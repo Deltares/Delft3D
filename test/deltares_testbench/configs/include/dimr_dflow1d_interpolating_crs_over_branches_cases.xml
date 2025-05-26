@@ -1,0 +1,117 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <!-- ======================================================================== -->
+    <testCase name="e106_f14_c01_264_flow-diversion_RWS_crs_profile" ref="dflow1d_default">
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f14_interpolating-crs-over-branches/c01_264_flow-diversion_RWS_crs_profile</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="B2_B3_h_x=0m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B5_h_x=250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B7_h_x=0m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B7_h_x=1250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=1500m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=2750m" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file> 
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" location="1_3" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="2_1" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="3_1" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="5_4" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="7_5" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="8_4" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>             
+       </checks>
+        <maxRunTime>60.0</maxRunTime>
+    </testCase>        
+    <!-- ======================================================================== -->
+    <testCase name="e106_f14_c04_267_flow-diversion_YZ-table" ref="dflow1d_default">
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f14_interpolating-crs-over-branches/c04_267_flow-diversion_YZ-table</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="B2_B3_h_x=0m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B5_h_x=250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B7_h_x=0m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B7_h_x=1250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=1500m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=2750m" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file> 
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" location="1_3" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="2_1" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="3_1" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="5_4" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="7_5" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="8_4" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>              
+        </checks>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f14_c05_268_flow-diversion_YZ-table" ref="dflow1d_default">
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f14_interpolating-crs-over-branches/c05_268_flow-diversion_YZ-table</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="B2_B3_h_x=0m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B5_h_x=250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B7_h_x=0m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B7_h_x=1250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=1500m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=2750m" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file> 
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" location="1_3" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="2_1" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="3_1" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="5_4" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="7_5" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="8_4" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>             
+        </checks>
+    </testCase>
+    <!-- ======================================================================== -->
+
+    <!-- <testCase name="e106_f14_c06_274_flow-diversion_YZ-table" ref="dflow1d_default">
+        <path>e106_dflow1d/f14_interpolating-crs-over-branches/c06_274_flow-diversion_YZ-table</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="B2_B3_h_x=0m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B5_h_x=250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B7_h_x=0m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B7_h_x=1250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=1500m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=250m" toleranceAbsolute="0.0001" />
+                    <parameter name="water_level" location="B8_h_x=2750m" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file> 
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" location="1_3" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="2_1" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="3_1" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="5_4" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="7_5" toleranceAbsolute="0.001" />
+                    <parameter name="water_discharge" location="8_4" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>             
+        </checks>
+    </testCase> -->
+
+    <!-- ======================================================================== -->
+</testCases>

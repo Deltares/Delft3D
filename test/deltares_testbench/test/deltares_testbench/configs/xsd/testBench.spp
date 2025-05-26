@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project ValidFileSet="Yes" ValidFile="deltaresTestbench_v3-1.00.xsd">
+	<Folder FolderName="XML Files" ExtStr="xml;cml;math;rdf;smil;svg;wml" ValidFileSet="Yes" ValidFile="deltaresTestbench_v3-1.00.xsd">
+		<File FilePath="coup203_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="coupsds_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="datsel_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="ddcouple_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="delft3d_lnx64_hp.xml" HomeFolder="Yes"/>
+		<File FilePath="delft3d_lnx64_hp_imbound.xml" HomeFolder="Yes"/>
+		<File FilePath="delft3d_lnx64_hp_parallel.xml" HomeFolder="Yes"/>
+		<File FilePath="delft3d_lnx64_sp.xml" HomeFolder="Yes"/>
+		<File FilePath="delft3d_win32_hp_gra_uni_dad.xml" HomeFolder="Yes"/>
+		<File FilePath="delft3d_win64_hp.xml" HomeFolder="Yes"/>
+		<File FilePath="delft3d_win64_hp_imbound.xml" HomeFolder="Yes"/>
+		<File FilePath="delft3d_win64_hp_parallel.xml" HomeFolder="Yes"/>
+		<File FilePath="delft3d_win64_sp.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_dhydro_win64.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_lnx64.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_lnx64_parallel.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_lnx64_single.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_sedmor_win64.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_unvalidated_lnx64.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_unvalidated_win64.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_wave_lnx64.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_wave_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_wave_win64.xml" HomeFolder="Yes"/>
+		<File FilePath="dflowfm_win64.xml" HomeFolder="Yes"/>
+		<File FilePath="dimr_dflow1d_drtc_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="dimr_dflow1d_release.xml" HomeFolder="Yes"/>
+		<File FilePath="dimr_dflow1d_salinity.xml" HomeFolder="Yes"/>
+		<File FilePath="dimr_dflow1d_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="kubint_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="lint_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="nefis_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="nefis_win64.xml" HomeFolder="Yes"/>
+		<File FilePath="nest_hd_wq_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="part_win64.xml" HomeFolder="Yes"/>
+		<File FilePath="RTC-Tools_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="sedmor_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="sobek3_acceptance_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="tide_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="tide_win64.xml" HomeFolder="Yes"/>
+		<File FilePath="triana_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="triana_win64.xml" HomeFolder="Yes"/>
+		<File FilePath="waq_lnx64.xml" HomeFolder="Yes"/>
+		<File FilePath="waq_lnx64_cross_platform.xml" HomeFolder="Yes"/>
+		<File FilePath="waq_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="waq_win64.xml" HomeFolder="Yes"/>
+		<File FilePath="wes_lnx64.xml" HomeFolder="Yes"/>
+		<File FilePath="wes_win32.xml" HomeFolder="Yes"/>
+		<File FilePath="wes_win64.xml" HomeFolder="Yes"/>
+	</Folder>
+	<Folder FolderName="XSL Files" ExtStr="xsl;xslt"/>
+	<Folder FolderName="XQuery Files" ExtStr="xq;xql;xquery"/>
+	<Folder FolderName="HTML Files" ExtStr="html;htm;xhtml;asp"/>
+	<Folder FolderName="DTD/Schemas" ExtStr="dtd;dcd;xdr;biz;xsd">
+		<File FilePath="deltaresTestbench_v3-1.00.xsd" HomeFolder="Yes"/>
+	</Folder>
+	<Folder FolderName="Entities" ExtStr="ent"/>
+</Project>

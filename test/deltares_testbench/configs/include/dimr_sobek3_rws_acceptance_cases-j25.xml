@@ -1,0 +1,186 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c01_sobek-maas-j23_6-v1a2" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c01_sobek-maas-j23_6-v1a2</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level"  toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c02_sobek-maas-j23_6-v1a2_D4100" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c01_sobek-maas-j23_6-v1a2</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level"  toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c03_sobek-markermeer-j10_5-v2_rvw2007" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c03_sobek-markermeer-j10_5-v2_rvw2007</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c04_sobek-nzk_ark-j15_5-v4" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c04_sobek-nzk_ark-j15_5-v4</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c05_sobek-ovd-j14_5-v2" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c05_sobek-ovd-j14_5-v2</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c06_sobek-ovd_dv-j14_5-v2" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c06_sobek-ovd_dv-j14_5-v2</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c06_sobek-rijn-j24_6-v1a1_D16000" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c06_sobek-rijn-j24_6-v1a1_D16000</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c07_sobek-rijn-j24_6-v1a1" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c07_sobek-rijn-j24_6-v1a1</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c10_sobek-twentekanaal_j10_5-v2" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c10_sobek-twentekanaal_j10_5-v2</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c11_sobek-vrm-j10_5-v2" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c11_sobek-vrm-j10_5-v2</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c12_sobek-ym_ijd-j16_5-v3_rvw2007" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c12_sobek-ym_ijd-j16_5-v3_rvw2007</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c13_sobek-oosterschelde-j12_5-v2" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c13_sobek-oosterschelde-j12_5-v2</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c14_sobek-rmm-vzm-j15_5-v4" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c14_sobek-rmm-vzm-j15_5-v4</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                    <parameter name="water_salinity" toleranceAbsolute="0.01"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e111_f01_c15_sobek-rmm-vzm-j15_5-v4_rvw-v2" ref="dimr_config_default">
+        <path version="2025-02-13T20:00:00">e111_sobek3_suite/f01_rws_acceptance_models/c14_sobek-rmm-vzm-j15_5-v4</path>
+        <checks>
+            <file name="dflow1d/output/observations.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" toleranceAbsolute="0.1"/>
+                    <parameter name="water_level" toleranceAbsolute="0.001"/>
+                    <parameter name="water_salinity" toleranceAbsolute="0.01"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>14400.0</maxRunTime> <!-- seconds -->
+    </testCase>
+
+</testCases>

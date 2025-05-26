@@ -1,0 +1,474 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <!-- ======================================================================== -->
+    <testCase name="e106_f07_c01_246c_compound-pump_free-surface-flow" ref="dflow1d_default">
+        <path version="2024-01-12T06:20:00">e106_dflow1d/f07_compound-structures/c01_246c_compound-pump_free-surface-flow</path>
+        <checks>
+            <file name="dflow1d/output/structures.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="structure_water_head" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_discharge" location="T1_compoundA" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member3" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member4" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member5" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member6" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/pumps.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member1" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member2" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member3" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member4" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member5" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member6" toleranceAbsolute="0.1"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>60.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f07_c02_366c_compound-pump_free-surface-flow_rws-reduction-table" ref="dflow1d_default">
+        <path version="2024-01-12T06:20:00">e106_dflow1d/f07_compound-structures/c02_366c_compound-pump_free-surface-flow_rws-reduction-table(neg-pump-heads)</path>
+        <checks>
+            <file name="dflow1d/output/structures.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="structure_water_head" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_discharge" location="T1_compoundA" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/pumps.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member1" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member2" toleranceAbsolute="0.1"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>60.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f07_c03_236c_internal-compound-pump_free-surface-flow" ref="dflow1d_default">
+        <path version="2024-01-12T06:20:00">e106_dflow1d/f07_compound-structures/c03_236c_internal-compound-pump_free-surface-flow</path>
+        <checks>
+            <file name="dflow1d/output/structures.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="structure_water_head" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_discharge" location="T1_compoundA" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member3" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member4" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member5" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member6" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/pumps.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member1" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member2" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member3" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member4" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member5" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member6" toleranceAbsolute="0.1"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>60.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f07_c04_288c_internal-compound-pump_pressurized-pipe-flow" ref="dflow1d_default">
+        <path version="2024-01-12T06:20:00">e106_dflow1d/f07_compound-structures/c04_288c_internal-compound-pump_pressurized-pipe-flow</path>
+        <checks>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_discharge" location="T1_B2_1" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/structures.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="structure_water_head" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_discharge" location="T1_compoundA" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member3" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member4" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member5" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member6" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/pumps.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member1" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member2" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member3" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member4" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member5" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member6" toleranceAbsolute="0.1"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>60.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f07_c05_287c_external-compound-pump_free-surface-flow" ref="dflow1d_default">
+        <path version="2025-03-04T06:20:00">e106_dflow1d/f07_compound-structures/c05_287c_external-compound-pump_free-surface-flow</path>
+        <checks>
+            <file name="dflow1d/output/structures.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="structure_water_head" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_discharge" location="T1_compoundA" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member3" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member4" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member5" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member6" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/pumps.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member1" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member2" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member3" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member4" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member5" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member6" toleranceAbsolute="0.1"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>60.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f07_c06_289c_external-compound-pump_pressurized-pipe-flow" ref="dflow1d_default">
+        <path version="2025-03-04T06:20:00">e106_dflow1d/f07_compound-structures/c06_289c_external-compound-pump_pressurized-pipe-flow</path>
+        <checks>
+            <file name="dflow1d/output/structures.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="structure_water_head" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_head" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_down" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="structure_water_level_up" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_discharge" location="T1_compoundA" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member3" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member4" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member5" toleranceAbsolute="0.001"/>
+                    <parameter name="water_discharge" location="T1_compoundA_member6" toleranceAbsolute="0.001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/pumps.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member1" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member2" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member3" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member4" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member5" toleranceAbsolute="0.1"/>
+                    <parameter name="actual_pump_stage" location="T1_compoundA_member6" toleranceAbsolute="0.1"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="delivery_side_level" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_capacity" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_discharge" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="pump_head" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="reduction_factor" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member1" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member2" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member3" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member4" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member5" toleranceAbsolute="0.0001"/>
+                    <parameter name="suction_side_level" location="T1_compoundA_member6" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>60.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->        
+</testCases>

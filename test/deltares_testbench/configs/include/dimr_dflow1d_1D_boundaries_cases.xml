@@ -1,0 +1,20 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <!-- ======================================================================== -->
+    <testCase name="e106_f01_c01_030_h-boundary1d_one-connected-branch-only" ref="dflow1d_default">
+        <path version="2024-01-12T06:30:00">e106_dflow1d/f01_1D-boundaries/c01_030_h-boundary1d_one-connected-branch-only</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="dflow1d/output/waterbalance.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_balance_boundaries_in" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_balance_boundaries_out" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_balance_boundaries_total" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_balance_storage" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_balance_volume" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_balance_error" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>                
+        </checks>
+    </testCase>
+<!-- ======================================================================== -->        
+</testCases>

@@ -4,12 +4,12 @@ setlocal enabledelayedexpansion
 rem Default arguments.
 rem No default value means that the option is a flag that is either on or off.
 rem A variable that can have arguments requires a default value (can be "")
-set config=fm-suite
+set config=dflowfm_interacter
 set build=
 set vs=0
 set coverage=
 set build_type=Debug
-set keep_build=
+set keep_build=1
 set compiler=ifx
 
 rem Non-argument variables

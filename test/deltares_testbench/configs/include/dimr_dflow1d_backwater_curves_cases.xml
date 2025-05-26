@@ -1,0 +1,165 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+<!-- ======================================================================== -->
+    <testCase name="e106_f15_c01_M1_iadvec1d_1" ref="dflow1d_default">
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c01_M1_iadvec1d_1</path>
+        <checks>
+             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_250.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_99750.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_99500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_1000.000" toleranceAbsolute="0.0001"/>
+                     <parameter name="water_level" location="T6_99000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>    
+                    <parameter name="water_discharge" location="T1_519" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T2_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T3_259" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T4_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T5_129" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T6_2" toleranceAbsolute="0.01"/>
+                    </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f15_c02_M1_iadvec1d_2" ref="dflow1d_default">
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c02_M1_iadvec1d_2</path>
+        <checks>
+             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_250.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_99750.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_99500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_1000.000" toleranceAbsolute="0.0001"/>
+                     <parameter name="water_level" location="T6_99000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>    
+                    <parameter name="water_discharge" location="T1_519" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T2_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T3_259" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T4_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T5_129" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T6_2" toleranceAbsolute="0.01"/>
+                    </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f15_c03_M1_iadvec1d_5" ref="dflow1d_default">
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c03_M1_iadvec1d_5</path>
+        <checks>
+             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_250.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_99750.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_99500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_1000.000" toleranceAbsolute="0.0001"/>
+                     <parameter name="water_level" location="T6_99000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>    
+                    <parameter name="water_discharge" location="T1_519" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T2_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T3_259" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T4_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T5_129" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T6_2" toleranceAbsolute="0.01"/>
+                    </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f15_c04_M2_iadvec1d_1" ref="dflow1d_default">
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c04_M2_iadvec1d_1</path>
+        <checks>
+             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_250.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_99750.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_99500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_1000.000" toleranceAbsolute="0.0001"/>
+                     <parameter name="water_level" location="T6_99000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>    
+                    <parameter name="water_discharge" location="T1_519" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T2_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T3_259" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T4_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T5_129" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T6_2" toleranceAbsolute="0.01"/>
+                    </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f15_c05_M2_iadvec1d_2" ref="dflow1d_default">
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c05_M2_iadvec1d_2</path>
+        <checks>
+             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_250.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_99750.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_99500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_1000.000" toleranceAbsolute="0.0001"/>
+                     <parameter name="water_level" location="T6_99000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>    
+                    <parameter name="water_discharge" location="T1_519" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T2_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T3_259" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T4_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T5_129" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T6_2" toleranceAbsolute="0.01"/>
+                    </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f15_c06_M2_iadvec1d_5" ref="dflow1d_default">
+        <path version="2024-01-12T06:00:00">e106_dflow1d/f15_backwater-curves/c06_M2_iadvec1d_5</path>
+        <checks>
+             <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_250.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_99750.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_99500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_1000.000" toleranceAbsolute="0.0001"/>
+                     <parameter name="water_level" location="T6_99000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>    
+                    <parameter name="water_discharge" location="T1_519" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T2_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T3_259" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T4_2" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T5_129" toleranceAbsolute="0.01"/>
+                    <parameter name="water_discharge" location="T6_2" toleranceAbsolute="0.01"/>
+                    </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+</testCases>

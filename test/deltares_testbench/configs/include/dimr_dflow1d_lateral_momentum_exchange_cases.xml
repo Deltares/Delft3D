@@ -1,0 +1,471 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c01_constant-point-lateral-inflow_iadvec1d_1" ref="dflow1d_default">
+        <path version="2024-01-11T22:50:00">e106_dflow1d/f16_lateral-momentum-exchange/c01_constant-point-lateral-inflow_iadvec1d_1</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B2_49500.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T2_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T4_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T4_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T6_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T6_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B2_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T8_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T8_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B2_100" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c02_constant-point-lateral-inflow_iadvec1d_2" ref="dflow1d_default">
+        <path version="2024-01-11T22:50:00">e106_dflow1d/f16_lateral-momentum-exchange/c02_constant-point-lateral-inflow_iadvec1d_2</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B2_49500.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T2_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T4_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T4_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T6_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T6_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B2_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T8_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T8_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B2_100" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c03_constant-point-lateral-inflow_iadvec1d_5" ref="dflow1d_default">
+        <path version="2024-01-11T22:50:00">e106_dflow1d/f16_lateral-momentum-exchange/c03_constant-point-lateral-inflow_iadvec1d_5</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B2_49500.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T2_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T4_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T4_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T6_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T6_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B2_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T8_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T8_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B2_100" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c04_constant-point-lateral-outflow_iadvec1d_1" ref="dflow1d_default">
+        <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c04_constant-point-lateral-outflow_iadvec1d_1</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B2_49500.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T2_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T4_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T4_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T6_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T6_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B2_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T8_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T8_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B2_100" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c05_constant-point-lateral-outflow_iadvec1d_2" ref="dflow1d_default">
+        <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c05_constant-point-lateral-outflow_iadvec1d_2</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B2_49500.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T2_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T4_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T4_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T6_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T6_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B2_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T8_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T8_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B2_100" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c06_constant-point-lateral-outflow_iadvec1d_5" ref="dflow1d_default">
+        <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c06_constant-point-lateral-outflow_iadvec1d_5</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T3_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T4_B2_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T5_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T6_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T7_B2_49500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_500.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B1_0.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T8_B2_49500.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T2_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T4_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T4_B2_1" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T4_B2_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T6_B1_100" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T6_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B1_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T6_B2_100" toleranceAbsolute="0.000001"/>
+                    <parameter name="water_velocity" location="T8_B1_1" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T8_B2_100" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B1_1" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T8_B2_100" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c07_no-lateral-inflow_storage-area_iadvec1d_1" ref="dflow1d_default">
+        <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c07_no-lateral-inflow_storage-area_iadvec1d_1</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_49000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_51000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T1_50" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_51" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T1_50" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_51" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c08_no-lateral-inflow_storage-area_iadvec1d_2" ref="dflow1d_default">
+        <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c08_no-lateral-inflow_storage-area_iadvec1d_2</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_49000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_51000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T1_50" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_51" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T1_50" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_51" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c09_no-lateral-inflow_storage-area_iadvec1d_5" ref="dflow1d_default">
+        <path version="2024-01-11T22:30:00">e106_dflow1d/f16_lateral-momentum-exchange/c09_no-lateral-inflow_storage-area_iadvec1d_5</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_49000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_51000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T1_50" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_51" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T1_50" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_51" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c10_time-dependent-point-lateral-discharge_iadvec1d_1" ref="dflow1d_default">
+        <path version="2024-01-11T22:20:00">e106_dflow1d/f16_lateral-momentum-exchange/c10_time-dependent-point-lateral-discharge_iadvec1d_1</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_49000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_51000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T1_50" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_51" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T1_50" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_51" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c11_time-dependent-point-lateral-discharge_iadvec1d_2" ref="dflow1d_default">
+        <path version="2024-01-11T22:20:00">e106_dflow1d/f16_lateral-momentum-exchange/c11_time-dependent-point-lateral-discharge_iadvec1d_2</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_49000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_51000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T1_50" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_51" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T1_50" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_51" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+    <testCase name="e106_f16_c12_time-dependent-point-lateral-discharge_iadvec1d_5" ref="dflow1d_default">
+        <path version="2024-01-11T22:20:00">e106_dflow1d/f16_lateral-momentum-exchange/c12_time-dependent-point-lateral-discharge_iadvec1d_5</path>
+        <checks>
+            <file name="dflow1d/output/gridpoints.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_level" location="T1_49000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T1_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_50000.000" toleranceAbsolute="0.0001"/>
+                    <parameter name="water_level" location="T2_51000.000" toleranceAbsolute="0.0001"/>
+                </parameters>
+            </file>
+            <file name="dflow1d/output/reachsegments.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="water_velocity" location="T1_50" toleranceAbsolute="0.001"/>
+                    <parameter name="water_velocity" location="T2_51" toleranceAbsolute="0.001"/>
+                    <parameter name="mom_lateral_correction" location="T1_50" toleranceAbsolute="0.000001"/>
+                    <parameter name="mom_lateral_correction" location="T2_51" toleranceAbsolute="0.000001"/>
+                </parameters>
+            </file>
+        </checks>
+        <maxRunTime>120.0</maxRunTime>
+    </testCase>
+    <!-- ======================================================================== -->
+</testCases>
