@@ -467,7 +467,7 @@ contains
       end if
 
       call timstrt('Observations init 2 ', handle_extra(28)) ! observations init 2
-      call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (2nd time required to fill values in observation stations)
+      call updateValuesOnObservationStations() ! and fill first value
       call timstop(handle_extra(28)) ! end observations init 2
 
       call timstrt('Structure parameters', handle_extra(29)) ! structure parameters

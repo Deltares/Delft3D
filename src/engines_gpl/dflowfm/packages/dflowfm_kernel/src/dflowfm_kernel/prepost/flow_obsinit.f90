@@ -62,9 +62,6 @@ contains
 
 !   for the following, it is assumed that the moving observation stations have been initialized (in flow_initexternalforcings)
       call init_valobs() ! (re)initialize work array and set pointers for observation stations
-
-      call updateValuesOnObservationStations() ! and fill first value
-
       call init_structure_hisvalues()
 
    contains
