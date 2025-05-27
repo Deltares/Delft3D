@@ -7,7 +7,10 @@ authors = [
     { name = "black-ops", email = "black-ops@deltares.nl" }
 ]
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "minio~=7.2.15",
+    "s3-path-wrangler~=0.5.0",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -21,10 +24,13 @@ dev = [
 verschilanalyse = [
     "openpyxl~=3.1.5",
     "types-openpyxl~=3.1.5",
-    "minio~=7.2.15",
     "junit-xml~=1.9",
 ]
 all = ["ci-tools[verschilanalyse,dev]"]
+
+[project.scripts]
+minio-sync = "ci_tools.minio.synchronize.cli:CommandLine.run"
+
 
 [tool.uv]
 package = true
@@ -95,10 +101,16 @@ pretty = true
 show_error_context = true
 
 [[tool.mypy.overrides]]
-module = ["junit_xml.*"]
+module = ["junit_xml.*", "s3_path_wrangler.*"]
 follow_untyped_imports = true
 
 [tool.pytest.ini_options]
+addopts = """\
+    --log-cli-level=INFO \
+"""
+log_cli = true
+log_format = "%(asctime)s.%(msecs)03d %(levelname)s %(threadName)s %(filename)s:%(lineno)s %(message)s"
+log_date_format = "%Y-%m-%dT%H:%M:%S"
 testpaths = [
-    "tests"
+    "tests",
 ]
