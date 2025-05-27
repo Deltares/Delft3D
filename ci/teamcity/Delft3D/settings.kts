@@ -53,6 +53,7 @@ project {
         buildType(LinuxCollect)
         buildType(LinuxRuntimeContainers)
         buildType(LinuxRunAllDockerExamples)
+        buildType(LinuxLegacyDockerTest)
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
@@ -60,6 +61,7 @@ project {
             LinuxCollect,
             LinuxRuntimeContainers,
             LinuxRunAllDockerExamples,
+            LinuxLegacyDockerTest,
             LinuxUnitTest,
             LinuxTest
         )
