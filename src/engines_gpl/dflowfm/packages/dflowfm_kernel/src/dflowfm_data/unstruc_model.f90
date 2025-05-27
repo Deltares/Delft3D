@@ -2610,7 +2610,7 @@ contains
       use m_map_his_precision
       use m_datum
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
-      use m_dambreak_breach, only: exist_dambreak_links
+      use m_dambreak_breach, only: have_dambreaks_links
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -3413,7 +3413,7 @@ contains
          call prop_set(prop_ptr, 'physics', 'Equili', jaequili, 'Equilibrium spiral flow intensity (0: no, 1: yes)')
       end if
 
-      if (exist_dambreak_links()) then
+      if (have_dambreaks_links()) then
          call prop_set(prop_ptr, 'physics', 'BreachGrowth', trim(md_dambreak_widening_method), 'Method for implementing dambreak widening: symmetric, proportional, or symmetric-asymmetric')
       end if
 

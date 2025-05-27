@@ -47,12 +47,42 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
    integer, dimension(:), allocatable :: breach_start_link !< the starting link, the closest to the breach point
    integer, dimension(:), allocatable :: upstream_link_ids !< dambreak upstream links index array
    integer, dimension(:), allocatable :: downstream_link_ids !< dambreak downstream links index array
+   integer, dimension(:), allocatable :: first_link !< first dambreak link for each signal
+   integer, dimension(:), allocatable :: last_link !< last dambreak link for each signal
+   integer, dimension(:), allocatable :: link_index !< dambreak links index array
 
    ! time varying, values can be retrieved via BMI interface
-   real(kind=dp), dimension(:), allocatable, target :: breach_widths !< dambreak breach widths (as a level)
    real(kind=dp), dimension(:), allocatable, target :: upstream_levels !< upstream water levels computed each time step
    real(kind=dp), dimension(:), allocatable, target :: downstream_levels !< downstream water levels computed each time step
-   real(kind=dp), dimension(:), allocatable, target :: breach_depths !< dambreak breach depths (as a level)
+
+   type :: t_dambreak !< dambreak data
+      integer :: index_structure = 0
+      integer :: breach_starting_link = -1
+      real(kind=dp) :: breach_depth = 0.0_dp
+      real(kind=dp) :: breach_width = 0.0_dp
+      character(len=128) :: name = ""
+      real(kind=dp) :: level_from_table = 0.0_dp
+      real(kind=dp) :: width_from_table = 0.0_dp
+      real(kind=dp) :: upstream_level
+      real(kind=dp) :: downstream_level
+      integer :: shift_in_link_array = 0
+      integer :: number_of_links = 0
+      integer, dimension(:), allocatable :: link_indices
+      integer, dimension(:), allocatable :: upstream_link_indices
+      integer, dimension(:), allocatable :: downstream_link_indices
+      integer :: algorithm = 0
+      integer :: phase = 0
+      real(kind=dp) :: t0 = 0.0_dp
+      real(kind=dp) :: width = 0.0_dp
+      real(kind=dp) :: maximum_width = 0.0_dp
+      real(kind=dp) :: crest_level
+      real(kind=dp) :: crest_level_ini
+      real(kind=dp) :: normal_velocity
+      real(kind=dp) :: breach_width_derivative
+      real(kind=dp) :: water_level_jump
+   end type
+
+   type(t_dambreak), target, dimension(:), allocatable :: dambreaks(:) !< array of dambreak signals
 
    procedure(calculate_dambreak_widening_any), pointer :: calculate_dambreak_widening
 
@@ -67,19 +97,40 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       end subroutine
    end interface
 
+   integer, parameter :: KX = 2
+   integer, parameter, dimension(1) :: KDUM = 1
+   real(kind=dp), parameter, dimension(1) :: XDUM = 1.0_dp, YDUM = 1.0_dp
+   character(len=*), parameter :: QID = 'dambreakLevelsAndWidths'
+
 contains
 
    !> allocate arrays and initialize variables
-   subroutine allocate_and_initialize_dambreak_data(n_db_signals)
+   subroutine allocate_and_initialize_dambreak_data()
       use m_alloc, only: realloc
 
-      integer, intent(in) :: n_db_signals !< number of dambreak signals
+      integer :: n !< loop index
 
-      call realloc(dambreak_structure, n_db_signals, fill=0)
+      if (allocated(dambreaks)) then
+         do n = 1, size(dambreaks)
+            if (allocated(dambreaks(n)%link_indices)) then
+               deallocate (dambreaks(n)%link_indices)
+            end if
+         end do
+         deallocate (dambreaks)
+      end if
+
+      allocate (dambreaks(n_db_signals))
+      do n = 1, n_db_signals
+         dambreaks(n)%shift_in_link_array = first_link(n) - 1
+         if (first_link(n) > last_link(n)) then
+            allocate (dambreaks(n)%link_indices(0))
+         else
+            allocate (dambreaks(n)%link_indices(last_link(n) - first_link(n) + 1))
+         end if
+         dambreaks(n)%number_of_links = size(dambreaks(n)%link_indices)
+      end do
+
       call realloc(breach_start_link, n_db_signals, fill=-1)
-      call realloc(breach_depths, n_db_signals, fill=0.0_dp)
-      call realloc(breach_widths, n_db_signals, fill=0.0_dp)
-      call realloc(dambreak_names, n_db_signals, fill="")
       call realloc(active_links, n_db_links, fill=0)
       call realloc(levels_widths_from_table, n_db_signals * 2, fill=0.0_dp)
       call realloc(upstream_levels, n_db_signals)
@@ -98,9 +149,8 @@ contains
 
    !> updates dambreak breach by updating water levels upstream and downstream and calculating dambreak widths
    module function update_dambreak_breach(start_time, delta_time) result(error)
-      use m_flow, only: hu, au, u1
+      use m_flow, only: s1, hu, au, u1
       use m_missing, only: dmiss
-      use unstruc_channel_flow, only: network
       use m_partitioninfo, only: get_average_quantity_from_links
 
       real(kind=dp), intent(in) :: start_time !< start time
@@ -108,7 +158,6 @@ contains
       integer :: error !< error code
 
       integer :: n !< index of the current dambreak signal
-      integer :: i_structure !< index of the structure
 
       error = 0
 
@@ -123,12 +172,19 @@ contains
 
       call reset_dambreak_variables(n_db_signals)
 
-      call update_dambreak_water_levels(start_time, UPSTREAM, upstream_link_ids, upstream_levels, error)
+      do n = 1, n_locations(UPSTREAM)
+         upstream_levels(location_mapping(n, UPSTREAM)) = s1(locations(n, UPSTREAM))
+      end do
+      do n = 1, n_locations(DOWNSTREAM)
+         downstream_levels(location_mapping(n, DOWNSTREAM)) = s1(locations(n, DOWNSTREAM))
+      end do
+
+      call update_water_levels_with_averaging(start_time, UPSTREAM, upstream_link_ids, upstream_levels, error)
       if (error /= 0) then
          return
       end if
 
-      call update_dambreak_water_levels(start_time, DOWNSTREAM, downstream_link_ids, downstream_levels, error)
+      call update_water_levels_with_averaging(start_time, DOWNSTREAM, downstream_link_ids, downstream_levels, error)
       if (error /= 0) then
          return
       end if
@@ -143,9 +199,8 @@ contains
 
       if (n_db_links > 0) then
          do n = 1, n_db_signals
-            i_structure = dambreak_structure(n)
-            if (i_structure /= 0 .and. weight_averaged_values(2, n) > 0.0_dp) then
-               network%sts%struct(i_structure)%dambreak%normal_velocity = &
+            if (dambreaks(n)%index_structure /= 0 .and. weight_averaged_values(2, n) > 0.0_dp) then
+               dambreaks(n)%normal_velocity = &
                   weight_averaged_values(1, n) / weight_averaged_values(2, n)
             end if
          end do
@@ -158,29 +213,26 @@ contains
 
    !> reset dambreak variables like water levels, averaged values etc.
    subroutine reset_dambreak_variables(n_db_signals)
-      use unstruc_channel_flow, only: network
 
       integer, intent(in) :: n_db_signals !< number of dambreak signals
 
       integer :: n !< index of the current dambreak signal
-      integer :: i_structure !< index of the structure
 
       weight_averaged_values(:, :) = 0.0_dp
       upstream_levels(:) = 0.0_dp
       downstream_levels(:) = 0.0_dp
       do n = 1, n_db_signals
-         i_structure = dambreak_structure(n)
-         if (i_structure <= 0) then
+         if (dambreaks(n)%index_structure <= 0) then
             continue
          end if
-         network%sts%struct(i_structure)%dambreak%normal_velocity = 0.0_dp
-         network%sts%struct(i_structure)%dambreak%breach_width_derivative = 0.0_dp
-         network%sts%struct(i_structure)%dambreak%water_level_jump = 0.0_dp
+         dambreaks(n)%normal_velocity = 0.0_dp
+         dambreaks(n)%breach_width_derivative = 0.0_dp
+         dambreaks(n)%water_level_jump = 0.0_dp
       end do
    end subroutine reset_dambreak_variables
 
-   !> update water levels for dambreaks
-   subroutine update_dambreak_water_levels(start_time, up_down, link_index, water_levels, error)
+   !> update water levels using averaging
+   subroutine update_water_levels_with_averaging(start_time, up_down, link_ids, water_levels, error)
       use m_flow, only: s1, hu
       use m_partitioninfo, only: get_average_quantity_from_links
       use m_flowgeom, only: wu
@@ -189,45 +241,47 @@ contains
 
       real(kind=dp), intent(in) :: start_time !< start time
       integer, intent(in) :: up_down !< 1 - upstream, 2 - downstream
-      integer, dimension(:), intent(in) :: link_index !< upstream or downstream link ids
+      integer, dimension(:), intent(in) :: link_ids !< upstream or downstream link ids
       real(kind=dp), dimension(:), intent(inout) :: water_levels !< water levels
       integer, intent(out) :: error !< error code
 
-      integer :: n !< index of the current dambreak signal
+      integer :: n !< loop index
+      integer :: signal !< current dambreak signal
+      integer, dimension(1) :: dummy_first = 1, dummy_last = 0
 
       error = 0
 
-      if (n_locations(up_down) > 0) then
-         water_levels(location_mapping(1:n_locations(up_down), up_down)) = s1(locations(1:n_locations(up_down), up_down))
+      if (n_averaging(up_down) == 0) then
+         return
       end if
 
-      !call this code only if something has to be averaged
-      if (n_averaging(up_down) > 0) then
-         error = get_average_quantity_from_links(first_link(averaging_mapping(1:n_averaging(up_down), up_down)), &
-                                                 last_link(averaging_mapping(1:n_averaging(up_down), up_down)), wu, &
-                                                 link_index, s1, link_index, weight_averaged_values, &
-                                                 0, hu, dmiss, active_links, 0)
-         if (error /= 0) then
-            return
+      do n = 1, n_averaging(up_down)
+         signal = averaging_mapping(n, up_down)
+         if (last_link(signal) >= first_link(signal)) then
+            error = get_average_quantity_from_links(first_link(signal:signal), &
+                                                    last_link(signal:signal), wu, &
+                                                    link_ids, s1, link_ids, weight_averaged_values, &
+                                                    0, hu, dmiss, active_links, 0)
+            if (error /= 0) then
+               return
+            end if
+            if (weight_averaged_values(2, 1) > 0.0_dp) then
+               water_levels(signal) = weight_averaged_values(1, 1) / weight_averaged_values(2, 1)
+            else if (abs(start_time - &
+                         network%sts%struct(dambreaks(signal)%index_structure)%dambreak%T0) < 1e-10_dp) then
+               water_levels(signal) = s1(link_ids(breach_start_link(signal)))
+            else
+               continue
+            end if
+         else
+            ! dummy call due to MPI_allreduce
+            error = get_average_quantity_from_links(dummy_first, dummy_last, wu, &
+                                                    link_ids, s1, link_ids, weight_averaged_values, &
+                                                    0, hu, dmiss, active_links, 0)
          end if
+      end do
 
-         if (n_db_links > 0) then
-            do n = 1, n_averaging(up_down)
-               if (weight_averaged_values(2, n) > 0.0_dp) then
-                  water_levels(averaging_mapping(n, up_down)) = &
-                     weight_averaged_values(1, n) / weight_averaged_values(2, n)
-               else if (abs(start_time - &
-                            network%sts%struct(dambreak_structure(averaging_mapping(n, up_down)))%dambreak%T0) < 1e-10_dp) then
-                  water_levels(averaging_mapping(n, up_down)) = &
-                     s1(link_index(breach_start_link(averaging_mapping(n, up_down))))
-               else
-                  continue
-               end if
-            end do
-         end if
-      end if
-
-   end subroutine update_dambreak_water_levels
+   end subroutine update_water_levels_with_averaging
 
    !> calculate dambreak widths
    subroutine calculate_dambreak_widths(start_time, delta_time)
@@ -244,62 +298,62 @@ contains
       logical :: success !< success flag
 
       do n = 1, n_db_signals
-         i_structure = dambreak_structure(n)
+         i_structure = dambreaks(n)%index_structure
          if (i_structure == 0) then
             continue
          end if
-         associate (dambreak => network%sts%struct(i_structure)%dambreak)
-            if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP .or. &
-                dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
-               call prepare_dambreak_calculation(network%sts%struct(i_structure)%dambreak, upstream_levels(n), &
-                                                 downstream_levels(n), start_time, delta_time)
+         if (dambreaks(n)%algorithm == BREACH_GROWTH_VDKNAAP .or. &
+             dambreaks(n)%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
+            call prepare_dambreak_calculation(network%sts%struct(i_structure)%dambreak, dambreaks(n), &
+                                              upstream_levels(n), downstream_levels(n), start_time, delta_time)
+         end if
+         if (dambreaks(n)%algorithm == BREACH_GROWTH_TIMESERIES .and. &
+             start_time > dambreaks(n)%t0) then
+            !Time in the tim file is relative to the start time
+            success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_db_levels_widths_table, &
+                                                     irefdate, tzone, tunit, start_time - dambreaks(n)%t0, &
+                                                     levels_widths_from_table)
+            ! NOTE: AvD: the code above works correctly, but is dangerous:
+            ! the addtimespace for dambreak has added each dambreak separately with a targetoffset.
+            ! The gettimespace above, however, gets the values for *all* dambreaks, but with the relative time
+            ! of the *current* dambreak #n.
+            ! This means that if t0 values for all dambreaks are different, then the levels_widths_from_table(1:n-1) have become obsolete now.
+            ! It works, because in the previous loop iterations the values that were then still correct
+            ! have already been set into the %crest_level and %width values.
+            if (success) then
+               dambreaks(n)%crest_level = levels_widths_from_table((n - 1) * 2 + 1)
+               dambreaks(n)%width = levels_widths_from_table((n - 1) * 2 + 2)
+            else
+               return
             end if
-            if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES .and. &
-                start_time > dambreak%t0) then
-               !Time in the tim file is relative to the start time
-               success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_db_levels_widths_table, &
-                                                        irefdate, tzone, tunit, start_time - dambreak%t0, &
-                                                        levels_widths_from_table)
-               ! NOTE: AvD: the code above works correctly, but is dangerous:
-               ! the addtimespace for dambreak has added each dambreak separately with a targetoffset.
-               ! The gettimespace above, however, gets the values for *all* dambreaks, but with the relative time
-               ! of the *current* dambreak #n.
-               ! This means that if t0 values for all dambreaks are different, then the levels_widths_from_table(1:n-1) have become obsolete now.
-               ! It works, because in the previous loop iterations the values that were then still correct
-               ! have already been set into the %crest_level and %width values.
-               if (success) then
-                  dambreak%crest_level = levels_widths_from_table((n - 1) * 2 + 1)
-                  dambreak%width = levels_widths_from_table((n - 1) * 2 + 2)
-               else
-                  return
-               end if
-            end if
+         end if
 
-            if (dambreak%algorithm /= BREACH_GROWTH_VERHEIJVDKNAAP) then
-               dambreak%breach_width_derivative = &
-                  (dambreak%width - breach_widths(n)) / delta_time
-            end if
+         if (dambreaks(n)%algorithm /= BREACH_GROWTH_VERHEIJVDKNAAP) then
+            dambreaks(n)%breach_width_derivative = &
+               (dambreaks(n)%width - dambreaks(n)%breach_width) / delta_time
+         end if
 
-            breach_widths(n) = dambreak%width
-            breach_depths(n) = dambreak%crest_level
+         dambreaks(n)%breach_width = dambreaks(n)%width
+         dambreaks(n)%breach_depth = dambreaks(n)%crest_level
 
-            if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
-               dambreak%water_level_jump = calculate_water_level_jump(upstream_levels(n), &
-                                                                      downstream_levels(n), breach_depths(n))
-            end if
-         end associate
+         if (dambreaks(n)%algorithm == BREACH_GROWTH_TIMESERIES) then
+            dambreaks(n)%water_level_jump = calculate_water_level_jump(upstream_levels(n), &
+                                                                       downstream_levels(n), dambreaks(n)%breach_depth)
+         end if
       end do
 
    end subroutine calculate_dambreak_widths
 
    !> This routine sets dambreak%crest_level and dambreak%width, these varuables are needed
    !! in the actual dambreak computation in dflowfm_kernel
-   subroutine prepare_dambreak_calculation(dambreak, upstream_water_level, downstream_water_level, time, time_step)
+   subroutine prepare_dambreak_calculation(dambreak_settings, dambreak, upstream_water_level, &
+                                           downstream_water_level, time, time_step)
       use ieee_arithmetic, only: ieee_is_nan
-      use m_dambreak, only: t_dambreak, BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP
+      use m_dambreak, only: t_dambreak_settings, BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP
       use m_physcoef, only: gravity => ag
 
-      type(t_dambreak), pointer, intent(inout) :: dambreak !< dambreak settings for a single dambreak
+      type(t_dambreak_settings), pointer, intent(in) :: dambreak_settings !< dambreak settings for a single dambreak
+      type(t_dambreak), intent(inout) :: dambreak !< dambreak data for a single dambreak
       real(kind=dp), intent(in) :: upstream_water_level !< waterlevel at upstream link from dambreak position
       real(kind=dp), intent(in) :: downstream_water_level !< waterlevel at downstream link from dambreak position
       real(kind=dp), intent(in) :: time !< current time
@@ -328,13 +382,14 @@ contains
       if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
 
          ! The linear part
-         if (time_from_breaching < dambreak%time_to_breach_to_maximum_depth) then
+         if (time_from_breaching < dambreak_settings%time_to_breach_to_maximum_depth) then
             dambreak%crest_level = dambreak%crest_level_ini - &
-                                   time_from_breaching / dambreak%time_to_breach_to_maximum_depth * (dambreak%crest_level_ini - dambreak%crest_level_min)
-            breach_width = dambreak%breach_width_ini
+                                   time_from_breaching / dambreak_settings%time_to_breach_to_maximum_depth * &
+                                   (dambreak%crest_level_ini - dambreak_settings%crest_level_min)
+            breach_width = dambreak_settings%breach_width_ini
          else
             ! The logarithmic part, time_from_breaching in seconds
-            breach_width = dambreak%a_coeff * log(time_from_breaching / dambreak%b_coeff)
+            breach_width = dambreak_settings%a_coeff * log(time_from_breaching / dambreak_settings%b_coeff)
          end if
 
          ! breach width must increase monotonically
@@ -345,25 +400,27 @@ contains
          ! Verheij-vdKnaap(2002) formula
       else if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
 
-         if (time <= dambreak%end_time_first_phase) then
+         if (time <= dambreak_settings%end_time_first_phase) then
             ! phase 1: lowering
             dambreak%crest_level = dambreak%crest_level_ini - &
-                                   time_from_breaching / dambreak%time_to_breach_to_maximum_depth * (dambreak%crest_level_ini - dambreak%crest_level_min)
-            dambreak%width = dambreak%breach_width_ini
+                                   time_from_breaching / dambreak_settings%time_to_breach_to_maximum_depth * &
+                                   (dambreak%crest_level_ini - dambreak_settings%crest_level_min)
+            dambreak%width = dambreak_settings%breach_width_ini
             dambreak%phase = 1
          else
             ! phase 2: widening
-            dambreak%crest_level = dambreak%crest_level_min
+            dambreak%crest_level = dambreak_settings%crest_level_min
             water_level_jump_dambreak = calculate_water_level_jump(upstream_water_level, downstream_water_level, &
                                                                    dambreak%crest_level)
             delta_level = (gravity * water_level_jump_dambreak)**1.5d0
-            time_from_first_phase = time - dambreak%end_time_first_phase
+            time_from_first_phase = time - dambreak_settings%end_time_first_phase
 
             if (dambreak%width < dambreak%maximum_width .and. (.not. ieee_is_nan(dambreak%normal_velocity)) &
-                .and. dabs(dambreak%normal_velocity) > dambreak%u_crit) then
-               breach_width_derivative = (dambreak%f1 * dambreak%f2 / log(10D0)) * &
-                                         (delta_level / (dambreak%u_crit * dambreak%u_crit)) * &
-                                         (1.0 / (1.0 + (dambreak%f2 * gravity * time_from_first_phase / (dambreak%u_crit * SECONDS_IN_HOUR))))
+                .and. dabs(dambreak%normal_velocity) > dambreak_settings%u_crit) then
+               breach_width_derivative = (dambreak_settings%f1 * dambreak_settings%f2 / log(10D0)) * &
+                                         (delta_level / (dambreak_settings%u_crit * dambreak_settings%u_crit)) * &
+                                         (1.0 / (1.0 + (dambreak_settings%f2 * gravity * time_from_first_phase / &
+                                                        (dambreak_settings%u_crit * SECONDS_IN_HOUR))))
                width_increment = breach_width_derivative * (time_step / SECONDS_IN_HOUR)
                !ensure monotonically increasing dambreak%width
                if (width_increment > 0) then
@@ -377,13 +434,13 @@ contains
 
       ! in vdKnaap(2000) the maximum allowed branch width is limited (see sobek manual and set_dambreak_coefficients subroutine below)
       if (dambreak%algorithm == BREACH_GROWTH_VDKNAAP) then
-         actual_maximum_width = min(dambreak%maximum_allowed_width, dambreak%maximum_width)
+         actual_maximum_width = min(dambreak_settings%maximum_allowed_width, dambreak%maximum_width)
       else
          actual_maximum_width = dambreak%maximum_width
       end if
 
       !width cannot exceed the width of the snapped polyline
-      if (dambreak%width >= actual_maximum_width) then
+      if (dambreak%width > actual_maximum_width) then
          dambreak%width = actual_maximum_width
       end if
 
@@ -574,14 +631,14 @@ contains
 
       if (n_db_links > 0) then ! needed, because n_db_signals may be > 0, but n_db_links==0, and then arrays are not available.
          do n = 1, n_db_signals
-            if (dambreak_structure(n) == 0 .or. first_link(n) > last_link(n)) then
+            if (dambreaks(n)%index_structure == 0 .or. dambreaks(n)%number_of_links == 0) then
                cycle
             end if
-            associate (dambreak => network%sts%struct(dambreak_structure(n))%dambreak)
+            associate (dambreak => network%sts%struct(dambreaks(n)%index_structure)%dambreak)
                ! Update the crest/bed levels
-               call adjust_bobs_on_dambreak_breach(dambreak%width, dambreak%maximum_width, dambreak%crest_level, &
-                                                 & breach_start_link(n), first_link(n), last_link(n), &
-                                                 & network%sts%struct(dambreak_structure(n))%id)
+               call adjust_bobs_on_dambreak_breach(dambreaks(n)%width, dambreaks(n)%maximum_width, &
+                          dambreaks(n)%crest_level, breach_start_link(n), first_link(n), last_link(n), &
+                                                 & network%sts%struct(dambreaks(n)%index_structure)%id)
             end associate
          end do
       end if
@@ -612,7 +669,7 @@ contains
       integer, intent(in) :: n !< index of the current dambreak signal
       integer, intent(in) :: Lstart !< index of the starting link
 
-      breach_start_link(n) = first_link(n) - 1 + Lstart
+      breach_start_link(n) = dambreaks(n)%shift_in_link_array + Lstart
 
    end subroutine set_breach_start_link
 
@@ -622,9 +679,7 @@ contains
       use m_flowgeom, only: bob, ln
       use m_flowparameters, only: epshu
       use m_missing, only: dmiss
-      use unstruc_channel_flow, only: network
       use m_link_ghostdata, only: link_ghostdata
-      use unstruc_channel_flow, only: network
       use m_partitioninfo, only: jampi, my_rank, idomain
       use m_structures_indices, only: NUMVALS_DAMBREAK, IVAL_WIDTH, IVAL_DB_CRESTW, IVAL_WIDTHWET, IVAL_DIS, IVAL_AREA, IVAL_DB_DISCUM, &
                                       IVAL_DB_CRESTH, IVAL_S1UP, IVAL_S1DN, IVAL_HEAD, IVAL_VEL, IVAL_DB_JUMP, IVAL_DB_TIMEDIV
@@ -643,7 +698,7 @@ contains
       do n = 1, n_db_signals
          ! values(NUMVALS_DAMBREAK,n) is the cumulative over time, we do not reset it to 0
          values(1:NUMVALS_DAMBREAK - 1, n) = 0.0_dp
-         index_structure = dambreak_structure(n)
+         index_structure = dambreaks(n)%index_structure
          do link = first_link(n), last_link(n)
             if (is_not_db_active_link(link)) then
                cycle
@@ -667,13 +722,13 @@ contains
                values(IVAL_AREA, n) = values(IVAL_AREA, n) + au(flow_link) ! flow area
             end if
          end do
-         if (last_link(n) < first_link(n)) then ! NOTE: values(IVAL_DB_DISCUM,n) in a parallel simulation already gets values after mpi communication
+         if (dambreaks(n)%number_of_links == 0) then ! NOTE: values(IVAL_DB_DISCUM,n) in a parallel simulation already gets values after mpi communication
             ! from the previous timestep. In the case that the dambreak does not exist on the current domain, it should
             ! not contribute to the cumulative discharge in the coming mpi communication so we set it to 0.
             values(IVAL_DB_DISCUM, n) = 0.0_dp
          else
-            if (network%sts%struct(index_structure)%dambreak%width > 0.0_dp) then
-               values(IVAL_DB_CRESTH, n) = network%sts%struct(index_structure)%dambreak%crest_level
+            if (dambreaks(n)%width > 0.0_dp) then
+               values(IVAL_DB_CRESTH, n) = dambreaks(n)%crest_level
             else
                values(1:NUMVALS_DAMBREAK - 1, n) = dmiss ! No breach started yet, set FillValue
                flow_link = get_dambreak_breach_start_link(n)
@@ -687,9 +742,9 @@ contains
             values(IVAL_S1UP, n) = upstream_levels(n)
             values(IVAL_S1DN, n) = downstream_levels(n)
             values(IVAL_HEAD, n) = values(IVAL_S1UP, n) - values(IVAL_S1DN, n)
-            values(IVAL_VEL, n) = network%sts%struct(index_structure)%dambreak%normal_velocity
-            values(IVAL_DB_JUMP, n) = network%sts%struct(index_structure)%dambreak%water_level_jump
-            values(IVAL_DB_TIMEDIV, n) = network%sts%struct(index_structure)%dambreak%breach_width_derivative
+            values(IVAL_VEL, n) = dambreaks(n)%normal_velocity
+            values(IVAL_DB_JUMP, n) = dambreaks(n)%water_level_jump
+            values(IVAL_DB_TIMEDIV, n) = dambreaks(n)%breach_width_derivative
             values(IVAL_DB_DISCUM, n) = values(IVAL_DB_DISCUM, n) + values(IVAL_DIS, n) * time_step ! cumulative discharge
          end if
       end do
@@ -787,7 +842,7 @@ contains
          call SetMessage(LEVEL_ERROR, msgbuf)
          res = c_null_ptr
       else
-         res = c_loc(breach_depths(item_index))
+         res = c_loc(dambreaks(item_index)%breach_depth)
       end if
 
    end function get_dambreak_depth_c_loc
@@ -806,7 +861,7 @@ contains
          call SetMessage(LEVEL_ERROR, msgbuf)
          res = c_null_ptr
       else
-         res = c_loc(breach_widths(item_index))
+         res = c_loc(dambreaks(item_index)%breach_width)
       end if
 
    end function get_dambreak_breach_width_c_loc
@@ -873,25 +928,20 @@ contains
 
       integer :: ierr
       integer :: n, k, link, index_in_structure
-      integer :: k1, k2, kx, k3, k4, kpol
-      integer :: ndambreakcoordinates, indexlink
+      integer :: k1, k2, k3, k4, kpol
       integer :: lStart
-      integer, dimension(1) :: kdum
       logical :: success
       real(kind=dp) :: xla, yla, xlb, ylb, xn, yn
       real(kind=dp) :: x_breach, y_breach
       real(kind=dp), allocatable, dimension(:, :) :: xl, yl
-      real(kind=dp), dimension(1) :: xdum, ydum
 
-      character(len=Idlen) :: qid
-      
       if (n_db_signals <= 0) then
          n_db_links = 0
          return
       end if
 
       n_db_links = last_link(n_db_signals)
-      call allocate_and_initialize_dambreak_data(n_db_signals)
+      call allocate_and_initialize_dambreak_data()
 
       do n = 1, n_db_signals
          do k = first_link(n), last_link(n)
@@ -905,6 +955,7 @@ contains
                downstream_link_ids(k) = ln(1, link)
             end if
          end do
+         dambreaks(n)%link_indices = link_index(first_link(n):last_link(n))
       end do
 
       ! number of columns in the dambreak heights and widths tim file
@@ -915,42 +966,42 @@ contains
          end if
 
          associate (pstru => network%sts%struct(dambridx(n)))
-            associate (dambreak => pstru%dambreak)
-               dambreak_names(n) = network%sts%struct(index_in_structure)%id
+            associate (dambreak_settings => pstru%dambreak)
+               dambreaks(n)%name = network%sts%struct(index_in_structure)%id
 
                ! mapping
-               dambreak_structure(n) = index_in_structure
+               dambreaks(n)%index_structure = index_in_structure
                ! set initial phase, width, crest level, coefficents if algorithm is 1
-               dambreak%phase = 0
-               dambreak%width = 0.0_dp
-               dambreak%maximum_width = 0.0_dp
-               dambreak%crest_level = dambreak%crest_level_ini
-               if (dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
-                  ! Time-interpolated value will be placed in levels_widths_from_table((n-1)*kx+1) when calling ec_gettimespacevalue.
-                  if (index(trim(dambreak%levels_and_widths)//'|', '.tim|') > 0) then
-                     qid = 'dambreakLevelsAndWidths'
-                     xdum = 1.0_dp
-                     ydum = 1.0_dp
-                     kdum = 1
-                     kx = 2
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, dambreak%levels_and_widths, uniform, spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has kx
-                     if(.not. success) then
-                         write (msgbuf, '(5a)') 'Cannot process a tim file for ''', qid, ''' for the dambreak ''', trim(dambreak_names(n)), '''.'
-                         call err_flush()
+               dambreaks(n)%phase = 0
+               dambreaks(n)%width = 0.0_dp
+               dambreaks(n)%maximum_width = 0.0_dp
+               dambreaks(n)%crest_level = dambreak_settings%crest_level_ini
+               dambreaks(n)%crest_level_ini = dambreak_settings%crest_level_ini
+               dambreaks(n)%algorithm = dambreak_settings%algorithm
+               dambreaks(n)%t0 = dambreak_settings%t0
+               if (dambreaks(n)%algorithm == BREACH_GROWTH_TIMESERIES) then
+                  ! Time-interpolated value will be placed in levels_widths_from_table((n-1)*KX+1) when calling ec_gettimespacevalue.
+                  if (index(trim(dambreak_settings%levels_and_widths)//'|', '.tim|') > 0) then
+                     success = ec_addtimespacerelation(QID, XDUM, YDUM, KDUM, KX, dambreak_settings%levels_and_widths, uniform, &
+                                                       spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has KX
+                     if (.not. success) then
+                        write (msgbuf, '(5a)') 'Cannot process a tim file for ''', QID, ''' for the dambreak ''', trim(dambreaks(n)%name), '''.'
+                        call err_flush()
                      end if
                   end if
                end if
 
                ! inquire if the water level upstream has to be taken from a location or be a result of averaging
-               if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
-                   .or. dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
-                  xla = dambreak%water_level_upstream_location_x
-                  yla = dambreak%water_level_upstream_location_y
-                  if (dambreak%water_level_upstream_node_id /= '') then
-                     ierr = findnode(dambreak%water_level_upstream_node_id, k)
+               if (dambreak_settings%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
+                   .or. dambreak_settings%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
+                  xla = dambreak_settings%water_level_upstream_location_x
+                  yla = dambreak_settings%water_level_upstream_location_y
+                  if (dambreak_settings%water_level_upstream_node_id /= '') then
+                     ierr = findnode(dambreak_settings%water_level_upstream_node_id, k)
                      if (ierr /= DFM_NOERR .or. k <= 0) then
-                        write (msgbuf, '(a,a,a,a,a)') 'Cannot find the node for water_level_upstream_node_id = ''', trim(dambreak%water_level_upstream_node_id), &
-                           ''' in dambreak ''', trim(dambreak_names(n)), '''.'
+                        write (msgbuf, '(a,a,a,a,a)') 'Cannot find the node for water_level_upstream_node_id = ''', &
+                           trim(dambreak_settings%water_level_upstream_node_id), &
+                           ''' in dambreak ''', trim(dambreaks(n)%name), '''.'
                         call err_flush()
                      else
                         call add_dambreaklocation_upstream(n, k)
@@ -966,15 +1017,16 @@ contains
                end if
 
                ! inquire if the water level downstream has to be taken from a location or be a result of averaging
-               if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
-                   .or. dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
-                  xla = dambreak%water_level_downstream_location_x
-                  yla = dambreak%water_level_downstream_location_y
-                  if (dambreak%water_level_downstream_node_id /= '') then
-                     ierr = findnode(dambreak%water_level_downstream_node_id, k)
+               if (dambreak_settings%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP & ! Needed for computation and output
+                   .or. dambreak_settings%algorithm == BREACH_GROWTH_TIMESERIES) then ! Needed for output only.
+                  xla = dambreak_settings%water_level_downstream_location_x
+                  yla = dambreak_settings%water_level_downstream_location_y
+                  if (dambreak_settings%water_level_downstream_node_id /= '') then
+                     ierr = findnode(dambreak_settings%water_level_downstream_node_id, k)
                      if (ierr /= DFM_NOERR .or. k <= 0) then
-                        write (msgbuf, '(5a)') 'Cannot find the node for water_level_downstream_node_id = ''', trim(dambreak%water_level_downstream_node_id), &
-                           ''' in dambreak ''', trim(dambreak_names(n)), '''.'
+                        write (msgbuf, '(5a)') 'Cannot find the node for water_level_downstream_node_id = ''', &
+                           trim(dambreak_settings%water_level_downstream_node_id), &
+                           ''' in dambreak ''', trim(dambreaks(n)%name), '''.'
                         call err_flush()
                      else
                         call add_dambreaklocation_downstream(n, k)
@@ -994,50 +1046,47 @@ contains
                if (.not. associated(pstru%yCoordinates)) cycle
 
                ! Create the array with the coordinates of the flow links
-               nDambreakCoordinates = last_link(n) - first_link(n) + 1
-               call realloc(xl, [nDambreakCoordinates, 2])
-               call realloc(yl, [nDambreakCoordinates, 2])
-               indexLink = 0
-               do k = first_link(n), last_link(n)
-                  indexLink = indexLink + 1
+               call realloc(xl, [dambreaks(n)%number_of_links, 2])
+               call realloc(yl, [dambreaks(n)%number_of_links, 2])
+               do k = 1, dambreaks(n)%number_of_links
                   ! compute the mid point
-                  link = abs(link_index(k))
+                  link = abs(dambreaks(n)%link_indices(k))
                   k1 = ln(1, link)
                   k2 = ln(2, link)
-                  xl(indexLink, 1) = xz(k1)
-                  xl(indexLink, 2) = xz(k2)
-                  yl(indexLink, 1) = yz(k1)
-                  yl(indexLink, 2) = yz(k2)
+                  xl(k, 1) = xz(k1)
+                  xl(k, 2) = xz(k2)
+                  yl(k, 1) = yz(k1)
+                  yl(k, 2) = yz(k2)
                end do
 
                ! comp_breach_point takes plain arrays to compute the breach point (also used in unstruct_bmi)
-               call comp_breach_point(dambreak%start_location_x, dambreak%start_location_y, &
+               call comp_breach_point(dambreak_settings%start_location_x, dambreak_settings%start_location_y, &
                                       pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, xl, &
                                       yl, Lstart, x_breach, y_breach, jsferic, jasfer3D, dmiss)
 
                call set_breach_start_link(n, Lstart)
 
                ! compute the normal projections of the start and endpoints of the flow links
-               do k = first_link(n), last_link(n)
-                  link = abs(link_index(k))
+               do k = 1, dambreaks(n)%number_of_links
+                  link = abs(dambreaks(n)%link_indices(k))
                   if (kcu(link) == 3) then ! 1d2d flow link
-                     link_effective_width(k) = wu(link)
+                     link_effective_width(k + dambreaks(n)%shift_in_link_array) = wu(link)
                   else
                      k3 = lncn(1, link)
                      k4 = lncn(2, link)
-                     kpol = lftopol(k)
+                     kpol = lftopol(k + dambreaks(n)%shift_in_link_array)
                      xla = pstru%xCoordinates(kpol)
                      xlb = pstru%xCoordinates(kpol + 1)
                      yla = pstru%yCoordinates(kpol)
                      ylb = pstru%yCoordinates(kpol + 1)
 
                      call normalout(xla, yla, xlb, ylb, xn, yn, jsferic, jasfer3D, dmiss, dxymis)
-                     link_effective_width(k) = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss) *&
+                     link_effective_width(k) = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss) * &
                                                abs(xn * csu(link) + yn * snu(link))
                   end if
 
                   ! Sum the length of the intersected flow links (required to bound maximum breach width)
-                  dambreak%maximum_width = dambreak%maximum_width + link_effective_width(k)
+                  dambreaks(n)%maximum_width = dambreaks(n)%maximum_width + link_effective_width(k + dambreaks(n)%shift_in_link_array)
                end do
 
                ! Now we can deallocate the polygon
@@ -1052,9 +1101,9 @@ contains
       use m_flowgeom, only: wu, ln, xz, yz, kcu, lncn, snu, csu
       use m_netw, only: xk, yk
       use unstruc_channel_flow, only: addstructure, getstructype_from_string
-      use m_structures! Jan's channel_flow for Sobek's generalstructure (TODO)
+      use m_structures ! Jan's channel_flow for Sobek's generalstructure (TODO)
       use timespace, only: UNIFORM, SPACEANDTIME
-      use m_meteo, only: kedb, success, qid, kx, ec_addtimespacerelation, dambreakPolygons
+      use m_meteo, only: kedb, ec_addtimespacerelation, dambreakPolygons
       use m_readstructures, only: readdambreak
       use m_sferic, only: jsferic, jasfer3d
       use geometry_module, only: dbdistance, normalout, comp_breach_point
@@ -1062,28 +1111,25 @@ contains
       use m_inquire_flowgeom, only: findnode
       use m_dambreak, only: BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
       use m_missing, only: dmiss, dxymis
-      
-      integer, dimension(:), intent(in) :: dambridx !< the index of the dambreak in the structure list.
-      integer, dimension(:), intent(in) :: lftopol !< the link number of the flow link.
 
       integer :: L, Lf, kb, ierr, k, kbi, n, k1, k2
       integer :: istrtype
-      type(tree_data), pointer :: str_ptr
-      real(kind=dp), dimension(1) :: xdum, ydum
-      integer, dimension(1) :: kdum
-      character(len=IdLen) :: strid ! TODO: where to put IdLen (now in MessageHandling)
-      character(len=IdLen) :: strtype ! TODO: where to put IdLen (now in MessageHandling)
       integer :: istrtmp
-
+      integer :: k3, k4, kpol, index_structure, indexInPliset, Lstart
+      integer, dimension(:), intent(in) :: dambridx !< the index of the dambreak in the structure list.
+      integer, dimension(:), intent(in) :: lftopol !< the link number of the flow link.
       real(kind=dp) :: x_breach, y_breach
       real(kind=dp) :: xn, yn
-      integer :: nDambreakCoordinates, k3, k4, kpol, indexInStructure, indexInPliset, indexLink, Lstart
       real(kind=dp) :: xla, xlb, yla, ylb
       real(kind=dp), allocatable :: xl(:, :), yl(:, :)
-      
+      type(tree_data), pointer :: str_ptr
+      character(len=IdLen) :: strid ! TODO: where to put IdLen (now in MessageHandling)
+      character(len=IdLen) :: strtype ! TODO: where to put IdLen (now in MessageHandling)
+      logical :: success !< success flag
+
       if (n_db_signals > 0) then
 
-         call allocate_and_initialize_dambreak_data(n_db_links)
+         call allocate_and_initialize_dambreak_data()
 
          do n = 1, n_db_signals
             do k = first_link(n), last_link(n)
@@ -1100,21 +1146,20 @@ contains
                downstream_link_ids(k) = kbi
                link_index(k) = L
             end do
+            dambreaks(n)%link_indices = link_index(first_link(n):last_link(n))
          end do
 
-         ! number of columns in the dambreak hights and widths tim file
          do n = 1, n_db_signals
 
-            !The index of the structure
-            indexInStructure = dambridx(n)
-            if (indexInStructure == -1) cycle
+            index_structure = dambridx(n)
+            if (index_structure == -1) cycle
 
-            str_ptr => strs_ptr%child_nodes(indexInStructure)%node_ptr
+            str_ptr => strs_ptr%child_nodes(index_structure)%node_ptr
 
             ! read the id first
             strid = ' '
             call prop_get(str_ptr, '', 'id', strid, success)
-            dambreak_names(n) = strid
+            dambreaks(n)%name = strid
 
             istrtmp = hashsearch(network%sts%hashlist_structure, strid) ! Assumes unique names across all structure types.
             if (istrtmp /= -1) then
@@ -1122,14 +1167,14 @@ contains
                success = .true.
             else
                ! Postponed read, because this is with old-style .pli ifile
-               indexInPliset = indexInStructure ! dambreakPolygons were already read in old style .pli count+selectelset loop above.
+               indexInPliset = index_structure ! dambreakPolygons were already read in old style .pli count+selectelset loop above.
 
                ! read the type
                strtype = ' '
                call prop_get(str_ptr, '', 'type', strtype, success)
                istrtype = getStructype_from_string(strtype)
                ! flow1d_io library: add and read SOBEK dambreak
-               if (last_link(n) >= first_link(n)) then
+               if (dambreaks(n)%number_of_links > 0) then
                   ! structure is active in current grid on one or more flow links: just use the first link of the the structure (the network%sts%struct(istrtmp)%link_number is not used in computations)
                   k = first_link(n)
                   k1 = upstream_link_ids(k)
@@ -1151,24 +1196,24 @@ contains
                write (msgbuf, '(a,a,a)') 'Dambreak ''', trim(strid), ''' set to new format.'
                call msg_flush()
                ! mapping
-               dambreak_structure(n) = istrtmp
+               dambreaks(n)%index_structure = istrtmp
                ! set initial phase, width, crest level, coefficents if algorithm is 1
-               network%sts%struct(istrtmp)%dambreak%phase = 0
-               network%sts%struct(istrtmp)%dambreak%width = 0.0_dp
-               network%sts%struct(istrtmp)%dambreak%maximum_width = 0.0_dp
-               network%sts%struct(istrtmp)%dambreak%crest_level = network%sts%struct(istrtmp)%dambreak%crest_level_ini
+               dambreaks(n)%phase = 0
+               dambreaks(n)%width = 0.0_dp
+               dambreaks(n)%maximum_width = 0.0_dp
+               dambreaks(n)%crest_level = network%sts%struct(istrtmp)%dambreak%crest_level_ini
+               dambreaks(n)%crest_level_ini = network%sts%struct(istrtmp)%dambreak%crest_level_ini
+               dambreaks(n)%algorithm = network%sts%struct(istrtmp)%dambreak%algorithm
+               dambreaks(n)%t0 = network%sts%struct(istrtmp)%dambreak%t0
+
                if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                   network%sts%struct(istrtmp)%dambreak%levels_and_widths = trim(network%sts%struct(istrtmp)%dambreak%levels_and_widths)
                   if (index(trim(network%sts%struct(istrtmp)%dambreak%levels_and_widths)//'|', '.tim|') > 0) then
-                     qid = 'dambreakLevelsAndWidths'
-                     xdum = 1.0_dp
-                     ydum = 1.0_dp
-                     kdum = 1
-                     kx = 2
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, network%sts%struct(istrtmp)%dambreak%levels_and_widths, uniform, spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has kx=3
+                     success = ec_addtimespacerelation(QID, XDUM, YDUM, KDUM, KX, network%sts%struct(istrtmp)%dambreak%levels_and_widths, uniform, spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has KX=2
                   else
-                     success = .false.
+                     write (msgbuf, '(5a)') 'Cannot process a tim file for ''', QID, ''' for the dambreak ''', trim(dambreaks(n)%name), '''.'
+                     call err_flush()
                   end if
                end if
 
@@ -1238,20 +1283,17 @@ contains
             if (allocated(yl)) then
                deallocate (yl)
             end if
-            nDambreakCoordinates = last_link(n) - first_link(n) + 1
-            allocate (xl(nDambreakCoordinates, 2))
-            allocate (yl(nDambreakCoordinates, 2))
-            indexLink = 0
-            do k = first_link(n), last_link(n)
-               indexLink = indexLink + 1
+            allocate (xl(dambreaks(n)%number_of_links, 2))
+            allocate (yl(dambreaks(n)%number_of_links, 2))
+            do k = 1, dambreaks(n)%number_of_links
                ! compute the mid point
-               Lf = abs(link_index(k))
+               Lf = abs(dambreaks(n)%link_indices(k))
                k1 = ln(1, Lf)
                k2 = ln(2, Lf)
-               xl(indexLink, 1) = xz(k1)
-               xl(indexLink, 2) = xz(k2)
-               yl(indexLink, 1) = yz(k1)
-               yl(indexLink, 2) = yz(k2)
+               xl(k, 1) = xz(k1)
+               xl(k, 2) = xz(k2)
+               yl(k, 1) = yz(k1)
+               yl(k, 2) = yz(k2)
             end do
 
             ! comp_breach_point takes plain arrays to compute the breach point (also used in unstruct_bmi)
@@ -1265,14 +1307,14 @@ contains
             call set_breach_start_link(n, Lstart)
 
             ! compute the normal projections of the start and endpoints of the flow links
-            do k = first_link(n), last_link(n)
-               Lf = abs(link_index(k))
+            do k = 1, dambreaks(n)%number_of_links
+               Lf = abs(dambreaks(n)%link_indices(k))
                if (kcu(Lf) == 3) then ! 1d2d flow link
                   link_effective_width(k) = wu(Lf)
                else
                   k3 = lncn(1, Lf)
                   k4 = lncn(2, Lf)
-                  kpol = lftopol(k)
+                  kpol = lftopol(k + dambreaks(n)%shift_in_link_array)
                   xla = dambreakPolygons(indexInPliset)%xp(kpol)
                   xlb = dambreakPolygons(indexInPliset)%xp(kpol + 1)
                   yla = dambreakPolygons(indexInPliset)%yp(kpol)
@@ -1284,7 +1326,7 @@ contains
                end if
 
                ! Sum the length of the intersected flow links (required to bound maximum breach width)
-               network%sts%struct(istrtmp)%dambreak%maximum_width = network%sts%struct(istrtmp)%dambreak%maximum_width + link_effective_width(k)
+               dambreaks(n)%maximum_width = dambreaks(n)%maximum_width + link_effective_width(k + dambreaks(n)%shift_in_link_array)
             end do
 
             ! Now we can deallocate the polygon
@@ -1292,7 +1334,152 @@ contains
             deallocate (dambreakPolygons(indexInPliset)%xp)
          end do
       end if
-         
+
    end subroutine update_dambreak_administration_old
+
+   !> update array of logicals indicating if the link contains dambreaks
+   pure module subroutine indicate_links_that_contain_dambreaks(does_link_contain_structures)
+
+      logical, intent(inout) :: does_link_contain_structures(:) !< array of logicals indicating if the link contains structures
+
+      integer :: n !< loop index
+      integer :: k !< loop index
+
+      if (have_dambreaks_links()) then
+         do n = 1, n_db_signals
+            if (dambreaks(n)%index_structure /= 0) then
+               do k = 1, dambreaks(n)%number_of_links
+                  does_link_contain_structures(abs(dambreaks(n)%link_indices(k))) = .true.
+               end do
+            end if
+         end do
+      end if
+
+   end subroutine indicate_links_that_contain_dambreaks
+
+   !> Check if any dambreaks are active in the current grid
+   pure module function should_write_dambreaks() result(res)
+
+      logical :: res
+      integer :: objects !< total number of objects to write
+      integer :: n !< loop index
+
+      ! Count the number of active links for each signal
+      objects = n_db_signals
+      do n = 1, n_db_signals
+         if (dambreaks(n)%number_of_links == 0) then
+            objects = objects - 1
+         end if
+      end do
+
+      res = objects > 0
+   end function should_write_dambreaks
+
+   !> set correct flow areas for dambreaks, using the actual flow width
+   module subroutine multiply_by_dambreak_link_actual_width(hu, au)
+
+      real(kind=dp), dimension(:), intent(in) :: hu !< source
+      real(kind=dp), dimension(:), intent(inout) :: au !< results
+
+      integer :: n !< loop index
+      integer :: k !< loop index
+      integer :: link !< link index
+
+      do n = 1, n_db_signals
+         do k = 1, dambreaks(n)%number_of_links
+            link = abs(dambreaks(n)%link_indices(k))
+            au(link) = hu(link) * link_actual_width(k + dambreaks(n)%shift_in_link_array)
+         end do
+      end do
+
+   end subroutine multiply_by_dambreak_link_actual_width
+
+   !> Get the index of the active dambreak for a given dambreak name
+   pure module function get_active_dambreak_index(dambreak_name) result(index)
+      character(len=*), intent(in) :: dambreak_name !< Id/name of the requested dambreak
+      integer :: index !< Returned index of the found dambreak; -1 when not found.
+
+      integer :: i !< loop index
+
+      index = -1
+      do i = 1, n_db_signals
+         if (trim(dambreaks(i)%name) == trim(dambreak_name)) then
+            if (dambreaks(i)%number_of_links > 0) then
+               ! Only return this dambreak index if dambreak is active in flowgeom (i.e., at least 1 flow link associated)
+               index = i
+               exit
+            end if
+         end if
+      end do
+   end function get_active_dambreak_index
+
+   !> Get the dambreak links for a given dambreak index
+   module function retrieve_set_of_flowlinks_dambreak(index) result(res)
+      use messagehandling, only: msgbuf, LEVEL_ERROR, SetMessage
+      integer, intent(in) :: index !< index of the dambreak
+      integer, dimension(:), allocatable :: res !< the dambreak links
+
+      if (index < 1 .or. index > n_db_signals) then
+         write (msgbuf, *) 'get_dambreak_links: the index ', index, &
+            ' is out of range. The range is 1 to ', n_db_signals
+         call SetMessage(LEVEL_ERROR, msgbuf)
+         allocate (res(0))
+      else
+         res = dambreaks(index)%link_indices
+      end if
+
+   end function retrieve_set_of_flowlinks_dambreak
+
+   !> Update the counters for the dambreaks
+   module subroutine update_counters_for_dambreaks(id, numgen, dambridx, i, kedb, kegen)
+      use m_update_counters_for_structures, only: update_counters_for_dambreak_or_pump
+      character(len=*), intent(in) :: id !< the id of the structure.
+      integer, intent(in) :: numgen !< the number of flow links.
+      integer, dimension(:), allocatable, intent(inout) :: dambridx !< the index of the structure.
+      integer, intent(in) :: i !< the index of the structure.
+      integer, dimension(:), allocatable, intent(inout) :: kedb !< edge oriented dambreak??? Do we need this array?
+      integer, dimension(:), allocatable, intent(in) :: kegen !< placeholder for the link snapping of all structure types.
+
+      call update_counters_for_dambreak_or_pump(id, numgen, n_db_signals, first_link, last_link, dambridx, i)
+      kedb(first_link(n_db_signals):last_link(n_db_signals)) = kegen(1:numgen)
+
+   end subroutine update_counters_for_dambreaks
+
+   !> Add a new dambreak signal to the list of signals
+   module subroutine add_dambreak_signal(index_in_structure, dambridx, n_dambreak_links, n_current_dambreak_links)
+      use messagehandling, only: msgbuf, LEVEL_ERROR, SetMessage
+      use m_alloc, only: realloc
+
+      integer, intent(in) :: index_in_structure !< the index of the structure in the structure list.
+      integer, dimension(:), intent(inout) :: dambridx !< the index of the dambreak in the structure list.
+      integer, intent(inout) :: n_dambreak_links !< the total number of flow links for dambreaks.
+      integer, intent(in) :: n_current_dambreak_links !< the number of flow links for the current dambreak signal.
+
+      if (n_dambreak_links /= n_db_links) then
+         write (msgbuf, '(a,i8,a,i8)') 'n_dambreak_links = ', n_dambreak_links, ' /= n_db_links = ', n_db_links
+         call SetMessage(LEVEL_ERROR, msgbuf)
+      end if
+      n_db_signals = n_db_signals + 1
+      dambridx(n_db_signals) = index_in_structure
+      call realloc(first_link, n_db_signals)
+      first_link(n_db_signals) = n_dambreak_links + 1
+      call realloc(last_link, n_db_signals)
+      last_link(n_db_signals) = n_dambreak_links + n_current_dambreak_links
+      n_dambreak_links = n_dambreak_links + n_current_dambreak_links
+      n_db_links = n_dambreak_links
+
+   end subroutine add_dambreak_signal
+
+   !> provides dambreak names
+   pure module function get_dambreak_names() result(names)
+      character(len=128), dimension(:), allocatable :: names !< the dambreak names
+
+      if (allocated(dambreaks)) then
+         names = dambreaks%name
+      else
+         allocate (names(0))
+      end if
+
+   end function get_dambreak_names
 
 end submodule m_dambreak_breach_submodule

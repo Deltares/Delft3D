@@ -228,40 +228,18 @@ class ComparisonRunner(TestSetRunner):
 
         for result in results:
             test_case_config = result.config
-            tc_results = result.results
+            test_case_results = result.results
 
-            # For this test case, find the 'worst' result. This has to take into
-            # account that a lower maxAbsDiff for a NOK is worse than a higher
-            # maxAbsDiff for an OK.
-            # That is: the result always has priority over the maxAbsDiff.
-
-            maxAbsDiff_worst = 0.0
-            result_worst = EndResult.OK
-            i_worst = -1
-            for i, (_, _, _, comparison_result) in enumerate(tc_results):
-                if comparison_result.result < result_worst or (
-                    comparison_result.result == result_worst and comparison_result.max_abs_diff > maxAbsDiff_worst
-                ):
-                    maxAbsDiff_worst = comparison_result.max_abs_diff
-                    result_worst = comparison_result.result
-                    i_worst = i
-
-            if i_worst == -1 and tc_results and len(tc_results) > 0:
-                i_worst = len(tc_results) - 1
-
-            # Local variables now contain the 'worst' scores for that test case. This one will be written in the summary
-            worst_result = tc_results[i_worst]
-            _, w_filename, w_parameter, w_cr = worst_result
-
-            table["Test case name"].append(test_case_config.name)
-            table["Result"].append(w_cr.result.value)
-            table["File name"].append(w_filename.name)
-            table["Parameter name"].append(w_parameter.name)
-            table["Runtime"].append(test_case_config.run_time)
-            table["Ratio"].append(test_case_config.run_time / test_case_config.ref_run_time)
-            table["MaxAbsDiff"].append(w_cr.max_abs_diff)
-            table["MaxRelDiff"].append(w_cr.max_rel_diff)
-            table["Information"].append("at coordinates" + str(w_cr.max_abs_diff_coordinates))
+            for (_, filename, parameter, comparison) in test_case_results:
+                table["Test case name"].append(test_case_config.name)
+                table["Result"].append(comparison.result.value)
+                table["File name"].append(filename.name)
+                table["Parameter name"].append(parameter.name)
+                table["Runtime"].append(test_case_config.run_time)
+                table["Ratio"].append(test_case_config.run_time / test_case_config.ref_run_time)
+                table["MaxAbsDiff"].append(comparison.max_abs_diff)
+                table["MaxRelDiff"].append(comparison.max_rel_diff)
+                table["Information"].append("at coordinates" + str(comparison.max_abs_diff_coordinates))
 
         log_table(table, logger)
         log_separator(logger)

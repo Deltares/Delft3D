@@ -29,9 +29,9 @@
 
 !
 !
-
 !> in m_flowgeom: nd and ln apply to waterlevel nodes and links
  !! in m_netw    : nod and lin apply to 'grid' or 'net' nodes and links
+!! \ref flow_node_num
 module m_flowgeom
    use precision, only: dp
 
@@ -75,18 +75,27 @@ module m_flowgeom
    type(griddimtype) :: griddim
    type(griddimtype) :: trachy_griddim
 
-   ! Flow node numbering:
-   ! 1:ndx2D, ndx2D+1:ndxi, ndxi+1:ndx1Db, ndx1Db+1:ndx
-   ! ^ 2D int ^ 1D int      ^ 1D bnd       ^ 2D bnd ^ total
-   ! the following variables have been moved in m_cell_geometry (module of gridgeom)
-   ! integer, target                   :: ndx2d          !< [-] Number of 2D flow cells (= NUMP). {"rank": 0}
-   ! integer, target                   :: ndx            !< [-] Number of flow nodes (internal + boundary). {"rank": 0}
-   ! real(kind=dp), dimension(:), allocatable, target :: ba      !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
-   ! real(kind=dp), dimension(:), allocatable         :: ba0     ! Backup of ba
-   ! real(kind=dp), dimension(:), allocatable, target :: xz      !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
-   ! real(kind=dp), dimension(:), allocatable         :: xz0     !< backup of xz
-   ! real(kind=dp), dimension(:), allocatable, target :: yz      !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
-   ! real(kind=dp), dimension(:), allocatable         :: yz0     !< backup of yz
+   !> \section flow_node_num Flow Node numbering
+   !! The description of flow node numbering is given below
+   !!
+   !> Flow node numbering:
+   !!
+   !> 1:ndx2D, ndx2D+1:ndxi, ndxi+1:ndx1Db, ndx1Db+1:ndx
+   !!
+   !> ^ 2D int ^ 1D int      ^ 1D bnd       ^ 2D bnd ^ total
+   !!
+   !> the following variables have been moved in \ref m_cell_geometry (module of gridgeom)
+   !!
+   !! Data type | Name | [Units] Description
+   !!------|------|------
+   !> integer, target                   | ndx2d          | [-] Number of 2D flow cells (= NUMP). {"rank": 0}
+   !> integer, target                   | ndx            |[-] Number of flow nodes (internal + boundary). {"rank": 0}
+   !> real(kind=dp), dimension(:), allocatable, target | ba      | [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
+   !> real(kind=dp), dimension(:), allocatable         | ba0     | Backup of ba
+   !> real(kind=dp), dimension(:), allocatable, target | xz      | [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
+   !> real(kind=dp), dimension(:), allocatable         | xz0     | backup of xz
+   !> real(kind=dp), dimension(:), allocatable, target | yz      | [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
+   !> real(kind=dp), dimension(:), allocatable         | yz0     | backup of yz
 
    integer, target :: ndxi !< [-] Number of internal flowcells  (internal = 2D + 1D ). {"rank": 0}
    integer, target :: ndx1db !< [-] Number of flow nodes incl. 1D bnds (internal 2D+1D + 1D bnd). {"rank": 0}
