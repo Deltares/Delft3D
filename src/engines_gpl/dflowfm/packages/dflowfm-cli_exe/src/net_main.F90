@@ -36,8 +36,13 @@
 !! The main program 'network' and all net-related routines.
 !! Flow-related routines are in unstruc.f90
 !<
-
-!> \mainpage Unstruc API docs
+!> \include{doc} dflowfm-mainpage.dox
+!> \page Unstruc Unstruc API docs
+!! Below is the flow structure of the unstructured grid flow solver when called form command line
+!! \image html Netmain_Logical_Call_sequence.svg
+!! 
+!! For BMI execution check \ref BMI_Unstruc
+!!
 !! \li \b Main \b program: net_main.f90
 !! \li \b Model \b setup: unstruc_model.f90
 !! \li \b Network \b data: network.f90 + network_data.f90

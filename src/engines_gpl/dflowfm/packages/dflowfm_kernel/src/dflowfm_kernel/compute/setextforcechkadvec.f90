@@ -182,7 +182,7 @@ contains
          end do
       end if
 
-      if ((jawave == 3 .or. jawave >= 6 .or. (jawave == 4 .and. lwave == 1)) .and. .not. flowWithoutWaves) then
+      if ((jawave == 3 .or. jawave == 7 .or. (jawave == 4 .and. lwave == 1)) .and. .not. flowWithoutWaves) then
          ! add wave forces to adve
          if (kmx == 0) then ! 2D
             do L = 1, lnx
@@ -211,14 +211,14 @@ contains
          call fm_ice_update_press(ag)
       end if
 
-      if (japatm > 0 .or. jatidep > 0 .or. ice_apply_pressure) then
+      if (air_pressure_available > 0 .or. jatidep > 0 .or. ice_apply_pressure) then
          do L = 1, lnx
             if (hu(L) > 0) then
                k1 = ln(1, L); k2 = ln(2, L)
 
                dptot = 0.0d0
-               if (japatm > 0) then
-                  dptot = dptot + (patm(k2) - patm(k1)) * dxi(L) / rhomean
+               if (air_pressure_available > 0) then
+                  dptot = dptot + (air_pressure(k2) - air_pressure(k1)) * dxi(L) / rhomean
                end if
                if (ice_apply_pressure) then
                   dptot = dptot + (ice_p(k2) - ice_p(k1)) * dxi(L) / rhomean

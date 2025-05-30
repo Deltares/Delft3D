@@ -93,7 +93,7 @@ contains
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
-      use m_wind, only: japatm, jawind
+      use m_wind, only: air_pressure_available, jawind
       implicit none
 
       integer :: i, i0, numfracs, nlyrs
@@ -231,7 +231,7 @@ contains
          i = i + 1; IVAL_WX = i
          i = i + 1; IVAL_WY = i
       end if
-      if (japatm > 0) then
+      if (air_pressure_available > 0) then
          i = i + 1; IVAL_PATM = i
       end if
       if (jawave > 0) then

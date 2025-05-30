@@ -89,7 +89,7 @@ contains
       call realloc(usty_cc, ndkx, stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('usty_cc  (ndkx)', ierr, ndkx)
 
-      if (jawave == 3 .or. jawave == 4 .or. jawave == 6 .or. jawave == 7) then
+      if (jawave == 3 .or. jawave == 4 .or. jawave == 7) then
          call realloc(wavfu, lnkx, stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('wavfu  (lnkx)', ierr, lnkx)
          call realloc(wavfv, lnkx, stat=ierr, keepExisting=.false., fill=0d0)
@@ -124,25 +124,13 @@ contains
          call aerr('distot(ndx)', ierr, ndx)
       end if
       !
-      if (jawave == 3 .or. jawave >= 6) then
+      if (jawave == 3 .or. jawave == 7) then
          call realloc(hwavcom, ndx, stat=ierr, keepExisting=.false., fill=hwavuni)
          call aerr('hwavcom   (ndx)', ierr, ndx)
          call realloc(twavcom, ndx, stat=ierr, keepExisting=.false., fill=twavuni)
          call aerr('twavcom   (ndx)', ierr, ndx)
       end if
       !
-      ! Ugly, fix with allocate9basic andsoon
-      if (jawave == 6) then
-         call realloc(hwav, ndx, stat=ierr, keepExisting=.false., fill=hwavuni)
-         call aerr('hwav   (ndx)', ierr, ndx)
-         call realloc(twav, ndx, stat=ierr, keepExisting=.false., fill=twavuni)
-         call aerr('twav   (ndx)', ierr, ndx)
-         call realloc(rlabda, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-         call aerr('rlabda  (ndx)', ierr, ndx)
-         call realloc(uorb, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-         call aerr('uorb    (ndx)', ierr, ndx)
-      end if
-
       if (jawave == 4) then
          if (trim(instat) == 'stat' .or. &
              trim(instat) == 'stat_table') then

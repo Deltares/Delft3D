@@ -39,8 +39,9 @@ module m_partition_METIS_to_idomain
    public :: partition_METIS_to_idomain
 
    interface
-      module subroutine partition_METIS_to_idomain(Nparts, jacontiguous, method, iseed)
+      module subroutine partition_METIS_to_idomain(idomain, Nparts, jacontiguous, method, iseed)
          implicit none
+         integer, intent(out), dimension(:), allocatable :: idomain !< cell-based domain number, dim(nump1d2d or ndx)
          integer, intent(in) :: Nparts !< number of partitions
          integer, intent(in) :: method !< partition method. 1: K-Way, 2: Recursive, 3: Mesh-dual
          integer, intent(in) :: jacontiguous !< enforce contiguous domains (1) or not (0)

@@ -95,7 +95,7 @@ contains
                call getint('Enforce contiguous domains? (0:no, 1:yes)', jacontiguous)
             end do
          end if
-         call partition_METIS_to_idomain(Ndomains, jacontiguous, method, 0)
+         call partition_METIS_to_idomain(idomain, Ndomains, jacontiguous, method, 0)
 
          japolygon = -1
          do while (japolygon /= 1 .and. japolygon /= 0)

@@ -47,7 +47,8 @@ contains
       use messagehandling, only: msgbuf, warn_flush, IDLEN, err_flush, msg_flush
       use timespace
       use unstruc_model, only: File1D2DLinkMajorVersion, File1D2DLinkMinorVersion
-      use m_linktypetoint
+      use m_inquire_link_type
+      use network_data, only: LINK_1D, LINK_2D,LINK_1D2D_INTERNAL,LINK_1D2D_LONGITUDINAL,LINK_1D2D_STREETINLET,LINK_1D_MAINBRANCH,LINK_1D2D_ROOF,LINK_ALL
 
       implicit none
 
@@ -152,7 +153,7 @@ contains
 
             if (loc_spec_type == LOCTP_CONTACTID .and. num1d2dprops == 1) then
                Lf = ke1d2dprops(1)
-               if (icontactType /= IFLTP_ALL .and. icontactType /= kcu(Lf)) then
+               if (icontactType /= LINK_ALL .and. icontactType /= kcu(Lf)) then
                   write (msgbuf, '(a,i0,a,i0,a)') 'Error Reading mesh contact parameters from block #', numcontactblocks, ' in file '''// &
                      trim(filename)//'''. Given contactType='//trim(contactType)// &
                      ' does not match the flow link type ', kcu(Lf), '.'
@@ -165,7 +166,7 @@ contains
             end if
 
             select case (icontactType)
-            case (IFLTP_1D2D_STREET)
+            case (LINK_1D2D_STREETINLET)
                call prop_get(node_ptr, '', 'openingWidth', wu1D2Dread, success)
                if (.not. success) then
                   write (msgbuf, '(a,i0,a)') 'Error Reading mesh contact parameters from block #', numcontactblocks, ' in file '''// &

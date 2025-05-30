@@ -1,6 +1,7 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import Delft3D.template.*
 
@@ -39,6 +40,17 @@ object DIMRbak : BuildType({
             snapshot(AbsoluteId("DIMR_To_NGHS")) {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
+            }
+        }
+        triggers {
+            finishBuildTrigger {
+                enabled = true
+                buildType = "DIMR_To_NGHS"
+                successfulOnly = true
+                branchFilter = """
+                    +:main
+                    +:release/*
+                """.trimIndent()
             }
         }
     }

@@ -45,7 +45,6 @@ contains
       use m_flowgeom, only: xz, yz, ba
       use m_alloc
       use m_partitioninfo, only: idomain, iglobal_s
-
       integer, dimension(:), allocatable :: numnew ! permutation array
 
       integer :: i, ic, icL, icR, icnew, isL, isR, L, num, N, numpnew
@@ -190,12 +189,6 @@ contains
 
 1234  continue
 
-!     deallocate
-      if (allocated(numnew)) then
-         deallocate (numnew)
-      end if
-
-      return
    end subroutine remove_masked_netcells
 
 end submodule m_remove_masked_netcells_

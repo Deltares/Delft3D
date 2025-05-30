@@ -47,7 +47,7 @@ contains
       use m_flow, only: jamapwind, wind_stress_water_density_option, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
           viskinair, ag, vonkarw, u1, ltop, v, jatem, jamapwindstress, kmx, ustw
       use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, wx, wy, relativewind, &
-          jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, airdensity
+          jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
       use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_af
 
       real(kind=dp) :: uwi, cdw, tuwi, roro, wxL, wyL, uL, vL, uxL, uyL, ust, ust2, tau, z0w, roa, row
@@ -129,7 +129,7 @@ contains
                end if
                if (ja_airdensity + ja_computed_airdensity > 0) then
                   k = ln(2, L)
-                  roa = airdensity(k)
+                  roa = air_density(k)
                end if
                tuwi = roa * cdw * uwi
                if (jamapwindstress > 0) then

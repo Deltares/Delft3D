@@ -154,10 +154,10 @@ module timespace_data
    use timespace_parameters
    implicit none
 
-   real(kind=dp) :: timelast = -1d10 ! time of most recent value requested
+   real(kind=dp) :: timelast = -1e10_dp ! time of most recent value requested
    ! if time =< timelast, no updates
 
-   real(kind=dp) :: t01ini = -1d10 ! initial time for dataproviders t0 and t1 fields
+   real(kind=dp) :: t01ini = -1e10_dp ! initial time for dataproviders t0 and t1 fields
 
    ! AvD: NOTE
    ! De pointers in alle onderstaande types worden puur gebruikt om dynamisch
@@ -357,7 +357,7 @@ contains
    !
    subroutine readTransformcoefficients(minp, transformcoef)
       use m_filez, only: readerror, zoekopt
-      
+
       integer, intent(in) :: minp
       real(kind=dp), intent(out) :: transformcoef(:)
 
@@ -372,7 +372,7 @@ contains
 
       ! constant keywrd = 'DISCHARGE'/'SALINITY'/'TEMPERATURE' removed, now always via time series, in future also via new ext [discharge]
 
-      transformcoef = -999d0
+      transformcoef = -999.0_dp
 
       pairs(1)%key = 'VALUE'
       pairs(1)%value = 1
@@ -582,7 +582,7 @@ contains
       Tzone = tz
 
       juljan = julday(1, 1, iyear0)
-      timjan = (jul0 - juljan) * 24.d0
+      timjan = (jul0 - juljan) * 24.0_dp
 
    end subroutine settimespacerefdat
    !
@@ -628,7 +628,7 @@ contains
       if (INI == 0) then
          INI = 1
 
-         XMN = 1d30; YMN = 1d30; XMX = -1d30; YMX = -1d30
+         XMN = 1e30_dp; YMN = 1e30_dp; XMX = -1e30_dp; YMX = -1e30_dp
          do I = 1, ndx
             xmn = min(xz(i), xmn)
             xmx = max(xz(i), xmx)
@@ -663,7 +663,7 @@ contains
             allocate (td2_y(i1:i2, j1:j2), stat=ierr)
          end if
 
-         td2 = 0d0
+         td2 = 0.0_dp
 
          if (jaselfal > 0) then
 !         if (allocated(self) ) deallocate ( self, avhs, area ) MVL ask Camille
@@ -673,10 +673,10 @@ contains
 !         allocate ( area(i1:i2,j1:j2), stat=ierr)
             do i = i1, i2
                do j = j1, j2
-                  xx(1) = dble(i) - 0.5d0; yy(1) = dble(j) - 0.5d0
-                  xx(2) = dble(i) + 0.5d0; yy(2) = dble(j) - 0.5d0
-                  xx(3) = dble(i) + 0.5d0; yy(3) = dble(j) + 0.5d0
-                  xx(4) = dble(i) - 0.5d0; yy(4) = dble(j) + 0.5d0
+                  xx(1) = dble(i) - 0.5_dp; yy(1) = dble(j) - 0.5_dp
+                  xx(2) = dble(i) + 0.5_dp; yy(2) = dble(j) - 0.5_dp
+                  xx(3) = dble(i) + 0.5_dp; yy(3) = dble(j) + 0.5_dp
+                  xx(4) = dble(i) - 0.5_dp; yy(4) = dble(j) + 0.5_dp
 
 !                call dAREAN( XX, YY, 4, DAREA, DLENGTH, DLENMX )
 !                area(i,j) = darea
@@ -698,7 +698,7 @@ contains
       if (jatidep > 0) then
          call tforce(jul0, TIME, xz2, yz2, Td2, ndx2, dstart, dstop, eps)
       else
-         td2 = 0d0 ! safety
+         td2 = 0.0_dp ! safety
       end if
 
       if (jaselfal > 0) then
@@ -712,10 +712,10 @@ contains
          n1 = floor(yz(n)); n2 = n1 + 1
          di = xz(n) - m1
          dj = yz(n) - n1
-         f11 = (1d0 - di) * (1d0 - dj)
-         f21 = (di) * (1d0 - dj)
+         f11 = (1.0_dp - di) * (1.0_dp - dj)
+         f21 = (di) * (1.0_dp - dj)
          f22 = (di) * (dj)
-         f12 = (1d0 - di) * (dj)
+         f12 = (1.0_dp - di) * (dj)
 
          if (jaselfal > 0) then
 
@@ -741,7 +741,7 @@ contains
 
       if (jatidep > 1) then ! gradient intp., get gradient
 
-         dyy = 2d0 * ra * dg2rd
+         dyy = 2.0_dp * ra * dg2rd
          do j = j1 + 1, j2 - 1
             dxx = dyy * cos(yz2(i1, j))
             do i = i1 + 1, i2 - 1
@@ -759,10 +759,10 @@ contains
             n1 = floor(yu(L)); n2 = n1 + 1
             di = xu(L) - m1
             dj = yu(L) - n1
-            f11 = (1d0 - di) * (1d0 - dj)
-            f21 = (di) * (1d0 - dj)
+            f11 = (1.0_dp - di) * (1.0_dp - dj)
+            f21 = (di) * (1.0_dp - dj)
             f22 = (di) * (dj)
-            f12 = (1d0 - di) * (dj)
+            f12 = (1.0_dp - di) * (dj)
 
             tidef(L) = csu(L) * (td2_x(m1, n1) * f11 + &
                                  td2_x(m2, n1) * f21 + &
@@ -822,8 +822,8 @@ contains
          allocate (jasea(i1:i2, j1:j2), stat=ierr)
 
          if (jakdtree == 1) then
-            call realloc(xx, (/Ni, Nj/), keepExisting=.false., fill=0d0)
-            call realloc(yy, (/Ni, Nj/), keepExisting=.false., fill=0d0)
+            call realloc(xx, (/Ni, Nj/), keepExisting=.false., fill=0.0_dp)
+            call realloc(yy, (/Ni, Nj/), keepExisting=.false., fill=0.0_dp)
             call realloc(kk, (/Ni, Nj/), keepExisting=.false., fill=0)
             do j = j1, j2
                do i = i1, i2
@@ -868,7 +868,7 @@ contains
                deallocate (workin)
             end if
             allocate (workin(2, Ni, Nj))
-            workin = 0d0
+            workin = 0.0_dp
             if (allocated(workout)) then
                deallocate (workout)
             end if
@@ -894,16 +894,16 @@ contains
                   if (k > 0) then
                      if (idomain(k1) == my_rank) then
 !                   jasea(i,j) = 1
-                        workin(1, i - i1 + 1, j - j1 + 1) = 1d0
-                        workin(2, i - i1 + 1, j - j1 + 1) = 0d0 ! dummy
+                        workin(1, i - i1 + 1, j - j1 + 1) = 1.0_dp
+                        workin(2, i - i1 + 1, j - j1 + 1) = 0.0_dp ! dummy
                      else
-                        workin(1, i - i1 + 1, j - j1 + 1) = 0d0
-                        workin(2, i - i1 + 1, j - j1 + 1) = 0d0 ! dummy
+                        workin(1, i - i1 + 1, j - j1 + 1) = 0.0_dp
+                        workin(2, i - i1 + 1, j - j1 + 1) = 0.0_dp ! dummy
                      end if
                   else
 !                   jasea(i,j) = 0
-                     workin(1, i - i1 + 1, j - j1 + 1) = 0d0
-                     workin(2, i - i1 + 1, j - j1 + 1) = 0d0 ! dummy
+                     workin(1, i - i1 + 1, j - j1 + 1) = 0.0_dp
+                     workin(2, i - i1 + 1, j - j1 + 1) = 0.0_dp ! dummy
                   end if
                end do
             end do
@@ -933,15 +933,15 @@ contains
 
       jasea = 1
 
-      avhs = 0d0
-      area = 0d0
+      avhs = 0.0_dp
+      area = 0.0_dp
 
       if (jampi == 0) then
          do k = 1, ndx
             i = nint(xz(k))
             j = nint(yz(k))
 
-            Ds = 0d0
+            Ds = 0.0_dp
             if (jaSELFALcorrectWLwithIni == 1) then
 !           water level rise
                Ds = s1init(k)
@@ -954,7 +954,7 @@ contains
             end if
          end do
       else ! parallel
-         workin = 0d0
+         workin = 0.0_dp
 
          do k = 1, Ndx
             i = nint(xz(k))
@@ -967,7 +967,7 @@ contains
                k1 = ln(1, LL) + ln(2, LL) - k
             end if
 
-            Ds = 0d0
+            Ds = 0.0_dp
             if (jaSELFALcorrectWLwithIni == 1) then
 !           water level rise
                Ds = s1init(k)
@@ -1003,13 +1003,13 @@ contains
          do i = i1, i2
             if (area(i, j) == 0.0 .and. jasea(i, j) == 1) then
                call findleftright(area, i, j, i1, i2, j1, j2, iL, iR, alf)
-               avhs(i, j) = (1d0 - alf) * avhs(iL, j) + alf * avhs(iR, j)
+               avhs(i, j) = (1.0_dp - alf) * avhs(iL, j) + alf * avhs(iR, j)
             end if
          end do
       end do
 
       !Used for testing
-      !avhs=1d0
+      !avhs=1.0_dp
 
       !Create output file
       ! open (newunit=lunfil, file='d:\output_avhs2.txt',status='unknown',position='append')
@@ -1104,7 +1104,7 @@ contains
       real(kind=dp), intent(out) :: self(i1:i2, j1:j2)
 
       ! Local parameters
-      real(kind=dp), parameter :: Me = 5.9726d24, R = 6371d3, g = 9.81d0, pi = 4d0 * atan(1.0), rhow = 1.0240164d3, rhoe = 3d0 * Me / (4d0 * pi * R * R * R)
+      real(kind=dp), parameter :: Me = 5.9726e24_dp, R = 6371e3_dp, g = 9.81_dp, pi = 4.0_dp * atan(1.0_dp), rhow = 1.0240164e3_dp, rhoe = 3.0_dp * Me / (4.0_dp * pi * R * R * R)
       integer :: nlat, nlon, lsave
       integer :: i, j, ierror, isym, nt, l, mdab, ndab, k1
       real(kind=dp), dimension(:), allocatable :: llnh, llnk
@@ -1135,7 +1135,7 @@ contains
       ! and colatitude theta(i)=(i-1)*pi/(nlat)
       !For a one degree grid, we have nlon=360 and nlat=181
       !If avhs is smaller then 0 is chosen at the location of the missing values
-      avhs1 = 0d0
+      avhs1 = 0.0_dp
       k1 = 0
       do i = i1, min(i2, i1 + 360 - 1)
          do j = j1, j2
@@ -1174,7 +1174,7 @@ contains
                  wshsec, ierror)
 
       !self1 is defined on the same grid than avhs1, we put it back in the same grid than avhs
-      self = 0d0
+      self = 0.0_dp
       k1 = 0
       do i = i1, i2
          if (k1 >= 360) then
@@ -3340,8 +3340,8 @@ contains
       parameter(idebug=0, i1dbg=0, i2dbg=0)
       parameter(maxdat=500) ! maximal # records in table
       parameter(maxfld=7) ! maximal # fields in table
-      parameter(pi=3.14159265358979, re=6378137d0, &
-                d2r=pi / 180d0, rmu=3.9860044d14, &
+      parameter(pi=3.14159265358979, re=6378137.0_dp, &
+                d2r=pi / 180.0_dp, rmu=3.9860044e14_dp, &
                 g=rmu / re / re, reps=1d-5)
 
       integer ntable, nskip
@@ -3368,7 +3368,7 @@ contains
       !     cansum         selected sum of elements of can for fixed mq,nq
       !     cm1            cosine-component of potential
       !     d2r            conversion factor pi/180
-      !     dtab           Doodson number: dtab1 + dtab2 / 1000d0
+      !     dtab           Doodson number: dtab1 + dtab2 / 1000.0_dp
       !     dtab1          first 3 digits of Doodson number
       !     dtab2          second 3 digits of Doodson number
       !     elmnts         array needed for calculation of can, san
@@ -3409,7 +3409,7 @@ contains
       !     rlong          eastern longitude in radians
       !     rlslat         previous value of rlat
       !     rlslon         previous value of rlong
-      !     rmu            gravitational constant (3.9860044d14)
+      !     rmu            gravitational constant (3.9860044e14)
       !     san            table with scaled harmonic components
       !                    sin(argument) * amp(i)
       !     sansum         selected sum of elements of san for fixed mq,nq
@@ -3501,7 +3501,7 @@ contains
       !
       !     DATA STATEMENTS
       !
-      data plsmin/+1d0, +1d0, +1d0, +1d0, -1d0, +1d0/
+      data plsmin/+1.0_dp, +1.0_dp, +1.0_dp, +1.0_dp, -1.0_dp, +1.0_dp/
       !
       save itable, ntable, pol1, cm1, sm1, amps
       !
@@ -3520,17 +3520,17 @@ contains
 
          IRC = 1
 
-         FACTORIAL(0) = 1d0
-         FACTORIAL(1) = 1d0
-         FACTORIAL(2) = 2d0
-         FACTORIAL(3) = 6d0
-         FACTORIAL(4) = 24d0
-         FACTORIAL(5) = 120d0
-         FACTORIAL(6) = 720d0
+         FACTORIAL(0) = 1.0_dp
+         FACTORIAL(1) = 1.0_dp
+         FACTORIAL(2) = 2.0_dp
+         FACTORIAL(3) = 6.0_dp
+         FACTORIAL(4) = 24.0_dp
+         FACTORIAL(5) = 120.0_dp
+         FACTORIAL(6) = 720.0_dp
 
          if (allocated(tideuc)) deallocate (tideuc, tideus)
-         allocate (tideuc(0:3, 2:3, IDIM1), STAT=IERR); tideuc = 0d0
-         allocate (tideus(0:3, 2:3, IDIM1), STAT=IERR); tideus = 0d0
+         allocate (tideuc(0:3, 2:3, IDIM1), STAT=IERR); tideuc = 0.0_dp
+         allocate (tideus(0:3, 2:3, IDIM1), STAT=IERR); tideus = 0.0_dp
 
          call iniharmonics(recs)
 
@@ -3542,15 +3542,15 @@ contains
          !
          !        --- k and h love numbers for degree 2 and 3
          !
-         rklove(1) = 0d0
-         rklove(2) = 0.303d0
-         rklove(3) = 0.0937d0
-         rhlove(1) = 0d0
-         rhlove(2) = 0.612d0
-         rhlove(3) = 0.293d0
+         rklove(1) = 0.0_dp
+         rklove(2) = 0.303_dp
+         rklove(3) = 0.0937_dp
+         rhlove(1) = 0.0_dp
+         rhlove(2) = 0.612_dp
+         rhlove(3) = 0.293_dp
          !
          do nq = 2, 3
-            factor(nq) = (1d0 + rklove(nq) - rhlove(nq))
+            factor(nq) = (1.0_dp + rklove(nq) - rhlove(nq))
          end do
          !
          ntable = 0
@@ -3576,9 +3576,9 @@ contains
          !        --- dtab is the doodson number for a table entry,
          !            select the lines where dstart <= dtab <= dstop
          !
-         dtab1 = kk(1) * 100d0 + (kk(2) + 5d0) * 10d0 + (kk(3) + 5d0)
-         dtab2 = (kk(4) + 5d0) * 100d0 + (kk(5) + 5d0) * 10d0 + (kk(6) + 5d0)
-         dtab = dtab1 + dtab2 / 1000d0
+         dtab1 = kk(1) * 100.0_dp + (kk(2) + 5.0_dp) * 10.0_dp + (kk(3) + 5.0_dp)
+         dtab2 = (kk(4) + 5.0_dp) * 100.0_dp + (kk(5) + 5.0_dp) * 10.0_dp + (kk(6) + 5.0_dp)
+         dtab = dtab1 + dtab2 / 1000.0_dp
 
          if (.not. permnt .and. abs(har) >= eps .and. dstart <= dtab .and. dtab <= dstop) then
 
@@ -3601,8 +3601,8 @@ contains
 20       continue
          ! rewind(luhar)
 
-         rlslat = -9999d0
-         rlslon = -9999d0
+         rlslat = -9999.0_dp
+         rlslon = -9999.0_dp
 
          if (idebug >= 10) then
             write (6, *) 'ntable = ', ntable, '   nskip = ', nskip
@@ -3622,8 +3622,8 @@ contains
             if (abs(rlat - rlslat) > reps) then
                do nq = 2, 3
                   do mq = 0, nq
-                     fnm = 2d0 / dble(2 * nq + 1) * factorial(nq + mq) / factorial(nq - mq)
-                     fnm = sqrt(1d0 / (2d0 * pi * fnm)) * ((-1d0)**mq)
+                     fnm = 2.0_dp / dble(2 * nq + 1) * factorial(nq + mq) / factorial(nq - mq)
+                     fnm = sqrt(1.0_dp / (2.0_dp * pi * fnm)) * ((-1.0_dp)**mq)
                      call legpol1(rlat, nq, mq, pnm)
                      pol1(mq, nq) = fnm * pnm
                   end do
@@ -3683,13 +3683,13 @@ contains
       !     --- compute tabels can, san
       !
       do i = 1, ntable
-         argum = 0d0
+         argum = 0.0_dp
          do j = 1, 6
             argfct = dble(itable(i, j))
             argum = argum + argfct * elmnts(j) * plsmin(j)
          end do
-         ! argum = mod(argum, 360d0)
-         ! if (argum.lt.0d0) argum = argum + 360d0
+         ! argum = mod(argum, 360.0_dp)
+         ! if (argum.lt.0.0_dp) argum = argum + 360.0_dp
          argum = argum * d2r
          can(i) = cos(argum) * amps(i)
          san(i) = sin(argum) * amps(i)
@@ -3704,8 +3704,8 @@ contains
       !
       do nq = 2, 3
          do mq = 0, nq
-            cansum(mq, nq) = 0d0
-            sansum(mq, nq) = 0d0
+            cansum(mq, nq) = 0.0_dp
+            sansum(mq, nq) = 0.0_dp
             do i = 1, ntable
                if (itable(i, 7) == nq .and. itable(i, 1) == mq) then
                   cansum(mq, nq) = cansum(mq, nq) + can(i)
@@ -3719,7 +3719,7 @@ contains
       !
       do i1 = 1, idim1
 
-         potent = 0d0
+         potent = 0.0_dp
          do nq = 2, 3
             do mq = 0, nq
                potent = potent + tideuc(mq, nq, I1) * cansum(mq, nq)
@@ -3800,7 +3800,7 @@ contains
       !     --- constant values:
       !
       real(kind=dp) :: circle
-      parameter(CIRCLE=360.0d0)
+      parameter(CIRCLE=360.0_dp)
       !
       !     circle       number of degrees in a circle
       !
@@ -3809,7 +3809,7 @@ contains
       real(kind=dp) :: T, TIME, UT
       integer i
       !
-      !     T           translated time: TIME - 51544.4993D0
+      !     T           translated time: TIME - 51544.4993.0_dp
       !     TIME        input time (mjdate)
       !     UT          fractional part of mjdate: (mjdate - int(mjdate))
       !
@@ -3818,7 +3818,7 @@ contains
       !     --- start of code
       !
       TIME = mjdate
-      T = TIME - 51544.4993d0 ! reference to 2000/1/1 1200 o'clock
+      T = TIME - 51544.4993_dp ! reference to 2000/1/1 1200 o'clock
       !
       !     --- perform translations using translation table of symbols:
       !
@@ -3830,18 +3830,18 @@ contains
       !         5  N           -N'      \Omega
       !         6  p'          p_1      \overline{\omega}'
       !
-      six(2) = 218.3164d0 + 13.17639648d0 * T
-      six(3) = 280.4661d0 + 0.98564736d0 * T
-      six(4) = 83.3535d0 + 0.11140353d0 * T
-      six(5) = 125.0445d0 - 0.05295377d0 * T
-      six(6) = 282.9384d0 + 0.0000471d0 * T
+      six(2) = 218.3164_dp + 13.17639648_dp * T
+      six(3) = 280.4661_dp + 0.98564736_dp * T
+      six(4) = 83.3535_dp + 0.11140353_dp * T
+      six(5) = 125.0445_dp - 0.05295377_dp * T
+      six(6) = 282.9384_dp + 0.0000471_dp * T
       !
       !     --- get them in the right quadrant
       !
       do i = 2, 6
 
          six(i) = mod(six(i), circle)
-         if (six(i) < 0d0) six(i) = six(i) + circle
+         if (six(i) < 0.0_dp) six(i) = six(i) + circle
 
       end do
       !
@@ -3852,7 +3852,7 @@ contains
       !         tau = alpha_G - q
       !
       UT = (mjdate - int(mjdate))
-      six(1) = 360d0 * UT + six(3) - 180d0 - six(2)
+      six(1) = 360.0_dp * UT + six(3) - 180.0_dp - six(2)
    end subroutine astrol
    !
    !
@@ -3899,7 +3899,7 @@ contains
       !
       !=======================================================================
       !
-      pnm = 1d38
+      pnm = 1e38_dp
 
       cp = cos(theta)
       sp = sin(theta)
@@ -3908,19 +3908,19 @@ contains
       !         obtaining associated Legendre functions?
       !
       if (n == 0) then
-         if (m == 0) pnm = 1d0
+         if (m == 0) pnm = 1.0_dp
       else if (n == 1) then
          if (m == 0) pnm = sp
          if (m == 1) pnm = cp
       else if (n == 2) then
-         if (m == 0) pnm = 1.5d0 * sp * sp - 0.5d0
-         if (m == 1) pnm = 3.0d0 * sp * cp
-         if (m == 2) pnm = 3.0d0 * cp * cp
+         if (m == 0) pnm = 1.5_dp * sp * sp - 0.5_dp
+         if (m == 1) pnm = 3.0_dp * sp * cp
+         if (m == 2) pnm = 3.0_dp * cp * cp
       else if (n == 3) then
-         if (m == 0) pnm = 2.5d0 * sp * sp * sp - 1.5d0 * sp
-         if (m == 1) pnm = cp * (7.5d0 * sp * sp - 1.5d0)
-         if (m == 2) pnm = 15d0 * cp * cp * sp
-         if (m == 3) pnm = 15d0 * cp * cp * cp
+         if (m == 0) pnm = 2.5_dp * sp * sp * sp - 1.5_dp * sp
+         if (m == 1) pnm = cp * (7.5_dp * sp * sp - 1.5_dp)
+         if (m == 2) pnm = 15.0_dp * cp * cp * sp
+         if (m == 3) pnm = 15.0_dp * cp * cp * cp
       end if
    end subroutine legpol1
    !
@@ -3931,11 +3931,11 @@ contains
       character(len=40), dimension(484) :: RECS ! ZAT IN FILE 'HARMONICS'
 
       !%refsys 2000
-      !%mjd0    47893.00000000
+      !%mj.0_dp    47893.00000000
       !%mjd1    55196.00000000
       !%dmjd         .11410938
       !%ndata   64000
-      !%gmearth 3.9860044d14
+      !%gmearth 3.9860044e14
       !%reearth 6378137
       RECS(1) = ' 0  0  0  0  0  0  2      -.31459'
       RECS(2) = ' 0  0  0  0  1  0  2       .02793'
@@ -4546,7 +4546,7 @@ contains
                if (rm == 0) then ! op scheve lijn
                   inside = 1
                   return
-               else if (rm > 0d0) then ! onder scheve lijn
+               else if (rm > 0.0_dp) then ! onder scheve lijn
                   if (xl == x1 .or. xl == x2) then
                      if (x1 > xl .or. x2 > xl) then
                         rechts = rechts + 1
@@ -4869,7 +4869,7 @@ contains
       !
       zp(2) = (a22 * b1 - a12 * b2) / det
       zp(3) = (-a21 * b1 + a11 * b2) / det
-      zp(1) = 1d0 - zp(2) - zp(3)
+      zp(1) = 1.0_dp - zp(2) - zp(3)
 
    end subroutine linweight
    !
@@ -4886,7 +4886,7 @@ contains
       !
       real(kind=dp) :: dmiss
 
-      data dmiss/-999d0/
+      data dmiss/-999.0_dp/
       !
       ! Global variables
       !
@@ -5030,10 +5030,10 @@ contains
 
       x_dist = x_max - x_min
       y_dist = y_max - y_min
-      x_min = x_min - 0.01d0 * x_dist
-      x_max = x_max + 0.01d0 * x_dist
-      y_min = y_min - 0.01d0 * y_dist
-      y_max = y_max + 0.01d0 * y_dist
+      x_min = x_min - 0.01_dp * x_dist
+      x_max = x_max + 0.01_dp * x_dist
+      y_min = y_min - 0.01_dp * y_dist
+      y_max = y_max + 0.01_dp * y_dist
 
       x_dummy(1) = x_min
       y_dummy(1) = y_min
@@ -5195,7 +5195,7 @@ contains
       do i = 1, n
          if (kcs(i) == 1) then
             dist = (x(i) - x_a)**2 + (y(i) - y_a)**2
-            if ((dist < dist_min) .and. (z(i) /= -999d0)) then
+            if ((dist < dist_min) .and. (z(i) /= -999.0_dp)) then
                dist_min = dist
                i_min = i
             end if
@@ -5304,19 +5304,19 @@ contains
       DISM = huge(DISM)
       kL = 0 ! Default: No valid point found
       kR = 0 ! idem
-      wL = 0d0
-      wR = 0d0
+      wL = 0.0_dp
+      wR = 0.0_dp
       km = 0
       crpm = 0
-      disL = 0d0
-      disR = 0d0
+      disL = 0.0_dp
+      disR = 0.0_dp
       DEPS = 1d-3
 
       do k = 1, ns - 1
 
          call cross(xe, ye, xen, yen, xs(k), ys(k), xs(k + 1), ys(k + 1), JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
 
-         if (SL >= 0d0 .and. SL <= 1d0 .and. SM > -DEPS .and. SM < 1.0d0 + DEPS) then ! instead of jacros==1, solves firmijn's problem
+         if (SL >= 0.0_dp .and. SL <= 1.0_dp .and. SM > -DEPS .and. SM < 1.0_dp + DEPS) then ! instead of jacros==1, solves firmijn's problem
             DIS = DBDISTANCE(XE, YE, XCR, YCR, jsferic, jasfer3D, dmiss)
             if (DIS < DISM) then ! Found a better intersection point
                DISM = DIS
@@ -5343,7 +5343,7 @@ contains
          end do
 
          ! Find nearest valid polyline point right of the intersection (i.e.: kcs(kR) == 1)
-         disR = (1d0 - SMM) * dis
+         disR = (1.0_dp - SMM) * dis
          do k = km + 1, ns
             if (kcs(k) == 1) then
                kR = k
@@ -5356,11 +5356,11 @@ contains
 
       if (kL /= 0 .and. kR /= 0) then
          wL = disR / (disL + disR)
-         wR = 1d0 - wL
+         wR = 1.0_dp - wL
       else if (kL /= 0) then
-         wL = 1d0
+         wL = 1.0_dp
       else if (kR /= 0) then
-         wR = 1d0
+         wR = 1.0_dp
       end if
 
    end subroutine polyindexweight
@@ -5378,10 +5378,10 @@ module timespace
 !
 ! Read time series in five possible formats:
 ! uniform       : Delft3D-FLOW format: time, uniform windspeed, direction and pressure
-! space varying : Delft3D-FLOW format: time and fields of patm, windx, windy
+! space varying : Delft3D-FLOW format: time and fields of air_pressure, windx, windy
 !                 on Delft3D-FLOW m,n grid
 ! arcinfo       : time and fields on own equidistant grid
-! spiderweb     : time and fields of patm, windspeed, direction op spiderweb grid
+! spiderweb     : time and fields of air_pressure, windspeed, direction op spiderweb grid
 ! curvi         : time and fields on own curvilinear grid
 !
 ! Main calls from Delft3D-FLOW:
@@ -5573,6 +5573,7 @@ contains
       use m_polygon
       use m_reapol
       use m_filez, only: oldfil
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
 
       implicit none
 
@@ -5589,7 +5590,7 @@ contains
       integer, optional, intent(in) :: branchindex !< (Optional) Branch index on which flow link is searched for (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
       real(kind=dp), optional, intent(in) :: chainage !< (Optional) Offset along specified branch (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
       character(len=*), optional, intent(in) :: contactId !< (Optional) Unique contactId for one flow link (when loc_spec_type==LOCTP_CONTACTID) (stored as mesh contact in input grid).
-      integer, optional, intent(in) :: linktype !< (Optional) Limit search to specific link types: only 1D flow links (linktype==IFLTP_1D), 2D (linktype==IFLTP_2D), or both (linktype==IFLTP_ALL).
+      integer, optional, intent(in) :: linktype !< (Optional) Limit search to specific link types: only 1D flow links (linktype==LINK_1D), 2D (linktype==LINK_2D), or both (linktype==LINK_ALL).
       real(kind=dp), allocatable, optional, intent(inout) :: xps(:), yps(:) !< (Optional) Arrays in which the read in polyline x,y-points can be stored (only relevant when loc_spec_type==LOCTP_POLYGON_FILE/LOCTP_POLYLINE_FILE).
       integer, optional, intent(inout) :: nps !< (Optional) Number of polyline points that have been read in (only relevant when loc_spec_type==LOCTP_POLYGON_FILE/LOCTP_POLYLINE_FILE).
       integer, optional, intent(inout) :: lftopol(:) !< (Optional) Mapping array from flow links to the polyline index that intersected that flow link (only relevant when loc_spec_type==LOCTP_POLYLINE_FILE or LOCTP_POLYLINE_XY).
@@ -5603,7 +5604,7 @@ contains
       if (present(linktype)) then
          linktype_ = linktype
       else
-         linktype_ = IFLTP_ALL
+         linktype_ = LINK_ALL
       end if
 
       numg = 0
@@ -5683,13 +5684,13 @@ contains
 
          ! select search range for flow links
          select case (linktype_)
-         case (IFLTP_1D, IFLTP_1D2D_INT, IFLTP_1D2D_LONG, IFLTP_1D2D_STREET, IFLTP_1D2D_ROOF)
+         case (LINK_1D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF)
             Lstart = 1
             Lend = lnx1D
-         case (IFLTP_2D)
+         case (LINK_2D)
             Lstart = lnx1D + 1
             Lend = lnx
-         case (IFLTP_ALL)
+         case (LINK_ALL)
             Lstart = 1
             Lend = lnx
          end select
@@ -5697,7 +5698,7 @@ contains
          inp = -1
          ierr = 0
          do L = Lstart, Lend
-            if (linktype_ /= IFLTP_ALL .and. kcu(L) /= linktype_) then
+            if (linktype_ /= LINK_ALL .and. kcu(L) /= linktype_) then
                cycle
             end if
 
@@ -6222,9 +6223,9 @@ contains
       if (m < mca .and. n < nca .and. m >= 1 .and. n >= 1) then
          if (d(m, n) /= dmiss .and. d(m + 1, n) /= dmiss .and. d(m, n + 1) /= dmiss .and. d(m + 1, n + 1) /= dmiss) then
             z = am * an * d(m + 1, n + 1) + &
-                (1d0 - am) * an * d(m, n + 1) + &
-                (1d0 - am) * (1d0 - an) * d(m, n) + &
-                am * (1d0 - an) * d(m + 1, n)
+                (1.0_dp - am) * an * d(m, n + 1) + &
+                (1.0_dp - am) * (1.0_dp - an) * d(m, n) + &
+                am * (1.0_dp - an) * d(m + 1, n)
          end if
       end if
 
@@ -6345,7 +6346,7 @@ module m_meteo
    integer, target :: item_normalvelocitybnd !< Unique Item id of the ext-file's 'normalvelocitybnd' quantity
    integer, target :: item_rainfall !< Unique Item id of the ext-file's 'rainfall' quantity
    integer, target :: item_rainfall_rate !< Unique Item id of the ext-file's 'rainfall_rate' quantity
-   integer, target :: item_airdensity !< Unique Item id of the ext-file's 'airdensity' quantity
+   integer, target :: item_air_density !< Unique Item id of the ext-file's 'airdensity' quantity
    integer, target :: item_qhbnd !< Unique Item id of the ext-file's 'qhbnd' quantity
    integer, target :: item_shiptxy !< Unique Item id of the ext-file's 'shiptxy' quantity
    integer, target :: item_movingstationtxy !< Unique Item id of the ext-file's 'movingstationtxy' quantity
@@ -6371,29 +6372,30 @@ module m_meteo
    integer, target :: item_generalstructure !< Unique Item id of the ext-file's 'generalstructure' quantity
    integer, target :: item_lateraldischarge !< Unique Item id of the ext-file's 'generalstructure' quantity
 
-   integer, target :: item_dacs_dewpoint !< Unique Item id of the ext-file's 'dewpoint' quantity
-   integer, target :: item_dacs_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_dacs_dew_point_temperature !< Unique Item id of the ext-file's 'dewpoint' quantity
+   integer, target :: item_dacs_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_dacs_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
-   integer, target :: item_dacs_solarradiation !< Unique Item id of the ext-file's 'solarradiation' quantity
+   integer, target :: item_dacs_solar_radiation !< Unique Item id of the ext-file's 'solarradiation' quantity
 
-   integer, target :: item_dac_dewpoint !< Unique Item id of the ext-file's 'dewpoint' quantity
-   integer, target :: item_dac_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_dac_dew_point_temperature !< Unique Item id of the ext-file's 'dewpoint' quantity
+   integer, target :: item_dac_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_dac_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
 
-   integer, target :: item_hacs_humidity !< Unique Item id of the ext-file's 'humidity' quantity
-   integer, target :: item_hacs_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_hacs_relative_humidity !< Unique Item id of the ext-file's 'humidity' quantity
+   integer, target :: item_hacs_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_hacs_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
-   integer, target :: item_hacs_solarradiation !< Unique Item id of the ext-file's 'solarradiation' quantity
+   integer, target :: item_hacs_solar_radiation !< Unique Item id of the ext-file's 'solarradiation' quantity
 
    integer, target :: item_hac_humidity !< Unique Item id of the ext-file's 'humidity' quantity
-   integer, target :: item_hac_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_hac_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_hac_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
 
-   integer, target :: item_humidity !< 'humidity' (or 'dewpoint') quantity
-   integer, target :: item_airtemperature !< 'airtemperature' quantity
+   integer, target :: item_dew_point_temperature !< 'dewpoint' quantity
+   integer, target :: item_relative_humidity !< 'humidity' quantity
+   integer, target :: item_air_temperature !< 'airtemperature' quantity
    integer, target :: item_cloudiness !< 'cloudiness' quantity
-   integer, target :: item_solarradiation !< 'solarradiation' quantity
-   integer, target :: item_longwaveradiation !< 'longwaveradiation' quantity
+   integer, target :: item_solar_radiation !< 'solarradiation' quantity
+   integer, target :: item_long_wave_radiation !< 'longwaveradiation' quantity
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
    integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
@@ -6413,8 +6415,8 @@ module m_meteo
    integer, target :: item_distot !< Unique Item id of the ext-file's 'item_distot'  quantity
    integer, target :: item_ubot !< Unique Item id of the ext-file's 'item_ubot' quantity
 
-   integer, target :: item_nudge_tem !< 3D temperature for nudging
-   integer, target :: item_nudge_sal !< 3D salinity for nudging
+   integer, target :: item_nudge_temperature !< 3D temperature for nudging
+   integer, target :: item_nudge_salinity !< 3D salinity for nudging
    integer, target :: item_db_levels_widths_table !< Dambreak levels and widths
 
    integer, target :: item_subsiduplift
@@ -6518,7 +6520,7 @@ contains
       item_normalvelocitybnd = ec_undef_int
       item_rainfall = ec_undef_int
       item_rainfall_rate = ec_undef_int
-      item_airdensity = ec_undef_int
+      item_air_density = ec_undef_int
       item_qhbnd = ec_undef_int
       item_shiptxy = ec_undef_int
       item_movingstationtxy = ec_undef_int
@@ -6542,27 +6544,28 @@ contains
       item_damlevel = ec_undef_int
       item_gateloweredgelevel = ec_undef_int
       item_generalstructure = ec_undef_int
-      item_dacs_dewpoint = ec_undef_int
-      item_dacs_airtemperature = ec_undef_int
+      item_dacs_dew_point_temperature = ec_undef_int
+      item_dacs_air_temperature = ec_undef_int
       item_dac_cloudiness = ec_undef_int
-      item_dac_dewpoint = ec_undef_int
-      item_dac_airtemperature = ec_undef_int
+      item_dac_dew_point_temperature = ec_undef_int
+      item_dac_air_temperature = ec_undef_int
       item_dac_cloudiness = ec_undef_int
-      item_dacs_solarradiation = ec_undef_int
-      item_hacs_humidity = ec_undef_int
-      item_hacs_airtemperature = ec_undef_int
+      item_dacs_solar_radiation = ec_undef_int
+      item_hacs_relative_humidity = ec_undef_int
+      item_hacs_air_temperature = ec_undef_int
       item_hacs_cloudiness = ec_undef_int
-      item_hacs_solarradiation = ec_undef_int
-      item_humidity = ec_undef_int
-      item_airtemperature = ec_undef_int
+      item_hacs_solar_radiation = ec_undef_int
+      item_dew_point_temperature = ec_undef_int
+      item_relative_humidity = ec_undef_int
+      item_air_temperature = ec_undef_int
       item_cloudiness = ec_undef_int
-      item_solarradiation = ec_undef_int
-      item_longwaveradiation = ec_undef_int
+      item_solar_radiation = ec_undef_int
+      item_long_wave_radiation = ec_undef_int
       item_hac_humidity = ec_undef_int
-      item_hac_airtemperature = ec_undef_int
+      item_hac_air_temperature = ec_undef_int
       item_hac_cloudiness = ec_undef_int
-      item_nudge_tem = ec_undef_int
-      item_nudge_sal = ec_undef_int
+      item_nudge_temperature = ec_undef_int
+      item_nudge_salinity = ec_undef_int
       item_discharge_salinity_temperature_sorsin = ec_undef_int
       item_sourcesink_discharge = ec_undef_int
       item_hrms = ec_undef_int
@@ -6820,14 +6823,14 @@ contains
          dataPtr1 => frcu
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
          itemPtr1 => item_apwxwy_p
-         dataPtr1 => patm
+         dataPtr1 => air_pressure
          itemPtr2 => item_apwxwy_x
          dataPtr2 => ec_pwxwy_x
          itemPtr3 => item_apwxwy_y
          dataPtr3 => ec_pwxwy_y
       case ('airpressure_windx_windy_charnock')
          itemPtr1 => item_apwxwy_p
-         dataPtr1 => patm
+         dataPtr1 => air_pressure
          itemPtr2 => item_apwxwy_x
          dataPtr2 => ec_pwxwy_x
          itemPtr3 => item_apwxwy_y
@@ -6866,7 +6869,7 @@ contains
          dataPtr1 => zbndn
       case ('airpressure', 'atmosphericpressure')
          itemPtr1 => item_atmosphericpressure
-         dataPtr1 => patm
+         dataPtr1 => air_pressure
       case ('rainfall')
          itemPtr1 => item_rainfall
          dataPtr1 => rain
@@ -6874,8 +6877,8 @@ contains
          itemPtr1 => item_rainfall_rate
          dataPtr1 => rain
       case ('airdensity')
-         itemPtr1 => item_airdensity
-         dataPtr1 => airdensity
+         itemPtr1 => item_air_density
+         dataPtr1 => air_density
       case ('qhbnd')
          itemPtr1 => item_qhbnd
          dataPtr1 => qhbndz
@@ -6945,59 +6948,59 @@ contains
          dataPtr1 => zcgen
       case ('humidity_airtemperature_cloudiness')
          itemPtr1 => item_hac_humidity
-         dataPtr1 => rhum
-         itemPtr2 => item_hac_airtemperature
-         dataPtr2 => tair
+         dataPtr1 => relative_humidity
+         itemPtr2 => item_hac_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_hac_cloudiness
-         dataPtr3 => clou
+         dataPtr3 => cloudiness
       case ('humidity_airtemperature_cloudiness_solarradiation')
-         itemPtr1 => item_hacs_humidity
-         dataPtr1 => rhum
-         itemPtr2 => item_hacs_airtemperature
-         dataPtr2 => tair
+         itemPtr1 => item_hacs_relative_humidity
+         dataPtr1 => relative_humidity
+         itemPtr2 => item_hacs_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_hacs_cloudiness
-         dataPtr3 => clou
-         itemPtr4 => item_hacs_solarradiation
-         dataPtr4 => qrad
+         dataPtr3 => cloudiness
+         itemPtr4 => item_hacs_solar_radiation
+         dataPtr4 => solar_radiation
       case ('dewpoint_airtemperature_cloudiness')
-         itemPtr1 => item_dac_dewpoint
-         dataPtr1 => rhum ! Relative humidity array used to store dewpoints
-         itemPtr2 => item_dac_airtemperature
-         dataPtr2 => tair
+         itemPtr1 => item_dac_dew_point_temperature
+         dataPtr1 => dew_point_temperature
+         itemPtr2 => item_dac_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_dac_cloudiness
-         dataPtr3 => clou
+         dataPtr3 => cloudiness
       case ('dewpoint_airtemperature_cloudiness_solarradiation')
-         itemPtr1 => item_dacs_dewpoint
-         dataPtr1 => rhum ! Relative humidity array used to store dewpoints
-         itemPtr2 => item_dacs_airtemperature
-         dataPtr2 => tair
+         itemPtr1 => item_dacs_dew_point_temperature
+         dataPtr1 => dew_point_temperature
+         itemPtr2 => item_dacs_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_dacs_cloudiness
-         dataPtr3 => clou
-         itemPtr4 => item_dacs_solarradiation
-         dataPtr4 => qrad
+         dataPtr3 => cloudiness
+         itemPtr4 => item_dacs_solar_radiation
+         dataPtr4 => solar_radiation
       case ('humidity')
-         itemPtr1 => item_humidity
-         dataPtr1 => rhum ! Relative humidity
+         itemPtr1 => item_relative_humidity
+         dataPtr1 => relative_humidity
       case ('dewpoint')
-         itemPtr1 => item_humidity
-         dataPtr1 => rhum ! Relative humidity array used to store dewpoints
+         itemPtr1 => item_dew_point_temperature
+         dataPtr1 => dew_point_temperature
       case ('airtemperature')
-         itemPtr1 => item_airtemperature
-         dataPtr1 => tair
+         itemPtr1 => item_air_temperature
+         dataPtr1 => air_temperature
       case ('cloudiness')
          itemPtr1 => item_cloudiness
-         dataPtr1 => clou
+         dataPtr1 => cloudiness
       case ('solarradiation')
-         itemPtr1 => item_solarradiation
-         dataPtr1 => qrad
+         itemPtr1 => item_solar_radiation
+         dataPtr1 => solar_radiation
       case ('longwaveradiation')
-         itemPtr1 => item_longwaveradiation
-         dataPtr1 => longwave
+         itemPtr1 => item_long_wave_radiation
+         dataPtr1 => long_wave_radiation
       case ('nudge_salinity_temperature')
-         itemPtr2 => item_nudge_sal
-         dataPtr2 => nudge_sal
-         itemPtr1 => item_nudge_tem
-         dataPtr1 => nudge_tem
+         itemPtr2 => item_nudge_salinity
+         dataPtr2 => nudge_salinity
+         itemPtr1 => item_nudge_temperature
+         dataPtr1 => nudge_temperature
       case ('discharge_salinity_temperature_sorsin')
          itemPtr1 => item_discharge_salinity_temperature_sorsin
          ! Do not point to array qstss here.
@@ -7286,7 +7289,6 @@ contains
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       character(len=*), intent(in) :: group_name !< unique group name
       real(kind=dp), intent(in) :: timesteps !< get data corresponding to this number of timesteps since FM's refdate
-      real(kind=dp), dimension(:), pointer :: ptm, prh, ptd
       !
       success = .false.
       !
@@ -7297,36 +7299,35 @@ contains
          if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall_rate, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'airdensity') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_airdensity, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_air_density, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'humidity_airtemperature_cloudiness') then
          if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hac_humidity, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'humidity_airtemperature_cloudiness_solarradiation') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hacs_humidity, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hacs_relative_humidity, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'dewpoint_airtemperature_cloudiness') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dac_dewpoint, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dac_dew_point_temperature, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dacs_dewpoint, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dacs_dew_point_temperature, irefdate, tzone, tunit, timesteps)) return
       end if
       if (trim(group_name) == 'dewpoint') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_humidity, irefdate, tzone, tunit, timesteps)) return ! Relative humidity array used to store dewpoints
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_airtemperature, irefdate, tzone, tunit, timesteps)) return ! update tair for conversion of dewpoint to humidity
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dew_point_temperature, irefdate, tzone, tunit, timesteps)) return
+      end if
+      if (trim(group_name) == 'airtemperature') then
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_air_temperature, irefdate, tzone, tunit, timesteps)) return
       end if
 
-      if ((trim(group_name) == 'dewpoint_airtemperature_cloudiness' .and. item_dac_dewpoint /= ec_undef_int) &
+      if ((trim(group_name) == 'dewpoint_airtemperature_cloudiness' .and. item_dac_dew_point_temperature /= ec_undef_int) &
           .or. &
-          (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation' .and. item_dacs_dewpoint /= ec_undef_int) &
+          (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation' .and. item_dacs_dew_point_temperature /= ec_undef_int) &
           .or. &
-          (trim(group_name) == 'dewpoint' .and. item_humidity /= ec_undef_int)) then
-         ! Conversion of dewpoint to relative humidity
-         ptd => rhum
-         prh => rhum
-         ptm => tair
-         call dewpt2rhum(ptd, ptm, prh) ! convert dewpoint temperatures to relative humidity (percentage)
+          (trim(group_name) == 'dewpoint' .and. item_dew_point_temperature /= ec_undef_int)) then
+         relative_humidity = calculate_relative_humidity(dew_point_temperature, air_temperature)
       end if
+
       if (index(group_name, 'airpressure_windx_windy') == 1) then
          if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_apwxwy_p, irefdate, tzone, tunit, timesteps)) return
       end if
@@ -7339,23 +7340,19 @@ contains
       success = .true.
    end function ec_gettimespacevalue_by_name
 
-   subroutine dewpt2rhum(td, tm, rh)
-      ! in-place conversion of dewpoint temperature to relative humidity, given the air temperature
-      ! $$RH(T,T_d) = \exp\left[\frac{BT}{C+T} - \frac{BT_d}{C+T_d}\right] \times 100$$
+   !> Computes relative humidity (%) from dew point and air temperature (Kelvin)
+   pure elemental function calculate_relative_humidity(td, tm) result(rh)
       use physicalconsts, only: CtoKelvin
-      implicit none
-      real(kind=dp), dimension(:), pointer :: td !< dewpoint temperature
-      real(kind=dp), dimension(:), pointer :: tm !< air temperature
-      real(kind=dp), dimension(:), pointer :: rh !< relative humidity
 
-      real(kind=dp), parameter :: B = 17.502 ! exactly as in
-      real(kind=dp), parameter :: C = -32.19
-      integer :: i, n
-      td => rh ! Dewpoint temperature was stored in the array where relative humidity will be stored
-      n = size(td)
-      do i = 1, n
-         rh(i) = exp(B * td(i) / (C + td(i) + CtoKelvin) - B * tm(i) / (C + tm(i) + CtoKelvin)) * 100.d0
-      end do
-   end subroutine dewpt2rhum
+      real(kind=dp), intent(in) :: td !< dew point temperature temperature (K)
+      real(kind=dp), intent(in) :: tm !< air temperature (K)
+      real(kind=dp) :: rh !< relative humidity (%)
+
+      real(kind=dp), parameter :: B = 17.502_dp
+      real(kind=dp), parameter :: C = -32.19_dp
+
+      ! Convert to Celsius for the Magnus formula
+      rh = exp(B * td / (C + td + CtoKelvin) - B * tm / (C + tm + CtoKelvin)) * 100.0_dp
+   end function calculate_relative_humidity
 
 end module m_meteo

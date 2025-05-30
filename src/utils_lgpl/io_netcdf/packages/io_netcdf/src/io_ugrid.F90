@@ -57,8 +57,8 @@ module io_ugrid
 ! TODO: AvD: GL2: move grid_mapping attribute to all data variables, not coordinate variables.
 
 !! Conventions
-   character(len=6), parameter :: UG_CONV_CF = 'CF-1.8'        !< Version of CF conventions currently adopted.
-   character(len=9), parameter :: UG_CONV_UGRID = 'UGRID-1.0'     !< Version of UGRID conventions currently adopted.
+   character(len=6), parameter :: UG_CONV_CF = 'CF-1.8' !< Version of CF conventions currently adopted.
+   character(len=9), parameter :: UG_CONV_UGRID = 'UGRID-1.0' !< Version of UGRID conventions currently adopted.
    character(len=16), parameter :: UG_CONV_DELTARES = 'Deltares-0.10' !< Version of Deltares extension.
 !! Conventions history Deltares-x.y:
 ! 0.10 (2019-08-21): Consistent renaming of variables and attribute names, singular instead of plural.
@@ -118,9 +118,9 @@ module io_ugrid
 
 !> Type t_face describes a 'netcell', a cell with net nodes as vertices.
    type t_face
-      integer :: n               !< nr of nodes
-      integer, allocatable :: nod(:)          !< node nrs
-      integer, allocatable :: lin(:)          !< link nrs, kn(1 of 2,netcell(n)%lin(1)) =  netcell(n)%nod(1)
+      integer :: n !< nr of nodes
+      integer, allocatable :: nod(:) !< node nrs
+      integer, allocatable :: lin(:) !< link nrs, kn(1 of 2,netcell(n)%lin(1)) =  netcell(n)%nod(1)
    end type t_face
 
    type t_ug_file
@@ -128,12 +128,12 @@ module io_ugrid
       integer :: nummesh
       integer :: numcontacts
       integer :: numnet
-      type(t_ug_mesh), allocatable :: meshids(:)         !< The type with underlying variable IDs (one column for each mesh topology).
+      type(t_ug_mesh), allocatable :: meshids(:) !< The type with underlying variable IDs (one column for each mesh topology).
       type(t_ug_network), allocatable :: netids(:)
-      type(t_ug_contacts), allocatable :: contactids(:)      !< The array with underlying variable IDs, one column for each link topology.
-      character(len=256), allocatable :: meshnames(:)       !< The variable names for all mesh topologies in file.
+      type(t_ug_contacts), allocatable :: contactids(:) !< The array with underlying variable IDs, one column for each link topology.
+      character(len=256), allocatable :: meshnames(:) !< The variable names for all mesh topologies in file.
       character(len=256), allocatable :: networksnames(:)
-      character(len=256), allocatable :: contactsnames(:)   !< The variable names for all contacts.
+      character(len=256), allocatable :: contactsnames(:) !< The variable names for all contacts.
    end type t_ug_file
 
    integer :: imiss = -999
@@ -190,7 +190,7 @@ contains
 !> Returns the integer value for a named constant.
 !! When requested constant does not exist, the returned value is undefined, and ierr contains an error code.
    integer function ug_get_constant(constname, constvalue) result(ierr)
-      character(len=*), intent(in) :: constname  !< The name of the requested constant.
+      character(len=*), intent(in) :: constname !< The name of the requested constant.
       integer, intent(out) :: constvalue !< The integer value of the requested constant.
 
       ierr = UG_NOERR
@@ -234,7 +234,7 @@ contains
 ! a dataset. Effectively resets all dimension and variable ids.
    function ug_reset_mesh(meshids) result(ierr)
       type(t_ug_mesh), intent(inout) :: meshids ! UGRID mesh variable to be reset.
-      integer :: ierr    !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       ierr = UG_NOERR
       meshids%dimids(1:mdim_end) = -1
@@ -248,9 +248,9 @@ contains
 !> Puts global attributes in an open NetCDF data set.
 !! This includes: institution, Conventions, etc.
    function ug_addglobalatts(ncid, meta) result(ierr)
-      integer, intent(in) :: ncid              !< Already opened NetCDF id to put global attributes into.
+      integer, intent(in) :: ncid !< Already opened NetCDF id to put global attributes into.
       type(t_ug_meta), intent(in) :: meta
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       character(len=8) :: cdate
       character(len=10) :: ctime
@@ -279,25 +279,25 @@ contains
 
       ! Leave the dataset in the same mode as we got it.
       ierr = ncu_restore_mode(ncid, wasInDefine)
-      
+
    end function ug_addglobalatts
 
 ! -- COORDINATES ------------
 !> Adds coordinate variables according to CF conventions.
 !! Non-standard attributes (such as bounds) should be set elsewhere.
    function ug_addcoordvars(ncid, id_varx, id_vary, id_dimension, name_varx, name_vary, longname_varx, longname_vary, mesh, location, crs) result(ierr)
-      integer, intent(in) :: ncid          !< NetCDF dataset id
-      integer, intent(inout) :: id_varx       !< NetCDF 'x' variable id
-      integer, intent(inout) :: id_vary       !< NetCDF 'y' variable id
-      integer, dimension(:), intent(in) :: id_dimension  !< NetCDF dimension id
-      character(len=*), intent(in) :: name_varx     !< NetCDF 'x' variable name
-      character(len=*), intent(in) :: name_vary     !< NetCDF 'y' variable name
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      integer, intent(inout) :: id_varx !< NetCDF 'x' variable id
+      integer, intent(inout) :: id_vary !< NetCDF 'y' variable id
+      integer, dimension(:), intent(in) :: id_dimension !< NetCDF dimension id
+      character(len=*), intent(in) :: name_varx !< NetCDF 'x' variable name
+      character(len=*), intent(in) :: name_vary !< NetCDF 'y' variable name
       character(len=*), intent(in) :: longname_varx !< NetCDF 'x' variable long name
       character(len=*), intent(in) :: longname_vary !< NetCDF 'y' variable long name
-      character(len=*), intent(in) :: mesh          !< Name of the mesh that contains the coordinate variables to add
-      character(len=*), intent(in) :: location      !< location on the mesh of the coordinate variables to add
-      type(t_crs), intent(in) :: crs           !< Coordinate reference system for the x/y-coordinates variables.
-      integer :: ierr          !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      character(len=*), intent(in) :: mesh !< Name of the mesh that contains the coordinate variables to add
+      character(len=*), intent(in) :: location !< location on the mesh of the coordinate variables to add
+      type(t_crs), intent(in) :: crs !< Coordinate reference system for the x/y-coordinates variables.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       ierr = UG_NOERR
 
@@ -318,17 +318,17 @@ contains
 !> Adds WGS84 coordinate variables according to CF conventions.
 !! Non-standard attributes (such as bounds) should be set elsewhere.
    function ug_addlonlatcoordvars(ncid, id_varlon, id_varlat, id_dimension, name_varlon, name_varlat, longname_varlon, longname_varlat, mesh, location) result(ierr)
-      integer, intent(in) :: ncid            !< NetCDF dataset id
-      integer, intent(inout) :: id_varlon       !< NetCDF 'lon' variable id
-      integer, intent(inout) :: id_varlat       !< NetCDF 'lat' variable id
-      integer, dimension(:), intent(in) :: id_dimension    !< NetCDF dimension id
-      character(len=*), intent(in) :: name_varlon     !< NetCDF 'lon' variable name
-      character(len=*), intent(in) :: name_varlat     !< NetCDF 'lat' variable name
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      integer, intent(inout) :: id_varlon !< NetCDF 'lon' variable id
+      integer, intent(inout) :: id_varlat !< NetCDF 'lat' variable id
+      integer, dimension(:), intent(in) :: id_dimension !< NetCDF dimension id
+      character(len=*), intent(in) :: name_varlon !< NetCDF 'lon' variable name
+      character(len=*), intent(in) :: name_varlat !< NetCDF 'lat' variable name
       character(len=*), intent(in) :: longname_varlon !< NetCDF 'lon' variable long name
       character(len=*), intent(in) :: longname_varlat !< NetCDF 'lat' variable long name
-      character(len=*), optional, intent(in) :: mesh            !< (Optional) Name of the mesh that contains the coordinate variables to add.
-      character(len=*), optional, intent(in) :: location        !< (Optional) Location on the mesh of the coordinate variables to add.
-      integer :: ierr            !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      character(len=*), optional, intent(in) :: mesh !< (Optional) Name of the mesh that contains the coordinate variables to add.
+      character(len=*), optional, intent(in) :: location !< (Optional) Location on the mesh of the coordinate variables to add.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       ierr = UG_NOERR
 
@@ -353,11 +353,11 @@ contains
 !> Adds coordinate attributes according to CF conventions, based on given coordinate projection type.
 !! Non-standard attributes (such as long_name) should be set elsewhere.
    function ug_addcoordatts(ncid, id_varx, id_vary, crs) result(ierr)
-      integer, intent(in) :: ncid     !< NetCDF dataset id
-      integer, intent(in) :: id_varx  !< NetCDF 'x' variable id
-      integer, intent(in) :: id_vary  !< NetCDF 'y' variable id
-      type(t_crs), intent(in) :: crs           !< Coordinate reference system for the x/y-coordinates variables.
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      integer, intent(in) :: id_varx !< NetCDF 'x' variable id
+      integer, intent(in) :: id_vary !< NetCDF 'y' variable id
+      type(t_crs), intent(in) :: crs !< Coordinate reference system for the x/y-coordinates variables.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       ierr = UG_NOERR
 
@@ -375,10 +375,10 @@ contains
 
 !> Adds WGS84 coordinate attributes according to CF conventions.
    function ug_addlonlatcoordatts(ncid, id_varlon, id_varlat) result(ierr)
-      integer, intent(in) :: ncid      !< NetCDF dataset id
+      integer, intent(in) :: ncid !< NetCDF dataset id
       integer, intent(in) :: id_varlon !< NetCDF 'longitude' variable id
       integer, intent(in) :: id_varlat !< NetCDF 'latitude' variable id
-      integer :: ierr      !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       ierr = UG_NOERR
 
@@ -395,13 +395,13 @@ contains
    function ug_add_coordmapping(ncid, crs) result(ierr)
       use netcdf_utils, only: ncu_put_var_attset
 
-      integer, intent(in) :: ncid   !< NetCDF dataset id
-      type(t_crs), intent(in) :: crs   !< Coordinate reference system that was used for the coordinate mapping.
-      integer :: ierr   !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      type(t_crs), intent(in) :: crs !< Coordinate reference system that was used for the coordinate mapping.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
       integer :: id_crs
       integer :: ierr_missing
       character(len=11) :: epsgstring
-      character(len=30) :: varname  !< Name of the created grid mapping variable.
+      character(len=30) :: varname !< Name of the created grid mapping variable.
 
       ierr = UG_NOERR
       ierr_missing = UG_NOERR ! Store whether crs was missing (and default was used)
@@ -447,7 +447,7 @@ contains
       else if (allocated(crs%attset)) then
          ierr = ncu_put_var_attset(ncid, id_crs, crs%attset)
       else
-         ierr_missing = UG_INVALID_CRS      ! TODO: remove hardcoded defaults below. Replace by cloning the crs%attset  into this new NetCDF var.
+         ierr_missing = UG_INVALID_CRS ! TODO: remove hardcoded defaults below. Replace by cloning the crs%attset  into this new NetCDF var.
          write (epsgstring, '("EPSG:",I0)') crs%epsg_code
          ierr = nf90_put_att(ncid, id_crs, 'name', 'Unknown projected') ! CF
          ierr = nf90_put_att(ncid, id_crs, 'epsg', crs%epsg_code) ! CF
@@ -488,13 +488,13 @@ contains
 
 !> Add the grid mapping attribute to one or more NetCDF variables.
    function ug_put_gridmapping_att(ncid, id_vars, crs) result(ierr)
-      integer, intent(in) :: ncid     !< NetCDF dataset id
-      integer, dimension(:), intent(in) :: id_vars  !< Array of NetCDF variable ids
-      type(t_crs), intent(in) :: crs      !< Projection type that was used for the coordinate mapping.
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      integer, dimension(:), intent(in) :: id_vars !< Array of NetCDF variable ids
+      type(t_crs), intent(in) :: crs !< Projection type that was used for the coordinate mapping.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       integer :: i, n
-      character(len=30) :: gridmappingvar           !< Name of grid mapping variable
+      character(len=30) :: gridmappingvar !< Name of grid mapping variable
 
       ierr = UG_SOMEERR
       gridmappingvar = crs%varname
@@ -521,9 +521,9 @@ contains
 !! Used to decide which optional mesh topology data should be written to file, and which not.
 !! \see UG_LOC_NODE, UG_LOC_EDGE, UG_LOC_FACE
    function ug_checklocation(dataLocsCode, locType) result(is_used)
-      integer, intent(in) :: dataLocsCode  !< Integer code describing on which topological locations data is/will be used.
-      integer, intent(in) :: locType       !< Integer location code to test on (one of UG_LOC_NODE, UG_LOC_EDGE, UG_LOC_FACE, UG_LOC_VOL).
-      logical :: is_used       !< Returns whether specified locType is contained in dataLocsCode.
+      integer, intent(in) :: dataLocsCode !< Integer code describing on which topological locations data is/will be used.
+      integer, intent(in) :: locType !< Integer location code to test on (one of UG_LOC_NODE, UG_LOC_EDGE, UG_LOC_FACE, UG_LOC_VOL).
+      logical :: is_used !< Returns whether specified locType is contained in dataLocsCode.
 
       ! Perform logical AND to determine whether locType is inside dataLocs 'set'.
       is_used = iand(dataLocsCode, locType) == locType
@@ -574,17 +574,17 @@ contains
    function ug_write_meshtopology(ncid, meshids, meshName, dim, dataLocsCode, add_edge_face_connectivity, add_face_edge_connectivity, add_face_face_connectivity, add_layers, add_latlon) result(ierr)
       implicit none
 
-      integer, intent(in) :: ncid       !< NetCDF dataset id
+      integer, intent(in) :: ncid !< NetCDF dataset id
       type(t_ug_mesh), intent(inout) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
-      character(len=*), intent(in) :: meshName     !< Name for the mesh variable, also used as prefix for all related entities.
-      integer, intent(in) :: dim          !< Dimensionality of the mesh (1/2/3)
+      character(len=*), intent(in) :: meshName !< Name for the mesh variable, also used as prefix for all related entities.
+      integer, intent(in) :: dim !< Dimensionality of the mesh (1/2/3)
       integer, intent(in) :: dataLocsCode !< Specifies at which mesh locations data may be specified.
       logical, intent(in) :: add_edge_face_connectivity !< Specifies whether edge_face_connectivity should be added.
       logical, intent(in) :: add_face_edge_connectivity !< Specifies whether face_edge_connectivity should be added.
       logical, intent(in) :: add_face_face_connectivity !< Specifies whether face_face_connectivity should be added.
-      logical, intent(in) :: add_layers   !< Specifies whether layer and interface vertical dimensions should be added.
-      logical, intent(in) :: add_latlon   !< Specifies whether latlon coordinate reference should be added.
-      integer :: ierr         !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      logical, intent(in) :: add_layers !< Specifies whether layer and interface vertical dimensions should be added.
+      logical, intent(in) :: add_latlon !< Specifies whether latlon coordinate reference should be added.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       character(len=len_trim(meshName)) :: prefix
       character(len=256) :: buffer
@@ -692,24 +692,24 @@ contains
       use precision, only: sp
       use netcdf_utils, only: ncu_ensure_define_mode, ncu_restore_mode
 
-      integer, intent(in) :: ncid          !< NetCDF dataset id
-      integer, intent(out) :: id_var        !< Created NetCDF variable id.
-      integer, dimension(:), intent(in) :: id_dims       !< NetCDF dimension ids for this variable. Example: (/ id_edgedim /) for scalar data on edges, or (/ id_twodim, id_facedim /) for vector data on faces.
-      integer, intent(in) :: itype         !< The variable type expressed in one of the basic nf90_* types, e.g., nf90_double.
-      integer, intent(in) :: iloctype      !< Specifies at which unique mesh location data will be specified.
-      character(len=*), intent(in) :: mesh_name     !< Name for the mesh variable, also used as prefix for all related entities.
-      character(len=*), intent(in) :: var_name      !< Name for the new data variable.
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      integer, intent(out) :: id_var !< Created NetCDF variable id.
+      integer, dimension(:), intent(in) :: id_dims !< NetCDF dimension ids for this variable. Example: (/ id_edgedim /) for scalar data on edges, or (/ id_twodim, id_facedim /) for vector data on faces.
+      integer, intent(in) :: itype !< The variable type expressed in one of the basic nf90_* types, e.g., nf90_double.
+      integer, intent(in) :: iloctype !< Specifies at which unique mesh location data will be specified.
+      character(len=*), intent(in) :: mesh_name !< Name for the mesh variable, also used as prefix for all related entities.
+      character(len=*), intent(in) :: var_name !< Name for the new data variable.
       character(len=*), intent(in) :: standard_name !< Standard name (CF-compliant) for 'standard_name' attribute in this variable.
-      character(len=*), intent(in) :: long_name     !< Long name for 'long_name' attribute in this variable (use empty string if not wanted).
-      character(len=*), intent(in) :: units         !< Units of this variable (CF-compliant) (use empty string for dimensionless quantities).
-      character(len=*), intent(in) :: cell_method   !< Cell method for the spatial dimension (i.e., for edge/face/volume), value should be one of 'point', 'mean', etc. (See CF) (empty string if not relevant).
+      character(len=*), intent(in) :: long_name !< Long name for 'long_name' attribute in this variable (use empty string if not wanted).
+      character(len=*), intent(in) :: units !< Units of this variable (CF-compliant) (use empty string for dimensionless quantities).
+      character(len=*), intent(in) :: cell_method !< Cell method for the spatial dimension (i.e., for edge/face/volume), value should be one of 'point', 'mean', etc. (See CF) (empty string if not relevant).
       character(len=*), intent(in) :: cell_measures !< Cell measures attribute, for example: 'area: mesh2d_cellarea', etc. (See CF) (empty string if not relevant).
-      type(t_crs), optional, intent(in) :: crs        !< (Optional) Add grid_mapping attribute based on this coordinate reference system for independent coordinates
-      integer, optional, intent(in) :: ifill         !< (Optional) Integer fill value.
-      double precision, optional, intent(in) :: dfill         !< (Optional) Double precision fill value.
-      integer, optional, intent(in) :: writeopts  !< integer option, currently only: UG_WRITE_LATLON
+      type(t_crs), optional, intent(in) :: crs !< (Optional) Add grid_mapping attribute based on this coordinate reference system for independent coordinates
+      integer, optional, intent(in) :: ifill !< (Optional) Integer fill value.
+      double precision, optional, intent(in) :: dfill !< (Optional) Double precision fill value.
+      integer, optional, intent(in) :: writeopts !< integer option, currently only: UG_WRITE_LATLON
       logical, optional, intent(in) :: do_deflate !< whether or not to apply compression (deflation)
-      integer :: ierr          !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       character(len=len_trim(mesh_name)) :: prefix
       logical :: wasInDefine
@@ -850,12 +850,12 @@ contains
 !! This function accepts the mesh geometry derived type as input, for the arrays-based function, see ug_write_mesh_arrays
 !! This only writes the mesh variables, not the actual data variables that are defined ON the mesh.
    function ug_write_mesh_struct(ncid, meshids, networkids, crs, meshgeom, nnodeids, nbranchids, nnodelongnames, nbranchlongnames, nodeids, nodelongnames, network1dname) result(ierr)
-      integer, intent(in) :: ncid     !< NetCDF dataset id, should be already open and ready for writing.
-      type(t_ug_mesh), intent(inout) :: meshids  !< Set of NetCDF-ids for all mesh geometry arrays.
-      type(t_ug_network), intent(inout) :: networkids  !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open and ready for writing.
+      type(t_ug_mesh), intent(inout) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
+      type(t_ug_network), intent(inout) :: networkids !< Set of NetCDF-ids for all mesh geometry arrays.
       type(t_ug_meshgeom), intent(in) :: meshgeom !< The complete mesh geometry in a single struct.
-      type(t_crs), intent(in) :: crs      !< Optional crs containing metadata of unsupported coordinate reference systems
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      type(t_crs), intent(in) :: crs !< Optional crs containing metadata of unsupported coordinate reference systems
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 !   integer, optional, intent(in)      :: nsigma_opt !< Number of
       character(len=ug_idsLen), optional, allocatable :: nnodeids(:), nbranchids(:), nodeids(:)
       character(len=ug_idsLongNamesLen), optional, allocatable :: nnodelongnames(:), nbranchlongnames(:), nodelongnames(:)
@@ -892,15 +892,15 @@ contains
 
       implicit none
 
-      integer, intent(in) :: ncid     !< NetCDF dataset id, should be already open and ready for writing.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open and ready for writing.
       type(t_ug_mesh), intent(inout) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       character(len=*), intent(in) :: meshName !< Name for the mesh variable, also used as prefix for all related entities.
-      integer, intent(in) :: dim      !< Dimensionality of the mesh (1/2/3)
+      integer, intent(in) :: dim !< Dimensionality of the mesh (1/2/3)
       integer, intent(in) :: dataLocs !< Integer code describing on which topological locations data is/will be used.
-      integer, intent(in) :: numNode  !< Number of nodes in the mesh.
-      integer, intent(in) :: numEdge  !< Number of edges in the mesh.
-      integer, intent(in) :: numFace  !< Number of faces in the mesh.
-      integer, intent(in) :: maxNumNodesPerFace  !< Maximum number of nodes per face in the mesh.
+      integer, intent(in) :: numNode !< Number of nodes in the mesh.
+      integer, intent(in) :: numEdge !< Number of edges in the mesh.
+      integer, intent(in) :: numFace !< Number of faces in the mesh.
+      integer, intent(in) :: maxNumNodesPerFace !< Maximum number of nodes per face in the mesh.
       integer, intent(in) :: edge_nodes(:, :) !< Edge-to-node mapping array.
       integer, intent(in) :: face_nodes(:, :) !< Face-to-node mapping array.
       integer, pointer, intent(in) :: edge_faces(:, :) !< Edge-to-face mapping array (optional, can be null()).
@@ -909,19 +909,19 @@ contains
       real(kind=dp), intent(in) :: xn(:), yn(:) !< x,y-coordinates of the mesh nodes.
       real(kind=dp), intent(in) :: xe(:), ye(:) !< representative x,y-coordinates of the mesh edges.
       real(kind=dp), intent(in) :: xf(:), yf(:) !< representative x,y-coordinates of the mesh faces.
-      type(t_crs), intent(in) :: crs      !< Coordinate reference system for input coordinates
-      integer, intent(in) :: imiss    !< Fill value used for integer values (e.g. in edge/face_nodes arrays).
-      real(kind=dp), intent(in) :: dmiss    !< Fill value used for double precision values (e.g. in face_x_bnd variable).
-      integer, intent(in) :: start_index     !< The base index of the provided arrays (0 if this function writes array from C/C++/C#, 1 for Fortran)
-      integer, optional, intent(in) :: num_layers  !< Number of vertical layers in the mesh. Optional.
+      type(t_crs), intent(in) :: crs !< Coordinate reference system for input coordinates
+      integer, intent(in) :: imiss !< Fill value used for integer values (e.g. in edge/face_nodes arrays).
+      real(kind=dp), intent(in) :: dmiss !< Fill value used for double precision values (e.g. in face_x_bnd variable).
+      integer, intent(in) :: start_index !< The base index of the provided arrays (0 if this function writes array from C/C++/C#, 1 for Fortran)
+      integer, optional, intent(in) :: num_layers !< Number of vertical layers in the mesh. Optional.
       integer, optional, intent(in) :: layerType !< Type of vertical layering in the mesh. One of LAYERTYPE_* parameters. Optional, only used if num_layers >= 1.
-      integer, optional, intent(in) :: nsigma_opt   !< Number of sigma layers
+      integer, optional, intent(in) :: nsigma_opt !< Number of sigma layers
 
-      real(kind=dp), optional, pointer, intent(in) :: layer_zs(:)     !< Vertical coordinates of the mesh layers' center (z or sigma or z-sigma combined). Optional, only used if num_layers >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
+      real(kind=dp), optional, pointer, intent(in) :: layer_zs(:) !< Vertical coordinates of the mesh layers' center (z or sigma or z-sigma combined). Optional, only used if num_layers >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
       real(kind=dp), optional, pointer, intent(in) :: interface_zs(:) !< Vertical coordinates of the mesh layers' interface (z or sigma or z-sigma combined). Optional, only used if num_layers >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
-      real(kind=dp), optional, pointer, intent(in) :: zn(:)           !< z-coordinates of the mesh nodes.
-      character(len=*), optional :: waterlevelname  !< Water level variable name for sigma and sigma-z coordinates, should be without "mesh2d_" prefix, for example. Default: "s1".
-      character(len=*), optional :: bldepthname     !< Bed level depth variable name for sigma and sigma-z coordinates, should be without "mesh2d_" prefix, for example. Default: "bldepth".
+      real(kind=dp), optional, pointer, intent(in) :: zn(:) !< z-coordinates of the mesh nodes.
+      character(len=*), optional :: waterlevelname !< Water level variable name for sigma and sigma-z coordinates, should be without "mesh2d_" prefix, for example. Default: "s1".
+      character(len=*), optional :: bldepthname !< Bed level depth variable name for sigma and sigma-z coordinates, should be without "mesh2d_" prefix, for example. Default: "bldepth".
 
       ! Optional network1d variables for 1d UGrid
       type(t_ug_network), optional, intent(inout) :: networkids
@@ -932,9 +932,9 @@ contains
       character(len=*), optional :: network1dname
       ! Optional mesh1d variables for 1d UGrid
       integer, optional, pointer, intent(in) :: nodebranchidx(:) !< Branch indexes for each mesh1d node.
-      double precision, optional, pointer, intent(in) :: nodeoffsets(:)   !< Offset along branch on which each mesh1d node lies.
+      double precision, optional, pointer, intent(in) :: nodeoffsets(:) !< Offset along branch on which each mesh1d node lies.
       integer, optional, pointer, intent(in) :: edgebranchidx(:) !< Branch indexes for each mesh1d edge.
-      double precision, optional, pointer, intent(in) :: edgeoffsets(:)   !< Offset along branch on which each mesh1d edge lies.
+      double precision, optional, pointer, intent(in) :: edgeoffsets(:) !< Offset along branch on which each mesh1d edge lies.
       integer, optional, intent(in) :: writeopts !< integer option, currently only: UG_WRITE_LATLON
 
       integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
@@ -950,9 +950,9 @@ contains
       logical :: add_edge_face_connectivity !< Specifies whether edge_face_connectivity should be added.
       logical :: add_face_edge_connectivity !< Specifies whether face_edge_connectivity should be added.
       logical :: add_face_face_connectivity !< Specifies whether face_face_connectivity should be added.
-      logical :: add_layer_dim              !< Specifies whether layer and interface vertical dimensions should be added.
-      logical :: add_layer_var              !< Specifies whether layer and interface vertical should be added as separate coordinate variables.
-      logical :: add_latlon                 !< Specifies whether latlon coordinates should be added.
+      logical :: add_layer_dim !< Specifies whether layer and interface vertical dimensions should be added.
+      logical :: add_layer_var !< Specifies whether layer and interface vertical should be added as separate coordinate variables.
+      logical :: add_latlon !< Specifies whether latlon coordinates should be added.
       integer :: offset
       logical :: is1dugridnetwork
       integer :: lengthofnetworkname
@@ -1215,10 +1215,10 @@ contains
 
       ! Layers
       if (add_layer_var) then
-          call ug_define_mesh_layer_arrays(ncid, prefix, meshids, layertype, waterlevelname_, bldepthname_, ierr)
-          if (ierr /= UG_NOERR) then
-              goto 888
-          endif
+         call ug_define_mesh_layer_arrays(ncid, prefix, meshids, layertype, waterlevelname_, bldepthname_, ierr)
+         if (ierr /= UG_NOERR) then
+            goto 888
+         end if
       end if
 
 ! TODO: AvD: add the following (resolution may be difficult)
@@ -1270,23 +1270,31 @@ contains
          if (lengthofnetworkname > 0) then
             if (present(nodebranchidx)) then
                if (associated(nodebranchidx)) then
-                  ierr = ug_put_1d_mesh_discretisation_points_v1(ncid, meshids, nodebranchidx, nodeoffsets, start_index, xn, yn)
+                  if (size(nodebranchidx) > 0) then
+                     ierr = ug_put_1d_mesh_discretisation_points_v1(ncid, meshids, nodebranchidx, nodeoffsets, start_index, xn, yn)
+                  end if
                end if
             end if
             !write node ids and node long names
             if (present(nodeids)) then
                if (allocated(nodeids)) then
-                  ierr = nf90_put_var(ncid, meshids%varids(mid_node_ids), nodeids)
+                  if (size(nodeids) > 0) then
+                     ierr = nf90_put_var(ncid, meshids%varids(mid_node_ids), nodeids)
+                  end if
                end if
             end if
             if (present(nodelongnames)) then
                if (allocated(nodelongnames)) then
-                  ierr = nf90_put_var(ncid, meshids%varids(mid_node_longnames), nodelongnames)
+                  if (size(nodelongnames) > 0) then
+                     ierr = nf90_put_var(ncid, meshids%varids(mid_node_longnames), nodelongnames)
+                  end if
                end if
             end if
             if (present(edgebranchidx)) then
                if (associated(edgebranchidx)) then
-                  ierr = ug_put_1d_mesh_edges(ncid, meshids, edgebranchidx, edgeoffsets, start_index, xe, ye)
+                  if (size(edgebranchidx) > 0) then
+                     ierr = ug_put_1d_mesh_edges(ncid, meshids, edgebranchidx, edgeoffsets, start_index, xe, ye)
+                  end if
                end if
             end if
          end if
@@ -1554,19 +1562,19 @@ contains
          ierr = UG_NOERR
       end if
    end subroutine ug_define_mesh_layer_arrays
-   
+
    subroutine ug_write_mesh_layer_arrays(ncid, meshids, ierr, num_layers, layertype, layer_zs, interface_zs, nsigma)
       integer, intent(inout) :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
       real(kind=dp), optional, pointer, intent(in) :: interface_zs(:) !< Vertical coordinates of the mesh layers' interface (z or sigma or z-sigma combined). Optional, only used if num_layers >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
       integer, optional, intent(in) :: layertype !< Type of vertical layering in the mesh. One of LAYERTYPE_* parameters. Optional, only used if num_layers >= 1.
-      real(kind=dp), optional, pointer, intent(in) :: layer_zs(:)     !< Vertical coordinates of the mesh layers' center (z or sigma or z-sigma combined). Optional, only used if num_layers >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
+      real(kind=dp), optional, pointer, intent(in) :: layer_zs(:) !< Vertical coordinates of the mesh layers' center (z or sigma or z-sigma combined). Optional, only used if num_layers >= 1. For ocean_sigma_z, the sigma coordinates should be in the second part of the array.
       type(t_ug_mesh), intent(inout) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
-      integer, intent(in) :: ncid              !< Already opened NetCDF id to put global attributes into.
+      integer, intent(in) :: ncid !< Already opened NetCDF id to put global attributes into.
       integer, optional, intent(in) :: nsigma !< Number of sigma layers
       integer, optional, intent(in) :: num_layers !< Number of vertical layers in the mesh. Optional.
 
       double precision :: depth_c
-   
+
       if (associated(interface_zs) .and. layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
          depth_c = -interface_zs(num_layers + 1 - nsigma) ! z pos -> depth pos down
       end if
@@ -1614,7 +1622,7 @@ contains
          end if ! interface_zs
       end if ! num_layers
    end subroutine ug_write_mesh_layer_arrays
-   
+
 !
 ! -- Reading-related routines ---------------------------------------------
 !
@@ -1622,9 +1630,9 @@ contains
 !> This function just creates a new mesh with no topology information, these will be added later
    function ug_add_mesh(ncid, ug_file, meshid) result(ierr)
 
-      integer, intent(in) :: ncid    !< ID of already opened data set.
+      integer, intent(in) :: ncid !< ID of already opened data set.
       type(t_ug_file), intent(inout) :: ug_file !< UGRID file struct with cached meta information.
-      integer :: ierr, i   !< Result status (UG_NOERR if successful).
+      integer :: ierr, i !< Result status (UG_NOERR if successful).
       integer, intent(inout) :: meshid
       type(t_ug_mesh), allocatable :: newmeshids(:)
       character(len=256), allocatable :: newmeshnames(:)
@@ -1673,9 +1681,9 @@ contains
 !> This function creates new contactsids structure
    function ug_add_mesh_contact(ncid, ug_file, contactsmesh) result(ierr)
 
-      integer, intent(in) :: ncid    !< ID of already opened data set.
+      integer, intent(in) :: ncid !< ID of already opened data set.
       type(t_ug_file), intent(inout) :: ug_file !< UGRID file struct with cached meta information.
-      integer :: ierr    !< Result status (UG_NOERR if successful).
+      integer :: ierr !< Result status (UG_NOERR if successful).
       integer, intent(inout) :: contactsmesh
       type(t_ug_contacts), allocatable :: newcontacts(:)
       character(len=256), allocatable :: newcontactsnames(:)
@@ -1722,9 +1730,9 @@ contains
 !> This function creates a new network information, these will be added later
    function ug_add_network(ncid, ug_file, networkid) result(ierr)
 
-      integer, intent(in) :: ncid    !< ID of already opened data set.
+      integer, intent(in) :: ncid !< ID of already opened data set.
       type(t_ug_file), intent(inout) :: ug_file !< UGRID file struct with cached meta information.
-      integer :: ierr, i   !< Result status (UG_NOERR if successful).
+      integer :: ierr, i !< Result status (UG_NOERR if successful).
       integer, intent(inout) :: networkid
       type(t_ug_network), allocatable :: newnetids(:)
       character(len=256), allocatable :: newnetworksnames(:)
@@ -1770,13 +1778,13 @@ contains
 
 !> Initialized all UGRID-specific meta information present in an open data set.
    function ug_init_dataset(ncid, ug_file) result(ierr)
-      integer, intent(in) :: ncid          !< ID of already opened data set.
-      type(t_ug_file), intent(inout) :: ug_file       !< UGRID file struct with cached meta information.
-      integer :: ierr          !< Result status (UG_NOERR if successful).
+      integer, intent(in) :: ncid !< ID of already opened data set.
+      type(t_ug_file), intent(inout) :: ug_file !< UGRID file struct with cached meta information.
+      integer :: ierr !< Result status (UG_NOERR if successful).
 
       integer :: im, nmesh, numvar, il, ncontacts, nnetworks, inet
       logical :: is_mesh_topo, is_link_topo, is_network_topo
-      integer :: varid         !< NetCDF variable ID (1-based).
+      integer :: varid !< NetCDF variable ID (1-based).
 
       ! Count nr of meshes present in the file
       ierr = ug_get_mesh_count(ncid, nmesh)
@@ -1870,10 +1878,10 @@ contains
       use netcdf_utils, only: ncu_att_to_dimid, ncu_att_to_varid
       use ionc_constants, only: IONC_NOERR
 
-      integer, intent(in) :: ncid          !< ID of already opened data set.
-      integer, intent(in) :: varid         !< NetCDF variable ID that contains the link topology information (1-based).
-      type(t_ug_contacts), intent(inout) :: contactids    !< vector in which all link topology dimension and variables ids will be stored.
-      integer :: ierr          !< Result status (UG_NOERR if successful).
+      integer, intent(in) :: ncid !< ID of already opened data set.
+      integer, intent(in) :: varid !< NetCDF variable ID that contains the link topology information (1-based).
+      type(t_ug_contacts), intent(inout) :: contactids !< vector in which all link topology dimension and variables ids will be stored.
+      integer :: ierr !< Result status (UG_NOERR if successful).
       character(len=nf90_max_name) :: varname
       integer :: tabledims(2)
 
@@ -1941,11 +1949,11 @@ contains
    function ug_init_network_topology(ncid, varid, netids) result(ierr)
       use netcdf_utils, only: ncu_att_to_dimid, ncu_att_to_varid
 
-      integer, intent(in) :: ncid          !< ID of already opened data set.
-      integer, intent(in) :: varid         !< NetCDF variable ID that contains the network topology information (1-based).
-      type(t_ug_network), intent(inout) :: netids        !< vector in which all mesh topology dimension and variables ids will be stored.
-      character(len=nf90_max_name) :: varname       !< char array  to hold the network name
-      integer :: ierr          !< Result status (UG_NOERR if successful).
+      integer, intent(in) :: ncid !< ID of already opened data set.
+      integer, intent(in) :: varid !< NetCDF variable ID that contains the network topology information (1-based).
+      type(t_ug_network), intent(inout) :: netids !< vector in which all mesh topology dimension and variables ids will be stored.
+      character(len=nf90_max_name) :: varname !< char array  to hold the network name
+      integer :: ierr !< Result status (UG_NOERR if successful).
       integer :: dimids(2)
 
       ierr = UG_NOERR
@@ -2036,10 +2044,10 @@ contains
    function ug_init_mesh_topology(ncid, varid, meshids) result(ierr)
       use netcdf_utils, only: ncu_get_att, ncu_att_to_dimid, ncu_att_to_varid
 
-      integer, intent(in) :: ncid          !< ID of already opened data set.
-      integer, intent(in) :: varid         !< NetCDF variable ID that contains the mesh topology information (1-based).
-      type(t_ug_mesh), intent(inout) :: meshids          !< vector in which all mesh topology dimension and variables ids will be stored.
-      integer :: ierr          !< Result status (UG_NOERR if successful).
+      integer, intent(in) :: ncid !< ID of already opened data set.
+      integer, intent(in) :: varid !< NetCDF variable ID that contains the mesh topology information (1-based).
+      type(t_ug_mesh), intent(inout) :: meshids !< vector in which all mesh topology dimension and variables ids will be stored.
+      integer :: ierr !< Result status (UG_NOERR if successful).
       character(len=:), allocatable :: coordspaceind !< The name of the network used by the mesh
       character(len=nf90_max_name) :: varname
       integer :: dimids(2)
@@ -2064,7 +2072,7 @@ contains
       ! Otherwise check another possible definitions
       if (ierr /= UG_NOERR) then
          ierr = nf90_inquire_variable(ncid, varid, name=varname)
-         varname = 'n'//trim(varname)//'_Two'  ! varname has defined lenth of nf90_var_name
+         varname = 'n'//trim(varname)//'_Two' ! varname has defined lenth of nf90_var_name
          ierr = nf90_inq_dimid(ncid, trim(varname), meshids%dimids(mdim_two))
       end if
       ! Dimensions for 3D variables
@@ -2078,7 +2086,7 @@ contains
       !check here if this is a mapped mesh
       coordspaceind = ''
       isMappedMesh = ncu_get_att(ncid, varid, 'coordinate_space', coordspaceind)
-      deallocate (coordspaceind)  ! not used anymore
+      deallocate (coordspaceind) ! not used anymore
       if (isMappedMesh == nf90_noerr) then
          !inquire the variable with that name
          ierr = ncu_att_to_varid(ncid, varid, 'coordinate_space', meshids%varids(mid_1dtopo))
@@ -2186,13 +2194,13 @@ contains
    function att_to_coordvarids(ncid, varid, attname, idx, idy, idz, idw) result(ierr)
       use netcdf_utils, only: ncu_get_att
 
-      integer, intent(in) :: ncid     !< NetCDF dataset ID
-      integer, intent(in) :: varid    !< NetCDF variable ID from which the coordinate attribute will be gotten (1-based).
-      character(len=*), intent(in) :: attname  !< Name of attribute in varid that contains the coordinate variable names.
+      integer, intent(in) :: ncid !< NetCDF dataset ID
+      integer, intent(in) :: varid !< NetCDF variable ID from which the coordinate attribute will be gotten (1-based).
+      character(len=*), intent(in) :: attname !< Name of attribute in varid that contains the coordinate variable names.
       integer, intent(out) :: idx, idy !< NetCDF variable ID for x,y-coordinates.
-      integer, optional, intent(out) :: idz      !< NetCDF variable ID for z-coordinates.
-      integer, optional, intent(out) :: idw      !< NetCDF variable ID for additional coordinate
-      integer :: ierr     !< Result status. NF90_NOERR if successful.
+      integer, optional, intent(out) :: idz !< NetCDF variable ID for z-coordinates.
+      integer, optional, intent(out) :: idw !< NetCDF variable ID for additional coordinate
+      integer :: ierr !< Result status. NF90_NOERR if successful.
       character(len=:), allocatable :: varname
 
       integer :: i1, i2, n
@@ -2261,11 +2269,11 @@ contains
 !! Used for example to determine node dimension id from a node coordinate variable.
    function varid_to_dimid(ncid, varid, dimid, dimidx) result(ierr)
 
-      integer, intent(in) :: ncid   !< NetCDF dataset ID
-      integer, intent(in) :: varid  !< NetCDF variable ID from which the dimension ID will be gotten (1-based).
-      integer, intent(out) :: dimid  !< NetCDF dimension ID that was found.
+      integer, intent(in) :: ncid !< NetCDF dataset ID
+      integer, intent(in) :: varid !< NetCDF variable ID from which the dimension ID will be gotten (1-based).
+      integer, intent(out) :: dimid !< NetCDF dimension ID that was found.
       integer, optional, intent(in) :: dimidx !< Optional index of the desired dimension, in case of a multidimensional variable. Default: 1.
-      integer :: ierr   !< Result status. UG_NOERR if successful.
+      integer :: ierr !< Result status. UG_NOERR if successful.
 
       integer, dimension(nf90_max_dims) :: dimids
       integer :: dimidx_, ndims
@@ -2289,15 +2297,15 @@ contains
 
 999   continue
       ! here we should return an error is the variable is undefined, following up actions are taken in ug_init_mesh_topology
-      dimid = -1           ! undefined id
+      dimid = -1 ! undefined id
    end function varid_to_dimid
 
 !> Returns whether a given variable is a mesh topology variable.
    function ug_is_mesh_topology(ncid, varid) result(is_mesh_topo)
       use netcdf_utils, only: ncu_get_att
 
-      integer, intent(in) :: ncid         !< NetCDF dataset id
-      integer, intent(in) :: varid        !< NetCDF variable id (1-based).
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      integer, intent(in) :: varid !< NetCDF variable id (1-based).
       logical :: is_mesh_topo !< Return value
 
       integer :: ierr, topology_dimension
@@ -2340,8 +2348,8 @@ contains
    function ug_is_network_topology(ncid, varid) result(is_mesh_topo)
       use netcdf_utils, only: ncu_get_att
 
-      integer, intent(in) :: ncid         !< NetCDF dataset id
-      integer, intent(in) :: varid        !< NetCDF variable id (1-based).
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      integer, intent(in) :: varid !< NetCDF variable id (1-based).
       logical :: is_mesh_topo !< Return value
 
       character(len=:), allocatable :: buffer
@@ -2368,8 +2376,8 @@ contains
    function ug_is_link_topology(ncid, varid) result(ug_is_link_topo)
       use netcdf_utils, only: ncu_get_att
 
-      integer, intent(in) :: ncid         !< NetCDF dataset id
-      integer, intent(in) :: varid        !< NetCDF variable id (1-based).
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      integer, intent(in) :: varid !< NetCDF variable id (1-based).
       logical :: ug_is_link_topo !< Return value
       integer :: cfrole
       character(len=:), allocatable :: buffer
@@ -2390,13 +2398,13 @@ contains
 !!
 !! \see
    function ug_get_mesh_count(ncid, numMesh) result(ierr)
-      integer, intent(in) :: ncid     !< NetCDF dataset id
-      integer, intent(out) :: numMesh  !< Number of mesh topologies in the dataset (>= 0).
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      integer, intent(out) :: numMesh !< Number of mesh topologies in the dataset (>= 0).
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       integer :: numVar
       logical :: is_mesh_topo
-      integer :: varid         !< NetCDF variable ID (1-based).
+      integer :: varid !< NetCDF variable ID (1-based).
 
       ierr = nf90_inquire(ncid, nVariables=numVar)
 
@@ -2411,14 +2419,14 @@ contains
    end function ug_get_mesh_count
 
    function ug_get_network_count(ncid, numNet) result(ierr)
-      integer, intent(in) :: ncid     !< NetCDF dataset id
-      integer, intent(out) :: numNet   !< Number of mesh topologies in the dataset (>= 0).
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      integer, intent(out) :: numNet !< Number of mesh topologies in the dataset (>= 0).
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       integer :: numVar
       logical :: is_net_topo
       integer :: iworkaround1
-      integer :: varid         !< NetCDF variable ID (1-based).
+      integer :: varid !< NetCDF variable ID (1-based).
 
       ! NOTE: AvD:
       ! Just like in ug_is_network_topology(), we suffer from a same Heisenbug in netcdf lib:
@@ -2439,11 +2447,11 @@ contains
 
 !> Gets the number of link topologies in an open dataset.
    function ug_get_contact_topo_count(ncid, ncontacts) result(ierr)
-      integer, intent(in) :: ncid      !< NetCDF dataset id
+      integer, intent(in) :: ncid !< NetCDF dataset id
       integer, intent(out) :: ncontacts !< Number of links (>= 0).
-      integer :: ierr      !< Result status (UG_NOERR==NF90_NOERR) if successful.
-      integer :: numVar    !< number of variables in the netCDF file.
-      integer :: varid     !< NetCDF variable ID (1-based).
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer :: numVar !< number of variables in the netCDF file.
+      integer :: varid !< NetCDF variable ID (1-based).
       logical :: is_link_topo
 
       ierr = nf90_inquire(ncid, nVariables=numVar)
@@ -2462,10 +2470,10 @@ contains
 !!
 !! \see
    function ug_get_mesh_name(ncid, meshids, meshname) result(ierr)
-      integer, intent(in) :: ncid     !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids  !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       character(len=*), intent(out) :: meshname !< The name of the mesh topology variable.
-      integer :: ierr     !< Result status, ug_noerr if successful.
+      integer :: ierr !< Result status, ug_noerr if successful.
 
       meshname = ''
       ierr = nf90_inquire_variable(ncid, meshids%varids(mid_meshtopo), name=meshname)
@@ -2480,10 +2488,10 @@ contains
 !!
 !! \see
    function ug_get_network_name(ncid, netids, networkname) result(ierr)
-      integer, intent(in) :: ncid     !< NetCDF dataset id, should be already open.
-      type(t_ug_network), intent(in) :: netids  !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_network), intent(in) :: netids !< Set of NetCDF-ids for all mesh geometry arrays.
       character(len=*), intent(out) :: networkname !< The name of the mesh topology variable.
-      integer :: ierr     !< Result status, ug_noerr if successful.
+      integer :: ierr !< Result status, ug_noerr if successful.
 
       networkname = ''
       ierr = nf90_inquire_variable(ncid, netids%varids(ntid_1dtopo), name=networkname)
@@ -2498,10 +2506,10 @@ contains
 !!
 !! \see
    function ug_get_mesh_network_name(ncid, meshids, networkname) result(ierr)
-      integer, intent(in) :: ncid         !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids      !< Set of NetCDF-ids for all mesh geometry arrays.
-      character(len=*), intent(out) :: networkname  !< The name of the mesh topology variable.
-      integer :: ierr         !< Result status, ug_noerr if successful.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
+      character(len=*), intent(out) :: networkname !< The name of the mesh topology variable.
+      integer :: ierr !< Result status, ug_noerr if successful.
 
       ierr = UG_NOERR
       networkname = ''
@@ -2539,11 +2547,11 @@ contains
 !> Gets the size/count of items for the specified topological location.
 !! Use this to get the number of nodes/edges/faces/volumes.
    function ug_inquire_dimension(ncid, meshids, idimtype, nitems) result(ierr)
-      integer, intent(in) :: ncid     !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids  !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       integer, intent(in) :: idimtype !< The location type to count (one of UG_LOC_NODE, UG_LOC_EDGE, UG_LOC_FACE, UG_LOC_VOL).
-      integer, intent(out) :: nitems   !< The number of items for that location.
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR if successful).
+      integer, intent(out) :: nitems !< The number of items for that location.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       integer :: idim
 
@@ -2577,10 +2585,10 @@ contains
 
 !> Gets the dimension of the mesh topology for the specified mesh in a UGRID data set.
    function ug_get_topology_dimension(ncid, meshids, dim) result(ierr)
-      integer, intent(in) :: ncid     !< NetCDF dataset id, should be already open.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
       type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
-      integer, intent(out) :: dim      !< The topology dimension for the requested mesh.
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR if successful).
+      integer, intent(out) :: dim !< The topology dimension for the requested mesh.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       ierr = UG_NOERR
       ierr = nf90_get_att(ncid, meshids%varids(mid_meshtopo), 'topology_dimension', dim)
@@ -2599,20 +2607,20 @@ contains
 
       use m_alloc
 
-      integer, intent(in) :: ncid          !< ID of already opened data set.
-      type(t_ug_meshgeom), intent(inout) :: meshgeom      !< Structure in which all mesh geometry will be stored.
-      integer, intent(in) :: start_index   !< the base index of the meshgeom arrays
+      integer, intent(in) :: ncid !< ID of already opened data set.
+      type(t_ug_meshgeom), intent(inout) :: meshgeom !< Structure in which all mesh geometry will be stored.
+      integer, intent(in) :: start_index !< the base index of the meshgeom arrays
 
       ! Optional variables
-      type(t_ug_mesh), optional, intent(in) :: meshids       !< Structure with all mesh topology variable ids (should be initialized already).
-      type(t_ug_network), optional, intent(in) :: netid         !< (optional) The network associated with the mesh (for 1d Ugrid)
+      type(t_ug_mesh), optional, intent(in) :: meshids !< Structure with all mesh topology variable ids (should be initialized already).
+      type(t_ug_network), optional, intent(in) :: netid !< (optional) The network associated with the mesh (for 1d Ugrid)
       logical, optional, intent(in) :: includeArrays !< (optional) Whether or not to include coordinate arrays and connectivity tables. Default: .false., i.e., dimension counts only.
       character(len=ug_idsLen), optional, allocatable, intent(inout) :: nbranchids(:), nnodeids(:), nodeids(:)
       character(len=ug_idsLongNamesLen), optional, allocatable, intent(inout) :: nbranchlongnames(:), nnodelongnames(:), nodelongnames(:)
       character(len=*), optional, intent(inout) :: network1dname, mesh1dname
 
       !locals
-      integer :: ierr          !< Result status (UG_NOERR if successful).
+      integer :: ierr !< Result status (UG_NOERR if successful).
 
       logical :: includeArrays_
 
@@ -2767,12 +2775,12 @@ contains
 !> Gets the x,y-coordinates for all nodes in the specified mesh.
 !! The output x,y,z arrays are supposed to be of exact correct length already.
    function ug_get_node_coordinates(ncid, meshids, xn, yn, zn) result(ierr)
-      integer, intent(in) :: ncid         !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids      !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       real(kind=dp), intent(out) :: xn(:), yn(:) !< Arrays to store x,y-coordinates of the mesh nodes.
-      real(kind=dp), intent(out), optional :: zn(:)        !< Array to store z-coordinates of the mesh nodes.
+      real(kind=dp), intent(out), optional :: zn(:) !< Array to store z-coordinates of the mesh nodes.
       !  (AM: Optional to make sure other using code needs no update)
-      integer :: ierr         !< Result status (UG_NOERR==NF90_NOERR if successful).
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       character(len=NF90_MAX_NAME) :: nodecrdname
       integer :: k, vid
@@ -2810,10 +2818,10 @@ contains
 !> Puts the x,y-coordinates for all nodes in the specified mesh.
 !! The input x,y arrays are supposed to be of exact correct length already.
    function ug_put_node_coordinates(ncid, meshids, xn, yn) result(ierr)
-      integer, intent(in) :: ncid    !< NetCDF dataset id, should be already open.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
       type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       real(kind=dp), intent(in) :: xn(:), yn(:) !< Arrays to store x,y-coordinates of the mesh nodes.
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR if successful).
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       ierr = nf90_put_var(ncid, meshids%varids(mid_nodex), xn)
       if (ierr /= NF90_NOERR) then
@@ -2828,13 +2836,13 @@ contains
 !! The output edge_faces array is supposed to be of exact correct size already.
    function ug_get_edge_faces(ncid, meshids, edge_faces, ifill, startIndex) result(ierr)
       use array_module
-      integer, intent(in) :: ncid              !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids           !< Set of NetCDF-ids for all mesh geometry arrays.
-      integer, intent(out) :: edge_faces(:, :)   !< Array to the edge-node connectivity table.
-      integer, optional, intent(out) :: ifill             !< (Optional) Integer fill value.
-      integer :: ierr              !< Result status (UG_NOERR==NF90_NOERRif successful).
-      integer, optional, intent(in) :: startIndex        !< The start index the caller asks for
-      integer :: varStartIndex  !< Temp variables
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(out) :: edge_faces(:, :) !< Array to the edge-node connectivity table.
+      integer, optional, intent(out) :: ifill !< (Optional) Integer fill value.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERRif successful).
+      integer, optional, intent(in) :: startIndex !< The start index the caller asks for
+      integer :: varStartIndex !< Temp variables
 
       ierr = nf90_get_var(ncid, meshids%varids(mid_edgefaces), edge_faces)
       if (ierr /= nf90_noerr) then
@@ -2871,12 +2879,12 @@ contains
       use array_module
       use netcdf_utils, only: ncu_inq_var_fill
 
-      integer, intent(in) :: ncid             !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids          !< Set of NetCDF-ids for all mesh geometry arrays.
-      integer, intent(out) :: edge_nodes(:, :)  !< Array to the edge-node connectivity table.
-      integer :: ierr             !< Result status (UG_NOERR==NF90_NOERRif successful).
-      integer, optional, intent(in) :: startIndex      !< The requested index
-      integer :: varStartIndex    !< The index stored in the netCDF file
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(out) :: edge_nodes(:, :) !< Array to the edge-node connectivity table.
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERRif successful).
+      integer, optional, intent(in) :: startIndex !< The requested index
+      integer :: varStartIndex !< The index stored in the netCDF file
 
       integer :: ifill, no_fill
 
@@ -2910,10 +2918,10 @@ contains
 !> Gets the x,y-coordinates (representative centre) for all faces in the specified mesh.
 !! The output x,y arrays are supposed to be of exact correct length already.
    function ug_get_face_coordinates(ncid, meshids, xf, yf) result(ierr)
-      integer, intent(in) :: ncid    !< NetCDF dataset id, should be already open.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
       type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       real(kind=dp), intent(out) :: xf(:), yf(:) !< Arrays to store x,y-coordinates of the mesh face centres.
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR if successful).
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       ierr = nf90_get_var(ncid, meshids%varids(mid_facex), xf)
       if (ierr /= UG_NOERR) then
@@ -2927,10 +2935,10 @@ contains
 !> Puts the x,y-coordinates (representative centre) for all faces in the specified mesh.
 !! The input x,y arrays are supposed to be of exact correct length already.
    function ug_put_face_coordinates(ncid, meshids, xf, yf) result(ierr)
-      integer, intent(in) :: ncid    !< NetCDF dataset id, should be already open.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
       type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       real(kind=dp), intent(in) :: xf(:), yf(:) !< Arrays containing the x,y-coordinates of the mesh face centres.
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR if successful).
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       ierr = nf90_put_var(ncid, meshids%varids(mid_facex), xf)
       if (ierr /= NF90_NOERR) then
@@ -2947,13 +2955,13 @@ contains
       use array_module
       use netcdf_utils, only: ncu_inq_var_fill
 
-      integer, intent(in) :: ncid            !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids         !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       integer, intent(out) :: face_edges(:, :) !< Array to the face-node connectivity table.
-      integer, optional, intent(out) :: ifill           !< (Optional) Integer fill value.
-      integer, optional, intent(in) :: startIndex      !< The start index the caller asks for
-      integer :: k, varStartIndex   !< Temp variables
-      integer :: ierr            !< Result status (UG_NOERR==NF90_NOERRif successful).
+      integer, optional, intent(out) :: ifill !< (Optional) Integer fill value.
+      integer, optional, intent(in) :: startIndex !< The start index the caller asks for
+      integer :: k, varStartIndex !< Temp variables
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERRif successful).
 
       integer :: ifill_, no_fill
 
@@ -2995,13 +3003,13 @@ contains
       use array_module
       use netcdf_utils, only: ncu_inq_var_fill
 
-      integer, intent(in) :: ncid            !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids         !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       integer, intent(out) :: face_nodes(:, :) !< Array to the face-node connectivity table.
-      integer, optional, intent(out) :: ifill           !< (Optional) Integer fill value.
-      integer, optional, intent(in) :: startIndex      !< The start index the caller asks for
-      integer :: k, varStartIndex   !< Temp variables
-      integer :: ierr            !< Result status (UG_NOERR==NF90_NOERRif successful).
+      integer, optional, intent(out) :: ifill !< (Optional) Integer fill value.
+      integer, optional, intent(in) :: startIndex !< The start index the caller asks for
+      integer :: k, varStartIndex !< Temp variables
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERRif successful).
 
       integer :: ifill_, no_fill
 
@@ -3042,15 +3050,15 @@ contains
 !! (UGRID-compliant, so UG_LOC_FACE/EDGE/NODE/ALL2D).
    function ug_get_var_count(ncid, meshids, iloctype, nvar) result(ierr)
       use string_module
-      integer, intent(in) :: ncid     !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids  !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       integer, intent(in) :: iloctype !< The topological location on which to select data (one of UG_LOC_FACE/EDGE/NODE/ALL2D).
-      integer, intent(out) :: nvar     !< Number of variables defined on the requested location type+mesh+dataset.
-      integer :: ierr     !< Result status, ug_noerr if successful.
+      integer, intent(out) :: nvar !< Number of variables defined on the requested location type+mesh+dataset.
+      integer :: ierr !< Result status, ug_noerr if successful.
 
       integer :: numVar, ivarloc
       character(len=nf90_max_name) :: str, meshname
-      integer :: varid         !< NetCDF variable ID (1-based).
+      integer :: varid !< NetCDF variable ID (1-based).
       str = ''
       meshname = ''
       ierr = nf90_inquire_variable(ncid, meshids%varids(mid_meshtopo), name=meshname)
@@ -3106,17 +3114,17 @@ contains
       use netcdf_utils, only: ncu_get_att
       use string_module
 
-      integer, intent(in) :: ncid      !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids   !< Set of NetCDF-ids for all mesh geometry arrays.
-      integer, intent(in) :: iloctype  !< The topological location on which to select data variables (one of UG_LOC_FACE/EDGE/NODE/ALL2D).
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: iloctype !< The topological location on which to select data variables (one of UG_LOC_FACE/EDGE/NODE/ALL2D).
       integer, intent(out) :: varids(:) !< Array to store the variable ids in.
-      integer, intent(out) :: nvar      !< Number of variables found/stored in array.
-      integer :: ierr      !< Result status, ug_noerr if successful.
+      integer, intent(out) :: nvar !< Number of variables found/stored in array.
+      integer :: ierr !< Result status, ug_noerr if successful.
 
       integer :: numVar, ivarloc, maxvar
       character(len=nf90_max_name) :: meshname
       character(len=:), allocatable :: str
-      integer :: varid         !< NetCDF variable ID (1-based).
+      integer :: varid !< NetCDF variable ID (1-based).
       allocate (character(len=0) :: str)
 
       meshname = ''
@@ -3182,15 +3190,15 @@ contains
       use netcdf_utils, only: ncu_get_att
       use string_module
 
-      integer, intent(in) :: ncid     !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids  !< Set of NetCDF-ids for all mesh geometry arrays.
-      character(len=*), intent(in) :: varname  !< The name of the variable to be found. Should be without any "meshnd_" prefix.
-      integer, intent(out) :: varid    !< The resulting variable id, if found (1-based).
-      integer :: ierr     !< Result status, ug_noerr if successful.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
+      character(len=*), intent(in) :: varname !< The name of the variable to be found. Should be without any "meshnd_" prefix.
+      integer, intent(out) :: varid !< The resulting variable id, if found (1-based).
+      integer :: ierr !< Result status, ug_noerr if successful.
 
       character(len=nf90_max_name) :: meshname
       character(len=:), allocatable :: str
-      integer :: loc_varid     !< NetCDF variable ID (1-based).
+      integer :: loc_varid !< NetCDF variable ID (1-based).
 
       allocate (character(len=0) :: str)
       meshname = ''
@@ -3251,18 +3259,18 @@ contains
       use netcdf_utils, only: ncu_get_att
       use string_module
 
-      integer, intent(in) :: ncid     !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), intent(in) :: meshids  !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       integer, intent(in) :: iloctype !< The topological location on which to check for the data variable (one of UG_LOC_FACE/EDGE/NODE/ALL2D).
-      character(len=*), intent(in) :: stdname  !< The standard_name value that is searched for.
-      integer, intent(out) :: varid    !< The netCDF variable id (when found) (1-based).
-      integer :: ierr     !< Result status, ug_noerr if successful.
+      character(len=*), intent(in) :: stdname !< The standard_name value that is searched for.
+      integer, intent(out) :: varid !< The netCDF variable id (when found) (1-based).
+      integer :: ierr !< Result status, ug_noerr if successful.
 
       integer, allocatable :: varids(:) !< Array to store the candidate variable ids in.
       integer :: numVar, maxvar
       character(len=:), allocatable :: str
       integer :: nlen
-      integer :: iv            !< Loop index cycling over the number of variables (1 to numVar).
+      integer :: iv !< Loop index cycling over the number of variables (1 to numVar).
 
       allocate (character(len=0) :: str)
       ! Get all candidate data variables on the right mesh+location
@@ -3318,9 +3326,9 @@ contains
    subroutine write_edge_type_variable(igeomfile, meshids, meshName, edge_type)
       implicit none
 
-      integer, intent(in) :: igeomfile    !< file pointer to netcdf file to write to.
-      type(t_ug_mesh), intent(inout) :: meshids!< Set of NetCDF-ids for all mesh geometry variables.
-      character(len=*), intent(in) :: meshName     !< Name of the mesh.
+      integer, intent(in) :: igeomfile !< file pointer to netcdf file to write to.
+      type(t_ug_mesh), intent(inout) :: meshids !< Set of NetCDF-ids for all mesh geometry variables.
+      character(len=*), intent(in) :: meshName !< Name of the mesh.
       integer, intent(in) :: edge_type(:) !< Edge type variable to be written to the NetCDF file.
 
       integer :: id_edgetype !< Variable ID for edge type variable.
@@ -3359,7 +3367,7 @@ contains
 !! NOTE: do not pass already filled mesh geometries to this function,
 !! since array pointers will become disassociated, possibly causing memory leaks.
    function ug_create_ugrid_geometry(meshgeom, crs) result(ierr)
-      type(t_ug_meshgeom), intent(out) :: meshgeom     !< The mesh geometry that is to be created and filled.
+      type(t_ug_meshgeom), intent(out) :: meshgeom !< The mesh geometry that is to be created and filled.
       type(t_crs), intent(inout) :: crs
       ! TODO why need save here?
       integer, allocatable, target, save :: edge_nodes(:, :), edge_faces(:, :), face_nodes(:, :), face_edges(:, :), face_links(:, :) !< Output arrays.
@@ -3507,7 +3515,7 @@ contains
    end function ug_create_ugrid_geometry
 
    subroutine ug_create_ugrid_meta(meta)
-      type(t_ug_meta) :: meta  !< Meta information on file.
+      type(t_ug_meta) :: meta !< Meta information on file.
 
       meta%institution = "Deltares"
       meta%source = "DeltaShell"
@@ -3522,10 +3530,10 @@ contains
       integer, intent(in) :: ncid !< file pointer to netcdf file to write to.
       type(t_ug_meshgeom), intent(in) :: meshgeom !< Mesh geometry to be written to the NetCDF file.
       type(t_crs), intent(in) :: crs !< Mesh geometry to be written to the NetCDF file.
-      type(t_ug_mesh), intent(inout) :: meshids  !< Set of NetCDF-ids for all mesh geometry variables.
+      type(t_ug_mesh), intent(inout) :: meshids !< Set of NetCDF-ids for all mesh geometry variables.
       type(t_ug_network), intent(inout) :: networkids
-      integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR if successful).
-      type(t_ug_meta) :: meta  !< Meta information on file. ! TODO: later also input arg
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
+      type(t_ug_meta) :: meta !< Meta information on file. ! TODO: later also input arg
 
       ierr = UG_NOERR
 
@@ -3548,9 +3556,9 @@ contains
       integer :: ierr
 
       type(t_ug_meshgeom) :: meshgeom !< Mesh geometry to be written to the NetCDF file.
-      type(t_ug_mesh) :: meshids          !< Set of NetCDF-ids for all mesh geometry variables.
-      type(t_ug_network) :: networkid        !< Set of NetCDF-ids for all network variables.
-      type(t_crs) :: crs              !< Set of NetCDF-ids for all mesh geometry variables.
+      type(t_ug_mesh) :: meshids !< Set of NetCDF-ids for all mesh geometry variables.
+      type(t_ug_network) :: networkid !< Set of NetCDF-ids for all network variables.
+      type(t_crs) :: crs !< Set of NetCDF-ids for all mesh geometry variables.
       integer :: ncid
 
       ierr = nf90_create(filename, 0, ncid)
@@ -3574,10 +3582,10 @@ contains
       character(len=*), intent(in) :: filename
       integer :: ierr
 
-      type(t_ug_meshgeom) :: meshgeom    !< Mesh geometry to be written to the NetCDF file.
-      type(t_ug_mesh) :: meshids     !< Set of NetCDF-ids for all mesh geometry variables.
-      type(t_ug_network) :: networkid   !< Set of NetCDF-ids for all mesh geometry variables.
-      type(t_crs) :: crs     !< Set of NetCDF-ids for all mesh geometry variables.
+      type(t_ug_meshgeom) :: meshgeom !< Mesh geometry to be written to the NetCDF file.
+      type(t_ug_mesh) :: meshids !< Set of NetCDF-ids for all mesh geometry variables.
+      type(t_ug_network) :: networkid !< Set of NetCDF-ids for all mesh geometry variables.
+      type(t_crs) :: crs !< Set of NetCDF-ids for all mesh geometry variables.
       integer :: id_s1, id_s2, id_u1, id_zk, id_time, itim ! example: water levels, water depth, edge speed, bed level and a timer
       integer :: ncid, id_timedim
       double precision, allocatable :: workf(:), worke(:), workn(:)
@@ -3659,7 +3667,7 @@ contains
       integer :: ierr
 
       !locals
-      type(t_crs) :: crs           !< Coordinate reference system for the x/y-coordinates variables.
+      type(t_crs) :: crs !< Coordinate reference system for the x/y-coordinates variables.
 
       crs%varname = 'Unknown projected'
       crs%epsg_code = 0
@@ -3676,7 +3684,7 @@ contains
       integer, intent(in) :: nBranches
       integer, intent(in) :: nGeometry
       type(t_ug_network), intent(inout) :: netids
-      type(t_crs), intent(in) :: crs           !< Coordinate reference system for the x/y-coordinates variables.
+      type(t_crs), intent(in) :: crs !< Coordinate reference system for the x/y-coordinates variables.
       integer :: ierr
 
       !locals
@@ -3815,7 +3823,7 @@ contains
       integer :: ierr
 
       !locals
-      type(t_crs) :: crs           !< Coordinate reference system for the x/y-coordinates variables.
+      type(t_crs) :: crs !< Coordinate reference system for the x/y-coordinates variables.
 
       crs%varname = 'Unknown projected'
       crs%epsg_code = 0
@@ -3835,7 +3843,7 @@ contains
       character(len=*), intent(in) :: networkname
       character(len=*), intent(in) :: meshname
       integer, intent(in) :: writexy
-      type(t_crs), intent(in) :: crs           !< Coordinate reference system for the x/y-coordinates variables.
+      type(t_crs), intent(in) :: crs !< Coordinate reference system for the x/y-coordinates variables.
       integer :: ierr
 
       !locals
@@ -3948,7 +3956,7 @@ contains
       character(len=len_trim(meshname)) :: prefix
       integer :: ierr
       logical :: wasInDefine
-      
+
       prefix = trim(meshname)
 
       ierr = UG_SOMEERR
@@ -4084,13 +4092,13 @@ contains
    end function ug_def_mesh_contact
 !> Writes edge nodes
    function ug_write_mesh_1d_edge_nodes(ncid, meshids, meshName, numEdge, mesh_1d_edge_nodes, start_index) result(ierr)
-      integer, intent(in) :: ncid                     !< NetCDF dataset id, should be already open and ready for writing.
-      type(t_ug_mesh), intent(inout) :: meshids                  !< Set of NetCDF-ids for all mesh geometry arrays.
-      character(len=*), intent(in) :: meshName                 !< Name for the mesh variable, also used as prefix for all related entities.
-      integer, intent(in) :: numEdge                  !< Number of edges in the mesh.
-      integer, intent(in) :: mesh_1d_edge_nodes(:, :)  !< Edge-to-node mapping array.
-      integer :: start_index              !< The base index of the provided arrays (0 if this function writes array from C/C++/C#, 1 for Fortran)
-      integer :: ierr                     !< Result status (UG_NOERR==NF90_NOERR) if successful.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open and ready for writing.
+      type(t_ug_mesh), intent(inout) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
+      character(len=*), intent(in) :: meshName !< Name for the mesh variable, also used as prefix for all related entities.
+      integer, intent(in) :: numEdge !< Number of edges in the mesh.
+      integer, intent(in) :: mesh_1d_edge_nodes(:, :) !< Edge-to-node mapping array.
+      integer :: start_index !< The base index of the provided arrays (0 if this function writes array from C/C++/C#, 1 for Fortran)
+      integer :: ierr !< Result status (UG_NOERR==NF90_NOERR) if successful.
 
       character(len=len_trim(meshName)) :: prefix
       logical :: wasInDefine
@@ -4143,10 +4151,10 @@ contains
 !> Get the number of contact links in a given meshcontact set.
    function ug_get_contacts_count(ncid, contactids, ncontacts) result(ierr)
 
-      integer, intent(in) :: ncid       !< NetCDF data set id
+      integer, intent(in) :: ncid !< NetCDF data set id
       type(t_ug_contacts), intent(in) :: contactids !< Mesh contact set
-      integer, intent(out) :: ncontacts  !< Number of contact links in the given meshcontact set.
-      integer :: ierr       !< Result status (IONC_NOERR if successful).
+      integer, intent(out) :: ncontacts !< Number of contact links in the given meshcontact set.
+      integer :: ierr !< Result status (IONC_NOERR if successful).
 
       integer :: xtype, ndims, nAtts, ncontactsDim1, ncontactsDim2
       character(len=nf90_max_name) :: name
@@ -4289,12 +4297,12 @@ contains
 !! The arrays should be allocated at the correct size already.
    function ug_get_mesh_contact_links(ncid, contactids, contactlinksfromto, contacttype, startIndex) result(ierr)
       use array_module
-      integer, intent(in) :: ncid           !< NetCDF dataset id
-      type(t_ug_contacts), intent(in) :: contactids     !< Mesh contact topology set
+      integer, intent(in) :: ncid !< NetCDF dataset id
+      type(t_ug_contacts), intent(in) :: contactids !< Mesh contact topology set
       integer, intent(out) :: contactlinksfromto(:, :) !< (2,numcontactlinks) table with from-to indices
       integer, intent(out) :: contacttype(:) !< Contact type for each link
-      integer, intent(in) :: startIndex     !< Desired start index for the table.
-      integer :: ierr           !< Result status (UG_NOERR if succesful)
+      integer, intent(in) :: startIndex !< Desired start index for the table.
+      integer :: ierr !< Result status (UG_NOERR if succesful)
 
       integer :: varStartIndex
       integer :: ifill
@@ -4487,14 +4495,14 @@ contains
 !! but x/y may be given as well.
    function ug_put_1d_mesh_edges(ncid, meshids, edgebranchidx, edgeoffset, startIndex, coordx, coordy) result(ierr)
       use array_module
-      integer, intent(in) :: ncid             !< NetCDF dataset id, should be already open and ready for writing.
-      type(t_ug_mesh), intent(in) :: meshids          !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open and ready for writing.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
       integer, intent(in) :: edgebranchidx(:) !< Branch index for each mesh1d edge.
-      double precision, intent(in) :: edgeoffset(:)    !< Offset along branch for each mesh1d edge.
-      integer, intent(in) :: startIndex       !< Start index convention used in input edge branch indexes (0 or 1).
-      double precision, optional, intent(in) :: coordx(:)        !< (Optional) representative x-coordinate of each mesh1d edge.
-      double precision, optional, intent(in) :: coordy(:)        !< (Optional) representative y-coordinate of each mesh1d edge.
-      integer :: ierr             !< Result status (UG_NOERR if successful).
+      double precision, intent(in) :: edgeoffset(:) !< Offset along branch for each mesh1d edge.
+      integer, intent(in) :: startIndex !< Start index convention used in input edge branch indexes (0 or 1).
+      double precision, optional, intent(in) :: coordx(:) !< (Optional) representative x-coordinate of each mesh1d edge.
+      double precision, optional, intent(in) :: coordy(:) !< (Optional) representative y-coordinate of each mesh1d edge.
+      integer :: ierr !< Result status (UG_NOERR if successful).
 
       integer, allocatable :: shiftededgebranchidx(:)
       integer :: nmeshedges
@@ -4793,22 +4801,22 @@ contains
 !! For x/y-coordinates: these are only read from file when present, not calculated from offsets.
    function ug_get_1d_mesh_edge_coordinates(ncid, meshids, edgebranchidx, edgeoffsets, startIndex, edgex, edgey, requireOptionals) result(ierr)
       use array_module
-      integer, intent(in) :: ncid               !< NetCDF dataset id, should be already open.
-      integer, intent(in) :: startIndex         !< Desired startIndex in output arrays. May be different from startIndex in the file's variables.
-      type(t_ug_mesh), intent(in) :: meshids            !< Set of NetCDF-ids for all mesh geometry arrays.
-      integer, intent(out) :: edgebranchidx(:)   !< Array in which the branch index for all edges will be stored.
-      real(kind=dp), intent(out) :: edgeoffsets(:)     !< Array in which the offset for all edges will be stored.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      integer, intent(in) :: startIndex !< Desired startIndex in output arrays. May be different from startIndex in the file's variables.
+      type(t_ug_mesh), intent(in) :: meshids !< Set of NetCDF-ids for all mesh geometry arrays.
+      integer, intent(out) :: edgebranchidx(:) !< Array in which the branch index for all edges will be stored.
+      real(kind=dp), intent(out) :: edgeoffsets(:) !< Array in which the offset for all edges will be stored.
 
       real(kind=dp), intent(out), optional :: edgex(:), edgey(:) !< The array in which the x and y-coordinates for all edges will be stored (if present).
-      logical, intent(in), optional :: requireOptionals   !< The array in which the x and y-coordinates for all edges will be stored (if present).
-      integer :: ierr               !< Result status, ug_noerr if successful. Nonzero if some arrays could not be read from file.
+      logical, intent(in), optional :: requireOptionals !< The array in which the x and y-coordinates for all edges will be stored (if present).
+      integer :: ierr !< Result status, ug_noerr if successful. Nonzero if some arrays could not be read from file.
       integer :: ierrloc, numerr
       logical :: optionalsRequired ! local version of req.optionals (to avoid many if(present(...))s)
 
       integer :: varStartIndex, ierrOptional
       character(len=ug_nameLen) :: meshname, varname
 
-      optionalsRequired = .true.     ! .true. to make the behaviour of the method backwards compatible.
+      optionalsRequired = .true. ! .true. to make the behaviour of the method backwards compatible.
       if (present(requireOptionals)) then
          optionalsRequired = requireOptionals
       end if
@@ -5048,9 +5056,9 @@ contains
    function ug_clone_network_definition(ncidin, ncidout, netidsin, netidsout) result(ierr)
       use netcdf_utils, only: ncu_copy_atts
 
-      integer, intent(in) :: ncidin    !< NetCDF id of input dataset
-      integer, intent(in) :: ncidout   !< NetCDF id of output dataset
-      type(t_ug_network), intent(in) :: netidsin  !< network struct with dim+varids in input dataset
+      integer, intent(in) :: ncidin !< NetCDF id of input dataset
+      integer, intent(in) :: ncidout !< NetCDF id of output dataset
+      type(t_ug_network), intent(in) :: netidsin !< network struct with dim+varids in input dataset
       type(t_ug_network), intent(inout) :: netidsout !< network struct with newly created dim+varids in output dataset
 
       integer :: i, ierr, xtype, ndims, nAtts, dimvalue
@@ -5130,9 +5138,9 @@ contains
 !!
 !! The cloning of the dim+var dimensions must have been done before, using ug_clone_network_definition().
    function ug_clone_network_data(ncidin, ncidout, netidsin, netidsout) result(ierr)
-      integer, intent(in) :: ncidin    !< NetCDF id of input dataset
-      integer, intent(in) :: ncidout   !< NetCDF id of output dataset
-      type(t_ug_network), intent(in) :: netidsin  !< network struct with dim+varids in input dataset
+      integer, intent(in) :: ncidin !< NetCDF id of input dataset
+      integer, intent(in) :: ncidout !< NetCDF id of output dataset
+      type(t_ug_network), intent(in) :: netidsin !< network struct with dim+varids in input dataset
       type(t_ug_network), intent(in) :: netidsout !< network struct with already existing dim+varids in output dataset
 
       integer :: i, dim, ierr, xtype, ndims, nAtts
@@ -5194,13 +5202,13 @@ contains
    function ug_clone_contact_definition(ncidin, ncidout, numl1d2d, nvars, varidmap, cidsin, cidsout, id_outvars) result(ierr)
       use netcdf_utils, only: ncu_copy_atts
 
-      integer, intent(in) :: ncidin     !< NetCDF id of input dataset
-      integer, intent(in) :: ncidout    !< NetCDF id of output dataset
-      integer, intent(in) :: numl1d2d   !< Number of 1d2d links
-      integer, intent(in) :: nvars      !< Number of variables
-      integer, dimension(nvars), intent(in) :: varidmap   !< Mapping array of contact variable ids to all variables
-      type(t_ug_contacts), intent(in) :: cidsin     !< Contact struct with dim+varids in input dataset
-      type(t_ug_contacts), intent(inout) :: cidsout    !< Contact struct with newly created dim+varids in output dataset
+      integer, intent(in) :: ncidin !< NetCDF id of input dataset
+      integer, intent(in) :: ncidout !< NetCDF id of output dataset
+      integer, intent(in) :: numl1d2d !< Number of 1d2d links
+      integer, intent(in) :: nvars !< Number of variables
+      integer, dimension(nvars), intent(in) :: varidmap !< Mapping array of contact variable ids to all variables
+      type(t_ug_contacts), intent(in) :: cidsin !< Contact struct with dim+varids in input dataset
+      type(t_ug_contacts), intent(inout) :: cidsout !< Contact struct with newly created dim+varids in output dataset
       integer, dimension(nvars), intent(out) :: id_outvars !< Ids of contact variables in the output file
 
       integer :: i, j, ierr, xtype, ndims, nAtts, dimvalue, id, idout
@@ -5418,7 +5426,7 @@ contains
 
    function ug_ionc_get_number_of_networks(ug_file, nnumNetworks) result(ierr)
 
-      type(t_ug_file), intent(in) :: ug_file      !< ID of already opened data set.
+      type(t_ug_file), intent(in) :: ug_file !< ID of already opened data set.
       integer, intent(inout) :: nnumNetworks
       integer :: ierr
 
@@ -5434,7 +5442,7 @@ contains
 
    function ug_get_number_of_meshes(ncid, ug_file, meshType, numMeshes) result(ierr)
 
-      type(t_ug_file), intent(in) :: ug_file      !< ID of already opened data set.
+      type(t_ug_file), intent(in) :: ug_file !< ID of already opened data set.
       integer, intent(in) :: ncid, meshType
       integer, intent(inout) :: numMeshes
       integer :: ierr, i, attval
@@ -5463,7 +5471,7 @@ contains
 
    function ug_get_network_ids(ug_file, networkids) result(ierr)
 
-      type(t_ug_file), intent(in) :: ug_file      !< ID of already opened data set.
+      type(t_ug_file), intent(in) :: ug_file !< ID of already opened data set.
       integer, intent(inout) :: networkids(:)
       integer :: ierr, i, nnumNetworks
 
@@ -5483,7 +5491,7 @@ contains
 
    function ug_get_mesh_ids(ncid, ug_file, meshType, meshids) result(ierr)
 
-      type(t_ug_file), intent(in) :: ug_file      !< ID of already opened data set.
+      type(t_ug_file), intent(in) :: ug_file !< ID of already opened data set.
       integer, intent(in) :: ncid, meshType
       integer, intent(inout) :: meshids(:)
       integer :: ierr, numMeshes, i, ind, attval
@@ -5530,8 +5538,8 @@ contains
 
    function ug_get_1d_network_id(ncid, ug_file, networkid) result(ierr)
 
-      integer, intent(in) :: ncid                                      !< ID of already opened data set.
-      integer :: i, ierr, attval         !< Result status (UG_NOERR if successful).
+      integer, intent(in) :: ncid !< ID of already opened data set.
+      integer :: i, ierr, attval !< Result status (UG_NOERR if successful).
       integer, intent(inout) :: networkid
       type(t_ug_file), intent(in) :: ug_file
 
@@ -5562,7 +5570,7 @@ contains
    function ug_get_mesh_id(ncid, ug_file, meshid, dim) result(ierr)
 
       integer, intent(in) :: ncid, dim
-      integer :: i, ierr, attval    !< Result status (UG_NOERR if successful).
+      integer :: i, ierr, attval !< Result status (UG_NOERR if successful).
       integer, intent(inout) :: meshid
       type(t_ug_file), intent(in) :: ug_file
       logical :: isMeshTopo
@@ -5600,8 +5608,8 @@ contains
       integer, intent(in) :: netid
       integer, intent(inout) :: nmeshids
       type(t_ug_file), intent(in) :: ug_file
-      character(len=nf90_max_name) :: networkname   !< the network name
-      character(len=nf90_max_name) :: networkmeshname      !< the mesh name
+      character(len=nf90_max_name) :: networkname !< the network name
+      character(len=nf90_max_name) :: networkmeshname !< the mesh name
       integer :: i, ierr
 
       ierr = UG_NOERR
@@ -5623,8 +5631,8 @@ contains
       integer, intent(in) :: netid
       integer, intent(inout) :: meshids(:)
       type(t_ug_file), intent(in) :: ug_file
-      character(len=nf90_max_name) :: networkname   !< the network name
-      character(len=nf90_max_name) :: networkmeshname      !< the mesh name
+      character(len=nf90_max_name) :: networkname !< the network name
+      character(len=nf90_max_name) :: networkmeshname !< the mesh name
       integer :: i, ierr
 
       ierr = UG_NOERR
@@ -5645,8 +5653,8 @@ contains
       type(t_ug_mesh), intent(in) :: meshids
       type(t_ug_file), intent(in) :: ug_file
       integer, intent(inout) :: networkid
-      character(len=nf90_max_name) :: networkname          !< the network name
-      character(len=nf90_max_name) :: networkmeshname      !< the network name associated with the mesh
+      character(len=nf90_max_name) :: networkname !< the network name
+      character(len=nf90_max_name) :: networkmeshname !< the network name associated with the mesh
       integer :: i, ierr
 
       ierr = ug_get_mesh_network_name(ncid, meshids, networkmeshname)
@@ -5671,11 +5679,11 @@ contains
 !< Gets contact id from the name of a mesh contact.
    function ug_get_contact_id_from_meshcontactname(ncid, ug_file, meshContactName, contactid) result(ierr)
 
-      integer, intent(in) :: ncid                 !< NetCDF dataset id, should be already open.
-      type(t_ug_file), intent(in) :: ug_file              !< Ug_file struct
-      character(len=*), intent(in) :: meshContactName      !< the contact name associated with the mesh
-      integer, intent(inout) :: contactid            !< the requrestd contact id
-      character(len=nf90_max_name) :: contactname          !< the contact name
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_file), intent(in) :: ug_file !< Ug_file struct
+      character(len=*), intent(in) :: meshContactName !< the contact name associated with the mesh
+      integer, intent(inout) :: contactid !< the requrestd contact id
+      character(len=nf90_max_name) :: contactname !< the contact name
 
       integer :: i, ierr
 
@@ -5696,10 +5704,10 @@ contains
 
 !> Gets the name of the contact topology variable in an open dataset.
    function ug_get_contact_name(ncid, contactids, meshContactName) result(ierr)
-      integer, intent(in) :: ncid            !< NetCDF dataset id, should be already open.
-      type(t_ug_contacts), intent(in) :: contactids      !< Set of NetCDF-ids for all contact ids.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_contacts), intent(in) :: contactids !< Set of NetCDF-ids for all contact ids.
       character(len=*), intent(out) :: meshContactName !< The name of the mesh topology variable.
-      integer :: ierr            !< Result status, ug_noerr if successful.
+      integer :: ierr !< Result status, ug_noerr if successful.
 
       meshContactName = ''
       ierr = nf90_inquire_variable(ncid, contactids%varids(cid_contacttopo), name=meshContactName)
@@ -5716,17 +5724,17 @@ contains
 !! If jaids > 0, then also returns the ids of these variables.
    function ug_get_var_total_count(ncid, mids, cids, jaid, nvars, id_vars) result(ierr)
       use string_module
-      integer, intent(in) :: ncid       !< NetCDF dataset id, should be already open.
-      type(t_ug_mesh), optional, intent(in) :: mids       !< Set of NetCDF-ids for all mesh geometry arrays.
-      type(t_ug_contacts), optional, intent(in) :: cids       !< Set of NetCDF-ids for all contact geometry arrays.
-      integer, intent(in) :: jaid       !< Returns variable ids (1) or not (0)
-      integer, intent(out) :: nvars      !< Number of variables defined on the requested mesh.
+      integer, intent(in) :: ncid !< NetCDF dataset id, should be already open.
+      type(t_ug_mesh), optional, intent(in) :: mids !< Set of NetCDF-ids for all mesh geometry arrays.
+      type(t_ug_contacts), optional, intent(in) :: cids !< Set of NetCDF-ids for all contact geometry arrays.
+      integer, intent(in) :: jaid !< Returns variable ids (1) or not (0)
+      integer, intent(out) :: nvars !< Number of variables defined on the requested mesh.
       integer, optional, intent(out) :: id_vars(:) !< Array to store the variable ids in.
-      integer :: ierr       !< Result status, ug_noerr if successful.
+      integer :: ierr !< Result status, ug_noerr if successful.
 
       integer :: numVar
       character(len=nf90_max_name) :: str, meshname
-      integer :: varid         !< NetCDF variable ID (1-based).
+      integer :: varid !< NetCDF variable ID (1-based).
       str = ''
       meshname = ''
       if (present(mids)) then ! A 1D or 2D mesh

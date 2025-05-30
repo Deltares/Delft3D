@@ -48,7 +48,7 @@ contains
       use m_flowtimes
       use m_missing
       use m_sobekdfm
-      use m_wind, only: japatm, pavbnd, patm
+      use m_wind, only: air_pressure_available, pavbnd, air_pressure
       use m_fm_icecover, only: ice_apply_pressure, ice_p
 
       implicit none
@@ -91,8 +91,8 @@ contains
             end if
          end if
 
-         if (japatm > 0 .and. PavBnd > 0) then
-            zb = zb - (patm(kb) - PavBnd) / (ag * rhomean)
+         if (air_pressure_available > 0 .and. PavBnd > 0) then
+            zb = zb - (air_pressure(kb) - PavBnd) / (ag * rhomean)
          end if
 
          if (ice_apply_pressure) then

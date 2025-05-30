@@ -45,7 +45,7 @@ contains
       use m_flowgeom, only: ndx
       use m_flow, only: tem1, sa1, kmxn
       use m_transport, only: itemp, isalt
-      use m_nudge, only: nudge_tem, nudge_sal
+      use m_nudge, only: nudge_temperature, nudge_salinity
       use m_missing, only: DMISS
       use m_get_kbot_ktop, only: getkbotktop
 
@@ -54,12 +54,12 @@ contains
       do kk = 1, Ndx
          call getkbotktop(kk, kb, kt)
          do k = kb, kt
-            if (ITEMP > 0 .and. nudge_tem(k) /= DMISS) then
-               tem1(k) = nudge_tem(k)
+            if (ITEMP > 0 .and. nudge_temperature(k) /= DMISS) then
+               tem1(k) = nudge_temperature(k)
             end if
 
-            if (ISALT > 0 .and. nudge_sal(k) /= DMISS) then
-               sa1(k) = nudge_sal(k)
+            if (ISALT > 0 .and. nudge_salinity(k) /= DMISS) then
+               sa1(k) = nudge_salinity(k)
             end if
          end do
 

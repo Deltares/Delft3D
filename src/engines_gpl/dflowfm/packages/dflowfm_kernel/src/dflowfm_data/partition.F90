@@ -589,7 +589,6 @@ contains
       use m_alloc
       use gridoperations
       use m_remove_masked_netcells, only: remove_masked_netcells
-
       implicit none
 
       integer, intent(in) :: idmn !< domain number
@@ -598,7 +597,8 @@ contains
       integer, intent(in) :: jacells !< generate partition domain and cell numbers
       integer, intent(out) :: ierror !< error code
 
-      integer :: ic1, ic2, k1, k2, L
+      integer :: ic1, ic2, L
+      logical :: domain_needs_cell_1, domain_needs_cell_2
       integer :: i
       integer, dimension(:, :), allocatable :: lne_org
       integer :: nLink2Dhang ! number of hanging 2D links found
@@ -611,55 +611,27 @@ contains
       call partition_set_ghostlevels(idmn, numlay_cell, numlay_node, 0, ierror)
       if (ierror /= 0) goto 1234
 
-!     delete other part of network, by using the node mask (network_data variable kc)
-!      if ( allocated(kc) ) deallocate(kc)
-!      allocate(kc(numk))
-!      kc = 0
-
 !     make link mask
       Lc = 0
       nLink2Dhang = 0
       do L = 1, numL
-!        check for hanging 2D links (not supported)
-         if (kn(3, L) == 2 .and. lnn(L) == 0) then
-!            call qnerror('Hanging 2D links not supported', ' ', ' ')
-!            call teklink(L,NCOLWARN1)
-!            ierror=1
-!            goto 1234
-
-            Lc(L) = 0 ! deactive link
+         if ((kn(3, L) == LINK_2D .and. lnn(L) == 0)) then
+            ! check for hanging 2D
+            Lc(L) = 0 ! set mask to inactive
             nLink2Dhang = nLink2dhang + 1
             cycle
          end if
-
          ic1 = abs(lne(1, L))
          ic2 = abs(lne(min(lnn(L), 2), L))
-         if (kn(3, L) == 2) then ! 2D links
-            if (idomain(ic1) == idmn .or. ighostlev(ic1) /= 0 .or. &
-                idomain(ic2) == idmn .or. ighostlev(ic2) /= 0) then
-               !kc(kn(1,L)) = 1
-               !kc(kn(2,L)) = 1
-               Lc(L) = 1
-            end if
-         else if (kn(3, L) /= 0) then ! kn(3,L)==1 .or. kn(3,L)==3 .or. kn(3,L)==4 ) then ! 1D link
-!           need to check connected netcells, since the netnode may not be associated with a 1D netcell (1D-2D coupling)
-            k1 = kn(1, L)
-            k2 = kn(2, L)
-            if ((idomain(ic1) == idmn .or. ighostlev(ic1) /= 0) .and. &
-                (idomain(ic2) == idmn .or. ighostlev(ic2) /= 0)) then ! active 1D cell
-               !kc(k1) = 1
-               !kc(k2) = 1
-               Lc(L) = 1
-            end if
+         domain_needs_cell_1 = idomain(ic1) == idmn .or. ighostlev(ic1) /= 0
+         domain_needs_cell_2 = idomain(ic2) == idmn .or. ighostlev(ic2) /= 0
+
+         if (kn(3, L) == LINK_2D .and. (domain_needs_cell_1 .or. domain_needs_cell_2)) then ! 2D links
+            Lc(L) = 1
+         else if (kn(3, L) /= 0 .and. (domain_needs_cell_1 .and. domain_needs_cell_2)) then ! 1D link
+            Lc(L) = 1
          end if
       end do
-
-!!     deactivate nodes
-!      do k=1,numk
-!         if ( kc(k).ne.1 ) then
-!            call delnode(k)
-!         end if
-!      end do
 
 !     deactive links
       do L = 1, numL
@@ -672,7 +644,6 @@ contains
 
       if (jacells == 1) then
          Nglobal_s = nump1d2d
-
 !        save lne
          allocate (lne_org(2, numL))
          lne_org = 0
@@ -750,7 +721,7 @@ contains
    !! NOTE: mesh1dNodeIds is not partitioned.
    subroutine partition_make_1dugrid_in_domain(idmn, numl1d, L2Lorg, ierror)
       use m_save_ugrid_state, only: meshgeom1d, nodeids, nodelongnames
-      use network_data, only: netcell, netcell0, nump, nump1d2d
+      use network_data, only: nump0, nump, nump1d2d
       implicit none
       integer, intent(in) :: idmn !< domain number
       integer, intent(in) :: numl1d !< number of 1D links
@@ -760,7 +731,7 @@ contains
       integer, allocatable :: edge_nodes(:, :)
       integer, allocatable :: iglobal_edge(:) !< Original global number of all current 1D edges (that is: excluding 1d2d)
       integer, allocatable :: kperm(:) !< Permutation table for net nodes (from old to new numbering)
-      integer :: i, ii, ic_p, ic_g, i_p, i_g, n1dedges, numk1d
+      integer :: i, ii, ic_p, ic_g, i_p, i_g, n1dedges, numk1d, nump1d
       character(len=ug_idsLen), allocatable :: nodeids_p(:)
       character(len=ug_idsLongNamesLen), allocatable :: nodelongnames_p(:)
       real(kind=hp), pointer :: nodeoffsets_p(:)
@@ -791,18 +762,20 @@ contains
       call get_1d_edges_in_domain(numl1d, L2Lorg, numk1d, n1dedges, edge_nodes, iglobal_edge, kperm, ierror)
       if (ierror /= 0) return
 
-      ! partition node arrays
-      allocate (nbranchids_p(numk1d), nodeids_p(numk1d), nodeoffsets_p(numk1d), nodelongnames_p(numk1d), stat=ierror)
+      nump1d = nump1d2d - nump
+      ! partition node arrays, equal to number of 1d netcells (not number of 1d netnodes)
+      allocate (nbranchids_p(nump1d), nodeids_p(nump1d), nodeoffsets_p(nump1d), nodelongnames_p(nump1d), stat=ierror)
       if (ierror /= 0) return
+
       ! 1D cells have already been sorted in original global order
       ! and 1D net should be written in original order (with other partitions removed, that is: in the current 1:numk1d order)
-      do ic_p = nump + 1, nump1d2d
+      do i_p = 1, nump1d
          ! UNST-6571: deliberately not using kperm here, under the assumption that in input 1D netnodes are already sorted by branch,
          !            and this loop should stay consistent with the one in unc_write_net_ugrid2().
          !            This subroutine only deals with edge-ordering and partition-to-global mapping (i.e., no netnode remapping).
-         i_p = netcell(ic_p)%nod(1) ! 1D netcell -> 1D net node
+         ic_p = nump + i_p
          ic_g = iglobal_s(ic_p)
-         i_g = netcell0(ic_g)%nod(1) ! netcell0 currently still contains backup of unpartitioned original full grid.
+         i_g = ic_g - nump0 ! mesh1d node number derived from netcell number.
          nodeids_p(i_p) = nodeids_g(i_g)
          nbranchids_p(i_p) = nodebranchidx_g(i_g)
          nodeoffsets_p(i_p) = nodeoffsets_g(i_g)
@@ -833,7 +806,8 @@ contains
    !! The net link and net node numbering is returned in a "1D only" numbering, intended for UGRID mesh1d output.
    !! A 1D edge is a true 1D netlink, i.e., not a 1D2D link.
    subroutine get_1d_edges_in_domain(numl1d, L2Lorg, numk1d, n1dedges, edge_nodes, Lorg, kperm, ierror)
-      use network_data, only: kn, LNE
+      use network_data, only: kn, LNE, lnn, LINK_1D, LINK_1D_MAINBRANCH
+      use m_inquire_link_type, only: is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges
       implicit none
       integer, intent(in) :: numl1d !< number of 1D(+1D2D) links in current partition mesh
       integer, intent(in) :: L2Lorg(:) !< Mapping table current (new) to original global net link numbers
@@ -850,13 +824,7 @@ contains
       allocate (kperm(size), stat=ierror)
       if (ierror /= 0) return
       kperm(:) = 0
-
-      n1dedges = 0
-      do l = 1, numl1d
-         if (kn(3, l) == 1 .or. kn(3, l) == 6) then
-            n1dedges = n1dedges + 1
-         end if
-      end do
+      n1dedges = count_1d_edges(numl1d)
       allocate (edge_nodes(2, n1dedges), stat=ierror)
       if (ierror /= 0) return
       allocate (Lorg(n1dedges), stat=ierror)
@@ -865,7 +833,7 @@ contains
       n1dedges = 0
       numk1d = 0
       do l = 1, numl1d
-         if (kn(3, l) == 1 .or. kn(3, l) == 6) then
+         if (is_valid_1d_netlink(l)) then
             n1dedges = n1dedges + 1
 
             k1 = kn(1, l)
@@ -882,9 +850,8 @@ contains
             edge_nodes(1, n1dedges) = kperm(kn(1, l))
             edge_nodes(2, n1dedges) = kperm(kn(2, l))
             Lorg(n1dedges) = L2Lorg(L) ! Note: this assumes that in original net, all 1D net links come first in the range 1:numl1d, and the 1D2D links are all together at the end of that numl1d range.
-         else if (kn(3, l) >= 3 .and. kn(3, l) <= 7) then
-            ! We may encounter an orphan 1D2D link, where the 1D side has no own true 1D links.
-            ! In that case, only increment the numk1d counter, but don't add any 1d edge.
+
+         else if (is_valid_1d2d_netlink(l)) then
             if (lne(1, L) < 0) then ! #1 is the 1D side, as set in find1dcells()
                k1 = kn(1, L)
             else if (lne(2, L) < 0) then ! #2 is the 1D side, as set in find1dcells()
@@ -3405,10 +3372,13 @@ contains
 !>   reduce: take global cell with lowest dist
    subroutine reduce_kobs(N, kobs, xobs, yobs, jaoutside)
       use m_flowgeom, only: xz, yz, nd
-      use messagehandling, only: LEVEL_ERROR, mess
+      use messagehandling, only: LEVEL_ERROR, LEVEL_WARN, mess
       use geometry_module, only: pinpok, dbdistance
       use m_missing, only: jins, dmiss
       use m_sferic, only: jsferic, jasfer3D
+      use m_observations_data, only: namobs
+      use precision_basics, only: comparereal
+
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -3466,29 +3436,6 @@ contains
          end if
       end do
 
-!      BEGIN DEBUG
-!       call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       do idmn=0,ndomains-1
-!          if ( idmn.eq.my_rank) then
-!             open(newunit=lunfil,file='deleteme.txt', access='append')
-!
-!             if ( my_rank.eq.0 ) then
-!                write(lunfil,"('reduce_kobs')")
-!                write(lunfil,"('before reduce')")
-!             end if
-!
-!             write(lunfil,"('my_rank=',I0)") idmn
-!             do i=1,N
-!                write(lunfil,"(I4, I8, E17.4)") i, kobs(i), dist(i)
-!             end do
-!
-!             close(lunfil)
-!          end if
-!
-!          call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       end do
-!      END DEBUG
-
 !     globally reduce
       call mpi_allgather(dist, N, MPI_DOUBLE_PRECISION, dist_all, N, MPI_DOUBLE_PRECISION, DFM_COMM_DFMWORLD, ierror)
 
@@ -3524,38 +3471,17 @@ contains
       end do
       call mpi_allreduce(dist, dist_all, N, MPI_DOUBLE_PRECISION, MPI_SUM, DFM_COMM_DFMWORLD, ierror) ! re-use (part of) dist_all
       do i = 1, N
-         if (dist_all(i, 0) > 1d0) then
+         if (comparereal(dist_all(i, 0), 1d0) == 1) then
             call mess(LEVEL_ERROR, 'reduce_kobs: non-unique observation station(s)')
+         end if
+         if (comparereal(dist_all(i, 0), 0d0) == 0) then
+            call mess(LEVEL_WARN, 'reduce_kobs: observation station '//trim(namobs(i))//' was not snapped to a valid flownode on any partition.')
          end if
       end do
 
-!      BEGIN DEBUG
-!       call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       do idmn=0,ndomains-1
-!          if ( idmn.eq.my_rank) then
-!             open(newunit=lunfil,file='deleteme.txt', access='append')
-!
-!             if ( my_rank.eq.0 ) then
-!                write(lunfil,"('after reduce')")
-!             end if
-!
-!             write(lunfil,"('my_rank=',I0)") idmn
-!             do i=1,N
-!                write(lunfil,"(I4, I8, 2E17.4)") i, kobs(i), dist(i), dist_all(i)
-!             end do
-!
-!             close(lunfil)
-!          end if
-!
-!          call MPI_barrier(DFM_COMM_DFMWORLD,ierror)
-!       end do
-!      END DEBUG
-
       if (allocated(dist)) deallocate (dist)
       if (allocated(dist_all)) deallocate (dist_all)
-
 #endif
-      return
    end subroutine reduce_kobs
 
 !> reduce outputted values at observation stations
@@ -4425,7 +4351,7 @@ contains
    !> optional secondFilter is defined on a local array [1,size(secondFilter)]
    !> works also across multiple MPI ranks
    function get_average_quantity_from_links(startLinks, endLinks, weights, indsWeight, quantity, indsQuantity, results, quantityType, &
-                                        firstFilter, firstFilterValue, secondFilter, secondFilterValue) result(ierr)
+                                            firstFilter, firstFilterValue, secondFilter, secondFilterValue) result(ierr)
 
       use mpi, only: MPI_DOUBLE_PRECISION, MPI_SUM
       use m_timer, only: jatimer, starttimer, stoptimer, IMPIREDUCE
@@ -4568,7 +4494,6 @@ contains
       if (netstat == NETSTAT_CELLS_DIRTY) then
          call findcells(0)
          call find1Dcells()
-
          call delete_dry_points_and_areas()
       end if
 
@@ -5960,9 +5885,9 @@ contains
 #endif
       logical, intent(in) :: val !< partition specific value
       logical, intent(out) :: allval !< reduced value across all partitions
-      
+
       integer :: ierror !< error
-      
+
       ierror = 0
       allval = val
       if (jampi) then

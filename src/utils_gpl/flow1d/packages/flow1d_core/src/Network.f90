@@ -202,9 +202,12 @@ contains
       double precision                   :: xEnd
       integer                            :: i, j
       integer                            :: timerHandle
+      integer                            :: num_fatal_errors
       logical                            :: interpolDone
       logical                            :: initError = .false.
 
+      num_fatal_errors = 0
+      
       call realloc(network%adm, linall_1d, linall_all, linall_1d + network%brs%Count)
 
       timerHandle = 0
@@ -237,15 +240,12 @@ contains
       call timstop(timerhandle)
       
       if (network%crs%Count > 0) then
-
          timerHandle = 0
          call timstrt('Apply branch orders', timerHandle)
-         
          call useBranchOrders(network%crs, network%brs)
          call reIndexCrossSections(network%sts, network%crs) ! Update re-sorted cross sections for culverts and bridges
-
          call timstop(timerhandle)
-         
+
          timerHandle = 0
          call timstrt('Sort cross sections', timerHandle)
          allocate(crossOrder(network%crs%Count))
@@ -260,23 +260,17 @@ contains
          call timstop(timerhandle)
          
          ! Cross-Section indices for links
-         
          timerHandle = 0
          call timstrt('Calculate weighing table for cross section interpolation', timerHandle)
          do ibran = 1, network%brs%Count
-            
             pbran   => network%brs%branch(ibran)
-            
             if (ibran .eq. 1) then
                icrsBeg = 1
             else
                icrsBeg =lastAtBran(ibran - 1) + 1
             endif
             icrsEnd = lastAtBran(ibran)
-            
-            
             if (icrsbeg > icrsend) then
-               
                call setmessage(LEVEL_WARN, 'No cross sections found on branch '//trim(pbran%id)//'. Using default rectangular cross section')
                do i = 1, pbran%uPointsCount
                   ilnk = pbran%lin(i)
@@ -285,13 +279,11 @@ contains
                   adm%line2cross(ilnk, :)%f  = 1.0d0
                   adm%line2cross(ilnk, :)%distance  = 0d0
                enddo
-               
                cycle
             endif
             
             icrs1 = icrsBeg
             icrs2 = icrsBeg
-            
             xBeg = network%crs%cross(crossOrder(icrsBeg))%chainage
             xEnd = network%crs%cross(crossOrder(icrsEnd))%chainage
             
@@ -311,50 +303,40 @@ contains
                         chainage = pbran%gridPointschainages(m+1 + (is-1))
                      endif
                      ilnk = pbran%lin(m)
-                  
                      if (m > L1 .and. j==1) then
                         ! Just copy data from the previous value
                         adm%line2cross(ilnk, j)%c1 = adm%line2cross(pbran%lin(m-1), 3)%c1
                         adm%line2cross(ilnk, j)%c2 = adm%line2cross(pbran%lin(m-1), 3)%c2
                         adm%line2cross(ilnk, j)%f  = adm%line2cross(pbran%lin(m-1), 3)%f 
                         adm%line2cross(ilnk, j)%distance  = adm%line2cross(pbran%lin(m-1), j)%distance
-
                      elseif (icrsBeg == icrsEnd) then
-                     
                         ! Just one Cross-Section
                         adm%line2cross(ilnk, j)%c1 = crossOrder(icrsBeg)
                         adm%line2cross(ilnk, j)%c2 = crossOrder(icrsBeg)
                         adm%line2cross(ilnk, j)%f  = 1.0d0
                         adm%line2cross(ilnk, j)%distance  = 0d0
                         interpolDone            = .true.
-                     
                      elseif (chainage <= xBeg) then
-                        
                         ! Before First Cross-Section
                         adm%line2cross(ilnk, j)%c1 = crossOrder(icrsBeg)
                         adm%line2cross(ilnk, j)%c2 = crossOrder(icrsBeg)
                         adm%line2cross(ilnk, j)%f  = 1.0d0
                         adm%line2cross(ilnk, j)%distance  = 0d0
                         interpolDone            = .true.
-                     
                      elseif (chainage >= xEnd) then
-                     
                         ! After Last Cross-Section
                         adm%line2cross(ilnk, j)%c1 = crossOrder(icrsEnd)
                         adm%line2cross(ilnk, j)%c2 = crossOrder(icrsEnd)
                         adm%line2cross(ilnk, j)%f  = 1.0d0
                         adm%line2cross(ilnk, j)%distance  = 0d0
                         interpolDone            = .true.
-                     
                      else if (ilnk <= size(adm%line2cross)) then
-                     
                         ! Skip links not in this partition
                         chainage1 = network%crs%cross(crossOrder(icrs1))%chainage
                         chainage2 = network%crs%cross(crossOrder(icrs2))%chainage
                         adm%line2cross(ilnk, 2)%distance  = chainage2 - chainage1
                      
                         if (.not. ((chainage1 <= chainage) .and. (chainage2 >= chainage))) then
-                        
                            do i = icrs1, icrsEnd
                               if (network%crs%cross(crossOrder(i))%chainage >= chainage) then
                                  chainage2 = network%crs%cross(crossOrder(i))%chainage
@@ -362,7 +344,6 @@ contains
                                  exit
                               endif
                            enddo
-                        
                            do i = icrsEnd, icrsBeg, -1
                               if (network%crs%cross(crossOrder(i))%chainage <= chainage) then
                                  chainage1 = network%crs%cross(crossOrder(i))%chainage
@@ -370,18 +351,12 @@ contains
                                  exit
                               endif
                            enddo
-                        
                         endif
-                        
                         interpolDone = .false.
-                        
                      endif
-                        
                         if (ilnk > 0 .and. ilnk <= size(adm%line2cross)) then
                            ! Skip links not in this partition
-                        
                            if (ibran == network%crs%cross(crossOrder(icrs2))%branchid) then
-                           
                               if (.not. interpolDone) then
                                  if (icrs1 == icrs2) then 
                                     adm%line2cross(ilnk, j)%c1 = crossOrder(icrs1)
@@ -397,13 +372,11 @@ contains
                                     adm%line2cross(ilnk, j)%f = f
                               endif 
                            endif
-                     
                         else
                            adm%line2cross(ilnk, j)%c1 = crossOrder(icrs1)
                            adm%line2cross(ilnk, j)%c2 = crossOrder(icrs1)
                            adm%line2cross(ilnk, j)%f  = 1.0d0
                         endif
-                     
                      endif
                   enddo
                enddo
@@ -411,32 +384,30 @@ contains
          enddo
          call timstop(timerhandle)
          
-         call resetMaxerrorLevel()
          do L = 1, linall_1d
             do i = 1,3
                if (adm%line2cross(L,i)%C1 > 0 .and. adm%line2cross(L,i)%C2 > 0) then
                   c1 => network%crs%cross(adm%line2cross(L,i)%C1)
                   c2 => network%crs%cross(adm%line2cross(L,i)%C2)
                   if (c1%crosstype /= c2%crosstype) then
-                     call SetMessage(LEVEL_WARN, 'Incorrect CrossSection input for CrossSections '''//trim(c1%csid)//''', '''//trim(c2%csid)//''' on branch '''//trim(pbran%id)// &
+                     call SetMessage(LEVEL_ERROR, 'Incorrect CrossSection input for CrossSections '''//trim(c1%csid)//''', '''//trim(c2%csid)//''' on branch '''//trim(pbran%id)// &
                         '''. CrossSections must be of the same type!')
+                     num_fatal_errors = num_fatal_errors + 1
                   endif
                   if (c1%closed .neqv. c2%closed) then
-                     call SetMessage(LEVEL_WARN, 'Incorrect CrossSection input for CrossSections '''//trim(c1%csid)//''', '''//trim(c2%csid)//''' on branch '''//trim(pbran%id)// &
+                     call SetMessage(LEVEL_ERROR, 'Incorrect CrossSection input for CrossSections '''//trim(c1%csid)//''', '''//trim(c2%csid)//''' on branch '''//trim(pbran%id)// &
                         '''. CrossSections must have same closed state!')
+                     num_fatal_errors = num_fatal_errors + 1
                   endif
                endif
             enddo
          enddo
-         if (getMaxErrorLevel() > 0) then
+         if (num_fatal_errors > 0) then
             call SetMessage(LEVEL_FATAL, 'Incompatible CrossSections have been detected, see previous messages.')
          endif
-
          deallocate(crossOrder)
          deallocate(lastAtBran)
-         
       endif
-
       if (initError) then 
          call setmessage(LEVEL_FATAL, 'Error initialising network')
       endif 

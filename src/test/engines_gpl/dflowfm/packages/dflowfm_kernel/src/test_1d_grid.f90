@@ -39,13 +39,13 @@ subroutine test_start_end_nodes_of_branches_A
    integer, parameter :: nBranches =  3
    integer, parameter :: nNodes    = 13
    integer :: ierr
-   integer :: nodebranchidx(nNodes)
+   integer :: test_nodebranchidx(nNodes)
    integer :: gpFirst(nBranches), gpLast(nBranches)
 
-   nodebranchidx(1:5) = 1
-   nodebranchidx(6:9) = 2
-   nodebranchidx(10:13) = 3
-   ierr = ggeo_get_start_end_nodes_of_branches(nodebranchidx, gpFirst, gpLast)
+   test_nodebranchidx(1:5) = 1
+   test_nodebranchidx(6:9) = 2
+   test_nodebranchidx(10:13) = 3
+   ierr = ggeo_get_start_end_nodes_of_branches(test_nodebranchidx, gpFirst, gpLast)
    call assert_equal(gpFirst, (/1, 6, 10/), 'check gpFirst')
    call assert_equal(gpLast, (/5, 9, 13/), 'check gpLast')
 
@@ -58,13 +58,13 @@ subroutine test_start_end_nodes_of_branches_B
    integer, parameter :: nBranches =  3
    integer, parameter :: nNodes    = 13
    integer :: ierr
-   integer :: nodebranchidx(nNodes)
+   integer :: test_nodebranchidx(nNodes)
    integer :: gpFirst(nBranches), gpLast(nBranches)
 
-   nodebranchidx(1:5) = 1
-   nodebranchidx(6:9) = 3
-   nodebranchidx(10:13) = 2
-   ierr = ggeo_get_start_end_nodes_of_branches(nodebranchidx, gpFirst, gpLast)
+   test_nodebranchidx(1:5) = 1
+   test_nodebranchidx(6:9) = 3
+   test_nodebranchidx(10:13) = 2
+   ierr = ggeo_get_start_end_nodes_of_branches(test_nodebranchidx, gpFirst, gpLast)
    call assert_equal(gpFirst, (/1, 10, 6/), 'check gpFirst')
    call assert_equal(gpLast, (/5, 13, 9/), 'check gpLast')
 

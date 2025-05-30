@@ -69,7 +69,7 @@ contains
       end if
 
       ! SWAN
-      if ((jawave == 3 .or. jawave >= 6) .and. .not. flowWithoutWaves) then
+      if ((jawave == 3 .or. jawave == 7) .and. .not. flowWithoutWaves) then
          if (kmx == 0) then
             call tauwave() ! 3D, done in update_verticalprofiles
          end if

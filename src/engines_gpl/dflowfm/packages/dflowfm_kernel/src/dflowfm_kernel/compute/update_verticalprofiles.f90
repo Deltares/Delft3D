@@ -896,9 +896,9 @@ contains
    subroutine calculate_drhodz(zws, drhodz)
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowgeom, only: ndx
-      use m_physcoef, only: ag, rhomean, apply_thermobaricity, thermobaricity_in_brunt_vaisala_frequency
+      use m_physcoef, only: ag, rhomean, apply_thermobaricity
       use m_density, only: density_at_cell_given_pressure
-      use m_turbulence, only: potential_density
+      use m_turbulence, only: rho
       use precision, only: dp
 
       real(kind=dp), dimension(:), intent(in) :: zws !< z levels  (m) of interfaces (w-points) at cell centres (s-points)
@@ -909,7 +909,7 @@ contains
 
       drhodz(:) = 0.0_dp
 
-      if ((.not. apply_thermobaricity) .or. (.not. thermobaricity_in_brunt_vaisala_frequency)) then
+      if (.not. apply_thermobaricity) then
          !$OMP PARALLEL DO &
          !$OMP PRIVATE(cell_index_2d, cell_index_3d, k_bot, k_top, dz)
          do cell_index_2d = 1, ndx
@@ -917,7 +917,7 @@ contains
             do cell_index_3d = k_bot, k_top - 1
                dz = 0.5_dp * (zws(cell_index_3d + 1) - zws(cell_index_3d - 1)) ! Vertical distance between cell centers
                if (dz > 0.0_dp) then
-                  drhodz(cell_index_3d) = (potential_density(cell_index_3d + 1) - potential_density(cell_index_3d)) / dz
+                  drhodz(cell_index_3d) = (rho(cell_index_3d + 1) - rho(cell_index_3d)) / dz
                end if
             end do
          end do

@@ -99,8 +99,7 @@ module m_physcoef
 
    integer :: idensform !< 0 = Uniform density, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
    logical :: apply_thermobaricity !< Check if density is pressure dependent
-   logical :: thermobaricity_in_brunt_vaisala_frequency !< Apply thermobaricity in computing the Brunt-Vaisala frequency
-   logical :: thermobaricity_in_baroclinic_pressure_gradient !< Apply thermobaricity in computing the baroclinic pressure gradient
+   logical :: thermobaricity_in_pressure_gradient !< Apply thermobaricity in computing the baroclinic pressure gradient
    integer :: max_iterations_pressure_density = 1 !< max nr of density-pressure iterations
    integer :: rhointerfaces = 0 !< Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density
    integer :: Jabarocponbnd = 1 !< baroclini pressure on open boundaries yes/no
@@ -166,8 +165,7 @@ contains
       xlozmidov = 0.0_dp
       idensform = 2
       apply_thermobaricity = .false.
-      thermobaricity_in_brunt_vaisala_frequency = .true.
-      thermobaricity_in_baroclinic_pressure_gradient = .false.
+      thermobaricity_in_pressure_gradient = .false.
       limiterhordif = 2
       Stanton = 0.0013_dp
       Dalton = 0.0013_dp

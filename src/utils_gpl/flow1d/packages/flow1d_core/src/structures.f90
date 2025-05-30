@@ -41,7 +41,7 @@ module m_1d_structures
    use m_Universal_Weir
    use m_Bridge
    use m_hash_search
-   use m_dambreak, only: t_dambreak
+   use m_dambreak, only: t_dambreak_settings
    use iso_c_utils
 
    implicit none
@@ -147,7 +147,7 @@ module m_1d_structures
       type(t_uni_weir),pointer         :: uniweir => null()
       type(t_bridge),pointer           :: bridge => null()
       type(t_GeneralStructure),pointer :: generalst => null()
-      type(t_dambreak),pointer         :: dambreak => null()
+      type(t_dambreak_settings),pointer         :: dambreak => null()
    end type
 
    type, public :: t_structureSet

@@ -6,7 +6,7 @@
 
 #define MAJOR_STR "3"
 #define MINOR_STR "216"
-#define REVISION_STR "77"
+#define REVISION_STR "78"
 
 #define VERSION_FULL MAJOR_STR "." MINOR_STR "." REVISION_STR "-" BUILD_NR
 

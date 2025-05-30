@@ -1,6 +1,7 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import Delft3D.template.*
 import Delft3D.linux.*
@@ -51,6 +52,17 @@ object Publish : BuildType({
             snapshot(AbsoluteId("DIMR_To_NGHS")) {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
+            }
+        }
+        triggers {
+            finishBuildTrigger {
+                enabled = true
+                buildType = "DIMR_To_NGHS"
+                successfulOnly = true
+                branchFilter = """
+                    +:main
+                    +:release/*
+                """.trimIndent()
             }
         }
     }
@@ -131,23 +143,13 @@ object Publish : BuildType({
                 sed -i 's@Delft3D FM@D-HYDRO@' ci/teamcity/Delft3D/linux/docker/readme.txt
             """.trimIndent()
         }
-        script {
-            name = "Copy to teamcity/Testdata"
-            scriptContent = """
-                ZIP_FILE=/opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Docker/%brand%_%release_version%-%commit_id_short%.zip
-                pushd examples/dflowfm
-                    rm -f *.*
-                    mkdir examples
-                    shopt -s extglob
-                    mv -v !(examples) examples
-                    rm -vf examples/*/run.{sh,bat}
-                    zip -r ${'$'}{ZIP_FILE} examples
-                popd
-                pushd ci/teamcity/Delft3D/linux/docker
-                    zip -g ${'$'}{ZIP_FILE} readme.txt
-                popd
-
-                zip -g ${'$'}{ZIP_FILE} %brand%_*.tar
+        exec {
+            name = "Create Docker ZIP file in /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Docker/"
+            path = "ci/teamcity/Delft3D/scripts/makePublishDockerZip.sh"
+            arguments = """
+                --brand %brand%
+                --release-version %release_version%
+                --commit-id-short %commit_id_short%
             """.trimIndent()
         }
     }

@@ -1069,7 +1069,7 @@ contains
       use m_physcoef, only: ag, rhomean
       use m_flowgeom, only: ndxi
       use m_flow, only: s1
-      use m_wind, only: japatm, PavIni, patm
+      use m_wind, only: air_pressure_available, PavIni, air_pressure
 
       implicit none
 
@@ -1078,9 +1078,9 @@ contains
       integer :: cell
       real(kind=dp) :: ds
 
-      if (japatm > OFF .and. PavIni > ZERO_AMBIENT_PRESSURE) then
+      if (air_pressure_available > OFF .and. PavIni > ZERO_AMBIENT_PRESSURE) then
          do cell = 1, ndxi
-            ds = -(patm(cell) - PavIni) / (ag * rhomean)
+            ds = -(air_pressure(cell) - PavIni) / (ag * rhomean)
             s1(cell) = s1(cell) + ds
          end do
       end if
@@ -1586,7 +1586,7 @@ contains
             call set_saltem_nudge()
             if (jainiwithnudge == 2) then
                janudge = OFF
-               deallocate (nudge_tem, nudge_sal, nudge_rate, nudge_time)
+               deallocate (nudge_temperature, nudge_salinity, nudge_rate, nudge_time)
             end if
          end if
       end if

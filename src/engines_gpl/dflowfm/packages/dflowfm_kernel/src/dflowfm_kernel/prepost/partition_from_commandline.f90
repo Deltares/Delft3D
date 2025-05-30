@@ -85,15 +85,14 @@ contains
       end if
       netstat = NETSTAT_OK
 
-!  delete dry points and dry areas
       call delete_dry_points_and_areas()
-
+      
       if (nump1d2d < 1) return
 
       call cosphiunetcheck(1)
 
       if (md_Ndomains > 0) then ! use METIS
-         call partition_METIS_to_idomain(md_Ndomains, md_jacontiguous, md_pmethod, md_partseed)
+         call partition_METIS_to_idomain(idomain, md_Ndomains, md_jacontiguous, md_pmethod, md_partseed)
 !     generate partitioning polygons
          Ndomains = md_Ndomains
          if (japolygon == 1) then

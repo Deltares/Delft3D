@@ -270,6 +270,7 @@ module Unpaved
   Double precision   , pointer, save :: IrrigationMaxSupply(:)
   Double precision   , pointer, save :: IrrigationInitSupply(:)
   Double precision   , pointer, save :: IrrigationInitDuration(:)
+  Double precision   , pointer, save :: IrrigationWaitDuration(:)
   Double precision   , pointer, save :: IrrigationCriticalSMValue(:)
   Double precision   , pointer, save :: IrrigationCriticalGWValue(:)
   Double precision   , pointer, save :: IrrigationTargetSMValue(:)
@@ -279,6 +280,7 @@ module Unpaved
   Double precision   , pointer, save :: IrrigationDemand(:)
   Double precision   , pointer, save :: IrrigationSupply(:)
   Double precision   , pointer, save :: TimeSinceStartFirstIrrigation(:)
+  Double precision   , pointer, save :: TimeSinceEndPreviousIrrigation(:)
   Double precision   , pointer, save :: IrrigationSaltConcentration(:)
 
   Logical IrrigationSeason, IrrigationDailyPeriod
@@ -537,6 +539,7 @@ contains
     success = success .and. DH_allocinit (NOVH, IrrigationMaxSupply , 4.1D0)
     success = success .and. DH_allocinit (NOVH, IrrigationInitSupply, 2.6D0)
     success = success .and. DH_allocinit (NOVH, IrrigationInitDuration, 1.0D0)
+    success = success .and. DH_allocinit (NOVH, IrrigationWaitDuration, 0.0D0)
     success = success .and. DH_allocinit (NOVH, IrrigationCriticalSMValue, -999.99D0)
     success = success .and. DH_allocinit (NOVH, IrrigationCriticalGWValue, -999.99D0)
     success = success .and. DH_allocinit (NOVH, IrrigationTargetSMValue, -999.99D0)
@@ -546,6 +549,7 @@ contains
     success = success .and. DH_allocinit (NOVH, IrrigationSupply, 0.0D0)
     success = success .and. DH_allocinit (NOVH, IrrigationDemand, 0.0D0)
     success = success .and. DH_allocinit (NOVH, TimeSinceStartFirstIrrigation, 0.0D0)
+    success = success .and. DH_allocinit (NOVH, TimeSinceEndPreviousIrrigation, 999.0D0)
     success = success .and. DH_allocinit (NOVH, IrrigationSaltConcentration, 0.0D0)
 ! to be corrected / adjusted to proper defaults (for testing now some other values) !!!
 
@@ -1095,7 +1099,8 @@ contains
                       CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
         IF (FOUND) then
             IrrigationpFTarget(iUnp) = RDum(1)
-            If (Rdum(1) .lt. 0 .or. rDum(1) .gt. 4.2 .or. IrrigationpFTarget(iunp) .lt. IrrigationpFCrit(iunp) )  then
+            ! corrected test pfTarget should be <= pFCrit
+            If (Rdum(1) .lt. 0 .or. rDum(1) .gt. 4.2 .or. IrrigationpFTarget(iunp) .gt. IrrigationpFCrit(iunp) )  then
                call ErrMsgStandard(977, 0, ' Specified irrigation pF target input not correct; default will be used; node-id=', Id_Nod(Inod))
                IrrigationpFTarget(iUnp) = min (IrrigationpFCrit(iunp), 2.4d0)
             Endif
@@ -1131,6 +1136,17 @@ contains
             If (Rdum(1) .lt. 1)  then
                call ErrMsgStandard(977, 0, ' Specified irrigation initial duration (days) in input not correct; default will be used; node-id=', Id_Nod(Inod))
                IrrigationInitDuration(iUnp) = 5
+            Endif
+        Endif
+! irrigation wait duration  (min. nr. days after previous irrigation to start irrigating again)
+        allow = .true. ! alle irrigatie input mag ontbreken
+        Retval = Retval + GetVAR2 (STRING,' wait ',2,' UNPV-ReadAscii',' Unpaved.3B file',IOUT1, &
+                      CDUM(1), RDUM(1), IDUM(1), ALLOW, FOUND, IflRtn)
+        IF (FOUND) then
+            IrrigationWaitDuration(iUnp) = RDum(1)
+            If (Rdum(1) .lt. 0)  then
+               call ErrMsgStandard(977, 0, ' Specified irrigation initial duration (days) in input not correct; default will be used; node-id=', Id_Nod(Inod))
+               IrrigationWaitDuration(iUnp) = 0
             Endif
         Endif
 ! irrigation salt concentration
@@ -2726,46 +2742,69 @@ contains
 
     IrrigationSupply(iovh) = 0
     if (IrrigationSource(iovh) .gt. 0) then
-       If (UnsatZoneOption .ge. 1) then
-          ! Capsim (1) or own Capsim+ (2)
-          Call FindSoilMoistureAtCriticalpFValue (IrrigationpFCrit(iovh), CriticalSoilMoistureValue, Bottyp(iovh), CapsimDpRootz(iovh),IrrigationCriticalSMValue(iovh))
-          Call FindSoilMoistureAtCriticalpFValue (IrrigationpFTarget(iovh), TargetSoilMoistureValue, Bottyp(iovh), CapsimDpRootz(iovh),IrrigationTargetSMValue(iovh))
-          if (OnvZone(IOVH)%Init_mm .le. CriticalSoilMoistureValue .or. IrrigationOngoing(iovh)) then
-             if (IrrigationSeason .and. IrrigationDailyPeriod) then
-               if (FirstIrrigationInYear(iovh)) then
-                   IrrigationSupply(iovh) = IrrigationInitSupply(iovh)
-               else
-                   IrrigationSupply(iovh) = IrrigationMaxSupply(iovh)
-               endif
+       if (IterNodelp .eq. 1) TimeSinceEndPreviousIrrigation(iovh) = TimeSinceEndPreviousIrrigation(iovh) + TimeSettings%TimestepSize
+       if (TimeSinceEndPreviousIrrigation(iovh) .lt. 86400.* IrrigationWaitDuration(iovh) ) then
+           IrrigationOngoing(iovh) = .false.
+           IrrigationSupply(iovh) = 0.0
+       else
+          If (UnsatZoneOption .ge. 1) then
+             ! Capsim (1) or own Capsim+ (2)
+             Call FindSoilMoistureAtCriticalpFValue (IrrigationpFCrit(iovh), CriticalSoilMoistureValue, Bottyp(iovh), CapsimDpRootz(iovh),IrrigationCriticalSMValue(iovh))
+             Call FindSoilMoistureAtCriticalpFValue (IrrigationpFTarget(iovh), TargetSoilMoistureValue, Bottyp(iovh), CapsimDpRootz(iovh),IrrigationTargetSMValue(iovh))
+             if (OnvZone(IOVH)%Init_mm .le. CriticalSoilMoistureValue .or. IrrigationOngoing(iovh)) then
+                if (IrrigationSeason .and. IrrigationDailyPeriod) then
+                  if (FirstIrrigationInYear(iovh)) then
+                      IrrigationSupply(iovh) = IrrigationInitSupply(iovh)
+                  else
+                      IrrigationSupply(iovh) = IrrigationMaxSupply(iovh)
+                  endif
+                endif
+                if (IterNodelp .eq. 1) TimeSinceStartFirstIrrigation(iovh) = TimeSinceStartFirstIrrigation(iovh) + TimeSettings%TimestepSize
              endif
-             if (IterNodelp .eq. 1) TimeSinceStartFirstIrrigation(iovh) = TimeSinceStartFirstIrrigation(iovh) + TimeSettings%TimestepSize
-          endif
-          if ( IrrigationOngoing(iovh) .and. (OnvZone(iovh)%Init_mm .gt. TargetSoilMoistureValue)) then
-             if (TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
-                IrrigationOngoing(iovh) = .false.
-                FirstIrrigationInYear(iovh) = .false.
-                IrrigationSupply(iovh) = 0.0
-             endif
-          endif
-       elseIf (UnsatZoneOption .eq. 0) then
-          ! No Capsim
-          Call FindGWLevelAtCriticalpFValue (IrrigationpFCrit(iovh), CriticalGWLevel, IrrigationCriticalGWValue(iovh))
-          Call FindGWLevelAtCriticalpFValue (IrrigationpFTarget(iovh), TargetGWLevel, IrrigationTargetGWValue(iovh))
-          if (GWL0(iovh) .le. CriticalGWLevel .or. IrrigationOngoing(iovh)) then
-             if (IrrigationSeason .and. IrrigationDailyPeriod) then
-                if (FirstIrrigationInYear(iovh)) then
-                    IrrigationSupply(iovh) = IrrigationInitSupply(iovh)
-                else
-                    IrrigationSupply(iovh) = IrrigationMaxSupply(iovh)
+             if ( IrrigationOngoing(iovh) .and. (OnvZone(iovh)%Init_mm .gt. TargetSoilMoistureValue)) then
+                if (TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
+                   IrrigationOngoing(iovh) = .false.
+                   FirstIrrigationInYear(iovh) = .false.
+                   IrrigationSupply(iovh) = 0.0
+                   if (IterNodelp .eq. 1) TimeSinceEndPreviousIrrigation(iovh) = 0.0
                 endif
              endif
-             if (IterNodelp .eq. 1) TimeSinceStartFirstIrrigation(iovh) = TimeSinceStartFirstIrrigation(iovh) + TimeSettings%TimestepSize
-          endif
-          if ( IrrigationOngoing(iovh) .and. (GWL0(iovh) .gt. TargetGWLevel) ) then
-             if (TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
+             if (FirstIrrigationInYear(iovh) .eq. .true. .and. IrrigationOngoing(iovh) .eq. .true. .and. TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
                 IrrigationOngoing(iovh) = .false.
                 FirstIrrigationInYear(iovh) = .false.
                 IrrigationSupply(iovh) = 0.0
+                if (IterNodelp .eq. 1) TimeSinceEndPreviousIrrigation(iovh) = 0.0
+             endif
+          elseIf (UnsatZoneOption .eq. 0) then
+             ! No Capsim
+             Call FindGWLevelAtCriticalpFValue (IrrigationpFCrit(iovh), CriticalGWLevel, IrrigationCriticalGWValue(iovh))
+             Call FindGWLevelAtCriticalpFValue (IrrigationpFTarget(iovh), TargetGWLevel, IrrigationTargetGWValue(iovh))
+             ! relative to surface level
+             CriticalGWLevel = Lvloh(iovh) - CriticalGWLevel
+             TargetGWLevel = Lvloh(iovh) - TargetGWLevel
+             if (GWL0(iovh) .le. CriticalGWLevel .or. IrrigationOngoing(iovh)) then
+                if (IrrigationSeason .and. IrrigationDailyPeriod) then
+                   if (FirstIrrigationInYear(iovh)) then
+                       IrrigationSupply(iovh) = IrrigationInitSupply(iovh)
+                   else
+                       IrrigationSupply(iovh) = IrrigationMaxSupply(iovh)
+                   endif
+                endif
+                if (IterNodelp .eq. 1) TimeSinceStartFirstIrrigation(iovh) = TimeSinceStartFirstIrrigation(iovh) + TimeSettings%TimestepSize
+             endif
+             if ( IrrigationOngoing(iovh) .and. (GWL0(iovh) .gt. TargetGWLevel) ) then
+                if (TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
+                   IrrigationOngoing(iovh) = .false.
+                   FirstIrrigationInYear(iovh) = .false.
+                   IrrigationSupply(iovh) = 0.0
+                   if (IterNodelp .eq. 1) TimeSinceEndPreviousIrrigation(iovh) = 0.0
+                endif
+             endif
+             if (FirstIrrigationInYear(iovh) .eq. .true. .and. IrrigationOngoing(iovh) .eq. .true. .and. TimeSinceStartFirstIrrigation(iovh) .gt. 86400 * IrrigationInitDuration(iovh)) then
+                IrrigationOngoing(iovh) = .false.
+                FirstIrrigationInYear(iovh) = .false.
+                IrrigationSupply(iovh) = 0.0
+                if (IterNodelp .eq. 1) TimeSinceEndPreviousIrrigation(iovh) = 0.0
              endif
           endif
        endif
@@ -2774,11 +2813,16 @@ contains
     IrrigationSupply(iovh) = IrrigationSupply(iovh) * TmIrri * AreaOh(iovh) / 86400. / 1000.
     IrrigationDemand(iovh) = IrrigationSupply(iovh) * IrrigationEfficiencyFactor(iovh)
     IrrigationOngoing(iovh) = (IrrigationSupply(iovh) .gt. 0)
-    if (Idebug .gt. 0 .and. IrrigationSource(iovh) .gt. 0 .and. UnsatZoneOption .ge. 1 ) then
+    if (Idebug .ne. 0 .and. IrrigationSource(iovh) .gt. 0 .and. IrrigationOngoing(iovh))  then
        WRITE(IDEBUG,*) ' Computed irrigation'
-       WRITE(IDEBUG,*) ' CriticalpFValue - CriticalSoilMoistureValue:',IrrigationpFCrit(iovh), CriticalSoilMoistureValue
-       WRITE(IDEBUG,*) ' TargetpFValue - TargetSoilMoistureValue:',IrrigationpFTarget(iovh), TargetSoilMoistureValue
-       WRITE(IDEBUG,*) ' Init_mm ',OnvZone(iovh)%Init_mm
+       If (UnSatZoneOption .ge. 1) then
+          WRITE(IDEBUG,*) ' CriticalpFValue - CriticalSoilMoistureValue:',IrrigationpFCrit(iovh), CriticalSoilMoistureValue
+          WRITE(IDEBUG,*) ' TargetpFValue - TargetSoilMoistureValue:',IrrigationpFTarget(iovh), TargetSoilMoistureValue
+          WRITE(IDEBUG,*) ' Init_mm ',OnvZone(iovh)%Init_mm
+       elseIf (UnSatZoneOption .eq. 0) then
+          WRITE(IDEBUG,*) ' CriticalpFValue - CriticalGWLevel:',IrrigationpFCrit(iovh), IrrigationCriticalGWValue(iovh),CriticalGWLevel
+          WRITE(IDEBUG,*) ' TargetpFValue - TargetGWLevel:',IrrigationpFTarget(iovh), IrrigationTargetGWValue(iovh),TargetGWLevel
+       endif
        WRITE(IDEBUG,*) ' Initsupply, MaxSupply',IrrigationInitSupply(iovh), IrrigationMaxSupply(iovh)
        WRITE(IDEBUG,*) ' Irrigation supply m3/s, m3 :',IrrigationSupply(iovh), IrrigationSupply(iovh) * timeSettings%timestepSize
        WRITE(IDEBUG,*) ' Irrigation demand m3/s, m3 :',IrrigationDemand(iovh), IrrigationDemand(iovh) * timeSettings%timestepSize
@@ -8445,7 +8489,7 @@ contains
 
   if (IrrCriticalGWLevel .le. -999.) then
      ! find from pF - gw level relation
-     CriticalGWLevel = 0.01 * (10 ** (-1.*pFCrit))
+     CriticalGWLevel = 0.01 * (10 ** (pFCrit))
      IrrCriticalGWLevel = CriticalGWLevel
   else
      ! already computed

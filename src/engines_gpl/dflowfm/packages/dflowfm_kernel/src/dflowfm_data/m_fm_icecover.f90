@@ -293,12 +293,12 @@ contains
    subroutine preprocess_icecover(n, Qlong_ice, tempwat, saltcon, wind)
 !!--declarations----------------------------------------------------------------
       use MessageHandling
-      use m_flow ! test om tair(.) te gebruiken
+      use m_flow, only: hu
       use m_flowgeom, only: nd
       use m_physcoef, only: vonkar
       use physicalconsts, only: CtoKelvin
       use m_heatfluxes, only: cpw
-      use m_wind, only: tair
+      use m_wind, only: air_temperature
       use ieee_arithmetic, only: ieee_is_nan
       implicit none
       !
@@ -370,7 +370,7 @@ contains
             tsi = snow_t(n)
          end if
          !
-         ! Compute longwave radiation flux from ice surface according to Eq. (7) in (Wang, 2005)
+         ! Compute long wave radiation radiation flux from ice surface according to Eq. (7) in (Wang, 2005)
          ! including an iteration proces
          !
          do iter = 1, 5
@@ -410,13 +410,13 @@ contains
                !
                ! no freezing in case of air temperatures above zero
                !
-               if (tair(n) > 0.0_fp .and. qh_air2ice(n) < 0.0_fp) then
+               if (air_temperature(n) > 0.0_fp .and. qh_air2ice(n) < 0.0_fp) then
                   qh_air2ice(n) = 0.0_fp
                end if
                !
                ! no melting in case of air temperatures below zero
                !
-               if (tair(n) < 0.0_fp .and. qh_air2ice(n) > 0.0_fp) then
+               if (air_temperature(n) < 0.0_fp .and. qh_air2ice(n) > 0.0_fp) then
                   qh_air2ice(n) = 0.0_fp
                end if
                exit ! jump out of the iteration loop
@@ -471,7 +471,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ndx
       use m_flowtimes, only: dts
-      use m_wind, only: tair, rain, jarain
+      use m_wind, only: air_temperature, rain, jarain
       implicit none
       !
       ! Function/routine arguments
@@ -494,7 +494,7 @@ contains
          ! Compute snow growth (NB. presence of ice is required)
          if (jarain == 1) then ! check whether rainfall input is prescribed
             do n = 1, ndx
-               if (tair(n) < 0.0_fp .and. ice_h(n) > 0.01_fp .and. rain(n) > 0.0_fp) then
+               if (air_temperature(n) < 0.0_fp .and. ice_h(n) > 0.01_fp .and. rain(n) > 0.0_fp) then
                   snow_h(n) = snow_h(n) + dts * rain(n) * conv_factor
                end if
             end do
@@ -502,7 +502,7 @@ contains
 
          ! Compute ice growth or melt or melting of snow
          do n = 1, ndx
-            if (tair(n) < 0.0_fp .or. ice_h(n) > 0.001_fp) then
+            if (air_temperature(n) < 0.0_fp .or. ice_h(n) > 0.001_fp) then
                if (qh_air2ice(n) > qh_ice2wat(n)) then
                   ! Melting of ice or snow
                   ! 
