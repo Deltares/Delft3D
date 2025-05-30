@@ -530,10 +530,10 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     ! === repose slope for slope failure bank erosion (m/m)
     !
-    call prop_get(mor_ptr, 'Morphology', 'Repose', morpar%repose)
-    call prop_get(mor_ptr, 'Morphology', 'DryRepose', morpar%dryrepose)
-    call prop_get(mor_ptr, 'Morphology', 'ReposeRedFac', morpar%reposeredfac)
-    call prop_get(mor_ptr, 'Morphology', 'ReposeMaxDz', morpar%reposemaxdz)
+    call prop_get(mor_ptr, 'Morphology', 'repose', morpar%repose)
+    call prop_get(mor_ptr, 'Morphology', 'dryRepose', morpar%dryrepose)
+    call prop_get(mor_ptr, 'Morphology', 'reposeRedFac', morpar%reposeredfac)
+    call prop_get(mor_ptr, 'Morphology', 'reposeMaxDz', morpar%reposemaxdz)
     !
     ! === factor for adjusting intensity of energy dissipation in wave boundary layer
     ! fwfac should be read from mdf-file (see rdnum)
