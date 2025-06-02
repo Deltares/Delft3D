@@ -31,40 +31,41 @@
 !
 
 module m_wind
+
    use precision, only: dp
+   
    implicit none
 
-   real(kind=dp), allocatable, target :: wx(:) !< [m/s] wind x velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable, target :: wy(:) !< [m/s] wind y velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable, target :: ec_pwxwy_x(:) !< Temporary array, for comparing EC-module to Meteo1.
-   real(kind=dp), allocatable, target :: ec_pwxwy_y(:) !< Temporary array, for comparing EC-module to Meteo1.
-   real(kind=dp), allocatable, target :: ec_pwxwy_c(:) !< Temporary array, for comparing EC-module to Meteo1.
-   real(kind=dp), allocatable, target :: ec_charnock(:) !< Temporary array, for comparing EC-module to Meteo1.
-   real(kind=dp), allocatable, target :: wcharnock(:) !< space var charnock (-) at u point {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), dimension(:), allocatable, target :: wx !< [m/s] wind x velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), dimension(:), allocatable, target :: wy !< [m/s] wind y velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), dimension(:), allocatable, target :: ec_pwxwy_x !< Temporary array, for comparing EC-module to Meteo1.
+   real(kind=dp), dimension(:), allocatable, target :: ec_pwxwy_y !< Temporary array, for comparing EC-module to Meteo1.
+   real(kind=dp), dimension(:), allocatable, target :: ec_pwxwy_c !< Temporary array, for comparing EC-module to Meteo1.
+   real(kind=dp), dimension(:), allocatable, target :: ec_charnock !< Temporary array, for comparing EC-module to Meteo1.
+   real(kind=dp), dimension(:), allocatable, target :: wcharnock !< space var charnock (-) at u point {"location": "edge", "shape": ["lnx"]}
 
-   real(kind=dp), allocatable, target :: air_pressure(:) !< atmospheric pressure user specified in (N/m2), internally reworked to (m2/s2)
+   real(kind=dp), dimension(:), allocatable, target :: air_pressure !< atmospheric pressure user specified in (N/m2), internally reworked to (m2/s2)
                                                       !! so that it can be merged with tidep later and difpatm/dx = m/s2, saves 1 array , using mode = 'add'
-   real(kind=dp), allocatable, target :: rain(:) !< [mm/day] rain at xz,yz {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: evap(:) !< [m/s] evaporation at xz,yz {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), dimension(:), allocatable, target :: rain !< [mm/day] rain at xz,yz {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), dimension(:), allocatable, target :: evap !< [m/s] evaporation at xz,yz {"location": "face", "shape": ["ndx"]}
    integer :: id_first_wind, id_last_wind !< counters to avoid looping over all ec_etims when only interessed in wind
 
-   real(kind=dp), allocatable, target :: qext(:) !< [m3/s] External discharge per cell {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: qextreal(:) !< [m3/s] Realized external discharge per cell {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: vextcum(:) !< [m3] Cumulative realized volume through qext {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), dimension(:), allocatable, target :: qext !< [m3/s] External discharge per cell {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), dimension(:), allocatable, target :: qextreal !< [m3/s] Realized external discharge per cell {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), dimension(:), allocatable, target :: vextcum !< [m3] Cumulative realized volume through qext {"location": "face", "shape": ["ndkx"]}
 
-   real(kind=dp), allocatable, target :: air_temperature(:) !< air temperature (degC)
-   real(kind=dp), allocatable, target :: dew_point_temperature(:) !< dew_point_temperature temperature (degC)
-   real(kind=dp), allocatable, target :: relative_humidity(:) !< air relative humidity (%)
-   real(kind=dp), allocatable, target :: cloudiness(:) !< air cloudiness (%)
-   real(kind=dp), allocatable, target :: air_density(:) !< air density (kg/m3)
-   real(kind=dp), allocatable, target :: solar_radiation(:) !< solar radiation (W/m2)
+   real(kind=dp), dimension(:), allocatable, target :: air_temperature !< air temperature (degC)
+   real(kind=dp), dimension(:), allocatable, target :: dew_point_temperature !< dew_point_temperature temperature (degC)
+   real(kind=dp), dimension(:), allocatable, target :: relative_humidity !< air relative humidity (%)
+   real(kind=dp), dimension(:), allocatable, target :: cloudiness !< air cloudiness (%)
+   real(kind=dp), dimension(:), allocatable, target :: air_density !< air density (kg/m3)
+   real(kind=dp), dimension(:), allocatable, target :: solar_radiation !< solar radiation (W/m2)
    real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< solar radiation (W/m2) incl. albedo correction
-   real(kind=dp), allocatable, target :: long_wave_radiation(:) !< long wave radiation (W/m2)
-   real(kind=dp), allocatable :: heatsrc(:) !< resulting 2D or 3D heat source per cell (Km3/s)
-   real(kind=dp), allocatable :: heatsrc0(:) !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
-   real(kind=dp), allocatable :: tbed(:) !< bed temperature (degC)
-
-   real(kind=dp), allocatable :: cdwcof(:) !< wind stress cd coefficient () , only if jatemp ==5
+   real(kind=dp), dimension(:), allocatable, target :: long_wave_radiation !< long wave radiation (W/m2)
+   real(kind=dp), dimension(:), allocatable :: heatsrc !< resulting 2D or 3D heat source per cell (Km3/s)
+   real(kind=dp), dimension(:), allocatable :: heatsrc0 !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
+   real(kind=dp), dimension(:), allocatable :: tbed !< bed temperature (degC)
+   real(kind=dp), dimension(:), allocatable :: cdwcof !< wind stress cd coefficient () , only if jatemp ==5
 
    integer :: jawind !< use wind yes or no
    integer :: air_pressure_available !< use air_pressure yes or no

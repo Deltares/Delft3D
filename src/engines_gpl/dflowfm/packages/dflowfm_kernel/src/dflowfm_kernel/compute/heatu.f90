@@ -31,62 +31,58 @@
 !
 
 module m_heatu
-   use m_qsun_nominal
-   use m_heatun
 
    implicit none
 
 contains
 
-   subroutine heatu(timhr)
+   !> Update the heatfluxes
+   subroutine heatu(time_in_hours)
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
-      use m_sferic
-      use m_get_kbot_ktop
+      use m_flow, only: qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, jamapheatflux, jahisheatflux, &
+                        jatem, hs, epshstem, chktempdep
+      use m_flowgeom, only: ndxi, nd
+      use m_sferic, only: anglon, anglat
       use m_wind, only: heatsrc0
-      
-      implicit none
+      use m_qsun_nominal, only: calculate_nominal_solar_radiation
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_heatun, only: heatun
 
-      real(kind=dp) :: timhr
+      real(kind=dp), intent(in) :: time_in_hours !< Current model time in hours
 
-      real(kind=dp) :: qsnom
+      real(kind=dp) :: nominal_solar_radiation
       integer :: n, kb, kt
 
-      heatsrc0 = 0d0 ! array of heat sources zero
+      heatsrc0(:) = 0.0_dp ! 2D or 3D heat source per cell, only set at timeuser (Km3/s)
 
-      if (jamapheatflux > 0 .or. jahisheatflux > 0) then ! map output zero
+      if (jamapheatflux > 0 .or. jahisheatflux > 0) then
          if (jatem == 3) then
-            Qtotmap = 0d0
+            qtotmap(:) = 0.0_dp
          else if (jatem == 5) then
-            Qtotmap = 0d0
-            Qsunmap = 0d0
-            Qevamap = 0d0
-            Qconmap = 0d0
-            Qlongmap = 0d0
-            Qfrevamap = 0d0
-            Qfrconmap = 0d0
+            qtotmap(:) = 0.0_dp
+            qsunmap(:) = 0.0_dp
+            qevamap(:) = 0.0_dp
+            qconmap(:) = 0.0_dp
+            qlongmap(:) = 0.0_dp
+            qfrevamap(:) = 0.0_dp
+            qfrconmap(:) = 0.0_dp
          end if
       end if
 
-      call qsun_nominal(anglon, anglat, timhr, qsnom) ! for models not in spherical coordinates do this just once
+      nominal_solar_radiation = calculate_nominal_solar_radiation(anglon, anglat, time_in_hours) ! for models not in spherical coordinates do this just once
 
-!epshstem     = 0.001d0
-!chktempdep   = 0.0d0
-!Soiltempthick = 0.2d0
-
-!$OMP PARALLEL DO   &
-!$OMP PRIVATE(n,kb,kt)
+      !$OMP PARALLEL DO   &
+      !$OMP PRIVATE(n,kb,kt)
       do n = 1, ndxi
-         if (nd(n)%lnx == 0) cycle ! The need for this statement makes Santa Claus unhappy
+         if (nd(n)%lnx == 0) cycle
          if (hs(n) < epshstem) cycle
-         call heatun(n, timhr, qsnom)
+         call heatun(n, time_in_hours, nominal_solar_radiation)
          if (hs(n) < chktempdep) then
             call getkbotktop(n, kb, kt)
             heatsrc0(kb:kt) = heatsrc0(kb:kt) * hs(n) / chktempdep
          end if
       end do
-!$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
 
    end subroutine heatu
 

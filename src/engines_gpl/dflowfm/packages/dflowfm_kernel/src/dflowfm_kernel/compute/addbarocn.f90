@@ -97,10 +97,11 @@ contains
       baroclinic_pressure = 0.0_dp
       do cell_index_3d = k_top, k_bot, -1
          delta_z = zws(cell_index_3d) - zws(cell_index_3d - 1)
-         baroclinic_pressure = baroclinic_pressure + 0.5_dp * (density_at_layer_interface(cell_index_3d - k_bot + 1) + density_at_layer_interface(cell_index_3d - k_bot)) * delta_z
-         baroclinic_pressures(cell_index_3d) = baroclinic_pressure
-         vertical_density_difference = density_at_layer_interface(cell_index_3d - k_bot) - density_at_layer_interface(cell_index_3d - k_bot + 1)
+         baroclinic_pressure = 0.5_dp * (density_at_layer_interface(cell_index_3d - k_bot + 1) + density_at_layer_interface(cell_index_3d - k_bot)) * delta_z
          baroclinic_pressure_up = baroclinic_pressure_down
+         baroclinic_pressure_down = baroclinic_pressure_up + baroclinic_pressure
+         baroclinic_pressures(cell_index_3d) = baroclinic_pressure_down
+         vertical_density_difference = density_at_layer_interface(cell_index_3d - k_bot) - density_at_layer_interface(cell_index_3d - k_bot + 1)
          baroclinic_pressure_down = baroclinic_pressure_up + density_at_layer_interface(cell_index_3d - k_bot + 1) * delta_z + 0.5_dp * vertical_density_difference * delta_z
          integrated_baroclinic_pressure = baroclinic_pressure_up * delta_z + 0.5_dp * density_at_layer_interface(cell_index_3d - k_bot + 1) * delta_z * delta_z + vertical_density_difference * delta_z * delta_z / 6.0_dp ! your left  wall
          integrated_baroclinic_pressures(cell_index_3d) = integrated_baroclinic_pressure

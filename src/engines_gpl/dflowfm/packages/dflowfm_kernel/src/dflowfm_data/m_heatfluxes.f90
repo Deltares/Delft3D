@@ -45,31 +45,31 @@ module m_heatfluxes
    real(kind=dp) :: emstf !< Em*Stf [W/m^2/K^4]
    real(kind=dp), parameter :: tkelvn = CtoKelvin !< Absolute zero
 
-   real(kind=dp) :: QSUNav !< Solar influx              (W/m2)
-   real(kind=dp) :: QEVAav !< Evaporative heat loss     (W/m2)
-   real(kind=dp) :: QCONav !< Convective heat loss      (W/m2)
-   real(kind=dp) :: QLongav !< Long wave back radiation  (W/m2)
-   real(kind=dp) :: Qfreeav !< Free conv + evap heat loss (W/m2)
-   real(kind=dp) :: Qfrconav !< Free convection heat loss (W/m2)
-   real(kind=dp) :: Qfrevaav !< Free evaporation heat loss (W/m2)
+   real(kind=dp) :: qsunav !< Solar influx              (W/m2)
+   real(kind=dp) :: qevaav !< Evaporative heat loss     (W/m2)
+   real(kind=dp) :: qconav !< Convective heat loss      (W/m2)
+   real(kind=dp) :: qlongav !< Long wave back radiation  (W/m2)
+   real(kind=dp) :: qfreeav !< Free conv + evap heat loss (W/m2)
+   real(kind=dp) :: qfrconav !< Free convection heat loss (W/m2)
+   real(kind=dp) :: qfrevaav !< Free evaporation heat loss (W/m2)
 
    real(kind=dp) :: sarea !< Only for excess temp model jatem=3, lake area
    real(kind=dp) :: fwind !< Only for excess temp model jatem=3, wind factor
 
    integer :: jamapheatflux !< write heatfluxes to map
-   integer :: jaRichardsononoutput !< write Richardson nr to his
-   integer :: jaSecchisp !< Spatial Secchi 0,1
+   integer :: jarichardsononoutput !< write Richardson nr to his
+   integer :: jasecchisp !< Spatial Secchi 0,1
    integer :: wind_stress_water_density_option !< Use rhomean or rhow in windstress: 0,1
 
-   real(kind=dp), allocatable, target :: Qsunmap(:) !< [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable :: Qevamap(:)
-   real(kind=dp), allocatable :: Qconmap(:)
-   real(kind=dp), allocatable :: Qlongmap(:)
-   real(kind=dp), allocatable :: Qfrevamap(:)
-   real(kind=dp), allocatable :: Qfrconmap(:)
-   real(kind=dp), allocatable :: Qtotmap(:)
+   real(kind=dp), dimension(:), allocatable, target :: qsunmap !< [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), dimension(:), allocatable :: qevamap
+   real(kind=dp), dimension(:), allocatable :: qconmap
+   real(kind=dp), dimension(:), allocatable :: qlongmap
+   real(kind=dp), dimension(:), allocatable :: qfrevamap
+   real(kind=dp), dimension(:), allocatable :: qfrconmap
+   real(kind=dp), dimension(:), allocatable :: qtotmap
 
-   real(kind=dp), allocatable :: Secchisp(:)
+   real(kind=dp), dimension(:), allocatable :: secchisp
 
 contains
 
@@ -80,7 +80,7 @@ contains
       cpa = 1004.0_dp
       cpw = 3986.0_dp
       jamapheatflux = 0
-      jaRichardsononoutput = 0
+      jarichardsononoutput = 0
       wind_stress_water_density_option = 0
 
    end subroutine default_heatfluxes
