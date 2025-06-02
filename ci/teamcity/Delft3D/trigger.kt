@@ -278,7 +278,6 @@ object Trigger : BuildType({
                 }
                 branchFilter = ""
                 triggerBuild = always()
-                withPendingChangesOnly = false
                 param("revisionRuleBuildBranch", "<default>")
             }
             vcs {
