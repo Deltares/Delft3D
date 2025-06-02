@@ -6417,7 +6417,6 @@ module m_meteo
 
    integer, target :: item_nudge_temperature !< 3D temperature for nudging
    integer, target :: item_nudge_salinity !< 3D salinity for nudging
-   integer, target :: item_db_levels_widths_table !< Dambreak levels and widths
 
    integer, target :: item_subsiduplift
    integer, target :: item_ice_cover !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
@@ -6581,7 +6580,6 @@ contains
       item_diswcap = ec_undef_int
       item_distot = ec_undef_int
       item_ubot = ec_undef_int
-      item_db_levels_widths_table = ec_undef_int
       item_subsiduplift = ec_undef_int
       !
       n_qhbnd = 0
@@ -6936,7 +6934,7 @@ contains
       case ('damlevel')
          itemPtr1 => item_damlevel
       case ('dambreakLevelsAndWidths')
-         itemPtr1 => item_db_levels_widths_table
+          ! itemPtr1 and dataPtr1 are provided at a dambreak call
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().

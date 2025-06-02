@@ -1,5 +1,19 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 
+	<testCase name="e02_f010_c037_breach_grow_algo_3" ref="dimr_default">
+		<path version="2025-05-27T15:05:01.136000">e02_dflowfm/f010_structures/c037_breach_grow_algo_3</path>
+		<checks>
+			<file name="dflowfmoutput/dambreak2ddrybreach_his.nc" type="netCDF">
+				<parameters>
+					<parameter name="dambreak_discharge" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+				</parameters>
+			</file>
+		</checks>
+	</testCase>
 	<testCase name="e02_f010_c100_dambreak_VerheijvdKnaap" ref="dimr_default">
 		<path version="2025-02-11T10:18:45.987000">e02_dflowfm/f010_structures/c100_dambreak_VerheijvdKnaap</path>
 		<checks>

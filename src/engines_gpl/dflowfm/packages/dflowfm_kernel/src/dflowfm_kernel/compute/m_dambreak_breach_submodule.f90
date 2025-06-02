@@ -29,6 +29,7 @@
 
 submodule(m_dambreak_breach) m_dambreak_breach_submodule
    use precision, only: dp
+   use m_meteo, only: ec_undef_int
 
    implicit none
 
@@ -36,7 +37,6 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
    integer, parameter :: DOWNSTREAM = 2
    real(kind=dp), dimension(2, 1) :: weighted_sum !< (1,:) weighted sum of water level or velocity over dambreak
                                                   !! (2,:) weighted sum of unity over dambreak
-   real(kind=dp), allocatable, target :: levels_widths_from_table(:) !< dambreak heights and widths
    integer, dimension(:), allocatable :: first_link !< first dambreak link for each signal
    integer, dimension(:), allocatable :: last_link !< last dambreak link for each signal
 
@@ -44,6 +44,7 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       integer :: algorithm = 0 !< algorithm for the dambreak breach growth
       integer :: breach_start_link = -1 !< index of the starting link in the breach growth
       integer :: index_structure = 0 !< index of the structure
+      integer :: ec_item = ec_undef_int !< item for EC module to get crest level and width from a tim file
       integer :: number_of_links = 0 !< number of links in the dambreak
       integer :: phase = 0 !< phase of the dambreak breach
       integer :: link_map_offset = 0 !< offset of the local array in the global link array
@@ -61,6 +62,7 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       real(kind=dp) :: crest_level_min !< minimum crest level of the breach
       real(kind=dp) :: upstream_level !< upstream water level
       real(kind=dp) :: downstream_level !< downstream water level
+      real(kind=dp), dimension(2) :: crest_level_and_width !< array to communicate with EC module
       real(kind=dp) :: width = 0.0_dp !< width of the breach
       real(kind=dp) :: maximum_width = 0.0_dp !< maximum width of the breach
       real(kind=dp) :: maximum_allowed_width = -1.0_dp !< maximum allowed width of the breach
@@ -163,7 +165,6 @@ contains
       end if
       allocate (averagings(2 * n_db_signals))
 
-      call realloc(levels_widths_from_table, n_db_signals * 2, fill=0.0_dp)
       number_of_mappings = 0
       number_of_averagings = 0
 
@@ -283,7 +284,7 @@ contains
    !> calculate dambreak widths
    subroutine calculate_dambreak_widths(start_time, delta_time)
       use m_dambreak, only: BREACH_GROWTH_VDKNAAP, BREACH_GROWTH_VERHEIJVDKNAAP, BREACH_GROWTH_TIMESERIES
-      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr, item_db_levels_widths_table
+      use m_meteo, only: ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: irefdate, tunit, tzone
       use messagehandling, only: msgbuf, LEVEL_ERROR, SetMessage
 
@@ -305,19 +306,11 @@ contains
          case (BREACH_GROWTH_TIMESERIES)
             if (start_time > dambreaks(n)%t0) then
                !Time in the tim file is relative to the start time
-               success = ec_gettimespacevalue_by_itemID(ecInstancePtr, item_db_levels_widths_table, &
-                                                        irefdate, tzone, tunit, start_time - dambreaks(n)%t0, &
-                                                        levels_widths_from_table)
-               ! NOTE: AvD: the code above works correctly, but is dangerous:
-               ! the addtimespace for dambreak has added each dambreak separately with a targetoffset.
-               ! The gettimespace above, however, gets the values for *all* dambreaks, but with the relative time
-               ! of the *current* dambreak #n.
-               ! This means that if t0 values for all dambreaks are different, then the levels_widths_from_table(1:n-1) have become obsolete now.
-               ! It works, because in the previous loop iterations the values that were then still correct
-               ! have already been set into the %crest_level and %width values.
+               success = ec_gettimespacevalue_by_itemID(ecInstancePtr, dambreaks(n)%ec_item, irefdate, tzone, tunit, &
+                                                        start_time - dambreaks(n)%t0, dambreaks(n)%crest_level_and_width)
                if (success) then
-                  dambreaks(n)%crest_level = levels_widths_from_table((n - 1) * 2 + 1)
-                  dambreaks(n)%width = levels_widths_from_table((n - 1) * 2 + 2)
+                  dambreaks(n)%crest_level = dambreaks(n)%crest_level_and_width(1)
+                  dambreaks(n)%width = dambreaks(n)%crest_level_and_width(2)
                else
                   write (msgbuf, '(3a)') 'Error retrieving crest level and width for dambreak ''', trim(dambreaks(n)%name), &
                      '''. Please check timeseries input file.'
@@ -894,10 +887,9 @@ contains
                                       dambreak_settings, dambreaks(n))
 
                if (dambreaks(n)%algorithm == BREACH_GROWTH_TIMESERIES) then
-                  ! Time-interpolated value will be placed in levels_widths_from_table((n-1)*KX+1) when calling ec_gettimespacevalue.
                   if (index(trim(dambreak_settings%levels_and_widths)//'|', '.tim|') > 0) then
                      success = ec_addtimespacerelation(QID, XDUM, YDUM, KDUM, KX, dambreak_settings%levels_and_widths, uniform, &
-                                                       spaceandtime, 'O', targetIndex=n) ! Hook up 1 component at a time, even when target element set has KX
+                                                       spaceandtime, 'O', targetIndex=1, tgt_item1=dambreaks(n)%ec_item)
                      if (.not. success) then
                         write (msgbuf, '(5a)') 'Cannot process a tim file for ''', QID, ''' for the dambreak ''', trim(dambreaks(n)%name), '''.'
                         call err_flush()
@@ -1059,12 +1051,16 @@ contains
 
                if (network%sts%struct(istrtmp)%dambreak%algorithm == BREACH_GROWTH_TIMESERIES) then
                   ! Time-interpolated value will be placed in <array>((n-1)*2+1) when calling ec_gettimespacevalue.
-                  network%sts%struct(istrtmp)%dambreak%levels_and_widths = trim(network%sts%struct(istrtmp)%dambreak%levels_and_widths)
+                  network%sts%struct(istrtmp)%dambreak%levels_and_widths = &
+                                                      trim(network%sts%struct(istrtmp)%dambreak%levels_and_widths)
                   if (index(trim(network%sts%struct(istrtmp)%dambreak%levels_and_widths)//'|', '.tim|') > 0) then
-                     success = ec_addtimespacerelation(QID, XDUM, YDUM, KDUM, KX, network%sts%struct(istrtmp)%dambreak%levels_and_widths, &
-                                                       uniform, spaceandtime, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(QID, XDUM, YDUM, KDUM, KX, &
+                                                       network%sts%struct(istrtmp)%dambreak%levels_and_widths, &
+                                                       uniform, spaceandtime, 'O', targetIndex=1, &
+                                                       tgt_item1=dambreaks(n)%ec_item)
                   else
-                     write (msgbuf, '(5a)') 'Cannot process a tim file for ''', QID, ''' for the dambreak ''', trim(dambreaks(n)%name), '''.'
+                     write (msgbuf, '(5a)') 'Cannot process a tim file for ''', QID, ''' for the dambreak ''', &
+                         trim(dambreaks(n)%name), '''.'
                      call err_flush()
                   end if
                end if
@@ -1152,15 +1148,13 @@ contains
       integer :: n !< loop index
       integer :: k !< loop index
 
-      if (have_dambreaks_links()) then
-         do n = 1, n_db_signals
-            if (dambreaks(n)%index_structure /= 0) then
-               do k = 1, dambreaks(n)%number_of_links
-                  does_link_contain_structures(abs(dambreaks(n)%link_indices(k))) = .true.
-               end do
-            end if
-         end do
-      end if
+      do n = 1, n_db_signals
+         if (dambreaks(n)%index_structure /= 0) then
+            do k = 1, dambreaks(n)%number_of_links
+               does_link_contain_structures(abs(dambreaks(n)%link_indices(k))) = .true.
+            end do
+         end if
+      end do
 
    end subroutine indicate_links_that_contain_dambreaks
 
@@ -1168,18 +1162,9 @@ contains
    pure module function should_write_dambreaks() result(res)
 
       logical :: res
-      integer :: objects !< total number of objects to write
-      integer :: n !< loop index
 
-      ! Count the number of active links for each signal
-      objects = n_db_signals
-      do n = 1, n_db_signals
-         if (dambreaks(n)%number_of_links == 0) then
-            objects = objects - 1
-         end if
-      end do
+      res = any(dambreaks(1:n_db_signals)%number_of_links > 0)
 
-      res = objects > 0
    end function should_write_dambreaks
 
    !> set correct flow areas for dambreaks, using the actual flow width
@@ -1202,6 +1187,7 @@ contains
    end subroutine multiply_by_dambreak_link_actual_width
 
    !> Get the index of the active dambreak for a given dambreak name
+   !! a dambreak is active in flowgeom when at least 1 flow link associated
    pure module function get_active_dambreak_index(dambreak_name) result(index)
       character(len=*), intent(in) :: dambreak_name !< Id/name of the requested dambreak
       integer :: index !< Returned index of the found dambreak; -1 when not found.
@@ -1210,12 +1196,9 @@ contains
 
       index = -1
       do i = 1, n_db_signals
-         if (trim(dambreaks(i)%name) == trim(dambreak_name)) then
-            if (dambreaks(i)%number_of_links > 0) then
-               ! Only return this dambreak index if dambreak is active in flowgeom (i.e., at least 1 flow link associated)
-               index = i
-               exit
-            end if
+         if (trim(dambreaks(i)%name) == trim(dambreak_name) .and. dambreaks(i)%number_of_links > 0) then
+            index = i
+            exit
          end if
       end do
    end function get_active_dambreak_index
