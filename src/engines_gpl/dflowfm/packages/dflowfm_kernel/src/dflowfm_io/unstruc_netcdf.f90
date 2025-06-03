@@ -58,7 +58,7 @@ module unstruc_netcdf
    use m_qnerror
    use netcdf_utils, only: ncu_sanitize_name, ncu_ensure_data_mode, ncu_ensure_define_mode, ncu_restore_mode
    use m_get_Lbot_Ltop_max, only: getLbotLtopmax
-   use m_sethu, only: set_hu_2D_from_3D
+   use m_reconstruct_hydrodynamics, only: reconstruct_hu_2D_from_3D
 
    implicit none
 
@@ -13528,7 +13528,7 @@ contains
          ierr = get_var_and_shift(imapfile, 'hu', hu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
                                   um%ilink_own, um%ilink_merge)
          call check_error(ierr, 'hu')
-         call set_hu_2D_from_3D()
+         call reconstruct_hu_2D_from_3D(hu, lnx)
       else
          ierr = get_var_and_shift(imapfile, 'hu', hu, tmpvar1, UNC_LOC_U, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
                                   um%ilink_own, um%ilink_merge)

@@ -61,7 +61,7 @@ module m_sethu
       end function
    end interface
 
-   public :: calculate_hu_au_and_advection_for_dams_weirs, set_hu_2D_from_3D
+   public :: calculate_hu_au_and_advection_for_dams_weirs
    
 contains
 !
@@ -787,24 +787,5 @@ contains
       end if
 
    end function get_upstream_water_level_usual_limiters
-
-   !> Set hu at the 2D indices to the corresponding hu at the top wet-layer
-   subroutine set_hu_2D_from_3D()
-      use m_flow, only: hu
-      use m_flowgeom, only: lnx
-      use m_get_Lbot_Ltop_max, only: getLbotLtopmax
-      
-      integer :: link_index_2d, link_index_3d, link_bottom, link_top_max
-      
-      do link_index_2d = 1, lnx
-         call getLbotLtopmax(link_index_2d, link_bottom, link_top_max)
-         do link_index_3d = link_top_max, link_bottom, -1
-            if (hu(link_index_3d) > 0.0_dp) then
-               hu(link_index_2d) = hu(link_index_3d)
-               exit
-             end if
-          end do
-       end do
-   end subroutine set_hu_2D_from_3D
 
 end module m_sethu
