@@ -1166,6 +1166,7 @@ contains
                   success = .false.
                else
                   success = .true.
+                  numsrc_old = numsrc_old + 1
                end if
 
                ! 2. Time series hookup is done below, once counting of all numsrc is done.
@@ -1820,7 +1821,10 @@ contains
          end do
       end if
 
-      if (numsrc > 0) then
+      if (numsrc_old > 0) then
+         if (numsrc_old /= numsrc) then
+            call mess(LEVEL_ERROR, 'Source/sink entries detected in both the old and new ext file. This is not allowed.')
+         end if
          ja = 1
          rewind (mext)
          kx = numconst + 1

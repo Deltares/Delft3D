@@ -129,7 +129,7 @@ module m_flow ! flow arrays-999
    integer, allocatable, target :: kbot(:) !< [-] layer-compressed bottom layer cell number: for each of ndx horizontal cells, we have indices to bot and top ndxk cells {"location": "face", "shape": ["ndx"]}
    integer, allocatable, target :: ktop(:) !< [-] layer-compressed top layer cell number: for each of ndx horizontal cells, we have indices to bot and top ndxk cells {"location": "face", "shape": ["ndx"]}
    integer, allocatable :: ktop0(:) !< store of ktop
-   integer, allocatable :: kmxn(:) !< max nr of vertical cells per base cell n
+   integer, allocatable :: kmxn(:) !< max nr of active vertical cells per base cell n
    integer, allocatable, target :: Lbot(:) !< [-] layer-compressed bottom layer edge number: for each of lnx horizontal links, we have indices to bot and top lnxk links {"location": "edge", "shape": ["lnx"]}
    integer, allocatable, target :: Ltop(:) !< [-] layer-compressed top layer edge number: for each of lnx horizontal links, we have indices to bot and top lnxk links {"location": "edge", "shape": ["lnx"]}
    integer, allocatable :: kmxL(:) !< max nr of vertical links per base link L

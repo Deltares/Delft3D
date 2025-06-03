@@ -201,7 +201,7 @@ if isequal(Props.FileInfo,'operator')
             t=sel{T_};
             first=1;
             off=0;
-            for i=1:length(Props.Props.Data)
+            for i=1:2
                 P=Props.Props.Data{i};
                 szi=getsize([],P);
                 szit=szi(T_);
@@ -707,11 +707,9 @@ if isequal(Props.FileInfo,'operator')
         case 'series: A,B'
             P=Props.Props.Data{1};
             sz=getsize([],P);
-            for i=2:length(Props.Props.Data)
-                P=Props.Props.Data{i};
-                szi=getsize([],P);
-                sz(T_)=sz(T_)+szi(T_);
-            end
+            P=Props.Props.Data{2};
+            szi=getsize([],P);
+            sz(T_)=sz(T_)+szi(T_);
         case {'max m','alg.mean m','min m','sum m'}
             P=Props.Props.Data{1};
             sz=getsize([],P);
@@ -759,7 +757,7 @@ end
 
 
 % -----------------------------------------------------------------------------
-function T=readtim(FI,Props,t)
+function [T,TZshift]=readtim(FI,Props,t)
 T_=1; ST_=2; M_=3; N_=4; K_=5;
 %======================== SPECIFIC CODE =======================================
 if isfield(Props,'Fld')
@@ -769,21 +767,30 @@ end
 if isequal(Props.FileInfo,'operator')
     switch Props.Props.Oper
         case 'series: A,B'
-            T=[];
-            off=0;
-            for i=1:length(Props.Props.Data)
-                P=Props.Props.Data{i};
-                szi=getsize([],P);
-                szit=szi(T_);
-                if t==0
-                    Ti=readtim([],P,0);
-                else
-                    ti=t(t>off)-off;
-                    ti(ti>szit)=[];
-                    Ti=readtim([],P,ti);
-                end
-                T=[T;Ti];
-                off=off+szit;
+            P=Props.Props.Data{1};
+            sz=getsize([],P);
+            num_times1=sz(T_);
+            if t==0
+                [T,TZshift] = readtim([],P,0);
+            else
+                t_index = t;
+                t_index(t_index>num_times1) = [];
+                [T,TZshift] = readtim([],P,t_index);
+            end
+
+            P=Props.Props.Data{2};
+            if t==0
+                [T2,TZshift2] = readtim([],P,0);
+            else
+                t_index = t(t>num_times1) - num_times1;
+                [T2,TZshift2] = readtim([],P,t_index);
+            end
+            if isnan(TZshift) || isnan(TZshift2)
+                T = [T;T2];
+                TZshift = NaN;
+            else
+                % make time zone consistent to TZshift1
+                T = [T;T2-TZshift2+TZshift];
             end
         otherwise
             nt=0;
@@ -800,9 +807,10 @@ if isequal(Props.FileInfo,'operator')
             end
             if j==0
                 T=[];
+                TZshift=NaN;
             else
                 P=Props.Props.Data{j};
-                T=readtim([],P,t);
+                [T,TZshift]=readtim([],P,t);
             end
     end
 else
@@ -823,9 +831,52 @@ else
     if isfield(Props,'Domain')
         DomainNr=Props.Domain;
     end
+    [Chk,TZshift]=qp_getdata(Props.FileInfo,DomainNr,Props.Props,'timezone');
     [Chk,T]=qp_getdata(Props.FileInfo,DomainNr,Props.Props,'times',t);
 end
 % -----------------------------------------------------------------------------
+
+
+% -----------------------------------------------------------------------------
+function [TZshift,TZstr]=gettimezone(FI,domain,Props)
+if isfield(Props,'Fld')
+    i=Props.Fld;
+    Props=FI(i);
+end
+[success,TZshift,TZstr]=nested_gettimezone(Props);
+if ~success
+    error(lasterr)
+end
+% -----------------------------------------------------------------------------
+
+
+function [success,TZshift,TZstr]=nested_gettimezone(Props)
+if isequal(Props.FileInfo,'operator')
+    [success,TZshift,TZstr]=nested_gettimezone(Props.Props.Data{1});
+    if strcmp(Props.Props.Oper,'series: A,B')
+            % time zone of A and B need to be consistent ...
+            if success && ~isnan(TZshift)
+                [success2,TZshift2]=nested_gettimezone(Props.Props.Data{2});
+                if success2
+                    if isnan(TZshift2)
+                        % concatenation with unknown time zone ... forget time zone
+                        TZshift = NaN;
+                        TZstr = '';
+                    end
+                else
+                    success = success2; % failure
+                end
+            end
+    else
+        % use time zone of first data set ...
+    end
+else
+    DomainNr=[];
+    if isfield(Props,'Domain')
+        DomainNr=Props.Domain;
+    end
+    [success,TZshift,TZstr] = qp_getdata(Props.FileInfo,DomainNr,Props.Props,'timezone');
+end
 
 
 % -----------------------------------------------------------------------------

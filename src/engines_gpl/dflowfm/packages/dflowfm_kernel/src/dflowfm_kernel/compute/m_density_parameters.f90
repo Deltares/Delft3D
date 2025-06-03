@@ -32,6 +32,8 @@ module m_density_parameters
 
    implicit none
 
+   private
+   
    integer, public :: idensform !< 0 = Uniform density, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
    logical, public :: apply_thermobaricity !< Check if density is pressure dependent
    logical, public :: thermobaricity_in_pressure_gradient !< Apply thermobaricity in computing the baroclinic pressure gradient

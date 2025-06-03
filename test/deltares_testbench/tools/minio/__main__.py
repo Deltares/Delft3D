@@ -25,7 +25,7 @@ except KeyboardInterrupt:
     exit(1)
 except MinioToolError as exc:
     if exc.code == ErrorCode.AUTH:
-        print(f'Authentication error: {exc.message.rstrip(".")}.', file=sys.stderr)
+        print(f"Authentication error: {exc.message.rstrip('.')}.", file=sys.stderr)
         print(
             "\n".join(
                 [
@@ -43,5 +43,5 @@ except MinioToolError as exc:
             file=sys.stderr,
         )
     else:
-        print(f'Error: {exc.message.rstrip(".")}.', file=sys.stderr)
+        print(f"Error: {exc.message.rstrip('.')}.", file=sys.stderr)
     exit(1)

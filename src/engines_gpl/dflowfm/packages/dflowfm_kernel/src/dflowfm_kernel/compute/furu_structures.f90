@@ -70,7 +70,6 @@ contains
 
       real(kind=dp) :: as1
       real(kind=dp) :: as2
-      real(kind=dp) :: cmustr
       real(kind=dp) :: Cz
       real(kind=dp) :: dpt
       real(kind=dp) :: maxwidth1
@@ -150,9 +149,13 @@ contains
                      call GetCSParsFlow(network%adm%line2cross(L, 2), network%crs%cross, dpt, wetdown, perimeter, width)
 
                      wetdown = max(wetdown, 0.0001d0)
-                     call computeculvert(pstru%culvert, fu(L), ru(L), au(L), width, cmustr, s1(k1), s1(k2), &
-                                         q1(L), q1(L), pstru%u1(L0), pstru%u0(L0), dx(L), dts, wetdown)
-
+                     call computeculvert(pstru%culvert, pstru%fu(L0), pstru%ru(L0), pstru%au(L0), width, s1(k1), s1(k2), &
+                                         pstru%u1(L0), dx(L), dts, wetdown)
+                     
+                     fu(L) = pstru%fu(L0)
+                     ru(L) = pstru%ru(L0)
+                     au(L) = pstru%au(L0)
+                     continue
                   case (ST_UNI_WEIR)
                      fu(L) = pstru%fu(L0)
                      ru(L) = pstru%ru(L0)

@@ -615,7 +615,7 @@ contains
          call check_error(ierr, 'def time dim')
          ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_time, nf90_double, (/sedids%id_tsp%id_timedim/), 'time', 'time', '', trim(Tudunitstr))
          ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_interval, nf90_double, (/sedids%id_tsp%id_timedim/), 'averaging interval', 'averaging interval', '', 's')
-         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_morfac, nf90_double, (/sedids%id_tsp%id_timedim/), 'morfac', 'morphological accelaration factor', '', '-')
+         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_morfac, nf90_double, (/sedids%id_tsp%id_timedim/), 'morfac', 'morphological acceleration factor', '', '-')
 
          ierr = nf90_def_dim(sedids%ncid, 'nSedTot', stmpar%lsedtot, sedids%id_tsp%id_sedtotdim)
 

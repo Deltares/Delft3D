@@ -32,7 +32,7 @@ function [DomainNr,Props,subf,selected,stats,Ops]=qp_interface_update_options(mf
 %   $Id$
 
 [DomainNr,Props,subf,selected,stats,vslice,hslice] = get_basics(UD.MainWin);
-if isnumeric(Props.NVal) && Props.NVal < 0
+if isstruct(Props) && isnumeric(Props.NVal) && Props.NVal < 0
     try
         Handle_SelectFile=findobj(mfig,'tag','selectfile');
         File=get(Handle_SelectFile,'userdata');
@@ -657,17 +657,30 @@ else
 end
 
 if DimFlag(T_)
-    if ~strcmpi(qp_settings('timezone'),'Ignored')
-        atz = findobj(OH,'tag','axestimezone=?');
-        set(findobj(OH,'tag','axestimezone'),'enable','on');
-        set(atz,'enable','on','backgroundcolor',Active)
-        TZsel = get(atz,'value');
-        TZstr = get(atz,'string');
-        TZshift = get(atz,'userdata');
+    tz_forcing = qp_settings('timezone');
+    atz = findobj(OH,'tag','axestimezone=?');
+    TZstr = get(atz,'string');
+    TZshift = get(atz,'userdata');
+    % if Time Zone is ignored or unknown ...
+    tz_dataset = get(UD.MainWin.TZdata,'userdata');
+    if strcmp(tz_forcing,'Ignored') || isempty(tz_dataset) || isnan(tz_dataset)
+        Ops.axestimezone_shift = NaN;
+    else
+        % if Time Zone is known ...
+        if strcmp(tz_forcing,'As in dataset') % free to choose for plotting
+            status_switch = 'on';
+            status_color = Active; 
+            TZsel = get(atz,'value');
+        else % specific time zone enforced, don't ask ...
+            status_switch = 'off';
+            status_color = Inactive;
+            TZsel = find(strcmp(TZstr,tz_forcing));
+            set(atz,'value',TZsel)
+        end
+        set(findobj(OH,'tag','axestimezone'),'enable',status_switch);
+        set(atz,'enable',status_switch,'backgroundcolor',status_color)
         Ops.axestimezone_str   = strtok(TZstr{TZsel});
         Ops.axestimezone_shift = TZshift(TZsel);
-    else
-        Ops.axestimezone_shift = NaN;
     end
 end
 
@@ -1848,14 +1861,11 @@ if nval>=0
         end
         if nval==1
             ExpTypes{end+1}='-QuickIn file';
-        end
-        if nval==1
             ExpTypes{end+1}='Delft3D-MOR field file';
             ExpTypes{end+1}='-Delft3D-MOR field file';
-        end
-        if nval==1
             ExpTypes{end+1}='SIMONA box file';
             ExpTypes{end+1}='-SIMONA box file';
+            ExpTypes{end+1}='Waqview xyz file';
         end
     end
     if (multiple(M_) && (multiple(N_) || unstructured || strcmp(geometry,'sSEG'))) && ~multiple(K_) && ~multiple(T_)

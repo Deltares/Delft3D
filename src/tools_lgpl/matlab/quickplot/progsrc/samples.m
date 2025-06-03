@@ -26,16 +26,21 @@ function [x,y,z]=samples(cmd,varargin)
 %   SAMPLES('writeraw',FILENAME,MATRIX) write an M x N matrix as a file
 %   with M data columns and N rows.
 %
-%   SAMPLES('writeraw',FILENAME,'format',FORMAT, MATRIX)
-%   SAMPLES('write',FILENAME,'format',FORMAT, XYZ)
-%   SAMPLES('write',FILENAME,'format',FORMAT, X,Y,Z)
-%   SAMPLES('write',FILENAME,'format',FORMAT, X1,X2,...,XM) write the data
-%   using the specified number format. The default number format used is
-%   a fixed point %f. Here FORMAT should contain a single valid format
-%   specification like '%15.7f', '%16.7e' or '%g' in which case the format
-%   is used for all data columns, or the FORMAT should contain the same
-%   format specifiers as there are data columns to be written; use this
-%   option to vary the format used for the columns.
+%   SAMPLES('writeraw',FILENAME,Name,Value,MATRIX)
+%   SAMPLES('write',FILENAME,Name,Value,XYZ)
+%   SAMPLES('write',FILENAME,Name,Value,X,Y,Z)
+%   SAMPLES('write',FILENAME,Name,Value,X1,X2,...,XM) write the data
+%   to the specified file. The following Name,Value pairs are supported:
+%    * 'format',FORMAT
+%      The default number format used is a fixed point %f. Here FORMAT
+%      should contain a single valid format specification like '%15.7f',
+%      '%16.7e' or '%g' in which case the format is used for all data
+%      columns, or the FORMAT should contain the same format specifiers as
+%      there are data columns to be written; use this option to vary the
+%      format used for the columns.
+%    * 'header',STRING
+%      Writes the specified STRING on the first line of the file. By
+%      default no header line is written.
 
 %----- LGPL --------------------------------------------------------------------
 %
@@ -78,20 +83,32 @@ switch lower(cmd)
             x=xyz;
         end
     case {'write','writeraw'}
-        if ~ischar(varargin{1}) || strcmpi(varargin{1},'format')
-            filename = '?';
-            i = 0;
-        else
-            filename = varargin{1};
-            i = 1;
+        filename = '?';
+        format = '%f';
+        header = '';
+
+        i = 0;
+        isdata = false(size(varargin));
+        while i < length(varargin)
+            i = i+1;
+            if ischar(varargin{i})
+                switch varargin{i}
+                    case 'format'
+                        format = varargin{i+1};
+                        i = i+1;
+                    case 'header'
+                        header = varargin{i+1};
+                        i = i+1;
+                    otherwise
+                        filename = varargin{i};
+                end
+            else
+                isdata(i) = true;
+            end
         end
-        if nargin > i && strcmpi(varargin{i+1},'format')
-            format = varargin{i+2};
-            i = i+2;
-        else
-            format = '%f';
-        end
-        xyz = varargin(i+1:end);
+        data_index = 1 + find(isdata); % offset by one because of "cmd" argument
+        xyz = varargin(isdata);
+
         if length(xyz) == 1 % single matrix XYZ
             xyz = xyz{1};
             if strcmpi(cmd,'write')
@@ -104,16 +121,17 @@ switch lower(cmd)
                     xyz = transpose(xyz);
                 end
             end
+
         else % a number of vectors
             for d = 1:length(xyz)
                 szd = size(xyz{d});
                 if length(szd)>2 || all(szd ~= 1) || ~any(szd == 1)
-                    error('Invalid data argument %i; data must be provided as a single matrix, or multiple vectors',d)
+                    error('Invalid data argument %i; data must be provided as a single matrix, or multiple vectors', data_index(d))
                 else % row or column vector, make sure all data is in row vector form
                     if d == 1
                         N = length(xyz{d});
                     elseif length(xyz{d}) ~= N
-                        error('Invalid data argument %i; all vectors should have equal length (%i)', N)
+                        error('Invalid data argument %i; all vectors should have equal length (%i)', data_index(d), N)
                     end
                     if szd(1) ~= 1
                         xyz{d} = transpose(xyz{d});
@@ -122,7 +140,8 @@ switch lower(cmd)
             end
             xyz = cat(1,xyz{:});
         end
-        Local_write_samples(filename,format,xyz);
+
+        Local_write_samples(filename,header,format,xyz);
     otherwise
         error('Unknown command: %s',var2str(cmd)) 
 end
@@ -466,7 +485,7 @@ if isstruct(xyz)
 end
 
 
-function Local_write_samples(filename,format,xyz)
+function Local_write_samples(filename,header,format,xyz)
 nrows = size(xyz,1);
 nfields = sum(format == '%');
 if nfields == 1
@@ -490,6 +509,9 @@ end
 fid=fopen(filename,'w','n','US-ASCII');
 if fid<0
     error(['Could not create or open: ',filename])
+end
+if ~isempty(header)
+    fprintf(fid,'%s\n',header);
 end
 fprintf(fid,format,xyz);
 fclose(fid);

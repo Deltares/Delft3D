@@ -34,7 +34,7 @@ module geometry_module
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-
+   use precision, only: dp
    use MessageHandling, only: msgbox, mess, LEVEL_ERROR
    implicit none
 
@@ -107,18 +107,18 @@ contains
       implicit none
 
       !input
-      double precision, intent(in) :: start_location_x, start_location_y !< Input coordinates of the start location of the breach.
-      double precision, intent(in) :: xp(:), yp(:) !< Dambreak polyline points.
+      real(kind=dp), intent(in) :: start_location_x, start_location_y !< Input coordinates of the start location of the breach.
+      real(kind=dp), intent(in) :: xp(:), yp(:) !< Dambreak polyline points.
       integer, intent(in) :: np !< Number of input polyline points.
-      double precision, intent(in) :: xl(:, :), yl(:, :) !< (2,nlinks) Start-end points of the intersected flow links, used for selecting the nearest link to the start location.
+      real(kind=dp), intent(in) :: xl(:, :), yl(:, :) !< (2,nlinks) Start-end points of the intersected flow links, used for selecting the nearest link to the start location.
       integer, intent(out) :: Lstart !< Resulting index of the flow link closest to the start_location_x,Y.
-      double precision, intent(out) :: x_breach, y_breach !< Snapped x,y coordinates of the selected flow link's intersection with the polyline.
-      double precision, intent(in) :: dmiss !< Missing value used in the input polyline arrays.
+      real(kind=dp), intent(out) :: x_breach, y_breach !< Snapped x,y coordinates of the selected flow link's intersection with the polyline.
+      real(kind=dp), intent(in) :: dmiss !< Missing value used in the input polyline arrays.
       integer, intent(in) :: jsferic, jasfer3D !< Input coordinate type (sferic=1, cartesian=0)
 
       !locals
       integer :: k, ja, i, jacros
-      double precision :: dis, distemp, xn, yn, xntempa, yntempa, xc, yc, crpm, sm, sl
+      real(kind=dp) :: dis, distemp, xn, yn, xntempa, yntempa, xc, yc, crpm, sm, sl
 
       ! Project the start of the breach on the polyline, find xn and yn
       !if(.not.allocated(xp)) return
@@ -170,8 +170,8 @@ contains
       logical :: cw !< true if clockwise, false if not
 
       integer :: n !< number of points in polygon
-      real(hp), dimension(:), allocatable :: xhp !< temporary double precision x-coordinates
-      real(hp), dimension(:), allocatable :: yhp !< temporary double precision y-coordinates
+      real(hp), dimension(:), allocatable :: xhp !< temporary real(kind=dp) x-coordinates
+      real(hp), dimension(:), allocatable :: yhp !< temporary real(kind=dp) y-coordinates
 
       n = size(x)
       allocate (xhp(n), yhp(n))
@@ -259,11 +259,11 @@ contains
       integer, intent(in) :: N
       integer, intent(out) :: INSIDE
       integer, intent(in) :: jins
-      double precision, intent(in) :: dmiss
-      double precision, intent(in) :: X(N), Y(N), XL, YL
+      real(kind=dp), intent(in) :: dmiss
+      real(kind=dp), intent(in) :: X(N), Y(N), XL, YL
 
       integer :: i, i1, i2, np
-      double precision :: rechts, x1, x2, y1, y2, rm, rl
+      real(kind=dp) :: rechts, x1, x2, y1, y2, rm, rl
 
       if (N <= 2) then
          INSIDE = 1; if (jins == 0) INSIDE = 1 - INSIDE
@@ -304,7 +304,7 @@ contains
                   !                 op scheve lijn
                   INSIDE = 1; if (jins == 0) INSIDE = 1 - INSIDE
                   return
-               else if (RM > 0d0) then
+               else if (RM > 0.0_dp) then
                   !                 onder scheve lijn
                   if (XL == X1 .or. XL == X2) then
                      if (X1 > XL .or. X2 > XL) then
@@ -317,7 +317,7 @@ contains
          end if
          I = I + 1
          if (I < NP) goto 10
-         if (mod(RECHTS, 2d0) /= 0) INSIDE = 1 - INSIDE
+         if (mod(RECHTS, 2.0_dp) /= 0) INSIDE = 1 - INSIDE
       end if
       if (jins == 0) INSIDE = 1 - INSIDE
       return
@@ -330,11 +330,11 @@ contains
 
       implicit none
 
-      double precision :: X, Y, Z
+      real(kind=dp) :: X, Y, Z
       integer :: NP, INSIDE
       integer, intent(in) :: jins
-      double precision, intent(in) :: dmiss
-      double precision :: XP(NP), YP(NP)
+      real(kind=dp), intent(in) :: dmiss
+      real(kind=dp) :: XP(NP), YP(NP)
 
       integer :: ipoint ! points to first part of a polygon-subsection in polygon array
       integer :: istart, iend ! point to start and and node of a polygon in polygon array respectively
@@ -366,17 +366,17 @@ contains
    end subroutine DPINPOK
 
    !> compute distance from (x1,y1) to (x2,y2)
-   double precision function dbdistance(x1, y1, x2, y2, jsferic, jasfer3D, dmiss) ! distance point 1 -> 2
+   real(kind=dp) function dbdistance(x1, y1, x2, y2, jsferic, jasfer3D, dmiss) ! distance point 1 -> 2
       implicit none
-      double precision, intent(in) :: x1, y1, x2, y2
+      real(kind=dp), intent(in) :: x1, y1, x2, y2
       ! locals
-      double precision :: ddx, ddy, rr
-      double precision :: xx1, yy1, zz1, xx2, yy2, zz2
+      real(kind=dp) :: ddx, ddy, rr
+      real(kind=dp) :: xx1, yy1, zz1, xx2, yy2, zz2
       integer, intent(in) :: jsferic, jasfer3D
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
       if (x1 == dmiss .or. x2 == dmiss .or. y1 == dmiss .or. y2 == dmiss) then
-         dbdistance = 0d0
+         dbdistance = 0.0_dp
          return
       end if
 
@@ -388,8 +388,8 @@ contains
          ddx = getdx(x1, y1, x2, y2, jsferic)
          ddy = getdy(x1, y1, x2, y2, jsferic)
          rr = ddx * ddx + ddy * ddy
-         if (rr == 0d0) then
-            dbdistance = 0d0
+         if (rr == 0.0_dp) then
+            dbdistance = 0.0_dp
          else
             dbdistance = sqrt(rr)
          end if
@@ -400,40 +400,40 @@ contains
    !
    !> getdx
    !
-   double precision function getdx(x1, y1, x2, y2, jsferic)
+   real(kind=dp) function getdx(x1, y1, x2, y2, jsferic)
 
       use mathconsts, only: degrad_hp
       use physicalconsts, only: earth_radius, dtol_pole
       implicit none
-      double precision :: x1, y1, x2, y2
-      double precision :: xx1, yy1, xx2, yy2
-      double precision :: diff1, diff2
+      real(kind=dp) :: x1, y1, x2, y2
+      real(kind=dp) :: xx1, yy1, xx2, yy2
+      real(kind=dp) :: diff1, diff2
       integer, intent(in) :: jsferic
-      double precision :: csphi
+      real(kind=dp) :: csphi
 
       if (jsferic == 1) then
 
          ! fix for poles
-         diff1 = abs(abs(y1) - 90d0)
-         diff2 = abs(abs(y2) - 90d0)
+         diff1 = abs(abs(y1) - 90_dp)
+         diff2 = abs(abs(y2) - 90_dp)
          if ((diff1 <= dtol_pole .and. diff2 > dtol_pole) .or. &
              (diff1 > dtol_pole .and. diff2 <= dtol_pole)) then
-            getdx = 0d0
+            getdx = 0.0_dp
             return
          end if
 
          xx1 = x1
          xx2 = x2
-         if (xx1 - xx2 > 180d0) then
-            xx1 = xx1 - 360d0
-         else if (xx1 - xx2 < -180d0) then
-            xx1 = xx1 + 360d0
+         if (xx1 - xx2 > 180_dp) then
+            xx1 = xx1 - 360_dp
+         else if (xx1 - xx2 < -180_dp) then
+            xx1 = xx1 + 360_dp
          end if
          xx1 = xx1 * degrad_hp
          xx2 = xx2 * degrad_hp
          yy1 = y1 * degrad_hp
          yy2 = y2 * degrad_hp
-         csphi = cos(0.5d0 * (yy1 + yy2))
+         csphi = cos(0.5_dp * (yy1 + yy2))
          getdx = earth_radius * csphi * (xx2 - xx1)
       else
          getdx = x2 - x1
@@ -443,15 +443,15 @@ contains
    !
    !> getdy
    !
-   double precision function getdy(x1, y1, x2, y2, jsferic)
+   real(kind=dp) function getdy(x1, y1, x2, y2, jsferic)
 
       use mathconsts, only: degrad_hp
       use physicalconsts, only: earth_radius, dtol_pole
 
       implicit none
 
-      double precision :: x1, y1, x2, y2
-      double precision :: yy1, yy2
+      real(kind=dp) :: x1, y1, x2, y2
+      real(kind=dp) :: yy1, yy2
       integer, intent(in) :: jsferic
 
       if (jsferic == 1) then
@@ -470,7 +470,7 @@ contains
 
       implicit none
 
-      double precision :: x1, y1, x2, y2, dx, dy
+      real(kind=dp) :: x1, y1, x2, y2, dx, dy
       integer, intent(in) :: jsferic
 
       if (Jsferic == 1) then
@@ -490,7 +490,7 @@ contains
       use mathconsts, only: degrad_hp
       use physicalconsts, only: earth_radius, dtol_pole
       implicit none
-      double precision :: x1, y1, xx1, yy1, zz1, rr
+      real(kind=dp) :: x1, y1, xx1, yy1, zz1, rr
 
 !      if ( jsferic == 1 ) then
       zz1 = earth_radius * sin(y1 * degrad_hp)
@@ -498,7 +498,7 @@ contains
       xx1 = rr * cos(x1 * degrad_hp)
       yy1 = rr * sin(x1 * degrad_hp)
 !      else
-!         zz1 = 0d0
+!         zz1 = 0.0_dp
 !         xx1 = x1
 !         yy1 = y1
 !      end if
@@ -514,28 +514,28 @@ contains
       use mathconsts, only: raddeg_hp
       implicit none
 
-      double precision, intent(in) :: xx1 !< 3D x-coordinate
-      double precision, intent(in) :: yy1 !< 3D y-coordinate
-      double precision, intent(in) :: zz1 !< 3D z-coordinate
-      double precision, intent(out) :: x1 !< longitude (spherical) or x-coordinate (2D Cartesian)
-      double precision, intent(out) :: y1 !< lattitude (spherical) or y-coordinate (2D Cartesian)
-      double precision, intent(in) :: xref !< reference point longitude
+      real(kind=dp), intent(in) :: xx1 !< 3D x-coordinate
+      real(kind=dp), intent(in) :: yy1 !< 3D y-coordinate
+      real(kind=dp), intent(in) :: zz1 !< 3D z-coordinate
+      real(kind=dp), intent(out) :: x1 !< longitude (spherical) or x-coordinate (2D Cartesian)
+      real(kind=dp), intent(out) :: y1 !< lattitude (spherical) or y-coordinate (2D Cartesian)
+      real(kind=dp), intent(in) :: xref !< reference point longitude
 
-      double precision :: xx1_
+      real(kind=dp) :: xx1_
 
-      double precision, parameter :: dtol = 1d-16
+      real(kind=dp), parameter :: dtol = 1d-16
 
 !         if ( jsferic == 1 ) then
       xx1_ = xx1
 !            yy1a = abs(yy1)
 !            if ( xx1 > -dtol*yy1a .and. xx1 < dtol*yy1a ) then
-!               xx1_ = 0d0
+!               xx1_ = 0.0_dp
 !            end if
       x1 = atan2(yy1, xx1) * raddeg_hp
       y1 = atan2(zz1, sqrt(xx1**2 + yy1**2)) * raddeg_hp
 
 !            if ( x1 /= DMISS ) then
-      x1 = x1 + nint((xref - x1) / 360d0) * 360d0
+      x1 = x1 + nint((xref - x1) / 360_dp) * 360_dp
 !            end if
 !         else
 !            x1 = xx1
@@ -559,31 +559,31 @@ contains
 
       implicit none
 
-      double precision, intent(inout) :: crp !< crp (in)==-1234 will make crp (out) non-dimensional
-      double precision :: det
-      double precision :: eps
+      real(kind=dp), intent(inout) :: crp !< crp (in)==-1234 will make crp (out) non-dimensional
+      real(kind=dp) :: det
+      real(kind=dp) :: eps
       integer :: jacros, jamakenondimensional
-      double precision :: sl
-      double precision :: sm
-      double precision, intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
-      double precision :: x21, y21, x31, y31, x43, y43, xcr, ycr
+      real(kind=dp) :: sl
+      real(kind=dp) :: sm
+      real(kind=dp), intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
+      real(kind=dp) :: x21, y21, x31, y31, x43, y43, xcr, ycr
       integer, intent(in) :: jsferic
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
 !     safety check on crp (in)
       if (ieee_is_nan(crp)) then
-         crp = 0d0
+         crp = 0.0_dp
       end if
 
       ! Set defaults for no crossing at all:
       jamakenondimensional = 0
-      if (abs(crp + 1234d0) < 0.5d0) then
+      if (abs(crp + 1234_dp) < 0.5_dp) then
          jamakenondimensional = 1
-         crp = 0d0
+         crp = 0.0_dp
       end if
 
       JACROS = 0
-      EPS = 0.00001d0
+      EPS = 0.00001_dp
       SL = DMISS
       SM = DMISS
 !     SL     = LABDA TUSSEN 0 EN 1 OP EERSTE PAAR
@@ -595,14 +595,14 @@ contains
 
       DET = X43 * Y21 - Y43 * X21
 
-      EPS = max(EPS * maxval((/X21, Y21, X43, Y43/)), tiny(0d0))
+      EPS = max(EPS * maxval((/X21, Y21, X43, Y43/)), tiny(0.0_dp))
       if (abs(DET) < EPS) then
          return
       else
          SM = (Y31 * X21 - X31 * Y21) / DET
          SL = (Y31 * X43 - X31 * Y43) / DET
-         if (SM >= 0d0 .and. SM <= 1d0 .and. &
-             SL >= 0d0 .and. SL <= 1d0) then
+         if (SM >= 0.0_dp .and. SM <= 1.0_dp .and. &
+             SL >= 0.0_dp .and. SL <= 1.0_dp) then
             JACROS = 1
          end if
          XCR = X1 + SL * (X2 - X1)
@@ -621,24 +621,24 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: x1, y1 !< first  point coordinates
-      double precision, intent(in) :: x2, y2 !< second point coordinates
-      double precision, intent(in) :: x3, y3 !< third  point coordinates
-      double precision, intent(in) :: x4, y4 !< fourth point coordinates
+      real(kind=dp), intent(in) :: x1, y1 !< first  point coordinates
+      real(kind=dp), intent(in) :: x2, y2 !< second point coordinates
+      real(kind=dp), intent(in) :: x3, y3 !< third  point coordinates
+      real(kind=dp), intent(in) :: x4, y4 !< fourth point coordinates
       integer, intent(out) :: jacros !< line 1-2 crosses line 3-4 (1) or not (0)
-      double precision, intent(out) :: sL, sm
-      double precision, intent(out) :: xcr, ycr
+      real(kind=dp), intent(out) :: sL, sm
+      real(kind=dp), intent(out) :: xcr, ycr
       integer, intent(in) :: jsferic
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
-      double precision, dimension(3) :: xx1, xx2, xx3, xx4
-      double precision, dimension(3) :: xxcr
+      real(kind=dp), dimension(3) :: xx1, xx2, xx3, xx4
+      real(kind=dp), dimension(3) :: xxcr
 
-      double precision, dimension(3) :: n12, n34
+      real(kind=dp), dimension(3) :: n12, n34
 
-      double precision :: Det12, Det34, dum
+      real(kind=dp) :: Det12, Det34, dum
 
-      double precision, parameter :: dtol = 1d-12
+      real(kind=dp), parameter :: dtol = 1d-12
 
 !        get 3D coordinates of four points
       call sphertocart3D(x1, y1, xx1(1), xx1(2), xx1(3))
@@ -660,7 +660,7 @@ contains
 
       dum = sqrt(abs(inprod(n12, n34)))
 
-      if (1d0 - dum > dtol) then
+      if (1.0_dp - dum > dtol) then
 !           3D
          Det12 = inprod(xx2 - xx1, n34)
          Det34 = inprod(xx4 - xx3, n12)
@@ -674,8 +674,8 @@ contains
 
       end if
 
-      if (SM >= 0d0 .and. SM <= 1d0 .and. &
-          SL >= 0d0 .and. SL <= 1d0) then
+      if (SM >= 0.0_dp .and. SM <= 1.0_dp .and. &
+          SL >= 0.0_dp .and. SL <= 1.0_dp) then
          jacros = 1
       end if
 
@@ -690,27 +690,27 @@ contains
       implicit none
 
       integer, intent(in) :: N !< number of points
-      double precision, dimension(N), intent(in) :: x, y !< point coordinates
-      double precision, intent(out) :: xu, yu !< average coordinates
+      real(kind=dp), dimension(N), intent(in) :: x, y !< point coordinates
+      real(kind=dp), intent(out) :: xu, yu !< average coordinates
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
 
-      double precision :: xx, yy, zz
-      double precision :: xxu, yyu, zzu
+      real(kind=dp) :: xx, yy, zz
+      real(kind=dp) :: xxu, yyu, zzu
 
-      double precision :: dNi, x1
+      real(kind=dp) :: dNi, x1
 
       integer :: i
 
       if (N < 1) return
 
-      dNi = 1d0 / N
+      dNi = 1.0_dp / N
       x1 = x(1)
 
       if (jsferic == 1 .and. jasfer3D == 1) then
-         xxu = 0d0
-         yyu = 0d0
-         zzu = 0d0
+         xxu = 0.0_dp
+         yyu = 0.0_dp
+         zzu = 0.0_dp
          do i = 1, N
             call sphertoCart3D(x(i), y(i), xx, yy, zz)
             xxu = xxu + xx
@@ -723,8 +723,8 @@ contains
          zzu = zzu * dNi
          call Cart3Dtospher(xxu, yyu, zzu, xu, yu, x1)
       else
-         xu = 0d0
-         yu = 0d0
+         xu = 0.0_dp
+         yu = 0.0_dp
          do i = 1, N
             xu = xu + x(i)
             yu = yu + y(i)
@@ -739,8 +739,8 @@ contains
    !>    c = a X b
    function vecprod(a, b)
       implicit none
-      double precision, dimension(3) :: vecprod
-      double precision, dimension(3), intent(in) :: a, b
+      real(kind=dp), dimension(3) :: vecprod
+      real(kind=dp), dimension(3), intent(in) :: a, b
 
       vecprod = (/a(2) * b(3) - a(3) * b(2), a(3) * b(1) - a(1) * b(3), a(1) * b(2) - a(2) * b(1)/)
 
@@ -748,10 +748,10 @@ contains
    end function vecprod
 
 !>    c = a.b
-   double precision function inprod(a, b)
+   real(kind=dp) function inprod(a, b)
       implicit none
 
-      double precision, dimension(3) :: a, b
+      real(kind=dp), dimension(3) :: a, b
 
       inprod = a(1) * b(1) + a(2) * b(2) + a(3) * b(3)
    end function inprod
@@ -760,9 +760,9 @@ contains
    function matprod(A, b)
       implicit none
 
-      double precision, dimension(3) :: matprod
-      double precision, dimension(3, 3), intent(in) :: A
-      double precision, dimension(3), intent(in) :: b
+      real(kind=dp), dimension(3) :: matprod
+      real(kind=dp), dimension(3, 3), intent(in) :: A
+      real(kind=dp), dimension(3), intent(in) :: b
 
       integer :: i
 
@@ -771,12 +771,12 @@ contains
 
    subroutine dbpinpol(xp, yp, in, dmiss, JINS, NPL, xpl, ypl, zpl) ! ALS JE VOOR VEEL PUNTEN MOET NAGAAN OF ZE IN POLYGON ZITTEN
       implicit none
-      double precision, intent(in) :: xp, yp !< point coordinates
+      real(kind=dp), intent(in) :: xp, yp !< point coordinates
       integer, intent(inout) :: in !< in(-1): initialization, out(0): outside polygon, out(1): inside polygon
       integer :: num
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
       integer, intent(in) :: JINS, NPL
-      double precision, optional, intent(in) :: xpl(:), ypl(:), zpl(:)
+      real(kind=dp), optional, intent(in) :: xpl(:), ypl(:), zpl(:)
 
       if (NPL > 0 .and. present(xpl)) then
          call dbpinpol_optinside_perpol(xp, yp, 0, 0, in, num, dmiss, JINS, NPL, xpl, ypl, zpl)
@@ -796,7 +796,7 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: xp, yp !< point coordinates
+      real(kind=dp), intent(in) :: xp, yp !< point coordinates
       integer, intent(in) :: inside_perpol !< Specify whether or not (1/0) to use each polygon's first point zpl-value as the jins(ide)-option (only 0 or 1 allowed), or use the global JINS variable.
       integer, intent(in) :: iselect !< use all polygons (0), only first-zpl<0 polygons (-1), or all but first-zpl<0 polygons (1)
       integer, intent(inout) :: in !< in(-1): initialization, out(0): outside polygon, out(1): inside polygon
@@ -804,7 +804,7 @@ contains
 
       integer :: MAXPOLY = 1000 ! will grow if needed
 
-      double precision, allocatable, save :: xpmin(:), ypmin(:), xpmax(:), ypmax(:)
+      real(kind=dp), allocatable, save :: xpmin(:), ypmin(:), xpmax(:), ypmax(:)
       integer, save :: Npoly
       integer, allocatable, save :: iistart(:), iiend(:)
 
@@ -815,9 +815,9 @@ contains
       logical :: Linit ! initialization of polygon bounds, and start and end nodes respectively
 
       integer :: jins_opt !< The actual used jins-mode (either global, or per poly)
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
       integer, intent(in) :: JINS, NPL
-      double precision, optional, intent(in) :: xpl(NPL), ypl(NPL), zpl(NPL)
+      real(kind=dp), optional, intent(in) :: xpl(NPL), ypl(NPL), zpl(NPL)
       integer :: count
       numselect = 0
 
@@ -953,7 +953,7 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: xp, yp !< point coordinates
+      real(kind=dp), intent(in) :: xp, yp !< point coordinates
       integer, intent(in) :: inside_perpol !< Specify whether or not (1/0) to use each polygon's first point zpl-value as the jins(ide)-option (only 0 or 1 allowed), or use the global JINS variable.
       integer, intent(in) :: iselect !< use all polygons (0), only first-zpl<0 polygons (-1), or all but first-zpl<0 polygons (1)
       integer, intent(inout) :: in !< in(-1): initialization, out(0): outside polygon, out(1): inside polygon
@@ -961,7 +961,7 @@ contains
 
       integer :: MAXPOLY = 1000 ! will grow if needed
 
-      double precision, allocatable, save :: xpmin(:), ypmin(:), xpmax(:), ypmax(:)
+      real(kind=dp), allocatable, save :: xpmin(:), ypmin(:), xpmax(:), ypmax(:)
       integer, save :: Npoly
       integer, allocatable, save :: iistart(:), iiend(:)
 
@@ -972,9 +972,9 @@ contains
       logical :: Linit ! initialization of polygon bounds, and start and end nodes respectively
 
       integer :: jins_opt !< The actual used jins-mode (either global, or per poly)
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
       integer, intent(in) :: JINS, NPL
-      double precision, optional, intent(in) :: xpl(NPL), ypl(NPL), zpl(NPL)
+      real(kind=dp), optional, intent(in) :: xpl(NPL), ypl(NPL), zpl(NPL)
 
       numselect = 0
 
@@ -1098,9 +1098,9 @@ contains
       implicit none
 
       integer, intent(in) :: num !< array size
-      double precision, dimension(num), intent(in) :: x, y !< array coordinates
+      real(kind=dp), dimension(num), intent(in) :: x, y !< array coordinates
       integer, intent(out) :: jstart, jend !< subarray indices
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
       !      find jstart and jend
       jend = 1
@@ -1136,34 +1136,34 @@ contains
       use mathconsts, only: degrad_hp
       implicit none
 
-      double precision, intent(in) :: xp, yp !< point coordinates
+      real(kind=dp), intent(in) :: xp, yp !< point coordinates
       integer, intent(in) :: N !< polygon size
-      double precision, dimension(N), intent(in) :: x, y !< polygon coordinates
+      real(kind=dp), dimension(N), intent(in) :: x, y !< polygon coordinates
       integer, intent(out) :: inside !< inside (1) or not (0)
-      double precision, intent(in) :: dmiss !< missing value
+      real(kind=dp), intent(in) :: dmiss !< missing value
       integer, intent(in) :: jins !< global inside/outside
       integer, intent(in) :: jsferic !< spherical coordinates (1) or Cartesian (0)
       integer, intent(in) :: jasfer3D
-      double precision, optional, intent(in) :: dfac !< polygon enlargement factor
-      double precision, optional, intent(in) :: xz, yz !< coordinates of enlargement center
+      real(kind=dp), optional, intent(in) :: dfac !< polygon enlargement factor
+      real(kind=dp), optional, intent(in) :: xz, yz !< coordinates of enlargement center
 
-      double precision, dimension(:), allocatable :: xx, yy, zz
+      real(kind=dp), dimension(:), allocatable :: xx, yy, zz
 
-      double precision, dimension(3) :: xiXxip1 ! x_i X x_{i+1}
-      double precision, dimension(3) :: xpXe ! xp X e
+      real(kind=dp), dimension(3) :: xiXxip1 ! x_i X x_{i+1}
+      real(kind=dp), dimension(3) :: xpXe ! xp X e
 
-      double precision :: xxp, yyp, zzp
-      double precision :: xxz, yyz, zzz
+      real(kind=dp) :: xxp, yyp, zzp
+      real(kind=dp) :: xxz, yyz, zzz
 
-      double precision :: D, Di
-      double precision :: xi, eta, zeta
-      double precision :: lambda
+      real(kind=dp) :: D, Di
+      real(kind=dp) :: xi, eta, zeta
+      real(kind=dp) :: lambda
 
       integer :: i, ip1, num
 
-      double precision, dimension(3) :: ee
+      real(kind=dp), dimension(3) :: ee
 
-      double precision, parameter :: dtol = 0d0
+      real(kind=dp), parameter :: dtol = 0.0_dp
 
       if (N < 3) then
          inside = 0
@@ -1207,7 +1207,7 @@ contains
 
       !     get test direction: e_lambda
       lambda = xp * degrad_hp ! dg2rd
-      ee = (/-sin(lambda), cos(lambda), 0d0/)
+      ee = (/-sin(lambda), cos(lambda), 0.0_dp/)
 
       !     loop over polygon sections
       inside = 0
@@ -1229,10 +1229,10 @@ contains
 !         D = xiXxip1(1)*ee(1) + xiXxip1(2)*ee(2) + xiXxip1(3)*ee(3)
 
          D = inprod(xiXxip1, ee)
-!         D = sign(1d0,D)
+!         D = sign(1.0_dp,D)
 
          if (abs(D) > dtol) then
-            Di = 1d0 / D
+            Di = 1.0_dp / D
 !            xi   = -( xpXe(1)*xx(ip1) + xpXe(2)*yy(ip1) + xpXe(3)*zz(ip1) ) * Di
 !            eta  =  ( xpXe(1)*xx(i)   + xpXe(2)*yy(i)   + xpXe(3)*zz(i)   ) * Di
 !            zeta = -( xiXxip1(1)*xxp  + xiXxip1(2)*yyp  + xiXxip1(3)*zzp  ) * Di
@@ -1242,15 +1242,15 @@ contains
             zeta = -(inprod(xiXxip1, (/xxp, yyp, zzp/))) * Di
          else
             !           enforce no intersection
-            xi = -1d0
-            eta = -1d0
-            zeta = -1d0
+            xi = -1.0_dp
+            eta = -1.0_dp
+            zeta = -1.0_dp
          end if
 
-         if (zeta == 0d0) then
+         if (zeta == 0.0_dp) then
             inside = 1
             goto 1234
-         else if (xi >= 0d0 .and. eta > 0d0 .and. zeta > 0d0) then
+         else if (xi >= 0.0_dp .and. eta > 0.0_dp .and. zeta > 0.0_dp) then
             inside = 1 - inside
          end if
 
@@ -1272,10 +1272,10 @@ contains
       implicit none
 
       integer :: n, np, m, mp
-      double precision :: a, b
+      real(kind=dp) :: a, b
 
       integer :: ipiv, indxr, indxc, i, j, k, L, LL, irow, icol
-      double precision :: big, dum, pivinv
+      real(kind=dp) :: big, dum, pivinv
 
       !      PARAMETER (num_rows=50)
       !      DIMENSION A(NP,NP),B(NP,MP),IPIV(num_rows),INDXR(num_rows),INDXC(num_rows)
@@ -1359,13 +1359,13 @@ contains
    subroutine crossinbox(x1, y1, x2, y2, x3, y3, x4, y4, JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss) ! only if overlap
 
       implicit none
-      double precision, intent(inout) :: crp ! crp (in)==-1234 will make crp (out) non-dimensional
+      real(kind=dp), intent(inout) :: crp ! crp (in)==-1234 will make crp (out) non-dimensional
       integer :: jacros
-      double precision, intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
-      double precision, intent(out) :: SL, SM, XCR, YCR
-      double precision :: x1min, x1max, y1min, y1max, x3min, x3max, y3min, y3max
+      real(kind=dp), intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
+      real(kind=dp), intent(out) :: SL, SM, XCR, YCR
+      real(kind=dp) :: x1min, x1max, y1min, y1max, x3min, x3max, y3min, y3max
       integer, intent(in) :: jsferic
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
       ! Set defaults for no crossing at all:
       JACROS = 0
@@ -1389,16 +1389,16 @@ contains
    subroutine dlinedis(X3, Y3, X1, Y1, X2, Y2, JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)
 
       implicit none
-      double precision, intent(in) :: X1, Y1, X2, Y2 !< x,y coordinates of the line between point 1 and 2.
-      double precision, intent(in) :: X3, Y3 !< x,y coordinates of the point for which to compute the distance.
+      real(kind=dp), intent(in) :: X1, Y1, X2, Y2 !< x,y coordinates of the line between point 1 and 2.
+      real(kind=dp), intent(in) :: X3, Y3 !< x,y coordinates of the point for which to compute the distance.
       integer, intent(out) :: ja !< Whether or not (1/0) the computation was possible. If line points 1 and 2 coincide, ja==0, and distance is just Euclidean distance between 3 and 1.
-      double precision, intent(out) :: DIS !< Perpendicular distance from point 3 and line 1-2.
-      double precision, intent(out) :: XN, YN !< Coordinates of the projected point from point 3 onto line 1-2.
+      real(kind=dp), intent(out) :: DIS !< Perpendicular distance from point 3 and line 1-2.
+      real(kind=dp), intent(out) :: XN, YN !< Coordinates of the projected point from point 3 onto line 1-2.
       integer, intent(in) :: jsferic, jasfer3D
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
-      double precision :: R2, RL, X21, Y21, Z21, X31, Y31, Z31
-      double precision :: xx1, xx2, xx3, yy1, yy2, yy3, zz1, zz2, zz3, xxn, yyn, zzn
+      real(kind=dp) :: R2, RL, X21, Y21, Z21, X31, Y31, Z31
+      real(kind=dp) :: xx1, xx2, xx3, yy1, yy2, yy3, zz1, zz2, zz3, xxn, yyn, zzn
 
 !     korste afstand tot lijnelement tussen eindpunten
       JA = 0
@@ -1413,16 +1413,16 @@ contains
 !         IF (R2 .NE. 0) THEN
          if (R2 > 1d-8) then
             RL = (X31 * X21 + Y31 * Y21) / R2
-            RL = max(min(1d0, RL), 0d0)
+            RL = max(min(1.0_dp, RL), 0.0_dp)
             JA = 1
             XN = X1 + RL * (x2 - x1)
 
 !           fix for spherical, periodic coordinates
             if (jsferic == 1) then
-               if (x2 - x1 > 180d0) then
-                  XN = XN - RL * 360d0
-               else if (x2 - x1 < -180d0) then
-                  XN = XN + RL * 360d0
+               if (x2 - x1 > 180_dp) then
+                  XN = XN - RL * 360_dp
+               else if (x2 - x1 < -180_dp) then
+                  XN = XN + RL * 360_dp
                end if
             end if
 
@@ -1446,7 +1446,7 @@ contains
          r2 = x21 * x21 + y21 * y21 + z21 * z21
          if (R2 > 1d-8) then
             RL = (X31 * X21 + Y31 * Y21 + Z31 * Z21) / R2
-            RL = max(min(1d0, RL), 0d0)
+            RL = max(min(1.0_dp, RL), 0.0_dp)
             JA = 1
 
             XXN = xx1 + RL * x21
@@ -1466,15 +1466,15 @@ contains
       return
    end subroutine dlinedis
 
-   double precision function dprodout(x1, y1, x2, y2, x3, y3, x4, y4, jsferic, jasfer3D) ! out product of two segments
+   real(kind=dp) function dprodout(x1, y1, x2, y2, x3, y3, x4, y4, jsferic, jasfer3D) ! out product of two segments
       implicit none
-      double precision :: x1, y1, x2, y2, x3, y3, x4, y4
-      double precision :: dx1, dy1, dx2, dy2
-      double precision :: xx1, yy1, zz1
-      double precision :: xx2, yy2, zz2
-      double precision :: xx3, yy3, zz3
-      double precision :: xx4, yy4, zz4
-      double precision :: vxx, vyy, vzz
+      real(kind=dp) :: x1, y1, x2, y2, x3, y3, x4, y4
+      real(kind=dp) :: dx1, dy1, dx2, dy2
+      real(kind=dp) :: xx1, yy1, zz1
+      real(kind=dp) :: xx2, yy2, zz2
+      real(kind=dp) :: xx3, yy3, zz3
+      real(kind=dp) :: xx4, yy4, zz4
+      real(kind=dp) :: vxx, vyy, vzz
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
 
@@ -1491,7 +1491,7 @@ contains
          dprodout = sqrt(vxx**2 + vyy**2 + vzz**2)
 
          !   check if vector is pointing outwards of earth
-         if (vxx * xx1 + vyy * yy1 + vzz * zz1 < 0d0) then
+         if (vxx * xx1 + vyy * yy1 + vzz * zz1 < 0.0_dp) then
             dprodout = -dprodout
          end if
       else
@@ -1513,16 +1513,16 @@ contains
    !> Normalized inner product of two segments
       !! NOTE that parallel lines may produce abs(dcosphi)=1+O(10^-16) > 1
       !! in Debug builds, crashes subsequent acos calls! (not in Release)
-   double precision function dcosphi(x1, y1, x2, y2, x3, y3, x4, y4, jsferic, jasfer3D, dxymis)
+   real(kind=dp) function dcosphi(x1, y1, x2, y2, x3, y3, x4, y4, jsferic, jasfer3D, dxymis)
 
       implicit none
-      double precision :: x1, y1, x2, y2, x3, y3, x4, y4
-      double precision :: dx1, dy1, dx2, dy2, r1, r2
+      real(kind=dp) :: x1, y1, x2, y2, x3, y3, x4, y4
+      real(kind=dp) :: dx1, dy1, dx2, dy2, r1, r2
       integer, intent(in) :: jsferic, jasfer3D
-      double precision, intent(in) :: dxymis
+      real(kind=dp), intent(in) :: dxymis
 
-      double precision, dimension(4) :: xx, yy, zz
-      double precision :: dz1, dz2
+      real(kind=dp), dimension(4) :: xx, yy, zz
+      real(kind=dp) :: dz1, dz2
 
       if (jsferic == 1 .and. jasfer3D == 1) then
          call sphertocart3D(x1, y1, xx(1), yy(1), zz(1))
@@ -1540,7 +1540,7 @@ contains
          dz2 = zz(4) - zz(3)
          r2 = dx2**2 + dy2**2 + dz2**2
 
-         if (r1 == 0d0 .or. r2 == 0d0) then
+         if (r1 == 0.0_dp .or. r2 == 0.0_dp) then
             dcosphi = dxymis
          else
             dcosphi = (dx1 * dx2 + dy1 * dy2 + dz1 * dz2) / sqrt(r1 * r2)
@@ -1558,7 +1558,7 @@ contains
          r1 = dx1 * dx1 + dy1 * dy1
          r2 = dx2 * dx2 + dy2 * dy2
 
-         if (r1 == 0d0 .or. r2 == 0d0) then
+         if (r1 == 0.0_dp .or. r2 == 0.0_dp) then
             dcosphi = dxymis
          else
             dcosphi = (dx1 * dx2 + dy1 * dy2) / sqrt(r1 * r2)
@@ -1566,7 +1566,7 @@ contains
 
       end if
 
-      dcosphi = max(min(dcosphi, 1d0), -1d0)
+      dcosphi = max(min(dcosphi, 1.0_dp), -1.0_dp)
 
       return
    end function dcosphi
@@ -1578,30 +1578,30 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: xref, yref !< global coordinates of reference point (longitude, latitude)
+      real(kind=dp), intent(in) :: xref, yref !< global coordinates of reference point (longitude, latitude)
       integer, intent(in) :: N !< number of global coordinates
-      double precision, dimension(N), intent(in) :: xglob, yglob !< global coordinates, (longitude, latitude)
-      double precision, dimension(N), intent(in) :: vxglob, vyglob !< vector components in global coordinates
-      double precision, dimension(N), intent(out) :: vxloc, vyloc !< vector components in local coordinates
+      real(kind=dp), dimension(N), intent(in) :: xglob, yglob !< global coordinates, (longitude, latitude)
+      real(kind=dp), dimension(N), intent(in) :: vxglob, vyglob !< vector components in global coordinates
+      real(kind=dp), dimension(N), intent(out) :: vxloc, vyloc !< vector components in local coordinates
 
-      double precision, dimension(3) :: exxp, eyyp, ezzp ! base vectors of rotated 3D Cartesian reference frame
-      double precision, dimension(3) :: elambda, ephi
-      double precision, dimension(3) :: elambdap, ephip
-      double precision, dimension(3) :: elambdaloc, ephiloc
-      double precision :: vxx, vyy, vzz
+      real(kind=dp), dimension(3) :: exxp, eyyp, ezzp ! base vectors of rotated 3D Cartesian reference frame
+      real(kind=dp), dimension(3) :: elambda, ephi
+      real(kind=dp), dimension(3) :: elambdap, ephip
+      real(kind=dp), dimension(3) :: elambdaloc, ephiloc
+      real(kind=dp) :: vxx, vyy, vzz
 
-      double precision :: xx, yy, zz !  3D Cartesian coordinates
-      double precision :: xxp, yyp, zzp !  3D Cartesian coordinates in rotated frame
-      double precision :: xloc, yloc
+      real(kind=dp) :: xx, yy, zz !  3D Cartesian coordinates
+      real(kind=dp) :: xxp, yyp, zzp !  3D Cartesian coordinates in rotated frame
+      real(kind=dp) :: xloc, yloc
 
-      double precision :: lambda0, phi0
-      double precision :: lambda, phi
-      double precision :: lambdap, phip
+      real(kind=dp) :: lambda0, phi0
+      real(kind=dp) :: lambda, phi
+      real(kind=dp) :: lambdap, phip
 
       integer :: i
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
       if (jsferic == 0 .or. jasfer3D == 0) then
          do i = 1, N
@@ -1615,7 +1615,7 @@ contains
 
          !           compute base vectors
          exxp = (/cos(phi0) * cos(lambda0), cos(phi0) * sin(lambda0), sin(phi0)/)
-         eyyp = (/-sin(lambda0), cos(lambda0), 0d0/)
+         eyyp = (/-sin(lambda0), cos(lambda0), 0.0_dp/)
          ezzp = (/-sin(phi0) * cos(lambda0), -sin(phi0) * sin(lambda0), cos(phi0)/)
 
          do i = 1, N
@@ -1637,7 +1637,7 @@ contains
             phip = yloc * degrad_hp
 
             !              compute global base vectors at other point in 3D (xx,yy,zz) frame
-            elambda = (/-sin(lambda), cos(lambda), 0d0/)
+            elambda = (/-sin(lambda), cos(lambda), 0.0_dp/)
             ephi = (/-sin(phi) * cos(lambda), -sin(phi) * sin(lambda), cos(phi)/)
 
             !              compute vector in 3D (xx,yy,zz) frame
@@ -1646,7 +1646,7 @@ contains
             vzz = vxglob(i) * elambda(3) + vyglob(i) * ephi(3)
 
             !              compute base vectors at other point in rotated 3D (xxp,yyp,zzp) frame
-            elambdap = (/-sin(lambdap), cos(lambdap), 0d0/)
+            elambdap = (/-sin(lambdap), cos(lambdap), 0.0_dp/)
             ephip = (/-sin(phip) * cos(lambdap), -sin(phip) * sin(lambdap), cos(phip)/)
 
             !              compute local base vectors in (xx,yy,zz) frame
@@ -1669,30 +1669,30 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: xref, yref !< global coordinates of reference point (longitude, latitude)
+      real(kind=dp), intent(in) :: xref, yref !< global coordinates of reference point (longitude, latitude)
       integer, intent(in) :: N !< number of global coordinates
-      double precision, intent(in) :: xglob, yglob !< global coordinates, (longitude, latitude)
-      double precision, intent(in) :: vxglob, vyglob !< vector components in global coordinates
-      double precision, dimension(N), intent(out) :: vxloc, vyloc !< vector components in local coordinates
+      real(kind=dp), intent(in) :: xglob, yglob !< global coordinates, (longitude, latitude)
+      real(kind=dp), intent(in) :: vxglob, vyglob !< vector components in global coordinates
+      real(kind=dp), dimension(N), intent(out) :: vxloc, vyloc !< vector components in local coordinates
 
-      double precision, dimension(3) :: exxp, eyyp, ezzp ! base vectors of rotated 3D Cartesian reference frame
-      double precision, dimension(3) :: elambda, ephi
-      double precision, dimension(3) :: elambdap, ephip
-      double precision, dimension(3) :: elambdaloc, ephiloc
-      double precision :: vxx, vyy, vzz
+      real(kind=dp), dimension(3) :: exxp, eyyp, ezzp ! base vectors of rotated 3D Cartesian reference frame
+      real(kind=dp), dimension(3) :: elambda, ephi
+      real(kind=dp), dimension(3) :: elambdap, ephip
+      real(kind=dp), dimension(3) :: elambdaloc, ephiloc
+      real(kind=dp) :: vxx, vyy, vzz
 
-      double precision :: xx, yy, zz !  3D Cartesian coordinates
-      double precision :: xxp, yyp, zzp !  3D Cartesian coordinates in rotated frame
-      double precision :: xloc, yloc
+      real(kind=dp) :: xx, yy, zz !  3D Cartesian coordinates
+      real(kind=dp) :: xxp, yyp, zzp !  3D Cartesian coordinates in rotated frame
+      real(kind=dp) :: xloc, yloc
 
-      double precision :: lambda0, phi0
-      double precision :: lambda, phi
-      double precision :: lambdap, phip
+      real(kind=dp) :: lambda0, phi0
+      real(kind=dp) :: lambda, phi
+      real(kind=dp) :: lambdap, phip
 
       integer :: i
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
       if (jsferic == 0 .or. jasfer3D == 0) then
          do i = 1, N
@@ -1706,7 +1706,7 @@ contains
 
          !           compute base vectors
          exxp = (/cos(phi0) * cos(lambda0), cos(phi0) * sin(lambda0), sin(phi0)/)
-         eyyp = (/-sin(lambda0), cos(lambda0), 0d0/)
+         eyyp = (/-sin(lambda0), cos(lambda0), 0.0_dp/)
          ezzp = (/-sin(phi0) * cos(lambda0), -sin(phi0) * sin(lambda0), cos(phi0)/)
 
          do i = 1, N
@@ -1728,7 +1728,7 @@ contains
             phip = yloc * degrad_hp
 
             !              compute global base vectors at other point in 3D (xx,yy,zz) frame
-            elambda = (/-sin(lambda), cos(lambda), 0d0/)
+            elambda = (/-sin(lambda), cos(lambda), 0.0_dp/)
             ephi = (/-sin(phi) * cos(lambda), -sin(phi) * sin(lambda), cos(phi)/)
 
             !              compute vector in 3D (xx,yy,zz) frame
@@ -1737,7 +1737,7 @@ contains
             vzz = vxglob * elambda(3) + vyglob * ephi(3)
 
             !              compute base vectors at other point in rotated 3D (xxp,yyp,zzp) frame
-            elambdap = (/-sin(lambdap), cos(lambdap), 0d0/)
+            elambdap = (/-sin(lambdap), cos(lambdap), 0.0_dp/)
             ephip = (/-sin(phip) * cos(lambdap), -sin(phip) * sin(lambdap), cos(phip)/)
 
             !              compute local base vectors in (xx,yy,zz) frame
@@ -1761,25 +1761,25 @@ contains
    subroutine normalin(x1, y1, x2, y2, xn, yn, xu, yu, jsferic, jasfer3D, dxymis)
       use mathconsts, only: degrad_hp
       implicit none
-      double precision, intent(in) :: x1
-      double precision, intent(in) :: y1
-      double precision, intent(in) :: x2
-      double precision, intent(in) :: y2
-      double precision, intent(out) :: xn
-      double precision, intent(out) :: yn
-      double precision, intent(in) :: xu
-      double precision, intent(in) :: yu
+      real(kind=dp), intent(in) :: x1
+      real(kind=dp), intent(in) :: y1
+      real(kind=dp), intent(in) :: x2
+      real(kind=dp), intent(in) :: y2
+      real(kind=dp), intent(out) :: xn
+      real(kind=dp), intent(out) :: yn
+      real(kind=dp), intent(in) :: xu
+      real(kind=dp), intent(in) :: yu
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
-      double precision, intent(in) :: dxymis
+      real(kind=dp), intent(in) :: dxymis
 
       ! locals
-      double precision :: ddx, ddy, rr
-      double precision, dimension(3) :: xx1
-      double precision, dimension(3) :: xx2
-      double precision, dimension(3) :: elambda
-      double precision, dimension(3) :: ephi
-      double precision :: lambda, phi
+      real(kind=dp) :: ddx, ddy, rr
+      real(kind=dp), dimension(3) :: xx1
+      real(kind=dp), dimension(3) :: xx2
+      real(kind=dp), dimension(3) :: elambda
+      real(kind=dp), dimension(3) :: ephi
+      real(kind=dp) :: lambda, phi
 
       if (jsferic == 1 .and. jasfer3D == 1) then
          !    call qnerror('normalin: reference probably not set', ' ', ' ')
@@ -1791,7 +1791,7 @@ contains
          !   compute base vectors in reference point
          lambda = xu * degrad_hp
          phi = yu * degrad_hp
-         elambda = (/-sin(lambda), cos(lambda), 0d0/)
+         elambda = (/-sin(lambda), cos(lambda), 0.0_dp/)
          ephi = (/-sin(phi) * cos(lambda), -sin(phi) * sin(lambda), cos(phi)/)
 
          !   project vector in local base
@@ -1803,7 +1803,7 @@ contains
       end if
 
       rr = ddx * ddx + ddy * ddy
-      if (rr == 0d0) then
+      if (rr == 0.0_dp) then
          xn = dxymis
          yn = dxymis
       else
@@ -1828,19 +1828,19 @@ contains
       use mathconsts, only: degrad_hp
 
       implicit none
-      double precision :: x1, y1, x2, y2, xn, yn
+      real(kind=dp) :: x1, y1, x2, y2, xn, yn
       ! locals
-      double precision :: ddx, ddy, rr
+      real(kind=dp) :: ddx, ddy, rr
 
-      double precision, dimension(3) :: xx1
-      double precision, dimension(3) :: xx2
-      double precision, dimension(3) :: xxu
-      double precision, dimension(3) :: elambda
-      double precision, dimension(3) :: ephi
-      double precision :: xu, yu
-      double precision :: lambda, phi
+      real(kind=dp), dimension(3) :: xx1
+      real(kind=dp), dimension(3) :: xx2
+      real(kind=dp), dimension(3) :: xxu
+      real(kind=dp), dimension(3) :: elambda
+      real(kind=dp), dimension(3) :: ephi
+      real(kind=dp) :: xu, yu
+      real(kind=dp) :: lambda, phi
       integer, intent(in) :: jsferic, jasfer3D
-      double precision, intent(in) :: dmiss, dxymis
+      real(kind=dp), intent(in) :: dmiss, dxymis
 
       if (jsferic == 1 .and. jasfer3D == 1) then
          !   get local coordinates w.r.t. (xn,yn)
@@ -1851,13 +1851,13 @@ contains
          call sphertoCart3D(x2, y2, xx2(1), xx2(2), xx2(3))
 
          !   compute midpoint
-         xxu = 0.5d0 * (xx1 + xx2)
+         xxu = 0.5_dp * (xx1 + xx2)
          call Cart3Dtospher(xxu(1), xxu(2), xxu(3), xu, yu, max(x1, x2))
 
          !   compute base vectors at midpoint
          lambda = xu * degrad_hp
          phi = yu * degrad_hp
-         elambda = (/-sin(lambda), cos(lambda), 0d0/)
+         elambda = (/-sin(lambda), cos(lambda), 0.0_dp/)
          ephi = (/-sin(phi) * cos(lambda), -sin(phi) * sin(lambda), cos(phi)/)
 
          !   project vector in local base
@@ -1869,7 +1869,7 @@ contains
       end if
 
       rr = ddx * ddx + ddy * ddy
-      if (rr == 0d0) then
+      if (rr == 0.0_dp) then
          xn = dxymis
          yn = dxymis
       else
@@ -1878,7 +1878,7 @@ contains
          yn = -ddx / rr
       end if
       if (jsferic == 1 .and. jasfer3D == 0) then
-         xn = xn / cos(degrad_hp * 0.5d0 * (y1 + y2))
+         xn = xn / cos(degrad_hp * 0.5_dp * (y1 + y2))
          yn = yn
       end if
 
@@ -1896,17 +1896,17 @@ contains
       use mathconsts, only: degrad_hp
 
       implicit none
-      double precision, intent(in) :: x1, y1 !< First point of line
-      double precision, intent(in) :: x2, y2 !< Second point of line
-      double precision, intent(in) :: x3, y3 !< Point that is considered 'inside'.
-      double precision, intent(out) :: xn, yn !< Output normal vector
+      real(kind=dp), intent(in) :: x1, y1 !< First point of line
+      real(kind=dp), intent(in) :: x2, y2 !< Second point of line
+      real(kind=dp), intent(in) :: x3, y3 !< Point that is considered 'inside'.
+      real(kind=dp), intent(out) :: xn, yn !< Output normal vector
       integer, intent(out) :: jaflip !< Indicates whether normal was flipped (1) or not (0).
 
-      double precision, dimension(1) :: xnloc, ynloc
-      double precision :: xref, yref
-      double precision :: x4, y4
+      real(kind=dp), dimension(1) :: xnloc, ynloc
+      real(kind=dp) :: xref, yref
+      real(kind=dp) :: x4, y4
       integer, intent(in) :: jsferic, jasfer3D
-      double precision, intent(in) :: dmiss, dxymis
+      real(kind=dp), intent(in) :: dmiss, dxymis
 
       call normalout(x1, y1, x2, y2, xn, yn, jsferic, jasfer3D, dmiss, dxymis)
       jaflip = 0
@@ -1921,7 +1921,7 @@ contains
          y4 = y1 + yn
       end if
 
-      if (dprodout(x1, y1, x4, y4, x1, y1, x2, y2, jsferic, jasfer3D) * dprodout(x1, y1, x3, y3, x1, y1, x2, y2, jsferic, jasfer3D) > 0d0) then
+      if (dprodout(x1, y1, x4, y4, x1, y1, x2, y2, jsferic, jasfer3D) * dprodout(x1, y1, x3, y3, x1, y1, x2, y2, jsferic, jasfer3D) > 0.0_dp) then
          xn = -xn ! Using the previously stored internal point x4.
          yn = -yn
          jaflip = 1
@@ -1937,8 +1937,8 @@ contains
    subroutine DUITPL(X1, Y1, X2, Y2, X3, Y3, X4, Y4, RU, jsferic)
 
       implicit none
-      double precision :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, RU
-      double precision :: X12, y12, x34, y34
+      real(kind=dp) :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, RU
+      real(kind=dp) :: X12, y12, x34, y34
       integer, intent(in) :: jsferic
 
       X12 = GETDX(X1, Y1, X2, Y2, jsferic)
@@ -1946,7 +1946,7 @@ contains
       X34 = GETDX(X3, Y3, X4, Y4, jsferic)
       Y34 = GETDY(X3, Y3, X4, Y4, jsferic)
       RU = X12 * Y34 - Y12 * X34
-      RU = sign(1d0, RU)
+      RU = sign(1.0_dp, RU)
       return
    end subroutine DUITPL
 
@@ -1958,21 +1958,21 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: x1, y1
-      double precision, intent(in) :: x2, y2
-      double precision, intent(out) :: xu, yu
+      real(kind=dp), intent(in) :: x1, y1
+      real(kind=dp), intent(in) :: x2, y2
+      real(kind=dp), intent(out) :: xu, yu
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
 
-      double precision :: xx1, yy1, zz1, xx2, yy2, zz2
+      real(kind=dp) :: xx1, yy1, zz1, xx2, yy2, zz2
 
       if (jsferic == 1 .and. jasfer3D == 1) then
          call sphertoCart3D(x1, y1, xx1, yy1, zz1)
          call sphertoCart3D(x2, y2, xx2, yy2, zz2)
-         call Cart3Dtospher(0.5d0 * (xx1 + xx2), 0.5d0 * (yy1 + yy2), 0.5d0 * (zz1 + zz2), xu, yu, max(x1, x2))
+         call Cart3Dtospher(0.5_dp * (xx1 + xx2), 0.5_dp * (yy1 + yy2), 0.5_dp * (zz1 + zz2), xu, yu, max(x1, x2))
       else
-         xu = 0.5d0 * (x1 + x2)
-         yu = 0.5d0 * (y1 + y2)
+         xu = 0.5_dp * (x1 + x2)
+         yu = 0.5_dp * (y1 + y2)
       end if
 
       return
@@ -1989,18 +1989,18 @@ contains
 
       implicit none
 
-      double precision, intent(in) :: x, y
-      double precision, intent(in) :: alpha
-      double precision, intent(in) :: vx, vy
-      double precision, intent(out) :: xu, yu
+      real(kind=dp), intent(in) :: x, y
+      real(kind=dp), intent(in) :: alpha
+      real(kind=dp), intent(in) :: vx, vy
+      real(kind=dp), intent(out) :: xu, yu
 
-      double precision, dimension(3) :: elambda
-      double precision, dimension(3) :: ephi
+      real(kind=dp), dimension(3) :: elambda
+      real(kind=dp), dimension(3) :: ephi
 
-      double precision :: vxx, vyy, vzz
-      double precision :: xx, yy, zz
-      double precision :: xxu, yyu, zzu
-      double precision :: lambda, phi
+      real(kind=dp) :: vxx, vyy, vzz
+      real(kind=dp) :: xx, yy, zz
+      real(kind=dp) :: xxu, yyu, zzu
+      real(kind=dp) :: lambda, phi
       integer, intent(in) :: jsferic, jasfer3D
 
       if (jsferic == 0) then
@@ -2011,7 +2011,7 @@ contains
             !     compute global base vectors at other point in 3D (xx,yy,zz) frame
             lambda = x * degrad_hp
             phi = y * degrad_hp
-            elambda = (/-sin(lambda), cos(lambda), 0d0/)
+            elambda = (/-sin(lambda), cos(lambda), 0.0_dp/)
             ephi = (/-sin(phi) * cos(lambda), -sin(phi) * sin(lambda), cos(phi)/)
             vxx = (vx * elambda(1) + vy * ephi(1))
             vyy = (vx * elambda(2) + vy * ephi(2))
@@ -2036,12 +2036,12 @@ contains
       implicit none
 
       integer, intent(in) :: N !< polygon size
-      double precision, dimension(N), intent(in) :: xin, y !< polygon coordinates
-      double precision, intent(out) :: xcg, ycg !< polygon mass center coordinates
-      double precision, intent(out) :: area !< polygon area
+      real(kind=dp), dimension(N), intent(in) :: xin, y !< polygon coordinates
+      real(kind=dp), intent(out) :: xcg, ycg !< polygon mass center coordinates
+      real(kind=dp), intent(out) :: area !< polygon area
       integer, intent(out) :: jacounterclockwise !< counterclockwise (1) or not (0)
       integer, intent(in) :: jsferic, jasfer3D
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
       if (jsferic == 1 .and. jasfer3D == 1) then
          call comp_masscenter3D(N, xin, y, xcg, ycg, area, jacounterclockwise, jsferic, jasfer3D, dmiss)
@@ -2061,27 +2061,29 @@ contains
       implicit none
 
       integer, intent(in) :: N !< polygon size
-      double precision, dimension(N), intent(in) :: xin, y !< polygon coordinates
-      double precision, intent(out) :: xcg, ycg !< polygon mass center coordinates
-      double precision, intent(out) :: area !< polygon area
+      real(kind=dp), dimension(N), intent(in) :: xin, y !< polygon coordinates
+      real(kind=dp), intent(out) :: xcg, ycg !< polygon mass center coordinates
+      real(kind=dp), intent(out) :: area !< polygon area
       integer, intent(out) :: jacounterclockwise !< counterclockwise (1) or not (0)
       integer, intent(in) :: jsferic
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
-      double precision, dimension(N) :: x !< Copy of xin, with possibly periodic fixes.
-      double precision :: dsx, dsy, xc, yc, xds, fac, x0, y0, x1, dx0, dx1, dy0, dy1
-      double precision :: xdum
+      real(kind=dp), dimension(N) :: x !< Copy of xin, with possibly periodic fixes.
+      real(kind=dp) :: dsx, dsy, xc, yc, xds, fac, x0, y0, x1, dx0, dx1, dy0, dy1
+      real(kind=dp) :: xdum
 
       integer :: i, ip1
 
-      double precision, parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1d-8
 
-      area = 0d0
-      xcg = 0d0
-      ycg = 0d0
+      area = 0.0_dp
+      xcg = 0.0_dp
+      ycg = 0.0_dp
       jacounterclockwise = 1
 
-      if (N < 1) goto 1234
+      if (N < 1) then
+         return
+      end if
 
       x = xin
 
@@ -2097,12 +2099,12 @@ contains
       !  fix for periodic, spherical coordinates
       if (jsferic == 1) then
          x1 = maxval(x(1:N))
-         if (x1 - x0 > 180d0) then
+         if (x1 - x0 > 180_dp) then
             !        determine cutline
-            xdum = x1 - 180d0
+            xdum = x1 - 180_dp
             do i = 1, N
                if (x(i) < xdum) then
-                  x(i) = x(i) + 360d0
+                  x(i) = x(i) + 360_dp
                end if
             end do
             x0 = minval(x(1:N))
@@ -2114,14 +2116,14 @@ contains
 
          call getdxdy(x0, y0, x(i), y(i), dx0, dy0, jsferic)
          call getdxdy(x0, y0, x(ip1), y(ip1), dx1, dy1, jsferic)
-         xc = 0.5d0 * (dx0 + dx1)
-         yc = 0.5d0 * (dy0 + dy1)
+         xc = 0.5_dp * (dx0 + dx1)
+         yc = 0.5_dp * (dy0 + dy1)
 
          call getdxdy(x(i), y(i), x(ip1), y(ip1), dx0, dy0, jsferic)
          dsx = dy0; dsy = -dx0
 
          xds = xc * dsx + yc * dsy
-         area = area + 0.5d0 * xds
+         area = area + 0.5_dp * xds
          xcg = xcg + xds * xc
          ycg = ycg + xds * yc
       end do
@@ -2130,7 +2132,7 @@ contains
       !  it must stay negative in the computation of the cell center (xcg,ycg)
       area = sign(max(abs(area), dtol), area)
 
-      fac = 1d0 / (3d0 * area)
+      fac = 1.0_dp / (3_dp * area)
 
       xcg = fac * xcg
       ycg = fac * ycg
@@ -2144,7 +2146,7 @@ contains
       ycg = ycg + y0
 
       !  output cell orientation
-      if (area > 0d0) then
+      if (area > 0.0_dp) then
          jacounterclockwise = 1
       else
          jacounterclockwise = 0
@@ -2153,9 +2155,6 @@ contains
       !  fix for inward normals (clockwise oriented cells)
       area = abs(area)
 
-1234  continue
-
-      return
    end subroutine comp_masscenter2D
 
    !> compute area and mass center of polygon
@@ -2166,54 +2165,52 @@ contains
       implicit none
 
       integer, intent(in) :: N !< polygon size
-      double precision, dimension(N), intent(in) :: x, y !< polygon coordinates
-      double precision, intent(out) :: xcg, ycg !< polygon mass center coordinates
-      double precision, intent(out) :: area !< polygon area
+      real(kind=dp), dimension(N), intent(in) :: x, y !< polygon coordinates
+      real(kind=dp), intent(out) :: xcg, ycg !< polygon mass center coordinates
+      real(kind=dp), intent(out) :: area !< polygon area
       integer, intent(out) :: jacounterclockwise !< counterclockwise (1) or not (0)
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
-      double precision, intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dmiss
 
-      !   double precision, dimension(N)                :: x  ! Copy of xin, with possibly periodic fixes.
+      real(kind=dp), dimension(N) :: xx, yy, zz !< 3D coordinates
+      real(kind=dp), dimension(4, 4) :: A !< Jacobian matrix of the system, including the constraint that the center lies on the sphere.
+      real(kind=dp), dimension(4) :: rhs !< Right hand side of linear system, residuals.
+      real(kind=dp), dimension(N) :: DvolDx, DvolDy, DvolDz !< Partial derivatives of the volume with respect to xx0, yy0, and zz0 for triangle i.
+      real(kind=dp) :: xx0, yy0, zz0 !< Coordinates of the current estimate of the mass center (centroid).
+      real(kind=dp) :: qq0 !< Lagrange multiplier enforcing the constraint that the center lies on the sphere.
+      real(kind=dp) :: xx00, yy00, zz00 !< backup of mass center coordinates
+      real(kind=dp) :: xxcg, yycg, zzcg !< Coordinates of the centroid of the tetrahedron formed by the center point and the current triangle.
+      real(kind=dp) :: vol, voli, dvol !< Accumulated volume of the polyhedral region formed by the polygon and the center point, inverse and increment.
+      real(kind=dp) :: Jx, Jy, Jz !< Accumulated first moments in each dimension (used in centroid computation).
 
-      double precision, dimension(N) :: xx, yy, zz ! 3D coordinates
-
-      double precision, dimension(4, 4) :: A
-      double precision, dimension(4) :: rhs
-
-      double precision, dimension(N) :: DvolDx, DvolDy, DvolDz
-
-      double precision :: xx0, yy0, zz0, alpha, xx00, yy00, zz00
-      double precision :: xxcg, yycg, zzcg
-      double precision :: dvol, vol, voli
-      double precision :: Jx, Jy, Jz
-      double precision :: Rai
-      double precision :: sx, sy, sz
-
+      real(kind=dp) :: Rai, scaled_diff
+      real(kind=dp) :: sx, sy, sz
       integer :: i, ip1, iter
 
       integer, parameter :: MAXITER = 100
-      double precision, parameter :: dtol = 1d-8
-      double precision, parameter :: deps = 1d-8
-      double precision, parameter :: onesixth = 0.166666666666666667d0
+      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: onesixth = 0.166666666666666667_dp
 
-      area = 0d0
-      xcg = 0d0
-      ycg = 0d0
+      area = 0.0_dp
+      xcg = 0.0_dp
+      ycg = 0.0_dp
       jacounterclockwise = 1
 
-      if (N < 1) goto 1234
+      if (N < 1) then
+         return
+      end if
 
       if (N == 2) then
          call half(x(1), y(1), x(2), y(2), xcg, ycg, jsferic, jasfer3D)
-         goto 1234
+         return
       end if
 
       do i = 1, N
          call sphertocart3D(x(i), y(i), xx(i), yy(i), zz(i))
       end do
 
-      Rai = 1d0 / earth_radius
+      Rai = 1.0_dp / earth_radius
 
       !  first iterate
       xx0 = 0
@@ -2230,13 +2227,12 @@ contains
       xx00 = xx0
       yy00 = yy0
       zz00 = zz0
-      alpha = 0.75d0
+      qq0 = 0.75_dp
 
       !  Newton iterations
       do iter = 1, MAXITER
-
          !     compute volume
-         vol = 0d0
+         vol = 0.0_dp
          do i = 1, N
             ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
 
@@ -2250,15 +2246,8 @@ contains
 
          if (abs(vol) < dtol) then
             if (iter == 1) then ! no mass center can be defined, use first iterate
-
                exit
             else ! also use first iterate
-               !if (mout == 0) call newfil(mout,'dump.pli')
-               !write(mout,*) 'bl01'
-               !write(mout,*) n, ' 2 '
-               !do k = 1,n
-               !   write (mout,*) x(k), y(k)
-               !enddo
                xx0 = xx00
                yy0 = yy00
                zz0 = zz00
@@ -2266,25 +2255,24 @@ contains
             end if
          end if
 
-         voli = 1d0 / vol
-
-         A = 0d0
-         rhs = 0d0
-         Jx = (0.25d0 - alpha) * xx0 !*vol
-         Jy = (0.25d0 - alpha) * yy0 !*vol
-         Jz = (0.25d0 - alpha) * zz0 !*vol
+         voli = 1.0_dp / vol
+         A = 0.0_dp
+         rhs = 0.0_dp
+         Jx = (0.25_dp - qq0) * xx0
+         Jy = (0.25_dp - qq0) * yy0
+         Jz = (0.25_dp - qq0) * zz0
          do i = 1, N
             ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
 
             dvol = (DvolDx(i) * xx0 + DvolDy(i) * yy0 + DvolDz(i) * zz0) * voli ! *vol
 
-            Jx = Jx + 0.25d0 * dvol * (xx(i) + xx(ip1))
-            Jy = Jy + 0.25d0 * dvol * (yy(i) + yy(ip1))
-            Jz = Jz + 0.25d0 * dvol * (zz(i) + zz(ip1))
+            Jx = Jx + 0.25_dp * dvol * (xx(i) + xx(ip1))
+            Jy = Jy + 0.25_dp * dvol * (yy(i) + yy(ip1))
+            Jz = Jz + 0.25_dp * dvol * (zz(i) + zz(ip1))
 
-            xxcg = 0.25d0 * (xx0 + xx(i) + xx(ip1))
-            yycg = 0.25d0 * (yy0 + yy(i) + yy(ip1))
-            zzcg = 0.25d0 * (zz0 + zz(i) + zz(ip1))
+            xxcg = 0.25_dp * (xx0 + xx(i) + xx(ip1))
+            yycg = 0.25_dp * (yy0 + yy(i) + yy(ip1))
+            zzcg = 0.25_dp * (zz0 + zz(i) + zz(ip1))
 
             A(1, 1) = A(1, 1) + xxcg * dvoldx(i)
             A(1, 2) = A(1, 2) + xxcg * dvoldy(i)
@@ -2299,45 +2287,37 @@ contains
             A(3, 3) = A(3, 3) + zzcg * dvoldz(i)
          end do
 
-         A(1, 1) = voli * A(1, 1) + 0.25 - alpha
-         A(1, 2) = voli * A(1, 2)
-         A(1, 3) = voli * A(1, 3)
-         A(1, 4) = -xx0 * Rai
+         A(1:3, 1:3) = voli * A(1:3, 1:3)
 
-         A(2, 1) = voli * A(2, 1)
-         A(2, 2) = voli * A(2, 2) + 0.25 - alpha
-         A(2, 3) = voli * A(2, 3)
-         A(2, 4) = -yy0 * Rai
+         A(1, 1) = A(1, 1) + 0.25_dp - qq0
+         A(2, 2) = A(2, 2) + 0.25_dp - qq0
+         A(3, 3) = A(3, 3) + 0.25_dp - qq0
 
-         A(3, 1) = voli * A(3, 1)
-         A(3, 2) = voli * A(3, 2)
-         A(3, 3) = voli * A(3, 3) + 0.25 - alpha
-         A(3, 4) = -zz0 * Rai
+         A(1, 4) = -xx0
+         A(2, 4) = -yy0
+         A(3, 4) = -zz0
 
-         A(4, 1) = -xx0 * Rai
-         A(4, 2) = -yy0 * Rai
-         A(4, 3) = -zz0 * Rai
-         A(4, 4) = 0d0
+         A(4, 1) = A(1, 4)
+         A(4, 2) = A(2, 4)
+         A(4, 3) = A(3, 4)
+         A(4, 4) = 0.0_dp
 
-         rhs(1) = -Jx ! *dvoli
-         rhs(2) = -Jy ! *dvoli
-         rhs(3) = -Jz ! *dvoli
-         rhs(4) = -0.5 * (earth_radius**2 - (xx0**2 + yy0**2 + zz0**2)) * Rai
-
+         rhs(1) = -Jx
+         rhs(2) = -Jy
+         rhs(3) = -Jz
+         scaled_diff = 1 - (xx0**2 + yy0**2 + zz0**2) * Rai**2 ! avoid substracting two huge numbers
+         rhs(4) = -0.5_dp * scaled_diff * earth_radius**2
          !     solve system
          call gaussj(A, 4, 4, rhs, 1, 1) ! rhs contains solution
-
          !     update coordinates of centerpoint
          xx0 = xx0 + rhs(1)
          yy0 = yy0 + rhs(2)
          zz0 = zz0 + rhs(3)
-         alpha = alpha + rhs(4) * Rai
-
+         qq0 = qq0 + rhs(4)
          !     check convergence
-         if (rhs(1)**2 + rhs(2)**2 + rhs(3)**2 + rhs(4)**2 < deps) then
+         if (rhs(1)**2 + rhs(2)**2 + rhs(3)**2 + rhs(4)**2 < dtol) then
             exit
          end if
-
       end do
 
       !  check convergence
@@ -2351,34 +2331,25 @@ contains
       end if
 
       !  compute area
-      Area = 0d0
+      Area = 0.0_dp
       do i = 1, N
          ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
-         sx = 0.5d0 * ((yy(i) - yy0) * (zz(ip1) - zz0) - (zz(i) - zz0) * (yy(ip1) - yy0))
-         sy = 0.5d0 * ((zz(i) - zz0) * (xx(ip1) - xx0) - (xx(i) - xx0) * (zz(ip1) - zz0))
-         sz = 0.5d0 * ((xx(i) - xx0) * (yy(ip1) - yy0) - (yy(i) - yy0) * (xx(ip1) - xx0))
+         sx = 0.5_dp * ((yy(i) - yy0) * (zz(ip1) - zz0) - (zz(i) - zz0) * (yy(ip1) - yy0))
+         sy = 0.5_dp * ((zz(i) - zz0) * (xx(ip1) - xx0) - (xx(i) - xx0) * (zz(ip1) - zz0))
+         sz = 0.5_dp * ((xx(i) - xx0) * (yy(ip1) - yy0) - (yy(i) - yy0) * (xx(ip1) - xx0))
 
          Area = Area + sqrt(sx**2 + sy**2 + sz**2)
-
       end do
-
-      !   write(6,*) Area*(Ra/3d0*voli)
 
       call Cart3Dtospher(xx0, yy0, zz0, xcg, ycg, maxval(x(1:N)))
 
       !  output cell orientation
-      if (vol > 0d0) then
+      if (vol > 0.0_dp) then
          jacounterclockwise = 1
       else
          jacounterclockwise = 0
       end if
 
-      !!  fix for inward normals (clockwise oriented cells)
-      !   area = abs(area)
-
-1234  continue
-
-      return
    end subroutine comp_masscenter3D
 
    !
@@ -2391,52 +2362,52 @@ contains
 
       implicit none
       integer, intent(in) :: N !< Nr. of vertices
-      double precision, intent(inout) :: xv(N), yv(N) !< Coordinates of vertices (may be changed to avoid alloc overhead)
-      double precision, intent(out) :: xz, yz !< Circumcenter coordinates
+      real(kind=dp), intent(inout) :: xv(N), yv(N) !< Coordinates of vertices (may be changed to avoid alloc overhead)
+      real(kind=dp), intent(out) :: xz, yz !< Circumcenter coordinates
 
-      double precision, dimension(N) :: xx, yy, zz
+      real(kind=dp), dimension(N) :: xx, yy, zz
 
-      double precision, dimension(N) :: ttx, tty, ttz ! tangential vector in 3D coordinates
-      double precision, dimension(N) :: xxe, yye, zze ! edge midpoint in 3D coordinates
-      double precision, dimension(N) :: ds ! edge lengths
+      real(kind=dp), dimension(N) :: ttx, tty, ttz ! tangential vector in 3D coordinates
+      real(kind=dp), dimension(N) :: xxe, yye, zze ! edge midpoint in 3D coordinates
+      real(kind=dp), dimension(N) :: ds ! edge lengths
 
-      double precision, dimension(4, 4) :: A ! matrix
-      double precision, dimension(4) :: rhs ! right-hand side
+      real(kind=dp), dimension(4, 4) :: A ! matrix
+      real(kind=dp), dimension(4) :: rhs ! right-hand side
 
-      double precision :: xxc, yyc, zzc ! circumcenter in 3D coordinates
-      double precision :: lambda ! Lagrange multiplier to enforce circumcenter on the sphere
+      real(kind=dp) :: xxc, yyc, zzc ! circumcenter in 3D coordinates
+      real(kind=dp) :: lambda ! Lagrange multiplier to enforce circumcenter on the sphere
 
-      double precision :: dsi, dinpr
+      real(kind=dp) :: dsi, dinpr
 
       integer :: i, ip1
 
       integer :: iter
 
-      double precision, parameter :: dtol = 1d-8 ! tolerance for ignoring edges
-      double precision, parameter :: deps = 1d-8 ! convergence tolerance (relative)
+      real(kind=dp), parameter :: dtol = 1d-8 ! tolerance for ignoring edges
+      real(kind=dp), parameter :: deps = 1d-8 ! convergence tolerance (relative)
 
       integer, parameter :: MAXITER = 100
 
       integer, intent(in) :: jsferic
-      double precision, intent(in) :: dmiss
-      double precision, intent(in) :: dcenterinside
+      real(kind=dp), intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dcenterinside
 
-      double precision :: xzw, yzw
-      double precision :: SL, SM, XCR, YCR
+      real(kind=dp) :: xzw, yzw
+      real(kind=dp) :: SL, SM, XCR, YCR
 
       integer :: jacros, in
 
       !  compute 3D coordinates and first iterate of circumcenter in 3D coordinates and Lagrange multiplier lambda
-      xxc = 0d0
-      yyc = 0d0
-      zzc = 0d0
+      xxc = 0.0_dp
+      yyc = 0.0_dp
+      zzc = 0.0_dp
       do i = 1, N
          call sphertocart3D(xv(i), yv(i), xx(i), yy(i), zz(i))
          xxc = xxc + xx(i)
          yyc = yyc + yy(i)
          zzc = zzc + zz(i)
       end do
-      lambda = 0d0
+      lambda = 0.0_dp
       xxc = xxc / N
       yyc = yyc / N
       zzc = zzc / N
@@ -2456,24 +2427,24 @@ contains
 
          if (ds(i) < dtol) cycle
 
-         dsi = 1d0 / ds(i)
+         dsi = 1.0_dp / ds(i)
 
          ttx(i) = ttx(i) * dsi
          tty(i) = tty(i) * dsi
          ttz(i) = ttz(i) * dsi
 
          !     edge midpoint
-         xxe(i) = 0.5d0 * (xx(i) + xx(ip1))
-         yye(i) = 0.5d0 * (yy(i) + yy(ip1))
-         zze(i) = 0.5d0 * (zz(i) + zz(ip1))
+         xxe(i) = 0.5_dp * (xx(i) + xx(ip1))
+         yye(i) = 0.5_dp * (yy(i) + yy(ip1))
+         zze(i) = 0.5_dp * (zz(i) + zz(ip1))
       end do
 
       !  Newton iterations
       do iter = 1, MAXITER
 
          !     build system
-         A = 0d0
-         rhs = 0d0
+         A = 0.0_dp
+         rhs = 0.0_dp
          do i = 1, N
             if (ds(i) < dtol) cycle ! no contribution
 
@@ -2496,27 +2467,27 @@ contains
 
          if (jsferic == 1) then
             !        add contribution of constraint
-            A(1, 1) = A(1, 1) - 2d0 * lambda
-            A(2, 2) = A(2, 2) - 2d0 * lambda
-            A(3, 3) = A(3, 3) - 2d0 * lambda
+            A(1, 1) = A(1, 1) - 2.0_dp * lambda
+            A(2, 2) = A(2, 2) - 2.0_dp * lambda
+            A(3, 3) = A(3, 3) - 2.0_dp * lambda
 
-            A(1, 4) = -2d0 * xxc
-            A(2, 4) = -2d0 * yyc
-            A(3, 4) = -2d0 * zzc
+            A(1, 4) = -2.0_dp * xxc
+            A(2, 4) = -2.0_dp * yyc
+            A(3, 4) = -2.0_dp * zzc
 
-            A(4, 4) = 0d0
+            A(4, 4) = 0.0_dp
 
-            rhs(1) = rhs(1) + 2d0 * lambda * xxc
-            rhs(2) = rhs(2) + 2d0 * lambda * yyc
-            rhs(3) = rhs(3) + 2d0 * lambda * zzc
+            rhs(1) = rhs(1) + 2.0_dp * lambda * xxc
+            rhs(2) = rhs(2) + 2.0_dp * lambda * yyc
+            rhs(3) = rhs(3) + 2.0_dp * lambda * zzc
             rhs(4) = xxc**2 + yyc**2 + zzc**2 - earth_radius**2
          else ! no constraints, enforce lambda=0
-            A(1, 4) = 0d0
-            A(2, 4) = 0d0
-            A(3, 4) = 0d0
-            A(4, 4) = 1d0
+            A(1, 4) = 0.0_dp
+            A(2, 4) = 0.0_dp
+            A(3, 4) = 0.0_dp
+            A(4, 4) = 1.0_dp
 
-            rhs(4) = 0d0
+            rhs(4) = 0.0_dp
          end if
 
          !     use symmetry of matrix
@@ -2554,7 +2525,7 @@ contains
       call Cart3Dtospher(xxc, yyc, zzc, xz, yz, maxval(xv(1:N)))
 
 !     check if circumcenter is inside cell
-      if (dcenterinside <= 1d0 .and. dcenterinside >= 0d0) then
+      if (dcenterinside <= 1.0_dp .and. dcenterinside >= 0.0_dp) then
          call pinpok3D(xz, yz, N, xv, yv, in, dmiss, 1, jsferic, 1) ! circumcentre may not lie outside cell
          if (in == 0) then
             do i = 1, N
@@ -2563,8 +2534,8 @@ contains
                             JACROS, SL, SM, xcr, ycr, jsferic, dmiss)
 
                if (jacros == 1) then
-                  !               xz = 0.5d0*( xh(m) + xh(m2) ) ! xcr
-                  !               yz = 0.5d0*( yh(m) + yh(m2) ) ! ycr
+                  !               xz = 0.5_dp*( xh(m) + xh(m2) ) ! xcr
+                  !               yz = 0.5_dp*( yh(m) + yh(m2) ) ! ycr
                   xz = xcr
                   yz = ycr
 
@@ -2590,31 +2561,31 @@ contains
 
       implicit none
       integer, intent(in) :: nn !< Nr. of vertices
-      double precision, intent(inout) :: xv(nn), yv(nn) !< Coordinates of vertices (may be changed to avoid alloc overhead)
+      real(kind=dp), intent(inout) :: xv(nn), yv(nn) !< Coordinates of vertices (may be changed to avoid alloc overhead)
       integer, intent(in) :: lnnl(nn) !< Local lnn codes for all netlinks between vertices.
-      double precision, intent(out) :: xz, yz !< Circumcenter coordinates
+      real(kind=dp), intent(out) :: xz, yz !< Circumcenter coordinates
       integer, intent(in) :: jsferic
       integer, intent(in) :: jasfer3D
       integer, intent(in) :: jglobe
       integer, intent(in) :: jins
-      double precision, intent(in) :: dmiss
-      double precision, intent(in) :: dxymis
-      double precision, intent(in) :: dcenterinside
+      real(kind=dp), intent(in) :: dmiss
+      real(kind=dp), intent(in) :: dxymis
+      real(kind=dp), intent(in) :: dcenterinside
       integer, intent(in) :: circumcenter_method_dummy ! dummy variable to pass circumcenter_method into
 
       ! locals
-      double precision :: xzw, yzw ! zwaartepunt
+      real(kind=dp) :: xzw, yzw ! zwaartepunt
       integer :: m, k
-      double precision :: xe3, ye3, xe1, ye1, xe2, ye2, tex, tey, ds, &
-         xccf, yccf, xccfo, yccfo, alf
+      real(kind=dp) :: xe3, ye3, xe1, ye1, xe2, ye2, tex, tey, ds, &
+                       xccf, yccf, xccfo, yccfo, alf
 
       integer, parameter :: num_columns = 10
 
-      double precision :: xh(num_columns), yh(num_columns)
-      double precision :: SL, SM, XCR, YCR, CRP
-      double precision :: xcc3, ycc3, xf, xmx, xmn
-      double precision :: eps
-      double precision :: dfac
+      real(kind=dp) :: xh(num_columns), yh(num_columns)
+      real(kind=dp) :: SL, SM, XCR, YCR, CRP
+      real(kind=dp) :: xcc3, ycc3, xf, xmx, xmn
+      real(kind=dp) :: eps
+      real(kind=dp) :: dfac
       integer :: jacros, in, m2, nintlinks ! nr of internal links = connected edges
 
       ! set tolerance for convergence
@@ -2624,14 +2595,14 @@ contains
          eps = circumcenter_tolerance
       end if
 
-      xzw = 0d0; yzw = 0d0
+      xzw = 0.0_dp; yzw = 0.0_dp
       if (jsferic == 1) then ! jglobe                 ! regularise sferic coordinates
          xmx = maxval(xv(1:nn))
          xmn = minval(xv(1:nn))
-         if (xmx - xmn > 180d0) then
+         if (xmx - xmn > 180_dp) then
             do m = 1, nn
-               if (xmx - xv(m) > 180d0) then
-                  xv(m) = xv(m) + 360d0
+               if (xmx - xv(m) > 180_dp) then
+                  xv(m) = xv(m) + 360_dp
                end if
             end do
          end if
@@ -2645,29 +2616,16 @@ contains
       xzw = xzw / nn
       yzw = yzw / nn
 
-      !--------------------------
-      ! test
-      ! if ( nn > N6 ) then
-      !    call qnerror('getcircumcenter: nn>N6', ' ', ' ')
-      !    stop
-      ! end if
-      ! xhalf(1:nn) = 0.5d0*(xv(1:nn)+(/ xv(2:nn), xv(1) /))
-      ! yhalf(1:nn) = 0.5d0*(yv(1:nn)+(/ yv(2:nn), yv(1) /))
-      ! call comp_circumcenter(nn, xv, yv, xhalf, yhalf, xz, yz)
-      ! goto 1234
-      ! end test
-      !--------------------------
-      ! if (nn == 333) then
       if (nn == 3 .and. jglobe == 0) then ! for triangles
          call circumcenter3(nn, xv, yv, xz, yz, jsferic)
       else
 
          xccf = xzw
          yccf = yzw
-         alf = 0.1d0
+         alf = 0.1_dp
 
          if (jsferic == 1) then
-            xf = 1d0 / cos(degrad_hp * yzw)
+            xf = 1.0_dp / cos(degrad_hp * yzw)
          end if
 
          nintlinks = 0
@@ -2699,8 +2657,8 @@ contains
                      if (xe1 == xe2 .and. ye1 == ye2) then
                         cycle
                      end if
-                     xe3 = 0.5d0 * (xe1 + xe2)
-                     ye3 = 0.5d0 * (ye1 + ye2)
+                     xe3 = 0.5_dp * (xe1 + xe2)
+                     ye3 = 0.5_dp * (ye1 + ye2)
                      call normalin(xe1, ye1, xe2, ye2, tex, tey, xe3, ye3, jsferic, jasfer3D, dxymis)
                      if (circumcenter_method_dummy == INTERNAL_NETLINKS_EDGE) then
                         ! (iteration per edge)
@@ -2742,14 +2700,14 @@ contains
 1234  continue
 
       ! if (jsferic == 1) then ! jglobe   ! regularisatie tbv tidal force routine
-      !    if ( xz < -180d0 ) then
-      !         xz = xz + 360d0
+      !    if ( xz < -180_dp ) then
+      !         xz = xz + 360_dp
       !    endif
       ! ENDIF
 
-      if (dcenterinside <= 1d0 .and. dcenterinside >= 0d0) then
+      if (dcenterinside <= 1.0_dp .and. dcenterinside >= 0.0_dp) then
          if (nn <= 3) then ! triangles
-            dfac = 1d0
+            dfac = 1.0_dp
          else
             dfac = dcenterinside
          end if
@@ -2767,8 +2725,8 @@ contains
                           JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
 
                if (jacros == 1) then
-                  !               xz = 0.5d0*( xh(m) + xh(m2) ) ! xcr
-                  !               yz = 0.5d0*( yh(m) + yh(m2) ) ! ycr
+                  !               xz = 0.5_dp*( xh(m) + xh(m2) ) ! xcr
+                  !               yz = 0.5_dp*( yh(m) + yh(m2) ) ! ycr
                   xz = xcr
                   yz = ycr
 
@@ -2781,9 +2739,9 @@ contains
    end subroutine GETCIRCUMCENTER
 
    !> computes dot product of two two-dimensional vectors defined by (x1,y1) and (x2,y2) respectively
-   double precision function dotp(x1, y1, x2, y2) ! dot produkt
+   real(kind=dp) function dotp(x1, y1, x2, y2) ! dot produkt
       implicit none
-      double precision :: x1, y1, x2, y2
+      real(kind=dp) :: x1, y1, x2, y2
       dotp = x1 * x2 + y1 * y2
    end function dotp
 
@@ -2795,11 +2753,11 @@ contains
 
       implicit none
       integer :: nn
-      double precision :: x(nn), y(nn), xz, yz, xf, phi
+      real(kind=dp) :: x(nn), y(nn), xz, yz, xf, phi
       integer, intent(in) :: jsferic
 
       ! locals
-      double precision :: z, den, dx2, dx3, dy2, dy3
+      real(kind=dp) :: z, den, dx2, dx3, dy2, dy3
 
       dx2 = x(2) - x(1)
       dx3 = x(3) - x(1)
@@ -2818,16 +2776,16 @@ contains
          z = (dx2 * (dx2 - dx3) + dy2 * (dy2 - dy3)) / den
       else
          ! call qnerror('coinciding points',' ',' ')
-         z = 0d0
+         z = 0.0_dp
       end if
       if (jsferic == 1) then
-         phi = (y(1) + y(2) + y(3)) / 3d0
-         xf = 1d0 / cos(degrad_hp * phi)
-         xz = x(1) + xf * 0.5d0 * (dx3 - z * dy3) * raddeg_hp / earth_radius
-         yz = y(1) + 0.5d0 * (dy3 + z * dx3) * raddeg_hp / earth_radius
+         phi = (y(1) + y(2) + y(3)) / 3_dp
+         xf = 1.0_dp / cos(degrad_hp * phi)
+         xz = x(1) + xf * 0.5_dp * (dx3 - z * dy3) * raddeg_hp / earth_radius
+         yz = y(1) + 0.5_dp * (dy3 + z * dx3) * raddeg_hp / earth_radius
       else
-         xz = x(1) + 0.5d0 * (dx3 - z * dy3)
-         yz = y(1) + 0.5d0 * (dy3 + z * dx3)
+         xz = x(1) + 0.5_dp * (dx3 - z * dy3)
+         yz = y(1) + 0.5_dp * (dy3 + z * dx3)
       end if
 
    end subroutine circumcenter3

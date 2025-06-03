@@ -53,8 +53,7 @@ contains
       use m_longculverts, only: nlongculverts
       use m_partitioninfo, only: jampi
       use messagehandling, only: IDLEN
-      use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration, &
-          allocate_dambreak_width_arrays
+      use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration
       use m_update_counters_for_structures, only: update_counters_for_dambreak_or_pump
       use m_1d_structures, only: update_bedlevels_for_bridges
       
@@ -85,7 +84,6 @@ contains
       allocate(lftopol(numl))
       allocate(pumpidx(network%sts%Count))
       allocate(dambridx(network%sts%Count), source=-1)
-      call allocate_dambreak_width_arrays(numl)
       !
       ! Some structures may have already been read by flow1d's readStructures into network.
       !
@@ -258,8 +256,7 @@ contains
       use m_read_property, only: read_property
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
-      use m_dambreak_breach, only: allocate_dambreak_width_arrays, add_dambreak_signal, &
-                                   update_dambreak_administration_old
+      use m_dambreak_breach, only: add_dambreak_signal, update_dambreak_administration_old
                                    
       logical :: status
       character(len=256) :: plifile
@@ -340,7 +337,6 @@ contains
          deallocate (dambreakPolygons)
       end if
       allocate (dambreakPolygons(nstr))
-      call allocate_dambreak_width_arrays(numl)
 
 ! UNST-3308: early counting of n_dambreak_links is needed here, because of lftopol array
       n_dambreak_links = 0

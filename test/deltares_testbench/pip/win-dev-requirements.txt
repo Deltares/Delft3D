@@ -19,6 +19,8 @@ colorama==0.4.6
     # via pytest
 contourpy==1.2.1
     # via matplotlib
+coverage==7.8.0
+    # via pytest-cov
 cycler==0.12.1
     # via matplotlib
 fonttools==4.53.1
@@ -73,7 +75,10 @@ pyparsing==3.1.2
 pytest==8.3.2
     # via
     #   deltares-testbench (pyproject.toml)
+    #   pytest-cov
     #   pytest-mock
+pytest-cov==6.1.1
+    # via deltares-testbench (pyproject.toml)
 pytest-mock==3.14.0
     # via deltares-testbench (pyproject.toml)
 python-dateutil==2.9.0.post0
@@ -90,6 +95,8 @@ s3-path-wrangler==0.5.0
     # via deltares-testbench (pyproject.toml)
 six==1.16.0
     # via python-dateutil
+tomli==2.2.1
+    # via coverage
 typing-extensions==4.12.2
     # via
     #   minio

@@ -1,5 +1,19 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 
+	<testCase name="e02_f010_c037_breach_grow_algo_3" ref="dimr_default">
+		<path version="2025-05-27T15:05:01.136000">e02_dflowfm/f010_structures/c037_breach_grow_algo_3</path>
+		<checks>
+			<file name="dflowfmoutput/dambreak2ddrybreach_his.nc" type="netCDF">
+				<parameters>
+					<parameter name="dambreak_discharge" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_water_level_jump" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_breach_width_time_derivative" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_crest_width" toleranceAbsolute="0.0001" />
+					<parameter name="dambreak_crest_level" toleranceAbsolute="0.0001" /> 
+				</parameters>
+			</file>
+		</checks>
+	</testCase>
 	<testCase name="e02_f010_c100_dambreak_VerheijvdKnaap" ref="dimr_default">
 		<path version="2025-02-11T10:18:45.987000">e02_dflowfm/f010_structures/c100_dambreak_VerheijvdKnaap</path>
 		<checks>
@@ -884,7 +898,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c03_culvert" ref="dimr_default">
-		<path version="2025-02-27T14:56:26.197000">e02_dflowfm/f106_hydraulic-structures/c03_Culvert</path>
+		<path version="2025-05-20T09:19:13.095000">e02_dflowfm/f106_hydraulic-structures/c03_Culvert</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>
@@ -972,7 +986,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c07_Compound" ref="dimr_default">
-		<path version="2025-02-27T14:56:55.447000">e02_dflowfm/f106_hydraulic-structures/c07_Compound</path>
+		<path version="2025-05-20T09:19:17.014000">e02_dflowfm/f106_hydraulic-structures/c07_Compound</path>
 		<checks>
 			<file name="DFM_OUTPUT_compound/compound_map.nc" type="netCDF">
 				<parameters>
@@ -1062,7 +1076,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c09_Inverted_siphon" ref="dimr_default">
-		<path version="2025-02-27T14:57:07.109000">e02_dflowfm/f106_hydraulic-structures/c09_Inverted_siphon</path>
+		<path version="2025-05-20T09:19:20.315000">e02_dflowfm/f106_hydraulic-structures/c09_Inverted_siphon</path>
 		<checks>
 			<file name="DFM_OUTPUT_Flow1D/Flow1D_map.nc" type="netCDF">
 				<parameters>

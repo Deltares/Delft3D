@@ -232,7 +232,8 @@ end
 if isfield(Ops,'axestimezone_shift') && ~isnan(Ops.axestimezone_shift)
     [Chk,datatimezone_shift,datatimezone_str] = qp_getdata(FileInfo,Domain,Props,'timezone');
     if isnan(datatimezone_shift)
-        error('Cannot convert unknown time zone to %s',Ops.axestimezone_str)
+        ui_message('warning','Cannot convert unknown time zone to %s.\nIgnoring time zone request.',Ops.axestimezone_str)
+        Ops.axestimezone_shift = NaN;
     else
         for i = length(data):-1:1
             data(i).Time = data(i).Time + (Ops.axestimezone_shift-datatimezone_shift)/24;

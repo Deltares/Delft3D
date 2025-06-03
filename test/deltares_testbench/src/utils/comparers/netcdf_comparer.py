@@ -281,8 +281,10 @@ class NetcdfComparer(IComparer):
         unique_attrs_left = left_set - right_set
         unique_attrs_right = right_set - left_set
 
-        if (len(unique_attrs_left) > 0 or len(unique_attrs_right) > 0):
-            logger.error(f"Attributes do not match for: {nc_var.left.name} => {unique_attrs_left}, {unique_attrs_right}")
+        if len(unique_attrs_left) > 0 or len(unique_attrs_right) > 0:
+            logger.error(
+                f"Attributes do not match for: {nc_var.left.name} => {unique_attrs_left}, {unique_attrs_right}"
+            )
             result.result = EndResult.NOK
             return result
 
@@ -292,7 +294,7 @@ class NetcdfComparer(IComparer):
             value1 = getattr(nc_var.left, attr)
             value2 = getattr(nc_var.right, attr)
 
-            if (not bool(value1 == value2)):
+            if not bool(value1 == value2):
                 logger.error(f"Values of attribute {attr} do not match")
                 result.result = EndResult.NOK
                 return result

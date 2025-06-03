@@ -108,7 +108,9 @@ contains
       integer, intent(in) :: l_bot !< bottom link
       integer, intent(in) :: l_top !< top link
 
-      integer :: link_index_3d, k1, k2, k1t, k2t, cell_index_3d, k_top, kz, ktz, insigpart, morelayersleft
+      integer, parameter :: LEFT = 1, RIGHT = 2, EQUAL = 0
+      integer :: link_index_3d, k1, k2, k1t, k2t, k_deep_side, k_top_deep_side, k_shallow_side, k_top_shallow_side, more_active_layers_on_the
+      logical :: in_sigma_part
       real(kind=dp) :: baroclinic_pressure_gradients(kmxx), volume_averaged_density(kmxx), baroclinic_pressure3
       real(kind=dp) :: baroclinic_pressure1, baroclinic_pressure2, integrated_baroclinic_pressure1, integrated_baroclinic_pressure2, baroclinic_pressure, integrated_baroclinic_pressure, weight_up, weight_down, delta_z, rho_down, rho_up
 
@@ -125,19 +127,19 @@ contains
          density => potential_density
       end if
 
-      insigpart = 0
+      in_sigma_part = .false.
       if (numtopsig > 0) then
          if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
-            insigpart = 1 ! one of the nodes is in the sigma part
+            in_sigma_part = .true. ! one of the nodes is in the sigma part
          end if
       end if
 
       if (kmxn(ln(1, link_index_2d)) > kmxn(ln(2, link_index_2d))) then
-         morelayersleft = 1
+         more_active_layers_on_the = LEFT
       else if (kmxn(ln(1, link_index_2d)) < kmxn(ln(2, link_index_2d))) then
-         morelayersleft = 2
+         more_active_layers_on_the = RIGHT
       else
-         morelayersleft = 0
+         more_active_layers_on_the = EQUAL
       end if
 
       do link_index_3d = l_top, l_bot, -1
@@ -161,48 +163,46 @@ contains
          integrated_baroclinic_pressure1 = integrated_baroclinic_pressures(k1)
          integrated_baroclinic_pressure2 = integrated_baroclinic_pressures(k2)
 
-         if (link_index_3d == l_bot .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
+         if (link_index_3d == l_bot .and. more_active_layers_on_the /= EQUAL) then ! extrapolate at 'bed' layer of deepest side
 
-            if (morelayersleft == 1) then ! cell_index_3d=deep side, kz=shallow side
-               cell_index_3d = k1
-               k_top = ktop(ln(1, link_index_2d))
-               kz = k2
-               ktz = ktop(ln(2, link_index_2d))
+            if (more_active_layers_on_the == LEFT) then
+               k_deep_side = k1
+               k_top_deep_side = ktop(ln(1, link_index_2d))
+               k_shallow_side = k2
+               k_top_shallow_side = ktop(ln(2, link_index_2d))
             else
-               cell_index_3d = k2
-               k_top = ktop(ln(2, link_index_2d))
-               kz = k1
-               ktz = ktop(ln(1, link_index_2d))
+               k_deep_side = k2
+               k_top_deep_side = ktop(ln(2, link_index_2d))
+               k_shallow_side = k1
+               k_top_shallow_side = ktop(ln(1, link_index_2d))
             end if
 
-            if (ktz - kz > 0) then ! shallow side extrapolates, coeffs based on shallow side:
-               weight_down = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1))
+            if (k_top_shallow_side - k_shallow_side > 0) then ! Shallow side extrapolates, coeffs based on shallow side:
+               weight_down = (zws(k_shallow_side + 1) - zws(k_shallow_side)) / (zws(k_shallow_side + 1) - zws(k_shallow_side - 1))
                weight_up = 1.0_dp - weight_down
-               rho_up = weight_up * density(cell_index_3d + 1) + weight_down * density(cell_index_3d)
-               rho_down = 2.0_dp * density(cell_index_3d) - rho_up
+               rho_up = weight_up * density(k_deep_side + 1) + weight_down * density(k_deep_side)
+               rho_down = 2.0_dp * density(k_deep_side) - rho_up
             else ! one layer
-               rho_up = density(cell_index_3d)
+               rho_up = density(k_deep_side)
                rho_down = rho_up
             end if
-
             rho_up = rho_up - rhomean
             rho_down = rho_down - rhomean
-            if (insigpart == 0) then
-               delta_z = zws(kz) - zws(kz - 1) ! shallow side
 
-               volume_averaged_density(1) = delta_z * 0.5_dp * (density(cell_index_3d) + density(kz)) * dx(link_index_2d)
+            if (.not. in_sigma_part) then
+               delta_z = zws(k_shallow_side) - zws(k_shallow_side - 1)
+               volume_averaged_density(1) = delta_z * 0.5_dp * (density(k_deep_side) + density(k_shallow_side)) * dx(link_index_2d)
                if (jarhoxu > 0) then
-                  rhou(link_index_3d) = 0.5_dp * (density(cell_index_3d) + density(kz))
+                  rhou(link_index_3d) = 0.5_dp * (density(k_deep_side) + density(k_shallow_side))
                end if
-
             else
-               delta_z = zws(cell_index_3d) - zws(cell_index_3d - 1) ! deep side
+               delta_z = zws(k_deep_side) - zws(k_deep_side - 1)
             end if
 
-            baroclinic_pressure = baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (rho_up + rho_down)
-            integrated_baroclinic_pressure = (baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (2.0_dp * rho_up + rho_down) / 3.0_dp) * delta_z
+            baroclinic_pressure = baroclinic_pressures(k_deep_side + 1) + 0.5_dp * delta_z * (rho_up + rho_down)
+            integrated_baroclinic_pressure = (baroclinic_pressures(k_deep_side + 1) + 0.5_dp * delta_z * (2.0_dp * rho_up + rho_down) / 3.0_dp) * delta_z
 
-            if (morelayersleft == 1) then ! k1=deepest
+            if (more_active_layers_on_the == LEFT) then ! k1=deepest
                baroclinic_pressure1 = baroclinic_pressure
                integrated_baroclinic_pressure1 = integrated_baroclinic_pressure
             else
@@ -210,7 +210,7 @@ contains
                integrated_baroclinic_pressure2 = integrated_baroclinic_pressure
             end if
 
-            if (insigpart == 0) then
+            if (.not. in_sigma_part) then
                baroclinic_pressure3 = 0.0_dp ! no skewness for zlay jump at bed
             else
                baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
@@ -245,7 +245,9 @@ contains
       integer, intent(in) :: l_bot !< bottom link
       integer, intent(in) :: l_top !< top link
 
-      integer :: link_index_3d, k1, k2, k1t, k2t, cell_index_3d, k_top, kz, ktz, insigpart, morelayersleft, i
+      integer, parameter :: LEFT = 1, RIGHT = 2, EQUAL = 0
+      integer :: link_index_3d, k1, k2, k1t, k2t, k_deep_side, k_top_deep_side, k_shallow_side, k_top_shallow_side, more_active_layers_on_the, i
+      logical :: in_sigma_part
       real(kind=dp) :: baroclinic_pressure_gradients(kmxx), volume_averaged_density(kmxx), baroclinic_pressure3
       real(kind=dp) :: baroclinic_pressure1, baroclinic_pressure2, integrated_baroclinic_pressure1, integrated_baroclinic_pressure2, baroclinic_pressure, integrated_baroclinic_pressure, salinity_down, salinity_up, temperature_down, temperature_up, weight_up, weight_down, delta_z, rho_down, rho_up, barotropic_pressure, total_pressure
 
@@ -262,19 +264,19 @@ contains
          density => potential_density
       end if
 
-      insigpart = 0
+      in_sigma_part = .false.
       if (numtopsig > 0) then
          if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
-            insigpart = 1 ! one of the nodes is in the sigma part
+            in_sigma_part = .true. ! one of the nodes is in the sigma part
          end if
       end if
 
       if (kmxn(ln(1, link_index_2d)) > kmxn(ln(2, link_index_2d))) then
-         morelayersleft = 1
+         more_active_layers_on_the = LEFT
       else if (kmxn(ln(1, link_index_2d)) < kmxn(ln(2, link_index_2d))) then
-         morelayersleft = 2
+         more_active_layers_on_the = RIGHT
       else
-         morelayersleft = 0
+         more_active_layers_on_the = EQUAL
       end if
 
       do link_index_3d = l_top, l_bot, -1
@@ -298,65 +300,63 @@ contains
          integrated_baroclinic_pressure1 = integrated_baroclinic_pressures(k1)
          integrated_baroclinic_pressure2 = integrated_baroclinic_pressures(k2)
 
-         if (link_index_3d == l_bot .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
+         if (link_index_3d == l_bot .and. more_active_layers_on_the /= EQUAL) then ! extrapolate at 'bed' layer of deepest side
 
-            if (morelayersleft == 1) then ! cell_index_3d=deep side, kz=shallow side
-               cell_index_3d = k1
-               k_top = ktop(ln(1, link_index_2d))
-               kz = k2
-               ktz = ktop(ln(2, link_index_2d))
+            if (more_active_layers_on_the == LEFT) then
+               k_deep_side = k1
+               k_top_deep_side = ktop(ln(1, link_index_2d))
+               k_shallow_side = k2
+               k_top_shallow_side = ktop(ln(2, link_index_2d))
             else
-               cell_index_3d = k2
-               k_top = ktop(ln(2, link_index_2d))
-               kz = k1
-               ktz = ktop(ln(1, link_index_2d))
+               k_deep_side = k2
+               k_top_deep_side = ktop(ln(2, link_index_2d))
+               k_shallow_side = k1
+               k_top_shallow_side = ktop(ln(1, link_index_2d))
             end if
 
-            if (ktz - kz > 0) then ! shallow side extrapolates, coeffs based on shallow side:
-               weight_down = (zws(kz + 1) - zws(kz)) / (zws(kz + 1) - zws(kz - 1))
+            if (k_top_shallow_side - k_shallow_side > 0) then ! Shallow side extrapolates, coeffs based on shallow side:
+               weight_down = (zws(k_shallow_side + 1) - zws(k_shallow_side)) / (zws(k_shallow_side + 1) - zws(k_shallow_side - 1))
                weight_up = 1.0_dp - weight_down
-               rho_up = weight_up * density(cell_index_3d + 1) + weight_down * density(cell_index_3d)
-               rho_down = 2.0_dp * density(cell_index_3d) - rho_up
+               rho_up = weight_up * density(k_deep_side + 1) + weight_down * density(k_deep_side)
+               rho_down = 2.0_dp * density(k_deep_side) - rho_up
             else ! one layer
-               rho_up = density(cell_index_3d)
+               rho_up = density(k_deep_side)
                rho_down = rho_up
             end if
-
             rho_up = rho_up - rhomean
             rho_down = rho_down - rhomean
-            if (insigpart == 0) then
-               delta_z = zws(kz) - zws(kz - 1) ! shallow side
 
-               volume_averaged_density(1) = delta_z * 0.5_dp * (density(cell_index_3d) + density(kz)) * dx(link_index_2d)
+            if (.not. in_sigma_part) then
+               delta_z = zws(k_shallow_side) - zws(k_shallow_side - 1)
+               volume_averaged_density(1) = delta_z * 0.5_dp * (density(k_deep_side) + density(k_shallow_side)) * dx(link_index_2d)
                if (jarhoxu > 0) then
-                  rhou(link_index_3d) = 0.5_dp * (density(cell_index_3d) + density(kz))
+                  rhou(link_index_3d) = 0.5_dp * (density(k_deep_side) + density(k_shallow_side))
                end if
-
             else
-               delta_z = zws(cell_index_3d) - zws(cell_index_3d - 1) ! deep side
+               delta_z = zws(k_deep_side) - zws(k_deep_side - 1)
             end if
 
-            salinity_up = weight_up * constituents(isalt, cell_index_3d + 1) + weight_down * constituents(isalt, cell_index_3d)
-            temperature_up = weight_up * constituents(itemp, cell_index_3d + 1) + weight_down * constituents(itemp, cell_index_3d)
-            salinity_down = 2.0_dp * constituents(isalt, cell_index_3d) - salinity_up
-            temperature_down = 2.0_dp * constituents(itemp, cell_index_3d) - temperature_up
+            salinity_up = weight_up * constituents(isalt, k_deep_side + 1) + weight_down * constituents(isalt, k_deep_side)
+            temperature_up = weight_up * constituents(itemp, k_deep_side + 1) + weight_down * constituents(itemp, k_deep_side)
+            salinity_down = 2.0_dp * constituents(isalt, k_deep_side) - salinity_up
+            temperature_down = 2.0_dp * constituents(itemp, k_deep_side) - temperature_up
 
             if (.not. apply_thermobaricity) then
                rho_down = calculate_density(salinity_down, temperature_down) - rhomean
             else
-               barotropic_pressure = (zws(ktz) - zws(kz - 1)) * rhomean
-               baroclinic_pressure = baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (rhosww(cell_index_3d) + rhosww(cell_index_3d - 1))
+               barotropic_pressure = (zws(k_top_shallow_side) - zws(k_shallow_side - 1)) * rhomean
+               baroclinic_pressure = baroclinic_pressures(k_deep_side + 1) + 0.5_dp * delta_z * (rhosww(k_deep_side) + rhosww(k_deep_side - 1))
                do i = 1, max_iterations_pressure_density
                   total_pressure = ag * (baroclinic_pressure + barotropic_pressure)
                   rho_down = calculate_density(salinity_down, temperature_down, total_pressure) - rhomean
-                  baroclinic_pressure = baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (rhosww(cell_index_3d) + rho_down)
+                  baroclinic_pressure = baroclinic_pressures(k_deep_side + 1) + 0.5_dp * delta_z * (rhosww(k_deep_side) + rho_down)
                end do
             end if
 
-            baroclinic_pressure = baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (rhosww(cell_index_3d) + rho_down)
-            integrated_baroclinic_pressure = (baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (2.0_dp * rhosww(cell_index_3d) + rho_down) / 3.0_dp) * delta_z
+            baroclinic_pressure = baroclinic_pressures(k_deep_side + 1) + 0.5_dp * delta_z * (rhosww(k_deep_side) + rho_down)
+            integrated_baroclinic_pressure = (baroclinic_pressures(k_deep_side + 1) + 0.5_dp * delta_z * (2.0_dp * rhosww(k_deep_side) + rho_down) / 3.0_dp) * delta_z
 
-            if (morelayersleft == 1) then ! k1=deepest
+            if (more_active_layers_on_the == LEFT) then ! k1=deepest
                baroclinic_pressure1 = baroclinic_pressure
                integrated_baroclinic_pressure1 = integrated_baroclinic_pressure
             else
@@ -364,7 +364,7 @@ contains
                integrated_baroclinic_pressure2 = integrated_baroclinic_pressure
             end if
 
-            if (insigpart == 0) then
+            if (.not. in_sigma_part) then
                baroclinic_pressure3 = 0.0_dp ! no skewness for zlay jump at bed
             else
                baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
@@ -384,7 +384,7 @@ contains
    end subroutine add_baroclinic_pressure_link_interface
 
    !> Computes baroclinic pressure gradients across layers for a horizontal link.
-   !! Cell density (i.e. rho(cell_index_3d)) is used
+   !! Cell density (i.e. rho(k_deep_side)) is used
    subroutine add_baroclinic_pressure_link_use_rho_directly(link_index_2d, l_bot, l_top)
       use m_turbulence, only: kmxx, rhou, baroclinic_pressures, integrated_baroclinic_pressures
       use m_flowgeom, only: ln, dx
@@ -396,7 +396,9 @@ contains
       integer, intent(in) :: l_bot !< bottom link
       integer, intent(in) :: l_top !< top link
 
-      integer :: link_index_3d, k1, k2, k1t, k2t, cell_index_3d, k_top, kz, ktz, insigpart, morelayersleft
+      integer, parameter :: LEFT = 1, RIGHT = 2, EQUAL = 0
+      integer :: link_index_3d, k1, k2, k1t, k2t, k_deep_side, k_top_deep_side, k_shallow_side, k_top_shallow_side, more_active_layers_on_the
+      logical :: in_sigma_part
       real(kind=dp) :: baroclinic_pressure_gradients(kmxx), volume_averaged_density(kmxx), baroclinic_pressure3
       real(kind=dp) :: baroclinic_pressure1, baroclinic_pressure2, integrated_baroclinic_pressure1, integrated_baroclinic_pressure2, baroclinic_pressure, integrated_baroclinic_pressure, delta_z
 
@@ -413,19 +415,19 @@ contains
          density => potential_density
       end if
 
-      insigpart = 0
+      in_sigma_part = .false.
       if (numtopsig > 0) then
          if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
-            insigpart = 1 ! one of the nodes is in the sigma part
+            in_sigma_part = .true. ! one of the nodes is in the sigma part
          end if
       end if
 
       if (kmxn(ln(1, link_index_2d)) > kmxn(ln(2, link_index_2d))) then
-         morelayersleft = 1
+         more_active_layers_on_the = LEFT
       else if (kmxn(ln(1, link_index_2d)) < kmxn(ln(2, link_index_2d))) then
-         morelayersleft = 2
+         more_active_layers_on_the = RIGHT
       else
-         morelayersleft = 0
+         more_active_layers_on_the = EQUAL
       end if
 
       do link_index_3d = l_top, l_bot, -1
@@ -449,36 +451,36 @@ contains
          integrated_baroclinic_pressure1 = integrated_baroclinic_pressures(k1)
          integrated_baroclinic_pressure2 = integrated_baroclinic_pressures(k2)
 
-         if (link_index_3d == l_bot .and. morelayersleft /= 0) then ! extrapolate at 'bed' layer of deepest side
+         if (link_index_3d == l_bot .and. more_active_layers_on_the /= EQUAL) then ! extrapolate at 'bed' layer of deepest side
 
-            if (morelayersleft == 1) then ! cell_index_3d=deep side, kz=shallow side
-               cell_index_3d = k1
-               k_top = ktop(ln(1, link_index_2d))
-               kz = k2
-               ktz = ktop(ln(2, link_index_2d))
+            if (more_active_layers_on_the == LEFT) then
+               k_deep_side = k1
+               k_top_deep_side = ktop(ln(1, link_index_2d))
+               k_shallow_side = k2
+               k_top_shallow_side = ktop(ln(2, link_index_2d))
             else
-               cell_index_3d = k2
-               k_top = ktop(ln(2, link_index_2d))
-               kz = k1
-               ktz = ktop(ln(1, link_index_2d))
+               k_deep_side = k2
+               k_top_deep_side = ktop(ln(2, link_index_2d))
+               k_shallow_side = k1
+               k_top_shallow_side = ktop(ln(1, link_index_2d))
             end if
 
-            if (insigpart == 0) then
-               delta_z = zws(kz) - zws(kz - 1) ! shallow side
+            if (.not. in_sigma_part) then
+               delta_z = zws(k_shallow_side) - zws(k_shallow_side - 1)
 
-               volume_averaged_density(1) = delta_z * 0.5_dp * (density(cell_index_3d) + density(kz)) * dx(link_index_2d)
+               volume_averaged_density(1) = delta_z * 0.5_dp * (density(k_deep_side) + density(k_shallow_side)) * dx(link_index_2d)
                if (jarhoxu > 0) then
-                  rhou(link_index_3d) = 0.5_dp * (density(cell_index_3d) + density(kz))
+                  rhou(link_index_3d) = 0.5_dp * (density(k_deep_side) + density(k_shallow_side))
                end if
 
             else
-               delta_z = zws(cell_index_3d) - zws(cell_index_3d - 1) ! deep side
+               delta_z = zws(k_deep_side) - zws(k_deep_side - 1) ! deep side
             end if
 
-            baroclinic_pressure = baroclinic_pressures(cell_index_3d + 1) + delta_z * (density(cell_index_3d) - rhomean)
-            integrated_baroclinic_pressure = (baroclinic_pressures(cell_index_3d + 1) + 0.5_dp * delta_z * (density(cell_index_3d) - rhomean)) * delta_z
+            baroclinic_pressure = baroclinic_pressures(k_deep_side + 1) + delta_z * (density(k_deep_side) - rhomean)
+            integrated_baroclinic_pressure = (baroclinic_pressures(k_deep_side + 1) + 0.5_dp * delta_z * (density(k_deep_side) - rhomean)) * delta_z
 
-            if (morelayersleft == 1) then ! k1=deepest
+            if (more_active_layers_on_the == LEFT) then ! k1=deepest
                baroclinic_pressure1 = baroclinic_pressure
                integrated_baroclinic_pressure1 = integrated_baroclinic_pressure
             else
@@ -486,7 +488,7 @@ contains
                integrated_baroclinic_pressure2 = integrated_baroclinic_pressure
             end if
 
-            if (insigpart == 0) then
+            if (.not. in_sigma_part) then
                baroclinic_pressure3 = 0.0_dp ! no skewness for zlay jump at bed
             else
                baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))

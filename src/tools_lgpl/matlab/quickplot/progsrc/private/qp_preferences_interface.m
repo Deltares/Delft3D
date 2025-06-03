@@ -1,4 +1,4 @@
-function fig=qp_preferences_interface
+function argout = qp_preferences_interface(cmd)
 %QP_PREFERENCES_INTERFACE Show QuickPlot preferences user interface.
 
 %----- LGPL --------------------------------------------------------------------
@@ -31,6 +31,18 @@ function fig=qp_preferences_interface
 %   $HeadURL$
 %   $Id$
 
+if nargin == 0
+    argout = qp_preferences_interface_dialog;
+else
+    switch cmd
+        case 'timezonehandling'
+            argout = {'Ignored','As in dataset','Enforced'};
+        case 'enforcedtimezone'
+            [~,argout] = gettimezone('supported');
+    end
+end
+
+function fig = qp_preferences_interface_dialog
 ListWidth=130;
 Margin=10;
 HOffset=ListWidth+2*Margin;
@@ -109,13 +121,13 @@ handles(end+1)=uicontrol('style','text', ...
     'parent',mfig);
 handles(end+1)=uicontrol('style','text', ...
     'position',[HOffset+60 VOffset 100 20], ...
-    'string',{'Ignored','As in dataset','Enforced'}, ...
+    'string',qp_preferences_interface('timezonehandling'), ...
     'backgroundcolor',Active, ...
     'tag','timezonehandling', ...
     'style','popupmenu', ...
     'callback','d3d_qp timezonehandling', ...
     'parent',mfig);
-[TZshift,tzones] = gettimezone('supported');
+tzones = qp_preferences_interface('enforcedtimezone');
 handles(end+1)=uicontrol('style','text', ...
     'position',[HOffset+170 VOffset 110 20], ...
     'string',tzones, ...

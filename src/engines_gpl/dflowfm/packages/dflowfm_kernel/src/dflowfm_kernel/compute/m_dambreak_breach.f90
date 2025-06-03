@@ -37,8 +37,6 @@ module m_dambreak_breach
 
    integer, public, protected :: n_db_links !< number of dambreak links
    integer, public, protected :: n_db_signals !< number of dambreak signals
-   real(kind=dp), dimension(:), allocatable :: link_effective_width !< dambreak effective flow widths
-   real(kind=dp), dimension(:), allocatable :: link_actual_width !< dambreak actual flow widths
 
    ! This module also holds pulic functions/subroutines after contains
    ! They use 1) only basic modules, 2) only data from the module, and 3) they are small!
@@ -51,7 +49,7 @@ module m_dambreak_breach
              have_dambreaks_links, should_write_dambreaks, multiply_by_dambreak_link_actual_width, &
              indicate_links_that_contain_dambreaks, get_active_dambreak_index, &
              get_dambreak_names, retrieve_set_of_flowlinks_dambreak, &
-             update_counters_for_dambreaks, allocate_dambreak_width_arrays, add_dambreak_signal
+             update_counters_for_dambreaks, add_dambreak_signal
 
    interface
       module subroutine adjust_bobs_for_dambreaks()
@@ -168,16 +166,5 @@ contains
       res = n_db_links > 0
 
    end function have_dambreaks_links
-
-   !> allocate and intialize dambreak link arrays
-   subroutine allocate_dambreak_width_arrays(numl)
-      use m_alloc, only: realloc
-
-      integer, intent(in) :: numl !< number of links
-
-      call realloc(link_effective_width, numl)
-      call realloc(link_actual_width, numl, fill=0.0_dp)
-
-   end subroutine allocate_dambreak_width_arrays
 
 end module m_dambreak_breach

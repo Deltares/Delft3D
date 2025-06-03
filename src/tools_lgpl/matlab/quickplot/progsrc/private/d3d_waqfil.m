@@ -498,7 +498,7 @@ switch subtype
                     if ~isempty(wlflag)
                         [T,wl]=delwaq('read',LocFI,wlflag,0,idx{T_});
                         wl=permute(wl,[3 2 1]);
-                    elseif isfield(FI,'Grid') && isfield(FI.Grid,'DPS');
+                    elseif isfield(FI,'Grid') && isfield(FI.Grid,'DPS')
                         dpsflag = true;
                         dps = FI.Grid.DPS;
                     end
@@ -506,7 +506,7 @@ switch subtype
                     if iscell(ld)
                         for k=length(ld):-1:1
                             [z(:,:,k),Chk]=vs_let(LocFI,casemod([DELWAQ '_RESULTS']),idx(T_), ...
-                                casemod(sprintf('SUBST_%3.3i',ld(k))),'quiet');
+                                casemod(sprintf('SUBST_%3.3i',ld{k})),'quiet');
                         end
                     else
                         [z,Chk]=vs_let(LocFI,casemod([DELWAQ '_RESULTS']),idx(T_), ...
@@ -2187,48 +2187,16 @@ elseif nargin==2
 end
 %
 if isempty(x)
-    ErrMsg='';
     x=-1;
     try
-        ErrMsg='Cannot find or open ';
         tbl=qp_settings('delwaq_procdef');
-        for WAQDIR = {'waq','dwaq'}
-            waq = WAQDIR{1};
-            if isequal(tbl,'auto') || ~exist(tbl,'file')
-                tbl=cat(2,getenv('D3D_HOME'),filesep,getenv('ARCH'),filesep,waq,filesep,'default',filesep,'proc_def.dat');
-            end
-            if ~exist(tbl,'file')
-                if isstandalone % from d3d_qp.exe on Windows (or old Linux)
-                    % two levels up to "D3D_HOME/ARCH" and then proc_def.dat should be located in waq/default
-                    tbl=cat(2,qp_basedir('exe'),filesep,'..',filesep,'..',filesep,waq,filesep,'default',filesep,'proc_def.dat');
-                elseif ispc % from d3d_qp.m on Windows (or old Linux)
-                    % one level up to "D3D_HOME/ARCH" and then proc_def.dat should be located in waq/default
-                    tbl=cat(2,qp_basedir('exe'),'..',filesep,waq,filesep,'default',filesep,'proc_def.dat');
-                else % from d3d_qp.m on (new) Linux
-                    % one level to "share" and then proc_def.dat should be located in dwaq
-                    tbl=cat(2,qp_basedir('exe'),'..',filesep,waq,filesep,'proc_def.dat');
-                end
-            end
-        end
-        if ~exist(tbl,'file') && ispc
-            for drive = 'cdef'
-                subdir = dir([drive ':\S*']);
-                for j = 1:length(subdir)
-                    if subdir(j).isdir
-                        tbl = [drive ':\' subdir(j).name '\programs\delwaq\fixed\proc_def.dat'];
-                        if exist(tbl,'file')
-                            break
-                        end
-                    end
-                end
-                if exist(tbl,'file')
-                    break
-                end
-            end
+        if isequal(tbl,'auto') || ~exist(tbl,'file')
+            tbl = search_proc_def;
         end
         if ~exist(tbl,'file')
             tbl='proc_def.dat';
         end
+
         TBL=vs_use(tbl,'quiet');
         [ID,Chk]=vs_get(TBL,'TABLE_P2','ITEM_ID','quiet');
         [NM,Chk]=vs_get(TBL,'TABLE_P2','ITEM_NM','quiet');
@@ -2248,7 +2216,7 @@ if isempty(x)
             x.NonTranspSubs=isSubs & ~isTransp;
         end
     catch
-        ui_message('error',[ErrMsg tbl]);
+        ui_message('error',['Cannot find or open ', tbl]);
         x=-1;
     end
 end
@@ -2316,6 +2284,114 @@ end
 if length(Full) == 1
     Full = Full{1};
 end
+
+function tbl = search_proc_def
+% Search Delft3D
+% Search relative to QUICKPLOT
+if isstandalone % relative to d3d_qp.exe
+    rel_dir = {cat(2,qp_basedir('exe'),filesep,'..',filesep,'..',filesep)};
+else % relative to d3d_qp.m
+    rel_dir = {cat(2,qp_basedir('exe'),filesep,'..',filesep)};
+end
+% Search Delft3D FM installation
+fm_dir = get_latest_delft3d_fm_installation;
+if ~isempty(fm_dir)
+    fm_dir = {fm_dir};
+else
+    fm_dir = {};
+end
+% Search Delft3D 4 installation
+if ~isempty(getenv('D3D_HOME')) && ~isempty(getenv('ARCH'))
+    d3d4_dir = {cat(2,getenv('D3D_HOME'),filesep,getenv('ARCH'),filesep)};
+else
+    d3d4_dir = {};
+end
+root_folders = [rel_dir, fm_dir, d3d4_dir];
+
+% locate the kernels relative to root_folder
+kernel_folders = {
+    ''};
+% kernels may be separated from guis
+if ~isempty(getenv('ARCH'))
+    kernel_folders{2} = cat(2,'..',filesep,'..',filesep,'kernels',getenv('ARCH'),filesep);
+end
+
+% locate the proc_def file relative to kernel_folder
+proc_folders = {
+    cat(2,'share',filesep,'delft3d',filesep), ... % Delft3D FM 2024.03 and later
+    cat(2,'dwaq',filesep), ... % Linux case
+    cat(2,'dwaq',filesep,'resources',filesep), ... % Delft3D FM 2024.01
+    cat(2,'dwaq',filesep,'default',filesep), ... % Delft3D FM 2023.03 and older
+    cat(2,'waq',filesep,'default',filesep) % old Delft3D 4 versions
+    };
+for root = root_folders
+    for kernel = kernel_folders
+        for proc = proc_folders
+            tbl = cat(2,root,kernel,proc,'proc_def.dat');
+            if exist(tbl,'file')
+                return
+            end
+        end
+    end
+end
+
+% Search for SOBEK 2 folders
+if ~exist(tbl,'file') && ispc
+    for drive = 'cdef'
+        subdir = dir([drive ':\S*']);
+        for j = 1:length(subdir)
+            if subdir(j).isdir
+                tbl = [drive ':\' subdir(j).name '\programs\delwaq\fixed\proc_def.dat'];
+                if exist(tbl,'file')
+                    return
+                end
+            end
+        end
+    end
+end
+
+
+function fm_dir = get_latest_delft3d_fm_installation
+refdate = 0;
+if ispc
+    try
+        deltashell_exe = winqueryreg('HKEY_LOCAL_MACHINE','SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\DeltaShell.Gui.exe');
+        % example: deltashell_exe = C:\Program Files\Deltares\Delft3D FM Suite 2024.01 HMWQ\bin\DeltaShell.Gui.exe
+        
+        deltashell_dir = fileparts(deltashell_exe);
+        % example: deltashell_dir = C:\Program Files\Deltares\Delft3D FM Suite 2024.01 HMWQ\bin
+        
+        fm_base = fileparts(deltashell_dir);
+        % example: fm_base = C:\Program Files\Deltares\Delft3D FM Suite 2024.01 HMWQ
+        
+        refdate = 1;
+    catch
+        DeltaresProgFiles = cat(2,getenv('ProgramFiles'),'\Deltares\');
+        % example: DeltaresProgFiles = C:\Program Files\Deltares\
+
+        d = dir(DeltaresProgFiles);
+        folder = '';
+        for i = 1:length(d)
+            % look for latest folder
+            if d(i).isdir && d(i).datenum > refdate
+                % make sure it is a Delft3D FM/D-Hydro folder
+                if exist(cat(2,DeltaresProgFiles,d(i).name,'\plugins'),'dir')
+                    folder = d(i).name;
+                    refdate = d(i).datenum;
+                end
+            end
+        end
+        
+        fm_base = cat(2,DeltaresProgFiles,folder);
+        % example: fm_base = C:\Program Files\Deltares\Delft3D FM Suite 2024.01 HMWQ
+    end
+end
+if refdate > 0
+    fm_dir = cat(2,fm_base,'\plugins\DeltaShell.Dimr\kernels\x64\');
+else
+    fm_dir = '';
+end
+
 
 % -----------------------------------------------------------------------------
 function [LocFI,isbinary,subtype,DELWAQ,casemod]=KeyParamFI(FI)
@@ -2458,7 +2534,7 @@ switch cmd
             end
         end
         options(FI,mfig,'updateprocdef');
-        
+
     case {'updateprocdef'}
         f1 = findobj(mfig,'tag','shownames');
         set(f1,'value',ustrcmpi(qp_settings('delwaq_names'),shownames))
@@ -2476,11 +2552,11 @@ switch cmd
             set(f2,'string',substdb('cmd','filename'),'enable','on','backgroundcolor',Active)
             set(f3,'enable','on')
         end
-        
+
     case {'shownames'}
         f1 = findobj(mfig,'tag','shownames');
         qp_settings('delwaq_names',shownames{get(f1,'value')})
-        
+
     case {'showfractions'}
         f = findobj(mfig,'tag','showfractions');
         if nargin>3
@@ -2507,13 +2583,13 @@ switch cmd
             qp_settings('delwaq_procdef','manual but not yet specied')
         end
         options(FI,mfig,'updateprocdef');
-        
+
     case {'procdefname'}
         f1 = findobj(mfig,'tag','procdefname');
         qp_settings('delwaq_procdef',get(f1,'string'))
         substdb('cmd','reload')
         options(FI,mfig,'updateprocdef');
-        
+
     case {'procdefbrowse'}
         procdef = qp_settings('delwaq_procdef');
         if isequal(procdef,'auto')
@@ -2525,7 +2601,7 @@ switch cmd
             substdb('cmd','reload')
         end
         options(FI,mfig,'updateprocdef');
-        
+
     case {'loadvolflux'}
         NewFI.Attributes = [];
         base = FI.FileBase;
@@ -2557,7 +2633,7 @@ switch cmd
         delete(H)
         f = findobj(mfig,'tag','loadvolflux');
         set(f,'string','Reload Volumes, Fluxes, ...')
-        
+
     case {'treatas1d','balancefile','nettransport','clipwherezundefined','reducebedto2d','reducedptstatto2d'}
         f = findobj(mfig,'tag',cmd);
         if nargin>3

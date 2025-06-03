@@ -37,6 +37,7 @@ dev = [
     "mypy ~= 1.9",
     "pyfakefs ~= 5.3",
     "pytest ~= 8.0",
+    "pytest-cov ~= 6.1.1",
     "pytest-mock ~= 3.12",
     "ruff ~= 0.4",
     "requests ~= 2.32",

@@ -2783,8 +2783,8 @@ contains
 
       call prop_set(prop_ptr, 'geometry', 'PartitionFile', trim(md_partitionfile), 'Domain partition polygon file *_part.pol for parallel run')
 
-      call prop_set(prop_ptr, 'geometry', 'AngLat', anglat, 'Angle of latitude S-N (deg), 0: no Coriolis')
-      call prop_set(prop_ptr, 'geometry', 'AngLon', anglon, 'Angle of longitude E-W (deg), 0: Greenwich, used in solar heat flux computation.')
+      call prop_set(prop_ptr, 'geometry', 'AngLat', anglat, 'Angle of latitude S-N [deg], 0 = on Equator (and thus no Coriolis force). Only required for Coriolis on Cartesian grids and for heat flux modelling.')
+      call prop_set(prop_ptr, 'geometry', 'AngLon', anglon, 'Angle of longitude E-W [deg], 0 = Greenwich Mean Time. Only required for heat flux modelling.')
 
       if (writeall .or. jahelmert > 0) then
          call prop_set(prop_ptr, 'geometry', 'Helmert', jaHelmert, 'HELMERT yes/no, 1/0')
@@ -2947,11 +2947,11 @@ contains
       if (writeall .or. setHorizontalBobsFor1d2d) then
          call prop_set(prop_ptr, 'numerics', 'setHorizontalBobsFor1d2d', setHorizontalBobsFor1d2d, 'bobs are set to 2D bedlevel, to prevent incorrect storage in sewer system (0: no, 1:yes).')
       end if
-      call prop_set(prop_ptr, 'numerics', 'Icoriolistype', icorio, '0=No, 5=default, 3,4 no weights, 5-10 Kleptsova hu/hs, 25-30 Ham hs/hu, odd: 2D hs/hu, even: hsk/huk ')
+      call prop_set(prop_ptr, 'numerics', 'Icoriolistype', icorio, '0 = No Coriolis force, 5 = default approach for Coriolis (depth-dependent and similar to Delft3D-FLOW).')
       call prop_set(prop_ptr, 'numerics', 'Newcorio', newcorio, '0=prior to 27-11-2019, 1=no normal forcing on open bnds, plus 12 variants )')
 
       if (writeall .or. jacorioconstant /= 0) then
-         call prop_set(prop_ptr, 'numerics', 'Corioconstant', jacorioconstant, '0=default, 1=Coriolis constant in sferic models anyway,2=beta plane, both in cart. and spher. coord.')
+         call prop_set(prop_ptr, 'numerics', 'Corioconstant', jacorioconstant, '0 = no change in Coriolis (default), 1 = Coriolis constant in Spherical models, 2 = Beta plane approach both in Cartesian and Spherical coordinates.')
       end if
       if (writeall .or. Corioadamsbashfordfac /= 0.5_dp) then
          call prop_set(prop_ptr, 'numerics', 'Corioadamsbashfordfac', Corioadamsbashfordfac, '0=No, 0.5=AdamsBashford, only for Newcorio=1)')
