@@ -38,6 +38,8 @@ module fm_external_forcings
    use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
    use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
+   use m_waveconst
+
    implicit none
 
    private
@@ -238,7 +240,7 @@ contains
          end do
       end if
 
-      if ((jawave == 1 .or. jawave == 2) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flowWithoutWaves) then
          call tauwavefetch(time_in_seconds)
       end if
 
@@ -393,7 +395,7 @@ contains
       integer :: kb !< cell index of boundary cell
       integer :: ki !< cell index of internal cell
 
-      if (jawave == 7 .and. waveforcing == 2) then
+      if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
          do link = 1, number_of_links
             kb = link2cell(1, link)
             ki = link2cell(2, link)
@@ -960,7 +962,7 @@ contains
             call realloc(wwssav_sum, (/2, nqbnd/), keepExisting=.true., fill=0.0_dp)
             call realloc(huqbnd, L2qbnd(nqbnd)); huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0.0_dp
          else if (qidfm == 'absgenbnd') then
-            if (.not. (jawave == 4)) then ! Safety to avoid allocation errors later on
+            if (.not. (jawave == WAVE_SURFBEAT)) then ! Safety to avoid allocation errors later on
                call qnerror('Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.', '  ', ' ')
                write (msgbuf, '(a)') 'Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.'
                call err_flush()
@@ -2027,7 +2029,7 @@ contains
       call init_1d2d()
 
       ! JRE ================================================================
-      if (nbndw > 0 .and. .not. (jawave == 4)) then
+      if (nbndw > 0 .and. .not. (jawave == WAVE_SURFBEAT)) then
          call qnerror('Wave energy boundary defined without setting correct wavemodelnr.', ' ', ' ')
          iresult = DFM_WRONGINPUT
       end if
@@ -2477,7 +2479,7 @@ contains
       end if
 
       if (jawind == 0) then
-         if (jawave > 0 .and. jawave < 3) then
+         if (jawave > NO_WAVES .and. jawave < 3) then
             jawave = 0 ! no wind, no waves
             call mess(LEVEL_INFO, 'No wind, so waves is switched off ')
          end if

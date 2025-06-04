@@ -37,6 +37,7 @@ module m_observations
    use fm_external_forcings_data
    use MessageHandling, only: IdLen
    use precision, only: dp
+   use m_waveconst
 
    implicit none
 
@@ -234,7 +235,7 @@ contains
       if (air_pressure_available > 0) then
          i = i + 1; IVAL_PATM = i
       end if
-      if (jawave > 0) then
+      if (jawave > NO_WAVES) then
          i = i + 1; IVAL_WAVEH = i
          i = i + 1; IVAL_WAVED = i
          i = i + 1; IVAL_WAVET = i
@@ -291,7 +292,7 @@ contains
          i = i + numfracs - 1; IVAL_SSCXN = i ! on purpose lsedtot, see alloc in morphology_data_module
          i = i + 1; IVAL_SSCY1 = i
          i = i + numfracs - 1; IVAL_SSCYN = i
-         if (jawave > 0) then
+         if (jawave > NO_WAVES) then
             i = i + 1; IVAL_SBWX1 = i
             i = i + numfracs - 1; IVAL_SBWXN = i
             i = i + 1; IVAL_SBWY1 = i
@@ -336,7 +337,7 @@ contains
          i = i + 1; IVAL_UCXQ = i
          i = i + 1; IVAL_UCYQ = i
       end if
-      if (jawave > 0) then
+      if (jawave > NO_WAVES) then
          i = i + 1; IVAL_UCXST = i
          i = i + 1; IVAL_UCYST = i
       end if

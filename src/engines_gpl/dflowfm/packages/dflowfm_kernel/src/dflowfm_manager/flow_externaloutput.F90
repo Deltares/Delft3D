@@ -33,6 +33,7 @@
 module m_flow_externaloutput
    use m_step_to_screen, only: step_to_screen
    use m_inctime_split, only: inctime_split
+   use m_waveconst
 
    implicit none
 
@@ -202,7 +203,7 @@ contains
       call timstop(handle_extra(78))
 
       ! Write com file
-      if (jawave == 3) then
+      if (jawave == WAVE_SWAN_ONLINE) then
          !
          if (ti_com /= dt_user .or. ti_ctv(1) > 0) then
             !

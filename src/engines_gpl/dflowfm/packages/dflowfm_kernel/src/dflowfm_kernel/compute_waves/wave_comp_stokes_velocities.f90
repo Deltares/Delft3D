@@ -49,6 +49,8 @@ contains
       use m_waves
       use m_sferic
       use m_partitioninfo
+      use m_waveconst
+
       implicit none
 
       real(kind=dp) :: Mu, Mv, massflux_max, mnorm, mangle ! link-based and link-oriented wave-induced volume fluxes
@@ -67,7 +69,7 @@ contains
       vstokes = 0d0
 
       ! switch off stokes drifts
-      if (jawavestokes == 0) then
+      if (jawavestokes == NO_STOKES_DRIFT) then
          return
       end if
 
@@ -97,7 +99,7 @@ contains
             ac1 = acl(L); ac2 = 1d0 - ac1
             !
             ! civilized behaviour in shallow surf zone
-            huL = max(hs(k1), hs(k2),epshu)
+            huL = max(hs(k1), hs(k2), epshu)
             hwavL = 0.5d0 * (hwav(k1) + hwav(k2))
             gammal = hwavL / huL
             if (gammal > 1.d0) then

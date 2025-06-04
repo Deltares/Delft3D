@@ -46,6 +46,7 @@ contains
       use m_flow
       use m_flowgeom
       use m_get_Lbot_Ltop
+      use m_waveconst
 
       implicit none
 
@@ -54,7 +55,7 @@ contains
 
       ust_mag = 0d0
       fwav_mag = 0d0
-      if (jawave /= 4) then
+      if (jawave /= WAVE_SURFBEAT) then
          ustx_cc = 0d0
          usty_cc = 0d0
       end if
@@ -73,7 +74,7 @@ contains
       end do
       ust_mag = hypot(ustx_cc, usty_cc)
 
-      if (jawave == 3 .or. jawave == 4 .or. jawave == 7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_SURFBEAT .or. jawave == WAVE_NC_OFFLINE) then
          do L = 1, lnx
             call getLbotLtop(L, Lb, Lt)
             do LL = Lb, Lt

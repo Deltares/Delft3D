@@ -35,6 +35,7 @@ module m_furu
    use m_getustbcfuhi
    use m_furu_structures
    use m_furusobekstructures
+   use m_waveconst
 
    implicit none
 
@@ -174,7 +175,7 @@ contains
 
 10             continue
 
-               if (jawave > 0 .and. .not. flowWithoutWaves) then ! Delft3D-Wave Stokes-drift correction
+               if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then ! Delft3D-Wave Stokes-drift correction
 
                   if (modind < 9) then
                      frL = cfwavhi(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
@@ -325,7 +326,7 @@ contains
             vLL = v(LL); v(LL) = 0d0
             call getustbcfuhi(LL, LL, ustbLL, cfuhi(LL), hdzb, z00, cfuhi3D) ! call with Lb = LL => layer integral profile
             ! JRE with HK, used to be in getustb
-            if (jawave > 0 .and. jawaveStokes >= 1) then ! Ustokes correction at bed
+            if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM) then ! Ustokes correction at bed
                adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
             end if
             v(LL) = vLL
@@ -367,7 +368,7 @@ contains
 
       call furusobekstructures()
 
-      if ((jawave == 3 .or. jawave == 7) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flowWithoutWaves) then
          if (kmx == 0) then
             !   add wave-induced mass fluxes on boundaries to convert euler input to GLM
             do L = Lnxi + 1, Lnx

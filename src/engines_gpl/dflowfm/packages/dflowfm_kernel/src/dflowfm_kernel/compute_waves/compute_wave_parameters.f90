@@ -34,6 +34,7 @@ module m_compute_wave_parameters
    use m_wave_uorbrlabda, only: wave_uorbrlabda
    use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
    use m_tauwavehk, only: tauwavehk
+   use m_waveconst
 
    implicit none
 
@@ -53,6 +54,7 @@ contains
       use mathconsts, only: sqrt2_hp
       use m_transform_wave_physics, only: transform_wave_physics_hp
       use m_wind, only: wx, wy
+      use m_waveconst
 
       integer :: k1, k2, k, L
       integer :: ierror
@@ -60,10 +62,10 @@ contains
 
       ! Fetch models
       !
-      if (jawave < 3 .and. .not. flowWithoutWaves) then ! Every timestep, not only at getfetch updates, as waterdepth changes
+      if (jawave < WAVE_SWAN_ONLINE .and. .not. flowWithoutWaves) then ! Every timestep, not only at getfetch updates, as waterdepth changes
          ! get ustokes, vstokes for 2D, else in update_verticalprofiles getustwav
          hwav = min(hwav, gammax * max(s1 - bl, 0d0))
-         if (kmx == 0 .and. jawavestokes > 0) then
+         if (kmx == 0 .and. jawavestokes > NO_STOKES_DRIFT) then
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
                hh = hu(L); 
@@ -90,8 +92,8 @@ contains
       end if
 
       ! SWAN
-      if ((jawave == 3 .or. jawave == 7) .and. .not. flowWithoutWaves) then
-         if (jawave == 7) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flowWithoutWaves) then
+         if (jawave == WAVE_NC_OFFLINE) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
@@ -101,7 +103,7 @@ contains
          twav = twavcom
          !
          ! Needed here, because we need wave mass fluxes to calculate stokes drift
-         if (jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
             !
             call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
                                & sxwav, sywav, mxwav, mywav, &
@@ -118,11 +120,11 @@ contains
          end if
       end if
       !
-      if ((jawave == 3 .or. jawave == 7) .and. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. flowWithoutWaves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
-         if (jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
@@ -134,16 +136,16 @@ contains
       end if
       !
       ! Surfbeat model
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          ! pro memore
       end if
       !
       ! Uniform wave field
-      if (jawave == 5 .and. .not. flowWithoutWaves) then
+      if (jawave == WAVE_UNIFORM .and. .not. flowWithoutWaves) then
          do k = 1, ndx
             hwav(k) = min(hwavuni, gammax * (s1(k) - bl(k)))
          end do
-         if (kmx == 0 .and. jawavestokes > 0) then
+         if (kmx == 0 .and. jawavestokes > NO_STOKES_DRIFT) then
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
                hh = hu(L); 

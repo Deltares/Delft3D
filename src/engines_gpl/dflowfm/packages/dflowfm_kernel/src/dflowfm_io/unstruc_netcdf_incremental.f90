@@ -46,6 +46,7 @@ module unstruc_netcdf_map_class
    use MessageHandling, only: mess, LEVEL_ERROR, LEVEL_INFO, LEVEL_FATAL
    use m_flowparameters, only: eps10, jaeulervel, jawave
    use mathconsts, only: raddeg_hp
+   use m_waveconst
 
    implicit none
 
@@ -408,7 +409,7 @@ contains
          lbound = 0d0
       else if (name == 'ucmag') then
          unit = 'm s-1'
-         if (jaeulervel == 1 .and. jawave > 0) then
+         if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES) then
             ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucmag, nf90_byte, UNC_LOC_S, 'ucmag', 'sea_water_eulerian_speed', 'Flow element center Eulerian velocity magnitude', unit)
          else
             ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucmag, nf90_byte, UNC_LOC_S, 'ucmag', 'sea_water_speed', 'Flow element center velocity magnitude', unit)
@@ -420,7 +421,7 @@ contains
          lbound = 0d0
       else if (name == 'ucdir') then
          unit = 'degree'
-         if (jaeulervel == 1 .and. jawave > 0) then
+         if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES) then
             ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucdir, nf90_byte, UNC_LOC_S, 'ucdir', 'sea_water_eulerian_velocity_to_direction', 'Flow element center Eulerian velocity direction', unit)
          else
             ierr = unc_def_var_map(incids%ncid, incids%id_tsp, incids%id_ucdir, nf90_byte, UNC_LOC_S, 'ucdir', 'sea_water_velocity_to_direction', 'Flow element center velocity direction', unit)

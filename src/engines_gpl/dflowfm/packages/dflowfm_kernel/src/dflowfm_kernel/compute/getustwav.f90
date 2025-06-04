@@ -33,6 +33,7 @@ module m_get_ustwav
    use m_swart, only: swart
    use m_soulsby, only: soulsby
    use m_getwavenr, only: getwavenr
+   use m_waveconst
 
    implicit none
 contains
@@ -89,13 +90,13 @@ contains
       costu = csw * csu(LL) + snw * snu(LL) ! and compute stokes drift
       sintu = -csw * snu(LL) + snw * csu(LL)
 
-      if (jawaveStokes == 1) then
+      if (jawaveStokes == STOKES_DRIFT_DEPTHUNIFORM) then
          uusto = 0.5d0 * omeg * asg * asg / hu(LL)
          ustokes(Lb:Lt) = costu * uusto
          vstokes(Lb:Lt) = sintu * uusto
          ustokes(LL) = costu * uusto ! for convenience
          vstokes(LL) = sintu * uusto
-      else if (jawaveStokes >= 2) then ! to do: add 3D roller contribution for roller model
+      else if (jawaveStokes >= STOKES_DRIFT_2NDORDER) then ! to do: add 3D roller contribution for roller model
          f1u = omeg * rk * asg**2
          h = hu(LL)
          f3u = (1d0 - exp(-2d0 * rk * h))**2
@@ -114,7 +115,7 @@ contains
          vstokes(LL) = sintu * ag * asg * asg * rk / omeg / 2d0 / hu(LL)
 
          ! add 3D roller contribution to stokes drift
-         if (jawave == 4 .and. roller == 1) then
+         if (jawave == WAVE_SURFBEAT .and. roller == 1) then
             ! roller mass flux
             rmax = 0.125d0 * rhomean * ag * (gammaxxb * h)**2
             erol = min(0.5d0 * (R(k1) + R(k2)), rmax)

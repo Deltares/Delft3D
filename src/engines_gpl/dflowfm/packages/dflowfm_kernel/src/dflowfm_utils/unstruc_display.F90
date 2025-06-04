@@ -53,6 +53,8 @@ module unstruc_display
    use m_set_col
    use m_movabs
    use m_lnabs
+   use m_waveconst
+
    implicit none
 
    public dis_info_1d_link
@@ -1758,7 +1760,7 @@ contains
 
       end if
 
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          xp = 0.90 * x1 + 0.10 * x2
          yp = 0.85 * y1 + 0.15 * y2
 

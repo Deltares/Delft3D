@@ -35,6 +35,8 @@ module m_xbeach_netcdf
    use io_ugrid
    use netcdf
    use unstruc_netcdf
+   use m_waveconst
+
    implicit none
 
    type t_unc_wavids
@@ -145,7 +147,7 @@ contains
       integer :: ierr
 
       ierr = 1
-      if ((jawave == 4) .and. (ti_wav > 0) .and. (jaavgwavquant == 1)) then
+      if ((jawave == WAVE_SURFBEAT) .and. (ti_wav > 0) .and. (jaavgwavquant == 1)) then
          if (comparereal(tim, time_wav, eps10) >= 0) then
             if (jamombal > 0) then
                call xbeach_mombalance()

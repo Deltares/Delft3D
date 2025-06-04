@@ -378,6 +378,7 @@ contains
       use m_sediment, only: stm_included
       use m_flowtimes, only: it_st
       use m_flowparameters, only: jawave
+      use m_waveconst
 
       implicit none
 
@@ -460,7 +461,7 @@ contains
             call definencvar(imapfile, id_tausmax(iid), nf90_double, idims, 'max_bss_magnitude', 'max bed shear stress magnitude', 'Pa', 'net_xcc net_ycc')
             call definencvar(imapfile, id_ssc(iid), nf90_double, (/id_flowelemdim(iid), id_sedtotdim(iid), id_timedim(iid)/), 'suspended_sed_conc', 'depth-averaged suspended sediment concentration', 'kg m-3', 'net_xcc net_ycc')
             !
-            if (jawave > 0) then
+            if (jawave > NO_WAVES) then
                call definencvar(imapfile, id_ua(iid), nf90_double, idims, 'wave_nonlin_vel_x_comp', 'non-linear wave velocity contribution, x-component', 'm s-1', 'net_xcc net_ycc')
                call definencvar(imapfile, id_va(iid), nf90_double, idims, 'wave_nonlin_vel_y_comp', 'non-linear wave velocity contribution, y-component', 'm s-1', 'net_xcc net_ycc')
             end if
@@ -580,7 +581,7 @@ contains
          work = work / is_dtint
          ierr = nf90_put_var(imapfile, id_ssc(iid), work(1:numk, 1:lsedtot), (/1, 1, itim/), (/ndxndxi, lsedtot, 1/))
          !
-         if (jawave > 0) then
+         if (jawave > NO_WAVES) then
             do k = 1, numk
                nodes = pack([(ii, ii=1, size(st_ind(:, k)))], st_ind(:, k) > 0)
                work(k, 1) = sum(st_wf(nodes, k) * is_sumvalsnd(IDX_UA, st_ind(nodes, k), 1))

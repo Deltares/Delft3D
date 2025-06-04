@@ -51,6 +51,8 @@ contains
       use m_xbeach_data, xb_hminlw => hminlw
       use m_physcoef, only: sag
       use m_get_Lbot_Ltop
+      use m_waveconst
+
       implicit none
 
       integer :: L, LL, Lb, Lt
@@ -61,20 +63,20 @@ contains
 
       integer :: k1, k2
 
-      if (jawaveforces == 0) then
+      if (jawaveforces == WAVE_FORCES_OFF) then
          wavfu = 0d0
          wavfv = 0d0
          return
       end if
 
       ! Set correct limiting depth
-      if (jawave == 3 .or. jawave == 7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
          hminlw = m_waves_hminlw
          hminlwi = 1d0 / m_waves_hminlw
          gammaloc = gammax
       end if
 
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          hminlw = xb_hminlw
          hminlwi = 1d0 / xb_hminlw
          gammaloc = gammaxxb

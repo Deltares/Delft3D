@@ -67,6 +67,7 @@ contains
       use m_tauwavehk, only: tauwavehk
       use m_fetch_operation_utils, only: initialise_fetch_proc_data, stop_fetch_computation, stop_fetch_computation, &
                                          stop_fetch_computation, send_s1_to_fetch_proc, get_fetch_values_from_fetch_proc
+      use m_waveconst
 
       real(kind=dp), intent(in) :: tim
 
@@ -145,9 +146,9 @@ contains
             if (FetchL > 0) then
 
                select case (jawave)
-               case (1)
+               case (WAVE_FETCH_HURDLE)
                   call hurdlestive(U10, fetchL, fetchD, Hsig, Tsig)
-               case (2)
+               case (WAVE_FETCH_YOUNG)
                   call ian_young_pt(U10, fetchL, fetchD, Hsig, Tsig)
                end select
 

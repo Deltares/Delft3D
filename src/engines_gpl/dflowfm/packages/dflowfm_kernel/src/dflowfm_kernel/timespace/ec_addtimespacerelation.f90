@@ -55,6 +55,7 @@ contains
       use timespace_read, only: maxnamelen
       use precision, only: dp
       use unstruc_messages, only: callback_msg
+      use m_waveconst
 
       character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
       real(kind=dp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
@@ -677,7 +678,7 @@ contains
          ! the name of the source item created by the file reader will be the same as the ext.force. quant name
          sourceItemName = target_name
          ! this file contains wave data
-         if (jawave == 3) then
+         if (jawave == WAVE_SWAN_ONLINE) then
             ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
             fileReaderPtr%one_time_field = .true.
          end if

@@ -46,6 +46,7 @@ contains
       use unstruc_model, only: md_bedformfile
       use m_flowparameters, only: jawave, modind
       use MessageHandling, only: mess, LEVEL_FATAL
+      use m_waveconst
 
       logical :: error
       integer, intent(in) :: stage
@@ -72,7 +73,7 @@ contains
          end if
          !
          ! safety: running waves with rouwav=vr04 can happen without sediment, or trachytopes for that matter
-         if (jawave > 0 .and. modind == 9) then
+         if (jawave > NO_WAVES .and. modind == 9) then
             bfmpar%lfbedfrmrou = .true.
          end if
       end if
