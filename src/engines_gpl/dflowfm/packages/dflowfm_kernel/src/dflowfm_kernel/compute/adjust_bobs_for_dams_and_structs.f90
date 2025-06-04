@@ -155,7 +155,6 @@ contains
          end if
       end do
 
-      ! Adjust bobs for dambreak
       call adjust_bobs_for_dambreaks()
       
       if (ifixedweirscheme1D2D == 1) then
