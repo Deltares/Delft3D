@@ -113,6 +113,7 @@ class Dimr {
 
         void           freeLibs(void);
         void           processWaitFile(void);
+        void           createDistributeMPISubGroupCommunicator(dimr_component *, bool);
         void           runControlBlock  (dimr_control_block *, double, int);
         void           runParallelInit  (dimr_control_block *);
         void           runParallelFinish(dimr_control_block *);
@@ -138,10 +139,11 @@ class Dimr {
         dimr_control_block * control;        // structure containing all information from the control block in the config.xml file
         dimr_components      componentsList; // Array of all components
         dimr_couplers        couplersList;   // Array of all couplers
-        bool                 use_mpi;        // Whether MPI-mode is active for this run.
+        bool                 use_mpi;        // Whether MPI-mode is active for this run
+        MPI_Group            mpiGroupWorld;  // Overall MPI-group
         int                  nc_mode;        // [3 or 4]   NetCDF creation mode: NetCDF3 (NF90_CLASSIC_MODEL) or NetCDF4 (NF90_NETCDF4)
         int                  my_rank;        // Rank# of current process
-        int                  numranks;       // Total nr of MPI processes for dimr main.
+        int                  numranks;       // Total nr of MPI processes for dimr main
         Level                logLevel;
         Level                feedbackLevel;
         const char *         configfile;     // name of configuration file
