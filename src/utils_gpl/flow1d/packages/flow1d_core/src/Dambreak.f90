@@ -55,7 +55,6 @@ module m_dambreak
       real(kind=dp) :: f2
       real(kind=dp) :: u_crit
       real(kind=dp) :: t0
-      real(kind=dp) :: end_time_first_phase
       real(kind=dp) :: water_level_upstream_location_x = -999d0
       real(kind=dp) :: water_level_upstream_location_y = -999d0
       real(kind=dp) :: water_level_downstream_location_x = -999d0
@@ -86,8 +85,6 @@ contains
             dambreak%b_coeff = 522
             dambreak%maximum_allowed_width = 200 !meters
          end if
-      else if (dambreak%algorithm == BREACH_GROWTH_VERHEIJVDKNAAP) then
-         dambreak%end_time_first_phase = dambreak%t0 + dambreak%time_to_breach_to_maximum_depth
       end if
 
    end subroutine set_dambreak_coefficients

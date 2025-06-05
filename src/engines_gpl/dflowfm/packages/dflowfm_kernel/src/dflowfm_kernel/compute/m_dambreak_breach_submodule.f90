@@ -46,7 +46,6 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       integer :: index_structure = 0 !< index of the structure
       integer :: ec_item = ec_undef_int !< item for EC module to get crest level and width from a tim file
       integer :: number_of_links = 0 !< number of links in the dambreak
-      integer :: phase = 0 !< phase of the dambreak breach
       integer :: link_map_offset = 0 !< offset of the local array in the global link array
       integer, dimension(:), allocatable :: link_indices !< link indices of the dambreak
       integer, dimension(:), allocatable :: active_links !< active links of the dambreak
@@ -70,7 +69,6 @@ submodule(m_dambreak_breach) m_dambreak_breach_submodule
       real(kind=dp) :: normal_velocity !< normal velocity of the breach
       real(kind=dp) :: u_crit !< critical velocity for the breach growth
       real(kind=dp) :: t0 = 0.0_dp !< time of the start of the dambreak
-      real(kind=dp) :: end_time_first_phase !< end time of the first phase of the breach
       real(kind=dp) :: time_to_breach_to_maximum_depth !< time to breach to maximum depth
       real(kind=dp) :: a_coeff !< coefficient a for the breach growth
       real(kind=dp) :: b_coeff !< coefficient b for the breach growth
@@ -320,25 +318,25 @@ contains
       real(kind=dp), intent(in) :: time_step !< time step
 
       real(kind=dp) :: breach_width
-      real(kind=dp) :: time_from_breaching
+      real(kind=dp) :: time_since_breaching
 
-      time_from_breaching = time - dambreak%t0
+      time_since_breaching = time - dambreak%t0
 
       ! breaching not started
-      if (time_from_breaching < 0.0_dp) then
+      if (time_since_breaching < 0.0_dp) then
          return
       end if
 
       !vdKnaap(2000) formula: to do: implement table
-      if (time_from_breaching < dambreak%time_to_breach_to_maximum_depth) then
+      if (time_since_breaching < dambreak%time_to_breach_to_maximum_depth) then
          ! The linear part
          dambreak%crest_level = dambreak%crest_level_ini - &
-                                time_from_breaching / dambreak%time_to_breach_to_maximum_depth * &
+                                time_since_breaching / dambreak%time_to_breach_to_maximum_depth * &
                                 (dambreak%crest_level_ini - dambreak%crest_level_min)
          breach_width = dambreak%breach_width_ini
       else
-         ! The logarithmic part, time_from_breaching in seconds
-         breach_width = dambreak%a_coeff * log(time_from_breaching / dambreak%b_coeff)
+         ! The logarithmic part, time_since_breaching in seconds
+         breach_width = dambreak%a_coeff * log(time_since_breaching / dambreak%b_coeff)
       end if
 
       ! breach width must increase monotonically
@@ -366,36 +364,34 @@ contains
 
       real(kind=dp), parameter :: SECONDS_IN_HOUR = 3600.0_dp
       real(kind=dp) :: delta_level
-      real(kind=dp) :: time_from_breaching
+      real(kind=dp) :: time_since_breaching
       real(kind=dp) :: time_from_first_phase
       real(kind=dp) :: width_increment
       real(kind=dp) :: water_level_jump_dambreak
       real(kind=dp) :: breach_width_derivative
 
-      time_from_breaching = time - dambreak%t0
+      time_since_breaching = time - dambreak%t0
 
       ! breaching not started
-      if (time_from_breaching < 0.0_dp) then
+      if (time_since_breaching < 0.0_dp) then
          return
       end if
 
       breach_width_derivative = 0.0_dp
       water_level_jump_dambreak = 0.0_dp
 
-      if (time <= dambreak%end_time_first_phase) then
+      if (time_since_breaching <= dambreak%time_to_breach_to_maximum_depth) then
          ! phase 1: lowering
-         dambreak%phase = 1
          dambreak%crest_level = dambreak%crest_level_ini - &
-                                time_from_breaching / dambreak%time_to_breach_to_maximum_depth * &
+                                time_since_breaching / dambreak%time_to_breach_to_maximum_depth * &
                                 (dambreak%crest_level_ini - dambreak%crest_level_min)
          dambreak%width = dambreak%breach_width_ini
       else
          ! phase 2: widening
-         dambreak%phase = 2
          dambreak%crest_level = dambreak%crest_level_min
          water_level_jump_dambreak = calculate_water_level_jump(dambreak)
          delta_level = (gravity * water_level_jump_dambreak)**1.5d0
-         time_from_first_phase = time - dambreak%end_time_first_phase
+         time_from_first_phase = time_since_breaching - dambreak%time_to_breach_to_maximum_depth
 
          if (dambreak%width < dambreak%maximum_width .and. (.not. ieee_is_nan(dambreak%normal_velocity)) &
              .and. abs(dambreak%normal_velocity) > dambreak%u_crit) then
@@ -1258,7 +1254,6 @@ contains
 
       dambreak%name = name
       dambreak%index_structure = index_in_structure
-      dambreak%phase = 0
       dambreak%width = 0.0_dp
       dambreak%maximum_width = 0.0_dp
       dambreak%maximum_allowed_width = dambreak_settings%maximum_allowed_width
@@ -1271,7 +1266,6 @@ contains
       dambreak%time_to_breach_to_maximum_depth = dambreak_settings%time_to_breach_to_maximum_depth
       dambreak%a_coeff = dambreak_settings%a_coeff
       dambreak%b_coeff = dambreak_settings%b_coeff
-      dambreak%end_time_first_phase = dambreak_settings%end_time_first_phase
       dambreak%u_crit = dambreak_settings%u_crit
       dambreak%f1 = dambreak_settings%f1
       dambreak%f2 = dambreak_settings%f2
