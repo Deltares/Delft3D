@@ -84,6 +84,7 @@ contains
       use m_tables, only: interpolate
       use Timers
       use m_reconstruct_sed_transports
+      use m_waveconst
 
       implicit none
 
@@ -156,14 +157,14 @@ contains
       ! Bed-slope and sediment availability effects for
       ! wave-related bed load transport
       !
-      if (bedw > 0.0_fp .and. jawave > 0) then
+      if (bedw > 0.0_fp .and. jawave > NO_WAVES) then
          call fm_adjust_bedload(e_sbwn, e_sbwt, AVALANCHE_OFF, SLOPECOR_ON)
       end if
       !
       ! Sediment availability effects for
       ! wave-related suspended load transport
       !
-      if (susw > 0.0_fp .and. jawave > 0) then
+      if (susw > 0.0_fp .and. jawave > NO_WAVES) then
          call fm_adjust_bedload(e_sswn, e_sswt, AVALANCHE_OFF, SLOPECOR_OFF)
       end if
       !
@@ -779,7 +780,7 @@ contains
    !> Apply morphodynamic boundary condition on bed level
    subroutine fm_bed_boundary_conditions(timhr)
       use precision, only: dp
-
+      use m_waveconst
    !!
    !! Declarations
    !!
@@ -843,7 +844,7 @@ contains
    !!
 
       if (flowWithoutWaves) then
-         jawaveswartdelwaq_local = 0
+         jawaveswartdelwaq_local = WAVE_WAQ_SHEAR_STRESS_HYD
       else
          jawaveswartdelwaq_local = jawaveswartdelwaq
       end if

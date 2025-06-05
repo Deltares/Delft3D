@@ -230,7 +230,7 @@ class ComparisonRunner(TestSetRunner):
             test_case_config = result.config
             test_case_results = result.results
 
-            for (_, filename, parameter, comparison) in test_case_results:
+            for _, filename, parameter, comparison in test_case_results:
                 table["Test case name"].append(test_case_config.name)
                 table["Result"].append(comparison.result.value)
                 table["File name"].append(filename.name)

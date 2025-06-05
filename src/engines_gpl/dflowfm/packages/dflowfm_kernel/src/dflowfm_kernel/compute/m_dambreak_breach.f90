@@ -46,7 +46,7 @@ module m_dambreak_breach
              get_dambreak_breach_width_c_loc, get_dambreak_upstream_level_c_loc, &
              get_dambreak_downstream_level_c_loc, update_dambreak_administration, &
              update_dambreak_administration_old, reset_dambreak_counters, &
-             have_dambreaks_links, should_write_dambreaks, multiply_by_dambreak_link_actual_width, &
+             have_dambreaks_links, should_write_dambreaks, set_flow_areas_for_dambreaks, &
              indicate_links_that_contain_dambreaks, get_active_dambreak_index, &
              get_dambreak_names, retrieve_set_of_flowlinks_dambreak, &
              update_counters_for_dambreaks, add_dambreak_signal
@@ -55,9 +55,9 @@ module m_dambreak_breach
       module subroutine adjust_bobs_for_dambreaks()
       end subroutine adjust_bobs_for_dambreaks
 
-      module function update_dambreak_breach(start_time, delta_time) result(error)
-         real(kind=dp), intent(in) :: start_time !< start time
-         real(kind=dp), intent(in) :: delta_time !< delta time
+      module function update_dambreak_breach(current_time, time_step) result(error)
+         real(kind=dp), intent(in) :: current_time !< current time
+         real(kind=dp), intent(in) :: time_step !< time step
          integer :: error !< error code
       end function update_dambreak_breach
 
@@ -112,10 +112,10 @@ module m_dambreak_breach
          logical :: res
       end function should_write_dambreaks
 
-      module subroutine multiply_by_dambreak_link_actual_width(hu, au)
+      module subroutine set_flow_areas_for_dambreaks(hu, au)
          real(kind=dp), dimension(:), intent(in) :: hu !< source
          real(kind=dp), dimension(:), intent(inout) :: au !< results
-      end subroutine multiply_by_dambreak_link_actual_width
+      end subroutine set_flow_areas_for_dambreaks
 
       pure module function get_active_dambreak_index(dambreak_name) result(index)
          character(len=*), intent(in) :: dambreak_name !< Id/name of the requested dambreak

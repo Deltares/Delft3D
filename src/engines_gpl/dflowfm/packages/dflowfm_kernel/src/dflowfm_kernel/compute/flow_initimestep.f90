@@ -45,6 +45,7 @@ module m_flow_initimestep
    use m_makeq1qaatstart
    use m_pillar_upd
    use m_heatu
+   use m_waveconst
 
    implicit none
 
@@ -158,12 +159,12 @@ contains
       end if
 
       ! Calculate max bed shear stress amplitude and z0rou without waves
-      if (jawave == 0) then
+      if (jawave == NO_WAVES) then
          call settaubxu_nowave(use_u1)
       end if
 
       ! Set wave parameters, adapted for present water depth/velocity fields
-      if (jawave > 0) then
+      if (jawave > NO_WAVES) then
          taubxu = 0d0
          call compute_wave_parameters()
       end if
@@ -186,7 +187,7 @@ contains
 
       ! Add wave model dependent wave force in RHS
       ! After setdt because surfbeat needs updated dts
-      if (jawave > 0 .and. .not. flowwithoutwaves) then
+      if (jawave > NO_WAVES .and. .not. flowwithoutwaves) then
          call compute_wave_forcing_RHS()
       end if
 

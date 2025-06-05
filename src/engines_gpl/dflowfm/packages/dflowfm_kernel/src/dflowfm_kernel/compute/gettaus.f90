@@ -42,6 +42,7 @@ contains
       use m_alloc
       use m_flowparameters, only: flowWithoutWaves, jawaveswartdelwaq
       use m_get_tau
+      use m_waveconst
       !
       !
       ! Parameters
@@ -54,10 +55,12 @@ contains
       integer :: ierr !< Error code
       integer :: n !< Counter
       integer :: jawaveswartdelwaq_local !< Local value of jawaveswartdelwaq, depending on kernel and flowWithoutWaves
+      integer, PARAMETER :: USE_DFLOWFM = 1
+      integer, PARAMETER :: SET_CZS_TAUS = 1
       !
       ! Body
-      if (flowWithoutWaves .and. kernel == 1) then
-         jawaveswartdelwaq_local = 0
+      if (flowWithoutWaves .and. kernel == USE_DFLOWFM) then
+         jawaveswartdelwaq_local = WAVE_WAQ_SHEAR_STRESS_HYD
       else
          jawaveswartdelwaq_local = jawaveswartdelwaq
       end if
@@ -66,7 +69,7 @@ contains
       else if (size(czs) < ndxi) then
          call realloc(czs, ndxi, keepExisting=.false., fill=0d0, stat=ierr)
       end if
-      if (typout == 1) then
+      if (typout == SET_CZS_TAUS) then
          if (.not. allocated(taus)) then
             call realloc(taus, ndxi, keepExisting=.false., fill=0d0, stat=ierr)
          else if (size(taus) < ndxi) then

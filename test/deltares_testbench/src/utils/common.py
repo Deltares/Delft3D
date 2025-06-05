@@ -31,11 +31,11 @@ def add_search_path(environment, sp, logger: ILogger) -> None:
     search_path = Paths().rebuildToLocalPath(sp)
     if platform.system() == "Windows":
         logger.debug(f"Adding windows search path {search_path}")
-        environment["PATH"] = f'{search_path};{environment["PATH"]}'
+        environment["PATH"] = f"{search_path};{environment['PATH']}"
     else:
         logger.debug(f"Adding linux search path {search_path}")
-        environment["LD_LIBRARY_PATH"] = f'{search_path}:{environment["LD_LIBRARY_PATH"]}'
-        environment["PATH"] = f'{search_path}:{environment["PATH"]}'
+        environment["LD_LIBRARY_PATH"] = f"{search_path}:{environment['LD_LIBRARY_PATH']}"
+        environment["PATH"] = f"{search_path}:{environment['PATH']}"
 
 
 def escape_teamcity(message: str) -> str:

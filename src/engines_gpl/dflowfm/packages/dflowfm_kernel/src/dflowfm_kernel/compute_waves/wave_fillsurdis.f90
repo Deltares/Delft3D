@@ -49,6 +49,7 @@ contains
       use m_flow, only: s1, epshu
       use m_flowgeom, only: bl
       use m_sferic
+      use m_waveconst
 
       implicit none
 
@@ -59,15 +60,15 @@ contains
       real(kind=dp) :: hsk
 
       select case (jawave)
-      case (3)
+      case (WAVE_SWAN_ONLINE)
          surdis = dsurf(k) + dwcap(k)
-      case (4)
+      case (WAVE_SURFBEAT)
          if (roller > 0) then
             surdis = DR(k)
          else
             surdis = D(k)
          end if
-      case (1, 2, 5)
+      case (WAVE_FETCH_HURDLE, WAVE_FETCH_YOUNG, WAVE_UNIFORM)
          hsk = s1(k) - bl(k)
          if (hsk > epshu) then
             if (twav(k) < 0.1d0) then

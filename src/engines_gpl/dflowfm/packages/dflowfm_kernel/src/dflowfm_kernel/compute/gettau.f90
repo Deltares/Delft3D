@@ -117,15 +117,15 @@ contains
          ust2 = ust * ust
       end if
       !
-      if (jawaveswartdelwaq_par == 0) then
+      if (jawaveswartdelwaq_par == WAVE_WAQ_SHEAR_STRESS_HYD) then
          taucurc = rhomean * ust2
-      else if (jawaveSwartDelwaq_par == 1) then
+      else if (jawaveSwartDelwaq_par == WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM) then
          if (twav(n) > 1d-2) then
             call Swart(twav(n), uorb(n), z00, fw, ustw2)
             ust2 = ust2 + ftauw * ustw2
          end if
          taucurc = rhomean * ust2
-      else if (jawaveSwartDelwaq_par == 2) then
+      else if (jawaveSwartDelwaq_par == WAVE_WAQ_SHEAR_STRESS_MAX_SHEAR_STRESS) then
          taucurc = ust ! area averaged taubxu
       end if
    end subroutine gettau2

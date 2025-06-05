@@ -70,7 +70,7 @@ contains
       use m_fm_erosed, only: ndx_mor, ndxi_mor, lnx_mor, lnxi_mor, nd_mor, ln_mor, ndkx_mor
       use m_f1dimp, only: f1dimp_initialized
       use m_alloc, only: realloc, reallocp
-      
+      use m_waveconst
       use m_mormerge_mpi
       use m_partitioninfo, only: jampi, my_rank, ndomains, DFM_COMM_DFMWORLD
       use m_xbeach_data, only: gammaxxb
@@ -168,7 +168,7 @@ contains
       ! Set transport velocity definitions according to morfile settings
       !
       jatranspvel = 1 ! default eul bedload, lag susp load
-      if (stmpar%morpar%eulerisoglm .and. jawave > 0) then
+      if (stmpar%morpar%eulerisoglm .and. jawave > NO_WAVES) then
          jatranspvel = 2 ! everything euler
       end if
 
@@ -454,12 +454,12 @@ contains
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Could not allocate bermslope arrays. Bermslope transport switched off.')
             stmpar%morpar%bermslopetransport = .false.
          end if
-         if (jawave > 0 .and. jawave /= 4) then
+         if (jawave > NO_WAVES .and. jawave /= 4) then
             if (comparereal(gammax, stmpar%morpar%bermslopegamma) == 0) then
                stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4 ! if they are exactly the same, rounding errors set index to false wrongly
             end if
          end if
-         if (jawave == 4) then
+         if (jawave == WAVE_SURFBEAT) then
             if (comparereal(gammaxxb, stmpar%morpar%bermslopegamma) == 0) then
                stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4
             end if
@@ -535,18 +535,18 @@ contains
       !
       select case (stmpar%morlyr%settings%active_layer_diffusion)
       case (1)
-          !The array read from the morphology module `rdmorlyr` is at cell centres because that routine is general
-          !for D3D4 and FM, however, diffusion in FM is at links. Here we transform it.
-          allocate(aldiff_links(1,lnx_mor))
-          associate (aldiff=>stmpar%morlyr%settings%aldiff)
-             do l=1,lnx_mor
-                 aldiff_links(1,l)=max(aldiff(ln_mor(1,l)),aldiff(ln_mor(2,l)))
-             enddo
-          end associate !aldiff
+         !The array read from the morphology module `rdmorlyr` is at cell centres because that routine is general
+         !for D3D4 and FM, however, diffusion in FM is at links. Here we transform it.
+         allocate (aldiff_links(1, lnx_mor))
+         associate (aldiff => stmpar%morlyr%settings%aldiff)
+            do l = 1, lnx_mor
+               aldiff_links(1, l) = max(aldiff(ln_mor(1, l)), aldiff(ln_mor(2, l)))
+            end do
+         end associate !aldiff
       case default
          ! if 0, do nothing.
       end select
-   
+
 1234  return
    end subroutine flow_sedmorinit
 

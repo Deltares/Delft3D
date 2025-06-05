@@ -82,7 +82,7 @@ contains
       statistics_file = md_sttfile
 
       ! Get executable directory
-      call get_executable_directory(exe_dir, ierr) 
+      call get_executable_directory(exe_dir, ierr)
       share_dir = trim(exe_dir)//'../share/delft3d/'
 
       ! check if substance file exists
@@ -403,6 +403,7 @@ contains
       use m_wind, only: jawind, jarain, solar_radiation_available
       use date_time_utils, only: compute_reference_day
       use m_logger_helper, only: set_log_unit_number
+      use m_waveconst
 
       implicit none
 
@@ -490,11 +491,11 @@ contains
          end if
       end if
       if (isftau > 0) then
-         if (jawaveSwartDelwaq == 0) then
+         if (jawaveSwartDelwaq == WAVE_WAQ_SHEAR_STRESS_HYD) then
             call mess(LEVEL_INFO, 'jawaveSwartDelwaq == 0 so tau/tauflow = taucur or tau from wave-current interaction if waves activated')
-         else if (jawaveSwartDelwaq == 1) then
+         else if (jawaveSwartDelwaq == WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM) then
             call mess(LEVEL_INFO, 'jawaveSwartDelwaq == 1 so tau/tauflow = taucur + ftauw*tauwave')
-         else if (jawaveSwartDelwaq == 2) then
+         else if (jawaveSwartDelwaq == WAVE_WAQ_SHEAR_STRESS_MAX_SHEAR_STRESS) then
             call mess(LEVEL_INFO, 'jawaveSwartDelwaq == 2 so tau/tauflow = taubxu')
          end if
       end if
@@ -632,7 +633,7 @@ contains
       end if
       isffetchl = 0
       isffetchd = 0
-      if (jawave == 1 .or. jawave == 2) then ! copied from "set_external_forcings", call to "tauwavefetch"
+      if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then ! copied from "set_external_forcings", call to "tauwavefetch"
          if (icon > 0) then
             num_spatial_time_fuctions = num_spatial_time_fuctions + 1
             isffetchl = num_spatial_time_fuctions
@@ -1393,6 +1394,7 @@ contains
       use m_gettauswave
       use m_get_kbot_ktop
       use m_get_link1
+      use m_waveconst
       implicit none
 
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
@@ -1455,7 +1457,7 @@ contains
 
       if (isftau > 0) then
          ipoitau = arrpoi(iisfun) + (isftau - 1) * num_cells
-         if (jawave == 0 .or. flowWithoutWaves) then
+         if (jawave == NO_WAVES .or. flowWithoutWaves) then
             call gettaus(1, 2)
          else
             call gettauswave(jawaveswartdelwaq)

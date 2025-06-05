@@ -57,6 +57,7 @@ module m_flow_geominit
    use m_iadvecini, only: iadvecini
    use m_getdxofconnectedkcu1, only: getdxofconnectedkcu1
    use m_wind, only: jawindpartialdry
+   use m_waveconst
 
    implicit none
 
@@ -1499,7 +1500,7 @@ contains
       end if
 
 !JRE
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          call xbeach_makethetagrid()
          call makethindamadmin()
          ! now that ntheta is determined:

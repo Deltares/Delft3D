@@ -37,6 +37,7 @@ module m_fm_erosed_sub
    use m_init_1dinfo, only: init_1dinfo
    use m_fm_upwbed, only: fm_upwbed
    use m_fm_red_soursin, only: fm_red_soursin
+   use m_waveconst
 
    implicit none
 
@@ -258,7 +259,7 @@ contains
          call mess(LEVEL_FATAL, errmsg)
       end if
       !
-      wave = (jawave > 0) .and. .not. flowWithoutWaves
+      wave = (jawave > NO_WAVES) .and. .not. flowWithoutWaves
       !
       ! Mass conservation; s1 is updated before entering fm_erosed
       !
@@ -274,7 +275,7 @@ contains
       !
       u1_tmp = u1 * u_to_umain
 
-      if (jatranspvel > 0 .and. jawave > 0 .and. .not. flowWithoutWaves) then
+      if (jatranspvel > 0 .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          u1_tmp = u1 - ustokes
          call setucxucy_mor(u1_tmp)
       else
@@ -294,8 +295,8 @@ contains
       !I think that it should be removed from <setucxucy_mor>
       call setucxqucyq_mor(u1_tmp, ucxq_tmp, ucyq_tmp)
 
-      if (jawave > 2) then
-         if ((.not. (jawave == 4 .or. jawave == 3 .or. jawave == 7)) .or. flowWithoutWaves) then
+      if (jawave > WAVE_FETCH_YOUNG) then
+         if ((.not. (jawave == WAVE_SURFBEAT .or. jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE)) .or. flowWithoutWaves) then
             ktb = 0d0 ! no roller turbulence
          else
             do k = 1, ndx
@@ -447,7 +448,7 @@ contains
       if (kmx > 0) then ! 3D
          deltas = 0.05d0
          maxdepfrac = 0.05
-         if (jawave > 0 .and. v2dwbl > 0) then
+         if (jawave > NO_WAVES .and. v2dwbl > 0) then
             deltas = 0d0
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
@@ -711,7 +712,7 @@ contains
             zvelb = h1 / ee
          end if
          !
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             ubot = uorb(nm) ! array uitgespaard
          else
             ubot = 0d0
@@ -719,7 +720,7 @@ contains
          !
          ! Calculate total (possibly wave enhanced) roughness
          !
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             z0rou = max(epsz0, z0rouk(nm))
          else ! currents only
             z0rou = z0curk(nm) ! currents+potentially trachy
@@ -792,7 +793,7 @@ contains
          end if
          taks0 = max(aksfac * rc, 0.01d0 * h1)
          !
-         if (jawave > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             if (twav(nm) > 0d0) then
                delr = 0.025d0
                taks0 = max(0.5d0 * delr, taks0)
@@ -828,7 +829,7 @@ contains
             dll_reals(RP_TETA) = real(phiwav(nm), hp)
             dll_reals(RP_RLAMB) = real(rlabda(nm), hp)
             dll_reals(RP_UORB) = real(uorb(nm), hp)
-            if (jawave > 2) then
+            if (jawave > WAVE_FETCH_YOUNG) then
                dll_reals(RP_KWTUR) = real(ktb(nm), hp)
             else
                dll_reals(RP_KWTUR) = real(0.0_hp, hp) ! array not allocated for fetch length models (choice of HK)
@@ -1293,14 +1294,14 @@ contains
          call fm_upwbed(lsedtot, sbcx, sbcy, sxtot, sytot, e_sbcn, e_sbct)
       end if
       !
-      if (bedw > 0.0_fp .and. jawave > 0 .and. .not. flowWithoutWaves) then
+      if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          !
          ! Upwind wave-related bed load load transports
          !
          call fm_upwbed(lsedtot, sbwx, sbwy, sxtot, sytot, e_sbwn, e_sbwt)
       end if
       !
-      if (susw > 0.0_fp .and. jawave > 0 .and. .not. flowWithoutWaves) then
+      if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          !
          ! Upwind wave-related suspended load transports
          !

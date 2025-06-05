@@ -144,8 +144,8 @@ contains
                     end if
                 end if
                 if (ito   > 0) then
-                    if (param(isurf, ifrom) > 1.0e-15) then
-                        aleng(2, iq) = volume(ito) / param(isurf, ifrom) / 2.
+                    if (param(isurf, ito) > 1.0e-15) then
+                        aleng(2, iq) = volume(ito) / param(isurf, ito) / 2.
                     end if
                 end if
             end do

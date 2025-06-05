@@ -390,6 +390,7 @@ module fm_external_forcings_data
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
    integer :: numsrc !< nr of point sources/sinks
+   integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield
    integer :: msrc = 0 !< maximal number of points that polylines contains for all sources/sinks
@@ -481,6 +482,7 @@ contains
       nzbnd = 0
       nubnd = 0
       numsrc = 0
+      numsrc_old = 0
       numsrc_nf = 0
 
    end subroutine default_fm_external_forcing_data

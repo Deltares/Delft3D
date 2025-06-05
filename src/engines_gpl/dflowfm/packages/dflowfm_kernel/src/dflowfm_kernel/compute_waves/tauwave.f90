@@ -172,7 +172,7 @@ contains
             tauwci = yparL * (taucur + tauwav) ! mean shear stress
             taubu(L) = tauwci / umod * (u1(L) + ustokes(L)) ! in D3D, stresses for glm and stokes drift are added. This gives correct magnitude, but wrong stress direction; fixed at writing
             !
-            if (jawave > 0) then
+            if (jawave > NO_WAVES) then
                if (modind < 9) then
                   cfwavhi(L) = tauwci / umod / umod / rhoL / huL ! combined w+c friction factor for furu 2d
                elseif (modind == 9) then

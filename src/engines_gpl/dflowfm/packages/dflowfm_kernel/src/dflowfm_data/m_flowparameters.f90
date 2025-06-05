@@ -34,6 +34,7 @@ module m_flowparameters
    use precision, only: dp
    use m_sediment, only: jased
    use m_missing
+   use m_waveconst
 
    implicit none
 
@@ -145,7 +146,7 @@ module m_flowparameters
 
    integer :: jawavebreakerturbulence !< Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
-   integer :: jawavedelta = 1 !< Wave boundary layer formulation: 1=Sana 2007
+   integer :: jawavedelta = WAVE_BOUNDARYLAYER_SANA !< Wave boundary layer formulation: 1=Sana 2007
 
    integer :: jawaveforces !< Apply wave forces to model (1, default), or not (0)
 
@@ -741,21 +742,21 @@ contains
 
       jacali = 0 !< Include calibration factor for roughness
 
-      jawave = 0 ! Include wave model nr
+      jawave = NO_WAVES ! Include wave model nr
 
-      waveforcing = 0 !< Include wave forcing
+      waveforcing = WAVEFORCING_NO_WAVEFORCES !< Include wave forcing
 
-      jawavestreaming = 0 ! Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
+      jawavestreaming = WAVE_STREAMING_OFF ! Switch on in D3D model: >=1 : streaming mom
 
-      jawavestokes = 1 ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
+      jawavestokes = STOKES_DRIFT_DEPTHUNIFORM ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
 
-      jawavebreakerturbulence = 1 ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+      jawavebreakerturbulence = WAVE_BREAKER_TURB_ON ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
       jawavedelta = 1 ! Wave boundary layer formulation: 1=Sana; 2=Nguyen
 
-      jawaveforces = 1
+      jawaveforces = WAVE_FORCES_ON
 
-      jawaveSwartDelwaq = 0 !< communicate to Delwaq taucur + tauwave instead of taucur
+      jawaveSwartDelwaq = WAVE_WAQ_SHEAR_STRESS_HYD !< communicate to Delwaq taucur + tauwave instead of taucur
 
       modind = 0 !< Nr of wave-current bed friction model, 9 = vanrijn, 1 = fredsoe, etc like d3d
 

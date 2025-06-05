@@ -32,6 +32,7 @@
 
 module m_xbeachwaves
    use m_xbeachwaves_getcellcentergradients, only: getcellcentergradients
+   use m_waveconst
 
    implicit none
 
@@ -3510,7 +3511,7 @@ contains
          return
       end if
       !
-      if (jawave == 3 .or. jawave == 7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
          cw = rlabda(k) / max(1d-1, twav(k))
          rol = 9d-1 * rhomean * ag * sin(1d-1) * hwav(k)**2 ! Martins 2018
          disrol = 2d-1 * ag * rol / cw ! 2.0*beta = 2d-1
@@ -3518,7 +3519,7 @@ contains
          Tb = twav(k)
       end if
       !
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          disrol = DR(k)
          rol = R(k)
          cw = max(cwav(k), sqrt(ag * epshu))
@@ -5789,9 +5790,9 @@ contains
       real(kind=dp), dimension(:, :), pointer :: theta_pointer
       real(kind=dp), dimension(:), pointer :: ucx_pointer, ucy_pointer
       ierr = 0
-      
+
       ! directional bin size
-      select case (callType) 
+      select case (callType)
       case (callTypeStationary)
          ntheta_local = ntheta
       case (callTypeDirections)
@@ -5838,7 +5839,7 @@ contains
          xbducydx = 0.d0
          xbducydy = 0.d0
       end if
-      
+
       ! Calculate sinh(2kh)
       where (hhwlocal > epshu .and. 2d0 * hhwlocal * kwav <= 3000.d0) ! to check: hhwlocal or hs
          sinh2kh = sinh(min(2d0 * kwav * hhwlocal, 10.0d0))
@@ -5937,6 +5938,7 @@ contains
       use m_flow, only: hu
       use m_flowparameters, only: jawavestokes
       use m_physcoef
+      use m_waveconst
 
       implicit none
 
@@ -5963,7 +5965,7 @@ contains
       end if
 
       ! shortcut to switch off stokes drift
-      if (jawavestokes == 0) then
+      if (jawavestokes == NO_STOKES_DRIFT) then
          ustokes = 0d0; vstokes = 0d0
          ustx_cc(k) = 0d0; usty_cc(k) = 0d0 ! output
          return

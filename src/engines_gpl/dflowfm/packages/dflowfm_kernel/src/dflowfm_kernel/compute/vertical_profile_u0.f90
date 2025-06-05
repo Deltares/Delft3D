@@ -230,7 +230,7 @@ contains
             adv = 0d0; adv1 = 0d0
          end if
 
-         if (jawave > 0 .and. jawaveStokes == 4 .and. .not. flowWithoutWaves) then ! ustokes correction in vertical viscosity
+         if (jawave > NO_WAVES .and. jawaveStokes == STOKES_DRIFT_2NDORDER_VISC_ADVE .and. .not. flowWithoutWaves) then ! ustokes correction in vertical viscosity
             ustv = vstress * (ustokes(L) - ustokes(L - 1))
             d(k + 1) = d(k + 1) + ustv / dzu(k + 1)
             d(k) = d(k) - ustv / dzu(k)

@@ -44,6 +44,7 @@ module unstruc_model
    use netcdf, only: nf90_double
    use m_start_parameters, only: md_jaautostart, MD_NOAUTOSTART
    use properties, only: prop_get, prop_file, tree_create, tree_destroy
+   use m_waveconst
 
    implicit none
 
@@ -1594,16 +1595,16 @@ contains
       if (jawave == 6) then ! backward compatibility
          write (msgbuf, '(a,i0,a)') 'Wavemodelnr = ', jawave, ' is now merged with the offline wave functionality (wavemodelnr=7), and option 6 is deprecated.'
          call mess(LEVEL_WARN, msgbuf)
-         jawave = 7
+         jawave = WAVE_NC_OFFLINE
       end if
-      if (jawave /= 7 .and. waveforcing /= 0) then
+      if (jawave /= WAVE_NC_OFFLINE .and. waveforcing /= WAVEFORCING_NO_WAVEFORCES) then
          write (msgbuf, '(a,i0,a)') 'Waveforcing = , ', waveforcing, ' is only supported for Wavemodelnr = 7. Keyword ignored.'
          call mess(LEVEL_WARN, msgbuf)
-         waveforcing = 0
+         waveforcing = WAVEFORCING_NO_WAVEFORCES
       end if
       call prop_get(md_ptr, 'waves', 'Tifetchcomp', Tifetch)
       call prop_get(md_ptr, 'waves', 'SurfbeatInput', md_surfbeatfile)
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          if (trim(md_surfbeatfile) == '') then
             md_surfbeatfile = 'params.txt'
          end if
@@ -1613,14 +1614,14 @@ contains
       call prop_get(md_ptr, 'waves', 'Phiwavuni', Phiwavuni)
       call prop_get(md_ptr, 'waves', 'flowWithoutWaves', flowWithoutWaves) ! True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
       call prop_get(md_ptr, 'waves', 'Rouwav', rouwav)
-      if (jawave > 0 .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          call setmodind(rouwav, modind)
       end if
       call prop_get(md_ptr, 'waves', 'Gammax', gammax)
       call prop_get(md_ptr, 'waves', 'hminlw', hminlw)
       call prop_get(md_ptr, 'waves', 'uorbfac', jauorb) ! 0=delft3d4, sqrt(pi)/2 included in uorb calculation; >0: FM, factor not included; default: 0
       ! backward compatibility for hk in tauwavehk:
-      if ((jawave > 0 .and. jawave < 3) .or. flowWithoutWaves) then
+      if ((jawave > NO_WAVES .and. jawave < WAVE_SWAN_ONLINE) .or. flowWithoutWaves) then
          jauorb = 1
       end if
       call prop_get(md_ptr, 'waves', 'jahissigwav', jahissigwav) ! 1: sign wave height on his output; 0: hrms wave height on his output. Default=1
@@ -1642,16 +1643,16 @@ contains
          fbreak = 0.0_dp
       end if
 
-      if (jawave <= 2) then
-         jawaveStokes = 0
-         jawaveforces = 0
-         jawavestreaming = 0
-         jawavedelta = 0
-         jawavebreakerturbulence = 0 ! default switch off, but switchable see below
+      if (jawave <= WAVE_FETCH_YOUNG) then
+         jawaveStokes = NO_STOKES_DRIFT
+         jawaveforces = WAVE_FORCES_OFF
+         jawavestreaming = WAVE_STREAMING_OFF
+         jawavedelta = WAVE_BOUNDARYLAYER_OFF
+         jawavebreakerturbulence = WAVE_BREAKER_TURB_OFF ! default switch off, but switchable see below
       end if
 
       call prop_get(md_ptr, 'waves', '3Dstokesprofile', jawaveStokes) ! Stokes profile. 0: no, 1:uniform over depth, 2: 2nd order Stokes theory; 3: 2, with vertical stokes gradient in adve; 4: 3, with stokes contribution vert viscosity
-      if ((jawave == 1 .or. jawave == 2) .and. jawaveStokes > 0) then
+      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. jawaveStokes > NO_STOKES_DRIFT) then
          write (msgbuf, *) 'unstruc_model::readMDUFile: wavemodelnr=', jawave, ', and 3Dstokesprofile=', jawavestokes, '. It is *strongly* advised to leave 3Dstokesprofile at 0 when using fetch based wave models.'
          call warn_flush()
       end if
@@ -1881,7 +1882,7 @@ contains
       call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
       call check_time_interval(ti_maps, ti_map, ti_mape, dt_user, 'MapInterval', tstart_user)
 
-      if (jawave == 3) then
+      if (jawave == WAVE_SWAN_ONLINE) then
          ti_com_array = 0.0_hp
          ti_com = dt_user !< defaults to backward compatible behaviour
          call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
@@ -2034,7 +2035,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', jamapu0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', jamapucvec, success)
       !
-      if (jawave == 3 .and. jamapucvec == 0) then ! only needed for 2 way coupling
+      if (jawave == WAVE_SWAN_ONLINE .and. jamapucvec == 0) then ! only needed for 2 way coupling
          jamapucvec = 1
          write (msgbuf, '(a, i0, a)') 'MDU setting "Wavemodelnr = ', jawave, '" requires ' &
             //'"Wrimap_velocity_vector = 1". Has been enabled now.'
@@ -2194,9 +2195,9 @@ contains
       call prop_get(md_ptr, 'output', 'WaqHorAggr', md_waqhoraggr, success)
       call prop_get(md_ptr, 'output', 'WaqVertAggr', md_waqvertaggr, success)
       call prop_get(md_ptr, 'waves', 'waveSwartDelwaq', jawaveSwartDelwaq, success)
-      if (jawave == 0) then
-         if (jawaveSwartdelwaq == 1) then
-            jawaveswartdelwaq = 0
+      if (jawave == NO_WAVES) then
+         if (jawaveSwartdelwaq == WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM) then
+            jawaveswartdelwaq = WAVE_WAQ_SHEAR_STRESS_HYD
             call mess(LEVEL_WARN, 'Waves inactive and waveswartdelwaq=1; Reset waveswartdelwaq to 0.')
          end if
       end if
@@ -2245,7 +2246,7 @@ contains
       call set_output_time_vector(md_mptfile, ti_mpt, ti_mpt_rel)
 
       call prop_get(md_ptr, 'output', 'FullGridOutput', jafullgridoutput, success)
-      if (jafullgridoutput < 1 .and. jawave == 3 .and. kmx > 0) then
+      if (jafullgridoutput < 1 .and. jawave == WAVE_SWAN_ONLINE .and. kmx > 0) then
          jafullgridoutput = 1
          call mess(LEVEL_WARN, 'D-WAVES coupling enabled and kmx>0, so layer interface coordinates are needed on com-file. FullGridOutput set to 1.')
          call warn_flush()
@@ -2265,16 +2266,16 @@ contains
 
       call prop_get(md_ptr, 'output', 'EulerVelocities', jaeulervel)
       if (jaeulervel == 1) then
-         if (jawave < 3 .or. flowWithoutWaves) then
+         if (jawave < WAVE_SWAN_ONLINE .or. flowWithoutWaves) then
             call mess(LEVEL_WARN, '''EulerVelocities'' is not compatible with the selected Wavemodelnr. ''EulerVelocities'' is set to 0.')
-            jaeulervel = 0
-         else if (jawavestokes == 0) then
+            jaeulervel = WAVE_EULER_VELOCITIES_OUTPUT_OFF
+         else if (jawavestokes == NO_STOKES_DRIFT) then
             call mess(LEVEL_WARN, '''EulerVelocities'' is set to 0, because 3Dstokesprofile is set to 0.')
-            jaeulervel = 0
+            jaeulervel = WAVE_EULER_VELOCITIES_OUTPUT_OFF
          end if
       end if
       !
-      if (jawave == 4) then ! not for Delta Shell
+      if (jawave == WAVE_SURFBEAT) then ! not for Delta Shell
          call prop_get(md_ptr, 'output', 'AvgWaveQuantities', jaavgwavquant)
          call prop_get(md_ptr, 'output', 'AvgWaveQuantitiesFile', md_avgwavquantfile, success)
          ti_wav_array = 0.0_dp
@@ -2783,8 +2784,8 @@ contains
 
       call prop_set(prop_ptr, 'geometry', 'PartitionFile', trim(md_partitionfile), 'Domain partition polygon file *_part.pol for parallel run')
 
-      call prop_set(prop_ptr, 'geometry', 'AngLat', anglat, 'Angle of latitude S-N (deg), 0: no Coriolis')
-      call prop_set(prop_ptr, 'geometry', 'AngLon', anglon, 'Angle of longitude E-W (deg), 0: Greenwich, used in solar heat flux computation.')
+      call prop_set(prop_ptr, 'geometry', 'AngLat', anglat, 'Angle of latitude S-N [deg], 0 = on Equator (and thus no Coriolis force). Only required for Coriolis on Cartesian grids and for heat flux modelling.')
+      call prop_set(prop_ptr, 'geometry', 'AngLon', anglon, 'Angle of longitude E-W [deg], 0 = Greenwich Mean Time. Only required for heat flux modelling.')
 
       if (writeall .or. jahelmert > 0) then
          call prop_set(prop_ptr, 'geometry', 'Helmert', jaHelmert, 'HELMERT yes/no, 1/0')
@@ -2947,11 +2948,11 @@ contains
       if (writeall .or. setHorizontalBobsFor1d2d) then
          call prop_set(prop_ptr, 'numerics', 'setHorizontalBobsFor1d2d', setHorizontalBobsFor1d2d, 'bobs are set to 2D bedlevel, to prevent incorrect storage in sewer system (0: no, 1:yes).')
       end if
-      call prop_set(prop_ptr, 'numerics', 'Icoriolistype', icorio, '0=No, 5=default, 3,4 no weights, 5-10 Kleptsova hu/hs, 25-30 Ham hs/hu, odd: 2D hs/hu, even: hsk/huk ')
+      call prop_set(prop_ptr, 'numerics', 'Icoriolistype', icorio, '0 = No Coriolis force, 5 = default approach for Coriolis (depth-dependent and similar to Delft3D-FLOW).')
       call prop_set(prop_ptr, 'numerics', 'Newcorio', newcorio, '0=prior to 27-11-2019, 1=no normal forcing on open bnds, plus 12 variants )')
 
       if (writeall .or. jacorioconstant /= 0) then
-         call prop_set(prop_ptr, 'numerics', 'Corioconstant', jacorioconstant, '0=default, 1=Coriolis constant in sferic models anyway,2=beta plane, both in cart. and spher. coord.')
+         call prop_set(prop_ptr, 'numerics', 'Corioconstant', jacorioconstant, '0 = no change in Coriolis (default), 1 = Coriolis constant in Spherical models, 2 = Beta plane approach both in Cartesian and Spherical coordinates.')
       end if
       if (writeall .or. Corioadamsbashfordfac /= 0.5_dp) then
          call prop_set(prop_ptr, 'numerics', 'Corioadamsbashfordfac', Corioadamsbashfordfac, '0=No, 0.5=AdamsBashford, only for Newcorio=1)')
@@ -2967,7 +2968,7 @@ contains
       end if
       call prop_set(prop_ptr, 'numerics', 'Limtypmom', limtypmom, 'Limiter type for cell center advection velocity (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)')
       call prop_set(prop_ptr, 'numerics', 'Limtypsa', limtypsa, 'Limiter type for salinity transport (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)')
-      if (writeall .or. (jawave == 4 .and. jajre == 1 .and. (.not. flowWithoutWaves) .and. swave == 1)) then
+      if (writeall .or. (jawave == WAVE_SURFBEAT .and. jajre == 1 .and. (.not. flowWithoutWaves) .and. swave == 1)) then
          call prop_set(prop_ptr, 'numerics', 'Limtypw', limtypw, 'Limiter type for wave action transport (0: none, 1: minmod, 2: van Leer, 3: Koren, 4: monotone central)')
       end if
 
@@ -3558,7 +3559,7 @@ contains
       end if
 
       ! jre wm67
-      if (writeall .or. jawave > 0) then
+      if (writeall .or. jawave > NO_WAVES) then
          call prop_set(prop_ptr, 'waves', 'Wavemodelnr', jawave, 'Wave model nr. (0: none, 1: fetch/depth limited Hurdle-Stive, 2: fetch/depth limited Young-Verhagen, 3: SWAN, 5: uniform, 7: Offline Wave Coupling')
          call prop_set(prop_ptr, 'waves', 'Rouwav', rouwav, 'Friction model for wave induced shear stress: FR84 (default) or: MS90, HT91, GM79, DS88, BK67, CJ85, OY88, VR04')
          call prop_set(prop_ptr, 'waves', 'Gammax', gammax, 'Maximum wave height/water depth ratio')
@@ -3577,10 +3578,10 @@ contains
             call prop_set(prop_ptr, 'waves', 'Twavuni', twavuni, 'root mean square wave period (s)')
             call prop_set(prop_ptr, 'waves', 'Phiwavuni', phiwavuni, 'root mean square wave direction, (deg), math convention')
          end if
-         if (writeall .or. jawaveswartdelwaq /= 0) then
+         if (writeall .or. jawaveswartdelwaq /= WAVE_WAQ_SHEAR_STRESS_HYD) then
             call prop_set(prop_ptr, 'waves', 'WaveSwartDelwaq', jaWaveSwartDelwaq, 'if WaveSwartDelwaq == 1 .and. Tiwaq > 0 then increase tauwave to Delwaq with 0.5rho*fw*uorbuorb')
          end if
-         if (writeall .or. jawave == 1 .or. jawave == 2) then
+         if (writeall .or. jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then
             call prop_set(prop_ptr, 'waves', 'Tifetchcomp', Tifetch, 'Time interval fetch comp (s) in wavemodel 1,2')
          end if
          if (writeall .or. kmx > 0) then
@@ -3589,7 +3590,7 @@ contains
             call prop_set(prop_ptr, 'waves', '3Dwavestreaming', jawavestreaming, 'Influence of wave streaming. 0: no, 1: added to adve                                                                 ')
             call prop_set(prop_ptr, 'waves', '3Dwaveboundarylayer', jawavedelta, 'Boundary layer formulation. 1: Sana                                                                                  ')
          end if
-         if (jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
             call prop_set(prop_ptr, 'waves', 'Waveforcing', waveforcing, 'Wave forcing (in combination with Wavemodelnr = 7 only). 1: based on radiation stress gradients, 2: based on dissipation, NOT implemented yet, 3: based on dissipation at free surface and water column, NOT implemented yet')
          end if
 

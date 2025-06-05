@@ -31,6 +31,7 @@
 !
 module m_k_plot_plus_min
    use m_textflow
+   use m_waveconst
 
    implicit none
 contains
@@ -52,7 +53,7 @@ contains
          kplot = max(1, min(kplot, kmx))
 
          call TEXTFLOW()
-      else if (jawave == 4) then
+      else if (jawave == WAVE_SURFBEAT) then
          itheta_view = max(min(itheta_view + sign(1, ipm), ntheta), 1)
       end if
    end subroutine KPLOTPLUSMIN

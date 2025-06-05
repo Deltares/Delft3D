@@ -869,8 +869,10 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     call prop_get(mor_ptr, 'Output', 'SuspTranspDueToWavesAtZeta'  , moroutput%sswuv)
     call prop_get(mor_ptr, 'Output', 'SuspTranspDueToCurrentsAtZeta'  , moroutput%sscuv)
     call prop_get(mor_ptr, 'Output', 'SuspTranspDueToWavesAtFlux'  , moroutput%sswuuvv)
+    call prop_get(mor_ptr, 'Output', 'TotalTransport'              , moroutput%sxytot)
     call prop_get(mor_ptr, 'Output', 'NearBedRefConcentration'     , moroutput%rca)
     call prop_get(mor_ptr, 'Output', 'EquilibriumConcentration'    , moroutput%rsedeq)
+    call prop_get(mor_ptr, 'Output', 'Concentration'               , moroutput%sedconc)
     call prop_get(mor_ptr, 'Output', 'NearBedTranspCorrAtFlux'     , moroutput%suvcor)
     call prop_get(mor_ptr, 'Output', 'SourceSinkTerms'             , moroutput%sourcesink)
     call prop_get(mor_ptr, 'Output', 'ReferenceHeight'             , moroutput%aks)
@@ -895,11 +897,18 @@ subroutine read_morphology_output_options(mor_ptr, moroutput, lsedtot, filmor, l
     !
     call prop_get(mor_ptr, 'Output', 'CumNetSedimentationFlux'     , moroutput%dmsedcum)
     call prop_get(mor_ptr, 'Output', 'BedLayerSedimentMass'        , moroutput%msed)
+    moroutput%bodsed = moroutput%msed
     call prop_get(mor_ptr, 'Output', 'BedLayerVolumeFractions'     , moroutput%lyrfrac)
+    call prop_get(mor_ptr, 'Output', 'BedLayerThickness'           , moroutput%dpsed)
+    moroutput%thlyr = moroutput%dpsed
     call prop_get(mor_ptr, 'Output', 'BedLayerDepth'               , moroutput%dpbedlyr)
     call prop_get(mor_ptr, 'Output', 'BedLayerPorosity'            , moroutput%poros)
+    call prop_get(mor_ptr, 'Output', 'BedLayerPreload'             , moroutput%preload)
     !
+    call prop_get(mor_ptr, 'Output', 'TimeAveragedTransport'    , moroutput%sxyavg)
     call prop_get(mor_ptr, 'Output', 'AverageAtEachOutputTime'     , moroutput%cumavg)
+    !
+    call prop_get(mor_ptr, 'Output', 'Morfac'                      , moroutput%morfac)
     !
     call prop_get(mor_ptr, 'Output', 'MainChannelAveragedBedLevel' , moroutput%blave)
     !

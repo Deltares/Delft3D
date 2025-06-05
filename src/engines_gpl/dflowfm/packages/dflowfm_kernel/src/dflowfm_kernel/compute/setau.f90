@@ -57,7 +57,7 @@ contains
       use fm_external_forcings_data, only: ngatesg, L1gatesg, L2gatesg, kgate, zgate, ncgensg, zcgen, L1cgensg, L2cgensg, kcgen, &
          nklep, lklep, nvalv, lvalv, valv, nqbnd, L1qbnd, L2qbnd, kbndu, huqbnd, wwssav_all, japartqbnd, &
          zbndq, qbndhutrs, at_all
-      use m_dambreak_breach, only: multiply_by_dambreak_link_actual_width
+      use m_dambreak_breach, only: set_flow_areas_for_dambreaks
 
       integer :: n, nq, L, k2
       integer :: ng, Lnu, LL, iup
@@ -92,8 +92,7 @@ contains
             au_nostrucs = au
          end if
 
-         ! set correct flow areas for dambreaks, using the actual flow width
-         call multiply_by_dambreak_link_actual_width(hu, au)
+         call set_flow_areas_for_dambreaks(hu, au)
 
          call reduceFlowAreaAtLongculverts()
 

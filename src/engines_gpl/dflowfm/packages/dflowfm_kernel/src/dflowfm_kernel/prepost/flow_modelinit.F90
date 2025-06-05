@@ -42,6 +42,7 @@ module m_flow_modelinit
    use m_init_lateral_his, only: init_lateral_his
    use m_flow_trachyinit, only: flow_trachyinit
    use m_flow_sedmorinit, only: flow_sedmorinit
+   use m_waveconst
 
    implicit none
 
@@ -187,7 +188,7 @@ contains
       end if
 
 ! JRE
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          call timstrt('Surfbeat input init', handle_extra(2)) ! Wave input
          bccreated = .false. ! for reinit
          call xbeach_wave_input() ! will set swave and lwave
@@ -270,7 +271,7 @@ contains
          is_is_numndvals = 3
       end if
 
-      if (my_rank == fetch_proc_rank .and. (jawave == 1 .or. jawave == 2)) then
+      if (my_rank == fetch_proc_rank .and. (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG)) then
          ! All helpers need no further model initialization.
          call tauwavefetch(0d0)
          iresult = DFM_USERINTERRUPT
@@ -281,7 +282,7 @@ contains
       call flow_allocflow() ! allocate   flow arrays
       call timstop(handle_extra(37)) ! end alloc flow
       !
-      if (jawave > 0) then
+      if (jawave > NO_WAVES) then
          call alloc9basicwavearrays()
       end if
       if (jawave > 2) then
@@ -295,7 +296,7 @@ contains
       call timstop(handle_extra(7)) ! End flow griddim
 
       call timstrt('Bed forms init (1)  ', handle_extra(8)) ! Bed forms
-      if ((jased > 0 .and. stm_included) .or. bfm_included .or. jatrt > 0 .or. (jawave > 0 .and. modind == 9)) then
+      if ((jased > 0 .and. stm_included) .or. bfm_included .or. jatrt > 0 .or. (jawave > NO_WAVES .and. modind == 9)) then
          call flow_bedforminit(1) ! bedforms stage 1: datastructure init
       end if
       call timstop(handle_extra(8)) ! End bed forms
@@ -455,7 +456,7 @@ contains
       end if
       call timstop(handle_extra(26)) ! end dredging init
 
-      if (jawave == 4 .and. jajre == 1) then
+      if (jawave == WAVE_SURFBEAT .and. jajre == 1) then
          call timstrt('Surfbeat init         ', handle_extra(27)) ! Surfbeat init
          if (jampi == 0) then
             if (nwbnd == 0) then

@@ -58,6 +58,7 @@ contains
       use m_get_Lbot_Ltop
       use m_get_chezy, only: get_chezy
       use m_links_to_centers, only: links_to_centers
+      use m_waveconst
 
       integer :: L, LL, Lb, Lt, k1, k2, kt1, kt2
       real(kind=dp) :: dptot, tidp, trshcorioi, dzt, dztm, alf
@@ -182,7 +183,7 @@ contains
          end do
       end if
 
-      if ((jawave == 3 .or. jawave == 7 .or. (jawave == 4 .and. lwave == 1)) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE .or. (jawave == WAVE_SURFBEAT .and. lwave == 1)) .and. .not. flowWithoutWaves) then
          ! add wave forces to adve
          if (kmx == 0) then ! 2D
             do L = 1, lnx

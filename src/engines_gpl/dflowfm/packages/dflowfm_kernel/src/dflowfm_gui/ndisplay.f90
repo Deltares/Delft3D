@@ -37,6 +37,7 @@ module m_ndisplay
    use m_add_tracer, only: add_tracer
    use m_textparameters
    use m_setwy
+   use m_waveconst
 
    implicit none
 
@@ -428,7 +429,7 @@ contains
          numoptwav = -999
          numoptsf = -999
          numoptsed = -999
-         if (jawave > 0) then
+         if (jawave > NO_WAVES) then
             numopt = numopt + 1
             numoptwav = numopt
             OPTION(numoptwav) = 'Wave parameters                         '
@@ -492,7 +493,7 @@ contains
             end if
 
          else if (ndraw(28) == numoptwav) then
-            if (jawave > 0) then
+            if (jawave > NO_WAVES) then
                ndraw(28) = 1
                nwhat = 42 ! WAVE submenu
                goto 1234
@@ -579,7 +580,7 @@ contains
          else
             OPTION(47) = 'Coriolis parameter fcorio        (1/s  )'
          end if
-         if (jawave > 2 .and. jawave < 5) then
+         if (jawave > WAVE_FETCH_YOUNG .and. jawave < WAVE_UNIFORM) then
             OPTION(48) = 'Wave forcing term at u            (m/s2)'
          else
             OPTION(48) = '                                        '
@@ -961,7 +962,7 @@ contains
          KEY = 3
       else if (NWHAT == 42) then ! wave stuff
 
-         if (jawave == 1 .or. jawave == 2) then
+         if (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) then
             OPTION(1) = 'RMS wave height  (~ 0.7*Hsig)        (m)'
             OPTION(2) = 'Wave length                          (m)'
             OPTION(3) = 'Peak wave period                     (s)'
