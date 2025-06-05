@@ -2752,17 +2752,17 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "NLDiat    ","PO4       ",   7,"N","x",1
 "NLDiat    ","Si        ",   8,"N","x",1
 "Rad_Green ","Depth     ",   1,"N","x",1
-"Rad_Green ","RadAve    ",   2,"N","x",1
+"Rad_Green ","Rad       ",   2,"N","x",1
 "Rad_Green ","RadSatGree",   3,"Y","x",1
 "Rad_Green ","ExtVl     ",   4,"N","x",1
 "Rad_Green ","TFGroGreen",   5,"Y","x",1
 "Rad_Diat  ","Depth     ",   1,"N","x",1
-"Rad_Diat  ","RadAve    ",   2,"N","x",1
+"Rad_Diat  ","Rad       ",   2,"N","x",1
 "Rad_Diat  ","RadSatDiat",   3,"Y","x",1
 "Rad_Diat  ","ExtVl     ",   4,"N","x",1
 "Rad_Diat  ","TFGroDiat ",   5,"Y","x",1
 "Rad_DiatS1","Depth     ",   1,"N","x",1
-"Rad_DiatS1","RadBotAve ",   2,"N","x",1
+"Rad_DiatS1","RadBot    ",   2,"N","x",1
 "Rad_DiatS1","RadSatDiS1",   3,"Y","x",1
 "Rad_DiatS1","ExtVl     ",   4,"N","x",1
 "Rad_DiatS1","TFGroDiat ",   5,"Y","x",1
