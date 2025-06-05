@@ -68,9 +68,9 @@ outppr,outpit,outpnm,outpdo,outpsx
 "AveRadSurf","SumAveRad ",   1," ",1
 "AveRadSurf","SumAveRadT",   2," ",1
 "AveRadSurf","RadSurfAve",   3,"x",1
-"DAYRAD    ","RadSurf   ",   1,"x",1
-"DAYRAD    ","RadMaxHour",   2,"x",1
-"DAYRAD    ","RadMaxDayA",   3,"x",1
+"DisRadSurf","RadSurf   ",   1,"x",1
+"DisRadSurf","RadMaxHour",   2,"x",1
+"DisRadSurf","RadMaxDayA",   3,"x",1
 "TempMode  ","Temp      ",   1,"x",1
 "TempMode  ","SurTemp   ",   2,"x",1
 "TempMode  ","NatTempp1 ",   3,"x",1

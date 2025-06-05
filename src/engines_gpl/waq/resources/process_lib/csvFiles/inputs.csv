@@ -213,11 +213,11 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "AveRadSurf","AuxSys    ",   6,"Y"," ",1
 "AveRadSurf","SumAveRad ",   7,"N"," ",1
 "AveRadSurf","SumAveRadT",   8,"N"," ",1
-"DAYRAD    ","RadSurfAve",   1,"Y","x",1
-"DAYRAD    ","ITIME     ",   2,"N"," ",1
-"DAYRAD    ","Latitude  ",   3,"Y","x",1
-"DAYRAD    ","RefDay    ",   4,"Y","x",1
-"DAYRAD    ","AuxSys    ",   5,"Y"," ",1
+"DisRadSurf","RadSurfAve",   1,"Y","x",1
+"DisRadSurf","ITIME     ",   2,"N"," ",1
+"DisRadSurf","Latitude  ",   3,"Y","x",1
+"DisRadSurf","RefDay    ",   4,"Y","x",1
+"DisRadSurf","AuxSys    ",   5,"Y"," ",1
 "TempMode  ","ModTemp   ",   1,"N","x",1
 "TempMode  ","NatTemp   ",   2,"Y","x",1
 "TempMode  ","SwitchTemp",   3,"Y","x",1

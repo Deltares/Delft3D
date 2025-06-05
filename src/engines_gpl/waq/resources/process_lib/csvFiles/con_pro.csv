@@ -11,7 +11,7 @@
 "MaxMacro  ",A,A,A,A,
 "Coverage  ",A,A,A,A,
 "AveRadSurf",A,A,A,A,
-"DAYRAD    ",A,A,A,A,
+"DisRadSurf",A,A,A,A,
 "TempMode  ", , , , ,
 "Temperatur",A,A,A,A,
 "Salinchlor",A,A,A,A,
