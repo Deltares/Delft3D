@@ -122,23 +122,13 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    !
    call initialize_wavedata(wavedata)
    call initialize_wave_mpi()
-   !
-   if (my_rank == master) then
-      !
-      ! master node does all the work ...
-      !
-      retval = wave_master_init(mode_in, mdw_file)
-   else
-      !
-      ! nothing to do for slave nodes
-      !
-   endif
+   retval = wave_init(mode_in, mdw_file)
 end function wave_main_init
 
 
 !
 ! ====================================================================================
-function wave_master_init(mode_in, mdw_file) result(retval)
+function wave_init(mode_in, mdw_file) result(retval)
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
    ! Activate the following line
@@ -192,6 +182,10 @@ function wave_master_init(mode_in, mdw_file) result(retval)
    if (wavedata%mode/=stand_alone .and. swan_run%flowgridfile/=' ') then
       swan_run%nttide = 1
    endif
+   !
+   ! All instances need to read the input, but the actual work is done by the master only
+   !
+   if (my_rank /= master) return
    !
    ! Initialisation from flow (write file runid(s))
    !
@@ -364,7 +358,7 @@ function wave_master_init(mode_in, mdw_file) result(retval)
    ! ====================================================================================
    !
    call check_input(swan_run, wavedata)
-end function wave_master_init
+end function wave_init
 
 
 

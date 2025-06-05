@@ -323,23 +323,46 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
 
 
 
+
+//------------------------------------------------------------------------------
+void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component, bool isMaster) {
+    MPI_Group mpiGroupComp;
+    int ierr;
+    if (component == NULL) {
+        throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: undefined component.");
+    }
+    bool multipleProcessesCheck = isMaster || component->numProcesses > 1;
+    if (use_mpi && component->mpiCommVar != NULL && multipleProcessesCheck) {
+        ierr = MPI_Group_incl(mpiGroupWorld, component->numProcesses, component->processes, &mpiGroupComp);
+        if (ierr != MPI_SUCCESS) {
+            throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot create a subgroup of %d processes for component \"%s\". Code: %d.", component->numProcesses, component->name, ierr);
+        }
+        // Needs to be called by *all* ranks:
+        ierr = MPI_Comm_create(MPI_COMM_WORLD, mpiGroupComp, &component->mpiComm);
+        if (ierr != MPI_SUCCESS) {
+            throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot create a subcommunicator of %d processes for component \"%s\". Code: %d.", component->numProcesses, component->name, ierr);
+        }
+        if (component->onThisRank) {
+            MPI_Fint* fComm;
+            component->dllGetVar(component->mpiCommVar, (void**)(&fComm));
+            if (fComm == NULL) {
+                throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot obtain reference to communicator handle \"%s\" from component \"%s\".", component->mpiCommVar, component->name);
+            }
+            *fComm = MPI_Comm_c2f(component->mpiComm);
+        }
+    }
+
+}
+
+
 //------------------------------------------------------------------------------
 void Dimr::runParallelInit(dimr_control_block* cb) {
     int ierr;
-    MPI_Group mpiGroupWorld;
-    MPI_Group mpiGroupComp;
     int nSettingsSet;
 
     // RTCTools/Wanda/Flow1D2D: impossible to autodetect which partition will deliver this source var
     //              Assumption: there is only one RTC/Wanda/Flow1D2D/ZSF-instance
     std::set<int> single_instance_component_set = { COMP_TYPE_RTC, COMP_TYPE_WANDA, COMP_TYPE_FLOW1D2D, COMP_TYPE_ZSF};
-
-    if (use_mpi) {
-        ierr = MPI_Comm_group(MPI_COMM_WORLD, &mpiGroupWorld);
-        if (ierr != MPI_SUCCESS) {
-            throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot obtain MPI world group. Code: %d.", ierr);
-        }
-    }
 
     // set masterSubBlockId
     for (int i = 0; i < cb->numSubBlocks; i++) {
@@ -363,26 +386,10 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
     // Wave can only be initialized after the flow component
     dimr_component* masterComponent = cb->subBlocks[cb->masterSubBlockId].unit.component;
 
-    // Create an MPI subgroup and subcommunicator and pass it on to the masterComponent.
-    if (use_mpi && masterComponent->mpiCommVar != NULL) {
-        ierr = MPI_Group_incl(mpiGroupWorld, masterComponent->numProcesses, masterComponent->processes, &mpiGroupComp);
-        if (ierr != MPI_SUCCESS) {
-            throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot create a subgroup of %d processes for component \"%s\". Code: %d.", masterComponent->numProcesses, masterComponent->name, ierr);
-        }
-        // Needs to be called by *all* ranks:
-        ierr = MPI_Comm_create(MPI_COMM_WORLD, mpiGroupComp, &masterComponent->mpiComm);
-        if (ierr != MPI_SUCCESS) {
-            throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot create a subcommunicator of %d processes for component \"%s\". Code: %d.", masterComponent->numProcesses, masterComponent->name, ierr);
-        }
-        if (masterComponent->onThisRank) {
-            MPI_Fint* fComm;
-            masterComponent->dllGetVar(masterComponent->mpiCommVar, (void**)(&fComm));
-            if (fComm == NULL) {
-                throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot obtain reference to communicator handle \"%s\" from component \"%s\".", masterComponent->mpiCommVar, masterComponent->name);
-            }
-            *fComm = MPI_Comm_c2f(masterComponent->mpiComm);
-        }
-    }
+    // Create an MPI subgroup and subcommunicator and pass it on to the masterComponent
+    bool isMaster = true;
+    createDistributeMPISubGroupCommunicator(masterComponent, isMaster);
+
     if (masterComponent->onThisRank) {
         chdir(masterComponent->workingDir);
         log->Write(INFO, my_rank, "%s.Initialize(%s)", masterComponent->name, masterComponent->inputFile);
@@ -442,26 +449,9 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                 if (cb->subBlocks[i].subBlocks[j].type == CT_START) {
                     dimr_component* thisComponent = cb->subBlocks[i].subBlocks[j].unit.component;
 
-                    // Create an MPI subgroup and subcommunicator and pass it on to thisComponent (similar to block for masterComponent above).
-                    if (use_mpi && thisComponent->mpiCommVar != NULL && thisComponent->numProcesses > 1) { // TODO: consider removing the numproc>1 check.
-                        ierr = MPI_Group_incl(mpiGroupWorld, thisComponent->numProcesses, thisComponent->processes, &mpiGroupComp);
-                        if (ierr != MPI_SUCCESS) {
-                            throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot create a subgroup of %d processes for component \"%s\". Code: %d.", thisComponent->numProcesses, thisComponent->name, ierr);
-                        }
-                        // Needs to be called by *all* ranks:
-                        ierr = MPI_Comm_create(MPI_COMM_WORLD, mpiGroupComp, &thisComponent->mpiComm);
-                        if (ierr != MPI_SUCCESS) {
-                            throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot create a subcommunicator of %d processes for component \"%s\". Code: %d.", thisComponent->numProcesses, thisComponent->name, ierr);
-                        }
-                        if (thisComponent->onThisRank) {
-                            MPI_Fint* fComm;
-                            thisComponent->dllGetVar(thisComponent->mpiCommVar, (void**)(&fComm));
-                            if (fComm == NULL) {
-                                throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot obtain reference to communicator handle \"%s\" from component \"%s\".", thisComponent->mpiCommVar, thisComponent->name);
-                            }
-                            *fComm = MPI_Comm_c2f(thisComponent->mpiComm);
-                        }
-                    }
+                    // Create an MPI subgroup and subcommunicator and pass it on to thisComponent (similar to block for masterComponent above)
+                    bool isMaster = false;
+                    createDistributeMPISubGroupCommunicator(thisComponent, isMaster);
 
                     if (thisComponent->onThisRank) { // TODO: AvD/AM: if FM is not start, but startblock, we need all the MPI stuff here as well: make a generic initializeComponent helper routine.
 
@@ -475,8 +465,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
 
                         chdir(thisComponent->workingDir);
                         log->Write(INFO, my_rank, "%s.Initialize(%s)", thisComponent->name, thisComponent->inputFile);
-                                                // SetKeyVals for settings (before initialize)
-                                                int nSettingsSet = thisComponent->dllSetKeyVals(thisComponent->settings);
+                        // SetKeyVals for settings (before initialize)
+                        int nSettingsSet = thisComponent->dllSetKeyVals(thisComponent->settings);
                         timerStart(thisComponent);
                         thisComponent->result = (thisComponent->dllInitialize) (thisComponent->inputFile);
                         if (thisComponent->result != 0)
@@ -491,8 +481,8 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                             throw Exception(true, Exception::ERR_UNKNOWN, message.c_str());
                         }
                         timerEnd(thisComponent);
-                                                // SetKeyVals for parameters (after initialize)
-                                                int nParamsSet = thisComponent->dllSetKeyVals(thisComponent->parameters);
+                        // SetKeyVals for parameters (after initialize)
+                        int nParamsSet = thisComponent->dllSetKeyVals(thisComponent->parameters);
                     }
                 }
             }

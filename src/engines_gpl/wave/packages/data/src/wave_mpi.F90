@@ -62,6 +62,19 @@ private               :: running_in_mpi_environment
     contains
 !
 !===============================================================================
+    !> 3 typical configurations:
+    !! 1. No MPI at all
+    !!    - mpi_initialized will be false, D-Waves has to call mpi_init
+    !!    - engine_comm_world will still be MPI_COMM_NULL, nothing in parallel (related to D-Waves)
+    !! 2. D-Waves not in parallel, but running coupled to a parallel (flow-)computation via DIMR
+    !!    - mpi_initialized will be true (by DIMR)
+    !!    - engine_comm_world will still be MPI_COMM_NULL, nothing in parallel (related to D-Waves)
+    !! 3. D-Waves runs in parallel initiated via DIMR
+    !!    - mpi_initialized will be true (by DIMR)
+    !!    - engine_comm_world will be set by DIMR and differ from be MPI_COMM_NULL
+    !! Not supported:
+    !! - D-Waves in parallel without DIMR
+    !! - D-Waves in parallel with numranks=1
 subroutine initialize_wave_mpi()
    character(256)       :: msgstr
    logical              :: mpi_is_initialized
@@ -86,12 +99,8 @@ subroutine initialize_wave_mpi()
 #endif
       !
       if (.not.mpi_is_initialized) then
-         ! * parallel wave.exe
-         mpi_initialized_by_engine = .TRUE.
-#ifdef HAVE_MPI
-         call mpi_init ( ierr )
-         engine_comm_world = MPI_COMM_WORLD
-#endif
+         ! * parallel wave.exe not called by parallel dimr.exe
+         call wavestop( 1, 'Not supported: D-Waves is running in parallel but is not called by dimr.exe' )
       endif
       !
       if (engine_comm_world /= MPI_COMM_NULL) then

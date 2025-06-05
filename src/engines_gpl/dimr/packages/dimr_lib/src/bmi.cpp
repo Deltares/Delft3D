@@ -175,6 +175,16 @@ extern "C" {
 			}
 
 			//
+			// Initialize MPI
+			if (thisDimr->use_mpi) {
+				int ierr;
+				ierr = MPI_Comm_group(MPI_COMM_WORLD, &thisDimr->mpiGroupWorld);
+				if (ierr != MPI_SUCCESS) {
+					throw Exception(true, Exception::ERR_MPI, "runParallelInit: cannot obtain MPI world group. Code: %d.", ierr);
+				}
+			}
+
+			//
 			// Initialize the components in the first controlBlock only
 			if (thisDimr->control->subBlocks[0].type == CT_PARALLEL)
 			{
@@ -182,6 +192,9 @@ extern "C" {
 			}
 			else
 			{
+				bool isMaster = true;
+				thisDimr->createDistributeMPISubGroupCommunicator(thisDimr->control->subBlocks[0].unit.component, isMaster);
+
 				// Start block
 
 				// Hack for WAVE:
