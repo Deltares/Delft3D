@@ -1895,7 +1895,7 @@ nPart = length(Partitions);
 ugrids = zeros(nData,1);
 for i = 1:nData
     M = P1.Dataset(i).Mesh;
-    if iscell(M) && numel(M)>=4 && isequal(M{1},'ugrid') && isequal(M{4},-1)
+    if iscell(M) && numel(M)>=4 && ismember(M{1},{'ugrid','ugrid1d_network'}) && isequal(M{4},-1)
         ugrids(i) = i;
     end
 end
@@ -1993,7 +1993,6 @@ for mesh = NumMeshes:-1:1
         progressbar((NumMeshes-mesh)/NumMeshes + (p/(2*nPart))/NumMeshes, hPB);
     end
     if isempty(faceDim) % 1D mesh
-        nGlbNodes = max(cellfun(@max,iNodes)) - min(cellfun(@min,iNodes)) + 1;
         nGlbFaces = 0;
         glbFNC = [];
     else
