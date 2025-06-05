@@ -7691,7 +7691,7 @@ contains
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_pressure, UNC_LOC_S, ice_pressure, jabndnd=jabndnd_)
          end if
          if (ice_mapout%ice_temperature) then
-            work1d = real(celsius_to_kelvin(ice_temperature),dp)
+            work1d = real(celsius_to_kelvin(ice_temperature), dp)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_temperature, UNC_LOC_S, work1d, jabndnd=jabndnd_)
          end if
          if (ice_mapout%snow_thickness) then

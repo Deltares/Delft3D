@@ -113,7 +113,7 @@ contains
       ja_ice_area_fraction_read => ice_data%ice_area_fraction_forcing_available
       ja_ice_thickness_read => ice_data%ice_thickness_forcing_available
 
-      ja_icecover => ice_data%modeltype
+      ja_icecover => ice_data%model_type
 
       ice_mapout => ice_data%mapout
 

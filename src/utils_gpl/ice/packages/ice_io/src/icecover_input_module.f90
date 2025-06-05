@@ -49,15 +49,13 @@ subroutine read_icecover(icecover, md_ptr, chapter, error)
    character(len=*), intent(in) :: chapter !< chapter name of the ice section
    logical, intent(out) :: error !< flag indicating an execution error
 
-   integer :: model !< local ice cover model
-
    call determine_icecover_model(icecover, md_ptr, chapter, error)
    if (error) return
 
    call read_icecover_parameters(icecover, md_ptr, chapter, error)
    if (error) return
    
-   call read_icecover_output(md_ptr, 'output', 'wriMap', model, icecover%mapout)
+   call read_icecover_output(icecover, md_ptr, chapter)
 end subroutine read_icecover
 
 
@@ -71,11 +69,11 @@ subroutine determine_icecover_model(icecover, md_ptr, chapter, error)
    logical, intent(out) :: error !< flag indicating an execution error
 
    integer :: istat !< reading status flag
-   integer :: model !< local ice cover model
+   integer :: model_type !< local ice cover model flag
    character(256) :: tmp !< temporary string for input processing
 
    error = .false.
-   model =  ICECOVER_NONE
+   model_type = ICECOVER_NONE
       
    tmp = ' '
    call prop_get(md_ptr,chapter,'iceCoverModel',tmp)
@@ -84,15 +82,15 @@ subroutine determine_icecover_model(icecover, md_ptr, chapter, error)
    case ('none', ' ')
       ! default selected
    case ('external')
-      model =  ICECOVER_EXT
+      model_type = ICECOVER_EXT
    case ('semtner','deltares')
-      model =  ICECOVER_SEMTNER
+      model_type = ICECOVER_SEMTNER
    case default
       call mess(LEVEL_ERROR, 'invalid ice cover model "'//trim(tmp)//'"')
       error = .true.
       ! still want to properly initialize the icecover module, so don't return immediately
    end select
-   istat = select_icecover_model(icecover, model)
+   istat = select_icecover_model(icecover, model_type)
 end subroutine determine_icecover_model
 
 
@@ -108,7 +106,7 @@ subroutine read_icecover_parameters(icecover, md_ptr, chapter, error)
    character(len=*)             , intent(in)    :: chapter  !< chapter name of the ice section
    logical                      , intent(out)   :: error    !< flag indicating an execution error
    !
-   integer                                      :: model !< local ice cover model
+   integer                                      :: model_type !< local ice cover model flag
    character(256)                               :: tmp   !< temporary string for input processing
 
    call prop_get(md_ptr, chapter, 'applyPressure', icecover%apply_pressure)
@@ -120,19 +118,19 @@ subroutine read_icecover_parameters(icecover, md_ptr, chapter, error)
    call str_lower(tmp, len(tmp))
    select case (tmp)
    case ('none', ' ')
-      model = ICE_WINDDRAG_NONE
+      model_type = ICE_WINDDRAG_NONE
    case ('linear')
-      model = ICE_WINDDRAG_LINEAR
+      model_type = ICE_WINDDRAG_LINEAR
    case ('cubic', 'icecube')
-      model = ICE_WINDDRAG_CUBIC
+      model_type = ICE_WINDDRAG_CUBIC
    case ('lupkes_birnbaum')
-      model = ICE_WINDDRAG_LB05
+      model_type = ICE_WINDDRAG_LB05
    case ('andreas')
-      model = ICE_WINDDRAG_AN10
+      model_type = ICE_WINDDRAG_AN10
    case ('raysice')
-      model = ICE_WINDDRAG_RAYS
+      model_type = ICE_WINDDRAG_RAYS
    case ('joyce')
-      model = ICE_WINDDRAG_JOYCE19
+      model_type = ICE_WINDDRAG_JOYCE19
       call prop_get(md_ptr, chapter, 'iceSkinDrag', icecover%ice_skin_drag)
       call prop_get(md_ptr, chapter, 'maximumIceFormDrag', icecover%maximum_ice_form_drag)
    case default
@@ -140,7 +138,7 @@ subroutine read_icecover_parameters(icecover, md_ptr, chapter, error)
       error = .true.
       return
    end select
-   icecover%modify_winddrag = model
+   icecover%modify_winddrag = model_type
    !
    call prop_get(md_ptr, chapter, 'iceDensity', icecover%ice_density)
    call prop_get(md_ptr, chapter, 'iceAlbedo', icecover%ice_albedo)
@@ -160,7 +158,7 @@ subroutine read_icecover_parameters(icecover, md_ptr, chapter, error)
    end select
    call prop_get(md_ptr, chapter, 'iceFricValue', icecover%frict_val)
    !
-   select case (icecover%modeltype)
+   select case (icecover%model_type)
    case (ICECOVER_EXT)
       ! No extra parameters for external forcing of ice cover
    case default
@@ -169,23 +167,37 @@ subroutine read_icecover_parameters(icecover, md_ptr, chapter, error)
 end subroutine read_icecover_parameters
 
 
-!> Support routine to read ice cover output settings
-subroutine read_icecover_output(md_ptr, chapter, prefix, model, outflags)
+!> Support routine to read all ice cover output settings
+subroutine read_icecover_output(icecover, md_ptr, chapter)
    use properties, only: tree_data, prop_get
-   use icecover_module, only: set_default_output_flags, icecover_output_flags
 
-   type(tree_data)              , pointer       :: md_ptr   !< pointer to the input file
-   character(len=*)             , intent(in)    :: chapter  !< chapter name of the ice section
-   character(len=*)             , intent(in)    :: prefix   !< name of output file
-   integer                      , intent(in)    :: model    !< ice cover model
-   type(icecover_output_flags)  , intent(inout) :: outflags !< output flags structure
+   type (icecover_type), intent(inout) :: icecover !< ice cover data structure containing the data read
+   type(tree_data), pointer :: md_ptr !< pointer to the input file
+   character(len=*), intent(in) :: chapter !< chapter name of the ice section
 
-   logical :: default_out !< default output flag!
+   ! backward compatibility flags located in the ice chapter
+   call prop_get(md_ptr, chapter, 'addIceToHis', icecover%hisout%default)
+   call prop_get(md_ptr, chapter, 'addIceToMap', icecover%mapout%default)
+   
+   ! new output flags always located in the output chapter
+   call read_output_flags_per_quantity(icecover%hisout, md_ptr, 'output', 'wriHis', icecover%model_type)
+   call read_output_flags_per_quantity(icecover%mapout, md_ptr, 'output', 'wriMap', icecover%model_type)
+end subroutine read_icecover_output
 
-   default_out = .false.
-   call prop_get(md_ptr, chapter, prefix//'_ice', default_out)
-   call prop_get(md_ptr, chapter, 'addIceToMap', default_out)
-   call set_default_output_flags(outflags, model, default_out)
+
+!> Support routine to read ice cover output settings per quantity for selected output type
+subroutine read_output_flags_per_quantity(outflags, md_ptr, chapter, prefix, model_type)
+   use icecover_module, only: apply_default_output_flag, icecover_output_flags
+   use properties, only: tree_data, prop_get
+   
+   type(icecover_output_flags), intent(inout) :: outflags !< output flags structure
+   type(tree_data), pointer :: md_ptr !< pointer to the input file
+   character(len=*), intent(in) :: chapter !< chapter name of the ice section
+   character(len=*), intent(in) :: prefix !< name of output file   
+   integer, intent(in) :: model_type !< ice cover model flag
+   
+   call prop_get(md_ptr, chapter, prefix//'_ice_default', outflags%default)
+   call apply_default_output_flag(outflags, model_type)
    
    call prop_get(md_ptr, chapter, prefix//'_open_water_level', outflags%ice_s1)
    call prop_get(md_ptr, chapter, prefix//'_ice_lower_surface_height', outflags%ice_zmin)
@@ -196,7 +208,7 @@ subroutine read_icecover_output(md_ptr, chapter, prefix, model, outflags)
    call prop_get(md_ptr, chapter, prefix//'_ice_temperature', outflags%ice_temperature)
    call prop_get(md_ptr, chapter, prefix//'_snow_thickness', outflags%snow_thickness)
    call prop_get(md_ptr, chapter, prefix//'_snow_temperature', outflags%snow_temperature)
-end subroutine read_icecover_output
+end subroutine read_output_flags_per_quantity
 
 
 !> Write ice cover settings to diagnostic
@@ -213,17 +225,17 @@ function echo_icecover(icecover, lundia) result (error)
    integer                      , intent(in)    :: lundia   !< unit number of diagnostics file
    logical                                      :: error    !< flag indicating an execution error
 
-   character(45) :: txtput1
-   character(120) :: txtput2
+   character(45) :: txtput1 !< string for parameter description
+   character(120) :: txtput2 !< string for parameter value
 
    ! don't print any ice messages if there is no ice cover
    error = .false.
-   if (icecover%modeltype == ICECOVER_NONE) return
+   if (icecover%model_type == ICECOVER_NONE) return
 
    write (lundia, '(a)' ) '*** Start  of ice cover input'
    
    txtput1 = '  Ice cover model'
-   select case (icecover%modeltype)
+   select case (icecover%model_type)
    case (ICECOVER_EXT)
        txtput2 = 'external'
    case (ICECOVER_SEMTNER)
@@ -233,7 +245,7 @@ function echo_icecover(icecover, lundia) result (error)
    end select
    write (lundia, '(3a)') txtput1, ': ', txtput2
    
-   if (icecover%modeltype == ICECOVER_EXT) then
+   if (icecover%model_type == ICECOVER_EXT) then
       txtput1 = '  Area fraction forcing'
       call write_logical(lundia, txtput1, icecover%ice_area_fraction_forcing_available /= 0)
 
@@ -304,9 +316,13 @@ function echo_icecover(icecover, lundia) result (error)
    txtput1 = '  Ice Cover Friction Value'
    write (lundia, '(2a,e20.4)') txtput1, ': ', icecover%frict_val
 
-   txtput1 = '  Map File Output'
+   txtput1 = '  His File Output Quantities'
    write (lundia, '(1a)') txtput1
-   call echo_icecover_output(lundia, icecover%mapout)
+   call echo_icecover_output(lundia, icecover%hisout, icecover%model_type)
+
+   txtput1 = '  Map File Output Quantities'
+   write (lundia, '(1a)') txtput1
+   call echo_icecover_output(lundia, icecover%mapout, icecover%model_type)
 
    write (lundia, '(a)' ) '*** End    of ice cover input'
    write (lundia, *)
@@ -314,66 +330,51 @@ end function echo_icecover
 
 
 !> Support routine to write ice cover output settings to diagnostic
-subroutine echo_icecover_output(lundia, outflags)
-   use icecover_module, only: icecover_output_flags
-!
-! Arguments
-!
-   integer                      , intent(in)    :: lundia   !< unit number of diagnostics file
-   type(icecover_output_flags)  , intent(in)    :: outflags !< output flags structure
-!
-! Local variables
-!
-   character(45) :: txtput1
-!
-!! executable statements -------------------------------------------------------
-!
-   if (outflags%ice_s1) then
-      write (lundia, '(2a)') '  * ', 'sea surface height of open water'
-   end if
-   if (outflags%ice_zmin) then
-      write (lundia, '(2a)') '  * ', 'lower surface height of ice cover'
-   end if
-   if (outflags%ice_zmax) then
-      write (lundia, '(2a)') '  * ', 'upper surface height of ice cover'
-   end if
-   if (outflags%ice_area_fraction) then
-      write (lundia, '(2a)') '  * ', 'area fraction covered by ice'
-   end if
-   if (outflags%ice_thickness) then
-      write (lundia, '(2a)') '  * ', 'ice thickness'
-   end if
-   if (outflags%ice_pressure) then
-      write (lundia, '(2a)') '  * ', 'pressure of ice cover'
-   end if
-   if (outflags%ice_temperature) then
-      write (lundia, '(2a)') '  * ', 'temperature of ice cover'
-   end if
-   if (outflags%snow_thickness) then
-      write (lundia, '(2a)') '  * ', 'snow thickness'
-   end if
-   if (outflags%snow_temperature) then
-      write (lundia, '(2a)') '  * ', 'temperature of snow cover'
-   end if
+subroutine echo_icecover_output(lundia, outflags, model_type)
+   use icecover_module, only: icecover_output_flags, check_output_flags
 
+   integer , intent(in) :: lundia !< unit number of diagnostics file
+   type(icecover_output_flags), intent(inout) :: outflags !< output flags structure
+   integer, intent(in) :: model_type !< ice cover model type
+
+   logical :: any_quantity !< flag indicating if any quantity has been selected for output
+
+   call check_output_flags(outflags, model_type)
+   
+   any_quantity = .false.
+   call write_quantity_name(outflags%ice_s1, lundia, 'sea surface height of open water', any_quantity)
+   call write_quantity_name(outflags%ice_zmin, lundia, 'lower surface height of ice cover', any_quantity)
+   call write_quantity_name(outflags%ice_zmax, lundia, 'upper surface height of ice cover', any_quantity)
+   call write_quantity_name(outflags%ice_area_fraction, lundia, 'area fraction covered by ice', any_quantity)
+   call write_quantity_name(outflags%ice_thickness, lundia, 'ice thickness', any_quantity)
+   call write_quantity_name(outflags%ice_pressure, lundia, 'pressure of ice cover', any_quantity)
+   call write_quantity_name(outflags%ice_temperature, lundia, 'temperature of ice cover', any_quantity)
+   call write_quantity_name(outflags%snow_thickness, lundia, 'snow thickness', any_quantity)
+   call write_quantity_name(outflags%snow_temperature, lundia, 'temperature of snow cover', any_quantity)
+   if (.not. any_quantity) then
+      write(lundia, '(a)') '  No ice cover output quantities selected'
+   end if
 end subroutine echo_icecover_output
 
+!> Support routine for reporting output quantities to diagnostic file
+subroutine write_quantity_name(output_flag, lundia, quantity_name, any_flag_true)
+   logical, intent(in) :: output_flag !< flag specifying if the quantity should be written
+   integer, intent(in) :: lundia !< unit number of diagnostics file
+   character(len=*), intent(in) :: quantity_name !< name of the quantity
+   logical, intent(inout) :: any_flag_true !< flag indicating if any quantity has been written
+
+   if (output_flag) then
+      write (lundia, '(2a)') '  * ', quantity_name
+      any_flag_true = .true.
+   end if
+end subroutine write_quantity_name
 
 !> Support routine to write logical flags to diagnostic file
 subroutine write_logical(lundia, txtput1, option)
-!
-! Arguments
-!
    integer                      , intent(in)    :: lundia   !< unit number of diagnostics file
    character(*)                 , intent(in)    :: txtput1  !< base string
    logical                      , intent(in)    :: option   !< logical option to report
-!
-! Local variables
-!
-!    NONE
-!
-!! executable statements -------------------------------------------------------
-!
+
    if (option) then
        write (lundia, '(3a)') txtput1, ': Yes'
    else

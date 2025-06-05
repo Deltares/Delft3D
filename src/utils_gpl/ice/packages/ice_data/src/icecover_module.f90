@@ -59,29 +59,30 @@ integer, parameter, public :: ICE_WINDDRAG_JOYCE19     = 6 !< Joyce et al (2019)
 !
 ! public routines
 !
-public freezing_temperature
-public null_icecover
-public select_icecover_model
-public late_activation_ext_force_icecover
-public alloc_icecover
-public clr_icecover
+public :: freezing_temperature
+public :: null_icecover
+public :: select_icecover_model
+public :: late_activation_ext_force_icecover
+public :: alloc_icecover
+public :: clr_icecover
 public :: update_icepress
 public :: ice_drag_effect
-public :: set_default_output_flags
+public :: apply_default_output_flag
+public :: check_output_flags
 public :: icecover_prepare_output
 
 ! ice cover output
 type icecover_output_flags
-    logical :: default  !< default flag for output writing
-    logical :: ice_s1   !< sea surface height of open water
-    logical :: ice_zmin !< lower surface height of ice/snow cover
-    logical :: ice_zmax !< upper surface height of ice/snow cover
-    logical :: ice_area_fraction   !< area fraction covered by ice
-    logical :: ice_thickness    !< ice thickness
-    logical :: ice_pressure    !< pressure of ice cover
-    logical :: ice_temperature    !< temperature of ice cover
-    logical :: snow_thickness   !< snow thickness
-    logical :: snow_temperature   !< temperature of snow cover
+    logical :: default = .false. !< default flag for output writing
+    logical :: ice_s1 = .false. !< sea surface height of open water
+    logical :: ice_zmin = .false. !< lower surface height of ice/snow cover
+    logical :: ice_zmax = .false. !< upper surface height of ice/snow cover
+    logical :: ice_area_fraction = .false. !< area fraction covered by ice
+    logical :: ice_thickness = .false. !< ice thickness
+    logical :: ice_pressure = .false. !< pressure of ice cover
+    logical :: ice_temperature = .false. !< temperature of ice cover
+    logical :: snow_thickness = .false. !< snow thickness
+    logical :: snow_temperature = .false. !< temperature of snow cover
 end type icecover_output_flags
 
 ! ice cover type
@@ -89,6 +90,7 @@ type icecover_type
     !
     ! input
     !
+    type(icecover_output_flags) :: hisout         !< flags indicating whether ice cover should be written to his-file
     type(icecover_output_flags) :: mapout         !< flags indicating whether ice cover should be written to map-file
     !
     logical  :: apply_pressure                    !< flag indicating whether pressure of ice cover should be applied
@@ -97,7 +99,7 @@ type icecover_type
     logical  :: reduce_waves                      !< flag indicating whether waves should be reduced
     integer  :: modify_winddrag                   !< flag indicating option to modify the wind drag coefficient (one of ICE_WINDDRAG_...)
     !
-    integer  :: modeltype                         !< type of the ice cover (one of ICECOVER_...)
+    integer  :: model_type                        !< type of the ice cover (one of ICECOVER_...)
     integer  :: frict_type                        !< friction type exerted by the ice cover
     !
     integer  :: ice_area_fraction_forcing_available    !< flag indicating whether ice area fraction is available via external forcing
@@ -156,18 +158,9 @@ end function freezing_temperature
 
 !> Nullify/initialize an icecover data structure.
 function null_icecover(icecover) result(istat)
-    !
-    ! Function/routine arguments
-    !
     type (icecover_type)                       , intent(inout) :: icecover  !< data structure containing ice cover data
     integer                                                    :: istat     !< status flag for allocation
-    !
-    ! Local variables
-    !
-    ! None
-!
-!! executable statements -------------------------------------------------------
-!
+
     istat = select_icecover_model(icecover, ICECOVER_NONE)
     !
     ! state
@@ -191,27 +184,20 @@ end function null_icecover
 
 !> activation of icecover module based on external forcing input
 function late_activation_ext_force_icecover(icecover) result(istat)
-    !
-    ! Function/routine arguments
-    !
     type (icecover_type)                       , intent(inout) :: icecover  !< data structure containing ice cover data
     integer                                                    :: istat     !< status flag for allocation
-    !
-    ! Local variables
-    !
-    ! None
-!
-!! executable statements -------------------------------------------------------
-!
+
     istat = 0
-    if (icecover%modeltype == ICECOVER_EXT) then
+    if (icecover%model_type == ICECOVER_EXT) then
        ! icecover already set to externally forced
-    elseif (icecover%modeltype == ICECOVER_NONE) then
+    elseif (icecover%model_type == ICECOVER_NONE) then
        ! activate icecover and switch on the pressure effect
-       icecover%modeltype = ICECOVER_EXT
+       icecover%model_type = ICECOVER_EXT
        icecover%apply_pressure = .true.
        call mess(LEVEL_ALL, 'Activating ice cover module based on external forcing.')
-       call set_default_output_flags(icecover%mapout, icecover%modeltype)
+       ! all output was set to False because the model type was equal to ICECOVER_NONE before
+       call apply_default_output_flag(icecover%hisout, icecover%model_type)
+       call apply_default_output_flag(icecover%mapout, icecover%model_type)
        ! note: spatial arrays haven't been allocated yet!
     else
        ! don't overrule previously selected icecover ...
@@ -221,19 +207,22 @@ end function late_activation_ext_force_icecover
 
 
 !> set default values for selected ice cover model and allocate
-function select_icecover_model(icecover, modeltype) result(istat)
+function select_icecover_model(icecover, model_type) result(istat)
     type (icecover_type), intent(inout) :: icecover !< data structure containing ice cover data
-    integer, intent(in) :: modeltype !< desired ice cover type
+    integer, intent(in) :: model_type !< desired ice cover type
     integer :: istat !< status flag for allocation
 
-    icecover%modeltype                 = modeltype
-
-    call set_default_output_flags(icecover%mapout, modeltype, .false.)
+    icecover%model_type = model_type
+    
+    icecover%hisout%default = .false.
+    icecover%mapout%default = .false.
+    call apply_default_output_flag(icecover%hisout, model_type)
+    call apply_default_output_flag(icecover%mapout, model_type)
     
     icecover%ice_area_fraction_forcing_available   = 0
     icecover%ice_thickness_forcing_available  = 0
     
-    if (modeltype == ICECOVER_NONE) then
+    if (model_type == ICECOVER_NONE) then
        icecover%apply_pressure         = .false.
     else
        icecover%apply_pressure         = .true.
@@ -253,45 +242,58 @@ function select_icecover_model(icecover, modeltype) result(istat)
     icecover%frict_type                = FRICT_AS_DRAG_COEFF
     icecover%frict_val                 = 0.005_fp
     
-    if (modeltype == ICECOVER_NONE) then
+    if (model_type == ICECOVER_NONE) then
         istat = clr_icecover(icecover)
     else
         istat = 0
     endif
 end function select_icecover_model
 
-!> set default values for output flags
-subroutine set_default_output_flags(flags, modeltype, default)
+!> initialize the output flags based on model type 
+subroutine apply_default_output_flag(flags, model_type)
    type(icecover_output_flags), intent(inout) :: flags !< output flags
-   integer, intent(in) :: modeltype !< ice cover model type
-   logical, optional, intent(in) :: default !< default value for output flags
+   integer, intent(in) :: model_type !< type of ice cover model (one of ICECOVER_...)
+
+   logical :: default !< default output flag value
+
+   default = flags%default
    
-   logical :: default_ !< local default value for output flags
+   flags%ice_s1 = default
+   flags%ice_zmin = default
+   flags%ice_zmax = default
+   flags%ice_area_fraction = default
+   flags%ice_thickness = default
+   flags%ice_pressure = default
+   flags%ice_temperature = default
+   flags%snow_thickness = default
+   flags%snow_temperature = default
    
-   if (present(default)) then
-      flags%default = default
-   end if
-   default_ = flags%default
+   call check_output_flags(flags, model_type)
+end subroutine apply_default_output_flag
+
+
+!> check that output flag is only true for quantities that are available for the selected ice cover model
+subroutine check_output_flags(flags, model_type)
+   type(icecover_output_flags), intent(inout) :: flags !< output flags
+   integer, intent(in) :: model_type !< type of ice cover model (one of ICECOVER_...)
+
+   logical :: filter !< default value for output flags
+
+   ! output for the following quantities is only possible if an ice model is used
+   filter = model_type /= ICECOVER_NONE
+   flags%ice_s1 = filter .and. flags%ice_s1
+   flags%ice_zmin = filter .and. flags%ice_zmin
+   flags%ice_zmax = filter .and. flags%ice_zmax
+   flags%ice_area_fraction = filter .and. flags%ice_area_fraction
+   flags%ice_thickness = filter .and. flags%ice_thickness
+   flags%ice_pressure = filter .and. flags%ice_pressure
    
-   if (modeltype == ICECOVER_NONE) then
-      default_ = .false.
-   end if
-   
-   flags%ice_s1 = default_
-   flags%ice_zmin = default_
-   flags%ice_zmax = default_
-   flags%ice_area_fraction = default_
-   flags%ice_thickness = default_
-   flags%ice_pressure = default_
-   
-   if (modeltype /= ICECOVER_SEMTNER) then
-      default_ = .false.
-   end if
-   
-   flags%ice_temperature = default_
-   flags%snow_thickness = default_
-   flags%snow_temperature = default_
-end subroutine set_default_output_flags
+   ! output for the following quantities is only possible if the model type is ICECOVER_SEMTNER
+   filter = model_type == ICECOVER_SEMTNER
+   flags%ice_temperature = filter .and. flags%ice_temperature
+   flags%snow_thickness = filter .and. flags%snow_thickness
+   flags%snow_temperature = filter .and. flags%snow_temperature
+end subroutine check_output_flags
 
 !> Allocate the arrays of an icecover data structure.
 function alloc_icecover(icecover, nmlb, nmub) result(istat)
@@ -303,14 +305,14 @@ function alloc_icecover(icecover, nmlb, nmub) result(istat)
     istat = 0
 
     ! state variables
-    if (icecover%modeltype /= ICECOVER_NONE) then
+    if (icecover%model_type /= ICECOVER_NONE) then
        if (istat==0) allocate(icecover%ice_area_fraction(nmlb:nmub), STAT = istat)
        if (istat==0) allocate(icecover%ice_thickness(nmlb:nmub), STAT = istat)
        if (istat==0) then
           icecover%ice_area_fraction = 0.0_fp
           icecover%ice_thickness = 0.0_fp
        endif
-       if (icecover%modeltype == ICECOVER_SEMTNER) then
+       if (icecover%model_type == ICECOVER_SEMTNER) then
           if (istat==0) allocate(icecover%ice_temperature(nmlb:nmub), STAT = istat)
           if (istat==0) allocate(icecover%snow_thickness(nmlb:nmub), STAT = istat)
           if (istat==0) allocate(icecover%snow_temperature(nmlb:nmub), STAT = istat)
@@ -371,7 +373,7 @@ end function clr_icecover
 !    type (icecover_type), intent(inout) :: icecover !< data structure containing ice cover data
 !    integer, intent(in) :: nm !< Spatial index
 !
-!    select case (icecover%modeltype)
+!    select case (icecover%model_type)
 !    case (ICECOVER_SEMTNER)
 !        ! follow Semtner (1975)
 !    case default
