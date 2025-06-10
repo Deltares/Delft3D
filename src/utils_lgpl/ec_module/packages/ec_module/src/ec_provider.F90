@@ -3703,7 +3703,6 @@ contains
          fileReaderPtr%hframe%phases = data_block
       end if
 
-      deallocate (data_block)
       success = .true.
    end function ecNetcdfInitializeHarmonicsFrame
 
