@@ -2415,14 +2415,16 @@ contains
 
    ! =======================================================================
 
-   !> Determine if provider data in file is transposed.
+   !> Determine if provider data for a particular data variable in file
+   !! is in column-major order or not, based on given NetCDF dimension ids.
    pure function ecProviderDataIsColumnMajor(column_id, row_id, lonx_id, laty_id) result (is_column_major)
-      logical :: is_column_major !< result: data in file is in a column major format
-	  integer, intent(in) :: column_id !< id of column dimension variable
-	  integer, intent(in) :: row_id !< id of row dimension variable
-	  integer, intent(in) :: lonx_id !< id of X (or longitude) dimension variable
-	  integer, intent(in) :: laty_id !< id of Y (or latitude) dimension variable
-	  is_column_major = (column_id == laty_id .and. row_id == lonx_id)
+      logical :: is_column_major !< Result: data in file is in a column major format.
+      integer, intent(in) :: column_id !< NetCDF id of column dimension (typically taken from the data variable).
+      integer, intent(in) :: row_id !< NetCDF id of row dimension (typically taken from the data variable).
+      integer, intent(in) :: lonx_id !< NetCDF id of X (or longitude) dimension variable.
+      integer, intent(in) :: laty_id !< NetCDF id of Y (or latitude) dimension variable.
+
+      is_column_major = (column_id == laty_id .and. row_id == lonx_id)
    end function
 
    ! =======================================================================
