@@ -58,7 +58,9 @@ module unstruc_netcdf
    use m_qnerror
    use netcdf_utils, only: ncu_sanitize_name, ncu_ensure_data_mode, ncu_ensure_define_mode, ncu_restore_mode
    use m_waveconst
-   
+   use m_get_Lbot_Ltop_max, only: getLbotLtopmax
+   use m_reconstruct_hydrodynamics, only: reconstruct_hu_2D_from_3D
+
    implicit none
 
    integer :: nerr_
@@ -4415,15 +4417,15 @@ contains
          end do
          ierr = nf90_put_var(irstfile, id_q1, work1(1:kmx, 1:lnx), start=[1, 1, itim], count=[kmx, lnx, 1])
 
-         work1 = dmiss
+         work0 = dmiss
          do LL = 1, lnx
             call getLbotLtopmax(LL, Lb, Ltx)
             call getlayerindicesLmax(LL, nlaybL, nrlayLx)
-            do L = Lb, Ltx
-               work1(L - Lb + nlaybL, LL) = hu(L)
+            do L = Lb - 1, Ltx
+               work0(L - Lb + nlaybL, LL) = hu(L)
             end do
          end do
-         ierr = nf90_put_var(irstfile, id_hu, work1(1:kmx, 1:lnx), start=[1, 1, itim], count=[kmx, lnx, 1])
+         ierr = nf90_put_var(irstfile, id_hu, work0(0:kmx, 1:lnx), start=[1, 1, itim], count=[kmx + 1, lnx, 1])
 
          if (Corioadamsbashfordfac > 0d0) then
             work1 = dmiss
@@ -13523,9 +13525,15 @@ contains
       call readyy('Reading map data', 0.50d0)
 
       ! Read upwinded flow depth (flow link)
-      ierr = get_var_and_shift(imapfile, 'hu', hu, tmpvar1, UNC_LOC_U, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
-                               um%ilink_own, um%ilink_merge)
-
+      if (kmx > 0) then
+         ierr = get_var_and_shift(imapfile, 'hu', hu, tmpvar1, UNC_LOC_WU, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
+                                  um%ilink_own, um%ilink_merge)
+         call reconstruct_hu_2D_from_3D(hu, lnx)
+      else
+         ierr = get_var_and_shift(imapfile, 'hu', hu, tmpvar1, UNC_LOC_U, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
+                                  um%ilink_own, um%ilink_merge)
+      end if
+      
       ! Read qa (flow link), optional: only from rst file, so no error check
       ierr = get_var_and_shift(imapfile, 'qa', qa, tmpvar1, UNC_LOC_U3D, kmx, Lstart, um%lnx_own, it_read, um%jamergedmap, &
                                um%ilink_own, um%ilink_merge)

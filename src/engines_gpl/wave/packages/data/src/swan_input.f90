@@ -278,10 +278,9 @@ module swan_input
       real :: deltcom ! Not used: COM write interval
       real :: inthotf
       real :: depmin
-      real :: dh_abs
       real :: diffr_coeff
       real :: drel
-      real :: dt_abs
+      real :: dabs
       real :: dxw
       real :: dyw
       real :: excval
@@ -544,6 +543,7 @@ contains
       real :: def_freqmin
       real :: def_freqmax
       real :: tscale
+      real :: r_dummy
       real, dimension(2) :: xy
       character(10) :: exemode
       character(10) :: versionstring
@@ -1198,9 +1198,8 @@ contains
       sr%num_scheme = 1
       sr%cdd = 0.5
       sr%css = 0.5
-      sr%drel = 0.02
-      sr%dh_abs = 0.02
-      sr%dt_abs = 0.02
+      sr%drel = 0.01
+      sr%dabs = 0.005
       sr%percwet = 98.0
       sr%itermx = 15
       sr%gamma0 = 3.3
@@ -1223,12 +1222,31 @@ contains
       end select
       call prop_get(mdw_ptr, 'Numerics', 'DirSpaceCDD', sr%cdd)
       call prop_get(mdw_ptr, 'Numerics', 'FreqSpaceCSS', sr%css)
-      call prop_get(mdw_ptr, 'Numerics', 'RChHsTm01', sr%drel)
-      call prop_get(mdw_ptr, 'Numerics', 'RChMeanHs', sr%dh_abs)
-      call prop_get(mdw_ptr, 'Numerics', 'RChMeanTm01', sr%dt_abs)
+      call prop_get(mdw_ptr, 'Numerics', 'DRelHinc', sr%drel)
+      call prop_get(mdw_ptr, 'Numerics', 'DAbsHinc', sr%dabs)
       call prop_get(mdw_ptr, 'Numerics', 'PercWet', sr%percwet)
       call prop_get(mdw_ptr, 'Numerics', 'MaxIter', sr%itermx)
       call prop_get(mdw_ptr, 'Numerics', 'AlfaUnderRelax', sr%alfa)
+      !
+      ! Stop with an error message when an outdated stop criteria is specified
+      !
+      r_dummy = -999.9
+      call prop_get(mdw_ptr, 'Numerics', 'RChHsTm01', r_dummy)
+      if (r_dummy > -999.0) then
+         write (*, *) 'SWAN_INPUT: Obsolete by switching to "NUM STOPC": RChHsTm01. Use DAbsHinc/DRelHinc.'
+         ! TEMPORARY DISABLED: call handle_errors_mdw(sr)
+      endif
+      call prop_get(mdw_ptr, 'Numerics', 'RChMeanHs', r_dummy)
+      if (r_dummy > -999.0) then
+         write (*, *) 'SWAN_INPUT: Obsolete by switching to "NUM STOPC": RChMeanHs. Use DAbsHinc/DRelHinc.'
+         ! TEMPORARY DISABLED: call handle_errors_mdw(sr)
+      endif
+      call prop_get(mdw_ptr, 'Numerics', 'RChMeanTm01', r_dummy)
+      if (r_dummy > -999.0) then
+         write (*, *) 'SWAN_INPUT: Obsolete by switching to "NUM STOPC": RChMeanTm01. Use DAbsHinc/DRelHinc.'
+         ! TEMPORARY DISABLED: call handle_errors_mdw(sr)
+      endif
+      
       !
       ! General output options
       !
@@ -3338,11 +3356,7 @@ contains
       elseif (sr%genmode == 2) then
          line(1:8) = 'GEN2 '
       elseif (sr%genmode == 3) then
-         if (sr%whitecap == 2) then
-            line = 'GEN3 WESTH'
-         else
-            line = 'GEN3 KOMEN'
-         end if
+         line = 'GEN3 WESTH'
          ! Always add (wind related) drag formula. It doesn't harm if there is no wind.
          line = trim(line) // ' DRAG WU'
       else
@@ -3386,7 +3400,6 @@ contains
       if (sr%triads) then
          line(1:16) = 'TRIAD itriad=11 '
          write (line(17:43), '(a,F7.4,a,F7.4)') 'trfac=', sr%cftriad1, ' cutfr=', sr%cftriad2
-         line(46:68) = ' urcrit=0.2 urslim=0.01'
          write (luninp, '(1X,A)') line
          line = ' '
       end if
@@ -3407,7 +3420,7 @@ contains
          line(11:) = ' '
          write (luninp, '(1X,A)') line
       else if (sr%whitecap == 1) then
-         line(1:20) = 'WCAP KOMEN delta=0  '
+         line(1:20) = 'WCAP KOMEN delta=1  '
          write (luninp, '(1X,A)') line
          !else
          !   line(1:20)  = 'WCAP   CSM   4   2  '
@@ -3455,19 +3468,13 @@ contains
       line(1:2) = '$ '
       write (luninp, '(1X,A)') line
       line = ' '
-      line(1:10) = 'NUM ACCUR '
+      line(1:10) = 'NUM STOPC '
       if (sr%modsim /= 3) then
-         if (sr%alfa > 0.0) then
-            write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,A,1X,I4,1X,F8.3)') &
-                 & sr%drel, sr%dh_abs, sr%dt_abs, sr%percwet, 'STAT', sr%itermx, sr%alfa
-         else
-            write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,I4)') &
-            & sr%drel, sr%dh_abs, sr%dt_abs, sr%percwet, sr%itermx
-         end if
+         write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0,A,F7.5)') &
+            & 'DABS=', sr%dabs, ' DREL=', sr%drel, ' CURVAT=0.005 NPNTS=', sr%percwet, ' STAT MXITST=', sr%itermx, ' ALFA=', sr%alfa
       else
-         write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,A,1X,I4)') &
-         & sr%drel, sr%dh_abs, sr%dt_abs, sr%percwet, &
-         & 'NONSTAT', sr%itermx
+         write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0)') &
+         & 'DABS=', sr%dabs, ' DREL=', sr%drel, ' CURVAT=0.005 NPNTS=', sr%percwet, ' NONSTAT MXITNS=', sr%itermx
       end if
       write (luninp, '(1X,A)') trim(line)
 !-----------------------------------------------------------------------
