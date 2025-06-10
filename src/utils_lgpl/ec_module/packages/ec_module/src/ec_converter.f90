@@ -622,9 +622,9 @@ contains
                            fmask(2) = (srcmask%msk((np - srcmask%nmin) * srcmask%mrange + mp + 1 - srcmask%mmin + 1))
                            fmask(3) = (srcmask%msk((np + 1 - srcmask%nmin) * srcmask%mrange + mp + 1 - srcmask%mmin + 1))
                            fmask(4) = (srcmask%msk((np + 1 - srcmask%nmin) * srcmask%mrange + mp - srcmask%mmin + 1))
-                           fsum = sum((1.d0 - fmask) * wf) ! fmask = 1 for DISCARDED corners
+                           fsum = sum((1.0_dp - fmask) * wf) ! fmask = 1 for DISCARDED corners
                            if (fsum >= 1.0e-03) then
-                              wf = (wf * (1.d0 - fmask)) / fsum
+                              wf = (wf * (1.0_dp - fmask)) / fsum
                            end if
                         end if
                         weight%weightFactors(1, i) = wf(1)
@@ -904,7 +904,7 @@ contains
       a41 = x4 - x1
       a42 = y4 - y1
       det = a21 * a42 - a22 * a41
-      if (abs(det) < 1.0e-20_hp) then
+      if (abs(det) < 1.0e-20_dp) then
          ier = 1
          goto 99999
       end if
@@ -912,48 +912,48 @@ contains
       y3t = (-a22 * a31 + a21 * a32) / det
       xt = (a42 * (x - x1) - a41 * (y - y1)) / det
       yt = (-a22 * (x - x1) + a21 * (y - y1)) / det
-      if ((x3t < 0.0_hp) .or. (y3t < 0.0_hp)) then
+      if ((x3t < 0.0_dp) .or. (y3t < 0.0_dp)) then
          ! write (*, *) 'distorted quadrangle'
          ier = 1
          goto 99999
       end if
-      if (abs(x3t - 1.0_hp) < 1.0e-7_hp) then
+      if (abs(x3t - 1.0_dp) < 1.0e-7_dp) then
          xi = xt
-         if (abs(y3t - 1.0_hp) < 1.0e-7_hp) then
+         if (abs(y3t - 1.0_dp) < 1.0e-7_dp) then
             eta = yt
-         elseif (abs(1.0_hp + (y3t - 1.0_hp) * xt) < 1.0e-6_hp) then
+         elseif (abs(1.0_dp + (y3t - 1.0_dp) * xt) < 1.0e-6_dp) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          else
-            eta = yt / (1.0_hp + (y3t - 1.0_hp) * xt)
+            eta = yt / (1.0_dp + (y3t - 1.0_dp) * xt)
          end if
-      elseif (abs(y3t - 1.0_hp) < 1.0e-6_hp) then
+      elseif (abs(y3t - 1.0_dp) < 1.0e-6_dp) then
          eta = yt
-         if (abs(1.0_hp + (x3t - 1.0_hp) * yt) < 1.0e-6_hp) then
+         if (abs(1.0_dp + (x3t - 1.0_dp) * yt) < 1.0e-6_dp) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          else
-            xi = xt / (1.0_hp + (x3t - 1.0_hp) * yt)
+            xi = xt / (1.0_dp + (x3t - 1.0_dp) * yt)
          end if
       else
-         a = y3t - 1.0_hp
-         b = 1.0_hp + (x3t - 1.0_hp) * yt - (y3t - 1.0_hp) * xt
+         a = y3t - 1.0_dp
+         b = 1.0_dp + (x3t - 1.0_dp) * yt - (y3t - 1.0_dp) * xt
          c = -xt
-         discr = b * b - 4.0_hp * a * c
-         if (discr < 1.0e-6_hp) then
+         discr = b * b - 4.0_dp * a * c
+         if (discr < 1.0e-6_dp) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          end if
-         xi = (-b + sqrt(discr)) / (2.0_hp * a)
-         eta = ((y3t - 1.0_hp) * (xi - xt) + (x3t - 1.0_hp) * yt) / (x3t - 1.0_hp)
+         xi = (-b + sqrt(discr)) / (2.0_dp * a)
+         eta = ((y3t - 1.0_dp) * (xi - xt) + (x3t - 1.0_dp) * yt) / (x3t - 1.0_dp)
       end if
-      w(1) = (1.0_hp - xi) * (1.0_hp - eta)
-      w(2) = xi * (1.0_hp - eta)
+      w(1) = (1.0_dp - xi) * (1.0_dp - eta)
+      w(2) = xi * (1.0_dp - eta)
       w(3) = xi * eta
-      w(4) = eta * (1.0_hp - xi)
+      w(4) = eta * (1.0_dp - xi)
       return
 99999 continue
    end subroutine bilin5
@@ -967,7 +967,7 @@ contains
       real(dp), dimension(n), intent(in) :: x, y ! polygon(n)
       integer, intent(out) :: inside
 
-      real(dp), parameter :: dmiss_default = -999.0_hp ! Default missing value in meteo arrays
+      real(dp), parameter :: dmiss_default = -999_dp ! Default missing value in meteo arrays
       integer :: i, i1, i2, np, rechts
       real(dp) :: rl, rm, x1, x2, y1, y2
 
@@ -1004,7 +1004,7 @@ contains
                if (rm == 0) then ! op scheve lijn
                   inside = 1
                   return
-               else if (rm > 0d0) then ! onder scheve lijn
+               else if (rm > 0.0_dp) then ! onder scheve lijn
                   if (xl == x1 .or. xl == x2) then
                      if (x1 > xl .or. x2 > xl) then
                         rechts = rechts + 1
@@ -1091,17 +1091,17 @@ contains
          l_extrapolated = .false.
          if (comparereal(timesteps, t0) == -1) then
             l_extrapolated = .true.
-            a0 = 1.0_hp
-            a1 = 0.0_hp
+            a0 = 1.0_dp
+            a1 = 0.0_dp
          end if
          if (comparereal(timesteps, t1) == 1) then
             l_extrapolated = .true.
-            a0 = 0.0_hp
-            a1 = 1.0_hp
+            a0 = 0.0_dp
+            a1 = 1.0_dp
          end if
          if (.not. l_extrapolated) then
-            a0 = 1.0_hp
-            a1 = 0.0_hp
+            a0 = 1.0_dp
+            a1 = 0.0_dp
             !
             if (comparereal(t0, t1) /= 0) then
                a1 = real((timesteps - t0) / (t1 - t0), hp)
@@ -1110,14 +1110,14 @@ contains
          end if
          if (present(extrapolated)) extrapolated = l_extrapolated
       case (timeint_bto)
-         a0 = 0.0d0
-         a1 = 1.0d0
+         a0 = 0.0_dp
+         a1 = 1.0_dp
       case (timeint_bfrom)
-         a0 = 1.0d0
-         a1 = 0.0d0
+         a0 = 1.0_dp
+         a1 = 0.0_dp
       case (timeint_rainfall) ! constant rainfall intensity from time-integrated amount
-         a0 = 0.0d0
-         a1 = 1.d0 / (t1 - t0)
+         a0 = 0.0_dp
+         a1 = 1.0_dp / (t1 - t0)
       case default
          ! invalid interpolation method
          return
@@ -1194,11 +1194,11 @@ contains
                call time_weight_factors(a0, a1, timesteps, t0, t1, &
                                         timeint=connection%sourceItemsPtr(1)%ptr%quantityptr%timeint)
             case (timeint_bto)
-               a0 = 0.0d0
-               a1 = 1.0d0
+               a0 = 0.0_dp
+               a1 = 1.0_dp
             case (timeint_bfrom)
-               a0 = 1.0d0
-               a1 = 0.0d0
+               a0 = 1.0_dp
+               a1 = 0.0_dp
             end select
             !
             do i = 1, size(valuesT0, dim=1)
@@ -1496,7 +1496,7 @@ contains
          winddirection1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr(2)
          winddirection = cyclic_interpolation(winddirection0, winddirection1, a0, a1)
          ! === space conversion using nautical convention ===
-         winddirection = (270.0_hp - winddirection) * degrad
+         winddirection = (270.0_dp - winddirection) * degrad
          u => connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr
          v => connection%targetItemsPtr(2)%ptr%targetFieldPtr%arr1dPtr
          targetU = windspeed * cos(winddirection)
@@ -1550,16 +1550,16 @@ contains
       dz = min(abs(zpos(ndxmin) - zmin), abs(zpos(ndxmin) - zmax))
       if (ndxmin > 1) then
          wt = dz / abs((zpos(ndxmin - 1) - zpos(ndxmin))) * 0.5
-         integral = integral + ((1_hp - wt) * val(ndxmin) + wt * val(ndxmin - 1)) * dz
+         integral = integral + ((1_dp - wt) * val(ndxmin) + wt * val(ndxmin - 1)) * dz
       else
          integral = integral + val(ndxmin) * dz
       end if
       dz = min(abs(zpos(ndxmax) - zmin), abs(zpos(ndxmax) - zmax))
       if (ndxmax < size(zpos)) then
          wt = dz / abs((zpos(ndxmax - 1) - zpos(ndxmax))) * 0.5
-         integral = integral + ((1_hp - wt) * val(ndxmax) + wt * val(ndxmax - 1)) * dz
+         integral = integral + ((1_dp - wt) * val(ndxmax) + wt * val(ndxmax - 1)) * dz
       else
-         wt = 0_hp
+         wt = 0_dp
          integral = integral + val(ndxmax) * dz
       end if
       integral = integral / (zmax - zmin)
@@ -1671,11 +1671,11 @@ contains
                   ! deal with one-sided interpolation
                   if (kL == 0 .and. kR /= 0) then
                      kL = kR
-                     wL = 0.0_hp
+                     wL = 0.0_dp
                   end if
                   if (kR == 0 .and. kL /= 0) then
                      kR = kL
-                     wR = 0.0_hp
+                     wR = 0.0_dp
                   end if
                   if (kL > 0) then
                      if (kR > 0) then
@@ -1798,13 +1798,13 @@ contains
                                     call setECMessage("WARNING: ec_converter::ecConverterPolytim: Unknown vertical interpolation type given, will proceed with linear method.")
                                     alreadyPrinted = .true.
                                  end if
-                                 val = wL * (wwL * valL1 + (1.0_hp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_hp - wwR) * valR2)
+                                 val = wL * (wwL * valL1 + (1.0_dp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_dp - wwR) * valR2)
                               case (zinterpolate_linear)
-                                 val = wL * (wwL * valL1 + (1.0_hp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_hp - wwR) * valR2)
+                                 val = wL * (wwL * valL1 + (1.0_dp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_dp - wwR) * valR2)
                               case (zinterpolate_block)
                                  val = wL * valL1 + wR * valR1
                               case (zinterpolate_log)
-                                 val = wL * (valL1**wwL) * (valL2**(1.0_hp - wwL)) + wR * (valR1**wwR) * (valR2**(1.0_hp - wwR))
+                                 val = wL * (valL1**wwL) * (valL2**(1.0_dp - wwL)) + wR * (valR1**wwR) * (valR2**(1.0_dp - wwR))
                               case default
                                  call setECMessage("ERROR: ec_converter::ecConverterPolytim: Unsupported vertical interpolation type requested.")
                                  return
@@ -1881,11 +1881,11 @@ contains
          if (abs(sigmak - sigma(1)) < abs(sigmak - sigma(maxlay_src))) then ! closer to sigma(1) (avoiding the assumption sigma(1) is the lowest)
             idx1 = 1
             idx2 = 1
-            ww = 0.5d0
+            ww = 0.5_dp
          else ! closer to sigma(maxlay_src)
             idx1 = maxlay_src
             idx2 = maxlay_src
-            ww = 0.5d0
+            ww = 0.5_dp
          end if
       else ! within the range of source levels
          do idx1 = 1, maxlay_src - 1 ! find vertical indices
@@ -1979,7 +1979,7 @@ contains
                   if (nmiss == 0) then ! if sufficient data for bi-linear interpolation
                      if ((connection%converterPtr%operandType == operand_replace) .or. &
                          (connection%converterPtr%operandType == operand_replace_if_value)) then
-                        targetValues(i) = 0.0_hp
+                        targetValues(i) = 0.0_dp
                      end if
                      wf_i = indexWeight%weightFactors(1:4, i)
                      targetValues(i) = targetValues(i) &
@@ -2063,10 +2063,10 @@ contains
             ! TODO : Calculate target value depending on ElementSet mask.
             ! === interpolate in space ===
             x1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n) - x01) / dx1
-            if (x1 < -0.5_hp .or. x1 > mx - 0.5_hp) cycle
+            if (x1 < -0.5_dp .or. x1 > mx - 0.5_dp) cycle
             !
             y1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n) - y01) / dy1
-            if (y1 < -0.5_hp .or. y1 > grid_width - 0.5_hp) cycle
+            if (y1 < -0.5_dp .or. y1 > grid_width - 0.5_dp) cycle
             !
             i1 = int(x1 + 1)
             i1 = min(mx - 1, max(1, i1))
@@ -2102,9 +2102,9 @@ contains
                fmask(4) = (srcmask%msk((j1 + 1 - srcmask%nmin) * srcmask%mrange + i1 - srcmask%mmin + 1))
             end if
 
-            fsum = sum(f * (1.d0 - fmask))
+            fsum = sum(f * (1.0_dp - fmask))
             if (fsum >= 1.0e-03) then
-               f = (f * (1.d0 - fmask)) / fsum
+               f = (f * (1.0_dp - fmask)) / fsum
             end if
 
             vv0 = u(1) * f(1) + u(2) * f(2) + u(3) * f(3) + u(4) * f(4)
@@ -2163,7 +2163,7 @@ contains
 
          call setECMessage('ERROR: ec_converter::ecConverterSamples: triangle interpolation is work in progress.')
          return
-         rr = 0d0 ! TODO: AvD: WIP
+         rr = 0.0_dp ! TODO: AvD: WIP
          !select case(connection%converterPtr%operandType)
          !   case(operand_replace)
          !      connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = rr
@@ -2255,7 +2255,7 @@ contains
       real(dp) :: deflection !< summed result of the Fourier component effects
       !
       success = .false.
-      deflection = 0.0_hp
+      deflection = 0.0_dp
       ! ===== interpolation =====
       select case (connection%converterPtr%interpolationType)
       case (interpolate_passthrough)
@@ -2277,11 +2277,11 @@ contains
                end if
             end do
             if (is_astro) then
-               tseconds = timesteps%seconds() - tnodal * 86400.0_hp
+               tseconds = timesteps%seconds() - tnodal * 86400.0_dp
             else
                tseconds = timesteps%seconds()
             end if
-            phase = omega * (tseconds / 60.0_hp) - phase0 ! omega, angle velocity [rad/minute]
+            phase = omega * (tseconds / 60.0_dp) - phase0 ! omega, angle velocity [rad/minute]
             deflection = deflection + magnitude * cos(phase)
          end do
          select case (connection%converterPtr%operandType)
@@ -2324,7 +2324,7 @@ contains
       real(dp) :: weightfac
 
       if (ieee_is_nan(var1) .or. ieee_is_nan(var2)) then
-         cyclic_interpolation = ieee_value(0.0_hp, ieee_quiet_nan)
+         cyclic_interpolation = ieee_value(0.0_dp, ieee_quiet_nan)
          return
       end if
 
@@ -2334,20 +2334,20 @@ contains
       if (var2 < var1) then
          minangle = var2
          maxangle = var1
-         weightfac = 1.0_hp - weightfac
+         weightfac = 1.0_dp - weightfac
       end if
       delta = maxangle - minangle
 
       ! Carry out the interpolation
-      if (delta <= 180.0_hp) then
-         cyclic_interpolation = (1.0_hp - weightfac) * delta
+      if (delta <= 180.0_dp) then
+         cyclic_interpolation = (1.0_dp - weightfac) * delta
       else
-         cyclic_interpolation = (1.0_hp - weightfac) * delta + weightfac * 360.0_hp
+         cyclic_interpolation = (1.0_dp - weightfac) * delta + weightfac * 360.0_dp
       end if
 
       ! Rotate backwards over the smallest angle
       cyclic_interpolation = cyclic_interpolation + minangle
-      cyclic_interpolation = modulo(cyclic_interpolation, 360.0_hp)
+      cyclic_interpolation = modulo(cyclic_interpolation, 360.0_dp)
    end function
 
    ! =======================================================================
@@ -2413,9 +2413,9 @@ contains
 
       !
       success = .false.
-      fa = pi / 180.0_hp
-      fi = 180.0_hp / pi
-      earthrad = 6378137.0_hp
+      fa = pi / 180.0_dp
+      fi = 180.0_dp / pi
+      earthrad = 6378137.0_dp
       n_rows = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows
       n_cols = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_cols
       !
@@ -2459,7 +2459,7 @@ contains
 
       !
       ! Calculate the basic spiderweb grid settings
-      spwdphi = 360.0_hp / (n_cols - 1) ! 0 == 360 degrees, so -1
+      spwdphi = 360.0_dp / (n_cols - 1) ! 0 == 360 degrees, so -1
       spwdrad = connection%sourceItemsPtr(1)%ptr%elementSetPtr%radius / (n_rows - 1)
       spw_merge_frac = connection%sourceItemsPtr(1)%ptr%elementSetPtr%spw_merge_frac
       !
@@ -2477,34 +2477,34 @@ contains
       do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
          xc = connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n)
          yc = connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n)
-         dlat = modulo(yc, 360.0_hp) - yeye
-         dlon = modulo(xc, 360.0_hp) - xeye
-         h1 = (sin(dlat / 2.0_hp * fa))**2 + cos(yeye * fa) * cos(yc * fa) * (sin(dlon / 2.0_hp * fa))**2
-         h2 = 2.0_hp * atan(sqrt(h1) / sqrt(1.0_hp - h1))
+         dlat = modulo(yc, 360.0_dp) - yeye
+         dlon = modulo(xc, 360.0_dp) - xeye
+         h1 = (sin(dlat / 2.0_dp * fa))**2 + cos(yeye * fa) * cos(yc * fa) * (sin(dlon / 2.0_dp * fa))**2
+         h2 = 2.0_dp * atan(sqrt(h1) / sqrt(1.0_dp - h1))
          spwradhat = earthrad * h2
          spwphihat = cos(yeye * fa) * sin(yc * fa) - sin(yeye * fa) * cos(yc * fa) * cos(dlon * fa)
-         if (.not. comparereal(spwphihat, 0d0) == 0) then
+         if (.not. comparereal(spwphihat, 0.0_dp) == 0) then
             spwphihat = atan(sin(dlon * fa) * cos(yc * fa) / (spwphihat)) * fi
          else
-            spwphihat = 0d0
+            spwphihat = 0.0_dp
          end if
-         if (comparereal(dlon, 0d0) == 0) then ! exceptional case of being excatly SOUTH of the eye, phi should be 180 degrees
+         if (comparereal(dlon, 0.0_dp) == 0) then ! exceptional case of being excatly SOUTH of the eye, phi should be 180 degrees
             if (dlat < 0) then
-               spwphihat = 180.0d0
+               spwphihat = 180.0_dp
             end if
          end if
          if (dlon * spwphihat < 0) then ! relative longitude should have the same sign as phi
-            spwphihat = spwphihat + 180.0_hp
+            spwphihat = spwphihat + 180.0_dp
          end if
-         spwphihat = modulo(spwphihat, 360.0_hp)
+         spwphihat = modulo(spwphihat, 360.0_dp)
          ! Find the four nearest points in the spiderweb
          mf = floor(spwphihat / spwdphi) + 1 ! find orientation in windrose
          nf = floor(spwradhat / spwdrad) + 1 ! find orientation on radius
          ! If outside spiderweb or exactly in eye, then set windspeed to zero, else find weightfactors and interpolate
-         if (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows .or. (dlat == 0.0_hp .and. dlon == 0.0_hp)) then
-            uintp = 0.0_hp
-            vintp = 0.0_hp
-            pintp = 0.0_hp
+         if (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows .or. (dlat == 0.0_dp .and. dlon == 0.0_dp)) then
+            uintp = 0.0_dp
+            vintp = 0.0_dp
+            pintp = 0.0_dp
          else
             ! Get data from stencil (mf (+1), nf (+1))
             if ((twx > 0) .or. (twy > 0)) then
@@ -2527,7 +2527,7 @@ contains
                                             connection%sourceItemsPtr(swd)%ptr%sourceT1FieldPtr%arr1dPtr(mf + 1 + n_cols * nf), a0, a1) ! cyclic time interp of direction
                ! Safety at center
                if (nf == 1) then
-                  spwr1 = 0.0_hp
+                  spwr1 = 0.0_dp
                   spwd1 = spwd3
                end if
             end if
@@ -2542,28 +2542,28 @@ contains
                        connection%sourceItemsPtr(swp)%ptr%sourceT1FieldPtr%arr1dPtr(mf + 1 + n_cols * nf) * a1 ! linear time interp of pressure
             end if
             !
-            wphi = 1.0_hp - (spwphihat - (mf - 1) * spwdphi) / (spwdphi) ! weightfactor for the direction
-            wrad = 1.0_hp - (spwradhat - (nf - 1) * spwdrad) / (spwdrad) ! weightfactor for the radius
+            wphi = 1.0_dp - (spwphihat - (mf - 1) * spwdphi) / (spwdphi) ! weightfactor for the direction
+            wrad = 1.0_dp - (spwradhat - (nf - 1) * spwdrad) / (spwdrad) ! weightfactor for the radius
 
             if ((twx > 0) .or. (twy > 0)) then
-               spwrA = spwr1 * wphi + spwr2 * (1.0_hp - wphi) ! space interp magnitude (direction)
-               spwrB = spwr3 * wphi + spwr4 * (1.0_hp - wphi) ! space interp magnitude (direction)
-               tmp = 1.0_hp - wphi
+               spwrA = spwr1 * wphi + spwr2 * (1.0_dp - wphi) ! space interp magnitude (direction)
+               spwrB = spwr3 * wphi + spwr4 * (1.0_dp - wphi) ! space interp magnitude (direction)
+               tmp = 1.0_dp - wphi
                spwdA = cyclic_interpolation(spwd1, spwd2, wphi, tmp) ! space interp direction (direction)
                spwdB = cyclic_interpolation(spwd3, spwd4, wphi, tmp) ! space interp direction (direction)
-               rintp = spwrA * wrad + spwrB * (1.0_hp - wrad) ! space interp (radius)
-               tmp = 1.0_hp - wrad
+               rintp = spwrA * wrad + spwrB * (1.0_dp - wrad) ! space interp (radius)
+               tmp = 1.0_dp - wrad
                dintp = cyclic_interpolation(spwdA, spwdB, wrad, tmp) ! space interp (radius)
-               dintp = 90.0_hp - dintp ! revert from nautical conventions
-               dintp = modulo(dintp, 360.0_hp) ! for debug purposes
+               dintp = 90.0_dp - dintp ! revert from nautical conventions
+               dintp = modulo(dintp, 360.0_dp) ! for debug purposes
                uintp = -rintp * cos(dintp * fa) ! minus sign: wind from N points to S
                vintp = -rintp * sin(dintp * fa) ! minus sign: wind from N points to S
             end if
 
             if (twp > 0) then
-               spwpA = spwp1 * wphi + spwp2 * (1.0_hp - wphi) ! space interp pressure (direction)
-               spwpB = spwp3 * wphi + spwp4 * (1.0_hp - wphi) ! space interp pressure (direction)
-               pintp = spwpA * wrad + spwpB * (1.0_hp - wrad) ! space interp (radius)
+               spwpA = spwp1 * wphi + spwp2 * (1.0_dp - wphi) ! space interp pressure (direction)
+               spwpB = spwp3 * wphi + spwp4 * (1.0_dp - wphi) ! space interp pressure (direction)
+               pintp = spwpA * wrad + spwpB * (1.0_dp - wrad) ! space interp (radius)
             end if
 
          end if
@@ -2586,19 +2586,19 @@ contains
          case (operand_add)
             rcycl = connection%sourceItemsPtr(1)%ptr%elementSetPtr%radius
             yy = spwradhat
-            spwf = 0.d0
+            spwf = 0.0_dp
             if (yy < rcycl) then
-               spwf = min((1.0_hp - yy / rcycl) / spw_merge_frac, 1.0_hp)
+               spwf = min((1.0_dp - yy / rcycl) / spw_merge_frac, 1.0_dp)
                ! spwf is the weightfactor for the spiderweb! Differs from the Delft3D implementation
                if (twx > 0) then
                   connection%targetItemsPtr(twx)%ptr%targetFieldPtr%arr1dPtr(n) = &
-                     (1.0_hp - spwf) * connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) &
+                     (1.0_dp - spwf) * connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) &
                      + spwf * uintp
                   connection%targetItemsPtr(twx)%ptr%targetFieldPtr%timesteps = timesteps
                end if
                if (twy > 0) then
                   connection%targetItemsPtr(twy)%ptr%targetFieldPtr%arr1dPtr(n) = &
-                     (1.0_hp - spwf) * connection%targetItemsPtr(2)%ptr%targetFieldPtr%arr1dPtr(n) &
+                     (1.0_dp - spwf) * connection%targetItemsPtr(2)%ptr%targetFieldPtr%arr1dPtr(n) &
                      + spwf * vintp
                   connection%targetItemsPtr(twy)%ptr%targetFieldPtr%timesteps = timesteps
                end if
@@ -2707,7 +2707,7 @@ contains
       integer, dimension(2) :: idx
 
       !
-      PI = atan(1.d0) * 4.d0
+      PI = atan(1.0_dp) * 4.0_dp
       success = .false.
       targetField => null()
       sourceT0Field => null()
@@ -2765,11 +2765,11 @@ contains
             waveheightT1(1:ncol, 1:nrow) => wavehgtPtr%SourceT1fieldptr%arr1d
             allocate (wdtemp(ncol * nrow))
             allocate (wd2d(ncol, nrow))
-            wdtemp = 0d0
-            wd2d = 0d0
-            coswd = 0d0
-            sinwd = 0d0
-            waveheight = 0d0
+            wdtemp = 0.0_dp
+            wd2d = 0.0_dp
+            coswd = 0.0_dp
+            sinwd = 0.0_dp
+            waveheight = 0.0_dp
          end if
       end do
       !         !
@@ -2778,7 +2778,7 @@ contains
          ! If eastward_wind was given, this operation should formally be ommitted, according to the CF-convention
          if (associated(windxPtr%elementsetPtr%dir)) then
             do ipt = 1, windxPtr%elementsetPtr%ncoordinates
-               phi = windxPtr%elementsetPtr%dir(ipt) * PI / 180.d0
+               phi = windxPtr%elementsetPtr%dir(ipt) * PI / 180.0_dp
                xtmp = windxPtr%SourceT0fieldptr%arr1dptr(ipt) * cos(phi) + windyPtr%SourceT0fieldptr%arr1dptr(ipt) * sin(phi)
                windyPtr%SourceT0fieldptr%arr1dptr(ipt) = windxPtr%SourceT0fieldptr%arr1dptr(ipt) * (-sin(phi)) + windyPtr%SourceT0fieldptr%arr1dptr(ipt) * cos(phi)
                windxPtr%SourceT0fieldptr%arr1dptr(ipt) = xtmp
@@ -2823,7 +2823,7 @@ contains
                   do j = 1, n_points
                      if ((connection%converterPtr%operandType == operand_replace) .or. &
                          (connection%converterPtr%operandType == operand_replace_if_value)) then ! Dit hoort in de loop beneden per target gridpunt!
-                        targetValues(j) = 0.0_hp
+                        targetValues(j) = 0.0_dp
                      end if
                      mp = indexWeight%indices(1, j)
                      if (mp > 0 .and. mp <= n_cols) then
@@ -2873,8 +2873,8 @@ contains
                   ! note: source file Amplitude lives in T1. Phases are indexed: col, row
                   n_phase_rows = sourceElementSet%n_rows
                   n_phase_cols = sourceElementSet%n_cols
-                  omega = 2.0_hp * PI / sourceItem%hframe%ec_period
-                  delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_hp !< convert to seconds since refdate.
+                  omega = 2.0_dp * PI / sourceItem%hframe%ec_period
+                  delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_dp !< convert to seconds since refdate.
                   if (issparse == 1) then
                      do j = 1, n_rows
                         if (ia(j + 1) > ia(j)) then
@@ -2885,7 +2885,7 @@ contains
                                   comparereal(phase0, sourceMissing, .true.) == 0) then
                                  sourceT0Field%arr1d(ipt) = sourceMissing
                               else
-                                 sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_hp)
+                                 sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
                               end if
                            end do
                         end if
@@ -2904,7 +2904,7 @@ contains
                                      comparereal(phase0, sourceMissing, .true.) == 0) then
                                     sourceT0Field%arr1d(ipt) = sourceMissing
                                  else
-                                    sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_hp)
+                                    sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
                                  end if
                               end do
                            end do
@@ -2939,17 +2939,17 @@ contains
                      if (mp > 0 .and. np > 0) then
                         if ((connection%converterPtr%operandType == operand_replace) .or. &
                             (connection%converterPtr%operandType == operand_replace_if_value)) then
-                           targetValues(kbot:ktop) = 0.0_hp
+                           targetValues(kbot:ktop) = 0.0_dp
                         end if
                         ! The save horizontal weigths are used. The vertical weights are recalculated because z changes.
                         ! transformation coefficients for the z-array, target side:
                         select case (targetElementSet%vptyp)
                         case (BC_VPTYP_ZDATUM)
-                           a_t = 1.0_hp
-                           b_t = 0.0_hp
+                           a_t = 1.0_dp
+                           b_t = 0.0_dp
                         case (BC_VPTYP_ZDATUM_DOWN)
-                           a_t = -1.0_hp
-                           b_t = 0.0_hp
+                           a_t = -1.0_dp
+                           b_t = 0.0_dp
                         case (BC_VPTYP_PERCBED)
                            a_t = (targetElementSet%zmax(j) - targetElementSet%zmin(j))
                            b_t = targetElementSet%zmin(j)
@@ -2961,11 +2961,11 @@ contains
                         ! transformation coefficients for the z-array, source side:
                         select case (sourceElementSet%vptyp)
                         case (BC_VPTYP_ZDATUM)
-                           a_s = 1.0_hp
-                           b_s = 0.0_hp
+                           a_s = 1.0_dp
+                           b_s = 0.0_dp
                         case (BC_VPTYP_ZDATUM_DOWN)
-                           a_s = -1.0_hp
-                           b_s = 0.0_hp
+                           a_s = -1.0_dp
+                           b_s = 0.0_dp
                         end select
 
                         ! scale source coordinates with factors of target
@@ -3035,7 +3035,7 @@ contains
                            else
 
                               ! horizontal interpolation
-                              val = 0d0 ! (down-up,old-new)
+                              val = 0.0_dp ! (down-up,old-new)
                               do ll = 1, 2
                                  do kk = 1, 2
                                     val(kk, ll) = val(kk, ll) + sourcevals(1, 1, kk, ll) * indexWeight%weightFactors(1, j) !   4      3
@@ -3046,8 +3046,8 @@ contains
                               end do
                               ! get weights for vertical interpolation
                               wb = (zsrc(kp) - ztgt) / (zsrc(kp) - zsrc(kp - dkp))
-                              wb = min(max(wb, 0.0_hp), 1.0_hp) ! zeroth-order extrapolation beyond range of source vertical coordinates
-                              wt = (1.0_hp - wb)
+                              wb = min(max(wb, 0.0_dp), 1.0_dp) ! zeroth-order extrapolation beyond range of source vertical coordinates
+                              wt = (1.0_dp - wb)
 
                               if (has_harmonics) then
                                  call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Harmonics not (yet) implemented for layers.")
@@ -3139,7 +3139,7 @@ contains
                         end if
 
                         if (connection%converterPtr%operandType == operand_replace) then
-                           targetValues(j) = 0.0_hp
+                           targetValues(j) = 0.0_dp
                         end if
 
                         kloop2D: do jj = 0, 1
@@ -3156,14 +3156,14 @@ contains
                            if (allocated(x_extrapolate)) x_extrapolate(j) = ec_undef_hp ! no-data -> unelectable for kdtree later
                         else
                            if (connection%converterPtr%operandType == operand_replace_if_value) then
-                              targetValues(j) = 0.0_hp
+                              targetValues(j) = 0.0_dp
                            end if
                            if (trim(connection%SourceItemsPtr(i)%ptr%quantityPtr%name) == 'sea_surface_wave_from_direction') then
                               ! Now interpolate the waveheight-weighted directional field in space
                               coswd = cosd(sourcevals(:, :, 1, 1)) * waveheight
                               sinwd = sind(sourcevals(:, :, 1, 1)) * waveheight
-                              targetvalcos = 0d0
-                              targetvalsin = 0d0
+                              targetvalcos = 0.0_dp
+                              targetvalsin = 0.0_dp
                               targetvalcos = targetvalcos + coswd(1, 1) * indexWeight%weightFactors(1, j)
                               targetvalcos = targetvalcos + coswd(2, 1) * indexWeight%weightFactors(2, j)
                               targetvalcos = targetvalcos + coswd(2, 2) * indexWeight%weightFactors(3, j)
@@ -3173,8 +3173,8 @@ contains
                               targetvalsin = targetvalsin + sinwd(2, 2) * indexWeight%weightFactors(3, j)
                               targetvalsin = targetvalsin + sinwd(1, 2) * indexWeight%weightFactors(4, j)
                               targetValues(j) = atan2d(targetvalsin, targetvalcos)
-                              if (.not. ieee_is_nan(targetValues(j)) .and. targetValues(j) < 0d0) then
-                                 targetValues(j) = targetValues(j) + 360d0
+                              if (.not. ieee_is_nan(targetValues(j)) .and. targetValues(j) < 0.0_dp) then
+                                 targetValues(j) = targetValues(j) + 360.0_dp
                               end if
                            else
                               targetValues(j) = targetValues(j) + a0 * sourcevals(1, 1, 1, 1) * indexWeight%weightFactors(1, j)
@@ -3337,18 +3337,18 @@ contains
       DISM = huge(DISM)
       kL = 0 ! Default: No valid point found
       kR = 0 ! idem
-      wL = 0.0_hp
-      wR = 0.0_hp
+      wL = 0.0_dp
+      wR = 0.0_dp
       km = 0
-      crpm = 0.0_hp
-      disL = 0.0_hp
-      disR = 0.0_hp
-      DEPS = 1.0e-3_hp
+      crpm = 0.0_dp
+      disL = 0.0_dp
+      disR = 0.0_dp
+      DEPS = 1.0e-3_dp
       !
       do k = 1, ns - 1
-         crp = 0.0_hp
+         crp = 0.0_dp
          call CROSS(xe, ye, xen, yen, xs(k), ys(k), xs(k + 1), ys(k + 1), JACROS, SL, SM, XCR, YCR, CRP)
-         if (SL >= 0.0_hp .and. SL <= 1.0_hp .and. SM > -DEPS .and. SM < 1.0_hp + DEPS) then ! instead of jacros==1
+         if (SL >= 0.0_dp .and. SL <= 1.0_dp .and. SM > -DEPS .and. SM < 1.0_dp + DEPS) then ! instead of jacros==1
             DIS = DBDISTANCE(XE, YE, XCR, YCR)
             if (DIS < DISM) then ! Found a better intersection point
                DISM = DIS
@@ -3373,7 +3373,7 @@ contains
             end if
          end do
          ! Find nearest valid polyline point right of the intersection (i.e.: kcs(kR) == 1)
-         disR = (1.0_hp - SMM) * dis
+         disR = (1.0_dp - SMM) * dis
          do k = km + 1, ns
             if (kcs(k) == 1) then
                kR = k
@@ -3386,11 +3386,11 @@ contains
       !
       if (kL /= 0 .and. kR /= 0) then
          wL = disR / (disL + disR)
-         wR = 1.0_hp - wL
+         wR = 1.0_dp - wL
       else if (kL /= 0) then
-         wL = 1.0_hp
+         wL = 1.0_dp
       else if (kR /= 0) then
-         wR = 1.0_hp
+         wR = 1.0_dp
       end if
    end subroutine polyindexweight
 
@@ -3411,22 +3411,22 @@ contains
       real(dp) :: sm
       real(dp), intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
       real(dp) :: x21, y21, x31, y31, x43, y43, xcr, ycr
-      real(dp) :: dmiss = -999d0
+      real(dp) :: dmiss = -999_dp
 
       !     safety check on crp (in)
       if (ieee_is_nan(crp)) then
-         crp = 0.0_hp
+         crp = 0.0_dp
       end if
 
       ! Set defaults for no crossing at all:
       jamakenondimensional = 0
-      if (abs(crp + 1234d0) < 0.5d0) then
+      if (abs(crp + 1234.0_dp) < 0.5_dp) then
          jamakenondimensional = 1
-         crp = 0.0_hp
+         crp = 0.0_dp
       end if
 
       JACROS = 0
-      EPS = 0.00001_hp
+      EPS = 0.00001_dp
       SL = DMISS
       SM = DMISS
 
@@ -3443,7 +3443,7 @@ contains
       DET = X43 * Y21 - Y43 * X21
 
       !     SPvdP: make eps have proper dimension
-      EPS = max(EPS * maxval((/X21, Y21, X43, Y43, X31, Y31/)), tiny(0.0_hp))
+      EPS = max(EPS * maxval((/X21, Y21, X43, Y43, X31, Y31/)), tiny(0.0_dp))
       if (abs(DET) < EPS) then
          return
       else
@@ -3453,10 +3453,10 @@ contains
          else if (abs(Y21) > EPS) then
             SL = (SM * Y43 + Y31) / Y21
          else
-            SL = 0.0_hp
+            SL = 0.0_dp
          end if
-         if (SM >= 0.0_hp .and. SM <= 1d0 .and. &
-             SL >= 0.0_hp .and. SL <= 1d0) then
+         if (SM >= 0.0_dp .and. SM <= 1.0_dp .and. &
+             SL >= 0.0_dp .and. SL <= 1.0_dp) then
             JACROS = 1
          end if
          XCR = X1 + SL * (X2 - X1)
@@ -3475,10 +3475,10 @@ contains
       real(dp) :: x1, y1, x2, y2
       ! locals
       real(dp) :: ddx, ddy, rr
-      real(dp) :: dmiss = -999d0
+      real(dp) :: dmiss = -999_dp
       !
       if (x1 == DMISS .or. x2 == DMISS .or. y1 == DMISS .or. y2 == DMISS) then
-         dbdistance = 0.0_hp
+         dbdistance = 0.0_dp
          return
       end if
       !
@@ -3487,8 +3487,8 @@ contains
       !ddy = getdy(x1,y1,x2,y2) ! TODO : all is cartesian, kernel must provide it as such
       ddy = y2 - y1
       rr = ddx * ddx + ddy * ddy
-      if (rr == 0.0_hp) then
-         dbdistance = 0.0_hp
+      if (rr == 0.0_dp) then
+         dbdistance = 0.0_dp
       else
          dbdistance = sqrt(rr)
       end if

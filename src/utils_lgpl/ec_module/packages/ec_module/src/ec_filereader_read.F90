@@ -134,7 +134,7 @@ contains
                read (rec, *, IOSTAT=istat) time_steps
                if (istat == 0) then
                   ! Convert from minutes to seconds.
-                  time_steps = time_steps * 60.0_hp
+                  time_steps = time_steps * 60.0_dp
                   success = .true.
                else
                   call setECMessage("ERROR: ec_filereader_read::ecUniReadTimeSteps: Read failure before end of file: "//trim(fileReaderPtr%fileName))
@@ -543,7 +543,7 @@ contains
             end if
          end do
          ! Fill the central point. (the first row)
-         item1%sourceT0FieldPtr%arr1dPtr(1:n_cols) = 0.0_hp
+         item1%sourceT0FieldPtr%arr1dPtr(1:n_cols) = 0.0_dp
          item2%sourceT0FieldPtr%arr1dPtr(1:n_cols) = item2%sourceT0FieldPtr%arr1dPtr(n_cols + 1:n_cols + n_cols)
          item3%sourceT0FieldPtr%arr1dPtr(1:n_cols) = p_drop_spw_eye
          ! Fill 360 degrees with values of 0 degrees. (copy first column into last column)
@@ -555,7 +555,7 @@ contains
          ! Compensate for unit of pressure (mbar (= hpa) versus Pa)
          if ((index(item3%quantityPtr%units, 'mbar') == 1) .or. (index(item3%quantityPtr%units, 'hPa') == 1)) then
             do i = 1, size(item3%sourceT0FieldPtr%arr1dPtr)
-               item3%sourceT0FieldPtr%arr1dPtr(i) = item3%sourceT0FieldPtr%arr1dPtr(i) * 100.0_hp
+               item3%sourceT0FieldPtr%arr1dPtr(i) = item3%sourceT0FieldPtr%arr1dPtr(i) * 100.0_dp
             end do
          end if
          ! ===== T1 =====
@@ -643,7 +643,7 @@ contains
             end if
          end do
          ! Fill the central point.
-         item1%sourceT1FieldPtr%arr1dPtr(1:n_cols) = 0.0_hp
+         item1%sourceT1FieldPtr%arr1dPtr(1:n_cols) = 0.0_dp
          item2%sourceT1FieldPtr%arr1dPtr(1:n_cols) = item2%sourceT1FieldPtr%arr1dPtr(n_cols + 1:n_cols + n_cols)
          item3%sourceT1FieldPtr%arr1dPtr(1:n_cols) = p_drop_spw_eye
          ! Fill 360 degrees with values of 0 degrees.
@@ -655,7 +655,7 @@ contains
          ! Compensate for unit of pressure (mbar, hPa versus Pa)
          if ((index(item3%quantityPtr%units, 'mbar') == 1) .or. (index(item3%quantityPtr%units, 'hPa') == 1)) then
             do i = 1, size(item3%sourceT1FieldPtr%arr1dPtr)
-               item3%sourceT1FieldPtr%arr1dPtr(i) = item3%sourceT1FieldPtr%arr1dPtr(i) * 100.0_hp
+               item3%sourceT1FieldPtr%arr1dPtr(i) = item3%sourceT1FieldPtr%arr1dPtr(i) * 100.0_dp
             end do
          end if
       else
@@ -939,7 +939,7 @@ contains
       end if
 
       ! - Apply the scale factor and offset
-      if (item%quantityPtr%factor /= 1.0_hp .or. item%quantityPtr%offset /= 0.0_hp) then
+      if (item%quantityPtr%factor /= 1.0_dp .or. item%quantityPtr%offset /= 0.0_dp) then
          do i = 1, size(fieldPtr%arr1dPtr)
             if (fieldPtr%arr1dPtr(i) /= dmiss_nc) then
                fieldPtr%arr1dPtr(i) = fieldPtr%arr1dPtr(i) * item%quantityPtr%factor + item%quantityPtr%offset
@@ -1062,9 +1062,9 @@ contains
       end if
       if (read_index > 0) then
          if (t0t1 < 0) then
-            if (comparereal(item1%sourceT0FieldPtr%timesteps, 0.0_hp) == -1) then
+            if (comparereal(item1%sourceT0FieldPtr%timesteps, 0.0_dp) == -1) then
                t0t1 = 0
-            elseif (comparereal(item1%sourceT1FieldPtr%timesteps, 0.0_hp) == -1) then
+            elseif (comparereal(item1%sourceT1FieldPtr%timesteps, 0.0_dp) == -1) then
                t0t1 = 1
             elseif (comparereal(item1%sourceT0FieldPtr%timesteps, item1%sourceT1FieldPtr%timesteps) /= 1) then
                t0t1 = 0
@@ -1075,13 +1075,13 @@ contains
          !
          ! T0
          if (t0t1 == 0) then ! JRE: needed to be changed to mjd because of use in ecItemUpdateSourceItem
-            tim = fileReaderPtr%tframe%ec_refdate + times(read_index) * ecSupportTimeUnitConversionFactor(fileReaderPtr%tframe%ec_timestep_unit) / 86400.0_hp - fileReaderPtr%tframe%ec_timezone / 24.0_hp
+            tim = fileReaderPtr%tframe%ec_refdate + times(read_index) * ecSupportTimeUnitConversionFactor(fileReaderPtr%tframe%ec_timestep_unit) / 86400.0_dp - fileReaderPtr%tframe%ec_timezone / 24.0_dp
             item1%sourceT0FieldPtr%timesteps = tim
             ierror = nf90_get_var(fileReaderPtr%fileHandle, idvar_q, item1%sourceT0FieldPtr%arr1dPtr, start=(/1, read_index/), count=(/n, 1/))
             success = ecSupportNetcdfCheckError(ierror, "get_var "//item1%quantityPtr%name, fileReaderPtr%fileName)
             ! ===== T1 =====
          else if (t0t1 == 1) then
-            tim = fileReaderPtr%tframe%ec_refdate + times(read_index) * ecSupportTimeUnitConversionFactor(fileReaderPtr%tframe%ec_timestep_unit) / 86400.0_hp - fileReaderPtr%tframe%ec_timezone / 24.0_hp
+            tim = fileReaderPtr%tframe%ec_refdate + times(read_index) * ecSupportTimeUnitConversionFactor(fileReaderPtr%tframe%ec_timestep_unit) / 86400.0_dp - fileReaderPtr%tframe%ec_timezone / 24.0_dp
             item1%sourceT1FieldPtr%timesteps = tim
             ierror = nf90_get_var(fileReaderPtr%fileHandle, idvar_q, item1%sourceT1FieldPtr%arr1dPtr, start=(/1, read_index/), count=(/n, 1/))
             success = ecSupportNetcdfCheckError(ierror, "get_var "//item1%quantityPtr%name, fileReaderPtr%fileName)
@@ -1262,23 +1262,23 @@ contains
                      return
                   end if
                   ! Perform transformations, which are handled by subroutine asc for components.
-                  if (.not. (comparereal(periods(nPeriods), 0.0_hp) == 0)) then
+                  if (.not. (comparereal(periods(nPeriods), 0.0_dp) == 0)) then
                      ! if a bc-structure is associated to the filereader (i.e. we are reading from a BC-file),
                      ! inspect the 'timeunit' in which info was stored on the contents of the 'component'-column
                      if (associated(fileReaderPtr%bc)) then
                         select case (fileReaderPtr%bc%timeunit)
                         case ('SECOND')
-                           periods(nPeriods) = 2.0_hp * pi_hp / (periods(nPeriods) / 60.0)
+                           periods(nPeriods) = 2.0_dp * pi_hp / (periods(nPeriods) / 60.0)
                         case ('MINUTE')
-                           periods(nPeriods) = 2.0_hp * pi_hp / (periods(nPeriods))
+                           periods(nPeriods) = 2.0_dp * pi_hp / (periods(nPeriods))
                         case ('HOUR')
-                           periods(nPeriods) = 2.0_hp * pi_hp / (periods(nPeriods) * 60.0)
+                           periods(nPeriods) = 2.0_dp * pi_hp / (periods(nPeriods) * 60.0)
                         case ('PERSECOND')
-                           periods(nPeriods) = 2.0_hp * pi_hp * (periods(nPeriods) / 60.0)
+                           periods(nPeriods) = 2.0_dp * pi_hp * (periods(nPeriods) / 60.0)
                         case ('PERMINUTE')
-                           periods(nPeriods) = 2.0_hp * pi_hp * (periods(nPeriods))
+                           periods(nPeriods) = 2.0_dp * pi_hp * (periods(nPeriods))
                         case ('PERHOUR')
-                           periods(nPeriods) = 2.0_hp * pi_hp * (periods(nPeriods) * 60.0)
+                           periods(nPeriods) = 2.0_dp * pi_hp * (periods(nPeriods) * 60.0)
                         case ('RADPERSECOND')
                            periods(nPeriods) = periods(nPeriods) / 60.0
                         case ('RADPERMINUTE')
@@ -1286,10 +1286,10 @@ contains
                         case ('RADPERHOUR')
                            periods(nPeriods) = periods(nPeriods) * 60.0
                         case default ! old setting
-                           periods(nPeriods) = 2.0_hp * pi_hp / periods(nPeriods)
+                           periods(nPeriods) = 2.0_dp * pi_hp / periods(nPeriods)
                         end select
                      else
-                        periods(nPeriods) = 2.0_hp * pi_hp / periods(nPeriods)
+                        periods(nPeriods) = 2.0_dp * pi_hp / periods(nPeriods)
                      end if
                   end if
                   phases(nPeriods) = phases(nPeriods) * degrad_hp
@@ -1501,8 +1501,8 @@ contains
       integer, intent(out) :: kx !< number of vector components in each sample value (1 for scalars)
 
       real(dp) :: xx, yy, zz
-      real(dp) :: dmiss_dflt = -999d0 ! Use default missing value for this 'old' sample file type
-      real(dp) :: xymis_dflt = -999d0 !
+      real(dp) :: dmiss_dflt = -999_dp ! Use default missing value for this 'old' sample file type
+      real(dp) :: xymis_dflt = -999_dp !
       character(len=:), allocatable :: rec
       character(len=maxMessageLen) :: tex
       integer :: istat
@@ -1530,7 +1530,7 @@ contains
       read (rec, *, end=40, err=40) xx, yy, zz
 
       if (xx /= xymis_dflt .and. yy /= xymis_dflt .and. &
-          zz /= dmiss_dflt .and. zz /= 999.999d0 .and. &
+          zz /= dmiss_dflt .and. zz /= 999.999_dp .and. &
           .not. (ieee_is_nan(xx) .or. ieee_is_nan(yy) .or. ieee_is_nan(zz))) then
          nSamples = nSamples + 1
          xs(nSamples) = xx

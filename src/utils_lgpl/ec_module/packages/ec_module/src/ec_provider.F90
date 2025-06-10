@@ -603,8 +603,8 @@ contains
       ! The values in T1 are never used, so to comply with the uniform EC-module mechanism, it is set to a large, increasable value.
       ! Rewind the file
       if (success) then
-         item_slope%sourceT0FieldPtr%arr1dPtr = 0.0_hp
-         item_crossing%sourceT0FieldPtr%arr1dPtr = 0.0_hp
+         item_slope%sourceT0FieldPtr%arr1dPtr = 0.0_dp
+         item_crossing%sourceT0FieldPtr%arr1dPtr = 0.0_dp
          do i = 1, nr_rows
             ! initialize Field T0
             item_discharge%sourceT0FieldPtr%arr1dPtr(i) = discharges(i)
@@ -631,15 +631,15 @@ contains
                item_crossing%sourceT0FieldPtr%arr1dPtr(n2) = waterlevels(n2) - item_slope%sourceT0FieldPtr%arr1dPtr(n2) * discharges(n2)
             end if
          end do
-         item_discharge%sourceT0FieldPtr%timesteps = 0.0_hp
-         item_waterlevel%sourceT0FieldPtr%timesteps = 0.0_hp
-         item_slope%sourceT0FieldPtr%timesteps = 0.0_hp
-         item_crossing%sourceT0FieldPtr%timesteps = 0.0_hp
+         item_discharge%sourceT0FieldPtr%timesteps = 0.0_dp
+         item_waterlevel%sourceT0FieldPtr%timesteps = 0.0_dp
+         item_slope%sourceT0FieldPtr%timesteps = 0.0_dp
+         item_crossing%sourceT0FieldPtr%timesteps = 0.0_dp
          ! initialize Field T1 (arbitrary far future)
-         item_discharge%sourceT1FieldPtr%timesteps = 10000.0_hp
-         item_waterlevel%sourceT1FieldPtr%timesteps = 10000.0_hp
-         item_slope%sourceT1FieldPtr%timesteps = 10000.0_hp
-         item_crossing%sourceT1FieldPtr%timesteps = 10000.0_hp
+         item_discharge%sourceT1FieldPtr%timesteps = 10000.0_dp
+         item_waterlevel%sourceT1FieldPtr%timesteps = 10000.0_dp
+         item_slope%sourceT1FieldPtr%timesteps = 10000.0_dp
+         item_crossing%sourceT1FieldPtr%timesteps = 10000.0_dp
       end if
       ! Add successfully created source Items to the FileReader
 
@@ -815,12 +815,12 @@ contains
                success = .false.
                return
             end if
-            itemPeriod%sourceT0FieldPtr%timesteps = 0.0_hp
-            itemMagnitude%sourceT0FieldPtr%timesteps = 0.0_hp
-            itemPhase%sourceT0FieldPtr%timesteps = 0.0_hp
-            itemPeriod%sourceT1FieldPtr%timesteps = 0.0_hp
-            itemMagnitude%sourceT1FieldPtr%timesteps = 0.0_hp
-            itemPhase%sourceT1FieldPtr%timesteps = 0.0_hp
+            itemPeriod%sourceT0FieldPtr%timesteps = 0.0_dp
+            itemMagnitude%sourceT0FieldPtr%timesteps = 0.0_dp
+            itemPhase%sourceT0FieldPtr%timesteps = 0.0_dp
+            itemPeriod%sourceT1FieldPtr%timesteps = 0.0_dp
+            itemMagnitude%sourceT1FieldPtr%timesteps = 0.0_dp
+            itemPhase%sourceT1FieldPtr%timesteps = 0.0_dp
          end if
          ! Add successfully created source Items to the FileReader
          if (success) success = ecFileReaderAddItem(instancePtr, fileReaderPtr%id, itemPeriod%id)
@@ -1231,7 +1231,7 @@ contains
       if (len_trim(rec) /= 0) then
          read (rec, *) missingValue
       else
-         missingValue = -9999.0_hp
+         missingValue = -9999.0_dp
       end if
       !
       rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'n_quantity')
@@ -1346,8 +1346,8 @@ contains
          item%sourceT1FieldPtr%arr1dPtr((i - 1) * kx + 1:i * kx) = zs(1:kx, i)
       end do
 
-      item%sourceT0FieldPtr%timesteps = 0.0_hp
-      item%sourceT1FieldPtr%timesteps = huge(0.0_hp)
+      item%sourceT0FieldPtr%timesteps = 0.0_dp
+      item%sourceT1FieldPtr%timesteps = huge(0.0_dp)
 
       if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, item%id)) return
 
@@ -2968,12 +2968,12 @@ contains
             units = ''
             ierror = nf90_get_att(fileReaderPtr%fileHandle, fgd_id, 'units', units)
             if (ierror == nf90_noerr .and. (strcmpi(units, 'km') .or. strcmpi(units, 'kilometer') .or. strcmpi(units, 'kilometre'))) then
-               fgd_data_1d = fgd_data_1d * 1000d0
+               fgd_data_1d = fgd_data_1d * 1000_dp
             end if
             units = ''
             ierror = nf90_get_att(fileReaderPtr%fileHandle, sgd_id, 'units', units)
             if (ierror == nf90_noerr .and. (strcmpi(units, 'km') .or. strcmpi(units, 'kilometer') .or. strcmpi(units, 'kilometre'))) then
-               sgd_data_1d = sgd_data_1d * 1000d0
+               sgd_data_1d = sgd_data_1d * 1000_dp
             end if
 
             if (.not. ecElementSetSetType(instancePtr, elementSetId, grid_type)) then
@@ -3040,7 +3040,7 @@ contains
                   if (allocated(pdiri)) deallocate (pdiri)
                   allocate (pdiri(size(fgd_data_1d)))
                   call gb2lla(fgd_data_1d, sgd_data_1d, fgd_data_trans, sgd_data_trans, pdiri, size(fgd_data_1d), &
-                              gsplon, gsplat, 0.0_hp, 0.0_hp, -90.0_hp, 0.0_hp)
+                              gsplon, gsplat, 0.0_dp, 0.0_dp, -90.0_dp, 0.0_dp)
                   if (.not. ecElementSetSetXArray(instancePtr, elementSetId, fgd_data_trans)) then
                      call setECMessage("Setting latitude array failed for "//trim(fileReaderPtr%filename)//".")
                      return
@@ -3253,7 +3253,7 @@ contains
       ! body
       success = .false.
       item => null()
-      dmiss = -999.0_hp
+      dmiss = -999.0_dp
       elementSetId = ecInstanceCreateElementSet(instancePtr)
       !
       ! Cartesian or spheric
@@ -3368,9 +3368,9 @@ contains
          fileReaderPtr%tframe%ec_timezone = fileReaderPtr%tframe%k_timezone
          fileReaderPtr%tframe%ec_timestep_unit = fileReaderPtr%tframe%k_timestep_unit
 
-         fileReaderPtr%tframe%dtnodal = 1e+20_hp
+         fileReaderPtr%tframe%dtnodal = 1e+20_dp
          if (present(dtnodal)) then
-            if (dtnodal /= 0.0_hp) then
+            if (dtnodal /= 0.0_dp) then
                fileReaderPtr%tframe%dtnodal = dtnodal
             end if
          end if
