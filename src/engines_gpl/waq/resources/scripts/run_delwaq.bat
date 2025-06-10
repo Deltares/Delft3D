@@ -52,9 +52,9 @@ goto :loop
 :endloop
 
 rem provide default proc_def and bloom.spe when not provided by the user
-if [%userprocfile%] EQU [none] (set procfile=%sharedir%\proc_def) else (set procfile=%userprocfile%)
+if [%userprocfile%] EQU [none] (set procfile="%sharedir%\proc_def") else (set procfile=%userprocfile%)
 if [%noprocesses%] EQU [false] (set switches=%switches%  -p %procfile%) else (set switches=%switches% -np)
-if [%userspefile%] EQU [none] (set spefile=%sharedir%\bloom.spe) else (set spefile=%userspefile%)
+if [%userspefile%] EQU [none] (set spefile="%sharedir%\bloom.spe") else (set spefile=%userspefile%)
 if [%eco%] EQU [true] set switches=%switches% -eco %spefile% 
 
 rem go to input file directory, run delwaq, and return
