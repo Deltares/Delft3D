@@ -160,6 +160,7 @@ module m_ec_netcdf_timeseries
     integer    :: dimids_tsid(2)
     integer    :: len_vectordef      
     logical    :: isVector
+    LOGICAL    :: stations_read
     integer, allocatable :: var_dimids(:,:)
     integer, allocatable :: var_ndims(:)
     
@@ -199,6 +200,7 @@ module m_ec_netcdf_timeseries
     allocate(var_dimids(nDims, nVars)) ! NOTE: nDims is only an upper bound here!
     allocate(var_ndims(nVars))
     var_ndims = 0
+    stations_read = .false.
     do iVars = 1, nVars                                                                     ! Inventorize variables
        ierr = nf90_inquire_attribute(ncptr%ncid,iVars,'vector',len=len_vectordef)           ! Check if this variable is just a reference to vector
        if (ierr == 0) then
@@ -226,7 +228,7 @@ module m_ec_netcdf_timeseries
        ! Check for important var: was it the stations?
        cf_role = ''
        ierr = ncu_get_att(ncptr%ncid,iVars,'cf_role',cf_role)
-       if (cf_role == 'timeseries_id') then 
+       if (cf_role == 'timeseries_id' .and. .not. stations_read) then 
              nDims = 0                
              ierr = nf90_inquire_variable(ncptr%ncid, iVars, ndims = nDims)
              if (nDims==2) then                                                             ! If cf Role 'timeseries_id' found, compose an index timeseries id's 
@@ -243,6 +245,7 @@ module m_ec_netcdf_timeseries
                 end do
                 ncptr%tsidvarid  = iVars                                                       ! For convenience also store the Station ID explicitly 
                 ncptr%tsiddimid = dimids_tsid(2)                                            ! For convenience also store the Station's dimension ID explicitly 
+                stations_read = .true.
              else 
                 ! timeseries_id has the wrong dimensionality
                 return  
