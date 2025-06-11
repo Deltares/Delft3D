@@ -1,12 +1,5 @@
 # Specify the modules to be included
-
-if (NOT TARGET googletest)
-    add_subdirectory(${checkout_src_root}/${googletest_module} googletest)
-endif()
-
-if (NOT TARGET f90tw_gtest)
-    add_subdirectory(${checkout_src_root}/${f90tw_module} f90tw)
-endif()
+include(${CMAKE_CURRENT_LIST_DIR}/../miscellaneous/unit_test_configuration.cmake)
 
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
@@ -56,8 +49,8 @@ if(NOT TARGET flow1d_implicit)
 endif()
 
 # Waq
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_base.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_dflowfm_online_coupling.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq/dwaq_base.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq/dwaq_dflowfm_online_coupling.cmake)
 
 # Morphology
 if(NOT TARGET morphology_plugins_c)
@@ -104,8 +97,6 @@ endif()
 if(NOT TARGET dfm_api_access)
     add_subdirectory(${checkout_src_root}/${dfm_api_access_module} dfm_api_access)
 endif()
-
-
 
 # Third party libraries
 # kdtree2
