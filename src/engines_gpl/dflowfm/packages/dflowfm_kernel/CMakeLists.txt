@@ -182,8 +182,8 @@ if (WIN32)
     )
 
     target_link_libraries(${library_name} PUBLIC
-                            petsc
                             "${mpi_fortran_library}"
+                            petsc
     )
 
     include_directories(${petsc_path})
