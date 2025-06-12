@@ -232,6 +232,7 @@ contains
         !! extension when name is enterd interactive from keyboard
 
         character(len=9) :: steering_file_name
+        character(len=256) :: file_name_temp
         character(:), allocatable :: filename_with_ext
         character(len=3) :: user_answer
         logical :: file_exists, command_found
@@ -247,6 +248,19 @@ contains
             if (file_name(1:1) /= '-') then
                 file_name = get_file_name_without_extension(file_name)
                 return
+            else if  (file_name(1:1) /= '-waq') then
+                steering_file_name = 'runid.waq'
+                inquire (file = steering_file_name, exist = file_exists)
+                if (file_exists) then
+                    open(newunit = file_unit, file = steering_file_name)
+                    read(file_unit, *, iostat = ioerr) file_name_temp
+                    if (ioerr == 0) then
+                        file_name = trim(file_name_temp)
+                        close(file_unit)
+                        return
+                    end if
+                endif
+                file_name = ' '
             end if
         end if
 
