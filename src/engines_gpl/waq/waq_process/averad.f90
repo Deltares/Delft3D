@@ -136,11 +136,13 @@ contains
          iaction = 2
          if (time <= tinit + 0.5 * delt) then
             do iseg = 1, num_cells
-               ip9 = ipoint(9) + (iseg - 1) * increm(9)
-               ip10 = ipoint(10) + (iseg - 1) * increm(10)
                process_space_real(ip9) = 0.0
-               process_space_real(IP10) = 0.0
+               process_space_real(ip10) = 0.0
+               ip9 = ip9 + in9
+               ip10 = ip10 + in10
             end do
+            ip9 = ipoint(9)
+            ip10 = ipoint(10)
          end if
       end if
 
