@@ -77,6 +77,11 @@ class TestCase(object):
         for program in self.__programs:
             program[1].run(logger)
 
+            error = program[1].getError()
+            return_code = program[1].last_return_code
+            if not program[1].ignore_return_code and return_code != 0:
+                self.__errors.append(error)
+
         # create testbench run file
         elapsed_time = time.time() - start_time
         self.__config.run_time = elapsed_time
