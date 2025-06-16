@@ -2617,7 +2617,7 @@ contains
       use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
       use m_map_his_precision
       use m_datum
-      use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
+      use m_circumcenter_method, only: ALL_NETLINKS_LOOP, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: DENSITY_TO_INTERFACES, rhointerfaces
 
@@ -2822,7 +2822,7 @@ contains
       if (writeall .or. (Dcenterinside /= 1.0_dp)) then
          call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
       end if
-      if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
+      if (writeall .or. (circumcenter_method /= ALL_NETLINKS_LOOP)) then
          call prop_set(prop_ptr, 'geometry', 'circumcenterMethod', trim(md_circumcenter_method), 'Circumcenter computation method (iterate each edge: internalNetlinksEdge; iterate each loop: internalNetlinksLoop or allNetlinksLoop)')
       end if
       if (writeall .or. (circumcenter_tolerance /= 1.0e-3_dp)) then
