@@ -33,7 +33,7 @@ module m_getkey2
    implicit none
 contains
    subroutine GETKEY2(KEY)
-      use m_nkeys
+      use m_nkeys, only : numkeys, nkey, numc
 
       integer :: i
       integer :: key

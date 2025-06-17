@@ -50,10 +50,10 @@ contains
       use m_tranfn, only: tranfn
       use m_eqdint, only: eqdint
       use precision, only: dp
-      use m_missing
-      use m_splint
-      use m_readyy
-      use m_get_ij
+      use m_missing, only : dmiss
+      use m_splint, only : splint
+      use m_readyy, only : readyy
+      use m_get_ij, only : getij
 
       integer :: mmax, nmax, imax, m1, n1, m2, n2, mc, nc, mfac, nfac
       real(kind=dp) :: X(MMAX, NMAX), XR(MMAX, NMAX), &

@@ -48,8 +48,8 @@ contains
 
    subroutine utmgeo2(xutm, yutm, xgeo, ygeo, IZONE, ihem)
       use precision, only: dp
-      use m_sferic
-      use m_ellips
+      use m_sferic, only : rd2dg
+      use m_ellips, only : e, a
 
 !     xutm    i    real(kind=dp) ::    easting (UTM)
 !     yutm    i    real(kind=dp) ::    northing (UTM)

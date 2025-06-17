@@ -47,8 +47,7 @@ contains
 #ifdef _OPENMP
       use omp_lib
 #endif
-      use dfm_error
-      use messagehandling, only: mess, level_info
+      use dfm_error, only : dfm_noerr
       
       integer, intent(in) :: maxnumthreads !< Desired maximum number of OpenMP threads.
       integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).

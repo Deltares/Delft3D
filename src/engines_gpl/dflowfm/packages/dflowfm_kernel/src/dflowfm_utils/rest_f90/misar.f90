@@ -42,7 +42,7 @@ contains
 
    subroutine MISAR(H, MMAX)
       use precision, only: dp
-      use M_MISSING
+      use M_MISSING, only : dmiss
 
       integer :: i
       integer :: mmax

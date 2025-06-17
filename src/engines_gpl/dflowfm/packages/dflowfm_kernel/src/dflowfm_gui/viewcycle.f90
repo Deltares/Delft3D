@@ -37,8 +37,7 @@ module m_viewcycle
 contains
 
    subroutine VIEWCYCLE(KEY)
-      use m_howtoview
-      use m_perspx
+      use m_howtoview, only : jview, jav
       implicit none
       integer :: KEY
 

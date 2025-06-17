@@ -37,8 +37,7 @@ module m_getrcir
 contains
 
    real(kind=dp) function GETRCIR()
-      use precision, only: dp
-      use m_wearelt
+      use m_wearelt, only : rcir
 
       GETRCIR = RCIR
    end function GETRCIR
