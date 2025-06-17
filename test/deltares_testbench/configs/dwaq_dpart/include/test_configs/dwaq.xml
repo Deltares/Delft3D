@@ -6685,7 +6685,7 @@
 
     <!-- Test cases for "new" bloom tests-->
     <testCase name="e03_f06_c01_blmdef" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f06_bloom_new/c01_blmdef</path>
+        <path version="2025-06-05T16:15:00">e03_waq/f06_bloom_new/c01_blmdef</path>
         <checks>
             <file name="n_blmdef.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6734,7 +6734,7 @@
         </checks>
     </testCase>
      <testCase name="e03_f06_c02_blmlcm" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f06_bloom_new/c02_blmclm</path>
+        <path version="2025-06-05T16:15:00">e03_waq/f06_bloom_new/c02_blmclm</path>
         <checks>
             <file name="n_blmclm.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6783,7 +6783,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f06_c03_blmmix" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f06_bloom_new/c03_blmmix</path>
+        <path version="2025-06-05T16:15:00">e03_waq/f06_bloom_new/c03_blmmix</path>
         <checks>
             <file name="n_blmmix.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6834,7 +6834,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f06_c04_blmnfx" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f06_bloom_new/c04_blmnfx</path>
+        <path version="2025-06-05T16:15:00">e03_waq/f06_bloom_new/c04_blmnfx</path>
         <checks>
             <file name="n_blmnfx.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6984,7 +6984,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c05_exercise_05" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
+        <dependency version="2025-06-05T16:15:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path version="2024-01-11T13:20:00">e03_waq/f07_course_d3dfm_env_mod/c05_exercise_05/exercise5.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
