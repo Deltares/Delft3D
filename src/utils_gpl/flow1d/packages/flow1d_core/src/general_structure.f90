@@ -266,6 +266,12 @@ contains
 
          u1L = ru(1) - fu(1)*dsL 
          qL = Au(1)*u1L
+         
+         ! temporry force with "old" values
+         ! hu = 6.088D-3
+         ! hd = 1.854D-3
+         ! uu = 6.088D-2
+         ! qL = -589.8
 
          call flqhgs(fu(1), ru(1), u1L, dxL, dt, structwidth, au(1), qL, flowDir, &
                      hu, hd, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, dg,                &

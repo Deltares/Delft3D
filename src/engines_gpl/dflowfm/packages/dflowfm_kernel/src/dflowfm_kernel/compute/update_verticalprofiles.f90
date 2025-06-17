@@ -85,9 +85,6 @@ contains
 
       if (iturbulencemodel == 1) then ! 1=constant
 
-         !$OMP PARALLEL DO &
-         !$OMP PRIVATE(LL,Lb,Lt,kxL,dzu,L,k,hdzb,z00,ac1,ac2,n1,n2,k1,k2,womegu,cfuhi3D)
-
          do LL = 1, lnx
 
             if (hu(LL) > 0.0_dp) then
@@ -137,7 +134,6 @@ contains
 
          end do
 
-         !$OMP END PARALLEL DO
 
       else if (iturbulencemodel == 2) then ! 2=algebraic , just testing 1D flow
 

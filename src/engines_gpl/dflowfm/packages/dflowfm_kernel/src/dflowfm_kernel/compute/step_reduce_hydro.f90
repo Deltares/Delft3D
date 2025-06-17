@@ -107,6 +107,7 @@ contains
 
 !-----------------------------------------------------------------------------------------------
          hs = max(hs, 0d0)
+
          call furu() ! staat in s0
 
          if (itstep /= 4) then ! implicit time-step

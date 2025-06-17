@@ -274,17 +274,19 @@ contains
 
       end if
       
-      call furu_structures()
+!      call furu_structures()
 
       if (kmx > 0) then
 
          if (jafilter /= 0) then
             call comp_filter_predictor()
          end if
-
+         
          call update_verticalprofiles()
 
       end if
+      
+      call furu_structures()
 
       do n = 1, nbndu ! boundaries at u points
 
