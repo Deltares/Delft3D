@@ -275,6 +275,8 @@ contains
 !> set_temperature_models
    subroutine set_temperature_models(time_in_seconds)
       use precision, only: dp
+      use messagehandling, only: LEVEL_WARN, mess
+
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       logical :: foundtempforcing
@@ -390,7 +392,7 @@ contains
       use ieee_arithmetic, only: ieee_is_nan
       use m_compute_wave_parameters, only: compute_wave_parameters
       use unstruc_messages, only: callback_msg
-      use messagehandling, only: warn_flush
+      use messagehandling, only: LEVEL_WARN, msgbuf, warn_flush
 
       logical, intent(in) :: initialization !< initialization phase
 

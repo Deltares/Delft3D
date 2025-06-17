@@ -90,7 +90,7 @@ name       the name of the function.  This is the minor sort
 	   the function in the gprof listing. If the index is
 	   in parenthesis it shows where it would appear in
 	   the gprof listing if it were to be printed.
-
+
 		     Call graph (explanation follows)
 
 
@@ -499,7 +499,7 @@ index % time    self  children    called     name
  for that member, how many times it was called from other members of
  the cycle.
 
-
+
 Index by function name
 
   [13] BUInt4Fseek            [56] HS_hash_key            [32] credat_

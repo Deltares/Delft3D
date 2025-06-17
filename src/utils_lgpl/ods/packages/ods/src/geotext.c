@@ -200,7 +200,7 @@ TVoid ODSGetDimTekAnno (
    return ;
 
 } /* End of ODSGetDimTekAnno */
-
+
 
 /* @@---------------------------------------------------
     Function:    ODSGetParTekAnno
@@ -286,7 +286,7 @@ TVoid ODSGetParTekAnno (
     return ;
 
 } /* End of ODSGetParTekAnno */
-
+
 /* @@---------------------------------------------------
     Function:    ODSGetTmeTekAnno
     Author:      Arjen Markus
@@ -363,7 +363,7 @@ TVoid ODSGetTmeTekAnno (
     return;
 
 } /* End of ODSGetTmeTekAnno */
-
+
  TVoid ODSGetLocTekAnno (
                      TString fname,
                      TInt4   *ftype,
