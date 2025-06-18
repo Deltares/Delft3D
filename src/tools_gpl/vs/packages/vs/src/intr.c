@@ -166,7 +166,7 @@ MINFUNC( DOUBLE, BRea8 )
 MINFUNC( FLOAT,  BRea4 )
 MINFUNC( INT,    BInt4 )
 MINFUNC( SHORT,  BInt2 )
-
+
 /*  @@  This function is used to perform the ViewSel intrinsic
  *      functions AVG (avarage), MAX (maximum) and MIN (minimum)
  */

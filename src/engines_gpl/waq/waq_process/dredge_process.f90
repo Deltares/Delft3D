@@ -32,6 +32,7 @@ contains
                              num_exchanges_z_dir, num_exchanges_bottom_dir)
       use m_logger_helper, only: stop_with_error, get_log_unit_number
       use m_extract_waq_attribute
+      use m_wq_processes_mpi, only: wq_processes_mpi, wq_processes_mpi_subroutines
 
       implicit none
 
@@ -120,7 +121,8 @@ contains
       integer(kind=int_wp), dimension(:, :), allocatable :: ip_storage_im3 ! indices in storage array
       integer(kind=int_wp) :: ip_storage !
       integer(kind=int_wp) :: ipoff !
-      real(kind=real_wp), dimension(:), allocatable :: storage
+      integer(kind=int_wp) :: size_storage_array ! Size of storage_size array
+      real(kind=real_wp), dimension(:), allocatable :: storage ! Storage array for dredge sediment which is not dumped yet
 
       integer(kind=int_wp) :: lunrep ! unit number of output file
 
@@ -152,6 +154,7 @@ contains
       integer(kind=int_wp) :: ifrac_dump_im2 ! dump towards this fraction
       integer(kind=int_wp) :: ifrac_dump_im3 ! dump towards this fraction
       logical :: dredge ! indication if dredging takes place in this segment at this time step
+      logical :: mydomain
 
       call get_log_unit_number(lunrep)
 
@@ -177,7 +180,8 @@ contains
             no_basin = max(no_basin, basin_no)
             ip_basin_no = ip_basin_no + increm(2)
          end do
-         process_space_real(ipoint(3)) = real(no_basin)
+         call wq_processes_mpi%reduce_int_max(no_basin)
+         process_space_real(ipoint(3)) = real(no_basin, kind=real_wp)
       end if
 
       ! if no basins then return
@@ -257,18 +261,20 @@ contains
       end do
 
       !     copy storage (remaining dredge mass) from process_space_real
-      allocate (storage(max_basin * (nim1 + nim2 + nim3)))
+      ipoff = ipoff + 7 * max_basin
+      size_storage_array = max_basin * (nim1 + nim2 + nim3)
+      allocate (storage(size_storage_array))
       storage = 0.0
 
       do i_basin = 1, no_basin
          do ifrac_im1 = 1, nim1
-            storage(ip_storage_im1(ifrac_im1, i_basin)) = process_space_real(ipoint(ipoff + 7 * max_basin + ip_storage_im1(ifrac_im1, i_basin)))
+            storage(ip_storage_im1(ifrac_im1, i_basin)) = process_space_real(ipoint(ipoff + ip_storage_im1(ifrac_im1, i_basin)))
          end do
          do ifrac_im2 = 1, nim2
-            storage(ip_storage_im2(ifrac_im2, i_basin)) = process_space_real(ipoint(ipoff + 7 * max_basin + ip_storage_im2(ifrac_im2, i_basin)))
+            storage(ip_storage_im2(ifrac_im2, i_basin)) = process_space_real(ipoint(ipoff + ip_storage_im2(ifrac_im2, i_basin)))
          end do
          do ifrac_im3 = 1, nim3
-            storage(ip_storage_im3(ifrac_im3, i_basin)) = process_space_real(ipoint(ipoff + 7 * max_basin + ip_storage_im3(ifrac_im3, i_basin)))
+            storage(ip_storage_im3(ifrac_im3, i_basin)) = process_space_real(ipoint(ipoff + ip_storage_im3(ifrac_im3, i_basin)))
          end do
       end do
       ! check for each basin if it is a dredging moment
@@ -311,6 +317,7 @@ contains
          end if
 
          if (dredge) then
+            call wq_processes_mpi%mydomain(iseg, mydomain)
             dredge_criterium = process_space_real(ip_dredge_criterium(basin_no))
             sws1s2_dredge = nint(process_space_real(ip_sws1s2_dredge(basin_no)))
             actths1 = process_space_real(ip_actths1)
@@ -326,7 +333,9 @@ contains
                         ip_im1s1 = ipoint(ip0_im1s1(ifrac_im1)) + (iseg - 1) * increm(ip0_im1s1(ifrac_im1))
                         im1s1 = process_space_real(ip_im1s1) * surf
                         ip_storage = ip_storage_im1(ifrac_im1, basin_no)
-                        storage(ip_storage) = storage(ip_storage) + im1s1 * fraction_dredge
+                        if (mydomain) then
+                           storage(ip_storage) = storage(ip_storage) + im1s1 * fraction_dredge
+                        end if
                         ipflux = iflux + ifrac_im1
                         fl(ipflux) = im1s1 * fraction_dredge / volume / delt
                      end do
@@ -334,7 +343,9 @@ contains
                         ip_im2s1 = ipoint(ip0_im2s1(ifrac_im2)) + (iseg - 1) * increm(ip0_im2s1(ifrac_im2))
                         im2s1 = process_space_real(ip_im2s1) * surf
                         ip_storage = ip_storage_im2(ifrac_im2, basin_no)
-                        storage(ip_storage) = storage(ip_storage) + im2s1 * fraction_dredge
+                        if (mydomain) then
+                           storage(ip_storage) = storage(ip_storage) + im2s1 * fraction_dredge
+                        end if
                         ipflux = iflux + nim1 + ifrac_im2
                         fl(ipflux) = im2s1 * fraction_dredge / volume / delt
                      end do
@@ -342,7 +353,9 @@ contains
                         ip_im3s1 = ipoint(ip0_im3s1(ifrac_im3)) + (iseg - 1) * increm(ip0_im3s1(ifrac_im3))
                         im3s1 = process_space_real(ip_im3s1) * surf
                         ip_storage = ip_storage_im3(ifrac_im3, basin_no)
-                        storage(ip_storage) = storage(ip_storage) + im3s1 * fraction_dredge
+                        if (mydomain) then
+                           storage(ip_storage) = storage(ip_storage) + im3s1 * fraction_dredge
+                        end if
                         ipflux = iflux + nim1 + nim2 + ifrac_im3
                         fl(ipflux) = im3s1 * fraction_dredge / volume / delt
                      end do
@@ -356,7 +369,9 @@ contains
                         ip_im1s2 = ipoint(ip0_im1s2(ifrac_im1)) + (iseg - 1) * increm(ip0_im1s2(ifrac_im1))
                         im1s2 = process_space_real(ip_im1s2) * surf
                         ip_storage = ip_storage_im1(ifrac_im1, basin_no)
-                        storage(ip_storage) = storage(ip_storage) + im1s2 * fraction_dredge
+                        if (mydomain) then
+                           storage(ip_storage) = storage(ip_storage) + im1s2 * fraction_dredge
+                        end if
                         ipflux = iflux + nim1 + nim2 + nim3 + ifrac_im1
                         fl(ipflux) = im1s2 * fraction_dredge / volume / delt
                      end do
@@ -364,7 +379,9 @@ contains
                         ip_im2s2 = ipoint(ip0_im2s2(ifrac_im2)) + (iseg - 1) * increm(ip0_im2s2(ifrac_im2))
                         im2s2 = process_space_real(ip_im2s2) * surf
                         ip_storage = ip_storage_im2(ifrac_im2, basin_no)
-                        storage(ip_storage) = storage(ip_storage) + im2s2 * fraction_dredge
+                        if (mydomain) then
+                           storage(ip_storage) = storage(ip_storage) + im2s2 * fraction_dredge
+                        end if
                         ipflux = iflux + nim1 + nim2 + nim3 + nim1 + ifrac_im2
                         fl(ipflux) = im2s2 * fraction_dredge / volume / delt
                      end do
@@ -372,7 +389,9 @@ contains
                         ip_im3s2 = ipoint(ip0_im3s2(ifrac_im3)) + (iseg - 1) * increm(ip0_im3s2(ifrac_im3))
                         im3s2 = process_space_real(ip_im3s2) * surf
                         ip_storage = ip_storage_im3(ifrac_im3, basin_no)
-                        storage(ip_storage) = storage(ip_storage) + im3s2 * fraction_dredge
+                        if (mydomain) then
+                           storage(ip_storage) = storage(ip_storage) + im3s2 * fraction_dredge
+                        end if
                         ipflux = iflux + nim1 + nim2 + nim3 + nim1 + nim2 + ifrac_im3
                         fl(ipflux) = im3s2 * fraction_dredge / volume / delt
                      end do
@@ -389,6 +408,10 @@ contains
          iflux = iflux + noflux
       end do
 
+      !  synchronise over MPI when necessary
+
+      call wq_processes_mpi%reduce_sum(size_storage_array, storage)
+
       ! dump loop
 
       ip_volume = ipoint(6)
@@ -396,6 +419,9 @@ contains
       do i_basin = 1, no_basin
 
          dumpsegment = nint(process_space_real(ip_dumpsegment(i_basin)))
+         if (dumpsegment <= 0) then
+            cycle
+         end if
          dumpspeed = process_space_real(ip_dumpspeed(i_basin))
          relabel = nint(process_space_real(ip_relabel(i_basin)))
 
@@ -419,14 +445,12 @@ contains
          end do
 
          if (dredge_tot > 1e-20) then
-
             ip_volume = ipoint(6) + (dumpsegment - 1) * increm(6)
             ip_delt = ipoint(8) + (dumpsegment - 1) * increm(8)
             volume = process_space_real(ip_volume)
             delt = process_space_real(ip_delt)
             maxdump = dumpspeed * delt
             dump = min(dredge_tot, maxdump)
-
             do ifrac_im1 = 1, nim1
                ip_storage = ip_storage_im1(ifrac_im1, i_basin)
                tmp_storage_im1 = storage(ip_storage)
@@ -438,10 +462,8 @@ contains
                   ifrac_dump_im1 = ifrac_im1
                end if
                storage(ip_storage) = tmp_storage_im1
-               if (dumpsegment > 0) then
-                  ifl_dump_im1 = (dumpsegment - 1) * noflux + nim1 + nim2 + nim3 + nim1 + nim2 + nim3 + ifrac_dump_im1
-                  fl(ifl_dump_im1) = fl(ifl_dump_im1) + dump_im1 / volume / delt
-               end if
+               ifl_dump_im1 = (dumpsegment - 1) * noflux + nim1 + nim2 + nim3 + nim1 + nim2 + nim3 + ifrac_dump_im1
+               fl(ifl_dump_im1) = fl(ifl_dump_im1) + dump_im1 / volume / delt
             end do
             do ifrac_im2 = 1, nim2
                ip_storage = ip_storage_im2(ifrac_im2, i_basin)
@@ -454,10 +476,8 @@ contains
                   ifrac_dump_im2 = ifrac_im2
                end if
                storage(ip_storage) = tmp_storage_im2
-               if (dumpsegment > 0) then
-                  ifl_dump_im2 = (dumpsegment - 1) * noflux + nim1 + nim2 + nim3 + nim1 + nim2 + nim3 + nim1 + ifrac_dump_im2
-                  fl(ifl_dump_im2) = fl(ifl_dump_im2) + dump_im2 / volume / delt
-               end if
+               ifl_dump_im2 = (dumpsegment - 1) * noflux + nim1 + nim2 + nim3 + nim1 + nim2 + nim3 + nim1 + ifrac_dump_im2
+               fl(ifl_dump_im2) = fl(ifl_dump_im2) + dump_im2 / volume / delt
             end do
             do ifrac_im3 = 1, nim3
                ip_storage = ip_storage_im3(ifrac_im3, i_basin)
@@ -470,30 +490,37 @@ contains
                   ifrac_dump_im3 = ifrac_im3
                end if
                storage(ip_storage) = tmp_storage_im3
-               if (dumpsegment > 0) then
-                  ifl_dump_im3 = (dumpsegment - 1) * noflux + nim1 + nim2 + nim3 + nim1 + nim2 + nim3 + nim1 + nim2 + ifrac_dump_im3
-                  fl(ifl_dump_im3) = fl(ifl_dump_im3) + dump_im3 / volume / delt
-               end if
+               ifl_dump_im3 = (dumpsegment - 1) * noflux + nim1 + nim2 + nim3 + nim1 + nim2 + nim3 + nim1 + nim2 + ifrac_dump_im3
+               fl(ifl_dump_im3) = fl(ifl_dump_im3) + dump_im3 / volume / delt
             end do
-
          end if
-
       end do
 
       !     store remaining mass in process_space_real, only if dumpsegment is in my domain
 
       do i_basin = 1, no_basin
          dumpsegment = nint(process_space_real(ip_dumpsegment(i_basin)))
-
-         do ifrac_im1 = 1, nim1
-            process_space_real(ipoint(ipoff + 7 * max_basin + ip_storage_im1(ifrac_im1, i_basin))) = storage(ip_storage_im1(ifrac_im1, i_basin))
-         end do
-         do ifrac_im2 = 1, nim2
-            process_space_real(ipoint(ipoff + 7 * max_basin + ip_storage_im2(ifrac_im2, i_basin))) = storage(ip_storage_im2(ifrac_im2, i_basin))
-         end do
-         do ifrac_im3 = 1, nim3
-            process_space_real(ipoint(ipoff + 7 * max_basin + ip_storage_im3(ifrac_im3, i_basin))) = storage(ip_storage_im3(ifrac_im3, i_basin))
-         end do
+         if (dumpsegment > 0) then
+            do ifrac_im1 = 1, nim1
+               process_space_real(ipoint(ipoff + ip_storage_im1(ifrac_im1, i_basin))) = storage(ip_storage_im1(ifrac_im1, i_basin))
+            end do
+            do ifrac_im2 = 1, nim2
+               process_space_real(ipoint(ipoff + ip_storage_im2(ifrac_im2, i_basin))) = storage(ip_storage_im2(ifrac_im2, i_basin))
+            end do
+            do ifrac_im3 = 1, nim3
+               process_space_real(ipoint(ipoff + ip_storage_im3(ifrac_im3, i_basin))) = storage(ip_storage_im3(ifrac_im3, i_basin))
+            end do
+         else
+            do ifrac_im1 = 1, nim1
+               process_space_real(ipoint(ipoff + ip_storage_im1(ifrac_im1, i_basin))) = 0.0
+            end do
+            do ifrac_im2 = 1, nim2
+               process_space_real(ipoint(ipoff + ip_storage_im2(ifrac_im2, i_basin))) = 0.0
+            end do
+            do ifrac_im3 = 1, nim3
+               process_space_real(ipoint(ipoff + ip_storage_im3(ifrac_im3, i_basin))) = 0.0
+            end do
+         end if
       end do
 
       return

@@ -1,127 +1,137 @@
 import argparse
-import sys
 import os
 import string
+import sys
 from datetime import datetime
 
-'''
-Author: Jan Mooiman
-E-Mail: jan.mooiman@deltares.nl
-Date  : 10 sep 2017
-
-This script list all what strings, starting with @(#)Deltares, in all subdirectories of a given root directory
-The root directory is specified by the argument --srcdir .....
-
-'''
-
-global log_file
+"""
+This script lists all what strings, starting with @(#)Deltares or containing HeadURL,
+in all subdirectories of a given root directory.
+The root directory is specified by the argument --srcdir.
+"""
 
 
-def lprint(*args, **kwargs):
-    global log_file
-    log_file.write(' '.join(map(str, args)) + '\n')
+def clean(text: str) -> str:
+    # Remove all non-printable characters
+    sanitized_text = "".join(
+        c
+        for c in text
+        if c in string.printable
+        and c
+        not in "\x0b\x0c\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
+    )
+    return sanitized_text
 
 
-def strings(filename, min=4):
-    if sys.version_info.major == 2:
-        f = open(filename, "rb")  # Python 2.x
-    else:
-        f = open(filename, "r", errors='ignore') # Python 3.x
-    result = ""
-    for c in f.read():
-        if c in string.printable:
-            result += c
-            continue
-        if len(result) >= min:
-            yield result
-        result = ""
-    if len(result) >= min:  # catch result at EOF
-        yield result
-    f.close()
+def extract_printable_strings(filename, min_length=4):
+    try:
+        with open(filename, "r", errors="ignore") as f:
+            printable_set = set(string.printable)
+            result = ""
+            while True:
+                chunk = f.read(4096)
+                if not chunk:
+                    break
+                for c in chunk:
+                    if c in printable_set:
+                        result += c
+                        continue
+                    if len(result) >= min_length:
+                        yield result
+                    result = ""
+            if len(result) >= min_length:
+                yield result
+    except Exception as e:
+        # Could not read file, skip it
+        yield from ()
 
 
-def list_what_strings(fname):
-    print("\t\t%s" % fname)
-    sl = list(strings(fname))
-    what_string = []
-    for s in sl:
-        if s.find('@(#)Deltares') != -1:
-            what_string.append(s[s.find('@(#)Deltares'):])
-        if s.find('HeadURL') != -1:
-            what_string.append(s[s.find('HeadURL'):])
-    if what_string.__len__() != 0:
-        lprint("\t%s" % fname)
-        for s in what_string:
-            if s[0:4] == '@(#)':
-                lprint("\t\t%s" % s[4:])
-            if s[0:7] == 'HeadURL':
-                lprint("\t\t%s" % s[9:])
+def list_what_strings(file_path: str, log_file) -> None:
+    # Determine the minimum length needed for the search strings
+    min_len = 7  # Minimum length of the search strings "@(#)Deltares" and "HeadURL"
+    try:
+        string_list = list(extract_printable_strings(file_path, min_length=min_len))
+    except Exception as e:
+        log_file.write(
+            clean(f"\t[Unreadable file] {file_path}: {type(e).__name__} - {e}\n")
+        )
+        return
+
+    what_strings = []
+    for str in string_list:
+        if "@(#)Deltares" in str:
+            what_strings.append(str[str.find("@(#)Deltares") :])
+        if "HeadURL" in str:
+            what_strings.append(str[str.find("HeadURL") :])
+
+    if what_strings:
+        log_file.write(clean(f"\t{file_path}\n"))
+        for what_string in what_strings:
+            if what_string.startswith("@(#)"):
+                log_file.write(clean(f"\t\t{what_string[4:]}\n"))
+            elif what_string.startswith("HeadURL"):
+                log_file.write(clean(f"\t\t{what_string[9:]}\n"))
 
 
-def recursive_walk(folder):
-    for dirName, subdirList, fileList in os.walk(folder):
-        if dirName != folder:
-            print("\t%s" % dirName)
-            for fname in fileList:
-                fname = os.path.join(dirName, fname)
-                if fname.find('.svn') == -1:
-                    list_what_strings(fname)
+def walk_and_list_what_strings(root_folder, log_file):
+    for current_dir, subdirs, files in os.walk(root_folder):
+        if current_dir != root_folder:
+            print(f"\t{current_dir}")
+            for file_name in files:
+                file_path = os.path.join(current_dir, file_name)
+                list_what_strings(file_path, log_file)
 
 
-def main(start_dir, src_dir):
-    os.chdir(src_dir)
-
-    print("Root Directory: %s" % src_dir)
-    lprint("Root Directory: %s" % src_dir)
-    recursive_walk(src_dir)
-    print("Processing done")
-    lprint("Processing done")
-
-    cwd = os.chdir(start_dir)
-    return
+def get_command_line_args():
+    parser = argparse.ArgumentParser(
+        description="Batch process to list all what-strings"
+    )
+    parser.add_argument(
+        "-s",
+        "--srcdir",
+        help="Root directory from which the what-strings are listed",
+        dest="src_dir",
+    )
+    parser.add_argument("-o", "--output", help="Output filename.", dest="out_put")
+    args = parser.parse_args()
+    return args
 
 
 if __name__ == "__main__":
-    global log_file
-
     start_time = datetime.now()
 
-    parser = argparse.ArgumentParser(description='Batch process to list all what-strings')
-    # run_mode_group = parser.add_mutually_exclusive_group(required=False)
-    parser.add_argument('-s', '--srcdir',
-                        help="Root directory from the what-strings are listed",
-                        dest='src_dir')
-    parser.add_argument('-o', '--output',
-                        help="Output filename.",
-                        dest='out_put')
-    args = parser.parse_args()
+    args = get_command_line_args()
 
-    src_dir = '.'
-    out_put = 'dimr_version.txt'
+    src_dir = "."
+    out_put = "dimr_version.txt"
     if args.src_dir:
         src_dir = args.src_dir
     start_dir = os.getcwd()
     src_dir = os.path.normpath(os.path.join(start_dir, src_dir))
     if not os.path.exists(src_dir):
-        print ("Given directory does not exists: %s" % src_dir)
+        print(f"Given directory does not exist: {src_dir}")
+        sys.exit(1)
 
     if args.out_put:
         out_put = args.out_put
     if os.path.exists(out_put):
         os.remove(out_put)
-    log_file = open(out_put, "a")
 
-    print('Start: %s\n' % start_time)
-    lprint('Start: %s\n' % start_time)
-    print("%s\n" % sys.version)
+    print(f"Start: {start_time}\n")
+    print(f"{sys.version}\n")
+    print(f"Listing is written to: {out_put}")
+    print(f"Root Directory: {src_dir}")
 
-    print('Listing is written to: %s' % out_put)
+    with open(out_put, "a") as log_file:
+        log_file.write(clean(f"Start: {start_time}\n"))
+        log_file.write(clean(f"Root Directory: {src_dir}\n"))
+        walk_and_list_what_strings(src_dir, log_file)
+        log_file.write(clean("Processing done\n"))
+        log_file.write(clean(f"\nStart: {start_time}\n"))
+        log_file.write(clean(f"End  : {datetime.now()}\n"))
+        log_file.write(clean("Klaar\n"))
 
-    main(start_dir, src_dir)
-
-    lprint('\nStart: %s' % start_time)
-    lprint('End  : %s' % datetime.now())
-    lprint('Klaar')
-    print('\nStart: %s' % start_time)
-    print('End  : %s' % datetime.now())
-    print('Klaar')
+    print("Processing done")
+    print(f"\nStart: {start_time}")
+    print(f"End  : {datetime.now()}")
+    print("Klaar")
