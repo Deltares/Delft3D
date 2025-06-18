@@ -60,8 +60,8 @@ contains
       y = xymis
 
       IFIRST = 0
-      do I = 1, MC
-         do J = 1, NC
+      do J = 1, NC
+         do I = 1, MC
             if (XH(I, J) /= XYMIS .and. IFIRST == 0) IFIRST = I
          end do
       end do
@@ -79,8 +79,8 @@ contains
       else
          IFIRST = IFIRST - 1
          JFIRST = JFIRST - 1
-         do I = 1, MC - IFIRST
-            do J = 1, NC - JFIRST
+         do J = 1, NC - JFIRST
+            do I = 1, MC - IFIRST
                X(I, J) = XH(I + IFIRST, J + JFIRST)
                Y(I, J) = YH(I + IFIRST, J + JFIRST)
             end do

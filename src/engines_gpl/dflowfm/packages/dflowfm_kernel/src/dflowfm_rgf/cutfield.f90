@@ -49,8 +49,8 @@ contains
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
       integer :: i, j
 
-      do I = 1, MC
-         do J = 1, NC
+      do J = 1, NC
+         do I = 1, MC
             if (I >= MB(3) .and. I <= MB(4) .and. J >= NB(3) .and. J <= NB(4)) then
 !               mooi houwen zo
             else

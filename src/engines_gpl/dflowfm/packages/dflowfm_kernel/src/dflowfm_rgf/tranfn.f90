@@ -63,8 +63,8 @@ contains
       call ABREL(X4, Y4, A2R, MFAC)
 
 !     Dit is modified transfinite
-      do I = 2, MFAC
-         do J = 2, NFAC
+      do J = 2, NFAC
+         do I = 2, MFAC
             B1 = B1R(J)
             B2 = B2R(J)
             A1 = A1R(I)
