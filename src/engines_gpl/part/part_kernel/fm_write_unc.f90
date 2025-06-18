@@ -103,13 +103,16 @@ contains
 
     !> Writes the (possibly aggregated) unstructured network and edge type to a netCDF file for DelWAQ.
     !! If file exists, it will be overwritten.
-    subroutine unc_init_map(crs, meshgeom, nosegl, num_layers)
+    subroutine unc_init_map(crs, hyd, meshgeom, nosegl, num_layers)
 
         use partmem, only: nosubs, nfract, oil, substi
         use io_ugrid
         use m_alloc
+        use netcdf_utils, only: ncu_append_atts
+        use m_hydmod, only: t_hydrodynamics
 
         type(t_crs), intent(in) :: crs      !< Optional crs containing metadata of unsupported coordinate reference systems
+        type(t_hydrodynamics), intent(in) :: hyd !< Data on the hydrodynamics as understood by D-Part
         type(t_ug_meshgeom), intent(in) :: meshgeom !< The complete mesh geometry in a single struct.
         integer, intent(in) :: nosegl   !< Number of segments per layer
         integer, intent(in) :: num_layers    !< Number of layers (meshgeom%numlayer turns out to be -1)
@@ -118,11 +121,19 @@ contains
         character(len = 50) :: cell_measures !< cell_measures for this variable (e.g. 'area: mesh2d_ba', see CF for details).
         integer :: ierr     !< Result status (UG_NOERR==NF90_NOERR if successful).
         logical :: success  !< Helper variable.
-        character(len = 3), dimension(nosubs) :: unit          !< Unit of this variable (CF-compliant) (use empty string for dimensionless quantities).
+        character(len = 10), dimension(nosubs) :: unit          !< Unit of this variable (CF-compliant) (use empty string for dimensionless quantities).
+        character(len = 50), dimension(3)      :: checkvars     !< Possible names for vertical coordinates
         integer :: ifract, isub
+
+        character(len=ug_idslen), parameter :: s1      = 's1'
+        character(len=ug_idslen), parameter :: bldepth = 'bldepth'
+        integer                             :: dummy_id
 
         character(len = len(substi)) :: substnc
         integer :: i
+        integer :: laytp
+
+        real(kind=dp), pointer, dimension(:) :: interface_zs, layer_zs
 
         !   character(len=*)                 :: var_name      !< Variable name for in NetCDF variable, will be prefixed with mesh name.
         !   character(len=*)                 :: standard_name !< Standard name (CF-compliant) for 'standard_name' attribute in this variable.
@@ -149,26 +160,55 @@ contains
 
         ! Note: a bit of trickery here ... we should probably define the concentrations as a 2D array
         if (num_layers > 1) then
-            ierr = nf90_def_dim(imapfile, 'layer', num_layers, id_map_layersdim)
+            ierr = nf90_def_dim(imapfile, trim(meshgeom%meshname) // '_nLayers', num_layers, id_map_layersdim)
         endif
 
-        ! Write mesh geometry.
+        ! Write mesh geometry, include the vertical layer information.
+        ! Note:
+        ! The names for the water level variable and the bathymetry are dummies
+        !
         ierr = ug_write_mesh_struct(imapfile, meshids, networkids, crs, meshgeom)
         if (ierr /= nf90_noerr) then
             call mess(LEVEL_ERROR, 'Could not write geometry to file map')
             return
         end if
 
+        if ( num_layers > 1 ) then
+            ! Ideally:
+            ! laytp = merge( LAYTP_SIGMA, LAYTP_Z, hyd%layertype == 1) - parameters from m_flow
+            ! But we would drag in yet another D-Flow FM module, so hardcode the values
+            !
+            laytp = merge( 1, 2, hyd%layer_type == 1)
+
+            call ug_define_mesh_layer_arrays(imapfile, trim(meshgeom%meshname), meshids, laytp, s1, bldepth, ierr)
+            if (ierr /= UG_NOERR) then
+                call mess(LEVEL_ERROR, 'Could not write geometry to file map')
+                return
+            end if
+
+            call construct_layer_coords( hyd, layer_zs, interface_zs )
+
+            call ug_write_mesh_layer_arrays(imapfile, meshids, ierr, num_layers, laytp, layer_zs, &
+                     interface_zs, num_layers)
+
+            deallocate( layer_zs, interface_zs )
+
+            if (ierr /= nf90_noerr) then
+                call mess(LEVEL_ERROR, 'Could not write geometry to file map')
+                return
+            end if
+        endif
+
         cell_method = 'mean' !< Default cell average.
         cell_measures = ''
 
         ! add concentrations of all available substances
         ! adapt units for surfcace and sticky oil
-        unit = 'm-3'
+        unit = 'kg.m-3'
         if (oil) then
             do ifract = 1, nfract
-                unit(1 + 3 * (ifract - 1)) = 'm-2'
-                unit(3 + 3 * (ifract - 1)) = 'm-2'
+                unit(1 + 3 * (ifract - 1)) = 'kg.m-2'
+                unit(3 + 3 * (ifract - 1)) = 'kg.m-2'
             enddo
         endif
 
@@ -189,6 +229,19 @@ contains
                 ierr = ug_def_var(imapfile, id_map_depth_averaged_particle_concentration(isub), [meshids%dimids(mdim_face), id_map_layersdim, id_map_timedim], nf90_double, UG_LOC_FACE, &
                         trim(meshgeom%meshName), substnc, 'particle_concentration', &
                         substi(isub), unit(isub), cell_method, cell_measures, crs, ifill = -999, dfill = dmiss)
+
+                ! Since ug_def_var does not append the vertical coordinate to the coordinates attribute, it needs to be done
+                ! explicitly:
+                ! Check which vertical coordinate variable is present in the file, and add it to the :coordinate attribute.
+                !
+                checkvars(1:3) = [character(len=50) :: 'layer_sigma_z', 'layer_z', 'layer_sigma']
+                do i = 1, 3
+                    if (nf90_inq_varid(imapfile, trim(meshgeom%meshname)//'_'//trim(checkvars(i)), dummy_id) == NF90_NOERR) then
+                        ierr = ncu_append_atts(imapfile, id_map_depth_averaged_particle_concentration(isub), 'coordinates', &
+                                   trim(meshgeom%meshname)//'_'//trim(checkvars(i)))
+                        exit
+                    end if
+                end do
             endif
         end do
 
@@ -204,6 +257,37 @@ contains
         call realloc(work, ndx, keepExisting = .false., fill = dmiss)
 
     end subroutine unc_init_map
+
+    subroutine construct_layer_coords( hyd, layer_zs, interface_zs )
+        use m_hydmod, only: t_hydrodynamics
+        type(t_hydrodynamics), intent(in) :: hyd
+        real(kind=dp), pointer, dimension(:), intent(out) :: layer_zs
+        real(kind=dp), pointer, dimension(:), intent(out) :: interface_zs
+
+        integer :: i, j, lay, no_hyd_lay
+
+        allocate( layer_zs(1:hyd%num_layers), interface_zs(1:hyd%num_layers+1) )
+
+        layer_zs     = 0.0_dp
+        interface_zs = 0.0_dp
+
+        lay          = 1
+        do j = 1,hyd%num_layers
+            no_hyd_lay = hyd%waq_layers(j)
+
+            interface_zs(j+1) = interface_zs(j)
+            do i = lay, lay + no_hyd_lay - 1
+                interface_zs(j+1) = interface_zs(j+1) + hyd%hyd_layers(i)
+            enddo
+
+            lay = lay + no_hyd_lay
+        enddo
+
+        do j = 1,hyd%num_layers
+            layer_zs(j) = ( interface_zs(j+1) + interface_zs(j) ) / 2.0_dp
+        enddo
+
+    end subroutine construct_layer_coords
 
 
     subroutine unc_write_map()

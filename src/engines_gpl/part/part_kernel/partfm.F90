@@ -147,7 +147,7 @@ contains
         ptref = 0.0D0
 
         if (notrak > 0) call unc_init_trk()
-        call unc_init_map(hyd%crs, hyd%waqgeom, hyd%nosegl, noslay)
+        call unc_init_map(hyd%crs, hyd, hyd%waqgeom, hyd%nosegl, noslay)
 
         time0 = tstart_user
         time1 = time0
