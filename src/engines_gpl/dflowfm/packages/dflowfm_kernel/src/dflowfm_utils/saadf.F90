@@ -2804,8 +2804,8 @@ contains
 !
 !-----------------------------------------------------------------------
       ierr = 0
-      do i = 1, nrow
-         do j = 1, ncol
+      do j = 1, ncol
+         do i = 1, nrow
             dns(i, j) = 0.0d0
          end do
       end do

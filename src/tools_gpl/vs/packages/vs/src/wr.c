@@ -112,7 +112,7 @@ static BText Fg_format[] = {
     "(% 13.6e,% 13.6e) ", "(% 13.6e,% 13.6e) ", "% 13.6e ", "% 13.6e ",
     "% 13ld ", "% 13d ", "% 13ld ", "% 13d ", ""
     } ;
-
+
 /*  @@
  */
 static BVoid WR_two_dim_write (

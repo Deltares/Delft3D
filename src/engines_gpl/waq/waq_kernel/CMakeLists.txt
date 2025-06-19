@@ -16,7 +16,7 @@ set(oss_dependencies deltares_common
         waq_netcdf
         waq_hyd_data)
 
-target_link_libraries(${library_name} ${oss_dependencies})
+target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
 
 # Set additional compilation properties
 target_compile_options(${library_name} PRIVATE "${openmp_flag}")

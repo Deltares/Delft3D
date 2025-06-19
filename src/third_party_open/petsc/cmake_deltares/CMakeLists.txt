@@ -31,6 +31,7 @@ target_link_libraries(${library_name} PRIVATE no_compiler_warnings)
 
 target_include_directories(${library_name} PRIVATE ${mpi_module_path} ${mpi_include_path})
 target_include_directories(${library_name} PRIVATE ${petsc_path})
+target_link_libraries(${library_name} PRIVATE "libpetsc.lib")
 
 # Create the vfproj structure
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/.." FILES ${sources})

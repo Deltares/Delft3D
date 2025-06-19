@@ -73,8 +73,8 @@
 static TVoid read_tekal_dimension_record ( FILE *, TInt4 *, TInt4 *, TInt4 *);
 static TVoid Get_tekal_block_time( TInt4 *, TInt4 *, TString, FILE *);
 
-
-
+
+
 /* @@---------------------------------------------------
     Function:    ODSGetDimAnyTekAscMap
     Author:      Pleun Koole
@@ -213,7 +213,7 @@ TVoid ODSGetDimAnyTekAscMap (
    return ;
 
 } /* End of ODSGetDimAnyTekAscMap */
-
+
 
 /* @@---------------------------------------------------
     Function:    ODSGetParAnyTekAscMap
@@ -322,7 +322,7 @@ TVoid ODSGetParAnyTekAscMap (
     return ;
 
 } /* End of ODSGetParAnyTekAscMAp */
-
+
 /* @@---------------------------------------------------
     Function:    ODSGetTmeAnyTekAscMap
     Author:      Pleun Koole
@@ -442,7 +442,7 @@ TVoid ODSGetTmeAnyTekAscMap (
     return;
 
 } /* End of ODSGetTmeAnyTekAscMap */
-
+
  TVoid ODSGetLocAnyTekAscMap (
                      TString fname,
                      TInt4   *ftype,
@@ -503,8 +503,8 @@ TVoid ODSGetTmeAnyTekAscMap (
     return ;
 
 } /* End of ODSGetLocAnyTekAscMap */
-
-
+
+
 void ODSGetGrdAnyTekAscMap(  TString fname,
                              TInt4  itype,
                              TInt4  *indloc ,
@@ -712,7 +712,7 @@ void ODSGetGrdAnyTekAscMap(  TString fname,
     return;
 } /* End of ODSGetGrdAnyTekAscMap */
 
-
+
 TVoid ODSGetMatAnyTekAscMap (
                       TString fname,
                       TInt4   *ftype,
@@ -942,8 +942,8 @@ TVoid ODSGetMatAnyTekAscMap (
 
 } /* End of ODSGetMatAnyTekAscMap */
 
-
-
+
+
 /* @@---------------------------------------------------
     Function:    read_tekal_dimension_record
     Author:      Pleun Koole
@@ -975,7 +975,7 @@ TVoid ODSGetMatAnyTekAscMap (
 
 } /* End of read_tekal_dimension_record */
 
-
+
 /* Read all comment records and read time if any available
    returns time < 0 : error
            time = 0 : no time availble , create default time
@@ -1039,7 +1039,7 @@ static TVoid Get_tekal_block_time(
         }
       }
 }
-
+
 TReal8 Julian_from_date_time( TInt4 jjjjmmdd, TInt4 hhmmss)
 {
 

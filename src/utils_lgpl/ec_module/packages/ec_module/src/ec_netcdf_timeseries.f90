@@ -149,6 +149,8 @@ module m_ec_netcdf_timeseries
 !   Open a netCDF file, store ncid, standard names and long names ....
 !   Open only if this file is not already opened, so check the list of nc-objects first and return a pointer ....
     logical                                        :: success
+    logical                                        :: station_id_found
+    logical                                        :: time_found
     character(len=*),              intent(in)      :: ncname
     type (tEcNetCDF),              pointer         :: ncptr
     integer, optional,             intent(out)     :: iostat
@@ -164,6 +166,8 @@ module m_ec_netcdf_timeseries
     integer, allocatable :: var_ndims(:)
     
     success = .false.
+    station_id_found = .false.
+    time_found = .false.
     allocate(character(len=0) :: cf_role)
     allocate(character(len=0) :: positive)
     allocate(character(len=0) :: zunits)
@@ -223,13 +227,12 @@ module m_ec_netcdf_timeseries
 
        if (isVector) cycle    ! vector placeholder, not a real variable with data in the file
 
-       ! Check for important var: was it the stations?
+       ! Check for important var: was it the station_id?
        cf_role = ''
        ierr = ncu_get_att(ncptr%ncid,iVars,'cf_role',cf_role)
-       if (cf_role == 'timeseries_id') then 
-             nDims = 0                
-             ierr = nf90_inquire_variable(ncptr%ncid, iVars, ndims = nDims)
-             if (nDims==2) then                                                             ! If cf Role 'timeseries_id' found, compose an index timeseries id's 
+       if (cf_role == 'timeseries_id') then                                                 ! Multiple variables might have cf_role=timeseries_id
+             if (var_ndims(iVars)==2 .and. ncptr%variable_names(iVars)=='station_id') then  ! Check dims and var_name
+                ! Compose an index timeseries id's 
                 ierr = nf90_inquire_variable(ncptr%ncid, iVars, dimids = dimids_tsid)
                 tslen = ncptr%dimlen(dimids_tsid(1))                                        ! timeseries ID length 
                 nTims = ncptr%dimlen(dimids_tsid(2))                                        ! number of timeseries IDs  
@@ -239,13 +242,11 @@ module m_ec_netcdf_timeseries
                 ncptr%tsid = ''
                 do iTims=1,nTims
                    ierr = nf90_get_var(ncptr%ncid, iVars, ncptr%tsid(iTims), (/1,iTims/),(/tslen,1/)) 
-                   call replace_char(ncptr%tsid(iTims), 0, 32) ! Replace NULL char by whitespace: iachar(' ') == 32
+                   call replace_char(ncptr%tsid(iTims), 0, 32)                              ! Replace NULL char by whitespace: iachar(' ') == 32
                 end do
-                ncptr%tsidvarid  = iVars                                                       ! For convenience also store the Station ID explicitly 
+                ncptr%tsidvarid  = iVars                                                    ! For convenience also store the Station ID explicitly 
                 ncptr%tsiddimid = dimids_tsid(2)                                            ! For convenience also store the Station's dimension ID explicitly 
-             else 
-                ! timeseries_id has the wrong dimensionality
-                return  
+                station_id_found = .true.
              endif 
        end if
 
@@ -254,6 +255,7 @@ module m_ec_netcdf_timeseries
           ierr = nf90_get_att(ncptr%ncid,iVars,'units',ncptr%timeunit)                     ! Store the unit string of the time variable 
           ncptr%timevarid    = iVars                                                       ! For convenience also store the ID explicitly 
           ncptr%timedimid = var_dimids(1,iVars)
+          time_found = .true.
        endif 
 
        ! Check for important var: was it vertical layering?
@@ -284,8 +286,10 @@ module m_ec_netcdf_timeseries
     deallocate(cf_role)
     deallocate(positive)
     deallocate(zunits)
-    
-    success = .True.
+
+    if (station_id_found .and. time_found) then
+       success = .true.
+    end if
     end function ecNetCDFInit
 
     !> Scan netcdf instance for a specific quantity name and location label 

@@ -561,7 +561,6 @@ function wave_main_finish() result(retval)
       ! slave nodes only need to finalize MPI
       !
       retval = 0
-      call finalize_wave_mpi()
    endif
 end function wave_main_finish
 
@@ -594,7 +593,6 @@ function wave_master_finish() result(retval)
    enddo
    !
    call dealloc_swan(swan_run)
-   call finalize_wave_mpi()
    write(*,'(a)') 'Delft3D-WAVE finished normally.'
 end function wave_master_finish
 

@@ -357,7 +357,7 @@ static TVoid read_tekal_dimension_record ( FILE *iunit, TInt4 *nrows, TInt4 *nco
        skip_tekal_record ( iunit) ;
     }
 }
-
+
 /* @@---------------------------------------------------
     Function:    ODSGetParAnyTekAscHis
     Author:      Pleun Koole
@@ -526,7 +526,7 @@ TVoid ODSGetParAnyTekAscHis (
     return ;
 
 } /* End of ODSGetParAnyTekAscHis */
-
+
 /* @@---------------------------------------------------
     Function:    ODSGetDimAnyTekAscHis
     Author:      Pleun Koole
@@ -713,7 +713,7 @@ TVoid ODSGetDimAnyTekAscHis (
    return ;
 
 } /* End of ODSGetDimAnyTekAscHis */
-
+
 TVoid ODSGetTmeAnyTekAscHis (
                       TString fname,
                       TInt4  *ftype,
@@ -903,7 +903,7 @@ TVoid ODSGetTmeAnyTekAscHis (
     return;
 
 } /* End of ODSGetTmeAnyTekAscHis */
-
+
 TVoid ODSGetLocAnyTekAscHis (
                      TString fname,
                      TInt4   *ftype,
@@ -1058,7 +1058,7 @@ TVoid ODSGetLocAnyTekAscHis (
     return ;
 
 } /* End of ODSGetLocAnyTekAscHis */
-
+
 TVoid ODSGetMatAnyTekAscHis (
                       TString fname,
                       TInt4   *ftype,

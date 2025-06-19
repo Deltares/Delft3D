@@ -51,8 +51,8 @@ contains
       real(kind=dp) :: xr
 !     DE EERSTE IN DE TWEEDE
       dimension XR(MMAX, NMAX), X(MMAX, NMAX)
-      do I = 1, MMAX
-         do J = 1, NMAX
+      do J = 1, NMAX
+         do I = 1, MMAX
             X(I, J) = XR(I, J)
          end do
       end do

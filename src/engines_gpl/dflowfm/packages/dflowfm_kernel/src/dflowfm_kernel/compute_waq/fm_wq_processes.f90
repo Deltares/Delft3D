@@ -403,6 +403,7 @@ contains
       use m_wind, only: jawind, jarain, solar_radiation_available
       use date_time_utils, only: compute_reference_day
       use m_logger_helper, only: set_log_unit_number
+      use m_wq_processes_mpi, only: wq_processes_mpi, wq_processes_mpi_subroutines
       use m_waveconst
 
       implicit none
@@ -450,6 +451,9 @@ contains
       character(len=20), parameter :: cWaveT = 'WavePeriod'
 
       if (timon) call timstrt("fm_wq_processes_ini_proc", ithndl)
+
+      ! Register pointers to MPI subroutines
+      wq_processes_mpi = wq_processes_mpi_subroutines(wq_processes_mpi_mydomain, wq_processes_mpi_reduce_sum, wq_processes_mpi_reduce_int_max)
 
       !     try to open the lsp-file for logging output
       proc_log_file = defaultfilename('wq_lsp')
@@ -1065,7 +1069,7 @@ contains
                               waqseglay = (int(viuh(kk)) - 1) / Nglobal_s + 1
                            end if
                            klocal = global_to_local(waqseg2D)
-                           if (klocal >= 1 .and. klocal <= Ndxi .and. waqseglay >= 1 .and. waqseglay <= kmx) then
+                           if (klocal >= 1 .and. klocal <= Ndxi .and. waqseglay >= 1 .and. waqseglay <= max(1, kmx)) then
                               call getkbotktop(klocal, kb, kt)
                               painp(ipa, kk) = max(kb, kb + kmxn(kk) - waqseglay) - kbx + 1
                            else
@@ -1832,65 +1836,6 @@ contains
       return
    end subroutine copy_data_from_wq_processes_to_fm
 
-   logical function wq_processes_mydomain(iseg)
-
-      use m_fm_wq_processes
-      use m_partitioninfo
-
-      implicit none
-
-      integer :: iseg
-      if (jampi == 1) then
-         if (iseg > 0 .and. iseg <= num_cells) then
-            wq_processes_mydomain = wqmydomain(iseg)
-         else
-            wq_processes_mydomain = .false.
-         end if
-      else
-         wq_processes_mydomain = .true.
-      end if
-
-   end function wq_processes_mydomain
-
-   logical function reduce_sum_wq_processes(size_wq_processes_data, wq_processes_data)
-      use precision, only: dp
-
-      use m_partitioninfo
-
-      implicit none
-
-      integer :: size_wq_processes_data
-      real :: wq_processes_data(size_wq_processes_data)
-
-      real(kind=dp) :: mpi_wq_processes_data(size_wq_processes_data)
-      real(kind=dp) :: mpi_wq_processes_data_reduce(size_wq_processes_data)
-
-      if (jampi == 1) then
-         mpi_wq_processes_data = dble(wq_processes_data)
-         call reduce_double_sum(size_wq_processes_data, mpi_wq_processes_data, mpi_wq_processes_data_reduce)
-         wq_processes_data = real(mpi_wq_processes_data_reduce)
-      end if
-
-      reduce_sum_wq_processes = .true.
-
-   end function reduce_sum_wq_processes
-
-   logical function reduce_int_max_wq_processes(wq_processes_data)
-
-      use m_partitioninfo
-
-      implicit none
-
-      integer :: wq_processes_data
-
-      if (jampi == 1) then
-         call reduce_int1_max(wq_processes_data)
-      end if
-
-      reduce_int_max_wq_processes = .true.
-
-   end function reduce_int_max_wq_processes
-
    module subroutine default_fm_wq_processes()
       !> defaults for process library (WAQ)
       use m_fm_wq_processes
@@ -1907,4 +1852,61 @@ contains
       return
    end subroutine default_fm_wq_processes
 
+   !> The three subroutines below are can be called called within the processes library
+   !! for processes that require a check if a segment is in the current domain (and
+   !! not a ghost cell), and for MPI communication between domains (reduce_sum) when
+   !! the processes library is integrated in D-Flexible Mesh. In Delwaq there are stub
+   !! versions that return results as if it is a single domain run. By registation of
+   !! pointers to these routines in m_wq_processes_mpi, we make sure the right version
+   !! is used without having an unwanted dependency of Delwaq to MPI.
+   subroutine wq_processes_mpi_mydomain(iseg, mydomain)
+      use m_fm_wq_processes
+      use m_partitioninfo
+
+      implicit none
+
+      integer, intent(in) :: iseg
+      logical, intent(out) :: mydomain
+
+      if (jampi == 1) then
+         if (iseg > 0 .and. iseg <= num_cells) then
+            mydomain = wqmydomain(iseg)
+         else
+            mydomain = .false.
+         end if
+      else
+         mydomain = .true.
+      end if
+   end subroutine wq_processes_mpi_mydomain
+
+   subroutine wq_processes_mpi_reduce_sum(size_wq_processes_data, wq_processes_data)
+      use precision, only: dp
+      use m_waq_precision, only: real_wp
+      use m_partitioninfo
+
+      implicit none
+
+      integer, intent(in) :: size_wq_processes_data
+      real(real_wp), intent(inout) :: wq_processes_data(size_wq_processes_data)
+
+      real(kind=dp) :: mpi_wq_processes_data(size_wq_processes_data)
+      real(kind=dp) :: mpi_wq_processes_data_reduce(size_wq_processes_data)
+
+      if (jampi == 1) then
+         mpi_wq_processes_data = real(wq_processes_data, kind=dp)
+         call reduce_double_sum(size_wq_processes_data, mpi_wq_processes_data, mpi_wq_processes_data_reduce)
+         wq_processes_data = real(mpi_wq_processes_data_reduce, kind=real_wp)
+      end if
+   end subroutine wq_processes_mpi_reduce_sum
+
+   subroutine wq_processes_mpi_reduce_int_max(wq_processes_data)
+      use m_partitioninfo
+
+      implicit none
+
+      integer, intent(inout) :: wq_processes_data
+      if (jampi == 1) then
+         call reduce_int1_max(wq_processes_data)
+      end if
+   end subroutine wq_processes_mpi_reduce_int_max
 end submodule m_fm_wq_processes_sub_
