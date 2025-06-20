@@ -152,8 +152,8 @@ contains
                            Y1, Y2, Y3, Y4, &
                            mmax, nmax, imax, &
                            MFA, NFA, XRH, YRH)
-               do K = 1, MFA + 1
-                  do L = 1, NFA + 1
+               do L = 1, NFA + 1
+                  do K = 1, MFA + 1
                      KI = KI1 + K
                      LJ = LJ1 + L
                      XR(KI, LJ) = XRH(K, L)

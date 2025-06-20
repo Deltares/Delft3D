@@ -1,6 +1,6 @@
 set(executable_name dflowfm_kernel_test)
 
-file(GLOB source    src/*.f90)
+file(GLOB source src/*.f90)
 
 add_executable(${executable_name} ${source})
 
@@ -10,7 +10,7 @@ if(UNIX)
 
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PETSC      REQUIRED IMPORTED_TARGET PETSc)
+    pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
     set(oss_dependencies    deltares_common
                             deltares_common_c
@@ -46,7 +46,7 @@ if(UNIX)
                             dflowfm_kernel)
 
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
          ${oss_dependencies}
          Threads::Threads
          PkgConfig::PETSC)
@@ -100,7 +100,7 @@ target_link_directories(${executable_name} PRIVATE
                         "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                         "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
-target_link_libraries(${executable_name} ${oss_dependencies}
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
                           "comctl32.lib"
                           "wsock32.lib"
                           "netapi32.lib"
@@ -112,7 +112,6 @@ target_link_libraries(${executable_name} ${oss_dependencies}
                           "netcdf.lib"
                           "pthreadVC2.lib"
                           "${mpi_fortran_library}"
-                          "libpetsc.lib"
                           "tecio.lib")
 
 

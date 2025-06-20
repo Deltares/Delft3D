@@ -71,7 +71,6 @@ if (WIN32)
     target_link_libraries(${library_name} PRIVATE
                           "pthreadVC2.lib"
                           "tecio.lib"
-                          "libpetsc.lib"
                           "${mpi_fortran_library}"
     )
 
@@ -97,4 +96,5 @@ set(build_dir ${CMAKE_BINARY_DIR})
 
 install(TARGETS ${library_name}
          RUNTIME DESTINATION lib
+         LIBRARY DESTINATION lib
 )

@@ -96,12 +96,12 @@ module m_dambreak_breach
 
       module subroutine update_dambreak_administration(dambridx, lftopol)
          integer, dimension(:), intent(in) :: dambridx !< the index of the dambreak in the structure list.
-         integer, dimension(:), intent(in) :: lftopol !< the link number of the flow link.
+         integer, dimension(:), intent(in) :: lftopol !< the mapping array from flow link to intersecting polyline segment.
       end subroutine update_dambreak_administration
 
       module subroutine update_dambreak_administration_old(dambridx, lftopol)
          integer, dimension(:), intent(in) :: dambridx !< the index of the dambreak in the structure list.
-         integer, dimension(:), intent(in) :: lftopol !< the link number of the flow link.
+         integer, dimension(:), intent(in) :: lftopol !< the mapping array from flow link to intersecting polyline segment.
       end subroutine update_dambreak_administration_old
 
       pure module subroutine indicate_links_that_contain_dambreaks(does_link_contain_structures)
@@ -127,12 +127,12 @@ module m_dambreak_breach
          integer, dimension(:), allocatable :: res !< the dambreak links
       end function retrieve_set_of_flowlinks_dambreak
 
-      module subroutine update_counters_for_dambreaks(id, numgen, dambridx, i, kedb, kegen)
+      module subroutine update_counters_for_dambreaks(id, number_of_links, dambridx, index_structure, kedb, kegen)
          character(len=*), intent(in) :: id !< the id of the structure.
-         integer, intent(in) :: numgen !< the number of flow links.
+         integer, intent(in) :: number_of_links !< the number of flow links.
          integer, dimension(:), allocatable, intent(inout) :: dambridx !< the index of the structure.
-         integer, intent(in) :: i !< the index of the structure.
-         integer, dimension(:), allocatable, intent(inout) :: kedb !< edge oriented dambreak??? Do we need this array?
+         integer, intent(in) :: index_structure !< the index of the structure.
+         integer, dimension(:), allocatable, intent(inout) :: kedb !< edge oriented dambreak
          integer, dimension(:), allocatable, intent(in) :: kegen !< placeholder for the link snapping of all structure types.
       end subroutine update_counters_for_dambreaks
 

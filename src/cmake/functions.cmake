@@ -309,7 +309,7 @@ function(create_test test_name)
 
     # Link libraries, include ftnunit in dependencies
     set(op_dependencies ftnunit ${op_dependencies})
-    target_link_libraries(${test_name} ${op_dependencies})
+    target_link_libraries(${test_name} PRIVATE ${op_dependencies})
 
     # Other link libraries
     if (WIN32)

@@ -56,7 +56,6 @@ integer, parameter    :: SWAN_DONE = 2
 integer, target       :: engine_comm_world = MPI_COMM_NULL   !< communicator to be used by D-Waves (can be get/set via BMI)
 integer               :: numranks = 1                        !< number of ranks
 integer               :: my_rank = 0                         !< own rank
-logical               :: mpi_initialized_by_engine = .FALSE. !< flag indicating whether MPI has been initialized by this engine (if so, finalize as well)
 private               :: running_in_mpi_environment
 !
     contains
@@ -82,7 +81,6 @@ subroutine initialize_wave_mpi()
    !
    ! MPI mode
    !
-   mpi_initialized_by_engine  = .FALSE.
    if ( running_in_mpi_environment() ) then
       ! Running inside MPI environment.
       ! * parallel wave.exe
@@ -126,16 +124,6 @@ end subroutine initialize_wave_mpi
 !
 !
 !===============================================================================
-subroutine finalize_wave_mpi()
-   integer :: ierr
-#ifdef HAVE_MPI
-   if (mpi_initialized_by_engine) then
-      call mpi_finalize(ierr)
-   endif
-#endif
-end subroutine finalize_wave_mpi
-
-
 subroutine wave_mpi_bcast(command, ierr)
    integer :: command
    integer :: ierr

@@ -49,8 +49,8 @@ contains
       integer :: nmax
       real(kind=dp) :: x
       dimension X(MMAX, NMAX)
-      do I = 1, MMAX
-         do J = 1, NMAX
+      do J = 1, NMAX
+         do I = 1, MMAX
             X(I, J) = 0d0
          end do
       end do

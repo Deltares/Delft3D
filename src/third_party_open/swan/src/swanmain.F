@@ -985,7 +985,7 @@
       WRITE (VERTXT, '(F5.2)') VERNUM                                     40.03
 !      CALL BUGFIX ('A')
 !      CALL BUGFIX ('B')
-      VERTXT ='41.51.2'
+      VERTXT ='41.51.3'
       IF (SIZEOF(GRAV) == 8) THEN
         VERTXT = TRIM(VERTXT) // " Double-Prec."
       END IF
