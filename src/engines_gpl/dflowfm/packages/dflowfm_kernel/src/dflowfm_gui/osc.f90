@@ -35,9 +35,9 @@ module m_osc
    implicit none
 contains
    subroutine OSC(KEY)
-      use m_devices
+      use m_devices, only: nopsys, npx, npy, ncolr
+      use m_help, only: help
       use messagehandling, only: msgbuf, msg_flush
-      use m_help
 
       integer :: infoinput
       integer :: ixp

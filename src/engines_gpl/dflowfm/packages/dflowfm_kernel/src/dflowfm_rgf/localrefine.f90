@@ -33,8 +33,8 @@ module m_local_refine
    implicit none
 contains
    subroutine LOCALREFINE(num, m1, n1, m2, n2, NOPTION)
-      use m_refine
-      use m_derefine
+      use m_refine, only: refine
+      use m_derefine, only: derefine
 
       integer :: num, m1, m2, n1, n2, NOPTION
 

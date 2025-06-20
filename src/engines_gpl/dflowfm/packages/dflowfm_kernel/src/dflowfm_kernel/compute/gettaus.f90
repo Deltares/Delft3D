@@ -55,8 +55,8 @@ contains
       integer :: ierr !< Error code
       integer :: n !< Counter
       integer :: jawaveswartdelwaq_local !< Local value of jawaveswartdelwaq, depending on kernel and flowWithoutWaves
-      integer, PARAMETER :: USE_DFLOWFM = 1
-      integer, PARAMETER :: SET_CZS_TAUS = 1
+      integer, parameter :: USE_DFLOWFM = 1
+      integer, parameter :: SET_CZS_TAUS = 1
       !
       ! Body
       if (flowWithoutWaves .and. kernel == USE_DFLOWFM) then

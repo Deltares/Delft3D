@@ -38,9 +38,9 @@ contains
 
    subroutine ARROWrcir(X0, Y0, cs, sn)
       use precision, only: dp
-      use M_WEARELT
-      use m_movabs
-      use m_lnabs
+      use M_WEARELT, only: rcir
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       implicit none
       real(kind=dp) :: cs
       integer :: i

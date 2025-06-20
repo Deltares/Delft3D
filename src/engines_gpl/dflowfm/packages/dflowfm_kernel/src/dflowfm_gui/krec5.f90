@@ -34,7 +34,7 @@ module m_krec5
 contains
    subroutine KREC5(XX, YY, XD, YD)
       use precision, only: dp
-      use m_pfiller_core
+      use m_pfiller_core, only: pfillercore
 
       real(kind=dp) :: xd
       real(kind=dp) :: xx

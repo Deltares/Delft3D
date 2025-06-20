@@ -35,8 +35,7 @@ contains
    !> initialize sferical coordinate frame
    subroutine inisferic()
       use precision, only: dp
-      use m_sferic
-      use m_physcoef
+      use m_sferic, only: pi, twopi, dg2rd, rd2dg, omega, fcorio, anglat, dy2dg, ra
 
       real(kind=dp) :: sidereal
       pi = acos(-1d0)

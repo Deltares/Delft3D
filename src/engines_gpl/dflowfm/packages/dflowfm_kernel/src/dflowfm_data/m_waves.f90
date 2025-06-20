@@ -109,7 +109,6 @@ contains
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, only call reset_waves() instead.
    subroutine default_waves()
-      use m_physcoef
 
       rouwav = 'FR84'
       gammax = 1.0d0 !< Maximum wave height/water depth ratio

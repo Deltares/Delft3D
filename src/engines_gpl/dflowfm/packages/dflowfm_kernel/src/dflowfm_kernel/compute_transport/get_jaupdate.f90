@@ -42,7 +42,7 @@ module m_get_jaupdate
 contains
 
    subroutine get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
-      use timers
+      use timers, only: timon, timstrt, timstop
 
       implicit none
 

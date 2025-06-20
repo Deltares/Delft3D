@@ -230,7 +230,7 @@ contains
       ! Get executable directory
       call get_executable_directory(exe_dir, ISTAT)
       interacter_share_dir = trim(exe_dir)//'../share/interacter/'
-      
+
       call readIniFile(inifilename, ini_ptr, errmsg=msgbuf, istat=istat)
       if (istat /= 0) then
          ! try reading unstruc.ini from install directory
@@ -520,14 +520,14 @@ contains
          call oldfil(mhlp, filnam)
       else
          full_path = trim(interacter_share_dir)//trim(filnam)
-         inquire (file=full_path, exist=jawel)    
+         inquire (file=full_path, exist=jawel)
          if (jawel) then
             call oldfil(mhlp, full_path)
          else
             call sysfil(mhlp, filnam)
          end if
       end if
-      
+
    end subroutine initGUI
 
    subroutine makeunstrucini(filnam, istat)
@@ -636,7 +636,7 @@ contains
          write (mout, '(a)') 'NTEK             = 10    # Nr of user timesteps between two redraws     '
          write (mout, '(a)') 'PLOTTOFILE       = 0     # Produce hardcopy (1) or not (0)              '
          write (mout, '(a)') 'JAOPENGL         = 1     # 1 : use OpenGL, 0 : use Interacter           '
-         write (mout, '(a)') 'JAFULLBOTTOMLINE = 0     # Full explanation yes/no                      ' 
+         write (mout, '(a)') 'JAFULLBOTTOMLINE = 0     # Full explanation yes/no                      '
       end if
 
       call doclose(mout)

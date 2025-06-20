@@ -43,8 +43,8 @@ module m_allocate_samplehessian
 contains
 
    subroutine allocate_sampleHessian()
-      use m_samples
-      use m_samples_refine
+      use m_samples, only: mxsam, mysam
+      use m_samples_refine, only: zss, ndim, ihesstat, ihesstat_dirty
 
       call deallocate_sampleHessian()
 

@@ -40,11 +40,11 @@ contains
 
    subroutine DISP3C(X, Y, Z, NCL, N, RCIR, NCOL)
       use precision, only: dp
-      use m_cir
-      use M_MISSING
-      use m_halt2
-      use m_jgrline8
-      use m_set_col
+      use m_cir, only: cir
+      use M_MISSING, only: dmiss
+      use m_halt2, only: halt2
+      use m_jgrline8, only: jgrline8
+      use m_set_col, only: setcol
       implicit none
       integer :: i
       integer :: istart

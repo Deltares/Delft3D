@@ -43,8 +43,8 @@ contains
       use m_gridsettings, only: mfac, nfac
       use messagehandling, only: LEVEL_DEBUG, mess
       use m_missing, only: dmiss
-      use m_readyy
-      use m_qnerror
+      use m_readyy, only: readyy
+      use m_qnerror, only: qnerror
 
       integer :: m1, n1, m2, n2, num
       integer :: I, J, IR, INOW, JR, JNOW, MFA, NFA, MFAA, NFAA, MD, ND

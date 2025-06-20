@@ -38,9 +38,9 @@ contains
 
    subroutine plotCross(x, y)
       use precision, only: dp
-      use m_wearelt
-      use m_movabs
-      use m_lnabs
+      use m_wearelt, only: rcir
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
 
       real(kind=dp) :: x
       real(kind=dp) :: y

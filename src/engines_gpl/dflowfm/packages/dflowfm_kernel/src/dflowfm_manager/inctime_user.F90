@@ -79,7 +79,7 @@ contains
 ! todo, wcxyl op randen is niet goed doordat acl op randen niet goed is doordat meteomodule niet werkt met xz,yz in gespiegelde
 ! binnencelpunten. graag goed zetten
    subroutine inctime_user()
-      use m_flowtimes
+      use m_flowtimes, only: time1, time_user, dt_user, tstop_user, dnt_user
 
       if (time1 >= time_user) then
          ! If not, current time_user was not yet reached (user interrupt in interface)

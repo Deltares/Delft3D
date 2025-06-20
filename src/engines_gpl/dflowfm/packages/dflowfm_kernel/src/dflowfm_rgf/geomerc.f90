@@ -42,7 +42,7 @@ contains
 
    subroutine GEOMERC(XG, YG, XX, YY)
       use precision, only: dp
-      use M_SFERIC
+      use M_SFERIC, only: dg2rd, ra
 
       real(kind=dp) :: XX, YY, XG, YG, FI2, YC, CY, F, E
       real(kind=dp) :: a

@@ -47,7 +47,7 @@ contains
       use m_sferic, only: twopi
       use m_get_link1
       use m_wind, only: wx, wy
-      
+
       implicit none
 
       integer :: k

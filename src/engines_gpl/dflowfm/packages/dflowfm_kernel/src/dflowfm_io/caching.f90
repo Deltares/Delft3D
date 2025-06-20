@@ -186,19 +186,19 @@ contains
    subroutine load_caching_file(base_name, net_file, use_caching)
       use m_partitioninfo, only: logical_and_across_partitions
       use messagehandling, only: LEVEL_WARN, mess
-      
+
       character(len=*), intent(in) :: base_name !< base_name to construct the name of the cache file (typically md_ident).
       character(len=*), intent(in) :: net_file !< Full name of the network file
       logical, intent(inout) :: use_caching !< Use the cache file if true. Might be reset to false if some errors forbid the use of caching.
-      
+
       logical :: all_cache_success
-      
+
       call load_caching_file_single_partition(base_name, net_file, use_caching)
-      
+
       call logical_and_across_partitions(cache_success, all_cache_success)
       if (cache_success .and. .not. all_cache_success) then
-          call mess(LEVEL_WARN, 'Some partitions failed to load cache file. Proceeding with normal initialization.')
-          cache_success = .false.
+         call mess(LEVEL_WARN, 'Some partitions failed to load cache file. Proceeding with normal initialization.')
+         cache_success = .false.
       end if
    end subroutine load_caching_file
 
@@ -683,8 +683,8 @@ contains
             write (lun) number_flow_links, number_polyline_points
             write (lun) thin_dams(i)%np, thin_dams(i)%lnx
             if (number_polyline_points > 0) then
-            write (lun) thin_dams(i)%xp(1:number_polyline_points), thin_dams(i)%yp(1:number_polyline_points), &
-               thin_dams(i)%zp(1:number_polyline_points)
+               write (lun) thin_dams(i)%xp(1:number_polyline_points), thin_dams(i)%yp(1:number_polyline_points), &
+                  thin_dams(i)%zp(1:number_polyline_points)
             end if
             if (thin_dams(i)%lnx > 0) then
                write (lun) thin_dams(i)%ln(1:number_flow_links), thin_dams(i)%indexp(1:number_flow_links), &

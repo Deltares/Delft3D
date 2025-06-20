@@ -39,8 +39,8 @@ contains
    subroutine DMOVABS(XD, YD, ZD)
       use precision, only: dp
       use m_oldz, only: oz
-      use m_three_two
-      use m_movabs
+      use m_three_two, only: drietwee
+      use m_movabs, only: movabs
 
       real(kind=dp) :: x
       real(kind=dp) :: y

@@ -44,7 +44,7 @@ contains
       use precision, only: dp
 !     GEEF AANTAL SPLINES MC EN MAXIMUM AANTAL PUNTEN OP SPLINE NC
 !      USE DIMENS
-      use m_numpold
+      use m_numpold, only: numpold
 
       integer :: mc, nc, mmax, nmax
       real(kind=dp) :: X(MMAX, NMAX)

@@ -38,8 +38,8 @@ contains
 
    subroutine SETTEXTSIZEFAC(T)
       use precision, only: dp
-      use unstruc_opengl
-      use m_textsize
+      use unstruc_opengl, only: inopenglrendering, settextheight, fontsize
+      use m_textsize, only: tsize
       implicit none
       real(kind=dp) :: t
 

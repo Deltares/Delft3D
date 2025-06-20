@@ -42,7 +42,7 @@ contains
 
    subroutine TRAROT(XX, YY, XG, YG)
       use precision, only: dp
-      use M_MAPPROPARAMETERS
+      use M_MAPPROPARAMETERS, only: xce, xf, yce, yf, deltx, cse, sne, delty
 
       real(kind=dp) :: XX, YY, XG, YG
       XX = (XX - XCE) * XF

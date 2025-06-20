@@ -112,7 +112,7 @@ contains
             else
                au(L) = hpr1 * wu(L)
                if (frcn > 0) then
-                Cz = get_chezy(hu(L), frcn, u1(L), v(L), friction_type)
+                  Cz = get_chezy(hu(L), frcn, u1(L), v(L), friction_type)
                   cfuhi(L) = ag / (hu(L) * Cz * Cz)
                else
                   cfuhi(L) = 0d0

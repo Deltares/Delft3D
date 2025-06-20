@@ -41,7 +41,7 @@ module m_reathd2pli
 contains
 
    subroutine reathd2pli(mthd, mout) ! convert d3d obs file to model independent
-      use m_grid
+      use m_grid, only: xc, yc
       use m_filez, only: doclose
 
       integer :: mthd, mout

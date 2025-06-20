@@ -64,7 +64,7 @@ contains
       character(len=256) :: msg
 
       integer :: i, itrace, ised, isf, ifrac, isys
-      LOGICAL :: allocate_transport
+      logical :: allocate_transport
 
       NUMCONST = 0
       ISALT = 0
@@ -130,19 +130,18 @@ contains
       end select
 
       !Allocate arrays for transport, if necessary.
-      allocate_transport=.false.
+      allocate_transport = .false.
       if (numconst > 0 .or. bfmpar%lfbedfrm) then
-         allocate_transport=.true.
-      endif
+         allocate_transport = .true.
+      end if
       if (jased > 0 .and. stm_included) then
          if (stmpar%morlyr%settings%active_layer_diffusion > 0) then !`morlyr` is undefined if `jased=0`, but it is associated, so you cannot check `associated`.
-            allocate_transport=.true.
-         endif
-      endif
+            allocate_transport = .true.
+         end if
+      end if
       if (allocate_transport) then
          call alloc_transport(.false.)
-      endif
-      
+      end if
 
       if (ISALT > 0) then
          if (javasal == 6) then

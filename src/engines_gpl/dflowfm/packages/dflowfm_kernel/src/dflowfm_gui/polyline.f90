@@ -38,8 +38,8 @@ contains
 
    subroutine POLYLINE(XR, YR, N)
       use unstruc_opengl, only: InOpenGLRendering
-      use m_movabs_nop
-      use m_lnabs_nop
+      use m_movabs_nop, only: movabsnop
+      use m_lnabs_nop, only: lnabsnop
 
       integer :: n, I
       real xr(N), yr(N)

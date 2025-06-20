@@ -34,8 +34,8 @@ module m_htext
 contains
    subroutine HTEXT(VAL, X, Y)
       use precision, only: dp
-      use m_colnow
-      use m_draw_text
+      use m_colnow, only: ncolnow
+      use m_draw_text, only: drawtext
 
       real(kind=dp) :: val
       real(kind=dp) :: x

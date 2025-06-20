@@ -34,14 +34,14 @@
 !! A buffer 'msgbuf' is available to write to.
 module unstruc_messages
    use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, SetMessagehandling, set_msgbox_callback, mess
-   
+
    implicit none
 
    private
-   
+
    public :: MAXERRPRINT, threshold_abort, loglevel_file, loglevel_StdOut, &
-       initMessaging, callback_msg, unstruc_errorhandler
-   
+             initMessaging, callback_msg, unstruc_errorhandler
+
    logical, parameter, private :: printToStdout = .true.
    integer :: threshold_abort = LEVEL_ERROR
 
@@ -63,7 +63,7 @@ module unstruc_messages
          character(len=*), intent(in) :: message !< log message
       end subroutine unstruc_errorhandler
    end interface
-    
+
 contains
 
 !> Initializes the MessageHandling module with the mdia file pointer.

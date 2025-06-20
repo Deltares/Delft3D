@@ -39,17 +39,17 @@ contains
    subroutine CHANGEGRIDPARAMETERS()
       use precision, only: dp
       use m_grid, only: mc, mmax, nmax, nc
-      use m_gridsettings
-      use m_sferic
-      use unstruc_colors
-      use unstruc_display_data
-      use m_polygon
+      use m_gridsettings, only: jdemo, mfac, nfac, itsmo, csmo, rfac, baas2, keepstartdir, splfac, splfac2, facmir, pil_rad, pil_x, pil_y
+      use m_sferic, only: jsferic, jsfertek, twopi
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use unstruc_display_data, only: npos
+      use m_polygon, only: maxpol, increasepol, xpl, ypl, npl
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
       use dflowfm_version_module, only: company, product_name
-      use m_helpnow
-      use m_save_keys
-      use m_restore_keys
-      use m_help
-      use m_highlight_form_line
       implicit none
 
       integer :: numpar, numfld, numparactual, numfldactual

@@ -84,7 +84,7 @@ contains
       wind_stress_water_density_option = 0
 
    end subroutine default_heatfluxes
-   
+
    !> calculate derived coefficients for heatfluxes
    subroutine calculate_derived_coefficients_heatfluxes()
       use m_physcoef, only: rhomean

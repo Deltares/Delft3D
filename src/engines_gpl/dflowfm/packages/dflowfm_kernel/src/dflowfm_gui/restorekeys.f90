@@ -33,7 +33,7 @@ module m_restore_keys
    implicit none
 contains
    subroutine RESTOREKEYS()
-      use m_keycodes
+      use m_keycodes, only: maxkey, keycod
 
       integer :: i
 

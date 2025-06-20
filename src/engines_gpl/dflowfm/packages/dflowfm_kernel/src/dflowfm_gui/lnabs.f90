@@ -35,7 +35,7 @@ contains
    subroutine LNABS(X, Y)
       use precision, only: dp
       use unstruc_opengl, only: InOpenGLRendering, LineTo
-      use m_dproject
+      use m_dproject, only: dproject
 
       real(kind=dp) :: x, y, xx, yy
 

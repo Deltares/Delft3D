@@ -38,7 +38,7 @@ contains
 
    subroutine inkade(sx2, sy2, i, j)
       use precision, only: dp
-      use m_ship
+      use m_ship, only: xmxs, xmns, ymxs, ymns
       implicit none
       integer :: i, j
       real(kind=dp) :: sx2, sy2

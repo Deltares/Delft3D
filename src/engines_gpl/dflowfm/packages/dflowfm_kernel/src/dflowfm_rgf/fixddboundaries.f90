@@ -41,7 +41,7 @@ module m_fixddboundaries
 contains
 
    subroutine FIXDDBOUNDARIES()
-      use m_grid
+      use m_grid, only: ijc
       use m_grid_block, only: npt
 
       integer :: i

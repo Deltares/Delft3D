@@ -2706,9 +2706,9 @@ contains
 
          real(kind=dp) :: alpha, alpha1
 
-         allocate(ww2(nmkx2))
-         allocate(u_temp(numk))
-         
+         allocate (ww2(nmkx2))
+         allocate (u_temp(numk))
+
          alpha = 0.5d0
 
          alpha1 = 1d0 - alpha

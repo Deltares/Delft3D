@@ -35,7 +35,7 @@
 module m_physcoef
    use precision, only: dp
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
-   
+
    implicit none
 
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)

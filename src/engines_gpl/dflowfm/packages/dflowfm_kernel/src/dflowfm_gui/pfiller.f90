@@ -36,12 +36,11 @@ contains
       use precision, only: dp
       use unstruc_opengl, only: inopenglrendering
       use m_sferic, only: jsfertek
-      use m_colnow
-      use m_drawthis
-      use m_dproject
-      use m_set_col
-      use m_realpolygon
-      use m_pfiller_core
+      use m_drawthis, only: ndraw
+      use m_dproject, only: dproject
+      use m_set_col, only: setcol
+      use m_realpolygon, only: realpolygon
+      use m_pfiller_core, only: pfillercore
 
       integer :: N_
       integer :: nclr

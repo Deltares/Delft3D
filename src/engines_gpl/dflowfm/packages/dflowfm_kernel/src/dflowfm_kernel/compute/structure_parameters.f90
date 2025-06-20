@@ -35,11 +35,11 @@ module m_structure_parameters
    public :: structure_parameters
 contains
 
-    subroutine structure_parameters
+   subroutine structure_parameters
       use m_flowgeom, only: ln, wu
       use m_flow
       use m_structures
-      use fm_external_forcings_data, only: ngenstru 
+      use fm_external_forcings_data, only: ngenstru
       use m_partitioninfo, only: jampi, reducebuf, nreducebuf, my_rank, idomain, reduce_crs
       use m_flowtimes
       use m_missing, only: dmiss

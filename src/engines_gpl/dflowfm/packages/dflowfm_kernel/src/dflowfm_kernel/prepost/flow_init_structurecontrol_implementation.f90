@@ -38,12 +38,12 @@ contains
       use m_flowgeom, only: lnx, wu, ln, bob0
       use m_netw, only: numl
       use unstruc_channel_flow, only: initialize_compounds, initialize_structure_links, &
-          update_lin2str_admin
+                                      update_lin2str_admin
       use m_structures ! Jan's channel_flow for Sobek's generalstructure (TODO)
       use m_GlobalParameters, only: ST_DAMBREAK, ST_PUMP, ST_WEIR, ST_GENERAL_ST, ST_ORIFICE, ST_GATE, &
-          ST_UNI_WEIR, ST_CULVERT, ST_BRIDGE, ST_LONGCULVERT
+                                    ST_UNI_WEIR, ST_CULVERT, ST_BRIDGE, ST_LONGCULVERT
       use timespace, only: LOCTP_BRANCHID_CHAINAGE, LOCTP_POLYLINE_XY, LOCTP_UNKNOWN, &
-          selectelset_internal_links, selectelset_internal_nodes
+                           selectelset_internal_links, selectelset_internal_nodes
       use m_meteo
       use fm_external_forcings, only: adduniformtimerelation_objects
       use fm_external_forcings_data, only: npumpsg
@@ -56,9 +56,9 @@ contains
       use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration
       use m_update_counters_for_structures, only: update_counters_for_dambreak_or_pump
       use m_1d_structures, only: update_bedlevels_for_bridges
-      
+
       logical :: status
-      
+
       integer :: i, link, k, n
       integer :: num_dambreak_links, numgen
       integer, dimension(:), allocatable :: pumpidx, dambridx
@@ -81,25 +81,25 @@ contains
          return
       end if
 
-      allocate(lftopol(numl))
-      allocate(pumpidx(network%sts%Count))
-      allocate(dambridx(network%sts%Count), source=-1)
+      allocate (lftopol(numl))
+      allocate (pumpidx(network%sts%Count))
+      allocate (dambridx(network%sts%Count), source=-1)
       !
       ! Some structures may have already been read by flow1d's readStructures into network.
       !
       do i = 1, network%forcinglist%Count
-         associate(pfrc => network%forcinglist%forcing(i))
+         associate (pfrc => network%forcinglist%forcing(i))
             qid = trim(pfrc%quantity_id) ! e.g., qid = 'pump_capacity'
             filename = trim(pfrc%filename)
             if (.not. strcmpi(filename, 'REALTIME')) then
                call resolvePath(filename, md_structurefile_dir)
                call resolvePath(filename, md_structurefile_dir)
             end if
-            ! Time-interpolated value will be placed in structure's appropriate member field, available in 
+            ! Time-interpolated value will be placed in structure's appropriate member field, available in
             ! %targetptr, when calling ec_gettimespacevalue.
             call c_f_pointer(c_loc(pfrc%targetptr), tgtarr, [1])
             success = adduniformtimerelation_objects(qid, '', trim(pfrc%object_type), trim(pfrc%object_id), &
-                      trim(pfrc%param_name), filename, 1, 1, tgtarr)
+                                                     trim(pfrc%param_name), filename, 1, 1, tgtarr)
          end associate
       end do
 
@@ -146,8 +146,8 @@ contains
       end do
 
       call update_lin2str_admin(network)
-      
-      call update_bedlevels_for_bridges(network%sts, bob0)      
+
+      call update_bedlevels_for_bridges(network%sts, bob0)
 
       if (network%cmps%Count > 0) then
          i_status = max(i_status, initialize_compounds(network%cmps, network%sts))
@@ -162,14 +162,14 @@ contains
          call realloc(qpump, npumpsg, fill=0.0_dp)
 
          if (npump > 0) then
-            call realloc(kpump, [3, npump], fill = 0)
+            call realloc(kpump, [3, npump], fill=0)
          end if
 
          do n = 1, npumpsg
             do k = L1pumpsg(n), L2pumpsg(n)
                kpump(3, k) = kep(k)
-               link = abs(kpump(3, k) )
-               if (kpump(3, k)  > 0) then
+               link = abs(kpump(3, k))
+               if (kpump(3, k) > 0) then
                   kpump(1, k) = ln(1, link)
                   kpump(2, k) = ln(2, link)
                else
@@ -240,11 +240,11 @@ contains
       use m_netw, only: numl
       use fm_external_forcings, only: adduniformtimerelation_objects
       use unstruc_channel_flow, only: t_forcing, t_structure, initialize_structure_links, initialize_compounds, &
-          addstructure, getstructype_from_string, update_lin2str_admin
-      use m_structures! Jan's channel_flow for Sobek's generalstructure (TODO)
+                                      addstructure, getstructype_from_string, update_lin2str_admin
+      use m_structures ! Jan's channel_flow for Sobek's generalstructure (TODO)
       use m_strucs ! Herman's generalstructure
       use timespace, only: LOCTP_BRANCHID_CHAINAGE, LOCTP_POLYLINE_XY, LOCTP_UNKNOWN, &
-          selectelset_internal_links, LOCTP_POLYLINE_FILE, UNIFORM, SPACEANDTIME, FOURIER, JUSTUPDATE
+                           selectelset_internal_links, LOCTP_POLYLINE_FILE, UNIFORM, SPACEANDTIME, FOURIER, JUSTUPDATE
       use m_meteo
       use m_readstructures, only: readpump
       use unstruc_model, only: md_structurefile_dir
@@ -257,7 +257,7 @@ contains
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
       use m_dambreak_breach, only: add_dambreak_signal, update_dambreak_administration_old
-                                   
+
       logical :: status
       character(len=256) :: plifile
       integer :: i, L, Lf, kb, ierr, k, kbi, n, ifld
@@ -1003,7 +1003,7 @@ contains
                      end if
                   end if
                   if (.not. success) then
-                      return
+                     return
                   end if
                end do
 
@@ -1393,7 +1393,7 @@ contains
       integer, dimension(:), intent(in) :: links !< flow links on hydraulic structures.
 
       integer :: i, nn, n12, kk
-      
+
       do i = 1, ubound(links, 1)
          do nn = 1, 2
             n12 = ln(nn, abs(links(i)))
@@ -1402,7 +1402,7 @@ contains
             end do
          end do
       end do
-      
+
    end subroutine set_teta_of_1_to_neighbours
 
 end submodule flow_init_structurecontrol_implementation

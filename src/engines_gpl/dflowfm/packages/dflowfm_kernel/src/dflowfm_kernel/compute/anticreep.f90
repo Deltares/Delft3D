@@ -225,16 +225,16 @@ contains
          if (jasal > 0) then
             cl = constituents(isalt, kl2)
             if (kl1 >= kbl .and. kl1 <= ktl) then
-                cl = ((pocol(kl2 - kbl + 1) - pocor(krr)) * constituents(isalt, kl1) &
-                                                   + (pocor(krr) - pocol(kl1 - kbl + 1)) * constituents(isalt, kl2)) &
-                                                  / (pocol(kl2 - kbl + 1) - pocol(kl1 - kbl + 1))
-                end if
+               cl = ((pocol(kl2 - kbl + 1) - pocor(krr)) * constituents(isalt, kl1) &
+                     + (pocor(krr) - pocol(kl1 - kbl + 1)) * constituents(isalt, kl2)) &
+                    / (pocol(kl2 - kbl + 1) - pocol(kl1 - kbl + 1))
+            end if
             cr = constituents(isalt, kr2)
-            if (kr1 >= kbr .and. kr1 <= ktr) then 
-                cr = ((pocor(kr2 - kbr + 1) - pocol(kll)) * constituents(isalt, kr1) &
-                                                   + (pocol(kll) - pocor(kr1 - kbr + 1)) * constituents(isalt, kr2)) &
-                                                  / (pocor(kr2 - kbr + 1) - pocor(kr1 - kbr + 1))
-                end if
+            if (kr1 >= kbr .and. kr1 <= ktr) then
+               cr = ((pocor(kr2 - kbr + 1) - pocol(kll)) * constituents(isalt, kr1) &
+                     + (pocol(kll) - pocor(kr1 - kbr + 1)) * constituents(isalt, kr2)) &
+                    / (pocor(kr2 - kbr + 1) - pocor(kr1 - kbr + 1))
+            end if
             grad1 = (constituents(isalt, kr) - cl) ! / dx(L)
             grad2 = (cr - constituents(isalt, kL)) ! / dx(L)
             grad = 0.0_dp
@@ -267,9 +267,9 @@ contains
             grad1 = (constituents(itemp, kr) - cl) ! / dx(L)
             grad2 = (cr - constituents(itemp, kl)) ! / dx(L)
             grad = 0.0_dp
-            if (grad1 * grad2 > 0.0_dp) then 
-                grad = 2.0_dp * grad1 * grad2 / (grad1 + grad2)
-                end if
+            if (grad1 * grad2 > 0.0_dp) then
+               grad = 2.0_dp * grad1 * grad2 / (grad1 + grad2)
+            end if
             temp = acl(L) * constituents(itemp, kl) + (1.0_dp - acl(L)) * constituents(itemp, kr)
             sal = backgroundsalinity
             if (jasal > 0) then

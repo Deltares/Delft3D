@@ -41,7 +41,7 @@ module m_resetb
 contains
 
    subroutine RESETB(NPUT)
-      use m_grid_block
+      use m_grid_block, only: mb, nb, npt, mb2, nb2, npt2, nputo
 
       integer :: nput
 

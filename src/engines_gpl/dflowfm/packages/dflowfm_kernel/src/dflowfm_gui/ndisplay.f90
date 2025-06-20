@@ -66,7 +66,7 @@ contains
       use m_set_branch_lc
       use m_filez, only: oldfil, doclose, message
       use m_wind, only: jawind
-      
+
       integer :: ium
       integer :: maxopt
       integer :: nputz

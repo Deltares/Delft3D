@@ -37,8 +37,8 @@ module m_alloc_jacobi
 contains
 
    subroutine alloc_jacobi(ndx, lnx)
-      use m_jacobi
-      use m_alloc
+      use m_jacobi, only: ndxjac, lnxjac, bbi, db, rr
+      use m_alloc, only: aerr
       integer :: ndx, lnx, ierr
 
       if (ndx == ndxjac .and. lnx == lnxjac) return

@@ -43,7 +43,7 @@ contains
 
    subroutine movespline(ispline, inode, xp, yp)
       use precision, only: dp
-      use m_splines
+      use m_splines, only: nump, maxspl, xsp, ysp, maxsplen
 
       integer, intent(in) :: ispline !< spline number
       integer, intent(in) :: inode !< spline control point

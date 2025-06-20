@@ -34,8 +34,8 @@ module m_get_samples_boundingbox
 contains
 !>    determine sample bounding box
    subroutine get_samples_boundingbox()
-      use m_samples
-      use m_missing
+      use m_samples, only: xsammin, xsammax, ysammin, ysammax, ns, xs, ys, zs
+      use m_missing, only: dmiss
 
       integer :: i
 

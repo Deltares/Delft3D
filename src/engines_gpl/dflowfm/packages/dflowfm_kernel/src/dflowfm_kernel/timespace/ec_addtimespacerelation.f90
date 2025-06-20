@@ -51,7 +51,7 @@ contains
       use timespace_parameters
       use timespace
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
-      use m_transportdata, only : NAMLEN
+      use m_transportdata, only: NAMLEN
       use timespace_read, only: maxnamelen
       use precision, only: dp
       use unstruc_messages, only: callback_msg
@@ -204,7 +204,7 @@ contains
             end if
             message = 'Adding time-space-relation for forcing '''//trim(name)//''', location='''//trim(location)//''', file='''//trim(forcingfile)//''' failed!'
             call mess(LEVEL_ERROR, message)
-            
+
             goto 1234
          end if
       else

@@ -39,8 +39,8 @@ contains
 
    real(kind=dp) function comp_dgrow(height, dheight0, nfac, ierror)
       use precision, only: dp
-      use m_missing
-      use m_comp_h
+      use m_missing, only: dmiss
+      use m_comp_h, only: comp_h
 
       implicit none
 

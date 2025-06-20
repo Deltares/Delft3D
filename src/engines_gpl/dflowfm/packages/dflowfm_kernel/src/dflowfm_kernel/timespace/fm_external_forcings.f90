@@ -2820,7 +2820,7 @@ contains
    function check_keyword_zerozbndinflowadvection() result(success)
       use m_flowparameters, only: jaZerozbndinflowadvection
       use messagehandling, only: LEVEL_ERROR, msgbuf, mess
-      
+
       logical :: success
 
       success = .true.

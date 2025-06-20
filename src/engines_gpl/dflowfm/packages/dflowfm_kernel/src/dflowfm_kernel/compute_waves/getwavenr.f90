@@ -42,8 +42,8 @@ contains
 
    subroutine getwavenr(h, T, k)
       use precision, only: dp
-      use m_sferic
-      use m_physcoef
+      use m_sferic, only: twopi
+      use m_physcoef, only: ag
       implicit none
       ! get wavenr from waterdepth and period, see d3d doc
 

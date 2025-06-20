@@ -43,8 +43,8 @@ module m_plotdots
 contains
 
    subroutine reallocdots(N)
-      use m_alloc
-      use m_missing
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss, imiss
       implicit none
 
       integer, intent(in) :: N

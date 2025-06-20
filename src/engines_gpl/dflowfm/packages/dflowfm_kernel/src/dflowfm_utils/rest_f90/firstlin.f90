@@ -35,7 +35,7 @@ contains
    subroutine FIRSTLIN(MRGF)
       use dflowfm_version_module, only: version_full
       use dflowfm_version_module, only: getbranch_dflowfm
-      use m_datum
+      use m_datum, only: datum
 
       integer :: mrgf
 

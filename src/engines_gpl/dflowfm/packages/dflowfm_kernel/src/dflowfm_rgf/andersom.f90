@@ -42,7 +42,7 @@ contains
 
    subroutine ANDERSOM(X, N)
       use precision, only: dp
-      use m_alloc
+      use m_alloc, only: aerr
 
       integer :: n
       real(kind=dp) :: X(N)

@@ -42,8 +42,8 @@ module m_copy_dots2sam
 contains
 
    subroutine copy_dots2sam()
-      use m_samples
-      use m_plotdots
+      use m_samples, only: increasesam, ns, xs, ys, zs
+      use m_plotdots, only: numdots, xdots, ydots, zdots
 
       integer :: i
 

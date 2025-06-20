@@ -37,8 +37,8 @@ contains
    subroutine JGRLINE8(X, Y, N) ! TEKEN LIJN, INCL XYMISSEN, GEBRUIK VAN INVIEW EN PROJECTIE
       use precision, only: dp
 
-      use m_missing
-      use m_inview2
+      use m_missing, only: dxymis
+      use m_inview2, only: inview2
 
       integer :: n
       real(kind=dp) :: X(N), Y(N)

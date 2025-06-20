@@ -43,7 +43,7 @@ contains
 
    subroutine comp_Afinespline(N, numref, Nr, A, ierror)
       use precision, only: dp
-      use m_sample_spline
+      use m_sample_spline, only: sample_spline
       implicit none
 
       integer, intent(in) :: N !< number of spline control points

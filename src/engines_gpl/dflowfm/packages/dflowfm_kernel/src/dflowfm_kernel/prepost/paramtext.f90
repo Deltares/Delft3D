@@ -33,7 +33,7 @@ module m_paramtext
    implicit none
 contains
    subroutine PARAMTEXT(OPTION, NR)
-      use M_isoscaleunit
+      use M_isoscaleunit, only: unit, paramtex
 
       integer :: l1
       integer :: l2

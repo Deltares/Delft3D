@@ -151,7 +151,7 @@ contains
       end do
       call READYY('CHANGE FIELD VALUES', -1d0)
       KEY = 3
-            
+
    end subroutine PLUSABSD
 
 end module m_plusabsd

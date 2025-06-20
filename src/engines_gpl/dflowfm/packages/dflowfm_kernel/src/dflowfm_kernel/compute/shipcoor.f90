@@ -34,7 +34,7 @@ module m_shipcoor
 contains
    subroutine shipcoor(n, sx1, sy1, sx2, sy2) ! get absolute shipcoordinates in sx2, sy2), input sx1, sy1 : ( 1, -1) = (bow  , portside )
       use precision, only: dp
-      use m_ship !                                                             (-1,  1) = (stern, starboard)
+      use m_ship, only: shi, shx, shl, shb, shy !                                                             (-1,  1) = (stern, starboard)
       real(kind=dp) :: sx1, sx2, sy1, sy2, css, sns
       integer :: n
       css = cos(shi(n)); sns = sin(shi(n))

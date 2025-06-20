@@ -34,8 +34,8 @@ module m_hi_text
 contains
    subroutine HITEXT(IVAL, X, Y)
       use precision, only: dp
-      use m_colnow
-      use m_draw_text
+      use m_colnow, only: ncolnow
+      use m_draw_text, only: drawtext
 
       integer :: ival
       integer :: l

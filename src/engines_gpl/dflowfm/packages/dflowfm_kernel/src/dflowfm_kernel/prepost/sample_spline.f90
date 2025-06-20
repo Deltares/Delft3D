@@ -35,10 +35,8 @@ contains
 !> sample a spline
    subroutine sample_spline(num, xs, ys, numref, Nr, xr, yr, ierror)
       use precision, only: dp
-      use m_splines
-      use m_alloc
-      use m_splint
-      use m_spline
+      use m_splint, only: splint
+      use m_spline, only: spline
 
       integer, intent(in) :: num !< number of spline control points
       real(kind=dp), dimension(num), intent(in) :: xs, ys !< spline control points coordinates

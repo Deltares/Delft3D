@@ -39,7 +39,7 @@ contains
 
    subroutine DRCIRC(XD, YD, ZD)
       use precision, only: dp
-      use m_three_two
+      use m_three_two, only: drietwee
 
       real(kind=dp) :: x
       real(kind=dp) :: y

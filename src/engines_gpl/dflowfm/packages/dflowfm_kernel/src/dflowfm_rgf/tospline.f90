@@ -43,9 +43,9 @@ contains
    subroutine TOSPLINE(XX, YY, XV, YV)
       use m_dismin, only: dismin
       use precision, only: dp
-      use M_SPLINES
-      use m_spline
-      use m_get_ij
+      use M_SPLINES, only: maxsplen, nump, xsp, maxspl, ysp
+      use m_spline, only: spline
+      use m_get_ij, only: getij
 
       real(kind=dp) :: XX, YY, XV, YV
 

@@ -36,7 +36,7 @@ contains
       !! Highlighted means: blank center, coloured outline.
    subroutine HLCIR(R, icol)
       use precision, only: dp
-      use m_hlcir2
+      use m_hlcir2, only: hlcir2
 
       real(kind=dp), intent(in) :: R !< Radius in world coords.
       integer, intent(in) :: icol !< Colour number

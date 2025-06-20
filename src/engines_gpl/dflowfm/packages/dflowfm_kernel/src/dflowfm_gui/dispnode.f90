@@ -34,7 +34,7 @@ module m_dispnode
 contains
    subroutine DISPNODE(MP)
       use m_devices, only: iws
-      use m_ktext
+      use m_ktext, only: ktext
 
       integer :: mp
       character TEX * 23

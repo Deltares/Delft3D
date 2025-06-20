@@ -146,16 +146,16 @@ contains
                vnod(2, k2) = vnod(2, k2) + vlin2(L) * wcL(2, LL)
             end do
          end do
-         
+
          !$OMP PARALLEL DO SIMD PRIVATE(kk, k_start, k_end)
          do kk = 1, ndx
             k_start = ktop(kk) + 1
             k_end = kbot(kk) + kmxn(kk) - 1
-            vnod(1,k_start:k_end) = vnod(1,ktop(kk))
-            vnod(2,k_start:k_end) = vnod(2,ktop(kk))
+            vnod(1, k_start:k_end) = vnod(1, ktop(kk))
+            vnod(2, k_start:k_end) = vnod(2, ktop(kk))
          end do
          !$OMP END PARALLEL DO SIMD
       end if
    end subroutine links_to_centers_dp_rank_2
-   
+
 end module m_links_to_centers

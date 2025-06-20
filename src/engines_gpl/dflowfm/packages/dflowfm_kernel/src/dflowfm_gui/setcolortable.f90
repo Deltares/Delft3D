@@ -37,8 +37,8 @@ module m_setcolortable
 contains
 
    subroutine SETCOLORTABLE()
-      use m_depmax
-      use m_depmax2
+      use m_depmax, only: nis, ncols
+      use m_depmax2, only: nis2, ncols2
       implicit none
 
       integer :: i

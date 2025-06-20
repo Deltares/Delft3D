@@ -1309,7 +1309,7 @@ contains
       end if
 
       ! Create the array with the coordinates of the flow links
-      allocate(polyline_x(dambreak%number_of_links, 2), polyline_y(dambreak%number_of_links, 2))
+      allocate (polyline_x(dambreak%number_of_links, 2), polyline_y(dambreak%number_of_links, 2))
       do k = 1, dambreak%number_of_links
          ! compute the mid point
          link = abs(dambreak%link_indices(k))

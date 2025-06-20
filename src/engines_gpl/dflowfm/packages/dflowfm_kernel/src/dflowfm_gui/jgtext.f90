@@ -36,11 +36,11 @@ module m_jgtext
 contains
    subroutine JGTEXT(TEX, X, Y, NCOL, WIC, HIC, JAHOOG) ! grafische tekst, grafische posities, met kleurblokjes ERONDER
       use precision, only: dp
-      use unstruc_colors
-      use m_box_nop
-      use m_fbox_nop
-      use m_set_col
-      use m_draw_text
+      use unstruc_colors, only: kltex
+      use m_box_nop, only: boxnop
+      use m_fbox_nop, only: fboxnop
+      use m_set_col, only: setcol
+      use m_draw_text, only: drawtext
 
       real(kind=dp) :: hic, WIC
       integer :: jahoog

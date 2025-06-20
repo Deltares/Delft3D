@@ -34,8 +34,8 @@ module m_box_nop
 contains
    subroutine BOXnop(XB1, YB1, XB2, YB2)
       use precision, only: dp
-      use m_movabs_nop
-      use m_lnabs_nop
+      use m_movabs_nop, only: movabsnop
+      use m_lnabs_nop, only: lnabsnop
 
       real(kind=dp) :: xb1
       real(kind=dp) :: xb2

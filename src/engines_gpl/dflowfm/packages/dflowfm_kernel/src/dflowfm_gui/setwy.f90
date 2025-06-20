@@ -40,8 +40,7 @@ contains
 
    subroutine SETWY(X1, Y1, X2)
       use precision, only: dp
-      use m_inqasp
-      use m_sferic
+      use m_inqasp, only: inqasp
       implicit none
       real(kind=dp) :: x1, x2, y1
       real(kind=dp) :: asp, x, y, dy

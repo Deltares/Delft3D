@@ -33,7 +33,7 @@
 module m_wind
 
    use precision, only: dp
-   
+
    implicit none
 
    real(kind=dp), dimension(:), allocatable, target :: wx !< [m/s] wind x velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}

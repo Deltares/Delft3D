@@ -36,10 +36,10 @@ contains
       use precision, only: dp
 !     TEKEN EEN LIJN IN GRID (MET CIRKELS ROND DE UITEINDEN)
       use m_missing, only: xymis
-      use m_cirr
-      use m_set_col
-      use m_movabs
-      use m_lnabs
+      use m_cirr, only: cirr
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
 
       integer :: mmax, nmax, m1, n1, m2, n2, ncol
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)

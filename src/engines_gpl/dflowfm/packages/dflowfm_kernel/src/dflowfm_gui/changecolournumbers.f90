@@ -38,14 +38,14 @@ contains
 
    subroutine CHANGEcolournumbers()
       use unstruc_display_data, only: npos
-      use unstruc_colors
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck, ncoldg, ncolrg, ncoldn, ncolrn, ncolnn, ncolsp, ncolln, ncoltx, ncolpl, ncolcrs, ncolthd, ncolfxw, ncolhl, klvec, klprof, klscl, kltex, klobs, nreds, ngreens, nblues, nredp, ngreenp, nbluep, klsrc
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
       use dflowfm_version_module, only: company, product_name
       use m_observations_data, only: jafahrenheit
-      use m_helpnow
-      use m_save_keys
-      use m_restore_keys
-      use m_help
-      use m_highlight_form_line
 
       implicit none
 

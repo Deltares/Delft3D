@@ -40,11 +40,11 @@ contains
    ! Now a real(kind=dp) (real(kind=dp) ::)
    subroutine GETREAL(TEXT, value)
       use precision, only: dp
-      use m_devices
-      use M_MISSING
-      use m_helpnow
-      use m_timlin
-      use m_fkeys
+      use m_devices, only: iws, ihs
+      use M_MISSING, only: dmiss
+      use m_helpnow, only: nlevel, wrdkey
+      use m_timlin, only: timlin
+      use m_fkeys, only: fkeys
       implicit none
       integer :: infoattribute
       integer :: infoinput

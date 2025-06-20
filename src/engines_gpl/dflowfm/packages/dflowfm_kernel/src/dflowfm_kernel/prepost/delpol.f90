@@ -33,8 +33,8 @@ module m_delpol
    implicit none
 contains
    subroutine DELPOL()
-      use M_POLYGON
-      use M_MISSING
+      use M_POLYGON, only: xpl, ypl, npl, mp, mps
+      use M_MISSING, only: xymis
 
       if (allocated(xpl)) XPL = XYMIS
       if (allocated(ypl)) YPL = XYMIS

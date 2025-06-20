@@ -44,7 +44,7 @@ contains
 !!
 !! NOTE: this subroutine is dflowfm's implementation of the MHCallBack::messagebox_iface interface.
    subroutine unstruc_guimessage(msg)
-      use m_qnerror
+      use m_qnerror, only: qnerror
 
       character(len=*), intent(in) :: msg !< Message string
 

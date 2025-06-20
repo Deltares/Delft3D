@@ -41,10 +41,10 @@ module m_copypoltoldb
 contains
 
    subroutine COPYPOLTOLDB()
-      use m_polygon
-      use M_LANDBOUNDARY
-      use M_MISSING
-      use m_delpol
+      use m_polygon, only: npl, xpl, ypl, zpl
+      use M_LANDBOUNDARY, only: mxlan, xlan, increaselan, ylan, zlan
+      use M_MISSING, only: xymis
+      use m_delpol, only: delpol
 
       integer :: k
       integer :: l

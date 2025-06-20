@@ -42,8 +42,8 @@ contains
 
    subroutine MAKEY(XR, YR, MMAX, NMAX) ! terug naar graden SUBROUTINE MAKEY
       use precision, only: dp
-      use M_SFERIC
-      use M_MISSING
+      use M_SFERIC, only: rd2dg
+      use M_MISSING, only: dxymis
 
       integer :: mmax, nmax
 

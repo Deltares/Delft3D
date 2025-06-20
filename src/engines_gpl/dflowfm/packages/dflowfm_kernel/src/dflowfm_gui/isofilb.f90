@@ -38,7 +38,7 @@ contains
 
    subroutine ISOFILb(X, Y, Z, n4, NCOLR) ! as isofil, now for depmax2
       use precision, only: dp
-      use m_isofil_color
+      use m_isofil_color, only: isofil_color
       use m_depmax2, only: val => val2, ncols => ncols2, nv => nv2
 
       integer :: n4, ncolr

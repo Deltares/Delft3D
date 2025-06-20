@@ -35,7 +35,7 @@ contains
    subroutine PTABS(X, Y)
       use precision, only: dp
       use unstruc_opengl, only: InOpenGLRendering, DrawPoint
-      use m_dproject
+      use m_dproject, only: dproject
 
       real(kind=dp) :: x, y, xx, yy
       call DPROJECT(X, Y, XX, YY, 1)

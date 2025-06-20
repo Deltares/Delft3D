@@ -42,7 +42,7 @@ contains
 
    subroutine GEORD(xgeo, ygeo, xrd, yrd, JAPARIJS)
       use precision, only: dp
-      use m_wgs842bessel
+      use m_wgs842bessel, only: wgs842bessel
 
       integer :: japarijs
 

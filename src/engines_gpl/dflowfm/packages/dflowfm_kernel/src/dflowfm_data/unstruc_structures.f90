@@ -37,7 +37,7 @@ module m_structures
    use MessageHandling
    use m_flowparameters, only: jahiscgen, jahispump, jahisgate, jahiscdam, jahisweir, jahisdambreak, jahisorif, jahisculv, jahisuniweir, jahiscmpstru, jahislongculv, jahisbridge
    use m_structures_indices ! all of these indices are used in the module
-   
+
    implicit none
 
    type(tree_data), pointer, public :: strs_ptr !< A property list with all input structure specifications of the current model. Not the actual structure set.
@@ -55,30 +55,30 @@ module m_structures
    real(kind=dp), dimension(:, :), allocatable, target :: valorifgen !< Array for orifice, (1:NUMVALS_ORIFGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
    !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
    !<                                   IVAL_FORCEDIF, IVAL_OPENW, IVAL_EDGEL, IVAL_OPENH, the last one NUMVALS_ORIFGEN is the counter
-   
+
    real(kind=dp), dimension(:, :), allocatable, target :: valbridge !< Array for bridge(1:NUMVALS_BRIDGE,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and NUMEXTVALS_BRIDGE extra variables here.
-      
+
    real(kind=dp), dimension(:, :), allocatable, target :: valdambreak !< Array for dambreak, (1:NUMVALS_DAMBREAK,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and NUMEXTVALS_DAMBREAK extra variables here.
 
    real(kind=dp), dimension(:, :), allocatable, target :: valculvert !< Array for culvert(1:NUMVALS_CULVERT,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
-   
+
    real(kind=dp), dimension(:, :), allocatable, target :: valuniweir !< Array for universal weir(1:NUMVALS_UNIWEIR,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
-   
+
    real(kind=dp), dimension(:, :), allocatable, target :: valgategen !< Array for (new) gate (1:NUMVALS_GATEGEN,:), the first dimension of this array contains
    !< NUMVALS_COMMON_GATE common variables (see definitation at top) and NUMEXTVALS_GATE extra variables.
-   
+
    real(kind=dp), dimension(:, :), allocatable, target :: valcmpstru !< Array for compound structure(1:NUMVALS_CMPSTRU,:)
 
-    real(kind=dp), dimension(:, :), allocatable, target :: valpump !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
+   real(kind=dp), dimension(:, :), allocatable, target :: valpump !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
    !< NUMVALS_COMMON_PUMP common variables (see definitation at top) and NUMEXTVALS_PUMP extra variables.
-    
+
    real(kind=dp), dimension(:, :), allocatable, target :: vallongculvert !< Array for long culvert, (1:NUMVALS_LONGCULVERT,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top)and above extra variables.
-   
+
    real(kind=dp), dimension(:, :), allocatable, target :: valgate !< Array for gate;      (1,:) discharge through gate
    real(kind=dp), dimension(:, :), allocatable, target :: valcdam !< Array for cdam;      (1,:) discharge through controlable dam
    !<                      (2,:) Upstream average water levels
@@ -236,7 +236,7 @@ contains
          if (allocated(valdambreak)) then
             deallocate (valdambreak)
          end if
-         allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals), source = 0.0_dp)
+         allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals), source=0.0_dp)
       end if
       if ((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
          if (allocated(valorifgen)) then

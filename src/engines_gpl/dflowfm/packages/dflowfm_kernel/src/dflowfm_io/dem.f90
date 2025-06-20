@@ -302,7 +302,7 @@ contains
    subroutine read_dem_data(fp, dem_info, arr)
       use precision, only: dp
       use messagehandling, only: msgbuf, msg_flush
-      use m_readyy
+      use m_readyy, only: readyy
       integer, intent(in) :: fp
       type(DEMInfo), intent(inout) :: dem_info
       integer, intent(out) :: arr(:, :)

@@ -37,11 +37,10 @@ module m_xydisformat
 contains
 
    subroutine XYDISFORMAT()
-      use m_sferic
-      use m_wearelt
-      use m_depmax
-      use m_locatora
-      use m_disfor
+      use m_wearelt, only: x1, x2, y1, y2
+      use m_depmax, only: vmin, vmax
+      use m_locatora, only: xlc, ylc
+      use m_disfor, only: zform, xyform, disform
 
       implicit none
 

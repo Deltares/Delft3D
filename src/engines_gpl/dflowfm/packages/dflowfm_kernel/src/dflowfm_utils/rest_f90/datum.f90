@@ -33,7 +33,7 @@ module m_datum
    implicit none
 contains
    subroutine DATUM(DATE)
-      use m_dateandtimenow
+      use m_dateandtimenow, only: dateandtimenow
 
       integer :: iyear, month, iday, ihour, minute, isecnd
       character DATE * 20

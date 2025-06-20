@@ -34,7 +34,7 @@ module m_deallocate_spline_props
 contains
 !> deallocate splineprops array
    subroutine deallocate_splineprops()
-      use m_spline2curvi
+      use m_spline2curvi, only: splineprops
 
       integer :: ispline
 

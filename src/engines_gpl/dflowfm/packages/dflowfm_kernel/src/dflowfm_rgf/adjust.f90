@@ -43,7 +43,7 @@ contains
 
    subroutine ADJUST(X, Y, mmax, nmax, MC, NC)
       use precision, only: dp
-      use m_missing
+      use m_missing, only: xymis
 
       integer :: mmax, nmax, mc, nc
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)

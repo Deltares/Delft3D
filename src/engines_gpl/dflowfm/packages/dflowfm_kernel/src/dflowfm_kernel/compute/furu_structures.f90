@@ -151,7 +151,7 @@ contains
                      wetdown = max(wetdown, 0.0001d0)
                      call computeculvert(pstru%culvert, pstru%fu(L0), pstru%ru(L0), pstru%au(L0), width, s1(k1), s1(k2), &
                                          pstru%u1(L0), dx(L), dts, wetdown)
-                     
+
                      fu(L) = pstru%fu(L0)
                      ru(L) = pstru%ru(L0)
                      au(L) = pstru%au(L0)

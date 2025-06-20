@@ -38,8 +38,8 @@ contains
 
    subroutine slnabs(n, sx1, sy1)
       use precision, only: dp
-      use m_shipcoor
-      use m_lnabs
+      use m_shipcoor, only: shipcoor
+      use m_lnabs, only: lnabs
       implicit none
       integer :: n
       real(kind=dp) :: sx1, sx2, sy1, sy2

@@ -39,8 +39,8 @@ contains
    subroutine DLNABS(XD, YD, ZD)
       use precision, only: dp
       use m_oldz, only: oz
-      use m_three_two
-      use m_lnabs
+      use m_three_two, only: drietwee
+      use m_lnabs, only: lnabs
 
       real(kind=dp) :: x
       real(kind=dp) :: y

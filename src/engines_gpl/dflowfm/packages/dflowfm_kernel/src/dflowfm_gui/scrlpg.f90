@@ -38,7 +38,7 @@ module m_scrlpg
 contains
 
    subroutine SCRLPG(HLPTXT, NUMTXT, NUMTOP, NUMCHC, IH)
-      use m_page
+      use m_page, only: page
       implicit none
       integer :: ih
       integer :: numchc

@@ -35,7 +35,7 @@ contains
 
    subroutine SMEERFUNCTIE(I, J, MP, NP, FR, IN, JN)
       use precision, only: dp
-      use m_grid_block
+      use m_grid_block, only: mb, nb
 
       integer :: i, j, mp, np, in, jn
       real(kind=dp) :: fr

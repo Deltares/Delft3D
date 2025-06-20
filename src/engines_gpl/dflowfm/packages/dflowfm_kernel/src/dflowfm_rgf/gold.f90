@@ -42,7 +42,7 @@ contains
 
    subroutine GOLD(AX, BX, CX, TOL, XMIN, P, P2, Q, Q2, XX, YY, N, DIS)
       use precision, only: dp
-      use m_spldist
+      use m_spldist, only: spldist
 
       real(kind=dp) :: c
       real(kind=dp) :: f0

@@ -42,7 +42,7 @@ contains
 
    subroutine reaobs2stat(mobs, mout) ! convert d3d obs file to model independent
       use precision, only: dp
-      use m_grid
+      use m_grid, only: xc, yc
       use m_filez, only: doclose
 
       integer :: mobs, mout

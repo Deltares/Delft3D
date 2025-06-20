@@ -171,7 +171,7 @@ contains
       index_suffix_start = max(1, quantity_length - len_trim('Delta') + 1)
 
       if (strcmpi(original_quantity(1:index_prefix_end), 'sourcesink_') &
-         .and. strcmpi(original_quantity(index_suffix_start:quantity_length), 'Delta')) then
+          .and. strcmpi(original_quantity(index_suffix_start:quantity_length), 'Delta')) then
          ! First, remove the 'sourcesink_' and 'Delta' parts from the original quantity.
          base_quantity = 'sourcesink_constituentDelta'
          constituent_name = original_quantity(index_prefix_end + 1:index_suffix_start - 1)

@@ -39,8 +39,8 @@ contains
 
    subroutine ORGLOCATOR(XL, YL)
       use precision, only: dp
-      use m_devices
-      use m_locatora
+      use m_devices, only: npx, npy
+      use m_locatora, only: xlc, ylc
 
       integer :: ml
       integer :: nl

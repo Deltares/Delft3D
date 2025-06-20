@@ -38,10 +38,10 @@ module m_axes
 contains
 
    subroutine AXES()
-      use unstruc_colors
-      use m_screenarea
-      use m_set_col
-      use m_view_port
+      use unstruc_colors, only: klaxs, y1, y2, x1, x2
+      use m_screenarea, only: jaxis
+      use m_set_col, only: setcol
+      use m_view_port, only: viewport
       implicit none
 
       if (JAXIS == 1) then

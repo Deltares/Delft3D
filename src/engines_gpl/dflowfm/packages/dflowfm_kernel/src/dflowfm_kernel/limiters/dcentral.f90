@@ -34,7 +34,7 @@ module m_dcentral
 contains
    real(kind=dp) function dcentral(d1, d2) ! twee maal vergroot vanwege acl
       use precision, only: dp
-      use m_dcminmod
+      use m_dcminmod, only: dcminmod
       real(kind=dp) d1, d2
 
       if (d1 * d2 > 0d0) then

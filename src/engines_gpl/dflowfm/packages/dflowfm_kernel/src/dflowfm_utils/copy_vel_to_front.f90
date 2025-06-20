@@ -43,8 +43,8 @@ contains
 
    subroutine copy_vel_to_front(mc, j, vel, ifront, nf, numf, xf, yf, velf, idxf)
       use precision, only: dp
-      use m_missing
-      use m_qnerror
+      use m_missing, only: dmiss
+      use m_qnerror, only: qnerror
 
       integer, intent(in) :: mc !< number of grid points
       integer, intent(in) :: j !< grid layer

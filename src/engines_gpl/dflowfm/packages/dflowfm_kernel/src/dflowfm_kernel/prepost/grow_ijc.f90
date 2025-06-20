@@ -43,9 +43,9 @@ contains
 
    subroutine grow_ijc(lowold, uppold, lowobj, uppobj, init)
       use precision, only: dp
-      use m_alloc
-      use m_grid
-      use m_missing
+      use m_alloc, only: realloc
+      use m_grid, only: ijc
+      use m_missing, only: imiss
 
       integer, dimension(2), intent(inout) :: lowold, uppold !< current array sizes
       integer, dimension(2), intent(in) :: lowobj, uppobj !< objective array sizes

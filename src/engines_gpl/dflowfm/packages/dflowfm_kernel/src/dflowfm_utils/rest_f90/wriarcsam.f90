@@ -41,7 +41,7 @@ module m_wriarcsam
 contains
 
    subroutine WRIARCsam(MARC, data_array, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
-      use m_writearcinfoheader
+      use m_writearcinfoheader, only: writearcinfoheader
       use precision, only: dp
 
       real(kind=dp) :: dmiss

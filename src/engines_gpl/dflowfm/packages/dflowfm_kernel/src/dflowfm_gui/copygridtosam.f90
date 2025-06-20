@@ -38,7 +38,7 @@ module m_copygridtosam
 contains
 
    subroutine copygridtosam()
-      use m_samples
+      use m_samples, only: increasesam, mxsam, mysam, xs, ys, zs, ipstat, ipstat_notok, ns
       use m_grid, only: mc, nc, xc, yc, zc
       use m_missing, only: dmiss
 

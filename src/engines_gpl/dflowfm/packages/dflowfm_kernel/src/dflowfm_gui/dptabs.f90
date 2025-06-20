@@ -38,8 +38,8 @@ contains
 
    subroutine DPTABS(XD, YD, ZD)
       use precision, only: dp
-      use m_three_two
-      use m_ptabs
+      use m_three_two, only: drietwee
+      use m_ptabs, only: ptabs
 
       real(kind=dp) :: x
       real(kind=dp) :: y

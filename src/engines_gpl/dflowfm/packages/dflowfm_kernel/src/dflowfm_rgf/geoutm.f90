@@ -42,7 +42,7 @@ contains
 
    subroutine GEOUTM(xgeo, ygeo, xutm, yutm, Izone, nzone, IERR)
       use precision, only: dp
-      use m_ellips
+      use m_ellips, only: e, a
 
       integer :: nzone
 ! ----------------------------------------------------------------------

@@ -38,8 +38,8 @@ contains
 
    subroutine ARROWSXYzfac(X0, Y0, UX, UY, VFAC, zfac)
       use precision, only: dp
-      use m_movabs
-      use m_lnabs
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       implicit none
       real(kind=dp) :: X0, Y0, UX, UY, VFAC, zfac
 

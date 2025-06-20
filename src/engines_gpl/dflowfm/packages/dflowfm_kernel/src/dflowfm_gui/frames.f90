@@ -34,8 +34,8 @@ module m_frames
 contains
 !
    subroutine FRAMES(NCOL)
-      use M_DEVICES
-      use m_set_col
+      use M_DEVICES, only: nopsys
+      use m_set_col, only: setcol
 
       integer :: ncol
       if (NOPSYS >= 2) return

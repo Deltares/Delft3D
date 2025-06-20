@@ -39,8 +39,8 @@ contains
 
    subroutine SETWINDOW(NSC, X1, Y1, X2, Y2, DXH, DYH)
       use precision, only: dp
-      use m_dscreens
-      use m_view_port
+      use m_dscreens, only: x1sc, y1sc, x2sc, y2sc
+      use m_view_port, only: viewport
       implicit none
       real(kind=dp) :: dx
       real(kind=dp) :: dxh

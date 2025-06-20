@@ -51,7 +51,7 @@ contains
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-      use precision
+      use precision, only: fp, long
 !
 ! Global variables
 !

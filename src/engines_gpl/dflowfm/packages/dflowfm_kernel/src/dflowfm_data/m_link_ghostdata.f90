@@ -30,9 +30,9 @@
 module m_link_ghostdata
 
    implicit none
-   
+
    private
-   
+
    public :: link_ghostdata
 
 contains
@@ -45,7 +45,7 @@ contains
 !! ACTIVATED ->   it connects only one ghost cell, and the other domain number is smaller than the own domain number, or
 !                 it connects connects a cell in the own subdomain with ghostlevel >0 (at the boundary)
    subroutine link_ghostdata(domain, left_domain, right_domain, is_ghost_link, link_domain_number, &
-                            left_ghost_level, right_ghost_level, link_ghost_level)
+                             left_ghost_level, right_ghost_level, link_ghost_level)
       integer, intent(in) :: domain !< domain number based on which the ghost-checking is done (typically my_rank)
       integer, intent(in) :: left_domain !< domain number of left neighboring cell
       integer, intent(in) :: right_domain !< domain number of right neighboring cell

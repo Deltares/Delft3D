@@ -42,7 +42,7 @@ module m_solversettings
 contains
 
    subroutine SolverSettings(solver, numrows, numnonzeros)
-      use m_solver
+      use m_solver, only: tsolver
       implicit none
 
       type(tsolver), intent(inout) :: solver !< solver

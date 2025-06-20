@@ -44,7 +44,7 @@ contains
       use m_rmdouble, only: rmdouble
       use precision, only: dp
       use stdlib_sorting, only: sort_index
-      use m_readyy
+      use m_readyy, only: readyy
 
       integer :: ns
       real(kind=dp) :: XS(NS), YS(NS), ZS(NS) !< sample coordinates

@@ -33,7 +33,7 @@ module m_save_keys
    implicit none
 contains
    subroutine SAVEKEYS()
-      use m_keycodes
+      use m_keycodes, only: maxkey, keycod
 
       integer :: i
       integer :: infoinput

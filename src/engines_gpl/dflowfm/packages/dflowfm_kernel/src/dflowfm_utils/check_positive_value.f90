@@ -31,7 +31,7 @@
 module m_check_positive_value
 
    implicit none
-   
+
    private
 
    public :: check_positive_value

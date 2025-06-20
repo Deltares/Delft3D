@@ -39,8 +39,8 @@ contains
 
    subroutine INQASP(ASP)
       use precision, only: dp
-      use m_devices
-      use m_screenarea
+      use m_devices, only: npy, npx
+      use m_screenarea, only: ybot, xleft
 
       real(kind=dp) :: asp
       real(kind=dp) :: dx

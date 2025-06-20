@@ -43,8 +43,8 @@ contains
 
    subroutine afhouwendammit()
       use precision, only: dp
-      use m_ship
-      use m_shipcoor
+      use m_ship, only: nshiptxy, deadw, fextx, fexty, fextm, xmxs, fricxi, shy, xmns, ymxs, fricyi, shx, ymns
+      use m_shipcoor, only: shipcoor
       implicit none
       integer :: n, i, j
       real(kind=dp) :: sx1, sy1, sx2, sy2, eas, easm, frc

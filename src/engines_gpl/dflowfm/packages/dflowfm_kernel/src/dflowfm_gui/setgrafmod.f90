@@ -37,7 +37,7 @@ module m_setgrafmod
 contains
 
    subroutine SETGRAFMOD()
-      use m_devices
+      use m_devices, only: iws, ihs, npx, npy, ncolr, ndev
       implicit none
       integer :: infoscreen
       integer :: infoscreenmode

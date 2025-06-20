@@ -42,7 +42,7 @@ contains
 
    subroutine statisticsonemorepoint(dif)
       use precision, only: dp
-      use m_statistics
+      use m_statistics, only: avedif, sqadif, dmxdif, numdif
 
       real(kind=dp) :: dif
       avedif = avedif + dif

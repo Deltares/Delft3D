@@ -38,8 +38,8 @@ module m_scrolh
 contains
 
    subroutine SCROLH(NUMCHC, HLPTXT, NUMTXT, NLEVEL, IH, JOFND, JATAB)
-      use m_timlin
-      use m_next
+      use m_timlin, only: timlin
+      use m_next, only: next
       implicit none
       integer :: ih
       integer :: jatab

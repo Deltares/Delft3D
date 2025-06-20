@@ -36,9 +36,9 @@ module m_cirr
 contains
    subroutine CIRR(X, Y, NCOL)
       use precision, only: dp
-      use m_wearelt
-      use m_set_col
-      use m_movabs
+      use m_wearelt, only: rcir
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
 
       integer :: ncol
       real(kind=dp) :: x

@@ -41,16 +41,16 @@ module m_intini
 contains
 
    subroutine INTINI()
-      use m_inikeys
-      use m_sferic
+      use m_inikeys, only: inikeys
+      use m_sferic, only: jsferic
+      use m_wearelt, only: xmin, xmax, ymin, ymax, x1, x2, y1, y2
+      use m_devices, only: nopsys, ncolr
+      use m_locatora, only: xlc, ylc
+      use m_screenarea, only: ybot, xleft, jaxis
+      use m_colnow, only: ncolnow
+      use m_initscreen, only: jvga, nxpix, nypix, croshrsz
+      use m_view_port, only: viewport
       use dflowfm_version_module, only: company, product_name, version_full
-      use m_wearelt
-      use m_devices
-      use m_locatora
-      use m_screenarea
-      use m_colnow
-      use m_initscreen
-      use m_view_port
 
       integer :: icrhf
       integer :: infoopsystem

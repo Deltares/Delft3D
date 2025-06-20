@@ -42,8 +42,8 @@ contains
 
    subroutine CUTFIELD(X, Y, mmax, nmax, MC, NC)
       use precision, only: dp
-      use m_missing
-      use m_grid_block
+      use m_missing, only: xymis
+      use m_grid_block, only: mb, nb
 
       integer :: mmax, nmax, mc, nc
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)

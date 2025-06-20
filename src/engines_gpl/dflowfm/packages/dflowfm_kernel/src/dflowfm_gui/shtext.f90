@@ -38,8 +38,8 @@ contains
 
    subroutine shtext(n, snum, sx1, sy1)
       use precision, only: dp
-      use m_shipcoor
-      use m_htext
+      use m_shipcoor, only: shipcoor
+      use m_htext, only: htext
       implicit none
       integer :: n
       real(kind=dp) :: snum, sx1, sx2, sy1, sy2

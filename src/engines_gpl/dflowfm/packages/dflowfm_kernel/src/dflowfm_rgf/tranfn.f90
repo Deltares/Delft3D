@@ -46,7 +46,7 @@ contains
                      MFAC, NFAC, XRH, YRH)
       use m_abrel, only: abrel
       use precision, only: dp
-      use m_missing
+      use m_missing, only: xymis
 
       integer :: mmax, nmax, imax, mfac, nfac
       real(kind=dp) :: X1(IMAX), X2(IMAX), X3(IMAX), X4(IMAX), XRH(MMAX, NMAX), &

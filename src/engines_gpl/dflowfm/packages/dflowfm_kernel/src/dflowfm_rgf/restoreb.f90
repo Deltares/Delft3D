@@ -41,7 +41,7 @@ module m_restoreb
 contains
 
    subroutine RESTOREB(NPUT)
-      use m_grid_block
+      use m_grid_block, only: mb, mb2, nb, nb2, npt, npt2, nputo
 
       integer :: nput
 

@@ -42,11 +42,11 @@ contains
 
    subroutine RMDOUBLE(XS, YS, ZS, IPSAM, NS)
       use precision, only: dp
-      use m_missing
-      use m_sferic
+      use m_missing, only: dmiss, xymis
+      use m_sferic, only: jsferic
+      use kdtree2Factory, only: build_kdtree, treeglob, itree_empty, delete_kdtree2, make_queryvector_kdtree, kdtree2_r_count, realloc_results_kdtree, kdtree2_n_nearest
+      use m_wall_clock_time, only: wall_clock_time
       use messagehandling, only: LEVEL_INFO, mess
-      use kdtree2Factory
-      use m_wall_clock_time
 
       integer :: i
       integer :: j

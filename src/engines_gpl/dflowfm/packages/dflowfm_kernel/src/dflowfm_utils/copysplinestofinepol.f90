@@ -42,10 +42,10 @@ module m_copysplinestofinepol
 contains
 
    subroutine copySplinesToFinePol(numk)
-      use M_SPLINES
-      use m_polygon
-      use m_missing
-      use m_sample_spline
+      use M_SPLINES, only: mcs, nump, xsp, ysp
+      use m_polygon, only: npl, xpl, increasepol, ypl, zpl
+      use m_missing, only: dmiss
+      use m_sample_spline, only: sample_spline
 
       integer, intent(in) :: numk !< resample factor
 

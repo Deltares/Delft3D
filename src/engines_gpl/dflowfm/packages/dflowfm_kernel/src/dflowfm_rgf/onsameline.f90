@@ -41,7 +41,7 @@ module m_onsameline
 contains
 
    subroutine ONSAMELINE(IPT, MP, NP, JA)
-      use m_grid_block
+      use m_grid_block, only: itype, mb, nb
 
       integer :: mp, np, ja, ipt
       integer :: md, nd

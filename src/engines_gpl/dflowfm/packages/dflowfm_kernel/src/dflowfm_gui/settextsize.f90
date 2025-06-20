@@ -37,8 +37,8 @@ module m_settextsize
 contains
 
    subroutine SETTEXTSIZE()
-      use unstruc_opengl
-      use m_textsize
+      use unstruc_opengl, only: inopenglrendering, settextheight, fontsize
+      use m_textsize, only: tsize
       implicit none
 
       if (InOpenGLRendering) then

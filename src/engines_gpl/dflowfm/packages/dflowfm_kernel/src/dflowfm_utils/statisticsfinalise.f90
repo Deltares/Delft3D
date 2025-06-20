@@ -41,7 +41,7 @@ module m_statisticsfinalise
 contains
 
    subroutine statisticsfinalise()
-      use m_statistics
+      use m_statistics, only: numdif, avedif, cumavedif, rmsdif, sqadif, cumrmsdif, dmxdif, cumdmxdif, numcum
 
       if (numdif /= 0) then
          avedif = avedif / numdif

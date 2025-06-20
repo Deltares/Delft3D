@@ -37,7 +37,7 @@ module m_readprofilesloc
 contains
 
    subroutine readprofilesloc(minp)
-      use m_profiles
+      use m_profiles, only: minproflocnr, maxproflocnr, xpr, ypr, zpr, npr, nproflocs
       use m_filez, only: doclose
 
       integer :: minp

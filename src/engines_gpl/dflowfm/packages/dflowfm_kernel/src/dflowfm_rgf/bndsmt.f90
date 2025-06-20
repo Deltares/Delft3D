@@ -44,9 +44,9 @@ contains
 
    subroutine BNDSMT(XR, YR, XI2, YI2, XJ2, YJ2, ATP, M1, N1, M2, N2)
       use precision, only: dp
-      use m_grid
-      use m_gridsettings
-      use m_get_ij
+      use m_grid, only: mmax, nmax, mnmax, nc, mc, ijc, xc, yc
+      use m_gridsettings, only: bfac
+      use m_get_ij, only: getij
 
       real(kind=dp) :: bfe
       integer :: i

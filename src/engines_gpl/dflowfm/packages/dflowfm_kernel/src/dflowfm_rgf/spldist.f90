@@ -34,8 +34,8 @@ module m_spldist
 contains
    real(kind=dp) function SPLDIST(X, X2, Y, Y2, XX, YY, TV, N)
       use precision, only: dp
-      use m_splint
-      use m_planedistance
+      use m_splint, only: splint
+      use m_planedistance, only: planedistance
 
       integer :: n
 !     AFSTAND VAN PUNT XX,YY TOT SPLINEPUNT MET PARM TV

@@ -42,9 +42,9 @@ contains
 
    subroutine smooth_samples_from_GUI()
       use m_smooth_samples, only: smooth_samples
-      use m_samples
-      use m_qnerror
-      use m_getint
+      use m_samples, only: mxsam, mysam, ns, savesam, zs
+      use m_qnerror, only: qnerror
+      use m_getint, only: getint
 
       integer :: N
 

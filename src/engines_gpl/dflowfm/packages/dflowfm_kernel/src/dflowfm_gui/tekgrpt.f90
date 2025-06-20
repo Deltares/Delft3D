@@ -39,10 +39,10 @@ contains
    subroutine TEKGRPT(X, Y, mmax, nmax, MC, NC, MP, NP, NCOL)
       use precision, only: dp
 !     TEKEN GRIDLIJNEN UITKOMEND OP DIT PUNT
-      use m_missing
-      use m_set_col
-      use m_movabs
-      use m_lnabs
+      use m_missing, only: xymis
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       implicit none
       integer :: mmax, nmax, mc, nc, mp, np, ncol
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)

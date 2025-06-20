@@ -40,7 +40,7 @@ contains
    subroutine DISDEP(m, n, dep)
       use precision, only: dp
       use m_devices, only: iws
-      use m_ktext
+      use m_ktext, only: ktext
 
       real(kind=dp) :: dep
       integer :: m

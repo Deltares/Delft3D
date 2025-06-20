@@ -38,7 +38,7 @@ contains
 
    subroutine getvminmax(num, vmin, vmax, v, n)
       use precision, only: dp
-      use unstruc_display_data
+      use unstruc_display_data, only: profmin, profmax
       use m_missing, only: dmiss
 
       integer :: n

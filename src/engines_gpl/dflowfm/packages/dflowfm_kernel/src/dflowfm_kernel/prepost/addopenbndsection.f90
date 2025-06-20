@@ -46,8 +46,8 @@ contains
  !! An open boundary section is associated with one polyline
  !! and consists of one or more netlink numbers.
    subroutine addopenbndsection(nbnd, netlinknrs, plifilename, ibndtype)
-      use m_alloc
-      use fm_external_forcings_data
+      use m_alloc, only: realloc
+      use fm_external_forcings_data, only: nopenbndsect, nopenbndlin, openbndname, openbndfile, openbndtype, ibndtp_unknown, openbndlin
 
       integer, intent(in) :: nbnd !< Nr. of net links in this open bnd section.
       integer, intent(in) :: netlinknrs(nbnd) !< Net link nrs in this open bnd section (in any order)

@@ -47,9 +47,9 @@ contains
 #ifdef _OPENMP
       use omp_lib
 #endif
-      use dfm_error
-      use messagehandling, only: mess, level_info
-      
+      use dfm_error, only: dfm_noerr
+      use messagehandling, only: mess, LEVEL_INFO
+
       integer, intent(in) :: maxnumthreads !< Desired maximum number of OpenMP threads.
       integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
 
@@ -63,17 +63,17 @@ contains
 #ifdef _OPENMP
       if (mpion == 1 .and. maxnumthreads == 0) then
          ! If MPI is on for this model, *and* no user-define numthreads was set, then disable OpenMP.
-            openmp_threads = 1
-            ! TODO: AvD: else, reset to maximum? Especially in library mode when multiple models can be run after one another?
+         openmp_threads = 1
+         ! TODO: AvD: else, reset to maximum? Especially in library mode when multiple models can be run after one another?
       else ! user defined OpenMP threads
-            openmp_threads = maxnumthreads
+         openmp_threads = maxnumthreads
       end if
       if (openmp_threads > 0) then
          call omp_set_num_threads(openmp_threads)
       end if
       openmp_threads = omp_get_max_threads() !check number of threads set by environment before reporting
       if (openmp_threads > 1) then
-         call mess(LEVEL_INFO, 'OpenMP enabled, number of threads = ',openmp_threads)
+         call mess(LEVEL_INFO, 'OpenMP enabled, number of threads = ', openmp_threads)
       else
          call mess(LEVEL_INFO, 'OpenMP disabled.')
       end if

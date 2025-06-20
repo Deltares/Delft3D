@@ -38,9 +38,9 @@ module m_setzcs
 
    public :: setzcs
 
-    contains
+contains
 
-    !> Sets array zsc (z levels at layer mid-points, only for nudging)
+   !> Sets array zsc (z levels at layer mid-points, only for nudging)
    subroutine setzcs()
       use m_flow, only: zcs, ndkx, zws, layertype, keepzlayeringatbed, zslay
       use m_flowgeom, only: ndx

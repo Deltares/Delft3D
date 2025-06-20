@@ -32,7 +32,7 @@
 !> This module contains general functions for snapping locations to either flowlink numbers or flownode numbers
 module m_inquire_flowgeom
    use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
-   use network_data, only: LINK_1D, LINK_2D,LINK_1D2D_INTERNAL,LINK_1D2D_LONGITUDINAL,LINK_1D2D_STREETINLET,LINK_1D_MAINBRANCH,LINK_1D2D_ROOF,LINK_ALL
+   use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
 
    implicit none
 
@@ -57,9 +57,7 @@ module m_inquire_flowgeom
       module procedure findnode_by_branchid !< find the flow node number, using (branch id, chainage)
    end interface
 
-   contains
-   
-   
+contains
 
    !> Find flow link number(s) intersected by a given polyline.
    function findlink_by_pli(npl, xpl, ypl, Larr, numlinks, lftopol, sortlinks, linktype) result(ierr)

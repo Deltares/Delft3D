@@ -202,7 +202,6 @@ contains
 
    end subroutine update_method_with_weightfactor_fallback
 
-
    subroutine update_method_in_case_extrapolation(method, is_extrapolation_allowed)
       implicit none
       integer, intent(inout) :: method !< method integer

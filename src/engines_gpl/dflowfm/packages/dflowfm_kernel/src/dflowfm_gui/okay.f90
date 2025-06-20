@@ -34,8 +34,7 @@ module m_okay
 contains
 !
    subroutine OKAY(JA)
-      use m_devices
-      use m_gui
+      use m_gui, only: jagui
 
       integer, intent(in) :: ja
 

@@ -42,8 +42,8 @@ contains
 
    subroutine bndpoint2pol(m, n)
       use precision, only: dp
-      use m_polygon
-      use m_grid
+      use m_polygon, only: npl, xpl, ypl
+      use m_grid, only: ijyes, mc, nc, xc, yc
 
       integer :: m, n
 

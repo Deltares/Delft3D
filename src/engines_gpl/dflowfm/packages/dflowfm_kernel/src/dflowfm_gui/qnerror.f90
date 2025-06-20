@@ -38,11 +38,11 @@ contains
       use messagehandling, only: level_error, warn_flush, mess, msgbuf
       use m_devices, only: ihs, iws
       use m_start_parameters, only: MD_AUTOSTARTSTOP, md_jaAutoStart
-      use m_gui
-      use m_helpnow
-      use m_okay
-      use m_fkeys
-      use m_getkey2
+      use m_gui, only: jagui
+      use m_helpnow, only: wrdkey, nlevel
+      use m_okay, only: okay
+      use m_fkeys, only: fkeys
+      use m_getkey2, only: getkey2
 
       character(len=*), intent(in) :: W1, W2, W3
 

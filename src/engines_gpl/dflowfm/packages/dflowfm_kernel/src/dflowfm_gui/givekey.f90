@@ -33,7 +33,7 @@ module m_givekey
    implicit none
 contains
    subroutine GIVEKEY(KEY)
-      use m_ktext
+      use m_ktext, only: ktext
 
       integer :: key
       character TEX * 14

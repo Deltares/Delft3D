@@ -1505,7 +1505,7 @@ contains
          call realloc(nudge_time, Ndx, fill=DMISS)
          call realloc(nudge_rate, Ndx, fill=DMISS)
       end if
-      
+
       call setkbotktop(1)
 
    end subroutine flow_allocflow

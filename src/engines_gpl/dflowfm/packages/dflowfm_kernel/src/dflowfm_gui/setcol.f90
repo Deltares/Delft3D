@@ -34,7 +34,7 @@ module m_set_col
 contains
    subroutine SETCOL(NCOL)
       use unstruc_opengl, only: setcolorfromcolornr
-      use m_colnow
+      use m_colnow, only: ncolnow
 
       integer :: ncol
 

@@ -39,9 +39,9 @@ contains
 
    subroutine DISPF2(X, Y, N, NMAX, NCOL)
       use precision, only: dp
-      use m_set_col
-      use m_movabs
-      use m_lnabs
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
 
       integer :: i
       integer :: n

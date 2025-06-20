@@ -43,16 +43,16 @@ contains
    subroutine setwindstress()
       use precision, only: dp
       use m_setcdwcoefficient, only: setcdwcoefficient
-      use m_flowgeom, only: ln, lnx, snu, csu 
+      use m_flowgeom, only: ln, lnx, snu, csu
       use m_flow, only: jamapwind, wind_stress_water_density_option, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
-          viskinair, ag, vonkarw, u1, ltop, v, jatem, jamapwindstress, kmx, ustw
+                        viskinair, ag, vonkarw, u1, ltop, v, jatem, jamapwindstress, kmx, ustw
       use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, wx, wy, relativewind, &
-          jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
+                        jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
       use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_af
 
       real(kind=dp) :: uwi, cdw, tuwi, roro, wxL, wyL, uL, vL, uxL, uyL, ust, ust2, tau, z0w, roa, row
       real(kind=dp) :: local_ice_af
-      integer :: L, numwav, k 
+      integer :: L, numwav, k
 
       windxav = 0d0
       windyav = 0d0

@@ -35,9 +35,9 @@ module m_fkeys
    implicit none
 contains
    subroutine FKEYS(KEY)
-      use m_helpnow
-      use m_osc
-      use m_help
+      use m_helpnow, only: wrdkey, nlevel
+      use m_osc, only: histor, osc
+      use m_help, only: help
 
       integer :: key
 

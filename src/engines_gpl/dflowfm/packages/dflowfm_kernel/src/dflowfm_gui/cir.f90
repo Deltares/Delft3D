@@ -38,9 +38,8 @@ contains
 
    subroutine CIR(R)
       use precision, only: dp
-      use unstruc_opengl
-      use m_colnow
-      use m_krec5
+      use unstruc_opengl, only: inopenglrendering, xlast, ylast
+      use m_krec5, only: krec5
       implicit none
       real(kind=dp) :: r, Hr
 

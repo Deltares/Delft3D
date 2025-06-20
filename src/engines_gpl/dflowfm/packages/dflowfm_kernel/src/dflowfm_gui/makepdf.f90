@@ -37,7 +37,7 @@ module m_makepdf
 contains
 
    subroutine makepdf(r, n)
-      use m_statistics
+      use m_statistics, only: xpdf, npdf, ypdf
 
       integer :: n
       real :: r(n), s

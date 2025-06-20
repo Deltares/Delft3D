@@ -49,7 +49,7 @@ contains
       use precision, only: dp
       use m_wearelt, only: rcir
       use m_missing, only: dmiss
-      use m_dispnode
+      use m_dispnode, only: dispnode
 
       integer :: i
       integer :: ishot

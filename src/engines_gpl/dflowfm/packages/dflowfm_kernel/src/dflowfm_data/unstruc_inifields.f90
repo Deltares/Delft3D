@@ -283,8 +283,8 @@ contains
                exit ! Or, consider cycle instead, to try all remaining blocks and return with an error only at the very end.
             end if
             if (strcmpi(qid, 'initialwaterlevel') .or. strcmpi(qid, 'initialwaterdepth') & ! Official names
-               .or. strcmpi(qid, 'waterlevel') .or. strcmpi(qid, 'waterdepth') & ! Backwards compatible names
-               .or. strcmpi(qid, 'initialvelocity')) then
+                .or. strcmpi(qid, 'waterlevel') .or. strcmpi(qid, 'waterdepth') & ! Backwards compatible names
+                .or. strcmpi(qid, 'initialvelocity')) then
                specified_water_levels = specified_water_levels .or. specified_indices
                if (global_value_provided) then
                   water_level_global_value_provided = .true.
@@ -406,9 +406,9 @@ contains
    subroutine fm_quantity_name_to_source_quantity_name(quantity_name, file_type, source_quantity_name)
       use string_module, only: str_tolower
       use timespace_parameters, only: FIELD1D
-      character(len=*), intent(in) :: quantity_name          !< Input quantity name (as it appears in the IniFieldFile).
-      integer, intent(in) :: file_type                       !< Data file type (one from the enum integers in timespace_parameters).
-      character(len=*), intent(out) :: source_quantity_name  !< Source name how the quantity is referred to in the data file. Empty string if combination is not supported.
+      character(len=*), intent(in) :: quantity_name !< Input quantity name (as it appears in the IniFieldFile).
+      integer, intent(in) :: file_type !< Data file type (one from the enum integers in timespace_parameters).
+      character(len=*), intent(out) :: source_quantity_name !< Source name how the quantity is referred to in the data file. Empty string if combination is not supported.
 
       source_quantity_name = ''
 
@@ -724,7 +724,7 @@ contains
           (.not. strcmpi(quantity, 'waterdepth')) .and. (.not. strcmpi(quantity, 'frictioncoefficient')) .and. &
           (.not. strcmpi(quantity, 'velocity')) .and. &
           (.not. strcmpi(quantity, 'initialvelocity')) & ! Silly exception, because in earlier D-HYDRO Suite 1D2D releases, this was already called 'initialvelocity'. Will phase out in file format 3.00 later.
-         ) then
+          ) then
          num_errors = num_errors + 1
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(ini_file_name), ''': [Global]. Quantity ''', trim(quantity), &
             ''' is unknown.'

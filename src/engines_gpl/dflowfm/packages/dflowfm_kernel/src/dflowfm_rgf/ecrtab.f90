@@ -42,7 +42,7 @@ contains
 
    subroutine ECRTAB(X, MC, NC, MRGF, HALF, mmax, nmax)
       use precision, only: dp
-      use m_readyy
+      use m_readyy, only: readyy
 
       real(kind=dp) :: af
       real(kind=dp) :: half

@@ -36,9 +36,8 @@ module m_dproject
 contains
    subroutine dPROJECT(X8, Y8, XX4, YY4, MODE)
       use precision, only: dp
-      use m_sferic
-      use m_wearelt
-      use m_sferzoom
+      use m_sferic, only: jsfertek, dg2rd, rd2dg
+      use m_sferzoom, only: y0, x0, fac
 
       real(kind=dp) :: x8, y8, xx4, yy4
       integer :: mode

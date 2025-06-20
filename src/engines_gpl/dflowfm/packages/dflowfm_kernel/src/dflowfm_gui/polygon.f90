@@ -34,10 +34,9 @@ module m_sub_polygon
 contains
    subroutine POLYGON(X, Y, N, NCOL)
       use precision, only: dp
-      use m_colnow
-      use m_set_col
-      use m_lnabs
-      use m_ptabs
+      use m_set_col, only: setcol
+      use m_lnabs, only: lnabs
+      use m_ptabs, only: ptabs
 
       integer :: i
       integer :: n

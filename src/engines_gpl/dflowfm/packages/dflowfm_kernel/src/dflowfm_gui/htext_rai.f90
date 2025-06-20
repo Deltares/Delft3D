@@ -38,10 +38,10 @@ contains
 
    subroutine htext_rai(val, x, y, xx, zz, ihv)
       use precision, only: dp
-      use m_raaitek
-      use m_htext
-      use m_movabs
-      use m_lnabs
+      use m_raaitek, only: xs2m, xs1m, ys2m, ys1m, xw1m, xw2m, yw1m, yw2m
+      use m_htext, only: htext
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       implicit none
       real(kind=dp) :: val, x, y, xx, zz
       real(kind=dp) :: fx, fy, xa, ya

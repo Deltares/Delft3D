@@ -38,13 +38,12 @@ contains
 
    subroutine KCIR(X, Y, Z)
       use precision, only: dp
-      use m_isocol
-      use m_cir
-      use unstruc_colors
+      use m_isocol, only: isocol
+      use m_cir, only: cir
+      use unstruc_colors, only: rcir, ncolhl
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
       use m_missing, only: dmiss
-      use m_wearelt
-      use m_set_col
-      use m_movabs
 
       integer :: ncol
       real(kind=dp) :: x

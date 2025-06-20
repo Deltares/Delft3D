@@ -42,8 +42,8 @@ contains
 
    subroutine MAKEY2(XR, YR, XO, YO, MMAX, NMAX) ! Voor tekenen bij JSFERIC SUBROUTINE MAKEY2
       use precision, only: dp
-      use M_SFERIC
-      use M_MISSING
+      use M_SFERIC, only: rd2dg
+      use M_MISSING, only: xymis
 
       integer :: mmax, nmax
       real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), &

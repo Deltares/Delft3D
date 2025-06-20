@@ -33,8 +33,8 @@ module m_dispnode2
    implicit none
 contains
    subroutine DISPNODE2(MP, NP)
-      use m_devices
-      use m_ktext
+      use m_devices, only: iws
+      use m_ktext, only: ktext
 
       integer :: mp, np
       character TEX * 23

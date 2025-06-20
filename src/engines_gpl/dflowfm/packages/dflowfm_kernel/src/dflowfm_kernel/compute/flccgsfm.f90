@@ -43,7 +43,7 @@ contains
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-      use m_dpsequfm
+      use m_dpsequfm, only: dpsequfm
       implicit none
 !
 ! Global variables

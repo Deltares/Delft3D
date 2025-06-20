@@ -38,8 +38,8 @@ contains
 
    subroutine DCIRR(XD, YD, ZD, NCOL)
       use precision, only: dp
-      use m_three_two
-      use m_cirr
+      use m_three_two, only: drietwee
+      use m_cirr, only: cirr
 
       implicit none
       integer :: ncol

@@ -41,7 +41,7 @@ contains
    !>   |y2-y1| / cos((y1+y2)/2) = |y3-y2| / cos((y2+y3)/2)
    subroutine comp_middle_latitude(y1_, y3_, y2, ierr)
       use precision, only: dp
-      use m_sferic
+      use m_sferic, only: jsferic, jamidlat, dg2rd, pi
       implicit none
 
       real(kind=dp), intent(in) :: y1_

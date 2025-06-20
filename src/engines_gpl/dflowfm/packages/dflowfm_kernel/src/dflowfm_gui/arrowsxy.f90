@@ -38,8 +38,8 @@ contains
 
    subroutine ARROWSxy(X0, Y0, UR, VR, VFAC)
       use precision, only: dp
-      use m_movabs
-      use m_lnabs
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       implicit none
       integer :: i
       real(kind=dp) :: ur

@@ -42,7 +42,7 @@ contains
 
    subroutine MAKEPLOTAREAS(NUMROW, NUMCOL, nsize)
       use precision, only: dp
-      use m_dscreens
+      use m_dscreens, only: x1sc, x2sc, y1sc, y2sc, numsc
 
       real(kind=dp) :: dx
       real(kind=dp) :: dy

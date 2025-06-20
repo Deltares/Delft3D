@@ -42,7 +42,7 @@ contains
 
    subroutine einstein_garcia(da, rs, dj1, dj2)
       use precision, only: dp
-      use m_einstein_garcia
+      use m_einstein_garcia, only: d, c1, c2
 
       real(kind=dp) :: da, rs, dj1, dj2
 

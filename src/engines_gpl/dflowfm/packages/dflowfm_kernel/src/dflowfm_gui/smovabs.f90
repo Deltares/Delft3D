@@ -38,8 +38,8 @@ contains
 
    subroutine smovabs(n, sx1, sy1)
       use precision, only: dp
-      use m_shipcoor
-      use m_movabs
+      use m_shipcoor, only: shipcoor
+      use m_movabs, only: movabs
       implicit none
       integer :: n
       real(kind=dp) :: sx1, sx2, sy1, sy2

@@ -42,10 +42,10 @@ module m_add_bndtracer
 contains
 
    subroutine add_bndtracer(tracnam, tracunit, itrac, janew)
-      use fm_external_forcings_data
-      use m_alloc
-      use m_missing
-      use m_fm_wq_processes
+      use fm_external_forcings_data, only: trnames, numtracers, nbndtr, trunits, wstracers, decaytimetracers, transformcoef, jadecaytracers
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss
+      use m_fm_wq_processes, only: wqbotnames
       use messagehandling, only: msgbuf, LEVEL_ERROR, mess, warn_flush
       use m_find_name, only: find_name
 

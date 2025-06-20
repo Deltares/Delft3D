@@ -38,11 +38,10 @@ module m_help
    implicit none
 contains
    subroutine HELP(WRDKEY, NLEVEL)
-      use unstruc_colors
+      use unstruc_colors, only: hlpfor, hlpbck, ihs, iws, lblfor, lblbck, wndfor, wndbck
+      use m_helpc, only: maxhlp, numtxt, hlptxt
       use unstruc_display_data, only: npos
-      use m_devices, only: ihs, iws
       use dflowfm_version_module, only: company, product_name
-      use m_helpc
 
       integer :: i
       integer :: ih

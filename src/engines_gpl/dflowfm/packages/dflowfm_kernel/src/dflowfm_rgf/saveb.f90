@@ -41,7 +41,7 @@ module m_saveb
 contains
 
    subroutine SAVEB(NPUT)
-      use m_grid_block
+      use m_grid_block, only: mb2, mb, nb2, nb, npt2, npt, nputo
 
       integer :: nput
 

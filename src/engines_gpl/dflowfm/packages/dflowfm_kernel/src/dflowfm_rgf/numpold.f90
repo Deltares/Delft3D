@@ -36,7 +36,7 @@ contains
       use precision, only: dp
 !     GEEF AANTAL PUNTEN VAN SPLINE MP
       !USE DIMENS
-      use m_missing
+      use m_missing, only: xymis
 
       integer :: mp, numpi, mmax, nmax
       real(kind=dp) :: X(MMAX, NMAX)

@@ -39,7 +39,7 @@ contains
 
    subroutine SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH DESIRED
       use precision, only: dp
-      use M_ALLOC
+      use M_ALLOC, only: realloc
 
       integer :: npl
       real(kind=dp) :: DPLA(NPL), DXS(NPL)

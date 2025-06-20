@@ -42,7 +42,7 @@ contains
 
    subroutine getdeltay(y, dx0, dy0) ! find dy=dx*cos(y0+0.5*dy) newton iteration
       use precision, only: dp
-      use m_sferic
+      use m_sferic, only: dg2rd
 
       real(kind=dp) :: y, dx0, dy0, f, df, yd, c, s, phi
       integer :: k

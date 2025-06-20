@@ -41,9 +41,9 @@ module m_savegrd
 contains
 
    subroutine savegrd()
-      use m_grid
-      use m_missing
-      use m_alloc
+      use m_grid, only: xc, xch, yc, ych, zc, zch, mch, mc, nch, nc
+      use m_missing, only: dmiss
+      use m_alloc, only: realloc
 
       integer, dimension(2) :: ibounds
       ! Possibly resize the help grid if the actual grid is larger.

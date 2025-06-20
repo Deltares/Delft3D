@@ -282,8 +282,8 @@ contains
       integer :: n_start
       integer :: n_end
 
-      allocate(new_index(n_links_polyline_nodes))
-      allocate(polygon_segment_weights_copy(n_links_polyline_nodes))
+      allocate (new_index(n_links_polyline_nodes))
+      allocate (polygon_segment_weights_copy(n_links_polyline_nodes))
 
       polygon_segment_weights_copy = polygon_segment_weights
       ! The following loop finds the n_start and n_end of which have the same crossed_link value

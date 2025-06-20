@@ -42,7 +42,7 @@ contains
 
    subroutine XMISAR(X, MMAX)
       use precision, only: dp
-      use M_MISSING
+      use M_MISSING, only: xymis
 
       integer :: i
       integer :: mmax

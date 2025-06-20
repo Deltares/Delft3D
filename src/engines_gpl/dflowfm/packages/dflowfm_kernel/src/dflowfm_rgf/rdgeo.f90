@@ -43,7 +43,7 @@ contains
    subroutine RDGEO(xrd, yrd, xgeo, ygeo, JAPARIJS)
       use m_bessel2wgs84, only: bessel2wgs84
       use precision, only: dp
-      use m_sferic
+      use m_sferic, only: dg2rd, rd2dg, pi
 
       integer :: japarijs
 !

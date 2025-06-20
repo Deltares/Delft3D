@@ -86,7 +86,7 @@ contains
       netstat = NETSTAT_OK
 
       call delete_dry_points_and_areas()
-      
+
       if (nump1d2d < 1) return
 
       call cosphiunetcheck(1)

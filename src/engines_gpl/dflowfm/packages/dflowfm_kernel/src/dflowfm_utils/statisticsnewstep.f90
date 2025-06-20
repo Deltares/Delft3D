@@ -41,7 +41,7 @@ module m_statisticsnewstep
 contains
 
    subroutine statisticsnewstep()
-      use m_statistics
+      use m_statistics, only: avedif, sqadif, dmxdif, numdif
 
       avedif = 0d0 ! for now only, cum dif with analytic sol
       sqadif = 0d0 ! for now only, cum dif with analytic sol

@@ -39,9 +39,9 @@ contains
    subroutine ISPOIN(X, Y, mmax, nmax, MC, NC, RD1, &
                      XL, YL, MV, NV)
       use precision, only: dp
-      use m_disval
+      use m_disval, only: disval
+      use m_wearelt, only: rcir
       use m_missing, only: xymis
-      use m_wearelt
 
       integer, intent(in) :: mmax, nmax, mc, nc
       integer, intent(out) :: mv, nv

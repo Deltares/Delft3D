@@ -42,7 +42,7 @@ contains
 
    subroutine hurdlestive(U10, fetchL, fetchD, Hsig, Tsig)
       use precision, only: dp
-      use m_physcoef
+      use m_physcoef, only: ag
       implicit none
       real(kind=dp) :: U10, fetchL, fetchD, Hsig, Tsig
       real(kind=dp) :: rt, ua, fs, ds, aa1, aa2, aa3, aa4

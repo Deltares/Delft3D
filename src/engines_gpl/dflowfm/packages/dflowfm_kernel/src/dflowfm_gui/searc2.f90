@@ -37,7 +37,7 @@ module m_searc2
 contains
 
    subroutine SEARC2(NAHEAD, HLPTXT, NUMTXT, LOOKUP, NUMCHC, JOFND)
-      use m_okay
+      use m_okay, only: okay
       implicit none
       integer :: jofnd
       integer :: k, len

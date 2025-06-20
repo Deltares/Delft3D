@@ -40,12 +40,12 @@ contains
    subroutine SETWYnew(X, Y, DY)
       use precision, only: dp
 !     Set zoomwindow limits at proper aspect ratio
-      use m_setwor
-      use m_inqasp
-      use m_wearelt
-      use m_sferic
-      use m_sferzoom
-      use m_dproject
+      use m_setwor, only: setwor
+      use m_inqasp, only: inqasp
+      use m_wearelt, only: y1, y2, x1, x2, rcir, cr, dsix
+      use m_sferic, only: jsfertek
+      use m_sferzoom, only: fac, dyh, y0, x0, x1w, y1w, x2w, y2w
+      use m_dproject, only: dproject
 
       real(kind=dp) :: asp, x, y, dy, dx, XA, Y1A, y2a
 

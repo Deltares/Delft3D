@@ -36,8 +36,8 @@ module m_bilinxy
 contains
    subroutine BILINXY(X, Y, XZ, YZ, XP, YP, XP2, YP2, INI)
       use precision, only: dp
-      use m_qnerror
-      use m_lubksb
+      use m_qnerror, only: qnerror
+      use m_lubksb, only: lubksb
 
       real(kind=dp) :: c
       integer :: i

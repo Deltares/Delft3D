@@ -42,15 +42,15 @@ contains
 
    subroutine REAARC(MINP, japrompt)
       use precision, only: dp
-      use m_getreal
-      use m_arcinfo
-      use m_polygon
-      use m_missing
-      use m_alloc
-      use m_qnerror
-      use m_readarcinfoheader
-      use m_read_arc_info_block
-      use m_read_large_arc_info_block
+      use m_getreal, only: getreal
+      use m_arcinfo, only: mca, nca, x0, y0, dxa, dya, rmis, d, maxarctile
+      use m_polygon, only: npl, xpl, ypl
+      use m_missing, only: dmiss
+      use m_alloc, only: aerr
+      use m_qnerror, only: qnerror
+      use m_readarcinfoheader, only: readarcinfoheader
+      use m_read_arc_info_block, only: readarcinfoblock
+      use m_read_large_arc_info_block, only: readlargearcinfoblock
 
       integer :: ierr
       integer :: minp

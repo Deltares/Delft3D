@@ -38,7 +38,7 @@ contains
 
    subroutine TWEEDRIE(X, Y, XD, YD, ZD)
       use precision, only: dp
-      use m_howtoview
+      use m_howtoview, only: jview, xyz
       implicit none
       real(kind=dp) :: X, Y, XD, YD, ZD
 

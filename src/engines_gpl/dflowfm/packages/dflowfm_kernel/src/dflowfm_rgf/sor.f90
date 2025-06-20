@@ -42,8 +42,7 @@ contains
 
    subroutine SOR(A, B, C, D, E, U, RJAC, M1, N1, M2, N2)
       use precision, only: dp
-      use m_grid
-      use m_gridsettings
+      use m_grid, only: mmax, nmax, mc, nc, ijc
       use m_orthosettings, only: ITIN
 
       real(kind=dp) :: anorm

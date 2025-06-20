@@ -42,7 +42,7 @@ module m_statisticsini
 contains
 
    subroutine statisticsini()
-      use m_statistics
+      use m_statistics, only: cumavedif, cumrmsdif, cumdmxdif, numcum
 
       call statisticsnewstep()
       cumavedif = 0d0 ! for now only, cum dif with analytic sol
