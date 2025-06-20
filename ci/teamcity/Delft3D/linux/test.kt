@@ -87,7 +87,6 @@ object LinuxTest : BuildType({
                     --config "configs/%configfile%"
                     --filter "testcase=%case_filter%"
                     --log-level DEBUG
-                    --parallel
                     --teamcity
                     --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
                 """.trimIndent()
