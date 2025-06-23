@@ -30,7 +30,7 @@
 !
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Copyright (C) 2007-2024 UNESCO-IHE, WL|Delft Hydraulics and Delft University !
+! Copyright (C) 2007-2025 UNESCO-IHE, Deltares and Delft University !
 ! Dano Roelvink, Ap van Dongeren, Ad Reniers, Jamie Lescinski,            !
 ! Jaap van Thiel de Vries, Robert McCall                                  !
 !                                                                         !
