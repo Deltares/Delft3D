@@ -160,7 +160,8 @@ contains
 
         ! Note: a bit of trickery here ... we should probably define the concentrations as a 2D array
         if (num_layers > 1) then
-            ierr = nf90_def_dim(imapfile, trim(meshgeom%meshname) // '_nLayers', num_layers, id_map_layersdim)
+            ierr = nf90_def_dim(imapfile, trim(meshgeom%meshname)//'_nLayers', num_layers, meshids%dimids(mdim_layer))
+            ierr = nf90_def_dim(imapfile, trim(meshgeom%meshname)//'_nInterfaces', num_layers + 1, meshids%dimids(mdim_interface))
         endif
 
         ! Write mesh geometry, include the vertical layer information.
@@ -185,6 +186,7 @@ contains
                 call mess(LEVEL_ERROR, 'Could not write geometry to file map')
                 return
             end if
+            ierr = nf90_enddef(imapfile)
 
             call construct_layer_coords( hyd, layer_zs, interface_zs )
 
@@ -192,6 +194,7 @@ contains
                      interface_zs, num_layers)
 
             deallocate( layer_zs, interface_zs )
+            ierr = nf90_redef(imapfile)
 
             if (ierr /= nf90_noerr) then
                 call mess(LEVEL_ERROR, 'Could not write geometry to file map')
@@ -226,7 +229,8 @@ contains
                         trim(meshgeom%meshName), substnc, 'depth_averaged_particle_concentration', &
                         substi(isub), unit(isub), cell_method, cell_measures, crs, ifill = -999, dfill = dmiss)
             else
-                ierr = ug_def_var(imapfile, id_map_depth_averaged_particle_concentration(isub), [meshids%dimids(mdim_face), id_map_layersdim, id_map_timedim], nf90_double, UG_LOC_FACE, &
+                ierr = ug_def_var(imapfile, id_map_depth_averaged_particle_concentration(isub), &
+                        [meshids%dimids(mdim_face), meshids%dimids(mdim_layer), id_map_timedim], nf90_double, UG_LOC_FACE, &
                         trim(meshgeom%meshName), substnc, 'particle_concentration', &
                         substi(isub), unit(isub), cell_method, cell_measures, crs, ifill = -999, dfill = dmiss)
 
