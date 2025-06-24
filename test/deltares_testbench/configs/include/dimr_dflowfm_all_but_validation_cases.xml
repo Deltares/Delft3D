@@ -6430,7 +6430,7 @@
       </checks>
     </testCase>  
     <testCase name="e02_f092_c10_exer_13_r01_vlissingen_course_model" ref="dflowfm_config">
-      <path version="2025-06-14T08:58:30.798000">e02_dflowfm/f092_tutorial_course_models/c10_exer_13_r01_vlissingen_course_model</path>
+      <path version="2025-06-24T13:56:38.958000">e02_dflowfm/f092_tutorial_course_models/c10_exer_13_r01_vlissingen_course_model</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/r01_map.nc" type="netCDF">
@@ -6442,7 +6442,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f092_c11_exer_13_r02_vlissingen_course_model" ref="dflowfm_config">
-      <path version="2025-06-14T08:58:34.664000">e02_dflowfm/f092_tutorial_course_models/c11_exer_13_r02_vlissingen_course_model</path>
+      <path version="2025-06-24T13:56:43.709000">e02_dflowfm/f092_tutorial_course_models/c11_exer_13_r02_vlissingen_course_model</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/r02_map.nc" type="netCDF">
