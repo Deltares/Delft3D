@@ -30,7 +30,7 @@
 !!!
 !!! Dio-const-rw: Datasets for one const
 !!!
-!!! (c) Deltares, nov 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

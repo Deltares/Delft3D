@@ -30,7 +30,7 @@
 !!!
 !!! Dio-DS: Dio Datasets
 !!!
-!!! (c) Deltares, dec 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

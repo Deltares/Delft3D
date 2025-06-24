@@ -30,7 +30,7 @@
 !!!
 !!! DIO-sem-support: semaphore support functions
 !!!
-!!! (c) Deltares, dec 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

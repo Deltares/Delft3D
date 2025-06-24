@@ -29,7 +29,7 @@
 !!!
 !!! SE_RR.F90: *S*obek*E*ngine API DLL interface on top of RR module
 !!!
-!!! (c) Deltares, sep 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!! Hans.vanPutten@Deltares.nl

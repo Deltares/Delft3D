@@ -33,7 +33,7 @@ module D3D_Sobek
 !!!
 !!! d3d_sobek.F90: D3S - module (*D*elft-*3*D *S*obek)
 !!!
-!!! (c) Deltares, feb. 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl, Herman.Kernkamp@deltares.nl
 !!!

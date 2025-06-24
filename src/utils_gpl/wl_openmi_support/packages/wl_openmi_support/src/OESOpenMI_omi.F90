@@ -29,7 +29,7 @@
 !!!
 !!! OESOpenMI.F90: DLL on OES - module
 !!!
-!!! (c) Deltares, may 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

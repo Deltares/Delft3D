@@ -30,7 +30,7 @@
 !!!
 !!! Dio-2DF-Nefis: Nefis I/O for 2d-field datasets
 !!!
-!!! (c) Deltares, july 2025
+!!! (c) Deltares, 2025
 !!!
 !!! David.Levelt@deltares.nl / Stef.Hummel@deltares.nl
 !!!

@@ -30,7 +30,7 @@
 !!!
 !!! Dio-2DF-Shm: (sobek)HIS I/O for Param./Loc./Time datasets
 !!!
-!!! (c) Deltares, mar 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

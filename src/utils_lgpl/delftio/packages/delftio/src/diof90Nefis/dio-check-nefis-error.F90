@@ -30,7 +30,7 @@
 !!!
 !!! dio-check-nefis-error: check the return value of a Nefis call
 !!!
-!!! (c) Deltares, apr 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

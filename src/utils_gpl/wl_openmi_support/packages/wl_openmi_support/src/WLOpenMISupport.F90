@@ -29,7 +29,7 @@
 !!!
 !!! Oes.F90: OES - module (*O*penmi *E*ngine *S*upport)
 !!!
-!!! (c) Deltares, oct 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

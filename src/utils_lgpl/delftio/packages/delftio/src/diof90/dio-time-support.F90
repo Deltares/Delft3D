@@ -30,7 +30,7 @@
 !!!
 !!! DIO-time-support: time string support functions
 !!!
-!!! (c) Deltares, apr 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

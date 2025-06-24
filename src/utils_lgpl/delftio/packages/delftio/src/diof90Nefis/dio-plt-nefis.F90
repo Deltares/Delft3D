@@ -30,7 +30,7 @@
 !!!
 !!! Dio-PLT-Nefis: Nefis I/O for Param./Loc./Time datasets
 !!!
-!!! (c) Deltares, dec 2025
+!!! (c) Deltares, 2025
 !!!
 !!! David.Levelt@deltares.nl
 !!!

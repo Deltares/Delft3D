@@ -33,7 +33,7 @@ module open_mi_dio
 !!!
 !!! open_mi_dio.F90: OD - module (*O*penMI exchange by means of *D*elftIO)
 !!!
-!!! (c) Deltares, feb. 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

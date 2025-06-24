@@ -5,7 +5,7 @@
 #
 # Stef.Hummel@deltares.nl
 #
-# (c) Deltares, Nov 2025
+# (c) Deltares, 2025
 #
 
 diffResult="diff_CVF_6.1_6.6-res.txt"

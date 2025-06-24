@@ -33,7 +33,7 @@ module d3d_sobek_conf
 !!!
 !!! d3d_sobek_conf.F90: DSC - module (*D*elft-3D *S*obek *C*onfiguration)
 !!!
-!!! (c) Deltares, feb. 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl, Herman.Kernkamp@deltares.nl
 !!!

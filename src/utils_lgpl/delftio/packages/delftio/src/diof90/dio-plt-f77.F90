@@ -30,7 +30,7 @@
 !!!
 !!! Dio-PLT-F77: F77 interface to DIO streams, PLT Datasets and Config
 !!!
-!!! (c) Deltares, mar 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

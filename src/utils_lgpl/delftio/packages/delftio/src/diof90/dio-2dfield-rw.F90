@@ -30,7 +30,7 @@
 !!!
 !!! Dio-2d-field-rw: 2d field datasets on stream functions
 !!!
-!!! (c) Deltares, aug 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!

@@ -30,7 +30,7 @@
 !!!
 !!! Dio_shm_f2c_f: F90 part of DioShm F90-to-C++ interface
 !!!
-!!! (c) Deltares, aug 2025
+!!! (c) Deltares, 2025
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!
