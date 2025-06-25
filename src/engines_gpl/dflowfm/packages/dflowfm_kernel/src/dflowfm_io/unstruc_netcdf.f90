@@ -18422,12 +18422,10 @@ contains
 !  another variable).
    subroutine read_sediment(var, stradd, imapfile, kstart, kcount, it_read, um, target_shift)
       use precision, only: dp
-
       use m_flow, only: kmx, ndkx
       use m_transport, only: ISED1, ISEDN, const_names
       use messagehandling, only: mess, LEVEL_WARN
       use m_alloc, only: realloc
-      use m_partitioninfo, only: um
       use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_S
 
 !input/output

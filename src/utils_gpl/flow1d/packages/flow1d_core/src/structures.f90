@@ -466,10 +466,10 @@ end subroutine deallocstructure
    end subroutine reIndexCrossSections
 
    pure function GetStrucType_from_string(string) result(istrtype)
-      use string_module
+      use string_module, only: str_lower
 
-      character(len=*), intent(in) :: string
-      integer                      :: istrtype
+      character(len=*), value :: string
+      integer :: istrtype
       call str_lower(string, 999)
       select case(trim(string))
       case ('pump')

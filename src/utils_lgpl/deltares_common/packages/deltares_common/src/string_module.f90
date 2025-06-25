@@ -446,10 +446,9 @@ contains
    end subroutine remove_leading_spaces
 
    !> Trims input string to a given length, filling with spaces at the end when necessary.
-      !!
-      !! When input string is longer than length, result is identical to normal string.
-      !! When input string is shorter than length, result is filled with spaces on the right.
-   elemental function trimexact(string, length) result(trimmed)
+   !! When input string is longer than length, result is identical to normal string.
+   !! When input string is shorter than length, result is filled with spaces on the right.
+   pure function trimexact(string, length) result(trimmed)
       character(len=*), intent(in) :: string !< Input string.
       integer, intent(in) :: length !< Exact length for the returned string.
       character(len=length) :: trimmed !< Resulting string.

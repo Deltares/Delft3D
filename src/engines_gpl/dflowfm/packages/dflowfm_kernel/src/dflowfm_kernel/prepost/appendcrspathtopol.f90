@@ -36,7 +36,7 @@ contains
 !! polyline. Useful for converting cross sections, thin dams or thin
 !! dykes back to editable polylines.
    subroutine appendCRSPathToPol(path)
-      use m_crspath, only: tcrspath, path
+      use m_crspath, only: tcrspath
       use m_polygon, only: npl, xpl, ypl, zpl, increasepol
       use m_missing, only: dmiss
 
