@@ -75,6 +75,7 @@ contains
       use m_find_name, only: find_name
       use m_fm_wq_processes_sub, only: get_waqinputname
       use network_data, only: LINK_1D, LINK_ALL
+      use m_set_bobs, only: setbobs
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -280,6 +281,7 @@ contains
             else if (qid == 'ibedlevtype') then ! Local override of bottomleveltype
 
                success = timespaceinitialfield_int(xu, yu, ibot, lnx, filename, filetype, operand, transformcoef)
+               call setbobs()
 
             else if (qid(1:17) == 'initialwaterlevel') then
                if (len_trim(md_inifieldfile) > 0) then
