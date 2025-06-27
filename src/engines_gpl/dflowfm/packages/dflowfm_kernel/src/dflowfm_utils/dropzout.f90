@@ -42,16 +42,15 @@ contains
 
    subroutine dropzout(idir)
       use precision, only: dp
-      use m_isocol
-      use m_polygon
-      use m_flowgeom
-      use m_flow
-      use m_transportdata
-      use m_missing, only: dmiss, jins
+      use m_isocol, only : isocol
+      use m_polygon, only : npl, xpl, ypl, zpl
+      use m_flowgeom, only : ndx, xz, yz, nd
+      use m_flow, only : sdropstep, dmiss, jins, kplot, sam1tot, vol0, vol1, nplot, kmx
+      use m_transportdata, only : constituents, isalt
+      use m_get_kbot_ktop, only : getkbotktop
+      use m_set_kbot_ktop, only : setkbotktop
+      use m_pfiller, only : pfiller
       use geometry_module, only: dbpinpol
-      use m_get_kbot_ktop
-      use m_set_kbot_ktop
-      use m_pfiller
 
       integer, intent(in) :: idir !< direction (1 for up, -1 for down)
 

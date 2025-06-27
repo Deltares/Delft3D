@@ -41,7 +41,7 @@ module m_wribl
 contains
 
    subroutine wribl(mout) ! write bottom level
-      use M_FLOWGEOM
+      use M_FLOWGEOM, only : ndxi, xz, yz, bl
       use m_filez, only: doclose
 
       integer :: mout, k

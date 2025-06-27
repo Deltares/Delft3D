@@ -37,8 +37,8 @@ contains
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
-      use m_splintxy
-      use m_comp_curv
+      use m_splintxy, only : splintxy
+      use m_comp_curv, only : comp_curv
 
 !     Bereken de afstand SS van punt TS in X,Y, tov punt met TS = 0, ofwel N=1
       integer :: n

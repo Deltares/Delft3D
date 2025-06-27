@@ -47,8 +47,8 @@ contains
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
-      use m_splinxy
-      use m_splintxy
+      use m_splinxy, only : splinxy
+      use m_splintxy, only : splintxy
 
       implicit none
 

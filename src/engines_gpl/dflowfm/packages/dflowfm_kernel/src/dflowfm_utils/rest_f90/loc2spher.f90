@@ -43,7 +43,7 @@ contains
 
    subroutine loc2spher(xref, yref, N, xloc, yloc, xglob, yglob)
       use precision, only: dp
-      use m_sferic
+      use m_sferic, only : jsferic, jasfer3d, dg2rd
       use geometry_module, only: sphertocart3D, cart3Dtospher
 
       real(kind=dp), intent(in) :: xref, yref !< global coordinates of reference point (longitude, latitude)

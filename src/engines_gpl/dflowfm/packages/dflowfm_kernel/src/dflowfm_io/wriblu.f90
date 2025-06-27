@@ -41,7 +41,7 @@ module m_wriblu
 contains
 
    subroutine wriblu(mout) ! write bottom level u points
-      use M_FLOWGEOM
+      use M_FLOWGEOM, only : lnx, xu, yu, blu
       use m_filez, only: doclose
 
       integer :: mout, L

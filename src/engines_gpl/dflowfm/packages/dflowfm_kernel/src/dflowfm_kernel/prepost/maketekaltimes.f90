@@ -42,7 +42,7 @@ contains
 
    subroutine maketekaltimes()
       use precision, only: dp
-      use m_flowtimes
+      use m_flowtimes, only : refdat
       use time_module, only: seconds_to_datetimestring
       use m_filez, only: oldfil, doclose, newfil
 

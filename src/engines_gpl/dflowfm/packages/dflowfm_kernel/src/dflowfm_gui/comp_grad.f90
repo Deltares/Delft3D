@@ -54,11 +54,10 @@ contains
 
    subroutine comp_grad(zss, ip0, ip1, ip0L, ip0R, ip1L, ip1R, gradx, grady, Sx, Sy, DareaL, DareaR)
       use precision, only: dp
-      use m_samples, only: MXSAM, MYSAM, xs, ys
-      use m_samples_refine, only: NDIM
-      use m_missing
-      use m_sferic
-      use geometry_module, only: getdxdy, getdx, getdy, dprodout
+      use m_samples, only : xs, ys
+      use m_missing, only : dmiss
+      use m_sferic, only : jsferic, jasfer3d
+      use geometry_module, only : getdxdy, dprodout
 
       implicit none
       real(kind=dp), dimension(NDIM, MXSAM*MYSAM) :: zss

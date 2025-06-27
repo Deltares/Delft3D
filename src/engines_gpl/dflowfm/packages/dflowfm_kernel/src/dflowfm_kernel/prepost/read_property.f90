@@ -41,7 +41,7 @@ contains
    !! parse it into a scalar double, or alternatively to check whether it is an existing file.
    subroutine read_property(prop_ptr, key, strvalue, dblvalue, is_double, typeandid, success)
       use precision, only: dp
-      use properties
+      use properties, only : prop_get
       use messagehandling, only: msgbuf, msg_flush
 
       type(TREE_DATA), pointer, intent(in) :: prop_ptr !< Property tree as read from a single .ini block

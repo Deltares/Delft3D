@@ -43,8 +43,8 @@ contains
 
    logical function Lcrossgridline(x1, x2, j)
       use precision, only: dp
-      use m_grid
-      use m_missing
+      use m_grid, only : mc, xc, yc
+      use m_missing, only : dmiss
       use m_sferic, only: jsferic
       use geometry_module, only: cross
 

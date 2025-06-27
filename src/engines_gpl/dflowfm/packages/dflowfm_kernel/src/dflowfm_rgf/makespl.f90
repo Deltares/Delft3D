@@ -49,10 +49,9 @@ module m_makespl
 contains
    subroutine MAKESPL(T, X, Y, imax, N, NT, MNFAC, XH, YH, KMAX, TT, H)
       use precision, only: dp
-      use m_gridsettings
-      use m_makes
-      use m_makessq
-      use m_getxy
+      use m_makes, only : makes
+      use m_makessq, only : makessq
+      use m_getxy, only : getxy
 
       integer :: imax, n, nt, kmax, mnfac
       real(kind=dp) :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), &

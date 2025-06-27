@@ -43,14 +43,14 @@ contains
 
    subroutine samdif()
       use precision, only: dp
-      use m_polygon
-      use m_samples
+      use m_polygon, only : increasepol, npl, xpl, ypl, zpl
+      use m_samples, only : ns, ns3, xs3, ys3, savesam, xs, ys, zs, zs3
+      use kdtree2Factory, only : build_kdtree, treeglob, realloc_results_kdtree, make_queryvector_kdtree, kdtree2_n_nearest, itree_empty, delete_kdtree2
+      use m_missing, only : dmiss
+      use m_delpol, only : delpol
       use network_data, only: tooclose
-      use kdtree2Factory
-      use m_missing
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: dbdistance
-      use m_delpol
 
       real(kind=dp) :: dist
 

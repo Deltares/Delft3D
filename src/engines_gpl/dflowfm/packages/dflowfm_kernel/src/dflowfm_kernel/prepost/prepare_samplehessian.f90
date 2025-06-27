@@ -44,9 +44,9 @@ contains
 
    subroutine prepare_sampleHessian(ierror)
       use m_allocate_samplehessian, only: allocate_samplehessian
-      use m_comp_samplehessian
-      use m_samples
-      use m_samples_refine
+      use m_comp_samplehessian, only : comp_samplehessian
+      use m_samples, only : mxsam, mysam, ns, zs
+      use m_samples_refine, only : ihesstat, ihesstat_ok, ndim, nsamplesmooth, zss, nsamplesmooth_last
 
       integer, intent(out) :: ierror !< error (1) or not (0)
 

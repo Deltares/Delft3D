@@ -34,7 +34,7 @@ module m_get_zlayer_indices_bobL
 contains
    subroutine getzlayerindicesbobL(n, nlayb, nrlay, bobL)
       use precision, only: dp
-      use m_flow
+      use m_flow, only : laydefnr, laymx, zslay
 
       integer :: n, nlayb, nrlay
       integer :: k, Ltn, mx ! layerdistribution indexes

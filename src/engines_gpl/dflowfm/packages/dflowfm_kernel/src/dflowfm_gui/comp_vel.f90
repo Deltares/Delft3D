@@ -40,10 +40,10 @@ contains
    subroutine comp_vel(mc, xc, yc, edgevel, vel)
       use precision, only: dp
       use m_missing, only: dmiss, dxymis
-      use m_sferic
+      use m_sferic, only : ra, jsferic, jasfer3d, dg2rd, rd2dg
+      use m_get_lr, only : get_lr
       use m_spline2curvi, only: dtolLR
       use geometry_module, only: dbdistance, normalout
-      use m_get_lr
 
       implicit none
 

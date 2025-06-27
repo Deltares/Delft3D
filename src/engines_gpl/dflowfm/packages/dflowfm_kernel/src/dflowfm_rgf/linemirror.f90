@@ -43,14 +43,13 @@ contains
 
    subroutine LINEMIRROR() !X, Y, mmax, nmax, MC, NC, IJC,IJYES)
       use precision, only: dp
-      use m_missing
-      use m_grid
-      use m_gridsettings
-      use unstruc_colors
-      use m_grid_block
-      use m_qnerror
-      use m_okay
-      use m_isitu
+      use m_missing, only : xymis
+      use m_grid, only : mc, mmax, xc, yc, nc, nmax
+      use m_gridsettings, only : facmir
+      use m_grid_block, only : mb, nb
+      use m_qnerror, only : qnerror
+      use m_okay, only : okay
+      use m_isitu, only : isitu
 
 !      integer :: mmax, nmax, mc, nc
 !      real(kind=dp) :: X(MMAX,NMAX), Y(MMAX,NMAX)

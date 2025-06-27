@@ -44,7 +44,7 @@ contains
 
    subroutine a1x1a2x2(x1, y1, x2, y2, alpha1, alpha2, xu, yu)
       use precision, only: dp
-      use m_sferic
+      use m_sferic, only : jsferic, jasfer3d
       use geometry_module, only: sphertocart3D, Cart3Dtospher
 
       real(kind=dp), intent(in) :: x1, y1

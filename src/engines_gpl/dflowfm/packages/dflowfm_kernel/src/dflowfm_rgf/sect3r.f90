@@ -44,11 +44,11 @@ contains
    subroutine SECT3R(XI, YI, XJ, YJ, imax, CRP, &
                      NUMPI, NUMPJ, NUMCRO, TIV, TJV, XP, YP)
       use precision, only: dp
-      use m_missing
+      use m_missing, only : dmiss
+      use m_splint, only : splint
+      use m_spline, only : spline
       use geometry_module, only: dbdistance, cross
       use m_sferic, only: jsferic, jasfer3D
-      use m_splint
-      use m_spline
 
 !     BEPAAL HET SNYPUNT VAN DE 2 SPLINES NR I EN J      USE DIMENS
 

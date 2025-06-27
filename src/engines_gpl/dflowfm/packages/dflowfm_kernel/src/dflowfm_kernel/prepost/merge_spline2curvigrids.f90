@@ -43,12 +43,12 @@ contains
 
    subroutine merge_spline2curvigrids()
       use precision, only: dp
-      use m_grid
-      use m_alloc
-      use m_missing
+      use m_grid, only : mc, xc, yc, nc
+      use m_alloc, only : realloc
+      use m_missing, only : dmiss
+      use m_increase_grid, only : increasegrid
       use geometry_module, only: dbdistance, get_startend
       use m_sferic, only: jsferic, jasfer3D
-      use m_increase_grid
 
       real(kind=dp), dimension(:, :), allocatable :: xcnew, ycnew
 

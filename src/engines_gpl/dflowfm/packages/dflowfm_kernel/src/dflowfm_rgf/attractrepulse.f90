@@ -43,14 +43,14 @@ contains
 
    subroutine ATTRACTREPULSE(XH, YH, X, Y, mmax, nmax, MC, NC, NUMP, JA)
       use precision, only: dp
-      use m_missing
-      use m_gridsettings
-      use m_sferic
-      use m_wearelt
+      use m_missing, only : dmiss, xymis
+      use m_gridsettings, only : rfac
+      use m_sferic, only : jsferic, jasfer3d, rd2dg, ra
+      use m_wearelt, only : x1, y1, x2, y2
+      use m_tolocl, only : tolocl
+      use m_grid_block, only : mb, nb, npt
+      use m_smeerfunctie, only : smeerfunctie
       use geometry_module, only: dbdistance
-      use m_tolocl
-      use m_grid_block
-      use m_smeerfunctie
 
       integer :: mmax, nmax, mc, nc, nump, ja
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)

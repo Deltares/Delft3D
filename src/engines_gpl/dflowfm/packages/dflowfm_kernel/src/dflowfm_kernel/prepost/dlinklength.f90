@@ -38,7 +38,7 @@ submodule(m_dlinklength) m_dlinklength_
 contains
 
    real(kind=dp) module function dLinklength(L)
-      use precision, only: dp
+      
       use network_data, only: xk, yk, kn
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D

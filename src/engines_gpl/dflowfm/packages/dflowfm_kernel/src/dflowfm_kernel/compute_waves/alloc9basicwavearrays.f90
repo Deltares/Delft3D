@@ -71,10 +71,9 @@ contains
    !
    !
    subroutine alloc9basicwavearrays()
-      use m_flow
-      use m_flowgeom
-      use m_waves
-      use m_flowparameters, only: flowwithoutwaves
+      use m_flow, only : realloc, aerr, flowwithoutwaves, lnkx, modind, kmx
+      use m_flowgeom, only : ndx, lnx
+      use m_waves, only : hwav, hwavuni, twav, twavuni, phiwav, phiwavuni, rlabda, uorb, ustokes, vstokes, wblt, cfwavhi, cfhi_vanrijn
       implicit none
       integer :: ierr
 

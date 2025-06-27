@@ -43,7 +43,7 @@ contains
 
    subroutine checksuspended_transport()
       use precision, only: dp
-      use m_check_einstein_garcia
+      use m_check_einstein_garcia, only : check_einstein_garcia
       use m_filez, only: doclose, newfil
 
       real(kind=dp) :: hsk

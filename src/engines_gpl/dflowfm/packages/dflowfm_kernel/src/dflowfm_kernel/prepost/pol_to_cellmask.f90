@@ -45,11 +45,10 @@ module m_pol_to_cellmask
 contains
 
    subroutine pol_to_cellmask()
-      use network_data
-      use m_polygon
+      use network_data, only : cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
+      use m_readyy, only : readyy
       use m_missing, only: dmiss, JINS
       use geometry_module, only: dbpinpol_optinside_perpol
-      use m_readyy
 
       integer :: in, k, KMOD
       integer :: num

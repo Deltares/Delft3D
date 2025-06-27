@@ -40,13 +40,13 @@ contains
    subroutine plot_ridges(ierror)
       use precision, only: dp
 
-      use m_samples
-      use m_samples_refine
+      use m_samples, only : mxsam, mysam, xs, ys
+      use m_samples_refine, only : ihesstat, ihesstat_ok, zss
+      use m_set_col, only : setcol
+      use m_movabs, only : movabs
+      use m_lnabs, only : lnabs
+      use m_comp_sampleDh, only : comp_sampledh
       use m_missing, only: dmiss
-      use m_set_col
-      use m_movabs
-      use m_lnabs
-      use m_comp_sampleDh
 
       integer, intent(out) :: ierror !< error (1) or not (0)
 

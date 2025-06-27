@@ -40,13 +40,12 @@ contains
 
    subroutine comp_edgevel(mc, edgevel, dgrow1, nfac1, ierror)
       use precision, only: dp
-      use m_splines
-      use m_gridsettings
-      use m_spline2curvi
-      use m_alloc
-      use m_missing
-      use m_comp_dgrow
-      use m_comp_nfac
+      use m_splines, only : mcs
+      use m_gridsettings, only : mfac, nfac
+      use m_spline2curvi, only : nsubmax, splineprops, dheight0, daspect, dwidth, nfacunimax, jaoutside, dgrow, xg1
+      use m_missing, only : dmiss
+      use m_comp_dgrow, only : comp_dgrow
+      use m_comp_nfac, only : comp_nfac
 
       implicit none
 

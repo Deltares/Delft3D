@@ -44,7 +44,7 @@ contains
 
    subroutine flippo(ip)
       use precision, only: dp
-      use m_polygon
+      use m_polygon, only : npl, xpl, ypl, zpl
 
       integer, intent(in) :: ip !< polygon point
 

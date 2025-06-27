@@ -41,10 +41,10 @@ module m_deleteselectedsplines
 contains
 
    subroutine deleteSelectedSplines()
-      use m_confrm
-      use M_SPLINES
-      use M_POLYGON
-      use M_MISSING
+      use m_confrm, only : confrm
+      use M_SPLINES, only : delsplines, mcs, lensp, xsp, ysp, delspline
+      use M_POLYGON, only : npl, xpl, ypl
+      use M_MISSING, only : jins, dmiss
       use geometry_module, only: pinpok
 
       integer :: i, j

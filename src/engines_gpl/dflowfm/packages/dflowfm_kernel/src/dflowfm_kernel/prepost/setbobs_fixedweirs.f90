@@ -44,8 +44,8 @@ contains
 
    subroutine setbobs_fixedweirs()
       use precision, only: dp
-      use m_flowgeom
-      use m_fixedweirs
+      use m_flowgeom, only : bob
+      use m_fixedweirs, only : nfxw, fxw
 
       integer :: i, ip, iL, Lf
       real(kind=dp) :: alpha, zc

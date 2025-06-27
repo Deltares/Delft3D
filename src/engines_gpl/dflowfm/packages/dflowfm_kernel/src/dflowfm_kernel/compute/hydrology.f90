@@ -44,7 +44,7 @@ contains
    !! Intended to be called as part of flow_modelinit().
    !! Actual initialization is done in init_hydrology().
    subroutine alloc_hydrology()
-      use m_alloc
+      use m_alloc, only : realloc
 
       integer :: ierr
       !
@@ -88,7 +88,7 @@ contains
    !! Intended to be called as part of flow_modelinit().
    !! Memory allocation must have done before by alloc_hydrology().
    subroutine init_hydrology()
-      use m_alloc
+      
 
       !
       ! Infiltration

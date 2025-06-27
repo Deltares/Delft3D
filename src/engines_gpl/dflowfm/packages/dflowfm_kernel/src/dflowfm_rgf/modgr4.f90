@@ -44,12 +44,12 @@ contains
    subroutine MODGR4(NUMP, LANDORSPLINE)
       use m_toland, only: toland
       use precision, only: dp
-      use m_grid
-      use m_landboundary
+      use m_grid, only : xch, ych, xc, yc, mmax, nmax, mc, nc
+      use m_landboundary, only : mxlan
+      use m_modfld, only : modfld
+      use m_grid_block, only : mb, nb
+      use m_qnerror, only : qnerror
       use M_SPLINES, only: mcs, splnump => nump
-      use m_modfld
-      use m_grid_block
-      use m_qnerror
 
       integer :: nump, landorspline
       integer :: m1, m2, n1, n2, i, j, in, jn, ncs, jdum

@@ -42,10 +42,10 @@ contains
 
    ! delete curviliniar grid outside polygon(s)
    subroutine del_grid_outside_pol()
-      use m_grid
-      use m_polygon
-      use m_tpoly
-      use m_missing
+      use m_grid, only : mc, nc, xc, yc
+      use m_polygon, only : npl
+      use m_tpoly, only : pol_to_tpoly, dbpinpol_tpoly, dealloc_tpoly
+      use m_missing, only : dmiss
 
       type(tpoly), dimension(:), allocatable :: pols
 

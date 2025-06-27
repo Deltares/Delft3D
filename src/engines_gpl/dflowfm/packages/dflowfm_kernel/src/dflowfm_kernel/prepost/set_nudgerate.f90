@@ -49,8 +49,8 @@ contains
    subroutine set_nudgerate()
       use m_flowgeom, only: Ndx
       use m_flowparameters, only: Tnudgeuni
-      use m_nudge
-      use m_missing
+      use m_nudge, only : nudge_time, nudge_rate, nudge_rate_unit_to_seci
+      use m_missing, only : dmiss
 
       integer :: k
 

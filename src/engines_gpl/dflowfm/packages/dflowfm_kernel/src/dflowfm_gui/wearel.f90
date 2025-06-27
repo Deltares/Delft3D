@@ -37,9 +37,9 @@ module m_wearel
 contains
 
    subroutine WEAREL()
-      use m_minmaxworld
-      use m_inilca
-      use m_wearelt
+      use m_minmaxworld, only : minmaxworld
+      use m_inilca, only : inilca
+      use m_wearelt, only : xmin, ymin, xmax, ymax
       implicit none
 
       call MINMAXWORLD(XMIN, YMIN, XMAX, YMAX)

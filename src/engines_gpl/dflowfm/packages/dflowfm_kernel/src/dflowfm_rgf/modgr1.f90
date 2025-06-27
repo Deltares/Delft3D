@@ -44,13 +44,12 @@ contains
    !> This routine operates directly on active grid data from m_grid
    subroutine MODGR1(NPUT, MP, NP, IN, JN) !, NCOL)!XH, YH, mmax, nmax, MC, NC,
       use m_adjust, only: adjust
-      use precision, only: dp
-      use m_tekgrpt
-      use m_missing
-      use m_grid
-      use unstruc_colors
-      use m_okay
-      use m_increase_grid
+      use m_tekgrpt, only : tekgrpt
+      use m_missing, only : xymis
+      use m_grid, only : mmax, nmax, mc, xc, yc, nc
+      use unstruc_colors, only : ncoldg
+      use m_okay, only : okay
+      use m_increase_grid, only : increasegrid
 
       integer :: nput, mp, np, in, jn
 !      real(kind=dp) :: XH(MMAX,NMAX), YH(MMAX,NMAX)

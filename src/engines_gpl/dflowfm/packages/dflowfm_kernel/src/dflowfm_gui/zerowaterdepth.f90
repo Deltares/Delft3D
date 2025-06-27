@@ -58,8 +58,8 @@ contains
    !
    !end subroutine wricir
    subroutine zerowaterdepth() ! restart without water
-      use m_flow
-      use m_flowgeom
+      use m_flow, only : s0, s1, u0, u1
+      use m_flowgeom, only : bl
       implicit none
       s0 = bl
       s1 = bl

@@ -46,7 +46,7 @@ contains
 
       use m_abrel2, only: abrel2
       use precision, only: dp
-      use M_GRIDSETTINGS
+      use M_GRIDSETTINGS, only : nfac, mfac
       use m_orthosettings, only: ITIN
 
       integer :: i

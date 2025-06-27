@@ -46,10 +46,10 @@ contains
       use m_get_crosssplines, only: get_crosssplines
       use precision, only: dp
       use m_allocate_splineprops, only: allocate_splineprops
-      use m_splines
-      use m_spline2curvi
-      use m_alloc
-      use m_deallocate_spline_props
+      use m_splines, only : mcs, nump, xsp, ysp
+      use m_spline2curvi, only : splineprops, daspect
+      use m_alloc, only : realloc
+      use m_deallocate_spline_props, only : deallocate_splineprops
       use m_splinelength, only: splinelength
 
       integer, intent(in) :: mcs_old !< number of original splines

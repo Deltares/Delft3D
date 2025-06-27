@@ -38,8 +38,8 @@ contains
 
    subroutine INILCA()
       use precision, only: dp
-      use m_wearelt
-      use m_anchor
+      use m_wearelt, only : xmax, xmin, ymax, ymin
+      use m_anchor, only : anchor
 
       real(kind=dp) :: xla, yla
       !CALL ORGLOCATOR(XLA,XLB)

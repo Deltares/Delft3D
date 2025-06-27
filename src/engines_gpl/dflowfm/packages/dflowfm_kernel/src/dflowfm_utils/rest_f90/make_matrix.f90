@@ -43,8 +43,8 @@ contains
 
    subroutine make_matrix(CFL, s1)
       use precision, only: dp
-      use m_reduce
-      use m_flowgeom
+      use m_reduce, only : bbr, ccr, lv2, ddr
+      use m_flowgeom, only : lnx, ln
 
       real(kind=dp), intent(in) :: CFL !< CFL-number
       real(kind=dp), dimension(Ndx), intent(in) :: s1 !< exact solution

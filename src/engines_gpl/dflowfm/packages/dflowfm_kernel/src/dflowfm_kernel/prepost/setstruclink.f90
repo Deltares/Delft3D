@@ -41,7 +41,7 @@ contains
 
    subroutine setstruclink()
 
-      use m_flow
+      use m_flow, only : ngatesg, l1gatesg, l2gatesg, kgate, struclink, ngategen, gate2cgen, l1cgensg, l2cgensg, kcgen, ncgensg, ngenstru, genstru2cgen, nweirgen, weir2cgen
 
       integer :: i, n, L, Lf, La
       !

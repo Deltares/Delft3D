@@ -42,8 +42,7 @@ contains
 
    real(kind=dp) function dprodin(x1, y1, x2, y2, x3, y3, x4, y4) ! inner product of two segments
       use precision, only: dp
-      use m_missing
-      use m_sferic
+      use m_sferic, only : jsferic, jasfer3d
       use geometry_module, only: getdx, getdy, sphertoCart3D
 
       real(kind=dp) :: x1, y1, x2, y2, x3, y3, x4, y4

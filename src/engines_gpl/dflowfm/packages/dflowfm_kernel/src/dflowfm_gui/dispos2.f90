@@ -39,9 +39,9 @@ contains
    subroutine DISPOS2(X, Y)
       use precision, only: dp
       use m_devices, only: iws
-      use m_disfor
-      use m_ktext
-      use m_disdis
+      use m_disfor, only : xyform
+      use m_ktext, only : ktext
+      use m_disdis, only : disdis
 
       real(kind=dp) :: x
       real(kind=dp) :: y

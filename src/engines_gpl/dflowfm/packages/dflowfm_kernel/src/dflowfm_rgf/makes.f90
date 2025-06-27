@@ -36,9 +36,9 @@ contains
 !!     van NT snijpunten
    subroutine MAKES(X, Y, X2, Y2, T, S, S2, imax, N, NT, H)
       use precision, only: dp
-      use m_splinxy
-      use m_spline
-      use m_getdis
+      use m_splinxy, only : splinxy
+      use m_spline, only : spline
+      use m_getdis, only : getdis
 
       integer :: imax, n, nt
       real(kind=dp) :: X(IMAX), Y(IMAX), X2(IMAX), Y2(IMAX), T(IMAX), S(IMAX), S2(IMAX)

@@ -44,7 +44,7 @@ contains
                    NC, II, JJ, IN, &
                    JN, DXY0)
       use precision, only: dp
-      use m_missing
+      use m_missing, only : xymis, dmiss
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
 

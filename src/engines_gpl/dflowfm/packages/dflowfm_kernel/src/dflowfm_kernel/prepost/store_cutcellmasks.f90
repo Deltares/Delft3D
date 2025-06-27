@@ -43,8 +43,8 @@ contains
 
    subroutine store_cutcellmasks(numk, kc, numL, Lmask, xmL, ymL)
       use precision, only: dp
-      use m_cutcells
-      use m_alloc
+      use m_cutcells, only : jastored, npol, ik, jk, idxl, xdxl, ydxl, pdxl
+      use m_alloc, only : realloc
       use messagehandling, only: LEVEL_ERROR, mess
 
       integer, intent(in) :: numk

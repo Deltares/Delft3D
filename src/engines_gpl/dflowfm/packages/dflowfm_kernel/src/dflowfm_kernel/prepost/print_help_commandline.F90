@@ -41,7 +41,7 @@ module m_print_help_commandline
 contains
 
    subroutine print_help_commandline()
-      use m_gui
+      use m_gui, only : jagui
       use system_utils, only: FILESEP
 
       character(len=255) :: progarg

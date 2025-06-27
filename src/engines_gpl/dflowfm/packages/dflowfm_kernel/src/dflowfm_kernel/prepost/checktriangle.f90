@@ -43,10 +43,10 @@ contains
    subroutine CHECKTRIANGLE(N, JA, phimin, phimax)
       use precision, only: dp
 
-      use m_samples
-      use m_ec_triangle
+      use m_samples, only : xs, ys
+      use m_ec_triangle, only : indx
+      use m_sferic, only : jsferic, jasfer3d, rd2dg
       use network_data, only: TRIANGLEMINANGLE, TRIANGLEMAXANGLE
-      use m_sferic
       use geometry_module, only: dcosphi
       use m_missing, only: dxymis
 

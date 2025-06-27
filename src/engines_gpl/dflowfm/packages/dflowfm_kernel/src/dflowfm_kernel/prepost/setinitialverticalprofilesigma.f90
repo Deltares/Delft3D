@@ -42,11 +42,11 @@ contains
 
    subroutine setinitialverticalprofilesigma(yy, ny, filename) ! polyfil
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_polygon
-      use m_reapol
-      use m_get_kbot_ktop
+      use m_flowgeom, only : ndxi, bl
+      use m_flow, only : kmxx, zws, s1
+      use m_polygon, only : savepol, xpl, ypl, npl, restorepol
+      use m_reapol, only : reapol
+      use m_get_kbot_ktop, only : getkbotktop
       use m_filez, only: oldfil
 
       integer :: ny
