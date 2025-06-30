@@ -43,7 +43,7 @@ function(F90TWFPP INFILE OUTFILE)
         find_program(TR_EXE NAMES "tr" REQUIRED)
         add_custom_command(
             OUTPUT "${OUTFILE}"
-            COMMAND "${FPP_EXE}" ${FPPOPTS} ${FPPDEFS} ${FPPINCL} "${INFILE}" | ${SED_EXE} \"/^[ \\t]*\#/d\" | ${TR_EXE} \"\;\" \"\\n\" > "${OUTFILE}"
+            COMMAND "${FPP_EXE}" ${FPPOPTS} ${FPPDEFS} ${FPPINCL} "${INFILE}" | ${SED_EXE} "/^[ \\t]*#/d" | ${TR_EXE} "\\;" "\\n" > "${OUTFILE}"
             DEPENDS "${INFILE}" ${FPP_DEPENDS}
             COMMENT "precompile ${INFILE}"
             VERBATIM
@@ -156,7 +156,16 @@ function(F90TWTEST NAME)
     gtest_discover_tests(${NAME})
 endfunction()
 
-set(FPP_EXE "${CMAKE_C_COMPILER}")
+# resolve the preprocessor to be used. it is assumed that on unix bases systems
+# cpp or clang  will be found in the path and in addition, on windows based
+# systems, cl.exe may be abailable. On mac os cpp in interface to clang with
+# "-traditional-cpp" locked. To avoid this we use directly the clang frond end.
+if(WIN32)
+    find_program(FPP_EXE NAMES cpp.exe clang.exe cl.exe REQUIRED)
+else()
+    find_program(FPP_EXE NAMES clang cpp REQUIRED)
+endif()
+
 if(NOT FPP_EXE)
     message (FATAL_ERROR "C preprocessor was not found")
 endif()
