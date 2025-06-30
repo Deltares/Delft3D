@@ -105,7 +105,7 @@ contains
     !! If file exists, it will be overwritten.
     subroutine unc_init_map(hyd, num_layers)
 
-        use partmem, only: nosubs, nfract, oil, substi
+        use partmem, only: nosubs, nfract, oil, substi, zmodel
         use m_part_flow, only: LAYTP_SIGMA, LAYTP_Z
         use io_ugrid
         use m_alloc
@@ -200,7 +200,7 @@ contains
                 call get_layer_coords( hyd, layer_zs, interface_zs )
 
                 call ug_write_mesh_layer_arrays(imapfile, meshids, ierr, num_layers, laytp, layer_zs, &
-                         interface_zs, num_layers)
+                         interface_zs, merge( 0, num_layers, zmodel ) )
 
                 deallocate( layer_zs, interface_zs )
                 ierr = nf90_redef(imapfile)
@@ -520,8 +520,6 @@ contains
 
         integer, save :: icount = 0
 
-        write(88,*) ' '
-
         icount = icount + 1
 
         !  allocate
@@ -561,11 +559,6 @@ contains
             do i = 1, NopartTot
                 k = mpart(i)
                 lay = laypart(i)
-
-                write(88,*) i, k, lay
-                if ( abs(lay) > 10 ) then
-                    flush( 88 )
-                endif
 
                 zz(i) = 0.0
                 if (k > 0 .and. lay > 0) then
