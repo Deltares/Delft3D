@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e100_f10_c00_fm2" ref="dimr">
-      <path version="2025-06-19T17:30:00">e100_dflowfm-dwaves/f10_parallel/c00_fm2</path>
+      <path version="2025-07-01T13:58:07.160000">e100_dflowfm-dwaves/f10_parallel/c00_fm2</path>
       <programs>
           <program ref="dimr">
              <arguments>
@@ -23,7 +23,7 @@
       </checks>
     </testCase>
     <testCase name="e100_f10_c01_fm3_wave1_omp" ref="dimr">
-      <path version="2025-06-19T17:30:00">e100_dflowfm-dwaves/f10_parallel/c01_fm3_wave1_omp</path>
+      <path version="2025-07-01T13:58:18.058000">e100_dflowfm-dwaves/f10_parallel/c01_fm3_wave1_omp</path>
       <programs>
           <program ref="dimr">
              <arguments>
@@ -59,7 +59,7 @@
       </checks>
     </testCase>
     <testCase name="e100_f10_c02_fm3_wave3_lib" ref="dimr">
-      <path version="2025-06-19T17:30:00">e100_dflowfm-dwaves/f10_parallel/c02_fm3_wave3_lib</path>
+      <path version="2025-07-01T13:58:27.756000">e100_dflowfm-dwaves/f10_parallel/c02_fm3_wave3_lib</path>
       <programs>
           <program ref="dimr">
              <arguments>
@@ -92,7 +92,7 @@
       </checks>
     </testCase>
     <testCase name="e100_f10_c03_fm3_wave2_lib" ref="dimr">
-      <path version="2025-06-19T17:30:00">e100_dflowfm-dwaves/f10_parallel/c03_fm3_wave2_lib</path>
+      <path version="2025-07-01T13:58:38.215000">e100_dflowfm-dwaves/f10_parallel/c03_fm3_wave2_lib</path>
       <programs>
           <program ref="dimr">
              <arguments>
@@ -125,7 +125,7 @@
       </checks>
     </testCase>
     <testCase name="e100_f10_c04_wave1_omp" ref="dimr">
-      <path version="2025-06-19T17:30:00">e100_dflowfm-dwaves/f10_parallel/c04_wave1_omp</path>
+      <path version="2025-07-01T13:58:48.029000">e100_dflowfm-dwaves/f10_parallel/c04_wave1_omp</path>
       <programs>
           <program ref="dimr_seq">
              <arguments>
@@ -146,7 +146,7 @@
       </checks>
     </testCase>
     <testCase name="e100_f10_c05_wave2_lib" ref="dimr">
-      <path version="2025-06-19T17:30:00">e100_dflowfm-dwaves/f10_parallel/c05_wave2_lib</path>
+      <path version="2025-07-01T13:58:52.012000">e100_dflowfm-dwaves/f10_parallel/c05_wave2_lib</path>
       <programs>
           <program ref="dimr">
              <arguments>
@@ -164,7 +164,7 @@
       </checks>
     </testCase>
     <testCase name="e100_f10_c06_wave4_lib" ref="dimr">
-      <path version="2025-06-19T17:30:00">e100_dflowfm-dwaves/f10_parallel/c06_wave4_lib</path>
+      <path version="2025-07-01T13:58:56.803000">e100_dflowfm-dwaves/f10_parallel/c06_wave4_lib</path>
       <programs>
           <program ref="dimr">
              <arguments>
