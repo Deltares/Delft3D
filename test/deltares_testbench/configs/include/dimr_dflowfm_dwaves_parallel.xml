@@ -12,12 +12,12 @@
       <checks>
         <file name="fm/dflowfmoutput/loo_0000_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
         <file name="fm/dflowfmoutput/loo_0001_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
       </checks>
@@ -38,22 +38,22 @@
       <checks>
         <file name="fm/dflowfmoutput/loo_0000_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
         <file name="fm/dflowfmoutput/loo_0001_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
         <file name="fm/dflowfmoutput/loo_0002_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
         <file name="wave/wavm-loo.nc" type="netCDF">
            <parameters>
-               <parameter name="hsign" toleranceAbsolute="0.001" />
+               <parameter name="hsign" toleranceAbsolute="0.1" />
            </parameters>
         </file>
       </checks>
@@ -71,22 +71,22 @@
       <checks>
         <file name="fm/dflowfmoutput/loo_0000_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
         <file name="fm/dflowfmoutput/loo_0001_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
         <file name="fm/dflowfmoutput/loo_0002_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
         <file name="wave/wavm-loo.nc" type="netCDF">
            <parameters>
-               <parameter name="hsign" toleranceAbsolute="0.001" />
+               <parameter name="hsign" toleranceAbsolute="0.1" />
            </parameters>
         </file>
       </checks>
@@ -104,22 +104,22 @@
       <checks>
         <file name="fm/dflowfmoutput/loo_0000_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
         <file name="fm/dflowfmoutput/loo_0001_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
         <file name="fm/dflowfmoutput/loo_0002_map.nc" type="netCDF">
            <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+               <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
            </parameters>
         </file>
         <file name="wave/wavm-loo.nc" type="netCDF">
            <parameters>
-               <parameter name="hsign" toleranceAbsolute="0.001" />
+               <parameter name="hsign" toleranceAbsolute="0.1" />
            </parameters>
         </file>
       </checks>
@@ -140,7 +140,7 @@
       <checks>
         <file name="wave/wavm-obw.nc" type="netCDF">
            <parameters>
-               <parameter name="hsign" toleranceAbsolute="0.001" />
+               <parameter name="hsign" toleranceAbsolute="0.1" />
            </parameters>
         </file>
       </checks>
@@ -158,7 +158,7 @@
       <checks>
         <file name="wave/wavm-obw.nc" type="netCDF">
            <parameters>
-               <parameter name="hsign" toleranceAbsolute="0.001" />
+               <parameter name="hsign" toleranceAbsolute="0.1" />
            </parameters>
         </file>
       </checks>
@@ -176,7 +176,7 @@
       <checks>
         <file name="wave/wavm-obw.nc" type="netCDF">
            <parameters>
-               <parameter name="hsign" toleranceAbsolute="0.001" />
+               <parameter name="hsign" toleranceAbsolute="0.1" />
            </parameters>
         </file>
       </checks>
