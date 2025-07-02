@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -39,7 +39,7 @@ end module M_control
 
 !                                 control.for
 !
-!     (C) 1996 Deltares
+!     (C) 2025 Deltares
 !
 !     E.A. Verschuur
 !

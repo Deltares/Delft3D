@@ -43,6 +43,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jasfer3d', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Allowcoolingbelowzero', OBSOLETE, &
           'Consider using MDU-keyword salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'RhoairRhowater', OBSOLETE, &
+          'This keyword is replaced with rhoWaterInWindStress in the [Wind] block in the MDU-file.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'writeBalanceFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'flow', DEPRECATED, 'Use [Lateral] discharge instead.')

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -601,7 +601,6 @@ contains
       logical :: domain_needs_cell_1, domain_needs_cell_2
       integer :: i
       integer, dimension(:, :), allocatable :: lne_org
-      integer :: nLink2Dhang ! number of hanging 2D links found
       integer :: i_old
       character(len=128) :: message
 
@@ -613,12 +612,10 @@ contains
 
 !     make link mask
       Lc = 0
-      nLink2Dhang = 0
       do L = 1, numL
          if ((kn(3, L) == LINK_2D .and. lnn(L) == 0)) then
             ! check for hanging 2D
             Lc(L) = 0 ! set mask to inactive
-            nLink2Dhang = nLink2dhang + 1
             cycle
          end if
          ic1 = abs(lne(1, L))
@@ -666,14 +663,6 @@ contains
          call mess(LEVEL_WARN, trim(message))
          ierror = DFM_GENERICERROR
          goto 1234
-      end if
-
-!     output number of hanging 2D links
-      if (idmn == 0) then
-         if (nLink2Dhang > 0) then
-            write (message, "(I0, ' hanging 2D links disregarded.')") nLink2Dhang
-            call mess(LEVEL_WARN, trim(message))
-         end if
       end if
 
       if (jacells == 1) then

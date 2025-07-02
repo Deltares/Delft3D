@@ -40,37 +40,10 @@ object LinuxRuntimeContainers : BuildType({
 
     steps {
         mergeTargetBranch {}
-        script {
+        exec {
             name = "Remove system libraries"
             workingDir = "dimrset/lib"
-            scriptContent = """
-                rm -fv libuuid.so.* \
-                    libdl.so.* \
-                    librt.so.* \
-                    libpthread.so.* \
-                    libm.so.* \
-                    libgcc_s.so.* \
-                    libz.so.* \
-                    libselinux.so.* \
-                    libbz2.so.* \
-                    libcom_err.so.* \
-                    libcurl.so.* \
-                    libgssapi_krb5.so.* \
-                    libidn2.so.* \
-                    libk5crypto.so.* \
-                    libkeyutils.so.* \
-                    libkrb5.so.* \
-                    libkrb5support.so.* \
-                    liblzma.so.* \
-                    libnghttp2.so.* \
-                    libpcre2-8.so.* \
-                    libresolv.so.* \
-                    libsasl2.so.* \
-                    libsqlite3.so.* \
-                    libunistring.so.* \
-                    libxml2.so.* \
-                    libzstd.so.*
-            """.trimIndent()
+            path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
         }
         script {
             name = "Set execute rights"
@@ -78,14 +51,9 @@ object LinuxRuntimeContainers : BuildType({
                 chmod a+x dimrset/bin/*
             """.trimIndent()
         }
-        script {
+        exec {
             name = "Copy example and readme.txt"
-            scriptContent = """
-                mkdir ./example && cp -r examples/dflowfm/01_dflowfm_sequential/* ./example
-                rm ./example/run.* ./example/run_docker.sh
-                cp -f ci/teamcity/Delft3D/linux/docker/readme.txt .
-                cp -f ci/teamcity/Delft3D/linux/docker/delft3dfm_latest_readme.txt .
-            """.trimIndent()
+            path = "ci/teamcity/Delft3D/linux/scripts/copyExampleAndReadMe.sh"
         }
         dockerCommand {
             name = "Docker build Delft3D runtime image"

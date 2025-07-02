@@ -1,0 +1,26 @@
+rm -fv libuuid.so.* \
+    libdl.so.* \
+    librt.so.* \
+    libpthread.so.* \
+    libm.so.* \
+    libgcc_s.so.* \
+    libz.so.* \
+    libselinux.so.* \
+    libbz2.so.* \
+    libcom_err.so.* \
+    libcurl.so.* \
+    libgssapi_krb5.so.* \
+    libidn2.so.* \
+    libk5crypto.so.* \
+    libkeyutils.so.* \
+    libkrb5.so.* \
+    libkrb5support.so.* \
+    liblzma.so.* \
+    libnghttp2.so.* \
+    libpcre2-8.so.* \
+    libresolv.so.* \
+    libsasl2.so.* \
+    libsqlite3.so.* \
+    libunistring.so.* \
+    libxml2.so.* \
+    libzstd.so.*

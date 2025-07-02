@@ -52,21 +52,9 @@ object WindowsBuild : BuildType({
         }
         python {
             name = "Determine product by branch prefix"
-            command = script {
-                content="""
-                    if "%product%" == "auto-select":
-                        if "merge-request" in "%teamcity.build.branch%":
-                            if "%teamcity.pullRequest.source.branch%".startswith("revert-"):
-                                product = "all"
-                            else:
-                                product = "%teamcity.pullRequest.source.branch%".split("/")[0]
-                        else:
-                            product = "%teamcity.build.branch%".split("/")[0]
-                        if "%teamcity.build.branch.is_default%" == "true":
-                            product = "all"
-                        print(f"##teamcity[setParameter name='product' value='{product}-testbench']")
-                        print(f"##teamcity[buildNumber '{product}-testbench: %build.vcs.number%']")
-                """.trimIndent()
+            command = file {
+                filename ="""ci\\teamcity\\Delft3D\\windows\\scripts\\determineProduct.py"""
+                scriptArguments = "%product% %teamcity.build.branch% %teamcity.build.branch.is_default% %build.vcs.number% %teamcity.pullRequest.source.branch%"
             }
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows

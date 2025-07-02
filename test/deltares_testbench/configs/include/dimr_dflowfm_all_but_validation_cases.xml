@@ -3580,7 +3580,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c094_varying_air_density" ref="dflowfm_default">
-      <path version="2025-06-10T18:59:01.998000">e02_dflowfm/f011_wind/c094_varying_air_density</path>
+      <path version="2025-06-24T11:23:34.734000">e02_dflowfm/f011_wind/c094_varying_air_density</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/output/air_density_his.nc" type="netCDF">
@@ -3598,7 +3598,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c095_computed_air_density" ref="dflowfm_default">
-      <path version="2025-06-23T07:35:31.816000">e02_dflowfm/f011_wind/c095_computed_air_density</path>
+      <path version="2025-06-24T11:24:33.284000">e02_dflowfm/f011_wind/c095_computed_air_density</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/output/computed_air_density_his.nc" type="netCDF">
@@ -3616,7 +3616,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c096_computed_air_density_combined_quantities" ref="dflowfm_default">
-      <path version="2025-06-20T19:50:00">e02_dflowfm/f011_wind/c096_computed_air_density_combined_quantities</path>
+      <path version="2025-06-24T11:25:34.574000">e02_dflowfm/f011_wind/c096_computed_air_density_combined_quantities</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/output/computed_air_density_his.nc" type="netCDF">
@@ -3629,6 +3629,24 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
             <parameter name="mesh2d_windstressx" toleranceAbsolute="0.001" />
             <parameter name="mesh2d_windstressy" toleranceAbsolute="0.001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f011_c097_rho_water_wind_stress" ref="dflowfm_default">
+      <path version="2025-06-27T11:37:08.600000">e02_dflowfm/f011_wind/c097_rho_water_wind_stress</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfm/output/wind_stress_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+        <file name="dflowfm/output/wind_stress_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.00001" />
+            <parameter name="mesh2d_windstressx" toleranceAbsolute="0.00001" />
+            <parameter name="mesh2d_windstressy" toleranceAbsolute="0.00001" />
           </parameters>
         </file>
       </checks>

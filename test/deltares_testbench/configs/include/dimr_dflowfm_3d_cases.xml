@@ -639,7 +639,7 @@
     </testCase>
 	
     <testCase name="e02_f020_c032_airdensity_effect_on_heatfluxes" ref="dflowfm_default">
-      <path version="2025-04-07T10:12:08.629000">e02_dflowfm/f020_heat_flux/c032_airdensity_effect_on_heatfluxes</path>
+      <path version="2025-06-24T11:16:38.598000">e02_dflowfm/f020_heat_flux/c032_airdensity_effect_on_heatfluxes</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/bonaire_map.nc" type="netCDF">
@@ -1881,7 +1881,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f210_c001_basic_thermobaricity_densities" ref="dflowfm_default">
-      <path version="2025-06-10T19:04:37.672000">e02_dflowfm/f210_3D_thermobaricity/c001_basic_thermobaricity_densities</path>
+      <path version="2025-06-24T11:18:36.242000">e02_dflowfm/f210_3D_thermobaricity/c001_basic_thermobaricity_densities</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfm/output/thermobaricity_his.nc" type="netCDF">

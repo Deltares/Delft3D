@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2025.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -670,7 +670,7 @@ void DimrExe::freeLib (void) {
 static void printAbout (char * exeName) {
     printf ("\n\
 %s \n\
-Copyright (C)  Stichting Deltares, 2011-2024. \n\
+Copyright (C)  Stichting Deltares, 2011-2025. \n\
 GNU General Public License, see <http://www.gnu.org/licenses/>. \n\n\
 sales@deltaressystems.nl \n", getfullversionstring_dimr_exe());
     printf("%s\n\n", geturlstring_dimr_exe());
