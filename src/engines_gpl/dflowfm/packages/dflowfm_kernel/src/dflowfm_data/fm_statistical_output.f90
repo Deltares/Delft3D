@@ -2610,7 +2610,7 @@ contains
          end if
 
          ! Meteo
-         if (air_pressure_available > 0 .and. jahiswind > 0) then
+         if (air_pressure_available .and. jahiswind > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PATM), valobs(:, IPNT_PATM))
          end if
 

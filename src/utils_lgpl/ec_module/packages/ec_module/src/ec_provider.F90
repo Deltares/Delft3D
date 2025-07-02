@@ -388,7 +388,8 @@ contains
                   "solarradiation", "longwaveradiation", "wavesignificantheight", &
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
-                  "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation")
+                  "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
+                  "pseudoAirPressure", "waterLevelCorrection")
                success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2565,6 +2566,12 @@ contains
       case ('airpressure', 'atmosphericpressure')
          ncvarnames(1) = 'msl' ! mean sea-level pressure
          ncstdnames(1) = 'air_pressure'
+      case ('pseudoAirPressure')
+         ncvarnames(1) = 'msl' ! mean sea-level pressure
+         ncstdnames(1) = 'air_pressure'
+      case ('waterLevelCorrection')
+         ncvarnames(1) = 'ssh' ! water level correction
+         ncstdnames(1) = 'sea_surface_height' 
       case ('airdensity')
          ! UNST-6593: air_density has variable name p140209 and no standard_name, will be changed in the future according to ECMWF.
          ncvarnames(1) = 'p140209' ! air density above sea

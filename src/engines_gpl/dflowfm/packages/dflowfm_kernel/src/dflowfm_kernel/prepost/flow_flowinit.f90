@@ -1079,7 +1079,7 @@ contains
       integer :: cell
       real(kind=dp) :: ds
 
-      if (air_pressure_available > OFF .and. PavIni > ZERO_AMBIENT_PRESSURE) then
+      if (air_pressure_available .and. PavIni > ZERO_AMBIENT_PRESSURE) then
          do cell = 1, ndxi
             ds = -(air_pressure(cell) - PavIni) / (ag * rhomean)
             s1(cell) = s1(cell) + ds

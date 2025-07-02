@@ -5807,7 +5807,7 @@ contains
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_icepths, nc_precision, UNC_LOC_S, 'interception_waterdepth', '', 'Waterdepth in interception layer', 'm', jabndnd=jabndnd_)
          end if
 
-         if (jamapwind > 0 .and. air_pressure_available /= 0) then
+         if (jamapwind > 0 .and. air_pressure_available) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_pressure, nc_precision, UNC_LOC_S, 'Patm', 'surface_air_pressure', 'Atmospheric pressure near surface', 'N m-2', jabndnd=jabndnd_)
          end if
 
@@ -7648,7 +7648,7 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_icepths, UNC_LOC_S, InterceptHs, jabndnd=jabndnd_)
       end if
 
-      if (jamapwind > 0 .and. air_pressure_available > 0) then
+      if (jamapwind > 0 .and. air_pressure_available) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_pressure, UNC_LOC_S, air_pressure, jabndnd=jabndnd_)
       end if
 
@@ -9461,7 +9461,7 @@ contains
             end if
          end if
 
-         if (jamapwind > 0 .and. air_pressure_available > 0) then
+         if (jamapwind > 0 .and. air_pressure_available) then
             call definencvar(imapfile, id_air_pressure(iid), nf90_double, idims, 'Patm', 'Atmospheric Pressure', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
          end if
 
@@ -10945,7 +10945,7 @@ contains
          ierr = nf90_put_var(imapfile, id_windyu(iid), wy, [1, itim], [lnx, 1])
       end if
 
-      if (jamapwind > 0 .and. air_pressure_available > 0) then
+      if (jamapwind > 0 .and. air_pressure_available) then
          ierr = nf90_put_var(imapfile, id_air_pressure(iid), air_pressure, [1, itim], [ndxndxi, 1])
       end if
 

@@ -224,7 +224,7 @@ contains
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                end do
             end if
-            if (air_pressure_available > 0 .and. allocated(air_pressure)) then
+            if (air_pressure_available .and. allocated(air_pressure)) then
                valobs(i, IPNT_PATM) = air_pressure(k)
             end if
 
