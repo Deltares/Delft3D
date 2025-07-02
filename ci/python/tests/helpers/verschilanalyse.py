@@ -126,7 +126,7 @@ def make_verschillentool_workbook(
             stats_sheet.append([f"station_{i}", random.random() * 100, random.random() * 100])
     else:
         now = datetime.now(timezone.utc) - timedelta(days=row_count)
-        stats_sheet.append(["time", "sea_surface_height_mean", "sea_water_level_mean"])
+        stats_sheet.append(["time", "sea_surface_height_bias", "sea_water_level_bias"])
         for i in range(row_count):
             stats_sheet.append([(now + timedelta(days=i)).isoformat(), random.random(), random.random()])
 
@@ -144,10 +144,10 @@ def make_verschillentool_workbook(
     for row in [
         ["", "Average over all stations"],
         ["sea_water_speed_max (m s-1)", flow_velocity_stats.avg_max],
-        ["sea_water_speed_mean (m s-1)", flow_velocity_stats.avg_mean],
+        ["sea_water_speed_bias (m s-1)", flow_velocity_stats.avg_bias],
         ["sea_water_speed_rms (m s-1)", flow_velocity_stats.avg_rms],
         ["sea_surface_height_max (m)", water_level_stats.avg_max],
-        ["sea_surface_height_mean (m)", water_level_stats.avg_mean],
+        ["sea_surface_height_bias (m)", water_level_stats.avg_bias],
         ["sea_surface_height_rms (m)", water_level_stats.avg_rms],
     ]:
         averages_sheet.append(row)
@@ -174,7 +174,7 @@ def tolerance_stats(output_type: OutputType, variable: Variable, diff: float = 0
     """
     return Statistics(
         avg_max=Tolerances.max(output_type, variable) + diff,
-        avg_mean=Tolerances.mean(output_type, variable) + diff,
+        avg_bias=Tolerances.bias(output_type, variable) + diff,
         avg_rms=Tolerances.rms(output_type, variable) + diff,
         max=Tolerances.max(output_type, variable) + diff,
     )
