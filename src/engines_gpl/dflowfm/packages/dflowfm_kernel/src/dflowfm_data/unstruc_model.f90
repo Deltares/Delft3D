@@ -691,7 +691,7 @@ contains
       use m_wind ! ,                  only : icdtyp, cdb, wdb,
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
-      use m_sferic, only: anglat, anglon, jasfer3D
+      use m_sferic, only: anglat, anglon
       use m_alloc
       use m_equatorial
       use m_netw, only: Makeorthocenters, strip_mesh
@@ -1229,8 +1229,6 @@ contains
       call prop_get(md_ptr, 'numerics', 'Lateral_fixedweir_relax', lat_fix_weir_relax)
 
       call prop_get(md_ptr, 'numerics', 'jaupwindsrc', jaupwindsrc)
-
-      call prop_get(md_ptr, 'numerics', 'jasfer3D', jasfer3D, success)
 
       call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection)
       call prop_get(md_ptr, 'numerics', 'HorizontalMomentumFilter', jafilter)
@@ -2595,7 +2593,7 @@ contains
       use m_wind
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
-      use m_sferic, only: anglat, anglon, jsferic, jasfer3D
+      use m_sferic, only: anglat, anglon, jsferic
       use m_density_parameters, only: apply_thermobaricity
       use unstruc_netcdf, only: unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
       use dflowfm_version_module
@@ -3233,8 +3231,6 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'jaupwindsrc', jaupwindsrc, '1st-order upwind advection at sources/sinks (1) or higher-order (0)')
-
-      call prop_set(prop_ptr, 'numerics', 'jasfer3D', jasfer3D, 'corrections for spherical coordinates')
 
       if (writeall .or. jabarrieradvection /= 1) then
          call prop_set(prop_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection, '1 = no correction, 2 = advection correction')
