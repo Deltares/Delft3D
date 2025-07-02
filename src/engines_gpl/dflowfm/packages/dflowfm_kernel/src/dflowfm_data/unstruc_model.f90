@@ -1231,9 +1231,6 @@ contains
       call prop_get(md_ptr, 'numerics', 'jaupwindsrc', jaupwindsrc)
 
       call prop_get(md_ptr, 'numerics', 'jasfer3D', jasfer3D, success)
-      if (success .and. jasfer3D == 1) then
-         jalimnor = 1
-      end if
 
       call prop_get(md_ptr, 'numerics', 'BarrierAdvection', jabarrieradvection)
       call prop_get(md_ptr, 'numerics', 'HorizontalMomentumFilter', jafilter)
