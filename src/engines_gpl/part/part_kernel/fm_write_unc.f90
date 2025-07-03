@@ -103,7 +103,7 @@ contains
 
     !> Writes the (possibly aggregated) unstructured network and edge type to a netCDF file for DelWAQ.
     !! If file exists, it will be overwritten.
-    subroutine unc_init_map(hyd, num_layers)
+    subroutine unc_init_map(hyd, num_layers, error, msg)
 
         use partmem, only: nosubs, nfract, oil, substi, zmodel
         use m_part_flow, only: LAYTP_SIGMA, LAYTP_Z
@@ -114,6 +114,8 @@ contains
 
         type(t_hydrodynamics), intent(in) :: hyd !< Data on the hydrodynamics as understood by D-Part
         integer, intent(in)               :: num_layers
+        logical, intent(out)              :: error
+        character(len=*), intent(out)     :: msg
 
 
         character(len = 10) :: cell_method   !< cell_method for this variable (one of 'mean', 'point', see CF for details).
@@ -138,6 +140,11 @@ contains
         !   character(len=*)                 :: standard_name !< Standard name (CF-compliant) for 'standard_name' attribute in this variable.
         !   character(len=*)                 :: long_name     !< Long name for 'long_name' attribute in this variable (use empty string if not wanted).
         !   character(len=*)                 :: unit          !< Unit of this variable (CF-compliant) (use empty string for dimensionless quantities).
+
+        !
+        ! We trust there will be no error, but you never know
+        !
+        error = .false.
 
         mapncfilename = trim(filebase) // '_map.nc'
         ierr = nf90_create(mapncfilename, 0, imapfile)
@@ -197,7 +204,10 @@ contains
                 end if
                 ierr = nf90_enddef(imapfile)
 
-                call get_layer_coords( hyd, layer_zs, interface_zs )
+                call get_layer_coords( hyd, layer_zs, interface_zs, error, msg )
+                if ( error ) then
+                    return
+                endif
 
                 call ug_write_mesh_layer_arrays(imapfile, meshids, ierr, num_layers, laytp, layer_zs, &
                          interface_zs, merge( 0, num_layers, zmodel ) )
@@ -304,13 +314,15 @@ contains
 
     end subroutine construct_layer_coords
 
-    subroutine get_layer_coords( hyd, layer_zs, interface_zs )
+    subroutine get_layer_coords( hyd, layer_zs, interface_zs, error, msg )
         use m_hydmod, only: t_hydrodynamics
         use io_netcdf
 
         type(t_hydrodynamics), intent(in) :: hyd
         real(kind=dp), pointer, dimension(:), intent(out) :: layer_zs
         real(kind=dp), pointer, dimension(:), intent(out) :: interface_zs
+        logical, intent(inout)                            :: error
+        character(len=*), intent(inout)                   :: msg
 
         integer :: idlay, idinterface
         integer :: ncid, ierr
@@ -318,6 +330,17 @@ contains
         allocate( layer_zs(1:hyd%num_layers), interface_zs(1:hyd%num_layers+1) )
 
         ierr = nf90_open( trim(hyd%file_geo%name), nf90_nowrite, ncid )
+
+        !
+        ! First of all: check that we have z-layers model OR a sigma-layers model.
+        ! The combination (sigma-z-layers) is NOT supported at the moment.
+        !
+        ierr = nf90_inq_varid( ncid, trim(hyd%waqgeom%meshname) // '_layer_sigma_z', idlay )
+        if ( ierr == nf90_noerr ) then
+            error = .true.
+            msg   = ' ERROR: the sigma-z layers option is currently not supported!'
+            return
+        endif
 
         layer_zs     = 0.0_dp
         interface_zs = 0.0_dp

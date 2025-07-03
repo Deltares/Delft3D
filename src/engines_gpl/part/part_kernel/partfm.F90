@@ -79,6 +79,8 @@ contains
         integer(4) ithndl              ! handle to time this subroutine
         logical :: mapfil  ! true if map file extension
         logical :: trkfil   ! true if track file extension
+        logical :: error
+        character(len=200) :: msg
         data ithndl / 0 /
         if (timon) call timstrt("partfm", ithndl)
 
@@ -151,7 +153,12 @@ contains
         ptref = 0.0D0
 
         if (notrak > 0) call unc_init_trk()
-        call unc_init_map(hyd, noslay)
+        call unc_init_map(hyd, noslay, error, msg)
+        if ( error ) then
+            write (lunpr, *) trim(msg)
+            write (*    , *) trim(msg)
+            error stop
+        endif
 
         time0 = tstart_user
         time1 = time0
