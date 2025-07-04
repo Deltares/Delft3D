@@ -50,7 +50,8 @@ contains
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
                         rich, jahisrain, jahis_airdensity, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
-                        jahisinfilt, infiltcap, infilt, jahisheatflux, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap
+                        jahisinfilt, infiltcap, infilt, jahisheatflux, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
+                        use_density
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
