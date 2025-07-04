@@ -29,7 +29,6 @@
 
 !> Utilities module with functions for initializing and updating external forcings.
 module fm_external_forcings_utils
-   use m_fm_wq_processes_sub, only: get_waqinputname
    use precision_basics, only: hp
    implicit none
    private
@@ -44,6 +43,7 @@ contains
    !! The base qid is the part of the qid that is common for all tracers of the same type.
    !! The specific qid is the part of the qid that is specific for a certain tracer.
    subroutine split_qid(qid, qid_base, qid_specific)
+      use m_fm_wq_processes_sub, only: get_waqinputname
       use mass_balance_areas_routines, only: get_mbainputname
 
       character(len=*), intent(in) :: qid !< Original quantityid, e.g., 'tracerbndfluor'.

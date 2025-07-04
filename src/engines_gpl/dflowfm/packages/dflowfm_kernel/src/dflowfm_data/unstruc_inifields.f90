@@ -38,7 +38,7 @@ module unstruc_inifields
    use messagehandling, only: msgbuf, warn_flush, err_flush
    use properties
    use string_module, only: str_lower, strcmpi
-   use precision_basics, only: dp
+   use precision_basics, only: dp, sp
 
    implicit none
    private
@@ -213,6 +213,7 @@ contains
       integer :: i, ib, ja, kx, iconst, itrac, k
       integer :: target_location_type, first_index
       integer :: method, iloctype, filetype, ierr_loc
+      integer :: target_location_count
       logical(kind=c_bool), allocatable :: specified_water_levels(:) !< indices where waterlevels are specified with non-global values
       logical(kind=c_bool), allocatable :: specified_indices(:)
       real(kind=dp) :: global_value, water_level_global_value
@@ -223,6 +224,7 @@ contains
 
       real(kind=dp), pointer, dimension(:) :: target_array, x_loc, y_loc
       real(kind=dp), pointer, dimension(:, :) :: target_array_3d
+      real(kind=sp), pointer, dimension(:, :) :: target_array_3d_sp
       integer, pointer, dimension(:) :: target_array_integer
       integer, dimension(:), allocatable :: mask
       real(kind=dp) :: factor
@@ -307,9 +309,8 @@ contains
                call process_initial_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
                                           target_array_3d, first_index, method)
             else
-               target_array_3d => null()
                call process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                            target_array_integer)
+                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index)
             end if
 
             if (.not. associated(target_array) .and. .not. associated(target_array_3d)) then
@@ -360,6 +361,8 @@ contains
 
             if (time_dependent_array) then
                kx = 1
+               call set_coordinates_for_location_type(target_location_type, x_loc, y_loc, target_location_count, iloctype, kcsini)
+               ! TODO: UNST-8964: should the mask be set based on target_location_type too? Until now in old code only kcs was used or a dummy.
                success = ec_addtimespacerelation(qid, x_loc, y_loc, kcs, kx, filename, filetype, method, operand, &
                                                  varname=varname)
             else
@@ -1527,7 +1530,7 @@ contains
    !> Set the control parameters for the actual reading of the items from the input file or
    !! connecting the input to the EC-module.
    subroutine process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                      target_array_integer)
+                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
       use tree_data_types
@@ -1536,13 +1539,14 @@ contains
       use m_alloc, only: realloc, aerr
       use unstruc_files, only: resolvePath
       use m_missing, only: dmiss
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL
       use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave
       use m_flow, only: frcu
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: success
+      use fm_external_forcings_utils, only: split_qid
       use m_wind, only: ICdtyp
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
@@ -1550,6 +1554,9 @@ contains
       use unstruc_model, only: md_extfile
       use string_module, only: str_tolower
       use m_waveconst
+      use processes_input, only: paname, painp, num_spatial_parameters, &
+                                 funame, funinp, num_time_functions, &
+                                 sfunname, sfuninp, num_spatial_time_fuctions
 
       implicit none
 
@@ -1559,14 +1566,23 @@ contains
       logical, intent(out) :: time_dependent_array !< Logical indicating, whether the quantity is time dependent or not.
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< pointer to the array that corresponds to the quantity (real(kind=dp)).
       integer, dimension(:), pointer, intent(out) :: target_array_integer !< pointer to the array that corresponds to the quantity (integer).
+      real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_3d !< pointer to the array that corresponds to the quantity (real(kind=dp)), if it has an extra dimension.
+      real(kind=sp), dimension(:, :), pointer, intent(out) :: target_array_3d_sp !< pointer to the array that corresponds to the quantity (real(kind=sp)), if it has an extra dimension.
+      integer, intent(out) :: target_quantity_index !< Index of the quantity in the first dimension of target_array_3d, if applicable.
 
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
+      character(len=idlen) :: qid_base, qid_specific
       integer :: ierr
 
       target_array => null()
       target_array_integer => null()
+      target_array_3d => null()
+      target_array_3d_sp => null()
       time_dependent_array = .false.
+      target_quantity_index = 1
+
+      call split_qid(qid, qid_base, qid_specific)
 
       ! UNST-8840: temporarily support hydrological quanties either as [Parameter] or [Initial] blocks.
       call process_hydrological_quantities(qid, inifilename, target_location_type, target_array)
@@ -1575,7 +1591,7 @@ contains
          return
       end if
 
-      select case (str_tolower(qid))
+      select case (str_tolower(qid_base))
       case ('frictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frcu
@@ -1743,6 +1759,29 @@ contains
                       ''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 7')
             success = .false.
          end if
+      case ('waqparameter')
+         target_location_type = UNC_LOC_S
+         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values = painp, index_waq_input = target_quantity_index)
+         target_array_3d_sp => painp
+         ! TODO: UNST-9008: discuss with Michelle whether this case is in fact equal to waqsegmentnumber.
+         ! TODO: UNST-9008: discuss with Michelle generalized 2D/3D handling that is repeated in old code.
+
+      case ('waqsegmentnumber')
+         target_location_type = UNC_LOC_S
+         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values = painp, index_waq_input = target_quantity_index)
+         target_array_3d_sp => painp
+         ! TODO: UNST-9008: discuss with Michelle generalized 2D/3D handling that is repeated in old code.
+
+      case ('waqfunction')
+         target_location_type = UNC_LOC_GLOBAL
+         time_dependent_array = .true.
+         call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., waq_values_ptr = funinp, index_waq_input = target_quantity_index)
+
+      case ('waqsegmentfunction')
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .true.
+         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., waq_values_ptr = sfuninp, index_waq_input = target_quantity_index)
+
       case default
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
             ' Field '''//trim(qid)//''' is not a recognized ''[Parameter]'' quantity (refer to User Manual). Ignoring this block.'
@@ -1751,6 +1790,45 @@ contains
       end select
 
    end subroutine process_parameter_block
+
+   !> Search a particular water quality input name in a list of names,
+   !! and if not found, add it to the list, also increasing the associated value array.
+   subroutine find_or_add_waq_input(waq_input_name, waq_names, waq_input_count, is_spatial, waq_values, waq_values_ptr, index_waq_input)
+      use m_find_name, only: find_name
+      use m_waq_precision, only: real_wp
+      use m_flow, only: ndkx
+      use m_alloc, only: realloc, reallocP
+
+      character(len=*), intent(in) :: waq_input_name !< Name of the water quality input that is searched for.
+      character(len=*), allocatable, dimension(:), intent(inout) :: waq_names !< (input index) List of water quality input names to be searched in.
+      integer, intent(inout) :: waq_input_count !< Current count of the water quality inputs. Will be incremented if a new input name is added.
+      logical, intent(in) :: is_spatial !< Whether or not this input is a spatial parameter (as opposed to a temporal function). Determines the length of the second dimension in the waq_values array (space-independent has length 1 there).
+      real(kind=real_wp), allocatable, dimension(:,:), optional, intent(inout) :: waq_values !< (input index, location index) Allocatable array of water quality input values, will be increased if a new input name is added. Use either this one or the _pointer argument.
+      real(kind=dp), pointer, dimension(:,:), optional, intent(inout) :: waq_values_ptr !< (input index, location index) Pointer array List of water quality input values, will be increased if a new input name is added. Use either this one or the previous non-_pointer argument.
+      integer, intent(out) :: index_waq_input !< Index of the found or added water quality input (in the search set, as well as parameter set).
+      
+      integer :: waq_location_count
+      
+      index_waq_input = find_name(waq_names, waq_input_name)
+
+      if (index_waq_input == 0) then
+         waq_input_count = waq_input_count + 1
+         index_waq_input = waq_input_count
+         
+         if (is_spatial) then
+            waq_location_count = Ndkx
+         else
+            waq_location_count = 1 ! Temporal functions are not spatial, so only one value per function.
+         end if
+         call realloc(waq_names, waq_input_count, keepExisting=.true., fill=waq_input_name)
+         if (present(waq_values)) then
+            call realloc(waq_values, [waq_input_count, waq_location_count], keepExisting=.true., fill=0.0_real_wp)
+         end if
+         if (present(waq_values_ptr)) then
+            call reallocP(waq_values_ptr, [waq_input_count, waq_location_count], keepExisting=.true., fill=0.0_dp)
+         end if
+      end if
+   end subroutine find_or_add_waq_input
 
    !> Helper routine to process several hydrological quantities that could either be in a [Parameter]
    !! or [Initial] block (this latter for backwards compatibility).
@@ -1965,7 +2043,7 @@ contains
       integer, intent(in) :: target_location_type !< The spatial type of the target locations: 1D, 2D or all.
       real(kind=dp), pointer, dimension(:), intent(out) :: x_loc, y_loc !< The x and y coordinates of the target locations.
       integer, intent(out) :: num_items !< The number of target locations.
-      integer, intent(in) :: iloctype !< The spatial type of the target locations: 1D, 2D or all.
+      integer, intent(in) :: iloctype !< The spatial type of the target locations: 1D, 2D or all. Used for filling the kcsini mask array. Valid values: ILATTP_1D, ILATTP_2D, ILATTP_ALL.
       integer, dimension(:), allocatable, intent(inout) :: kcsini !< Mask array.
 
       select case (target_location_type)
@@ -1987,31 +2065,36 @@ contains
       end select
    end subroutine set_coordinates_for_location_type
 
+   !> The values from the input array on 2D grid cells are copied to the 3D locations in the output array.
+   !! Optionally, a vertical range can be specified, which then only updates the 3D output array elements if their vertical
+   !! position lies within that range. Without this range, all 3D cells in a single vertical column get the same 2D input value.
+
    !> The values from the input array are transferred to the 3d locations in the output array. A bamdwith can be specified,
    !! by using the bandwith_lower_limit and bandwith_upper_limit. If the bandwith is not specified, the values are transferred to all
    !! 3d grid cells
-   subroutine initialfield2Dto3D(input_array_2d, output_array_3d, bandwith_lower_limit, bandwith_upper_limit, operand)
+   subroutine initialfield2Dto3D(input_array_2d, output_array_3d, vertical_range_min, vertical_range_max, operand)
       use m_missing
 
       implicit none
 
-      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells.
-      real(kind=dp), dimension(:), intent(inout), target :: output_array_3d !< The output array on 3d grid cells.
-      real(kind=dp), intent(in) :: bandwith_lower_limit, bandwith_upper_limit !< The value for the first index of the output array.
-      character(len=*), intent(in) :: operand !< The operand to be used for filling the field values.
+      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
+      real(kind=dp), dimension(:), intent(inout), target :: output_array_3d !< The output array on 3d grid cells (1:ndkx).
+      real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
+      real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
+      character(len=*), intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
 
       real(kind=dp), dimension(:, :), pointer :: output_array_3d_tmp
 
       output_array_3d_tmp(1:1, 1:size(output_array_3d)) => output_array_3d
 
-      call initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d_tmp, 1, bandwith_lower_limit, bandwith_upper_limit, operand)
+      call initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d_tmp, 1, vertical_range_min, vertical_range_max, operand)
 
    end subroutine initialfield2Dto3D
 
-   !> The values from the input array are transferred to the 3d locations in the output array. A bamdwith can be specified,
-   !! by using the bandwith_lower_limit and bandwith_upper_limit. If the bandwith is not specified, the values are transferred to all
-   !! 3d grid cells.
-   subroutine initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d, first_index, bandwith_lower_limit, bandwith_upper_limit, operand)
+   !> The values from the input array on 2D grid cells are copied to the 3D locations in the output array.
+   !! Optionally, a vertical range can be specified, which then only updates the 3D output array elements if their vertical
+   !! position lies within that range. Without this range, all 3D cells in a single  vertical column get the same 2D input value.
+   subroutine initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d, first_index, vertical_range_min, vertical_range_max, operand)
       use m_flowgeom, only: ndx
       use precision_basics
       use m_flow, only: kmx, kbot, ktop, zws
@@ -2020,22 +2103,25 @@ contains
 
       implicit none
 
-      real(kind=dp), dimension(:), intent(inout) :: input_array_2d !< The input array on 2d grid cells.
-      real(kind=dp), dimension(:, :), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
-      integer, intent(in) :: first_index !< The value for the first index of the output array.
-      real(kind=dp), intent(in) :: bandwith_lower_limit, bandwith_upper_limit !< The lower and upper limit of the bandwith.
-      character(len=*), intent(in) :: operand !< The operand to be used for filling the field values.
+      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
+      real(kind=dp), dimension(:,:), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
+                                                                      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
+                                                                      !< The second dimension is the 3D grid cell dimension (1:ndkx)
+      integer, intent(in) :: first_index !< The value for the first "constituent" index of the output array.
+      real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
+      real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
+      character(len=*), intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
 
       real(kind=dp) :: lower_limit, upper_limit, level_at_pressure_point
       integer :: n, k, kb, kt
 
       lower_limit = -huge(1.0_dp)
       upper_limit = huge(1.0_dp)
-      if (bandwith_lower_limit /= dmiss) then
-         lower_limit = bandwith_lower_limit
+      if (vertical_range_min /= dmiss) then
+         lower_limit = vertical_range_min
       end if
-      if (bandwith_upper_limit /= dmiss) then
-         upper_limit = bandwith_upper_limit
+      if (vertical_range_max /= dmiss) then
+         upper_limit = vertical_range_max
       end if
       do n = 1, ndx
          if (input_array_2d(n) /= dmiss) then

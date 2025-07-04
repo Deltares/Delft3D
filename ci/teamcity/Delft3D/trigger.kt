@@ -270,7 +270,7 @@ object Trigger : BuildType({
 
     }
 
-    if (DslContext.getParameter("environment") == "production") {
+    if (DslContext.getParameter("enable_pre_merge_trigger").lowercase() == "true") {
         triggers {
             schedule {
                 schedulingPolicy = daily {

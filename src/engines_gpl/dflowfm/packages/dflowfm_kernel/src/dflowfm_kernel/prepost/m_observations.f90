@@ -232,7 +232,7 @@ contains
          i = i + 1; IVAL_WX = i
          i = i + 1; IVAL_WY = i
       end if
-      if (air_pressure_available > 0) then
+      if (air_pressure_available) then
          i = i + 1; IVAL_PATM = i
       end if
       if (jawave > NO_WAVES) then

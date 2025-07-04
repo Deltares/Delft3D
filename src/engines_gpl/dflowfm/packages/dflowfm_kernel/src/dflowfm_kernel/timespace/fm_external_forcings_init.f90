@@ -613,7 +613,7 @@ contains
       !! and do required initialisation for that quantity.
    function init_meteo_forcings(node_ptr, base_dir, file_name, group_name) result(res)
       use string_module, only: strcmpi, str_tolower
-      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess
+      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess, warn_flush
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       use m_missing, only: dmiss
       use tree_data_types, only: tree_data
@@ -625,7 +625,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
                         jaqin, jaqext, solar_radiation_available, long_wave_radiation_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, &
-                        ec_charnock, wcharnock, rain, qext
+                        ec_charnock, wcharnock, rain, qext, pseudo_air_pressure_available, water_level_correction_available
       use m_flowgeom, only: ndx, lnx, xz, yz
       use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
                                   btempforcingtypS, itempforcingtyp
@@ -748,7 +748,18 @@ contains
             end if
          case ('airpressure', 'atmosphericpressure')
             kx = 1
-            ierr = allocate_patm(0._dp)
+            ierr = allocate_patm(0.0_dp)
+
+         case ('pseudoAirPressure')
+            kx = 1
+            ierr = allocate_pseudo_air_pressure(0.0_dp)
+            write (msgbuf, '(a)') 'quantity '//trim(quantity)//' is found in file '//file_name// &
+                '. Quantity waterLevelCorrection is more preferable.' 
+            call warn_flush()
+
+         case ('waterLevelCorrection')
+            kx = 1
+            ierr = allocate_water_level_correction(0.0_dp)
 
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
             kx = 1
@@ -757,7 +768,7 @@ contains
             jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
             jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
 
-            ierr = allocate_patm(100000._dp)
+            ierr = allocate_patm(100000.0_dp)
 
             if (.not. allocated(ec_pwxwy_x)) then
                allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0.0_dp)
@@ -829,7 +840,8 @@ contains
             res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
             return ! This was a special case, don't continue with timespace processing below.
          case default
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//''' in file '''//trim(file_name)//''': ['//trim(group_name)//'].'
+            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name// &
+               '].'
             call err_flush()
             return
          end select
@@ -875,11 +887,17 @@ contains
             ja_airdensity = 1
 
          case ('airpressure', 'atmosphericpressure')
-            air_pressure_available = 1
+            air_pressure_available = .true.
+
+         case ('pseudoAirPressure')
+            pseudo_air_pressure_available = .true.
+
+         case ('waterLevelCorrection')
+            water_level_correction_available = .true.
 
          case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
             jawind = 1
-            air_pressure_available = 1
+            air_pressure_available = .true.
 
          case ('charnock')
             jaspacevarcharn = 1

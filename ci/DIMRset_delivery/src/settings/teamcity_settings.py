@@ -32,6 +32,7 @@ TESTCASE_GROUPS = [
 
 
 class TEAMCITY_IDS(Enum):
+    DIMR_PUBLISH = "Delft3D_DIMRbak"
     DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID = "Dimr_DimrCollector"
     DIMR_TO_NGHS_BUILD_TYPE_ID = "DIMR_To_NGHS"
     DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID = "Dimr_DimrTestbenchRelease_StatusOfDailyTestbench"

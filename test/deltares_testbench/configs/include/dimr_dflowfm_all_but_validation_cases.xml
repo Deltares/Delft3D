@@ -2003,6 +2003,63 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f006_c110_dcsm5_periodic_forcing" ref="dflowfm_default">
+      <path version="2025-07-01T15:56:51.310000">e02_dflowfm/f006_external_forcing/c110_dcsm5_periodic_forcing</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_dcsmv5/dcsmv5_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_OUTPUT_dcsmv5/dcsmv5_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="s1" toleranceAbsolute="0.0005"/>
+            <parameter name="unorm" toleranceAbsolute="0.0005"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f006_c111_dcsm5_pseudo_air_pressure" ref="dflowfm_default">
+      <path version="2025-07-01T16:02:32.186000">e02_dflowfm/f006_external_forcing/c111_dcsm5_pseudo_air_pressure</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_dcsmv5/dcsmv5_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_OUTPUT_dcsmv5/dcsmv5_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="s1" toleranceAbsolute="0.0005"/>
+            <parameter name="unorm" toleranceAbsolute="0.0005"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f006_c112_dcsm5_water_level_correction" ref="dflowfm_default">
+      <path version="2025-07-01T16:03:15.706000">e02_dflowfm/f006_external_forcing/c112_dcsm5_water_level_correction</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_dcsmv5/dcsmv5_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="DFM_OUTPUT_dcsmv5/dcsmv5_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="s1" toleranceAbsolute="0.0005"/>
+            <parameter name="unorm" toleranceAbsolute="0.0005"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f008_c010_ws_bedlevel_asdefault" ref="dflowfm_default">
       <path version="2025-04-14T09:51:38.844000">e02_dflowfm/f008_network/c010_ws_bedlevel_asdefault</path>
       <maxRunTime>15000.0000000</maxRunTime>

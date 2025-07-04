@@ -43,7 +43,7 @@ module processes_input
     character(20), allocatable :: syunit(:)       !< substance names
     character(20), allocatable :: coname(:)       !< constant names
     character(20), allocatable :: paname(:)       !< parameter names
-    real(KIND = real_wp), allocatable :: painp(:, :)      !< parameter input
+    real(KIND = real_wp), allocatable, target :: painp(:, :)      !< parameter input
     character(20), allocatable :: funame(:)       !< function names
     real(kind = dp), pointer :: funinp(:, :)     !< function input
     character(20), allocatable :: sfunname(:)     !< segm.func. names
