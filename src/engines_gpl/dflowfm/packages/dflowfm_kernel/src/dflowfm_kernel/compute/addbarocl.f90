@@ -98,7 +98,7 @@ contains
    !> Computes baroclinic pressure gradients across layers for a horizontal link.
    !! Density is based on linear interpolation of density at vertical interfaces.
    subroutine add_baroclinic_pressure_link(link_index_2d, l_bot, l_top)
-      use m_turbulence, only: kmxx, rhou, baroclinic_pressures, integrated_baroclinic_pressures
+      use m_turbulence, only: kmxx, rhou, baroclinic_pressures, integrated_baroclinic_pressures, baroc_weight_flip
       use m_flowgeom, only: ln, dx
       use m_flow, only: zws, numtopsig, kmxn, ktop
       use m_flowparameters, only: jarhoxu
@@ -180,6 +180,10 @@ contains
             if (k_top_shallow_side - k_shallow_side > 0) then ! Shallow side extrapolates, coeffs based on shallow side:
                weight_down = (zws(k_shallow_side + 1) - zws(k_shallow_side)) / (zws(k_shallow_side + 1) - zws(k_shallow_side - 1))
                weight_up = 1.0_dp - weight_down
+               if (baroc_weight_flip == 1) then
+                  weight_down = weight_up
+                  weight_up = 1.0_dp - weight_down
+               end if
                rho_up = weight_up * density(k_deep_side + 1) + weight_down * density(k_deep_side)
                rho_down = 2.0_dp * density(k_deep_side) - rho_up
             else ! one layer
@@ -232,7 +236,7 @@ contains
    !> Computes baroclinic pressure gradients across layers for a horizontal link.
    !! Density is based on linear interpolation of recomputed density (from salinity, temperature (and pressure)) at vertical interfaces.
    subroutine add_baroclinic_pressure_link_interface(link_index_2d, l_bot, l_top)
-      use m_turbulence, only: kmxx, rhou, baroclinic_pressures, integrated_baroclinic_pressures, rhosww
+      use m_turbulence, only: kmxx, rhou, baroclinic_pressures, integrated_baroclinic_pressures, rhosww, baroc_weight_flip
       use m_flowgeom, only: ln, dx
       use m_flow, only: zws, numtopsig, kmxn, ktop
       use m_flowparameters, only: jarhoxu
@@ -317,6 +321,10 @@ contains
             if (k_top_shallow_side - k_shallow_side > 0) then ! Shallow side extrapolates, coeffs based on shallow side:
                weight_down = (zws(k_shallow_side + 1) - zws(k_shallow_side)) / (zws(k_shallow_side + 1) - zws(k_shallow_side - 1))
                weight_up = 1.0_dp - weight_down
+               if (baroc_weight_flip == 1) then
+                  weight_down = weight_up
+                  weight_up = 1.0_dp - weight_down
+               end if
                rho_up = weight_up * density(k_deep_side + 1) + weight_down * density(k_deep_side)
                rho_down = 2.0_dp * density(k_deep_side) - rho_up
             else ! one layer

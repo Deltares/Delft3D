@@ -1369,7 +1369,8 @@ contains
       call prop_get(md_ptr, 'physics', 'thermobaricity', apply_thermobaricity)
       call prop_get(md_ptr, 'physics', 'thermobaricityInPressureGradient', thermobaricity_in_pressure_gradient)
       call validate_density_and_thermobaricity_settings(idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient)
-
+      call prop_get(md_ptr, 'physics', 'barocWeightFlip', baroc_weight_flip)
+      
       call prop_get(md_ptr, 'physics', 'Temperature', jatem)
       call prop_get(md_ptr, 'physics', 'InitialTemperature', temini)
       call prop_get(md_ptr, 'physics', 'Secchidepth', Secchidepth)
@@ -3334,7 +3335,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'Idensform', idensform, 'Density calulation (0: uniform, 1: Eckart, 2: UNESCO, 3: UNESCO83)')
       call prop_set(prop_ptr, 'physics', 'thermobaricity', apply_thermobaricity, 'Include pressure effects on water density. Only works for idensform = 3 (UNESCO83).')
       call prop_set(prop_ptr, 'physics', 'thermobaricityInPressureGradient', thermobaricity_in_pressure_gradient, 'Apply thermobaricity in computing the baroclinic pressure gradient (0 = no, 1 = yes).')
-
+      call prop_set(prop_ptr, 'physics', 'barocWeightFlip', baroc_weight_flip, '1: weight_down = delta_z_down / delta_z_total [Herman] 2: weight_down = delta_z_up / delta_z_total [Jan]. weight_up = 1 - weight_down. ')
+      
       call prop_set(prop_ptr, 'physics', 'Ag', ag, 'Gravitational acceleration')
       call prop_set(prop_ptr, 'physics', 'TidalForcing', jatidep, 'Tidal forcing, if jsferic=1 (0: no, 1: yes)')
       call prop_set(prop_ptr, 'physics', 'SelfAttractionLoading', jaselfal, 'Self attraction and loading (0=no, 1=yes, 2=only self attraction)')
