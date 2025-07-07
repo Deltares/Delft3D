@@ -24,4 +24,6 @@ RUN set -eo pipefail && \
     python3.9 -m pip install --requirement "/tmp/lnx-requirements.txt" && \
     rm --verbose "/tmp/lnx-requirements.txt"
 
+ENV LD_LIBRARY_PATH=/opt/dimrset/lib
+
 CMD [ "python3.9" ]
