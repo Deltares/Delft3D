@@ -2,6 +2,8 @@ FROM runtime-container
 
 ENV PIP_ROOT_USER_ACTION=ignore
 ENV PIP_NO_CACHE_DIR=1
+# Unset variable value because of libcurl version conflict.
+ENV LD_LIBRARY_PATH=
 
 # Used for (integration) testbench only
 ADD wanda/bin/* /opt/dimrset/bin/
