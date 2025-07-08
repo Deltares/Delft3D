@@ -796,6 +796,10 @@ contains
                call aerr('rain(ndx)', ierr, ndx)
             end if
 
+         case ('netsolarradiation')
+            kx = 1
+            ! EM TODO: Maybe something with net_solar_radiation?
+
          case ('qext')
             ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
             if (jaQext == 0) then
