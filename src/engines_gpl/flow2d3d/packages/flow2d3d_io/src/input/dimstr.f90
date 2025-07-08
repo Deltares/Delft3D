@@ -63,7 +63,6 @@ subroutine dimstr(lunmd     ,filnam    ,lundia    ,error     ,nrrec     , &
     integer           :: iocond  ! Reading condition, should be 0 
     integer           :: lfile   ! Number of non blank characters of file name 
     integer           :: luntmp  ! Unit number of FILTMP 
-    integer, external :: newlun
     character(132)    :: rec132
 !
 !! executable statements -------------------------------------------------------

@@ -81,7 +81,6 @@ subroutine wri_cormix(u0    ,v0    ,rho    ,thick ,kmax  ,dps   ,&
     integer                                :: nm_amb
     integer                                :: nmd_amb
     integer                                :: ndm_amb
-    integer                 , external     :: newlun
     integer                                :: luntmp
     real(fp)                               :: thck
     real(fp)                               :: uuu

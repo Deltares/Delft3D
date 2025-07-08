@@ -90,7 +90,6 @@ subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     integer                                :: nparrd
     integer                                :: nqhrd
     integer                                :: nr      ! Sequence nr of the time read 
-    integer, external                      :: newlun
     logical                                :: access  ! Flag to read file as direct access or sequential 
     logical                                :: ex      ! Flag to test if file exists 
     real(fp)                               :: qold    ! Help var. to store last read discharg to test accending order 

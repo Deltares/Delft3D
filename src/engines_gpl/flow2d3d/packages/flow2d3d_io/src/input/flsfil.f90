@@ -77,7 +77,6 @@ subroutine flsfil(lundia    ,error     ,filfls    ,mmax      ,nmax      , &
     integer           :: md
     integer           :: n        ! Help loop var. 
     integer           :: nd
-    integer, external :: newlun
     character(11)     :: fmttmp   ! Format file ('formatted  ')
     character(300)    :: message
 !

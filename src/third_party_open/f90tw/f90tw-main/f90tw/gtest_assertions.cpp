@@ -1,12 +1,9 @@
-/* just expanding the wrappers without boost and obtain a more
-// comprehensive source file. */
 #include "gtest/gtest.h"
 
 #include "f90tw_defs_gtest.h"
 
 #define HEADERLEVEL "gtest_level.h"
 #define HEADERLEVELWHAT "implement_gtest_wrappers.h"
-#define VERSIONSUB C_F90TW_VER
 #define GTESTFUNCTION1 C_GTEST_LEVEL_CHECK1T1A
 #define GTESTFUNCTION1M C_GTEST_LEVEL_CHECK1T1AM
 #define GTESTFUNCTION2 C_GTEST_LEVEL_CHECK1T2A
@@ -28,7 +25,5 @@
 #undef GTESTFUNCTION2
 #undef GTESTFUNCTION1M
 #undef GTESTFUNCTION1
-#undef VERSIONSUB
 #undef HEADERLEVELWHAT
 #undef HEADERLEVEL
-

@@ -1,11 +1,6 @@
 #ifdef F90TESTWRAPPERS
 
-#ifdef DOINTERFACE
-/* version */
-VERSIONSUB
-#endif
-
-/* For each supported boost assertion, a wrapper is created for
+/* For each supported gtest assertion, a wrapper is created for
 // the various levels (see gtest_level.h) and arguments type (see
 // <implement|interfae>_gtest_wrapers.h) supported. The latter is
 // controlled with HAVECINT, HAVECBOOL, HAVECFLOAT, HAVECDOUBLE and
@@ -19,7 +14,7 @@ VERSIONSUB
 /* set variable names for the arguments */
 #define NAME1 val1
 #define NAME2 val2
-/* set the definitions of the boost functions of the wrapper */
+/* set the definitions of the gtest functions of the wrapper */
 #define GTESTFUNCTION GTESTFUNCTION2
 #define GTESTFUNCTIONM GTESTFUNCTION2M
 /* set the flags for the arguments type supported for the wrapper*/

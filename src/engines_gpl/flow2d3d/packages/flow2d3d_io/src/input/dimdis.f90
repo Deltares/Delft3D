@@ -66,7 +66,6 @@ subroutine dimdis(lunmd     ,lundia    ,error     ,nrrec     ,nsrc      , &
     integer                  :: lfile   ! Number of non blank characters of file name 
     integer                  :: lkw     ! Length of keyword (:= 6) 
     integer                  :: luntmp  ! Unit number of FILTMP 
-    integer, external        :: newlun
     integer                  :: nlook   ! Nr. of values to look for in a record 
     integer                  :: ntrec   ! Current record counter. It's value is changed to detect if all records in the MD-file have been read 
     logical                  :: found   ! Flag is true if KEYWRD is found 

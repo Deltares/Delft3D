@@ -395,7 +395,6 @@ subroutine postpr(lundia    ,lunprt    ,error     ,versio    ,comfil    , &
     integer                  :: nmaxddb
     integer(pntrsize)        :: velu           ! U velocity array (FSM r-index)
     integer(pntrsize)        :: velv           ! V velocity array (FSM r-index)
-    integer       , external :: newlun
     logical                  :: flupd          ! Flag to update (true) or initialize (false) the discharge arrays 
     logical                  :: ftcros         ! Flag set when TCROSS is invoked 
     logical                  :: ftstat         ! Flag set when TSTAT  is invoked 

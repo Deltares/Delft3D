@@ -106,7 +106,6 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
     integer                                              :: luntmp  ! Unit number file 
     integer                                              :: m       ! Help var. 
     integer                                              :: n       ! Help var. 
-    integer                                              :: newlun
     logical                                              :: ex
     logical                                              :: ex_nfs
     character(16)                                        :: datetime

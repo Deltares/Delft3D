@@ -66,7 +66,6 @@ subroutine det_num_dis(no_dis, no_amb_max, gdp)
     integer                  :: istat
     integer                  :: luntmp
     integer                  :: no_amb
-    integer, external        :: newlun
     type(tree_data), pointer :: cosumoblock_ptr
     type(tree_data), pointer :: data_ptr
     character(300)           :: errmsg

@@ -76,7 +76,6 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     integer        , dimension(maxfld)            :: ifield
     integer        , dimension(maxfld)            :: itype
     integer        , dimension(maxfld)            :: lenchr
-    integer                            , external :: newlun
     logical                                       :: lftrto
     logical                                       :: newkw
     real(fp)       , dimension(maxfld)            :: rfield

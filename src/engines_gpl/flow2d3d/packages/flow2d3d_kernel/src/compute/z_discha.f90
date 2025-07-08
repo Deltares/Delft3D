@@ -95,7 +95,6 @@ subroutine z_discha(kmax      ,nsrc      ,nbub      ,lstsci    ,lstsc     ,j    
 !
 ! Local variables
 !
-    integer,external :: newlun
     integer          :: dfil
     integer          :: ddb
     integer          :: icxy

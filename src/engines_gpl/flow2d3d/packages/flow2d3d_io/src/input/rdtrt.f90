@@ -119,7 +119,6 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        ,mmax      , &
     integer, dimension(maxfld)       :: ifield
     integer, dimension(maxfld)       :: itype
     integer, dimension(maxfld)       :: lenchr
-    integer, external                :: newlun
     logical                          :: dtn
     logical                          :: lokay
     logical                          :: lrcode

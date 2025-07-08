@@ -43,7 +43,7 @@ function(F90TWFPP INFILE OUTFILE)
         find_program(TR_EXE NAMES "tr" REQUIRED)
         add_custom_command(
             OUTPUT "${OUTFILE}"
-            COMMAND "${FPP_EXE}" ${FPPOPTS} ${FPPDEFS} ${FPPINCL} "${INFILE}" | ${SED_EXE} \"/^[ \\t]*\#/d\" | ${TR_EXE} \"\;\" \"\\n\" > "${OUTFILE}"
+            COMMAND "${FPP_EXE}" ${FPPOPTS} ${FPPDEFS} ${FPPINCL} "${INFILE}" | ${SED_EXE} "/^[ \\t]*#/d" | ${TR_EXE} "\\;" "\\n" | ${SED_EXE} "s/^[ \\t]*//;s/[ \\t]*$//;/^$/d" > "${OUTFILE}"
             DEPENDS "${INFILE}" ${FPP_DEPENDS}
             COMMENT "precompile ${INFILE}"
             VERBATIM
@@ -51,9 +51,9 @@ function(F90TWFPP INFILE OUTFILE)
     endif()
 endfunction()
 
-# extruct the f90tw directive from the given fortran files
-# INFILES: f90 files with f90tw directived to be extructed
-# OUTFILE: header file to place the extructed directives
+# extract the f90tw directive from the given fortran files
+# INFILES: f90 files with f90tw directives to be extracted
+# OUTFILE: header file to place the extracted directives
 function(F90TWF2H INFILES OUTFILE)
     set(prefix F2H)
     set(flags)
@@ -71,7 +71,7 @@ function(F90TWF2H INFILES OUTFILE)
         find_program(POWERSHELL_EXE NAMES "powershell.exe" REQUIRED)
         add_custom_command(
             OUTPUT ${F2H_OUTFILE}
-            COMMAND ${POWERSHELL_EXE} -Command " \" ( ( cat ${F2H_INFILES} ) | select-string -pattern '^[ \\t]*[!cC][\\$$][fF]90[tT][wW]' ) -replace '^[ \\t]*[!cC][\\$$][fF]90[tT][wW][ \\t]', '' | Set-Content -Path ${F2H_OUTFILE} \" "
+            COMMAND ${POWERSHELL_EXE} -Command " \" ( ( cat ${F2H_INFILES} ) | select-string -pattern '^[ \\t]*[!cC][\\$$][fF]90[tT][wW]' ) -replace '^[ \\t]*[!cC][\\$$][fF]90[tT][wW][ \\t]*', '' | Set-Content -Path ${F2H_OUTFILE} \" "
             DEPENDS ${F2H_INFILES}
             COMMENT "process ${F2H_INFILES}"
         )
@@ -79,7 +79,7 @@ function(F90TWF2H INFILES OUTFILE)
         find_program(SED_EXE NAMES "sed" REQUIRED)
         add_custom_command(
             OUTPUT ${F2H_OUTFILE}
-            COMMAND ${SED_EXE} '/^[ \\t]*[!cC]\$$[fF]90[tT][wW] /!d \; s/.*[!cC]\$$[fF]90[tT][wW]\\\(.*\\\)$$/\\1/' ${F2H_INFILES}  >  ${F2H_OUTFILE}
+            COMMAND ${SED_EXE} '/^[ \\t]*[!cC]\$$[fF]90[tT][wW]/!d \; s/.*[!cC]\$$[fF]90[tT][wW][ \\t]*\\\(.*\\\)$$/\\1/' ${F2H_INFILES} > ${F2H_OUTFILE}
             DEPENDS ${F2H_INFILES}
             COMMENT "process ${F2H_INFILES}"
         )
@@ -89,14 +89,13 @@ endfunction()
 # setup a F90TWTEST
 # CFILES : list of c/c++ files
 # F90FILES : list of fortran files
-# F2HFILES : list of fortran files to be processed for extructing f90tw directives
-# MODULES : list of modules direactories
+# F2HFILES : list of fortran files to be processed for extracting f90tw directives
 # the rest of the arguments are the arguments of F90TWFPP and F90TWFPPFILES functions.
 function(F90TWTEST NAME)
     set(prefix FTW)
     set(flags)
     set(singleValues OUTDIR VISUAL_STUDIO_PATH)
-    set(multiValues CFILES F90FILES F2HFILES LIBRARIES INCLUDES MODULES DEFINITIONS)
+    set(multiValues CFILES F90FILES F2HFILES LIBRARIES INCLUDES DEFINITIONS)
 
     include(CMakeParseArguments)
     cmake_parse_arguments(PARSE_ARGV 1 ${prefix}
@@ -106,7 +105,6 @@ function(F90TWTEST NAME)
     )
 
     list(APPEND FTW_INCLUDES ${f90tw_INCLUDE_DIR})
-    list(APPEND FTW_MODULES ${f90tw_MODULES_DIR})
 
     set(FLIBNAME "${NAME}_f90")
     set(F2HTRGNAME "${NAME}_f2h")
@@ -127,8 +125,7 @@ function(F90TWTEST NAME)
     # create the fortran library
     add_library(${FLIBNAME} STATIC ${F2HFILE} ${FTW_F90FILES})
     set_property(TARGET ${FLIBNAME} PROPERTY POSITION_INDEPENDENT_CODE ON)
-    target_include_directories(${FLIBNAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${FTW_INCLUDES} ${FTW_MODULES})
-    set_target_properties(${FLIBNAME} PROPERTIES Fortran_MODULE_DIRECTORY ${FTW_MODULES})
+    target_include_directories(${FLIBNAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${FTW_INCLUDES})
     set_property(TARGET ${FLIBNAME}
         APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${XF90FILES}
     )
@@ -156,7 +153,16 @@ function(F90TWTEST NAME)
     gtest_discover_tests(${NAME})
 endfunction()
 
-set(FPP_EXE "${CMAKE_C_COMPILER}")
+# resolve the preprocessor to be used. it is assumed that on unix-based systems
+# cpp or clang will be found in the path and in addition, on windows-based
+# systems, cl.exe may be available. On mac os cpp is an interface to clang with
+# "-traditional-cpp" locked. To avoid this we use directly the clang front end.
+if(WIN32)
+    set(FPP_EXE "${CMAKE_C_COMPILER}")
+else()
+    find_program(FPP_EXE NAMES clang cpp REQUIRED)
+endif()
+
 if(NOT FPP_EXE)
     message (FATAL_ERROR "C preprocessor was not found")
 endif()
@@ -170,18 +176,19 @@ else()
     set(FPP_SWITCH -)
 endif()
 
-# make available the preprocessor and the options through FPP_OPTIONS variables
+# expose the preprocessor and the options through the FPP_OPTIONS variables
 set(FPP_OPTIONS ${FPP_OPTIONS} CACHE STRING "preprocessor options")
 set(FPP_SWITCH ${FPP_SWITCH} CACHE STRING "preprocessor switch")
-
-add_library(f90tw_gtest STATIC gtest_assertions.cpp)
-set_property(TARGET f90tw_gtest PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(f90tw_gtest PUBLIC ${gtest_INCLUDE_DIR})
-target_link_libraries(f90tw_gtest PUBLIC f90twi_gtest gtest_main)
 
 set(file2fpp "${CMAKE_CURRENT_SOURCE_DIR}/assertions_gtest.fpp")
 set(file2 "${CMAKE_CURRENT_BINARY_DIR}/assertions_gtest.f90")
 add_library(f90twi_gtest OBJECT "${file2}")
+# Place the assertions_gtest module in the global module directory so all targets can find it
+if(DEFINED CMAKE_Fortran_MODULE_DIRECTORY)
+    set_target_properties(f90twi_gtest PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_Fortran_MODULE_DIRECTORY}")
+else()
+    set_target_properties(f90twi_gtest PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+endif()
 set_property(TARGET f90twi_gtest
         APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${file2}"
 )
@@ -191,10 +198,13 @@ F90TWFPP("${file2fpp}" "${file2}"
     OPTIONS ${FPP_OPTIONS}
     SWITCH ${FPP_SWITCH}
 )
-add_dependencies(f90tw_gtest f90twi_gtest)
+
+add_library(f90tw_gtest STATIC gtest_assertions.cpp)
+set_property(TARGET f90tw_gtest PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(f90tw_gtest PUBLIC ${gtest_INCLUDE_DIR})
+target_link_libraries(f90tw_gtest PUBLIC f90twi_gtest gtest)
 
 # make available the include and module paths
 set(f90tw_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE STRING "f90tw include directory")
-set(f90tw_MODULES_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE STRING "f90tw modules/libraries directory")
 
 include(GoogleTest)

@@ -77,7 +77,6 @@ subroutine reacmp(lundia    ,error     ,filana    ,statns    ,nto       , &
     integer                        :: lstat
     integer                        :: mcmp   ! Logical unit number 
     integer                        :: ncomp  ! Number of components 
-    integer                        :: newlun
     integer                        :: nrcmp  ! Index of component 
     integer        , external      :: numcmp
     logical                        :: ex     ! Flag of existing file 

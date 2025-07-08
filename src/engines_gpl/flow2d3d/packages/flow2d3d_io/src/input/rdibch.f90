@@ -74,7 +74,6 @@ subroutine rdibch(lundia    ,error     ,runid     ,ntof      ,nto       , &
     integer                               :: lrid    ! Length of character string RUNID 
     integer                               :: luntmp
     integer                               :: n
-    integer, external                     :: newlun
     character(256)                        :: filbch
     real(fp), dimension(:,:), allocatable :: rtmp    ! temporary array containing hydrbc of entire domain
 !

@@ -49,7 +49,6 @@ subroutine removeDuplicateDDBFiles(runid, ddbfile, gdp)
     integer                              :: fillun
     integer                              :: fillundef
     integer                              :: istat
-    integer,external                     :: newlun
     logical                              :: ex
     logical                              :: identicalFiles
     character(300)                       :: line

@@ -68,7 +68,6 @@ subroutine rdfour(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                        :: lfile     ! Length of file name 
     integer                        :: lkw       ! Length of keyword 
     integer                        :: lunfou    ! Unit number fourier input file 
-    integer         , external     :: newlun
     integer                        :: nlook     ! Help var.: nr. of data to look for in the MD-file 
     integer                        :: ntrec     ! Help. var to keep track of NRREC 
     logical                        :: found     ! Flag=TRUE if keyword found 

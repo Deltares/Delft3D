@@ -81,7 +81,6 @@ subroutine icfil(lundia    ,error     ,filic     ,fmttmp    ,mmax      , &
     integer                                     :: luntmp       ! Unit number file 
     integer                                     :: m            ! Help var. 
     integer                                     :: n            ! Help var. 
-    integer, external                           :: newlun
     real(sp), allocatable, dimension(:,:,:,:)   :: sbuff        !  Single precision buffer to read from file
     logical                                     :: test
     character(300)                              :: message

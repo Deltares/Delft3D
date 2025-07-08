@@ -29,6 +29,8 @@ fm dwave mormerge,dimr/dimr_dflowfm_dwave_mormerge_win64.xml,FALSE,FALSE,FALSE,F
 fm dwaves,dimr/dimr_dflowfm_dwaves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves parallel,dimr/dimr_dflowfm_dwaves_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves parallel,dimr/dimr_dflowfm_dwaves_win64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+fm dwaves parallel c01,dimr/dimr_dflowfm_dwaves_lnx64_parallel_c01.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+fm dwaves parallel c01,dimr/dimr_dflowfm_dwaves_win64_parallel_c01.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves tutorial,dimr/dimr_dflowfm_dwaves_tutorial_course_win64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves,dimr/dimr_dflowfm_dwaves_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm full-scale,dimr/dimr_dflowfm_full_scale_models_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,

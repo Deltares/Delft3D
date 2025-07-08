@@ -70,7 +70,6 @@ subroutine rdscour(lundia    ,error     ,nmmax     ,gdp       )
     integer                              :: n
     integer, dimension(:,:), allocatable :: nmappin
     integer, dimension(:,:), allocatable :: nmrefin
-    integer, external                    :: newlun
     logical                              :: lex
     character(256)                       :: errmsg
     character(256)                       :: flname

@@ -502,7 +502,7 @@
     </testCase>
 
     <testCase name="e02_f017_c020_sourcesink_3D" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f017_sources_sinks/c020_sourcesink_3D</path>
+      <path version="2025-06-27T09:43:45.762000">e02_dflowfm/f017_sources_sinks/c020_sourcesink_3D</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sorsin3D_map.nc" type="netCDF">
@@ -512,6 +512,13 @@
             <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_tem1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/sorsin3D_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="source_sink_prescribed_discharge" toleranceAbsolute="0.000001" />
+            <parameter name="source_sink_prescribed_salinity_increment" toleranceAbsolute="0.000001" />
+            <parameter name="source_sink_prescribed_temperature_increment" toleranceAbsolute="0.000001" />
           </parameters>
         </file>
       </checks>

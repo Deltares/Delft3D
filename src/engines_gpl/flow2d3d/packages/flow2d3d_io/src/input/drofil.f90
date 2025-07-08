@@ -75,7 +75,6 @@ subroutine drofil(lundia    ,fildro    ,fmttmp    ,error     ,ndro      , &
     integer                :: lr132    ! Standard length of a record in the attribute file = 132 
     integer                :: luntmp   ! Temporary file unit 
     integer                :: n
-    integer, external      :: newlun
     logical                :: dtn
     real(fp)               :: rdef     ! Help var. containing default va- lue(s) for real variable 
     real(fp)               :: t

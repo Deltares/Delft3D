@@ -83,7 +83,6 @@ subroutine pppsol(mmax      ,nmax      ,kmax      ,lstsci    ,ltur      , &
     integer           :: lunsol ! Unit for print file ZSOL 
     integer           :: m      ! Help var. counter for array index in the X-/M-direction 
     integer           :: n      ! Help var. counter for array index in the Y-/N-direction 
-    integer, external :: newlun
     character(300)    :: filnam ! Name of file to write to 
 !
 !! executable statements -------------------------------------------------------

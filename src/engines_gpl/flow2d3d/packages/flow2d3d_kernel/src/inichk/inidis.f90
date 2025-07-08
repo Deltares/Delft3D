@@ -125,7 +125,6 @@ subroutine inidis(lundia    ,error     ,runid     ,cyclic    ,timnow    , &
     integer                                    :: md
     integer                                    :: n
     integer                                    :: nd
-    integer                                    :: newlun
     integer                                    :: nm          ! N,M index for discharge location 
     integer                                    :: npara       ! Number of parameter records in time dependent direct access file 
     integer                                    :: nparrd      ! NR. of parameter records actual read

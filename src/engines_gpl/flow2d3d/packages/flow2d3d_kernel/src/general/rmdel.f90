@@ -57,7 +57,6 @@ subroutine rmdel(filnam    ,gdp       )
     integer                        :: ierr
     integer                        :: lfil        ! Length of character string FILNAM 
     integer                        :: luntmp      ! Unit number for file 
-    integer , external             :: newlun
     logical                        :: ex          ! Logical flag used for INQUIRE state- ment for file EXIST and OPENED 
 !
 !! executable statements -------------------------------------------------------

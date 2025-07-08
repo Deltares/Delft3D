@@ -73,7 +73,6 @@ subroutine corinp_gen(idensform, gdp)
 ! Local variables
 !
     integer                :: luntmp
-    integer, external      :: newlun
     integer                :: idis
     real(fp)               :: dummy
     character              :: cdummy

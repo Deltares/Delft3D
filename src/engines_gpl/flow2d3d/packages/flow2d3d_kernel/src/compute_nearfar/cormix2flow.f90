@@ -73,7 +73,6 @@ subroutine cormix2flow(thick  ,kmax  ,dps   ,s0    ,disch_nf ,sour_nf , &
 !
     integer                                     :: ierror
     integer                                     :: nm_diff
-    integer                      , external     :: newlun
     integer                                     :: luntmp
     integer                                     :: iocond
     integer                                     :: irow

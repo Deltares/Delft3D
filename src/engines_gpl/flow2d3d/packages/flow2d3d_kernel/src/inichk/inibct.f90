@@ -91,7 +91,6 @@ subroutine inibct(lundia    ,error     ,runid     , &
     integer                                  :: nparrd ! NR. of parameter records actual read 
     integer                                  :: ntimrd
     integer                                  :: ntyp   ! Index number of open boundary type and PARNAM 
-    integer, external                        :: newlun
     logical                                  :: access ! Flag to read file as direct access or sequential    logical                                  :: first  ! Help var. It is always set to TRUE before calling the relevant routines for the time dependent data, because they are activated here for the first time
     logical                                  :: opend  ! Help flag = TRUE when file is still open (Delft3D) and 
     character(1)                             :: dumchr ! Dummy character (#) in first record of direct access file 

@@ -132,7 +132,6 @@ subroutine incdis(lundia    ,sferic    ,grdang    ,timnow    ,nsrcd     , &
 !
 !> Local variables
 !
-    integer,external  :: newlun
     integer           :: dfil
     integer           :: ddb
     integer           :: i

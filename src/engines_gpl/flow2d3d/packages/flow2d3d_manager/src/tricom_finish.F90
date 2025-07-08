@@ -345,7 +345,6 @@ subroutine tricom_finish(olv_handle, gdp)
     integer                                       :: istat
     integer                                       :: lunfil
     integer                            , external :: modlen
-    integer                            , external :: newlun
     integer                                       :: nst           ! Current time step counter 
     integer                                       :: nst2go        ! Number of timesteps left 
     integer(pntrsize)                  , external :: gtcpnt

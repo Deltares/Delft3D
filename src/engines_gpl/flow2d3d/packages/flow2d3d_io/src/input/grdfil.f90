@@ -64,7 +64,6 @@ subroutine grdfil(lundia    ,lungrd    ,error     ,filgrd    ,fmttmp    , &
     integer                        :: lfile   ! Length of file name 
     integer                        :: luntmp  ! Unit number for attribute file 
     integer                        :: m       ! Help var. 
-    integer, external              :: newlun
     integer, dimension(2)          :: ival    ! Help array (int.) where the data, recently read from the MD-file, are stored temporarily 
 !
 !

@@ -67,7 +67,6 @@ subroutine dryfil(lundia    ,lundry    ,error     ,fildry    ,fmttmp    , &
     integer               :: lfile  ! Length of file name 
     integer               :: luntmp ! Unit number for attribute file 
     integer               :: m      ! Help var. 
-    integer, external     :: newlun
     integer, dimension(4) :: ival   ! Help array (int.) where the data, recently read from the MD-file, are stored temporarily 
     logical               :: outsd  ! indicating whether all dry points are outside subdomain (.TRUE.) or not (.FALSE.)
     logical               :: onParbndIsInside

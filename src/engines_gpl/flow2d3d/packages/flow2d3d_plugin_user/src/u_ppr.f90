@@ -262,7 +262,6 @@ subroutine u_ppr(lundia    ,lunprt    ,error     ,versio    ,prsmap    , &
     integer                       :: istat  ! Station number selected 
     integer                       :: itime  ! Current simulation time MMHHSS 
     integer                       :: notim  ! No. of time step to be written to the file 
-    integer, external             :: newlun
     character(131), dimension(10) :: header ! File header 
 !
 !! executable statements -------------------------------------------------------

@@ -90,7 +90,6 @@ subroutine inibcc(lundia    ,error     ,runid     ,timnow    , &
     integer                                :: k       ! Loop counter over KMAX 
     integer                                :: lrec    ! Record length of direct access file 
     integer                                :: lrid    ! Length of character string runid 
-    integer                                :: newlun
     integer                                :: np
     integer                                :: npara   ! Number of parameter records in time dependent direct access file 
     integer                                :: nparrd  ! NR. of parameter records actual read 

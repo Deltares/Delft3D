@@ -75,7 +75,6 @@ subroutine inieva(runid     ,cyclic    ,timnow    ,evaint    ,j         , &
 !
     integer           :: itfac    ! Interpolation factor 
     integer           :: lrid     ! Length of character string runid 
-    integer           :: newlun
     integer           :: nm       ! Loop counter for NMMAX 
     logical           :: first    ! Help var. It is always set to TRUE before calling the relevant routines for the time dependent data, because they are activated here for the first time 
     logical           :: inteva   ! Interpolation method between consecu- tive rain/evaporation data: N = No     interpolation. Y = Linear interpolation. 

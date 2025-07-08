@@ -88,7 +88,6 @@ subroutine rdiwe(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                        :: lenc   ! Help var. (length of var. cvar to be looked for in the MD-file) 
     integer                        :: lfile  ! Number of non blank characters of file name 
     integer                        :: luntmp ! Unit number of (input par. for) FILIWE 
-    integer                        :: newlun
     integer                        :: nlook  ! Help var.: nr. of data to look for in the MD-file 
     integer                        :: ntrec  ! Help. var to keep track of NRREC 
     logical                        :: dtn

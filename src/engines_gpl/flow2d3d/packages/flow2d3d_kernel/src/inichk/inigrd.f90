@@ -88,7 +88,6 @@ subroutine inigrd(lundia    ,error     ,runid     ,nmax      ,mmax      , &
     integer                        :: nd      ! Current N-index minus 1 (see N) 
     integer                        :: ndd     ! ND-1 
     integer                        :: ndum    ! Help var. 
-    integer                        :: newlun
     integer                        :: ngrd    ! Help var. 
     integer                        :: nrp     ! Counter for the number of points in the current polygon 
     integer                        :: nu      ! Current N-index plus  1 (see N) 

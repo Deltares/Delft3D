@@ -94,7 +94,6 @@ subroutine urdrgs(lundia    ,error     ,filusr    ,nmax      ,mmax      , &
     integer               :: n       ! Loop variable 
     integer               :: n1      ! First n-index for rigid sheets 
     integer               :: n2      ! Last n-index for rigid sheets 
-    integer               :: newlun
     integer               :: nlook   ! Help var.: nr. of data to look for in the MD-file 
     integer               :: nrigid  ! Help var. (counter) 
     integer, dimension(6) :: ival    ! Help array (int.) where the data, recently read from file, are stored temporarily 

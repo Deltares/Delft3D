@@ -77,7 +77,6 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
     integer           :: lunid             ! Unit nr. for the file 'runid' where the runid is specified : 'pc  ' or 'unix' 
     integer           :: luntmp
     integer           :: n
-    integer, external :: newlun
     integer           :: nrec
     integer           :: pos               ! Help var. for adjusting runid 
     logical           :: ex                ! Help flag = TRUE when file is found 

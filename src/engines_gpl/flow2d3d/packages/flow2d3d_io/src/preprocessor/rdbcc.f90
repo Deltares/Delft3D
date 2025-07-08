@@ -115,7 +115,6 @@ subroutine rdbcc(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                        :: lunout  ! Unit number for the transformed file between tdatom and trisim 
     integer                        :: lunrd
     integer                        :: mxlrec
-    integer, external              :: newlun
     integer                        :: nlook   ! Help var.: nr. of data to look for in the MD-file 
     integer                        :: nn
     integer                        :: ntrec   ! Help. var to keep track of NRREC 

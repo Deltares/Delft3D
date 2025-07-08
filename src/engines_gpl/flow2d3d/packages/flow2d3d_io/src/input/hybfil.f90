@@ -75,7 +75,6 @@ subroutine hybfil(lundia    ,error     ,filrgh    ,fmttmp    ,nmax      , &
     integer                               :: luntmp   ! Help var. for a unit number of an attribute file 
     integer                               :: m        ! Help (loop) var. for M-index 
     integer                               :: n        ! Help (loop) var. for N-index 
-    integer, external                     :: newlun
     real(fp), dimension(:,:), allocatable :: ctmp     ! temporary array containing roughness of entire domain
 !
 !! executable statements -------------------------------------------------------
