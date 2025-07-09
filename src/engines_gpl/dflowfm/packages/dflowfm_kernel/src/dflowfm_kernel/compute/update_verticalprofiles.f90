@@ -1196,7 +1196,7 @@ contains
 
                call tridag(ak, bk, ck, dk, ek, turepsws(kb0:kt), kxL + 1) ! solve eps
                turepsws(kb0:kt) = max(epseps, turepsws(kb0:kt))
-               do L = kt + 1, kb + kmxL(kk) - 1 ! copy to surface for z-layers
+               do L = kt + 1, kb + kmxn(kk) - 1 ! copy to surface for z-layers
                   turepsws(L) = turepsws(kt)
                end do
 
