@@ -72,7 +72,6 @@ subroutine srcfil(lundia    ,filsrc    ,error     ,nsrc      ,mnksrc    , &
     integer                :: lr132   ! Standard length of a record in the attribute file = 132 
     integer                :: luntmp  ! Temporary file unit 
     integer                :: n
-    integer, external      :: newlun
     integer , dimension(3) :: ival    ! Help array (integer) where the data, recently read from the MD-file, are stored temporarily
     real(fp)               :: rdef
     real(fp), dimension(1) :: rval

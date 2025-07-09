@@ -75,7 +75,6 @@ subroutine strgrd ( icom, runid, mmax, nmax, mmaxgl, nmaxgl, &
     integer                              :: lungrd ! Unit number of local scratch file for array ICOM
     integer                              :: m      ! loop variable
     integer                              :: n      ! loop variable
-    integer                              :: newlun
     integer, dimension(:,:), allocatable :: icomo  ! array ICOM for own subdomain
     character(256)                       :: filnam ! String containing complete file name "TMP_RUNID.extension"
     character(256)                       :: fixid  ! fixed size version of runid, needed for character concatenation

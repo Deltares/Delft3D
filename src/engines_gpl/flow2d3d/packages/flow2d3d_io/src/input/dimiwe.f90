@@ -70,7 +70,6 @@ subroutine dimiwe(lunmd     ,lundia    ,error     ,nrrec     ,iweflg    , &
     integer              :: lfile  ! Number of non blank characters of file name 
     integer              :: lkw
     integer              :: luntmp ! Unit number of (input par. for) FILIWE 
-    integer              :: newlun
     integer              :: nlook  ! Help var.: nr. of data to look for in the MD-file 
     integer              :: ntrec  ! Help. var to keep track of NRREC 
     logical              :: ex     ! Flag if file exists 

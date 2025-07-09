@@ -84,7 +84,6 @@ subroutine rdbcq(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer            :: lunrd
     integer            :: nlook   ! Help var.: nr. of data to look for in the MD-file 
     integer            :: ntrec   ! Help. var to keep track of NRREC 
-    integer, external  :: newlun
     logical            :: ex      ! Flag to test if file exists 
     logical            :: found   ! FOUND=TRUE if KEYW in the MD-file was found 
     logical            :: lerror  ! Flag=TRUE if a local error is encountered 

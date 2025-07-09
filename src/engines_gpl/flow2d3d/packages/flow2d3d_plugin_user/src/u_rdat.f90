@@ -58,7 +58,6 @@ subroutine u_rdat(lundia    ,error     ,gdp       )
 !
     integer                        :: ios
     integer                        :: luninp
-    integer, external              :: newlun
     logical                        :: ex
     character(12)                  :: inpfil
     character(256)                 :: errtx1

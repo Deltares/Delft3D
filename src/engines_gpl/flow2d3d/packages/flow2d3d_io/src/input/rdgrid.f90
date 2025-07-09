@@ -114,7 +114,6 @@ subroutine rdgrid(lunmd     ,lundia    ,error     ,zmodel    ,nrrec     , &
     integer               :: lungrd ! Unit number of local scratch file for grid enclosure points 
     integer               :: luntd  ! Unit number of local scratch file for thin dam point sections 
     integer               :: n
-    integer               :: newlun
     integer               :: nlook  ! Help var.: nr. of data to look for in the MD-file 
     integer               :: ntrec  ! Help. var to keep track of NRREC 
     integer, dimension(4) :: ival   ! Help array 

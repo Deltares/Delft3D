@@ -76,7 +76,6 @@ subroutine rdbcb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                        :: lf                   ! Help var. specifying the length of character variables for file names 
     integer                        :: lrid                 ! Length of character string runid 
     integer                        :: lunrd
-    integer, external              :: newlun
     integer                        :: nlook                ! Help var.: nr. of data to look for in the MD-file 
     integer                        :: ntrec                ! Help. var to keep track of NRREC 
     logical                        :: lerror               ! Flag=TRUE if a local error is encountered 

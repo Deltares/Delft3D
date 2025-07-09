@@ -76,7 +76,6 @@ subroutine dimbch(lunmd     ,lundia    ,error     ,nrrec     ,kc        , &
     integer                          :: lstat
     integer                          :: luntmp  ! Unit number of FILTMP 
     integer                          :: mcmp    ! Logical unit number 
-    integer, external                :: newlun
     integer                          :: nlook   ! Nr. of values to look for in a record 
     integer                          :: ntrec   ! Current record counter. It's value is changed to detect if all records in the MD-file have been read 
     logical                          :: defaul  ! Flag to detrmine if a default value is allowed when no value is read 

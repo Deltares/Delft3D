@@ -97,7 +97,6 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     integer                                   :: mxlrec ! Actual maximum record length (:= KMAX*24*2 + 24) 
     integer                                   :: n      ! Help var. for the nr. of data to be read (see LENDAT) 
     integer                                   :: nb
-    integer                                   :: newlun
     integer                                   :: nlook  ! Nr. of data to look for in RECORD 
     integer                                   :: np
     integer                                   :: npara  ! Number of parameter records 

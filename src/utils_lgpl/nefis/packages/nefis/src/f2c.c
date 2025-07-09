@@ -1408,7 +1408,7 @@ DLLEXPORT BInt4 FTN_CALL INQUIRE_FIRST_ELEMENT( BInt4 * fd                 ,/* I
   BChar   elm_unity   [MAX_NAME+1];
   BChar   elm_desc    [MAX_DESC+1];
   BInt4   elm_dimens  [MAX_DIM]   ;
-  BInt4   elm_num_bytes = 0       ;
+  BUInt8  elm_num_bytes = 0       ;
   BInt4   elm_num_dim   = 0       ;
   BInt4   i       ;
 
@@ -1547,7 +1547,7 @@ DLLEXPORT BInt4 FTN_CALL INQUIRE_NEXT_ELEMENT ( BInt4 * fd                 ,/* I
   BChar   elm_unity   [MAX_NAME+1];
   BChar   elm_desc    [MAX_DESC+1];
   BInt4   elm_dimens  [MAX_DIM]   ;
-  BInt4   elm_num_bytes = 0       ;
+  BUInt8   elm_num_bytes = 0       ;
   BInt4   elm_num_dim   = 0       ;
   BInt4   i       ;
 

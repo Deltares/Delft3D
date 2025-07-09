@@ -96,7 +96,6 @@ subroutine rdtddn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     integer                      :: mxlrec  ! Actual maximum record length 
     integer                      :: n       ! Help var. for the nr. of data to be read (see LENDAT) 
     integer                      :: nb
-    integer                      :: newlun
     integer                      :: np
     integer                      :: npara   ! NR. of parameter records equal to number of data values in a record to be read 
     integer                      :: nparrd  ! NR. of parameter records actual read 

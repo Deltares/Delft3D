@@ -100,7 +100,6 @@ integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, o
     integer                             :: lunid
     integer                             :: luntri       ! Unit number for trigger file for TRISIM for running programs simultaniously 
     integer                             :: nhystp
-    integer                  , external :: newlun
     integer                  , external :: fsmtrf
     logical                             :: ex
     logical                             :: init         ! Flag=TRUE when initialisation is required (always the case if FLOW is used stand alone) 

@@ -76,7 +76,6 @@ subroutine inimet(lundia    ,error     ,versio    ,wave      ,trasol    , &
     integer           :: n
     integer           :: nfil
     integer           :: nn
-    integer, external :: newlun
     logical           :: ex     ! Logical flag for file existence 
 !
 !! executable statements -------------------------------------------------------

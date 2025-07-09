@@ -85,7 +85,6 @@ subroutine corinp_gen2(error, gdp)
 ! Local variables
 !
     integer                             :: luntmp
-    integer, external                   :: newlun
     integer                             :: i
     integer                             :: j
     integer                             :: idis

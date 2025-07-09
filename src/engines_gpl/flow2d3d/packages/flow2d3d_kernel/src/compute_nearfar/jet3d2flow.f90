@@ -76,7 +76,6 @@ subroutine jet3d2flow(thick  ,kmax   ,dps    ,s0     ,r0       ,          &
 !
     integer                                  :: ierror
     integer                                  :: irow
-    integer                   , external     :: newlun
     integer                                  :: nm_diff
     integer                                  :: nrow
     integer                                  :: luntmp

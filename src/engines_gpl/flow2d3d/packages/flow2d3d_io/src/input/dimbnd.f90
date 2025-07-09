@@ -80,7 +80,6 @@ subroutine dimbnd(lunmd     ,lundia    ,error     ,nrrec     ,filtmp    , &
     integer                        :: nlook   ! Nr. of values to look for in a record 
     integer                        :: nrrec0  ! Record counter keeping the track of the last record read 
     integer                        :: ntrec   ! Current record counter. It's value is changed to detect if all records in the MD-file have been read 
-    integer         , external     :: newlun
     logical                        :: lerror  ! Flag=TRUE if an local error is encountered
     logical                        :: newkw   ! Flag to specify if the keyword to look for is a new keyword 
     character(1)                   :: cdum    ! Dummy character variable 

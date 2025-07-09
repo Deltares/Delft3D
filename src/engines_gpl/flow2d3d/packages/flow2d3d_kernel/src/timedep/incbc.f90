@@ -213,7 +213,6 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     integer                             :: n              ! Loop variable 
     integer                             :: n1             ! Pointer var. relating NOB to MNBND 
     integer                             :: nend           ! End coord. (in the y-dir.) of an open bound. section 
-    integer, external                   :: newlun
     integer                             :: ngg            ! N-coord. of the actual open boundary point, which may differ from the ori- ginal position due to grid staggering 
     integer                             :: np
     integer                             :: npbi           ! N index of point at boundary inside domain

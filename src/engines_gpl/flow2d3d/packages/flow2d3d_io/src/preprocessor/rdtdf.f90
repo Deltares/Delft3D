@@ -75,7 +75,6 @@ subroutine rdtdf(lundia    ,luntdp    ,error     ,filnam    ,fmttmp    , &
     integer                        :: lfile  ! Help var. specifying the length of character variables for file names 
     integer                        :: lunrd  ! Unit number of the attribute file containing the time series 
     integer                        :: n      ! Help var. for the nr. of data to be read (see LENDAT) 
-    integer         , external     :: newlun
     logical                        :: dtn
     logical                        :: rec1st ! Flag set to TRUE if the record read is the first record 
     real(fp)                       :: t

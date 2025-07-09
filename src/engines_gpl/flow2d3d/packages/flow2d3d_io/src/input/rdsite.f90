@@ -130,7 +130,6 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                                    :: i            ! Help var.
     integer                                    :: mfl          ! first m-index of this local partition, excluding the halo
     integer                                    :: mll          ! last  m-index of this local partition, excluding the halo
-    integer, external                          :: newlun
     integer                                    :: nfl          ! first n-index of this local partition, excluding the halo
     integer                                    :: nll          ! last  n-index of this local partition, excluding the halo
     integer                                    :: nlook        ! Help var.: nr. of data to look for in the MD-file

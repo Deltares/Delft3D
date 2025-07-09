@@ -58,7 +58,6 @@ subroutine chkrefinement(gdp)
     integer           :: ipos
     integer           :: refinement
     integer           :: tmpfile
-    integer, external :: newlun
     character(50)     :: filnam
     character(300)    :: line
 !

@@ -412,7 +412,6 @@ subroutine tricom_init(olv_handle, gdp)
     integer                                       :: mmaxddb
     integer                            , external :: modlen
     integer                                       :: mp
-    integer                            , external :: newlun
     integer                                       :: nhystp
     integer                                       :: nmaxddb
     integer                                       :: nst           ! Current time step counter 

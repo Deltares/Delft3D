@@ -58,7 +58,6 @@ subroutine wait_until_finished (no_dis, waitfiles, idis, filename, waitlog, ifat
 !
 ! Local variables
 !
-    integer , external      :: newlun
     integer                 :: lun
     integer                 :: ios
     integer                 :: i
@@ -133,14 +132,13 @@ subroutine wait_until_finished (no_dis, waitfiles, idis, filename, waitlog, ifat
        !
        ! File found: open file and search for the end tag </NF2FF>
        !
-       lun = newlun(gdp)
        inquire(lun, iostat=ios, opened=opend)
        if (ios /= 0) then
           ! try again
           cycle
        endif
        if (opend) close(lun, iostat=ios)
-       open (lun,file=filename,iostat=ios)
+       open (newunit=lun,file=filename,iostat=ios)
        if (ios /= 0) then
           ! try again
           cycle

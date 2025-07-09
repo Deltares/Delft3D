@@ -71,13 +71,11 @@ subroutine wri_tek    (x_jet  , y_jet  , z_jet , no_val , xstart ,xend  ,ystart 
     integer                                                                    :: n
     integer                                                                    :: m
     integer                                                                    :: luntmp
-    integer                                                                    :: newlun
 
 !
 !! executable statements -------------------------------------------------------
 !
-    luntmp = newlun(gdp)
-    open (luntmp,file=filename,status='unknown')
+    open (newunit=luntmp,file=filename,status='unknown')
 
     write (luntmp,'(a,f12.6)')'* Salinity    of the discharge : ',linkinf(1)
     write (luntmp,'(a,f12.6)')'* Temperature of the discharge : ',linkinf(2)

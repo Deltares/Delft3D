@@ -96,7 +96,6 @@ subroutine barfil(lundia    ,filbar    ,error     ,mmax      ,nmax      , &
     integer                          :: n                    ! loop counter 
     integer                          :: n1                   ! First n-index for barrier 
     integer                          :: n2                   ! Last n-index for barrier 
-    integer, external                :: newlun
     integer                          :: nlook                ! Nr. of values to look for in a record 
     integer                          :: npar                 ! Number of parameters on input line before barrier velocity
     integer                          :: nrflds

@@ -55,7 +55,6 @@ subroutine prihis(gdp)
     integer        :: iocond
     integer        :: lrid    ! Help var. to determine the actual length of RUNID 
     integer        :: n
-    integer        :: newlun
     integer        :: nrec
     logical        :: ex      ! Help flag = TRUE when file is found 
     logical        :: opend   ! Help flag = TRUE when file is still open (DELFT3D) 

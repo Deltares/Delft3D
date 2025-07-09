@@ -102,7 +102,6 @@ subroutine bubfil(lundia    ,filbub    ,error     ,mmax      ,nmax      , &
     integer                                     :: n2      ! Last n-index for bubble screen 
     integer                                     :: ncount  ! Nr. of bubble screens in N-direction
     integer                                     :: nint    ! Last m-index for bubble screen 
-    integer, external                           :: newlun
     integer                                     :: nlook   ! Nr. of values to look for in a record 
     integer, dimension(4)                       :: ival    ! Help array (integer) where the data, recently read from the MD-file, are stored temporarily 
     integer, dimension(:,:)       , allocatable :: itemp   ! work array to store mnksrc temporarily 

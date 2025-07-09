@@ -110,7 +110,6 @@ subroutine rdtdtn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     integer                                :: nr     ! Sequence nr of the time read 
     integer                                :: ntimrd
     integer                                :: ntyp
-    integer, external                      :: newlun
     logical                                :: access ! Flag to read file as direct access or sequential 
     logical                                :: ex     ! Flag to test if file exists 
     real(fp)                               :: rdfaul

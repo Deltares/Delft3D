@@ -62,7 +62,6 @@ subroutine initmerge (nmmax, lsed, runid, gdp)
     integer                :: istat
     integer, external      :: getstream
     integer                :: lunfil
-    integer, external      :: newlun
     integer                :: pathlen
     real(hp), dimension(2) :: rn
     logical                :: ex

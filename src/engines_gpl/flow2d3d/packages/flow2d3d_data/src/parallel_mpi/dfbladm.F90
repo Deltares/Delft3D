@@ -120,7 +120,6 @@ subroutine dfbladm(ipown, icom, mmax, nmax, runid, gdp)
     integer                              :: m              ! current M-index of point in computational row
     integer                              :: moff           ! offset in x-direction
     integer                              :: n              ! current N-index of point in computational column
-    integer,external                     :: newlun
     integer                              :: nneigh         ! number of neighbouring subdomains
     integer                              :: noff           ! offset in y-direction
     integer                              :: novlu          ! number of overlapping unknowns

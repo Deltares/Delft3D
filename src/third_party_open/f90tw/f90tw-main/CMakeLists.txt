@@ -12,4 +12,3 @@ endif()
 add_subdirectory(f90tw)
 
 message(STATUS "f90tw_INCLUDE_DIR is ${f90tw_INCLUDE_DIR}")
-message(STATUS "f90tw_MODULES_DIR is ${f90tw_MODULES_DIR}")

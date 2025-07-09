@@ -144,6 +144,9 @@ contains
          method = METHOD_CONSTANT
       case ('linearspacetime')
          method = WEIGHTFACTORS
+      case ('nearestnb')
+         ! Nearest neighbour is currently automatically selected by ec_converter under standard method "weightfactors".
+         method = WEIGHTFACTORS
       case ('triangulation')
          method = METHOD_TRIANGULATION
       case default

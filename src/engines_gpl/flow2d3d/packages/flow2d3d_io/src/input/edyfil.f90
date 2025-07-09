@@ -84,7 +84,6 @@ subroutine edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
     integer           :: luntmp  ! Help var. for a unit number of an attribute file 
     integer           :: m       ! Help (loop) var. for M-index 
     integer           :: n       ! Help (loop) var. for N-index 
-    integer, external :: newlun
     character(300)    :: message
     real(fp), dimension(:,:), allocatable :: tmp   ! Temporary array containing dicuv/vicuv of entire domain 
 !

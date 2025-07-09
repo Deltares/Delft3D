@@ -64,7 +64,6 @@ subroutine varcon(fname     ,timmin    ,result    ,isdir     ,nres      , &
     integer                 :: iuntim
     integer                 :: ncol
     integer                 :: nt
-    integer, external       :: newlun
     real(fp)                :: a
     real(fp)                :: b
     real(fp)                :: c

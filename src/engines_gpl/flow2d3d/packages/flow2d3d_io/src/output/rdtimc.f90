@@ -63,7 +63,6 @@ subroutine rdtimc(comfil    ,lundia    ,error     ,commrd    ,itlen     , &
     integer                                       :: ierror ! error flag
     integer                                       :: lfil   ! Actual length of name file COMFIL 
     integer                                       :: luntmp
-    integer                                       :: newlun
     integer       , dimension(1)                  :: idummy ! Help array to write integers
     integer      , dimension(3,5)                 :: uindex
     integer                        , external     :: clsnef

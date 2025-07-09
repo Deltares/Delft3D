@@ -75,7 +75,6 @@ subroutine dittar(filnam    ,lundia    ,error     ,nttaru    ,gdp)
     integer, dimension(maxfld)       :: ifield
     integer, dimension(maxfld)       :: itype
     integer, dimension(maxfld)       :: lenchr
-    integer, external                :: newlun
     logical                          :: leql
     logical                          :: lfirst
     logical                          :: lokay

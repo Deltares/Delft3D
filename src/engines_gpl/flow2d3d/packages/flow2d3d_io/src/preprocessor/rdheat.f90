@@ -91,7 +91,6 @@ subroutine rdheat(lunmd     ,lundia    ,error     ,nrrec       ,mdfrec    , &
     integer                      :: lrid     ! Length of character string runid 
     integer                      :: lunout   ! Unit number for unformatted FLOW help file between TDATOM and TRISIM  
     integer                      :: n        ! Help var. 
-    integer                      :: newlun
     integer                      :: nlook    ! Help var.: nr. of data to look for in the MD-file 
     integer                      :: nrval    ! Number of values to read from file 
     integer                      :: ntrec    ! Help. var to keep track of NRREC 

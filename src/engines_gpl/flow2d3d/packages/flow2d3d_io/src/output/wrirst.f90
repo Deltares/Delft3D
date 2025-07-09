@@ -93,7 +93,6 @@ subroutine wrirst(lundia    ,runid     ,itrstc    ,nmaxus    ,mmax      , &
     integer        :: lunrst   ! Unit number for the restart file, used only whne simulation sets the initial condition from this file 
     integer        :: m        ! Help var. 
     integer        :: n        ! Help var. 
-    integer        :: newlun
     logical        :: ex       ! Help logical var. to determine whether the file currently beeing checked exist 
     character(256) :: filrst   ! Char. var. containing the restart file name 
 !

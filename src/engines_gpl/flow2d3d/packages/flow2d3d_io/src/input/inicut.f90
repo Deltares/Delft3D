@@ -124,7 +124,6 @@ subroutine inicut(lundia    ,error     ,runid     ,nmax      ,mmax      , &
     integer                        :: nd            ! Current N-index minus 1 (see N)
     integer                        :: nrp           ! Counter for the number of points in the current polygon
     integer                        :: nu            ! Current N-index plus  1 (see N)
-    integer, external              :: newlun
     real(fp)                       :: area
     real(fp)                       :: check_dir
     real(fp)                       :: check_kcstot1

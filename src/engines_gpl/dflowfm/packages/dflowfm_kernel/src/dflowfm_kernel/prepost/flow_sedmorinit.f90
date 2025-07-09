@@ -495,6 +495,8 @@ contains
       !
       inquire (file=trim(md_morphopol), exist=ex)
       if (.not. ex) then
+         call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Morphopol set but file does not exist, morphopol not used.')
+         md_morphopol = ''
          ! do all cells
          kcsmor = 1
       else

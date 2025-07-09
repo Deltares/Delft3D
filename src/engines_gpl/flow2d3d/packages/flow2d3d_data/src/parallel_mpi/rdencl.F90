@@ -72,7 +72,6 @@ subroutine rdencl( lunmd     ,lundia    ,error     , runid    , &
     integer               :: lkw    ! Actual length of KEYW
     integer               :: lrid   ! Length of character string runid
     integer               :: lungrd ! Unit number of local scratch file for grid enclosure points
-    integer               :: newlun
     integer               :: nlook  ! Help var.: nr. of data to look for in the MD-file
     integer               :: nrrec  !  Pointer to the record number in the MD-file
     integer               :: ntrec  ! Help. var to keep track of NRREC

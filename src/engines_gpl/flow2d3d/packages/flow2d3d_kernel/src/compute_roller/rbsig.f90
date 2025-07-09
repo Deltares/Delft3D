@@ -111,7 +111,6 @@ subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
     integer           :: lenc
     integer           :: lfile    ! Length of file name
     integer           :: uw
-    integer, external :: newlun
     integer           :: version  ! to detect the version number of the file
     logical           :: ex       ! file existence flag
     real(fp)          :: omspl

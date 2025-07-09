@@ -54,7 +54,6 @@ subroutine delnef(filnam, gdp)
 !
     integer         :: ind      ! Length of filenam 
     integer         :: luntmp
-    integer         :: newlun
     logical         :: exists
     character(256)  :: locfnm   ! Local file name 
 !

@@ -78,7 +78,6 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
     integer                        :: lninp                ! Help var. specifying the length of input file name 
     integer                        :: lrec                 ! Length of record 
     integer                        :: lunout               ! Unit number for transformed file 
-    integer                        :: newlun
     integer                        :: nrecs                ! Number of records in table 
     integer                        :: stapos               ! Start position of scan 
     integer                        :: timref               ! Reference time read 

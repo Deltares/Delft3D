@@ -101,7 +101,6 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
     integer             :: nstav  ! First N-index of V-points
     integer             :: n1     ! Help var. 
     integer             :: n2     ! Help var. 
-    integer             :: newlun
     integer             :: nf     ! First N-index of the active point in the current computational COLUMN 
     integer             :: nl     ! Last N-index of the active point in the current computational COLUMN 
     integer             :: nld    ! One to last N-index of the active point in the current computational COLUMN 

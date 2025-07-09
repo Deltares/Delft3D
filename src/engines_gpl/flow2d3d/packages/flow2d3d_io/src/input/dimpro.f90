@@ -120,7 +120,6 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
 !
     integer                   :: istof  ! Flag to detect if any constituent has been specified 
     integer                   :: lconst ! number of constituents, including sediments
-    integer        , external :: newlun
     integer                   :: uw
     logical                   :: lhulp  ! Help variable to read logical from MD-file
     logical                   :: skipuniqueid !< temporary variable for reading the corresponding keyword

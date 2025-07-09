@@ -73,7 +73,6 @@ subroutine stafil(lundia    ,filsta    ,fmttmp    ,error     ,nostat    , &
     integer                        :: lr132    ! Standard length of a record in the attribute file = 132 
     integer                        :: luntmp   ! Temporary file unit 
     integer                        :: n
-    integer, external              :: newlun
     integer, dimension(2)          :: ival     ! Help array (integer) where the data, recently read from the MD-file, are stored temporarily 
     character(132)                 :: rec132   ! Standard rec. length in an attribute file (132) 
     character(20)                  :: cdef     ! Default value when CVAR not found 

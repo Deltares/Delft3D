@@ -76,7 +76,6 @@ subroutine cortim2flow(thick  ,kmax  ,dps   ,s0    ,r0       ,          &
 !
     integer                                     :: ierror
     integer                                     :: nm_diff
-    integer                      , external     :: newlun
     integer                                     :: no_modules
     integer                                     :: luntmp
     integer                                     :: iocond
@@ -120,8 +119,7 @@ subroutine cortim2flow(thick  ,kmax  ,dps   ,s0    ,r0       ,          &
     ! Open cormix output file
     !
 
-    luntmp = newlun (gdp)
-    open (luntmp,file=filename(2),status='old')
+    open (newunit=luntmp,file=filename(2),status='old')
 
     !
     ! Determine the number of modules used by Cormix and the number of jut/plume trajectory values

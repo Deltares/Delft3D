@@ -123,7 +123,6 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                                  :: maxval  ! Maximum number of values 1+LSTSC+2 
     integer                                  :: mxlrec
     integer                                  :: n       ! Help var. 
-    integer, external                        :: newlun
     integer                                  :: nlook   ! Help var.: nr. of data to look for in the MD-file 
     integer                                  :: nrval   ! Number of values to read from file 
     integer                                  :: ntrec   ! Help. var to keep track of NRREC 

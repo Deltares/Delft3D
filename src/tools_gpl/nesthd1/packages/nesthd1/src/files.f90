@@ -55,8 +55,7 @@ subroutine opnfl1(lun   ,filnam, CIDENT)
       write(*,'(a    )') ' >> please reenter '
       go to 10
    endif
-   lun(1) = newlun ( )
-   open (lun(1),file=filnam(1),status='old')
+   open (newunit=lun(1),file=filnam(1),status='old')
 
 20 write (*,'(2a,$)') ' ','File name enclosure file          : '
    read  (*,'(a80    )') filnam (2)
@@ -66,8 +65,7 @@ subroutine opnfl1(lun   ,filnam, CIDENT)
       write(*,'(a    )') ' >> please reenter '
       go to 20
    endif
-   lun(2) = newlun ( )
-   open (lun(2),file=filnam(2),status='old')
+   open (newunit=lun(2),file=filnam(2),status='old')
 
    write (*,'(/, 2a)') ' ', 'Detailed model'
    write (*,'(   2a)') ' ', '---------------'
@@ -80,8 +78,7 @@ subroutine opnfl1(lun   ,filnam, CIDENT)
       write(*,'(a    )') ' >> please reenter '
       go to 30
    endif
-   lun(3) = newlun ( )
-   open (lun(3),file=filnam(3),status='old')
+   open (newunit=lun(3),file=filnam(3),status='old')
 
 40 write (*,'(2a,$)') ' ','File name enclosure file          : '
    read  (*,'(a80    )') filnam (4)
@@ -91,8 +88,7 @@ subroutine opnfl1(lun   ,filnam, CIDENT)
       write(*,'(a    )') ' >> please reenter '
       go to 40
    endif
-   lun(4) = newlun ( )
-   open (lun(4),file=filnam(4),status='old')
+   open (newunit=lun(4),file=filnam(4),status='old')
 
 50 write (*,'(2a,$)') ' ','File name boundary definition file: '
    read  (*,'(a80    )') filnam (5)
@@ -102,27 +98,23 @@ subroutine opnfl1(lun   ,filnam, CIDENT)
       write(*,'(a    )') ' >> please reenter '
       go to 50
    endif
-   lun(5) = newlun ( )
-   open (lun(5),file=filnam(5),status='old')
+   open (newunit=lun(5),file=filnam(5),status='old')
 
    write (*,'(/, 2a,$)') ' ', 'File name administration file     : '
    read  (*,'(a80    )') filnam (6)
-   lun(6) = newlun( )
-   open (lun(6),file=filnam(6),status='unknown')
+   open (newunit=lun(6),file=filnam(6),status='unknown')
 
    write (*,'(/, 2a,$)') ' ', 'File FLOW observation file        : '
    read  (*,'(a80    )') filnam (7)
    write (*,'( )')
 
-   lun(7) = newlun( )
-
    inquire (file = filnam(7), exist = ex)
    if (ex) then
-      open  (lun(7), file=filnam(7))
+      open  (newunit=lun(7), file=filnam(7))
       close (lun(7), status='delete')
    endif
 
-   open (lun(7),file=filnam(7),status='unknown')
+   open (newunit=lun(7),file=filnam(7),status='unknown')
 
    call wrigen (lun(6),filnam, CIDENT)
 
@@ -152,31 +144,26 @@ subroutine opnfl2(lun   ,extnef)
 
    write (*,'(/,2a,$)') ' ','File name boundary definition file : '
    read  (*,'(a80    )') filnam
-   lun(1) = newlun ( )
-   open (lun(1),file=filnam,status='old')
+   open (newunit=lun(1),file=filnam,status='old')
 
    write (*,'(2a,$)') ' ', 'File name administration file      : '
    read  (*,'(a80    )') filnam
-   lun(2) = newlun( )
-   open (lun(2),file=filnam,status='unknown')
+   open (newunit=lun(2),file=filnam,status='unknown')
 
    write (*,'(2a,$)') ' ', 'Extension NEFIS files overall model: '
    read  (*,'(a3    )') extnef
 
    write (*,'(2a,$)') ' ', 'File name hydrodynamic bc.         : '
    read  (*,'(a80    )') filnam
-   lun(3) = newlun( )
-   open (lun(3),file=filnam,status='unknown')
+   open (newunit=lun(3),file=filnam,status='unknown')
 
    write (*,'(2a,$)') ' ', 'File name transport bc.            : '
    read  (*,'(a80    )') filnam
-   lun(4) = newlun( )
-   open (lun(4),file=filnam,status='unknown')
+   open (newunit=lun(4),file=filnam,status='unknown')
 
    write (*,'(2a,$)') ' ', 'File name diagnostic file          : '
    read  (*,'(a80    )') filnam
-   lun(5) = newlun( )
-   open (lun(5),file=filnam,status='unknown')
+   open (newunit=lun(5),file=filnam,status='unknown')
 
    return
 
