@@ -62,7 +62,7 @@ contains
                         salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
                         jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
                         q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
-                        jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
+                        jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, iturbulencemodel
       use m_flowtimes, only: dtcell, time_wetground, ja_timestep_auto, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
@@ -85,7 +85,7 @@ contains
                         air_pressure, dew_point_temperature, relative_humidity, solar_radiation, net_solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
-      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
+      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz, turkinws0, turkinws, turepsws0, turepsws, ustbs, ustws
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: setkbotktop
@@ -882,6 +882,15 @@ contains
 
          call realloc(turkinepsws, [2, ndkx], stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('turkinepsws(2,ndkx)', ierr, ndkx)
+
+         if (iturbulencemodel == 5) then
+            allocate (turkinws0(ndkx), stat=ierr); turkinws0 = epstke
+            allocate (turkinws(ndkx), stat=ierr); turkinws = epstke
+            allocate (turepsws0(ndkx), stat=ierr); turepsws0 = epseps
+            allocate (turepsws(ndkx), stat=ierr); turepsws = epseps
+            allocate (ustbs(ndkx), stat=ierr)
+            allocate (ustws(ndkx), stat=ierr)
+         end if
 
          call realloc(sqcu, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('sqcu(ndkx)', ierr, ndkx)
