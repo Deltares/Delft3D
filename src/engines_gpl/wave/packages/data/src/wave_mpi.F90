@@ -5,7 +5,7 @@
 module wave_mpi
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -56,12 +56,24 @@ integer, parameter    :: SWAN_DONE = 2
 integer, target       :: engine_comm_world = MPI_COMM_NULL   !< communicator to be used by D-Waves (can be get/set via BMI)
 integer               :: numranks = 1                        !< number of ranks
 integer               :: my_rank = 0                         !< own rank
-logical               :: mpi_initialized_by_engine = .FALSE. !< flag indicating whether MPI has been initialized by this engine (if so, finalize as well)
 private               :: running_in_mpi_environment
 !
     contains
 !
 !===============================================================================
+    !> 3 typical configurations:
+    !! 1. No MPI at all
+    !!    - mpi_initialized will be false, D-Waves has to call mpi_init
+    !!    - engine_comm_world will still be MPI_COMM_NULL, nothing in parallel (related to D-Waves)
+    !! 2. D-Waves not in parallel, but running coupled to a parallel (flow-)computation via DIMR
+    !!    - mpi_initialized will be true (by DIMR)
+    !!    - engine_comm_world will still be MPI_COMM_NULL, nothing in parallel (related to D-Waves)
+    !! 3. D-Waves runs in parallel initiated via DIMR
+    !!    - mpi_initialized will be true (by DIMR)
+    !!    - engine_comm_world will be set by DIMR and differ from be MPI_COMM_NULL
+    !! Not supported:
+    !! - D-Waves in parallel without DIMR
+    !! - D-Waves in parallel with numranks=1
 subroutine initialize_wave_mpi()
    character(256)       :: msgstr
    logical              :: mpi_is_initialized
@@ -69,7 +81,6 @@ subroutine initialize_wave_mpi()
    !
    ! MPI mode
    !
-   mpi_initialized_by_engine  = .FALSE.
    if ( running_in_mpi_environment() ) then
       ! Running inside MPI environment.
       ! * parallel wave.exe
@@ -86,12 +97,8 @@ subroutine initialize_wave_mpi()
 #endif
       !
       if (.not.mpi_is_initialized) then
-         ! * parallel wave.exe
-         mpi_initialized_by_engine = .TRUE.
-#ifdef HAVE_MPI
-         call mpi_init ( ierr )
-         engine_comm_world = MPI_COMM_WORLD
-#endif
+         ! * parallel wave.exe not called by parallel dimr.exe
+         call wavestop( 1, 'Not supported: D-Waves is running in parallel but is not called by dimr.exe' )
       endif
       !
       if (engine_comm_world /= MPI_COMM_NULL) then
@@ -117,16 +124,6 @@ end subroutine initialize_wave_mpi
 !
 !
 !===============================================================================
-subroutine finalize_wave_mpi()
-   integer :: ierr
-#ifdef HAVE_MPI
-   if (mpi_initialized_by_engine) then
-      call mpi_finalize(ierr)
-   endif
-#endif
-end subroutine finalize_wave_mpi
-
-
 subroutine wave_mpi_bcast(command, ierr)
    integer :: command
    integer :: ierr

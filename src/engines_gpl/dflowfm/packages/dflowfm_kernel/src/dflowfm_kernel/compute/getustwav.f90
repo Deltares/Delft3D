@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,18 +33,19 @@ module m_get_ustwav
    use m_swart, only: swart
    use m_soulsby, only: soulsby
    use m_getwavenr, only: getwavenr
+   use m_waveconst
 
    implicit none
 contains
    subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! at u-point, get ustarwave and get ustokes
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
-      use m_waves
-      use m_sferic
-      use m_physcoef
+      use m_flow, only: hu, jawavestokes, ag, jawave, rhomean, eps10
+      use m_flowgeom, only: ln, csu, snu
+      use m_waves, only: twav, ustokes, vstokes, phiwav, hwav, gammax, jauorb, ftauw, alfdeltau, fwfac
+      use m_waveconst, only: STOKES_DRIFT_2NDORDER, STOKES_DRIFT_DEPTHUNIFORM, WAVE_SURFBEAT
+      use m_sferic, only: twopi, dg2rd, pi
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_xbeach_data, only: R, cwav, gammaxxb, roller
-      use m_get_Lbot_Ltop
       use mathconsts, only: ee
 
       integer, intent(in) :: LL
@@ -89,13 +90,13 @@ contains
       costu = csw * csu(LL) + snw * snu(LL) ! and compute stokes drift
       sintu = -csw * snu(LL) + snw * csu(LL)
 
-      if (jawaveStokes == 1) then
+      if (jawaveStokes == STOKES_DRIFT_DEPTHUNIFORM) then
          uusto = 0.5d0 * omeg * asg * asg / hu(LL)
          ustokes(Lb:Lt) = costu * uusto
          vstokes(Lb:Lt) = sintu * uusto
          ustokes(LL) = costu * uusto ! for convenience
          vstokes(LL) = sintu * uusto
-      else if (jawaveStokes >= 2) then ! to do: add 3D roller contribution for roller model
+      else if (jawaveStokes >= STOKES_DRIFT_2NDORDER) then ! to do: add 3D roller contribution for roller model
          f1u = omeg * rk * asg**2
          h = hu(LL)
          f3u = (1d0 - exp(-2d0 * rk * h))**2
@@ -114,7 +115,7 @@ contains
          vstokes(LL) = sintu * ag * asg * asg * rk / omeg / 2d0 / hu(LL)
 
          ! add 3D roller contribution to stokes drift
-         if (jawave == 4 .and. roller == 1) then
+         if (jawave == WAVE_SURFBEAT .and. roller == 1) then
             ! roller mass flux
             rmax = 0.125d0 * rhomean * ag * (gammaxxb * h)**2
             erol = min(0.5d0 * (R(k1) + R(k2)), rmax)

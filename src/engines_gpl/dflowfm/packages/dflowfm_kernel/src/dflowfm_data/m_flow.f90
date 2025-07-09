@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,6 +35,7 @@ module m_flow ! flow arrays-999
    use fm_external_forcings_data
    use m_flowoutput
    use m_physcoef
+   use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
    use m_turbulence
    use m_grw
    use m_heatfluxes
@@ -128,7 +129,7 @@ module m_flow ! flow arrays-999
    integer, allocatable, target :: kbot(:) !< [-] layer-compressed bottom layer cell number: for each of ndx horizontal cells, we have indices to bot and top ndxk cells {"location": "face", "shape": ["ndx"]}
    integer, allocatable, target :: ktop(:) !< [-] layer-compressed top layer cell number: for each of ndx horizontal cells, we have indices to bot and top ndxk cells {"location": "face", "shape": ["ndx"]}
    integer, allocatable :: ktop0(:) !< store of ktop
-   integer, allocatable :: kmxn(:) !< max nr of vertical cells per base cell n
+   integer, allocatable :: kmxn(:) !< max nr of active vertical cells per base cell n
    integer, allocatable, target :: Lbot(:) !< [-] layer-compressed bottom layer edge number: for each of lnx horizontal links, we have indices to bot and top lnxk links {"location": "edge", "shape": ["lnx"]}
    integer, allocatable, target :: Ltop(:) !< [-] layer-compressed top layer edge number: for each of lnx horizontal links, we have indices to bot and top lnxk links {"location": "edge", "shape": ["lnx"]}
    integer, allocatable :: kmxL(:) !< max nr of vertical links per base link L
@@ -574,7 +575,7 @@ contains
 !> Resets only flow variables intended for a restart of flow simulation.
 !! Upon loading of new model/MDU, call default_flow() instead.
    subroutine reset_flow()
-      use m_missing
+      use m_missing, only: dmiss
 ! node related
 
 ! basis

@@ -39,7 +39,7 @@ object LinuxThirdPartyLibs : BuildType({
         param("env.JIRA_ISSUE_ID", "")
     }
 
-    if (DslContext.getParameter("environment") == "production") {
+    if (DslContext.getParameter("enable_third_party_libs_trigger").lowercase() == "true") {
         triggers {
             vcs { // Only trigger builds when dockerfiles are modified.
                 triggerRules = """

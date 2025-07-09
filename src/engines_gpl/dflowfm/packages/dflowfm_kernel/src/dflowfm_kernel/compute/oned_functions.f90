@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -67,9 +67,9 @@ contains
 
    !> IFRCUTP and FRCu are filled, using 1D roughness values from Network structure
    subroutine set_1d_roughnesses()
-      use m_flowgeom
+      use m_flowgeom, only: kcu, lnx1d
+      use unstruc_channel_flow, only: network
       use m_flow, only: frcu, ifrcutp, frcu_mor
-      use unstruc_channel_flow
 
       implicit none
 
@@ -89,13 +89,11 @@ contains
    !! into the 1D network structure for branches, storage nodes,
    !! cross sections and structures, etc.
    subroutine set_1d_indices_in_network()
-      use timers
-      use m_sediment
-      use m_flowgeom
-      use m_flow
-      use m_cross_helper
-      use m_flowparameters
-      use unstruc_channel_flow
+      use timers, only: timstrt, timstop
+      use m_sediment, only: jased, stm_included
+      use m_flowgeom, only: wu1duni
+      use m_flow, only: nonlin1d, nonlin, flow_solver, flow_solver_sre
+      use unstruc_channel_flow, only: default_width, network, cscalculationoption, cs_type_plus
 
       implicit none
       integer handle_tot
@@ -152,12 +150,10 @@ contains
    !! (This replaces the netlink/netnode numbers that were originally
    !! filled in during the network reading stage.)
    subroutine set_linknumbers_in_branches()
-      use unstruc_channel_flow
-      use m_flowgeom
-      use m_sediment
-      use messageHandling
+      use unstruc_channel_flow, only: network, realloc, msgbuf, err_flush, flow1d_eps10
+      use m_flowgeom, only: ln, ndx2d, nd
       use precision_basics, only: comparereal
-      use m_GlobalParameters, only: flow1d_eps10
+      use m_branch, only: t_branch
 
       implicit none
 

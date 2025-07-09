@@ -572,7 +572,7 @@ class TestMinioRewinder:
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        debug = f'Skipping download: {Path("destination/path/foo")}, local and online are the same version.'
+        debug = f"Skipping download: {Path('destination/path/foo')}, local and online are the same version."
         assert mocker.call(debug) in logger.debug.call_args_list
         minio_client.fget_object.assert_not_called()
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,22 +40,22 @@ contains
 !> Find for each input point the nearest flow node, given a set of points [xx, yy].
    subroutine find_nearest_flownodes(n, xx, yy, names, node_nrs_nearest, jakdtree, jaoutside, iLocTp)
       use precision, only: dp
-      use messagehandling, only: msgbuf, msg_flush, IDLEN
-      use m_partitioninfo
-      use m_flowgeom
-      use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
-      use kdtree2Factory
+      use messagehandling, only: msgbuf, msg_flush, idlen
+      use m_partitioninfo, only: jampi, reduce_int_max, reduce_kobs
+      use m_flowgeom, only: nd, xz, yz
+      use m_GlobalParameters, only: INDTP_1D, INDTP_ALL
+      use kdtree2Factory, only: treeglob
+      use m_inflowcell, only: inflowcell
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
-      use m_inflowcell
 
       implicit none
 
       integer, intent(in) :: n !< number of points
       real(kind=dp), dimension(n), intent(in) :: xx !< x-coordinate of input points
       real(kind=dp), dimension(n), intent(in) :: yy !< y-coordinate of input points
-      character(len=IDLEN), dimension(n), intent(in) :: names !< names of points
+      character(len=idlen), dimension(n), intent(in) :: names !< names of points
       integer, dimension(n), intent(inout) :: node_nrs_nearest !< associated flow node numbers, if any found.
       integer, intent(inout) :: jakdtree !< use kdtree (1) or not (other)
       integer, intent(in) :: jaoutside !< allow outside cells (for 1D) (1) or not (0)

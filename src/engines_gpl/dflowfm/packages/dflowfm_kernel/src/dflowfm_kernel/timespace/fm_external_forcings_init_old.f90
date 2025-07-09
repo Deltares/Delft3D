@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -798,10 +798,10 @@ contains
                jawindstressgiven = merge(1, 0, qid == 'airpressure_stressx_stressy')
                jaspacevarcharn = merge(1, 0, qid == 'airpressure_windx_windy_charnock')
 
-               if (.not. allocated(patm)) then
-                  allocate (patm(ndx), stat=ierr)
-                  call aerr('patm(ndx)', ierr, ndx)
-                  patm = 100000.0_dp
+               if (.not. allocated(air_pressure)) then
+                  allocate (air_pressure(ndx), stat=ierr)
+                  call aerr('air_pressure(ndx)', ierr, ndx)
+                  air_pressure = 100000.0_dp
                end if
 
                if (.not. allocated(ec_pwxwy_x)) then
@@ -826,7 +826,7 @@ contains
 
                if (success) then
                   jawind = 1
-                  japatm = 1
+                  air_pressure_available = .true.
                end if
 
             else if (qid == 'charnock') then
@@ -865,10 +865,6 @@ contains
                allocate (mask(ndx), source=1)
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 3
-               if (success) then
-                  dewpoint_available = .true.
-                  tair_available = .true.
-               end if
 
             else if (qid == 'humidity_airtemperature_cloudiness_solarradiation') then
 
@@ -881,8 +877,7 @@ contains
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
                if (success) then
-                  tair_available = .true.
-                  solrad_available = .true.
+                  solar_radiation_available = .true.
                end if
 
             else if (qid == 'dewpoint_airtemperature_cloudiness_solarradiation') then
@@ -896,9 +891,7 @@ contains
 
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, filetype, method, operand, varname=varname) ! vectormax = 4
                if (success) then
-                  dewpoint_available = .true.
-                  tair_available = .true.
-                  solrad_available = .true.
+                  solar_radiation_available = .true.
                end if
 
             else if (qid == 'nudge_salinity_temperature') then
@@ -928,14 +921,29 @@ contains
 
             else if (qid == 'airpressure' .or. qid == 'atmosphericpressure') then
 
-               if (.not. allocated(patm)) then
-                  allocate (patm(ndx), stat=ierr)
-                  call aerr('patm(ndx)', ierr, ndx)
-                  patm = 0.0_dp
-               end if
+               call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('air_pressure(ndx)', ierr, ndx)
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  japatm = 1
+                  air_pressure_available = .true.
+               end if
+
+            else if (qid == 'pseudoAirPressure') then
+
+               call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('pseudo_air_pressure(ndx)', ierr, ndx)
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  pseudo_air_pressure_available = .true.
+               end if
+
+            else if (qid == 'waterLevelCorrection') then
+
+               call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('water_level_correction(ndx)', ierr, ndx)
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  water_level_correction_available = .true.
                end if
 
             else if (qid == 'air_temperature') then
@@ -944,28 +952,27 @@ contains
 
             else if (qid == 'airtemperature') then
 
-               if (.not. allocated(airtemperature)) then
-                  allocate (airtemperature(ndx), stat=ierr)
-                  call aerr('airtemperature(ndx)', ierr, ndx)
-                  airtemperature = 0.0_dp
+               if (.not. allocated(air_temperature)) then
+                  allocate (air_temperature(ndx), stat=ierr)
+                  call aerr('air_temperature(ndx)', ierr, ndx)
+                  air_temperature = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  jatair = 1
                   btempforcingtypA = .true.
-                  tair_available = .true.
                end if
 
             else if (qid == 'airdensity') then
 
-               if (.not. allocated(airdensity)) then
-                  allocate (airdensity(ndx), stat=ierr)
-                  call aerr('airdensity(ndx)', ierr, ndx)
-                  airdensity = 0.0_dp
+
+               if (.not. allocated(air_density)) then
+                  allocate (air_density(ndx), stat=ierr)
+                  call aerr('air_density(ndx)', ierr, ndx)
+                  air_density = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  call mess(LEVEL_INFO, 'Enabled variable airdensity for windstress while reading external forcings.')
+                  call mess(LEVEL_INFO, 'Enabled variable air_density for windstress while reading external forcings.')
                   ja_airdensity = 1
                end if
 
@@ -983,16 +990,14 @@ contains
 
             else if (qid == 'dewpoint') then
 
-               if (.not. allocated(dewpoint)) then
-                  allocate (dewpoint(ndx), stat=ierr)
-                  call aerr('dewpoint(ndx)', ierr, ndx)
-                  dewpoint = 0.0_dp
+               if (.not. allocated(dew_point_temperature)) then
+                  allocate (dew_point_temperature(ndx), stat=ierr)
+                  call aerr('dew_point_temperature(ndx)', ierr, ndx)
+                  dew_point_temperature = 0.0_dp
                end if
 
-               itempforcingtyp = 5
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  dewpoint_available = .true.
                   btempforcingtypD = .true.
                end if
 
@@ -1028,27 +1033,27 @@ contains
 
             else if (qid == 'solarradiation') then
 
-               if (.not. allocated(qrad)) then
-                  allocate (qrad(ndx), stat=ierr)
-                  call aerr('qrad(ndx)', ierr, ndx)
-                  qrad = 0.0_dp
+               if (.not. allocated(solar_radiation)) then
+                  allocate (solar_radiation(ndx), stat=ierr)
+                  call aerr('solar_radiation(ndx)', ierr, ndx)
+                  solar_radiation = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
                   btempforcingtypS = .true.
-                  solrad_available = .true.
+                  solar_radiation_available = .true.
                end if
 
             else if (qid == 'longwaveradiation') then
-               if (.not. allocated(longwave)) then
-                  allocate (longwave(ndx), stat=ierr)
-                  call aerr('longwave(ndx)', ierr, ndx)
-                  longwave = 0.0_dp
+               if (.not. allocated(long_wave_radiation)) then
+                  allocate (long_wave_radiation(ndx), stat=ierr)
+                  call aerr('long_wave_radiation(ndx)', ierr, ndx)
+                  long_wave_radiation = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
                   btempforcingtypL = .true.
-                  longwave_available = .true.
+                  long_wave_radiation_available = .true.
                end if
 
             else if (qid(1:8) == 'rainfall') then
@@ -1176,6 +1181,7 @@ contains
                   success = .false.
                else
                   success = .true.
+                  numsrc_old = numsrc_old + 1
                end if
 
                ! 2. Time series hookup is done below, once counting of all numsrc is done.
@@ -1232,11 +1238,9 @@ contains
                   call qnerror('Quantity massbalancearea in the ext-file, but no MbaInterval specified in the mdu-file.', ' ', ' ')
                   success = .false.
                end if
-
-            else if (qid(1:12) == 'waqparameter' .or. qid(1:17) == 'waqmonitoringarea' .or. qid(1:16) == 'waqsegmentnumber') then
+            else if (qid(1:12) == 'waqparameter' .or. qid(1:16) == 'waqsegmentnumber') then
                ! Already taken care of in fm_wq_processes
                success = .true.
-
             else if (qid(1:11) == 'waqfunction') then
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename, filetype, method, operand)
 
@@ -1318,7 +1322,7 @@ contains
                call qnerror(' ', 'Quantity WINDX_WINDY_AIRPRESSURE must be renamed to airpressure_windx_windy in the ext-file.', ' ')
                success = .false.
             else if (trim(qid) == "wavesignificantheight") then
-               if (jawave == 6 .or. jawave == 7) then
+               if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7')
@@ -1326,7 +1330,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "waveperiod") then
-               if (jawave == 6 .or. jawave == 7) then
+               if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "waveperiod" found but "Wavemodelnr" is not 6 or 7')
@@ -1334,7 +1338,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "wavedirection") then
-               if (jawave == 7) then
+               if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1343,7 +1347,7 @@ contains
                end if
             else if (trim(qid) == "wavebreakerdissipation") then
                ! wave forces based on dissipation at free surface and water column
-               if (jawave == 7 .and. waveforcing == 3) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1352,7 +1356,7 @@ contains
                end if
             else if (trim(qid) == "whitecappingdissipation") then
                ! wave forces based on dissipation at free surface and water column
-               if (jawave == 7 .and. waveforcing == 3) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1360,7 +1364,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "xwaveforce") then
-               if (jawave == 7 .and. (waveforcing == 1 .or. waveforcing == 3)) then
+               if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1368,7 +1372,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "ywaveforce") then
-               if (jawave == 7 .and. (waveforcing == 1 .or. waveforcing == 3)) then
+               if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1376,7 +1380,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "totalwaveenergydissipation") then
-               if (jawave == 7 .and. waveforcing == 2) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == 2) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1830,7 +1834,10 @@ contains
          end do
       end if
 
-      if (numsrc > 0) then
+      if (numsrc_old > 0) then
+         if (numsrc_old /= numsrc) then
+            call mess(LEVEL_ERROR, 'Source/sink entries detected in both the old and new ext file. This is not allowed.')
+         end if
          ja = 1
          rewind (mext)
          kx = numconst + 1

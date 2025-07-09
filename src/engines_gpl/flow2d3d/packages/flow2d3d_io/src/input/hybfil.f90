@@ -2,7 +2,7 @@ subroutine hybfil(lundia    ,error     ,filrgh    ,fmttmp    ,nmax      , &
                 & mmax      ,nmaxus    ,cfurou    ,cfvrou    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -75,7 +75,6 @@ subroutine hybfil(lundia    ,error     ,filrgh    ,fmttmp    ,nmax      , &
     integer                               :: luntmp   ! Help var. for a unit number of an attribute file 
     integer                               :: m        ! Help (loop) var. for M-index 
     integer                               :: n        ! Help (loop) var. for N-index 
-    integer, external                     :: newlun
     real(fp), dimension(:,:), allocatable :: ctmp     ! temporary array containing roughness of entire domain
 !
 !! executable statements -------------------------------------------------------

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,8 +38,8 @@ contains
 
    subroutine DHITEXT(IVAL, XD, YD)
       use precision, only: dp
-      use m_dproject
-      use m_hi_text
+      use m_dproject, only: dproject
+      use m_hi_text, only: hitext
 
       integer :: ival
       real(kind=dp) :: x

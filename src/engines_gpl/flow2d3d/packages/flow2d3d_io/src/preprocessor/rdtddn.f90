@@ -4,7 +4,7 @@ subroutine rdtddn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
                 & disint    ,parnam    ,parunt    ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -96,7 +96,6 @@ subroutine rdtddn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     integer                      :: mxlrec  ! Actual maximum record length 
     integer                      :: n       ! Help var. for the nr. of data to be read (see LENDAT) 
     integer                      :: nb
-    integer                      :: newlun
     integer                      :: np
     integer                      :: npara   ! NR. of parameter records equal to number of data values in a record to be read 
     integer                      :: nparrd  ! NR. of parameter records actual read 

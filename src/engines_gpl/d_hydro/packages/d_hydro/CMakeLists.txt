@@ -52,11 +52,11 @@ if(UNIX)
                               "${d_hydro_lib_path}/include"
                               "${expat_include_path}")
 
-    target_link_libraries(${executable_name} ${oss_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
-    target_link_libraries(${executable_name} Threads::Threads)
+    target_link_libraries(${executable_name} PRIVATE Threads::Threads)
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 
@@ -84,10 +84,12 @@ if (WIN32)
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
-    target_link_libraries(${executable_name}    ${oss_dependencies}
-                                                "${mpi_c_library}"
-                                                "libexpat.lib"
-                                                "pthreadVC2.lib")
+    target_link_libraries(${executable_name} PRIVATE
+                            ${oss_dependencies}
+                            "${mpi_c_library}"
+                            "libexpat.lib"
+                            "pthreadVC2.lib"
+    )
 endif(WIN32)
 
 # Create the folder structure in vfproj

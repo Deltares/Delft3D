@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,10 +42,10 @@ contains
 
    subroutine addlinkship2D(L, japerim) ! but substract, nested Newton
       use precision, only: dp
-      use m_ship
-      use m_flowgeom
-      use m_flow
-      use m_get_link_area_wid2D
+      use m_ship, only: zspc
+      use m_flowgeom, only: ln, lncn, wu, dx, acl
+      use m_flow, only: s1m, a1m, vol1, hu, s1, au
+      use m_get_link_area_wid2D, only: getlinkareawid2d
       implicit none
       integer :: L, japerim
 

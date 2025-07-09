@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -10,7 +10,7 @@
 !
 !  Delft3D  is distributed in the hope that it will be useful,
 !  but WITHOUT ANY WARRANTY; without even the implied warranty of
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
 !  GNU Affero General Public License for more details.
 !
 !  You should have received a copy of the GNU Affero General Public License
@@ -27,41 +27,41 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
 module m_splint
    implicit none
+   private
+   public :: splint
+
 contains
 
-   subroutine SPLINT(YA, Y2A, N, X, Y)
+   subroutine splint(ya, y2a, n, x, y)
       use precision, only: dp
 
-      integer :: N !< number of control points
-      real(kind=dp), dimension(N) :: ya !< control point values
-      real(kind=dp), dimension(N) :: y2a !< control point second order derivatives
+      integer, intent(in) :: n !< number of control points
+      real(kind=dp), dimension(n), intent(in) :: ya !< control point values
+      real(kind=dp), dimension(n), intent(in) :: y2a !< control point second order derivatives
       real(kind=dp), intent(in) :: x !< spline coordinate
       real(kind=dp), intent(out) :: y !< interpolated value at prescribed spline coordinate
 
-!     AANGEPAST VOOR GEBRUIK BIJ XA IS ENKEL 0,1,2...N-1
-!     ZOEKEN KAN GESLOOPT DOOR DEFINITIE VAN XA IS 0,1,
+      ! Adjusted for use with xa is only 0,1,2...n-1
+      ! Search can be broken because the definition of xa is 0,1,
 
-      real(kind=dp) :: EPS, A, B, SPLFAC = 1d0
+      real(kind=dp), parameter :: EPS = 0.00001_dp
+      real(kind=dp), parameter :: SPLFAC = 1.0_dp
+      real(kind=dp) :: a, b
 
       integer :: intx
-      integer :: KLO, KHI
+      integer :: klo, khi
 
-      EPS = 0.00001d0
-      INTX = int(X)
-      if (X - INTX < EPS) then
-         Y = YA(INTX + 1)
+      intx = int(x)
+      if (x - intx < EPS) then
+         y = ya(intx + 1)
       else
-         KLO = INTX + 1
-         KHI = KLO + 1
-         A = ((KHI - 1) - X)
-         B = (X - (KLO - 1))
-         Y = A * YA(KLO) + B * YA(KHI) + SPLFAC * ((A**3 - A) * Y2A(KLO) + (B**3 - B) * Y2A(KHI)) / 6d0
+         klo = intx + 1
+         khi = klo + 1
+         a = ((khi - 1) - x)
+         b = (x - (klo - 1))
+         y = a * ya(klo) + b * ya(khi) + SPLFAC * ((a**3 - a) * y2a(klo) + (b**3 - b) * y2a(khi)) / 6.0_dp
       end if
-      return
-   end subroutine SPLINT
-
+   end subroutine splint
 end module m_splint

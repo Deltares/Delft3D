@@ -4,6 +4,8 @@ argon2-cffi==23.1.0
     # via minio
 argon2-cffi-bindings==21.2.0
     # via argon2-cffi
+bmi-python==0.3.0
+    # via deltares-testbench (pyproject.toml)
 certifi==2024.7.4
     # via
     #   minio
@@ -16,6 +18,10 @@ contourpy==1.2.1
     # via matplotlib
 cycler==0.12.1
     # via matplotlib
+docopt==0.6.1
+    # via docopts
+docopts==0.6.1
+    # via bmi-python
 fonttools==4.53.1
     # via matplotlib
 kiwisolver==1.4.5
@@ -31,6 +37,7 @@ netcdf4==1.7.2
 numpy==1.26.4
     # via
     #   deltares-testbench (pyproject.toml)
+    #   bmi-python
     #   cftime
     #   contourpy
     #   matplotlib
@@ -59,8 +66,12 @@ pytz==2024.1
     # via pandas
 s3-path-wrangler==0.5.0
     # via deltares-testbench (pyproject.toml)
+setuptools==80.9.0
+    # via bmi-python
 six==1.16.0
-    # via python-dateutil
+    # via
+    #   bmi-python
+    #   python-dateutil
 typing-extensions==4.12.2
     # via minio
 tzdata==2024.1

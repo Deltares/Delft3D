@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,13 +39,13 @@ contains
    subroutine flqhgsfm(m, teken, husb, hdsb, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, &
                        dg, cgf, cgd, cwf, cwd, mugf, lambda, strdamf, jarea, ds)
       use precision, only: dp
-      use m_flgsfurufm
-      use m_flgsd3fm
-      use m_flgsd2fm
-      use m_flgsareafm
-      use m_flccgsfm
+      use m_flgsfurufm, only: flgsfurufm
+      use m_flgsd3fm, only: flgsd3fm
+      use m_flgsd2fm, only: flgsd2fm
+      use m_flgsareafm, only: flgsareafm
+      use m_flccgsfm, only: flccgsfm
+      use m_dpsequfm, only: dpsequfm
       use m_physcoef, only: ag
-      use m_dpsequfm
 
       implicit none
 !

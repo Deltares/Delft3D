@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,8 +40,8 @@ contains
 !> defines ID for fusav, rusav, ausav in NETCDF, writes and reads these variables to from a NETCDF file
    subroutine process_structures_saved_parameters(action, id_file)
       use fm_external_forcings_data, only: ncgen, fusav, rusav, ausav
-      use netcdf
-      use messagehandling
+      use netcdf, only: nf90_def_dim, nf90_def_var, nf90_double, nf90_put_att, nf90_inq_varid, nf90_put_var, nf90_noerr, nf90_get_var
+      use messagehandling, only: mess, level_info
 
       implicit none
 
@@ -113,9 +113,8 @@ contains
 
 !> checks netcdf status and prints a message when there is an error
    subroutine check_netcdf_status_and_writes_error_message(status, message)
-      use netcdf
-      use messagehandling
-      use iso_varying_string
+      use netcdf, only: nf90_noerr, nf90_strerror
+      use messagehandling, only: mess, level_error
 
       implicit none
 

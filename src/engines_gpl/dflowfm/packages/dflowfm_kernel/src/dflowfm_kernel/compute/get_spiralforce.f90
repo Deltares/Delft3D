@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,8 +39,8 @@ contains
    subroutine get_spiralforce ! Effect of secondary flow on momentum equations
       ! This subroutine calculates the forces fx and fy for momentum equations
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: ht_xx, ht_xy, spirucm, hs, epshu, sag, vonkar, czssf, spirbeta, spirint, ucx, ucy, spirfx, spirfy, adve
+      use m_flowgeom, only: ndxi, lnxi, lnx, ln, nd, xz, yz, acl, csu, snu
 
       implicit none
       integer :: k, k1, k2, LL, L, n

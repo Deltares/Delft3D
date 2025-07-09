@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,11 +38,11 @@ contains
 
    subroutine MTEXT(TEX, X, Y, NCOL)
       use precision, only: dp
-      use unstruc_colors
-      use m_box_nop
-      use m_fbox_nop
-      use m_set_col
-      use m_draw_text
+      use unstruc_colors, only: x1, x2, y1, y2, klscl
+      use m_box_nop, only: boxnop
+      use m_fbox_nop, only: fboxnop
+      use m_set_col, only: setcol
+      use m_draw_text, only: drawtext
 
       real(kind=dp) :: heigth
       integer :: l

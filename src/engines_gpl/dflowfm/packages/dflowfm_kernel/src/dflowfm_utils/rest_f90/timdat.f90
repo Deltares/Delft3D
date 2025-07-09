@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,11 +51,11 @@ contains
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-      use precision
+      use precision, only: fp, long
 !
 ! Global variables
 !
-      integer :: idatum !  Absolute date related to ITDATE and TIMSEC
+      integer, intent(inout) :: idatum !  Absolute date related to ITDATE and TIMSEC
       integer, intent(out) :: itijd !  Absolute time related to ITDATE and TIMSEC
       integer, intent(in) :: julday !  Description and declaration in inttim.igs
       real(fp), intent(in) :: timsec !  Description and declaration in inttim.igs

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,8 +38,8 @@ contains
 
    subroutine DISVAL1(DEP)
       use precision, only: dp
-      use unstruc_colors
-      use m_ktext
+      use unstruc_colors, only: iws
+      use m_ktext, only: ktext
 
       real(kind=dp) :: DEP
       character TEX * 8

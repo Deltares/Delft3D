@@ -5,23 +5,34 @@ subroutine vrijn84_hxbs(dll_integers, max_integers, &
                   equi_conc, cesus, ssus, sswu, sswv, t_relax  , &
                   error_message_c  )
 !DEC$ ATTRIBUTES DLLEXPORT, ALIAS: 'VRIJN84_HXBS' :: VRIJN84_HXBS
-!!--copyright-------------------------------------------------------------------
-! Copyright (c) 2005-2024, WL | Delft Hydraulics. All rights reserved.
-!!--disclaimer------------------------------------------------------------------
-! This code is part of the Delft3D software system. WL|Delft Hydraulics has
-! developed c.q. manufactured this code to its best ability and according to the
-! state of the art. Nevertheless, there is no express or implied warranty as to
-! this software whether tangible or intangible. In particular, there is no
-! express or implied warranty as to the fitness for a particular purpose of this
-! software, whether tangible or intangible. The intellectual property rights
-! related to this software code remain with WL|Delft Hydraulics at all times.
-! For details on the licensing agreement, we refer to the Delft3D software
-! license and any modifications to this license, if applicable. These documents
-! are available upon request.
-!!--version information---------------------------------------------------------
-! $W.Ottevanger$
-! $April_07$
-! $Revision$
+!----- LGPL --------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2011-2025.
+!
+!  This library is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License as published by the Free Software Foundation version 2.1.
+!
+!  This library is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  You should have received a copy of the GNU Lesser General Public
+!  License along with this library; if not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+!
+!
 !!--description-----------------------------------------------------------------
 !
 ! Computes sediment transport according to
@@ -64,14 +75,14 @@ logical                                    , intent(out) :: sbc_total     ! Sedi
 !
 character(len=256) :: error_message
 !
-call core_function() ! Core function call 
+call core_function() ! Core function call
 !
 call message2c(error_message, error_message_c)
 
 contains
-    
+
 !
-! Core function definition 
+! Core function definition
 !
 subroutine core_function()
 !
@@ -79,7 +90,7 @@ subroutine core_function()
 !
 integer            :: kode
 integer            :: ntrsi
-integer			   :: lundia 
+integer			   :: lundia
 
 real(hp)           :: c
 real(hp)           :: d10
@@ -138,7 +149,7 @@ real(hp), save     :: rhidexp = 1.0
     real(hp)       :: thetcr
     real(hp)       :: uster
     real(hp)       :: zc
-    real(hp)       :: shld 
+    real(hp)       :: shld
 	real(hp)	   :: d50tot  ! D50 van het totale mengsel
 !
 !! extract array variables -----------------------------------------------------
@@ -180,15 +191,15 @@ runid   = dll_strings( 1)
 !
 error_message = ' '
 sbc_total     = .true.
-equi_conc     = .false.    
+equi_conc     = .false.
 
     lundia = 12345
-	if (firsttime) then 
-	  firsttime = .false. 
+	if (firsttime) then
+	  firsttime = .false.
 	    write(*,*) 'Van Rijn transport formula (including hiding exposure) -- Version 0.3 (bedload = bedload+suspended)'
 	    open (newunit=lundia, file='vr84hx.par')
 		read (lundia,*) line
-		read (line,*) rmuc  !Constant ripple factor 
+		read (line,*) rmuc  !Constant ripple factor
         if (rmuc < 0.0) then
            write(*,*) 'Ripple factor computed using D90 of complete mixture and local Chezy roughness'
 	    else
@@ -211,7 +222,7 @@ equi_conc     = .false.
 !                                                    3          : Ashida & Michiue, modified Egiazaroff
 !                                                    4          : Soehngen, Kellermann, Loy
 !                                                    5          : Wu, Wang, Jia
-		select case (ihidexp)	
+		select case (ihidexp)
 			case (1)
 				write(*,*) 'Hiding Exposure Formulation: none'
 			case (2)
@@ -221,19 +232,19 @@ equi_conc     = .false.
 			case (4)
 				write(*,*) 'Hiding Exposure Formulation: Soehngen, Kellermann, Loy'
 			    read (lundia,*) line
-				read (line,*) rhidexp  
+				read (line,*) rhidexp
 				write(*,*) 'ASKLHE', rhidexp
 			case (5)
 				write(*,*) 'Hiding Exposure Formulation: Wu, Wang, Jia'
 			    read (lundia,*) line
-				read (line,*) rhidexp  
+				read (line,*) rhidexp
 				write(*,*) 'MWWJHE', rhidexp
 			case default
 				write(*,*) 'Hiding Exposure Formulation: none'
 		end select
 	    close (lundia)
-	endif 
-		select case (ihidexp)	
+	endif
+		select case (ihidexp)
 			case (2)
 				!hidexp = (log(19.0)/(log(19.0)+log(d50/d50tot)))**2
 				!d50/d50tot = 10**(log(19.0)/sqrt(hidexp)-log(19.0))
@@ -242,7 +253,7 @@ equi_conc     = .false.
 				d50tot = hidexp**(1.0/rhidexp)*d50
 			case default
 				error_message = 'D50 of complete mixture on the basis of hiding-exposure not possible'
-                return 
+                return
 		end select
 
 	ntrsi = 1
@@ -257,16 +268,16 @@ equi_conc     = .false.
     rhow = rhowat  !par(2)
     rhos = rhosol  !par(3)
     del = (rhos - rhow)/rhow
-    
+
 	if (c <	21.65459 .or. utot<1.E-3) then
        return
     endif
     !
-	a = 12.0*h/(10**(c/18.0))  
-    
-	
-	dster = dstar*d50tot/d50 !Bereken D* van het complete mengsel 
-	
+	a = 12.0*h/(10**(c/18.0))
+
+
+	dster = dstar*d50tot/d50 !Bereken D* van het complete mengsel
+
     !
     if (rmuc < 0.0) then
 		rmuc = ((c/18.0)/log10(12.*h/d90))**2
@@ -296,10 +307,10 @@ equi_conc     = .false.
 	!!!--------------------------------
 
 
-    thetcr = shld  
-	tbcrhx = (rhos - rhow)*g*d50*hidexp*thetcr    
+    thetcr = shld
+	tbcrhx = (rhos - rhow)*g*d50*hidexp*thetcr
 	tbcr = (rhos - rhow)*g*d50*thetcr
-    t = (tbce - tbcrhx)/tbcr   !TOEGEVOEGD: hiding exposure correction. 
+    t = (tbce - tbcrhx)/tbcr   !TOEGEVOEGD: hiding exposure correction.
     !
     if (t<.000001) t = .000001
     ca = .015*alf1*d50/a*t**1.5/dster**.3
@@ -322,14 +333,14 @@ equi_conc     = .false.
     ff = fc
     ssus = ff*utot*h*ca
     !
-    
-	if (original) then 
+
+	if (original) then
 		if (t<3.) then
 			sbc = 0.053*(del)**0.5*sqrt(g)*d50**1.5*dster**( - 0.3)*t**2.1
 	    else
 			sbc = 0.100*(del)**0.5*sqrt(g)*d50**1.5*dster**( - 0.3)*t**1.5
 	    endif
-	else 
+	else
 		sbc = 0.100*(del)**0.5*sqrt(g)*d50**1.5*dster**( - 0.3)*t**1.5
 	endif
 	sbc = sbc + ssus

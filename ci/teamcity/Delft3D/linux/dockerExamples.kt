@@ -20,7 +20,7 @@ object LinuxRunAllDockerExamples : BuildType({
     )
 
     name = "Run all docker examples"
-    buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
+    buildNumberPattern = "%dep.${LinuxRuntimeContainers.id}.product%: %build.vcs.number%"
 
     vcs {
         root(DslContext.settingsRoot)
@@ -32,7 +32,7 @@ object LinuxRunAllDockerExamples : BuildType({
             name = "Execute run_all_examples_docker.sh"
             scriptContent = """
                 cd ./examples/dflowfm/
-                ./run-all-examples-docker.sh --image "containers.deltares.nl/delft3d/delft3d-runtime-container:alma8-%build.vcs.number%"
+                ./run-all-examples-docker.sh --image "%dep.${LinuxRuntimeContainers.id}.runtime_container_image%"
             """.trimIndent()
         }
     }

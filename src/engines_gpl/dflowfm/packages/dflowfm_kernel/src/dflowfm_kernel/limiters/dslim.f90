@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,14 +34,14 @@ module m_dslim
 contains
    real(kind=dp) function dslim(d1, d2, limtyp)
       use precision, only: dp
-      use m_dminmod
-      use m_dvanleer
-      use m_dkoren
-      use m_dcentral
-      use m_dlimiter
-      use m_dcminmod
-      use m_dsuperbee
-      use m_dlimitercentral
+      use m_dminmod, only: dminmod
+      use m_dvanleer, only: dvanleer
+      use m_dkoren, only: dkoren
+      use m_dcentral, only: dcentral
+      use m_dlimiter, only: dlimiter
+      use m_dcminmod, only: dcminmod
+      use m_dsuperbee, only: dsuperbee
+      use m_dlimitercentral, only: dlimitercentral
 
       real(kind=dp) d1, d2 ! voorslope, naslope
       integer limtyp

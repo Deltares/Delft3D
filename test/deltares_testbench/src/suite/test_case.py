@@ -1,6 +1,6 @@
 """Test Case Handler.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 import copy
@@ -76,6 +76,11 @@ class TestCase(object):
         # execute all programs, subprocess
         for program in self.__programs:
             program[1].run(logger)
+
+            error = program[1].getError()
+            return_code = program[1].last_return_code
+            if not program[1].ignore_return_code and return_code != 0:
+                self.__errors.append(error)
 
         # create testbench run file
         elapsed_time = time.time() - start_time

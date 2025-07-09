@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,8 @@ module m_fixddboundaries
 contains
 
    subroutine FIXDDBOUNDARIES()
-      use m_grid
+      use m_grid, only: ijc
+      use m_grid_block, only: npt
 
       integer :: i
       integer :: m
@@ -54,9 +55,8 @@ contains
       integer :: n2
       integer :: nb(80)
       integer :: nd
-      integer :: npt
 
-      do I = 1, NPT - 1, 2
+      do I = 1, npt - 1, 2
          M1 = MB(I)
          N1 = NB(I)
          M2 = MB(I + 1)

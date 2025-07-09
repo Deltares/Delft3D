@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,9 +43,9 @@ contains
    subroutine TOSPLINE(XX, YY, XV, YV)
       use m_dismin, only: dismin
       use precision, only: dp
-      use M_SPLINES
-      use m_spline
-      use m_get_ij
+      use M_SPLINES, only: maxsplen, nump, xsp, maxspl, ysp
+      use m_spline, only: spline
+      use m_get_ij, only: get_ij
 
       real(kind=dp) :: XX, YY, XV, YV
 
@@ -56,8 +56,8 @@ contains
       IN = 1 ! Pick first spline
       call NUMP(IN, NUMPI)
       TV = NUMPI / 2d0
-      call GETIJ(XSP, XI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
-      call GETIJ(YSP, YI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
+      call get_ij(XSP, XI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
+      call get_ij(YSP, YI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
       call SPLINE(XI, NUMPI, XI2)
       call SPLINE(YI, NUMPI, YI2)
       call DISMIN(XI, XI2, YI, YI2, XX, YY, NUMPI, DIS, TV, XV, YV)

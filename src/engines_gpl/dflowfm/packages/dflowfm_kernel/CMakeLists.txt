@@ -176,7 +176,15 @@ if (WIN32)
         target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
-    target_link_libraries(${library_name} PRIVATE petsc)
+    target_link_directories(${library_name} PUBLIC
+                                "${mpi_library_path}"
+                                "${petsc_libdir}"
+    )
+
+    target_link_libraries(${library_name} PUBLIC
+                            "${mpi_fortran_library}"
+                            petsc
+    )
 
     include_directories(${petsc_path})
 endif(WIN32)
@@ -256,3 +264,5 @@ endif(UNIX)
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${library_source_list})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/dflowfm)
+
+add_subdirectory(test)

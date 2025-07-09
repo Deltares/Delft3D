@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,9 +38,9 @@ contains
 
    subroutine setwor_rai(xs1, ys1, xs2, ys2, xw1, yw1, xw2, yw2)
       use precision, only: dp
-      use m_setwor
-      use m_raaitek
-      use m_view_port
+      use m_setwor, only: setwor
+      use m_raaitek, only: xs1m, ys1m, xs2m, ys2m, xw1m, yw1m, xw2m, yw2m
+      use m_view_port, only: viewport
       implicit none
       real :: xs1, ys1, xs2, ys2
       real(kind=dp) :: xw1, yw1, xw2, yw2

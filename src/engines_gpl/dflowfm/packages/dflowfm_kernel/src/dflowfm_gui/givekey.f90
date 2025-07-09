@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,7 +33,7 @@ module m_givekey
    implicit none
 contains
    subroutine GIVEKEY(KEY)
-      use m_ktext
+      use m_ktext, only: ktext
 
       integer :: key
       character TEX * 14

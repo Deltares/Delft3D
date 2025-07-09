@@ -1,7 +1,7 @@
 subroutine opnfl1(lun   ,filnam, CIDENT)
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -50,50 +50,42 @@ subroutine opnfl1(lun   ,filnam, CIDENT)
 
    write (*,'(2a,$)') ' ','File name grid file               : '
    read  (*,'(a)') filnam (1)
-   lun(1) = newlun ( )
-   open (lun(1),file=trim(filnam(1)),status='old')
+   open (newunit=lun(1),file=trim(filnam(1)),status='old')
 
    write (*,'(2a,$)') ' ','File name enclosure file          : '
    read  (*,'(a)') filnam (2)
-   lun(2) = newlun ( )
-   open (lun(2),file=trim(filnam(2)),status='old')
+   open (newunit=lun(2),file=trim(filnam(2)),status='old')
 
    write (*,'(/, 2a)') ' ', 'Detailed model'
    write (*,'(   2a)') ' ', '---------------'
 
    write (*,'(2a,$)') ' ','File name grid file               : '
    read  (*,'(a)') filnam (3)
-   lun(3) = newlun ( )
-   open (lun(3),file=trim(filnam(3)),status='old')
+   open (newunit=lun(3),file=trim(filnam(3)),status='old')
 
    write (*,'(2a,$)') ' ','File name enclosure file          : '
    read  (*,'(a)') filnam (4)
-   lun(4) = newlun ( )
-   open (lun(4),file=trim(filnam(4)),status='old')
+   open (newunit=lun(4),file=trim(filnam(4)),status='old')
 
    write (*,'(2a,$)') ' ','File name boundary definition file: '
    read  (*,'(a)') filnam (5)
-   lun(5) = newlun ( )
-   open (lun(5),file=trim(filnam(5)),status='old')
+   open (newunit=lun(5),file=trim(filnam(5)),status='old')
 
    write (*,'(/, 2a,$)') ' ', 'File name administration file     : '
    read  (*,'(a)') filnam (6)
-   lun(6) = newlun( )
-   open (lun(6),file=trim(filnam(6)),status='unknown')
+   open (newunit=lun(6),file=trim(filnam(6)),status='unknown')
 
    write (*,'(/, 2a,$)') ' ', 'File FLOW observation file        : '
    read  (*,'(a)') filnam (7)
    write (*,'( )')
 
-   lun(7) = newlun( )
-
    inquire (file = trim(filnam(7)), exist = ex)
    if (ex) then
-      open  (lun(7), file=trim(filnam(7)))
+      open  (newunit=lun(7), file=trim(filnam(7)))
       close (lun(7), status='delete')
    endif
 
-   open (lun(7),file=trim(filnam(7)),status='unknown')
+   open (newunit=lun(7),file=trim(filnam(7)),status='unknown')
 
    call wrigen (lun(6),filnam, CIDENT)
 
@@ -124,13 +116,11 @@ subroutine opnfl2(lun   ,extnef)
    write (*,'(   2a)') ' ', '-------------'
    write (*,'(2a,$)') ' ','File name boundary definition file : '
    read  (*,'(a80    )') filnam
-   lun(1) = newlun ( )
-   open (lun(1),file=trim(filnam),status='old')
+   open (newunit=lun(1),file=trim(filnam),status='old')
 
    write (*,'(2a,$)') ' ', 'File name administration file      : '
    read  (*,'(a)') filnam
-   lun(2) = newlun( )
-   open (lun(2),file=trim(filnam),status='unknown')
+   open (newunit=lun(2),file=trim(filnam),status='unknown')
 
    write (*,'(/, 2a)') ' ', 'Overall model'
    write (*,'(   2a)') ' ', '-------------'
@@ -141,18 +131,15 @@ subroutine opnfl2(lun   ,extnef)
    write (*,'(   2a)') ' ', '----------------------'
    write (*,'(2a,$)') ' ', 'File name hydrodynamic bc.         : '
    read  (*,'(a    )') filnam
-   lun(3) = newlun( )
-   open (lun(3),file=trim(filnam),status='unknown')
+   open (newunit=lun(3),file=trim(filnam),status='unknown')
 
    write (*,'(2a,$)') ' ', 'File name transport bc.            : '
    read  (*,'(a)') filnam
-   lun(4) = newlun( )
-   open (lun(4),file=trim(filnam),status='unknown')
+   open (newunit=lun(4),file=trim(filnam),status='unknown')
 
    write (*,'(2a,$)') ' ', 'File name diagnostic file          : '
    read  (*,'(a)') filnam
-   lun(5) = newlun( )
-   open (lun(5),file=trim(filnam),status='unknown')
+   open (newunit=lun(5),file=trim(filnam),status='unknown')
 
    return
 

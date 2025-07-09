@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,16 +49,16 @@ contains
    subroutine find_crossed_links_kdtree2(treeinst, NPL, xpl, ypl, itype, n_links_polyline_nodes, jaboundarylinks, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
       use precision, only: dp
       use network_data, only: numL, kn, xk, yk
-      use m_flowgeom
-      use kdtree2Factory
-      use m_sferic
+      use m_flowgeom, only: lnx, lnxi, lnx1db, ln, xz, yz, lnx1d, lncn
+      use kdtree2Factory, only: kdtree_instance, ntreedim, build_kdtree, make_queryvector_kdtree, kdtree2_r_count, realloc_results_kdtree, kdtree2_n_nearest, itree_empty, delete_kdtree2
+      use m_sferic, only: jsferic, jasfer3d
+      use m_readyy, only: readyy
+      use m_get_link_neighboring_cell_coords, only: get_link_neighboringcellcoords
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_missing, only: dmiss
       use geometry_module, only: dbdistance, crossinbox
-      use m_readyy
-      use m_get_link_neighboring_cell_coords
-      use m_movabs
-      use m_lnabs
 
       type(kdtree_instance), intent(inout) :: treeinst
       integer, intent(in) :: NPL !< polyline length
@@ -282,8 +282,8 @@ contains
       integer :: n_start
       integer :: n_end
 
-      allocate(new_index(n_links_polyline_nodes))
-      allocate(polygon_segment_weights_copy(n_links_polyline_nodes))
+      allocate (new_index(n_links_polyline_nodes))
+      allocate (polygon_segment_weights_copy(n_links_polyline_nodes))
 
       polygon_segment_weights_copy = polygon_segment_weights
       ! The following loop finds the n_start and n_end of which have the same crossed_link value

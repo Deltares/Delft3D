@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,10 +45,10 @@ contains
    subroutine QucPer3Dsigmapiaczekteta(LL, Lb, Lt, cs, sn, ae, ai)
       use precision, only: dp
 
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: lbot, ltop, qa, vol1, ucxu, ucyu, u1
+      use m_flowgeom, only: acl, ln, nd
+      use m_sferic, only: jasfer3d
       use m_flowtimes, only: dts
-      use m_sferic
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
       use m_nod2linx, only: nod2linx

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -86,7 +86,7 @@ contains
 !> initialze PETSc
    module subroutine startpetsc()
 #ifdef HAVE_PETSC
-      use m_petsc
+      use m_petsc, only: PETSC_OK, petsc_comm_world, petscinitialize, petsc_null_character, petscpopsignalhandler
       use mpi, only: mpi_comm_dup
       use m_flowparameters, only: Icgsolver
       use m_partitioninfo, only: DFM_COMM_DFMWORLD, jampi
@@ -110,7 +110,7 @@ contains
    module subroutine stoppetsc()
 #ifdef HAVE_PETSC
       use mpi, only: mpi_comm_free
-      use m_petsc
+      use m_petsc, only: PETSC_OK, petscfinalize, petsc_comm_world
       use m_flowparameters, only: Icgsolver
       use m_partitioninfo, only: jampi
 
@@ -130,11 +130,11 @@ contains
 !> allocate arrays for petsc matrix construction,
 !>   and get sparsity pattern in RCS format
    module subroutine ini_petsc(Ndx, ierror)
-      use m_reduce
-      use m_partitioninfo
+      use m_reduce, only: nocg, noel, nogauss, ndn, row
+      use m_partitioninfo, only: get_global_numbers, iglobal, numcells, jampi, my_rank, ndomains, numghost_sall, ighostlist_sall
       use petsc
-      use m_petsc
-      use MessageHandling
+      use m_petsc, only: PETSC_OK, numrows, numallrows, numdia, numoff, rowtoelem, jdia, idia, adia, joff, ioff, aoff, joffsav, guusidxdia, guusidxoff, izerorow, rhs_val, sol_val, res_val, rhs, sol, res
+      use MessageHandling, only: mess, level_error
       use stdlib_sorting, only: sort_index
 
       integer, intent(in) :: Ndx !< number of cells
@@ -437,10 +437,10 @@ contains
 !>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
 !>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    subroutine setPETSCmatrixEntries()
-      use m_reduce
-      use m_partitioninfo
-      use m_petsc
-      use MessageHandling
+      use m_reduce, only: bbr, ccr
+      use m_partitioninfo, only: iglobal
+      use m_petsc, only: numzerorows, izerorow, adia, aoff, numdia, guusidxdia, numrows, ioff, guusidxoff
+      use MessageHandling, only: mess, level_error
       use m_flowgeom, only: kfs
 
       integer :: i, n
@@ -566,11 +566,9 @@ contains
 !>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
 !>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    subroutine createPETSCPreconditioner(iprecnd)
-      use petsc
-      use m_reduce
-      use m_partitioninfo
-      use m_petsc
-      use MessageHandling
+      use petsc, only: kspgetpc, pcdestroy, pccreate, petsc_comm_world, pcsetoperators, kspsetpc, pcsettype, pcasmsetoverlap, kspsetup, pcasmgetsubksp, petsc_null_integer
+      use m_petsc, only: PETSC_OK, PreconditioningType, Solver, Preconditioner, Amat, SubSolver, SubPrec
+      use MessageHandling, only: mess, level_error
 
       integer, intent(in) :: iprecnd !< preconditioner type, 0:default, 1: none, 2:incomplete Cholesky, 3:Cholesky, 4:GAMG (doesn't work)
 
@@ -642,10 +640,10 @@ contains
    module subroutine preparePETSCsolver(japipe)
 ! fix for missing definition of KSPPIPECG in finclude/petscdef.h:
 #define KSPPIPECG 'pipecg'
-      use petsc
-      use m_reduce
-      use m_partitioninfo
-      use m_petsc
+      use petsc, only: petsc_default_real, matcreateseqaijwitharrays, petsc_comm_world, matcreatempiaijwithsplitarrays, petsc_determine, matassemblybegin, mat_final_assembly, matassemblyend, kspcreate, kspsetoperators, kspsettype, kspsetinitialguessnonzero, petsc_true, kspsettolerances
+      use m_reduce, only: dp
+      use m_partitioninfo, only: ndomains
+      use m_petsc, only: PETSC_OK, joff, joffsav, adia, aoff, numrows, idia, jdia, Amat, ioff, Solver, isKSPCreated
 
       integer, intent(in) :: japipe !< use pipelined CG (1) or not (0)
 
@@ -719,13 +717,13 @@ contains
 !>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
 !>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
-      use petsc
-      use m_reduce
-      use m_partitioninfo
-      use m_petsc
+      use petsc, only: kspsolve, kspgetconvergedreason, ksp_diverged_indefinite_pc, kspgetiterationnumber, kspgetresidualnorm
+      use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
+      use m_partitioninfo, only: iglobal, my_rank
+      use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver
+      use MessageHandling, only: mess, level_info, level_warn, level_error, level_debug
       use m_flowgeom, only: kfs
       use m_flowtimes, only: dts ! for logging
-      use MessageHandling
       use m_flowparameters, only: jalogsolverconvergence
 
       integer, intent(in) :: ndx
@@ -837,8 +835,8 @@ contains
 
    subroutine killSolverPETSC()
 !#include <finclude/petscdef.h>
-      use petsc
-      use m_petsc
+      use petsc, only: kspdestroy
+      use m_petsc, only: PETSC_OK, isKSPCreated, Solver
 
       PetscErrorCode :: ierr = PETSC_OK
 

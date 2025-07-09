@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,10 +39,10 @@ contains
    subroutine CONFRM(TEXT, JAZEKR)
       use unstruc_display_data, only: npos
       use m_devices, only: iws
-      use m_gui
-      use m_helpnow
-      use m_timlin
-      use m_fkeys
+      use m_gui, only: jagui
+      use m_helpnow, only: nlevel, wrdkey
+      use m_timlin, only: timlin
+      use m_fkeys, only: fkeys
       implicit none
 
       character TEXT * (*)

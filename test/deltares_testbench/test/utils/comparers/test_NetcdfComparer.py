@@ -1,6 +1,6 @@
 #  Description: NetCDF file comparer
 #  -----------------------------------------------------
-#  Copyright (C)  Stichting Deltares, 2013
+#  Copyright (C)  Stichting Deltares, 2025
 
 
 import datetime

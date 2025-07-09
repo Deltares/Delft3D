@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,6 +34,7 @@ module m_flowparameters
    use precision, only: dp
    use m_sediment, only: jased
    use m_missing
+   use m_waveconst
 
    implicit none
 
@@ -122,18 +123,18 @@ module m_flowparameters
    integer :: janudge !< temperature and salinity nudging
    integer :: jainiwithnudge !< initialize salinity and temperature with nudge variables
 
-   integer :: itempforcingtyp !< Forcing parameter types 1,2 humidity, 3,4 dewpoint see code
+   integer :: itempforcingtyp !< Forcing parameter types 1,2 relative humidity, 3,4 dew point temperature, see code
 
-   logical :: btempforcingtypA !< Forcing parameter Air temperature is given as a separate field or not
-   logical :: btempforcingtypC !< Forcing parameter Cloudiness given as a separate field or not
-   logical :: btempforcingtypD !< Forcing parameter Dewpoint given as a separate field or not
-   logical :: btempforcingtypH !< Forcing parameter Humidity given as a separate field or not
-   logical :: btempforcingtypS !< Forcing parameter Solarradiation given as a separate field or not
-   logical :: btempforcingtypL !< Forcing parameter Long wave radiation given as a separate field or not
+   logical :: btempforcingtypA !< Forcing parameter air temperature is given as a separate field or not
+   logical :: btempforcingtypC !< Forcing parameter cloudiness given as a separate field or not
+   logical :: btempforcingtypD !< Forcing parameter dew point temperature given as a separate field or not
+   logical :: btempforcingtypH !< Forcing parameter relative humidity given as a separate field or not
+   logical :: btempforcingtypS !< Forcing parameter solar radiation given as a separate field or not
+   logical :: btempforcingtypL !< Forcing parameter long wave radiation given as a separate field or not
 
    integer :: jarhoxu !< rho effects in momentum, 0=no, 1=in horizontal adv, 2=+ in vertical adv, 3 = + in pressure term
 
-   integer :: jawave !< Include wave model nr, 0=no, 1=fetchlimited hurdle stive + swart, 3=SWAN, 4=XBeach wave driver, 5=Const, 6=SWAN-NetCDF, 7=Offline Wave Coupling
+   integer :: jawave !< Include wave model nr, 0=no, 1=fetchlimited hurdle stive + swart, 3=SWAN, 4=surfbeat, 5=Const, 7=Offline Wave Coupling
 
    integer :: waveforcing !< Wave forcing type, 0=no, 1=based on radiation stress gradients, 2=based on dissipation, NOT implemented yet, 3=based on dissipation at free surface and water column, NOT implemented yet
 
@@ -145,7 +146,7 @@ module m_flowparameters
 
    integer :: jawavebreakerturbulence !< Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
-   integer :: jawavedelta = 1 !< Wave boundary layer formulation: 1=Sana 2007
+   integer :: jawavedelta = WAVE_BOUNDARYLAYER_SANA !< Wave boundary layer formulation: 1=Sana 2007
 
    integer :: jawaveforces !< Apply wave forces to model (1, default), or not (0)
 
@@ -741,21 +742,21 @@ contains
 
       jacali = 0 !< Include calibration factor for roughness
 
-      jawave = 0 ! Include wave model nr
+      jawave = NO_WAVES ! Include wave model nr
 
-      waveforcing = 0 !< Include wave forcing
+      waveforcing = WAVEFORCING_NO_WAVEFORCES !< Include wave forcing
 
-      jawavestreaming = 0 ! Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
+      jawavestreaming = WAVE_STREAMING_OFF ! Switch on in D3D model: >=1 : streaming mom
 
-      jawavestokes = 1 ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
+      jawavestokes = STOKES_DRIFT_DEPTHUNIFORM ! Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
 
-      jawavebreakerturbulence = 1 ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
+      jawavebreakerturbulence = WAVE_BREAKER_TURB_ON ! Add wave-induced production terms in turbulence modelling: 0 = no, 1 = yes
 
       jawavedelta = 1 ! Wave boundary layer formulation: 1=Sana; 2=Nguyen
 
-      jawaveforces = 1
+      jawaveforces = WAVE_FORCES_ON
 
-      jawaveSwartDelwaq = 0 !< communicate to Delwaq taucur + tauwave instead of taucur
+      jawaveSwartDelwaq = WAVE_WAQ_SHEAR_STRESS_HYD !< communicate to Delwaq taucur + tauwave instead of taucur
 
       modind = 0 !< Nr of wave-current bed friction model, 9 = vanrijn, 1 = fredsoe, etc like d3d
 

@@ -2,7 +2,7 @@ subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
                & filrol    ,lundia    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -111,7 +111,6 @@ subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
     integer           :: lenc
     integer           :: lfile    ! Length of file name
     integer           :: uw
-    integer, external :: newlun
     integer           :: version  ! to detect the version number of the file
     logical           :: ex       ! file existence flag
     real(fp)          :: omspl

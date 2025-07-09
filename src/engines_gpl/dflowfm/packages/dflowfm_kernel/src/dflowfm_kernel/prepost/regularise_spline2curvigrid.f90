@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,12 +45,12 @@ contains
 
    subroutine regularise_spline2curvigrid()
       use precision, only: dp
-      use m_grid
+      use m_grid, only: mc, nc, xc, yc
+      use m_get_lr, only: get_lr
       use m_spline2curvi, only: dtolLR
       use m_missing, only: dmiss
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
-      use m_get_lr
 
       real(kind=dp) :: xi
       real(kind=dp) :: dhmax, dtolLR_bak

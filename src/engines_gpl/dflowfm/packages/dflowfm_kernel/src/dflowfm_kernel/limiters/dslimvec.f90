@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,8 +43,8 @@ contains
    !> limited higher-order correction of vector data
    subroutine dslimvec(ds1x, ds1y, ds2x, ds2y, csu, snu, limtyp, dsx, dsy)
       use precision, only: dp
-      use m_flowparameters
-      use m_dslim
+      use m_flowparameters, only: jalimnor, eps10
+      use m_dslim, only: dslim
       implicit none
 
       real(kind=dp), intent(in) :: ds1x, ds1y !< "voorslope" components

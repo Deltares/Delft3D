@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,9 +36,9 @@ module m_fbox
 contains
    subroutine FBOX(X1, Y1, X2, Y2)
       use precision, only: dp
-      use m_fboxold
-      use m_drawthis
-      use m_dproject
+      use m_fboxold, only: fboxold
+      use m_drawthis, only: ndraw
+      use m_dproject, only: dproject
 
       real(kind=dp) :: x1, x2, y1, y2
       real(kind=dp) :: xb1, xb2, yb1, yb2

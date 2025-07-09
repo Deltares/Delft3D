@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,12 +45,12 @@ contains
 
       integer :: i
       integer :: j
-      integer :: mmax
-      integer :: nmax
+      integer, intent(in) :: mmax
+      integer, intent(in) :: nmax
       real(kind=dp) :: x
       dimension X(MMAX, NMAX)
-      do I = 1, MMAX
-         do J = 1, NMAX
+      do J = 1, NMAX
+         do I = 1, MMAX
             X(I, J) = 0d0
          end do
       end do

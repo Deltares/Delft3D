@@ -1,6 +1,6 @@
 """Xml Configuration parser.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 import copy
@@ -132,7 +132,7 @@ class XmlConfigParser(object):
             elif con == "startat":
                 start_at_filter = arg.lower()
             else:
-                error_message = "ERROR: Filter keyword " " + con + " " not recognised"
+                error_message = f"ERROR: Filter keyword {con} not recognised"
                 logger.error(f"{error_message} '{con}'\n")
                 sys.stderr.write(error_message + "\n")
                 raise SyntaxError(error_message + "\n")

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,8 +40,7 @@ contains
 
    subroutine SETWY(X1, Y1, X2)
       use precision, only: dp
-      use m_inqasp
-      use m_sferic
+      use m_inqasp, only: inqasp
       implicit none
       real(kind=dp) :: x1, x2, y1
       real(kind=dp) :: asp, x, y, dy

@@ -1,7 +1,7 @@
 module m_1d_structures
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -41,7 +41,7 @@ module m_1d_structures
    use m_Universal_Weir
    use m_Bridge
    use m_hash_search
-   use m_dambreak, only: t_dambreak
+   use m_dambreak, only: t_dambreak_settings
    use iso_c_utils
 
    implicit none
@@ -147,7 +147,7 @@ module m_1d_structures
       type(t_uni_weir),pointer         :: uniweir => null()
       type(t_bridge),pointer           :: bridge => null()
       type(t_GeneralStructure),pointer :: generalst => null()
-      type(t_dambreak),pointer         :: dambreak => null()
+      type(t_dambreak_settings),pointer         :: dambreak => null()
    end type
 
    type, public :: t_structureSet
@@ -466,10 +466,10 @@ end subroutine deallocstructure
    end subroutine reIndexCrossSections
 
    pure function GetStrucType_from_string(string) result(istrtype)
-      use string_module
+      use string_module, only: str_lower
 
-      character(len=*), intent(in) :: string
-      integer                      :: istrtype
+      character(len=*), value :: string
+      integer :: istrtype
       call str_lower(string, 999)
       select case(trim(string))
       case ('pump')

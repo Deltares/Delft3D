@@ -18,7 +18,7 @@ Unfortunately, the `--extra all` is necessary because we make use of the
 `[project.optional-dependencies]` section in `pyproject.toml`, which `pip` also understands.
 
 `uv` can manage your installed Python versions and virtual environments for you. If you don't
-have at least (the required) Python 3.11 installed, you can install it with 
+have Python 3.11 or higher installed, you can install it with 
 `uv python install 3.11`. You can
 see which versions of python you have installed on your system with `uv python list`.
 `uv` also creates a virtual environment or "venv" for you in this directory. You can either
@@ -64,7 +64,7 @@ navigate to the `ci/python` directory and do one of the following:
 - Prefix all of the commands below with `uv run` (If you have `uv` installed).
 ```bash
 # Auto format all the files in this directory
-ruff format
+ruff format .
 
 # Run the linter
 ruff check
@@ -115,3 +115,102 @@ VS Code "workspaces", I recommend selecting the `ci` directory as a separate
 workspace. That way, all the settings in the `.vscode/settings.json` in the `ci`
 apply only to that directory. 
 [Check out VS code workspace here](https://code.visualstudio.com/docs/editor/workspaces/workspaces).
+
+
+## Included tools
+
+### MinIO synchronizer
+
+The MinIO synchronizer program (`minio-sync`) is a command line program inspired
+by the `aws s3 sync` subcommand of the AWS command line program. It 'synchronizes'
+a local directory with files with objects in a MinIO bucket. `minio-sync` has two
+required command line arguments: The `--source` and the `--destination`. You can
+run it like this:
+```bash
+minio-sync --source ./path/to/files/ --destination s3://my-bucket/path/to/objects/
+```
+The command above will copy the files in `./path/to/files` to the `my-bucket` MinIO
+bucket, under the prefix `/path/to/objects`. If the `./path/to/files` directory
+contains subdirecties, `minio-sync` will keep the directory structure intact. So for 
+example: It will upload `./path/to/files/sub/dir/README.md` as 
+`s3://my-bucket/path/to/objects/sub/dir/README.md`. When `minio-sync` is done,
+the contents of the source and destination should be the same.
+
+The previous example used a local directory as the source and a MinIO prefix as the
+destination. This will upload files from your computer to MinIO. If instead you
+specify a local directory as the destination and a MinIO prefix as the source, the
+objects in MinIO will be downloaded to the local directory:
+```bash
+minio-sync --source s3://my-bucket/path/to/objects/ --destination ./path/to/files/
+```
+Again, `minio-sync` will try to keep the directory structure intact. So it will
+create subdirectories in `./path/to/files` if necessary.
+
+In addition, if the source is a prefix in MinIO (so you're downloading the files), 
+you can specify a `timestamp` to recover the files in MinIO from a specific point of 
+time in the past. This is called "point in time recovery". This will only work for 
+MinIO buckets that have versioning enabled:
+```bash
+minio-sync --source s3://my-bucket/objects --destination ./files --timestamp 2025-05-10
+```
+The timestamp should be an [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) formatted
+timestamp. You can specify just the date, or a specific time of the day as well. For
+instance `2025-05-10T12:34:56.789` specifies the timestamp to the millisecond. The
+timestamp will be interpreted as being in the timezone of your computer, unless
+explicitly specified otherwise. A UTC timestamp can be passed as well like this:
+`2025-05-10T12:34:56Z`.
+
+You can limit what kind of operations `minio-sync` will do to modify the files at the
+destination. For example, if a file exists at the destination, but not at the source,
+a faithful synchronization would remove the file at the destination. This can be a
+destructive operation, so if you make a mistake you might lose data. These four command
+line switches control the "operation mode":
+- `--create-only`: Only create files that exist at the source but not at the destination.
+- `--update-only`: Only update files that exist at both source and destination, but have different content
+- `--no-delete`: The default mode. Perform "creations" and "updates", but do not delete
+  files that exist at the destination but not at the source.
+- `--delete`: Perform "creations", "updates" and "deletions". This mode provides a
+  complete synchronization between the source and destination.
+
+In addition you can specify "filters", so `minio-sync` will only operate on a subset
+of the files at the source. Currently, you can specify filters using "glob" patterns
+or "regex" patterns. These patterns will be applied to the "relative paths" of objects.
+For example:
+```bash
+minio-sync --source s3://my-bucket/objects --destination ./files --glob '*.png'
+```
+Suppose the MinIO bucket contains the object `s3://my-bucket/object/cat_pictures/meow.png`.
+The command above will apply the `*.png` glob pattern on `cat_pictures/meow.png`. It matches, 
+so the file is downloaded to `./files/cat_pictures/meow.png`.
+
+*NOTE*: Please always surround your glob patterns with single quotes (').
+Otherwise your shell might try to 'expand' the glob pattern instead of passing it
+to the program as is. For example:
+```bash
+minio-sync --source s3://my-bucket/objects --destination . --glob *.png
+```
+Might be expanded to...
+```bash
+minio-sync --source s3://my-bucket/objects --destination . --glob ape.png nut.png mies.png
+```
+...provided that you have those three PNG files in your current directory.
+Surrounding the patterns in single quotes will prevent this.
+
+
+It is possible to specify multiple filters. In that case, files will match if at least
+one of the filters match. For example: The following command downloads all PNG files
+_and_ JPEG files:
+```bash
+minio-sync --source s3://my-bucket/objects --destination ./files --glob '*.png' --regex '[.]jpe?g'
+```
+Note that we used a "regex" pattern to match JPEG files. So both `.jpeg` and `.jpg` files
+will match.
+
+Finally it's possible to "exclude" files based on a filter. For example if I'm not interested
+in downloading NetCDF files. I can do the following:
+```bash
+minio-sync --source s3://my-bucket/objects --destination ./files --exclude-glob '*.nc'
+```
+
+You can specify any amount of "include" and "exclude" filters. The files will match if
+they match _any_ include filter and _none_ of the exclude filters.

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -72,6 +72,7 @@ module m_flow_flowinit
    use m_read_restart_from_map, only: read_restart_from_map
    use m_inifcori
    use m_alloc_jacobi
+   use m_waveconst
 
    implicit none
 
@@ -1069,7 +1070,7 @@ contains
       use m_physcoef, only: ag, rhomean
       use m_flowgeom, only: ndxi
       use m_flow, only: s1
-      use m_wind, only: japatm, PavIni, patm
+      use m_wind, only: air_pressure_available, PavIni, air_pressure
 
       implicit none
 
@@ -1078,9 +1079,9 @@ contains
       integer :: cell
       real(kind=dp) :: ds
 
-      if (japatm > OFF .and. PavIni > ZERO_AMBIENT_PRESSURE) then
+      if (air_pressure_available .and. PavIni > ZERO_AMBIENT_PRESSURE) then
          do cell = 1, ndxi
-            ds = -(patm(cell) - PavIni) / (ag * rhomean)
+            ds = -(air_pressure(cell) - PavIni) / (ag * rhomean)
             s1(cell) = s1(cell) + ds
          end do
       end if
@@ -1318,7 +1319,7 @@ contains
          hwav = min(hwav, gammax * hs)
          twav = twavcom
          !
-         if (jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
             !
             call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
                                & sxwav, sywav, mxwav, mywav, &
@@ -1356,7 +1357,7 @@ contains
          hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
-            if (jawavestokes > 0) then
+            if (jawavestokes > NO_STOKES_DRIFT) then
                do link = 1, lnx
                   left_node = ln(1, link)
                   right_node = ln(2, link)
@@ -1586,7 +1587,7 @@ contains
             call set_saltem_nudge()
             if (jainiwithnudge == 2) then
                janudge = OFF
-               deallocate (nudge_tem, nudge_sal, nudge_rate, nudge_time)
+               deallocate (nudge_temperature, nudge_salinity, nudge_rate, nudge_time)
             end if
          end if
       end if
@@ -1631,7 +1632,7 @@ contains
       use m_turbulence, only: rhowat, potential_density, in_situ_density
       use m_get_kbot_ktop, only: getkbotktop
       use m_density, only: set_potential_density, set_pressure_dependent_density
-      use m_physcoef, only: apply_thermobaricity
+      use m_density_parameters, only: apply_thermobaricity
 
       implicit none
 

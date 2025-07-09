@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,8 @@ contains
 
    subroutine NULFIELD(X, Y, mmax, nmax)
       use precision, only: dp
-      use m_missing
-      use m_grid_block
+      use m_missing, only: xymis
+      use m_grid_block, only: mb, nb
 
       integer :: mmax, nmax
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)

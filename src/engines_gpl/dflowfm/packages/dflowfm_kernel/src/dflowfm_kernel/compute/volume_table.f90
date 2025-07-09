@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -95,7 +95,6 @@ contains
 
    !> Allocate the volume table arrays and initialize to 0
    subroutine allocVoltable(this)
-      use m_flowparameters
 
       class(t_voltable) :: this
 
@@ -153,7 +152,8 @@ contains
    !> Retrieve the volume for given volume table and water level
    real(kind=dp) function getVolumeVoltable(this, level)
       use precision, only: dp
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
+      use m_globalparameters, only: summerDikeTransitionHeight
       class(t_voltable) :: this
       real(kind=dp), intent(in) :: level !< water level
 
@@ -186,7 +186,8 @@ contains
    !> Retrieve the surface area for given volume table and water level
    real(kind=dp) function getSurfaceVoltable(this, level)
       use precision, only: dp
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
+      use m_globalparameters, only: summerDikeTransitionHeight
 
       class(t_voltable) :: this
       real(kind=dp), intent(in) :: level !< water level
@@ -219,7 +220,7 @@ contains
    !> Returns the volume which is the result of a decreasing width for a given water level
    real(kind=dp) function getVolumeDecreasingVoltable(this, level)
       use precision, only: dp
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
 
       class(t_voltable) :: this
       real(kind=dp), intent(in) :: level !< water level
@@ -237,7 +238,7 @@ contains
    !> Retrieve the surface area for given volume table and water level
    real(kind=dp) function getSurfaceDecreasingVoltable(this, level)
       use precision, only: dp
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
 
       class(t_voltable) :: this
       real(kind=dp), intent(in) :: level !< water level
@@ -251,7 +252,7 @@ contains
 
    !> Compute the surfaces in the volume table out of the volumes.
    subroutine computeSurfaceVoltable(this)
-      use unstruc_channel_flow
+      use unstruc_channel_flow, only: tableincrement
 
       class(t_voltable) :: this
 
@@ -270,14 +271,10 @@ contains
 
    !> Generate the volume tables, by using GetCSParsTotal.
    subroutine makeVolumeTables(filename, branchOutput)
-
-      use unstruc_channel_flow
-      use m_flowparameters
-      use m_flowgeom
-      use m_GlobalParameters
-      use m_Storage
-      use m_flow
-      use m_missing
+      use m_crosssections, only: t_CrossSection
+      use m_storage, only: t_storage
+      use unstruc_channel_flow, only: usevolumetablefile, volumetablefile, network
+      use m_flowgeom, only: ndx, ndx2d, lnx1d, kcs, nd, lnxi, lbnd1d, kcu
 
       character(len=*), intent(in) :: filename !< Name of the volumetablefile
       logical, optional, intent(in) :: branchOutput !< Flag indicates whether the volumes on flow links are required.
@@ -411,6 +408,7 @@ contains
       use m_flowparameters
       use m_flowgeom
       use unstruc_channel_flow
+      use m_globalparameters, only: summerDikeTransitionHeight
 
       type(t_voltable), dimension(:), intent(inout) :: vltb !< Volume tables.
 

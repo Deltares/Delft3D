@@ -1,7 +1,7 @@
 /*
 !----- AGPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -57,7 +57,7 @@
  *  Irv.Elshoff@deltares.nl
  *  22 mar 00
  *
- *  Copyright (C) 2000, Deltares
+ *  Copyright (C) 2025, Deltares
  ******************************************************************************/
 
 

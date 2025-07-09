@@ -56,8 +56,9 @@ chmod a+x,a-s $run_docker_file_name
 # Execute the docker container
 working_dir=`pwd`
 mount_dir=/data
+image=${DOCKER_IMAGE:-deltares/delft3dfm:latest}
 echo "Executing latest delft3dfm Docker container with:"
 echo "Working directory                 :   $working_dir"
 echo "Mounting directory                :   $mount_dir"
 echo "Extra executable flags            :   $executable_extraopts"
-docker run --rm -v $working_dir:$mount_dir -u $(id -u):$(id -g) --ulimit stack=-1 -t deltares/delft3dfm:latest
+docker run --rm -v $working_dir:$mount_dir -u $(id -u):$(id -g) --ulimit stack=-1 -t ${image} ./${run_docker_file_name}

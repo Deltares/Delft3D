@@ -1,6 +1,6 @@
 """Type of result for test case.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 from enum import IntEnum

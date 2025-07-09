@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,10 +50,10 @@ contains
       use m_tranfn, only: tranfn
       use m_eqdint, only: eqdint
       use precision, only: dp
-      use m_missing
-      use m_splint
-      use m_readyy
-      use m_get_ij
+      use m_missing, only: dmiss
+      use m_splint, only: splint
+      use m_readyy, only: readyy
+      use m_get_ij, only: get_ij
 
       integer :: mmax, nmax, imax, m1, n1, m2, n2, mc, nc, mfac, nfac
       real(kind=dp) :: X(MMAX, NMAX), XR(MMAX, NMAX), &
@@ -98,14 +98,14 @@ contains
             MFA = 1
          end if
          I2 = I1 + 1
-         call GETIJ(X, XH1, mmax, nmax, imax, I1, I1, 1, NC)
-         call GETIJ(XI2, XH21, mmax, nmax, imax, I1, I1, 1, NC)
-         call GETIJ(X, XH2, mmax, nmax, imax, I2, I2, 1, NC)
-         call GETIJ(XI2, XH22, mmax, nmax, imax, I2, I2, 1, NC)
-         call GETIJ(Y, YH1, mmax, nmax, imax, I1, I1, 1, NC)
-         call GETIJ(YI2, YH21, mmax, nmax, imax, I1, I1, 1, NC)
-         call GETIJ(Y, YH2, mmax, nmax, imax, I2, I2, 1, NC)
-         call GETIJ(YI2, YH22, mmax, nmax, imax, I2, I2, 1, NC)
+         call get_ij(X, XH1, mmax, nmax, imax, I1, I1, 1, NC)
+         call get_ij(XI2, XH21, mmax, nmax, imax, I1, I1, 1, NC)
+         call get_ij(X, XH2, mmax, nmax, imax, I2, I2, 1, NC)
+         call get_ij(XI2, XH22, mmax, nmax, imax, I2, I2, 1, NC)
+         call get_ij(Y, YH1, mmax, nmax, imax, I1, I1, 1, NC)
+         call get_ij(YI2, YH21, mmax, nmax, imax, I1, I1, 1, NC)
+         call get_ij(Y, YH2, mmax, nmax, imax, I2, I2, 1, NC)
+         call get_ij(YI2, YH22, mmax, nmax, imax, I2, I2, 1, NC)
          LJ1 = 0
          do J1 = 1, NC - 1
             if (J1 >= N1 .and. J1 < N2) then
@@ -114,14 +114,14 @@ contains
                NFA = 1
             end if
             J2 = J1 + 1
-            call GETIJ(X, XH3, mmax, nmax, imax, 1, MC, J1, J1)
-            call GETIJ(XJ2, XH23, mmax, nmax, imax, 1, MC, J1, J1)
-            call GETIJ(X, XH4, mmax, nmax, imax, 1, MC, J2, J2)
-            call GETIJ(XJ2, XH24, mmax, nmax, imax, 1, MC, J2, J2)
-            call GETIJ(Y, YH3, mmax, nmax, imax, 1, MC, J1, J1)
-            call GETIJ(YJ2, YH23, mmax, nmax, imax, 1, MC, J1, J1)
-            call GETIJ(Y, YH4, mmax, nmax, imax, 1, MC, J2, J2)
-            call GETIJ(YJ2, YH24, mmax, nmax, imax, 1, MC, J2, J2)
+            call get_ij(X, XH3, mmax, nmax, imax, 1, MC, J1, J1)
+            call get_ij(XJ2, XH23, mmax, nmax, imax, 1, MC, J1, J1)
+            call get_ij(X, XH4, mmax, nmax, imax, 1, MC, J2, J2)
+            call get_ij(XJ2, XH24, mmax, nmax, imax, 1, MC, J2, J2)
+            call get_ij(Y, YH3, mmax, nmax, imax, 1, MC, J1, J1)
+            call get_ij(YJ2, YH23, mmax, nmax, imax, 1, MC, J1, J1)
+            call get_ij(Y, YH4, mmax, nmax, imax, 1, MC, J2, J2)
+            call get_ij(YJ2, YH24, mmax, nmax, imax, 1, MC, J2, J2)
             if (IJYES(I1, J1) == 1) then
 
                do K = 1, MFA + 1
@@ -152,8 +152,8 @@ contains
                            Y1, Y2, Y3, Y4, &
                            mmax, nmax, imax, &
                            MFA, NFA, XRH, YRH)
-               do K = 1, MFA + 1
-                  do L = 1, NFA + 1
+               do L = 1, NFA + 1
+                  do K = 1, MFA + 1
                      KI = KI1 + K
                      LJ = LJ1 + L
                      XR(KI, LJ) = XRH(K, L)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,7 +34,7 @@ module m_reconstruct_sed_transports
 contains
    subroutine reconstructsedtransports()
       ! Reconstructs cell centre transports from link based values for output purposes
-      use m_fm_erosed
+      use m_fm_erosed, only: sbcx, fp, sbcy, sbwx, sbwy, sscx, sscy, sswx, sswy, sxtot, sytot, lsed, e_ssn, lsedtot, has_bedload, tratyp, e_sbcn, e_sbwn, e_sswn
       use m_flowgeom, only: ln, lnx, ndx, wcx1, wcx2, wcy1, wcy2
       use m_sediment, only: sedtot2sedsus
 

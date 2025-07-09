@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,9 +43,9 @@ contains
 
    subroutine SOMDIST(A, B, C, D, M1, N1, M2, N2)
       use precision, only: dp
-      use m_grid
-      use m_missing
-      use m_isitu
+      use m_grid, only: mmax, nmax, ijc, ijyes
+      use m_missing, only: dmiss
+      use m_isitu, only: isitu
 
       integer :: i
       integer :: i2

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,7 +35,7 @@ contains
    subroutine FIRSTLIN(MRGF)
       use dflowfm_version_module, only: version_full
       use dflowfm_version_module, only: getbranch_dflowfm
-      use m_datum
+      use m_datum, only: datum
 
       integer :: mrgf
 

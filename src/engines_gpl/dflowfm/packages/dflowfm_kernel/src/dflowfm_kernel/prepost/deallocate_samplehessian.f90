@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,7 @@ module m_deallocate_samplehessian
 contains
 
    subroutine deallocate_sampleHessian()
-      use m_samples
-      use m_samples_refine
+      use m_samples_refine, only: zss, ihesstat, ihesstat_dirty
 
       if (allocated(zss)) then
          deallocate (zss)

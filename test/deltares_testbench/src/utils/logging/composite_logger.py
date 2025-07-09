@@ -1,6 +1,6 @@
 """Logger for combining multiple loggers.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 from typing import Iterable, List

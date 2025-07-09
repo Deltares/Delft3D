@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,9 +34,9 @@ module m_inview2
 contains
    logical function INVIEW2(X, Y, XX, YY)
       use precision, only: dp
-      use M_MISSING
-      use m_wearelt
-      use m_dproject
+      use M_MISSING, only: xymis
+      use m_wearelt, only: x1, x2, y1, y2
+      use m_dproject, only: dproject
 
       real(kind=dp) :: x, y, xx, yy
 

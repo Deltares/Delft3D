@@ -1,7 +1,7 @@
 module flow_tables
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -82,7 +82,6 @@ subroutine flw_readtable(handle, filnam, refjulday, gdp)
 !
 ! Local variables
 !
-    integer, external               :: newlun
     character(256)                  :: errorstring
 !
 !! executable statements -------------------------------------------------------

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,149 +27,162 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
-!> extract constituent array
 module m_extract_constituents
 
    implicit none
 
    private
 
-   public :: extract_constituents
+   public :: extract_constituents, print_extract_constituents_message
+
+   integer, parameter :: MAX_NUMBER_OF_MESSAGES = 10 ! maximum number of warning messages
+   integer, dimension(6) :: number_of_printed_messages = 0
 
 contains
 
+   !> print the message if limited cells are found
+   subroutine print_extract_constituents_message()
+      use messageHandling, only: msgbuf, msg_flush
+
+      if (any(number_of_printed_messages > 0)) then
+         msgbuf = ' '
+         call msg_flush()
+         write (msgbuf, '(a)') &
+            'Salinity, temperature and/or suspended sediment concentration (SSC) were limited in some cells during the simulation.'
+         call msg_flush()
+      end if
+
+   end subroutine print_extract_constituents_message
+
+   !> extract constituent array and limits values if needed
    subroutine extract_constituents()
+      use precision, only: dp, fp
       use m_doforester, only: doforester
-      use precision, only: dp
-      use m_transport
-      use m_flow
-      use m_flowgeom
-      use m_sediment
-      use m_transport
-      use messageHandling
-      use m_missing
-      use m_plotdots
-      use timers
-      use m_flowtimes
+      use m_flowparameters, only: jaequili, jalogtransportsolverlimiting, jasal, jasecflow, jatem, &
+                                  maxitverticalforestersal, maxitverticalforestertem
+      use m_flow, only: hs, kmx, kbot, ktop, ndkx, spirint, vol1
+      use m_flowgeom, only: ndx, ndxi, bai_mor
+      use m_flowtimes, only: dts, tfac, time1, tstart_user
       use m_fm_icecover, only: freezing_temperature
-      use m_get_kbot_ktop
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_missing, only: dmiss
+      use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, temperature_max, temperature_min
+      use m_plotdots, only: numdots
+      use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
+      use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed
 
-      implicit none
+      use timers, only: timon, timstop, timstrt
 
-      integer :: i, iconst, k, kk, limmin, limmax, ll, kb, k1, kt
-      real(kind=dp) :: dmin
-      real(kind=dp) :: t_freeze !< freezing point temperature [degC]
+      integer :: iconst, grain, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt
+      real(kind=dp) :: minimum_salinity_value
+      real(kind=dp) :: freezing_point_temperature ! freezing point temperature [degC]
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("extract_constituents", ithndl)
-      limmax = 0
-      limmin = 0
+      integer, parameter :: IDX_SSC_MIN = 1 ! index of suspended sediment concentration messages for min limits
+      integer, parameter :: IDX_SSC_MAX = 2 ! index of suspended sediment concentration messages for max limits
+      integer, parameter :: IDX_SAL_MIN = 3 ! index of salinity messages for min limits
+      integer, parameter :: IDX_SAL_MAX = 4 ! index of salinity messages for max limits
+      integer, parameter :: IDX_TEMP_MIN = 5 ! index of temperature messages for min limits
+      integer, parameter :: IDX_TEMP_MAX = 6 ! index of temperature messages for max limits
 
-      do k = 1, Ndkx
+      if (timon) then
+         call timstrt("extract_constituents", ithndl)
+      end if
 
-         if (jasecflow > 0 .and. jaequili == 0 .and. kmx == 0) then
-            spirint(k) = constituents(ISPIR, k)
-         end if
+      if (jasecflow > 0 .and. jaequili == 0 .and. kmx == 0) then
+         spirint(1:ndkx) = constituents(ispir, 1:ndkx)
+      end if
 
-         if (ISED1 /= 0) then
-            do i = 1, mxgr
-               iconst = ISED1 + i - 1
-               if (constituents(iconst, k) < 0d0) then
-                  limmin = limmin + 1
-                  constituents(iconst, k) = 0d0
+      if (ised1 > 0) then
+         cells_with_max_limit = 0
+         cells_with_min_limit = 0
+         do k = 1, ndkx
+            do grain = 1, mxgr
+               iconst = ised1 + grain - 1
+               if (constituents(iconst, k) < 0.0_dp) then
+                  cells_with_min_limit = cells_with_min_limit + 1
+                  constituents(iconst, k) = 0.0_dp
                end if
-               !
+
                ! keep track of mass error because of concentration limitation
                if (constituents(iconst, k) > upperlimitssc) then
-                  limmax = limmax + 1
+                  cells_with_max_limit = cells_with_max_limit + 1
                   maserrsed = maserrsed + vol1(k) * (constituents(iconst, k) - upperlimitssc)
                   constituents(iconst, k) = upperlimitssc
                end if
-               sed(i, k) = constituents(iconst, k)
-            end do
-         end if
-      end do
-
-      if (ISED1 /= 0 .and. jalogtransportsolverlimiting > 0) then
-         if (limmin > 0) then
-            write (msgbuf, *) 'Negative ssc encountered and limited, number of cells = ', limmin; call msg_flush()
-         end if
-         !
-         if (limmax > 0) then
-            write (msgbuf, *) 'SSC overshoots encountered and limited to ', upperlimitssc, ', number of cells = ', limmax; call msg_flush()
-         end if
-      end if
-
-      if (jatem /= 0) then
-         if (tempmax /= dmiss) then ! tem is now positive
-            limmax = 0
-            do k = 1, Ndkx
-               if (constituents(itemp, k) > tempmax) then
-                  constituents(itemp, k) = tempmax
-                  limmax = limmax + 1
-               end if
-            end do
-            if (limmax /= 0) then
-               write (msgbuf, *) 'Max. temperature limited, number of cells Limmax = ', limmax; call msg_flush()
-            end if
-         end if
-         limmin = 0
-
-         if (tempmin /= dmiss) then
-            k1 = 1; if (kmx > 0) k1 = Ndx + 1
-            do k = k1, Ndkx
-               if (constituents(itemp, k) < tempmin) then
-                  constituents(itemp, k) = tempmin
-                  limmin = limmin + 1
-               end if
-            end do
-         else if (isalt > 0) then ! only at surface limit to freezing point
-            do k = 1, Ndx
-               kt = ktop(k)
-               t_freeze = real(freezing_temperature(real(constituents(isalt, kt), fp)), dp)
-               if (constituents(itemp, kt) < t_freeze) then
-                  constituents(itemp, kt) = t_freeze
-                  limmin = limmin + 1
-               end if
-            end do
-         end if
-         if (limmin /= 0 .and. tempmin > -0.001d0) then !! no warnings when negative temperatures are allowed
-            write (msgbuf, *) 'Min. temperature limited, number of cells Limmin = ', limmin; call msg_flush()
-         end if
-      end if
-
-      if (jasal /= 0) then
-         limmax = 0; limmin = 0; numdots = 0
-         dmin = huge(1d0)
-         do kk = 1, Ndxi
-            if (salimax /= dmiss) then
-               do k = kbot(kk), ktop(kk)
-                  if (constituents(isalt, k) > salimax) then
-                     constituents(isalt, k) = salimax
-                     limmax = limmax + 1
-                  end if
-               end do
-            end if
-
-            do k = kbot(kk), ktop(kk)
-               if (constituents(isalt, k) < salimin) then
-                  dmin = min(dmin, constituents(isalt, k))
-                  constituents(isalt, k) = salimin
-                  limmin = limmin + 1
-               end if
+               sed(grain, k) = constituents(iconst, k)
             end do
          end do
 
-         if (limmax /= 0) then
-            write (msgbuf, *) 'Max. salinity limited, number of cells Limmax = ', limmax; call msg_flush()
+         if (jalogtransportsolverlimiting > 0) then
+            call print_message(IDX_SSC_MIN, 'Negative SSC', cells_with_min_limit)
+            call print_message(IDX_SSC_MAX, 'SSC overshoots', cells_with_max_limit, max_limit=upperlimitssc)
          end if
-         if (limmin /= 0) then
-            write (msgbuf, *) 'Min. salinity limited, number of cells Limmin = ', limmin; call msg_flush()
-            write (msgbuf, *) 'Min. salinity limited, min = ', dmin; call msg_flush()
+      end if
+
+      if (jatem > 0) then
+         if (temperature_max /= dmiss) then
+            cells_with_max_limit = 0
+            do k = 1, ndkx
+               if (constituents(itemp, k) > temperature_max) then
+                  constituents(itemp, k) = temperature_max
+                  cells_with_max_limit = cells_with_max_limit + 1
+               end if
+            end do
+            call print_message(IDX_TEMP_MAX, 'Max. temperature', cells_with_max_limit)
          end if
+
+         cells_with_min_limit = 0
+         if (isalt > 0 .and. use_salinity_freezing_point) then ! only at surface limit to freezing point
+            do kk = 1, ndx
+               k = ktop(kk)
+               freezing_point_temperature = real(freezing_temperature(real(constituents(isalt, k), fp)), dp)
+               if (constituents(itemp, k) < freezing_point_temperature) then
+                  constituents(itemp, k) = freezing_point_temperature
+                  cells_with_min_limit = cells_with_min_limit + 1
+               end if
+            end do
+         end if
+
+         if (temperature_min /= dmiss) then
+            do k = 1, ndkx
+               if (constituents(itemp, k) < temperature_min) then
+                  constituents(itemp, k) = temperature_min
+                  cells_with_min_limit = cells_with_min_limit + 1
+               end if
+            end do
+         end if
+
+         call print_message(IDX_TEMP_MIN, 'Min. temperature', cells_with_min_limit)
+      end if
+
+      if (jasal > 0) then
+         numdots = 0
+         if (salinity_max /= dmiss) then
+            cells_with_max_limit = 0
+            do kk = 1, ndxi
+               do k = kbot(kk), ktop(kk)
+                  if (constituents(isalt, k) > salinity_max) then
+                     constituents(isalt, k) = salinity_max
+                     cells_with_max_limit = cells_with_max_limit + 1
+                  end if
+               end do
+            end do
+            call print_message(IDX_SAL_MAX, 'max. salinity', cells_with_max_limit)
+         end if
+
+         cells_with_min_limit = 0
+         minimum_salinity_value = huge(1.0_dp)
+         do kk = 1, ndxi
+            do k = kbot(kk), ktop(kk)
+               if (constituents(isalt, k) < salinity_min) then
+                  minimum_salinity_value = min(minimum_salinity_value, constituents(isalt, k))
+                  constituents(isalt, k) = salinity_min
+                  cells_with_min_limit = cells_with_min_limit + 1
+               end if
+            end do
+         end do
+         call print_message(IDX_SAL_MIN, 'Min. salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
       end if
 
       if (jasal > 0 .and. maxitverticalforestersal > 0 .or. jatem > 0 .and. maxitverticalforestertem > 0) then
@@ -177,25 +190,59 @@ contains
       end if
       !
       ! When a cell become dries, keep track of the mass in the water column in sscum array. This will be accounted
-      ! for in the bottom update when the cell becomes wet again. This prevents large concentration gradients and exploding bed levels.
-      if (stm_included) then
+      ! for in the bottom update when the cell becomes wet again. This prevents large concentration gradients and
+      ! exploding bed levels.
+      if (stm_included .and. ised1 > 0) then
          if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor * tfac) then
-            if (ISED1 > 0) then
-               do ll = 1, mxgr
-                  do k = 1, ndx
-                     if (hs(k) < stmpar%morpar%sedthr) then
-                        call getkbotktop(k, kb, kt)
-                        ssccum(ll, k) = ssccum(ll, k) + sum(constituents(ISED1 + ll - 1, kb:kt)) / dts * bai_mor(k) * vol1(k)
-                        constituents(ISED1 + ll - 1, kb:kt) = 0d0
-                     end if
-                  end do
+            do grain = 1, mxgr
+               do k = 1, ndx
+                  if (hs(k) < stmpar%morpar%sedthr) then
+                     call getkbotktop(k, kb, kt)
+                     ssccum(grain, k) = ssccum(grain, k) + sum(constituents(ised1 + grain - 1, kb:kt)) / &
+                                        dts * bai_mor(k) * vol1(k)
+                     constituents(ised1 + grain - 1, kb:kt) = 0.0_dp
+                  end if
                end do
-            end if
+            end do
          end if
       end if
 
-      if (timon) call timstop(ithndl)
-      return
+      if (timon) then
+         call timstop(ithndl)
+      end if
+
    end subroutine extract_constituents
+
+   subroutine print_message(index, text, cells_with_limit, max_limit, minimum_salinity_value)
+      use messageHandling, only: msgbuf, msg_flush
+      use precision, only: dp
+
+      integer, intent(in) :: index !< index of the message to print
+      character(len=*), intent(in) :: text !< text of the message to print
+      integer, intent(in) :: cells_with_limit !< cells_with_limit
+      real(kind=dp), optional, intent(in) :: max_limit !< optional max limit value for the message
+      real(kind=dp), optional, intent(in) :: minimum_salinity_value !< optional minimum_salinity_value
+
+      if (cells_with_limit > 0 .and. number_of_printed_messages(index) < MAX_NUMBER_OF_MESSAGES) then
+         number_of_printed_messages(index) = number_of_printed_messages(index) + 1
+         if (present(max_limit)) then
+            write (msgbuf, *) text, ' encountered and limited to ', max_limit, ' in ', &
+               cells_with_limit, ' cell(s).'
+         else
+            write (msgbuf, *) text, ' encountered and limited in ', cells_with_limit, ' cell(s).'
+            if (present(minimum_salinity_value)) then
+               call msg_flush()
+               write (msgbuf, *) 'Min. salinity encountered = ', minimum_salinity_value
+            end if
+         end if
+         call msg_flush()
+
+         if (number_of_printed_messages(index) == MAX_NUMBER_OF_MESSAGES) then
+            write (msgbuf, *) 'Warning limit reached: No more ', text, ' limit messages will be displayed.'
+            call msg_flush()
+         end if
+      end if
+
+   end subroutine print_message
 
 end module m_extract_constituents

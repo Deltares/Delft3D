@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,21 +31,21 @@
 !
 
 module m_viewcycle
-
    implicit none
+   private
+   public :: viewcycle
 
 contains
 
-   subroutine VIEWCYCLE(KEY)
-      use m_howtoview
-      use m_perspx
+   subroutine viewcycle(key)
+      use m_howtoview, only: jview, jav
       implicit none
-      integer :: KEY
+      integer, intent(out) :: key
 
-      JVIEW = JVIEW + 1
-      if (JVIEW > JAV) JVIEW = 1
-      KEY = 3
-      return
-   end subroutine VIEWCYCLE
-
+      jview = jview + 1
+      if (jview > jav) then
+         jview = 1
+      end if
+      key = 3
+   end subroutine viewcycle
 end module m_viewcycle

@@ -27,7 +27,7 @@
 
 	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e23_f01_c09-bijker_bailard_wave_wind" ref="flow2d3d_wave_default">
-			<path version="2024-04-17T17:50:00">e23_d3dflow-wave/f01_general/c09-bijker_bailard_wave_wind</path>
+			<path version="2025-06-06T08:15:46.190000">e23_d3dflow-wave/f01_general/c09-bijker_bailard_wave_wind</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
@@ -64,7 +64,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e23_f27_c10-wave_klopman_wfc" ref="flow2d3d_wave_default">
-			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c10-wave_klopman_wfc</path>
+			<path version="2025-06-05T12:02:48.931000">e23_d3dflow-wave/f27_zmodel_updates/c10-wave_klopman_wfc</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>

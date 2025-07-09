@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ module unstruc_shapefile
    use unstruc_files, only: defaultFilename
    use m_partitioninfo, only: my_rank, jampi
    use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
-   
+
    implicit none
 
 contains
@@ -1594,7 +1594,6 @@ contains
       integer :: object_index, flowlinknr_index
       character(len=:), dimension(:), allocatable :: dambreak_names
       integer, dimension(:), allocatable :: dambreak_links
-
 
       if (jampi == 0) then
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for dam breaks.')

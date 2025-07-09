@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,8 +37,7 @@ module m_getltoplot
 contains
 
    subroutine getLtoplot(kk, k)
-      use m_flowgeom
-      use m_flow
+      use m_flow, only: kplotfrombedorsurface, lbot, kplot, kmxl, ltop
       implicit none
       integer, intent(in) :: kk
       integer, intent(out) :: k

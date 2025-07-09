@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
       use precision, only: dp
 
       real(kind=dp) :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV
-      integer :: JA
+      integer, intent(inout) :: JA
 
       real(kind=dp) :: DX, DY, R2
 

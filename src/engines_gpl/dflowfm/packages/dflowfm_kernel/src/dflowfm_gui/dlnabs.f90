@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,8 +39,8 @@ contains
    subroutine DLNABS(XD, YD, ZD)
       use precision, only: dp
       use m_oldz, only: oz
-      use m_three_two
-      use m_lnabs
+      use m_three_two, only: drietwee
+      use m_lnabs, only: lnabs
 
       real(kind=dp) :: x
       real(kind=dp) :: y

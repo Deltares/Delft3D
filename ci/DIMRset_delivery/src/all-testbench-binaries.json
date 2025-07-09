@@ -65,6 +65,14 @@
             "issuedTo": "Stichting Deltares"
         },
         {
+            "file": "bin\\trim2dep.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\qdb.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
             "file": "lib\\delwaq.dll",
             "issuedTo": "Stichting Deltares"
         },

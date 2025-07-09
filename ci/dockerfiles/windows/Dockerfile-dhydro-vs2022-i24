@@ -46,9 +46,6 @@ RUN Start-Process msiexec -Wait -ArgumentList '/i C:\\cmake-3.31.0-rc1-windows-x
 RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\CMake\\bin')
 RUN Remove-Item C:\\cmake-3.31.0-rc1-windows-x86_64.msi
 
-RUN setx /M PATH $($Env:PATH + ';C:\Program Files (x86)\\Intel\\oneAPI\\compiler\\2023.1.0\\windows\\bin\\intel64')
-RUN setx /M PATH $($Env:PATH + ';C:\\Program Files (x86)\\Intel\\oneAPI\\compiler\\2023.1.0\\windows\\bin')
-
 ENV ONEAPI_ROOT="C:\\Program Files (x86)\\Intel\\oneAPI\\"
 ENV VS2022INSTALLDIR="C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community\\"
 

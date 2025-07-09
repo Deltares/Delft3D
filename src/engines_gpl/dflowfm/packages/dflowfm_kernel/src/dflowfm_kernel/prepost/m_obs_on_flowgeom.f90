@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -118,6 +118,7 @@ contains
       use m_flowgeom
       use m_find_flownode, only: find_nearest_flownodes
       use m_find_flowlink, only: find_nearest_flowlinks
+      use m_partitioninfo, only: jampi
 
       implicit none
 
@@ -193,7 +194,9 @@ contains
                   if (ierr == DFM_NOERR) then
                      kobs(i) = nodenr
                   else
-                     call SetMessage(LEVEL_ERROR, 'Error when snapping Observation Point '''//trim(namobs(i))//''' to a 1D flow node.')
+                     if (jampi == 0) then !> in an MPI run reduce kobs will handle a missing obs
+                        call SetMessage(LEVEL_WARN, 'Cannot snap observation point '''//trim(namobs(i))//''' to a 1D flow node.')
+                     end if
                   end if
                end if
             end if

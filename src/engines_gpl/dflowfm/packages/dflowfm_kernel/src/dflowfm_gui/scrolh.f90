@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,8 +38,8 @@ module m_scrolh
 contains
 
    subroutine SCROLH(NUMCHC, HLPTXT, NUMTXT, NLEVEL, IH, JOFND, JATAB)
-      use m_timlin
-      use m_next
+      use m_timlin, only: timlin
+      use m_next, only: next
       implicit none
       integer :: ih
       integer :: jatab

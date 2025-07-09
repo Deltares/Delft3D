@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,8 +41,9 @@ contains
    !! parse it into a scalar double, or alternatively to check whether it is an existing file.
    subroutine read_property(prop_ptr, key, strvalue, dblvalue, is_double, typeandid, success)
       use precision, only: dp
-      use properties
+      use properties, only: prop_get
       use messagehandling, only: msgbuf, msg_flush
+      use tree_data_types, only: tree_data
 
       type(TREE_DATA), pointer, intent(in) :: prop_ptr !< Property tree as read from a single .ini block
       character(len=*), intent(in) :: key !< Property key that should be read.

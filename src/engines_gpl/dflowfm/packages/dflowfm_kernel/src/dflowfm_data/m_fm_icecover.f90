@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -230,7 +230,7 @@ contains
    subroutine fm_ice_read(md_ptr, ierror)
 !!--declarations----------------------------------------------------------------
       use dfm_error, only: DFM_WRONGINPUT
-      use properties, only: tree_data
+      use tree_data_types, only: tree_data
       implicit none
       !
       ! Function/routine arguments
@@ -293,12 +293,12 @@ contains
    subroutine preprocess_icecover(n, Qlong_ice, tempwat, saltcon, wind)
 !!--declarations----------------------------------------------------------------
       use MessageHandling
-      use m_flow ! test om airtemperature(.) te gebruiken
+      use m_flow, only: hu
       use m_flowgeom, only: nd
       use m_physcoef, only: vonkar
       use physicalconsts, only: CtoKelvin
       use m_heatfluxes, only: cpw
-      use m_wind, only: airtemperature
+      use m_wind, only: air_temperature
       use ieee_arithmetic, only: ieee_is_nan
       implicit none
       !
@@ -370,7 +370,7 @@ contains
             tsi = snow_t(n)
          end if
          !
-         ! Compute longwave radiation flux from ice surface according to Eq. (7) in (Wang, 2005)
+         ! Compute long wave radiation radiation flux from ice surface according to Eq. (7) in (Wang, 2005)
          ! including an iteration proces
          !
          do iter = 1, 5
@@ -410,13 +410,13 @@ contains
                !
                ! no freezing in case of air temperatures above zero
                !
-               if (airtemperature(n) > 0.0_fp .and. qh_air2ice(n) < 0.0_fp) then
+               if (air_temperature(n) > 0.0_fp .and. qh_air2ice(n) < 0.0_fp) then
                   qh_air2ice(n) = 0.0_fp
                end if
                !
                ! no melting in case of air temperatures below zero
                !
-               if (airtemperature(n) < 0.0_fp .and. qh_air2ice(n) > 0.0_fp) then
+               if (air_temperature(n) < 0.0_fp .and. qh_air2ice(n) > 0.0_fp) then
                   qh_air2ice(n) = 0.0_fp
                end if
                exit ! jump out of the iteration loop
@@ -471,7 +471,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ndx
       use m_flowtimes, only: dts
-      use m_wind, only: airtemperature, rain, jarain
+      use m_wind, only: air_temperature, rain, jarain
       implicit none
       !
       ! Function/routine arguments
@@ -494,7 +494,7 @@ contains
          ! Compute snow growth (NB. presence of ice is required)
          if (jarain == 1) then ! check whether rainfall input is prescribed
             do n = 1, ndx
-               if (airtemperature(n) < 0.0_fp .and. ice_h(n) > 0.01_fp .and. rain(n) > 0.0_fp) then
+               if (air_temperature(n) < 0.0_fp .and. ice_h(n) > 0.01_fp .and. rain(n) > 0.0_fp) then
                   snow_h(n) = snow_h(n) + dts * rain(n) * conv_factor
                end if
             end do
@@ -502,10 +502,10 @@ contains
 
          ! Compute ice growth or melt or melting of snow
          do n = 1, ndx
-            if (airtemperature(n) < 0.0_fp .or. ice_h(n) > 0.001_fp) then
+            if (air_temperature(n) < 0.0_fp .or. ice_h(n) > 0.001_fp) then
                if (qh_air2ice(n) > qh_ice2wat(n)) then
                   ! Melting of ice or snow
-                  ! 
+                  !
                   if (snow_h(n) < 0.001_fp) then
                      ! melting of ice because there is no snow on top of the ice
                      !
@@ -514,7 +514,7 @@ contains
                      ! melting of snow due to heat exchange with air and melting of ice due to heat exchange with water
                      !
                      snow_h(n) = max(0.0_fp, snow_h(n) + dts * (-qh_air2ice(n) + 0.0_fp) / snow_latentheat)
-                     ice_h(n) = max(0.0_fp, ice_h(n)   + dts * (0.0_fp  + qh_ice2wat(n)) / ice_latentheat)
+                     ice_h(n) = max(0.0_fp, ice_h(n) + dts * (0.0_fp + qh_ice2wat(n)) / ice_latentheat)
                   end if
                else
                   ! freezing of ice

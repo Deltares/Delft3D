@@ -3,7 +3,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
                & kcu       ,kcv       ,kcs       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -101,7 +101,6 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
     integer             :: nstav  ! First N-index of V-points
     integer             :: n1     ! Help var. 
     integer             :: n2     ! Help var. 
-    integer             :: newlun
     integer             :: nf     ! First N-index of the active point in the current computational COLUMN 
     integer             :: nl     ! Last N-index of the active point in the current computational COLUMN 
     integer             :: nld    ! One to last N-index of the active point in the current computational COLUMN 

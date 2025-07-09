@@ -1,7 +1,7 @@
 subroutine rdmud(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -76,7 +76,6 @@ subroutine rdmud(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     integer                        :: luninp
     integer                        :: nlook  ! Help var.: nr. of data to look for in the MD-file 
     integer                        :: ntrec  ! Help. var to keep track of NRREC 
-    integer        , external      :: newlun
     logical                        :: lerror ! Flag=TRUE if a local error is encountered 
     logical                        :: newkw  ! Logical var. specifying whether a new recnam should be read from the MD-file or just new data in the continuation line 
     real(fp)                       :: ws

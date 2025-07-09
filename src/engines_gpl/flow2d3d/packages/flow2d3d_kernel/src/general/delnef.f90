@@ -1,7 +1,7 @@
 subroutine delnef(filnam, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -54,7 +54,6 @@ subroutine delnef(filnam, gdp)
 !
     integer         :: ind      ! Length of filenam 
     integer         :: luntmp
-    integer         :: newlun
     logical         :: exists
     character(256)  :: locfnm   ! Local file name 
 !

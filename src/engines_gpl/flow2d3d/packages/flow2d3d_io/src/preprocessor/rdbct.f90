@@ -5,7 +5,7 @@ subroutine rdbct(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                & nbcttm    ,tampab    ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -114,7 +114,6 @@ subroutine rdbct(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                     :: nlook  ! Help var.: nr. of data to look for in the MD-file 
     integer                     :: ntrec  ! Help. var to keep track of NRREC 
     integer                     :: ntyp
-    integer, external           :: newlun
     logical                     :: ex     ! Flag to test if file exists 
     logical                     :: found  ! FOUND=TRUE if KEYW in the MD-file was found 
     logical                     :: lerror ! Flag=TRUE if a local error is encountered 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,10 +34,9 @@ module m_sub_polygon
 contains
    subroutine POLYGON(X, Y, N, NCOL)
       use precision, only: dp
-      use m_colnow
-      use m_set_col
-      use m_lnabs
-      use m_ptabs
+      use m_set_col, only: setcol
+      use m_lnabs, only: lnabs
+      use m_ptabs, only: ptabs
 
       integer :: i
       integer :: n

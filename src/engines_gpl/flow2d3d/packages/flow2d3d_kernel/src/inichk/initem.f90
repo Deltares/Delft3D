@@ -1,7 +1,7 @@
 subroutine initem(runid, cyclic, timnow, ktemp, temint, patm, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -98,7 +98,6 @@ subroutine initem(runid, cyclic, timnow, ktemp, temint, patm, gdp)
 !
     integer        :: itfac   ! Interpolation factor 
     integer        :: lrid    ! Length of character string runid 
-    integer        :: newlun
     real(fp)       :: alpha   ! Interpolation factor; valid interval [0,1]
     logical        :: first   ! Help var. It is always set to TRUE before calling the relevant routines for the time dependent data,
                               ! because they are activated here for the first time

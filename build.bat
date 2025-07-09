@@ -113,7 +113,7 @@ rem =================================
         goto :usage
     )
 
-    set configs="all fm-suite d3d4-suite dflowfm_interacter dimr drr dwaq dwaves flow2d3d swan tests tools tools_gpl"
+    set configs="all fm-suite d3d4-suite dflowfm_interacter dimr drr dwaq dwaves flow2d3d swan tools tools_gpl"
     set "modified=!configs:%-config%=!"
     if !modified!==!configs! (
         echo ERROR: Configuration !-config! not recognized
@@ -438,7 +438,6 @@ rem =======================
     echo   flow2d3d           : Delft3D-FLOW
     echo   swan               : SWAN
     echo   fbc                : FBC-tools
-    echo   tests
     echo   tools
     echo   tools_gpl
     echo.

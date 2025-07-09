@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,9 +39,10 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ndxi
       use m_flow, only: czs, taus
-      use m_alloc
+      use m_alloc, only: realloc
+      use m_get_tau, only: get_tau
+      use m_waveconst, only: wave_waq_shear_stress_hyd
       use m_flowparameters, only: flowWithoutWaves, jawaveswartdelwaq
-      use m_get_tau
       !
       !
       ! Parameters
@@ -54,10 +55,12 @@ contains
       integer :: ierr !< Error code
       integer :: n !< Counter
       integer :: jawaveswartdelwaq_local !< Local value of jawaveswartdelwaq, depending on kernel and flowWithoutWaves
+      integer, parameter :: USE_DFLOWFM = 1
+      integer, parameter :: SET_CZS_TAUS = 1
       !
       ! Body
-      if (flowWithoutWaves .and. kernel == 1) then
-         jawaveswartdelwaq_local = 0
+      if (flowWithoutWaves .and. kernel == USE_DFLOWFM) then
+         jawaveswartdelwaq_local = WAVE_WAQ_SHEAR_STRESS_HYD
       else
          jawaveswartdelwaq_local = jawaveswartdelwaq
       end if
@@ -66,7 +69,7 @@ contains
       else if (size(czs) < ndxi) then
          call realloc(czs, ndxi, keepExisting=.false., fill=0d0, stat=ierr)
       end if
-      if (typout == 1) then
+      if (typout == SET_CZS_TAUS) then
          if (.not. allocated(taus)) then
             call realloc(taus, ndxi, keepExisting=.false., fill=0d0, stat=ierr)
          else if (size(taus) < ndxi) then

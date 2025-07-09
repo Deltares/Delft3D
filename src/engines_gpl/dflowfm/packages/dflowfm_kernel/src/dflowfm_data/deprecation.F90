@@ -164,14 +164,14 @@ contains
       use string_module, only: strcmpi
 
       implicit none
-      type(TREE_DATA), pointer, intent(in) :: tree !< tree of content of the input file to check for deprecated keywords
+      type(tree_data), pointer, intent(in) :: tree !< tree of content of the input file to check for deprecated keywords
       type(deprecated_keyword_set), intent(in) :: keyword_set !< keyword set that corresponds to the file type of the tree that is being checked
       integer, intent(out) :: status !< Result status (DFM_NOERR if no invalid (obsolete) entries were present)
       character(len=*), intent(in) :: prefix !< Message string prefix
       character(len=*), dimension(:), optional, intent(in) :: excluded_chapters !< Tree chapters to exclude when checking for deprecated or unused keywords
 
-      type(TREE_DATA), pointer :: chapter !< tree data pointer for chapter level
-      type(TREE_DATA), pointer :: node !< tree data pointer for keyword level
+      type(tree_data), pointer :: chapter !< tree data pointer for chapter level
+      type(tree_data), pointer :: node !< tree data pointer for keyword level
       integer :: node_index !< index of the keyword being processed
       integer :: num_nodes !< number of keywords in the chapter
       integer :: chapter_index !< index of the chapter being processed

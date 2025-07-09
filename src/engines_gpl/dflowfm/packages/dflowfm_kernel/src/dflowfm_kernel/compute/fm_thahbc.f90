@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,10 +58,10 @@ contains
 
    subroutine fm_thahbc()
 
-      use fm_external_forcings_data
-      use m_flowparameters
+      use fm_external_forcings_data, only: nbnds, zbnds, kbnds, thtbnds, thzbnds, nbndtm, zbndtm, kbndtm, thtbndtm, thzbndtm, nbndsd, zbndsd, kbndsd, thtbndsd, thzbndsd, bndtr, numtracers, nbndtr, bndsf, numfracs, nbndsf
+      use m_flowparameters, only: jasal, jatem, jased
+      use m_sediment, only: stm_included
       use m_transport, only: ISALT, ITEMP, ISED1, itrac2const, ifrac2const
-      use m_sediment
 
       implicit none
 
@@ -122,14 +122,14 @@ contains
    subroutine thconst(iconst, nbnd, zbnd, kbnd, tht, thz)
       use precision, only: dp
 
-      use m_transport
+      use m_transport, only: constituents
+      use fm_external_forcings_data, only: nopenbndsect, threttim
+      use m_missing, only: dmiss
+      use m_get_Lbot_Ltop, only: getlbotltop
       use mathconsts, only: pi_hp
       use m_flow, only: kmxd, q1
       use m_flowtimes, only: dt_user
       use m_flowgeom, only: ln
-      use fm_external_forcings_data
-      use m_missing
-      use m_get_Lbot_Ltop
 
       implicit none
 
