@@ -321,7 +321,7 @@ end-parameter
 parameter 'RadSurf'
    description   'irradiation at the water surface'
    unit          '(W/m2)'
-   value         -0.9990E+03
+   value         0.1000E+03
 end-parameter
 parameter 'Temp'
    description   'ambient water temperature'
