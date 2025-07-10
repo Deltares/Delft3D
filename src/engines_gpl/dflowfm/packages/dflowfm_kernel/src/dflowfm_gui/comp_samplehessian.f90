@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,13 +39,13 @@ contains
 
    subroutine comp_sampleHessian(ierror)
       use precision, only: dp
-      use m_comp_samplegradi
-      use m_samples
-      use m_samples_refine
-      use m_missing
+      use m_comp_samplegradi, only: comp_samplegradi
+      use m_samples, only: xs, ys, mxsam, mysam
+      use m_samples_refine, only: zss, ihesstat, ihesstat_ok
+      use m_missing, only: dmiss
+      use m_readyy, only: readyy
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
-      use m_readyy
 
       implicit none
 

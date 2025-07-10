@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,13 +38,12 @@ contains
 
    subroutine tektransport1D(tim)
       use precision, only: dp
-      use m_sferic
-      use m_statistics
-      use m_flowgeom
-      use m_flow
-      use m_transport
-      use m_movabs
-      use m_lnabs
+      use m_sferic, only: twopi
+      use m_statistics, only: avedif
+      use m_flowgeom, only: ndxi, xz
+      use m_transport, only: constituents, isalt
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       implicit none
       real(kind=dp) :: tim
       real(kind=dp) :: cwave, period, omeg, wlen, rk, phi, xx, yy, dif

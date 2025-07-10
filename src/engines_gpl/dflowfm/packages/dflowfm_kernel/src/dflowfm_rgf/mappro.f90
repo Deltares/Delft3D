@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,7 +51,7 @@ contains
       use m_geomerc, only: geomerc
       use m_affine, only: affine
       use precision, only: dp
-      use M_MISSING
+      use M_MISSING, only: dxymis
 
       integer :: ierr
       integer :: ini

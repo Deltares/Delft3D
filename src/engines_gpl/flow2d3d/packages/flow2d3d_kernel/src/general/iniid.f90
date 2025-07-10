@@ -2,7 +2,7 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
                & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -77,7 +77,6 @@ subroutine iniid(error     ,prgnm     ,runid     ,filmd     ,filmrs    , &
     integer           :: lunid             ! Unit nr. for the file 'runid' where the runid is specified : 'pc  ' or 'unix' 
     integer           :: luntmp
     integer           :: n
-    integer, external :: newlun
     integer           :: nrec
     integer           :: pos               ! Help var. for adjusting runid 
     logical           :: ex                ! Help flag = TRUE when file is found 

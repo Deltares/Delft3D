@@ -3,7 +3,7 @@ subroutine rdheat(lunmd     ,lundia    ,error     ,nrrec       ,mdfrec    , &
                 & itstrt    ,itfinish  ,ivapop    ,solrad_read ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -91,7 +91,6 @@ subroutine rdheat(lunmd     ,lundia    ,error     ,nrrec       ,mdfrec    , &
     integer                      :: lrid     ! Length of character string runid 
     integer                      :: lunout   ! Unit number for unformatted FLOW help file between TDATOM and TRISIM  
     integer                      :: n        ! Help var. 
-    integer                      :: newlun
     integer                      :: nlook    ! Help var.: nr. of data to look for in the MD-file 
     integer                      :: nrval    ! Number of values to read from file 
     integer                      :: ntrec    ! Help. var to keep track of NRREC 

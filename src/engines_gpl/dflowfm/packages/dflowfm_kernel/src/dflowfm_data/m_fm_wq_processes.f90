@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -145,8 +145,4 @@ module m_fm_wq_processes
    real(hp), allocatable, dimension(:, :, :), target :: flxdmp !< Fluxes at dump segments
    real(hp), allocatable, dimension(:, :, :) :: flxdmpreduce !< Fluxes at dump segments
    real(hp), allocatable, dimension(:, :, :), target :: flxdmptot !< Total fluxes at dump segments
-
-   integer :: nomon !< number of mass balance areas
-   character(len=NAMWAQLEN), allocatable :: monname(:) !< parameter names
-   integer, allocatable :: mondef(:, :) !< monitoring area definition
 end module m_fm_wq_processes

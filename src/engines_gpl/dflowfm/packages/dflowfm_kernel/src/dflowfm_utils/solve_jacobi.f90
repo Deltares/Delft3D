@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,7 +36,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ln, kfs, nd
       use m_jacobi, only: bbi, db, itmxjac
-      use m_reduce
+      use m_reduce, only: bbr, ddr, epscg, ccr, lv2
 
       real(kind=dp) :: ds, rrn ! max error
       integer :: L, n, ndx, itsol, nn, La, n1, n2, ni

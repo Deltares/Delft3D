@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,9 +39,9 @@ contains
 
    subroutine comp_samplegradi(IDIR, i, j, grad, Sn, DareaL, DareaR)
       use precision, only: dp
-      use m_comp_grad
+      use m_comp_grad, only: comp_grad
+      use m_samples_refine, only: zss
       use m_samples, only: MXSAM, MYSAM
-      use m_samples_refine
 
       implicit none
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,9 +39,9 @@ contains
 
    subroutine plotklnup(L)
       use precision, only: dp
-      use m_dhtext
-      use m_flowgeom
-      use m_cirr
+      use m_dhtext, only: dhtext
+      use m_flowgeom, only: klnup, slnup, xz, yz, xu, yu
+      use m_cirr, only: cirr
 
       integer, intent(in) :: L !< flowlink number
 

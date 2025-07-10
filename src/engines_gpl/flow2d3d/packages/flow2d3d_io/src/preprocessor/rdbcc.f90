@@ -6,7 +6,7 @@ subroutine rdbcc(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                & cab       ,zstep     ,tprofc    ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -115,7 +115,6 @@ subroutine rdbcc(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                        :: lunout  ! Unit number for the transformed file between tdatom and trisim 
     integer                        :: lunrd
     integer                        :: mxlrec
-    integer, external              :: newlun
     integer                        :: nlook   ! Help var.: nr. of data to look for in the MD-file 
     integer                        :: nn
     integer                        :: ntrec   ! Help. var to keep track of NRREC 

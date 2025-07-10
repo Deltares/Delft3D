@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,10 +42,10 @@ contains
 
    subroutine volship() ! compute ship volume relative to fixed level 0d0
       use precision, only: dp
-      use m_ship
-      use m_flowgeom
-      use m_flow
-      use m_get_link_area_wid2D
+      use m_ship, only: v1ship, zspc
+      use m_flowgeom, only: lnx, ln, lncn, wu, dx, acl
+      use m_flow, only: slotw2d
+      use m_get_link_area_wid2D, only: getlinkareawid2d
       implicit none
 
       integer :: L, k1, k2, k3, k4

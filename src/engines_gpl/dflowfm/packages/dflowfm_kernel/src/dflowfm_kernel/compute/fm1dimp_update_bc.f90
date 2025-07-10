@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,7 +39,7 @@ contains
 
       use m_flow, only: au
       use m_f1dimp, only: f1dimppar
-      use fm_external_forcings_data
+      use fm_external_forcings_data, only: zbndz, l1qbnd, kbndu, zbndq
 !pointer
       integer, pointer :: table_length
       integer, pointer :: maxtab

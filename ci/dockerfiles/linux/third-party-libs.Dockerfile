@@ -575,9 +575,31 @@ FROM base AS boost
 
 RUN <<"EOF-boost" 
 set -eo pipefail
-dnf install --assumeyes epel-release
 dnf install --assumeyes boost-devel
+
+mkdir -p /usr/local/lib
+cp /usr/lib64/libboost_*.so* /usr/local/lib/
+
+mkdir -p /usr/local/include
+cp -r /usr/include/boost /usr/local/include/
+
+mkdir -p /usr/local/share/licenses/boost-devel
+cp /usr/share/licenses/boost-devel/LICENSE_1_0.txt /usr/local/share/licenses/boost-devel/
 EOF-boost
+
+FROM base AS googletest
+
+RUN <<"EOF-googletest"
+set -eo pipefail
+dnf install --assumeyes gtest-devel
+
+mkdir -p /usr/local/lib
+cp /usr/lib64/libgtest.so* /usr/local/lib/
+cp /usr/lib64/libgtest_main.so* /usr/local/lib/
+
+mkdir -p /usr/local/include
+cp -r /usr/include/gtest /usr/local/include/
+EOF-googletest
 
 FROM base AS all
 
@@ -597,6 +619,5 @@ COPY --from=petsc --link /usr/local/ /usr/local/
 COPY --from=netcdf --link /usr/local /usr/local/
 COPY --from=gdal --link /usr/local/ /usr/local/
 COPY --from=esmf --link /usr/local/ /usr/local/
-COPY --from=boost --link /usr/lib64/ /usr/lib64/
-COPY --from=boost --link /usr/include/boost/ /usr/include/boost/
-
+COPY --from=boost --link /usr/local/ /usr/local/
+COPY --from=googletest --link /usr/local/ /usr/local/

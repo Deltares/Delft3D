@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,8 +43,8 @@ contains
 
    subroutine flow_initialize_fm1dimp_timestep(iresult, time1)
       use precision, only: dp
-      use m_fm1dimp_update_network
-      use m_fm1dimp_update_bc
+      use m_fm1dimp_update_network, only: fm1dimp_update_network
+      use m_fm1dimp_update_bc, only: fm1dimp_update_bc
 
 !
 !DECLARATION

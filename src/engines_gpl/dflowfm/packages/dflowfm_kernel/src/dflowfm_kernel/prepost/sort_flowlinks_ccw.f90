@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,9 +41,9 @@ contains
    subroutine sort_flowlinks_ccw()
       use precision, only: dp
       use m_flowgeom, only: xz, yz, nd, Ndx, ln
-      use m_sferic
-      use m_alloc
-      use geometry_module, only: getdxdy, dcosphi
+      use m_sferic, only: jsferic, pi
+      use m_alloc, only: realloc
+      use geometry_module, only: getdxdy
       use stdlib_sorting, only: sort_index
 
       integer :: k ! node number

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,15 +51,11 @@ contains
 
    subroutine advec() ! advection, based on u0, q0 24
       use precision, only: dp
-      use m_flowtimes
-      use m_flowgeom
-      use m_flow
-      use m_partitioninfo
-      use m_fixedweirs
-      use m_sferic
-      use m_dlimiter
-      use m_dslim
-      use m_get_kbot_ktop
+      use m_flowgeom, only: lnxi, iadv, iadv_subgrid_weir, ln, lnx, ndxi, csu, snu, kcu, acl, iadv_pure1d_fm, iadv_pure1d_sobek, iadv_original_lateral_overflow, dx, dxi, bai, ba, lnx1d
+      use m_flow, only: kmxx, japiaczek33, ifixedweirscheme, u0, ucx, ucy, jabarrieradvection, ngatesg, l1gatesg, l2gatesg, kgate, ngategen, gate2cgen, l1cgensg, l2cgensg, kcgen, uqcx, uqcy, sqa, kmx, qa, ucxu, ucyu, lbot, ltop, javau, jarhoxu, qw, zws, kbot, ktop, rho, numsrc, arsrc, qsrc, ksrc, epshs, rhomean, cssrc, snsrc, hu, u1, vol1_f, vol1, japure1d, au1d, q1d, volu1d, alpha_mom_1d, alpha_ene_1d, volau, voldhu, sq, advi, iadveccorr1d2d, au, hs, huvli, q1, adve, layertype, jahazlayer, kmxn
+      use m_sferic, only: jasfer3d
+      use m_dslim, only: dslim
+      use m_get_kbot_ktop, only: getkbotktop
       use m_qucper, only: qucper
       use m_qucpercu, only: qucpercu
       use m_qucperi, only: qucperi

@@ -1,14 +1,4 @@
-/* check:
-// https://stackoverflow.com/questions/127318/is-there-any-sed-like-utility-for-cmd-exe
-*/
-
 #define F90TESTWRAPPERS
-
-/*  the version (boost style)
-//  F90TW_VERSION % 100 is the patch level
-//  F90TW_VERSION / 100 % 1000 is the minor version
-//  F90TW_VERSION / 100000 is the major version */
-#define F90TW_VERSION 001000
 
 /* utility macros */
 #define TOSTRHLP(x) #x
@@ -40,47 +30,11 @@
 
 #define TESTFRK gtest
 
-/* version */
-#define F90_F90TW_VER \
-     interface f90tw_version ; \
-          subroutine c_f90tw_version( major, minor, patch) BIND(C, name="c_f90tw_version") ; \
-               import C_INT ; \
-               integer(KIND=C_INT), intent(out) :: major, minor, patch ; \
-          end subroutine c_f90tw_version ; \
-     end interface f90tw_version
-
-#define C_F90TW_VER \
-     extern "C" { \
-     void c_f90tw_version(int* major, int* minor, int* patch) { \
-          *patch = F90TW_VERSION % 100; \
-          *minor = F90TW_VERSION / 100 % 1000; \
-          *major = F90TW_VERSION / 100000; \
-          } \
-     }
-
-/* utility macros for simple boost/gtest test implementation */
-
-/* first lines of module TESTNAME for testing module MODNAME using TESTFRK test framework */
-#define F90TESTMODULE(TESTNAME,MODNAME)   \
-    module TESTNAME; \
-        use CONCAT2(assertions,TESTFRK,_) ;  \
-        use MODNAME; \
-        implicit none
-
-#define F90TESTCONTAINS contains
-
-/* module TESTNAME closure */
-#define F90ENDTESTMODULE(TESTNAME) end module TESTNAME
-
 /* code generation macros,
 // H* : c definition
 // C* : c/c++ implementation
 // F* : fortran implemenation. */
 #define HCODE_( TESTTYPE, TESTSUITENAME, TESTNAME, SUBNAME, ... ) extern "C" {  void SUBNAME(); }
 #define HCODE( TESTTYPE, TESTSUITENAME, TESTNAME, SUBNAME, ... ) HCODE_( TESTTYPE,TESTSUITENAME, TESTNAME, SUBNAME, __VA_ARGS__ )
-#define CCODE_( TESTTYPE, TESTSUITENAME, TESTNAME, SUBNAME, ... ) TESTTYPE(TESTNAME) { SUBNAME(); }
 #define CCODEG_( TESTTYPE, TESTSUITENAME, TESTNAME, SUBNAME, ... ) TESTTYPE(TESTSUITENAME,TESTNAME) { SUBNAME(); }
-#define CCODEFULL_( TESTTYPE, TESTSUITENAME, TESTNAME, SUBNAME, ... ) TESTTYPE(TESTNAME) { do { __VA_ARGS__ } while(false); }
 #define CCODE( TESTTYPE, TESTSUITENAME, TESTNAME, SUBNAME, ... ) CCODEG_( TESTTYPE, TESTSUITENAME, TESTNAME, SUBNAME, __VA_ARGS__ )
-#define FCODE_( TESTTYPE, TESTSUITENAME, TESTNAME, SUBNAME, ... ) subroutine SUBNAME() BIND(C,name=#SUBNAME); __VA_ARGS__ ; end subroutine SUBNAME
-#define FCODE( TESTTYPE, TESTSUITENAME, TESTNAME, SUBNAME, ... ) FCODE_( TESTTYPE, TESTSUITENAME, TESTNAME, SUBNAME, __VA_ARGS__ )

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,12 +43,11 @@ contains
    subroutine update_s_explicit()
       use precision, only: dp
       use m_sets01zbnd, only: sets01zbnd
-      use m_flow
-      use m_flowgeom
-      use m_flowtimes
-      use m_partitioninfo
-      use m_timer
-      use m_sobekdfm
+      use m_flow, only: s1, s0, sq
+      use m_flowgeom, only: ndx, bai
+      use m_flowtimes, only: dts
+      use m_partitioninfo, only: jampi, update_ghosts, itype_sall
+      use m_timer, only: jatimer, starttimer, iupdsall, stoptimer
       implicit none
 
       integer :: k

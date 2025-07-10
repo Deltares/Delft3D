@@ -1,6 +1,6 @@
 """TestCasePath Data Class.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 from typing import Optional

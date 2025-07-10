@@ -3,7 +3,7 @@ subroutine chksit(lundia    ,error     ,nostat    ,ntruv     ,ntru      , &
                 & kcs       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -87,7 +87,6 @@ subroutine chksit(lundia    ,error     ,nostat    ,ntruv     ,ntru      , &
     integer                        :: n1           ! Help variable
     integer                        :: n2           ! Help variable 
     integer                        :: nbuit        ! Help variable summing up the cross section points which lie on inactive velocity points
-    integer                        :: newlun
     integer                        :: nnm          ! Help variable
     integer                        :: nnx          ! Help variable
     integer                        :: nr           ! Sequence number of open boundary points 

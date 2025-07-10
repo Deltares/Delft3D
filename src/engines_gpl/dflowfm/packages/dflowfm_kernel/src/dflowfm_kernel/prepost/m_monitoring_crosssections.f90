@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -106,7 +106,7 @@ contains
 
    subroutine ReallocCrosssectionSums(cs)
       use m_transport, only: NUMCONST
-      use m_alloc
+      use m_alloc, only: realloc
       use m_sediment, only: jased, stmpar
       implicit none
       type(tcrs), allocatable, intent(inout) :: cs(:) !< Array of cross sections
@@ -153,7 +153,7 @@ contains
 
 !> Copies array of crs into another array of crs.
    subroutine copyCrossSections(rfrom, rto)
-      use m_alloc
+
       type(tcrs), intent(inout) :: rfrom(:)
       type(tcrs), intent(inout) :: rto(:)
 
@@ -288,9 +288,7 @@ contains
 !> Reads observation points from an *.pli file.
 ! Typically called via loadObservCrossSections().
    subroutine loadObservCrossSections_from_pli(filename)
-      use messageHandling
-      use dfm_error
-      use m_polygon
+      use m_polygon, only: xpl, ypl, npl, nampli
       use m_reapol_nampli, only: reapol_nampli
       use m_filez, only: oldfil, doclose
 
@@ -310,20 +308,19 @@ contains
 !> Adds observation cross sections, that are read from *.ini file, to the normal cross section adm
    subroutine addObservCrsFromIni(network, filename)
       use precision, only: dp
-      use m_network
+      use m_network, only: t_network, mess, level_error
+      use odugrid, only: odu_get_xy_coordinates
+      use m_save_ugrid_state, only: meshgeom1d
+      use dfm_error, only: dfm_noerr
       use m_sferic, only: jsferic
-      use odugrid
-      use m_save_ugrid_state
-      use dfm_error
-      use m_missing
-      use m_ObservCrossSections
+      use m_observcrosssections, only: t_observcrosssection
       implicit none
       type(t_network), intent(inout) :: network !< network
       character(len=*), intent(in) :: filename !< filename of the cross section file
 
       integer :: nByBrch ! number of cross sections that are defined by branchID and chainage
       integer :: ierr, ncrsini, i, numv
-      type(t_observCrossSection), pointer :: pCrs
+      type(t_observcrosssection), pointer :: pCrs
       integer, allocatable :: branchIdx_tmp(:), ibrch2crs(:)
       real(kind=dp), allocatable :: Chainage_tmp(:), xx_tmp(:), yy_tmp(:)
 

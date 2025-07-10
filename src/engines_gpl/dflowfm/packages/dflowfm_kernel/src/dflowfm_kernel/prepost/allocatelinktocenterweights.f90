@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,8 +43,8 @@ contains
    !> allocate center related linkxy weights
    subroutine allocatelinktocenterweights()
 
-      use m_flowgeom
-      use m_alloc
+      use m_flowgeom, only: wcxy, wcx1, wcy1, wcx2, wcy2, wcl, wc, ndx, lnx
+      use m_alloc, only: aerr
 
       integer :: ierr
 

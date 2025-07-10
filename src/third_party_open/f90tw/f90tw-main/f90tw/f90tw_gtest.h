@@ -7,9 +7,6 @@
 /* get the test defined in the corresponding file
 // and create the definitions of the fortran methods
 // to be used */
-#define TESTMODULE( ... )
-#define TESTCONTAINS
-#define ENDTESTMODULE( ... )
 #define TESTCODE HCODE
 #include CURRENTTESTFILE
 

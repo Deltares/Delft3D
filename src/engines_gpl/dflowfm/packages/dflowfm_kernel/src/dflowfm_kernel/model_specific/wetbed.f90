@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,8 +45,8 @@ contains
       use precision, only: dp
 
       use m_flowparameters, only: hwetbed
-      use m_movabs
-      use m_lnabs
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
 
       integer, parameter :: mmax = 601 !  3000
       real(kind=dp) :: s(0:mmax), u(0:mmax), x(0:mmax)

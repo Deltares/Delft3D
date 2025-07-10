@@ -60,8 +60,8 @@ class Tolerances:
                 raise ValueError(f"Unsupported output type {output_type} and variable {variable}")
 
     @staticmethod
-    def mean(output_type: OutputType, variable: Variable) -> float:
-        """Get the tolerance for the `mean` statistic given output type and variable.
+    def bias(output_type: OutputType, variable: Variable) -> float:
+        """Get the tolerance for the `bias` statistic given output type and variable.
 
         Parameters
         ----------
@@ -74,13 +74,13 @@ class Tolerances:
         """
         match output_type, variable:
             case OutputType.HIS, Variable.WATER_LEVEL:
-                return HisWaterLevelTolerances.MEAN
+                return HisWaterLevelTolerances.BIAS
             case OutputType.HIS, Variable.FLOW_VELOCITY:
-                return HisFlowVelocityTolerances.MEAN
+                return HisFlowVelocityTolerances.BIAS
             case OutputType.MAP, Variable.WATER_LEVEL:
-                return MapWaterLevelTolerances.MEAN
+                return MapWaterLevelTolerances.BIAS
             case OutputType.MAP, Variable.FLOW_VELOCITY:
-                return MapFlowVelocityTolerances.MEAN
+                return MapFlowVelocityTolerances.BIAS
             case _:
                 raise ValueError(f"Unsupported output type {output_type} and variable {variable}")
 
@@ -115,7 +115,7 @@ class HisWaterLevelTolerances:
 
     MAX: ClassVar[float] = 0.01  # m
     RMS: ClassVar[float] = 0.001  # m
-    MEAN: ClassVar[float] = 0.0001  # m
+    BIAS: ClassVar[float] = 0.0001  # m
 
 
 class HisFlowVelocityTolerances:
@@ -123,7 +123,7 @@ class HisFlowVelocityTolerances:
 
     MAX: ClassVar[float] = 0.05  # m/s
     RMS: ClassVar[float] = 0.005  # m/s
-    MEAN: ClassVar[float] = 0.0005  # m/s
+    BIAS: ClassVar[float] = 0.0005  # m/s
 
 
 class MapWaterLevelTolerances:
@@ -131,7 +131,7 @@ class MapWaterLevelTolerances:
 
     MAX: ClassVar[float] = 0.05  # m
     RMS: ClassVar[float] = 0.001  # m
-    MEAN: ClassVar[float] = 0.0001  # m
+    BIAS: ClassVar[float] = 0.0001  # m
 
 
 class MapFlowVelocityTolerances:
@@ -139,7 +139,7 @@ class MapFlowVelocityTolerances:
 
     MAX: ClassVar[float] = 0.1  # m/s
     RMS: ClassVar[float] = 0.005  # m/s
-    MEAN: ClassVar[float] = 0.0005  # m/s
+    BIAS: ClassVar[float] = 0.0005  # m/s
 
 
 @dataclass
@@ -147,7 +147,7 @@ class Statistics:
     """Contains statistics of a sample."""
 
     avg_max: float
-    avg_mean: float
+    avg_bias: float
     avg_rms: float
     max: float
 
@@ -204,13 +204,13 @@ class VerschillentoolOutput:
         try:
             flow_velocity_stats = Statistics(
                 avg_max=stats_dict["sea_water_speed_max"],
-                avg_mean=stats_dict["sea_water_speed_mean"],
+                avg_bias=stats_dict["sea_water_speed_bias"],
                 avg_rms=stats_dict["sea_water_speed_rms"],
                 max=maxima_dict["sea_water_speed"],
             )
             water_level_stats = Statistics(
                 avg_max=stats_dict["sea_surface_height_max"],
-                avg_mean=stats_dict["sea_surface_height_mean"],
+                avg_bias=stats_dict["sea_surface_height_bias"],
                 avg_rms=stats_dict["sea_surface_height_rms"],
                 max=maxima_dict["sea_surface_height"],
             )

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -495,6 +495,8 @@ contains
       !
       inquire (file=trim(md_morphopol), exist=ex)
       if (.not. ex) then
+         call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Morphopol set but file does not exist, morphopol not used.')
+         md_morphopol = ''
          ! do all cells
          kcsmor = 1
       else

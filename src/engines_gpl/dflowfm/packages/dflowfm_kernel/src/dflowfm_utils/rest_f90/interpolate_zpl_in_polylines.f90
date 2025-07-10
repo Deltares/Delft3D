@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,11 +43,11 @@ contains
 
    subroutine interpolate_zpl_in_polylines()
       use precision, only: dp
-      use m_polygon
-      use m_missing
+      use m_polygon, only: npl, xpl, ypl, zpl
+      use m_missing, only: dmiss
+      use m_qnerror, only: qnerror
       use geometry_module, only: dbdistance, get_startend
       use m_sferic, only: jsferic, jasfer3D
-      use m_qnerror
 
       real(kind=dp), dimension(:), allocatable :: wfromLeft ! arc length from left
 

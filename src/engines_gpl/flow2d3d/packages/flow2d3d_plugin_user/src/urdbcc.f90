@@ -2,7 +2,7 @@ subroutine urdbcc(lundia    ,error     ,filusr    ,ltur      ,kmax      , &
                 & nto       ,ubnd      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -73,7 +73,6 @@ subroutine urdbcc(lundia    ,error     ,filusr    ,ltur      ,kmax      , &
     integer                :: lfile   ! Length of file name 
     integer                :: luntmp  ! Unit number for attribute file 
     integer                :: n       ! Loop variable 
-    integer                :: newlun
     integer                :: nrand   ! Read boundary number 
     logical                :: ex      ! Logical flag for file existence 
     real(fp)               :: rdef    ! Default value for boundary condition input for turbulent quantities should be < 0 !! 

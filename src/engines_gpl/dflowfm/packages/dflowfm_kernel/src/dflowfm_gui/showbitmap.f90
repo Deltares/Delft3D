@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,15 +38,15 @@ contains
 
    subroutine SHOWBITMAP(jainterpolate)
       use precision, only: dp
-      use m_rectangle
-      use m_pixcount
-      use M_WEARELT
-      use M_BITMAP
-      use m_drawthis
-      use m_halt2
-      use m_krec5
-      use m_bilinxy
-      use m_set_col
+      use m_rectangle, only: rectangle
+      use m_pixcount, only: pixcount
+      use M_WEARELT, only: x1, x2, y1, y2
+      use M_BITMAP, only: xb, yb, xp, yp, nxp, mxp, ipix
+      use m_drawthis, only: ndraw
+      use m_halt2, only: halt2
+      use m_krec5, only: krec5
+      use m_bilinxy, only: bilinxy
+      use m_set_col, only: setcol
       implicit none
       integer :: i
       integer :: ini

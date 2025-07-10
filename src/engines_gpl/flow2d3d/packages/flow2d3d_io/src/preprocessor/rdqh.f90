@@ -3,7 +3,7 @@ subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
               & ntoq      ,nambnd    ,bubble    ,kmax      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -90,7 +90,6 @@ subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     integer                                :: nparrd
     integer                                :: nqhrd
     integer                                :: nr      ! Sequence nr of the time read 
-    integer, external                      :: newlun
     logical                                :: access  ! Flag to read file as direct access or sequential 
     logical                                :: ex      ! Flag to test if file exists 
     real(fp)                               :: qold    ! Help var. to store last read discharg to test accending order 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,10 +40,10 @@ contains
    subroutine comp_tmax_other(mc, jlay, xc, yc, vel, mc1, xc1, yc1, vel1, idx1, tmax)
       use precision, only: dp
       use m_missing, only: dmiss
-      use m_sferic
+      use m_sferic, only: jsferic, jasfer3d
+      use m_get_lr, only: get_lr
       use m_spline2curvi, only: dtolLR
       use geometry_module, only: dbdistance
-      use m_get_lr
       use m_comp_cross_time_2, only: comp_cross_time_2
 
       implicit none

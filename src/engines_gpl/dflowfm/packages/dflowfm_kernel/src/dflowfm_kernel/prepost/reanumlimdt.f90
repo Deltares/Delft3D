@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,16 +41,16 @@ module m_reanumlimdt
 contains
 
    subroutine reanumlimdt()
-      use m_flowgeom
+      use m_flowgeom, only: ndx
+      use m_flow, only: numlimdt
+      use m_partitioninfo, only: jampi, sdmn
+      use m_samples, only: increasesam, xs, ys, zs
       use m_GlobalParameters, only: INDTP_ALL
-      use MessageHandling, only: IdLen
-      use m_flow
-      use m_partitioninfo
-      use m_samples
       use m_find_flownode, only: find_nearest_flownodes
       use m_filez, only: oldfil, doclose
+      use messagehandling, only: IDLEN
 
-      character(len=IdLen) :: name, nams
+      character(len=IDLEN) :: name, nams
       logical :: jawel
       integer :: mlim, k, kk, jakdtree = 1, jaoutside = 0
       integer, allocatable :: knum(:)

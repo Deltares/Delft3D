@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,14 +39,12 @@ contains
 
    subroutine bermslopenudging(error)
       use precision, only: dp
-      use m_sediment
-      use m_fm_erosed
+      use m_sediment, only: bermslopeindex, bermslopeindexbed, bermslopeindexsus, hwav, stmpar
+      use m_fm_erosed, only: bermslopegamma, bermslopedepth, bermslopebed, bermslopesus, e_dzdn, e_dzdt, bermslopefac, bermslope, morfac, lsedtot, bed, has_bedload, e_sbcn, e_sbct, e_sbwn, e_sbwt, sus, lsed, e_ssn, e_sswn, e_sswt
+      use m_waveconst, only: no_waves
       use m_flow, only: hu, epshu
       use m_flowgeom, only: lnx, ln, wu_mor
-      use m_waves, only: hwav
       use m_flowparameters, only: jawave
-      use m_debug
-      use m_waveconst
 
       logical, intent(out) :: error
 
@@ -141,9 +139,9 @@ contains
 
    subroutine getfracfixfac(L, k1, k2, lsd, transp, frc, fixf)
       use precision, only: dp
-      use m_fm_erosed
+      use m_fm_erosed, only: fixfac, frac
+      use m_flowgeom, only: lnxi
       use m_flow, only: hu, epshu
-      use m_flowgeom
 
       implicit none
 

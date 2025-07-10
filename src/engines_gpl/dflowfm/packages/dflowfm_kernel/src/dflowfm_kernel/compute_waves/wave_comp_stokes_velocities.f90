@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,14 +42,12 @@ contains
 
    subroutine wave_comp_stokes_velocities()
       use precision, only: dp
-      use m_flowparameters
-      use m_flowgeom
+      use m_flowparameters, only: jawavestokes, no_stokes_drift, epshu
+      use m_flowgeom, only: ndx, lnxi, ln, acl, csu, snu, lnx
+      use m_waves, only: ustokes, vstokes, gammax, mxwav, mywav, hwav
+      use m_partitioninfo, only: jampi, update_ghosts, itype_sall, itype_u
       use m_flow, only: hu, hs
       use m_physcoef, only: sag
-      use m_waves
-      use m_sferic
-      use m_partitioninfo
-      use m_waveconst
 
       implicit none
 

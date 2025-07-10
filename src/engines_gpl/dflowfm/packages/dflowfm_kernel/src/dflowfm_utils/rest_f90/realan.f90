@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,12 +38,12 @@ contains
 
    module subroutine REALAN(MLAN, ANTOT)
       use precision, only: dp
-      use m_polygon
-      use M_landboundary
-      use M_MISSING
-      use m_readyy
-      use m_qn_read_error
-      use m_qn_eof_error
+      use m_polygon, only: xpl, ypl, npl
+      use M_landboundary, only: increaselan, maxlan, mxlan, xlan, ylan, zlan, nclan
+      use M_MISSING, only: dmiss
+      use m_readyy, only: readyy
+      use m_qn_read_error, only: qnreaderror
+      use m_qn_eof_error, only: qneoferror
       use m_filez, only: doclose
 
       implicit none

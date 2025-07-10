@@ -41,6 +41,12 @@ set(gridgeom_dll_module ${utils_lgpl_path}/gridgeom/packages/gridgeom_dll)
 # Nefis
 set(nefis_module ${utils_lgpl_path}/nefis/packages/nefis)
 
+# trim2dep
+set(trim2dep ${utils_lgpl_path}/trim2dep)
+
+# qdb
+set(qdb ${utils_lgpl_path}/qdb)
+
 # io_hyd
 set(io_hyd_module ${utils_lgpl_path}/io_hyd/packages/io_hyd)
 

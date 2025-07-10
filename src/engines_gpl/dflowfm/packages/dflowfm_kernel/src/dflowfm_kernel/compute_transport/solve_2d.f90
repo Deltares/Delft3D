@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,9 +44,9 @@ contains
    subroutine solve_2D(NUMCONST, Ndkx, vol1, kbot, ktop, sumhorflux, fluxver, source, sink, nsubsteps, jaupdate, ndeltasteps, sed, rhs)
       use precision, only: dp
       use m_make_rhs, only: make_rhs
-      use m_flowgeom, only: Ndxi, Ndx ! static mesh information
+      use m_flowgeom, only: Ndxi, ndx
+      use timers, only: timon, timstrt, timstop ! static mesh information
       use m_flowtimes, only: dts
-      use timers
 
       implicit none
 

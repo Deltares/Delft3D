@@ -29,13 +29,7 @@ object DIMRbak : BuildType({
         """.trimIndent()
     }
 
-    features {
-        approval {
-            approvalRules = "group:DIMR_BAKKERS:1"
-        }
-    }
-
-    if (DslContext.getParameter("environment") == "production") {
+    if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
         dependencies {
             snapshot(AbsoluteId("DIMR_To_NGHS")) {
                 onDependencyFailure = FailureAction.FAIL_TO_START

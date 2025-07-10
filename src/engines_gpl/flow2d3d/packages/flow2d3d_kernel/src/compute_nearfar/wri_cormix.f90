@@ -2,7 +2,7 @@ subroutine wri_cormix(u0    ,v0    ,rho    ,thick ,kmax  ,dps   ,&
                     & s0    ,alfas ,gdp    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -81,7 +81,6 @@ subroutine wri_cormix(u0    ,v0    ,rho    ,thick ,kmax  ,dps   ,&
     integer                                :: nm_amb
     integer                                :: nmd_amb
     integer                                :: ndm_amb
-    integer                 , external     :: newlun
     integer                                :: luntmp
     real(fp)                               :: thck
     real(fp)                               :: uuu

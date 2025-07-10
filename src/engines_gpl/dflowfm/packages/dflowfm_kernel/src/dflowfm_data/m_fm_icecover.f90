@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -230,7 +230,7 @@ contains
    subroutine fm_ice_read(md_ptr, ierror)
 !!--declarations----------------------------------------------------------------
       use dfm_error, only: DFM_WRONGINPUT
-      use properties, only: tree_data
+      use tree_data_types, only: tree_data
       implicit none
       !
       ! Function/routine arguments

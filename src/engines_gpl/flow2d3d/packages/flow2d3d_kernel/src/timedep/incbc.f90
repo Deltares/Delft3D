@@ -13,7 +13,7 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                & typbnd    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -213,7 +213,6 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     integer                             :: n              ! Loop variable 
     integer                             :: n1             ! Pointer var. relating NOB to MNBND 
     integer                             :: nend           ! End coord. (in the y-dir.) of an open bound. section 
-    integer, external                   :: newlun
     integer                             :: ngg            ! N-coord. of the actual open boundary point, which may differ from the ori- ginal position due to grid staggering 
     integer                             :: np
     integer                             :: npbi           ! N index of point at boundary inside domain

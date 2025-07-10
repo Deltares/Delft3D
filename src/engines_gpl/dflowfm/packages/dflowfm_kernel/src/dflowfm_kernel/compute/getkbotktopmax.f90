@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,8 +38,7 @@ contains
 
    subroutine getkbotktopmax(n, kb, kt, ktx)
 ! Variation on getkbotktop. Always returns the maximum possible layer range instead of the actual range.
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: kmx, kbot, ktop, kmxn
       implicit none
       integer :: n, kb, kt, ktx
       if (kmx == 0) then

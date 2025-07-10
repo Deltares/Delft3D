@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,13 +40,13 @@ contains
 
    subroutine belanger()
       use precision, only: dp
-      use m_physcoef
-      use fm_external_forcings_data
+      use m_physcoef, only: frcuni, ifrctypuni, ag
+      use fm_external_forcings_data, only: kbndz
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       use m_flowgeom, only: xz, bl, dxi, ln
       use m_flow, only: s1, iadvec, u1, v
       use m_get_chezy, only: get_chezy
-      use m_movabs
-      use m_lnabs
 
       real(kind=dp) :: chezy, cf, h0, h1, x0, x1, q, constant, bot, a, x, hav, slope, h, h3, hc, hc3, he3
       integer :: k, kb, L

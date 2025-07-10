@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,13 +40,13 @@ contains
 
    subroutine comp_gridheights(mc, eheight, ierror)
       use precision, only: dp
-      use m_splines
-      use m_gridsettings
-      use m_spline2curvi
-      use m_alloc
-      use m_missing
-      use m_splint
-      use m_spline
+      use m_splines, only: mcs, nump, xsp, ysp
+      use m_gridsettings, only: mfac
+      use m_spline2curvi, only: nsubmax, splineprops, sg1
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss
+      use m_splint, only: splint
+      use m_spline, only: spline
       use m_splinelength_int, only: splinelength_int
 
       integer, intent(in) :: mc !< number of grid points

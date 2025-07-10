@@ -1,6 +1,6 @@
 ! ---- LGPL --------------------------------------------------------------------
 !
-! Copyright (C)  Stichting Deltares, 2011-2024.
+! Copyright (C)  Stichting Deltares, 2011-2025.
 !
 ! This library is free software; you can redistribute it and/or
 ! modify it under the terms of the GNU Lesser General Public
@@ -69,7 +69,7 @@
 !     Program:    TYPES.INC
 !     Version:    1.00
 !     Programmer: Andre Hendriks
-!     Copyright (C)  Stichting Deltares, 2011-2024.
+!     Copyright (C)  Stichting Deltares, 2011-2025.
 !     Previous version(s):
 !     0.01 -- 10 Jun 1993 -- 15:11 -- Operating System: DOS
 !     0.00 -- 10 Jun 1993 -- 15:05 -- Operating System: DOS
@@ -137,7 +137,7 @@
 !     Program:    ERRORS.INC
 !     Version:    0.00
 !     Programmer: Andre Hendriks
-!     Copyright (C)  Stichting Deltares, 2011-2024.
+!     Copyright (C)  Stichting Deltares, 2011-2025.
 !     Previous version(s):
 !     0.0 -- 10 Jun 1993 -- 15:35 -- Operating System: DOS
 !     Project:    Open data-structuur

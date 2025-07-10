@@ -26,7 +26,7 @@ class ExportJiraIssueId : ScriptBuildStep {
     constructor(init: ExportJiraIssueId.() -> Unit) {
         init()
 
-        if (DslContext.getParameter("environment") == "production") {
+        if (DslContext.getParameter("enable_export_jira_issue_id").lowercase() == "true") {
             conditions {
                 exists("teamcity.build.branch")
                 equals("teamcity.build.branch.is_default", "false")

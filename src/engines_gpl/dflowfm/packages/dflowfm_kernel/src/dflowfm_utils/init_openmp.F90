@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,9 +46,9 @@ contains
    integer function init_openmp(maxnumthreads, mpion) result(iresult)
 #ifdef _OPENMP
       use omp_lib
+      use messagehandling, only: mess, LEVEL_INFO
 #endif
       use dfm_error, only: dfm_noerr
-      use messagehandling, only: mess, LEVEL_INFO
 
       integer, intent(in) :: maxnumthreads !< Desired maximum number of OpenMP threads.
       integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
