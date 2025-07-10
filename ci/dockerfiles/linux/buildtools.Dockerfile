@@ -66,9 +66,9 @@ set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
 for URL in \
-    'https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz' \
-    'https://ftp.gnu.org/gnu/automake/automake-1.17.tar.xz' \
-    'https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.xz'
+    'https://mirrors.kernel.org/gnu/autoconf/autoconf-2.72.tar.xz' \
+    'https://mirrors.kernel.org/gnu/automake/automake-1.17.tar.xz' \
+    'https://mirrors.kernel.org/gnu/libtool/libtool-2.4.7.tar.xz'
 do
     BASEDIR=$(basename -s '.tar.xz' "$URL")
     if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
