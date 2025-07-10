@@ -78,7 +78,7 @@
         <from>.</from>
       </location>
       <location ref="dsctestbench-references" type="reference">
-        <from>lnx64</from>
+        <from>win64</from>
       </location>
       <maxRunTime>3600.0</maxRunTime>
       <!-- seconds -->

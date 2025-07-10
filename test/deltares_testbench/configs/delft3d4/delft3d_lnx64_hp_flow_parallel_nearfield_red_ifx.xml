@@ -212,7 +212,7 @@
 				<!-- if "to" is not specified, "from" is used as target -->
 			</location>
 			<location ref="dsctestbench-references_data" type="reference">
-				<from>lnx64</from>
+				<from>win64</from>
 			</location>
 			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
 			<programs>
@@ -224,7 +224,7 @@
 				<from>.</from>
 			</location>
 			<location ref="dsctestbench-references_data" type="reference">
-				<from>lnx64</from>
+				<from>win64</from>
 			</location>
 			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
 			<programs>
@@ -236,7 +236,7 @@
 				<from>.</from>
 			</location>
 			<location ref="dsctestbench-references_data" type="reference">
-				<from>lnx64</from>
+				<from>win64</from>
 			</location>
 			<maxRunTime>2500.0</maxRunTime>
 			<programs>
@@ -248,7 +248,7 @@
 				<from>.</from>
 			</location>
 			<location ref="dsctestbench-references_data" type="reference">
-				<from>lnx64</from>
+				<from>win64</from>
 			</location>
 			<maxRunTime>2500.0</maxRunTime> <!-- seconds -->
 			<programs>

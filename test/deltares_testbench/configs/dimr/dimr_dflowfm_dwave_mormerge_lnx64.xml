@@ -90,7 +90,7 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
-                <from>lnx64</from>
+                <from>win64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
@@ -106,7 +106,7 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
-                <from>lnx64</from>
+                <from>win64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
@@ -122,7 +122,7 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
-                <from>lnx64</from>
+                <from>win64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
