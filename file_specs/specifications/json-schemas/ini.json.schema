@@ -1,0 +1,337 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "file_version": {
+            "type": "string"
+        },
+        "file_format_version": {
+            "type": "string"
+        },
+        "file_format_type": {
+            "type": "string",
+            "enum": [
+                "ini"
+            ]
+        },
+        "description": {
+            "type": "string"
+        },
+        "ini_sections": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "is_unique": {
+                        "type": "boolean"
+                    },
+                    "ini_properties": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string"
+                                },
+                                "default_value": {},
+                                "value_type": {
+                                    "type": "string",
+                                    "enum": [
+                                        "string",
+                                        "int",
+                                        "float",
+                                        "intbool",
+                                        "path",
+                                        "enum",
+                                        "intenum",
+                                        "list[path]",
+                                        "list[string]",
+                                        "list[float]",
+                                        "datetime"
+                                    ]
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "GA",
+                                        "research",
+                                        "deprecated"
+                                    ],
+                                    "default": "GA"
+                                },
+                                "validation": {
+                                    "type": "object",
+                                    "properties": {
+                                        "min_length": {
+                                            "type": "integer"
+                                        },
+                                        "max_length": {
+                                            "type": "integer"
+                                        },
+                                        "length_dependency": {
+                                            "type": "string"
+                                        },
+                                        "is_required": {
+                                            "type": "boolean"
+                                        },
+                                        "range": {
+                                            "type": "object",
+                                            "properties": {
+                                                "min_inclusive": {
+                                                    "type": "number"
+                                                },
+                                                "max_inclusive": {
+                                                    "type": "number"
+                                                },
+                                                "min_exclusive": {
+                                                    "type": "number"
+                                                },
+                                                "max_exclusive": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "enum_values": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "unit": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "key",
+                                "value_type",
+                                "description"
+                            ],
+                            "allOf": [
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "enum"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "required": [
+                                            "enum_values"
+                                        ],
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "string"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "int"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "float"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "number"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "intbool"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "path"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "intenum"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "required": [
+                                            "enum_values"
+                                        ],
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "integer"
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "list[path]"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "list[string]"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "list[float]"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "value_type": {
+                                                "const": "datetime",
+                                                "pattern": "^\\d{8}(\\d{6})?$"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "properties": {
+                                            "default_value": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "required": [
+                    "name",
+                    "description",
+                    "is_unique",
+                    "ini_properties"
+                ],
+                "additionalProperties": false
+            }
+        }
+    },
+    "required": [
+        "file_version",
+        "file_format_version",
+        "file_format_type",
+        "description",
+        "ini_sections"
+    ],
+    "additionalProperties": false
+}
