@@ -102,6 +102,8 @@ class ArtifactInstallHelper(object):
         command += "cd /p/d-hydro/dimrset/weekly;"
         command += f"chgrp -R dl_acl_dsc {self.__dimr_version}/;"
         command += f"chmod -R a+x,a-s {self.__dimr_version}/;"
+
+        # only update the latest symlink if we are on the main branch we don't do this for the release branche
         if self.__branch_name == "main":
             command += "unlink latest;"
             command += f"ln -s {self.__dimr_version} latest;"
