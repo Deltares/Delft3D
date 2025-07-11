@@ -1,5 +1,6 @@
 rm -fv libuuid.so.* \
     libdl.so.* \
+    libcurl.so.* \
     librt.so.* \
     libpthread.so.* \
     libm.so.* \

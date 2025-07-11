@@ -1,4 +1,4 @@
-<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"> 
     <testCase name="e02_f001_c220_drypoints_pol" ref="dflowfm_default">
       <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f001_general/c220_drypoints_pol</path>
       <maxRunTime>15.0</maxRunTime>
@@ -1295,7 +1295,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c081_qhbnd_refined" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c081_qhbnd_refined</path>
+      <path version="2025-07-08T08:48:05.235000">e02_dflowfm/f005_boundary_conditions/c081_qhbnd_refined</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
@@ -1314,7 +1314,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c082_qhbnd_refined_twice" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c082_qhbnd_refined_twice</path>
+      <path version="2025-07-08T08:48:11.007000">e02_dflowfm/f005_boundary_conditions/c082_qhbnd_refined_twice</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
@@ -1333,7 +1333,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c083_qhbnd_doubleboundary" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c083_qhbnd_doubleboundary</path>
+      <path version="2025-07-08T08:48:13.734000">e02_dflowfm/f005_boundary_conditions/c083_qhbnd_doubleboundary</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
