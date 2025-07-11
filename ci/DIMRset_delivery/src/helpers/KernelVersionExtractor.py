@@ -32,7 +32,7 @@ class KernelVersionExtractor(object):
             Dict[str, str]: A dictionary of "kernel name" -> "version"
         """
         latest_dimr_collector_build_info = self.__teamcity.get_build_info_for_latest_build_for_build_type_id(
-            build_type_id=TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID.value)
+            build_type_id=TEAMCITY_IDS.DIMR_PUBLISH.value)
         self.__kernel_versions = self.__extract_kernel_versions(build_info=latest_dimr_collector_build_info)
         return self.__kernel_versions
 

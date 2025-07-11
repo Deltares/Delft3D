@@ -6,7 +6,7 @@ from helpers.ToolData import ToolData
 # All kernels for which the versions are set in the configuration parameters of 2.Dimr_collector_release
 KERNELS = [
     KernelData(name_for_extracting_revision="DIMRset_ver", name_for_email="DIMRset"),
-    KernelData(name_for_extracting_revision="OSS_ver", name_for_email="OSS"),
+    KernelData(name_for_extracting_revision="build.vcs.number", name_for_email="OSS"),
 ]
 
 # All tools for which a version should be extracted from the Version.txt artifact for creating the SVN log message
