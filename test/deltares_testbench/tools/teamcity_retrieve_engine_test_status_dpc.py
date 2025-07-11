@@ -8,6 +8,7 @@ from io import TextIOWrapper
 from typing import List
 
 import requests
+from pyparsing import Enum
 from requests.auth import HTTPBasicAuth
 
 """
@@ -30,6 +31,16 @@ REST_API_URL = f"{BASE_URL}/httpAuth/app/rest"
 PROJECTS_URL = f"{REST_API_URL}/projects/id:"
 TEST_OCCURRENCES = "./testOccurrences"
 HEADER_FMT = "{:>20s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s}  ---  {:24s} (#{:s})"
+
+
+class TEAMCITY_IDS(Enum):
+    DIMR_PUBLISH = "Delft3D_DIMRbak"
+    DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID = "Delft3D_LinuxCollect"
+    DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID = "Delft3D_WindowsCollect"
+    DIMR_TO_NGHS_BUILD_TYPE_ID = "DIMR_To_NGHS"
+    DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID = "Dimr_DimrTestbenchRelease_StatusOfDailyTestbench"
+    DIMR_TESTBENCH_RELEASE_TESTS_LINUX = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsLinux"
+    DIMR_TESTBENCH_RELEASE_TESTS_WINDOWS = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsWindows"
 
 
 class TestResultSummary(object):
@@ -131,7 +142,7 @@ class TestResult(object):
 class ConfigurationTestResult(object):
     """A class to store configuration test results info."""
 
-    def __init__(
+    def __init(
         self,
         name: str,
         build_nr: str,
@@ -179,7 +190,7 @@ class SubEngineTestResult(object):
 class EngineTestResult(object):
     """A class to store engine test results info."""
 
-    def __init__(
+    def __init(
         self, name: str, engine_results: List[ConfigurationTestResult], sub_engine_results: List[SubEngineTestResult]
     ) -> None:
         self.name = name
@@ -662,6 +673,11 @@ def create_argument_parser() -> argparse.ArgumentParser:
         help="Specify extra components to be summarized, between double quotes and separated by a comma",
         dest="engines",
     )
+    parser.add_argument(
+        "--build_id",
+        help="Build ID of the chain to analyze",
+        dest="build_id",
+    )
 
     return parser
 
@@ -677,6 +693,38 @@ def get_number_of_failed_tests(tree_result_overview: TreeResult) -> int:
                 total_failed_tests += result.get_not_passed_total()
 
     return total_failed_tests
+
+
+def get_build_dependency_chain(build_id: str, username: str, password: str) -> list:
+    """
+    Get dependency chain of all dependent builds for a given build ID from TeamCity,
+    only returning IDs that are in TEAMCITY_IDS. Print a warning for any TEAMCITY_IDS
+    not found in the response.
+
+    Returns
+    -------
+    list
+        List of dependent build IDs (snapshot dependencies) that are in TEAMCITY_IDS.
+    """
+    url = f"{BASE_URL}/httpAuth/app/rest/builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id}))&fields=build(id,buildTypeId)"
+    response = get_request(url, username, password)
+    if not text_in_xml_message(response.text):
+        print(f"Could not retrieve dependencies for build ID {build_id}")
+        return []
+    xml_root = ET.fromstring(response.text)
+    dependency_chain = []
+    teamcity_ids_set = set(item.value for item in TEAMCITY_IDS)
+    found_ids = set()
+    for dep in xml_root.findall("build"):
+        build_type_id = dep.attrib.get("buildTypeId")
+        id = dep.attrib.get("id")
+        if build_type_id and build_type_id in teamcity_ids_set:
+            dependency_chain.append(id)
+            found_ids.add(build_type_id)
+    missing_ids = teamcity_ids_set - found_ids
+    if missing_ids:
+        print(f"Warning: The following TEAMCITY_IDS were not found in the dependency chain: {', '.join(missing_ids)}")
+    return dependency_chain
 
 
 if __name__ == "__main__":
@@ -699,6 +747,8 @@ if __name__ == "__main__":
         commit = args.commit
     if args.branch:
         branch = args.branch
+    if args.build_id:
+        build_id = args.build_id
     if args.interactive:
         interactive = args.interactive
     else:
@@ -731,6 +781,19 @@ if __name__ == "__main__":
     log_to_file(log_file, f"Start: {start_time}\n")
 
     print(f"Listing is written to: {out_put}")
+    # https://dpcbuild.deltares.nl/buildConfiguration/Delft3D_LinuxTest
+    # https://dpcbuild.deltares.nl/buildConfiguration/Delft3D_WindowsTest
+    # https://dpcbuild.deltares.nl/project/Dimr_DimrTestbenchRelease?mode=builds#all-projects/
+
+    # 1. Get dependency chain of all dependent builds and Filter on relevant build IDs
+    dependency_chain = []
+    if "build_id" in locals() and build_id:
+        dependency_chain = get_build_dependency_chain(build_id, username, password)
+        print(f"Dependency chain for build {build_id}: {dependency_chain}")
+
+    # 2. Loop over the builds and retrieve the test results and write to file
+
+    # 3. Write executive summary to file
 
     tree_result_overview = get_tree_entire_engine_test_results(log_file, tbroot, given_build_config, username, password)
     log_tree(log_file, tree_result_overview)
