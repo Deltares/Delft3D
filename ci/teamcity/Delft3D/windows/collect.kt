@@ -44,6 +44,13 @@ object WindowsCollect : BuildType({
                 equals("dep.${WindowsBuild.id}.product", "fm-suite")
             }
         }
+        script {
+            name = "Remove unlicensed intel debug-library"
+            scriptContent = "rm -vf x64/lib/libmmdd.dll"
+            conditions {
+                matches("dep.${WindowsBuild.id}.product", "(fm-suite|all-testbench)")
+            }
+        }
         python {
             name = "Generate list of version numbers (from what-strings)"
             command = file {

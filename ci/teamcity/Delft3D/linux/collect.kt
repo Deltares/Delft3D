@@ -40,8 +40,22 @@ object LinuxCollect : BuildType({
             path = "/usr/bin/python3"
             arguments = "src/scripts_lgpl/artifacts_cleaner.py --product dimrset --root ."
             conditions {
-                equals("dep.${LinuxBuild.id}.product", "fm-suite")
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
             }
+        }
+        exec {
+            name = "Remove system libraries"
+            workingDir = "lnx64/lib"
+            path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
+            conditions {
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
+        }
+        script {
+            name = "Set execute rights"
+            scriptContent = """
+                chmod a+x lnx64/bin/*
+            """.trimIndent()
         }
         exec {
             name = "Generate list of version numbers (from what-strings)"

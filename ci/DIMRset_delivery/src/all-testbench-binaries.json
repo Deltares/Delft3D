@@ -253,10 +253,6 @@
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "lib\\libmmdd.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
             "file": "lib\\libmpi_ilp64.dll",
             "issuedTo": "Intel Corporation"
         },
