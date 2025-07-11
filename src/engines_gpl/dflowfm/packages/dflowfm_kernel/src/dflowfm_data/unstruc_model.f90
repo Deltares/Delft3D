@@ -2624,7 +2624,7 @@ contains
       use m_datum
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
-      use m_add_baroclinic_pressure, only: DENSITY_TO_INTERFACES, rhointerfaces
+      use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
