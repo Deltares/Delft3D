@@ -25,6 +25,7 @@ cmake_path(GET PARENT_DIR PARENT_PATH dir)
 # Set unit and integration test root directory
 set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
+set(nefis_tests_dir ${dir}/test/nefis_test)
 
 include(modules.cmake)
 
