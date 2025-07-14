@@ -1163,7 +1163,16 @@
     </file>
   </checks>
 </testCase>
-
+<testCase name="e02_f030_c110_frisianinlet_segment_function" ref="dflowfm_default">
+  <path version="2025-06-30T20:43:25.430000">e02_dflowfm/f030_water_quality_processes/c110_frisianinlet_segment_function</path>
+  <checks>
+    <file name="dflowfmoutput/f34_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_water_quality_output_1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
 <testCase name="e02_f030_c201_parallel_mba_sink_source" ref="dflowfm_default">
   <path version="2025-06-16T20:43:25.430000">e02_dflowfm/f030_water_quality_processes/c201_parallel_mba_sink_source</path>
   <programs>
