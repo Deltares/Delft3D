@@ -31,7 +31,7 @@
 #include <string.h>
 #include <limits.h>
 
-#if !defined(WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 #  include <rpc/types.h>
 #  include <rpc/xdr.h>
 #else
