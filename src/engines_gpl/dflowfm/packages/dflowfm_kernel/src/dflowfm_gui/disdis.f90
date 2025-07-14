@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,13 +35,12 @@ contains
    subroutine DISDIS()
       use precision, only: dp
 
-      use m_devices
+      use m_devices, only: iws
+      use m_locatora, only: xa, ya, xlc, ylc
+      use m_ktext, only: ktext
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
-      use m_locatora
-      use m_disfor
-      use m_ktext
 
       real(kind=dp) :: dis
 !     -------------------------------

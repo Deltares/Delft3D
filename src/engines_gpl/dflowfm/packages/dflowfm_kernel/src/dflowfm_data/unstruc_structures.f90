@@ -2,7 +2,7 @@ module m_structures
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -171,7 +171,7 @@ contains
    !! Used for history output and/or restart file output for hydraulic structures.
    subroutine init_structure_hisvalues()
       use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen
-      use m_alloc
+
       use m_flowtimes, only: ti_rst
       use m_longculverts, only: nlongculverts
       use m_dambreak_breach, only: n_db_signals
@@ -320,10 +320,10 @@ contains
       use m_flow, only: q1, s1, au, hu, hs
       use m_flowgeom, only: wu, ln, teta, bl
       use m_1d_structures, only: get_discharge_under_compound_struc
-      use m_General_Structure
-      use m_GlobalParameters
-      use m_longculverts
+      use m_GlobalParameters, only: st_longculvert, st_pump, st_general_st, st_weir, st_orifice, st_bridge
+      use m_longculverts, only: longculverts
       use m_flowparameters, only: epshs, epshu
+      use m_general_structure, only: t_generalstructure
       implicit none
       real(kind=dp), dimension(:), intent(inout) :: valstruct !< Output values on structure (e.g. valweirgen(:)):
       !< (IVAL_WIDTH) total width, no matter dry or not

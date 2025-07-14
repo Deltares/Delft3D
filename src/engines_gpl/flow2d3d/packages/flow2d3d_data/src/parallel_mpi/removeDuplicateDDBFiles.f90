@@ -1,7 +1,7 @@
 subroutine removeDuplicateDDBFiles(runid, ddbfile, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -49,7 +49,6 @@ subroutine removeDuplicateDDBFiles(runid, ddbfile, gdp)
     integer                              :: fillun
     integer                              :: fillundef
     integer                              :: istat
-    integer,external                     :: newlun
     logical                              :: ex
     logical                              :: identicalFiles
     character(300)                       :: line

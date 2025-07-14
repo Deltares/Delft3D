@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2018-2024.
+!  Copyright (C)  Stichting Deltares, 2018-2025.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -947,7 +947,7 @@ contains
       integer, intent(out) :: iresult
 
       character(len=256) :: filename, sourcemask
-      integer :: kb, k, ja, method, kk, kt, lenqidnam, ipa, ifun, isfun, imna
+      integer :: kb, k, ja, method, kk, kt, lenqidnam, ipa, ifun, isfun
       integer :: klocal, waqseg2D, waqseglay
       character(len=NAMTRACLEN) :: qidnam
       character(len=20) :: waqinput
@@ -969,12 +969,6 @@ contains
       end if
       if (.not. allocated(sfunname)) then
          allocate (sfunname(0))
-      end if
-      if (.not. allocated(monname)) then
-         allocate (monname(0))
-      end if
-      if (.not. allocated(mondef)) then
-         allocate (mondef(0, 0))
       end if
 
       call settimespacerefdat(refdat, julrefdat, Tzone, Timjan)
@@ -1105,34 +1099,6 @@ contains
                      call reallocP(sfuninp, [num_spatial_time_fuctions, Ndkx], keepExisting=.true., fill=0.0d0)
                   end if
                   success = .true.
-
-               else if (qid(1:17) == 'waqmonitoringarea') then
-                  imna = find_name(monname, waqinput)
-
-                  if (imna == 0) then
-                     nomon = nomon + 1
-                     imna = nomon
-                     call realloc(monname, nomon, keepExisting=.true., fill=waqinput)
-                     call realloc(mondef, [nomon, Ndkx], keepExisting=.true., fill=2)
-                  end if
-
-                  call realloc(viuh, Ndkx, keepExisting=.false., fill=dmiss)
-
-                  ! will only fill 2D part of viuh
-                  success = timespaceinitialfield(xz, yz, viuh, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
-
-                  if (success) then
-                     do kk = 1, Ndxi
-                        if (viuh(kk) /= dmiss) then
-                           mondef(imna, kk) = 1
-                           call getkbotktop(kk, kb, kt)
-                           do k = kb, kb + kmxn(kk) - 1
-                              mondef(imna, k) = 1
-                           end do
-                        end if
-                     end do
-                  end if
-                  deallocate (viuh)
                else
                   ! just accept any other keyword as success, they are evaluated again in unstruc.F90
                   success = .true.
@@ -1259,11 +1225,6 @@ contains
          qidname = qidloc(1:18)
          if (len_trim(qidloc) > 18) then
             inputname = trim(qidloc(19:))
-         end if
-      else if (qidloc(1:17) == 'waqmonitoringarea') then
-         qidname = qidloc(1:17)
-         if (len_trim(qidloc) > 17) then
-            inputname = trim(qidloc(18:))
          end if
       end if
 

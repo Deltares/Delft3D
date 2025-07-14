@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -56,14 +56,14 @@ contains
       use m_wridep, only: wridep
       use m_ecrtab, only: ecrtab
       use precision, only: dp
-      use m_sferic
-      use m_grid
-      use m_missing
-      use m_arcinfo
-      use m_polygon
-      use m_readyy
-      use m_firstlin
-      use m_wripol
+      use m_sferic, only: jsferic
+      use m_grid, only: mc, nc, xc, mmax, nmax, yc, zc
+      use m_missing, only: xymis, dmiss
+      use m_arcinfo, only: x0, y0, dxa, dya
+      use m_polygon, only: savepol, xpl, ypl, npl, restorepol
+      use m_readyy, only: readyy
+      use m_firstlin, only: firstlin
+      use m_wripol, only: wripol
       use m_filez, only: doclose, newfil
 
       real(kind=dp) :: half

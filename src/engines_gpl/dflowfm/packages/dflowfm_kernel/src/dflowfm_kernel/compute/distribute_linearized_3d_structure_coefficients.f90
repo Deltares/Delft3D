@@ -5,13 +5,14 @@ contains
    !> distribute linearized 3D structure coefficients over the layers of the structure.
    subroutine distribute_linearized_3d_structure_coefficients(structure)
       use precision_basics, only: dp
-      use m_1d_structures, only: t_structure
-      use m_General_Structure, only: t_GeneralStructure
+
       use m_flowparameters, only: jastructurelayersactive
       use m_flowgeom, only: ln
       use m_flow, only: u1, s1, zws, au, fu, ru, hu
       use fm_external_forcings_data, only: ff3
       use m_get_Lbot_Ltop, only: getLbotLtop
+      use m_1d_structures, only: t_structure
+      use m_general_structure, only: t_generalstructure
 
       implicit none
 

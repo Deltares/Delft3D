@@ -2,7 +2,7 @@ subroutine srcfil(lundia    ,filsrc    ,error     ,nsrc      ,mnksrc    , &
                 & namsrc    ,disint    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -72,7 +72,6 @@ subroutine srcfil(lundia    ,filsrc    ,error     ,nsrc      ,mnksrc    , &
     integer                :: lr132   ! Standard length of a record in the attribute file = 132 
     integer                :: luntmp  ! Temporary file unit 
     integer                :: n
-    integer, external      :: newlun
     integer , dimension(3) :: ival    ! Help array (integer) where the data, recently read from the MD-file, are stored temporarily
     real(fp)               :: rdef
     real(fp), dimension(1) :: rval

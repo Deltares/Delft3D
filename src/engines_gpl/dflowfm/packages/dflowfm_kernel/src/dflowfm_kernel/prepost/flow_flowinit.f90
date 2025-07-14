@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -1079,7 +1079,7 @@ contains
       integer :: cell
       real(kind=dp) :: ds
 
-      if (air_pressure_available > OFF .and. PavIni > ZERO_AMBIENT_PRESSURE) then
+      if (air_pressure_available .and. PavIni > ZERO_AMBIENT_PRESSURE) then
          do cell = 1, ndxi
             ds = -(air_pressure(cell) - PavIni) / (ag * rhomean)
             s1(cell) = s1(cell) + ds

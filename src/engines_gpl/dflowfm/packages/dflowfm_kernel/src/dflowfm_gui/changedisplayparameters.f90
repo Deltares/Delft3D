@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,25 +38,23 @@ module m_changedisplayparameters
 contains
 
    subroutine CHANGEDISPLAYPARAMETERS()
-      use M_RAAITEK
+      use M_RAAITEK, only: zminrai, zmaxrai, jtextflow
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck, cr
+      use unstruc_display_data, only: npos, ntek, plottofile, numzoomshift, jahighlight, nhlnetnode, nhlnetlink, nhlflownode, nhlflowlink, wetplot, yfac
+      use m_sediment, only: jgrtek, mxgr
+      use m_screenarea, only: xleft, ybot, jaxis
+      use m_helpnow, only: nlevel, wrdkey
+      use m_textsize, only: tsize
+      use m_hardcopy, only: numhcopts, ihcopts, nhcdev
+      use m_vfac, only: vfac, nvec, vfacforce
+      use m_drawthis, only: ndraw
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
       use m_missing, only: dmiss
-      use unstruc_colors
-      use unstruc_display_data
-      use m_sediment
       use m_flow, only: kplotfrombedorsurface, kplotordepthaveraged
 
       use dflowfm_version_module, only: company, product_name
       use unstruc_opengl, only: jaOpenGL
-      use m_depmax
-      use m_screenarea
-      use m_helpnow
-      use m_textsize
-      use m_hardcopy
-      use m_scalepos
-      use m_vfac
-      use m_drawthis
-      use m_help
-      use m_highlight_form_line
 
       implicit none
       integer :: i

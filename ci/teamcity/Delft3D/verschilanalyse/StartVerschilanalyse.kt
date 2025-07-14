@@ -43,7 +43,7 @@ object StartVerschilanalyse : BuildType({
     }
 
     triggers {
-        if (DslContext.getParameter("va_harbor_webhook_enabled", "false").lowercase() == "true") {
+        if (DslContext.getParameter("enable_verschilanalyse_trigger").lowercase() == "true") {
             // TeamCity webhook plugin docs: https://github.com/tcplugins/tcWebHookTrigger
             // I couldn't find a webhook event payload example in the Harbor documenations,
             // but this GitHub issue comment has an example:

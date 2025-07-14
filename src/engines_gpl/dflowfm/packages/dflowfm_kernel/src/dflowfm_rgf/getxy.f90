@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,8 +35,8 @@ contains
 !>     zoek TT in X,Y, en XT,YT met dezelfde afstand geeft als SSQ
    subroutine GETXY(T, X, X2, Y, Y2, imax, N, NT, SSQ, XT, YT, TT, H)
       use precision, only: dp
-      use m_golddis
-      use m_splintxy
+      use m_golddis, only: golddis
+      use m_splintxy, only: splintxy
 
       integer :: imax, n, nt
       real(kind=dp) :: ssq, xt, yt

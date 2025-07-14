@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -826,7 +826,7 @@ contains
 
                if (success) then
                   jawind = 1
-                  air_pressure_available = 1
+                  air_pressure_available = .true.
                end if
 
             else if (qid == 'charnock') then
@@ -921,14 +921,29 @@ contains
 
             else if (qid == 'airpressure' .or. qid == 'atmosphericpressure') then
 
-               if (.not. allocated(air_pressure)) then
-                  allocate (air_pressure(ndx), stat=ierr)
-                  call aerr('air_pressure(ndx)', ierr, ndx)
-                  air_pressure = 0.0_dp
-               end if
+               call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('air_pressure(ndx)', ierr, ndx)
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  air_pressure_available = 1
+                  air_pressure_available = .true.
+               end if
+
+            else if (qid == 'pseudoAirPressure') then
+
+               call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('pseudo_air_pressure(ndx)', ierr, ndx)
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  pseudo_air_pressure_available = .true.
+               end if
+
+            else if (qid == 'waterLevelCorrection') then
+
+               call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('water_level_correction(ndx)', ierr, ndx)
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  water_level_correction_available = .true.
                end if
 
             else if (qid == 'air_temperature') then
@@ -948,6 +963,7 @@ contains
                end if
 
             else if (qid == 'airdensity') then
+
 
                if (.not. allocated(air_density)) then
                   allocate (air_density(ndx), stat=ierr)
@@ -1222,11 +1238,9 @@ contains
                   call qnerror('Quantity massbalancearea in the ext-file, but no MbaInterval specified in the mdu-file.', ' ', ' ')
                   success = .false.
                end if
-
-            else if (qid(1:12) == 'waqparameter' .or. qid(1:17) == 'waqmonitoringarea' .or. qid(1:16) == 'waqsegmentnumber') then
+            else if (qid(1:12) == 'waqparameter' .or. qid(1:16) == 'waqsegmentnumber') then
                ! Already taken care of in fm_wq_processes
                success = .true.
-
             else if (qid(1:11) == 'waqfunction') then
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename, filetype, method, operand)
 

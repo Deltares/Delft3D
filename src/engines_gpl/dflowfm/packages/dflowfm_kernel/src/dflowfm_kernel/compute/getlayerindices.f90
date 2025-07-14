@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,7 +36,7 @@ contains
  !! Note: works both for sigma and z, but for sigma, the return values are trivial: nlayb==1, nrlay==kmx.
    subroutine getlayerindices(n, nlayb, nrlay)
       use m_flow, only: laydefnr, laytyp, laymx
-      use m_get_zlayer_indices
+      use m_get_zlayer_indices, only: getzlayerindices
 
       integer, intent(in) :: n !< Flow node/grid cell number
       integer, intent(out) :: nlayb !< Layer number for the bottom layer (in 1:kmx)

@@ -5,7 +5,7 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
                 & dpd       ,namcon    ,coninit   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -106,7 +106,6 @@ subroutine rstfil(lundia    ,error     ,restid    ,lturi     ,mmax      , &
     integer                                              :: luntmp  ! Unit number file 
     integer                                              :: m       ! Help var. 
     integer                                              :: n       ! Help var. 
-    integer                                              :: newlun
     logical                                              :: ex
     logical                                              :: ex_nfs
     character(16)                                        :: datetime

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -511,7 +511,7 @@ contains
    subroutine baroclinic_pressure_link_time_integration(baroclinic_pressure_gradients, volume_averaged_density, link_index_2d, l_bot, l_top)
       use m_flow, only: adve, kmxL
       use m_flowtimes, only: dts, dtprev
-      use m_turbulence, only: kmxx, baroclinic_force_prev
+      use m_turbulence, only: baroclinic_force_prev, kmxx
       use m_physcoef, only: ag
 
       real(kind=dp), dimension(1:kmxx), intent(in) :: baroclinic_pressure_gradients !> Baroclinic pressure gradient for each layer

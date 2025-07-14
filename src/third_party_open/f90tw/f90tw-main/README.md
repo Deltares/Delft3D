@@ -1,64 +1,68 @@
 # Deltares
-This is an adapted and stripped down version of f90tw. The original library did not work on windows, because the powershell commands failed. Furthermore, we only use googletest, so boost test was removed as an option.
-Then, the library provided two options to provide the tests, either through direct use of preprocessor macros in a .fpp file or via !$f90tw directives in a .f90 file. The latter implementation follows standard Fortran
-more closely and allows for the easy use of Fortran formatters and include statements of libraries. Therefore, the macro implementation was removed from the library.
-The CMake code was simplified so that it is simpler for the user of the library. The CMake function `gtest_discover_tests` was used to automatically register the tests in CTest.
+This is an adapted and stripped-down version of [f90tw](https://github.com/loudove/f90tw). The original library did not work on Windows because the PowerShell commands failed. Furthermore, since we only use Google Test, Boost Test was removed as an option.
+The original library provided two options for implementing tests: either through direct use of preprocessor macros in a .fpp file or via !$f90tw directives in a .f90 file. The latter implementation follows standard Fortran more closely and allows for easier use of Fortran formatters and library include statements. Therefore, the macro implementation was removed from this version.
+The CMake code was simplified to make it easier for users of the library. The CMake function `gtest_discover_tests` is used to automatically register tests in CTest.
 
 # f90tw
 
-f90tw project provides fortran wrappers for a limited subset of the [google](https://github.com/google/googletest) test framework functionality. At the same time, offers a rather simple mechanism for setting up and managing test suites in fortran projects. All the way down, f90tw implementation follows a preprocessor-based approach. The motivation was to utilize already available test frameworks and assertions implementation with minimal effort.
+The f90tw project provides Fortran wrappers for a limited subset of the [Google Test](https://github.com/google/googletest) framework functionality. It offers a simple mechanism for setting up and managing test suites in Fortran projects. The f90tw implementation follows a preprocessor-based approach, with the goal of utilizing already available test frameworks and assertion implementations with minimal effort.
 
-### Preprocessor macros
+## Usage
 
-In the fortran code file, we first include the header [`"f90tw_test.h"`](./f90tw/f90tw_test.h) and then, we implemented the test module with the help of f90tw preprocessor macros:
+Tests are implemented using standard Fortran with the `!$f90tw` directive (`[!cC]\$[fF]90[tT][wW]` in regular expression) to indicate the test cases (i.e., the subroutines to be wrapped). The lines with the directives are extracted and included in the C/C++ counterpart to create the test suite.
 
-- **TESTMODULE**( MODULENAME, MODULETOTEST): (*optional*) prepares the initial statements of the module(module declaration, use of the module to be tested and set `implicit none`).
-  - MODULENAME: the name of the module
-  - MODULETOTEST: the name of the module to test
+### Example
 
-- **TESTCONTAINS**: (*optional*) expands to fortran `contain` statement. It is
-separated from TESTMODULE macro to allow for the declaration of module resources common to all tests.
+```fortran
+module test_example
+   use assertions_gtest
+   use my_module_to_test
+   implicit none
 
-- **TESTCODE**( *TESTTYPE*, *TESTSUITENAME*, *TESTNAME*, *SUBNAME*, **...** ): prepares the specific test.
-  - *TESTTYPE*: the framework macro to be used for test declaration
-  - *TESTSUITENAME*: the name of the test suite
-  - *TESTNAME*: the name of the test
-  - *SUBNAME*: the name of the fortran subroutine to be implemented
-  - **...** : the rest of the arguments which are essentially, the fortran source code implementing the test.
-    **PLEASE NOTE** that each code line should be terminated with `";"`. The use of pound character (`"#"`) in fortran string renders preprocessing impossible, while, in order to avoid similar catastrophic errors, the string concatenation operator (`//`) should be replaced with the `F90CONCAT` macro and the line continuation operator (`&`) with the `F90LNCONT` macro. Moreover, `F90SPOT` macro expands to the `filename:line` string, while `F90SPOTMSG(MSG)` macro appends the MSG string to it. You can simplify the implementation by just calling a fortran method implemented elsewhere. This approach is maybe preferable since you will avoid the drawbacks of preprocessing relevant to code's clarity and debugging.
+contains
 
-- **ENDTESTMODULE**(MODULENAME)  : (*optional*) module end statement.
-  - MODULENAME: the name of the module (the same with the one used with with **TESTMODULE** macro).
+   !$f90tw TESTCODE(TEST, test_suite, test_addition, test_addition,
+   subroutine test_addition() bind(C)
+      use precision, only: dp
+      real(kind=dp), parameter :: tolerance = 1e-8_dp
 
-Using this approach, the c++ implementation becomes rather fast and easy since it is based on preprocessing the same fortran file, with different definitions of the macros resulting automatically in a) the declarations of the fortran test methods and b) the framework tests which essentially wrap these methods. A more detailed description of the fortran and c/c++ files is provided [here](./examples/README.md).
+      call f90_assert_eq(1 + 1, 2)
+      call f90_expect_near(1.0_dp, 1.1_dp, 0.2_dp, "values should be close")
+   end subroutine test_addition
+   !$f90tw)
 
-### Directives
+end module test_example
+```
 
-An alternative approach is to implement the test using standard fortran (see [`test_example_gtest.f90`](./examples/test_example_gtest.f90)) and the `!$f90tw` directive (`[!cC]\$[fF]90[tT][wW]]` in regular expression) to indicate the test cases i.e. the subroutines to be wrapped. Essentially, the lines with the directives will be extracted and included in the c/c++ counterpart ((see [`test_example_gtest.cpp`](./examples/test_example_gtest.cpp))) in order to create the test suite. A more detailed description of the fortran and c/c++ files is provided [here](examples/README.md).
+### Google Test Assertions
 
-## Assertions tests
+The following subset of the Google Test framework is supported with `<level>` : (ASSERT|EXPECT):
 
-In addition to the assertion wrappers for [gtest](./README.md#gtest-assertions-tests), a method for accessing the f90tw version is available:
+| Fortran (F90_`<level>`_`<operator>`) | operator | argument types |
+|---------------------------------------|----------|----------------|
+| F90_`<level>`_`<operator>` | (EQ\|NE) | logical(KIND=(C_BOOL\|4)), integer(KIND=C_INT), real(KIND=C_FLOAT), real(KIND=C_DOUBLE) |
+| F90_`<level>`_`<operator>` | (GT\|GE\|LT\|LE) | integer(KIND=C_INT), real(KIND=C_FLOAT), real(KIND=C_DOUBLE) |
+| F90_`<level>`_FLOAT_EQ | - | real(KIND=C_FLOAT) |
+| F90_`<level>`_DOUBLE_EQ | - | real(KIND=C_DOUBLE) |
+| F90_`<level>`_NEAR | - | real(KIND=C_FLOAT), real(KIND=C_DOUBLE) |
+| F90_`<level>`_`<operator>` | (TRUE\|FALSE) | logical(KIND=(C_BOOL\|4)) |
+| F90_`<level>`_`<operator>` | (STREQ\|STRNE\|STRCASEEQ\|STRCASENE) | character(KIND=C_CHAR,LEN=*) |
 
-- f90tw_version(*major*, *minor*, *patch*)
-  - *major* : major version
-  - *minor* : minor version
-  - *patch* : patch version
+**Note:** For logical types, you can use either `logical(KIND=C_BOOL)` or the default Fortran `logical` type. F90TW automatically provides type conversion when needed.
 
-### Gtest assertions tests
+All assertion methods can be used with a message as the last argument (of type `character(KIND=C_CHAR,LEN=*)`) to override the default assertion message.
 
-The following subset of gtest framework is supported with &lt;level&gt; : (ASSERT&#124;EXPECT) :
+## CMake Integration
 
-Fortran (F90_&lt;C/C++&gt;) | operator | argumens type
---------------------------- | -------- | -------------
-F90_&lt;level&gt;_&lt;operator&gt; |  (EQ&#124;NE) | logical(KIND=(C_BOOL&#124;4)),<br> integer(KIND=C_INT),<br> real(KIND=C_FLOAT),<br> real(KIND=C_DOUBLE)
-F90_&lt;level&gt;_&lt;operator&gt; |  (GT&#124;GE&#124;LT&#124;LE) | integer(KIND=C_INT),<br> real(KIND=C_FLOAT),<br> real(KIND=C_DOUBLE)
-F90_&lt;level&gt;_FLOAT_EQ <sup>(*)</sup> |  - | real(KIND=C_FLOAT)
-F90_&lt;level&gt;_DOUBLE_EQ <sup>(*)</sup> |  - | real(KIND=C_DOUBLE)
-F90_&lt;level&gt;_NEAR <sup>(*)</sup> |  - | real(KIND=C_FLOAT),<br> real(KIND=C_DOUBLE)
-F90_&lt;level&gt;_&lt;operator&gt; |  (TRUE&#124;FALSE) <sup>(*)</sup> | logical(KIND=(C_BOOL&#124;4))
-F90_&lt;level&gt;_&lt;operator&gt; |  (STREQ&#124;STRNE&#124;<br>STRCASEEQ&#124;STRCASENE) | character(KIND=C_CHAR,LEN=*)
+To use F90TW in your project, use the `F90TWTEST` function:
 
-All the assertion methods can be used with a message as the last argument (of type character(KIND=C_CHAR,LEN=*) ) in order to overwrite the default assertion message.
+```cmake
+F90TWTEST(test_name
+    CFILES test_main.cpp
+    F90FILES test_module.f90
+    F2HFILES test_module.f90
+    LIBRARIES my_library
+)
+```
 
-For more details please check the [gtest](https://github.com/google/googletest) documentation.
+For more details, please check the [Google Test](https://github.com/google/googletest) documentation.

@@ -1,7 +1,7 @@
 subroutine rdscour(lundia    ,error     ,nmmax     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -70,7 +70,6 @@ subroutine rdscour(lundia    ,error     ,nmmax     ,gdp       )
     integer                              :: n
     integer, dimension(:,:), allocatable :: nmappin
     integer, dimension(:,:), allocatable :: nmrefin
-    integer, external                    :: newlun
     logical                              :: lex
     character(256)                       :: errmsg
     character(256)                       :: flname

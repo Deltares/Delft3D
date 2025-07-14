@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,18 +44,17 @@ contains
    subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, &
                              viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu, difsedsp, background_diffusion_factor)
       use precision, only: dp
-      use m_flowgeom, only: Ndx, Lnx, ln, nd, klnup, slnup, dxi, acl, csu, snu, wcx1, wcx2, wcy1, wcy2, Dx ! static mesh information
+      use m_flowgeom, only: Lnx, ln, dxi, wcx1, wcy1, wcx2, wcy2, klnup, slnup, acl, csu, snu, Dx, nd, ndx
+      use MessageHandling, only: msgbuf, mess, level_warn
+      use timers, only: timon, timstrt, timstop
+      use m_dlimiter, only: dlimiter
+      use m_dlimitercentral, only: dlimitercentral
+      use m_dlimiter_nonequi, only: dlimiter_nonequi ! static mesh information
       use m_flowtimes, only: dts
       use m_flowparameters, only: cflmx
       use m_flow, only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, &
                         number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS
       use m_transport, only: ISALT, ITEMP
-      use m_missing
-      use MessageHandling
-      use timers
-      use m_dlimiter
-      use m_dlimitercentral
-      use m_dlimiter_nonequi
 
       implicit none
 

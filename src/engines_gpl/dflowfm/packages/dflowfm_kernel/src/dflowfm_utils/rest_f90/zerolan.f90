@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,10 +41,10 @@ module m_zerolan
 contains
 
    subroutine ZEROLAN(KEY)
-      use m_confrm
-      use m_landboundary
-      use m_polygon
-      use m_missing
+      use m_confrm, only: confrm
+      use m_landboundary, only: mxlan, xlan, ylan, zlan, nclan
+      use m_polygon, only: npl, xpl, ypl, zpl
+      use m_missing, only: dmiss, jins
       use geometry_module, only: dbpinpol
 
       integer :: i

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -174,8 +174,7 @@ contains
 
    subroutine allocgrains() ! for all fractions:
       use precision, only: dp
-      use MessageHandling
-      use m_physcoef
+      use m_physcoef, only: rhomean
       use m_turbulence, only: sigsed
       implicit none
 

@@ -3,7 +3,7 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
                 & bubble    ,kmax      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -83,7 +83,6 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
     integer                                :: npara   ! Number of parameter records in time dependent direct access file 
     integer                                :: nparrd  ! NR. of parameter records actual read 
     integer                                :: nqhrd
-    integer, external                      :: newlun
     logical                                :: access  ! Flag to read file as direct access or sequential 
     logical                                :: opend   ! Help flag = TRUE when file is still open (Delft3D) and 
     real(fp)                               :: tdummy

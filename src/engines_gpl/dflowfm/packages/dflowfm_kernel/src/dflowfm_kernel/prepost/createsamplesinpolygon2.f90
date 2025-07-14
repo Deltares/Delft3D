@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,15 +43,15 @@ contains
 
    subroutine CREATESAMPLESINPOLYGON2()
       use precision, only: dp
-      use m_ec_triangle
+      use m_ec_triangle, only: numtri, indx, edgeindx, triedge, numedge
+      use M_SAMPLES, only: ns, increasesam, zs, xs, ys
+      use M_MISSING, only: dmiss, jins
+      use m_sferic, only: jsferic
+      use m_alloc, only: aerr, realloc
+      use m_polygon, only: npl, xpl, ypl
+      use m_qnerror, only: qnerror
       use network_data, only: TRIANGLESIZEFAC
-      use M_SAMPLES
-      use M_MISSING
-      use m_sferic
-      use m_alloc
       use geometry_module, only: dbpinpol, get_startend
-      use m_polygon
-      use m_qnerror
 
       integer :: ierr
       integer :: in

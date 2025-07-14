@@ -81,7 +81,7 @@ object Sign : BuildType({
     }
 
     features {
-        if (DslContext.getParameter("environment") == "production") {
+        if (DslContext.getParameter("enable_commit_status_publisher").lowercase() == "true") {
             commitStatusPublisher {
                 enabled = true
                 vcsRootExtId = "${DslContext.settingsRoot.id}"

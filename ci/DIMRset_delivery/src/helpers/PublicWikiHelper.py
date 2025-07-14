@@ -6,7 +6,13 @@ from typing import Tuple
 from lib.Atlassian import Atlassian
 from lib.TeamCity import TeamCity
 from settings.atlassian_settings import *
-from settings.teamcity_settings import *
+
+# from settings.teamcity_settings import *
+from settings.teamcity_settings import (
+    PATH_TO_LINUX_VERSION_ARTIFACT,
+    PATH_TO_WINDOWS_VERSION_ARTIFACT,
+    TEAMCITY_IDS,
+)
 
 
 class PublicWikiHelper(object):
@@ -86,16 +92,23 @@ class PublicWikiHelper(object):
         Returns:
             Tuple[str, str]: A tuple containing the Windows and Linux artifacts respectively.
         """
-        latest_dimr_collector_release_build_id = self.__teamcity.get_latest_build_id_for_build_type_id(
-            build_type_id=TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID.value
+        publish_build_id = self.__teamcity.get_latest_build_id_for_build_type_id(
+            build_type_id=TEAMCITY_IDS.DIMR_PUBLISH.value
+        )
+
+        windows_collect_id = self.__teamcity.get_dependent_build_id(
+            publish_build_id, TEAMCITY_IDS.DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID.value
         )
 
         windows_version_artifact = self.__teamcity.get_build_artifact(
-            build_id=latest_dimr_collector_release_build_id, path_to_artifact=PATH_TO_WINDOWS_VERSION_ARTIFACT
+            build_id=windows_collect_id,
+            path_to_artifact=PATH_TO_WINDOWS_VERSION_ARTIFACT,
         )
-
+        linux_collect_id = self.__teamcity.get_dependent_build_id(
+            publish_build_id, TEAMCITY_IDS.DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID.value
+        )
         linux_version_artifact = self.__teamcity.get_build_artifact(
-            build_id=latest_dimr_collector_release_build_id, path_to_artifact=PATH_TO_LINUX_VERSION_ARTIFACT
+            build_id=linux_collect_id, path_to_artifact=PATH_TO_LINUX_VERSION_ARTIFACT
         )
 
         return windows_version_artifact.decode(), linux_version_artifact.decode()

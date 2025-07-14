@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,10 +43,10 @@ contains
    real(kind=dp) function comp_cross_time_2(x1, x3, x4, v1, v3, v4, dclear)
       use precision, only: dp
 
-      use m_missing
+      use m_missing, only: dmiss
+      use m_comp_roots4, only: comp_roots4
       use geometry_module, only: dlinedis
       use m_sferic, only: jsferic, jasfer3D
-      use m_comp_roots4
       use m_comp_cross_time_1, only: comp_cross_time_1
       use m_lcrossgridline, only: Lcrossgridline
 

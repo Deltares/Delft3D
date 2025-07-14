@@ -22,6 +22,8 @@ authors = [
 
 requires-python = ">= 3.11"
 dependencies = [
+    "bmi-python ~= 0.3.0",
+    "pywin32 ; platform_system == 'Windows'",  # Required for Windows to access the registry.
     "netCDF4 ~= 1.7.2",
     "lxml ~= 5.1",
     "pyarrow ~= 16.1", # Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0)

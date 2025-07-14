@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,15 +43,14 @@ contains
 
    subroutine makestep_samplepath(ipprev, ipcur, ipnext, Nsub, ipsub, ierror)
       use precision, only: dp
-      use m_samples
-      use m_samples_refine
+      use m_samples, only: mxsam, mysam, xs, ys, zs
+      use m_cirr, only: cirr
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       use m_missing, only: dmiss, dxymis
       use geometry_module, only: dbdistance, dcosphi
       use m_sferic, only: jsferic, jasfer3D
-      use m_cirr
-      use m_set_col
-      use m_movabs
-      use m_lnabs
 
       integer, intent(in) :: ipprev !< previous sample point
       integer, intent(in) :: ipcur !< current  sample point

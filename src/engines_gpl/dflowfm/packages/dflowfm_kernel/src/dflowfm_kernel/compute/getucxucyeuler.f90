@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,8 +41,8 @@ contains
 
    subroutine getucxucyeuler(N, ucxeu, ucyeu)
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: jawave, no_waves, lnx, ln, wcx1, wcy1, wcx2, wcy2
+      use m_flow, only: ndkx, ucx, ucy, flowwithoutwaves, lbot, kmxl
       use m_waves, only: ustokes ! available for all wave models
 
       implicit none

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_wribl
 contains
 
    subroutine wribl(mout) ! write bottom level
-      use M_FLOWGEOM
+      use M_FLOWGEOM, only: ndxi, xz, yz, bl
       use m_filez, only: doclose
 
       integer :: mout, k

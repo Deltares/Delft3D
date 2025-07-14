@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -245,7 +245,7 @@ contains
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer, intent(in) :: converterId !< unique Converter id
-      real(hp), pointer :: inputptr !< pointer to an input arg for the converter
+      real(dp), pointer :: inputptr !< pointer to an input arg for the converter
       !
       type(tEcConverter), pointer :: converterPtr !< Converter corresponding to converterId
       !
@@ -323,28 +323,28 @@ contains
       type(tEcIndexWeight), pointer :: weight !< the new IndexWeight
       type(tEcElementSet), pointer :: sourceElementSet !< source ElementSet
       type(tEcElementSet), pointer :: targetElementSet !< target ElementSet
-      real(hp) :: wx, wy
+      real(dp) :: wx, wy
       integer :: i, j !< loop counter
       integer :: ii, jj, ierr
       integer :: n_cols, n_rows, n_points
       integer :: inside, mp, np, in, jn !< return values of findnm
-      real(hp) :: wf(4) !< return value of findnm
+      real(dp) :: wf(4) !< return value of findnm
       integer :: fmask(4) !< return value of findnm
-      real(hp) :: fsum
+      real(dp) :: fsum
       type(tEcMask), pointer :: srcmask
-      real(hp), dimension(:), pointer :: src_x, src_y
-      real(hp) :: tgt_x, tgt_y
+      real(dp), dimension(:), pointer :: src_x, src_y
+      real(dp) :: tgt_x, tgt_y
       integer :: nsx, nsy
-      real(hp), allocatable, dimension(:) :: edge_poly_x
-      real(hp), allocatable, dimension(:) :: edge_poly_y
-      real(hp), dimension(:, :), pointer :: sY_2D, sX_2D !< 2D representation of linearly indexed array arr1D
-      real(hp) :: cx, cy, r2
+      real(dp), allocatable, dimension(:) :: edge_poly_x
+      real(dp), allocatable, dimension(:) :: edge_poly_y
+      real(dp), dimension(:, :), pointer :: sY_2D, sX_2D !< 2D representation of linearly indexed array arr1D
+      real(dp) :: cx, cy, r2
       integer :: nresult, iresult, idx, jsferic
       integer :: iimin, iimax, jjmin, jjmax
       type(kdtree_instance) :: treeinst
-      real(hp) :: x0, x1, y0, y1, rd
+      real(dp) :: x0, x1, y0, y1, rd
 
-      real(hp), dimension(4) :: xfindpoly, yfindpoly
+      real(dp), dimension(4) :: xfindpoly, yfindpoly
       integer :: imin, jmin, iii, jjj
 
       integer :: issparse
@@ -437,15 +437,17 @@ contains
          case (elmSetType_spheric_ortho, elmSetType_Cartesian_ortho)
             src_x => sourceElementSet%x
             src_y => sourceElementSet%y
-            nsx = n_cols
-            nsy = n_rows
+            nsx = size(src_x)
+            nsy = size(src_y)
+            iimin = nsx
+            jjmin = nsy
 
             if (connection%converterPtr%ofType == convType_netcdf) then
                issparse = 1 ! sparse storage
             end if
 
             if (issparse == 1) then
-               call realloc(imask, (/n_cols, n_rows/), fill=0)
+               call realloc(imask, [nsx, nsy], fill=0)
             end if
 
             do i = 1, n_points
@@ -515,7 +517,7 @@ contains
                do jj = 1, n_cols - 1
                   do ii = 1, n_rows - 1
                      if (ieee_is_nan(sx_2D(jj, ii)) .or. ieee_is_nan(sx_2D(jj + 1, ii)) .or. ieee_is_nan(sx_2D(jj, ii + 1)) .or. ieee_is_nan(sx_2D(jj + 1, ii + 1)) .or. &
-                        ieee_is_nan(sy_2D(jj, ii)) .or. ieee_is_nan(sy_2D(jj + 1, ii)) .or. ieee_is_nan(sy_2D(jj, ii + 1)) .or. ieee_is_nan(sy_2D(jj + 1, ii + 1))) then
+                         ieee_is_nan(sy_2D(jj, ii)) .or. ieee_is_nan(sy_2D(jj + 1, ii)) .or. ieee_is_nan(sy_2D(jj, ii + 1)) .or. ieee_is_nan(sy_2D(jj + 1, ii + 1))) then
                         cycle
                      end if
                      cx = (sx_2D(jj, ii) + sx_2D(jj + 1, ii) + sx_2D(jj, ii + 1) + sx_2D(jj + 1, ii + 1)) / 4.0
@@ -620,9 +622,9 @@ contains
                            fmask(2) = (srcmask%msk((np - srcmask%nmin) * srcmask%mrange + mp + 1 - srcmask%mmin + 1))
                            fmask(3) = (srcmask%msk((np + 1 - srcmask%nmin) * srcmask%mrange + mp + 1 - srcmask%mmin + 1))
                            fmask(4) = (srcmask%msk((np + 1 - srcmask%nmin) * srcmask%mrange + mp - srcmask%mmin + 1))
-                           fsum = sum((1.d0 - fmask) * wf) ! fmask = 1 for DISCARDED corners
+                           fsum = sum((1.0_dp - fmask) * wf) ! fmask = 1 for DISCARDED corners
                            if (fsum >= 1.0e-03) then
-                              wf = (wf * (1.d0 - fmask)) / fsum
+                              wf = (wf * (1.0_dp - fmask)) / fsum
                            end if
                         end if
                         weight%weightFactors(1, i) = wf(1)
@@ -737,17 +739,17 @@ contains
    ! =======================================================================
 
    subroutine findnm(xl, yl, x, y, mc, nc, inside, mv, nv, in, jn, wf)
-      real(hp), intent(in) :: xl, yl !< coordinates of point in target grid
-      real(hp), dimension(:), intent(in) :: x, y !< coordinates of points in source grid
+      real(dp), intent(in) :: xl, yl !< coordinates of point in target grid
+      real(dp), dimension(:), intent(in) :: x, y !< coordinates of points in source grid
       integer, intent(in) :: mc, nc !< maximum and actual dimensions
       integer, intent(out) :: inside, mv, nv, in, jn
-      real(hp), intent(out) :: wf(4)
+      real(dp), intent(out) :: wf(4)
       !
-      real(hp) :: xx(4), yy(4), xk(3), yk(3)
+      real(dp) :: xx(4), yy(4), xk(3), yk(3)
       integer :: ishot, i, j, mz, nz, m1, m2, n1, n2, insidet, i1, i2, ier
       integer :: mvol = 0
       integer :: nvol = 0
-      real(hp) :: dx, dy, r, rmin, xxc, yyc
+      real(dp) :: dx, dy, r, rmin, xxc, yyc
       !
       if (mc == 0 .or. nc == 0) return
       ishot = 0
@@ -838,41 +840,41 @@ contains
    subroutine bilin5(xa, ya, x0, y0, w, ier)
       ! Author: H. Petit
       integer, intent(out) :: ier
-      real(hp), intent(in) :: x0
-      real(hp), intent(in) :: y0
-      real(hp), dimension(4), intent(out) :: w
-      real(hp), dimension(4), intent(in) :: xa
-      real(hp), dimension(4), intent(in) :: ya
+      real(dp), intent(in) :: x0
+      real(dp), intent(in) :: y0
+      real(dp), dimension(4), intent(out) :: w
+      real(dp), dimension(4), intent(in) :: xa
+      real(dp), dimension(4), intent(in) :: ya
       !
       ! Local variables
       !
-      real(hp) :: a
-      real(hp) :: a21
-      real(hp) :: a22
-      real(hp) :: a31
-      real(hp) :: a32
-      real(hp) :: a41
-      real(hp) :: a42
-      real(hp) :: b
-      real(hp) :: c
-      real(hp) :: det
-      real(hp) :: discr
-      real(hp) :: eta
-      real(hp) :: x
-      real(hp) :: x1
-      real(hp) :: x2
-      real(hp) :: x3
-      real(hp) :: x3t
-      real(hp) :: x4
-      real(hp) :: xi
-      real(hp) :: xt
-      real(hp) :: y
-      real(hp) :: y1
-      real(hp) :: y2
-      real(hp) :: y3
-      real(hp) :: y3t
-      real(hp) :: y4
-      real(hp) :: yt
+      real(dp) :: a
+      real(dp) :: a21
+      real(dp) :: a22
+      real(dp) :: a31
+      real(dp) :: a32
+      real(dp) :: a41
+      real(dp) :: a42
+      real(dp) :: b
+      real(dp) :: c
+      real(dp) :: det
+      real(dp) :: discr
+      real(dp) :: eta
+      real(dp) :: x
+      real(dp) :: x1
+      real(dp) :: x2
+      real(dp) :: x3
+      real(dp) :: x3t
+      real(dp) :: x4
+      real(dp) :: xi
+      real(dp) :: xt
+      real(dp) :: y
+      real(dp) :: y1
+      real(dp) :: y2
+      real(dp) :: y3
+      real(dp) :: y3t
+      real(dp) :: y4
+      real(dp) :: yt
       !
          !! executable statements -------------------------------------------------------
       !
@@ -902,7 +904,7 @@ contains
       a41 = x4 - x1
       a42 = y4 - y1
       det = a21 * a42 - a22 * a41
-      if (abs(det) < 1.0e-20_hp) then
+      if (abs(det) < 1.0e-20_dp) then
          ier = 1
          goto 99999
       end if
@@ -910,48 +912,48 @@ contains
       y3t = (-a22 * a31 + a21 * a32) / det
       xt = (a42 * (x - x1) - a41 * (y - y1)) / det
       yt = (-a22 * (x - x1) + a21 * (y - y1)) / det
-      if ((x3t < 0.0_hp) .or. (y3t < 0.0_hp)) then
+      if ((x3t < 0.0_dp) .or. (y3t < 0.0_dp)) then
          ! write (*, *) 'distorted quadrangle'
          ier = 1
          goto 99999
       end if
-      if (abs(x3t - 1.0_hp) < 1.0e-7_hp) then
+      if (abs(x3t - 1.0_dp) < 1.0e-7_dp) then
          xi = xt
-         if (abs(y3t - 1.0_hp) < 1.0e-7_hp) then
+         if (abs(y3t - 1.0_dp) < 1.0e-7_dp) then
             eta = yt
-         elseif (abs(1.0_hp + (y3t - 1.0_hp) * xt) < 1.0e-6_hp) then
+         elseif (abs(1.0_dp + (y3t - 1.0_dp) * xt) < 1.0e-6_dp) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          else
-            eta = yt / (1.0_hp + (y3t - 1.0_hp) * xt)
+            eta = yt / (1.0_dp + (y3t - 1.0_dp) * xt)
          end if
-      elseif (abs(y3t - 1.0_hp) < 1.0e-6_hp) then
+      elseif (abs(y3t - 1.0_dp) < 1.0e-6_dp) then
          eta = yt
-         if (abs(1.0_hp + (x3t - 1.0_hp) * yt) < 1.0e-6_hp) then
+         if (abs(1.0_dp + (x3t - 1.0_dp) * yt) < 1.0e-6_dp) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          else
-            xi = xt / (1.0_hp + (x3t - 1.0_hp) * yt)
+            xi = xt / (1.0_dp + (x3t - 1.0_dp) * yt)
          end if
       else
-         a = y3t - 1.0_hp
-         b = 1.0_hp + (x3t - 1.0_hp) * yt - (y3t - 1.0_hp) * xt
+         a = y3t - 1.0_dp
+         b = 1.0_dp + (x3t - 1.0_dp) * yt - (y3t - 1.0_dp) * xt
          c = -xt
-         discr = b * b - 4.0_hp * a * c
-         if (discr < 1.0e-6_hp) then
+         discr = b * b - 4.0_dp * a * c
+         if (discr < 1.0e-6_dp) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          end if
-         xi = (-b + sqrt(discr)) / (2.0_hp * a)
-         eta = ((y3t - 1.0_hp) * (xi - xt) + (x3t - 1.0_hp) * yt) / (x3t - 1.0_hp)
+         xi = (-b + sqrt(discr)) / (2.0_dp * a)
+         eta = ((y3t - 1.0_dp) * (xi - xt) + (x3t - 1.0_dp) * yt) / (x3t - 1.0_dp)
       end if
-      w(1) = (1.0_hp - xi) * (1.0_hp - eta)
-      w(2) = xi * (1.0_hp - eta)
+      w(1) = (1.0_dp - xi) * (1.0_dp - eta)
+      w(2) = xi * (1.0_dp - eta)
       w(3) = xi * eta
-      w(4) = eta * (1.0_hp - xi)
+      w(4) = eta * (1.0_dp - xi)
       return
 99999 continue
    end subroutine bilin5
@@ -960,14 +962,14 @@ contains
 
    subroutine pinpok(xl, yl, n, x, y, inside)
       ! Author: H. Kernkamp
-      double precision, intent(in) :: xl, yl ! point under consideration
+      real(dp), intent(in) :: xl, yl ! point under consideration
       integer, intent(in) :: n
-      double precision, dimension(n), intent(in) :: x, y ! polygon(n)
+      real(dp), dimension(n), intent(in) :: x, y ! polygon(n)
       integer, intent(out) :: inside
 
-      double precision, parameter :: dmiss_default = -999.0_hp ! Default missing value in meteo arrays
+      real(dp), parameter :: dmiss_default = -999_dp ! Default missing value in meteo arrays
       integer :: i, i1, i2, np, rechts
-      double precision :: rl, rm, x1, x2, y1, y2
+      real(dp) :: rl, rm, x1, x2, y1, y2
 
       if (n <= 2) then
          inside = 1
@@ -1002,7 +1004,7 @@ contains
                if (rm == 0) then ! op scheve lijn
                   inside = 1
                   return
-               else if (rm > 0d0) then ! onder scheve lijn
+               else if (rm > 0.0_dp) then ! onder scheve lijn
                   if (xl == x1 .or. xl == x2) then
                      if (x1 > xl .or. x2 > xl) then
                         rechts = rechts + 1
@@ -1070,8 +1072,8 @@ contains
    subroutine time_weight_factors(a0, a1, timesteps, t0, t1, extrapolated, timeint)
       !
       ! parameters
-      real(hp), intent(inout) :: a0, a1
-      real(hp), intent(in) :: t1, t0, timesteps
+      real(dp), intent(inout) :: a0, a1
+      real(dp), intent(in) :: t1, t0, timesteps
       logical, intent(out), optional :: extrapolated
       integer, intent(in), optional :: timeint
       !
@@ -1089,17 +1091,17 @@ contains
          l_extrapolated = .false.
          if (comparereal(timesteps, t0) == -1) then
             l_extrapolated = .true.
-            a0 = 1.0_hp
-            a1 = 0.0_hp
+            a0 = 1.0_dp
+            a1 = 0.0_dp
          end if
          if (comparereal(timesteps, t1) == 1) then
             l_extrapolated = .true.
-            a0 = 0.0_hp
-            a1 = 1.0_hp
+            a0 = 0.0_dp
+            a1 = 1.0_dp
          end if
          if (.not. l_extrapolated) then
-            a0 = 1.0_hp
-            a1 = 0.0_hp
+            a0 = 1.0_dp
+            a1 = 0.0_dp
             !
             if (comparereal(t0, t1) /= 0) then
                a1 = real((timesteps - t0) / (t1 - t0), hp)
@@ -1108,14 +1110,14 @@ contains
          end if
          if (present(extrapolated)) extrapolated = l_extrapolated
       case (timeint_bto)
-         a0 = 0.0d0
-         a1 = 1.0d0
+         a0 = 0.0_dp
+         a1 = 1.0_dp
       case (timeint_bfrom)
-         a0 = 1.0d0
-         a1 = 0.0d0
+         a0 = 1.0_dp
+         a1 = 0.0_dp
       case (timeint_rainfall) ! constant rainfall intensity from time-integrated amount
-         a0 = 0.0d0
-         a1 = 1.d0 / (t1 - t0)
+         a0 = 0.0_dp
+         a1 = 1.0_dp / (t1 - t0)
       case default
          ! invalid interpolation method
          return
@@ -1132,14 +1134,14 @@ contains
    function ecConverterUniform(connection, timesteps) result(success)
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(hp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
+      real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       !
-      real(hp) :: t0, t1 !< source item t0 and t1
-      real(hp) :: a0, a1 !< weight for source t0 and t1 data
+      real(dp) :: t0, t1 !< source item t0 and t1
+      real(dp) :: a0, a1 !< weight for source t0 and t1 data
       integer :: n_data !< number of values
-      real(hp), dimension(:), pointer :: valuesT0 !< values at time t0
-      real(hp), dimension(:), pointer :: valuesT1 !< values at time t1
-      real(hp), dimension(:), allocatable :: valuesT !< values at time t
+      real(dp), dimension(:), pointer :: valuesT0 !< values at time t0
+      real(dp), dimension(:), pointer :: valuesT1 !< values at time t1
+      real(dp), dimension(:), allocatable :: valuesT !< values at time t
       integer :: istat !< allocation status
       integer :: i, j !< loop counters
       type(tEcField), pointer :: targetField !< Converter's result goes in here
@@ -1192,11 +1194,11 @@ contains
                call time_weight_factors(a0, a1, timesteps, t0, t1, &
                                         timeint=connection%sourceItemsPtr(1)%ptr%quantityptr%timeint)
             case (timeint_bto)
-               a0 = 0.0d0
-               a1 = 1.0d0
+               a0 = 0.0_dp
+               a1 = 1.0_dp
             case (timeint_bfrom)
-               a0 = 1.0d0
-               a1 = 0.0d0
+               a0 = 1.0_dp
+               a1 = 0.0_dp
             end select
             !
             do i = 1, size(valuesT0, dim=1)
@@ -1374,20 +1376,20 @@ contains
    function ecConverterUniformToMagnitude(connection, timesteps) result(success)
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(hp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
+      real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       !
       integer :: j !< loop counter
-      real(hp) :: t0 !< source item t0
-      real(hp) :: t1 !< source item t1
-      real(hp) :: a0 !< weight for source t0 data
-      real(hp) :: a1 !< weight for source t1 data
-      real(hp) :: windXT0 !< wind x-component value at time t0
-      real(hp) :: windXT1 !< wind x-component value at time t1
-      real(hp) :: windYT0 !< wind y-component value at time t0
-      real(hp) :: windYT1 !< wind y-component value at time t1
-      real(hp) :: windXT !< wind x-component value at time t
-      real(hp) :: windYT !< wind y-component value at time t
-      real(hp) :: magnitude !< wind magnitude at time t
+      real(dp) :: t0 !< source item t0
+      real(dp) :: t1 !< source item t1
+      real(dp) :: a0 !< weight for source t0 data
+      real(dp) :: a1 !< weight for source t1 data
+      real(dp) :: windXT0 !< wind x-component value at time t0
+      real(dp) :: windXT1 !< wind x-component value at time t1
+      real(dp) :: windYT0 !< wind y-component value at time t0
+      real(dp) :: windYT1 !< wind y-component value at time t1
+      real(dp) :: windXT !< wind x-component value at time t
+      real(dp) :: windYT !< wind y-component value at time t
+      real(dp) :: magnitude !< wind magnitude at time t
       type(tEcField), pointer :: targetField !< Converter's result goes in here
       !
       success = .false.
@@ -1457,23 +1459,23 @@ contains
    function ecConverterUnimagdir(connection, timesteps) result(success)
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(hp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
+      real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       !
-      real(hp) :: t0 !< source item t0
-      real(hp) :: t1 !< source item t1
-      real(hp) :: a0 !< weight for source t0 data
-      real(hp) :: a1 !< weight for source t1 data
-      real(hp) :: windspeed0 !< wind speed at timesteps t0
-      real(hp) :: windspeed1 !< wind speed at timesteps t1
-      real(hp) :: windspeed !< time interpolated wind speed
-      real(hp) :: winddirection0 !< wind direction at timesteps t0
-      real(hp) :: winddirection1 !< wind direction at timesteps t1
-      real(hp) :: winddirection !< time interpolated wind direction
-      real(hp), dimension(:), pointer :: u !< calculated u value
-      real(hp), dimension(:), pointer :: v !< calculated v value
+      real(dp) :: t0 !< source item t0
+      real(dp) :: t1 !< source item t1
+      real(dp) :: a0 !< weight for source t0 data
+      real(dp) :: a1 !< weight for source t1 data
+      real(dp) :: windspeed0 !< wind speed at timesteps t0
+      real(dp) :: windspeed1 !< wind speed at timesteps t1
+      real(dp) :: windspeed !< time interpolated wind speed
+      real(dp) :: winddirection0 !< wind direction at timesteps t0
+      real(dp) :: winddirection1 !< wind direction at timesteps t1
+      real(dp) :: winddirection !< time interpolated wind direction
+      real(dp), dimension(:), pointer :: u !< calculated u value
+      real(dp), dimension(:), pointer :: v !< calculated v value
       integer :: i !< loop counter
-      real(hp) :: targetU !< new u value to be written to all target grid points
-      real(hp) :: targetV !< new v value to be written to all target grid points
+      real(dp) :: targetU !< new u value to be written to all target grid points
+      real(dp) :: targetV !< new v value to be written to all target grid points
       !
       success = .false.
       u => null()
@@ -1494,7 +1496,7 @@ contains
          winddirection1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr(2)
          winddirection = cyclic_interpolation(winddirection0, winddirection1, a0, a1)
          ! === space conversion using nautical convention ===
-         winddirection = (270.0_hp - winddirection) * degrad
+         winddirection = (270.0_dp - winddirection) * degrad
          u => connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr
          v => connection%targetItemsPtr(2)%ptr%targetFieldPtr%arr1dPtr
          targetU = windspeed * cos(winddirection)
@@ -1528,12 +1530,12 @@ contains
    ! =======================================================================
 
    function ecConverterVerticalMean(zpos, val, zmin, zmax, ndxmin, ndxmax) result(integral)
-      real(hp) :: integral
-      real(hp), dimension(:), intent(in) :: zpos, val
-      real(hp), intent(in) :: zmin, zmax
+      real(dp) :: integral
+      real(dp), dimension(:), intent(in) :: zpos, val
+      real(dp), intent(in) :: zmin, zmax
       integer, intent(out) :: ndxmin, ndxmax
 
-      real(hp) :: wt, dz
+      real(dp) :: wt, dz
       integer :: ndx
       ndxmin = size(zpos)
       ndxmax = 1
@@ -1548,16 +1550,16 @@ contains
       dz = min(abs(zpos(ndxmin) - zmin), abs(zpos(ndxmin) - zmax))
       if (ndxmin > 1) then
          wt = dz / abs((zpos(ndxmin - 1) - zpos(ndxmin))) * 0.5
-         integral = integral + ((1_hp - wt) * val(ndxmin) + wt * val(ndxmin - 1)) * dz
+         integral = integral + ((1_dp - wt) * val(ndxmin) + wt * val(ndxmin - 1)) * dz
       else
          integral = integral + val(ndxmin) * dz
       end if
       dz = min(abs(zpos(ndxmax) - zmin), abs(zpos(ndxmax) - zmax))
       if (ndxmax < size(zpos)) then
          wt = dz / abs((zpos(ndxmax - 1) - zpos(ndxmax))) * 0.5
-         integral = integral + ((1_hp - wt) * val(ndxmax) + wt * val(ndxmax - 1)) * dz
+         integral = integral + ((1_dp - wt) * val(ndxmax) + wt * val(ndxmax - 1)) * dz
       else
-         wt = 0_hp
+         wt = 0_dp
          integral = integral + val(ndxmax) * dz
       end if
       integral = integral / (zmax - zmin)
@@ -1571,10 +1573,10 @@ contains
       use m_ec_message
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(hp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
+      real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       !
       integer :: i, k !< loop counters
-      real(hp) :: wL, wR !< left and right weights
+      real(dp) :: wL, wR !< left and right weights
       integer :: kL, kR !<
       integer :: maxlay_tgt !< size of ElementSet of the TARGET in third dimension (if relevant), a.k.a kmx
       integer :: maxlay_src !< size of ElementSet of the SOURCE in third dimension (if relevant)
@@ -1583,13 +1585,13 @@ contains
       integer :: kbegin, kend, kbeginL, kendL, kbeginR, kendR, idxL1, idxR1, idxL2, idxR2 !<
       integer :: ndxmin, ndxmax
       logical, save :: alreadyPrinted = .false.
-      real(hp) :: wwL, wwR !<
-      real(hp), dimension(:), allocatable :: valL, valR, valL1, valL2, valR1, valR2, val !<
-      real(hp), dimension(:), allocatable :: sigmaL, sigmaR, sigma, sigmaLL, sigmaRR
+      real(dp) :: wwL, wwR !<
+      real(dp), dimension(:), allocatable :: valL, valR, valL1, valL2, valR1, valR2, val !<
+      real(dp), dimension(:), allocatable :: sigmaL, sigmaR, sigma, sigmaLL, sigmaRR
       logical, dimension(:), allocatable :: vmaskL, vmaskR
-      real(hp), dimension(:), pointer :: zmin => null() !< vertical min
-      real(hp), dimension(:), pointer :: zmax => null() !< vertical max
-      real(hp) :: missing
+      real(dp), dimension(:), pointer :: zmin => null() !< vertical min
+      real(dp), dimension(:), pointer :: zmax => null() !< vertical max
+      real(dp) :: missing
 
       integer :: idx !< helper variable
       integer :: vectormax
@@ -1669,11 +1671,11 @@ contains
                   ! deal with one-sided interpolation
                   if (kL == 0 .and. kR /= 0) then
                      kL = kR
-                     wL = 0.0_hp
+                     wL = 0.0_dp
                   end if
                   if (kR == 0 .and. kL /= 0) then
                      kR = kL
-                     wR = 0.0_hp
+                     wR = 0.0_dp
                   end if
                   if (kL > 0) then
                      if (kR > 0) then
@@ -1796,13 +1798,13 @@ contains
                                     call setECMessage("WARNING: ec_converter::ecConverterPolytim: Unknown vertical interpolation type given, will proceed with linear method.")
                                     alreadyPrinted = .true.
                                  end if
-                                 val = wL * (wwL * valL1 + (1.0_hp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_hp - wwR) * valR2)
+                                 val = wL * (wwL * valL1 + (1.0_dp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_dp - wwR) * valR2)
                               case (zinterpolate_linear)
-                                 val = wL * (wwL * valL1 + (1.0_hp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_hp - wwR) * valR2)
+                                 val = wL * (wwL * valL1 + (1.0_dp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_dp - wwR) * valR2)
                               case (zinterpolate_block)
                                  val = wL * valL1 + wR * valR1
                               case (zinterpolate_log)
-                                 val = wL * (valL1**wwL) * (valL2**(1.0_hp - wwL)) + wR * (valR1**wwR) * (valR2**(1.0_hp - wwR))
+                                 val = wL * (valL1**wwL) * (valL2**(1.0_dp - wwL)) + wR * (valR1**wwR) * (valR2**(1.0_dp - wwR))
                               case default
                                  call setECMessage("ERROR: ec_converter::ecConverterPolytim: Unsupported vertical interpolation type requested.")
                                  return
@@ -1870,20 +1872,20 @@ contains
    end function ecConverterPolytim
 
    subroutine findVerticalIndexWeight(sigmak, sigma, maxlay_src, kLR, ww, idx1, idx2)
-      real(kind=hp), intent(in) :: sigmak, sigma(:)
+      real(dp), intent(in) :: sigmak, sigma(:)
       integer, intent(in) :: maxlay_src, kLR
-      real(kind=hp), intent(out) :: ww
+      real(dp), intent(out) :: ww
       integer, intent(out) :: idx1, idx2
 
       if ((sigmak - sigma(1)) * (sigmak - sigma(maxlay_src)) >= 0) then ! beyond the range of source levels
          if (abs(sigmak - sigma(1)) < abs(sigmak - sigma(maxlay_src))) then ! closer to sigma(1) (avoiding the assumption sigma(1) is the lowest)
             idx1 = 1
             idx2 = 1
-            ww = 0.5d0
+            ww = 0.5_dp
          else ! closer to sigma(maxlay_src)
             idx1 = maxlay_src
             idx2 = maxlay_src
-            ww = 0.5d0
+            ww = 0.5_dp
          end if
       else ! within the range of source levels
          do idx1 = 1, maxlay_src - 1 ! find vertical indices
@@ -1905,24 +1907,24 @@ contains
    function ecConverterCurvi(connection, timesteps) result(success)
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(hp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
+      real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       !
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
-      real(hp) :: sourceMissing !< Source side missing value
+      real(dp) :: sourceMissing !< Source side missing value
       type(tEcField), pointer :: targetField !< helper pointer
       type(tEcIndexWeight), pointer :: indexWeight !< helper pointer, saved index weights
       type(tEcElementSet), pointer :: sourceElementSet !< source ElementSet
-      real(hp), dimension(:), pointer :: targetValues
+      real(dp), dimension(:), pointer :: targetValues
       integer :: ii, jj
       integer :: nmiss
-      real(hp), dimension(:, :), pointer :: s2D_T0, s2D_T1 !< 2D representation of linearly indexed array arr1D
+      real(dp), dimension(:, :), pointer :: s2D_T0, s2D_T1 !< 2D representation of linearly indexed array arr1D
       integer :: n_cols, n_rows, n_points
       integer :: mp, np
       integer :: i, j
-      real(hp) :: a0, a1
-      real(hp) :: t0, t1
-      real(hp), dimension(4) :: wf_i !< helper containing indexWeight%weightFactors(1:4,i)
+      real(dp) :: a0, a1
+      real(dp) :: t0, t1
+      real(dp), dimension(4) :: wf_i !< helper containing indexWeight%weightFactors(1:4,i)
       !
       success = .false.
       sourceT0Field => null()
@@ -1977,7 +1979,7 @@ contains
                   if (nmiss == 0) then ! if sufficient data for bi-linear interpolation
                      if ((connection%converterPtr%operandType == operand_replace) .or. &
                          (connection%converterPtr%operandType == operand_replace_if_value)) then
-                        targetValues(i) = 0.0_hp
+                        targetValues(i) = 0.0_dp
                      end if
                      wf_i = indexWeight%weightFactors(1:4, i)
                      targetValues(i) = targetValues(i) &
@@ -2010,25 +2012,25 @@ contains
    function ecConverterArcinfo(connection, timesteps) result(success)
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(hp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
+      real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       !
-      real(hp) :: x01, y01, dx1, dy1 !< uniform grid parameters
+      real(dp) :: x01, y01, dx1, dy1 !< uniform grid parameters
       integer :: mx !< n_cols (x or latitude coordinate)
       integer :: grid_width !< n_rows (y or longitude coordinate)
       integer :: n !< loop counter
-      real(hp) :: x1, y1 !<
+      real(dp) :: x1, y1 !<
       integer :: i1, j1 !<
-      real(hp) :: di1, dj1 !<
-      real(hp), dimension(4) :: f !< spatial weights
-      real(hp), dimension(4) :: fmask !< spatial mask
-      real(hp) :: fsum !< summed spatial weights*masks
-      real(hp), dimension(4) :: u !< source u, v or p at timesteps=t0
-      real(hp), dimension(4) :: v !< source u, v or p at timesteps=t1
-      real(hp) :: a0, a1 !<
-      real(hp) :: t0, t1 !<
-      real(hp) :: vv0 !< target u, v or p at timesteps=t0
-      real(hp) :: vv1 !< target u, v or p at timesteps=t1
-      real(hp) :: rr !< target u, v or p at timesteps=t
+      real(dp) :: di1, dj1 !<
+      real(dp), dimension(4) :: f !< spatial weights
+      real(dp), dimension(4) :: fmask !< spatial mask
+      real(dp) :: fsum !< summed spatial weights*masks
+      real(dp), dimension(4) :: u !< source u, v or p at timesteps=t0
+      real(dp), dimension(4) :: v !< source u, v or p at timesteps=t1
+      real(dp) :: a0, a1 !<
+      real(dp) :: t0, t1 !<
+      real(dp) :: vv0 !< target u, v or p at timesteps=t0
+      real(dp) :: vv1 !< target u, v or p at timesteps=t1
+      real(dp) :: rr !< target u, v or p at timesteps=t
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
       type(tEcMask), pointer :: srcmask
@@ -2061,10 +2063,10 @@ contains
             ! TODO : Calculate target value depending on ElementSet mask.
             ! === interpolate in space ===
             x1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n) - x01) / dx1
-            if (x1 < -0.5_hp .or. x1 > mx - 0.5_hp) cycle
+            if (x1 < -0.5_dp .or. x1 > mx - 0.5_dp) cycle
             !
             y1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n) - y01) / dy1
-            if (y1 < -0.5_hp .or. y1 > grid_width - 0.5_hp) cycle
+            if (y1 < -0.5_dp .or. y1 > grid_width - 0.5_dp) cycle
             !
             i1 = int(x1 + 1)
             i1 = min(mx - 1, max(1, i1))
@@ -2100,9 +2102,9 @@ contains
                fmask(4) = (srcmask%msk((j1 + 1 - srcmask%nmin) * srcmask%mrange + i1 - srcmask%mmin + 1))
             end if
 
-            fsum = sum(f * (1.d0 - fmask))
+            fsum = sum(f * (1.0_dp - fmask))
             if (fsum >= 1.0e-03) then
-               f = (f * (1.d0 - fmask)) / fsum
+               f = (f * (1.0_dp - fmask)) / fsum
             end if
 
             vv0 = u(1) * f(1) + u(2) * f(2) + u(3) * f(3) + u(4) * f(4)
@@ -2139,10 +2141,10 @@ contains
    function ecConverterSamples(connection, timesteps) result(success)
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(hp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
+      real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       !
-      real(hp) :: x01, y01 !< uniform grid parameters
-      real(hp) :: rr !< target u, v or p at timesteps=t
+      real(dp) :: x01, y01 !< uniform grid parameters
+      real(dp) :: rr !< target u, v or p at timesteps=t
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
       integer :: nSamples
@@ -2161,7 +2163,7 @@ contains
 
          call setECMessage('ERROR: ec_converter::ecConverterSamples: triangle interpolation is work in progress.')
          return
-         rr = 0d0 ! TODO: AvD: WIP
+         rr = 0.0_dp ! TODO: AvD: WIP
          !select case(connection%converterPtr%operandType)
          !   case(operand_replace)
          !      connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = rr
@@ -2188,7 +2190,7 @@ contains
    function ecConverterQhtable(connection) result(success)
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(hp), pointer :: input !< input value to the lookup table (referenced by pointer
+      real(dp), pointer :: input !< input value to the lookup table (referenced by pointer
       !
       integer :: j
       integer :: start_j
@@ -2243,17 +2245,17 @@ contains
       integer :: i, j !< loop counters
       character(len=maxNameLen) :: str !< helper variable
       logical :: is_astro !< flag for astronomical signal
-      real(hp) :: refdate !< reference date for this source in mjd
-      real(hp) :: tseconds !< time in seconds
-      real(hp) :: tnodal !< start time (seconds after reftime)
-      real(hp) :: omega !< angular velocity [rad/minute]
-      real(hp) :: phase0 !< phase at t=t0 [rad]
-      real(hp) :: magnitude !< magnitude [m]
-      real(hp) :: phase !< phase at t=timesteps [rad]
-      real(hp) :: deflection !< summed result of the Fourier component effects
+      real(dp) :: refdate !< reference date for this source in mjd
+      real(dp) :: tseconds !< time in seconds
+      real(dp) :: tnodal !< start time (seconds after reftime)
+      real(dp) :: omega !< angular velocity [rad/minute]
+      real(dp) :: phase0 !< phase at t=t0 [rad]
+      real(dp) :: magnitude !< magnitude [m]
+      real(dp) :: phase !< phase at t=timesteps [rad]
+      real(dp) :: deflection !< summed result of the Fourier component effects
       !
       success = .false.
-      deflection = 0.0_hp
+      deflection = 0.0_dp
       ! ===== interpolation =====
       select case (connection%converterPtr%interpolationType)
       case (interpolate_passthrough)
@@ -2275,11 +2277,11 @@ contains
                end if
             end do
             if (is_astro) then
-               tseconds = timesteps%seconds() - tnodal * 86400.0_hp
+               tseconds = timesteps%seconds() - tnodal * 86400.0_dp
             else
                tseconds = timesteps%seconds()
             end if
-            phase = omega * (tseconds / 60.0_hp) - phase0 ! omega, angle velocity [rad/minute]
+            phase = omega * (tseconds / 60.0_dp) - phase0 ! omega, angle velocity [rad/minute]
             deflection = deflection + magnitude * cos(phase)
          end do
          select case (connection%converterPtr%operandType)
@@ -2310,19 +2312,19 @@ contains
    !> Cyclic interpolation of two scalars, based on periodicity of 360 (degrees)
       !! Sort data in monotonically increasing order and rotate over smallest angle
    elemental function cyclic_interpolation(var1, var2, weight1, weight2)
-      real(hp), intent(in) :: var1 !< First input argument for in interpolation functions using a scalar weight value
-      real(hp), intent(in) :: var2 !< Second input argument for in interpolation functions using a scalar weight value
-      real(hp), intent(in) :: weight1 !< Value for weighing two variables: 'weight1' holds for var1
-      real(hp), intent(in) :: weight2 !< Value for weighing two variables: 'weight2' holds for var2
-      real(hp) :: cyclic_interpolation !< Result value after linear interpolation between var1 and var2 using weightvalue weight
+      real(dp), intent(in) :: var1 !< First input argument for in interpolation functions using a scalar weight value
+      real(dp), intent(in) :: var2 !< Second input argument for in interpolation functions using a scalar weight value
+      real(dp), intent(in) :: weight1 !< Value for weighing two variables: 'weight1' holds for var1
+      real(dp), intent(in) :: weight2 !< Value for weighing two variables: 'weight2' holds for var2
+      real(dp) :: cyclic_interpolation !< Result value after linear interpolation between var1 and var2 using weightvalue weight
       !
-      real(hp) :: minangle
-      real(hp) :: maxangle
-      real(hp) :: delta
-      real(hp) :: weightfac
-      
+      real(dp) :: minangle
+      real(dp) :: maxangle
+      real(dp) :: delta
+      real(dp) :: weightfac
+
       if (ieee_is_nan(var1) .or. ieee_is_nan(var2)) then
-         cyclic_interpolation = ieee_value(0.0_hp, ieee_quiet_nan)
+         cyclic_interpolation = ieee_value(0.0_dp, ieee_quiet_nan)
          return
       end if
 
@@ -2332,20 +2334,20 @@ contains
       if (var2 < var1) then
          minangle = var2
          maxangle = var1
-         weightfac = 1.0_hp - weightfac
+         weightfac = 1.0_dp - weightfac
       end if
       delta = maxangle - minangle
 
       ! Carry out the interpolation
-      if (delta <= 180.0_hp) then
-         cyclic_interpolation = (1.0_hp - weightfac) * delta
+      if (delta <= 180.0_dp) then
+         cyclic_interpolation = (1.0_dp - weightfac) * delta
       else
-         cyclic_interpolation = (1.0_hp - weightfac) * delta + weightfac * 360.0_hp
+         cyclic_interpolation = (1.0_dp - weightfac) * delta + weightfac * 360.0_dp
       end if
 
       ! Rotate backwards over the smallest angle
       cyclic_interpolation = cyclic_interpolation + minangle
-      cyclic_interpolation = modulo(cyclic_interpolation, 360.0_hp)
+      cyclic_interpolation = modulo(cyclic_interpolation, 360.0_dp)
    end function
 
    ! =======================================================================
@@ -2355,54 +2357,54 @@ contains
    function ecConverterSpiderweb(connection, timesteps) result(success)
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(hp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
+      real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       !
       integer :: i
-      real(hp) :: spwdphi !< angular increment: 2pi/#colums
-      real(hp) :: spwdrad !< radial increment: radius/#rows
-      real(hp) :: a0, a1
-      real(hp) :: t0, t1
-      real(hp) :: xeye0
-      real(hp) :: yeye0
-      real(hp) :: xeye1
-      real(hp) :: yeye1
-      real(hp) :: xeye
-      real(hp) :: yeye
-      real(hp) :: dlat
-      real(hp) :: dlon
-      real(hp) :: xc, yc
-      real(hp) :: spwradhat
-      real(hp) :: spwphihat
-      real(hp) :: uintp
-      real(hp) :: vintp
-      real(hp) :: pintp
-      real(hp) :: spwr1
-      real(hp) :: spwd1
-      real(hp) :: spwp1
-      real(hp) :: spwr2
-      real(hp) :: spwd2
-      real(hp) :: spwp2
-      real(hp) :: spwr3
-      real(hp) :: spwd3
-      real(hp) :: spwp3
-      real(hp) :: spwr4
-      real(hp) :: spwd4
-      real(hp) :: spwp4
-      real(hp) :: wphi
-      real(hp) :: wrad
-      real(hp) :: spwrA
-      real(hp) :: spwrB
-      real(hp) :: spwdA
-      real(hp) :: spwdB
-      real(hp) :: spwpA
-      real(hp) :: spwpB
-      real(hp) :: rintp
-      real(hp) :: dintp
-      real(hp) :: h1, h2
-      real(hp) :: fa, fi
-      real(hp) :: earthrad
-      real(hp) :: rcycl, yy, spwf, spw_merge_frac !< temporary variables used for blending spiderwebdata with the background
-      real(hp) :: tmp !< helper temporary
+      real(dp) :: spwdphi !< angular increment: 2pi/#colums
+      real(dp) :: spwdrad !< radial increment: radius/#rows
+      real(dp) :: a0, a1
+      real(dp) :: t0, t1
+      real(dp) :: xeye0
+      real(dp) :: yeye0
+      real(dp) :: xeye1
+      real(dp) :: yeye1
+      real(dp) :: xeye
+      real(dp) :: yeye
+      real(dp) :: dlat
+      real(dp) :: dlon
+      real(dp) :: xc, yc
+      real(dp) :: spwradhat
+      real(dp) :: spwphihat
+      real(dp) :: uintp
+      real(dp) :: vintp
+      real(dp) :: pintp
+      real(dp) :: spwr1
+      real(dp) :: spwd1
+      real(dp) :: spwp1
+      real(dp) :: spwr2
+      real(dp) :: spwd2
+      real(dp) :: spwp2
+      real(dp) :: spwr3
+      real(dp) :: spwd3
+      real(dp) :: spwp3
+      real(dp) :: spwr4
+      real(dp) :: spwd4
+      real(dp) :: spwp4
+      real(dp) :: wphi
+      real(dp) :: wrad
+      real(dp) :: spwrA
+      real(dp) :: spwrB
+      real(dp) :: spwdA
+      real(dp) :: spwdB
+      real(dp) :: spwpA
+      real(dp) :: spwpB
+      real(dp) :: rintp
+      real(dp) :: dintp
+      real(dp) :: h1, h2
+      real(dp) :: fa, fi
+      real(dp) :: earthrad
+      real(dp) :: rcycl, yy, spwf, spw_merge_frac !< temporary variables used for blending spiderwebdata with the background
+      real(dp) :: tmp !< helper temporary
       integer :: n_rows, n_cols
       integer :: n !< loop counter
       integer :: mf, nf
@@ -2411,9 +2413,9 @@ contains
 
       !
       success = .false.
-      fa = pi / 180.0_hp
-      fi = 180.0_hp / pi
-      earthrad = 6378137.0_hp
+      fa = pi / 180.0_dp
+      fi = 180.0_dp / pi
+      earthrad = 6378137.0_dp
       n_rows = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows
       n_cols = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_cols
       !
@@ -2457,7 +2459,7 @@ contains
 
       !
       ! Calculate the basic spiderweb grid settings
-      spwdphi = 360.0_hp / (n_cols - 1) ! 0 == 360 degrees, so -1
+      spwdphi = 360.0_dp / (n_cols - 1) ! 0 == 360 degrees, so -1
       spwdrad = connection%sourceItemsPtr(1)%ptr%elementSetPtr%radius / (n_rows - 1)
       spw_merge_frac = connection%sourceItemsPtr(1)%ptr%elementSetPtr%spw_merge_frac
       !
@@ -2475,34 +2477,34 @@ contains
       do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
          xc = connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n)
          yc = connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n)
-         dlat = modulo(yc, 360.0_hp) - yeye
-         dlon = modulo(xc, 360.0_hp) - xeye
-         h1 = (sin(dlat / 2.0_hp * fa))**2 + cos(yeye * fa) * cos(yc * fa) * (sin(dlon / 2.0_hp * fa))**2
-         h2 = 2.0_hp * atan(sqrt(h1) / sqrt(1.0_hp - h1))
+         dlat = modulo(yc, 360.0_dp) - yeye
+         dlon = modulo(xc, 360.0_dp) - xeye
+         h1 = (sin(dlat / 2.0_dp * fa))**2 + cos(yeye * fa) * cos(yc * fa) * (sin(dlon / 2.0_dp * fa))**2
+         h2 = 2.0_dp * atan(sqrt(h1) / sqrt(1.0_dp - h1))
          spwradhat = earthrad * h2
          spwphihat = cos(yeye * fa) * sin(yc * fa) - sin(yeye * fa) * cos(yc * fa) * cos(dlon * fa)
-         if (.not. comparereal(spwphihat, 0d0) == 0) then
+         if (.not. comparereal(spwphihat, 0.0_dp) == 0) then
             spwphihat = atan(sin(dlon * fa) * cos(yc * fa) / (spwphihat)) * fi
          else
-            spwphihat = 0d0
+            spwphihat = 0.0_dp
          end if
-         if (comparereal(dlon, 0d0) == 0) then ! exceptional case of being excatly SOUTH of the eye, phi should be 180 degrees
+         if (comparereal(dlon, 0.0_dp) == 0) then ! exceptional case of being excatly SOUTH of the eye, phi should be 180 degrees
             if (dlat < 0) then
-               spwphihat = 180.0d0
+               spwphihat = 180.0_dp
             end if
          end if
          if (dlon * spwphihat < 0) then ! relative longitude should have the same sign as phi
-            spwphihat = spwphihat + 180.0_hp
+            spwphihat = spwphihat + 180.0_dp
          end if
-         spwphihat = modulo(spwphihat, 360.0_hp)
+         spwphihat = modulo(spwphihat, 360.0_dp)
          ! Find the four nearest points in the spiderweb
          mf = floor(spwphihat / spwdphi) + 1 ! find orientation in windrose
          nf = floor(spwradhat / spwdrad) + 1 ! find orientation on radius
          ! If outside spiderweb or exactly in eye, then set windspeed to zero, else find weightfactors and interpolate
-         if (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows .or. (dlat == 0.0_hp .and. dlon == 0.0_hp)) then
-            uintp = 0.0_hp
-            vintp = 0.0_hp
-            pintp = 0.0_hp
+         if (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows .or. (dlat == 0.0_dp .and. dlon == 0.0_dp)) then
+            uintp = 0.0_dp
+            vintp = 0.0_dp
+            pintp = 0.0_dp
          else
             ! Get data from stencil (mf (+1), nf (+1))
             if ((twx > 0) .or. (twy > 0)) then
@@ -2525,7 +2527,7 @@ contains
                                             connection%sourceItemsPtr(swd)%ptr%sourceT1FieldPtr%arr1dPtr(mf + 1 + n_cols * nf), a0, a1) ! cyclic time interp of direction
                ! Safety at center
                if (nf == 1) then
-                  spwr1 = 0.0_hp
+                  spwr1 = 0.0_dp
                   spwd1 = spwd3
                end if
             end if
@@ -2540,28 +2542,28 @@ contains
                        connection%sourceItemsPtr(swp)%ptr%sourceT1FieldPtr%arr1dPtr(mf + 1 + n_cols * nf) * a1 ! linear time interp of pressure
             end if
             !
-            wphi = 1.0_hp - (spwphihat - (mf - 1) * spwdphi) / (spwdphi) ! weightfactor for the direction
-            wrad = 1.0_hp - (spwradhat - (nf - 1) * spwdrad) / (spwdrad) ! weightfactor for the radius
+            wphi = 1.0_dp - (spwphihat - (mf - 1) * spwdphi) / (spwdphi) ! weightfactor for the direction
+            wrad = 1.0_dp - (spwradhat - (nf - 1) * spwdrad) / (spwdrad) ! weightfactor for the radius
 
             if ((twx > 0) .or. (twy > 0)) then
-               spwrA = spwr1 * wphi + spwr2 * (1.0_hp - wphi) ! space interp magnitude (direction)
-               spwrB = spwr3 * wphi + spwr4 * (1.0_hp - wphi) ! space interp magnitude (direction)
-               tmp = 1.0_hp - wphi
+               spwrA = spwr1 * wphi + spwr2 * (1.0_dp - wphi) ! space interp magnitude (direction)
+               spwrB = spwr3 * wphi + spwr4 * (1.0_dp - wphi) ! space interp magnitude (direction)
+               tmp = 1.0_dp - wphi
                spwdA = cyclic_interpolation(spwd1, spwd2, wphi, tmp) ! space interp direction (direction)
                spwdB = cyclic_interpolation(spwd3, spwd4, wphi, tmp) ! space interp direction (direction)
-               rintp = spwrA * wrad + spwrB * (1.0_hp - wrad) ! space interp (radius)
-               tmp = 1.0_hp - wrad
+               rintp = spwrA * wrad + spwrB * (1.0_dp - wrad) ! space interp (radius)
+               tmp = 1.0_dp - wrad
                dintp = cyclic_interpolation(spwdA, spwdB, wrad, tmp) ! space interp (radius)
-               dintp = 90.0_hp - dintp ! revert from nautical conventions
-               dintp = modulo(dintp, 360.0_hp) ! for debug purposes
+               dintp = 90.0_dp - dintp ! revert from nautical conventions
+               dintp = modulo(dintp, 360.0_dp) ! for debug purposes
                uintp = -rintp * cos(dintp * fa) ! minus sign: wind from N points to S
                vintp = -rintp * sin(dintp * fa) ! minus sign: wind from N points to S
             end if
 
             if (twp > 0) then
-               spwpA = spwp1 * wphi + spwp2 * (1.0_hp - wphi) ! space interp pressure (direction)
-               spwpB = spwp3 * wphi + spwp4 * (1.0_hp - wphi) ! space interp pressure (direction)
-               pintp = spwpA * wrad + spwpB * (1.0_hp - wrad) ! space interp (radius)
+               spwpA = spwp1 * wphi + spwp2 * (1.0_dp - wphi) ! space interp pressure (direction)
+               spwpB = spwp3 * wphi + spwp4 * (1.0_dp - wphi) ! space interp pressure (direction)
+               pintp = spwpA * wrad + spwpB * (1.0_dp - wrad) ! space interp (radius)
             end if
 
          end if
@@ -2584,19 +2586,19 @@ contains
          case (operand_add)
             rcycl = connection%sourceItemsPtr(1)%ptr%elementSetPtr%radius
             yy = spwradhat
-            spwf = 0.d0
+            spwf = 0.0_dp
             if (yy < rcycl) then
-               spwf = min((1.0_hp - yy / rcycl) / spw_merge_frac, 1.0_hp)
+               spwf = min((1.0_dp - yy / rcycl) / spw_merge_frac, 1.0_dp)
                ! spwf is the weightfactor for the spiderweb! Differs from the Delft3D implementation
                if (twx > 0) then
                   connection%targetItemsPtr(twx)%ptr%targetFieldPtr%arr1dPtr(n) = &
-                     (1.0_hp - spwf) * connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) &
+                     (1.0_dp - spwf) * connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) &
                      + spwf * uintp
                   connection%targetItemsPtr(twx)%ptr%targetFieldPtr%timesteps = timesteps
                end if
                if (twy > 0) then
                   connection%targetItemsPtr(twy)%ptr%targetFieldPtr%arr1dPtr(n) = &
-                     (1.0_hp - spwf) * connection%targetItemsPtr(2)%ptr%targetFieldPtr%arr1dPtr(n) &
+                     (1.0_dp - spwf) * connection%targetItemsPtr(2)%ptr%targetFieldPtr%arr1dPtr(n) &
                      + spwf * vintp
                   connection%targetItemsPtr(twy)%ptr%targetFieldPtr%timesteps = timesteps
                end if
@@ -2626,29 +2628,29 @@ contains
       implicit none
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
-      real(hp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
+      real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       !
       integer :: i, j, k, ipt !< loop counters
       integer :: kbot, ktop
       logical :: extrapolated !< .true.: timesteps is outside [t0,t1]
-      real(hp) :: t0 !< source item t0
-      real(hp) :: t1 !< source item t1
-      real(hp) :: a0 !< weight for source t0 data
-      real(hp) :: a1 !< weight for source t1 data
-      real(hp) :: wb !< weight for source data below
-      real(hp) :: wt !< weight for source data above
-      real(hp) :: a_s, b_s !< coefficients for a linear transformation of source vertical coordinates to elevation above datum
-      real(hp) :: a_t, b_t !< coefficients for a linear transformation of target vertical coordinates to elevation above datum
-      real(hp) :: sourceValueT0 !< source value at t0
-      real(hp) :: sourceValueT1 !< source value at t1
+      real(dp) :: t0 !< source item t0
+      real(dp) :: t1 !< source item t1
+      real(dp) :: a0 !< weight for source t0 data
+      real(dp) :: a1 !< weight for source t1 data
+      real(dp) :: wb !< weight for source data below
+      real(dp) :: wt !< weight for source data above
+      real(dp) :: a_s, b_s !< coefficients for a linear transformation of source vertical coordinates to elevation above datum
+      real(dp) :: a_t, b_t !< coefficients for a linear transformation of target vertical coordinates to elevation above datum
+      real(dp) :: sourceValueT0 !< source value at t0
+      real(dp) :: sourceValueT1 !< source value at t1
       type(tEcField), pointer :: targetField !< Converter's result goes in here
-      real(hp) :: targetMissing !< Target side missing value
+      real(dp) :: targetMissing !< Target side missing value
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
-      real(hp) :: sourceMissing !< Source side missing value
-      real(hp), dimension(:, :, :), pointer :: s3D_T0, s3D_T1 !< 3D representation of linearly indexed array arr1D
-      real(hp), dimension(:, :), pointer :: s2D_T0, s2D_T1 !< 2D representation of linearly indexed array arr1D
-      real(hp), dimension(:), pointer :: s1D_T0, s1D_T1 !< 1D representation of linearly indexed array arr1D
+      real(dp) :: sourceMissing !< Source side missing value
+      real(dp), dimension(:, :, :), pointer :: s3D_T0, s3D_T1 !< 3D representation of linearly indexed array arr1D
+      real(dp), dimension(:, :), pointer :: s2D_T0, s2D_T1 !< 2D representation of linearly indexed array arr1D
+      real(dp), dimension(:), pointer :: s1D_T0, s1D_T1 !< 1D representation of linearly indexed array arr1D
       type(tEcIndexWeight), pointer :: indexWeight !< helper pointer, saved index weights
       type(tEcElementSet), pointer :: sourceElementSet !< source ElementSet
       type(tEcElementSet), pointer :: targetElementSet !< target ElementSet
@@ -2662,39 +2664,39 @@ contains
       logical :: has_x_wind, has_y_wind
       logical :: has_wave_direction
       logical :: has_harmonics !< Indicate if the quantity is defined in phase and amplitude instead of time.
-      real(hp), dimension(:), pointer :: targetValues
-      real(hp), dimension(:), allocatable :: zsrc
-      real(hp) :: ztgt
-      double precision :: PI, phi, xtmp
+      real(dp), dimension(:), pointer :: targetValues
+      real(dp), dimension(:), allocatable :: zsrc
+      real(dp) :: ztgt
+      real(dp) :: PI, phi, xtmp
       integer :: time_interpolation
       logical, dimension(:), allocatable :: missing
-      real(hp), dimension(2, 2, 2, 2) :: sourcevals
-      real(hp), dimension(2, 2) :: val
-      real(hp), dimension(2, 2) :: sinwd
-      real(hp), dimension(2, 2) :: coswd
-      real(hp), dimension(2, 2) :: waveheight
-      real(hp) :: lastvalue
+      real(dp), dimension(2, 2, 2, 2) :: sourcevals
+      real(dp), dimension(2, 2) :: val
+      real(dp), dimension(2, 2) :: sinwd
+      real(dp), dimension(2, 2) :: coswd
+      real(dp), dimension(2, 2) :: waveheight
+      real(dp) :: lastvalue
       integer :: ii, jj, kk, LL
       integer :: jamissing
       integer :: ierr
       integer :: jsferic
       type(kdtree_instance) :: treeinst
-      real(hp), dimension(:), allocatable :: x_extrapolate ! temporary array holding targetelementset x for setting up kdtree for interpolation
-      real(hp), dimension(:, :), pointer :: waveheightT0 ! temporary array holding source dataset for wave direction interpolation
-      real(hp), dimension(:, :), pointer :: waveheightT1 ! temporary array holding source dataset for wave direction interpolation
-      real(hp), dimension(:), allocatable :: wdtemp ! temporary array holding source dataset for wave direction interpolation
-      real(hp), dimension(:, :), allocatable :: wd2d ! temporary array holding source dataset for wave direction interpolation
+      real(dp), dimension(:), allocatable :: x_extrapolate ! temporary array holding targetelementset x for setting up kdtree for interpolation
+      real(dp), dimension(:, :), pointer :: waveheightT0 ! temporary array holding source dataset for wave direction interpolation
+      real(dp), dimension(:, :), pointer :: waveheightT1 ! temporary array holding source dataset for wave direction interpolation
+      real(dp), dimension(:), allocatable :: wdtemp ! temporary array holding source dataset for wave direction interpolation
+      real(dp), dimension(:, :), allocatable :: wd2d ! temporary array holding source dataset for wave direction interpolation
       integer :: col0, row0, col1, row1 ! bounding box in meteo-space spanned by the target elementset
 
-      real(hp) :: amplitude ! harmonics: amplitude
-      real(hp) :: omega ! harmonics: omega of current component (radians/second)
-      real(hp) :: delta_t ! harmonics: time delta (in seconds) relative to reference time.
-      real(hp) :: phase0 ! harmonics: current phase offset angle (in radians)
+      real(dp) :: amplitude ! harmonics: amplitude
+      real(dp) :: omega ! harmonics: omega of current component (radians/second)
+      real(dp) :: delta_t ! harmonics: time delta (in seconds) relative to reference time.
+      real(dp) :: phase0 ! harmonics: current phase offset angle (in radians)
       integer :: n_phase_rows ! harmonics: number of phase rows
       integer :: n_phase_cols ! harmonics: number of phase columns
 
-      real(hp) :: targetvalcos ! help variables for wave direction interpolation
-      real(hp) :: targetvalsin
+      real(dp) :: targetvalcos ! help variables for wave direction interpolation
+      real(dp) :: targetvalsin
 
       integer :: issparse
       integer, dimension(:), pointer :: ia ! sparsity pattern in CRS format, startpointers
@@ -2705,7 +2707,7 @@ contains
       integer, dimension(2) :: idx
 
       !
-      PI = atan(1.d0) * 4.d0
+      PI = atan(1.0_dp) * 4.0_dp
       success = .false.
       targetField => null()
       sourceT0Field => null()
@@ -2763,11 +2765,11 @@ contains
             waveheightT1(1:ncol, 1:nrow) => wavehgtPtr%SourceT1fieldptr%arr1d
             allocate (wdtemp(ncol * nrow))
             allocate (wd2d(ncol, nrow))
-            wdtemp = 0d0
-            wd2d = 0d0
-            coswd = 0d0
-            sinwd = 0d0
-            waveheight = 0d0
+            wdtemp = 0.0_dp
+            wd2d = 0.0_dp
+            coswd = 0.0_dp
+            sinwd = 0.0_dp
+            waveheight = 0.0_dp
          end if
       end do
       !         !
@@ -2776,7 +2778,7 @@ contains
          ! If eastward_wind was given, this operation should formally be ommitted, according to the CF-convention
          if (associated(windxPtr%elementsetPtr%dir)) then
             do ipt = 1, windxPtr%elementsetPtr%ncoordinates
-               phi = windxPtr%elementsetPtr%dir(ipt) * PI / 180.d0
+               phi = windxPtr%elementsetPtr%dir(ipt) * PI / 180.0_dp
                xtmp = windxPtr%SourceT0fieldptr%arr1dptr(ipt) * cos(phi) + windyPtr%SourceT0fieldptr%arr1dptr(ipt) * sin(phi)
                windyPtr%SourceT0fieldptr%arr1dptr(ipt) = windxPtr%SourceT0fieldptr%arr1dptr(ipt) * (-sin(phi)) + windyPtr%SourceT0fieldptr%arr1dptr(ipt) * cos(phi)
                windxPtr%SourceT0fieldptr%arr1dptr(ipt) = xtmp
@@ -2821,7 +2823,7 @@ contains
                   do j = 1, n_points
                      if ((connection%converterPtr%operandType == operand_replace) .or. &
                          (connection%converterPtr%operandType == operand_replace_if_value)) then ! Dit hoort in de loop beneden per target gridpunt!
-                        targetValues(j) = 0.0_hp
+                        targetValues(j) = 0.0_dp
                      end if
                      mp = indexWeight%indices(1, j)
                      if (mp > 0 .and. mp <= n_cols) then
@@ -2871,8 +2873,8 @@ contains
                   ! note: source file Amplitude lives in T1. Phases are indexed: col, row
                   n_phase_rows = sourceElementSet%n_rows
                   n_phase_cols = sourceElementSet%n_cols
-                  omega = 2.0_hp * PI / sourceItem%hframe%ec_period
-                  delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_hp !< convert to seconds since refdate.
+                  omega = 2.0_dp * PI / sourceItem%hframe%ec_period
+                  delta_t = (timesteps - sourceItem%tframe%ec_refdate) * 86400.0_dp !< convert to seconds since refdate.
                   if (issparse == 1) then
                      do j = 1, n_rows
                         if (ia(j + 1) > ia(j)) then
@@ -2883,7 +2885,7 @@ contains
                                   comparereal(phase0, sourceMissing, .true.) == 0) then
                                  sourceT0Field%arr1d(ipt) = sourceMissing
                               else
-                                 sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_hp)
+                                 sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
                               end if
                            end do
                         end if
@@ -2902,7 +2904,7 @@ contains
                                      comparereal(phase0, sourceMissing, .true.) == 0) then
                                     sourceT0Field%arr1d(ipt) = sourceMissing
                                  else
-                                    sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_hp)
+                                    sourceT0Field%arr1d(ipt) = amplitude * cos(omega * delta_t - phase0 * PI / 180.0_dp)
                                  end if
                               end do
                            end do
@@ -2937,17 +2939,17 @@ contains
                      if (mp > 0 .and. np > 0) then
                         if ((connection%converterPtr%operandType == operand_replace) .or. &
                             (connection%converterPtr%operandType == operand_replace_if_value)) then
-                           targetValues(kbot:ktop) = 0.0_hp
+                           targetValues(kbot:ktop) = 0.0_dp
                         end if
                         ! The save horizontal weigths are used. The vertical weights are recalculated because z changes.
                         ! transformation coefficients for the z-array, target side:
                         select case (targetElementSet%vptyp)
                         case (BC_VPTYP_ZDATUM)
-                           a_t = 1.0_hp
-                           b_t = 0.0_hp
+                           a_t = 1.0_dp
+                           b_t = 0.0_dp
                         case (BC_VPTYP_ZDATUM_DOWN)
-                           a_t = -1.0_hp
-                           b_t = 0.0_hp
+                           a_t = -1.0_dp
+                           b_t = 0.0_dp
                         case (BC_VPTYP_PERCBED)
                            a_t = (targetElementSet%zmax(j) - targetElementSet%zmin(j))
                            b_t = targetElementSet%zmin(j)
@@ -2959,11 +2961,11 @@ contains
                         ! transformation coefficients for the z-array, source side:
                         select case (sourceElementSet%vptyp)
                         case (BC_VPTYP_ZDATUM)
-                           a_s = 1.0_hp
-                           b_s = 0.0_hp
+                           a_s = 1.0_dp
+                           b_s = 0.0_dp
                         case (BC_VPTYP_ZDATUM_DOWN)
-                           a_s = -1.0_hp
-                           b_s = 0.0_hp
+                           a_s = -1.0_dp
+                           b_s = 0.0_dp
                         end select
 
                         ! scale source coordinates with factors of target
@@ -3033,7 +3035,7 @@ contains
                            else
 
                               ! horizontal interpolation
-                              val = 0d0 ! (down-up,old-new)
+                              val = 0.0_dp ! (down-up,old-new)
                               do ll = 1, 2
                                  do kk = 1, 2
                                     val(kk, ll) = val(kk, ll) + sourcevals(1, 1, kk, ll) * indexWeight%weightFactors(1, j) !   4      3
@@ -3044,8 +3046,8 @@ contains
                               end do
                               ! get weights for vertical interpolation
                               wb = (zsrc(kp) - ztgt) / (zsrc(kp) - zsrc(kp - dkp))
-                              wb = min(max(wb, 0.0_hp), 1.0_hp) ! zeroth-order extrapolation beyond range of source vertical coordinates
-                              wt = (1.0_hp - wb)
+                              wb = min(max(wb, 0.0_dp), 1.0_dp) ! zeroth-order extrapolation beyond range of source vertical coordinates
+                              wt = (1.0_dp - wb)
 
                               if (has_harmonics) then
                                  call setECMessage("ERROR: ec_converter::ecConverterNetcdf: Harmonics not (yet) implemented for layers.")
@@ -3137,7 +3139,7 @@ contains
                         end if
 
                         if (connection%converterPtr%operandType == operand_replace) then
-                           targetValues(j) = 0.0_hp
+                           targetValues(j) = 0.0_dp
                         end if
 
                         kloop2D: do jj = 0, 1
@@ -3154,14 +3156,14 @@ contains
                            if (allocated(x_extrapolate)) x_extrapolate(j) = ec_undef_hp ! no-data -> unelectable for kdtree later
                         else
                            if (connection%converterPtr%operandType == operand_replace_if_value) then
-                              targetValues(j) = 0.0_hp
+                              targetValues(j) = 0.0_dp
                            end if
                            if (trim(connection%SourceItemsPtr(i)%ptr%quantityPtr%name) == 'sea_surface_wave_from_direction') then
                               ! Now interpolate the waveheight-weighted directional field in space
                               coswd = cosd(sourcevals(:, :, 1, 1)) * waveheight
                               sinwd = sind(sourcevals(:, :, 1, 1)) * waveheight
-                              targetvalcos = 0d0
-                              targetvalsin = 0d0
+                              targetvalcos = 0.0_dp
+                              targetvalsin = 0.0_dp
                               targetvalcos = targetvalcos + coswd(1, 1) * indexWeight%weightFactors(1, j)
                               targetvalcos = targetvalcos + coswd(2, 1) * indexWeight%weightFactors(2, j)
                               targetvalcos = targetvalcos + coswd(2, 2) * indexWeight%weightFactors(3, j)
@@ -3171,8 +3173,8 @@ contains
                               targetvalsin = targetvalsin + sinwd(2, 2) * indexWeight%weightFactors(3, j)
                               targetvalsin = targetvalsin + sinwd(1, 2) * indexWeight%weightFactors(4, j)
                               targetValues(j) = atan2d(targetvalsin, targetvalcos)
-                              if (.not. ieee_is_nan(targetValues(j)) .and. targetValues(j) < 0d0) then
-                                 targetValues(j) = targetValues(j) + 360d0
+                              if (.not. ieee_is_nan(targetValues(j)) .and. targetValues(j) < 0.0_dp) then
+                                 targetValues(j) = targetValues(j) + 360.0_dp
                               end if
                            else
                               targetValues(j) = targetValues(j) + a0 * sourcevals(1, 1, 1, 1) * indexWeight%weightFactors(1, j)
@@ -3318,35 +3320,35 @@ contains
       !! segments are checked, not the closest based on dbdistance of pli points.
    subroutine polyindexweight(xe, ye, xen, yen, xs, ys, kcs, ns, kL, wL, kR, wR)
       integer, intent(in) :: ns !< Dimension of polygon OR LINE BOUNDARY
-      real(hp), dimension(:), intent(in) :: xs !< polygon
-      real(hp), dimension(:), intent(in) :: ys
+      real(dp), dimension(:), intent(in) :: xs !< polygon
+      real(dp), dimension(:), intent(in) :: ys
       integer, dimension(:), intent(in) :: kcs !< polygon mask
-      real(hp), intent(in) :: xe, ye !
-      real(hp), intent(in) :: xen, yen !< in input uitstekers, on output SL and CRP
+      real(dp), intent(in) :: xe, ye !
+      real(dp), intent(in) :: xen, yen !< in input uitstekers, on output SL and CRP
       integer, intent(out) :: kL !< Index of left nearest polyline point (with kcs==1!)
-      real(hp), intent(out) :: wL !< Relative weight of left nearest polyline point.
+      real(dp), intent(out) :: wL !< Relative weight of left nearest polyline point.
       integer, intent(out) :: kR !< Index of right nearest polyline point (with kcs==1!)
-      real(hp), intent(out) :: wR !< Relative weight of right nearest polyline point.
+      real(dp), intent(out) :: wR !< Relative weight of right nearest polyline point.
       !
       integer :: k, km, JACROS
-      real(hp) :: dis, disM, disL, disR
-      real(hp) :: SL, SM, SMM, SLM, XCR, YCR, CRP, CRPM, DEPS
+      real(dp) :: dis, disM, disL, disR
+      real(dp) :: SL, SM, SMM, SLM, XCR, YCR, CRP, CRPM, DEPS
       !
       DISM = huge(DISM)
       kL = 0 ! Default: No valid point found
       kR = 0 ! idem
-      wL = 0.0_hp
-      wR = 0.0_hp
+      wL = 0.0_dp
+      wR = 0.0_dp
       km = 0
-      crpm = 0.0_hp
-      disL = 0.0_hp
-      disR = 0.0_hp
-      DEPS = 1.0e-3_hp
+      crpm = 0.0_dp
+      disL = 0.0_dp
+      disR = 0.0_dp
+      DEPS = 1.0e-3_dp
       !
       do k = 1, ns - 1
-         crp = 0.0_hp
+         crp = 0.0_dp
          call CROSS(xe, ye, xen, yen, xs(k), ys(k), xs(k + 1), ys(k + 1), JACROS, SL, SM, XCR, YCR, CRP)
-         if (SL >= 0.0_hp .and. SL <= 1.0_hp .and. SM > -DEPS .and. SM < 1.0_hp + DEPS) then ! instead of jacros==1
+         if (SL >= 0.0_dp .and. SL <= 1.0_dp .and. SM > -DEPS .and. SM < 1.0_dp + DEPS) then ! instead of jacros==1
             DIS = DBDISTANCE(XE, YE, XCR, YCR)
             if (DIS < DISM) then ! Found a better intersection point
                DISM = DIS
@@ -3371,7 +3373,7 @@ contains
             end if
          end do
          ! Find nearest valid polyline point right of the intersection (i.e.: kcs(kR) == 1)
-         disR = (1.0_hp - SMM) * dis
+         disR = (1.0_dp - SMM) * dis
          do k = km + 1, ns
             if (kcs(k) == 1) then
                kR = k
@@ -3384,11 +3386,11 @@ contains
       !
       if (kL /= 0 .and. kR /= 0) then
          wL = disR / (disL + disR)
-         wR = 1.0_hp - wL
+         wR = 1.0_dp - wL
       else if (kL /= 0) then
-         wL = 1.0_hp
+         wL = 1.0_dp
       else if (kR /= 0) then
-         wR = 1.0_hp
+         wR = 1.0_dp
       end if
    end subroutine polyindexweight
 
@@ -3401,30 +3403,30 @@ contains
    subroutine CROSS(x1, y1, x2, y2, x3, y3, x4, y4, JACROS, SL, SM, XCR, YCR, CRP)
       use ieee_arithmetic, only: ieee_is_nan
 
-      double precision, intent(inout) :: crp !< crp (in)==-1234 will make crp (out) non-dimensional
-      double precision :: det
-      double precision :: eps
+      real(dp), intent(inout) :: crp !< crp (in)==-1234 will make crp (out) non-dimensional
+      real(dp) :: det
+      real(dp) :: eps
       integer :: jacros, jamakenondimensional
-      double precision :: sl
-      double precision :: sm
-      double precision, intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
-      double precision :: x21, y21, x31, y31, x43, y43, xcr, ycr
-      double precision :: dmiss = -999d0
+      real(dp) :: sl
+      real(dp) :: sm
+      real(dp), intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
+      real(dp) :: x21, y21, x31, y31, x43, y43, xcr, ycr
+      real(dp) :: dmiss = -999_dp
 
       !     safety check on crp (in)
       if (ieee_is_nan(crp)) then
-         crp = 0.0_hp
+         crp = 0.0_dp
       end if
 
       ! Set defaults for no crossing at all:
       jamakenondimensional = 0
-      if (abs(crp + 1234d0) < 0.5d0) then
+      if (abs(crp + 1234.0_dp) < 0.5_dp) then
          jamakenondimensional = 1
-         crp = 0.0_hp
+         crp = 0.0_dp
       end if
 
       JACROS = 0
-      EPS = 0.00001_hp
+      EPS = 0.00001_dp
       SL = DMISS
       SM = DMISS
 
@@ -3441,7 +3443,7 @@ contains
       DET = X43 * Y21 - Y43 * X21
 
       !     SPvdP: make eps have proper dimension
-      EPS = max(EPS * maxval((/X21, Y21, X43, Y43, X31, Y31/)), tiny(0.0_hp))
+      EPS = max(EPS * maxval((/X21, Y21, X43, Y43, X31, Y31/)), tiny(0.0_dp))
       if (abs(DET) < EPS) then
          return
       else
@@ -3451,10 +3453,10 @@ contains
          else if (abs(Y21) > EPS) then
             SL = (SM * Y43 + Y31) / Y21
          else
-            SL = 0.0_hp
+            SL = 0.0_dp
          end if
-         if (SM >= 0.0_hp .and. SM <= 1d0 .and. &
-             SL >= 0.0_hp .and. SL <= 1d0) then
+         if (SM >= 0.0_dp .and. SM <= 1.0_dp .and. &
+             SL >= 0.0_dp .and. SL <= 1.0_dp) then
             JACROS = 1
          end if
          XCR = X1 + SL * (X2 - X1)
@@ -3469,14 +3471,14 @@ contains
    end subroutine CROSS
 
    !> distance point 1 -> 2
-   real(hp) function dbdistance(x1, y1, x2, y2)
-      real(hp) :: x1, y1, x2, y2
+   real(dp) function dbdistance(x1, y1, x2, y2)
+      real(dp) :: x1, y1, x2, y2
       ! locals
-      real(hp) :: ddx, ddy, rr
-      real(hp) :: dmiss = -999d0
+      real(dp) :: ddx, ddy, rr
+      real(dp) :: dmiss = -999_dp
       !
       if (x1 == DMISS .or. x2 == DMISS .or. y1 == DMISS .or. y2 == DMISS) then
-         dbdistance = 0.0_hp
+         dbdistance = 0.0_dp
          return
       end if
       !
@@ -3485,8 +3487,8 @@ contains
       !ddy = getdy(x1,y1,x2,y2) ! TODO : all is cartesian, kernel must provide it as such
       ddy = y2 - y1
       rr = ddx * ddx + ddy * ddy
-      if (rr == 0.0_hp) then
-         dbdistance = 0.0_hp
+      if (rr == 0.0_dp) then
+         dbdistance = 0.0_dp
       else
          dbdistance = sqrt(rr)
       end if

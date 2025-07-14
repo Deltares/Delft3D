@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -95,7 +95,7 @@ contains
    end subroutine reset_sedtrails_stats
 
    subroutine alloc_sedtrails_stats()
-      use m_alloc
+      use m_alloc, only: realloc
       use m_fm_erosed, only: lsedtot
       use m_sediment, only: stm_included
       use m_flowgeom, only: ndx
@@ -116,18 +116,18 @@ contains
    subroutine update_sedtrails_stats()
       use precision, only: dp
       use m_flowtimes, only: dts
-      use m_flow, only: hs, ucx, ucy, taus, kmx, hs, vol1
+      use m_flow, only: hs, taus, ucx, ucy, kmx, vol1
+      use m_fm_erosed, only: stm_included, sedtra, lsedtot, sbcx, sbwx, sbcy, sbwy, sscx, sswx, sscy, sswy, lsed
+      use m_sediment, only: sedtot2sedsus
+      use m_gettaus, only: gettaus
+      use m_gettauswave, only: gettauswave
+      use m_get_kbot_ktop, only: getkbotktop
       use m_flowgeom, only: ndx, bl, ba
-      use m_fm_erosed
       use m_transport, only: constituents, ISED1
-      use m_sediment, only: sedtot2sedsus, stm_included, sedtra
       use m_flowparameters, only: jawave, flowWithoutWaves, jawaveswartdelwaq, epshu
       use sed_support_routines, only: ruessink_etal_2012
       use m_waves, only: rlabda, hwav, uorb, phiwav
       use m_sferic, only: pi
-      use m_gettaus
-      use m_gettauswave
-      use m_get_kbot_ktop
 
       implicit none
 

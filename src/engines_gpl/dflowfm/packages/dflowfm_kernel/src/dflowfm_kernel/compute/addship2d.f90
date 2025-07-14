@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,12 +43,11 @@ contains
    subroutine addship2D(japerim)
       use m_addlinkship2d, only: addlinkship2D
       use precision, only: dp
-      use m_ship
-      use m_flowgeom
-      use m_flow
-      use m_arcinfo
-      use m_sferic
-      use m_flowtimes
+      use m_ship, only: japressurehull, v1ship, nshiptxy, shi, shl, shb, shy, shx, ihullmethod, zsp, shd, numsmo, icontroltyp
+      use m_flowgeom, only: lnx1d, lnxi, ndx, ba, yz, xz, ln, dx, wu
+      use m_flow, only: slotw2d, a1m, s1m, au, vol1, s1
+      use m_arcinfo, only: mca, nca, d
+      use m_sferic, only: pi
       implicit none
       integer :: k, L, k1, k2, japerim, i0, i1, j0, j1, n, numi, kk
       real(kind=dp) :: slotsav, h1, h2, dx2d, d2, css, sns, dxsa, dysa, dxx, dyy, xx, yy, sxr, syr, sxrL, sxrR, alfa

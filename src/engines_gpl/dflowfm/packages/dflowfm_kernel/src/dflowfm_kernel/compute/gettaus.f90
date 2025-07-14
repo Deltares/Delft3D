@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,10 +39,10 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ndxi
       use m_flow, only: czs, taus
-      use m_alloc
+      use m_alloc, only: realloc
+      use m_get_tau, only: get_tau
+      use m_waveconst, only: wave_waq_shear_stress_hyd
       use m_flowparameters, only: flowWithoutWaves, jawaveswartdelwaq
-      use m_get_tau
-      use m_waveconst
       !
       !
       ! Parameters

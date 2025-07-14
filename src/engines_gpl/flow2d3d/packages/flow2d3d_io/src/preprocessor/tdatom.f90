@@ -1,7 +1,7 @@
 subroutine tdatom(runid, filmrs, nuerr, gdp) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -188,7 +188,6 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
                                                                        !    K = 1,.....,NOPEN  
     integer, dimension(:,:), pointer                    :: mnksrc      ! MNK-coord. for discharges  
     integer, dimension(:), pointer                      :: nhsub       ! integer array to store sequence numbers of harmonic boundary condition in own subdomain 
-    integer, external                                   :: newlun 
     logical                                             :: found       ! If FOUND = TRUE then recnam in the MD-file was found  
     logical                                             :: error       ! Flag=TRUE if an error is encountered  
     logical                                             :: solrad_read ! Flag=TRUE means Nett Solar Radiation is to be read from .tem file 

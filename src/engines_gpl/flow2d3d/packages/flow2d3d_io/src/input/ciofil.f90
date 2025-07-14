@@ -2,7 +2,7 @@ subroutine ciofil(lundia    ,error     ,filcio    ,mmax      ,nmax      , &
                 & nmaxus    ,fcorio    ,gdp       ) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -72,7 +72,6 @@ subroutine ciofil(lundia    ,error     ,filcio    ,mmax      ,nmax      , &
     integer                               :: luntmp   ! Unit number for attribute file  
     integer                               :: m        ! Help loop variable  
     integer                               :: n        ! Help loop variable 
-    integer, external                     :: newlun 
     real(fp), dimension(:,:), allocatable :: ftmp     ! temporary array containing coriolis of entire domain 
     character(300)                        :: errmsg   ! Character string containing the errormessage to be written to file. The message depends on the error.  
 ! 

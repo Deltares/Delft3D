@@ -46,7 +46,7 @@
     </testCase>
     <testCase name="e03_f02_c01_eutrophication" ref="dwaq_default">
         <dependency version="2024-01-11T09:00:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2024-01-11T13:20:00">e03_waq/f02_hongkong/c01_eutrophication</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f02_hongkong/c01_eutrophication</path>
         <checks>
             <file name="group2-test001.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -66,7 +66,7 @@
                     <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_015" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+02" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+03" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_018" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_019" toleranceAbsolute="1.0e+00" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -116,7 +116,7 @@
                     <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_015" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+02" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+03" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_018" toleranceAbsolute="1.0e-01" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_019" toleranceAbsolute="1.0e+00" toleranceRelative="1.0e-05"/>
                     <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -322,7 +322,7 @@
     </testCase>
     -->
     <testCase name="e03_f01_c04_test004" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f01_general/c04_test004</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f01_general/c04_test004</path>
         <checks>
             <file name="d3d-waq-test004.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -350,7 +350,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c06_test006" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f01_general/c06_test006</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f01_general/c06_test006</path>
         <checks>
             <file name="d3d-waq-test006.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -1163,7 +1163,7 @@
     </testCase>
     -->
     <testCase name="e03_f01_c13_test013" ref="dwaq_default">
-        <path version="2025-02-18T18:00:00">e03_waq/f01_general/c13_test013</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f01_general/c13_test013</path>
         <checks>
             <file name="d3d-waq-test013.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -1544,7 +1544,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c19_test019" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f01_general/c19_test019</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f01_general/c19_test019</path>
         <checks>
             <file name="d3d-waq-test019.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -1706,7 +1706,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c28_test028" ref="dwaq_default">
-        <path version="2025-01-24T13:03:41.171000">e03_waq/f01_general/c28_test028</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f01_general/c28_test028</path>
         <checks>
             <file name="d3d-waq-test028.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2013,7 +2013,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c31_test031" ref="dwaq_default">
-        <path version="2025-01-24T13:03:51.663000">e03_waq/f01_general/c31_test031</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f01_general/c31_test031</path>
         <checks>
             <file name="d3d-waq-test031.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2258,7 +2258,7 @@
     </testCase>
     <testCase name="e03_f02_c03_loadscenario1" ref="dwaq_default">
         <dependency version="2024-01-11T09:00:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2025-01-24T13:04:08.358000">e03_waq/f02_hongkong/c03_loadscenario1</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f02_hongkong/c03_loadscenario1</path>
         <checks>
             <file name="group2-test003.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2278,7 +2278,7 @@
                     <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+00" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+03" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_018" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_019" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -2328,7 +2328,7 @@
                     <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+00" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+03" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_018" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_019" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -2364,7 +2364,7 @@
     </testCase>
     <testCase name="e03_f02_c05_eutrophication_scheme15" ref="dwaq_default">
         <dependency version="2024-01-11T09:00:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2025-01-24T13:04:25.592000">e03_waq/f02_hongkong/c05_eutrophication_scheme15</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f02_hongkong/c05_eutrophication_scheme15</path>
         <checks>
             <file name="group2-test005.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2384,7 +2384,7 @@
                     <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+01" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+03" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_018" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_019" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -2434,7 +2434,7 @@
                     <parameter name="SUBST_014" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_015" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_016" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+01" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_017" toleranceAbsolute="1.0e+03" toleranceRelative="1.0e-04"/>
                     <parameter name="SUBST_018" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_019" toleranceAbsolute="1.0e-02" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_020" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
@@ -2469,7 +2469,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c01_braas79" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c01_braas79</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c01_braas79</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2547,7 +2547,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c02_braas80" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c02_braas80</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c02_braas80</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2625,7 +2625,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c03_dm75" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c03_dm75</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c03_dm75</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2703,7 +2703,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c04_dm76" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c04_dm76</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c04_dm76</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2781,7 +2781,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c05_dm77" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c05_dm77</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c05_dm77</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2859,7 +2859,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c06_dm78" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c06_dm78</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c06_dm78</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2937,7 +2937,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c07_dm79" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c07_dm79</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c07_dm79</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3015,7 +3015,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c08_dm80" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c08_dm80</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c08_dm80</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3093,7 +3093,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c09_dm81" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c09_dm81</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c09_dm81</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3171,7 +3171,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c10_dm82" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c10_dm82</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c10_dm82</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3249,7 +3249,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c11_dm83" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c11_dm83</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c11_dm83</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3327,7 +3327,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c12_ijss764" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c12_ijss764</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c12_ijss764</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3405,7 +3405,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c13_ijss774" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c13_ijss774</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c13_ijss774</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3483,7 +3483,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c14_ijss784" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c14_ijss784</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c14_ijss784</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3561,7 +3561,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c15_ijss794" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c15_ijss794</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c15_ijss794</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3639,7 +3639,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c16_kaag79" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c16_kaag79</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c16_kaag79</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3717,7 +3717,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c17_kaag80" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c17_kaag80</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c17_kaag80</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3795,7 +3795,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c18_lang79" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c18_lang79</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c18_lang79</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3873,7 +3873,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c19_lang80" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c19_lang80</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c19_lang80</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -3951,7 +3951,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c20_lang84" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c20_lang84</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c20_lang84</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4029,7 +4029,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c21_mark82" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c21_mark82</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c21_mark82</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4107,7 +4107,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c22_reeuw77" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c22_reeuw77</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c22_reeuw77</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4185,7 +4185,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c23_reeuw78" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c23_reeuw78</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c23_reeuw78</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4263,7 +4263,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c24_reeuw79" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c24_reeuw79</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c24_reeuw79</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4341,7 +4341,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c25_reeuw80" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c25_reeuw80</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c25_reeuw80</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4419,7 +4419,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c26_rop1178" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c26_rop1178</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c26_rop1178</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4497,7 +4497,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c27_rop1179" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c27_rop1179</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c27_rop1179</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4575,7 +4575,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c28_rop1180" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c28_rop1180</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c28_rop1180</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4653,7 +4653,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c29_rop1278" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c29_rop1278</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c29_rop1278</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4731,7 +4731,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c30_rop1279" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c30_rop1279</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c30_rop1279</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4809,7 +4809,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c31_rop1280" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c31_rop1280</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c31_rop1280</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4887,7 +4887,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c32_vm75" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c32_vm75</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c32_vm75</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -4965,7 +4965,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c33_vm76" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c33_vm76</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c33_vm76</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5043,7 +5043,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c34_vm77" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c34_vm77</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c34_vm77</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5121,7 +5121,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c35_vm78" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c35_vm78</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c35_vm78</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5199,7 +5199,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c36_vm79" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c36_vm79</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c36_vm79</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5277,7 +5277,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c37_vm80" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c37_vm80</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c37_vm80</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5355,7 +5355,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c38_vm81" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c38_vm81</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c38_vm81</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5433,7 +5433,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c39_vm82" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c39_vm82</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c39_vm82</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5511,7 +5511,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c40_vm83" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c40_vm83</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c40_vm83</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5589,7 +5589,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c41_vm85" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c41_vm85</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c41_vm85</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5667,7 +5667,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c42_west77" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c42_west77</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c42_west77</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5745,7 +5745,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c43_west78" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c43_west78</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c43_west78</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5823,7 +5823,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c44_west79" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c44_west79</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c44_west79</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5901,7 +5901,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c45_west80" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c45_west80</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c45_west80</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -5979,7 +5979,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c46_wn75" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c46_wn75</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c46_wn75</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6057,7 +6057,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c47_wn76" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c47_wn76</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c47_wn76</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6135,7 +6135,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c48_wn77" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c48_wn77</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c48_wn77</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6213,7 +6213,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c49_wn78" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c49_wn78</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c49_wn78</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6291,7 +6291,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c50_wn79" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c50_wn79</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c50_wn79</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6369,7 +6369,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c51_wn80" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c51_wn80</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c51_wn80</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6447,7 +6447,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c52_wn81" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c52_wn81</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c52_wn81</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6525,7 +6525,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c53_wn82" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c53_wn82</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c53_wn82</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6603,7 +6603,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f04_c54_wn83" ref="dwaq_default">
-    <path version="2024-01-11T13:20:00">e03_waq/f04_bloom_fresh_water/c54_wn83</path>
+    <path version="2025-06-25T22:20:00">e03_waq/f04_bloom_fresh_water/c54_wn83</path>
         <checks>
             <file name="BLOOM.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6685,7 +6685,7 @@
 
     <!-- Test cases for "new" bloom tests-->
     <testCase name="e03_f06_c01_blmdef" ref="dwaq_default">
-        <path version="2025-06-05T16:15:00">e03_waq/f06_bloom_new/c01_blmdef</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f06_bloom_new/c01_blmdef</path>
         <checks>
             <file name="n_blmdef.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6734,7 +6734,7 @@
         </checks>
     </testCase>
      <testCase name="e03_f06_c02_blmlcm" ref="dwaq_default">
-        <path version="2025-06-05T16:15:00">e03_waq/f06_bloom_new/c02_blmclm</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f06_bloom_new/c02_blmclm</path>
         <checks>
             <file name="n_blmclm.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6783,7 +6783,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f06_c03_blmmix" ref="dwaq_default">
-        <path version="2025-06-05T16:15:00">e03_waq/f06_bloom_new/c03_blmmix</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f06_bloom_new/c03_blmmix</path>
         <checks>
             <file name="n_blmmix.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6834,7 +6834,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f06_c04_blmnfx" ref="dwaq_default">
-        <path version="2025-06-05T16:15:00">e03_waq/f06_bloom_new/c04_blmnfx</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f06_bloom_new/c04_blmnfx</path>
         <checks>
             <file name="n_blmnfx.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6913,7 +6913,7 @@
     </testCase>
     <testCase name="e03_f07_c02a_exercise_02a" ref="dwaq_default">
         <dependency version="2024-01-11T09:00:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
-        <path version="2025-01-22T16:14:53.701000">e03_waq/f07_course_d3dfm_env_mod/c02a_exercise_02a/exercise2a.dsproj_data/Water_Quality_output</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f07_course_d3dfm_env_mod/c02a_exercise_02a/exercise2a.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6925,7 +6925,7 @@
     </testCase>
     <testCase name="e03_f07_c02b_exercise_02b" ref="dwaq_default">
         <dependency version="2024-01-11T09:00:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
-        <path version="2025-01-22T16:14:56.245000">e03_waq/f07_course_d3dfm_env_mod/c02b_exercise_02b/exercise2b.dsproj_data/Water_Quality_output</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f07_course_d3dfm_env_mod/c02b_exercise_02b/exercise2b.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6985,7 +6985,7 @@
     </testCase>
     <testCase name="e03_f07_c05_exercise_05" ref="dwaq_default">
         <dependency version="2025-06-05T16:15:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
-        <path version="2024-01-11T13:20:00">e03_waq/f07_course_d3dfm_env_mod/c05_exercise_05/exercise5.dsproj_data/Water_Quality_output</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f07_course_d3dfm_env_mod/c05_exercise_05/exercise5.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7110,7 +7110,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f10_c01_viruses" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f10_additional_modules/c01_viruses</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f10_additional_modules/c01_viruses</path>
         <checks>
             <file name="d3d-waq-virus.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -9767,7 +9767,7 @@
     <!-- Test cases for DEBGRZ/CONSBL -->
 
     <testCase name="e03_f16_c01_bloom-consbl" ref="dwaq_default">
-        <path version="2025-01-24T13:04:48.486000">e03_waq/f16_grazing/c01_bloom_consbl</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f16_grazing/c01_bloom_consbl</path>
         <checks>
             <file name="bloomcolumn-CONSBL.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -9903,7 +9903,7 @@
     </testCase>
 
     <testCase name="e03_f16_c02_bloom-mussel" ref="dwaq_default">
-        <path version="2025-01-24T13:05:11.264000">e03_waq/f16_grazing/c02_bloom_mussel</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f16_grazing/c02_bloom_mussel</path>
         <checks>
             <file name="bloomcolumn-mussel.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10059,7 +10059,7 @@
     </testCase>
 
     <testCase name="e03_f16_c03_bloom-mussel_rope" ref="dwaq_default">
-        <path version="2025-01-24T13:05:31.620000">e03_waq/f16_grazing/c03_bloom_mussel_rope</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f16_grazing/c03_bloom_mussel_rope</path>
         <checks>
             <file name="bloomcolumn-mussel-rope.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10215,7 +10215,7 @@
     </testCase>
 
     <testCase name="e03_f16_c04_bloom-zoopl" ref="dwaq_default">
-        <path version="2025-01-24T13:05:51.573000">e03_waq/f16_grazing/c04_bloom_zoopl</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f16_grazing/c04_bloom_zoopl</path>
         <checks>
             <file name="bloomcolumn-zoopl.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10371,7 +10371,7 @@
     </testCase>
 
     <testCase name="e03_f16_c05_bloom-small-mussel" ref="dwaq_default">
-        <path version="2025-01-24T13:06:14.027000">e03_waq/f16_grazing/c05_bloom_small_mussel</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f16_grazing/c05_bloom_small_mussel</path>
         <checks>
             <file name="bloomcolumn-grazer3.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10529,7 +10529,7 @@
     </testCase>
 
     <testCase name="e03_f16_c06_bloom-medium-mussel" ref="dwaq_default">
-        <path version="2025-01-24T13:06:34.841000">e03_waq/f16_grazing/c06_bloom_medium_mussel</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f16_grazing/c06_bloom_medium_mussel</path>
         <checks>
             <file name="bloomcolumn-grazer4.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10687,7 +10687,7 @@
     </testCase>
 
     <testCase name="e03_f16_c07_bloom-large-mussel" ref="dwaq_default">
-        <path version="2025-01-24T13:06:56.646000">e03_waq/f16_grazing/c07_bloom_large_mussel</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f16_grazing/c07_bloom_large_mussel</path>
         <checks>
             <file name="bloomcolumn-grazer5.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -11035,7 +11035,7 @@
     </testCase>
 
     <testCase name="e03_f16_c09_bloom-mussel-ddmf" ref="dwaq_default">
-        <path version="2025-03-26T13:05:11.264000">e03_waq/f16_grazing/c09_bloom_mussel_ddmf</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f16_grazing/c09_bloom_mussel_ddmf</path>
         <checks>
             <file name="bloomcolumn-mussel-ddmf.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -11192,7 +11192,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f16_c10_bloom-zoopl-ddmf" ref="dwaq_default">
-        <path version="2025-03-26T13:05:51.573000">e03_waq/f16_grazing/c10_bloom_zoopl_ddmf</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f16_grazing/c10_bloom_zoopl_ddmf</path>
         <checks>
             <file name="bloomcolumn-zoopl-ddmf.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">

@@ -7,7 +7,7 @@ subroutine inicut(lundia    ,error     ,runid     ,nmax      ,mmax      , &
                 & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -124,7 +124,6 @@ subroutine inicut(lundia    ,error     ,runid     ,nmax      ,mmax      , &
     integer                        :: nd            ! Current N-index minus 1 (see N)
     integer                        :: nrp           ! Counter for the number of points in the current polygon
     integer                        :: nu            ! Current N-index plus  1 (see N)
-    integer, external              :: newlun
     real(fp)                       :: area
     real(fp)                       :: check_dir
     real(fp)                       :: check_kcstot1

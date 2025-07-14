@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,12 +42,12 @@ contains
 
    subroutine addlink2D(L, japerim) ! and add area's and volumes of 2D links
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: bob, wu, ln, dx, acl, lncn, ucnx, csu, ucny, snu, aifu
+      use m_flow, only: s1, a1, vol1, hu, jaconveyance2d, frcu, ifrcutp, cfuhi, ag, au
+      use m_get_link_area_wid2D, only: getlinkareawid2d
+      use m_get_prof2d, only: getprof2d
+      use m_get_hpr_nostruc, only: get_hpr_nostruc
       use m_sferic, only: jasfer3d
-      use m_get_link_area_wid2D
-      use m_get_prof2d
-      use m_get_hpr_nostruc
       use m_cor2linx, only: cor2linx
       use m_cor2liny, only: cor2liny
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,15 +42,13 @@ contains
 
    subroutine setdtorg(jareduced) ! set computational timestep dts
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_wind
-      use m_flowtimes
-      use m_partitioninfo
-      use m_missing
-      use m_drawthis
-      use m_get_kbot_ktop
-      use m_get_Lbot_Ltop
+      use m_flowgeom, only: ndx, lnx1d, iadv, iadv_general_structure, ln, ndxi, lnxi, lnx, dxi, wu, ba, kcu, lncn
+      use m_flow, only: jamapdtcell, plotlin, kkcflmx, kcflmx, itstep, squcor, squ, q1, qin, eps10, hs, epshu, vol1, jamapflowanalysis, flowcourantnumber, cflmx, sqwave, sqi, squ2d, rho, ag, hu, au, ihorvic, kmx, istresstyp, viclu, zws, limitingtimestepestimation
+      use m_flowtimes, only: dtcell, ja_timestep_auto, dt_max, dts, ja_timestep_nostruct, ja_timestep_noqout, dtsc, ja_timestep_auto_visc
+      use m_partitioninfo, only: jampi, idomain, my_rank
+      use m_drawthis, only: ndraw
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getlbotltop
 
       integer, intent(out) :: jareduced ! maximum time-step is already globally reduced (1) or not (0)
 

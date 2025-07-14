@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -33,7 +33,7 @@ module waq_static_version_info
     character(*), public, parameter :: major = MAJOR_STR
     character(*), public, parameter :: minor = MINOR_STR
 
-    character(*), public, parameter :: copyright = "Copyright (C) "//company//", 2023-2024"
+    character(*), public, parameter :: copyright = "Copyright (C) "//company//", 2023-2025"
     character(*), public, parameter :: build_date_time = __DATE__//', '//__TIME__
     character(*), public, parameter :: major_minor_buildnr = trim(major)//'.'//trim(minor)//'-'//trim(build_nr)
     character(*), public, parameter :: major_minor_buildnr_date_time = 'Version '//major_minor_buildnr//', '//build_date_time

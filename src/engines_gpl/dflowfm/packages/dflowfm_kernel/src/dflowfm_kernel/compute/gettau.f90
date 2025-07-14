@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,9 +57,9 @@ contains
 
    subroutine gettau2(n, taucurc, czc, ustw2, jawaveswartdelwaq_par)
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_waves
+      use m_flowgeom, only: nd, dx, wave_waq_shear_stress_hyd, wave_waq_shear_stress_linear_sum, wave_waq_shear_stress_max_shear_stress
+      use m_flow, only: frcu, hu, u1, v, ifrcutp, ag, au, ustb, taubxu, z0ucur, epsz0, kmx, ucx, ucy, rhomean
+      use m_waves, only: twav, uorb, ftauw
       use m_get_chezy, only: get_chezy
       !
       ! Parameters

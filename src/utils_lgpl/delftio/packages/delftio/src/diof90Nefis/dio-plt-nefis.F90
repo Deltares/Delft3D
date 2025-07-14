@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -30,7 +30,7 @@
 !!!
 !!! Dio-PLT-Nefis: Nefis I/O for Param./Loc./Time datasets
 !!!
-!!! (c) Deltares, dec 2000
+!!! (c) Deltares, 2025
 !!!
 !!! David.Levelt@deltares.nl
 !!!

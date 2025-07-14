@@ -2,7 +2,7 @@ subroutine dryfil(lundia    ,lundry    ,error     ,fildry    ,fmttmp    , &
                 & fldry     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -67,7 +67,6 @@ subroutine dryfil(lundia    ,lundry    ,error     ,fildry    ,fmttmp    , &
     integer               :: lfile  ! Length of file name 
     integer               :: luntmp ! Unit number for attribute file 
     integer               :: m      ! Help var. 
-    integer, external     :: newlun
     integer, dimension(4) :: ival   ! Help array (int.) where the data, recently read from the MD-file, are stored temporarily 
     logical               :: outsd  ! indicating whether all dry points are outside subdomain (.TRUE.) or not (.FALSE.)
     logical               :: onParbndIsInside

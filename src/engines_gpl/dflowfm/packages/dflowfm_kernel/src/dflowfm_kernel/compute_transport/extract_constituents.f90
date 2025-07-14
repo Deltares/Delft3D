@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -70,7 +70,7 @@ contains
       use m_plotdots, only: numdots
       use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
       use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed
-      use messageHandling, only: msgbuf, msg_flush
+
       use timers, only: timon, timstop, timstrt
 
       integer :: iconst, grain, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt

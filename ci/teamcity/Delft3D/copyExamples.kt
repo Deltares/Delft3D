@@ -43,7 +43,7 @@ object CopyExamples : BuildType({
         }
     }
 
-    if (DslContext.getParameter("environment") == "production") {
+    if (DslContext.getParameter("enable_copy_example_cases").lowercase() == "true") {
         triggers {
             vcs {
                 branchFilter = "+:<default>"

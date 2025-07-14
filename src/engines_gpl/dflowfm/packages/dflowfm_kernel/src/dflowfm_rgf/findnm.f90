@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,7 @@ contains
 
    subroutine FINDNM(XL, YL, X, Y, mmax, nmax, MC, NC, INSIDE, MV, NV, IN, JN, wf)
       use precision, only: dp
-      use m_missing
+      use m_missing, only: xymis, jins, dmiss
       use geometry_module, only: pinpok
 
       integer :: mmax, nmax, mc, nc, inside, mv, nv, in, jn

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,11 +43,11 @@ contains
    !> get uniform curvilinear grid parameters in "makenet" from polygon
    subroutine pol2netparams()
       use precision, only: dp
-      use m_makenet
-      use m_polygon
-      use m_sferic
-      use m_missing
-      use geometry_module
+      use m_makenet, only: angle, x0, y0, nrx, dx0, nry, dy0
+      use m_polygon, only: npl, xpl, ypl
+      use m_sferic, only: dg2rd, jsferic, ra, rd2dg
+      use m_missing, only: dmiss
+      use geometry_module, only: getdxdy
 
       real(kind=dp) :: ximin, ximax
       real(kind=dp) :: etamin, etamax

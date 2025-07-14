@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,8 +39,7 @@ contains
 
    subroutine comp_subheights(is, Lorient, num, xs, ys, ncs, ics, t, nsubL, nsubR, hL, hR)
       use precision, only: dp
-      use m_splines
-      use m_spline2curvi
+      use m_spline2curvi, only: nsubmax, splineprops
       use m_splinelength_int, only: splinelength_int
 
       integer, intent(in) :: is !< center spline number

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,13 +45,13 @@ contains
    subroutine detect_ridges(jadeleteHessians)
       use precision, only: dp
       use m_deallocate_samplehessian, only: deallocate_samplehessian
-      use m_plot_ridges
-      use m_samples
-      use m_samples_refine
-      use m_missing
+      use m_plot_ridges, only: plot_ridges
+      use m_samples, only: mxsam, mysam, ns, xs, ys, savesam
+      use m_samples_refine, only: nsamplesmooth, zss
+      use m_missing, only: dmiss
+      use m_comp_sampleDh, only: comp_sampledh
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
-      use m_comp_sampleDh
 
       implicit none
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,7 +49,8 @@ contains
       !--pseudo code and references--------------------------------------------------
       ! NONE
       !--declarations----------------------------------------------------------------
-      use precision
+      use precision, only: fp
+      use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use flocculation, only: FLOC_NONE, flocculate
       use m_flowgeom, only: ndx, bl
@@ -57,7 +58,6 @@ contains
       use m_flowparameters, only: epshs
       use m_transport, only: constituents, ised1
       use m_fm_erosed, only: floclist, flocmod, nflocpop, nflocsizes, tbreakup, tfloc
-      use m_get_kbot_ktop
       implicit none
 
       !

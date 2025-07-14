@@ -5,6 +5,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import Delft3D.template.*
 import Delft3D.linux.*
+import Delft3D.windows.*
 
 object Publish : BuildType({
 
@@ -36,26 +37,58 @@ object Publish : BuildType({
     }
 
     features {
-        approval {
-            approvalRules = "group:DIMR_BAKKERS:1"
-        }
         matrix {
             param("brand", listOf(
                 value("delft3dfm"),
                 value("dhydro")
             ))
         }
+        approval {
+            approvalRules = "group:DIMR_BAKKERS:1"
+        }
     }
 
-    if (DslContext.getParameter("environment") == "production") {
+    if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
         dependencies {
             snapshot(AbsoluteId("DIMR_To_NGHS")) {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
-            snapshot(AbsoluteId("LinuxRuntimeContainers")) {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
+            dependency(LinuxTest) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
+            dependency(WindowsTest) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
+            dependency(LinuxUnitTest) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
+            dependency(WindowsUnitTest) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
+            dependency(LinuxRunAllDockerExamples) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
+            dependency(LinuxLegacyDockerTest) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
             }
         }
         triggers {
