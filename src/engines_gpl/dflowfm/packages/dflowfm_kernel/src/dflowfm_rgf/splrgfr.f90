@@ -75,7 +75,7 @@ contains
 ! x, y -> xc, yc (m_grid)
 ! ijc, ijyes in m_grid
       integer :: ierr, mspl
-      integer :: imax, i1, ni1, nti1, l1max, jj, ii1, ii2, k, ii, i, j, L, ki, LJ, no, &
+      integer :: imax, i1, ni1, nti1, l1max, jj, ii1, ii2, k, i, j, L, ki, LJ, no, &
                  numspl, numpx, numi, &
                  ms, ns, &
                  mcr, ncr
@@ -158,11 +158,11 @@ contains
                K = K + 1
                if (K <= L1MAX) then
                   if (I1 <= NUMI) then
-                     Xc(II, JJ) = X1(K)
-                     Yc(II, JJ) = Y1(K)
+                     Xc(I, JJ) = X1(K)
+                     Yc(I, JJ) = Y1(K)
                   else
-                     Xc(JJ, II) = X1(K)
-                     Yc(JJ, II) = Y1(K)
+                     Xc(JJ, I) = X1(K)
+                     Yc(JJ, I) = Y1(K)
                   end if
                end if
 !              CALL RCIRC( X1(K),Y1(K) )
