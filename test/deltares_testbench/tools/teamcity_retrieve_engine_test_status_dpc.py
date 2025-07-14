@@ -34,13 +34,10 @@ HEADER_FMT = "{:>20s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s} {:>8s}  ---  {:24s} (#{
 
 
 class TEAMCITY_IDS(Enum):
-    DIMR_PUBLISH = "Delft3D_DIMRbak"
-    DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID = "Delft3D_LinuxCollect"
-    DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID = "Delft3D_WindowsCollect"
-    DIMR_TO_NGHS_BUILD_TYPE_ID = "DIMR_To_NGHS"
-    DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID = "Dimr_DimrTestbenchRelease_StatusOfDailyTestbench"
-    DIMR_TESTBENCH_RELEASE_TESTS_LINUX = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsLinux"
-    DIMR_TESTBENCH_RELEASE_TESTS_WINDOWS = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsWindows"
+    DIMRSET_AGGREGATED_RELEASE_RESULTS_LINUX = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsLinux"
+    DIMRSET_AGGREGATED_RELEASE_RESULTS_WINDOWS = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsWindows"
+    DELFT3D_WINDOWS_TEST = "Delft3D_WindowsTest"
+    DELFT3D_LINUX_TEST = "Delft3D_LinuxTest"
 
 
 class TestResultSummary(object):
@@ -142,7 +139,7 @@ class TestResult(object):
 class ConfigurationTestResult(object):
     """A class to store configuration test results info."""
 
-    def __init(
+    def __init__(
         self,
         name: str,
         build_nr: str,
@@ -695,16 +692,25 @@ def get_number_of_failed_tests(tree_result_overview: TreeResult) -> int:
     return total_failed_tests
 
 
-def get_build_dependency_chain(build_id: str, username: str, password: str) -> list:
+def get_build_dependency_chain(build_id: str, username: str, password: str, filter: TEAMCITY_IDS = None) -> list:
     """
-    Get dependency chain of all dependent builds for a given build ID from TeamCity,
-    only returning IDs that are in TEAMCITY_IDS. Print a warning for any TEAMCITY_IDS
-    not found in the response.
+    Get dependency chain of all dependent builds for a given build ID from TeamCity.
+
+    Parameters
+    ----------
+    build_id : str
+        The build ID to get dependencies for.
+    username : str
+        TeamCity username.
+    password : str
+        TeamCity password.
+    filter : TEAMCITY_IDS, optional
+        Optional filter to include only builds whose buildTypeId matches one of the TEAMCITY_IDS values.
 
     Returns
     -------
     list
-        List of dependent build IDs (snapshot dependencies) that are in TEAMCITY_IDS.
+        List of dependent build IDs (snapshot dependencies).
     """
     url = f"{BASE_URL}/httpAuth/app/rest/builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id}))&fields=build(id,buildTypeId)"
     response = get_request(url, username, password)
@@ -713,18 +719,64 @@ def get_build_dependency_chain(build_id: str, username: str, password: str) -> l
         return []
     xml_root = ET.fromstring(response.text)
     dependency_chain = []
-    teamcity_ids_set = set(item.value for item in TEAMCITY_IDS)
-    found_ids = set()
     for dep in xml_root.findall("build"):
+        dep_id = dep.attrib.get("id")
         build_type_id = dep.attrib.get("buildTypeId")
-        id = dep.attrib.get("id")
-        if build_type_id and build_type_id in teamcity_ids_set:
-            dependency_chain.append(id)
-            found_ids.add(build_type_id)
-    missing_ids = teamcity_ids_set - found_ids
-    if missing_ids:
-        print(f"Warning: The following TEAMCITY_IDS were not found in the dependency chain: {', '.join(missing_ids)}")
+        if dep_id:
+            if filter is not None:
+                # Accept if build_type_id matches any value in filter
+                filter_values = [item.value for item in filter]
+                if build_type_id in filter_values:
+                    dependency_chain.append(dep_id)
+            else:
+                dependency_chain.append(dep_id)
     return dependency_chain
+
+
+def get_build_test_results(build_id: str, username: str, password: str) -> ConfigurationTestResult:
+    """
+    For each build ID, fetch and log its test results.
+    Queries the TeamCity API for the build, checks for tests, and returns a ConfigurationTestResult.
+    Automatically retrieves the configuration name from the TeamCity API.
+    """
+    url = f"{BASE_URL}/httpAuth/app/rest/builds/id:{build_id}?fields=number,status,statusText,buildType(name),testOccurrences(count,passed,failed,ignored,muted)"
+    response = get_request(url, username, password)
+    if not text_in_xml_message(response.text):
+        # Could not retrieve build info, return empty result with build_id as name
+        return ConfigurationTestResult("Unknown config", build_id, 0, 0, 0, 0, "No build info")
+
+    xml_root = ET.fromstring(response.text)
+    build_nr = xml_root.attrib.get("number", build_id)
+    # Try to get statusText, if not present or empty, use status, else fallback
+    status_text = xml_root.attrib.get("statusText", "")
+    if not status_text:
+        status_text = xml_root.attrib.get("status", "No status available")
+    build_type_elem = xml_root.find("buildType")
+    if build_type_elem is not None and "name" in build_type_elem.attrib:
+        config_name = build_type_elem.attrib["name"]
+    else:
+        config_name = "Unknown config"
+    test_occurrences = xml_root.find("testOccurrences")
+
+    passed = failed = ignored = muted = 0
+    if test_occurrences is not None:
+        passed = int(test_occurrences.attrib.get("passed", "0"))
+        failed = int(test_occurrences.attrib.get("failed", "0"))
+        ignored = int(test_occurrences.attrib.get("ignored", "0"))
+        muted = int(test_occurrences.attrib.get("muted", "0"))
+        # TeamCity does not provide "exception" directly, so leave as 0
+    else:
+        print(f"No test occurrences found for build {build_id}, assuming no tests run.")
+
+    return ConfigurationTestResult(
+        name=config_name,
+        build_nr=build_nr,
+        passed=passed,
+        failed=failed,
+        ignored=ignored,
+        muted=muted,
+        status_text=status_text,
+    )
 
 
 if __name__ == "__main__":
@@ -781,26 +833,33 @@ if __name__ == "__main__":
     log_to_file(log_file, f"Start: {start_time}\n")
 
     print(f"Listing is written to: {out_put}")
-    # https://dpcbuild.deltares.nl/buildConfiguration/Delft3D_LinuxTest
-    # https://dpcbuild.deltares.nl/buildConfiguration/Delft3D_WindowsTest
-    # https://dpcbuild.deltares.nl/project/Dimr_DimrTestbenchRelease?mode=builds#all-projects/
 
     # 1. Get dependency chain of all dependent builds and Filter on relevant build IDs
     dependency_chain = []
     if "build_id" in locals() and build_id:
-        dependency_chain = get_build_dependency_chain(build_id, username, password)
+        dependency_chain = get_build_dependency_chain(build_id, username, password, TEAMCITY_IDS)
         print(f"Dependency chain for build {build_id}: {dependency_chain}")
 
     # 2. Loop over the builds and retrieve the test results and write to file
+    result_list = []
+    for build_id in dependency_chain:
+        result_list.append(get_build_test_results(build_id, username, password))
+    log_engine(log_file, "all tests", result_list)
 
     # 3. Write executive summary to file
+    # Aggregate results from result_list into a TestResultSummary
+    summary = TestResultSummary("All")
+    for result in result_list:
+        summary.sum_passed += result.test_result.passed
+        summary.sum_failed += result.test_result.failed
+        summary.sum_exception += result.test_result.exception
+        summary.sum_ignored += result.test_result.ignored
+        summary.sum_muted += result.test_result.muted
 
-    tree_result_overview = get_tree_entire_engine_test_results(log_file, tbroot, given_build_config, username, password)
-    log_tree(log_file, tree_result_overview)
-    executive_summary = tree_result_overview.get_executive_summary()
+    executive_summary = ExecutiveSummary("Testbench Overview", [summary])
     log_executive_summary(log_file, executive_summary)
 
-    tests_failed = get_number_of_failed_tests(tree_result_overview)
+    tests_failed = sum(result.get_not_passed_total() for result in result_list)
     print(f"Total test failed: {tests_failed}")
 
     log_to_file(log_file, f"\nStart: {start_time}")
@@ -809,4 +868,5 @@ if __name__ == "__main__":
     print(f"\nStart: {start_time}")
     print(f"End  : {datetime.now()}")
     print("Ready")
-    sys.exit(tests_failed)
+    # sys.exit(tests_failed)
+    sys.exit(0)

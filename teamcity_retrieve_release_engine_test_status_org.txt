@@ -1,0 +1,153 @@
+Start: 2025-07-11 15:36:28.852496
+
+DIMR Testbench Release
+    D-Flow FM
+        D-Flow FM (lnx64)
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                 333      333        0        0        0        0   100.00  ---  Test D-Flow FM (lnx64)   (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   5        5        0        0        0        0   100.00  ---  Test D-Flow FM (lnx64, tutorial-, demo-, course-models) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   6        6        0        0        0        0   100.00  ---  Test D-Flow FM - hyd (lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  90       90        0        0        0        0   100.00  ---  Test D-Flow FM 1D (lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  17       17        0        0        0        0   100.00  ---  Test D-Flow FM 1D parallel (lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  59       59        0        0        0        0   100.00  ---  Test D-Flow FM Mor2D (lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  14       14        0        0        0        0   100.00  ---  Test D-Flow FM parallel (incl. dfmoutput; lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  42       42        0        0        0        0   100.00  ---  Validation D-Flow FM (lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  17       17        0        0        0        0   100.00  ---  Validation D-Morphology (lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :    583
+            Passed    :    583
+            Percentage: 100.00
+        D-Flow FM (win64)
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                 333      333        0        0        0        0   100.00  ---  Test D-Flow FM (win64)   (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   5        5        0        0        0        0   100.00  ---  Test D-Flow FM (win64, tutorial-, demo-, course-models) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   6        6        0        0        0        0   100.00  ---  Test D-Flow FM - hyd (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  90       90        0        0        0        0   100.00  ---  Test D-Flow FM 1D (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  17       17        0        0        0        0   100.00  ---  Test D-Flow FM 1D parallel (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  13       13        0        0        0        0   100.00  ---  Test D-Flow FM 1D2D (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  59       59        0        0        0        0   100.00  ---  Test D-Flow FM Mor2D (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  14       14        0        0        0        0   100.00  ---  Test D-Flow FM parallel (incl. dfmoutput; win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  42       42        0        0        0        0   100.00  ---  Validation D-Flow FM (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  17       17        0        0        0        0   100.00  ---  Validation D-Morphology (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :    596
+            Passed    :    596
+            Percentage: 100.00
+    D-Flow FM, D-RR
+        D-Flow FM, D-RR (lnx64)
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                   5        5        0        0        0        0   100.00  ---  Test D-Flow FM, D-RR (lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :      5
+            Passed    :      5
+            Percentage: 100.00
+        D-Flow FM, D-RR (win64)
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                   5        5        0        0        0        0   100.00  ---  Test D-Flow FM, D-RR (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :      5
+            Passed    :      5
+            Percentage: 100.00
+    D-Flow FM, D-RTC
+        D-Flow FM, D-RTC (lnx64)
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                  64       64        0        0        0        0   100.00  ---  Test D-Flow FM, D-RTC (1D network, lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  12       12        0        0        0        0   100.00  ---  Test D-Flow FM, D-RTC (General, lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  11       11        0        0        0        0   100.00  ---  Test D-Flow FM, D-RTC (Restart, lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   3        3        0        0        0        0   100.00  ---  Test D-Flow FM, D-RTC (Tutorials, lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :     90
+            Passed    :     90
+            Percentage: 100.00
+        D-Flow FM, D-RTC (win64)
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                  64       64        0        0        0        0   100.00  ---  Test D-Flow FM, D-RTC (1D network, win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  12       12        0        0        0        0   100.00  ---  Test D-Flow FM, D-RTC (General, win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  11       11        0        0        0        0   100.00  ---  Test D-Flow FM, D-RTC (Restart, win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   3        3        0        0        0        0   100.00  ---  Test D-Flow FM, D-RTC (Tutorials, win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :     90
+            Passed    :     90
+            Percentage: 100.00
+    D-Flow FM, D-RTC, D-Waves
+        D-Flow FM, D-RTC, D-Waves
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                   1        1        0        0        0        0   100.00  ---  Test D-Flow FM, D-RTC, D-Waves (lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   1        1        0        0        0        0   100.00  ---  Test D-Flow FM, D-RTC, D-Waves (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :      2
+            Passed    :      2
+            Percentage: 100.00
+    D-Flow FM, D-Waves
+        D-Flow FM, D-Waves (lnx64)
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                  14       14        0        0        0        0   100.00  ---  Test D-Flow FM, D-Waves (lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   1        1        0        0        0        0   100.00  ---  Test D-Flow FM, D-Waves (lnx64) - FriesianInletRealistic (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   x        x        x        x        x        x        x  ---  Test D-Flow FM, D-Waves (lnx64) - Obstacle (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                                                                            xxx  Success
+            Total     :     15
+            Passed    :     15
+            Percentage: 100.00
+        D-Flow FM, D-Waves (win64)
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                  15       15        0        0        0        0   100.00  ---  Test D-Flow FM, D-Waves (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   1        1        0        0        0        0   100.00  ---  Test D-Flow FM, D-Waves (win64) - FriesianInletRealistic (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                   x        x        x        x        x        x        x  ---  Test D-Flow FM, D-Waves (win64) - Obstacle (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                                                                            xxx  Success
+            Total     :     16
+            Passed    :     16
+            Percentage: 100.00
+    D-RR
+        D-RR (lnx64)
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                  23       23        0        0        0        0   100.00  ---  Test D-RR (lnx64, D-NAM) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  12       12        0        0        0        0   100.00  ---  Test D-RR (lnx64, unpaved) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  11       11        0        0        0        0   100.00  ---  Test D-RR (lnx64, walrus) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :     46
+            Passed    :     46
+            Percentage: 100.00
+        D-RR (win64)
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                  23       23        0        0        0        0   100.00  ---  Test D-RR (win64, D-NAM) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  12       12        0        0        0        0   100.00  ---  Test D-RR (win64, unpaved) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  11       11        0        0        0        0   100.00  ---  Test D-RR (win64, walrus) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :     46
+            Passed    :     46
+            Percentage: 100.00
+    D-WAQ
+        D-WAQ
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                 129      129        0        0        0        0   100.00  ---  Test D-WAQ (lnx64)       (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                 129      129        0        0        0        0   100.00  ---  Test D-WAQ (win64)       (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  40       40        0        0        0        0   100.00  ---  Validation D-WAQ (lnx64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  40       40        0        0        0        0   100.00  ---  Validation D-WAQ (win64) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :    338
+            Passed    :    338
+            Percentage: 100.00
+    D-Waves
+        D-Waves
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                  30       30        0        0        0        0   100.00  ---  Test D-Waves (lnx64)     (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  30       30        0        0        0        0   100.00  ---  Test D-Waves (win64)     (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :     60
+            Passed    :     60
+            Percentage: 100.00
+    D-PART
+        D-PART
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                  42       42        0        0        0        0   100.00  ---  Test D-PART (lnx64)      (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  42       42        0        0        0        0   100.00  ---  Test D-PART (win64)      (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  45       45        0        0        0        0   100.00  ---  Test D-PART FM (lnx64)   (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                  45       45        0        0        0        0   100.00  ---  Test D-PART FM (win64)   (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :    174
+            Passed    :    174
+            Percentage: 100.00
+
+Testbench root: DIMR Testbench Release
+
+Summary: All
+Total tests   :   2066
+    Passed    :   2066
+    Not passed:      0
+    Failed    :      0
+    Exception :      0
+    Ignored   :      0
+    Muted     :      0
+    Percentage: 100.00
+
+Start: 2025-07-11 15:36:28.852496
+End  : 2025-07-11 15:37:22.139717
+Ready

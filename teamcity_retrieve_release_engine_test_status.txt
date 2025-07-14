@@ -1,0 +1,25 @@
+Start: 2025-07-14 11:33:50.286904
+
+        all tests
+               total   passed   failed   except  ignored    muted        %  ---  test case name           (#build)
+                1039     1039        0        0        0        0   100.00  ---  DIMRset aggregated release results (windows) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+                1026     1026        0        0        0        0   100.00  ---  DIMRset aggregated release results (linux) (#44827b5579884008ea4371b98396ae0d3f1062bb)
+            Total     :   2065
+            Passed    :   2065
+            Percentage: 100.00
+
+Testbench root: Testbench Overview
+
+Summary: All
+Total tests   :   2065
+    Passed    :   2065
+    Not passed:      0
+    Failed    :      0
+    Exception :      0
+    Ignored   :      0
+    Muted     :      0
+    Percentage: 100.00
+
+Start: 2025-07-14 11:33:50.286904
+End  : 2025-07-14 11:33:53.516585
+Ready
