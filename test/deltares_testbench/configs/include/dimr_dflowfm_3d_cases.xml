@@ -804,11 +804,7 @@
     </testCase>
 
     <testCase name="e02_f202_c001_conservation_sigma" ref="dflowfm_default">
-<<<<<<< HEAD
-      <path version="2025-07-08T09:42:58.042000">e02_dflowfm/f202_3D_z_sigma/c001_conservation_sigma</path>
-=======
       <path version="2025-07-14T09:49:42.413000">e02_dflowfm/f202_3D_z_sigma/c001_conservation_sigma</path>
->>>>>>> 60c74435fa (UNST-8762: Updated case input of 28 cases converted with the extforce-convert script. These should also run and the output should still be within tolerances.)
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/csv_sigma_map.nc" type="netCDF">
@@ -821,11 +817,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f202_c002_conservation_z" ref="dflowfm_default">
-<<<<<<< HEAD
-      <path version="2025-07-08T09:43:03.655000">e02_dflowfm/f202_3D_z_sigma/c002_conservation_z</path>
-=======
       <path version="2025-07-14T09:49:49.333000">e02_dflowfm/f202_3D_z_sigma/c002_conservation_z</path>
->>>>>>> 60c74435fa (UNST-8762: Updated case input of 28 cases converted with the extforce-convert script. These should also run and the output should still be within tolerances.)
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/csv_z_map.nc" type="netCDF">
@@ -838,11 +830,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f202_c003_conservation_z-sigma_numtopsiguniform0" ref="dflowfm_default">
-<<<<<<< HEAD
-      <path version="2025-07-08T09:43:09.939000">e02_dflowfm/f202_3D_z_sigma/c003_conservation_z-sigma_numtopsiguniform0</path>
-=======
       <path version="2025-07-14T09:49:52.554000">e02_dflowfm/f202_3D_z_sigma/c003_conservation_z-sigma_numtopsiguniform0</path>
->>>>>>> 60c74435fa (UNST-8762: Updated case input of 28 cases converted with the extforce-convert script. These should also run and the output should still be within tolerances.)
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/csv_z-sigma_numtopsiguniform0_map.nc" type="netCDF">
