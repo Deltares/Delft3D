@@ -328,12 +328,11 @@ contains
                         if (jsferic == 1) then
                             xpart(i) = xwasth + dxp
                             ypart(i) = ywasth + dyp
+                            call part_findcellsingle( xpart(i), ypart(i), mpart(i), ierror )
                         else
                             call displace_spherical( real(xwasth,dp), real(ywasth,dp), real(zwasth,dp), &
-                                     dxp, dyp, xpart(i), ypart(i), zpart(i) )
+                                     dxp, dyp, xpart(i), ypart(i), zpart(i), mpart(i) )
                         endif
-
-                        call part_findcellsingle( xpart(i), ypart(i), mpart(i), ierror )
 
                         if ( mpart(i) > 0 ) then
                             exit ! The particle is in an appropriate cell

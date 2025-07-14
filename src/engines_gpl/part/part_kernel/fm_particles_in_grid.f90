@@ -671,7 +671,7 @@ contains
 
     end subroutine part06fm
 
-    subroutine displace_spherical( xporg, yporg, zporg, dxp, dyp, xpnew, ypnew, zpnew )
+    subroutine displace_spherical( xporg, yporg, zporg, dxp, dyp, xpnew, ypnew, zpnew, mpnew )
         !>\file
         !>            Determines the grid cells and relative coordinates of waste locations
         !>
@@ -694,6 +694,11 @@ contains
 
         real(kind=dp)              :: xlong, ylat, dxlong, dylat
 
+        integer, intent(out)       :: mpnew
+
+        integer                    :: ierror
+
+        ierror = 0
         call Cart3Dtospher( xporg, yporg, zporg, xlong, ylat, ptref)
 
         dxlong = atan2( dxp, cos(ylat * degrad_hp) * earth_radius ) * raddeg_hp
@@ -702,6 +707,8 @@ contains
         ylat   = ylat  + dylat
 
         call sphertoCart3D( xlong, ylat, xpnew, ypnew, zpnew )
+
+        call part_findcellsingle( xlong, ylat, mpnew, ierror )
 
     end subroutine displace_spherical
 

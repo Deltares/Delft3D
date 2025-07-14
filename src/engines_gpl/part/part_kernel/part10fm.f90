@@ -216,11 +216,11 @@ contains
                     if (jsferic == 0) then
                         xpart(ipart) = xpartold + dax
                         ypart(ipart) = ypartold + day
+                        call part_findcellsingle(xpart(ipart), ypart(ipart), mpart(ipart), ierror)
                     else
                         call displace_spherical( xpartold, ypartold, zpartold, &
-                                  dax, day, xpart(ipart), ypart(ipart), zpart(ipart) )
+                                  dax, day, xpart(ipart), ypart(ipart), zpart(ipart), mpart(i) )
                     endif
-                    call part_findcellsingle(xpart(ipart), ypart(ipart), mpart(ipart), ierror)
 
                     !  We sill need to check for internal boundaries (eg thin dam or dry cell in the FM model)
                     ! if openbound = false then there is an internal (no flow) boundary.
@@ -398,6 +398,7 @@ contains
 
             xpart(ipart) = xpartold + dwx    !cartesian
             ypart(ipart) = ypartold + dwy    !
+            call part_findcellsingle(xpart(ipart), ypart(ipart), mpart(ipart), ierror)
         else
             ! if spherical then for an accurate conversion we need to calculate distances
             zpartold = zpart(ipart)
@@ -409,10 +410,9 @@ contains
             dwy = cdrag * (dpywind - uy0old) * dts
 
             call displace_spherical( xpartold, ypartold, zpartold, &
-                     dwx, dwy, xpart(ipart), ypart(ipart), zpart(ipart) )
+                     dwx, dwy, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
         endif
 
-        call part_findcellsingle(xpart(ipart), ypart(ipart), mpart(ipart), ierror)
         call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)  ! check around the starting point and end point
 
         ! if the particle goes outside the domain due to wind, use the current angle to transport, otherwise it sticks
@@ -436,12 +436,12 @@ contains
             if (jsferic == 0) then
                 xpart(ipart) = xpartold + dwx
                 ypart(ipart) = ypartold + dwy
+                call part_findcell(1, xx(1), yy(1), mpart(ipart:ipart), ierror)
             else
                 call displace_spherical( xpartold, ypartold, zpartold, &
-                         dwx, dwy, xpart(ipart), ypart(ipart), zpart(ipart) )
+                         dwx, dwy, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
             endif
 
-            call part_findcell(1, xx(1), yy(1), mpart(ipart:ipart), ierror)
             call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)  ! check around the starting point and end point
 
         elseif ((mpart(ipart) == 0 .or. .not.openbound) .and. .not. dstick .and. wpart(1 + 3 * (ifract - 1), ipart) > 0.0) then
