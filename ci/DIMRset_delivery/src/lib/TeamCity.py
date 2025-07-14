@@ -612,7 +612,7 @@ class TeamCity(object):
         Gets a list of build IDs for builds related to a specific build, filtered by buildTypeIds from TEAMCITY_IDS Enum.
 
         Uses the following TeamCity REST API endpoint:
-        /app/rest/builds?locator=defaultFilter:false,snapshotDependency(to:(id:<build_id>))&fields=build(id,buildTypeId)
+        /app/rest/builds?locator=defaultFilter:false,snapshotDependency(to:(id:<build_id>)),count:1000&fields=build(id,buildTypeId)
 
         Arguments:
             build_id (str): The ID of the build to filter related builds.
@@ -623,7 +623,7 @@ class TeamCity(object):
             Returns an empty list if the request failed or no matching builds are found.
         """
         build_type_ids = [member.value for member in TEAMCITY_IDS]
-        endpoint = f"{self.__rest_uri}builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id}))&fields=build(id,buildTypeId)"
+        endpoint = f"{self.__rest_uri}builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id})),count:1000&fields=build(id,buildTypeId)"
         result = requests.get(
             url=endpoint, headers=self.__default_headers, auth=self.__auth
         )
@@ -650,7 +650,7 @@ class TeamCity(object):
         Gets the build ID of a specific dependent build type for a given build.
 
         Uses the following TeamCity REST API endpoint:
-        /app/rest/builds?locator=defaultFilter:false,snapshotDependency(to:(id:<build_id>))&fields=build(id,buildTypeId)
+        /app/rest/builds?locator=defaultFilter:false,snapshotDependency(to:(id:<build_id>)),count:1000&fields=build(id,buildTypeId)
 
         Arguments:
             build_id (str): The build id for a specific build.
@@ -661,7 +661,7 @@ class TeamCity(object):
 
             Returns None if the request failed or no matching dependent build is found.
         """
-        endpoint = f"{self.__rest_uri}builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id}))&fields=build(id,buildTypeId)"
+        endpoint = f"{self.__rest_uri}builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id})),count:1000&fields=build(id,buildTypeId)"
         result = requests.get(
             url=endpoint, headers=self.__default_headers, auth=self.__auth
         )

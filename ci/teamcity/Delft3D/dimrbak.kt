@@ -88,10 +88,11 @@ object DIMRbak : BuildType({
     }
 
     params {
-        text("release_version", "%DIMRset_ver%", 
-        label = "Release version", 
-        description = "e.g. '2.29.03' or '2025.02'", 
-        display = ParameterDisplay.PROMPT)
+        text("release_version", "2.29.xx",
+            label = "Release version",
+            description = "e.g. '2.29.03' or '2025.02'",
+            display = ParameterDisplay.PROMPT)
+        param("DIMRset_ver", "%release_version%")
         param("dimrbakker_username", DslContext.getParameter("dimrbakker_username"))
         password("dimrbakker_password", "credentialsJSON:43ca5761-31e9-4289-97f3-c060a4007293")
         password("dimrbakker_personal_access_token", "credentialsJSON:8af5f616-4c9b-4f2c-9cd2-b5cc8cc4592d")
