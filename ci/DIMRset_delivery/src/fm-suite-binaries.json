@@ -161,31 +161,11 @@
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "lib\\libiomp5md_db.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
             "file": "lib\\libfabric.dll",
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "lib\\libicaf.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
             "file": "lib\\libifcoremd.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
-            "file": "lib\\libifcoremdd.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
-            "file": "lib\\libifcorert.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
-            "file": "lib\\libifcorertd.dll",
             "issuedTo": "Intel Corporation"
         },
         {
@@ -197,19 +177,7 @@
             "issuedTo": "Intel Corporation"
         },
         {
-            "file": "lib\\libiompstubs5md.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
-            "file": "lib\\libirngmd.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
             "file": "lib\\libmmd.dll",
-            "issuedTo": "Intel Corporation"
-        },
-        {
-            "file": "lib\\libmmdd.dll",
             "issuedTo": "Intel Corporation"
         },
         {
