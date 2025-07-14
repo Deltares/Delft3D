@@ -1189,8 +1189,6 @@ contains
       call prop_get(md_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor)
       call prop_get(md_ptr, 'numerics', 'FacLaxTurbVer', turbulence_lax_vertical)
       call prop_get(md_ptr, 'numerics', 'FacLaxTurbHor', turbulence_lax_horizontal)
-      call prop_get(md_ptr, 'numerics', 'EpsTKE', epstke)
-      call prop_get(md_ptr, 'numerics', 'EpsEPS', epseps)
 
       call prop_get(md_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax)
       call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
@@ -1324,6 +1322,8 @@ contains
       call prop_get(md_ptr, 'physics', 'Dicoww', dicoww)
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
       call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
+      call prop_get(md_ptr, 'physics', 'EpsTKE', epstke)
+      call prop_get(md_ptr, 'physics', 'EpsEPS', epseps)
 
       call prop_get(md_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity)
       call check_positive_value('SchmidtNumberSalinity', Schmidt_number_salinity)
@@ -3149,14 +3149,6 @@ contains
          call prop_set(prop_ptr, 'numerics', 'FacLaxTurbHor', turbulence_lax_horizontal, 'Horizontal method of turbulence_lax_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)')
       end if
 
-      if (writeall .or. (epstke > 1.0e-32_dp .and. kmx > 0)) then
-         call prop_set(prop_ptr, 'numerics', 'EpsTKE', epstke, '(TKE=max(TKE,EpsTKE), default=1d-32)')
-      end if
-
-      if (writeall .or. (epseps > 1.0e-32_dp .and. kmx > 0)) then
-         call prop_set(prop_ptr, 'numerics', 'EpsEPS', epseps, '(EPS=max(EPS,EpsEPS), default=1d-32, (or TAU))')
-      end if
-
       if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then
          call prop_set(prop_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax, 'Limit eddy viscosity at bed )')
       end if
@@ -3314,7 +3306,14 @@ contains
             call prop_set(prop_ptr, 'physics', 'Vicwminb', Vicwminb, 'Minimum visc in prod and buoyancy term (m2/s)')
          end if
          call prop_set(prop_ptr, 'physics', 'Xlozmidov', xlozmidov, 'Ozmidov length scale (m), default=0.0, no contribution of internal waves to vertical diffusion')
+         if (epstke > 1.0e-32_dp) then
+            call prop_set(prop_ptr, 'physics', 'EpsTKE', epstke, 'Minimum TKE value (TKE = max(TKE,EpsTKE), default = 1d-32)')
+         end if
+         if (epseps > 1.0e-32_dp) then
+            call prop_set(prop_ptr, 'physics', 'EpsEPS', epseps, 'Minimum EPS value (EPS = max(EPS,EpsEPS) [or TAU], default = 1d-32)')
+         end if
       end if
+
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberSalinity', Schmidt_number_salinity, 'Turbulent Schmidt number for salinity')
       call prop_set(prop_ptr, 'physics', 'PrandtlNumberTemperature', Prandtl_number_temperature, 'Turbulent Prandtl number for temperature')
       call prop_set(prop_ptr, 'physics', 'SchmidtNumberTracer', Schmidt_number_tracer, 'Turbulent Schmidt number for tracer(s)')
@@ -3527,9 +3526,9 @@ contains
       end if
       if (writeall .or. rho_water_in_wind_stress /= RHO_MEAN) then
          call prop_set(prop_ptr, 'Wind', 'rhoWaterInWindStress', rho_water_in_wind_stress, &
-             'Water density used in computation of wind stress (0: Rhomean, 1: local (surface) density of model)')
+                       'Water density used in computation of wind stress (0: Rhomean, 1: local (surface) density of model)')
       end if
-         
+
       if (writeall .or. jagrw > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT) then
          call prop_set(prop_ptr, 'grw', 'groundwater', jagrw, '0=No (horizontal) groundwater flow, 1=With groundwater flow')
          write (tmpstr, '(a,5(i0,": ",a),a)') 'Infiltration method (', DFM_HYD_NOINFILT, 'No infiltration', 1, 'Interception layer', &

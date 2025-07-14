@@ -80,9 +80,8 @@ module m_turbulence
    real(kind=dp) :: hcref(kmxx) !< mid-layer heigths
    real(kind=dp) :: hwref(0:kmxx) !< layer interface height, 0=bed
 
-   real(kind=dp) :: epstke = 1d-32 ! D3D: - 7, dpm: -32
-   real(kind=dp) :: epseps = 1d-32 ! D3D: - 7, dpm: -32
-   real(kind=dp) :: epsd = 1d-32 ! D3D: - 7, dpm: -32
+   real(kind=dp) :: epstke = 1d-32
+   real(kind=dp) :: epseps = 1d-32
 
    real(kind=dp), allocatable, dimension(:) :: turkin0 ! k old (m2/s2)  , at layer interface at u     these will become global, rename to : turkinwu0
    real(kind=dp), allocatable, dimension(:), target :: turkin1 !< [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
