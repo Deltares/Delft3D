@@ -24,8 +24,8 @@ object LinuxCollect : BuildType({
     artifactRules = """
         #teamcity:symbolicLinks=as-is
         lnx64 => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
-        dimr_version_lnx64.txt => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
-        dimr_version*txt => version
+        dimrset_version_lnx64.txt => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
+        dimrset_version*txt => version
     """.trimIndent()
 
     vcs {
@@ -60,7 +60,7 @@ object LinuxCollect : BuildType({
         exec {
             name = "Generate list of version numbers (from what-strings)"
             path = "/usr/bin/python3"
-            arguments = "ci/DIMRset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimr_version_lnx64.txt"
+            arguments = "ci/DIMRset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimrset_version_lnx64.txt"
         }
     }
 
