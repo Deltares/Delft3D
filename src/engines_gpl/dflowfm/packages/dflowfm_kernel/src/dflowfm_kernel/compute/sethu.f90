@@ -744,7 +744,7 @@ contains
    end function get_upstream_water_level_regular_linear_interpolation
 
 !> get_upstream_water_level_usual_limiters
-   real(kind=dp) function get_upstream_water_level_usual_limiters(upstream_cell, downstream_cell, link) result(upstream_water_level)
+   real(kind=dp) function get_upstream_water_level_usual_limiters(left_cell, right_cell, link) result(upstream_water_level)
       use precision, only: dp
       use m_flowparameters, only: limtyphu
       use m_flow, only: s0
@@ -752,8 +752,9 @@ contains
       use m_missing, only: dmiss
       use m_dslim
 
-      integer, intent(in) :: upstream_cell, downstream_cell, link
-
+      integer, intent(in) :: left_cell, right_cell, link
+      integer :: upstream_cell, downstream_cell
+      logical :: left_cell_is_upstream
       integer :: klnup1
       integer :: klnup2
       integer :: ip
@@ -763,10 +764,24 @@ contains
 
       if (velocity_pointer(link) > 0) then
          ip = 0
+         left_cell_is_upstream = .true.
       else
-         ip = 3
+         if (velocity_pointer(link) == 0) then
+            left_cell_is_upstream = s0(left_cell) > s0(right_cell)
+         else ! velocity_pointer < 0
+            left_cell_is_upstream = .false.
+         end if
+         ip = 3 
       end if
-
+      
+      if (left_cell_is_upstream) then
+         upstream_cell = left_cell
+         downstream_cell = right_cell
+      else
+         upstream_cell = right_cell
+         downstream_cell = left_cell
+      end if
+      
       klnup1 = klnup(1 + ip, link)
       sku = dmiss
       if (klnup1 < 0) then
