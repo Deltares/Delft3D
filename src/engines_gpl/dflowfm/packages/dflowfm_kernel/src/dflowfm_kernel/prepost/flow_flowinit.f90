@@ -1626,7 +1626,7 @@ contains
 
 !> initialise_density_at_cell_centres
    subroutine initialise_density_at_cell_centres()
-      use m_flow, only: kmxn, rho_read_rst
+      use m_flow, only: kmxn
       use m_cell_geometry, only: ndx
       use m_sediment, only: stm_included
       use m_turbulence, only: rhowat, potential_density, in_situ_density
@@ -1642,11 +1642,9 @@ contains
       integer :: cell3D
 
       do cell = 1, ndx
-         if (.not. rho_read_rst) then
-            call set_potential_density(potential_density, cell)
-            if (apply_thermobaricity) then
-               call set_pressure_dependent_density(in_situ_density, cell)
-            end if
+         call set_potential_density(potential_density, cell)
+         if (apply_thermobaricity) then
+            call set_pressure_dependent_density(in_situ_density, cell)
          end if
          if (stm_included) then
             call getkbotktop(cell, bottom_cell, top_cell)
