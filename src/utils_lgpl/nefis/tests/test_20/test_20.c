@@ -44,8 +44,6 @@ BInt4   set;
 
 retrieve * array_retrieve_ptrs[MAX_NEFIS_FILES];
 BUInt8 *** retrieve_var;
-BUInt8 *** new_capacity_retrieve_var( BUInt8 *** retrieve, BInt4 length, BInt4 new_length);
-
 
 int main( int argc, char **argv )
 {
@@ -161,22 +159,4 @@ retrieve * free_retrieve_ptrs( retrieve * p )
     p = NULL;
 
     return p;
-}
-/*==========================================================================*/
-BUInt8 *** new_capacity_retrieve_var( BUInt8 *** retrieve, BInt4 length, BInt4 new_length)
-{
-    long i, j;
-
-    retrieve = (BUInt8***) realloc(retrieve, (new_length)*sizeof(BUInt8));
-    for (i=length; i<new_length; i++)  {
-        retrieve[i] = (BUInt8 **) malloc(MAX_VAR_GROUPS * sizeof(BUInt8) );
-    }
-    for (j=0; j<MAX_VAR_GROUPS; j++)  {
-        for (i=length; i<new_length; i++)  {
-            retrieve[i][j] = (BUInt8 *) malloc(1 * sizeof(BUInt8) );
-            retrieve[i][j][0] = (BUInt8) ULONG_MAX;
-        }
-    }
-
-    return retrieve;
 }
