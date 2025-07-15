@@ -502,7 +502,7 @@
     </testCase>
 
     <testCase name="e02_f017_c020_sourcesink_3D" ref="dflowfm_default">
-      <path version="2025-06-27T09:43:45.762000">e02_dflowfm/f017_sources_sinks/c020_sourcesink_3D</path>
+      <path version="2025-07-15T14:05:00.627000">e02_dflowfm/f017_sources_sinks/c020_sourcesink_3D</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/sorsin3D_map.nc" type="netCDF">
@@ -856,7 +856,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f202_c005_lake_veere_sigma" ref="dflowfm_default">
-      <path version="2025-05-07T11:39:38.277000">e02_dflowfm/f202_3D_z_sigma/c005_lake_veere_sigma</path>
+      <path version="2025-07-15T14:05:40.575000">e02_dflowfm/f202_3D_z_sigma/c005_lake_veere_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/2zb_sigma_map.nc" type="netCDF">
