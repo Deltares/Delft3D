@@ -36,8 +36,7 @@ program test15
    &)
 
    INTEGER*4 fds
-   INTEGER&
-   &Clsnef,&
+   INTEGER Clsnef,&
    &Credat,&
    &Defcel,&
    &Defelm,&
