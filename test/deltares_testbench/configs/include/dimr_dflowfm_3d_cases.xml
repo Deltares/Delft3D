@@ -908,7 +908,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="platform_specific">
-      <path version="2025-04-07T12:49:12.968000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
+      <path version="2025-07-15T12:34:23.916000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_sigma_map.nc" type="netCDF">
@@ -921,7 +921,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f203_c04_Waal_trachytopes_3D_zsigma" ref="dflowfm_default">
-      <path version="2025-04-07T12:23:32.975000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
+      <path version="2025-07-15T12:34:48.905000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_zsigma_map.nc" type="netCDF">
