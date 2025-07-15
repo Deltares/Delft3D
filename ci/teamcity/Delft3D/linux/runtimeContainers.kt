@@ -41,17 +41,6 @@ object LinuxRuntimeContainers : BuildType({
     steps {
         mergeTargetBranch {}
         exec {
-            name = "Remove system libraries"
-            workingDir = "dimrset/lib"
-            path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
-        }
-        script {
-            name = "Set execute rights"
-            scriptContent = """
-                chmod a+x dimrset/bin/*
-            """.trimIndent()
-        }
-        exec {
             name = "Copy example and readme.txt"
             path = "ci/teamcity/Delft3D/linux/scripts/copyExampleAndReadMe.sh"
         }

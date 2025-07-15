@@ -222,37 +222,6 @@ make install
 popd
 EOF-petsc
 
-FROM base AS curl
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-COPY --from=compression-libs --link /usr/local/ /usr/local/
-
-RUN --mount=type=cache,target=/var/cache/src/,id=curl-${CACHE_ID_SUFFIX} <<"EOF-curl"
-set -eo pipefail
-source /opt/intel/oneapi/setvars.sh
-
-URL='https://curl.se/download/curl-8.9.1.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-pushd "/var/cache/src/${BASEDIR}"
-if [[ $DEBUG = "0" ]]; then
-    ./configure CC=icx CFLAGS="-O3" CPPFLAGS="-DNDEBUG" --with-openssl --with-zlib --with-zstd
-else
-    ./configure CC=icx CFLAGS="-O0" --enable-debug --with-openssl --with-zlib --with-zstd
-fi
-make --jobs=$(nproc)
-make install
-popd
-EOF-curl
-
 FROM base AS sqlite3
 
 ARG DEBUG
@@ -364,7 +333,6 @@ ARG DEBUG
 ARG CACHE_ID_SUFFIX
 
 COPY --from=hdf5 --link /usr/local/ /usr/local/
-COPY --from=curl --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=netcdf-c-${CACHE_ID_SUFFIX} <<"EOF-netcdf-c"
 set -eo pipefail
@@ -438,7 +406,6 @@ ARG CACHE_ID_SUFFIX
 
 COPY --from=tiff --link /usr/local/ /usr/local/
 COPY --from=sqlite3 --link /usr/local/ /usr/local/
-COPY --from=curl --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=proj-${CACHE_ID_SUFFIX} <<"EOF-proj"
 set -eo pipefail
@@ -509,7 +476,7 @@ cmake .. \
     -DGDAL_USE_HDF5=ON -DGDAL_USE_NETCDF=ON \
     -DGDAL_USE_EXPAT=ON -DGDAL_USE_XERCESC=ON \
     -DGDAL_USE_ZSTD=ON -DGDAL_USE_ZLIB=ON \
-    -DGDAL_USE_TIFF=ON
+    -DGDAL_USE_TIFF=ON -DGDAL_USE_CURL=OFF
 
 cmake --build . --config $BUILD_TYPE --parallel $(nproc)
 cmake --build . --target install

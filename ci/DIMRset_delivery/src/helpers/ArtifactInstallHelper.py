@@ -67,32 +67,23 @@ class ArtifactInstallHelper(object):
         self.__dimr_version = dimr_version
         self.__branch_name = branch_name
 
-    def download_artifacts_to_network_drive(self) -> None:
+    def publish_artifacts_to_network_drive(self, build_id_chain: str) -> None:
         """Downloads the DIMR artifacts to the network drive."""
-        latest_dimr_collector_release_signed_build_id = (
-            self.__teamcity.get_latest_build_id_for_build_type_id(
-                build_type_id=TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID.value
-            )
+        windows_collect_id = self.__teamcity.get_dependent_build_id(
+            build_id_chain, TEAMCITY_IDS.DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID.value
         )
-        artifact_names = self.__teamcity.get_build_artifact_names(
-            build_id=latest_dimr_collector_release_signed_build_id
+        linux_collect_id = self.__teamcity.get_dependent_build_id(
+            build_id_chain, TEAMCITY_IDS.DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID.value
         )
 
-        artifacts_to_download = []
-
-        for artifact_name in artifact_names["file"]:
-            if (
-                NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT in artifact_name["name"]
-                or NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT in artifact_name["name"]
-            ):
-                artifacts_to_download.append(artifact_name["name"])
-
-        self.__download_and_unpack_dimr_artifacts(
-            artifacts_to_download=artifacts_to_download,
-            build_id=latest_dimr_collector_release_signed_build_id,
+        self.__publish_artifact_to_file_share(
+            windows_collect_id, NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT
+        )
+        self.__publish_artifact_to_file_share(
+            linux_collect_id, NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT
         )
 
-    def install_dimr_on_linux(self) -> None:
+    def publish_weekly_dimr_via_h7(self) -> None:
         """Installs DIMR on the Linux machine via SSH."""
         print(f"Installing DIMR on {LINUX_ADDRESS} via SSH...")
 
@@ -102,6 +93,8 @@ class ArtifactInstallHelper(object):
         command += "cd /p/d-hydro/dimrset/weekly;"
         command += f"chgrp -R dl_acl_dsc {self.__dimr_version}/;"
         command += f"chmod -R a+x,a-s {self.__dimr_version}/;"
+
+        # only update the latest symlink if we are on the main branch we don't do this for the release branche
         if self.__branch_name == "main":
             command += "unlink latest;"
             command += f"ln -s {self.__dimr_version} latest;"
@@ -113,7 +106,27 @@ class ArtifactInstallHelper(object):
         self.__ssh_client.execute(address=LINUX_ADDRESS, command=command)
         print(f"Successfully installed DIMR on {LINUX_ADDRESS}.")
 
-    def __download_and_unpack_dimr_artifacts(
+    def __publish_artifact_to_file_share(self, build_id, artifact_name_key):
+        """
+        Downloads and unpacks artifacts from a TeamCity build that match the specified artifact name key.
+
+        Args:
+            build_id (str): The ID of the TeamCity build to retrieve artifacts from.
+            artifact_name_key (str): Substring to filter artifact names for downloading.
+
+        Returns:
+            None
+        """
+        artifact_names = self.__teamcity.get_build_artifact_names(build_id=build_id)
+        artifacts_to_download = [
+            a["name"] for a in artifact_names["file"] if artifact_name_key in a["name"]
+        ]
+        self.__download_and_unpack_dimr_artifacts_via_h7(
+            artifacts_to_download=artifacts_to_download,
+            build_id=build_id,
+        )
+
+    def __download_and_unpack_dimr_artifacts_via_h7(
         self, artifacts_to_download: List[str], build_id: str
     ) -> None:
         """
@@ -141,9 +154,10 @@ class ArtifactInstallHelper(object):
             print(f"Deleting {artifact_to_download}...")
             os.remove(artifact_to_download)
 
+            remote_path = "/p/d-hydro/dimrset/weekly"
             self.__ssh_client.secure_copy(
                 address=LINUX_ADDRESS,
                 local_path=file_path,
-                remote_path="/p/d-hydro/dimrset/weekly",
+                remote_path=remote_path,
             )
-            print(f"Successfully downloaded {artifact_to_download}.")
+            print(f"Successfully deployed {artifact_to_download} to {remote_path}.")

@@ -59,7 +59,7 @@ class ExcelHelper(object):
         row.append("")                                              # Column D (Revision)
         row.append("FLOW1D2D now in GitLab")                        # Column E (Flow1D)
         row.append("OSS")                                           # Column F (FlowFM)
-        row.append(self.__kernel_versions["OSS_ver"])               # Column G (OSS)
+        row.append(self.__kernel_versions["build.vcs.number"])               # Column G (OSS)
         row.append("DRR now in GitLab")                             # Column H (RR)
         row.append("FBC now in GitLab")                             # Column I (FBC)
         row.append(self.__parser.get_percentage_total_passing())    # Column J (Percentage passing)

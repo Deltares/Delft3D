@@ -63,6 +63,7 @@ object WindowsCollect : BuildType({
             }
             conditions {
                 matches("dep.${WindowsBuild.id}.product", "(fm-suite|all-testbench)")
+                matches("dep.${WindowsBuild.id}.build_type", "Release")
             }
         }
     }
