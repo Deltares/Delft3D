@@ -26,6 +26,7 @@ object DIMRbak : BuildType({
     artifactRules = """
         +:ci/DIMRset_delivery/output/*.html
         +:ci/DIMRset_delivery/src/*.xlsx
+        +:ci/DIMRset_delivery/src/*.txt
     """.trimIndent()
 
     vcs {
@@ -99,6 +100,23 @@ object DIMRbak : BuildType({
     }
 
     steps {
+
+        
+        python {
+            name = "Generate test report summary"
+            command = file {
+                filename = "teamcity_retrieve_engine_test_status_dpc.py"
+                scriptArguments = """
+                    --username "%svn_buildserver_username%"
+                    --password "%svn_buildserver_password%"
+                    --build_id "%teamcity.build.id%"
+                """.trimIndent()
+            }
+            workingDir = "ci/DIMRset_delivery/src"
+            environment = venv {
+                requirementsFile = "../requirements.txt"
+            }
+        }
         python {
             name = "Execute DIMRbakker script"
             command = file {
@@ -107,6 +125,7 @@ object DIMRbak : BuildType({
                     --username "%dimrbakker_username%"
                     --password "%dimrbakker_password%"
                     --git-PAT "%dimrbakker_personal_access_token%"
+                    --build_id "%teamcity.build.id%"
                 """.trimIndent()
             }
             workingDir = "ci/DIMRset_delivery/src"
