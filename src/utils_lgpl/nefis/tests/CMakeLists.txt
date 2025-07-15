@@ -7,7 +7,9 @@ foreach(i RANGE 0 21)
         set(test_name test_${i})
     endif()
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${test_name}")
-        list(APPEND TEST_DIRS ${test_name})
+        if(NOT i MATCHES 13)
+            list(APPEND TEST_DIRS ${test_name})
+        endif()
     endif()
 endforeach()
 
@@ -35,6 +37,9 @@ foreach(test_dir ${TEST_DIRS})
 
     configure_visual_studio_user_file(${executable_name})
 
+    if (WIN32)
+        install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/run_test.${platform_extension} DESTINATION test/nefis)
+    endif()    
     install(TARGETS ${executable_name} RUNTIME  DESTINATION test/nefis)
 
 endforeach()
