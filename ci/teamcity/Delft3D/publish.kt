@@ -54,8 +54,11 @@ object Publish : BuildType({
             label = "Release version", 
             description = "e.g. '2.29.03' or '2025.02'", 
             display = ParameterDisplay.PROMPT)
-        param("reverse.dep.${DIMRbak.id}.release_version", "%release_version%")
-        param("reverse.dep.Dimr_DimrCollector.DIMRset_ver", "%release_version%")
+        text("reverse.dep.*.release_version", "2.29.xx", 
+            label = "Release version for dependencies", 
+            description = "e.g. '2.29.03' or '2025.02'", 
+            display = ParameterDisplay.PROMPT)
+        param("reverse.dep.*.product", "all-testbench")
         param("commit_id_short", "%dep.${LinuxBuild.id}.commit_id_short%")
         param("source_image", "%dep.${LinuxRuntimeContainers.id}.runtime_container_image%")
         param("destination_image_generic", "containers.deltares.nl/delft3d/%brand%:%release_type%")
