@@ -219,7 +219,7 @@ contains
                         call part_findcellsingle(xpart(ipart), ypart(ipart), mpart(ipart), ierror)
                     else
                         call displace_spherical( xpartold, ypartold, zpartold, &
-                                  dax, day, xpart(ipart), ypart(ipart), zpart(ipart), mpart(i) )
+                                  dax, day, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
                     endif
 
                     !  We sill need to check for internal boundaries (eg thin dam or dry cell in the FM model)
@@ -517,8 +517,14 @@ contains
 
         integer :: j, iq
 
+        integer(kind = int_wp), save :: ithndl = 0             ! handle to time this subroutine
+
         if (mpartold == 0) then
             return  ! if the particle was not in the grid then skip
+        endif
+
+        if (timon) then
+            call timstrt("checkpart_bound", ithndl)
         endif
 
         openbound = .TRUE.
@@ -539,6 +545,9 @@ contains
                     ! check whether the bondary is closed
                     if (abs(qe(L)) == 0.0D0) then
                         openbound = .FALSE.
+                        if (timon) then
+                            call timstop (ithndl)
+                        endif
                         return  ! if a closed boundary is found then return with openbound = false
                     else
                         ! ensure a tolerance so that the coordinate is actually in the next cell.
@@ -553,6 +562,9 @@ contains
                             mpart_tmp = 0  ! this is outside the grid exit the routine
                             mpart(ipart) = 0
                             openbound = .TRUE. ! has to be an open boundary because the q is greater than 0
+                            if (timon) then
+                                call timstop (ithndl)
+                            endif
                             return
                         endif
                     endif
@@ -562,9 +574,16 @@ contains
             end do
             ! if no boundary found, then we are in the same segment,  exit the routine
             if (.not. isboundary) then
+                if (timon) then
+                    call timstop (ithndl)
+                endif
                 return
             endif
         end do
+
+        if (timon) then
+            call timstop (ithndl)
+        endif
 
     end subroutine
 end module
