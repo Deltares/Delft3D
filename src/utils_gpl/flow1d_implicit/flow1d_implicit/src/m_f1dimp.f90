@@ -171,23 +171,36 @@ use m_f1dimp_data
 
 implicit none
 
-f1dimppar%omega=0.5d0 !check sensible value
+!<SOBEK_TechRefMan_1997.pdf>
+!Values of \omega as low as 0.2 may be necessary, depending on 
+!how irregular these variables behave as a function of the water level. On the other hand, when
+!\alpha_b, C^2 R and Wf are all smooth functions, \omega may be as high as 0.95, resulting in much
+!faster convergence.
+f1dimppar%omega=0.5d0 
 f1dimppar%psi=0.5d0
 f1dimppar%theta=1.0d0 !It is rewriten if steady flow is chosen anyhow
+!These values of `epsh` and `epsq` may be too restrictive. 
+!Default values in SRE GUI are `epsh=1e-3` and `epsq=1e-1`. 
 f1dimppar%epsh=1.0d-5  
 f1dimppar%epsq=1.0d-5  
 f1dimppar%flitmx=100 
 f1dimppar%epsqrl=1.0d-10
 f1dimppar%lambda=0 
-f1dimppar%relstr=1.0d0
-f1dimppar%dhstru=1.0d-5
-f1dimppar%cflpse=1000.0d0
+f1dimppar%relstr=0.6d0
+f1dimppar%dhstru=0.001d0
 f1dimppar%iterbc=100
 f1dimppar%resid=1.0d-8 !check sensible value
 f1dimppar%overlp=0 !change to summerdiketransitionheight -> check if <network%csdefinitions%cs(1)%summerdike> allocated?
 f1dimppar%lconv=.true. !the input is converted to logical by calling soipar? setting to true we can break the simulation in FM code to handle the messages
+!The value of underrelaxation coefficient \omega_{CFL}
+!has been set to a fixed value of 0.9, while the initial 
+!value of CFL_pseu is set to 1.
 f1dimppar%omcfl=0.9d0 !default in SRE
-f1dimppar%dhtyp=0.1d0 !default in SRE
+f1dimppar%cflpse=1.0d0
+!\delta_{typ} represents a typical water level change for which
+!linearisation problems are to be expected; its value has been set
+!in SOBEK to a fixed value of 0.1 [m].
+f1dimppar%dhtyp=0.1d0 !default  in SRE
 f1dimppar%exrstp=0.0d0 !default in SRE
 
 end subroutine default_fm1dimp
