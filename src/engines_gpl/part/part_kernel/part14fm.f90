@@ -325,7 +325,7 @@ contains
                         dxp = cos(dpangle) * dradius
                         dyp = sin(dpangle) * dradius
 
-                        if (jsferic == 1) then
+                        if (jsferic == 0) then
                             xpart(i) = xwasth + dxp
                             ypart(i) = ywasth + dyp
                             call part_findcellsingle( xpart(i), ypart(i), mpart(i), ierror )

@@ -712,5 +712,4 @@ contains
 
     end subroutine displace_spherical
 
-
 end module m_fm_particles_in_grid

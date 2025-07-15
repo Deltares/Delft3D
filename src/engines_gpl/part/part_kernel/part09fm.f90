@@ -129,6 +129,7 @@ contains
 
         !     loop over the number of dye releases
 
+
         write (lun2, '(/)')
         do id = 1, nodye
             iwt = iwtime(id)
@@ -305,6 +306,7 @@ contains
         enddo
 
         !     end of routine
+
 
         if (timon) call timstop (ithndl)
         return
