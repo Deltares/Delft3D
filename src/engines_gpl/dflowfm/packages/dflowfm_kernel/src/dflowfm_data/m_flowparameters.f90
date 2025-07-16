@@ -130,6 +130,7 @@ module m_flowparameters
    logical :: btempforcingtypD !< Forcing parameter dew point temperature given as a separate field or not
    logical :: btempforcingtypH !< Forcing parameter relative humidity given as a separate field or not
    logical :: btempforcingtypS !< Forcing parameter solar radiation given as a separate field or not
+   logical :: btempforcingtypN !< Forcing parameter net solar radiation given as a separate field or not
    logical :: btempforcingtypL !< Forcing parameter long wave radiation given as a separate field or not
 
    integer :: jarhoxu !< rho effects in momentum, 0=no, 1=in horizontal adv, 2=+ in vertical adv, 3 = + in pressure term

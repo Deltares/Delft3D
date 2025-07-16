@@ -36,7 +36,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, item_pump, qpump, item_longculvert_valve_relative_opening, &
                       nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, item_lateraldischarge, npumpswithlevels, numsrc, item_discharge_salinity_temperature_sorsin, qstss, item_sourcesink_discharge, &
                       item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, &
-                      item_relative_humidity, btempforcingtypa, btempforcingtyps, item_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, item_long_wave_radiation, btempforcingtypd, &
+                      item_relative_humidity, btempforcingtypa, btempforcingtyps, btempforcingtypn, item_solar_radiation, item_net_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, item_long_wave_radiation, btempforcingtypd, &
                       relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, dumpecmessagestack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, &
                       dwcap, mxwav, mywav, hs, epshu, twavcom, flowwithoutwaves, nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, item_hrms, ecgetvalues, item_tp, item_dir, item_fx, item_fy, item_wsbu, &
                       item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, &
@@ -306,6 +306,10 @@ contains
       end if
       if (btempforcingtypS) then
          call get_timespace_value_by_item_and_consider_success_value(item_solar_radiation, time_in_seconds)
+         foundtempforcing = .true.
+      end if
+      if (btempforcingtypN) then
+         call get_timespace_value_by_item_and_consider_success_value(item_net_solar_radiation, time_in_seconds)
          foundtempforcing = .true.
       end if
       if (btempforcingtypC) then

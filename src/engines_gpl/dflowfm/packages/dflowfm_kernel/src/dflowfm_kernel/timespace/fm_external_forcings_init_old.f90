@@ -1028,6 +1028,19 @@ contains
                   solar_radiation_available = .true.
                end if
 
+            else if (qid == 'netsolarradiation') then
+
+               if (.not. allocated(net_solar_radiation)) then
+                  allocate (net_solar_radiation(ndx), stat=ierr)
+                  call aerr('net_solar_radiation(ndx)', ierr, ndx)
+                  net_solar_radiation = 0.0_dp
+               end if
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  btempforcingtypN = .true.
+                  net_solar_radiation_available = .true.
+               end if
+
             else if (qid == 'longwaveradiation') then
                if (.not. allocated(long_wave_radiation)) then
                   allocate (long_wave_radiation(ndx), stat=ierr)

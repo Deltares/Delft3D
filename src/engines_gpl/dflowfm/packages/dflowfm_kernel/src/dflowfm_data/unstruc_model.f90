@@ -3383,6 +3383,7 @@ contains
 
          call prop_set(prop_ptr, 'physics', 'Stanton', Stanton, 'Coefficient for convective heat flux, if negative, Ccon = abs(Stanton)*Cdwind')
          call prop_set(prop_ptr, 'physics', 'Dalton', Dalton, 'Coefficient for evaporative heat flux, if negative, Ceva = abs(Dalton)*Cdwind')
+         call prop_set(prop_ptr, 'physics', 'Albedo', albedo)
 
          if (writeall .or. (tempmax /= dmiss .or. tempmin /= 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'Tempmax', Tempmax, 'Limit the temperature')
