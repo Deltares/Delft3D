@@ -174,7 +174,7 @@ contains
       use timespace_parameters, only: FIELD1D
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
 
-      use m_flow, only: s1, hs, frcu, ndkx, kbot, ktop, ndkx, zcs
+      use m_flow, only: s1, hs, frcu, ndkx, kbot, ktop, kmxn, ndkx, zcs
       use m_flowgeom, only: ndx2d, ndxi, ndx, kcs, bl
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
 
@@ -193,6 +193,7 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_timespaceinitialfield_mpi
       use m_find_name, only: find_name
+      use m_get_kbot_ktop, only : getkbotktop
 
       implicit none
       character(len=*), intent(in) :: inifilename !< name of initial field file
@@ -210,7 +211,7 @@ contains
       character(len=255) :: fnam, filename
       character(len=255) :: basedir
       integer :: istat
-      integer :: i, ib, ja, kx, iconst, itrac, k
+      integer :: i, ib, ja, kx, iconst, itrac, k, n, kb, kt
       integer :: target_location_type, first_index
       integer :: method, iloctype, filetype, ierr_loc
       integer :: target_location_count
@@ -318,7 +319,7 @@ contains
             end if
 
             ! This part of the code might be moved or changed. (See UNST-8247)
-            if (qid(1:13) == 'initialtracer' .and. method == interpolate_spacetime) then
+            if (qid(1:13) == 'initialtracer') then
                call get_tracername(qid, tracnam, qidnam)
                call add_tracer(tracnam, iconst) ! or just gets constituents number if tracer already exists
                itrac = find_name(trnames, tracnam)
@@ -331,27 +332,43 @@ contains
                iconst = itrac2const(itrac)
 
                call reallocP(target_array, ndkx, keepExisting=.false., fill=dmiss)
-               kx = 1
-               if (allocated(mask)) then
-                  deallocate (mask)
-               end if
-               allocate (mask(ndx), source=1)
-               ec_item = ec_undef_int
-               call setzcs()
-               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, &
-                                                 filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
-                                                 varname=varname, tgt_item1=ec_item)
-               success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                                      tunit, tstart_user, target_array)
-               if (.not. success) then
-                  call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
-               end if
-               factor = merge(transformcoef(2), 1.0_dp, transformcoef(2) /= -999.0_dp)
-               do k = 1, Ndkx
-                  if (target_array(k) /= dmiss) then
-                     constituents(iconst, k) = target_array(k) * factor
+               if (method == 3) then
+                  kx = 1
+                  if (allocated(mask)) then
+                     deallocate (mask)
                   end if
-               end do
+                  allocate (mask(ndx), source=1)
+                  ec_item = ec_undef_int
+                  call setzcs()
+                  success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, &
+                                                    filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
+                                                    varname=varname, tgt_item1=ec_item)
+                  success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
+                                                                         tunit, tstart_user, target_array)
+                  if (.not. success) then
+                     call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
+                  end if
+                  factor = merge(transformcoef(2), 1.0_dp, transformcoef(2) /= -999.0_dp)
+                  do k = 1, Ndkx
+                     if (target_array(k) /= dmiss) then
+                        constituents(iconst, k) = target_array(k) * factor
+                     end if
+                  end do
+               else
+                  ! will only fill 2D part of target_array
+                  success = timespaceinitialfield(xz(1:ndx), yz(1:ndx), target_array, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
+                  if (success) then
+                     do n = 1, Ndx
+                        if (target_array(n) /= dmiss) then
+                           constituents(iconst, n) = target_array(n)
+                           call getkbotktop(n, kb, kt)
+                           do k = kb, kb + kmxn(n) - 1
+                              constituents(iconst, k) = constituents(iconst, n)
+                           end do
+                        end if
+                     end do
+                  end if
+               end if
             end if
 
             if (.not. success) then
@@ -1262,8 +1279,8 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_S3D, UNC_LOC_3DV
 
       use fm_external_forcings_data, only: success, transformcoef, trnames, uxini, uyini, inivelx, &
-                                           inively
-      use fm_external_forcings_utils, only: split_qid !, copy_3d_arrays_double_indexed_to_single_indexed
+                                           inively, NAMTRACLEN
+      use fm_external_forcings_utils, only: split_qid, get_tracername !, copy_3d_arrays_double_indexed_to_single_indexed
 
       use m_flow, only: s1, hs, sabot, satop, sa1, ndkx, tem1, h_unsat, kmx
       use m_flowgeom, only: ndx, lnx
@@ -1277,6 +1294,8 @@ contains
       use m_transportdata, only: ISED1, const_names, itrac2const, constituents
       use m_fm_wq_processes, only: wqbotnames, wqbot
       use m_find_name, only: find_name
+      use m_add_bndtracer, only: add_bndtracer
+
 
       ! use network_data
       ! use dfm_error
@@ -1297,6 +1316,9 @@ contains
       integer :: iostat
       integer :: iconst, isednum, itrac, iwqbot
       character(len=idlen) :: qid_base, qid_specific
+      character(len=NAMTRACLEN) :: tracnam, qidnam
+      character(len=20) :: tracunit
+      integer :: janew
 
       integer :: layer
 
@@ -1412,6 +1434,10 @@ contains
             ! handled elsewhere
             return
          end if
+
+         call get_tracername(qid, tracnam, qidnam)
+         tracunit = " "
+         call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          call add_tracer(qid_specific, iconst) ! or just gets constituents number if tracer already exists
          itrac = find_name(trnames, qid_specific)
