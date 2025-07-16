@@ -278,27 +278,3 @@ METHOD=4
 OPERAND=O
 VALUE=1.0
 
-* monitoring areas
-
-QUANTITY=waqmonitoringareaSouthWest
-FILENAME=para1.pol
-FILETYPE=10
-METHOD=4
-OPERAND=O
-VALUE=1.0
- 
-QUANTITY=waqmonitoringareaSouthEast
-FILENAME=para2.pol
-FILETYPE=10
-METHOD=4
-OPERAND=O
-VALUE=1.0
- 
-QUANTITY=waqmonitoringareaNorth
-FILENAME=para3.pol
-FILETYPE=10
-METHOD=4
-OPERAND=O
-VALUE=1.0
- 
-
