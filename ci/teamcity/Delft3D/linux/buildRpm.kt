@@ -16,7 +16,7 @@ object LinuxBuildRpm : BuildType({
         *.tar.gz
         *.rpm
     """.trimIndent()
-    buildNumberPattern = "%build.counter%: %build.vcs.number%"
+    buildNumberPattern = "%build.counter%: %build.vcs.number.Delft3D_Git%"
 
     params {
         param("Delft3D-FM_version", "weekly")
