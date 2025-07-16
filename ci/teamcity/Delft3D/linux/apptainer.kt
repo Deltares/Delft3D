@@ -15,7 +15,7 @@ object LinuxBuildApptainerRunTime : BuildType({
         src/scripts_lgpl/install_sif_for_testbench.sh
         src/scripts_lgpl/apptainer_setup_harbor.sh
     """.trimIndent()
-    buildNumberPattern = "%build.counter%: %build.vcs.number.Delft3dGitlab%"
+    buildNumberPattern = "%build.counter%: %build.vcs.number%"
     publishArtifacts = PublishMode.SUCCESSFUL
 
     params {
