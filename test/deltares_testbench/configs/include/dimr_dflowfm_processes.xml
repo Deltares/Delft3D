@@ -1264,6 +1264,30 @@
     </file>
   </checks>
 </testCase>
+<testCase name="e02_f030_c300_opendllso" ref="dflowfm_default">
+  <path version="2025-07-10T18:52:46.049000">e02_dflowfm/f030_water_quality_processes/c300_opendllso</path>
+  <programs>
+    <program ref="dimr_opl" seq="1">
+      <arguments>
+        <argument>dimr_config.xml</argument>
+      </arguments>
+    </program>
+  </programs>
+  <checks>
+    <file name="dflowfmoutput/f34_map.nc" type="NETCDF">
+      <parameters>
+        <parameter name="mesh2d_Foo" toleranceAbsolute="1.0e-6" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_Boo" toleranceAbsolute="1.0e-6" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+    <file name="dflowfmoutput/f34_his.nc" type="NETCDF">
+      <parameters>
+        <parameter name="Foo" toleranceAbsolute="1.0e-6" toleranceRelative="1.0e-6"/>
+        <parameter name="Boo" toleranceAbsolute="1.0e-6" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
 <testCase name="e02_f030_c401_Course_tracers" ref="dflowfm_platform_specific_refs">
   <path version="2025-07-11T09:00:00">e02_dflowfm/f030_water_quality_processes/c401_Course_tracers</path>
   <checks>
