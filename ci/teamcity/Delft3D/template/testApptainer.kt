@@ -20,7 +20,7 @@ object TemplateTestApptainer : Template({
         test\deltares_testbench\failed\list.txt => failed_cases.zip
         test\deltares_testbench\copy_cases      => copy_cases.zip
     """.trimIndent()
-    buildNumberPattern = "%build.vcs.number.Delft3dGitlab%"
+    buildNumberPattern = "%build.vcs.number.Delft3D_Git%"
 
     params {
         text("testbench.loglevel", "ERROR", description = "CRITICAL, ERROR, WARNING, INFO or DEBUG", allowEmpty = true)

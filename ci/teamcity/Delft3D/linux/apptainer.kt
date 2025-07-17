@@ -32,7 +32,6 @@ object LinuxBuildApptainerRunTime : BuildType({
     }
 
     vcs {
-        root(AbsoluteId("ReposDsRoot"), "-:.")
         root(DslContext.settingsRoot)
 
         checkoutMode = CheckoutMode.ON_SERVER
