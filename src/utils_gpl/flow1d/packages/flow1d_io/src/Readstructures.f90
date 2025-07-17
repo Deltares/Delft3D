@@ -224,7 +224,7 @@ module m_readstructures
             pstru%numCoordinates = 0
             if (success1) then
                pstru%ibran = hashsearch(network%brs%hashlist, branchID)
-               if (pstru%ibran <= 0) then
+               if (pstru%ibran <= 0 .and. network%brs%hashlist%size > 0) then
                   write (msgbuf, '(a)') 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structureFile)//''', branchId '''//trim(branchID)//''' not found.'
                   call err_flush()
                   success = .false.
