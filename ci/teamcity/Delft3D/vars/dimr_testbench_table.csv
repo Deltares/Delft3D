@@ -1,8 +1,10 @@
 #name,#config,all-testbench,none-testbench,fm-suite,d3d4-suite,fm-testbench,rr-testbench,waq-testbench,part-testbench,wave-testbench,swan-testbench,d3d4-testbench,qp-testbench,tc-testbench,#comment
 fm 1d parallel,dimr/dimr_dflowfm_1D_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 1d,dimr/dimr_dflowfm_1d_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm 1d rivers,dimr/dimr_dflowfm_1d_rivers_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 1d parallel,dimr/dimr_dflowfm_1D_win64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 1d,dimr/dimr_dflowfm_1d_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm 1d rivers,dimr/dimr_dflowfm_1d_rivers_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 2d3d performance,dimr/dimr_dflowfm_2D3D_performance_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 3d,dimr/dimr_dflowfm_3d_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 3d,dimr/dimr_dflowfm_3d_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
