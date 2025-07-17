@@ -432,5 +432,22 @@
             </checks>
             <maxRunTime>6.0</maxRunTime> <!-- seconds -->
         </testCase>
+        <testCase name="e80_f01_c21" ref="test_default">
+            <path version="2025-07-15T11:16:00">e80_nefis/f01/c20</path>
+            <programs>
+                <program ref="nefis_test">
+                    <arguments>
+                        <argument>20 &gt;test.scr 2&gt;&amp;1</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <checks>
+                <file name="test.scr" type="NUMBERTEXT">
+                    <skipline>[V|v]ersion</skipline>
+                    <skipline>-----</skipline>
+                </file>
+            </checks>
+            <maxRunTime>6.0</maxRunTime> <!-- seconds -->
+        </testCase>
     </testCases>
 </deltaresTestbench_v3>
