@@ -17,6 +17,14 @@ set PATH=%libdir%;%testdir%;%PATH%
 
 rem run nefis test
 "%testdir%\test_%1.exe" 
+rem check on error 
+if %ERRORLEVEL% NEQ 0 (
+  rem echo Task failed with error level %ERRORLEVEL%
+  exit /b %ERRORLEVEL%
+) else (
+  rem echo Normal end.
+  exit /b 0
+)
 goto end
 
 :usage
@@ -33,4 +41,3 @@ echo.
 
 rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
 rem pause
-exit 0
