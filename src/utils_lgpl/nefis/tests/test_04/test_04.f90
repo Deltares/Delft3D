@@ -65,9 +65,9 @@ program test4
 !
    call clock(cpu1)
    error = getnfv(version)
-   write(*,*)
-   write(*,*) trim(version(5:))
-   write(*,*)
+   write(*,*) '-----------------------------------------------'
+   write(*,*) 'Version: '//trim(version(5:))
+   write(*,*) '-----------------------------------------------'
 
    error= Opndef( fds, 'nefis_ex.def', coding)
    if (error .ne. 0) goto 9999
