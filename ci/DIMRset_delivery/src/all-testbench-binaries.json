@@ -555,10 +555,6 @@
         {
             "file": "lib\\flow2d3d.dll",
             "issuedTo": "Stichting Deltares"
-        },
-        {
-            "file": "test\\nefis\\test_00.exe",
-            "issuedTo": "Stichting Deltares"
         }
     ],
     "notSigned": [
