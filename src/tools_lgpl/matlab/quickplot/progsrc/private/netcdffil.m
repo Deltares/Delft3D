@@ -210,11 +210,11 @@ fidx=find(DimFlag);
 if isempty(subf)
     % initialize and read indices ...
     idx(fidx(1:length(varargin))) = varargin;
-    marg = find(fidx==M_);
+    index_m_dimension = find(fidx==M_);
 else
     % initialize and read indices ...
     idx(fidx(1:(length(varargin)-1))) = varargin(2:end);
-    marg = 1 + find(fidx==M_);
+    index_m_dimension = 1 + find(fidx==M_);
 end
 
 if isfield(FI.Attribute,'Name')
@@ -230,27 +230,23 @@ else
 end
 if FI.NumDomains>1
     args = varargin;
-    spatial = false;
-    if ~isempty(marg) && ~isempty(Props.Coords)
-        spatial = ~isempty(strfind(Props.Coords,'xy'));
-    end
-    if spatial && domain == FI.NumDomains+2
+    if domain == FI.NumDomains+2 && ~isempty(index_m_dimension) && ~isempty(Props.Coords) && ~isempty(strfind(Props.Coords,'xy'))
         m = identify_mesh(Props.DimName{M_}, FI.MergedPartitions);
-        if isempty(m)
-            spatial = false;
-        else
-            MergedMesh = FI.MergedPartitions(m);
-        end
+        merge_needed = ~isempty(m);
+    else
+        merge_needed = false;
     end
-    if spatial && domain == FI.NumDomains+2
+    if merge_needed
+        MergedMesh = FI.MergedPartitions(m);
+
         % merged partitions
         if DimFlag(K_)
             cmd = strrep(cmd, 'grid', 'z');
         else
             cmd = strrep(cmd, 'grid', '');
         end
-        if marg <= numel(args)
-            args{marg} = 0;
+        if index_m_dimension <= numel(args)
+            args{index_m_dimension} = 0;
         end
         %
         if iscell(Props.varid)
@@ -272,7 +268,7 @@ if FI.NumDomains>1
     end
     if isempty(cmd)
         Data = [];
-    elseif ~spatial
+    elseif ~merge_needed
         % read non-spatial data from the first file ... should be consistent across all files and no way to merge anyway
         Data = netcdffil(FI,1,Props,cmd,args{:});
     else
@@ -290,7 +286,7 @@ if FI.NumDomains>1
             iOut = iOut + 1;
         end
     end
-    if spatial && domain == FI.NumDomains+2
+    if merge_needed
         % merged partitions
         partData = Data;
         Data = [];
@@ -1585,7 +1581,7 @@ if XYRead || XYneeded || ZRead
         end
     end
     %
-    if ~Props.hasCoords
+    if ~Props.hasCoords && Props.DimFlag(M_) && Props.DimFlag(N_)
         %
         % Define a simple regular grid
         %
