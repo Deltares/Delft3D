@@ -144,17 +144,6 @@ object LinuxBuildApptainerRunTime : BuildType({
         }
     }
 
-    
-    triggers {
-        finishBuildTrigger {
-            buildType = "${LinuxBuildRpm.id}"
-            branchFilter = """
-                +:<default>
-                +:all/release/*
-            """.trimIndent()
-        }
-    }
-
     dependencies {
         dependency(LinuxBuildRpm) {
             snapshot {

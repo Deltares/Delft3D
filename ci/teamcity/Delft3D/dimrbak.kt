@@ -3,8 +3,7 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 
 import Delft3D.template.*
-import Delft3D.linux.*
-import Delft3D.windows.*
+import PublishToGui
 
 object DIMRbak : BuildType({
 
@@ -39,41 +38,7 @@ object DIMRbak : BuildType({
 
     if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
         dependencies {
-            snapshot(AbsoluteId("DIMR_To_NGHS")) {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
-            dependency(LinuxTest) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
-            }
-            dependency(WindowsTest) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
-            }
-            dependency(LinuxUnitTest) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
-            }
-            dependency(WindowsUnitTest) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
-            }
-            dependency(LinuxRunAllDockerExamples) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
-            }
-            dependency(LinuxLegacyDockerTest) {
+            dependency(PublishToGui) {
                 snapshot {
                     onDependencyFailure = FailureAction.FAIL_TO_START
                     onDependencyCancel = FailureAction.CANCEL

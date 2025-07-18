@@ -102,17 +102,6 @@ object LinuxBuildRpm : BuildType({
         }
     }
 
-    triggers {
-        finishBuildTrigger {
-            buildType = "${LinuxCollect.id}"
-            successfulOnly = true
-            branchFilter = """
-                +:<default>
-                +:all/release/*
-            """.trimIndent()
-        }
-    }
-
     features {
         swabra {
             forceCleanCheckout = true
