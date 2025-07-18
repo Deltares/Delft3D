@@ -75,6 +75,7 @@ object Sign : BuildType({
                     ?:*_x64_*.zip!/x64/bin/** => to_sign/bin
                     ?:*_x64_*.zip!/x64/lib/** => to_sign/lib
                     ?:*_x64_*.zip!/x64/share/** => to_sign/share
+                    ?:*_x64_*.zip!/x64/test/** => to_sign/test
                 """.trimIndent()
             }
         }
