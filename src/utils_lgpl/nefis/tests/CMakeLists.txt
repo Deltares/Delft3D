@@ -1,3 +1,6 @@
+#Only for windows build
+if (WIN32)
+
 # Collect test directories test_00 to test_21
 set(TEST_DIRS)
 foreach(i RANGE 0 21)
@@ -37,9 +40,9 @@ foreach(test_dir ${TEST_DIRS})
 
     configure_visual_studio_user_file(${executable_name})
 
-    if (WIN32)
-        install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/run_test.${platform_extension} DESTINATION test/nefis)
-    endif()    
+    install(PROGRAMS ${CMAKE_CURRENT_SOURCE_DIR}/../scripts/run_test.${platform_extension} DESTINATION test/nefis)
     install(TARGETS ${executable_name} RUNTIME  DESTINATION test/nefis)
 
 endforeach()
+
+endif()
