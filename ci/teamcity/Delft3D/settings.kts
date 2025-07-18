@@ -158,10 +158,12 @@ project {
     )
 
     buildType(Trigger)
+    buildType(PublishToGui)
     buildType(DIMRbak)
     buildType(Publish)
     buildTypesOrder = arrayListOf(
         Trigger,
+        PublishToGui,
         DIMRbak,
         Publish
     )
