@@ -85,7 +85,7 @@ contains
                         air_pressure, dew_point_temperature, relative_humidity, solar_radiation, net_solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
-      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz, turkinws0, turkinws, turepsws0, turepsws, ustbs, ustws
+      use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz, turkinws0, turkinws, turepsws0, turepsws, ustbs, ustws, Prandtl_Richardson
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: setkbotktop
@@ -1126,7 +1126,7 @@ contains
          end if
       end if
 
-      if (idensform > 0 .and. jaRichardsononoutput > 0) then
+      if (idensform > 0 .and. (jaRichardsononoutput > 0 .or. Prandtl_Richardson)) then
          call realloc(rich, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('rich(lnkx)', ierr, lnkx)
          call realloc(richs, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)

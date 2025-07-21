@@ -55,7 +55,7 @@ contains
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
       use m_turbulence, only: cmukep, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
-                              c3t_stable, c3t_unstable, turkinws, turepsws, turkinws0, turepsws0, ustbs, ustws
+                              c3t_stable, c3t_unstable, turkinws, turepsws, turkinws0, turepsws0, ustbs, ustws, Prandtl_Richardson, eps_limit_method
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
@@ -424,7 +424,7 @@ contains
                      dijdij(k) = ((u1(Lu) - u1(L))**2 + (v(Lu) - v(L))**2) / dzw(k)**2
                   end if
 
-                  if (jarichardsononoutput > 0) then
+                  if ((Prandtl_Richardson) .or. (jarichardsononoutput > 0)) then
                      rich(L) = sigrho * bruva(k) / max(1d-8, dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
                   end if
 
@@ -810,7 +810,11 @@ contains
                end if
 
                call tridag(ak, bk, ck, dk, ek, tureps1(Lb0:Lt), kxL + 1) ! solve eps
-               tureps1(Lb0:Lt) = max(epseps, tureps1(Lb0:Lt))
+               if ((eps_limit_method == 2) .and. (bruva(k) > 0.0_dp)) then ! stable stratification
+                  tureps1(Lb0:Lt) = max((sqrt(0.045) * epstke * sqrt(bruva(k) * sigrho)), tureps1(Lb0:Lt))
+               else
+                  tureps1(Lb0:Lt) = max(epseps, tureps1(Lb0:Lt))
+               end if
                do L = Lt + 1, Lb + kmxL(LL) - 1 ! copy to surface for z-layers
                   tureps1(L) = tureps1(Lt)
                end do
@@ -1262,7 +1266,7 @@ contains
 
       if (iturbulencemodel < 5) then
          call links_to_centers(vicwws, vicwwu)
-         if (jarichardsononoutput > 0) then
+         if ((Prandtl_Richardson == .true.) .or. (jarichardsononoutput > 0)) then
             call links_to_centers(richs, rich)
          end if
       end if
