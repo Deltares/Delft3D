@@ -45,12 +45,14 @@ object TemplateValidationDocumentation : Template({
         startsWith("teamcity.agent.jvm.os.name", "Windows", "RQ_2470")
     }
 
-    triggers {
-        finishBuildTrigger {
-            buildType = "Dimr_DimrCollector"
-            branchFilter = "+:<default>"
+    if (DslContext.getParameter("enable_documentation_trigger").lowercase() == "true") {
+        triggers {
+            finishBuildTrigger {
+                buildType = "Dimr_DimrCollector"
+                branchFilter = "+:<default>"
+            }
         }
-    }    
+    }
     
     failureConditions {
         executionTimeoutMin = 180

@@ -56,6 +56,7 @@ contains
       use precision, only: dp
       use unstruc_messages, only: callback_msg
       use m_waveconst
+      use m_unit_utils, only: is_correct_unit
 
       character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
       real(kind=dp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
@@ -133,6 +134,7 @@ contains
       character(len=20) :: waqinput
       integer, external :: findname
       type(tEcMask) :: srcmask
+      
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
       logical :: exist, opened, withCharnock, withStress
 
@@ -475,7 +477,19 @@ contains
             end if
          else
             if (ec_filetype == provFile_bc .and. target_name == 'windxy') then
-               ec_convtype = convType_unimagdir
+               fileReaderPtr => ecSupportFindFileReader(ecInstancePtr, fileReaderId)
+               associate(column_units =>fileReaderPtr%bc%quantity%column_units)
+                  if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('velocity', column_units(3))) then
+                     ! windxy is defined by wind in x and wind in y direction
+                     ec_convtype = convtype_uniform
+                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3)) ) then
+                     ec_convtype = convtype_unimagdir
+                  else
+                     msgbuf = 'incorrect units found in bc file concerning the input for windxy. Only the combinations "ms-1, ms-1"'// &
+                              ' or "ms-1, degree" are allowed.'
+                     call err_flush()
+                  end if
+               end associate
             end if
             success = initializeConverter(ecInstancePtr, converterId, ec_convtype, ec_operand, ec_method)
          end if
