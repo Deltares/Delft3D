@@ -264,7 +264,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c030_lock_exchange_2m_3d" ref="platform_specific">
-     <path version="2024-01-11T13:10:00">e02_dflowfm/f019_transport/c030_lock_exchange_2m_3d</path>
+     <path version="2025-07-21T08:52:56.851000">e02_dflowfm/f019_transport/c030_lock_exchange_2m_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/locxx_map.nc" type="netCDF">
