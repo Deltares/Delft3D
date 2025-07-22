@@ -450,7 +450,7 @@ contains
       character(len=1), intent(out) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
       real(kind=dp), intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
-      character(len=*), intent(out) :: varname !< variable name within filename; only in case of NetCDF
+      character(len=*), intent(out) :: varname !< Variable name within filename; only in case of NetCDF. Will be empty string if not specified in input.
 
       integer, parameter :: ini_key_len = 32
       integer, parameter :: ini_value_len = 256
@@ -512,6 +512,9 @@ contains
          call warn_flush()
          return
       end if
+
+      varname = ''
+      call prop_get(node_ptr, '', 'dataVariableName ', varname)
 
       ! if dataFileType is 1dField, then it is not necessary to read interpolationMethod, operand, averagingType,
       ! averagingRelSize, averagingNumMin, averagingPercentile, locationType, extrapolationMethod, value
@@ -668,8 +671,6 @@ contains
             transformcoef(3) = real(int_friction_type, dp)
          end if
       end if
-
-      varname = ''
 
       ! We've made it to here, success!
       ja = 1
@@ -1539,7 +1540,7 @@ contains
       use unstruc_files, only: resolvePath
       use m_missing, only: dmiss
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL
-      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave
+      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, waveforcing
       use m_flow, only: frcu
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
@@ -1552,7 +1553,7 @@ contains
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use unstruc_model, only: md_extfile
       use string_module, only: str_tolower
-      use m_waveconst
+      use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
       use processes_input, only: paname, painp, num_spatial_parameters, &
                                  funame, funinp, num_time_functions, &
                                  sfunname, sfuninp, num_spatial_time_fuctions
@@ -1749,13 +1750,47 @@ contains
          target_array => Cdwusp
          iCdtyp = 1 ! only 1 coeff
          !
-      case ('wavesignificantheight')
+      case ('wavesignificantheight', 'waveperiod', 'wavedirection')
          if (jawave == WAVE_NC_OFFLINE) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
          else
-            call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 7')
+            write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', QUANTITY "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, '.'
+            call warn_flush()
+            success = .false.
+         end if
+      case ('wavebreakerdissipation', 'whitecappingdissipation')
+         if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
+            target_location_type = UNC_LOC_S
+            time_dependent_array = .true.
+         else            
+            write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+            call warn_flush()
+            success = .false.
+         end if
+      case ('xwaveforce', 'ywaveforce')
+         if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
+            target_location_type = UNC_LOC_S
+            time_dependent_array = .true.
+         else            
+            write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+                      'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+            call warn_flush()
+            success = .false.
+         end if
+      case ('totalwaveenergydissipation')
+         if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
+            target_location_type = UNC_LOC_S
+            time_dependent_array = .true.
+         else            
+            write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+            call warn_flush()
             success = .false.
          end if
       case ('waqparameter')
