@@ -214,9 +214,11 @@
 
       call timstrt('Update', timerUpdate)
       ! copy incoming water levels from bmi arrays into bnd array
+      BND_BMIAdjusted = .false. 
       do i = 1, size(BndPar_dp)
          if (BndPar_dp(i) /= noBndProvided) then
             BndPar(i,1) = sngl(BndPar_dp(i))
+            BND_BMIAdjusted(i) = .true. 
          endif
       end do
       ! at the first time step copy incoming water levels also into initial water level

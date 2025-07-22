@@ -196,6 +196,7 @@ module RRRunoff
 
 Real   , Pointer, SAVE ::        SCS_HMSLinResInflow(:), SCS_HMSLinResInflowTot(:), SCS_HMSLinResOutflow0(:), SCS_HMSLinResOutflow(:), SCS_HMSLinResContent(:), SCS_HMSLinResContent0(:)
 
+Integer, Pointer, SAVE :: SCS_Snyder_Set(:)                     ! Snyder SHGSet index
 REAL   , Pointer, SAVE :: SCS_Snyder_Cp(:)                      ! Snyder Peaking Factor
 REAL   , Pointer, SAVE :: SCS_Snyder_UH_decay_rate(:)           ! Decay rate (1/hour) of exponential part of Snyder UH
 REAL   , Pointer, SAVE :: SCS_Snyder_UH_decay_frac(:)           ! fraction of peak flow at which exponential decay starts (0-0.5)
@@ -576,6 +577,7 @@ contains
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Storage0, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Rainfall, 0E0)
 
+        Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_Set, 0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_Cp, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_UH_decay_rate, 0E0)
         Success = Success .and. Dh_AllocInit (NcRRRunoffSCS, SCS_Snyder_UH_decay_frac, 0E0)
@@ -1456,6 +1458,7 @@ contains
                if (found) SCS_Snyder_BF_interpolation_method(IRRRunoffSub) = IDUM(1)
 
                SHG_set%size = SHG_set%size + 1
+               SCS_Snyder_Set(IRRRunoffSub) = SHG_set%size
             endif
             ! optional TimeLag specification (in hours)
             allow = .true.
@@ -2059,6 +2062,14 @@ contains
 !           write(*,*) ' WALRUS_IntSoilType(IRRRunoffSub)', WALRUS_IntSoilType(IRRRunoffSub)
 
            Endif
+! UNST 9025 input check
+           if (NcRRRunoffWalrus .gt. 0) then
+              If (Walrus_HSMINTable(IRRRunoffSub) .eq. '') then
+                 if (Walrus_CD(IRRRunoffSub) .le. Walrus_HSMin(IRRRunoffSub)) then
+                    call ErrMsgStandard (969, 0, ' Walrus HSMin should be less than Walrus Channel Depth cd','' )
+                 endif
+              endif
+           endif
           Endif
          Endif
         Endif
@@ -5578,7 +5589,7 @@ contains
       IRRRunoffSub = RRRunoff_SubIndex(i)
       if (RRRunoff_CompOption(i) .eq. 2) then ! SCS node
          if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
-            call compute_snyder_hydrograph(SHG_set%SHG(iRRRunoffSub),  AREA_RRRunoffNode(i), SCS_Snyder_Cp(iRRRunoffSub), SCS_TLag(iRRRunoffSub),timeSettings%TimestepSize/3600.)
+            call compute_snyder_hydrograph(SHG_set%SHG(SCS_Snyder_Set(IRRRunoffSub)),  AREA_RRRunoffNode(i), SCS_Snyder_Cp(iRRRunoffSub), SCS_TLag(iRRRunoffSub),timeSettings%TimestepSize/3600.)
          endif
       endif
    enddo
@@ -5659,7 +5670,7 @@ contains
                ! SCS dimensionless; first convert Timelag to nr of computation timesteps! The factor 5 is related to time-lage (< Tc) as specified in SCS method
                MaxTc = max (MaxTc, 1 + Ceiling (5* (SCS_Tlag(iRRRunoffSub) * 3600./timeSettings%TimestepSize + 0.5)))
            else if (SCS_UHChosen(iRRRunoffSub) .eq. 2) then ! Snyder
-               SCS_Tc(iRRRunoffSub) = (SHG_set%SHG(iRRRunoffSub)%time_array(7) * 3600./timeSettings%TimestepSize)
+               SCS_Tc(iRRRunoffSub) = (SHG_set%SHG(SCS_Snyder_Set(iRRRunoffSub))%time_array(7) * 3600./timeSettings%TimestepSize)
                MaxTc = max (MaxTc,ceiling(SCS_Tc(iRRRunoffSub)) + 1)
            endif
         endif
@@ -5760,6 +5771,10 @@ contains
     RowNr = -1
     TabelNr = Walrus_HSminRefTable(iRRRunoffSub)
     HSmin   = Dble ( GetNewValue(TableHandle, TabelNr, 1, RowNr, CurrentDate, CurrentTime, Idebug, iout1, DateTimeOutsideTable, .true.) )
+! UNST 9025 input check
+    if (Walrus_CD(IRRRunoffSub) .le. HSmin) then
+        call ErrMsgStandard (969, 0, ' Walrus HSMin (from table) should be less than Walrus Channel Depth cd','' )
+    endif
 !   no further conversion, input is in mm
     if (idebug .ne. 0) WRITE (IDEBUG,*) ' From table GetNewValue HsMin', HSmin
     if (idebug .ne. 0) WRITE (IDEBUG,*) ' IRRRunoffSub rowNr HSmin', iRRRunoffSub, RowNr, HSmin
@@ -5955,7 +5970,7 @@ contains
                  write(idebug,*) ' j, InputTp, OutputQp, SCS_UH,', InputTpValue, OutputQpValue, SCS_UnitHydComp(j,IRRRunoffSub)
            Enddo
         else if (SCS_UHChosen(IRRRunoffSub) .eq. 2) then! Snyder hydrograph
-           call interpolate_snyder_hydrograph(SHG_set%SHG(iRRRunoffsub), SCS_UnitHydComp(:,IRRRunoffSub),Ceiling (SCS_Tc(iRRRunoffSub)),SCS_Snyder_UH_decay_frac(iRRRunoffsub),SCS_Snyder_UH_decay_rate(iRRRunoffSub))
+           call interpolate_snyder_hydrograph(SHG_set%SHG(SCS_Snyder_Set(iRRRunoffsub)), SCS_UnitHydComp(:,IRRRunoffSub),Ceiling (SCS_Tc(iRRRunoffSub)),SCS_Snyder_UH_decay_frac(iRRRunoffsub),SCS_Snyder_UH_decay_rate(iRRRunoffSub))
         endif
      Endif
   Enddo
@@ -6630,7 +6645,7 @@ contains
 
       iDebug = ConfFil_get_iDebug()
       iOut1  = ConfFil_get_iOut1 ()
-!     Write(*,*) ' Start CmpRRRunoff', IRRRunoffSub, Itmstp
+!     if (Idebug .ne. 0) Write(Idebug,*) ' Start CmpRRRunoff', IRRRunoffSub, Itmstp
 
 ! initial situation
       IF (iDebug .ne. 0) THEN
@@ -7775,88 +7790,88 @@ contains
 
       elseif (RRRunoff_CompOption(IRRRunoff) .eq. 6) then
 
-!        Write(*,*) ' CHECKING timestep ', itmstp
+         if (Idebug .ne. 0) Write(Idebug,*) ' CHECKING timestep ', itmstp
 !        only CHECKING whether all data to WALRUS was correctly set and kept ok!
          if (itmstp .le. 2) then
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_area, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get Area ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 11 Area ', TempVar, (Area_RRRunoffNode(IRRRunoff))/1000000.D0
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 11 Area ', TempVar, (Area_RRRunoffNode(IRRRunoff))/1000000.D0
 ! default numerical parameters
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_min_deltime, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get min_deltime', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 41 min_deltime', TempVar, 60.D0
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 41 min_deltime', TempVar, 60.D0
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_max_h_change, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get max_hchange ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 42 max_hchange', TempVar, 10.D0
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 42 max_hchange', TempVar, 10.D0
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_min_h, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get minh ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 43 hmin ', TempVar, 1.0D-3
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 43 hmin ', TempVar, 1.0D-3
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_max_Pstep, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get max_Pstep ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 44 max_PStep ', TempVar, 10.D0
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 44 max_PStep ', TempVar, 10.D0
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_max_substeps, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get max_substeps ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 45 max_substeps', TempVar, 288.D0
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 45 max_substeps', TempVar, 288.D0
 ! user defined parameters
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cW, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CW ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 1 CW', TempVar, Walrus_CW(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 1 CW', TempVar, Walrus_CW(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cV, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CV ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 2 CV', TempVar, Walrus_CV(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 2 CV', TempVar, Walrus_CV(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cG, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CG ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 3 CG', TempVar, Walrus_CG(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 3 CG', TempVar, Walrus_CG(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cQ, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CQ ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 4 CQ', TempVar, Walrus_CQ(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 4 CQ', TempVar, Walrus_CQ(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cS, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CS ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 5 CS', TempVar, Walrus_CS(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 5 CS', TempVar, Walrus_CS(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub, wc_par_cD, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get CD ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 6 CD', TempVar, Walrus_CD(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 6 CD', TempVar, Walrus_CD(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub,wc_par_cexpS, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get XS ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 12 XS', TempVar, Walrus_XS(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 12 XS', TempVar, Walrus_XS(IRRRunoffSub)
            retValWalrusCall = WalrusGet(IRRRunoffSub,wc_par_aS, TempVar,WalrusFirst)
            if (retValWalrusCall .ne. 0) then
                call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get AS ', ' RRRunoffNode_Init1' )
            endif
-!          Write(*,*) ' WalrusGet 10 As', TempVar, Walrus_AS(IRRRunoffSub)
-!          Write(*,*) ' END CHECKING timestep ', itmstp
+           if (Idebug .ne. 0) Write(Idebug,*) ' WalrusGet 10 As', TempVar, Walrus_AS(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' END CHECKING timestep ', itmstp
          endif   ! end CHECKING
 
 ! update HSMin if time table
           if (Walrus_HST(IRRRunoffSub)) then
              Call GetHSminFromTable (Walrus_HSmin(IRRRunoffSub), IRRRunoffSub)
-!            Write(*,*) ' WalrusSet HSMin'
+             if (Idebug .ne. 0) Write(Idebug,*) ' WalrusSet HSMin'
              retValWalrusCall = WalrusSet(IRRRunoffSub,wc_hSmin, Walrus_HSMIN(IRRRunoffSub),WalrusFirst)
              if (retValWalrusCall .ne. 0) then
                 call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Set HSMin ', ' RRRunoffNode_Init1' )
@@ -7865,7 +7880,7 @@ contains
 
 !         Runoff node option 6: Walrus model
           ! Walrus.dostep (dble(TimeSettings%TimestepSize))
-!         Write(*,*) ' Walrus_DOStep;IRRRunoffSub -timestep size', IRRRunoffSub, dble(TimeSettings%TimestepSize)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Walrus_DOStep;IRRRunoffSub -timestep size', IRRRunoffSub, dble(TimeSettings%TimestepSize)
           RetValWalrusCall = WALRUSDOSTEP (IRRRunoffSub, dble(TimeSettings%TimestepSize), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine DoStep', ' RRRunoffNode_Init1')
@@ -7879,130 +7894,130 @@ contains
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get DV', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got WalrusStartTime', Cur_time
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got WalrusStartTime', Cur_time
           ! states
           ! Walrus.get (61, Walrus_DVcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_dV, Walrus_DVcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get DV', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got DV ', Walrus_DVCurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got DV ', Walrus_DVCurrent(IRRRunoffSub)
           ! Walrus.get (62, Walrus_DGcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_dG, Walrus_DGcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get DG', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got DG ', Walrus_DGCurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got DG ', Walrus_DGCurrent(IRRRunoffSub)
           ! Walrus.get (63, Walrus_hQcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_hQ, Walrus_hQcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get hQ', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got hQ ', Walrus_hQCurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got hQ ', Walrus_hQCurrent(IRRRunoffSub)
           ! Walrus.get (64, Walrus_hScurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_hS, Walrus_hScurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get hS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got hS ', Walrus_hSCurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got hS ', Walrus_hSCurrent(IRRRunoffSub)
           ! functions
           ! Walrus.get (71, Walrus_WIcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_W, Walrus_WIcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get WI', ' RRRunoffNode_Init1')
               endif
-!         Write(*,*) ' Got WI ', Walrus_WICurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got WI ', Walrus_WICurrent(IRRRunoffSub)
           ! Walrus.get (72, Walrus_BETAcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_beta, Walrus_BETAcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get BETA', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got Beta ', Walrus_BETACurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got Beta ', Walrus_BETACurrent(IRRRunoffSub)
           ! Walrus.get (73, Walrus_DVEQcurrent(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_cur_dVeq, Walrus_DVEQcurrent(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get DVEQ', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got DVEQ ', Walrus_DVEQCurrent(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got DVEQ ', Walrus_DVEQCurrent(IRRRunoffSub)
           ! Walrus.get (80, Walrus_lastdt   (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_deltime, Walrus_lastdt   (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastdt', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastdt ', Walrus_lastdt(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastdt ', Walrus_lastdt(IRRRunoffSub)
           ! Walrus.get (81, Walrus_lastFXG  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_fXG, Walrus_lastFXG  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastFXG', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastFXG ', Walrus_lastFXG(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastFXG ', Walrus_lastFXG(IRRRunoffSub)
           ! Walrus.get (82, Walrus_lastFXS  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_fXS, Walrus_lastFXS  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastFXS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastFXS ', Walrus_lastFXS(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastFXS ', Walrus_lastFXS(IRRRunoffSub)
           ! Walrus.get (83, Walrus_lastPQ   (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_PQ, Walrus_lastPQ   (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastPQ', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastPQ ', Walrus_lastPQ(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastPQ ', Walrus_lastPQ(IRRRunoffSub)
           ! Walrus.get (84, Walrus_lastPV   (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_PV, Walrus_lastPV   (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastPV', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastPV ', Walrus_lastPV(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastPV ', Walrus_lastPV(IRRRunoffSub)
           ! Walrus.get (85, Walrus_lastPS   (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_PS, Walrus_lastPS   (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastPS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastPS ', Walrus_lastPS(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastPS ', Walrus_lastPS(IRRRunoffSub)
           ! Walrus.get (86, Walrus_lastETV  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_ETV, Walrus_lastETV  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastETV', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastETV ', Walrus_lastETV(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastETV ', Walrus_lastETV(IRRRunoffSub)
           ! Walrus.get (87, Walrus_lastETS  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_ETS, Walrus_lastETS  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastETS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastETS ', Walrus_lastETS(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastETS ', Walrus_lastETS(IRRRunoffSub)
           ! Walrus.get (88, Walrus_lastETAct(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_ETact, Walrus_lastETAct(IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastETAct', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastETAct ', Walrus_lastETAct(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastETAct ', Walrus_lastETAct(IRRRunoffSub)
           ! Walrus.get (89, Walrus_lastFQS  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_fQS, Walrus_lastFQS  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastFQS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastFQS ', Walrus_lastFQS(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastFQS ', Walrus_lastFQS(IRRRunoffSub)
           ! Walrus.get (90, Walrus_lastFGS  (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_fGS, Walrus_lastFGS  (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastFGS', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastFGS ', Walrus_lastFGS(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastFGS ', Walrus_lastFGS(IRRRunoffSub)
           ! Walrus.get (91, Walrus_lastQ    (IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_Q, Walrus_lastQ    (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastQ', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got lastQ ', Walrus_lastQ(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got lastQ ', Walrus_lastQ(IRRRunoffSub)
           ! Walrus.get (92, Walrus_lastQdis (IRRRunoffSub)
-!          Write(*,*) ' Walrus_Get lastQDis'
+           if (Idebug .ne. 0) Write(Idebug,*) ' Walrus_Get lastQDis'
 !          RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_Qdischarge, Walrus_lastQDis (IRRRunoffSub), WalrusFirst)
 !          if (retValWalrusCall .ne. 0) then
 !              call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get lastQDis', ' RRRunoffNode_Init1')
 !          endif
-!          Write(*,*) ' Got lastQDis ', Walrus_lastQDis(IRRRunoffSub)
+           if (Idebug .ne. 0) Write(Idebug,*) ' Got lastQDis ', Walrus_lastQDis(IRRRunoffSub)
 !          compute lastQdis in m3/s from lastQ in mm
           Walrus_lastQDis (IRRRunoffSub) = Walrus_lastQ(IRRRUnoffSub) * Area_RRRunoffNode(IRRRunoff) * mm2m / timeSettings%TimestepSize
 
@@ -8016,12 +8031,12 @@ contains
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get P', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got P ', Walrus_P(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got P ', Walrus_P(IRRRunoffSub)
           RetValWalrusCall = WALRUSGet (IRRRunoffSub, wc_last_ETPot, Walrus_ETPot (IRRRunoffSub), WalrusFirst)
           if (retValWalrusCall .ne. 0) then
               call ErrMsgStandard (981, 0, ' Some error during WALRUS routine Get ETPOT', ' RRRunoffNode_Init1')
           endif
-!         Write(*,*) ' Got ETPot ', Walrus_ETPot(IRRRunoffSub)
+          if (Idebug .ne. 0) Write(Idebug,*) ' Got ETPot ', Walrus_ETPot(IRRRunoffSub)
 
           if (idebug .ne. 0) then
              Write(Idebug,*) ' Rain (m3/s) ', Rain(imeteo)

@@ -2185,7 +2185,10 @@ contains
             Dt (iplv2,iptyp,ipopp,1)  = NWRW_Dt(index1)
             InfSts(iplv2,iptyp,ipopp,1) = NWRW_InfSts(index1)
             ! Infiltratie IPV in m3 per tijdstap
+! UNST 8880 original
             IPV(IPLV2,IPTYP,IPOPP) = NWRW_NewInfCap(index1) * MM2M * timeSettings%timestepSize / NRSHR
+! UNST 8880 adjusted
+            IPV(IPLV2,IPTYP,IPOPP) = (0.5 * NWRW_PreviousInfCap(index1) + 0.5 * NWRW_NewInfCap(index1)) * MM2M * timeSettings%timestepSize / NRSHR
          enddo
       Enddo
     ELSE
@@ -2284,7 +2287,10 @@ contains
              Dt (iplv2,iptyp,ipopp,2)  = NWRW_Dt(index1)
              InfSts(iplv2,iptyp,ipopp,2) = NWRW_InfSts(index1)
              ! Infiltratie IPV in m3 per tijdstap
+! UNST 8880 original
              RINF2(index1) = NWRW_NewInfCap(index1) * MM2M * timeSettings%timestepSize / NRSHR
+! UNST 8880 adjusted
+             RINF2(index1) = (0.5 * NWRW_PreviousInfCap(index1) + 0.5 * NWRW_NewInfCap(index1)) * MM2M * timeSettings%timestepSize / NRSHR
           enddo
        Enddo
     ELSE
@@ -2483,7 +2489,10 @@ contains
           SpecialDt (iplv2,1)    = NWRW_Dt(index1)
           SpecialInfSts(iplv2,1) = NWRW_InfSts(index1)
          ! Infiltratie IPV in m3 per tijdstap
+! UNST 8880 original
           SpecialIPV(IPLV2) = SpecialINFCP(IPLV2,1) * MM2M * timeSettings%timestepSize / NRSHR
+! UNST 8880 adjusted
+          SpecialIPV(IPLV2) = (0.5 * NWRW_PreviousInfCap(index1) + 0.5 * NWRW_NewInfCap(index1)) * MM2M * timeSettings%timestepSize / NRSHR
        ELSE
           SpecialIPV(IPLV2) = 0.0
        ENDIF
@@ -2553,7 +2562,10 @@ contains
           SpecialDt (iplv2,2)    = NWRW_Dt(index1)
           SpecialInfSts(iplv2,2) = NWRW_InfSts(index1)
     ! Infiltratie uit afstroming RINF2 in m3 per tijdstap
+! UNST 8880 original
           RINF2 = SpecialINFCP(IPLV2,2) * MM2M * timeSettings%timestepSize / NRSHR
+! UNST 8880 adjusted
+          RINF2 = (0.5 * NWRW_PreviousInfCap(index1) + 0.5 * NWRW_NewInfCap(index1)) * MM2M * timeSettings%timestepSize / NRSHR
           if (Idebug .ne. 0) write(idebug,'(A,I4,2E11.4)')  ' Special',index1, NWRW_InfiltrationMM(index1), RINF2
 
        ELSE

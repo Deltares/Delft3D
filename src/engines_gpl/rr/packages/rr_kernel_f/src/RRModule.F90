@@ -784,6 +784,8 @@
         IDateAct   = EventStartDateTime(1,1)*10000 + EventStartDateTime(1,2)* 100 + EventStartDateTime(1,3)
         ITimeAct   = EventStartDateTime(1,4)*10000 + EventStartDateTime(1,5)* 100 + EventStartDateTime(1,6)
         JulianStartDate = Julian (IDateAct, ITimeAct)
+        StartDateAsInteger = IDateAct
+        JulStart = Modified_Julian_fromJulian(JulianStartDate)
         IDateAct   = OutputEventStartDateTime(1,1)*10000 + OutputEventStartDateTime(1,2)* 100 + &
                                                                            OutputEventStartDateTime(1,3)
         ITimeAct   = OutputEventStartDateTime(1,4)*10000 + OutputEventStartDateTime(1,5)* 100 + &
@@ -936,6 +938,8 @@
      IDateAct   = EventStartDateTime(1,1)*10000 + EventStartDateTime(1,2)* 100 + EventStartDateTime(1,3)
      ITimeAct   = EventStartDateTime(1,4)*10000 + EventStartDateTime(1,5)* 100 + EventStartDateTime(1,6)
      JulianStartDate = Julian (IDateAct, ITimeAct)
+     StartDateAsInteger = IDateAct
+     JulStart = Modified_Julian_fromJulian(JulianStartDate)
      ModJulianTime = Modified_Julian_fromJulian(JulianStartDate)
 !
 !*********************************************************************
