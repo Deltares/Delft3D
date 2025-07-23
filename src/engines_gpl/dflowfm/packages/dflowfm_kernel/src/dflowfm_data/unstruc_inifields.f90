@@ -162,7 +162,7 @@ contains
       use tree_data_types
       use tree_structures
       use m_alloc, only: reallocP
-      use m_ec_parameters, only: ec_undef_int, interpolate_spacetime
+      use m_ec_parameters, only: ec_undef_int
       use m_cell_geometry, only: xz, yz
 
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
@@ -174,7 +174,7 @@ contains
       use timespace_parameters, only: FIELD1D
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
 
-      use m_flow, only: s1, hs, frcu, ndkx, kbot, ktop, kmxn, ndkx, zcs
+      use m_flow, only: s1, hs, frcu, ndkx, kbot, ktop, ndkx, zcs
       use m_flowgeom, only: ndx2d, ndxi, ndx, bl
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
 
@@ -194,7 +194,8 @@ contains
       use m_timespaceinitialfield_mpi
       use m_find_name, only: find_name
       use m_get_kbot_ktop, only : getkbotktop
-
+      use timespace_parameters, only: WEIGHTFACTORS
+      
       implicit none
       character(len=*), intent(in) :: inifilename !< name of initial field file
       integer :: ierr !< Result status (DFM_NOERR on success)
@@ -211,7 +212,7 @@ contains
       character(len=255) :: fnam, filename
       character(len=255) :: basedir
       integer :: istat
-      integer :: i, ib, ja, kx, iconst, itrac, k, n, kb, kt
+      integer :: i, ib, ja, kx, iconst, itrac, k
       integer :: target_location_type, first_index
       integer :: method, iloctype, filetype, ierr_loc
       integer :: target_location_count
@@ -315,56 +316,41 @@ contains
             end if
 
             ! This part of the code might be moved or changed. (See UNST-8247)
-            if (qid(1:13) == 'initialtracer') then
+            ! 'initialtracer' with method unequal to WEIGHTFACTORS will be handled by calling fill_field_values below
+            if (qid(1:13) == 'initialtracer' .and. method == WEIGHTFACTORS) then
+               call reallocP(target_array, ndkx, keepExisting=.false., fill=dmiss)
+               ! Get iconst via qid, tracnam, itrac, itrac2const
                call get_tracername(qid, tracnam, qidnam)
                call add_tracer(tracnam, iconst) ! or just gets constituents number if tracer already exists
                itrac = find_name(trnames, tracnam)
-
                if (itrac == 0) then
                   call mess(LEVEL_WARN, 'flow_initexternalforcings: tracer '//trim(tracnam)//' not found')
                   success = .false.
                   return
                end if
                iconst = itrac2const(itrac)
-
-               call reallocP(target_array, ndkx, keepExisting=.false., fill=dmiss)
-               if (method == 3) then
-                  kx = 1
-                  if (allocated(mask)) then
-                     deallocate (mask)
-                  end if
-                  allocate (mask(ndx), source=1)
-                  ec_item = ec_undef_int
-                  call setzcs()
-                  success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, &
-                                                    filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
-                                                    varname=varname, tgt_item1=ec_item)
-                  success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                                         tunit, tstart_user, target_array)
-                  if (.not. success) then
-                     call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
-                  end if
-                  factor = merge(transformcoef(2), 1.0_dp, transformcoef(2) /= -999.0_dp)
-                  do k = 1, Ndkx
-                     if (target_array(k) /= dmiss) then
-                        constituents(iconst, k) = target_array(k) * factor
-                     end if
-                  end do
-               else
-                  ! will only fill 2D part of target_array
-                  success = timespaceinitialfield(xz(1:ndx), yz(1:ndx), target_array, Ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
-                  if (success) then
-                     do n = 1, Ndx
-                        if (target_array(n) /= dmiss) then
-                           constituents(iconst, n) = target_array(n)
-                           call getkbotktop(n, kb, kt)
-                           do k = kb, kb + kmxn(n) - 1
-                              constituents(iconst, k) = constituents(iconst, n)
-                           end do
-                        end if
-                     end do
-                  end if
+               !
+               kx = 1
+               if (allocated(mask)) then
+                  deallocate (mask)
                end if
+               allocate (mask(ndx), source=1)
+               ec_item = ec_undef_int
+               call setzcs()
+               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, &
+                                                   filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
+                                                   varname=varname, tgt_item1=ec_item)
+               success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
+                                                                        tunit, tstart_user, target_array)
+               if (.not. success) then
+                  call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
+               end if
+               factor = merge(transformcoef(2), 1.0_dp, transformcoef(2) /= -999.0_dp)
+               do k = 1, Ndkx
+                  if (target_array(k) /= dmiss) then
+                     constituents(iconst, k) = target_array(k) * factor
+                  end if
+               end do
             end if
 
             if (.not. success) then
@@ -1268,7 +1254,7 @@ contains
       use messageHandling
       use m_alloc, only: realloc, aerr, reallocP
       use m_missing, only: dmiss
-      use m_ec_parameters, only: ec_undef_int, interpolate_spacetime
+      use m_ec_parameters, only: ec_undef_int
 
       use m_meteo, only: ec_addtimespacerelation
       use unstruc_files, only: resolvePath
@@ -1294,6 +1280,7 @@ contains
       use m_fm_wq_processes, only: wqbotnames, wqbot
       use m_find_name, only: find_name
       use m_add_bndtracer, only: add_bndtracer
+      use timespace_parameters, only: WEIGHTFACTORS
 
 
       ! use network_data
@@ -1429,7 +1416,7 @@ contains
             initem2D = 1
          end if
       case ('initialtracer')
-         if (method == interpolate_spacetime) then
+         if (method == WEIGHTFACTORS) then
             ! handled elsewhere
             return
          end if

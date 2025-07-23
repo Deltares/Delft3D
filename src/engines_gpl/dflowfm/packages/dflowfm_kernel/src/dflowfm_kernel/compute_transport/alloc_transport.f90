@@ -135,7 +135,6 @@ contains
          call realloc(isys2const, num_substances_total, keepExisting=.true., fill=0)
       end if
       call realloc(iconst2sys, NUMCONST, keepExisting=.true., fill=0)
-!     C-SUMO
       call realloc(item_sourcesink_constituent_delta, NUMCONST, keepExisting=.true., fill=ec_undef_int)
    end subroutine alloc_transport
 
