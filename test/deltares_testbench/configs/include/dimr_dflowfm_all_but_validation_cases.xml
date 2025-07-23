@@ -4385,6 +4385,17 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f015_c073_iniwatdep_pol" ref="dflowfm_default">
+      <path version="2025-07-23T08:21:10.798000">e02_dflowfm/f015_spatial_interpolation/c073_iniwatdep_pol</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/iniwaterdepth_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f016_c012_schematic_xyz_multifile" ref="dflowfm_default">
       <path version="2025-05-01T08:53:20.680000">e02_dflowfm/f016_drypoints/c012_schematic_xyz_multifile</path>
       <maxRunTime>15000.0000000</maxRunTime>
