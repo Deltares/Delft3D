@@ -48,3 +48,4 @@ src/**/FortranCInterface.h
 /doxy_output
 /ci/DIMRset_delivery/venv/**
 /ci/teamcity/Delft3D/target/**
+**/result_doc/**

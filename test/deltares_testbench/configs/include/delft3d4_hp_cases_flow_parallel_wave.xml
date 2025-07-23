@@ -26,7 +26,7 @@
 				-->
 	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e23_f27_c10-wave_klopman_wfc" ref="flow2d3d_default">
-			<path version="2024-01-12T07:30:00">e23_d3dflow-wave/f27_zmodel_updates/c10-wave_klopman_wfc</path>
+			<path version="2025-06-05T14:02:00">e23_d3dflow-wave/f27_zmodel_updates/c10-wave_klopman_wfc</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>

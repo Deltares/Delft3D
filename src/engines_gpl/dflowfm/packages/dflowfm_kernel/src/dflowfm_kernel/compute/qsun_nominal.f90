@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,32 +36,32 @@ module m_qsun_nominal
 
 contains
 
-   subroutine qsun_nominal(rlon, rlat, timhr, qs)
+   !> Calculate nominal solar radiation
+   pure function calculate_nominal_solar_radiation(anglon, anglat, time_in_hours) result(nominal_solar_radiation)
       use precision, only: dp
-      use m_sferic
+      use m_sferic, only: twopi, dg2rd
       use m_flowtimes, only: timjan, tzone
-      implicit none
 
-      real(kind=dp) :: rlat, rlon, timhr, qs
+      real(kind=dp), intent(in) :: anglon !< Longitude angle in degrees
+      real(kind=dp), intent(in) :: anglat !< Latitude angle in degrees
+      real(kind=dp), intent(in) :: time_in_hours !< Current model time in hours
 
-      real(kind=dp) :: decln, w0, w1, d, e, tm, snh
+      real(kind=dp) :: nominal_solar_radiation, decln, w0, w1, d, e, tm, snh
 
       ! Calculate sine of the angle of the sun above the horizon: SNH
       ! d is the declination angle
       ! June 21st is the 171st day after TM=0
 
-      tm = timjan + timhr
-      !if (jsferic > 0) then
-      tm = tm + 24.0d0 * rlon / 360.0d0 - tzone
-      !endif
-      w0 = twopi / (365.24d0 * 24d0)
-      w1 = twopi / (24d0)
-      decln = 23.5d0 * dg2rd
-      d = decln * cos(w0 * tm - 2.950d0)
-      e = rlat * dg2rd
+      tm = timjan + time_in_hours
+      tm = tm + 24.0_dp * anglon / 360.0_dp - tzone
+      w0 = twopi / (365.24_dp * 24.0_dp)
+      w1 = twopi / (24.0_dp)
+      decln = 23.5_dp * dg2rd
+      d = decln * cos(w0 * tm - 2.95_dp)
+      e = anglat * dg2rd
       snh = -cos(e) * cos(d) * cos(w1 * tm) + sin(e) * sin(d)
-      snh = max(0d0, min(1d0, snh))
-      qs = 1368d0 * snh * 0.76d0
-   end subroutine qsun_nominal
+      snh = max(0.0_dp, min(1.0_dp, snh))
+      nominal_solar_radiation = 1368.0_dp * snh * 0.76_dp
+   end function calculate_nominal_solar_radiation
 
 end module m_qsun_nominal

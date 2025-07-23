@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,8 +36,8 @@ module m_fbox_nop
 contains
    subroutine FBOXNOP(XB1, YB1, XB2, YB2)
       use precision, only: dp
-      use m_fboxold
-      use m_drawthis
+      use m_fboxold, only: fboxold
+      use m_drawthis, only: ndraw
 
       real(kind=dp) :: xb1, xb2, yb1, yb2
 

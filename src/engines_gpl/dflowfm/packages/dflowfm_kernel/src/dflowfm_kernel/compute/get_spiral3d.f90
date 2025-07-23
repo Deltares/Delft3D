@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,10 +38,10 @@ contains
 
    subroutine get_spiral3d
       use precision, only: dp
-      use m_findfn
+      use m_findfn, only: findfn
+      use m_get_kbot_ktop, only: getkbotktop
       use m_flow, only: ucx, ucy, spirint, zws, hs, dzslay, spiratx, spiraty
       use m_flowgeom, only: ndx
-      use m_get_kbot_ktop
 
       implicit none
       integer :: k, kk, k1, kb, kt

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,9 +41,8 @@ module m_generatepartitionmdufile
 contains
 
    subroutine generatePartitionMDUFile(filename, filename_new)
-      use unstruc_model
-      use m_partitioninfo
-      use string_module
+      use unstruc_model, only: md_icgsolver, md_restartfile, md_mapfile, md_genpolygon, md_flowgeomfile, md_classmap_file, md_netfile, md_partitionfile, mess, level_error
+      use string_module, only: strcmpi, str_lower
 
       character(len=*), intent(in) :: filename, filename_new
       integer :: k1, k2, k3, k4, k5, k6, k7, n

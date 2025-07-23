@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,10 +42,10 @@ contains
 
    subroutine setgrainsizes() ! for all fractions:
       use precision, only: dp
-      use m_fdster
-      use M_SEDIMENT
+      use m_fdster, only: fdster
+      use M_SEDIMENT, only: d90, rhodelta, sqsgd50, dstar, dstar03, accr, awcr, mxgr, d50, rhosed, d50wa, d50wb, d50wc, ws
+      use MessageHandling, only: mess, level_info
       use m_physcoef, only: ag, rhomean, backgroundwatertemperature, vismol
-      use MessageHandling
       implicit none
       integer :: m, j
       real(kind=dp) :: Ucr, sster, c1, c2, wster, wschk, taucr, thetcr, pclay = 0d0, fcr = 1d0

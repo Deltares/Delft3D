@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,6 +58,7 @@ contains
       use m_get_Lbot_Ltop
       use m_get_chezy, only: get_chezy
       use m_links_to_centers, only: links_to_centers
+      use m_waveconst
 
       integer :: L, LL, Lb, Lt, k1, k2, kt1, kt2
       real(kind=dp) :: dptot, tidp, trshcorioi, dzt, dztm, alf
@@ -182,7 +183,7 @@ contains
          end do
       end if
 
-      if ((jawave == 3 .or. jawave >= 6 .or. (jawave == 4 .and. lwave == 1)) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE .or. (jawave == WAVE_SURFBEAT .and. lwave == 1)) .and. .not. flowWithoutWaves) then
          ! add wave forces to adve
          if (kmx == 0) then ! 2D
             do L = 1, lnx
@@ -211,14 +212,21 @@ contains
          call fm_ice_update_press(ag)
       end if
 
-      if (japatm > 0 .or. jatidep > 0 .or. ice_apply_pressure) then
+      if (air_pressure_available .or. pseudo_air_pressure_available .or. water_level_correction_available &
+          .or. jatidep > 0 .or. ice_apply_pressure) then
          do L = 1, lnx
             if (hu(L) > 0) then
                k1 = ln(1, L); k2 = ln(2, L)
 
                dptot = 0.0d0
-               if (japatm > 0) then
-                  dptot = dptot + (patm(k2) - patm(k1)) * dxi(L) / rhomean
+               if (air_pressure_available) then
+                  dptot = dptot + (air_pressure(k2) - air_pressure(k1)) * dxi(L) / rhomean
+               end if
+               if (pseudo_air_pressure_available) then
+                  dptot = dptot + (pseudo_air_pressure(k2) - pseudo_air_pressure(k1)) * dxi(L) / rhomean
+               end if
+               if (water_level_correction_available) then
+                  dptot = dptot + (water_level_correction(k2) - water_level_correction(k1)) * dxi(L) * ag
                end if
                if (ice_apply_pressure) then
                   dptot = dptot + (ice_p(k2) - ice_p(k1)) * dxi(L) / rhomean

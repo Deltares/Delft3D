@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,8 +37,8 @@ module m_inikeys
 contains
 
    subroutine INIKEYS()
-      use m_devices
-      use m_nkeys
+      use m_devices, only: nopsys
+      use m_nkeys, only: nkey, numc, numkeys
       implicit none
       integer :: i
 !     Keyboard

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,8 +40,8 @@ contains
 
    subroutine getucxucybarrierzero(Lf, ku, ucxku, ucyku)
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: u1
+      use m_flowgeom, only: nd, acl, dx, wu, csu, snu, ba
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
       implicit none

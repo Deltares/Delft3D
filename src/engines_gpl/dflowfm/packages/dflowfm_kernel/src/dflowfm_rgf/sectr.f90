@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -103,8 +103,8 @@ contains
 !        VERDUBBEL AANTAL STEUNPUNTEN ALS
          do I = 1, NUMSPL
             call NUMPold(X, mmax, nmax, I, NUMPI)
-            call GETIJ(X, XI, mmax, nmax, imax, I, I, 1, NUMPI)
-            call GETIJ(Y, YI, mmax, nmax, imax, I, I, 1, NUMPI)
+            call get_ij(X, XI, mmax, nmax, imax, I, I, 1, NUMPI)
+            call get_ij(Y, YI, mmax, nmax, imax, I, I, 1, NUMPI)
             call SPLINE(XI, NUMPI, XJ)
             call SPLINE(YI, NUMPI, YJ)
             do J = 2 * NUMPI - 1, 2, -2
@@ -129,10 +129,10 @@ contains
          do J = I + 1, NUMSPL
             call NUMPold(X, mmax, nmax, I, NUMPI)
             call NUMPold(X, mmax, nmax, J, NUMPJ)
-            call GETIJ(X, XI, mmax, nmax, imax, I, I, 1, NUMPI)
-            call GETIJ(Y, YI, mmax, nmax, imax, I, I, 1, NUMPI)
-            call GETIJ(X, XJ, mmax, nmax, imax, J, J, 1, NUMPJ)
-            call GETIJ(Y, YJ, mmax, nmax, imax, J, J, 1, NUMPJ)
+            call get_ij(X, XI, mmax, nmax, imax, I, I, 1, NUMPI)
+            call get_ij(Y, YI, mmax, nmax, imax, I, I, 1, NUMPI)
+            call get_ij(X, XJ, mmax, nmax, imax, J, J, 1, NUMPJ)
+            call get_ij(Y, YJ, mmax, nmax, imax, J, J, 1, NUMPJ)
             call SECT3r(XI, YI, XJ, YJ, imax, CRP, &
                         NUMPI, NUMPJ, NUMCRO, TI, TJ, XSPc, YSPc)
             if (NUMCRO == 1) then

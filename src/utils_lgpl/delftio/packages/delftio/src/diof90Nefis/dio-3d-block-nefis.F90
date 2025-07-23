@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -30,7 +30,7 @@
 !!!
 !!! Dio-3D-Block-Nefis: Nefis I/O for 3D-value blocks
 !!!
-!!! (c) Deltares, okt 2002
+!!! (c) Deltares, okt 2025
 !!!
 !!! David.Levelt@deltares.nl
 !!!

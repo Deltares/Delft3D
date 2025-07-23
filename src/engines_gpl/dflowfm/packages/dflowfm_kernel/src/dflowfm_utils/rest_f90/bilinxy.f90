@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,8 +36,8 @@ module m_bilinxy
 contains
    subroutine BILINXY(X, Y, XZ, YZ, XP, YP, XP2, YP2, INI)
       use precision, only: dp
-      use m_qnerror
-      use m_lubksb
+      use m_qnerror, only: qnerror
+      use m_lubksb, only: lubksb
 
       real(kind=dp) :: c
       integer :: i

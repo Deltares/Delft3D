@@ -2,7 +2,7 @@ subroutine rdencl( lunmd     ,lundia    ,error     , runid    , &
                 &  mmax      ,nmaxus    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -72,7 +72,6 @@ subroutine rdencl( lunmd     ,lundia    ,error     , runid    , &
     integer               :: lkw    ! Actual length of KEYW
     integer               :: lrid   ! Length of character string runid
     integer               :: lungrd ! Unit number of local scratch file for grid enclosure points
-    integer               :: newlun
     integer               :: nlook  ! Help var.: nr. of data to look for in the MD-file
     integer               :: nrrec  !  Pointer to the record number in the MD-file
     integer               :: ntrec  ! Help. var to keep track of NRREC

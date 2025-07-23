@@ -69,6 +69,41 @@ class TestProgram:
         # Close the file in the file logger handler to avoid errors.
         close_file_logger_handler(logging.getLogger(log_file.name))
 
+    def test_run__set_last_return_code(self, mocker: MockerFixture, tmp_dir: Path) -> None:
+        # Arrange
+        system = platform.system()
+        if system == "Linux":
+            script = tmp_dir / "foo.sh"
+            script.write_text("#!/bin/bash\necho 'Failure!'\nexit 1")  # Script that echos something.
+            script.chmod(stat.S_IFREG | 0o755)  # Make script executable.
+        elif system == "Windows":
+            script = tmp_dir / "foo.bat"
+            script.write_text('@echo off\necho "Failure!"\nexit /b 1')  # Script that echos something.
+        else:
+            pytest.skip(reason=f"Unknown platform: {system}")
+
+        config = ProgramConfig()
+        config.name = "foo"
+        config.working_directory = str(tmp_dir.absolute())
+        config.absolute_bin_path = str(script.absolute())
+        config.log_output_to_file = True
+        settings = TestBenchSettings()
+        settings.log_level = LogLevel.DEBUG
+        program = Program(config, settings)
+        logger = mocker.Mock(spec=ILogger)
+        log_folder = mocker.patch("src.suite.program.get_default_logging_folder_path")
+        log_folder.return_value = str(tmp_dir.absolute())
+
+        # Act
+        program.run(logger)
+
+        # Assert
+        log_file, *other_files = tmp_dir.glob("foo_seq0.log")
+        assert program.last_return_code == 1
+
+        # Close the file in the file logger handler to avoid errors.
+        close_file_logger_handler(logging.getLogger(log_file.name))
+
     @pytest.mark.skipif(platform.system() != "Linux", reason="Test is specific for Linux")
     def test_run__linux_no_execute_permissions__log_exception(self, mocker: MockerFixture, tmp_dir: Path) -> None:
         # Arrange

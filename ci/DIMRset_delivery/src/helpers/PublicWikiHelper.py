@@ -6,7 +6,14 @@ from typing import Tuple
 from lib.Atlassian import Atlassian
 from lib.TeamCity import TeamCity
 from settings.atlassian_settings import *
-from settings.teamcity_settings import *
+
+# from settings.teamcity_settings import *
+from settings.teamcity_settings import (
+    PATH_TO_LINUX_VERSION_ARTIFACT,
+    PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT,
+    PATH_TO_WINDOWS_VERSION_ARTIFACT,
+    TEAMCITY_IDS,
+)
 
 
 class PublicWikiHelper(object):
@@ -33,7 +40,7 @@ class PublicWikiHelper(object):
         self.__minor_version = minor
         self.__patch_version = patch
 
-    def update_public_wiki(self) -> None:
+    def update_public_wiki(self, build_id_chain: str) -> None:
         """
         Creates and/or updates the Public Wiki for a specific DIMR version.
 
@@ -41,61 +48,67 @@ class PublicWikiHelper(object):
             None
         """
         print("Updating main wiki page...")
-        main_page_id = self.__update_main_page()
+        main_page_id = self.__update_main_page(build_id_chain)
 
         print("Updating sub wiki page...")
         self.__update_sub_page(parent_page_id=main_page_id)
 
-    def __update_main_page(self) -> str:
+    def __update_main_page(self, build_id_chain: str) -> str:
         """
         Updates the content of the main page for the given DIMR version.
 
         Returns:
             str: The id of the updated page.
         """
-        content = self.__prepare_content_for_main_page()
+        content = self.__prepare_content_for_main_page(build_id_chain)
         page_to_update_page_id = self.__get_main_page_id_for_page_to_update()
         page_title = f"{DIMR_PATCH_PAGE_PREFIX} {self.__major_version}.{self.__minor_version}.{self.__patch_version}"
         self.__update_content_of_page(page_to_update_page_id, page_title, content)
 
         return page_to_update_page_id
 
-    def __prepare_content_for_main_page(self) -> str:
+    def __prepare_content_for_main_page(self, build_id_chain: str) -> str:
         """
         Prepares the content that should be uploaded to the main page.
 
         Returns:
             str: The content.
         """
-        windows_version_artifact, linux_version_artifact = self.__get_version_artifacts()
+        windows_version_artifact, linux_version_artifact = self.__get_version_artifacts(
+            build_id_chain
+        )
         if windows_version_artifact is None:
             raise AssertionError("Could not retrieve the Windows version.txt artifact.")
         if linux_version_artifact is None:
             raise AssertionError("Could not retrieve the Linux version.txt artifact.")
 
         content = self.__create_content_from_template(
-            windows_version_artifact=windows_version_artifact, linux_version_artifact=linux_version_artifact
+            windows_version_artifact=windows_version_artifact,
+            linux_version_artifact=linux_version_artifact,
         )
 
         return content
 
-    def __get_version_artifacts(self) -> Tuple[str, str]:
+    def __get_version_artifacts(self, build_id_chain: str) -> Tuple[str, str]:
         """
         Gets the latest Windows and Linux Version.txt artifacts from Dimr Collector Release.
 
         Returns:
             Tuple[str, str]: A tuple containing the Windows and Linux artifacts respectively.
         """
-        latest_dimr_collector_release_build_id = self.__teamcity.get_latest_build_id_for_build_type_id(
-            build_type_id=TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID.value
+        windows_collect_id = self.__teamcity.get_dependent_build_id(
+            build_id_chain, TEAMCITY_IDS.DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID.value
         )
 
         windows_version_artifact = self.__teamcity.get_build_artifact(
-            build_id=latest_dimr_collector_release_build_id, path_to_artifact=PATH_TO_WINDOWS_VERSION_ARTIFACT
+            build_id=windows_collect_id,
+            path_to_artifact=PATH_TO_WINDOWS_VERSION_ARTIFACT,
         )
-
+        linux_collect_id = self.__teamcity.get_dependent_build_id(
+            build_id_chain, TEAMCITY_IDS.DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID.value
+        )
         linux_version_artifact = self.__teamcity.get_build_artifact(
-            build_id=latest_dimr_collector_release_build_id, path_to_artifact=PATH_TO_LINUX_VERSION_ARTIFACT
+            build_id=linux_collect_id, path_to_artifact=PATH_TO_LINUX_VERSION_ARTIFACT
         )
 
         return windows_version_artifact.decode(), linux_version_artifact.decode()
@@ -238,14 +251,10 @@ class PublicWikiHelper(object):
         Returns:
             str: The content.
         """
-        latest_dimr_release_testbench_build_id = self.__teamcity.get_latest_build_id_for_build_type_id(
-            build_type_id=TEAMCITY_IDS.DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID.value
-        )
-        release_testbench_artifact = self.__teamcity.get_build_artifact(
-            latest_dimr_release_testbench_build_id, PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT
-        )
+        with open(PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT, "rb") as f:
+            artifact = f.read()
 
-        # decode bytes and add the <pre> ... </pre> tags to make sure the wiki page properly keeps the formatting
-        content = f"<pre>{release_testbench_artifact.decode()}</pre>"
+        # Add the <pre> ... </pre> tags to make sure the wiki page properly keeps the formatting
+        content = f"<pre>{artifact}</pre>"
 
         return content

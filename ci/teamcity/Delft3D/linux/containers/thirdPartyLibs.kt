@@ -11,6 +11,7 @@ import java.io.File
 object LinuxThirdPartyLibs : BuildType({
     name = "Third-party libraries"
     description = "Add third-party libraries to the build-environment container image to build our Delf3D software in."
+    buildNumberPattern = "%build.vcs.number%"
 
     templates(
         TemplatePublishStatus,
@@ -39,7 +40,7 @@ object LinuxThirdPartyLibs : BuildType({
         param("env.JIRA_ISSUE_ID", "")
     }
 
-    if (DslContext.getParameter("environment") == "production") {
+    if (DslContext.getParameter("enable_third_party_libs_trigger").lowercase() == "true") {
         triggers {
             vcs { // Only trigger builds when dockerfiles are modified.
                 triggerRules = """

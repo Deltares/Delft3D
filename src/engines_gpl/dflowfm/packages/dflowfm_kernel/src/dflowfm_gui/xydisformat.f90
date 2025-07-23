@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,11 +37,10 @@ module m_xydisformat
 contains
 
    subroutine XYDISFORMAT()
-      use m_sferic
-      use m_wearelt
-      use m_depmax
-      use m_locatora
-      use m_disfor
+      use m_wearelt, only: x1, x2, y1, y2
+      use m_depmax, only: vmin, vmax
+      use m_locatora, only: xlc, ylc
+      use m_disfor, only: zform, xyform, disform
 
       implicit none
 

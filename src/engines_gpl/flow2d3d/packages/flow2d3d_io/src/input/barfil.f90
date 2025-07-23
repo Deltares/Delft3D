@@ -3,7 +3,7 @@ subroutine barfil(lundia    ,filbar    ,error     ,mmax      ,nmax      , &
                 & mnbar     ,nambar    ,cbuv      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -96,7 +96,6 @@ subroutine barfil(lundia    ,filbar    ,error     ,mmax      ,nmax      , &
     integer                          :: n                    ! loop counter 
     integer                          :: n1                   ! First n-index for barrier 
     integer                          :: n2                   ! Last n-index for barrier 
-    integer, external                :: newlun
     integer                          :: nlook                ! Nr. of values to look for in a record 
     integer                          :: npar                 ! Number of parameters on input line before barrier velocity
     integer                          :: nrflds

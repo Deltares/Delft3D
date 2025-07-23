@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,12 +41,12 @@ contains
    subroutine spline2poly()
       use m_make_gridline, only: make_gridline
       use precision, only: dp
-      use m_splines
-      use m_spline2curvi
-      use m_gridsettings
-      use m_polygon
-      use m_missing
-      use m_delpol
+      use m_splines, only: mcs, nump, xsp, ysp
+      use m_spline2curvi, only: splineprops, dwidth, jacurv
+      use m_gridsettings, only: mfac
+      use m_polygon, only: savepol, increasepol, npl, xpl, ypl
+      use m_missing, only: dmiss
+      use m_delpol, only: delpol
 
       real(kind=dp), allocatable, dimension(:) :: sc !  spline-coordinates of grid points, not used
 

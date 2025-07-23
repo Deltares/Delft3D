@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,7 @@ contains
 
    subroutine setbaptist()
       use precision, only: dp
-      use m_flow
+      use m_flow, only: rnveg, hu, densvegminbap, jabaptist, frcu, u1, v, ifrcutp, diaveg, stemheight, jacdvegsp, cdvegsp, cdveg, uchistem, expchistem, uchileaf, expchileaf, cdleaf, arealeaf, ag, sag, vonkar, cfuhi, alfav, cfuveg, alfaveg
       use m_flowgeom, only: ln, lnx
       use m_get_chezy, only: get_chezy
 

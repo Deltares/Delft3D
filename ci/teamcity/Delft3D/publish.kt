@@ -1,10 +1,10 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
-import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import Delft3D.template.*
 import Delft3D.linux.*
+import Delft3D.windows.*
 
 object Publish : BuildType({
 
@@ -36,51 +36,83 @@ object Publish : BuildType({
     }
 
     features {
-        approval {
-            approvalRules = "group:DIMR_BAKKERS:1"
-        }
         matrix {
             param("brand", listOf(
                 value("delft3dfm"),
                 value("dhydro")
             ))
         }
+        approval {
+            approvalRules = "group:DIMR_BAKKERS:1"
+        }
     }
 
-    if (DslContext.getParameter("environment") == "production") {
+    params {
+        select("release_type", "weekly", display = ParameterDisplay.PROMPT, options = listOf("daily", "weekly", "release"))
+        text("release_version", "2.29.xx", 
+            label = "Release version", 
+            description = "e.g. '2.29.03' or '2025.02'", 
+            display = ParameterDisplay.PROMPT)
+        text("reverse.dep.*.release_version", "2.29.xx", 
+            label = "Release version for dependencies", 
+            description = "e.g. '2.29.03' or '2025.02'", 
+            display = ParameterDisplay.PROMPT)
+        param("reverse.dep.*.product", "all-testbench")
+        param("commit_id_short", "%dep.${LinuxBuild.id}.commit_id_short%")
+        param("source_image", "%dep.${LinuxRuntimeContainers.id}.runtime_container_image%")
+        param("destination_image_generic", "containers.deltares.nl/delft3d/%brand%:%release_type%")
+        param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_type%-%release_version%")
+    }
+
+    if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
         dependencies {
-            snapshot(AbsoluteId("DIMR_To_NGHS")) {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
+            dependency(DIMRbak) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
             }
-        }
-        triggers {
-            finishBuildTrigger {
-                enabled = true
-                buildType = "DIMR_To_NGHS"
-                successfulOnly = true
-                branchFilter = """
-                    +:main
-                    +:release/*
-                """.trimIndent()
+            dependency(LinuxTest) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
+            dependency(WindowsTest) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
+            dependency(LinuxUnitTest) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
+            dependency(WindowsUnitTest) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
+            dependency(LinuxRunAllDockerExamples) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
+            }
+            dependency(LinuxLegacyDockerTest) {
+                snapshot {
+                    onDependencyFailure = FailureAction.FAIL_TO_START
+                    onDependencyCancel = FailureAction.CANCEL
+                }
             }
         }
     }
 
     requirements {
         contains("teamcity.agent.jvm.os.name", "Linux")
-    }
-
-    params {
-        select("release_type", "weekly", display = ParameterDisplay.PROMPT, options = listOf("daily", "weekly", "release"))
-        text("release_version", "%dep.Dimr_DimrCollector.DIMRset_ver%", 
-            label = "Release version", 
-            description = "e.g. '2.29.03' or '2025.02'", 
-            display = ParameterDisplay.PROMPT)
-        param("commit_id_short", "%dep.${LinuxBuild.id}.build.revisions.short%")
-        param("source_image", "containers.deltares.nl/delft3d/delft3d-runtime-container:alma8-%build.vcs.number%")
-        param("destination_image_generic", "containers.deltares.nl/delft3d/%brand%:%release_type%")
-        param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_type%-%release_version%")
     }
 
     steps {

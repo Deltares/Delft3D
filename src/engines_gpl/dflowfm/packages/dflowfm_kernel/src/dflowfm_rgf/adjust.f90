@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ contains
 
    subroutine ADJUST(X, Y, mmax, nmax, MC, NC)
       use precision, only: dp
-      use m_missing
+      use m_missing, only: xymis
 
       integer :: mmax, nmax, mc, nc
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
@@ -60,8 +60,8 @@ contains
       y = xymis
 
       IFIRST = 0
-      do I = 1, MC
-         do J = 1, NC
+      do J = 1, NC
+         do I = 1, MC
             if (XH(I, J) /= XYMIS .and. IFIRST == 0) IFIRST = I
          end do
       end do
@@ -79,8 +79,8 @@ contains
       else
          IFIRST = IFIRST - 1
          JFIRST = JFIRST - 1
-         do I = 1, MC - IFIRST
-            do J = 1, NC - JFIRST
+         do J = 1, NC - JFIRST
+            do I = 1, MC - IFIRST
                X(I, J) = XH(I + IFIRST, J + JFIRST)
                Y(I, J) = YH(I + IFIRST, J + JFIRST)
             end do

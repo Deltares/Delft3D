@@ -2,7 +2,7 @@ subroutine trafil(lundia    ,filtra    ,fmttmp    ,error     ,ntruv     , &
                 & namtra    ,mnit      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -71,7 +71,6 @@ subroutine trafil(lundia    ,filtra    ,fmttmp    ,error     ,ntruv     , &
     integer                        :: lr132         ! Standard length of a record in the attribute file = 132 
     integer                        :: luntmp        ! Temporary file unit 
     integer                        :: n
-    integer, external              :: newlun
     integer        , dimension(4)  :: ival          ! Help array (integer) where the data, recently read from the MD-file, are stored temporarily 
     character(132)                 :: rec132        ! Standard rec. length in an attribute file (132) 
     character(20)                  :: cdef          ! Default value when CVAR not found 

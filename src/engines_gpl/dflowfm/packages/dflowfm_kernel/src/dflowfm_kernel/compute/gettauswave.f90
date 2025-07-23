@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,11 +38,11 @@ contains
 !> Make output arrays for bed shear stress icm jawave>0, depending on waq coupling and 2D/3D
    subroutine gettauswave(waveswartdelwaq)
       use precision, only: dp
-      use m_flow
-      use m_waves
-      use m_flowgeom
+      use m_flow, only: taus, workx, worky, kmx, taubu, frcu, hu, u1, v, ifrcutp, ag, au, ustb, z0ucur, epsz0, ucx, ucy, rhomean, taubxu, flowwithoutwaves
+      use m_waves, only: twav, uorb, ftauw, phiwav, ustokes
+      use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2, ndx, nd, dx
+      use m_get_kbot_ktop, only: getkbotktop
       use m_sediment, only: sedtra, stm_included
-      use m_get_kbot_ktop
       use m_get_chezy, only: get_chezy
 
       ! Input variables

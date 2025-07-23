@@ -1,6 +1,6 @@
 // ---- - LGPL--------------------------------------------------------------------
 //
-// Copyright(C)  Stichting Deltares, 2011-2024 - 2021-2024.
+// Copyright(C)  Stichting Deltares, 2011-2025.
 //
 // This library is free software; you can redistribute itand /or
 // modify it under the terms of the GNU Lesser General Public
@@ -10,9 +10,9 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
-// License along with this library; if not, see < http://www.gnu.org/licenses/>. 
+// License along with this library; if not, see < http://www.gnu.org/licenses/>.
 //
 // contact : delft3d.support@deltares.nl
 // Stichting Deltares
@@ -30,7 +30,6 @@
 // This routine obtains the current
 // working directorty(cwd).Code based on : https://stackoverflow.com/questions/30279228/is-there-an-alternative-to-getcwd-in-fortran-2003-2008.
 //------------------------------------------------------------------------------ -
-
 
 #ifdef _WIN32
 #include <direct.h>

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -82,12 +82,12 @@ contains
 !    Output, integer   ADJ_BANDWIDTH, the bandwidth of the adjacency
 !    matrix.
 !
-      integer adj_num
-      integer node_num
+      integer, intent(in) :: adj_num
+      integer, intent(in) :: node_num
 
-      integer adj(adj_num)
+      integer, intent(in) :: adj(adj_num)
       integer adj_bandwidth
-      integer adj_row(node_num + 1)
+      integer, intent(in) :: adj_row(node_num + 1)
       integer band_hi
       integer band_lo
       integer col
@@ -344,19 +344,19 @@ contains
 !
       implicit none
 
-      integer adj_num
-      integer node_num
+      integer, intent(in) :: adj_num
+      integer, intent(in) :: node_num
 
-      integer adj(adj_num)
+      integer, intent(in) :: adj(adj_num)
       integer adj_perm_bandwidth
-      integer adj_row(node_num + 1)
+      integer, intent(in) :: adj_row(node_num + 1)
       integer band_hi
       integer band_lo
       integer col
       integer i
       integer j
-      integer perm(node_num)
-      integer perm_inv(node_num)
+      integer, intent(in) :: perm(node_num)
+      integer, intent(in) :: perm_inv(node_num)
 
       band_lo = 0
       band_hi = 0
@@ -1245,8 +1245,8 @@ contains
 !
       implicit none
 
-      integer adj_num
-      integer node_num
+      integer, intent(inout) :: adj_num
+      integer, intent(inout) :: node_num
 
       node_num = 10
       adj_num = 28
@@ -1278,8 +1278,8 @@ contains
 !
       implicit none
 
-      integer i
-      integer j
+      integer, intent(inout) :: i
+      integer, intent(inout) :: j
       integer k
 
       k = i
@@ -2041,9 +2041,9 @@ contains
 !
       implicit none
 
-      integer n
+      integer, intent(in) :: n
 
-      integer a(n)
+      integer, intent(inout) :: a(n)
       integer i
 
       do i = 1, n
@@ -2553,11 +2553,11 @@ contains
 !
       implicit none
 
-      integer n
+      integer, intent(in) :: n
 
       integer i
-      integer perm(n)
-      integer perm_inv(n)
+      integer, intent(in) :: perm(n)
+      integer, intent(inout) :: perm_inv(n)
 
       do i = 1, n
          perm_inv(perm(i)) = i
@@ -4438,9 +4438,9 @@ contains
 !
       implicit none
 
-      integer hole_num
-      integer node_num
-      integer triangle_num
+      integer, intent(inout) :: hole_num
+      integer, intent(inout) :: node_num
+      integer, intent(inout) :: triangle_num
 
       node_num = 25
       triangle_num = 32
@@ -5222,9 +5222,9 @@ contains
 !
       implicit none
 
-      integer hole_num
-      integer node_num
-      integer triangle_num
+      integer, intent(inout) :: hole_num
+      integer, intent(inout) :: node_num
+      integer, intent(inout) :: triangle_num
 
       node_num = 25
       triangle_num = 8

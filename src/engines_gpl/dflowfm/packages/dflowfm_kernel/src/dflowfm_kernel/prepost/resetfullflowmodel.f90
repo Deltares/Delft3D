@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -82,7 +82,7 @@ contains
       use m_sferic, only: default_sferic
       use m_1d2d_fixedweirs, only: default_1d2d_fixedweirs
       use m_laterals, only: default_lateral
-      use m_f1dimp
+      use m_f1dimp, only: default_fm1dimp
       use fm_statistical_output
       use fm_deprecated_keywords, only: default_fm_deprecated_keywords
       use m_sediment, only: deallocgrains, default_sediment
@@ -103,7 +103,7 @@ contains
 
       call default_physcoef()
       call calculate_derived_physcoef()
-      
+
       call default_sferic()
 
       call default_grw()

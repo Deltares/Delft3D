@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,6 @@ contains
 
    subroutine ININUMBERS()
       use precision, only: dp
-      use M_MISSING
 
       real(kind=dp) :: pi, dg2rd, rd2dg, ra
       RA = 6370000d0

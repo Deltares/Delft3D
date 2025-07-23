@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -64,7 +64,7 @@ contains
 !> Allocates the internal data for one crs path.
 !! Based on polyline length and flow links upper limit.
    subroutine increaseCrossSectionPath(path, maxnp, maxlnx)
-      use m_alloc
+      use m_alloc, only: realloc
       type(tcrspath), intent(inout) :: path !< The path structure of a cross section.
       integer, intent(in) :: maxnp !< Max number of polyline points. If 0, nothing is done.
       integer, intent(in) :: maxlnx !< Max number of crossed flow links. If 0, nothing is done.
@@ -313,7 +313,7 @@ contains
 !! one or more polylines separated by dmiss values.
    subroutine pol_to_flowlinks(xpl, ypl, zpl, npl, ns, paths)
       use precision, only: dp
-      use m_missing
+      use m_missing, only: dmiss
 
       real(kind=dp), intent(in) :: xpl(:), ypl(:), zpl(:) !< Long array with one or more polylines, separated by dmiss
       integer, intent(in) :: npl !< Total number of polyline points

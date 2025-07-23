@@ -193,7 +193,6 @@ endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 set(all_configuration "ALL")
 set(dflowfm_configuration "DFLOWFM")
 set(dflowfm_configuration_interacter "DFLOWFM_INTERACTER")
-set(tests_configuration "TESTS")
 set(dimr_configuration "DIMR")
 set(dwaq_configuration "DWAQ")
 set(dwaves_configuration "DWAVES")
@@ -223,8 +222,7 @@ set(fm-suite_configuration "FM-SUITE")
 set(d3d4-suite_configuration "D3D4-SUITE")
 
 # Determine the configuration to make
-if(NOT (${configuration_type} STREQUAL ${tests_configuration}
-     OR ${configuration_type} STREQUAL ${dflowfm_configuration}
+if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
      OR ${configuration_type} STREQUAL ${dflowfm_configuration_interacter}
      OR ${configuration_type} STREQUAL ${dimr_configuration}
      OR ${configuration_type} STREQUAL ${dwaq_configuration}
@@ -252,12 +250,6 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
 endif()
 
 ### Component configurations
-
-# Tests configuration
-if(${configuration_type} STREQUAL ${tests_configuration})
-    message(STATUS "Generating solution for Tests ...")
-    include(configurations/components/tests_configuration.cmake)
-endif()
 
 # D-Flow FM configuration
 if(${configuration_type} STREQUAL ${dflowfm_configuration})

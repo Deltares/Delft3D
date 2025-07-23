@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -48,7 +48,7 @@ contains
       use m_fixedweirs, only: nfxw, lnfxw
       use m_transport, only: dxiAu, jalimitdtdiff
       use timers, only: timon, timstrt, timstop
-      use m_get_Lbot_Ltop
+      use m_get_Lbot_Ltop, only: getlbotltop
 
       implicit none
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,33 +27,28 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_eqdint
-
    implicit none
-
    private
-
    public :: eqdint
 
 contains
 
-   subroutine EQDINT(YH2, imax, TJ, Y2)
+   subroutine eqdint(yh2, imax, tj, y2)
       use precision, only: dp
 
-      integer :: imax
-      real(kind=dp) :: YH2(imax)
-      real(kind=dp) :: TJ, Y2
-      integer :: j1, j2
-      real(kind=dp) :: T1, T2
-      J1 = int(TJ) + 1
-      J2 = J1 + 1
-      T1 = TJ - int(TJ)
-      T2 = 1 - T1
-      Y2 = T2 * YH2(J1) + T1 * YH2(J2)
-      return
-   end subroutine EQDINT
+      integer, intent(in) :: imax
+      real(kind=dp), intent(in) :: yh2(imax)
+      real(kind=dp), intent(in) :: tj
+      real(kind=dp), intent(out) :: y2
 
+      integer :: j1, j2
+      real(kind=dp) :: t1, t2
+
+      j1 = int(tj) + 1
+      j2 = j1 + 1
+      t1 = tj - int(tj)
+      t2 = 1 - t1
+      y2 = t2 * yh2(j1) + t1 * yh2(j2)
+   end subroutine eqdint
 end module m_eqdint

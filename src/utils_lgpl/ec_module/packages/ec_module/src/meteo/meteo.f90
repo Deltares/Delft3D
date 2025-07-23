@@ -1,7 +1,7 @@
 module meteo
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -31,11 +31,11 @@ module meteo
 !
 ! Read time series in five possible formats:
 ! uniform                     : Delft3D-FLOW format: time, uniform windspeed, direction and pressure
-! meteo_on_computational_grid : Space varying wind and pressure on the computational grid: time and fields of patm, windu, windv
+! meteo_on_computational_grid : Space varying wind and pressure on the computational grid: time and fields of air_pressure, windu, windv
 !                               on the computational (m,n) grid
 ! field_on_computational_grid : same as meteo_on_computational_grid but more general
 ! meteo_on_equidistant_grid   : time and fields on on equidistant grid
-! meteo_on_spiderweb_grid     : time and fields of patm, windspeed, wind_from_direction op spiderweb grid
+! meteo_on_spiderweb_grid     : time and fields of air_pressure, windspeed, wind_from_direction op spiderweb grid
 ! meteo_on_curvilinear_grid   : time and fields on own curvilinear grid
 !
 ! Main calls from Delft3D-FLOW:
@@ -1312,7 +1312,7 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                            !
                            spw%spwarr(2, n, m) = z(1) * sin(z(2))
                            !
-                           ! patm
+                           ! air_pressure
                            !
                            spw%spwarr(3, n, m) = z(3)
                         endif

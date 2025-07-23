@@ -4,7 +4,7 @@ subroutine pppsol(mmax      ,nmax      ,kmax      ,lstsci    ,ltur      , &
                 & r1        ,rtur1     ,dps       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -83,7 +83,6 @@ subroutine pppsol(mmax      ,nmax      ,kmax      ,lstsci    ,ltur      , &
     integer           :: lunsol ! Unit for print file ZSOL 
     integer           :: m      ! Help var. counter for array index in the X-/M-direction 
     integer           :: n      ! Help var. counter for array index in the Y-/N-direction 
-    integer, external :: newlun
     character(300)    :: filnam ! Name of file to write to 
 !
 !! executable statements -------------------------------------------------------

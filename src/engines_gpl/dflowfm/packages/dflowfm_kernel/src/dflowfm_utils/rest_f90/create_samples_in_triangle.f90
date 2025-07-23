@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,13 +43,13 @@ contains
 
    subroutine create_samples_in_triangle()
       use precision, only: dp
-      use m_polygon
-      use m_samples
+      use m_polygon, only: npl, xpl, ypl
+      use m_samples, only: increasesam, ns, xs, ys, zs
+      use m_missing, only: dmiss, dxymis
+      use m_delsam, only: delsam
       use network_data, only: cornercos
-      use m_missing
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: dbdistance, dcosphi
-      use m_delsam
 
       real(kind=dp), dimension(:, :), allocatable :: xx
       real(kind=dp), dimension(:, :), allocatable :: yy

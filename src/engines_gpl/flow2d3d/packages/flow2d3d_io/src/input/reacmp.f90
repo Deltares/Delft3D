@@ -2,7 +2,7 @@ subroutine reacmp(lundia    ,error     ,filana    ,statns    ,nto       , &
                 & ampl      ,phas      ,jacor     ,kc        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -77,7 +77,6 @@ subroutine reacmp(lundia    ,error     ,filana    ,statns    ,nto       , &
     integer                        :: lstat
     integer                        :: mcmp   ! Logical unit number 
     integer                        :: ncomp  ! Number of components 
-    integer                        :: newlun
     integer                        :: nrcmp  ! Index of component 
     integer        , external      :: numcmp
     logical                        :: ex     ! Flag of existing file 

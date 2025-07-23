@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,7 @@ contains
 
    subroutine einstein_garcia(da, rs, dj1, dj2)
       use precision, only: dp
-      use m_einstein_garcia
+      use m_einstein_garcia, only: d, c1, c2
 
       real(kind=dp) :: da, rs, dj1, dj2
 

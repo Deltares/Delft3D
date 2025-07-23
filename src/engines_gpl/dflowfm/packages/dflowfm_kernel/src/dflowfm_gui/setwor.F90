@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,7 +37,7 @@ module m_setwor
 contains
 
    subroutine SETWOR(XW1, YW1, XW2, YW2)
-      use unstruc_opengl
+      use unstruc_opengl, only: inopenglrendering
       use precision, only: dp
 #ifdef HAVE_OPENGL
       use IFOPNGL, only: GL_PROJECTION, GL_MODELVIEW, fglMatrixMode, fglLoadIdentity, fglOrtho

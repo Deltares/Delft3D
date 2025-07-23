@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_onsameline
 contains
 
    subroutine ONSAMELINE(IPT, MP, NP, JA)
-      use m_grid_block
+      use m_grid_block, only: itype, mb, nb
 
       integer :: mp, np, ja, ipt
       integer :: md, nd

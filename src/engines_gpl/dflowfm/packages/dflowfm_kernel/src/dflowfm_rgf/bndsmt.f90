@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,9 +44,9 @@ contains
 
    subroutine BNDSMT(XR, YR, XI2, YI2, XJ2, YJ2, ATP, M1, N1, M2, N2)
       use precision, only: dp
-      use m_grid
-      use m_gridsettings
-      use m_get_ij
+      use m_grid, only: mmax, nmax, mnmax, nc, mc, ijc, xc, yc
+      use m_gridsettings, only: bfac
+      use m_get_ij, only: get_ij
 
       real(kind=dp) :: bfe
       integer :: i
@@ -120,10 +120,10 @@ contains
                ILR = IR - 1
                IL = IR
                NUM = IL - IFF + 1
-               call GETIJ(XC, XH, MMAX, NMAX, MNMAX, IFF, IL, J, J)
-               call GETIJ(XJ2, XH2, MMAX, NMAX, MNMAX, IFF, IL, J, J)
-               call GETIJ(YC, YH, MMAX, NMAX, MNMAX, IFF, IL, J, J)
-               call GETIJ(YJ2, YH2, MMAX, NMAX, MNMAX, IFF, IL, J, J)
+               call get_ij(XC, XH, MMAX, NMAX, MNMAX, IFF, IL, J, J)
+               call get_ij(XJ2, XH2, MMAX, NMAX, MNMAX, IFF, IL, J, J)
+               call get_ij(YC, YH, MMAX, NMAX, MNMAX, IFF, IL, J, J)
+               call get_ij(YJ2, YH2, MMAX, NMAX, MNMAX, IFF, IL, J, J)
 
                do IRR = IFR, ILR
                   if (IRR >= M1 .and. IRR <= M2 .and. &
@@ -208,10 +208,10 @@ contains
                JLR = JR - 1
                JL = JR
                NUM = JL - JF + 1
-               call GETIJ(XC, XH, MMAX, NMAX, MNMAX, I, I, JF, JL)
-               call GETIJ(XI2, XH2, MMAX, NMAX, MNMAX, I, I, JF, JL)
-               call GETIJ(YC, YH, MMAX, NMAX, MNMAX, I, I, JF, JL)
-               call GETIJ(YI2, YH2, MMAX, NMAX, MNMAX, I, I, JF, JL)
+               call get_ij(XC, XH, MMAX, NMAX, MNMAX, I, I, JF, JL)
+               call get_ij(XI2, XH2, MMAX, NMAX, MNMAX, I, I, JF, JL)
+               call get_ij(YC, YH, MMAX, NMAX, MNMAX, I, I, JF, JL)
+               call get_ij(YI2, YH2, MMAX, NMAX, MNMAX, I, I, JF, JL)
 
                do JRR = JFR, JLR
                   if (JRR >= N1 .and. JRR <= N2 .and. &

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,8 @@ contains
 
    subroutine togeneral(ng, hulp, ngen, widths)
       use precision, only: dp
-      use m_strucs
-      use m_alloc
+      use m_strucs, only: generalstruc
+      use m_alloc, only: realloc
 
       integer, intent(in) :: ng !< Index of this general structure in the generalstruc(:) array
       real(kind=dp), intent(in) :: hulp(26) !< genstru params read from file

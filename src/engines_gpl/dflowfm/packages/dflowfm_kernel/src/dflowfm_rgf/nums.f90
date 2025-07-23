@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
       use precision, only: dp
 !     GEEF AANTAL SPLINES MC EN MAXIMUM AANTAL PUNTEN OP SPLINE NC
 !      USE DIMENS
-      use m_numpold
+      use m_numpold, only: numpold
 
       integer :: mc, nc, mmax, nmax
       real(kind=dp) :: X(MMAX, NMAX)

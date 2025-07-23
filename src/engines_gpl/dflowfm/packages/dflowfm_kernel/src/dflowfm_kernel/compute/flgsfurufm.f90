@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,9 +49,9 @@ contains
       ! use cpluv
 
       use m_flowgeom, only: dx
-      use m_flow
-      use m_flowtimes
-      use m_iterfurufm
+      use m_flow, only: au, fu, ru, ag, q1, u1
+      use m_flowtimes, only: dts
+      use m_iterfurufm, only: iterfurufm
 
       implicit none
 !

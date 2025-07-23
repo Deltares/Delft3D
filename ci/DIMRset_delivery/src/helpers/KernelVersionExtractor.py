@@ -2,7 +2,7 @@ import re
 from typing import Any, Dict
 
 from lib.TeamCity import TeamCity
-from settings.teamcity_settings import TEAMCITY_IDS, KERNELS
+from settings.teamcity_settings import KERNELS, TEAMCITY_IDS
 
 
 class KernelVersionExtractor(object):
@@ -24,16 +24,17 @@ class KernelVersionExtractor(object):
         self.__kernel_versions: Dict[str, str] = None
         self.__dimr_version = None
 
-    def get_latest_kernel_versions(self) -> Dict[str, str]:
+    def get_latest_kernel_versions(self, build_id_chain: str) -> Dict[str, str]:
         """
         Gets the kernel versions from the latest Dimr Collector Release build.
 
         Returns:
             Dict[str, str]: A dictionary of "kernel name" -> "version"
         """
-        latest_dimr_collector_build_info = self.__teamcity.get_build_info_for_latest_build_for_build_type_id(
-            build_type_id=TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID.value)
-        self.__kernel_versions = self.__extract_kernel_versions(build_info=latest_dimr_collector_build_info)
+        publish_build_info = self.__teamcity.get_build_info_for_build_id(build_id_chain)
+        self.__kernel_versions = self.__extract_kernel_versions(
+            build_info=publish_build_info
+        )
         return self.__kernel_versions
 
     def assert_all_versions_have_been_extracted(self) -> None:
@@ -52,13 +53,21 @@ class KernelVersionExtractor(object):
         error += ', '.join(missing_kernel_versions)
         raise AssertionError(error)
 
-    def get_branch_name(self) -> str:
-        """ Returns the branch name from the latest release collector build. """
-        latest_dimr_collector_build_info = self.__teamcity.get_build_info_for_latest_build_for_build_type_id(
-            build_type_id=TEAMCITY_IDS.DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID.value)
-        branch_name_property = next((prop for prop in latest_dimr_collector_build_info['resultingProperties']['property'] 
-                        if prop['name'] == 'teamcity.build.branch'), None)
-        self.__branch_name = branch_name_property['value']
+    def get_branch_name(self, build_id_chain: str) -> str:
+        """Returns the branch name from the latest release collector build."""
+        latest_publish_build_info = self.__teamcity.get_build_info_for_build_id(
+            build_id_chain
+        )
+
+        branch_name_property = next(
+            (
+                prop
+                for prop in latest_publish_build_info["resultingProperties"]["property"]
+                if prop["name"] == "teamcity.build.branch"
+            ),
+            None,
+        )
+        self.__branch_name = branch_name_property["value"]
         return self.__branch_name
 
     def get_dimr_version(self) -> str:

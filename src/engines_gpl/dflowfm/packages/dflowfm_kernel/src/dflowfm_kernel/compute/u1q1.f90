@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,14 +42,14 @@ contains
 
    subroutine u1q1()
       use precision, only: dp
-      use m_flow ! substitute u1 and q1
-      use m_flowgeom
-      use m_flowtimes
-      use m_partitioninfo
-      use m_timer
-      use unstruc_channel_flow
-      use m_1d_structures
+      use m_flow, only: squ, sqi, qinbnd, qoutbnd, kmx, hu, u1, ru, fu, s1, q1, au, u0, qa, jaqaisq1, q1waq, iadvec, voldhu, vol1, qin, itstep, sqwave, ag, lbot, ltop, kmxl, ngatesg, l1gatesg, l2gatesg, kgate, ncgensg, l1cgensg, l2cgensg, kcgen, lnkx, layertype, laytp_sigma, ln0, qwwaq, squ2d, kbot, ktop, a1, kmxn, ww1, qw, zws0, ktop0, zws, sq
+      use m_flowgeom, only: lnx, ln, teta, ndxi, ba, ndx, lnxi
+      use m_flowtimes, only: ti_waq, dts, ja_timestep_auto
+      use m_partitioninfo, only: jampi, update_ghosts, itype_u, idomain, my_rank, itype_u3d
+      use m_timer, only: jatimer, starttimer, iupdu, stoptimer
+      use unstruc_channel_flow, only: network, set_u1q1_structure ! substitute u1 and q1
       use m_wind, only: jaqin
+      use m_1d_structures, only: t_structure
 
       implicit none
 

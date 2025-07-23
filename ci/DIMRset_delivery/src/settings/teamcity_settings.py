@@ -6,7 +6,7 @@ from helpers.ToolData import ToolData
 # All kernels for which the versions are set in the configuration parameters of 2.Dimr_collector_release
 KERNELS = [
     KernelData(name_for_extracting_revision="DIMRset_ver", name_for_email="DIMRset"),
-    KernelData(name_for_extracting_revision="OSS_ver", name_for_email="OSS"),
+    KernelData(name_for_extracting_revision="build.vcs.number", name_for_email="OSS"),
 ]
 
 # All tools for which a version should be extracted from the Version.txt artifact for creating the SVN log message
@@ -32,18 +32,20 @@ TESTCASE_GROUPS = [
 
 
 class TEAMCITY_IDS(Enum):
-    DIMR_COLLECTOR_RELEASE_BUILD_TYPE_ID = "Dimr_DimrCollector"
+    DIMR_PUBLISH = "Delft3D_DIMRbak"
+    DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID = "Delft3D_LinuxCollect"
+    DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID = "Delft3D_WindowsCollect"
     DIMR_TO_NGHS_BUILD_TYPE_ID = "DIMR_To_NGHS"
-    DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID = "Dimr_DimrTestbenchRelease_StatusOfDailyTestbench"
     DIMR_TESTBENCH_RELEASE_TESTS_LINUX = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsLinux"
     DIMR_TESTBENCH_RELEASE_TESTS_WINDOWS = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsWindows"
+    STATUS_OF_DAILY = "Dimr_DimrTestbenchRelease_StatusOfDailyTestbench"
 
 
 # Path to Windows version artifact on TeamCity
-PATH_TO_WINDOWS_VERSION_ARTIFACT = "version/dimr_version_release_x64.txt"
+PATH_TO_WINDOWS_VERSION_ARTIFACT = "version/dimrset_version_x64.txt"
 
 # Path to Linux version artifact on TeamCity
-PATH_TO_LINUX_VERSION_ARTIFACT = "version/dimr_version_release_lnx64.txt"
+PATH_TO_LINUX_VERSION_ARTIFACT = "version/dimrset_version_lnx64.txt"
 
 # Path to release test results artifact on TeamCity
 PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT = "teamcity_retrieve_release_engine_test_status.txt"

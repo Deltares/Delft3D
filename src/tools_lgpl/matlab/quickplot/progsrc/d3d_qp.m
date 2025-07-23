@@ -5149,7 +5149,10 @@ switch cmd
             'enforcedtimezone', 'netcdf_use_fillvalue','export_max_ntimes', ...
             'update_showversion', 'defaultrenderer','defaultsmoothing', ...
             'ghostscript', 'ghostscript_browse'}
-        qp_prefs(UD,mfig,cmd,cmdargs);
+        args = qp_prefs(UD,mfig,cmd,cmdargs);
+        if logfile
+            writelog(logfile,logtype,args{:});
+        end
         
     case {'deltaresweb','deltaresweboss'}
         ops={};

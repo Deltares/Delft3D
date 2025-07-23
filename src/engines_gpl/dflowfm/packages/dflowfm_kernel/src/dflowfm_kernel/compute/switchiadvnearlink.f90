@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,8 +41,8 @@ module m_switchiadvnearlink
 contains
 
    subroutine switchiadvnearlink(L)
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: ln, iadv_original_lateral_overflow, nd, iadv, iadv_general_structure, kcu
+      use m_flow, only: iadvec, u0
       implicit none
       integer :: L, k1, k2, kk, LL, iadv1, iadv2
 

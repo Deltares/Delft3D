@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,10 +35,8 @@ contains
 !> sample a spline
    subroutine sample_spline(num, xs, ys, numref, Nr, xr, yr, ierror)
       use precision, only: dp
-      use m_splines
-      use m_alloc
-      use m_splint
-      use m_spline
+      use m_splint, only: splint
+      use m_spline, only: spline
 
       integer, intent(in) :: num !< number of spline control points
       real(kind=dp), dimension(num), intent(in) :: xs, ys !< spline control points coordinates

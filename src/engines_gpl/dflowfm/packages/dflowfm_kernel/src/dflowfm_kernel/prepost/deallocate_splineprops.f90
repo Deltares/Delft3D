@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,7 +34,7 @@ module m_deallocate_spline_props
 contains
 !> deallocate splineprops array
    subroutine deallocate_splineprops()
-      use m_spline2curvi
+      use m_spline2curvi, only: splineprops
 
       integer :: ispline
 

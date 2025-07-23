@@ -46,11 +46,11 @@ class ExcelExporter:
                 model_name,
                 stats.row_count,
                 round(stats.water_level.avg_max, ndigits=ndigits),
-                round(stats.water_level.avg_mean, ndigits=ndigits),
+                round(stats.water_level.avg_bias, ndigits=ndigits),
                 round(stats.water_level.avg_rms, ndigits=ndigits),
                 round(stats.water_level.max, ndigits=ndigits),
                 round(stats.flow_velocity.avg_max, ndigits=ndigits),
-                round(stats.flow_velocity.avg_mean, ndigits=ndigits),
+                round(stats.flow_velocity.avg_bias, ndigits=ndigits),
                 round(stats.flow_velocity.avg_rms, ndigits=ndigits),
                 round(stats.flow_velocity.max, ndigits=ndigits),
             ]
@@ -62,7 +62,7 @@ class ExcelExporter:
         if stats.water_level.avg_max > Tolerances.max(stats.output_type, Variable.WATER_LEVEL):
             row[2].fill = red_fill
             row[2].value = f"❌ {row[2].value}"
-        if stats.water_level.avg_mean > Tolerances.mean(stats.output_type, Variable.WATER_LEVEL):
+        if stats.water_level.avg_bias > Tolerances.bias(stats.output_type, Variable.WATER_LEVEL):
             row[3].fill = red_fill
             row[3].value = f"❌ {row[3].value}"
         if stats.water_level.avg_rms > Tolerances.rms(stats.output_type, Variable.WATER_LEVEL):
@@ -71,7 +71,7 @@ class ExcelExporter:
         if stats.flow_velocity.avg_max > Tolerances.max(stats.output_type, Variable.FLOW_VELOCITY):
             row[6].fill = red_fill
             row[6].value = f"❌ {row[6].value}"
-        if stats.flow_velocity.avg_mean > Tolerances.mean(stats.output_type, Variable.FLOW_VELOCITY):
+        if stats.flow_velocity.avg_bias > Tolerances.bias(stats.output_type, Variable.FLOW_VELOCITY):
             row[7].fill = red_fill
             row[7].value = f"❌ {row[7].value}"
         if stats.flow_velocity.avg_rms > Tolerances.rms(stats.output_type, Variable.FLOW_VELOCITY):

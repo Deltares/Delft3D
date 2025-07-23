@@ -1,7 +1,7 @@
 subroutine det_num_dis(no_dis, no_amb_max, gdp)
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -66,7 +66,6 @@ subroutine det_num_dis(no_dis, no_amb_max, gdp)
     integer                  :: istat
     integer                  :: luntmp
     integer                  :: no_amb
-    integer, external        :: newlun
     type(tree_data), pointer :: cosumoblock_ptr
     type(tree_data), pointer :: data_ptr
     character(300)           :: errmsg

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_clearflowmodelinputs
 contains
 
    subroutine clearflowmodelinputs()
-      use m_flow
+      use m_flow, only: nbndz, nbndu, nbnds, nbndtm, nbndt, nbnduxy
 
       nbndz = 0
       nbndu = 0

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,11 +38,11 @@ contains
       real(kind=dp) :: b
       integer :: i
       integer :: ii
-      integer :: indx
+      integer, intent(in) :: indx
       integer :: j
       integer :: ll
-      integer :: n
-      integer :: np
+      integer, intent(in) :: n
+      integer, intent(in) :: np
       real(kind=dp) :: sum
       dimension A(NP, NP), INDX(N), B(N)
       II = 0

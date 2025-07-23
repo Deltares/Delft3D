@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,6 +37,7 @@ module m_observations
    use fm_external_forcings_data
    use MessageHandling, only: IdLen
    use precision, only: dp
+   use m_waveconst
 
    implicit none
 
@@ -67,7 +68,7 @@ contains
 
 !> (re)allocate valobs work array
    subroutine alloc_valobs()
-      use m_partitioninfo
+
       implicit none
 
       if (allocated(valobs)) then
@@ -93,7 +94,7 @@ contains
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
-      use m_wind, only: japatm, jawind
+      use m_wind, only: air_pressure_available, jawind
       implicit none
 
       integer :: i, i0, numfracs, nlyrs
@@ -231,10 +232,10 @@ contains
          i = i + 1; IVAL_WX = i
          i = i + 1; IVAL_WY = i
       end if
-      if (japatm > 0) then
+      if (air_pressure_available) then
          i = i + 1; IVAL_PATM = i
       end if
-      if (jawave > 0) then
+      if (jawave > NO_WAVES) then
          i = i + 1; IVAL_WAVEH = i
          i = i + 1; IVAL_WAVED = i
          i = i + 1; IVAL_WAVET = i
@@ -291,7 +292,7 @@ contains
          i = i + numfracs - 1; IVAL_SSCXN = i ! on purpose lsedtot, see alloc in morphology_data_module
          i = i + 1; IVAL_SSCY1 = i
          i = i + numfracs - 1; IVAL_SSCYN = i
-         if (jawave > 0) then
+         if (jawave > NO_WAVES) then
             i = i + 1; IVAL_SBWX1 = i
             i = i + numfracs - 1; IVAL_SBWXN = i
             i = i + 1; IVAL_SBWY1 = i
@@ -336,7 +337,7 @@ contains
          i = i + 1; IVAL_UCXQ = i
          i = i + 1; IVAL_UCYQ = i
       end if
-      if (jawave > 0) then
+      if (jawave > NO_WAVES) then
          i = i + 1; IVAL_UCXST = i
          i = i + 1; IVAL_UCYST = i
       end if
@@ -528,7 +529,7 @@ contains
 
 !> pointer of variable in valobs work array
    integer function ivalpoint(ivar, kmx, nlyrs)
-      use messageHandling
+      use messageHandling, only: mess, level_error
 
       implicit none
 
@@ -614,7 +615,7 @@ contains
 !> Adds an observation point to the existing points.
 !! New observation point may be a moving one or not.
    subroutine addObservation(x, y, name, isMoving, loctype, iOP)
-      use m_alloc
+      use m_alloc, only: realloc
       use m_GlobalParameters, only: INDTP_ALL
       real(kind=dp), intent(in) :: x !< x-coordinate
       real(kind=dp), intent(in) :: y !< y-coordinate
@@ -707,12 +708,12 @@ contains
 
 !> Adds observation points that are read from *.ini file to the normal obs adm
    subroutine addObservation_from_ini(network, filename)
-      use m_network
+      use m_network, only: t_network, mess, level_error
+      use odugrid, only: odu_get_xy_coordinates
+      use m_save_ugrid_state, only: meshgeom1d
+      use dfm_error, only: dfm_noerr
       use m_sferic, only: jsferic
-      use m_ObservationPoints
-      use odugrid
-      use m_save_ugrid_state
-      use dfm_error
+      use m_ObservationPoints, only: t_ObservationPoint
       implicit none
       type(t_network), intent(inout) :: network !< network
       character(len=*), intent(in) :: filename !< filename of the obs file

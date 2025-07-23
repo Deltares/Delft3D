@@ -1,15 +1,15 @@
 #name,#config,all-testbench,none-testbench,fm-suite,d3d4-suite,fm-testbench,rr-testbench,waq-testbench,part-testbench,wave-testbench,swan-testbench,d3d4-testbench,qp-testbench,tc-testbench,#comment
 fm 1d parallel,dimr/dimr_dflowfm_1D_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 1d,dimr/dimr_dflowfm_1d_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm 1d rivers,dimr/dimr_dflowfm_1d_rivers_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 1d parallel,dimr/dimr_dflowfm_1D_win64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 1d,dimr/dimr_dflowfm_1d_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm 1d rivers,dimr/dimr_dflowfm_1d_rivers_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 2d3d performance,dimr/dimr_dflowfm_2D3D_performance_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 3d,dimr/dimr_dflowfm_3d_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm 3d,dimr/dimr_dflowfm_3d_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm cosumo,dimr/dimr_dflowfm_cosumo_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm cosumo,dimr/dimr_dflowfm_cosumo_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm drr drtc,dimr/dimr_dflowfm_drr_drtc_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Removed from Git until there are valid tests.
-fm drr drtc,dimr/dimr_dflowfm_drr_drtc_win64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Removed from Git until there are valid tests.
 fm drr,dimr/dimr_dflowfm_drr_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm drr,dimr/dimr_dflowfm_drr_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm drtc 1d,dimr/dimr_dflowfm_drtc_1d-network_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
@@ -27,6 +27,10 @@ fm drtc tutorials,dimr/dimr_dflowfm_drtc_tutorials_win64.xml,TRUE,FALSE,TRUE,FAL
 fm dwave mormerge,dimr/dimr_dflowfm_dwave_mormerge_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Is not used/maintained and fails.
 fm dwave mormerge,dimr/dimr_dflowfm_dwave_mormerge_win64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Is not used/maintained and fails.
 fm dwaves,dimr/dimr_dflowfm_dwaves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+fm dwaves parallel,dimr/dimr_dflowfm_dwaves_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+fm dwaves parallel,dimr/dimr_dflowfm_dwaves_win64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+fm dwaves parallel c01,dimr/dimr_dflowfm_dwaves_lnx64_parallel_c01.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
+fm dwaves parallel c01,dimr/dimr_dflowfm_dwaves_win64_parallel_c01.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves tutorial,dimr/dimr_dflowfm_dwaves_tutorial_course_win64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm dwaves,dimr/dimr_dflowfm_dwaves_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 fm full-scale,dimr/dimr_dflowfm_full_scale_models_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
@@ -88,7 +92,8 @@ dwaq validation,dwaq_dpart/lnx64/dwaq_validation.xml,TRUE,FALSE,FALSE,FALSE,FALS
 dwaq validation,dwaq_dpart/win64/dwaq_validation.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dwaq,dwaq_dpart/lnx64/dwaq.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dwaq,dwaq_dpart/win64/dwaq.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
-dwaq_with_dll,dwaq_dpart/win64/dwaq_with_dll.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+dwaq openpb,dwaq_dpart/lnx64/dwaq_openpb.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
+dwaq openpb,dwaq_dpart/win64/dwaq_openpb.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
 d3d4 flow,delft3d4/delft3d_lnx64_hp_flow.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
 d3d4 flow,delft3d4/delft3d_win64_hp_flow.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
 d3d4 flow flow,delft3d4/delft3d_lnx64_hp_flow_flow.xml,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,
@@ -115,9 +120,10 @@ RED IFX d3d4 flow wave,delft3d4/delft3d_lnx64_hp_flow_wave_red_ifx.xml,FALSE,FAL
 RED IFX d3d4 flow wave,delft3d4/delft3d_win64_hp_flow_wave_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
 RED IFX d3d4 flow parallel,delft3d4/delft3d_lnx64_hp_flow_parallel_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
 RED IFX d3d4 flow parallel,delft3d4/delft3d_win64_hp_flow_parallel_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
-RED IFX d3d4 flow nearfield,delft3d4/delft3d_lnx64_hp_flow_nearfield_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
-RED IFX d3d4 flow nearfield,delft3d4/delft3d_win64_hp_flow_nearfield_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow nearfield,delft3d4/delft3d_lnx64_hp_flow_parallel_nearfield_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
+RED IFX d3d4 flow nearfield,delft3d4/delft3d_win64_hp_flow_parallel_nearfield_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
 RED IFX d3d4 flow parallel wave,delft3d4/delft3d_lnx64_hp_flow_parallel_wave_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
 RED IFX d3d4 flow parallel wave,delft3d4/delft3d_win64_hp_flow_parallel_wave_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
 RED IFX d3d4 flow rtc,delft3d4/delft3d_lnx64_hp_flow_rtc.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Disabled because it does not work on IFX.
 RED IFX d3d4 flow rtc,delft3d4/delft3d_win64_hp_flow_rtc.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Disabled because it does not work on IFX.
+RED IFX d3d4 flow nearfield,delft3d4/delft3d4_hp_cases_flow_nearfield_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.

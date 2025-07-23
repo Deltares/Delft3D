@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,9 +34,9 @@ module m_read_large_arc_info_block
 contains
 !>    read Arcinfo data and average it into a smaller array
    subroutine ReadLargeArcInfoBlock(MINP, Mfile, Nfile, istart, iend, jstart, jend, Marray, Narray, RMIS, istep, jstep, D)
-      use m_halt3
+      use m_halt3, only: halt3
+      use m_readyy, only: readyy
       use m_missing, only: dmiss
-      use m_readyy
       use precision, only: dp
       use m_filez, only: readerror, doclose, eoferror
 

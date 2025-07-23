@@ -3,7 +3,7 @@ subroutine inimet(lundia    ,error     ,versio    ,wave      ,trasol    , &
                 & disctr    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -76,7 +76,6 @@ subroutine inimet(lundia    ,error     ,versio    ,wave      ,trasol    , &
     integer           :: n
     integer           :: nfil
     integer           :: nn
-    integer, external :: newlun
     logical           :: ex     ! Logical flag for file existence 
 !
 !! executable statements -------------------------------------------------------

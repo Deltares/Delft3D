@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 !> This module contains general functions for snapping locations to either flowlink numbers or flownode numbers
 module m_inquire_flowgeom
    use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
-   use network_data, only: LINK_1D, LINK_2D,LINK_1D2D_INTERNAL,LINK_1D2D_LONGITUDINAL,LINK_1D2D_STREETINLET,LINK_1D_MAINBRANCH,LINK_1D2D_ROOF,LINK_ALL
+   use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
 
    implicit none
 
@@ -57,17 +57,15 @@ module m_inquire_flowgeom
       module procedure findnode_by_branchid !< find the flow node number, using (branch id, chainage)
    end interface
 
-   contains
-   
-   
+contains
 
    !> Find flow link number(s) intersected by a given polyline.
    function findlink_by_pli(npl, xpl, ypl, Larr, numlinks, lftopol, sortlinks, linktype) result(ierr)
       use precision, only: dp
       use m_flowgeom, only: xz, yz, ln, lnx, lnx1D
       use stdlib_sorting, only: sort_index
-      use dfm_error
-      use m_crosspoly
+      use dfm_error, only: dfm_noerr
+      use m_crosspoly, only: crosspoly
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       integer, intent(in) :: npl !< Number of polyline points.
@@ -171,8 +169,8 @@ module m_inquire_flowgeom
    !> Find the nearest flow link number for a given location, using (branch index, chainage).
    function findlink_by_branchindex(branchindex, chainage, L) result(ierr)
       use precision, only: dp
-      use unstruc_channel_flow
-      use dfm_error
+      use unstruc_channel_flow, only: network, getlinkindex
+      use dfm_error, only: dfm_noerr
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       integer, intent(in) :: branchindex !< Branch index in network brs set.
@@ -193,12 +191,13 @@ module m_inquire_flowgeom
    !> Find the nearest flow link number for a given location, using (branch id, chainage).
    function findlink_by_branchid(branchid, chainage, L) result(ierr)
       use precision, only: dp
-      use unstruc_channel_flow
-      use m_hash_search
-      use dfm_error
+      use unstruc_channel_flow, only: network
+      use m_hash_search, only: hashsearch
+      use dfm_error, only: dfm_noerr
+      use messagehandling, only: idlen
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
-      character(len=Idlen), intent(in) :: branchid !< Branch Id to be searched in network brs set.
+      character(len=idlen), intent(in) :: branchid !< Branch Id to be searched in network brs set.
       real(kind=dp), intent(in) :: chainage !< Chainage of item on the branch with index branchindex.
       integer, intent(out) :: L !< Found flow link number, -1 when not found.
 
@@ -223,9 +222,10 @@ module m_inquire_flowgeom
       use m_save_ugrid_state, only: hashlist_contactids, contactnetlinks
       use m_hash_search
       use dfm_error
+      use messagehandling, only: idlen
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
-      character(len=Idlen), intent(in) :: contactId !< contactId to be searched in mesh contact set.
+      character(len=idlen), intent(in) :: contactId !< contactId to be searched in mesh contact set.
       integer, intent(out) :: L !< Found flow link number, -1 when not found.
 
       integer :: LL
@@ -243,15 +243,15 @@ module m_inquire_flowgeom
    !> find the flow link number, using node id
    function findlink_by_nodeid(nodeId, L) result(ierr)
       use dfm_error
-      use messagehandling
       use m_hash_search
       use unstruc_channel_flow
       use m_branch
       use precision_basics, only: comparereal
       use m_GlobalParameters, only: flow1d_eps10
+      use messagehandling, only: idlen
 
       integer :: ierr
-      character(len=Idlen), intent(in) :: nodeId !< Id of the connection node
+      character(len=idlen), intent(in) :: nodeId !< Id of the connection node
       integer, intent(out) :: L !< Found link number, -1 when not found.
 
       integer :: nodeindex
@@ -301,13 +301,14 @@ module m_inquire_flowgeom
    function findlink_by_structureid(strucid, L) result(ierr)
       use dfm_error
       use unstruc_channel_flow
+      use messagehandling, only: idlen
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
       character(len=*), intent(in) :: strucid !< Structure id
       integer, intent(out) :: L !< Found flow link number, -1 when not found.
 
       integer :: i
-      character(len=Idlen) :: strucid_tmp
+      character(len=idlen) :: strucid_tmp
 
       L = -1
       ierr = DFM_NOERR
@@ -328,7 +329,6 @@ module m_inquire_flowgeom
    function findnode_by_pol(npol, xpol, ypol, points, numpoints, nodetype) result(ierr)
       use precision, only: dp
       use m_flowgeom, only: xz, yz, ndx2D, ndxi
-      use messagehandling
       use m_polygon, only: xpl, ypl, npl, increasepol
       use dfm_error
 
@@ -392,13 +392,13 @@ module m_inquire_flowgeom
 
    !> Find the flow node number, using node Id.
    function findnode_by_id(nodeId, nodenr) result(ierr)
-      use messagehandling
       use m_hash_search
       use unstruc_channel_flow
       use dfm_error
+      use messagehandling, only: idlen
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
-      character(len=Idlen), intent(in) :: nodeId !< Id of the connection node
+      character(len=idlen), intent(in) :: nodeId !< Id of the connection node
       integer, intent(out) :: nodenr !< Found flow node number, -1 when not found.
 
       integer :: nodeindex
@@ -424,9 +424,10 @@ module m_inquire_flowgeom
       use m_hash_search
       use unstruc_channel_flow
       use dfm_error
+      use messagehandling, only: idlen
 
       integer :: ierr !< Result status, DFM_NOERR in case of success.
-      character(len=Idlen), intent(in) :: branchid !< branch Id
+      character(len=idlen), intent(in) :: branchid !< branch Id
       real(kind=dp), intent(in) :: chainage !< chainage of item on the branch with id branchid
       integer, intent(out) :: nodenr !< Found flow node number, -1 when not found.
 

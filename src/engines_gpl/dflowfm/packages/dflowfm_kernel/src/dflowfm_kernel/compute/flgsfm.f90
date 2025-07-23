@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,10 @@ contains
 
    subroutine flgsfm(n, ng, L, jarea)
       use precision, only: dp
-      use m_flowgeom
+      use m_flowgeom, only: ln, bob, wu, bl
+      use m_strucs, only: generalstruc
+      use m_flow, only: kcgen, l1cgensg, s1, au, fu, ru, kmx, ff3, u1, rusav, fusav, u0, q1, ausav, jastructurelayersactive, zws, hu
+      use m_get_Lbot_Ltop, only: getlbotltop
 !!--description-----------------------------------------------------------------
 ! NONE
 !!--pseudo code and references--------------------------------------------------
@@ -50,10 +53,6 @@ contains
       ! use cpluv
       ! use m_strucs
       ! use ident
-
-      use m_strucs
-      use m_flow
-      use m_get_Lbot_Ltop
 
       implicit none
 !

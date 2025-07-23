@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ module m_scrlpg
 contains
 
    subroutine SCRLPG(HLPTXT, NUMTXT, NUMTOP, NUMCHC, IH)
-      use m_page
+      use m_page, only: page
       implicit none
       integer :: ih
       integer :: numchc

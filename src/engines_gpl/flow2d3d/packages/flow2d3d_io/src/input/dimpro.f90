@@ -9,7 +9,7 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
                 & prgnm     ,lfsdu     ,lfsdus1   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -120,7 +120,6 @@ subroutine dimpro(lunmd     ,lundia    ,error     ,nrrec     ,lsts      , &
 !
     integer                   :: istof  ! Flag to detect if any constituent has been specified 
     integer                   :: lconst ! number of constituents, including sediments
-    integer        , external :: newlun
     integer                   :: uw
     logical                   :: lhulp  ! Help variable to read logical from MD-file
     logical                   :: skipuniqueid !< temporary variable for reading the corresponding keyword

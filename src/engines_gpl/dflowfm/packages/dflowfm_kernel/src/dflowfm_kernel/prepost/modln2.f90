@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,8 +44,8 @@ contains
       use m_get_polstartend, only: get_polstartend
       use precision, only: dp
       use m_missing, only: dmiss
-      use m_okay
-      use m_dispnode
+      use m_okay, only: okay
+      use m_dispnode, only: dispnode
 !     WIJZIG AANTAL PUNTEN OP EEN ENKELE LIJN
 !     DELETE , NPUT = -2
 !     OF INSERT, NPUT = -1

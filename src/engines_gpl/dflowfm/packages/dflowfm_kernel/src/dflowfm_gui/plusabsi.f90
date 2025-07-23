@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,7 +55,7 @@ contains
       real(kind=dp), dimension(numk), intent(in) :: YK
       real(kind=dp), dimension(numk), intent(in) :: ZK
       integer, dimension(3, NUML), intent(inout) :: KN
-      
+
       integer, intent(inout) :: kndefault !< Default uniform value (e.g. kn3typ), will be changed too at call site when user changes it in the dialog.
       character(len=40) OPTION(MAXOP)
 
@@ -72,7 +72,7 @@ contains
       real(kind=dp) :: rd
 
       real(kind=dp), save :: A
-      
+
       A = kndefault
 
       JA = 0
@@ -168,7 +168,7 @@ contains
       end do
       call READYY('CHANGE FIELD VALUES', -1d0)
       KEY = 3
-      
+
    end subroutine PLUSABSI
 
 end module m_plusabsi

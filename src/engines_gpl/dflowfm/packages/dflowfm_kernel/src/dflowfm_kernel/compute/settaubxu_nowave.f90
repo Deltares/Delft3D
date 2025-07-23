@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,10 +42,9 @@ contains
 
    subroutine settaubxu_nowave(use_u1)
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_physcoef
-      use m_get_Lbot_Ltop
+      use m_flowgeom, only: lnx
+      use m_flow, only: taubxu, u1, u0, hu, epshu, frcu, v, ifrcutp, z0urou, vonkar, sag, rhomean
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_get_chezy, only: get_chezy
       use mathconsts, only: ee
       implicit none

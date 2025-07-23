@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,10 +42,10 @@ contains
 
    subroutine GETSPL2(X, XI2, XJ2, MC, NC, MMAX, NMAX)
       use precision, only: dp
-      use M_MISSING
-      use m_spline
-      use m_put_ij
-      use m_get_ij
+      use M_MISSING, only: dxymis
+      use m_spline, only: spline
+      use m_put_ij, only: putij
+      use m_get_ij, only: get_ij
 
       integer :: i
       integer :: iff
@@ -73,7 +73,7 @@ contains
       XJ2 = DXYMIS
 
       do JN = 1, NC
-         call GETIJ(X, XH1, MMAX, NMAX, MNMAX, 1, MC, JN, JN)
+         call get_ij(X, XH1, MMAX, NMAX, MNMAX, 1, MC, JN, JN)
          JALIN = 0
          K = 0
          do I = 1, MC
@@ -102,7 +102,7 @@ contains
       end do
 
       do IN = 1, MC
-         call GETIJ(X, XH1, MMAX, NMAX, MNMAX, IN, IN, 1, NC)
+         call get_ij(X, XH1, MMAX, NMAX, MNMAX, IN, IN, 1, NC)
          JALIN = 0
          K = 0
          do I = 1, NC

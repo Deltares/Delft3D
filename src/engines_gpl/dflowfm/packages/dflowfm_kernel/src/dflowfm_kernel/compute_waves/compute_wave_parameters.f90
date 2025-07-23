@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,6 +34,7 @@ module m_compute_wave_parameters
    use m_wave_uorbrlabda, only: wave_uorbrlabda
    use m_wave_comp_stokes_velocities, only: wave_comp_stokes_velocities
    use m_tauwavehk, only: tauwavehk
+   use m_waveconst
 
    implicit none
 
@@ -46,8 +47,8 @@ contains
    ! compute uorb, rlabda for input in other subroutines
    subroutine compute_wave_parameters()
       use precision, only: dp
-      use m_xbeach_data
-      use m_waves
+      use m_waves, only: hwav, gammax, ustokes, vstokes, twav, hwavcom, twavcom, phiwav, sxwav, sywav, mxwav, mywav, distot, dsurf, dwcap, jonswapgamma0, sbxwav, sbywav, hwavuni
+      use m_waveconst, only: wave_swan_online, no_stokes_drift, wave_nc_offline, wave_surfbeat, wave_uniform
       use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flowwithoutwaves, epshu, ag, hs, waveforcing
       use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
       use mathconsts, only: sqrt2_hp
@@ -60,10 +61,10 @@ contains
 
       ! Fetch models
       !
-      if (jawave < 3 .and. .not. flowWithoutWaves) then ! Every timestep, not only at getfetch updates, as waterdepth changes
+      if (jawave < WAVE_SWAN_ONLINE .and. .not. flowWithoutWaves) then ! Every timestep, not only at getfetch updates, as waterdepth changes
          ! get ustokes, vstokes for 2D, else in update_verticalprofiles getustwav
          hwav = min(hwav, gammax * max(s1 - bl, 0d0))
-         if (kmx == 0 .and. jawavestokes > 0) then
+         if (kmx == 0 .and. jawavestokes > NO_STOKES_DRIFT) then
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
                hh = hu(L); 
@@ -90,8 +91,8 @@ contains
       end if
 
       ! SWAN
-      if ((jawave == 3 .or. jawave >= 6) .and. .not. flowWithoutWaves) then
-         if (jawave == 6 .or. jawave == 7) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. .not. flowWithoutWaves) then
+         if (jawave == WAVE_NC_OFFLINE) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
@@ -101,7 +102,7 @@ contains
          twav = twavcom
          !
          ! Needed here, because we need wave mass fluxes to calculate stokes drift
-         if (jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
             !
             call transform_wave_physics_hp(hwavcom, phiwav, twavcom, hs, &
                                & sxwav, sywav, mxwav, mywav, &
@@ -118,11 +119,11 @@ contains
          end if
       end if
       !
-      if ((jawave == 3 .or. jawave >= 6) .and. flowWithoutWaves) then
+      if ((jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) .and. flowWithoutWaves) then
          ! Exceptional situation: use wave info not in FLOW, only in WAQ
          ! Only compute uorb
          ! Works both for 2D and 3D
-         if (jawave == 6 .or. jawave == 7) then
+         if (jawave == WAVE_NC_OFFLINE) then
             ! HSIG is read from SWAN NetCDF file. Convert to HRMS
             hwav = hwavcom / sqrt2_hp
          else
@@ -134,16 +135,16 @@ contains
       end if
       !
       ! Surfbeat model
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          ! pro memore
       end if
       !
       ! Uniform wave field
-      if (jawave == 5 .and. .not. flowWithoutWaves) then
+      if (jawave == WAVE_UNIFORM .and. .not. flowWithoutWaves) then
          do k = 1, ndx
             hwav(k) = min(hwavuni, gammax * (s1(k) - bl(k)))
          end do
-         if (kmx == 0 .and. jawavestokes > 0) then
+         if (kmx == 0 .and. jawavestokes > NO_STOKES_DRIFT) then
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
                hh = hu(L); 

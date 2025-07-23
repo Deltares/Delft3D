@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,7 @@ contains
 
    subroutine insertsamples(L1, L2)
       use precision, only: dp
-      use m_samples
+      use m_samples, only: ns, increasesam, xs, ys, zs, mxsam, mysam, ipstat, ipstat_notok
       use m_gridsettings, only: mfac
 
       integer :: L1, L2

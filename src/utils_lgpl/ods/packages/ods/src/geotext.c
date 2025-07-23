@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2025.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -200,7 +200,7 @@ TVoid ODSGetDimTekAnno (
    return ;
 
 } /* End of ODSGetDimTekAnno */
-
+
 
 /* @@---------------------------------------------------
     Function:    ODSGetParTekAnno
@@ -286,7 +286,7 @@ TVoid ODSGetParTekAnno (
     return ;
 
 } /* End of ODSGetParTekAnno */
-
+
 /* @@---------------------------------------------------
     Function:    ODSGetTmeTekAnno
     Author:      Arjen Markus
@@ -363,7 +363,7 @@ TVoid ODSGetTmeTekAnno (
     return;
 
 } /* End of ODSGetTmeTekAnno */
-
+
  TVoid ODSGetLocTekAnno (
                      TString fname,
                      TInt4   *ftype,

@@ -57,12 +57,13 @@ object WindowsCollect : BuildType({
                 filename = "ci/DIMRset_delivery/src/validate_signing.py"
                 scriptArguments = """
                     "ci\\DIMRset_delivery\\src\\%dep.${WindowsBuild.id}.product%-binaries.json" 
-                    "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat" 
+                    "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat"
                     "x64"
                 """.trimIndent()
             }
             conditions {
                 matches("dep.${WindowsBuild.id}.product", "(fm-suite|all-testbench)")
+                matches("dep.${WindowsBuild.id}.build_type", "Release")
             }
         }
     }

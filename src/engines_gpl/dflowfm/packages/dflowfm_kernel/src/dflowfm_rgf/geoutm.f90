@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,152 +27,96 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_geoutm
-
    implicit none
-
    private
-
    public :: geoutm
 
 contains
 
-   subroutine GEOUTM(xgeo, ygeo, xutm, yutm, Izone, nzone, IERR)
+   !> conversion of geographical (lat, lon) --> UTM coordinates (x, y, zone)
+   !! geographical coordinates (lat, lon) expressed in decimal degrees.
+   subroutine geoutm(xgeo, ygeo, xutm, yutm, izone, nzone, ierr)
       use precision, only: dp
-      use m_ellips
+      use m_ellipse, only: semi_major_axis, eccentricity
 
-      integer :: nzone
-! ----------------------------------------------------------------------
-!
-!     conversion of geographical (lat, lon) --> UTM coordinates (x, y, zone)
-!     geographical coordinates (lat, lon) expressed in decimal degrees.
-!
-! ----------------------------------------------------------------------
-!     arguments:
-!     xgeo    i    real(kind=dp) ::    longitude (geographical coordinate)
-!     ygeo    i    real(kind=dp) ::    lattitude (geographical coordinate)
-!     a       i    real(kind=dp) ::    semi-major axis of ellipsoid
-!     e       i    real(kind=dp) ::    excentricity of ellipsoid
-!     xutm    o    real(kind=dp) ::    easting (UTM)
-!     yutm    o    real(kind=dp) ::    northing (UTM)
-!     zone    o    integer   zone (UTM)
-!     ierr    o    integer   error code (zero for no error)
-!
-      real(kind=dp) :: xgeo, ygeo, xutm, yutm
-      integer Izone, ierr
-!
-!     local variables:
-!     pi           real(kind=dp) ::    3.14....
-!     fn           real(kind=dp) ::    false northing
-!     fe           real(kind=dp) ::    false easting
-!     fi           real(kind=dp) ::    geographic lattitude (equivalent to lat)
-!     dl           real(kind=dp) ::    longitude within zone
-!     dl2          real(kind=dp) ::    dl*dl
-!     s            real(kind=dp) ::    sin(fi)
-!     ss           real(kind=dp) ::    s*s
-!     sc           real(kind=dp) ::    sin(fi)*cos(fi)
-!     c            real(kind=dp) ::    cos(fi)
-!     cc           real(kind=dp) ::    c*c
-!     cccc         real(kind=dp) ::    c*c*c*c
-!     f1           real(kind=dp) ::    coefficient in function dm(fi)
-!     f2           real(kind=dp) ::    coefficient in function dm(fi)
-!     f3           real(kind=dp) ::    coefficient in function dm(fi)
-!     f4           real(kind=dp) ::    coefficient in function dm(fi)
-!     e2           real(kind=dp) ::    e*e
-!     e4           real(kind=dp) ::    e2*e2
-!     e6           real(kind=dp) ::    e2*e4
-!     n            real(kind=dp) ::    e*e/(1-e*e)
-!     nn           real(kind=dp) ::    n*n
-!     x            real(kind=dp) ::    UTM easting (similar to xutm)
-!     y            real(kind=dp) ::    UTM northing (similar to yutm)
-!     rp           real(kind=dp) ::    function rp(fi)
-!     dm           real(kind=dp) ::    function dm(fi)
-!     gx           real(kind=dp) ::    function gx(fi,dl)
-!     gy           real(kind=dp) ::    function gy(fi,dl)
-!
-      real(kind=dp) :: pi, fn, fe
-      real(kind=dp) :: fi, dl, dl2, s, ss, sc, c, cc, cccc, f1, f2, f3, f4, e2, e4, e6
-      real(kind=dp) :: n, nn, x, y, rp, dm, gx, gy
-!
-! -----------------------------------------------------------------------------
-!     t.j.zitman                                  last update: 10 december 1990
-! -----------------------------------------------------------------------------
-!
-!     initialize constants
-!
-      pi = 4d0 * atan(1d0)
-!
-      e2 = e**2
+      real(kind=dp), intent(in) :: xgeo !< longitude (geographical coordinate)
+      real(kind=dp), intent(in) :: ygeo !< lattitude (geographical coordinate)
+      real(kind=dp), intent(out) :: xutm !< easting (UTM)
+      real(kind=dp), intent(out) :: yutm !< northing (UTM)
+      integer, intent(out) :: izone !< zone (UTM)
+      integer, intent(inout) :: nzone
+      integer, intent(out) :: ierr !< error code (zero for no error)
+
+      real(kind=dp), parameter :: pi = 4.0_dp * atan(1.0_dp)
+      real(kind=dp) :: fn !< false northing
+      real(kind=dp) :: fe !< false easting
+      real(kind=dp) :: fi !< geographic latitude (equivalent to lat)
+      real(kind=dp) :: dl !< longitude within zone
+      real(kind=dp) :: dl2 !< dl*dl
+      real(kind=dp) :: s !< sin(fi)
+      real(kind=dp) :: ss !< s*s
+      real(kind=dp) :: sc !< sin(fi)*cos(fi)
+      real(kind=dp) :: c !< cos(fi)
+      real(kind=dp) :: cc !< c*c
+      real(kind=dp) :: cccc !< c*c*c*c
+      real(kind=dp) :: f1 !< coefficient in function dm(fi)
+      real(kind=dp) :: f2 !< coefficient in function dm(fi)
+      real(kind=dp) :: f3 !< coefficient in function dm(fi)
+      real(kind=dp) :: f4 !< coefficient in function dm(fi)
+      real(kind=dp) :: e2 !< eccentricity squared
+      real(kind=dp) :: e4 !< e2 squared
+      real(kind=dp) :: e6 !< e2 * e4
+      real(kind=dp) :: n !< eccentricity squared / (1 - eccentricity squared)
+      real(kind=dp) :: nn !< n squared
+      real(kind=dp) :: x !< UTM easting (similar to xutm)
+      real(kind=dp) :: y !< UTM northing (similar to yutm)
+      real(kind=dp) :: rp !< function rp(fi)
+      real(kind=dp) :: dm !< function dm(fi)
+      real(kind=dp) :: gx !< function gx(fi, dl)
+      real(kind=dp) :: gy !< function gy(fi, dl)
+
+      e2 = eccentricity**2
       e4 = e2**2
       e6 = e2 * e4
-      n = e2 / (1d0 - e2)
+      n = e2 / (1.0_dp - e2)
       nn = n**2
-      f1 = 1d0 - (1d0 / 4d0) * e2 - (3d0 / 64d0) * e4 - (5d0 / 256d0) * e6
-      f2 = (3d0 / 8d0) * e2 + (3d0 / 32d0) * e4 + (45d0 / 1024d0) * e6
-      f3 = (15d0 / 256d0) * e4 + (45d0 / 1024d0) * e6
-      f4 = (35d0 / 3072d0) * e6
-!
-!     set false northing and false easting
-!
-      !  IF (ygeo.LT.0.0) then
-      !    ygeo = -ygeo
-      !    fn   = 1.0E+07
-      !    fn   = Y_offset
-      !  else
-      !    fn   = 0.0d0
-      !  endif
+      f1 = 1.0_dp - (1.0_dp / 4.0_dp) * e2 - (3.0_dp / 64.0_dp) * e4 - (5.0_dp / 256.0_dp) * e6
+      f2 = (3.0_dp / 8.0_dp) * e2 + (3.0_dp / 32.0_dp) * e4 + (45.0_dp / 1024.0_dp) * e6
+      f3 = (15.0_dp / 256.0_dp) * e4 + (45.0_dp / 1024.0_dp) * e6
+      f4 = (35.0_dp / 3072.0_dp) * e6
 
-      fn = 0d0
-      fe = 5d+05
-!
-!     determine zone
-!
-      Nzone = int((xgeo + 180) / 6) + 1
-      if (IZONE == 0) then
-         IZONE = NZONE
+      fn = 0.0_dp
+      fe = 5e5_dp
+
+      ! determine zone
+      nzone = int((xgeo + 180) / 6) + 1
+      if (izone == 0) then
+         izone = nzone
       end if
-!
-!     set fi and dl
-!
-      fi = ygeo * pi / 180d0
-      dl = (xgeo + 177d0 - 6d0 * real(Izone - 1, kind=kind(dl))) * pi / 180d0
-!
-!     constants, related to fi
-!
+
+      fi = ygeo * pi / 180.0_dp
+      dl = (xgeo + 177.0_dp - 6.0_dp * real(izone - 1, kind=kind(dl))) * pi / 180.0_dp
+
       s = sin(fi)
       ss = s**2
       c = cos(fi)
       cc = c**2
       cccc = cc**2
       sc = s * c
-!
-!     values of sub-functions
-!
-      rp = a / sqrt(1d0 - e2 * ss)
-      dm = a * (f1 * fi - f2 * sin(2d0 * fi) + f3 * sin(4d0 * fi) - f4 * sin(6d0 * fi))
-      dl2 = dl**2
-      gx = dl2 * (2d0 * cc - 1d0 + nn * cccc) / 6d0
-      gy = dl2 * (6d0 * cc - 1d0 + 9d0 * nn * cccc) / 12d0
-!
-!     function values x and y
-!
-      x = rp * dl * c * (1d0 + gx)
-      y = dm + rp * 0.5d0 * dl2 * sc * (1d0 + gy)
-!
-!     set UTM x- and y-coordinates
-!
-      xutm = 0.9996d0 * x + fe
-      yutm = 0.9996d0 * y + fn
-!
-!     set no error
-!
-      ierr = 0
-!
-      continue
-      return
-   end subroutine geoutm
 
+      rp = semi_major_axis / sqrt(1.0_dp - e2 * ss)
+      dm = semi_major_axis * (f1 * fi - f2 * sin(2.0_dp * fi) + f3 * sin(4.0_dp * fi) - f4 * sin(6.0_dp * fi))
+      dl2 = dl**2
+      gx = dl2 * (2.0_dp * cc - 1.0_dp + nn * cccc) / 6.0_dp
+      gy = dl2 * (6.0_dp * cc - 1.0_dp + 9.0_dp * nn * cccc) / 12.0_dp
+
+      x = rp * dl * c * (1.0_dp + gx)
+      y = dm + rp * 0.5_dp * dl2 * sc * (1.0_dp + gy)
+
+      xutm = 0.9996_dp * x + fe
+      yutm = 0.9996_dp * y + fn
+
+      ierr = 0
+   end subroutine geoutm
 end module m_geoutm

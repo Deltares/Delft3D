@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,13 +54,13 @@ contains
     !! numl1D+1:numl remain intact). Also: boundary links are ignored.
    subroutine renumberFlowNodes()
       use precision, only: dp
-      use network_data
-      use m_flowgeom
+      use network_data, only: numl, nump, lne, netcell, xzw, yzw, numl1d, kn, lnn, numk, nmk, nod, netstat, netstat_ok, tface
+      use m_flowgeom, only: jaflownetchanged, xz, yz, ba
+      use m_alloc, only: realloc
+      use m_readyy, only: readyy
+      use m_rcm, only: adj_bandwidth, genrcm, perm_inverse3, adj_perm_bandwidth, sort_heap_external
       use messagehandling, only: msgbuf, dbg_flush
-      use m_alloc
       use m_partitioninfo, only: idomain, iglobal_s
-      use m_readyy
-      use m_rcm
 
       implicit none
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -144,6 +144,9 @@ contains
          method = METHOD_CONSTANT
       case ('linearspacetime')
          method = WEIGHTFACTORS
+      case ('nearestnb')
+         ! Nearest neighbour is currently automatically selected by ec_converter under standard method "weightfactors".
+         method = WEIGHTFACTORS
       case ('triangulation')
          method = METHOD_TRIANGULATION
       case default
@@ -201,7 +204,6 @@ contains
       end select
 
    end subroutine update_method_with_weightfactor_fallback
-
 
    subroutine update_method_in_case_extrapolation(method, is_extrapolation_allowed)
       implicit none

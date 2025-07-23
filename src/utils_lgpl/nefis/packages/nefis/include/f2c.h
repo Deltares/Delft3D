@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2025.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -47,7 +47,7 @@ BInt4 GP_get_next_cell        ( BInt4   , BInt4  , BText  , BText  , BUInt4 *,
                                        BUInt8 *);
 BInt4 GP_get_next_elm         ( BInt4  , BInt4  , BText  , BText  , BText  ,
                                        BText  , BText  , BInt4 *, BInt4 *, BInt4 *,
-                                       BInt4 *);
+                                       BUInt8 *);
 BInt4 GP_get_next_def_grp     ( BInt4  , BInt4  , BText  , BText  , BInt4 *,
                                        BInt4 *, BInt4 *);
 BInt4 GP_get_next_grp         ( BInt4  , BInt4  , BText  , BText  );

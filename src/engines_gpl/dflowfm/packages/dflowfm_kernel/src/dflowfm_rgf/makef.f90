@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,8 @@ contains
 
    subroutine MAKEF(XR, YR, MMAX, NMAX) ! naar rekenvlak SUBROUTINE MAKEF
       use precision, only: dp
-      use M_SFERIC
-      use M_MISSING
+      use M_SFERIC, only: dg2rd
+      use M_MISSING, only: dxymis
 
       integer :: mmax, nmax
       real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), FI2

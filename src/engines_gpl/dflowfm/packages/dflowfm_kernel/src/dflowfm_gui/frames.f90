@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,8 +34,8 @@ module m_frames
 contains
 !
    subroutine FRAMES(NCOL)
-      use M_DEVICES
-      use m_set_col
+      use M_DEVICES, only: nopsys
+      use m_set_col, only: setcol
 
       integer :: ncol
       if (NOPSYS >= 2) return

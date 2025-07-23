@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,12 +33,11 @@ module m_disput
    implicit none
 contains
    subroutine DISPUT(NPUT)
-      use M_SFERIC
-      use M_DEVICES
+      use M_SFERIC, only: jsferic
+      use M_DEVICES, only: iws, ihs
+      use m_ktext, only: ktext
       use network_data, only: kn3typ
       use m_missing, only: JINS
-      use m_howtoview
-      use m_ktext
 
       integer :: NPUT
       character TEX * 32

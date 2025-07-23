@@ -16,7 +16,7 @@
     </control>
     <component name="myNameDFlowFM">
         <library>dflowfm</library>
-        <process>0 1 2 3 4 5 6 7</process>
+        <process>0 1 2</process>
         <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
         <workingDir>dflowfm</workingDir>
         <inputFile>f34.mdu</inputFile>

@@ -1,6 +1,6 @@
 """Result for test case run.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 from typing import List, Tuple

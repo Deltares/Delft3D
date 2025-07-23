@@ -6,7 +6,7 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                & cqs       ,cqt       ,cqc       ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -123,7 +123,6 @@ subroutine rddis(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                                  :: maxval  ! Maximum number of values 1+LSTSC+2 
     integer                                  :: mxlrec
     integer                                  :: n       ! Help var. 
-    integer, external                        :: newlun
     integer                                  :: nlook   ! Help var.: nr. of data to look for in the MD-file 
     integer                                  :: nrval   ! Number of values to read from file 
     integer                                  :: ntrec   ! Help. var to keep track of NRREC 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 module m_get_ucx_ucy_eul_mag
    use m_getucxucyeuler
    use m_getucmag
+   use m_waveconst
 
    implicit none
 contains
@@ -54,7 +55,7 @@ contains
       ucxeulg(1:ndkx) = ucx(1:ndkx); ucyeulg(1:ndkx) = ucy(1:ndkx)
 
       ! Transform uxy/ucy into Eulerian velocities
-      if (jaeulervel == 1 .and. jawave > 0 .and. .not. flowWithoutWaves) then
+      if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          call getucxucyeuler(N, ucxeulg, ucyeulg)
       end if
 

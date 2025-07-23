@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,11 +42,11 @@ module m_copypoltospline
 contains
 
    subroutine COPYPOLTOSPLINE()
-      use m_polygon
-      use m_splines
-      use m_missing
+      use m_polygon, only: npl, xpl, ypl
+      use m_splines, only: addsplinepoints, mcs
+      use m_missing, only: dmiss
+      use m_delpol, only: delpol
       use geometry_module, only: get_startend
-      use m_delpol
 
       integer :: jstart, jend, jpoint
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
    subroutine init_lateral_his()
       use m_laterals, only: qplatCum, qplatCumPre, qplatAve, qLatReal, qLatRealCum, qLatRealCumPre, qLatRealAve, numlatsg
       use m_flowparameters, only: jahislateral
-      use m_alloc
+      use m_alloc, only: realloc
 
       ! At the starting time of history output, initialize variables
       if (jahislateral > 0 .and. numlatsg > 0) then

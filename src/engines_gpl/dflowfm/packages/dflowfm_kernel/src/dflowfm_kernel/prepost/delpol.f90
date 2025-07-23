@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,8 +33,8 @@ module m_delpol
    implicit none
 contains
    subroutine DELPOL()
-      use M_POLYGON
-      use M_MISSING
+      use M_POLYGON, only: xpl, ypl, npl, mp, mps
+      use M_MISSING, only: xymis
 
       if (allocated(xpl)) XPL = XYMIS
       if (allocated(ypl)) YPL = XYMIS

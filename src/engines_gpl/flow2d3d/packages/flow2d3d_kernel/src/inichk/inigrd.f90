@@ -2,7 +2,7 @@ subroutine inigrd(lundia    ,error     ,runid     ,nmax      ,mmax      , &
                 & nmaxus    ,icom      ,ipx       ,ipy       ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -88,7 +88,6 @@ subroutine inigrd(lundia    ,error     ,runid     ,nmax      ,mmax      , &
     integer                        :: nd      ! Current N-index minus 1 (see N) 
     integer                        :: ndd     ! ND-1 
     integer                        :: ndum    ! Help var. 
-    integer                        :: newlun
     integer                        :: ngrd    ! Help var. 
     integer                        :: nrp     ! Counter for the number of points in the current polygon 
     integer                        :: nu      ! Current N-index plus  1 (see N) 

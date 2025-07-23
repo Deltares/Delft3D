@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,11 +43,10 @@ contains
 
    subroutine get_heights()
       use precision, only: dp
-      use m_comp_subheights
-      use m_splines
-      use m_spline2curvi
-      use m_missing
-      use m_alloc
+      use m_comp_subheights, only: comp_subheights
+      use m_splines, only: mcs, nump, xsp, ysp
+      use m_spline2curvi, only: splineprops
+      use m_alloc, only: realloc
 
       integer :: is, j, js, k, kk, ks, kks, ncs, num, numj
       integer :: kL, kR ! left and right neighboring splines at the cross spline w.r.t. the center spline

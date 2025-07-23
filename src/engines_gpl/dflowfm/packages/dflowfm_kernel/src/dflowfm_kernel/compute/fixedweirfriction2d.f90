@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,9 +39,8 @@ contains
 
    subroutine fixedweirfriction2D(L, k1, k2, frL) ! frL of fixed weir
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_missing
+      use m_flowgeom, only: bob, bl, dx, csu, snu
+      use m_flow, only: frcu, hu, epshu, fixedweirtopfrictcoef, dmiss, u1, v, ifrcutp, ag, fixedweirtopwidth, fixedweirtalud, ifxedweirfrictscheme, hs
       use m_get_chezy, only: get_chezy
 
       implicit none

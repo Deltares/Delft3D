@@ -8,7 +8,7 @@ subroutine wri_FF2NF(nlb     ,nub      ,mlb      ,mub       ,kmax   , &
                    & ifatal  ,gdp    )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -127,7 +127,6 @@ subroutine wri_FF2NF(nlb     ,nub      ,mlb      ,mub       ,kmax   , &
     integer                                :: md
     integer                                :: n
     integer                                :: nd
-    integer                 , external     :: newlun
     integer                                :: npnt
     integer                                :: luntmp
     integer , dimension(:,:), allocatable  :: nm
@@ -693,8 +692,7 @@ subroutine wri_FF2NF(nlb     ,nub      ,mlb      ,mub       ,kmax   , &
     !
     !
     write(*,'(3a)') "Writing file '", trim(filename(1)), "' ..."
-    luntmp = newlun(gdp)
-    open (luntmp, file=trim(filename(1)), status='new', iostat=istat)
+    open (newunit=luntmp, file=trim(filename(1)), status='new', iostat=istat)
     if (istat /= 0) then
        write(lundia,'(3a)') "ERROR: file '", trim(filename(1)), "' already exists."
        write(lundia,'(a,i0)') "       istat: ", istat

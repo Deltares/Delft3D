@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -48,7 +48,7 @@ contains
       use timespace
       use unstruc_model, only: File1D2DLinkMajorVersion, File1D2DLinkMinorVersion
       use m_inquire_link_type
-      use network_data, only: LINK_1D, LINK_2D,LINK_1D2D_INTERNAL,LINK_1D2D_LONGITUDINAL,LINK_1D2D_STREETINLET,LINK_1D_MAINBRANCH,LINK_1D2D_ROOF,LINK_ALL
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
 
       implicit none
 

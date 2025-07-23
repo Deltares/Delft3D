@@ -3,7 +3,7 @@ subroutine corjet2flow(thick  ,kmax  ,dps   ,s0    ,disch_nf ,sour_nf , &
                      & kcs    ,time  ,gdp   )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -75,7 +75,6 @@ subroutine corjet2flow(thick  ,kmax  ,dps   ,s0    ,disch_nf ,sour_nf , &
 !
     integer                                     :: ierror
     integer                                     :: nm_diff
-    integer                      , external     :: newlun
     integer                                     :: luntmp
     integer                                     :: iocond
     integer                                     :: irow
@@ -111,8 +110,7 @@ subroutine corjet2flow(thick  ,kmax  ,dps   ,s0    ,disch_nf ,sour_nf , &
     ! Open cormix output file and read jet characteristics end of near field
     ! end of corjet computation
     !
-    luntmp = newlun (gdp)
-    open (luntmp,file='corjet.out',status='old')
+    open (newunit=luntmp,file='corjet.out',status='old')
     record (1:13) = '             '
     !
     do while (record (6:13) .ne. 'X      Y')

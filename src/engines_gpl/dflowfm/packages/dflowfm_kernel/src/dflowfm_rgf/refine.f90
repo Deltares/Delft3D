@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,10 +42,10 @@ contains
       use m_grid, only: ijyes, nc, mc, mmax, mnmax, nmax, xc, yc
       use m_gridsettings, only: mfac, nfac
       use messagehandling, only: LEVEL_DEBUG, mess
-      use m_readyy
-      use m_qnerror
-      use m_increase_grid
-      use m_isitu
+      use m_readyy, only: readyy
+      use m_qnerror, only: qnerror
+      use m_increase_grid, only: increasegrid
+      use m_isitu, only: isitu
 
       integer :: m1, n1, m2, n2, num
       real(kind=dp), allocatable :: XI2(:, :), XJ2(:, :), YI2(:, :), YJ2(:, :), XR(:, :), YR(:, :), XRH(:, :), YRH(:, :)

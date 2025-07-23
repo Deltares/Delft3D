@@ -8,7 +8,7 @@
 # mormerge.tcl - Script to start parallel FLOW runs
 #                and a morphological merging executable
 #
-# Copyright (C)  Stichting Deltares, 2011-2013.
+# Copyright (C)  Stichting Deltares, 2011-2025.
 #
 # Authors: Adri Mourits
 #

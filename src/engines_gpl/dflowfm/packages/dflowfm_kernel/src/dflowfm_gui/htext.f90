@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,8 +34,8 @@ module m_htext
 contains
    subroutine HTEXT(VAL, X, Y)
       use precision, only: dp
-      use m_colnow
-      use m_draw_text
+      use m_colnow, only: ncolnow
+      use m_draw_text, only: drawtext
 
       real(kind=dp) :: val
       real(kind=dp) :: x

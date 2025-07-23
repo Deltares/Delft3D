@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,8 +33,9 @@ module m_view_port
    implicit none
 contains
    subroutine viewport(xs1, ys1, xs2, ys2)
-      use unstruc_opengl
+      use unstruc_opengl, only: inopenglrendering
 #ifdef HAVE_OPENGL
+      use unstruc_opengl, only: currentWidth, currentHeight
       use IFOPNGL, only: fglViewPort
 #endif
       real xs1, ys1, xs2, ys2

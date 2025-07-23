@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -75,7 +75,7 @@ contains
 ! x, y -> xc, yc (m_grid)
 ! ijc, ijyes in m_grid
       integer :: ierr, mspl
-      integer :: imax, i1, ni1, nti1, l1max, jj, ii1, ii2, k, ii, i, j, L, ki, LJ, no, &
+      integer :: imax, i1, ni1, nti1, l1max, jj, ii1, ii2, k, i, j, L, ki, LJ, no, &
                  numspl, numpx, numi, &
                  ms, ns, &
                  mcr, ncr
@@ -138,8 +138,8 @@ contains
 !        vul voor alle splines de lijninterpolaties in
          do I1 = 1, NUMSPL
 !           Alle horizontaaltjes
-            call GETIJ(XSPc, XI1, mcs, maxsplen, imax, I1, I1, 1, NUMPX)
-            call GETIJ(YSPc, YI1, mcs, maxsplen, imax, I1, I1, 1, NUMPX)
+            call get_ij(XSPc, XI1, mcs, maxsplen, imax, I1, I1, 1, NUMPX)
+            call get_ij(YSPc, YI1, mcs, maxsplen, imax, I1, I1, 1, NUMPX)
             call NUMPold(XSPc, mcs, maxsplen, I1, NI1)
             call PAKTIJ(TIJ, mcs, maxsplen, TI1, imax, I1, I1, 1, NUMSPL, NTI1)
             if (I1 <= NUMI) then
@@ -158,11 +158,11 @@ contains
                K = K + 1
                if (K <= L1MAX) then
                   if (I1 <= NUMI) then
-                     Xc(II, JJ) = X1(K)
-                     Yc(II, JJ) = Y1(K)
+                     Xc(I, JJ) = X1(K)
+                     Yc(I, JJ) = Y1(K)
                   else
-                     Xc(JJ, II) = X1(K)
-                     Yc(JJ, II) = Y1(K)
+                     Xc(JJ, I) = X1(K)
+                     Yc(JJ, I) = Y1(K)
                   end if
                end if
 !              CALL RCIRC( X1(K),Y1(K) )

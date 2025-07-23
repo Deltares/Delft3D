@@ -3,7 +3,7 @@ subroutine rdq2eb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                 & mnbnd     ,rtubnd    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -91,7 +91,6 @@ subroutine rdq2eb(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                :: nb
     integer                :: nlook   ! Help var.: nr. of data to look for in the MD-file 
     integer                :: ntrec   ! Help. var to keep track of NRREC 
-    integer, external      :: newlun
     logical                :: ex      ! Logical flag for file existence 
     logical                :: found   ! FOUND=TRUE if KEYW in the MD-file was found 
     logical                :: lerror  ! Flag=TRUE if an error is encountered 

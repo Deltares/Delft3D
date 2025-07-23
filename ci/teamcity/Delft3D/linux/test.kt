@@ -92,7 +92,7 @@ object LinuxTest : BuildType({
                     --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
                 """.trimIndent()
             }
-            dockerImage = "containers.deltares.nl/delft3d/test/delft3d-test-container:alma8-%build.vcs.number%"
+            dockerImage = "%dep.${LinuxRuntimeContainers.id}.testbench_container_image%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
             dockerPull = true
             dockerRunParameters = """
@@ -106,7 +106,7 @@ object LinuxTest : BuildType({
             executionMode = BuildStep.ExecutionMode.ALWAYS
             commandType = other {
                 subCommand = "rmi"
-                commandArgs = "containers.deltares.nl/delft3d/test/delft3d-test-container:alma8-%build.vcs.number%"
+                commandArgs = "%dep.${LinuxRuntimeContainers.id}.testbench_container_image%"
             }
         }
         dockerCommand {
@@ -141,6 +141,7 @@ object LinuxTest : BuildType({
     }
 
     failureConditions {
+        executionTimeoutMin = 90
         errorMessage = true
         failOnText {
             conditionType = BuildFailureOnText.ConditionType.CONTAINS

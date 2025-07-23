@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,8 +38,8 @@ contains
 
    subroutine slnabs(n, sx1, sy1)
       use precision, only: dp
-      use m_shipcoor
-      use m_lnabs
+      use m_shipcoor, only: shipcoor
+      use m_lnabs, only: lnabs
       implicit none
       integer :: n
       real(kind=dp) :: sx1, sx2, sy1, sy2

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,8 @@ contains
 
    subroutine INULAR(X, MMAX)
       integer :: i
-      integer :: mmax
-      integer X(MMAX)
+      integer, intent(in) :: mmax
+      integer, intent(inout) :: X(MMAX)
       do I = 1, MMAX
          X(I) = 0d0
       end do

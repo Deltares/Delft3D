@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,7 @@ contains
 
    subroutine pressakey()
 #ifdef HAVE_MPI
-      use mpi
+      use mpi, only: mpi_barrier
       use m_partitioninfo, only: DFM_COMM_ALLWORLD, my_rank, jampi
 
       integer :: ierr

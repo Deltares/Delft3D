@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,9 +58,9 @@ contains
       integer :: k3, k4
       integer :: ka, kb, LL
       integer :: krcnw ! counter for cn points attached to 2 closed walls
-      
-      allocate(wcnxy(3,numk))
-      
+
+      allocate (wcnxy(3, numk))
+
       wcnxy = 0
       wcnx3 = 0
       wcny3 = 0
@@ -178,7 +178,7 @@ contains
       if (Perot_weight_update == PEROT_STATIC) then
          deallocate (acn, jacorner)
       end if
-      
+
    end subroutine setlinktocornerweights
 
 end module m_setlinktocornerweights

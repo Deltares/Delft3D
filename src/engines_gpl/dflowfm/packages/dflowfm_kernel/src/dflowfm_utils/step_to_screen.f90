@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,10 +46,10 @@ module m_step_to_screen
 contains
 
    subroutine step_to_screen()
-      use precision
-      use Timers
-      use m_flowtimes
-      use messagehandling, only: msgbuf, mess, msg_flush
+      use precision, only: long, fp, hp
+      use Timers, only: tim_get_wallclock
+      use m_flowtimes, only: tstop_user, time_user, dt_user, dnt_user, handle_steps, time1, dnt, tstart_user
+      use messagehandling, only: msgbuf, msg_flush
 !
 ! Local variables
 !
@@ -175,7 +175,7 @@ contains
    end subroutine step_to_screen
 
    function seconds_to_dhms(secs_long) result(timestr)
-      use precision
+      use precision, only: long
       implicit none
       integer(long), intent(in) :: secs_long !< total in seconds
       character(len=20) :: timestr

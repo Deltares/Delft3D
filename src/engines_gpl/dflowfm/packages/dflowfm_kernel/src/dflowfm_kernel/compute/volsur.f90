@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,9 +36,9 @@ module m_volsur
 contains
    subroutine volsur() ! volsur entirely in s1 because of s1 iteration
       use precision, only: dp
-      use timers
-      use m_flowgeom
-      use m_flow
+      use timers, only: timstrt, timstop
+      use m_flowgeom, only: ndx2d, bl, ba, ndxi, lnxi, lnx, ln
+      use m_flow, only: nonlin2d, s1, vol1, a1, nonlin, a1m
 
       ! locals
       integer :: japerim

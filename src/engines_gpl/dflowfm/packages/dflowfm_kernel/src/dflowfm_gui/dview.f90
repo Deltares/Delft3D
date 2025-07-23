@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,7 +39,7 @@ contains
    subroutine DVIEW(XD, YD, ZD, X, Y, Z)
       use precision, only: dp
       use m_missing, only: dmiss
-      use m_viewmat
+      use m_viewmat, only: vs, x0s, y0s
 
       real(kind=dp) :: ce
       integer :: i

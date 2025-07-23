@@ -72,7 +72,7 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
 
         local_error = False
         if (varList is not None) and (varList > []):
-            paramResults_file = os.path.join(right_path, f'param_results_{filename.split(".")[0]}.csv')
+            paramResults_file = os.path.join(right_path, f"param_results_{filename.split('.')[0]}.csv")
             fparamResults = open(paramResults_file, "w")
             fparamResults.write(
                 "%4s, %12s, %12s, %12s, %12s, %12s, %12s\n"

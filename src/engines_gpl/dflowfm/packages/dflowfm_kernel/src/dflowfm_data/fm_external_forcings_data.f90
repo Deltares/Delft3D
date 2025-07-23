@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -348,7 +348,7 @@ module fm_external_forcings_data
       real(kind=dp), dimension(:), allocatable :: xp, yp
       integer :: np
    end type polygon
-   type(polygon), dimension(:), allocatable :: dambreakPolygons
+   type(polygon), dimension(:), allocatable, target :: dambreakPolygons
 
    integer :: nklep !< nr of kleps
    integer, allocatable :: Lklep(:) !< klep links index array, pos=allow 1->2, neg= allow 2->1
@@ -390,6 +390,7 @@ module fm_external_forcings_data
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
    integer :: numsrc !< nr of point sources/sinks
+   integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield
    integer :: msrc = 0 !< maximal number of points that polylines contains for all sources/sinks
@@ -428,7 +429,6 @@ module fm_external_forcings_data
    integer, private :: num_lat_ini_blocks !< Number of [Lateral] blocks in a loaded new external forcings file.
    public :: have_laterals_in_external_forcings_file, set_lateral_count_in_external_forcings_file
 
-   logical :: tair_available, dewpoint_available
    real(kind=dp), allocatable, target :: uxini(:), uyini(:) !< optional initial velocity fields on u points in x/y dir.
    integer :: inivelx, inively !< set to 1 when initial velocity x or y component is available in *.ext file
 
@@ -482,6 +482,7 @@ contains
       nzbnd = 0
       nubnd = 0
       numsrc = 0
+      numsrc_old = 0
       numsrc_nf = 0
 
    end subroutine default_fm_external_forcing_data

@@ -32,7 +32,7 @@ if (UNIX)
                          netcdff
                          dfm_api_access)
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
          ${oss_dependencies})
 endif(UNIX)
 
@@ -48,7 +48,7 @@ if (WIN32)
                          netcdff
                          dfm_api_access)
 
-    target_link_libraries(${executable_name} ${oss_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 endif(WIN32)
 
 if(UNIX)
@@ -84,7 +84,7 @@ if (WIN32)
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
                           "comctl32.lib"
                           "wsock32.lib"
                           "netapi32.lib"
