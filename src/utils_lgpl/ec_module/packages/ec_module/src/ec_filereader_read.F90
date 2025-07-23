@@ -980,7 +980,7 @@ contains
    !> Read the next record from a NetCDF file.
       !! meteo1: readnetcdfblock
    ! TODO: cleanup: lastReadTime, TimeFrame usage, time conversions, remove hardcoded asumption of file content and structure
-   function ecNetcdfReadBlock(fileReaderPtr, item1, t0t1, n) result(success)
+   function ecNetcdfReadBlock(fileReaderPtr, item1, t0t1, n, current_time_MJD) result(success)
       use netcdf
       !
       logical :: success !< function status
@@ -988,6 +988,7 @@ contains
       type(tEcItem), pointer :: item1 !< Item containing quantity1, intent(inout)
       integer :: t0t1 !< read into Field T0 or T1 (0,1). -1: choose yourself and return where you put it.
       integer, intent(in) :: n !< dimension of quantity to read
+      real(dp), intent(in), optional :: current_time_MJD
       !
       integer :: i !< loop counter
       integer :: ierror !< return value of function calls
@@ -1053,12 +1054,25 @@ contains
          ! No data read at all. Force reading for the first time
          read_index = 1
       else
-         do i = 1, ntimes
-            if (comparereal(times(i), fileReaderPtr%lastReadTime) == 1) then
-               read_index = i
-               exit
+         if (present(current_time_MJD)) then
+            do i = ntimes, 1, -1
+               tim = ecSupportThisTimeToMJD(fileReaderPtr%tframe, times(i))
+               if (comparereal(tim, current_time_MJD) < 1) then
+                  read_index = i
+                  exit
+               end if
+            end do
+            if (comparereal(times(read_index), fileReaderPtr%lastReadTime) == 0) then
+               read_index = -1
             end if
-         end do
+         else
+            do i = 1, ntimes
+               if (comparereal(times(i), fileReaderPtr%lastReadTime) == 1) then
+                  read_index = i
+                  exit
+               end if
+            end do           
+         end if
       end if
       if (read_index > 0) then
          if (t0t1 < 0) then
