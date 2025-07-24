@@ -700,6 +700,9 @@ contains
       case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
             'wavebreakerdissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
          ! the name of the source item created by the file reader will be the same as the ext.force. var name
+
+         ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
+         ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
          sourceItemName = varname
       case ('airpressure', 'atmosphericpressure')
          if (ec_filetype == provFile_arcinfo) then
