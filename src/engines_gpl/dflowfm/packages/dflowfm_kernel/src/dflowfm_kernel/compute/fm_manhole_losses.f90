@@ -28,7 +28,7 @@
 !
 !-------------------------------------------------------------------------------
 module fm_manhole_losses
-   use precision, only: dp
+   use precision, only: dp 
 
    implicit none
    public calculate_manhole_losses, init_manhole_losses
@@ -186,9 +186,9 @@ contains
             do iL = 1, nd(nod)%lnx
                call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
                if (q_manhole_to_pipe > 0) then
-                  advi(L) = advi(L) + 0.5_dp * (k_correction + k_exp + pstor%exit_loss) * u1(L) * dxi(L)
+                  advi(L) = advi(L) + 0.5_dp * (k_correction + k_exp + pstor%entrance_loss) * u1(L) * dxi(L)
                else
-                  advi(L) = advi(L) + 0.5_dp * (k_bend(count, i) - k_exp + pstor%entrance_loss) * u1(L) * dxi(L)
+                  advi(L) = advi(L) + 0.5_dp * (k_bend(count, i) - k_exp + pstor%exit_loss) * u1(L) * dxi(L)
                end if
             end do
          end if
