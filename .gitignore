@@ -1,6 +1,6 @@
 # default build directories
 bin*/**
-build_*/**
+build*/**
 install_*/**
 
 # editor files
