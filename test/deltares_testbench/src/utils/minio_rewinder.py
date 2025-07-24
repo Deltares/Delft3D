@@ -7,7 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Iterable, Iterator, List, Mapping, Optional, Tuple
+from typing import Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple
 
 from minio import Minio
 from minio.commonconfig import Tags
@@ -202,6 +202,8 @@ class Rewinder:
         tags: Optional[Tags] = None,
         allow_create_and_delete: bool = False,
         part_size: Optional[int] = None,
+        include_patterns: Optional[list[str]] = None,
+        exclude_patterns: Optional[list[str]] = None,
     ) -> Plan:
         """Build plan to synchronize a set of objects in MinIO with the contents of a local directory.
 
@@ -233,7 +235,10 @@ class Rewinder:
 
         # Get sorted `(key, etag)` pairs from local directory and MinIO prefix.
         minio_sorted = sorted(self.__minio_path_hash_pairs(dst_prefix), reverse=True)
-        local_sorted = sorted(self.__local_path_hash_pairs(src_dir, part_size), reverse=True)
+        local_sorted = sorted(
+            self.__local_path_hash_pairs(src_dir, part_size, include_patterns, exclude_patterns),
+            reverse=True,
+        )
 
         while minio_sorted and local_sorted:
             local_key, local_hash = local_sorted.pop()
@@ -285,8 +290,26 @@ class Rewinder:
 
         return ((postfix(obj.object_name, dst_prefix.key), obj.etag) for obj in objects)
 
-    def __local_path_hash_pairs(self, src_dir: Path, part_size: Optional[int] = None) -> Iterator[Tuple[str, str]]:
-        for path in src_dir.rglob("*"):
+    def __local_path_hash_pairs(
+        self,
+        src_dir: Path,
+        part_size: Optional[int] = None,
+        include_patterns: Optional[list[str]] = None,
+        exclude_patterns: Optional[list[str]] = None,
+    ) -> Iterator[Tuple[str, str]]:
+        matched_files: Iterable[Path] = src_dir.rglob("*")
+        if include_patterns:
+            matched_files = filter(
+                lambda file: any(file.match(pat) for pat in include_patterns),
+                matched_files,
+            )
+        if exclude_patterns:
+            matched_files = filter(
+                lambda file: not any(file.match(pat) for pat in exclude_patterns),
+                matched_files,
+            )
+
+        for path in matched_files:
             if not path.is_dir():  # `path` is a file.
                 etag = self.__etag(path, part_size)
                 yield (str(path.relative_to(src_dir).as_posix()), etag)  # Make sure to use unix path separators.
@@ -420,6 +443,27 @@ class Rewinder:
         if add_tags:
             return (self.__add_object_tags(obj) for obj in objects)
         return objects
+
+    def autocomplete_prefix(self, prefix: S3Path) -> Sequence[S3Path]:
+        """List all objects in MinIO with a given prefix up to the next separator.
+
+        Parameters
+        ----------
+        prefix : S3Path
+            S3 Prefix of a set of objects in MinIO.
+
+        Returns
+        -------
+        Iterable[S3Path]
+            An iterable of `S3Path` objects representing possible completions of the prefix.
+        """
+        return [
+            S3Path.from_bucket(obj.bucket_name) / obj.object_name
+            for obj in self._client.list_objects(
+                bucket_name=prefix.bucket,
+                prefix=prefix.key,
+            )
+        ]
 
     @staticmethod
     def __get_rewinded_version(versions: Iterable[MinioObject], timestamp: datetime) -> Optional[MinioObject]:
