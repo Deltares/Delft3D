@@ -412,7 +412,6 @@ contains
       end if
 
       if (layertype > 1) then ! ln does not change in sigma only
-
          do LL = 1, Lnx
             n1 = ln(1, LL); n2 = ln(2, LL)
             kt1 = ktop(n1); kt2 = ktop(n2)
@@ -422,7 +421,6 @@ contains
                ln(2, L) = min(ln0(2, L), kt2)
             end do
          end do
-
       end if
 
    end subroutine setkbotktop

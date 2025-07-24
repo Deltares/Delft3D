@@ -174,7 +174,7 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
     !
     ar    = 0.24_fp
     as    = 0.24_fp
-    rewcr = 1.5e5_fp
+    rewcr = 1.5e5_fp ! critical Re for waves
     !
     ! Compute basic parameters
     !
@@ -199,8 +199,8 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
     z0silt = max( kseff/30.0_fp , localeps )
     !
     rec    = umod * depth / vicmol
-    cds    = 1.615e-4_fp * exp(6.0_fp * rec**(-0.08_fp))
-    cdr    = ( 0.40_fp / (log(depth/z0silt)-1.0_fp) )**2
+    cds    = 1.615e-4_fp * exp(6.0_fp * rec**(-0.08_fp)) ! assumption of ks=0 (smooth beds)
+    cdr    = ( 0.40_fp / (log(depth/z0silt)-1.0_fp) )**2 
     phicur = atan2(vmean,umean) / degrad
     if (phicur < 0.0_fp) phicur = phicur + 360.0_fp
     !
@@ -211,25 +211,25 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
        uorbm  = max( uorb , 0.01_fp )
        aorb   = uorbm * tper / 2.0_fp / pi
        rew    = max(uorbm * aorb / vicmol, 1e3_fp) ! limit rew to avoid t1->1 and a1,a2->Inf in computation of taums 
-       fws    = 0.0521_fp * rew**(-0.187_fp)
+       fws    = 0.0521_fp * rew**(-0.187_fp)  
        fwr    = 1.39_fp * (aorb/z0silt)**(-0.52_fp)
        !
        if (umod >= 1.0e-6_fp) then
           !
           ! Combined flow and waves
           !
-          reccr = 2000.0_fp + (5.92e5_fp * rew)**0.35_fp
-          if (rec <= reccr .and. rew <= rewcr) then
+          reccr = 2000.0_fp + (5.92e5_fp * rew)**0.35_fp ! critical Re for currents 
+          !if (rec <= reccr .and. rew <= rewcr) then
              !
-             ! laminar flow
+             ! Flow + wave laminar flow
              !
-             taum   = 3.0_fp * rhowat * vicmol * umod / depth
-             tauw   = rhowat * uorbm * uorbm / sqrt(rew)
-             taumax = sqrt((taum +  tauw*abs(cos(phiwr)))**2 &
-                          &      + (tauw*abs(sin(phiwr)))**2 )
-          else
+             !taum   = 3.0_fp * rhowat * vicmol * umod / depth
+             !tauw   = rhowat * uorbm * uorbm / sqrt(rew)
+             !taumax = sqrt((taum +  tauw*abs(cos(phiwr)))**2 &
+             !             &      + (tauw*abs(sin(phiwr)))**2 )
+          !else
              !
-             ! turbulent flow
+             ! Flow + wave turbulent flow
              !
              ! 1) compute shear stresses belonging with rough bed
              !
@@ -251,7 +251,7 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
                      & * (cds*cds*(umod/uorbm)**4 + (fws/2.0_fp)**2)**0.25_fp
              t2      = ( (rec/rew)*(uorbm/umod)*sqrt(2.0_fp/fws) ) / as
              t3      = (cds*cds + (fws/2.0_fp)**2 * (uorbm/umod)**4)**0.25_fp
-             !
+             
              a1      = t3 * (log(t2) - 1.0_fp) / (2.0_fp*log(t1))
              a2      = 0.40_fp * t3 / log(t1)
              cdm     = (sqrt(a1*a1 + a2) - a1)**2
@@ -269,37 +269,37 @@ subroutine compbsskin (umean , vmean , depth , wave  , uorb  , tper  , &
                 taum   = taumr
                 taumax = taumaxr
              endif
-          endif
+          !endif
        else
           !
           ! Waves only
           !
-          taum = 0.0_fp
-          if (rew <= rewcr) then
-             taumax = rhowat * uorbm * uorbm / sqrt(rew)
-          else
+          taum = 0.0_fp ! because there is no currents
+          !if (rew <= rewcr) then
+          !   taumax = rhowat * uorbm * uorbm / sqrt(rew) ! waves-only laminar
+          !else
              if (fwr >= fws) then
-                taumax = 0.5_fp * rhowat * fwr * uorbm * uorbm
+                taumax = 0.5_fp * rhowat * fwr * uorbm * uorbm ! waves-only turbulent rough
              else
-                taumax = 0.5_fp * rhowat * fws * uorbm * uorbm
+                taumax = 0.5_fp * rhowat * fws * uorbm * uorbm ! waves-only turbulent smooth
              endif
-          endif
+          !endif
        endif
     elseif (umod >= 1.0e-6_fp) then
-       !
-       ! Flow only
-       !
-       if (rec <= 2000.0_fp) then
-          taum   = 3.0_fp * rhowat * vicmol * umod / depth
-          taumax = taum
-       else
-          if (cdr >= cds) then
-             taum = rhowat * cdr * umod * umod
-          else
-             taum = rhowat * cds * umod * umod
+    !
+    ! Flow only
+    !
+       !if (rec <= 2000.0_fp) then ! flow-only laminar
+       !   taum   = 3.0_fp * rhowat * vicmol * umod / depth
+       !   taumax = taum
+       !else 
+          if (cdr >= cds) then 
+             taum = rhowat * cdr * umod * umod ! flow-only rough
+          else 
+             taum = rhowat * cds * umod * umod ! flow-only smooth
           endif
-          taumax = taum
-       endif
+          taumax = taum ! because there is no waves
+       !endif
     else
        !
        ! No flow and no waves

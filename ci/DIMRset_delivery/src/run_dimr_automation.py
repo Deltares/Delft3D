@@ -27,6 +27,7 @@ if __name__ == "__main__":
     parser.add_argument("--username", type=str, default=None)
     parser.add_argument("--password", type=str, default=None)
     parser.add_argument("--git-PAT", type=str, default=None)
+    parser.add_argument("--build_id", type=str, default=None)
 
     args = parser.parse_args()
     username = args.username
@@ -52,5 +53,5 @@ if __name__ == "__main__":
         git_client=git_client_wrapper,
     )
     print("Starting the automation process...")
-    dimr_automation.run()
+    dimr_automation.run(args.build_id)
     print("Finished")

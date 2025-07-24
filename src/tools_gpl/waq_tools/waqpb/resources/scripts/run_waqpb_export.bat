@@ -13,7 +13,7 @@ set PATH=%libdir%;%bindir%;%PATH%
 echo "    bin dir           : %bindir%"
 echo "    lib dir           : %libdir%"
 
-echo executing in this window: "%bindir%\waqpb_export.exe"
+echo executing in this window: "%bindir%\waqpb_export.exe %*" 
 "%bindir%\waqpb_export.exe" %*
 
 pause

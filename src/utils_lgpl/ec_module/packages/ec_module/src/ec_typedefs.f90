@@ -81,6 +81,7 @@ module m_ec_typedefs
       character(len=25) :: name = '' !< User-specified name
       integer :: column !< Unique column number in the data for this quantity
       character(len=25) :: unit !< unit specification
+      character(len=25), allocatable, dimension(:) :: column_units !< Unit specification for the individual columns (relevant for vector quantities).
       real(hp) :: offset = 0.d0 !< to be added to all data for this quantity
       real(hp) :: factor = 1.d0 !< to be multiplied with all data for this quantity
       real(hp) :: missing = ec_undef_hp !< Missing value or fillValue

@@ -1,17 +1,25 @@
-from typing import Dict
 import os
+from typing import Dict
 
-from settings.general_settings import RELATIVE_PATH_TO_OUTPUT_FOLDER
-from settings.email_settings import RELATIVE_PATH_TO_EMAIL_TEMPLATE, LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS
 from helpers.TestbankResultParser import TestbankResultParser
+from settings.email_settings import (
+    LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS,
+    RELATIVE_PATH_TO_EMAIL_TEMPLATE,
+)
+from settings.general_settings import RELATIVE_PATH_TO_OUTPUT_FOLDER
 from settings.teamcity_settings import KERNELS, TESTCASE_GROUPS
 
 
 class EmailHelper(object):
-    """ Class responsible for preparing the weekly DIMR release email. """
+    """Class responsible for preparing the weekly DIMR release email."""
 
-    def __init__(self, dimr_version: str, kernel_versions: Dict[str, str],
-                 current_parser: TestbankResultParser, previous_parser: TestbankResultParser):
+    def __init__(
+        self,
+        dimr_version: str,
+        kernel_versions: Dict[str, str],
+        current_parser: TestbankResultParser,
+        previous_parser: TestbankResultParser,
+    ):
         """
         Creates a new instance of EmailHelper.
 
@@ -32,7 +40,6 @@ class EmailHelper(object):
         self.__load_template()
         self.__insert_summary_table_header()
         self.__insert_summary_table()
-        self.__insert_crashing_testcases_table()
         self.__save_template()
 
     def __load_template(self) -> None:
@@ -97,7 +104,7 @@ class EmailHelper(object):
         html += f"Total tests: {self.__current_parser.get_total_tests()} was ({self.__previous_parser.get_total_tests()})"
         html += "<br />"
         html += f"Passed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {self.__current_parser.get_total_passing()} was ({self.__previous_parser.get_total_passing()})"
-        
+
         html += "</tr></table>"
         html += "</td>"
         html += "</tr>"
@@ -138,26 +145,3 @@ class EmailHelper(object):
 
         with open(path_to_email_template, 'w+') as file:
             file.write(self.__template)
-
-    def __insert_crashing_testcases_table(self):
-        """ Inserts the crashing testcases table into the template. """
-        html = self.__generate_crashing_testcases_table_html()
-        self.__template = self.__template.replace("@@@CRASHING_TESTCASES_TABLE_BODY@@@", html)
-
-    def __generate_crashing_testcases_table_html(self) -> str:
-        """ Dynamically generates the crashing testcases table based on the testcases expected to be present. """
-        html = ""
-
-        for TESTCASE_GROUP in TESTCASE_GROUPS:
-            exceptions = self.__current_parser.get_exceptions_for_testcase_group(TESTCASE_GROUP)
-            html += "<tr>"
-            html += f"<td>{TESTCASE_GROUP}</td>"
-            html += f"<td>{len(exceptions)}</td>"
-            html += "<td>"
-            for exception in exceptions:
-                html += f"{exception}<br />"
-            html += "</td>"
-            html += "</tr>"
-
-        return html
-

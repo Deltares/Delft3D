@@ -206,13 +206,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Coverage  ","IBotSeg   ",  13,"N","x",1
 "Coverage  ","RadMacrop ",  14,"N","x",1
 "AveRadSurf","RadSurf   ",   1,"N","x",1
-"AveRadSurf","AveRadTIni",   2,"Y","x",1
-"AveRadSurf","AveRadPeri",   3,"Y","x",1
-"AveRadSurf","ITIME     ",   4,"N"," ",1
-"AveRadSurf","DELT      ",   5,"N"," ",1
-"AveRadSurf","AuxSys    ",   6,"Y"," ",1
-"AveRadSurf","SumAveRad ",   7,"N"," ",1
-"AveRadSurf","SumAveRadT",   8,"N"," ",1
+"AveRadSurf","AveRadPeri",   2,"Y","x",1
+"AveRadSurf","DELT      ",   3,"N"," ",1
+"AveRadSurf","SumAveRad ",   4,"Y"," ",1
+"AveRadSurf","SumAveRadT",   5,"Y"," ",1
 "DisRadSurf","RadSurfAve",   1,"N","x",1
 "DisRadSurf","ITIME     ",   2,"N"," ",1
 "DisRadSurf","Latitude  ",   3,"Y","x",1

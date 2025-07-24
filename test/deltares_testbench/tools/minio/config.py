@@ -1,25 +1,41 @@
 import abc
 import io
-import logging
+import itertools
 import re
+import textwrap
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import ClassVar, Dict, Iterable, List, Mapping, Optional, TextIO, Tuple
+from typing import ClassVar, Iterable, Mapping, Sequence, TextIO, Tuple
 
 from s3_path_wrangler.paths import S3Path
+from typing_extensions import override
 
 from src.config.credentials import Credentials
+from src.config.file_check import FileCheck
 from src.config.local_paths import LocalPaths
 from src.config.location import Location
+from src.config.parameter import Parameter
 from src.config.test_case_config import TestCaseConfig
 from src.config.types.path_type import PathType
 from src.suite.test_bench_settings import TestBenchSettings
 from src.utils.logging.console_logger import ConsoleLogger
+from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.log_level import LogLevel
 from src.utils.xml_config_parser import XmlConfigParser
 from tools.minio import utils
+from tools.minio.error import MinioToolError
+
+
+@dataclass
+class DefaultTestCaseData:
+    name: str
+    max_run_time: float
+
+    @classmethod
+    def from_config(cls, config: TestCaseConfig) -> "DefaultTestCaseData":
+        return cls(name=config.name, max_run_time=config.max_run_time)
 
 
 @dataclass
@@ -31,14 +47,26 @@ class TestCaseData:
     reference_dir: Path
     case_prefix: S3Path
     reference_prefix: S3Path
-    version: Optional[datetime] = None
+    version: datetime | None = None
+    file_checks: list[FileCheck] = field(default_factory=list)
+    max_run_time: float = 1500.0
+    default_test_case: str | None = None
 
-    def get_default_dir_and_prefix(self, path_type: PathType) -> Tuple[Path, S3Path]:
-        """Get the default local directory and remote MinIO prefix based on the `path_type`."""
+    def get_default_local_directory(self, path_type: PathType) -> Path:
+        """Get the default local directory based on the `path_type`."""
         if path_type == PathType.INPUT:
-            return self.case_dir, self.case_prefix
+            return self.case_dir
         elif path_type == PathType.REFERENCE:
-            return self.reference_dir, self.reference_prefix
+            return self.reference_dir
+        else:
+            raise ValueError(f"Unsupported path type: {path_type.name}")
+
+    def get_remote_prefix(self, path_type: PathType) -> S3Path:
+        """Get the remote MinIO prefix based on the `path_type`."""
+        if path_type == PathType.INPUT:
+            return self.case_prefix
+        elif path_type == PathType.REFERENCE:
+            return self.reference_prefix
         else:
             raise ValueError(f"Unsupported path type: {path_type.name}")
 
@@ -66,6 +94,8 @@ class TestCaseData:
             case_prefix=cls.__to_s3_path(case_loc) / config.path.prefix,
             reference_prefix=cls.__to_s3_path(reference_loc) / config.path.prefix,
             version=rewind_timestamp,
+            file_checks=config.checks,
+            max_run_time=config.max_run_time,
         )
 
     @staticmethod
@@ -83,73 +113,292 @@ class TestCaseData:
         abs_path = S3Path(loc.root) / utils.to_unix_path(loc.from_path or ".")
         return S3Path.from_bucket(abs_path.bucket) / utils.resolve_relative(abs_path.key)
 
+    def to_xml(self) -> str:
+        if not self.version or self.version.tzinfo != timezone.utc:
+            raise ValueError("Test case version must be defined and have a UTC timezone")
+        version = self.version.isoformat().split("+")[0]
 
-class ConfigIndexer:
-    """Index the configuration specified or the config folders xml files."""
+        case_prefix = self.case_prefix
+        path = utils.remove_prefix(case_prefix, S3Path.from_bucket(case_prefix.bucket) / "cases")
 
-    def __init__(
-        self,
-        configs: Optional[Iterable[Path]] = None,
-        bucket: str = "dsc-testbench",
-        logger: Optional[logging.Logger] = None,
-    ) -> None:
-        self._configs = configs or Path("configs").rglob("*.xml")
-        self._bucket = bucket
-        self._logger = logger or logging.getLogger(__name__)
+        checks = "\n".join(self.__format_file_check(check) for check in self.file_checks)
 
-    def index_configs(self) -> Dict[Path, List[TestCaseData]]:
-        """Return an index of the test cases.
+        template = textwrap.dedent("""
+            <testCase name="{name}" ref="{default_test_case}">
+                <path version="{version}">{path}</path>
+                <maxRunTime>{max_runtime}</maxRunTime>
+                <checks>
+                    {checks}
+                </checks>
+            </testCase>
+            """).strip()
 
-        The test cases are indexed by config file.
+        return template.format(
+            name=self.name,
+            default_test_case=self.default_test_case,
+            version=version,
+            path=str(path),
+            max_runtime=self.max_run_time,
+            checks=self.__indent(checks, 2),
+        )
 
-        Returns
-        -------
-        dict[Path, list[TestCaseData]]
-            The computed index. Only contains configs that include test cases.
-        """
-        result: dict[Path, list[TestCaseData]] = {}
-        for xml in self._configs:
-            test_cases = list(self._extract_test_cases_from_xml(xml))
-            if test_cases:
-                result[xml] = test_cases
+    @classmethod
+    def __format_file_check(cls, file_check: FileCheck) -> str:
+        parameters = "\n".join(cls.__format_parameter(param[0]) for param in file_check.parameters.values())
+        attributes: Iterable[tuple[str, str]] = filter(
+            None,
+            [
+                ("name", file_check.name),
+                ("type", file_check.type.name.lower()),
+                ("ignore", "true") if file_check.ignore else None,
+            ],
+        )
+        file_attrs = " ".join(f'{key}="{str(val)}"' for key, val in attributes)
+        template = textwrap.dedent("""
+            <file {file_attrs}>
+                <parameters>
+                    {parameters}
+                </parameters>
+            </file>
+            """).strip()
+        return template.format(file_attrs=file_attrs, parameters=cls.__indent(parameters, 2))
 
-        return result
+    @classmethod
+    def __format_parameter(cls, param: Parameter) -> str:
+        attributes: Iterable[tuple[str, str]] = filter(
+            None,
+            [
+                ("name", param.name),
+                ("toleranceAbsolute", str(param.tolerance_absolute)) if param.tolerance_absolute else None,
+                ("toleranceRelative", str(param.tolerance_relative)) if param.tolerance_relative else None,
+                ("ignore", "true") if param.ignore else None,
+            ],
+        )
+        parameter_attrs = " ".join(f'{key}="{val}"' for key, val in attributes)
+        return f"<parameter {parameter_attrs} />"
 
-    def _extract_test_cases_from_xml(self, xml: Path) -> Iterable[TestCaseData]:
-        """Return test case data defined within the provided XML file."""
-        # Crude check to see if the XML file is a deltares testbench config.
-        with open(xml, "r") as file:
-            if not any(re.search(r"<deltaresTestbench_v3", line) for line in file):
-                return []  # Not a test bench config.
-
-        try:
-            config_loader = TestBenchConfigLoader(xml, server_base_url=f"s3://{self._bucket}")
-            return config_loader.get_test_cases()
-        except Exception:
-            self._logger.exception(f"Skip xml: {xml} due to error in parsing.")
-            return []
+    @staticmethod
+    def __indent(s: str, level: int, spaces_per_level: int = 4) -> str:
+        spaces = level * spaces_per_level
+        return s.replace("\n", "\n" + spaces * " ")
 
 
-class TestCaseLoader(abc.ABC):
-    """Loads test cases."""
+@dataclass
+class TestCasePattern:
+    __test__: ClassVar[bool] = False
+
+    config_glob: str = "*"
+    name_filter: str = ""
+
+    @staticmethod
+    def read_patterns_from_file(text_io: TextIO) -> "Iterable[TestCasePattern]":
+        for linenr, line in enumerate((line.strip() for line in text_io), start=1):
+            if line.startswith("#"):
+                continue
+
+            name_filter, *glob_list = line.split(",", 1)
+            if not name_filter:
+                raise ValueError(f"Error on line {linenr}: Missing test case pattern.")
+
+            config_glob = "" if not glob_list else glob_list[0].strip()
+            yield TestCasePattern(
+                config_glob=config_glob or "*",
+                name_filter=name_filter.strip(),
+            )
+
+
+@dataclass
+class TestCaseId:
+    """Data class to represent a test case name."""
 
     __test__: ClassVar[bool] = False
 
-    @abc.abstractmethod
-    def get_test_cases(self, filter: Optional[str] = None) -> Iterable[TestCaseData]:
-        """Get test cases with an optional filter string.
+    NAME_PATTERN: ClassVar[re.Pattern] = re.compile(
+        r"^(?P<engine>e\d+)_(?P<feature>f\d+)_(?P<case>c\d+)(?P<trailer>[-_][-\w.]+)$"
+    )
 
-        Parameters
-        ----------
-        filter : Optional[str], optional
-            Filter test cases on the `name` property, if set.
-            The `name` matches the filter if it passes a simple `filter in name` check.
+    engine_id: str
+    feature_id: str
+    case_id: str
+    trailer: str
 
-        Returns
-        -------
-        Iterable[TestCaseData]
-            The `TestCaseData` of matching test cases.
-        """
+    def __str__(self) -> str:
+        """Return the string representation of the test case name."""
+        return f"{self.engine_id}_{self.feature_id}_{self.case_id}{self.trailer}"
+
+    @property
+    def identifier(self) -> str:
+        """Return the identifier part of the test case name."""
+        return f"{self.engine_id}_{self.feature_id}_{self.case_id}"
+
+    @classmethod
+    def from_name(cls, name: str) -> "TestCaseId":
+        match = cls.NAME_PATTERN.match(name)
+        if not match:
+            raise ValueError(f"Invalid test case name format: {name}")
+        return TestCaseId(
+            engine_id=match.group("engine"),
+            feature_id=match.group("feature"),
+            case_id=match.group("case"),
+            trailer=match.group("trailer"),
+        )
+
+
+@dataclass
+class IndexItem:
+    test_cases: Sequence[TestCaseData]
+    default_test_cases: Sequence[DefaultTestCaseData]
+
+
+class TestCaseIndex:
+    """Index the configuration specified or the config folders xml files."""
+
+    __test__: ClassVar[bool] = False
+
+    def __init__(self, index: Mapping[Path, IndexItem]) -> None:
+        self._index = index
+
+    @property
+    def index(self) -> Mapping[Path, IndexItem]:
+        """Return the index of config files to test cases."""
+        return self._index
+
+    def get_default_test_cases(self, config: Path) -> Sequence[DefaultTestCaseData]:
+        index_item = self._index.get(config)
+        return [] if index_item is None else index_item.default_test_cases
+
+    def find_test_cases(self, test_case_patterns: Iterable[TestCasePattern]) -> Mapping[Path, Sequence[TestCaseData]]:
+        all_matching_configs: defaultdict[Path, list[TestCaseData]] = defaultdict(list)
+
+        for pattern in test_case_patterns:
+            test_case, configs = self.find_test_case(pattern)
+            if test_case is None:
+                continue
+
+            for config_path in configs:
+                test_cases = all_matching_configs[config_path]
+                if not self.__contains_case(test_cases, test_case.name):
+                    test_cases.append(test_case)
+
+        return all_matching_configs
+
+    def find_test_case(self, test_case_pattern: TestCasePattern) -> tuple[TestCaseData | None, Sequence[Path]]:
+        test_case_map: dict[Path, TestCaseData] = {}
+        for config_path, index_item in self._index.items():
+            if not config_path.match(test_case_pattern.config_glob):
+                continue
+
+            cases = index_item.test_cases
+            matching_cases = [case for case in cases if test_case_pattern.name_filter in case.name]
+            if not matching_cases:
+                continue
+
+            if len(matching_cases) > 1:
+                suggestions = ", ".join(case.name for case in itertools.islice(matching_cases, 3))
+                raise MinioToolError(
+                    f"The pattern `{test_case_pattern.name_filter}` matches multiple test cases in "
+                    f"config file `{config_path}`.\nSuggestions: `{suggestions}`"
+                )
+
+            test_case_map[config_path] = matching_cases[0]
+
+        if not test_case_map:
+            return None, []
+
+        (first_config, first_case), *other_items = test_case_map.items()
+        first_case_locations = self.__locations(first_case)
+
+        wrong_config, wrong_case = next(
+            ((config, case) for config, case in other_items if self.__locations(case) != first_case_locations),
+            (None, None),
+        )
+        if wrong_config and wrong_case:
+            raise MinioToolError(
+                f"Test case `{first_case.name}` in config file `{first_config}` has different "
+                f"locations than test case `{wrong_case.name}` in config file `{wrong_config}`."
+            )
+
+        return first_case, list(test_case_map.keys())
+
+    @staticmethod
+    def __contains_case(case_list: Iterable[TestCaseData], case_name: str) -> bool:
+        """Check if the case list contains a case with the given name."""
+        return any(case.name == case_name for case in case_list)
+
+    @staticmethod
+    def __locations(case: TestCaseData) -> Tuple[Path, Path, S3Path, S3Path]:
+        """Return a tuple of locations for the case."""
+        return (case.case_dir, case.reference_dir, case.case_prefix, case.reference_prefix)
+
+
+class ConfigIndexBuilder:
+    """Loads test bench configs from test bench config XML files."""
+
+    DEFAULT_SERVER_BASE_URL = "s3://dsc-testbench"
+
+    __test__: ClassVar[bool] = False
+
+    def __init__(
+        self,
+        settings: TestBenchSettings,
+        config_parser: XmlConfigParser | None = None,
+        logger: IMainLogger | None = None,
+    ) -> None:
+        self._settings = settings
+        self._logger = logger or ConsoleLogger(LogLevel.DEBUG)
+        self._config_parser = config_parser or XmlConfigParser()
+
+    def __load_test_cases_from_config(self, config_path: Path) -> IndexItem | None:
+        # Quickly rule out that we're really not reading an 'include' XML file.
+        if self.__first_xml_tag(config_path) != "deltaresTestbench_v3":
+            self._logger.warning(f"Invalid TestBench config file: {config_path}")
+            return None
+
+        # Now that we're pretty sure we're reading a TestBench config file: Parse the XML.
+        self._settings.config_file = str(config_path)
+        local_paths, _, test_case_configs = self._config_parser.load(self._settings, self._logger)
+
+        test_cases = sorted(
+            (TestCaseData.from_config(config, local_paths) for config in test_case_configs),
+            key=lambda test_case: test_case.name,
+        )
+
+        test_case_names = set(test_case.name for test_case in test_cases)
+        default_test_cases = sorted(
+            (
+                DefaultTestCaseData.from_config(config)
+                for config in self._config_parser.default_cases
+                if config.name not in test_case_names
+            ),
+            key=lambda test_case: test_case.name,
+        )
+        return IndexItem(test_cases=test_cases, default_test_cases=default_test_cases)
+
+    def build_index(self, configs: Iterable[Path]) -> TestCaseIndex:
+        index = {config: test_cases for config in configs if (test_cases := self.__load_test_cases_from_config(config))}
+        return TestCaseIndex(index)
+
+    @staticmethod
+    def __first_xml_tag(config_path: Path) -> str | None:
+        with open(config_path, "r") as file:
+            matches = filter(None, (re.search(r"<\s*(?P<tag_name>[-\w]+)", line) for line in file))
+            match = next(matches, None)
+            return match.group("tag_name") if match else None
+
+    @classmethod
+    def from_default_settings(cls) -> "ConfigIndexBuilder":
+        """Make a ConfigIndexBuilder with the default settings."""
+        credentials = Credentials()
+        credentials.name = "commandline"
+
+        settings = TestBenchSettings()
+        settings.server_base_url = cls.DEFAULT_SERVER_BASE_URL
+        settings.credentials = credentials
+        settings.override_paths = ""
+
+        logger = ConsoleLogger(LogLevel.DEBUG)
+
+        return ConfigIndexBuilder(settings=settings, logger=logger)
 
 
 class TestCaseWriter(abc.ABC):
@@ -158,64 +407,49 @@ class TestCaseWriter(abc.ABC):
     __test__: ClassVar[bool] = False
 
     @abc.abstractmethod
-    def config_updates(self, updates: Mapping[str, datetime], configs: List[Path]) -> Mapping[Path, TextIO]:
-        """Generate new config files based on updates test cases.
+    def new_test_case(self, test_case: TestCaseData, config: Path) -> Mapping[Path, TextIO]:
+        """Add a new test case to the config file.
 
         Parameters
         ----------
-        updates : Mapping[str, datetime]
-            Maps test case names to new timestamps.
-            All of the test cases with a matching test case name should
-            have the `version` attribute in their path elements updated
-            in the config files. Several config files may be updated in
-            the process because config files can 'include' other config files.
-        configs : List[Path]
-            List of Path objects that link to the xml configurations
-            that need to be updated with the new `version` timestamp.
+        test_case : TestCaseData
+            All of the data needed to write the test case to the config.
+        config : Path
+            Path to the config file.
 
         Returns
         -------
         Mapping[Path, TextIO]
-            A map from files (`Path`s) to their new content, after the
-            config updates have been applied. Since config files can 'include'
-            other config files, several config files may be affected.
+            A mapping of config files with their respective new contents.
+            Since config files can include other config files, multiple
+            config files may be updated in the process.
         """
 
+    @abc.abstractmethod
+    def update_versions(
+        self, version_updates: Mapping[str, datetime], configs: Sequence[Path]
+    ) -> Mapping[Path, TextIO]:
+        """Generate new config files based on updates test cases.
 
-class TestBenchConfigLoader(TestCaseLoader):
-    """Loads test bench configs from a test bench config XML files."""
+        Parameters
+        ----------
+        version_updates : Mapping[str, datetime]
+            Maps test case names to new versions.
+            All of the test cases with a matching test case name should
+            have the `version` attribute in their path elements updated
+            in the config files. Several config files may be updated in
+            the process because config files can 'include' other config files.
+        configs : Sequence[Path]
+            Sequence of configuration files that contain test cases that
+            need to have their `version` updated..
 
-    __test__: ClassVar[bool] = False
-
-    def __init__(
-        self,
-        path: Path,
-        config_parser: Optional[XmlConfigParser] = None,
-        credentials: Optional[Credentials] = None,
-        server_base_url: str = "s3://dsc-testbench",
-    ) -> None:
-        self._path = path
-        self._config_parser = config_parser or XmlConfigParser()
-        if credentials is None:
-            credentials = Credentials()
-            credentials.name = "commandline"  # Trick to make the XmlConfigParser not throw an error.
-        self._credentials = credentials
-        self._server_base_url = server_base_url
-
-    def get_test_cases(self, filter: Optional[str] = None) -> Iterable[TestCaseData]:
-        settings = TestBenchSettings()
-        settings.server_base_url = self._server_base_url
-        settings.credentials = self._credentials
-        settings.override_paths = ""
-        settings.config_file = str(self._path)
-        logger = ConsoleLogger(LogLevel.DEBUG)
-        local_paths, _, test_case_configs = self._config_parser.load(settings, logger)
-
-        return [
-            TestCaseData.from_config(config, local_paths)
-            for config in test_case_configs
-            if (filter or "") in config.name
-        ]
+        Returns
+        -------
+        Mapping[Path, TextIO]
+            A map from config files to their new content, after the
+            config updates have been applied. Since config files can 'include'
+            other config files.
+        """
 
 
 class TestBenchConfigWriter(TestCaseWriter):
@@ -244,28 +478,147 @@ class TestBenchConfigWriter(TestCaseWriter):
         re.VERBOSE,
     )
 
-    def config_updates(self, updates: Mapping[str, datetime], configs: List[Path]) -> Mapping[Path, TextIO]:
-        result: Dict[Path, TextIO] = {}
-        for file_path in configs:
-            result.update(self.__update_config(file_path, updates))
+    TEST_CASES_PATTERN: ClassVar[re.Pattern] = re.compile(
+        r"""
+        ^ (?P<leading_space> \s* )
+        (?:
+            (?P<test_cases> <testCases (?: \s+ xmlns="http://schemas\.deltares\.nl/deltaresTestbench_v3" )? > ) |
+            (?P<include> <xi:include \s+ href="(?P<path>[-./\\:\s\w]+)" \s* />)
+        )
+        \s* $
+        """,
+        re.VERBOSE,
+    )
+
+    TEST_CASE_BEGIN_PATTERN: ClassVar[re.Pattern] = re.compile(
+        r"^ \s* <testCase \s+ name=\"(?P<name>[-\w.]+)\" [^>]* > \s* $",
+        re.VERBOSE,
+    )
+
+    TEST_CASE_END_PATTERN: ClassVar[re.Pattern] = re.compile(
+        r"^ \s* </testCase> \s* $",
+        re.VERBOSE,
+    )
+
+    @override
+    def new_test_case(self, test_case: TestCaseData, config: Path) -> Mapping[Path, TextIO]:
+        result: dict[Path, TextIO] = {}
+        destination = io.StringIO()
+        with config.open("r+") as source:
+            while line := source.readline():
+                destination.write(line)
+                match_object = self.TEST_CASES_PATTERN.match(line)
+                if not match_object:
+                    continue
+
+                if match_object.group("test_cases"):
+                    leading_space = match_object.group("leading_space")
+                    self.__search_test_case_insertion_point(test_case, source, destination)
+                    self.__write_test_case(test_case, destination, leading_space)
+
+                if match_object.group("include"):
+                    # Found an include tag, we need to seek the included file.
+                    path_attribute = match_object.group("path")
+                    if not path_attribute:
+                        raise ValueError("Include element without a path attribute found in config.")
+
+                    # Seek the included file and copy its content.
+                    include_path = Path(path_attribute)
+                    if not include_path.is_absolute():  # include path is relative to config file
+                        include_path = config.parent / include_path
+
+                    updates = self.new_test_case(test_case, include_path)
+                    result.update(updates)
+
+        destination.seek(0)
+        result[config] = destination
         return result
 
-    def __update_config(self, config_path: Path, updates: Mapping[str, datetime]) -> Mapping[Path, TextIO]:
-        result: Dict[Path, TextIO] = {}
+    def __search_test_case_insertion_point(self, test_case: TestCaseData, source: TextIO, destination: TextIO) -> None:
+        start = source.tell()
+        buffer = io.StringIO()
+        while True:
+            while line := source.readline():
+                buffer.write(line)
+                begin_match = self.TEST_CASE_BEGIN_PATTERN.match(line)
+                if begin_match:
+                    break
+            if not begin_match:
+                break  # End of file.
+
+            test_case_name = begin_match.group("name")
+            if test_case_name > test_case.name:
+                source.seek(start)  # Found insertion point.
+                break
+
+            while line := source.readline():
+                buffer.write(line)
+                end_match = self.TEST_CASE_END_PATTERN.match(line)
+                if end_match:
+                    break
+            if not end_match:
+                break  # End of file.
+
+            buffer.seek(0)
+            destination.write(buffer.read())
+            buffer = io.StringIO()
+            start = source.tell()
+
+    def __write_test_case(self, test_case: TestCaseData, destination: TextIO, leading_space: str) -> None:
+        spaces = sum(4 if c == "\t" else 1 for c in leading_space)
+        indents = (spaces + 3) // 4
+
+        destination.write(self.__indent(test_case.to_xml(), indents + 1))
+        destination.write("\n")
+
+    @staticmethod
+    def __indent(s: str, level: int, spaces_per_level: int = 4) -> str:
+        spaces = (level * spaces_per_level) * " "
+        return spaces + s.replace("\n", "\n" + spaces)
+
+    @override
+    def update_versions(
+        self, version_updates: Mapping[str, datetime], configs: Sequence[Path]
+    ) -> Mapping[Path, TextIO]:
+        result: dict[Path, TextIO] = {}
+        for file_path in configs:
+            config_updates = self.__update_versions_in_config(file_path, version_updates)
+            result.update(config_updates)
+        return result
+
+    def __update_versions_in_config(
+        self, config_path: Path, version_updates: Mapping[str, datetime]
+    ) -> Mapping[Path, TextIO]:
+        result: dict[Path, TextIO] = {}
         out_handle = io.StringIO()
         with open(config_path, "r") as config_handle:
             for line in config_handle:
                 out_handle.write(line)  # Copy line
-                if re.search(r'<testCases(\s+xmlns="http://schemas\.deltares\.nl/deltaresTestbench_v3")?>', line):
-                    self.__update_test_cases(config_handle, out_handle, updates)
-                elif mo := re.search(r"<xi:include\s+href=\"(?P<path>[-./\\:\s\w]+)\"\s*/>", line):
-                    include_path = config_path.parent / mo.group("path")
-                    result.update(self.__update_config(include_path, updates))
+                match_object = self.TEST_CASES_PATTERN.match(line)
+                if not match_object:
+                    continue
+
+                if match_object.group("test_cases"):
+                    self.__update_versions_in_test_cases(config_handle, out_handle, version_updates)
+
+                if match_object.group("include"):
+                    path_attribute = match_object.group("path")
+                    if not path_attribute:
+                        raise ValueError("Include element without a path attribute found in config.")
+
+                    # Seek the included file and copy its content.
+                    include_path = Path(path_attribute)
+                    if not include_path.is_absolute():  # include path is relative to config file
+                        include_path = config_path.parent / include_path
+
+                    config_updates = self.__update_versions_in_config(include_path, version_updates)
+                    result.update(config_updates)
+
         out_handle.seek(0)
         result[config_path] = out_handle
         return result
 
-    def __update_test_cases(
+    def __update_versions_in_test_cases(
         self,
         config_handle: TextIO,
         out_handle: TextIO,
@@ -287,9 +640,9 @@ class TestBenchConfigWriter(TestCaseWriter):
 
                 new_version = updates.get(mo.group("name"))
                 if new_version is not None:
-                    self.__update_test_case(config_handle, out_handle, new_version)
+                    self.__update_version_in_test_case(config_handle, out_handle, new_version)
 
-    def __update_test_case(
+    def __update_version_in_test_case(
         self,
         config_handle: TextIO,
         out_handle: TextIO,
@@ -307,40 +660,3 @@ class TestBenchConfigWriter(TestCaseWriter):
                 out_handle.write(f'{space}<path version="{new_version}">{path}</path>\n')
             else:
                 out_handle.write(line)
-
-
-class CaseListReader:
-    def read_cases_from_file(self, path: Path) -> defaultdict[str, list[str]]:
-        """Parse test cases from a text file.
-
-        Reads a csv file in the format `testcase, config`
-        Both values are used as filter testcase must only match one testcase
-        and config is matched against a part of the path.
-
-        Parameters
-        ----------
-        path: str
-            Path to the csv file to parse a testcase name from
-            and the optional configuration filter.
-
-        Returns
-        -------
-        defaultdict[str, List[str]]
-            A dictionary that couples a testcase string to one
-            or multiple configurations filters.
-            example: {e02_f01_c001_example_case: [*_lnx64.xml, *_win64.xml]}
-        """
-        parsed_file_cases: defaultdict[str, list[str]] = defaultdict(list)
-
-        with open(path, "r") as file:
-            for line in file:
-                if self.__line_is_comment(line):
-                    continue
-                case_filter, *xml_globs = (s.strip() for s in line.split(","))
-                # If glob is missing or empty (in case of trailing comma on line): Match all configs.
-                xml_glob = (xml_globs[0] or "*") if xml_globs else "*"
-                parsed_file_cases[case_filter].append(xml_glob)
-        return parsed_file_cases
-
-    def __line_is_comment(self, line: str) -> bool:
-        return line.startswith("#")

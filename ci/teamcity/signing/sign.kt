@@ -78,6 +78,18 @@ object Sign : BuildType({
                 """.trimIndent()
             }
         }
+        dependency(AbsoluteId("${DslContext.getParameter("delft3d_project_root")}_WindowsBuild2D3DSP")) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            artifacts {
+                cleanDestination = true
+                artifactRules = """
+                    ?:*_x64_*.zip!/x64/lib/flow2d3d_sp.dll => to_sign/lib
+                """.trimIndent()
+            }
+        }
     }
 
     features {
