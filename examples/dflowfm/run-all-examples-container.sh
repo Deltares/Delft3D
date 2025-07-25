@@ -27,7 +27,12 @@ done
 
 # Prepare image reference based on container runtime
 if [ "$container_runtime" = "apptainer" ]; then
-    container_image="docker://$image"
+    # when using image as argument then don't prepend docker://
+    if [ "$image" = "containers.deltares.nl/delft3d/delft3dfm:daily" ]; then
+        container_image="docker://$image"
+    else
+        container_image="$image"
+    fi
     echo "Using Apptainer with Docker image: $container_image"
     
     # Check if apptainer is available in PATH
