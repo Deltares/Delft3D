@@ -1,9 +1,10 @@
 #!/bin/bash
-sed -e
+set -e
 
 # Initialize variables
-image="containers.deltares.nl/delft3d/delft3dfm:daily"  # Default value
-container_runtime="docker"  # Default to docker
+default_image="containers.deltares.nl/delft3d/delft3dfm:daily"
+image="$default_image"
+container_runtime="docker"
 
 # Parse command-line arguments
 while [[ "$#" -gt 0 ]]; do
@@ -28,7 +29,7 @@ done
 # Prepare image reference based on container runtime
 if [ "$container_runtime" = "apptainer" ]; then
     # when using image as argument then don't prepend docker://
-    if [ "$image" = "containers.deltares.nl/delft3d/delft3dfm:daily" ]; then
+    if [ "$image" = "$default_image" ]; then
         container_image="docker://$image"
     else
         container_image="$image"
@@ -69,7 +70,7 @@ for dir in */ ; do
         
         # Check exit status
         if [ $? -ne 0 ]; then
-            echo "Warning: $script_name in $dir exited with non-zero status"
+            echo "Warning: $script_name in $dir exited with non-zero status (exit code: $?)"
         fi
     else
         echo "No $script_name found in $dir."
@@ -77,7 +78,7 @@ for dir in */ ; do
 done
 
 if [ $found_scripts -eq 0 ]; then
-    echo "No run_${container_runtime}.sh scripts found in any subdirectory."
+    echo "No run_${container_runtime}.sh scripts found in any subdirectory of $(pwd)."
     echo "Make sure you have the appropriate scripts for the selected runtime ($container_runtime)."
     exit 1
 else
