@@ -70,7 +70,9 @@ for dir in */ ; do
         
         # Check exit status
         if [ $? -ne 0 ]; then
-            echo "Warning: $script_name in $dir exited with non-zero status (exit code: $?)"
+            echo "##teamcity[message text='$script_name in $dir exited with non-zero status (exit code: $?)' status='ERROR']"
+        else
+            echo "##teamcity[message text='Successfully executed $script_name in $dir' status='NORMAL']"
         fi
     else
         echo "No $script_name found in $dir."
