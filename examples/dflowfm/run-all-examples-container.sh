@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 # Initialize variables
 default_image="containers.deltares.nl/delft3d/delft3dfm:daily"
