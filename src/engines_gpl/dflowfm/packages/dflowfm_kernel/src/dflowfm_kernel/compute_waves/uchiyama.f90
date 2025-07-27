@@ -8,7 +8,7 @@ subroutine uchiyama_u(L, hrms, rlabda, alfa, fb)
    double precision,                   intent(in)  :: hrms     ! wave height
    double precision,                   intent(in)  :: rlabda   ! wave length
    double precision,                   intent(in)  :: alfa     ! alfa_uchi for breaking or mixing
-   double precision, dimension(kmx),   intent(out) :: fb       ! vertical distribution in link positions   
+   double precision, dimension(kmx+1), intent(out) :: fb       ! vertical distribution in link positions   
    ! Local variables
    integer          :: LL, Lb, Lt
    double precision :: hoverL, wps, fbsum

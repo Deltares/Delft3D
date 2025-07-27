@@ -75,6 +75,7 @@
          endif
          ! get uorb, rlabda
          call wave_uorbrlabda()
+         call calculate_wavenumber_vectors()
       endif
 
       ! SWAN
@@ -87,13 +88,14 @@
          endif
          hwav = min(hwav, gammax*hs)
          call wave_uorbrlabda()
+         call calculate_wavenumber_vectors()
          if (kmx == 0) then
             call wave_comp_stokes_velocities_2d()
          end if
          !
          if (kmx>0) then
             ! to do
-            !call wave_compute_kinematic_pressure()
+            call wave_compute_kinematic_pressure()
          endif
       end if
       !
@@ -109,6 +111,7 @@
         endif
         hwav = min(hwav, gammax*hs)
         call wave_uorbrlabda()                       ! hwav gets depth-limited here
+        call calculate_wavenumber_vectors()
       end if
       !
       ! Surfbeat model
@@ -137,6 +140,7 @@
                endif
             enddo
             call wave_uorbrlabda()
+            call calculate_wavenumber_vectors()
          endif
       endif
 

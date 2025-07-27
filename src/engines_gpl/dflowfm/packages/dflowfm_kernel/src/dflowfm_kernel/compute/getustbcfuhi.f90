@@ -158,9 +158,9 @@
          fc       = 0.242/(log10(12.*huLL/ka))**2
          fc0      = 0.242/(log10(12.*huLL/ks))**2
          tauw     = 0.5d0*rhomean*fw*uorbu**2
-         ! Below: check all directions
-         tauwc    = 0.5*rhomean*fc*sqrt(umod**2+0.5*(1.16*uorbu)**2)*umod  ! u1L             ! Feddersen (2000) (for random waves)
-         tauc0    = 0.5*rhomean*fc0*umod*umod !u1L
+         !
+         tauwc    = 0.5*rhomean*fc*sqrt(umod**2+0.5*(1.16*uorbu)**2)*umod               ! Feddersen (2000) (for random waves)
+         tauc0    = 0.5*rhomean*fc0*umod*umod
          !
          ustbLL   = sqrt(abs(tauc0)/rhomean)                                            ! should correspond to ustbLL above 
          sqcf     = ustbLL/umod                                                         ! update sqcf
@@ -174,10 +174,6 @@
 
     if (jawave==0 .or. flowWithoutWaves) then
          z0urou(LL) = z0ucur(LL)                                ! morfo, bedforms, trachytopes
-    endif
-
-    if (jawave>0 .and. jawaveStokes >= 1 .and. .not. flowWithoutWaves) then                               ! Ustokes correction at bed
-         adve(Lb)  = adve(Lb) - cfuhi3D*ustokes(Lb)
     endif
 
     else if (ifrctyp == 10) then                                 ! Hydraulically smooth, glass etc

@@ -48,10 +48,10 @@
  ! 3D parameters
  integer                           :: kmx               !< nr of 3d layers, increasing in positive upward direction
                                                         !! if kmx==0 then 2D code. if kmx==1 then 3D code
- integer                           :: kmx1              !< kmx + 1, for dimensioning arrays that used to be (0:kmax)
+ !integer                           :: kmx1              !< kmx + 1, for dimensioning arrays that used to be (0:kmax)
  integer                           :: kmxd              !< dim of kmx, >= 1
  integer                           :: ndkx              !< dim of 3d flow nodes (internal + boundary)
- integer                           :: ndkx1             !< dim of 3d flow horizontal interfaces (internal + boundary), (0:kmx)
+ !integer                           :: ndkx1             !< dim of 3d flow horizontal interfaces (internal + boundary), (0:kmx)
  integer                           :: lnkx              !< dim of 3d flow links (internal + boundary)
  integer                           :: numvertdis        !< number of           vertical layer distributions
  integer                           :: mxlayz            !< max nr of z     layers in flow domain

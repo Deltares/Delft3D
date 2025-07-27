@@ -51,11 +51,12 @@ subroutine get_mixing_nguyen(LL, kmxx, ustbcw, deltau, Kbr, Kfr)
    ! Mixing distribution from breaking
    !visc_br(i,k) = cb*((((1-alphar)*Dw(i)+Dr(i))/rho)**(1./3)) &
    !         *Hrms(i)*d(i)*fwb(i,k)
-   do L = Lb, Lt
+   do L = Lb-1, Lt
       Kbr(L) = cb*hrms*huLL*fb(L)*(surdisLL/rhomean)**(1d0/3d0)
    enddo
+   !
    ! Mixing distribution from bottom dissipation
-   do L  = Lb, Lt
+   do L  = Lb-1, Lt
       huL = hu(L)
       z = max(huL,deltau)
       zz = z*( 1d0 - z/ huLL )  
