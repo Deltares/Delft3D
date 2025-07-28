@@ -523,7 +523,7 @@ class TeamCity(object):
 
         Uses the following TeamCity REST API endpoints:
         /app/rest/builds/<buildLocator>/tag
-        /app/rest/builds/multiple/snapshotDependency:(to:(id:<build_id>))/tags
+        /app/rest/builds/multiple/snapshotDependency:(to:(id:<build_id>)),count:1000/tags
 
         Arguments:
             build_id (str): The build id for a specific build.
@@ -548,7 +548,7 @@ class TeamCity(object):
             print(f"{result.status_code} - {result.content}")
             return False
 
-        endpoint = f"{self.__rest_uri}builds/multiple/snapshotDependency:(to:(id:{build_id}))/tags"
+        endpoint = f"{self.__rest_uri}builds/multiple/snapshotDependency:(to:(id:{build_id})),count:1000/tags"
         headers = {
             "Content-Type": "application/json",
             "X-TC-CSRF-Token": self.__get_csrf_token(),

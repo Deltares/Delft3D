@@ -162,7 +162,7 @@ contains
       use tree_data_types
       use tree_structures
       use m_alloc, only: reallocP
-      use m_ec_parameters, only: ec_undef_int, interpolate_spacetime
+      use m_ec_parameters, only: ec_undef_int
       use m_cell_geometry, only: xz, yz
 
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
@@ -193,7 +193,9 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_timespaceinitialfield_mpi
       use m_find_name, only: find_name
-
+      use m_get_kbot_ktop, only : getkbotktop
+      use timespace_parameters, only: WEIGHTFACTORS
+      
       implicit none
       character(len=*), intent(in) :: inifilename !< name of initial field file
       integer :: ierr !< Result status (DFM_NOERR on success)
@@ -314,19 +316,20 @@ contains
             end if
 
             ! This part of the code might be moved or changed. (See UNST-8247)
-            if (qid(1:13) == 'initialtracer' .and. method == interpolate_spacetime) then
+            ! 'initialtracer' with method unequal to WEIGHTFACTORS will be handled by calling fill_field_values below
+            if (qid(1:13) == 'initialtracer' .and. method == WEIGHTFACTORS) then
+               call reallocP(target_array, ndkx, keepExisting=.false., fill=dmiss)
+               ! Get iconst via qid, tracnam, itrac, itrac2const
                call get_tracername(qid, tracnam, qidnam)
                call add_tracer(tracnam, iconst) ! or just gets constituents number if tracer already exists
                itrac = find_name(trnames, tracnam)
-
                if (itrac == 0) then
                   call mess(LEVEL_WARN, 'flow_initexternalforcings: tracer '//trim(tracnam)//' not found')
                   success = .false.
                   return
                end if
                iconst = itrac2const(itrac)
-
-               call reallocP(target_array, ndkx, keepExisting=.false., fill=dmiss)
+               !
                kx = 1
                if (allocated(mask)) then
                   deallocate (mask)
@@ -335,10 +338,10 @@ contains
                ec_item = ec_undef_int
                call setzcs()
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, &
-                                                 filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
-                                                 varname=varname, tgt_item1=ec_item)
+                                                   filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
+                                                   varname=varname, tgt_item1=ec_item)
                success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                                      tunit, tstart_user, target_array)
+                                                                        tunit, tstart_user, target_array)
                if (.not. success) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
                end if
@@ -450,7 +453,7 @@ contains
       character(len=1), intent(out) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
       real(kind=dp), intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
-      character(len=*), intent(out) :: varname !< variable name within filename; only in case of NetCDF
+      character(len=*), intent(out) :: varname !< Variable name within filename; only in case of NetCDF. Will be empty string if not specified in input.
 
       integer, parameter :: ini_key_len = 32
       integer, parameter :: ini_value_len = 256
@@ -512,6 +515,9 @@ contains
          call warn_flush()
          return
       end if
+
+      varname = ''
+      call prop_get(node_ptr, '', 'dataVariableName ', varname)
 
       ! if dataFileType is 1dField, then it is not necessary to read interpolationMethod, operand, averagingType,
       ! averagingRelSize, averagingNumMin, averagingPercentile, locationType, extrapolationMethod, value
@@ -668,8 +674,6 @@ contains
             transformcoef(3) = real(int_friction_type, dp)
          end if
       end if
-
-      varname = ''
 
       ! We've made it to here, success!
       ja = 1
@@ -1251,7 +1255,7 @@ contains
       use messageHandling
       use m_alloc, only: realloc, aerr, reallocP
       use m_missing, only: dmiss
-      use m_ec_parameters, only: ec_undef_int, interpolate_spacetime
+      use m_ec_parameters, only: ec_undef_int
 
       use m_meteo, only: ec_addtimespacerelation
       use unstruc_files, only: resolvePath
@@ -1261,8 +1265,8 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_S3D, UNC_LOC_3DV
 
       use fm_external_forcings_data, only: success, transformcoef, trnames, uxini, uyini, inivelx, &
-                                           inively
-      use fm_external_forcings_utils, only: split_qid !, copy_3d_arrays_double_indexed_to_single_indexed
+                                           inively, NAMTRACLEN
+      use fm_external_forcings_utils, only: split_qid, get_tracername !, copy_3d_arrays_double_indexed_to_single_indexed
 
       use m_flow, only: s1, hs, sabot, satop, sa1, ndkx, tem1, h_unsat, kmx
       use m_flowgeom, only: ndx, lnx
@@ -1276,6 +1280,9 @@ contains
       use m_transportdata, only: ISED1, const_names, itrac2const, constituents
       use m_fm_wq_processes, only: wqbotnames, wqbot
       use m_find_name, only: find_name
+      use m_add_bndtracer, only: add_bndtracer
+      use timespace_parameters, only: WEIGHTFACTORS
+
 
       ! use network_data
       ! use dfm_error
@@ -1296,6 +1303,9 @@ contains
       integer :: iostat
       integer :: iconst, isednum, itrac, iwqbot
       character(len=idlen) :: qid_base, qid_specific
+      character(len=NAMTRACLEN) :: tracnam, qidnam
+      character(len=20) :: tracunit
+      integer :: janew
 
       integer :: layer
 
@@ -1407,10 +1417,14 @@ contains
             initem2D = 1
          end if
       case ('initialtracer')
-         if (method == interpolate_spacetime) then
+         if (method == WEIGHTFACTORS) then
             ! handled elsewhere
             return
          end if
+
+         call get_tracername(qid, tracnam, qidnam)
+         tracunit = " "
+         call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          call add_tracer(qid_specific, iconst) ! or just gets constituents number if tracer already exists
          itrac = find_name(trnames, qid_specific)
@@ -1539,7 +1553,7 @@ contains
       use unstruc_files, only: resolvePath
       use m_missing, only: dmiss
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL
-      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave
+      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, waveforcing
       use m_flow, only: frcu
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
@@ -1552,7 +1566,7 @@ contains
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use unstruc_model, only: md_extfile
       use string_module, only: str_tolower
-      use m_waveconst
+      use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
       use processes_input, only: paname, painp, num_spatial_parameters, &
                                  funame, funinp, num_time_functions, &
                                  sfunname, sfuninp, num_spatial_time_fuctions
@@ -1749,13 +1763,47 @@ contains
          target_array => Cdwusp
          iCdtyp = 1 ! only 1 coeff
          !
-      case ('wavesignificantheight')
+      case ('wavesignificantheight', 'waveperiod', 'wavedirection')
          if (jawave == WAVE_NC_OFFLINE) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
          else
-            call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 7')
+            write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', QUANTITY "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, '.'
+            call warn_flush()
+            success = .false.
+         end if
+      case ('wavebreakerdissipation', 'whitecappingdissipation')
+         if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
+            target_location_type = UNC_LOC_S
+            time_dependent_array = .true.
+         else            
+            write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+            call warn_flush()
+            success = .false.
+         end if
+      case ('xwaveforce', 'ywaveforce')
+         if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
+            target_location_type = UNC_LOC_S
+            time_dependent_array = .true.
+         else            
+            write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+                      'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+            call warn_flush()
+            success = .false.
+         end if
+      case ('totalwaveenergydissipation')
+         if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
+            target_location_type = UNC_LOC_S
+            time_dependent_array = .true.
+         else            
+            write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+            call warn_flush()
             success = .false.
          end if
       case ('waqparameter')
