@@ -81,7 +81,7 @@ object LinuxBuild : BuildType({
     features {
         xmlReport {
             reportType = XmlReport.XmlReportType.JUNIT
-            rules = "+:build_%product%/junit.xml"
+            rules = "+:unit-test-report.xml"
         }
     }
 

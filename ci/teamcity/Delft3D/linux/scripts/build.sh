@@ -29,4 +29,4 @@ cmake --build "build_${PRODUCT}" --parallel --target install --config "${BUILD_T
 # Run the unit tests. This is done after the 'install' step. 
 # Must be done after the 'install' step. Otherwise the tests don't run because shared libraries fail to load.
 # Write the test results to a jUnit XML test result file. The file path given in '--output-junit' is relative to the '--test-dir'.
-ctest --test-dir "build_${PRODUCT}" --build-config "${BUILD_TYPE}" --output-junit junit.xml --output-on-failure
+ctest --test-dir "build_${PRODUCT}" --build-config "${BUILD_TYPE}" --output-junit ../unit-test-report.xml --output-on-failure
