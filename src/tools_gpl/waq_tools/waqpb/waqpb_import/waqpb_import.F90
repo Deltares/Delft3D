@@ -30,6 +30,7 @@
 !     Program to decompose a PROCES.ASC file into tables
 program waqpb_import
    use m_validate_input, only: validate_names
+   use m_waqpb_import_utils, only: check_read_error, get_input_type
    use m_string_utils
    use m_waqpb_import_settings
    use m_cli_utils
@@ -47,9 +48,9 @@ program waqpb_import
    character(len=80) :: procesnaam
 
    real :: value
-   integer :: jndex, naanta, iaanta, iproc, i, ihulp, &
-              noffse, ihulp2, ihulp3, ihulp4, nprocl, &
-              noffsf, iitem, iconf
+   integer :: jndex, num_items, idx_item, iproc, i, ihulp, &
+              noffse, ihulp2, ihulp3, ihulp4, num_proc_exp, &
+              num_proc_read, noffsf, iitem, iconf
    integer :: delete, replac, insert, abort, none
    parameter(delete=1, replac=2, insert=3, abort=0, none=4)
    logical :: status
@@ -124,47 +125,40 @@ program waqpb_import
    write (io_mes, '('' Decomposing '',a,''......'')') settings%processes_overview_file_path
    open (newunit=io_asc, file=settings%processes_overview_file_path, status='old', err=999)
 
-   linecount = 1
-   read (io_asc, *, iostat=ierr) nprocl
-   if (ierr /= 0) then
-      write (*, *) 'Error reading the number of processes - correct input'
-      error stop
-   end if
-
-   call iniind
-
    !----------------------------------------------------------------------c
    !     Parsing the processes overview file
    !----------------------------------------------------------------------c
+   linecount = 1
+   read (io_asc, *, iostat=ierr) num_proc_exp
+   call check_read_error(io_mes, ierr, linecount, 'number of processes')
+   if (num_proc_exp <= 0) stop 'No processes found in the overview file'
 
-   do iproc = 1, nprocl
+   call iniind()
 
-      ! proces name and description
+   ! Loop over processes
+   iproc = 0
+   do
+      ! process name and description
       linecount = linecount + 1
       read (io_asc, '(a10,20x,a50)', iostat=ierr) c10, c50
-      if (ierr /= 0) then
-         write (*, *) 'Error reading process information at line', linecount
-         error stop
+      if (ierr > 0) then
+         write (*, '(A,I5)') 'Finished normally reading processes overview file at line ', linecount
+         exit
       end if
+      call check_read_error(io_mes, ierr, linecount, 'process information')
 
       write (io_mes, '(''Process '',a10)') c10
       write (*, '(''Process: '',a10)') c10
 
-      ! fortran code
+      ! name of Fortran subroutine
       linecount = linecount + 1
       read (io_asc, '(a10)', iostat=ierr) c10a
-      if (ierr /= 0) then
-         write (*, *) 'Error reading Fortran name at line', linecount
-         error stop
-      end if
+      call check_read_error(io_mes, ierr, linecount, 'name of Fortran subroutine')
 
-      ! transport code
+      ! transport switch
       linecount = linecount + 1
       read (io_asc, *, iostat=ierr) jndex
-      if (ierr /= 0) then
-         write (*, *) 'Error reading transport code at line', linecount
-         error stop
-      end if
+      call check_read_error(io_mes, ierr, linecount, 'transport switch')
 
       if (nproc + 1 > nprocm) stop 'DIMENSION NPROCM'
       call validate_names([c10a], io_mes) ! process Fortran name
@@ -176,23 +170,16 @@ program waqpb_import
 
       call upd_p3(c10a, settings%create_new_tables, io_mes)
 
-      ! input items on segment level
-
+      ! input items on cells
       linecount = linecount + 1
-      read (io_asc, '(i10)', iostat=ierr) naanta
-      if (ierr /= 0) then
-         write (*, *) 'Error reading number of input items (segment level) at line', linecount
-         error stop
-      end if
+      read (io_asc, '(i10)', iostat=ierr) num_items
+      call check_read_error(io_mes, ierr, linecount, 'number of input items on cells (segments)')
 
-      ihulp = naanta
-      do iaanta = 1, naanta
+      ihulp = num_items
+      do idx_item = 1, num_items
          linecount = linecount + 1
          read (io_asc, FMT31, iostat=ierr) c10, value, c1, c50, c20
-         if (ierr /= 0) then
-            write (*, *) 'Error reading input item (segment level) at line', linecount
-            error stop
-         end if
+         call check_read_error(io_mes, ierr, linecount, 'input item on cell (segment)')
 
          call upd_p2(c10, c50, value, 1, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
 
@@ -204,43 +191,24 @@ program waqpb_import
 
          inpupr(ninpu) = procid(nproc)
          inpuit(ninpu) = itemid(iitem)
-         inpunm(ninpu) = iaanta
+         inpunm(ninpu) = idx_item
          inpudo(ninpu) = c1
 
-         if (abs(value + 999.) < 1e-10) then
-            inpude(ninpu) = 'N'
-         elseif (abs(value + 888.) < 1e-10) then
-            inpude(ninpu) = 'G'
-         elseif (abs(value + 101.) < 1e-10) then
-            inpude(ninpu) = 'B'
-         elseif (abs(value + 11.) < 1e-10) then
-            inpude(ninpu) = 'M'
-         elseif (abs(value + 1.) < 1e-10) then
-            inpude(ninpu) = 'O'
-         else
-            inpude(ninpu) = 'Y'
-         end if
+         inpude(ninpu) = get_input_type(value)
          ! Switch to decide segment/exchange!
          inpusx(ninpu) = 1
 
       end do
 
-      ! input items on exchange level
-
+      ! input items on exchanges
       linecount = linecount + 1
-      read (io_asc, '(i10)', iostat=ierr) naanta
-      if (ierr /= 0) then
-         write (*, *) 'Error reading number of input items at line (exchange level)', linecount
-         error stop
-      end if
+      read (io_asc, '(i10)', iostat=ierr) num_items
+      call check_read_error(io_mes, ierr, linecount, 'number of input items on exchanges')
 
-      do iaanta = 1, naanta
+      do idx_item = 1, num_items
          linecount = linecount + 1
          read (io_asc, FMT31, iostat=ierr) c10, value, c1, c50, c20
-         if (ierr /= 0) then
-            write (*, *) 'Error reading input item (exchange level) at line', linecount
-            error stop
-         end if
+         call check_read_error(io_mes, ierr, linecount, 'input item on exchanges')
 
          call upd_p2(c10, c50, value, 2, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
          ninpu = ninpu + 1
@@ -251,42 +219,23 @@ program waqpb_import
 
          inpupr(ninpu) = procid(nproc)
          inpuit(ninpu) = itemid(iitem)
-         inpunm(ninpu) = iaanta + ihulp
+         inpunm(ninpu) = idx_item + ihulp
          inpudo(ninpu) = c1
-         if (abs(value + 999.) < 1e-10) then
-            inpude(ninpu) = 'N'
-         elseif (abs(value + 888.) < 1e-10) then
-            inpude(ninpu) = 'G'
-         elseif (abs(value + 101.) < 1e-10) then
-            inpude(ninpu) = 'B'
-         elseif (abs(value + 11.) < 1e-10) then
-            inpude(ninpu) = 'M'
-         elseif (abs(value + 1.) < 1e-10) then
-            inpude(ninpu) = 'O'
-         else
-            inpude(ninpu) = 'Y'
-         end if
+         inpude(ninpu) = get_input_type(value)
          ! Switch to decide segment/exchange!
          inpusx(ninpu) = 0
       end do
 
-      ! output items on segment level
-
+      ! output items on cells
       linecount = linecount + 1
-      read (io_asc, '(i10)', iostat=ierr) naanta
-      if (ierr /= 0) then
-         write (*, *) 'Error reading number of output items (segment level) at line', linecount
-         error stop
-      end if
+      read (io_asc, '(i10)', iostat=ierr) num_items
+      call check_read_error(io_mes, ierr, linecount, 'number of output items on cells (segments)')
 
-      ihulp = naanta
-      do iaanta = 1, naanta
+      ihulp = num_items
+      do idx_item = 1, num_items
          linecount = linecount + 1
          read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
-         if (ierr /= 0) then
-            write (*, *) 'Error reading output item (segment level) at line', linecount
-            error stop
-         end if
+         call check_read_error(io_mes, ierr, linecount, 'output item on cell (segment)')
 
          value = -999.
          call upd_p2(c10, c50, value, 1, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
@@ -294,28 +243,21 @@ program waqpb_import
          if (noutp > noutpm) stop 'DIMENSION NOUTPM'
          outppr(noutp) = procid(nproc)
          outpit(noutp) = itemid(iitem)
-         outpnm(noutp) = iaanta
+         outpnm(noutp) = idx_item
          outpdo(noutp) = c1
          ! Switch to decide segment/exchange!
          outpsx(noutp) = 1
       end do
 
-      ! output items on exchange level
-
+      ! output items on exchanges
       linecount = linecount + 1
-      read (io_asc, '(i10)', iostat=ierr) naanta
-      if (ierr /= 0) then
-         write (*, *) 'Error reading number of output items (exchange level) at line', linecount
-         error stop
-      end if
+      read (io_asc, '(i10)', iostat=ierr) num_items
+      call check_read_error(io_mes, ierr, linecount, 'number of output items on exchanges')
 
-      do iaanta = 1, naanta
+      do idx_item = 1, num_items
          linecount = linecount + 1
          read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
-         if (ierr /= 0) then
-            write (*, *) 'Error reading output item (exchange level) at line', linecount
-            error stop
-         end if
+         call check_read_error(io_mes, ierr, linecount, 'output item on exchanges')
 
          value = -999.
          call upd_p2(c10, c50, value, 2, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
@@ -323,29 +265,22 @@ program waqpb_import
          if (noutp > noutpm) stop 'DIMENSION NOUTPM'
          outppr(noutp) = procid(nproc)
          outpit(noutp) = itemid(iitem)
-         outpnm(noutp) = iaanta + ihulp
+         outpnm(noutp) = idx_item + ihulp
          outpdo(noutp) = c1
          ! Switch to decide segment/exchange!
          outpsx(noutp) = 0
       end do
 
       ! fluxes
-
       noffsf = noutf
       linecount = linecount + 1
-      read (io_asc, '(i10)', iostat=ierr) naanta
-      if (ierr /= 0) then
-         write (*, *) 'Error reading number of fluxes at line', linecount
-         error stop
-      end if
+      read (io_asc, '(i10)', iostat=ierr) num_items
+      call check_read_error(io_mes, ierr, linecount, 'number of fluxes')
 
-      do iaanta = 1, naanta
+      do idx_item = 1, num_items
          linecount = linecount + 1
          read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
-         if (ierr /= 0) then
-            write (*, *) 'Error reading flux at line', linecount
-            error stop
-         end if
+         call check_read_error(io_mes, ierr, linecount, 'flux')
 
          value = -999.
          call upd_p2(c10, c50, value, 1, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
@@ -353,32 +288,25 @@ program waqpb_import
          if (noutf > noutfm) stop 'DIMENSION NOUTFM'
          outfpr(noutf) = procid(nproc)
          outffl(noutf) = c10
-         outfnm(noutf) = iaanta
+         outfnm(noutf) = idx_item
          outfdo(noutf) = c1
       end do
 
-      ! stochi lines
-
+      ! stoichiometry lines
       noffse = nstoc
       linecount = linecount + 1
-      read (io_asc, '(i10)', iostat=ierr) naanta
-      if (ierr /= 0) then
-         write (*, *) 'Error reading number of stoichiometry lines at line', linecount
-         error stop
-      end if
+      read (io_asc, '(i10)', iostat=ierr) num_items
+      call check_read_error(io_mes, ierr, linecount, 'number of stoichiometry lines')
 
-      do iaanta = 1, naanta
+      do idx_item = 1, num_items
          linecount = linecount + 1
          read (io_asc, '(a10,2x,a10,2x,f10.0)', iostat=ierr) c10, c10b, value
-         if (ierr /= 0) then
-            write (*, *) 'Error reading stoichiometry line at line', linecount
-            error stop
-         end if
+         call check_read_error(io_mes, ierr, linecount, 'stoichiometry line')
 
          ! check presence of current flux in fluxes under current process
          ihulp = index_in_array(c10b(:10), outffl(noffsf + 1:noutf))
          if (ihulp <= 0) then
-            write (*, *) ' Illegal flux in stochi line!!'
+            write (*, *) ' Illegal flux in stoichiometry line!!'
             write (*, *) c10b
             stop ' Fatal error'
          end if
@@ -394,23 +322,16 @@ program waqpb_import
          call upd_p2(c10, c50, value, 0, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
       end do
 
-      ! stochi lines D
-
+      ! stoichiometry lines dispersion
       noffse = ndisp
       linecount = linecount + 1
-      read (io_asc, '(i10)', iostat=ierr) naanta
-      if (ierr /= 0) then
-         write (*, *) 'Error reading number of stoichiometry lines (dispersion) at line', linecount
-         error stop
-      end if
+      read (io_asc, '(i10)', iostat=ierr) num_items
+      call check_read_error(io_mes, ierr, linecount, 'number of stoichiometry lines (dispersion)')
 
-      do iaanta = 1, naanta
+      do idx_item = 1, num_items
          linecount = linecount + 1
          read (io_asc, '(a10,2x,a10,2x,f10.0)', iostat=ierr) c10, c10b, value
-         if (ierr /= 0) then
-            write (*, *) 'Error reading stoichiometry line (dispersion) at line', linecount
-            error stop
-         end if
+         call check_read_error(io_mes, ierr, linecount, 'stoichiometry line (dispersion)')
 
          ndisp = ndisp + 1
          if (ndisp > ndispm) stop 'DIMENSION NDISPM'
@@ -424,23 +345,16 @@ program waqpb_import
          call upd_p2(c10, c50, value, 0, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
       end do
 
-      ! stochi lines V
-
+      ! stoichiometry lines velocity
       noffse = nvelo
       linecount = linecount + 1
-      read (io_asc, '(i10)', iostat=ierr) naanta
-      if (ierr /= 0) then
-         write (*, *) 'Error reading number of stoichiometry lines (velocity) at line', linecount
-         error stop
-      end if
+      read (io_asc, '(i10)', iostat=ierr) num_items
+      call check_read_error(io_mes, ierr, linecount, 'number of stoichiometry lines (velocity)')
 
-      do iaanta = 1, naanta
+      do idx_item = 1, num_items
          linecount = linecount + 1
          read (io_asc, '(a10,2x,a10,2x,f10.0)', iostat=ierr) c10, c10b, value
-         if (ierr /= 0) then
-            write (*, *) 'Error reading stoichiometry line (velocity) at line', linecount
-            error stop
-         end if
+         call check_read_error(io_mes, ierr, linecount, 'stoichiometry line (velocity)')
 
          nvelo = nvelo + 1
          if (nvelo > nvelom) stop 'DIMENSION NVELOM'
@@ -456,12 +370,19 @@ program waqpb_import
       linecount = linecount + 1
       read (io_asc, '(a10)', iostat=ierr) c10
       if (c10(1:3) /= 'END') stop 'error'
+      iproc = iproc + 1
    end do
+   if (iproc /= num_proc_exp) then
+      write (*, '(A,I5,A, I5, A)') 'Warning: ', iproc, ' processes read from file. Expecting ', num_proc_exp, ' processes.'
+      write (io_mes, '(A,I5,A, I5, A)') 'Warning: ', iproc, ' processes read from file. Expecting ', num_proc_exp, ' processes.'
+   else 
+      write (*, '(A,I5)') 'Number of processes  read from file: ', iproc
+      write (io_mes, '(A,I5)') 'Number of processes  read from file: ', iproc
+   end if
 
    close (io_asc)
 
    ! Sort and check R6-R7-R8
-
    call sortst(stocfl, stocsu, stocsc, nstoc)
    call chksto(stocfl, stocsu, stocsc, nstoc, itemid, nitem, io_mes)
    call sortst(dispit, dispsu, dispsc, ndisp)
@@ -651,3 +572,4 @@ subroutine cratab(grp, newtab, initialConfgId, initialConfgName)
    end if
    return
 end subroutine cratab
+
