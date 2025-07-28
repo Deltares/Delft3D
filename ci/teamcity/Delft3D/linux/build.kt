@@ -78,6 +78,13 @@ object LinuxBuild : BuildType({
         }
     }
 
+    features {
+        xmlReport {
+            reportType = XmlReport.XmlReportType.JUNIT
+            rules = "+:build_%product%/junit.xml"
+        }
+    }
+
     dependencies {
         dependency(LinuxThirdPartyLibs) {
             snapshot {
