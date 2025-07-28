@@ -81,11 +81,20 @@ object WindowsBuild : BuildType({
                 cd build_%product%
 
                 cmake --build . -j --target install --config %build_type%
+
+                ctest --test-dir . --build-config %build_type% --output-junit ../unit-test-report.xml --output-on-failure
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
+        }
+    }
+
+    features {
+        xmlReport {
+            reportType = XmlReport.XmlReportType.JUNIT
+            rules = "+:unit-test-report.xml"
         }
     }
 })
