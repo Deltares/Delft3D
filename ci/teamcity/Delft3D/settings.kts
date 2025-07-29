@@ -53,7 +53,7 @@ project {
         buildType(LinuxBuild2D3DSP)
         buildType(LinuxCollect)
         buildType(LinuxRuntimeContainers)
-        buildType(LinuxRunAllDockerExamples)
+        buildType(LinuxRunAllContainerExamples)
         buildType(LinuxLegacyDockerTest)
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
@@ -62,7 +62,7 @@ project {
             LinuxBuild2D3DSP,
             LinuxCollect,
             LinuxRuntimeContainers,
-            LinuxRunAllDockerExamples,
+            LinuxRunAllContainerExamples,
             LinuxLegacyDockerTest,
             LinuxUnitTest,
             LinuxTest

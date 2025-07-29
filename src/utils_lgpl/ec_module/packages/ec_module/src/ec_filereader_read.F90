@@ -980,7 +980,7 @@ contains
    !> Read the next record from a NetCDF file.
       !! meteo1: readnetcdfblock
    ! TODO: cleanup: lastReadTime, TimeFrame usage, time conversions, remove hardcoded asumption of file content and structure
-   function ecNetcdfReadBlock(fileReaderPtr, item1, t0t1, n) result(success)
+   function ecNetcdfReadBlock(fileReaderPtr, item1, t0t1, n, current_time_MJD) result(success)
       use netcdf
       !
       logical :: success !< function status
@@ -988,6 +988,7 @@ contains
       type(tEcItem), pointer :: item1 !< Item containing quantity1, intent(inout)
       integer :: t0t1 !< read into Field T0 or T1 (0,1). -1: choose yourself and return where you put it.
       integer, intent(in) :: n !< dimension of quantity to read
+      real(dp), intent(in), optional :: current_time_MJD
       !
       integer :: i !< loop counter
       integer :: ierror !< return value of function calls
@@ -1007,6 +1008,7 @@ contains
       ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, iddim_time, string, ntimes); success = ecSupportNetcdfCheckError(ierror, "inq_dim time", fileReaderPtr%fileName)
       ierror = nf90_inq_varid(fileReaderPtr%fileHandle, 'time', idvar_time); success = ecSupportNetcdfCheckError(ierror, "inq_varid time", fileReaderPtr%fileName)
       !
+      if (ntimes < 1) return
       !
       ! varid: First compare name with standard_names
       idvar_q = -1
@@ -1045,20 +1047,44 @@ contains
                                                     tzone=fileReaderPtr%tframe%ec_timezone)) return
       ierror = nf90_get_var(fileReaderPtr%fileHandle, idvar_time, times, start=(/1/), count=(/ntimes/)); success = ecSupportNetcdfCheckError(ierror, "get_var time", fileReaderPtr%fileName)
       !
-      ! Search in times the first time bigger than lastReadTime
+      ! Search in times the best fitting time
+      ! read_index=-1: data in file is not updated, do not re-read
       !
       read_index = -1
-      if (comparereal(fileReaderPtr%lastReadTime, ec_undef_hp) == 0) then
-         !
-         ! No data read at all. Force reading for the first time
-         read_index = 1
-      else
-         do i = 1, ntimes
-            if (comparereal(times(i), fileReaderPtr%lastReadTime) == 1) then
+      if (present(current_time_MJD)) then
+         ! The current implementation is not optimal: refactoring needed
+         ! D-Flow FM writing: always in first field, times(1) will be updated
+         ! D-Waves   reading: always the first field
+         ! D-Waves   writing: normally ntimes=1 and D-Waves writes to the first/only field
+         !                    if appendCOM, D-Waves will add a new field and ntimes becomes > 1
+         ! D-Flow FM reading: if appendCOM, the times array will not be monotonically increasing, e.g. 60, 20, 40, 60
+         !                    Choose the best-fitting-time by comparing with current_time_MJD STARTING AT THE END OF THE ARRAY
+         do i = ntimes, 1, -1
+            tim = ecSupportThisTimeToMJD(fileReaderPtr%tframe, times(i))
+            if (comparereal(tim, current_time_MJD) < 1) then
                read_index = i
                exit
             end if
          end do
+         if (read_index > 0) then
+            if (comparereal(times(read_index), fileReaderPtr%lastReadTime) == 0) then
+               ! Already read, do not re-read
+               read_index = -1
+            end if
+         end if
+      else
+         if (comparereal(fileReaderPtr%lastReadTime, ec_undef_hp) == 0) then
+            ! No data read at all. Force reading for the first time
+            read_index = 1
+         else
+            ! Choose a time based on what was read the last time
+            do i = 1, ntimes
+               if (comparereal(times(i), fileReaderPtr%lastReadTime) == 1) then
+                  read_index = i
+                  exit
+               end if
+            end do           
+         end if
       end if
       if (read_index > 0) then
          if (t0t1 < 0) then

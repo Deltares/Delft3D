@@ -462,7 +462,8 @@ contains
       character(len=ini_value_len) :: averagingType
       character(len=ini_value_len) :: locationType
       character(len=ini_value_len) :: friction_type
-      integer :: iav, extrapolation, averagingNumMin, int_friction_type
+      integer :: iav, averagingNumMin, int_friction_type
+      character(len=ini_value_len) :: extrapolation
       logical :: retVal
       ja = 0
       groupname = tree_get_name(node_ptr)
@@ -634,10 +635,12 @@ contains
 
          ! read extrapolationMethod
          call prop_get(node_ptr, '', 'extrapolationMethod', extrapolation, retVal)
-         if (.not. retVal) then
-            extrapolation = 0
+         if (retVal .and. strcmpi(trim(extrapolation), 'yes')) then
+            ! TODO: implement extrapolation method (see UNST-8626) and then remove this warning
+            write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+               //trim(quantity)//'. Field ''extrapolationMethod'' is not (yet) supported. Continuing without extrapolation.'
+            call warn_flush()
          end if
-         method = method + 100 * extrapolation
 
          ! read value
          if (filetype == inside_polygon) then
@@ -1988,7 +1991,7 @@ contains
       call split_qid(qid, qid_base, qid_specific)
 
       select case (str_tolower(qid_base))
-      case ('waterdepth')
+      case ('initialwaterdepth', 'waterdepth')
          s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
       case ('bedrocksurfaceelevation')
          jasubsupl = 1

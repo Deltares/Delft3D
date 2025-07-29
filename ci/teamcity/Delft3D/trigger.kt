@@ -216,7 +216,7 @@ object Trigger : BuildType({
                         -X POST \
                         -H "Content-Type: application/xml" \
                         -d '<build branchName="%teamcity.build.branch%" replace="true">
-                            <buildType id="${LinuxRunAllDockerExamples.id}"/>
+                            <buildType id="${LinuxRunAllContainerExamples.id}"/>
                             <revisions>
                                 <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
                                     <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
