@@ -27,7 +27,7 @@ dnf config-manager --set-enabled powertools
 # we have to install them explicitly
 dnf install --assumeyes \
     which binutils patchelf diffutils procps m4 make gcc gcc-c++ \
-    openssl openssl-devel wget perl python3 xz
+    openssl openssl-devel wget perl python3 xz curl-devel
 
 # For Intel oneAPI, explicitly list the common-vars version, otherwise some much newer versions of packages will also be installed
 # as dependencies. Furthure, do not use intel 2023.2.1, since the dependencies of mkl 2023.2.0 will then also install the C++
@@ -66,9 +66,9 @@ set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
 for URL in \
-    'https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.xz' \
-    'https://ftp.gnu.org/gnu/automake/automake-1.17.tar.xz' \
-    'https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.xz'
+    'https://mirrors.kernel.org/gnu/autoconf/autoconf-2.72.tar.xz' \
+    'https://mirrors.kernel.org/gnu/automake/automake-1.17.tar.xz' \
+    'https://mirrors.kernel.org/gnu/libtool/libtool-2.4.7.tar.xz'
 do
     BASEDIR=$(basename -s '.tar.xz' "$URL")
     if [[ -d "/var/cache/src/${BASEDIR}" ]]; then

@@ -79,6 +79,8 @@ pyfakefs==5.6.0
     # via deltares-testbench (pyproject.toml)
 pyparsing==3.1.2
     # via matplotlib
+pyreadline3==3.5.4
+    # via deltares-testbench (pyproject.toml)
 pytest==8.3.2
     # via
     #   deltares-testbench (pyproject.toml)

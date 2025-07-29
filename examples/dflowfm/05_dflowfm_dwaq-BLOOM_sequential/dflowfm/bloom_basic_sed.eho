@@ -124,6 +124,6 @@ end-output
 output 'ExtVlOSS'
    description   'VL extinction by POC'
 end-output
-output 'RadSurf'
+output 'RadSurfAve'
    description   'irradiation at the water surface'
 end-output

@@ -39,7 +39,7 @@ module m_add_baroclinic_pressure
    integer, parameter, public :: DENSITY_TO_INTERFACES = 0 !< Density is based on linear interpolation of density at vertical interfaces.
    integer, parameter :: SALINITY_AND_TEMPERATURE_TO_INTERFACES = 1 !< Density is based on linear interpolation of recomputed density (from salinity, temperature (and pressure)) at vertical interfaces.
    integer, parameter :: DIRECTLY_RHO = 2 !< Cell density (i.e. rho(cell_index_3d)) is used
-   integer, public :: rhointerfaces = DENSITY_TO_INTERFACES !< Baroclinic pressure gradient method: -1 = original method. Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.
+   integer, public :: rhointerfaces = BAROC_ORIGINAL !< Baroclinic pressure gradient method: -1 = original method. Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.
 
 contains
 

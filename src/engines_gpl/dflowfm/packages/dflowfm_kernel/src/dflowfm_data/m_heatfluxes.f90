@@ -70,7 +70,7 @@ module m_heatfluxes
    real(kind=dp), dimension(:), allocatable :: qfrconmap
    real(kind=dp), dimension(:), allocatable :: qtotmap
 
-   real(kind=dp), dimension(:), allocatable :: secchisp
+   real(kind=dp), dimension(:), allocatable, target :: secchisp !< [m] Space-varying secchi depth {"location": "face", "shape": ["ndx"]}
 
 contains
 

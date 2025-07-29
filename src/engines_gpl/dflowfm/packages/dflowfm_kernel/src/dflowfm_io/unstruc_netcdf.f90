@@ -2946,7 +2946,7 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
-      use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, jatem, nbndtm, jased, nbndsd, numfracs, nbndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, rho, rhowat, thtbnds, thzbnds, kmxd, thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own
+      use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, jatem, nbndtm, jased, nbndsd, numfracs, nbndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only : tudunitstr, refdat, dts
       use m_flowgeom, only : lnx, ndx, ndxi, ndx2d, xz, yz, bl, xu, yu, ln, lnxi
@@ -3029,9 +3029,7 @@ contains
          id_spirint, id_hu, &
          id_ucxq, id_ucyq, &
          id_ucxqbnd, id_ucyqbnd, &
-         id_fvcoro, &
-         id_rho, id_rho_bnd, &
-         id_rhowat, id_rhowat_bnd
+         id_fvcoro
 
       integer, allocatable, save :: id_tr1(:), id_rwqb(:), id_bndtradim(:), id_ttrabnd(:), id_ztrabnd(:)
       integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
@@ -3584,31 +3582,6 @@ contains
             ! Fill boundary cells
             if (jarstbnd > 0 .and. ndxbnd > 0) then
                call add_att_sediment(id_sf1_bnd, stmpar%lsedsus, id_laydim, id_bnddim, id_timedim, irstfile, '_bnd', 'FlowElem_xbnd FlowElem_ybnd')
-            end if
-            ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
-            if (stmpar%morpar%densin) then
-               ! rho
-               ierr = nf90_def_var(irstfile, 'rho', nf90_double, id1, id_rho)
-               ierr = nf90_put_att(irstfile, id_rho, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-               ierr = nf90_put_att(irstfile, id_rho, 'long_name', 'Water density')
-               ierr = nf90_put_att(irstfile, id_rho, 'units', 'kg m-3')
-               if (jarstbnd > 0 .and. ndxbnd > 0) then
-                  ierr = nf90_def_var(irstfile, 'rho_bnd', nf90_double, id1_bnd, id_rho_bnd)
-                  ierr = nf90_put_att(irstfile, id_rho_bnd, 'coordinates', 'FlowElem_xbnd FlowElem_ybnd')
-                  ierr = nf90_put_att(irstfile, id_rho_bnd, 'long_name', 'Water density at boundaries')
-                  ierr = nf90_put_att(irstfile, id_rho_bnd, 'units', 'kg m-3')
-               end if !(jarstbnd > 0 .and. ndxbnd > 0) then
-               !rhowat
-               ierr = nf90_def_var(irstfile, 'rhowat', nf90_double, id1, id_rhowat)
-               ierr = nf90_put_att(irstfile, id_rhowat, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-               ierr = nf90_put_att(irstfile, id_rhowat, 'long_name', 'Water density (without sediment)')
-               ierr = nf90_put_att(irstfile, id_rhowat, 'units', 'kg m-3')
-               if (jarstbnd > 0 .and. ndxbnd > 0) then
-                  ierr = nf90_def_var(irstfile, 'rhowat_bnd', nf90_double, id1_bnd, id_rhowat_bnd)
-                  ierr = nf90_put_att(irstfile, id_rhowat_bnd, 'coordinates', 'FlowElem_xbnd FlowElem_ybnd')
-                  ierr = nf90_put_att(irstfile, id_rhowat_bnd, 'long_name', 'Water density (without sediment) at boundaries')
-                  ierr = nf90_put_att(irstfile, id_rhowat_bnd, 'units', 'kg m-3')
-               end if !(jarstbnd > 0 .and. ndxbnd > 0) then
             end if
          end if
          !
@@ -4686,12 +4659,6 @@ contains
                   deallocate (dum)
                end if
             end if !(jarstbnd > 0 .and. ndxbnd > 0)
-            !
-            ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
-            if (stmpar%morpar%densin) then
-               ierr = unc_put_var_rst(irstfile, id_rho, id_rho_bnd, rho, itim)
-               ierr = unc_put_var_rst(irstfile, id_rhowat, id_rhowat_bnd, rhowat, itim)
-            end if !(stmpar%morpar%densin)
          end if !(stmpar%lsedsus .gt. 0)
          ! morbl
          ierr = nf90_put_var(irstfile, id_morbl, bl, [1, itim], [ndxi, 1])
@@ -13551,22 +13518,6 @@ contains
       ierr = get_var_and_shift(imapfile, 'ucy', ucy, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
                                um%inode_own, um%inode_merge)
 
-      ! Read rho (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-      rho_read_rst = .true.
-
-      ierr = get_var_and_shift(imapfile, 'rho', rho, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
-                               um%inode_own, um%inode_merge)
-
-      if (ierr /= nf90_noerr) then
-         rho_read_rst = .false.
-      end if
-
-      ! Read rhowat (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-      if (stm_included) then
-         ierr = get_var_and_shift(imapfile, 'rhowat', rhowat, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
-                                  um%inode_own, um%inode_merge)
-      end if
-
       !Read Coriolis Adams-Bashford (flow link)
       if (Corioadamsbashfordfac > 0d0) then
          !We check on it because if the factor is 0, `fvcoro` is not allocated.
@@ -13628,20 +13579,6 @@ contains
                ierr = nf90_get_var(imapfile, id_ucyqbnd, tmp_ucyq, start=[kstart_bnd, it_read], count=[um%nbnd_read, 1])
                call check_error(ierr, 'ucyq_bnd')
             end if
-
-            if (ierr == 0) then
-               ! Read rho_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-               ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
-                                        um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
-
-               if (stm_included) then
-                  ! Read rhowat_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-                  ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
-                                           um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
-               end if
-            end if
-
-            if (nerr_ /= 0) goto 999
 
             if (jampi == 0) then
                do i = 1, um%nbnd_read
@@ -13710,14 +13647,6 @@ contains
             ierr = get_var_and_shift(imapfile, 'ucyq_bnd', tmp_ucyq, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
             call check_error(ierr, 'ucyq_bnd')
-            ! Read rho_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-            ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
-                                     um%jamergedmap, ibnd_own, um%ibnd_merge)
-            if (stm_included) then
-               ! Read rhowat_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-               ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
-                                        um%jamergedmap, ibnd_own, um%ibnd_merge)
-            end if
             do i = 1, ndxbnd_own
                j = ibnd_own(i)
                Lf = lnxi + j

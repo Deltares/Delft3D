@@ -73,7 +73,7 @@
      </program>
         <program name="python" addSearchPaths="true">
             <shell ref="command_prompt"/>
-            <path>python3.9</path>
+            <path>python3</path>
         </program>
  </programs>
 

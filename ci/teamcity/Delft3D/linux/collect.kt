@@ -24,8 +24,8 @@ object LinuxCollect : BuildType({
     artifactRules = """
         #teamcity:symbolicLinks=as-is
         lnx64 => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
-        dimr_version_lnx64.txt => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
-        dimr_version*txt => version
+        dimrset_version_lnx64.txt => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
+        dimrset_version*txt => version
     """.trimIndent()
 
     vcs {
@@ -44,9 +44,23 @@ object LinuxCollect : BuildType({
             }
         }
         exec {
+            name = "Remove system libraries"
+            workingDir = "lnx64/lib"
+            path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
+            conditions {
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
+        }
+        script {
+            name = "Set execute rights"
+            scriptContent = """
+                chmod a+x lnx64/bin/*
+            """.trimIndent()
+        }
+        exec {
             name = "Generate list of version numbers (from what-strings)"
             path = "/usr/bin/python3"
-            arguments = "ci/DIMRset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimr_version_lnx64.txt"
+            arguments = "ci/DIMRset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimrset_version_lnx64.txt"
         }
     }
 
@@ -69,6 +83,16 @@ object LinuxCollect : BuildType({
     }
 
     dependencies {
+        dependency(LinuxBuild2D3DSP) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+
+            artifacts {
+                artifactRules = "?:oss_artifacts_lnx64_*.tar.gz!lnx64/lib/libflow2d3d_sp.so => lnx64/lib"
+            }
+        }
         dependency(LinuxBuild) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START

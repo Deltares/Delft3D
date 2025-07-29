@@ -1380,7 +1380,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "totalwaveenergydissipation") then
-               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == 2) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
