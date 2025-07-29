@@ -7,8 +7,8 @@ contains
         integer, intent(in) :: ierr, linecount, io_mes
         character(len=*), intent(in) :: read_item
         if (ierr /= 0) then
-            write (*, *) 'Error reading ', trim(read_item), ' at line', linecount
-            write(io_mes, *) 'Error reading ', trim(read_item), ' at line', linecount
+            write (*, '(A, A, A, I0)') 'Error reading ', trim(read_item), ' at line', linecount
+            write(io_mes, '(A, A, A, I0)') 'Error reading ', trim(read_item), ' at line', linecount
             write (*, '(A)') 'Please check the input file for correctness.'
             error stop
         end if

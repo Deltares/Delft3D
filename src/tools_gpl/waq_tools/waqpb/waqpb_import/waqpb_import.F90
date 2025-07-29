@@ -45,7 +45,7 @@ program waqpb_import
    character(len=50) :: c50
    character(len=10) :: initialConfgId
    character(len=50) :: initialConfgName
-   character(len=80) :: procesnaam
+   character(len=255) :: line_buffer
 
    real :: value
    integer :: jndex, num_items, idx_item, iproc, i, ihulp, &
@@ -140,7 +140,13 @@ program waqpb_import
    do
       ! process name and description
       linecount = linecount + 1
-      read (io_asc, '(a10,20x,a50)', iostat=ierr) c10, c50
+      read(io_asc, '(A)', iostat=ierr) line_buffer
+      if (ierr <0) then
+         write (*, '(A, A)') 'Succesfully finished reading processes overview file ', settings%processes_overview_file_path
+         exit
+      end if
+      read (line_buffer, '(a10,20x,a50)', iostat=ierr) c10, c50
+      call check_read_error(io_mes, ierr, linecount, 'process name and description')
       if (ierr > 0) then
          write (*, '(A,I5)') 'Finished normally reading processes overview file at line ', linecount
          exit
@@ -372,12 +378,11 @@ program waqpb_import
       if (c10(1:3) /= 'END') stop 'error'
       iproc = iproc + 1
    end do
+   write (*, '(I0, A, A)') iproc, ' processes successfully read from file ', settings%processes_overview_file_path
+   write (io_mes, '(I0, A, A)') iproc, ' processes successfully read from file ', settings%processes_overview_file_path
    if (iproc /= num_proc_exp) then
-      write (*, '(A,I5,A, I5, A)') 'Warning: ', iproc, ' processes read from file. Expecting ', num_proc_exp, ' processes.'
-      write (io_mes, '(A,I5,A, I5, A)') 'Warning: ', iproc, ' processes read from file. Expecting ', num_proc_exp, ' processes.'
-   else 
-      write (*, '(A,I5)') 'Number of processes  read from file: ', iproc
-      write (io_mes, '(A,I5)') 'Number of processes  read from file: ', iproc
+      write (*, '(A,I0,A, I0, A)') 'Warning: the process overview file indicated ', num_proc_exp, ' processes, however, ', iproc, ' have been found and successfully read.'
+      write (io_mes, '(A,I0,A, I0, A)') 'Warning: the process overview file indicated ', num_proc_exp, ' processes, however, ', iproc, ' have been found and successfully read.'
    end if
 
    close (io_asc)
