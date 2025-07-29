@@ -30,7 +30,7 @@
 !     Program to decompose a PROCES.ASC file into tables
 program waqpb_import
    use m_validate_input, only: validate_names
-   use m_waqpb_import_utils, only: check_read_error, get_input_type
+   use m_waqpb_import_utils, only: check_read_error, get_input_type, parse_input_item_line
    use m_string_utils
    use m_waqpb_import_settings
    use m_cli_utils
@@ -184,8 +184,9 @@ program waqpb_import
       ihulp = num_items
       do idx_item = 1, num_items
          linecount = linecount + 1
-         read (io_asc, FMT31, iostat=ierr) c10, value, c1, c50, c20
-         call check_read_error(io_mes, ierr, linecount, 'input item on cell (segment)')
+         call parse_input_item_line(io_asc, linecount, c10, value, c1, c50, c20)
+         ! read (io_asc, FMT31, iostat=ierr) c10, value, c1, c50, c20
+         ! call check_read_error(io_mes, ierr, linecount, 'input item on cell (segment)')
 
          call upd_p2(c10, c50, value, 1, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
 
@@ -378,6 +379,7 @@ program waqpb_import
       if (c10(1:3) /= 'END') stop 'error'
       iproc = iproc + 1
    end do
+   ! End of reading processes overview file
    write (*, '(I0, A, A)') iproc, ' processes successfully read from file ', settings%processes_overview_file_path
    write (io_mes, '(I0, A, A)') iproc, ' processes successfully read from file ', settings%processes_overview_file_path
    if (iproc /= num_proc_exp) then
