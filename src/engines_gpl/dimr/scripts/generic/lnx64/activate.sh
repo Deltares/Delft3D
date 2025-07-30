@@ -86,7 +86,7 @@ _activator() {
         export PATH="$script_dir:$PATH"
 
         # Add the lib directory to LD_LIBRARY_PATH (prepend)
-        export LD_LIBRARY_PATH="$lib_dir:$LD_LIBRARY_PATH"
+        export LD_LIBRARY_PATH="$lib_dir${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
         # Set tracking variables
         export ACTIVE_DIMRSET_DIR="$parent_dir"
