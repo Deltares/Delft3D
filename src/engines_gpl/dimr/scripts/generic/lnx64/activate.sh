@@ -112,7 +112,7 @@ _activator() {
 
     echo "  - Added $SCRIPT_DIR to PATH"
     echo "  - Added $LIB_DIR to LD_LIBRARY_PATH"
-    echo "  - Added 'deactivate_dimrset' alias for deactivation"
+    echo "  - Run 'deactivate_dimrset' alias for deactivation"
 }
 
 # Execute the activator function with any provided arguments
