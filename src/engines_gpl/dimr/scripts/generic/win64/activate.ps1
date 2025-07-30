@@ -1,7 +1,6 @@
 # Ensure script is sourced
 if ($MyInvocation.InvocationName -ne '.' -and $MyInvocation.InvocationName -ne 'source') {
-    $scriptPath = $MyInvocation.MyCommand.Path
-    Write-Host "This script must be sourced to work properly. Usage: . $scriptPath [--deactivate]"
+    Write-Host "This script must be sourced to work properly. Usage: . $MyInvocation.InvocationName [--deactivate]"
     return
 }
 
@@ -100,7 +99,7 @@ function _activator {
 
     Write-Host "  - Added $SCRIPT_DIR to PATH"
     Write-Host "  - Added $LIB_DIR to PATH"
-    Write-Host "  - Run 'deactivate_dimrset' function for deactivation"
+    Write-Host "  - Added 'deactivate_dimrset' function for deactivation"
 }
 
 # Execute the activator function with any provided arguments
