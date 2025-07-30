@@ -49,9 +49,6 @@ export I_MPI_PMI_LIBRARY=/usr/lib64/libpmi2.so
 # Get the path to the script submitted using `sbatch`. `sbatch` copies the script to
 # a temporary directory before executing it, so we need `scontrol` to look up the original command.
 SCRIPT_PATH=$(scontrol show job $SLURM_JOB_ID | awk '/Command=/{split($1,a,"="); print(a[2])}')
-D3D_HOME="$(readlink -f $(dirname $SCRIPT_PATH)/..)"
-BIN_DIR=${D3D_HOME}/bin
-LIB_DIR=${D3D_HOME}/lib
 
 # Parse command line arguments.
 DEBUG_LEVEL=-1
@@ -61,7 +58,7 @@ while [[ $# -ge 1 ]]; do
     shift
     case $key in
         -d|--debug)
-        DEBUG_LEVEL="$1"
+        debuglevel="$1"
         shift
         ;;
         -m|--masterfile)
@@ -88,36 +85,34 @@ fi
 
 # Check debuglevel, translate into argument for dimr
 DEBUG_ARG=
-if [[ $DEBUG_LEVEL != -1 ]]; then
+if [[ $debuglevel != -1 ]]; then
     DEBUG_ARG="-d $DEBUG_LEVEL"
 fi
   
 # Configure environment variables and 'stacksize' limit.
 ulimit -s unlimited
-export PATH=$BIN_DIR:$PATH
-export LD_LIBRARY_PATH=$LIB_DIR:$LD_LIBRARY_PATH
-export PROC_DEF_DIR=${D3D_HOME}/share/delft3d
 
-if [[ $DEBUG_LEVEL = 0 ]]; then
+# For debugging only
+if [ $debuglevel -eq 0 ]; then
     echo === LD_LIBRARY_PATH =========================================
-    echo $LD_LIBRARY_PATH
+       echo $LD_LIBRARY_PATH
     echo =========================================================
     echo " "
-    echo === ldd $LIB_DIR/libdflowfm.so =========================================
-    ldd $LIB_DIR/libdflowfm.so
+    echo === ldd $ACTIVE_DIMRSET_DIR/lib/libdflowfm.so =========================================
+             ldd $ACTIVE_DIMRSET_DIR/lib/libdflowfm.so
     echo =========================================================
     echo " "
-    echo ===  $BIN_DIR/dflowfm -v =========================================
-    $BIN_DIR/dflowfm -v
+    echo ===  dflowfm -v =========================================
+              dflowfm -v
     echo =========================================================
     echo " "
-    echo ===  ldd $BIN_DIR/dimr =========================================
-    ldd $BIN_DIR/dimr
+    echo ===  ldd $ACTIVE_DIMRSET_DIR/bin/dimr =========================================
+              ldd $ACTIVE_DIMRSET_DIR/bin/dimr
     echo ========================================================
     echo " "
-    echo ===  ldd $LIB_DIR/libdimr.so =======================================
-    ldd $LIB_DIR/libdimr.so
+    echo ===  ldd $ACTIVE_DIMRSET_DIR/lib/libdimr.so =======================================
+              ldd $ACTIVE_DIMRSET_DIR/lib/libdimr.so
     echo =========================================================
 fi
 
-srun ${BIN_DIR}/dimr $CONFIG_FILE $DEBUG_ARG
+srun dimr $CONFIG_FILE $DEBUG_ARG

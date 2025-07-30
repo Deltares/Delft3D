@@ -79,10 +79,6 @@ case $key in
     cleanupfile="$1"
     shift
     ;;
-    --D3D_HOME)
-    D3D_HOME="$1"
-    shift
-    ;;
     --NNODES)
     NNODES="$1"
     shift

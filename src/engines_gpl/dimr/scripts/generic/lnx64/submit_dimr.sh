@@ -54,7 +54,6 @@ debuglevel=-1
 configfile=dimr_config.xml
 queue=normal-e3-c7
 JOBNAME=dimr
-D3D_HOME=
 runscript_extraopts=
 numnode=1
 do_mpi=0
@@ -130,9 +129,6 @@ if [ ${numnode} -ge 2 ] || [ ${corespernode} -ge 2 ]; then
     do_mpi=1
 fi
 
-
-
-
 ## MPI processes:
 if [ -z "${numnode}" ]; then
     echo "Error: number of nodes missing on commandline."
@@ -142,20 +138,14 @@ fi
 
 JOBNAME="${JOBNAME}_${numnode}x${corespernode}"
 
-
-scriptdirname=`readlink \-f \$0`
-scriptdir=`dirname $scriptdirname`
-D3D_HOME=$scriptdir/..
-RUNSCRIPT=$scriptdir/run_dimr.sh
-
-runscript_opts="-m ${configfile} ${debugarg} -c $corespernode --NNODES $numnode --D3D_HOME ${D3D_HOME}"
+runscript_opts="-m ${configfile} ${debugarg} -c $corespernode --NNODES $numnode
 runscript_opts="$runscript_opts $runscript_extraopts"
 if [[ $do_mpi -eq 0 ]]; then
-    echo "qsub -q $queue -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}"
-          qsub -q $queue -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}
+    echo "qsub -q $queue -N ${JOBNAME} run_dimr.sh ${runscript_opts}"
+          qsub -q $queue -N ${JOBNAME} run_dimr.sh ${runscript_opts}
 else
-    echo "qsub -q $queue -pe distrib ${numnode} -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}"
-          qsub -q $queue -pe distrib ${numnode} -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}
+    echo "qsub -q $queue -pe distrib ${numnode} -N ${JOBNAME} run_dimr.sh ${runscript_opts}"
+          qsub -q $queue -pe distrib ${numnode} -N ${JOBNAME} run_dimr.sh ${runscript_opts}
 fi
 
 
