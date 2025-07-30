@@ -45,7 +45,6 @@ debuglevel=-1
 configfile=dimr_config.xml
 cleanup=0
 cleanupfile=
-D3D_HOME=
 runscript_extraopts=
 NNODES=1
 ulimit -s unlimited
@@ -130,30 +129,13 @@ fi
 
 export NSLOTS=`expr $NNODES \* $corespernode`
 
-PROC_DEF_DIR=$D3D_HOME/share/delft3d
-export PROC_DEF_DIR
-
-
-
-# On Deltares systems only:
-if [ -f "/opt/apps/deltares/.nl" ]; then
-    # Try the following module load
-    module load intelmpi
-
-    # If not defined yet: Define I_MPI_FABRICS and FI_PROVIDER with proper values for Deltares systems
-    [ ! -z "$I_MPI_FABRICS" ] && echo "I_MPI_FABRICS is already defined" || export I_MPI_FABRICS=shm
-    [ ! -z "$FI_PROVIDER" ] && echo "FI_PROVIDER is already defined" || export FI_PROVIDER=tcp
-fi
-
-
-
-echo "    Configfile       : $configfile"
-echo "    D3D_HOME         : $D3D_HOME"
-echo "    PROC_DEF_DIR     : $PROC_DEF_DIR"
-echo "    Working directory: $workdir"
-echo "    Number of nodes  : $NNODES"
-echo "    Number of slots  : $NSLOTS"
-echo "    OMP_NUM_THREADS  : $OMP_NUM_THREADS"
+echo "    Configfile         : $configfile"
+echo "    ACTIVE_DIMRSET_DIR : $ACTIVE_DIMRSET_DIR"
+echo "    PROC_DEF_DIR       : $PROC_DEF_DIR"
+echo "    Working directory  : $workdir"
+echo "    Number of nodes    : $NNODES"
+echo "    Number of slots    : $NSLOTS"
+echo "    OMP_NUM_THREADS    : $OMP_NUM_THREADS"
 if [ $NSLOTS -ne 1 ]; then
     echo "    `type mpiexec`"
 fi
@@ -161,41 +143,26 @@ echo "    FI_PROVIDER      : $FI_PROVIDER"
 echo "    I_MPI_FABRICS    : $I_MPI_FABRICS"
 echo
 
-    #
-    # Set the directories containing the binaries
-    #
-
-bindir=$D3D_HOME/bin
-libdir=$D3D_HOME/lib
-
-    #
-    # No adaptions needed below
-    #
-
-    # Run
-export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
-export PATH=$bindir:$PATH
-
 # For debugging only
 if [ $debuglevel -eq 0 ]; then
     echo === LD_LIBRARY_PATH =========================================
        echo $LD_LIBRARY_PATH
     echo =========================================================
     echo " "
-    echo === ldd $libdir/libdflowfm.so =========================================
-             ldd $libdir/libdflowfm.so
+    echo === ldd $ACTIVE_DIMRSET_DIR/lib/libdflowfm.so =========================================
+             ldd $ACTIVE_DIMRSET_DIR/lib/libdflowfm.so
     echo =========================================================
     echo " "
-    echo ===  $bindir/dflowfm -v =========================================
-              $bindir/dflowfm -v
+    echo ===  dflowfm -v =========================================
+              dflowfm -v
     echo =========================================================
     echo " "
-    echo ===  ldd $bindir/dimr =========================================
-              ldd $bindir/dimr
+    echo ===  ldd $ACTIVE_DIMRSET_DIR/bin/dimr =========================================
+              ldd $ACTIVE_DIMRSET_DIR/bin/dimr
     echo ========================================================
     echo " "
-    echo ===  ldd $libdir/libdimr.so =======================================
-              ldd $libdir/libdimr.so
+    echo ===  ldd $ACTIVE_DIMRSET_DIR/lib/libdimr.so =======================================
+              ldd $ACTIVE_DIMRSET_DIR/lib/libdimr.so
     echo =========================================================
 fi
 
@@ -204,14 +171,14 @@ if [ $debuglevel -eq 0 ]; then
    if [ -z "${TIME}" ]; then
        export TIME="\n\n %PCPU (%Xtext+%Ddata %Mmax)k \nreal %e \nuser %U \nsys %s"
    fi
-   timecmd="/usr/bin/time -o resource_dimr.out"
+   timecmd="time -o resource_dimr.out"
 fi
 
 
 if [ $NSLOTS -eq 1 ]; then
     echo "executing:"
-    echo "$timecmd $bindir/dimr $configfile $debugarg"
-          $timecmd $bindir/dimr $configfile $debugarg
+    echo "$timecmd dimr $configfile $debugarg"
+          $timecmd dimr $configfile $debugarg
 else
     #
     # Create machinefile using $PE_HOSTFILE
