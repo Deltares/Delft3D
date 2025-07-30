@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# This script activates a specific DIMRset to use by setting system paths.
+#
 
 # Check if the script is sourced
 if [ "${BASH_SOURCE[0]}" == "${0}" ]; then
