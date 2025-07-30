@@ -14,13 +14,16 @@ _activator() {
     }
 
     # Get the parent directory (DIMRset root)
-    PARENT_DIR="$(dirname "$SCRIPT_DIR")"
+    PARENT_DIR="$(dirname "$BIN_DIR")"
 
     # Get the lib directory
     LIB_DIR="$PARENT_DIR/lib"
 
+    # Get the PROC_DEF_DIR
+    PROC_DEF_DIR="$PARENT_DIR/share/delft3d"
+
     # Validate required directories exist
-    if [ ! -d "$SCRIPT_DIR" ] || [ ! -d "$LIB_DIR" ]; then
+    if [ ! -d "$BIN_DIR" ] || [ ! -d "$LIB_DIR" ]; then
         echo "Error: Required directories (bin or lib) not found in $PARENT_DIR"
         return 1
     fi
@@ -48,6 +51,7 @@ _activator() {
 
             ACTIVE_BIN_DIR="$ACTIVE_DIMRSET_DIR/bin"
             ACTIVE_LIB_DIR="$ACTIVE_DIMRSET_DIR/lib"
+            ACTIVE_PROC_DEF_DIR="$ACTIVE_DIMRSET_DIR/share/delft3d"
 
             # Remove old bin from PATH
             remove_from_path "PATH" "$ACTIVE_BIN_DIR"
@@ -57,10 +61,12 @@ _activator() {
 
             # Unset the tracking variable and alias
             unset ACTIVE_DIMRSET_DIR
+            unset PROC_DEF_DIR
             unset -f deactivate_dimrset 2>/dev/null
 
             echo "  - Removed $ACTIVE_BIN_DIR from PATH"
             echo "  - Removed $ACTIVE_LIB_DIR from LD_LIBRARY_PATH"
+            echo "  - Removed $ACTIVE_PROC_DEF_DIR as PROC_DEF_DIR"
             echo "DIMRset deactivated."
         else
             echo "No DIMRset is currently active."
@@ -74,6 +80,7 @@ _activator() {
 
         ACTIVE_BIN_DIR="$ACTIVE_DIMRSET_DIR/bin"
         ACTIVE_LIB_DIR="$ACTIVE_DIMRSET_DIR/lib"
+        ACTIVE_PROC_DEF_DIR="$ACTIVE_DIMRSET_DIR/share/delft3d"
 
         # Remove old bin from PATH
         remove_from_path "PATH" "$ACTIVE_BIN_DIR"
@@ -83,14 +90,16 @@ _activator() {
 
         # Unset the old tracking variable and alias
         unset ACTIVE_DIMRSET_DIR
+        unset PROC_DEF_DIR
         unset -f deactivate_dimrset 2>/dev/null
 
         echo "  - Removed $ACTIVE_BIN_DIR from PATH"
         echo "  - Removed $ACTIVE_LIB_DIR from LD_LIBRARY_PATH"
+        echo "  - Removed $ACTIVE_PROC_DEF_DIR as PROC_DEF_DIR"
         echo "Previous DIMRset unloaded."
     elif [ -n "$ACTIVE_DIMRSET_DIR" ] && [ "$ACTIVE_DIMRSET_DIR" == "$PARENT_DIR" ]; then
         echo "This DIMRset is already active."
-        echo "  - $SCRIPT_DIR in PATH"
+        echo "  - $BIN_DIR in PATH"
         echo "  - $LIB_DIR in LD_LIBRARY_PATH"
         return 0
     fi
@@ -99,7 +108,7 @@ _activator() {
     echo "Activating DIMRset at $PARENT_DIR..."
 
     # Add the bin directory to PATH (prepend)
-    export PATH="$SCRIPT_DIR:$PATH"
+    export PATH="$BIN_DIR:$PATH"
 
     # Add the lib directory to LD_LIBRARY_PATH (prepend)
     export LD_LIBRARY_PATH="$LIB_DIR:$LD_LIBRARY_PATH"
@@ -108,10 +117,11 @@ _activator() {
     export ACTIVE_DIMRSET_DIR="$PARENT_DIR"
 
     # Add deactivation alias
-    alias deactivate_dimrset="source \"$SCRIPT_DIR/activate.sh\" --deactivate"
+    alias deactivate_dimrset="source \"$BIN_DIR/activate.sh\" --deactivate"
 
-    echo "  - Added $SCRIPT_DIR to PATH"
+    echo "  - Added $BIN_DIR to PATH"
     echo "  - Added $LIB_DIR to LD_LIBRARY_PATH"
+    echo "  - Set $PROC_DEF_DIR as PROC_DEF_DIR"
     echo "  - Run 'deactivate_dimrset' alias for deactivation"
 }
 

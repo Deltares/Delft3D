@@ -27,8 +27,6 @@ function print_usage_info {
     echo "-m, --masterfile <filename>"
     echo "       dimr configuration filename, default dimr_config.xml"
     echo "The following arguments are used when called by submit_dimr.sh:"
-    echo "    --D3D_HOME <path>"
-    echo "       path to binaries and scripts"
     echo "    --NNODES <N>"
     echo "       number of slots=NNODES*CoresPerNode, default 1 (not parallel)"
     exit 1
@@ -132,23 +130,6 @@ fi
 
 export NSLOTS=`expr $NNODES \* $corespernode`
 
-workdir=`pwd`
-
-if [ -z "${D3D_HOME}" ]; then
-    scriptdirname=`readlink \-f \$0`
-    scriptdir=`dirname $scriptdirname`
-    export D3D_HOME=$scriptdir/..
-else
-    # D3D_HOME is passed through via argument --D3D_HOME
-    # Commonly its value is "/some/path/bin/.."
-    # To obtain scriptdir: remove "/.." at the end of the string
-    scriptdir=${D3D_HOME%"/.."}
-fi
-if [ ! -d $D3D_HOME ]; then
-    echo "ERROR: directory $D3D_HOME does not exist"
-    print_usage_info
-fi
-export D3D_HOME
 PROC_DEF_DIR=$D3D_HOME/share/delft3d
 export PROC_DEF_DIR
 
