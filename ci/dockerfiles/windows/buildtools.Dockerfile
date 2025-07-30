@@ -40,8 +40,7 @@ RUN Start-Process msiexec -Wait -ArgumentList '/i C:\\cmake-3.31.0-rc1-windows-x
     setx /M PATH $($Env:PATH + ';C:\\Program Files\\CMake\\bin') ; \
     Remove-Item C:\\cmake-3.31.0-rc1-windows-x86_64.msi ; \
     New-Item -ItemType Junction -Path 'C:\\VS2022' -Target 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community' -Force ; \
-    New-Item -ItemType Junction -Path 'C:\\Intel' -Target 'C:\\Program Files (x86)\\Intel' -Force ; \
-    setx /M PATH "$($Env:PATH + ';C:\\Intel\\oneAPI\\compiler\\2025.2\\bin')"
+    New-Item -ItemType Junction -Path 'C:\\Intel' -Target 'C:\\Program Files (x86)\\Intel' -Force
 
 # Set environment variables after junction points are created
 ENV ONEAPI_ROOT="C:\\Intel\\oneAPI\\"
