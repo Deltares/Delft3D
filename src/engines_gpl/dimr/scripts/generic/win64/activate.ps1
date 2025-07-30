@@ -36,7 +36,7 @@ function Invoke-DIMRsetActivator {
         return 1
     }
 
-    # Function to remove a directory from a path variable
+    # Function to remove a directory from PATH
     function Remove-FromPath {
         param (
             [string]$VarName,
@@ -62,19 +62,17 @@ function Invoke-DIMRsetActivator {
         $ACTIVE_LIB_DIR = Join-Path $ActiveDir "lib"
         $ACTIVE_PROC_DEF_DIR = Join-Path $ActiveDir "share\delft3d"
 
-        # Remove old bin from PATH
+        # Remove old bin and lib from PATH
         Remove-FromPath -VarName "PATH" -DirToRemove $ACTIVE_BIN_DIR
+        Remove-FromPath -VarName "PATH" -DirToRemove $ACTIVE_LIB_DIR
 
-        # Remove old lib from LD_LIBRARY_PATH
-        Remove-FromPath -VarName "LD_LIBRARY_PATH" -DirToRemove $ACTIVE_LIB_DIR
-
-        # Unset tracking variables and alias
+        # Unset tracking variables and function
         Remove-Item -Path Env:ACTIVE_DIMRSET_DIR -ErrorAction SilentlyContinue
         Remove-Item -Path Env:PROC_DEF_DIR -ErrorAction SilentlyContinue
         Remove-Item -Path Function:Deactivate-DIMRset -ErrorAction SilentlyContinue
 
         Write-Host "  - Removed $ACTIVE_BIN_DIR from PATH"
-        Write-Host "  - Removed $ACTIVE_LIB_DIR from LD_LIBRARY_PATH"
+        Write-Host "  - Removed $ACTIVE_LIB_DIR from PATH"
         Write-Host "  - Removed $ACTIVE_PROC_DEF_DIR as PROC_DEF_DIR"
         Write-Host "$MessagePrefix completed."
     }
@@ -89,14 +87,10 @@ function Invoke-DIMRsetActivator {
         $procDefDir = Join-Path $ParentDir "share\delft3d"
         Write-Host "Activating DIMRset at $ParentDir..."
 
-        # Add the bin directory to PATH (prepend)
+        # Add the bin and lib directories to PATH (prepend)
         $currentPath = [Environment]::GetEnvironmentVariable("PATH", "Process")
-        [Environment]::SetEnvironmentVariable("PATH", "$scriptDir;$currentPath", "Process")
-
-        # Add the lib directory to LD_LIBRARY_PATH (prepend)
-        $currentLibPath = [Environment]::GetEnvironmentVariable("LD_LIBRARY_PATH", "Process")
-        $newLibPath = if ($currentLibPath) { "$libDir;$currentLibPath" } else { $libDir }
-        [Environment]::SetEnvironmentVariable("LD_LIBRARY_PATH", $newLibPath, "Process")
+        $newPath = "$scriptDir;$libDir;$currentPath"
+        [Environment]::SetEnvironmentVariable("PATH", $newPath, "Process")
 
         # Set tracking variables
         [Environment]::SetEnvironmentVariable("ACTIVE_DIMRSET_DIR", $ParentDir, "Process")
@@ -108,7 +102,7 @@ function Invoke-DIMRsetActivator {
         } -Force | Out-Null
 
         Write-Host "  - Added $scriptDir to PATH"
-        Write-Host "  - Added $libDir to LD_LIBRARY_PATH"
+        Write-Host "  - Added $libDir to PATH"
         Write-Host "  - Set $procDefDir as PROC_DEF_DIR"
         Write-Host "  - Added 'Deactivate-DIMRset' function for deactivation"
     }
@@ -131,7 +125,7 @@ function Invoke-DIMRsetActivator {
     elseif ($env:ACTIVE_DIMRSET_DIR -and $env:ACTIVE_DIMRSET_DIR -eq $PARENT_DIR) {
         Write-Host "This DIMRset is already active."
         Write-Host "  - $SCRIPT_DIR in PATH"
-        Write-Host "  - $LIB_DIR in LD_LIBRARY_PATH"
+        Write-Host "  - $LIB_DIR in PATH"
         Write-Host "  - $PROC_DEF_DIR as PROC_DEF_DIR"
         return
     }
