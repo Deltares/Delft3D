@@ -3,7 +3,7 @@ Please use the tarball containing the latest released version of the source code
 https://oss.deltares.nl/en/web/delft3dfm/get-started#Download%20source%20code
 See section "Workflow" below in case you want to contribute to the source code.
 
-# About compiling https://git.deltares.nl/oss/delft3d
+# About compiling https://github.com/Deltares/Delft3D
 
 #### Windows:
 - build.bat from an Intel oneAPI command prompt for Intel 64 for Visual Studio 2022.
@@ -44,7 +44,7 @@ Replace "..." by the actual path on your system to the checkout directory.
     -> Environment: PATH=...\build_fm-suite\x64\Debug;%PATH%;...\fm-suite\x64\Release\share\bin
 
 # Workflow
-- Request for access on https://git.deltares.nl/oss/delft3d
+- Request for access on https://github.com/Deltares/Delft3D
 - Create an issue in https://issuetracker.deltares.nl
   If an issue is not created, you have to create a branch of type research
 - Clone the repository
