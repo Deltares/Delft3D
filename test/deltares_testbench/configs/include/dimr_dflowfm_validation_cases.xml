@@ -13,7 +13,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f001_c011_Channel_with_refinement_triangles" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f001_general/c011_Channel_with_refinement_triangles</path>
+      <path version="2025-07-30T14:55:07.360000">e02_dflowfm/f001_general/c011_Channel_with_refinement_triangles</path>
       <maxRunTime>200.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
