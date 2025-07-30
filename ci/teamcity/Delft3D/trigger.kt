@@ -9,7 +9,7 @@ import Delft3D.windows.*
 
 object Trigger : BuildType({
 
-    description = "This is triggered for merge-requests and will schedule the appropriate testbenches."
+    description = "This is triggered for pull-requests and will schedule the appropriate testbenches."
 
     templates(
         TemplateMergeRequest,
@@ -283,7 +283,7 @@ object Trigger : BuildType({
             vcs {
                 quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_CUSTOM
                 quietPeriod = 60
-                branchFilter = "+:merge-requests/*"
+                branchFilter = "+:pull/*"
             }
         }
     }

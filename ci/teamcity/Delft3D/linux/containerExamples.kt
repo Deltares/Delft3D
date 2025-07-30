@@ -11,7 +11,7 @@ import Trigger
 
 object LinuxRunAllContainerExamples : BuildType({
     name = "Run all container examples (Matrix)"
-    description = "Run all container example cases for fm/ and all/ merge-requests using Docker and Apptainer."
+    description = "Run all container example cases for fm/ and all/ pull-requests using Docker and Apptainer."
     buildNumberPattern = "%dep.${LinuxRuntimeContainers.id}.product%: %build.vcs.number%"
 
     templates(

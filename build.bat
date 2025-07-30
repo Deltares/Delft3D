@@ -451,7 +451,7 @@ rem extra four spaces required for aligning Example, compensating for ^ characte
     echo -keep_build: do not delete the 'build_^<CONFIG^>' and 'install_^<CONFIG^>' folders.       Example: -keep_build
     echo.
     echo More info  : https://oss.deltares.nl/web/delft3d/source-code
-    echo About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/doc/README
+    echo About CMake: https://github.com/Deltares/Delft3D/tree/main/src/cmake/doc/README
     echo.
     set ERRORLEVEL=1
     goto :end
