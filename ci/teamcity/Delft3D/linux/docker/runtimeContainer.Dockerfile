@@ -27,6 +27,7 @@ RUN dnf --assumeyes update \
 ENV LD_LIBRARY_PATH=/opt/dimrset/lib
 ENV PATH=/opt/dimrset/bin:/opt/intel/mpi/bin:$PATH
 ENV PROC_DEF_DIR=/opt/dimrset/share/delft3d
+ENV ACTIVE_DIMRSET_DIR=/opt/dimrset
 ENV OMP_NUM_THREADS=1
 
 ARG GIT_COMMIT=unknown

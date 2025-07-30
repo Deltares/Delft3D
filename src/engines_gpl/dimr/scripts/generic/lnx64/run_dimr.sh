@@ -202,8 +202,8 @@ else
 
 
     echo "executing:"
-    echo "$timecmd mpiexec -np $NSLOTS $bindir/dimr $configfile $debugarg"
-          $timecmd mpiexec -np $NSLOTS $bindir/dimr $configfile $debugarg
+    echo "$timecmd mpiexec -np $NSLOTS dimr $configfile $debugarg"
+          $timecmd mpiexec -np $NSLOTS dimr $configfile $debugarg
 fi
 
 
