@@ -81,7 +81,7 @@ object LinuxBuild : BuildType({
             path = "ctest"
             arguments = """
                 --test-dir build_%product%
-                --build-config %build_type"
+                --build-config %build_type%
                 --output-junit ../unit-test-report-linux.xml
                 --output-on-failure
             """.trimIndent()
