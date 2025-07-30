@@ -1,3 +1,5 @@
+# This script is used to activate a specific DIMRset by loading the bin and lib folder into PATH
+
 # Ensure script is sourced
 if ($MyInvocation.InvocationName -ne '.' -and $MyInvocation.InvocationName -ne 'source') {
     Write-Host "This script must be sourced to work properly. Usage: . $MyInvocation.InvocationName [--deactivate]"
