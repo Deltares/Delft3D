@@ -8,13 +8,13 @@ fun BuildSteps.mergeTargetBranch(init: ScriptBuildStep.() -> Unit): ScriptBuildS
     step(result)
     result.name = "Merge target into branch"
     result.conditions {
-        contains("teamcity.build.branch", "merge-requests")
+        contains("teamcity.build.branch", "pull")
     }
     result.workingDir = "."
     result.scriptContent = """
         git --version
-        git remote add temporary "https://svc_teamcity_gitdsc:%gitlab_private_access_token%@git.deltares.nl/oss/delft3d.git"
-        git fetch temporary refs/merge-requests/*:refs/remotes/temporary/merge-requests/* --quiet
+        git remote add temporary "https://deltares-service-account:%github_deltares-service-account_access_token%@github.com/Deltares/delft3d.git"
+        git fetch temporary refs/pull/*:refs/remotes/temporary/pull/* --quiet
         git checkout temporary/%teamcity.build.branch%/merge
         git remote remove temporary
     """.trimIndent()

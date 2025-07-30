@@ -687,6 +687,21 @@
       </checks>
     </testCase>
 	
+    <testCase name="e02_f020_c036_heatmodel5_secchidepth_spatial" ref="dflowfm_default">
+      <path version="2025-07-28T18:20:08.923000">e02_dflowfm/f020_heat_flux/c036_heatmodel5_secchidepth_spatial</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/sech4_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="temperature" toleranceAbsolute="0.0001" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
     <testCase name="e02_f021_c001_bedwithobstacle_anticreep" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f021_anti-creep/c001_bedwithobstacle_anticreep</path>
       <maxRunTime>15000.0000000</maxRunTime>

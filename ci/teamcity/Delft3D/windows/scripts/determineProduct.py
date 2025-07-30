@@ -7,7 +7,7 @@ vcs_number = sys.argv[4]
 pr_source_branch = sys.argv[5] if len(sys.argv) > 5 else ""
 
 if product == "auto-select":
-    if "merge-request" in branch:
+    if "pull" in branch:
         if pr_source_branch.startswith("revert-"):
             product = "all"
         else:
