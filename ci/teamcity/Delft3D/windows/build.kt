@@ -81,17 +81,7 @@ object WindowsBuild : BuildType({
                 cd build_%product%
 
                 cmake --build . -j --target install --config %build_type%
-            """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
-            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
-            dockerPull = true
-            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
-        }
-        script {
-            name = "Run unit tests"
-            scriptContent = """
-                call C:/set-env-vs2022.cmd
-                cd build_%product%
+
                 ctest --test-dir . --build-config %build_type% --output-junit ../unit-test-report-windows.xml --output-on-failure
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
