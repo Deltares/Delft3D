@@ -29,7 +29,7 @@ _activator() {
     if [ ! -d "$SCRIPT_DIR" ] || [ ! -d "$LIB_DIR" ]; then
         echo "Error: Required directories (bin or lib) not found in $PARENT_DIR"
         return 1
-    }
+    fi
 
     # Function to remove a directory from a path variable
     remove_from_path() {
