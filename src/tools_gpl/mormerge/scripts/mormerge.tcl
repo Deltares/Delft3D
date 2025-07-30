@@ -1521,7 +1521,7 @@ proc startMormerge { inputfilename workdir mergeexe localrun runid node } {
       }
       puts $scriptfile "\nrem Start mormerge\n"
       puts $scriptfile "set PATH=$exedir;$sharedir;$libdir;%PATH%"
-      puts $scriptfile "start /b [spaceSafe $mergeexe] -i [file tail $inputfilename] -w $rundir -r $runid >$screenfile 2>&1"
+      puts $scriptfile "start /b [spaceSafe $mergeexe] -i [file tail $inputfilename] -w [spaceSafe $rundir] -r $runid >$screenfile 2>&1"
       if { $localrun } {
          puts $scriptfile "\nrem Copy rundir data back to modeldir\n"
          puts $scriptfile "copy /Y $screenfile $rundir"
@@ -1789,7 +1789,7 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
       }
       if { $infillist(dimrexedir) != " " } {
          puts $scriptfile "\nrem Start $infillist(dimrexename)\n"
-         puts $scriptfile "$dimrexe --forceExit $infillist(dimrargs) >$infillist(dimrexename).scr 2>&1"
+         puts $scriptfile "\"$dimrexe\" --forceExit $infillist(dimrargs) >$infillist(dimrexename).scr 2>&1"
       } else {
          puts $scriptfile "\nrem Start $infillist(flowexename)\n"
          puts $scriptfile "set PATH=$exedir;$sharedir;$libdir;%PATH%"

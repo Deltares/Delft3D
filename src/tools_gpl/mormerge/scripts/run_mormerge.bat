@@ -51,7 +51,7 @@ set scriptname=%dmorscripts%/mormerge.tcl
 
     rem Run
 echo executing: %TCL_EXE% %scriptname% -i %argfile% -s %scriptname%
-%TCL_EXE% %scriptname% -i %argfile% -s %scriptname%
+"%TCL_EXE%" "%scriptname%" -i %argfile% -s "%scriptname%"
 
 
 goto end
