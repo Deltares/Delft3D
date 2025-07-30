@@ -39,8 +39,8 @@ ADD cmake-3.31.0-rc1-windows-x86_64.msi C:\\cmake-3.31.0-rc1-windows-x86_64.msi
 RUN Start-Process msiexec -Wait -ArgumentList '/i C:\\cmake-3.31.0-rc1-windows-x86_64.msi /qn' ; \
     setx /M PATH $($Env:PATH + ';C:\\Program Files\\CMake\\bin') ; \
     Remove-Item C:\\cmake-3.31.0-rc1-windows-x86_64.msi ; \
-    cmd /c 'mklink /J C:\\VS2022 \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community\"' ; \
-    cmd /c 'mklink /J C:\\Intel \"C:\\Program Files (x86)\\Intel\"' ; \
+    New-Item -ItemType Junction -Path 'C:\\VS2022' -Target 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community' -Force ; \
+    New-Item -ItemType Junction -Path 'C:\\Intel' -Target 'C:\\Program Files (x86)\\Intel' -Force ; \
     setx /M PATH "$($Env:PATH + ';C:\\Intel\\oneAPI\\compiler\\2025.2\\bin')"
 
 # Set environment variables after junction points are created
