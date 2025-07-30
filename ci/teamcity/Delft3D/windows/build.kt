@@ -91,8 +91,8 @@ object WindowsBuild : BuildType({
             name = "Run unit tests"
             scriptContent = """
                 call C:/set-env-vs2022.cmd
-
-                ctest --test-dir build_%product% --build-config %build_type% --output-junit ../unit-test-report-windows.xml --output-on-failure
+                cd build_%product%
+                ctest --test-dir . --build-config %build_type% --output-junit ../unit-test-report-windows.xml --output-on-failure
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
