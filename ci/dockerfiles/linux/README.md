@@ -92,14 +92,14 @@ make install
 
 ### Build arguments
 The dockerfile has several build arguments:
-- `INTEL_ONEAPI_VERSION` (default value: `2024`)
-- `INTEL_FORTRAN_COMPILER` (default value: `ifort`)
+- `INTEL_ONEAPI_VERSION` (default value: `2025`)
+- `INTEL_FORTRAN_COMPILER` (default value: `ifx`)
 - `DEBUG` (default value: `0`)
 - `BUILDTOOLS_IMAGE_URL` (default value: `containers.deltares.nl/delft3d-dev/delft3d-buildtools`)
 - `BUILDTOOLS_IMAGE_TAG` (default value: `oneapi-${INTEL_ONEAPI_VERSION}`)
 
 The `INTEL_ONEAPI_VERSION` build argument is used to select the right `buildtools` image. Valid values are
-`2023` and `2024`.
+`2023`, `2024` and `2025`.
 
 The `INTEL_FORTRAN_COMPILER` selects which Fortran compiler is used to compile the Fortran libraries
 (there are just a few libraries for which this is relevant). Valid values are `ifort` and `ifx`. The
@@ -121,8 +121,8 @@ The `BUILDTOOLS_IMAGE_TAG` ensures that the `third-party-libs` image is based on
 From the delft3d repository root:
 ```bash
 sudo docker build . -f ci/dockerfiles/linux/third-party-libs.Dockerfile -t localhost/third-party-libs:$TAG \
-    --build-arg INTEL_ONEAPI_VERSION=2024 \
-    --build-arg INTEL_FORTRAN_COMPILER=ifort \
+    --build-arg INTEL_ONEAPI_VERSION=2025 \
+    --build-arg INTEL_FORTRAN_COMPILER=ifx \
     --build-arg DEBUG=0
 ```
 Note: Passing the build arguments is not necessary if the default value is required.
@@ -154,8 +154,8 @@ This avoids copying unnecessary files to the build image.
 
 ### Build arguments
 The dockerfile has three build argument:
-- `INTEL_ONEAPI_VERSION` (default value: `2024`)
-- `INTEL_FORTRAN_COMPILER` (default value: `ifort`)
+- `INTEL_ONEAPI_VERSION` (default value: `2025`)
+- `INTEL_FORTRAN_COMPILER` (default value: `ifx`)
 - `DEBUG` (default value: `0`)
 
 The build arguments are the same as the ones used in the `third-party-libs` image. The build arguments are used to select 
@@ -166,8 +166,8 @@ From the delft3d repository root:
 ```bash
 docker build . -f ci/dockerfiles/linux/dimrset.Dockerfile \
     -t localhost/dimrset:$TAG \
-    --build-arg INTEL_ONEAPI_VERSION=2024 \
-    --build-arg INTEL_FORTRAN_COMPILER=ifort \
+    --build-arg INTEL_ONEAPI_VERSION=2025 \
+    --build-arg INTEL_FORTRAN_COMPILER=ifx \
     --build-arg DEBUG=0
 ```
 Note: Passing the build arguments is not necessary if the default value is required.
@@ -207,9 +207,9 @@ sudo docker pull containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:one
 If you have made changes to the dockerfiles, you may need to build the `buildtools` and `third-party-libs` images locally.
 Go to the Delft3D root and run
 ```bash
-sudo docker build . --file ci/dockerfiles/linux/buildtools.Dockerfile --tag localhost/buildtools:<BUILD_TOOLS_TAG> --build-arg INTEL_ONEAPI_VERSION=2024
+sudo docker build . --file ci/dockerfiles/linux/buildtools.Dockerfile --tag localhost/buildtools:<BUILD_TOOLS_TAG> --build-arg INTEL_ONEAPI_VERSION=2025
 sudo docker build . --file ci/dockerfiles/linux/third-party-libs.Dockerfile --tag localhost/third-party-libs:<THIRD_PARTY_TAG> \
-    --build-arg INTEL_ONEAPI_VERSION=2024 --build-arg INTEL_FORTRAN_COMPILER=ifx --build-arg DEBUG=0 \
+    --build-arg INTEL_ONEAPI_VERSION=2025 --build-arg INTEL_FORTRAN_COMPILER=ifx --build-arg DEBUG=0 \
     --build-arg BUILDTOOLS_IMAGE_URL=localhost/buildtools --build-arg BUILDTOOLS_IMAGE_TAG=<BUILD_TOOLS_TAG>
 ```
 Here, the `<BUILD_TOOLS_TAG>` and `<THIRD_PARTY_TAG>` can be the same, and can reflect the issue number or branch that you are working on.

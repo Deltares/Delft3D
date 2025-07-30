@@ -2,7 +2,7 @@
 
 FROM containers.deltares.nl/base_linux_containers/8-base:latest AS buildtools
 
-ARG INTEL_ONEAPI_VERSION=2024
+ARG INTEL_ONEAPI_VERSION=2025
 
 # Install intel C/C++ and Fortran compilers, the
 # math kernel library and MPI library/tools
@@ -45,6 +45,12 @@ elif [[ $INTEL_ONEAPI_VERSION = "2024" ]]; then
     COMPILER_FORTRAN_VERSION="2024.2.1"
     MKL_DEVEL_VERSION="2024.2.2"
     MPI_DEVEL_VERSION="2021.13.1"
+elif [[ $INTEL_ONEAPI_VERSION = "2025" ]]; then
+    COMMON_VARS_VERSION="2025.2.0"
+    COMPILER_DPCPP_CPP_VERSION="2025.2.x86_64"
+    COMPILER_FORTRAN_VERSION="2025.2.x86_64"
+    MKL_DEVEL_VERSION="2025.2.x86_64"
+    MPI_DEVEL_VERSION="2021.16.x86_64"
 fi
 
 dnf install --assumeyes \
