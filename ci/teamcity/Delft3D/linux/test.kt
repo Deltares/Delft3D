@@ -130,6 +130,7 @@ object LinuxTest : BuildType({
         dependency(Trigger) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
         }
         dependency(LinuxRuntimeContainers) {
