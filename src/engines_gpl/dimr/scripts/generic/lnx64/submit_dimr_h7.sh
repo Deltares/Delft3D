@@ -94,25 +94,7 @@ ulimit -s unlimited
 
 # For debugging only
 if [ $debuglevel -eq 0 ]; then
-    echo === LD_LIBRARY_PATH =========================================
-       echo $LD_LIBRARY_PATH
-    echo =========================================================
-    echo " "
-    echo === ldd $ACTIVE_DIMRSET_DIR/lib/libdflowfm.so =========================================
-             ldd $ACTIVE_DIMRSET_DIR/lib/libdflowfm.so
-    echo =========================================================
-    echo " "
-    echo ===  dflowfm -v =========================================
-              dflowfm -v
-    echo =========================================================
-    echo " "
-    echo ===  ldd $ACTIVE_DIMRSET_DIR/bin/dimr =========================================
-              ldd $ACTIVE_DIMRSET_DIR/bin/dimr
-    echo ========================================================
-    echo " "
-    echo ===  ldd $ACTIVE_DIMRSET_DIR/lib/libdimr.so =======================================
-              ldd $ACTIVE_DIMRSET_DIR/lib/libdimr.so
-    echo =========================================================
+    common.sh debug dimr dflowfm
 fi
 
 srun dimr $CONFIG_FILE $DEBUG_ARG
