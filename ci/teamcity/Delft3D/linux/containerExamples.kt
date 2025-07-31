@@ -49,7 +49,8 @@ object LinuxRunAllContainerExamples : BuildType({
             )
             param("distribution", listOf(
                 value("alma8", label = "AlmaLinux 8"),
-                value("alma9", label = "AlmaLinux 9")
+                value("alma9", label = "AlmaLinux 9"),
+                value("alma10", label = "AlmaLinux 10")
             ))
         }
     }

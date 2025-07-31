@@ -57,6 +57,7 @@ object LinuxTest : BuildType({
             options = listOf(
                 "AlmaLinux 8" to "alma8",
                 "AlmaLinux 9" to "alma9",
+                "AlmaLinux 9" to "alma10"
             )
         )
         param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:%distribution%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
