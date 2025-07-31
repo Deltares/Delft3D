@@ -20,7 +20,7 @@ object StartVerschilanalyse : BuildType({
 
     params {
         param("harbor_webhook.image.tag", "latest")
-        select("va_harbor_protocol", "oras", display = ParameterDisplay.PROMPT, options = listOf("oras", "docker"))
+        param("va_harbor_protocol", "docker")
         param(
             "harbor_webhook.image.url", 
             sequenceOf(

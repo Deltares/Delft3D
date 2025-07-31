@@ -25,8 +25,7 @@ object LinuxBuild2D3DSP : BuildType({
     allowExternalStatus = true
     artifactRules = """
         #teamcity:symbolicLinks=as-is
-        **/*.log => logging
-        build_flow2d3d/install/** => oss_artifacts_lnx64_%build.vcs.number%.tar.gz!lnx64
+        build_flow2d3d/install/lib/libflow2d3d_sp.so => oss_artifacts_lnx64_%build.vcs.number%.tar.gz!lnx64/lib
     """.trimIndent()
 
     outputParams {

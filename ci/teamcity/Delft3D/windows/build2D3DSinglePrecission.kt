@@ -23,8 +23,7 @@ object WindowsBuild2D3DSP : BuildType({
     allowExternalStatus = true
     artifactRules = """
         #teamcity:symbolicLinks=as-is
-        **/*.log => logging
-        build_flow2d3d/install/lib/** => oss_artifacts_x64_%build.vcs.number%.zip!x64/lib
+        build_flow2d3d/install/lib/flow2d3d_sp.dll => oss_artifacts_x64_%build.vcs.number%.zip!x64/lib
     """.trimIndent()
 
     params {

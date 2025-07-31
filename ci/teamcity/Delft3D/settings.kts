@@ -4,7 +4,6 @@ import jetbrains.buildServer.configs.kotlin.projectFeatures.*
 import Delft3D.*
 import Delft3D.linux.*
 import Delft3D.linux.containers.*
-import Delft3D.linux.apptainerTest.*
 import Delft3D.windows.*
 import Delft3D.template.*
 
@@ -25,6 +24,7 @@ project {
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
 
         param("product", "dummy_value")
+
     }
 
     template(TemplateMergeRequest)
@@ -36,7 +36,6 @@ project {
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromS3)
     template(TemplateDockerRegistry)
-    template(TemplateTestApptainer)
 
     subProject {
         id("Linux")
@@ -51,51 +50,23 @@ project {
                 LinuxThirdPartyLibs,
             )
         }        
-        subProject {
-            id("ApptainerTests")
-            name = "Apptainer Tests"
-            buildType(ApptainerTestApptainerSmoke)
-            buildType(ApptainerTestDFlowFmDRtc1dNetworkLnx64)
-            buildType(ApptainerTestDFlowFmDRtcDWavesLnx64)
-            buildType(ApptainerTestDFlowFMDWaves)
-            buildType(ApptainerTestDFlowFmDWavesLnx64FriesianInletRealistic)
-            buildType(ApptainerTestDFlowFmLnx64)
-            buildType(ApptainerTestDPart)
-            buildType(ApptainerTestDWaq)
-            buildType(ApptainerTestDWaves)
-            buildTypesOrder = listOf(
-                ApptainerTestApptainerSmoke,
-                ApptainerTestDFlowFmDRtc1dNetworkLnx64,
-                ApptainerTestDFlowFmDRtcDWavesLnx64,
-                ApptainerTestDFlowFMDWaves,
-                ApptainerTestDFlowFmDWavesLnx64FriesianInletRealistic,
-                ApptainerTestDFlowFmLnx64,
-                ApptainerTestDPart,
-                ApptainerTestDWaq,
-                ApptainerTestDWaves
-            )
-        }
         buildType(LinuxBuild)
         buildType(LinuxBuild2D3DSP)
         buildType(LinuxCollect)
         buildType(LinuxRuntimeContainers)
-        buildType(LinuxRunAllDockerExamples)
-        buildType(LinuxBuildRpm)
+        buildType(LinuxRunAllContainerExamples)
         buildType(LinuxLegacyDockerTest)
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
-        buildType(LinuxBuildApptainerRunTime)
         buildTypesOrder = arrayListOf(
             LinuxBuild,
             LinuxBuild2D3DSP,
             LinuxCollect,
             LinuxRuntimeContainers,
-            LinuxRunAllDockerExamples,
-            LinuxBuildRpm,
+            LinuxRunAllContainerExamples,
             LinuxLegacyDockerTest,
             LinuxUnitTest,
-            LinuxTest,
-            LinuxBuildApptainerRunTime
+            LinuxTest
         )
     }
 

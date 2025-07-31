@@ -1069,13 +1069,13 @@ contains
          shape(1) = 1
 
       ! Array pointers:
-      case ("geometry/xcc", "geometry/ycc", "field/water_depth", "geometry/kbot", "geometry/ktop")
+      case ("xcc", "ycc", "water_depth", "kbot", "ktop")
          shape(1) = ndx
          return
-      case ("geometry/z_level", "field/velocity_x", "field/velocity_y", "field/rho")
+      case ("z_level", "velocity_x", "velocity_y", "rho")
          shape(1) = ndkx
          return
-      case ("field/constituents")
+      case ("constituents")
          shape(1) = numconst
          shape(2) = ndkx
          return
