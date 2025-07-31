@@ -134,7 +134,7 @@ object PublishToGui : BuildType({
                     onDependencyCancel = FailureAction.CANCEL
                 }
             }
-            dependency(LinuxRunAllDockerExamples) {
+            dependency(LinuxRunAllContainerExamples) {
                 snapshot {
                     onDependencyFailure = FailureAction.FAIL_TO_START
                     onDependencyCancel = FailureAction.CANCEL

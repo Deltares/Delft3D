@@ -96,7 +96,7 @@ object Publish : BuildType({
                     onDependencyCancel = FailureAction.CANCEL
                 }
             }
-            dependency(LinuxRunAllDockerExamples) {
+            dependency(LinuxRunAllContainerExamples) {
                 snapshot {
                     onDependencyFailure = FailureAction.FAIL_TO_START
                     onDependencyCancel = FailureAction.CANCEL
@@ -149,9 +149,6 @@ object Publish : BuildType({
         }
         script {
             name = "Generate Apptainer SIF file"
-            conditions {
-                equals("brand", "delft3dfm")
-            }
             workingDir = "src/scripts_lgpl/singularity"
             scriptContent = """
                 apptainer pull docker-daemon:%destination_image_specific%
@@ -177,12 +174,15 @@ object Publish : BuildType({
         }
         script {
             name = "Replace branding delft3dfm->dhydro"
-            conditions {
-                equals("brand", "dhydro")
-            }
             scriptContent = """
-                sed -i 's@delft3dfm@dhydro@' ci/teamcity/Delft3D/linux/docker/readme.txt
-                sed -i 's@Delft3D FM@D-HYDRO@' ci/teamcity/Delft3D/linux/docker/readme.txt
+                sed -i 's@delft3dfm@dhydro@' \
+                    ci/teamcity/Delft3D/linux/docker/readme.txt \
+                    src/scripts_lgpl/singularity/readme.txt \
+                    src/scripts_lgpl/singularity/submit_singularity_h7.sh
+                sed -i 's@Delft3D FM@D-HYDRO@' \
+                    ci/teamcity/Delft3D/linux/docker/readme.txt \
+                    src/scripts_lgpl/singularity/readme.txt \
+                    src/scripts_lgpl/singularity/submit_singularity_h7.sh
             """.trimIndent()
         }
         exec {
@@ -195,10 +195,7 @@ object Publish : BuildType({
             """.trimIndent()
         }
         script {
-            name = "Apptainer save for DFS-drive"
-            conditions {
-                equals("brand", "delft3dfm")
-            }
+            name = "Copy Apptainer packages to share"
             workingDir = "src/scripts_lgpl/singularity"
             scriptContent = """
                 tar -vczf %brand%_%release_type%-%release_version%.tar.gz \
@@ -206,8 +203,7 @@ object Publish : BuildType({
                     readme.txt \
                     run_singularity.sh \
                     execute_singularity_h7.sh \
-                    submit_singularity_h7.sh \
-                    execute_singularity_tc.sh
+                    submit_singularity_h7.sh
                 
                 # Copy the artifact to network
                 cp -vf %brand%_%release_type%-%release_version%.tar.gz /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Singularity

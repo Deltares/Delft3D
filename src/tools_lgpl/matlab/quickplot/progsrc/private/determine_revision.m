@@ -134,8 +134,8 @@ else
         [hash, b] = strtok(b);
         b = strsplit(b, local_newline);
         
-        if ~isempty(strfind(b{1},'refs/merge-requests'))
-            % We're probably working on a merge-request ... don't look for
+        if ~isempty(strfind(b{1},'refs/pull'))
+            % We're probably working on a pull request ... don't look for
             % origin ...
             hasLocalCommits = false;
         else
