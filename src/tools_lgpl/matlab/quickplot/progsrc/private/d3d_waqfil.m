@@ -2216,7 +2216,12 @@ if isempty(x)
             x.NonTranspSubs=isSubs & ~isTransp;
         end
     catch
-        ui_message('error',['Cannot find or open ', tbl]);
+        if isequal(tbl,'auto') || ~exist(tbl,'file')
+            errmsg = 'Cannot find the process definition file.';
+        else
+            errmsg = ['Cannot open the process definition file ', tbl];
+        end
+        ui_message('error',errmsg);
         x=-1;
     end
 end

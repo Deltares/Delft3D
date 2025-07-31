@@ -721,16 +721,16 @@ if strfind(axestype,'Y')
     %    axestype = strrep(axestype,'Y',Props.NName);
     %end
 else
-    if ~ismember('y',coordinates) && ~ismember('x',coordinates)
-        coords={'index'};
-    elseif ~ismember('y',coordinates)
-        coords={'path distance','reverse path distance','x coordinate'};
-    elseif isfield(Props,'MName') && ~isempty(Props.MName) && multiple(M_)
+    if isfield(Props,'MName') && ~isempty(Props.MName) && multiple(M_)
         %    axestype = strrep(axestype,'X',Props.MName);
         coords={'x coordinate'};
     elseif isfield(Props,'NName') && ~isempty(Props.NName)
         %    axestype = strrep(axestype,'X',Props.NName);
         coords={'y coordinate'};
+    elseif ~ismember('x',coordinates) && ~ismember('y',coordinates)
+        coords={'index'};
+    elseif ~ismember('y',coordinates)
+        coords={'path distance','reverse path distance','x coordinate'};
     end
 end
 

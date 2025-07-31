@@ -1932,6 +1932,7 @@ else
             Insert.Coords = 'xy';
             Insert.hasCoords=1;
         elseif ~isempty(Info.X) && ~isempty(Info.Y)
+            Insert.Coords = 'xy';
             Insert.hasCoords=1;
             mesh = [Info.X Info.Y];
             found = false;
@@ -1947,7 +1948,6 @@ else
             if ~isempty(Info.XBounds) && ~isempty(Info.YBounds)
                 Insert.Geom = 'POLYG';
                 Insert.ClosedPoly = 1;
-                Insert.Coords = 'xy';
                 Insert.DataInCell = 1;
             elseif ~Insert.DimFlag(N_) % 1D data set or unstructured data set
                 if Insert.DimFlag(K_)
@@ -1955,7 +1955,6 @@ else
                     Insert.Coords = 'xy+z';
                 else
                     Insert.Geom = 'PNT';
-                    Insert.Coords = 'xy';
                 end
             end
         elseif ~isempty(Info.Z)
