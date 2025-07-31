@@ -48,7 +48,7 @@ object LinuxCollect : BuildType({
             workingDir = "lnx64/lib"
             path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
             conditions {
-                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+                matches("dep.${LinuxBuild.id}.product", """^(fm-(suite|testbench))|(all-testbench)$""")
             }
         }
         script {
