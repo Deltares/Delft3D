@@ -22,16 +22,16 @@ object LinuxRuntimeContainers : BuildType({
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     params {
-        param("runtime_container_image", "containers.deltares.nl/delft3d-dev/delft3d-runtime-container:%distribution%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
-        param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:%distribution%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
+        param("runtime_container_image", "containers.deltares.nl/delft3d-dev/delft3d-runtime-container:alma%almalinux_version%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
+        param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:alma%almalinux_version%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
     }
 
     features {
         matrix {
-           param("distribution", listOf(
-              value("alma8", label = "AlmaLinux 8"),
-              value("alma9", label = "AlmaLinux 9"),
-              value("alma10", label = "AlmaLinux 10")
+           param("almalinux_version", listOf(
+              value("8", label = "AlmaLinux 8"),
+              value("9", label = "AlmaLinux 9"),
+              value("10", label = "AlmaLinux 10")
            ))
         }
     }
@@ -51,7 +51,7 @@ object LinuxRuntimeContainers : BuildType({
             name = "Docker build Delft3D runtime image"
             commandType = build {
                 source = file {
-                    path = "ci/teamcity/Delft3D/linux/docker/runtimeContainer-%distribution%.Dockerfile"
+                    path = "ci/teamcity/Delft3D/linux/docker/runtimeContainer-alma%almalinux_version%.Dockerfile"
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
@@ -63,6 +63,7 @@ object LinuxRuntimeContainers : BuildType({
                     --provenance=false
                     --pull
                     --no-cache
+                    --build-arg BASE_IMAGE=almalinux:%almalinux_version%
                     --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
                     --build-arg BUILDTOOLS_IMAGE_TAG=%dep.${LinuxBuild.id}.build_tools_image_tag%
@@ -97,8 +98,8 @@ object LinuxRuntimeContainers : BuildType({
         script {
             name = "Promote container names as parameters"
             scriptContent = """
-                echo "##teamcity[setParameter name='runtime_container_image_%distribution%' value='%runtime_container_image%']"
-                echo "##teamcity[setParameter name='testbench_container_image_%distribution%' value='%testbench_container_image%']"
+                echo "##teamcity[setParameter name='runtime_container_image_alma%almalinux_version%' value='%runtime_container_image%']"
+                echo "##teamcity[setParameter name='testbench_container_image_alma%almalinux_version%' value='%testbench_container_image%']"
             """.trimIndent()
         }
     }
