@@ -130,7 +130,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c020_astronomic_cmp_standard" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c020_astronomic_cmp_standard</path>
+      <path version="2025-07-31T14:55:36.560000">e02_dflowfm/f005_boundary_conditions/c020_astronomic_cmp_standard</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/astronomic_his.nc" type="netCDF">
