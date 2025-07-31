@@ -9,12 +9,13 @@ bindir=`dirname $scriptdirname`
 libdir=$bindir/../lib
 export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
 echo
-echo "    bin dir           : $bindir"
-echo "    lib dir           : $libdir"
+echo "    bin dir          : $bindir"
+echo "    lib dir          : $libdir"
+echo
 
 ## Run
 echo "executing:"
-echo "$bindir/waqpb_export"
+echo "$bindir/waqpb_export $@"
 echo
 $bindir/waqpb_export "$@"
 

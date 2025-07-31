@@ -51,7 +51,7 @@ contains
         use MessageHandling
         use partmem
         use m_part_mesh
-        use m_particles, only: NopartTot, Nrpart, trpart, xrpart, yrpart, zrpart, mrpart, irpart
+        use m_particles, only: NopartTot, Nrpart, trpart, xrpart, yrpart, zrpart, mrpart, irpart, laypart => kpart
         use part10fm_mod
         use fm_oildsp_mod
         use fm_vert_disp_mod
@@ -79,6 +79,8 @@ contains
         integer(4) ithndl              ! handle to time this subroutine
         logical :: mapfil  ! true if map file extension
         logical :: trkfil   ! true if track file extension
+        logical :: error
+        character(len=200) :: msg
         data ithndl / 0 /
         if (timon) call timstrt("partfm", ithndl)
 
@@ -99,7 +101,11 @@ contains
         ! For a model based on z-layers we need extra administration
         ! but that is not part of the current implementation yet
         !
-        allocate(laytop(0, 0), laytopp(0, 0))
+        if ( zmodel ) then
+            allocate(laytop(1, hyd%nosegl), laytopp(1, hyd%nosegl))
+        else
+            allocate(laytop(0, 0), laytopp(0, 0))
+        endif
 
         !
         ! Read the grid information and the actual input file
@@ -147,7 +153,12 @@ contains
         ptref = 0.0D0
 
         if (notrak > 0) call unc_init_trk()
-        call unc_init_map(hyd%crs, hyd%waqgeom, hyd%nosegl, noslay)
+        call unc_init_map(hyd, noslay, error, msg)
+        if ( error ) then
+            write (lunpr, *) trim(msg)
+            write (*    , *) trim(msg)
+            error stop
+        endif
 
         time0 = tstart_user
         time1 = time0
@@ -180,6 +191,7 @@ contains
                     trkfil = .false.
                 endif
             endif
+
             if (trkfil) call unc_write_trk()
             if (mapfil) call unc_write_map()
 

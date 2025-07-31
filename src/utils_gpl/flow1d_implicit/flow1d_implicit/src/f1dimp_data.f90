@@ -116,6 +116,10 @@ module m_f1dimp_data
       integer                          :: maxtab                !< Maximum number of defined tables.
       integer                          :: nbrnod                !< Maximum number of connected branches to one node.
       integer                          :: table_length          !< Number of items in each table.
+      integer                          :: nstru                 !< Number of structures.
+      integer                          :: number_bc_tables      !< Number of boundary condition tables.
+      integer                          :: dmstrpar              !< Number of parameters for structures.
+      integer                          :: table_length_stru     !< Number of points in each structure table.
       
       !*******
       !dependent on branch
@@ -163,6 +167,10 @@ module m_f1dimp_data
       
       integer, allocatable, dimension(:,:)             :: grd_fmL_sre  !< Conversion between internal link in FM and SRE global flownodes. For <grd_fmL_sre(i)> one obtains the two flownodes in SRE associated to <i>
       integer, allocatable, dimension(:,:)             :: grd_fmLb_sre !< Conversion between boundary link <L> in FM and SRE global flownode (in position (k,1)) and the FM cell-centre (in position (k,2)), where  <k=[lnxi+1:lnx1Db]-lnxi+1>
+      
+      integer, allocatable, dimension(:)               :: grid   ! grid(ngrid)       I  Grid cell type definition:
+                                                                 !                                    cgrdcl (1) : Normal grid cell
+                                                                 !                                    cstrcl (2) : Structure cell
       
       real   , allocatable, dimension(:)               :: x      !  x-coordinate for each grid point.
       
@@ -265,6 +273,37 @@ module m_f1dimp_data
       
       integer, allocatable, dimension(:,:)   :: nodnod           ! Administration of nodal adminstration matrix. All elements (i,j) with index i contain the numbers of the nodes connected to node i, node i included.
       
+      !*******
+      !dependent on structures
+      !*******
+      integer, allocatable, dimension(:,:)   :: strtyp           ! strtyp(10,nstru) Structure definitions:
+                                                                 !       (1,i) = Type of structure:
+                                                                 !               csweir (1) : Simple weir
+                                                                 !               caweir (2) : Advanced weir
+                                                                 !               csgate (3) : - not used, reserved for
+                                                                 !                              simple gate -
+                                                                 !               cpump  (4) : Pump
+                                                                 !               cgenst (5) : General Structure
+                                                                 !       (2,i) = Position of structure:
+                                                                 !               cstbra (1) : In branch
+                                                                 !               cstlat (2) : Lateral structure
+                                                                 !       (3,i) = Left gridpoint.
+                                                                 !       (4,i) = Right gridpoint.
+      
+      real, allocatable, dimension(:,:)      :: strpar           ! strpar(dmstrpar,nstru) Structure parameters
+                                                                 !       - Simple weir:
+                                                                 !       (1,j) = Crest height Zs.
+                                                                 !       (2,j) = Crest width Ws.
+                                                                 !            Positive flow:
+                                                                 !       (3,j) = Correction coefficient cw.
+                                                                 !       (4,j) = Submergence limit Slim.
+                                                                 !       (5,j) = Table pointer for drowned reduction
+                                                                 !               curve f(h2/h1).
+                                                                 !            Negative flow:
+                                                                 !       (6,j) = Correction coefficient cw.
+                                                                 !       (7,j) = Submergence limit Slim.
+                                                                 !       (8,j) = Table pointer for drowned reduction
+                                                                 !               curve f(h2/h1).
       !*******
       !debug variables
       !*******

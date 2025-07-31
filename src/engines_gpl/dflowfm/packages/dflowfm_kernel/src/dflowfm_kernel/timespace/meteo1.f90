@@ -6766,6 +6766,7 @@ contains
                                          itemPtr1, itemPtr2, itemPtr3, itemPtr4, &
                                          dataPtr1, dataPtr2, dataPtr3, dataPtr4) result(success)
       use m_find_name, only: find_name
+      use string_module, only: str_tolower
 
       logical :: success
       character(len=*), intent(in) :: trname !< Tracer name (if applicatable)
@@ -6791,7 +6792,7 @@ contains
       dataPtr2 => null()
       dataPtr3 => null()
       dataPtr4 => null()
-      select case (trim(qidname))
+      select case (str_tolower(trim(qidname)))
       case ('windx')
          itemPtr1 => item_windx
          dataPtr1 => wx
@@ -6872,10 +6873,10 @@ contains
       case ('airpressure', 'atmosphericpressure')
          itemPtr1 => item_atmosphericpressure
          dataPtr1 => air_pressure
-      case ('pseudoAirPressure')
+      case ('pseudoairpressure')
          itemPtr1 => item_pseudo_air_pressure
          dataPtr1 => pseudo_air_pressure
-      case ('waterLevelCorrection')
+      case ('waterlevelcorrection')
          itemPtr1 => item_water_level_correction
          dataPtr1 => water_level_correction
       case ('rainfall')
@@ -6904,46 +6905,46 @@ contains
       case ('pump_capacity') ! flow1d pump
          itemPtr1 => item_pump_capacity
          dataPtr1 => qpump ! TODO: UNST-2724: needs more thinking, see issue comments.
-      case ('culvert_valveOpeningHeight') ! flow1d culvert
+      case ('culvert_valveopeningheight') ! flow1d culvert
          itemPtr1 => item_culvert_valveOpeningHeight
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('weir_crestLevel') ! flow1d weir
+      case ('weir_crestlevel') ! flow1d weir
          itemPtr1 => item_weir_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('orifice_crestLevel') ! flow1d orifice
+      case ('orifice_crestlevel') ! flow1d orifice
          itemPtr1 => item_orifice_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('orifice_gateLowerEdgeLevel') ! flow1d orifice
+      case ('orifice_gateloweredgelevel') ! flow1d orifice
          itemPtr1 => item_orifice_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('gate_crestLevel') ! flow1d gate
+      case ('gate_crestlevel') ! flow1d gate
          itemPtr1 => item_gate_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('gate_gateLowerEdgeLevel') ! flow1d gate
+      case ('gate_gateloweredgelevel') ! flow1d gate
          itemPtr1 => item_gate_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('gate_gateOpeningWidth') ! flow1d gate
+      case ('gate_gateopeningwidth') ! flow1d gate
          itemPtr1 => item_gate_gateOpeningWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_crestLevel') ! flow1d general structure
+      case ('general_structure_crestlevel') ! flow1d general structure
          itemPtr1 => item_general_structure_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_gateLowerEdgeLevel') ! flow1d general structure
+      case ('general_structure_gateloweredgelevel') ! flow1d general structure
          itemPtr1 => item_general_structure_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_crestWidth') ! flow1d general structure
+      case ('general_structure_crestwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_crestWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_gateOpeningWidth') ! flow1d general structure
+      case ('general_structure_gateopeningwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_gateOpeningWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('longCulvert_valveRelativeOpening')
+      case ('longculvert_valverelativeopening')
          itemPtr1 => item_longculvert_valve_relative_opening
-      case ('valve1D')
+      case ('valve1d')
          itemPtr1 => item_valve1D
       case ('damlevel')
          itemPtr1 => item_damlevel
-      case ('dambreakLevelsAndWidths')
+      case ('dambreaklevelsandwidths')
           ! itemPtr1 and dataPtr1 are provided at a dambreak call
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
@@ -7021,7 +7022,7 @@ contains
          ! qstss might be reallocated after initialization (when coupled to Cosumo)
          ! and must be an argument when calling ec_gettimespacevalue.
          nullify (dataPtr1)
-      case ('sourcesink_constituentDelta')
+      case ('sourcesink_constituentdelta')
          if (strcmpi(constituent_name, 'salinity')) then
             iconst = ISALT
          else
@@ -7099,11 +7100,11 @@ contains
          dataPtr1 => sfuninp(isfun, :)
       case ('initialtracer')
          continue
-      case ('friction_coefficient_Chezy', 'friction_coefficient_Manning', 'friction_coefficient_WalLlawNikuradse', &
-            'friction_coefficient_WhiteColebrook', 'friction_coefficient_StricklerNikuradse', &
-            'friction_coefficient_Strickler', 'friction_coefficient_deBosBijkerk')
+      case ('friction_coefficient_chezy', 'friction_coefficient_manning', 'friction_coefficient_walllawnikuradse', &
+            'friction_coefficient_whitecolebrook', 'friction_coefficient_stricklernikuradse', &
+            'friction_coefficient_strickler', 'friction_coefficient_debosbijkerk')
          itemPtr1 => item_frcutim ! the same for all types (type is stored elsewhere)
-      case ('bedrock_surface_elevation')
+      case ('bedrocksurfaceelevation', 'bedrock_surface_elevation')
          itemPtr1 => item_subsiduplift
          dataPtr1 => subsupl
       case default

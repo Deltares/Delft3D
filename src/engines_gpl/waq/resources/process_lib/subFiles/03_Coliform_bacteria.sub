@@ -40,14 +40,17 @@ parameter 'ExtVl'
    unit          '(1/m)'
    value          0.1000E+01
 end-parameter
-parameter 'DayRadSurf'
+parameter 'RadSurf'
    description   'irradiation at the water surface'
    unit          '(W/m2)'
    value         -0.9990E+03
 end-parameter
+output 'RadSurf'
+   description   'irradiation at the water surface'
+end-output
 active-processes
    name  'EColiMrt' 'Mortality EColi bacteria'
    name  'Salinchlor' 'Conversion of salinity into chloride or vv'
-   name  'CalcRadDay' 'Actual radiation at segment boundaries'
+   name  'CalcRad' 'Actual radiation at segment boundaries'
    name  'DynDepth' 'dynamic calculation of the depth'
 end-active-processes

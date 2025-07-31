@@ -81,6 +81,17 @@
           <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
       </environments>
     </program>
+
+    <program name="dimr_opl" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+        <path>bin/run_dimr.bat</path>
+        <shell ref="command_prompt"/>
+        <location ref="local" type="check">
+            <from>teamcity_artifacts/x64</from>
+        </location>
+        <environments>
+            <environment name="LIBEXT" type="string">.dll</environment>
+        </environments>
+    </program>
   </programs>
   <defaultTestCases>
     <testCase name="dflowfm_default">

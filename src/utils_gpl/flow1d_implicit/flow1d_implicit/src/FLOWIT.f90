@@ -353,7 +353,6 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
    integer       nstmoz
 !
    double precision dbg1
-   real dbg2
    integer debug_wr
 !
 !      !DEC$ IF DEFINED (_DLL)
@@ -370,7 +369,6 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
 !     Calculate water level dependent hydraulic parameters
 !
 !     Debug variables FM1DIMP2DO: remove
-   dbg2=waoft(100,3)
 
 !      write(42,*) 'in FLOWIT'
 !      write(42,*) 'h1'
@@ -394,7 +392,6 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
    &exrstp  ,omalfa  ,omc     ,omr    ,omw    )
 !
 !     Debug variables FM1DIMP2DO: remove
-   dbg2=waoft(100,3)
    if (debug_wr>0) then
       write(42,*) 'FLYPA'
       write(42,*) 'h1'
@@ -529,7 +526,7 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
    &hp     ,qp     ,iterbc ,resid  ,delh   ,work  ,&
    &ker    ,steady ,nqlat  ,qlat   ,qltpar ,strhis,&
    &relstr ,theta  ,dt1    ,indx   ,juer   ,bicg  ,&
-   &debug_wr)
+   &dmstrh, debug_wr)
 
    dbg1=hp(1,1)
 
