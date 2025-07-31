@@ -92,7 +92,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c010_chezy" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f004_bottomfriction/c010_chezy</path>
+      <path version="2025-07-31T14:39:28.365000">e02_dflowfm/f004_bottomfriction/c010_chezy</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
