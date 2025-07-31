@@ -13,7 +13,7 @@ ADD test/deltares_testbench/pip/lnx-requirements.txt /tmp/lnx-requirements.txt
 # Install system dependencies and clean up packages afterwards
 RUN set -eo pipefail && \
     dnf update --assumeyes && \
-    dnf install --assumeyes python3 expect && \
+    dnf install --assumeyes 'python3 >= 3.9' expect && \
     dnf clean all && \
     rm --recursive --force /var/cache/dnf
 
