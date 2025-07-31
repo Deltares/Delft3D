@@ -188,7 +188,7 @@ else
         geometry='PNT';
         coordinates='';
     end
-    if ~isempty(Props.Coords)
+    if isfield(Props,'Coords') && ~isempty(Props.Coords)
         coordinates = Props.Coords;
     end
     if isfield(Props,'Tri') && isequal(Props.Tri,1)
