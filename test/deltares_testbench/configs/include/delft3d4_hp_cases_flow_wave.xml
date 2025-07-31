@@ -27,7 +27,7 @@
 
 	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e23_f01_c09-bijker_bailard_wave_wind" ref="flow2d3d_wave_default">
-			<path version="2025-06-06T08:15:46.190000">e23_d3dflow-wave/f01_general/c09-bijker_bailard_wave_wind</path>
+			<path version="2025-07-31T16:06:25.347000">e23_d3dflow-wave/f01_general/c09-bijker_bailard_wave_wind</path>
 			<programs>
 				<program ref="FLOW2D3D_WAVE">
 					<arguments>
