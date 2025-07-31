@@ -51,7 +51,7 @@ object LinuxRuntimeContainers : BuildType({
             name = "Docker build Delft3D runtime image"
             commandType = build {
                 source = file {
-                    path = "ci/teamcity/Delft3D/linux/docker/runtimeContainer-alma%almalinux_version%.Dockerfile"
+                    path = "ci/teamcity/Delft3D/linux/docker/runtimeContainer.Dockerfile"
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
