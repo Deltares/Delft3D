@@ -49,20 +49,27 @@ class DimrAutomation(object):
         self.__branch_name = None
         self.__kernel_versions = None
         self.__dimr_version = None
+        self.__dry_run = False
 
-    def run(self, build_id_chain: str) -> None:
+    def run(self, build_id_chain: str, dry_run: bool = False) -> None:
         """Runs the actual DIMR release automation steps."""
+        self.__dry_run = dry_run
         self.__assert_preconditions()
         # __get_kernel_versions is crucial for the script to run, do not comment this one out!
         self.__get_kernel_versions(build_id_chain)
-        self.__download_and_install_artifacts(build_id_chain)
-        # self.__git_client.tag_commit(
-        #     self.__kernel_versions["build.vcs.number"], f"DIMRset_{self.__dimr_version}"
-        # )
-        self.__pin_and_tag_builds(build_id_chain)
-        self.__update_excel_sheet()
-        self.__prepare_email(build_id_chain)  # depending on TC tags
-        self.__update_public_wiki(build_id_chain)
+        
+        # self.__download_and_install_artifacts(build_id_chain)
+        # if dry_run:
+        #     print("🔍 DRY-RUN: Would tag commit with:", 
+        #           f"commit={self.__kernel_versions['build.vcs.number']}, tag=DIMRset_{self.__dimr_version}")
+        # else:
+        #     self.__git_client.tag_commit(
+        #         self.__kernel_versions["build.vcs.number"], f"DIMRset_{self.__dimr_version}"
+        #     )
+        # self.__pin_and_tag_builds(build_id_chain)
+        # self.__update_excel_sheet()
+        # self.__prepare_email(build_id_chain)  # depending on TC tags
+        # self.__update_public_wiki(build_id_chain)
 
     def __assert_preconditions(self) -> None:
         """Asserts some preconditions are met before the script is fully run."""
@@ -90,6 +97,9 @@ class DimrAutomation(object):
 
     def __update_public_wiki(self, build_id_chain: str) -> None:
         """Updates the Public Wiki."""
+        if self.__dry_run:
+            print("🔍 DRY-RUN: Would update public wiki for DIMR version:", self.__dimr_version)
+            return
         print("Updating the public wiki...")
         public_wiki = PublicWikiHelper(
             atlassian=self.__atlassian,
@@ -100,6 +110,11 @@ class DimrAutomation(object):
 
     def __download_and_install_artifacts(self, build_id_chain: str) -> None:
         """Downloads the artifacts and installs them on Linux machine."""
+        if self.__dry_run:
+            print("🔍 DRY-RUN: Would download and install artifacts for build:", build_id_chain)
+            print("🔍 DRY-RUN: Would publish artifacts to network drive")
+            print("🔍 DRY-RUN: Would publish weekly DIMR via H7")
+            return
         helper = ArtifactInstallHelper(
             teamcity=self.__teamcity,
             ssh_client=self.__ssh_client,
@@ -111,11 +126,21 @@ class DimrAutomation(object):
 
     def __pin_and_tag_builds(self, build_id_chain: str) -> None:
         """Pin and tag the appropriate builds."""
+        if self.__dry_run:
+            print("🔍 DRY-RUN: Would pin and tag builds in TeamCity for build chain:", build_id_chain)
+            print("🔍 DRY-RUN: Would add tag:", f"DIMRset_{self.__dimr_version}")
+            return
         helper = PinHelper(teamcity=self.__teamcity, dimr_version=self.__dimr_version)
         helper.pin_and_tag_builds(build_id_chain)
 
     def __update_excel_sheet(self) -> None:
         """Updates the Excel sheet with this week's release information."""
+        if self.__dry_run:
+            print("🔍 DRY-RUN: Would update Excel sheet with DIMR version:", self.__dimr_version)
+            print("🔍 DRY-RUN: Would download Excel from network drive")
+            print("🔍 DRY-RUN: Would append new row with release information")
+            print("🔍 DRY-RUN: Would upload updated Excel back to network drive")
+            return
         parser = self.__get_testbank_result_parser()
         path_to_excel_file = f"/p/d-hydro/dimrset/{VERSIONS_EXCEL_FILENAME}"
 
@@ -135,6 +160,9 @@ class DimrAutomation(object):
         )
 
     def __prepare_email(self, build_id_chain: str) -> None:
+        if self.__dry_run:
+            print("🔍 DRY-RUN: Would prepare email template for DIMR version:", self.__dimr_version)
+            return
         parser = self.__get_testbank_result_parser()
         previous_parser = self.__get_previous_testbank_result_parser(build_id_chain)
 

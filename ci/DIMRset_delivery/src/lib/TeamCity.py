@@ -50,11 +50,13 @@ class TeamCity(object):
         Returns:
             bool: Returns True if a successful request can be made.
         """
+        print(f"Checking connection to the TeamCity API with credentials: {self.__auth[0]}")
         endpoint = f"{self.__rest_uri}agents"
         result = requests.get(
             url=endpoint, headers=self.__default_headers, auth=self.__auth
         )
         if result.status_code == 200:
+            print("Successfully connected to the TeamCity API.")
             return True
         print("Could not connect to the TeamCity API:")
         print(f"Error: {result.status_code} - {result.content}")

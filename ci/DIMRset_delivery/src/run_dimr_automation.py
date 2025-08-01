@@ -28,6 +28,8 @@ if __name__ == "__main__":
     parser.add_argument("--password", type=str, default=None)
     parser.add_argument("--git-PAT", type=str, default=None)
     parser.add_argument("--build_id", type=str, default=None)
+    parser.add_argument("--dry-run", action="store_true", 
+                        help="Run in dry-run mode without making any changes")
 
     args = parser.parse_args()
     username = args.username
@@ -53,5 +55,7 @@ if __name__ == "__main__":
         git_client=git_client_wrapper,
     )
     print("Starting the automation process...")
-    dimr_automation.run(args.build_id)
+    if args.dry_run:
+        print("🔍 Running in DRY-RUN mode - no changes will be made")
+    dimr_automation.run(args.build_id, dry_run=args.dry_run)
     print("Finished")

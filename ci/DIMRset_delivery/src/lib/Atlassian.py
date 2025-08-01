@@ -43,9 +43,11 @@ class Atlassian(object):
         Returns:
             bool: Returns True if a successful request can be made.
         """
+        print(f"Checking connection to the Atlassian Confluence API with credentials: {self.__auth[0]}")
         endpoint = f"{self.__rest_uri}content"
         result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=False)
         if result.status_code == 200:
+            print("Successfully connected to the Atlassian Confluence API.")
             return True
         print("Could not connect to the Atlassian Confluence API:")
         print(f"Error : {result.status_code} - {result.content}")

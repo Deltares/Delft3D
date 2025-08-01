@@ -1,4 +1,5 @@
 import os
+from unittest import result
 
 from helpers.SshClient import SshClient
 from helpers.GitClient import GitClient
@@ -28,35 +29,33 @@ class PreconditionsHelper(object):
     def assert_preconditions(self) -> None:
         """ Asserts if all preconditions are met. """
         print("Asserting if all preconditions are met...")
-        self.__check_teamcity_api_connection()
-        self.__check_atlassian_api_connection()
-        self.__check_network_base_path_accessible()
-        self.__check_ssh_connection_to_linux()
-        # self.__check_git_connection()
+        self.check_teamcity_api_connection()
+        self.check_atlassian_api_connection()
+        self.check_network_base_path_accessible()
+        self.check_ssh_connection_to_linux()
+        self.check_git_connection()
         print("Successfully asserted all preconditions.")
 
-    def __check_teamcity_api_connection(self) -> None:
-        print("Checking connection to the TeamCity API...")
+    def check_teamcity_api_connection(self) -> None:
         if not self.__teamcity.test_api_connection():
             raise AssertionError("Failed to connect to the TeamCity REST API.")
-        print("Successfully connected to the TeamCity API.")
 
-    def __check_atlassian_api_connection(self) -> None:
-        print("Checking connection to the Atlassian Confluence API...")
+    def check_atlassian_api_connection(self) -> None:
         if not self.__atlassian.test_api_connection():
             raise AssertionError("Failed to connect to the Atlassian Confluence REST API.")
-        print("Successfully connected to the Atlassian Confluence API.")
 
-    def __check_network_base_path_accessible(self) -> None:
+    def check_network_base_path_accessible(self) -> None:
         print("Checking read/write access to the network drive...")
         try:
             if os.access(NETWORK_BASE_PATH, os.W_OK) and os.access(NETWORK_BASE_PATH, os.R_OK):
                 print(f"Successfully checked for read and write access to {NETWORK_BASE_PATH}.")
                 return
+            else:
+                raise AssertionError(f"Could not read or write to {NETWORK_BASE_PATH}: insufficient permissions.")
         except Exception as e:
             raise AssertionError(f"Could not read or write to {NETWORK_BASE_PATH}:\n{e}.")
 
-    def __check_ssh_connection_to_linux(self) -> None:
+    def check_ssh_connection_to_linux(self) -> None:
         print("Checking if ssh connection to Linux can be made...")
         try:
             self.__ssh_client.test_connection(address=LINUX_ADDRESS)
@@ -64,7 +63,7 @@ class PreconditionsHelper(object):
         except Exception as e:
             raise AssertionError(f"Could not establish ssh connection to {LINUX_ADDRESS}:\n{e}")
 
-    def __check_git_connection(self) -> None:
+    def check_git_connection(self) -> None:
         print("Checking if git connection can be made...")
         try:
             self.__git_client.test_connection()
