@@ -44,7 +44,6 @@ object LinuxBuild : BuildType({
         param("generator", """"Unix Makefiles"""")
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
         select("build_type", "%dep.${LinuxThirdPartyLibs.id}.build_type%", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
-        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
     }
 
     vcs {
@@ -53,13 +52,7 @@ object LinuxBuild : BuildType({
         checkoutDir = "ossbuild-lnx64"
     }
 
-    steps {
-        script {
-            name = "Write to file"
-            scriptContent = """
-                echo %s3_dsctestbench_secret% > ci/dimrbakker_pat.txt
-            """.trimIndent()
-        }	
+    steps {	
         mergeTargetBranch {}
         script {
             name = "Add version attributes"
