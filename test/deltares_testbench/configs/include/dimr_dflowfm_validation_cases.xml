@@ -540,7 +540,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c010_frisianinlet_schematized" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f013_waves/c010_frisianinlet_schematized</path>
+      <path version="2025-08-01T14:38:51.258000">e02_dflowfm/f013_waves/c010_frisianinlet_schematized</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/f34_his.nc" type="netCDF">
@@ -559,7 +559,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c020_frisianinlet_realistic" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f013_waves/c020_frisianinlet_realistic</path>
+      <path version="2025-08-01T14:39:26.148000">e02_dflowfm/f013_waves/c020_frisianinlet_realistic</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/r17_his.nc" type="netCDF">
@@ -578,7 +578,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c030_coastcalifornia" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f013_waves/c030_coastcalifornia</path>
+      <path version="2025-08-01T14:39:56.405000">e02_dflowfm/f013_waves/c030_coastcalifornia</path>
       <maxRunTime>30.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/cca_his.nc" type="netCDF">
@@ -597,7 +597,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c040_loosdrecht" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f013_waves/c040_loosdrecht</path>
+      <path version="2025-08-01T14:40:31.371000">e02_dflowfm/f013_waves/c040_loosdrecht</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/loo_his.nc" type="netCDF">
@@ -616,7 +616,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c050_inclinedbed_withobstacle" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f013_waves/c050_inclinedbed_withobstacle</path>
+      <path version="2025-08-01T14:45:26.121000">e02_dflowfm/f013_waves/c050_inclinedbed_withobstacle</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/obw_his.nc" type="netCDF">
