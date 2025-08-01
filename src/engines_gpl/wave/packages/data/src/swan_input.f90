@@ -3391,7 +3391,11 @@ contains
       elseif (sr%genmode == 2) then
          line(1:8) = 'GEN2 '
       elseif (sr%genmode == 3) then
-         line = 'GEN3 WESTH'
+         if (sr%whitecap == 2) then
+            line = 'GEN3 WESTH'
+         else
+            line = 'GEN3 KOMEN'
+         end if
          ! Always add (wind related) drag formula. It doesn't harm if there is no wind.
          line = trim(line)//' DRAG WU'
       else

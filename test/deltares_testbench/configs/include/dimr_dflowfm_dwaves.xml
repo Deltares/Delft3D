@@ -130,7 +130,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c03" ref="dimr_trunk">
-        <path version="2025-06-05T15:17:05.780000">e100_dflowfm-dwaves/f02_delft3d_cases/c03-FriesianInlet_realistic/dfm</path>
+        <path version="2025-07-31T16:06:20.320000">e100_dflowfm-dwaves/f02_delft3d_cases/c03-FriesianInlet_realistic/dfm</path>
         <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/dflowfmoutput/r17_map.nc" type="NETCDF">

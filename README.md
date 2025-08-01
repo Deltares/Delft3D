@@ -92,4 +92,3 @@ to write the test results to an XML file, which is recognized by many tools that
 test results. Use `ctest --help` for an overview of the options.
 
 For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](doc/unit-testing.md).
-
