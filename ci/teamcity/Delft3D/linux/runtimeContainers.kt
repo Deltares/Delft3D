@@ -95,13 +95,6 @@ object LinuxRuntimeContainers : BuildType({
                 """.trimIndent()
             }
         }
-        script {
-            name = "Promote container names as parameters"
-            scriptContent = """
-                echo "##teamcity[setParameter name='runtime_container_image_alma%almalinux_version%' value='%runtime_container_image%']"
-                echo "##teamcity[setParameter name='testbench_container_image_alma%almalinux_version%' value='%testbench_container_image%']"
-            """.trimIndent()
-        }
     }
     dependencies {
         dependency(LinuxCollect) {
