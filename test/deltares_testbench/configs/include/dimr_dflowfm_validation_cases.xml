@@ -308,7 +308,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f009_c020_beyer004_contr10" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c020_beyer004_contr10</path>
+      <path version="2025-08-01T11:56:02.780000">e02_dflowfm/f009_weirs/c020_beyer004_contr10</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/beyer_004_his.nc" type="netCDF">
@@ -385,7 +385,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c012_schematized_lake" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f011_wind/c012_schematized_lake</path>
+      <path version="2025-08-01T12:41:02.845000">e02_dflowfm/f011_wind/c012_schematized_lake</path>
       <maxRunTime>20.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/windoverlake_his.nc" type="netCDF">
