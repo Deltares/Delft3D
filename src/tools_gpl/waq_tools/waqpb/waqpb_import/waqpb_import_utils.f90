@@ -103,11 +103,6 @@ contains
         end if
         units = temp_string !< Last substring is the units
 
-        ! if (is_input) then
-        !     print *, 'Input item: ', trim(name), ', Default: ', def_value, ', Show in PLCT: ', trim(show_in_plct), ', Description: ', trim(description), ', Units: ', trim(units)
-        ! else
-        !     print *, 'Output item: ', trim(name), ', Show in PLCT: ', trim(show_in_plct), ', Description: ', trim(description), ', Units: ', trim(units)
-        ! end if
     end subroutine parse_item_line
 
 end module m_waqpb_import_utils
