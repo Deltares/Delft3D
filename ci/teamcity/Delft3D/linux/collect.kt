@@ -47,9 +47,6 @@ object LinuxCollect : BuildType({
             name = "Remove system libraries"
             workingDir = "lnx64/lib"
             path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
-            conditions {
-                matches("dep.${LinuxBuild.id}.product", """^(fm-(suite|testbench))|(all-testbench)$""")
-            }
         }
         script {
             name = "Set execute rights"
