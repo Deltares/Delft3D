@@ -27,6 +27,7 @@ object WindowsBuild : BuildType({
         #teamcity:symbolicLinks=as-is
         **/*.log => logging
         build_%product%/install/** => oss_artifacts_x64_%build.vcs.number%.zip!x64
+        unit-test-report-windows.xml
     """.trimIndent()
 
     params {

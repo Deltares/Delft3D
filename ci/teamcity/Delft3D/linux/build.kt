@@ -29,6 +29,7 @@ object LinuxBuild : BuildType({
         #teamcity:symbolicLinks=as-is
         **/*.log => logging
         build_%product%/install/** => oss_artifacts_lnx64_%build.vcs.number%.tar.gz!lnx64
+        unit-test-report-linux.xml
     """.trimIndent()
 
     outputParams {
