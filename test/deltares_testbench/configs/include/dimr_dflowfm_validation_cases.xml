@@ -257,7 +257,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c023_basinwithfriction_squares" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f006_external_forcing/c023_basinwithfriction_squares</path>
+      <path version="2025-08-01T10:39:21.631000">e02_dflowfm/f006_external_forcing/c023_basinwithfriction_squares</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basinsquares_his.nc" type="netCDF">
