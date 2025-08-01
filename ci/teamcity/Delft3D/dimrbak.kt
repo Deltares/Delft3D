@@ -60,7 +60,7 @@ object DIMRbak : BuildType({
         param("DIMRset_ver", "%release_version%")
         param("dimrbakker_username", DslContext.getParameter("dimrbakker_username"))
         password("dimrbakker_password", "credentialsJSON:7dfc50ee-d348-4a9b-bf39-6878963a4422")
-        password("dimrbakker_personal_access_token", "credentialsJSON:8af5f616-4c9b-4f2c-9cd2-b5cc8cc4592d")
+        password("dimrbakker_personal_access_token", "credentialsJSON:2dc9d91a-497b-4bf0-97e0-c83f2d31f4aa")
     }
 
     steps {
