@@ -46,7 +46,6 @@ object LinuxLegacyDockerTest : BuildType({
 
     features {
         matrix {
-            id = "matrix"
             param("configfile", listOf(
               value("docker/dimr/dimr_dflowfm_lnx64.xml"),
               value("docker/dimr/dimr_smoke_test_lnx64.xml")
