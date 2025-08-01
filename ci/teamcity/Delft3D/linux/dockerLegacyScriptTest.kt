@@ -22,7 +22,7 @@ object LinuxLegacyDockerTest : BuildType({
     )
 
     name = "Legacy Docker Test"
-    buildNumberPattern = "%dep.${LinuxRuntimeContainers.id}.product%: %build.vcs.number%"
+    buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
     vcs {
         root(DslContext.settingsRoot)
@@ -30,15 +30,26 @@ object LinuxLegacyDockerTest : BuildType({
     }
 
     params {
-        param("env.DOCKER_IMAGE", "%dep.${LinuxRuntimeContainers.id}.runtime_container_image%")
+        select(
+            name = "distribution",
+            label = "Distribution",
+            value = "alma10",
+            display = ParameterDisplay.PROMPT,
+            options = listOf(
+                "AlmaLinux 8" to "alma8",
+                "AlmaLinux 9" to "alma9",
+                "AlmaLinux 10" to "alma10"
+            )
+        )
+        param("env.DOCKER_IMAGE", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:%distribution%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
     }
 
     features {
         matrix {
-           param("configfile", listOf(
+            param("configfile", listOf(
               value("docker/dimr/dimr_dflowfm_lnx64.xml"),
               value("docker/dimr/dimr_smoke_test_lnx64.xml")
-           ))
+            ))
         }
     }
 
