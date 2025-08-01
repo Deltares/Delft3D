@@ -1,4 +1,6 @@
 module m_waqpb_import_utils
+    use m_string_utils, only: split_string_non_empty, join_strings
+    implicit none
 contains
 
     !< Checks for read errors and prints an error message if an error occurred
@@ -35,62 +37,77 @@ contains
       end if
     end function get_input_type
 
-    subroutine parse_input_item_line(io_unit, linecount, name, def_value, show_in_plct, description, units)
+    subroutine parse_item_line(io_unit, log_unit, linecount, &
+                                     name, def_value, show_in_plct, &
+                                     description, units, is_input)
         integer, intent(in) :: io_unit !< Input unit number to read from
+        integer, intent(in) :: log_unit !< Log unit number
         integer, intent(in) :: linecount !< Line number being read
         character(len=10), intent(out) :: name !< Name of the input item
         real, intent(out) :: def_value !< Default value of the input item
         character(len=1), intent(out) :: show_in_plct !< Indicates if the item should be shown in PLCT ('x') or not (' ')
         character(len=50), intent(out) :: description !< Description of the input item
         character(len=20), intent(out) :: units !< Units of the input item
-        
+        logical, intent(in), optional :: is_input !< Optional flag to indicate if the item is an input (.true.) or output (.false.)
+
         character(len=255) :: line_buffer !< Buffer to read the line
-        character(len=52), parameter :: letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-        character(len=10), parameter :: digits = '0123456789'
-        character(len=10), parameter :: plus_minus = '+-'
-        integer :: ierr, istart, iend, len_line
+        character(len=255) :: temp_string !< Temporary string for processing
+        integer :: ierr, idx_field
+        character(:), dimension(:), allocatable :: substrings
+        logical :: item_is_input
+
+        if ( present(is_input) ) then
+            item_is_input = is_input
+        else
+            item_is_input = .true.
+        endif
 
         read(io_unit, '(A)', iostat=ierr) line_buffer
-        line_buffer = adjustl(line_buffer) !< Remove leading spaces
-        istart = scan(line_buffer, letters // digits // plus_minus) !< Find the start of the name
-        len_line = len_trim(line_buffer) !< Get the length of the line
+        substrings = split_string_non_empty(adjustl(trim(line_buffer)), ' ') !< Split the line into substrings based on spaces
 
-        ! field 1 - name (no spaces allowed)
-        iend = scan(line_buffer(istart:), ' ') + istart - 1
-        if (iend < istart) iend = len_line
-        name = line_buffer(istart:iend)
+        idx_field = 1
+        temp_string = substrings(idx_field) !< First substring is the name
+        if (len_trim(temp_string) > 10) then
+            write (*, '(A, A, I0)') 'Error: item name "', trim(temp_string), '" exceeds 10 characters at line ', linecount
+            error stop
+        end if
+        name = temp_string !< First substring is the name
+        idx_field = idx_field + 1
 
-        ! field 2 - default value (real number)
-        istart = iend + 1
-        istart = scan(line_buffer(istart:), digits // plus_minus) + istart - 1
-        iend = scan(line_buffer(istart:), ' ') + istart - 1
-        if (iend < istart) iend = len_line
-        read(line_buffer(istart:iend), *, iostat=ierr) def_value
+        if (item_is_input) then
+            read(substrings(idx_field), *, iostat=ierr) def_value
+            call check_read_error(log_unit, ierr, linecount, 'default value')
+            idx_field = idx_field + 1
+        else
+            def_value = 0.0 !< Default value is set to 0.0
+        end if
 
-        ! field 3 - show in PLCT (character, 'x' or ' ')
-        istart = iend + 1
-        istart = scan(line_buffer(istart:), 'x' // letters) + istart - 1
-        if (line_buffer(istart:istart) == 'x') then
+        if (trim(adjustl(substrings(idx_field))) == 'x') then
             show_in_plct = 'x'
+            idx_field = idx_field + 1 !< Start of description
         else
             show_in_plct = ' '
         end if
 
-        ! field 5 - units (in parentheses)
-        iend = index(line_buffer, '(', back = .true.)
-        if (iend > 0) then
-            units = line_buffer(iend + 1:len_line - 1) !< Extract units from parentheses
-            description = line_buffer(istart:iend - 1) !< Extract description before units
-        else
-            units = ''
-            description = adjustl(line_buffer(istart:len_line)) !< No units, take the rest as description
+        temp_string = join_strings(substrings(idx_field:size(substrings) - 1), ' ') !< Join the remaining substrings except the last one for description
+        if (len_trim(temp_string) > 50) then
+            write (*, '(A, A, I0)') 'Error: description "', trim(temp_string), '" exceeds 50 characters at line ', linecount
+            error stop
         end if
-        print *, 'Parsed input item name = ', trim(name), ', default value = ', def_value, ' show in PLCT = ', show_in_plct, ' description = ', trim(description), ' units = ', trim(units)
-        pause
+        description = temp_string !< Remaining substrings except units form the description
 
-        ! read(io_unit, '(A10, F18.0, A1, A50, A20)', iostat=ierr) name, def_value, show_in_plct, description, units
-        ! call check_read_error(io_mes, ierr, linecount, 'input line')
+        temp_string = substrings(size(substrings)) !< Last substring is the units
+        if (len_trim(temp_string) > 20) then
+            write (*, '(A, A, I0)') 'Error: units "', trim(temp_string), '" exceed 20 characters at line ', linecount
+            error stop
+        end if
+        units = temp_string !< Last substring is the units
 
-    end subroutine parse_input_item_line
+        ! if (is_input) then
+        !     print *, 'Input item: ', trim(name), ', Default: ', def_value, ', Show in PLCT: ', trim(show_in_plct), ', Description: ', trim(description), ', Units: ', trim(units)
+        ! else
+        !     print *, 'Output item: ', trim(name), ', Show in PLCT: ', trim(show_in_plct), ', Description: ', trim(description), ', Units: ', trim(units)
+        ! end if
+    end subroutine parse_item_line
 
 end module m_waqpb_import_utils
