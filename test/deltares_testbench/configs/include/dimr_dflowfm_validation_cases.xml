@@ -224,7 +224,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c090_salinity_tim_constant" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c090_salinity_tim_constant</path>
+      <path version="2025-08-01T10:13:51.683000">e02_dflowfm/f005_boundary_conditions/c090_salinity_tim_constant</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
