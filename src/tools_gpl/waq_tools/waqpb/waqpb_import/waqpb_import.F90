@@ -30,7 +30,7 @@
 !     Program to decompose a PROCES.ASC file into tables
 program waqpb_import
    use m_validate_input, only: validate_names
-   use m_waqpb_import_utils, only: check_read_error, get_input_type, parse_input_item_line
+   use m_waqpb_import_utils, only: check_read_error, get_input_type, parse_item_line
    use m_string_utils
    use m_waqpb_import_settings
    use m_cli_utils
@@ -153,8 +153,8 @@ program waqpb_import
       end if
       call check_read_error(io_mes, ierr, linecount, 'process information')
 
-      write (io_mes, '(''Process '',a10)') c10
-      write (*, '(''Process: '',a10)') c10
+      write (io_mes, '(A, I3, A, A)' ), 'Process ', iproc + 1,' : ', c10
+      write (*, '(A, I3, A, A)' ), 'Process ', iproc + 1,' : ', c10
 
       ! name of Fortran subroutine
       linecount = linecount + 1
@@ -184,7 +184,7 @@ program waqpb_import
       ihulp = num_items
       do idx_item = 1, num_items
          linecount = linecount + 1
-         call parse_input_item_line(io_asc, linecount, c10, value, c1, c50, c20)
+         call parse_item_line(io_asc, io_mes, linecount, c10, value, c1, c50, c20, is_input = .true.)
          ! read (io_asc, FMT31, iostat=ierr) c10, value, c1, c50, c20
          ! call check_read_error(io_mes, ierr, linecount, 'input item on cell (segment)')
 
@@ -214,8 +214,9 @@ program waqpb_import
 
       do idx_item = 1, num_items
          linecount = linecount + 1
-         read (io_asc, FMT31, iostat=ierr) c10, value, c1, c50, c20
-         call check_read_error(io_mes, ierr, linecount, 'input item on exchanges')
+         call parse_item_line(io_asc, io_mes, linecount, c10, value, c1, c50, c20, is_input = .true.)
+         ! read (io_asc, FMT31, iostat=ierr) c10, value, c1, c50, c20
+         ! call check_read_error(io_mes, ierr, linecount, 'input item on exchanges')
 
          call upd_p2(c10, c50, value, 2, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
          ninpu = ninpu + 1
@@ -241,8 +242,9 @@ program waqpb_import
       ihulp = num_items
       do idx_item = 1, num_items
          linecount = linecount + 1
-         read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
-         call check_read_error(io_mes, ierr, linecount, 'output item on cell (segment)')
+         call parse_item_line(io_asc, io_mes, linecount, c10, value, c1, c50, c20, is_input = .false.)
+         ! read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
+         ! call check_read_error(io_mes, ierr, linecount, 'output item on cell (segment)')
 
          value = -999.
          call upd_p2(c10, c50, value, 1, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
@@ -263,8 +265,9 @@ program waqpb_import
 
       do idx_item = 1, num_items
          linecount = linecount + 1
-         read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
-         call check_read_error(io_mes, ierr, linecount, 'output item on exchanges')
+         call parse_item_line(io_asc, io_mes, linecount, c10, value, c1, c50, c20, is_input = .false.)
+         ! read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
+         ! call check_read_error(io_mes, ierr, linecount, 'output item on exchanges')
 
          value = -999.
          call upd_p2(c10, c50, value, 2, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
@@ -286,8 +289,9 @@ program waqpb_import
 
       do idx_item = 1, num_items
          linecount = linecount + 1
-         read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
-         call check_read_error(io_mes, ierr, linecount, 'flux')
+         call parse_item_line(io_asc, io_mes, linecount, c10, value, c1, c50, c20, is_input = .false.)
+         ! read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
+         ! call check_read_error(io_mes, ierr, linecount, 'flux')
 
          value = -999.
          call upd_p2(c10, c50, value, 1, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
@@ -380,11 +384,9 @@ program waqpb_import
       iproc = iproc + 1
    end do
    ! End of reading processes overview file
-   write (*, '(I0, A, A)') iproc, ' processes successfully read from file ', settings%processes_overview_file_path
-   write (io_mes, '(I0, A, A)') iproc, ' processes successfully read from file ', settings%processes_overview_file_path
    if (iproc /= num_proc_exp) then
-      write (*, '(A,I0,A, I0, A)') 'Warning: the process overview file indicated ', num_proc_exp, ' processes, however, ', iproc, ' have been found and successfully read.'
-      write (io_mes, '(A,I0,A, I0, A)') 'Warning: the process overview file indicated ', num_proc_exp, ' processes, however, ', iproc, ' have been found and successfully read.'
+      write (*, '(A,I0,A, I0, A)') 'Warning: the process overview file indicated ', num_proc_exp, ' processes, however, ', iproc, ' have been found and read.'
+      write (io_mes, '(A,I0,A, I0, A)') 'Warning: the process overview file indicated ', num_proc_exp, ' processes, however, ', iproc, ' have been found and read.'
    end if
 
    close (io_asc)
