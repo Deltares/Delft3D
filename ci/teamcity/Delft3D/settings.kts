@@ -18,7 +18,7 @@ project {
 
     params {
         param("delft3d-user", "robot${'$'}delft3d")
-        password("delft3d-secret", "credentialsJSON:1dee1a48-252e-42fd-b600-6bf52d940513")
+        password("delft3d-secret", "credentialsJSON:a4f31b33-b3b9-48de-aedc-f5367ac4e60f")
 
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
