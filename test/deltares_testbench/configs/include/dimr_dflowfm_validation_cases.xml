@@ -521,7 +521,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f012_c051_restartrst2d_bndvariable" ref="dflowfm_default">
-      <path version="2024-03-22T19:40:00">e02_dflowfm/f012_inout/c051_restartrst2d_bndvariable</path>
+      <path version="2025-08-01T14:37:54.055000">e02_dflowfm/f012_inout/c051_restartrst2d_bndvariable</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
