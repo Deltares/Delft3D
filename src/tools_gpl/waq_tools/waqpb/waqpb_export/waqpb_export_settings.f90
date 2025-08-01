@@ -59,7 +59,6 @@ contains
       if (.not. get_command_argument_by_name('--version', version)) then
          this%version = generate_version()
          write (*, '(A, F0.1)') 'No or invalid version number specified, using generated one: ', this%version
-         pause 'Press Enter to continue...'
       else
          this%version = version
       end if
@@ -67,7 +66,6 @@ contains
       if (.not. get_command_argument_by_name('--serial', serial)) then
          this%serial = generate_serial()
          write (*, '(A, I0)') 'No or invalid serial number specified, using generated one: ', this%serial
-         pause 'Press Enter to continue...'
       else
          this%serial = serial
       end if

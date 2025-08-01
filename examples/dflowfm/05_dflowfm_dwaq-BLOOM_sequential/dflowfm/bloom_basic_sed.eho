@@ -7,22 +7,22 @@ end-output
 output 'DayL'
    description   'daylength <0-1>'
 end-output
-output 'Limit Chlo'
+output 'Limit_Chlo'
    description   'total chlorophyll in algae'
 end-output
-output 'Limit nit'
+output 'Limit_nit'
    description   'limiting factor nitrogen'
 end-output
-output 'Limit pho'
+output 'Limit_pho'
    description   'limiting factor phosphorus'
 end-output
-output 'Limit sil'
+output 'Limit_sil'
    description   'limiting factor silicate'
 end-output
-output 'Limit e'
+output 'Limit_e'
    description   'limiting factor energy'
 end-output
-output 'Limit gro'
+output 'Limit_gro'
    description   'limiting factor growth'
 end-output
 output 'TOC'

@@ -332,13 +332,13 @@ outppr,outpit,outpnm,outpdo,outpsx
 "BLOOM_P   ","AlgDM_bl  ",   7," ",1
 "BLOOM_P   ","BOD5/infPH",   8,"x",1
 "BLOOM_P   ","Chlfa_bl  ",   9," ",1
-"BLOOM_P   ","Limit Chlo",  10,"x",1
-"BLOOM_P   ","Limit nit ",  11,"x",1
-"BLOOM_P   ","Limit pho ",  12,"x",1
-"BLOOM_P   ","Limit sil ",  13,"x",1
-"BLOOM_P   ","Limit e   ",  14,"x",1
-"BLOOM_P   ","Limit gro ",  15,"x",1
-"BLOOM_P   ","Limit mor ",  16,"x",1
+"BLOOM_P   ","Limit_Chlo",  10,"x",1
+"BLOOM_P   ","Limit_nit ",  11,"x",1
+"BLOOM_P   ","Limit_pho ",  12,"x",1
+"BLOOM_P   ","Limit_sil ",  13,"x",1
+"BLOOM_P   ","Limit_e   ",  14,"x",1
+"BLOOM_P   ","Limit_gro ",  15,"x",1
+"BLOOM_P   ","Limit_mor ",  16,"x",1
 "BLOOM_P   ","fPPtot    ",  17,"x",1
 "BLOOM_P   ","fResptot  ",  18,"x",1
 "BLOOM_P   ","fFixNUpt  ",  19,"x",1
@@ -365,13 +365,13 @@ outppr,outpit,outpnm,outpdo,outpsx
 "BLOOM     ","AlgDM_bl  ",   7," ",1
 "BLOOM     ","BOD5/infPH",   8," ",1
 "BLOOM     ","Chlfa_bl  ",   9," ",1
-"BLOOM     ","Limit Chlo",  10," ",1
-"BLOOM     ","Limit nit ",  11," ",1
-"BLOOM     ","Limit pho ",  12," ",1
-"BLOOM     ","Limit sil ",  13," ",1
-"BLOOM     ","Limit e   ",  14," ",1
-"BLOOM     ","Limit gro ",  15," ",1
-"BLOOM     ","Limit mor ",  16," ",1
+"BLOOM     ","Limit_Chlo",  10," ",1
+"BLOOM     ","Limit_nit ",  11," ",1
+"BLOOM     ","Limit_pho ",  12," ",1
+"BLOOM     ","Limit_sil ",  13," ",1
+"BLOOM     ","Limit_e   ",  14," ",1
+"BLOOM     ","Limit_gro ",  15," ",1
+"BLOOM     ","Limit_mor ",  16," ",1
 "BLOOM     ","fPPtot    ",  17," ",1
 "BLOOM     ","fResptot  ",  18," ",1
 "BLOOM     ","fFixNUpt  ",  19," ",1

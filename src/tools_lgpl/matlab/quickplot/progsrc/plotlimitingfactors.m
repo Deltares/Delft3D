@@ -62,7 +62,7 @@ end
 QuantNames = {Quants.Name};
 Chlfa = strmatch('total chlorophyll in algae',QuantNames,'exact');
 if isempty(Chlfa)
-   Chlfa = strmatch('Limit Chlo',QuantNames,'exact');
+   Chlfa = strmatch('Limit_Chlo',QuantNames,'exact');
 end
 if isempty(Chlfa)
    error('Cannot find total Chlorophyll in algae (Limit Chlo) in data file.')
@@ -122,12 +122,12 @@ else
    delete(allchild(Ax2))
 end
 limits = {
-   'limiting factor mortality'  'Limit mor'
-   'limiting factor growth'     'Limit gro'
-   'limiting factor silicate'   'Limit sil'
-   'limiting factor phosphorus' 'Limit pho'
-   'limiting factor nitrogen'   'Limit nit'
-   'limiting factor energy'     'Limit e'};
+   'limiting factor mortality'  'Limit_mor'
+   'limiting factor growth'     'Limit_gro'
+   'limiting factor silicate'   'Limit_sil'
+   'limiting factor phosphorus' 'Limit_pho'
+   'limiting factor nitrogen'   'Limit_nit'
+   'limiting factor energy'     'Limit_e'};
 limits_used = {};
 offset=0;
 NTim = length(DataChlfa.Time);
