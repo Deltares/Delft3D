@@ -52,7 +52,7 @@ object LinuxTest : BuildType({
         select(
             name = "distribution",
             label = "Distribution",
-            value = "alma8",
+            value = "alma10",
             display = ParameterDisplay.PROMPT,
             options = listOf(
                 "AlmaLinux 8" to "alma8",
