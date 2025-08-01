@@ -63,7 +63,7 @@ object LinuxRuntimeContainers : BuildType({
                     --provenance=false
                     --pull
                     --no-cache
-                    --build-arg BASE_IMAGE=almalinux:%almalinux_version%
+                    --build-arg BASE_IMAGE=containers.deltares.nl/docker-proxy/library/almalinux:%almalinux_version%
                     --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
                     --build-arg BUILDTOOLS_IMAGE_TAG=%dep.${LinuxBuild.id}.build_tools_image_tag%
