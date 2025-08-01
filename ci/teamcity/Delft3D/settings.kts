@@ -21,7 +21,7 @@ project {
         password("delft3d-secret", "credentialsJSON:a4f31b33-b3b9-48de-aedc-f5367ac4e60f")
 
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
+        password("s3_dsctestbench_secret", "credentialsJSON:f29c59af-7f08-4826-8c5d-1c3d48a73161")
 
         param("product", "dummy_value")
 
