@@ -635,7 +635,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f016_c010_schematic_xyz" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f016_drypoints/c010_schematic_xyz</path>
+      <path version="2025-08-01T14:49:59.621000">e02_dflowfm/f016_drypoints/c010_schematic_xyz</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/drypoints_his.nc" type="netCDF">
