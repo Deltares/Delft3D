@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,10 +44,10 @@ contains
 
    subroutine updateValuesOnLaterals(tim1, timestep)
       use m_flowtimes, only: ti_his, time_his, ti_hiss
-      use m_laterals, only: qqLat, numlatsg, num_layers, qplat, qplatCum, qplatCumPre, qplatAve, qLatReal, &
-                            qLatRealCum, qLatRealCumPre, qLatRealAve, n1latsg, n1latsg, n2latsg, nnlat
-      use precision
-      use m_alloc
+      use m_laterals, only: qLatReal, numlatsg, n1latsg, n2latsg, nnlat, num_layers, qqLat, qplatCum, qplat, &
+                            qLatRealCum, qplatAve, qplatCumPre, qLatRealAve, qLatRealCumPre
+      use precision, only: dp, comparereal
+      use m_alloc, only: realloc
       use m_flowparameters, only: eps10
       use m_partitioninfo, only: jampi, reduce_double_sum, is_ghost_node
 

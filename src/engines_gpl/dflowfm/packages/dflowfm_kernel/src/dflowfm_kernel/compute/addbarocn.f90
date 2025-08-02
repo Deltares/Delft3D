@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,6 +50,8 @@ contains
 
    !> Computes baroclinic pressure gradients across layers for a horizontal cell.
    !! Original method that was used when Baroczlaybed was set to 0.
+   !! Uses linear interpolation of density at vertical interfaces and precomputes the density at the layer interfaces.
+   !! This method is used for backward compatibility with existing models, but the other methods are investigated as more accurate alternatives.
    subroutine add_baroclinic_pressure_cell_original(cell_index_2d)
       use m_turbulence, only: integrated_baroclinic_pressures, baroclinic_pressures, kmxx
       use m_flowparameters, only: epshu

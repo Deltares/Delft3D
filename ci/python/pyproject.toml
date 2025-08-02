@@ -9,7 +9,7 @@ authors = [
 requires-python = ">=3.11"
 dependencies = [
     "httpx>=0.28.1",
-    "minio~=7.2.15",
+    "minio==7.2.15",
     "s3-path-wrangler~=0.5.0",
 ]
 

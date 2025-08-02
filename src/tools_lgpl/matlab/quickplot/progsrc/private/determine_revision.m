@@ -9,7 +9,7 @@ function [revString,repoUrl,hash] = determine_revision(dirname,dbid)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -134,8 +134,8 @@ else
         [hash, b] = strtok(b);
         b = strsplit(b, local_newline);
         
-        if ~isempty(strfind(b{1},'refs/merge-requests'))
-            % We're probably working on a merge-request ... don't look for
+        if ~isempty(strfind(b{1},'refs/pull'))
+            % We're probably working on a pull request ... don't look for
             % origin ...
             hasLocalCommits = false;
         else

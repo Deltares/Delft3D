@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,8 @@ module m_get_jaupdatehorflux
 contains
 
    subroutine get_jaupdatehorflux(nsubsteps, limtyp, jaupdate, jaupdatehorflux)
-      use m_flowgeom, only: Ndx, Lnx, ln, klnup
-      use timers
+      use m_flowgeom, only: Lnx, ln, klnup, ndx
+      use timers, only: timon, timstrt, timstop
 
       implicit none
 

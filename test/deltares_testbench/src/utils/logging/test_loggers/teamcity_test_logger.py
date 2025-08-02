@@ -1,6 +1,6 @@
 """Test case logger for teamcity.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 import datetime

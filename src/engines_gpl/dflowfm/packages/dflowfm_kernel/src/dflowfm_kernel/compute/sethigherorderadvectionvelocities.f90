@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,12 +43,11 @@ contains
 
    subroutine sethigherorderadvectionvelocities()
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_sferic
+      use m_flowgeom, only: lnx, ln, acl, klnup, csu, snu, dx, slnup, dxi
+      use m_flow, only: limtypmom, kmx, qa, hs, chkadvd, ducxdx, ducxdy, ducydx, ducydy, ucx, ucy, u1, ucxu, ucyu, kbot, kmxn, kmxl, ktop
+      use m_sferic, only: jasfer3d
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_flowtimes, only: dts
-      use m_dslim
-      use m_get_Lbot_Ltop
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
       use m_nodup2linx, only: nodup2linx

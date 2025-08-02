@@ -5,7 +5,7 @@ subroutine rdtdtn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
                 & bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -110,7 +110,6 @@ subroutine rdtdtn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     integer                                :: nr     ! Sequence nr of the time read 
     integer                                :: ntimrd
     integer                                :: ntyp
-    integer, external                      :: newlun
     logical                                :: access ! Flag to read file as direct access or sequential 
     logical                                :: ex     ! Flag to test if file exists 
     real(fp)                               :: rdfaul

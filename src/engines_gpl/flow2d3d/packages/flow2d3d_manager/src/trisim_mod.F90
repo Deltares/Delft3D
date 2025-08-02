@@ -1,7 +1,7 @@
 module mod_trisim
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -100,7 +100,6 @@ integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, o
     integer                             :: lunid
     integer                             :: luntri       ! Unit number for trigger file for TRISIM for running programs simultaniously 
     integer                             :: nhystp
-    integer                  , external :: newlun
     integer                  , external :: fsmtrf
     logical                             :: ex
     logical                             :: init         ! Flag=TRUE when initialisation is required (always the case if FLOW is used stand alone) 

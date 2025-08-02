@@ -2,7 +2,7 @@ subroutine grdfil(lundia    ,lungrd    ,error     ,filgrd    ,fmttmp    , &
                 & flgrd     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -64,7 +64,6 @@ subroutine grdfil(lundia    ,lungrd    ,error     ,filgrd    ,fmttmp    , &
     integer                        :: lfile   ! Length of file name 
     integer                        :: luntmp  ! Unit number for attribute file 
     integer                        :: m       ! Help var. 
-    integer, external              :: newlun
     integer, dimension(2)          :: ival    ! Help array (int.) where the data, recently read from the MD-file, are stored temporarily 
 !
 !

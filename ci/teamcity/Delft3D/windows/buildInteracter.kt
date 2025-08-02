@@ -76,7 +76,7 @@ object WindowsBuildDflowfmInteracter : BuildType({
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
     }
-    if (DslContext.getParameter("environment") == "production") {
+    if (DslContext.getParameter("enable_schedule_interacter_build").lowercase() == "true") {
         triggers {
             schedule {
                 schedulingPolicy = daily {

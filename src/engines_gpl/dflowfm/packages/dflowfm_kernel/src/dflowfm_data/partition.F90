@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -271,11 +271,11 @@ contains
 !! to allow 'holes' inside the outer region or even 'islands' inside 'holes'.
    subroutine partition_pol_to_idomain(janet, jafindcells)
 
-      use network_data
+      use network_data, only: nump1d2d, nump, xzw, yzw
+      use m_missing, only: dmiss
+      use m_alloc, only: realloc
+      use gridoperations, only: findcells
       use m_flowgeom, only: Ndx, xz, yz
-      use m_missing
-      use m_alloc
-      use gridoperations
 
       implicit none
 
@@ -430,8 +430,7 @@ contains
 
 !> generate partition domain-numbers from selecting polygons
    subroutine generate_partitioning_from_pol()
-      use m_polygon
-      use network_data
+      use m_polygon, only: savepol, restorepol
 
       implicit none
 
@@ -503,9 +502,6 @@ contains
 !> initialize partitioning
    subroutine partition_init_1D2D(md_ident, ierror)
       use m_flowparameters, only: icgsolver
-      use m_polygon
-      use m_missing
-      use m_alloc
 
       implicit none
 
@@ -582,12 +578,12 @@ contains
 !> make a domain, including the ghostcells, by removing the other parts of the network
 !>   based on combined ghostlevels
    subroutine partition_make_domain(idmn, numlay_cell, numlay_node, jacells, ierror)
-      use MessageHandling
-      use dfm_error
-      use m_polygon
-      use network_data
-      use m_alloc
-      use gridoperations
+      use messagehandling, only: mess, level_warn
+      use dfm_error, only: dfm_genericerror, dfm_noerr
+      use m_polygon, only: npl
+      use network_data, only: lc, numl, kn, link_2d, lnn, lne, nump1d2d, netstat, netstat_ok, numk, cellmask, lperm, netcell, numl1d
+      use m_alloc, only: realloc
+      use gridoperations, only: findcells
       use m_remove_masked_netcells, only: remove_masked_netcells
       implicit none
 
@@ -601,7 +597,6 @@ contains
       logical :: domain_needs_cell_1, domain_needs_cell_2
       integer :: i
       integer, dimension(:, :), allocatable :: lne_org
-      integer :: nLink2Dhang ! number of hanging 2D links found
       integer :: i_old
       character(len=128) :: message
 
@@ -613,12 +608,10 @@ contains
 
 !     make link mask
       Lc = 0
-      nLink2Dhang = 0
       do L = 1, numL
          if ((kn(3, L) == LINK_2D .and. lnn(L) == 0)) then
             ! check for hanging 2D
             Lc(L) = 0 ! set mask to inactive
-            nLink2Dhang = nLink2dhang + 1
             cycle
          end if
          ic1 = abs(lne(1, L))
@@ -666,14 +659,6 @@ contains
          call mess(LEVEL_WARN, trim(message))
          ierror = DFM_GENERICERROR
          goto 1234
-      end if
-
-!     output number of hanging 2D links
-      if (idmn == 0) then
-         if (nLink2Dhang > 0) then
-            write (message, "(I0, ' hanging 2D links disregarded.')") nLink2Dhang
-            call mess(LEVEL_WARN, trim(message))
-         end if
       end if
 
       if (jacells == 1) then
@@ -806,7 +791,7 @@ contains
    !! The net link and net node numbering is returned in a "1D only" numbering, intended for UGRID mesh1d output.
    !! A 1D edge is a true 1D netlink, i.e., not a 1D2D link.
    subroutine get_1d_edges_in_domain(numl1d, L2Lorg, numk1d, n1dedges, edge_nodes, Lorg, kperm, ierror)
-      use network_data, only: kn, LNE, lnn, LINK_1D, LINK_1D_MAINBRANCH
+      use network_data, only: kn, LNE
       use m_inquire_link_type, only: is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges
       implicit none
       integer, intent(in) :: numl1d !< number of 1D(+1D2D) links in current partition mesh
@@ -1124,7 +1109,7 @@ contains
 !>    it is assumed that module variable idomain has been filled
 !>    ghost cells are masked in module variable ighostlev_cellbased
    subroutine partition_set_ghostlevels_cellbased(idmn, numlay_loc, ierror)
-      use network_data
+      use network_data, only: numl, lnn, lne
       implicit none
 
       integer, intent(in) :: idmn !< domain number
@@ -1169,7 +1154,7 @@ contains
 !>    it is assumed that module variable idomain has been filled
 !>    ghost cells are masked in module variable ighostlev_nodebased
    subroutine partition_set_ghostlevels_nodebased(idmn, numlay_loc, ierror)
-      use network_data
+      use network_data, only: nump, netcell, nmk, nod
       use m_icommon, only: common_cell_for_two_net_links
       implicit none
 
@@ -1219,8 +1204,7 @@ contains
 
 !> set ghostlevels in boundary flownodes (copy from inner nodes)
    subroutine partition_set_ghostlevels_boundaries()
-      use network_data
-      use m_flowgeom
+      use m_flowgeom, only: lnxi, lnx, ln
       implicit none
 
       integer :: kb, ki, L
@@ -1247,8 +1231,6 @@ contains
 !> make the lists of ghost-water-levels and velocities
 !>    it is assumed that idomain and ighostlev are filled
    subroutine partition_make_ghostlists(domain_number, error)
-      use m_alloc
-      use m_flowgeom
 
       implicit none
 
@@ -1390,7 +1372,6 @@ contains
 !> make the lists of ghost-water-levels and velocities
 !>    it is assumed that idomain and ighostlev are filled
    subroutine partition_get_ghosts(domain_number, itype, ghost_list, ierror)
-      use m_alloc
 
       implicit none
 
@@ -1435,7 +1416,7 @@ contains
    subroutine partition_fill_sendlist(own_domain_number, other_domain_number, itype, N_req, x_req, y_req, ghost_list, &
                                       send_list, nr_send_list, ierror)
 
-      use m_alloc
+      use m_alloc, only: realloc
       use network_data, only: numk, xzw, yzw, xk, yk
       use m_flowgeom, only: xu, yu
       use geometry_module, only: dbdistance
@@ -1568,9 +1549,9 @@ contains
 !>  make the sendlists
 !>    include additional layer to detect all flownodes and flowlinks ("enclosed, level-five" cells)
    subroutine partition_make_sendlists(idmn, fnam, ierror)
-      use m_polygon
-      use m_alloc
-      use m_reapol
+      use m_polygon, only: savepol, npl, xpl, ypl, restorepol
+      use m_alloc, only: realloc
+      use m_reapol, only: reapol
       use m_filez, only: oldfil
 
       implicit none
@@ -1705,12 +1686,11 @@ contains
 
 !> communicate ghost cells to other domains
    subroutine partition_make_sendlist_MPI(itype, numlay_cell, numlay_node, i_list, n_list, ifromto)
-      use m_alloc
-      use m_missing
+      use m_alloc, only: realloc
+      use mpi
       use network_data, only: xzw, yzw, xk, yk
       use m_flowgeom, only: xu, yu
 #ifdef HAVE_MPI
-      use mpi
 #endif
 
       implicit none
@@ -2012,10 +1992,10 @@ contains
 
 !> copy sendlist to samples
    subroutine copy_sendlist_to_sam()
-      use m_samples
+      use m_samples, only: savesam, increasesam, ns, xs, ys, zs
+      use m_delsam, only: delsam
       use network_data, only: xzw, yzw
       use m_flowgeom, only: xu, yu
-      use m_delsam
 
       implicit none
 
@@ -2156,7 +2136,7 @@ contains
 
 !> generate non-overlapping ghost/sendlists (for solver)
    subroutine partition_fill_ghostsendlist_nonoverlap(error)
-      use m_alloc
+      use m_alloc, only: realloc
       implicit none
 
       integer, intent(out) :: error !< error (1) or not (0)
@@ -2252,12 +2232,11 @@ contains
 
    subroutine update_ghosts(itype, ndim, n, solution, error, ignore_orientation)
 #ifdef HAVE_MPI
-      use mpi
+      use m_flowgeom, only: dp, ndx, lnx
+      use messagehandling, only: mess, level_error
 #endif
-      use m_flowgeom
       use m_flow, only: kmxn, kmxL, kbot, Lbot, Ndkx, Lnkx
       use network_data, only: numk
-      use messageHandling
 
       implicit none
 
@@ -2367,9 +2346,9 @@ contains
    subroutine update_ghost_loc(ndomains, NDIM, N, s, numghost, ighost, nghost, numsend, isend, nsend, itag, ierror, nghost3d, nsend3d, kmxnL, kbot, ignore_orientation)
 #ifdef HAVE_MPI
       use mpi
+      use m_flowgeom, only: dp
+      use m_alloc, only: realloc
 #endif
-      use m_flowgeom
-      use m_alloc
 
       implicit none
 
@@ -4460,7 +4439,7 @@ contains
       use m_tpoly
       use m_sferic
       use messagehandling, only: LEVEL_WARN, mess
-      use gridoperations
+      use gridoperations, only: findcells
       use m_copynetboundstopol
       implicit none
 

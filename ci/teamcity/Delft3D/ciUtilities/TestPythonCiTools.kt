@@ -45,7 +45,7 @@ object TestPythonCiTools : BuildType({
                 +:/ci/python/pyproject.toml
                 +:/ci/python/uv.lock
             """.trimIndent()
-            branchFilter = "+:merge-requests/*"
+            branchFilter = "+:pull/*"
         }
     }
 

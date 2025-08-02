@@ -2,7 +2,7 @@ subroutine wri_jet3d(u0    ,v0    ,rho    ,thick ,kmax      ,dps   ,&
                    & s0    ,alfas ,flwang ,sign  ,idensform ,time  ,gdp   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -86,7 +86,6 @@ subroutine wri_jet3d(u0    ,v0    ,rho    ,thick ,kmax      ,dps   ,&
     integer                                     :: nm_amb
     integer                                     :: nmd_amb
     integer                                     :: ndm_amb
-    integer                       , external    :: newlun
     integer                                     :: luntmp1
     integer                                     :: luntmp2
     real(fp)                                    :: sign
@@ -138,8 +137,7 @@ subroutine wri_jet3d(u0    ,v0    ,rho    ,thick ,kmax      ,dps   ,&
     !
     ! Read the general diffuser characteritics from jet3d input file
     !
-    luntmp1 = newlun(gdp)
-    open (luntmp1, file='str3dinp.def', status='old')
+    open (newunit=luntmp1, file='str3dinp.def', status='old')
     !
     ! Position diffuser
     !
@@ -222,8 +220,7 @@ subroutine wri_jet3d(u0    ,v0    ,rho    ,thick ,kmax      ,dps   ,&
     !
     ! Write jet3d input file
     !
-    luntmp2 = newlun(gdp)
-    open (luntmp2,file='str3dinp.xxx',status='unknown')
+    open (newunit=luntmp2,file='str3dinp.xxx',status='unknown')
     read  (luntmp1,'(a256)') record
     write (record(11:20),'(f10.3)') s0(nm_diff) + real(dps(nm_diff),fp)
     write (luntmp2,'(a256)') record

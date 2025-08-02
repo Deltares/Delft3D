@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -208,7 +208,7 @@ contains
 !> Read the ice cover module configuration from the mdu file
    subroutine fm_ice_read(md_ptr, ierror)
       use dfm_error, only: DFM_WRONGINPUT
-      use properties, only: tree_data
+      use tree_data_types, only: tree_data
 
       type(tree_data), pointer :: md_ptr !< pointer to the input file
       integer, intent(inout) :: ierror !< D-Flow FM error flag

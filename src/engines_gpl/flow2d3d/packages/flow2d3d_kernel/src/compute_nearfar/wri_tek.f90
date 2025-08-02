@@ -2,7 +2,7 @@ subroutine wri_tek    (x_jet  , y_jet  , z_jet , no_val , xstart ,xend  ,ystart 
                      & bv_jet , bh_jet , s_jet , linkinf, gdp    )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -71,13 +71,11 @@ subroutine wri_tek    (x_jet  , y_jet  , z_jet , no_val , xstart ,xend  ,ystart 
     integer                                                                    :: n
     integer                                                                    :: m
     integer                                                                    :: luntmp
-    integer                                                                    :: newlun
 
 !
 !! executable statements -------------------------------------------------------
 !
-    luntmp = newlun(gdp)
-    open (luntmp,file=filename,status='unknown')
+    open (newunit=luntmp,file=filename,status='unknown')
 
     write (luntmp,'(a,f12.6)')'* Salinity    of the discharge : ',linkinf(1)
     write (luntmp,'(a,f12.6)')'* Temperature of the discharge : ',linkinf(2)

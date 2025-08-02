@@ -5,7 +5,7 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
                 & drodep    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -130,7 +130,6 @@ subroutine rdsite(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     integer                                    :: i            ! Help var.
     integer                                    :: mfl          ! first m-index of this local partition, excluding the halo
     integer                                    :: mll          ! last  m-index of this local partition, excluding the halo
-    integer, external                          :: newlun
     integer                                    :: nfl          ! first n-index of this local partition, excluding the halo
     integer                                    :: nll          ! last  n-index of this local partition, excluding the halo
     integer                                    :: nlook        ! Help var.: nr. of data to look for in the MD-file

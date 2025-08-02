@@ -18,7 +18,7 @@ object TemplateDetermineProduct : Template({
             command = script {
                 content="""
                     if "%product%" == "auto-select":
-                        if "merge-request" in "%teamcity.build.branch%":
+                        if "pull" in "%teamcity.build.branch%":
                             if "%teamcity.pullRequest.source.branch%".startswith("revert-"):
                                 product = "tc"
                             else:

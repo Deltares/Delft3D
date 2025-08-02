@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2025.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -43,7 +43,7 @@ public icecover_output_flags
 integer, parameter, public :: ICECOVER_NONE    = 0 !< no ice cover
 integer, parameter, public :: ICECOVER_EXT     = 1 !< externally forced ice cover --> EC module, or BMI?
 integer, parameter, public :: ICECOVER_SEMTNER = 2 !< ice thickness computed based on Semtner (1975)
-! ... add IcePack
+
 
 integer, parameter, public :: FRICT_AS_DRAG_COEFF = 11 ! should be extension of D-Flow FM friction numbers
 

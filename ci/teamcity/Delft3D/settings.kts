@@ -24,6 +24,7 @@ project {
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
 
         param("product", "dummy_value")
+
     }
 
     template(TemplateMergeRequest)
@@ -48,19 +49,21 @@ project {
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
             )
-        }
+        }        
         buildType(LinuxBuild)
+        buildType(LinuxBuild2D3DSP)
         buildType(LinuxCollect)
         buildType(LinuxRuntimeContainers)
-        buildType(LinuxRunAllDockerExamples)
+        buildType(LinuxRunAllContainerExamples)
         buildType(LinuxLegacyDockerTest)
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
             LinuxBuild,
+            LinuxBuild2D3DSP,
             LinuxCollect,
             LinuxRuntimeContainers,
-            LinuxRunAllDockerExamples,
+            LinuxRunAllContainerExamples,
             LinuxLegacyDockerTest,
             LinuxUnitTest,
             LinuxTest
@@ -74,6 +77,7 @@ project {
         buildType(WindowsBuildEnvironment)
         buildType(WindowsBuildEnvironmentI24)
         buildType(WindowsBuild)
+        buildType(WindowsBuild2D3DSP)
         buildType(WindowsCollect)
         buildType(WindowsTest)
         buildType(WindowsUnitTest)
@@ -82,6 +86,7 @@ project {
             WindowsBuildEnvironment,
             WindowsBuildEnvironmentI24,
             WindowsBuild,
+            WindowsBuild2D3DSP,
             WindowsCollect,
             WindowsTest,
             WindowsUnitTest,
@@ -128,10 +133,12 @@ project {
     )
 
     buildType(Trigger)
+    buildType(PublishToGui)
     buildType(DIMRbak)
     buildType(Publish)
     buildTypesOrder = arrayListOf(
         Trigger,
+        PublishToGui,
         DIMRbak,
         Publish
     )

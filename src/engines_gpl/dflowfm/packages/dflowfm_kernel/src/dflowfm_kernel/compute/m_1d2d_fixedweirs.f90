@@ -78,7 +78,7 @@ contains
 
    !> Reallocate the arrays for the lateral fixed weirs
    subroutine realloc_1d2d_fixedweirs()
-      use m_alloc
+      use m_alloc, only: realloc
 
       call realloc(index_1d2d_fixedweirs, n_1d2d_fixedweirs, keepexisting=.true.)
       call realloc(dx_i, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
@@ -150,7 +150,7 @@ contains
    end subroutine find_1d2d_fixedweirs
 
    subroutine initialise_1d2d_fixedweirs()
-      use m_flowgeom, only: ndx2d, ln, nd, iadv, lnx1d, iadv, teta
+      use m_flowgeom, only: iadv, teta, ln, ndx2d, nd, lnx1d
 
       integer i, L, j
 
@@ -438,7 +438,7 @@ contains
    !> For the last iteration the computed discharge is imposed. As a result the total computation
    !> should be mass conserving.
    subroutine set_discharge_on_1d2d_fixedweirs()
-      use precision, only: comparereal
+
       use m_flow, only: fu, ru, hu, u0, au, s1
       use m_flowgeom, only: ln, teta
       use m_reduce, only: lv2, ccr, bbr, ddr
@@ -574,8 +574,6 @@ contains
       use precision, only: dp
       use m_flow, only: au, s1, hu
       use precision_basics, only: comparereal
-      use m_flowtimes
-      use messagehandling
 
       real(kind=dp) :: Q_1d2d, Q_2d1d
       integer i, L

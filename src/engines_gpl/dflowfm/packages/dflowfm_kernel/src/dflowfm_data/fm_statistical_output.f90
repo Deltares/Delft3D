@@ -104,8 +104,8 @@ contains
 
    !> Subroutine that divides sediment transport x,y variables by rho
    subroutine assign_sediment_transport(X, Y, IPNT_X, IPNT_Y)
-      use m_sediment
-      use m_observations_data
+      use m_sediment, only: stmpar
+      use m_observations_data, only: numobs, nummovobs, valobs
 
       real(dp), dimension(:), intent(out) :: X, Y !< arrays to assign valobs values to
       integer, intent(in) :: IPNT_X, IPNT_Y !< location specifier inside valobs array
@@ -131,7 +131,7 @@ contains
 
    !> Wrapper function that will allocate and fill the dredge time arrays
    subroutine calculate_dredge_time_fraction(source_input)
-      use m_dad
+      use m_dad, only: dadpar
       use m_flowtimes, only: time1
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
       real(dp) :: cof0
@@ -153,7 +153,7 @@ contains
 
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SSW(source_input)
-      use m_observations_data
+      use m_observations_data, only: ipnt_sswx1, ipnt_sswy1
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSWX" item, to be assigned once on first call.
       call allocate_and_associate(source_input, get_sediment_array_size(), SSWX, SSWY)
       call assign_sediment_transport(SSWX, SSWY, IPNT_SSWX1, IPNT_SSWY1)
@@ -161,7 +161,7 @@ contains
 
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SSC(source_input)
-      use m_observations_data
+      use m_observations_data, only: ipnt_sscx1, ipnt_sscy1
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SSCX" item, to be assigned once on first call.
       call allocate_and_associate(source_input, get_sediment_array_size(), SSCX, SSCY)
       call assign_sediment_transport(SSCX, SSCY, IPNT_SSCX1, IPNT_SSCY1)
@@ -169,7 +169,7 @@ contains
 
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SBW(source_input)
-      use m_observations_data
+      use m_observations_data, only: ipnt_sbwx1, ipnt_sbwy1
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBWX" item, to be assigned once on first call.
       call allocate_and_associate(source_input, get_sediment_array_size(), SBWX, SBWY)
       call assign_sediment_transport(SBWX, SBWY, IPNT_SBWX1, IPNT_SBWY1)
@@ -177,7 +177,7 @@ contains
 
    !> Wrapper function that will allocate and fill the sediment transport arrays
    subroutine calculate_sediment_SBC(source_input)
-      use m_observations_data
+      use m_observations_data, only: ipnt_sbcx1, ipnt_sbcy1
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
       call allocate_and_associate(source_input, get_sediment_array_size(), SBCX, SBCY)
       call assign_sediment_transport(SBCX, SBCY, IPNT_SBCX1, IPNT_SBCY1)
@@ -185,9 +185,8 @@ contains
 
    subroutine add_station_water_quality_configs(output_config_set, idx_his_hwq)
       use processes_input, only: num_wq_user_outputs => noout_user
-      use results, only: OutputPointers
-      use m_fm_wq_processes, only: wq_user_outputs => outputs
       use m_ug_nc_attribute, only: ug_nc_attribute
+      use m_fm_wq_processes, only: wq_user_outputs => outputs
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_set_att
       use m_observations_data, only: numobs, nummovobs
@@ -236,7 +235,7 @@ contains
       use m_ug_nc_attribute
       use m_transport, only: NUMCONST_MDU, const_names, isedn, ised1, const_units
       use m_sediment, only: stmpar, jased, stm_included
-      use messagehandling, only: Idlen
+      use messagehandling, only: idlen
       use netcdf_utils, only: ncu_set_att, ncu_sanitize_name
       use MessageHandling, only: err
 
@@ -2649,7 +2648,7 @@ contains
          end if
 
          ! Meteo
-         if (air_pressure_available > 0 .and. jahiswind > 0) then
+         if (air_pressure_available .and. jahiswind > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PATM), valobs(:, IPNT_PATM))
          end if
 

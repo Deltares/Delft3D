@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,11 +43,11 @@ contains
 
    subroutine TOLAND(XX, YY, JSTART, JEND, JAINVIEW, XV, YV, DISMIN, JOUT, RLOUT) ! SHIFT 1 POINT TO LANDBOUNDARY
       use precision, only: dp
-      use M_LANDBOUNDARY
-      use M_MISSING
-      use M_POLYGON
+      use M_LANDBOUNDARY, only: mxlan, xlan, ylan
+      use M_MISSING, only: imiss, dxymis, jins, dmiss
+      use M_POLYGON, only: npl, xpl, ypl
+      use m_d_line_dis3, only: dlinedis3
       use geometry_module, only: pinpok
-      use m_d_line_dis3
 
       real(kind=dp), intent(in) :: xx, yy !< coordinates of reference point
       integer, intent(in) :: JSTART, JEND !< start end end node of land boundary segment respectively

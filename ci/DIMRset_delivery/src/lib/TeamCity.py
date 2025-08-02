@@ -1,6 +1,7 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import requests
+from settings.teamcity_settings import TEAMCITY_IDS
 
 
 class TeamCity(object):
@@ -172,8 +173,8 @@ class TeamCity(object):
 
         Returns:
             bytes: A byte string containing a dictionairy
-        
-        """ 
+
+        """
         endpoint = f"{self.__rest_uri}buildTypes/{build_type_id}/artifact-dependencies"
 
         result = requests.get(
@@ -245,15 +246,11 @@ class TeamCity(object):
             Returns None if the request failed.
         """
 
-        status_locator = ""
-        if include_failed_builds is True:
-            status_locator = ",status:SUCCESS"
-
         pinned_locator = ""
         if pinned == "true" or pinned == "false":
             pinned_locator = f",pinned:{pinned}"
 
-        endpoint = f"{self.__rest_uri}builds?locator=defaultFilter:false,status:SUCCESS,buildType:{build_type_id},count:{limit}{status_locator}{pinned_locator}"
+        endpoint = f"{self.__rest_uri}builds?locator=defaultFilter:false,buildType:{build_type_id},count:{limit}{pinned_locator}"
 
         result = requests.get(
             url=endpoint, headers=self.__default_headers, auth=self.__auth
@@ -377,21 +374,16 @@ class TeamCity(object):
         print(f"Could not retrieve build info for build id {build_id}:")
         print(f"{result.status_code} - {result.content}")
         return None
-
-    def get_build_info_for_latest_build_for_build_type_id(
-        self, build_type_id: str, include_failed_builds: bool = False
-    ) -> Dict[str, Any]:
+    
+    def get_full_build_info_for_build_id(self, build_id: str) -> Dict[str, Any]:
         """
-        Gets the build info for the latest build of a specific build type.
+        Gets the build info for a specific build.
 
-        Uses the following TeamCity REST API endpoints:
-        /app/rest/builds?<buildLocator>
-        /app/rest/buildTypes/<buildTypeLocator>/builds?<buildLocator>
+        Uses the following TeamCity REST API endpoint:
+        /app/rest/builds/<buildLocator>
 
         Arguments:
-            build_type_id (str): The build type id.
-            include_failed_builds (bool, optional): Specifies whether to include
-                builds that have failed. Defaults to False.
+            build_id (str): The build id of a specific build.
 
         Returns:
             Dict[str, Any]: A dictionary with a variety of keys. This includes
@@ -402,12 +394,15 @@ class TeamCity(object):
 
             Returns None if the request failed.
         """
-        latest_build_id = self.get_latest_build_id_for_build_type_id(
-            build_type_id=build_type_id, include_failed_builds=include_failed_builds
+        endpoint = f"{self.__rest_uri}builds/id:{build_id}"
+        result = requests.get(
+            url=endpoint, headers=self.__default_headers, auth=self.__auth
         )
-        if latest_build_id is None:
-            return None
-        return self.get_build_info_for_build_id(build_id=latest_build_id)
+        if result.status_code == 200:
+            return result.json()
+        print(f"Could not retrieve build info for build id {build_id}:")
+        print(f"{result.status_code} - {result.content}")
+        return None
 
     def get_latest_build_id_for_build_type_id(
         self, build_type_id: str, include_failed_builds: bool = False
@@ -522,12 +517,13 @@ class TeamCity(object):
         print(f"{result.status_code} - {result.content}")
         return False
 
-    def add_tag_to_build(self, build_id: str, tag: str) -> bool:
+    def add_tag_to_build_with_dependencies(self, build_id: str, tag: str) -> bool:
         """
-        Adds the specified tag to the specified build.
+        Adds the specified tag to the specified build and its dependencies.
 
-        Uses the following TeamCity REST API endpoint:
+        Uses the following TeamCity REST API endpoints:
         /app/rest/builds/<buildLocator>/tag
+        /app/rest/builds/multiple/snapshotDependency:(to:(id:<build_id>)),count:1000/tags
 
         Arguments:
             build_id (str): The build id for a specific build.
@@ -547,11 +543,27 @@ class TeamCity(object):
         result = requests.post(
             url=endpoint, headers=headers, auth=self.__auth, data=payload
         )
-        if result.status_code == 200:
-            return True
-        print(f"Could not add {tag} tag to build with build id {build_id}:")
-        print(f"{result.status_code} - {result.content}")
-        return False
+        if result.status_code != 200:
+            print(f"Could not add {tag} tag to build with build id {build_id}:")
+            print(f"{result.status_code} - {result.content}")
+            return False
+
+        endpoint = f"{self.__rest_uri}builds/multiple/snapshotDependency:(to:(id:{build_id})),count:1000/tags"
+        headers = {
+            "Content-Type": "application/json",
+            "X-TC-CSRF-Token": self.__get_csrf_token(),
+        }
+        payload = f'{{"tag":[{{"name":"{tag}"}}]}}'
+        result = requests.post(
+            url=endpoint, headers=headers, auth=self.__auth, data=payload
+        )
+        if result.status_code != 200:
+            print(
+                f"Could not add {tag} tag to dependencies of build with build id {build_id}:"
+            )
+            print(f"{result.status_code} - {result.content}")
+            return False
+        return True
 
     def __get_csrf_token(self) -> str:
         """
@@ -592,3 +604,73 @@ class TeamCity(object):
             "origin": self.__base_uri,
         }
         return headers
+
+    def get_filtered_dependent_build_ids(self, build_id: str) -> List[str]:
+        """
+        Gets a list of build IDs for builds related to a specific build, filtered by buildTypeIds from TEAMCITY_IDS Enum.
+
+        Uses the following TeamCity REST API endpoint:
+        /app/rest/builds?locator=defaultFilter:false,snapshotDependency(to:(id:<build_id>)),count:1000&fields=build(id,buildTypeId)
+
+        Arguments:
+            build_id (str): The ID of the build to filter related builds.
+
+        Returns:
+            List[str]: A list of build IDs for builds matching the snapshot dependency
+            and whose buildTypeId is in TEAMCITY_IDS.
+            Returns an empty list if the request failed or no matching builds are found.
+        """
+        build_type_ids = [member.value for member in TEAMCITY_IDS]
+        endpoint = f"{self.__rest_uri}builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id})),count:1000&fields=build(id,buildTypeId)"
+        result = requests.get(
+            url=endpoint, headers=self.__default_headers, auth=self.__auth
+        )
+        if result.status_code == 200:
+            build_data = result.json()
+            build_ids = []
+            build_ids.append(f"{build_id}")  # Include the original build ID
+            for build in build_data.get("build", []):
+                dependency_build_id = str(build.get("id"))
+                build_type_id = build.get("buildTypeId")
+                if (
+                    dependency_build_id
+                    and build_type_id
+                    and build_type_id in build_type_ids
+                ):
+                    build_ids.append(dependency_build_id)
+            return build_ids
+        print(f"Could not retrieve build info for build id {build_id}:")
+        print(f"{result.status_code} - {result.content}")
+        return []
+
+    def get_dependent_build_id(self, build_id: str, dependent_build_type: str) -> int:
+        """
+        Gets the build ID of a specific dependent build type for a given build.
+
+        Uses the following TeamCity REST API endpoint:
+        /app/rest/builds?locator=defaultFilter:false,snapshotDependency(to:(id:<build_id>)),count:1000&fields=build(id,buildTypeId)
+
+        Arguments:
+            build_id (str): The build id for a specific build.
+            dependent_build_type (str): The build type ID of the dependent build to find.
+
+        Returns:
+            int: The build ID of the dependent build that matches the specified build type.
+
+            Returns None if the request failed or no matching dependent build is found.
+        """
+        endpoint = f"{self.__rest_uri}builds?locator=defaultFilter:false,snapshotDependency(to:(id:{build_id})),count:1000&fields=build(id,buildTypeId)"
+        result = requests.get(
+            url=endpoint, headers=self.__default_headers, auth=self.__auth
+        )
+        if result.status_code == 200:
+            build_data = result.json()
+            for build in build_data.get("build", []):
+                dependent_build_type_id = str(build.get("buildTypeId"))
+                if dependent_build_type_id == dependent_build_type:
+                    return build.get("id")
+
+        print(
+            f"Could not retrieve dependend build ({dependent_build_type}) for build id {build_id}:"
+        )
+        return None

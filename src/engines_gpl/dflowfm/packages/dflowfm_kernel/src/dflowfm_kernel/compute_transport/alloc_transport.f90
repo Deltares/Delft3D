@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -47,9 +47,10 @@ contains
       use m_fm_wq_processes
       use m_transport
       use m_alloc
-      use m_meteo, only: numtracers, numfracs
+      use m_meteo, only: numtracers, numfracs, item_sourcesink_constituent_delta
       use fm_external_forcings_data, only: numsrc, qcsrc, vcsrc, wstracers
       use m_sediment, only: stm_included
+      use m_ec_module, only: ec_undef_int
       implicit none
 
       logical, intent(in) :: KeepExisting !< keep existing data (true) or not (false)
@@ -134,7 +135,7 @@ contains
          call realloc(isys2const, num_substances_total, keepExisting=.true., fill=0)
       end if
       call realloc(iconst2sys, NUMCONST, keepExisting=.true., fill=0)
-      return
+      call realloc(item_sourcesink_constituent_delta, NUMCONST, keepExisting=.true., fill=ec_undef_int)
    end subroutine alloc_transport
 
 end module m_alloc_transport

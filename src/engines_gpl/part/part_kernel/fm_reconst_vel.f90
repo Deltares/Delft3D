@@ -6,7 +6,7 @@ contains
 
     !----- AGPL --------------------------------------------------------------------
     !
-    !  Copyright (C)  Stichting Deltares, 2017-2024.
+    !  Copyright (C)  Stichting Deltares, 2017-2025.
     !
     !  This file is part of Delft3D (D-Flow Flexible Mesh component).
     !
@@ -289,7 +289,7 @@ contains
                 L3d = hyd%num_exchanges_u_dir + k
                 icell3d = icell + (lay - 1) * numcells
 
-                u0w(icell3d) = hyd%flow(L3d) / hyd%volume(k)
+                u0w(icell3d) = hyd%flow(L3d) / (hyd%volume(k) + tiny(hyd%volume(k)))
             end do
         end do
 

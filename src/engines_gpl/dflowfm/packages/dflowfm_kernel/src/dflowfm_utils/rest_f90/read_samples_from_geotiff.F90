@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,19 +43,23 @@ module m_read_samples_from_geotiff
 contains
 
    function read_samples_from_geotiff(filename) result(success)
-      use precision, only: dp
-      use MessageHandling
-      use, intrinsic :: iso_c_binding
+      use MessageHandling, only: mess, level_warn
 #ifdef HAVE_GDAL
-      use fortranc
-      use gdal
-#endif
-      use m_samples
+      use, intrinsic :: iso_c_binding, only: c_int, c_double, c_float, c_null_char, c_associated, c_ptr
+      use fortranc, only: strtofchar
+      use gdal, only: gdaldataseth, gdalrasterbandh, gdalallregister, gdalopen, ga_readonly, gdalassociated, &
+                      gdalgetrasterxsize, gdalgetrasterysize, gdalgetrastercount, gdalgetrasterband, gdalgetdatatypesize, &
+                      gdalgetrasterdatatype, gdaldatasetrasterio_f, gf_read, gdalgetgeotransform, gdalgetmetadataitem, &
+                      gdalmajorobjecth_new, gdalclose
+      use m_samples, only: increasesam, ns, xs, ys, zs, mxsam, mysam, ipstat, ipstat_notok, ipsam, ipstat_ok
+      use m_drawthis, only: ndraw
+      use m_readyy, only: readyy
+      use m_get_samples_boundingbox, only: get_samples_boundingbox
+      use precision, only: dp
+      use messagehandling, only: msgbuf, warn_flush
       use m_samples_refine, only: iHesstat, iHesstat_DIRTY
       use string_module, only: strcmpi
-      use m_drawthis
-      use m_readyy
-      use m_get_samples_boundingbox
+#endif
 
       character(len=*), intent(in) :: filename !< Path of the file to be read
       logical :: success !< Return value to describe success of the operations

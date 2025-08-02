@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,14 +42,13 @@ contains
       !! A dmiss line starts a new polyline without a name. Multiple dmiss lines are skipped.
    module subroutine REAPOL_NAMPLI(MPOL, jadoorladen, janampl, ipli)
       use precision, only: dp
-      use M_POLYGON
-      use network_data, only: NETSTAT_CELLS_DIRTY
+      use m_polygon, only: xpl, ypl, zpl, npl, nampli, jakol45, increasepol, dzl, maxpol, dzr, iweirt, dcrest, dtl, dtr, dveg
+      use m_alloc, only: realloc
+      use m_readyy, only: readyy
+      use m_qnerror, only: qnerror
+      use m_qn_read_error, only: qnreaderror
       use m_missing, only: dmiss, xymis
-      use m_alloc
       use m_flowparameters, only: ifixedweirscheme
-      use m_readyy
-      use m_qnerror
-      use m_qn_read_error
       use m_filez, only: doclose
 
       integer :: mpol

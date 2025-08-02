@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,8 +40,8 @@ contains
    subroutine setvelocityfield()
       use precision, only: dp
       use m_setcornervelocities, only: setcornervelocities
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: iuvfield, ucx, ucy, u1, u0, s0, s1
+      use m_flowgeom, only: ndx, xz, yz, lnx, ln, acl, csu, snu
 
       integer :: k, k1, k2, L
       real(kind=dp) :: xx, yy, ux, uy, yyy, uuu, ykmx

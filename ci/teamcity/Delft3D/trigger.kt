@@ -9,7 +9,7 @@ import Delft3D.windows.*
 
 object Trigger : BuildType({
 
-    description = "This is triggered for merge-requests and will schedule the appropriate testbenches."
+    description = "This is triggered for pull-requests and will schedule the appropriate testbenches."
 
     templates(
         TemplateMergeRequest,
@@ -216,7 +216,7 @@ object Trigger : BuildType({
                         -X POST \
                         -H "Content-Type: application/xml" \
                         -d '<build branchName="%teamcity.build.branch%" replace="true">
-                            <buildType id="${LinuxRunAllDockerExamples.id}"/>
+                            <buildType id="${LinuxRunAllContainerExamples.id}"/>
                             <revisions>
                                 <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
                                     <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
@@ -270,7 +270,7 @@ object Trigger : BuildType({
 
     }
 
-    if (DslContext.getParameter("environment") == "production") {
+    if (DslContext.getParameter("enable_pre_merge_trigger").lowercase() == "true") {
         triggers {
             schedule {
                 schedulingPolicy = daily {
@@ -283,7 +283,7 @@ object Trigger : BuildType({
             vcs {
                 quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_CUSTOM
                 quietPeriod = 60
-                branchFilter = "+:merge-requests/*"
+                branchFilter = "+:pull/*"
             }
         }
     }

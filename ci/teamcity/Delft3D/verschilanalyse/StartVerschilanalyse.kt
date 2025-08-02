@@ -20,6 +20,7 @@ object StartVerschilanalyse : BuildType({
 
     params {
         param("harbor_webhook.image.tag", "latest")
+        param("va_harbor_protocol", "docker")
         param(
             "harbor_webhook.image.url", 
             sequenceOf(
@@ -43,7 +44,7 @@ object StartVerschilanalyse : BuildType({
     }
 
     triggers {
-        if (DslContext.getParameter("va_harbor_webhook_enabled", "false").lowercase() == "true") {
+        if (DslContext.getParameter("enable_verschilanalyse_trigger").lowercase() == "true") {
             // TeamCity webhook plugin docs: https://github.com/tcplugins/tcWebHookTrigger
             // I couldn't find a webhook event payload example in the Harbor documenations,
             // but this GitHub issue comment has an example:
@@ -119,7 +120,7 @@ object StartVerschilanalyse : BuildType({
 
                 pushd bundle
                 ./start_verschilanalyse.sh \
-                    --apptainer='oras://%harbor_webhook.image.url%' \
+                    --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
                     --model-filter='%model_filter%'

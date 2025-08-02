@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -408,10 +408,7 @@ contains
 
       epsgstring = ' '
       varname = ' '
-      if (crs%epsg_code == 4326) then ! epsg 4326 is assumed spherical
-         ierr_missing = UG_INVALID_CRS
-         varname = 'wgs84'
-      else if (len_trim(crs%varname) > 0) then
+      if (len_trim(crs%varname) > 0) then
          varname = crs%varname
       else
          ierr_missing = UG_INVALID_CRS
@@ -430,7 +427,6 @@ contains
       !The meta info other than epsg code should be retrived from proj4 library, as done in Delta Shell
       !otherwise we will generate inconsistent information
       if (crs%epsg_code == 4326) then
-         ierr_missing = UG_INVALID_CRS
          write (epsgstring, '("EPSG:",I0)') crs%epsg_code
          ierr = nf90_put_att(ncid, id_crs, 'name', 'WGS84') ! CF
          ierr = nf90_put_att(ncid, id_crs, 'epsg', crs%epsg_code) ! CF
@@ -440,9 +436,6 @@ contains
          ierr = nf90_put_att(ncid, id_crs, 'semi_minor_axis', 6356752.314245d0) ! CF
          ierr = nf90_put_att(ncid, id_crs, 'inverse_flattening', 298.257223563d0) ! CF
          ierr = nf90_put_att(ncid, id_crs, 'EPSG_code', trim(epsgstring)) ! ADAGUC
-!      ierr = nf90_put_att(ncid, id_crs, 'projection_name',             ' '                ) ! ADAGUC
-!      ierr = nf90_put_att(ncid, id_crs, 'wkt',                         ' '                ) ! WKT
-!      ierr = nf90_put_att(ncid, id_crs, 'comment',                     ' '                )
          ierr = nf90_put_att(ncid, id_crs, 'value', 'value is equal to EPSG code')
       else if (allocated(crs%attset)) then
          ierr = ncu_put_var_attset(ncid, id_crs, crs%attset)
@@ -457,9 +450,6 @@ contains
          ierr = nf90_put_att(ncid, id_crs, 'semi_minor_axis', 6356752.314245d0) ! CF
          ierr = nf90_put_att(ncid, id_crs, 'inverse_flattening', 298.257223563d0) ! CF
          ierr = nf90_put_att(ncid, id_crs, 'EPSG_code', trim(epsgstring)) ! ADAGUC
-!      ierr = nf90_put_att(ncid, id_crs, 'projection_name',             ' '                 ) ! ADAGUC
-!      ierr = nf90_put_att(ncid, id_crs, 'wkt',                         ' '                 ) ! WKT
-!      ierr = nf90_put_att(ncid, id_crs, 'comment',                     ' '                 )
          ierr = nf90_put_att(ncid, id_crs, 'value', 'value is equal to EPSG code')
       end if
       if (len_trim(crs%proj_string) > 0) then
@@ -469,7 +459,6 @@ contains
       if (ierr_missing /= UG_NOERR) then
          ierr = ierr_missing
          ug_messagestr = 'Missing coordinate reference system. Now using default: '//trim(varname)//' ('//trim(epsgstring)//').'
-         ! But continue...
       end if
 
       ! Check for any remaining native NetCDF errors

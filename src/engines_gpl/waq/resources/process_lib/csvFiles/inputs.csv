@@ -205,11 +205,16 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Coverage  ","PotEM05   ",  12,"Y","x",1
 "Coverage  ","IBotSeg   ",  13,"N","x",1
 "Coverage  ","RadMacrop ",  14,"N","x",1
-"DAYRAD    ","RadSurf   ",   1,"Y","x",1
-"DAYRAD    ","ITIME     ",   2,"N"," ",1
-"DAYRAD    ","Latitude  ",   3,"Y","x",1
-"DAYRAD    ","RefDay    ",   4,"Y","x",1
-"DAYRAD    ","AuxSys    ",   5,"Y"," ",1
+"AveRadSurf","RadSurf   ",   1,"N","x",1
+"AveRadSurf","AveRadPeri",   2,"Y","x",1
+"AveRadSurf","DELT      ",   3,"N"," ",1
+"AveRadSurf","SumAveRad ",   4,"Y"," ",1
+"AveRadSurf","SumAveRadT",   5,"Y"," ",1
+"DisRadSurf","RadSurfAve",   1,"N","x",1
+"DisRadSurf","ITIME     ",   2,"N"," ",1
+"DisRadSurf","Latitude  ",   3,"Y","x",1
+"DisRadSurf","RefDay    ",   4,"Y","x",1
+"DisRadSurf","AuxSys    ",   5,"Y"," ",1
 "TempMode  ","ModTemp   ",   1,"N","x",1
 "TempMode  ","NatTemp   ",   2,"Y","x",1
 "TempMode  ","SwitchTemp",   3,"Y","x",1
@@ -228,7 +233,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Temperatur","SwEmersion",  11,"Y","x",1
 "Temperatur","LocSedDept",  12,"Y","x",1
 "Temperatur","ThSedDT   ",  13,"Y","x",1
-"Temperatur","DayRadSurf",  14,"Y","x",1
+"Temperatur","RadSurf   ",  14,"N","x",1
 "Temperatur","RadMax    ",  15,"Y","x",1
 "Temperatur","RTradmax  ",  16,"Y","x",1
 "Temperatur","DelTradmax",  17,"Y","x",1
@@ -580,20 +585,20 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Extinc_VLG","POC4      ",  35,"Y","x",1
 "CalcRad   ","ExtVl     ",   1,"N","x",1
 "CalcRad   ","Depth     ",   2,"N","x",1
-"CalcRad   ","RadSurf   ",   3,"Y","x",1
+"CalcRad   ","RadSurf   ",   3,"N","x",1
 "CalcRad   ","a_enh     ",   4,"Y","x",1
 "CalcRad   ","Surf      ",   5,"N","x",1
 "CalcRad   ","SwEmersion",   6,"Y","x",1
 "CalcRad   ","Rad       ",   7,"N"," ",1
 "CalcRad   ","fRefl     ",   8,"Y","x",1
-"CalcRadDay","ExtVl     ",   1,"N","x",1
-"CalcRadDay","Depth     ",   2,"N","x",1
-"CalcRadDay","DayRadSurf",   3,"N","x",1
-"CalcRadDay","a_enh     ",   4,"Y","x",1
-"CalcRadDay","Surf      ",   5,"N","x",1
-"CalcRadDay","SwEmersion",   6,"Y","x",1
-"CalcRadDay","RadDay    ",   7,"N"," ",1
-"CalcRadDay","fRefl     ",   8,"Y","x",1
+"CalcRadAve","ExtVl     ",   1,"N","x",1
+"CalcRadAve","Depth     ",   2,"N","x",1
+"CalcRadAve","RadSurfAve",   3,"N","x",1
+"CalcRadAve","a_enh     ",   4,"Y","x",1
+"CalcRadAve","Surf      ",   5,"N","x",1
+"CalcRadAve","SwEmersion",   6,"Y","x",1
+"CalcRadAve","RadAve    ",   7,"N"," ",1
+"CalcRadAve","fRefl     ",   8,"Y","x",1
 "Daylength ","ITIME     ",   1,"N","x",1
 "Daylength ","Latitude  ",   2,"Y","x",1
 "Daylength ","RefDay    ",   3,"Y","x",1
@@ -704,7 +709,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BLOOM_P   ","ExtVl     ",   3,"N","x",1
 "BLOOM_P   ","ExtVlPhBl ",   4,"N","x",1
 "BLOOM_P   ","Temp      ",   5,"Y","x",1
-"BLOOM_P   ","Rad       ",   6,"N","x",1
+"BLOOM_P   ","RadAve    ",   6,"N","x",1
 "BLOOM_P   ","Depth     ",   7,"N","x",1
 "BLOOM_P   ","BloomDepth",   8,"Y","x",1
 "BLOOM_P   ","DayL      ",   9,"Y","x",1
@@ -770,7 +775,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BLOOM     ","ExtVl     ",   2,"N","x",1
 "BLOOM     ","ExtVlPhBl ",   3,"N","x",1
 "BLOOM     ","Temp      ",   4,"Y","x",1
-"BLOOM     ","Rad       ",   5,"N","x",1
+"BLOOM     ","RadAve    ",   5,"N","x",1
 "BLOOM     ","Depth     ",   6,"N","x",1
 "BLOOM     ","BloomDepth",   7,"Y","x",1
 "BLOOM     ","DayL      ",   8,"Y","x",1
@@ -2133,7 +2138,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "EColiMrt  ","Temp      ",   4,"Y","x",1
 "EColiMrt  ","CTMrtEColi",   5,"Y","x",1
 "EColiMrt  ","Salinity  ",   6,"N","x",1
-"EColiMrt  ","RadDay    ",   7,"N","x",1
+"EColiMrt  ","Rad       ",   7,"N","x",1
 "EColiMrt  ","CFRAD     ",   8,"Y","x",1
 "EColiMrt  ","ExtVl     ",   9,"N","x",1
 "EColiMrt  ","Depth     ",  10,"N","x",1
@@ -2144,7 +2149,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "FColiMrt  ","Temp      ",   4,"Y","x",1
 "FColiMrt  ","CTMrtFColi",   5,"Y","x",1
 "FColiMrt  ","Salinity  ",   6,"N","x",1
-"FColiMrt  ","RadDay    ",   7,"N","x",1
+"FColiMrt  ","Rad       ",   7,"N","x",1
 "FColiMrt  ","CFRAD     ",   8,"Y","x",1
 "FColiMrt  ","ExtVl     ",   9,"N","x",1
 "FColiMrt  ","Depth     ",  10,"N","x",1
@@ -2155,7 +2160,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "TColiMrt  ","Temp      ",   4,"Y","x",1
 "TColiMrt  ","CTMrtTColi",   5,"Y","x",1
 "TColiMrt  ","Salinity  ",   6,"N","x",1
-"TColiMrt  ","RadDay    ",   7,"N","x",1
+"TColiMrt  ","Rad       ",   7,"N","x",1
 "TColiMrt  ","CFRAD     ",   8,"Y","x",1
 "TColiMrt  ","ExtVl     ",   9,"N","x",1
 "TColiMrt  ","Depth     ",  10,"N","x",1
@@ -2166,7 +2171,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "EnCocMrt  ","Temp      ",   4,"Y","x",1
 "EnCocMrt  ","CTMrtEnCoc",   5,"Y","x",1
 "EnCocMrt  ","Salinity  ",   6,"N","x",1
-"EnCocMrt  ","RadDay    ",   7,"N","x",1
+"EnCocMrt  ","Rad       ",   7,"N","x",1
 "EnCocMrt  ","CFRAD     ",   8,"Y","x",1
 "EnCocMrt  ","ExtVl     ",   9,"N","x",1
 "EnCocMrt  ","Depth     ",  10,"N","x",1
@@ -3007,7 +3012,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "OXIDCH4   ","Poros     ",  17,"Y","x",1
 "OXIDCH4   ","DELT      ",  18,"N","x",1
 "OXIDCH4   ","RadMetInh ",  19,"Y","x",1
-"OXIDCH4   ","Rad       ",  20,"N","x",1
+"OXIDCH4   ","RadAve    ",  20,"N","x",1
 "OXIDCH4   ","KSRadFr   ",  21,"O","x",1
 "OXIDCH4   ","KSRadSh   ",  22,"Y","x",1
 "SPECIRON  ","FeIIId    ",   1,"Y","x",1
@@ -12511,7 +12516,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "VB09_Upt3D","fPVB09up  ",  24,"N","x",1
 "VB09_Upt3D","fSVB09up  ",  25,"N","x",1
 "Rad_SM01  ","ITopSeg01 ",   1,"N","x",1
-"Rad_SM01  ","Rad       ",   2,"N","x",1
+"Rad_SM01  ","RadAve    ",   2,"N","x",1
 "Rad_SM01  ","HactSM01  ",   3,"N","x",1
 "Rad_SM01  ","TotalDepth",   4,"N","x",1
 "Rad_SM01  ","LocalDepth",   5,"N","x",1
@@ -12519,7 +12524,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM01  ","ExtVl     ",   7,"N","x",1
 "Rad_SM01  ","RadSatSM01",   8,"Y","x",1
 "Rad_SM02  ","ITopSeg02 ",   1,"N","x",1
-"Rad_SM02  ","Rad       ",   2,"N","x",1
+"Rad_SM02  ","RadAve    ",   2,"N","x",1
 "Rad_SM02  ","HactSM02  ",   3,"N","x",1
 "Rad_SM02  ","TotalDepth",   4,"N","x",1
 "Rad_SM02  ","LocalDepth",   5,"N","x",1
@@ -12527,7 +12532,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM02  ","ExtVl     ",   7,"N","x",1
 "Rad_SM02  ","RadSatSM02",   8,"Y","x",1
 "Rad_SM03  ","ITopSeg03 ",   1,"N","x",1
-"Rad_SM03  ","Rad       ",   2,"N","x",1
+"Rad_SM03  ","RadAve    ",   2,"N","x",1
 "Rad_SM03  ","HactSM03  ",   3,"N","x",1
 "Rad_SM03  ","TotalDepth",   4,"N","x",1
 "Rad_SM03  ","LocalDepth",   5,"N","x",1
@@ -12535,7 +12540,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM03  ","ExtVl     ",   7,"N","x",1
 "Rad_SM03  ","RadSatSM03",   8,"Y","x",1
 "Rad_SM04  ","ITopSeg04 ",   1,"N","x",1
-"Rad_SM04  ","Rad       ",   2,"N","x",1
+"Rad_SM04  ","RadAve    ",   2,"N","x",1
 "Rad_SM04  ","HactSM04  ",   3,"N","x",1
 "Rad_SM04  ","TotalDepth",   4,"N","x",1
 "Rad_SM04  ","LocalDepth",   5,"N","x",1
@@ -12543,7 +12548,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_SM04  ","ExtVl     ",   7,"N","x",1
 "Rad_SM04  ","RadSatSM04",   8,"Y","x",1
 "Rad_SM05  ","ITopSeg05 ",   1,"N","x",1
-"Rad_SM05  ","Rad       ",   2,"N","x",1
+"Rad_SM05  ","RadAve    ",   2,"N","x",1
 "Rad_SM05  ","HactSM05  ",   3,"N","x",1
 "Rad_SM05  ","TotalDepth",   4,"N","x",1
 "Rad_SM05  ","LocalDepth",   5,"N","x",1
@@ -15253,7 +15258,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Virus1Mrt ","Temp      ",   4,"Y","x",1
 "Virus1Mrt ","CTMrtVir1 ",   5,"Y","x",1
 "Virus1Mrt ","Salinity  ",   6,"Y","x",1
-"Virus1Mrt ","RadDay    ",   7,"N","x",1
+"Virus1Mrt ","Rad       ",   7,"N","x",1
 "Virus1Mrt ","CFRADVir1 ",   8,"Y","x",1
 "Virus1Mrt ","ExtVl     ",   9,"N","x",1
 "Virus1Mrt ","Depth     ",  10,"N","x",1
@@ -15264,7 +15269,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Virus2Mrt ","Temp      ",   4,"Y","x",1
 "Virus2Mrt ","CTMrtVir2 ",   5,"Y","x",1
 "Virus2Mrt ","Salinity  ",   6,"Y","x",1
-"Virus2Mrt ","RadDay    ",   7,"N","x",1
+"Virus2Mrt ","Rad       ",   7,"N","x",1
 "Virus2Mrt ","CFRADVir2 ",   8,"Y","x",1
 "Virus2Mrt ","ExtVl     ",   9,"N","x",1
 "Virus2Mrt ","Depth     ",  10,"N","x",1
@@ -15275,7 +15280,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Virus3Mrt ","Temp      ",   4,"Y","x",1
 "Virus3Mrt ","CTMrtVir3 ",   5,"Y","x",1
 "Virus3Mrt ","Salinity  ",   6,"Y","x",1
-"Virus3Mrt ","RadDay    ",   7,"N","x",1
+"Virus3Mrt ","Rad       ",   7,"N","x",1
 "Virus3Mrt ","CFRADVir3 ",   8,"Y","x",1
 "Virus3Mrt ","ExtVl     ",   9,"N","x",1
 "Virus3Mrt ","Depth     ",  10,"N","x",1
@@ -15286,7 +15291,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Vir1S1Mrt ","Temp      ",   4,"Y","x",1
 "Vir1S1Mrt ","CTMrtVir1 ",   5,"Y","x",1
 "Vir1S1Mrt ","Salinity  ",   6,"Y","x",1
-"Vir1S1Mrt ","RadDay    ",   7,"N","x",1
+"Vir1S1Mrt ","Rad       ",   7,"N","x",1
 "Vir1S1Mrt ","CFRADVir1 ",   8,"Y","x",1
 "Vir1S1Mrt ","ExtVl     ",   9,"N","x",1
 "Vir1S1Mrt ","Depth     ",  10,"N","x",1
@@ -15297,7 +15302,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Vir2S1Mrt ","Temp      ",   4,"Y","x",1
 "Vir2S1Mrt ","CTMrtVir2 ",   5,"Y","x",1
 "Vir2S1Mrt ","Salinity  ",   6,"Y","x",1
-"Vir2S1Mrt ","RadDay    ",   7,"N","x",1
+"Vir2S1Mrt ","Rad       ",   7,"N","x",1
 "Vir2S1Mrt ","CFRADVir2 ",   8,"Y","x",1
 "Vir2S1Mrt ","ExtVl     ",   9,"N","x",1
 "Vir2S1Mrt ","Depth     ",  10,"N","x",1
@@ -15308,7 +15313,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Vir3S1Mrt ","Temp      ",   4,"Y","x",1
 "Vir3S1Mrt ","CTMrtVir3 ",   5,"Y","x",1
 "Vir3S1Mrt ","Salinity  ",   6,"Y","x",1
-"Vir3S1Mrt ","RadDay    ",   7,"N","x",1
+"Vir3S1Mrt ","Rad       ",   7,"N","x",1
 "Vir3S1Mrt ","CFRADVir3 ",   8,"Y","x",1
 "Vir3S1Mrt ","ExtVl     ",   9,"N","x",1
 "Vir3S1Mrt ","Depth     ",  10,"N","x",1
@@ -15851,8 +15856,8 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "MPB2Temp  ","AuxSys    ",   6,"Y"," ",1
 "MPB2Temp  ","MPB2ftmp  ",   7,"N"," ",1
 "MPB2Temp  ","WSMPB2ftmp",   8,"N"," ",1
-"MPB1LLim  ","DayRadSurf",   1,"N","x",1
-"MPB1LLim  ","RadDay    ",   2,"N","x",1
+"MPB1LLim  ","RadSurf   ",   1,"N","x",1
+"MPB1LLim  ","Rad       ",   2,"N","x",1
 "MPB1LLim  ","ExtVl     ",   3,"N","x",1
 "MPB1LLim  ","a_enh     ",   4,"Y","x",1
 "MPB1LLim  ","fPAR      ",   5,"Y","x",1
@@ -15868,15 +15873,15 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "MPB1LLim  ","ITSTRT    ",  15,"N"," ",1
 "MPB1LLim  ","AuxSys    ",  16,"Y"," ",1
 "MPB1LLim  ","SwMPBGEM  ",  17,"Y","x",1
-"MPB1LLim  ","RadBotDay ",  18,"N","x",1
+"MPB1LLim  ","RadBot    ",  18,"N","x",1
 "MPB1LLim  ","ExtVlSed  ",  19,"Y","x",1
 "MPB1LLim  ","ZSED      ",  20,"Y","x",1
 "MPB1LLim  ","MPB1WS01  ",  21,"N"," ",1
 "MPB1LLim  ","MPB1WS02  ",  22,"N"," ",1
 "MPB1LLim  ","MPB1WS03  ",  23,"N"," ",1
 "MPB1LLim  ","MPB1WS04  ",  24,"N"," ",1
-"MPB2LLim  ","DayRadSurf",   1,"N","x",1
-"MPB2LLim  ","RadDay    ",   2,"N","x",1
+"MPB2LLim  ","RadSurf   ",   1,"N","x",1
+"MPB2LLim  ","Rad       ",   2,"N","x",1
 "MPB2LLim  ","ExtVl     ",   3,"N","x",1
 "MPB2LLim  ","a_enh     ",   4,"Y","x",1
 "MPB2LLim  ","fPAR      ",   5,"Y","x",1
@@ -15892,7 +15897,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "MPB2LLim  ","ITSTRT    ",  15,"N"," ",1
 "MPB2LLim  ","AuxSys    ",  16,"Y"," ",1
 "MPB2LLim  ","SwMPBGEM  ",  17,"Y","x",1
-"MPB2LLim  ","RadBotDay ",  18,"N","x",1
+"MPB2LLim  ","RadBot    ",  18,"N","x",1
 "MPB2LLim  ","ExtVlSed  ",  19,"Y","x",1
 "MPB2LLim  ","ZSED      ",  20,"Y","x",1
 "MPB2LLim  ","MPB2WS01  ",  21,"N"," ",1

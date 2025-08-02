@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
 
    subroutine flippo(ip)
       use precision, only: dp
-      use m_polygon
+      use m_polygon, only: npl, xpl, ypl, zpl
 
       integer, intent(in) :: ip !< polygon point
 

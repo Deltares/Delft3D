@@ -1,6 +1,6 @@
 """Xml Configuration parser.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 import copy
@@ -70,6 +70,16 @@ class XmlConfigParser(object):
         self.__program_configs: List[ProgramConfig] = []
         self.__default_cases: List[TestCaseConfig] = []
 
+    @property
+    def default_cases(self) -> List[TestCaseConfig]:
+        return self.__default_cases
+
+    def __reset(self) -> None:
+        self.__credentials = []
+        self.__locations = []
+        self.__program_configs = []
+        self.__default_cases = []
+
     def load(
         self, settings: TestBenchSettings, logger: IMainLogger
     ) -> Tuple[LocalPaths, List[ProgramConfig], List[TestCaseConfig]]:
@@ -87,6 +97,7 @@ class XmlConfigParser(object):
         tuple[LocalPaths, List[ProgramConfig], list]
             Local paths, program configs and test case configs.
         """
+        self.__reset()
         self.__testbench_settings = settings
         self.__validate__()
         self.__credentials.append(settings.credentials)

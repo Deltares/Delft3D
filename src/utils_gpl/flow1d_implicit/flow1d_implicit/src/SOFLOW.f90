@@ -6,14 +6,16 @@ subroutine SOFLOW(&
 &time   , dtf    , steady                   ,&
 &ngrid  , ngridm , nbran  , maxlev , nnode  ,&
 &nhstat , nqstat , maxtab , ntabm  , nbrnod ,&
-&nlev                                       ,&
+&nlev   , nstru                             ,&
 &branch , bfrict                            ,&
 &bfricp , hpack  , qpack  ,x       ,waoft   ,&
+&grid                                       ,&        
 &wft    , aft    ,wtt     ,att     , of     ,&
 &hlev                                       ,&
 &hbdpar , qbdpar                            ,&
 &table  , ntab                              ,&
 &node   , numnod ,nodnod                    ,&
+&strpar , strtyp                            ,&
 &debug_wr                                   ,&
 &juer&
 &)
@@ -250,7 +252,7 @@ subroutine SOFLOW(&
    double precision  dtf    , resid  , time
 
    integer  ngrid  , ngridm , nbran  , maxlev , nnode  ,&
-   &nhstat , nqstat , maxtab , flitmx
+   &nhstat , nqstat , maxtab , flitmx, nstru
 !
 !    Originally input but currently parameters
 !
@@ -497,9 +499,6 @@ subroutine SOFLOW(&
    parameter (nstdb=0)
 
 !      nstru  = ip (gtipnt ( 'NSTRU' ))
-!     set as parameter because needed for allocating
-   integer nstru
-   parameter (nstru=0)
 
 !      ntab   =     gtipnt ( 'NTAB'  )
    integer ntab(4,maxtab)
@@ -656,15 +655,15 @@ subroutine SOFLOW(&
 
 !      strhis =     gtrpnt ( 'STRHIS')
 !      real    strhis(dmstrh,*)
-   real    strhis(dmstrh)
+   real    strhis(dmstrh,nstru)
 
 !      strpar =     gtrpnt ( 'STRPAR')
 !      real    strpar(dmstrpar,*)
-   real    strpar(dmstrpar)
+   real    strpar(dmstrpar,nstru)
 
 !      strtyp =     gtipnt ( 'STRTYP')
 !      integer strtyp(10,*)
-   integer strtyp(10)
+   integer strtyp(10,nstru)
 
 !      table  =     gtrpnt ( 'TABLE' )
    real    table(ntabm)
@@ -734,14 +733,14 @@ subroutine SOFLOW(&
    arexop(1)=0
    arexop(2)=0
 !
-!     structures input (not used)
+!     structures input 
 !
    ncontr=0
    nlags=1
    ncsrel=1
-   do kgrid=1,ngrid
-      grid(kgrid)=1
-   enddo
+   
+   strhis=0
+   strhis(9,1)=1
 !
 !    only main channel
 !

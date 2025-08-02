@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,12 +36,12 @@ contains
    subroutine setkbotktop(jazws0)
       use precision, only: dp
       use m_flowgeom, only: ndx, ba, bl, ln, lnx, nd
-      use m_flow
+      use m_flow, only: kmx, zws0, zws, ktop0, ktop, vol1, layertype, kbot, jased, s1, kmxn, zslay, toplayminthick, numtopsig, keepzlayeringatbed, dkx, rho, sdkx, tsigma, epshu, laydefnr, laytyp, wflaynod, indlaynod, sigmagrowthfactor, keepzlay1bedvol, vol0, jasal, jatem, qwwaq, ln0
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getlbotltop
+      use m_get_zlayer_indices, only: getzlayerindices
       use m_flowtimes, only: dts, ti_waq
       use m_transport, only: Constituents, ISALT, ITEMP
-      use m_get_kbot_ktop
-      use m_get_Lbot_Ltop
-      use m_get_zlayer_indices
 
       integer :: jazws0
 
@@ -412,7 +412,6 @@ contains
       end if
 
       if (layertype > 1) then ! ln does not change in sigma only
-
          do LL = 1, Lnx
             n1 = ln(1, LL); n2 = ln(2, LL)
             kt1 = ktop(n1); kt2 = ktop(n2)
@@ -422,7 +421,6 @@ contains
                ln(2, L) = min(ln0(2, L), kt2)
             end do
          end do
-
       end if
 
    end subroutine setkbotktop

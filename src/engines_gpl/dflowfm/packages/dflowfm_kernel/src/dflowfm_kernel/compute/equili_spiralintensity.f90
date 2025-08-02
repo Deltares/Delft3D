@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,8 +40,8 @@ contains
 
    subroutine equili_spiralintensity()
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
+      use m_flow, only: icorio, fcoris, hs, spircrv, spirucm, spirint
+      use m_flowgeom, only: ndx
       use m_sferic, only: jsferic, fcorio
       implicit none
       integer :: kk

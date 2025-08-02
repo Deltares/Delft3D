@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ module m_add_tracer
 contains
 
    subroutine add_tracer(tracer_name, iconst)
-      use m_transport
+      use m_transport, only: NUMCONST, ITRA1, ITRAN, const_names, itrac2const
       use messagehandling, only: mess, LEVEL_INFO, LEVEL_ERROR
       use m_meteo, only: numtracers, trnames
       use m_find_name, only: find_name

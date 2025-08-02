@@ -59,15 +59,21 @@ elseif (intel_version GREATER_EQUAL 24)
 
     set (redist_path $ENV{ONEAPI_ROOT}/compiler/latest/bin)
     string(REPLACE "\\" "/" redist_path "${redist_path}")
-    install (DIRECTORY ${redist_path}/ DESTINATION lib
-    FILES_MATCHING
-    PATTERN "libi*.dll"
-    PATTERN "libm*.dll"
-    PATTERN "svml_dispmd.dll"
-    PATTERN "1033" EXCLUDE
-    PATTERN "compiler" EXCLUDE
-    )
-
+    install(FILES
+    ${redist_path}/libifcoremd.dll
+    ${redist_path}/libmmd.dll    
+    ${redist_path}/svml_dispmd.dll
+    ${redist_path}/libiomp5md.dll  
+    ${redist_path}/libifportMD.dll 
+    DESTINATION lib)
+    
+    #Debug runtime dlls
+    install(FILES
+    ${redist_path}/libifcoremdd.dll
+    ${redist_path}/libmmdd.dll
+    ${redist_path}/libiomp5md_db.dll
+    DESTINATION lib CONFIGURATIONS debug)
+    
     # Intel MPI
     if ("${OSS_MPI}" STREQUAL "IntelMPI")
         set(mpi_path $ENV{ONEAPI_ROOT}/mpi/latest)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -63,7 +63,6 @@ contains
 
 !> (re)allocate valobs work array
    subroutine alloc_valobs()
-      use m_partitioninfo
 
       if (allocated(valobs)) then
          deallocate (valobs)
@@ -224,7 +223,7 @@ contains
          IVAL_WX = next_index(i)
          IVAL_WY = next_index(i)
       end if
-      if (air_pressure_available > 0) then
+      if (air_pressure_available) then
          IVAL_PATM = next_index(i)
       end if
       if (jawave > NO_WAVES) then
@@ -681,7 +680,7 @@ contains
 !> Adds an observation point to the existing points.
 !! New observation point may be a moving one or not.
    subroutine addObservation(x, y, name, isMoving, loctype, iOP)
-      use m_alloc
+      use m_alloc, only: realloc
       use m_GlobalParameters, only: INDTP_ALL
       real(kind=dp), intent(in) :: x !< x-coordinate
       real(kind=dp), intent(in) :: y !< y-coordinate
@@ -774,12 +773,12 @@ contains
 
 !> Adds observation points that are read from *.ini file to the normal obs adm
    subroutine addObservation_from_ini(network, filename)
-      use m_network
+      use m_network, only: t_network, mess, level_error
+      use odugrid, only: odu_get_xy_coordinates
+      use m_save_ugrid_state, only: meshgeom1d
+      use dfm_error, only: dfm_noerr
       use m_sferic, only: jsferic
-      use m_ObservationPoints
-      use odugrid
-      use m_save_ugrid_state
-      use dfm_error
+      use m_ObservationPoints, only: t_ObservationPoint
 
       type(t_network), intent(inout) :: network !< network
       character(len=*), intent(in) :: filename !< filename of the obs file

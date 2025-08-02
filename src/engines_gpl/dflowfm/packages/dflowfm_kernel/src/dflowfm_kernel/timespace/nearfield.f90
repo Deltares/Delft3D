@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.!
+!  Copyright (C)  Stichting Deltares, 2017-2025.!
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -195,9 +195,8 @@ contains
 !> Input:  "Pointers to data inside COSUMO_BMI" (nf_q_source, nf_q_intake, ..., nf_src_mom)
 !> Result: "NearField arrays on FM domain" are filled (nf_sink_n, nf_sour_n, ..., nf_intake_z)
    subroutine desa()
-      use m_alloc
-      use MessageHandling, only: IdLen
-      use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
+      use m_alloc, only: realloc
+      use m_GlobalParameters, only: INDTP_2D
       !
       ! Locals
       integer :: idif
@@ -263,7 +262,7 @@ contains
 !>            cssrc : cosine of angle of discharge
 !>            snsrc : sinus  of angle of discharge
    subroutine nearfieldToFM()
-      use m_alloc
+      use m_alloc, only: realloc
       use m_physcoef, only: NFEntrainmentMomentum
       !
       ! Locals
@@ -317,7 +316,7 @@ contains
 !> Use find_flownode to convert x,y-coordinates of each sink location into nf_sink_n index
 !> Keep all sinks separated, even if the n-index is the same: height varying is allowed
    subroutine getSinkLocations(idif, jakdtree, jaoutside, iLocTp)
-      use m_alloc
+      use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       !
       ! Arguments
@@ -365,10 +364,10 @@ contains
 !> Use find_flownode to convert x,y-coordinates of each intake location into nf_intake_n index
 !> Also get nk-index, sum for each nk, define weights
    subroutine getIntakeLocations(idif, jakdtree, jaoutside, iLocTp)
-      use m_alloc
+      use m_alloc, only: realloc
+      use m_get_kbot_ktop, only: getkbotktop
       use m_flow, only: zws
       use m_find_flownode, only: find_nearest_flownodes
-      use m_get_kbot_ktop
       !
       ! Arguments
       integer, intent(in) :: idif !< Diffuser id
@@ -487,7 +486,7 @@ contains
 !> Use find_flownode to convert x,y-coordinates of each sink location into nf_sink_n index
 !> Keep all sinks separated, even if the n-index is the same: height varying is allowed
    subroutine getSourceLocations(idif, jakdtree, jaoutside, iLocTp)
-      use m_alloc
+      use m_alloc, only: realloc
       use mathconsts, only: pi
       use m_find_flownode, only: find_nearest_flownodes
       !
@@ -629,10 +628,10 @@ contains
 !> Convert entrainment data into src arrays of D-Flow FM
 !> From each sink point to each source (track) point
    subroutine entrainmentToSrc(idif)
-      use m_alloc
+      use m_alloc, only: realloc
+      use m_get_kbot_ktop, only: getkbotktop
       use m_physcoef, only: NFEntrainmentMomentum
       use m_flow, only: zws
-      use m_get_kbot_ktop
       !
       ! Arguments
       integer, intent(in) :: idif !< Diffuser id
@@ -717,7 +716,7 @@ contains
 !> Convert entrainment data into src arrays of D-Flow FM
 !> For each source (track) point, no related sink point
    subroutine dischargeToSrc(idif, sum_weight_intakes)
-      use m_alloc
+      use m_alloc, only: realloc
       use mathconsts, only: degrad, eps_fp
       !
       ! Arguments

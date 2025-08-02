@@ -2,7 +2,7 @@ subroutine coupled(kbot    , ktop    , lcon, &
                  & n_intake_i, k_intake_i, add )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by

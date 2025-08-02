@@ -1,4 +1,4 @@
-!  Copyright (C)  Stichting Deltares, 2012-2023.
+!  Copyright (C)  Stichting Deltares, 2012-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License version 3,
@@ -34,7 +34,8 @@ module m_cli_utils
               get_arguments, &
               get_argument_by_index, &
               get_command_argument_by_name, &
-              is_command_arg_specified
+              is_command_arg_specified, &
+              get_invalid_args
 
     interface get_command_argument_by_name
         procedure get_string_command_argument_by_name
@@ -84,7 +85,7 @@ contains
 
         arg_value = trim(arguments(index))
         success = .true.
-    end function
+    end function get_argument_by_index
 
     !> Gives the index of the name in the commandline arguments
     !! (returns -1 if no match can be found)
@@ -99,7 +100,7 @@ contains
         name_to_search = trim(name)
 
         arg_index = index_in_array(name_to_search, get_arguments(), .true.)
-    end function
+    end function get_command_arg_index_by_name
 
     !> Checks if the provided name is specified as a command-line argument
     function is_command_arg_specified(name) result(arg_specified)
@@ -107,9 +108,9 @@ contains
         logical :: arg_specified      !< Value of the argument
 
         arg_specified = get_command_arg_index_by_name(name) > 0
-    end function
+    end function is_command_arg_specified
 
-    !> Searches the string value for an command-line argument
+    !> Searches the string value for a command-line argument
     function get_string_command_argument_by_name(name, arg_value, parsing_error) result(success)
         character(len=*), intent(in) :: name   !< Name of the argument
         character(:), allocatable, intent(out) :: arg_value !< Value of the argument
@@ -143,7 +144,7 @@ contains
         end if
 
         success = .true.
-    end function
+    end function get_string_command_argument_by_name
 
     !> Searches the integer value for an command-line argument
     function get_int_command_argument_by_name(name, arg_value, parsing_error) result(success)
@@ -169,7 +170,7 @@ contains
         end if
 
         success = stat == 0
-    end function
+    end function get_int_command_argument_by_name
 
     !> Searches the real value for an command-line argument
     function get_real_command_argument_by_name(name, arg_value, parsing_error) result(success)
@@ -195,7 +196,7 @@ contains
         end if
 
         success = stat == 0
-    end function
+    end function get_real_command_argument_by_name
 
     !> Stores a set of (constructed) command-line arguments in memory
     !! if no args are provided, the args will be determined by default functions
@@ -312,5 +313,58 @@ contains
         ! if there is remove extension
         file_name = get_file_name_without_extension(file_name)
     end subroutine get_input_filename
+
+    !> Returns a list of invalid command-line arguments based on the accepted arguments
+    !! This function checks the command-line arguments against a list of accepted arguments
+    function get_invalid_args(accepted_flag_args, accepted_keyval_args, positional_args_count) result(invalid_args)
+        character(len=*), dimension(:), intent(in) :: accepted_flag_args !< List of accepted flag arguments (no value expected)
+        character(len=*), dimension(:), intent(in) :: accepted_keyval_args !< List of accepted key-value arguments (value expected)
+        integer, intent(in), optional :: positional_args_count !< Number of positional arguments expected (default is 0)
+        character(len=256), dimension(:), allocatable :: invalid_args !< List of invalid arguments found
+
+        integer :: i, n_positional, nargs, idx_arg_found
+        character(len=256) :: arg
+        character(len=256), dimension(:), allocatable :: temp_invalid
+        integer :: invalid_count
+        character(:), dimension(:), allocatable :: arguments
+
+        arguments = get_arguments()
+        nargs = size(arguments)
+
+        invalid_count = 0
+
+        allocate(temp_invalid(nargs))  ! Max possible invalids
+
+        if ( present(positional_args_count) ) then
+            n_positional = positional_args_count
+        else
+            n_positional = 0
+        endif
+        i = 1 + n_positional
+
+        do while (i <= nargs)
+            arg = trim(arguments(i))
+            idx_arg_found = index_in_array(arg, accepted_flag_args, .true., .true.)
+            if (idx_arg_found < 0) then
+                idx_arg_found = index_in_array(arg, accepted_keyval_args, .true., .true.)
+                if (idx_arg_found >= 0) then
+                    i = i + 1
+                else
+                    ! Invalid argument found
+                    invalid_count = invalid_count + 1
+                    temp_invalid(invalid_count) = arg
+                end if
+            end if
+            i = i + 1
+        end do
+
+        ! If we have collected invalid arguments, allocate the result array
+        if (invalid_count > 0) then
+            allocate(invalid_args(invalid_count))
+            invalid_args = temp_invalid(1:invalid_count)
+        else
+            allocate(invalid_args(0))
+        end if
+    end function get_invalid_args
 
 end module m_cli_utils

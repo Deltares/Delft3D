@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,9 +43,9 @@ contains
    !> compute Graviational Input from tidal forces and SAL
    subroutine comp_GravInput()
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_partitioninfo
+      use m_flowgeom, only: lnx, ln, dxi, ndxi, ba, wcx1, wcy1, wcx2, wcy2
+      use m_flow, only: gravinput, salinput, salinput2, tidef, jaselfal, tidep, rho, hs, ucx, ucy, sq
+      use m_partitioninfo, only: jampi, idomain, my_rank
       implicit none
 
       real(kind=dp) :: force, dfac

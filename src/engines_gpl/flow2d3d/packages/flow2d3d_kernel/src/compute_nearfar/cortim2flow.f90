@@ -4,7 +4,7 @@ subroutine cortim2flow(thick  ,kmax  ,dps   ,s0    ,r0       ,          &
                      & linkinf,gdp     )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -76,7 +76,6 @@ subroutine cortim2flow(thick  ,kmax  ,dps   ,s0    ,r0       ,          &
 !
     integer                                     :: ierror
     integer                                     :: nm_diff
-    integer                      , external     :: newlun
     integer                                     :: no_modules
     integer                                     :: luntmp
     integer                                     :: iocond
@@ -120,8 +119,7 @@ subroutine cortim2flow(thick  ,kmax  ,dps   ,s0    ,r0       ,          &
     ! Open cormix output file
     !
 
-    luntmp = newlun (gdp)
-    open (luntmp,file=filename(2),status='old')
+    open (newunit=luntmp,file=filename(2),status='old')
 
     !
     ! Determine the number of modules used by Cormix and the number of jut/plume trajectory values

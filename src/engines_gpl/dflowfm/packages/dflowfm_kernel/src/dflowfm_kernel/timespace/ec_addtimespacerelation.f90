@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -56,6 +56,7 @@ contains
       use precision, only: dp
       use unstruc_messages, only: callback_msg
       use m_waveconst
+      use m_unit_utils, only: is_correct_unit
 
       character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
       real(kind=dp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
@@ -133,6 +134,7 @@ contains
       character(len=20) :: waqinput
       integer, external :: findname
       type(tEcMask) :: srcmask
+      
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
       logical :: exist, opened, withCharnock, withStress
 
@@ -458,7 +460,8 @@ contains
          ! Each qhbnd polytim file replaces exactly one element in the target data array.
          ! Converter will put qh value in target_array(n_qhbnd)
       case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy', 'airdensity', &
-            'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', 'cloudiness', 'solarradiation', 'longwaveradiation')
+            'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', &
+            'cloudiness', 'solarradiation', 'longwaveradiation')
          if (present(srcmaskfile)) then
             if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
                if (.not. ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then
@@ -474,7 +477,19 @@ contains
             end if
          else
             if (ec_filetype == provFile_bc .and. target_name == 'windxy') then
-               ec_convtype = convType_unimagdir
+               fileReaderPtr => ecSupportFindFileReader(ecInstancePtr, fileReaderId)
+               associate(column_units =>fileReaderPtr%bc%quantity%column_units)
+                  if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('velocity', column_units(3))) then
+                     ! windxy is defined by wind in x and wind in y direction
+                     ec_convtype = convtype_uniform
+                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3)) ) then
+                     ec_convtype = convtype_unimagdir
+                  else
+                     msgbuf = 'incorrect units found in bc file concerning the input for windxy. Only the combinations "ms-1, ms-1"'// &
+                              ' or "ms-1, degree" are allowed.'
+                     call err_flush()
+                  end if
+               end associate
             end if
             success = initializeConverter(ecInstancePtr, converterId, ec_convtype, ec_operand, ec_method)
          end if
@@ -685,6 +700,9 @@ contains
       case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
             'wavebreakerdissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
          ! the name of the source item created by the file reader will be the same as the ext.force. var name
+
+         ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
+         ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
          sourceItemName = varname
       case ('airpressure', 'atmosphericpressure')
          if (ec_filetype == provFile_arcinfo) then
@@ -700,6 +718,20 @@ contains
             sourceItemName = 'air_pressure'
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity wind_p.')
+            return
+         end if
+      case ('pseudoAirPressure')
+         if (ec_filetype == provFile_netcdf) then
+            sourceItemName = 'air_pressure'
+         else
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
+            return
+         end if
+      case ('waterLevelCorrection')
+         if (ec_filetype == provFile_netcdf) then
+            sourceItemName = 'sea_surface_height'
+         else
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
             return
          end if
       case ('windx')

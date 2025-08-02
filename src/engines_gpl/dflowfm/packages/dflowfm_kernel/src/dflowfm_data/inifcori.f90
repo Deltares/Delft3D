@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,12 +38,12 @@ contains
 
    subroutine inifcori()
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_sferic
+      use m_flowgeom, only: lnx, yu, xu, ndx, yz, xz, llkkk, ln, nd
+      use m_flow, only: jacorioconstant, fcori, icorio, aerr, jasecflow, kmx, fcoris
+      use m_sferic, only: jsferic, omega, dg2rd, anglat, ra
+      use m_dbdistance_hk, only: dbdistancehk
       use network_data, only: ykmin, ykmax
       use messagehandling, only: LEVEL_INFO, mess
-      use m_dbdistance_hk
       use m_filez, only: doclose
       implicit none
       integer :: ierr, L, k, i, LL, LLL, LLLL, k1, k2, k3, n, j, mout

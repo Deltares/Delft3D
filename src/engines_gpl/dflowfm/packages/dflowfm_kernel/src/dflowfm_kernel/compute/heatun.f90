@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -167,7 +167,7 @@ contains
          relative_humidity_in_cell = min(1.0_dp, max(0.0_dp, 0.01_dp * relative_humidity(n)))
          cloudiness_in_cell = min(1.0_dp, max(0.0_dp, 0.01_dp * cloudiness(n)))
 
-         if (air_pressure_available > 0) then
+         if (air_pressure_available) then
             air_pressure_in_cell = 0.01_dp * air_pressure(n)
          end if
 

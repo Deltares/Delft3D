@@ -37,9 +37,6 @@ set(netcdf_version "netcdf-c-4.9.2")
 # polypack
 set(polypack_module ${third_party_open_path}/polypack)
 
-# icepack
-set(icepack_module ${third_party_open_path}/icepack/${cmake_directory})
-
 # interacter_stub
 set(interacter_stub_module ${third_party_path}/interacter_stub)
 

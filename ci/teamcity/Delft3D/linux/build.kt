@@ -63,18 +63,16 @@ object LinuxBuild : BuildType({
                 echo '#define BRANCH "%teamcity.build.branch%"' >> checkout_info.h
             """.trimIndent()
         }
-        script {
+        exec {
             name = "Build"
-            scriptContent = """
-                #!/usr/bin/env bash
-                set -eo pipefail
-                source /root/.bashrc
-
-                cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=%product% -D CMAKE_BUILD_TYPE=%build_type% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install
-                cmake --build build_%product% --parallel --target install --config %build_type%
+            path = "ci/teamcity/Delft3D/linux/scripts/build.sh"
+            arguments = """
+                --generator %generator%
+                --product %product%
+                --build-type %build_type%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
-            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
         }

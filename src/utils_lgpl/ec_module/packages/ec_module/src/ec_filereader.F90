@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -377,7 +377,7 @@ module m_ec_filereader
                   if(fileReaderPtr%one_time_field) then
                      t0t1 = -1
                      do i=1, fileReaderPtr%nItems
-                        success = ecNetcdfReadBlock(fileReaderPtr, fileReaderPtr%items(i)%ptr, t0t1, fileReaderPtr%items(i)%ptr%elementSetPtr%nCoordinates)
+                        success = ecNetcdfReadBlock(fileReaderPtr, fileReaderPtr%items(i)%ptr, t0t1, fileReaderPtr%items(i)%ptr%elementSetPtr%nCoordinates, timesteps)
                         if (t0t1 == 0) then
                            ! flip t0 and t1
                            fieldPtrA => fileReaderPtr%items(i)%ptr%sourceT1FieldPtr

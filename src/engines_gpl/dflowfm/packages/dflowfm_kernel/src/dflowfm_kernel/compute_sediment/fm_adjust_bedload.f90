@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,16 +45,16 @@ contains
       use m_sferic, only: pi
       use m_flowgeom, only: lnxi, kcs, ba, bl, Dx, wu_mor
       use m_flow, only: hu
-      use m_flowtimes
+      use m_flowtimes, only: dp
+      use precision, only: fp, comparereal
+      use m_alloc, only: realloc
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_turbulence, only: rhou
-      use precision
       use m_fm_erosed, only: stmpar, has_bedload, alfabn, alfabs, ashld, bshld, cshld, dm, dshld, e_dzdn, e_dzdt, alfpa, avaltime, duneavalan, fixfac
       use m_fm_erosed, only: frac, hidexp, islope, morfac, rhosol, sedd50fld, sedd50, taurat, tratyp, ust2, wetslope, lsedtot, thcrpa
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
       use m_sediment, only: bermslopeindexbed, bermslopeindexsus
-      use m_alloc
-      use m_get_Lbot_Ltop
 
       implicit none
 

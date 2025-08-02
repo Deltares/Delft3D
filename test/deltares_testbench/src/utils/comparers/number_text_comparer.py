@@ -1,6 +1,6 @@
 """Ascii file comparer, compares numbers (with tolerance) and text.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 import os

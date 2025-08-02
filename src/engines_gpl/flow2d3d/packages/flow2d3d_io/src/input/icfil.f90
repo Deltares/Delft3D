@@ -3,7 +3,7 @@ subroutine icfil(lundia    ,error     ,filic     ,fmttmp    ,mmax      , &
                & u1        ,v1        ,r1        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -81,7 +81,6 @@ subroutine icfil(lundia    ,error     ,filic     ,fmttmp    ,mmax      , &
     integer                                     :: luntmp       ! Unit number file 
     integer                                     :: m            ! Help var. 
     integer                                     :: n            ! Help var. 
-    integer, external                           :: newlun
     real(sp), allocatable, dimension(:,:,:,:)   :: sbuff        !  Single precision buffer to read from file
     logical                                     :: test
     character(300)                              :: message

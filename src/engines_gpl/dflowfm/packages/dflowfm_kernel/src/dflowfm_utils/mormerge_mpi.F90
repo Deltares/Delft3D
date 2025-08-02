@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ module m_mormerge_mpi
 
 contains
 
-!> returns a total number of cells over subdomains
+   !> returns a total number of cells over subdomains
    integer function total_number_of_cells(jampi, ndxi, DFM_COMM_DFMWORLD)
 #ifdef HAVE_MPI
       use mpi
@@ -72,7 +72,7 @@ contains
 
 !> updates the merge buffer
    subroutine update_mergebuffer(mergehandle, buffer_size, mergebuffer, jampi, my_rank, DFM_COMM_DFMWORLD)
-      use m_mormerge
+      use m_mormerge, only: put_get_mergebuffer
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -108,9 +108,9 @@ contains
 
 !< initialization of mormerge and arrays allocation for its operation on a parallel computer
    function initialize_mormerge_mpi(gdmorpar, lsedtot, ndxi, jampi, my_rank, ndomains, DFM_COMM_DFMWORLD) result(error)
+      use m_mormerge, only: initialize_mormerge
       use morphology_data_module, only: morpar_type
-      use m_mormerge
-      use m_alloc
+      use m_alloc, only: aerr
 #ifdef HAVE_MPI
       use mpi
 #endif

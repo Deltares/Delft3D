@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,12 +49,12 @@ contains
       use m_turbulence, only: sigdifi
       use m_flowtimes, only: time1
       use m_physcoef, only: dicouv
-      use m_timer
-      use m_transport
+      use m_timer, only: jatimer, starttimer, impireduce, stoptimer
+      use m_transport, only: dtmin_transp, kk_dtmin, jalimitdtdiff, sumdifflim, numconst, difsedu, dxiau, dtmax, ised1, time_dtmax
+      use m_partitioninfo, only: jampi, idomain, my_rank, update_ghosts, itype_sall, reduce_double_min
+      use timers, only: timon, timstrt, timstop
+      use m_get_kbot_ktop, only: getkbotktop
       use m_sediment, only: mtd, stm_included
-      use m_partitioninfo
-      use timers
-      use m_get_kbot_ktop
 
       implicit none
 

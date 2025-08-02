@@ -4,7 +4,7 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
                & ycor      ,kfu       ,kfv       ,itdate    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -126,7 +126,6 @@ subroutine wrfou(nmax      ,mmax      ,nmaxus    ,kmax      ,lmax      , &
     integer                                           :: ivar         ! Local teller for fourier functions 
     integer                                           :: lrid         ! Length of RUNID character string 
     integer                                           :: lunfou
-    integer                             , external    :: newlun
     integer                             , external    :: nc_def_var
     real(fp)                                          :: freqnt       ! Frequency in degrees per hour 
     real(fp)                                          :: tfasto       ! Stop time in minutes 

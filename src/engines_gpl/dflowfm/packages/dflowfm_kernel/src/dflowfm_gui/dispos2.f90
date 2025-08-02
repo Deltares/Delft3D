@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,9 +39,9 @@ contains
    subroutine DISPOS2(X, Y)
       use precision, only: dp
       use m_devices, only: iws
-      use m_disfor
-      use m_ktext
-      use m_disdis
+      use m_disfor, only: xyform
+      use m_ktext, only: ktext
+      use m_disdis, only: disdis
 
       real(kind=dp) :: x
       real(kind=dp) :: y

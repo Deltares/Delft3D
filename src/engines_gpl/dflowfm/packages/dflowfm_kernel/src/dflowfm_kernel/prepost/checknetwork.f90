@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,13 +45,12 @@ contains
    subroutine checknetwork()
       use precision, only: dp
 
-      use network_data
-      use unstruc_colors
-      use m_alloc
+      use network_data, only: numl, linkcross, nlinkcross, kn, xk, yk, nmk, nod, kn
+      use m_alloc, only: realloc
+      use m_readyy, only: readyy
       use geometry_module, only: cross
       use m_missing, only: dmiss
       use m_sferic, only: jsferic
-      use m_readyy
 
       integer, allocatable :: linkQueue(:), jaLinkVisited(:)
       integer :: nLink = 0
@@ -122,7 +121,7 @@ contains
 !! from each link (brute force approach O(numl*numl) would be too expensive.
       recursive subroutine findLinks(k)
 !use m_alloc
-         use network_data
+         use network_data, only: numk, nmk, nod, kn
          implicit none
          integer :: k
 !integer, intent(inout) :: linkQueue(:)

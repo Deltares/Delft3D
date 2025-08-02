@@ -2,7 +2,7 @@ subroutine inieva(runid     ,cyclic    ,timnow    ,evaint    ,j         , &
                 & nmmaxj    ,nmmax     ,evap      ,precip    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -75,7 +75,6 @@ subroutine inieva(runid     ,cyclic    ,timnow    ,evaint    ,j         , &
 !
     integer           :: itfac    ! Interpolation factor 
     integer           :: lrid     ! Length of character string runid 
-    integer           :: newlun
     integer           :: nm       ! Loop counter for NMMAX 
     logical           :: first    ! Help var. It is always set to TRUE before calling the relevant routines for the time dependent data, because they are activated here for the first time 
     logical           :: inteva   ! Interpolation method between consecu- tive rain/evaporation data: N = No     interpolation. Y = Linear interpolation. 

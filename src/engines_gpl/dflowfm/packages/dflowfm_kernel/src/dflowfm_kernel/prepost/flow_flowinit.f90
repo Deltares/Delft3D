@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -1079,7 +1079,7 @@ contains
       integer :: cell
       real(kind=dp) :: ds
 
-      if (air_pressure_available > OFF .and. PavIni > ZERO_AMBIENT_PRESSURE) then
+      if (air_pressure_available .and. PavIni > ZERO_AMBIENT_PRESSURE) then
          do cell = 1, ndxi
             ds = -(air_pressure(cell) - PavIni) / (ag * rhomean)
             s1(cell) = s1(cell) + ds
@@ -1626,7 +1626,7 @@ contains
 
 !> initialise_density_at_cell_centres
    subroutine initialise_density_at_cell_centres()
-      use m_flow, only: kmxn, rho_read_rst
+      use m_flow, only: kmxn
       use m_cell_geometry, only: ndx
       use m_sediment, only: stm_included
       use m_turbulence, only: rhowat, potential_density, in_situ_density
@@ -1642,11 +1642,9 @@ contains
       integer :: cell3D
 
       do cell = 1, ndx
-         if (.not. rho_read_rst) then
-            call set_potential_density(potential_density, cell)
-            if (apply_thermobaricity) then
-               call set_pressure_dependent_density(in_situ_density, cell)
-            end if
+         call set_potential_density(potential_density, cell)
+         if (apply_thermobaricity) then
+            call set_pressure_dependent_density(in_situ_density, cell)
          end if
          if (stm_included) then
             call getkbotktop(cell, bottom_cell, top_cell)

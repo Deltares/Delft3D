@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,17 +41,16 @@ module m_start_program
 contains
 
    subroutine START_PROGRAM()
-      use M_dimens
-      use M_DEVICES
-      use unstruc_files
-      use unstruc_startup
-      use dflowfm_version_module, only: base_name
-      use m_gui
-      use m_helpnow
-      use m_fkeys
-      use m_menuh
-      use m_botlin
-      use m_firstlin
+      use M_dimens, only: lmax, kmax
+      use M_DEVICES, only: npx, npy, iws, ihs, ncolr
+      use unstruc_files, only: inidia, base_name, mdia, msgbuf, msg_flush
+      use unstruc_startup, only: initprogram
+      use m_gui, only: jagui
+      use m_helpnow, only: wrdkey, nlevel
+      use m_fkeys, only: fkeys
+      use m_menuh, only: menuh
+      use m_botlin, only: botlin
+      use m_firstlin, only: firstlin
 
       integer :: infofile
       integer :: infoopsystem

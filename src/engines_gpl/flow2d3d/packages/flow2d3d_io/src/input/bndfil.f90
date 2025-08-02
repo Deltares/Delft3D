@@ -4,7 +4,7 @@ subroutine bndfil(lundia    ,error     ,kmax      ,lnto      ,lntof     , &
                 & alpha     ,tprofu    ,statns    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -100,7 +100,6 @@ subroutine bndfil(lundia    ,error     ,kmax      ,lnto      ,lntof     , &
     integer           :: lr132  ! Standard length of a record in the attribute file = 132 
     integer           :: luntmp ! Help var. for a unit number of an attribute file 
     integer           :: n      ! Help var. 
-    integer, external :: newlun
     logical           :: ltest  ! Flag for testing 
     real(fp)          :: rdef   ! Help var. containing default va- lue(s) for real variable 
     character(1)      :: cdefd  ! Default value when DATBND not found 

@@ -4,7 +4,7 @@ subroutine inibcc(lundia    ,error     ,runid     ,timnow    , &
                 & zstep     ,bubble    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -90,7 +90,6 @@ subroutine inibcc(lundia    ,error     ,runid     ,timnow    , &
     integer                                :: k       ! Loop counter over KMAX 
     integer                                :: lrec    ! Record length of direct access file 
     integer                                :: lrid    ! Length of character string runid 
-    integer                                :: newlun
     integer                                :: np
     integer                                :: npara   ! Number of parameter records in time dependent direct access file 
     integer                                :: nparrd  ! NR. of parameter records actual read 
