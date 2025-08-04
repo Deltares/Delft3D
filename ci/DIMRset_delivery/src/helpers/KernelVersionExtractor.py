@@ -22,10 +22,8 @@ class KernelVersionExtractor(object):
              teamcity (TeamCity): A reference to a TeamCity REST API wrapper.
         """
         self.__teamcity = teamcity
-        self.__kernel_versions: Dict[str, str] = None
-        self.__dimr_version = None
 
-    def get_latest_kernel_versions(self, build_id_chain: str, dry_run: bool) -> Dict[str, str]:
+    def get_latest_kernel_versions(self, teamcity: TeamCity, build_id_chain: str, dry_run: bool) -> Dict[str, str]:
         """
         Gets the kernel versions from the latest Dimr Collector Release build.
 
@@ -34,25 +32,25 @@ class KernelVersionExtractor(object):
         """
         if dry_run:
             print(f"{DRY_RUN_PREFIX} Get build info of build_id {build_id_chain}, then extract kernel versions from properties.")
-            self.__kernel_versions = {
+            kernel_versions = {
                 KERNELS[0].name_for_extracting_revision: "1.23.45",
                 KERNELS[1].name_for_extracting_revision: "abcdefghijklmnopqrstuvwxyz01234567890123"
             }
         else:
-            publish_build_info = self.__teamcity.get_build_info_for_build_id(build_id_chain)
-            self.__kernel_versions = self.__extract_kernel_versions(
+            publish_build_info = teamcity.get_build_info_for_build_id(build_id_chain)
+            kernel_versions = self.__extract_kernel_versions(
                 build_info=publish_build_info
             )
-        return self.__kernel_versions
+        return kernel_versions
 
-    def assert_all_versions_have_been_extracted(self) -> None:
+    def assert_all_versions_have_been_extracted(self, kernel_versions: Dict[str, str]) -> None:
         """ Asserts all expected kernels have had their version extracted. """
         missing_kernel_versions = []
-        for kernel in self.__kernel_versions:
-            if self.__kernel_versions[kernel] is None:
+        for kernel in kernel_versions:
+            if kernel_versions[kernel] is None:
                 missing_kernel_versions.append(kernel)
             else:
-                print(f"Found {kernel}: #{self.__kernel_versions[kernel]}")
+                print(f"Found {kernel}: #{kernel_versions[kernel]}")
         if len(missing_kernel_versions) == 0:
             print("All kernel revision numbers have successfully been found.")
             return
@@ -61,14 +59,14 @@ class KernelVersionExtractor(object):
         error += ', '.join(missing_kernel_versions)
         raise AssertionError(error)
 
-    def get_branch_name(self, build_id_chain: str, dry_run: bool) -> str:
+    def get_branch_name(self, teamcity: TeamCity, build_id_chain: str, dry_run: bool) -> str:
         """Returns the branch name from the latest release collector build."""
         if dry_run:
             print(f"{DRY_RUN_PREFIX} Get build info of build_id {build_id_chain}, then get branch name from properties.")
             self.__branch_name = "main"
             print(f"{DRY_RUN_PREFIX} simulating '{self.__branch_name}' branch")
             return self.__branch_name
-        latest_publish_build_info = self.__teamcity.get_build_info_for_build_id(
+        latest_publish_build_info = teamcity.get_build_info_for_build_id(
             build_id_chain
         )
 

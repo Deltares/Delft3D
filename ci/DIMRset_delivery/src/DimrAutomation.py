@@ -58,10 +58,10 @@ class DimrAutomation(object):
 
         extractor = KernelVersionExtractor(self.__teamcity)
 
-        branch_name = extractor.get_branch_name(build_id_chain, dry_run)
-        kernel_versions = extractor.get_latest_kernel_versions(build_id_chain, dry_run)
+        branch_name = extractor.get_branch_name(self.__teamcity, build_id_chain, dry_run)
+        kernel_versions = extractor.get_latest_kernel_versions(self.__teamcity, build_id_chain, dry_run)
         dimr_version = extractor.get_dimr_version(kernel_versions)
-        extractor.assert_all_versions_have_been_extracted()
+        extractor.assert_all_versions_have_been_extracted(kernel_versions)
 
         self.__download_and_install_artifacts(build_id_chain, dimr_version, branch_name,dry_run)
         if dry_run:
