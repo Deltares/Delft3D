@@ -1241,7 +1241,7 @@ switch Type
                     case 'tem'
                         Out(end).DimFlag(T_) = 5;
                         name = 'temperature';
-                        units = 'ï¿½C';
+                        units = '°C';
                     case 'vdf'
                         Out(end).DimFlag(T_) = 5;
                         name = 'vertical diffusivity';
@@ -1856,7 +1856,7 @@ if ~isempty(icnst)
             Ins(j).Units = [Ins(j).Units '/d'];
             Out(1).BalSubFld=[];
         end
-        if isequal(Ins(j).ShortName,'Limit_Chlo')
+        if isequal(Ins(j).ShortName,'Limit Chlo')
             Ins(end+1)=Ins(j);
             Ins(end).Name = [Ins(j).Name ' (limiting factors)'];
             Ins(end).NVal = -1;
