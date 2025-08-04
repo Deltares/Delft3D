@@ -1,6 +1,6 @@
   <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f001_c010_Channel_with_refinement_squares" ref="dflowfm_default">
-      <path version="2025-07-30T14:53:31.884000">e02_dflowfm/f001_general/c010_Channel_with_refinement_squares</path>
+      <path version="2025-08-04T14:19:52.410000">e02_dflowfm/f001_general/c010_Channel_with_refinement_squares</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
@@ -13,7 +13,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f001_c011_Channel_with_refinement_triangles" ref="dflowfm_default">
-      <path version="2025-07-30T14:55:07.360000">e02_dflowfm/f001_general/c011_Channel_with_refinement_triangles</path>
+      <path version="2025-08-04T14:24:35.091000">e02_dflowfm/f001_general/c011_Channel_with_refinement_triangles</path>
       <maxRunTime>200.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
@@ -37,7 +37,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f003_c020_dambreak1dwet_standard" ref="dflowfm_default">
-      <path version="2025-07-30T15:05:44.334000">e02_dflowfm/f003_advection/c020_dambreak1dwet_standard</path>
+      <path version="2025-08-04T14:26:16.021000">e02_dflowfm/f003_advection/c020_dambreak1dwet_standard</path>
       <maxRunTime>10.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/dambreak1dwet_map.nc" type="netCDF">
@@ -49,7 +49,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f003_c021_dambreak1ddry_standard" ref="dflowfm_default">
-      <path version="2025-07-30T15:06:40.736000">e02_dflowfm/f003_advection/c021_dambreak1ddry_standard</path>
+      <path version="2025-08-04T14:27:19.263000">e02_dflowfm/f003_advection/c021_dambreak1ddry_standard</path>
       <maxRunTime>10.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/dambreak1ddry_map.nc" type="netCDF">
