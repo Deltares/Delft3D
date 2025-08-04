@@ -79,14 +79,6 @@ contains
         substrings = split_string_non_empty(adjustl(trim(line_buffer(11:len_trim(line_buffer)))), ' ') !< Split the line into substrings based on spaces
 
         idx_field = 1
-        ! temp_string = substrings(idx_field) !< First substring is the name
-        ! if (len_trim(temp_string) > 10) then
-        !     write (*, '(A, A, I0)') 'Error: item name "', trim(temp_string), '" exceeds 10 characters at line ', linecount
-        !     error stop
-        ! end if
-        ! name = temp_string !< First substring is the name
-        ! idx_field = idx_field + 1
-
         if (item_is_input) then
             read(substrings(idx_field), *, iostat=ierr) def_value
             call check_read_error(log_unit, ierr, linecount, 'default value')

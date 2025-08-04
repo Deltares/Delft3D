@@ -185,9 +185,6 @@ program waqpb_import
       do idx_item = 1, num_items
          linecount = linecount + 1
          call parse_item_line(io_asc, io_mes, linecount, c10, value, c1, c50, c20, is_input = .true.)
-         ! read (io_asc, FMT31, iostat=ierr) c10, value, c1, c50, c20
-         ! call check_read_error(io_mes, ierr, linecount, 'input item on cell (segment)')
-
          call upd_p2(c10, c50, value, 1, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
 
          ninpu = ninpu + 1
@@ -215,9 +212,6 @@ program waqpb_import
       do idx_item = 1, num_items
          linecount = linecount + 1
          call parse_item_line(io_asc, io_mes, linecount, c10, value, c1, c50, c20, is_input = .true.)
-         ! read (io_asc, FMT31, iostat=ierr) c10, value, c1, c50, c20
-         ! call check_read_error(io_mes, ierr, linecount, 'input item on exchanges')
-
          call upd_p2(c10, c50, value, 2, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
          ninpu = ninpu + 1
          if (ninpu > ninpum) then
@@ -243,8 +237,6 @@ program waqpb_import
       do idx_item = 1, num_items
          linecount = linecount + 1
          call parse_item_line(io_asc, io_mes, linecount, c10, value, c1, c50, c20, is_input = .false.)
-         ! read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
-         ! call check_read_error(io_mes, ierr, linecount, 'output item on cell (segment)')
 
          value = -999.
          call upd_p2(c10, c50, value, 1, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
@@ -266,8 +258,6 @@ program waqpb_import
       do idx_item = 1, num_items
          linecount = linecount + 1
          call parse_item_line(io_asc, io_mes, linecount, c10, value, c1, c50, c20, is_input = .false.)
-         ! read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
-         ! call check_read_error(io_mes, ierr, linecount, 'output item on exchanges')
 
          value = -999.
          call upd_p2(c10, c50, value, 2, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
@@ -290,8 +280,6 @@ program waqpb_import
       do idx_item = 1, num_items
          linecount = linecount + 1
          call parse_item_line(io_asc, io_mes, linecount, c10, value, c1, c50, c20, is_input = .false.)
-         ! read (io_asc, FMT32, iostat=ierr) c10, c1, c50, c20
-         ! call check_read_error(io_mes, ierr, linecount, 'flux')
 
          value = -999.
          call upd_p2(c10, c50, value, 1, settings%create_new_tables, grp, io_mes, iitem, c20, .false.)
