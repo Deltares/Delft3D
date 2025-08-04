@@ -414,6 +414,16 @@ program waqpb_export
 900 continue
    close (lu_mes)
 
+   write (*,*)
+   write (*, '(A)') 'Export completed successfully.'
+   if (settings%wrong_version) then
+      write (*, '(A, f0.1)') 'WARNING: no or not a valid version specified. Using generated version instead: ', settings%version
+   end if
+
+   if (settings%wrong_serial) then
+      write (*, '(A, I0)') 'WARNING: no or not a valid serial number specified. Using generated serial instead: ', settings%serial
+   end if
+
    stop 'Normal end'
 end program waqpb_export
 

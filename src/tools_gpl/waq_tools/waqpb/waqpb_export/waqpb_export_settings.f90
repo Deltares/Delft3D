@@ -34,6 +34,8 @@ module m_waqpb_export_settings
    type, extends(waqpb_base_settings) :: waqpb_export_settings
       real :: version = 0.0
       integer :: serial = 0
+      logical :: wrong_version = .false. !> Flag to indicate if the specified version is wrong (e.g. letters)
+      logical :: wrong_serial = .false. !> Flag to indicate if the specified serial is wrong (e.g. letters)
       logical :: generate_latex_tables = .false. !> Flag to indicate whether to generate LaTeX tables
    contains
       procedure :: init
@@ -57,19 +59,21 @@ contains
       call this%init_base("waqpb_export")
 
       if (.not. get_command_argument_by_name('--version', version)) then
+         ! Generate a version number based on the version of the software
          this%version = generate_version()
-         write (*, '(A, F0.1)') 'No or invalid version number specified, using generated one: ', this%version
-         pause 'Press Enter to continue...'
+         this%wrong_version = .true.
       else
          this%version = version
+         this%wrong_version = .false.
       end if
 
       if (.not. get_command_argument_by_name('--serial', serial)) then
+         ! Generate a serial number based on the current date and time
          this%serial = generate_serial()
-         write (*, '(A, I0)') 'No or invalid serial number specified, using generated one: ', this%serial
-         pause 'Press Enter to continue...'
+         this%wrong_serial = .true.
       else
          this%serial = serial
+         this%wrong_serial = .false.
       end if
 
       this%generate_latex_tables = is_command_arg_specified('--latex')
