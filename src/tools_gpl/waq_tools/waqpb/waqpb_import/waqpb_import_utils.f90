@@ -71,7 +71,7 @@ contains
         ! first read the name (or ID) of the item
         temp_string = adjustl(trim(line_buffer(1:11)))
         if (len_trim(temp_string) > 10) then
-            write (*, '(A, A, I0)') 'Error: item name "', trim(temp_string), '" exceeds 10 characters at line ', linecount
+            write (*, '(A, A, A, I0)') 'Error: item name "', trim(temp_string), '" exceeds 10 characters at line ', linecount
             error stop
         end if
         name = temp_string !< First 10 characters are the name
@@ -96,14 +96,14 @@ contains
 
         temp_string = join_strings(substrings(idx_field:size(substrings) - 1), ' ') !< Join the remaining substrings except the last one for description
         if (len_trim(temp_string) > 50) then
-            write (*, '(A, A, I0)') 'Error: description "', trim(temp_string), '" exceeds 50 characters at line ', linecount
+            write (*, '(A, A, A, I0)') 'Error: description "', trim(temp_string), '" exceeds 50 characters at line ', linecount
             error stop
         end if
         description = temp_string !< Remaining substrings except units form the description
 
         temp_string = substrings(size(substrings)) !< Last substring is the units
         if (len_trim(temp_string) > 20) then
-            write (*, '(A, A, I0)') 'Error: units "', trim(temp_string), '" exceed 20 characters at line ', linecount
+            write (*, '(A, A, A, I0)') 'Error: units "', trim(temp_string), '" exceed 20 characters at line ', linecount
             error stop
         end if
         units = temp_string !< Last substring is the units
