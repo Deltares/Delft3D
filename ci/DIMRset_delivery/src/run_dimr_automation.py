@@ -17,7 +17,7 @@ from helpers.GitClient import GitClient
 from helpers.SshClient import SshClient
 from lib.Atlassian import Atlassian
 from lib.TeamCity import TeamCity
-from settings.general_settings import DELFT3D_GIT_REPO
+from settings.general_settings import DELFT3D_GIT_REPO, DRY_RUN_PREFIX
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -56,6 +56,6 @@ if __name__ == "__main__":
     )
     print("Starting the automation process...")
     if args.dry_run:
-        print("🔍 Running in DRY-RUN mode - no changes will be made")
+        print(f"{DRY_RUN_PREFIX} - no changes will be made")
     dimr_automation.run(args.build_id, dry_run=args.dry_run)
     print("Finished")

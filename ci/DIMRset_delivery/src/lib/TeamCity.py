@@ -1,7 +1,9 @@
 from typing import Any, Dict, List
 
 import requests
+from settings.general_settings import DRY_RUN_PREFIX
 from settings.teamcity_settings import TEAMCITY_IDS
+from types import SimpleNamespace
 
 
 class TeamCity(object):
@@ -39,7 +41,7 @@ class TeamCity(object):
             "accept": "application/json",
         }
 
-    def test_api_connection(self) -> bool:
+    def test_api_connection(self, dry_run: bool) -> bool:
         """
         Tests if the the API connection can successfully
         be established.
@@ -52,9 +54,13 @@ class TeamCity(object):
         """
         print(f"Checking connection to the TeamCity API with credentials: {self.__auth[0]}")
         endpoint = f"{self.__rest_uri}agents"
-        result = requests.get(
-            url=endpoint, headers=self.__default_headers, auth=self.__auth
-        )
+        if dry_run:
+            print(f"{DRY_RUN_PREFIX} GET request: {endpoint}")
+            result = SimpleNamespace(status_code=200, content=b'dry-run mock')
+        else:
+            result = requests.get(
+                url=endpoint, headers=self.__default_headers, auth=self.__auth
+            )
         if result.status_code == 200:
             print("Successfully connected to the TeamCity API.")
             return True

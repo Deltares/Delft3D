@@ -1,6 +1,7 @@
 import re
 from typing import Any, Dict
 
+from settings.general_settings import DRY_RUN_PREFIX
 from lib.TeamCity import TeamCity
 from settings.teamcity_settings import KERNELS, TEAMCITY_IDS
 
@@ -24,17 +25,24 @@ class KernelVersionExtractor(object):
         self.__kernel_versions: Dict[str, str] = None
         self.__dimr_version = None
 
-    def get_latest_kernel_versions(self, build_id_chain: str) -> Dict[str, str]:
+    def get_latest_kernel_versions(self, build_id_chain: str, dry_run: bool) -> Dict[str, str]:
         """
         Gets the kernel versions from the latest Dimr Collector Release build.
 
         Returns:
             Dict[str, str]: A dictionary of "kernel name" -> "version"
         """
-        publish_build_info = self.__teamcity.get_build_info_for_build_id(build_id_chain)
-        self.__kernel_versions = self.__extract_kernel_versions(
-            build_info=publish_build_info
-        )
+        if dry_run:
+            print(f"{DRY_RUN_PREFIX} Get build info of build_id {build_id_chain}, then extract kernel versions from properties.")
+            self.__kernel_versions = {
+                KERNELS[0].name_for_extracting_revision: "1.23.45",
+                KERNELS[1].name_for_extracting_revision: "abcdefghijklmnopqrstuvwxyz01234567890123"
+            }
+        else:
+            publish_build_info = self.__teamcity.get_build_info_for_build_id(build_id_chain)
+            self.__kernel_versions = self.__extract_kernel_versions(
+                build_info=publish_build_info
+            )
         return self.__kernel_versions
 
     def assert_all_versions_have_been_extracted(self) -> None:
@@ -53,8 +61,13 @@ class KernelVersionExtractor(object):
         error += ', '.join(missing_kernel_versions)
         raise AssertionError(error)
 
-    def get_branch_name(self, build_id_chain: str) -> str:
+    def get_branch_name(self, build_id_chain: str, dry_run: bool) -> str:
         """Returns the branch name from the latest release collector build."""
+        if dry_run:
+            print(f"{DRY_RUN_PREFIX} Get build info of build_id {build_id_chain}, then get branch name from properties.")
+            self.__branch_name = "main"
+            print(f"{DRY_RUN_PREFIX} simulating '{self.__branch_name}' branch")
+            return self.__branch_name
         latest_publish_build_info = self.__teamcity.get_build_info_for_build_id(
             build_id_chain
         )

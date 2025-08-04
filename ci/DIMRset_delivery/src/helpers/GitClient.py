@@ -1,6 +1,8 @@
 import subprocess
 import sys
 
+from settings.general_settings import DRY_RUN_PREFIX
+
 class GitClient(object):
     """Class responsible for tagging Git commits."""
 
@@ -46,7 +48,7 @@ class GitClient(object):
             print(f"##teamcity[message text='An error occurred while adding tag to Git: {e}.' status='ERROR']")
             sys.exit(1)
     
-    def test_connection(self):
+    def test_connection(self, dry_run: bool) -> None:
         """
         Tests the connection to the remote Git repository.
 
@@ -55,9 +57,13 @@ class GitClient(object):
             auth_repo_url = self.repo_url.replace(
                 "https://", f"https://{self.__username}:{self.__password}@"
             )
-            result = subprocess.run(
-                ["git", "ls-remote", auth_repo_url], capture_output=True, text=True
-            )
+            if dry_run:
+                print(f"{DRY_RUN_PREFIX} Testing connection to {auth_repo_url}")
+                result = subprocess.CompletedProcess(args=[], returncode=0, stdout="Dry run successful")
+            else:
+                result = subprocess.run(
+                    ["git", "ls-remote", auth_repo_url], capture_output=True, text=True
+                )
             if result.returncode == 0:
                 print("Read access to the repository is successful.")
             else:

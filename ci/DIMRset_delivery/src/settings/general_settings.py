@@ -18,3 +18,6 @@ NAME_COLUMN = "C"
 
 # Relative path to the output folder
 RELATIVE_PATH_TO_OUTPUT_FOLDER = "..\\..\\output\\"
+
+# Dry-run mode prefix
+DRY_RUN_PREFIX = "🔍 DRY-RUN:"

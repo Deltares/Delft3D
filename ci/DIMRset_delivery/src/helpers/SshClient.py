@@ -2,6 +2,8 @@ import paramiko
 from scp import SCPClient
 from enum import Enum
 
+from settings.general_settings import DRY_RUN_PREFIX
+
 class Direction(Enum):
     TO = "to"     # local to remote
     FROM = "from" # remote to local
@@ -27,23 +29,28 @@ class SshClient(object):
         self.__client = paramiko.SSHClient()
         self.__client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-    def test_connection(self, address: str) -> None:
+    def test_connection(self, address: str, dry_run: bool) -> None:
         """
         Test if a SSH connection can be made to the specified address.
 
         Args:
-            address:
+            address (str): The SSH address to connect to.
+            dry_run (bool): If True, the connection will not be established, but a message will be printed.
 
         Raises:
             AssertionError: If the SSH connection failed.
         """
         try:
-            self.__client.connect(
-                address,
-                username=self.__username,
-                password=self.__password,
-                timeout=self.__connect_timeout
-            )
+            if dry_run:
+                print(f"{DRY_RUN_PREFIX} SSH connection to {address} with {self.__username}")
+            else:
+                self.__client.connect(
+                    address,
+                    username=self.__username,
+                    password=self.__password,
+                    timeout=self.__connect_timeout
+                )
+            print(f"Successfully created and closed a ssh connection to {address} with {self.__username}.")
         except Exception as e:
             raise AssertionError(
                 f"Could not establish ssh connection to {address}:\n{e}"

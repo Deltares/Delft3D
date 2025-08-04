@@ -1,6 +1,9 @@
 import json
+from types import SimpleNamespace
 import requests
 from typing import List, Dict, Tuple, Any, IO
+
+from settings.general_settings import DRY_RUN_PREFIX
 
 
 class Atlassian(object):
@@ -32,7 +35,7 @@ class Atlassian(object):
             "accept": "application/json"
         }
 
-    def test_api_connection(self) -> bool:
+    def test_api_connection(self, dry_run: bool) -> bool:
         """
         Tests if the the API connection can successfully 
         be established.
@@ -45,7 +48,13 @@ class Atlassian(object):
         """
         print(f"Checking connection to the Atlassian Confluence API with credentials: {self.__auth[0]}")
         endpoint = f"{self.__rest_uri}content"
-        result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=False)
+
+        if dry_run:
+            print(f"{DRY_RUN_PREFIX} GET request: {endpoint}")
+            result = SimpleNamespace(status_code=200, content=b'dry-run mock')
+        else:
+            result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=False)
+
         if result.status_code == 200:
             print("Successfully connected to the Atlassian Confluence API.")
             return True
