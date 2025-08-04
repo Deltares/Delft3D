@@ -77,17 +77,15 @@ object LinuxBuild : BuildType({
             dockerRunParameters = "--rm"
             dockerPull = true
         }
-        exec {
+        script {
             name = "Run unit tests"
-            path = "ctest"
-            arguments = """
-                --test-dir build_%product%
-                --build-config %build_type%
-                --output-junit ../unit-test-report-linux.xml
-                --output-on-failure
+            scriptContent = """
+                #!/usr/bin/env bash
+                source /root/.bashrc
+                ctest --test-dir build_%product% --build-config %build_type% --output-junit ../unit-test-report-linux.xml --output-on-failure
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
-            dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
         }
