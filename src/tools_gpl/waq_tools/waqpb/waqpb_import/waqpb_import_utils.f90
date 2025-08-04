@@ -63,23 +63,36 @@ contains
         endif
 
         read(io_unit, '(A)', iostat=ierr) line_buffer
-        substrings = split_string_non_empty(adjustl(trim(line_buffer)), ' ') !< Split the line into substrings based on spaces
+        if (ierr /= 0) then
+            write (*, '(A, I0)') 'Error reading line ', linecount, ' from input file.'
+            error stop
+        end if
 
-        idx_field = 1
-        temp_string = substrings(idx_field) !< First substring is the name
+        ! first read the name (or ID) of the item
+        temp_string = adjustl(trim(line_buffer(1:11)))
         if (len_trim(temp_string) > 10) then
             write (*, '(A, A, I0)') 'Error: item name "', trim(temp_string), '" exceeds 10 characters at line ', linecount
             error stop
         end if
-        name = temp_string !< First substring is the name
-        idx_field = idx_field + 1
+        name = temp_string !< First 10 characters are the name
+
+        substrings = split_string_non_empty(adjustl(trim(line_buffer(11:len_trim(line_buffer)))), ' ') !< Split the line into substrings based on spaces
+
+        idx_field = 1
+        ! temp_string = substrings(idx_field) !< First substring is the name
+        ! if (len_trim(temp_string) > 10) then
+        !     write (*, '(A, A, I0)') 'Error: item name "', trim(temp_string), '" exceeds 10 characters at line ', linecount
+        !     error stop
+        ! end if
+        ! name = temp_string !< First substring is the name
+        ! idx_field = idx_field + 1
 
         if (item_is_input) then
             read(substrings(idx_field), *, iostat=ierr) def_value
             call check_read_error(log_unit, ierr, linecount, 'default value')
             idx_field = idx_field + 1
         else
-            def_value = 0.0 !< Default value is set to 0.0
+            def_value = 0.0 !< Unused default value is set to 0.0
         end if
 
         if (trim(adjustl(substrings(idx_field))) == 'x') then
