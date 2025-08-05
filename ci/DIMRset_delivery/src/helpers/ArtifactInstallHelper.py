@@ -5,7 +5,7 @@ from typing import List
 
 from helpers.SshClient import SshClient
 from lib.TeamCity import TeamCity
-from settings.general_settings import LINUX_ADDRESS, NETWORK_BASE_PATH
+from settings.general_settings import LINUX_ADDRESS
 from settings.teamcity_settings import (
     NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT,
     NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT,

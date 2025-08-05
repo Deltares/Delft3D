@@ -7,7 +7,7 @@ from settings.email_settings import (
     RELATIVE_PATH_TO_EMAIL_TEMPLATE,
 )
 from settings.general_settings import RELATIVE_PATH_TO_OUTPUT_FOLDER
-from settings.teamcity_settings import KERNELS, TESTCASE_GROUPS
+from settings.teamcity_settings import KERNELS
 
 
 class EmailHelper(object):

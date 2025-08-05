@@ -1,11 +1,19 @@
 import os
-import re
 from datetime import date
 from typing import Tuple
 
 from lib.Atlassian import Atlassian
 from lib.TeamCity import TeamCity
-from settings.atlassian_settings import *
+from settings.atlassian_settings import (
+    DIMR_MAJOR_PAGE_PREFIX,
+    DIMR_MINOR_PAGE_PREFIX,
+    DIMR_PATCH_PAGE_PREFIX,
+    DIMR_ROOT_PAGE_ID,
+    DIMR_SPACE_ID,
+    DIMR_SUBPAGE_PREFIX,
+    DIMR_SUBPAGE_SUFFIX,
+    RELATIVE_PATH_TO_WIKI_TEMPLATE,
+)
 
 # from settings.teamcity_settings import *
 from settings.teamcity_settings import (

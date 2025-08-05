@@ -1,5 +1,4 @@
 from lib.TeamCity import TeamCity
-from settings.teamcity_settings import TEAMCITY_IDS
 
 
 class PinHelper(object):

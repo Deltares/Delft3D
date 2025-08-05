@@ -1,7 +1,7 @@
 import json
 from types import SimpleNamespace
 import requests
-from typing import List, Dict, Tuple, Any, IO
+from typing import Dict, Any
 
 from settings.general_settings import DRY_RUN_PREFIX
 

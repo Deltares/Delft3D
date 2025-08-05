@@ -11,16 +11,14 @@ from lib.Atlassian import Atlassian
 from lib.TeamCity import TeamCity
 from settings.general_settings import (
     DRY_RUN_PREFIX,
-    DRY_RUN_PREFIX,
     LINUX_ADDRESS,
     VERSIONS_EXCEL_FILENAME,
 )
 from settings.teamcity_settings import (
     KERNELS,
     PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT,
-    TEAMCITY_IDS,
 )
-from typing import Dict
+from typing import Any, Dict
 
 
 class DimrAutomation(object):

@@ -1,5 +1,4 @@
 import os
-from unittest import result
 
 from helpers.SshClient import SshClient
 from helpers.GitClient import GitClient

@@ -5,7 +5,7 @@ Handles initialization and provides common functionality.
 
 import argparse
 from getpass import getpass
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 from helpers.GitClient import GitClient
 from helpers.SshClient import SshClient
