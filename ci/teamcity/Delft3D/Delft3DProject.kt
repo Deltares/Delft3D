@@ -6,7 +6,7 @@ import jetbrains.buildServer.configs.kotlin.projectFeatures.*
 import Delft3D.template.*
 import Delft3D.linux.*
 import Delft3D.windows.*
-import Delft3D.containers.*
+import Delft3D.linux.containers.*
 
 object Delft3DProject : Project({
 

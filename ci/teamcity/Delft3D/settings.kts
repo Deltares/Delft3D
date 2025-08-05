@@ -2,4 +2,4 @@ import Delft3D.Delft3DProject
 
 version = "2025.07"
 
-project (Delft3DProject)
+project {Delft3DProject}
