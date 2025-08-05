@@ -59,7 +59,7 @@ object Publish : BuildType({
             display = ParameterDisplay.PROMPT)
         param("reverse.dep.*.product", "all-testbench")
         param("commit_id_short", "%dep.${LinuxBuild.id}.commit_id_short%")
-        param("source_image", "%dep.${LinuxRuntimeContainers.id}.runtime_container_image%")
+        param("source_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:alma10-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
         param("destination_image_generic", "containers.deltares.nl/delft3d/%brand%:%release_type%")
         param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_type%-%release_version%")
     }
