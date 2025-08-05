@@ -476,6 +476,10 @@ contains
                   ! Pure1D implementation SOBEK style
 
                   advel = 0d0
+                  if (au1d(1,L)==0_dp .or. au1d(2,L)==0d0) then
+                     cycle
+                  end if
+                  
                   ! weight of momentum versus energy conservation
                   select case (jaPure1D)
                   case (3) ! momentum conserving
