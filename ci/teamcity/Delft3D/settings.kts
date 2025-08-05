@@ -36,6 +36,7 @@ project {
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromS3)
     template(TemplateDockerRegistry)
+    template(TemplateKeeperVault)
 
     subProject {
         id("Linux")
@@ -143,6 +144,14 @@ project {
         Publish
     )
 
+    connection {
+        id = "KEEPER_VAULT_DELFT3D"
+        type = "JetBrains.KeeperVault"
+        param("vaultUrl", "https://keepersecurity.eu/vault")
+        param("clientId", "credentialsJSON:75f914cc-ec3c-4028-84c5-51f9ab6d10d2")
+        param("privateKey", "credentialsJSON:2ebd62a7-eda9-49fd-b1a2-21d4ebdec32a")
+    }
+        
     features {
         dockerRegistry {
             id = "DOCKER_REGISTRY_DELFT3D"
