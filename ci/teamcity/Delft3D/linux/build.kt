@@ -89,6 +89,18 @@ object LinuxBuild : BuildType({
             dockerRunParameters = "--rm"
             dockerPull = true
         }
+        script {
+            name = "Install"
+            scriptContent = """
+                #!/usr/bin/env bash
+                source /root/.bashrc
+                cmake --build build_%product% --config %build_type% --parallel --target install 
+            """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerRunParameters = "--rm"
+            dockerPull = true
+        }
     }
 
     features {
