@@ -10,7 +10,7 @@ object TemplateKeeperVault : Template({
 
     features {
         feature {
-            id = Id("KEEPER_VAULT_DELFT3D")
+            id = "KEEPER_VAULT_DELFT3D"
             type = "JetBrains.KeeperVault"
             param("connectionId", "KEEPER_VAULT_DELFT3D")
         }
