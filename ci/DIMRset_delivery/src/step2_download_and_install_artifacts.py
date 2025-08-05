@@ -37,7 +37,7 @@ def download_and_install_artifacts(context: DimrAutomationContext) -> None:
 
 if __name__ == "__main__":
     args = parse_common_arguments()
-    context = create_context_from_args(args, require_atlassian=False)
+    context = create_context_from_args(args, require_atlassian=False, require_git=False)
     
     print("Starting artifact download and installation...")
     download_and_install_artifacts(context)

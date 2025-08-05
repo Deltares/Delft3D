@@ -23,7 +23,7 @@ class DimrAutomationContext:
                  teamcity_username: Optional[str] = None, teamcity_password: Optional[str] = None,
                  ssh_username: Optional[str] = None, ssh_password: Optional[str] = None,
                  git_username: Optional[str] = None, git_pat: Optional[str] = None,
-                 require_atlassian: bool = True):
+                 require_atlassian: bool = True, require_git: bool = True):
         self.build_id = build_id
         self.dry_run = dry_run
         
@@ -46,7 +46,7 @@ class DimrAutomationContext:
             ssh_password = ssh_password or getpass(prompt="Enter your SSH password:", stream=None)
         
         # Get Git credentials
-        if not git_username or not git_pat:
+        if require_git and (not git_username or not git_pat):
             print("Git credentials:")
             git_username = git_username or input("Enter your Git username:")
             git_pat = git_pat or getpass(prompt="Enter your Git PAT:", stream=None)
@@ -55,7 +55,7 @@ class DimrAutomationContext:
         self.atlassian = Atlassian(username=atlassian_username, password=atlassian_password) if require_atlassian else None
         self.teamcity = TeamCity(username=teamcity_username, password=teamcity_password)
         self.ssh_client = SshClient(username=ssh_username, password=ssh_password, connect_timeout=30)
-        self.git_client = GitClient(DELFT3D_GIT_REPO, git_username, git_pat)
+        self.git_client = GitClient(DELFT3D_GIT_REPO, git_username, git_pat) if require_git else None
         
         # Cache for commonly needed data
         self._kernel_versions = None
@@ -170,7 +170,7 @@ def parse_common_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def create_context_from_args(args: argparse.Namespace, require_atlassian: bool = True) -> DimrAutomationContext:
+def create_context_from_args(args: argparse.Namespace, require_atlassian: bool = True, require_git: bool = True) -> DimrAutomationContext:
     """Create automation context from parsed arguments."""
     # Use specific credentials if provided, otherwise fall back to general credentials
     atlassian_username = args.atlassian_username or args.username
@@ -194,5 +194,6 @@ def create_context_from_args(args: argparse.Namespace, require_atlassian: bool =
         ssh_password=ssh_password,
         git_username=git_username,
         git_pat=git_pat,
-        require_atlassian=require_atlassian
+        require_atlassian=require_atlassian,
+        require_git=require_git
     )
