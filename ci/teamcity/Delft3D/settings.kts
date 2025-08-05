@@ -14,6 +14,16 @@ version = "2025.07"
 
 project {
 
+    projectFeatures {
+        feature {
+            id = "KEEPER_VAULT_DELFT3D"
+            type = "JetBrains.KeeperVault"
+            param("vaultUrl", "https://keepersecurity.eu/vault")
+            param("clientId", "credentialsJSON:75f914cc-ec3c-4028-84c5-51f9ab6d10d2")
+            param("privateKey", "credentialsJSON:2ebd62a7-eda9-49fd-b1a2-21d4ebdec32a")
+        }
+    }
+
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
     params {
@@ -142,16 +152,6 @@ project {
         DIMRbak,
         Publish
     )
-
-    projectFeatures {
-        feature {
-            id = "KEEPER_VAULT_DELFT3D"
-            type = "JetBrains.KeeperVault"
-            param("vaultUrl", "https://keepersecurity.eu/vault")
-            param("clientId", "credentialsJSON:75f914cc-ec3c-4028-84c5-51f9ab6d10d2")
-            param("privateKey", "credentialsJSON:2ebd62a7-eda9-49fd-b1a2-21d4ebdec32a")
-        }
-    }
         
     features {
         dockerRegistry {
