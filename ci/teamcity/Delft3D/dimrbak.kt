@@ -96,7 +96,7 @@ object DIMRbak : BuildType({
                     --git-username "%dimrbakker_username%"
                     --git-PAT "%dimrbakker_personal_access_token%"
                     --build_id "%teamcity.build.id%"
-                    --dry-run "%dry_run%"
+                    %if ("%dry_run%" == "true") "--dry-run" else ""%
                 """.trimIndent()
             }
             workingDir = "ci/DIMRset_delivery/src"
@@ -114,7 +114,7 @@ object DIMRbak : BuildType({
                     --ssh-username "%dimrbakker_username%"
                     --ssh-password "%dimrbakker_password%"
                     --build_id "%teamcity.build.id%"
-                    --dry-run "%dry_run%"
+                    %if ("%dry_run%" == "true") "--dry-run" else ""%
                 """.trimIndent()
             }
             workingDir = "ci/DIMRset_delivery/src"
@@ -132,7 +132,7 @@ object DIMRbak : BuildType({
                     --ssh-username "%dimrbakker_username%"
                     --ssh-password "%dimrbakker_password%"
                     --build_id "%teamcity.build.id%"
-                    --dry-run "%dry_run%"
+                    %if ("%dry_run%" == "true") "--dry-run" else ""%
                 """.trimIndent()
             }
             workingDir = "ci/DIMRset_delivery/src"
@@ -148,7 +148,7 @@ object DIMRbak : BuildType({
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
                     --build_id "%teamcity.build.id%"
-                    --dry-run "%dry_run%"
+                    %if ("%dry_run%" == "true") "--dry-run" else ""%
                 """.trimIndent()
             }
             workingDir = "ci/DIMRset_delivery/src"
@@ -166,7 +166,7 @@ object DIMRbak : BuildType({
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
                     --build_id "%teamcity.build.id%"
-                    --dry-run "%dry_run%"
+                    %if ("%dry_run%" == "true") "--dry-run" else ""%
                 """.trimIndent()
             }
             workingDir = "ci/DIMRset_delivery/src"
@@ -184,7 +184,7 @@ object DIMRbak : BuildType({
                     --git-username "%dimrbakker_username%"
                     --git-PAT "%dimrbakker_personal_access_token%"
                     --build_id "%teamcity.build.id%"
-                    --dry-run "%dry_run%"
+                    %if ("%dry_run%" == "true") "--dry-run" else ""%
                 """.trimIndent()
             }
             workingDir = "ci/DIMRset_delivery/src"

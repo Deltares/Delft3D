@@ -133,8 +133,8 @@ def parse_common_arguments() -> argparse.Namespace:
     # General arguments
     parser.add_argument("--build_id", type=str, required=True,
                         help="Build ID chain for the DIMR release")
-    parser.add_argument("--dry-run", type=str, default="false", 
-                        help="Run in dry-run mode without making any changes (true/false)")
+    parser.add_argument("--dry-run", action="store_true", default=False,
+                        help="Run in dry-run mode without making any changes")
     
     # Atlassian/Confluence credentials
     parser.add_argument("--atlassian-username", type=str, default=None,
@@ -180,9 +180,7 @@ def create_context_from_args(args: argparse.Namespace) -> DimrAutomationContext:
     ssh_password = args.ssh_password or args.password
     git_username = args.git_username or args.username
     git_pat = getattr(args, 'git_PAT', None)
-    
-    # Convert string dry_run to boolean
-    dry_run = str(args.dry_run).lower() == "true"
+    dry_run = args.dry_run
 
     return DimrAutomationContext(
         build_id=args.build_id,
