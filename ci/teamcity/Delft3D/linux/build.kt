@@ -44,7 +44,6 @@ object LinuxBuild : BuildType({
         param("generator", """"Unix Makefiles"""")
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
         select("build_type", "%dep.${LinuxThirdPartyLibs.id}.build_type%", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
-        param("test", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
     }
 
     vcs {
@@ -54,12 +53,6 @@ object LinuxBuild : BuildType({
     }
 
     steps {	
-        script {
-            name = "test"
-            scriptContent = """
-                echo %test% > ci/test_pat.txt
-            """.trimIndent()
-        }
         mergeTargetBranch {}
         script {
             name = "Add version attributes"
