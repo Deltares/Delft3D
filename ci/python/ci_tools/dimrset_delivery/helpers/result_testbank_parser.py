@@ -1,12 +1,12 @@
 import re
 
 
-class TestbankResultParser(object):
+class ResultTestBankParser(object):
     """Object responsible for parsing a specific testbank result artifact."""
 
     def __init__(self, testbank_result: str) -> None:
         """
-        Create a new instance of TestbankResultParser.
+        Create a new instance of ResultTestBankParser.
 
         Parameters
         ----------

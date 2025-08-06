@@ -10,7 +10,7 @@ from ci_tools.dimrset_delivery.dimr_context import (
     parse_common_arguments,
 )
 from ci_tools.dimrset_delivery.helpers.email_helper import EmailHelper
-from ci_tools.dimrset_delivery.helpers.testbank_result_parser import TestbankResultParser
+from ci_tools.dimrset_delivery.helpers.result_testbank_parser import ResultTestBankParser
 from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
 from ci_tools.dimrset_delivery.settings.teamcity_settings import PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT
 
@@ -47,8 +47,8 @@ def prepare_email(context: DimrAutomationContext) -> None:
     print("Email template preparation completed successfully!")
 
 
-def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optional[TestbankResultParser]:
-    """Get a new TestbankResultParser for the previous versioned tagged test bench results.
+def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optional[ResultTestBankParser]:
+    """Get a new ResultTestBankParser for the previous versioned tagged test bench results.
 
     Parameters
     ----------
@@ -57,7 +57,7 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
 
     Returns
     -------
-    Optional[TestbankResultParser]
+    Optional[ResultTestBankParser]
         Parser for previous test results, or None if not found.
     """
     if not context.teamcity:
@@ -116,7 +116,7 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
     if artifact is None:
         return None
 
-    return TestbankResultParser(artifact.decode())
+    return ResultTestBankParser(artifact.decode())
 
 
 def get_tag_from_build_info(current_build_info: dict) -> tuple:

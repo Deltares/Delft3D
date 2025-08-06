@@ -1,7 +1,7 @@
 import os
 from typing import Dict, Optional
 
-from ci_tools.dimrset_delivery.helpers.testbank_result_parser import TestbankResultParser
+from ci_tools.dimrset_delivery.helpers.result_testbank_parser import ResultTestBankParser
 from ci_tools.dimrset_delivery.settings.email_settings import (
     LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS,
     RELATIVE_PATH_TO_EMAIL_TEMPLATE,
@@ -17,8 +17,8 @@ class EmailHelper(object):
         self,
         dimr_version: str,
         kernel_versions: Dict[str, str],
-        current_parser: TestbankResultParser,
-        previous_parser: Optional[TestbankResultParser],
+        current_parser: ResultTestBankParser,
+        previous_parser: Optional[ResultTestBankParser],
     ) -> None:
         """
         Create a new instance of EmailHelper.
@@ -26,8 +26,8 @@ class EmailHelper(object):
         Args:
             dimr_version (str): The latest DIMR version.
             kernel_versions (Dict[str, str]): A dictionary mapping kernel names to their version.
-            current_parser (TestbankResultParser): A parser for the latest test bench results.
-            previous_parser (Optional[TestbankResultParser]): A parser for the previous test bench results.
+            current_parser (ResultTestBankParser): A parser for the latest test bench results.
+            previous_parser (Optional[ResultTestBankParser]): A parser for the previous test bench results.
         """
         self.__dimr_version = dimr_version
         self.__kernel_versions = kernel_versions

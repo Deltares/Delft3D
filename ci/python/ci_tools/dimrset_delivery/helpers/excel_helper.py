@@ -4,7 +4,7 @@ from typing import Dict, List
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
-from ci_tools.dimrset_delivery.helpers.testbank_result_parser import TestbankResultParser
+from ci_tools.dimrset_delivery.helpers.result_testbank_parser import ResultTestBankParser
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.settings.general_settings import NAME_COLUMN, SHEET_NAME
 
@@ -18,7 +18,7 @@ class ExcelHelper(object):
         filepath: str,
         dimr_version: str,
         kernel_versions: Dict[str, str],
-        parser: TestbankResultParser,
+        parser: ResultTestBankParser,
     ) -> None:
         """
         Create a new instance of ExcelHelper.
@@ -28,7 +28,7 @@ class ExcelHelper(object):
             filepath (str): Path to the Excel file.
             dimr_version (str): The DIMR version to update the Excel for.
             kernel_versions (Dict[str, str]): A dictionary mapping kernel names to their version.
-            parser (TestbankResultParser): A parser for the latest test bench results.
+            parser (ResultTestBankParser): A parser for the latest test bench results.
         """
         self.__teamcity = teamcity
         self.__filepath = filepath

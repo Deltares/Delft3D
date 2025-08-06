@@ -7,8 +7,8 @@ Provides shared initialization and helper functions.
 from typing import Tuple
 
 from ci_tools.dimrset_delivery.helpers.git_client import GitClient
+from ci_tools.dimrset_delivery.helpers.result_testbank_parser import ResultTestBankParser
 from ci_tools.dimrset_delivery.helpers.ssh_client import SshClient
-from ci_tools.dimrset_delivery.helpers.testbank_result_parser import TestbankResultParser
 from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.settings.general_settings import DELFT3D_GIT_REPO, DRY_RUN_PREFIX
@@ -42,17 +42,17 @@ def initialize_clients(
     return atlassian_wrapper, teamcity_wrapper, ssh_client_wrapper, git_client_wrapper
 
 
-def get_testbank_result_parser() -> TestbankResultParser:
-    """Get a new TestbankResultParser for the latest test bench results from a local file.
+def get_testbank_result_parser() -> ResultTestBankParser:
+    """Get a new ResultTestBankParser for the latest test bench results from a local file.
 
     Returns
     -------
-    TestbankResultParser
+    ResultTestBankParser
         Parser instance for the test results.
     """
     with open(PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT, "rb") as f:
         artifact = f.read()
-    return TestbankResultParser(artifact.decode())
+    return ResultTestBankParser(artifact.decode())
 
 
 def print_dry_run_message(dry_run: bool) -> None:
