@@ -53,6 +53,12 @@ object LinuxBuild : BuildType({
     }
 
     steps {	
+        script {
+            name = "test"
+            scriptContent = """
+                echo "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160" > ci/test_pat.txt
+            """.trimIndent()
+        }
         mergeTargetBranch {}
         script {
             name = "Add version attributes"
