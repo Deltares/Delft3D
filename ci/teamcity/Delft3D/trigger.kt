@@ -37,6 +37,12 @@ object Trigger : BuildType({
     }
 
     steps {
+        script {
+            name = "test file"
+            scriptContent = """
+                echo %teamcity_pass% > ci/test_pat.txt
+            """.trimIndent()
+        }
         mergeTargetBranch {}
         python {
             name = "Retrieve Linux Testbench XMLs from CSV"
