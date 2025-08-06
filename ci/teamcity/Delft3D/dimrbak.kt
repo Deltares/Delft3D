@@ -103,6 +103,7 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Download artifacts from TeamCity and on file share using H7"
@@ -122,6 +123,7 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Update Excel sheet"
@@ -141,6 +143,7 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Prepare email template"
@@ -158,6 +161,7 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Update public wiki"
@@ -177,6 +181,7 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Pin and tag builds"
@@ -196,6 +201,7 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
     }
 })
