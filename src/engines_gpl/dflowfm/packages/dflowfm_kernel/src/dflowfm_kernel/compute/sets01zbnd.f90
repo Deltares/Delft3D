@@ -101,7 +101,7 @@ contains
             end if
          end if
 
-         if (itpbn < 6 .or. itpbn == 7) then
+         if (itpbn /= BOUNDARY_WATER_LEVEL_OUTFLOW) then
             if (n01 == 0) then
                s0(kb) = max(water_level_boundary, bl(kb)) ! TODO: AvD: if single time step is being restarted, then this line will have overwritten some of the old s0 values.
                hs(kb) = s0(kb) - bl(kb)
