@@ -96,6 +96,7 @@ object DIMRbak : BuildType({
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
+                    --dry-run
                 """.trimIndent()
             }
             workingDir = "ci/python"
