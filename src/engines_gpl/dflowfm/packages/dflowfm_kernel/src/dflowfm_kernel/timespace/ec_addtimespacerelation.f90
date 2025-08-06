@@ -476,22 +476,20 @@ contains
                end if
             end if
          else
-            if (ec_filetype == provFile_bc .and. (target_name == 'windx' .or. target_name == 'windy' .or. target_name == 'windxy')) then
+            if (ec_filetype == provFile_bc .and. target_name == 'windxy') then
                fileReaderPtr => ecSupportFindFileReader(ecInstancePtr, fileReaderId)
-               if (target_name == 'windxy') then 
-                  associate(column_units =>fileReaderPtr%bc%quantity%column_units)
-                     if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('velocity', column_units(3))) then
-                        ! windxy is defined by wind in x and wind in y direction
-                        ec_convtype = convtype_uniform
-                     else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3)) ) then
-                        ec_convtype = convtype_unimagdir
-                     else
-                        msgbuf = 'incorrect units found in bc file concerning the input for windxy. Only the combinations "ms-1, ms-1"'// &
-                                 ' or "ms-1, degree" are allowed.'
-                        call err_flush()
-                     end if
-                  end associate
-               end if
+               associate(column_units =>fileReaderPtr%bc%quantity%column_units)
+                  if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('velocity', column_units(3))) then
+                     ! windxy is defined by wind in x and wind in y direction
+                     ec_convtype = convtype_uniform
+                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3)) ) then
+                     ec_convtype = convtype_unimagdir
+                  else
+                     msgbuf = 'incorrect units found in bc file concerning the input for windxy. Only the combinations "ms-1, ms-1"'// &
+                              ' or "ms-1, degree" are allowed.'
+                     call err_flush()
+                  end if
+               end associate
             end if
             success = initializeConverter(ecInstancePtr, converterId, ec_convtype, ec_operand, ec_method)
          end if
@@ -747,7 +745,7 @@ contains
          else if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'eastward_wind'
          else if (ec_filetype == provFile_bc) then
-            sourceItemName = 'windx'
+            sourceItemName = 'WINDX'
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windx.')
             return
@@ -763,7 +761,7 @@ contains
          else if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'northward_wind'
          else if (ec_filetype == provFile_bc) then
-            sourceItemName = 'windy'
+            sourceItemName = 'WINDY'
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windy.')
             return
