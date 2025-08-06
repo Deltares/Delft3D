@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from .helpers.ArtifactInstallHelper import ArtifactInstallHelper
 from .helpers.EmailHelper import EmailHelper
 from .helpers.ExcelHelper import ExcelHelper
@@ -18,13 +20,13 @@ from .settings.teamcity_settings import (
     KERNELS,
     PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT,
 )
-from typing import Any, Dict
 
 
 class DimrAutomation(object):
     """
-    Class to automate the latest weekly DIMR release. This includes
-    updating the public wiki, downloading the artifacts to the network drive,
+    Class to automate the latest weekly DIMR release.
+
+    This includes updating the public wiki, downloading the artifacts to the network drive,
     installing the new DIMR set on Linux, pinning and tagging the appropriate builds,
     updating SVN, and preparing a mail for the release notification.
     """
@@ -35,9 +37,9 @@ class DimrAutomation(object):
         teamcity: TeamCity,
         ssh_client: SshClient,
         git_client: GitClient,
-    ):
+    ) -> None:
         """
-        Creates a new instance of DimrAutomation.
+        Create a new instance of DimrAutomation.
 
         Args:
             atlassian (Atlassian): A wrapper for the Atlassian Confluence REST API.
@@ -51,28 +53,28 @@ class DimrAutomation(object):
         self.__git_client = git_client
 
     def run(self, build_id_chain: str, dry_run: bool = False) -> None:
-        """Runs the actual DIMR release automation steps."""
+        """Run the actual DIMR release automation steps."""
         self.__assert_preconditions(dry_run)
         branch_name = self.__get_branch_name(self.__teamcity, build_id_chain, dry_run)
         kernel_versions = self.__get_latest_kernel_versions(self.__teamcity, build_id_chain, dry_run)
         dimr_version = self.__get_dimr_version(kernel_versions)
         self.__assert_all_versions_have_been_extracted(kernel_versions)
 
-        self.__download_and_install_artifacts(build_id_chain, dimr_version, branch_name,dry_run)
+        self.__download_and_install_artifacts(build_id_chain, dimr_version, branch_name, dry_run)
         if dry_run:
-            print(f"{DRY_RUN_PREFIX} Would tag commit with:", 
-                  f"commit={kernel_versions['build.vcs.number']}, tag=DIMRset_{dimr_version}")
-        else:
-            self.__git_client.tag_commit(
-                kernel_versions["build.vcs.number"], f"DIMRset_{dimr_version}"
+            print(
+                f"{DRY_RUN_PREFIX} Would tag commit with: "
+                f"commit={kernel_versions['build.vcs.number']}, tag=DIMRset_{dimr_version}"
             )
+        else:
+            self.__git_client.tag_commit(kernel_versions["build.vcs.number"], f"DIMRset_{dimr_version}")
         self.__update_excel_sheet(kernel_versions, dimr_version, dry_run)
         self.__prepare_email(build_id_chain, kernel_versions, dimr_version, dry_run)
         self.__update_public_wiki(build_id_chain, dimr_version, dry_run)
         self.__pin_and_tag_builds(build_id_chain, dimr_version, dry_run)
 
     def __assert_preconditions(self, dry_run: bool) -> None:
-        """Asserts some preconditions are met before the script is fully run."""
+        """Assert some preconditions are met before the script is fully run."""
         preconditions = PreconditionsHelper(
             atlassian=self.__atlassian,
             teamcity=self.__teamcity,
@@ -82,7 +84,7 @@ class DimrAutomation(object):
         preconditions.assert_preconditions(dry_run)
 
     def __update_public_wiki(self, build_id_chain: str, dimr_version: str, dry_run: bool) -> None:
-        """Updates the Public Wiki."""
+        """Update the Public Wiki."""
         if dry_run:
             print(f"{DRY_RUN_PREFIX} Would update public wiki for DIMR version:", dimr_version)
             return
@@ -94,8 +96,10 @@ class DimrAutomation(object):
         )
         public_wiki.update_public_wiki(build_id_chain)
 
-    def __download_and_install_artifacts(self, build_id_chain: str, dimr_version: str, branch_name: str, dry_run: bool) -> None:
-        """Downloads the artifacts and installs them on Linux machine."""
+    def __download_and_install_artifacts(
+        self, build_id_chain: str, dimr_version: str, branch_name: str, dry_run: bool
+    ) -> None:
+        """Download the artifacts and install them on Linux machine."""
         if dry_run:
             print(f"{DRY_RUN_PREFIX} Would download artifacts for build from TeamCity:", build_id_chain)
             print(f"{DRY_RUN_PREFIX} Would publish artifacts to network drive")
@@ -120,7 +124,7 @@ class DimrAutomation(object):
         helper.pin_and_tag_builds(build_id_chain)
 
     def __update_excel_sheet(self, kernel_versions: Dict[str, str], dimr_version: str, dry_run: bool) -> None:
-        """Updates the Excel sheet with this week's release information."""
+        """Update the Excel sheet with this week's release information."""
         if dry_run:
             print(f"{DRY_RUN_PREFIX} Would update Excel sheet with DIMR version:", dimr_version)
             print(f"{DRY_RUN_PREFIX} Would download Excel from network drive")
@@ -130,9 +134,7 @@ class DimrAutomation(object):
         parser = self.__get_testbank_result_parser()
         path_to_excel_file = f"/p/d-hydro/dimrset/{VERSIONS_EXCEL_FILENAME}"
 
-        self.__ssh_client.secure_copy(
-            LINUX_ADDRESS, VERSIONS_EXCEL_FILENAME, path_to_excel_file, Direction.FROM
-        )
+        self.__ssh_client.secure_copy(LINUX_ADDRESS, VERSIONS_EXCEL_FILENAME, path_to_excel_file, Direction.FROM)
         helper = ExcelHelper(
             teamcity=self.__teamcity,
             filepath=VERSIONS_EXCEL_FILENAME,
@@ -141,11 +143,11 @@ class DimrAutomation(object):
             parser=parser,
         )
         helper.append_row()
-        self.__ssh_client.secure_copy(
-            LINUX_ADDRESS, VERSIONS_EXCEL_FILENAME, path_to_excel_file, Direction.TO
-        )
+        self.__ssh_client.secure_copy(LINUX_ADDRESS, VERSIONS_EXCEL_FILENAME, path_to_excel_file, Direction.TO)
 
-    def __prepare_email(self, build_id_chain: str, kernel_versions: Dict[str, str], dimr_version: str, dry_run: bool) -> None:
+    def __prepare_email(
+        self, build_id_chain: str, kernel_versions: Dict[str, str], dimr_version: str, dry_run: bool
+    ) -> None:
         if dry_run:
             print(f"{DRY_RUN_PREFIX} Would prepare email template for DIMR version:", dimr_version)
             return
@@ -161,19 +163,14 @@ class DimrAutomation(object):
         helper.generate_template()
 
     def __get_testbank_result_parser(self) -> TestbankResultParser:
-        """Gets a new TestbankResultParser for the latest test bench results from a local file."""
+        """Get a new TestbankResultParser for the latest test bench results from a local file."""
         with open(PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT, "rb") as f:
             artifact = f.read()
         return TestbankResultParser(artifact.decode())
 
-    def __get_previous_testbank_result_parser(
-        self, build_id_chain: str
-    ) -> TestbankResultParser:
-        """Gets a new TestbankResultParser for the previous versioned tagged test bench results."""
-
-        current_build_info = self.__teamcity.get_full_build_info_for_build_id(
-            build_id_chain
-        )
+    def __get_previous_testbank_result_parser(self, build_id_chain: str) -> TestbankResultParser:
+        """Get a new TestbankResultParser for the previous versioned tagged test bench results."""
+        current_build_info = self.__teamcity.get_full_build_info_for_build_id(build_id_chain)
         build_type_id = current_build_info.get("buildTypeId")
         current_tag_name = self.__get_tag_from_build_info(current_build_info)
 
@@ -199,19 +196,14 @@ class DimrAutomation(object):
             loop_build_info = self.__teamcity.get_full_build_info_for_build_id(build_id)
             loop_tag_name = self.__get_tag_from_build_info(loop_build_info)
 
-            if (
-                loop_tag_name
-                and loop_tag_name != (0, 0, 0)
-                and current_tag_name
-                and loop_tag_name < current_tag_name
-            ):
+            if loop_tag_name and loop_tag_name != (0, 0, 0) and current_tag_name and loop_tag_name < current_tag_name:
                 if previous_version is None or loop_tag_name > previous_version:
                     previous_build_id = build_id
                     previous_version = loop_tag_name
-        
+
         # Previous version not found
         if previous_build_id is None:
-            return None  
+            return None
 
         # Download artifact for previous build
         artifact = self.__teamcity.get_build_artifact(
@@ -220,7 +212,7 @@ class DimrAutomation(object):
         )
         return TestbankResultParser(artifact.decode())
 
-    def __get_tag_from_build_info(self, current_build_info):
+    def __get_tag_from_build_info(self, current_build_info: dict) -> tuple:
         current_tag_name = (0, 0, 0)
         tags = current_build_info.get("tags", {}).get("tag", [])
         for tag in tags:
@@ -229,33 +221,36 @@ class DimrAutomation(object):
                 current_tag_name = self.__parse_version(tag_name)
         return current_tag_name
 
-    def __parse_version(self, tag):
+    def __parse_version(self, tag: str) -> tuple:
         if tag and tag.startswith("DIMRset_"):
             return tuple(map(int, tag[len("DIMRset_") :].split(".")))
         return None
 
     def __get_latest_kernel_versions(self, teamcity: TeamCity, build_id_chain: str, dry_run: bool) -> Dict[str, str]:
         """
-        Gets the kernel versions from the latest Dimr Collector Release build.
+        Get the kernel versions from the latest Dimr Collector Release build.
 
-        Returns:
-            Dict[str, str]: A dictionary of "kernel name" -> "version"
+        Returns
+        -------
+        Dict[str, str]
+            A dictionary of "kernel name" -> "version"
         """
         if dry_run:
-            print(f"{DRY_RUN_PREFIX} Get build info of build_id {build_id_chain}, then extract kernel versions from properties.")
+            print(
+                f"{DRY_RUN_PREFIX} Get build info of build_id {build_id_chain}, "
+                f"then extract kernel versions from properties."
+            )
             kernel_versions = {
                 KERNELS[0].name_for_extracting_revision: "1.23.45",
-                KERNELS[1].name_for_extracting_revision: "abcdefghijklmnopqrstuvwxyz01234567890123"
+                KERNELS[1].name_for_extracting_revision: "abcdefghijklmnopqrstuvwxyz01234567890123",
             }
         else:
             publish_build_info = teamcity.get_build_info_for_build_id(build_id_chain)
-            kernel_versions = self.__extract_kernel_versions(
-                build_info=publish_build_info
-            )
+            kernel_versions = self.__extract_kernel_versions(build_info=publish_build_info)
         return kernel_versions
 
     def __assert_all_versions_have_been_extracted(self, kernel_versions: Dict[str, str]) -> None:
-        """ Asserts all expected kernels have had their version extracted. """
+        """Assert all expected kernels have had their version extracted."""
         missing_kernel_versions = []
         for kernel in kernel_versions:
             if kernel_versions[kernel] is None:
@@ -267,19 +262,19 @@ class DimrAutomation(object):
             return
 
         error = "Could not find the revision number for the following kernels: \n"
-        error += ', '.join(missing_kernel_versions)
+        error += ", ".join(missing_kernel_versions)
         raise AssertionError(error)
 
     def __get_branch_name(self, teamcity: TeamCity, build_id_chain: str, dry_run: bool) -> str:
-        """Returns the branch name from the latest release collector build."""
+        """Return the branch name from the latest release collector build."""
         if dry_run:
-            print(f"{DRY_RUN_PREFIX} Get build info of build_id {build_id_chain}, then get branch name from properties.")
+            print(
+                f"{DRY_RUN_PREFIX} Get build info of build_id {build_id_chain}, then get branch name from properties."
+            )
             self.__branch_name = "main"
             print(f"{DRY_RUN_PREFIX} simulating '{self.__branch_name}' branch")
             return self.__branch_name
-        latest_publish_build_info = teamcity.get_build_info_for_build_id(
-            build_id_chain
-        )
+        latest_publish_build_info = teamcity.get_build_info_for_build_id(build_id_chain)
 
         branch_name_property = next(
             (
@@ -293,7 +288,7 @@ class DimrAutomation(object):
         return self.__branch_name
 
     def __get_dimr_version(self, kernel_versions: Dict[str, str]) -> str:
-        """ Extracts and returns the DIMR version that requires automated release. """
+        """Extract and return the DIMR version that requires automated release."""
         if kernel_versions is None:
             raise AssertionError("Could not extract the DIMR version: the kernel versions have not yet been extracted")
         dimr_version = kernel_versions["DIMRset_ver"]
@@ -301,20 +296,22 @@ class DimrAutomation(object):
 
     def __extract_kernel_versions(self, build_info: Dict[str, Any]) -> Dict[str, str]:
         """
-        Extracts the kernel versions that have been entered manually from the provided build info.
+        Extract the kernel versions that have been entered manually from the provided build info.
 
         Args:
             build_info (Dict[str, Any]: The build info as provided by the TeamCity API wrapper.
 
-        Returns:
-            Dict[str, str]: A dictionary mapping a kernel name to a kernel version.
+        Returns
+        -------
+        Dict[str, str]
+            A dictionary mapping a kernel name to a kernel version.
         """
         kernel_versions = {}
-        for KERNEL in KERNELS:
-            kernel_versions[KERNEL.name_for_extracting_revision] = None
+        for kernel in KERNELS:
+            kernel_versions[kernel.name_for_extracting_revision] = None
 
         for kernel in build_info["resultingProperties"]["property"]:
-            if any(KERNEL.name_for_extracting_revision == kernel["name"] for KERNEL in KERNELS):
+            if any(k.name_for_extracting_revision == kernel["name"] for k in KERNELS):
                 kernel_versions[kernel["name"]] = kernel["value"]
 
         return kernel_versions

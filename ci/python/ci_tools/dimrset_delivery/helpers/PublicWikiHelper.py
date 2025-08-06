@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import datetime, timezone
 from typing import Tuple
 
 from ..lib.Atlassian import Atlassian
@@ -25,19 +25,22 @@ from ..settings.teamcity_settings import (
 
 
 class PublicWikiHelper(object):
-    """
-    Class responsible for updating the Deltares Public Wiki for a specific DIMR version.
-    """
+    """Class responsible for updating the Deltares Public Wiki for a specific DIMR version."""
 
-    def __init__(self, atlassian: Atlassian, teamcity: TeamCity, dimr_version):
+    def __init__(self, atlassian: Atlassian, teamcity: TeamCity, dimr_version: str) -> None:
         """
-        Creates a new instance of PublicWikiHelper.
+        Create a new instance of PublicWikiHelper.
 
-        Args:
-            atlassian (Atlassian): A reference to a Atlassian Confluence REST API wrapper.
-            teamcity (TeamCity): A reference to a TeamCity REST API wrapper.
-            dimr_version (str): The version of DIMR to update the Public Wiki for.
-            svn_revision_number (str): The SVN revision of the DIMR set.
+        Parameters
+        ----------
+        atlassian : Atlassian
+            A reference to a Atlassian Confluence REST API wrapper.
+        teamcity : TeamCity
+            A reference to a TeamCity REST API wrapper.
+        dimr_version : str
+            The version of DIMR to update the Public Wiki for.
+        svn_revision_number : str
+            The SVN revision of the DIMR set.
         """
         self.__atlassian = atlassian
         self.__teamcity = teamcity
@@ -50,10 +53,11 @@ class PublicWikiHelper(object):
 
     def update_public_wiki(self, build_id_chain: str) -> None:
         """
-        Creates and/or updates the Public Wiki for a specific DIMR version.
+        Create and/or update the Public Wiki for a specific DIMR version.
 
-        Returns:
-            None
+        Returns
+        -------
+        None
         """
         print("Updating main wiki page...")
         main_page_id = self.__update_main_page(build_id_chain)
@@ -63,10 +67,12 @@ class PublicWikiHelper(object):
 
     def __update_main_page(self, build_id_chain: str) -> str:
         """
-        Updates the content of the main page for the given DIMR version.
+        Update the content of the main page for the given DIMR version.
 
-        Returns:
-            str: The id of the updated page.
+        Returns
+        -------
+        str
+            The id of the updated page.
         """
         content = self.__prepare_content_for_main_page(build_id_chain)
         page_to_update_page_id = self.__get_main_page_id_for_page_to_update()
@@ -77,14 +83,14 @@ class PublicWikiHelper(object):
 
     def __prepare_content_for_main_page(self, build_id_chain: str) -> str:
         """
-        Prepares the content that should be uploaded to the main page.
+        Prepare the content that should be uploaded to the main page.
 
-        Returns:
-            str: The content.
+        Returns
+        -------
+        str
+            The content.
         """
-        windows_version_artifact, linux_version_artifact = self.__get_version_artifacts(
-            build_id_chain
-        )
+        windows_version_artifact, linux_version_artifact = self.__get_version_artifacts(build_id_chain)
         if windows_version_artifact is None:
             raise AssertionError("Could not retrieve the Windows version.txt artifact.")
         if linux_version_artifact is None:
@@ -99,10 +105,12 @@ class PublicWikiHelper(object):
 
     def __get_version_artifacts(self, build_id_chain: str) -> Tuple[str, str]:
         """
-        Gets the latest Windows and Linux Version.txt artifacts from Dimr Collector Release.
+        Get the latest Windows and Linux Version.txt artifacts from Dimr Collector Release.
 
-        Returns:
-            Tuple[str, str]: A tuple containing the Windows and Linux artifacts respectively.
+        Returns
+        -------
+        Tuple[str, str]
+            A tuple containing the Windows and Linux artifacts respectively.
         """
         windows_collect_id = self.__teamcity.get_dependent_build_id(
             build_id_chain, TEAMCITY_IDS.DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID.value
@@ -123,14 +131,19 @@ class PublicWikiHelper(object):
 
     def __create_content_from_template(self, windows_version_artifact: str, linux_version_artifact: str) -> str:
         """
-        Creates the content for the main DIMR page from a template file.
+        Create the content for the main DIMR page from a template file.
 
-        Args:
-            windows_version_artifact (str): The Windows Version.txt artifact.
-            linux_version_artifact (str): The Linux Version.txt artifact.
+        Parameters
+        ----------
+        windows_version_artifact : str
+            The Windows Version.txt artifact.
+        linux_version_artifact : str
+            The Linux Version.txt artifact.
 
-        Returns:
-            str: The content.
+        Returns
+        -------
+        str
+            The content.
         """
         current_dir = os.path.dirname(__file__)
         path_to_wiki_template = os.path.join(current_dir, RELATIVE_PATH_TO_WIKI_TEMPLATE)
@@ -138,7 +151,7 @@ class PublicWikiHelper(object):
         with open(path_to_wiki_template, "r") as file:
             data = file.read()
 
-        data = data.replace("@@@DATE@@@", date.today().strftime("%d-%m-%Y"))
+        data = data.replace("@@@DATE@@@", datetime.now(tz=timezone.utc).date().strftime("%d-%m-%Y"))
         data = data.replace("@@@WINDOWS_VERSION_ARTIFACT@@@", f"<pre>{windows_version_artifact}</pre>")
         data = data.replace("@@@LINUX_VERSION_ARTIFACT@@@", f"<pre>{linux_version_artifact}</pre>")
         data = data.replace(
@@ -148,7 +161,7 @@ class PublicWikiHelper(object):
 
     def __get_main_page_id_for_page_to_update(self) -> str:
         """
-        Gets the page id for the Public Wiki page we want to update.
+        Get the page id for the Public Wiki page we want to update.
 
         This method first checks if there is a page for the current major version of DIMR on the root DIMR page.
         If there is no such page, it will be created. (e.g. DIMRset 2)
@@ -163,8 +176,10 @@ class PublicWikiHelper(object):
         It will then return the page id for the major.minor.patch page. This is the page that should be updated
         (so: the id of the DIMRset 2.13.03 page).
 
-        Returns:
-            str: The page id of the page to be updated.
+        Returns
+        -------
+        str
+            The page id of the page to be updated.
         """
         dimr_major_version_page_id = self.__get_public_wiki_page_id(
             parent_page_id=DIMR_ROOT_PAGE_ID, dimr_version=self.__major_version, prefix=DIMR_MAJOR_PAGE_PREFIX
@@ -186,12 +201,14 @@ class PublicWikiHelper(object):
 
     def __get_public_wiki_page_id(self, parent_page_id: str, dimr_version: str, prefix: str, suffix: str = "") -> str:
         """
-        Checks if there is already a page for the specified DIMR version
-        under the specified parent page. If there is no such page, it
-        will be created.
+        Check if there is already a page for the specified DIMR version under the specified parent page.
 
-        Returns:
-            str: The id for the page of the specified DIMR version.
+        If there is no such page, it will be created.
+
+        Returns
+        -------
+        str
+            The id for the page of the specified DIMR version.
         """
         parent_page = self.__atlassian.get_page_info_for_parent_page(parent_page_id=parent_page_id)
         page_exists = False
@@ -216,15 +233,20 @@ class PublicWikiHelper(object):
 
     def __update_content_of_page(self, page_id: str, page_title: str, content: str) -> None:
         """
-        Updates the page with the given page id on the Public Wiki with the given title and content.
+        Update the page with the given page id on the Public Wiki with the given title and content.
 
-        Args:
-            page_id (str): The id for the page to update.
-            page_title (str): The title for the page to update.
-            content (str): The content for the page to update.
+        Parameters
+        ----------
+        page_id : str
+            The id for the page to update.
+        page_title : str
+            The title for the page to update.
+        content : str
+            The content for the page to update.
 
-        Returns:
-            None
+        Returns
+        -------
+        None
         """
         page_updated_successfully = self.__atlassian.update_page(
             page_id=page_id, page_title=page_title, content=content
@@ -232,14 +254,18 @@ class PublicWikiHelper(object):
         if not page_updated_successfully:
             raise AssertionError("Failed to update the public wiki page.")
 
-    def __update_sub_page(self, parent_page_id) -> None:
+    def __update_sub_page(self, parent_page_id: str) -> None:
         """
-        Updates the sub page for the given DIMR version.
-        Args:
-            parent_page_id (str): The id for the main page of the specified DIMR version.
+        Update the sub page for the given DIMR version.
 
-        Returns:
-            None
+        Parameters
+        ----------
+        parent_page_id : str
+            The id for the main page of the specified DIMR version.
+
+        Returns
+        -------
+        None
         """
         content = self.__prepare_content_for_sub_page()
 
@@ -254,10 +280,12 @@ class PublicWikiHelper(object):
 
     def __prepare_content_for_sub_page(self) -> str:
         """
-        Prepares the content that should be uploaded to the sub page.
+        Prepare the content that should be uploaded to the sub page.
 
-        Returns:
-            str: The content.
+        Returns
+        -------
+        str
+            The content.
         """
         with open(PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT, "rb") as f:
             artifact = f.read()

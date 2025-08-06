@@ -1,10 +1,9 @@
 class KernelData(object):
-    """
-    Class to hold the various variations of names for a kernel.
-    """
-    def __init__(self, name_for_extracting_revision: str, name_for_email: str):
+    """Class to hold the various variations of names for a kernel."""
+
+    def __init__(self, name_for_extracting_revision: str, name_for_email: str) -> None:
         """
-        Creates a new instance of KernelData.
+        Create a new instance of KernelData.
 
         Args:
             name_for_extracting_revision (str): The name of the kernel used to extract the revision number from

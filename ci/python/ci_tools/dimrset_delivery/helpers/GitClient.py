@@ -3,15 +3,16 @@ import sys
 
 from ..settings.general_settings import DRY_RUN_PREFIX
 
+
 class GitClient(object):
     """Class responsible for tagging Git commits."""
 
-    def __init__(self, repo_url: str, username: str, password: str):
+    def __init__(self, repo_url: str, username: str, password: str) -> None:
         self.repo_url = repo_url
         self.__username = username
         self.__password = password
 
-    def tag_commit(self, commit_hash: str, tag_name: str):
+    def tag_commit(self, commit_hash: str, tag_name: str) -> None:
         """
         Tags a specific commit with a given tag name and pushes the tag to the remote repository.
 
@@ -21,53 +22,54 @@ class GitClient(object):
         try:
             # Create the tag locally
             result = subprocess.run(
-                ['git', 'tag', tag_name, commit_hash],
-                capture_output=True, text=True,
-                env={"GIT_ASKPASS": "echo", "GIT_USERNAME": self.__username, "GIT_PASSWORD": self.__password}
+                ["git", "tag", tag_name, commit_hash],
+                capture_output=True,
+                text=True,
+                env={"GIT_ASKPASS": "echo", "GIT_USERNAME": self.__username, "GIT_PASSWORD": self.__password},
             )
             if result.returncode != 0:
-                print(f"##teamcity[message text='Failed to create tag {tag_name} for commit {commit_hash}.' status='ERROR']")
+                print(
+                    f"##teamcity[message text='Failed to create tag {tag_name} for commit {commit_hash}.' "
+                    f"status='ERROR']"
+                )
                 sys.exit(1)
 
             # Push the tag to the remote repository
-            auth_repo_url = self.repo_url.replace(
-                "https://", f"https://{self.__username}:{self.__password}@"
-            )
+            auth_repo_url = self.repo_url.replace("https://", f"https://{self.__username}:{self.__password}@")
             result = subprocess.run(
                 ["git", "push", "--tags", auth_repo_url],
                 capture_output=True,
                 text=True,
             )
-            
+
             if result.returncode == 0:
                 print(f"Tag '{tag_name}' pushed to remote repository successfully.")
             else:
-                print(f"##teamcity[message text='Failed to push tag '{tag_name}' to remote repository; return code: {result.returncode}.' status='ERROR']")
+                print(
+                    f"##teamcity[message text='Failed to push tag '{tag_name}' to remote repository; "
+                    f"return code: {result.returncode}.' status='ERROR']"
+                )
                 sys.exit(1)
         except Exception as e:
             print(f"##teamcity[message text='An error occurred while adding tag to Git: {e}.' status='ERROR']")
             sys.exit(1)
-    
-    def test_connection(self, dry_run: bool) -> None:
-        """
-        Tests the connection to the remote Git repository.
 
-        """
+    def test_connection(self, dry_run: bool) -> None:
+        """Test the connection to the remote Git repository."""
         try:
-            auth_repo_url = self.repo_url.replace(
-                "https://", f"https://{self.__username}:{self.__password}@"
-            )
+            auth_repo_url = self.repo_url.replace("https://", f"https://{self.__username}:{self.__password}@")
             if dry_run:
                 print(f"{DRY_RUN_PREFIX} Testing connection to {auth_repo_url}")
                 result = subprocess.CompletedProcess(args=[], returncode=0, stdout="Dry run successful")
             else:
-                result = subprocess.run(
-                    ["git", "ls-remote", auth_repo_url], capture_output=True, text=True
-                )
+                result = subprocess.run(["git", "ls-remote", auth_repo_url], capture_output=True, text=True)
             if result.returncode == 0:
                 print("Read access to the repository is successful.")
             else:
-                print(f"##teamcity[message text='Failed to read from the repository while testing Git connection; return code {result.returncode}.' status='ERROR']")
+                print(
+                    f"##teamcity[message text='Failed to read from the repository while testing Git connection; "
+                    f"return code {result.returncode}.' status='ERROR']"
+                )
                 sys.exit(1)
         except Exception as e:
             print(f"##teamcity[message text='An error occurred while testing Git connection: {e}.' status='ERROR']")

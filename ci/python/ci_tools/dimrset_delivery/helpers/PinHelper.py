@@ -4,10 +4,8 @@ from ..lib.TeamCity import TeamCity
 class PinHelper(object):
     """Class responsible for pinning and tagging builds in TeamCity."""
 
-    def __init__(self, teamcity: TeamCity, dimr_version: str):
-        """
-        Creates a new instance of PinHelper.
-        """
+    def __init__(self, teamcity: TeamCity, dimr_version: str) -> None:
+        """Create a new instance of PinHelper."""
         self.__teamcity = teamcity
         self.__dimr_version = dimr_version
 
@@ -18,8 +16,6 @@ class PinHelper(object):
         self.__teamcity.add_tag_to_build_with_dependencies(build_id_chain, tag=tag)
 
         # Only pin specific builds
-        build_ids_to_pin = self.__teamcity.get_filtered_dependent_build_ids(
-            build_id_chain
-        )
+        build_ids_to_pin = self.__teamcity.get_filtered_dependent_build_ids(build_id_chain)
         for build_id in build_ids_to_pin:
             self.__teamcity.pin_build(build_id=build_id)

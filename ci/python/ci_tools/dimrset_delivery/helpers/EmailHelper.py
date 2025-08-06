@@ -1,13 +1,13 @@
 import os
 from typing import Dict
 
-from .TestbankResultParser import TestbankResultParser
 from ..settings.email_settings import (
     LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS,
     RELATIVE_PATH_TO_EMAIL_TEMPLATE,
 )
 from ..settings.general_settings import RELATIVE_PATH_TO_OUTPUT_FOLDER
 from ..settings.teamcity_settings import KERNELS
+from .TestbankResultParser import TestbankResultParser
 
 
 class EmailHelper(object):
@@ -19,9 +19,9 @@ class EmailHelper(object):
         kernel_versions: Dict[str, str],
         current_parser: TestbankResultParser,
         previous_parser: TestbankResultParser,
-    ):
+    ) -> None:
         """
-        Creates a new instance of EmailHelper.
+        Create a new instance of EmailHelper.
 
         Args:
             dimr_version (str): The latest DIMR version.
@@ -36,22 +36,22 @@ class EmailHelper(object):
         self.__template = ""
 
     def generate_template(self) -> None:
-        """ Generate a template email for the latest DIMR release that can be copy/pasted into Outlook. """
+        """Generate a template email for the latest DIMR release that can be copy/pasted into Outlook."""
         self.__load_template()
         self.__insert_summary_table_header()
         self.__insert_summary_table()
         self.__save_template()
 
     def __load_template(self) -> None:
-        """ Loads the template into memory. """
+        """Load the template into memory."""
         current_dir = os.path.dirname(__file__)
         path_to_email_template = os.path.join(current_dir, RELATIVE_PATH_TO_EMAIL_TEMPLATE)
 
-        with open(path_to_email_template, 'r') as file:
+        with open(path_to_email_template, "r") as file:
             self.__template = file.read()
 
     def __insert_summary_table_header(self) -> None:
-        """ Inserts the summary table header into the template. """
+        """Insert the summary table header into the template."""
         html = self.__template
 
         html = html.replace("@@@DIMR_VERSION@@@", self.__dimr_version)
@@ -64,12 +64,12 @@ class EmailHelper(object):
         return f'<a href="{link}">{link}</a>'
 
     def __insert_summary_table(self) -> None:
-        """ Inserts the summary table into the tempalte. """
+        """Insert the summary table into the template."""
         html = self.__generate_summary_table_html()
         self.__template = self.__template.replace("@@@SUMMARY_TABLE_BODY@@@", html)
 
     def __generate_summary_table_html(self) -> str:
-        """ Dynamically generates the summary table based on the kernels expected to be present. """
+        """Dynamically generates the summary table based on the kernels expected to be present."""
         html = ""
 
         # Insert the kernel information
@@ -101,9 +101,14 @@ class EmailHelper(object):
         else:
             html += f'Green testbank was (<span class="success">{previous_percentage_passing_tests}%</span>)'
         html += "<br />"
-        html += f"Total tests: {self.__current_parser.get_total_tests()} was ({self.__previous_parser.get_total_tests()})"
+        html += (
+            f"Total tests: {self.__current_parser.get_total_tests()} was ({self.__previous_parser.get_total_tests()})"
+        )
         html += "<br />"
-        html += f"Passed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {self.__current_parser.get_total_passing()} was ({self.__previous_parser.get_total_passing()})"
+        html += (
+            f"Passed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {self.__current_parser.get_total_passing()} "
+            f"was ({self.__previous_parser.get_total_passing()})"
+        )
 
         html += "</tr></table>"
         html += "</td>"
@@ -125,23 +130,23 @@ class EmailHelper(object):
 
         return html
 
-    def __get_email_friendly_kernel_name(self, kernel) -> str:
-        """ Gets the email friendly kernel name for a given kernel. """
+    def __get_email_friendly_kernel_name(self, kernel: str) -> str:
+        """Get the email friendly kernel name for a given kernel."""
         kernel_name = ""
-        for KERNEL in KERNELS:
-            if KERNEL.name_for_extracting_revision == kernel:
-                kernel_name = KERNEL.name_for_email
+        for kernel_config in KERNELS:
+            if kernel_config.name_for_extracting_revision == kernel:
+                kernel_name = kernel_config.name_for_email
         return kernel_name
 
     def __save_template(self) -> None:
-        """ Saves the email template in the output folder. """
+        """Save the email template in the output folder."""
         current_dir = os.path.dirname(__file__)
         path_to_output_folder = os.path.join(current_dir, RELATIVE_PATH_TO_OUTPUT_FOLDER)
         path_to_email_template = os.path.join(path_to_output_folder, f"DIMRset_{self.__dimr_version}.html")
-        
+
         print(f"Saved email html to {path_to_email_template}")
         if not os.path.exists(path_to_output_folder):
             os.makedirs(path_to_output_folder)
 
-        with open(path_to_email_template, 'w+') as file:
+        with open(path_to_email_template, "w+") as file:
             file.write(self.__template)

@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
-"""
-DIMR Automation Step 4: Prepare Email
-This script prepares a mail template for the release notification.
-"""
+"""Prepare a mail template for the release notification."""
 
 from typing import Optional
 
-from .dimr_context import DimrAutomationContext, parse_common_arguments, create_context_from_args
+from .dimr_context import DimrAutomationContext, create_context_from_args, parse_common_arguments
 from .helpers.EmailHelper import EmailHelper
 from .helpers.TestbankResultParser import TestbankResultParser
 from .settings.general_settings import DRY_RUN_PREFIX
@@ -14,17 +11,17 @@ from .settings.teamcity_settings import PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT
 
 
 def prepare_email(context: DimrAutomationContext) -> None:
-    """Prepares a mail template for the release notification."""
+    """Prepare a mail template for the release notification."""
     context.print_status("Preparing email template...")
-    
+
     # Get required information
     kernel_versions = context.get_kernel_versions()
     dimr_version = context.get_dimr_version()
-    
+
     if context.dry_run:
         print(f"{DRY_RUN_PREFIX} Would prepare email template for DIMR version:", dimr_version)
         return
-    
+
     parser = get_testbank_result_parser()
     previous_parser = get_previous_testbank_result_parser(context)
 
@@ -35,19 +32,19 @@ def prepare_email(context: DimrAutomationContext) -> None:
         previous_parser=previous_parser,
     )
     helper.generate_template()
-    
+
     print("Email template preparation completed successfully!")
 
 
 def get_testbank_result_parser() -> TestbankResultParser:
-    """Gets a new TestbankResultParser for the latest test bench results from a local file."""
+    """Get a new TestbankResultParser for the latest test bench results from a local file."""
     with open(PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT, "rb") as f:
         artifact = f.read()
     return TestbankResultParser(artifact.decode())
 
 
 def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optional[TestbankResultParser]:
-    """Gets a new TestbankResultParser for the previous versioned tagged test bench results."""
+    """Get a new TestbankResultParser for the previous versioned tagged test bench results."""
     current_build_info = context.teamcity.get_full_build_info_for_build_id(context.build_id)
     build_type_id = current_build_info.get("buildTypeId")
     current_tag_name = get_tag_from_build_info(current_build_info)
@@ -74,19 +71,14 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
         loop_build_info = context.teamcity.get_full_build_info_for_build_id(build_id)
         loop_tag_name = get_tag_from_build_info(loop_build_info)
 
-        if (
-            loop_tag_name
-            and loop_tag_name != (0, 0, 0)
-            and current_tag_name
-            and loop_tag_name < current_tag_name
-        ):
+        if loop_tag_name and loop_tag_name != (0, 0, 0) and current_tag_name and loop_tag_name < current_tag_name:
             if previous_version is None or loop_tag_name > previous_version:
                 previous_build_id = build_id
                 previous_version = loop_tag_name
-    
+
     # Previous version not found
     if previous_build_id is None:
-        return None  
+        return None
 
     # Download artifact for previous build
     artifact = context.teamcity.get_build_artifact(
@@ -96,7 +88,7 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
     return TestbankResultParser(artifact.decode())
 
 
-def get_tag_from_build_info(current_build_info):
+def get_tag_from_build_info(current_build_info: dict) -> tuple:
     """Extract tag information from build info."""
     current_tag_name = (0, 0, 0)
     tags = current_build_info.get("tags", {}).get("tag", [])
@@ -107,7 +99,7 @@ def get_tag_from_build_info(current_build_info):
     return current_tag_name
 
 
-def parse_version(tag):
+def parse_version(tag: str) -> Optional[tuple]:
     """Parse version string from tag."""
     if tag and tag.startswith("DIMRset_"):
         return tuple(map(int, tag[len("DIMRset_") :].split(".")))
@@ -117,7 +109,7 @@ def parse_version(tag):
 if __name__ == "__main__":
     args = parse_common_arguments()
     context = create_context_from_args(args, require_atlassian=False, require_git=False, require_ssh=False)
-    
+
     print("Starting email template preparation...")
     prepare_email(context)
     print("Finished")

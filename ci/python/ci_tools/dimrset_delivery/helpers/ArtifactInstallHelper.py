@@ -3,7 +3,6 @@ import tarfile
 import zipfile
 from typing import List
 
-from .SshClient import SshClient
 from ..lib.TeamCity import TeamCity
 from ..settings.general_settings import LINUX_ADDRESS
 from ..settings.teamcity_settings import (
@@ -11,11 +10,12 @@ from ..settings.teamcity_settings import (
     NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT,
     TEAMCITY_IDS,
 )
+from .SshClient import SshClient
 
 
-def extract_archive(archive_path: str, target_path: str):
+def extract_archive(archive_path: str, target_path: str) -> None:
     """
-    Extracts a tar or zip archive to a target path.
+    Extract a tar or zip archive to a target path.
 
     Parameters
     ----------
@@ -26,7 +26,8 @@ def extract_archive(archive_path: str, target_path: str):
 
     Notes
     -----
-    - The function removes the Unix permission bits when on Windows, as the permission bits are not supported on Windows.
+    - The function removes the Unix permission bits when on Windows, as the permission bits are not
+      supported on Windows.
     """
     if archive_path.endswith(".tar.gz") or archive_path.endswith(".tgz"):
         with tarfile.open(archive_path, "r:gz") as tar:
@@ -39,9 +40,7 @@ def extract_archive(archive_path: str, target_path: str):
         with zipfile.ZipFile(archive_path, "r") as zip_ref:
             zip_ref.extractall(target_path)
     else:
-        raise ValueError(
-            "Unsupported archive format. Only .tar.gz, .tgz, and .zip are supported."
-        )
+        raise ValueError("Unsupported archive format. Only .tar.gz, .tgz, and .zip are supported.")
 
 
 class ArtifactInstallHelper(object):
@@ -53,9 +52,9 @@ class ArtifactInstallHelper(object):
         ssh_client: SshClient,
         dimr_version: str,
         branch_name: str,
-    ):
+    ) -> None:
         """
-        Creates a new instance of ArtifactInstallHelper.
+        Create a new instance of ArtifactInstallHelper.
 
         Arguments:
             teamcity (TeamCity): A reference to a TeamCity REST API wrapper.
@@ -68,7 +67,7 @@ class ArtifactInstallHelper(object):
         self.__branch_name = branch_name
 
     def publish_artifacts_to_network_drive(self, build_id_chain: str) -> None:
-        """Downloads the DIMR artifacts to the network drive."""
+        """Download the DIMR artifacts to the network drive."""
         windows_collect_id = self.__teamcity.get_dependent_build_id(
             build_id_chain, TEAMCITY_IDS.DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID.value
         )
@@ -76,12 +75,8 @@ class ArtifactInstallHelper(object):
             build_id_chain, TEAMCITY_IDS.DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID.value
         )
 
-        self.__publish_artifact_to_file_share(
-            windows_collect_id, NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT
-        )
-        self.__publish_artifact_to_file_share(
-            linux_collect_id, NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT
-        )
+        self.__publish_artifact_to_file_share(windows_collect_id, NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT)
+        self.__publish_artifact_to_file_share(linux_collect_id, NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT)
 
     def publish_weekly_dimr_via_h7(self) -> None:
         """Installs DIMR on the Linux machine via SSH."""
@@ -106,31 +101,28 @@ class ArtifactInstallHelper(object):
         self.__ssh_client.execute(address=LINUX_ADDRESS, command=command)
         print(f"Successfully installed DIMR on {LINUX_ADDRESS}.")
 
-    def __publish_artifact_to_file_share(self, build_id, artifact_name_key):
+    def __publish_artifact_to_file_share(self, build_id: str, artifact_name_key: str) -> None:
         """
-        Downloads and unpacks artifacts from a TeamCity build that match the specified artifact name key.
+        Download and unpack artifacts from a TeamCity build that match the specified artifact name key.
 
         Args:
             build_id (str): The ID of the TeamCity build to retrieve artifacts from.
             artifact_name_key (str): Substring to filter artifact names for downloading.
 
-        Returns:
+        Returns
+        -------
             None
         """
         artifact_names = self.__teamcity.get_build_artifact_names(build_id=build_id)
-        artifacts_to_download = [
-            a["name"] for a in artifact_names["file"] if artifact_name_key in a["name"]
-        ]
+        artifacts_to_download = [a["name"] for a in artifact_names["file"] if artifact_name_key in a["name"]]
         self.__download_and_unpack_dimr_artifacts_via_h7(
             artifacts_to_download=artifacts_to_download,
             build_id=build_id,
         )
 
-    def __download_and_unpack_dimr_artifacts_via_h7(
-        self, artifacts_to_download: List[str], build_id: str
-    ) -> None:
+    def __download_and_unpack_dimr_artifacts_via_h7(self, artifacts_to_download: List[str], build_id: str) -> None:
         """
-        Downloads the provided artifact names from the provided TeamCity build id.
+        Download the provided artifact names from the provided TeamCity build id.
 
         Args:
             artifacts_to_download List[str]: A list of artifact names to download.
@@ -142,9 +134,7 @@ class ArtifactInstallHelper(object):
 
         for artifact_to_download in artifacts_to_download:
             print(f"Downloading {artifact_to_download}...")
-            artifact = self.__teamcity.get_build_artifact(
-                build_id=build_id, path_to_artifact=artifact_to_download
-            )
+            artifact = self.__teamcity.get_build_artifact(build_id=build_id, path_to_artifact=artifact_to_download)
 
             with open(artifact_to_download, "wb") as f:
                 f.write(artifact)

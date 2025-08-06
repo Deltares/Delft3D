@@ -1,19 +1,26 @@
-from datetime import date
+from datetime import datetime, timezone
 from typing import Dict, List
+
 from openpyxl import load_workbook, worksheet
 
-from .TestbankResultParser import TestbankResultParser
 from ..lib.TeamCity import TeamCity
-from ..settings.general_settings import SHEET_NAME, NAME_COLUMN
+from ..settings.general_settings import NAME_COLUMN, SHEET_NAME
+from .TestbankResultParser import TestbankResultParser
 
 
 class ExcelHelper(object):
-    """ Object responsible for updating the Excel sheet. """
+    """Object responsible for updating the Excel sheet."""
 
-    def __init__(self, teamcity: TeamCity, filepath: str, dimr_version: str,
-                 kernel_versions: Dict[str, str], parser: TestbankResultParser):
+    def __init__(
+        self,
+        teamcity: TeamCity,
+        filepath: str,
+        dimr_version: str,
+        kernel_versions: Dict[str, str],
+        parser: TestbankResultParser,
+    ) -> None:
         """
-        Creates a new instance of ExcelHelper.
+        Create a new instance of ExcelHelper.
 
         Args:
             teamcity (TeamCity): A wrapper for the TeamCity REST API.
@@ -29,7 +36,7 @@ class ExcelHelper(object):
         self.__parser = parser
 
     def append_row(self) -> None:
-        """ Appends a new row to the Excel sheet with this week's DIMR information. """
+        """Append a new row to the Excel sheet with this week's DIMR information."""
         row = self.__prepare_row_to_insert()
         print(row)
 
@@ -50,31 +57,32 @@ class ExcelHelper(object):
             workbook.close()
 
     def __prepare_row_to_insert(self) -> List[str]:
-        """ Prepares a row to be inserted in the Excel sheet. """
+        """Prepare a row to be inserted in the Excel sheet."""
         row = []
 
-        row.append("")                                              # Column A (empty column)
-        row.append(date.today())                                    # Column B (Date)
-        row.append(f"DIMRset {self.__dimr_version}")                # Column C (DIMR version)
-        row.append("")                                              # Column D (Revision)
-        row.append("FLOW1D2D now in GitHub")                        # Column E (Flow1D)
-        row.append("OSS")                                           # Column F (FlowFM)
-        row.append(self.__kernel_versions["build.vcs.number"])               # Column G (OSS)
-        row.append("DRR now in GitHub")                             # Column H (RR)
-        row.append("FBC now in GitHub")                             # Column I (FBC)
-        row.append(self.__parser.get_percentage_total_passing())    # Column J (Percentage passing)
-        row.append(self.__parser.get_total_tests())                 # Column K (Total Number of          cases)
-        row.append(self.__parser.get_total_passing())               # Column L (      Number of green    cases)
-        row.append(self.__parser.get_total_failing())               # Column M (      Number of red      cases)
-        row.append(self.__parser.get_total_exceptions())            # Column N (      Number of crashing cases)
-        row.append("")                                              # Column O (Docker hub)
-        row.append("Flow1D and RR: only Windows")                   # Column P (Remarks)
+        row.append("")  # Column A (empty column)
+        row.append(datetime.now(tz=timezone.utc).date())  # Column B (Date)
+        row.append(f"DIMRset {self.__dimr_version}")  # Column C (DIMR version)
+        row.append("")  # Column D (Revision)
+        row.append("FLOW1D2D now in GitHub")  # Column E (Flow1D)
+        row.append("OSS")  # Column F (FlowFM)
+        row.append(self.__kernel_versions["build.vcs.number"])  # Column G (OSS)
+        row.append("DRR now in GitHub")  # Column H (RR)
+        row.append("FBC now in GitHub")  # Column I (FBC)
+        row.append(self.__parser.get_percentage_total_passing())  # Column J (Percentage passing)
+        row.append(self.__parser.get_total_tests())  # Column K (Total Number of          cases)
+        row.append(self.__parser.get_total_passing())  # Column L (      Number of green    cases)
+        row.append(self.__parser.get_total_failing())  # Column M (      Number of red      cases)
+        row.append(self.__parser.get_total_exceptions())  # Column N (      Number of crashing cases)
+        row.append("")  # Column O (Docker hub)
+        row.append("Flow1D and RR: only Windows")  # Column P (Remarks)
 
         return row
 
-    def __worksheet_already_contains_row(self, worksheet: worksheet):
+    def __worksheet_already_contains_row(self, worksheet: worksheet) -> bool:
         """
-        Checks if the Excel sheet already contains a row for the given DIMRset.
+        Check if the Excel sheet already contains a row for the given DIMRset.
+
         Return True if the Excel sheet already contains such a row.
         """
         name_already_exists = False
@@ -86,6 +94,3 @@ class ExcelHelper(object):
                 name_already_exists = True
 
         return name_already_exists
-
-
-

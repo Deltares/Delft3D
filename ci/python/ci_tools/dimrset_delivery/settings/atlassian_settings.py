@@ -19,8 +19,3 @@ DIMR_SUBPAGE_SUFFIX = " release"
 
 # Relative path to public wiki template
 RELATIVE_PATH_TO_WIKI_TEMPLATE = "..\\..\\templates\\main.html"
-
-
-
-
-
