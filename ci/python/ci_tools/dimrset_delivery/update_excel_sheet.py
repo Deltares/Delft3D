@@ -10,7 +10,13 @@ from .settings.teamcity_settings import PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT
 
 
 def update_excel_sheet(context: DimrAutomationContext) -> None:
-    """Update the Excel sheet with this week's release information."""
+    """Update the Excel sheet with this week's release information.
+
+    Parameters
+    ----------
+    context : DimrAutomationContext
+        The automation context containing necessary clients and configuration.
+    """
     context.print_status("Updating Excel sheet...")
 
     # Get required information

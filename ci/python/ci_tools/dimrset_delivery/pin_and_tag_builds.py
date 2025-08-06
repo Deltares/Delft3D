@@ -7,7 +7,13 @@ from .settings.general_settings import DRY_RUN_PREFIX
 
 
 def pin_and_tag_builds(context: DimrAutomationContext) -> None:
-    """Pin and tag the appropriate builds."""
+    """Pin and tag the appropriate builds.
+
+    Parameters
+    ----------
+    context : DimrAutomationContext
+        The automation context containing necessary clients and configuration.
+    """
     context.print_status("Pinning and tagging builds...")
 
     # Get required information

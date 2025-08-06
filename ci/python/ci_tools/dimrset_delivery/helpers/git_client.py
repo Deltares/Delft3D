@@ -5,7 +5,17 @@ from ..settings.general_settings import DRY_RUN_PREFIX
 
 
 class GitClient(object):
-    """Class responsible for tagging Git commits."""
+    """Class responsible for tagging Git commits.
+
+    Parameters
+    ----------
+    repo_url : str
+        URL of the Git repository.
+    username : str
+        Git username for authentication.
+    password : str
+        Git password for authentication.
+    """
 
     def __init__(self, repo_url: str, username: str, password: str) -> None:
         self.repo_url = repo_url
@@ -13,11 +23,14 @@ class GitClient(object):
         self.__password = password
 
     def tag_commit(self, commit_hash: str, tag_name: str) -> None:
-        """
-        Tags a specific commit with a given tag name and pushes the tag to the remote repository.
+        """Tags a specific commit with a given tag name and pushes the tag to the remote repository.
 
-        @param commit_hash: Hash of the commit to be tagged.
-        @param tag_name: Name of the tag to be created.
+        Parameters
+        ----------
+        commit_hash : str
+            Hash of the commit to be tagged.
+        tag_name : str
+            Name of the tag to be created.
         """
         try:
             # Create the tag locally
@@ -55,7 +68,13 @@ class GitClient(object):
             sys.exit(1)
 
     def test_connection(self, dry_run: bool) -> None:
-        """Test the connection to the remote Git repository."""
+        """Test the connection to the remote Git repository.
+
+        Parameters
+        ----------
+        dry_run : bool
+            Whether to run in dry-run mode without making actual connection.
+        """
         try:
             auth_repo_url = self.repo_url.replace("https://", f"https://{self.__username}:{self.__password}@")
             if dry_run:

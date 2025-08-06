@@ -11,7 +11,13 @@ from .settings.teamcity_settings import PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT
 
 
 def prepare_email(context: DimrAutomationContext) -> None:
-    """Prepare a mail template for the release notification."""
+    """Prepare a mail template for the release notification.
+
+    Parameters
+    ----------
+    context : DimrAutomationContext
+        The automation context containing necessary clients and configuration.
+    """
     context.print_status("Preparing email template...")
 
     # Get required information
@@ -44,7 +50,18 @@ def get_testbank_result_parser() -> TestbankResultParser:
 
 
 def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optional[TestbankResultParser]:
-    """Get a new TestbankResultParser for the previous versioned tagged test bench results."""
+    """Get a new TestbankResultParser for the previous versioned tagged test bench results.
+
+    Parameters
+    ----------
+    context : DimrAutomationContext
+        The automation context containing necessary clients and configuration.
+
+    Returns
+    -------
+    Optional[TestbankResultParser]
+        Parser for previous test results, or None if not found.
+    """
     current_build_info = context.teamcity.get_full_build_info_for_build_id(context.build_id)
     build_type_id = current_build_info.get("buildTypeId")
     current_tag_name = get_tag_from_build_info(current_build_info)
@@ -89,7 +106,18 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
 
 
 def get_tag_from_build_info(current_build_info: dict) -> tuple:
-    """Extract tag information from build info."""
+    """Extract tag information from build info.
+
+    Parameters
+    ----------
+    current_build_info : dict
+        Build information dictionary from TeamCity.
+
+    Returns
+    -------
+    tuple
+        Tuple containing version numbers (major, minor, patch).
+    """
     current_tag_name = (0, 0, 0)
     tags = current_build_info.get("tags", {}).get("tag", [])
     for tag in tags:
@@ -100,7 +128,18 @@ def get_tag_from_build_info(current_build_info: dict) -> tuple:
 
 
 def parse_version(tag: str) -> Optional[tuple]:
-    """Parse version string from tag."""
+    """Parse version string from tag.
+
+    Parameters
+    ----------
+    tag : str
+        Tag string to parse (e.g., 'DIMRset_1.2.3').
+
+    Returns
+    -------
+    Optional[tuple]
+        Tuple of version numbers (major, minor, patch) or None if parsing fails.
+    """
     if tag and tag.startswith("DIMRset_"):
         return tuple(map(int, tag[len("DIMRset_") :].split(".")))
     return None

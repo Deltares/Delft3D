@@ -25,7 +25,7 @@ class ExcelHelper(object):
         Args:
             teamcity (TeamCity): A wrapper for the TeamCity REST API.
             filepath (str): Path to the Excel file.
-            dimr_version (str): The DIMR version to upate the Excel for.
+            dimr_version (str): The DIMR version to update the Excel for.
             kernel_versions (Dict[str, str]): A dictionary mapping kernel names to their version.
             parser (TestbankResultParser): A parser for the latest test bench results.
         """

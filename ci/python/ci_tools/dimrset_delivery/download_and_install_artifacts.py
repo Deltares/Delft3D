@@ -7,7 +7,13 @@ from .settings.general_settings import DRY_RUN_PREFIX
 
 
 def download_and_install_artifacts(context: DimrAutomationContext) -> None:
-    """Download the artifacts and install them on Linux machine."""
+    """Download the artifacts and install them on Linux machine.
+
+    Parameters
+    ----------
+    context : DimrAutomationContext
+        The automation context containing necessary clients and configuration.
+    """
     context.print_status("Downloading and installing artifacts...")
 
     # Get required information

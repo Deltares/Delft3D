@@ -6,7 +6,13 @@ from .helpers.preconditions_helper import PreconditionsHelper
 
 
 def assert_preconditions(context: DimrAutomationContext) -> None:
-    """Assert some preconditions are met before the script is fully run."""
+    """Assert some preconditions are met before the script is fully run.
+
+    Parameters
+    ----------
+    context : DimrAutomationContext
+        The automation context containing necessary clients and configuration.
+    """
     context.print_status("Asserting preconditions...")
 
     preconditions = PreconditionsHelper(

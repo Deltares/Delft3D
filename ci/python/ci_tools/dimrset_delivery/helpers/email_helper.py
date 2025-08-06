@@ -25,7 +25,7 @@ class EmailHelper(object):
 
         Args:
             dimr_version (str): The latest DIMR version.
-            kernel_versions (str): A dictionary mapping kernel names to their version.
+            kernel_versions (Dict[str, str]): A dictionary mapping kernel names to their version.
             current_parser (TestbankResultParser): A parser for the latest test bench results.
             previous_parser (TestbankResultParser): A parser for the previous test bench results.
         """

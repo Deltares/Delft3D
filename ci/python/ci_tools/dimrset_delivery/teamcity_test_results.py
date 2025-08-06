@@ -56,7 +56,15 @@ class ResultSummary:
 
 
 class ResultExecutiveSummary:
-    """A class to store data for test result summary."""
+    """A class to store data for test result summary.
+
+    Parameters
+    ----------
+    passed : int
+        Number of passed tests.
+    failed : int
+        Number of failed tests.
+    """
 
     def __init__(self, passed: int, failed: int) -> None:
         self.passed = passed
@@ -69,7 +77,15 @@ class ResultExecutiveSummary:
 
 
 class ExecutiveSummary:
-    """A class to store executive summary data for test results."""
+    """A class to store executive summary data for test results.
+
+    Parameters
+    ----------
+    name : str
+        Name of the summary.
+    summary : list[ResultSummary]
+        List of result summaries.
+    """
 
     def __init__(self, name: str, summary: list[ResultSummary]) -> None:
         self.name = name
@@ -77,7 +93,23 @@ class ExecutiveSummary:
 
 
 class ResultInfo:
-    """A class to store configuration test results info."""
+    """A class to store configuration test results info.
+
+    Parameters
+    ----------
+    passed : int
+        Number of passed tests.
+    failed : int
+        Number of failed tests.
+    ignored : int
+        Number of ignored tests.
+    muted : int
+        Number of muted tests.
+    exception : int
+        Number of tests with exceptions.
+    muted_exception : int
+        Number of muted exceptions.
+    """
 
     def __init__(
         self, passed: int, failed: int, ignored: int, muted: int, exception: int, muted_exception: int
@@ -111,7 +143,25 @@ class ResultInfo:
 
 
 class ConfigurationTestResult:
-    """A class to store configuration test results info."""
+    """A class to store configuration test results info.
+
+    Parameters
+    ----------
+    name : str
+        Name of the configuration.
+    build_nr : str
+        Build number.
+    passed : int
+        Number of passed tests.
+    failed : int
+        Number of failed tests.
+    ignored : int
+        Number of ignored tests.
+    muted : int
+        Number of muted tests.
+    status_text : str
+        Status text description.
+    """
 
     def __init__(
         self,

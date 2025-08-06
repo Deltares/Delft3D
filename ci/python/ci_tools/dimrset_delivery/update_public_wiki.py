@@ -7,7 +7,13 @@ from .settings.general_settings import DRY_RUN_PREFIX
 
 
 def update_public_wiki(context: DimrAutomationContext) -> None:
-    """Update the Public Wiki."""
+    """Update the Public Wiki.
+
+    Parameters
+    ----------
+    context : DimrAutomationContext
+        The automation context containing necessary clients and configuration.
+    """
     context.print_status("Updating public wiki...")
 
     # Get required information

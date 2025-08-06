@@ -10,15 +10,17 @@ SIGNTOOL = "signtool.exe"
 
 
 def is_signtool_available(developer_prompt: str) -> bool:
-    """
-    Check if the 'signtool' is available in the given developer prompt.
+    """Check if the 'signtool' is available in the given developer prompt.
 
-    Args:
-        developer_prompt (str): The command to open the developer prompt.
+    Parameters
+    ----------
+    developer_prompt : str
+        The command to open the developer prompt.
 
     Returns
     -------
-        bool: True if 'signtool' is available, False otherwise.
+    bool
+        True if 'signtool' is available, False otherwise.
     """
     try:
         result = subprocess.run(
@@ -44,17 +46,20 @@ def is_signtool_available(developer_prompt: str) -> bool:
 
 
 def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple:
-    """
-    Verify the signing authority of a given file using the specified developer prompt.
+    """Verify the signing authority of a given file using the specified developer prompt.
 
-    Args:
-        filepath (str): The path to the file to be verified.
-        developer_prompt (str): The developer prompt command to be used for verification.
+    Parameters
+    ----------
+    filepath : str
+        The path to the file to be verified.
+    developer_prompt : str
+        The developer prompt command to be used for verification.
 
     Returns
     -------
-        tuple: A tuple containing the verification status ("Verified" or "Not Verified")
-               and the issuer name if verified, or an error message if an exception occurs.
+    tuple
+        A tuple containing the verification status ("Verified" or "Not Verified")
+        and the issuer name if verified, or an error message if an exception occurs.
     """
     try:
         result = subprocess.run(
@@ -85,15 +90,17 @@ def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple:
 
 
 def get_actual_files(directory: str) -> list[Path]:
-    """
-    Recursively retrieve a list of relative file paths for all .dll and .exe files in the given directory.
+    """Recursively retrieve a list of relative file paths for all .dll and .exe files in the given directory.
 
-    Args:
-        directory (str): The root directory to search for files.
+    Parameters
+    ----------
+    directory : str
+        The root directory to search for files.
 
     Returns
     -------
-        list: A list of relative file paths for .dll and .exe files found in the directory.
+    list[Path]
+        A list of relative file paths for .dll and .exe files found in the directory.
     """
     directory = Path(directory)
     return [path.relative_to(directory) for path in directory.glob("**/*") if path.suffix.lower() in (".dll", ".exe")]
@@ -106,19 +113,25 @@ def validate_signing_status(
     files_that_should_not_be_signed: list[Path],
     developer_prompt: str,
 ) -> tuple:
-    """
-    Validate the signing status of a file.
+    """Validate the signing status of a file.
 
-    Args:
-        file (str): The name of the file to validate.
-        directory (str): The directory where the file is located.
-        files_that_should_be_signed_with_issued_to (str): List of files that should be signed with a specific issuer.
-        files_that_should_not_be_signed (str): List of files that should not be signed.
-        developer_prompt (str): Prompt for the developer.
+    Parameters
+    ----------
+    file : str
+        The name of the file to validate.
+    directory : str
+        The directory where the file is located.
+    files_that_should_be_signed_with_issued_to : list
+        List of files that should be signed with a specific issuer.
+    files_that_should_not_be_signed : list[Path]
+        List of files that should not be signed.
+    developer_prompt : str
+        Prompt for the developer.
 
     Returns
     -------
-        tuple: A message indicating the validation result and a boolean indicating if the validation was successful.
+    tuple
+        A message indicating the validation result and a boolean indicating if the validation was successful.
     """
     filepath = os.path.join(directory, file)
     status, issued_to = verify_signing_authority(filepath, developer_prompt)

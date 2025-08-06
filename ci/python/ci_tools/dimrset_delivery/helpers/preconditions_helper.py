@@ -26,7 +26,13 @@ class PreconditionsHelper(object):
         self.__git_client = git_client
 
     def assert_preconditions(self, dry_run: bool) -> None:
-        """Assert if all preconditions are met."""
+        """Assert if all preconditions are met.
+
+        Parameters
+        ----------
+        dry_run : bool
+            Whether to run in dry-run mode without making actual connections.
+        """
         print("Asserting if all preconditions are met...")
 
         if not self.__teamcity.test_api_connection(dry_run):
