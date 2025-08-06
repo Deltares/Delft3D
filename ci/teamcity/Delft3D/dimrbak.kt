@@ -22,9 +22,9 @@ object DIMRbak : BuildType({
     }
 
     artifactRules = """
-        +:ci/DIMRset_delivery/output/*.html
-        +:ci/DIMRset_delivery/src/*.xlsx
-        +:ci/DIMRset_delivery/src/*.txt
+        +:ci/python/output/*.html
+        +:ci/python/*.xlsx
+        +:ci/python/*.txt
     """.trimIndent()
 
     vcs {
@@ -67,8 +67,8 @@ object DIMRbak : BuildType({
     steps {
         python {
             name = "Assert access rights"
-            command = file {
-                filename = "assert_preconditions.py"
+            command = module {
+                module = "ci_tools.dimrset_delivery.assert_preconditions"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --atlassian-username "%dimrbakker_username%"
@@ -82,30 +82,32 @@ object DIMRbak : BuildType({
                     --dry-run
                 """.trimIndent()
             }
-            workingDir = "ci/DIMRset_delivery/src"
+            workingDir = "ci/python"
             environment = venv {
-                requirementsFile = "../requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
             }
         }
         python {
             name = "Generate test report summary"
-            command = file {
-                filename = "teamcity_retrieve_engine_test_status_dpc.py"
+            command = module {
+                module = "ci_tools.dimrset_delivery.teamcity_test_results"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
                 """.trimIndent()
             }
-            workingDir = "ci/DIMRset_delivery/src"
+            workingDir = "ci/python"
             environment = venv {
-                requirementsFile = "../requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
             }
         }
         python {
             name = "Download artifacts from TeamCity and on file share using H7"
-            command = file {
-                filename = "download_and_install_artifacts.py"
+            command = module {
+                module = "ci_tools.dimrset_delivery.download_and_install_artifacts"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -115,15 +117,16 @@ object DIMRbak : BuildType({
                     --dry-run
                 """.trimIndent()
             }
-            workingDir = "ci/DIMRset_delivery/src"
+            workingDir = "ci/python"
             environment = venv {
-                requirementsFile = "../requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
             }
         }
         python {
             name = "Update Excel sheet"
-            command = file {
-                filename = "update_excel_sheet.py"
+            command = module {
+                module = "ci_tools.dimrset_delivery.update_excel_sheet"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -133,15 +136,16 @@ object DIMRbak : BuildType({
                     --dry-run
                 """.trimIndent()
             }
-            workingDir = "ci/DIMRset_delivery/src"
+            workingDir = "ci/python"
             environment = venv {
-                requirementsFile = "../requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
             }
         }
         python {
             name = "Prepare email template"
-            command = file {
-                filename = "prepare_email.py"
+            command = module {
+                module = "ci_tools.dimrset_delivery.prepare_email"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -149,15 +153,16 @@ object DIMRbak : BuildType({
                     --dry-run
                 """.trimIndent()
             }
-            workingDir = "ci/DIMRset_delivery/src"
+            workingDir = "ci/python"
             environment = venv {
-                requirementsFile = "../requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
             }
         }
         python {
             name = "Update public wiki"
-            command = file {
-                filename = "update_public_wiki.py"
+            command = module {
+                module = "ci_tools.dimrset_delivery.update_public_wiki"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --atlassian-username "%dimrbakker_username%"
@@ -167,15 +172,16 @@ object DIMRbak : BuildType({
                     --dry-run
                 """.trimIndent()
             }
-            workingDir = "ci/DIMRset_delivery/src"
+            workingDir = "ci/python"
             environment = venv {
-                requirementsFile = "../requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
             }
         }
         python {
             name = "Pin and tag builds"
-            command = file {
-                filename = "pin_and_tag_builds.py"
+            command = module {
+                module = "ci_tools.dimrset_delivery.pin_and_tag_builds"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
@@ -185,9 +191,10 @@ object DIMRbak : BuildType({
                     --dry-run
                 """.trimIndent()
             }
-            workingDir = "ci/DIMRset_delivery/src"
+            workingDir = "ci/python"
             environment = venv {
-                requirementsFile = "../requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
             }
         }
     }
