@@ -38,7 +38,6 @@ Finally, the main class putting everything together is the DimrAutomation class.
 
 ## Module Structure
 
-- `DimrAutomation.py` - Main automation orchestrator class
 - `helpers/` - Helper modules for various automation tasks
 - `lib/` - Library wrappers for TeamCity and Atlassian APIs
 - `settings/` - Configuration constants and settings

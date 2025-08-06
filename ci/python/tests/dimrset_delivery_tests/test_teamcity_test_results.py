@@ -16,7 +16,7 @@ from ci_tools.dimrset_delivery.teamcity_test_results import (
 )
 
 
-class TestTestResultExecutiveSummary:
+class TestResultExecutiveSummary:
     """Test cases for TestResultExecutiveSummary class."""
 
     def test_init_with_values(self) -> None:
@@ -42,7 +42,7 @@ class TestTestResultExecutiveSummary:
         assert summary.percentage == 0.0
 
 
-class TestTestResult:
+class TestResultInfo:
     """Test cases for TestResult class."""
 
     def test_test_result_can_be_created(self) -> None:
@@ -95,7 +95,7 @@ class TestConfigurationTestResult:
         assert config_result.get_not_passed_total() == 6
 
 
-class TestTeamcityRetrieveEngineTestStatusDPC:
+class TestTeamcityTestResults:
     """Test cases for log_executive_summary function."""
 
     def test_log_to_file_single_arg(self) -> None:

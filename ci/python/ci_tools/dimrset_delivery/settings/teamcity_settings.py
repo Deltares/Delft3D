@@ -1,33 +1,11 @@
 from enum import Enum
 
 from ..helpers.KernelData import KernelData
-from ..helpers.ToolData import ToolData
 
 # All kernels for which the versions are set in the configuration parameters of 2.Dimr_collector_release
 KERNELS = [
     KernelData(name_for_extracting_revision="DIMRset_ver", name_for_email="DIMRset"),
     KernelData(name_for_extracting_revision="build.vcs.number", name_for_email="OSS"),
-]
-
-# All tools for which a version should be extracted from the Version.txt artifact for creating the SVN log message
-TOOLS = [
-    ToolData(name_for_extracting_version="D-Flow FM", name_for_svn_log="D-Flow FM"),
-    ToolData(name_for_extracting_version="WQ PROCESSES", name_for_svn_log="D-WAQ"),
-    ToolData(name_for_extracting_version="Delft3D-WAVE", name_for_svn_log="D-Waves"),
-    ToolData(name_for_extracting_version="DIMR_EXE", name_for_svn_log="DIMR"),
-]
-
-# All testcase groups that are listed in the Status of Release Testbench artifact
-TESTCASE_GROUPS = [
-    "D-Flow FM",
-    "D-Flow FM, D-RR",
-    "D-Flow FM, D-RTC",
-    "D-Flow FM, D-RTC, D-Waves",
-    "D-Flow FM, D-Waves",
-    "D-PART",
-    "D-RR",
-    "D-WAQ",
-    "D-Waves",
 ]
 
 

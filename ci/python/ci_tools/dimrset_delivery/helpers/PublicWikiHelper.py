@@ -39,8 +39,6 @@ class PublicWikiHelper(object):
             A reference to a TeamCity REST API wrapper.
         dimr_version : str
             The version of DIMR to update the Public Wiki for.
-        svn_revision_number : str
-            The SVN revision of the DIMR set.
         """
         self.__atlassian = atlassian
         self.__teamcity = teamcity
