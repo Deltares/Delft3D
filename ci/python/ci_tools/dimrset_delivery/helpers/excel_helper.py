@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 from typing import Dict, List
 
-from openpyxl import load_workbook, worksheet
+from openpyxl import load_workbook
+from openpyxl.worksheet.worksheet import Worksheet
 
 from ..lib.teamcity import TeamCity
 from ..settings.general_settings import NAME_COLUMN, SHEET_NAME
@@ -61,7 +62,7 @@ class ExcelHelper(object):
         row = []
 
         row.append("")  # Column A (empty column)
-        row.append(datetime.now(tz=timezone.utc).date())  # Column B (Date)
+        row.append(str(datetime.now(tz=timezone.utc).date()))  # Column B (Date)
         row.append(f"DIMRset {self.__dimr_version}")  # Column C (DIMR version)
         row.append("")  # Column D (Revision)
         row.append("FLOW1D2D now in GitHub")  # Column E (Flow1D)
@@ -79,7 +80,7 @@ class ExcelHelper(object):
 
         return row
 
-    def __worksheet_already_contains_row(self, worksheet: worksheet) -> bool:
+    def __worksheet_already_contains_row(self, worksheet: Worksheet) -> bool:
         """
         Check if the Excel sheet already contains a row for the given DIMRset.
 

@@ -45,7 +45,7 @@ def is_signtool_available(developer_prompt: str) -> bool:
         return False
 
 
-def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple:
+def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple[str, str]:
     """Verify the signing authority of a given file using the specified developer prompt.
 
     Parameters
@@ -57,7 +57,7 @@ def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple:
 
     Returns
     -------
-    tuple
+    tuple[str, str]
         A tuple containing the verification status ("Verified" or "Not Verified")
         and the issuer name if verified, or an error message if an exception occurs.
     """
@@ -86,7 +86,7 @@ def verify_signing_authority(filepath: str, developer_prompt: str) -> tuple:
         else:
             return "Not Verified", ""
     except Exception as e:
-        return f"Error: {e}"
+        return "Error", f"{e}"
 
 
 def validate_signing_status(
@@ -170,7 +170,8 @@ def signing_is_valid(filepath: str, developer_prompt: str, expected_issued_to: s
     else:
         print(f"file is correctly (un)signed: {filepath}")
 
-    return status == "Verified" and expected_issued_to == issued_to
+    result: bool = status == "Verified" and expected_issued_to == issued_to
+    return result
 
 
 def is_signing_correct(
@@ -226,8 +227,12 @@ def _get_actual_files(directory: str) -> list[Path]:
     list[Path]
         A list of relative file paths for .dll and .exe files found in the directory.
     """
-    directory = Path(directory)
-    return [path.relative_to(directory) for path in directory.glob("**/*") if path.suffix.lower() in (".dll", ".exe")]
+    directory_path = Path(directory)
+    return [
+        path.relative_to(directory_path)
+        for path in directory_path.glob("**/*")
+        if path.suffix.lower() in (".dll", ".exe")
+    ]
 
 
 def _validate_directory_contents(actual_files: list[Path], expected_files: list[Path]) -> bool:

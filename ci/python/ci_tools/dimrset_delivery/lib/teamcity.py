@@ -1,7 +1,8 @@
 from types import SimpleNamespace
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import requests
+from requests import Response
 
 from ..settings.general_settings import DRY_RUN_PREFIX
 from ..settings.teamcity_settings import TeamcityIds
@@ -66,14 +67,14 @@ class TeamCity(object):
         endpoint = f"{self.__rest_uri}agents"
         if dry_run:
             print(f"{DRY_RUN_PREFIX} GET request: {endpoint}")
-            result = SimpleNamespace(status_code=200, content=b"dry-run mock")
+            result: Union[Response, SimpleNamespace] = SimpleNamespace(status_code=200, content=b"dry-run mock")
         else:
             result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth)
         if result.status_code == 200:
             print("Successfully connected to the TeamCity API.")
             return True
         print("Could not connect to the TeamCity API:")
-        print(f"Error: {result.status_code} - {result.content}")
+        print(f"Error: {result.status_code} - {result.content.decode('utf-8', errors='replace')}")
         return False
 
     def get_project(self, project_id: str) -> Dict[str, str]:
@@ -95,7 +96,8 @@ class TeamCity(object):
         """
         endpoint = f"{self.__rest_uri}projects?locator=id:{project_id}"
         result = requests.get(endpoint, headers=self.__default_headers, auth=self.__auth)
-        return result.json()
+        json_result: Dict[str, str] = result.json()
+        return json_result
 
     def set_project_name(self, project_id: str, new_name: str) -> bytes:
         """
@@ -254,7 +256,7 @@ class TeamCity(object):
         limit: int = 10,
         include_failed_builds: bool = False,
         pinned: str = "any",
-    ) -> Dict[str, Any]:
+    ) -> Optional[Dict[str, Any]]:
         """
         Get builds for the given build type id.
 
@@ -294,14 +296,15 @@ class TeamCity(object):
 
         result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth)
         if result.status_code == 200:
-            return result.json()
+            json_result: Dict[str, Any] = result.json()
+            return json_result
         print(f"Could not retrieve builds for build id {build_type_id}:")
-        print(f"{result.status_code} - {result.content}")
+        print(f"{result.status_code} - {result.content.decode('utf-8', errors='replace')}")
         return None
 
     def get_latest_build_for_build_type_id(
         self, build_type_id: str, include_failed_builds: bool = False
-    ) -> Dict[str, Any]:
+    ) -> Optional[Dict[str, Any]]:
         """
         Get the latest build for the given build type id.
 
@@ -331,7 +334,9 @@ class TeamCity(object):
             include_failed_builds=include_failed_builds,
         )
 
-    def get_latest_build_number_for_build_type_id(self, build_type_id: str, include_failed_builds: bool = False) -> str:
+    def get_latest_build_number_for_build_type_id(
+        self, build_type_id: str, include_failed_builds: bool = False
+    ) -> Optional[str]:
         """
         Get the latest build number for a given build type id.
 
@@ -357,7 +362,8 @@ class TeamCity(object):
         )
         if latest_build is None:
             return None
-        return latest_build["build"][0]["number"]
+        build_number: str = latest_build["build"][0]["number"]
+        return build_number
 
     def get_build_id_for_specific_build(self, build_type_id: str, build_number: str) -> Optional[str]:
         """
@@ -384,9 +390,10 @@ class TeamCity(object):
         )
         result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth)
         if result.status_code == 200:
-            return result.json()["build"][0]["id"]
+            build_id: str = result.json()["build"][0]["id"]
+            return build_id
         print(f"Could not retrieve build id for build type {build_type_id} and build number {build_number}:")
-        print(f"{result.status_code} - {result.content}")
+        print(f"{result.status_code} - {result.content.decode('utf-8', errors='replace')}")
         return None
 
     def get_build_info_for_build_id(self, build_id: str) -> Optional[Dict[str, Any]]:
@@ -418,9 +425,10 @@ class TeamCity(object):
         )
         result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth)
         if result.status_code == 200:
-            return result.json()
+            build_info: Dict[str, Any] = result.json()
+            return build_info
         print(f"Could not retrieve build info for build id {build_id}:")
-        print(f"{result.status_code} - {result.content}")
+        print(f"{result.status_code} - {result.content.decode('utf-8', errors='replace')}")
         return None
 
     def get_full_build_info_for_build_id(self, build_id: str) -> Optional[Dict[str, Any]]:
@@ -449,9 +457,10 @@ class TeamCity(object):
         endpoint = f"{self.__rest_uri}builds/id:{build_id}"
         result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth)
         if result.status_code == 200:
-            return result.json()
+            full_build_info: Dict[str, Any] = result.json()
+            return full_build_info
         print(f"Could not retrieve build info for build id {build_id}:")
-        print(f"{result.status_code} - {result.content}")
+        print(f"{result.status_code} - {result.content.decode('utf-8', errors='replace')}")
         return None
 
     def get_latest_build_id_for_build_type_id(
@@ -516,9 +525,10 @@ class TeamCity(object):
         headers = self.__get_put_request_headers()
         result = requests.get(url=endpoint, headers=headers, auth=self.__auth)
         if result.status_code == 200:
-            return result.json()
+            artifact_names: Dict[str, Any] = result.json()
+            return artifact_names
         print(f"Could not get artifact names for build id {build_id}:")
-        print(f"{result.status_code} - {result.content}")
+        print(f"{result.status_code} - {result.content.decode('utf-8', errors='replace')}")
         return None
 
     def get_build_artifact(self, build_id: str, path_to_artifact: str) -> Optional[bytes]:
@@ -549,7 +559,7 @@ class TeamCity(object):
         if result.status_code == 200:
             return result.content
         print(f"Could not get artifact for build id {build_id} and path {path_to_artifact}:")
-        print(f"{result.status_code} - {result.content}")
+        print(f"{result.status_code} - {result.content.decode('utf-8', errors='replace')}")
         return None
 
     def pin_build(self, build_id: str) -> bool:
@@ -575,7 +585,7 @@ class TeamCity(object):
         if result:
             return True
         print(f"Could not pin build with build id {build_id}:")
-        print(f"{result.status_code} - {result.content}")
+        print(f"{result.status_code} - {result.content.decode('utf-8', errors='replace')}")
         return False
 
     def add_tag_to_build_with_dependencies(self, build_id: str, tag: str) -> bool:
@@ -608,19 +618,20 @@ class TeamCity(object):
         result = requests.post(url=endpoint, headers=headers, auth=self.__auth, data=payload)
         if result.status_code != 200:
             print(f"Could not add {tag} tag to build with build id {build_id}:")
-            print(f"{result.status_code} - {result.content}")
+            print(f"{result.status_code} - {result.content.decode('utf-8', errors='replace')}")
             return False
 
         endpoint = f"{self.__rest_uri}builds/multiple/snapshotDependency:(to:(id:{build_id})),count:1000/tags"
+        csrf_token = self.__get_csrf_token()
         headers = {
             "Content-Type": "application/json",
-            "X-TC-CSRF-Token": self.__get_csrf_token(),
+            "X-TC-CSRF-Token": csrf_token or "",
         }
         payload = f'{{"tag":[{{"name":"{tag}"}}]}}'
         result = requests.post(url=endpoint, headers=headers, auth=self.__auth, data=payload)
         if result.status_code != 200:
             print(f"Could not add {tag} tag to dependencies of build with build id {build_id}:")
-            print(f"{result.status_code} - {result.content}")
+            print(f"{result.status_code} - {result.content.decode('utf-8', errors='replace')}")
             return False
         return True
 
@@ -641,7 +652,7 @@ class TeamCity(object):
         endpoint = f"{self.__base_uri}authenticationTest.html?csrf"
         result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth)
         if result.status_code == 200:
-            return result.content
+            return result.content.decode("utf-8", errors="replace")
         return None
 
     def __get_put_request_headers(
@@ -662,10 +673,11 @@ class TeamCity(object):
         Dict[str, str]
             The headers required for making PUT requests.
         """
+        csrf_token = self.__get_csrf_token()
         headers = {
             "content-type": content_type,
             "accept": accept,
-            "X-TC-CSRF-Token": self.__get_csrf_token(),
+            "X-TC-CSRF-Token": csrf_token or "",
             "origin": self.__base_uri,
         }
         return headers
@@ -706,7 +718,7 @@ class TeamCity(object):
                     build_ids.append(dependency_build_id)
             return build_ids
         print(f"Could not retrieve build info for build id {build_id}:")
-        print(f"{result.status_code} - {result.content}")
+        print(f"{result.status_code} - {result.content.decode('utf-8', errors='replace')}")
         return []
 
     def get_dependent_build_id(self, build_id: str, dependent_build_type: str) -> Optional[int]:
@@ -739,7 +751,8 @@ class TeamCity(object):
             for build in build_data.get("build", []):
                 dependent_build_type_id = str(build.get("buildTypeId"))
                 if dependent_build_type_id == dependent_build_type:
-                    return build.get("id")
+                    build_id_value: Optional[int] = build.get("id")
+                    return build_id_value
 
         print(f"Could not retrieve dependend build ({dependent_build_type}) for build id {build_id}:")
         return None
