@@ -166,7 +166,7 @@ project {
             id = "KEEPER_VAULT_DELFT3D"
             type = "OAuthProvider"
             param("displayName", "Keeper Vault Delft3d")
-            param("secure:client-secret", "credentialsJSON:4a3be7b8-d38c-41fd-9d40-fbfe4e0131aa")
+            param("secure:client-secret", "credentialsJSON:b3006852-9a08-4b9c-b315-001c4acac724")
             param("providerType", "teamcity-ksm")
         }
     }
