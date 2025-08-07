@@ -6223,17 +6223,17 @@ contains
 
          if (jawave > NO_WAVES .and. jamapwav > 0) then
             if (flowWithoutWaves) then ! Check the external forcing wave quantities and their associated arrays
-               if (jamapwav_hwav > 0 .and. allocated(hwav)) then
+               if (allocated(hwav)) then
                   if (jamapsigwav == 0) then
                      ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_rms_height', 'RMS wave height', 'm', jabndnd=jabndnd_) ! not CF
                   else
                      ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_significant_height', 'Significant wave height', 'm', jabndnd=jabndnd_)
                   end if
                end if
-               if (jamapwav_twav > 0 .and. allocated(twav)) then
+               if (allocated(twav)) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'tp', 'sea_surface_wave_period_at_variance_spectral_density_maximum', 'Peak wave period', 's')
                end if
-               if (jamapwav_phiwav > 0 .and. allocated(phiwav)) then
+               if (allocated(phiwav)) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'degree')
                end if
             else ! flow with waves
@@ -7642,7 +7642,7 @@ contains
          end if
          !
          if (flowWithoutWaves) then ! Check the external forcing wave quantities and their associated arrays
-            if (jamapwav_hwav > 0 .and. allocated(hwav)) then
+            if (allocated(hwav)) then
                if (allocated(wa)) then
                   deallocate (wa, stat=ierr)
                end if
@@ -7650,13 +7650,13 @@ contains
                wa = wavfac * hwav
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, UNC_LOC_S, wa, jabndnd=jabndnd_)
             end if
-            if (jamapwav_twav > 0 .and. allocated(twav)) then
+            if (allocated(twav)) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, UNC_LOC_S, twav, jabndnd=jabndnd_)
             end if
-            if (jamapwav_phiwav > 0 .and. allocated(phiwav)) then
+            if (allocated(phiwav)) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_phiwav, UNC_LOC_S, phiwav, jabndnd=jabndnd_)
             end if
-         else ! flowWithoutWaves
+         else ! no flowWithoutWaves
             if (allocated(wa)) then
                deallocate (wa, stat=ierr)
             end if

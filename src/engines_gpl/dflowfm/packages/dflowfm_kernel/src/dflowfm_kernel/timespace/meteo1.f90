@@ -7036,15 +7036,12 @@ contains
       case ('hrms', 'wavesignificantheight')
          itemPtr1 => item_hrms
          dataPtr1 => hwavcom
-         jamapwav_hwav = 1
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
          dataPtr1 => twavcom
-         jamapwav_twav = 1
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
-         jamapwav_phiwav = 1
          ! wave height needed as the weighting factor for direction interpolation
          itemPtr2 => item_hrms
          dataPtr2 => hwavcom

@@ -2097,9 +2097,6 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_nudging', jamapnudge, success)
       call prop_get(md_ptr, 'output', 'Wrimap_pure1d_debug', jamapPure1D_debug, success)
       call prop_get(md_ptr, 'output', 'Wrimap_waves', jamapwav, success)
-      jamapwav_hwav = 0
-      jamapwav_twav = 0
-      jamapwav_phiwav = 0
       call prop_get(md_ptr, 'output', 'Wrimap_DTcell', jamapdtcell, success)
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       call prop_get(md_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, success)
