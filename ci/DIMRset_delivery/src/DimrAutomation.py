@@ -56,9 +56,9 @@ class DimrAutomation(object):
         # __get_kernel_versions is crucial for the script to run, do not comment this one out!
         self.__get_kernel_versions(build_id_chain)
         self.__download_and_install_artifacts(build_id_chain)
-        self.__git_client.tag_commit(
-            self.__kernel_versions["build.vcs.number"], f"DIMRset_{self.__dimr_version}"
-        )
+        # self.__git_client.tag_commit(
+        #     self.__kernel_versions["build.vcs.number"], f"DIMRset_{self.__dimr_version}"
+        # )
         self.__pin_and_tag_builds(build_id_chain)
         self.__update_excel_sheet()
         self.__prepare_email(build_id_chain)  # depending on TC tags
