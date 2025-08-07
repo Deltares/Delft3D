@@ -143,7 +143,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c052_neumann_cmp_1d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c052_neumann_cmp_1d</path>
+      <path version="2025-08-07T14:48:59.813000">e02_dflowfm/f005_boundary_conditions/c052_neumann_cmp_1d</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
