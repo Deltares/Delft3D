@@ -3036,7 +3036,7 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f011_c019_windxy_in_u_and_v" ref="dflowfm_default">
+    <testCase name="e02_f011_c019_wind_in_bc" ref="dflowfm_default">
       <path version="2025-08-05T11:38:13.904000">e02_dflowfm/f011_wind/c019_wind_in_bc</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
