@@ -540,7 +540,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c010_frisianinlet_schematized" ref="dflowfm_default">
-      <path version="2025-08-01T14:38:51.258000">e02_dflowfm/f013_waves/c010_frisianinlet_schematized</path>
+      <path version="2025-08-07T09:51:00.599000">e02_dflowfm/f013_waves/c010_frisianinlet_schematized</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/f34_his.nc" type="netCDF">
