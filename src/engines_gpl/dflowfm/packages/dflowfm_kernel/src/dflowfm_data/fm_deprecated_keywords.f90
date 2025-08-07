@@ -16,8 +16,8 @@ contains
       end if
       allocate (deprecated_mdu_keywords%deprecated_keyword_list(100), deprecated_ext_keywords%deprecated_keyword_list(100))
 
-      deprecated_mdu_keywords%additional_information = 'Check Section A.4 in the User Manual for information on how to update this input file.'
-      deprecated_ext_keywords%additional_information = 'Check Section C.5 in the User Manual for information on how to update this input file.'
+      deprecated_mdu_keywords%additional_information = 'Check the User Manual appendix about the Master Definition file for information on how to update this input file.'
+      deprecated_ext_keywords%additional_information = 'Check the User Manual appendix about the external forcings file for information on how to update this input file.'
       deprecated_mdu_keywords%count = 0
       deprecated_ext_keywords%count = 0
 
