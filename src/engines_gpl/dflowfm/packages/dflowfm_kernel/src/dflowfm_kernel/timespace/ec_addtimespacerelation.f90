@@ -744,6 +744,8 @@ contains
             sourceItemName = 'uniform_item'
          else if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'eastward_wind'
+         else if (ec_filetype == provFile_bc) then
+            sourceItemName = 'WINDX'
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windx.')
             return
@@ -758,6 +760,8 @@ contains
             sourceItemName = 'uniform_item'
          else if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'northward_wind'
+         else if (ec_filetype == provFile_bc) then
+            sourceItemName = 'WINDY'
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windy.')
             return
