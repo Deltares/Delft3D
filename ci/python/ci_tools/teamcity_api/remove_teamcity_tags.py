@@ -66,9 +66,10 @@ if __name__ == "__main__":
                 payload = f'{{"tag": [{{"name":  "{tag}"}}]}}'
                 logger.log(payload)
                 try:
-                    teamcity_client.remove_tag_from_build(build_configuration, tag)
-                except HTTPStatusError:
+                    teamcity_client.remove_tag_from_build(build_configuration, tag, logger)
+                except HTTPStatusError as e:
                     logger.log("Apicall triggered a exception")
+                    logger.log(e)
 
                 logger.log(f"Deleted tag. {tag}.")
         else:
