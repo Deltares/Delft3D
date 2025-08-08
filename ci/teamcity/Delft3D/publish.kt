@@ -162,6 +162,7 @@ object Publish : BuildType({
                     "%destination_image_specific%"
                 """.trimIndent()
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         script {
             name = "Replace default image in run_docker.sh scripts"
