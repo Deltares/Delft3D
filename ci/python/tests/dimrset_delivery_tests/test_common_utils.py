@@ -6,10 +6,13 @@ from unittest.mock import Mock, mock_open, patch
 import pytest
 
 from ci_tools.dimrset_delivery.common_utils import (
+    get_previous_testbank_result_parser,
+    get_tag_from_build_info,
     get_testbank_result_parser,
     initialize_clients,
     print_dry_run_message,
 )
+from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.helpers.git_client import GitClient
 from ci_tools.dimrset_delivery.helpers.result_testbank_parser import ResultTestBankParser
 from ci_tools.dimrset_delivery.helpers.ssh_client import SshClient
@@ -197,3 +200,264 @@ class TestPrintDryRunMessage:
 
         # Assert
         mock_print.assert_not_called()
+
+
+class TestGetPreviousTestbankResultParser:
+    """Test cases for get_previous_testbank_result_parser function."""
+
+    def test_no_teamcity_client_raises_error(self) -> None:
+        """Test that missing TeamCity client raises ValueError."""
+        # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.teamcity = None
+
+        # Act & Assert
+        with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
+            get_previous_testbank_result_parser(mock_context)
+
+    def test_no_current_build_info_returns_none(self) -> None:
+        """Test that missing current build info returns None."""
+        # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.build_id = "12345"
+        mock_context.teamcity = Mock()
+        mock_context.teamcity.get_full_build_info_for_build_id.return_value = None
+
+        # Act
+        result = get_previous_testbank_result_parser(mock_context)
+
+        # Assert
+        assert result is None
+        mock_context.teamcity.get_full_build_info_for_build_id.assert_called_once_with("12345")
+
+    def test_no_build_type_id_returns_none(self) -> None:
+        """Test that missing buildTypeId returns None."""
+        # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.build_id = "12345"
+        mock_context.teamcity = Mock()
+        mock_context.teamcity.get_full_build_info_for_build_id.return_value = {}
+
+        # Act
+        result = get_previous_testbank_result_parser(mock_context)
+
+        # Assert
+        assert result is None
+
+    def test_no_builds_returns_none(self) -> None:
+        """Test that no builds available returns None."""
+        # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.build_id = "12345"
+        mock_context.teamcity = Mock()
+        mock_context.teamcity.get_full_build_info_for_build_id.return_value = {
+            "buildTypeId": "bt123",
+            "tags": {"tag": [{"name": "DIMRset_1.2.3"}]},
+        }
+        mock_context.teamcity.get_builds_for_build_type_id.return_value = None
+
+        # Act
+        result = get_previous_testbank_result_parser(mock_context)
+
+        # Assert
+        assert result is None
+
+    @patch("ci_tools.dimrset_delivery.common_utils.ResultTestBankParser")
+    def test_successful_previous_parser_retrieval(self, mock_parser_class: Mock) -> None:
+        """Test successful retrieval of previous testbank result parser."""
+        # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.build_id = "12345"
+        mock_context.teamcity = Mock()
+
+        current_build_info = {"buildTypeId": "bt123", "tags": {"tag": [{"name": "DIMRset_1.2.3"}]}}
+
+        builds_response = {
+            "build": [
+                {"id": 12346},  # Different build
+                {"id": 12344},  # Previous build
+            ]
+        }
+
+        previous_build_info = {"buildTypeId": "bt123", "tags": {"tag": [{"name": "DIMRset_1.2.2"}]}}
+
+        mock_artifact_content = b"artifact content"
+
+        mock_context.teamcity.get_full_build_info_for_build_id.side_effect = [
+            current_build_info,  # For current build
+            None,  # For first loop build (12346)
+            previous_build_info,  # For second loop build (12344)
+        ]
+        mock_context.teamcity.get_builds_for_build_type_id.return_value = builds_response
+        mock_context.teamcity.get_build_artifact.return_value = mock_artifact_content
+
+        mock_parser_instance = Mock(spec=ResultTestBankParser)
+        mock_parser_class.return_value = mock_parser_instance
+
+        # Act
+        result = get_previous_testbank_result_parser(mock_context)
+
+        # Assert
+        assert result == mock_parser_instance
+        mock_parser_class.assert_called_once_with("artifact content")
+        mock_context.teamcity.get_build_artifact.assert_called_once()
+
+    def test_no_previous_version_found_returns_none(self) -> None:
+        """Test that no previous version found returns None."""
+        # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.build_id = "12345"
+        mock_context.teamcity = Mock()
+
+        current_build_info = {"buildTypeId": "bt123", "tags": {"tag": [{"name": "DIMRset_1.2.3"}]}}
+
+        builds_response = {
+            "build": [
+                {"id": 12346},  # Different build
+            ]
+        }
+
+        other_build_info = {
+            "buildTypeId": "bt123",
+            "tags": {"tag": [{"name": "DIMRset_1.2.4"}]},  # Higher version
+        }
+
+        mock_context.teamcity.get_full_build_info_for_build_id.side_effect = [
+            current_build_info,  # For current build
+            other_build_info,  # For other build
+        ]
+        mock_context.teamcity.get_builds_for_build_type_id.return_value = builds_response
+
+        # Act
+        result = get_previous_testbank_result_parser(mock_context)
+
+        # Assert
+        assert result is None
+
+    def test_no_artifact_returns_none(self) -> None:
+        """Test that missing artifact returns None."""
+        # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.build_id = "12345"
+        mock_context.teamcity = Mock()
+
+        current_build_info = {"buildTypeId": "bt123", "tags": {"tag": [{"name": "DIMRset_1.2.3"}]}}
+
+        builds_response = {
+            "build": [
+                {"id": 12344},  # Previous build
+            ]
+        }
+
+        previous_build_info = {"buildTypeId": "bt123", "tags": {"tag": [{"name": "DIMRset_1.2.2"}]}}
+
+        mock_context.teamcity.get_full_build_info_for_build_id.side_effect = [
+            current_build_info,  # For current build
+            previous_build_info,  # For previous build
+        ]
+        mock_context.teamcity.get_builds_for_build_type_id.return_value = builds_response
+        mock_context.teamcity.get_build_artifact.return_value = None
+
+        # Act
+        result = get_previous_testbank_result_parser(mock_context)
+
+        # Assert
+        assert result is None
+
+
+class TestGetTagFromBuildInfo:
+    """Test cases for get_tag_from_build_info function."""
+
+    def test_no_tags_returns_default(self) -> None:
+        """Test that build info without tags returns default tuple."""
+        # Arrange
+        build_info = {}
+
+        # Act
+        result = get_tag_from_build_info(build_info)
+
+        # Assert
+        assert result == (0, 0, 0)
+
+    def test_empty_tags_returns_default(self) -> None:
+        """Test that empty tags returns default tuple."""
+        # Arrange
+        build_info = {"tags": {"tag": []}}
+
+        # Act
+        result = get_tag_from_build_info(build_info)
+
+        # Assert
+        assert result == (0, 0, 0)
+
+    def test_no_dimrset_tag_returns_default(self) -> None:
+        """Test that tags without DIMRset prefix return default tuple."""
+        # Arrange
+        build_info = {"tags": {"tag": [{"name": "some_other_tag"}, {"name": "another_tag"}]}}
+
+        # Act
+        result = get_tag_from_build_info(build_info)
+
+        # Assert
+        assert result == (0, 0, 0)
+
+    def test_valid_dimrset_tag_returns_version(self) -> None:
+        """Test that valid DIMRset tag returns parsed version."""
+        # Arrange
+        build_info = {"tags": {"tag": [{"name": "some_other_tag"}, {"name": "DIMRset_1.2.3"}, {"name": "another_tag"}]}}
+
+        # Act
+        result = get_tag_from_build_info(build_info)
+
+        # Assert
+        assert result == (1, 2, 3)
+
+    def test_multiple_dimrset_tags_returns_last_valid(self) -> None:
+        """Test that multiple DIMRset tags returns the last valid one."""
+        # Arrange
+        build_info = {
+            "tags": {"tag": [{"name": "DIMRset_1.0.0"}, {"name": "DIMRset_2.3.4"}, {"name": "some_other_tag"}]}
+        }
+
+        # Act
+        result = get_tag_from_build_info(build_info)
+
+        # Assert
+        assert result == (2, 3, 4)
+
+    def test_valid_non_standard_dimrset_tag_returns_version(self) -> None:
+        """Test that valid DIMRset tag with non-standard format returns parsed version."""
+        # Arrange
+        build_info = {
+            "tags": {
+                "tag": [
+                    {"name": "some_other_tag"},
+                    {"name": "DIMRset_1.2"},  # Valid but only major.minor
+                    {"name": "another_tag"},
+                ]
+            }
+        }
+
+        # Act
+        result = get_tag_from_build_info(build_info)
+
+        # Assert
+        assert result == (1, 2)
+
+    def test_invalid_dimrset_tag_returns_default(self) -> None:
+        """Test that invalid DIMRset tag format returns default tuple."""
+        # Arrange
+        build_info = {
+            "tags": {
+                "tag": [
+                    {"name": "DIMRset_invalid"},
+                    {"name": "DIMRset_a.b.c"},  # Completely invalid
+                ]
+            }
+        }
+
+        # Act
+        result = get_tag_from_build_info(build_info)
+
+        # Assert
+        assert result == (0, 0, 0)

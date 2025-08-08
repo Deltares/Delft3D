@@ -1,18 +1,25 @@
 #!/usr/bin/env python3
 """Prepare a mail template for the release notification."""
 
-from typing import Optional
+import os
+from typing import Dict, Optional
 
-from ci_tools.dimrset_delivery.common_utils import get_testbank_result_parser
+from ci_tools.dimrset_delivery.common_utils import (
+    get_previous_testbank_result_parser,
+    get_testbank_result_parser,
+)
 from ci_tools.dimrset_delivery.dimr_context import (
     DimrAutomationContext,
     create_context_from_args,
     parse_common_arguments,
 )
-from ci_tools.dimrset_delivery.helpers.email_helper import EmailHelper
 from ci_tools.dimrset_delivery.helpers.result_testbank_parser import ResultTestBankParser
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
-from ci_tools.dimrset_delivery.settings.teamcity_settings import PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT
+from ci_tools.dimrset_delivery.settings.email_settings import (
+    LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS,
+    RELATIVE_PATH_TO_EMAIL_TEMPLATE,
+)
+from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX, RELATIVE_PATH_TO_OUTPUT_FOLDER
+from ci_tools.dimrset_delivery.settings.teamcity_settings import KERNELS
 
 
 def prepare_email(context: DimrAutomationContext) -> None:
@@ -47,121 +54,163 @@ def prepare_email(context: DimrAutomationContext) -> None:
     print("Email template preparation completed successfully!")
 
 
-def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optional[ResultTestBankParser]:
-    """Get a new ResultTestBankParser for the previous versioned tagged test bench results.
+class EmailHelper(object):
+    """Class responsible for preparing the weekly DIMR release email."""
 
-    Parameters
-    ----------
-    context : DimrAutomationContext
-        The automation context containing necessary clients and configuration.
+    def __init__(
+        self,
+        dimr_version: str,
+        kernel_versions: Dict[str, str],
+        current_parser: ResultTestBankParser,
+        previous_parser: Optional[ResultTestBankParser],
+    ) -> None:
+        """
+        Create a new instance of EmailHelper.
 
-    Returns
-    -------
-    Optional[ResultTestBankParser]
-        Parser for previous test results, or None if not found.
-    """
-    if not context.teamcity:
-        raise ValueError("TeamCity client is required but not initialized")
+        Args:
+            dimr_version (str): The latest DIMR version.
+            kernel_versions (Dict[str, str]): A dictionary mapping kernel names to their version.
+            current_parser (ResultTestBankParser): A parser for the latest test bench results.
+            previous_parser (Optional[ResultTestBankParser]): A parser for the previous test bench results.
+        """
+        self.__dimr_version = dimr_version
+        self.__kernel_versions = kernel_versions
+        self.__current_parser = current_parser
+        self.__previous_parser = previous_parser
+        self.__template = ""
 
-    current_build_info = context.teamcity.get_full_build_info_for_build_id(context.build_id)
-    if not current_build_info:
-        return None
+    def generate_template(self) -> None:
+        """Generate a template email for the latest DIMR release that can be copy/pasted into Outlook."""
+        self.__load_template()
+        self.__insert_summary_table_header()
+        self.__insert_summary_table()
+        self.__save_template()
 
-    build_type_id = current_build_info.get("buildTypeId")
-    if not build_type_id:
-        return None
+    def __load_template(self) -> None:
+        """Load the template into memory."""
+        current_dir = os.path.dirname(__file__)
+        path_to_email_template = os.path.join(current_dir, RELATIVE_PATH_TO_EMAIL_TEMPLATE)
 
-    current_tag_name = get_tag_from_build_info(current_build_info)
+        with open(path_to_email_template, "r") as file:
+            self.__template = file.read()
 
-    # Get all builds for the publish build type
-    latest_builds = context.teamcity.get_builds_for_build_type_id(
-        build_type_id=build_type_id,
-        limit=50,
-        include_failed_builds=False,
-    )
+    def __insert_summary_table_header(self) -> None:
+        """Insert the summary table header into the template."""
+        html = self.__template
 
-    if latest_builds is None:
-        return None
+        html = html.replace("@@@DIMR_VERSION@@@", self.__dimr_version)
+        html = html.replace("@@@LINK_TO_PUBLIC_WIKI@@@", self.__generate_wiki_link())
 
-    previous_build_id = None
-    previous_version = None
+        self.__template = html
 
-    # Find previous versioned tagged build (major.minor.patch < current)
-    builds_list = latest_builds.get("build", []) if isinstance(latest_builds, dict) else []
-    for build in builds_list:
-        build_id = build.get("id")
-        if build_id == int(context.build_id):
-            continue
+    def __generate_wiki_link(self) -> str:
+        link = f"https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+{self.__dimr_version}"
+        return f'<a href="{link}">{link}</a>'
 
-        loop_build_info = context.teamcity.get_full_build_info_for_build_id(str(build_id))
-        if not loop_build_info:
-            continue
+    def __insert_summary_table(self) -> None:
+        """Insert the summary table into the template."""
+        html = self.__generate_summary_table_html()
+        self.__template = self.__template.replace("@@@SUMMARY_TABLE_BODY@@@", html)
 
-        loop_tag_name = get_tag_from_build_info(loop_build_info)
+    def __generate_summary_table_html(self) -> str:
+        """Dynamically generates the summary table based on the kernels expected to be present."""
+        html = ""
 
-        if loop_tag_name and loop_tag_name != (0, 0, 0) and current_tag_name and loop_tag_name < current_tag_name:
-            if previous_version is None or loop_tag_name > previous_version:
-                previous_build_id = build_id
-                previous_version = loop_tag_name
+        # Insert the kernel information
+        for kernel, revision in self.__kernel_versions.items():
+            if kernel == "DIMRset_ver":
+                continue
 
-    # Previous version not found
-    if previous_build_id is None:
-        return None
+            kernel_name = self.__get_email_friendly_kernel_name(kernel)
 
-    # Download artifact for previous build
-    artifact = context.teamcity.get_build_artifact(
-        build_id=f"{previous_build_id}",
-        path_to_artifact=PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT,
-    )
-    if artifact is None:
-        return None
+            html += "<tr>"
+            html += f"<td>{kernel_name}</td>"
+            html += f"<td>{revision}</td>"
+            html += "<td></td>"
+            html += "</tr>"
 
-    return ResultTestBankParser(artifact.decode())
+        # Insert the passing test percentage info
+        html += "<tr>"
+        html += "<td></td>"
+        passing_test_percentage = self.__current_parser.get_percentage_total_passing()
+        if float(passing_test_percentage) < LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS:
+            html += f'<td><span class="fail">{passing_test_percentage}%</span></td>'
+        else:
+            html += f'<td><span class="success">{passing_test_percentage}%</span></td>'
 
+        if self.__previous_parser is not None:
+            previous_percentage_passing_tests = self.__previous_parser.get_percentage_total_passing()
+            html += "<td><table><tr><td><br />"
+            if float(previous_percentage_passing_tests) < LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS:
+                html += f'Green testbank was (<span class="fail">{previous_percentage_passing_tests}%</span>)'
+            else:
+                html += f'Green testbank was (<span class="success">{previous_percentage_passing_tests}%</span>)'
+            html += "<br />"
+            html += (
+                f"Total tests: {self.__current_parser.get_total_tests()} "
+                f"was ({self.__previous_parser.get_total_tests()})"
+            )
+            html += "<br />"
+            html += (
+                f"Passed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {self.__current_parser.get_total_passing()} "
+                f"was ({self.__previous_parser.get_total_passing()})"
+            )
+        else:
+            html += "<td><table><tr><td><br />"
+            html += f'Green testbank: <span class="success">{passing_test_percentage}%</span>'
+            html += "<br />"
+            html += f"Total tests: {self.__current_parser.get_total_tests()}"
+            html += "<br />"
+            html += f"Passed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {self.__current_parser.get_total_passing()}"
 
-def get_tag_from_build_info(current_build_info: dict) -> tuple:
-    """Extract tag information from build info.
+        html += "</tr></table>"
+        html += "</td>"
+        html += "</tr>"
 
-    Parameters
-    ----------
-    current_build_info : dict
-        Build information dictionary from TeamCity.
+        total_exceptions = self.__current_parser.get_total_exceptions()
+        if self.__previous_parser is not None:
+            previous_total_exceptions = self.__previous_parser.get_total_exceptions()
+        else:
+            previous_total_exceptions = "N/A"
 
-    Returns
-    -------
-    tuple
-        Tuple containing version numbers (major, minor, patch).
-    """
-    current_tag_name = (0, 0, 0)
-    tags = current_build_info.get("tags", {}).get("tag", [])
-    for tag in tags:
-        tag_name = tag.get("name")
-        if tag_name and tag_name.startswith("DIMRset_"):
-            parsed_version = parse_version(tag_name)
-            if parsed_version is not None:
-                current_tag_name = parsed_version
-    return current_tag_name
+        html += "<tr>"
+        html += "<td></td>"
+        if int(total_exceptions) > 0:
+            html += f'<td><span class="fail">{total_exceptions}</span></td>'
+        else:
+            html += f'<td><span class="success">{total_exceptions}</span></td>'
 
+        if self.__previous_parser is not None:
+            if int(previous_total_exceptions) > 0:
+                html += f'<td>Crashes in testbank (was <span class="fail">{previous_total_exceptions}</span>)</td>'
+            else:
+                html += f'<td>Crashes in testbank (was <span class="success">{previous_total_exceptions}</span>)</td>'
+        else:
+            html += "<td>Crashes in testbank (no previous data)</td>"
+        html += "</tr>"
 
-def parse_version(tag: str) -> Optional[tuple]:
-    """Parse version string from tag.
+        return html
 
-    Parameters
-    ----------
-    tag : str
-        Tag string to parse (e.g., 'DIMRset_1.2.3').
+    def __get_email_friendly_kernel_name(self, kernel: str) -> str:
+        """Get the email friendly kernel name for a given kernel."""
+        kernel_name = ""
+        for kernel_config in KERNELS:
+            if kernel_config.name_for_extracting_revision == kernel:
+                kernel_name = kernel_config.name_for_email
+        return kernel_name
 
-    Returns
-    -------
-    Optional[tuple]
-        Tuple of version numbers (major, minor, patch) or None if parsing fails.
-    """
-    if tag and tag.startswith("DIMRset_"):
-        try:
-            return tuple(map(int, tag[len("DIMRset_") :].split(".")))
-        except ValueError:
-            return None
-    return None
+    def __save_template(self) -> None:
+        """Save the email template in the output folder."""
+        current_dir = os.path.dirname(__file__)
+        path_to_output_folder = os.path.join(current_dir, RELATIVE_PATH_TO_OUTPUT_FOLDER)
+        path_to_email_template = os.path.join(path_to_output_folder, f"DIMRset_{self.__dimr_version}.html")
+
+        print(f"Saved email html to {path_to_email_template}")
+        if not os.path.exists(path_to_output_folder):
+            os.makedirs(path_to_output_folder)
+
+        with open(path_to_email_template, "w+") as file:
+            file.write(self.__template)
 
 
 if __name__ == "__main__":
