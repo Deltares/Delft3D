@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, Mock, call, patch
 
 import pytest
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext, DimrCredentials, ServiceRequirements
 from ci_tools.dimrset_delivery.download_and_install_artifacts import download_and_install_artifacts
 
 
@@ -252,8 +252,6 @@ class TestIntegration:
     def test_integration_with_real_context_structure(self, mock_helper_class: MagicMock) -> None:
         """Test integration with a more realistic context object."""
         # Arrange
-        from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
-
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
             Atlassian=Mock(),
@@ -261,9 +259,8 @@ class TestIntegration:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
-                build_id="test-build-123",
-                dry_run=False,
+            # Create credentials and requirements objects
+            credentials = DimrCredentials(
                 atlassian_username="test_user",
                 atlassian_password="test_pass",
                 teamcity_username="tc_user",
@@ -272,8 +269,12 @@ class TestIntegration:
                 ssh_password="ssh_pass",
                 git_username="git_user",
                 git_pat="git_token",
-                require_atlassian=False,
-                require_git=False,
+            )
+
+            requirements = ServiceRequirements(atlassian=False, teamcity=True, ssh=True, git=False)
+
+            context = DimrAutomationContext(
+                build_id="test-build-123", dry_run=False, credentials=credentials, requirements=requirements
             )
 
         # Mock the context methods to return predictable values
@@ -299,8 +300,6 @@ class TestIntegration:
     def test_integration_dry_run_with_real_context(self) -> None:
         """Test dry run mode with a realistic context object."""
         # Arrange
-        from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
-
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
             Atlassian=Mock(),
@@ -308,14 +307,10 @@ class TestIntegration:
             SshClient=Mock(),
             GitClient=Mock(),
         ):
-            context = DimrAutomationContext(
-                build_id="dry-run-build-456",
-                dry_run=True,
-                require_atlassian=False,
-                require_git=False,
-                require_teamcity=False,
-                require_ssh=False,
-            )
+            # Create requirements object for a dry run with no services
+            requirements = ServiceRequirements(atlassian=False, teamcity=False, ssh=False, git=False)
+
+            context = DimrAutomationContext(build_id="dry-run-build-456", dry_run=True, requirements=requirements)
 
         # Mock the context methods
         context.get_branch_name = Mock(return_value="dry-run-branch")

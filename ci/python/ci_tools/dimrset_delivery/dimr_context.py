@@ -5,6 +5,7 @@ Handles initialization and provides common functionality.
 """
 
 import argparse
+from dataclasses import dataclass
 from getpass import getpass
 from typing import Any, Dict, Optional
 
@@ -16,6 +17,30 @@ from ci_tools.dimrset_delivery.settings.general_settings import DELFT3D_GIT_REPO
 from ci_tools.dimrset_delivery.settings.teamcity_settings import KERNELS
 
 
+@dataclass
+class DimrCredentials:
+    """Dataclass for storing credentials for DIMR automation."""
+
+    atlassian_username: Optional[str] = None
+    atlassian_password: Optional[str] = None
+    teamcity_username: Optional[str] = None
+    teamcity_password: Optional[str] = None
+    ssh_username: Optional[str] = None
+    ssh_password: Optional[str] = None
+    git_username: Optional[str] = None
+    git_pat: Optional[str] = None
+
+
+@dataclass
+class ServiceRequirements:
+    """Dataclass for specifying which services are required."""
+
+    atlassian: bool = True
+    teamcity: bool = True
+    ssh: bool = True
+    git: bool = True
+
+
 class DimrAutomationContext:
     """Shared context for DIMR automation steps."""
 
@@ -23,64 +48,115 @@ class DimrAutomationContext:
         self,
         build_id: str,
         dry_run: bool = False,
-        atlassian_username: Optional[str] = None,
-        atlassian_password: Optional[str] = None,
-        teamcity_username: Optional[str] = None,
-        teamcity_password: Optional[str] = None,
-        ssh_username: Optional[str] = None,
-        ssh_password: Optional[str] = None,
-        git_username: Optional[str] = None,
-        git_pat: Optional[str] = None,
-        require_atlassian: bool = True,
-        require_git: bool = True,
-        require_teamcity: bool = True,
-        require_ssh: bool = True,
+        credentials: Optional[DimrCredentials] = None,
+        requirements: Optional[ServiceRequirements] = None,
     ) -> None:
+        """Initialize DIMR Automation Context.
+
+        Parameters
+        ----------
+        build_id : str
+            The TeamCity build ID
+        dry_run : bool, optional
+            Whether to run in dry-run mode, by default False
+        credentials : Optional[DimrCredentials], optional
+            Credentials for various services, by default None
+        requirements : Optional[ServiceRequirements], optional
+            Requirements for various services, by default None
+        """
         self.build_id = build_id
         self.dry_run = dry_run
 
-        if require_atlassian and (not atlassian_username or not atlassian_password):
+        # Initialize credentials if not provided
+        if credentials is None:
+            credentials = DimrCredentials()
+
+        # Initialize requirements if not provided
+        if requirements is None:
+            requirements = ServiceRequirements()
+
+        # Prompt for any missing required credentials
+        self._prompt_for_credentials(credentials, requirements)
+
+        # Initialize services based on requirements
+        self._initialize_services(credentials, requirements)
+
+        # Cache for commonly needed data
+        self._kernel_versions: Optional[Dict[str, str]] = None
+        self._dimr_version: Optional[str] = None
+        self._branch_name: Optional[str] = None
+
+    def _prompt_for_credentials(self, credentials: DimrCredentials, requirements: ServiceRequirements) -> None:
+        """Prompt for any missing required credentials.
+
+        Parameters
+        ----------
+        credentials : DimrCredentials
+            The credentials object to update
+        requirements : ServiceRequirements
+            The service requirements
+        """
+        if requirements.atlassian and (not credentials.atlassian_username or not credentials.atlassian_password):
             print("Atlassian/Confluence credentials:")
-            atlassian_username = atlassian_username or input("Enter your Atlassian username:")
-            atlassian_password = atlassian_password or getpass(prompt="Enter your Atlassian password:", stream=None)
+            credentials.atlassian_username = credentials.atlassian_username or input("Enter your Atlassian username:")
+            credentials.atlassian_password = credentials.atlassian_password or getpass(
+                prompt="Enter your Atlassian password:", stream=None
+            )
 
-        if require_teamcity and (not teamcity_username or not teamcity_password):
+        if requirements.teamcity and (not credentials.teamcity_username or not credentials.teamcity_password):
             print("TeamCity credentials:")
-            teamcity_username = teamcity_username or input("Enter your TeamCity username:")
-            teamcity_password = teamcity_password or getpass(prompt="Enter your TeamCity password:", stream=None)
+            credentials.teamcity_username = credentials.teamcity_username or input("Enter your TeamCity username:")
+            credentials.teamcity_password = credentials.teamcity_password or getpass(
+                prompt="Enter your TeamCity password:", stream=None
+            )
 
-        if require_ssh and (not ssh_username or not ssh_password):
+        if requirements.ssh and (not credentials.ssh_username or not credentials.ssh_password):
             print("SSH (H7) credentials:")
-            ssh_username = ssh_username or input("Enter your SSH username:")
-            ssh_password = ssh_password or getpass(prompt="Enter your SSH password:", stream=None)
+            credentials.ssh_username = credentials.ssh_username or input("Enter your SSH username:")
+            credentials.ssh_password = credentials.ssh_password or getpass(
+                prompt="Enter your SSH password:", stream=None
+            )
 
-        if require_git and (not git_username or not git_pat):
+        if requirements.git and (not credentials.git_username or not credentials.git_pat):
             print("Git credentials:")
-            git_username = git_username or input("Enter your Git username:")
-            git_pat = git_pat or getpass(prompt="Enter your Git PAT:", stream=None)
+            credentials.git_username = credentials.git_username or input("Enter your Git username:")
+            credentials.git_pat = credentials.git_pat or getpass(prompt="Enter your Git PAT:", stream=None)
+
+    def _initialize_services(self, credentials: DimrCredentials, requirements: ServiceRequirements) -> None:
+        """Initialize services based on requirements.
+
+        Parameters
+        ----------
+        credentials : DimrCredentials
+            The credentials to use for initialization
+        requirements : ServiceRequirements
+            The service requirements
+        """
         self.atlassian = None
-        if require_atlassian:
-            if not atlassian_username or not atlassian_password:
+        if requirements.atlassian:
+            if not credentials.atlassian_username or not credentials.atlassian_password:
                 raise ValueError("Atlassian credentials are required but not provided")
-            self.atlassian = Atlassian(username=atlassian_username, password=atlassian_password)
+            self.atlassian = Atlassian(username=credentials.atlassian_username, password=credentials.atlassian_password)
 
         self.teamcity = None
-        if require_teamcity:
-            if not teamcity_username or not teamcity_password:
+        if requirements.teamcity:
+            if not credentials.teamcity_username or not credentials.teamcity_password:
                 raise ValueError("TeamCity credentials are required but not provided")
-            self.teamcity = TeamCity(username=teamcity_username, password=teamcity_password)
+            self.teamcity = TeamCity(username=credentials.teamcity_username, password=credentials.teamcity_password)
 
         self.ssh_client = None
-        if require_ssh:
-            if not ssh_username or not ssh_password:
+        if requirements.ssh:
+            if not credentials.ssh_username or not credentials.ssh_password:
                 raise ValueError("SSH credentials are required but not provided")
-            self.ssh_client = SshClient(username=ssh_username, password=ssh_password, connect_timeout=30)
+            self.ssh_client = SshClient(
+                username=credentials.ssh_username, password=credentials.ssh_password, connect_timeout=30
+            )
 
         self.git_client = None
-        if require_git:
-            if not git_username or not git_pat:
+        if requirements.git:
+            if not credentials.git_username or not credentials.git_pat:
                 raise ValueError("Git credentials are required but not provided")
-            self.git_client = GitClient(DELFT3D_GIT_REPO, git_username, git_pat)
+            self.git_client = GitClient(DELFT3D_GIT_REPO, credentials.git_username, credentials.git_pat)
 
         # Cache for commonly needed data
         self._kernel_versions: Optional[Dict[str, str]] = None
@@ -133,6 +209,11 @@ class DimrAutomationContext:
         -------
         str
             The DIMR version string.
+
+        Raises
+        ------
+        AssertionError
+            If kernel versions have not been extracted.
         """
         if self._dimr_version is None:
             kernel_versions = self.get_kernel_versions()
@@ -141,6 +222,10 @@ class DimrAutomationContext:
                     "Could not extract the DIMR version: the kernel versions have not yet been extracted"
                 )
             self._dimr_version = kernel_versions["DIMRset_ver"]
+
+        if self._dimr_version is None:
+            raise AssertionError("DIMR version is unexpectedly None after extraction")
+
         return self._dimr_version
 
     def get_branch_name(self) -> str:
@@ -150,6 +235,11 @@ class DimrAutomationContext:
         -------
         str
             The branch name.
+
+        Raises
+        ------
+        ValueError
+            If branch name could not be retrieved.
         """
         if self._branch_name is None:
             if self.dry_run:
@@ -173,6 +263,10 @@ class DimrAutomationContext:
                 if branch_name_property is None:
                     raise ValueError("Could not find branch name in build properties")
                 self._branch_name = branch_name_property["value"]
+
+        if self._branch_name is None:
+            raise ValueError("Branch name is unexpectedly None after retrieval")
+
         return self._branch_name
 
     def _extract_kernel_versions(self, build_info: Dict[str, Any]) -> Dict[str, str]:
@@ -220,29 +314,21 @@ def create_context_from_args(
     require_ssh: bool = True,
 ) -> DimrAutomationContext:
     """Create automation context from parsed arguments."""
-    atlassian_username = args.atlassian_username
-    atlassian_password = args.atlassian_password
-    teamcity_username = args.teamcity_username
-    teamcity_password = args.teamcity_password
-    ssh_username = args.ssh_username
-    ssh_password = args.ssh_password
-    git_username = args.git_username
-    git_pat = getattr(args, "git_PAT", None)
-    dry_run = args.dry_run
+    credentials = DimrCredentials(
+        atlassian_username=args.atlassian_username,
+        atlassian_password=args.atlassian_password,
+        teamcity_username=args.teamcity_username,
+        teamcity_password=args.teamcity_password,
+        ssh_username=args.ssh_username,
+        ssh_password=args.ssh_password,
+        git_username=args.git_username,
+        git_pat=getattr(args, "git_PAT", None),
+    )
+
+    requirements = ServiceRequirements(
+        atlassian=require_atlassian, teamcity=require_teamcity, ssh=require_ssh, git=require_git
+    )
 
     return DimrAutomationContext(
-        build_id=args.build_id,
-        dry_run=dry_run,
-        atlassian_username=atlassian_username,
-        atlassian_password=atlassian_password,
-        teamcity_username=teamcity_username,
-        teamcity_password=teamcity_password,
-        ssh_username=ssh_username,
-        ssh_password=ssh_password,
-        git_username=git_username,
-        git_pat=git_pat,
-        require_atlassian=require_atlassian,
-        require_git=require_git,
-        require_teamcity=require_teamcity,
-        require_ssh=require_ssh,
+        build_id=args.build_id, dry_run=args.dry_run, credentials=credentials, requirements=requirements
     )
