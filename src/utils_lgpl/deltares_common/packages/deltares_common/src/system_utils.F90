@@ -351,6 +351,11 @@ contains
       character(len=*), intent(in) :: path !< Input path
 
       integer :: idrive ! last char position of possible drive letter start, e.g. 'D:'
+      
+      if (len_trim(path) == 0) then
+         is_abs = .false.
+         return
+      end if
       if (ARCH == 'linux') then
          is_abs = (path(1:1) == FILESEP)
       else

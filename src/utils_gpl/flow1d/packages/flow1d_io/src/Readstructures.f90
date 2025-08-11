@@ -85,11 +85,12 @@ module m_readstructures
    contains
 
    !> Read structure.ini file(s).
-   subroutine readStructures(network, structureFiles)
+   subroutine readStructures(network, structureFiles, basedir)
       use string_module, only: str_token
 
       type(t_network),  intent(inout)    :: network        !< The network data structure into whose Structure Set the file(s) will be read.
       character(len=*), intent(in   )    :: structurefiles !< File name(s) to be read. Separate multiple files by semicolon: "file with spaces 1.ini;file2.ini;file 3.ini".
+      character(len=*), intent(in   )    :: basedir        !< directory where the structure file(s) are located.
    
       character(len=IdLen) :: file
       character(len=IdLen) :: inputFiles
@@ -97,7 +98,7 @@ module m_readstructures
       inputFiles = structurefiles
       do while (len_trim(inputfiles) > 0) 
          call str_token(inputfiles, file, DELIMS=';')
-         call readStructureFile(network, adjustl(trim(file)))
+         call readStructureFile(network, adjustl(trim(file)), basedir)
       enddo
 
       if (.not. allocated(network%sts%restartData) .and. (network%sts%count > 0)) then
@@ -115,7 +116,7 @@ module m_readstructures
    end subroutine readStructures
 
    !> read a single ini file and add the structures to the structure sets
-   subroutine readStructureFile(network, structureFile)
+   subroutine readStructureFile(network, structureFile, basedir)
       use m_GlobalParameters
       use m_1d_Structures
       use m_compound
@@ -124,7 +125,8 @@ module m_readstructures
       implicit none
       
       type(t_network), intent(inout) :: network              !< Network pointer
-      character(len=*), intent(in)      :: structureFile        !< Name of the structure file
+      character(len=*), intent(in)      :: structureFile     !< Name of the structure file
+      character(len=*), intent(in)      :: basedir           !< directory where the structure file is located, empty if relative filepaths is off.
 
       logical                                                :: success, success1
       type(tree_data), pointer                               :: md_ptr 
@@ -141,6 +143,7 @@ module m_readstructures
       type(t_structure), pointer                             :: pstru
       integer                                                :: major, minor, ierr
       character(len=IdLen)                                   :: filename
+      character(:), allocatable                              :: full_filename
       
       success = .true.
 
@@ -258,7 +261,8 @@ module m_readstructures
                   
                end if
                if (success1) then
-                  call read_poly_from_tekalfile(filename, pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, success1)
+                  full_filename = trim(basedir)//filename
+                  call read_poly_from_tekalfile(full_filename, pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, success1)
                end if
 
                success = success .and. check_input_result(success1, st_id, 'branchId, numCoordinates and locationfile')  
