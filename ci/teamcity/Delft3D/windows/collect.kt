@@ -47,7 +47,7 @@ object WindowsCollect : BuildType({
         python {
             name = "Generate list of version numbers (from what-strings)"
             command = file {
-                filename = """ci/DIMRset_delivery/scripts/list_all_what_strings.py"""
+                filename = """ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py"""
                 scriptArguments = "--srcdir x64 --output dimrset_version_x64.txt"
             }
         }
