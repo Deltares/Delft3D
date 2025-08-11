@@ -36,7 +36,9 @@ contains
    subroutine setkbotktop(jazws0)
       use precision, only: dp
       use m_flowgeom, only: ndx, ba, bl, ln, lnx, nd
-      use m_flow, only: kmx, zws0, zws, ktop0, ktop, vol1, layertype, kbot, jased, s1, kmxn, zslay, toplayminthick, numtopsig, keepzlayeringatbed, dkx, rho, sdkx, tsigma, epshu, laydefnr, laytyp, wflaynod, indlaynod, sigmagrowthfactor, keepzlay1bedvol, vol0, jasal, jatem, qwwaq, ln0
+      use m_flow, only: kmx, zws0, zws, ktop0, ktop, vol1, layertype, kbot, jased, s1, kmxn, &
+                        zslay, toplayminthick, numtopsig, keepzlayeringatbed, dkx, rho, sdkx, tsigma, epshu, laydefnr, laytyp, &
+                        wflaynod, indlaynod, sigmagrowthfactor, keepzlay1bedvol, vol0, jasal, jatem, qwwaq, ln0, LAYTP_SIGMA, LAYTP_Z
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_get_zlayer_indices, only: getzlayerindices
@@ -63,7 +65,7 @@ contains
       nL = 1
       nR = 2
 
-      if (Layertype == 1) then ! sigma only
+      if (Layertype == LAYTP_SIGMA) then ! sigma only
 
          do n = 1, ndx
 
@@ -85,7 +87,7 @@ contains
          end do
          return ! sigma only: quick exit
 
-      else if (Layertype == 2) then ! z only
+      else if (Layertype == LAYTP_Z) then ! z or z-sigma
 
          ! toplayminthick = 0.5d0*( zslay(1,1) - zslay(0,1) )
 
