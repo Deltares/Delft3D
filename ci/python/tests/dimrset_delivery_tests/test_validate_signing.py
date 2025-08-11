@@ -116,8 +116,9 @@ The signature is timestamped: Friday, January 1, 2024 12:00:00 PM"""
         assert issuer == ""
 
     @patch("ci_tools.dimrset_delivery.validate_signing.subprocess.run")
-    def test_verify_signing_authority_returns_error_on_exception(self, mock_run: Mock) -> None:
-        """Test that verify_signing_authority returns 'Error' when an exception occurs."""
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_verify_signing_authority_returns_error_on_exception(self, mock_stdout: StringIO, mock_run: Mock) -> None:
+        """Test that verify_signing_authority returns 'Error' when an exception occurs and prints the error message."""
         # Arrange
         filepath = "test_file.exe"
         developer_prompt = "vcvars64.bat"
@@ -127,8 +128,10 @@ The signature is timestamped: Friday, January 1, 2024 12:00:00 PM"""
         status, error_message = verify_signing_authority(filepath, developer_prompt)
 
         # Assert
+        output = mock_stdout.getvalue()
         assert status == "Error"
-        assert "Command failed" in error_message
+        assert error_message == ""
+        assert "Error verifying signing authority: Command failed" in output
 
 
 class TestValidateSigningStatus:
