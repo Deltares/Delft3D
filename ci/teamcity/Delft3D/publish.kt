@@ -162,6 +162,7 @@ object Publish : BuildType({
                     "%destination_image_specific%"
                 """.trimIndent()
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         script {
             name = "Replace default image in run_docker.sh scripts"
@@ -171,6 +172,7 @@ object Publish : BuildType({
                     sed -i 's@^image=[^ ]*@image=%destination_image_specific%@' ${'$'}file
                 done
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         script {
             name = "Replace branding delft3dfm->dhydro"
@@ -184,6 +186,7 @@ object Publish : BuildType({
                     src/scripts_lgpl/singularity/readme.txt \
                     src/scripts_lgpl/singularity/submit_singularity_h7.sh
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         exec {
             name = "Create Docker ZIP file in /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Docker/"
@@ -193,6 +196,7 @@ object Publish : BuildType({
                 --release-version %release_version%
                 --commit-id-short %commit_id_short%
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         script {
             name = "Copy Apptainer packages to share"
@@ -208,6 +212,7 @@ object Publish : BuildType({
                 # Copy the artifact to network
                 cp -vf %brand%_%release_type%-%release_version%.tar.gz /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Singularity
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
     }
 })
