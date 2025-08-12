@@ -543,7 +543,7 @@ end subroutine deallocstructure
              get_crest_level = max(struc%culvert%leftlevel, struc%culvert%rightlevel)
           case (ST_PUMP)
              get_crest_level = huge(1d0)
-          case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE)
+          case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE, ST_GATE)
              get_crest_level = struc%generalst%zs_actual
           case (ST_BRIDGE)
              get_crest_level = struc%bridge%bedLevel
@@ -563,7 +563,7 @@ end subroutine deallocstructure
        select case (struc%type)
           case (ST_UNI_WEIR)
              get_crest_level_c_loc = c_loc(struc%uniweir%crestlevel)
-          case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE)
+          case (ST_GENERAL_ST, ST_WEIR, ST_ORIFICE, ST_GATE)
              get_crest_level_c_loc = c_loc(struc%generalst%zs)
           case default
              get_crest_level_c_loc = C_NULL_PTR
@@ -579,7 +579,7 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_GENERAL_ST, ST_ORIFICE)
+          case (ST_GENERAL_ST, ST_ORIFICE, ST_GATE)
              get_gate_lower_edge_level_c_loc = c_loc(struc%generalst%gateLowerEdgeLevel)
           case default
              get_gate_lower_edge_level_c_loc = C_NULL_PTR
@@ -610,7 +610,7 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_GENERAL_ST)
+          case (ST_GENERAL_ST, ST_GATE)
              get_gate_opening_width_c_loc = c_loc(struc%generalst%gateopeningwidth)
           case default
              get_gate_opening_width_c_loc = C_NULL_PTR
@@ -626,7 +626,7 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_GENERAL_ST)
+          case (ST_GENERAL_ST, ST_GATE)
              get_gate_door_height_c_loc = c_loc(struc%generalst%gatedoorheight)
           case default
              get_gate_door_height_c_loc = C_NULL_PTR
@@ -639,7 +639,7 @@ end subroutine deallocstructure
       type(t_structure), intent(in) :: struc
       
        select case (struc%type)
-          case (ST_GENERAL_ST, ST_ORIFICE, ST_WEIR)
+          case (ST_GENERAL_ST, ST_ORIFICE, ST_WEIR, ST_GATE)
              get_width = struc%generalst%ws_actual
           case default
              get_width = huge(1d0)
@@ -652,7 +652,7 @@ end subroutine deallocstructure
       type (t_structure), intent(inout) :: struc
       
       select case(struc%type)
-      case (ST_GENERAL_ST, ST_ORIFICE)
+      case (ST_GENERAL_ST, ST_ORIFICE, ST_GATE)
          get_gle = struc%generalst%gateLowerEdgeLevel_actual
       case (ST_CULVERT)
          get_gle = max(struc%culvert%leftlevel, struc%culvert%rightlevel) + struc%culvert%valveOpening
@@ -666,7 +666,7 @@ end subroutine deallocstructure
       type (t_structure), intent(inout) :: struc
       
       select case(struc%type)
-      case (ST_GENERAL_ST, ST_ORIFICE)
+      case (ST_GENERAL_ST, ST_ORIFICE, ST_GATE)
          get_opening_height = struc%generalst%gateLowerEdgeLevel_actual - struc%generalst%zs_actual
       case (ST_CULVERT)
          get_opening_height = struc%culvert%valveOpening
