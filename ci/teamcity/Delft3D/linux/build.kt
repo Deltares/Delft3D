@@ -94,7 +94,7 @@ object LinuxBuild : BuildType({
             scriptContent = """
                 #!/usr/bin/env bash
                 source /root/.bashrc
-                cmake --build build_%product% --config %build_type% --parallel --target install 
+                cmake --install build_%product% --config %build_type%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
