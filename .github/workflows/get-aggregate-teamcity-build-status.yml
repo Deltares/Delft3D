@@ -1,0 +1,36 @@
+name: Get aggregate TeamCity build status
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - tc/task/DEVOPSDSC-664-allow-merging-only-when-pipelines-succeed
+      
+jobs:
+  wait-for-teamcity-builds:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+      
+      # - name: Retrieve TeamCity access token from Keeper
+      #   id: keeper_secrets
+      #   uses: Keeper-Security/ksm-action@v1
+      #   with:
+      #     keeper-secret-config: ${{ secrets.TEAMCITY_ACCESS_TOKEN_DELFT3D }}
+      #     secrets: |-
+      #       keeper://Z8l66p1kXatULIUc7AxbIw/field/password > password
+
+      - name: Get Teamcity build aggregate status
+        run: |
+          chmod +x ci/github/get_aggregate_teamcity_build_status.sh
+          ci/github/get_aggregate_teamcity_build_status.sh \
+            --teamcity-token "${{ secrets.TEAMCITY_ACCESS_TOKEN_DELFT3D }}" \
+            --branch-name "${{ github.ref_name }}" \
+            --poll-interval 30 \
+            --timeout 1d
+
