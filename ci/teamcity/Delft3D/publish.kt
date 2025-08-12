@@ -147,7 +147,7 @@ object Publish : BuildType({
             """.trimIndent()
         }
         dockerCommand {
-            name = "Push generic and specific images"
+            name = "Push release image"
             commandType = push {
                 namesAndTags = """
                     "%destination_image_specific%"
