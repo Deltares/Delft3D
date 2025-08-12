@@ -2639,7 +2639,7 @@ contains
          ncstdnames(2) = 'air_temperature'
          ncvarnames(3) = 'tcc' ! cloud cover (fraction)
          ncstdnames(3) = 'cloud_area_fraction'
-         ncvarnames(4) = 'ssr'
+         ncvarnames(4) = 'ssrd'
          ncstdnames(4) = 'surface_downwelling_shortwave_flux_in_air'
       case ('solarradiation')
          ncvarnames(1) = 'ssrd'
@@ -2647,7 +2647,7 @@ contains
          ncstdnames_fallback(1) = 'solar_irradiance'
       case ('netsolarradiation')
          ncvarnames(1) = 'ssr'
-         ncstdnames(1) = 'surface_downwelling_shortwave_flux_in_air'
+         ncstdnames(1) = 'surface_downwelling_shortwave_flux'
          ncstdnames_fallback(1) = 'solar_irradiance'
       case ('longwaveradiation')
          ncvarnames(1) = 'strd' ! outgoing long wave radiation
