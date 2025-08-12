@@ -2650,7 +2650,7 @@ contains
          ncstdnames(1) = 'surface_downwelling_shortwave_flux'
          ncstdnames_fallback(1) = 'solar_irradiance'
       case ('longwaveradiation')
-         ncvarnames(1) = 'strd' ! outgoing long wave radiation
+         ncvarnames(1) = 'strd'
          ncstdnames(1) = 'surface_net_downward_longwave_flux'
       case ('nudge_salinity_temperature')
          ncvarnames(1) = 'thetao' ! temperature
