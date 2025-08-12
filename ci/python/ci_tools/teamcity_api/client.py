@@ -14,7 +14,7 @@ class TeamcityClient:
     @staticmethod
     def with_bearer_token_auth(token: str, server: str, verify: bool = True) -> "TeamcityClient":
         """Create a bearer authenticated client."""
-        client = Client(auth=BearerTokenAuth(token=token), verify=verify, base_url=f"https://{server}")
+        client = Client(auth=BearerTokenAuth(token=token), timeout=20.0, verify=verify, base_url=f"https://{server}")
         return TeamcityClient(client, server)
 
     def call_teamcity_api(self, url: str, payload: str = "", method: str = "GET") -> Response:
@@ -53,9 +53,10 @@ class TeamcityClient:
 
     def remove_tag_from_build(self, build_configuration_id: str, tag_name: str) -> None:
         """Call teamcity and remove tags the tag from the buildconfiguration."""
-        payload = f'{{"tag": [{{"name":  "{tag_name}"}}]}}'
-        resturl = f"/app/rest/builds/multiple/buildType:{build_configuration_id}/tags?fields=tag(name)"
-
+        payload = f'{{"tag": [{{"name": "{tag_name}"}}]}}'
+        urlbase = "/app/rest/builds/multiple"
+        extra_filters = "defaultFilter:false,lookupLimit:1000000000"
+        resturl = f"{urlbase}/buildType:{build_configuration_id},{extra_filters},tag:name:{tag_name}/tags"
         response = self.call_teamcity_api(
             url=resturl,
             method="DELETE",
