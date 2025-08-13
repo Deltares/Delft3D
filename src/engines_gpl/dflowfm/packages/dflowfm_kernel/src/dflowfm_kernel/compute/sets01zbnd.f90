@@ -46,7 +46,7 @@ contains
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, &
                                            BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
                                            BOUNDARY_DISCHARGE_HEAD
-      use m_set_kbot_ktop, only: reset_kbot_ktop_boundary
+      use m_set_kbot_ktop, only: update_vertical_coordinates_boundary
 
       integer, intent(in) :: n01 !< Selects whether s0 or s1 has to be set.
       integer, intent(in) :: jasetBlDepth !< Whether or not (1/0) to set the boundary node bed levels, based on depth below s1. Typically only upon model init (based on initial water levels).
@@ -119,7 +119,7 @@ contains
       end do
 
       if (s0_was_updated) then
-         call reset_kbot_ktop_boundary() ! Ensure that zws and other 3d variables are aligned with the new s0 values.
+         call update_vertical_coordinates_boundary() ! Ensure that zws and other 3d variables are aligned with the new s0 values.
       end if
 
       call set_1d2d_01()

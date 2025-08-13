@@ -32,7 +32,7 @@ module m_set_kbot_ktop
    implicit none
    private
    public :: set_kbot_ktop
-   public :: reset_kbot_ktop_boundary
+   public :: update_vertical_coordinates_boundary
 contains
 
    !> Initialise vertical coordinates, calculate layer volumes, set layer interfaces
@@ -402,7 +402,7 @@ contains
    !> Update vertical coordinates for boundary nodes only after an update of s0, avoiding global side effects
    !! but including link connectivity updates when dry-to-wet transitions occur.
    !! Is a special version of the set_kbot_ktop subroutine for after s0 updates on the boundary nodes.
-   subroutine reset_kbot_ktop_boundary()
+   subroutine update_vertical_coordinates_boundary()
       use precision, only: dp
       use m_flowgeom, only: ndx, ba, bl, ln, lnx
       use m_flow, only: kmx, zws, zws0, ktop, ktop0, vol1, layertype, kbot, jased, kmxn, &
@@ -781,5 +781,5 @@ contains
             end do
          end do
       end if
-   end subroutine reset_kbot_ktop_boundary
+   end subroutine update_vertical_coordinates_boundary
 end module m_set_kbot_ktop
