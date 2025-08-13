@@ -58,7 +58,7 @@ object WindowsTest : BuildType({
         checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "credentialsJSON:f29c59af-7f08-4826-8c5d-1c3d48a73161")
+        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
         
     }
 
