@@ -52,7 +52,7 @@ object LinuxBuild : BuildType({
         checkoutDir = "ossbuild-lnx64"
     }
 
-    steps {	
+    steps {
         mergeTargetBranch {}
         script {
             name = "Add version attributes"
