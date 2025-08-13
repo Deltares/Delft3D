@@ -1184,6 +1184,10 @@ contains
       if (c3e_unstable < 0.0_dp) then
          call mess(LEVEL_ERROR, 'c3eUnstable should be >= 0')
       end if
+      call prop_get(md_ptr, 'numerics', 'Prandtl_Richardson', Prandtl_Richardson)
+      call prop_get(md_ptr, 'numerics', 'Prt0', Prt0)
+      call prop_get(md_ptr, 'numerics', 'Prt_max', Prt_max)
+      call prop_get(md_ptr, 'numerics', 'Ri_inf', Ri_inf)
 
       call prop_get(md_ptr, 'numerics', 'Turbulenceadvection', javakeps)
       call prop_get(md_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor)
@@ -1191,6 +1195,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'FacLaxTurbHor', turbulence_lax_horizontal)
       call prop_get(md_ptr, 'numerics', 'EpsTKE', epstke)
       call prop_get(md_ptr, 'numerics', 'EpsEPS', epseps)
+      call prop_get(md_ptr, 'numerics', 'EpsLimitMethod', eps_limit_method)
 
       call prop_get(md_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax)
       call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
@@ -1369,6 +1374,7 @@ contains
       call prop_get(md_ptr, 'physics', 'thermobaricity', apply_thermobaricity)
       call prop_get(md_ptr, 'physics', 'thermobaricityInPressureGradient', thermobaricity_in_pressure_gradient)
       call validate_density_and_thermobaricity_settings(idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient)
+      call prop_get(md_ptr, 'physics', 'barocWeightFlip', baroc_weight_flip)
 
       call prop_get(md_ptr, 'physics', 'Temperature', jatem)
       call prop_get(md_ptr, 'physics', 'InitialTemperature', temini)
@@ -3142,6 +3148,10 @@ contains
          call prop_set(prop_ptr, 'numerics', 'c1e', c1e, 'c1e coefficient in turbulence model')
          call prop_set(prop_ptr, 'numerics', 'c3eStable', c3e_stable, 'c3e coefficient (for stable stratification) in k-eps turbulence model')
          call prop_set(prop_ptr, 'numerics', 'c3eUnstable', c3e_unstable, 'c3e coefficient (for unstable stratification) in k-eps turbulence model')
+         call prop_set(prop_ptr, 'numerics', 'Prandtl_Richardson', merge(1, 0, Prandtl_Richardson), 'Make the Prandtl-Schmidt number dependent on the Richardson number in the case of stable stratification (1: yes, 0: no)')
+         call prop_set(prop_ptr, 'numerics', 'Prt0', Prt0, 'Used in "Prt = min(Prt_max, Prt0 * exp(-richs(k) / (Prt0 * Ri_inf)) + richs(k) / Ri_inf)"')
+         call prop_set(prop_ptr, 'numerics', 'Prt_max', Prt_max, 'Used in "Prt = min(Prt_max, Prt0 * exp(-richs(k) / (Prt0 * Ri_inf)) + richs(k) / Ri_inf)')
+         call prop_set(prop_ptr, 'numerics', 'Ri_inf', Ri_inf, 'Used in "Prt = min(Prt_max, Prt0 * exp(-richs(k) / (Prt0 * Ri_inf)) + richs(k) / Ri_inf)"')
       end if
 
       if (writeall .or. (javakeps /= 3 .and. kmx > 0)) then
@@ -3160,6 +3170,9 @@ contains
 
       if (writeall .or. (epseps > 1.0e-32_dp .and. kmx > 0)) then
          call prop_set(prop_ptr, 'numerics', 'EpsEPS', epseps, '(EPS=max(EPS,EpsEPS), default=1d-32, (or TAU))')
+      end if
+      if (eps_limit_method /= 1) then
+         call prop_set(prop_ptr, 'numerics', 'EpsLimitMethod', eps_limit_method, 'Method to limit EPS (1: EPS=max(EPS, EpsEPS), 2: EPS=max(EPS, sqrt(0.045) * epstke * sqrt(bruva * sigrho)))')
       end if
 
       if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then
@@ -3334,6 +3347,7 @@ contains
       call prop_set(prop_ptr, 'physics', 'Idensform', idensform, 'Density calulation (0: uniform, 1: Eckart, 2: UNESCO, 3: UNESCO83)')
       call prop_set(prop_ptr, 'physics', 'thermobaricity', apply_thermobaricity, 'Include pressure effects on water density. Only works for idensform = 3 (UNESCO83).')
       call prop_set(prop_ptr, 'physics', 'thermobaricityInPressureGradient', thermobaricity_in_pressure_gradient, 'Apply thermobaricity in computing the baroclinic pressure gradient (0 = no, 1 = yes).')
+      call prop_set(prop_ptr, 'physics', 'barocWeightFlip', baroc_weight_flip, '1: weight_down = delta_z_down / delta_z_total [Herman] 2: weight_down = delta_z_up / delta_z_total [Jan]. weight_up = 1 - weight_down. ')
 
       call prop_set(prop_ptr, 'physics', 'Ag', ag, 'Gravitational acceleration')
       call prop_set(prop_ptr, 'physics', 'TidalForcing', jatidep, 'Tidal forcing, if jsferic=1 (0: no, 1: yes)')
