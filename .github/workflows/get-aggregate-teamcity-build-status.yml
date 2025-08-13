@@ -4,14 +4,13 @@ on:
   push:
     branches:
       - main
-      - 'pull/[0-9]+'
   pull_request:
     types:
       - opened # triggers build when opened
       - synchronize # triggers build when commits are pushed to HEAD
     branches:
-      - 'pull/[0-9]+'
-      
+      - main
+
 jobs:
   wait-for-teamcity-builds:
     runs-on: ubuntu-latest
@@ -23,7 +22,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq
-      
+
       # - name: Retrieve TeamCity access token from Keeper
       #   id: keeper_secrets
       #   uses: Keeper-Security/ksm-action@v1
@@ -40,4 +39,3 @@ jobs:
             --branch-name "${{ github.ref_name }}" \
             --poll-interval 30 \
             --timeout 1d
-
