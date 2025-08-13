@@ -55,7 +55,7 @@ contains
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_links_to_centers, only: links_to_centers
       use m_turbulence, only: cmukep, drhodz, brunt_vaisala_coefficient, rich, richs, c3e_stable, c3e_unstable, sigtkei, sigepsi, cde, &
-                              c3t_stable, c3t_unstable
+                              c3t_stable, c3t_unstable, c3eTest
       use m_tridag, only: tridag
       use m_model_specific, only: update_turkin_modelspecific
       use m_wave_fillsurdis, only: wave_fillsurdis
@@ -670,9 +670,13 @@ contains
                      !c Source and sink terms                                                                epsilon
                      if (bruva(k) > 0.0_dp) then ! stable stratification
                         dk(k) = dk(k) - cmukep * c3e_stable * bruva(k) * turkin1(L)
-                        bk(k) = bk(k) - (2.0_dp * cmukep * c3e_stable * bruva(k) * turkin1(L)) / tureps0(L)
                      elseif (bruva(k) < 0.0_dp) then ! unstable stratification
-                        dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turkin1(L)
+                        if (c3eTest .and. c3e_unstable < 0.0_dp) then
+                           dk(k) = dk(k) + cmukep * c3e_unstable * bruva(k) * turkin1(L)
+                           bk(k) = bk(k) + (2.0_dp * cmukep * c3e_unstable * bruva(k) * turkin1(L)) / tureps0(L)
+                        else
+                           dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turkin1(L)
+                        end if
                      end if
 
                      ! Similar to the k-equation, in the eps-equation the net IWE to TKE
