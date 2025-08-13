@@ -3,7 +3,14 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - tc/task/DEVOPSDSC-664-allow-merging-only-when-pipelines-succeed
+      - main
+      - 'pull/[0-9]+'
+  pull_request:
+    types:
+      - opened # triggers build when opened
+      - synchronize # triggers build when commits are pushed to HEAD
+    branches:
+      - 'pull/[0-9]+'
       
 jobs:
   wait-for-teamcity-builds:
