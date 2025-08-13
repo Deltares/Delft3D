@@ -507,7 +507,7 @@ end subroutine deallocstructure
          case (ST_PUMP)
             strng = 'pump'
          case (ST_GENERAL_ST)
-            strng = 'general_structure'
+            strng = 'generalStructure'
          case (ST_WEIR)
             strng = 'weir'
          case (ST_ORIFICE)
@@ -517,7 +517,7 @@ end subroutine deallocstructure
          case (ST_CULVERT)
             strng = 'culvert'
          case (ST_UNI_WEIR)
-            strng = 'universalweir'
+            strng = 'universalWeir'
          case (ST_DAMBREAK)
             strng = 'dambreak'
          case (ST_BRIDGE)
