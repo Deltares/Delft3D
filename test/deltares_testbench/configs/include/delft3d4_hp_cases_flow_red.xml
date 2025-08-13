@@ -181,7 +181,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f06_c22-vanrijn2004_SedTransStt" ref="flow2d3d_default">
-			<path version="2024-03-22T19:30:00">e01_d3dflow/f06_ols/c22-vanrijn2004_SedTransStt</path>
+			<path version="2025-06-05T16:30:00">e01_d3dflow/f06_ols/c22-vanrijn2004_SedTransStt</path>
 			<maxRunTime>20.0</maxRunTime>
 			<checks>
 				<file name="trih-t2d.dat" type="NEFIS">
