@@ -65,6 +65,9 @@ module delwaq2_data
         logical :: updatr
         logical :: litrep
         logical :: ldummy
+
+        logical :: online_hydrodynamics = .false. ! Indicates if the hydrodynamic information
+                                                  ! comes in via BMI instead of external files
         type(operation_data), dimension(:), pointer :: operation => null()
         integer(kind = int_wp) :: number_operations = 0
         real(kind = dp) :: tol

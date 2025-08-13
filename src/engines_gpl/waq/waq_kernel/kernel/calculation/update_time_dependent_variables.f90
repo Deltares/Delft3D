@@ -99,7 +99,7 @@ contains
         endif
 
         !volumes
-        if (nrharm(2) >= 0) then
+        if (nrharm(2) >= 0 .and. .not. dlwqd%online_hydrodynamics) then
             call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), volume, 1, nrharm(2), &
                     num_cells, nrftot(2), ipa, iph, ipf, &
@@ -240,7 +240,7 @@ contains
         ! volumes
 
         ! if read anyway or ( read-requested and there is something to read )
-        if (nrharm(2) >= 0) then
+        if (nrharm(2) >= 0 .and. .not. dlwqd%online_hydrodynamics) then
             if   (rdvolu) then
                 ! if .not. computed volumes .or. this is the first time
                 if (ivflag     == 0 .or. ifflag == 1) then
@@ -269,7 +269,7 @@ contains
         endif
 
         !         dispersions
-        if (nrharm(3) >= 0) then
+        if (nrharm(3) >= 0 .and. .not. dlwqd%online_hydrodynamics) then
             call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), disper, num_dispersion_arrays, nrharm(3), &
                     num_exchanges, nrftot(3), ipa, iph, ipf, &
@@ -289,7 +289,7 @@ contains
         endif
 
         ! area
-        if (nrharm(4) >= 0) then
+        if (nrharm(4) >= 0 .and. .not. dlwqd%online_hydrodynamics) then
             call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), area, 1, nrharm(4), &
                     num_exchanges, nrftot(4), ipa, iph, ipf, &
@@ -309,7 +309,7 @@ contains
         endif
 
         ! flow
-        if (nrharm(5) >= 0) then
+        if (nrharm(5) >= 0 .and. .not. dlwqd%online_hydrodynamics) then
             call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), flow, 1, nrharm(5), &
                     num_exchanges, nrftot(5), ipa, iph, ipf, &
@@ -329,7 +329,7 @@ contains
         endif
 
         ! velocities
-        if (nrharm(6) >= 0) then
+        if (nrharm(6) >= 0 .and. .not. dlwqd%online_hydrodynamics) then
             call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
                     array(ipa), ipoint(ipi), velo, num_velocity_arrays, nrharm(6), &
                     num_exchanges, nrftot(6), ipa, iph, ipf, &

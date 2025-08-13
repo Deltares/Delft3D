@@ -816,13 +816,13 @@ Stream::lookup_dotaddr (
     undefined system type in lookup_dotaddr
 #endif
 
-#if defined(WIN32)
-    if ((hostinfo = gethostbyaddr ((char *)&addr, 4, AF_INET)) == NULL)
-        error ("Cannot get hostname of \"%s\" (0x%x) -- error code: %d\n", ipdotaddr, addr, WSAGetLastError());
-#else
-    if ((hostinfo = gethostbyaddr ((char *)&addr, sizeof addr, AF_INET)) == NULL)
-        error ("Cannot get hostname of \"%s\" (0x%x)\n", ipdotaddr, addr);
-#endif
+//#if defined(WIN32)
+//    if ((hostinfo = gethostbyaddr ((char *)&addr, 4, AF_INET)) == NULL)
+//        error ("Cannot get hostname of \"%s\" (0x%x) -- error code: %d\n", ipdotaddr, addr, WSAGetLastError());
+//#else
+//    if ((hostinfo = gethostbyaddr ((char *)&addr, sizeof addr, AF_INET)) == NULL)
+//        error ("Cannot get hostname of \"%s\" (0x%x)\n", ipdotaddr, addr);
+//#endif
 
     const char * cp = hostinfo->h_name;
     char * dp = hostname;

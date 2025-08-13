@@ -112,31 +112,36 @@ contains
 
         call log%log_debug("Set_var: value = "//value_given)
 
-        !
         argnew = 2
         if (value_given(1:1) == ' ') argnew = 1
         if (key_given(1:1) == ' ') argnew = 0
         !
         if (argnew > 0) then
-            ! Add new arguments to argv
-            if (allocated(argv_tmp)) deallocate (argv_tmp)
-            if (allocated(argv)) then
-                argc = size(argv, 1)
-                allocate (argv_tmp(argc))
-                do iarg = 1, argc
-                    argv_tmp(iarg) = argv(iarg)
-                end do
-                deallocate (argv)
+            ! Handle the argument -onlinehydrodynamics here - it will remain
+            ! unknown to DELWAQ otherwise
+            if (key_given == '-onlinehydrodynamics') then
+                dlwqd%online_hydrodynamics = .true.
             else
-                argc = 0
-            end if
-            allocate (argv(argc + argnew))
-            do iarg = 1, argc
-                argv(iarg) = argv_tmp(iarg)
-            end do
-            argv(argc + 1) = key_given
-            if (argnew == 2) then
-                argv(argc + 2) = value_given
+                ! Add new arguments to argv
+                if (allocated(argv_tmp)) deallocate (argv_tmp)
+                if (allocated(argv)) then
+                    argc = size(argv, 1)
+                    allocate (argv_tmp(argc))
+                    do iarg = 1, argc
+                        argv_tmp(iarg) = argv(iarg)
+                    end do
+                    deallocate (argv)
+                else
+                    argc = 0
+                end if
+                allocate (argv(argc + argnew))
+                do iarg = 1, argc
+                    argv(iarg) = argv_tmp(iarg)
+                end do
+                argv(argc + 1) = key_given
+                if (argnew == 2) then
+                    argv(argc + 2) = value_given
+                end if
             end if
         end if
         error_code = 0
@@ -435,11 +440,11 @@ contains
         con_data => connections%get_connection_by_exchange_name(key_given)
         if (.not. associated(con_data)) then
             new_con_data = parse_connection_string(key_given)
-            
+
             if (allocated(new_con_data)) then
                 call set_connection_data(new_con_data)
-                                
-                ! use added connection instance                
+
+                ! use added connection instance
                 con_data => connections%add_connection(new_con_data)
             end if
         end if

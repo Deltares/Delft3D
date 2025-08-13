@@ -116,7 +116,8 @@ contains
 
         if (ilun <= 800 .or. ilun >= 900) then
             ierr = 0
-            if (ifflag == 1 .and. nrftot > 0) call open_waq_files (file_unit_list(ilun), luntxt(ilun), ilun, 2 + ftype(ilun), ierr)
+            if (ifflag == 1 .and. nrftot > 0 .AND. .not. dlwqd%online_hydrodynamics) &
+                call open_waq_files (file_unit_list(ilun), luntxt(ilun), ilun, 2 + ftype(ilun), ierr)
             if (ierr /= 0) call messag (lunout, 5, isflag, file_unit_list(ilun), luntxt(ilun), itime, 0)
             ilt = ilun
             llun = file_unit_list(ilun)
