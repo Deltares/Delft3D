@@ -38,6 +38,7 @@ module m_set_bobs
 contains
    subroutine setbobs() ! and set blu, weigthed depth at u point
       use precision, only: dp
+      use messagehandling, only: msg_flush, msgbuf
       use m_netw
       use m_flowgeom
       use m_flow
@@ -46,7 +47,7 @@ contains
       use m_structures, only: network
       use m_longculverts
 
-      integer L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, mis, i, numcoords
+      integer L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, mis, i, numcoords, ibotL
       real(kind=dp) :: bl1, bl2, blv, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
       ! real(kind=dp), external :: skewav
 
@@ -93,70 +94,24 @@ contains
 
          if (iadv(L) > 20 .and. iadv(L) < 30) cycle ! skip update of bobs for structures ! TODO: [TRUNKMERGE]: JN/BJ: really structures on bnd?
 
-         n1 = ln(1, L); n2 = ln(2, L)
+         n1 = ln(1, L)
+         n2 = ln(2, L)
+         k1 = lncn(1,L)
+         k2 = lncn(2,L)
 
-         if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! tegeldieptes celcentra
-            bl1 = bl(n1)
-            bl2 = bl(n2)
-            if (jadpuopt == 1) then !original
-               bob(1, L) = max(bl1, bl2)
-            elseif (jadpuopt == 2) then
-               bob(1, L) = (bl1 + bl2) / 2
-            end if
-
-            bob(2, L) = bob(1, L)
-         else if (ibedlevtyp == 2) then ! rechtstreeks op u punten interpoleren,
-            k1 = ln(1, L); k2 = ln(2, L) ! haal waarde uit blu, gedefinieerd op xu,yu
-            if (blu(L) == dmiss) then
-               blv = zkuni
-            else
-               blv = blu(L)
-            end if
-            bob(1, L) = blv
-            bob(2, L) = blv
-            if (ibedlevmode == BLMODE_DFM) then
-               bl(n1) = min(bl(n1), blv)
-               bl(n2) = min(bl(n2), blv)
-            end if
-         else if (ibedlevtyp >= 3 .or. ibedlevtyp <= 5) then ! dieptes uit netnodes zk
-            k1 = lncn(1, L); k2 = lncn(2, L)
-            zn1 = zk(k1); if (zn1 == dmiss) zn1 = zkuni
-            zn2 = zk(k2); if (zn2 == dmiss) zn2 = zkuni
-            if (jaconveyance2D >= 1) then ! left rigth
-               blv = min(zn1, zn2)
-               bob(1, L) = zn1
-               bob(2, L) = zn2
-            else if (ibedlevtyp == 3) then ! mean
-               blv = 0.5d0 * (zn1 + zn2)
-               bob(1, L) = blv
-               bob(2, L) = blv
-            else if (ibedlevtyp == 4) then ! min
-               blv = min(zn1, zn2)
-               bob(1, L) = blv
-               bob(2, L) = blv
-            else if (ibedlevtyp == 5) then ! max
-               blv = max(zn1, zn2)
-               bob(1, L) = blv
-               bob(2, L) = blv
-            end if
-
-            if (allocated(ibot)) then ! Local override of bottomleveltype
-               if (ibot(L) == 4) then
-                  blv = min(zn1, zn2) ! local override min
-                  bob(1, L) = blv
-                  bob(2, L) = blv
-               else if (ibot(L) == 5) then ! local override max
-                  blv = max(zn1, zn2)
-                  bob(1, L) = blv
-                  bob(2, L) = blv
-               end if
-            end if
-
-            ! When in DFM mode (not D3D mode), get bed level from velocity point depth.
-            if (ibedlevmode == BLMODE_DFM) then
-               bl(n1) = min(bl(n1), blv)
-               bl(n2) = min(bl(n2), blv)
-            end if
+         if (allocated(ibot)) then
+            ibotL = ibot(L)
+         else
+            ! do not use ibot for 2D links, so set to 0
+            ibotL = 0
+         end if
+      
+         blv = get_blv(n1, n2, k1, k2, blu(l), ibotL)
+         bob(1, L) = blv
+         bob(2, L) = blv
+         if (ibedlevmode == BLMODE_DFM) then
+            bl(n1) = min(bl(n1), blv)
+            bl(n2) = min(bl(n2), blv)
          end if
 
          blu(L) = min(bob(1, L), bob(2, L))
@@ -372,7 +327,68 @@ contains
             end if
          end do
       end if
-
+      do k = 1, ndx ! set bl for 2D points
+         write(msgbuf, '(''BL('',I6,'') = '', F12.5)') k, bl(k)
+         call msg_flush()
+      end do
       jaupdbndbl = 0 ! after first run of setbobs set to 0 = no update
    end subroutine setbobs
+   
+   function get_blv(n1, n2, k1, k2, blu, ibot) result(blv)
+      
+      use precision, only: dp
+      use m_missing, only : dmiss
+      use network_data, only : zkuni, zk
+      use m_flowparameters, only: ibedlevtyp, jadpuopt, jaconveyance2D
+      use m_flowgeom, only: bl
+      
+      integer, intent(in) :: n1, n2, k1, k2
+      integer, intent(in) :: ibot ! 1: min, 2: max, 3: mean, 4: local override min, 5: local override max
+      real(kind=dp), intent(in) :: blu
+      real(kind=dp) :: blv
+
+      real(kind=dp) :: zn1, zn2
+      
+      
+      if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! tegeldieptes celcentra
+         if (jadpuopt == 1) then !original
+            blv = max(bl(n1), bl(n2))
+         elseif (jadpuopt == 2) then
+            blv = (bl(n1) + bl(n2)) / 2
+         end if
+
+      else if (ibedlevtyp == 2) then ! rechtstreeks op u punten interpoleren,
+         if (blu == dmiss) then
+            blv = zkuni
+         else
+            blv = blu
+         end if
+      else if (ibedlevtyp >= 3 .or. ibedlevtyp <= 5) then ! dieptes uit netnodes zk
+         zn1 = zk(k1)
+         if (zn1 == dmiss) then 
+            zn1 = zkuni
+         end if
+
+         zn2 = zk(k2)
+         if (zn2 == dmiss) then
+            zn2 = zkuni
+         end if
+         
+         if (jaconveyance2D >= 1) then ! left rigth
+            blv = min(zn1, zn2)
+         else if (ibedlevtyp == 3) then ! mean
+            blv = 0.5d0 * (zn1 + zn2)
+         else if (ibedlevtyp == 4) then ! min
+            blv = min(zn1, zn2)
+         else if (ibedlevtyp == 5) then ! max
+            blv = max(zn1, zn2)
+         end if
+
+         if (ibot == 4) then
+            blv = min(zn1, zn2) ! local override min
+         else if (ibot == 5) then ! local override max
+            blv = max(zn1, zn2)
+         end if
+      end if
+   end function get_blv
 end module m_set_bobs
