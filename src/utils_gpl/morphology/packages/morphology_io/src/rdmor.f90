@@ -2137,6 +2137,8 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
 ! Local variables
 !
     integer                         , pointer :: iflufflyr
+    real(fp)                        , pointer :: maxthfluff
+    real(fp)                        , pointer :: densfluff
     real(fp)      , dimension(:)    , pointer :: mfluni
     real(fp)      , dimension(:,:)  , pointer :: bfluff0
     real(fp)      , dimension(:,:)  , pointer :: bfluff1
@@ -2158,12 +2160,17 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
 !! executable statements -------------------------------------------------------
 !
     iflufflyr            => flufflyr%iflufflyr
+    maxthfluff           => flufflyr%maxthfluff
+    densfluff            => flufflyr%densfluff
     !
     error      = .false.
     rmissval   = -999.0
     fmttmp     = 'formatted'
     !
     call prop_get(mor_ptr, 'FluffLayer', 'Type', iflufflyr)
+    call prop_get(mor_ptr, 'FluffLayer', 'MaxThickFluff', maxthfluff)
+    call prop_get(mor_ptr, 'FluffLayer', 'DensFluff', densfluff)
+    
     if (iflufflyr==0) return
     !
     nmlb = griddim%nmlb

@@ -53,8 +53,9 @@ subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac)
     integer  :: l
     integer  :: nm
     real(fp) :: fac
-    real(fp) :: dfluff
-    real(fp) :: mfltot
+    real(fp) :: dfluff, dfluff2
+    real(fp) :: mfltot, mfltot2
+    real(fp) :: maxmfltot
     !
     real(fp), dimension(:,:), pointer :: bfluff0
     real(fp), dimension(:,:), pointer :: bfluff1
@@ -62,6 +63,8 @@ subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac)
 !
 !! executable statements ------------------
 !
+    maxmfltot = flufflyr%maxthfluff * flufflyr%densfluff ! kg/m2
+    !
     if (flufflyr%iflufflyr==1) then
        bfluff0 => flufflyr%bfluff0
        bfluff1 => flufflyr%bfluff1
@@ -81,6 +84,23 @@ subroutine fluff_burial(flufflyr, dbodsd, lsed, lsedtot, nmlb, nmub, dt, morfac)
                 dbodsd(l,nm) = dbodsd(l,nm) + dfluff*morfac
              enddo
           endif
+          !
+          mfltot2 = 0.0_fp
+          do l = 1, lsed
+             mfltot2 = mfltot2 + mfluff(l,nm) 
+          enddo
+          !
+          if (mfltot2>maxmfltot) then
+             do l = 1, lsed
+                fac          = mfluff(l,nm)/mfltot2
+                dfluff2      = min(fac*(mfltot2-maxmfltot),mfluff(l,nm))
+                mfluff(l,nm) = mfluff(l,nm) - dfluff2
+                dbodsd(l,nm) = dbodsd(l,nm) + dfluff2*morfac
+             enddo
+          endif
+          !
+          
+          
        enddo
     endif
 end subroutine fluff_burial

@@ -361,6 +361,8 @@ type fluffy_type
     !
     ! single / doubles (fp)
     !
+    real(fp) :: maxthfluff!  maximum allowed thickness of the fluff layer [m]
+    real(fp) :: densfluff !  density of the fluff layer [kg/m3]
     !
     ! singles (sp)
     !
@@ -589,6 +591,8 @@ type sedpar_type
     real(fp) :: tfloc     !  relaxation time scale for flocculation [s]
     real(fp) :: d_micro   !  characteristic diameter of micro flocs [m]
     real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
+    real(fp) :: k_wsmod   !  parameter for settling velocity reduction [-]
+    real(fp) :: h0_wsmod  !  threshold of water depth for settling velocity reduction [m]
     real(fp) :: version   !  interpreter version
     !
     ! reals
@@ -603,6 +607,7 @@ type sedpar_type
     integer  :: sc_mudfac      !  formulation used for determining bed roughness length for Soulsby & Clarke (2005): SC_MUDFRAC, or SC_MUDTHC
     integer  :: max_mud_sedtyp !  largest sediment type associated with mud
     integer  :: min_dxx_sedtyp !  smallest sediment type included in computation of characteristic sediment diameters
+    integer  :: wsmod          !  switch for settling velocity modulation in shallow water
     !
     ! pointers
     !
@@ -1251,6 +1256,8 @@ subroutine nullsedpar(sedpar)
     sedpar%tfloc    = 1e-10_fp
     sedpar%d_micro  = 1e-4_fp
     sedpar%ustar_macro = 0.067_fp
+    sedpar%k_wsmod  = 5.0_fp
+    sedpar%h0_wsmod = 1.5_fp
     !
     sedpar%flocmod        = FLOC_NONE
     sedpar%nflocpop       = 1
@@ -1259,6 +1266,7 @@ subroutine nullsedpar(sedpar)
     sedpar%sc_mudfac      = SC_MUDTHC
     sedpar%max_mud_sedtyp = SEDTYP_SILT
     sedpar%min_dxx_sedtyp = SEDTYP_SAND
+    sedpar%wsmod          = 0
     !
     sedpar%anymud    = .false.
     sedpar%bsskin    = .false.
@@ -1797,6 +1805,9 @@ subroutine initfluffy(flufflyr)
 !
     flufflyr%iflufflyr = 0
     !
+    flufflyr%maxthfluff = 0.2_fp
+    flufflyr%densfluff = 200.0_fp
+    !
     nullify(flufflyr%mfluni)
     nullify(flufflyr%mfluff)
     nullify(flufflyr%bfluff0)
@@ -1860,6 +1871,8 @@ subroutine clrfluffy(istat, flufflyr)
 !! executable statements -------------------------------------------------------
 !
     flufflyr%iflufflyr = 0
+    flufflyr%maxthfluff = 0.0_fp
+    flufflyr%densfluff = 0.0_fp
     !
     if (associated(flufflyr%mfluni))      deallocate(flufflyr%mfluni,      STAT = istat)
     if (associated(flufflyr%mfluff))      deallocate(flufflyr%mfluff,      STAT = istat)

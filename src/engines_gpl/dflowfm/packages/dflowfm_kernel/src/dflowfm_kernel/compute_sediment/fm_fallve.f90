@@ -72,6 +72,8 @@ contains
       real(fp), dimension(:), pointer :: localpar
       real(fp), dimension(:, :), pointer :: ws
       real(fp), pointer :: csoil
+      real(fp), pointer :: k_wsmod
+      real(fp), pointer :: h0_wsmod
       real(fp), dimension(:), pointer :: rhosol
       real(fp), dimension(:, :), pointer :: dss
       real(fp), dimension(:), pointer :: sedd50
@@ -87,6 +89,7 @@ contains
       integer, pointer :: max_integers
       integer, pointer :: max_reals
       integer, pointer :: max_strings
+      integer, pointer :: wsmod
       integer, dimension(:), pointer :: dll_integers
       real(hp), dimension(:), pointer :: dll_reals
       character(256), dimension(:), pointer :: dll_strings
@@ -120,6 +123,7 @@ contains
       real(kind=dp) :: wsloc
       real(kind=dp), dimension(:), allocatable :: z0rou
       real(kind=dp) :: thick
+      real(kind=dp) :: alpha
 
       character(256) :: errmsg
    !!
@@ -132,6 +136,10 @@ contains
       dss => stmpar%sedpar%dss
       sedd50 => stmpar%sedpar%sedd50
       sedd50fld => stmpar%sedpar%sedd50fld
+
+      wsmod => stmpar%sedpar%wsmod
+      k_wsmod => stmpar%sedpar%k_wsmod
+      h0_wsmod => stmpar%sedpar%h0_wsmod
 
       npar => stmpar%trapar%npar
       dll_usrfil => stmpar%trapar%dll_usrfil_settle
@@ -331,7 +339,12 @@ contains
                   return
                end if
                !
-               ws(kk, ll) = wsloc
+               if (wsmod == 1) then
+                  alpha = 1.0 / (1 + EXP(-k_wsmod * (h0 - h0_wsmod)))
+               else
+                  alpha = 1.0
+               endif
+               ws(kk, ll) = alpha * wsloc
             end do ! ll
          end do ! kk
          if (kmx > 1) then

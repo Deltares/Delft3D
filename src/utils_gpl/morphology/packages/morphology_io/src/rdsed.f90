@@ -77,8 +77,11 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     real(fp)                           , pointer :: sc_flcf
     real(fp)                           , pointer :: d_micro
     real(fp)                           , pointer :: ustar_macro
+    real(fp)                           , pointer :: k_wsmod
+    real(fp)                           , pointer :: h0_wsmod
     integer                            , pointer :: nmudfrac
     integer                            , pointer :: sc_mudfac
+    integer                            , pointer :: wsmod
     logical          , dimension(:)    , pointer :: cmpupdfrac
     real(fp)         , dimension(:)    , pointer :: tpsnumber
     real(fp)         , dimension(:)    , pointer :: rhosol
@@ -194,6 +197,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     sc_flcf              => sedpar%sc_flcf
     d_micro              => sedpar%d_micro
     ustar_macro          => sedpar%ustar_macro
+    wsmod                => sedpar%wsmod
+    k_wsmod              => sedpar%k_wsmod
+    h0_wsmod             => sedpar%h0_wsmod
     flocmod              => sedpar%flocmod
     nflocpop             => sedpar%nflocpop
     nflocsizes           => sedpar%nflocsizes
@@ -426,6 +432,10 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        call prop_get(sed_ptr, 'SedimentOverall', 'IopSus', iopsus)
        !
        call prop_get(sed_ptr, 'SedimentOverall', 'MudCnt', flsmdc)
+       !
+       call prop_get(sed_ptr, 'SedimentOverall', 'WsMod', wsmod)
+       call prop_get(sed_ptr, 'SedimentOverall', 'KWsMod', k_wsmod)
+       call prop_get(sed_ptr, 'SedimentOverall', 'HWsMod', h0_wsmod)
        !
        floc_str = 'none'
        call prop_get(sed_ptr, 'SedimentOverall', 'FlocModel', floc_str)
