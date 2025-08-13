@@ -2647,7 +2647,7 @@ contains
          ncstdnames_fallback(1) = 'solar_irradiance'
       case ('netsolarradiation')
          ncvarnames(1) = 'ssr'
-         ncstdnames(1) = 'surface_downwelling_shortwave_flux'
+         ncstdnames(1) = 'surface_net_downward_shortwave_flux'
          ncstdnames_fallback(1) = 'solar_irradiance'
       case ('longwaveradiation')
          ncvarnames(1) = 'strd'

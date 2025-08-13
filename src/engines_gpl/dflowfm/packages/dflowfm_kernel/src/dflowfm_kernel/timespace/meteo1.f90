@@ -6999,10 +6999,9 @@ contains
       case ('cloudiness')
          itemPtr1 => item_cloudiness
          dataPtr1 => cloudiness
-      case ('solarradiation')
+      case ('solarradiation', 'netsolarradiation')
          itemPtr1 => item_solar_radiation
          dataPtr1 => solar_radiation
-      case ('netsolarradiation')
          itemPtr1 => item_solar_radiation
          dataPtr1 => solar_radiation
       case ('longwaveradiation')
