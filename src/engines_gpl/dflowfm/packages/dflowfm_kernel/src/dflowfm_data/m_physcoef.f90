@@ -104,8 +104,8 @@ module m_physcoef
    real(kind=dp) :: viuchk !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
 
    real(kind=dp) :: vicoww !< user specified constant vertical   eddy viscosity  (m2/s)
-   real(kind=dp) :: dicoww !< real scalar of dicoww, copied to t_dicoww if scalar input
-   class(dicoww_t), allocatable, target :: t_dicoww !< user specified constant vertical   eddy diffusivity(m2/s)
+   real(kind=dp) :: dicoww !< user specified constant vertica eddy diffusivity(m2/s)
+   class(dicoww_t), allocatable, target :: t_dicoww !< abstract class for dicoww, either scalar or array depending on user input
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
@@ -161,27 +161,28 @@ module m_physcoef
 
 contains
 
-   ! Scalar implementation of get_dicoww
+   !> Scalar implementation of get_dicoww
    pure function get_dicoww_scalar(this, k) result(val)
-      class(dicoww_scalar_t), intent(in) :: this
-      integer, intent(in) :: k
+      class(dicoww_scalar_t), intent(in) :: this !< dicoww object to obtain value from at index k
+      integer, intent(in) :: k !< dummy index to make call consistent
       real :: val
       associate (k_dummy => k)
       end associate
       val = this%value
    end function get_dicoww_scalar
 
-   ! Array implementation of get_dicoww
+   !> Array implementation of get_dicoww
    pure function get_dicoww_array(this, k) result(val)
-      class(dicoww_array_t), intent(in) :: this
-      integer, intent(in) :: k
+      class(dicoww_array_t), intent(in) :: this !< dicoww object to obtain value from at index k
+      integer, intent(in) :: k !< index in the dicoww array
       real :: val
       val = this%values(k)
    end function get_dicoww_array
 
+!> (re)allocate dicoww as scalar regardless of previous status
 subroutine realloc_dicoww_scalar(dicoww, value)
-    class(dicoww_t), allocatable, intent(inout) :: dicoww
-    real(kind=dp), intent(in) :: value
+    class(dicoww_t), allocatable, intent(inout) :: dicoww !< dicoww object to be reallocated
+    real(kind=dp), intent(in) :: value !< value to be set in the scalar dicoww
 
     if (allocated(dicoww)) then
         deallocate(dicoww)
@@ -194,11 +195,12 @@ subroutine realloc_dicoww_scalar(dicoww, value)
     end select
 end subroutine realloc_dicoww_scalar
 
+!> (re)allocate dicoww as array regardless of previous status, optionally with a fill_value and a pointer to the values array
    subroutine realloc_dicoww_array(dicoww, n, fill_value, values_ptr)
-      class(dicoww_t), allocatable, target, intent(inout) :: dicoww
-      integer, intent(in) :: n
-      real(kind=dp), optional, intent(in) :: fill_value
-      real(kind=dp), pointer, optional, intent(out) :: values_ptr(:)
+      class(dicoww_t), allocatable, target, intent(inout) :: dicoww !< dicoww object to be reallocated
+      integer, intent(in) :: n !< size of the array to allocate
+      real(kind=dp), optional, intent(in) :: fill_value !< value to fill the array with, if present
+      real(kind=dp), pointer, optional, intent(out) :: values_ptr(:) !< pointer to the values array, if present
 
       if (allocated(dicoww)) then
          deallocate (dicoww)
