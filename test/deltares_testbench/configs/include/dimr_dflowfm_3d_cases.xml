@@ -1497,7 +1497,7 @@
     </testCase>
 
     <testCase name="e02_fxxx_c010_nudgerate" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/fxxx_nudging/c010_nudgerate</path>
+      <path version="2025-08-25T09:31:22.440000">e02_dflowfm/fxxx_nudging/c010_nudgerate</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/test_map.nc" type="netCDF">

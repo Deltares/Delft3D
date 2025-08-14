@@ -375,7 +375,7 @@ contains
                   "airpressure_windx_windy", "airpressure_windx_windy_charnock", &
                   "airpressure_stressx_stressy", "charnock", &
                   "windxy", "stressxy", "windx", "windy", "stressx", "stressy", &
-                  "nudge_salinity_temperature", &
+                  "nudge_salinity_temperature", "nudgeSalinityTemperature", &
                   "airpressure", "atmosphericpressure", &
                   "airtemperature", "humidity", "dewpoint", "cloudiness", &
                   "wind_speed", "wind_from_direction", &
@@ -2652,7 +2652,7 @@ contains
       case ('longwaveradiation')
          ncvarnames(1) = 'strd'
          ncstdnames(1) = 'surface_net_downward_longwave_flux'
-      case ('nudge_salinity_temperature')
+      case ('nudge_salinity_temperature', 'nudgeSalinityTemperature')
          ncvarnames(1) = 'thetao' ! temperature
          ncstdnames(1) = 'sea_water_potential_temperature'
          ncvarnames(2) = 'so' ! salinity
