@@ -9,26 +9,41 @@ BRANCH_NAME=""
 COMMIT_SHA=""
 POLL_INTERVAL=30
 TIMEOUT=1800
+VERBOSE=false
 
 ENCODED_BRANCH_NAME=""
 TEAMCITY_BUILDS="${TEAMCITY_URL}/app/rest/builds"
+
+# unicode definitions
+# states
+UNICODE_QUEUED="\U23F3"
+UNICODE_PENDING="\U1F551"
+UNICODE_RUNNING="\U1F680"
+UNICODE_FINISHED="\U1F3C1"
+# statuses
+UNICODE_SUCCESS='\U2705'
+UNICODE_FAILURE='\U274C'
+UNICODE_UNKNOWN="\U2753"
+# misc
+UNICODE_WAIT='\U23F3'
 
 function usage() {
   cat <<EOF
 Usage: $0 [OPTIONS]
 
 Options:
-  --teamcity-token TOKEN      TeamCity access token or password
-  --branch-name NAME          Branch name to monitor (will be URL-encoded automatically)
-  --commit-sha SHA            Commit SHA
-  --poll-interval SECONDS     Polling interval in seconds (default: 30)
-  --timeout SECONDS           Timeout in seconds (default: 1800)
-  --help                      Show this help message
+  --teamcity-token TOKEN    TeamCity access token or password
+  --branch-name NAME        Branch name to monitor (will be URL-encoded automatically)
+  --commit-sha SHA          Commit SHA
+  --poll-interval SECONDS   Polling interval in seconds (default: 30)
+  --timeout TIMEOUT         Timeout in seconds (default: 1800s)
+  --verbose                 Verbosity switch
+  --help                    Show this help message
 EOF
 }
 
 parse_args() {
-  local long_options="help,teamcity-token:,branch-name:,commit-sha:,poll-interval:,timeout:"
+  local long_options="help,teamcity-token:,branch-name:,commit-sha:,poll-interval:,timeout:,verbose"
   local parsed_options
   if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long ${long_options} -- "$@"); then
     echo "parse_args: failed to parse arguments."
@@ -62,6 +77,10 @@ parse_args() {
       TIMEOUT="$2"
       shift 2
       ;;
+    --verbose)
+      VERBOSE=true
+      shift
+      ;;
     --)
       shift
       break
@@ -92,6 +111,12 @@ function print_header() {
   echo -e "--\n"
 }
 
+function log_verbose() {
+  if ${VERBOSE}; then
+    echo -e "$1"
+  fi
+}
+
 function encode_branch_name() {
   local branch_name="$1"
   local encoded_branch_name
@@ -101,16 +126,6 @@ function encode_branch_name() {
 
 function count_sheep() {
   sleep "${POLL_INTERVAL}"
-}
-
-function get_build_info() {
-  local id="$1"
-  curl \
-    --silent \
-    --request "GET" \
-    "${TEAMCITY_BUILDS}/id:${id}" \
-    --header "Authorization: Bearer ${TEAMCITY_TOKEN}" \
-    --header "Accept: application/json"
 }
 
 function trigger() {
@@ -136,17 +151,17 @@ function trigger() {
 
     if [ "${state}" != "finished" ]; then
       if [ "${waiting}" = false ]; then
-        echo "⏳ Trigger not finished yet. Polling every ${POLL_INTERVAL} seconds..."
+        echo -e "${UNICODE_WAIT} Trigger not finished yet. Polling every ${POLL_INTERVAL} seconds..."
         waiting=true
       fi
       count_sheep
       continue
     elif [ "${status}" != "SUCCESS" ]; then
-      echo "❌ Trigger failed. Tracking of the remaining jobs is no longer possible."
+      echo -e "${UNICODE_FAILURE} Trigger failed. Tracking of the remaining jobs is no longer possible."
       return 1
     fi
 
-    echo "✅ Trigger finished successfully!"
+    echo -e "${UNICODE_SUCCESS} Trigger finished successfully!"
 
     # shellcheck disable=SC2034
     id=$(echo "${trigger}" | jq -r '.build[0].id')
@@ -156,10 +171,43 @@ function trigger() {
 
 }
 
+function unicode_state_status() {
+  local state="$1"
+  local status="$2"
+
+  local unicode=""
+  if [ "${state}" = "pending" ]; then
+    unicode="${UNICODE_PENDING}  "
+  elif [ "${state}" = "queued" ]; then
+    unicode="${UNICODE_QUEUED}  "
+  elif [ "${state}" = "running" ]; then
+    unicode="${UNICODE_RUNNING}  "
+  elif [ "${state}" = "finished" ]; then
+    unicode="${UNICODE_FINISHED}"
+    if [ "${status}" = "SUCCESS" ]; then
+      unicode+="${UNICODE_SUCCESS}"
+    elif [ "${status}" = "FAILURE" ]; then
+      unicode+="${UNICODE_FAILURE}"
+    elif [ "${status}" = "UNKNOWN" ]; then
+      unicode+="${UNICODE_UNKNOWN}"
+    fi
+  fi
+  echo -e "${unicode}"
+}
+
+function get_build_info() {
+  local id="$1"
+  curl \
+    --silent \
+    --request "GET" \
+    "${TEAMCITY_BUILDS}/id:${id}" \
+    --header "Authorization: Bearer ${TEAMCITY_TOKEN}" \
+    --header "Accept: application/json"
+}
+
 function get_aggregate_teamcity_build_status() {
   local trigger_id="$1"
 
-  local tracked_build_ids=""
   while true; do
 
     # Fetch all builds since last trigger
@@ -173,18 +221,23 @@ function get_aggregate_teamcity_build_status() {
         --header "Accept: application/json"
     )
 
+    local tracked_build_ids=""
     tracked_build_ids=$(jq -r '.build[]?.id' <<<"${jobs}" | tr -d '\r' | sort -nu | xargs)
 
     if [ -z "${tracked_build_ids}" ]; then
-      echo "✅ No builds detected for branch ${BRANCH_NAME}."
+      echo -e "${UNICODE_SUCCESS} No builds detected."
       return 0
     fi
 
     # Check status of all tracked builds
+
+    local ids=()
+    IFS=' ' read -r -a ids <<<"$tracked_build_ids"
     local states=()
     local statuses=()
+    local web_urls=()
 
-    for id in ${tracked_build_ids}; do
+    for id in "${ids[@]}"; do
       local build_info
       build_info="$(get_build_info "${id}")"
       local state
@@ -195,7 +248,10 @@ function get_aggregate_teamcity_build_status() {
       statuses+=("${status}")
       local web_url
       web_url=$(echo "${build_info}" | jq -r '.webUrl')
-      echo "Build ${id} → State: ${state} | Status: ${status} | URL: ${web_url}"
+      web_urls+=("${web_url}")
+      local unicode
+      unicode=$(unicode_state_status "${state}" "${status}")
+      log_verbose "${unicode} Build ${id} → State: ${state} | Status: ${status} | URL: ${web_url}"
     done
 
     local all_done=true
@@ -207,17 +263,24 @@ function get_aggregate_teamcity_build_status() {
     done
 
     if [ "${all_done}" = true ]; then
+      echo "Build results"
+      for i in "${!ids[@]}"; do
+        local unicode
+        unicode=$(unicode_state_status "${states[$i]}" "${statuses[$i]}")
+        echo -e "${unicode} Build ${ids[$i]} → State: ${states[$i]} | Status: ${statuses[$i]} | URL: ${web_urls[$i]}"
+      done
       for status in "${statuses[@]}"; do
         if [[ "${status}" != "SUCCESS" ]]; then
-          echo "❌ One or more builds failed."
+          echo -e "${UNICODE_FAILURE} One or more tracked builds failed."
           return 1
         fi
       done
-      echo "✅ All builds for branch ${BRANCH_NAME} finished successfully!"
+      echo -e "${UNICODE_SUCCESS} All tracked builds finished successfully!"
       return 0
     fi
 
-    echo "⏳ Still waiting for builds. Will poll again in ${POLL_INTERVAL} seconds..."
+    log_verbose "\n${UNICODE_WAIT} Still waiting for builds to finish. Will poll again in ${POLL_INTERVAL} seconds...\n"
+
     count_sheep
 
   done
