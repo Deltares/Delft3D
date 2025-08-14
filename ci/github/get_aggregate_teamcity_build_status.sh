@@ -6,6 +6,7 @@ TEAMCITY_URL="https://dpcbuild.deltares.nl"
 TEAMCITY_TOKEN=""
 PROJECT_ID="Delft3D"
 BRANCH_NAME=""
+COMMIT_SHA=""
 POLL_INTERVAL=30
 TIMEOUT=1800
 
@@ -19,6 +20,7 @@ Usage: $0 [OPTIONS]
 Options:
   --teamcity-token TOKEN      TeamCity access token or password
   --branch-name NAME          Branch name to monitor (will be URL-encoded automatically)
+  --commit-sha SHA            Commit SHA
   --poll-interval SECONDS     Polling interval in seconds (default: 30)
   --timeout SECONDS           Timeout in seconds (default: 1800)
   --help                      Show this help message
@@ -26,7 +28,7 @@ EOF
 }
 
 parse_args() {
-  local long_options="help,teamcity-url:,teamcity-user:,teamcity-token:,project-id:,branch-name:,poll-interval:,timeout:"
+  local long_options="help,teamcity-token:,branch-name:,commit-sha:,poll-interval:,timeout:"
   local parsed_options
   if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long ${long_options} -- "$@"); then
     echo "parse_args: failed to parse arguments."
@@ -46,6 +48,10 @@ parse_args() {
       ;;
     --branch-name)
       BRANCH_NAME="$2"
+      shift 2
+      ;;
+    --commit-sha)
+      COMMIT_SHA="$2"
       shift 2
       ;;
     --poll-interval)
@@ -68,11 +74,22 @@ parse_args() {
   done
 
   # Validate required params
-  if [[ -z "${TEAMCITY_TOKEN}" || -z "${BRANCH_NAME}" ]]; then
+  if [[ -z "${TEAMCITY_TOKEN}" || -z "${BRANCH_NAME}" || -z "${COMMIT_SHA}" ]]; then
     echo "Missing required arguments." >&21
     usage
     exit 1
   fi
+}
+
+function print_header() {
+  echo -e "\n$0 invoked with"
+  echo "TeamCity URL  : ${TEAMCITY_URL}"
+  echo "Project ID    : ${PROJECT_ID}"
+  echo "Branch name   : ${BRANCH_NAME}"
+  echo "Commit SHA    : ${COMMIT_SHA}"
+  echo "Poll interval : ${POLL_INTERVAL}"
+  echo "Timeout       : ${TIMEOUT}"
+  echo -e "--\n"
 }
 
 function encode_branch_name() {
@@ -82,8 +99,12 @@ function encode_branch_name() {
   echo "${encoded_branch_name}"
 }
 
+function count_sheep() {
+  sleep "${POLL_INTERVAL}"
+}
+
 function get_build_info() {
-  local id="$1" 
+  local id="$1"
   curl \
     --silent \
     --request "GET" \
@@ -94,7 +115,7 @@ function get_build_info() {
 
 function trigger() {
   declare -n id="$1"
-  declare -n sha="$2"
+
   local build_type="Delft3D_Trigger"
   local waiting=false
   while true; do
@@ -103,7 +124,7 @@ function trigger() {
       curl \
         --silent \
         --request "GET" \
-        "${TEAMCITY_BUILDS}?locator=project:${PROJECT_ID},buildType:${build_type},branch:${ENCODED_BRANCH_NAME},state:any,count:1" \
+        "${TEAMCITY_BUILDS}?locator=project:${PROJECT_ID},buildType:${build_type},branch:${ENCODED_BRANCH_NAME},revision:${COMMIT_SHA},state:any,count:1" \
         --header "Authorization: Bearer ${TEAMCITY_TOKEN}" \
         --header "Accept: application/json"
     )
@@ -118,7 +139,7 @@ function trigger() {
         echo "⏳ Trigger not finished yet. Polling every ${POLL_INTERVAL} seconds..."
         waiting=true
       fi
-      sleep "${POLL_INTERVAL}"
+      count_sheep
       continue
     elif [ "${status}" != "SUCCESS" ]; then
       echo "❌ Trigger failed. Tracking of the remaining jobs is no longer possible."
@@ -130,10 +151,6 @@ function trigger() {
     # shellcheck disable=SC2034
     id=$(echo "${trigger}" | jq -r '.build[0].id')
 
-    local build_info
-    build_info="$(get_build_info "${id}")"
-    # shellcheck disable=SC2034
-    sha=$(echo "${build_info}" | jq -r '.revisions.revision[0].version')
     return 0
   done
 
@@ -141,20 +158,17 @@ function trigger() {
 
 function get_aggregate_teamcity_build_status() {
   local trigger_id="$1"
-  local branch_sha="$2"
 
   local tracked_build_ids=""
-
   while true; do
 
     # Fetch all builds since last trigger
-
     local jobs
     jobs=$(
       curl \
         --silent \
         --request "GET" \
-        "${TEAMCITY_BUILDS}?locator=affectedProject:${PROJECT_ID},branch:${ENCODED_BRANCH_NAME},state:any,canceled:any,sinceBuild:${trigger_id},count:1000" \
+        "${TEAMCITY_BUILDS}?locator=affectedProject:${PROJECT_ID},branch:${ENCODED_BRANCH_NAME},revision:${COMMIT_SHA},state:any,canceled:any,sinceBuild:${trigger_id},count:1000&fields=build(id)" \
         --header "Authorization: Bearer ${TEAMCITY_TOKEN}" \
         --header "Accept: application/json"
     )
@@ -173,22 +187,15 @@ function get_aggregate_teamcity_build_status() {
     for id in ${tracked_build_ids}; do
       local build_info
       build_info="$(get_build_info "${id}")"
-
-      local sha
-      sha=$(echo "${build_info}" | jq -r '.revisions.revision[0].version')
-      if [[ "${sha}" = "${branch_sha}" ]]; then
-        local state
-        state=$(echo "${build_info}" | jq -r '.state')
-        #echo "$state"
-        states+=("${state}")
-        local status
-        status=$(echo "${build_info}" | jq -r '.status')
-        #echo "$status"
-        statuses+=("${status}")
-        local web_url
-        web_url=$(echo "${build_info}" | jq -r '.webUrl')
-        echo "Build ${id} → State: ${state} | Status: ${status} | URL: ${web_url}"
-      fi
+      local state
+      state=$(echo "${build_info}" | jq -r '.state')
+      states+=("${state}")
+      local status
+      status=$(echo "${build_info}" | jq -r '.status')
+      statuses+=("${status}")
+      local web_url
+      web_url=$(echo "${build_info}" | jq -r '.webUrl')
+      echo "Build ${id} → State: ${state} | Status: ${status} | URL: ${web_url}"
     done
 
     local all_done=true
@@ -210,20 +217,20 @@ function get_aggregate_teamcity_build_status() {
       return 0
     fi
 
-    echo "⏳ Still waiting for builds. Sleeping ${POLL_INTERVAL} seconds..."
-    sleep "${POLL_INTERVAL}"
+    echo "⏳ Still waiting for builds. Will poll again in ${POLL_INTERVAL} seconds..."
+    count_sheep
 
   done
 }
 
 main() {
   parse_args "$@"
+  print_header
   ENCODED_BRANCH_NAME=$(encode_branch_name "${BRANCH_NAME}")
   # sleep 60 # delay to allow the trigger job to queue
-  local trigger_id branch_sha
-  trigger trigger_id branch_sha
-  echo "id: ${trigger_id} | sha: ${branch_sha}"
-  get_aggregate_teamcity_build_status "${trigger_id}" "${branch_sha}"
+  local trigger_id
+  trigger trigger_id
+  get_aggregate_teamcity_build_status "${trigger_id}"
 }
 
 main "$@"
