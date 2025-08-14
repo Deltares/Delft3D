@@ -4588,6 +4588,50 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f020_c040_simple_solar_radiation_model_all_defaults" ref="dflowfm_default">
+      <path version="2025-08-14T09:46:01.082000">e02_dflowfm/f020_heat_flux/c040_simple_solar_radiation_model_all_defaults</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="output/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Qsun" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f020_c041_simple_solar_radiation_model_default_albedo" ref="dflowfm_default">
+      <path version="2025-08-14T09:46:24.664000">e02_dflowfm/f020_heat_flux/c041_simple_solar_radiation_model_default_albedo</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="output/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Qsun" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f020_c042_simple_solar_radiation_model_custom_albedo" ref="dflowfm_default">
+      <path version="2025-08-14T09:46:48.586000">e02_dflowfm/f020_heat_flux/c042_simple_solar_radiation_model_custom_albedo</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="output/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Qsun" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f020_c043_simple_net_solar_radiation_model" ref="dflowfm_default">
+      <path version="2025-08-14T09:47:17.435000">e02_dflowfm/f020_heat_flux/c043_simple_net_solar_radiation_model</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="output/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Qsun" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f006_c063_rain" ref="dflowfm_default">
       <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f006_external_forcing/c063_rain</path>
       <maxRunTime>15000.0000000</maxRunTime>

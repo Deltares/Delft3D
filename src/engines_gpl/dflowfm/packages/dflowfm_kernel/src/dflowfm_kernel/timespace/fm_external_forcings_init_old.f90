@@ -1044,6 +1044,19 @@ contains
                   solar_radiation_available = .true.
                end if
 
+            else if (qid == 'netsolarradiation') then
+
+               if (.not. allocated(solar_radiation)) then
+                  allocate (solar_radiation(ndx), stat=ierr)
+                  call aerr('solar_radiation(ndx)', ierr, ndx)
+                  solar_radiation = 0.0_dp
+               end if
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  btempforcingtypS = .true.
+                  net_solar_radiation_available = .true.
+               end if
+
             else if (qid == 'longwaveradiation') then
                if (.not. allocated(long_wave_radiation)) then
                   allocate (long_wave_radiation(ndx), stat=ierr)
