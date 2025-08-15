@@ -303,11 +303,7 @@ function(create_test test_name)
         set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}")
     endif (UNIX)
     if (WIN32)
-        set(lib_path "PATH=$<TARGET_FILE_DIR:${test_name}>\;${CMAKE_INSTALL_PREFIX}/lib\;$ENV{PATH}")
-        add_custom_command(TARGET ${test_name} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${test_name}> $<TARGET_RUNTIME_DLLS:${test_name}>
-            COMMAND_EXPAND_LISTS
-        )
+        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/lib\;$ENV{PATH}")
     endif (WIN32)
 
 
@@ -365,8 +361,6 @@ function(create_test test_name)
 
         set_tests_properties(${test_i} PROPERTIES
             ENVIRONMENT "${lib_path};${data_path}"
-            # ENVIRONMENT_MODIFICATION 
-            #     "PATH=path_list_prepend:$<TARGET_FILE_DIR:${test_name}>\;${lib_path}\;${data_path}"
             LABELS "${labels}"
         )
     endforeach()
