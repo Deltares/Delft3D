@@ -44,7 +44,6 @@ endif(UNIX)
 
 if(WIN32)
     if(WITH_INTERACTER)
-        target_sources(${executable_name} PRIVATE "${checkout_src_root}/third_party/interacter/src/jacobi.f90")
         # Add lib_interacter before adding the other libraries. Sometimes it seems to make a difference
         target_link_libraries(${executable_name} PRIVATE ${lib_interacter})
     else()
