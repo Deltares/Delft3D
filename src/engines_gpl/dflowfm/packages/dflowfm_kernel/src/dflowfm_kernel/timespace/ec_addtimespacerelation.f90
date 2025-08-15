@@ -1100,7 +1100,7 @@ contains
          if (success) success = ecAddItemConnection(ecInstancePtr, item_air_density, connectionId)
       case ('solarradiation')
          if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'surface_net_downward_shortwave_flux'
+            sourceItemName = 'surface_downwelling_shortwave_flux_in_air'
          else
             sourceItemName = 'sw_radiation_flux'
          end if

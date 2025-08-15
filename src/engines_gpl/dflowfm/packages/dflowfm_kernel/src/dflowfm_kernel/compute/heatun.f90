@@ -57,7 +57,7 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_link1, only: getlink1
       use m_wind, only: air_pressure_available, jaevap, long_wave_radiation_available, relativewind, air_temperature, wx, wy, relative_humidity, cloudiness, &
-                        air_pressure, heatsrc0, solar_radiation, net_solar_radiation, solar_radiation_available, tbed, rhoair, long_wave_radiation, evap, cdwcof, &
+                        air_pressure, heatsrc0, solar_radiation, solar_radiation_available, net_solar_radiation, net_solar_radiation_available, tbed, rhoair, long_wave_radiation, evap, cdwcof, &
                         air_density, ja_airdensity, ja_computed_airdensity
       use m_qsun_nominal, only: calculate_nominal_solar_radiation
 
@@ -171,8 +171,10 @@ contains
             air_pressure_in_cell = 0.01_dp * air_pressure(n)
          end if
 
-         ! Solar radiation restricted by presence of clouds and reflection of water surface (albedo)
-         if (solar_radiation_available) then
+         ! Solar radiation restricted by presence of clouds and/or reflection of water surface (albedo)
+         if (net_solar_radiation_available) then
+            net_solar_radiation_in_cell = solar_radiation(n)
+         else if (solar_radiation_available) then
             net_solar_radiation_in_cell = solar_radiation(n) * (1.0_dp - albedo)
          else ! Calculate solar radiation from cloud coverage specified in file
             if (jsferic == 1) then
