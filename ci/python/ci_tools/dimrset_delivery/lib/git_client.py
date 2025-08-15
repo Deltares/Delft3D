@@ -1,10 +1,10 @@
 import subprocess
 import sys
 
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
+from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 
 
-class GitClient():
+class GitClient:
     """Class responsible for tagging Git commits.
 
     Parameters
@@ -17,10 +17,20 @@ class GitClient():
         Git password for authentication.
     """
 
-    def __init__(self, repo_url: str, username: str, password: str) -> None:
-        self.repo_url = repo_url
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        settings: Settings,
+    ) -> None:
         self.__username = username
         self.__password = password
+        self.__settings = settings
+
+        if settings is None or settings.delft3d_git_repo is None:
+            self.repo_url = ""
+        else:
+            self.repo_url = settings.delft3d_git_repo
 
     def tag_commit(self, commit_hash: str, tag_name: str) -> None:
         """Tags a specific commit with a given tag name and pushes the tag to the remote repository.
@@ -78,7 +88,7 @@ class GitClient():
         try:
             auth_repo_url = self.repo_url.replace("https://", f"https://{self.__username}:{self.__password}@")
             if dry_run:
-                print(f"{DRY_RUN_PREFIX} Testing connection to {auth_repo_url}")
+                print(f"{self.__settings.dry_run_prefix} Testing connection to {auth_repo_url}")
                 result = subprocess.CompletedProcess(args=[], returncode=0, stdout="Dry run successful")
             else:
                 result = subprocess.run(["git", "ls-remote", auth_repo_url], capture_output=True, text=True)

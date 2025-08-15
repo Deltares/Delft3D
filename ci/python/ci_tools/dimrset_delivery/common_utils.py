@@ -5,18 +5,12 @@ Provides shared initialization and helper functions.
 """
 
 import re
-from typing import Optional, Tuple
+from typing import Optional
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
-from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
-from ci_tools.dimrset_delivery.lib.git_client import GitClient
-from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
-from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
-from ci_tools.dimrset_delivery.settings.general_settings import DELFT3D_GIT_REPO, DRY_RUN_PREFIX
-from ci_tools.dimrset_delivery.settings.teamcity_settings import PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT
 
 
-class ResultTestBankParser():
+class ResultTestBankParser:
     """Object responsible for parsing a specific testbank result artifact."""
 
     def __init__(self, testbank_result: str) -> None:
@@ -67,34 +61,7 @@ class ResultTestBankParser():
         return total_number
 
 
-def initialize_clients(
-    username: str, password: str, personal_access_token: str
-) -> Tuple[Atlassian, TeamCity, SshClient, GitClient]:
-    """Initialize all required client wrappers.
-
-    Parameters
-    ----------
-    username : str
-        Username for authentication.
-    password : str
-        Password for authentication.
-    personal_access_token : str
-        Personal access token for Git authentication.
-
-    Returns
-    -------
-    Tuple[Atlassian, TeamCity, SshClient, GitClient]
-        Initialized client wrappers.
-    """
-    atlassian_wrapper = Atlassian(username=username, password=password)
-    teamcity_wrapper = TeamCity(username=username, password=password)
-    ssh_client_wrapper = SshClient(username=username, password=password, connect_timeout=30)
-    git_client_wrapper = GitClient(DELFT3D_GIT_REPO, username, personal_access_token)
-
-    return atlassian_wrapper, teamcity_wrapper, ssh_client_wrapper, git_client_wrapper
-
-
-def get_testbank_result_parser() -> ResultTestBankParser:
+def get_testbank_result_parser(path_to_release_test_results_artifact: str) -> ResultTestBankParser:
     """Get a new ResultTestBankParser for the latest test bench results from a local file.
 
     Returns
@@ -102,7 +69,7 @@ def get_testbank_result_parser() -> ResultTestBankParser:
     ResultTestBankParser
         Parser instance for the test results.
     """
-    with open(PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT, "rb") as f:
+    with open(path_to_release_test_results_artifact, "rb") as f:
         artifact = f.read()
     return ResultTestBankParser(artifact.decode())
 
@@ -171,7 +138,7 @@ def get_previous_testbank_result_parser(context: DimrAutomationContext) -> Optio
     # Download artifact for previous build
     artifact = context.teamcity.get_build_artifact(
         build_id=f"{previous_build_id}",
-        path_to_artifact=PATH_TO_RELEASE_TEST_RESULTS_ARTIFACT,
+        path_to_artifact=context.settings.path_to_release_test_results_artifact,
     )
     if artifact is None:
         return None
@@ -201,18 +168,6 @@ def get_tag_from_build_info(current_build_info: dict) -> tuple:
             if parsed_version is not None:
                 current_tag_name = parsed_version
     return current_tag_name
-
-
-def print_dry_run_message(dry_run: bool) -> None:
-    """Print dry run message if applicable.
-
-    Parameters
-    ----------
-    dry_run : bool
-        Whether running in dry-run mode.
-    """
-    if dry_run:
-        print(f"{DRY_RUN_PREFIX} - no changes will be made")
 
 
 def parse_version(tag: str) -> Optional[tuple]:

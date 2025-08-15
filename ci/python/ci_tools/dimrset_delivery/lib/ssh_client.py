@@ -1,9 +1,9 @@
 from enum import Enum
 
 import paramiko
-from scp import SCPClient  # type: ignore[import-untyped]
+from scp import SCPClient
 
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
+from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings  # type: ignore[import-untyped]
 
 
 class Direction(Enum):
@@ -13,10 +13,10 @@ class Direction(Enum):
     FROM = "from"  # remote to local
 
 
-class SshClient():
+class SshClient:
     """Class to wrap a paramiko ssh client."""
 
-    def __init__(self, username: str, password: str, connect_timeout: int = 30) -> None:
+    def __init__(self, username: str, password: str, settings: Settings, connect_timeout: int = 30) -> None:
         """
         Create a new instance of SshClient.
 
@@ -33,15 +33,15 @@ class SshClient():
 
         self._client = paramiko.SSHClient()
         self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.__settings = settings
+        self.__address = settings.linux_address
 
-    def test_connection(self, address: str, dry_run: bool) -> None:
+    def test_connection(self, dry_run: bool) -> None:
         """
         Test if a SSH connection can be made to the specified address.
 
         Parameters
         ----------
-        address : str
-            The SSH address to connect to.
         dry_run : bool
             If True, the connection will not be established, but a message will be printed.
 
@@ -52,25 +52,23 @@ class SshClient():
         """
         try:
             if dry_run:
-                print(f"{DRY_RUN_PREFIX} SSH connection to {address} with {self.__username}")
+                print(f"{self.__settings.dry_run_prefix} SSH connection to {self.__address} with {self.__username}")
             else:
                 self._client.connect(
-                    address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
+                    self.__address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
                 )
-            print(f"Successfully created and closed a ssh connection to {address} with {self.__username}.")
+            print(f"Successfully created and closed a ssh connection to {self.__address} with {self.__username}.")
         except Exception as e:
-            raise AssertionError(f"Could not establish ssh connection to {address}:\n{e}") from e
+            raise AssertionError(f"Could not establish ssh connection to {self.__address}:\n{e}") from e
         finally:
             self._client.close()
 
-    def execute(self, address: str, command: str) -> None:
+    def execute(self, command: str) -> None:
         """
         Execute the specified command on the specified address.
 
         Parameters
         ----------
-        address : str
-            The SSH address to connect to.
         command : str
             The command to execute on the specified address.
 
@@ -81,22 +79,21 @@ class SshClient():
         """
         try:
             self._client.connect(
-                address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
+                self.__address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
             )
             self._client.exec_command(command)
         except Exception as e:
-            raise AssertionError(f"Could not execute command '{command}' on '{address}':\n{e}") from e
+            raise AssertionError(f"Could not execute command '{command}' on '{self.__address}':\n{e}") from e
         finally:
             self._client.close()
+            print(f"Successfully executed command '{command}' on '{self.__address}'.")
 
-    def secure_copy(self, address: str, local_path: str, remote_path: str, direction: Direction = Direction.TO) -> None:
+    def secure_copy(self, local_path: str, remote_path: str, direction: Direction = Direction.TO) -> None:
         """
         Copy a file to or from the specified address using SCP.
 
         Parameters
         ----------
-        address : str
-            The SSH address to connect to.
         local_path : str
             The local file path.
         remote_path : str
@@ -111,7 +108,7 @@ class SshClient():
         """
         try:
             self._client.connect(
-                address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
+                self.__address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
             )
             transport = self._client.get_transport()
             if transport is not None:
@@ -131,6 +128,6 @@ class SshClient():
                 else:
                     raise ValueError("Invalid direction. Use 'to' for local to remote or 'from' for remote to local.")
         except Exception as e:
-            raise AssertionError(f"Could not perform SCP operation '{direction}' on '{address}':\n{e}") from e
+            raise AssertionError(f"Could not perform SCP operation '{direction}' on '{self.__address}':\n{e}") from e
         finally:
             self._client.close()

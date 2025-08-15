@@ -14,11 +14,6 @@ from ci_tools.dimrset_delivery.dimr_context import (
     create_context_from_args,
     parse_common_arguments,
 )
-from ci_tools.dimrset_delivery.settings.email_settings import (
-    LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS,
-    RELATIVE_PATH_TO_EMAIL_TEMPLATE,
-)
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX, RELATIVE_PATH_TO_OUTPUT_FOLDER
 from ci_tools.dimrset_delivery.settings.teamcity_settings import KERNELS
 
 # Mock data for dry-run mode
@@ -55,23 +50,26 @@ def prepare_email(context: DimrAutomationContext) -> None:
     context : DimrAutomationContext
         The automation context containing necessary clients and configuration.
     """
-    context.print_status("Preparing email template...")
+    context.log("Preparing email template...")
 
     # Get required information
     kernel_versions = context.get_kernel_versions()
     dimr_version = context.get_dimr_version()
 
     if context.dry_run:
-        print(f"{DRY_RUN_PREFIX} Preparing email template for DIMR version:", dimr_version)
+        print(
+            f"{context.settings.dry_run_prefix} Preparing email template for DIMR version:",
+            dimr_version,
+        )
         # Create mock parsers with sensible default values for dry-run
         parser = ResultTestBankParser(MOCK_CURRENT_TEST_RESULTS.strip())
         previous_parser = ResultTestBankParser(MOCK_PREVIOUS_TEST_RESULTS.strip())
     else:
-        parser = get_testbank_result_parser()
+        parser = get_testbank_result_parser(context.settings.path_to_release_test_results_artifact)
         previous_parser = get_previous_testbank_result_parser(context)
 
     helper = EmailHelper(
-        dimr_version=dimr_version,
+        context=context,
         kernel_versions=kernel_versions,
         current_parser=parser,
         previous_parser=previous_parser,
@@ -90,7 +88,7 @@ class EmailHelper:
 
     def __init__(
         self,
-        dimr_version: str,
+        context: DimrAutomationContext,
         kernel_versions: Dict[str, str],
         current_parser: ResultTestBankParser,
         previous_parser: Optional[ResultTestBankParser],
@@ -104,11 +102,12 @@ class EmailHelper:
             current_parser (ResultTestBankParser): A parser for the latest test bench results.
             previous_parser (Optional[ResultTestBankParser]): A parser for the previous test bench results.
         """
-        self.__dimr_version = dimr_version
+        self.__dimr_version = context.get_dimr_version()
         self.__kernel_versions = kernel_versions
         self.__current_parser = current_parser
         self.__previous_parser = previous_parser
         self.__template = ""
+        self.__settings = context.settings
 
     def generate_template(self) -> None:
         """Generate a template email for the latest DIMR release that can be copy/pasted into Outlook."""
@@ -120,7 +119,7 @@ class EmailHelper:
     def __load_template(self) -> None:
         """Load the template into memory."""
         current_dir = os.path.dirname(__file__)
-        path_to_email_template = os.path.join(current_dir, RELATIVE_PATH_TO_EMAIL_TEMPLATE)
+        path_to_email_template = os.path.join(current_dir, self.__settings.relative_path_to_email_template)
 
         with open(path_to_email_template, "r") as file:
             self.__template = file.read()
@@ -157,7 +156,7 @@ class EmailHelper:
         suffix = "%" if is_percentage else ""
 
         if is_percentage:
-            is_success = float(value) >= LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS
+            is_success = float(value) >= int(self.__settings.lower_bound_percentage_successful_tests)
         else:
             # For exceptions, 0 is success, anything else is failure
             is_success = int(value) == 0
@@ -265,7 +264,7 @@ class EmailHelper:
     def __save_template(self) -> None:
         """Save the email template in the output folder."""
         current_dir = os.path.dirname(__file__)
-        path_to_output_folder = os.path.join(current_dir, RELATIVE_PATH_TO_OUTPUT_FOLDER)
+        path_to_output_folder = os.path.join(current_dir, self.__settings.relative_path_to_output_folder)
         path_to_email_template = os.path.join(path_to_output_folder, f"DIMRset_{self.__dimr_version}.html")
 
         print(f"Saved email html to {path_to_email_template}")

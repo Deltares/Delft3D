@@ -1,12 +1,13 @@
 import os
-from pathlib import Path
-from typing import Dict, Optional
+from pathlib import Path, PosixPath
+from typing import Any, Dict, Optional
 from unittest.mock import Mock, patch
 
 from ci_tools.dimrset_delivery import prepare_email as pe
 from ci_tools.dimrset_delivery.common_utils import ResultTestBankParser, parse_version
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.prepare_email import EmailHelper, prepare_email
+from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 
 
 class DummyParser:
@@ -31,73 +32,76 @@ class DummyParser:
         return self._exceptions
 
 
-def make_helper(
-    dimr_version: str = "1.2.3",
-    kernel_versions: Optional[Dict[str, str]] = None,
-    passing: str = "95",
-    exceptions: str = "0",
-    prev_passing: Optional[str] = None,
-    prev_exceptions: Optional[str] = None,
-) -> EmailHelper:
-    if kernel_versions is None:
-        kernel_versions = {"kernelA": "123", "kernelB": "456"}
-    parser = DummyParser(passing=passing, exceptions=exceptions)
-    prev_parser = (
-        DummyParser(passing=prev_passing or passing, exceptions=prev_exceptions or exceptions)
-        if prev_passing is not None
-        else None
-    )
-    return EmailHelper(dimr_version, kernel_versions, parser, prev_parser)  # type: ignore
-
-
-def test_generate_template_calls_all() -> None:
-    helper = make_helper()
-    # Just check that the public method runs without error
-    with (
-        patch.object(helper, "_EmailHelper__load_template") as mock_load,
-        patch.object(helper, "_EmailHelper__insert_summary_table_header") as mock_header,
-        patch.object(helper, "_EmailHelper__insert_summary_table") as mock_table,
-        patch.object(helper, "_EmailHelper__save_template") as mock_save,
-    ):
-        helper.generate_template()
-
-        # Verify all internal methods were called
-        mock_load.assert_called_once()
-        mock_header.assert_called_once()
-        mock_table.assert_called_once()
-        mock_save.assert_called_once()
-
-
-def test_load_and_save_template(tmp_path: Path) -> None:
-    # Integration-style: test that generate_template creates an output file
-    template_content = "Hello @@@DIMR_VERSION@@@ @@@LINK_TO_PUBLIC_WIKI@@@ @@@SUMMARY_TABLE_BODY@@@"
-    template_path = tmp_path / "template.html"
-    template_path.write_text(template_content)
-    helper = make_helper()
-
-    # Create the expected output directory structure
-    output_dir = tmp_path / "output"
-    output_dir.mkdir()
-
-    with (
-        patch.object(pe, "RELATIVE_PATH_TO_EMAIL_TEMPLATE", template_path.name),
-        patch.object(pe, "RELATIVE_PATH_TO_OUTPUT_FOLDER", "output/"),
-        patch.object(os.path, "dirname", lambda _: str(tmp_path)),
-    ):
-        helper.generate_template()
-    # Find the output file by pattern in the output subdirectory
-    out_files = list(output_dir.glob("DIMRset_*.html"))
-    assert out_files, "No output file generated"
-    content = out_files[0].read_text()
-    assert "Hello" in content
-
-
 class TestEmailHelper:
     """Unit tests for EmailHelper class methods."""
 
+    def make_helper(
+        self,
+        dimr_version: str = "1.2.3",
+        kernel_versions: Optional[Dict[str, str]] = None,
+        passing: str = "95",
+        exceptions: str = "0",
+        prev_passing: Optional[str] = None,
+        prev_exceptions: Optional[str] = None,
+        template_path: Path = Path("/dump/location"),
+        lower_bound: str = "100",
+    ) -> EmailHelper:
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.get_dimr_version.return_value = dimr_version
+        mock_context.settings = Mock(spec=Settings)
+        mock_context.settings.relative_path_to_email_template = template_path.name
+        mock_context.settings.relative_path_to_output_folder = "output/"
+        mock_context.settings.lower_bound_percentage_successful_tests = lower_bound
+
+        if kernel_versions is None:
+            kernel_versions = {"kernelA": "123", "kernelB": "456"}
+        parser = DummyParser(passing=passing, exceptions=exceptions)
+        prev_parser = (
+            DummyParser(passing=prev_passing or passing, exceptions=prev_exceptions or exceptions)
+            if prev_passing is not None
+            else None
+        )
+        return EmailHelper(mock_context, kernel_versions, parser, prev_parser)  # type: ignore
+
+    def test_generate_template_calls_all(self) -> None:
+        helper = self.make_helper()
+        # Just check that the public method runs without error
+        with (
+            patch.object(helper, "_EmailHelper__load_template") as mock_load,
+            patch.object(helper, "_EmailHelper__insert_summary_table_header") as mock_header,
+            patch.object(helper, "_EmailHelper__insert_summary_table") as mock_table,
+            patch.object(helper, "_EmailHelper__save_template") as mock_save,
+        ):
+            helper.generate_template()
+
+            # Verify all internal methods were called
+            mock_load.assert_called_once()
+            mock_header.assert_called_once()
+            mock_table.assert_called_once()
+            mock_save.assert_called_once()
+
+    def test_load_and_save_template(self, tmp_path: Path) -> None:
+        # Integration-style: test that generate_template creates an output file
+        template_content = "Hello @@@DIMR_VERSION@@@ @@@LINK_TO_PUBLIC_WIKI@@@ @@@SUMMARY_TABLE_BODY@@@"
+        template_path = tmp_path / "template.html"
+        template_path.write_text(template_content)
+        helper = self.make_helper(template_path=template_path)
+
+        # Create the expected output directory structure
+        output_dir = tmp_path / "output"
+        output_dir.mkdir()
+
+        with patch.object(os.path, "dirname", lambda _: str(tmp_path)):
+            helper.generate_template()
+        # Find the output file by pattern in the output subdirectory
+        out_files = list(output_dir.glob("DIMRset_*.html"))
+        assert out_files, "No output file generated"
+        content = out_files[0].read_text()
+        assert "Hello" in content
+
     def test_generate_wiki_link(self) -> None:
         """Test wiki link generation for different version formats."""
-        helper = make_helper(dimr_version="1.2.3")
+        helper = self.make_helper(dimr_version="1.2.3")
         # Access the private method using name mangling
         wiki_link = helper._EmailHelper__generate_wiki_link()  # type: ignore
 
@@ -110,7 +114,7 @@ class TestEmailHelper:
         test_cases = ["2025.01", "10.20.30", "1.0.0", "2.29.03"]
 
         for version in test_cases:
-            helper = make_helper(dimr_version=version)
+            helper = self.make_helper(dimr_version=version)
             wiki_link = helper._EmailHelper__generate_wiki_link()  # type: ignore
 
             expected_url = f"https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+{version}"
@@ -120,7 +124,7 @@ class TestEmailHelper:
     @patch("ci_tools.dimrset_delivery.prepare_email.KERNELS", [])
     def test_get_email_friendly_kernel_name_empty_kernels(self) -> None:
         """Test kernel name mapping with empty KERNELS list."""
-        helper = make_helper()
+        helper = self.make_helper()
         result = helper._EmailHelper__get_email_friendly_kernel_name("unknown_kernel")  # type: ignore
         assert result == ""
 
@@ -133,7 +137,7 @@ class TestEmailHelper:
         mock_kernel.name_for_email = "Kernel Display Name"
         mock_kernels.__iter__.return_value = [mock_kernel]
 
-        helper = make_helper()
+        helper = self.make_helper()
         result = helper._EmailHelper__get_email_friendly_kernel_name("kernel_internal")  # type: ignore
         assert result == "Kernel Display Name"
 
@@ -146,15 +150,16 @@ class TestEmailHelper:
         mock_kernel.name_for_email = "Other Kernel"
         mock_kernels.__iter__.return_value = [mock_kernel]
 
-        helper = make_helper()
+        helper = self.make_helper()
         result = helper._EmailHelper__get_email_friendly_kernel_name("unknown_kernel")  # type: ignore
         assert result == ""
 
-    @patch("ci_tools.dimrset_delivery.prepare_email.LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS", 100)
     def test_generate_summary_table_html_no_previous_parser(self) -> None:
         """Test HTML table generation without previous parser."""
         kernel_versions = {"kernel1": "1.0.0", "kernel2": "2.0.0", "DIMRset_ver": "should_be_skipped"}
-        helper = make_helper(dimr_version="1.2.3", kernel_versions=kernel_versions, passing="95", exceptions="0")
+        helper = self.make_helper(
+            dimr_version="1.2.3", kernel_versions=kernel_versions, passing="95", exceptions="0", lower_bound="100"
+        )
 
         with patch.object(helper, "_EmailHelper__get_email_friendly_kernel_name", side_effect=lambda k: f"Display_{k}"):
             html = helper._EmailHelper__generate_summary_table_html()  # type: ignore
@@ -180,16 +185,16 @@ class TestEmailHelper:
         # Check exceptions (0 should be success class)
         assert '<span class="success">0</span>' in html
 
-    @patch("ci_tools.dimrset_delivery.prepare_email.LOWER_BOUND_PERCENTAGE_SUCCESSFUL_TESTS", 90)
     def test_generate_summary_table_html_with_previous_parser_success(self) -> None:
         """Test HTML table generation with previous parser - success case."""
-        helper = make_helper(
+        helper = self.make_helper(
             dimr_version="1.2.3",
             kernel_versions={"kernel1": "1.0.0"},
             passing="95",
             exceptions="0",
             prev_passing="92",
             prev_exceptions="1",
+            lower_bound="90",
         )
 
         with patch.object(helper, "_EmailHelper__get_email_friendly_kernel_name", return_value="Kernel1"):
@@ -211,7 +216,7 @@ class TestEmailHelper:
 
     def test_insert_summary_table_header(self) -> None:
         """Test summary table header insertion."""
-        helper = make_helper(dimr_version="2.29.03")
+        helper = self.make_helper(dimr_version="2.29.03")
         helper._EmailHelper__template = "Version: @@@DIMR_VERSION@@@ Link: @@@LINK_TO_PUBLIC_WIKI@@@"  # type: ignore
 
         helper._EmailHelper__insert_summary_table_header()  # type: ignore
@@ -223,7 +228,7 @@ class TestEmailHelper:
 
     def test_insert_summary_table(self) -> None:
         """Test summary table insertion."""
-        helper = make_helper()
+        helper = self.make_helper()
         helper._EmailHelper__template = "Table: @@@SUMMARY_TABLE_BODY@@@"  # type: ignore
 
         with patch.object(helper, "_EmailHelper__generate_summary_table_html", return_value="<table>content</table>"):
@@ -280,6 +285,8 @@ class TestIntegration:
         mock_context.dry_run = False
         mock_context.get_kernel_versions.return_value = {"kernel1": "1.0.0"}
         mock_context.get_dimr_version.return_value = "1.2.3"
+        mock_context.settings = Mock(spec=Settings)
+        mock_context.settings.path_to_release_test_results_artifact = "\random-location"
 
         mock_current_parser = Mock(spec=ResultTestBankParser)
         mock_get_parser.return_value = mock_current_parser
@@ -293,7 +300,7 @@ class TestIntegration:
 
         # Assert
         mock_email_helper.assert_called_once_with(
-            dimr_version="1.2.3",
+            context=mock_context,
             kernel_versions={"kernel1": "1.0.0"},
             current_parser=mock_current_parser,
             previous_parser=None,

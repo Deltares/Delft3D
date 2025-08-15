@@ -1,10 +1,6 @@
-"""
-Shared context for DIMR automation scripts.
-
-Handles initialization and provides common functionality.
-"""
-
 import argparse
+import json
+import os
 from dataclasses import dataclass
 from getpass import getpass
 from typing import Any, Dict, Optional
@@ -13,8 +9,10 @@ from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
-from ci_tools.dimrset_delivery.settings.general_settings import DELFT3D_GIT_REPO, DRY_RUN_PREFIX
-from ci_tools.dimrset_delivery.settings.teamcity_settings import KERNELS
+from ci_tools.dimrset_delivery.settings.teamcity_settings import (
+    KERNELS,
+    Settings,
+)
 
 
 @dataclass
@@ -78,98 +76,34 @@ class DimrAutomationContext:
         # Prompt for any missing required credentials
         self._prompt_for_credentials(credentials, requirements)
 
-        # Initialize services based on requirements
-        self._initialize_services(credentials, requirements)
+        settings_path = os.path.join(os.path.dirname(__file__), "settings", "teamcity_settings.json")
+        self.settings = Settings(settings_path)
+
+        self._initialize_services(credentials, requirements, self.settings)
 
         # Cache for commonly needed data
         self._kernel_versions: Optional[Dict[str, str]] = None
         self._dimr_version: Optional[str] = None
         self._branch_name: Optional[str] = None
 
-    def _prompt_for_credentials(self, credentials: DimrCredentials, requirements: ServiceRequirements) -> None:
-        """Prompt for any missing required credentials.
-
-        Parameters
-        ----------
-        credentials : DimrCredentials
-            The credentials object to update
-        requirements : ServiceRequirements
-            The service requirements
-        """
-        if requirements.atlassian and (not credentials.atlassian_username or not credentials.atlassian_password):
-            print("Atlassian/Confluence credentials:")
-            credentials.atlassian_username = credentials.atlassian_username or input("Enter your Atlassian username:")
-            credentials.atlassian_password = credentials.atlassian_password or getpass(
-                prompt="Enter your Atlassian password:", stream=None
-            )
-
-        if requirements.teamcity and (not credentials.teamcity_username or not credentials.teamcity_password):
-            print("TeamCity credentials:")
-            credentials.teamcity_username = credentials.teamcity_username or input("Enter your TeamCity username:")
-            credentials.teamcity_password = credentials.teamcity_password or getpass(
-                prompt="Enter your TeamCity password:", stream=None
-            )
-
-        if requirements.ssh and (not credentials.ssh_username or not credentials.ssh_password):
-            print("SSH (H7) credentials:")
-            credentials.ssh_username = credentials.ssh_username or input("Enter your SSH username:")
-            credentials.ssh_password = credentials.ssh_password or getpass(
-                prompt="Enter your SSH password:", stream=None
-            )
-
-        if requirements.git and (not credentials.git_username or not credentials.git_pat):
-            print("Git credentials:")
-            credentials.git_username = credentials.git_username or input("Enter your Git username:")
-            credentials.git_pat = credentials.git_pat or getpass(prompt="Enter your Git PAT:", stream=None)
-
-    def _initialize_services(self, credentials: DimrCredentials, requirements: ServiceRequirements) -> None:
-        """Initialize services based on requirements.
-
-        Parameters
-        ----------
-        credentials : DimrCredentials
-            The credentials to use for initialization
-        requirements : ServiceRequirements
-            The service requirements
-        """
-        self.atlassian = None
-        if requirements.atlassian:
-            if not credentials.atlassian_username or not credentials.atlassian_password:
-                raise ValueError("Atlassian credentials are required but not provided")
-            self.atlassian = Atlassian(username=credentials.atlassian_username, password=credentials.atlassian_password)
-
-        self.teamcity = None
-        if requirements.teamcity:
-            if not credentials.teamcity_username or not credentials.teamcity_password:
-                raise ValueError("TeamCity credentials are required but not provided")
-            self.teamcity = TeamCity(username=credentials.teamcity_username, password=credentials.teamcity_password)
-
-        self.ssh_client = None
-        if requirements.ssh:
-            if not credentials.ssh_username or not credentials.ssh_password:
-                raise ValueError("SSH credentials are required but not provided")
-            self.ssh_client = SshClient(
-                username=credentials.ssh_username, password=credentials.ssh_password, connect_timeout=30
-            )
-
-        self.git_client = None
-        if requirements.git:
-            if not credentials.git_username or not credentials.git_pat:
-                raise ValueError("Git credentials are required but not provided")
-            self.git_client = GitClient(DELFT3D_GIT_REPO, credentials.git_username, credentials.git_pat)
-
-    def print_status(self, message: str) -> None:
+    def log(self, *args, **kwargs) -> None:
         """Print status message with dry-run prefix if applicable.
 
         Parameters
         ----------
-        message : str
-            Status message to print.
+        *args
+            Positional arguments to pass to print.
+        **kwargs
+            Keyword arguments to pass to print.
         """
         if self.dry_run:
-            print(f"{DRY_RUN_PREFIX} {message}")
+            # If sep is specified in kwargs, use it; otherwise default to ' '
+            sep = kwargs.get("sep", " ")
+            # Join all args with the separator and add dry-run prefix
+            message = sep.join(str(arg) for arg in args)
+            print(f"{self.settings.dry_run_prefix} {message}", **{k: v for k, v in kwargs.items() if k != "sep"})
         else:
-            print(message)
+            print(*args, **kwargs)
 
     def get_kernel_versions(self) -> Dict[str, str]:
         """Get kernel versions (cached).
@@ -181,9 +115,7 @@ class DimrAutomationContext:
         """
         if self._kernel_versions is None:
             if self.dry_run:
-                self.print_status(
-                    f"Get build info of build_id {self.build_id}, then extract kernel versions from properties."
-                )
+                self.log(f"Get build info of build_id {self.build_id}, then extract kernel versions from properties.")
                 self._kernel_versions = {
                     KERNELS[0].name_for_extracting_revision: "1.23.45",
                     KERNELS[1].name_for_extracting_revision: "abcdefghijklmnopqrstuvwxyz01234567890123",
@@ -238,9 +170,9 @@ class DimrAutomationContext:
         """
         if self._branch_name is None:
             if self.dry_run:
-                self.print_status(f"Get build info of build_id {self.build_id}, then get branch name from properties.")
+                self.log(f"Get build info of build_id {self.build_id}, then get branch name from properties.")
                 self._branch_name = "main"
-                self.print_status(f"simulating '{self._branch_name}' branch")
+                self.log(f"simulating '{self._branch_name}' branch")
             else:
                 if self.teamcity is None:
                     raise ValueError("TeamCity client is required but not initialized")
@@ -263,6 +195,94 @@ class DimrAutomationContext:
             raise ValueError("Branch name is unexpectedly None after retrieval")
 
         return self._branch_name
+
+    def _prompt_for_credentials(self, credentials: DimrCredentials, requirements: ServiceRequirements) -> None:
+        """Prompt for any missing required credentials.
+
+        Parameters
+        ----------
+        credentials : DimrCredentials
+            The credentials object to update
+        requirements : ServiceRequirements
+            The service requirements
+        """
+        if requirements.atlassian and (not credentials.atlassian_username or not credentials.atlassian_password):
+            print("Atlassian/Confluence credentials:")
+            credentials.atlassian_username = credentials.atlassian_username or input("Enter your Atlassian username:")
+            credentials.atlassian_password = credentials.atlassian_password or getpass(
+                prompt="Enter your Atlassian password:", stream=None
+            )
+
+        if requirements.teamcity and (not credentials.teamcity_username or not credentials.teamcity_password):
+            print("TeamCity credentials:")
+            credentials.teamcity_username = credentials.teamcity_username or input("Enter your TeamCity username:")
+            credentials.teamcity_password = credentials.teamcity_password or getpass(
+                prompt="Enter your TeamCity password:", stream=None
+            )
+
+        if requirements.ssh and (not credentials.ssh_username or not credentials.ssh_password):
+            print("SSH (H7) credentials:")
+            credentials.ssh_username = credentials.ssh_username or input("Enter your SSH username:")
+            credentials.ssh_password = credentials.ssh_password or getpass(
+                prompt="Enter your SSH password:", stream=None
+            )
+
+        if requirements.git and (not credentials.git_username or not credentials.git_pat):
+            print("Git credentials:")
+            credentials.git_username = credentials.git_username or input("Enter your Git username:")
+            credentials.git_pat = credentials.git_pat or getpass(prompt="Enter your Git PAT:", stream=None)
+
+    def _initialize_services(
+        self, credentials: DimrCredentials, requirements: ServiceRequirements, settings: Settings
+    ) -> None:
+        """Initialize services based on requirements.
+
+        Parameters
+        ----------
+        credentials : DimrCredentials
+            The credentials to use for initialization
+        requirements : ServiceRequirements
+            The service requirements
+        """
+        self.atlassian = None
+        if requirements.atlassian:
+            if not credentials.atlassian_username or not credentials.atlassian_password:
+                raise ValueError("Atlassian credentials are required but not provided")
+            self.atlassian = Atlassian(
+                username=credentials.atlassian_username,
+                password=credentials.atlassian_password,
+                settings=settings,
+            )
+
+        self.teamcity = None
+        if requirements.teamcity:
+            if not credentials.teamcity_username or not credentials.teamcity_password:
+                raise ValueError("TeamCity credentials are required but not provided")
+            self.teamcity = TeamCity(
+                username=credentials.teamcity_username,
+                password=credentials.teamcity_password,
+                settings=settings,
+            )
+
+        self.ssh_client = None
+        if requirements.ssh:
+            if not credentials.ssh_username or not credentials.ssh_password:
+                raise ValueError("SSH credentials are required but not provided")
+            self.ssh_client = SshClient(
+                username=credentials.ssh_username,
+                password=credentials.ssh_password,
+                settings=settings,
+            )
+
+        self.git_client = None
+        if requirements.git:
+            if not credentials.git_username or not credentials.git_pat:
+                raise ValueError("Git credentials are required but not provided")
+            self.git_client = GitClient(
+                username=credentials.git_username,
+                password=credentials.git_pat,
+                settings=settings,
+            )
 
     def _extract_kernel_versions(self, build_info: Dict[str, Any]) -> Dict[str, str]:
         """Extract kernel versions from build info."""

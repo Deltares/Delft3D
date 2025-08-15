@@ -8,8 +8,9 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from ci_tools.dimrset_delivery.common_utils import ResultTestBankParser
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.lib.ssh_client import Direction, SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX, VERSIONS_EXCEL_FILENAME
+from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 from ci_tools.dimrset_delivery.update_excel_sheet import ExcelHelper, update_excel_sheet
 
 
@@ -19,10 +20,15 @@ class TestExcelHelper:
     def setup_method(self) -> None:
         """Set up test fixtures before each test method."""
         # Arrange - Common test data
-        self.mock_teamcity = Mock(spec=TeamCity)
+        self.mock_context = Mock(spec=DimrAutomationContext)
+        self.mock_context.settings = Mock(spec=Settings)
+        self.mock_context.settings.versions_excel_filename = "test_versions.xlsx"
+        self.mock_context.settings.sheet_name = "sheet1"
+        self.mock_context.settings.name_column = "column1"
+        self.mock_context.teamcity = Mock(spec=TeamCity)
         self.filepath = "test_versions.xlsx"
-        self.dimr_version = "v1.2.3"
-        self.kernel_versions = {"build.vcs.number": "12345", "other_kernel": "v2.0.0"}
+        self.mock_context.get_dimr_version.return_value = "v1.2.3"
+        self.mock_context.get_kernel_versions.return_value = {"build.vcs.number": "12345", "other_kernel": "v2.0.0"}
         self.mock_parser = Mock(spec=ResultTestBankParser)
 
         # Configure mock parser return values
@@ -35,10 +41,7 @@ class TestExcelHelper:
     def create_excel_helper(self) -> ExcelHelper:
         """Create an ExcelHelper instance with test data."""
         return ExcelHelper(
-            teamcity=self.mock_teamcity,
-            filepath=self.filepath,
-            dimr_version=self.dimr_version,
-            kernel_versions=self.kernel_versions,
+            context=self.mock_context,
             parser=self.mock_parser,
         )
 
@@ -106,7 +109,7 @@ class TestExcelHelper:
 
         # Mock worksheet already contains the row
         mock_cell = Mock()
-        mock_cell.value = f"DIMRset {self.dimr_version}"
+        mock_cell.value = f"DIMRset {self.mock_context.get_dimr_version()}"
         mock_worksheet.__getitem__.return_value = [mock_cell]
 
         # Act
@@ -191,7 +194,7 @@ class TestExcelHelper:
         mock_cell1 = Mock()
         mock_cell1.value = "DIMRset v1.0.0"
         mock_cell2 = Mock()
-        mock_cell2.value = f"DIMRset {self.dimr_version}"  # This should match
+        mock_cell2.value = f"DIMRset {self.mock_context.get_dimr_version()}"  # This should match
         mock_cell3 = Mock()
         mock_cell3.value = "DIMRset v2.0.0"
 
@@ -249,8 +252,12 @@ class TestUpdateExcelSheet:
         # Arrange - Common test data
         self.mock_context = Mock(spec=DimrAutomationContext)
         self.mock_context.dry_run = False
-        self.mock_context.ssh_client = Mock()
+        self.mock_context.ssh_client = Mock(spec=SshClient)
         self.mock_context.teamcity = Mock(spec=TeamCity)
+        self.mock_context.settings = Mock(spec=Settings)
+        self.mock_context.settings.path_to_release_test_results_artifact = "path/to/artifact"
+        self.mock_context.settings.versions_excel_filename = "path/to/versions.xlsx"
+        self.mock_context.settings.dry_run_prefix = "[TEST]"
 
         # Configure context methods
         self.kernel_versions = {"build.vcs.number": "12345"}
@@ -269,31 +276,29 @@ class TestUpdateExcelSheet:
         mock_parser = Mock(spec=ResultTestBankParser)
         mock_get_parser.return_value = mock_parser
 
-        mock_excel_helper = Mock()
+        mock_excel_helper = Mock(spec=ExcelHelper)
         mock_excel_helper_class.return_value = mock_excel_helper
 
         # Act
         update_excel_sheet(self.mock_context)
 
         # Assert
-        self.mock_context.print_status.assert_called_once_with("Updating Excel sheet...")
-        self.mock_context.get_kernel_versions.assert_called_once()
-        self.mock_context.get_dimr_version.assert_called_once()
-
-        # Verify SSH operations
+        self.mock_context.log.assert_called_once_with("Updating Excel sheet...")
         assert self.mock_context.ssh_client.secure_copy.call_count == 2
+        self.mock_context.ssh_client.secure_copy.assert_has_calls(
+            [
+                call("path/to/versions.xlsx", "/p/d-hydro/dimrset/path/to/versions.xlsx", Direction.FROM),
+                call("path/to/versions.xlsx", "/p/d-hydro/dimrset/path/to/versions.xlsx", Direction.TO),
+            ],
+            any_order=False,
+        )
 
-        # Verify ExcelHelper creation and usage
         mock_excel_helper_class.assert_called_once_with(
-            teamcity=self.mock_context.teamcity,
-            filepath=VERSIONS_EXCEL_FILENAME,
-            dimr_version=self.dimr_version,
-            kernel_versions=self.kernel_versions,
+            context=self.mock_context,
             parser=mock_parser,
         )
         mock_excel_helper.append_row.assert_called_once()
 
-        # Verify success message
         mock_print.assert_called_with("Excel sheet update completed successfully!")
 
     @patch("builtins.print")
@@ -306,16 +311,18 @@ class TestUpdateExcelSheet:
         update_excel_sheet(self.mock_context)
 
         # Assert
-        self.mock_context.print_status.assert_called_once_with("Updating Excel sheet...")
-        self.mock_context.get_kernel_versions.assert_called_once()
+        self.mock_context.log.assert_called_once_with("Updating Excel sheet...")
         self.mock_context.get_dimr_version.assert_called_once()
 
         # Verify dry run messages
         expected_calls = [
-            call(f"{DRY_RUN_PREFIX} Would update Excel sheet with DIMR version:", self.dimr_version),
-            call(f"{DRY_RUN_PREFIX} Would download Excel from network drive"),
-            call(f"{DRY_RUN_PREFIX} Would append new row with release information"),
-            call(f"{DRY_RUN_PREFIX} Would upload updated Excel back to network drive"),
+            call(
+                f"{self.mock_context.settings.dry_run_prefix} Would update Excel sheet with DIMR version:",
+                self.dimr_version,
+            ),
+            call(f"{self.mock_context.settings.dry_run_prefix} Would download Excel from network drive"),
+            call(f"{self.mock_context.settings.dry_run_prefix} Would append new row with release information"),
+            call(f"{self.mock_context.settings.dry_run_prefix} Would upload updated Excel back to network drive"),
         ]
         mock_print.assert_has_calls(expected_calls)
 

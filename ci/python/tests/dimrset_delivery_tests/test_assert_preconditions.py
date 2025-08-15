@@ -7,6 +7,11 @@ import pytest
 
 from ci_tools.dimrset_delivery.assert_preconditions import assert_preconditions
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
+from ci_tools.dimrset_delivery.lib.git_client import GitClient
+from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
+from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
+from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 
 
 class TestAssertPreconditionsFunction:
@@ -16,13 +21,15 @@ class TestAssertPreconditionsFunction:
         """Set up test fixtures."""
         self.mock_context = Mock(spec=DimrAutomationContext)
         self.mock_context.dry_run = False
-        self.mock_context.atlassian = Mock()
-        self.mock_context.teamcity = Mock()
-        self.mock_context.ssh_client = Mock()
-        self.mock_context.git_client = Mock()
+        self.mock_context.settings = Mock(spec=Settings)
+        self.mock_context.settings.network_base_path = "test_path"
+        self.mock_context.settings.linux_address = "test_host"
+        self.mock_context.settings.dry_run_prefix = "[TEST]"
+        self.mock_context.atlassian = Mock(spec=Atlassian)
+        self.mock_context.teamcity = Mock(spec=TeamCity)
+        self.mock_context.ssh_client = Mock(spec=SshClient)
+        self.mock_context.git_client = Mock(spec=GitClient)
 
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.NETWORK_BASE_PATH", "test_path")
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.LINUX_ADDRESS", "test_host")
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_success(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
@@ -39,13 +46,13 @@ class TestAssertPreconditionsFunction:
         assert_preconditions(self.mock_context)
 
         # Assert
-        self.mock_context.print_status.assert_called_once_with("Asserting preconditions...")
+        self.mock_context.log.assert_called_once_with("Asserting preconditions...")
         self.mock_context.teamcity.test_api_connection.assert_called_once_with(False)
         self.mock_context.atlassian.test_api_connection.assert_called_once_with(False)
         mock_os_exists.assert_called_with("test_path")
         mock_os_access.assert_any_call("test_path", os.W_OK)
         mock_os_access.assert_any_call("test_path", os.R_OK)
-        self.mock_context.ssh_client.test_connection.assert_called_once_with("test_host", False)
+        self.mock_context.ssh_client.test_connection.assert_called_once_with(False)
         self.mock_context.git_client.test_connection.assert_called_once_with(False)
 
     def test_assert_preconditions_teamcity_failure(self) -> None:
@@ -67,7 +74,6 @@ class TestAssertPreconditionsFunction:
         with pytest.raises(AssertionError, match="Failed to connect to the Atlassian Confluence REST API"):
             assert_preconditions(self.mock_context)
 
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.NETWORK_BASE_PATH", "test_path")
     @patch("os.path.exists")
     def test_assert_preconditions_network_path_not_exists(self, mock_os_exists: Mock) -> None:
         """Test preconditions check fails when network path does not exist."""
@@ -80,7 +86,6 @@ class TestAssertPreconditionsFunction:
         with pytest.raises(AssertionError, match="Network path does not exist: test_path"):
             assert_preconditions(self.mock_context)
 
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.NETWORK_BASE_PATH", "test_path")
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_network_access_failure(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
@@ -95,7 +100,6 @@ class TestAssertPreconditionsFunction:
         with pytest.raises(AssertionError, match="Insufficient permissions for test_path"):
             assert_preconditions(self.mock_context)
 
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.NETWORK_BASE_PATH", "test_path")
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_network_access_exception(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
@@ -110,8 +114,6 @@ class TestAssertPreconditionsFunction:
         with pytest.raises(AssertionError, match="Could not access test_path"):
             assert_preconditions(self.mock_context)
 
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.NETWORK_BASE_PATH", "test_path")
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.LINUX_ADDRESS", "test_host")
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_ssh_failure(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
@@ -127,8 +129,6 @@ class TestAssertPreconditionsFunction:
         with pytest.raises(AssertionError, match="Could not establish ssh connection to test_host"):
             assert_preconditions(self.mock_context)
 
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.NETWORK_BASE_PATH", "test_path")
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.LINUX_ADDRESS", "test_host")
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_git_failure(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
@@ -145,8 +145,6 @@ class TestAssertPreconditionsFunction:
         with pytest.raises(AssertionError, match="Could not establish git connection"):
             assert_preconditions(self.mock_context)
 
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.NETWORK_BASE_PATH", "test_path")
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.LINUX_ADDRESS", "test_host")
     def test_assert_preconditions_dry_run_mode(self) -> None:
         """Test preconditions check in dry-run mode."""
         # Arrange
@@ -158,10 +156,10 @@ class TestAssertPreconditionsFunction:
         assert_preconditions(self.mock_context)
 
         # Assert
-        self.mock_context.print_status.assert_called_once_with("Asserting preconditions...")
+        self.mock_context.log.assert_called_once_with("Asserting preconditions...")
         self.mock_context.teamcity.test_api_connection.assert_called_once_with(True)
         self.mock_context.atlassian.test_api_connection.assert_called_once_with(True)
-        self.mock_context.ssh_client.test_connection.assert_called_once_with("test_host", True)
+        self.mock_context.ssh_client.test_connection.assert_called_once_with(True)
         self.mock_context.git_client.test_connection.assert_called_once_with(True)
 
     def test_assert_preconditions_missing_atlassian(self) -> None:
@@ -182,7 +180,6 @@ class TestAssertPreconditionsFunction:
         with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
             assert_preconditions(self.mock_context)
 
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.NETWORK_BASE_PATH", "test_path")
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_missing_ssh_client(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
@@ -198,7 +195,6 @@ class TestAssertPreconditionsFunction:
         with pytest.raises(ValueError, match="SSH client is required but not initialized"):
             assert_preconditions(self.mock_context)
 
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.NETWORK_BASE_PATH", "test_path")
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_missing_git_client(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
@@ -228,7 +224,7 @@ class TestMainExecution:
         """Test main execution flow."""
         # Arrange
         mock_args = Mock()
-        mock_context = Mock()
+        mock_context = Mock(spec=DimrAutomationContext)
         mock_parse_args.return_value = mock_args
         mock_create_context.return_value = mock_context
 

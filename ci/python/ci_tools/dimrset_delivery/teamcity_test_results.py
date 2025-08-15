@@ -11,8 +11,6 @@ from ci_tools.dimrset_delivery.dimr_context import (
     create_context_from_args,
     parse_common_arguments,
 )
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
-from ci_tools.dimrset_delivery.settings.teamcity_settings import TeamcityIds
 
 """
 This script retrieves test results from TeamCity for DIMR release builds.
@@ -294,10 +292,10 @@ def get_build_dependency_chain(
         List of dependent build IDs (snapshot dependencies).
     """
     if context.dry_run:
-        print(f"{DRY_RUN_PREFIX} Would get dependency chain for build {context.build_id}")
+        print(f"{context.settings.dry_run_prefix} Would get dependency chain for build {context.build_id}")
         if filtered_list:
             filter_values = [item.value for item in filtered_list]
-            print(f"{DRY_RUN_PREFIX} Would filter by build types: {filter_values}")
+            print(f"{context.settings.dry_run_prefix} Would filter by build types: {filter_values}")
         # Return mock dependency chain for dry run
         return ["123456", "123457", "123458"]
 
@@ -332,16 +330,16 @@ def get_build_test_results_from_teamcity(
         An object containing the parsed test results for the build, or None if no test results.
     """
     if context.dry_run:
-        print(f"{DRY_RUN_PREFIX} Would get test results for build {build_id}")
+        print(f"{context.settings.dry_run_prefix} Would get test results for build {build_id}")
         # Return mock test result for dry run
         return ConfigurationTestResult(
-            name=f"{DRY_RUN_PREFIX} Test Configuration / Build {build_id}",
+            name=f"{context.settings.dry_run_prefix} Test Configuration / Build {build_id}",
             build_nr=str(build_id),
             passed=85,
             failed=0,
             ignored=0,
             muted=0,
-            status_text=f"{DRY_RUN_PREFIX} SUCCESS",
+            status_text=f"{context.settings.dry_run_prefix} SUCCESS",
         )
 
     if not context.teamcity:

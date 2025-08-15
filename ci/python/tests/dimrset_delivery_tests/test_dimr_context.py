@@ -13,7 +13,10 @@ from ci_tools.dimrset_delivery.dimr_context import (
     create_context_from_args,
     parse_common_arguments,
 )
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
+from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
+from ci_tools.dimrset_delivery.lib.git_client import GitClient
+from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
+from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 
 
 class TestDimrAutomationContext:
@@ -71,10 +74,10 @@ class TestDimrAutomationContext:
         """Test initialization when all credentials are provided."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
-            TeamCity=Mock(),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            Atlassian=Mock(spec=Atlassian),
+            TeamCity=Mock(spec=TeamCity),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -100,10 +103,10 @@ class TestDimrAutomationContext:
         """Test initialization in dry run mode."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
-            TeamCity=Mock(),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            Atlassian=Mock(spec=Atlassian),
+            TeamCity=Mock(spec=TeamCity),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -124,10 +127,10 @@ class TestDimrAutomationContext:
         """Test initialization prompts for missing credentials."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
-            TeamCity=Mock(),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            Atlassian=Mock(spec=Atlassian),
+            TeamCity=Mock(spec=TeamCity),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
             input=Mock(side_effect=["atlas_user", "tc_user", "ssh_user", "git_user"]),
             getpass=Mock(side_effect=["atlas_pass", "tc_pass", "ssh_pass", "git_token"]),
         ):
@@ -146,10 +149,10 @@ class TestDimrAutomationContext:
         """Test initialization prompts only for missing credentials."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
-            TeamCity=Mock(),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            Atlassian=Mock(spec=Atlassian),
+            TeamCity=Mock(spec=TeamCity),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
             input=Mock(side_effect=["tc_user", "ssh_user"]),
             getpass=Mock(side_effect=["tc_pass", "ssh_pass"]),
         ):
@@ -206,14 +209,14 @@ class TestDimrAutomationContext:
             )
 
     @patch("builtins.print")
-    def test_print_status_dry_run_mode(self, mock_print: Mock) -> None:
-        """Test print_status method in dry run mode."""
+    def test_log_dry_run_mode(self, mock_print: Mock) -> None:
+        """Test log method in dry run mode."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
-            TeamCity=Mock(),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            Atlassian=Mock(spec=Atlassian),
+            TeamCity=Mock(spec=TeamCity),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -228,18 +231,18 @@ class TestDimrAutomationContext:
                 git_pat="token",
             )
 
-            context.print_status("Test message")
-            mock_print.assert_called_with(f"{DRY_RUN_PREFIX} Test message")
+            context.log("Test message")
+            mock_print.assert_called_with(f"{context.settings.dry_run_prefix} Test message")
 
     @patch("builtins.print")
-    def test_print_status_normal_mode(self, mock_print: Mock) -> None:
-        """Test print_status method in normal mode."""
+    def test_log_normal_mode(self, mock_print: Mock) -> None:
+        """Test log method in normal mode."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
-            TeamCity=Mock(),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            Atlassian=Mock(spec=Atlassian),
+            TeamCity=Mock(spec=TeamCity),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -254,7 +257,7 @@ class TestDimrAutomationContext:
                 git_pat="token",
             )
 
-            context.print_status("Test message")
+            context.log("Test message")
             mock_print.assert_called_with("Test message")
 
     def test_get_kernel_versions_dry_run_mode(self) -> None:
@@ -262,10 +265,10 @@ class TestDimrAutomationContext:
         with (
             patch.multiple(
                 "ci_tools.dimrset_delivery.dimr_context",
-                Atlassian=Mock(),
-                TeamCity=Mock(),
-                SshClient=Mock(),
-                GitClient=Mock(),
+                Atlassian=Mock(spec=Atlassian),
+                TeamCity=Mock(spec=TeamCity),
+                SshClient=Mock(spec=SshClient),
+                GitClient=Mock(spec=GitClient),
             ),
             patch("builtins.print"),
         ):
@@ -292,7 +295,7 @@ class TestDimrAutomationContext:
 
     def test_get_kernel_versions_normal_mode(self) -> None:
         """Test get_kernel_versions method in normal mode."""
-        mock_teamcity = Mock()
+        mock_teamcity = Mock(spec=TeamCity)
         mock_build_info = {
             "resultingProperties": {
                 "property": [
@@ -306,10 +309,10 @@ class TestDimrAutomationContext:
 
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
+            Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -332,7 +335,7 @@ class TestDimrAutomationContext:
 
     def test_get_kernel_versions_caching(self) -> None:
         """Test that get_kernel_versions caches results."""
-        mock_teamcity = Mock()
+        mock_teamcity = Mock(spec=TeamCity)
         mock_build_info = {
             "resultingProperties": {
                 "property": [
@@ -345,10 +348,10 @@ class TestDimrAutomationContext:
 
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
+            Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -387,15 +390,15 @@ class TestDimrAutomationContext:
 
     def test_get_kernel_versions_no_build_info(self) -> None:
         """Test get_kernel_versions raises error when build info cannot be retrieved."""
-        mock_teamcity = Mock()
+        mock_teamcity = Mock(spec=TeamCity)
         mock_teamcity.get_build_info_for_build_id.return_value = None
 
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
+            Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -415,7 +418,7 @@ class TestDimrAutomationContext:
 
     def test_get_dimr_version(self) -> None:
         """Test get_dimr_version method."""
-        mock_teamcity = Mock()
+        mock_teamcity = Mock(spec=TeamCity)
         mock_build_info = {
             "resultingProperties": {
                 "property": [
@@ -428,10 +431,10 @@ class TestDimrAutomationContext:
 
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
+            Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -487,10 +490,10 @@ class TestDimrAutomationContext:
         with (
             patch.multiple(
                 "ci_tools.dimrset_delivery.dimr_context",
-                Atlassian=Mock(),
-                TeamCity=Mock(),
-                SshClient=Mock(),
-                GitClient=Mock(),
+                Atlassian=Mock(spec=Atlassian),
+                TeamCity=Mock(spec=TeamCity),
+                SshClient=Mock(spec=SshClient),
+                GitClient=Mock(spec=GitClient),
             ),
             patch("builtins.print"),
         ):
@@ -512,7 +515,7 @@ class TestDimrAutomationContext:
 
     def test_get_branch_name_normal_mode(self) -> None:
         """Test get_branch_name method in normal mode."""
-        mock_teamcity = Mock()
+        mock_teamcity = Mock(spec=TeamCity)
         mock_build_info = {
             "resultingProperties": {
                 "property": [
@@ -525,10 +528,10 @@ class TestDimrAutomationContext:
 
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
+            Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -562,15 +565,15 @@ class TestDimrAutomationContext:
 
     def test_get_branch_name_no_build_info(self) -> None:
         """Test get_branch_name raises error when build info cannot be retrieved."""
-        mock_teamcity = Mock()
+        mock_teamcity = Mock(spec=TeamCity)
         mock_teamcity.get_build_info_for_build_id.return_value = None
 
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
+            Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -590,7 +593,7 @@ class TestDimrAutomationContext:
 
     def test_get_branch_name_no_branch_property(self) -> None:
         """Test get_branch_name raises error when branch property is not found."""
-        mock_teamcity = Mock()
+        mock_teamcity = Mock(spec=TeamCity)
         mock_build_info = {
             "resultingProperties": {
                 "property": [
@@ -602,10 +605,10 @@ class TestDimrAutomationContext:
 
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
+            Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -625,7 +628,7 @@ class TestDimrAutomationContext:
 
     def test_get_branch_name_caching(self) -> None:
         """Test that get_branch_name caches results."""
-        mock_teamcity = Mock()
+        mock_teamcity = Mock(spec=TeamCity)
         mock_build_info = {
             "resultingProperties": {
                 "property": [
@@ -637,10 +640,10 @@ class TestDimrAutomationContext:
 
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
+            Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(return_value=mock_teamcity),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -667,10 +670,10 @@ class TestDimrAutomationContext:
         """Test _extract_kernel_versions method."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
-            TeamCity=Mock(),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            Atlassian=Mock(spec=Atlassian),
+            TeamCity=Mock(spec=TeamCity),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = self._create_context(
                 build_id="12345",
@@ -789,10 +792,10 @@ class TestCreateContextFromArgs:
 
         with patch.multiple(
             "ci_tools.dimrset_delivery.dimr_context",
-            Atlassian=Mock(),
-            TeamCity=Mock(),
-            SshClient=Mock(),
-            GitClient=Mock(),
+            Atlassian=Mock(spec=Atlassian),
+            TeamCity=Mock(spec=TeamCity),
+            SshClient=Mock(spec=SshClient),
+            GitClient=Mock(spec=GitClient),
         ):
             context = create_context_from_args(args)
 

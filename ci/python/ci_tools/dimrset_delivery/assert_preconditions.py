@@ -9,7 +9,6 @@ from ci_tools.dimrset_delivery.dimr_context import (
     create_context_from_args,
     parse_common_arguments,
 )
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX, LINUX_ADDRESS, NETWORK_BASE_PATH
 
 
 def _check_api_connections(context: DimrAutomationContext) -> None:
@@ -46,7 +45,7 @@ def _check_api_connections(context: DimrAutomationContext) -> None:
     print("Atlassian API connection successful")
 
 
-def _check_network_access(dry_run: bool) -> None:
+def _check_network_access(context: DimrAutomationContext) -> None:
     """Check read/write access to the network drive.
 
     Parameters
@@ -60,20 +59,23 @@ def _check_network_access(dry_run: bool) -> None:
         If network access check fails.
     """
     print("Checking read/write access to the network drive...")
-    if dry_run:
-        print(f"{DRY_RUN_PREFIX} Checking read/write access to {NETWORK_BASE_PATH}")
-        print(f"Successfully checked for read and write access to {NETWORK_BASE_PATH}.")
+    if context.dry_run:
+        print((f"{context.settings.dry_run_prefix} Checking read/write access to {context.settings.network_base_path}"))
+        print(f"Successfully checked for read and write access to {context.settings.network_base_path}.")
     else:
         try:
-            if not os.path.exists(NETWORK_BASE_PATH):
-                raise AssertionError(f"Network path does not exist: {NETWORK_BASE_PATH}")
+            if not os.path.exists(context.settings.network_base_path):
+                raise AssertionError(f"Network path does not exist: {context.settings.network_base_path}")
 
-            if not (os.access(NETWORK_BASE_PATH, os.W_OK) and os.access(NETWORK_BASE_PATH, os.R_OK)):
-                raise AssertionError(f"Insufficient permissions for {NETWORK_BASE_PATH}")
+            if not (
+                os.access(context.settings.network_base_path, os.W_OK)
+                and os.access(context.settings.network_base_path, os.R_OK)
+            ):
+                raise AssertionError(f"Insufficient permissions for {context.settings.network_base_path}")
 
-            print(f"Successfully checked for read and write access to {NETWORK_BASE_PATH}.")
+            print(f"Successfully checked for read and write access to {context.settings.network_base_path}.")
         except OSError as e:
-            raise AssertionError(f"Could not access {NETWORK_BASE_PATH}: {e}") from e
+            raise AssertionError(f"Could not access {context.settings.network_base_path}: {e}") from e
 
 
 def _check_ssh_connection(context: DimrAutomationContext) -> None:
@@ -94,9 +96,9 @@ def _check_ssh_connection(context: DimrAutomationContext) -> None:
         raise ValueError("SSH client is required but not initialized")
 
     try:
-        context.ssh_client.test_connection(LINUX_ADDRESS, context.dry_run)
+        context.ssh_client.test_connection(context.dry_run)
     except Exception as e:
-        raise AssertionError(f"Could not establish ssh connection to {LINUX_ADDRESS}: {e}") from e
+        raise AssertionError(f"Could not establish ssh connection to {context.settings.linux_address}: {e}") from e
 
 
 def _check_git_connection(context: DimrAutomationContext) -> None:
@@ -146,10 +148,10 @@ def assert_preconditions(context: DimrAutomationContext) -> None:
     AssertionError
         If any precondition check fails.
     """
-    context.print_status("Asserting preconditions...")
+    context.log("Asserting preconditions...")
     try:
         _check_api_connections(context)
-        _check_network_access(context.dry_run)
+        _check_network_access(context)
         _check_ssh_connection(context)
         _check_git_connection(context)
 

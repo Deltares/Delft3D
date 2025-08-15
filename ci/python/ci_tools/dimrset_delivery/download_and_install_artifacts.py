@@ -13,12 +13,6 @@ from ci_tools.dimrset_delivery.dimr_context import (
 )
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX, LINUX_ADDRESS
-from ci_tools.dimrset_delivery.settings.teamcity_settings import (
-    NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT,
-    NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT,
-    TeamcityIds,
-)
 
 
 def download_and_install_artifacts(context: DimrAutomationContext) -> None:
@@ -29,16 +23,19 @@ def download_and_install_artifacts(context: DimrAutomationContext) -> None:
     context : DimrAutomationContext
         The automation context containing necessary clients and configuration.
     """
-    context.print_status("Downloading and installing artifacts...")
+    context.log("Downloading and installing artifacts...")
 
     # Get required information
     branch_name = context.get_branch_name()
     dimr_version = context.get_dimr_version()
 
     if context.dry_run:
-        print(f"{DRY_RUN_PREFIX} Would download artifacts for build from TeamCity:", context.build_id)
-        print(f"{DRY_RUN_PREFIX} Would publish artifacts to network drive")
-        print(f"{DRY_RUN_PREFIX} Would publish weekly DIMR via H7")
+        print(
+            f"{context.settings.dry_run_prefix} Would download artifacts for build from TeamCity:",
+            context.build_id,
+        )
+        print(f"{context.settings.dry_run_prefix} Would publish artifacts to network drive")
+        print(f"{context.settings.dry_run_prefix} Would publish weekly DIMR via H7")
         return
 
     if context.teamcity is None:
@@ -52,13 +49,13 @@ def download_and_install_artifacts(context: DimrAutomationContext) -> None:
         dimr_version=dimr_version,
         branch_name=branch_name,
     )
-    helper.download_and_deploy_artifacts(context.build_id)
-    helper.install_dimr_on_remote_system()
+    helper.download_and_deploy_artifacts(context)
+    helper.install_dimr_on_remote_system(context.settings.linux_address)
 
     print("Artifacts download and installation completed successfully!")
 
 
-class ArtifactInstallHelper():
+class ArtifactInstallHelper:
     """Class responsible for downloading, unpacking and installing the DIMR artifacts."""
 
     def __init__(
@@ -88,30 +85,32 @@ class ArtifactInstallHelper():
         self.__remote_base_path = remote_base_path
         self.__installation_path = installation_path
 
-    def download_and_deploy_artifacts(self, build_id_chain: str) -> None:
+    def download_and_deploy_artifacts(self, context: DimrAutomationContext) -> None:
         """Download the DIMR artifacts from TeamCity and deploy them to the remote system."""
         windows_collect_id = self.__teamcity.get_dependent_build_id(
-            build_id_chain, TeamcityIds.DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID.value
+            context.build_id, context.settings.teamcity_ids.delft3d_windows_collect_build_type_id
         )
+
         linux_collect_id = self.__teamcity.get_dependent_build_id(
-            build_id_chain, TeamcityIds.DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID.value
+            context.build_id, context.settings.teamcity_ids.delft3d_linux_collect_build_type_id
         )
 
         self.__download_and_deploy_artifact_by_name(
             str(windows_collect_id) if windows_collect_id is not None else "",
-            NAME_OF_DIMR_RELEASE_SIGNED_WINDOWS_ARTIFACT,
-        )
-        self.__download_and_deploy_artifact_by_name(
-            str(linux_collect_id) if linux_collect_id is not None else "", NAME_OF_DIMR_RELEASE_SIGNED_LINUX_ARTIFACT
+            context.settings.name_of_dimr_release_signed_windows_artifact,
         )
 
-    def install_dimr_on_remote_system(self) -> None:
+        self.__download_and_deploy_artifact_by_name(
+            str(linux_collect_id) if linux_collect_id is not None else "",
+            context.settings.name_of_dimr_release_signed_linux_artifact,
+        )
+
+    def install_dimr_on_remote_system(self, linux_address: str) -> None:
         """Install DIMR on the Linux machine via SSH."""
-        print(f"Installing DIMR on {LINUX_ADDRESS} via SSH...")
+        print(f"Installing DIMR on {linux_address} via SSH...")
 
         command = self.__build_ssh_installation_command()
-        self.__ssh_client.execute(address=LINUX_ADDRESS, command=command)
-        print(f"Successfully installed DIMR on {LINUX_ADDRESS}.")
+        self.__ssh_client.execute(command=command)
 
     def __build_ssh_installation_command(self) -> str:
         """Build the SSH command for DIMR installation."""
@@ -150,12 +149,9 @@ class ArtifactInstallHelper():
         if artifact_names is None:
             raise ValueError(f"Could not retrieve artifact names for build {build_id}")
         artifacts_to_download = [a["name"] for a in artifact_names["file"] if artifact_name_key in a["name"]]
-        self.__download_and_unpack_dimr_artifacts_via_h7(
-            artifacts_to_download=artifacts_to_download,
-            build_id=build_id,
-        )
+        self.__download_and_unpack_dimr_artifacts(artifacts_to_download=artifacts_to_download, build_id=build_id)
 
-    def __download_and_unpack_dimr_artifacts_via_h7(self, artifacts_to_download: List[str], build_id: str) -> None:
+    def __download_and_unpack_dimr_artifacts(self, artifacts_to_download: List[str], build_id: str) -> None:
         """
         Download the provided artifact names from the provided TeamCity build id.
 
@@ -197,7 +193,6 @@ class ArtifactInstallHelper():
         # Deploy to remote location
         remote_path = f"{self.__remote_base_path}/{self.__installation_path}"
         self.__ssh_client.secure_copy(
-            address=LINUX_ADDRESS,
             local_path=file_path,
             remote_path=remote_path,
         )

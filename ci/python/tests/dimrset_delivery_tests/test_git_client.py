@@ -3,12 +3,15 @@ from unittest.mock import Mock, patch
 from unittest.mock import Mock as MockType
 
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
+from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 
 
 @patch("subprocess.run")
 def test_tag_commit_success(mock_run: MockType) -> None:
     # Arrange
-    client = GitClient("https://repo.url", "user", "pass")
+    mock_settings = Mock(spec=Settings)
+    mock_settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_settings)
     mock_run.return_value.returncode = 0
     # Act
     client.tag_commit("abc123", "v1.0.0")
@@ -23,7 +26,9 @@ def test_tag_commit_success(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_tag_commit_fail_tag(mock_run: MockType) -> None:
     # Arrange
-    client = GitClient("https://repo.url", "user", "pass")
+    mock_settings = Mock(spec=Settings)
+    mock_settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_settings)
     mock_run.side_effect = [Mock(returncode=1), Mock(returncode=0)]
     with patch.object(sys, "exit") as mock_exit:
         # Act
@@ -35,7 +40,9 @@ def test_tag_commit_fail_tag(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_tag_commit_fail_push(mock_run: MockType) -> None:
     # Arrange
-    client = GitClient("https://repo.url", "user", "pass")
+    mock_settings = Mock(spec=Settings)
+    mock_settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_settings)
     mock_run.side_effect = [Mock(returncode=0), Mock(returncode=1)]
     with patch.object(sys, "exit") as mock_exit:
         # Act
@@ -47,7 +54,9 @@ def test_tag_commit_fail_push(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_tag_commit_exception(mock_run: MockType) -> None:
     # Arrange
-    client = GitClient("https://repo.url", "user", "pass")
+    mock_settings = Mock(spec=Settings)
+    mock_settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_settings)
 
     def raise_exc(*a: object, **kw: object) -> None:
         raise Exception("fail")
@@ -63,7 +72,9 @@ def test_tag_commit_exception(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_test_connection_success(mock_run: MockType) -> None:
     # Arrange
-    client = GitClient("https://repo.url", "user", "pass")
+    mock_settings = Mock(spec=Settings)
+    mock_settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_settings)
     mock_run.return_value = Mock(returncode=0)
     # Act
     client.test_connection(dry_run=False)
@@ -74,7 +85,9 @@ def test_test_connection_success(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_test_connection_fail(mock_run: MockType) -> None:
     # Arrange
-    client = GitClient("https://repo.url", "user", "pass")
+    mock_settings = Mock(spec=Settings)
+    mock_settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_settings)
     mock_run.return_value = Mock(returncode=1)
     with patch.object(sys, "exit") as mock_exit:
         # Act
@@ -86,7 +99,9 @@ def test_test_connection_fail(mock_run: MockType) -> None:
 @patch("subprocess.run")
 def test_test_connection_exception(mock_run: MockType) -> None:
     # Arrange
-    client = GitClient("https://repo.url", "user", "pass")
+    mock_settings = Mock(spec=Settings)
+    mock_settings.delft3d_git_repo = "https://repo.url"
+    client = GitClient("user", "pass", mock_settings)
 
     def raise_exc(*a: object, **kw: object) -> None:
         raise Exception("fail")
@@ -101,7 +116,10 @@ def test_test_connection_exception(mock_run: MockType) -> None:
 
 def test_test_connection_dry_run() -> None:
     # Arrange
-    client = GitClient("https://repo.url", "user", "pass")
+    mock_settings = Mock(spec=Settings)
+    mock_settings.delft3d_git_repo = "https://repo.url"
+    mock_settings.dry_run_prefix = "[TEST]"
+    client = GitClient("user", "pass", mock_settings)
     # Act
     client.test_connection(dry_run=True)
     # Assert

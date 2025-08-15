@@ -6,61 +6,57 @@ from ci_tools.dimrset_delivery.dimr_context import (
     create_context_from_args,
     parse_common_arguments,
 )
-from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
-from ci_tools.dimrset_delivery.settings.teamcity_settings import TeamcityIds
 
 
-def pin_and_tag_builds_teamcity(teamcity: TeamCity, dimr_version: str, build_id_chain: str) -> None:
-    """Tag all builds and pin the appropriate builds in TeamCity."""
-    tag = f"DIMRset_{dimr_version}"
-    teamcity.add_tag_to_build_with_dependencies(build_id_chain, tag=tag)
-    # Only pin specific builds
-    teamcity_ids_list = [member.value for member in TeamcityIds]
-    build_ids_to_pin = teamcity.get_dependent_build_ids_with_filter(build_id_chain, teamcity_ids_list)
-    build_ids_to_pin.append(build_id_chain)
-    for build_id in build_ids_to_pin:
-        teamcity.pin_build(build_id=build_id)
+class PinAndTagHelper:
+    def __init__(self, context: DimrAutomationContext) -> None:
+        self.__context = context
+        self.__dry_run = context.dry_run
+        self.__dry_run_prefix = context.settings.dry_run_prefix
+        self.__git_client = context.git_client
+        self.__teamcity = context.teamcity
+        self.__kernel_versions = context.get_kernel_versions()
+        self.__dimr_version = context.get_dimr_version()
+        self.__build_id = context.build_id
+        self.__teamcity_ids = context.settings.teamcity_ids
 
+    def pin_and_tag_builds(self) -> None:
+        """Pin and tag the appropriate builds.
 
-def pin_and_tag_builds(context: DimrAutomationContext) -> None:
-    """Pin and tag the appropriate builds.
+        Parameters
+        ----------
+        context : DimrAutomationContext
+            The automation context containing necessary clients and configuration.
+        """
+        self.__context.log("Pinning and tagging builds...")
 
-    Parameters
-    ----------
-    context : DimrAutomationContext
-        The automation context containing necessary clients and configuration.
-    """
-    context.print_status("Pinning and tagging builds...")
+        if self.__teamcity is None:
+            raise ValueError("TeamCity client is required but not initialized")
+        if self.__git_client is None:
+            raise ValueError("Git client is required but not initialized")
 
-    # Get required information
-    kernel_versions = context.get_kernel_versions()
-    dimr_version = context.get_dimr_version()
+        if self.__dry_run:
+            self.__context.log("Pin and tag TC builds")
+            self.__context.log(
+                f"{self.__dry_run_prefix} Would tag git commit with:",
+                f"commit={self.__kernel_versions['build.vcs.number']}, tag=DIMRset_{self.__dimr_version}",
+            )
+        else:
+            self.__pin_and_tag_builds_teamcity()
+            self.__git_client.tag_commit(self.__kernel_versions["build.vcs.number"], f"DIMRset_{self.__dimr_version}")
 
-    if context.dry_run:
-        print(f"{DRY_RUN_PREFIX} Would pin and tag builds in TeamCity for build chain:", context.build_id)
-        print(f"{DRY_RUN_PREFIX} Would add tag:", f"DIMRset_{dimr_version}")
-        print(
-            f"{DRY_RUN_PREFIX} Would tag commit with:",
-            f"commit={kernel_versions['build.vcs.number']}, tag=DIMRset_{dimr_version}",
-        )
-        return
+        print("Build pinning and tagging completed successfully!")
 
-    if context.teamcity is None:
-        raise ValueError("TeamCity client is required but not initialized")
-    if context.git_client is None:
-        raise ValueError("Git client is required but not initialized")
-
-    pin_and_tag_builds_teamcity(
-        teamcity=context.teamcity,
-        dimr_version=dimr_version,
-        build_id_chain=context.build_id,
-    )
-
-    # Also tag the git commit
-    context.git_client.tag_commit(kernel_versions["build.vcs.number"], f"DIMRset_{dimr_version}")
-
-    print("Build pinning and tagging completed successfully!")
+    def __pin_and_tag_builds_teamcity(self) -> None:
+        """Tag all builds and pin the appropriate builds in TeamCity."""
+        tag = f"DIMRset_{self.__dimr_version}"
+        self.__teamcity.add_tag_to_build_with_dependencies(self.__build_id, tag=tag)
+        # Only pin specific builds
+        teamcity_ids_list = list(vars(self.__teamcity_ids).values())
+        build_ids_to_pin = self.__teamcity.get_dependent_build_ids_with_filter(self.__build_id, teamcity_ids_list)
+        build_ids_to_pin.append(self.__build_id)
+        for build_id in build_ids_to_pin:
+            self.__teamcity.pin_build(build_id=build_id)
 
 
 if __name__ == "__main__":
@@ -68,5 +64,6 @@ if __name__ == "__main__":
     context = create_context_from_args(args, require_atlassian=False, require_ssh=False)
 
     print("Starting build pinning and tagging...")
-    pin_and_tag_builds(context)
+    helper = PinAndTagHelper(context=context)
+    helper.pin_and_tag_builds()
     print("Finished")

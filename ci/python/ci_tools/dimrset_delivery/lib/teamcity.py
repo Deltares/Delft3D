@@ -5,10 +5,10 @@ from typing import Any, Dict, List, Optional, Union
 import requests
 from requests import Response
 
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
+from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 
 
-class TeamCity():
+class TeamCity:
     """
     Wrapper for the TeamCity REST API.
 
@@ -27,7 +27,7 @@ class TeamCity():
     https://www.jetbrains.com/help/teamcity/rest-api.html
     """
 
-    def __init__(self, username: str, password: str) -> None:
+    def __init__(self, username: str, password: str, settings: Settings) -> None:
         """
         Instantiate a new TeamCity object.
 
@@ -45,6 +45,7 @@ class TeamCity():
             "content-type": "application/json",
             "accept": "application/json",
         }
+        self.__settings = settings
 
     def test_api_connection(self, dry_run: bool) -> bool:
         """
@@ -66,7 +67,7 @@ class TeamCity():
         print(f"Checking connection to the TeamCity API with credentials: {self.__auth[0]}")
         endpoint = f"{self.__rest_uri}agents"
         if dry_run:
-            print(f"{DRY_RUN_PREFIX} GET request: {endpoint}")
+            print(f"{self.__settings.dry_run_prefix} GET request: {endpoint}")
             result: Union[Response, SimpleNamespace] = SimpleNamespace(status_code=200, content=b"dry-run mock")
         else:
             result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth)

@@ -14,25 +14,14 @@ from ci_tools.dimrset_delivery.dimr_context import (
     parse_common_arguments,
 )
 from ci_tools.dimrset_delivery.lib.ssh_client import Direction
-from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
-from ci_tools.dimrset_delivery.settings.general_settings import (
-    DRY_RUN_PREFIX,
-    LINUX_ADDRESS,
-    NAME_COLUMN,
-    SHEET_NAME,
-    VERSIONS_EXCEL_FILENAME,
-)
 
 
-class ExcelHelper():
+class ExcelHelper:
     """Object responsible for updating the Excel sheet."""
 
     def __init__(
         self,
-        teamcity: TeamCity,
-        filepath: str,
-        dimr_version: str,
-        kernel_versions: Dict[str, str],
+        context: DimrAutomationContext,
         parser: ResultTestBankParser,
     ) -> None:
         """
@@ -45,11 +34,13 @@ class ExcelHelper():
             kernel_versions (Dict[str, str]): A dictionary mapping kernel names to their version.
             parser (ResultTestBankParser): A parser for the latest test bench results.
         """
-        self.__teamcity = teamcity
-        self.__filepath = filepath
-        self.__dimr_version = dimr_version
-        self.__kernel_versions = kernel_versions
+        self.__teamcity = context.teamcity
+        self.__filepath = context.settings.versions_excel_filename
+        self.__dimr_version = context.get_dimr_version()
+        self.__kernel_versions = context.get_kernel_versions()
         self.__parser = parser
+        self.__sheet_name = context.settings.sheet_name
+        self.__name_column = context.settings.name_column
 
     def append_row(self) -> None:
         """Append a new row to the Excel sheet with this week's DIMR information."""
@@ -58,7 +49,7 @@ class ExcelHelper():
 
         try:
             workbook = load_workbook(filename=self.__filepath)
-            worksheet = workbook[SHEET_NAME]
+            worksheet = workbook[self.__sheet_name]
 
             if self.__worksheet_already_contains_row(worksheet):
                 print("The Excel sheet already contains a row for this DIMRset value and revision number.")
@@ -103,7 +94,7 @@ class ExcelHelper():
         """
         name_already_exists = False
 
-        name_column = worksheet[NAME_COLUMN]
+        name_column = worksheet[self.__name_column]
 
         for cell in name_column:
             if cell.value == f"DIMRset {self.__dimr_version}":
@@ -120,37 +111,41 @@ def update_excel_sheet(context: DimrAutomationContext) -> None:
     context : DimrAutomationContext
         The automation context containing necessary clients and configuration.
     """
-    context.print_status("Updating Excel sheet...")
-
-    # Get required information
-    kernel_versions = context.get_kernel_versions()
-    dimr_version = context.get_dimr_version()
+    context.log("Updating Excel sheet...")
 
     if context.dry_run:
-        print(f"{DRY_RUN_PREFIX} Would update Excel sheet with DIMR version:", dimr_version)
-        print(f"{DRY_RUN_PREFIX} Would download Excel from network drive")
-        print(f"{DRY_RUN_PREFIX} Would append new row with release information")
-        print(f"{DRY_RUN_PREFIX} Would upload updated Excel back to network drive")
+        print(
+            f"{context.settings.dry_run_prefix} Would update Excel sheet with DIMR version:",
+            context.get_dimr_version(),
+        )
+        print(f"{context.settings.dry_run_prefix} Would download Excel from network drive")
+        print(f"{context.settings.dry_run_prefix} Would append new row with release information")
+        print(f"{context.settings.dry_run_prefix} Would upload updated Excel back to network drive")
         return
 
-    parser = get_testbank_result_parser()
-    path_to_excel_file = f"/p/d-hydro/dimrset/{VERSIONS_EXCEL_FILENAME}"
+    parser = get_testbank_result_parser(context.settings.path_to_release_test_results_artifact)
+    path_to_excel_file = f"/p/d-hydro/dimrset/{context.settings.versions_excel_filename}"
 
     if context.ssh_client is None:
         raise ValueError("SSH client is required but not initialized")
     if context.teamcity is None:
         raise ValueError("TeamCity client is required but not initialized")
 
-    context.ssh_client.secure_copy(LINUX_ADDRESS, VERSIONS_EXCEL_FILENAME, path_to_excel_file, Direction.FROM)
+    context.ssh_client.secure_copy(
+        context.settings.versions_excel_filename,
+        path_to_excel_file,
+        Direction.FROM,
+    )
     helper = ExcelHelper(
-        teamcity=context.teamcity,
-        filepath=VERSIONS_EXCEL_FILENAME,
-        dimr_version=dimr_version,
-        kernel_versions=kernel_versions,
+        context=context,
         parser=parser,
     )
     helper.append_row()
-    context.ssh_client.secure_copy(LINUX_ADDRESS, VERSIONS_EXCEL_FILENAME, path_to_excel_file, Direction.TO)
+    context.ssh_client.secure_copy(
+        context.settings.versions_excel_filename,
+        path_to_excel_file,
+        Direction.TO,
+    )
 
     print("Excel sheet update completed successfully!")
 

@@ -4,10 +4,10 @@ from typing import Any, Dict, Optional, Union
 
 import requests
 
-from ci_tools.dimrset_delivery.settings.general_settings import DRY_RUN_PREFIX
+from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 
 
-class Atlassian():
+class Atlassian:
     """
     Wrapper for the Atlassian Confluence REST API.
 
@@ -20,7 +20,7 @@ class Atlassian():
     https://developer.atlassian.com/cloud/confluence/rest/intro/
     """
 
-    def __init__(self, username: str, password: str) -> None:
+    def __init__(self, username: str, password: str, settings: Settings) -> None:
         """
         Instantiate a new Atlassian object.
 
@@ -35,6 +35,7 @@ class Atlassian():
         self.__base_uri = "https://publicwiki.deltares.nl/"
         self.__rest_uri = f"{self.__base_uri}rest/api/"
         self.__default_headers = {"content-type": "application/json", "accept": "application/json"}
+        self.__settings = settings
 
     def test_api_connection(self, dry_run: bool) -> bool:
         """
@@ -52,7 +53,7 @@ class Atlassian():
         endpoint = f"{self.__rest_uri}content"
 
         if dry_run:
-            print(f"{DRY_RUN_PREFIX} GET request: {endpoint}")
+            print(f"{self.__settings.dry_run_prefix} GET request: {endpoint}")
             result: Union[SimpleNamespace, requests.Response] = SimpleNamespace(
                 status_code=200, content=b"dry-run mock"
             )
