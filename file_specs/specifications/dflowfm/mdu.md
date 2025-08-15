@@ -1,6 +1,6 @@
 **File description**: The master definition file of D-Flow FM
 
-**File version**: 0.1.0
+**File version**: 1.0.0
 
 **Legend**
 - 🔬: Indicates keywords that are still experimental.

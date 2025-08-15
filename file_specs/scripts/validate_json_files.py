@@ -17,7 +17,7 @@ from pathlib import Path
 import sys
 from jsonschema import Draft7Validator
 
-SCHEMA_PATH = Path(__file__).parent.parent / "schemas"
+SPECIFICATIONS_FOLDER = Path(__file__).parent.parent / "specifications"
 
 
 def load_json(file: Path) -> dict:
@@ -29,7 +29,7 @@ def find_json_schema(json_data) -> Path:
 
     file_format = json_data.get("file_format_type")
 
-    for json_schema_file in SCHEMA_PATH.glob("**/*.json.schema"):
+    for json_schema_file in SPECIFICATIONS_FOLDER.glob("**/*.json.schema"):
 
         if json_schema_file.stem.startswith(file_format):
             return json_schema_file
@@ -52,9 +52,13 @@ def is_json_valid(data, schema):
 
 
 def run():
+    if not SPECIFICATIONS_FOLDER.exists():
+        print(f"Folder {SPECIFICATIONS_FOLDER} does not exist.")
+        sys.exit(1)
+
     validation_failed = False
 
-    for json_file in SCHEMA_PATH.glob("**/*.json"):
+    for json_file in SPECIFICATIONS_FOLDER.glob("**/*.json"):
         data = load_json(json_file)
 
         json_schema_file = find_json_schema(data)

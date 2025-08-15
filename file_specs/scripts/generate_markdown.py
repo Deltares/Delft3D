@@ -16,7 +16,7 @@ from pathlib import Path
 import sys
 from typing import Dict, List, Any
 
-SCHEMA_PATH = Path(__file__).parent.parent / "schemas"
+SPECIFICATIONS_FOLDER = Path(__file__).parent.parent / "specifications"
 
 
 def json_to_markdown(json_path: Path) -> str:
@@ -218,7 +218,11 @@ def format_lines(lines: List[str]) -> str:
 
 
 def run():
-    for json_file in SCHEMA_PATH.glob("**/*.json"):
+    if not SPECIFICATIONS_FOLDER.exists():
+        print(f"Folder {SPECIFICATIONS_FOLDER} does not exist.")
+        sys.exit(1)
+
+    for json_file in SPECIFICATIONS_FOLDER.glob("**/*.json"):
         markdown = json_to_markdown(json_file)
         md_path = json_file.parent / f"{json_file.stem}.md"
 
