@@ -51,7 +51,7 @@ module m_flowparameters
    logical :: dxDoubleAt1DEndNodes !< indicaties whether a 1D grid cell at the end of a network has to be extended with 0.5*dx
    integer :: iadvec1D !< same, now for 1D links
    integer :: iadveccorr1D2D !< Advection correction of 1D2D link volume (0: none, 1: link volume au*dx')
-
+   logical :: calc_bedlevel_over_non_active_links
    logical :: changeVelocityAtStructures !< Set the flow velocity at structures in setucxucyucxuucyu to the
    !< flow velocity upstream of the structure
    logical :: changeStructureDimensions !< Change the crestwidth of a structure, in case the crestwidth is larger than the
@@ -661,6 +661,7 @@ contains
       changeStructureDimensions = .true. !< Change the crestwidth of a structure, in case the crestwidth is larger than the
       !< wet surface width and make sure the crest level is equal or larger than the
       !< bed level of the channel.
+      calc_bedlevel_over_non_active_links = .false.
       lincontin = 0 ! 0 = no, 1 = yes linear continuity
 
       Perot_type = PEROT_AREA_BASED ! Perot weighting type of cell center velocities ucx, ucy

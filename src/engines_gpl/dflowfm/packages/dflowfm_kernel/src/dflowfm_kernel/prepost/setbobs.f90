@@ -38,16 +38,20 @@ module m_set_bobs
 contains
    subroutine setbobs() ! and set blu, weigthed depth at u point
       use precision, only: dp
-      use m_netw
-      use m_flowgeom
-      use m_flow
+      use messagehandling, only: msg_flush, msgbuf
+      use m_netw, only: netcell, zk, zkuni, numl, numl1d, lne, kn, nmk
+      use m_flowparameters, only: ibedlevtyp, calc_bedlevel_over_non_active_links, jaconveyance2D
+      use m_flowgeom, only: ndx2d, bl, ndxi, lne2ln, iadv, ln, lncn, ibot, blu, bob, bob0, lnx1d, lnx, kcu, kcs, ndx, nd
+      use m_flowgeom, only: wu, lnxi
+      use m_flow, only : ibedlevmode, BLMODE_D3D, BLMODE_DFM, dmiss, jaupdbobbl1d, setHorizontalBobsFor1d2d, jaupdbndbl, jadpuopt
+      use m_flow, only: blmeanbelow, blminabove
       use m_sediment, only: stm_included
       use m_oned_functions, only: setbobs_1d
       use m_structures, only: network
       use m_longculverts
 
-      integer L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, mis, i, numcoords
-      real(kind=dp) :: bl1, bl2, blv, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
+      integer :: L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, Lf, mis, i, numcoords, ibotL
+      real(kind=dp) :: bl1, bl2, bedlevel_at_link, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
       ! real(kind=dp), external :: skewav
 
       ! First, prepare bed levels at pressure points:
@@ -88,78 +92,49 @@ contains
 
          end if
       end if
-
-      do L = lnx1D + 1, lnx ! Intentional: includes boundaries, to properly set bobs based on net nodes here already
-
-         if (iadv(L) > 20 .and. iadv(L) < 30) cycle ! skip update of bobs for structures ! TODO: [TRUNKMERGE]: JN/BJ: really structures on bnd?
-
-         n1 = ln(1, L); n2 = ln(2, L)
-
-         if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! tegeldieptes celcentra
-            bl1 = bl(n1)
-            bl2 = bl(n2)
-            if (jadpuopt == 1) then !original
-               bob(1, L) = max(bl1, bl2)
-            elseif (jadpuopt == 2) then
-               bob(1, L) = (bl1 + bl2) / 2
-            end if
-
-            bob(2, L) = bob(1, L)
-         else if (ibedlevtyp == 2) then ! rechtstreeks op u punten interpoleren,
-            k1 = ln(1, L); k2 = ln(2, L) ! haal waarde uit blu, gedefinieerd op xu,yu
-            if (blu(L) == dmiss) then
-               blv = zkuni
-            else
-               blv = blu(L)
-            end if
-            bob(1, L) = blv
-            bob(2, L) = blv
-            if (ibedlevmode == BLMODE_DFM) then
-               bl(n1) = min(bl(n1), blv)
-               bl(n2) = min(bl(n2), blv)
-            end if
-         else if (ibedlevtyp >= 3 .or. ibedlevtyp <= 5) then ! dieptes uit netnodes zk
-            k1 = lncn(1, L); k2 = lncn(2, L)
-            zn1 = zk(k1); if (zn1 == dmiss) zn1 = zkuni
-            zn2 = zk(k2); if (zn2 == dmiss) zn2 = zkuni
-            if (jaconveyance2D >= 1) then ! left rigth
-               blv = min(zn1, zn2)
-               bob(1, L) = zn1
-               bob(2, L) = zn2
-            else if (ibedlevtyp == 3) then ! mean
-               blv = 0.5d0 * (zn1 + zn2)
-               bob(1, L) = blv
-               bob(2, L) = blv
-            else if (ibedlevtyp == 4) then ! min
-               blv = min(zn1, zn2)
-               bob(1, L) = blv
-               bob(2, L) = blv
-            else if (ibedlevtyp == 5) then ! max
-               blv = max(zn1, zn2)
-               bob(1, L) = blv
-               bob(2, L) = blv
-            end if
-
-            if (allocated(ibot)) then ! Local override of bottomleveltype
-               if (ibot(L) == 4) then
-                  blv = min(zn1, zn2) ! local override min
-                  bob(1, L) = blv
-                  bob(2, L) = blv
-               else if (ibot(L) == 5) then ! local override max
-                  blv = max(zn1, zn2)
-                  bob(1, L) = blv
-                  bob(2, L) = blv
-               end if
-            end if
-
-            ! When in DFM mode (not D3D mode), get bed level from velocity point depth.
-            if (ibedlevmode == BLMODE_DFM) then
-               bl(n1) = min(bl(n1), blv)
-               bl(n2) = min(bl(n2), blv)
-            end if
+      
+      do L = numL1D + 1, numL ! Intentional: includes boundaries, to properly set bobs based on net nodes here already
+         Lf = lne2ln(L)  
+         
+         n1 = lne(1,L)
+         n2 = lne(2,L)
+         if (n1==0 .and. n2 == 0) then
+            cycle
+         else if (n1==0) then
+            n1 = n2
+         else if (n2 == 0) then
+            n2 = n1
          end if
 
-         blu(L) = min(bob(1, L), bob(2, L))
+         k1 = kn(1,L)
+         k2 = kn(2,L)
+
+         bedlevel_at_link = huge(1.0_dp)
+         
+         if (Lf <= 0 .and. ibedlevtyp/=2 .and. calc_bedlevel_over_non_active_links) then
+            bedlevel_at_link = get_bedlevel_at_link(n1, n2, k1, k2, dmiss, 0)
+   
+         else if (Lf > 0) then
+            if (iadv(Lf) > 20 .and. iadv(Lf) < 30) cycle ! skip update of bobs for structures ! TODO: [TRUNKMERGE]: JN/BJ: really structures on bnd?
+
+            if (allocated(ibot)) then
+               ibotL = ibot(Lf)
+            else
+               ibotL = 0
+            end if
+            bedlevel_at_link = get_bedlevel_at_link(n1, n2, k1, k2, blu(Lf), ibotL)
+            if (jaconveyance2D >=1) then
+               bob(1, Lf) = zk(k1)
+               bob(2, Lf) = zk(k2)
+            end if
+            blu(Lf) = min(bob(1, Lf), bob(2, Lf)) 
+         end if      
+
+         if (ibedlevmode == BLMODE_DFM) then
+            bl(n1) = min(bl(n1), bedlevel_at_link)
+            bl(n2) = min(bl(n2), bedlevel_at_link)
+         end if
+
 
       end do
       bob0(:, lnx1d + 1:lnx) = bob(:, lnx1d + 1:lnx)
@@ -193,22 +168,24 @@ contains
                      bl(n2) = zn2
                   end if
                else
-                  blv = 0.5d0 * (zn1 + zn2) ! same as 2D, based on network, but now in flow link dir. In 2D this is net link dir
-                  bob(1, L) = blv
-                  bob(2, L) = blv ! revisit
-                  bl(n1) = min(bl(n1), blv)
-                  bl(n2) = min(bl(n2), blv)
+                  bedlevel_at_link = 0.5d0 * (zn1 + zn2) ! same as 2D, based on network, but now in flow link dir. In 2D this is net link dir
+                  bob(1, L) = bedlevel_at_link
+                  bob(2, L) = bedlevel_at_link ! revisit
+                  bl(n1) = min(bl(n1), bedlevel_at_link)
+                  bl(n2) = min(bl(n2), bedlevel_at_link)
                end if
             end if
          end do
          bob0(:, 1:lnx1d) = bob(:, 1:lnx1d)
       end if
+      
+      ! 1d-2d links
       do L = 1, lnx1D ! 1D
          n1 = ln(1, L); n2 = ln(2, L) ! flow ref
          k1 = lncn(1, L); k2 = lncn(2, L) ! net  ref
          if (ibedlevtyp == 3) then
             zn1 = zk(k1)
-            zn2 = zk(k2)
+            zn2 = zk(k2)  
          else if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then
             zn1 = bl(n1)
             zn2 = bl(n2)
@@ -221,30 +198,30 @@ contains
 
          if (kcu(L) == 3) then ! 1D2D internal link, bobs at minimum
             if (kcs(n1) == 21) then
-               blv = bl(n1)
+               bedlevel_at_link = bl(n1)
                call get2Dnormal(n1, xn, yn) ! xn, yn = 2D land normal vector pointing upward, both zero = flat
                call get1Ddir(n2, xt, yt) ! xt, yt = 1D river tangential normal vector
             end if
             if (kcs(n2) == 21) then
-               blv = bl(n2)
+               bedlevel_at_link = bl(n2)
                call get2Dnormal(n2, xn, yn)
                call get1Ddir(n1, xt, yt)
             end if
             skewn = abs(xn * xt + yn * yt)
-            bob(1, L) = blv
-            bob(2, L) = blv ! revisit later+ wu(L)*skewn ! TODO: HK: why wu here? Why not dx(L) or something similar?
-            bob0(1, L) = blv
-            bob0(2, L) = blv ! revisit later+ wu(L)*skewn ! TODO: HK: why wu here? Why not dx(L) or something similar?
-            bl(n1) = min(bl(n1), blv)
-            bl(n2) = min(bl(n2), blv)
+            bob(1, L) = bedlevel_at_link
+            bob(2, L) = bedlevel_at_link ! revisit later+ wu(L)*skewn ! TODO: HK: why wu here? Why not dx(L) or something similar?
+            bob0(1, L) = bedlevel_at_link
+            bob0(2, L) = bedlevel_at_link ! revisit later+ wu(L)*skewn ! TODO: HK: why wu here? Why not dx(L) or something similar?
+            bl(n1) = min(bl(n1), bedlevel_at_link)
+            bl(n2) = min(bl(n2), bedlevel_at_link)
          else if (kcu(L) == 4) then ! left right
-            blv = min(zn1, zn2)
+            bedlevel_at_link = min(zn1, zn2)
             bob(1, L) = zn1
             bob(2, L) = zn2
             bob0(1, L) = zn1
             bob0(2, L) = zn2
-            bl(n1) = min(bl(n1), blv)
-            bl(n2) = min(bl(n2), blv)
+            bl(n1) = min(bl(n1), bedlevel_at_link)
+            bl(n2) = min(bl(n2), bedlevel_at_link)
          else if (kcu(L) == 5 .or. kcu(L) == 7) then ! keep 1D and 2D levels
             if (bl(n1) /= 1d30) then
                bob(1, L) = bl(n1)
@@ -375,4 +352,65 @@ contains
 
       jaupdbndbl = 0 ! after first run of setbobs set to 0 = no update
    end subroutine setbobs
+   
+   !> calculate bed level at a link based on the type of bed level definition and the input parameters.
+   function get_bedlevel_at_link(n1, n2, k1, k2, blu, ibot) result(bedlevel_at_link)
+      
+      use precision, only: dp
+      use m_missing, only : dmiss
+      use network_data, only : zkuni, zk
+      use m_flowparameters, only: ibedlevtyp, jadpuopt, jaconveyance2D
+      use m_flowgeom, only: bl
+      
+      integer, intent(in) :: n1, n2 !< Node numbers for the link.
+      integer, intent(in) :: k1, k2 !< Corresponding net node numbers (corner points).
+      integer, intent(in) :: ibot !< Location dependent bedlevel type.
+      real(kind=dp), intent(in) :: blu !< Bed level at u point, used for ibedlevtyp=2.
+      
+      real(kind=dp) :: bedlevel_at_link
+
+      real(kind=dp) :: zn1, zn2
+      
+      
+      if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! tegeldieptes celcentra
+         if (jadpuopt == 1) then !original
+            bedlevel_at_link = max(bl(n1), bl(n2))
+         elseif (jadpuopt == 2) then
+            bedlevel_at_link = (bl(n1) + bl(n2)) / 2
+         end if
+
+      else if (ibedlevtyp == 2) then ! rechtstreeks op u punten interpoleren,
+         if (blu == dmiss) then
+            bedlevel_at_link = zkuni
+         else
+            bedlevel_at_link = blu
+         end if
+      else if (ibedlevtyp >= 3 .or. ibedlevtyp <= 5) then ! dieptes uit netnodes zk
+         zn1 = zk(k1)
+         if (zn1 == dmiss) then 
+            zn1 = zkuni
+         end if
+
+         zn2 = zk(k2)
+         if (zn2 == dmiss) then
+            zn2 = zkuni
+         end if
+         
+          if (jaconveyance2D >= 1) then ! left rigth
+            bedlevel_at_link = min(zn1, zn2)
+         else if (ibedlevtyp == 3) then ! mean
+            bedlevel_at_link = 0.5d0 * (zn1 + zn2)
+         else if (ibedlevtyp == 4) then ! min
+            bedlevel_at_link = min(zn1, zn2)
+         else if (ibedlevtyp == 5) then ! max
+            bedlevel_at_link = max(zn1, zn2)
+         end if
+
+         if (ibot == 4) then
+            bedlevel_at_link = min(zn1, zn2) ! local override min
+         else if (ibot == 5) then ! local override max
+            bedlevel_at_link = max(zn1, zn2)
+         end if
+      end if
+   end function get_bedlevel_at_link
 end module m_set_bobs
