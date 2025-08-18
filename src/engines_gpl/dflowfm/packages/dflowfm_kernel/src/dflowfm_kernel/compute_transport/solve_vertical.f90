@@ -243,7 +243,7 @@ contains
    end subroutine solve_vertical
 
    pure function get_difsedw(k, j)
-      use m_physcoef, only: class_dicoww, dicoww_t, dicoww_scalar_t, dicoww_array_t
+      use m_physcoef, only: class_dicoww, t_array_or_scalar, t_scalar, t_array
       use m_transport, only: molecular_diffusion_coeff
       use precision, only: dp
       integer, intent(in) :: k ! base node index (1:Ndxi)

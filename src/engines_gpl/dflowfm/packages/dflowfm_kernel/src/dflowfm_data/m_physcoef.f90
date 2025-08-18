@@ -39,39 +39,39 @@ module m_physcoef
    implicit none
 
    interface realloc
-      module procedure realloc_dicoww_array
-      module procedure realloc_dicoww_scalar
+      module procedure realloc_t_array
+      module procedure realloc_t_scalar
    end interface
 
    ! Abstract base type for dicoww
-   type, abstract :: dicoww_t
+   type, abstract :: t_array_or_scalar
    contains
-      procedure(get_dicoww_if), deferred :: get
-   end type dicoww_t
+      procedure(get_array_or_scalar), deferred :: get
+   end type t_array_or_scalar
 
    ! Interface for deferred binding
    abstract interface
-      pure function get_dicoww_if(this, k) result(val)
-         import :: dicoww_t
-         class(dicoww_t), intent(in) :: this
+      pure function get_array_or_scalar(this, k) result(val)
+         import :: t_array_or_scalar, dp
+         class(t_array_or_scalar), intent(in) :: this
          integer, intent(in) :: k
-         real :: val
-      end function get_dicoww_if
+         real(kind=dp) :: val
+      end function get_array_or_scalar
    end interface
 
    ! Concrete type for scalar dicoww
-   type, extends(dicoww_t) :: dicoww_scalar_t
+   type, extends(t_array_or_scalar) :: t_scalar
       real(kind=dp) :: value
    contains
-      procedure :: get => get_dicoww_scalar
-   end type dicoww_scalar_t
+      procedure :: get => get_t_scalar
+   end type t_scalar
 
    ! Concrete type for array dicoww
-   type, extends(dicoww_t) :: dicoww_array_t
+   type, extends(t_array_or_scalar) :: t_array
       real(kind=dp), dimension(:), allocatable, public :: values
    contains
-      procedure :: get => get_dicoww_array
-   end type dicoww_array_t
+      procedure :: get => get_t_array
+   end type t_array
 
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
    real(kind=dp) :: sag !< sqrt(ag)
@@ -105,7 +105,7 @@ module m_physcoef
 
    real(kind=dp) :: vicoww !< user specified constant vertical   eddy viscosity  (m2/s)
    real(kind=dp) :: dicoww !< user specified constant vertica eddy diffusivity(m2/s)
-   class(dicoww_t), allocatable, target :: class_dicoww !< abstract class for dicoww, either scalar or array depending on user input
+   class(t_array_or_scalar), allocatable, target :: class_dicoww !< abstract class for dicoww, either scalar or array depending on user input
    logical :: vertical_diffusivity_enabled !< true if vertical diffusivity is enabled, false if not
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
@@ -163,70 +163,70 @@ module m_physcoef
 contains
 
    !> Scalar implementation of get_dicoww
-   pure function get_dicoww_scalar(this, k) result(val)
-      class(dicoww_scalar_t), intent(in) :: this !< dicoww object to obtain value from at index k
+   pure function get_t_scalar(this, k) result(val)
+      class(t_scalar), intent(in) :: this !< dicoww object to obtain value from at index k
       integer, intent(in) :: k !< dummy index to make call consistent
-      real :: val
+      real(kind=dp) :: val
       associate (k_dummy => k)
       end associate
       val = this%value
-   end function get_dicoww_scalar
+   end function get_t_scalar
 
    !> Array implementation of get_dicoww
-   pure function get_dicoww_array(this, k) result(val)
-      class(dicoww_array_t), intent(in) :: this !< dicoww object to obtain value from at index k
+   pure function get_t_array(this, k) result(val)
+      class(t_array), intent(in) :: this !< dicoww object to obtain value from at index k
       integer, intent(in) :: k !< index in the dicoww array
-      real :: val
+      real(kind=dp) :: val
       val = this%values(k)
-   end function get_dicoww_array
+   end function get_t_array
 
 !> (re)allocate dicoww as scalar regardless of previous status
-   subroutine realloc_dicoww_scalar(dicoww, value)
-      class(dicoww_t), allocatable, intent(inout) :: dicoww !< dicoww object to be reallocated
-      real(kind=dp), intent(in) :: value !< value to be set in the scalar dicoww
+   subroutine realloc_t_scalar(array_or_scalar, value)
+      class(t_array_or_scalar), allocatable, intent(inout) :: array_or_scalar !< array_or_scalar object to be reallocated
+      real(kind=dp), intent(in) :: value !< value to be set in the scalar array_or_scalar
 
-      if (allocated(dicoww)) then
-         deallocate (dicoww)
+      if (allocated(array_or_scalar)) then
+         deallocate (array_or_scalar)
       end if
 
-      allocate (dicoww_scalar_t :: dicoww)
-      select type (dicoww_scalar => dicoww)
-      type is (dicoww_scalar_t)
-         dicoww_scalar%value = value
+      allocate (t_scalar :: array_or_scalar)
+      select type (scalar => array_or_scalar)
+      type is (t_scalar)
+         scalar%value = value
       end select
-   end subroutine realloc_dicoww_scalar
+   end subroutine realloc_t_scalar
 
-!> (re)allocate dicoww as array regardless of previous status, optionally with a fill_value and a pointer to the values array
-   subroutine realloc_dicoww_array(dicoww, n, fill_value, values_ptr)
-      class(dicoww_t), allocatable, target, intent(inout) :: dicoww !< dicoww object to be reallocated
+!> (re)allocate array_or_scalar as array regardless of previous status, optionally with a fill_value and a pointer to the values array
+   subroutine realloc_t_array(array_or_scalar, n, fill_value, values_ptr)
+      class(t_array_or_scalar), allocatable, target, intent(inout) :: array_or_scalar !< array_or_scalar object to be reallocated
       integer, intent(in) :: n !< size of the array to allocate
       real(kind=dp), optional, intent(in) :: fill_value !< value to fill the array with, if present
       real(kind=dp), pointer, optional, intent(out) :: values_ptr(:) !< pointer to the values array, if present
 
-      if (allocated(dicoww)) then
-         deallocate (dicoww)
+      if (allocated(array_or_scalar)) then
+         deallocate (array_or_scalar)
       end if
 
-      allocate (dicoww_array_t :: dicoww)
+      allocate (t_array :: array_or_scalar)
 
-      select type (dicoww_array => dicoww)
-      type is (dicoww_array_t)
-         if (allocated(dicoww_array%values)) then
-            if (size(dicoww_array%values /= n)) then
-               deallocate (dicoww_array%values)
+      select type (array => array_or_scalar)
+      type is (t_array)
+         if (allocated(array%values)) then
+            if (size(array%values /= n)) then
+               deallocate (array%values)
             end if
          end if
-         if (.not. allocated(dicoww_array%values)) then
-            allocate (dicoww_array%values(n))
+         if (.not. allocated(array%values)) then
+            allocate (array%values(n))
          end if
          if (present(fill_value)) then
-            dicoww_array%values = fill_value
+            array%values = fill_value
          end if
          if (present(values_ptr)) then
-            values_ptr => dicoww_array%values
+            values_ptr => array%values
          end if
       end select
-   end subroutine realloc_dicoww_array
+   end subroutine realloc_t_array
 
 !> Sets all variables in this module to their default values.
    subroutine default_physcoef()
