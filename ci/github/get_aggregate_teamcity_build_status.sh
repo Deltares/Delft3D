@@ -195,6 +195,34 @@ function unicode_state_status() {
   echo -e "${unicode}"
 }
 
+function unicode_state() {
+  local state="$1"
+  local unicode=""
+  if [ "${state}" = "pending" ]; then
+    unicode="${UNICODE_PENDING}"
+  elif [ "${state}" = "queued" ]; then
+    unicode="${UNICODE_QUEUED}"
+  elif [ "${state}" = "running" ]; then
+    unicode="${UNICODE_RUNNING}"
+  elif [ "${state}" = "finished" ]; then
+    unicode="${UNICODE_FINISHED}"
+  fi
+  echo -e "${unicode}"
+}
+
+function unicode_status() {
+  local status="$1"
+  local unicode=""
+  if [ "${status}" = "SUCCESS" ]; then
+    unicode="${UNICODE_SUCCESS}"
+  elif [ "${status}" = "FAILURE" ]; then
+    unicode="${UNICODE_FAILURE}"
+  elif [ "${status}" = "UNKNOWN" ]; then
+    unicode="${UNICODE_UNKNOWN}"
+  fi
+  echo -e "${unicode}"
+}
+
 function get_build_info() {
   local id="$1"
   curl \
@@ -232,27 +260,32 @@ function get_aggregate_teamcity_build_status() {
     # Check status of all tracked builds
 
     local ids=()
+    local old_ids="${ids[*]}"
     IFS=' ' read -r -a ids <<<"$tracked_build_ids"
     local states=()
     local statuses=()
     local web_urls=()
+    local build_type_ids=()
 
     for id in "${ids[@]}"; do
       local build_info
       build_info="$(get_build_info "${id}")"
-      local state
-      state=$(echo "${build_info}" | jq -r '.state')
-      states+=("${state}")
-      local status
-      status=$(echo "${build_info}" | jq -r '.status')
-      statuses+=("${status}")
-      local web_url
-      web_url=$(echo "${build_info}" | jq -r '.webUrl')
-      web_urls+=("${web_url}")
+      build_type_ids+=("$(echo "${build_info}" | jq -r '.buildTypeId')")
+      states+=("$(echo "${build_info}" | jq -r '.state')")
+      statuses+=("$(echo "${build_info}" | jq -r '.status')")
+      web_urls+=("$(echo "${build_info}" | jq -r '.webUrl')")
       local unicode
-      unicode=$(unicode_state_status "${state}" "${status}")
-      log_verbose "${unicode} Build ${id} → State: ${state} | Status: ${status} | URL: ${web_url}"
+      unicode=$(unicode_state_status "${states[-1]}" "${statuses[-1]}")
+      log_verbose "${unicode} Build ${build_type_ids[-1]}\n  id: ${id}\n  State: ${states[-1]}\n  Status: ${statuses[-1]}\n  URL: ${web_urls[-1]}"
     done
+
+    if [ "${old_ids[*]}" != "${ids[*]}" ]; then
+      echo -e "\n${UNICODE_WAIT} Monitoring the following build configurations (the list will be updated if new builds are triggered):"
+      for i in "${!ids[@]}"; do
+        echo "   -${build_type_ids[$i]} (id: ${ids[$i]}): ${web_urls[$i]}"
+      done
+    fi
+
 
     local all_done=true
     for state in "${states[@]}"; do
@@ -263,11 +296,10 @@ function get_aggregate_teamcity_build_status() {
     done
 
     if [ "${all_done}" = true ]; then
-      echo "Build results"
+      echo -e "\nSummary"
       for i in "${!ids[@]}"; do
         local unicode
-        unicode=$(unicode_state_status "${states[$i]}" "${statuses[$i]}")
-        echo -e "${unicode} Build ${ids[$i]} → State: ${states[$i]} | Status: ${statuses[$i]} | URL: ${web_urls[$i]}"
+        echo -e "- Build ${build_type_ids[$i]}\n  id: ${ids[$i]}\n  State: ${states[$i]} $(unicode_state "${states[$i]}")\n  Status: ${statuses[$i]} $(unicode_status "${statuses[$i]}")\n  URL: ${web_urls[$i]}"
       done
       for status in "${statuses[@]}"; do
         if [[ "${status}" != "SUCCESS" ]]; then
@@ -275,7 +307,7 @@ function get_aggregate_teamcity_build_status() {
           return 1
         fi
       done
-      echo -e "${UNICODE_SUCCESS} All tracked builds finished successfully!"
+      echo -e "\n${UNICODE_SUCCESS} All tracked builds finished successfully!"
       return 0
     fi
 
