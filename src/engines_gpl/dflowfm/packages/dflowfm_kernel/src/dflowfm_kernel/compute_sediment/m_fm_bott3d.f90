@@ -1679,7 +1679,7 @@ contains
    subroutine fm_total_face_normal_suspended_transport()
 
       use m_flowgeom, only: lnx, wu_mor
-      use m_fm_erosed, only: e_ssn, lsed, e_scrn
+      use m_fm_erosed, only: e_ssn, lsed, e_scrn, e_sst, e_sswn, e_sswt
       use m_transport, only: fluxhortot, ISED1
       use m_get_Lbot_Ltop
 
@@ -1705,7 +1705,8 @@ contains
             do iL = Lb, Lt
                e_ssn(L, ll) = e_ssn(L, ll) + fluxhortot(j, iL) / max(wu_mor(L), 1d-3) ! timestep transports per layer [kg/s/m]
             end do
-            e_ssn(L, ll) = e_ssn(L, ll) + e_scrn(L, ll) ! bottom layer correction
+            e_ssn(L, ll) = e_ssn(L, ll) + e_scrn(L, ll) + e_sswn(L, ll)! bottom layer correction
+            e_sst(L, ll) = e_sst(L, ll) + e_sswt(L, ll)
          end do
       end do
 
@@ -1715,7 +1716,7 @@ contains
    subroutine sum_current_wave_transport_links()
 
       use sediment_basics_module
-      use m_fm_erosed, only: lsedtot, e_sbn, e_sbt, e_sbcn, e_sbwn, e_sswn, tratyp, e_sbct, e_sbwt, e_sswt
+      use m_fm_erosed, only: lsedtot, e_sbn, e_sbt, e_sbcn, e_sbwn, tratyp, e_sbct, e_sbwt
       use m_fm_erosed, only: lnx => lnx_mor
 
       implicit none
@@ -1735,8 +1736,8 @@ contains
       do l = 1, lsedtot
          if (has_bedload(tratyp(l))) then
             do nm = 1, lnx
-               e_sbn(nm, l) = e_sbcn(nm, l) + e_sbwn(nm, l) + e_sswn(nm, l)
-               e_sbt(nm, l) = e_sbct(nm, l) + e_sbwt(nm, l) + e_sswt(nm, l)
+               e_sbn(nm, l) = e_sbcn(nm, l) + e_sbwn(nm, l)
+               e_sbt(nm, l) = e_sbct(nm, l) + e_sbwt(nm, l)
             end do
          end if
       end do
