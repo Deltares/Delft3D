@@ -2389,7 +2389,8 @@ contains
       use m_get_prof_1D
       use mathconsts, only: pi
       use m_filez, only: doclose
-      use m_physcoef, only: constant_dicoww, realloc
+      use m_physcoef, only: constant_dicoww, dicoww_instance
+      use m_array_or_scalar, only: realloc
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2804,9 +2805,9 @@ contains
       ! (needed to disable possibly invalid statistical output items)
       call check_model_has_structures_across_partitions
 
-      ! Set class_dicoww to scalar value if not read from inifields file
-      if (.not. allocated(class_dicoww)) then
-         call realloc(class_dicoww, constant_dicoww)
+      ! Set dicoww_instance to scalar value if not read from inifields file
+      if (.not. allocated(dicoww_instance)) then
+         call realloc(dicoww_instance, constant_dicoww)
       end if
 
    end subroutine finalize
