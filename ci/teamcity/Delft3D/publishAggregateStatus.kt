@@ -16,7 +16,7 @@ object PublishAggregateStatus : BuildType({
     }
 
     vcs {
-        root(Delft3DGitPleaseReplaceWithProjectSpecificAccessAccount)
+        root(DslContext.settingsRoot)
     }
 
     steps {
@@ -38,7 +38,6 @@ object PublishAggregateStatus : BuildType({
         finishBuildTrigger {
             buildType = "${Trigger.id}"
             branchFilter = """
-                +:<default>
                 +:pull/*
             """.trimIndent()
         }
