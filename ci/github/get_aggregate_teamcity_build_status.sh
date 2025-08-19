@@ -121,6 +121,8 @@ function get_request() {
   local request_url="$1"
   curl \
     --silent \
+    --fail \
+    --show-error \
     --request "GET" \
     "${request_url}" \
     --header "Authorization: Bearer ${TEAMCITY_TOKEN}" \
