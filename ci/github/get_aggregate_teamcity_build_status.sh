@@ -4,7 +4,7 @@ set -euo pipefail
 # Globals to be set by parse_args
 TEAMCITY_URL="https://dpcbuild.deltares.nl"
 TEAMCITY_TOKEN=""
-PROJECT_ID="Delft3D"
+PROJECT_ID=""
 BRANCH_NAME=""
 COMMIT_SHA=""
 POLL_INTERVAL=30
@@ -41,7 +41,7 @@ EOF
 }
 
 parse_args() {
-  local long_options="help,teamcity-token:,branch-name:,commit-sha:,poll-interval:,interactive"
+  local long_options="help,teamcity-token:,project-id:,branch-name:,commit-sha:,poll-interval:,interactive"
   local parsed_options
   if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long ${long_options} -- "$@"); then
     printf "parse_args: failed to parse arguments."
@@ -57,6 +57,10 @@ parse_args() {
       ;;
     --teamcity-token)
       TEAMCITY_TOKEN="$2"
+      shift 2
+      ;;
+    --project-id)
+      PROJECT_ID="$2"
       shift 2
       ;;
     --branch-name)
@@ -87,7 +91,10 @@ parse_args() {
   done
 
   # Validate required params
-  if [[ -z "${TEAMCITY_TOKEN}" || -z "${BRANCH_NAME}" || -z "${COMMIT_SHA}" ]]; then
+  if [[ -z "${TEAMCITY_TOKEN}" ||
+    -z "${PROJECT_ID}" ||
+    -z "${BRANCH_NAME}" ||
+    -z "${COMMIT_SHA}" ]]; then
     printf "%s\n" "Missing required arguments." >&2
     usage
     exit 1
@@ -127,7 +134,7 @@ function count_sheep() {
 function trigger() {
   declare -n id="$1"
 
-  local build_type="Delft3D_Trigger"
+  local build_type="${PROJECT_ID}_Trigger"
   local waiting=false
 
   local request_url="${TEAMCITY_BUILDS}?locator="
