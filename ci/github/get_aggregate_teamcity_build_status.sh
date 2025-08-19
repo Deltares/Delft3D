@@ -15,16 +15,16 @@ TEAMCITY_BUILDS="${TEAMCITY_URL}/app/rest/builds"
 
 # unicode definitions
 # states
-UNICODE_QUEUED="\U23F3"
-UNICODE_PENDING="\U1F551"
-UNICODE_RUNNING="\U1F680"
-UNICODE_FINISHED="\U1F3C1"
+UNICODE_QUEUED="U23F3"
+UNICODE_PENDING="U1F551"
+UNICODE_RUNNING="U1F680"
+UNICODE_FINISHED="U1F3C1"
 # statuses
-UNICODE_SUCCESS='\U2705'
-UNICODE_FAILURE='\U274C'
-UNICODE_UNKNOWN="\U2753"
+UNICODE_SUCCESS='U2705'
+UNICODE_FAILURE='U274C'
+UNICODE_UNKNOWN="U2753"
 # misc
-UNICODE_WAIT='\U23F3'
+UNICODE_WAIT='U23F3'
 
 function usage() {
   cat <<EOF
@@ -338,11 +338,15 @@ function get_aggregate_teamcity_build_status() {
 
 function main() {
   parse_args "$@"
+  echo "parsed args"
   print_header
+  echo "printed header"
   ENCODED_BRANCH_NAME=$(encode_branch_name "${BRANCH_NAME}")
   local trigger_id
   trigger trigger_id
+  echo "got trigger"
   get_aggregate_teamcity_build_status "${trigger_id}"
+  echo "got status"
 }
 
 main "$@"
