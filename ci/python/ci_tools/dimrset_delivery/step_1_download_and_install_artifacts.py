@@ -2,6 +2,7 @@
 """Download the artifacts and install them on Linux machine."""
 
 import os
+import sys
 import tarfile
 import zipfile
 from typing import List
@@ -14,50 +15,32 @@ from ci_tools.dimrset_delivery.dimr_context import (
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
+from ci_tools.dimrset_delivery.step_executer_interface import StepExecutorInterface
 
 
-def download_and_install_artifacts(context: DimrAutomationContext, services: Services) -> None:
-    """Download the artifacts and install them on Linux machine.
-
-    Parameters
-    ----------
-    context : DimrAutomationContext
-        The automation context containing necessary clients and configuration.
+class ArtifactInstaller(StepExecutorInterface):
     """
-    context.log("Downloading and installing artifacts...")
+    Executes the step to download and install build artifacts on a Linux machine.
 
-    if context.dry_run:
-        context.log(f"Would download artifacts for build from TeamCity: {context.build_id}")
-        context.log("Would publish artifacts to network drive")
-        context.log("Would publish weekly DIMR via H7")
-        return
+    This class handles the process of retrieving artifacts from TeamCity,
+    deploying them to a remote system via SSH, and performing installation
+    tasks as part of the DIMR automation workflow.
 
-    if services.teamcity is None:
-        raise ValueError("TeamCity client is required but not initialized")
-    if services.ssh is None:
-        raise ValueError("SSH client is required but not initialized")
+    services : Services
+        The collection of external service clients required for artifact
+        retrieval and deployment (e.g., TeamCity, SSH).
 
-    helper = ArtifactInstallHelper(
-        teamcity=services.teamcity,
-        ssh_client=services.ssh,
-        dimr_version=context.dimr_version,
-        branch_name=context.branch_name,
-    )
-    helper.download_and_deploy_artifacts(context)
-    helper.install_dimr_on_remote_system(context.settings.linux_address)
-
-    context.log("Artifacts download and installation completed successfully!")
-
-
-class ArtifactInstallHelper:
-    """Class responsible for downloading, unpacking and installing the DIMR artifacts."""
+    Methods
+    -------
+    execute_step()
+        Downloads artifacts from TeamCity and installs them on the remote Linux machine.
+        Supports dry-run mode for testing without performing actual operations.
+    """
 
     def __init__(
         self,
-        teamcity: TeamCity,
-        ssh_client: SshClient,
-        dimr_version: str,
-        branch_name: str,
+        context: DimrAutomationContext,
+        services: Services,
         remote_base_path: str = "/p/d-hydro/dimrset",
         installation_path: str = "weekly",
     ) -> None:
@@ -72,36 +55,73 @@ class ArtifactInstallHelper:
             remote_base_path (str): Base path for DIMR installation on remote system.
             installation_path (str): Installation subdirectory (e.g., 'weekly', 'release').
         """
-        self.__teamcity = teamcity
-        self.__ssh_client = ssh_client
-        self.__dimr_version = dimr_version
-        self.__branch_name = branch_name
+        self.context = context
+        self.services = services
+        self.__dimr_version = context.dimr_version
+        self.__branch_name = context.branch_name
         self.__remote_base_path = remote_base_path
         self.__installation_path = installation_path
+        self.__teamcity = services.teamcity
+        self.__ssh_client = services.ssh
 
-    def download_and_deploy_artifacts(self, context: DimrAutomationContext) -> None:
+    def execute_step(self) -> bool:
+        """Download the artifacts and install them on Linux machine.
+
+        Parameters
+        ----------
+        context : DimrAutomationContext
+            The automation context containing necessary clients and configuration.
+        """
+        self.context.log("Downloading and installing artifacts...")
+
+        if self.context.dry_run:
+            self.context.log(f"Would download artifacts for build from TeamCity: {self.context.build_id}")
+            self.context.log("Would publish artifacts to network drive")
+            self.context.log("Would publish weekly DIMR via H7")
+            return True
+
+        if self.services.teamcity is None:
+            self.context.log("TeamCity client is required but not initialized")
+            return False
+        if self.services.ssh is None:
+            self.context.log("SSH client is required but not initialized")
+            return False
+
+        self.__download_and_deploy_artifacts()
+        self.__install_dimr_on_remote_system()
+
+        self.context.log("Artifacts download and installation completed successfully!")
+        return True
+
+    def __download_and_deploy_artifacts(self) -> None:
         """Download the DIMR artifacts from TeamCity and deploy them to the remote system."""
+        if self.__teamcity is None:
+            raise ValueError("TeamCity client is required but not initialized")
+        if self.__ssh_client is None:
+            raise ValueError("SSH client is required but not initialized")
         windows_collect_id = self.__teamcity.get_dependent_build_id(
-            context.build_id, context.settings.teamcity_ids.delft3d_windows_collect_build_type_id
+            self.context.build_id, self.context.settings.teamcity_ids.delft3d_windows_collect_build_type_id
         )
 
         linux_collect_id = self.__teamcity.get_dependent_build_id(
-            context.build_id, context.settings.teamcity_ids.delft3d_linux_collect_build_type_id
+            self.context.build_id, self.context.settings.teamcity_ids.delft3d_linux_collect_build_type_id
         )
 
         self.__download_and_deploy_artifact_by_name(
             str(windows_collect_id) if windows_collect_id is not None else "",
-            context.settings.name_of_dimr_release_signed_windows_artifact,
+            self.context.settings.name_of_dimr_release_signed_windows_artifact,
         )
 
         self.__download_and_deploy_artifact_by_name(
             str(linux_collect_id) if linux_collect_id is not None else "",
-            context.settings.name_of_dimr_release_signed_linux_artifact,
+            self.context.settings.name_of_dimr_release_signed_linux_artifact,
         )
 
-    def install_dimr_on_remote_system(self, linux_address: str) -> None:
+    def __install_dimr_on_remote_system(self) -> None:
         """Install DIMR on the Linux machine via SSH."""
-        print(f"Installing DIMR on {linux_address} via SSH...")
+        if self.__ssh_client is None:
+            raise ValueError("SSH client is required but not initialized")
+        print(f"Installing DIMR on {self.context.settings.linux_address} via SSH...")
 
         command = self.__build_ssh_installation_command()
         self.__ssh_client.execute(command=command)
@@ -139,6 +159,8 @@ class ArtifactInstallHelper:
         -------
             None
         """
+        if self.__teamcity is None:
+            raise ValueError("TeamCity client is required but not initialized")
         artifact_names = self.__teamcity.get_build_artifact_names(build_id=build_id)
         if artifact_names is None:
             raise ValueError(f"Could not retrieve artifact names for build {build_id}")
@@ -166,6 +188,10 @@ class ArtifactInstallHelper:
 
     def __download_extract_and_deploy_artifact(self, artifact_name: str, build_id: str) -> None:
         """Download, extract, and deploy a single artifact."""
+        if self.__teamcity is None:
+            raise ValueError("TeamCity client is required but not initialized")
+        if self.__ssh_client is None:
+            raise ValueError("SSH client is required but not initialized")
         print(f"Downloading {artifact_name}...")
         artifact = self.__teamcity.get_build_artifact(build_id=build_id, path_to_artifact=artifact_name)
 
@@ -240,10 +266,27 @@ class ArtifactInstallHelper:
 
 
 if __name__ == "__main__":
-    args = parse_common_arguments()
-    context = create_context_from_args(args, require_atlassian=False, require_git=False)
-    services = Services(context)
+    try:
+        args = parse_common_arguments()
+        context = create_context_from_args(args, require_atlassian=False, require_git=False)
+        services = Services(context)
 
-    context.log("Starting artifact download and installation...")
-    download_and_install_artifacts(context, services)
-    context.log("Finished")
+        context.log("Starting deploying artifacts...")
+        if ArtifactInstaller(context, services).execute_step():
+            context.log("Finished successfully!")
+            sys.exit(0)
+        else:
+            context.log("Deploying artifacts failed!")
+            sys.exit(1)
+
+    except KeyboardInterrupt:
+        print("\nDeploying artifacts interrupted by user")
+        sys.exit(130)  # Standard exit code for keyboard interrupt
+
+    except (ValueError, AssertionError) as e:
+        print(f"Deploying artifacts failed: {e}")
+        sys.exit(1)
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        sys.exit(2)

@@ -3,9 +3,6 @@
 import os
 from unittest.mock import Mock, patch
 
-import pytest
-
-from ci_tools.dimrset_delivery.assert_preconditions import assert_preconditions
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
@@ -13,6 +10,7 @@ from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
+from ci_tools.dimrset_delivery.step_0_assert_preconditions import PreconditionsChecker
 
 
 class TestAssertPreconditionsFunction:
@@ -38,141 +36,159 @@ class TestAssertPreconditionsFunction:
     def test_assert_preconditions_success(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
         """Test successful preconditions check."""
         # Arrange
-        self.mock_services.teamcity.test_api_connection.return_value = True
-        self.mock_services.atlassian.test_api_connection.return_value = True
+        self.mock_services.teamcity.test_connection.return_value = True
+        self.mock_services.atlassian.test_connection.return_value = True
+        self.mock_services.ssh.test_connection.return_value = True
+        self.mock_services.git.test_connection.return_value = True
         mock_os_exists.return_value = True
         mock_os_access.return_value = True
-        self.mock_services.ssh.test_connection.return_value = None
-        self.mock_services.git.test_connection.return_value = None
 
         # Act
-        assert_preconditions(self.mock_context, self.mock_services)
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
+        result = checker.execute_step()
 
         # Assert
-        self.mock_services.teamcity.test_api_connection.assert_called_once_with(False)
-        self.mock_services.atlassian.test_api_connection.assert_called_once_with(False)
+        assert result
+        self.mock_services.teamcity.test_connection.assert_called_once_with(False)
+        self.mock_services.atlassian.test_connection.assert_called_once_with(False)
+        self.mock_services.ssh.test_connection.assert_called_once_with(False)
+        self.mock_services.git.test_connection.assert_called_once_with(False)
         mock_os_exists.assert_called_with("test_path")
         mock_os_access.assert_any_call("test_path", os.W_OK)
         mock_os_access.assert_any_call("test_path", os.R_OK)
-        self.mock_services.ssh.test_connection.assert_called_once_with(False)
-        self.mock_services.git.test_connection.assert_called_once_with(False)
 
     def test_assert_preconditions_teamcity_failure(self) -> None:
         """Test preconditions check fails when TeamCity connection fails."""
         # Arrange
-        self.mock_services.teamcity.test_api_connection.return_value = False
+        self.mock_services.teamcity.test_connection.return_value = False
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(AssertionError, match="Failed to connect to the TeamCity REST API"):
-            assert_preconditions(self.mock_context, self.mock_services)
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("Failed to connect to the TeamCity REST API.")
 
     def test_assert_preconditions_atlassian_failure(self) -> None:
         """Test preconditions check fails when Atlassian connection fails."""
         # Arrange
-        self.mock_services.teamcity.test_api_connection.return_value = True
-        self.mock_services.atlassian.test_api_connection.return_value = False
+        self.mock_services.teamcity.test_connection.return_value = True
+        self.mock_services.atlassian.test_connection.return_value = False
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(AssertionError, match="Failed to connect to the Atlassian Confluence REST API"):
-            assert_preconditions(self.mock_context, self.mock_services)
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("Failed to connect to the Atlassian REST API.")
 
     @patch("os.path.exists")
     def test_assert_preconditions_network_path_not_exists(self, mock_os_exists: Mock) -> None:
         """Test preconditions check fails when network path does not exist."""
         # Arrange
-        self.mock_services.teamcity.test_api_connection.return_value = True
-        self.mock_services.atlassian.test_api_connection.return_value = True
+        self.mock_services.teamcity.test_connection.return_value = True
+        self.mock_services.atlassian.test_connection.return_value = True
         mock_os_exists.return_value = False
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(AssertionError, match="Network path does not exist: test_path"):
-            assert_preconditions(self.mock_context, self.mock_services)
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("Access check failed for test_path.")
 
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_network_access_failure(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
         """Test preconditions check fails when network access fails."""
         # Arrange
-        self.mock_services.teamcity.test_api_connection.return_value = True
-        self.mock_services.atlassian.test_api_connection.return_value = True
+        self.mock_services.teamcity.test_connection.return_value = True
+        self.mock_services.atlassian.test_connection.return_value = True
         mock_os_exists.return_value = True
         mock_os_access.return_value = False
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(AssertionError, match="Insufficient permissions for test_path"):
-            assert_preconditions(self.mock_context, self.mock_services)
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("Access check failed for test_path.")
 
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_network_access_exception(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
         """Test preconditions check fails when network access raises exception."""
         # Arrange
-        self.mock_services.teamcity.test_api_connection.return_value = True
-        self.mock_services.atlassian.test_api_connection.return_value = True
+        self.mock_services.teamcity.test_connection.return_value = True
+        self.mock_services.atlassian.test_connection.return_value = True
         mock_os_exists.return_value = True
         mock_os_access.side_effect = OSError("Permission denied")
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(AssertionError, match="Could not access test_path"):
-            assert_preconditions(self.mock_context, self.mock_services)
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("Could not access test_path: Permission denied")
 
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_ssh_failure(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
         """Test preconditions check fails when SSH connection fails."""
         # Arrange
-        self.mock_services.teamcity.test_api_connection.return_value = True
-        self.mock_services.atlassian.test_api_connection.return_value = True
+        self.mock_services.teamcity.test_connection.return_value = True
+        self.mock_services.atlassian.test_connection.return_value = True
         mock_os_exists.return_value = True
         mock_os_access.return_value = True
         self.mock_services.ssh.test_connection.side_effect = ConnectionError("SSH connection failed")
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(AssertionError, match="Could not establish ssh connection to test_host"):
-            assert_preconditions(self.mock_context, self.mock_services)
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("Exception during connection check: SSH connection failed")
 
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_git_failure(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
         """Test preconditions check fails when Git connection fails."""
         # Arrange
-        self.mock_services.teamcity.test_api_connection.return_value = True
-        self.mock_services.atlassian.test_api_connection.return_value = True
+        self.mock_services.teamcity.test_connection.return_value = True
+        self.mock_services.atlassian.test_connection.return_value = True
         mock_os_exists.return_value = True
         mock_os_access.return_value = True
         self.mock_services.ssh.test_connection.return_value = None
         self.mock_services.git.test_connection.side_effect = ConnectionError("Git connection failed")
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(AssertionError, match="Could not establish git connection"):
-            assert_preconditions(self.mock_context, self.mock_services)
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("Exception during connection check: Git connection failed")
 
     def test_assert_preconditions_dry_run_mode(self) -> None:
         """Test preconditions check in dry-run mode."""
         # Arrange
         self.mock_context.dry_run = True
-        self.mock_services.teamcity.test_api_connection.return_value = True
-        self.mock_services.atlassian.test_api_connection.return_value = True
+        self.mock_services.teamcity.test_connection.return_value = True
+        self.mock_services.atlassian.test_connection.return_value = True
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act
-        assert_preconditions(self.mock_context, self.mock_services)
+        checker.execute_step()
 
         # Assert
         # Verify that all expected log messages are called
         expected_log_calls = [
             "Asserting preconditions...",
-            "Checking API connections...",
-            "Testing TeamCity API connection...",
-            "TeamCity API connection successful",
-            "Testing Atlassian API connection...",
-            "Atlassian API connection successful",
-            "Checking read/write access to the network drive...",
-            f"Checking read/write access to {self.mock_context.settings.network_base_path}",
+            "Checking connections...",
+            "Testing TeamCity connection...",
+            "TeamCity connection successful",
+            "Testing Atlassian connection...",
+            "Atlassian connection successful",
+            "Testing Git connection...",
+            "Git connection successful",
+            "Testing SSH connection...",
+            "SSH connection successful",
+            f"Checking read/write access to {self.mock_context.settings.network_base_path}...",
             f"Successfully checked for read and write access to {self.mock_context.settings.network_base_path}.",
-            "Checking if ssh connection to Linux can be made...",
-            "Checking if git connection can be made...",
-            "Successfully asserted all preconditions.",
-            "Preconditions check completed successfully!",
+            "Asserted all preconditions.",
+            "Preconditions check completed and returned 0 errors!",
         ]
 
         # Check that log was called the expected number of times
@@ -183,8 +199,8 @@ class TestAssertPreconditionsFunction:
         assert actual_calls == expected_log_calls
 
         # Verify service method calls with dry_run=True
-        self.mock_services.teamcity.test_api_connection.assert_called_once_with(True)
-        self.mock_services.atlassian.test_api_connection.assert_called_once_with(True)
+        self.mock_services.teamcity.test_connection.assert_called_once_with(True)
+        self.mock_services.atlassian.test_connection.assert_called_once_with(True)
         self.mock_services.ssh.test_connection.assert_called_once_with(True)
         self.mock_services.git.test_connection.assert_called_once_with(True)
 
@@ -192,73 +208,55 @@ class TestAssertPreconditionsFunction:
         """Test preconditions assertion fails when Atlassian client is missing."""
         # Arrange
         self.mock_services.atlassian = None
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(ValueError, match="Atlassian client is required but not initialized"):
-            assert_preconditions(self.mock_context, self.mock_services)
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("Atlassian client is required but not initialized")
 
     def test_assert_preconditions_missing_teamcity(self) -> None:
         """Test preconditions assertion fails when TeamCity client is missing."""
         # Arrange
         self.mock_services.teamcity = None
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
-            assert_preconditions(self.mock_context, self.mock_services)
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("TeamCity client is required but not initialized")
 
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_missing_ssh_client(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
         """Test preconditions assertion fails when SSH client is missing."""
         # Arrange
-        self.mock_services.teamcity.test_api_connection.return_value = True
-        self.mock_services.atlassian.test_api_connection.return_value = True
+        self.mock_services.teamcity.test_connection.return_value = True
+        self.mock_services.atlassian.test_connection.return_value = True
         mock_os_exists.return_value = True
         mock_os_access.return_value = True
         self.mock_services.ssh = None
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(ValueError, match="SSH client is required but not initialized"):
-            assert_preconditions(self.mock_context, self.mock_services)
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("SSH client is required but not initialized")
 
     @patch("os.access")
     @patch("os.path.exists")
     def test_assert_preconditions_missing_git_client(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
         """Test preconditions assertion fails when Git client is missing."""
         # Arrange
-        self.mock_services.teamcity.test_api_connection.return_value = True
-        self.mock_services.atlassian.test_api_connection.return_value = True
+        self.mock_services.teamcity.test_connection.return_value = True
+        self.mock_services.atlassian.test_connection.return_value = True
         mock_os_exists.return_value = True
         mock_os_access.return_value = True
         self.mock_services.ssh.test_connection.return_value = None
         self.mock_services.git = None
+        checker = PreconditionsChecker(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(ValueError, match="Git client is required but not initialized"):
-            assert_preconditions(self.mock_context, self.mock_services)
-
-
-class TestMainExecution:
-    """Test cases for the main execution block."""
-
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.create_context_from_args")
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.parse_common_arguments")
-    @patch("ci_tools.dimrset_delivery.assert_preconditions.assert_preconditions")
-    def test_main_execution(
-        self, mock_assert_preconditions: Mock, mock_parse_args: Mock, mock_create_context: Mock
-    ) -> None:
-        """Test main execution flow."""
-        # Arrange
-        mock_args = Mock()
-        mock_context = Mock(spec=DimrAutomationContext)
-        mock_parse_args.return_value = mock_args
-        mock_create_context.return_value = mock_context
-
-        # Act
-        # We need to simulate the main block execution
-        # This would require importing the module in a way that triggers the main block
-        # For now, we'll test the components that would be called
-
-        # Assert that the functions would be called in the correct order
-        # This is more of an integration test concept
-        pass
+        result = checker.execute_step()
+        assert not result
+        self.mock_context.log.assert_any_call("Git client is required but not initialized")

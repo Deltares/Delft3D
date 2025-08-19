@@ -4,6 +4,7 @@ import paramiko
 from scp import SCPClient  # type: ignore
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
 
 
 class Direction(Enum):
@@ -13,7 +14,7 @@ class Direction(Enum):
     FROM = "from"  # remote to local
 
 
-class SshClient:
+class SshClient(ConnectionServiceInterface):
     """Class to wrap a paramiko ssh client."""
 
     def __init__(self, username: str, password: str, context: DimrAutomationContext, connect_timeout: int = 30) -> None:
@@ -36,34 +37,43 @@ class SshClient:
         self.__context = context
         self.__address = context.settings.linux_address
 
-    def test_connection(self, dry_run: bool) -> None:
+    def test_connection(self, dry_run: bool) -> bool:
         """
-        Test if a SSH connection can be made to the specified address.
+        Tests the SSH connection to the specified address using the provided credentials.
 
-        Parameters
-        ----------
-        dry_run : bool
-            If True, the connection will not be established, but a message will be printed.
+        If `dry_run` is True, logs the connection attempt without actually connecting and returns True.
+        Otherwise, attempts to establish an SSH connection using paramiko. Logs the result and returns True
+        if successful, or False if an exception occurs.
 
-        Raises
-        ------
-        AssertionError
-            If the SSH connection failed.
+        Args:
+            dry_run (bool): If True, performs a dry run without establishing a real connection.
+
+        Returns
+        -------
+            bool: True if the connection test is successful or dry run is performed, False otherwise.
         """
+        if dry_run:
+            self.__context.log(f"SSH connection to '{self.__address}' with '{self.__username}' (dry run)")
+            return True
+
         try:
-            if dry_run:
-                self.__context.log(f"SSH connection to {self.__address} with {self.__username}")
-            else:
-                self._client.connect(
-                    self.__address, username=self.__username, password=self.__password, timeout=self.__connect_timeout
-                )
-            self.__context.log(
-                f"Successfully created and closed a ssh connection to {self.__address} with {self.__username}."
+            self._client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self._client.connect(
+                hostname=self.__address,
+                username=self.__username,
+                password=self.__password,
+                timeout=self.__connect_timeout,
             )
+            self.__context.log(
+                f"Successfully created an SSH connection to '{self.__address}' with '{self.__username}'."
+            )
+            return True
         except Exception as e:
-            raise AssertionError(f"Could not establish ssh connection to {self.__address}:\n{e}") from e
+            self.__context.log(f"Failed to establish SSH connection to '{self.__address}': {e}")
+            return False
         finally:
             self._client.close()
+            self.__context.log(f"Close SSH connection to '{self.__address}' with '{self.__username}'.")
 
     def execute(self, command: str) -> None:
         """

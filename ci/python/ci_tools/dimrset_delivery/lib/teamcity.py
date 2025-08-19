@@ -6,11 +6,12 @@ import requests
 from requests import Response
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
 from ci_tools.dimrset_delivery.settings.teamcity_settings import KERNELS
 from ci_tools.dimrset_delivery.teamcity_types import ConfigurationTestResult
 
 
-class TeamCity:
+class TeamCity(ConnectionServiceInterface):
     """
     Wrapper for the TeamCity REST API.
 
@@ -49,7 +50,7 @@ class TeamCity:
         }
         self.__context = context
 
-    def test_api_connection(self, dry_run: bool) -> bool:
+    def test_connection(self, dry_run: bool) -> bool:
         """
         Test if the the API connection can successfully be established.
 

@@ -2,6 +2,7 @@
 """Update the Public Wiki with the new DIMR release information."""
 
 import os
+import sys
 from datetime import datetime, timezone
 from typing import Tuple
 
@@ -11,14 +12,15 @@ from ci_tools.dimrset_delivery.dimr_context import (
     parse_common_arguments,
 )
 from ci_tools.dimrset_delivery.services import Services
+from ci_tools.dimrset_delivery.step_executer_interface import StepExecutorInterface
 
 
-class PublicWikiHelper:
+class WikiPublisher(StepExecutorInterface):
     """Class responsible for updating the Deltares Public Wiki for a specific DIMR version."""
 
     def __init__(self, context: DimrAutomationContext, services: Services) -> None:
         """
-        Create a new instance of PublicWikiHelper.
+        Create a new instance of WikiPublisher.
 
         Parameters
         ----------
@@ -51,6 +53,31 @@ class PublicWikiHelper:
         self.__dimr_subpage_prefix = context.settings.dimr_subpage_prefix
         self.__dimr_subpage_suffix = context.settings.dimr_subpage_suffix
         self.__build_id = context.build_id
+
+    def execute_step(self) -> bool:
+        """Update the Public Wiki.
+
+        Parameters
+        ----------
+        context : DimrAutomationContext
+            The automation context containing necessary clients and configuration.
+        """
+        self.__context.log("Updating public wiki...")
+
+        if self.__context.dry_run:
+            self.__context.log(f"Would update public wiki for DIMR version: {self.__context.dimr_version}")
+
+        if self.__atlassian is None:
+            self.__context.log("Atlassian client is required but not initialized")
+            return False
+        if self.__teamcity is None:
+            self.__context.log("TeamCity client is required but not initialized")
+            return False
+
+        self.update_public_wiki()
+
+        self.__context.log("Public wiki update completed successfully!")
+        return True
 
     def update_public_wiki(self) -> None:
         """
@@ -322,35 +349,28 @@ class PublicWikiHelper:
         return content
 
 
-def update_public_wiki(context: DimrAutomationContext, services: Services) -> None:
-    """Update the Public Wiki.
-
-    Parameters
-    ----------
-    context : DimrAutomationContext
-        The automation context containing necessary clients and configuration.
-    """
-    context.log("Updating public wiki...")
-
-    if context.dry_run:
-        context.log(f"Would update public wiki for DIMR version: {context.dimr_version}")
-
-    if services.atlassian is None:
-        raise ValueError("Atlassian client is required but not initialized")
-    if services.teamcity is None:
-        raise ValueError("TeamCity client is required but not initialized")
-
-    public_wiki = PublicWikiHelper(context=context, services=services)
-    public_wiki.update_public_wiki()
-
-    context.log("Public wiki update completed successfully!")
-
-
 if __name__ == "__main__":
-    args = parse_common_arguments()
-    context = create_context_from_args(args, require_git=False, require_ssh=False)
-    services = Services(context)
+    try:
+        args = parse_common_arguments()
+        context = create_context_from_args(args, require_git=False, require_ssh=False)
+        services = Services(context)
 
-    context.log("Starting public wiki update...")
-    update_public_wiki(context, services)
-    context.log("Finished")
+        context.log("Starting public wiki update...")
+        if WikiPublisher(context, services).execute_step():
+            context.log("Finished successfully!")
+            sys.exit(0)
+        else:
+            context.log("Failed public wiki update!")
+            sys.exit(1)
+
+    except KeyboardInterrupt:
+        print("\nPublic wiki update interrupted by user")
+        sys.exit(130)  # Standard exit code for keyboard interrupt
+
+    except (ValueError, AssertionError) as e:
+        print(f"Public wiki update failed: {e}")
+        sys.exit(1)
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        sys.exit(2)

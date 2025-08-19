@@ -20,7 +20,7 @@ def test_test_connection_success() -> None:
         # Act
         client.test_connection(dry_run=False)
         # Assert
-        mock_connect.assert_called_once_with("host", username="user", password="pass", timeout=30)
+        mock_connect.assert_called_once_with(hostname="host", username="user", password="pass", timeout=30)
         mock_close.assert_called_once()
 
 
@@ -39,7 +39,7 @@ def test_test_connection_dry_run() -> None:
         client.test_connection(dry_run=True)
         # Assert
         mock_connect.assert_not_called()
-        mock_close.assert_called_once()
+        mock_close.assert_not_called()
 
 
 def test_test_connection_fail() -> None:
@@ -53,9 +53,10 @@ def test_test_connection_fail() -> None:
         patch.object(client._client, "close") as mock_close,
     ):
         # Act & Assert
-        with pytest.raises(AssertionError):
-            client.test_connection(dry_run=False)
+        result = client.test_connection(dry_run=False)
+        assert not result
         mock_close.assert_called_once()
+        mock_context.log.assert_called_with("Close SSH connection to 'host' with 'user'.")
 
 
 def test_execute_success() -> None:

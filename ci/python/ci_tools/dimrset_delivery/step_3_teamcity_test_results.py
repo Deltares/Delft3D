@@ -7,10 +7,12 @@ from typing import List
 from pyparsing import Enum
 
 from ci_tools.dimrset_delivery.dimr_context import (
+    DimrAutomationContext,
     create_context_from_args,
     parse_common_arguments,
 )
 from ci_tools.dimrset_delivery.services import Services
+from ci_tools.dimrset_delivery.step_executer_interface import StepExecutorInterface
 from ci_tools.dimrset_delivery.teamcity_types import ConfigurationTestResult, ResultInfo
 
 """
@@ -93,6 +95,112 @@ class ExecutiveSummary:
     def __init__(self, name: str, summary: list[ResultSummary]) -> None:
         self.name = name
         self.summary = summary
+
+
+class TeamCityTestResultWriter(StepExecutorInterface):
+    """
+    Executes the step to retrieve and write TeamCity test results for dependent builds.
+
+    This class interacts with the TeamCity service to:
+    - Retrieve the dependency chain of builds relevant for test results.
+    - Collect test results from each dependent build.
+    - Write detailed test results and an executive summary to an output file.
+    - Log progress and summary information to both file and context logger.
+    - Exit the script with the number of failed tests as the exit code.
+
+    Args:
+        context (DimrAutomationContext): The automation context containing build information and logging.
+        services (Services): Service container providing access to TeamCity client and other services.
+
+    Methods
+    -------
+        execute_step() -> bool:
+            Executes the retrieval and writing of TeamCity test results.
+            Returns True if successful, otherwise exits with the number of failed tests.
+    """
+
+    def __init__(self, context: DimrAutomationContext, services: Services) -> None:
+        self.__context = context
+        self.__services = services
+
+    def execute_step(self) -> bool:
+        """
+        Retrieve and summarize TeamCity test results for dependent builds.
+
+        This method performs the following actions:
+        1. Validates the presence of TeamCity credentials.
+        2. Retrieves the dependency chain of relevant builds.
+        3. Collects test results for each dependent build.
+        4. Writes detailed test results and executive summary to an output file.
+        5. Logs progress and summary information.
+        6. Exits the script with the number of failed tests as the exit code.
+
+        Returns
+        -------
+            bool: This method does not return; it exits the process with the number of failed tests.
+
+        Raises
+        ------
+            SystemExit: If TeamCity credentials are missing or after processing test results.
+        """
+        start_time = datetime.now(timezone.utc)
+
+        if not self.__services.teamcity:
+            self.__context.log("Error: TeamCity credentials are required for this script")
+            return False
+
+        output_file = "teamcity_test_results.txt"
+        if os.path.exists(output_file):
+            os.remove(output_file)
+        log_file = open(output_file, "a")
+
+        self.__context.log(f"Start: {start_time}\n")
+        log_to_file(log_file, f"Start: {start_time}\n")
+
+        self.__context.log(f"Listing is written to: {output_file}")
+
+        # 1. Get dependency chain of all dependent builds and Filter on relevant build IDs
+        dependency_chain = self.__services.teamcity.get_dependent_build_ids_with_filter(
+            self.__context.build_id,
+            filtered_ids=[FilteredList.DELFT3D_WINDOWS_TEST.value, FilteredList.DELFT3D_LINUX_TEST.value],
+        )
+        self.__context.log(f"Dependency chain for build {self.__context.build_id}: {dependency_chain}")
+
+        # 2. Loop over the builds and retrieve the test results and write to file
+        result_list = []
+        for dep_build_id in dependency_chain:
+            test_result = self.__services.teamcity.get_build_test_results_from_teamcity(dep_build_id)
+            if test_result:
+                result_list.append(test_result)
+
+        # 3. Write test results to file
+        result_list.sort(key=lambda x: x.name)
+        log_result_list(log_file, "DIMR Testbench Release", result_list)
+
+        # 4. Write executive summary to file
+        summary = ResultSummary("All")
+        for result in result_list:
+            summary.sum_passed += result.test_result.passed
+            summary.sum_failed += result.test_result.failed
+            summary.sum_exception += result.test_result.exception
+            summary.sum_ignored += result.test_result.ignored
+            summary.sum_muted += result.test_result.muted
+
+        executive_summary = ExecutiveSummary("DIMR Testbench Release", [summary])
+        log_executive_summary(log_file, executive_summary)
+
+        tests_failed = sum(result.get_not_passed_total() for result in result_list)
+        self.__context.log(f"Total test failed: {tests_failed}")
+
+        log_to_file(log_file, f"\nStart: {start_time}")
+        log_to_file(log_file, f"End  : {datetime.now(timezone.utc)}")
+        log_to_file(log_file, "Ready")
+        self.__context.log(f"\nStart: {start_time}")
+        self.__context.log(f"End  : {datetime.now(timezone.utc)}")
+        self.__context.log("Ready")
+        log_file.close()
+
+        return tests_failed == 0
 
 
 def log_to_file(log_file: TextIOWrapper, *args: str) -> None:
@@ -243,65 +351,27 @@ def _log_configuration_line(log_file: TextIOWrapper, line: ConfigurationTestResu
 
 
 if __name__ == "__main__":
-    start_time = datetime.now(timezone.utc)
+    try:
+        args = parse_common_arguments()
+        context = create_context_from_args(args, require_atlassian=False, require_git=False, require_ssh=False)
+        services = Services(context)
 
-    args = parse_common_arguments()
-    context = create_context_from_args(args, require_atlassian=False, require_git=False, require_ssh=False)
-    services = Services(context)
+        context.log("Starting Test Result Writer...")
+        if TeamCityTestResultWriter(context, services).execute_step():
+            context.log("Finished successfully!")
+            sys.exit(0)
+        else:
+            context.log("Failed Test Result Writer!")
+            sys.exit(1)
 
-    # Extract TeamCity client from context
-    if not services.teamcity:
-        context.log("Error: TeamCity credentials are required for this script")
+    except KeyboardInterrupt:
+        print("\nTest Result Writer interrupted by user")
+        sys.exit(130)  # Standard exit code for keyboard interrupt
+
+    except (ValueError, AssertionError) as e:
+        print(f"Test Result Writer failed: {e}")
         sys.exit(1)
 
-    build_id = args.build_id
-    output_file = "teamcity_test_results.txt"
-    if os.path.exists(output_file):
-        os.remove(output_file)
-    log_file = open(output_file, "a")
-
-    context.log(f"Start: {start_time}\n")
-    log_to_file(log_file, f"Start: {start_time}\n")
-
-    context.log(f"Listing is written to: {output_file}")
-
-    # 1. Get dependency chain of all dependent builds and Filter on relevant build IDs
-    dependency_chain = services.teamcity.get_dependent_build_ids_with_filter(
-        context.build_id, filtered_ids=[FilteredList.DELFT3D_WINDOWS_TEST.value, FilteredList.DELFT3D_LINUX_TEST.value]
-    )
-    context.log(f"Dependency chain for build {build_id}: {dependency_chain}")
-
-    # 2. Loop over the builds and retrieve the test results and write to file
-    result_list = []
-    for dep_build_id in dependency_chain:
-        test_result = services.teamcity.get_build_test_results_from_teamcity(dep_build_id)
-        if test_result:
-            result_list.append(test_result)
-
-    # 3. Write test results to file
-    result_list.sort(key=lambda x: x.name)
-    log_result_list(log_file, "DIMR Testbench Release", result_list)
-
-    # 4. Write executive summary to file
-    summary = ResultSummary("All")
-    for result in result_list:
-        summary.sum_passed += result.test_result.passed
-        summary.sum_failed += result.test_result.failed
-        summary.sum_exception += result.test_result.exception
-        summary.sum_ignored += result.test_result.ignored
-        summary.sum_muted += result.test_result.muted
-
-    executive_summary = ExecutiveSummary("DIMR Testbench Release", [summary])
-    log_executive_summary(log_file, executive_summary)
-
-    tests_failed = sum(result.get_not_passed_total() for result in result_list)
-    context.log(f"Total test failed: {tests_failed}")
-
-    log_to_file(log_file, f"\nStart: {start_time}")
-    log_to_file(log_file, f"End  : {datetime.now(timezone.utc)}")
-    log_to_file(log_file, "Ready")
-    context.log(f"\nStart: {start_time}")
-    context.log(f"End  : {datetime.now(timezone.utc)}")
-    context.log("Ready")
-
-    sys.exit(tests_failed)
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        sys.exit(2)

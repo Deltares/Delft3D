@@ -8,7 +8,7 @@ test_username = "user"
 test_password = "pass"
 
 
-def test_test_api_connection_success() -> None:
+def test_test_connection_success() -> None:
     # Arrange
     mock_context = Mock(spec=DimrAutomationContext)
     atlassian = Atlassian(test_username, test_password, mock_context)
@@ -18,12 +18,12 @@ def test_test_api_connection_success() -> None:
         mock_response.content = b"ok"
         mock_get.return_value = mock_response
         # Act
-        result = atlassian.test_api_connection(dry_run=False)
+        result = atlassian.test_connection(dry_run=False)
         # Assert
         assert result is True
 
 
-def test_test_api_connection_failure() -> None:
+def test_test_connection_failure() -> None:
     # Arrange
     mock_context = Mock(spec=DimrAutomationContext)
     atlassian = Atlassian(test_username, test_password, mock_context)
@@ -33,7 +33,7 @@ def test_test_api_connection_failure() -> None:
         mock_response.content = b"unauthorized"
         mock_get.return_value = mock_response
         # Act
-        result = atlassian.test_api_connection(dry_run=False)
+        result = atlassian.test_connection(dry_run=False)
         # Assert
         assert result is False
 

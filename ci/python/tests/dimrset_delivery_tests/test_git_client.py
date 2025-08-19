@@ -96,11 +96,12 @@ def test_test_connection_fail(mock_run: MockType) -> None:
     mock_context.settings.delft3d_git_repo = "https://repo.url"
     client = GitClient("user", "pass", mock_context)
     mock_run.return_value = Mock(returncode=1)
-    with patch.object(sys, "exit") as mock_exit:
-        # Act
-        client.test_connection(dry_run=False)
-        # Assert
-        mock_exit.assert_called_once()
+
+    # Act
+    result = client.test_connection(dry_run=False)
+
+    # Assert
+    assert result is False
 
 
 @patch("subprocess.run")
@@ -115,11 +116,12 @@ def test_test_connection_exception(mock_run: MockType) -> None:
         raise Exception("fail")
 
     mock_run.side_effect = raise_exc
-    with patch.object(sys, "exit") as mock_exit:
-        # Act
-        client.test_connection(dry_run=False)
-        # Assert
-        mock_exit.assert_called_once()
+
+    # Act
+    result = client.test_connection(dry_run=False)
+
+    # Assert
+    assert result is False
 
 
 def test_test_connection_dry_run() -> None:

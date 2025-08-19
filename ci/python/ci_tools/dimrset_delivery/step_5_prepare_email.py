@@ -2,10 +2,9 @@
 """Prepare a mail template for the release notification."""
 
 import os
-from typing import Optional
+import sys
 
 from ci_tools.dimrset_delivery.common_utils import (
-    ResultTestBankParser,
     get_previous_testbank_result_parser,
     get_testbank_result_parser,
 )
@@ -16,62 +15,10 @@ from ci_tools.dimrset_delivery.dimr_context import (
 )
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import KERNELS
-
-# Mock data for dry-run mode
-MOCK_CURRENT_TEST_RESULTS = """
-Summary: All
-Total tests   :   2000
-    Passed    :   2000
-    Not passed:      0
-    Failed    :      0
-    Exception :      0
-    Ignored   :      0
-    Muted     :      0
-    Percentage: 100.00
-"""
-
-MOCK_PREVIOUS_TEST_RESULTS = """
-Summary: All
-Total tests   :   1900
-    Passed    :   1800
-    Not passed:      20
-    Failed    :      20
-    Exception :      20
-    Ignored   :      20
-    Muted     :      20
-    Percentage: 94.74
-"""
+from ci_tools.dimrset_delivery.step_executer_interface import StepExecutorInterface
 
 
-def prepare_email(context: DimrAutomationContext, services: Services) -> None:
-    """Prepare a mail template for the release notification.
-
-    Parameters
-    ----------
-    context : DimrAutomationContext
-        The automation context containing necessary clients and configuration.
-    """
-    context.log("Preparing email template...")
-    if context.dry_run:
-        context.log(f"Preparing email template for DIMR version: {context.dimr_version}")
-        # Create mock parsers with sensible default values for dry-run
-        parser = ResultTestBankParser(MOCK_CURRENT_TEST_RESULTS.strip())
-        previous_parser = ResultTestBankParser(MOCK_PREVIOUS_TEST_RESULTS.strip())  # type: ResultTestBankParser | None
-    else:
-        parser = get_testbank_result_parser(context.settings.path_to_release_test_results_artifact)
-        previous_parser = get_previous_testbank_result_parser(context, services)
-
-    helper = EmailHelper(
-        context=context,
-        current_parser=parser,
-        previous_parser=previous_parser,
-    )
-    helper.generate_template()
-
-    context.log("Email template preparation completed successfully!")
-
-
-class EmailHelper:
+class EmailHelper(StepExecutorInterface):
     """Class responsible for preparing the weekly DIMR release email."""
 
     # Constants
@@ -81,8 +28,7 @@ class EmailHelper:
     def __init__(
         self,
         context: DimrAutomationContext,
-        current_parser: ResultTestBankParser,
-        previous_parser: Optional[ResultTestBankParser],
+        services: Services,
     ) -> None:
         """
         Create a new instance of EmailHelper.
@@ -97,11 +43,26 @@ class EmailHelper:
         self.__settings = context.settings
         self.__dimr_version = context.dimr_version
         self.__kernel_versions = context.kernel_versions
-        self.__current_parser = current_parser
-        self.__previous_parser = previous_parser
+        self.__current_parser = get_testbank_result_parser(context)
+        self.__previous_parser = get_previous_testbank_result_parser(context, services)
         self.__template = ""
 
-    def generate_template(self) -> None:
+    def execute_step(self) -> bool:
+        """Prepare a mail template for the release notification.
+
+        Parameters
+        ----------
+        context : DimrAutomationContext
+            The automation context containing necessary clients and configuration.
+        """
+        self.__context.log("Preparing email template...")
+
+        self.__generate_template()
+
+        self.__context.log("Email template preparation completed successfully!")
+        return True
+
+    def __generate_template(self) -> None:
         """Generate a template email for the latest DIMR release that can be copy/pasted into Outlook."""
         self.__load_template()
         self.__insert_summary_table_header()
@@ -268,10 +229,27 @@ class EmailHelper:
 
 
 if __name__ == "__main__":
-    args = parse_common_arguments()
-    context = create_context_from_args(args, require_atlassian=False, require_git=False, require_ssh=False)
-    services = Services(context)
+    try:
+        args = parse_common_arguments()
+        context = create_context_from_args(args, require_atlassian=False, require_git=False, require_ssh=False)
+        services = Services(context)
 
-    context.log("Starting email template preparation...")
-    prepare_email(context, services)
-    context.log("Finished")
+        context.log("Starting email template preparation...")
+        if EmailHelper(context, services).execute_step():
+            context.log("Finished successfully!")
+            sys.exit(0)
+        else:
+            context.log("Failed email template preparation!")
+            sys.exit(1)
+
+    except KeyboardInterrupt:
+        print("\nEmail template preparation interrupted by user")
+        sys.exit(130)  # Standard exit code for keyboard interrupt
+
+    except (ValueError, AssertionError) as e:
+        print(f"Email template preparation failed: {e}")
+        sys.exit(1)
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        sys.exit(2)

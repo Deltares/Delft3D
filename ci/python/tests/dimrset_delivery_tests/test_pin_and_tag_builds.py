@@ -2,14 +2,12 @@
 
 from unittest.mock import Mock, call, patch
 
-import pytest
-
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
-from ci_tools.dimrset_delivery.pin_and_tag_builds import PinAndTagHelper
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings, TeamcityIds
+from ci_tools.dimrset_delivery.step_2_pin_and_tag_builds import PinAndTagger
 
 
 class TestPinAndTagBuilds:
@@ -39,10 +37,10 @@ class TestPinAndTagBuilds:
         """Test successful pinning and tagging of builds."""
         # Arrange
         self.mock_services.teamcity.get_dependent_build_ids_with_filter.return_value = ["id1", "id2"]
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
         # Act
-        helper.pin_and_tag_builds()
+        helper.execute_step()
 
         # Assert
         self.mock_context.log.assert_has_calls(
@@ -64,38 +62,41 @@ class TestPinAndTagBuilds:
         """Test dry run mode - should only print what would be done."""
         # Arrange
         self.mock_context.dry_run = True
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
         # Act
         with patch("builtins.print"):
-            helper.pin_and_tag_builds()
+            helper.execute_step()
 
         # Assert
         self.mock_context.log.assert_any_call("Pinning and tagging builds...")
         self.mock_context.log.assert_any_call("Pin and tag TC builds")
+        self.mock_context.log.assert_any_call("Build pinning and tagging completed successfully!")
         # Check for the combined log call with both arguments
-        expected_log_call = ("[TEST] Would tag git commit with:", "commit=abc123def, tag=DIMRset_1.2.3")
+        expected_log_call = ("Would tag git commit with:", "commit=abc123def, tag=DIMRset_1.2.3")
         assert expected_log_call in [call.args for call in self.mock_context.log.call_args_list]
 
     def test_pin_and_tag_builds_missing_teamcity_client(self) -> None:
         """Test error when TeamCity client is None."""
         # Arrange
         self.mock_services.teamcity = None
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
-            helper.pin_and_tag_builds()
+        result = helper.execute_step()
+        assert result is False
+        self.mock_context.log.assert_any_call("TeamCity client is required but not initialized.")
 
     def test_pin_and_tag_builds_missing_git_client(self) -> None:
         """Test error when Git client is None."""
         # Arrange
         self.mock_services.git = None
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(ValueError, match="Git client is required but not initialized"):
-            helper.pin_and_tag_builds()
+        result = helper.execute_step()
+        assert result is False
+        self.mock_context.log.assert_any_call("Git client is required but not initialized.")
 
     def test_pin_and_tag_builds_with_different_versions(self) -> None:
         """Test with different kernel and DIMR versions."""
@@ -103,10 +104,10 @@ class TestPinAndTagBuilds:
         self.mock_context.kernel_versions = {"build.vcs.number": "xyz789abc"}
         self.mock_context.dimr_version = "2.0.0"
         self.mock_services.teamcity.get_dependent_build_ids_with_filter.return_value = ["id3"]
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
         # Act
-        helper.pin_and_tag_builds()
+        helper.execute_step()
 
         # Assert
         self.mock_services.teamcity.add_tag_to_build_with_dependencies.assert_called_once_with(
@@ -124,10 +125,10 @@ class TestPinAndTagBuilds:
         """Test that success message is printed after completion."""
         # Arrange
         self.mock_services.teamcity.get_dependent_build_ids_with_filter.return_value = []
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
         # Act
-        helper.pin_and_tag_builds()
+        helper.execute_step()
 
         # Assert
         self.mock_context.log.assert_called_with("Build pinning and tagging completed successfully!")
@@ -136,53 +137,57 @@ class TestPinAndTagBuilds:
         """Test when TeamCity client raises an exception."""
         # Arrange
         self.mock_services.teamcity.add_tag_to_build_with_dependencies.side_effect = Exception("TeamCity error")
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(Exception, match="TeamCity error"):
-            helper.pin_and_tag_builds()
+        result = helper.execute_step()
+        assert result is False
+        self.mock_context.log.assert_any_call("Error during build tagging: TeamCity error")
 
     def test_pin_and_tag_builds_git_client_exception(self) -> None:
         """Test when Git client raises an exception."""
         # Arrange
         self.mock_services.teamcity.get_dependent_build_ids_with_filter.return_value = []
         self.mock_services.git.tag_commit.side_effect = Exception("Git error")
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
         # Act & Assert
-        with pytest.raises(Exception, match="Git error"):
-            helper.pin_and_tag_builds()
+        result = helper.execute_step()
+        assert result is False
+        self.mock_context.log.assert_any_call("Error during build tagging: Git error")
 
     def test_pin_and_tag_builds_dry_run_teamcity_client_required(self) -> None:
         """Test that dry run without teamcity client."""
         # Arrange
         self.mock_context.dry_run = True
         self.mock_services.teamcity = None
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
-        # Act & Assert - should raise an exception
-        with pytest.raises(ValueError, match="TeamCity client is required but not initialized"):
-            helper.pin_and_tag_builds()
+        # Act & Assert
+        result = helper.execute_step()
+        assert result is False
+        self.mock_context.log.assert_any_call("TeamCity client is required but not initialized.")
 
     def test_pin_and_tag_builds_dry_run_git_client_required(self) -> None:
         """Test that dry run without git client."""
         # Arrange
         self.mock_context.dry_run = True
         self.mock_services.git = None
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
-        # Act & Assert - should raise an exception
-        with pytest.raises(ValueError, match="Git client is required but not initialized"):
-            helper.pin_and_tag_builds()
+        # Act & Assert
+        result = helper.execute_step()
+        assert result is False
+        self.mock_context.log.assert_any_call("Git client is required but not initialized.")
 
     def test_pin_and_tag_builds_context_method_calls(self) -> None:
         """Test that all expected context methods are called in the correct order."""
         # Arrange
         self.mock_services.teamcity.get_dependent_build_ids_with_filter.return_value = []
-        helper = PinAndTagHelper(self.mock_context, self.mock_services)
+        helper = PinAndTagger(self.mock_context, self.mock_services)
 
         # Act
-        helper.pin_and_tag_builds()
+        helper.execute_step()
 
         # Assert method call order
         assert self.mock_context.log.call_count == 2

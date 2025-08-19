@@ -1,17 +1,17 @@
 """Tests for update_public_wiki.py."""
 
-from unittest.mock import Mock, call, patch
+from unittest.mock import MagicMock, Mock, call, patch
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings, TeamcityIds
-from ci_tools.dimrset_delivery.update_public_wiki import PublicWikiHelper, update_public_wiki
+from ci_tools.dimrset_delivery.step_6_update_public_wiki import WikiPublisher
 
 
-class TestPublicWikiHelper:
-    """Test cases for PublicWikiHelper class."""
+class TestWikiPublisher:
+    """Test cases for WikiPublisher class."""
 
     def setup_method(self) -> None:
         """Set up mocks for each test."""
@@ -38,18 +38,19 @@ class TestPublicWikiHelper:
 
         self.mock_services = Mock(spec=Services)
         self.mock_services.atlassian = Mock(spec=Atlassian)
+        self.mock_services.atlassian.get_page_info_for_parent_page.return_value = {"results": []}
         self.mock_services.teamcity = Mock(spec=TeamCity)
 
-        self.public_wiki_helper = PublicWikiHelper(self.mock_context, self.mock_services)
+        self.public_wiki_helper = WikiPublisher(self.mock_context, self.mock_services)
 
     def test_init_creates_instance_successfully(self) -> None:
-        """Test that PublicWikiHelper can be instantiated successfully."""
+        """Test that WikiPublisher can be instantiated successfully."""
         # Arrange & Act
-        helper = PublicWikiHelper(self.mock_context, self.mock_services)
+        helper = WikiPublisher(self.mock_context, self.mock_services)
 
         # Assert
         assert helper is not None
-        assert isinstance(helper, PublicWikiHelper)
+        assert isinstance(helper, WikiPublisher)
 
     def test_update_public_wiki_executes_successfully(self) -> None:
         """Test that update_public_wiki method executes without errors."""
@@ -59,8 +60,8 @@ class TestPublicWikiHelper:
 
         # Act
         with (
-            patch.object(self.public_wiki_helper, "_PublicWikiHelper__update_main_page", mock_update_main_page),
-            patch.object(self.public_wiki_helper, "_PublicWikiHelper__update_sub_page", mock_update_sub_page),
+            patch.object(self.public_wiki_helper, "_WikiPublisher__update_main_page", mock_update_main_page),
+            patch.object(self.public_wiki_helper, "_WikiPublisher__update_sub_page", mock_update_sub_page),
         ):
             self.public_wiki_helper.update_public_wiki()
 
@@ -68,20 +69,31 @@ class TestPublicWikiHelper:
         mock_update_main_page.assert_called_once()
         mock_update_sub_page.assert_called_once()
 
-    @patch("ci_tools.dimrset_delivery.update_public_wiki.PublicWikiHelper")
-    def test_update_public_wiki_success(self, mock_helper_class: Mock) -> None:
+    def test_update_public_wiki_success(self) -> None:
         """Test successful execution of update_public_wiki function."""
         # Arrange
         self.mock_context.log = Mock()
-        mock_helper_instance = Mock(spec=PublicWikiHelper)
-        mock_helper_class.return_value = mock_helper_instance
 
-        # Act
-        update_public_wiki(self.mock_context, self.mock_services)
+        # Patch open for both text and binary modes
+        def open_side_effect(file: str, mode: str = "r") -> MagicMock:
+            mock_file = MagicMock()
+            if mode == "r":
+                mock_file.read.return_value = "dummy template content"
+            return mock_file
+
+        with patch("builtins.open", side_effect=open_side_effect):
+            # Act
+            self.public_wiki_helper.execute_step()
 
         # Assert
-        mock_helper_class.assert_called_once_with(context=self.mock_context, services=self.mock_services)
-        mock_helper_instance.update_public_wiki.assert_called_once()
+        self.mock_context.log.assert_has_calls(
+            [
+                call("Updating public wiki..."),
+                call("Updating main wiki page..."),
+                call("Updating sub wiki page..."),
+                call("Public wiki update completed successfully!"),
+            ]
+        )
 
     @patch("builtins.print")
     def test_update_public_wiki_dry_run(self, mock_print: Mock) -> None:
@@ -91,7 +103,7 @@ class TestPublicWikiHelper:
         self.mock_context.log = Mock()
 
         # Act
-        update_public_wiki(self.mock_context, self.mock_services)
+        self.public_wiki_helper.execute_step()
 
         # Assert
         self.mock_context.log.assert_has_calls(

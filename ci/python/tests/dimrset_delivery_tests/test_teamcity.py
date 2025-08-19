@@ -13,22 +13,22 @@ class TestTeamCity:
         self.mock_context = Mock(spec=DimrAutomationContext)
         self.mock_context.settings = Mock(spec=Settings)
 
-    def test_test_api_connection_success(self) -> None:
+    def test_test_connection_success(self) -> None:
         tc = TeamCity("user", "pass", context=self.mock_context)
         with patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get:
             mock_get.return_value = Mock(status_code=200, content=b"ok")
-            assert tc.test_api_connection(dry_run=False) is True
+            assert tc.test_connection(dry_run=False) is True
 
-    def test_test_api_connection_fail(self) -> None:
+    def test_test_connection_fail(self) -> None:
         tc = TeamCity("user", "pass", context=self.mock_context)
         with patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get:
             mock_get.return_value = Mock(status_code=401, content=b"fail")
-            assert tc.test_api_connection(dry_run=False) is False
+            assert tc.test_connection(dry_run=False) is False
 
-    def test_test_api_connection_dry_run(self) -> None:
+    def test_test_connection_dry_run(self) -> None:
         self.mock_context.settings.dry_run_prefix = "[TEST]"
         tc = TeamCity("user", "pass", context=self.mock_context)
-        assert tc.test_api_connection(dry_run=True) is True
+        assert tc.test_connection(dry_run=True) is True
 
     def test_get_builds_for_build_configuration_id_success(self) -> None:
         tc = TeamCity("user", "pass", context=self.mock_context)

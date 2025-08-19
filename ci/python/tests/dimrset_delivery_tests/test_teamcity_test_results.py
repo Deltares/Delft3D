@@ -2,16 +2,15 @@
 
 from io import StringIO
 
-from ci_tools.dimrset_delivery.teamcity_test_results import (
-    ConfigurationTestResult,
+from ci_tools.dimrset_delivery.step_3_teamcity_test_results import (
     ExecutiveSummary,
     ResultExecutiveSummary,
-    ResultInfo,
     ResultSummary,
     log_executive_summary,
     log_result_list,
     log_to_file,
 )
+from ci_tools.dimrset_delivery.teamcity_types import ConfigurationTestResult, ResultInfo
 
 
 class TestResultExecutiveSummary:

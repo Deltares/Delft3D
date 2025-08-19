@@ -26,16 +26,19 @@ class TestGetTestResultTestBankParser:
     ) -> None:
         """Test that get_testbank_result_parser reads file and creates parser correctly."""
         # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.settings = Mock(spec=Settings)
+        mock_context.dry_run = False
+        mock_context.settings.path_to_release_test_results_artifact = "abc/teamcity_test_results.txt"
         mock_parser_instance = Mock(spec=ResultTestBankParser)
         mock_parser_class.return_value = mock_parser_instance
-        path = "abc/teamcity_test_results.txt"
 
         # Act
-        result = get_testbank_result_parser(path)
+        result = get_testbank_result_parser(mock_context)
 
         # Assert
         assert result == mock_parser_instance
-        mock_file.assert_called_once_with(path, "rb")
+        mock_file.assert_called_once_with(mock_context.settings.path_to_release_test_results_artifact, "rb")
         mock_parser_class.assert_called_once_with("test data")
 
     @patch("ci_tools.dimrset_delivery.common_utils.ResultTestBankParser")
@@ -43,12 +46,15 @@ class TestGetTestResultTestBankParser:
     def test_get_testbank_result_parser_with_empty_file(self, mock_file: Mock, mock_parser_class: Mock) -> None:
         """Test get_testbank_result_parser with empty file."""
         # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.settings = Mock(spec=Settings)
+        mock_context.dry_run = False
+        mock_context.settings.path_to_release_test_results_artifact = "abc/teamcity_test_results.txt"
         mock_parser_instance = Mock(spec=ResultTestBankParser)
         mock_parser_class.return_value = mock_parser_instance
-        path = "abc/teamcity_test_results.txt"
 
         # Act
-        result = get_testbank_result_parser(path)
+        result = get_testbank_result_parser(mock_context)
 
         # Assert
         assert result == mock_parser_instance
@@ -59,24 +65,30 @@ class TestGetTestResultTestBankParser:
     def test_get_testbank_result_parser_handles_file_not_found(self, mock_file: Mock, mock_parser_class: Mock) -> None:
         """Test that get_testbank_result_parser handles file not found error."""
         # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.settings = Mock(spec=Settings)
+        mock_context.dry_run = False
+        mock_context.settings.path_to_release_test_results_artifact = "abc/teamcity_test_results.txt"
         mock_file.side_effect = FileNotFoundError("File not found")
-        path = "abc/teamcity_test_results.txt"
 
         # Act & Assert
         with pytest.raises(FileNotFoundError, match="File not found"):
-            get_testbank_result_parser(path)
+            get_testbank_result_parser(mock_context)
 
     @patch("ci_tools.dimrset_delivery.common_utils.ResultTestBankParser")
     @patch("ci_tools.dimrset_delivery.common_utils.open", new_callable=mock_open, read_data=b"\xc3\xa9test data")
     def test_get_testbank_result_parser_handles_unicode_data(self, mock_file: Mock, mock_parser_class: Mock) -> None:
         """Test get_testbank_result_parser with unicode data."""
         # Arrange
+        mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.settings = Mock(spec=Settings)
+        mock_context.dry_run = False
+        mock_context.settings.path_to_release_test_results_artifact = "abc/teamcity_test_results.txt"
         mock_parser_instance = Mock(spec=ResultTestBankParser)
         mock_parser_class.return_value = mock_parser_instance
-        path = "abc/teamcity_test_results.txt"
 
         # Act
-        result = get_testbank_result_parser(path)
+        result = get_testbank_result_parser(mock_context)
 
         # Assert
         assert result == mock_parser_instance
@@ -90,6 +102,7 @@ class TestGetPreviousTestbankResultParser:
         """Test that missing TeamCity client raises ValueError."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.dry_run = False
         mock_services = Mock(spec=Services)
         mock_services.teamcity = None
 
@@ -101,6 +114,7 @@ class TestGetPreviousTestbankResultParser:
         """Test that missing current build info returns None."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.dry_run = False
         mock_context.build_id = "12345"
         mock_services = Mock(spec=Services)
         mock_services.teamcity = Mock(spec=TeamCity)
@@ -117,6 +131,7 @@ class TestGetPreviousTestbankResultParser:
         """Test that missing buildTypeId returns None."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.dry_run = False
         mock_context.build_id = "12345"
         mock_services = Mock(spec=Services)
         mock_services.teamcity = Mock(spec=TeamCity)
@@ -132,6 +147,7 @@ class TestGetPreviousTestbankResultParser:
         """Test that no builds available returns None."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.dry_run = False
         mock_context.build_id = "12345"
         mock_services = Mock(spec=Services)
         mock_services.teamcity = Mock(spec=TeamCity)
@@ -152,6 +168,7 @@ class TestGetPreviousTestbankResultParser:
         """Test successful retrieval of previous testbank result parser."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.dry_run = False
         mock_context.build_id = "12345"
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.path_to_release_test_results_artifact = "test_results.txt"
@@ -194,6 +211,7 @@ class TestGetPreviousTestbankResultParser:
         """Test that no previous version found returns None."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.dry_run = False
         mock_context.build_id = "12345"
         mock_services = Mock(spec=Services)
         mock_services.teamcity = Mock(spec=TeamCity)
@@ -227,6 +245,7 @@ class TestGetPreviousTestbankResultParser:
         """Test that missing artifact returns None."""
         # Arrange
         mock_context = Mock(spec=DimrAutomationContext)
+        mock_context.dry_run = False
         mock_context.build_id = "12345"
         mock_context.settings = Mock(spec=Settings)
         mock_context.settings.path_to_release_test_results_artifact = "test_results.txt"

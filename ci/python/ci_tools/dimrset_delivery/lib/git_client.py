@@ -2,9 +2,10 @@ import subprocess
 import sys
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
 
 
-class GitClient:
+class GitClient(ConnectionServiceInterface):
     """Class responsible for tagging Git commits.
 
     Parameters
@@ -78,31 +79,46 @@ class GitClient:
             )
             sys.exit(1)
 
-    def test_connection(self, dry_run: bool) -> None:
-        """Test the connection to the remote Git repository.
+    def test_connection(self, dry_run: bool) -> bool:
+        """
+        Tests the connection to the Git repository.
 
         Parameters
         ----------
         dry_run : bool
-            Whether to run in dry-run mode without making actual connection.
+            If True, performs a dry run without making actual network requests.
+
+        Returns
+        -------
+        bool
+            True if the connection test is successful, False otherwise.
         """
+        auth_repo_url = self._get_authenticated_url()
+
         try:
-            auth_repo_url = self.repo_url.replace("https://", f"https://{self.__username}:{self.__password}@")
             if dry_run:
                 self.__context.log(f"Testing connection to {auth_repo_url}")
                 result = subprocess.CompletedProcess(args=[], returncode=0, stdout="Dry run successful")
             else:
                 result = subprocess.run(["git", "ls-remote", auth_repo_url], capture_output=True, text=True)
+
             if result.returncode == 0:
                 self.__context.log("Read access to the repository is successful.")
+                return True
             else:
                 self.__context.log(
-                    f"##teamcity[message text='Failed to read from the repository while testing Git connection; "
-                    f"return code {result.returncode}.' status='ERROR']"
+                    (
+                        f"##teamcity[message text='Failed to read from the repository; "
+                        f"return code {result.returncode}.' status='ERROR']"
+                    )
                 )
-                sys.exit(1)
+                return False
+
         except Exception as e:
             self.__context.log(
                 f"##teamcity[message text='An error occurred while testing Git connection: {e}.' status='ERROR']"
             )
-            sys.exit(1)
+            return False
+
+    def _get_authenticated_url(self) -> str:
+        return self.repo_url.replace("https://", f"https://{self.__username}:{self.__password}@")

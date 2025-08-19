@@ -10,6 +10,31 @@ from typing import Optional
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.services import Services
 
+# Mock data for dry-run mode
+MOCK_CURRENT_TEST_RESULTS = """
+Summary: All
+Total tests   :   2000
+    Passed    :   2000
+    Not passed:      0
+    Failed    :      0
+    Exception :      0
+    Ignored   :      0
+    Muted     :      0
+    Percentage: 100.00
+"""
+
+MOCK_PREVIOUS_TEST_RESULTS = """
+Summary: All
+Total tests   :   1900
+    Passed    :   1800
+    Not passed:      20
+    Failed    :      20
+    Exception :      20
+    Ignored   :      20
+    Muted     :      20
+    Percentage: 94.74
+"""
+
 
 class ResultTestBankParser:
     """Object responsible for parsing a specific testbank result artifact."""
@@ -62,7 +87,7 @@ class ResultTestBankParser:
         return total_number
 
 
-def get_testbank_result_parser(path_to_release_test_results_artifact: str) -> ResultTestBankParser:
+def get_testbank_result_parser(context: DimrAutomationContext) -> ResultTestBankParser:
     """Get a new ResultTestBankParser for the latest test bench results from a local file.
 
     Returns
@@ -70,7 +95,11 @@ def get_testbank_result_parser(path_to_release_test_results_artifact: str) -> Re
     ResultTestBankParser
         Parser instance for the test results.
     """
-    with open(path_to_release_test_results_artifact, "rb") as f:
+    if context.dry_run:
+        context.log("Create mock parsers with sensible default values for dry-run")
+        return ResultTestBankParser(MOCK_CURRENT_TEST_RESULTS.strip())
+
+    with open(context.settings.path_to_release_test_results_artifact, "rb") as f:
         artifact = f.read()
     return ResultTestBankParser(artifact.decode())
 
@@ -90,6 +119,10 @@ def get_previous_testbank_result_parser(
     Optional[ResultTestBankParser]
         Parser for previous test results, or None if not found.
     """
+    if context.dry_run:
+        context.log("Create mock parsers with sensible default values for dry-run")
+        return ResultTestBankParser(MOCK_PREVIOUS_TEST_RESULTS.strip())
+
     if not services.teamcity:
         raise ValueError("TeamCity client is required but not initialized")
 

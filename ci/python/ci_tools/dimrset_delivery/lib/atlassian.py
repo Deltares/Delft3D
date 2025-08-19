@@ -5,9 +5,10 @@ from typing import Any, Dict, Optional, Union
 import requests
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
 
 
-class Atlassian:
+class Atlassian(ConnectionServiceInterface):
     """
     Wrapper for the Atlassian Confluence REST API.
 
@@ -37,7 +38,7 @@ class Atlassian:
         self.__default_headers = {"content-type": "application/json", "accept": "application/json"}
         self.__context = context
 
-    def test_api_connection(self, dry_run: bool) -> bool:
+    def test_connection(self, dry_run: bool) -> bool:
         """
         Test if the the API connection can successfully be established.
 
