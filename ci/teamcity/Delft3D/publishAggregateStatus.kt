@@ -35,7 +35,7 @@ object PublishAggregateStatus : BuildType({
 
     triggers {
         finishBuildTrigger {
-            buildType = "${Trigger_1.id}"
+            buildType = "${Trigger.id}"
             branchFilter = """
                 +:<default>
                 +:pull/*
@@ -61,7 +61,7 @@ object PublishAggregateStatus : BuildType({
     }
 
     dependencies {
-        snapshot(Trigger_1) {
+        snapshot(Trigger) {
         }
     }
 
