@@ -243,7 +243,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c083_trachytopes_spatially_varying_25" ref="dflowfm_default">
-      <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f004_bottomfriction/c083_trachytopes_spatially_varying_25</path>
+      <path version="2025-08-19T09:01:30.028000">e02_dflowfm/f004_bottomfriction/c083_trachytopes_spatially_varying_25</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -262,7 +262,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f004_c084_trachytopes_spatially_varying_50" ref="dflowfm_default">
-      <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f004_bottomfriction/c084_trachytopes_spatially_varying_50</path>
+      <path version="2025-08-19T09:01:41.459000">e02_dflowfm/f004_bottomfriction/c084_trachytopes_spatially_varying_50</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
@@ -1333,7 +1333,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f005_c083_qhbnd_doubleboundary" ref="dflowfm_default">
-      <path version="2025-07-08T08:48:13.734000">e02_dflowfm/f005_boundary_conditions/c083_qhbnd_doubleboundary</path>
+      <path version="2025-08-19T09:01:48.680000">e02_dflowfm/f005_boundary_conditions/c083_qhbnd_doubleboundary</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
