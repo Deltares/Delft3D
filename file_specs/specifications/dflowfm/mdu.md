@@ -101,7 +101,8 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `sillHeightMin` | Fixed weir only active if both ground heights are larger than this value. | `0.0` |  | [m AD] |
 | `makeOrthoCenters` | Switch from circumcentres to orthocenters in geominit. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `dCenterInside` | Limit cell center; 1.0:in cell <-> 0.0:on c/g. | `1.0` | `[0.0, 1.0]` | [-] |
-| `circumCenter` | Computation of circumcenter. | `1` | <ul><li>**`1`**: internal netlinks, iterate each loop</li><li>**`2`**: internal netlinks</li><li>**`3`**: all netlinks</li></ul> | [-] |
+| `circumcenterMethod` | Circumcenter computation method. | `internalNetlinksEdge` | <ul><li>**`internalNetlinksEdge`**: iterate each edge</li><li>**`internalNetlinksLoop`**: iterate each loop</li><li>**`allNetlinksLoop`**: iterate each edge and each loop</li></ul> | [-] |
+| `circumcenterTolerance` | Tolerance for convergence of circumcenter method. | `0.001` |  | [m] |
 | `baMin` | Minimum grid cell area, i.c.m. cutcells. | `1e-06` |  | [m²] |
 | `openBoundaryTolerance` | Search tolerance factor between boundary polyline and grid cells. | `3.0` |  | [cell size] |
 | `renumberFlowNodes` | Renumber the flow nodes. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
@@ -128,23 +129,23 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `zLayerAtuByBob` 🔬 | Lowest connected cells governed by bob instead of by bL L/R. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `shipDefFile` 🔬 | File \*.shd containing ship definitions. |  |  |  |
 | `bedWaveLength` 🔬 | Bed testcases. |  |  |  |
-| `removeSmallLinkstrsh` 🔬 | Remove small links. |  |  |  |
+| `removeSmallLinksTrsh` 🔬 | Remove small links. |  |  |  |
 | `createLinks1D2D` 🔬 | Rashly create links between 1D nodes and 2D cells when initializing model. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `bedWaveAmplitude` 🔬 | Bed testcases. |  |  |  |
 | `uniformHu` 🔬 | Waterdepth in rigid-lid-like solution. |  |  |  |
 | `tSigma` 🔬 | Sigma adaptation period for `Layertype`=4. |  |  | [s] |
 | `dpuopt` 🔬 | Bed level interpolation at velocity point in case of tile approach bed level. | `1` | <ul><li>**`1`**: max</li><li>**`2`**: mean</li></ul> |  |
-| `ihuzcSig` 🔬 | If `keepZLayerInGatBed`>=2. |  | <ul><li>**`1`**: average of Leftsig and Rightsig</li><li>**`2`**: max of Leftsig and Rightsig</li><li>**`3`**: min of Leftsig and Rightsig</li><li>**`4`**: uniform</li></ul> |  |
+| `ihuzcSig` 🔬 | If `keepZLayeringAtBed`>=2. |  | <ul><li>**`1`**: average of Leftsig and Rightsig</li><li>**`2`**: max of Leftsig and Rightsig</li><li>**`3`**: min of Leftsig and Rightsig</li><li>**`4`**: uniform</li></ul> |  |
 | `ihuz` 🔬 | TODO |  |  |  |
 | `cosphiutrsh` 🔬 | 1.0=no bad orthos. |  | `[0.0, 1.0]` |  |
 | `cutCellList` 🔬 | File with names of cutcell polygons, e.g. cutcellpolygons.lst. |  |  |  |
 | `uniformTyp1D` 🔬 | Uniform type for channel profiles not specified by profloc. |  |  |  |
 | `1D2DInternalLinkType` 🔬 | Link treatment method for type-3 internal links. |  |  |  |
-| `orgfloorlevtoplaydef` 🔬 | Keep original definition of floor level of top layer. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
+| `orgFloorLevTopLayDef` 🔬 | Keep original definition of floor level of top layer. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `pipeFile` 🔬 | File \*.pliz containing pipe-based 'culverts'. |  |  |  |
 | `groundLayerThickness` 🔬 | Only in pipes: groundlayer thickness. |  |  | [m] |
 | `extrBl` 🔬 | Extrapolate bed level at boundaries according to the slope. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
-| `keepZLay1BedVol` 🔬 | Correct volumes when `keepZLayerInGatBed`=1. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
+| `keepZLay1BedVol` 🔬 | Correct volumes when `keepZLayeringAtBed`=1. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 
 
 # [volumeTables]
@@ -204,7 +205,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `c3eStable` | c3e coefficient (for stable stratification) in k-eps turbulance model. | `0.0` |  |  |
 | `c3eUnstable` | c3e coefficient (for unstable stratification) in k-eps turbulance model. | `1.489` |  |  |
 | `antiCreep` | Include anti-creep to suppress artificial vertical diffusion. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
-| `barocPOnBnd` | Use baroclinic pressure correction on open boundaries. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
+| `barocPOnBnd` | Include baroclinic pressure on open boundaries. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `maxItPresDens` | Max number of iterations in pressure-density coupling, only if `thermobaricity`=true. | `1` |  |  |
 | `diagnosticTransport` | No update of transport quantities, also known as diagnostic transport. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `maxWaterLevelDiff` | Upper bound on water level changes, (<= 0: no bounds). Run will abort when violated. | `0.0` |  | [m] |
@@ -241,15 +242,15 @@ This section contains the settings of specific parts of the flow solver, such as
 | `cfExpHu` 🔬 | Exponent for including (1-CFL) in sethu. |  |  |  |
 | `jbasqbnddownwindhs` 🔬 | Water depth scheme at discharge boundaries. | `0` | <ul><li>**`0`**: original hu</li><li>**`1`**: downwind hs</li></ul> |  |
 | `filterOrder` 🔬 | First-order or second order filter to suppress checkerboarding. | `2` | <ul><li>**`1`**: first order</li><li>**`2`**: second order</li></ul> |  |
-| `keepStBndOnOutflow` 🔬 | Keep salinity and temperature signals on boundary cells at outflow. | `1` | <ul><li>**`0`**: no (like Thatcher-Harleman)</li><li>**`1`**: yes (use prescribed boundary conditions)</li></ul> |  |
-| `keepZLayerInGatBed` 🔬 | Z-layering at bed. | `2` | <ul><li>**`0`**: original bed level</li><li>**`1`**: adapted bed level</li><li>**`2`**: Ztbml approach of Delft3D-FLOW</li></ul> |  |
+| `keepSTBndOnOutflow` 🔬 | Keep salinity and temperature signals on boundary cells at outflow. | `1` | <ul><li>**`0`**: no (like Thatcher-Harleman)</li><li>**`1`**: yes (use prescribed boundary conditions)</li></ul> |  |
+| `keepZLayeringAtBed` 🔬 | Z-layering at bed. | `2` | <ul><li>**`0`**: original bed level</li><li>**`1`**: adapted bed level</li><li>**`2`**: Ztbml approach of Delft3D-FLOW</li></ul> |  |
 | `logProfAtUBndIn` 🔬 | ubnds inflow. | `1` | <ul><li>**`0`**: uniform U1</li><li>**`1`**: log U1</li><li>**`2`**: log U1 and k-eps accordingly</li></ul> |  |
 | `logProfKepsBndIn` 🔬 | 3D profile at open boundaries. | `0` | <ul><li>**`0`**: k-eps</li><li>**`1`**: log k-eps inflow</li><li>**`2`**: log k-eps in- and outflow</li></ul> |  |
 | `epshstem` 🔬 | Only compute heat flux + evaporation if depth > `epshstem`. | `0.001` |  |  |
 | `diffusionOnBnd` 🔬 | Horizontal diffusion on open boundaries. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `newCorio` 🔬 | New standard way of Coriolis term calculation. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `barrierAdvection` 🔬 | Advection modelling at barriers. | `1` | <ul><li>**`1`**: no correction</li><li>**`2`**: advection correction</li></ul> |  |
-| `rhoInterfaces` 🔬 | Evaluate rho at interfaces. | `1` | <ul><li>**`0`**: at centers</li><li>**`1`**: at interfaces</li></ul> |  |
+| `rhoInterfaces` 🔬 | Estimate rho at 3D layer interfaces for baroclinic pressure gradient method. | `-1` | <ul><li>**`-1`**: Original linear interpolation</li><li>**`0`**: Improved linear interpolation</li><li>**`1`**: Recompute from salinity and temperature</li><li>**`2`**: Use cell density</li></ul> |  |
 | `chkdifd` 🔬 | Check diffusion terms if depth < `chkdifd`, only if `transportAutoTimeStepDiff`=1. |  |  |  |
 | `fixedWeirFrictScheme` 🔬 | Fixed weir friction scheme. | `0` | <ul><li>**`0`**: friction based on hu</li><li>**`1`**: friction based on subgrid weir friction scheme</li><li>**`2`**: without weir (like WAQUA)</li><li>**`3`**: full undisturbed velocity reconstruction</li><li>**`4`**: full undisturbed velocity reconstruction</li></ul> |  |
 | `testDryingFlooding` 🔬 | Drying flooding algorithm. | `0` | <ul><li>**`0`**: D-Flow FM</li><li>**`1`**: Delft3D-FLOW</li><li>**`2`**: similar to `0`, and volume limitation in the transport solver based on `epshu`</li></ul> |  |
@@ -261,8 +262,8 @@ This section contains the settings of specific parts of the flow solver, such as
 | `vertAdvTypSal` | Vertical advection type for salinity. Note that `vertAdvTypSal`=4 leads to less numerical dissipation than `vertAdvTypSal`=6. | `6` | <ul><li>**`0`**: none</li><li>**`4`**: theta implicit</li><li>**`6`**: higher order explicit, no Forester filter</li></ul> |  |
 | `vertAdvTypTem` | Vertical advection type for temperature. Note that `vertAdvTypTem`=4 leads to less numerical dissipation than `vertAdvTypTem`=6. | `6` | <ul><li>**`0`**: none</li><li>**`4`**: theta implicit</li><li>**`6`**: higher order explicit, no Forester filter</li></ul> |  |
 | `zeroZBndInflowAdvection` | Switch for advection at open boundary. | `0` | <ul><li>**`0`**: Neumann</li><li>**`1`**: zero at inflow</li><li>**`2`**: zero at inflow and outflow</li></ul> |  |
-| `facLaxturb` 🔬 | 0.0=TurKin0 from links, 1.0=TurKin0 from nodes, 0.5=50/50. | `0.0` | `[0.0, 1.0]` |  |
-| `jafacLaxturbTyp` 🔬 | Vertical distribution of `facLaxturb`. |  | <ul><li>**`0`**: sigm<0.5=0.0, sigm>0.75=1.0, linear in between</li><li>**`1`**: 1.0 for whole column</li></ul> |  |
+| `facLaxTurb` 🔬 | 0.0=TurKin0 from links, 1.0=TurKin0 from nodes, 0.5=50/50. | `0.0` | `[0.0, 1.0]` |  |
+| `jafacLaxTurbTyp` 🔬 | Vertical distribution of `facLaxTurb`. |  | <ul><li>**`0`**: sigm<0.5=0.0, sigm>0.75=1.0, linear in between</li><li>**`1`**: 1.0 for whole column</li></ul> |  |
 | `locSaltMin` 🔬 | Minimum salinity for case of lock exchange. | `5.0` |  |  |
 | `locSaltMax` 🔬 | Maximum salinity for case of lock exchange. | `10.0` |  |  |
 | `locSaltLev` 🔬 | Salinity level for case of lock exchange. | `1.0` |  |  |
@@ -329,6 +330,7 @@ In this field, physical model parameters can be inserted, for instance related t
 | `secchiDepth` | Water clarity parameter. | `2.0` |  | [m] |
 | `stanton` | Coefficient for convective heat flux, if negative, then Cd wind is used. | `0.0013` |  | [-] |
 | `dalton` | Coefficient for evaporative heat flux, if negative, then Cd wind is used. | `0.0013` |  | [-] |
+| `albedo` | Albedo coefficient. Fraction of solar radiation reflected by the water surface. | `0.06` |  | [-] |
 | `tempMax` | Limit the temperature to max value. | `-999.0` |  | [°C] |
 | `tempMin` | Limit the temperature to min value. | `0.0` |  | [°C] |
 | `saliMax` | Limit for salinity to max value. | `-999.0` |  | [ppt] |
@@ -415,7 +417,7 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 | `waveModelNr` | Wave model nr. | `3` | <ul><li>**`0`**: none</li><li>**`1`**: fetch/depth limited hurdlestive</li><li>**`2`**: Young-Verhagen</li><li>**`3`**: SWAN</li><li>**`4`**: wave group forcing</li><li>**`5`**: uniform</li><li>**`6`**: SWAN-NetCDF</li></ul> |  |
 | `rouWav` | Friction model for wave induced shear stress. | `FR84` | <ul><li>**`FR84`**: Fredsøe (1984)</li><li>**`MS90`**: Myrhaug and Slaattelid (1990)</li><li>**`HT91`**: Huynh-Thanh and Temperville (1991)</li><li>**`GM79`**: Grant and Madsen (1979)</li><li>**`DS88`**: Davies et al. (1988)</li><li>**`BK67`**: Bijker (1967)</li><li>**`CJ85`**: Christoffersen and Jonsson (1985)</li><li>**`OY88`**: O' Connor and Yoo (1988)</li><li>**`VR04`**: Van Rijn et al. (2004)</li></ul> |  |
 | `gammaX` | Maximum wave height/water depth ratio. | `0.5` |  |  |
-| `flowWithoutWaves` | Exclude Wave data in the flow computations, passing it directly to D-WAQ. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
+| `flowWithoutWaves` | Exclude Wave data in the flow computations, passing it directly to D-WAQ. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `surfBeatInput` | File with surf beat input conditions. |  |  |  |
 | `waveSwartDelwaq` 🔬 | If `waveSwartDelwaq`=1 and tiWaq> 0, then increase tauwave to Delwaq with 0.5rhofwuorbuorb. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `hwavuni` 🔬 | Root mean square wave height. |  |  | [m] |
@@ -759,6 +761,7 @@ This section contains setting for a dynamic vegetation model
 | `cbVeg` 🔬 | Stem stiffness coefficient. | `0.0` |  | [-] |
 | `rhoVeg` 🔬 | Stem Rho, if > 0, bouyant stick procedure. | `0.0` |  | [kg/m³] |
 | `stemHeightStd` 🔬 | Stem height standard deviation fraction, e.g. 0.1. | `0.0` |  | [-] |
+| `stemHeightConvention` 🔬 | Stem height convention. | `upward_from_bed` | <ul><li>**`upward_from_bed`**: Upward from bed</li><li>**`downward_from_surface`**: Downward from surface</li></ul> | [-] |
 | `densVegMinBap` 🔬 | Minimum vegeation density in Baptist formula. Only in 2D. | `0.0` |  | [1/m²] |
 | `expChiStem` 🔬 | TODO. | `0.0` |  | [-] |
 | `expChiLeaf` 🔬 | TODO. | `0.0` |  | [-] |

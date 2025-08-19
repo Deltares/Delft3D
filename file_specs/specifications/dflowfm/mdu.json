@@ -419,16 +419,23 @@
                     }
                 },
                 {
-                    "key": "circumCenter",
-                    "value_type": "intenum",
-                    "default_value": 1,
-                    "description": "Computation of circumcenter.",
+                    "key": "circumcenterMethod",
+                    "value_type": "enum",
+                    "default_value": "internalNetlinksEdge",
+                    "description": "Circumcenter computation method.",
                     "unit": "-",
                     "enum_values": {
-                        "1": "internal netlinks, iterate each loop",
-                        "2": "internal netlinks",
-                        "3": "all netlinks"
+                    "internalNetlinksEdge": "iterate each edge",
+                    "internalNetlinksLoop": "iterate each loop",
+                    "allNetlinksLoop": "iterate each edge and each loop"
                     }
+                },
+                {
+                    "key": "circumcenterTolerance",
+                    "value_type": "float",
+                    "default_value": 1e-3,
+                    "description": "Tolerance for convergence of circumcenter method.",
+                    "unit": "m"
                 },
                 {
                     "key": "baMin",
@@ -611,7 +618,7 @@
                     "status": "research"
                 },
                 {
-                    "key": "removeSmallLinkstrsh",
+                    "key": "removeSmallLinksTrsh",
                     "value_type": "float",
                     "description": "Remove small links.",
                     "status": "research"
@@ -655,7 +662,7 @@
                 {
                     "key": "ihuzcSig",
                     "value_type": "intenum",
-                    "description": "If `keepZLayerInGatBed`>=2.",
+                    "description": "If `keepZLayeringAtBed`>=2.",
                     "status": "research",
                     "enum_values": {
                         "1": "average of Leftsig and Rightsig",
@@ -701,7 +708,7 @@
                     "status": "research"
                 },
                 {
-                    "key": "orgfloorlevtoplaydef",
+                    "key": "orgFloorLevTopLayDef",
                     "value_type": "intbool",
                     "description": "Keep original definition of floor level of top layer.",
                     "status": "research"
@@ -728,7 +735,7 @@
                 {
                     "key": "keepZLay1BedVol",
                     "value_type": "intbool",
-                    "description": "Correct volumes when `keepZLayerInGatBed`=1.",
+                    "description": "Correct volumes when `keepZLayeringAtBed`=1.",
                     "status": "research"
                 }
             ]
@@ -1113,7 +1120,7 @@
                     "key": "barocPOnBnd",
                     "default_value": 1,
                     "value_type": "intbool",
-                    "description": "Use baroclinic pressure correction on open boundaries."
+                    "description": "Include baroclinic pressure on open boundaries."
                 },
                 {
                     "key": "maxItPresDens",
@@ -1423,7 +1430,7 @@
                     }
                 },
                 {
-                    "key": "keepStBndOnOutflow",
+                    "key": "keepSTBndOnOutflow",
                     "default_value": 1,
                     "value_type": "intenum",
                     "description": "Keep salinity and temperature signals on boundary cells at outflow.",
@@ -1434,7 +1441,7 @@
                     }
                 },
                 {
-                    "key": "keepZLayerInGatBed",
+                    "key": "keepZLayeringAtBed",
                     "default_value": 2,
                     "value_type": "intenum",
                     "description": "Z-layering at bed.",
@@ -1503,13 +1510,15 @@
                 },
                 {
                     "key": "rhoInterfaces",
-                    "default_value": 1,
+                    "default_value": -1,
                     "value_type": "intenum",
-                    "description": "Evaluate rho at interfaces.",
+                    "description": "Estimate rho at 3D layer interfaces for baroclinic pressure gradient method.",
                     "status": "research",
                     "enum_values": {
-                        "0": "at centers",
-                        "1": "at interfaces"
+                        "-1": "Original linear interpolation",
+                        "0": "Improved linear interpolation",
+                        "1": "Recompute from salinity and temperature",
+                        "2": "Use cell density"
                     }
                 },
                 {
@@ -1621,7 +1630,7 @@
                     }
                 },
                 {
-                    "key": "facLaxturb",
+                    "key": "facLaxTurb",
                     "value_type": "float",
                     "default_value": 0.0,
                     "description": "0.0=TurKin0 from links, 1.0=TurKin0 from nodes, 0.5=50/50.",
@@ -1634,9 +1643,9 @@
                     }
                 },
                 {
-                    "key": "jafacLaxturbTyp",
+                    "key": "jafacLaxTurbTyp",
                     "value_type": "intenum",
-                    "description": "Vertical distribution of `facLaxturb`.",
+                    "description": "Vertical distribution of `facLaxTurb`.",
                     "status": "research",
                     "enum_values": {
                         "0": "sigm<0.5=0.0, sigm>0.75=1.0, linear in between",
@@ -1900,11 +1909,11 @@
                     "unit": "m²/s"
                 },
                 {
-                    "key": "vicwminb",
-                    "default_value": 0.0,
-                    "value_type": "float",
-                    "description": "Minimum viscosity in production and buoyancy term.",
-                    "unit": "m²/s"
+                  "key": "vicwminb",
+                  "default_value": 0.0,
+                  "value_type": "float",
+                  "description": "Minimum viscosity in production and buoyancy term.",
+                  "unit": "m²/s"
                 },
                 {
                     "key": "xlOzmidov",
@@ -2104,6 +2113,13 @@
                     "default_value": 0.0013,
                     "value_type": "float",
                     "description": "Coefficient for evaporative heat flux, if negative, then Cd wind is used.",
+                    "unit": "-"
+                },
+                                {
+                    "key": "albedo",
+                    "default_value": 0.06,
+                    "value_type": "float",
+                    "description": "Albedo coefficient. Fraction of solar radiation reflected by the water surface.",
                     "unit": "-"
                 },
                 {
@@ -2594,7 +2610,7 @@
                 },
                 {
                     "key": "flowWithoutWaves",
-                    "default_value": 1,
+                    "default_value": 0,
                     "value_type": "intbool",
                     "description": "Exclude Wave data in the flow computations, passing it directly to D-WAQ."
                 },
@@ -4357,6 +4373,18 @@
                     "description": "Stem height standard deviation fraction, e.g. 0.1.",
                     "unit": "-",
                     "status": "research"
+                },
+                {
+                    "key": "stemHeightConvention",
+                    "default_value": "upward_from_bed",
+                    "value_type": "enum",
+                    "description": "Stem height convention.",
+                    "unit": "-",
+                    "status": "research",
+                    "enum_values": {
+                        "upward_from_bed": "Upward from bed",
+                        "downward_from_surface": "Downward from surface"
+                    }
                 },
                 {
                     "key": "densVegMinBap",
