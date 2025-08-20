@@ -62,6 +62,7 @@ jobs:
           chmod +x ci/github/get_aggregate_teamcity_build_status.sh
           ci/github/get_aggregate_teamcity_build_status.sh \
             --teamcity-token "${{ secrets.TEAMCITY_ACCESS_TOKEN_DELFT3D }}" \
+            --project-id "Delft3D" \
             --branch-name "${{ steps.get_short_ref.outputs.ref }}" \
-            --poll-interval 30 \
-            --timeout 1d
+            --commit-sha "${{ github.sha }}" \
+            --poll-interval 30
