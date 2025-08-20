@@ -42,7 +42,7 @@ contains
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flowwithoutwaves, adve, u1, qw, &
                         a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinepsws, turkin1, tureps1, numsrc, addksources, tqcu, eqcu, sqcu, q1, tetavkeps, &
-                        eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, turbulence_lax_factor, turbulence_lax_vertical, eps20, &
+                        eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, turbulence_lax_factor, eps20, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, epstke, kmxl, &
                         c1e, c1t, c2t, c9of1, eps6, epseps, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, turbulence_lax_horizontal, viskin, jawavebreakerturbulence, rhomean, idensform, bruva, buoflu, &
@@ -71,7 +71,7 @@ contains
       real(kind=dp) :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
       real(kind=dp) :: hdzb, dtiL, adv, omegu
       real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
-      real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax, zf
+      real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax
       real(kind=dp) :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, teps, tkin
       real(kind=dp) :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps
       real(kind=dp) :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL
@@ -292,31 +292,15 @@ contains
                dk(0:kxL) = dtiL * turkin0(Lb0:Lt)
 
                if (turbulence_lax_factor > 0) then
-                  if (turbulence_lax_vertical == 1) then
-                     do L = Lb, Lt - 1
-                        zf = min(1.0_dp, (hu(L) - 0.5_dp * hu(LL)) / (0.25_dp * hu(LL)))
-                        if (zf > 0.0_dp) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1
-                           k1 = ln(1, L); k2 = ln(2, L)
-                           if (turkinepsws(1, k1) > eps20 .and. turkinepsws(1, k2) > eps20) then
-                              if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                                 faclax = turbulence_lax_factor * zf
-                                 faclax = faclax * min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1)) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
-                                 dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * turkin0(L) + 0.5_dp * facLax * (turkinepsws(1, k1) + turkinepsws(1, k2)))
-                              end if
-                           end if
+                  do L = Lb, Lt - 1
+                     k1 = ln(1, L); k2 = ln(2, L)
+                     if (turkinepsws(1, k1) > eps20 .and. turkinepsws(1, k2) > eps20) then
+                        if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                           faclax = turbulence_lax_factor * min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1)) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
+                           dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * turkin0(L) + 0.5_dp * facLax * (turkinepsws(1, k1) + turkinepsws(1, k2)))
                         end if
-                     end do
-                  else if (turbulence_lax_vertical == 2) then
-                     do L = Lb, Lt - 1
-                        k1 = ln(1, L); k2 = ln(2, L)
-                        if (turkinepsws(1, k1) > eps20 .and. turkinepsws(1, k2) > eps20) then
-                           if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                              faclax = turbulence_lax_factor * min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1)) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
-                              dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * turkin0(L) + 0.5_dp * facLax * (turkinepsws(1, k1) + turkinepsws(1, k2)))
-                           end if
-                        end if
-                     end do
-                  end if
+                     end if
+                  end do
                end if
 
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigtkei
@@ -614,31 +598,15 @@ contains
                ! Dirichlet condition on bed ; teta method:
 
                if (turbulence_lax_factor > 0) then
-                  if (turbulence_lax_vertical == 1) then
-                     do L = Lb, Lt - 1
-                        zf = min(1.0_dp, (hu(L) - 0.5_dp * hu(LL)) / (0.25_dp * hu(LL)))
-                        if (zf > 0.0_dp) then ! top half only: 0.5-0.75: zf = linear from 0 to 1,  > 0.75 : zf 1
-                           k1 = ln(1, L); k2 = ln(2, L)
-                           if (turkinepsws(2, k1) > eps20 .and. turkinepsws(2, k2) > eps20) then
-                              if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                                 faclax = turbulence_lax_factor * zf
-                                 faclax = faclax * dzu(L - Lb + 1) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
-                                 dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * tureps0(L) + 0.5_dp * facLax * (turkinepsws(2, k1) + turkinepsws(2, k2)))
-                              end if
-                           end if
+                  do L = Lb, Lt - 1
+                     k1 = ln(1, L); k2 = ln(2, L)
+                     if (turkinepsws(2, k1) > eps20 .and. turkinepsws(2, k2) > eps20) then
+                        if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                           faclax = turbulence_lax_factor * dzu(L - Lb + 1) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
+                           dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * tureps0(L) + 0.5_dp * facLax * (turkinepsws(2, k1) + turkinepsws(2, k2)))
                         end if
-                     end do
-                  else if (turbulence_lax_vertical == 2) then
-                     do L = Lb, Lt - 1
-                        k1 = ln(1, L); k2 = ln(2, L)
-                        if (turkinepsws(2, k1) > eps20 .and. turkinepsws(2, k2) > eps20) then
-                           if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                              faclax = turbulence_lax_factor * dzu(L - Lb + 1) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
-                              dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * tureps0(L) + 0.5_dp * facLax * (turkinepsws(2, k1) + turkinepsws(2, k2)))
-                           end if
-                        end if
-                     end do
-                  end if
+                     end if
+                  end do
                end if
 
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigepsi
