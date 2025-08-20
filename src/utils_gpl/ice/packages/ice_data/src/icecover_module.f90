@@ -61,6 +61,7 @@ integer, parameter, public :: ICE_WINDDRAG_JOYCE19     = 6 !< Joyce et al (2019)
 public :: freezing_temperature
 public :: null_icecover
 public :: select_icecover_model
+public :: is_allocated_icecover
 public :: alloc_icecover
 public :: clr_icecover
 public :: update_icepress
@@ -270,6 +271,13 @@ subroutine check_output_flags(flags, model_type)
    flags%snow_thickness = filter .and. flags%snow_thickness
    flags%snow_temperature = filter .and. flags%snow_temperature
 end subroutine check_output_flags
+
+!> Check if icecover has been allocated
+function is_allocated_icecover(icecover) result(flag)
+    type (icecover_type), intent(in) :: icecover !< data structure containing ice cover data
+    integer :: flag !< logical flag for allocation
+    flag = associated(icecover%ice_area_fraction)
+end function is_allocated_icecover
 
 !> Allocate the arrays of an icecover data structure.
 function alloc_icecover(icecover, nmlb, nmub) result(istat)

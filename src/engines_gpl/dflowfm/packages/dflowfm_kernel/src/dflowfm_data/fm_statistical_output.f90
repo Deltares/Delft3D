@@ -1535,7 +1535,7 @@ contains
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_ICE_TEMPERATURE, &
                              'Wrihis_ice_temperature', 'ice_temperature', 'ice temperature', 'sea_ice_temperature', &
-                             'K', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write ice temperature to his-file', &
+                             'degC', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write ice temperature to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_SNOW_THICKNESS, &
                              'Wrihis_snow_thickness', 'snow_thickness', 'snow thickness', 'surface_snow_thickness', &
@@ -1543,7 +1543,7 @@ contains
                              nc_dim_ids=station_nc_dims_2D)
       call add_output_config(config_set_his, IDX_HIS_SNOW_TEMPERATURE, &
                              'Wrihis_snow_temperature', 'snow_temperature', 'snow temperature', 'temperature_in_surface_snow', &
-                             'K', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write snow temperature to his-file', &
+                             'degC', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write snow temperature to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
 
       ! Sediment model

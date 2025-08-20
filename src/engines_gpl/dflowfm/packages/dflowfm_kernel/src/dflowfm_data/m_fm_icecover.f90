@@ -31,7 +31,7 @@ module m_fm_icecover
    use precision
    use icecover_module, only: icecover_type, icecover_output_flags
    use icecover_module, only: ICECOVER_NONE, ICECOVER_EXT, ICECOVER_SEMTNER, ICE_WINDDRAG_NONE, FRICT_AS_DRAG_COEFF
-   use icecover_module, only: null_icecover, alloc_icecover, clr_icecover
+   use icecover_module, only: null_icecover, alloc_icecover, clr_icecover, is_allocated_icecover
    use icecover_module, only: freezing_temperature, update_icepress, ice_drag_effect, icecover_prepare_output
    use icecover_input_module, only: read_icecover, echo_icecover, late_activation_ext_force_icecover
    implicit none
@@ -166,6 +166,13 @@ contains
       qh_ice2wat => ice_data%qh_ice2wat
    end subroutine fm_ice_update_spatial_pointers
 
+   !> logical flag for allocation
+   function fm_is_allocated_ice() result (flag)
+       logical :: flag !< logical flag for allocation
+       
+       flag = is_allocated_icecover(ice_data)
+   end function fm_is_allocated_ice
+   
 !> activation of icecover module based on external forcing input
    subroutine fm_ice_activate_by_ext_forces(ndx, md_ptr)
       use properties, only: tree_data
@@ -191,9 +198,9 @@ contains
 
       integer :: istat !< status flag for allocation
 
-      if (.not.associated(ice_area_fraction)) then
-      istat = alloc_icecover(ice_data, 1, ndx)
-      call fm_ice_update_spatial_pointers()
+      if (.not.is_allocated_icecover(ice_data)) then
+         istat = alloc_icecover(ice_data, 1, ndx)
+         call fm_ice_update_spatial_pointers()
       end if
    end subroutine fm_ice_alloc
 

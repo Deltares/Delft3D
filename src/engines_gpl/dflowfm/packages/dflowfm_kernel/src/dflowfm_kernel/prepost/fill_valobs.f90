@@ -591,7 +591,7 @@ contains
    !> Support routine to collect the values of the ice quantities at the observation stations
    subroutine collect_ice_values(valobs, i, k)
       use precision, only: dp
-      use m_fm_icecover, only: ja_icecover, ICECOVER_NONE
+      use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, fm_is_allocated_ice
       use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature
       use m_observations_data, only: IPNT_ICE_S1, IPNT_ICE_ZMIN, IPNT_ICE_ZMAX, &
          IPNT_ICE_AREA_FRACTION, IPNT_ICE_THICKNESS, IPNT_ICE_PRESSURE, IPNT_ICE_TEMPERATURE, &
@@ -601,7 +601,7 @@ contains
       integer, intent(in) :: i !< index of the observation station
       integer, intent(in) :: k !< face index associated with the observation station
       
-      if (ja_icecover == ICECOVER_NONE) return
+      if (ja_icecover == ICECOVER_NONE .or. .not. fm_is_allocated_ice()) return
 
       call conditional_assign(valobs, i, IPNT_ICE_S1, ice_s1, k)
       call conditional_assign(valobs, i, IPNT_ICE_ZMIN, ice_zmin, k)
@@ -625,7 +625,7 @@ contains
       integer, intent(in) :: k !< face index associated with the observation station
       
       if (ipnt > 0) then
-         valobs(i, ipnt) = array(k)
+         valobs(i, ipnt) = real(array(k), dp)
       end if
    end subroutine conditional_assign
 
