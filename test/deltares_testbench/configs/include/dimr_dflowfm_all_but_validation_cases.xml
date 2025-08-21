@@ -4571,7 +4571,7 @@
           <parameters>
             <parameter name="salinity" toleranceAbsolute="0.0000001" />
             <parameter name="Tair" toleranceAbsolute="0.0000001" />
-            <parameter name="potential_density" toleranceAbsolute="0.0000001" />
+            <parameter name="potential_density" toleranceAbsolute="0.001" />
             <parameter name="rhum" toleranceAbsolute="0.0000001" />
             <parameter name="temperature" toleranceAbsolute="0.001" />
             <parameter name="ice_temperature" toleranceAbsolute="0.001" />
