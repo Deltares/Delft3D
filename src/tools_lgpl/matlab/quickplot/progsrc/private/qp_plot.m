@@ -605,19 +605,17 @@ if NVal==0.6 || NVal==0.9
     % 0.9 = coloured thindam
     NVal=0.5;
 elseif  NVal==1.9 
-    if isequal(Ops.presentationtype,'edges') || ...
-             isequal(Ops.presentationtype,'edges m') || ...
-              isequal(Ops.presentationtype,'edges n') || ...
-              isequal(Ops.presentationtype,'values')
-        % 1.9 = coloured thindam or vector perpendicular to thindam
-        NVal=0.5;
-    else
-        % vector case: vector location is determined by computecomponent
-        NVal=2;
-        data.XComp = data.XDamVal;
-        data.YComp = data.YDamVal;
-        data = rmfield(data,{'XDam','YDam','XDamVal','YDamVal'});
-        Ops.vectorcomponent='edge';
+    % 1.9 = coloured thindam or vector perpendicular to thindam
+    switch Ops.presentationtype
+        case {'vector'}
+            % vector case: vector location is determined by computecomponent
+            NVal=2;
+            data.XComp = data.XDamVal;
+            data.YComp = data.YDamVal;
+            data = rmfield(data,{'XDam','YDam','XDamVal','YDamVal'});
+            Ops.vectorcomponent='edge';
+        otherwise
+            NVal=0.5;
     end
 end
 
