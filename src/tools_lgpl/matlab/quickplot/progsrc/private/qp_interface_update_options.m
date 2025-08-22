@@ -612,6 +612,10 @@ if (multiple(M_) && ~multiple(N_) && DimFlag(N_)) || (~multiple(M_) && DimFlag(M
     end
 end
 
+if nval == 0
+    lineproperties = 1;
+end
+
 if strcmp(axestype,'X-Y-Val')
     % skip
 elseif strfind(axestype,'Val')
