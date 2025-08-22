@@ -38,7 +38,6 @@ module m_set_bobs
 contains
    subroutine setbobs() ! and set blu, weigthed depth at u point
       use precision, only: dp
-      use messagehandling, only: msg_flush, msgbuf
       use m_netw, only: netcell, zk, zkuni, numl, numl1d, lne, kn, nmk
       use m_flowparameters, only: ibedlevtyp, calc_bedlevel_over_non_active_links, jaconveyance2D
       use m_flowgeom, only: ndx2d, bl, ndxi, lne2ln, iadv, ln, lncn, ibot, blu, bob, bob0, lnx1d, lnx, kcu, kcs, ndx, nd
@@ -95,28 +94,30 @@ contains
       
       do L = numL1D + 1, numL ! Intentional: includes boundaries, to properly set bobs based on net nodes here already
          Lf = lne2ln(L)  
-         
-         n1 = lne(1,L)
-         n2 = lne(2,L)
-         if (n1==0 .and. n2 == 0) then
-            cycle
-         else if (n1==0) then
-            n1 = n2
-         else if (n2 == 0) then
-            n2 = n1
-         end if
-
-         k1 = kn(1,L)
-         k2 = kn(2,L)
 
          bedlevel_at_link = huge(1.0_dp)
          
          if (Lf <= 0 .and. ibedlevtyp/=2 .and. calc_bedlevel_over_non_active_links) then
+            n1 = lne(1,L)
+            n2 = lne(2,L)
+            if (n1==0 .and. n2 == 0) then
+               cycle
+            else if (n1==0) then
+               n1 = n2
+            else if (n2 == 0) then
+               n2 = n1
+            end if
+            k1 = kn(1,L)
+            k2 = kn(2,L)
             bedlevel_at_link = get_bedlevel_at_link(n1, n2, k1, k2, dmiss, 0)
    
          else if (Lf > 0) then
             if (iadv(Lf) > 20 .and. iadv(Lf) < 30) cycle ! skip update of bobs for structures ! TODO: [TRUNKMERGE]: JN/BJ: really structures on bnd?
-
+            
+            n1 = ln(1,Lf)
+            n2 = ln(2,Lf)
+            k1 = lncn(1,Lf)
+            k2 = lncn(2,Lf)
             if (allocated(ibot)) then
                ibotL = ibot(Lf)
             else
@@ -124,13 +125,25 @@ contains
             end if
             bedlevel_at_link = get_bedlevel_at_link(n1, n2, k1, k2, blu(Lf), ibotL)
             if (jaconveyance2D >=1) then
-               bob(1, Lf) = zk(k1)
-               bob(2, Lf) = zk(k2)
+               if (zk(k1) ==dmiss) then
+                  bob(1, Lf) = zkuni
+               else
+                  bob(1, Lf) = zk(k1)
+               end if
+               if (zk(k2) ==dmiss) then
+                  bob(2, Lf) = zkuni
+               else
+                  bob(2, Lf) = zk(k2)
+               end if
+               
+            else 
+               bob(1,Lf) = bedlevel_at_link
+               bob(2,Lf) = bedlevel_at_link
             end if
             blu(Lf) = min(bob(1, Lf), bob(2, Lf)) 
          end if      
 
-         if (ibedlevmode == BLMODE_DFM) then
+         if (ibedlevmode == BLMODE_DFM .and. ibedlevtyp .ne. 1 .and. ibedlevtyp .ne. 6) then
             bl(n1) = min(bl(n1), bedlevel_at_link)
             bl(n2) = min(bl(n2), bedlevel_at_link)
          end if
@@ -349,10 +362,9 @@ contains
             end if
          end do
       end if
-
       jaupdbndbl = 0 ! after first run of setbobs set to 0 = no update
-   end subroutine setbobs
    
+   end subroutine setbobs
    !> calculate bed level at a link based on the type of bed level definition and the input parameters.
    function get_bedlevel_at_link(n1, n2, k1, k2, blu, ibot) result(bedlevel_at_link)
       
