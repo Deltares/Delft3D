@@ -1186,8 +1186,8 @@ contains
       end if
 
       call prop_get(md_ptr, 'numerics', 'Turbulenceadvection', javakeps)
-      call prop_get(md_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor)
-      call prop_get(md_ptr, 'numerics', 'FacLaxTurbMethod', turbulence_lax_horizontal)
+      call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationFactor', turbulence_lax_factor)
+      call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', turbulence_lax_horizontal)
       call prop_get(md_ptr, 'numerics', 'EpsTKE', epstke)
       call prop_get(md_ptr, 'numerics', 'EpsEPS', epseps)
 
@@ -3149,8 +3149,8 @@ contains
       end if
 
       if (writeall .or. (turbulence_lax_factor > 0 .and. kmx > 0)) then
-         call prop_set(prop_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor, 'LAX-scheme factor (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)')
-         call prop_set(prop_ptr, 'numerics', 'FacLaxTurbMethod', turbulence_lax_horizontal, 'Horizontal method of turbulence_lax_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)')
+         call prop_set(prop_ptr, 'numerics', 'turbulenceTimeIntegrationFactor', turbulence_lax_factor, '[0.0 - 1.0] for turbulent quantities (0.0: Tur0 from links (default), 1.0: Tur0 maximal mix of values from links with nodes)')
+         call prop_set(prop_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', turbulence_lax_horizontal, 'Apply turbulenceTimeIntegrationFactor (1: to all cells, 2: only when vertical layers are horizontally connected (default))')
       end if
 
       if (writeall .or. (epstke > 1.0e-32_dp .and. kmx > 0)) then
