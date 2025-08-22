@@ -27,6 +27,7 @@ object WindowsBuild : BuildType({
         #teamcity:symbolicLinks=as-is
         **/*.log => logging
         build_%product%/install/** => oss_artifacts_x64_%build.vcs.number%.zip!x64
+        unit-test-report-windows.xml
     """.trimIndent()
 
     params {
@@ -81,11 +82,20 @@ object WindowsBuild : BuildType({
                 cd build_%product%
 
                 cmake --build . -j --target install --config %build_type%
+
+                ctest --test-dir . --build-config %build_type% --output-junit ../unit-test-report-windows.xml --output-on-failure
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
+        }
+    }
+
+    features {
+        xmlReport {
+            reportType = XmlReport.XmlReportType.JUNIT
+            rules = "+:unit-test-report-windows.xml"
         }
     }
 })

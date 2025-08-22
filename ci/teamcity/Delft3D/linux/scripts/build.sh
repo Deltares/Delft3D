@@ -24,4 +24,4 @@ while [[ $# -gt 0 ]]; do
 done
 
 cmake -S ./src/cmake -G "${GENERATOR}" -D CONFIGURATION_TYPE:STRING="${PRODUCT}" -D CMAKE_BUILD_TYPE="${BUILD_TYPE}" -B "build_${PRODUCT}" -D CMAKE_INSTALL_PREFIX="build_${PRODUCT}/install"
-cmake --build "build_${PRODUCT}" --parallel --target install --config "${BUILD_TYPE}"
+cmake --build "build_${PRODUCT}" --parallel --config "${BUILD_TYPE}"

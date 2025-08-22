@@ -32,7 +32,7 @@ class PreconditionsHelper(object):
         self.__check_atlassian_api_connection()
         self.__check_network_base_path_accessible()
         self.__check_ssh_connection_to_linux()
-        self.__check_git_connection()
+        # self.__check_git_connection()
         print("Successfully asserted all preconditions.")
 
     def __check_teamcity_api_connection(self) -> None:

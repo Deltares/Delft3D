@@ -1009,7 +1009,7 @@ contains
          tempset%cross(ics) = crs%cross(crsIndices(ics))
          crs%crossSectionIndex(crsIndices(ics)) = ics
       end do
-      crs%cross(:) = tempset%cross(:) !copy temp array to real array
+      crs%cross(1:crsCount) = tempset%cross(1:crsCount) !copy temp array to real array
 
       !ENABLE THIS LOOP TO DEBUG SORTED BRANCH ORDERS IN CASE OF PROBLEMS IN USEBRANCHORDERSCRS
       !do ics = 1, crsCount

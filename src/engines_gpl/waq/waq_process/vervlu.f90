@@ -40,7 +40,7 @@ contains
         ! Name    T   L I/O   Description                                    Uni
         ! ----    --- -  -    -------------------                             --
         ! ATMC    R*4 1 I  Concentration OMV in atmosphere                [g.m3]
-        ! CONC    R*4 1 I  Total concentration OMV in water               [g.m3]
+        ! CONC    R*4 1 I  Concentration dissolved OMV in water           [g.m3]
         ! C1      R*4 1 I  Constant in temperature dependance of Henrys
         !                  value represents delta S0 (entropy) / R           [-]
         ! C2      R*4 1 L  Constant in temperature dependence of Henrys

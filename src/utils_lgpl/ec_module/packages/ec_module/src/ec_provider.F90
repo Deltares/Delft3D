@@ -385,7 +385,7 @@ contains
                   "dewpoint_airtemperature_cloudiness", &
                   "dewpoint_airtemperature_cloudiness_solarradiation", &
                   "sea_ice_area_fraction", "sea_ice_thickness", &
-                  "solarradiation", "longwaveradiation", "wavesignificantheight", &
+                  "solarradiation", "netsolarradiation", "longwaveradiation", "wavesignificantheight", &
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
                   "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
@@ -2639,14 +2639,18 @@ contains
          ncstdnames(2) = 'air_temperature'
          ncvarnames(3) = 'tcc' ! cloud cover (fraction)
          ncstdnames(3) = 'cloud_area_fraction'
-         ncvarnames(4) = 'ssr' ! outgoing SW radiation at the top-of-the-atmosphere
-         ncstdnames(4) = 'surface_net_downward_shortwave_flux'
+         ncvarnames(4) = 'ssrd'
+         ncstdnames(4) = 'surface_downwelling_shortwave_flux_in_air'
       case ('solarradiation')
-         ncvarnames(1) = 'ssr' ! outgoing SW radiation at the top-of-the-atmosphere
+         ncvarnames(1) = 'ssrd'
+         ncstdnames(1) = 'surface_downwelling_shortwave_flux_in_air'
+         ncstdnames_fallback(1) = 'solar_irradiance'
+      case ('netsolarradiation')
+         ncvarnames(1) = 'ssr'
          ncstdnames(1) = 'surface_net_downward_shortwave_flux'
          ncstdnames_fallback(1) = 'solar_irradiance'
       case ('longwaveradiation')
-         ncvarnames(1) = 'strd' ! outgoing long wave radiation
+         ncvarnames(1) = 'strd'
          ncstdnames(1) = 'surface_net_downward_longwave_flux'
       case ('nudge_salinity_temperature')
          ncvarnames(1) = 'thetao' ! temperature

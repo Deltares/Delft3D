@@ -3036,6 +3036,25 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f011_c019_wind_in_bc" ref="dflowfm_default">
+      <path version="2025-08-05T11:38:13.904000">e02_dflowfm/f011_wind/c019_wind_in_bc</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="output_r001/r001_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.001" />
+            <parameter name="x_velocity" toleranceAbsolute="0.001" />
+            <parameter name="y_velocity" toleranceAbsolute="0.001" />
+          </parameters>
+        </file>
+        <file name="output_r001/r001_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f011_c020_spiderweb_schematic_var01" ref="dflowfm_default">
       <path version="2025-04-09T14:35:11.235000">e02_dflowfm/f011_wind/c020_spiderweb_schematic_var01</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -4565,6 +4584,50 @@
             <parameter name="mesh2d_u1" toleranceAbsolute="0.00001" />
             <parameter name="mesh2d_sa1" toleranceAbsolute="0.00001" />
             <parameter name="mesh2d_tem1" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f020_c040_simple_solar_radiation_model_all_defaults" ref="dflowfm_default">
+      <path version="2025-08-14T09:46:01.082000">e02_dflowfm/f020_heat_flux/c040_simple_solar_radiation_model_all_defaults</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="output/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Qsun" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f020_c041_simple_solar_radiation_model_default_albedo" ref="dflowfm_default">
+      <path version="2025-08-14T09:46:24.664000">e02_dflowfm/f020_heat_flux/c041_simple_solar_radiation_model_default_albedo</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="output/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Qsun" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f020_c042_simple_solar_radiation_model_custom_albedo" ref="dflowfm_default">
+      <path version="2025-08-14T09:46:48.586000">e02_dflowfm/f020_heat_flux/c042_simple_solar_radiation_model_custom_albedo</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="output/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Qsun" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f020_c043_simple_net_solar_radiation_model" ref="dflowfm_default">
+      <path version="2025-08-14T09:47:17.435000">e02_dflowfm/f020_heat_flux/c043_simple_net_solar_radiation_model</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="output/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Qsun" toleranceAbsolute="0.00001" />
           </parameters>
         </file>
       </checks>
