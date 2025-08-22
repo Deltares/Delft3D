@@ -262,8 +262,8 @@ This section contains the settings of specific parts of the flow solver, such as
 | `vertAdvTypSal` | Vertical advection type for salinity. Note that `vertAdvTypSal`=4 leads to less numerical dissipation than `vertAdvTypSal`=6. | `6` | <ul><li>**`0`**: none</li><li>**`4`**: theta implicit</li><li>**`6`**: higher order explicit, no Forester filter</li></ul> |  |
 | `vertAdvTypTem` | Vertical advection type for temperature. Note that `vertAdvTypTem`=4 leads to less numerical dissipation than `vertAdvTypTem`=6. | `6` | <ul><li>**`0`**: none</li><li>**`4`**: theta implicit</li><li>**`6`**: higher order explicit, no Forester filter</li></ul> |  |
 | `zeroZBndInflowAdvection` | Switch for advection at open boundary. | `0` | <ul><li>**`0`**: Neumann</li><li>**`1`**: zero at inflow</li><li>**`2`**: zero at inflow and outflow</li></ul> |  |
-| `facLaxTurb` 🔬 | 0.0=TurKin0 from links, 1.0=TurKin0 from nodes, 0.5=50/50. | `0.0` | `[0.0, 1.0]` |  |
-| `jafacLaxTurbTyp` 🔬 | Vertical distribution of `facLaxTurb`. |  | <ul><li>**`0`**: sigm<0.5=0.0, sigm>0.75=1.0, linear in between</li><li>**`1`**: 1.0 for whole column</li></ul> |  |
+| `turbulenceTimeIntegrationFactor` | 0.0=Tur0 from links, 1.0=Tur0 maximal mix of values from links with nodes | `0.0` | `[0.0, 1.0]` | [-] |
+| `turbulenceTimeIntegrationMethod` | Where to apply `turbulenceTimeIntegrationFactor` | `2` | <ul><li>**`1`**: apply to all cells</li><li>**`2`**: apply only when vertical layers are horizontally connected</li></ul> |  |
 | `locSaltMin` 🔬 | Minimum salinity for case of lock exchange. | `5.0` |  |  |
 | `locSaltMax` 🔬 | Maximum salinity for case of lock exchange. | `10.0` |  |  |
 | `locSaltLev` 🔬 | Salinity level for case of lock exchange. | `1.0` |  |  |

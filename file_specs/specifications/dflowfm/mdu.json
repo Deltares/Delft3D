@@ -1630,11 +1630,11 @@
                     }
                 },
                 {
-                    "key": "facLaxTurb",
+                    "key": "turbulenceTimeIntegrationFactor",
                     "value_type": "float",
+                    "unit": "-",
                     "default_value": 0.0,
-                    "description": "0.0=TurKin0 from links, 1.0=TurKin0 from nodes, 0.5=50/50.",
-                    "status": "research",
+                    "description": "0.0=Tur0 from links, 1.0=Tur0 maximal mix of values from links with nodes",
                     "validation": {
                         "range": {
                             "min_inclusive": 0.0,
@@ -1643,13 +1643,13 @@
                     }
                 },
                 {
-                    "key": "jafacLaxTurbTyp",
+                    "key": "turbulenceTimeIntegrationMethod",
                     "value_type": "intenum",
-                    "description": "Vertical distribution of `facLaxTurb`.",
-                    "status": "research",
+                    "default_value": 2,
+                    "description": "Where to apply `turbulenceTimeIntegrationFactor`",
                     "enum_values": {
-                        "0": "sigm<0.5=0.0, sigm>0.75=1.0, linear in between",
-                        "1": "1.0 for whole column"
+                        "1": "apply to all cells",
+                        "2": "apply only when vertical layers are horizontally connected"
                     }
                 },
                 {
