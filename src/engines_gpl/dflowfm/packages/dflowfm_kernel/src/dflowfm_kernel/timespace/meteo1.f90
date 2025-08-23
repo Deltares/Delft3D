@@ -6303,7 +6303,7 @@ module m_meteo
    use string_module
    use m_sediment, only: stm_included, stmpar
    use m_subsidence
-   use m_fm_icecover, only: ice_af, ice_h
+   use m_fm_icecover, only: ice_area_fraction, ice_thickness
 
    implicit none
 
@@ -6806,10 +6806,10 @@ contains
          dataPtr2 => wy
       case ('sea_ice_area_fraction')
          itemPtr1 => item_sea_ice_area_fraction
-         dataPtr1 => ice_af
+         dataPtr1 => ice_area_fraction ! here we require fp == dp
       case ('sea_ice_thickness')
          itemPtr1 => item_sea_ice_thickness
-         dataPtr1 => ice_h
+         dataPtr1 => ice_thickness ! here we require fp == dp
       case ('stressx')
          itemPtr1 => item_stressx
          dataPtr1 => wdsu_x
@@ -7349,19 +7349,22 @@ contains
       success = .true.
    end function ec_gettimespacevalue_by_name
 
-   !> Computes relative humidity (%) from dew point and air temperature (Kelvin)
+   !> Computes relative humidity (%) from dew point and air temperature (degC)
    pure elemental function calculate_relative_humidity(td, tm) result(rh)
-      use physicalconsts, only: CtoKelvin
-
-      real(kind=dp), intent(in) :: td !< dew point temperature temperature (K)
-      real(kind=dp), intent(in) :: tm !< air temperature (K)
+      real(kind=dp), intent(in) :: td !< dew point temperature temperature (degC)
+      real(kind=dp), intent(in) :: tm !< air temperature (degC)
       real(kind=dp) :: rh !< relative humidity (%)
 
       real(kind=dp), parameter :: B = 17.502_dp
-      real(kind=dp), parameter :: C = -32.19_dp
+      real(kind=dp), parameter :: C = 240.96_dp
 
-      ! Convert to Celsius for the Magnus formula
-      rh = exp(B * td / (C + td + CtoKelvin) - B * tm / (C + tm + CtoKelvin)) * 100.0_dp
+      ! Computation based on Tetens / Magnus formula for water vapour saturation pressure
+      ! expressed using temperatures in Celsius scale.
+      ! C equals 240.97 in Eq (8) of Buck (1981)
+      ! Eq (7.5) of ECMWF (2023) uses temperatures in Kelvin scale:
+      ! with a1 * (td - t0) / (td - a4) where a1 = 17.502, t0 = 273.16, a4 = 32.19 (= 273.15 - 240.96)
+      
+      rh = exp(B * td / (C + td) - B * tm / (C + tm)) * 100.0_dp
    end function calculate_relative_humidity
 
 end module m_meteo

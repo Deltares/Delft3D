@@ -578,7 +578,6 @@ module m_flowparameters
    integer :: jaeverydt !< Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes
    integer :: jamapFlowAnalysis !< Write flow analysis output to map file
    integer :: jamapNearField !< Nearfield related output
-   integer :: jamapice !< Ice cover related output
    integer :: jamapwqbot3d !< Write wqbot3d to map file, 0: no, 1: yes
 
 ! read from restart
@@ -1040,7 +1039,6 @@ contains
       jamapS1Gradient = 0
       jamapFlowAnalysis = 0
       jamapNearField = 0
-      jamapice = 0
       jamapwqbot3d = 0
 
       jarstignorebl = 0

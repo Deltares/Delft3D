@@ -1568,7 +1568,7 @@ contains
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemdiam, stemdens, stemheight
-      use unstruc_model, only: md_extfile
+      use unstruc_model, only: md_extfile, md_ptr
       use string_module, only: str_tolower
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
       use processes_input, only: paname, painp, num_spatial_parameters, &
@@ -1713,7 +1713,7 @@ contains
 
          ! if ice properties not yet read before, initialize ...
          if (.not. (ja_ice_area_fraction_read /= 0 .or. ja_ice_thickness_read /= 0)) then
-            call fm_ice_activate_by_ext_forces(ndx)
+            call fm_ice_activate_by_ext_forces(ndx, md_ptr)
          end if
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.

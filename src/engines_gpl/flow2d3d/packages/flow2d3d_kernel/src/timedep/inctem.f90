@@ -40,7 +40,7 @@ subroutine inctem(ktemp     ,timnow    ,temint    ,gdp       )
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use physicalconsts, only: CtoKelvin
+    use physicalconsts, only: celsius_to_kelvin
     !
     use globaldata
     !
@@ -95,7 +95,6 @@ subroutine inctem(ktemp     ,timnow    ,temint    ,gdp       )
     real(fp) :: alpha  ! Interpolation factor; valid interval [0,1]
     logical  :: first  ! Flag = TRUE in case a time-dependent file is read for the 1st time 
     logical  :: inttem ! Interpolation method between consecutive temperature data: N = No interpolation. Y = Linear interpolation. 
-    real(fp), parameter :: fCtoKelvin = real(CtoKelvin, fp) ! conversion offset between Celsius and Kelvin
 
 !
 !! executable statements -------------------------------------------------------
@@ -182,9 +181,9 @@ subroutine inctem(ktemp     ,timnow    ,temint    ,gdp       )
     ! will be calculated See also EASP in the routine HEATU
     !
     if (ktemp <= 2) then
-       vapres = 23.38_fp * (rhum/100.0_fp) * exp(18.1_fp - 5303.3_fp/(tdryb + fCtoKelvin))
+       vapres = 23.38_fp * (rhum/100.0_fp) * exp(18.1_fp - 5303.3_fp/celsius_to_kelvin(tdryb))
     elseif (ktemp == 4 .and. ivapop == 0) then
-       vapres = 23.38_fp * (rhum/100.0_fp) * exp(18.1_fp - 5303.3_fp/(tair + fCtoKelvin))
+       vapres = 23.38_fp * (rhum/100.0_fp) * exp(18.1_fp - 5303.3_fp/celsius_to_kelvin(tair))
     else
     endif
 end subroutine inctem
