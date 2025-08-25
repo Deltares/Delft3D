@@ -233,7 +233,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Temperatur","SwEmersion",  11,"Y","x",1
 "Temperatur","LocSedDept",  12,"Y","x",1
 "Temperatur","ThSedDT   ",  13,"Y","x",1
-"Temperatur","RadSurf   ",  14,"N","x",1
+"Temperatur","RadSW     ",  14,"N","x",1
 "Temperatur","RadMax    ",  15,"Y","x",1
 "Temperatur","RTradmax  ",  16,"Y","x",1
 "Temperatur","DelTradmax",  17,"Y","x",1
