@@ -30,5 +30,5 @@
     "sheet_name": "Sheet1",
     "name_column": "C",
     "relative_path_to_output_folder": "output/",
-    "dry_run_prefix": "[DRY-RUN]"
+    "dry_run_prefix": "DRY-RUN: "
 }

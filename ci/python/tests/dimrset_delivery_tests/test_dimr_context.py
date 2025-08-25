@@ -6,12 +6,13 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from ci_tools.dimrset_delivery.arg_parsing import create_context_from_args, parse_common_arguments
 from ci_tools.dimrset_delivery.dimr_context import (
+    CredentialEntry,
+    Credentials,
     DimrAutomationContext,
-    DimrCredentials,
-    ServiceRequirements,
-    create_context_from_args,
-    parse_common_arguments,
+    ServiceAuthenticateStore,
+    ServiceName,
 )
 from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
@@ -27,49 +28,58 @@ class TestDimrAutomationContext:
         self,
         build_id: str = "12345",
         dry_run: bool = False,
-        atlassian_username: Optional[str] = None,
-        atlassian_password: Optional[str] = None,
-        teamcity_username: Optional[str] = None,
-        teamcity_password: Optional[str] = None,
-        ssh_username: Optional[str] = None,
-        ssh_password: Optional[str] = None,
-        git_username: Optional[str] = None,
-        git_pat: Optional[str] = None,
+        atlassian_username: str = "",
+        atlassian_password: str = "",
+        teamcity_username: str = "",
+        teamcity_password: str = "",
+        ssh_username: str = "",
+        ssh_password: str = "",
+        git_username: str = "",
+        git_password: str = "",
         require_atlassian: bool = True,
         require_teamcity: bool = True,
         require_ssh: bool = True,
         require_git: bool = True,
-        credentials: Optional[DimrCredentials] = None,
-        requirements: Optional[ServiceRequirements] = None,
+        credentials: Optional[ServiceAuthenticateStore] = None,
     ) -> DimrAutomationContext:
         """Create a DimrAutomationContext with specified parameters."""
-        # If credentials and requirements are provided directly, use them
-        if credentials is not None and requirements is not None:
-            return DimrAutomationContext(
-                build_id=build_id, dry_run=dry_run, credentials=credentials, requirements=requirements
-            )
+        # If credentials are provided directly, use them
+        if credentials is not None:
+            return DimrAutomationContext(build_id=build_id, dry_run=dry_run, credentials=credentials)
 
         # Otherwise, create them from the individual parameters
         if credentials is None:
-            credentials = DimrCredentials(
-                atlassian_username=atlassian_username,
-                atlassian_password=atlassian_password,
-                teamcity_username=teamcity_username,
-                teamcity_password=teamcity_password,
-                ssh_username=ssh_username,
-                ssh_password=ssh_password,
-                git_username=git_username,
-                git_pat=git_pat,
+            credentials = ServiceAuthenticateStore()
+            credentials.add(
+                CredentialEntry(
+                    name=ServiceName.ATLASSIAN,
+                    required=require_atlassian,
+                    credential=Credentials(username=atlassian_username, password=atlassian_password),
+                )
+            )
+            credentials.add(
+                CredentialEntry(
+                    name=ServiceName.TEAMCITY,
+                    required=require_teamcity,
+                    credential=Credentials(username=teamcity_username, password=teamcity_password),
+                )
+            )
+            credentials.add(
+                CredentialEntry(
+                    name=ServiceName.SSH,
+                    required=require_ssh,
+                    credential=Credentials(username=ssh_username, password=ssh_password),
+                )
+            )
+            credentials.add(
+                CredentialEntry(
+                    name=ServiceName.GIT,
+                    required=require_git,
+                    credential=Credentials(username=git_username, password=git_password),
+                )
             )
 
-        if requirements is None:
-            requirements = ServiceRequirements(
-                atlassian=require_atlassian, teamcity=require_teamcity, ssh=require_ssh, git=require_git
-            )
-
-        return DimrAutomationContext(
-            build_id=build_id, dry_run=dry_run, credentials=credentials, requirements=requirements
-        )
+        return DimrAutomationContext(build_id=build_id, dry_run=dry_run, credentials=credentials)
 
     def test_init_with_all_credentials_provided(self) -> None:
         """Test initialization when all credentials are provided."""
@@ -90,7 +100,7 @@ class TestDimrAutomationContext:
                 ssh_username="ssh_user",
                 ssh_password="ssh_pass",
                 git_username="git_user",
-                git_pat="git_token",
+                git_password="git_token",
             )
             services = Services(context)
 
@@ -120,7 +130,7 @@ class TestDimrAutomationContext:
                 ssh_username="ssh_user",
                 ssh_password="ssh_pass",
                 git_username="git_user",
-                git_pat="git_token",
+                git_password="git_token",
             )
 
             assert context.dry_run is True
@@ -186,7 +196,7 @@ class TestDimrAutomationContext:
                 atlassian_username="atlas_user",
                 atlassian_password="atlas_pass",
                 git_username="git_user",
-                git_pat="git_token",
+                git_password="git_token",
             )
             services = Services(context)
 
@@ -253,7 +263,7 @@ class TestDimrAutomationContext:
                 ssh_username="user",
                 ssh_password="pass",
                 git_username="user",
-                git_pat="token",
+                git_password="token",
             )
 
             context.log("Test message")
@@ -279,7 +289,7 @@ class TestDimrAutomationContext:
                 ssh_username="user",
                 ssh_password="pass",
                 git_username="user",
-                git_pat="token",
+                git_password="token",
             )
 
             context.log("Test message")
@@ -287,16 +297,21 @@ class TestDimrAutomationContext:
 
     def test_get_kernel_versions_dry_run_mode(self) -> None:
         """Test get_kernel_versions method in dry run mode."""
+        # Only patch the service classes. In dry run mode, TeamCity.get_kernel_versions returns mock data directly.
+        teamcity_mock = Mock(spec=TeamCity)
+        teamcity_mock.get_kernel_versions.return_value = {
+            "DIMRset_ver": "1.23.45",
+            "build.vcs.number": "abcdefghijklmnopqrstuvwxyz01234567890123",
+        }
+        teamcity_mock.get_dimr_version.return_value = "1.23.45"
+        teamcity_mock.get_branch_name.return_value = "mock_branch"
+
         with (
-            patch.multiple(
-                "ci_tools.dimrset_delivery.services",
-                Atlassian=Mock(spec=Atlassian),
-                TeamCity=Mock(spec=TeamCity),
-                SshClient=Mock(spec=SshClient),
-                GitClient=Mock(spec=GitClient),
-            ),
+            patch("ci_tools.dimrset_delivery.services.TeamCity", return_value=teamcity_mock),
+            patch("ci_tools.dimrset_delivery.services.Atlassian", Mock(spec=Atlassian)),
+            patch("ci_tools.dimrset_delivery.services.SshClient", Mock(spec=SshClient)),
+            patch("ci_tools.dimrset_delivery.services.GitClient", Mock(spec=GitClient)),
             patch("builtins.print"),
-            patch("ci_tools.dimrset_delivery.services.TeamCity") as teamcity_patch,
         ):
             context = self._create_context(
                 build_id="12345",
@@ -308,15 +323,8 @@ class TestDimrAutomationContext:
                 ssh_username="user",
                 ssh_password="pass",
                 git_username="user",
-                git_pat="token",
+                git_password="token",
             )
-            teamcity_mock = teamcity_patch.return_value
-            teamcity_mock.get_dimr_version_from_context.return_value = "1.23.45"
-            teamcity_mock.get_kernel_versions_from_context.return_value = {
-                "DIMRset_ver": "1.23.45",
-                "build.vcs.number": "abcdefghijklmnopqrstuvwxyz01234567890123",
-            }
-            teamcity_mock.get_branch_name_from_context.return_value = "mock_branch"
             Services(context)
 
             # Should return mock data in dry run mode
@@ -328,34 +336,29 @@ class TestDimrAutomationContext:
 
     def test_get_kernel_versions_normal_mode(self) -> None:
         """Test get_kernel_versions method in normal mode."""
-        mock_teamcity = Mock(spec=TeamCity)
+        teamcity_mock = Mock(spec=TeamCity)
         mock_build_info = {
             "resultingProperties": {
                 "property": [
                     {"name": "DIMRset_ver", "value": "5.10.00.12345"},
                     {"name": "build.vcs.number", "value": "abc123def456"},
-                    {"name": "other_property", "value": "other_value"},
                 ]
             }
         }
-        mock_teamcity.get_build_info_for_build_id.return_value = mock_build_info
+        teamcity_mock.get_build_info_for_build_id.return_value = mock_build_info
+        teamcity_mock.get_dimr_version.return_value = "1.23.45"
+        teamcity_mock.get_kernel_versions.return_value = {
+            "DIMRset_ver": "1.23.45",
+            "build.vcs.number": "abcdefghijklmnopqrstuvwxyz01234567890123",
+        }
 
         with (
-            patch.multiple(
-                "ci_tools.dimrset_delivery.services",
-                Atlassian=Mock(spec=Atlassian),
-                TeamCity=Mock(return_value=mock_teamcity),
-                SshClient=Mock(spec=SshClient),
-                GitClient=Mock(spec=GitClient),
-            ),
-            patch("ci_tools.dimrset_delivery.services.TeamCity") as teamcity_patch,
+            patch("ci_tools.dimrset_delivery.services.TeamCity", return_value=teamcity_mock),
+            patch("ci_tools.dimrset_delivery.services.Atlassian", Mock(spec=Atlassian)),
+            patch("ci_tools.dimrset_delivery.services.SshClient", Mock(spec=SshClient)),
+            patch("ci_tools.dimrset_delivery.services.GitClient", Mock(spec=GitClient)),
+            patch("builtins.print"),
         ):
-            teamcity_mock = teamcity_patch.return_value
-            teamcity_mock.get_dimr_version_from_context.return_value = "1.23.45"
-            teamcity_mock.get_kernel_versions_from_context.return_value = {
-                "DIMRset_ver": "1.23.45",
-                "build.vcs.number": "abcdefghijklmnopqrstuvwxyz01234567890123",
-            }
             context = self._create_context(
                 build_id="12345",
                 dry_run=False,
@@ -366,7 +369,7 @@ class TestDimrAutomationContext:
                 ssh_username="user",
                 ssh_password="pass",
                 git_username="user",
-                git_pat="token",
+                git_password="token",
             )
             Services(context)
 
@@ -393,7 +396,7 @@ class TestParseCommonArguments:
             assert args.ssh_username is None
             assert args.ssh_password is None
             assert args.git_username is None
-            assert getattr(args, "git_PAT", None) is None
+            assert getattr(args, "git_password", None) is None
 
     def test_parse_common_arguments_all_optional(self) -> None:
         """Test parsing with all optional arguments."""
@@ -431,7 +434,7 @@ class TestParseCommonArguments:
             assert args.ssh_username == "ssh_user"
             assert args.ssh_password == "ssh_pass"
             assert args.git_username == "git_user"
-            assert getattr(args, "git_PAT", None) == "git_token"
+            assert args.git_PAT == "git_token"
 
     def test_parse_common_arguments_missing_required(self) -> None:
         """Test parsing fails when required arguments are missing."""
@@ -458,9 +461,8 @@ class TestCreateContextFromArgs:
             ssh_username="ssh_user",
             ssh_password="ssh_pass",
             git_username="git_user",
+            git_PAT="git_token",
         )
-        args.git_PAT = "git_token"
-
         # Act
         with patch.multiple(
             "ci_tools.dimrset_delivery.services",
@@ -492,8 +494,8 @@ class TestCreateContextFromArgs:
             ssh_username=None,
             ssh_password=None,
             git_username=None,
+            git_PAT=None,
         )
-        args.git_PAT = None
 
         context = create_context_from_args(
             args,
@@ -511,8 +513,8 @@ class TestCreateContextFromArgs:
         assert services.ssh is None
         assert services.git is None
 
-    def test_create_context_from_args_missing_git_pat_attribute(self) -> None:
-        """Test creating context when git_PAT attribute is missing from args."""
+    def test_create_context_from_args_missing_git_password_attribute(self) -> None:
+        """Test creating context when git_password attribute is missing from args."""
         args = argparse.Namespace(
             build_id="12345",
             dry_run=False,
@@ -524,15 +526,12 @@ class TestCreateContextFromArgs:
             ssh_password=None,
             git_username=None,
         )
-        # Don't set git_PAT attribute
-
-        context = create_context_from_args(
-            args,
-            require_atlassian=False,
-            require_git=False,
-            require_teamcity=False,
-            require_ssh=False,
-        )
-
-        assert context.build_id == "12345"
-        assert context.dry_run is False
+        # Act & Assert
+        with pytest.raises(AttributeError):
+            create_context_from_args(
+                args,
+                require_atlassian=False,
+                require_git=False,
+                require_teamcity=False,
+                require_ssh=False,
+            )

@@ -8,12 +8,9 @@ from typing import List
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
+from ci_tools.dimrset_delivery.arg_parsing import create_context_from_args, parse_common_arguments
 from ci_tools.dimrset_delivery.common_utils import SummaryResults, get_testbank_result_parser
-from ci_tools.dimrset_delivery.dimr_context import (
-    DimrAutomationContext,
-    create_context_from_args,
-    parse_common_arguments,
-)
+from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.ssh_client import Direction
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.step_executer_interface import StepExecutorInterface

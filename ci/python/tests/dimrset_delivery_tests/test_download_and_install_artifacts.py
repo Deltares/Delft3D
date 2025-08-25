@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock, Mock, call, patch
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext, ServiceRequirements
+from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
@@ -38,7 +38,7 @@ class TestDownloadAndInstallArtifacts:
             "file": [{"name": "windows_artifact.zip"}, {"name": "linux_artifact.tar.gz"}]
         }
         mock_services.teamcity.get_build_artifact.return_value = b"fake_content"
-        mock_services.teamcity.get_branch_name_from_context.return_value = "main"
+        mock_services.teamcity.get_branch_name.return_value = "main"
         mock_services.ssh = Mock(spec=SshClient)
 
         installer = ArtifactInstaller(mock_context, mock_services)
@@ -401,14 +401,12 @@ class TestIntegration:
             SshClient=Mock(spec=SshClient),
             GitClient=Mock(spec=GitClient),
         ):
-            requirements = ServiceRequirements(atlassian=False, teamcity=False, ssh=False, git=False)
-
-            context = DimrAutomationContext(build_id="dry-run-build-456", dry_run=True, requirements=requirements)
+            context = DimrAutomationContext(build_id="dry-run-build-456", dry_run=True)
             services = Services(context)
 
         context.branch_name = "dry-run-branch"
         context.dimr_version = "0.0.1"
-        context.log = Mock()
+        context.log = Mock(wraps=context.log)
 
         # Act
         installer = ArtifactInstaller(context, services)

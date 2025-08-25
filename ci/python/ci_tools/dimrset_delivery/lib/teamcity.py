@@ -468,7 +468,7 @@ class TeamCity(ConnectionServiceInterface):
             status_text=status_text,
         )
 
-    def get_kernel_versions_from_context(self) -> Dict[str, str]:
+    def get_kernel_versions(self) -> Dict[str, str]:
         """
         Get kernel versions from context.
 
@@ -497,7 +497,7 @@ class TeamCity(ConnectionServiceInterface):
             kernel_versions = self.__extract_kernel_versions(publish_build_info)
         return kernel_versions
 
-    def get_dimr_version_from_context(self) -> str:
+    def get_dimr_version(self) -> str:
         """
         Get DIMR version from context.
 
@@ -511,7 +511,7 @@ class TeamCity(ConnectionServiceInterface):
         AssertionError
             If kernel versions have not been extracted.
         """
-        kernel_versions = self.get_kernel_versions_from_context()
+        kernel_versions = self.get_kernel_versions()
         if kernel_versions is None:
             raise AssertionError("Could not extract the DIMR version: the kernel versions have not yet been extracted")
         dimr_version = kernel_versions["DIMRset_ver"]
@@ -521,7 +521,7 @@ class TeamCity(ConnectionServiceInterface):
 
         return dimr_version
 
-    def get_branch_name_from_context(self) -> str:
+    def get_branch_name(self) -> str:
         """
         Get branch name from context.
 

@@ -5,11 +5,8 @@ import os
 import sys
 from typing import Optional
 
-from ci_tools.dimrset_delivery.dimr_context import (
-    DimrAutomationContext,
-    create_context_from_args,
-    parse_common_arguments,
-)
+from ci_tools.dimrset_delivery.arg_parsing import create_context_from_args, parse_common_arguments
+from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.step_executer_interface import StepExecutorInterface

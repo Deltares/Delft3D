@@ -325,7 +325,7 @@ class TestGetTagFromBuildInfo:
     def test_no_tags_returns_default(self) -> None:
         """Test that build info without tags returns default tuple."""
         # Arrange
-        build_info = {}
+        build_info: dict = {}
 
         # Act
         result = get_tag_from_build_info(build_info)
@@ -336,7 +336,7 @@ class TestGetTagFromBuildInfo:
     def test_empty_tags_returns_default(self) -> None:
         """Test that empty tags returns default tuple."""
         # Arrange
-        build_info = {"tags": {"tag": []}}
+        build_info: dict = {"tags": {"tag": []}}
 
         # Act
         result = get_tag_from_build_info(build_info)

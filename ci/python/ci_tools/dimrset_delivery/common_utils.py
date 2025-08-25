@@ -13,22 +13,7 @@ from ci_tools.dimrset_delivery.services import Services
 
 
 class SummaryResults(str, Enum):
-    """
-    Enum representing summary result keys for DIMR testbank results.
-
-    Members
-    -------
-    TOTAL_TESTS : str
-        Key for total number of tests.
-    PERCENTAGE : str
-        Key for percentage of passing tests.
-    PASSED : str
-        Key for number of passed tests.
-    NOT_PASSED : str
-        Key for number of not passed tests.
-    EXCEPTION : str
-        Key for number of exceptions.
-    """
+    """Enum representing summary result keys for DIMR testbank results."""
 
     TOTAL_TESTS = "Total tests"
     PASSED = "Passed"
@@ -163,9 +148,10 @@ def get_previous_testbank_result_parser(
     current_tag_name = get_tag_from_build_info(current_build_info)
 
     # Get all builds for the publish build configuration
+    number_of_builds = 50
     latest_builds = services.teamcity.get_builds_for_build_configuration_id(
         build_configuration_id=build_type_id,
-        limit=50,
+        limit=number_of_builds,
         include_failed_builds=False,
     )
 

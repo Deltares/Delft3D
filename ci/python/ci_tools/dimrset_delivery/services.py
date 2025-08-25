@@ -1,6 +1,6 @@
 from typing import Optional
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.dimr_context import CredentialEntry, DimrAutomationContext, ServiceName
 from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
@@ -35,49 +35,42 @@ class Services:
         ValueError
             If required credentials for a service are missing.
         """
-        if context.requirements.atlassian:
-            if not context.credentials.atlassian_username or not context.credentials.atlassian_password:
-                raise ValueError("Atlassian credentials are required but not provided")
+        for iterator in context.credentials:
+            if iterator.required:
+                self.__setup_service(iterator, context)
+
+        if self.teamcity:
+            context.kernel_versions = self.teamcity.get_kernel_versions()
+            context.dimr_version = self.teamcity.get_dimr_version()
+            context.branch_name = self.teamcity.get_branch_name()
+
+    def __setup_service(self, entry: CredentialEntry, context: DimrAutomationContext) -> None:
+        if not entry.required:
+            return
+
+        if entry.name == ServiceName.ATLASSIAN:
             self.atlassian = Atlassian(
-                username=context.credentials.atlassian_username,
-                password=context.credentials.atlassian_password,
+                username=entry.credential.username,
+                password=entry.credential.password,
                 context=context,
             )
-        else:
-            self.atlassian = None
-
-        if context.requirements.teamcity:
-            if not context.credentials.teamcity_username or not context.credentials.teamcity_password:
-                raise ValueError("TeamCity credentials are required but not provided")
+        elif entry.name == ServiceName.TEAMCITY:
             self.teamcity = TeamCity(
-                username=context.credentials.teamcity_username,
-                password=context.credentials.teamcity_password,
+                username=entry.credential.username,
+                password=entry.credential.password,
                 context=context,
             )
-            context.dimr_version = self.teamcity.get_dimr_version_from_context()
-            context.kernel_versions = self.teamcity.get_kernel_versions_from_context()
-            context.branch_name = self.teamcity.get_branch_name_from_context()
-        else:
-            self.teamcity = None
-
-        if context.requirements.ssh:
-            if not context.credentials.ssh_username or not context.credentials.ssh_password:
-                raise ValueError("SSH credentials are required but not provided")
+        elif entry.name == ServiceName.SSH:
             self.ssh = SshClient(
-                username=context.credentials.ssh_username,
-                password=context.credentials.ssh_password,
+                username=entry.credential.username,
+                password=entry.credential.password,
                 context=context,
             )
-        else:
-            self.ssh = None
-
-        if context.requirements.git:
-            if not context.credentials.git_username or not context.credentials.git_pat:
-                raise ValueError("Git credentials are required but not provided")
+        elif entry.name == ServiceName.GIT:
             self.git = GitClient(
-                username=context.credentials.git_username,
-                password=context.credentials.git_pat,
+                username=entry.credential.username,
+                password=entry.credential.password,
                 context=context,
             )
         else:
-            self.git = None
+            raise ValueError(f"Unsupported service type: {entry.name.value}")
