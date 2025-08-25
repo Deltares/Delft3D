@@ -28,25 +28,6 @@ module m_waqpb_export_helper
 
 contains
 
-   !> Show the help message for the waqpb_export tool
-   subroutine show_help()
-      character(len=*), parameter :: param_format = '(A,t25,A,A)'
-      character(2), parameter :: separator = ': '
-
-      write (*, *)
-      write (*, '(A)') repeat("-", 120)
-      write (*, '(A, t120, A)') '|' // "waqpb export tool", '|'
-      write (*, '(A)') repeat("-", 120)
-      write (*, '(A/)') 'Usage: waqpb_export(.exe) <proc_def folder> [optional_args]'
-
-      write (*, param_format) 'proc_def folder', separator, 'Path to the folder containing the process definition files'
-      write (*, param_format) '-h, --help, --usage', separator, 'Print help about waqpb export tool'
-      write (*, param_format) '--version', separator, 'Overrides the default version number of this tool'
-      write (*, param_format) '--serial', separator, 'Overrides the default serial number (generated from date and time) of this tool'
-      write (*, *)
-
-   end subroutine show_help
-
    !> Generate the version number based on the current waq "major.minor" version
    pure function generate_version() result(version)
       use waq_static_version_info, only: major, minor

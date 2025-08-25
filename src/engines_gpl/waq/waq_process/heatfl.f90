@@ -94,7 +94,7 @@ contains
 
         use m_logger_helper, only : stop_with_error, get_log_unit_number
         use m_extract_waq_attribute
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
+        use physicalconsts, only : celsius_to_kelvin
         IMPLICIT NONE
         REAL(kind = real_wp) :: process_space_real  (*), FL  (*)
         INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
@@ -112,7 +112,6 @@ contains
                 HTVap, Fwind, Ql, Beta, Qsg, Qt, Qrb, Tref, &
                 dTemp, cp, DEPTH, RelHum, Psvap, Hm, Ha, Vevap, Fwind2, &
                 VWinda, DeltaT, HtVRef, RhoRef, Rho0, MODTEMP, mindeptht
-        REAL(kind = real_wp), PARAMETER :: sCtoKelvin = real(CtoKelvin)
         INTEGER(kind = int_wp) :: LUNREP
 
         IP1 = IPOINT(1)
@@ -219,7 +218,7 @@ contains
                         Emiss = (0.51 + 0.066 * SQRT(Pvap)) * &
                                 (1.0 + 0.17 * cloud ** 2.0)
                         !
-                        Qa = Emiss * SBC * (TempAt + sCtoKelvin) ** 4.0
+                        Qa = Emiss * SBC * celsius_to_kelvin(TempAt) ** 4.0
                         !
                         !           ----2.  Option 2 = Edinger, 1965 and Koberg, 1962
                         !
@@ -232,7 +231,7 @@ contains
                         !
                         Emiss = 1.1 * C + 0.030 * SQRT(Pvap)
                         !
-                        Qa = Emiss * SBC * (TempAt + sCtoKelvin) ** 4.0
+                        Qa = Emiss * SBC * celsius_to_kelvin(TempAt) ** 4.0
                         !
                         !           ----3.  Option 3 = Edinger, 1965
                         !
@@ -242,7 +241,7 @@ contains
                                 0.0045 * (1 - 0.4 * cloud) * &
                                         Pvap
                         !
-                        Qa = Emiss * SBC * (TempAt + sCtoKelvin) ** 4.0
+                        Qa = Emiss * SBC * celsius_to_kelvin(TempAt) ** 4.0
                         !
                         !           ----4.  Option 4 = Ludikhuize, 1994 as in WAQUA
                         !
@@ -262,7 +261,7 @@ contains
                     !
                     !     ------Long wave back radiation from water------
                     !
-                    Qbr = Ewater * SBC * ((TempWa + DeltaT + sCtoKelvin) ** 4.0)
+                    Qbr = Ewater * SBC * (celsius_to_kelvin(TempWa + DeltaT) ** 4.0)
                     !
                     !     ------Latent heat (evaporation or condensation)-----
                     !

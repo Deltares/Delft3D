@@ -385,7 +385,7 @@ contains
                   "dewpoint_airtemperature_cloudiness", &
                   "dewpoint_airtemperature_cloudiness_solarradiation", &
                   "sea_ice_area_fraction", "sea_ice_thickness", &
-                  "solarradiation", "longwaveradiation", "wavesignificantheight", &
+                  "solarradiation", "netsolarradiation", "longwaveradiation", "wavesignificantheight", &
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
                   "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
@@ -2639,14 +2639,18 @@ contains
          ncstdnames(2) = 'air_temperature'
          ncvarnames(3) = 'tcc' ! cloud cover (fraction)
          ncstdnames(3) = 'cloud_area_fraction'
-         ncvarnames(4) = 'ssr' ! outgoing SW radiation at the top-of-the-atmosphere
-         ncstdnames(4) = 'surface_net_downward_shortwave_flux'
+         ncvarnames(4) = 'ssrd'
+         ncstdnames(4) = 'surface_downwelling_shortwave_flux_in_air'
       case ('solarradiation')
-         ncvarnames(1) = 'ssr' ! outgoing SW radiation at the top-of-the-atmosphere
+         ncvarnames(1) = 'ssrd'
+         ncstdnames(1) = 'surface_downwelling_shortwave_flux_in_air'
+         ncstdnames_fallback(1) = 'solar_irradiance'
+      case ('netsolarradiation')
+         ncvarnames(1) = 'ssr'
          ncstdnames(1) = 'surface_net_downward_shortwave_flux'
          ncstdnames_fallback(1) = 'solar_irradiance'
       case ('longwaveradiation')
-         ncvarnames(1) = 'strd' ! outgoing long wave radiation
+         ncvarnames(1) = 'strd'
          ncstdnames(1) = 'surface_net_downward_longwave_flux'
       case ('nudge_salinity_temperature')
          ncvarnames(1) = 'thetao' ! temperature
@@ -3000,10 +3004,16 @@ contains
                nrow = 1
                nlay = crd_dimlen(1, 3)
             else
+               if (fileReaderPtr%lonx_id < 0) then
+                  fileReaderPtr%lonx_id = dimids(1)
+               end if
                ncol = fileReaderPtr%dim_length(fileReaderPtr%lonx_id)
                nrow = 1
                nlay = 0
                if (size(dimids) >= 2) then
+                  if (fileReaderPtr%laty_id < 0) then
+                     fileReaderPtr%laty_id = dimids(2)
+                  end if
                   nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
                   ! Flag indicating that data is stored (X,Y) instead of (Y,X), used to make sure the values are oriented row,column after reading.
                   fileReaderPtr%is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
@@ -3970,6 +3980,7 @@ contains
          do idim = 1, ndim
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, len=fileReaderPtr%dim_length(idim))
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, name=dim_name)
+            write(*,*) trim(dim_name)
             ! Find dimension matching columns and rows
             select case (trim(dim_name))
             case ('x', 'longitude', 'projected_x', 'xc', 'grid_longitude', 'projection_x_coordinate')

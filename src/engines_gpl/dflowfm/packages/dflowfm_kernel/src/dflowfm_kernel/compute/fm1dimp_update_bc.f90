@@ -42,7 +42,7 @@ contains
       use fm_external_forcings_data, only: zbndz, l1qbnd, kbndu, zbndq
 !pointer
       integer, pointer :: table_length
-      integer, pointer :: maxtab
+      integer, pointer :: number_BC_tables
 
 !input
       real(kind=dp), intent(in) :: time1 !t^{n+1}
@@ -56,7 +56,7 @@ contains
 
 !point
       table_length => f1dimppar%table_length
-      maxtab => f1dimppar%maxtab
+      number_BC_tables => f1dimppar%number_BC_tables
 
 !!
 !! CALC
@@ -71,7 +71,7 @@ contains
          f1dimppar%table(ktab) = time1
          f1dimppar%table(ktab + 1) = time1 + 1d0 !It does not matter, as the query time will be <time1>
          !y (var)
-         ktab = maxtab * table_length + table_number * table_length - 1
+         ktab = number_BC_tables * table_length + table_number * table_length - 1
          f1dimppar%table(ktab) = zbndz(k)
          f1dimppar%table(ktab + 1) = zbndz(k)
       end do
@@ -84,7 +84,7 @@ contains
          f1dimppar%table(ktab) = time1
          f1dimppar%table(ktab + 1) = time1 + 1d0 !It does not matter, as the query time will be <time1>
          !y (var)
-         ktab = maxtab * table_length + table_number * table_length - 1
+         ktab = number_BC_tables * table_length + table_number * table_length - 1
 
          !FM1DIMP2DO: properly understand what happens!
          !In <setau>, the discharge read in BC is converted into a

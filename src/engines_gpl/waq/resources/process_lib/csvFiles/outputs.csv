@@ -66,8 +66,7 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Coverage  ","IBotSeg   ",   7,"x",1
 "Coverage  ","RadSurf   ",   8,"x",1
 "AveRadSurf","SumAveRad ",   1," ",1
-"AveRadSurf","SumAveRadT",   2," ",1
-"AveRadSurf","RadSurfAve",   3,"x",1
+"AveRadSurf","RadSurfAve",   2,"x",1
 "DisRadSurf","RadSurf   ",   1,"x",1
 "DisRadSurf","RadMaxHour",   2,"x",1
 "DisRadSurf","RadMaxDayA",   3,"x",1

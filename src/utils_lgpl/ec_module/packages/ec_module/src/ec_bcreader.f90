@@ -36,7 +36,7 @@ module m_ec_bcreader
   use m_alloc
   use multi_file_io
   use string_module
-  use physicalconsts, only : CtoKelvin
+  use physicalconsts, only : C_TO_KELVIN
   implicit none
 
   private
@@ -383,11 +383,15 @@ contains
        if (allocated(bc%quantity%col2elm)) then
           deallocate(bc%quantity%col2elm)
        endif
+       if (allocated(bc%quantity%column_units)) then
+          deallocate(bc%quantity%column_units)
+       end if
        deallocate(bc%quantity)
     endif
     allocate(bc%quantity)
     allocate(hdrkeys(nfld),hdrvals(nfld))
     allocate(bc%quantity%jacolumn(nq))
+    allocate(bc%quantity%column_units(nq))
     allocate(bc%quantity%col2elm(nq))
     allocate(iv(nq),il(nq))
     iv = -1
@@ -478,6 +482,7 @@ contains
        case ('UNIT')
           if (bc%quantity%jacolumn(iq)) then
              bc%quantity%unit = trim(hdrvals(ifld)%s)
+             bc%quantity%column_units(iq) = trim(hdrvals(ifld)%s)
           endif
           if (iq==bc%timecolumn) then                     ! Is this the unit of time ?
              bc%timeunit = trim(hdrvals(ifld)%s)            ! store timeunit string in this bc instance
@@ -612,7 +617,7 @@ contains
 
     if (bc%quantity%unit == 'K' .or. bc%quantity%unit == 'KELVIN' .or. bc%quantity%unit == 'Kelvin') then
        ! convert Kelvin to degrees Celsius (kernel expects degrees Celsius)
-       bc%quantity%offset = bc%quantity%offset - CtoKelvin
+       bc%quantity%offset = bc%quantity%offset - C_TO_KELVIN
     endif
 
     ! Fill bc%quantity%col2elm(nq) which holds the mapping of columns in the file to vector positions

@@ -36,9 +36,9 @@ class TEAMCITY_IDS(Enum):
     DELFT3D_LINUX_COLLECT_BUILD_TYPE_ID = "Delft3D_LinuxCollect"
     DELFT3D_WINDOWS_COLLECT_BUILD_TYPE_ID = "Delft3D_WindowsCollect"
     DIMR_TO_NGHS_BUILD_TYPE_ID = "DIMR_To_NGHS"
-    DIMR_TESTBENCH_RELEASE_BUILD_TYPE_ID = "Dimr_DimrTestbenchRelease_StatusOfDailyTestbench"
     DIMR_TESTBENCH_RELEASE_TESTS_LINUX = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsLinux"
     DIMR_TESTBENCH_RELEASE_TESTS_WINDOWS = "Dimr_DimrCollectors_DIMRsetAggregatedReleaseResultsWindows"
+    STATUS_OF_DAILY = "Dimr_DimrTestbenchRelease_StatusOfDailyTestbench"
 
 
 # Path to Windows version artifact on TeamCity

@@ -30,7 +30,7 @@
 !> Module for computing spatial and time-varying air density.
 module m_airdensity
    use precision_basics, only: hp
-   use physicalconsts, only: CtoKelvin
+   use physicalconsts, only: celsius_to_kelvin
 
    implicit none
 
@@ -93,8 +93,8 @@ contains
       allocate (Td_kelvin(nelem), stat=ierr)
       call aerr('Td_kelvin ', ierr, nelem)
 
-      T_kelvin(1:nelem) = T(1:nelem) + CtoKelvin
-      Td_kelvin(1:nelem) = T_dewpoint(1:nelem) + CtoKelvin
+      T_kelvin(1:nelem) = celsius_to_kelvin(T(1:nelem))
+      Td_kelvin(1:nelem) = celsius_to_kelvin(T_dewpoint(1:nelem))
 
       call get_saturation_pressure
       call get_specific_humidity

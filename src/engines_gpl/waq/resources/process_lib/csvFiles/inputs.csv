@@ -205,15 +205,12 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Coverage  ","PotEM05   ",  12,"Y","x",1
 "Coverage  ","IBotSeg   ",  13,"N","x",1
 "Coverage  ","RadMacrop ",  14,"N","x",1
-"AveRadSurf","RadSurf   ",   1,"Y","x",1
-"AveRadSurf","AveRadTIni",   2,"Y","x",1
-"AveRadSurf","AveRadPeri",   3,"Y","x",1
-"AveRadSurf","ITIME     ",   4,"N"," ",1
-"AveRadSurf","DELT      ",   5,"N"," ",1
-"AveRadSurf","AuxSys    ",   6,"Y"," ",1
-"AveRadSurf","SumAveRad ",   7,"N"," ",1
-"AveRadSurf","SumAveRadT",   8,"N"," ",1
-"DisRadSurf","RadSurfAve",   1,"Y","x",1
+"AveRadSurf","RadSurf   ",   1,"N","x",1
+"AveRadSurf","AveRadPeri",   2,"Y","x",1
+"AveRadSurf","DELT      ",   3,"N"," ",1
+"AveRadSurf","SumAveRad ",   4,"Y"," ",1
+"AveRadSurf","SumAveRadT",   5,"Y"," ",1
+"DisRadSurf","RadSurfAve",   1,"N","x",1
 "DisRadSurf","ITIME     ",   2,"N"," ",1
 "DisRadSurf","Latitude  ",   3,"Y","x",1
 "DisRadSurf","RefDay    ",   4,"Y","x",1
@@ -236,7 +233,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Temperatur","SwEmersion",  11,"Y","x",1
 "Temperatur","LocSedDept",  12,"Y","x",1
 "Temperatur","ThSedDT   ",  13,"Y","x",1
-"Temperatur","RadSurf   ",  14,"Y","x",1
+"Temperatur","RadSurf   ",  14,"N","x",1
 "Temperatur","RadMax    ",  15,"Y","x",1
 "Temperatur","RTradmax  ",  16,"Y","x",1
 "Temperatur","DelTradmax",  17,"Y","x",1
@@ -588,7 +585,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Extinc_VLG","POC4      ",  35,"Y","x",1
 "CalcRad   ","ExtVl     ",   1,"N","x",1
 "CalcRad   ","Depth     ",   2,"N","x",1
-"CalcRad   ","RadSurf   ",   3,"Y","x",1
+"CalcRad   ","RadSurf   ",   3,"N","x",1
 "CalcRad   ","a_enh     ",   4,"Y","x",1
 "CalcRad   ","Surf      ",   5,"N","x",1
 "CalcRad   ","SwEmersion",   6,"Y","x",1

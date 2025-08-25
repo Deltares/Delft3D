@@ -294,12 +294,15 @@ module unstruc_netcdf
       integer :: id_icepths(MAX_ID_VAR) = -1 !< Variable ID for interception layer waterdepth.
       integer :: id_wind(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_air_pressure(MAX_ID_VAR) = -1 !< Variable ID for
-      integer :: id_ice_af(MAX_ID_VAR) = -1 !< Variable ID for sea_ice_area_fraction
-      integer :: id_ice_h(MAX_ID_VAR) = -1 !< Variable ID for sea_ice_thickness
-      integer :: id_ice_p(MAX_ID_VAR) = -1 !< Variable ID for the pressure exerted by the sea ice cover
-      integer :: id_ice_t(MAX_ID_VAR) = -1 !< Variable ID for temperature of the ice cover
-      integer :: id_snow_h(MAX_ID_VAR) = -1 !< Variable ID for snow_thickness
-      integer :: id_snow_t(MAX_ID_VAR) = -1 !< Variable ID for temperature of the snow cover
+      integer :: id_ice_s1(MAX_ID_VAR) = -1 !< Variable ID for water level of open water (in between ice floes)
+      integer :: id_ice_zmin(MAX_ID_VAR) = -1 !< Variable ID for lower surface of ice
+      integer :: id_ice_zmax(MAX_ID_VAR) = -1 !< Variable ID for surface of ice
+      integer :: id_ice_area_fraction(MAX_ID_VAR) = -1 !< Variable ID for sea_ice_area_fraction
+      integer :: id_ice_thickness(MAX_ID_VAR) = -1 !< Variable ID for sea_ice_thickness
+      integer :: id_ice_pressure(MAX_ID_VAR) = -1 !< Variable ID for the pressure exerted by the sea ice cover
+      integer :: id_ice_temperature(MAX_ID_VAR) = -1 !< Variable ID for temperature of the ice cover
+      integer :: id_snow_thickness(MAX_ID_VAR) = -1 !< Variable ID for snow_thickness
+      integer :: id_snow_temperature(MAX_ID_VAR) = -1 !< Variable ID for temperature of the snow cover
       integer :: id_air_temperature(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_relative_humidity(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_cloudiness(MAX_ID_VAR) = -1 !< Variable ID for
@@ -2946,7 +2949,7 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
-      use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, jatem, nbndtm, jased, nbndsd, numfracs, nbndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, rho, rhowat, thtbnds, thzbnds, kmxd, thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own
+      use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, jatem, nbndtm, jased, nbndsd, numfracs, nbndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only : tudunitstr, refdat, dts
       use m_flowgeom, only : lnx, ndx, ndxi, ndx2d, xz, yz, bl, xu, yu, ln, lnxi
@@ -3029,9 +3032,7 @@ contains
          id_spirint, id_hu, &
          id_ucxq, id_ucyq, &
          id_ucxqbnd, id_ucyqbnd, &
-         id_fvcoro, &
-         id_rho, id_rho_bnd, &
-         id_rhowat, id_rhowat_bnd
+         id_fvcoro
 
       integer, allocatable, save :: id_tr1(:), id_rwqb(:), id_bndtradim(:), id_ttrabnd(:), id_ztrabnd(:)
       integer, allocatable, save :: id_sf1(:), id_bndsedfracdim(:), id_tsedfracbnd(:), id_zsedfracbnd(:)
@@ -3584,31 +3585,6 @@ contains
             ! Fill boundary cells
             if (jarstbnd > 0 .and. ndxbnd > 0) then
                call add_att_sediment(id_sf1_bnd, stmpar%lsedsus, id_laydim, id_bnddim, id_timedim, irstfile, '_bnd', 'FlowElem_xbnd FlowElem_ybnd')
-            end if
-            ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
-            if (stmpar%morpar%densin) then
-               ! rho
-               ierr = nf90_def_var(irstfile, 'rho', nf90_double, id1, id_rho)
-               ierr = nf90_put_att(irstfile, id_rho, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-               ierr = nf90_put_att(irstfile, id_rho, 'long_name', 'Water density')
-               ierr = nf90_put_att(irstfile, id_rho, 'units', 'kg m-3')
-               if (jarstbnd > 0 .and. ndxbnd > 0) then
-                  ierr = nf90_def_var(irstfile, 'rho_bnd', nf90_double, id1_bnd, id_rho_bnd)
-                  ierr = nf90_put_att(irstfile, id_rho_bnd, 'coordinates', 'FlowElem_xbnd FlowElem_ybnd')
-                  ierr = nf90_put_att(irstfile, id_rho_bnd, 'long_name', 'Water density at boundaries')
-                  ierr = nf90_put_att(irstfile, id_rho_bnd, 'units', 'kg m-3')
-               end if !(jarstbnd > 0 .and. ndxbnd > 0) then
-               !rhowat
-               ierr = nf90_def_var(irstfile, 'rhowat', nf90_double, id1, id_rhowat)
-               ierr = nf90_put_att(irstfile, id_rhowat, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-               ierr = nf90_put_att(irstfile, id_rhowat, 'long_name', 'Water density (without sediment)')
-               ierr = nf90_put_att(irstfile, id_rhowat, 'units', 'kg m-3')
-               if (jarstbnd > 0 .and. ndxbnd > 0) then
-                  ierr = nf90_def_var(irstfile, 'rhowat_bnd', nf90_double, id1_bnd, id_rhowat_bnd)
-                  ierr = nf90_put_att(irstfile, id_rhowat_bnd, 'coordinates', 'FlowElem_xbnd FlowElem_ybnd')
-                  ierr = nf90_put_att(irstfile, id_rhowat_bnd, 'long_name', 'Water density (without sediment) at boundaries')
-                  ierr = nf90_put_att(irstfile, id_rhowat_bnd, 'units', 'kg m-3')
-               end if !(jarstbnd > 0 .and. ndxbnd > 0) then
             end if
          end if
          !
@@ -4686,12 +4662,6 @@ contains
                   deallocate (dum)
                end if
             end if !(jarstbnd > 0 .and. ndxbnd > 0)
-            !
-            ! density (only necessary if morphodynamics and fractions in suspension and consider concentrations in density)
-            if (stmpar%morpar%densin) then
-               ierr = unc_put_var_rst(irstfile, id_rho, id_rho_bnd, rho, itim)
-               ierr = unc_put_var_rst(irstfile, id_rhowat, id_rhowat_bnd, rhowat, itim)
-            end if !(stmpar%morpar%densin)
          end if !(stmpar%lsedsus .gt. 0)
          ! morbl
          ierr = nf90_put_var(irstfile, id_morbl, bl, [1, itim], [ndxi, 1])
@@ -5294,7 +5264,7 @@ contains
       use Timers
       use fm_location_types
       use m_map_his_precision
-      use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -5798,16 +5768,33 @@ contains
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_pressure, nc_precision, UNC_LOC_S, 'Patm', 'surface_air_pressure', 'Atmospheric pressure near surface', 'N m-2', jabndnd=jabndnd_)
          end if
 
-         if (ice_mapout) then
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_af, nf90_double, UNC_LOC_S, 'ice_af', 'sea_ice_area_fraction', 'Fraction of surface area covered by floating ice', '1', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_h, nf90_double, UNC_LOC_S, 'ice_h', 'sea_ice_area_fraction', 'Thickness of the floating ice cover', 'm', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_p, nf90_double, UNC_LOC_S, 'ice_p', '', 'Pressure exerted by the floating ice cover', 'N m-2', jabndnd=jabndnd_)
-            if (ja_icecover == ICECOVER_SEMTNER) then
-               ! need to convert this to K if we want to comply with the CF standard name "sea_ice_temperature"
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_t, nf90_double, UNC_LOC_S, 'ice_t', '', 'Temperature of the floating ice cover', 'degC', jabndnd=jabndnd_)
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_h, nf90_double, UNC_LOC_S, 'snow_h', '', 'Thickness of the snow layer', 'm', jabndnd=jabndnd_)
-               ! need to convert this to K if we want to comply with the CF standard name "temperature_in_surface_snow"
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_t, nf90_double, UNC_LOC_S, 'snow_t', '', 'Temperature of the snow layer', 'degC', jabndnd=jabndnd_)
+         if (ja_icecover /= ICECOVER_NONE) then
+            if (ice_mapout%ice_s1) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_s1, nf90_double, UNC_LOC_S, 'ice_open_water_level', '', 'Sea surface height of open water', 'm', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%ice_zmin) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmin, nf90_double, UNC_LOC_S, 'ice_lower_surface_height', '', 'Lower surface height of ice cover', 'm', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%ice_zmax) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmax, nf90_double, UNC_LOC_S, 'ice_surface_height', '', 'Upper surface height of ice cover', 'm', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%ice_area_fraction) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_area_fraction, nf90_double, UNC_LOC_S, 'ice_area_fraction', 'sea_ice_area_fraction', 'Fraction of surface area covered by floating ice', '1', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%ice_thickness) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_thickness, nf90_double, UNC_LOC_S, 'ice_thickness', 'sea_ice_area_fraction', 'Thickness of the floating ice cover', 'm', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%ice_pressure) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_pressure, nf90_double, UNC_LOC_S, 'ice_pressure', '', 'Pressure exerted by the floating ice cover', 'N m-2', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%ice_temperature) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_temperature, nf90_double, UNC_LOC_S, 'ice_temperature', 'sea_ice_temperature', 'Temperature of the floating ice cover', 'K', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%snow_thickness) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_thickness, nf90_double, UNC_LOC_S, 'snow_thickness', '', 'Thickness of the snow layer', 'm', jabndnd=jabndnd_)
+            end if
+            if (ice_mapout%snow_temperature) then
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_temperature, nf90_double, UNC_LOC_S, 'snow_temperature', 'temperature_in_surface_snow', 'Temperature of the snow layer', 'K', jabndnd=jabndnd_)
             end if
          end if
 
@@ -7639,14 +7626,33 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_pressure, UNC_LOC_S, air_pressure, jabndnd=jabndnd_)
       end if
 
-      if (ice_mapout) then
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_af, UNC_LOC_S, ice_af, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_h, UNC_LOC_S, ice_h, jabndnd=jabndnd_)
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_p, UNC_LOC_S, ice_p, jabndnd=jabndnd_)
-         if (ja_icecover == ICECOVER_SEMTNER) then
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_t, UNC_LOC_S, ice_t, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_h, UNC_LOC_S, snow_h, jabndnd=jabndnd_)
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_t, UNC_LOC_S, snow_t, jabndnd=jabndnd_)
+      if (ja_icecover /= ICECOVER_NONE) then
+         if (ice_mapout%ice_s1) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_s1, UNC_LOC_S, ice_s1, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%ice_zmin) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmin, UNC_LOC_S, ice_zmin, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%ice_zmax) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_zmax, UNC_LOC_S, ice_zmax, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%ice_area_fraction) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_area_fraction, UNC_LOC_S, ice_area_fraction, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%ice_thickness) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_thickness, UNC_LOC_S, ice_thickness, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%ice_pressure) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_pressure, UNC_LOC_S, ice_pressure, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%ice_temperature) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ice_temperature, UNC_LOC_S, ice_temperature, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%snow_thickness) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_thickness, UNC_LOC_S, snow_thickness, jabndnd=jabndnd_)
+         end if
+         if (ice_mapout%snow_temperature) then
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_snow_temperature, UNC_LOC_S, snow_temperature, jabndnd=jabndnd_)
          end if
       end if
 
@@ -8175,7 +8181,7 @@ contains
       use m_missing
       use string_module, only: replace_multiple_spaces_by_single_spaces
       use netcdf_utils, only: ncu_append_atts
-      use m_fm_icecover, only: ice_mapout, ice_af, ice_h, ice_p, ice_t, snow_h, snow_t, ja_icecover, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_mapout, ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_SEMTNER
       use m_gettaus
       use m_gettauswave
       use m_get_kbot_ktop
@@ -8221,7 +8227,8 @@ contains
          id_q1main, &
          id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_ucxa, id_ucya, id_unorm, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, id_cfcl, id_cftrt, id_czs, id_czu, &
          id_qsun, id_qeva, id_qcon, id_qlong, id_qfreva, id_qfrcon, id_qtot, &
-         id_air_pressure, id_ice_af, id_ice_h, id_ice_p, id_ice_t, id_snow_h, id_snow_t, id_air_temperature, id_relative_humidity, id_cloudiness, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
+         id_air_pressure, id_air_temperature, id_relative_humidity, id_cloudiness, id_E, id_R, id_H, id_D, id_DR, id_urms, id_thetamean, &
+         id_ice_s1, id_ice_zmax, id_ice_zmin, id_ice_area_fraction, id_ice_thickness, id_ice_pressure, id_ice_temperature, id_snow_thickness, id_snow_temperature, &
          id_cwav, id_cgwav, id_sigmwav, &
          id_ust, id_vst, id_windx, id_windy, id_windxu, id_windyu, id_numlimdt, id_hs, id_bl, id_zk, &
          id_1d2d_edges, id_1d2d_zeta1d, id_1d2d_crest_level, id_1d2d_b_2di, id_1d2d_b_2dv, id_1d2d_d_2dv, id_1d2d_q_zeta, id_1d2d_q_lat, &
@@ -9452,14 +9459,33 @@ contains
             call definencvar(imapfile, id_air_pressure(iid), nf90_double, idims, 'Patm', 'Atmospheric Pressure', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
          end if
 
-         if (ice_mapout) then
-            call definencvar(imapfile, id_ice_af(iid), nf90_double, idims, 'ice_af', 'Fraction of the surface area covered by floating ice', '1', 'FlowElem_xcc FlowElem_ycc')
-            call definencvar(imapfile, id_ice_h(iid), nf90_double, idims, 'ice_h', 'Thickness of floating ice cover', 'm', 'FlowElem_xcc FlowElem_ycc')
-            call definencvar(imapfile, id_ice_p(iid), nf90_double, idims, 'ice_p', 'Pressure exerted by the floating ice cover', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
-            if (ja_icecover == ICECOVER_SEMTNER) then
-               call definencvar(imapfile, id_ice_t(iid), nf90_double, idims, 'ice_t', 'Temperature of the floating ice cover', 'degC', 'FlowElem_xcc FlowElem_ycc')
-               call definencvar(imapfile, id_snow_h(iid), nf90_double, idims, 'snow_h', 'Thickness of the snow layer', 'm', 'FlowElem_xcc FlowElem_ycc')
-               call definencvar(imapfile, id_snow_t(iid), nf90_double, idims, 'snow_t', 'Temperature of the snow layer', 'degC', 'FlowElem_xcc FlowElem_ycc')
+         if (ja_icecover) then
+            if (ice_mapout%ice_s1) then
+               call definencvar(imapfile, id_ice_s1(iid), nf90_double, idims, 'ice_s1', 'Sea surface height of open water', 'm', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%ice_zmin) then
+               call definencvar(imapfile, id_ice_zmin(iid), nf90_double, idims, 'ice_zmin', 'Lower surface height of ice cover', 'm', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%ice_zmax) then
+               call definencvar(imapfile, id_ice_zmax(iid), nf90_double, idims, 'ice_zmax', 'Upper surface height of ice cover', 'm', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%ice_area_fraction) then
+               call definencvar(imapfile, id_ice_area_fraction(iid), nf90_double, idims, 'ice_area_fraction', 'Fraction of the surface area covered by floating ice', '1', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%ice_thickness) then
+               call definencvar(imapfile, id_ice_thickness(iid), nf90_double, idims, 'ice_thickness', 'Thickness of floating ice cover', 'm', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%ice_pressure) then
+               call definencvar(imapfile, id_ice_pressure(iid), nf90_double, idims, 'ice_pressure', 'Pressure exerted by the floating ice cover', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%ice_temperature) then
+                  call definencvar(imapfile, id_ice_temperature(iid), nf90_double, idims, 'ice_temperature', 'Temperature of the floating ice cover', 'K', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%snow_thickness) then
+                  call definencvar(imapfile, id_snow_thickness(iid), nf90_double, idims, 'snow_thickness', 'Thickness of the snow layer', 'm', 'FlowElem_xcc FlowElem_ycc')
+            end if
+            if (ice_mapout%snow_temperature) then
+                call definencvar(imapfile, id_snow_temperature(iid), nf90_double, idims, 'snow_temperature', 'Temperature of the snow layer', 'K', 'FlowElem_xcc FlowElem_ycc')
             end if
          end if
 
@@ -10936,17 +10962,36 @@ contains
          ierr = nf90_put_var(imapfile, id_air_pressure(iid), air_pressure, [1, itim], [ndxndxi, 1])
       end if
 
-      if (ice_mapout) then
-         ierr = nf90_put_var(imapfile, id_ice_af(iid), ice_af, [1, itim], [ndxndxi, 1])
-         ierr = nf90_put_var(imapfile, id_ice_h(iid), ice_h, [1, itim], [ndxndxi, 1])
-         ierr = nf90_put_var(imapfile, id_ice_p(iid), ice_p, [1, itim], [ndxndxi, 1])
-         if (ja_icecover == ICECOVER_SEMTNER) then
-            ierr = nf90_put_var(imapfile, id_ice_t(iid), ice_t, [1, itim], [ndxndxi, 1])
-            ierr = nf90_put_var(imapfile, id_snow_h(iid), snow_h, [1, itim], [ndxndxi, 1])
-            ierr = nf90_put_var(imapfile, id_snow_t(iid), snow_t, [1, itim], [ndxndxi, 1])
+      if (ja_icecover) then
+         if (ice_mapout%ice_s1) then
+            ierr = nf90_put_var(imapfile, id_ice_s1(iid), ice_s1, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%ice_zmin) then
+            ierr = nf90_put_var(imapfile, id_ice_zmin(iid), ice_zmin, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%ice_zmax) then
+            ierr = nf90_put_var(imapfile, id_ice_zmax(iid), ice_zmax, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%ice_area_fraction) then
+            ierr = nf90_put_var(imapfile, id_ice_area_fraction(iid), ice_area_fraction, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%ice_thickness) then
+            ierr = nf90_put_var(imapfile, id_ice_thickness(iid), ice_thickness, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%ice_pressure) then
+            ierr = nf90_put_var(imapfile, id_ice_pressure(iid), ice_pressure, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%ice_temperature) then
+            ierr = nf90_put_var(imapfile, id_ice_temperature(iid), ice_temperature, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%snow_thickness) then
+            ierr = nf90_put_var(imapfile, id_snow_thickness(iid), snow_thickness, [1, itim], [ndxndxi, 1])
+         end if
+         if (ice_mapout%snow_temperature) then
+            ierr = nf90_put_var(imapfile, id_snow_temperature(iid), snow_temperature, [1, itim], [ndxndxi, 1])
          end if
       end if
-
+      
       if (jamapheatflux > 0 .and. jatem > 1) then ! Heat modelling only
          ierr = nf90_put_var(imapfile, id_air_temperature(iid), air_temperature, [1, itim], [ndxndxi, 1])
          ierr = nf90_put_var(imapfile, id_relative_humidity(iid), relative_humidity, [1, itim], [ndxndxi, 1])
@@ -13551,22 +13596,6 @@ contains
       ierr = get_var_and_shift(imapfile, 'ucy', ucy, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
                                um%inode_own, um%inode_merge)
 
-      ! Read rho (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-      rho_read_rst = .true.
-
-      ierr = get_var_and_shift(imapfile, 'rho', rho, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
-                               um%inode_own, um%inode_merge)
-
-      if (ierr /= nf90_noerr) then
-         rho_read_rst = .false.
-      end if
-
-      ! Read rhowat (flow elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-      if (stm_included) then
-         ierr = get_var_and_shift(imapfile, 'rhowat', rhowat, tmpvar1, tmp_loc, kmx, kstart, um%ndxi_own, 1, um%jamergedmap, &
-                                  um%inode_own, um%inode_merge)
-      end if
-
       !Read Coriolis Adams-Bashford (flow link)
       if (Corioadamsbashfordfac > 0d0) then
          !We check on it because if the factor is 0, `fvcoro` is not allocated.
@@ -13628,20 +13657,6 @@ contains
                ierr = nf90_get_var(imapfile, id_ucyqbnd, tmp_ucyq, start=[kstart_bnd, it_read], count=[um%nbnd_read, 1])
                call check_error(ierr, 'ucyq_bnd')
             end if
-
-            if (ierr == 0) then
-               ! Read rho_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-               ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
-                                        um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
-
-               if (stm_included) then
-                  ! Read rhowat_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-                  ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart_bnd, um%nbnd_read, it_read, &
-                                           um%jamergedmap, ibnd_own, um%ibnd_merge, ndxi)
-               end if
-            end if
-
-            if (nerr_ /= 0) goto 999
 
             if (jampi == 0) then
                do i = 1, um%nbnd_read
@@ -13710,14 +13725,6 @@ contains
             ierr = get_var_and_shift(imapfile, 'ucyq_bnd', tmp_ucyq, tmpvar1, UNC_LOC_S, kmx, kstart, ndxbnd_own, it_read, &
                                      um%jamergedmap, ibnd_own, um%ibnd_merge)
             call check_error(ierr, 'ucyq_bnd')
-            ! Read rho_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-            ierr = get_var_and_shift(imapfile, 'rho_bnd', rho, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
-                                     um%jamergedmap, ibnd_own, um%ibnd_merge)
-            if (stm_included) then
-               ! Read rhowat_bnd (bnd elem), optional: only from rst file and when sediment and `idens` is true, so no error check
-               ierr = get_var_and_shift(imapfile, 'rhowat_bnd', rhowat, tmpvar1, tmp_loc, kmx, kstart, ndxbnd_own, it_read, &
-                                        um%jamergedmap, ibnd_own, um%ibnd_merge)
-            end if
             do i = 1, ndxbnd_own
                j = ibnd_own(i)
                Lf = lnxi + j

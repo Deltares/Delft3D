@@ -6303,7 +6303,7 @@ module m_meteo
    use string_module
    use m_sediment, only: stm_included, stmpar
    use m_subsidence
-   use m_fm_icecover, only: ice_af, ice_h
+   use m_fm_icecover, only: ice_area_fraction, ice_thickness
 
    implicit none
 
@@ -6766,6 +6766,7 @@ contains
                                          itemPtr1, itemPtr2, itemPtr3, itemPtr4, &
                                          dataPtr1, dataPtr2, dataPtr3, dataPtr4) result(success)
       use m_find_name, only: find_name
+      use string_module, only: str_tolower
 
       logical :: success
       character(len=*), intent(in) :: trname !< Tracer name (if applicatable)
@@ -6791,7 +6792,7 @@ contains
       dataPtr2 => null()
       dataPtr3 => null()
       dataPtr4 => null()
-      select case (trim(qidname))
+      select case (str_tolower(trim(qidname)))
       case ('windx')
          itemPtr1 => item_windx
          dataPtr1 => wx
@@ -6805,10 +6806,10 @@ contains
          dataPtr2 => wy
       case ('sea_ice_area_fraction')
          itemPtr1 => item_sea_ice_area_fraction
-         dataPtr1 => ice_af
+         dataPtr1 => ice_area_fraction ! here we require fp == dp
       case ('sea_ice_thickness')
          itemPtr1 => item_sea_ice_thickness
-         dataPtr1 => ice_h
+         dataPtr1 => ice_thickness ! here we require fp == dp
       case ('stressx')
          itemPtr1 => item_stressx
          dataPtr1 => wdsu_x
@@ -6872,10 +6873,10 @@ contains
       case ('airpressure', 'atmosphericpressure')
          itemPtr1 => item_atmosphericpressure
          dataPtr1 => air_pressure
-      case ('pseudoAirPressure')
+      case ('pseudoairpressure')
          itemPtr1 => item_pseudo_air_pressure
          dataPtr1 => pseudo_air_pressure
-      case ('waterLevelCorrection')
+      case ('waterlevelcorrection')
          itemPtr1 => item_water_level_correction
          dataPtr1 => water_level_correction
       case ('rainfall')
@@ -6904,46 +6905,46 @@ contains
       case ('pump_capacity') ! flow1d pump
          itemPtr1 => item_pump_capacity
          dataPtr1 => qpump ! TODO: UNST-2724: needs more thinking, see issue comments.
-      case ('culvert_valveOpeningHeight') ! flow1d culvert
+      case ('culvert_valveopeningheight') ! flow1d culvert
          itemPtr1 => item_culvert_valveOpeningHeight
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('weir_crestLevel') ! flow1d weir
+      case ('weir_crestlevel') ! flow1d weir
          itemPtr1 => item_weir_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('orifice_crestLevel') ! flow1d orifice
+      case ('orifice_crestlevel') ! flow1d orifice
          itemPtr1 => item_orifice_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('orifice_gateLowerEdgeLevel') ! flow1d orifice
+      case ('orifice_gateloweredgelevel') ! flow1d orifice
          itemPtr1 => item_orifice_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('gate_crestLevel') ! flow1d gate
+      case ('gate_crestlevel') ! flow1d gate
          itemPtr1 => item_gate_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('gate_gateLowerEdgeLevel') ! flow1d gate
+      case ('gate_gateloweredgelevel') ! flow1d gate
          itemPtr1 => item_gate_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('gate_gateOpeningWidth') ! flow1d gate
+      case ('gate_gateopeningwidth') ! flow1d gate
          itemPtr1 => item_gate_gateOpeningWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_crestLevel') ! flow1d general structure
+      case ('general_structure_crestlevel') ! flow1d general structure
          itemPtr1 => item_general_structure_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_gateLowerEdgeLevel') ! flow1d general structure
+      case ('general_structure_gateloweredgelevel') ! flow1d general structure
          itemPtr1 => item_general_structure_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_crestWidth') ! flow1d general structure
+      case ('general_structure_crestwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_crestWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_gateOpeningWidth') ! flow1d general structure
+      case ('general_structure_gateopeningwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_gateOpeningWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('longCulvert_valveRelativeOpening')
+      case ('longculvert_valverelativeopening')
          itemPtr1 => item_longculvert_valve_relative_opening
-      case ('valve1D')
+      case ('valve1d')
          itemPtr1 => item_valve1D
       case ('damlevel')
          itemPtr1 => item_damlevel
-      case ('dambreakLevelsAndWidths')
+      case ('dambreaklevelsandwidths')
           ! itemPtr1 and dataPtr1 are provided at a dambreak call
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
@@ -6998,7 +6999,7 @@ contains
       case ('cloudiness')
          itemPtr1 => item_cloudiness
          dataPtr1 => cloudiness
-      case ('solarradiation')
+      case ('solarradiation', 'netsolarradiation')
          itemPtr1 => item_solar_radiation
          dataPtr1 => solar_radiation
       case ('longwaveradiation')
@@ -7021,7 +7022,7 @@ contains
          ! qstss might be reallocated after initialization (when coupled to Cosumo)
          ! and must be an argument when calling ec_gettimespacevalue.
          nullify (dataPtr1)
-      case ('sourcesink_constituentDelta')
+      case ('sourcesink_constituentdelta')
          if (strcmpi(constituent_name, 'salinity')) then
             iconst = ISALT
          else
@@ -7099,11 +7100,11 @@ contains
          dataPtr1 => sfuninp(isfun, :)
       case ('initialtracer')
          continue
-      case ('friction_coefficient_Chezy', 'friction_coefficient_Manning', 'friction_coefficient_WalLlawNikuradse', &
-            'friction_coefficient_WhiteColebrook', 'friction_coefficient_StricklerNikuradse', &
-            'friction_coefficient_Strickler', 'friction_coefficient_deBosBijkerk')
+      case ('friction_coefficient_chezy', 'friction_coefficient_manning', 'friction_coefficient_walllawnikuradse', &
+            'friction_coefficient_whitecolebrook', 'friction_coefficient_stricklernikuradse', &
+            'friction_coefficient_strickler', 'friction_coefficient_debosbijkerk')
          itemPtr1 => item_frcutim ! the same for all types (type is stored elsewhere)
-      case ('bedrock_surface_elevation')
+      case ('bedrocksurfaceelevation', 'bedrock_surface_elevation')
          itemPtr1 => item_subsiduplift
          dataPtr1 => subsupl
       case default
@@ -7348,19 +7349,22 @@ contains
       success = .true.
    end function ec_gettimespacevalue_by_name
 
-   !> Computes relative humidity (%) from dew point and air temperature (Kelvin)
+   !> Computes relative humidity (%) from dew point and air temperature (degC)
    pure elemental function calculate_relative_humidity(td, tm) result(rh)
-      use physicalconsts, only: CtoKelvin
-
-      real(kind=dp), intent(in) :: td !< dew point temperature temperature (K)
-      real(kind=dp), intent(in) :: tm !< air temperature (K)
+      real(kind=dp), intent(in) :: td !< dew point temperature temperature (degC)
+      real(kind=dp), intent(in) :: tm !< air temperature (degC)
       real(kind=dp) :: rh !< relative humidity (%)
 
       real(kind=dp), parameter :: B = 17.502_dp
-      real(kind=dp), parameter :: C = -32.19_dp
+      real(kind=dp), parameter :: C = 240.96_dp
 
-      ! Convert to Celsius for the Magnus formula
-      rh = exp(B * td / (C + td + CtoKelvin) - B * tm / (C + tm + CtoKelvin)) * 100.0_dp
+      ! Computation based on Tetens / Magnus formula for water vapour saturation pressure
+      ! expressed using temperatures in Celsius scale.
+      ! C equals 240.97 in Eq (8) of Buck (1981)
+      ! Eq (7.5) of ECMWF (2023) uses temperatures in Kelvin scale:
+      ! with a1 * (td - t0) / (td - a4) where a1 = 17.502, t0 = 273.16, a4 = 32.19 (= 273.15 - 240.96)
+      
+      rh = exp(B * td / (C + td) - B * tm / (C + tm)) * 100.0_dp
    end function calculate_relative_humidity
 
 end module m_meteo

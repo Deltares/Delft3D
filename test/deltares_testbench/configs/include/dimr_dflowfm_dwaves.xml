@@ -54,6 +54,18 @@
         </checks>
     </testCase>
     <!-- ======================================================================== -->
+    <testCase name="e100_f00_c03" ref="dimr_trunk">
+        <path version="2025-07-25T14:59:00">e100_dflowfm-dwaves/f00_general/c03_append_com</path>
+        <maxRunTime>300.0</maxRunTime> <!-- seconds -->
+        <checks>
+            <file name="fm/DFM_OUTPUT_straight_coast/straight_coast_map.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="mesh2d_hwav" toleranceAbsolute="0.01" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <!-- ======================================================================== -->
     <testCase name="e100_f02_c00" ref="dimr_trunk">
         <path version="2025-06-05T11:46:21.912000">e100_dflowfm-dwaves/f02_delft3d_cases/c00-test0_smallclosedbasin/dfm</path>
         <maxRunTime>40.0</maxRunTime> <!-- seconds -->
@@ -118,7 +130,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c03" ref="dimr_trunk">
-        <path version="2025-06-05T15:17:05.780000">e100_dflowfm-dwaves/f02_delft3d_cases/c03-FriesianInlet_realistic/dfm</path>
+        <path version="2025-07-31T16:06:20.320000">e100_dflowfm-dwaves/f02_delft3d_cases/c03-FriesianInlet_realistic/dfm</path>
         <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/dflowfmoutput/r17_map.nc" type="NETCDF">

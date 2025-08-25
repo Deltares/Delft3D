@@ -111,7 +111,7 @@ contains
       use timers, only: timstrt, timstop
       use m_sethu
       use fm_external_forcings
-      use m_fm_icecover, only: ice_apply_pressure, ice_p, fm_ice_update_press
+      use m_fm_icecover, only: ice_apply_pressure, ice_pressure, fm_ice_update_press
       use fm_manhole_losses, only: init_manhole_losses
       use unstruc_channel_flow, only: network
       use m_fixedweirs, only: weirdte, nfxw
@@ -278,7 +278,7 @@ contains
       if (len_trim(md_restartfile) == 0) then
          if (ice_apply_pressure) then
             call fm_ice_update_press(ag)
-            s1 = s1 - ice_p / (ag * rhomean)
+            s1 = s1 - ice_pressure / (ag * rhomean)
             s0 = s1
             hs = s0 - bl
          end if
@@ -1626,7 +1626,7 @@ contains
 
 !> initialise_density_at_cell_centres
    subroutine initialise_density_at_cell_centres()
-      use m_flow, only: kmxn, rho_read_rst
+      use m_flow, only: kmxn
       use m_cell_geometry, only: ndx
       use m_sediment, only: stm_included
       use m_turbulence, only: rhowat, potential_density, in_situ_density
@@ -1642,11 +1642,9 @@ contains
       integer :: cell3D
 
       do cell = 1, ndx
-         if (.not. rho_read_rst) then
-            call set_potential_density(potential_density, cell)
-            if (apply_thermobaricity) then
-               call set_pressure_dependent_density(in_situ_density, cell)
-            end if
+         call set_potential_density(potential_density, cell)
+         if (apply_thermobaricity) then
+            call set_pressure_dependent_density(in_situ_density, cell)
          end if
          if (stm_included) then
             call getkbotktop(cell, bottom_cell, top_cell)

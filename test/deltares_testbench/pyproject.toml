@@ -32,6 +32,7 @@ dependencies = [
     "numpy ~= 1.24",
     "minio ~= 7.2",
     "s3-path-wrangler ~= 0.5",
+    "pyreadline3 ~= 3.5.4 ; platform_system == 'Windows'"
 ]
 
 [project.optional-dependencies]

@@ -40,7 +40,6 @@ module unstruc_model
    use m_globalparameters, only: t_filenames
    use time_module, only: ymd2modified_jul, datetimestring_to_seconds
    use dflowfm_version_module, only: getbranch_dflowfm
-   use m_fm_icecover, only: ice_mapout
    use netcdf, only: nf90_double
    use m_start_parameters, only: md_jaautostart, MD_NOAUTOSTART
    use properties, only: prop_get, prop_file, tree_create, tree_destroy
@@ -1394,6 +1393,7 @@ contains
       call prop_get(md_ptr, 'physics', 'Salimax', salinity_max)
       call prop_get(md_ptr, 'physics', 'Salimin', salinity_min)
       call prop_get(md_ptr, 'physics', 'Surftempsmofac', Surftempsmofac)
+      call prop_get(md_ptr, 'physics', 'Albedo', albedo)
       call prop_get(md_ptr, 'physics', 'Heat_eachstep', jaheat_eachstep)
       call prop_get(md_ptr, 'physics', 'Soiltempthick', Soiltempthick)
       if (soiltempthick > 0.0_dp) then
@@ -1418,7 +1418,6 @@ contains
       call set_dambreak_widening_method(md_dambreak_widening_method)
 
       ierror = DFM_NOERR
-      call fm_ice_read(md_ptr, ierror)
 
       call prop_get(md_ptr, 'veg', 'Vegetationmodelnr', javeg) ! Vegetation model nr, (0=no, 1=Baptist DFM)
       if (japillar == 2) then
@@ -2117,7 +2116,6 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_Qin', jamapqin, success)
       call prop_get(md_ptr, 'output', 'Wrimap_every_dt', jaeverydt, success)
       call prop_get(md_ptr, 'output', 'Wrimap_NearField', jamapNearField, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_ice', jamapice, success)
       call prop_get(md_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, success)
       if (kmx == 0 .and. jamapwqbot3d == 1) then
          jamapwqbot3d = 0
@@ -2146,9 +2144,6 @@ contains
       if (jasal < 1) then ! If no salinity is involved, then do not write salinity to output map/his files.
          jamapsal = 0
          jahissal = 0
-      end if
-      if (jamapice > 0) then
-         ice_mapout = .true.
       end if
 
       call read_output_parameter_toggle(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success)
@@ -2395,6 +2390,13 @@ contains
          end if
       end if
 
+      ierror = DFM_NOERR
+      call fm_ice_read(md_ptr, ierror)
+      if (ierror /= DFM_NOERR) then
+         call mess(LEVEL_ERROR, 'Error reading ice properties from the MDU file. Error code: ', ierror)
+         return
+      end if
+          
 !  processes (WAQ)
       call prop_get(md_ptr, 'processes', 'SubstanceFile', md_subfile, success)
       call prop_get(md_ptr, 'processes', 'AdditionalHistoryOutputFile', md_ehofile, success)
@@ -2624,7 +2626,7 @@ contains
       use m_datum
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
-      use m_add_baroclinic_pressure, only: DENSITY_TO_INTERFACES, rhointerfaces
+      use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -3176,8 +3178,8 @@ contains
       if (writeall .or. max_iterations_pressure_density /= 1) then
          call prop_set(prop_ptr, 'numerics', 'maxitpresdens', max_iterations_pressure_density, 'Max nr of iterations in pressure-density coupling, only used if thermobaricity is true.')
       end if
-      if (writeall .or. rhointerfaces /= DENSITY_TO_INTERFACES) then
-         call prop_set(prop_ptr, 'numerics', 'Rhointerfaces', rhointerfaces, 'Baroclinic pressure gradient method: -1 = original method. Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
+      if (writeall .or. rhointerfaces /= BAROC_ORIGINAL) then
+         call prop_set(prop_ptr, 'numerics', 'rhoInterfaces', rhointerfaces, 'Estimate rho at 3D layer interfaces for baroclinic pressure gradient method; -1 = original linear interpolation, 0 = improved linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density.')
       end if
 
       if (icgsolver == 8) then ! for parms solver
@@ -3387,6 +3389,7 @@ contains
 
          call prop_set(prop_ptr, 'physics', 'Stanton', Stanton, 'Coefficient for convective heat flux, if negative, Ccon = abs(Stanton)*Cdwind')
          call prop_set(prop_ptr, 'physics', 'Dalton', Dalton, 'Coefficient for evaporative heat flux, if negative, Ceva = abs(Dalton)*Cdwind')
+         call prop_set(prop_ptr, 'physics', 'Albedo', albedo, 'Albedo coefficient [-]. Fraction of solar radiation reflected by the water surface.')
 
          if (writeall .or. (temperature_max /= dmiss .or. temperature_min /= dmiss)) then
             call prop_set(prop_ptr, 'physics', 'Tempmax', temperature_max, 'Upper temperature limit')
@@ -3534,9 +3537,9 @@ contains
       end if
       if (writeall .or. rho_water_in_wind_stress /= RHO_MEAN) then
          call prop_set(prop_ptr, 'Wind', 'rhoWaterInWindStress', rho_water_in_wind_stress, &
-             'Water density used in computation of wind stress (0: Rhomean, 1: local (surface) density of model)')
+                       'Water density used in computation of wind stress (0: Rhomean, 1: local (surface) density of model)')
       end if
-         
+
       if (writeall .or. jagrw > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT) then
          call prop_set(prop_ptr, 'grw', 'groundwater', jagrw, '0=No (horizontal) groundwater flow, 1=With groundwater flow')
          write (tmpstr, '(a,5(i0,": ",a),a)') 'Infiltration method (', DFM_HYD_NOINFILT, 'No infiltration', 1, 'Interception layer', &
@@ -3868,9 +3871,6 @@ contains
       end if
       if (jaeverydt > 0 .or. writeall) then
          call prop_set(prop_ptr, 'output', 'Wrimap_every_dt', jaeverydt, 'Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes')
-      end if
-      if (jamapice > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'Wrimap_ice', jamapice, 'Write output to map file for ice cover, 0=no (default), 1=yes')
       end if
       if (jamapwqbot3d > 0 .or. writeall) then
          call prop_set(prop_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')

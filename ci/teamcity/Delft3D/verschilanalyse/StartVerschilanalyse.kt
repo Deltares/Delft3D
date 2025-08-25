@@ -20,6 +20,7 @@ object StartVerschilanalyse : BuildType({
 
     params {
         param("harbor_webhook.image.tag", "latest")
+        param("va_harbor_protocol", "docker")
         param(
             "harbor_webhook.image.url", 
             sequenceOf(
@@ -119,7 +120,7 @@ object StartVerschilanalyse : BuildType({
 
                 pushd bundle
                 ./start_verschilanalyse.sh \
-                    --apptainer='oras://%harbor_webhook.image.url%' \
+                    --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
                     --model-filter='%model_filter%'
