@@ -111,7 +111,7 @@ object ReportVerschilanalyse: BuildType({
         }
         dockerRegistryConnections {
             loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_133" // Reference to DockerHub Registry in Root project.
+                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D"
             }
         }
         xmlReport {
