@@ -35,7 +35,7 @@ module m_update_verticalprofiles
 
    public :: update_verticalprofiles
 
-   contains
+contains
 
    !> Compute turbulence quantities and call vertical_profile_u0
    !! When iturbulencemodel>=3 (k-eps, k-tau):
