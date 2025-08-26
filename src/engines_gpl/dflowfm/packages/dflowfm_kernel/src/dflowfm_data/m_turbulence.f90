@@ -116,7 +116,8 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: sigdifi !< inverse prandtl schmidt nrs
    real(kind=dp), allocatable, dimension(:) :: wsf !< fall velocities of all numconst constituents
 
-   real(kind=dp), allocatable, dimension(:, :) :: turkinepsws !< k and eps,1,2     at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turkinws !< k   at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turepsws !< eps at layer interface at c , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turkinws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps

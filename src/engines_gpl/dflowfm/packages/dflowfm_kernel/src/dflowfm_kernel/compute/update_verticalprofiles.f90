@@ -35,18 +35,23 @@ module m_update_verticalprofiles
 
    public :: update_verticalprofiles
 
-contains
+   contains
 
+   !> Compute turbulence quantities and call vertical_profile_u0
+   !! When iturbulencemodel>=3 (k-eps, k-tau):
+   !!    For each link:
+   !!       Build a vertical tri-diagonal system to solve the k-equation. Idem for the the eps-equation.
+   !! Update vicww (iturbulencemodel>=2)
    subroutine update_verticalprofiles()
       use m_getustbcfuhi, only: getustbcfuhi
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flowwithoutwaves, adve, u1, qw, &
-                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinepsws, turkin1, tureps1, numsrc, addksources, tqcu, eqcu, sqcu, q1, tetavkeps, &
-                        eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, turbulence_lax_factor, eps20, &
+                        a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, numsrc, addksources, tqcu, eqcu, sqcu, q1, tetavkeps, &
+                        eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, epstke, kmxl, &
                         c1e, c1t, c2t, c9of1, eps6, epseps, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
-                        vicwws, kmxx, turbulence_lax_horizontal, viskin, jawavebreakerturbulence, rhomean, idensform, bruva, buoflu, &
-                        vicwminb, dijdij, v, eddyviscositysurfacmax
+                        vicwws, kmxx, turbulence_lax_factor, eps20, turbulence_lax_horizontal, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
+                        rhomean, idensform, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax
       use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
       use m_partitioninfo, only: jampi, itype_sall3d, update_ghosts
@@ -203,16 +208,18 @@ contains
 
          call calculate_drhodz(zws, drhodz)
 
-         if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
+         call links_to_centers(turkinws, turkin1)
+         call links_to_centers(turepsws, tureps1)
 
-            call links_to_centers(turkinepsws, turkin1, tureps1)
+         if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
             if (numsrc > 0 .and. addksources > 0.0_dp) then
                call doaddksources()
             end if
 
             if (jampi == 1) then
-               call update_ghosts(ITYPE_Sall3D, 2, Ndkx, turkinepsws, ierror)
+               call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turkinws, ierror)
+               call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turepsws, ierror)
             end if
 
             tqcu = 0.0_dp; eqcu = 0.0_dp; sqcu = 0.0_dp
@@ -223,12 +230,12 @@ contains
                   k1 = ln(1, L); k2 = ln(2, L)
                   qqq = 0.5_dp * (q1(L) + q1(L + 1))
                   if (qqq > 0) then ! set upwind center values on links
-                     tqcu(k2) = tqcu(k2) + qqq * turkinepsws(1, k1)
-                     eqcu(k2) = eqcu(k2) + qqq * turkinepsws(2, k1)
+                     tqcu(k2) = tqcu(k2) + qqq * turkinws(k1)
+                     eqcu(k2) = eqcu(k2) + qqq * turepsws(k1)
                      sqcu(k2) = sqcu(k2) + qqq
                   else if (qqq < 0) then
-                     tqcu(k1) = tqcu(k1) - qqq * turkinepsws(1, k2)
-                     eqcu(k1) = eqcu(k1) - qqq * turkinepsws(2, k2)
+                     tqcu(k1) = tqcu(k1) - qqq * turkinws(k2)
+                     eqcu(k1) = eqcu(k1) - qqq * turepsws(k2)
                      sqcu(k1) = sqcu(k1) - qqq
                   end if
                end do
@@ -292,12 +299,15 @@ contains
                dk(0:kxL) = dtiL * turkin0(Lb0:Lt)
 
                if (turbulence_lax_factor > 0) then
+                  ! Apply horizontal coupling of turkin with care:
+                  ! - turbulence_lax_factor is scaled with a ratio denoting the actual overlap of layer k in cells k1 and k2
+                  ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
                   do L = Lb, Lt - 1
                      k1 = ln(1, L); k2 = ln(2, L)
-                     if (turkinepsws(1, k1) > eps20 .and. turkinepsws(1, k2) > eps20) then
-                        if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                     if (turkinws(k1) > eps20 .and. turkinws(k2) > eps20) then
+                        if (turbulence_lax_horizontal == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
                            faclax = turbulence_lax_factor * min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1)) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
-                           dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * turkin0(L) + 0.5_dp * facLax * (turkinepsws(1, k1) + turkinepsws(1, k2)))
+                           dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * turkin0(L) + 0.5_dp * facLax * (turkinws(k1) + turkinws(k2)))
                         end if
                      end if
                   end do
@@ -598,12 +608,15 @@ contains
                ! Dirichlet condition on bed ; teta method:
 
                if (turbulence_lax_factor > 0) then
+                  ! Apply horizontal coupling of tureps with care:
+                  ! - turbulence_lax_factor is scaled with a ratio denoting the actual overlap of layer k in cells k1 and k2
+                  ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
                   do L = Lb, Lt - 1
                      k1 = ln(1, L); k2 = ln(2, L)
-                     if (turkinepsws(2, k1) > eps20 .and. turkinepsws(2, k2) > eps20) then
-                        if (turbulence_lax_horizontal == 1 .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                     if (turepsws(k1) > eps20 .and. turepsws(k2) > eps20) then
+                        if (turbulence_lax_horizontal == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
                            faclax = turbulence_lax_factor * dzu(L - Lb + 1) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
-                           dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * tureps0(L) + 0.5_dp * facLax * (turkinepsws(2, k1) + turkinepsws(2, k2)))
+                           dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * tureps0(L) + 0.5_dp * facLax * (turepsws(k1) + turepsws(k2)))
                         end if
                      end if
                   end do
