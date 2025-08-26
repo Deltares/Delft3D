@@ -70,7 +70,7 @@ module m_physcoef
 
    real(kind=dp) :: vicoww !< user specified constant vertical eddy viscosity (m2/s)
    real(kind=dp) :: constant_dicoww !< user specified constant vertical eddy diffusivity (m2/s)
-   class(t_array_or_scalar), allocatable, target :: dicoww_instance !< abstract class instance for dicoww, either scalar or array depending on user input
+   class(t_array_or_scalar), allocatable, target :: dicoww !< abstract class instance for dicoww, either scalar or array depending on user input
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g

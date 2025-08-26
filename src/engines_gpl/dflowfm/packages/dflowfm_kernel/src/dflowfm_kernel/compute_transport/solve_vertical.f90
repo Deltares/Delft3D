@@ -244,7 +244,7 @@ contains
    
    !> Get vertical diffusivity at a given node and add constituent specific molecular diffusivity.
    pure function get_difsedw(node_index, constituent_index) result(val)
-      use m_physcoef, only: dicoww_instance
+      use m_physcoef, only: dicoww
       use m_transport, only: molecular_diffusion_coeff
       use precision, only: dp
       integer, intent(in) :: node_index !< base node index (1:Ndxi)
@@ -252,7 +252,7 @@ contains
       real(kind=dp) :: val ! return value
 
       !total diffusivity is user specified background diffusivity plus molecular diffusivity depending on constituent
-      val = dicoww_instance%get(node_index) + molecular_diffusion_coeff(constituent_index)
+      val = dicoww%get(node_index) + molecular_diffusion_coeff(constituent_index)
    end function get_difsedw
 
 end module m_solve_vertical
