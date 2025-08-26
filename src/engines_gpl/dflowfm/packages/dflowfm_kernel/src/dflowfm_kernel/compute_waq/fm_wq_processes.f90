@@ -1807,7 +1807,7 @@ contains
       md_subfile = ''
       md_ehofile = ''
       md_sttfile = ''
-      md_thetav_waq = 0d0
+      md_thetav_waq = 0.55d0 ! thetav for waq (same as default for salinity and temperature)
       md_dt_waqproc = 0d0
 
       return
