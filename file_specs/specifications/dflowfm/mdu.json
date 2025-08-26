@@ -574,6 +574,13 @@
                     "description": "Change the structure dimensions in case these are inconsistent with the channel dimensions. ⋄ weirs, orifices, general structures: 1. In case the crest width exceeds the surface width, the crest width is set to the surface width; 2. In case the crest level is lower than the bed level, the crest level is set to the bed level. ⋄ bridges: 1. In case the crest width exceeds the surface width, the crest width is set to the surface width; 2. In case the flow area of the bridge exceeds the upstream flow area the flow area of the bridge is set to the upstream flow area. ⋄ universal weirs: only the crest level is checked and changed. NOTE: It is strongly advised not to change this parameter (true). Since turning this option off can lead to instabilities and unrealistic results."
                 },
                 {
+                    "key": "calculateBedLevelOverNonActiveLinks",
+                    "value_type": "intbool",
+                    "default_value": 0,
+                    "description": "Specifies whether the bed levels must be computed over all links of a cell including the closed boundaries, thin dams and dry points (= 0), or only the flow links. (= 1)",
+                    "status": "research"
+                },
+                {
                     "key": "stripMesh",
                     "value_type": "intbool",
                     "default_value": 0,
