@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - "all/release/*"
-      - tc/task/DEVOPSDSC-549-prevent-merging-main-into-release-branches # temporary to test if main can be merged into this feature branch
 
 jobs:
   block-merging-main-into-release-branches:
