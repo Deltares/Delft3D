@@ -52,7 +52,7 @@ subroutine getbrn (ibr ,branam, lbrnam)
 !
 !     Include memory pool
 !
-   include '..\include\mempool.i'
+   include '../include/mempool.i'
 
    branch =    gtipnt('BRANCH')
    gridnm =    gtcpnt('GRIDNM')
