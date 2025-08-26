@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 import requests
 from requests import Response
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.dimr_context import Credentials, DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
 from ci_tools.dimrset_delivery.settings.teamcity_settings import KERNELS
 from ci_tools.dimrset_delivery.teamcity_types import ConfigurationTestResult
@@ -20,20 +20,18 @@ class TeamCity(ConnectionServiceInterface):
     Usage: Instantiate with credentials and context, then call API methods.
     """
 
-    def __init__(self, username: str, password: str, context: DimrAutomationContext) -> None:
+    def __init__(self, credentials: Credentials, context: DimrAutomationContext) -> None:
         """
         Instantiate a new TeamCity object.
 
         Parameters
         ----------
-        username : str
-            Deltares username.
-        password : str
-            Deltares password.
+        credentials : Credentials
+            Username and Password for authentication.
         context : DimrAutomationContext
             Automation context for logging and configuration.
         """
-        self.__auth = (username, password)
+        self.__auth = (credentials.username, credentials.password)
         self.__base_uri = "https://dpcbuild.deltares.nl"
         self.__rest_uri = f"{self.__base_uri}/app/rest"
         self.__default_headers = {

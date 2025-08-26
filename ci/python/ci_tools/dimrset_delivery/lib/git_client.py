@@ -1,38 +1,35 @@
 import subprocess
 import sys
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.dimr_context import Credentials, DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
+from ci_tools.dimrset_delivery.settings.teamcity_settings import INIT_VALUE
 from ci_tools.example_utils.logger import LogLevel
 
 
 class GitClient(ConnectionServiceInterface):
-    """Handles Git operations such as tagging commits and testing repository connections.
-
-    This client is used to interact with a Git repository, primarily for tagging commits and verifying connectivity.
-
-    Parameters
-    ----------
-    username : str
-        Git username for authentication.
-    password : str
-        Git password for authentication.
-    context : DimrAutomationContext
-        Context object containing settings and logging utilities.
-    """
+    """Handles Git operations such as tagging commits and testing repository connections."""
 
     def __init__(
         self,
-        username: str,
-        password: str,
+        credentials: Credentials,
         context: DimrAutomationContext,
     ) -> None:
-        self.__username = username
-        self.__password = password
+        """Set up the git client.
+
+        Parameters
+        ----------
+        credentials : Credentials
+            Username and Password for authentication.
+        context : DimrAutomationContext
+            Context object containing settings and logging utilities.
+        """
+        self.__username = credentials.username
+        self.__password = credentials.password
         self.__context = context
 
         self.repo_url = ""
-        if context.settings is None or context.settings.delft3d_git_repo != "Undefined":
+        if context.settings is None or context.settings.delft3d_git_repo != INIT_VALUE:
             self.repo_url = context.settings.delft3d_git_repo
 
     def tag_commit(self, commit_hash: str, tag_name: str) -> None:

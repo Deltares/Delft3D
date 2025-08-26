@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.dimr_context import Credentials, DimrAutomationContext
 
 
 class ConnectionServiceInterface(ABC):
@@ -12,16 +12,14 @@ class ConnectionServiceInterface(ABC):
     """
 
     @abstractmethod
-    def __init__(self, username: str, password: str, context: DimrAutomationContext) -> None:
+    def __init__(self, credentials: Credentials, context: DimrAutomationContext) -> None:
         """
         Initialize the connection service interface.
 
         Parameters
         ----------
-        username : str
-            Username for authentication.
-        password : str
-            Password for authentication.
+        credentials : Credentials
+            Username and Password for authentication.
         context : DimrAutomationContext
             DIMR automation context object.
         """

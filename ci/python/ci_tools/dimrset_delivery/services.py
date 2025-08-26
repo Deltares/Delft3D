@@ -50,26 +50,22 @@ class Services:
 
         if entry.name == ServiceName.ATLASSIAN:
             self.atlassian = Atlassian(
-                username=entry.credential.username,
-                password=entry.credential.password,
+                credentials=entry.credential,
                 context=context,
             )
         elif entry.name == ServiceName.TEAMCITY:
             self.teamcity = TeamCity(
-                username=entry.credential.username,
-                password=entry.credential.password,
+                credentials=entry.credential,
                 context=context,
             )
         elif entry.name == ServiceName.SSH:
             self.ssh = SshClient(
-                username=entry.credential.username,
-                password=entry.credential.password,
+                credentials=entry.credential,
                 context=context,
             )
         elif entry.name == ServiceName.GIT:
             self.git = GitClient(
-                username=entry.credential.username,
-                password=entry.credential.password,
+                credentials=entry.credential,
                 context=context,
             )
         else:

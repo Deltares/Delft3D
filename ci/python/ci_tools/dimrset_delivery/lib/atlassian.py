@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, Union
 
 import requests
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.dimr_context import Credentials, DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
 from ci_tools.example_utils.logger import LogLevel
 
@@ -19,20 +19,18 @@ class Atlassian(ConnectionServiceInterface):
         client.create_public_wiki_page(...)
     """
 
-    def __init__(self, username: str, password: str, context: DimrAutomationContext) -> None:
+    def __init__(self, credentials: Credentials, context: DimrAutomationContext) -> None:
         """
         Initialize Atlassian API client.
 
         Parameters
         ----------
-        username : str
-            Deltares username.
-        password : str
-            Deltares password.
+        credentials : Credentials
+            Username and Password for authentication.
         context : DimrAutomationContext
             Automation context for logging and configuration.
         """
-        self.__auth = (username, password)
+        self.__auth = (credentials.username, credentials.password)
         self.__rest_uri = "https://publicwiki.deltares.nl/rest/api"
         self.__default_headers = {"content-type": "application/json", "accept": "application/json"}
         self.__context = context

@@ -2,7 +2,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.dimr_context import Credentials, DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.ssh_client import Direction, SshClient
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 from ci_tools.example_utils.logger import LogLevel
@@ -13,7 +13,7 @@ def test_test_connection_success() -> None:
     mock_context = Mock(spec=DimrAutomationContext)
     mock_context.settings = Mock(spec=Settings)
     mock_context.settings.linux_address = "host"
-    client = SshClient("user", "pass", mock_context)
+    client = SshClient(credentials=Credentials("user", "pass"), context=mock_context)
     with (
         patch.object(client._client, "connect") as mock_connect,
         patch.object(client._client, "close") as mock_close,
@@ -31,7 +31,7 @@ def test_test_connection_dry_run() -> None:
     mock_context.settings = Mock(spec=Settings)
     mock_context.settings.linux_address = "host"
     mock_context.settings.dry_run_prefix = "[TEST]"
-    client = SshClient("user", "pass", mock_context)
+    client = SshClient(credentials=Credentials("user", "pass"), context=mock_context)
     with (
         patch.object(client._client, "connect") as mock_connect,
         patch.object(client._client, "close") as mock_close,
@@ -48,7 +48,7 @@ def test_test_connection_fail() -> None:
     mock_context = Mock(spec=DimrAutomationContext)
     mock_context.settings = Mock(spec=Settings)
     mock_context.settings.linux_address = "host"
-    client = SshClient("user", "pass", mock_context)
+    client = SshClient(credentials=Credentials("user", "pass"), context=mock_context)
     with (
         patch.object(client._client, "connect", side_effect=Exception("fail")),
         patch.object(client._client, "close") as mock_close,
@@ -65,7 +65,7 @@ def test_execute_success() -> None:
     mock_context = Mock(spec=DimrAutomationContext)
     mock_context.settings = Mock(spec=Settings)
     mock_context.settings.linux_address = "host"
-    client = SshClient("user", "pass", mock_context)
+    client = SshClient(credentials=Credentials("user", "pass"), context=mock_context)
     with (
         patch.object(client._client, "connect") as mock_connect,
         patch.object(client._client, "exec_command") as mock_exec,
@@ -84,7 +84,7 @@ def test_execute_fail() -> None:
     mock_context = Mock(spec=DimrAutomationContext)
     mock_context.settings = Mock(spec=Settings)
     mock_context.settings.linux_address = "host"
-    client = SshClient("user", "pass", mock_context)
+    client = SshClient(credentials=Credentials("user", "pass"), context=mock_context)
     with (
         patch.object(client._client, "connect") as mock_connect,
         patch.object(client._client, "exec_command", side_effect=Exception("fail")),
@@ -104,7 +104,7 @@ def test_secure_copy_to_success() -> None:
     mock_context = Mock(spec=DimrAutomationContext)
     mock_context.settings = Mock(spec=Settings)
     mock_context.settings.linux_address = "host"
-    client = SshClient("user", "pass", mock_context)
+    client = SshClient(credentials=Credentials("user", "pass"), context=mock_context)
     with (
         patch.object(client._client, "connect") as mock_connect,
         patch("ci_tools.dimrset_delivery.lib.ssh_client.SCPClient") as mock_scp,
@@ -126,7 +126,7 @@ def test_secure_copy_from_success() -> None:
     mock_context = Mock(spec=DimrAutomationContext)
     mock_context.settings = Mock(spec=Settings)
     mock_context.settings.linux_address = "host"
-    client = SshClient("user", "pass", mock_context)
+    client = SshClient(credentials=Credentials("user", "pass"), context=mock_context)
     with (
         patch.object(client._client, "connect") as mock_connect,
         patch("ci_tools.dimrset_delivery.lib.ssh_client.SCPClient") as mock_scp,
@@ -148,7 +148,7 @@ def test_secure_copy_fail() -> None:
     mock_context = Mock(spec=DimrAutomationContext)
     mock_context.settings = Mock(spec=Settings)
     mock_context.settings.linux_address = "host"
-    client = SshClient("user", "pass", mock_context)
+    client = SshClient(credentials=Credentials("user", "pass"), context=mock_context)
     with (
         patch.object(client._client, "connect") as mock_connect,
         patch("ci_tools.dimrset_delivery.lib.ssh_client.SCPClient", side_effect=Exception("fail")),

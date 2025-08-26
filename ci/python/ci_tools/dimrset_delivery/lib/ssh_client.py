@@ -3,7 +3,7 @@ from enum import Enum
 import paramiko
 from scp import SCPClient  # type: ignore
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.dimr_context import Credentials, DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
 from ci_tools.example_utils.logger import LogLevel
 
@@ -24,22 +24,20 @@ class SshClient(ConnectionServiceInterface):
     Provides methods to test SSH connectivity, execute remote commands, and transfer files using SCP.
     """
 
-    def __init__(self, username: str, password: str, context: DimrAutomationContext, connect_timeout: int = 30) -> None:
+    def __init__(self, credentials: Credentials, context: DimrAutomationContext, connect_timeout: int = 30) -> None:
         """Initialize a new SshClient instance.
 
         Parameters
         ----------
-        username : str
-            Username for SSH authentication.
-        password : str
-            Password for SSH authentication.
+        credentials : Credentials
+            Username and Password for authentication.
         context : DimrAutomationContext
             Context object containing settings and logging utilities.
         connect_timeout : int, optional
             Timeout for SSH connection in seconds (default is 30).
         """
-        self.__username = username
-        self.__password = password
+        self.__username = credentials.username
+        self.__password = credentials.password
         self.__connect_timeout = connect_timeout
 
         self._client = paramiko.SSHClient()
@@ -61,7 +59,7 @@ class SshClient(ConnectionServiceInterface):
             True if the connection test is successful or dry run is performed, False otherwise.
         """
         if dry_run:
-            self.__context.log(f"SSH connection to '{self.__address}' with '{self.__username}' (dry run)")
+            self.__context.log(f"SSH connection to '{self.__address}' with '{self.__username}'")
             success = True
         else:
             try:

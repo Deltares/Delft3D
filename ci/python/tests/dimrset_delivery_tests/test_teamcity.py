@@ -1,7 +1,7 @@
 import sys
 from unittest.mock import MagicMock, Mock, patch
 
-from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.dimr_context import Credentials, DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 
@@ -14,31 +14,31 @@ class TestTeamCity:
         self.mock_context.settings = Mock(spec=Settings)
 
     def test_test_connection_success(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get:
             mock_get.return_value = Mock(status_code=200, content=b"ok")
             assert tc.test_connection(dry_run=False) is True
 
     def test_test_connection_fail(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get:
             mock_get.return_value = Mock(status_code=401, content=b"fail")
             assert tc.test_connection(dry_run=False) is False
 
     def test_test_connection_dry_run(self) -> None:
         self.mock_context.settings.dry_run_prefix = "[TEST]"
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         assert tc.test_connection(dry_run=True) is True
 
     def test_get_builds_for_build_configuration_id_success(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get:
             mock_get.return_value = Mock(status_code=200, json=lambda: {"build": [1, 2, 3]})
             result = tc.get_builds_for_build_configuration_id("buildtype", limit=2, include_failed_builds=True)
             assert result == {"build": [1, 2, 3]}
 
     def test_get_builds_for_build_configuration_id_fail(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with (
             patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get,
             patch.object(sys, "exit") as mock_exit,
@@ -48,14 +48,14 @@ class TestTeamCity:
             mock_exit.assert_called_once()
 
     def test_get_build_info_for_build_id_success(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get:
             mock_get.return_value = Mock(status_code=200, json=lambda: {"id": 123})
             result = tc.get_build_info_for_build_id("123")
             assert result == {"id": 123}
 
     def test_get_build_info_for_build_id_fail(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with (
             patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get,
             patch.object(sys, "exit") as mock_exit,
@@ -65,14 +65,14 @@ class TestTeamCity:
             mock_exit.assert_called_once()
 
     def test_get_full_build_info_for_build_id_success(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get:
             mock_get.return_value = Mock(status_code=200, json=lambda: {"id": 123})
             result = tc.get_full_build_info_for_build_id("123")
             assert result == {"id": 123}
 
     def test_get_full_build_info_for_build_id_fail(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with (
             patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get,
         ):
@@ -81,7 +81,7 @@ class TestTeamCity:
             assert result is None
 
     def test_get_build_artifact_names_success(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get:
             mock_get.return_value = Mock(status_code=200, json=lambda: {"files": ["a", "b"]})
             with patch.object(tc, "_TeamCity__get_put_request_headers", return_value={}):
@@ -89,7 +89,7 @@ class TestTeamCity:
                 assert result == {"files": ["a", "b"]}
 
     def test_get_build_artifact_names_fail(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with (
             patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get,
             patch.object(tc, "_TeamCity__get_put_request_headers", return_value={}),
@@ -100,14 +100,14 @@ class TestTeamCity:
             mock_exit.assert_called_once()
 
     def test_get_build_artifact_success(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get:
             mock_get.return_value = Mock(status_code=200, content=b"artifact")
             result = tc.get_build_artifact("123", "path/to/artifact")
             assert result == b"artifact"
 
     def test_get_build_artifact_fail(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         with (
             patch("ci_tools.dimrset_delivery.lib.teamcity.requests.get") as mock_get,
             patch.object(sys, "exit") as mock_exit,
@@ -117,7 +117,7 @@ class TestTeamCity:
             mock_exit.assert_called_once()
 
     def test_pin_build_success(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         mock_csrf = Mock()
         mock_csrf.status_code = 200
         mock_csrf.content = b"csrf-token"
@@ -129,7 +129,7 @@ class TestTeamCity:
                 assert tc.pin_build("123") is True
 
     def test_pin_build_fail(self) -> None:
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
         mock_csrf = Mock()
         mock_csrf.status_code = 200
         mock_csrf.content = b"csrf-token"
@@ -149,7 +149,7 @@ class TestTeamCity:
         # Arrange
         self.mock_context.dry_run = True
         self.mock_context.settings.dry_run_prefix = "[TEST]"
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
 
         # Act
         result = tc.get_build_test_results_from_teamcity("12345")
@@ -168,7 +168,7 @@ class TestTeamCity:
         """Test get_build_test_results_from_teamcity when no build info is returned."""
         # Arrange
         self.mock_context.dry_run = False
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
 
         # Act
         result = tc.get_build_test_results_from_teamcity("12345")
@@ -180,7 +180,7 @@ class TestTeamCity:
         """Test get_build_test_results_from_teamcity when no test occurrences exist."""
         # Arrange
         self.mock_context.dry_run = False
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
 
         build_info = {
             "number": "2023.01.123",
@@ -199,7 +199,7 @@ class TestTeamCity:
         """Test get_build_test_results_from_teamcity when test count is zero."""
         # Arrange
         self.mock_context.dry_run = False
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
 
         build_info = {
             "number": "2023.01.123",
@@ -219,7 +219,7 @@ class TestTeamCity:
         """Test get_build_test_results_from_teamcity with valid test results."""
         # Arrange
         self.mock_context.dry_run = False
-        tc = TeamCity("user", "pass", context=self.mock_context)
+        tc = TeamCity(credentials=Credentials("user", "pass"), context=self.mock_context)
 
         build_info = {
             "number": "1.23.34",
