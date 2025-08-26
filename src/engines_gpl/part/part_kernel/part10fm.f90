@@ -222,7 +222,7 @@ contains
                                   dax, day, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
                     endif
 
-                    !  We sill need to check for internal boundaries (eg thin dam or dry cell in the FM model)
+                    !  We still need to check for internal boundaries (eg thin dam or dry cell in the FM model)
                     ! if openbound = false then there is an internal (no flow) boundary.
 
                     call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)

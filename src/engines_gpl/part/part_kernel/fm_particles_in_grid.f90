@@ -673,14 +673,7 @@ contains
 
     subroutine displace_spherical( xporg, yporg, zporg, dxp, dyp, xpnew, ypnew, zpnew, mpnew )
         !>\file
-        !>            Determines the grid cells and relative coordinates of waste locations
-        !>
-        !>            The wastelocations are given by the user in global x,y coordinates.\n
-        !>            This routine determines the n,m grid indices and the local x,y coordinates.\n
-        !>            The local x,y coordinates are 0< .. <1 and are store in the old x,y locations
-        !
-        !     Note : we need to be careful about the names nwaste and mwaste, nwaste
-        !            is actually a dummy in the case of unstructured grids
+        !>            Determines the new position of a particle using spherical coordinates
 
         use m_waq_precision, only: dp
         use mathconsts, only:      raddeg_hp, degrad_hp
