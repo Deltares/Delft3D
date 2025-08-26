@@ -9,8 +9,8 @@ jobs:
   block-merging-main-into-release-branches:
     runs-on: ubuntu-latest
     steps:
-      - name: Block merging if Fail if source branch is main
-        if: github.head_ref == 'main'
+      - name: Fail if source branch is main
+        if: ${{ github.head_ref == 'main' }}
         run: |
           echo "❌ Pull requests from 'main' into all/release/* are not allowed."
           exit 1
