@@ -1859,13 +1859,13 @@ contains
          
       case ('nudgerate')
          target_location_type = UNC_LOC_S
-         target_array => nudge_rate
          call alloc_nudging()
+         target_array => nudge_rate
 
       case ('nudgetime')
          target_location_type = UNC_LOC_S
-         target_array => nudge_time
          call alloc_nudging()
+         target_array => nudge_time
 
       case default
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
