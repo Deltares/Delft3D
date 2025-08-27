@@ -744,6 +744,8 @@ contains
             sourceItemName = 'uniform_item'
          else if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'eastward_wind'
+         else if (ec_filetype == provFile_bc) then
+            sourceItemName = 'WINDX'
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windx.')
             return
@@ -758,6 +760,8 @@ contains
             sourceItemName = 'uniform_item'
          else if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'northward_wind'
+         else if (ec_filetype == provFile_bc) then
+            sourceItemName = 'WINDY'
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windy.')
             return
@@ -1096,7 +1100,7 @@ contains
          if (success) success = ecAddItemConnection(ecInstancePtr, item_air_density, connectionId)
       case ('solarradiation')
          if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'surface_net_downward_shortwave_flux'
+            sourceItemName = 'surface_downwelling_shortwave_flux_in_air'
          else
             sourceItemName = 'sw_radiation_flux'
          end if

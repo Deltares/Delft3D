@@ -129,7 +129,7 @@ contains
                   cells_with_max_limit = cells_with_max_limit + 1
                end if
             end do
-            call print_message(IDX_TEMP_MAX, 'Max. temperature', cells_with_max_limit)
+            call print_message(IDX_TEMP_MAX, 'Maximum temperature', cells_with_max_limit)
          end if
 
          cells_with_min_limit = 0
@@ -153,7 +153,7 @@ contains
             end do
          end if
 
-         call print_message(IDX_TEMP_MIN, 'Min. temperature', cells_with_min_limit)
+         call print_message(IDX_TEMP_MIN, 'Minimum temperature', cells_with_min_limit)
       end if
 
       if (jasal > 0) then
@@ -168,7 +168,7 @@ contains
                   end if
                end do
             end do
-            call print_message(IDX_SAL_MAX, 'max. salinity', cells_with_max_limit)
+            call print_message(IDX_SAL_MAX, 'Maximum salinity', cells_with_max_limit)
          end if
 
          cells_with_min_limit = 0
@@ -182,7 +182,7 @@ contains
                end if
             end do
          end do
-         call print_message(IDX_SAL_MIN, 'Min. salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
+         call print_message(IDX_SAL_MIN, 'Minimum salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
       end if
 
       if (jasal > 0 .and. maxitverticalforestersal > 0 .or. jatem > 0 .and. maxitverticalforestertem > 0) then
@@ -232,7 +232,7 @@ contains
             write (msgbuf, *) text, ' encountered and limited in ', cells_with_limit, ' cell(s).'
             if (present(minimum_salinity_value)) then
                call msg_flush()
-               write (msgbuf, *) 'Min. salinity encountered = ', minimum_salinity_value
+               write (msgbuf, *) 'Minimum salinity encountered = ', minimum_salinity_value
             end if
          end if
          call msg_flush()

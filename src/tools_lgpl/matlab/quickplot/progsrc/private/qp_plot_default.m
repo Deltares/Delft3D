@@ -85,23 +85,27 @@ switch NVal
                     if ~FirstFrame
                         delete(hNew)
                     end
-                    if strcmp(Ops.presentationtype,'edge m')
-                        data.XDamVal(:) = NaN;
-                    elseif strcmp(Ops.presentationtype,'edge n')
-                        data.YDamVal(:) = NaN;
+                    switch Ops.presentationtype
+                        case {'edges m','values m','markers m'}
+                            data.XDamVal(:) = NaN;
+                        case {'edges n','values n','markers n'}
+                            data.YDamVal(:) = NaN;
                     end
-                    if strcmp(Ops.presentationtype,'values')
-                        xx = (data.X(:,1:end-1) + data.X(:,2:end))/2;
-                        yy = (data.Y(:,1:end-1) + data.Y(:,2:end))/2;
-                        vv = data.XDamVal(:,2:end);
-                        hNew = qp_scalarfield(Parent,[],Ops.presentationtype,'QUAD',xx,yy,[],vv,Ops);
+                    if strncmp(Ops.presentationtype,'values',6) || strncmp(Ops.presentationtype,'markers',7)
+                        presentationtype = strtok(Ops.presentationtype);
+                        xx1 = (data.X(:,1:end-1) + data.X(:,2:end))/2;
+                        yy1 = (data.Y(:,1:end-1) + data.Y(:,2:end))/2;
+                        vv1 = data.XDamVal(:,2:end);
                         %
-                        xx = (data.X(1:end-1,:) + data.X(2:end,:))/2;
-                        yy = (data.Y(1:end-1,:) + data.Y(2:end,:))/2;
-                        vv = data.YDamVal(2:end,:);
-                        hNew2 = qp_scalarfield(Parent,[],Ops.presentationtype,'QUAD',xx,yy,[],vv,Ops);
+                        xx2 = (data.X(1:end-1,:) + data.X(2:end,:))/2;
+                        yy2 = (data.Y(1:end-1,:) + data.Y(2:end,:))/2;
+                        vv2 = data.YDamVal(2:end,:);
                         %
-                        hNew = cat(2,hNew,hNew2);
+                        xx = [xx1(:);xx2(:)];
+                        yy = [yy1(:);yy2(:)];
+                        vv = [vv1(:);vv2(:)];
+                        hNew = qp_scalarfield(Parent,[],presentationtype,'QUAD',xx,yy,[],vv,Ops);
+                        
                     elseif isfield(data,'XDamVal') && Ops.colourdams
                         hNew=thindam(data.X,data.Y,data.XDam,data.YDam,'color',data.XDamVal,data.YDamVal,'parent',Parent);
                         set(hNew,'linewidth',Ops.linewidth, ...
