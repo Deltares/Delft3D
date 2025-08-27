@@ -335,7 +335,7 @@ if(${configuration_type} STREQUAL ${testbench-all_configuration} OR ${configurat
 endif()
 
 # NONE configuration
-if(${configuration_type} STREQUAL ${testbench-none_configuration} OR ${configuration_type} STREQUAL ${none_configuration})
+if(${configuration_type} STREQUAL ${testbench-none_configuration})
     message(STATUS "Generating solution for none testbenches ...")
     include(configurations/testbench/waq_configuration.cmake)
 endif()
