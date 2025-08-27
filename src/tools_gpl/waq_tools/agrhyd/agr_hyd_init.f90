@@ -246,6 +246,12 @@
       else
          output_hyd%vdf_present = .false.
       endif
+      if ( input_hyd%vel_present ) then
+         output_hyd%vel_present = .true.
+         allocate(output_hyd%vel(output_hyd%num_cells))
+      else
+         output_hyd%vel_present = .false.
+      endif
 !     allocate(hyd%wasteflow(hyd%wasteload_coll%actual_size))
 
       ! cco information
