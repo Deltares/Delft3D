@@ -1876,7 +1876,7 @@ contains
 
    end subroutine process_parameter_block
 
-   !> Allocate nudging arrays and set the nudge control flag.
+   !> Allocate nudging arrays.
    subroutine alloc_nudging()
       use m_alloc, only: realloc
       use m_cell_geometry, only: ndx
