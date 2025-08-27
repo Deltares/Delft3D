@@ -1590,13 +1590,13 @@ contains
       character(len=*), intent(in) :: qid !< Name of the quantity.
       character(len=*), intent(in) :: inifilename !< Name of the ini file.
       integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U.
-      integer, intent(out) :: quantity_value_count !< The number of values for this quantity on a single location. E.g. 1 for scalar fields, 2 for vector fields.
       logical, intent(out) :: time_dependent_array !< Logical indicating, whether the quantity is time dependent or not.
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< pointer to the array that corresponds to the quantity (real(kind=dp)).
       integer, dimension(:), pointer, intent(out) :: target_array_integer !< pointer to the array that corresponds to the quantity (integer).
       real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_3d !< pointer to the array that corresponds to the quantity (real(kind=dp)), if it has an extra dimension.
       real(kind=sp), dimension(:, :), pointer, intent(out) :: target_array_3d_sp !< pointer to the array that corresponds to the quantity (real(kind=sp)), if it has an extra dimension.
       integer, intent(out) :: target_quantity_index !< Index of the quantity in the first dimension of target_array_3d, if applicable.
+      integer, intent(out) :: quantity_value_count !< The number of values for this quantity on a single location. E.g. 1 for scalar fields, 2 for vector fields.
 
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
@@ -1855,15 +1855,17 @@ contains
          target_location_type = UNC_LOC_S3D
          time_dependent_array = .true.
          quantity_value_count = 2
-         call initialize_nudging()
+         call alloc_nudging()
          
       case ('nudgerate')
          target_location_type = UNC_LOC_S
          target_array => nudge_rate
+         call alloc_nudging()
 
       case ('nudgetime')
          target_location_type = UNC_LOC_S
          target_array => nudge_time
+         call alloc_nudging()
 
       case default
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
@@ -1875,20 +1877,18 @@ contains
    end subroutine process_parameter_block
 
    !> Allocate nudging arrays and set the nudge control flag.
-   subroutine initialize_nudging()
+   subroutine alloc_nudging()
       use m_alloc, only: realloc
       use m_cell_geometry, only: ndx
       use m_flow, only: ndkx
       use m_missing, only: dmiss
-      use m_flowparameters, only: janudge
       use m_nudge, only: nudge_salinity, nudge_temperature, nudge_time, nudge_rate
 
-      janudge = 1
       call realloc(nudge_temperature, ndkx, fill=dmiss)
       call realloc(nudge_salinity, ndkx, fill=dmiss)
       call realloc(nudge_time, ndx, fill=dmiss)
       call realloc(nudge_rate, ndx, fill=dmiss)
-   end subroutine initialize_nudging
+   end subroutine alloc_nudging
 
    !> Search a particular water quality input name in a list of names,
    !! and if not found, add it to the list, also increasing the associated value array.
@@ -2012,6 +2012,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
 
       use m_flow, only: s1, hs, h_unsat
+      use m_flowparameters, only: janudge
       use m_flowgeom, only: ndxi, ndx, bl
       use m_wind, only: jaevap, evap
 
@@ -2085,6 +2086,8 @@ contains
          if (stemheightstd > 0.0_dp) then
             stemheight = stemheight * (1.0_dp + stemheightstd * (ran0(idum) - 0.5_dp))
          end if
+      case ('nudgesalinitytemperature', 'nudgetime', 'nudgerate')
+         janudge = 1
       end select
 
    end subroutine finish_initialization
