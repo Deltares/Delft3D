@@ -429,6 +429,7 @@ module m_readStorageNodes
 
          success = .true.
 
+         nullify(angle_loss)
          num_angles     = 0
          entrance_loss  = 0d0
          exit_loss      = 0d0
