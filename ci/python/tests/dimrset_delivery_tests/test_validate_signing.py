@@ -495,7 +495,7 @@ class TestGetActualFiles:
         mock_directory_path.glob.return_value = [mock_file1, mock_file2, mock_file3]
 
         # Act
-        result = _get_actual_files(directory)
+        result = _get_actual_files(directory, {".dll", ".exe"})
 
         # Assert
         assert len(result) == 2
@@ -523,7 +523,7 @@ class TestGetActualFiles:
         mock_directory_path.glob.return_value = [mock_file1, mock_file2]
 
         # Act
-        result = _get_actual_files(directory)
+        result = _get_actual_files(directory, {".dll", ".exe"})
 
         # Assert
         assert len(result) == 2
@@ -540,7 +540,7 @@ class TestGetActualFiles:
         mock_directory_path.glob.return_value = []
 
         # Act
-        result = _get_actual_files(directory)
+        result = _get_actual_files(directory, {".dll", ".exe"})
 
         # Assert
         assert result == []

@@ -219,24 +219,25 @@ def is_signing_correct(
     return files_signed_correctly and files_unsigned_correctly
 
 
-def _get_actual_files(directory: str) -> list[Path]:
-    """Recursively retrieve a list of relative file paths for all .dll and .exe files in the given directory.
+def _get_actual_files(directory: str, extensions: set[str]) -> list[Path]:
+    """
+    Recursively retrieve a list of relative file paths for files with specified extensions in the given directory.
 
     Parameters
     ----------
     directory : str
         The root directory to search for files.
+    extensions : set[str]
+        File extensions to include.
 
     Returns
     -------
     list[Path]
-        A list of relative file paths for .dll and .exe files found in the directory.
+        A list of relative file paths for files found in the directory with the given extensions.
     """
     directory_path = Path(directory)
     return [
-        path.relative_to(directory_path)
-        for path in directory_path.glob("**/*")
-        if path.suffix.lower() in (".dll", ".exe")
+        path.relative_to(directory_path) for path in directory_path.glob("**/*") if path.suffix.lower() in extensions
     ]
 
 
@@ -323,7 +324,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     expected_files = files_that_should_be_signed + files_that_should_not_be_signed
-    actual_files = _get_actual_files(directory)
+    actual_files = _get_actual_files(directory, {".dll", ".exe"})
 
     if not _validate_directory_contents(actual_files, expected_files):
         print("Directory check failed: Missing or extra files detected.")
