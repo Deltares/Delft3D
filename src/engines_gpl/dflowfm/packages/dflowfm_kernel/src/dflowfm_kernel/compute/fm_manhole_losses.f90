@@ -67,6 +67,7 @@ contains
       use m_sferic, only: pi
       use m_physcoef, only: ag
       use gridoperations, only: dlinkangle
+      use m_flowparameters, only: eps6
 
       type(t_storage_set), intent(in) :: storS !<  set of storage nodes that contain manhole parameters
       real(kind=dp), allocatable, intent(inout) :: advi(:) !<  advection implicit part (1/s), energy losses are applied here.
@@ -187,7 +188,7 @@ contains
                end if
             end do
             k_correction = 0.0_dp
-            if (comparereal(v_squared_outflow_from_manhole, 0.00001_dp ) ==1) then
+            if (comparereal(v_squared_outflow_from_manhole, eps6 ) ==1) then
                ! No need to apply losses when outflow is equal to 0. (prevent division by zero)
                factor = 2_dp * ag
                minimal_energy_loss = 0.05_dp * v_squared_outflow_from_manhole /factor
