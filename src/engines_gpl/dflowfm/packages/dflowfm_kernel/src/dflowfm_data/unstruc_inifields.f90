@@ -2086,7 +2086,7 @@ contains
          if (stemheightstd > 0.0_dp) then
             stemheight = stemheight * (1.0_dp + stemheightstd * (ran0(idum) - 0.5_dp))
          end if
-      case ('nudgesalinitytemperature', 'nudgetime', 'nudgerate')
+      case ('nudgesalinitytemperature')
          janudge = 1
       end select
 
