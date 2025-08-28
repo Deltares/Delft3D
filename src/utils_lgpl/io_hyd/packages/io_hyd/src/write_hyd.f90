@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -139,6 +139,11 @@
          call remove_path(hyd%file_vdf%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') vert_diffusion_file, trim(filename)
       else
          write(lunhyd,'(a,''     '',a)') vert_diffusion_file, 'none'
+      endif
+      if ( hyd%vel_present ) then
+         call remove_path(hyd%file_vel%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') velocities_file, trim(filename)
+      else
+         write(lunhyd,'(a,''     '',a)') velocities_file, 'none'
       endif
       if (hyd%geometry .eq. HYD_GEOM_CURVI) then
          call remove_path(hyd%file_srf%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') surfaces_file, trim(filename)

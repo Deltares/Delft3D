@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
       use precision, only: dp
       use m_flowtimes, only: dts
       use m_flowgeom, only: ndx
-      use m_fm_erosed
+      use m_fm_erosed, only: morfac, lsedtot, sbxcum, sbcx, sbwx, sbycum, sbcy, sbwy, ssxcum, sscx, sswx, ssycum, sscy, sswy
 
       integer :: k, l
       real(kind=dp) :: dtmor_

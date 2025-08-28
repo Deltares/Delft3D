@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -2706,9 +2706,9 @@ contains
 
          real(kind=dp) :: alpha, alpha1
 
-         allocate(ww2(nmkx2))
-         allocate(u_temp(numk))
-         
+         allocate (ww2(nmkx2))
+         allocate (u_temp(numk))
+
          alpha = 0.5d0
 
          alpha1 = 1d0 - alpha

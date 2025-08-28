@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,7 +45,7 @@ contains
       !! the consecutive polyline segments.
    subroutine mapToPolyline(XHO, YHO, DPL, NO, XH, YH, DPLA, NPL) ! HAAL HUIDIGE PUNTEN OP
       use precision, only: dp
-      use m_interpolateOnPolyline
+      use m_interpolateOnPolyline, only: interpolateonpolyline
 
       integer, intent(in) :: NO !< Nr. of polyline points.
       integer, intent(in) :: npl !< Nr. of points to be interpolated.

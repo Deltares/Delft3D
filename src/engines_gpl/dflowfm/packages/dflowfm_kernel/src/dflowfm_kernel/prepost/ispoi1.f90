@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,7 +49,7 @@ contains
       use precision, only: dp
       use m_wearelt, only: rcir
       use m_missing, only: dmiss
-      use m_dispnode
+      use m_dispnode, only: dispnode
 
       integer :: i
       integer :: ishot

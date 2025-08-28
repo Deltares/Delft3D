@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ contains
       !! Filled means: one colour for inside, one colour for edge.
    subroutine HLCIR2(R, icolfill, icoledge)
       use precision, only: dp
-      use m_set_col
+      use m_set_col, only: setcol
 
       real(kind=dp), intent(in) :: R !< Radius in world coords.
       integer, intent(in) :: icolfill !< Colour number for inner fill

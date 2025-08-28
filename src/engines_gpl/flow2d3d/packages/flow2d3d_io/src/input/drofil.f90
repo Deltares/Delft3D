@@ -3,7 +3,7 @@ subroutine drofil(lundia    ,fildro    ,fmttmp    ,error     ,ndro      , &
                 & drodep    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -75,7 +75,6 @@ subroutine drofil(lundia    ,fildro    ,fmttmp    ,error     ,ndro      , &
     integer                :: lr132    ! Standard length of a record in the attribute file = 132 
     integer                :: luntmp   ! Temporary file unit 
     integer                :: n
-    integer, external      :: newlun
     logical                :: dtn
     real(fp)               :: rdef     ! Help var. containing default va- lue(s) for real variable 
     real(fp)               :: t

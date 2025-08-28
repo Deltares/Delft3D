@@ -17,6 +17,17 @@
         </environments>
     </program>
 
+    <program name="dimr_opl" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+        <path>bin/run_dimr.bat</path>
+        <shell ref="command_prompt"/>
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/x64</from>
+        </location>
+        <environments>
+            <environment name="LIBEXT" type="string">.dll</environment>
+        </environments>
+    </program>
+
     <program name="vs">
         <shell ref="command_prompt"/>
         <path>thirdparty\vs\win64\vs.exe</path>

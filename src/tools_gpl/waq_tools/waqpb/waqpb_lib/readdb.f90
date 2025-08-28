@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -322,24 +322,24 @@ subroutine readdb(lu_inp, lu_mes, csv_folder)
 end subroutine readdb
 
 
-subroutine writdb(lu)
+subroutine writdb(lu, csv_folder)
     use m_waqpb_data
     integer :: lu !< logical unit number
-
+    character(len=*), intent(in) :: csv_folder !< Folder containing the CSV files
     integer iproc, iconf, i
     character(len=10) c10
     character(len=1)  swicnf(nconfm)
 
     !Table P1
-    open(newunit=lu, file='grpsub.csv')
+    open(newunit=lu, file=(csv_folder//'grpsub.csv'))
     write(lu,'(''sgrpid,sgrpnm'')')
     if (nsgrp>0) then
-        write(lu,'(''"'',a30,''","'',a50,''"'')') (sgrpid(i),sgrpnm(i),i=1,nsgrp)
+        write(lu,'(''"'',a30,''","'',a50,''"''))') (sgrpid(i),sgrpnm(i),i=1,nsgrp)
     end if
     close(lu)
 
     !Table P2
-    open(newunit=lu, file='items.csv')
+    open(newunit=lu, file=(csv_folder//'items.csv'))
     write(lu,'(''itemid,itemse,itemex,itemde,itemun,itemnm,'', &
             ''itemag,itemda,itemwk,itemgr'')')
     if (nitem>0) then
@@ -351,18 +351,16 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table P3
-    open(newunit=lu, file='fortran.csv')
+    open(newunit=lu, file=(csv_folder//'fortran.csv'))
     write(lu,'(''fortid'')')
     if (nfort>0) then
         write(lu,'(''"'',a10,''"'')') (fortid(i),i=1,nfort)
     end if
     close(lu)
 
-
     !Table P4
-    open(newunit=lu, file='proces.csv')
+    open(newunit=lu, file=(csv_folder//'proces.csv'))
     write(lu,'(''procid,procco,procfo,procnm'')')
     if (nproc>0) then
         write(lu,'(''"''a10,''",'',i3,'',"'',a10,''","'',a50,''"'')') &
@@ -370,9 +368,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table P5
-    open(newunit=lu, file='config.csv')
+    open(newunit=lu, file=(csv_folder//'config.csv'))
     write(lu,'(''confid,confnm'')')
     if (nconf>0)  then
         write(lu,'(''"'',a10,''","'',a50,''"'')') &
@@ -380,9 +377,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R1
-    open(newunit=lu, file='con_pro.csv')
+    open(newunit=lu, file=(csv_folder//'con_pro.csv'))
     c10 = 'Config:'
     write(lu, '(''"'',a10,''"'',99('',"'',a10,''"''))') &
             c10,(confid(i),i=1,nconf)
@@ -399,9 +395,8 @@ subroutine writdb(lu)
 300 continue
     close(lu)
 
-
     !Table R2
-    open(newunit=lu, file='con_sub.csv')
+    open(newunit=lu, file=(csv_folder//'con_sub.csv'))
     write(lu,'(''r2_cid,r2_sid'')')
     if (ncnsb>0) then
         write(lu,'(''"'',a10,''","'',a10,''"'')') &
@@ -409,9 +404,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R3
-    open(newunit=lu, file='inputs.csv')
+    open(newunit=lu, file=(csv_folder//'inputs.csv'))
     write(lu,'(''inpupr,inpuit,inpunm,inpude,inpudo,inpusx'')')
     if (ninpu>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',i4,'',"'',a1, &
@@ -421,9 +415,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R4
-    open(newunit=lu, file='outputs.csv')
+    open(newunit=lu, file=(csv_folder//'outputs.csv'))
     write(lu,'(''outppr,outpit,outpnm,outpdo,outpsx'')')
     if (noutp>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',i4,'',"'',a1, &
@@ -432,9 +425,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R5
-    open(newunit=lu, file='outpflx.csv')
+    open(newunit=lu, file=(csv_folder//'outpflx.csv'))
     write(lu,'(''outfpr,outffl,outfnm,outfdo'')')
     if (noutf>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',i4,'',"'',a1,''"'')') &
@@ -442,9 +434,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R6
-    open(newunit=lu, file='stochi.csv')
+    open(newunit=lu, file=(csv_folder//'stochi.csv'))
     write(lu,'(''stocfl,stocsu,stocsc'')')
     if (nstoc>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',f10.5)') &
@@ -452,9 +443,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R7
-    open(newunit=lu, file='velocs.csv')
+    open(newunit=lu, file=(csv_folder//'velocs.csv'))
     write(lu,'(''veloit,velosu,velosc'')')
     if (nvelo>0) then
         write(lu,'(''"''a10,''","'',a10,''",'',f10.5)') &
@@ -462,9 +452,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R8
-    open(newunit=lu, file='disps.csv')
+    open(newunit=lu, file=(csv_folder//'disps.csv'))
     write(lu,'(''dispit,dispsu,dispsc'')')
     if (ndisp>0) then
         write(lu,'(''"''a10,''","'',a10,''",'',f10.5)') &
@@ -474,7 +463,7 @@ subroutine writdb(lu)
 
 
     !Table old_items
-    open(newunit=lu, file='old_items.csv')
+    open(newunit=lu, file=(csv_folder//'old_items.csv'))
     write(lu,'(''old_name,new_name,old_default,configuration,serial,action_type'')')
     if (n_old_items>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',g15.6,'',"'',a10,''",'',i10,'','',i10)') &

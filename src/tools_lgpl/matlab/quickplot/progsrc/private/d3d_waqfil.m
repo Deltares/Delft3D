@@ -18,7 +18,7 @@ function varargout=d3d_waqfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -1241,7 +1241,7 @@ switch Type
                     case 'tem'
                         Out(end).DimFlag(T_) = 5;
                         name = 'temperature';
-                        units = '°C';
+                        units = 'Â°C';
                     case 'vdf'
                         Out(end).DimFlag(T_) = 5;
                         name = 'vertical diffusivity';
@@ -2216,7 +2216,12 @@ if isempty(x)
             x.NonTranspSubs=isSubs & ~isTransp;
         end
     catch
-        ui_message('error',['Cannot find or open ', tbl]);
+        if strcmp(tbl,'auto') || ~exist(tbl,'file')
+            errmsg = 'Cannot find the process definition file.';
+        else
+            errmsg = ['Cannot open the process definition file ', tbl];
+        end
+        ui_message('error',errmsg);
         x=-1;
     end
 end

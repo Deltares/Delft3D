@@ -9,7 +9,7 @@ subroutine inidis(lundia    ,error     ,runid     ,cyclic    ,timnow    , &
                 & upwsrc    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -125,7 +125,6 @@ subroutine inidis(lundia    ,error     ,runid     ,cyclic    ,timnow    , &
     integer                                    :: md
     integer                                    :: n
     integer                                    :: nd
-    integer                                    :: newlun
     integer                                    :: nm          ! N,M index for discharge location 
     integer                                    :: npara       ! Number of parameter records in time dependent direct access file 
     integer                                    :: nparrd      ! NR. of parameter records actual read

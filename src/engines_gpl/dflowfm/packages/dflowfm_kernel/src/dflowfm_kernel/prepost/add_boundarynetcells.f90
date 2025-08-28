@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,9 +43,9 @@ contains
 
    subroutine add_boundarynetcells()
 
-      use network_data
-      use m_flowgeom
-      use gridoperations
+      use network_data, only: nump, nump1d2d, netcell
+      use m_flowgeom, only: ndx
+      use gridoperations, only: increasenetcells
 
       implicit none
 

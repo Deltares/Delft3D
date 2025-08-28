@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,13 +43,13 @@ contains
 
    subroutine pillargrid(ierror)
       use precision, only: dp
-      use m_grid
-      use m_gridsettings
-      use m_polygon
-      use m_missing
+      use m_grid, only: mc, nc, xc, yc
+      use m_gridsettings, only: nfac, pil_rad, pil_x, pil_y
+      use m_polygon, only: npl, xpl, ypl
+      use m_missing, only: dmiss
+      use m_increase_grid, only: increasegrid
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: dbdistance, get_startend
-      use m_increase_grid
 
       integer, intent(out) :: ierror ! error (1) or not (0)
 

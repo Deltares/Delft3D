@@ -3,7 +3,7 @@ function [hNewVec,Error,FileInfo,PlotState]=qp_plot(PlotState,Ops)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -344,6 +344,14 @@ end
 
 if isfield(Ops,'plotcoordinate')
     % TODO: take into account the EdgeGeometry length ...
+    sName = '';
+    sUnits = [];
+    if isfield(data,'XName')
+        sName = data.XName;
+    end
+    if isfield(data,'XUnits')
+        sUnits = data.XUnits;
+    end
     switch Ops.plotcoordinate
         case {'path distance','reverse path distance'}
             if isfield(data,'FaceNodeConnect') || isfield(data,'EdgeNodeConnect')
@@ -396,7 +404,7 @@ if isfield(Ops,'plotcoordinate')
                 end
                 x = data.X(:,:,1);
                 y = data.Y(:,:,1);
-            else
+            elseif isfield(data,'X')
                 if size(data.X,2)==2 && size(data.X,1)>2
                     data.X = (data.X(:,1,:) + data.X(:,2,:))/2;
                 elseif size(data.X,1)==2 && size(data.X,2)>2
@@ -411,7 +419,7 @@ if isfield(Ops,'plotcoordinate')
             end
             if isfield(data,'XUnits') && strcmp(data.XUnits,'deg')
                 s = pathdistance(x,y,'geographic');
-                data.XUnits = 'm';
+                sUnits = 'm';
             else
                 s = pathdistance(x,y);
             end
@@ -425,12 +433,25 @@ if isfield(Ops,'plotcoordinate')
                 s = rot90(s,2);
             end
             s = reshape(repmat(s,[1 1 size(data.X,3)]),size(data.X));
+        case {'coordinate','index'}
+            if isfield(data,'X')
+                s = data.X;
+            else
+                s = 1:numel(data.Val);
+            end
         case 'x coordinate'
             s = data.X;
         case 'y coordinate'
             s = data.Y;
+            if isfield(data,'YName')
+                sName = data.YName;
+            end
+            if isfield(data,'YUnits')
+                sUnits = data.YUnits;
+            end
         case 'time'
             s = repmat(data.Time,[1 size(data.X,3)]);
+            sUnits = [];
     end
     data.X = squeeze(s);
     flds = {'Z','Val','XComp','YComp','ZComp'};
@@ -442,9 +463,18 @@ if isfield(Ops,'plotcoordinate')
     end
     if isfield(data,'Y')
         data = rmfield(data,'Y');
+        if isfield(data,'YName')
+            data = rmfield(data,'YName');
+        end
         if isfield(data,'YUnits')
             data = rmfield(data,'YUnits');
         end
+    end
+    if ~isempty(sName)
+        data.XName = sName;
+    end
+    if ~isempty(sUnits)
+        data.XUnits = sUnits;
     end
     data.Geom = 'sSEG';
 end
@@ -575,19 +605,17 @@ if NVal==0.6 || NVal==0.9
     % 0.9 = coloured thindam
     NVal=0.5;
 elseif  NVal==1.9 
-    if isequal(Ops.presentationtype,'edges') || ...
-             isequal(Ops.presentationtype,'edges m') || ...
-              isequal(Ops.presentationtype,'edges n') || ...
-              isequal(Ops.presentationtype,'values')
-        % 1.9 = coloured thindam or vector perpendicular to thindam
-        NVal=0.5;
-    else
-        % vector case: vector location is determined by computecomponent
-        NVal=2;
-        data.XComp = data.XDamVal;
-        data.YComp = data.YDamVal;
-        data = rmfield(data,{'XDam','YDam','XDamVal','YDamVal'});
-        Ops.vectorcomponent='edge';
+    % 1.9 = coloured thindam or vector perpendicular to thindam
+    switch Ops.presentationtype
+        case {'vector'}
+            % vector case: vector location is determined by computecomponent
+            NVal=2;
+            data.XComp = data.XDamVal;
+            data.YComp = data.YDamVal;
+            data = rmfield(data,{'XDam','YDam','XDamVal','YDamVal'});
+            Ops.vectorcomponent='edge';
+        otherwise
+            NVal=0.5;
     end
 end
 
@@ -1079,7 +1107,7 @@ end
 % If horizontal units is degrees, change to longitude and latitude plot
 % type.
 %
-if isfield(data,'XUnits') && ...
+if isfield(data,'XUnits') && ~isfield(data,'XName') && ...
         (strcmp(data(1).XUnits,'deg') || strcmp(data(1).XUnits,'degree'))
     Ops.axestype = strrep(Ops.axestype,'X-Y','Lon-Lat');
     Ops.axestype = strrep(Ops.axestype,'X-','Lon-');
@@ -1142,11 +1170,11 @@ if isfield(Ops,'plotcoordinate') && ~isempty(Ops.plotcoordinate)
             else
                 diststr = 'y coordinate';
             end
-        case 'coordinate'
+        case {'coordinate','index'}
             if isfield(data,'XName')
                 diststr = data(1).XName;
             else
-                diststr = 'coordinate';
+                diststr = Ops.plotcoordinate;
             end
     end
 end
@@ -1344,8 +1372,8 @@ if isempty(specialplot) && isfield(Ops,'basicaxestype') && ~isempty(Ops.basicaxe
                     if isfield(Props,'NName') && ~isempty(Props.NName)
                         dimension{d} = protectstring(Props.NName);
                     end
-                    if isfield(data,'YUnits') && ~isempty(data(1).YUnits)
-                        unit{d} = data(1).YUnits;
+                    if isfield(data,'XUnits') && ~isempty(data(1).XUnits) % YUnits have been transferred to XUnits
+                        unit{d} = data(1).XUnits;
                     end
                 else
                     if isfield(Props,'MName') && ~isempty(Props.MName)

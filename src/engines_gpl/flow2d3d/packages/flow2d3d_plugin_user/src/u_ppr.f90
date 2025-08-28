@@ -5,7 +5,7 @@ subroutine u_ppr(lundia    ,lunprt    ,error     ,versio    ,prsmap    , &
                & ftstat    ,ftcros    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -262,7 +262,6 @@ subroutine u_ppr(lundia    ,lunprt    ,error     ,versio    ,prsmap    , &
     integer                       :: istat  ! Station number selected 
     integer                       :: itime  ! Current simulation time MMHHSS 
     integer                       :: notim  ! No. of time step to be written to the file 
-    integer, external             :: newlun
     character(131), dimension(10) :: header ! File header 
 !
 !! executable statements -------------------------------------------------------

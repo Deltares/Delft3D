@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,7 +35,7 @@ module m_calbedform
    use m_waveconst
 
    implicit none
-   
+
    private
 
    public fm_calbf, fm_calksc
@@ -311,8 +311,8 @@ contains
       real(fp), dimension(:), allocatable :: sink
       real(fp), dimension(:), allocatable :: sour
       !
-      real(kind=dp), dimension(1), parameter :: BEDFORM_BACKGROUND_DIFFUSION_FACTOR=[BACKGROUND_DIFFUSION_ON] !< background diffusion factor [-]. For backward compatibility, it is set to 1.0`, although it would most probably make more sense to be 0. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional. 
-      integer, parameter :: LIMITER_TYPE=4 !< It should be made equal to a parameter inside, for instance, `m_flowparameters`. 
+      real(kind=dp), dimension(1), parameter :: BEDFORM_BACKGROUND_DIFFUSION_FACTOR = [BACKGROUND_DIFFUSION_ON] !< background diffusion factor [-]. For backward compatibility, it is set to 1.0`, although it would most probably make more sense to be 0. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional.
+      integer, parameter :: LIMITER_TYPE = 4 !< It should be made equal to a parameter inside, for instance, `m_flowparameters`.
       !
       !Local parameters
       !
@@ -399,7 +399,7 @@ contains
       lsedtot => stmpar%lsedtot
       tcmp => stmpar%morpar%tcmp
       !
-      call realloc(dh,   ndx, keepExisting=.false., fill=0d0)
+      call realloc(dh, ndx, keepExisting=.false., fill=0d0)
       call realloc(uxbf, ndx, keepExisting=.false., fill=0d0)
       call realloc(uybf, ndx, keepExisting=.false., fill=0d0)
       call realloc(sour, ndx, keepExisting=.false., fill=0d0)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,13 +39,13 @@ module m_get_ustwav
 contains
    subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! at u-point, get ustarwave and get ustokes
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
-      use m_waves
-      use m_sferic
-      use m_physcoef
+      use m_flow, only: hu, jawavestokes, ag, jawave, rhomean, eps10
+      use m_flowgeom, only: ln, csu, snu
+      use m_waves, only: twav, ustokes, vstokes, phiwav, hwav, gammax, jauorb, ftauw, alfdeltau, fwfac
+      use m_waveconst, only: STOKES_DRIFT_2NDORDER, STOKES_DRIFT_DEPTHUNIFORM, WAVE_SURFBEAT
+      use m_sferic, only: twopi, dg2rd, pi
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_xbeach_data, only: R, cwav, gammaxxb, roller
-      use m_get_Lbot_Ltop
       use mathconsts, only: ee
 
       integer, intent(in) :: LL

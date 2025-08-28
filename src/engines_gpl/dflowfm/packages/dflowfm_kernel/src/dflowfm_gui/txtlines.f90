@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,10 +37,9 @@ module m_txtlines
 contains
 
    subroutine TXTLINES()
-      use m_settextsize
-      use m_mtext
-      use m_devices
-      use m_textlines
+      use m_settextsize, only: settextsize
+      use m_mtext, only: mtext
+      use m_textlines, only: txsize, txlin, txxpos, txypos
       implicit none
       integer :: i
 

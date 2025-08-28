@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,7 +37,7 @@ module m_search
 contains
 
    subroutine SEARCH(NAHEAD, NLEVEL, HLPTXT, NUMTXT, WRDKEY, NUMCHC, JOFND)
-      use m_okay
+      use m_okay, only: okay
       implicit none
       integer :: jofnd
       integer :: k

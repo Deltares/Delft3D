@@ -1,6 +1,6 @@
 """Nefis file comparer.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 import copy

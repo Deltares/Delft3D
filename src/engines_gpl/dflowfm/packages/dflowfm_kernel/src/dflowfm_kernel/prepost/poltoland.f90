@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,9 +43,9 @@ contains
 
    subroutine POLTOLAND(L1, L2) ! SHIFT POLYGON TO LANDBOUNDARY
       use precision, only: dp
-      use M_POLYGON
-      use M_MISSING
-      use M_LANDBOUNDARY
+      use M_POLYGON, only: xpl, ypl
+      use M_MISSING, only: xymis
+      use M_LANDBOUNDARY, only: mxlan
 
       integer :: l1
       integer :: l2

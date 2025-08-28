@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -245,6 +245,12 @@
          allocate(output_hyd%vdf(output_hyd%num_cells))
       else
          output_hyd%vdf_present = .false.
+      endif
+      if ( input_hyd%vel_present ) then
+         output_hyd%vel_present = .true.
+         allocate(output_hyd%vel(output_hyd%num_cells))
+      else
+         output_hyd%vel_present = .false.
       endif
 !     allocate(hyd%wasteflow(hyd%wasteload_coll%actual_size))
 

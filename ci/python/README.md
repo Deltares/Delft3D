@@ -119,6 +119,24 @@ apply only to that directory.
 
 ## Included tools
 
+### DIMR Set Delivery Automation
+
+The DIMR Set Delivery automation tools (`ci_tools.dimrset_delivery`) provide scripts
+to automate the weekly DIMR release process. This includes:
+
+- Automating release steps for TeamCity DIMR builds
+- Retrieving test results from TeamCity
+- Updating Excel sheets with test statistics
+- Updating the Public Wiki with release information
+- Generating email reports
+
+To use these tools, install with the `dimrset_delivery` optional dependencies:
+```bash
+uv sync --extra dimrset_delivery
+```
+
+For detailed information, see the [DIMR Set Delivery README](ci_tools/dimrset_delivery/README.md).
+
 ### MinIO synchronizer
 
 The MinIO synchronizer program (`minio-sync`) is a command line program inspired

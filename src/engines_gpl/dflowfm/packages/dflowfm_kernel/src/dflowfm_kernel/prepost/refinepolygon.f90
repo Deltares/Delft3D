@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,13 +45,13 @@ contains
    subroutine refinepolygon()
       use m_modln2, only: modln2
       use precision, only: dp
-      use m_typevalue
-      use m_polygon !, only: npl, dxuni
-      use m_tpoly
-      use m_sferic
-      use m_missing
+      use m_typevalue, only: typevalue
+      use m_polygon, only: npl, dxuni, xpl, ypl, zpl, increasepol, maxpol
+      use m_tpoly, only: pol_to_tpoly, tpoly_to_pol, dealloc_tpoly, tpoly
+      use m_sferic, only: jsferic, jasfer3d
+      use m_missing, only: dmiss
+      use m_delpol, only: delpol
       use geometry_module, only: dbdistance, half
-      use m_delpol
 
       integer :: i1, i2
       integer :: key

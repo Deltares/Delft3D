@@ -3,7 +3,7 @@ function setaxesprops(hAx,FullAxesType,dimension,unit)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -169,25 +169,37 @@ for i = 1:nAxes
 end
 
 
-function sethscale_lonlat(hAx,newAxesSettings)
-ylimv=get(hAx,'ylim');
-if ylimv(1)<-90
-    ylimv(1)=-90;
-    if ylimv(2)<=ylimv(1)
-        ylimv(2)=-89;
+function sethscale_lonlat(hAx, newAxesSettings)
+ylimv = get(hAx,'ylim');
+xlimv = get(hAx, 'xlim');
+if ylimv(1) <- 90
+    ylimv(1) = -90;
+    if ylimv(2) <= ylimv(1)
+        ylimv(2) = -89;
     end
 end
-if ylimv(2)>90
-    ylimv(2)=90;
-    if ylimv(1)>=ylimv(2)
-        ylimv(1)=89;
+if ylimv(2) > 90
+    ylimv(2) = 90;
+    if ylimv(1) >= ylimv(2)
+        ylimv(1) = 89;
     end
 end
-lat=mean(ylimv);
-lat=min(max(lat,-89),89);
-sethscale(hAx,cos(lat*pi/180),newAxesSettings)
-xlim=get(hAx,'xlim'); % force both xlimmode and ylimmode to manual
-set(hAx,'ylim',ylimv,'xlim',xlim)
+lat = mean(ylimv);
+lat = min(max(lat, -89), 89);
+if xlimv(1) < -360
+    xlimv(1) = -360;
+    if xlimv(2) <= xlimv(1)
+        xlimv(2) = -359;
+    end
+end
+if xlimv(2) > 360
+    xlimv(2) = 360;
+    if xlimv(1) >= xlimv(2)
+        xlimv(1) = 359;
+    end
+end
+set(hAx, 'ylim', ylimv, 'xlim', xlimv)
+sethscale(hAx, cos(lat*pi/180), newAxesSettings)
 
 
 function sethscale(hAx,ratio,newAxesSettings)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,11 +38,10 @@ contains
       !! as 'L00x' otherwise.
    subroutine WRILDB(MPOL, XSH, YSH, NSH, NCLAN, nnclan, ZSH, nzsh, names, namlen, nnam)
       use precision, only: dp
-      use M_MISSING
-      use m_polygon ! , only : zpl, DZL, DZR, jakol45
-      use gridoperations
-      use m_readyy
-      use m_inview
+      use M_MISSING, only: dmiss, kmod
+      use m_polygon, only: jakol45, xpl, ypl, zpl, dzl, dzr, dcrest, dtl, dtr, dveg
+      use m_readyy, only: readyy
+      use m_inview, only: inview
       use m_filez, only: doclose, newfil
 
       integer, intent(inout) :: mpol !< Open file pointer where to write to.

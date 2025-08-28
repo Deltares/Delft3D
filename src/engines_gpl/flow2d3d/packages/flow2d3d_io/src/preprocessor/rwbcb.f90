@@ -2,7 +2,7 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
                & itfinish  ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -78,7 +78,6 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
     integer                        :: lninp                ! Help var. specifying the length of input file name 
     integer                        :: lrec                 ! Length of record 
     integer                        :: lunout               ! Unit number for transformed file 
-    integer                        :: newlun
     integer                        :: nrecs                ! Number of records in table 
     integer                        :: stapos               ! Start position of scan 
     integer                        :: timref               ! Reference time read 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,15 +38,15 @@ module m_reasam
 contains
    subroutine REASAM(MSAM, JADOORLADEN)
       use precision, only: dp
-      use M_MISSING
-      use M_SAMPLES
-      use m_alloc
+      use M_MISSING, only: kmod, xymis, dmiss
+      use M_SAMPLES, only: savesam, mxsam, mysam, ipstat, ipstat_notok, nsmax, ns, xs, ys, zs, ipsam, restoresam, ipstat_ok
+      use m_alloc, only: aerr
+      use m_drawthis, only: ndraw
+      use m_pharosflow, only: jflow, rec1
+      use m_readyy, only: readyy
+      use m_qnerror, only: qnerror
+      use m_get_samples_boundingbox, only: get_samples_boundingbox
       use ieee_arithmetic, only: ieee_is_nan
-      use m_drawthis
-      use m_pharosflow
-      use m_readyy
-      use m_qnerror
-      use m_get_samples_boundingbox
       use m_filez, only: thisisanumber, doclose
 
       integer, intent(inout) :: msam !< already opened file pointer to sample file

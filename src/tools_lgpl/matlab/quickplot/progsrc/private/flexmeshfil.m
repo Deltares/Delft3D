@@ -18,7 +18,7 @@ function varargout=flexmeshfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -166,6 +166,8 @@ switch Props.Geom
     case {'UGRID2D-NODE','UGRID2D-FACE'}
         Faces(Faces==0) = NaN;
         Ans.FaceNodeConnect = Faces;
+        faceMask = all(isnan(Ans.FaceNodeConnect),2);
+        Ans.FaceNodeConnect(faceMask,:) = [];
         Ans.X = NodeCoor(:,1);
         Ans.Y = NodeCoor(:,2);
         switch Props.Name
@@ -179,6 +181,7 @@ switch Props.Geom
                 else
                     Ans.Val = 1:size(Faces,1);
                 end
+                Ans.Val(faceMask) = [];
             case 'value'
                 Ans.Val = NodeCoor(:,3);
         end

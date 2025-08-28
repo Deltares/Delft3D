@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,15 +37,15 @@ module m_poshcheck
 contains
 
    subroutine poshcheck(key)
-      use m_rcirc
-      use m_flow
-      use m_flowgeom
-      use m_flowtimes
-      use m_partitioninfo
-      use m_timer
-      use m_gui
-      use m_okay
-      use m_set_col
+      use m_rcirc, only: rcirc
+      use m_flow, only: s1, hu, nodneg, jposhchk, s0, vol1, vol0, dp, testdryflood, epshu, numnodneg, au, eps6, u1, jamapflowanalysis, negativedepths
+      use m_flowgeom, only: bl, ndxi, kfs, xz, yz, nd
+      use m_flowtimes, only: dts, dsetb, dtmin
+      use m_partitioninfo, only: jampi, reduce_int_max
+      use m_timer, only: jatimer, starttimer, impireduce, stoptimer
+      use m_gui, only: jagui
+      use m_okay, only: okay
+      use m_set_col, only: setcol
 
       implicit none
 

@@ -1,7 +1,7 @@
 subroutine dimbub(error, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -81,7 +81,6 @@ subroutine dimbub(error, gdp)
     integer                       :: lfile  ! Number of non blank characters of file name 
     integer                       :: lkw    ! Length of keyword (:= 6) 
     integer                       :: luntmp ! Unit number of FILTMP 
-    integer, external             :: newlun
     integer                       :: mcount ! Nr. of bubble screens in M-direction
     integer                       :: ncount ! Nr. of bubble screens in N-direction
     integer                       :: nlook  ! Nr. of values to look for in a record 

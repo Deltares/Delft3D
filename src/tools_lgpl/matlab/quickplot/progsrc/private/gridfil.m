@@ -18,7 +18,7 @@ function varargout=gridfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -249,16 +249,23 @@ if Props.File~=0
     filetp=Attrib.FileType;
     switch filetp
         case {'wldep','wlfdep','trirst','boxfile'}
-            Dpsopt=qp_option(Attrib,'Dpsopt','default','max');
-            if ~isempty(strmatch('velocity',Props.Name))
-                val{1}=Attrib.Data{Fld(1)};
-                val{2}=Attrib.Data{Fld(2)};
-            elseif ~isempty(strmatch('horizontal velocity',Props.Name))
-                k=length(Fld)/2;
-                val{1}=cat(3,Attrib.Data{Fld(1:k)});
-                val{2}=cat(3,Attrib.Data{Fld(k+(1:k))});
+            if Props.NVal == 0.9
+                ThinDam = 1;
+                val = Attrib.Data([1,2,1,2]);
+                val{1} = ones(size(val{1}));
+                val{2} = ones(size(val{2}));
             else
-                val{1}=cat(3,Attrib.Data{Fld});
+                Dpsopt=qp_option(Attrib,'Dpsopt','default','max');
+                if ~isempty(strmatch('velocity',Props.Name))
+                    val{1}=Attrib.Data{Fld(1)};
+                    val{2}=Attrib.Data{Fld(2)};
+                elseif ~isempty(strmatch('horizontal velocity',Props.Name))
+                    k=length(Fld)/2;
+                    val{1}=cat(3,Attrib.Data{Fld(1:k)});
+                    val{2}=cat(3,Attrib.Data{Fld(k+(1:k))});
+                else
+                    val{1}=cat(3,Attrib.Data{Fld});
+                end
             end
             for iv=1:length(val)
                 if isfield(Attrib,'DOrder')
@@ -700,7 +707,7 @@ if dataongrid
         val{1}=reshape(val{1},szz1);
         val{1}(:,act<=0,:)=NaN;
         val{1}=reshape(val{1},szz);
-        for i=2:length(val),
+        for i=2:length(val)
             val{i}(:,isnan(val{1}))=NaN;
         end
     end
@@ -857,23 +864,30 @@ if ~isempty(Attribs)
         AttribName = relativepath(Attribs(i).Name,FI.FileName);
         switch Attribs(i).FileType
             case {'wldep','wlfdep','boxfile'}
-                for j=1:length(Attrib.Data)
-                    l=l+1;
-                    if length(Attrib.Data)>1
-                        Str=sprintf('field %i of %s',j,AttribName);
-                    else
-                        Str=AttribName;
-                    end
-                    DataProps(l,:)={Str   'sQUAD' 'xy'    [0 0 1 1 0]  1          1     ''        'd'   'd'      ''      i      j   };
-                    L=l;
-                    if length(Attrib.Data)==1
-                        l=l+1;
-                        DataProps(l,:)= ...
-                            {strcat('-',Str) 'sQUAD' 'xy'   [0 0 1 1 0]  1          1     ''        'd'   'd'      ''      i     -j   };
-                        L=[L l];
-                    end
-                    if isequal(qp_option(Attribs(i),'DLocation'),'cell centres')
-                        DataProps(L,8:9)={'z'};
+                if isequal(qp_option(Attribs(i),'DLocation'),'grid edges (U and V points)') && length(Attrib.Data) == 2
+                    l = l+1;
+                    Str = AttribName;
+                    DataProps(l,:) = {Str   'SGRID-EDGE' 'xy'    [0 0 1 1 0]  1        0.9     ''        'd'   'd'      ''      i      1:2   };
+                else
+                    j = 1;
+                    while j <= length(Attrib.Data)
+                        l = l+1;
+                        if length(Attrib.Data) > 1
+                            Str = sprintf('field %i of %s',j,AttribName);
+                        else
+                            Str = AttribName;
+                        end
+                        DataProps(l,:) = {Str   'sQUAD' 'xy'    [0 0 1 1 0]  1          1     ''        'd'   'd'      ''      i      j   };
+                        if isequal(qp_option(Attribs(i),'DLocation'),'cell centres')
+                            DataProps(L,8:9) = {'z'};
+                        end
+                        if length(Attrib.Data)==1
+                            DataProps(l+1,:) = DataProps(l,:);
+                            DataProps{l+1,1} = strcat('-',Str);
+                            DataProps{l+1,end} = -j;
+                            l = l+1;
+                        end
+                        j = j+1;
                     end
                 end
             case 'SWAN-output'
@@ -1770,7 +1784,7 @@ uicontrol('Parent',h0, ...
     'Position',[181 voffset 150 20], ...
     'Style','popupmenu', ...
     'horizontalalignment','right', ...
-    'String',{'grid points','cell centres'}, ...
+    'String',{'grid points','cell centres','grid edges (U and V points)'}, ...
     'Tag','dlocation')
 %
 voffset=voffset-25;

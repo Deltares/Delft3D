@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -69,7 +69,7 @@ contains
         !     ------   -----  ------------
         use m_logger_helper
         use m_extract_waq_attribute
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
+        use physicalconsts, only : C_TO_KELVIN
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
@@ -81,7 +81,7 @@ contains
         !
         !     Local declarations, constants in source
         !
-        PARAMETER (C1 = 18., &
+        REAL(kind = real_wp), PARAMETER :: C1 = 18., &
                 C2 = 5.64, &
                 C3 = 0.969, &
                 C4 = 0.673, &
@@ -91,7 +91,7 @@ contains
                 CRIT1 = 1.9, &
                 CRIT2 = 5.0, &
                 E = 2.718, &
-                KELVIN = real(CtoKelvin), &
+                KELVIN = real(C_TO_KELVIN, real_wp), &
                 VCMIN = 0.001, &
                 C11 = 1.293, &
                 C12 = 0.00367, &
@@ -111,7 +111,7 @@ contains
                 C28 = 0.0144, &
                 C29 = 0.00341, &
                 C30 = 2.2, &
-                CRIT3 = 0.3)
+                CRIT3 = 0.3
         !
         IN2 = INCREM(2)
         IN4 = INCREM(4)

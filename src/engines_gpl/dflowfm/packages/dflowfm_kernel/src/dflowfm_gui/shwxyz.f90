@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,18 +41,18 @@ contains
    ! NOTE: japes is disabled [AvD]
    subroutine SHWXYZ(X, Y, RD1, mmax, nmax, MC, NC, JAPERS, KEY, M, N)
       use precision, only: dp
-      use m_setxor
-      use m_orglocator
-      use m_dispos2
-      use m_disdep
-      use m_cir
-      use m_missing
-      use unstruc_colors
-      use m_locatora
-      use m_helpnow
-      use m_set_col
-      use m_movabs
-      use m_help
+      use m_setxor, only: setxor
+      use m_orglocator, only: orglocator
+      use m_dispos2, only: dispos2
+      use m_disdep, only: disdep
+      use m_cir, only: cir
+      use m_missing, only: xymis, dmiss
+      use unstruc_colors, only: x1, x2, y1, y2, ncoltx, rcir
+      use m_locatora, only: xlc, ylc
+      use m_helpnow, only: wrdkey, nlevel
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_help, only: help
 
       implicit none
 

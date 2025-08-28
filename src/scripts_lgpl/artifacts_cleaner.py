@@ -1,7 +1,7 @@
 '''
 Description: DIMR artifacts organisator
 -----------------------------------------------------
-Copyright (C)  Stichting Deltares, 2021
+Copyright (C)  Stichting Deltares, 2025
 '''
 
 from __future__ import print_function   # if code has to work in python 2 and 3!

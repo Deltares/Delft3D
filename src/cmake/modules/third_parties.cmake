@@ -37,9 +37,6 @@ set(netcdf_version "netcdf-c-4.9.2")
 # polypack
 set(polypack_module ${third_party_open_path}/polypack)
 
-# icepack
-set(icepack_module ${third_party_open_path}/icepack/${cmake_directory})
-
 # interacter_stub
 set(interacter_stub_module ${third_party_path}/interacter_stub)
 
@@ -65,7 +62,8 @@ set(zlib_module ${third_party_open_path}/zlib)
 set(curl_module ${third_party_open_path}/curl)
 set(hdf5_module ${third_party_open_path}/hdf5)
 set(microsoftredist_module ${third_party_open_path}/microsoftredist)
-
+set(googletest_module ${third_party_open_path}/googletest)
+set(f90tw_module ${third_party_open_path}/f90tw)
 
 if(WIN32)
     set(Tecplot_module ${third_party_open_path}/Tecplot)

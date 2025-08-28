@@ -8,7 +8,7 @@ function nc = nc_interpret(nc,NumPartitions,PartNr_StrOffset,nDigits,Part1)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -1895,7 +1895,7 @@ nPart = length(Partitions);
 ugrids = zeros(nData,1);
 for i = 1:nData
     M = P1.Dataset(i).Mesh;
-    if iscell(M) && numel(M)>=4 && isequal(M{1},'ugrid') && isequal(M{4},-1)
+    if iscell(M) && numel(M)>=4 && ismember(M{1},{'ugrid','ugrid1d_network'}) && isequal(M{4},-1)
         ugrids(i) = i;
     end
 end
@@ -1959,7 +1959,7 @@ for mesh = NumMeshes:-1:1
         file = Partitions{p}.Filename;
         xNodes{p} = nc_varget(file,xNodeVar);
         yNodes{p} = nc_varget(file,yNodeVar);
-        for partinfo = 1:3
+        for partinfo = 1:4
             try
                 switch partinfo
                     case 1
@@ -1979,6 +1979,15 @@ for mesh = NumMeshes:-1:1
                         % for com files ...
                         iFaces{p} = nc_varget(file,'FlowElemGlobalNr');
                         faceDomain{p} = nc_varget(file,'FlowElemDomain');
+                    case 4
+                        % fallback, use all values of domain 1
+                        if isempty(faceDim)
+                            iNodes{p} = (1:nNodes(p))';
+                            nodeDomain{p} = zeros([nNodes(p),1]);
+                        else
+                            iFaces{p} = (1:nFaces(p));
+                            faceDomain{p} = zeros([nFaces(p),1]);
+                        end
                 end
                 break
             catch
@@ -1993,7 +2002,6 @@ for mesh = NumMeshes:-1:1
         progressbar((NumMeshes-mesh)/NumMeshes + (p/(2*nPart))/NumMeshes, hPB);
     end
     if isempty(faceDim) % 1D mesh
-        nGlbNodes = max(cellfun(@max,iNodes)) - min(cellfun(@min,iNodes)) + 1;
         nGlbFaces = 0;
         glbFNC = [];
     else

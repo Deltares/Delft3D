@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -223,8 +223,8 @@ contains
             ! Diffuse fractions in active layer
             !
             if (stmpar%morlyr%settings%active_layer_diffusion > 0) then
-               call fm_diffusion_active_layer() 
-            endif
+               call fm_diffusion_active_layer()
+            end if
             !
             ! Determine new thickness of transport layer
             !
@@ -2048,10 +2048,10 @@ contains
          sumflux = sumflux - flux
       end if
 
-    end subroutine fm_sumflux
-    
-    !> Apply diffusion to sediment mass in the active layer. 
-    subroutine fm_diffusion_active_layer()
+   end subroutine fm_sumflux
+
+   !> Apply diffusion to sediment mass in the active layer.
+   subroutine fm_diffusion_active_layer()
       use precision, only: dp
       use m_fm_advec_diff_2d, only: fm_advec_diff_2d
       use m_fm_erosed, only: lsedtot, tratyp, stmpar
@@ -2060,42 +2060,41 @@ contains
       use m_alloc, only: realloc
       use m_sediment, only: aldiff_links
       use m_turbulence, only: BACKGROUND_DIFFUSION_OFF
-      
-      real(kind=dp), dimension(1), parameter :: ACTIVE_LAYER_BACKGROUND_DIFFUSION_FACTOR=[BACKGROUND_DIFFUSION_OFF] !< background diffusion factor [-]. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional. 
-      integer, parameter :: LIMITER_TYPE=4 !< It should be made equal to a parameter inside, for instance, `m_flowparameters`. 
+
+      real(kind=dp), dimension(1), parameter :: ACTIVE_LAYER_BACKGROUND_DIFFUSION_FACTOR = [BACKGROUND_DIFFUSION_OFF] !< background diffusion factor [-]. It cannot be a `parameter` because it is `inout` in `comp_fluxhor3D` because it is optional.
+      integer, parameter :: LIMITER_TYPE = 4 !< It should be made equal to a parameter inside, for instance, `m_flowparameters`.
    !!
    !! I/O
    !!
 
-
    !!
    !! Local variables
    !!
-      real(kind=dp), dimension(:)  , allocatable :: uadv
-      real(kind=dp), dimension(:)  , allocatable :: qadv
-      real(kind=dp), dimension(:)  , allocatable :: sour
-      real(kind=dp), dimension(:)  , allocatable :: sink
-      
+      real(kind=dp), dimension(:), allocatable :: uadv
+      real(kind=dp), dimension(:), allocatable :: qadv
+      real(kind=dp), dimension(:), allocatable :: sour
+      real(kind=dp), dimension(:), allocatable :: sink
+
       integer :: l
       integer :: ierror
 
    !!
    !! Execute
    !!
-      
+
       ierror = 0
-      
+
       call realloc(uadv, lnx, keepExisting=.false., fill=0.0_dp)
       call realloc(qadv, lnx, keepExisting=.false., fill=0.0_dp)
       call realloc(sour, ndx, keepExisting=.false., fill=0.0_dp)
       call realloc(sink, ndx, keepExisting=.false., fill=0.0_dp)
-      
+
       do l = 1, lsedtot
-         if (has_bedload(tratyp(l))) then      
-            call fm_advec_diff_2d(stmpar%morlyr%state%msed(l,1,:), uadv, qadv, sour, sink, aldiff_links, ACTIVE_LAYER_BACKGROUND_DIFFUSION_FACTOR, LIMITER_TYPE, ierror)   
+         if (has_bedload(tratyp(l))) then
+            call fm_advec_diff_2d(stmpar%morlyr%state%msed(l, 1, :), uadv, qadv, sour, sink, aldiff_links, ACTIVE_LAYER_BACKGROUND_DIFFUSION_FACTOR, LIMITER_TYPE, ierror)
          end if
       end do
-      
-    end subroutine fm_diffusion_active_layer
-    
+
+   end subroutine fm_diffusion_active_layer
+
 end module m_fm_bott3d

@@ -1,4 +1,6 @@
 # Specify the modules to be included
+include(${CMAKE_CURRENT_LIST_DIR}/../miscellaneous/unit_test_configuration.cmake)
+
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()
@@ -47,8 +49,8 @@ if(NOT TARGET flow1d_implicit)
 endif()
 
 # Waq
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_base.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_dflowfm_online_coupling.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq/dwaq_base.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq/dwaq_dflowfm_online_coupling.cmake)
 
 # Morphology
 if(NOT TARGET morphology_plugins_c)
@@ -95,8 +97,6 @@ endif()
 if(NOT TARGET dfm_api_access)
     add_subdirectory(${checkout_src_root}/${dfm_api_access_module} dfm_api_access)
 endif()
-
-
 
 # Third party libraries
 # kdtree2
@@ -192,11 +192,6 @@ if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
 endif()
 
-# icepack
-if(NOT TARGET icepack)
-    add_subdirectory(${checkout_src_root}/${icepack_module} icepack)
-endif()
-
 if(NOT WITH_INTERACTER)
     # Use interacter_stub instead
     if(NOT TARGET interacter_stub)
@@ -234,11 +229,11 @@ if(NOT WITH_INTERACTER)
     if(NOT TARGET test_dflowfm_kernel)
         add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
     endif()
-    
+
     if(NOT TARGET test_deltares_common)
         add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
     endif()
-    
+
     if(NOT TARGET test_ec_module)
         add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
     endif()

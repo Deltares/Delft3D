@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,12 +41,12 @@ contains
 
    subroutine split_pol(Ni, Nj, NPLmax, MAXsplit)
       use precision, only: dp
-      use m_polygon
-      use m_tpoly
-      use m_alloc
-      use m_missing
+      use m_polygon, only: npl, savepol, zpl, restorepol, xpl, ypl
+      use m_tpoly, only: pol_to_tpoly, tpoly_to_pol, dealloc_tpoly, tpoly
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss
+      use m_wrildb, only: wrildb
       use messagehandling, only: LEVEL_WARN, mess
-      use m_wrildb
       use m_addtopol, only: addtopol
       use m_filez, only: doclose, newfil
 

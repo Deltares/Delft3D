@@ -21,6 +21,21 @@ object LinuxRuntimeContainers : BuildType({
     name = "Runtime Containers"
     buildNumberPattern = "%dep.${LinuxBuild.id}.product%: %build.vcs.number%"
 
+    params {
+        param("runtime_container_image", "containers.deltares.nl/delft3d-dev/delft3d-runtime-container:alma%almalinux_version%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
+        param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:alma%almalinux_version%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
+    }
+
+    features {
+        matrix {
+           param("almalinux_version", listOf(
+              value("8", label = "AlmaLinux 8"),
+              value("9", label = "AlmaLinux 9"),
+              value("10", label = "AlmaLinux 10")
+           ))
+        }
+    }
+
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
@@ -28,52 +43,9 @@ object LinuxRuntimeContainers : BuildType({
 
     steps {
         mergeTargetBranch {}
-        script {
-            name = "Remove system libraries"
-            workingDir = "dimrset/lib"
-            scriptContent = """
-                rm -fv libuuid.so.* \
-                    libdl.so.* \
-                    librt.so.* \
-                    libpthread.so.* \
-                    libm.so.* \
-                    libgcc_s.so.* \
-                    libz.so.* \
-                    libselinux.so.* \
-                    libbz2.so.* \
-                    libcom_err.so.* \
-                    libcurl.so.* \
-                    libgssapi_krb5.so.* \
-                    libidn2.so.* \
-                    libk5crypto.so.* \
-                    libkeyutils.so.* \
-                    libkrb5.so.* \
-                    libkrb5support.so.* \
-                    liblzma.so.* \
-                    libnghttp2.so.* \
-                    libpcre2-8.so.* \
-                    libresolv.so.* \
-                    libsasl2.so.* \
-                    libsqlite3.so.* \
-                    libunistring.so.* \
-                    libxml2.so.* \
-                    libzstd.so.*
-            """.trimIndent()
-        }
-        script {
-            name = "Set execute rights"
-            scriptContent = """
-                chmod a+x dimrset/bin/*
-            """.trimIndent()
-        }
-        script {
+        exec {
             name = "Copy example and readme.txt"
-            scriptContent = """
-                mkdir ./example && cp -r examples/dflowfm/01_dflowfm_sequential/* ./example
-                rm ./example/run.* ./example/run_docker.sh
-                cp -f ci/teamcity/Delft3D/linux/docker/readme.txt .
-                cp -f ci/teamcity/Delft3D/linux/docker/delft3dfm_latest_readme.txt .
-            """.trimIndent()
+            path = "ci/teamcity/Delft3D/linux/scripts/copyExampleAndReadMe.sh"
         }
         dockerCommand {
             name = "Docker build Delft3D runtime image"
@@ -85,15 +57,16 @@ object LinuxRuntimeContainers : BuildType({
                 platform = DockerCommandStep.ImagePlatform.Linux
                 namesAndTags = """
                     runtime-container
-                    containers.deltares.nl/delft3d/delft3d-runtime-container:alma8-%build.vcs.number%
+                    %runtime_container_image%
                 """.trimIndent()
                 commandArgs = """
                     --provenance=false
                     --pull
                     --no-cache
+                    --build-arg BASE_IMAGE=containers.deltares.nl/docker-proxy/library/almalinux:%almalinux_version%
                     --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
-                    --build-arg BUILDTOOLS_IMAGE_TAG=%dep.${LinuxBuildTools.id}.env.IMAGE_TAG%
+                    --build-arg BUILDTOOLS_IMAGE_TAG=%dep.${LinuxBuild.id}.build_tools_image_tag%
                 """.trimIndent()
                 // --provenance=false is to prevent metadata to be pushed as unknown/unknown os/arch https://docs.docker.com/build/metadata/attestations/attestation-storage/
             }
@@ -106,7 +79,7 @@ object LinuxRuntimeContainers : BuildType({
                 }
                 contextDir = "."
                 platform = DockerCommandStep.ImagePlatform.Linux
-                namesAndTags = "containers.deltares.nl/delft3d/test/delft3d-test-container:alma8-%build.vcs.number%"
+                namesAndTags = "%testbench_container_image%"
                 commandArgs = """
                     --build-arg GIT_COMMIT=%build.vcs.number%
                     --build-arg GIT_BRANCH=%teamcity.build.branch%
@@ -117,8 +90,8 @@ object LinuxRuntimeContainers : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d/delft3d-runtime-container:alma8-%build.vcs.number%
-                    containers.deltares.nl/delft3d/test/delft3d-test-container:alma8-%build.vcs.number%
+                    %runtime_container_image%
+                    %testbench_container_image%
                 """.trimIndent()
             }
         }

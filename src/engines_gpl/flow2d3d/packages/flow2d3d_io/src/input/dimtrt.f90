@@ -1,7 +1,7 @@
 subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -76,7 +76,6 @@ subroutine dimtrt(lunmd     ,lundia    ,error     ,nrrec     ,gdp       )
     integer        , dimension(maxfld)            :: ifield
     integer        , dimension(maxfld)            :: itype
     integer        , dimension(maxfld)            :: lenchr
-    integer                            , external :: newlun
     logical                                       :: lftrto
     logical                                       :: newkw
     real(fp)       , dimension(maxfld)            :: rfield

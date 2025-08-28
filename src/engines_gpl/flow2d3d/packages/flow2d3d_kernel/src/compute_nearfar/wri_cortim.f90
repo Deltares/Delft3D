@@ -5,7 +5,7 @@ subroutine wri_cortim(u0     ,v0       ,rho       ,thick  ,kmax   ,dps    , &
                     & kfsmn0 ,kfsmx0   ,dzs0      , gdp   )
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -104,7 +104,6 @@ subroutine wri_cortim(u0     ,v0       ,rho       ,thick  ,kmax   ,dps    , &
     integer                                :: nm_amb
     integer                                :: nmd_amb
     integer                                :: ndm_amb
-    integer                 , external     :: newlun
     integer                                :: luntmp
     real(fp)                               :: deg2rad
     real(fp)                               :: drohj
@@ -239,12 +238,11 @@ subroutine wri_cortim(u0     ,v0       ,rho       ,thick  ,kmax   ,dps    , &
     !
     ! Write Cortime input file
     !
-    luntmp = newlun(gdp)
     linkinp   = .true.
     do while (linkinp)
        inquire (file=trim(gdp%gdnfl%base_path(idis))//'cortime_'//trim(gdp%runid)//'_'//c_inode//'.linkinp',exist=linkinp)
     enddo
-    open (luntmp,file=trim(gdp%gdnfl%base_path(idis))//'cortime_'//trim(gdp%runid)//'_'//c_inode//'.linkinp',status='new')
+    open (newunit=luntmp,file=trim(gdp%gdnfl%base_path(idis))//'cortime_'//trim(gdp%runid)//'_'//c_inode//'.linkinp',status='new')
     write (luntmp,'(''CorTime v7.0'')')
     write (luntmp,'()')
     write (luntmp,'(''File name='',a1,a )') tab,'cortime_'//trim(gdp%runid)//'_'//c_inode//'.linkinp'

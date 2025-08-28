@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,11 +43,10 @@ contains
 !> groundwater flow explicit
    subroutine setgrwflowexpl()
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_flowtimes
-      use m_hydrology_data
-      use horton
+      use m_flowgeom, only: ndx, ndx2d, bl, ba, lnx1d, lnxi, ln, wu, dxi, bai, lnx
+      use m_flow, only: qingrw, qoutgrw, volgrw, infiltrationmodel, dfm_hyd_infilt_horton, hortonmininfcap, hortonmaxinfcap, hortondecreaserate, hortonrecoveryrate, infiltcap0, infiltcap, hs, hortonstate, sgrw1, qin, dfm_hyd_infilt_const, jagrw, vol1, infilt, sgrw0, h_transfer, s1, pgrw, bgrw, conductivity, porosgrw, dfm_hyd_infilt_darcy, h_capillair, unsatfac, hu
+      use m_flowtimes, only: dts
+      use horton, only: infiltration_horton_formula
       use m_wind, only: jarain, rain
 
       real(kind=dp), parameter :: mmphr_to_mps = 1d-3 / 3600d0

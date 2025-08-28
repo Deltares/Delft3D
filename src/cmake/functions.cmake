@@ -203,7 +203,7 @@ function(configure_package_installer name description_file  major minor build ge
   set(CPACK_VERBATIM_VARIABLES YES)
   set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${name}")
-  set(CPACK_PACKAGE_VENDOR "Deltares 2024")
+  set(CPACK_PACKAGE_VENDOR "Deltares 2025")
   set(CPACK_PACKAGE_DESCRIPTION_FILE "${description_file}")
   set(CPACK_RESOURCE_FILE_LICENSE "${checkout_src_root}/Copyright.txt")
   set(CPACK_PACKAGE_VERSION_MAJOR "${major}")
@@ -300,7 +300,7 @@ function(create_test test_name)
     )
     # Set environment paths to find *.so/*.dll files Make sure DLL is found by adding its directory to PATH
     if (UNIX)
-        set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib;${LD_LIBRARY_PATH}")
+        set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}")
     endif (UNIX)
     if (WIN32)
         set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/lib\;$ENV{PATH}")
@@ -309,7 +309,7 @@ function(create_test test_name)
 
     # Link libraries, include ftnunit in dependencies
     set(op_dependencies ftnunit ${op_dependencies})
-    target_link_libraries(${test_name} ${op_dependencies})
+    target_link_libraries(${test_name} PRIVATE ${op_dependencies})
 
     # Other link libraries
     if (WIN32)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -259,9 +259,9 @@ contains
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_gateloweredgelevel, irefdate, tzone, tunit, time, zgate)
       end if
 
-      if( update_dambreak_breach(time, dts) /= 0 ) then
-          success = .false.
-          goto 888
+      if (update_dambreak_breach(time, dts) /= 0) then
+         success = .false.
+         goto 888
       end if
 
       if (network%rgs%timeseries_defined) then

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@ module m_golddis
 contains
    subroutine GOLDDIS(AX, BX, CX, TOL, P, P2, Y, Y2, N, XMIN, DIS, SSQ, H)
       use precision, only: dp
-      use m_getdis
+      use m_getdis, only: getdis
 
       integer :: n
       real(kind=dp) :: P(N), P2(N), Y(N), Y2(N)

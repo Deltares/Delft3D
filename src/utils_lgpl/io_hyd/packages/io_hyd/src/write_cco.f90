@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@
       npart = 0
       rdum  = 0.0
 
-      call file_cco%open()
+      call file_cco%open(replace = .true.)
       lun    = file_cco%unit
       filtyp = file_cco%type
 

@@ -113,7 +113,7 @@ rem =================================
         goto :usage
     )
 
-    set configs="all fm-suite d3d4-suite dflowfm_interacter dimr drr dwaq dwaves flow2d3d swan tests tools tools_gpl"
+    set configs="all fm-suite d3d4-suite dflowfm_interacter dimr drr dwaq dwaves flow2d3d swan tools tools_gpl"
     set "modified=!configs:%-config%=!"
     if !modified!==!configs! (
         echo ERROR: Configuration !-config! not recognized
@@ -438,7 +438,6 @@ rem =======================
     echo   flow2d3d           : Delft3D-FLOW
     echo   swan               : SWAN
     echo   fbc                : FBC-tools
-    echo   tests
     echo   tools
     echo   tools_gpl
     echo.
@@ -452,7 +451,7 @@ rem extra four spaces required for aligning Example, compensating for ^ characte
     echo -keep_build: do not delete the 'build_^<CONFIG^>' and 'install_^<CONFIG^>' folders.       Example: -keep_build
     echo.
     echo More info  : https://oss.deltares.nl/web/delft3d/source-code
-    echo About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/doc/README
+    echo About CMake: https://github.com/Deltares/Delft3D/tree/main/src/cmake/doc/README
     echo.
     set ERRORLEVEL=1
     goto :end

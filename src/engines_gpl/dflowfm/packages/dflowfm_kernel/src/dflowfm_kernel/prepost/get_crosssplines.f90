@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,9 +44,9 @@ contains
 
    subroutine get_crosssplines(num, xs1, ys1, ncs, ics, Lorient, t, cosphi)
       use precision, only: dp
-      use m_splines
-      use m_spline2curvi
-      use m_alloc
+      use m_splines, only: mcs, nump, xsp, ysp
+      use m_spline2curvi, only: dtolcos
+      use m_alloc, only: realloc
       use stdlib_sorting, only: sort_index
 
       integer, intent(in) :: num !< number of spline control points

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,10 +44,9 @@ contains
    !! If arrays are already large enough, nothing is done (specifically, no shrinking is done).
    subroutine reallocsrc(new_size_src, new_num_points)
       use m_transport, only: NUMCONST
-      use fm_external_forcings_data
-      use m_alloc
-      use m_missing
-      use precision, only: dp
+      use fm_external_forcings_data, only: ksrc, msrc, xsrc, ysrc, qsrc, dp, tmsrc, sasrc, ccsrc, arsrc, cssrc, snsrc, zsrc, zsrc2, srsn, jamess, qstss, srcname, nxsrc, qsrcavg, vsrccum, vsrccum_pre
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss
 
       integer, intent(in) :: new_size_src !< Desired *minimum* size of sourcesink arrays.
       integer, intent(in) :: new_num_points !< Desired *minimum* size of x/y arrays.

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,13 +44,12 @@ contains
 
    subroutine read_samples_from_arcinfo(filnam, jadoorladen, japrompt) ! reaasc
       use m_reaarc, only: reaarc
-      use m_missing
-      use m_samples
+      use m_samples, only: savesam, ns, increasesam, xs, ys, zs, mxsam, mysam, ipstat, ipstat_notok, ipsam, ipstat_ok
+      use m_arcinfo, only: mca, nca, maxsamarc, x0, dxa, y0, dya, d
+      use m_drawthis, only: ndraw
+      use m_readyy, only: readyy
+      use m_get_samples_boundingbox, only: get_samples_boundingbox
       use m_samples_refine, only: iHesstat, iHesstat_DIRTY
-      use m_arcinfo
-      use m_drawthis
-      use m_readyy
-      use m_get_samples_boundingbox
       use m_filez, only: oldfil, doclose, message
 
       character(len=*), intent(in) :: filnam !< Name of *.asc file.

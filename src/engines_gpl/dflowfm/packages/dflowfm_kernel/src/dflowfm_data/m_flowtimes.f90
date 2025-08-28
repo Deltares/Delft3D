@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -286,7 +286,7 @@ contains
 !> Resets only flow times variables intended for a restart of flow simulation.
 !! Upon loading of new model/MDU, use default_flowtimes() instead.
    subroutine reset_flowtimes()
-      use Timers
+
       dtprev = dt_init !< previous computational timestep (s)  (1s is a bit like sobek)
       dts = dt_init !< internal computational timestep (s)
       dti = 1.0_dp / dts !< inverse  computational timestep (1/s)
@@ -354,7 +354,7 @@ contains
    end subroutine reset_flowtimes
 
    subroutine reset_timers()
-      use Timers
+      use Timers, only: timini, timon, timstrt
 
       call timini()
       timon = .true.

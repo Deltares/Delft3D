@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,7 +35,7 @@
 module m_physcoef
    use precision, only: dp
    use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
-   
+
    implicit none
 
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
@@ -102,11 +102,11 @@ module m_physcoef
 
    real(kind=dp) :: Stanton !< coeff for convective  heat flux, if negative , take wind Cd
    real(kind=dp) :: Dalton !< coeff for evaporative heat flux, if negative , take wind Cd
-   real(kind=dp) :: Tempmax = -999.0_dp !< limit
-   real(kind=dp) :: Tempmin = 0.0_dp !< limit
-   integer :: Jaallowcoolingbelowzero = 0 !< Allow cooling below 0 degrees C (0=default since 2017)
-   real(kind=dp) :: Salimax = -999.0_dp !< limit
-   real(kind=dp) :: Salimin = 0.0_dp !< limit
+   real(kind=dp) :: temperature_max = -999.0_dp !< upper temperature limit
+   real(kind=dp) :: temperature_min = 0.0_dp !< lower temperature limit
+   logical :: use_salinity_freezing_point = .false. !< a flag to use a salinity dependent freezing point
+   real(kind=dp) :: salinity_max = -999.0_dp !< upper salinity limit
+   real(kind=dp) :: salinity_min = 0.0_dp !< lower salinity limit
    real(kind=dp) :: epshstem = 0.001_dp !< only compute heatflx + evap if depth > trsh
    real(kind=dp) :: surftempsmofac = 0.0_dp !< surface temperature smoothing factor (0 - 10^5)
    real(kind=dp) :: Soiltempthick = 0.0_dp !< if soil buffer desired make thick > 0, e.g. 0.2 m

@@ -65,9 +65,11 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Coverage  ","CoverEM05 ",   6,"x",1
 "Coverage  ","IBotSeg   ",   7,"x",1
 "Coverage  ","RadSurf   ",   8,"x",1
-"DAYRAD    ","DayRadSurf",   1,"x",1
-"DAYRAD    ","RadMaxHour",   2,"x",1
-"DAYRAD    ","RadMaxDayA",   3,"x",1
+"AveRadSurf","SumAveRad ",   1," ",1
+"AveRadSurf","RadSurfAve",   2,"x",1
+"DisRadSurf","RadSurf   ",   1,"x",1
+"DisRadSurf","RadMaxHour",   2,"x",1
+"DisRadSurf","RadMaxDayA",   3,"x",1
 "TempMode  ","Temp      ",   1,"x",1
 "TempMode  ","SurTemp   ",   2,"x",1
 "TempMode  ","NatTempp1 ",   3,"x",1
@@ -151,9 +153,9 @@ outppr,outpit,outpnm,outpdo,outpsx
 "CalcRad   ","Rad       ",   1,"x",1
 "CalcRad   ","RadBot    ",   2,"x",1
 "CalcRad   ","atten     ",   3," ",1
-"CalcRadDay","RadDay    ",   1,"x",1
-"CalcRadDay","RadBotDay ",   2,"x",1
-"CalcRadDay","atten     ",   3," ",1
+"CalcRadAve","RadAve    ",   1,"x",1
+"CalcRadAve","RadBotAve ",   2,"x",1
+"CalcRadAve","atten     ",   3," ",1
 "Daylength ","DayL      ",   1,"x",1
 "Reflection","fRefl     ",   1,"x",1
 "DepAve    ","BloomDepth",   1,"x",1

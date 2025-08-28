@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,7 +30,7 @@
 !
 !> holds indices for all structure types
 module m_structures_indices
-   
+
    implicit none
 
 ! COMMON indices for all structure types:
@@ -93,8 +93,8 @@ module m_structures_indices
    integer, parameter :: IVAL_DB_DISCUM = NUMVALS_COMMON + 5 !< Index of cumulative discharge for dambreak
    integer, parameter :: NUMEXTVALS_DAMBREAK = 5 !< Number of extra variables for dambreak
    integer, parameter :: NUMVALS_DAMBREAK = NUMVALS_COMMON + NUMEXTVALS_DAMBREAK !< Total number of variables for dambreak
-   
-      ! Culvert, extra variables:
+
+   ! Culvert, extra variables:
    integer, parameter :: IVAL_CL_CRESTL = NUMVALS_COMMON + 1 !< Index of culvert crest level
    integer, parameter :: IVAL_CL_STATE = NUMVALS_COMMON + 2 !< Index of culvert state (0: closed, 1: free weir, 2: drowned/submerged weir)
    integer, parameter :: IVAL_CL_EDGEL = NUMVALS_COMMON + 3 !< Index of culvert gate lower edge level
@@ -117,8 +117,8 @@ module m_structures_indices
    integer, parameter :: IVAL_GATE_WIDTHWET = NUMVALS_COMMON_GATE + 6 !< Width of wet links at upstream (used for IVAL_GATE_FLOWH)
    integer, parameter :: NUMEXTVALS_GATE = 6 !< Number of extra variables for gate
    integer, parameter :: NUMVALS_GATEGEN = NUMVALS_COMMON_GATE + NUMEXTVALS_GATE !< Total number of variables for gate
-   
-     ! Compound structure
+
+   ! Compound structure
    integer, parameter :: NUMVALS_CMPSTRU = NUMVALS_COMMON !< Total number of variables for compound structure, no extra variables.
 
    ! Pump shares the first 9 indices in common indices, extra variables are as follows:
@@ -143,5 +143,4 @@ module m_structures_indices
    integer :: NUMVALS_CDAM = 4 !< Number of variables for controble dam
    integer :: NUMVALS_CGEN = 4 !< Number of variables for general structure (old ext file)
 
- 
 end module m_structures_indices

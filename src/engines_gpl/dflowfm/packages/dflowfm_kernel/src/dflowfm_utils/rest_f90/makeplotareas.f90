@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,15 +42,15 @@ contains
 
    subroutine MAKEPLOTAREAS(NUMROW, NUMCOL, nsize)
       use precision, only: dp
-      use m_dscreens
+      use m_dscreens, only: x1sc, x2sc, y1sc, y2sc, numsc
 
       real(kind=dp) :: dx
       real(kind=dp) :: dy
       integer :: i, nsize
       integer :: j
       integer :: nsc
-      integer :: numcol
-      integer :: numrow
+      integer, intent(in) :: numcol
+      integer, intent(in) :: numrow
       real(kind=dp) :: xb
       real(kind=dp) :: xm
       real(kind=dp) :: xz

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ module m_fullscreen
 contains
 
    subroutine FULLSCREEN()
-      use m_view_port
+      use m_view_port, only: viewport
       call viewport(0.0, 0.0, 1.0, 1.0)
       return
    end

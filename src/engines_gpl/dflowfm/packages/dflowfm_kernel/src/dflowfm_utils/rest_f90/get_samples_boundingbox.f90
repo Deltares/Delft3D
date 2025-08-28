@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,8 +34,8 @@ module m_get_samples_boundingbox
 contains
 !>    determine sample bounding box
    subroutine get_samples_boundingbox()
-      use m_samples
-      use m_missing
+      use m_samples, only: xsammin, xsammax, ysammin, ysammax, ns, xs, ys, zs
+      use m_missing, only: dmiss
 
       integer :: i
 

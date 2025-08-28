@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,8 +46,8 @@ contains
    subroutine CHECKSPL(X, Y, mmax, nmax, MCS, NCS)
       use m_charow, only: charow
       use precision, only: dp
-      use m_missing
-      use m_numpold
+      use m_missing, only: xymis
+      use m_numpold, only: numpold
 
       integer :: mmax, nmax, mcs, ncs
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)

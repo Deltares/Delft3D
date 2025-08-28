@@ -18,7 +18,7 @@ function varargout=swanfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -142,10 +142,12 @@ if XYRead
         Ans.YUnits = FI.UnitXY;
     else
         Ans.X  = FI.Frequencies(idx{M_});
+        Ans.XName = Props.MName;
         Ans.XUnits = 'Hz';
         if Props.DimFlag(N_)
             Ans.X  = repmat(Ans.X',1,length(idx{N_}));
             Ans.Y = repmat(FI.Directions(idx{N_}),length(idx{M_}),1);
+            Ans.YName = Props.NName;
             Ans.YUnits = 'deg';
         end
     end

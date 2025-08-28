@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,7 +34,7 @@ module m_krec5
 contains
    subroutine KREC5(XX, YY, XD, YD)
       use precision, only: dp
-      use m_pfiller_core
+      use m_pfiller_core, only: pfillercore
 
       real(kind=dp) :: xd
       real(kind=dp) :: xx

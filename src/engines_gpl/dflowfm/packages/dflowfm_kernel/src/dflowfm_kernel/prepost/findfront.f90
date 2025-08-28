@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
    subroutine findfront(mc, nc, mmax, nmax, xc, yc, num, xf, yf, idxf, nf)
       use precision, only: dp
       use m_missing, only: dmiss
-      use m_get_lr
+      use m_get_lr, only: get_lr
 
       implicit none
 

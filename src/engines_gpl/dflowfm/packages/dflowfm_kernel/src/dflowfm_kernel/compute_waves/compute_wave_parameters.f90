@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -47,14 +47,13 @@ contains
    ! compute uorb, rlabda for input in other subroutines
    subroutine compute_wave_parameters()
       use precision, only: dp
-      use m_xbeach_data
-      use m_waves
+      use m_waves, only: hwav, gammax, ustokes, vstokes, twav, hwavcom, twavcom, phiwav, sxwav, sywav, mxwav, mywav, distot, dsurf, dwcap, jonswapgamma0, sbxwav, sbywav, hwavuni
+      use m_waveconst, only: wave_swan_online, no_stokes_drift, wave_nc_offline, wave_surfbeat, wave_uniform
       use m_flow, only: jawave, s1, kmx, jawavestokes, hu, flowwithoutwaves, epshu, ag, hs, waveforcing
       use m_flowgeom, only: bl, lnx, ln, csu, snu, ndx
       use mathconsts, only: sqrt2_hp
       use m_transform_wave_physics, only: transform_wave_physics_hp
       use m_wind, only: wx, wy
-      use m_waveconst
 
       integer :: k1, k2, k, L
       integer :: ierror

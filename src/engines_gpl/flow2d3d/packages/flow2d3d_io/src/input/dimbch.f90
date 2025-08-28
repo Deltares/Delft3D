@@ -2,7 +2,7 @@ subroutine dimbch(lunmd     ,lundia    ,error     ,nrrec     ,kc        , &
                 & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -76,7 +76,6 @@ subroutine dimbch(lunmd     ,lundia    ,error     ,nrrec     ,kc        , &
     integer                          :: lstat
     integer                          :: luntmp  ! Unit number of FILTMP 
     integer                          :: mcmp    ! Logical unit number 
-    integer, external                :: newlun
     integer                          :: nlook   ! Nr. of values to look for in a record 
     integer                          :: ntrec   ! Current record counter. It's value is changed to detect if all records in the MD-file have been read 
     logical                          :: defaul  ! Flag to detrmine if a default value is allowed when no value is read 

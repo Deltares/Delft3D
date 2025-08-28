@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -168,7 +168,7 @@ module m_ec_quantity
          use netcdf
          use netcdf_utils, only: ncu_get_att
          use string_module
-         use physicalconsts, only : CtoKelvin
+         use physicalconsts, only : C_TO_KELVIN
          use io_ugrid 
 
          implicit none
@@ -219,7 +219,7 @@ module m_ec_quantity
 
          if (units == 'K' .or. units == 'KELVIN') then
             ! convert Kelvin to degrees Celsius (kernel expects degrees Celsius)
-            add_offset = add_offset - CtoKelvin
+            add_offset = add_offset - C_TO_KELVIN
          end if
 
          if (add_offset /= 0.0_hp) then

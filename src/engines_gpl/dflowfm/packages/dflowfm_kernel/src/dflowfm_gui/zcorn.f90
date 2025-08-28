@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,15 +31,14 @@
 !
 
 module m_zcorn
-
+   use precision, only: dp
    implicit none
 
 contains
 
    real(kind=dp) function zcorn(k) ! get various values at flow cell corners
-      use precision, only: dp
-      use m_flowgeom
-      use m_drawthis
+      use m_flowgeom, only: ucnx, ucny
+      use m_drawthis, only: ndraw
       implicit none
 
       integer :: k, nodval

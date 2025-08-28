@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_statisticsfinalise
 contains
 
    subroutine statisticsfinalise()
-      use m_statistics
+      use m_statistics, only: numdif, avedif, cumavedif, rmsdif, sqadif, cumrmsdif, dmxdif, cumdmxdif, numcum
 
       if (numdif /= 0) then
          avedif = avedif / numdif

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,9 +42,9 @@ contains
 
    subroutine smooth_samples_from_GUI()
       use m_smooth_samples, only: smooth_samples
-      use m_samples
-      use m_qnerror
-      use m_getint
+      use m_samples, only: mxsam, mysam, ns, savesam, zs
+      use m_qnerror, only: qnerror
+      use m_getint, only: getint
 
       integer :: N
 

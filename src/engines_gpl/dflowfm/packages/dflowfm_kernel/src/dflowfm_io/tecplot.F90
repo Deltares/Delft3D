@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -93,7 +93,9 @@ contains
 
 !  write array to Tecplot file
    subroutine tecdat(num, var, ierr, kmask, miss)
-      use m_missing
+#ifdef HAVE_TECPLOT
+      use m_missing, only: DMISS
+#endif
 
       integer, intent(in) :: num ! data size
       real(kind=dp), dimension(num), intent(in) :: var ! data to be written
@@ -142,9 +144,12 @@ contains
 
 !>  write net to Tecplot file
    subroutine wrinet_tecplot(FNAM)
-      use network_data
-      use m_partitioninfo
-      use m_qnerror
+#ifdef HAVE_TECPLOT
+      use network_data, only: nump, numk, xk, yk, zk, zkuni, cellmask, kn, lne
+      use m_partitioninfo, only: jampi, my_rank, idomain
+#else
+      use m_qnerror, only: qnerror
+#endif
 
       character(len=*), intent(in) :: FNAM
 
@@ -246,7 +251,6 @@ contains
       use m_flowgeom
       use network_data, only: nump
       use m_flowtimes, only: time1
-      use gridoperations
 #endif
       use MessageHandling, only: mess, LEVEL_ERROR
 
@@ -321,10 +325,9 @@ contains
    end subroutine wrimap_tecplot
 
    subroutine ini_tecplot()
-      use network_data
-      use gridoperations
-
 #ifdef HAVE_TECPLOT
+      use network_data, only: nump, numk, numl, netstat, NETSTAT_OK, cellmask, kn, lne
+      use gridoperations, only: findcells
 
       integer :: i, k, L
 

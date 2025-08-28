@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,12 +44,12 @@ contains
    subroutine ATPPAR(X, Y, M1, N1, M2, N2, &
                      ATP, A, B, C, D, E)
       use precision, only: dp
-      use m_grid, not1 => xc, not2 => yc
-      use M_GRIDSETTINGS
-      use m_orthosettings
-      use M_MISSING
-      use m_drawthis
-      use m_planedistance
+      use m_grid, only: mmax, nmax, ijyes, ijc
+      use M_GRIDSETTINGS, only: mdesign
+      use m_orthosettings, only: atpf
+      use M_MISSING, only: dxymis, dmiss
+      use m_drawthis, only: ndraw
+      use m_planedistance, only: planedistance
 
       real(kind=dp) :: af
       real(kind=dp) :: cy

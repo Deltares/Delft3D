@@ -1,7 +1,3 @@
-# Set directories
-# Set the directory of where the source code is located.
-set(src_path src)
-
 # Set the DFlow FM component path
 set(dflowfm_path "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 set(dflowfm_cli_path "${CMAKE_CURRENT_SOURCE_DIR}/src/")
@@ -78,13 +74,12 @@ endif(WIN32)
 
 
 # Define additional compilation flags
-set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/${src_path}/net_main.F90
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/net_main.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 if (WIN32)
     target_link_libraries(${executable_name} PRIVATE netcdf)
     include_directories(${mpi_module_path}
-                        ${petsc_libdir}
                         ${tecplot_path}
                         ${version_include_dir}
     )
@@ -95,7 +90,6 @@ if (WIN32)
                             PRIVATE
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                            "${petsc_libdir}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${checkout_src_root}/third_party_open/Tecplot/lib/x64"
     )
@@ -103,7 +97,6 @@ if (WIN32)
     target_link_libraries(${executable_name} PRIVATE
                           "pthreadVC2.lib"
                           "tecio.lib"
-                          "libpetsc.lib"
                           "${mpi_fortran_library}"
     )
 

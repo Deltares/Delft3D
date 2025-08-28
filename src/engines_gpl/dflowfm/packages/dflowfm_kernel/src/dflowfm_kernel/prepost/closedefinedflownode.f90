@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,10 +43,9 @@ contains
    subroutine CLOSEdefinedflownode(XP1, YP1, N1) !
       use precision, only: dp
 
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: ndxi, xz, yz
+      use m_flow, only: laydefnr, dmiss
       use geometry_module, only: dbdistance
-      use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
 
       integer :: n1

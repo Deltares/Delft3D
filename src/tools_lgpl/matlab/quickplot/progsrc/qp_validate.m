@@ -3,7 +3,7 @@ function qp_validate(varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -590,7 +590,7 @@ try
                                 TC2=3-TC2;
                             else
                                 PName=P(p).Name;
-                                PName_double = strmatch(PName,{P(1:p-1).Name},'exact');
+                                PName_double = find(strcmpi(PName,{P(1:p-1).Name}));
                                 PName=str2file(PName);
                                 CmpFile=[PName '.mat'];
                                 if PName_double

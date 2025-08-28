@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,8 +38,8 @@ contains
 
    subroutine DPTABS(XD, YD, ZD)
       use precision, only: dp
-      use m_three_two
-      use m_ptabs
+      use m_three_two, only: drietwee
+      use m_ptabs, only: ptabs
 
       real(kind=dp) :: x
       real(kind=dp) :: y

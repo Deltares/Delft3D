@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,22 +38,19 @@ contains
 
    subroutine furu_structures()
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
-      use m_flowtimes
-      use m_flowparameters
-      use m_general_structure
-      use m_1d_structures
-      use m_compound
-      use m_Universal_Weir
-      use m_cross_helper
-      use m_culvert
-      use m_bridge
-      use m_oned_functions
-      use unstruc_channel_flow
+      use m_flow, only: changestructuredimensions, hu, epshu, s1, frcu, u1, v, ifrcutp, au, fu, ru, q1, kmx, u0
+      use m_flowgeom, only: lnx1d, wu, ln, kcu, bob0, bl, dx, teta
+      use m_flowtimes, only: dts
+      use m_general_structure, only: update_widths, computegeneralstructure
+      use m_1d_structures, only: set_fu_ru_structure, check_for_changes_on_structures, t_structure
+      use m_compound, only: computecompound, t_compound
+      use m_Universal_Weir, only: computeuniversalweir
+      use m_culvert, only: computeculvert
+      use m_bridge, only: computebridge
+      use m_oned_functions, only: computepump_all_links
+      use unstruc_channel_flow, only: network, st_pump, st_general_st, getcsparsflow, st_dambreak, st_culvert, st_uni_weir, st_bridge, st_longculvert, msgbuf, err_flush, level_warn
       use m_get_chezy, only: get_chezy
       use m_distribute_linearized_3d_structure_coefficients, only: distribute_linearized_3d_structure_coefficients
-      use messagehandling, only: err_flush
 
       implicit none
 
@@ -151,7 +148,7 @@ contains
                      wetdown = max(wetdown, 0.0001d0)
                      call computeculvert(pstru%culvert, pstru%fu(L0), pstru%ru(L0), pstru%au(L0), width, s1(k1), s1(k2), &
                                          pstru%u1(L0), dx(L), dts, wetdown)
-                     
+
                      fu(L) = pstru%fu(L0)
                      ru(L) = pstru%ru(L0)
                      au(L) = pstru%au(L0)

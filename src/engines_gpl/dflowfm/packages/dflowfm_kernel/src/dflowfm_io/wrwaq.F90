@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -848,7 +848,7 @@ contains
 
       use io_ugrid
       use netcdf_utils, only: ncu_ensure_define_mode
-      
+
       implicit none
 
       integer, intent(in) :: igeomfile !< file pointer to netcdf file to write to.
@@ -876,7 +876,7 @@ contains
 
       ! Leave the dataset in the same mode as we got it.
       ierr = ncu_restore_mode(igeomfile, was_in_define_mode)
-      
+
    end subroutine write_face_global_number_variable
 
 !> Creates and initializes mesh geometry that contains the 2D (layered) unstructured network and edge type array.

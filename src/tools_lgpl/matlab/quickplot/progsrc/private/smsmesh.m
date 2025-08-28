@@ -17,7 +17,7 @@ function S = smsmesh(cmd,FileName)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -92,13 +92,15 @@ S.FileName = FileName;
 try
     Line = fgetl(fid);
     fseek(fid,0,-1);
-    if strcmpi(strtrim(Line),'MESH2D')
+    if strcmpi(strtok(Line),'MESH2D')
         S.FileType = 'SMS mesh2d';
         S = local_open_mesh2d(fid,S);
-    else
+    elseif strcmpi(strtok(Line),'Node')
         S.FileType = 'SMS mesh';
         S = local_open_grd(fid,S);
         S = local_open_dep(S);
+    else
+        error('Expected "MESH2D" or "Node Number =" on the first line. Found: %s', Line)
     end
     fclose(fid);
 catch err
@@ -109,19 +111,29 @@ end
 
 function S = local_open_grd(fid,S)
 Line = fgetl(fid);
-nNodes = sscanf(Line,'Node Number = %i',1);
-Line = fgetl(fid);
-nElm = sscanf(Line,'Cell Number = %i',1);
+try
+    nNodes = sscanf(Line,'Node Number = %i',1);
+catch
+    nNodes = [];
+end
 if isempty(nNodes)
     error('Invalid mesh: expecting "Node Number =" on first line of file')
 elseif nNodes==0
     error('Invalid mesh: number of nodes = 0')
-elseif isempty(nElm)
+end
+
+Line = fgetl(fid);
+try
+    nElm = sscanf(Line,'Cell Number = %i',1);
+catch
+    nElm = [];
+end
+if isempty(nElm)
     error('Invalid mesh: expecting "Cell Number =" on second line of file')
 elseif nElm==0
     error('Invalid mesh: number of cells = 0')
 end
-%
+
 Elm = readmat(fid,5,nElm,'cell node indices');
 if ~isequal(Elm(1,:),1:nElm)
     error('Cell numbers in file don''t match 1:%i',nElm)
@@ -165,81 +177,155 @@ end
 
 function S = local_open_mesh2d(fid,S)
 Line = fgetl(fid);
-if ~strcmpi(strtrim(Line),'MESH2D')
+if ~strcmpi(strtok(Line),'MESH2D')
     error('Expecting MESH2D on the first line of the file; found "%s".',Line)
 end
 %
-Line = fgetl(fid);
-S.MeshName = sscanf(Line,'MESHNAME "%[^"]');
-%
+firstElement = true;
+S.nMaterials = NaN;
 nMaxElm = 1000;
-Elm = zeros(6,nMaxElm); % [1] type, [2-5] up to 4 coordinates, [6] material
-Line = fgetl(fid);
-[tok,rem] = strtok(Line);
-nElm = 0;
+nMaxNodes = 1000;
+nNodeStrings = 0;
+Elm = NaN(5, nMaxElm); % [1] type, [2-5] up to 4 coordinates, [6-] material (not yet allocated)
+Coords = NaN(3, nMaxNodes);
 while 1
-    switch tok
-        case 'E3T'
-            elmType = 3;
-        case 'E4Q'
-            elmType = 4;
-        case 'ND'
-            break
-        otherwise
-            error('Unknown element type "%s" encountered.',tok)
-    end
-    nElm = nElm+1;
-    if nElm > nMaxElm
-        nMaxElm = 2*nMaxElm;    
-        Elm(6,nMaxElm) = 0;
-    end
-    elm = sscanf(rem,'%i');
-    if elm(1) ~= nElm
-        error('The elements are not defined in sequence. Not yet supported!')
-    end
-    switch elmType
-        case 3
-            if length(elm) ~= 5
-                error('Unexpected number of parameters on line "%s".',Line)
-            end
-            Elm(:,nElm) = [3; elm(2:4); 0; elm(5)];
-        case 4
-            if length(elm) ~= 6
-                error('Unexpected number of parameters on line "%s".',Line)
-            end
-            Elm(:,nElm) = [4; elm(2:6)];
-    end
-    %
-    Line = fgetl(fid);
-    if ~ischar(Line)
-        error('End-of-file while reading element definitions.')
-    end
-    [tok,rem] = strtok(Line);
-end
-Elm(:,nElm+1:end) = [];
-%
-nMaxNodes = max(max(Elm(2:5,:)));
-Coords = zeros(3,nMaxNodes);
-nNodes = 0;
-while ismember(tok,{'ND'})
-    nNodes = nNodes+1;
-    if nNodes > nMaxNodes % shouldn't need this based on the highest node number in the element table
-        nMaxNodes = 2*nMaxNodes;
-        Coords(3,nMaxNodes) = 0;
-    end
-    node = sscanf(rem,'%i %f %f %f');
-    if node(1) ~= nNodes
-        error('The node coordinates are not specified in sequence. Not yet supported!')
-    end
-    Coords(:,nNodes) = node(2:end);
-    %
     Line = fgetl(fid);
     if ~ischar(Line)
         break
     end
     [tok,rem] = strtok(Line);
+    switch tok
+        case 'ND'
+            % node definition found ...
+            node = sscanf(rem,'%i %f %f %f', [1 4]); % ... may contain more values
+            if node(1) > nMaxNodes
+                Coords(:,nMaxNodes+1:2*nMaxNodes) = NaN;
+                nMaxNodes = 2*nMaxNodes;
+            end
+            Coords(:,node(1)) = node(2:end);
+            continue
+        case 'E2L'
+            % 1 2
+            elmType = 2;
+            nIDs = 2;
+        case 'E3L'
+            % 1 2 3
+            elmType = 23;
+            nIDs = 3;
+        case 'E3T'
+            %  3
+            % 1 2
+            elmType = 3;
+            nIDs = 3;
+        case 'E6T'
+            %   5
+            %  6 4
+            % 1 2 3
+            elmType = 36;
+            nIDs = 6;
+        case 'E4Q'
+            % 4 3
+            % 1 2
+            elmType = 4;
+            nIDs = 4;
+        case 'E8Q'
+            % 7 6 5
+            % 8   4
+            % 1 2 3
+            elmType = 48;
+            nIDs = 8;
+        case 'E9Q'
+            % 7 6 5
+            % 8 9 4
+            % 1 2 3
+            elmType = 49;
+            nIDs = 9;
+        case {'PG', 'PD', 'PO', 'GG', 'GP', 'BD', 'BV', 'MD', 'MV', 'BCE', 'BCN', 'BCS', 'TIME', 'BEDISP'}
+            % considered obsolete by SMS
+            continue
+        case 'NUM_MATERIALS_PER_ELEM'
+            % new in SMS version 11.0
+            S.nMaterials = sscanf(rem, '%i', 1);
+            Elm(end+1:5+S.nMaterials, :) = NaN;
+            continue
+        case 'MESHNAME'
+            S.MeshName = sscanf(rem, '"%[^"]');
+            continue
+        case 'NS'
+            % node strings, last node index is specified as negative number
+            if nNodeStrings == 0
+                nNodeStrings = 1; % start of first node string
+                S.NodeString{nNodeStrings} = [];
+            elseif S.NodeString{nNodeStrings}(end) < 0 % check if previous node string was finished
+                % finished, start new node string
+                nNodeStrings = nNodeStrings + 1;
+                S.NodeString{nNodeStrings} = [];
+            else
+                % continue node string
+            end
+            nsNodes = sscanf(rem, '%i', [1,inf]);
+            negNode = find(nsNodes < 0, 1);
+            if isempty(negNode)
+                % end of node string not included
+            else
+                nsNodes = nsNodes(1:negNode);
+            end
+            S.NodeString{nNodeStrings} = cat(2, S.NodeString{nNodeStrings}, nsNodes);
+            continue
+        otherwise
+            % skip ... many more keywords are possible
+            continue
+    end
+
+    % element definition found ...
+    elm = sscanf(rem,'%f');
+    if elm(1) > nMaxElm
+        Elm(:, nMaxElm+1:2*nMaxElm) = NaN;
+        nMaxElm = 2*nMaxElm;
+    end
+    switch elmType
+        case {2, 23, 3, 36, 4, 48, 49}
+            nVal = 1 + nIDs;
+            % auto-detect number of materials
+            if firstElement && isnan(S.nMaterials)
+                S.nMaterials = max(0, length(elm) - nVal);
+                Elm(end+1:5+S.nMaterials, :) = NaN;
+            end
+            nVal = nVal + S.nMaterials;
+            if length(elm) < nVal
+                error('Expected at least %i numbers on line "%s", found %i.', nVal, Line, length(elm))
+            end
+            IDs = zeros(4,1);
+            % The following code ignores the additional nodes upon reading.
+            % It would be better to read them in and, optionally, ignore
+            % them at a later stage ...
+            switch elmType
+                case {2, 3, 4}
+                    IDs(1:nIDs) = elm(2:nIDs+1);
+                case 23
+                    IDs(1:2) = elm([2 4]);
+                case 36
+                    IDs(1:3) = elm([2 4 6]);
+                case {48, 49}
+                    IDs(1:4) = elm([2 4 6 8]);
+            end
+            Elm(:, elm(1)) = [elmType; IDs; elm(nIDs+2:nVal)];
+        otherwise
+            error('Element type "%s" not yet implemented.', tok)
+    end
 end
+
+nNodes = find(any(~isnan(Coords),1), 1, 'last' );
+if nNodes == 0
+    error('No node definitions found in MESH2D file.')
+end
+
+nElm = find(any(~isnan(Elm),1), 1, 'last' );
+if nElm == 0
+    error('No element definitions found in MESH2D file.')
+end
+
 S.NodeCoor = Coords(:,1:nNodes)';
-S.FaceType = Elm(1,:);
-S.Faces = Elm(2:5,:)';
-S.FaceMaterial = Elm(6,:);
+S.FaceType = Elm(1,1:nElm);
+S.Faces = Elm(2:5,1:nElm)';
+S.FaceMaterial = Elm(6:end,1:nElm)';

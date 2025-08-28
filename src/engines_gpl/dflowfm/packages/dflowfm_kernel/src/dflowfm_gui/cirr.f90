@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,9 +36,9 @@ module m_cirr
 contains
    subroutine CIRR(X, Y, NCOL)
       use precision, only: dp
-      use m_wearelt
-      use m_set_col
-      use m_movabs
+      use m_wearelt, only: rcir
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
 
       integer :: ncol
       real(kind=dp) :: x

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -47,7 +47,7 @@ contains
       use precision, only: dp
       use m_crspath_on_netgeom, only: crspath_on_netgeom
       use m_thindams, only: thd, nthd, crspath_on_singlelink
-      use network_data, only: numl, kn, npl, xpl, ypl, xk, yk, kn
+      use network_data, only: numl, kn, npl, xpl, ypl, xk, yk
       use messagehandling, only: LEVEL_INFO, mess
       use m_alloc, only: realloc
       use kdtree2Factory, only: treeglob
@@ -57,7 +57,6 @@ contains
       use m_get_link_neighboring_cell_coords, only: get_link_neighboringcellcoords
       use m_append_crspath_to_pol, only: appendCRSPathToPol
       use unstruc_caching, only: cache_retrieved, cache_thin_dams, copy_cached_thin_dams
-      use precision, only: dp
 
       real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
       integer, dimension(:), allocatable :: crossed_links, polygon_nodes, idum

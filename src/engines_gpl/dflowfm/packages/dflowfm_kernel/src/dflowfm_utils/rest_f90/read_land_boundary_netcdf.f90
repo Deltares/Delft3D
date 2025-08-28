@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,9 +45,9 @@ module m_read_land_boundary_netcdf
 contains
 
    subroutine read_land_boundary_netcdf(filename)
-      use M_landboundary
-      use M_MISSING
-      use netcdf
+      use M_landboundary, only: increaselan, xlan, ylan, mxlan
+      use M_MISSING, only: dmiss
+      use netcdf, only: nf90_open, nf90_nowrite, nf90_inq_dimid, nf90_inquire_dimension, nf90_inq_varid, nf90_get_var, nf90_close
 
       character(len=*), intent(in) :: fileName
 

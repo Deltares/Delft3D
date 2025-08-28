@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
       use m_alloc, only: realloc, aerr
       use MessageHandling, only: LEVEL_ERROR, LEVEL_INFO, LEVEL_WARN, mess
       use m_qnerror, only: qnerror
-      
+
       integer, intent(out), dimension(:), allocatable :: idomain !< cell-based domain number, dim(nump1d2d or ndx)
       integer, intent(in) :: Nparts !< number of partitions
       integer, intent(in) :: method !< partition method. 1: K-Way, 2: Recursive, 3: Mesh-dual

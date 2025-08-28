@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,7 +29,7 @@
 
 !
 !
-module M_splines
+module m_splines
    use precision, only: dp
    use m_missing, only: dxymis
    use m_readyy
@@ -49,7 +49,7 @@ contains
 
 !> Increases memory for splines.
    subroutine increasespl(m, n)
-      use m_alloc
+      use m_alloc, only: realloc, aerr
 
       implicit none
 
@@ -255,7 +255,7 @@ contains
 !> Finds a spline point within a certain radius of a clicked point.
    subroutine isSplinePoint(xl, yl, rcir, mv, nv)
       use precision, only: dp
-      use m_dispnode2
+      use m_dispnode2, only: dispnode2
 
       real(kind=dp), intent(inout) :: xl, yl !< The clicked point
       real(kind=dp), intent(in) :: rcir !< The search radius around the point
@@ -349,7 +349,7 @@ contains
 
 !> write splines in TEKAL format
    subroutine writeSplines(mspl)
-      use m_firstlin
+      use m_firstlin, only: firstlin
       use m_filez, only: doclose
       implicit none
       integer :: mspl

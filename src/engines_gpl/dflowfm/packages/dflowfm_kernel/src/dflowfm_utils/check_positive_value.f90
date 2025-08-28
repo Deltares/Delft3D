@@ -1,6 +1,6 @@
 !----AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 module m_check_positive_value
 
    implicit none
-   
+
    private
 
    public :: check_positive_value

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -68,6 +68,7 @@
       hyd%tem_present    = .true.
       hyd%tau_present    = .true.
       hyd%vdf_present    = .true.
+      hyd%vel_present    = .true.
       hyd%wasteload_coll%current_size = 0
       hyd%wasteload_coll%maxsize = 0
 
@@ -128,6 +129,7 @@
          if ( .not. domain_hyd%tem_present ) hyd%tem_present = .false.
          if ( .not. domain_hyd%tau_present ) hyd%tau_present = .false.
          if ( .not. domain_hyd%vdf_present ) hyd%vdf_present = .false.
+         if ( .not. domain_hyd%vel_present ) hyd%vdf_present = .false.
 
          if ( n_mode ) then
             if ( parallel ) then

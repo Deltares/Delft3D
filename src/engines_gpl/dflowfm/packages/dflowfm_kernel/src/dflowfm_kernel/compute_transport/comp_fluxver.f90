@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,9 +49,8 @@ contains
       use m_transport, only: ISED1, ISEDN ! preferably in argument list
       use m_sediment, only: mtd
       use m_sediment, only: jased, sedtra, stm_included
-      use sediment_basics_module
-      use timers
-      use m_dlimiter
+      use timers, only: timon, timstrt, timstop
+      use m_dlimiter, only: dlimiter
 
       implicit none
 

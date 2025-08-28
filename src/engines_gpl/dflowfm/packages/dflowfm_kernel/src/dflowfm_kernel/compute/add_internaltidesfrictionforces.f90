@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,11 +44,11 @@ contains
 
    subroutine add_InternalTidesFrictionForces()
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_flowtimes
+      use m_flowgeom, only: bl, ndx, ndxi, ba, lnx, ln, acl, csu, snu
+      use m_flow, only: hs, s1, workx, worky, dissinternaltides, ucx, ucy, frcinternaltides2d, epshs, itcap, rho, dissinternaltidesperarea, hu, adve, huvli
+      use m_flowtimes, only: dts
+      use m_partitioninfo, only: jampi, idomain, my_rank
       use messagehandling, only: LEVEL_ERROR, mess
-      use m_partitioninfo
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
       implicit none

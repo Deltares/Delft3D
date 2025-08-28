@@ -39,16 +39,57 @@
       </arguments>
     </program>
     <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+      <path>bin/run_dimr.bat</path>
+      <shell ref="command_prompt"/>
+      <location ref="reference_engines" type="reference">
+          <from>win64</from>
+      </location>
+      <location ref="engines_to_compare" type="check">
+          <from>teamcity_artifacts/x64</from>
+      </location>
+      <environments>
+          <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+      </environments>
+    </program>
+    <program name="dimr_plain" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+      <path>bin/run_dimr.bat</path>
+      <shell ref="command_prompt"/>
+      <location ref="reference_engines" type="reference">
+          <from>win64</from>
+      </location>
+      <location ref="engines_to_compare" type="check">
+          <from>teamcity_artifacts/x64</from>
+      </location>
+      <environments>
+          <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+      </environments>
+      <arguments>
+          <argument>dimr_config.xml</argument>
+      </arguments>
+    </program>
+    <program name="dimr_partitioned" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+      <path>bin/run_dimr_parallel.bat</path>
+      <shell ref="command_prompt"/>
+      <location ref="reference_engines" type="reference">
+          <from>win64</from>
+      </location>
+      <location ref="local" type="check">
+          <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+      </location>
+      <environments>
+          <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+          <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+      </environments>
+    </program>
+
+    <program name="dimr_opl" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
         <path>bin/run_dimr.bat</path>
         <shell ref="command_prompt"/>
-        <location ref="reference_engines" type="reference">
-            <from>win64</from>
-        </location>
-        <location ref="engines_to_compare" type="check">
+        <location ref="local" type="check">
             <from>teamcity_artifacts/x64</from>
         </location>
         <environments>
-            <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+            <environment name="LIBEXT" type="string">.dll</environment>
         </environments>
     </program>
   </programs>

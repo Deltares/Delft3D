@@ -1,6 +1,0 @@
-pytest
-requests
-paramiko
-scp
-openpyxl
-python-certifi-win32

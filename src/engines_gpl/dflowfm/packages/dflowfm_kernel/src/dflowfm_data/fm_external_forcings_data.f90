@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -348,7 +348,7 @@ module fm_external_forcings_data
       real(kind=dp), dimension(:), allocatable :: xp, yp
       integer :: np
    end type polygon
-   type(polygon), dimension(:), allocatable :: dambreakPolygons
+   type(polygon), dimension(:), allocatable, target :: dambreakPolygons
 
    integer :: nklep !< nr of kleps
    integer, allocatable :: Lklep(:) !< klep links index array, pos=allow 1->2, neg= allow 2->1

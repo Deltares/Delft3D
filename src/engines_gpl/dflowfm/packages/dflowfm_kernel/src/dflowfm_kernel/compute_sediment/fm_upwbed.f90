@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,13 +43,12 @@ contains
    ! Interpolate flownode-based vector (sx,sy) to edge-based vector (e_sn, e_st)
    subroutine fm_upwbed(lsedtot, sx, sy, sxtot, sytot, e_sn, e_st)
       use precision, only: dp
-      use m_flowgeom, only: acl, snu, csu, kcu
+      use m_flowgeom, only: acl, snu, csu, kcu, ndx
       use m_flow, only: u1, epshu, hu
       use m_sediment, only: stmpar, jabndtreatment
-      use sediment_basics_module
+      use sediment_basics_module, only: has_bedload
       use m_fm_erosed, only: link1, link1sign, tratyp, kfsed, link1sign2
       use m_fm_erosed, only: ln => ln_mor
-      use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: lnxi => lnxi_mor
       implicit none

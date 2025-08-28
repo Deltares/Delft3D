@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,8 +40,8 @@ contains
    subroutine MINMAXWORLD(XMI, YMI, XMA, YMA)
       use precision, only: dp
       ! ASPECT RATIO VAN HET DEFAULTGEBIED GOED ZETTEN
-      use m_inqasp
-      use m_wearelt
+      use m_inqasp, only: inqasp
+      use m_wearelt, only: xmin, ymin, xmax, ymax
 
       real(kind=dp) :: XMI, YMI, XMA, YMA, ASPECT, XC, YC, DY, dx
       XMIN = XMI

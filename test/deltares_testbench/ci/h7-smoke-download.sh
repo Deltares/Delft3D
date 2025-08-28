@@ -22,7 +22,7 @@ docker pull "$container"
 docker run --rm \
            -v .:/data/data/cases \
            -v=$HOME/.aws:/root/.aws:ro \
-           "$container" python3.9 TestBench.py --filter "testcase=e02_f014_c001,e109_f01_c010,e112_f01_c11" --reference --skip-run --skip-post-processing --config configs/singularity/dimr/dimr_smoke_test_lnx64.xml --log-level INFO --parallel
+           "$container" python3.9 TestBench.py --filter "testcase=e02_f014_c001,e109_f01_c010,e112_f01_c11" --reference --skip-run --skip-post-processing --config configs/apptainer/dimr/dimr_smoke_test_lnx64.xml --log-level INFO --parallel
 
 # Pull the Apptainer
 module purge

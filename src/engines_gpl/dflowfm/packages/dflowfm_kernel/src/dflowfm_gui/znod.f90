@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,9 +55,9 @@ contains
       use m_get_equilibrium_transport_rates
       use m_get_tau
       use m_nudge, only: nudge_rate
-      use m_waves, only: waveparopt, hwav, rlabda, twav , uorb, fwav_mag,ust_mag, sxwav, numoptwav, sywav, sbxwav, sbywav, ustx_cc, usty_cc, phiwav, fetch
+      use m_waves, only: waveparopt, hwav, rlabda, twav, uorb, fwav_mag, ust_mag, sxwav, numoptwav, sywav, sbxwav, sbywav, ustx_cc, usty_cc, phiwav, fetch
       use m_waveconst
-      
+
       implicit none
 
       integer :: kk, k, nodval, L
@@ -179,7 +179,7 @@ contains
             znod = min(znod, vol1(k) / max(squ(k), eps10))
          end do
       else if (nodval == 31) then
-         if (air_pressure_available > 0) znod = air_pressure(kk)
+         if (air_pressure_available) znod = air_pressure(kk)
       else if (nodval == 32) then
          if (numlimdt(kk) > 0) znod = numlimdt(kk)
       else if (nodval == 33) then

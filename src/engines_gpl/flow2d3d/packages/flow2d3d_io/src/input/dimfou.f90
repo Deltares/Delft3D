@@ -2,7 +2,7 @@ subroutine dimfou(lunmd     ,lundia    ,error     ,nrrec     ,filfou    , &
                 & nofou     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -63,7 +63,6 @@ subroutine dimfou(lunmd     ,lundia    ,error     ,nrrec     ,filfou    , &
     integer            :: lenc    ! Number of char. to read in string 
     integer            :: lfile   ! Number of non blank characters of file name 
     integer            :: luntmp  ! Unit number of FILFOU 
-    integer, external  :: newlun
     integer            :: nlook   ! Nr. of values to look for in a record 
     integer            :: ntrec   ! Current record counter. It's value is changed to detect if all records in the MD-file have been read 
     logical            :: found   ! Flag is true if KEYWRD is found 

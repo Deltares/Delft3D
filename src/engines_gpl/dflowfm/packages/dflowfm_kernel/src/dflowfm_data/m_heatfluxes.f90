@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,6 @@
 
 module m_heatfluxes
    use precision, only: dp
-   use physicalconsts, only: CtoKelvin
 
    implicit none
 
@@ -43,7 +42,6 @@ module m_heatfluxes
    real(kind=dp) :: cpw !< Specific heat water [J/kg/K]
    real(kind=dp) :: rcpi !< 1/(rho*cpi) m3K/J
    real(kind=dp) :: emstf !< Em*Stf [W/m^2/K^4]
-   real(kind=dp), parameter :: tkelvn = CtoKelvin !< Absolute zero
 
    real(kind=dp) :: qsunav !< Solar influx              (W/m2)
    real(kind=dp) :: qevaav !< Evaporative heat loss     (W/m2)
@@ -59,7 +57,8 @@ module m_heatfluxes
    integer :: jamapheatflux !< write heatfluxes to map
    integer :: jarichardsononoutput !< write Richardson nr to his
    integer :: jasecchisp !< Spatial Secchi 0,1
-   integer :: wind_stress_water_density_option !< Use rhomean or rhow in windstress: 0,1
+   integer :: rho_water_in_wind_stress !< Use rhomean or local (surface) density of model in windstress: 0,1
+   integer, parameter :: RHO_MEAN = 0 !< Use rhomean in windstress
 
    real(kind=dp), dimension(:), allocatable, target :: qsunmap !< [W/m2] solar radiation reaching water surface {"location": "face", "shape": ["ndx"]}
    real(kind=dp), dimension(:), allocatable :: qevamap
@@ -69,7 +68,7 @@ module m_heatfluxes
    real(kind=dp), dimension(:), allocatable :: qfrconmap
    real(kind=dp), dimension(:), allocatable :: qtotmap
 
-   real(kind=dp), dimension(:), allocatable :: secchisp
+   real(kind=dp), dimension(:), allocatable, target :: secchisp !< [m] Space-varying secchi depth {"location": "face", "shape": ["ndx"]}
 
 contains
 
@@ -81,10 +80,10 @@ contains
       cpw = 3986.0_dp
       jamapheatflux = 0
       jarichardsononoutput = 0
-      wind_stress_water_density_option = 0
+      rho_water_in_wind_stress = RHO_MEAN
 
    end subroutine default_heatfluxes
-   
+
    !> calculate derived coefficients for heatfluxes
    subroutine calculate_derived_coefficients_heatfluxes()
       use m_physcoef, only: rhomean

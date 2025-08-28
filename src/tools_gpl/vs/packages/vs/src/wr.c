@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2025.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -112,7 +112,7 @@ static BText Fg_format[] = {
     "(% 13.6e,% 13.6e) ", "(% 13.6e,% 13.6e) ", "% 13.6e ", "% 13.6e ",
     "% 13ld ", "% 13d ", "% 13ld ", "% 13d ", ""
     } ;
-
+
 /*  @@
  */
 static BVoid WR_two_dim_write (

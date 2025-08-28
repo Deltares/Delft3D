@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,10 +38,10 @@ contains
 
    subroutine findqorifice(gateheight, crestheight, h1, h3, q, h2, hg, regime, num, qcrit) ! bepaal q en hoogte h2 achter schuif, waterstand links = h1, rechts= h4, schuif = a, alles tov bodem
       use precision, only: dp
-      use m_qorifdif
-      use m_getq1
-      use m_getq2
-      use m_getq3
+      use m_qorifdif, only: qorifdif
+      use m_getq1, only: getq1
+      use m_getq2, only: getq2
+      use m_getq3, only: getq3
       implicit none
       real(kind=dp) :: gateheight ! gate height above crest
       real(kind=dp) :: crestheight ! crest height above bed

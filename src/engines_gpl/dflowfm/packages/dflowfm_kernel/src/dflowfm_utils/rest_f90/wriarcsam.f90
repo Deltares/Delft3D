@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_wriarcsam
 contains
 
    subroutine WRIARCsam(MARC, data_array, MMAX, NMAX, MC, NC, X0, Y0, DX, DY, dmiss)
-      use m_writearcinfoheader
+      use m_writearcinfoheader, only: writearcinfoheader
       use precision, only: dp
 
       real(kind=dp) :: dmiss

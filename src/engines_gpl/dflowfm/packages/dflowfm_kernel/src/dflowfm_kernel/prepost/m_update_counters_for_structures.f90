@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,7 +40,7 @@ module m_update_counters_for_structures
 
 contains
 
-   !> Update counter arrays for structures (dambreak and pump) that use "signals" to store information on number of structures and their links. 
+   !> Update counter arrays for structures (dambreak and pump) that use "signals" to store information on number of structures and their links.
    subroutine update_counters_for_dambreak_or_pump(qid, numlinks, nsignals, l1signals, l2signals, strucidx, structure_index)
       use messagehandling, only: msgbuf, msg_flush
       use m_alloc, only: realloc

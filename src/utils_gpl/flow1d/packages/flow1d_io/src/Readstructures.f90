@@ -1,7 +1,7 @@
 module m_readstructures
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -222,7 +222,7 @@ module m_readstructures
             if (success1) call prop_get(md_ptr%child_nodes(i)%node_ptr, '', 'chainage', pstru%chainage, success1)
 
             pstru%numCoordinates = 0
-            if (success1) then
+            if (success1 .and. network%loaded) then
                pstru%ibran = hashsearch(network%brs%hashlist, branchID)
                if (pstru%ibran <= 0) then
                   write (msgbuf, '(a)') 'Error Reading Structure '''//trim(st_id)//''' from '''//trim(structureFile)//''', branchId '''//trim(branchID)//''' not found.'

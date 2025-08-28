@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -109,7 +109,6 @@ contains
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, only call reset_waves() instead.
    subroutine default_waves()
-      use m_physcoef
 
       rouwav = 'FR84'
       gammax = 1.0d0 !< Maximum wave height/water depth ratio

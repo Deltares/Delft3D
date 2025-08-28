@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,9 +41,9 @@ module m_setpressurehull
 contains
 
    subroutine setpressurehull()
-      use m_ship
-      use m_flowgeom
-      use m_flow
+      use m_ship, only: zsp
+      use m_flowgeom, only: lnx, ln, dxi
+      use m_flow, only: lbot, ltop, adve, ag
       implicit none
       integer :: L, LL, k1, k2
       do LL = 1, Lnx

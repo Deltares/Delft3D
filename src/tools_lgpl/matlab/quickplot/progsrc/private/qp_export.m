@@ -3,7 +3,7 @@ function cmdargs = qp_export(ExpType,DataState,cmdargs)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -407,6 +407,17 @@ for f=1:ntim
                 vars{1,end}=cat(2,vars{1,end},' (',ValUnits,')');
             end
             if isnumeric(data(1).Val)
+                numericValues = true;
+            end
+        end
+        if isfield(data,'XDamVal')
+            flds{1,end+1}='XDamVal';
+            flds{1,end+1}='YDamVal';
+            vars{1,end+1}=[componentof Props.Name];
+            if ~isempty(ValUnits)
+                vars{1,end}=cat(2,vars{1,end},' (',ValUnits,')');
+            end
+            if isnumeric(data(1).XDamVal)
                 numericValues = true;
             end
         end
@@ -1142,31 +1153,44 @@ for f=1:ntim
             else
                 nVarNum = nVar - nVal;
             end
-            expdata=zeros([nVarNum prod(sz)]);
-            if x
-                expdata(1,:)=data.X(:)';
-            end
-            if y
-                expdata(x+1,:)=data.Y(:)';
-            end
-            if z
-                expdata(x+y+1,:)=data.Z(:)';
-            end
-            if isfield(data,'XComp') && Props.NVal>1
-                xyz=xyz+1;
-                expdata(xyz,:)=data.XComp(:)';
-            end
-            if isfield(data,'YComp') && Props.NVal>1
-                xyz=xyz+1;
-                expdata(xyz,:)=data.YComp(:)';
-            end
-            if isfield(data,'ZComp') && Props.NVal>1
-                xyz=xyz+1;
-                expdata(xyz,:)=data.ZComp(:)';
-            end
-            if isfield(data,'Val') && numericValues
-                xyz=xyz+1;
-                expdata(xyz,:)=data.Val(:)';
+            if isfield(data,'XDamVal')
+                xx = (data.X(:,1:end-1) + data.X(:,2:end))/2;
+                yy = (data.Y(:,1:end-1) + data.Y(:,2:end))/2;
+                vv = data.XDamVal(:,2:end);
+                expdata = [xx(:)'; yy(:)'; vv(:)'];
+                %
+                xx = (data.X(1:end-1,:) + data.X(2:end,:))/2;
+                yy = (data.Y(1:end-1,:) + data.Y(2:end,:))/2;
+                vv = data.YDamVal(2:end,:);
+                expdata = cat(2, expdata, [xx(:)'; yy(:)'; vv(:)']);
+
+            else
+                expdata=zeros([nVarNum prod(sz)]);
+                if x
+                    expdata(1,:)=data.X(:)';
+                end
+                if y
+                    expdata(x+1,:)=data.Y(:)';
+                end
+                if z
+                    expdata(x+y+1,:)=data.Z(:)';
+                end
+                if isfield(data,'XComp') && Props.NVal>1
+                    xyz=xyz+1;
+                    expdata(xyz,:)=data.XComp(:)';
+                end
+                if isfield(data,'YComp') && Props.NVal>1
+                    xyz=xyz+1;
+                    expdata(xyz,:)=data.YComp(:)';
+                end
+                if isfield(data,'ZComp') && Props.NVal>1
+                    xyz=xyz+1;
+                    expdata(xyz,:)=data.ZComp(:)';
+                end
+                if isfield(data,'Val') && numericValues
+                    xyz=xyz+1;
+                    expdata(xyz,:)=data.Val(:)';
+                end
             end
             excludePoints = any(isnan(expdata),1);
             expdata(:,excludePoints) = [];

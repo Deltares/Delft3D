@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,13 +44,13 @@ contains
       use fm_external_forcings_data, only: ncdamsg, zcdam, l1cdamsg, l2cdamsg, kcdam, ncgensg, l1cgensg, l2cgensg, kcgen, zcgen
       use m_flowparameters, only: ifixedweirscheme1D2D
       use unstruc_channel_flow, only: network, st_culvert
-      use m_1d_structures, only: t_structure, get_crest_level
-      use m_compound, only: t_compound
+      use m_1d_structures, only: get_crest_level, t_structure
       use m_1d2d_fixedweirs, only: set_iadvec
       use messagehandling, only: msgbuf, warn_flush
       use m_switchiadvnearlink, only: switchiadvnearlink
       use m_dambreak_breach, only: adjust_bobs_for_dambreaks
-   
+      use m_compound, only: t_compound
+
       real(kind=dp) :: zcdamn, minzcdamn, blmx
       type(t_structure), pointer :: pstru
       type(t_compound), pointer :: pcompound
@@ -156,7 +156,7 @@ contains
       end do
 
       call adjust_bobs_for_dambreaks()
-      
+
       if (ifixedweirscheme1D2D == 1) then
          call set_iadvec()
       end if

@@ -3,7 +3,7 @@ subroutine urdrgs(lundia    ,error     ,filusr    ,nmax      ,mmax      , &
                 & ubrlsu    ,ubrlsv    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -94,7 +94,6 @@ subroutine urdrgs(lundia    ,error     ,filusr    ,nmax      ,mmax      , &
     integer               :: n       ! Loop variable 
     integer               :: n1      ! First n-index for rigid sheets 
     integer               :: n2      ! Last n-index for rigid sheets 
-    integer               :: newlun
     integer               :: nlook   ! Help var.: nr. of data to look for in the MD-file 
     integer               :: nrigid  ! Help var. (counter) 
     integer, dimension(6) :: ival    ! Help array (int.) where the data, recently read from file, are stored temporarily 

@@ -5,7 +5,7 @@
 #
 # Stef.Hummel@deltares.nl
 #
-# (c) Deltares, Nov 2003
+# (c) Deltares, 2025
 #
 
 diffResult="diff_lf95_ifc_linux-res.txt"

@@ -1,6 +1,6 @@
 !----AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -33,7 +33,7 @@ module m_density_parameters
    implicit none
 
    private
-   
+
    integer, public :: idensform !< 0 = Uniform density, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
    logical, public :: apply_thermobaricity !< Check if density is pressure dependent
    logical, public :: thermobaricity_in_pressure_gradient !< Apply thermobaricity in computing the baroclinic pressure gradient

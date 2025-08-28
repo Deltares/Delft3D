@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,8 @@ contains
 
    subroutine MAKEY2(XR, YR, XO, YO, MMAX, NMAX) ! Voor tekenen bij JSFERIC SUBROUTINE MAKEY2
       use precision, only: dp
-      use M_SFERIC
-      use M_MISSING
+      use M_SFERIC, only: rd2dg
+      use M_MISSING, only: xymis
 
       integer :: mmax, nmax
       real(kind=dp) :: XR(MMAX, NMAX), YR(MMAX, NMAX), &

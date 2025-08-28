@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,7 @@ contains
 
    subroutine copyPolygonToObservations()
       use m_observations, only: addObservation
-      use M_POLYGON
+      use M_POLYGON, only: npl, xpl, ypl
 
       integer :: n
       do N = 1, NPL
