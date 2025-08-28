@@ -133,6 +133,19 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
                 rwork, output_hyd%tem)
     endif
 
+    ! flow velocities, averaged with volume
+
+    if (input_hyd%vel_present) then
+        call aggregate_extended(input_hyd%num_cells, output_hyd%num_cells, &
+                1, 1, &
+                1, 1, &
+                1, 1, &
+                1, 1, &
+                ipnt, AGGREGATION_TYPE_WEIGHTED_AVERAGE, &
+                input_hyd%vel, input_hyd%volume, &
+                rwork, output_hyd%vel)
+    endif
+
     ! tau, only do last layer, other layers 0.0
 
     !     if ( input_hyd%tau_present ) then

@@ -65,18 +65,18 @@ contains
       real(kind=dp) :: wfac, Dzk
       real(kind=dp) :: uixL, uiyL, uL, vL, uxL, uyL, duxL, duyL, duL, cdi, ice_shear
 
-      trshcorioi = 1d0 / trshcorio
+      trshcorioi = 1.0_dp / trshcorio
 
       if (jawind > 0) then
 
          if (kmx == 0) then
             do LL = 1, lnx
                if (hu(LL) > 0) then
-                  wfac = 1d0
+                  wfac = 1.0_dp
                   if (jawindpartialdry == 1) then
                      Dzk = abs(zk(lncn(1, LL)) - zk(lncn(2, LL)))
-                     if (Dzk > 0d0) then
-                        wfac = min(1d0, hu(LL) / Dzk)
+                     if (Dzk > 0.0_dp) then
+                        wfac = min(1.0_dp, hu(LL) / Dzk)
                      end if
                   end if
                   ! wdsu/huvli = [(m^2/s^2)*m^-1]
@@ -91,31 +91,29 @@ contains
          else
 
             do LL = 1, lnx
-               if (hu(LL) > 0d0) then
-                  wfac = 1d0
+               if (hu(LL) > 0.0_dp) then
+                  wfac = 1.0_dp
                   if (jawindpartialdry == 1) then
                      Dzk = abs(zk(lncn(1, LL)) - zk(lncn(2, LL)))
-                     if (Dzk > 0d0) then
-                        wfac = min(1d0, hu(LL) / Dzk)
+                     if (Dzk > 0.0_dp) then
+                        wfac = min(1.0_dp, hu(LL) / Dzk)
                      end if
                   end if
 
                   Lt = Ltop(LL)
-                  ! adve(Lt) = adve(Lt) - wdsu(LL) / max( toplayminthick, hu(Lt) - hu(Lt-1)  )
-
-                  alf = 1d0
+                 
+                  alf = 1.0_dp
                   if (jawindhuorzwsbased == 0 .and. Lt > 1) then
                      dzt = hu(Lt) - hu(Lt - 1)
                   else
                      kt1 = ktop(ln(1, LL)); kt2 = ktop(ln(2, LL))
-                     dzt = acL(LL) * (zws(kt1) - zws(kt1 - 1)) + (1d0 - acL(LL)) * (zws(kt2) - zws(kt2 - 1))
+                     dzt = acL(LL) * (zws(kt1) - zws(kt1 - 1)) + (1.0_dp - acL(LL)) * (zws(kt2) - zws(kt2 - 1))
                   end if
                   if (Lbot(LL) < Lt .and. Lt > 2) then
                      dztm = hu(Lt - 1) - hu(Lt - 2)
-                     !if ( dzt < 0.8d0*dztm ) then
-                     if (dzt < 0.05d0) then
+                     if (dzt < 0.05_dp) then
                         alf = dzt / (dzt + dztm)
-                        adve(Lt - 1) = adve(Lt - 1) - (1d0 - alf) * wdsu(LL) * wfac / dztm
+                        adve(Lt - 1) = adve(Lt - 1) - (1.0_dp - alf) * wdsu(LL) * wfac / dztm
                      end if
                   end if
                   adve(Lt) = adve(Lt) - alf * wdsu(LL) * wfac / dzt
@@ -132,8 +130,8 @@ contains
                Lt = Ltop(LL)
 
                ! for the moment the ice is always stagnant
-               uixL = 0d0
-               uiyL = 0d0
+               uixL = 0.0_dp
+               uiyL = 0.0_dp
 
                ! flow velocity
                uL = U1(Lt)
@@ -150,26 +148,26 @@ contains
                if (ice_frict_type == FRICT_AS_DRAG_COEFF) then
                   cdi = ice_frcuni
                else
-                  cdi = 0d0
+                  cdi = 0.0_dp
                end if
 
-               wfac = 0.5d0 * (ice_area_fraction(ln(1, LL)) + ice_area_fraction(ln(2, LL)))
+               wfac = 0.5_dp * (ice_area_fraction(ln(1, LL)) + ice_area_fraction(ln(2, LL)))
                ice_shear = wfac * cdi * duL * (duxL * csu(LL) + duyL * snu(LL)) ! * rhomean?
 
                if (kmx > 0) then
-                  alf = 1d0
+                  alf = 1.0_dp
                   if (jawindhuorzwsbased == 0 .and. Lt > 1) then
                      dzt = hu(Lt) - hu(Lt - 1)
                   else
                      kt1 = ktop(ln(1, LL))
                      kt2 = ktop(ln(2, LL))
-                     dzt = acL(LL) * (zws(kt1) - zws(kt1 - 1)) + (1d0 - acL(LL)) * (zws(kt2) - zws(kt2 - 1))
+                     dzt = acL(LL) * (zws(kt1) - zws(kt1 - 1)) + (1.0_dp - acL(LL)) * (zws(kt2) - zws(kt2 - 1))
                   end if
                   if (Lbot(LL) < Lt .and. Lt > 2) then
                      dztm = hu(Lt - 1) - hu(Lt - 2)
-                     if (dzt < 0.05d0) then
+                     if (dzt < 0.05_dp) then
                         alf = dzt / (dzt + dztm)
-                        adve(Lt - 1) = adve(Lt - 1) - (1d0 - alf) * ice_shear / dztm
+                        adve(Lt - 1) = adve(Lt - 1) - (1.0_dp - alf) * ice_shear / dztm
                      end if
                   end if
                   adve(Lt) = adve(Lt) - alf * ice_shear / dzt
@@ -187,7 +185,7 @@ contains
          ! add wave forces to adve
          if (kmx == 0) then ! 2D
             do L = 1, lnx
-               wfac = 1d0
+               wfac = 1.0_dp
                if (ice_reduce_waves) then
                   wfac = wfac * (1.0d0 - 0.5d0 * (ice_area_fraction(ln(1, L)) + ice_area_fraction(ln(2, L))))
                end if
@@ -195,7 +193,7 @@ contains
             end do
          else
             do LL = 1, lnx
-               wfac = 1d0
+               wfac = 1.0_dp
                if (ice_reduce_waves) then
                   wfac = wfac * (1.0d0 - 0.5d0 * (ice_area_fraction(ln(1, LL)) + ice_area_fraction(ln(2, LL))))
                end if
@@ -218,7 +216,7 @@ contains
             if (hu(L) > 0) then
                k1 = ln(1, L); k2 = ln(2, L)
 
-               dptot = 0.0d0
+               dptot = 0.0_dp
                if (air_pressure_available) then
                   dptot = dptot + (air_pressure(k2) - air_pressure(k1)) * dxi(L) / rhomean
                end if
@@ -267,12 +265,12 @@ contains
          call mess(LEVEL_INFO, 'Error : Anti-creep must be switched off in a 1d/2d model!')
       end if
 
-      if (idensform > 0) then ! Baroclinic pressure
+      if (use_density()) then ! Baroclinic pressure
          if (jacreep == 1) then
-            dsalL = 0d0
-            dtemL = 0d0
+            dsalL = 0.0_dp
+            dtemL = 0.0_dp
             do L = 1, lnx
-               if (hu(L) > 0d0) then
+               if (hu(L) > 0.0_dp) then
                   call anticreep(L)
                end if
             end do
@@ -289,7 +287,7 @@ contains
 
          if (kmx < 2) then
             call links_to_centers(czssf, czusf) ! converting chezy coefficient to the flow nodes
-            if (spirbeta > 0.0d0) then
+            if (spirbeta > 0.0_dp) then
                call get_spiralforce()
             end if
          else
@@ -310,11 +308,11 @@ contains
                if (hu(L) > 0) then
                   k1 = ln(1, L); k2 = ln(2, L)
 
-                  if (hs(k1) < 0.5d0 * hs(k2)) then
+                  if (hs(k1) < 0.5_dp * hs(k2)) then
                      if (adve(L) < 0 .and. hs(k1) < chkadvd) then
                         adve(L) = adve(L) * hs(k1) / chkadvd
                      end if
-                  else if (hs(k2) < 0.5d0 * hs(k1)) then
+                  else if (hs(k2) < 0.5_dp * hs(k1)) then
                      if (adve(L) > 0 .and. hs(k2) < chkadvd) then
                         adve(L) = adve(L) * hs(k2) / chkadvd
                      end if
@@ -326,16 +324,16 @@ contains
          else
 
             do LL = 1, lnx
-               if (hu(LL) > 0d0) then
+               if (hu(LL) > 0.0_dp) then
                   call getLbotLtop(LL, Lb, Lt)
                   k1 = ln(1, LL); k2 = ln(2, LL)
-                  if (hs(k1) < 0.5d0 * hs(k2)) then
+                  if (hs(k1) < 0.5_dp * hs(k2)) then
                      do L = Lb, Lt
                         if (adve(L) < 0 .and. hs(k1) < chkadvd) then
                            adve(L) = adve(L) * hs(k1) / chkadvd
                         end if
                      end do
-                  else if (hs(k2) < 0.5d0 * hs(k1)) then
+                  else if (hs(k2) < 0.5_dp * hs(k1)) then
                      do L = Lb, Lt
                         if (adve(L) > 0 .and. hs(k2) < chkadvd) then
                            adve(L) = adve(L) * hs(k2) / chkadvd

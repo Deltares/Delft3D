@@ -3636,7 +3636,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c094_varying_air_density" ref="dflowfm_default">
-      <path version="2025-06-24T11:23:34.734000">e02_dflowfm/f011_wind/c094_varying_air_density</path>
+      <path version="2025-08-23T12:49:28.205000">e02_dflowfm/f011_wind/c094_varying_air_density</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/output/air_density_his.nc" type="netCDF">
@@ -3654,7 +3654,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c095_computed_air_density" ref="dflowfm_default">
-      <path version="2025-06-24T11:24:33.284000">e02_dflowfm/f011_wind/c095_computed_air_density</path>
+      <path version="2025-08-23T12:50:35.285000">e02_dflowfm/f011_wind/c095_computed_air_density</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/output/computed_air_density_his.nc" type="netCDF">
@@ -3672,7 +3672,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c096_computed_air_density_combined_quantities" ref="dflowfm_default">
-      <path version="2025-06-24T11:25:34.574000">e02_dflowfm/f011_wind/c096_computed_air_density_combined_quantities</path>
+      <path version="2025-08-23T12:50:51.097000">e02_dflowfm/f011_wind/c096_computed_air_density_combined_quantities</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/output/computed_air_density_his.nc" type="netCDF">
@@ -3690,7 +3690,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c097_rho_water_wind_stress" ref="dflowfm_default">
-      <path version="2025-06-27T11:37:08.600000">e02_dflowfm/f011_wind/c097_rho_water_wind_stress</path>
+      <path version="2025-08-23T12:50:55.481000">e02_dflowfm/f011_wind/c097_rho_water_wind_stress</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/output/wind_stress_his.nc" type="netCDF">
@@ -4564,7 +4564,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f020_c034_salinity_freezing" ref="dflowfm_default">
-      <path version="2025-08-21T11:30:00.000000">e02_dflowfm/f020_heat_flux/c034_salinity_freezing</path>
+      <path version="2025-08-24T11:54:18.718000">e02_dflowfm/f020_heat_flux/c034_salinity_freezing</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="output/winter97_saltwater_his.nc" type="netCDF">
@@ -4589,7 +4589,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f020_c040_simple_solar_radiation_model_all_defaults" ref="dflowfm_default">
-      <path version="2025-08-14T09:46:01.082000">e02_dflowfm/f020_heat_flux/c040_simple_solar_radiation_model_all_defaults</path>
+      <path version="2025-08-23T12:51:05.545000">e02_dflowfm/f020_heat_flux/c040_simple_solar_radiation_model_all_defaults</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="output/model_map.nc" type="netCDF">
@@ -4600,7 +4600,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f020_c041_simple_solar_radiation_model_default_albedo" ref="dflowfm_default">
-      <path version="2025-08-14T09:46:24.664000">e02_dflowfm/f020_heat_flux/c041_simple_solar_radiation_model_default_albedo</path>
+      <path version="2025-08-23T12:51:09.365000">e02_dflowfm/f020_heat_flux/c041_simple_solar_radiation_model_default_albedo</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="output/model_map.nc" type="netCDF">
@@ -4611,7 +4611,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f020_c042_simple_solar_radiation_model_custom_albedo" ref="dflowfm_default">
-      <path version="2025-08-14T09:46:48.586000">e02_dflowfm/f020_heat_flux/c042_simple_solar_radiation_model_custom_albedo</path>
+      <path version="2025-08-23T12:51:12.753000">e02_dflowfm/f020_heat_flux/c042_simple_solar_radiation_model_custom_albedo</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="output/model_map.nc" type="netCDF">
@@ -4622,7 +4622,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f020_c043_simple_net_solar_radiation_model" ref="dflowfm_default">
-      <path version="2025-08-14T09:47:17.435000">e02_dflowfm/f020_heat_flux/c043_simple_net_solar_radiation_model</path>
+      <path version="2025-08-23T12:51:15.889000">e02_dflowfm/f020_heat_flux/c043_simple_net_solar_radiation_model</path>
       <maxRunTime>60.0000000</maxRunTime>
       <checks>
         <file name="output/model_map.nc" type="netCDF">

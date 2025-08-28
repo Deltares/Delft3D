@@ -289,7 +289,6 @@ module m_flowparameters
    integer :: limtypsed !< 0=no, 1=minmod, 2=vanleer, 3=koren 4=MC, 21=central voor stof transport
    integer :: limtyphu !< 0=no, 1=minmod, 2=vanleer, 3=koren 4=MC, 21=central voor hu
    integer :: limtypmom !< 0=no, 1=minmod, 2=vanleer, 3=koren 4=MC, 21=central voor momentum transport
-   integer :: jalimnor !< 0=limit x/y components, 1=limit normal/tangetial components
    integer :: limtypw !< 0=no, 1=minmod, 2=vanleer, 3=koren 4=MC, 21=central voor wave action transport
 
    integer :: ifixedweirscheme !< 0 = no, 1 = compact stencil, 2 = whole tile lifted, full subgrid weir + factor
@@ -842,7 +841,6 @@ contains
       limtypsed = 4 ! 0=no, 1=minmod, 2=vanleer, 3=koren 4=MC voor scalar transport SEDIMENT
       limtyphu = 0 ! 0=no, 1=minmod, 2=vanleer, 3=koren 4=MC voor hu WATERHEIGHT AT U POINT
       limtypmom = 4 ! 0=no, 1=minmod, 2=vanleer, 3=koren 4=MC voor MOMENTUM transport
-      jalimnor = 0 ! 0=limit x/y components, 1=limit normal/tangetial components
       limtypw = 4
 
       ifixedweirscheme = 6 !< 0 = no special treatment, setbobs only, 1 = compact stencil, 2 = whole tile lifted, full subgrid weir + factor
