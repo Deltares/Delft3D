@@ -96,6 +96,15 @@ subroutine read_hyd_step(hyd, itime, iend)
         endif
     endif
 
+    if (hyd%vel_present) then
+        call hyd%file_vel%open()
+        read(hyd%file_vel%unit, iostat = ierr) itime, (hyd%vel(i), i = 1, hyd%num_cells)
+        if (ierr /= 0) then
+            write(*, *) 'ERROR: reading vel file: ', hyd%file_vel%unit, trim(hyd%file_vel%name)
+            call stop_with_error()
+        endif
+    endif
+
     if (hyd%vdf_present) then
         call hyd%file_vdf%open()
         read(hyd%file_vdf%unit, iostat = ierr) itime, (hyd%vdf(i), i = 1, hyd%num_cells)
