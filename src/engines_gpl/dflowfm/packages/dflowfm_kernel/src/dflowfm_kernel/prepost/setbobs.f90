@@ -96,6 +96,9 @@ contains
          Lf = lne2ln(L)  
 
          bedlevel_at_link = huge(1.0_dp)
+         ! prevent out of bounds, when bedlevel_at_link is not set:
+         n1 = 1
+         n2 = 1
          
          if (Lf <= 0 .and. ibedlevtyp/=2 .and. calc_bedlevel_over_non_active_links) then
             n1 = lne(1,L)
