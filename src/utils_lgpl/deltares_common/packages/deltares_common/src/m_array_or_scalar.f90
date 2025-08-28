@@ -121,17 +121,8 @@ contains
 
       select type (array => array_or_scalar)
       type is (t_array)
-         if (allocated(array%values)) then
-            if (size(array%values /= n)) then
-               deallocate (array%values)
-            end if
-         end if
-         if (.not. allocated(array%values)) then
-            allocate (array%values(n))
-         end if
-         if (present(fill_value)) then
-            array%values = fill_value
-         end if
+         call realloc(array%values, n, fill = fill_value)
+
       end select
    end subroutine realloc_t_array
 
