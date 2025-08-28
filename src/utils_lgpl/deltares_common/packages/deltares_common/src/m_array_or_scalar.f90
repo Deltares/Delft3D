@@ -98,16 +98,17 @@ contains
       end if
 
       allocate (t_scalar :: array_or_scalar)
-      select type (array_or_scalar)
-      type is (t_scalar)
-         if (present(fill_value)) then
+      if (present(fill_value)) then
+         select type (array_or_scalar)
+         type is (t_scalar)
             array_or_scalar%value = fill_value
-         end if
-      end select
+         end select
+      end if
    end subroutine realloc_t_scalar
 
 !> (Re)allocate array_or_scalar as array regardless of previous status, optionally with a fill_value and a pointer to the values array.
    subroutine realloc_t_array(array_or_scalar, n, fill_value)
+      use m_alloc, only: realloc
       class(t_array_or_scalar), allocatable, target, intent(inout) :: array_or_scalar !< Array_or_scalar object to be reallocated.
       integer, intent(in) :: n !< Size of the array to allocate
       real(kind=dp), optional, intent(in) :: fill_value !< Value to fill the array with, if present.
@@ -115,13 +116,10 @@ contains
       if (allocated(array_or_scalar)) then
          deallocate (array_or_scalar)
       end if
-
       allocate (t_array :: array_or_scalar)
-
       select type (array => array_or_scalar)
       type is (t_array)
-         call realloc(array%values, n, fill = fill_value)
-
+         call realloc(array%values, n, fill=fill_value)
       end select
    end subroutine realloc_t_array
 
