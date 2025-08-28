@@ -103,7 +103,6 @@ contains
          if (present(fill_value)) then
             array_or_scalar%value = fill_value
          end if
-         array_or_scalar%value = fill_value
       end select
    end subroutine realloc_t_scalar
 
