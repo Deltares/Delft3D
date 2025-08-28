@@ -387,7 +387,7 @@ contains
             if (meshid2d > 0) then
                 allocate(laythickness(num_layers))
                 laythickness = 1.0 / real(num_layers)  ! Uniform distribution for now !!
-                inc_error = create_layer_dimension(ncidmap, mesh_name2d, num_layers, laythickness, nolayid)
+                inc_error = create_layer_dimension(ncid, ncidmap, mesh_name2d, num_layers, laythickness, nolayid)
 
                 if (num_layers == 1) then
                     nolayid = dlwqnc_type2d
