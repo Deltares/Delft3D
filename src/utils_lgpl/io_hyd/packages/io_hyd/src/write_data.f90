@@ -83,7 +83,7 @@
 !     initialise file
 !
       num_local_vars  = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
-      call afile%open()
+      call afile%open(replace = .true.)
       lun    = afile%unit
       filtyp = afile%type
       filnam = afile%name

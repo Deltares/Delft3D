@@ -140,6 +140,11 @@
       else
          write(lunhyd,'(a,''     '',a)') vert_diffusion_file, 'none'
       endif
+      if ( hyd%vel_present ) then
+         call remove_path(hyd%file_vel%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') velocities_file, trim(filename)
+      else
+         write(lunhyd,'(a,''     '',a)') velocities_file, 'none'
+      endif
       if (hyd%geometry .eq. HYD_GEOM_CURVI) then
          call remove_path(hyd%file_srf%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') surfaces_file, trim(filename)
       else if (hyd%geometry .eq. HYD_GEOM_UNSTRUC) then

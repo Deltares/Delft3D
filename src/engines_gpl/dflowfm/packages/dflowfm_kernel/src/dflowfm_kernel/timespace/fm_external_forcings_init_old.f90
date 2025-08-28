@@ -47,7 +47,7 @@ contains
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_netw, only: xk, yk, zk, numk, numl
-      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile
+      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
       use m_structures, only: jaoldstr
       use m_meteo
@@ -1005,7 +1005,7 @@ contains
 
                ! if ice properties not yet read before, initialize ...
                if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
-                  call fm_ice_activate_by_ext_forces(ndx)
+                  call fm_ice_activate_by_ext_forces(ndx, md_ptr)
                end if
                ! add the EC link
                if (len_trim(sourcemask) > 0) then
