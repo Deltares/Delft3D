@@ -9,7 +9,7 @@
 image=containers.deltares.nl/delft3d/delft3dfm:daily
 
 # Additional options, like increased shared memory for parallel runs.
-docker_options="--shm-size 6G"
+docker_options="--shm-size 8G"
 
 # Directory containing the entire model, that will be mounted inside the container.
 # Default: the location of this script.
