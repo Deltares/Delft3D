@@ -142,10 +142,12 @@ if XYRead
         Ans.YUnits = FI.UnitXY;
     else
         Ans.X  = FI.Frequencies(idx{M_});
+        Ans.XName = Props.MName;
         Ans.XUnits = 'Hz';
         if Props.DimFlag(N_)
             Ans.X  = repmat(Ans.X',1,length(idx{N_}));
             Ans.Y = repmat(FI.Directions(idx{N_}),length(idx{M_}),1);
+            Ans.YName = Props.NName;
             Ans.YUnits = 'deg';
         end
     end
