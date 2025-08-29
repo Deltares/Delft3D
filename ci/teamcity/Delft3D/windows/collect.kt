@@ -54,9 +54,9 @@ object WindowsCollect : BuildType({
         python {
             name = "Verify (un)signed binaries and directory structure"
             command = file {
-                filename = "ci/DIMRset_delivery/src/validate_signing.py"
+                filename = "ci/python/ci_tools/dimrset_delivery/validate_signing.py"
                 scriptArguments = """
-                    "ci\\DIMRset_delivery\\src\\%dep.${WindowsBuild.id}.product%-binaries.json" 
+                    "ci\\python\\ci_tools\\dimrset_delivery\\%dep.${WindowsBuild.id}.product%-binaries.json" 
                     "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat"
                     "x64"
                 """.trimIndent()

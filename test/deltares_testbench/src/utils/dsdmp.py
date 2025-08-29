@@ -25,7 +25,7 @@ translations = {
 DEBUG = False
 
 
-class dsdmp():
+class dsdmp:
     def __init__(self) -> None:
         print("hello")
 

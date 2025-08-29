@@ -15,7 +15,7 @@ from src.utils.paths import Paths
 
 
 # Test case handler (compare or reference)
-class TestCase():
+class TestCase:
     __errors = []
     __test__: ClassVar[bool] = False
 

@@ -39,7 +39,7 @@ object ReportVerschilanalyse: BuildType({
             name = "Download logs and verschillentool output"
             val script = File(DslContext.baseDir, "verschilanalyse/scripts/download_reports.sh")
             scriptContent = Util.readScript(script)
-            dockerImage = "amazon/aws-cli:2.22.7"
+            dockerImage = "containers.deltares.nl/docker-proxy/amazon/aws-cli:2.22.7"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = """
                 --rm
@@ -111,7 +111,7 @@ object ReportVerschilanalyse: BuildType({
         }
         dockerRegistryConnections {
             loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_133" // Reference to DockerHub Registry in Root project.
+                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D"
             }
         }
         xmlReport {
