@@ -126,14 +126,19 @@ class PreconditionsChecker(StepExecutorInterface):
 
     def __is_network_accessible(self) -> bool:
         """
-        Check read/write access to the network drive.
+        Check read/write access to the network drive and print the current user.
 
         Returns
         -------
         bool
             True if read and write access is available, False otherwise.
         """
-        self.context.log(f"Checking read/write access to {self.context.settings.network_base_path}...")
+        # Determine the current user in a cross-platform way
+        try:
+            user = os.getlogin()
+        except (OSError, AttributeError):
+            user = os.environ.get("USERNAME") or os.environ.get("USER") or "Unknown"
+        self.context.log(f"Checking read/write access to {self.context.settings.network_base_path} as user '{user}'...")
 
         if self.context.dry_run:
             self.context.log(

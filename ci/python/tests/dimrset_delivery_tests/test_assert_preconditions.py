@@ -179,8 +179,10 @@ class TestAssertPreconditionsFunction:
         self.mock_context.log.assert_any_call(
             "Exception during connection check: Git connection failed", severity=LogLevel.ERROR
         )
-
-    def test_assert_preconditions_dry_run_mode(self) -> None:
+    @patch("os.getlogin", return_value="test_user")
+    @patch("os.access", return_value=True)
+    @patch("os.path.exists", return_value=True)
+    def test_assert_preconditions_dry_run_mode(self, mock_exists, mock_access, mock_getlogin) -> None:
         """Test preconditions check in dry-run mode."""
         # Arrange
         self.mock_context.dry_run = True
@@ -192,7 +194,6 @@ class TestAssertPreconditionsFunction:
         checker.execute_step()
 
         # Assert
-        # Verify that all expected log messages are called
         expected_log_calls = [
             "Asserting preconditions...",
             "Checking connections...",
@@ -204,20 +205,16 @@ class TestAssertPreconditionsFunction:
             "Git connection successful",
             "Testing SSH connection...",
             "SSH connection successful",
-            f"Checking read/write access to {self.mock_context.settings.network_base_path}...",
+            f"Checking read/write access to {self.mock_context.settings.network_base_path} as user 'test_user'...",
             f"Successfully checked for read and write access to {self.mock_context.settings.network_base_path}.",
             "Asserted all preconditions.",
             "Preconditions check completed and returned 0 errors!",
         ]
 
-        # Check that log was called the expected number of times
         assert self.mock_context.log.call_count == len(expected_log_calls)
-
-        # Check that all expected log messages were called in order
         actual_calls = [call.args[0] for call in self.mock_context.log.call_args_list]
         assert actual_calls == expected_log_calls
 
-        # Verify service method calls with dry_run=True
         self.mock_services.teamcity.test_connection.assert_called_once()
         self.mock_services.atlassian.test_connection.assert_called_once()
         self.mock_services.ssh.test_connection.assert_called_once()
