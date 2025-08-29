@@ -2603,7 +2603,7 @@ contains
             end if
          end if
 
-         if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+         if (use_density() .and. jahisrho > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_RHOP:IPNT_RHOP + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POTENTIAL_DENSITY), temp_pointer)

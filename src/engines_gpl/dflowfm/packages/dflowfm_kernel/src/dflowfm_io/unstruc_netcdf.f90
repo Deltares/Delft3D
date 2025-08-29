@@ -13285,7 +13285,7 @@ contains
       nerr_ = 0
       inquire (file=filename, exist=file_exists)
       if (.not. file_exists) then
-         call mess(LEVEL_FATAL, 'The specified file for the restart has not been found. Check your .mdu file.')
+         call mess(LEVEL_FATAL, 'NetCDF restart file does not exist:  ', trim(filename))
          call readyy('Reading map data', -1d0)
          return
       end if

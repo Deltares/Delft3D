@@ -212,7 +212,7 @@ contains
       character(len=255) :: fnam, filename
       character(len=255) :: basedir
       integer :: istat
-      integer :: i, ib, ja, kx, iconst, itrac, k
+      integer :: i, ib, ja, iconst, itrac, k
       integer :: target_location_type, first_index
       integer :: method, iloctype, filetype, ierr_loc
       integer :: target_location_count
@@ -223,6 +223,7 @@ contains
       logical :: time_dependent_array
       integer, allocatable :: kcsini(:) ! node code during initialization
       integer :: ec_item
+      integer :: quantity_value_count
 
       real(kind=dp), pointer, dimension(:) :: target_array, x_loc, y_loc
       real(kind=dp), pointer, dimension(:, :) :: target_array_3d
@@ -230,6 +231,7 @@ contains
       integer, pointer, dimension(:) :: target_array_integer
       integer, dimension(:), allocatable :: mask
       real(kind=dp) :: factor
+      integer, pointer, dimension(:) :: pktop, pkbot
 
       ierr = DFM_NOERR
       success = .true.
@@ -312,7 +314,7 @@ contains
                                           target_array_3d, first_index, method)
             else
                call process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index)
+                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count)
             end if
 
             ! This part of the code might be moved or changed. (See UNST-8247)
@@ -330,14 +332,14 @@ contains
                end if
                iconst = itrac2const(itrac)
                !
-               kx = 1
+               quantity_value_count = 1
                if (allocated(mask)) then
                   deallocate (mask)
                end if
                allocate (mask(ndx), source=1)
                ec_item = ec_undef_int
                call setzcs()
-               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, &
+               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, quantity_value_count, filename, &
                                                    filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
                                                    varname=varname, tgt_item1=ec_item)
                success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
@@ -359,10 +361,17 @@ contains
             end if
 
             if (time_dependent_array) then
-               kx = 1
                call set_coordinates_for_location_type(target_location_type, x_loc, y_loc, target_location_count, iloctype, kcsini)
-               success = ec_addtimespacerelation(qid, x_loc, y_loc, kcsini, kx, filename, filetype, method, operand, &
-                                                 varname=varname)
+               if (target_location_type == UNC_LOC_S3D) then
+                  pkbot => kbot
+                  pktop => ktop
+                  call setzcs()
+                  success = ec_addtimespacerelation(qid, x_loc, y_loc, kcsini, quantity_value_count, filename, filetype, method, operand, &
+                                                    varname=varname, z=zcs, pkbot=pkbot, pktop=pktop)
+               else 
+                  success = ec_addtimespacerelation(qid, x_loc, y_loc, kcsini, quantity_value_count, filename, filetype, method, operand, &
+                                                    varname=varname)
+               end if
             else
                if (.not. associated(target_array) .and. .not. associated(target_array_3d)) then
                   cycle
@@ -1546,7 +1555,7 @@ contains
    !> Set the control parameters for the actual reading of the items from the input file or
    !! connecting the input to the EC-module.
    subroutine process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index)
+                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index, quantity_value_count)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
       use tree_data_types
@@ -1555,7 +1564,7 @@ contains
       use m_alloc, only: realloc, aerr
       use unstruc_files, only: resolvePath
       use m_missing, only: dmiss
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL, UNC_LOC_S3D
       use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, waveforcing
       use m_flow, only: frcu
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
@@ -1569,6 +1578,7 @@ contains
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemdiam, stemdens, stemheight
       use unstruc_model, only: md_extfile, md_ptr
+      use m_nudge, only: nudge_time, nudge_rate
       use string_module, only: str_tolower
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
       use processes_input, only: paname, painp, num_spatial_parameters, &
@@ -1586,6 +1596,7 @@ contains
       real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_3d !< pointer to the array that corresponds to the quantity (real(kind=dp)), if it has an extra dimension.
       real(kind=sp), dimension(:, :), pointer, intent(out) :: target_array_3d_sp !< pointer to the array that corresponds to the quantity (real(kind=sp)), if it has an extra dimension.
       integer, intent(out) :: target_quantity_index !< Index of the quantity in the first dimension of target_array_3d, if applicable.
+      integer, intent(out) :: quantity_value_count !< The number of values for this quantity on a single location. E.g. 1 for scalar fields, 2 for vector fields.
 
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
@@ -1598,6 +1609,7 @@ contains
       target_array_3d_sp => null()
       time_dependent_array = .false.
       target_quantity_index = 1
+      quantity_value_count = 1
 
       call split_qid(qid, qid_base, qid_specific)
 
@@ -1839,6 +1851,22 @@ contains
          time_dependent_array = .true.
          call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., waq_values_ptr = sfuninp, index_waq_input = target_quantity_index)
 
+      case ('nudgesalinitytemperature')
+         target_location_type = UNC_LOC_S3D
+         time_dependent_array = .true.
+         quantity_value_count = 2
+         call alloc_nudging()
+         
+      case ('nudgerate')
+         target_location_type = UNC_LOC_S
+         call alloc_nudging()
+         target_array => nudge_rate
+
+      case ('nudgetime')
+         target_location_type = UNC_LOC_S
+         call alloc_nudging()
+         target_array => nudge_time
+
       case default
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
             ' Field '''//trim(qid)//''' is not a recognized ''[Parameter]'' quantity (refer to User Manual). Ignoring this block.'
@@ -1847,6 +1875,20 @@ contains
       end select
 
    end subroutine process_parameter_block
+
+   !> Allocate nudging arrays.
+   subroutine alloc_nudging()
+      use m_alloc, only: realloc
+      use m_cell_geometry, only: ndx
+      use m_flow, only: ndkx
+      use m_missing, only: dmiss
+      use m_nudge, only: nudge_salinity, nudge_temperature, nudge_time, nudge_rate
+
+      call realloc(nudge_temperature, ndkx, fill=dmiss)
+      call realloc(nudge_salinity, ndkx, fill=dmiss)
+      call realloc(nudge_time, ndx, fill=dmiss)
+      call realloc(nudge_rate, ndx, fill=dmiss)
+   end subroutine alloc_nudging
 
    !> Search a particular water quality input name in a list of names,
    !! and if not found, add it to the list, also increasing the associated value array.
@@ -1970,6 +2012,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
 
       use m_flow, only: s1, hs, h_unsat
+      use m_flowparameters, only: janudge
       use m_flowgeom, only: ndxi, ndx, bl
       use m_wind, only: jaevap, evap
 
@@ -2043,6 +2086,8 @@ contains
          if (stemheightstd > 0.0_dp) then
             stemheight = stemheight * (1.0_dp + stemheightstd * (ran0(idum) - 0.5_dp))
          end if
+      case ('nudgesalinitytemperature')
+         janudge = 1
       end select
 
    end subroutine finish_initialization

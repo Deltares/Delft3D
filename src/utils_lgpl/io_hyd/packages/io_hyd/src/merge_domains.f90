@@ -124,6 +124,7 @@
       hyd%tem_present = d_hyd%tem_present
       hyd%tau_present = d_hyd%tau_present
       hyd%vdf_present = d_hyd%vdf_present
+      hyd%vel_present = d_hyd%vel_present
       hyd%description = ' '
       hyd%hyd_ref     = d_hyd%hyd_ref
       hyd%hyd_start   = d_hyd%hyd_start
@@ -669,6 +670,7 @@
       if (hyd%tem_present) allocate(hyd%tem(hyd%num_cells))
       if (hyd%tau_present) allocate(hyd%tau(hyd%num_cells))
       if (hyd%vdf_present) allocate(hyd%vdf(hyd%num_cells))
+      if (hyd%vel_present) allocate(hyd%vel(hyd%num_cells))
 
       ! time independent items
       hyd%atr_type = ATR_FM
@@ -773,6 +775,7 @@
       hyd%tem_present = domain_hyd_coll%hyd_pnts(1)%tem_present
       hyd%tau_present = domain_hyd_coll%hyd_pnts(1)%tau_present
       hyd%vdf_present = domain_hyd_coll%hyd_pnts(1)%vdf_present
+      hyd%vel_present = domain_hyd_coll%hyd_pnts(1)%vel_present
       hyd%description = ' '
       hyd%hyd_ref     = domain_hyd_coll%hyd_pnts(1)%hyd_ref
       hyd%hyd_start   = domain_hyd_coll%hyd_pnts(1)%hyd_start
@@ -1136,6 +1139,7 @@
       if (hyd%tem_present) allocate(hyd%tem(hyd%num_cells))
       if (hyd%tau_present) allocate(hyd%tau(hyd%num_cells))
       if (hyd%vdf_present) allocate(hyd%vdf(hyd%num_cells))
+      if (hyd%vel_present) allocate(hyd%vel(hyd%num_cells))
 
       ! time independent items
       hyd%atr_type = ATR_FM
