@@ -39,10 +39,11 @@ contains
    subroutine setbobs() ! and set blu, weigthed depth at u point
       use precision, only: dp
       use m_netw, only: netcell, zk, zkuni, numl, numl1d, lne, kn, nmk
-      use m_flowparameters, only: ibedlevtyp, calc_bedlevel_over_non_active_links, jaconveyance2D
+      use m_flowparameters, only: ibedlevtyp, calc_bedlevel_over_inactive_links, jaconveyance2D
+      use m_flowparameters, only: BEDLEV_TYPE_WATERLEVEL, BEDLEV_TYPE_VELOCITY, BEDLEV_TYPE_MEAN, BEDLEV_TYPE_MIN, BEDLEV_TYPE_MAX, BEDLEV_TYPE_WATERLEVEL6
       use m_flowgeom, only: ndx2d, bl, ndxi, lne2ln, iadv, ln, lncn, ibot, blu, bob, bob0, lnx1d, lnx, kcu, kcs, ndx, nd
       use m_flowgeom, only: wu, lnxi
-      use m_flow, only : ibedlevmode, BLMODE_D3D, BLMODE_DFM, dmiss, jaupdbobbl1d, setHorizontalBobsFor1d2d, jaupdbndbl, jadpuopt
+      use m_flow, only: ibedlevmode, BLMODE_D3D, BLMODE_DFM, dmiss, jaupdbobbl1d, setHorizontalBobsFor1d2d, jaupdbndbl, jadpuopt
       use m_flow, only: blmeanbelow, blminabove
       use m_sediment, only: stm_included
       use m_oned_functions, only: setbobs_1d
@@ -66,15 +67,15 @@ contains
          end do
       else
          ! Default: BLMODE_DFM, tiles or velocity point based, use ibedlevtyp only
-         if (ibedlevtyp == 1) then ! Already delivered via ext file, only fill missing values here
+         if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL) then ! Already delivered via ext file, only fill missing values here
             do k = 1, ndxi
                if (bl(k) == dmiss) then
                   bl(k) = zkuni
                end if
             end do
-         else if (ibedlevtyp > 1 .and. ibedlevtyp <= 5) then
+         else if (ibedlevtyp > BEDLEV_TYPE_WATERLEVEL .and. ibedlevtyp <= BEDLEV_TYPE_MAX) then
             bl = 1d30
-         else if (ibedlevtyp == 6) then ! quick and dirty flownodes tile depth like taken from netnodes, to be able to at least run netnode zk defined models
+         else if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then ! quick and dirty flownodes tile depth like taken from netnodes, to be able to at least run netnode zk defined models
             do k = 1, ndxi ! Was: ndx2d, but netcell includes 1D too
                bl(k) = 0d0
                mis = 0
@@ -91,66 +92,67 @@ contains
 
          end if
       end if
-      
+
       do L = numL1D + 1, numL ! Intentional: includes boundaries, to properly set bobs based on net nodes here already
-         Lf = lne2ln(L)  
+         Lf = lne2ln(L)
 
          bedlevel_at_link = huge(1.0_dp)
          ! prevent out of bounds, when bedlevel_at_link is not set:
          n1 = 1
          n2 = 1
-         
-         if (Lf <= 0 .and. ibedlevtyp/=2 .and. calc_bedlevel_over_non_active_links) then
-            n1 = lne(1,L)
-            n2 = lne(2,L)
-            if (n1==0 .and. n2 == 0) then
+
+         ! When Lf (flow link) <= 0, there is no active flow link at this interface
+         ! Bedlevtyp == 2 uses only the pre-defined bed levels in BLU
+         if (Lf <= 0 .and. ibedlevtyp /= BEDLEV_TYPE_VELOCITY .and. calc_bedlevel_over_inactive_links) then
+            n1 = lne(1, L)
+            n2 = lne(2, L)
+            if (n1 == 0 .and. n2 == 0) then
                cycle
-            else if (n1==0) then
+            else if (n1 == 0) then
                n1 = n2
             else if (n2 == 0) then
                n2 = n1
             end if
-            k1 = kn(1,L)
-            k2 = kn(2,L)
+            k1 = kn(1, L)
+            k2 = kn(2, L)
             bedlevel_at_link = get_bedlevel_at_link(n1, n2, k1, k2, dmiss, 0)
-   
+
          else if (Lf > 0) then
             if (iadv(Lf) > 20 .and. iadv(Lf) < 30) cycle ! skip update of bobs for structures ! TODO: [TRUNKMERGE]: JN/BJ: really structures on bnd?
-            
-            n1 = ln(1,Lf)
-            n2 = ln(2,Lf)
-            k1 = lncn(1,Lf)
-            k2 = lncn(2,Lf)
+
+            n1 = ln(1, Lf)
+            n2 = ln(2, Lf)
+            k1 = lncn(1, Lf)
+            k2 = lncn(2, Lf)
             if (allocated(ibot)) then
                ibotL = ibot(Lf)
             else
                ibotL = 0
             end if
             bedlevel_at_link = get_bedlevel_at_link(n1, n2, k1, k2, blu(Lf), ibotL)
-            if (jaconveyance2D >=1) then
-               if (zk(k1) ==dmiss) then
+            if (jaconveyance2D >= 1) then
+               if (zk(k1) == dmiss) then
                   bob(1, Lf) = zkuni
                else
                   bob(1, Lf) = zk(k1)
                end if
-               if (zk(k2) ==dmiss) then
+               if (zk(k2) == dmiss) then
                   bob(2, Lf) = zkuni
                else
                   bob(2, Lf) = zk(k2)
                end if
-               
-            else 
-               bob(1,Lf) = bedlevel_at_link
-               bob(2,Lf) = bedlevel_at_link
-            end if
-            blu(Lf) = min(bob(1, Lf), bob(2, Lf)) 
-         end if      
 
-         if (ibedlevmode == BLMODE_DFM .and. ibedlevtyp .ne. 1 .and. ibedlevtyp .ne. 6) then
+            else
+               bob(1, Lf) = bedlevel_at_link
+               bob(2, Lf) = bedlevel_at_link
+            end if
+            blu(Lf) = min(bob(1, Lf), bob(2, Lf))
+         end if
+
+         if (ibedlevmode == BLMODE_DFM .and. ibedlevtyp /= BEDLEV_TYPE_WATERLEVEL .and. ibedlevtyp /= BEDLEV_TYPE_WATERLEVEL6) then
             bl(n1) = min(bl(n1), bedlevel_at_link)
             bl(n2) = min(bl(n2), bedlevel_at_link)
          end if
-
 
       end do
       bob0(:, lnx1d + 1:lnx) = bob(:, lnx1d + 1:lnx)
@@ -171,7 +173,7 @@ contains
 
             if (kcu(L) == 1) then ! 1D link
 
-               if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! tegeldieptes celcentra ! TODO: [TRUNKMERGE] WO/BJ: do we need stm_included in this if (consistent?)
+               if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL .or. ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then ! tegeldieptes celcentra ! TODO: [TRUNKMERGE] WO/BJ: do we need stm_included in this if (consistent?)
                   if (stm_included) then
                      bl1 = bl(n1)
                      bl2 = bl(n2)
@@ -194,15 +196,15 @@ contains
          end do
          bob0(:, 1:lnx1d) = bob(:, 1:lnx1d)
       end if
-      
+
       ! 1d-2d links
       do L = 1, lnx1D ! 1D
          n1 = ln(1, L); n2 = ln(2, L) ! flow ref
          k1 = lncn(1, L); k2 = lncn(2, L) ! net  ref
-         if (ibedlevtyp == 3) then
+         if (ibedlevtyp == BEDLEV_TYPE_MEAN) then
             zn1 = zk(k1)
-            zn2 = zk(k2)  
-         else if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then
+            zn2 = zk(k2)
+         else if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL .or. ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then
             zn1 = bl(n1)
             zn2 = bl(n2)
          else
@@ -230,7 +232,7 @@ contains
             bob0(2, L) = bedlevel_at_link ! revisit later+ wu(L)*skewn ! TODO: HK: why wu here? Why not dx(L) or something similar?
             bl(n1) = min(bl(n1), bedlevel_at_link)
             bl(n2) = min(bl(n2), bedlevel_at_link)
-         else if (kcu(L) == 4) then ! left right
+         else if (kcu(L) == BEDLEV_TYPE_MIN) then ! left right
             bedlevel_at_link = min(zn1, zn2)
             bob(1, L) = zn1
             bob(2, L) = zn2
@@ -293,7 +295,7 @@ contains
                end if
             end do
 
-            if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then
+            if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL .or. ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then
                bl2 = bl(n2)
                if (stm_included) then
                   bl1 = bl(n1)
@@ -318,7 +320,7 @@ contains
             end if
 
          else ! 2D boundary link
-            if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! Implicitly intended for: jaconveyance2D < 1
+            if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL .or. ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then ! Implicitly intended for: jaconveyance2D < 1
                bob(1, L) = bl(n1) ! uniform bobs only for tiledepths
                bob(2, L) = bl(n1)
                if (stm_included) then
@@ -366,43 +368,42 @@ contains
          end do
       end if
       jaupdbndbl = 0 ! after first run of setbobs set to 0 = no update
-   
+
    end subroutine setbobs
    !> calculate bed level at a link based on the type of bed level definition and the input parameters.
    function get_bedlevel_at_link(n1, n2, k1, k2, blu, ibot) result(bedlevel_at_link)
-      
+
       use precision, only: dp
-      use m_missing, only : dmiss
-      use network_data, only : zkuni, zk
+      use m_missing, only: dmiss
+      use network_data, only: zkuni, zk
       use m_flowparameters, only: ibedlevtyp, jadpuopt, jaconveyance2D
       use m_flowgeom, only: bl
-      
+
       integer, intent(in) :: n1, n2 !< Node numbers for the link.
       integer, intent(in) :: k1, k2 !< Corresponding net node numbers (corner points).
-      integer, intent(in) :: ibot !< Location dependent bedlevel type.
+      integer, intent(in) :: ibot !< Location dependent bedlevel type (overrides ibedlevtyp).
       real(kind=dp), intent(in) :: blu !< Bed level at u point, used for ibedlevtyp=2.
-      
+
       real(kind=dp) :: bedlevel_at_link
 
       real(kind=dp) :: zn1, zn2
-      
-      
-      if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! tegeldieptes celcentra
+
+      if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL .or. ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then ! tegeldieptes celcentra
          if (jadpuopt == 1) then !original
             bedlevel_at_link = max(bl(n1), bl(n2))
          elseif (jadpuopt == 2) then
             bedlevel_at_link = (bl(n1) + bl(n2)) / 2
          end if
 
-      else if (ibedlevtyp == 2) then ! rechtstreeks op u punten interpoleren,
+      else if (ibedlevtyp == BEDLEV_TYPE_VELOCITY) then ! rechtstreeks op u punten interpoleren,
          if (blu == dmiss) then
             bedlevel_at_link = zkuni
          else
             bedlevel_at_link = blu
          end if
-      else if (ibedlevtyp >= 3 .or. ibedlevtyp <= 5) then ! dieptes uit netnodes zk
+      else if (ibedlevtyp >= BEDLEV_TYPE_MEAN .or. ibedlevtyp <= BEDLEV_TYPE_MAX) then ! dieptes uit netnodes zk
          zn1 = zk(k1)
-         if (zn1 == dmiss) then 
+         if (zn1 == dmiss) then
             zn1 = zkuni
          end if
 
@@ -410,20 +411,20 @@ contains
          if (zn2 == dmiss) then
             zn2 = zkuni
          end if
-         
-          if (jaconveyance2D >= 1) then ! left rigth
+
+         if (jaconveyance2D >= 1) then ! left rigth
             bedlevel_at_link = min(zn1, zn2)
-         else if (ibedlevtyp == 3) then ! mean
+         else if (ibedlevtyp == BEDLEV_TYPE_MEAN) then ! mean
             bedlevel_at_link = 0.5d0 * (zn1 + zn2)
-         else if (ibedlevtyp == 4) then ! min
+         else if (ibedlevtyp == BEDLEV_TYPE_MIN) then ! min
             bedlevel_at_link = min(zn1, zn2)
-         else if (ibedlevtyp == 5) then ! max
+         else if (ibedlevtyp == BEDLEV_TYPE_MAX) then ! max
             bedlevel_at_link = max(zn1, zn2)
          end if
 
-         if (ibot == 4) then
+         if (ibot == BEDLEV_TYPE_MIN) then
             bedlevel_at_link = min(zn1, zn2) ! local override min
-         else if (ibot == 5) then ! local override max
+         else if (ibot == BEDLEV_TYPE_MAX) then ! local override max
             bedlevel_at_link = max(zn1, zn2)
          end if
       end if
