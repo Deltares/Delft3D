@@ -388,20 +388,20 @@ contains
 
       real(kind=dp) :: zn1, zn2
 
-      if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL .or. ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then ! tegeldieptes celcentra
+      if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL .or. ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then ! tile bed levels at cell centers
          if (jadpuopt == 1) then !original
             bedlevel_at_link = max(bl(n1), bl(n2))
          elseif (jadpuopt == 2) then
             bedlevel_at_link = (bl(n1) + bl(n2)) / 2
          end if
 
-      else if (ibedlevtyp == BEDLEV_TYPE_VELOCITY) then ! rechtstreeks op u punten interpoleren,
+      else if (ibedlevtyp == BEDLEV_TYPE_VELOCITY) then ! directly apply bed levels at flow links,
          if (blu == dmiss) then
             bedlevel_at_link = zkuni
          else
             bedlevel_at_link = blu
          end if
-      else if (ibedlevtyp >= BEDLEV_TYPE_MEAN .or. ibedlevtyp <= BEDLEV_TYPE_MAX) then ! dieptes uit netnodes zk
+      else if (ibedlevtyp >= BEDLEV_TYPE_MEAN .or. ibedlevtyp <= BEDLEV_TYPE_MAX) then ! bed levels from netnodes zk
          zn1 = zk(k1)
          if (zn1 == dmiss) then
             zn1 = zkuni
@@ -412,7 +412,7 @@ contains
             zn2 = zkuni
          end if
 
-         if (jaconveyance2D >= 1) then ! left rigth
+         if (jaconveyance2D >= 1) then ! left right
             bedlevel_at_link = min(zn1, zn2)
          else if (ibedlevtyp == BEDLEV_TYPE_MEAN) then ! mean
             bedlevel_at_link = 0.5d0 * (zn1 + zn2)
