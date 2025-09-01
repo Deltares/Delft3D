@@ -162,5 +162,12 @@ project {
             allowInSubProjects = true
             allowInBuilds = true
         }
+        feature {
+            id = "KEEPER_VAULT_DELFT3D"
+            type = "OAuthProvider"
+            param("displayName", "Keeper Vault Delft3d")
+            param("secure:client-secret", "credentialsJSON:b3006852-9a08-4b9c-b315-001c4acac724")
+            param("providerType", "teamcity-ksm")
+        }
     }
 }
