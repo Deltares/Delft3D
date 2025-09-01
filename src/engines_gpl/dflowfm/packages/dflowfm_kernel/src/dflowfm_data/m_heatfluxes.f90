@@ -32,7 +32,6 @@
 
 module m_heatfluxes
    use precision, only: dp
-   use physicalconsts, only: CtoKelvin
 
    implicit none
 
@@ -43,7 +42,6 @@ module m_heatfluxes
    real(kind=dp) :: cpw !< Specific heat water [J/kg/K]
    real(kind=dp) :: rcpi !< 1/(rho*cpi) m3K/J
    real(kind=dp) :: emstf !< Em*Stf [W/m^2/K^4]
-   real(kind=dp), parameter :: tkelvn = CtoKelvin !< Absolute zero
 
    real(kind=dp) :: qsunav !< Solar influx              (W/m2)
    real(kind=dp) :: qevaav !< Evaporative heat loss     (W/m2)
@@ -70,7 +68,7 @@ module m_heatfluxes
    real(kind=dp), dimension(:), allocatable :: qfrconmap
    real(kind=dp), dimension(:), allocatable :: qtotmap
 
-   real(kind=dp), dimension(:), allocatable :: secchisp
+   real(kind=dp), dimension(:), allocatable, target :: secchisp !< [m] Space-varying secchi depth {"location": "face", "shape": ["ndx"]}
 
 contains
 

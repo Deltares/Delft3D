@@ -724,4 +724,13 @@ contains
 
    end subroutine reset_flow
 
+   !> Check if salinity, temperature or sediment are simulated, i.e. density needs to be incorporated
+   pure function use_density() result(res)
+      use m_flowparameters, only: jasal, jatem, jased
+      
+      logical :: res !< Return value
+
+      res = (jasal > 0 .or. jatem > 0 .or. jased > 0)
+   end function use_density
+
 end module m_flow

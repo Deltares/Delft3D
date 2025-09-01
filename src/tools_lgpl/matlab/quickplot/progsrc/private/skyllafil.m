@@ -345,8 +345,9 @@ for i=size(Out,1):-1:1
             % remove references to non-stored data fields
             Out(i,:)=[];
         else
-            switch Out(i).Name,
-                case 'raai',
+            Out(i).Coords = 'x+z';
+            switch Out(i).Name
+                case 'raai'
             end
         end
     end

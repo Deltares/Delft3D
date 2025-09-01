@@ -26,11 +26,11 @@ target "validate" {
     output = ["type=local,dest=report"]
 }   
 
-// Get the branch name. If the build branch is a 'merge head', return the source branch of the merge request.
+// Get the branch name. If the build branch is a 'merge head', return the source branch of the pull request.
 function "branch" {
     params = [build_branch, pull_request_source_branch]
     result = (
-        length(regexall("^merge-requests/.*$", build_branch)) > 0 
+        length(regexall("^pull/.*$", build_branch)) > 0 
         ? pull_request_source_branch
         : build_branch
     )

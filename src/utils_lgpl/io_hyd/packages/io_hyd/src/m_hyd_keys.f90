@@ -58,6 +58,7 @@
       character(len=*), parameter :: salinity_file = 'salinity-file'
       character(len=*), parameter :: temperature_file = 'temperature-file'
       character(len=*), parameter :: vert_diffusion_file = 'vert-diffusion-file'
+      character(len=*), parameter :: velocities_file = 'velocities-file'
       character(len=*), parameter :: surfaces_file = 'surfaces-file'
       character(len=*), parameter :: total_grid_file = 'total-grid-file'
       character(len=*), parameter :: discharges_file = 'discharges-file'

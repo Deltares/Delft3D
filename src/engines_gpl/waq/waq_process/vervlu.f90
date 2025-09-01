@@ -40,7 +40,7 @@ contains
         ! Name    T   L I/O   Description                                    Uni
         ! ----    --- -  -    -------------------                             --
         ! ATMC    R*4 1 I  Concentration OMV in atmosphere                [g.m3]
-        ! CONC    R*4 1 I  Total concentration OMV in water               [g.m3]
+        ! CONC    R*4 1 I  Concentration dissolved OMV in water           [g.m3]
         ! C1      R*4 1 I  Constant in temperature dependance of Henrys
         !                  value represents delta S0 (entropy) / R           [-]
         ! C2      R*4 1 L  Constant in temperature dependence of Henrys
@@ -56,7 +56,6 @@ contains
         ! KL      R*4 1 I  Mass transport coefficient liquid phase         [m/d]
         ! KG      R*4 1 I  Mass transport coefficient gas phase            [m/d]
         ! KV      R*4 1 O  volatilization rate constant                    [m/d]
-        ! KELVIN  R*4 1 LC absolute temperature reference                    [-]
         ! NG      R*4 1 L  amount moles in 1m3 gas                     [mole/m3]
         ! NL      R*4 1 LC amount moles in 1m3 water                   [mole/m3]
         ! P       R*4 1 LC atmospheric pressure                             [Pa]
@@ -73,7 +72,7 @@ contains
         !     ------   -----  ------------
         use m_logger_helper
         use m_extract_waq_attribute
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
+        use physicalconsts, only : celsius_to_kelvin
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
@@ -83,11 +82,10 @@ contains
         !
         !     Local declarations, constants in source
         !
-        PARAMETER (E = 2.718, &
-                KELVIN = real(CtoKelvin), &
+        REAL(kind = real_wp), PARAMETER :: E = 2.718, &
                 NL = 55510., &
                 P = 1.01E+5, &
-                R = 8.314)
+                R = 8.314
         !
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -124,7 +122,7 @@ contains
                     !
                     !     Error messages
                     IF (H0TREF < 1E-30)  CALL write_error_message ('H0TREF in VERVLU =<0')
-                    IF (TEMP <= -KELVIN) CALL &
+                    IF (celsius_to_kelvin(TEMP) <= 0.0_real_wp) CALL &
                             write_error_message ('TEMP in VERVLU < 0 DEG KELVIN')
                     IF (KL < 1E-30) CALL write_error_message ('KL in VERVLU zero')
                     IF (KG < 1E-30) CALL write_error_message ('KG in VERVLU zero')
@@ -132,11 +130,11 @@ contains
                     !     Calculation of temperarure dependence of Henry
                     H2TREF = H0TREF * NL / P
                     !
-                    C2 = (KELVIN + TREF) * (LOG(H2TREF) - C1)
+                    C2 = celsius_to_kelvin(TREF) * (LOG(H2TREF) - C1)
                     !
-                    NG = P / (R * (KELVIN + TEMP))
+                    NG = P / (R * celsius_to_kelvin(TEMP))
                     !
-                    H1TEMP = NG / NL * E**(C2 / (KELVIN + TEMP) + C1)
+                    H1TEMP = NG / NL * E**(C2 / celsius_to_kelvin(TEMP) + C1)
                     !
                     !     Calculation of volatilization rate constant
                     !

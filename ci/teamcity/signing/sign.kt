@@ -97,15 +97,16 @@ object Sign : BuildType({
             commitStatusPublisher {
                 enabled = true
                 vcsRootExtId = "${DslContext.settingsRoot.id}"
-                publisher = gitlab {
+                publisher = github {
+                    githubUrl = "https://api.github.com"
                     authType = vcsRoot()
                 }
             }
         }
         pullRequests {
-            provider = gitlab {
+            provider = github {
                 authType = token {
-                    token = "%gitlab_private_access_token%"
+                    token = "%github_deltares-service-account_access_token%"
                 }
                 filterSourceBranch = "+:*"
                 ignoreDrafts = true

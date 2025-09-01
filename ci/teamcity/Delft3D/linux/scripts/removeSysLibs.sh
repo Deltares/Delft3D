@@ -1,4 +1,10 @@
-rm -fv libuuid.so.* \
+rm -fv \
+    libc-* \
+    libc.* \
+    libssh.so.* \
+    libstdc++.so.* \
+    libgcc.* \
+    libuuid.so.* \
     libdl.so.* \
     libcurl.so.* \
     librt.so.* \
@@ -21,6 +27,5 @@ rm -fv libuuid.so.* \
     libresolv.so.* \
     libsasl2.so.* \
     libsqlite3.so.* \
-    libunistring.so.* \
     libxml2.so.* \
-    libzstd.so.*
+    libzstd.so.* 

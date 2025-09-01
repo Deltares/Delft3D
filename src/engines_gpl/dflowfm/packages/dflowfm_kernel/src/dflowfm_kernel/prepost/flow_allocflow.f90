@@ -55,14 +55,14 @@ contains
                         jacreep, baroclinic_force_prev, baroclinic_pressures, integrated_baroclinic_pressures, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
                         workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
                         spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
-                        limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, epstke, epseps, &
+                        limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, &
                         turkinepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
                         v, ucxu, ucyu, hu, huvli, au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, &
                         frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
                         salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
                         jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
                         q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
-                        jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs
+                        jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, use_density
       use m_flowtimes, only: dtcell, time_wetground, ja_timestep_auto, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
@@ -724,7 +724,7 @@ contains
          call aerr('rhowat(ndkx)', ierr, ndkx)
       end if
 
-      if (jasal > 0 .or. jatem > 0 .or. jased > 0 .or. stm_included) then
+      if (use_density() .or. stm_included) then
          call realloc(baroclinic_force_prev, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('baroclinic_force_prev(lnkx)', ierr, lnkx)
          call realloc(baroclinic_pressures, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -833,7 +833,7 @@ contains
       end if
 
       ! Anti-creep
-      if (jacreep == 1 .and. (jasal > 0 .or. jatem > 0 .or. jased > 0 .and. jased < 4)) then
+      if (jacreep == 1 .and. (use_density() .and. jased < 4)) then
          if (kmx >= 2) then
             call realloc(dsalL, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('dsalL(lnkx)', ierr, lnkx)
@@ -863,13 +863,13 @@ contains
 
       if (kmx > 0) then ! turbulence arrays
 
-         call realloc(turkin0, lnkx, stat=ierr, fill=epstke, keepexisting=.false.)
+         call realloc(turkin0, lnkx, stat=ierr, fill=tke_min, keepexisting=.false.)
          call aerr('turkin0(lnkx)', ierr, lnkx)
-         call realloc(turkin1, lnkx, stat=ierr, fill=epstke, keepexisting=.false.)
+         call realloc(turkin1, lnkx, stat=ierr, fill=tke_min, keepexisting=.false.)
          call aerr('turkin1(lnkx)', ierr, lnkx)
-         call realloc(tureps0, lnkx, stat=ierr, fill=epseps, keepexisting=.false.)
+         call realloc(tureps0, lnkx, stat=ierr, fill=eps_min, keepexisting=.false.)
          call aerr('tureps0(lnkx)', ierr, lnkx)
-         call realloc(tureps1, lnkx, stat=ierr, fill=epseps, keepexisting=.false.)
+         call realloc(tureps1, lnkx, stat=ierr, fill=eps_min, keepexisting=.false.)
          call aerr('tureps1(lnkx)', ierr, lnkx)
          call realloc(vicwwu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('vicwwu(lnkx)', ierr, lnkx)

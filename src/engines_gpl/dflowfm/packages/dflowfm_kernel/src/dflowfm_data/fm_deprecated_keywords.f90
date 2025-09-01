@@ -16,8 +16,8 @@ contains
       end if
       allocate (deprecated_mdu_keywords%deprecated_keyword_list(100), deprecated_ext_keywords%deprecated_keyword_list(100))
 
-      deprecated_mdu_keywords%additional_information = 'Check Section A.4 in the User Manual for information on how to update this input file.'
-      deprecated_ext_keywords%additional_information = 'Check Section C.5 in the User Manual for information on how to update this input file.'
+      deprecated_mdu_keywords%additional_information = 'Check the User Manual appendix about the Master Definition file for information on how to update this input file.'
+      deprecated_ext_keywords%additional_information = 'Check the User Manual appendix about the external forcings file for information on how to update this input file.'
       deprecated_mdu_keywords%count = 0
       deprecated_ext_keywords%count = 0
 
@@ -40,6 +40,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'barocTerm', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'barocTimeInt', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jaDrhoDz', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'epsTKE', OBSOLETE, 'Use [Physics] TKEMin instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'epsEPS', OBSOLETE, 'Use [Physics] EPSMin (k-epsilon turbulence model) or [Physics] TAUmin (k-tau turbulence model) instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Allowcoolingbelowzero', OBSOLETE, &
                                   'Consider using MDU-keyword salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'RhoairRhowater', OBSOLETE, &

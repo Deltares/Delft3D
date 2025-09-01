@@ -368,10 +368,13 @@ switch DT
             case 1
                 Out(1).DimFlag=[1 0 1 0 0];
                 Out(1).UseGrid=0;
+                Out(1).Coords = 'x';
             case 2
                 Out(1).DimFlag=[1 0 1 1 0];
+                Out(1).Coords = 'xy';
             case 3
                 Out(1).DimFlag=[1 0 1 1 1];
+                Out(1).Coords = 'xy+z';
         end
 end
 if ~isempty(FI.Item)

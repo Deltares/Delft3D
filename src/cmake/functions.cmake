@@ -300,7 +300,7 @@ function(create_test test_name)
     )
     # Set environment paths to find *.so/*.dll files Make sure DLL is found by adding its directory to PATH
     if (UNIX)
-        set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib;${LD_LIBRARY_PATH}")
+        set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}")
     endif (UNIX)
     if (WIN32)
         set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/lib\;$ENV{PATH}")
