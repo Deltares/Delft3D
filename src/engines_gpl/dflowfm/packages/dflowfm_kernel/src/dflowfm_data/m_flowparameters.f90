@@ -51,7 +51,7 @@ module m_flowparameters
    logical :: dxDoubleAt1DEndNodes !< indicaties whether a 1D grid cell at the end of a network has to be extended with 0.5*dx
    integer :: iadvec1D !< same, now for 1D links
    integer :: iadveccorr1D2D !< Advection correction of 1D2D link volume (0: none, 1: link volume au*dx')
-
+   logical :: calc_bedlevel_over_inactive_links
    logical :: changeVelocityAtStructures !< Set the flow velocity at structures in setucxucyucxuucyu to the
    !< flow velocity upstream of the structure
    logical :: changeStructureDimensions !< Change the crestwidth of a structure, in case the crestwidth is larger than the
@@ -207,7 +207,13 @@ module m_flowparameters
                                                         !! 2 : Bed levels at velocity points  (=flow links),            xu, yu, blu, bob = blu,    bl = lowest connected link
                                                         !! 3 : Bed levels at velocity points  (=flow links), using mean network levels xk, yk, zk  bl = lowest connected link
                                                         !! 4 : Bed levels at velocity points  (=flow links), using min  network levels xk, yk, zk  bl = lowest connected link
-
+   integer, parameter :: BEDLEV_TYPE_WATERLEVEL = 1
+   integer, parameter :: BEDLEV_TYPE_VELOCITY = 2
+   integer, parameter :: BEDLEV_TYPE_MEAN = 3
+   integer, parameter :: BEDLEV_TYPE_MIN = 4
+   integer, parameter :: BEDLEV_TYPE_MAX = 5
+   integer, parameter :: BEDLEV_TYPE_WATERLEVEL6 = 6
+   
    integer :: ibedlevtyp1D !< 1 : same, 1D, 1 = tiles, xz(flow)=zk(net), bob(1,2) = max(zkr,zkl) , 3=mean netnode based
 
    integer :: izbndpos !< 0 : waterlevel boundary location as in D3DFLOW, 1=on network boundary, 2=on specified boundary polyline
@@ -661,6 +667,7 @@ contains
       changeStructureDimensions = .true. !< Change the crestwidth of a structure, in case the crestwidth is larger than the
       !< wet surface width and make sure the crest level is equal or larger than the
       !< bed level of the channel.
+      calc_bedlevel_over_inactive_links = .false.
       lincontin = 0 ! 0 = no, 1 = yes linear continuity
 
       Perot_type = PEROT_AREA_BASED ! Perot weighting type of cell center velocities ucx, ucy
