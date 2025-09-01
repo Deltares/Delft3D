@@ -499,7 +499,7 @@ contains
       call timstrt('Read structures', timerHandle)
       if (len_trim(md_1dfiles%structures) > 0) then
          call SetMessage(LEVEL_INFO, 'Reading Structures ...')
-         call readStructures(network, md_1dfiles%structures, relative_paths=md_paths_relto_parent > 0)
+         call readStructures(network, md_1dfiles%structures, is_path_relative=md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
 
          if (md_convertlongculverts == 0) then

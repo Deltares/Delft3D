@@ -84,12 +84,12 @@ module m_readstructures
 contains
 
    !> Read structure.ini file(s).
-   subroutine readStructures(network, structureFiles, relative_paths)
+   subroutine readStructures(network, structureFiles, is_path_relative)
       use string_module, only: str_token
 
       type(t_network), intent(inout) :: network !< The network data structure into whose Structure Set the file(s) will be read.
       character(len=*), intent(in) :: structurefiles !< File name(s) to be read. Separate multiple files by semicolon: "file with spaces 1.ini;file2.ini;file 3.ini".
-      logical, intent(in) :: relative_paths !< whether the files in the structure file are relative to the structure file location or to the working directory.
+      logical, intent(in) :: is_path_relative !< whether the files in the structure file are relative to the structure file location or to the working directory.
 
       character(len=IdLen) :: file
       character(len=IdLen) :: inputFiles
@@ -97,7 +97,7 @@ contains
       inputFiles = structurefiles
       do while (len_trim(inputfiles) > 0)
          call str_token(inputfiles, file, DELIMS=';')
-         call readStructureFile(network, adjustl(trim(file)), relative_paths)
+         call readStructureFile(network, adjustl(trim(file)), is_path_relative)
       end do
 
       if (.not. allocated(network%sts%restartData) .and. (network%sts%count > 0)) then
@@ -115,7 +115,7 @@ contains
    end subroutine readStructures
 
    !> read a single ini file and add the structures to the structure sets
-   subroutine readStructureFile(network, structureFile, relative_paths)
+   subroutine readStructureFile(network, structureFile, is_path_relative)
       use m_GlobalParameters
       use m_1d_Structures
       use m_compound
@@ -126,7 +126,7 @@ contains
 
       type(t_network), intent(inout) :: network !< Network pointer
       character(len=*), intent(in) :: structureFile !< Name of the structure file
-      logical, intent(in) :: relative_paths !< if . true, files in structure file are relative to the structure file location, otherwise to working directory.
+      logical, intent(in) :: is_path_relative !< if true, files in structure file are relative to the structure file location, otherwise to working directory.
 
       logical :: success, success1
       type(tree_data), pointer :: md_ptr
@@ -143,11 +143,11 @@ contains
       type(t_structure), pointer :: pstru
       integer :: major, minor, ierr
       character(len=IdLen) :: filename
-      character(:), allocatable :: structure_file_directory, dummy
+      character(:), allocatable :: structure_file_directory
 
       success = .true.
 
-      if (relative_paths) then
+      if (is_path_relative) then
          call get_filepath(structureFile, structure_file_directory)
       else
          structure_file_directory = ''

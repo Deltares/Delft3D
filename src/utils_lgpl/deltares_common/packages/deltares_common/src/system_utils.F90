@@ -177,36 +177,36 @@ contains
       !
       ! Local variables
       !
-      integer :: ifilesep ! index of last file separator
+      integer :: file_sep_index ! index of last file separator
       integer :: idot ! index of last dot
 !
 !! executable statements -------------------------------------------------------
 !
       ! find last file separator
-      ifilesep = index(name, FILESEP, back=.true.)
+      file_sep_index = index(name, FILESEP, back=.true.)
       if (ARCH == 'windows') then
          ! on Windows also check forward slash
-         ifilesep = max(ifilesep, index(name, FILESEP_OTHER_ARCH, back=.true.))
+         file_sep_index = max(file_sep_index, index(name, FILESEP_OTHER_ARCH, back=.true.))
       end if
       !
       ! split name
-      if (ifilesep > 0) then
-         path = name(1:ifilesep)
+      if (file_sep_index > 0) then
+         path = name(1:file_sep_index)
       else
          path = ' '
       end if
       if (present(ext)) then
          ! find last dot
          idot = index(name, '.', back=.true.)
-         if (idot > ifilesep) then
-            file = name(ifilesep + 1:idot - 1)
+         if (idot > file_sep_index) then
+            file = name(file_sep_index + 1:idot - 1)
             ext = name(idot:len_trim(name))
          else
-            file = name(ifilesep + 1:len_trim(name))
+            file = name(file_sep_index + 1:len_trim(name))
             ext = ' '
          end if
       else
-         file = name(ifilesep + 1:len_trim(name))
+         file = name(file_sep_index + 1:len_trim(name))
       end if
    end subroutine split_filename
 
@@ -215,7 +215,7 @@ contains
       character(*), intent(in) :: file_name !< file name, either absolute or relative.
       character(:), allocatable, intent(out) :: file_path ! output path
 
-      integer :: ifilesep ! index of last file separator
+      integer :: file_sep_index ! index of last file separator
       integer :: ierr
       character(:), allocatable :: temp_name
       character(len=1024) :: cwd_string
@@ -228,13 +228,13 @@ contains
          temp_name = file_name
       end if
       ! find last file separator
-      ifilesep = index(temp_name, FILESEP, back=.true.)
+      file_sep_index = index(temp_name, FILESEP, back=.true.)
       if (ARCH == 'windows') then
          ! on Windows also check forward slash
-         ifilesep = max(ifilesep, index(temp_name, FILESEP_OTHER_ARCH, back=.true.))
+         file_sep_index = max(file_sep_index, index(temp_name, FILESEP_OTHER_ARCH, back=.true.))
       end if
-      if (ifilesep > 0) then
-         file_path = temp_name(1:ifilesep)
+      if (file_sep_index > 0) then
+         file_path = temp_name(1:file_sep_index)
       end if
    end subroutine get_filepath
 
@@ -253,19 +253,19 @@ contains
       !
       ! Local variables
       !
-      integer :: ifilesep ! index of last file separator
+      integer :: file_sep_index ! index of last file separator
 !
 !! executable statements -------------------------------------------------------
 !
       ! find last file separator
-      ifilesep = index(name, FILESEP, back=.true.)
+      file_sep_index = index(name, FILESEP, back=.true.)
       if (ARCH == 'windows') then
          ! on Windows also check forward slash
-         ifilesep = max(ifilesep, index(name, FILESEP_OTHER_ARCH, back=.true.))
+         file_sep_index = max(file_sep_index, index(name, FILESEP_OTHER_ARCH, back=.true.))
       end if
       !
       ! file name with extention
-      file = name(ifilesep + 1:len_trim(name))
+      file = name(file_sep_index + 1:len_trim(name))
    end subroutine remove_path
 
    function exifil(name, unit)
