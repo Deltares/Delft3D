@@ -3,6 +3,7 @@ package _Self.buildTypes
 import jetbrains.buildServer.configs.kotlin.*
 
 object SigCi : BuildType({
+    id("SigCi")
     name = "Sig Ci"
 
     steps {
