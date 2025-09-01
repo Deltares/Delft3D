@@ -8,6 +8,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
 import Trigger
 import Delft3D.linux.*
 import Delft3D.linux.containers.*
+import Delft3D.windows.*
 
 object PublishAggregateStatus : BuildType({
     name = "Publish Aggregate Status"
@@ -55,14 +56,14 @@ object PublishAggregateStatus : BuildType({
             """.trimIndent()
         }
         finishBuildTrigger {
-            buildType = "${LinuxUnitTest.id}"
+            buildType = "${LinuxTest.id}"
             branchFilter = """
                 -:*
                 +:pull/*
             """.trimIndent()
         }
         finishBuildTrigger {
-            buildType = "${LinuxBuild.id}"
+            buildType = "${LinuxUnitTest.id}"
             branchFilter = """
                 -:*
                 +:pull/*
@@ -77,6 +78,27 @@ object PublishAggregateStatus : BuildType({
         }
         finishBuildTrigger {
             buildType = "${LinuxThirdPartyLibs.id}"
+            branchFilter = """
+                -:*
+                +:pull/*
+            """.trimIndent()
+        }
+        finishBuildTrigger {
+            buildType = "${WindowsBuild.id}"
+            branchFilter = """
+                -:*
+                +:pull/*
+            """.trimIndent()
+        }
+        finishBuildTrigger {
+            buildType = "${WindowsTest.id}"
+            branchFilter = """
+                -:*
+                +:pull/*
+            """.trimIndent()
+        }
+        finishBuildTrigger {
+            buildType = "${WindowsUnitTest.id}"
             branchFilter = """
                 -:*
                 +:pull/*
