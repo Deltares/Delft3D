@@ -63,6 +63,13 @@ object PublishAggregateStatus : BuildType({
             """.trimIndent()
         }
         finishBuildTrigger {
+            buildType = "${LinuxCollect.id}"
+            branchFilter = """
+                -:*
+                +:pull/*
+            """.trimIndent()
+        }
+        finishBuildTrigger {
             buildType = "${LinuxUnitTest.id}"
             branchFilter = """
                 -:*
@@ -99,6 +106,13 @@ object PublishAggregateStatus : BuildType({
         }
         finishBuildTrigger {
             buildType = "${WindowsUnitTest.id}"
+            branchFilter = """
+                -:*
+                +:pull/*
+            """.trimIndent()
+        }
+        finishBuildTrigger {
+            buildType = "${WindowsCollect.id}"
             branchFilter = """
                 -:*
                 +:pull/*
