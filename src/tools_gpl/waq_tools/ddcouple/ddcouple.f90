@@ -1250,6 +1250,7 @@ program ddcouple
         if (hyd%tem_present) allocate(hyd%tem(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
         if (hyd%tau_present) allocate(hyd%tau(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
         if (hyd%vdf_present) allocate(hyd%vdf(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
+        if (hyd%vel_present) allocate(hyd%vel(hyd%num_cells), stat = ierr_alloc) ; if (ierr_alloc /= 0) goto 990
 
         hyd%area = 0.0
         hyd%flow = 0.0
@@ -1258,6 +1259,7 @@ program ddcouple
         if (hyd%tem_present) hyd%tem = 0.0
         if (hyd%tau_present) hyd%tau = 0.0
         if (hyd%vdf_present) hyd%vdf = 0.0
+        if (hyd%vel_present) hyd%vel = 0.0
 
         ! time loop
 

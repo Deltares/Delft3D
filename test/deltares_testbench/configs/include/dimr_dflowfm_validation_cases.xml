@@ -385,7 +385,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c012_schematized_lake" ref="dflowfm_default">
-      <path version="2025-08-01T12:41:02.845000">e02_dflowfm/f011_wind/c012_schematized_lake</path>
+      <path version="2025-08-27T12:22:45.472000">e02_dflowfm/f011_wind/c012_schematized_lake</path>
       <maxRunTime>20.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/windoverlake_his.nc" type="netCDF">
@@ -404,7 +404,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f011_c026_spiderweb_regular" ref="dflowfm_default">
-      <path version="2025-08-01T12:41:56.932000">e02_dflowfm/f011_wind/c026_spiderweb_regular</path>
+      <path version="2025-08-27T12:22:49.077000">e02_dflowfm/f011_wind/c026_spiderweb_regular</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/katrina_his.nc" type="netCDF">
@@ -540,7 +540,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c010_frisianinlet_schematized" ref="dflowfm_default">
-      <path version="2025-08-07T09:51:00.599000">e02_dflowfm/f013_waves/c010_frisianinlet_schematized</path>
+      <path version="2025-08-27T12:22:51.785000">e02_dflowfm/f013_waves/c010_frisianinlet_schematized</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/f34_his.nc" type="netCDF">
@@ -559,7 +559,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c020_frisianinlet_realistic" ref="dflowfm_default">
-      <path version="2025-08-01T14:39:26.148000">e02_dflowfm/f013_waves/c020_frisianinlet_realistic</path>
+      <path version="2025-08-27T12:22:54.394000">e02_dflowfm/f013_waves/c020_frisianinlet_realistic</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/r17_his.nc" type="netCDF">
@@ -597,7 +597,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f013_c040_loosdrecht" ref="dflowfm_default">
-      <path version="2025-08-01T14:40:31.371000">e02_dflowfm/f013_waves/c040_loosdrecht</path>
+      <path version="2025-08-27T12:22:56.848000">e02_dflowfm/f013_waves/c040_loosdrecht</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/loo_his.nc" type="netCDF">

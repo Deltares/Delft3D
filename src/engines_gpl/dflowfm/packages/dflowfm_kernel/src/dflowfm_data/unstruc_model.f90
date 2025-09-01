@@ -935,8 +935,14 @@ contains
             mxlayz = kmx
          end if
 
-         call prop_get(md_ptr, 'geometry', 'Numtopsig', Numtopsig)
-         call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform)
+         call prop_get(md_ptr, 'geometry', 'Numtopsig', Numtopsig, success)
+         if (success .and. numtopsig > 0 .and. layertype /= LAYTP_Z) then
+            write (msgbuf, '(a,i0,a)'), 'The model definition file sets numtopsig to ', numtopsig, &
+               ', but layertype is not 2 (z-layers or z-sigma-layers). Continuing with numtopsig = 0.'
+            call warn_flush()
+            numtopsig = 0
+         end if
+         call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform, success)
          call prop_get(md_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor)
          call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
          call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
@@ -987,11 +993,15 @@ contains
 
          call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
          if (.not. success) then
-            call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed)
+            call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success)
          end if
          call prop_get(md_ptr, 'geometry', 'Ihuz', ihuz, success)
          call prop_get(md_ptr, 'geometry', 'Ihuzcsig', ihuzcsig, success)
          call prop_get(md_ptr, 'geometry', 'Keepzlay1bedvol', keepzlay1bedvol, success)
+         if (success .and. keepzlay1bedvol == 1 .and. keepzlayeringatbed /= 1) then
+            call mess(LEVEL_WARN, 'Keepzlay1bedvol is set to 1, but keepzlayeringatbed is not set to 1. Keepzlay1bedvol will be set to 0.')
+            keepzlay1bedvol = 0
+         end if
          call prop_get(md_ptr, 'geometry', 'Zlayeratubybob', jaZlayeratubybob, success)
       end if
       call prop_get(md_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters)
@@ -1579,11 +1589,6 @@ contains
          call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
       end if
       call prop_get(md_ptr, 'wind', 'Relativewind', relativewind)
-      if (kmx == 0) then
-         jawindhuorzwsbased = 1
-      else
-         jawindhuorzwsbased = 0
-      end if
       call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased)
       call prop_get(md_ptr, 'wind', 'Windpartialdry', jawindpartialdry)
 

@@ -88,7 +88,7 @@ contains
       use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
-      use m_set_kbot_ktop, only: setkbotktop
+      use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
@@ -1229,6 +1229,6 @@ contains
          call realloc(nudge_rate, Ndx, fill=DMISS)
       end if
 
-      call setkbotktop(1)
+      call set_kbot_ktop(jazws0=1)
    end subroutine flow_allocflow
 end module m_flow_allocflow

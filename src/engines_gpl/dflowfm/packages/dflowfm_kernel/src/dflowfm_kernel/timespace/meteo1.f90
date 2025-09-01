@@ -6846,7 +6846,7 @@ contains
       case ('waterlevelbnd', 'neumannbnd', 'riemannbnd', 'outflowbnd')
          itemPtr1 => item_waterlevelbnd
          dataPtr1 => zbndz
-      case ('velocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'absgenbnd', 'riemannubnd')
+      case ('velocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'absgenbnd')
          itemPtr1 => item_velocitybnd
          dataPtr1 => zbndu
       case ('dischargebnd')
@@ -7005,7 +7005,7 @@ contains
       case ('longwaveradiation')
          itemPtr1 => item_long_wave_radiation
          dataPtr1 => long_wave_radiation
-      case ('nudge_salinity_temperature')
+      case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          itemPtr2 => item_nudge_salinity
          dataPtr2 => nudge_salinity
          itemPtr1 => item_nudge_temperature
