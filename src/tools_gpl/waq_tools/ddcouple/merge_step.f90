@@ -73,6 +73,7 @@
             if ( hyd%tem_present ) hyd%tem(iseg) = domain_hyd%tem(iseg_domain)
             if ( hyd%tau_present ) hyd%tau(iseg) = domain_hyd%tau(iseg_domain)
             if ( hyd%vdf_present ) hyd%vdf(iseg) = domain_hyd%vdf(iseg_domain)
+            if ( hyd%vel_present ) hyd%vel(iseg) = domain_hyd%vel(iseg_domain)
          enddo
       enddo
 

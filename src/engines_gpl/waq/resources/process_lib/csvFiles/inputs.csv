@@ -239,6 +239,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Temperatur","DelTradmax",  17,"Y","x",1
 "Temperatur","DelTev    ",  18,"Y","x",1
 "Temperatur","DelTrad   ",  19,"N"," ",1
+"Temperatur","AirTemp   ",  20,"Y","x",1
 "Salinchlor","Cl        ",   1,"Y","x",1
 "Salinchlor","Temp      ",   2,"Y","x",1
 "Salinchlor","SWSalCl   ",   3,"Y","x",1
