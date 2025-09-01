@@ -152,6 +152,7 @@
       allocate(hyd%tem(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
       allocate(hyd%tau(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
       allocate(hyd%vdf(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
+      allocate(hyd%vel(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
       allocate(hyd%attributes(hyd%num_cells),stat=ierr_alloc) ; if ( ierr_alloc .ne. 0 ) goto 970
 !     allocate(hyd%wasteflow(hyd%wasteload_coll%actual_size))
 

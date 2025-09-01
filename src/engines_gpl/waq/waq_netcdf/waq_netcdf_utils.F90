@@ -100,7 +100,7 @@ contains
         do char_index = 1, len(input_string)
             ascii_value = iachar(input_string(char_index:char_index))
             if (ascii_value >= ASCII__A .and. ascii_value <= ASCII_Z) then
-                ascii_value = ascii_value - case_offset
+                ascii_value = ascii_value + case_offset
             endif
             lowercase_string(char_index:char_index) = achar(ascii_value)
         enddo
@@ -1188,7 +1188,7 @@ contains
 
     end function create_time_variable
 
-    integer function create_variable(nc_id, mesh_name, delwaq_variable_name, long_name, standard_name, unit, &
+    integer function create_variable(nc_id, mesh_name, delwaq_variable_name_in, long_name, standard_name, unit, &
             time_dimension_id, segments_num, layers_num, variable_id)
         !! Create a WQ variable in the output file
         !!
@@ -1199,18 +1199,17 @@ contains
         !!     time ID? mesh ID? Roles?
         use netcdf_utils, only : ncu_get_att
 
-        integer, intent(in) :: nc_id              !! ID of the output NetCDF file
-        character(len = *), intent(in) :: mesh_name !! Name of the mesh
-        character(len = *), intent(in) :: delwaq_variable_name    !! DELWAQ name of the WQ variable
-        character(len = *), intent(in) :: long_name  !! Long descriptive name of the WQ variable
-        character(len = *), intent(in) :: standard_name
-        !! Standard name according to CF convention (or identical to wqname)
-        character(len = *), intent(in) :: unit      !! String defining the unit of the WQ variable
-        integer, intent(in) :: time_dimension_id              !! Dimension: number of times
-        integer, intent(in) :: segments_num             !! Dimension: number of cells per layer
-        integer, intent(in) :: layers_num              !! DimensionL number of layers (or -999 if 2D variable - use
-        !! dlwqnc_type2d, or -111 if 1D variable - use dlwqnc_type1d)
-        integer, intent(out) :: variable_id                !! ID of the WQ variable in the output file
+        integer, intent(in) :: nc_id                                 !! ID of the output NetCDF file
+        character(len = *), intent(in) :: mesh_name                  !! Name of the mesh
+        character(len = *), intent(in) :: delwaq_variable_name_in    !! DELWAQ name of the WQ variable
+        character(len = *), intent(in) :: long_name                  !! Long descriptive name of the WQ variable
+        character(len = *), intent(in) :: standard_name              !! Standard name according to CF convention (or identical to wqname)
+        character(len = *), intent(in) :: unit                       !! String defining the unit of the WQ variable
+        integer, intent(in) :: time_dimension_id                     !! Dimension: number of times
+        integer, intent(in) :: segments_num                          !! Dimension: number of cells per layer
+        integer, intent(in) :: layers_num                            !! Dimension: number of layers (or -999 if 2D variable - use
+                                                                     !! dlwqnc_type2d, or -111 if 1D variable - use dlwqnc_type1d)
+        integer, intent(out) :: variable_id                          !! ID of the WQ variable in the output file
 
         integer :: i
         integer :: k, k2
@@ -1222,10 +1221,19 @@ contains
         character(len = nf90_max_name), dimension(5) :: dim_name
         character(len = 3 * nf90_max_name) :: methods
         character(len = :), allocatable :: coords
+        character(len = len(delwaq_variable_name_in)) :: delwaq_variable_name
 
         allocate(character(len = 0) :: coords)
 
         create_variable = nf90_noerr
+
+        !
+        ! Make sure the preselected variable "volume" is created once only
+        !
+        delwaq_variable_name = delwaq_variable_name_in
+        if (lowercase(delwaq_variable_name) == 'volume') then
+            delwaq_variable_name = 'volume'
+        endif
 
         ierror = nf90_redef(nc_id)
 

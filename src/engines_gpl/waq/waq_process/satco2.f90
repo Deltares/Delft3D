@@ -38,7 +38,7 @@ contains
         !>       Saturation concentration carbon dioxide
 
         use m_logger_helper, only : stop_with_error, get_log_unit_number
-        use physicalconsts, only : ctokelvin
+        use physicalconsts, only : celsius_to_kelvin
         implicit none
 
         real(kind = real_wp) :: process_space_real  (*), fl    (*)
@@ -94,7 +94,7 @@ contains
                 ! =====================================================================
 
                 cl2 = chlorinity_from_sal( sal, temp ) / 1000.
-                tempa = temp + real(ctokelvin)
+                tempa = celsius_to_kelvin(temp)
                 rion = 0.147e-02 + 0.3592e-01 * cl2 + 0.68e-04 * cl2**2
                 rkco2 = 10.0**(-(- 0.238573e+04 / tempa + 0.140184e+02 - &
                         0.152642e-01 * tempa + rion * (0.28569 - 0.6167e-05 * tempa)))

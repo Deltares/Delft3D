@@ -39,6 +39,11 @@ FileName='';
 Tp='';
 FileFromCall=0;
 Otherargs={};
+MergePartitions = 1;
+if ~isempty(varargin) && strcmp(varargin{1},'no_merge')
+    varargin = varargin(2:end);
+    MergePartitions = 0;
+end
 switch cmd
     case {'open','openldb','opennew','openurl'}
         if strcmp(cmd,'opennew') %|| strcmp(cmd,'openldb')
@@ -434,11 +439,15 @@ switch cmd
                             end
                         end
                     case 'NetCDF'
-                        Opt = get_matching_names(FileName,'_',-2);
-                        if ~isempty(Opt)
-                            if Opt{4}~=0 || Opt{3}~=4
-                                Opt = {};
+                        if MergePartitions
+                            Opt = get_matching_names(FileName,'_',-2);
+                            if ~isempty(Opt)
+                                if Opt{4}~=0 || Opt{3}~=4
+                                    Opt = {};
+                                end
                             end
+                        else
+                            Opt = {};
                         end
                         init_netcdf_settings
                         FI = nc_interpret(FileName,Opt{:});

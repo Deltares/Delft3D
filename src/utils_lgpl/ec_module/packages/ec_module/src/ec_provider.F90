@@ -318,6 +318,8 @@ contains
 
    !> Create source Items and their contained types, based on file type and file header.
    function ecProviderCreateItems(instancePtr, fileReaderPtr, bctfilename, quantityname, varname, varname2) result(success)
+      use string_module, only: str_tolower
+
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       type(tEcFileReader), pointer :: fileReaderPtr !< intent(inout)
@@ -367,15 +369,15 @@ contains
          call setECMessage("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: grib.")
       case (provFile_netcdf)
          if (present(quantityname)) then
-            select case (quantityname)
-            case ("ERA_Interim_Dataset")
+            select case (str_tolower(trim(quantityname)))
+            case ("era_interim_dataset")
                success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("rainfall", &
                   "rainfall_rate", &
                   "airpressure_windx_windy", "airpressure_windx_windy_charnock", &
                   "airpressure_stressx_stressy", "charnock", &
                   "windxy", "stressxy", "windx", "windy", "stressx", "stressy", &
-                  "nudge_salinity_temperature", &
+                  "nudge_salinity_temperature", "nudgesalinitytemperature", &
                   "airpressure", "atmosphericpressure", &
                   "airtemperature", "humidity", "dewpoint", "cloudiness", &
                   "wind_speed", "wind_from_direction", &
@@ -389,7 +391,7 @@ contains
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
                   "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
-                  "pseudoAirPressure", "waterLevelCorrection")
+                  "pseudoairpressure", "waterlevelcorrection")
                success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2435,6 +2437,7 @@ contains
       use transform_poleshift
       use m_ec_message
       use m_alloc
+      use string_module, only: str_tolower
       implicit none
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -2534,7 +2537,7 @@ contains
       ncvarnames(:) = ''
       ncstdnames_fallback = ' '
       idvar = -1
-      select case (trim(quantityName))
+      select case (str_tolower(trim(quantityName)))
       case ('rainfall')
          ncvarnames(1) = 'rainfall'
          ncstdnames(1) = 'precipitation_amount'
@@ -2566,10 +2569,10 @@ contains
       case ('airpressure', 'atmosphericpressure')
          ncvarnames(1) = 'msl' ! mean sea-level pressure
          ncstdnames(1) = 'air_pressure'
-      case ('pseudoAirPressure')
+      case ('pseudoairpressure')
          ncvarnames(1) = 'msl' ! mean sea-level pressure
          ncstdnames(1) = 'air_pressure'
-      case ('waterLevelCorrection')
+      case ('waterlevelcorrection')
          ncvarnames(1) = 'ssh' ! water level correction
          ncstdnames(1) = 'sea_surface_height' 
       case ('airdensity')
@@ -2652,7 +2655,7 @@ contains
       case ('longwaveradiation')
          ncvarnames(1) = 'strd'
          ncstdnames(1) = 'surface_net_downward_longwave_flux'
-      case ('nudge_salinity_temperature')
+      case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          ncvarnames(1) = 'thetao' ! temperature
          ncstdnames(1) = 'sea_water_potential_temperature'
          ncvarnames(2) = 'so' ! salinity
@@ -3004,10 +3007,16 @@ contains
                nrow = 1
                nlay = crd_dimlen(1, 3)
             else
+               if (fileReaderPtr%lonx_id < 0) then
+                  fileReaderPtr%lonx_id = dimids(1)
+               end if
                ncol = fileReaderPtr%dim_length(fileReaderPtr%lonx_id)
                nrow = 1
                nlay = 0
                if (size(dimids) >= 2) then
+                  if (fileReaderPtr%laty_id < 0) then
+                     fileReaderPtr%laty_id = dimids(2)
+                  end if
                   nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
                   ! Flag indicating that data is stored (X,Y) instead of (Y,X), used to make sure the values are oriented row,column after reading.
                   fileReaderPtr%is_column_major = ecProviderDataIsColumnMajor(dimids(1), dimids(2), fileReaderPtr%lonx_id, fileReaderPtr%laty_id)
@@ -3974,6 +3983,7 @@ contains
          do idim = 1, ndim
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, len=fileReaderPtr%dim_length(idim))
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, name=dim_name)
+            write(*,*) trim(dim_name)
             ! Find dimension matching columns and rows
             select case (trim(dim_name))
             case ('x', 'longitude', 'projected_x', 'xc', 'grid_longitude', 'projection_x_coordinate')

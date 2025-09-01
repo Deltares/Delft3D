@@ -86,14 +86,18 @@
       openbndsect%openbndlin_coll%openbndlin_pnts => null()
       do i_sect = 1 , no_sect
 
-         if ( gettoken( openbndsect%name, ierr) .ne. 0 ) then
+         ! The boundary name appears on the next line by its own, but may contain
+         ! spaces, so read the whole line
+         read( ilun(1), '(a)', iostat = ierr ) openbndsect%name
+         openbndsect%name = adjustl(openbndsect%name)
+         if ( ierr /= 0 ) then
             write(lunrep,*) ' error reading boundary file:',trim(file_bnd%name)
             write(lunrep,*) ' character expected with name of section'
             goto 200
          endif
          if ( gettoken( no_bnd, ierr) .ne. 0 ) then
             write(lunrep,*) ' error reading boundary file:',trim(file_bnd%name)
-            write(lunrep,*) ' expected integer with number of boundary in this section'
+            write(lunrep,*) ' expected integer with number of boundary points in this section'
             goto 200
          endif
 

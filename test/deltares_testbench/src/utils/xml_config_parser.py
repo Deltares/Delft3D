@@ -61,7 +61,7 @@ def branch(xml_tree: etree._ElementTree, prefix: str) -> Dict[str, Any]:
 
 
 # Parse the xml configuration file
-class XmlConfigParser(object):
+class XmlConfigParser:
     def __init__(self, settings: Optional[TestBenchSettings] = None) -> None:
         """Initialize defaults."""
         self.__testbench_settings: TestBenchSettings = settings
