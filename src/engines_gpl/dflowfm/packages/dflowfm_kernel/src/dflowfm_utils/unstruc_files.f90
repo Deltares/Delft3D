@@ -141,7 +141,7 @@ contains
       use time_module, only: seconds_to_datetimestring
       use system_utils, only: makedir, FILESEP
       use unstruc_model, only: md_ident, md_obsfile, md_mapfile, md_classmap_file, md_waqfilebase, md_netfile, &
-           md_ldbfile, md_hisfile, md_pipefile, md_comfile, md_avgwavquantfile, md_avgsedquantfile, md_avgsedtrailsfile, getoutputdir
+                               md_ldbfile, md_hisfile, md_pipefile, md_comfile, md_avgwavquantfile, md_avgsedquantfile, md_avgsedtrailsfile, getoutputdir
       implicit none
 
       character(len=*), intent(in) :: filecat !< File category for which the filename is requested, e.g. 'obs', 'map', 'hyd'.
