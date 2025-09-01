@@ -13744,7 +13744,7 @@ contains
 
       ! compute kbot and ktop after reading s1 from rst/map file
       if (kmx > 0) then
-         call setkbotktop(1)
+         call set_kbot_ktop(jazws0=1)
       end if
 
       ! For 3D model
@@ -14479,6 +14479,7 @@ contains
       use fm_external_forcings_data, only: ibnd_own, kbndz, ndxbnd_own, jaoldrstfile
       use m_wrisam
       use m_filez, only: newfil
+      use m_boundary_condition_type, only: BOUNDARY_VELOCITY_RIEMANN
 
       character(len=*), intent(in) :: filename !< Name of NetCDF file.
       integer, intent(in) :: imapfile
@@ -14854,7 +14855,7 @@ contains
 
       ! check if restarting a model with Riemann boundary conditions
       if (allocated(kbndz)) then
-         if (any(kbndz(4, :) == 5) .and. jaoldrstfile == 1) then
+         if (any(kbndz(4, :) == BOUNDARY_VELOCITY_RIEMANN) .and. jaoldrstfile == 1) then
             call mess(LEVEL_WARN, 'When restarting a model with Riemann boundary conditions, the restart file should be ' &
                       //'a *_rst file which contains waterlevel info. on boundaries. Otherwise FM still runs but the results are ' &
                       //'not accurate.')

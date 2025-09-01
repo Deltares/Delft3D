@@ -77,8 +77,8 @@ object DIMRbak : BuildType({
                     --teamcity-password "%dimrbakker_password%"
                     --ssh-username "%dimrbakker_username%"
                     --ssh-password "%dimrbakker_password%"
-                    --git-username "%dimrbakker_username%"
-                    --git-PAT "%dimrbakker_personal_access_token%"
+                    --git-username "deltares-service-account"
+                    --git-PAT "%github_deltares-service-account_access_token%"
                     %dry_run%
                 """.trimIndent()
             }

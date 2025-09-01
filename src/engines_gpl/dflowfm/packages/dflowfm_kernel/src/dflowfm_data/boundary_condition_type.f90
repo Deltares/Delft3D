@@ -26,23 +26,15 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
-module m_get_kbot_ktop
+module m_boundary_condition_type
    implicit none
-contains
-   elemental subroutine getkbotktop(n, kb, kt)
-      use m_flow, only: kmx, ktop, kbot
-      integer, intent(in) :: n
-      integer, intent(out) :: kb, kt
+   private
 
-      if (kmx == 0) then
-         kb = n
-         kt = n
-      else
-         kb = kbot(n)
-         kt = ktop(n)
-      end if
-   end subroutine getkbotktop
-end module m_get_kbot_ktop
+   integer, parameter, public :: BOUNDARY_WATER_LEVEL = 1 ! water level boundary
+   integer, parameter, public :: BOUNDARY_WATER_LEVEL_NEUMANN = 2 ! water level neumann
+   integer, parameter, public :: BOUNDARY_VELOCITY_NORMAL_INFLOW = 3 ! velocity normal ingoing component
+   integer, parameter, public :: BOUNDARY_VELOCITY_FLUX = 4 ! velocity flux boundary
+   integer, parameter, public :: BOUNDARY_VELOCITY_RIEMANN = 5 ! velocity Riemann boundary
+   integer, parameter, public :: BOUNDARY_WATER_LEVEL_OUTFLOW = 6 ! water level outflow
+   integer, parameter, public :: BOUNDARY_DISCHARGE_HEAD = 7 ! discharge-head (qh) boundary
+end module m_boundary_condition_type

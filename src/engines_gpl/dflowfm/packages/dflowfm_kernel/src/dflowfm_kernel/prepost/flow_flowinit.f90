@@ -189,7 +189,7 @@ contains
 
       call statisticsini()
 
-      call setkbotktop(1) ! prior to correctblforzlayerpoints, setting kbot
+      call set_kbot_ktop(jazws0=1) ! prior to correctblforzlayerpoints, setting kbot
 
       call initialize_ec_module()
 
@@ -260,7 +260,7 @@ contains
 
       call initialize_morphological_start_time()
 
-      call setkbotktop(1) ! set sigmabnds for ec
+      call set_kbot_ktop(jazws0=1) ! set sigmabnds for ec
 
       if (janudge == ON) then
          call setzcs()
@@ -322,7 +322,7 @@ contains
 
       call set_data_for_ship_modelling()
 
-      call setkbotktop(1)
+      call set_kbot_ktop(jazws0=1)
 
       if (.not. jawelrestart) then
          call update_s0_and_hs()
@@ -1117,7 +1117,7 @@ contains
          call setship() ! in flowinit
          if (kmx > 0 .and. jasal > OFF) then
             inquire (file='verticalsalinityprofile.pli', exist=success)
-            call setkbotktop(1)
+            call set_kbot_ktop(jazws0=1)
             if (success) then
                call setinitialverticalprofile(sa1, ndkx, 'verticalsalinityprofile.pli')
             end if
@@ -1712,7 +1712,7 @@ contains
          end do
 
          if (kmx > 0) then
-            call setkbotktop(1) ! wetbed
+            call set_kbot_ktop(jazws0=1) ! wetbed
             if (jasal /= OFF) then
                do k = 1, ndx
                   if (xz(k) <= 0.5_dp * (xzmin + xzmax)) then
@@ -1729,7 +1729,7 @@ contains
 
          xx1 = 0.5_dp * (xzmin + xzmax)
          yy1 = 0.5_dp * (xzmin + xzmax)
-         call setkbotktop(1) ! barocin
+         call set_kbot_ktop(jazws0=1) ! barocin
 
          do k = 1, ndx
             rr = dbdistance(xx1, yy1, xz(k), yz(k), jsferic, jasfer3D, dmiss)
@@ -1743,7 +1743,7 @@ contains
 
       else if (md_IDENT(1:16) == 'internalseichexx') then ! internal seiche hofmeister 2010
 
-         call setkbotktop(1) ! internalseichexx
+         call set_kbot_ktop(jazws0=1) ! internalseichexx
          salup = 0.0_dp
          saldo = 30.0_dp
          do k = 1, ndx
@@ -1838,7 +1838,7 @@ contains
 
       else if (index(md_ident, 'saltwedge') > 0) then !
 
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
 
          do k = 1, ndx
             if (xz(k) < 0.5 * (xzmin + xzmax)) then
@@ -1854,7 +1854,7 @@ contains
 
       else if (index(md_ident, 'salthori') > 0 .and. kmx > 0) then !
 
-         call setkbotktop(1) ! ini vertical salinity gradient
+         call set_kbot_ktop(jazws0=1) ! ini vertical salinity gradient
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
             do kk = kb, kt
@@ -1865,7 +1865,7 @@ contains
       else if (index(md_ident, 'lockexchange') > 0) then !
 
          call dminmax(xz, ndx, xzmin, xzmax, ndx)
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
 
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
@@ -1901,7 +1901,7 @@ contains
             end do
          end if
 
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
 
          do k = 1, ndx
 
@@ -1942,7 +1942,7 @@ contains
          jamodelspecific = ON
       else if (index(md_ident, 'canal-lake') > 0) then
 
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
          do k = 1, ndx
 
             call getkbotktop(k, kb, kt)
@@ -1957,7 +1957,7 @@ contains
       else if (index(md_ident, 'internalwave') > 0) then !
 
          call dminmax(xz, ndx, xzmin, xzmax, ndx)
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
 
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
@@ -1969,7 +1969,7 @@ contains
       else if (index(md_ident, 'slope1_5') > 0) then !
 
          call dminmax(xz, ndx, xzmin, xzmax, ndx)
-         call setkbotktop(1) ! inisaltwedge
+         call set_kbot_ktop(jazws0=1) ! inisaltwedge
          sa1 = 5.0_dp
 
          s1 = bl + 2.0_dp
@@ -1977,7 +1977,7 @@ contains
       else if (index(md_ident, 'huump3d') > 0) then !
 
          call dminmax(xz, ndx, xzmin, xzmax, ndx)
-         call setkbotktop(1) !inihump3D
+         call set_kbot_ktop(jazws0=1) !inihump3D
 
          do k = 1, ndx
             if (xz(k) < 0.5 * (xzmin + xzmax)) then
@@ -1995,7 +1995,7 @@ contains
          call thacker1d(1, xz, yz, s1, bl, ndx, 0.0_dp)
 
          if (kmx > 0) then
-            call setkbotktop(1) ! inisaltwedge
+            call set_kbot_ktop(jazws0=1) ! inisaltwedge
 
             do k = 1, ndx
                if (s1(k) > 0.5_dp) then
@@ -2334,7 +2334,7 @@ contains
 
       else if (index(md_ident, 'slope') > 0) then
 
-         call setkbotktop(1)
+         call set_kbot_ktop(jazws0=1)
          do LL = 1, Lnx
             Ltop(LL) = lbot(LL) + max(kmx, 1) - 1
             hu(LL) = 5.0_dp
