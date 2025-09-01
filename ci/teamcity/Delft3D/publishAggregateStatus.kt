@@ -7,6 +7,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.finishBuildTrigger
 
 import Trigger
 import Delft3D.linux.*
+import Delft3D.linux.containers.*
 
 object PublishAggregateStatus : BuildType({
     name = "Publish Aggregate Status"
