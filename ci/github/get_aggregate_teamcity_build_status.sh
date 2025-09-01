@@ -226,16 +226,16 @@ function get_status_unicode() {
 function get_aggregate_teamcity_build_status() {
   local trigger_id="$1"
 
-  #local request_url="${TEAMCITY_BUILDS}?locator=snapshotDependency:(from:(id:${trigger_id}),includeInitial:true),defaultFilter:false"
+  local request_url="${TEAMCITY_BUILDS}?locator=snapshotDependency:(from:(id:${trigger_id}),includeInitial:true),defaultFilter:false"
 
-  local request_url="${TEAMCITY_BUILDS}?locator="
-  request_url+="affectedProject:${PROJECT_ID},"
-  request_url+="branch:${ENCODED_BRANCH_NAME},"
-  request_url+="revision:${COMMIT_SHA},"
-  request_url+="state:any,"
-  request_url+="canceled:any,"
-  request_url+="sinceBuild:${trigger_id},"
-  request_url+="count:1000"
+  # local request_url="${TEAMCITY_BUILDS}?locator="
+  # request_url+="affectedProject:${PROJECT_ID},"
+  # request_url+="branch:${ENCODED_BRANCH_NAME},"
+  # request_url+="revision:${COMMIT_SHA},"
+  # request_url+="state:any,"
+  # request_url+="canceled:any,"
+  # request_url+="sinceBuild:${trigger_id},"
+  # request_url+="count:1000"
 
   local jobs
   jobs="$(get_request "${request_url}")"
