@@ -283,6 +283,7 @@ function get_aggregate_teamcity_build_status() {
     if [[ "${state}" != "finished" ]]; then
       # Some jobs have not finished yet (sufficient condition for blocking the merging of the PR).
       # The status can be anything. The status become relevant when all finish.
+      printf "\n%b Not all tracked builds have finished." "${UNICODE_FAILURE}"
       exit 1
     fi
   done
@@ -291,11 +292,11 @@ function get_aggregate_teamcity_build_status() {
   # Note: An unknown status is treated as a failure
   for status in "${statuses[@]}"; do
     if [[ "${status}" != "SUCCESS" ]]; then
-      printf "\n%b One or more tracked builds were not successful.\n" "${UNICODE_FAILURE}"
+      printf "\n%b All tracked builds have finished but one or more were not successful.\n" "${UNICODE_FAILURE}"
       exit 1 # finished with errors
     fi
   done
-  printf "\n%b All tracked builds finished successfully!\n" "${UNICODE_SUCCESS}"
+  printf "\n%b All tracked builds have finished successfully!\n" "${UNICODE_SUCCESS}"
   exit 0 # finished successfully
 }
 
