@@ -57,6 +57,7 @@ contains
 
         REAL(kind = real_wp) :: MTEMP              ! 1  in  Modelled temperature                                [oC]
         REAL(kind = real_wp) :: TMPNAT             ! 2  in  natural temperature of ambient water                [oC]
+        REAL(kind = real_wp) :: TMPAIR             ! 2  in  air temperature                                     [oC]
         REAL(kind = real_wp) :: DEPTH              ! 3  in  actual depth of the water column                     [m]
         REAL(kind = real_wp) :: VWIND              ! 4  in  wind speed at 10 m above surface                   [m/s]
         REAL(kind = real_wp) :: CP                 ! 5  in  specific heat (default 4183.0)                 [J/kg/oC]
@@ -102,7 +103,7 @@ contains
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
                 IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19, IP20, &
-                IP21, IP22, IP23
+                IP21, IP22, IP23, IP24
         INTEGER(kind = int_wp) :: IFLUX, ISEG, IKMRK2
 
         IP1 = IPOINT(1)
@@ -128,6 +129,7 @@ contains
         IP21 = IPOINT(21)
         IP22 = IPOINT(22)
         IP23 = IPOINT(23)
+        IP24 = IPOINT(24)
         !
         IFLUX = 0
         DO ISEG = 1, num_cells
@@ -212,12 +214,13 @@ contains
                         DELTRADMAX = process_space_real(IP17)
                         DELTEV = process_space_real(IP18)
                         DELTRAD = process_space_real(IP19)
+                        TMPAIR  = process_space_real(IP20)
 
                         TREQ = DELTRADMAX * RAD / RADMAX
                         RTRAD = RTRADMAX * RAD / RADMAX
                         DELTRAD = MIN(DELT * RTRAD + DELTRAD, TREQ)
 
-                        TTEMP = TMPNAT + DELTRAD - DELTEV
+                        TTEMP = TMPAIR + DELTRAD - DELTEV
 
                     ENDIF
 
@@ -228,10 +231,10 @@ contains
             !        Output flux, temp, surtemp, heat exchage and temperature increase due to radiation
             !
             FL(1 + IFLUX) = WFLUX
-            process_space_real (IP20) = WEXCH
-            process_space_real (IP21) = TTEMP
-            process_space_real (IP22) = ETEMP
-            process_space_real (IP23) = DELTRAD
+            process_space_real (IP21) = WEXCH
+            process_space_real (IP22) = TTEMP
+            process_space_real (IP23) = ETEMP
+            process_space_real (IP24) = DELTRAD
             !
             IFLUX = IFLUX + NOFLUX
             IP1 = IP1 + INCREM (1)
@@ -257,6 +260,7 @@ contains
             IP21 = IP21 + INCREM (21)
             IP22 = IP22 + INCREM (22)
             IP23 = IP23 + INCREM (23)
+            IP24 = IP24 + INCREM (24)
             !
         end do
         !

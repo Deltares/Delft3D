@@ -318,6 +318,8 @@ contains
 
    !> Create source Items and their contained types, based on file type and file header.
    function ecProviderCreateItems(instancePtr, fileReaderPtr, bctfilename, quantityname, varname, varname2) result(success)
+      use string_module, only: str_tolower
+
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       type(tEcFileReader), pointer :: fileReaderPtr !< intent(inout)
@@ -367,15 +369,15 @@ contains
          call setECMessage("ERROR: ec_provider::ecProviderCreateItems: Unsupported file type: grib.")
       case (provFile_netcdf)
          if (present(quantityname)) then
-            select case (quantityname)
-            case ("ERA_Interim_Dataset")
+            select case (str_tolower(trim(quantityname)))
+            case ("era_interim_dataset")
                success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("rainfall", &
                   "rainfall_rate", &
                   "airpressure_windx_windy", "airpressure_windx_windy_charnock", &
                   "airpressure_stressx_stressy", "charnock", &
                   "windxy", "stressxy", "windx", "windy", "stressx", "stressy", &
-                  "nudge_salinity_temperature", &
+                  "nudge_salinity_temperature", "nudgesalinitytemperature", &
                   "airpressure", "atmosphericpressure", &
                   "airtemperature", "humidity", "dewpoint", "cloudiness", &
                   "wind_speed", "wind_from_direction", &
@@ -389,7 +391,7 @@ contains
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
                   "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
-                  "pseudoAirPressure", "waterLevelCorrection")
+                  "pseudoairpressure", "waterlevelcorrection")
                success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2435,6 +2437,7 @@ contains
       use transform_poleshift
       use m_ec_message
       use m_alloc
+      use string_module, only: str_tolower
       implicit none
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -2534,7 +2537,7 @@ contains
       ncvarnames(:) = ''
       ncstdnames_fallback = ' '
       idvar = -1
-      select case (trim(quantityName))
+      select case (str_tolower(trim(quantityName)))
       case ('rainfall')
          ncvarnames(1) = 'rainfall'
          ncstdnames(1) = 'precipitation_amount'
@@ -2566,10 +2569,10 @@ contains
       case ('airpressure', 'atmosphericpressure')
          ncvarnames(1) = 'msl' ! mean sea-level pressure
          ncstdnames(1) = 'air_pressure'
-      case ('pseudoAirPressure')
+      case ('pseudoairpressure')
          ncvarnames(1) = 'msl' ! mean sea-level pressure
          ncstdnames(1) = 'air_pressure'
-      case ('waterLevelCorrection')
+      case ('waterlevelcorrection')
          ncvarnames(1) = 'ssh' ! water level correction
          ncstdnames(1) = 'sea_surface_height' 
       case ('airdensity')
@@ -2652,7 +2655,7 @@ contains
       case ('longwaveradiation')
          ncvarnames(1) = 'strd'
          ncstdnames(1) = 'surface_net_downward_longwave_flux'
-      case ('nudge_salinity_temperature')
+      case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          ncvarnames(1) = 'thetao' ! temperature
          ncstdnames(1) = 'sea_water_potential_temperature'
          ncvarnames(2) = 'so' ! salinity
