@@ -55,6 +55,7 @@ contains
       use m_lin2nody, only: lin2nody
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
+      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
       implicit none
       real(kind=dp), dimension(lnkx), intent(in) :: u1_loc
 
@@ -183,7 +184,7 @@ contains
          cs = csu(LL); sn = snu(LL)
          if (kmx == 0) then
             if (hs(kb) > epshs) then
-               if (jacstbnd == 0 .and. itpbn /= 2) then ! Neumann: always
+               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx_mor(k2), ucy_mor(k2)) * cs + nod2liny(LL, 2, ucx_mor(k2), ucy_mor(k2)) * sn
                      ucx_mor(kb) = uin * lin2nodx(LL, 1, cs, sn)
@@ -228,7 +229,7 @@ contains
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb, Lt
                kbk = ln(1, L); k2k = ln(2, L)
-               if (jacstbnd == 0 .and. itpbn /= 2) then
+               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx_mor(k2k), ucy_mor(k2k)) * cs + nod2liny(LL, 2, ucx_mor(k2k), ucy_mor(k2k)) * sn
                      ucx_mor(kbk) = uin * lin2nodx(LL, 1, cs, sn)

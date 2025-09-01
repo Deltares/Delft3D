@@ -6846,7 +6846,7 @@ contains
       case ('waterlevelbnd', 'neumannbnd', 'riemannbnd', 'outflowbnd')
          itemPtr1 => item_waterlevelbnd
          dataPtr1 => zbndz
-      case ('velocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'absgenbnd', 'riemannubnd')
+      case ('velocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'absgenbnd')
          itemPtr1 => item_velocitybnd
          dataPtr1 => zbndu
       case ('dischargebnd')

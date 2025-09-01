@@ -48,6 +48,7 @@ contains
       use m_waves, only: hminlw, mxwav, mywav
       use m_get_Lbot_Ltop, only: getlbotltop
       use m_flow, only: hu, huvli, wavmubnd, kmx
+      use m_boundary_condition_type, only: BOUNDARY_VELOCITY_RIEMANN
       implicit none
 
       real(kind=dp) :: ac1, ac2
@@ -86,7 +87,7 @@ contains
       end do
 
       do n = 1, nbndz
-         if (kbndz(4, n) == 5) then ! riemann boundaries
+         if (kbndz(4, n) == BOUNDARY_VELOCITY_RIEMANN) then ! riemann boundaries
             kb = kbndz(1, n)
             ki = kbndz(2, n)
             L = kbndz(3, n)

@@ -59,7 +59,7 @@ contains
       volerr = 0; volerrcum = 0
 
       if (kmx > 0) then
-         call setkbotktop(1) ! dropland_zk
+         call set_kbot_ktop(jazws0=1) ! dropland_zk
       end if
    end subroutine land_change_callback
 

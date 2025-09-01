@@ -110,13 +110,7 @@ module fm_external_forcings_data
                                                         !! 1,* = index in s1 boundary point
                                                         !! 2,* = index in s1 first point on the inside
                                                         !! 3,* = index in u1 of their connecting link (always positive to the inside)
-                                                        !! 4,* = type indicator :
-                                                        !!                        1 = waterlevel boundary
-                                                        !!                        2 = waterlevel neumann
-                                                        !!                        3 = velocity   normal ingoing component
-                                                        !!                        4 = velocity   flux boundary
-                                                        !!                        5 = velocity   Riemann boundary
-                                                        !!                        6 = waterlevel outflow
+                                                        !! 4,* = type indicator (see m_boundary_condition_type)
                                                         !! 5,* = member of boundary number somuch of this type
                                                         !! 6,* = riemann relaxation time for this point (s)
    real(kind=dp), allocatable :: zkbndz(:, :) !< only for jaceneqtr == 2 : left and right vertical netnode zk levels

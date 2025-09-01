@@ -649,7 +649,7 @@ contains
       case ('velocitybnd', 'dischargebnd', 'waterlevelbnd', 'salinitybnd', 'tracerbnd', &
             'neumannbnd', 'riemannbnd', 'absgenbnd', 'outflowbnd', &
             'temperaturebnd', 'sedimentbnd', 'tangentialvelocitybnd', 'uxuyadvectionvelocitybnd', &
-            'normalvelocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'sedfracbnd', 'riemannubnd')
+            'normalvelocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'sedfracbnd')
          if ((.not. checkFileType(ec_filetype, provFile_poly_tim, target_name)) .and. &
              (.not. checkFileType(ec_filetype, provFile_bc, target_name))) then
             return

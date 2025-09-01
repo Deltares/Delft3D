@@ -100,7 +100,7 @@ contains
    subroutine add_baroclinic_pressure_link(link_index_2d, l_bot, l_top)
       use m_turbulence, only: kmxx, rhou, baroclinic_pressures, integrated_baroclinic_pressures
       use m_flowgeom, only: ln, dx
-      use m_flow, only: zws, numtopsig, kmxn, ktop
+      use m_flow, only: zws, numtopsig, kmxn, ktop, layertype, LAYTP_Z
       use m_flowparameters, only: jarhoxu
       use m_physcoef, only: rhomean
 
@@ -128,7 +128,7 @@ contains
       end if
 
       in_sigma_part = .false.
-      if (numtopsig > 0) then
+      if (layertype == LAYTP_Z .and. numtopsig > 0) then
          if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
             in_sigma_part = .true. ! one of the nodes is in the sigma part
          end if
@@ -234,7 +234,7 @@ contains
    subroutine add_baroclinic_pressure_link_interface(link_index_2d, l_bot, l_top)
       use m_turbulence, only: kmxx, rhou, baroclinic_pressures, integrated_baroclinic_pressures, rhosww
       use m_flowgeom, only: ln, dx
-      use m_flow, only: zws, numtopsig, kmxn, ktop
+      use m_flow, only: zws, numtopsig, kmxn, ktop, layertype, LAYTP_Z
       use m_flowparameters, only: jarhoxu
       use m_transport, only: ISALT, ITEMP, constituents
       use m_physcoef, only: rhomean, ag
@@ -265,7 +265,7 @@ contains
       end if
 
       in_sigma_part = .false.
-      if (numtopsig > 0) then
+      if (layertype == LAYTP_Z .and. numtopsig > 0) then
          if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
             in_sigma_part = .true. ! one of the nodes is in the sigma part
          end if
@@ -388,7 +388,7 @@ contains
    subroutine add_baroclinic_pressure_link_use_rho_directly(link_index_2d, l_bot, l_top)
       use m_turbulence, only: kmxx, rhou, baroclinic_pressures, integrated_baroclinic_pressures
       use m_flowgeom, only: ln, dx
-      use m_flow, only: zws, numtopsig, kmxn, ktop
+      use m_flow, only: zws, numtopsig, kmxn, ktop, layertype, LAYTP_Z
       use m_flowparameters, only: jarhoxu
       use m_physcoef, only: rhomean
 
@@ -416,7 +416,7 @@ contains
       end if
 
       in_sigma_part = .false.
-      if (numtopsig > 0) then
+      if (layertype == LAYTP_Z .and. numtopsig > 0) then
          if (kmxn(ln(1, link_index_2d)) <= numtopsig .or. kmxn(ln(2, link_index_2d)) <= numtopsig) then
             in_sigma_part = .true. ! one of the nodes is in the sigma part
          end if
