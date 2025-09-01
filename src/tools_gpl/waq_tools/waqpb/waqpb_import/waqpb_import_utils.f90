@@ -9,8 +9,8 @@ contains
         integer, intent(in) :: ierr, linecount, io_mes
         character(len=*), intent(in) :: read_item
         if (ierr /= 0) then
-            write (*, '(A, A, A, I0)') 'Error reading ', trim(read_item), ' at line', linecount
-            write(io_mes, '(A, A, A, I0)') 'Error reading ', trim(read_item), ' at line', linecount
+            write (*, '(A, A, A, I0)') 'Error reading ', trim(read_item), ' at line ', linecount
+            write(io_mes, '(A, A, A, I0)') 'Error reading ', trim(read_item), ' at line ', linecount
             write (*, '(A)') 'Please check the input file for correctness.'
             error stop
         end if
@@ -69,14 +69,14 @@ contains
         end if
 
         ! first read the name (or ID) of the item
-        temp_string = adjustl(trim(line_buffer(1:11)))
+        temp_string = adjustl(line_buffer(1:11))
         if (len_trim(temp_string) > 10) then
-            write (*, '(A, A, A, I0)') 'Error: item name "', trim(temp_string), '" exceeds 10 characters at line ', linecount
+            write (*, '(A, A, A, I0)') 'Error: item name "', temp_string, '" exceeds 10 characters at line ', linecount
             error stop
         end if
         name = temp_string !< First 10 characters are the name
 
-        substrings = split_string_non_empty(adjustl(trim(line_buffer(11:len_trim(line_buffer)))), ' ') !< Split the line into substrings based on spaces
+        substrings = split_string_non_empty(adjustl(line_buffer(11:len_trim(line_buffer))), ' ') !< Split the line into substrings based on spaces
 
         idx_field = 1
         if (item_is_input) then

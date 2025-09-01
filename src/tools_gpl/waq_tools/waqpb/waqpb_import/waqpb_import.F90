@@ -56,6 +56,7 @@ program waqpb_import
    logical :: status
    integer :: ierr, linecount
    integer :: io_mes, io_asc, io_inp, lunfil
+   character(:), dimension(:), allocatable :: substrings
 
    type(waqpb_import_settings) :: settings ! Settings for the import tool
 
@@ -136,7 +137,7 @@ program waqpb_import
    call iniind()
 
    ! Loop over processes
-   iproc = 0
+   iproc = 1
    do
       ! process name and description
       linecount = linecount + 1
@@ -144,29 +145,48 @@ program waqpb_import
       if (ierr <0) then
          write (*, '(A, A)') 'Succesfully finished reading processes overview file ', settings%processes_overview_file_path
          exit
-      end if
-      read (line_buffer, '(a10,20x,a50)', iostat=ierr) c10, c50
-      call check_read_error(io_mes, ierr, linecount, 'process name and description')
-      if (ierr > 0) then
+      else if (ierr > 0) then
          write (*, '(A,I5)') 'Finished normally reading processes overview file at line ', linecount
          exit
       end if
-      call check_read_error(io_mes, ierr, linecount, 'process information')
 
-      write (io_mes, '(A, I3, A, A)' ), 'Process ', iproc + 1,' : ', c10
-      write (*, '(A, I3, A, A)' ), 'Process ', iproc + 1,' : ', c10
+      line_buffer = adjustl(line_buffer)
+      substrings = split_string_non_empty(line_buffer, ' ') !< Split the line into substrings based on spaces
+      if (len_trim(substrings(1)) > 10) then
+            write (*, '(A, A, A, I0)') 'Error: process name "', substrings(1), '" exceeds 10 characters at line ', linecount
+            error stop
+      else
+         c10 = substrings(1)
+         c50 = adjustl(line_buffer(len_trim(substrings(1))+1:len_trim(line_buffer)))
+         if (len_trim(c50) > 50) then
+            write (*, '(A, A, A, I0)') 'Error: process description "', c50, '" exceeds 50 characters at line ', linecount
+            error stop
+         end if
+      end if
+
+      write (io_mes, '(A, I3, A, A)' ), 'Process ', iproc,' : ', c10
+      write (*, '(A, I3, A, A)' ), 'Process ', iproc,' : ', c10
 
       ! name of Fortran subroutine
       linecount = linecount + 1
-      read (io_asc, '(a10)', iostat=ierr) c10a
-      call check_read_error(io_mes, ierr, linecount, 'name of Fortran subroutine')
+      read(io_asc, '(A)', iostat=ierr) line_buffer
+      substrings = split_string_non_empty(line_buffer, ' ') !< Split the line into substrings based on spaces
+      if (len_trim(substrings(1)) > 10) then
+            write (*, '(A, A, A, I0)') 'Error: name of Fortran subroutine "', substrings(1), '" exceeds 10 characters at line ', linecount
+            error stop
+      else
+         c10a = substrings(1)
+      end if
 
       ! transport switch
       linecount = linecount + 1
       read (io_asc, *, iostat=ierr) jndex
       call check_read_error(io_mes, ierr, linecount, 'transport switch')
 
-      if (nproc + 1 > nprocm) stop 'DIMENSION NPROCM'
+      if (nproc + 1 > nprocm) then
+         write (*, '(A, I5, A, I5)') 'Error: already read ', nproc + 1, ' processes, exceeding maximum number of processes = ', nprocm
+         error stop
+      end if
       call validate_names([c10a], io_mes) ! process Fortran name
       nproc = nproc + 1
       procid(nproc) = c10
@@ -371,6 +391,7 @@ program waqpb_import
       if (c10(1:3) /= 'END') stop 'error'
       iproc = iproc + 1
    end do
+   iproc = iproc - 1
    ! End of reading processes overview file
    if (iproc /= num_proc_exp) then
       write (*, '(A,I0,A, I0, A)') 'Warning: the process overview file indicated ', num_proc_exp, ' processes, however, ', iproc, ' have been found and read.'
