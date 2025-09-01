@@ -85,12 +85,12 @@ module m_readstructures
    contains
 
    !> Read structure.ini file(s).
-   subroutine readStructures(network, structureFiles, basedir)
+   subroutine readStructures(network, structureFiles, relative_paths)
       use string_module, only: str_token
 
       type(t_network),  intent(inout)    :: network        !< The network data structure into whose Structure Set the file(s) will be read.
       character(len=*), intent(in   )    :: structurefiles !< File name(s) to be read. Separate multiple files by semicolon: "file with spaces 1.ini;file2.ini;file 3.ini".
-      character(len=*), intent(in   )    :: basedir        !< directory where the structure file(s) are located.
+      logical, intent(in   )    :: relative_paths        !< whether the files in the structure file are relative to the structure file location or to the working directory.
    
       character(len=IdLen) :: file
       character(len=IdLen) :: inputFiles
@@ -98,7 +98,7 @@ module m_readstructures
       inputFiles = structurefiles
       do while (len_trim(inputfiles) > 0) 
          call str_token(inputfiles, file, DELIMS=';')
-         call readStructureFile(network, adjustl(trim(file)), basedir)
+         call readStructureFile(network, adjustl(trim(file)), relative_paths)
       enddo
 
       if (.not. allocated(network%sts%restartData) .and. (network%sts%count > 0)) then
@@ -116,17 +116,18 @@ module m_readstructures
    end subroutine readStructures
 
    !> read a single ini file and add the structures to the structure sets
-   subroutine readStructureFile(network, structureFile, basedir)
+   subroutine readStructureFile(network, structureFile, relative_paths)
       use m_GlobalParameters
       use m_1d_Structures
       use m_compound
       use polygon_module, only: read_poly_from_tekalfile
+      use system_utils, only: get_filepath
       
       implicit none
       
       type(t_network), intent(inout) :: network              !< Network pointer
-      character(len=*), intent(in)      :: structureFile     !< Name of the structure file
-      character(len=*), intent(in)      :: basedir           !< directory where the structure file is located, empty if relative filepaths is off.
+      character(len=*), intent(in)   :: structureFile     !< Name of the structure file
+      logical, intent(in)      :: relative_paths           !< if . true, files in structure file are relative to the structure file location, otherwise to working directory.
 
       logical                                                :: success, success1
       type(tree_data), pointer                               :: md_ptr 
@@ -143,10 +144,15 @@ module m_readstructures
       type(t_structure), pointer                             :: pstru
       integer                                                :: major, minor, ierr
       character(len=IdLen)                                   :: filename
-      character(:), allocatable                              :: full_filename
+      character(:), allocatable                              :: structure_file_directory, dummy
       
       success = .true.
 
+      if (relative_paths) then
+         call get_filepath(structureFile, structure_file_directory)
+      else
+         structure_file_directory = ''
+      end if
       call tree_create(trim(structurefile), md_ptr, maxlenpar)
       call prop_file('ini',trim(structurefile),md_ptr,istat)
       
@@ -261,8 +267,7 @@ module m_readstructures
                   
                end if
                if (success1) then
-                  full_filename = trim(basedir)//filename
-                  call read_poly_from_tekalfile(full_filename, pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, success1)
+                  call read_poly_from_tekalfile(structure_file_directory//filename, pstru%xCoordinates, pstru%yCoordinates, pstru%numCoordinates, success1)
                end if
 
                success = success .and. check_input_result(success1, st_id, 'branchId, numCoordinates and locationfile')  

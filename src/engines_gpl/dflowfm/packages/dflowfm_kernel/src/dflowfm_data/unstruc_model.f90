@@ -432,12 +432,10 @@ contains
       use m_realan, only: realan
       use m_filez, only: oldfil
       use unstruc_messages, only: threshold_abort
-      use unstruc_files, only: resolvePath
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
       character(len=200), dimension(:), allocatable :: fnames
-      character(:), allocatable :: basedir
       character(len=1024) :: fnamesstring
       real(kind=dp), dimension(2) :: tempbob
 
@@ -501,12 +499,7 @@ contains
       call timstrt('Read structures', timerHandle)
       if (len_trim(md_1dfiles%structures) > 0) then
          call SetMessage(LEVEL_INFO, 'Reading Structures ...')
-         if (md_paths_relto_parent > 0) then
-            basedir = md_structurefile_dir
-         else
-            basedir = ''
-         end if
-         call readStructures(network, md_1dfiles%structures, basedir)
+         call readStructures(network, md_1dfiles%structures, relative_paths = md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
 
          if (md_convertlongculverts == 0) then

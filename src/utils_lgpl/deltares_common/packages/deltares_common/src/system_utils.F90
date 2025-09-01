@@ -56,6 +56,7 @@ module system_utils
 
    public :: cat_filename
    public :: split_filename
+   public :: get_filepath
    public :: remove_path
    public :: exifil
    public :: directory_exists
@@ -209,6 +210,34 @@ contains
       end if
    end subroutine split_filename
 
+   subroutine get_filepath(file_name, file_path)
+      use cwd, only: getcwd
+      character(*), intent(in) :: file_name !< file name, either absolute or relative.
+      character(:), allocatable, intent(out) :: file_path ! output path
+
+      integer :: ifilesep ! index of last file separator
+      integer :: ierr
+      character(:), allocatable :: temp_name
+      character(len=1024) :: cwd_string
+
+      file_path = ''
+      if (.not. is_abs(file_name)) then
+         ierr = getcwd(cwd_string)
+         temp_name = trim(cwd_string)//FILESEP//file_name
+      else
+         temp_name = file_name
+      end if
+      ! find last file separator
+      ifilesep = index(temp_name, FILESEP, back=.true.)
+      if (ARCH == 'windows') then
+         ! on Windows also check forward slash
+         ifilesep = max(ifilesep, index(temp_name, FILESEP_OTHER_ARCH, back=.true.))
+      end if
+      if (ifilesep > 0) then
+         file_path = temp_name(1:ifilesep)
+      end if
+   end subroutine get_filepath
+
    subroutine remove_path(name, file)
 !!--description-----------------------------------------------------------------
 !
@@ -351,7 +380,7 @@ contains
       character(len=*), intent(in) :: path !< Input path
 
       integer :: idrive ! last char position of possible drive letter start, e.g. 'D:'
-      
+
       if (len_trim(path) == 0) then
          is_abs = .false.
          return
