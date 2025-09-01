@@ -32,10 +32,9 @@ module m_water_level_boundary
 
    use m_wind, only: air_pressure_available, air_pressure, pseudo_air_pressure_available, pseudo_air_pressure, &
                      water_level_correction_available, water_level_correction, pavbnd
-   use m_fm_icecover, only: ice_apply_pressure, ice_p
+   use m_fm_icecover, only: ice_apply_pressure, ice_pressure
    use m_physcoef, only: ag, rhomean
    use precision, only: dp
-
    implicit none
 
    public :: correct_water_level_boundary
@@ -62,7 +61,7 @@ contains
       end if
 
       if (ice_apply_pressure) then
-         water_level_boundary = water_level_boundary - ice_p(i_boundary) / (ag * rhomean)
+         water_level_boundary = water_level_boundary - ice_pressure(i_boundary) / (ag * rhomean)
       end if
 
    end subroutine correct_water_level_boundary

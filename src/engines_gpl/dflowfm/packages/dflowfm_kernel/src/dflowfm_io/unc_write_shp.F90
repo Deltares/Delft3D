@@ -134,7 +134,7 @@ contains
          end if
       end if
       ! gates
-      if (jashp_gate > 0) then
+      if (jashp_gate > 0 .and. allocated(gate2cgen) .and. ngategen > 0) then
          jawrite = ngategen
          do n = 1, ngategen
             igen = gate2cgen(n)

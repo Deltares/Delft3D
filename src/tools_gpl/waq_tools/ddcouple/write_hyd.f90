@@ -124,6 +124,11 @@
       else
          write(lunhyd,'(a,'' '''''',a,'''''''')') vert_diffusion_file, 'none'
       endif
+      if ( hyd%vel_present ) then
+         write(lunhyd,'(a,'' '''''',a,'''''''')') velocities_file, trim(hyd%file_vel%name)
+      else
+         write(lunhyd,'(a,'' '''''',a,'''''''')') velocities_file, 'none'
+      endif
       write(lunhyd,'(a,'' '''''',a,'''''''')') surfaces_file, trim(hyd%file_srf%name)
       write(lunhyd,'(a,'' '''''',a,'''''''')') total_grid_file, trim(hyd%file_lgt%name)
       write(lunhyd,'(a,'' '''''',a,'''''''')') discharges_file, trim(hyd%file_src%name)

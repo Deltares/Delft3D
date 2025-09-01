@@ -38,11 +38,11 @@ contains
 
    subroutine heatun(n, time_in_hours, nominal_solar_radiation)
       use precision, only: dp, comparereal, fp
-      use physicalconsts, only: stf
+      use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
       use m_physcoef, only: ag, rhomean, backgroundsalinity, dalton, epshstem, stanton, sfr, soiltempthick, &
                             BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, secchidepth2, surftempsmofac, &
                             jadelvappos, zab
-      use m_heatfluxes, only: em, albedo, cpa, tkelvn, jaSecchisp, Secchisp, jamapheatflux, rcpi, &
+      use m_heatfluxes, only: em, albedo, cpa, jaSecchisp, Secchisp, jamapheatflux, rcpi, &
                               fwind, qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, &
                               qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
@@ -52,12 +52,12 @@ contains
       use m_sferic, only: jsferic
       use m_flowtimes, only: dts
       use m_transport, only: constituents, itemp, isalt
-      use m_fm_icecover, only: ja_icecover, ice_af, ice_albedo, ice_h, ice_t, snow_albedo, snow_h, snow_t, &
+      use m_fm_icecover, only: ja_icecover, ice_area_fraction, ice_albedo, ice_thickness, ice_temperature, snow_albedo, snow_thickness, snow_temperature, &
                                qh_air2ice, qh_ice2wat, ICECOVER_NONE, ICECOVER_SEMTNER, preprocess_icecover
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_link1, only: getlink1
       use m_wind, only: air_pressure_available, jaevap, long_wave_radiation_available, relativewind, air_temperature, wx, wy, relative_humidity, cloudiness, &
-                        air_pressure, heatsrc0, solar_radiation, net_solar_radiation, solar_radiation_available, tbed, rhoair, long_wave_radiation, evap, cdwcof, &
+                        air_pressure, heatsrc0, solar_radiation, solar_radiation_available, net_solar_radiation, net_solar_radiation_available, tbed, rhoair, long_wave_radiation, evap, cdwcof, &
                         air_density, ja_airdensity, ja_computed_airdensity
       use m_qsun_nominal, only: calculate_nominal_solar_radiation
 
@@ -87,7 +87,7 @@ contains
       real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
 
       if (ja_icecover /= ICECOVER_NONE) then
-         ice_free_area_fraction = 1.0_dp - ice_af(n)
+         ice_free_area_fraction = 1.0_dp - ice_area_fraction(n)
       else
          ice_free_area_fraction = 1.0_dp
       end if
@@ -145,16 +145,16 @@ contains
 
       else if (jatem == 5) then ! Composite (ocean) model
 
-         ! Set surface_temperature either to water_temperature_in_cell or to ice_t(n) or to snow_t(n) and change albedo parameter in case of ice and/or snow
+         ! Set surface_temperature either to water_temperature_in_cell or to ice_temperature(n) or to snow_temperature(n) and change albedo parameter in case of ice and/or snow
          if (ja_icecover == ICECOVER_SEMTNER) then
-            if (snow_h(n) > MIN_THICK) then
+            if (snow_thickness(n) > MIN_THICK) then
                ! ice and snow
                albedo = snow_albedo
-               surface_temperature = snow_t(n)
-            elseif (ice_h(n) > MIN_THICK) then
+               surface_temperature = kelvin_to_celsius(snow_temperature(n))
+            elseif (ice_thickness(n) > MIN_THICK) then
                ! ice but no snow
                albedo = ice_albedo
-               surface_temperature = ice_t(n)
+               surface_temperature = kelvin_to_celsius(ice_temperature(n))
             else
                ! no ice and no snow, but ice_modelling switched on
                surface_temperature = water_temperature_in_cell
@@ -171,8 +171,10 @@ contains
             air_pressure_in_cell = 0.01_dp * air_pressure(n)
          end if
 
-         ! Solar radiation restricted by presence of clouds and reflection of water surface (albedo)
-         if (solar_radiation_available) then
+         ! Solar radiation restricted by presence of clouds and/or reflection of water surface (albedo)
+         if (net_solar_radiation_available) then
+            net_solar_radiation_in_cell = solar_radiation(n)
+         else if (solar_radiation_available) then
             net_solar_radiation_in_cell = solar_radiation(n) * (1.0_dp - albedo)
          else ! Calculate solar radiation from cloud coverage specified in file
             if (jsferic == 1) then
@@ -276,7 +278,7 @@ contains
 
          ! change parameters for ice modelling
          if (ja_icecover == ICECOVER_SEMTNER) then
-            if (ice_h(n) > MIN_THICK) then
+            if (ice_thickness(n) > MIN_THICK) then
                ! in case of ice (and snow) overrule the Stanton number (convective heat flux)
                convective_heat_flux_coefficient = 0.00232_dp
             end if
@@ -292,7 +294,7 @@ contains
 
          convective_heat_flux = -convective_heat_flux_coefficient * air_density_in_cell * cpa * wind_speed_in_cell * (surface_temperature - air_temperature_in_cell) ! heat loss of water by convection eq.(A.23); Stanton number is convective_heat_flux_coefficient:
 
-         water_surface_temperature_kelvin = surface_temperature + tkelvn
+         water_surface_temperature_kelvin = celsius_to_kelvin(surface_temperature)
          if (long_wave_radiation_available) then
             longwave_radiation_flux = em * (long_wave_radiation(n) - stf * (water_surface_temperature_kelvin**4)) ! difference between prescribed long wave downward flux and calculated upward flux
          else
@@ -303,8 +305,8 @@ contains
          free_convection_heat_flux = 0.0_dp
          free_convective_sensible_heat_flux = 0.0_dp
          free_convective_latent_heat_flux = 0.0_dp ! Contribution by free convection:
-         air_density_surface = ((air_pressure_in_cell - saturation_vapor_pressure_at_surface_temperature) / rdry + saturation_vapor_pressure_at_surface_temperature / rvap) / (surface_temperature + Tkelvn)
-         air_density_10m = ((air_pressure_in_cell - vapor_pressure_air_humidity) / rdry + vapor_pressure_air_humidity / rvap) / (air_temperature_in_cell + Tkelvn)
+         air_density_surface = ((air_pressure_in_cell - saturation_vapor_pressure_at_surface_temperature) / rdry + saturation_vapor_pressure_at_surface_temperature / rvap) / celsius_to_kelvin(surface_temperature)
+         air_density_10m = ((air_pressure_in_cell - vapor_pressure_air_humidity) / rdry + vapor_pressure_air_humidity / rvap) / celsius_to_kelvin(air_temperature_in_cell)
          buoyancy_parameter = 2.0_dp * ag * (air_density_10m - air_density_surface) / (air_density_surface + air_density_10m)
          if (buoyancy_parameter > 0.0_dp) then ! Ri= (buoyancy_parameter/DZ)/ (du/dz)2, Ri>0.25 stable
             free_convection_velocity = buoyancy_parameter * xnuair / pr2
@@ -323,7 +325,7 @@ contains
 
          ! In case of ice preprocessing of ice quantities
          if (ja_icecover == ICECOVER_SEMTNER) then
-            if (ice_h(n) > MIN_THICK .or. (water_temperature_in_cell < 0.1_fp .and. air_temperature(n) < 0.0_fp)) then
+            if (ice_thickness(n) > MIN_THICK .or. (water_temperature_in_cell < 0.1_fp .and. air_temperature(n) < 0.0_fp)) then
 
                ! Compute Qlong_ice (NB. Delft3D-FLOW definition is used, with opposite sign, so that
                ! algorithm in preprocess_icecover remains identical to the one for Delft3D-FLOW
@@ -343,7 +345,7 @@ contains
                call preprocess_icecover(n, Qlong_ice, water_temperature_in_cell, salinity, wind_speed_in_cell)
             end if
 
-            if (ice_h(n) > MIN_THICK) then
+            if (ice_thickness(n) > MIN_THICK) then
                ! recompute heatsrc0 because of presence of ice
                if (kmx > 0) then
                   heatsrc0(k_top) = qh_ice2wat(n) * ice_free_area_fraction
