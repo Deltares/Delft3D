@@ -377,6 +377,7 @@ contains
       use m_missing, only: dmiss
       use network_data, only: zkuni, zk
       use m_flowparameters, only: ibedlevtyp, jadpuopt, jaconveyance2D
+      use m_flowparameters, only: BEDLEV_TYPE_WATERLEVEL, BEDLEV_TYPE_VELOCITY, BEDLEV_TYPE_MEAN, BEDLEV_TYPE_MIN, BEDLEV_TYPE_MAX, BEDLEV_TYPE_WATERLEVEL6
       use m_flowgeom, only: bl
 
       integer, intent(in) :: n1, n2 !< Node numbers for the link.
