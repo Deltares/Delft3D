@@ -13,7 +13,7 @@ object SigCi : BuildType({
             param("sourceDir", ".")
             param("system", "dflow-flexible")
             param("plugin.docker.imagePlatform", "")
-            param("targetquality", "3.5")
+            param("targetquality", "3.6")
             param("plugin.docker.imageId", "")
             param("publish", "--publish")
             param("showupload", "--showupload")
