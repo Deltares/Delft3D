@@ -65,7 +65,7 @@ contains
       call realloc(sinkftot, (/NUMCONST, Ndx/), keepExisting=KeepExisting, fill=0d0)
 
       call realloc(difsedu, NUMCONST, keepExisting=KeepExisting, fill=0d0)
-      call realloc(difsedw, NUMCONST, keepExisting=KeepExisting, fill=0d0)
+      call realloc(molecular_diffusion_coeff, NUMCONST, keepExisting=KeepExisting, fill=0d0)
       call realloc(sigdifi, NUMCONST, keepExisting=KeepExisting, fill=0d0)
       call realloc(wsf, NUMCONST, keepExisting=.true., fill=0d0)
 
