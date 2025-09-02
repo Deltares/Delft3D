@@ -6,6 +6,10 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 object SigCi : BuildType({
     name = "Sig Ci"
     
+    vcs {
+        root(DslContext.settingsRoot)
+    }
+
     steps {
         step {
             name = "Upload to sigrid using recipe"
@@ -13,7 +17,7 @@ object SigCi : BuildType({
             param("sourceDir", ".")
             param("system", "dflow-flexible")
             param("plugin.docker.imagePlatform", "")
-            param("targetquality", "3.6")
+            param("targetquality", "3.5")
             param("plugin.docker.imageId", "")
             param("publish", "--publish")
             param("showupload", "--showupload")
