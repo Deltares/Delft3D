@@ -47,6 +47,11 @@ object LinuxUnitTest : BuildType({
                 filename = "run_all_tests.py"
             }
         }
+        exec {
+            name = "Remove system libraries"
+            workingDir = "lnx64/lib"
+            path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
+        }
         script {
             conditions {
                 matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
