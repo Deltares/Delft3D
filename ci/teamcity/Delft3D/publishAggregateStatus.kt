@@ -31,6 +31,22 @@ object PublishAggregateStatus : BuildType({
         root(DslContext.settingsRoot)
     }
 
+    // steps {
+    //     script {
+    //         id = "simpleRunner"
+    //         scriptContent = """
+    //             #!/usr/bin/env bash
+    //             chmod +x ./ci/github/get_aggregate_teamcity_build_status.sh
+    //             ./ci/github/get_aggregate_teamcity_build_status.sh  \
+    //               --teamcity-token "%svc_teamcity_github_delft3d_access_token%" \
+    //               --project-id "${DslContext.projectId}" \
+    //               --branch-name "%dep.${Trigger.id}.branch_name%" \
+    //               --commit-sha "%build.vcs.number%" \
+    //               --poll-interval 10
+    //         """.trimIndent()
+    //     }
+    // }
+
     steps {
         script {
             id = "simpleRunner"
@@ -40,12 +56,13 @@ object PublishAggregateStatus : BuildType({
                 ./ci/github/get_aggregate_teamcity_build_status.sh  \
                   --teamcity-token "%svc_teamcity_github_delft3d_access_token%" \
                   --project-id "${DslContext.projectId}" \
-                  --branch-name "%dep.${Trigger.id}.branch_name%" \
+                  --branch-name "pull/15" \
                   --commit-sha "%build.vcs.number%" \
                   --poll-interval 10
             """.trimIndent()
         }
     }
+
 
     triggers {
         finishBuildTrigger {
