@@ -50,16 +50,19 @@ contains
       use m_cli_utils
       use m_waqpb_export_helper
       class(waqpb_export_settings), intent(inout) :: this
-      real :: version
-      integer :: serial, i
+      real :: version, dummy_real
+      integer :: serial, i, dummy_integer
       character(len=256), dimension(:), allocatable :: accepted_flag_args, accepted_keyval_args, invalid_args
+      logical :: success, parsing_error
 
       this%processes_overview_file_name = 'processes_overview_exported.asc'
 
       call this%init_base("waqpb_export")
 
-      if (.not. get_command_argument_by_name('--version', version)) then
-         ! Generate a version number based on the version of the software
+      parsing_error = .false.
+      success = get_command_argument_by_name('--version', version, parsing_error)
+      if (.not. success) then
+         call report_failure(parsing_error, '--version', 'real')
          this%version = generate_version()
          this%wrong_version = .true.
       else
@@ -67,8 +70,10 @@ contains
          this%wrong_version = .false.
       end if
 
-      if (.not. get_command_argument_by_name('--serial', serial)) then
-         ! Generate a serial number based on the current date and time
+      parsing_error = .false.
+      success = get_command_argument_by_name('--serial', serial, parsing_error)
+      if (.not. success) then
+         call report_failure(parsing_error, '--serial', 'integer')
          this%serial = generate_serial()
          this%wrong_serial = .true.
       else
@@ -78,6 +83,25 @@ contains
 
       this%generate_latex_tables = is_command_arg_specified('--latex')
    end subroutine init
+
+   subroutine report_failure(parsing_error, argument_name, expected_type)
+      use m_cli_utils
+      logical, intent(in) :: parsing_error
+      character(len=*), intent(in) :: argument_name
+      character(len=*), intent(in) :: expected_type
+
+      character(:), allocatable :: string_found
+      logical :: success
+
+      if (parsing_error) then
+         success = get_command_argument_by_name(argument_name, string_found)
+         write (*, '(A)', ADVANCE = 'NO') 'An invalid value was given for the optional argument '//argument_name//': '
+         write (*, '(A)', ADVANCE = 'NO') ' "'//trim(string_found)//'" was found. A number of type '//expected_type//' is expected. '
+      else
+         write (*, '(A)', ADVANCE = 'NO') 'No optional argument '//argument_name//' or value for it was found. '
+      end if
+      write (*, '(A)') 'Default value (automatically generated) will be used.'
+   end subroutine report_failure
 
    !> Returns the accepted flag arguments for this tool
    function get_accepted_flag_args(this) result(accepted_flag_args)
@@ -114,8 +138,8 @@ contains
 
       call this%show_help_base('[--version <version_number>] [--serial <serial_number>] [--latex]')
 
-      write (*, param_format) '--version <version_number>', separator, 'Overrides the default version number of this tool.'
-      write (*, param_format) '--serial <serial_number>', separator, 'Overrides the default serial number (generated from date and time) of this tool.'
+      write (*, param_format) '--version <version_number>', separator, 'Overrides the default version number of this tool. If specified, a real number is expected.'
+      write (*, param_format) '--serial <serial_number>', separator, 'Overrides the default serial number (generated from date and time) of this tool. If specified, an integer is expected.'
       write (*, param_format) '--latex', separator, 'Generates the LaTeX tables.'
       write (*, *)
    end subroutine show_help
