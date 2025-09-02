@@ -202,7 +202,7 @@ contains
                   z1 = 1d0 - zint
                   tkin1ref(k) = tkebot * z1 + tkesur * zint
                   teps1ref(k) = (epsbot / zint + epssur / z1) / h0
-                  teps1ref(k) = max(epseps, teps1ref(k))
+                  teps1ref(k) = max(eps_min, teps1ref(k))
                   vicwref(k) = cmukep * tkin1ref(k)**2 / abs(teps1ref(k))
                end do
 

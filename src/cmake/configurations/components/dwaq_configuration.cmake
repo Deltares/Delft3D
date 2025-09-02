@@ -18,7 +18,12 @@ include_component("D-WAQ unit and integration tests" ${waq_include_dir}/dwaq_tes
 add_target_with_subdirectory(install_waq ${install_waq_module})
 
 #intel MPI & MKL
-if(${configuration_type} STREQUAL ${dwaq_configuration} OR (${configuration_type} STREQUAL ${testbench-waq_configuration}) OR (${configuration_type} STREQUAL ${testbench-part_configuration}) OR (${configuration_type} STREQUAL ${testbench-tc_configuration}))
+if(${configuration_type} STREQUAL ${dwaq_configuration} OR
+   ${configuration_type} STREQUAL ${testbench-waq_configuration} OR
+   ${configuration_type} STREQUAL ${testbench-part_configuration} OR
+   ${configuration_type} STREQUAL ${testbench-none_configuration} OR
+   ${configuration_type} STREQUAL ${testbench-qp_configuration} OR
+   ${configuration_type} STREQUAL ${testbench-tc_configuration})
     message(STATUS "Intel MPI & MKL")
     list(APPEND CMAKE_MESSAGE_INDENT "   ")
 

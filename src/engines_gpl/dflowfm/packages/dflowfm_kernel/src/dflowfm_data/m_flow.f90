@@ -61,7 +61,7 @@ module m_flow ! flow arrays-999
    integer :: nplot !< vertical profile to be plotted at node nr
    integer :: kplotfrombedorsurface = 2 !< up or down k
    integer :: kplotordepthaveraged = 1 !< 1 = kplot, 2 = averaged
-   integer :: layertype !< 1= all sigma, 2 = all z, 3 = left sigma, 4 = left z
+   integer :: layertype !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
    integer :: numtopsig = 0 !< number of top layers in sigma
    integer :: janumtopsiguniform = 1 !< specified nr of top layers in sigma is same everywhere
 
@@ -562,7 +562,7 @@ contains
       mxlays = 1 ! max nr of sigma layers in flow domain
       kplot = 1 ! layer nr to be plotted
       nplot = 1 ! vertical profile to be plotted at node nr
-      layertype = 1 !< 1= all sigma, 2 = all z, 3 = left sigma, 4 = left z
+      layertype = 1 !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
       iturbulencemodel = 3 !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
       ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
       sigmagrowthfactor = 1d0 !<layer thickness growth factor from bed up
@@ -723,5 +723,14 @@ contains
       ukin0 = dmiss
 
    end subroutine reset_flow
+
+   !> Check if salinity, temperature or sediment are simulated, i.e. density needs to be incorporated
+   pure function use_density() result(res)
+      use m_flowparameters, only: jasal, jatem, jased
+      
+      logical :: res !< Return value
+
+      res = (jasal > 0 .or. jatem > 0 .or. jased > 0)
+   end function use_density
 
 end module m_flow

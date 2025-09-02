@@ -41,7 +41,7 @@ procid,procco,procfo,procnm
 "EXTINABVLP",123,"EXTINA    ","Extinction of visible light by algae (Bloom)      "
 "EXTINABVL ",123,"EXTINA    ","Extinction of visible light by algae (Bloom)      "
 "ExtPhDVL  ",123,"EXTINA    ","Extinction of visible light by algae (Dynamo)     "
-"Extinc_VLG",123,"EXTINC    ","Extinction of visible-light (370-680nm) DLWQ-G    "
+"Extinc_VLG",123,"EXTINC    ","Extinction of visible-light (370-680nm)           "
 "CalcRad   ",123,"CLCRAD    ","Actual radiation at segment upper/lower boundaries"
 "CalcRadAve",123,"CLCRAD    ","Average radiation at segment boundaries           "
 "Daylength ",123,"DAYL      ","Daylength calculation                             "
