@@ -4,6 +4,8 @@ set -o errexit
 set -o errtrace
 
 # Globals to be set by parse_args
+GITHUB_USERNAME=""
+GITHUB_TOKEN=""
 TEAMCITY_URL="https://dpcbuild.deltares.nl"
 TEAMCITY_TOKEN=""
 PROJECT_ID=""
@@ -53,17 +55,19 @@ function usage() {
 Usage: $0 [OPTIONS]
 
 Options:
-  --teamcity-token TOKEN    TeamCity access token or password
-  --project-id              TeamCity project ID
-  --branch-name NAME        Branch name to monitor (will be URL-encoded automatically)
-  --commit-sha SHA          Commit SHA
-  --poll-interval SECONDS   Polling interval in seconds (default: 30)
-  --help                    Show this help message
+  --github-username USERNAME  GitHub username
+  --github-token TOKEN        GitHub access token
+  --teamcity-token TOKEN      TeamCity access token
+  --project-id                TeamCity project ID
+  --branch-name NAME          Branch name to monitor (will be URL-encoded automatically)
+  --commit-sha SHA            Commit SHA
+  --poll-interval SECONDS     Polling interval in seconds (default: 30)
+  --help                      Show this help message
 EOF
 }
 
 function parse_args() {
-  local long_options="help,teamcity-token:,project-id:,branch-name:,commit-sha:,poll-interval:"
+  local long_options="help,github-username:,github-token:,teamcity-token:,project-id:,branch-name:,commit-sha:,poll-interval:"
   local parsed_options
   if ! parsed_options=$(getopt --name "$(basename "$0")" --options "" --long ${long_options} -- "$@"); then
     printf "parse_args: failed to parse arguments."
@@ -76,6 +80,14 @@ function parse_args() {
     --help)
       usage
       exit 0
+      ;;
+    --github-username)
+      GITHUB_USERNAME="$2"
+      shift 2
+      ;;
+    --github-token)
+      GITHUB_TOKEN="$2"
+      shift 2
       ;;
     --teamcity-token)
       TEAMCITY_TOKEN="$2"
@@ -135,7 +147,7 @@ function encode_branch_name() {
   printf "%s" "${encoded_branch_name}"
 }
 
-function get_request() {
+function teamcity_get_request() {
   local request_url="$1"
   curl \
     --silent \
@@ -167,7 +179,7 @@ function trigger() {
 
   while true; do
     local trigger
-    trigger="$(get_request "${request_url}")"
+    trigger="$(teamcity_get_request "${request_url}")"
 
     local state
     state=$(printf "%s" "${trigger}" | jq -r '.build[0].state')
@@ -223,6 +235,33 @@ function get_status_unicode() {
   printf "%b" "${unicode}"
 }
 
+function publish_state() {
+  local state="$1"
+
+  local payload
+  payload=$(
+    jq -n \
+      --arg state "${state}" \
+      '{
+        "state": $state,
+        "description": "Dynamic status that is continuously updated until all jobs finish",
+        "context": "TeamCity aggregate build status"
+      }'
+  )
+
+  curl \
+    --silent \
+    --fail \
+    --show-error \
+    --location \
+    --request POST \
+    --header "Accept: application/vnd.github+json" \
+    --header "X-GitHub-Api-Version: 2022-11-28" \
+    --header "Authorization: token ${GITHUB_TOKEN}" \
+    "https://api.github.com/repos/Deltares/Delft3D/statuses/${COMMIT_SHA}" \
+    -d "${payload}"
+}
+
 function get_aggregate_teamcity_build_status() {
   local trigger_id="$1"
 
@@ -238,7 +277,7 @@ function get_aggregate_teamcity_build_status() {
   # request_url+="count:1000"
 
   local jobs
-  jobs="$(get_request "${request_url}")"
+  jobs="$(teamcity_get_request "${request_url}")"
 
   #printf "%b" "\nSNAPSHOT DEPS\n=============\n"
   #printf "%s" "${jobs}" | jq -r
@@ -263,7 +302,7 @@ function get_aggregate_teamcity_build_status() {
   for id in "${ids[@]}"; do
     local request_url="${TEAMCITY_BUILDS}/id:${id}"
     local build_info
-    build_info="$(get_request "${request_url}")"
+    build_info="$(teamcity_get_request "${request_url}")"
     build_type_ids+=("$(printf "%s" "${build_info}" | jq -r '.buildTypeId')")
     states+=("$(printf "%s" "${build_info}" | jq -r '.state')")
     statuses+=("$(printf "%s" "${build_info}" | jq -r '.status')")
@@ -284,7 +323,8 @@ function get_aggregate_teamcity_build_status() {
       # Some jobs have not finished yet (sufficient condition for blocking the merging of the PR).
       # The status can be anything. The status become relevant when all finish.
       printf "\n%b Not all tracked builds have finished." "${UNICODE_FAILURE}"
-      exit 1
+      publish_state "pending"
+      return 0
     fi
   done
 
@@ -293,11 +333,13 @@ function get_aggregate_teamcity_build_status() {
   for status in "${statuses[@]}"; do
     if [[ "${status}" != "SUCCESS" ]]; then
       printf "\n%b All tracked builds have finished but one or more were not successful.\n" "${UNICODE_FAILURE}"
-      exit 1 # finished with errors
+      publish_state "failure"
+      return 0 # finished with errors, do not fail the step though
     fi
   done
   printf "\n%b All tracked builds have finished successfully!\n" "${UNICODE_SUCCESS}"
-  exit 0 # finished successfully
+  publish_state "success"
+  return 0 # finished successfully
 }
 
 function main() {

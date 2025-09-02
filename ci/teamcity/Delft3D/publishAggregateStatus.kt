@@ -40,7 +40,7 @@ object PublishAggregateStatus : BuildType({
                 ./ci/github/get_aggregate_teamcity_build_status.sh  \
                   --teamcity-token "%svc_teamcity_github_delft3d_access_token%" \
                   --project-id "${DslContext.projectId}" \
-                  --branch-name "%dep.${Trigger.id}.branch_name%" \
+                  --branch-name "%teamcity.build.branch%" \
                   --commit-sha "%build.vcs.number%" \
                   --poll-interval 10
             """.trimIndent()
@@ -90,30 +90,30 @@ object PublishAggregateStatus : BuildType({
                 +:pull/*
             """.trimIndent()
         }
-        finishBuildTrigger {
-            buildType = "${WindowsBuild.id}"
-            branchFilter = """
-                +:pull/*
-            """.trimIndent()
-        }
-        finishBuildTrigger {
-            buildType = "${WindowsTest.id}"
-            branchFilter = """
-                +:pull/*
-            """.trimIndent()
-        }
-        finishBuildTrigger {
-            buildType = "${WindowsUnitTest.id}"
-            branchFilter = """
-                +:pull/*
-            """.trimIndent()
-        }
-        finishBuildTrigger {
-            buildType = "${WindowsCollect.id}"
-            branchFilter = """
-                +:pull/*
-            """.trimIndent()
-        }
+        // finishBuildTrigger {
+        //     buildType = "${WindowsBuild.id}"
+        //     branchFilter = """
+        //         +:pull/*
+        //     """.trimIndent()
+        // }
+        // finishBuildTrigger {
+        //     buildType = "${WindowsTest.id}"
+        //     branchFilter = """
+        //         +:pull/*
+        //     """.trimIndent()
+        // }
+        // finishBuildTrigger {
+        //     buildType = "${WindowsUnitTest.id}"
+        //     branchFilter = """
+        //         +:pull/*
+        //     """.trimIndent()
+        // }
+        // finishBuildTrigger {
+        //     buildType = "${WindowsCollect.id}"
+        //     branchFilter = """
+        //         +:pull/*
+        //     """.trimIndent()
+        // }
     }
 
     dependencies {

@@ -45,6 +45,7 @@ object LinuxBuild : BuildType({
         param("generator", """"Unix Makefiles"""")
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
         select("build_type", "%dep.${LinuxThirdPartyLibs.id}.build_type%", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
+        password("svc_teamcity_github_delft3d_access_token", "credentialsJSON:4493718c-625a-46a7-9c1d-ec75e0bf7c34")
     }
 
     vcs {
@@ -100,6 +101,26 @@ object LinuxBuild : BuildType({
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
+        }
+
+        script {
+            name = "Update aggregate status"
+            scriptContent = """
+                #!/usr/bin/env bash
+                BRANCH="%teamcity.build.branch%"
+                if [[ "${BRANCH}" =~ ^pull/ ]]; then
+                    chmod +x ./ci/github/get_aggregate_teamcity_build_status.sh
+                    ./ci/github/get_aggregate_teamcity_build_status.sh  \
+                    --github-username "deltares-service-account" \
+                    --github-token "%github_deltares-service-account_access_token%" \
+                    --teamcity-token "%svc_teamcity_github_delft3d_access_token%" \
+                    --project-id "${DslContext.projectId}" \
+                    --branch-name "%teamcity.build.branch%" \
+                    --commit-sha "%build.vcs.number%" \
+                    --poll-interval 10
+                fi
+            """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
     }
 

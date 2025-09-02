@@ -133,13 +133,13 @@ project {
     )
 
     buildType(Trigger)
-    buildType(PublishAggregateStatus)
+    //buildType(PublishAggregateStatus)
     buildType(PublishToGui)
     buildType(DIMRbak)
     buildType(Publish)
     buildTypesOrder = arrayListOf(
         Trigger,
-        PublishAggregateStatus,
+        //PublishAggregateStatus,
         PublishToGui,
         DIMRbak,
         Publish
