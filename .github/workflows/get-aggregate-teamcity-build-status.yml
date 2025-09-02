@@ -1,68 +1,68 @@
-name: Get aggregate TeamCity build status
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-      - "all/release/[0-9][0-9][0-9][0-9].[0-9]*"
-  pull_request:
-    types:
-      - opened # triggers build when opened
-      - synchronize # triggers build when commits are pushed to HEAD
-    branches:
-      - main
-      - "all/release/[0-9][0-9][0-9][0-9].[0-9]*"
+# name: Get aggregate TeamCity build status
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches:
+#       - main
+#       - "all/release/[0-9][0-9][0-9][0-9].[0-9]*"
+#   pull_request:
+#     types:
+#       - opened # triggers build when opened
+#       - synchronize # triggers build when commits are pushed to HEAD
+#     branches:
+#       - main
+#       - "all/release/[0-9][0-9][0-9][0-9].[0-9]*"
 
-jobs:
-  wait-for-teamcity-builds:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+# jobs:
+#   wait-for-teamcity-builds:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v4
 
-      - name: Install jq
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
+#       - name: Install jq
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y jq
 
-      # 1. Generate an access token following the steps demonstrated in
-      #    https://docs.keeper.io/en/keeperpam/secrets-manager/integrations/github-actions
-      #    with the exception that a login record should be created instead of a database.
-      # 2. Summary of commands needed for the generation of the secret from the access token (bash log is attached):
-      #    Install keeper-secrets-manager-cli in a virtual env (requires python3):
-      #       user@host:~$ mkdir -p ~/.python
-      #       user@host:~$ python3 -m venv ~/.python/venv-keeper
-      #       user@host:~$ ~/.python/venv-keeper/bin/pip install keeper-secrets-manager-cli
-      #    Generate the secret from the access token generated in the previous step
-      #       user@host:~$ ~/.python/venv-keeper/bin/ksm init default <token>
-      # 3. Add the secret to the GitHub repository. Call it KEEPER_TEAMCITY_ACCESS_TOKEN_DELFT3D for example.
-      # 4. uncomment the step below.
-      #
-      # - name: Retrieve TeamCity access token from Keeper record
-      #   id: keeper_secrets
-      #   uses: Keeper-Security/ksm-action@v1
-      #   with:
-      #     keeper-secret-config: ${{ secrets.KEEPER_TEAMCITY_ACCESS_TOKEN_DELFT3D }}
-      #     secrets: |-
-      #       keeper://Z8l66p1kXatULIUc7AxbIw/field/password > password
-      #
-      # 5. In a subsequent step, the retrieved password becomes available through ${{ steps.keeper_secrets.outputs.password }}
+#       # 1. Generate an access token following the steps demonstrated in
+#       #    https://docs.keeper.io/en/keeperpam/secrets-manager/integrations/github-actions
+#       #    with the exception that a login record should be created instead of a database.
+#       # 2. Summary of commands needed for the generation of the secret from the access token (bash log is attached):
+#       #    Install keeper-secrets-manager-cli in a virtual env (requires python3):
+#       #       user@host:~$ mkdir -p ~/.python
+#       #       user@host:~$ python3 -m venv ~/.python/venv-keeper
+#       #       user@host:~$ ~/.python/venv-keeper/bin/pip install keeper-secrets-manager-cli
+#       #    Generate the secret from the access token generated in the previous step
+#       #       user@host:~$ ~/.python/venv-keeper/bin/ksm init default <token>
+#       # 3. Add the secret to the GitHub repository. Call it KEEPER_TEAMCITY_ACCESS_TOKEN_DELFT3D for example.
+#       # 4. uncomment the step below.
+#       #
+#       # - name: Retrieve TeamCity access token from Keeper record
+#       #   id: keeper_secrets
+#       #   uses: Keeper-Security/ksm-action@v1
+#       #   with:
+#       #     keeper-secret-config: ${{ secrets.KEEPER_TEAMCITY_ACCESS_TOKEN_DELFT3D }}
+#       #     secrets: |-
+#       #       keeper://Z8l66p1kXatULIUc7AxbIw/field/password > password
+#       #
+#       # 5. In a subsequent step, the retrieved password becomes available through ${{ steps.keeper_secrets.outputs.password }}
 
-      - name: Get PR short ref
-        id: get_short_ref
-        run: |
-          # Remove 'refs/' prefix and last segment
-          REF=${GITHUB_REF#refs/}
-          REF=${REF%/*}
-          echo "ref: $REF"
-          echo "ref=$REF" >> $GITHUB_OUTPUT
+#       - name: Get PR short ref
+#         id: get_short_ref
+#         run: |
+#           # Remove 'refs/' prefix and last segment
+#           REF=${GITHUB_REF#refs/}
+#           REF=${REF%/*}
+#           echo "ref: $REF"
+#           echo "ref=$REF" >> $GITHUB_OUTPUT
 
-      - name: Get Teamcity build aggregate status
-        run: |
-          chmod +x ci/github/get_aggregate_teamcity_build_status.sh
-          ci/github/get_aggregate_teamcity_build_status.sh \
-            --teamcity-token "${{ secrets.TEAMCITY_ACCESS_TOKEN_DELFT3D }}" \
-            --project-id "Delft3D" \
-            --branch-name "${{ steps.get_short_ref.outputs.ref }}" \
-            --commit-sha "${{ github.sha }}" \
-            --poll-interval 30
+#       - name: Get Teamcity build aggregate status
+#         run: |
+#           chmod +x ci/github/get_aggregate_teamcity_build_status.sh
+#           ci/github/get_aggregate_teamcity_build_status.sh \
+#             --teamcity-token "${{ secrets.TEAMCITY_ACCESS_TOKEN_DELFT3D }}" \
+#             --project-id "Delft3D" \
+#             --branch-name "${{ steps.get_short_ref.outputs.ref }}" \
+#             --commit-sha "${{ github.sha }}" \
+#             --poll-interval 30
