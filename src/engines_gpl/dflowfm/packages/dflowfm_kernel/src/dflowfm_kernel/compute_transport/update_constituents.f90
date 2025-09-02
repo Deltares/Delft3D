@@ -243,7 +243,7 @@ contains
             call solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
                                 zws, qw, vol1, kbot, ktop, &
                                 sumhorflux, fluxver, const_sour, const_sink, &
-                                difsedw, sigdifi, vicwws, nsubsteps, jaupdate, ndeltasteps, constituents, &
+                                sigdifi, vicwws, nsubsteps, jaupdate, ndeltasteps, constituents, &
                                 a, b, c, d, e, sol, rhs)
          end if
 

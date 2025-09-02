@@ -15200,6 +15200,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "AtmDep_Ecl","sw2AtmDEcl",   5,"Y","x",1
 "AtmDep_Ecl","DELT      ",   6,"N","x",1
 "AttribOut ","AttribIdx ",   1,"Y","x",1
+"AttribOut ","SwEmersion",   2,"Y","x",1
 "Cascade   ","Cascade1  ",   1,"N","x",1
 "Cascade   ","Cascade2  ",   2,"Y","x",1
 "Cascade   ","Cascade3  ",   3,"Y","x",1
