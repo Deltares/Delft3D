@@ -22,15 +22,15 @@ contains
       real, intent(in) :: value
       character(len=1) :: typechar
 
-      if (abs(value + 999.) < 1e-10) then
+      if (abs(value + 999.) < 1e-6) then
          typechar = 'N'
-      else if (abs(value + 888.) < 1e-10) then
+      else if (abs(value + 888.) < 1e-6) then
          typechar = 'G'
-      else if (abs(value + 101.) < 1e-10) then
+      else if (abs(value + 101.) < 1e-6) then
          typechar = 'B'
-      else if (abs(value + 11.) < 1e-10) then
+      else if (abs(value + 11.) < 1e-6) then
          typechar = 'M'
-      else if (abs(value + 1.) < 1e-10) then
+      else if (abs(value + 1.) < 1e-6) then
          typechar = 'O'
       else
          typechar = 'Y'
