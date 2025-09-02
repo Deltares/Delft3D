@@ -22,4 +22,13 @@ object SigCi : BuildType({
             param("customer", "deltares")
         }
     }
+
+    if (DslContext.getParameter("enable_sigrid_trigger").lowercase() == "true") {
+        triggers {
+            vcs {
+                branchFilter = "+:<default>"
+                perCheckinTriggering = false
+            }
+        }
+    }
 })
