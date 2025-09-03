@@ -44,7 +44,7 @@ object Trigger : BuildType({
                 filename = "ci/python/ci_tools/trigger/testbench_filter.py"
                 scriptArguments = "-n %product% -f %testbench_table% -v lnx64"
             }
-            dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:alma10-%dep.Delft3D_LinuxBuild.product%-%build.vcs.number%"
+            dockerImage = "python:3.11"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
             dockerPull = true
         }
@@ -55,7 +55,7 @@ object Trigger : BuildType({
                 filename = "ci/python/ci_tools/trigger/testbench_filter.py"
                 scriptArguments = "-n %product% -f %testbench_table% -v win64"
             }
-            dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:alma10-%dep.Delft3D_LinuxBuild.product%-%build.vcs.number%"
+            dockerImage = "python:3.11"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
             dockerPull = true
         }
