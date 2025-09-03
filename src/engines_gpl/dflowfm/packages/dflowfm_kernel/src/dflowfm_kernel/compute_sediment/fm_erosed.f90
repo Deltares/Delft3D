@@ -649,7 +649,6 @@ contains
                ! at layer interfaces, but not at bed and surface  ! to check...
                do l = 1, lsed
                   do k = kb, kt - 1
-                     !seddif(l, k) = max(vicwws(k),dicoww)
                      seddif(l, k) = vicwws(k) ! background dico is added in solve_vertical
                   end do
                end do
@@ -992,7 +991,6 @@ contains
                   !
                   klc = 0
                   do k = kt, kb - 1, -1
-                     !seddif(l, k) = max(vicwws(k),dicoww)
                      seddif(l, k) = vicwws(k)
                      klc = klc + 1
                   end do
@@ -1089,7 +1087,6 @@ contains
                   dcwwlc = 0.0_fp
                   wslc = 0.0_fp
                   do kk = kt, kb - 1, -1 ! sigma convention
-                     !dcwwlc(klc) = max(vicwws(kk),dicoww)     ! maximalisation is safety
                      dcwwlc(klc) = vicwws(kk) !  background is added in solve_vertical
                      wslc(klc) = ws(kk, l)
                      klc = klc + 1

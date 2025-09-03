@@ -229,17 +229,6 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Temperatur","SwitchTemp",   7,"Y","x",1
 "Temperatur","FactRcHeat",   8,"Y","x",1
 "Temperatur","ZHeatExch ",   9,"Y","x",1
-"Temperatur","SwTempDF  ",  10,"Y","x",1
-"Temperatur","SwEmersion",  11,"Y","x",1
-"Temperatur","LocSedDept",  12,"Y","x",1
-"Temperatur","ThSedDT   ",  13,"Y","x",1
-"Temperatur","RadSurf   ",  14,"N","x",1
-"Temperatur","RadMax    ",  15,"Y","x",1
-"Temperatur","RTradmax  ",  16,"Y","x",1
-"Temperatur","DelTradmax",  17,"Y","x",1
-"Temperatur","DelTev    ",  18,"Y","x",1
-"Temperatur","DelTrad   ",  19,"N"," ",1
-"Temperatur","AirTemp   ",  20,"Y","x",1
 "Salinchlor","Cl        ",   1,"Y","x",1
 "Salinchlor","Temp      ",   2,"Y","x",1
 "Salinchlor","SWSalCl   ",   3,"Y","x",1
@@ -15200,6 +15189,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "AtmDep_Ecl","sw2AtmDEcl",   5,"Y","x",1
 "AtmDep_Ecl","DELT      ",   6,"N","x",1
 "AttribOut ","AttribIdx ",   1,"Y","x",1
+"AttribOut ","SwEmersion",   2,"Y","x",1
 "Cascade   ","Cascade1  ",   1,"N","x",1
 "Cascade   ","Cascade2  ",   2,"Y","x",1
 "Cascade   ","Cascade3  ",   3,"Y","x",1
