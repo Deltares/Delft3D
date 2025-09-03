@@ -157,11 +157,12 @@ program waqpb_import
             error stop
       else
          c10 = substrings(1)
-         c50 = adjustl(line_buffer(len_trim(substrings(1))+1:len_trim(line_buffer)))
-         if (len_trim(c50) > 50) then
-            write (*, '(A, A, A, I0)') 'Error: process description "', c50, '" exceeds 50 characters at line ', linecount
+         line_buffer = adjustl(line_buffer(len_trim(substrings(1))+1:len(line_buffer)))
+         if (len_trim(line_buffer) > 50) then
+            write (*, '(A, A, A, I0)') 'Error: process description "', trim(line_buffer), '" exceeds 50 characters at line ', linecount
             error stop
          end if
+         c50 = trim(line_buffer)
       end if
 
       write (io_mes, '(A, I3, A, A)' ), 'Process ', iproc,' : ', c10
