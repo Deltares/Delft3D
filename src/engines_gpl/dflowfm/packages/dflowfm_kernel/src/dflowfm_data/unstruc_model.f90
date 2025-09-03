@@ -498,7 +498,7 @@ contains
       call timstrt('Read structures', timerHandle)
       if (len_trim(md_1dfiles%structures) > 0) then
          call SetMessage(LEVEL_INFO, 'Reading Structures ...')
-         call readStructures(network, md_1dfiles%structures)
+         call readStructures(network, md_1dfiles%structures, is_path_relative=md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
 
          if (md_convertlongculverts == 0) then
@@ -1331,7 +1331,7 @@ contains
       call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
       call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
       call prop_get(md_ptr, 'physics', 'Vicoww', vicoww)
-      call prop_get(md_ptr, 'physics', 'Dicoww', dicoww)
+      call prop_get(md_ptr, 'physics', 'Dicoww', constant_dicoww)
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
       call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
       call prop_get(md_ptr, 'physics', 'TKEMin', tke_min)
@@ -3319,7 +3319,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'physics', 'Vicoww', vicoww, 'Uniform vertical eddy viscosity (m2/s)')
-         call prop_set(prop_ptr, 'physics', 'Dicoww', dicoww, 'Uniform vertical eddy diffusivity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'Dicoww', constant_dicoww, 'Uniform vertical eddy diffusivity (m2/s)')
+
          if (writeall .or. (vicwminb > 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'Vicwminb', Vicwminb, 'Minimum visc in prod and buoyancy term (m2/s)')
          end if

@@ -1737,6 +1737,17 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f006_c012_spatially_varying_dicoww" ref="dflowfm_default">
+        <path version="2025-09-01T13:25:22.547000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="output/spatial_dicoww_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e02_f006_c021_basinnofriction_squaresfine" ref="dflowfm_default">
       <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f006_external_forcing/c021_basinnofriction_squaresfine</path>
       <maxRunTime>15000.0000000</maxRunTime>

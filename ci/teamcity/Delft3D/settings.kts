@@ -165,7 +165,7 @@ project {
         feature {
             type = "OAuthProvider"
             param("displayName", "Keeper Vault Delft3d")
-            param("secure:client-secret", "credentialsJSON:b3006852-9a08-4b9c-b315-001c4acac724")
+            param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
             param("providerType", "teamcity-ksm")
         }
     }

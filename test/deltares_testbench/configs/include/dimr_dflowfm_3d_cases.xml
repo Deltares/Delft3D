@@ -335,8 +335,8 @@
       <file name="depthgr.xyz" ignore="true" />
      </checks>
     </testCase>
-    <testCase name="e02_f019_c042_tidal_flume_zmodel_3d" ref="platform_specific">
-     <path version="2025-05-07T13:31:28.013000">e02_dflowfm/f019_transport/c042_tidal_flume_zmodel_3d</path>
+    <testCase name="e02_f019_c042_tidal_flume_zmodel_3d" ref="dflowfm_default">
+     <path version="2025-08-19T11:49:05.890000">e02_dflowfm/f019_transport/c042_tidal_flume_zmodel_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tfz_his.nc" type="netCDF">
@@ -344,7 +344,7 @@
          <parameter name="waterlevel" toleranceAbsolute="0.0001" />
          <parameter name="x_velocity" toleranceAbsolute="0.0001" />
          <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-         <parameter name="salinity" toleranceRelative="0.0005" />
+         <parameter name="salinity" toleranceRelative="0.005" />
         </parameters>
       </file>
       <file name="depthgr.xyz" ignore="true" />

@@ -1584,6 +1584,8 @@ contains
       use processes_input, only: paname, painp, num_spatial_parameters, &
                                  funame, funinp, num_time_functions, &
                                  sfunname, sfuninp, num_spatial_time_fuctions
+      use m_physcoef, only: constant_dicoww, dicoww
+      use m_array_or_scalar, only: assign_pointer_to_t_array, realloc
 
       implicit none
 
@@ -1627,12 +1629,10 @@ contains
       case ('advectiontype')
          target_location_type = UNC_LOC_U
          target_array_integer => iadv
-
       case ('groundlayerthickness')
          target_location_type = UNC_LOC_U
          target_array => grounlay
          jagrounlay = 1
-
       case ('bedrocksurfaceelevation')
          call initialize_subsupl()
          time_dependent_array = .true.
@@ -1645,9 +1645,7 @@ contains
             target_location_type = UNC_LOC_CN
          end select
          ! Note: target_array not needed, handled via quantity in ec_addtimespacerelation()
-
       case ('frictiontrtfactor')
-
          if (jatrt /= 1) then
             call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting QUANTITY '//trim(qid)// &
                       ', but [trachytopes] is not switched on in MDU file. Ignoring this block.')
@@ -1662,9 +1660,7 @@ contains
             target_array => cftrtfac
             jacftrtfac = 1
          end if
-
       case ('horizontaleddyviscositycoefficient')
-
          if (javiusp == 0) then
             if (allocated(viusp)) then
                deallocate (viusp)
@@ -1676,9 +1672,7 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => viusp
-
       case ('horizontaleddydiffusivitycoefficient')
-
          if (jadiusp == 0) then
             if (allocated(diusp)) then
                deallocate (diusp)
@@ -1690,13 +1684,10 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => diusp
-
       case ('ibedlevtype')
          target_location_type = UNC_LOC_U
          target_array_integer => ibot
-
       case ('internaltidesfrictioncoefficient')
-
          if (jaFrcInternalTides2D /= 1) then ! not added yet
             if (allocated(frcInternalTides2D)) then
                deallocate (frcInternalTides2D)
@@ -1711,37 +1702,29 @@ contains
             allocate (DissInternalTidesPerArea(Ndx), stat=ierr)
             call aerr(' DissInternalTidesPerArea(Ndx)', ierr, Ndx)
             DissInternalTidesPerArea = 0.0_dp
-
             jaFrcInternalTides2D = 1
          end if
          target_location_type = UNC_LOC_S
          target_array => frcInternalTides2D
-
       case ('linearfrictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frculin
          jafrculin = 1
-      case ('sea_ice_area_fraction', 'sea_ice_thickness')
-
-         ! if ice properties not yet read before, initialize ...
-         if (.not. (ja_ice_area_fraction_read /= 0 .or. ja_ice_thickness_read /= 0)) then
+      case ('seaiceareafraction', 'seaicethickness')
+         if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
             call fm_ice_activate_by_ext_forces(ndx, md_ptr)
          end if
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.
-         if (qid == 'sea_ice_area_fraction') then
-            ja_ice_area_fraction_read = 1
-         else
-            ja_ice_thickness_read = 1
-         end if
-
       case ('secchidepth')
          call realloc(secchisp, ndx, keepExisting=.true., fill=dmiss, stat = ierr)
          target_location_type = UNC_LOC_S
          target_array => secchisp
-
+      case ('backgroundverticaleddydiffusivitycoefficient')
+         target_location_type = UNC_LOC_S
+         call realloc(dicoww, ndx, constant_dicoww)
+         call assign_pointer_to_t_array(dicoww, target_array, ierr)
       case ('stemdiameter')
-
          if (.not. allocated(stemdiam)) then
             allocate (stemdiam(ndx), stat=ierr)
             call aerr('stemdiam(ndx)', ierr, ndx)
@@ -1749,9 +1732,7 @@ contains
          end if
          target_location_type = UNC_LOC_S
          target_array => stemdiam
-
       case ('stemdensity')
-
          if (.not. allocated(stemdens)) then
             allocate (stemdens(ndx), stat=ierr)
             call aerr('stemdens(ndx)', ierr, ndx)
@@ -1759,9 +1740,7 @@ contains
          end if
          target_location_type = UNC_LOC_S
          target_array => stemdens
-
       case ('stemheight')
-
          if (.not. allocated(stemheight)) then
             allocate (stemheight(ndx), stat=ierr)
             call aerr('stemheight(ndx)', ierr, ndx)
@@ -1769,9 +1748,7 @@ contains
          end if
          target_location_type = UNC_LOC_S
          target_array => stemheight
-
       case ('windstresscoefficient')
-
          if (jaCdwusp == 0) then
             if (allocated(Cdwusp)) then
                deallocate (Cdwusp)
@@ -1784,7 +1761,6 @@ contains
          target_location_type = UNC_LOC_U
          target_array => Cdwusp
          iCdtyp = 1 ! only 1 coeff
-         !
       case ('wavesignificantheight', 'waveperiod', 'wavedirection')
          if (jawave == WAVE_NC_OFFLINE) then
             target_location_type = UNC_LOC_S
@@ -1834,39 +1810,32 @@ contains
          target_array_3d_sp => painp
          ! TODO: UNST-9008: discuss with Michelle whether this case is in fact equal to waqsegmentnumber.
          ! TODO: UNST-9008: discuss with Michelle generalized 2D/3D handling that is repeated in old code.
-
       case ('waqsegmentnumber')
          target_location_type = UNC_LOC_S
          call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values = painp, index_waq_input = target_quantity_index)
          target_array_3d_sp => painp
          ! TODO: UNST-9008: discuss with Michelle generalized 2D/3D handling that is repeated in old code.
-
       case ('waqfunction')
          target_location_type = UNC_LOC_GLOBAL
          time_dependent_array = .true.
          call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., waq_values_ptr = funinp, index_waq_input = target_quantity_index)
-
       case ('waqsegmentfunction')
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.
          call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., waq_values_ptr = sfuninp, index_waq_input = target_quantity_index)
-
       case ('nudgesalinitytemperature')
          target_location_type = UNC_LOC_S3D
          time_dependent_array = .true.
          quantity_value_count = 2
          call alloc_nudging()
-         
       case ('nudgerate')
          target_location_type = UNC_LOC_S
          call alloc_nudging()
          target_array => nudge_rate
-
       case ('nudgetime')
          target_location_type = UNC_LOC_S
          call alloc_nudging()
          target_array => nudge_time
-
       case default
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
             ' Field '''//trim(qid)//''' is not a recognized ''[Parameter]'' quantity (refer to User Manual). Ignoring this block.'
@@ -2021,7 +1990,8 @@ contains
                                   DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap
       use m_grw, only: jaintercept2D
-      use m_fm_icecover, only: fm_ice_activate_by_ext_forces
+      use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
+
       use m_heatfluxes, only: jasecchisp, secchisp
       use m_physcoef, only: secchidepth
       use m_meteo, only: ec_addtimespacerelation
@@ -2075,6 +2045,10 @@ contains
          if (qid == 'interceptionlayerthickness') then
             jaintercept2D = 1
          end if
+      case ('seaiceareafraction')
+         ja_ice_area_fraction_read = 1
+      case('seaicethickness')
+         ja_ice_thickness_read = 1
       case ('secchidepth')
          jaSecchisp = 1
          do n = 1, ndx
