@@ -37,11 +37,6 @@ object LinuxUnitTest : BuildType({
 
     steps {
         mergeTargetBranch {}
-        exec {
-            name = "Remove system libraries"
-            workingDir = "lnx64/lib"
-            path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
-        }
         python {
             conditions {
                 matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
