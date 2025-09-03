@@ -50,8 +50,8 @@ contains
       use m_cli_utils
       use m_waqpb_export_helper
       class(waqpb_export_settings), intent(inout) :: this
-      real :: version, dummy_real
-      integer :: serial, i, dummy_integer
+      real :: version
+      integer :: serial, i
       character(len=256), dimension(:), allocatable :: accepted_flag_args, accepted_keyval_args, invalid_args
       logical :: success, parsing_error
 
