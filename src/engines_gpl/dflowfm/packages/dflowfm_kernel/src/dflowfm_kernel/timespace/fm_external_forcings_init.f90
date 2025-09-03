@@ -754,9 +754,6 @@ contains
          case ('pseudoAirPressure')
             kx = 1
             ierr = allocate_pseudo_air_pressure(0.0_dp)
-            write (msgbuf, '(a)') 'quantity '//trim(quantity)//' is found in file '//file_name// &
-                '. Quantity waterLevelCorrection is more preferable.' 
-            call warn_flush()
 
          case ('waterLevelCorrection')
             kx = 1
