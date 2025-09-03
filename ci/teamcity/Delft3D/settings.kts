@@ -155,8 +155,8 @@ project {
             id = "doc_download_connection"
             name = "Deltares MinIO connection"
             credentialsType = static {
-                accessKeyId = DslContext.getParameter("s3_dsctestbench_accesskey")
-                secretAccessKey = "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160"
+                accessKeyId = "%s3_dsctestbench_accesskey%"
+                secretAccessKey = "%s3_dsctestbench_secret%"
                 useSessionCredentials = false
             }
             allowInSubProjects = true
