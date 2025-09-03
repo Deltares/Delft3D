@@ -17,7 +17,7 @@ project {
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
     params {
-        param("delft3d-user", "robot${'$'}delft3d")
+        param("delft3d-user", DslContext.getParameter("delft3d-user"))
         password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
 
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
