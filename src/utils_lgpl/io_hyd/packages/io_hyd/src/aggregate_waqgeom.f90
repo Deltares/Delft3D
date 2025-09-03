@@ -280,12 +280,33 @@ contains
 
       implicit none
 
-      type(t_ug_meshgeom), intent(in) :: input !< The mesh geometry to be aggregated.
-      type(t_ug_meshgeom), intent(inout) :: output !< Aggregated mesh geometry.
-      integer, dimension(:), intent(in) :: layer_mapping_table !< Mapping table flow cells -> waq cells.
+      type(t_ug_meshgeom), intent(in) :: input !< The layers and interfaces to be aggregated.
+      type(t_ug_meshgeom), intent(inout) :: output !< Aggregated layers and interfaces.
+      integer, dimension(:), intent(in) :: layer_mapping_table !< Mapping table input layers and interfaces -> waq layers and interfaces.
       logical :: success !< Result status, true if successful.
-      
+
+      ! Relevant variables from input and output .
+      ! integer  :: num_layers      = -1    !< Number of mesh layers (num interfaces == num_layers + 1), num_layers = 0 means "no layers".
+      ! integer  :: numtopsig       = -1    !< Number of top sigma layers in the case of z-sigma coordinates.
+      ! integer  :: layertype       = -1    !< Type of vertical layer definition (only if num_layers >= 1), one of LAYERTYPE_* parameters.
+      !
+      ! double precision, pointer :: layer_zs(:) => null()    !< Vertical coordinates of the mesh layers' center (either z or sigma).
+      ! double precision, pointer :: interface_zs(:)=> null() !< Vertical coordinates of the mesh layers' interface (either z or sigma).
+
       success = .false.
+      
+      ! Check the validity of the layer mapping table (starts with 1 and increments of 0 or 1 only.
+      ! Check we don't aggregate z and sigma layers using %numtopsig when we have %layertype = LAYERTYPE_OCEAN_SIGMA_Z, unless we aggregate to 2D.
+
+      ! Determine a the new %num_layers and the new %numtopsig when we have %layertype = LAYERTYPE_OCEAN_SIGMA_Z.
+      ! When we aggregate to 2D, then the new %layertype should change/remain -1, and we don't need to aggregate the layers any more and return.
+      
+      ! Allocate output arrays %layer_zs and %interface_zs.
+      ! Copy the remaining interfaces to the output array.
+      ! Calculate the output layers as the average of the two surrounding interfaces.
+      ! Take special care when %layertype = LAYERTYPE_OCEAN_SIGMA_Z
+
+      success = .true.
 
    end function aggregate_ugrid_layers_interfaces
 

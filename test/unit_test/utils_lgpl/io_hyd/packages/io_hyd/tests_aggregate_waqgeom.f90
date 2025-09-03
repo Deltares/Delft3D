@@ -92,6 +92,19 @@ contains
       integer, dimension(:), allocatable :: layer_mapping_table !< Mapping table flow cells -> waq cells.
       logical :: success = .false. !< Result status, true if successful.
       
+      ! The tests should be implemented for 3 cases with different layering:
+      ! 1) 3D 20 sigma layers
+      ! 2) 3D 20 z-layers
+      ! 3) 3D 10/10 z-sigma layers
+      
+      ! The cases should be aggregated in 4 different ways:
+      ! 1) no aggregation of layers (just copy current data)
+      ! 2) 3D -> 2D layers
+      ! 3) 20 -> 8 layers where z and sigma layers are combined (this should fail %layertype = LAYERTYPE_OCEAN_SIGMA_Z)
+      ! 4) 20 -> 8 layers where z and sigma layers are not combined
+      
+      ! in total this results in 12 test cases, of which one is expected to fail
+      
       success = aggregate_ugrid_layers_interfaces(input, output, layer_mapping_table)
 
       call assert_true(success, 'Layers and interfaces were not aggregated as expected.')
