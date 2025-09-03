@@ -13,7 +13,7 @@ object SigCi : BuildType({
     steps {
         step {
             name = "Upload to sigrid using recipe"
-            type = "${DslContext.getParameter("deltares_recipes_root")}_SigridCiUploadTemplate"
+            type = "SigridCiUploadTemplate"
             param("sourceDir", ".")
             param("system", "dflow-flexible")
             param("plugin.docker.imagePlatform", "")
