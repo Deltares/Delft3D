@@ -44,6 +44,9 @@ object Trigger : BuildType({
                 filename = "ci/python/ci_tools/trigger/testbench_filter.py"
                 scriptArguments = "-n %product% -f %testbench_table% -v lnx64"
             }
+            dockerImage = "python:3.13"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
+            dockerPull = true
         }
 
         python {
@@ -52,6 +55,9 @@ object Trigger : BuildType({
                 filename = "ci/python/ci_tools/trigger/testbench_filter.py"
                 scriptArguments = "-n %product% -f %testbench_table% -v win64"
             }
+            dockerImage = "python:3.13"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
+            dockerPull = true
         }
 
         script {

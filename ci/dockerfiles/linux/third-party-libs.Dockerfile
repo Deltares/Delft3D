@@ -571,7 +571,7 @@ EOF-googletest
 FROM base AS all
 
 RUN set -eo pipefail && \
-    cat <<EOT >> /root/.bashrc
+    cat <<EOT >> /opt/bashrc
 source /opt/intel/oneapi/setvars.sh
 export FC=mpi${INTEL_FORTRAN_COMPILER}
 export CXX=mpicxx # We would like to use mpiicpx, but some tests get different results
