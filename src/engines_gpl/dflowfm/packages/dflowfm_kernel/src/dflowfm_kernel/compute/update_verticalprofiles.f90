@@ -76,7 +76,7 @@ contains
       real(kind=dp) :: zz, z00, ac1, ac2, tkebot, tkesur, epsbot, epssur
       real(kind=dp) :: hdzb, dtiL, adv, omegu
       real(kind=dp) :: dzu(kmxx), dzw(kmxx), womegu(kmxx), pkwav(kmxx)
-      real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq, faclax
+      real(kind=dp) :: gradk, gradt, grad, gradd, gradu, volki, arLL, qqq
       real(kind=dp) :: wk, wke, vk, um, tauinv, tauinf, xlveg, rnv, diav, ap1, alf, teps, tkin
       real(kind=dp) :: cfuhi3D, vicwmax, zint, z1, vicwww, alfaT, tke, eps
       real(kind=dp) :: rhoLL, pkwmag, hrmsLL, wdep, dzwav, dis1, dis2, surdisLL
@@ -299,18 +299,7 @@ contains
                dk(0:kxL) = dtiL * turkin0(Lb0:Lt)
 
                if (tur_time_int_factor > 0) then
-                  ! Apply horizontal coupling of turkin with care:
-                  ! - tur_time_int_factor is scaled with a ratio denoting the actual overlap of layer k in cells k1 and k2
-                  ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
-                  do L = Lb, Lt - 1
-                     k1 = ln(1, L); k2 = ln(2, L)
-                     if (turkinws(k1) > eps20 .and. turkinws(k2) > eps20) then
-                        if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                           faclax = tur_time_int_factor
-                           dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * turkin0(L) + 0.5_dp * facLax * (turkinws(k1) + turkinws(k2)))
-                        end if
-                     end if
-                  end do
+                  call apply_horizontal_coupling(turkin0, turkinws)
                end if
 
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigtkei
@@ -608,18 +597,7 @@ contains
                ! Dirichlet condition on bed ; teta method:
 
                if (tur_time_int_factor > 0) then
-                  ! Apply horizontal coupling of tureps with care:
-                  ! - tur_time_int_factor is scaled with a ratio denoting the actual overlap of layer k in cells k1 and k2
-                  ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
-                  do L = Lb, Lt - 1
-                     k1 = ln(1, L); k2 = ln(2, L)
-                     if (turepsws(k1) > eps20 .and. turepsws(k2) > eps20) then
-                        if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                           faclax = tur_time_int_factor
-                           dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * tureps0(L) + 0.5_dp * facLax * (turepsws(k1) + turepsws(k2)))
-                        end if
-                     end if
-                  end do
+                  call apply_horizontal_coupling(tureps0, turepsws)
                end if
 
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigepsi
@@ -871,6 +849,28 @@ contains
       if (jarichardsononoutput > 0) then
          call links_to_centers(richs, rich)
       end if
+      
+   contains
+
+   
+   
+      !> Lax-inspired time integration method to couple turbulence quantities horizontally
+      !! By using a subroutine inside "update_verticalprofiles", all parameters defined in "update_verticalprofiles" are accessible
+      subroutine apply_horizontal_coupling(tur0, turws)   
+         real(kind=dp), dimension(:) :: tur0, turws   
+         ! Apply horizontal coupling of turkin/tureps with care:
+         ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
+         do L = Lb, Lt - 1
+            k1 = ln(1, L); k2 = ln(2, L)
+            if (turws(k1) > eps20 .and. turws(k2) > eps20) then
+               if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                  dk(L - Lb + 1) = dtiL * ((1.0_dp - tur_time_int_factor) * tur0(L) + 0.5_dp * tur_time_int_factor * (turws(k1) + turws(k2)))
+               end if
+            end if
+         end do
+      end subroutine apply_horizontal_coupling
+      
+
 
    end subroutine update_verticalprofiles
 
