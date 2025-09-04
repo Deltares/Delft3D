@@ -1,6 +1,5 @@
 """Tests for assert_preconditions.py."""
 
-import os
 from unittest.mock import Mock, patch
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
@@ -31,8 +30,6 @@ class TestAssertPreconditionsFunction:
         self.mock_services.git = Mock(spec=GitClient)
         self.mock_services.ssh = Mock(spec=SshClient)
 
-    @patch("os.access")
-    @patch("os.path.exists")
     def test_assert_preconditions_success(self) -> None:
         """Test successful preconditions check."""
         # Arrange
