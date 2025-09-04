@@ -284,6 +284,11 @@ contains
       type(t_ug_meshgeom), intent(inout) :: output !< Aggregated layers and interfaces.
       integer, dimension(:), intent(in) :: layer_mapping_table !< Mapping table input layers and interfaces -> waq layers and interfaces.
       logical :: success !< Result status, true if successful.
+      logical :: valid !< Is layer_mapping_table valid?
+      logical :: no_aggregation !< Is there no aggregation at all?
+      logical :: to_2D !< Is there aggregation to 2D?
+      integer :: i, increment !< Loop variable and increment variable.
+      character(len=255) :: message !< Temporary variable for writing log messages.
 
       ! Relevant variables from input and output .
       ! integer  :: num_layers      = -1    !< Number of mesh layers (num interfaces == num_layers + 1), num_layers = 0 means "no layers".
@@ -293,13 +298,53 @@ contains
       ! double precision, pointer :: layer_zs(:) => null()    !< Vertical coordinates of the mesh layers' center (either z or sigma).
       ! double precision, pointer :: interface_zs(:)=> null() !< Vertical coordinates of the mesh layers' interface (either z or sigma).
 
+      ! Defaults
       success = .false.
+      valid = .true.
+      no_aggregation = .true.
+      to_2D = .true.
       
       ! Check the validity of the layer mapping table (starts with 1 and increments of 0 or 1 only.
+      if (size(layer_mapping_table) /= input%num_layers) then
+         write (message, *) 'Definition of vertical aggregation does not match the number of layers.'
+         call mess(LEVEL_ERROR, trim(message))
+      end if
+      
+      if (layer_mapping_table(1) /= 1) then
+         write (message, *) 'Definition of vertical aggregation should start with one.'
+         call mess(LEVEL_ERROR, trim(message))
+      end if
+      
+      do i = 1, input%num_layers - 1
+         increment = layer_mapping_table(i+1) - layer_mapping_table(i)
+         if (increment/=0 .and. increment/=1) then
+            write (message, *) 'Definition of vertical aggregation must only contain increments of 0 or 1.'
+            call mess(LEVEL_ERROR, trim(message))
+         end if
+         if (increment==0) then
+            no_aggregation = .false.
+         end if
+         if (increment==1) then
+            to_2D = .false.
+         end if
+      end do
+      
       ! Check we don't aggregate z and sigma layers using %numtopsig when we have %layertype = LAYERTYPE_OCEAN_SIGMA_Z, unless we aggregate to 2D.
-
       ! Determine a the new %num_layers and the new %numtopsig when we have %layertype = LAYERTYPE_OCEAN_SIGMA_Z.
+
+      ! When there is no aggregation, just copy the input and return.
+      if (no_aggregation) then
+         output = input
+         success = .true.
+         return
+      end if
+
       ! When we aggregate to 2D, then the new %layertype should change/remain -1, and we don't need to aggregate the layers any more and return.
+      if (no_aggregation) then
+         output%num_layers = 0
+         success = .true.
+         return
+      end if
       
       ! Allocate output arrays %layer_zs and %interface_zs.
       ! Copy the remaining interfaces to the output array.
