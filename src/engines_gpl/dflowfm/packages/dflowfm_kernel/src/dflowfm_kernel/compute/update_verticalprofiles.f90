@@ -849,15 +849,13 @@ contains
       if (jarichardsononoutput > 0) then
          call links_to_centers(richs, rich)
       end if
-      
+
    contains
 
-   
-   
       !> Lax-inspired time integration method to couple turbulence quantities horizontally
       !! By using a subroutine inside "update_verticalprofiles", all parameters defined in "update_verticalprofiles" are accessible
-      subroutine apply_horizontal_coupling(tur0, turws)   
-         real(kind=dp), dimension(:) :: tur0, turws   
+      subroutine apply_horizontal_coupling(tur0, turws)
+         real(kind=dp), dimension(:) :: tur0, turws
          ! Apply horizontal coupling of turkin/tureps with care:
          ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
          do L = Lb, Lt - 1
@@ -869,8 +867,6 @@ contains
             end if
          end do
       end subroutine apply_horizontal_coupling
-      
-
 
    end subroutine update_verticalprofiles
 
