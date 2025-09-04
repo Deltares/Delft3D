@@ -81,7 +81,7 @@ object LinuxBuild : BuildType({
             name = "Run unit tests"
             scriptContent = """
                 #!/usr/bin/env bash
-                source /root/.bashrc
+                source /opt/bashrc
                 ctest --test-dir build_%product% --build-config %build_type% --output-junit ../unit-test-report-linux.xml --output-on-failure
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
@@ -93,7 +93,7 @@ object LinuxBuild : BuildType({
             name = "Install"
             scriptContent = """
                 #!/usr/bin/env bash
-                source /root/.bashrc
+                source /opt/bashrc
                 cmake --install build_%product% --config %build_type%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"

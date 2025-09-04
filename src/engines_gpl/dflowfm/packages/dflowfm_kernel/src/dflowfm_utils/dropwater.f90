@@ -104,7 +104,7 @@ contains
       volerr = 0; volerrcum = 0
 
       if (kmx > 0) then
-         call setkbotktop(1) ! dropwater
+         call set_kbot_ktop(jazws0=1) ! dropwater
       end if
 
       validateon = .false.

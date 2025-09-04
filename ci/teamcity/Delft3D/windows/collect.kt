@@ -47,16 +47,16 @@ object WindowsCollect : BuildType({
         python {
             name = "Generate list of version numbers (from what-strings)"
             command = file {
-                filename = """ci/DIMRset_delivery/scripts/list_all_what_strings.py"""
+                filename = """ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py"""
                 scriptArguments = "--srcdir x64 --output dimrset_version_x64.txt"
             }
         }
         python {
             name = "Verify (un)signed binaries and directory structure"
             command = file {
-                filename = "ci/DIMRset_delivery/src/validate_signing.py"
+                filename = "ci/python/ci_tools/dimrset_delivery/validate_signing.py"
                 scriptArguments = """
-                    "ci\\DIMRset_delivery\\src\\%dep.${WindowsBuild.id}.product%-binaries.json" 
+                    "ci\\python\\ci_tools\\dimrset_delivery\\%dep.${WindowsBuild.id}.product%-binaries.json" 
                     "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat"
                     "x64"
                 """.trimIndent()

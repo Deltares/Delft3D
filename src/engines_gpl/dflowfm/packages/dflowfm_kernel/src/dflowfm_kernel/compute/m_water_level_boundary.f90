@@ -35,7 +35,6 @@ module m_water_level_boundary
    use m_fm_icecover, only: ice_apply_pressure, ice_pressure
    use m_physcoef, only: ag, rhomean
    use precision, only: dp
-
    implicit none
 
    public :: correct_water_level_boundary

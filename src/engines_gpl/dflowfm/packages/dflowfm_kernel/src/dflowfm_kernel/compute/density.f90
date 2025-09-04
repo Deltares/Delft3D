@@ -162,6 +162,7 @@ contains
    pure subroutine salinity_and_temperature_at_cell(cell_index_3d, salinity, temperature)
       use m_flow, only: jasal, jatem, backgroundsalinity, backgroundwatertemperature
       use m_transportdata, only: isalt, itemp, constituents
+      use m_physcoef, only: temperature_min
 
       integer, intent(in) :: cell_index_3d !< cell index
       real(kind=dp), intent(out) :: salinity !< salinity at cell
@@ -174,7 +175,7 @@ contains
       end if
 
       if (jatem > 0) then
-         temperature = max(-5.0_dp, constituents(itemp, cell_index_3d))
+         temperature = max(temperature_min, constituents(itemp, cell_index_3d))
       else
          temperature = backgroundwatertemperature
       end if

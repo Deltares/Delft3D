@@ -428,8 +428,7 @@ contains
       subroutine calculate_hu_au_3D()
          use m_qnerror
 
-         integer, parameter :: TYPE_ALL_Z = 2
-         integer, parameter :: AVERAGE_BED_CELLING = 2
+         integer, parameter :: AVERAGE_BED_CEILING = 2
 
          if (hu(link) <= 0d0) then
             Ltop(link) = DRY_FLAG
@@ -448,7 +447,7 @@ contains
                ! UNST-5182: The code below has only been implemented for keepzlayeringatbed == 2
                ! To be implemented for keepzlayeringatbed == 0 and 1 as well, because layer distribution is independent of value of keepzlayeringatbed?
                !
-               if (layertype == TYPE_ALL_Z .and. keepzlayeringatbed == AVERAGE_BED_CELLING) then
+               if (layertype == LAYTP_Z .and. keepzlayeringatbed == AVERAGE_BED_CEILING) then
                   call calculate_using_split_central_and_sigma_parts()
                else
                   call calculate_hu_au_using_upwind_sigma()
@@ -584,7 +583,7 @@ contains
 
       end subroutine assign_au_3D
 
-!> calculate_hu_au_upwind_in_upper_part
+      !> calculate_hu_au_upwind_in_upper_part
       subroutine calculate_hu_au_upwind_in_upper_part()
 
          hub = hu(link) - hub
@@ -596,10 +595,11 @@ contains
 
       end subroutine calculate_hu_au_upwind_in_upper_part
 
-!> default: upwind sigma oriented distribution of hu(link)
+      !> default: upwind sigma oriented distribution of hu(link)
       subroutine calculate_hu_au_using_upwind_sigma()
-
-         if (keepzlay1bedvol == 0 .or. &
+         use m_flow, only: layertype, LAYTP_Z, numtopsig, kmxn
+         use m_flowparameters, only: keepzlay1bedvol
+         if (layertype /= LAYTP_Z .or. keepzlay1bedvol == 0 .or. &
              (kmxn(upstream_cell) == kmxn(downstream_cell) .and. kmxn(upstream_cell) <= numtopsig)) then
             call calculate_hu_au_upwind_based()
          else

@@ -57,7 +57,7 @@ object LinuxCollect : BuildType({
         exec {
             name = "Generate list of version numbers (from what-strings)"
             path = "/usr/bin/python3"
-            arguments = "ci/DIMRset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimrset_version_lnx64.txt"
+            arguments = "ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimrset_version_lnx64.txt"
         }
     }
 
