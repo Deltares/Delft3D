@@ -322,6 +322,7 @@ module m_flowparameters
    real(kind=dp) :: zkdropstep !< Amount of bottomlevel to be added with dropland (m)
    real(kind=dp) :: sdropstep !< Amount of water to be added with dropwater (m)
 
+   real(kind=dp), parameter :: eps3 = 1d-3 !< min value in storage_area check
    real(kind=dp), parameter :: eps4 = 1d-4 !< min au in poshchk
    real(kind=dp), parameter :: eps6 = 1d-6 !<
    real(kind=dp), parameter :: eps8 = 1d-8 !< implicit diffusion

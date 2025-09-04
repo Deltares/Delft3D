@@ -229,17 +229,6 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Temperatur","SwitchTemp",   7,"Y","x",1
 "Temperatur","FactRcHeat",   8,"Y","x",1
 "Temperatur","ZHeatExch ",   9,"Y","x",1
-"Temperatur","SwTempDF  ",  10,"Y","x",1
-"Temperatur","SwEmersion",  11,"Y","x",1
-"Temperatur","LocSedDept",  12,"Y","x",1
-"Temperatur","ThSedDT   ",  13,"Y","x",1
-"Temperatur","RadSurf   ",  14,"N","x",1
-"Temperatur","RadMax    ",  15,"Y","x",1
-"Temperatur","RTradmax  ",  16,"Y","x",1
-"Temperatur","DelTradmax",  17,"Y","x",1
-"Temperatur","DelTev    ",  18,"Y","x",1
-"Temperatur","DelTrad   ",  19,"N"," ",1
-"Temperatur","AirTemp   ",  20,"Y","x",1
 "Salinchlor","Cl        ",   1,"Y","x",1
 "Salinchlor","Temp      ",   2,"Y","x",1
 "Salinchlor","SWSalCl   ",   3,"Y","x",1
@@ -3464,26 +3453,6 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "CalVSALG30","Salinity  ",   7,"Y","x",1
 "CalVSALG30","SMax      ",   8,"Y","x",1
 "CalVSALG30","EnhSdAlg30",   9,"Y","x",1
-"Res_Pickup","IM1S2     ",   1,"Y","x",1
-"Res_Pickup","IM2S2     ",   2,"Y","x",1
-"Res_Pickup","IM3S2     ",   3,"Y","x",1
-"Res_Pickup","Tau       ",   4,"N","x",1
-"Res_Pickup","TauShields",   5,"Y","x",1
-"Res_Pickup","GRAIN50   ",   6,"Y","x",1
-"Res_Pickup","GRAV      ",   7,"Y","x",1
-"Res_Pickup","KinViscos ",   8,"Y","x",1
-"Res_Pickup","PowNS2Pup ",   9,"Y","x",1
-"Res_Pickup","RHOSAND   ",  10,"Y","x",1
-"Res_Pickup","RhoWater  ",  11,"N","x",1
-"Res_Pickup","PORS2     ",  12,"Y","x",1
-"Res_Pickup","ThickS2   ",  13,"Y","x",1
-"Res_Pickup","Surf      ",  14,"N","x",1
-"Res_Pickup","Depth     ",  15,"N","x",1
-"Res_Pickup","DELT      ",  16,"N","x",1
-"Res_Pickup","MinDepth  ",  17,"Y","x",1
-"Res_Pickup","MaxResPup ",  18,"Y","x",1
-"Res_Pickup","FactResPup",  19,"Y","x",1
-"Res_Pickup","SWfrIMS2  ",  20,"Y","x",1
 "Res_Buffer","IM1S2     ",   1,"Y","x",1
 "Res_Buffer","IM2S2     ",   2,"Y","x",1
 "Res_Buffer","IM3S2     ",   3,"Y","x",1
@@ -3517,6 +3486,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Res_Buffer","TaucRS1IM3",  31,"Y","x",1
 "Res_Buffer","DMS1      ",  32,"Y","x",1
 "Res_Buffer","DMS2      ",  33,"Y","x",1
+"Res_Buffer","SwResBuf  ",  34,"Y","x",1
 "Sed_IM1   ","IM1       ",   1,"N","x",1
 "Sed_IM1   ","ZSedIM1   ",   2,"Y","x",1
 "Sed_IM1   ","VSedIM1   ",   3,"Y","x",1
@@ -4442,6 +4412,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Res_DM    ","MinDepth  ",  10,"Y","x",1
 "Res_DM    ","Surf      ",  11,"N","x",1
 "Res_DM    ","SWResusp  ",  12,"Y"," ",1
+"Res_DM    ","SWResBuf  ",  13,"Y"," ",1
 "Bur_DM    ","fSedDM    ",   1,"N","x",1
 "Bur_DM    ","fResS1DM  ",   2,"Y","x",1
 "Bur_DM    ","fResS2DM  ",   3,"Y","x",1
@@ -4678,7 +4649,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "S12TraIM1 ","SWDigS2   ",  14,"Y","x",1
 "S12TraIM1 ","Depth     ",  15,"N","x",1
 "S12TraIM1 ","SedZoneSW ",  16,"Y"," ",1
-"S12TraIM1 ","SWResIM1  ",  17,"Y"," ",1
+"S12TraIM1 ","SwResBuf  ",  17,"Y","x",1
 "S12TraIM1 ","SWResusp  ",  18,"Y"," ",1
 "S12TraIM1 ","IM1S1     ",  19,"Y"," ",1
 "S12TraIM1 ","IM1S2     ",  20,"Y"," ",1
@@ -4705,7 +4676,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "S12TraIM2 ","SWDigS2   ",  14,"Y","x",1
 "S12TraIM2 ","Depth     ",  15,"N","x",1
 "S12TraIM2 ","SedZoneSW ",  16,"Y"," ",1
-"S12TraIM2 ","SWResIM2  ",  17,"Y"," ",1
+"S12TraIM2 ","SwResBuf  ",  17,"Y","x",1
 "S12TraIM2 ","SWResusp  ",  18,"Y"," ",1
 "S12TraIM2 ","IM2S1     ",  19,"Y"," ",1
 "S12TraIM2 ","IM2S2     ",  20,"Y"," ",1
@@ -4732,7 +4703,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "S12TraIM3 ","SWDigS2   ",  14,"Y","x",1
 "S12TraIM3 ","Depth     ",  15,"N","x",1
 "S12TraIM3 ","SedZoneSW ",  16,"Y"," ",1
-"S12TraIM3 ","SWResIM3  ",  17,"Y"," ",1
+"S12TraIM3 ","SwResBuf  ",  17,"Y","x",1
 "S12TraIM3 ","SWResusp  ",  18,"Y"," ",1
 "S12TraIM3 ","IM3S1     ",  19,"Y"," ",1
 "S12TraIM3 ","IM3S2     ",  20,"Y"," ",1
@@ -15200,6 +15171,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "AtmDep_Ecl","sw2AtmDEcl",   5,"Y","x",1
 "AtmDep_Ecl","DELT      ",   6,"N","x",1
 "AttribOut ","AttribIdx ",   1,"Y","x",1
+"AttribOut ","SwEmersion",   2,"Y","x",1
 "Cascade   ","Cascade1  ",   1,"N","x",1
 "Cascade   ","Cascade2  ",   2,"Y","x",1
 "Cascade   ","Cascade3  ",   3,"Y","x",1

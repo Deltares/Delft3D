@@ -179,7 +179,6 @@ procid,procco,procfo,procnm
 "CalVSALG28",123,"CALSED    ","Sedimentation velocity ALG28 = f (Temp SS Sal)    "
 "CalVSALG29",123,"CALSED    ","Sedimentation velocity ALG29 = f (Temp SS Sal)    "
 "CalVSALG30",123,"CALSED    ","Sedimentation velocity ALG30 = f (Temp SS Sal)    "
-"Res_Pickup",123,"RESPUP    ","Resuspension S2 van Rijn pick-up                  "
 "Res_Buffer",123,"RESBUF    ","Resuspension for buffer model                     "
 "Sed_IM1   ",123,"SEDIM     ","Sedimentation IM1                                 "
 "Sed_IM2   ",123,"SEDIM     ","Sedimentation IM2                                 "

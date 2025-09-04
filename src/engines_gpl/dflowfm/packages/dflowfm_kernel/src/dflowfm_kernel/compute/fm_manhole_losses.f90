@@ -60,13 +60,14 @@ contains
    subroutine calculate_manhole_losses(storS, advi)
 
       use m_storage, only: t_storage_set, t_storage
-      use m_flowgeom, only: nd, dxi
+      use m_flowgeom, only: nd, dxi, kcu
       use m_flow, only: u1, au
       use m_tables, only: hasTableData, interpolate
       use precision, only: comparereal
       use m_sferic, only: pi
       use m_physcoef, only: ag
       use gridoperations, only: dlinkangle
+      use m_flowparameters, only: eps6
 
       type(t_storage_set), intent(in) :: storS !<  set of storage nodes that contain manhole parameters
       real(kind=dp), allocatable, intent(inout) :: advi(:) !<  advection implicit part (1/s), energy losses are applied here.
@@ -92,6 +93,10 @@ contains
          if (hasTableData(pstor%angle_loss)) then
             q_temp = 0
             do iL = 1, nd(nod)%lnx
+               if (kcu(abs(nd(nod)%ln(iL))) /=1) then
+                  cycle
+               end if
+            
                call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
                reference_angle = 0_dp
                if (q_manhole_to_pipe > 0_dp .and. q_manhole_to_pipe > q_temp) then !we want the link with the biggest discharge as reference_angle
@@ -104,6 +109,10 @@ contains
                !Calculate bend loss K value
                count = 0
                do iL = 1, nd(nod)%lnx
+                  if (kcu(abs(nd(nod)%ln(iL))) /=1) then
+                     cycle
+                  end if
+
                   call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
                   if (q_manhole_to_pipe < 0) then
                      angle = abs(dlinkangle(ln2lne_signed(nd(nod)%ln(iL))) - reference_angle(i)) * 180 / pi
@@ -129,6 +138,9 @@ contains
             total_outflow_from_manhole_area = 0_dp
             total_inflow_to_manhole_area = 0_dp
             do iL = 1, nd(nod)%lnx
+               if (kcu(abs(nd(nod)%ln(iL))) /=1) then
+                  cycle
+               end if
                call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
                if (q_manhole_to_pipe > 0_dp) then
                   total_outflow_from_manhole_area = total_outflow_from_manhole_area + au(L)
@@ -162,6 +174,9 @@ contains
             v_squared_inflow_to_manhole = 0_dp
             count = 0
             do iL = 1, nd(nod)%lnx
+               if (kcu(abs(nd(nod)%ln(iL))) /=1) then
+                  cycle
+               end if
                call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
                if (q_manhole_to_pipe > 0) then
                   energy_loss_total = energy_loss_total + 0.5_dp * (k_exp + pstor%entrance_loss) * u1(L)**2 / ag
@@ -173,22 +188,27 @@ contains
                end if
             end do
             k_correction = 0.0_dp
-            if (.not. comparereal(v_squared_outflow_from_manhole, 0.0_dp )) then
+            if (comparereal(v_squared_outflow_from_manhole, eps6 ) ==1) then
                ! No need to apply losses when outflow is equal to 0. (prevent division by zero)
                factor = 2_dp * ag
                minimal_energy_loss = 0.05_dp * v_squared_outflow_from_manhole /factor
                maximal_energy_loss = (v_squared_inflow_to_manhole + 0.5_dp * v_squared_outflow_from_manhole) / factor
                required_energy_loss = min ( max(minimal_energy_loss, energy_loss_total), maximal_energy_loss)
                k_correction = (required_energy_loss - energy_loss_total) * factor / v_squared_outflow_from_manhole
+            else 
+               k_correction = 0.0_dp
             end if
 
             !Apply losses to ADVI
             do iL = 1, nd(nod)%lnx
+               if (kcu(abs(nd(nod)%ln(iL))) /=1) then
+                  cycle
+               end if
                call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
                if (q_manhole_to_pipe > 0) then
-                  advi(L) = advi(L) + 0.5_dp * (k_correction + k_exp + pstor%entrance_loss) * u1(L) * dxi(L)
+                  advi(L) = advi(L) + 0.5_dp * (k_correction + k_exp + pstor%entrance_loss) * abs(u1(L)) * dxi(L)
                else
-                  advi(L) = advi(L) + 0.5_dp * (k_bend(count, i) - k_exp + pstor%exit_loss) * u1(L) * dxi(L)
+                  advi(L) = advi(L) + 0.5_dp * (k_bend(count, i) - k_exp + pstor%exit_loss) * abs(u1(L)) * dxi(L)
                end if
             end do
          end if

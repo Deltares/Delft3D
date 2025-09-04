@@ -100,19 +100,6 @@ contains
                     switch = process_space_real(ip(16))
                     iswres = nint(process_space_real(ip(17)))
                     !     if iswres = 1 then the resuspension flux is independent of the other fractions and calculated here
-                    if (iswres == 1) then
-                        call get_log_unit_number(lunrep)
-                        write(lunrep, *) "Please remove processes S12TraIMx from your  &
-                                sub-file, and use the Res_Pickup process instead."
-                        write(*, *) "Please remove processes S12TraIMx from your  &
-                                sub-file, and use the Res_Pickup process instead."
-                        call stop_with_error()
-                    else
-                        fracs1_res = fracs1
-                        fracs2_res = fracs2
-                        scals1_res = scals1
-                        scals2_res = scals2
-                    endif
 
                     !***********************************************************************
                     !**** Processes connected to the BURIAL and DIGGING
@@ -121,8 +108,10 @@ contains
                     !     RESUSPENSION
                     R1 = 0.0
                     R2 = 0.0
-                    IF (FRACS1_RES * SCALS1_RES >= 0.0) R1 = FRESS1 * FRACS1_RES * SCALS1_RES
-                    IF (FRACS2_RES * SCALS2_RES >= 0.0) R2 = FRESS2 * FRACS2_RES * SCALS2_RES
+                    if (iswres /= 1) then
+                       IF (FRACS1 * SCALS1 >= 0.0) R1 = FRESS1 * FRACS1 * SCALS1
+                       IF (FRACS2 * SCALS2 >= 0.0) R2 = FRESS2 * FRACS2 * SCALS2
+                    end if
 
                     !     BURIAL
                     B1 = 0.0

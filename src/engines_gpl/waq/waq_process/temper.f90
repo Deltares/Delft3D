@@ -102,8 +102,7 @@ contains
         REAL(kind = real_wp) :: RTRAD              ! rate of temperature increase due to solar radiation      [oC/d]
 
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7, IP8, IP9, IP10, &
-                IP11, IP12, IP13, IP14, IP15, IP16, IP17, IP18, IP19, IP20, &
-                IP21, IP22, IP23, IP24
+                IP11, IP12, IP13
         INTEGER(kind = int_wp) :: IFLUX, ISEG, IKMRK2
 
         IP1 = IPOINT(1)
@@ -119,17 +118,6 @@ contains
         IP11 = IPOINT(11)
         IP12 = IPOINT(12)
         IP13 = IPOINT(13)
-        IP14 = IPOINT(14)
-        IP15 = IPOINT(15)
-        IP16 = IPOINT(16)
-        IP17 = IPOINT(17)
-        IP18 = IPOINT(18)
-        IP19 = IPOINT(19)
-        IP20 = IPOINT(20)
-        IP21 = IPOINT(21)
-        IP22 = IPOINT(22)
-        IP23 = IPOINT(23)
-        IP24 = IPOINT(24)
         !
         IFLUX = 0
         DO ISEG = 1, num_cells
@@ -192,49 +180,14 @@ contains
                 ENDIF
             ENDIF
 
-            !        Temperature increase due to emersion
-
-            SWTEMPDF = NINT(process_space_real(IP10))
-
-            IF (SWTEMPDF == 1) THEN
-
-                SWEMERSION = NINT(process_space_real(IP11))
-
-                IF (SWEMERSION == 1) THEN
-
-                    LOCSEDDEPT = process_space_real(IP12)
-                    THSEDDT = process_space_real(IP13)
-
-                    IF (LOCSEDDEPT <= THSEDDT) THEN
-
-                        DELT = process_space_real(IP6)
-                        RAD = process_space_real(IP14)
-                        RADMAX = process_space_real(IP15)
-                        RTRADMAX = process_space_real(IP16)
-                        DELTRADMAX = process_space_real(IP17)
-                        DELTEV = process_space_real(IP18)
-                        DELTRAD = process_space_real(IP19)
-                        TMPAIR  = process_space_real(IP20)
-
-                        TREQ = DELTRADMAX * RAD / RADMAX
-                        RTRAD = RTRADMAX * RAD / RADMAX
-                        DELTRAD = MIN(DELT * RTRAD + DELTRAD, TREQ)
-
-                        TTEMP = TMPAIR + DELTRAD - DELTEV
-
-                    ENDIF
-
-                ENDIF
-
-            ENDIF
             !
             !        Output flux, temp, surtemp, heat exchage and temperature increase due to radiation
             !
             FL(1 + IFLUX) = WFLUX
-            process_space_real (IP21) = WEXCH
-            process_space_real (IP22) = TTEMP
-            process_space_real (IP23) = ETEMP
-            process_space_real (IP24) = DELTRAD
+            process_space_real (IP10) = WEXCH
+            process_space_real (IP11) = TTEMP
+            process_space_real (IP12) = ETEMP
+            process_space_real (IP13) = DELTRAD
             !
             IFLUX = IFLUX + NOFLUX
             IP1 = IP1 + INCREM (1)
@@ -250,17 +203,6 @@ contains
             IP11 = IP11 + INCREM (11)
             IP12 = IP12 + INCREM (12)
             IP13 = IP13 + INCREM (13)
-            IP14 = IP14 + INCREM (14)
-            IP15 = IP15 + INCREM (15)
-            IP16 = IP16 + INCREM (16)
-            IP17 = IP17 + INCREM (17)
-            IP18 = IP18 + INCREM (18)
-            IP19 = IP19 + INCREM (19)
-            IP20 = IP20 + INCREM (20)
-            IP21 = IP21 + INCREM (21)
-            IP22 = IP22 + INCREM (22)
-            IP23 = IP23 + INCREM (23)
-            IP24 = IP24 + INCREM (24)
             !
         end do
         !
