@@ -115,7 +115,7 @@ object LinuxBuild : BuildType({
                     --github-token "%github_deltares-service-account_access_token%" \
                     --teamcity-token "%svc_teamcity_github_delft3d_access_token%" \
                     --teamcity-project-id "${DslContext.projectId}" \
-                    --teamcity-build-config-id "${id.value}" \
+                    --teamcity-build-config-id "${this.id}" \
                     --branch-name "%teamcity.build.branch%" \
                     --commit-sha "%build.vcs.number%" \
                     --poll-interval 10
