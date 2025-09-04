@@ -204,8 +204,6 @@ class TestAssertPreconditionsFunction:
             "Git connection successful",
             "Testing SSH connection...",
             "SSH connection successful",
-            f"Checking read/write access to {self.mock_context.settings.network_base_path}...",
-            f"Successfully checked for read and write access to {self.mock_context.settings.network_base_path}.",
             "Asserted all preconditions.",
             "Preconditions check completed and returned 0 errors!",
         ]
