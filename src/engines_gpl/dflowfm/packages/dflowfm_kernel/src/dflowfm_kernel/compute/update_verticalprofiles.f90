@@ -306,7 +306,7 @@ contains
                      k1 = ln(1, L); k2 = ln(2, L)
                      if (turkinws(k1) > eps20 .and. turkinws(k2) > eps20) then
                         if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                           faclax = tur_time_int_factor * min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1)) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
+                           faclax = tur_time_int_factor
                            dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * turkin0(L) + 0.5_dp * facLax * (turkinws(k1) + turkinws(k2)))
                         end if
                      end if
@@ -615,7 +615,7 @@ contains
                      k1 = ln(1, L); k2 = ln(2, L)
                      if (turepsws(k1) > eps20 .and. turepsws(k2) > eps20) then
                         if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                           faclax = tur_time_int_factor * dzu(L - Lb + 1) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
+                           faclax = tur_time_int_factor
                            dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * tureps0(L) + 0.5_dp * facLax * (turepsws(k1) + turepsws(k2)))
                         end if
                      end if
