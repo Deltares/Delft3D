@@ -259,27 +259,14 @@ contains
         endif
         !
         ! read time lags
-        ! note:
-        ! we may encounter strings instead, in that case skip
-        ! until we find an integer
         itype = 2
         call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
                 iposr, npos, cdummy, iaropt, real_output, &
                 itype, ierr2)
         if (ierr2 > 0) then
-            write (file_unit, 2101)
-            itype = 1
-            do
-                call rdtok1 (file_unit, ilun, lch, lstack, cchar, &
-                        iposr, npos, cdummy, iaropt, real_output, &
-                        itype, ierr2)
-                read(cdummy, *, iostat = ierr2) iaropt
-                if (ierr2 == 0) then
-                    exit
-                endif
-            enddo
-        endif
-
+           write (file_unit, 2101) 
+           goto 170
+        endif   
         write (file_unit, 2100) iaropt
         if (iaropt == 0) then
            goto 60
@@ -490,7 +477,7 @@ contains
         2070 format (I6, 2X, A20)
         2090 format (//, ' No active systems; no boundary conditions')
         2100 format (/, ' Time lag option:', I3)
-        2101 format (/, ' Note: Skipping superfluous boundary names')
+        2101 format (/, ' Note: Found superfluous boundary names, possibly due to incomplete Z-layer pointing')
         2110 format (' ERROR: Option not implemented')
         2120 format (' No time lags')
         2130 format (' Constant time lags without defaults')
