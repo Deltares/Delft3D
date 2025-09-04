@@ -75,13 +75,10 @@ module m_flow ! flow arrays-999
    integer, parameter :: STRCH_USER = 1
    integer, parameter :: STRCH_EXPONENT = 2
    
-   integer, parameter :: TURB_LAX_ALL = 1
-   integer, parameter :: TURB_LAX_CONNECTED = 2
-
    integer :: iturbulencemodel !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
-   real(kind=dp) :: turbulence_lax_factor = 0 !< LAX-scheme factor (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
-   integer :: turbulence_lax_horizontal = TURB_LAX_CONNECTED !< Horizontal method of turbulence_lax_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
+   real(kind=dp) :: tur_time_int_factor = 0 !< Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
+   integer :: tur_time_int_method = TURB_LAX_CONNECTED !< Where to apply tur_time_int_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
    real(kind=dp) :: sigmagrowthfactor !<layer thickness growth factor from bed up
    real(kind=dp) :: dztopuniabovez = -999d0 !< bottom level of lowest uniform layer == blmin if not specified
    real(kind=dp) :: Floorlevtoplay = -999d0 !< floor  level of top zlayer, == sini if not specified

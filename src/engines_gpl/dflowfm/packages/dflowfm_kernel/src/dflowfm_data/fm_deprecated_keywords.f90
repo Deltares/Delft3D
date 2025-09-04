@@ -40,8 +40,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'barocTerm', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'barocTimeInt', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jaDrhoDz', OBSOLETE)
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'FacLaxTurb', DEPRECATED, 'Use [Numerics] turbulenceTimeIntegrationFactor instead.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'FacLaxTurbHor', DEPRECATED, 'Use [Numerics] turbulenceTimeIntegrationMethod instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'FacLaxTurb', OBSOLETE, 'Use [Numerics] turbulenceTimeIntegrationFactor instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'FacLaxTurbHor', OBSOLETE, 'Use [Numerics] turbulenceTimeIntegrationMethod instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'FacLaxTurbVer', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Allowcoolingbelowzero', OBSOLETE, &
                                   'Consider using MDU-keyword salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')

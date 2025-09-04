@@ -152,7 +152,7 @@ contains
             znod = seq(jgrtek)
          end if
       else if (nodval == 23) then
-         znod = qin(k) ! turkinws(1,k)
+         znod = qin(k)
       else if (nodval == 24) then
          if (mxgr > 1 .and. jaceneqtr == 1) znod = grainlay(jgrtek, kk)
       else if (nodval == 25 .and. kmx > 0) then

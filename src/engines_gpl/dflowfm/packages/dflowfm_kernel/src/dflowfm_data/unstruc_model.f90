@@ -1185,8 +1185,8 @@ contains
       end if
 
       call prop_get(md_ptr, 'numerics', 'Turbulenceadvection', javakeps)
-      call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationFactor', turbulence_lax_factor)
-      call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', turbulence_lax_horizontal)
+      call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationFactor', tur_time_int_factor)
+      call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', tur_time_int_method)
       call prop_get(md_ptr, 'numerics', 'EpsTKE', epstke)
       call prop_get(md_ptr, 'numerics', 'EpsEPS', epseps)
 
@@ -3149,9 +3149,9 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Turbulenceadvection', javakeps, 'Turbulence advection (0: none, 3: horizontally explicit and vertically implicit)')
       end if
 
-      if (writeall .or. (turbulence_lax_factor > 0 .and. kmx > 0)) then
-         call prop_set(prop_ptr, 'numerics', 'turbulenceTimeIntegrationFactor', turbulence_lax_factor, '[0.0 - 1.0] for turbulent quantities (0.0: Tur0 from links (default), 1.0: Tur0 maximal mix of values from links with nodes)')
-         call prop_set(prop_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', turbulence_lax_horizontal, 'Apply turbulenceTimeIntegrationFactor (1: to all cells, 2: only when vertical layers are horizontally connected (default))')
+      if (writeall .or. (tur_time_int_factor > 0 .and. kmx > 0)) then
+         call prop_set(prop_ptr, 'numerics', 'turbulenceTimeIntegrationFactor', tur_time_int_factor, '[0.0 - 1.0] for turbulent quantities (0.0: Tur0 from links, 1.0: Tur0 maximal mix of values from links with nodes)')
+         call prop_set(prop_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', tur_time_int_method, 'Apply turbulenceTimeIntegrationFactor (1: to all cells, 2: only when vertical layers are horizontally connected)')
       end if
 
       if (writeall .or. (epstke > 1.0e-32_dp .and. kmx > 0)) then

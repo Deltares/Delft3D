@@ -50,7 +50,7 @@ contains
                         eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, epstke, kmxl, &
                         c1e, c1t, c2t, c9of1, eps6, epseps, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
-                        vicwws, kmxx, turbulence_lax_factor, eps20, turbulence_lax_horizontal, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
+                        vicwws, kmxx, tur_time_int_factor, eps20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
                         rhomean, idensform, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax
       use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
@@ -298,15 +298,15 @@ contains
                ck(0:kxL) = 0.0_dp
                dk(0:kxL) = dtiL * turkin0(Lb0:Lt)
 
-               if (turbulence_lax_factor > 0) then
+               if (tur_time_int_factor > 0) then
                   ! Apply horizontal coupling of turkin with care:
-                  ! - turbulence_lax_factor is scaled with a ratio denoting the actual overlap of layer k in cells k1 and k2
+                  ! - tur_time_int_factor is scaled with a ratio denoting the actual overlap of layer k in cells k1 and k2
                   ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
                   do L = Lb, Lt - 1
                      k1 = ln(1, L); k2 = ln(2, L)
                      if (turkinws(k1) > eps20 .and. turkinws(k2) > eps20) then
-                        if (turbulence_lax_horizontal == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                           faclax = turbulence_lax_factor * min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1)) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
+                        if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                           faclax = tur_time_int_factor * min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1)) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
                            dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * turkin0(L) + 0.5_dp * facLax * (turkinws(k1) + turkinws(k2)))
                         end if
                      end if
@@ -607,15 +607,15 @@ contains
                ! Vertical diffusion; Neumann condition on surface;
                ! Dirichlet condition on bed ; teta method:
 
-               if (turbulence_lax_factor > 0) then
+               if (tur_time_int_factor > 0) then
                   ! Apply horizontal coupling of tureps with care:
-                  ! - turbulence_lax_factor is scaled with a ratio denoting the actual overlap of layer k in cells k1 and k2
+                  ! - tur_time_int_factor is scaled with a ratio denoting the actual overlap of layer k in cells k1 and k2
                   ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
                   do L = Lb, Lt - 1
                      k1 = ln(1, L); k2 = ln(2, L)
                      if (turepsws(k1) > eps20 .and. turepsws(k2) > eps20) then
-                        if (turbulence_lax_horizontal == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                           faclax = turbulence_lax_factor * dzu(L - Lb + 1) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
+                        if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
+                           faclax = tur_time_int_factor * dzu(L - Lb + 1) / max(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1))
                            dk(L - Lb + 1) = dtiL * ((1.0_dp - facLax) * tureps0(L) + 0.5_dp * facLax * (turepsws(k1) + turepsws(k2)))
                         end if
                      end if

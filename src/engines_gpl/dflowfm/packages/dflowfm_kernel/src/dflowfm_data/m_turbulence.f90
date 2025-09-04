@@ -58,6 +58,9 @@ module m_turbulence
    integer, parameter :: kmxx = 2000 !< max dim of nr of vertical layers
    integer, parameter :: mg = 4 !< max dim of nr of sediment fractions
 
+   integer, parameter :: TURB_LAX_ALL = 1
+   integer, parameter :: TURB_LAX_CONNECTED = 2
+
    real(kind=dp) :: dijdij(0:kmxx) !< dudz(k)**2+dvdz(k)**2 vertical shear squared
    real(kind=dp) :: buoflu(kmxx)
    real(kind=dp) :: bruva(kmxx)
