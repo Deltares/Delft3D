@@ -70,6 +70,8 @@ contains
       use m_paramtext
       use m_increase_grid
       use m_ini_sferic
+      use m_start_parameters, only: md_jaautostart
+
 
       real(kind=dp) :: dx
       integer :: k

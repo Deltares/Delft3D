@@ -36,7 +36,7 @@ contains
       use precision, only: dp
       use m_wearelt
       use m_devices
-      use m_partitioninfo, only: jampi
+      use m_partitioninfo, only: jampi, reduce_key
       use m_locatora
       use m_timlin
       use m_dproject
@@ -69,8 +69,7 @@ contains
             call InKeyEvent(KEY)
          else
             call InKeyEventIMM(KEY)
-!           reduce key
-!            call reduce_key(key)
+            call reduce_key(key)
          end if
       end if
 

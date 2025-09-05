@@ -41,7 +41,6 @@ module unstruc_model
    use time_module, only: ymd2modified_jul, datetimestring_to_seconds
    use dflowfm_version_module, only: getbranch_dflowfm
    use netcdf, only: nf90_double
-   use m_start_parameters, only: md_jaautostart, MD_NOAUTOSTART
    use properties, only: prop_get, prop_file, tree_create, tree_destroy
    use m_waveconst
 
@@ -278,6 +277,8 @@ contains
       use unstruc_netcdf, only: UNC_CONV_UGRID
       use unstruc_channel_flow
       use m_fm_icecover, only: fm_ice_null
+      use m_start_parameters, only: md_jaautostart, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
+      use unstruc_display, only: jagui
 
       call tree_destroy(md_ptr)
       nullify (trtdef_ptr) ! trtdef_ptr was only pointing to subtree of md_ptr, so is now a dangling pointer: model's responsibility to nullify it here.
@@ -364,8 +365,11 @@ contains
       md_nccompress = .false. !< Whether or not to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
 
       md_fou_step = 0 !< default: fourier analysis is updated on a user-timestep basis
-
-      md_jaAutoStart = MD_NOAUTOSTART !< Autostart simulation after loading or not.
+      if (jagui == 1) then
+         md_jaAutoStart = MD_NOAUTOSTART
+      else
+         md_jaAutoStart = MD_AUTOSTARTSTOP !< Autostart simulation after loading or not.
+      end if
 
       md_cfgfile = ' '
 
@@ -820,7 +824,6 @@ contains
       end if
       call prop_get(md_ptr, bnam, 'Version', tmpstr, success) ! Not used currently. Mark as read to prevent warnings.
 
-      call prop_get(md_ptr, bnam, 'AutoStart', md_jaAutoStart)
       call prop_get(md_ptr, bnam, 'InputSpecific', md_input_specific)
       call prop_get(md_ptr, bnam, 'ModelSpecific', md_specific)
       call prop_get(md_ptr, bnam, 'PathsRelativeToParent', md_paths_relto_parent)
@@ -2656,8 +2659,6 @@ contains
       tmpstr = ''
       write (tmpstr, '(i0,".",i2.2)') MDUFormatMajorVersion, MDUFormatMinorVersion
       call prop_set(prop_ptr, 'General', 'fileVersion', trim(tmpstr), 'File format version (do not edit this)')
-      call prop_set(prop_ptr, 'General', 'AutoStart', md_jaAutoStart, 'Autostart simulation after loading MDU (0: no, 1: autostart, 2: autostartstop)')
-      call prop_set(prop_ptr, 'General', 'InputSpecific', md_jaAutoStart, 'Use of hardcoded specific inputs, shall not be used by users (0: no, 1: yes)')
       call prop_set(prop_ptr, 'General', 'ModelSpecific', md_specific, 'Optional ''model specific ID'', to enable certain custom runtime function calls (instead of via MDU name).')
       call prop_set(prop_ptr, 'General', 'PathsRelativeToParent', md_paths_relto_parent, 'Default: 0. Whether or not (1/0) to resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir.')
 
