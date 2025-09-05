@@ -68,8 +68,8 @@ module m_hydmod
 
     ! open boundaries
     type t_open_boundary_line
-        integer :: ibnd                   ! boundary number
-        integer :: ibnd_new               ! renumbered boundary number (0 = inactive)
+        integer :: ibnd = 0               ! boundary number
+        integer :: ibnd_new = 0           ! renumbered boundary number (0 = inactive)
         real(kind = 8) :: x1                     ! x1
         real(kind = 8) :: y1                     ! y1
         real(kind = 8) :: x2                     ! x2

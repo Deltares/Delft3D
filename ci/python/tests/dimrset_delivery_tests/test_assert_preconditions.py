@@ -1,6 +1,5 @@
 """Tests for assert_preconditions.py."""
 
-import os
 from unittest.mock import Mock, patch
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
@@ -22,7 +21,6 @@ class TestAssertPreconditionsFunction:
         self.mock_context = Mock(spec=DimrAutomationContext)
         self.mock_context.dry_run = False
         self.mock_context.settings = Mock(spec=Settings)
-        self.mock_context.settings.network_base_path = "test_path"
         self.mock_context.settings.linux_address = "test_host"
         self.mock_context.settings.dry_run_prefix = "[TEST]"
 
@@ -32,17 +30,13 @@ class TestAssertPreconditionsFunction:
         self.mock_services.git = Mock(spec=GitClient)
         self.mock_services.ssh = Mock(spec=SshClient)
 
-    @patch("os.access")
-    @patch("os.path.exists")
-    def test_assert_preconditions_success(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
+    def test_assert_preconditions_success(self) -> None:
         """Test successful preconditions check."""
         # Arrange
         self.mock_services.teamcity.test_connection.return_value = True
         self.mock_services.atlassian.test_connection.return_value = True
         self.mock_services.ssh.test_connection.return_value = True
         self.mock_services.git.test_connection.return_value = True
-        mock_os_exists.return_value = True
-        mock_os_access.return_value = True
 
         # Act
         checker = PreconditionsChecker(self.mock_context, self.mock_services)
@@ -54,9 +48,6 @@ class TestAssertPreconditionsFunction:
         self.mock_services.atlassian.test_connection.assert_called_once()
         self.mock_services.ssh.test_connection.assert_called_once()
         self.mock_services.git.test_connection.assert_called_once()
-        mock_os_exists.assert_called_with("test_path")
-        mock_os_access.assert_any_call("test_path", os.W_OK)
-        mock_os_access.assert_any_call("test_path", os.R_OK)
 
     def test_assert_preconditions_teamcity_failure(self) -> None:
         """Test preconditions check fails when TeamCity connection fails."""
@@ -84,58 +75,6 @@ class TestAssertPreconditionsFunction:
         # Assert
         assert not result
         self.mock_context.log.assert_any_call("Failed to connect to the Atlassian REST API.", severity=LogLevel.ERROR)
-
-    @patch("os.path.exists")
-    def test_assert_preconditions_network_path_not_exists(self, mock_os_exists: Mock) -> None:
-        """Test preconditions check fails when network path does not exist."""
-        # Arrange
-        self.mock_services.teamcity.test_connection.return_value = True
-        self.mock_services.atlassian.test_connection.return_value = True
-        mock_os_exists.return_value = False
-        checker = PreconditionsChecker(self.mock_context, self.mock_services)
-
-        # Act
-        result = checker.execute_step()
-
-        # Assert
-        assert not result
-        self.mock_context.log.assert_any_call("Access check failed for test_path.", severity=LogLevel.ERROR)
-
-    @patch("os.access")
-    @patch("os.path.exists")
-    def test_assert_preconditions_network_access_failure(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
-        """Test preconditions check fails when network access fails."""
-        # Arrange
-        self.mock_services.teamcity.test_connection.return_value = True
-        self.mock_services.atlassian.test_connection.return_value = True
-        mock_os_exists.return_value = True
-        mock_os_access.return_value = False
-        checker = PreconditionsChecker(self.mock_context, self.mock_services)
-
-        # Act
-        result = checker.execute_step()
-
-        # Assert
-        assert not result
-        self.mock_context.log.assert_any_call("Access check failed for test_path.", severity=LogLevel.ERROR)
-
-    @patch("os.access")
-    @patch("os.path.exists")
-    def test_assert_preconditions_network_access_exception(self, mock_os_exists: Mock, mock_os_access: Mock) -> None:
-        """Test preconditions check fails when network access raises exception."""
-        # Arrange
-        self.mock_services.teamcity.test_connection.return_value = True
-        self.mock_services.atlassian.test_connection.return_value = True
-        mock_os_exists.return_value = True
-        mock_os_access.side_effect = OSError("Permission denied")
-        checker = PreconditionsChecker(self.mock_context, self.mock_services)
-
-        # Act
-        result = checker.execute_step()
-
-        # Assert
-        assert not result
-        self.mock_context.log.assert_any_call("Could not access test_path: Permission denied", severity=LogLevel.ERROR)
 
     @patch("os.access")
     @patch("os.path.exists")
@@ -204,8 +143,6 @@ class TestAssertPreconditionsFunction:
             "Git connection successful",
             "Testing SSH connection...",
             "SSH connection successful",
-            f"Checking read/write access to {self.mock_context.settings.network_base_path}...",
-            f"Successfully checked for read and write access to {self.mock_context.settings.network_base_path}.",
             "Asserted all preconditions.",
             "Preconditions check completed and returned 0 errors!",
         ]

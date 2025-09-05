@@ -40,7 +40,7 @@
 !> \page Unstruc Unstruc API docs
 !! Below is the flow structure of the unstructured grid flow solver when called form command line
 !! \image html Netmain_Logical_Call_sequence.svg
-!! 
+!!
 !! For BMI execution check \ref BMI_Unstruc
 !!
 !! \li \b Main \b program: net_main.f90
@@ -70,7 +70,7 @@ program unstruc
    use unstruc_model, only: md_jaopengl, md_pressakey, md_jatest, md_nruns, md_soltest, md_cfl, md_icgsolver, md_maxmatvecs, md_epsdiff, &
                             md_epscg, md_convnetcells, md_netfile, md_jasavenet, md_jamake1d2dlinks, md_japartition, md_partugrid, md_ident, md_ndomains, &
                             md_jacontiguous, md_pmethod, md_genpolygon, md_partseed, md_restartfile, md_mapfile, md_classmap_file, md_flowgeomfile, md_partitionfile, &
-                            md_jagridgen, md_jarefine, md_cutcells, md_cfgfile, md_convertlongculverts, md_jaautostart
+                            md_jagridgen, md_jarefine, md_cutcells, md_cfgfile, md_convertlongculverts
    use unstruc_netcdf, only: unc_conv_ugrid, level_info, unc_write_net
    use unstruc_api, only: flow
    use messagehandling, only: warn_flush, msgbuf, mess, msg_flush
@@ -111,7 +111,7 @@ program unstruc
    use m_pressakey, only: pressakey
    use m_fetch_operation_utils, only: set_mpi_environment_wwo_fetch_proc, finish_fetch_proc
    use m_solve_petsc, only: startpetsc
-   use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP
+   use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP, MD_NOAUTOSTART, md_jaautostart
    use unstruc_display, only: load_displaysettings
    use m_gridtonet, only: gridtonet
    use m_partitioninfo, only: partition_finalize
@@ -119,14 +119,12 @@ program unstruc
    use m_inidat, only: inidat
    use m_iset_jaopengl, only: iset_jaopengl
    use m_resetb, only: resetb
-   
+
    implicit none
 
    integer :: KEY
-
    integer :: ierr, lastmode, IDUM
    logical :: JAWEL
-
    integer :: i, L, n12
    integer :: Lrst = 0, Lmap = 0, L_merge = 0, jamergedrst = 0, Lmap1 = 0
    integer, parameter :: numlen = 4 !< number of digits in domain number string/filename
@@ -136,13 +134,9 @@ program unstruc
    character(len=maxnamelen) :: md_mapfile_base !< storing the user-defined map file
    character(len=maxnamelen) :: md_flowgeomfile_base !< storing the user-defined flowgeom file
    character(len=maxnamelen) :: md_classmapfile_base !< storing the user-defined class map file
-
-   real(kind=dp) :: tstartall, tstopall ! just checking...
+   real(kind=dp) :: tstartall, tstopall
 
    call wall_clock_time(tstartall)
-
-!  call checkunesco83()
-
 #if HAVE_DISPLAY==0
 ! For dflowfm-cli executable, switch off all GUI calls here at *runtime*,
 ! by setting jaGUI = 0.
@@ -151,25 +145,11 @@ program unstruc
 ! is done by `if (jaGUI .. )`
    jaGUI = 0 !< GUI (1) or not (0)
 #endif
-
    jampi = 0
    numranks = 1
    my_rank = 0
    ja_mpi_init_by_fm = 0
-   !INTEGER*4 OLD_FPE_FLAGS, NEW_FPE_FLAGS                                ! nanrelease
-   !NEW_FPE_FLAGS = FPE_M_TRAP_OVF + FPE_M_TRAP_DIV0 + FPE_M_TRAP_INV     ! nanrelease
-   !OLD_FPE_FLAGS = FOR_SET_FPE (NEW_FPE_FLAGS)                           ! nanrelease
-
-   ! Only run in test mode
-!    call runtests_init
-!    call runtests( unstruc_test_all )
-!    call runtests_final
-   !               1        1         2         3         4         5          6
-!   WHATST       = '@(#)   | Kernkamp Herman  ,      NETWORK, Version 1.0000; 04-07-2001'//char(0)
-!   WHATST       = '@(#)WL | Deltares,               Unstruc, Version 1.0000; 20-03-2007'//char(0)   ! Starting date
-!   WHATST       = '@(#)WL | Deltares,               Unstruc, Version 1.0011; 01-06-2009'//char(0)
    JQN = 2
-
    MMAX = 0
    NMAX = MMAX
    KMAX = MMAX * NMAX
@@ -179,7 +159,6 @@ program unstruc
    MAXLAN = 500
    MAXPOL = MAXLAN
    MAXBOAT = MAXLAN
-
    md_jaopenGL = -1 ! no commandline option read for OpenGL (yet)
 
    ierr = read_commandline()
@@ -193,22 +172,17 @@ program unstruc
    end select
 
 #ifdef HAVE_MPI
-
    ! Preparations for calling mpi_init:
    ! When using IntelMPI, mpi_init will cause a crash if IntelMPI is not
    ! installed. Do not call mpi_init in a sequential computation.
    ! Check this via the possible environment parameters.
    jampi = merge(1, 0, running_in_mpi_environment())
-
    if (jampi == 1) then
       ja_mpi_init_by_fm = 1
       call mpi_init(ierr)
       if (ierr /= 0) then
          jampi = 0
       end if
-   end if
-
-   if (jampi == 1) then
       ! From calling C/C++ side, construct an MPI communicator, and call
       ! MPI_Fint MPI_Comm_c2f(MPI_Comm comm) to convert the C comm handle
       ! to a FORTRAN comm handle.
@@ -219,10 +193,7 @@ program unstruc
       jampi = 0
    end if
    write (*, *) ' my_rank, numranks ', my_rank, numranks
-!  make domain number string as soon as possible
    write (sdmn, '(I4.4)') my_rank
-   !write(6,*) 'my_rank =', my_rank
-
 #else
    numranks = 1
 #endif
@@ -231,7 +202,6 @@ program unstruc
       call pressakey()
    end if
 
-!   set jaopengl from commandline option (if available)
    call iset_jaopengl(md_jaopengl)
    call START_PROGRAM()
    call resetFullFlowModel()
@@ -250,22 +220,18 @@ program unstruc
    if (md_jatest == 1) then
       call initimer()
       do i = 1, md_Nruns
-         !     call axpy(md_M, md_N)
       end do
 !      output timings
       write (6, '(a,E9.2,a,E9.2)') ' WC-time Axpy test [s]: ', gettimer(1, IAXPY), ' CPU-time Axpy test [s]: ', gettimer(0, IAXPY)
-
       goto 1234
    end if
 
    if (md_soltest == 1) then
       call soltest(md_CFL, md_icgsolver, md_maxmatvecs, md_epsdiff, md_epscg)
-
       goto 1234
    end if
 
    if (md_convnetcells == 1) then
-      ! call soltest(md_CFL,md_icgsolver,md_maxmatvecs,md_epsdiff,md_epscg)
       ! read net, write net ... md_netfile
       call findcells(0)
       call find1dcells()
@@ -418,24 +384,16 @@ program unstruc
 
          call DRAWNU(KEY) ! Draw model for the first time
       end if
-
-      if (md_jaAutoStart == MD_AUTOSTART .or. md_jaAutoStart >= MD_AUTOSTARTSTOP) then
-         if (md_jaAutoStart > MD_AUTOSTARTSTOP) ntek = 0
+      if (md_jaAutoStart == MD_AUTOSTART .or. md_jaAutoStart == MD_AUTOSTARTSTOP) then
          idum = FLOW()
          ! TODO: check whether all data (net/s1) is available before starting flow. [AvD]
-         if (idum == DFM_SIGINT .or. md_jaAutoStart >= MD_AUTOSTARTSTOP) then
+         if (idum == DFM_SIGINT .or. md_jaAutoStart == MD_AUTOSTARTSTOP) then
             goto 1234 ! finalize and stop
-         end if
-      else
-         if (jaGUI == 0) then
-            call mess(LEVEL_INFO, 'Model '''//trim(md_ident)//''' successfully initialized, but no run was started.')
-            call mess(LEVEL_INFO, 'Consider using commandline option --autostartstop.')
          end if
       end if
    end if
 
    if (jaGUI == 1) then
-
 10    continue
       if (MODE == 1) then
          call EDITPOL(MODE, KEY, NETFLOW)
@@ -477,8 +435,5 @@ program unstruc
    call partition_finalize()
 
    call wall_clock_time(tstopall)
-
-   !call newfil(mklok, 'wallclock')
-   !write(mklok,*) tstopall - tstartall, ' s'
 
 end program unstruc

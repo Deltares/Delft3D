@@ -50,9 +50,6 @@ class PreconditionsChecker(StepExecutorInterface):
             if not self.__are_connections_ok():
                 error_count += 1
 
-            if not self.__is_network_accessible():
-                error_count += 1
-
         except (ValueError, AssertionError) as e:
             self.context.log(f"Preconditions check failed: {str(e)}", severity=LogLevel.ERROR)
             error_count += 1
