@@ -853,15 +853,15 @@ contains
 
       !> Lax-inspired time integration method to couple turbulence quantities horizontally
       !! By using a subroutine inside "update_verticalprofiles", all parameters defined in "update_verticalprofiles" are accessible
-      subroutine apply_horizontal_coupling(tur0, turws)
-         real(kind=dp), dimension(:) :: tur0, turws
+      subroutine apply_horizontal_coupling(tur_link, tur_node)
+         real(kind=dp), dimension(:) :: tur_link, tur_node
          ! Apply horizontal coupling of turkin/tureps with care:
          ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
          do L = Lb, Lt - 1
             k1 = ln(1, L); k2 = ln(2, L)
-            if (turws(k1) > eps20 .and. turws(k2) > eps20) then
+            if (tur_node(k1) > eps20 .and. tur_node(k2) > eps20) then
                if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
-                  dk(L - Lb + 1) = dtiL * ((1.0_dp - tur_time_int_factor) * tur0(L) + 0.5_dp * tur_time_int_factor * (turws(k1) + turws(k2)))
+                  dk(L - Lb + 1) = dtiL * ((1.0_dp - tur_time_int_factor) * tur_link(L) + 0.5_dp * tur_time_int_factor * (tur_node(k1) + tur_node(k2)))
                end if
             end if
          end do
