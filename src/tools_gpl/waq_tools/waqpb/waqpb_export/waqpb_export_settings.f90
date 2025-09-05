@@ -61,24 +61,24 @@ contains
 
       parsing_error = .false.
       success = get_command_argument_by_name('--version', version, parsing_error)
-      if (.not. success) then
+      if (success) then
+         this%version = version
+         this%wrong_version = .false.
+      else
          call report_failure(parsing_error, '--version', 'real')
          this%version = generate_version()
          this%wrong_version = .true.
-      else
-         this%version = version
-         this%wrong_version = .false.
       end if
 
       parsing_error = .false.
       success = get_command_argument_by_name('--serial', serial, parsing_error)
-      if (.not. success) then
+      if (success) then
+         this%serial = serial
+         this%wrong_serial = .false.
+      else
          call report_failure(parsing_error, '--serial', 'integer')
          this%serial = generate_serial()
          this%wrong_serial = .true.
-      else
-         this%serial = serial
-         this%wrong_serial = .false.
       end if
 
       this%generate_latex_tables = is_command_arg_specified('--latex')
@@ -138,10 +138,12 @@ contains
 
       call this%show_help_base('[--version <version_number>] [--serial <serial_number>] [--latex]')
 
-      write (*, param_format) '--version <version_number>', separator, 'Overrides the default version number of this tool. If specified, a real number is expected.'
+      write (*, param_format) '--version <version_number>', separator, 'Overrides the default version number (equal to the one of DELWAQ) of this tool. If specified, a positive decimal number is expected.'
       write (*, param_format) '--serial <serial_number>', separator, 'Overrides the default serial number (generated from date and time) of this tool. If specified, an integer is expected.'
       write (*, param_format) '--latex', separator, 'Generates the LaTeX tables.'
       write (*, *)
+
+      call show_help_manual()
    end subroutine show_help
 
 end module m_waqpb_export_settings
