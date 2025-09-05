@@ -188,7 +188,6 @@ module process_registration
     use m_sedaap
     use m_plastc
     use m_s12tim
-    use m_respup
     use m_stox3d
     use m_mpbllm
     use m_sulfpr
@@ -399,7 +398,6 @@ contains
                             process_routine_info('DEBGRZ', DEBGRZ), &
                             process_routine_info('FLOCEQ', FLOCEQ), &
                             process_routine_info('DREDGE', dredge_process), &
-                            process_routine_info('RESPUP', RESPUP), &
                             process_routine_info('RESBUF', RESBUF), &
                             process_routine_info('SEDIM ', SEDIM), &
                             process_routine_info('S12TIM', S12TIM), &

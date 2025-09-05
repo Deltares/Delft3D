@@ -596,6 +596,17 @@
             endif
          enddo
       enddo
+      
+      ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
+      ! equals the number of boundary conditions per layer times the number of layers
+      if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
+         ! increase hyd%num_exchanges_u_dir and hyd%num_exchanges, and reallocate hyd%ipoint
+         hyd%num_exchanges_u_dir = hyd%num_exchanges_u_dir + 1
+         hyd%num_exchanges = hyd%num_exchanges + 1
+         call reallocP(hyd%ipoint, [4, hyd%num_exchanges] , keepExisting = .true., fill = 0)
+         ! Insert a dummy exchange as the last of the horizontal exhanges
+         hyd%ipoint(1, hyd%num_exchanges_u_dir) = -hyd%num_boundary_conditions
+      endif
 
       ! pointers in third dimension
       do iseg = 1, hyd%nosegl
@@ -986,6 +997,17 @@
             end if
          end do
       end do
+      
+      ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
+      ! equals the number of boundary conditions per layer times the number of layers
+      if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
+         ! increase hyd%num_exchanges_u_dir and hyd%num_exchanges, and reallocate hyd%ipoint
+         hyd%num_exchanges_u_dir = hyd%num_exchanges_u_dir + 1
+         hyd%num_exchanges = hyd%num_exchanges + 1
+         call reallocP(hyd%ipoint, [4, hyd%num_exchanges] , keepExisting = .true., fill = 0)
+         ! Insert a dummy exchange as the last of the horizontal exhanges
+         hyd%ipoint(1, hyd%num_exchanges_u_dir) = -hyd%num_boundary_conditions
+      endif
 
       ! pointers in third dimension
       do iseg = 1, hyd%nosegl
