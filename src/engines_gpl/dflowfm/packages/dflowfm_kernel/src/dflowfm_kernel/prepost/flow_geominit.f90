@@ -335,8 +335,13 @@ contains
 ! increase netcell admin. to include boundary nodes (safety)
       call add_boundarynetcells()
 
+      ! allocate geometry related node arrays
       if (allocated(kcs)) then
-         deallocate (nd, bl, bai, kcs, bai_mor, ba_mor) ! and allocate geometry related node arrays
+         deallocate (nd, bai, kcs, bai_mor, ba_mor)
+      end if
+      ! bl treated separately; it's also used in delete_dry_points_and_areas
+      if (allocated(bl)) then
+         deallocate (bl)
       end if
       allocate (nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx), stat=ierr)
       call aerr('nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx)', ierr, 8 * ndx); kcs = 1
