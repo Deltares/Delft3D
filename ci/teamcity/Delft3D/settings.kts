@@ -149,6 +149,12 @@ project {
             userName = "%delft3d-user%"
             password = "%delft3d-secret%"
         }
+        feature {
+            type = "OAuthProvider"
+            param("displayName", "Keeper Vault Delft3d")
+            param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
+            param("providerType", "teamcity-ksm")
+        }
         awsConnection {
             id = "doc_download_connection"
             name = "Deltares MinIO connection"
@@ -159,12 +165,6 @@ project {
             }
             allowInSubProjects = true
             allowInBuilds = true
-        }
-        feature {
-            type = "OAuthProvider"
-            param("displayName", "Keeper Vault Delft3d")
-            param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
-            param("providerType", "teamcity-ksm")
         }
     }
 }
