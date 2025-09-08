@@ -349,7 +349,7 @@ contains
       end if
 
       ! When we aggregate to 2D, then the new %layertype should change/remain -1, and we don't need to aggregate the layers any more and return.
-      if (no_aggregation) then
+      if (to_2D) then
          output%num_layers = 0
          success = .true.
          return

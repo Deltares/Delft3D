@@ -94,8 +94,8 @@ contains
       type(t_ug_meshgeom) :: input_s !< The layers and interfaces to be aggregated (sigma).
       type(t_ug_meshgeom) :: input_z !< The layers and interfaces to be aggregated (z).
       type(t_ug_meshgeom) :: input_zs !< The layers and interfaces to be aggregated (z-sigma).
-      type(t_ug_meshgeom) :: output !< Aggregated layers and interfaces.
-      type(t_ug_meshgeom) :: expected_output !< Aggregated layers and interfaces.
+      type(t_ug_meshgeom), dimension(11) :: output !< Aggregated layers and interfaces.
+      type(t_ug_meshgeom), dimension(11) :: expected_output !< Aggregated layers and interfaces.
       integer, dimension(7,20) :: layer_mapping_table !< Mapping table flow cells -> waq cells.
       logical :: success !< Result status, true if successful.
       logical :: is_equal !< Result status, true if successful.
@@ -153,49 +153,79 @@ contains
       ! 7) layer mapping is decreasing
       layer_mapping_table(7,:) = [1, 1, 2, 1, 2, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
 
-      ! in total this results in 12 combined test cases, of which one is expected to fail (assert_true(.not.success, 'failure expected'))
+      ! in total this results in 10 combined test cases, of which the last one is expected to fail (assert_true(.not.success, 'failure expected'))
       ! and 5 test cases with erroneous layer mapping tables (all expected to fail)
       
-      ! Layer mapping table is too short
-      success = aggregate_ugrid_layers_interfaces(input_s, output, [(i, i=1, 19)])
-      call assert_true(.not. success, 'No error when layer mapping table is too short.')
-
-      ! Layer mapping table is too long
-      success = aggregate_ugrid_layers_interfaces(input_s, output, [(i, i=1, 21)])
-      call assert_true(.not. success, 'No error when layer mapping table is too long.')
-
-      ! Layer mapping doesn't start with 1
-      success = aggregate_ugrid_layers_interfaces(input_s, output, layer_mapping_table(5,:))
-      call assert_true(.not. success, 'No error when layer mapping table does not start with one.')
-
-      ! Layer mapping is increasing by more than one
-      success = aggregate_ugrid_layers_interfaces(input_s, output, layer_mapping_table(6,:))
-      call assert_true(.not. success, 'No error when layer mapping table increases with a step of more than one.')
+      ! Testing no aggregation
+      ! ======================
       
-      ! Layer mapping is decreasing
-      success = aggregate_ugrid_layers_interfaces(input_s, output, layer_mapping_table(7,:))
-      call assert_true(.not. success, 'No error when layer mapping table has a decreasing step.')
-
       ! Sigma-layers without aggregation
-      expected_output = input_s
-      success = aggregate_ugrid_layers_interfaces(input_s, output, layer_mapping_table(1,:))
-      is_equal = compare_ugrid_layers_interfaces(output, expected_output, tolerance)
+      expected_output(1) = input_s
+      success = aggregate_ugrid_layers_interfaces(input_s, output(1), layer_mapping_table(1,:))
+      is_equal = compare_ugrid_layers_interfaces(output(1), expected_output(1), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for sigma-layers without aggregation.')
 
       ! Z-layers without aggregation
-      expected_output = input_z
-      success = aggregate_ugrid_layers_interfaces(input_z, output, layer_mapping_table(1,:))
-      is_equal = compare_ugrid_layers_interfaces(output, expected_output, tolerance)
+      expected_output(2) = input_z
+      success = aggregate_ugrid_layers_interfaces(input_z, output(2), layer_mapping_table(1,:))
+      is_equal = compare_ugrid_layers_interfaces(output(2), expected_output(2), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for z-layers without aggregation.')
 
       ! Z-sigma-layers without aggregation
-      expected_output = input_zs
-      success = aggregate_ugrid_layers_interfaces(input_zs, output, layer_mapping_table(1,:))
-      is_equal = compare_ugrid_layers_interfaces(output, expected_output, tolerance)
+      expected_output(3) = input_zs
+      success = aggregate_ugrid_layers_interfaces(input_zs, output(3), layer_mapping_table(1,:))
+      is_equal = compare_ugrid_layers_interfaces(output(3), expected_output(3), tolerance)
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for z-sigma-layers without aggregation.')
+
+      ! Testing 3D to 2D
+      ! ================
+      
+      ! Sigma-layers without aggregation
+      expected_output(4)%num_layers = 0
+      success = aggregate_ugrid_layers_interfaces(input_s, output(4), layer_mapping_table(2,:))
+      is_equal = compare_ugrid_layers_interfaces(output(4), expected_output(4), tolerance)
+      call assert_true(success .and. is_equal, &
+                       'Error in aggregation of layers and interfaces for sigma-layers without aggregation.')
+
+      ! Z-layers without aggregation
+      expected_output(5)%num_layers = 0
+      success = aggregate_ugrid_layers_interfaces(input_z, output(5), layer_mapping_table(2,:))
+      is_equal = compare_ugrid_layers_interfaces(output(5), expected_output(5), tolerance)
+      call assert_true(success .and. is_equal, &
+                       'Error in aggregation of layers and interfaces for z-layers without aggregation.')
+
+      ! Z-sigma-layers without aggregation
+      expected_output(6)%num_layers = 0
+      success = aggregate_ugrid_layers_interfaces(input_zs, output(6), layer_mapping_table(2,:))
+      is_equal = compare_ugrid_layers_interfaces(output(6), expected_output(6), tolerance)
+      call assert_true(success .and. is_equal, &
+                       'Error in aggregation of layers and interfaces for z-sigma-layers without aggregation.')
+
+      ! Layer mapping table testing
+      ! ===========================
+
+      ! Layer mapping table is too short
+      success = aggregate_ugrid_layers_interfaces(input_s, output(11), [(i, i=1, 19)])
+      call assert_true(.not. success, 'No error when layer mapping table is too short.')
+
+      ! Layer mapping table is too long
+      success = aggregate_ugrid_layers_interfaces(input_s, output(11), [(i, i=1, 21)])
+      call assert_true(.not. success, 'No error when layer mapping table is too long.')
+
+      ! Layer mapping doesn't start with 1
+      success = aggregate_ugrid_layers_interfaces(input_s, output(11), layer_mapping_table(5,:))
+      call assert_true(.not. success, 'No error when layer mapping table does not start with one.')
+
+      ! Layer mapping is increasing by more than one
+      success = aggregate_ugrid_layers_interfaces(input_s, output(11), layer_mapping_table(6,:))
+      call assert_true(.not. success, 'No error when layer mapping table increases with a step of more than one.')
+      
+      ! Layer mapping is decreasing
+      success = aggregate_ugrid_layers_interfaces(input_s, output(11), layer_mapping_table(7,:))
+      call assert_true(.not. success, 'No error when layer mapping table has a decreasing step.')
 
       return
    end subroutine
