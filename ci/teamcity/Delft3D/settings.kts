@@ -150,6 +150,7 @@ project {
             password = "%delft3d-secret%"
         }
         feature {
+            id = "DELFT3D_KEEPER"
             type = "OAuthProvider"
             param("displayName", "Keeper Vault Delft3d")
             param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
