@@ -57,4 +57,10 @@ object TemplateValidationDocumentation : Template({
     failureConditions {
         executionTimeoutMin = 180
     }
+
+    features {
+        provideAwsCredentials {
+            awsConnectionId = "doc_download_connection"
+        }
+    }
 })

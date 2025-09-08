@@ -38,8 +38,5 @@ object ValidationDocumentMatrix : BuildType({
             id = "matrix"
             param("engine_name_and_dir", engineOptions.map { MatrixFeature.Value(it) })
         }
-        provideAwsCredentials {
-            awsConnectionId = "doc_download_connection"
-        }
     }
 })
