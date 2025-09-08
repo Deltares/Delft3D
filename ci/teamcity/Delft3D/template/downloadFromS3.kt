@@ -51,8 +51,9 @@ object TemplateDownloadFromS3 : Template({
         provideAwsCredentials {
             awsConnectionId = "doc_download_connection"
         }
-        provideKeeperCredentials {
-            connectionId = "DELFT3D_KEEPER"
+        feature {
+            type = "KeeperConnection" 
+            param("connectionId", "DELFT3D_KEEPER")
         }
     }
 })
