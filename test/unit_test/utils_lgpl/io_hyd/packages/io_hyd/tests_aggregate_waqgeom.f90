@@ -135,23 +135,23 @@ contains
       input_zs%interface_zs = [-5.0, -4.745, -4.49, -4.235, -3.98, -3.725, -3.47, -3.215, -2.96, -2.705, -2.45, &
                                -2.195, -1.94, -0.875, -0.75, -0.625, -0.5, -0.375, -0.25, -0.125, 0.0]
 
-      ! The cases should be aggregated in 4 different ways:
+      ! The cases should be aggregated in three different ways:
       ! 1) no aggregation of layers (just copy current data)
       layer_mapping_table(1,:) = [(i, i=1, 20)]
       ! 2) 3D -> 2D layers
       layer_mapping_table(2,:) = 1
-      ! 3) 20 -> 8 layers where z and sigma layers are not combined
+      ! 3) 20 -> 8 layers (where z and sigma layers are not combined when %layertype = LAYERTYPE_OCEAN_SIGMA_Z)
       layer_mapping_table(3,:) = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
-      ! 4) 20 -> 8 layers where z and sigma layers are combined (this should fail when %layertype = LAYERTYPE_OCEAN_SIGMA_Z)
-      layer_mapping_table(4,:) = [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8]
 
       ! Also test layer mapping tables with errors:
-      ! 5) layer mapping doesn't start with 1
-      layer_mapping_table(5,:) = [8, 8, 8, 7, 7, 7, 6, 6, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1]
-      ! 6) layer mapping is increasing by more than one
-      layer_mapping_table(6,:) = [1, 1, 3, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
-      ! 7) layer mapping is decreasing
-      layer_mapping_table(7,:) = [1, 1, 2, 1, 2, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
+      ! 4) layer mapping doesn't start with 1
+      layer_mapping_table(4,:) = [8, 8, 8, 7, 7, 7, 6, 6, 6, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1]
+      ! 5) layer mapping is increasing by more than one
+      layer_mapping_table(5,:) = [1, 1, 3, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
+      ! 6) layer mapping is decreasing
+      layer_mapping_table(6,:) = [1, 1, 2, 1, 2, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
+      ! 7) 20 -> 8 layers where z and sigma layers are combined (this should fail when %layertype = LAYERTYPE_OCEAN_SIGMA_Z)
+      layer_mapping_table(7,:) = [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8]
 
       ! in total this results in 10 combined test cases, of which the last one is expected to fail (assert_true(.not.success, 'failure expected'))
       ! and 5 test cases with erroneous layer mapping tables (all expected to fail)
@@ -204,28 +204,77 @@ contains
       call assert_true(success .and. is_equal, &
                        'Error in aggregation of layers and interfaces for z-sigma-layers without aggregation.')
 
+      ! Test a valid layer mapping table for all three layer types
+      ! ==========================================================
+      ! the used layer_mapping_table(3,:) = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
+      
+      ! Sigma-layers with a valid layer mapping
+      expected_output(7)%num_layers = 8
+      expected_output(7)%numtopsig = -1
+      expected_output(7)%layertype = LAYERTYPE_OCEANSIGMA
+      call reallocP(expected_output(7)%layer_zs, 8)
+      expected_output(7)%layer_zs = [-0.925, -0.775, -0.625, -0.475, -0.35, -0.25, -0.15, -0.05]
+      call reallocP(expected_output(7)%interface_zs, 9)
+      expected_output(7)%interface_zs = [-1.0, -0.85, -0.70, -0.55, -0.40, -0.30, -0.20, -0.10, 0.0]
+
+
+      success = aggregate_ugrid_layers_interfaces(input_s, output(7), layer_mapping_table(3,:))
+      is_equal = compare_ugrid_layers_interfaces(output(7), expected_output(7), tolerance)
+      call assert_true(success .and. is_equal, &
+                       'Error in aggregation of layers and interfaces for sigma-layers with a 20 to 8 layer aggregation.')
+
+      ! Z-layers  with a valid layer mapping
+      expected_output(8)%num_layers = 8
+      expected_output(8)%numtopsig = -1
+      expected_output(8)%layertype = LAYERTYPE_Z
+      call reallocP(expected_output(8)%layer_zs, 8)
+      expected_output(8)%layer_zs = [-4.6175, -3.8525, -3.0875, -2.3225, -1.685, -1.175, -0.665, -0.155]
+      call reallocP(expected_output(8)%interface_zs, 9)
+      expected_output(8)%interface_zs = [-5.0, -4.235, -3.47, -2.705, -1.94, -1.43, -0.92, -0.41, 0.1]
+      is_equal = compare_ugrid_layers_interfaces(output(8), expected_output(8), tolerance)
+      call assert_true(success .and. is_equal, &
+                       'Error in aggregation of layers and interfaces for z-layers with a 20 to 8 layer aggregation.')
+
+      ! Z-sigma-layers  with a valid layer mapping
+      expected_output(9)%num_layers = 8
+      expected_output(9)%numtopsig = 8
+      expected_output(9)%layertype = LAYERTYPE_OCEAN_SIGMA_Z
+      call reallocP(expected_output(9)%layer_zs, 8)
+      expected_output(9)%layer_zs = [-4.6175, -3.8525, -3.0875, -2.3225, -0.875, -0.625, -0.375, -0.125]
+      call reallocP(expected_output(9)%interface_zs, 9)
+      expected_output(9)%interface_zs = [-5.0, -4.235, -3.47, -2.705, -1.94, -0.75, -0.5, -0.25, 0.0]
+      success = aggregate_ugrid_layers_interfaces(input_zs, output(9), layer_mapping_table(3,:))
+      is_equal = compare_ugrid_layers_interfaces(output(9), expected_output(9), tolerance)
+      call assert_true(success .and. is_equal, &
+                       'Error in aggregation of layers and interfaces for z-sigma-layers with a 20 to 8 layer aggregation.')
+
       ! Layer mapping table testing
       ! ===========================
+      ! output(10) is a dummy, because output is not expected
 
       ! Layer mapping table is too short
-      success = aggregate_ugrid_layers_interfaces(input_s, output(11), [(i, i=1, 19)])
+      success = aggregate_ugrid_layers_interfaces(input_s, output(10), [(i, i=1, 19)])
       call assert_true(.not. success, 'No error when layer mapping table is too short.')
 
       ! Layer mapping table is too long
-      success = aggregate_ugrid_layers_interfaces(input_s, output(11), [(i, i=1, 21)])
+      success = aggregate_ugrid_layers_interfaces(input_s, output(10), [(i, i=1, 21)])
       call assert_true(.not. success, 'No error when layer mapping table is too long.')
 
       ! Layer mapping doesn't start with 1
-      success = aggregate_ugrid_layers_interfaces(input_s, output(11), layer_mapping_table(5,:))
+      success = aggregate_ugrid_layers_interfaces(input_s, output(10), layer_mapping_table(4,:))
       call assert_true(.not. success, 'No error when layer mapping table does not start with one.')
 
       ! Layer mapping is increasing by more than one
-      success = aggregate_ugrid_layers_interfaces(input_s, output(11), layer_mapping_table(6,:))
+      success = aggregate_ugrid_layers_interfaces(input_s, output(10), layer_mapping_table(5,:))
       call assert_true(.not. success, 'No error when layer mapping table increases with a step of more than one.')
       
       ! Layer mapping is decreasing
-      success = aggregate_ugrid_layers_interfaces(input_s, output(11), layer_mapping_table(7,:))
+      success = aggregate_ugrid_layers_interfaces(input_s, output(10), layer_mapping_table(6,:))
       call assert_true(.not. success, 'No error when layer mapping table has a decreasing step.')
+
+      ! Z-sigma-layers  with a invalid layer mapping
+      success = aggregate_ugrid_layers_interfaces(input_zs, output(10), layer_mapping_table(7,:))
+      call assert_true(.not.success,  'No error when merging Z and sigma layers in z-sigma-layers model.')
 
       return
    end subroutine
