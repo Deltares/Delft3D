@@ -93,7 +93,7 @@ contains
         use m_logger_helper
         USE MOD_CHEMCONST
         USE MOD_ACBW_PHSOLVERS
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
+        use physicalconsts, only : celsius_to_kelvin
 
         IMPLICIT NONE
 
@@ -120,7 +120,6 @@ contains
         REAL(kind = real_wp), PARAMETER :: CM3TOM3 = 1.0E-6
         REAL(kind = real_wp), PARAMETER :: ATMTOMICROATM = 1.0E+6
         REAL(kind = real_wp), PARAMETER :: ATMTOPA = 101325.0
-        REAL(kind = real_wp), PARAMETER :: KELVIN = real(CtoKelvin)
         REAL(kind = real_wp), PARAMETER :: R = 8.314
 
         REAL(kind = real_wp) :: SAL, TEMP, TIC, ALKA, PH_MIN, PH_MAX
@@ -236,7 +235,7 @@ contains
                     ENDIF
                     ALKA = 1E-30
                 ENDIF
-                IF (TEMP <= -KELVIN) THEN
+                IF (celsius_to_kelvin(TEMP) <= 0.0_real_wp) THEN
                     WRITE (ILUMON, *) ' WARNING: Temperature drops below 0 Kelvin', &
                             ' segment=', ISEG, ' Temp set to 15 oC (288.15 K)'
                     TEMP = 15.0E0
@@ -245,7 +244,7 @@ contains
                 !---- Process formulation ---------------------------------------
                 ! ********************************
                 ! Dissociation constants depending on temperature and salinity
-                TEMPK = TEMP + KELVIN
+                TEMPK = celsius_to_kelvin(TEMP)
 
                 ! Dissociation constant of water. DOE (1994), Zeebe and Wolf-Gladrow (2001). Total pH scale. [mol^2/kg^2 solution]
                 LNKW = 148.96502 - 13847.26 / TEMPK - 23.6521 * log(TEMPK) + &

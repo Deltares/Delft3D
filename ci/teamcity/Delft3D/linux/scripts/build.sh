@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -eo pipefail
-source /root/.bashrc
+source /opt/bashrc
 
 while [[ $# -gt 0 ]]; do
     case "$1" in

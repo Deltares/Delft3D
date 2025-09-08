@@ -115,7 +115,7 @@ contains
       volerr = 0; volerrcum = 0
 
       if (kmx > 0) then
-         call setkbotktop(1) ! dropland
+         call set_kbot_ktop(jazws0=1) ! dropland
       end if
 
       ! NOTE: vol1tot cumulation now contains an error: new bl's have not been accounted for...

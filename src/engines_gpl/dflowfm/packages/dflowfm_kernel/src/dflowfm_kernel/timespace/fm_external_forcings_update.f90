@@ -95,7 +95,7 @@ contains
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
-
+      
       integer :: i_const
 
       call timstrt('External forcings', handle_ext)
@@ -203,7 +203,7 @@ contains
 
          !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds, qstss)
          call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_discharge, time_in_seconds)
-         do i_const = 1, numconst
+         do i_const = 1,numconst
             call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_constituent_delta(i_const), time_in_seconds)
          end do
       end if
@@ -661,13 +661,13 @@ contains
 
 !> retrieve icecover
    subroutine retrieve_icecover(time_in_seconds)
-      use precision, only: dp
-      use m_fm_icecover, only: ja_icecover, ice_af, ice_h, ICECOVER_EXT
+      use precision, only: dp, fp
+      use m_fm_icecover, only: ja_icecover, ice_area_fraction, ice_thickness, ICECOVER_EXT
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
       if (ja_icecover == ICECOVER_EXT) then
-         ice_af = 0.0_dp
-         ice_h = 0.0_dp
+         ice_area_fraction = 0.0_fp
+         ice_thickness = 0.0_fp
          if (item_sea_ice_area_fraction /= ec_undef_int) then
             call get_timespace_value_by_item_and_consider_success_value(item_sea_ice_area_fraction, time_in_seconds)
          end if

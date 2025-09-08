@@ -104,7 +104,6 @@ contains
       use m_reapol_nampli, only: reapol_nampli
       use m_realan, only: realan
       use m_filez, only: doclose, newfil, message
-      use m_tecplot, only: ini_tecplot, wrinet_tecplot
 
       integer :: NUM, NWHAT, KEY
       integer :: ja, ierr
@@ -555,9 +554,6 @@ contains
                   !origial call unc_write_net(filnam, janetcell = 1, janetbnd = 0)
                   call unc_write_net('UG'//filnam, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
                   call unc_write_net(filnam, janetcell=1, janetbnd=1) ! wrinet
-               else if (nwhat == 24) then
-                  call ini_tecplot()
-                  call wrinet_tecplot(filnam)
                end if
                call MESSAGE('YOU SAVED ', filnam, ' ')
                md_netfile = ' '

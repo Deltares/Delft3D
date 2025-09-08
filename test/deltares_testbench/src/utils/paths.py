@@ -9,7 +9,7 @@ from typing import List
 
 
 # Path helpers
-class Paths(object):
+class Paths:
     # split network path in server, folder and rest with os.sep
     # input: path
     # output: server part, folder part, left over part

@@ -43,21 +43,27 @@ contains
    !> limited higher-order correction of vector data
    subroutine dslimvec(ds1x, ds1y, ds2x, ds2y, csu, snu, limtyp, dsx, dsy)
       use precision, only: dp
-      use m_flowparameters, only: jalimnor, eps10
+      use m_flowparameters, only: eps10
       use m_dslim, only: dslim
+      use m_sferic, only: jasfer3d
+
       implicit none
 
-      real(kind=dp), intent(in) :: ds1x, ds1y !< "voorslope" components
-      real(kind=dp), intent(in) :: ds2x, ds2y !< "naslope" components
-      real(kind=dp), intent(in) :: csu, snu !< orientation vector components
+      real(kind=dp), intent(in) :: ds1x !< "voorslope" x-component
+      real(kind=dp), intent(in) :: ds1y !< "voorslope" y-component
+      real(kind=dp), intent(in) :: ds2x !< "naslope" x-component
+      real(kind=dp), intent(in) :: ds2y !< "naslope" y-component
+      real(kind=dp), intent(in) :: csu !< orientation vector x-component
+      real(kind=dp), intent(in) :: snu !< orientation vector y-component
       integer, intent(in) :: limtyp !< limiter type
-      real(kind=dp), intent(out) :: dsx, dsy !< correction components
+      real(kind=dp), intent(out) :: dsx !< correction x-component
+      real(kind=dp), intent(out) :: dsy !< correction y-component
 
       real(kind=dp) :: ds1n, ds1t !< normal and tangential component, respectively
       real(kind=dp) :: ds2n, ds2t !< normal and tangential component, respectively
       real(kind=dp) :: dsn, dst
 
-      if (jalimnor == 1) then
+      if (jasfer3d == 1) then
          ds1n = csu * ds1x + snu * ds1y
          ds1t = -snu * ds1x + csu * ds1y
 

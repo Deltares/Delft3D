@@ -152,7 +152,7 @@ contains
             znod = seq(jgrtek)
          end if
       else if (nodval == 23) then
-         znod = qin(k) ! turkinepsws(1,k)
+         znod = qin(k)
       else if (nodval == 24) then
          if (mxgr > 1 .and. jaceneqtr == 1) znod = grainlay(jgrtek, kk)
       else if (nodval == 25 .and. kmx > 0) then
@@ -245,7 +245,7 @@ contains
          if (allocated(FrcInternalTides2D)) then
             znod = FrcInternalTides2D(kk)
          else
-            znod = turkinepsws(1, k)
+            znod = turkinws(k)
          end if
       else if (nodval == 47 .and. (jagrw > 0 .or. jadhyd > 0)) then
          select case (grwhydopt)

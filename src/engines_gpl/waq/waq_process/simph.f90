@@ -68,7 +68,7 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
         use m_logger_helper
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
+        USE PHYSICALCONSTS, ONLY : celsius_to_kelvin
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
@@ -78,8 +78,8 @@ contains
         !
         !     Local declarations, constants in source
         !
-        PARAMETER (MC = 12.0, MCO2 = 44.0, &
-                MHCO3 = 61.0, M3TOL = 1.0E-3, KELVIN = real(CtoKelvin))
+        REAL(kind = real_wp), PARAMETER :: MC = 12.0, MCO2 = 44.0, &
+                MHCO3 = 61.0, M3TOL = 1.0E-3
         integer(kind = int_wp), save :: nr_mes = 0     ! message count negative total carbonate
         integer(kind = int_wp), save :: nrmes2 = 0     ! message count negative salinity
         integer(kind = int_wp), save :: nrmes3 = 0     ! message count high salinity
@@ -172,7 +172,7 @@ contains
                     ENDIF
                     ALKA = 1E-30
                 ENDIF
-                IF (TEMP <= -KELVIN) THEN
+                IF (celsius_to_kelvin(TEMP) <= 0.0_real_wp) THEN
                     WRITE (ILUMON, *) ' WARNING: Temperature drops below 0 Kelvin', &
                             ' segment=', ISEG, ' Temp set to 15 oC (288.15 K)'
                     TEMP = 15
@@ -181,7 +181,7 @@ contains
                 !---- Procesformuleringen ---------------------------------------
                 ! ********************************
                 ! Dissociatieconstanten afhankelijk van temperatuur en saliniteit
-                TEMPK = TEMP + KELVIN
+                TEMPK = celsius_to_kelvin(TEMP)
 
                 ! Roy et al (1993), Millero (1995)
                 LNK1 = 290.9097 - 14554.21 / TEMPK - 45.0575 * log(TEMPK) + &

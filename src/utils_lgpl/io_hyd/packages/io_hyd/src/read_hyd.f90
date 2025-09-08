@@ -120,6 +120,7 @@
       hyd%file_sal=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
       hyd%file_tem=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
       hyd%file_vdf=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
+      hyd%file_vel=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
       hyd%file_srf=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
       hyd%file_hsrf=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
       hyd%file_lgt=t_file(' ',' ',0,ft_dat,FILE_STAT_UNOPENED)
@@ -360,6 +361,17 @@
             else
                hyd%file_vdf%name = ' '
                hyd%vdf_present = .false.
+            endif
+
+         elseif ( ctoken == velocities_file) then
+            ! vdf file
+            if ( gettoken(ctoken, ierr) .ne. 0 ) goto 900
+            if ( ctoken.ne. 'none' ) then
+               hyd%file_vel%name = trim(filpath)//ctoken
+               hyd%vel_present = .true.
+            else
+               hyd%file_vel%name = ' '
+               hyd%vel_present = .false.
             endif
 
          elseif ( ctoken == surfaces_file) then

@@ -45,7 +45,7 @@ contains
    subroutine solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
                              zws, qw, vol1, kbot, ktop, &
                              sumhorflux, fluxver, source, sink, &
-                             difsed, sigdifi, vicwws, &
+                             sigdifi, vicwws, &
                              nsubsteps, jaupdate, ndeltasteps, sed, &
                              a, b, c, d, e, sol, rhs)
       use precision, only: dp
@@ -78,36 +78,29 @@ contains
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: fluxver !< vertical fluxes
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: source !< sources
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: sink !< sinks
-      real(kind=dp), dimension(NUMCONST), intent(in) :: difsed !< scalar-specific diffusion coefficent (dicoww+difmod)
       real(kind=dp), dimension(Ndkx), intent(in) :: vicwws !< vertical eddy viscosity, NOTE: real, not double
       real(kind=dp), dimension(NUMCONST), intent(in) :: sigdifi !< 1/(Prandtl number) for heat, 1/(Schmidt number) for mass
       integer, intent(in) :: nsubsteps !< number of substeps
       integer, dimension(Ndx), intent(in) :: jaupdate !< update cell (1) or not (0)
       integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sed !< transported quantities
+
       real(kind=dp), dimension(kmx, NUMCONST) :: a, b, c, d ! work array: aj(i,j)*sed(j,k-1) + bj(i,j)*sed(j,k) + c(i,j)*sed(j,k+1) = d(i), i=k-kb+1
       real(kind=dp), dimension(kmx) :: ac, bc, cc, dc, sol, e ! work array: solution and dummy array in tridag, respectively
       real(kind=dp), dimension(NUMCONST, Ndkx) :: rhs ! work array: right-hand side, dim(NUMCONST,Ndkx)
-
       real(kind=dp) :: fluxfac, dvol1i, dvol2i
       real(kind=dp) :: dtbazi, dtba, ozmid, bruns
-
       integer :: kk, k, kb, kt, ktx, nel
       integer :: j, n
-
       real(kind=dp) :: dt_loc
       real(kind=dp) :: qw_loc
-
       real(kind=dp), parameter :: dtol = 1d-8
-
       integer(4) :: ithndl = 0
 
       if (timon) call timstrt("solve_vertical", ithndl)
 
       dt_loc = dts
-
       rhs = 0d0
-      
       ac = 0.0_dp
       bc = 0.0_dp
       cc = 0.0_dp
@@ -163,7 +156,6 @@ contains
             if (testdryflood == 2) dvol2i = 1d0 / max(vol1(k + 1), epshu * ba(kk) / max(kt - kb + 1, 1))
             dtba = dt_loc * ba(kk)
             dtbazi = dtba / max(1d-4, 0.5d0 * (zws(k + 1) - zws(k - 1))) ! another safety check
-
             ozmid = 0d0
             if (xlozmidov > 0d0) then
                if (rho(k) < rho(k - 1)) then
@@ -174,15 +166,13 @@ contains
             end if
 
             do j = 1, NUMCONST
-
                ! diffusion
                if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then ! sediment d3d
-                  fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + difsed(j)) * dtbazi
-                  !           i.w.  + vicwws/van rijn                                       + background (dicoww)
+                  fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + get_difsedw(kk, j)) * dtbazi
                else
-                  fluxfac = (sigdifi(j) * vicwws(k) + difsed(j) + ozmid) * dtbazi
+                  fluxfac = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid) * dtbazi
                   if (j == ISALT) then
-                     difwws(k) = (sigdifi(j) * vicwws(k) + difsed(j) + ozmid)
+                     difwws(k) = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid)
                   end if
                end if
 
@@ -194,7 +184,6 @@ contains
 
                ! advection
                if (thetavert(j) > 0d0) then ! semi-implicit, use central scheme
-
                   if (jased > 0 .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                      if (jased < 4) then
                         qw_loc = qw(k) - wsf(j) * a1(kk)
@@ -204,7 +193,6 @@ contains
                   else
                      qw_loc = qw(k)
                   end if
-
                   fluxfac = qw_loc * 0.5d0 * thetavert(j) * dt_loc
 
                   a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
@@ -226,7 +214,6 @@ contains
                   else
                      fluxfac = wsf(j) * a1(kk) * dt_loc
                   end if
-
                   if (fluxfac > 0d0) then
                      c(n, j) = c(n, j) - fluxfac * dvol1i
                      b(n + 1, j) = b(n + 1, j) + fluxfac * dvol2i
@@ -234,9 +221,7 @@ contains
                      b(n, j) = b(n, j) - fluxfac * dvol1i
                      a(n + 1, j) = a(n + 1, j) + fluxfac * dvol2i
                   end if
-
                end if
-
             end do
          end do
 
@@ -249,18 +234,25 @@ contains
             cc(1:nel) = c(1:nel, j)
             dc(1:nel) = d(1:nel, j)
             call tridag(ac, bc, cc, dc, e, sol, nel)
-
             sed(j, kb:kt) = sol(1:nel)
             sed(j, kt + 1:ktx) = sed(j, kt)
-
          end do
-
       end do
-
       !$OMP END PARALLEL DO
-
       if (timon) call timstop(ithndl)
-      return
    end subroutine solve_vertical
+   
+   !> Get vertical diffusivity at a given node and add constituent specific molecular diffusivity.
+   pure function get_difsedw(node_index, constituent_index) result(val)
+      use m_physcoef, only: dicoww
+      use m_transport, only: molecular_diffusion_coeff
+      use precision, only: dp
+      integer, intent(in) :: node_index !< base node index (1:Ndxi)
+      integer, intent(in) :: constituent_index !< constituent index (1:NUMCONST)
+      real(kind=dp) :: val ! return value
+
+      !total diffusivity is user specified background diffusivity plus molecular diffusivity depending on constituent
+      val = dicoww%get(node_index) + molecular_diffusion_coeff(constituent_index)
+   end function get_difsedw
 
 end module m_solve_vertical
