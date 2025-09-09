@@ -9,8 +9,9 @@ object TemplateKeeperVault : Template({
     description = "Make Keeper Vault secrets available"
 
     features {
-        provideKeeperCredentials {
-            connectionId = "KEEPER_VAULT_DELFT3D"
+        feature {
+            type = "KeeperConnection"
+            param("connectionId", "KEEPER_VAULT_DELFT3D")
         }
     }
 })
