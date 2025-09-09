@@ -940,7 +940,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="platform_specific">
+    <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="dflowfm_default">
       <path version="2025-09-09T09:15:36.025000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
@@ -1588,7 +1588,7 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f901_c206_tidal_flume_ktau_zmodel_equi_3d" ref="platform_specific">
+    <testCase name="e02_f901_c206_tidal_flume_ktau_zmodel_equi_3d" ref="dflowfm_default">
       <path version="2025-09-09T09:20:44.055000">e02_dflowfm/f901_tidal_flume/c206_tidal_flume_ktau_zmodel_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
