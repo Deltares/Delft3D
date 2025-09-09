@@ -54,15 +54,9 @@ if nargin<2
 end
 
 OrigFI = FI;
-if FI.NumDomains>1
-    if isempty(domain)
-        % continue
-    elseif domain>FI.NumDomains || domain==0
-        % continue
-    else
-        FI = FI.Partitions{domain};
-        domain = 1;
-    end
+if nargin >= 2 && load_single_partition(FI, domain)
+    FI = FI.Partitions{domain};
+    domain = 1;
 end
 
 if nargin==2
@@ -128,7 +122,7 @@ if nargin==2
             end
         end
         infileStruct = rmfield(infileStruct,'ncVarName');
-        if domain == FI.NumDomains+1
+        if load_all_partitions(FI, domain)
             for i = 1:length(infileStruct)
                 if infileStruct(i).DimFlag(M_)
                     infileStruct(i).DimFlag(M_) = inf;
@@ -230,7 +224,8 @@ else
 end
 if FI.NumDomains>1
     args = varargin;
-    if domain == FI.NumDomains+2 && ~isempty(index_m_dimension) && ~isempty(Props.Coords) && ~isempty(strfind(Props.Coords,'xy'))
+    if load_merged_partitions(FI, domain) && ...
+            ~isempty(index_m_dimension) && ~isempty(Props.Coords) && ~isempty(strfind(Props.Coords,'xy'))
         m = identify_mesh(Props.DimName{M_}, FI.MergedPartitions);
         merge_needed = ~isempty(m);
     else
@@ -268,7 +263,7 @@ if FI.NumDomains>1
     end
     if isempty(cmd)
         Data = [];
-    elseif ~merge_needed && domain == FI.NumDomains+2
+    elseif ~merge_needed && load_merged_partitions(FI, domain)
         % read non-spatial data from the first file ... should be consistent across all files and no way to merge anyway
         Data = netcdffil(FI,1,Props,cmd,args{:});
     else
@@ -2204,7 +2199,7 @@ end
 % all partitions ... no index across all partitions ... set DimFlag to inf
 % to display dimension size as ?
 %
-if domain==FI.NumDomains+1
+if load_all_domains(FI, domain)
     for i = 1:length(Out)
         if Out(i).DimFlag(M_)
             Out(i).DimFlag(M_) = inf;
@@ -3460,3 +3455,12 @@ switch Props.varid{1}
     otherwise
         ui_message('error','Unknown plot type "%s".', Props.varid{1})
 end
+
+function check = load_single_partition(FI, domain)
+check = ~isempty(domain) && domain <= FI.NumDomains;
+
+function check = load_all_partitions(FI, domain)
+check = domain == FI.NumDomains+1;
+
+function check = load_merged_partitions(FI, domain)
+check = domain == FI.NumDomains+2;
