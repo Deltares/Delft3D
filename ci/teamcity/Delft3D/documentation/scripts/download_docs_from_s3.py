@@ -3,6 +3,7 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
+import os
 
 from minio import Minio
 from minio.credentials import AWSConfigProvider
@@ -62,9 +63,12 @@ if __name__ == "__main__":
     parser.add_argument("--iso_time", required=True, help="ISO8601 time to filter files")
     args = parser.parse_args()
 
+    access_key = os.environ.get("s3_dsctestbench_accesskey")
+    secret_key = os.environ.get("s3_dsctestbench_secret")
+
     try:
         # Set up Minio client with connection pooling
-        minio_client = Minio("s3.deltares.nl", credentials=AWSConfigProvider())
+        minio_client = Minio("s3.deltares.nl", access_key=access_key, secret_key=secret_key)
 
         # Download files from MinIO
         bucket_name = "dsc-testbench"
