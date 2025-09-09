@@ -37,9 +37,5 @@ object FunctionalityDocumentMatrix : BuildType({
             id = "matrix"
             param("engine_name_and_dir", engineOptions.map { MatrixFeature.Value(it) })
         }
-        feature {
-            type = "KeeperConnection"
-            param("connectionId", "KEEPER_VAULT_DELFT3D")
-        }
     }
 })
