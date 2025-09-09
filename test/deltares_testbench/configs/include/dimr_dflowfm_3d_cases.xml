@@ -922,6 +922,24 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f202_c009_turbulence_timeintegration" ref="dflowfm_default">
+        <path version="2025-09-04T13:02:52.897000">e02_dflowfm/f202_3D_z_sigma/c009_turbulence_timeintegration</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="dflowfm/dflowfmoutput/csv_sigma_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="mesh2d_tureps1" toleranceAbsolute="0.00001" />
+                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+                    <parameter name="mesh2d_turkin1" toleranceAbsolute="0.00001" />
+                </parameters>
+            </file>
+            <file name="dflowfm/dflowfmoutput/csv_sigma_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="platform_specific">
       <path version="2025-07-15T12:34:23.916000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>

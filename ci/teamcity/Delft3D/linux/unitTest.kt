@@ -139,9 +139,9 @@ object LinuxUnitTest : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
             }
         }
-        dependency(LinuxBuild) {
+        dependency(LinuxCollect) {
             artifacts {
-                artifactRules = "oss_artifacts_lnx64_*.tar.gz!** => ."
+                artifactRules = "dimrset_lnx64_*.tar.gz!** => ."
             }
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START

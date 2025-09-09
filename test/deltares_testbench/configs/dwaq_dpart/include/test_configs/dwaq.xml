@@ -7249,7 +7249,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f10_c05_resbuf" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f10_additional_modules/c05_resbuf</path>
+        <path version="2025-08-25T11:23:00">e03_waq/f10_additional_modules/c05_resbuf</path>
         <checks>
             <file name="c05_resbuf.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7325,7 +7325,7 @@
                     <parameter name="s01IM3\*IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="s02IM3\*IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="s03IM3\*IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
-                    <parameter name="s04IM3\*IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>			
+                    <parameter name="s04IM3\*IM3" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
             <file name="deltashell_map.nc" type="netCDF">
@@ -7341,6 +7341,35 @@
                     <parameter name="mesh2d_2d_IM3S2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="mesh2d_2d_ActThS1" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="mesh2d_2d_ActThS2" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e03_f10_c09_resbuf_burial_digging" ref="dwaq_default">
+        <path version="2025-08-26T14:09:00">e03_waq/f10_additional_modules/c09_resbuf_burial_digging</path>
+        <checks>
+            <file name="test0d_im1_digbur.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="test0d_im1_digbur.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_005" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_006" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_007" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                    <parameter name="SUBST_008" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
         </checks>
