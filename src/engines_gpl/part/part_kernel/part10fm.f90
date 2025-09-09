@@ -384,30 +384,21 @@ contains
         wdirr = wdir(mpart(ipart)) * twopi / 360.0d0
         dpxwind = - wvelo(mpart(ipart)) * sin(wdirr) !TODO check the angles . for both sferical as wel as cartesian grids.
         dpywind = - wvelo(mpart(ipart)) * cos(wdirr)  ! here it is in m/s
-        wvel_sf = atan2(wvelo(mpart(ipart)), earth_radius) * raddeg_hp !wind magnitude in degrees/sec
 
         ! drag on the difference vector: cd * (wind - flow)
         ux0 = u0x(mpart(ipart)) + alphafm(mpart(ipart)) * (xpart(ipart) - xzwcell(mpart(ipart)))  ! in m/s ?
         uy0 = u0y(mpart(ipart)) + alphafm(mpart(ipart)) * (ypart(ipart) - yzwcell(mpart(ipart)))
-        ux0old = u0x(mpartold) + alphafm(mpartold) * (xpartold - xzwcell(mpartold))  ! in m/s ?
-        uy0old = u0y(mpartold) + alphafm(mpartold) * (ypartold - yzwcell(mpartold))
+
+        dwx = cdrag * (dpxwind - ux0) * dts
+        dwy = cdrag * (dpywind - uy0) * dts
 
         if (jsferic == 0) then
-            dwx = cdrag * (dpxwind - ux0) * dts
-            dwy = cdrag * (dpywind - uy0) * dts  !this is for carthesian grids.
-
             xpart(ipart) = xpartold + dwx    !cartesian
             ypart(ipart) = ypartold + dwy    !
             call part_findcellsingle(xpart(ipart), ypart(ipart), mpart(ipart), ierror)
         else
             ! if spherical then for an accurate conversion we need to calculate distances
             zpartold = zpart(ipart)
-            ux0old = atan2(ux0old, earth_radius) * raddeg_hp
-            uy0old = atan2(uy0old, earth_radius) * raddeg_hp
-            dpxwind = - wvel_sf * sin(wdirr)  ! in degrees (radians). note that the direction is from the north and defined clockwise, 0 means no x displacement
-            dpywind = - wvel_sf * cos(wdirr)
-            dwx = cdrag * (dpxwind - ux0old) * dts
-            dwy = cdrag * (dpywind - uy0old) * dts
 
             call displace_spherical( xpartold, ypartold, zpartold, &
                      dwx, dwy, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
