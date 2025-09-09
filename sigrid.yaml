@@ -1,6 +1,5 @@
 languages:
-  - name: "C"
-  - name: "Cpp"
+  - name: "cpp"
 
 scope:
   exclude:
@@ -8,4 +7,4 @@ scope:
 
   include:
     - path: "src/engines_gpl"
-      languages: ["C", "Cpp"]
+      languages: ["cpp"]
