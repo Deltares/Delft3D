@@ -1,5 +1,7 @@
 languages:
   - cpp
+  - python
+  - java
 
-include:
-  - "src/engines_gpl/**"
+exclude:
+  - "ci/**"
