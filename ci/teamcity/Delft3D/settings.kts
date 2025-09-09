@@ -19,37 +19,11 @@ project {
     params {
         param("delft3d-user", DslContext.getParameter("delft3d-user"))
         password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
+        param("s3_accesskey", "%keeper:2QeIUOj3PqQarS_ZxV1sBg/field/login%")
+        password("s3_secret", "%keeper:2QeIUOj3PqQarS_ZxV1sBg/field/password%")
 
         param("product", "dummy_value")
 
-    }
-
-    features {
-        dockerRegistry {
-            id = "DOCKER_REGISTRY_DELFT3D"
-            name = "Docker Registry Delft3d"
-            url = "https://containers.deltares.nl/"
-            userName = "%delft3d-user%"
-            password = "%delft3d-secret%"
-        }
-        feature {
-            id = "DELFT3D_KEEPER"
-            type = "OAuthProvider"
-            param("displayName", "Keeper Vault Delft3d")
-            param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
-            param("providerType", "teamcity-ksm")
-        }
-        awsConnection {
-            id = "doc_download_connection"
-            name = "Deltares MinIO connection"
-            credentialsType = static {
-                accessKeyId = "%keeper:2QeIUOj3PqQarS_ZxV1sBg/field/login%"
-                secretAccessKey = "%keeper:2QeIUOj3PqQarS_ZxV1sBg/field/password%"
-                useSessionCredentials = false
-            }
-            allowInSubProjects = true
-            allowInBuilds = true
-        }
     }
 
     template(TemplateMergeRequest)
@@ -168,4 +142,32 @@ project {
         DIMRbak,
         Publish
     )
+        
+    features {
+        dockerRegistry {
+            id = "DOCKER_REGISTRY_DELFT3D"
+            name = "Docker Registry Delft3d"
+            url = "https://containers.deltares.nl/"
+            userName = "%delft3d-user%"
+            password = "%delft3d-secret%"
+        }
+        feature {
+            id = "DELFT3D_KEEPER"
+            type = "OAuthProvider"
+            param("displayName", "Keeper Vault Delft3d")
+            param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
+            param("providerType", "teamcity-ksm")
+        }
+        awsConnection {
+            id = "doc_download_connection"
+            name = "Deltares MinIO connection"
+            credentialsType = static {
+                accessKeyId = "%s3_accesskey%"
+                secretAccessKey = "%s3_secret%"
+                useSessionCredentials = false
+            }
+            allowInSubProjects = true
+            allowInBuilds = true
+        }
+    }
 }
