@@ -68,7 +68,7 @@
       npart = 0
       rdum  = 0.0
 
-      call file_cco%open()
+      call file_cco%open(replace = .true.)
       lun    = file_cco%unit
       filtyp = file_cco%type
 

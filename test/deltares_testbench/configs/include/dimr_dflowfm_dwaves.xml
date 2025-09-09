@@ -54,6 +54,18 @@
         </checks>
     </testCase>
     <!-- ======================================================================== -->
+    <testCase name="e100_f00_c03" ref="dimr_trunk">
+        <path version="2025-07-25T14:59:00">e100_dflowfm-dwaves/f00_general/c03_append_com</path>
+        <maxRunTime>300.0</maxRunTime> <!-- seconds -->
+        <checks>
+            <file name="fm/DFM_OUTPUT_straight_coast/straight_coast_map.nc" type="NETCDF">
+                <parameters>
+                    <parameter name="mesh2d_hwav" toleranceAbsolute="0.01" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <!-- ======================================================================== -->
     <testCase name="e100_f02_c00" ref="dimr_trunk">
         <path version="2025-06-05T11:46:21.912000">e100_dflowfm-dwaves/f02_delft3d_cases/c00-test0_smallclosedbasin/dfm</path>
         <maxRunTime>40.0</maxRunTime> <!-- seconds -->
@@ -118,7 +130,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f02_c03" ref="dimr_trunk">
-        <path version="2025-06-05T15:17:05.780000">e100_dflowfm-dwaves/f02_delft3d_cases/c03-FriesianInlet_realistic/dfm</path>
+        <path version="2025-07-31T16:06:20.320000">e100_dflowfm-dwaves/f02_delft3d_cases/c03-FriesianInlet_realistic/dfm</path>
         <maxRunTime>3600.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/dflowfmoutput/r17_map.nc" type="NETCDF">
@@ -202,7 +214,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f09_c01" ref="dimr_noconfig">
-        <path version="2025-06-05T11:47:19.341000">e100_dflowfm-dwaves/f09_comwrite_intervals/c01-ti_com_dtuser_default</path>
+        <path version="2025-08-27T12:39:58.274000">e100_dflowfm-dwaves/f09_comwrite_intervals/c01-ti_com_dtuser_default</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -223,7 +235,7 @@
     </testCase>
     <!-- ======================================================================== -->	
     <testCase name="e100_f09_c02" ref="dimr_noconfig">
-        <path version="2025-06-05T11:47:24.451000">e100_dflowfm-dwaves/f09_comwrite_intervals/c02-ti_com_10xdtuser</path>
+        <path version="2025-08-27T12:39:07.757000">e100_dflowfm-dwaves/f09_comwrite_intervals/c02-ti_com_10xdtuser</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -244,7 +256,7 @@
     </testCase>
     <!-- ======================================================================== -->	
     <testCase name="e100_f09_c03" ref="dimr_noconfig">
-        <path version="2025-06-05T11:47:31.661000">e100_dflowfm-dwaves/f09_comwrite_intervals/c03-ti_com_10xdtuser_tcoms_tcome</path>
+        <path version="2025-08-27T12:39:09.390000">e100_dflowfm-dwaves/f09_comwrite_intervals/c03-ti_com_10xdtuser_tcoms_tcome</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -265,7 +277,7 @@
     </testCase>
     <!-- ======================================================================== -->
     <testCase name="e100_f09_c04" ref="dimr_noconfig">
-        <path version="2025-06-05T11:47:38.693000">e100_dflowfm-dwaves/f09_comwrite_intervals/c04-comtimevector</path>
+        <path version="2025-08-27T12:39:10.929000">e100_dflowfm-dwaves/f09_comwrite_intervals/c04-comtimevector</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">
@@ -286,7 +298,7 @@
     </testCase>
     <!-- ======================================================================== -->	
     <testCase name="e100_f09_c05" ref="dimr_noconfig">
-        <path version="2025-06-05T11:47:43.714000">e100_dflowfm-dwaves/f09_comwrite_intervals/c05-ti_com_dtuser_in_mdu</path>
+        <path version="2025-08-27T12:39:12.558000">e100_dflowfm-dwaves/f09_comwrite_intervals/c05-ti_com_dtuser_in_mdu</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/dflowfmoutput/f34_map.nc" type="NETCDF">

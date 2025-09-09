@@ -26,7 +26,7 @@ object TestBenchValidation : BuildType({
     """.trimIndent()
 
     params {
-        param("env.IMAGE_NAME", "containers.deltares.nl/delft3d/testbench")
+        param("env.IMAGE_NAME", "containers.deltares.nl/delft3d-dev/testbench-validation")
         param("env.BUILD_BRANCH", "%teamcity.build.branch%")
         param("env.PULL_REQUEST_SOURCE_BRANCH", "%teamcity.pullRequest.source.branch%")
     }
@@ -60,7 +60,7 @@ object TestBenchValidation : BuildType({
                     +:/ci/teamcity/Delft3D/ciUtilities/scripts/validateReports.sh
                 """.trimIndent()
                 branchFilter = """
-                    +:merge-requests/*
+                    +:pull/*
                     +:all/release/*
                     +:<default>
                 """.trimIndent()

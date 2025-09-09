@@ -66,8 +66,7 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Coverage  ","IBotSeg   ",   7,"x",1
 "Coverage  ","RadSurf   ",   8,"x",1
 "AveRadSurf","SumAveRad ",   1," ",1
-"AveRadSurf","SumAveRadT",   2," ",1
-"AveRadSurf","RadSurfAve",   3,"x",1
+"AveRadSurf","RadSurfAve",   2,"x",1
 "DisRadSurf","RadSurf   ",   1,"x",1
 "DisRadSurf","RadMaxHour",   2,"x",1
 "DisRadSurf","RadMaxDayA",   3,"x",1
@@ -1047,12 +1046,6 @@ outppr,outpit,outpnm,outpdo,outpsx
 "CalVSALG30","SalFnAlg30",   2,"x",1
 "CalVSALG30","FloFnAlg30",   3,"x",1
 "CalVSALG30","VSedAlg30 ",   4," ",0
-"Res_Pickup","fRIM1S2Pup",   1,"x",1
-"Res_Pickup","fRIM2S2Pup",   2,"x",1
-"Res_Pickup","fRIM3S2Pup",   3,"x",1
-"Res_Pickup","fRTIMS2Pup",   4,"x",1
-"Res_Pickup","Pshields  ",   5,"x",1
-"Res_Pickup","FrTIMS2   ",   6,"x",1
 "Res_Buffer","fRIM1S2Pup",   1,"x",1
 "Res_Buffer","fRIM2S2Pup",   2,"x",1
 "Res_Buffer","fRIM3S2Pup",   3,"x",1
@@ -1060,9 +1053,9 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Res_Buffer","Pshields  ",   5,"x",1
 "Res_Buffer","FrTIMS2   ",   6,"x",1
 "Res_Buffer","FrPOMS2   ",   7,"x",1
-"Res_Buffer","fResS1IM1 ",   8,"x",1
-"Res_Buffer","fResS1IM2 ",   9,"x",1
-"Res_Buffer","fResS1IM3 ",  10,"x",1
+"Res_Buffer","fRS1IM1Buf",   8,"x",1
+"Res_Buffer","fRS1IM2Buf",   9,"x",1
+"Res_Buffer","fRS1IM3Buf",  10,"x",1
 "Res_Buffer","fResS1DM  ",  11,"x",1
 "Res_Buffer","fResS2DM  ",  12,"x",1
 "Sed_IM1   ","PSedIM1   ",   1,"x",1

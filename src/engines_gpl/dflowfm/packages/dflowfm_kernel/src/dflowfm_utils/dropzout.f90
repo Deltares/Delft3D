@@ -48,7 +48,7 @@ contains
       use m_flow, only: sdropstep, dmiss, jins, kplot, sam1tot, vol0, vol1, nplot, kmx
       use m_transportdata, only: constituents, isalt
       use m_get_kbot_ktop, only: getkbotktop
-      use m_set_kbot_ktop, only: setkbotktop
+      use m_set_kbot_ktop, only: set_kbot_ktop
       use m_pfiller, only: pfiller
       use geometry_module, only: dbpinpol
 
@@ -96,7 +96,7 @@ contains
       end if
 
       if (kmx > 0) then
-         call setkbotktop(1) ! drop
+         call set_kbot_ktop(jazws0=1) ! drop
       end if
 
    end subroutine dropzout

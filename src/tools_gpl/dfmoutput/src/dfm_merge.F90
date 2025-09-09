@@ -371,7 +371,7 @@ contains
          ! fill in the mapping array mesh2topo that is mapping from meshid to topology index
          ! and compute maximal and minimal topology dimensions.
          call realloc(mesh2topo, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1)
-         call realloc(topodim, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1) 
+         call realloc(topodim, (/nMaxMeshes, nfiles/), keepExisting=.false., fill=-1)
          maxTopodim = 0
          minTopodim = 999
          do ii = 1, nfiles
@@ -2110,25 +2110,25 @@ contains
 
             ! NOTE: AvD: below we assume that order is kx, kmx, ndx, nt, so not as generic anymore as the var_*dimpos analysis would allow.
             ! Allocate the proper memory space for nf90_get_var without risk of stack overflows in the netcdf lib
-            if (var_types(iv, itopo) /= nf90_double .and. var_types(iv, itopo) /= nf90_int .and. var_types(iv, itopo) /= nf90_short .and. var_types(iv, itopo) /= nf90_byte .and. var_types(iv, itopo) /= nf90_char) then
+            if (.not. is_float_kind(var_types(iv,itopo)) .and. .not. is_integer_kind(var_types(iv,itopo)) .and. var_types(iv, itopo) /= nf90_byte .and. var_types(iv, itopo) /= nf90_char) then
                write (*, '(a,i0,a)') 'Error: mapmerge: encountered unsupported data type ', var_types(iv, itopo), ' for variable `'//trim(var_names(iv, itopo))//'''.'
                if (.not. verbose_mode) goto 888
             end if
 
             ! Read attribute _fillValue of this variable from the file
-            if (var_types(iv, itopo) == nf90_double) then
+            if (is_float_kind(var_types(iv,itopo))) then
                ierr = ncu_inq_var_fill(ncids(ifile(itopo)), varids(ifile(itopo), iv, itopo), nofill, fill_value_double, fill_value_customed=dmiss)
-            else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+            else if (is_integer_kind(var_types(iv,itopo))) then
                ierr = ncu_inq_var_fill(ncids(ifile(itopo)), varids(ifile(itopo), iv, itopo), nofill, fill_value_int, fill_value_customed=imiss)
             end if
 
             if (all(var_kxdimpos(:, iv, itopo) == -1) .and. var_laydimpos(iv, itopo) == -1 .and. var_wdimpos(iv, itopo) == -1 & ! 1D array with no layers and no vectormax (possibly time-dep)
                 .or. (var_ndims(iv, itopo) == 1 .and. (var_laydimpos(iv, itopo) > 0 .or. var_wdimpos(iv, itopo) > 0))) then ! 1D array of vertical coordinates
                ! Already allocated at max(lnx, ndx, numk, numl), no risk of stack overflow
-               if (var_types(iv, itopo) == nf90_double) then
+               if (is_float_kind(var_types(iv,itopo))) then
                   tmpvar1D = fill_value_double
                   tmpvarptr(1:1, 1:1, 1:maxitems) => tmpvar1D(:)
-               else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+               else if (is_integer_kind(var_types(iv,itopo))) then
                   itmpvar1D = fill_value_int
                   itmpvarptr(1:1, 1:1, 1:maxitems) => itmpvar1D(:)
                else if (var_types(iv, itopo) == nf90_byte) then
@@ -2147,11 +2147,11 @@ contains
                   tmpvarptr => tmpvar3D
                   tmpvarDim = 3
                else ! Only a vectormax dim
-                  if (var_types(iv, itopo) == nf90_double) then
+                  if (is_float_kind(var_types(iv,itopo))) then
                      call realloc(tmpvar2D, (/count_read(var_kxdimpos(ikx0, iv, itopo)), maxitems/), keepExisting=.false., fill=fill_value_double)
                      tmpvarptr(1:count_read(var_kxdimpos(ikx0, iv, itopo)), 1:1, 1:maxitems) => tmpvar2D(:, :)
                      call realloc(tmpvar2D_tmp, (/count_read(var_kxdimpos(ikx0, iv, itopo)), maxitems/), keepExisting=.false., fill=fill_value_double)
-                  else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+                  else if (is_integer_kind(var_types(iv,itopo))) then
                      call realloc(itmpvar2D, (/count_read(var_kxdimpos(ikx0, iv, itopo)), maxitems/), keepExisting=.false., fill=fill_value_int)
                      itmpvarptr(1:count_read(var_kxdimpos(ikx0, iv, itopo)), 1:1, 1:maxitems) => itmpvar2D(:, :)
                      call realloc(itmpvar2D_tmp, (/count_read(var_kxdimpos(ikx0, iv, itopo)), maxitems/), keepExisting=.false., fill=fill_value_int)
@@ -2162,22 +2162,22 @@ contains
                   tmpvarDim = 2
                end if
             else if (var_laydimpos(iv, itopo) /= -1) then ! Only a laydim
-               if (var_types(iv, itopo) == nf90_double) then
+               if (is_float_kind(var_types(iv,itopo))) then
                   call realloc(tmpvar2D, (/kmx(itopo, noutfile), maxitems/), keepExisting=.false., fill=fill_value_double)
                   tmpvarptr(1:1, 1:kmx(itopo, noutfile), 1:maxitems) => tmpvar2D(:, :)
                   call realloc(tmpvar2D_tmp, (/kmx(itopo, noutfile), maxitems/), keepExisting=.false., fill=fill_value_double)
-               else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+               else if (is_integer_kind(var_types(iv,itopo))) then
                   call realloc(itmpvar2D, (/kmx(itopo, noutfile), maxitems/), keepExisting=.false., fill=fill_value_int)
                   itmpvarptr(1:1, 1:kmx(itopo, noutfile), 1:maxitems) => itmpvar2D(:, :)
                   call realloc(itmpvar2D_tmp, (/kmx(itopo, noutfile), maxitems/), keepExisting=.false., fill=fill_value_int)
                end if
                tmpvarDim = 2
             else if (var_wdimpos(iv, itopo) /= -1) then
-               if (var_types(iv, itopo) == nf90_double) then
+               if (is_float_kind(var_types(iv,itopo))) then
                   call realloc(tmpvar2D, (/kmx(itopo, noutfile) + 1, maxitems/), keepExisting=.false., fill=fill_value_double)
                   tmpvarptr(1:1, 1:kmx(itopo, noutfile) + 1, 1:maxitems) => tmpvar2D(:, :)
                   call realloc(tmpvar2D_tmp, (/kmx(itopo, noutfile) + 1, maxitems/), keepExisting=.false., fill=fill_value_double)
-               else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+               else if (is_integer_kind(var_types(iv,itopo))) then
                   call realloc(itmpvar2D, (/kmx(itopo, noutfile) + 1, maxitems/), keepExisting=.false., fill=fill_value_int)
                   itmpvarptr(1:1, 1:kmx(itopo, noutfile) + 1, 1:maxitems) => itmpvar2D(:, :)
                   call realloc(itmpvar2D_tmp, (/kmx(itopo, noutfile) + 1, maxitems/), keepExisting=.false., fill=fill_value_int)
@@ -2188,7 +2188,7 @@ contains
          !! 1D array of vertical coordinates are COPIED from file "ifile(itopo)" to the merged file
             if (var_ndims(iv, itopo) == 1 .and. (var_laydimpos(iv, itopo) > 0 .or. var_wdimpos(iv, itopo) > 0)) then
                nlen = count_read(ie)
-               if (var_types(iv, itopo) == nf90_double) then
+               if (is_float_kind(var_types(iv,itopo))) then
                   ierr = nf90_get_var(ncids(ifile(itopo)), varids(ifile(itopo), iv, itopo), tmpvar1D(1:nlen), count=count_read(is:ie))
                   if (ierr /= nf90_noerr) then
                      write (*, '(a,i0,a)') 'Error: mapmerge: cannot read variable ', var_names(iv, itopo), ' from file `'//trim(infiles(ifile(itopo)))//'''.'
@@ -2200,7 +2200,7 @@ contains
                      write (*, '(a,i0,a)') 'Error: mapmerge: cannot write variable ', var_names(iv, itopo), ' to the merged file.'
                      if (.not. verbose_mode) goto 888
                   end if
-               else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+               else if (is_integer_kind(var_types(iv,itopo))) then
                   ierr = nf90_get_var(ncids(ifile(itopo)), varids(ifile(itopo), iv, itopo), itmpvar1D(1:nlen), count=count_read(is:ie))
                   if (ierr /= nf90_noerr) then
                      write (*, '(a,i0,a)') 'Error: mapmerge: cannot read variable ', var_names(iv, itopo), ' from file `'//trim(infiles(ifile(itopo)))//'''.'
@@ -2253,15 +2253,15 @@ contains
                      end if
 
                      if (all(var_kxdimpos(:, iv, itopo) == -1) .and. var_laydimpos(iv, itopo) == -1 .and. var_wdimpos(iv, itopo) == -1) then ! 1D array with no layers and no vectormax (possibly time-dep)
-                        if (var_types(iv, itopo) == nf90_double) then
+                        if (is_float_kind(var_types(iv,itopo))) then
                            ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), tmpvar1D(nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
-                        else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+                        else if (is_integer_kind(var_types(iv,itopo))) then
                            ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), itmpvar1D(nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
                         else if (var_types(iv, itopo) == nf90_byte) then
                            ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), btmpvar1D(nitemglob0 + 1:, itm:itm), count=count_read(is:ie), start=start_idx(is:ie))
                         end if
                      else if (var_kxdimpos(ikx0, iv, itopo) /= -1 .neqv. var_laydimpos(iv, itopo) /= -1) then ! Either a vectormax OR a laydim
-                        if (var_types(iv, itopo) == nf90_double) then
+                        if (is_float_kind(var_types(iv,itopo))) then
                            if (jaread_sep == 1) then
                               call realloc(tmpvar2D_tmpmax, (/count_read(is), count_read(ie)/), keepExisting=.false., fill=fill_value_double)
                               ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), tmpvar2D_tmpmax, count=count_read(is:ie), start=start_idx(is:ie))
@@ -2279,7 +2279,7 @@ contains
                                  ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), tmpvar2D(:, nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
                               end if
                            end if
-                        else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+                        else if (is_integer_kind(var_types(iv,itopo))) then
                            if (jaread_sep == 1) then
                               call realloc(itmpvar2D_tmpmax, (/count_read(is), count_read(ie)/), keepExisting=.false., fill=fill_value_int)
                               ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), itmpvar2D_tmpmax, count=count_read(is:ie), start=start_idx(is:ie))
@@ -2294,13 +2294,13 @@ contains
                         end if
                      else if (var_kxdimpos(ikx0, iv, itopo) /= -1 .neqv. (var_laydimpos(iv, itopo) /= -1 .or. var_wdimpos(iv, itopo) /= -1)) then
                         ! Either a vectormax OR a wdim/laydim
-                        if (var_types(iv, itopo) == nf90_double) then
+                        if (is_float_kind(var_types(iv,itopo))) then
                            ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), tmpvar2D(:, nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
-                        else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+                        else if (is_integer_kind(var_types(iv,itopo))) then
                            ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), itmpvar2D(:, nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
                         end if
                      else ! Both a vectormax AND a laydim
-                        if (var_types(iv, itopo) == nf90_double) then
+                        if (is_float_kind(var_types(iv,itopo))) then
                            ierr = nf90_get_var(ncids(ii), varids(ii, iv, itopo), tmpvar3D(:, :, nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
                         end if
                      end if
@@ -2429,65 +2429,6 @@ contains
                         if (ii == nfiles) then
                            itmpvar2D(:, 1:nitemglob) = itmpvar2D_tmp(:, 1:nitemglob)
                         end if
-                        !else if (var_loctype(iv) == UNC_LOC_S) then ! variables that locate on faces, temporaly disabled
-                        !    if (var_types(iv) == nf90_int .or. var_types(iv) == nf90_short) then
-                        !      nfacecount = sum(nump(1:ii-1))
-                        !      do ip=1, item_counts(ii)
-                        !         if (item_domain(nfacecount+ip) == ii-1) then
-                        !            ifaceglob = face_c2g(nfacecount+ip)
-                        !            if (ifaceglob > 0) then
-                        !               nitemglob = nitemglob + 1
-                        !               itmpvar1D_tmp(ifaceglob) = itmpvar1D(nitemglob0+ip)
-                        !            end if
-                        !         end if
-                        !      end do
-                        !      if (ii==nfiles) then
-                        !          itmpvar1D(1:nitemglob) = itmpvar1D_tmp(1:nitemglob)
-                        !      end if
-                        !   else if (var_types(iv) == nf90_byte) then
-                        !      nfacecount = sum(nump(1:ii-1))
-                        !      do ip=1, item_counts(ii)
-                        !         if (item_domain(nfacecount+ip) == ii-1) then
-                        !            ifaceglob = face_c2g(nfacecount+ip)
-                        !            if (ifaceglob > 0) then
-                        !               nitemglob = nitemglob + 1
-                        !               btmpvar1D_tmp(ifaceglob,itm:itm) = btmpvar1D(nitemglob0+ip,itm:itm)
-                        !            end if
-                        !         end if
-                        !      end do
-                        !      if (ii==nfiles) then
-                        !          btmpvar1D(1:nitemglob,itm:itm) = btmpvar1D_tmp(1:nitemglob,itm:itm)
-                        !      end if
-                        !   else
-                        !      nfacecount = sum(nump(1:ii-1))
-                        !      if (tmpvarDim == 1) then
-                        !         do ip=1, item_counts(ii)
-                        !            if (item_domain(nfacecount+ip) == ii-1) then
-                        !               ifaceglob = face_c2g(nfacecount+ip)
-                        !               if (ifaceglob > 0) then
-                        !                  nitemglob = nitemglob + 1
-                        !                  tmpvar1D_tmp(ifaceglob) = tmpvar1D(nitemglob0+ip)
-                        !               end if
-                        !            end if
-                        !         end do
-                        !         if (ii==nfiles) then
-                        !             tmpvar1D(1:nitemglob) = tmpvar1D_tmp(1:nitemglob)
-                        !         end if
-                        !      else if (tmpvarDim == 2) then
-                        !         do ip=1, item_counts(ii)
-                        !            if (item_domain(nfacecount+ip) == ii-1) then
-                        !               ifaceglob = face_c2g(nfacecount+ip)
-                        !               if (ifaceglob > 0) then
-                        !                  nitemglob = nitemglob + 1
-                        !                  tmpvar2D_tmp(:,ifaceglob)=tmpvar2D(:,nitemglob0+ip)
-                        !               end if
-                        !            end if
-                        !         end do
-                        !         if (ii==nfiles) then
-                        !            tmpvar2D(:,1:nitemglob) = tmpvar2D_tmp(:,1:nitemglob)
-                        !         end if
-                        !      end if
-                        !   end if
                      else if (jaugrid == 1 .and. topodim(imesh, ii) == 1 .and. var_loctype(iv, itopo) == UNC_LOC_CN) then
                         ! For 1D mesh, the node indices in the merged file are read directly from flowelem_globalnr into node_c2g.
                         ! So for variables that locate on nodes, we do not use the shift method, but use the global numbers in node_c2g.
@@ -2497,9 +2438,9 @@ contains
                            if (item_domain(nnodecount(itopo) + ip) == ii - 1) then ! only for the node which belongs to the current domain
                               inodeglob = node_c2g(nnodecount(itopo) + ip, itopo)
                               if (inodeglob > 0) then
-                                 if (var_types(iv, itopo) == nf90_double) then
+                                 if (is_float_kind(var_types(iv,itopo))) then
                                     tmpvar1D_tmp(inodeglob) = tmpvar1D(nnodecount(itopo) + ip)
-                                 else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+                                 else if (is_integer_kind(var_types(iv,itopo))) then
                                     itmpvar1D_tmp(inodeglob) = itmpvar1D(nnodecount(itopo) + ip)
                                  else if (var_types(iv, itopo) == nf90_byte) then
                                     btmpvar1D_tmp(inodeglob, itm:itm) = btmpvar1D(nnodecount(itopo) + ip, itm:itm)
@@ -2512,7 +2453,7 @@ contains
                         nitemglob = nnodecount(itopo) + item_counts(ii) ! This variable needs to be updated for reading variables from input map files.
                      else
                         needshift = .false. ! The get_var above started at the right place, so no shifting needed yet.
-                        if (var_types(iv, itopo) == nf90_double) then ! TODO: AvD: try to remove this ugly code-copy for just different types
+                        if (is_float_kind(var_types(iv,itopo))) then ! TODO: AvD: try to remove this ugly code-copy for just different types
                            do ip = 1, item_counts(ii)
                               if (item_domain(nitemcount + ip) == ii - 1) then
                                  nitemglob = nitemglob + 1
@@ -2523,7 +2464,7 @@ contains
                                  needshift = .true. ! From now on, all points from this var/file need one or more shifts to the left.
                               end if
                            end do
-                        else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+                        else if (is_integer_kind(var_types(iv,itopo))) then
                            do ip = 1, item_counts(ii)
                               if (item_domain(nitemcount + ip) == ii - 1) then
                                  nitemglob = nitemglob + 1
@@ -2553,9 +2494,9 @@ contains
                   ! For 1D mesh variables, after merging among all files, copy tmp array to 1D array for later writing to the merged file.
                   if (ja1DCNVar == 1) then
                      nitemglob = item_counts(noutfile) ! Update nitemglob, otherwise the check on nitemglob after the outer do-loop will show unexpected error message.
-                     if (var_types(iv, itopo) == nf90_double) then
+                     if (is_float_kind(var_types(iv,itopo))) then
                         tmpvar1D(1:nitemglob) = tmpvar1D_tmp(1:nitemglob)
-                     else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+                     else if (is_integer_kind(var_types(iv,itopo))) then
                         itmpvar1D(1:nitemglob) = itmpvar1D_tmp(1:nitemglob)
                      else if (var_types(iv, itopo) == nf90_byte) then
                         btmpvar1D(1:nitemglob, itm:itm) = btmpvar1D_tmp(1:nitemglob, itm:itm)
@@ -2571,9 +2512,9 @@ contains
                   end if
                !! tmpvar is now filled with 1 var, 1 time, across all domains, without overlap, so write it now:
                   if (all(var_kxdimpos(:, iv, itopo) == -1) .and. var_laydimpos(iv, itopo) == -1 .and. var_wdimpos(iv, itopo) == -1 .and. var_seddimpos(iv, itopo) == -1) then ! 1D array with no layers and no vectormax (possibly time-dep)
-                     if (var_types(iv, itopo) == nf90_double) then
+                     if (is_float_kind(var_types(iv,itopo))) then
                         ierr = nf90_put_var(ncids(noutfile), varids_out(iv, itopo), tmpvar1D, count=count_write(is:ie), start=start_idx(is:ie))
-                     else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+                     else if (is_integer_kind(var_types(iv,itopo))) then
                         ierr = nf90_put_var(ncids(noutfile), varids_out(iv, itopo), itmpvar1D, count=count_write(is:ie), start=start_idx(is:ie))
                      else if (var_types(iv, itopo) == nf90_byte) then
                         if (itm == mapclass_time_buffer_size) then
@@ -2581,7 +2522,7 @@ contains
                         end if
                      end if
                   else if (var_kxdimpos(ikx0, iv, itopo) /= -1 .neqv. var_laydimpos(iv, itopo) /= -1) then ! Either a vectormax OR a laydim
-                     if (var_types(iv, itopo) == nf90_double) then
+                     if (is_float_kind(var_types(iv,itopo))) then
                         if (numkx(iv, itopo) == 2) then
                            ierr = nf90_put_var(ncids(noutfile), varids_out(iv, itopo), tmpvar3D, count=count_write(is:ie), start=start_idx(is:ie))
                         else if (var_seddimpos(iv, itopo) /= -1) then ! if it is a sediment variable
@@ -2589,32 +2530,23 @@ contains
                         else
                            ierr = nf90_put_var(ncids(noutfile), varids_out(iv, itopo), tmpvar2D, count=count_write(is:ie), start=start_idx(is:ie))
                         end if
-                     else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+                     else if (is_integer_kind(var_types(iv,itopo))) then
                         ierr = nf90_put_var(ncids(noutfile), varids_out(iv, itopo), itmpvar2D, count=count_write(is:ie), start=start_idx(is:ie))
                      else if (var_types(iv, itopo) == nf90_char) then
                         ierr = nf90_put_var(ncids(noutfile), varids_out(iv, itopo), ctmpvar2D, count=count_write(is:ie), start=start_idx(is:ie))
                      end if
                   else if (var_kxdimpos(ikx0, iv, itopo) /= -1 .neqv. (var_laydimpos(iv, itopo) /= -1 .or. var_wdimpos(iv, itopo) /= -1)) then
                      ! Either a vectormax OR a wdim/laydim
-                     if (var_types(iv, itopo) == nf90_double) then
+                     if (is_float_kind(var_types(iv,itopo))) then
                         ierr = nf90_put_var(ncids(noutfile), varids_out(iv, itopo), tmpvar2D, count=count_write(is:ie), start=start_idx(is:ie))
-                     else if (var_types(iv, itopo) == nf90_int .or. var_types(iv, itopo) == nf90_short) then
+                     else if (is_integer_kind(var_types(iv,itopo))) then
                         ierr = nf90_put_var(ncids(noutfile), varids_out(iv, itopo), itmpvar2D, count=count_write(is:ie), start=start_idx(is:ie))
                      end if
                   else ! Both a vectormax AND a laydim
-                     if (var_types(iv, itopo) == nf90_double) then
+                     if (is_float_kind(var_types(iv,itopo))) then
                         ierr = nf90_put_var(ncids(noutfile), varids_out(iv, itopo), tmpvar3D, count=count_write(is:ie), start=start_idx(is:ie))
                      end if
                   end if
-                  !if (kmx(noutfile) > 0) then
-                  !   ierr = nf90_put_var(ncids(noutfile), varids_out(iv), tmpvar, count = (/ kmx(noutfile), ndx(noutfile), 1 /), start = (/ 1, 1, it /))
-                  !else
-                  !   ierr = nf90_put_var(ncids(noutfile), varids_out(iv), tmpvar, count = (/ ndx(noutfile), 1 /), start = (/ 1, it /))
-                  !end if
-                  !if (ierr /= nf90_noerr) then
-                  !   write (*,'(a,i0,a)') 'Error: mapmerge: could not write merged variable `'//trim(var_names(iv))//''' into output file `'//trim(outfile)//''' (itime=', it, ').'
-                  !   if (.not. verbose_mode) goto 888
-                  !end if
 
                   ! Check: if this was time-independent variable, first iteration-step was enough for reading+writing.
                   if (var_timdimpos(iv, itopo) == -1) then
@@ -2722,10 +2654,10 @@ contains
                   end if
 
                   ! Reallocate arrays
-                  if (vartype == nf90_double) then
+                  if (is_float_kind(vartype)) then
                      call realloc(tmpvar1D, maxitems, keepExisting=.false., fill=fill_value_double)
                      call realloc(tmpvar1D_tmp, maxitems, keepExisting=.false., fill=fill_value_double)
-                  else if (vartype == nf90_int .or. vartype == nf90_short) then
+                  else if (is_integer_kind(vartype)) then
                      call realloc(itmpvar1D, maxitems, keepExisting=.false., fill=fill_value_int)
                      call realloc(itmpvar1D_tmp, maxitems, keepExisting=.false., fill=fill_value_int)
                   else if (vartype == nf90_char) then
@@ -2757,9 +2689,9 @@ contains
                            cycle
                         end if
 
-                        if (vartype == nf90_double) then
+                        if (is_float_kind(vartype)) then
                            ierr = nf90_get_var(ncids(ii), varid, tmpvar1D(nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
-                        else if (vartype == nf90_int .or. vartype == nf90_short) then
+                        else if (is_integer_kind(vartype)) then
                            ierr = nf90_get_var(ncids(ii), varid, itmpvar1D(nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
                         else if (vartype == nf90_char) then
                            ierr = nf90_get_var(ncids(ii), varid, ctmpvar2D(:, nitemglob0 + 1:), count=count_read(is:ie), start=start_idx(is:ie))
@@ -2771,9 +2703,9 @@ contains
                            if (link1d2d_domain(nlink1d2dcount(icontact) + ip, icontact) == ii - 1) then ! only for the 1d2dlink which belongs to the current domain
                               ilink1d2dglob = link1d2d_c2g(nlink1d2dcount(icontact) + ip, icontact)
                               if (ilink1d2dglob > 0) then
-                                 if (vartype == nf90_double) then
+                                 if (is_float_kind(vartype)) then
                                     tmpvar1D_tmp(ilink1d2dglob) = tmpvar1D(nlink1d2dcount(icontact) + ip)
-                                 else if (vartype == nf90_int .or. vartype == nf90_short) then
+                                 else if (is_integer_kind(vartype)) then
                                     itmpvar1D_tmp(ilink1d2dglob) = itmpvar1D(nlink1d2dcount(icontact) + ip)
                                  else if (vartype == nf90_char) then
                                     ctmpvar2D_tmp(:, ilink1d2dglob) = ctmpvar2D(:, nlink1d2dcount(icontact) + ip)
@@ -2785,9 +2717,9 @@ contains
 
                         if (ii == nfiles) then
                            nitemglob = numl1d2d(icontact, noutfile)
-                           if (vartype == nf90_double) then
+                           if (is_float_kind(vartype)) then
                               tmpvar1D(1:nitemglob) = tmpvar1D_tmp(1:nitemglob)
-                           else if (vartype == nf90_int .or. vartype == nf90_short) then
+                           else if (is_integer_kind(vartype)) then
                               itmpvar1D(1:nitemglob) = itmpvar1D_tmp(1:nitemglob)
                            else if (vartype == nf90_char) then
                               ctmpvar2D(:, 1:nitemglob) = ctmpvar2D_tmp(:, 1:nitemglob)
@@ -2797,9 +2729,9 @@ contains
 
                      ! 8b.4 Write to output file
                      count_write(idimlink1d2d) = numl1d2d(icontact, noutfile)
-                     if (vartype == nf90_double) then
+                     if (is_float_kind(vartype)) then
                         ierr = nf90_put_var(ncids(noutfile), id, tmpvar1D, count=count_write(is:ie), start=start_idx(is:ie))
-                     else if (vartype == nf90_int .or. vartype == nf90_short) then
+                     else if (is_integer_kind(vartype)) then
                         ierr = nf90_put_var(ncids(noutfile), id, itmpvar1D, count=count_write(is:ie), start=start_idx(is:ie))
                      else if (vartype == nf90_char) then
                         count_write(idimstring) = count_read(idimstring)
@@ -2924,5 +2856,18 @@ contains
       flush (6)
       return
    end subroutine progress
+
+   elemental function is_float_kind(var_kind) result(res)
+      integer, intent(in) :: var_kind
+      logical :: res
+      res = var_kind == nf90_double .or. var_kind == nf90_float
+   end function is_float_kind
+
+   elemental function is_integer_kind(var_kind) result(res)
+      integer, intent(in) :: var_kind
+      logical :: res
+      res = var_kind == nf90_int .or. var_kind == nf90_short
+   end function is_integer_kind
+
 end module dfm_merge
 

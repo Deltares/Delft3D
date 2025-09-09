@@ -21,8 +21,8 @@ docker pull "$container"
 docker run --rm \
            -v .:/data/upload/TeamcityMinioStorage/h7_results \
            -v=$HOME/.aws:/root/.aws:ro \
-           "$container" python3.9 -m tools.h7.upload_folder_to_minio devops-teamcity-artifacts
+           "$container" python3 -m tools.h7.upload_folder_to_minio devops-teamcity-artifacts
 
 docker run --rm \
            -v=$HOME/.aws:/root/.aws:ro \
-           "$container" python3.9 tools/h7/start_tc_build.py "$teamcity_config" container_id:"$container_id" "$tc_account" "$tc_password"
+           "$container" python3 tools/h7/start_tc_build.py "$teamcity_config" container_id:"$container_id" "$tc_account" "$tc_password"

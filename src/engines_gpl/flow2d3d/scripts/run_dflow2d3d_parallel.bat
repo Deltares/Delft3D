@@ -18,7 +18,7 @@ title run_dflow2d3d_parallel
     rem Leave this script where it is.
     rem Call this script from within the working directory:
     rem path\to\delft3d\installation\x64\dflow2d3d\scripts\run_dflow2d3d_parallel.bat
-    rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
+    rem More examples: check run scripts in https://github.com/Deltares/Delft3D/tree/main/examples/*
 
 setlocal enabledelayedexpansion
 

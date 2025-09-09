@@ -1,10 +1,11 @@
+ARG BASE_IMAGE=almalinux:8
 ARG INTEL_ONEAPI_VERSION=2024
 ARG BUILDTOOLS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-buildtools
 ARG BUILDTOOLS_IMAGE_TAG=oneapi-${INTEL_ONEAPI_VERSION}
 
 FROM ${BUILDTOOLS_IMAGE_URL}:${BUILDTOOLS_IMAGE_TAG} as buildtools
 
-FROM almalinux:8
+FROM $BASE_IMAGE
 
 # We have opted to not add any mpi executables to the released installers, but we do ship the mpi libraries in the installers (done by CMake).
 # This choice was made since linux HPC clusters often offer their own specialized MPI executables.

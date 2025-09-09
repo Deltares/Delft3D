@@ -1,33 +1,33 @@
       subroutine set_hyd(hyd,name)
 !----- GPL ---------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
-!                                                                               
-!  This program is free software: you can redistribute it and/or modify         
-!  it under the terms of the GNU General Public License as published by         
-!  the Free Software Foundation version 3.                                      
-!                                                                               
-!  This program is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU General Public License for more details.                                 
-!                                                                               
-!  You should have received a copy of the GNU General Public License            
-!  along with this program.  If not, see <http://www.gnu.org/licenses/>.        
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2025.
+!
+!  This program is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU General Public License as published by
+!  the Free Software Foundation version 3.
+!
+!  This program is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU General Public License for more details.
+!
+!  You should have received a copy of the GNU General Public License
+!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
-   
+!
+!
+
       ! function : set the filenames of the hyd file
 
       ! global declarations
@@ -80,7 +80,7 @@
          hyd%file_geo%name = trim(name)//'_waqgeom.nc'
          hyd%file_lga%name = trim(name)//'.bnd'
          hyd%file_cco%name = trim(name)//'_waqgeom.nc'
-      end if                  
+      end if
       hyd%file_vol%name = trim(name)//'.vol'
       hyd%file_are%name = trim(name)//'.are'
       hyd%file_flo%name = trim(name)//'.flo'
@@ -89,6 +89,7 @@
       hyd%file_sal%name = trim(name)//'.sal'
       hyd%file_tem%name = trim(name)//'.tem'
       hyd%file_vdf%name = trim(name)//'.vdf'
+      hyd%file_vel%name = trim(name)//'.vel'
       if (hyd%geometry .eq. HYD_GEOM_CURVI) then
       hyd%file_srf%name = trim(name)//'.srf'
       else if (hyd%geometry .eq. HYD_GEOM_UNSTRUC) then
@@ -118,6 +119,7 @@
       hyd%file_sal%type = ft_dat
       hyd%file_tem%type = ft_dat
       hyd%file_vdf%type = ft_dat
+      hyd%file_vel%type = ft_dat
       hyd%file_srf%type = ft_dat
       hyd%file_hsrf%type = ft_dat
       hyd%file_lgt%type = ft_dat
@@ -143,6 +145,7 @@
       hyd%file_sal%status = 0
       hyd%file_tem%status = 0
       hyd%file_vdf%status = 0
+      hyd%file_vel%status = 0
       hyd%file_srf%status = 0
       hyd%file_hsrf%status = 0
       hyd%file_lgt%status = 0

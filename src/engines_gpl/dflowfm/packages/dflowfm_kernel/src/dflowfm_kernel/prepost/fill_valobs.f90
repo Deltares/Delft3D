@@ -50,7 +50,8 @@ contains
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
                         rich, jahisrain, jahis_airdensity, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
-                        jahisinfilt, infiltcap, infilt, jahisheatflux, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap
+                        jahisinfilt, infiltcap, infilt, jahisheatflux, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
+                        use_density
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
@@ -232,6 +233,8 @@ contains
             if (jawave == WAVE_SURFBEAT .and. allocated(R)) then
                valobs(i, IPNT_WAVER) = R(k)
             end if
+            
+            call collect_ice_values(valobs, i, k)
 
             if (jawave > NO_WAVES .and. allocated(hwav)) then
                valobs(i, IPNT_WAVEH) = hwav(k) * wavfac
@@ -414,7 +417,7 @@ contains
                if (jahistur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
-               if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+               if (use_density() .and. jahisrho > 0) then
                   valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
                   if (apply_thermobaricity) then
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
@@ -481,11 +484,11 @@ contains
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
                   end if
-                  if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+                  if (use_density() .and. jahisrho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
                         valobs(i, IPNT_BRUV + klay - 1) = drhodz(kk) * brunt_vaisala_coefficient
+                        end if
                      end if
-                  end if
                   if (idensform > 0 .and. jaRichardsononoutput > 0) then
                      valobs(i, IPNT_RICHS + klay - 1) = richs(kk)
                   end if
@@ -584,7 +587,47 @@ contains
       end if
 
       if (timon) call timstop(handle_extra(55))
-      return
    end subroutine fill_valobs
+   
+   !> Support routine to collect the values of the ice quantities at the observation stations
+   subroutine collect_ice_values(valobs, i, k)
+      use precision, only: dp
+      use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, fm_is_allocated_ice
+      use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature
+      use m_observations_data, only: IPNT_ICE_S1, IPNT_ICE_ZMIN, IPNT_ICE_ZMAX, &
+         IPNT_ICE_AREA_FRACTION, IPNT_ICE_THICKNESS, IPNT_ICE_PRESSURE, IPNT_ICE_TEMPERATURE, &
+         IPNT_SNOW_THICKNESS, IPNT_SNOW_TEMPERATURE
+      
+      real(kind=dp), dimension(:,:), intent(inout) :: valobs !< values at observations stations
+      integer, intent(in) :: i !< index of the observation station
+      integer, intent(in) :: k !< face index associated with the observation station
+      
+      if (ja_icecover == ICECOVER_NONE .or. .not. fm_is_allocated_ice()) return
+
+      call conditional_assign(valobs, i, IPNT_ICE_S1, ice_s1, k)
+      call conditional_assign(valobs, i, IPNT_ICE_ZMIN, ice_zmin, k)
+      call conditional_assign(valobs, i, IPNT_ICE_ZMAX, ice_zmax, k)
+      call conditional_assign(valobs, i, IPNT_ICE_AREA_FRACTION, ice_area_fraction, k)
+      call conditional_assign(valobs, i, IPNT_ICE_THICKNESS, ice_thickness, k)
+      call conditional_assign(valobs, i, IPNT_ICE_PRESSURE, ice_pressure, k)
+      call conditional_assign(valobs, i, IPNT_ICE_TEMPERATURE, ice_temperature, k)
+      call conditional_assign(valobs, i, IPNT_SNOW_THICKNESS, snow_thickness, k)
+      call conditional_assign(valobs, i, IPNT_SNOW_TEMPERATURE, snow_temperature, k)
+   end subroutine collect_ice_values
+   
+   !> Support routine to conditionally assign values to the target variable
+   subroutine conditional_assign(valobs, i, ipnt, array, k)
+      use precision, only: dp, fp
+      
+      real(kind=dp), dimension(:,:), intent(inout) :: valobs !< values at observations stations
+      integer, intent(in) :: i !< index of the observation station
+      integer, intent(in) :: ipnt !< pointer index in valobs
+      real(kind=fp), dimension(:), intent(in) :: array !< array from which to assign value
+      integer, intent(in) :: k !< face index associated with the observation station
+      
+      if (ipnt > 0) then
+         valobs(i, ipnt) = real(array(k), dp)
+      end if
+   end subroutine conditional_assign
 
 end module m_fill_valobs

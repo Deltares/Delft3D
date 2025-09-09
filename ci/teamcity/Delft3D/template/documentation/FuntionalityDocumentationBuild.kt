@@ -59,15 +59,17 @@ object TemplateFunctionalityDocumentation : Template({
     }
 
     triggers {
-        schedule {
-            schedulingPolicy = weekly {
-                dayOfWeek = ScheduleTrigger.DAY.Sunday
-                hour = 0
-                minute = 0
+        if (DslContext.getParameter("enable_documentation_trigger").lowercase() == "true") {
+            schedule {
+                schedulingPolicy = weekly {
+                    dayOfWeek = ScheduleTrigger.DAY.Sunday
+                    hour = 0
+                    minute = 0
+                }
+                branchFilter = "+:<default>"
+                triggerBuild = always()
+                withPendingChangesOnly = false
             }
-            branchFilter = "+:<default>"
-            triggerBuild = always()
-            withPendingChangesOnly = false
         }
     }    
     

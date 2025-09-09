@@ -179,7 +179,7 @@ contains
       end do
 
       if (tim == 0) then
-         call setkbotktop(1)
+         call set_kbot_ktop(jazws0=1)
          do L = 1, Lnx
             k1 = ln(1, L); k2 = ln(2, L)
             u1(L) = 0.5d0 * (ucx(k1) + ucx(k2)) * csu(L) + 0.5d0 * (ucy(k1) + ucy(k2)) * snu(L)

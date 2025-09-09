@@ -1069,13 +1069,13 @@ contains
          shape(1) = 1
 
       ! Array pointers:
-      case ("geometry/xcc", "geometry/ycc", "field/water_depth", "geometry/kbot", "geometry/ktop")
+      case ("xcc", "ycc", "water_depth", "kbot", "ktop")
          shape(1) = ndx
          return
-      case ("geometry/z_level", "field/velocity_x", "field/velocity_y", "field/rho")
+      case ("z_level", "velocity_x", "velocity_y", "rho")
          shape(1) = ndkx
          return
-      case ("field/constituents")
+      case ("constituents")
          shape(1) = numconst
          shape(2) = ndkx
          return
@@ -2108,16 +2108,28 @@ contains
          end if
          select case (field_name)
          case ("crestlevel")
-            x = c_loc(zcgen((item_index - 1) * 3 + 1))
+            if (is_in_network) then
+               x = get_crest_level_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 3 + 1))
+            end if
             return
          case ("gateheight")
             x = c_loc(generalstruc(item_index)%gatedoorheight)
             return
          case ("gateloweredgelevel")
-            x = c_loc(zcgen((item_index - 1) * 3 + 2))
+            if (is_in_network) then
+               x = get_gate_lower_edge_level_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 3 + 2))
+            end if
             return
          case ("gateopeningwidth")
-            x = c_loc(zcgen((item_index - 1) * 3 + 3))
+            if (is_in_network) then
+               x = get_gate_opening_width_c_loc(network%sts%struct(item_index))
+            else
+               x = c_loc(zcgen((item_index - 1) * 3 + 3))
+            end if
             return
          case ("gateopeninghorizontaldirection")
             ! TODO: RTC: AvD: get this from gate/genstru params

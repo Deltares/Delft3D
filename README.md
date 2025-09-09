@@ -3,7 +3,7 @@ Please use the tarball containing the latest released version of the source code
 https://oss.deltares.nl/en/web/delft3dfm/get-started#Download%20source%20code
 See section "Workflow" below in case you want to contribute to the source code.
 
-# About compiling https://git.deltares.nl/oss/delft3d
+# About compiling https://github.com/Deltares/Delft3D
 
 #### Windows:
 - build.bat from an Intel oneAPI command prompt for Intel 64 for Visual Studio 2022.
@@ -44,7 +44,7 @@ Replace "..." by the actual path on your system to the checkout directory.
     -> Environment: PATH=...\build_fm-suite\x64\Debug;%PATH%;...\fm-suite\x64\Release\share\bin
 
 # Workflow
-- Request for access on https://git.deltares.nl/oss/delft3d
+- Request for access on https://github.com/Deltares/Delft3D
 - Create an issue in https://issuetracker.deltares.nl
   If an issue is not created, you have to create a branch of type research
 - Clone the repository
@@ -74,11 +74,21 @@ Examples:
 
 # Unit tests
 ## Running Unit tests
-- After building the source code, execute "ctest" in the build directory
-- Then run ctest followed by the config
+After building the source code, you can run the unit tests with `ctest`. 
+You can do this by running `ctest` in the build directory. Be sure to pass the "config"
+(`Debug`/`Release`) with the `-C|--build-config` argument.
+```
+cd build_fm-suite
+ctest --build-config Debug
+```
 
-```
-  cd build_fm-suite
-  ctest -C debug
-```
-- For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](doc/unit-testing.md).
+Or...
+
+`ctest --test-dir build_fm-suite --build-config Debug`
+
+`ctest` allows you to customize which tests you want to run or exclude, and supports
+options for customizing the output. For instance, you can use the `--output-junit` option
+to write the test results to an XML file, which is recognized by many tools that process
+test results. Use `ctest --help` for an overview of the options.
+
+For more details about the unit testing utilities in cmake, see [Fortran Unit Testing](doc/unit-testing.md).

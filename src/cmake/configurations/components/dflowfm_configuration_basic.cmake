@@ -192,11 +192,6 @@ if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
 endif()
 
-# icepack
-if(NOT TARGET icepack)
-    add_subdirectory(${checkout_src_root}/${icepack_module} icepack)
-endif()
-
 if(NOT WITH_INTERACTER)
     # Use interacter_stub instead
     if(NOT TARGET interacter_stub)

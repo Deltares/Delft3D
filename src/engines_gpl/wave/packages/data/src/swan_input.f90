@@ -100,6 +100,13 @@ module swan_input
    !
    integer, parameter :: SWAN_MODE_EXE = 0
    integer, parameter :: SWAN_MODE_LIB = 1
+   integer, parameter :: NUM_ACCUR = 0
+   integer, parameter :: NUM_STOPC = 1
+   !
+   real, parameter :: DEFAULT_TOLERANCE_RELATIVE_STOPC = 0.01
+   real, parameter :: DEFAULT_TOLERANCE_ABSOLUTE_STOPC = 0.005
+   real, parameter :: DEFAULT_TOLERANCE_ACCUR = 0.02
+
    !
    type swan_dom
       real :: freqmax ! maximum frequency
@@ -279,8 +286,11 @@ module swan_input
       real :: inthotf
       real :: depmin
       real :: diffr_coeff
-      real :: drel
-      real :: dabs
+      integer :: num_type !> Either NUM_ACCUR or NUM_STOPC
+      real :: tolerance_relative !> Relative tolerance used with both "num stopc" and "num accur"
+      real :: tolerance_absolute !> Absolute tolerance used with "num stopc"
+      real :: tolerance_absolute_wave_height !> Absolute tolerance for wave height used with "num accur"
+      real :: tolerance_absolute_wave_period !> Absolute tolerance for wave period used with "num accur"
       real :: dxw
       real :: dyw
       real :: excval
@@ -538,12 +548,13 @@ contains
       logical :: ex !< flag indicating whether file exists
       logical :: flag
       logical :: success
+      logical :: enable_num_accur !< TRUE when parameters are specified for "num accur"
+      logical :: enable_num_stopc !< TRUE when parameters are specified for "num stopc"
       real :: def_startdir
       real :: def_enddir
       real :: def_freqmin
       real :: def_freqmax
       real :: tscale
-      real :: r_dummy
       real, dimension(2) :: xy
       character(10) :: exemode
       character(10) :: versionstring
@@ -1198,8 +1209,14 @@ contains
       sr%num_scheme = 1
       sr%cdd = 0.5
       sr%css = 0.5
-      sr%drel = 0.01
-      sr%dabs = 0.005
+
+      enable_num_accur = .false.
+      enable_num_stopc = .false.
+      
+      sr%tolerance_relative = -1.0 ! Default value will be set after checking whether "num accur" or "num stopc" is used
+      sr%tolerance_absolute = DEFAULT_TOLERANCE_ABSOLUTE_STOPC
+      sr%tolerance_absolute_wave_height = DEFAULT_TOLERANCE_ACCUR
+      sr%tolerance_absolute_wave_period = DEFAULT_TOLERANCE_ACCUR
       sr%percwet = 98.0
       sr%itermx = 15
       sr%gamma0 = 3.3
@@ -1222,31 +1239,49 @@ contains
       end select
       call prop_get(mdw_ptr, 'Numerics', 'DirSpaceCDD', sr%cdd)
       call prop_get(mdw_ptr, 'Numerics', 'FreqSpaceCSS', sr%css)
-      call prop_get(mdw_ptr, 'Numerics', 'DRelHinc', sr%drel)
-      call prop_get(mdw_ptr, 'Numerics', 'DAbsHinc', sr%dabs)
+      !
+      ! "num stopc" parameters
+      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'DRelHinc', sr%tolerance_relative, 0.0, 1.0) ) then
+         enable_num_stopc = .true.
+      end if
+      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'DAbsHinc', sr%tolerance_absolute, 0.0, 100.0) ) then
+         enable_num_stopc = .true.
+      end if
+      !
+      ! "num accur" parameters
+      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChHsTm01', sr%tolerance_relative, 0.0, 1.0) ) then
+         enable_num_accur = .true.
+      end if
+      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanHs', sr%tolerance_absolute_wave_height, 0.0, 100.0) ) then
+         enable_num_accur = .true.
+      end if
+      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanTm01', sr%tolerance_absolute_wave_period, 0.0, 100.0) ) then
+         enable_num_accur = .true.
+      end if
+      !
+      ! Check (combinations of) enable_num_accur and enable_num_stopc
+      if (enable_num_accur .and. enable_num_stopc) then
+         write (*, *) 'SWAN_INPUT: Tolerances specified for both "num_accur" and "num_stopc"'
+         call handle_errors_mdw(sr)
+      end if
+      if (enable_num_accur == .false. .and. enable_num_stopc == .false.) then
+         enable_num_stopc = .true.
+      end if
+      if (enable_num_stopc) then
+         sr%num_type = NUM_STOPC
+         if (sr%tolerance_relative < 0.0) then
+            sr%tolerance_relative = DEFAULT_TOLERANCE_RELATIVE_STOPC
+         end if
+      else if (enable_num_accur) then
+         sr%num_type = NUM_ACCUR
+         if (sr%tolerance_relative < 0.0) then
+            sr%tolerance_relative = DEFAULT_TOLERANCE_ACCUR
+         end if
+      end if
+      !
       call prop_get(mdw_ptr, 'Numerics', 'PercWet', sr%percwet)
       call prop_get(mdw_ptr, 'Numerics', 'MaxIter', sr%itermx)
       call prop_get(mdw_ptr, 'Numerics', 'AlfaUnderRelax', sr%alfa)
-      !
-      ! Stop with an error message when an outdated stop criteria is specified
-      !
-      r_dummy = -999.9
-      call prop_get(mdw_ptr, 'Numerics', 'RChHsTm01', r_dummy)
-      if (r_dummy > -999.0) then
-         write (*, *) 'SWAN_INPUT: Obsolete by switching to "NUM STOPC": RChHsTm01. Use DAbsHinc/DRelHinc.'
-         ! TEMPORARY DISABLED: call handle_errors_mdw(sr)
-      endif
-      call prop_get(mdw_ptr, 'Numerics', 'RChMeanHs', r_dummy)
-      if (r_dummy > -999.0) then
-         write (*, *) 'SWAN_INPUT: Obsolete by switching to "NUM STOPC": RChMeanHs. Use DAbsHinc/DRelHinc.'
-         ! TEMPORARY DISABLED: call handle_errors_mdw(sr)
-      endif
-      call prop_get(mdw_ptr, 'Numerics', 'RChMeanTm01', r_dummy)
-      if (r_dummy > -999.0) then
-         write (*, *) 'SWAN_INPUT: Obsolete by switching to "NUM STOPC": RChMeanTm01. Use DAbsHinc/DRelHinc.'
-         ! TEMPORARY DISABLED: call handle_errors_mdw(sr)
-      endif
-      
       !
       ! General output options
       !
@@ -3356,9 +3391,13 @@ contains
       elseif (sr%genmode == 2) then
          line(1:8) = 'GEN2 '
       elseif (sr%genmode == 3) then
-         line = 'GEN3 WESTH'
+         if (sr%whitecap == 2) then
+            line = 'GEN3 WESTH'
+         else
+            line = 'GEN3 KOMEN'
+         end if
          ! Always add (wind related) drag formula. It doesn't harm if there is no wind.
-         line = trim(line) // ' DRAG WU'
+         line = trim(line)//' DRAG WU'
       else
       end if
       write (luninp, '(1X,A)') line
@@ -3468,13 +3507,30 @@ contains
       line(1:2) = '$ '
       write (luninp, '(1X,A)') line
       line = ' '
-      line(1:10) = 'NUM STOPC '
-      if (sr%modsim /= 3) then
-         write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0,A,F7.5)') &
-            & 'DABS=', sr%dabs, ' DREL=', sr%drel, ' CURVAT=0.005 NPNTS=', sr%percwet, ' STAT MXITST=', sr%itermx, ' ALFA=', sr%alfa
+      if (sr%num_type == NUM_STOPC) then
+         line(1:10) = 'NUM STOPC '
+         if (sr%modsim /= 3) then
+            write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0,A,F7.5)') &
+               & 'DABS=', sr%tolerance_absolute, ' DREL=', sr%tolerance_relative, ' CURVAT=0.005 NPNTS=', sr%percwet, ' STAT MXITST=', sr%itermx, ' ALFA=', sr%alfa
+         else
+            write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0)') &
+            & 'DABS=', sr%tolerance_absolute, ' DREL=', sr%tolerance_relative, ' CURVAT=0.005 NPNTS=', sr%percwet, ' NONSTAT MXITNS=', sr%itermx
+         end if
       else
-         write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0)') &
-         & 'DABS=', sr%dabs, ' DREL=', sr%drel, ' CURVAT=0.005 NPNTS=', sr%percwet, ' NONSTAT MXITNS=', sr%itermx
+         line(1:10) = 'NUM ACCUR '
+         if (sr%modsim /= 3) then
+            if (sr%alfa > 0.0) then
+               write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,A,1X,I4,1X,F8.3)') &
+                    & sr%tolerance_relative, sr%tolerance_absolute_wave_height, sr%tolerance_absolute_wave_period, sr%percwet, 'STAT', sr%itermx, sr%alfa
+            else
+               write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,I4)') &
+               & sr%tolerance_relative, sr%tolerance_absolute_wave_height, sr%tolerance_absolute_wave_period, sr%percwet, sr%itermx
+            end if
+         else
+            write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,A,1X,I4)') &
+            & sr%tolerance_relative, sr%tolerance_absolute_wave_height, sr%tolerance_absolute_wave_period, sr%percwet, &
+            & 'NONSTAT', sr%itermx
+         end if
       end if
       write (luninp, '(1X,A)') trim(line)
 !-----------------------------------------------------------------------
@@ -4311,7 +4367,9 @@ contains
          pointname(maxPointNameLength + 1:) = ' '
       end if
    end function get_pointname
-
+!
+!
+!==============================================================================
 !> add nest index as to the string
    subroutine add_inest(nnest, line, i, inest)
 
@@ -4328,5 +4386,30 @@ contains
          i = i + 3
       end if
    end subroutine
+!
+!
+!==============================================================================
+   !> Use the success return value of prop_get
+   !> Check if value_out is between lower_bound and upper_bound
+   function prop_get_checked(sr, mdw_ptr, group, key, value_out, lower_bound, upper_bound) result(success)
+      use properties
+
+      type(swan_type) :: sr
+      type(tree_data), pointer :: mdw_ptr
+      character(*), intent(in) :: group
+      character(*), intent(in) :: key
+      real, intent(out) :: value_out
+      real, intent(in) :: lower_bound
+      real, intent(in) :: upper_bound
+      logical :: success
+      
+      call prop_get(mdw_ptr, group, key, value_out, success)
+      if (success) then
+         if (value_out < lower_bound .or. value_out > upper_bound) then
+            write (*, *) 'SWAN_INPUT: parameter ', key, ' (', value_out, ') is out of bounds [', lower_bound, ',', upper_bound, ']'
+            call handle_errors_mdw(sr)
+         end if
+      end if  
+   end function prop_get_checked
 
 end module swan_input

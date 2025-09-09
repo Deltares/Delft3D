@@ -88,7 +88,7 @@ contains
       use dfparall
       use m_alloc
       use m_missing
-      use m_turbulence, only: vicwws, turkinepsws, rhowat
+      use m_turbulence, only: vicwws, turkinws, rhowat
       use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
       use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor
@@ -649,7 +649,6 @@ contains
                ! at layer interfaces, but not at bed and surface  ! to check...
                do l = 1, lsed
                   do k = kb, kt - 1
-                     !seddif(l, k) = max(vicwws(k),dicoww)
                      seddif(l, k) = vicwws(k) ! background dico is added in solve_vertical
                   end do
                end do
@@ -864,7 +863,7 @@ contains
          dll_reals(RP_SNDFR) = real(sandfrac(nm), hp)
          dll_reals(RP_DGSD) = real(dgsd(nm), hp)
          if (iturbulencemodel > 2 .and. kmx > 0) then
-            dll_reals(RP_KTUR) = real(turkinepsws(1, kb), hp) ! 1=k, 2=e
+            dll_reals(RP_KTUR) = real(turkinws(kb), hp)
          end if
          dll_reals(RP_UMEAN) = real(umean, hp)
          dll_reals(RP_VMEAN) = real(vmean, hp)
@@ -992,7 +991,6 @@ contains
                   !
                   klc = 0
                   do k = kt, kb - 1, -1
-                     !seddif(l, k) = max(vicwws(k),dicoww)
                      seddif(l, k) = vicwws(k)
                      klc = klc + 1
                   end do
@@ -1089,7 +1087,6 @@ contains
                   dcwwlc = 0.0_fp
                   wslc = 0.0_fp
                   do kk = kt, kb - 1, -1 ! sigma convention
-                     !dcwwlc(klc) = max(vicwws(kk),dicoww)     ! maximalisation is safety
                      dcwwlc(klc) = vicwws(kk) !  background is added in solve_vertical
                      wslc(klc) = ws(kk, l)
                      klc = klc + 1
