@@ -1,10 +1,6 @@
 languages:
-  - name: "cpp"
+  - cpp
 
-scope:
-  exclude:
-    - path: ".*"
+include:
+  - "src/engines_gpl/**"
 
-  include:
-    - path: "src/engines_gpl"
-      languages: ["cpp"]
