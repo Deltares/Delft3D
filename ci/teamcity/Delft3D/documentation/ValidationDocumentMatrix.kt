@@ -10,6 +10,7 @@ import Delft3D.template.*
 object ValidationDocumentMatrix : BuildType({
     templates(
         TemplateDownloadFromS3,
+        TemplateKeeperVault,
         TemplateValidationDocumentation
     )
 

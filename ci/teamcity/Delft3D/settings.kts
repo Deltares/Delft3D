@@ -19,8 +19,9 @@ project {
     params {
         param("delft3d-user", DslContext.getParameter("delft3d-user"))
         password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
-        param("s3_accesskey", "%keeper:2QeIUOj3PqQarS_ZxV1sBg/field/login%")
-        password("s3_secret", "%keeper:2QeIUOj3PqQarS_ZxV1sBg/field/password%")
+
+        param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
+        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
 
         param("product", "dummy_value")
 
@@ -151,23 +152,23 @@ project {
             userName = "%delft3d-user%"
             password = "%delft3d-secret%"
         }
-        feature {
-            id = "DELFT3D_KEEPER"
-            type = "OAuthProvider"
-            param("displayName", "Keeper Vault Delft3d")
-            param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
-            param("providerType", "teamcity-ksm")
-        }
         awsConnection {
             id = "doc_download_connection"
             name = "Deltares MinIO connection"
             credentialsType = static {
-                accessKeyId = "%s3_accesskey%"
-                secretAccessKey = "%s3_secret%"
+                accessKeyId = "%s3_dsctestbench_accesskey%"
+                secretAccessKey = "%s3_dsctestbench_secret%"
                 useSessionCredentials = false
             }
             allowInSubProjects = true
             allowInBuilds = true
+        }
+        feature {
+            id = "KEEPER_VAULT_DELFT3D"
+            type = "OAuthProvider"
+            param("displayName", "Keeper Vault Delft3d")
+            param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
+            param("providerType", "teamcity-ksm")
         }
     }
 }

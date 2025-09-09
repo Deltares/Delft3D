@@ -9,7 +9,8 @@ import Delft3D.template.*
 
 object FunctionalityDocumentMatrix : BuildType({
     templates(
-        TemplateDownloadFromS3, 
+        TemplateDownloadFromS3,
+        TemplateKeeperVault,
         TemplateFunctionalityDocumentation
     )
 
