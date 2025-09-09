@@ -41,7 +41,6 @@ module unstruc_model
    use time_module, only: ymd2modified_jul, datetimestring_to_seconds
    use dflowfm_version_module, only: getbranch_dflowfm
    use netcdf, only: nf90_double
-   use m_start_parameters, only: md_jaautostart, MD_NOAUTOSTART
    use properties, only: prop_get, prop_file, tree_create, tree_destroy
    use m_waveconst
 
@@ -246,19 +245,10 @@ module unstruc_model
    character(len=128) :: md_culvertprefix = ' ' !< prefix for generating long culvert files
    character(len=128) :: md_dambreak_widening_method !< method for dambreak widening
 
-!   map file output format
-   integer, parameter :: NUMFORMATS = 4
-
    integer, parameter :: IFORMAT_NETCDF = 1
-   integer, parameter :: IFORMAT_TECPLOT = 2
-   integer, parameter :: IFORMAT_NETCDF_AND_TECPLOT = 3
+   integer, parameter :: IFORMAT_TECPLOT = 2 !< No longer_supported, used for error message
+   integer, parameter :: IFORMAT_NETCDF_AND_TECPLOT = 3 !< No longer_supported, used for error message
    integer, parameter :: IFORMAT_UGRID = 4
-
-   character(len=128), dimension(NUMFORMATS) :: SFORMATNAMES = [character(len=128) :: &
-                                                                'netCDF', &
-                                                                'Tecplot', &
-                                                                'netCFD and Tecplot', &
-                                                                'NetCDF-UGRID']
 
    integer :: md_mapformat !< map file output format (one of IFORMAT_*)
    integer :: md_unc_conv !< Unstructured NetCDF conventions (either UNC_CONV_CFOLD or UNC_CONV_UGRID)
@@ -278,6 +268,8 @@ contains
       use unstruc_netcdf, only: UNC_CONV_UGRID
       use unstruc_channel_flow
       use m_fm_icecover, only: fm_ice_null
+      use m_start_parameters, only: md_jaautostart, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
+      use unstruc_display, only: jagui
 
       call tree_destroy(md_ptr)
       nullify (trtdef_ptr) ! trtdef_ptr was only pointing to subtree of md_ptr, so is now a dangling pointer: model's responsibility to nullify it here.
@@ -364,8 +356,11 @@ contains
       md_nccompress = .false. !< Whether or not to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
 
       md_fou_step = 0 !< default: fourier analysis is updated on a user-timestep basis
-
-      md_jaAutoStart = MD_NOAUTOSTART !< Autostart simulation after loading or not.
+      if (jagui == 1) then
+         md_jaAutoStart = MD_NOAUTOSTART
+      else
+         md_jaAutoStart = MD_AUTOSTARTSTOP !< Autostart simulation after loading or not.
+      end if
 
       md_cfgfile = ' '
 
@@ -498,7 +493,7 @@ contains
       call timstrt('Read structures', timerHandle)
       if (len_trim(md_1dfiles%structures) > 0) then
          call SetMessage(LEVEL_INFO, 'Reading Structures ...')
-         call readStructures(network, md_1dfiles%structures)
+         call readStructures(network, md_1dfiles%structures, is_path_relative=md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
 
          if (md_convertlongculverts == 0) then
@@ -820,7 +815,6 @@ contains
       end if
       call prop_get(md_ptr, bnam, 'Version', tmpstr, success) ! Not used currently. Mark as read to prevent warnings.
 
-      call prop_get(md_ptr, bnam, 'AutoStart', md_jaAutoStart)
       call prop_get(md_ptr, bnam, 'InputSpecific', md_input_specific)
       call prop_get(md_ptr, bnam, 'ModelSpecific', md_specific)
       call prop_get(md_ptr, bnam, 'PathsRelativeToParent', md_paths_relto_parent)
@@ -921,6 +915,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'Slotw1D', slotw1D)
       call prop_get(md_ptr, 'geometry', 'Dpuopt', jadpuopt)
       call prop_get(md_ptr, 'geometry', 'ExtrBl', jaextrapbl)
+      call prop_get(md_ptr, 'geometry', 'calculateBedLevelOverNonActiveLinks', calc_bedlevel_over_inactive_links)
       ! use slotw1d also in getcspars routines
       sl = slotw1D
 
@@ -934,8 +929,14 @@ contains
             mxlayz = kmx
          end if
 
-         call prop_get(md_ptr, 'geometry', 'Numtopsig', Numtopsig)
-         call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform)
+         call prop_get(md_ptr, 'geometry', 'Numtopsig', Numtopsig, success)
+         if (success .and. numtopsig > 0 .and. layertype /= LAYTP_Z) then
+            write (msgbuf, '(a,i0,a)'), 'The model definition file sets numtopsig to ', numtopsig, &
+               ', but layertype is not 2 (z-layers or z-sigma-layers). Continuing with numtopsig = 0.'
+            call warn_flush()
+            numtopsig = 0
+         end if
+         call prop_get(md_ptr, 'geometry', 'Numtopsiguniform', JaNumtopsiguniform, success)
          call prop_get(md_ptr, 'geometry', 'SigmaGrowthFactor', sigmagrowthfactor)
          call prop_get(md_ptr, 'geometry', 'Dztopuniabovez', dztopuniabovez)
          call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
@@ -986,11 +987,15 @@ contains
 
          call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
          if (.not. success) then
-            call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed)
+            call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success)
          end if
          call prop_get(md_ptr, 'geometry', 'Ihuz', ihuz, success)
          call prop_get(md_ptr, 'geometry', 'Ihuzcsig', ihuzcsig, success)
          call prop_get(md_ptr, 'geometry', 'Keepzlay1bedvol', keepzlay1bedvol, success)
+         if (success .and. keepzlay1bedvol == 1 .and. keepzlayeringatbed /= 1) then
+            call mess(LEVEL_WARN, 'Keepzlay1bedvol is set to 1, but keepzlayeringatbed is not set to 1. Keepzlay1bedvol will be set to 0.')
+            keepzlay1bedvol = 0
+         end if
          call prop_get(md_ptr, 'geometry', 'Zlayeratubybob', jaZlayeratubybob, success)
       end if
       call prop_get(md_ptr, 'geometry', 'Makeorthocenters', Makeorthocenters)
@@ -1185,9 +1190,8 @@ contains
       end if
 
       call prop_get(md_ptr, 'numerics', 'Turbulenceadvection', javakeps)
-      call prop_get(md_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor)
-      call prop_get(md_ptr, 'numerics', 'FacLaxTurbVer', turbulence_lax_vertical)
-      call prop_get(md_ptr, 'numerics', 'FacLaxTurbHor', turbulence_lax_horizontal)
+      call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationFactor', tur_time_int_factor)
+      call prop_get(md_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', tur_time_int_method)
 
       call prop_get(md_ptr, 'numerics', 'Eddyviscositybedfacmax', Eddyviscositybedfacmax)
       call prop_get(md_ptr, 'numerics', 'AntiCreep', jacreep)
@@ -1320,7 +1324,7 @@ contains
       call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
       call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
       call prop_get(md_ptr, 'physics', 'Vicoww', vicoww)
-      call prop_get(md_ptr, 'physics', 'Dicoww', dicoww)
+      call prop_get(md_ptr, 'physics', 'Dicoww', constant_dicoww)
       call prop_get(md_ptr, 'physics', 'Vicwminb', Vicwminb)
       call prop_get(md_ptr, 'physics', 'Xlozmidov', Xlozmidov)
       call prop_get(md_ptr, 'physics', 'TKEMin', tke_min)
@@ -1578,11 +1582,6 @@ contains
          call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
       end if
       call prop_get(md_ptr, 'wind', 'Relativewind', relativewind)
-      if (kmx == 0) then
-         jawindhuorzwsbased = 1
-      else
-         jawindhuorzwsbased = 0
-      end if
       call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased)
       call prop_get(md_ptr, 'wind', 'Windpartialdry', jawindpartialdry)
 
@@ -1903,6 +1902,11 @@ contains
       end if
 
       call prop_get(md_ptr, 'output', 'MapFormat', md_mapformat, success)
+      if (md_mapformat == IFORMAT_TECPLOT) then
+         call mess(LEVEL_ERROR, 'MapFormat = 2 (Tecplot) is no longer supported. Please use MapFormat=4 (UGRID).')
+      else if (md_mapformat == IFORMAT_NETCDF_AND_TECPLOT) then
+         call mess(LEVEL_ERROR, 'MapFormat = 3 (NetCDF and Tecplot) is no longer supported. Please use MapFormat=4 (UGRID).')
+      end if
       if (md_mapformat == IFORMAT_UGRID) then
          md_unc_conv = UNC_CONV_UGRID
       else
@@ -2650,8 +2654,6 @@ contains
       tmpstr = ''
       write (tmpstr, '(i0,".",i2.2)') MDUFormatMajorVersion, MDUFormatMinorVersion
       call prop_set(prop_ptr, 'General', 'fileVersion', trim(tmpstr), 'File format version (do not edit this)')
-      call prop_set(prop_ptr, 'General', 'AutoStart', md_jaAutoStart, 'Autostart simulation after loading MDU (0: no, 1: autostart, 2: autostartstop)')
-      call prop_set(prop_ptr, 'General', 'InputSpecific', md_jaAutoStart, 'Use of hardcoded specific inputs, shall not be used by users (0: no, 1: yes)')
       call prop_set(prop_ptr, 'General', 'ModelSpecific', md_specific, 'Optional ''model specific ID'', to enable certain custom runtime function calls (instead of via MDU name).')
       call prop_set(prop_ptr, 'General', 'PathsRelativeToParent', md_paths_relto_parent, 'Default: 0. Whether or not (1/0) to resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir.')
 
@@ -2930,6 +2932,8 @@ contains
       call prop_set(prop_ptr, 'geometry', 'Dpuopt', jadpuopt, 'Bed level interpolation at velocity point in case of tile approach bed level: 1 = max (default); 2 = mean')
 
       call prop_set(prop_ptr, 'geometry', 'ExtrBl', jaextrapbl, 'Extrapolation of bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate.')
+      call prop_set(prop_ptr, 'geometry', 'calculateBedLevelOverNonActiveLinks', calc_bedlevel_over_inactive_links, &
+                     'Calculate the bed level, using the non active links in the network as well. ')
 
       ! 1D Volume tables
       if (writeall .or. useVolumeTables) then
@@ -3151,10 +3155,9 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Turbulenceadvection', javakeps, 'Turbulence advection (0: none, 3: horizontally explicit and vertically implicit)')
       end if
 
-      if (writeall .or. (turbulence_lax_factor > 0 .and. kmx > 0)) then
-         call prop_set(prop_ptr, 'numerics', 'FacLaxTurb', turbulence_lax_factor, 'LAX-scheme factor (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)')
-         call prop_set(prop_ptr, 'numerics', 'FacLaxTurbVer', turbulence_lax_vertical, 'Vertical distribution of turbulence_lax_factor (1: linear increasing from 0.0 to 1.0 in top half only, 2: uniform 1.0 over vertical)')
-         call prop_set(prop_ptr, 'numerics', 'FacLaxTurbHor', turbulence_lax_horizontal, 'Horizontal method of turbulence_lax_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)')
+      if (writeall .or. (tur_time_int_factor > 0 .and. kmx > 0)) then
+         call prop_set(prop_ptr, 'numerics', 'turbulenceTimeIntegrationFactor', tur_time_int_factor, '[0.0 - 1.0] for turbulent quantities (0.0: Tur0 from links, 1.0: Tur0 maximal mix of values from links with nodes)')
+         call prop_set(prop_ptr, 'numerics', 'turbulenceTimeIntegrationMethod', tur_time_int_method, 'Apply turbulenceTimeIntegrationFactor (1: to all cells, 2: only when vertical layers are horizontally connected)')
       end if
 
       if (writeall .or. Eddyviscositybedfacmax > 0 .and. kmx > 0) then
@@ -3311,7 +3314,8 @@ contains
       call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'physics', 'Vicoww', vicoww, 'Uniform vertical eddy viscosity (m2/s)')
-         call prop_set(prop_ptr, 'physics', 'Dicoww', dicoww, 'Uniform vertical eddy diffusivity (m2/s)')
+         call prop_set(prop_ptr, 'physics', 'Dicoww', constant_dicoww, 'Uniform vertical eddy diffusivity (m2/s)')
+
          if (writeall .or. (vicwminb > 0.0_dp)) then
             call prop_set(prop_ptr, 'physics', 'Vicwminb', Vicwminb, 'Minimum visc in prod and buoyancy term (m2/s)')
          end if
@@ -3819,11 +3823,7 @@ contains
       write (helptxt, '(i0,a1,a1)') int(ti_split), ' ', ti_split_unit
       call prop_set(prop_ptr, 'output', 'TimeSplitInterval', trim(helptxt), 'Time splitting interval, after which a new output file is started. value+unit, e.g. ''1 M'', valid units: Y,M,D,h,m,s.')
 
-      write (helptxt, "('Map file format ')")
-      do i = 1, NUMFORMATS
-         write (helptxt, "(A, ', ', I0, ': ', A)") trim(helptxt), i, trim(SFORMATNAMES(i))
-      end do
-      call prop_set(prop_ptr, 'output', 'MapFormat', md_mapformat, trim(helptxt))
+      call prop_set(prop_ptr, 'output', 'MapFormat', md_mapformat, 'Map file format, 1: NetCDF, 4: NetCDF-UGRID')
 
       call prop_set(prop_ptr, 'output', 'NcFormat', md_ncformat, 'Format for all NetCDF output files (3: classic, 4: NetCDF4+HDF5)')
 

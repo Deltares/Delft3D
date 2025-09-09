@@ -124,6 +124,7 @@
       hyd%tem_present = d_hyd%tem_present
       hyd%tau_present = d_hyd%tau_present
       hyd%vdf_present = d_hyd%vdf_present
+      hyd%vel_present = d_hyd%vel_present
       hyd%description = ' '
       hyd%hyd_ref     = d_hyd%hyd_ref
       hyd%hyd_start   = d_hyd%hyd_start
@@ -595,6 +596,17 @@
             endif
          enddo
       enddo
+      
+      ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
+      ! equals the number of boundary conditions per layer times the number of layers
+      if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
+         ! increase hyd%num_exchanges_u_dir and hyd%num_exchanges, and reallocate hyd%ipoint
+         hyd%num_exchanges_u_dir = hyd%num_exchanges_u_dir + 1
+         hyd%num_exchanges = hyd%num_exchanges + 1
+         call reallocP(hyd%ipoint, [4, hyd%num_exchanges] , keepExisting = .true., fill = 0)
+         ! Insert a dummy exchange as the last of the horizontal exhanges
+         hyd%ipoint(1, hyd%num_exchanges_u_dir) = -hyd%num_boundary_conditions
+      endif
 
       ! pointers in third dimension
       do iseg = 1, hyd%nosegl
@@ -669,6 +681,7 @@
       if (hyd%tem_present) allocate(hyd%tem(hyd%num_cells))
       if (hyd%tau_present) allocate(hyd%tau(hyd%num_cells))
       if (hyd%vdf_present) allocate(hyd%vdf(hyd%num_cells))
+      if (hyd%vel_present) allocate(hyd%vel(hyd%num_cells))
 
       ! time independent items
       hyd%atr_type = ATR_FM
@@ -773,6 +786,7 @@
       hyd%tem_present = domain_hyd_coll%hyd_pnts(1)%tem_present
       hyd%tau_present = domain_hyd_coll%hyd_pnts(1)%tau_present
       hyd%vdf_present = domain_hyd_coll%hyd_pnts(1)%vdf_present
+      hyd%vel_present = domain_hyd_coll%hyd_pnts(1)%vel_present
       hyd%description = ' '
       hyd%hyd_ref     = domain_hyd_coll%hyd_pnts(1)%hyd_ref
       hyd%hyd_start   = domain_hyd_coll%hyd_pnts(1)%hyd_start
@@ -983,6 +997,17 @@
             end if
          end do
       end do
+      
+      ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
+      ! equals the number of boundary conditions per layer times the number of layers
+      if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
+         ! increase hyd%num_exchanges_u_dir and hyd%num_exchanges, and reallocate hyd%ipoint
+         hyd%num_exchanges_u_dir = hyd%num_exchanges_u_dir + 1
+         hyd%num_exchanges = hyd%num_exchanges + 1
+         call reallocP(hyd%ipoint, [4, hyd%num_exchanges] , keepExisting = .true., fill = 0)
+         ! Insert a dummy exchange as the last of the horizontal exhanges
+         hyd%ipoint(1, hyd%num_exchanges_u_dir) = -hyd%num_boundary_conditions
+      endif
 
       ! pointers in third dimension
       do iseg = 1, hyd%nosegl
@@ -1136,6 +1161,7 @@
       if (hyd%tem_present) allocate(hyd%tem(hyd%num_cells))
       if (hyd%tau_present) allocate(hyd%tau(hyd%num_cells))
       if (hyd%vdf_present) allocate(hyd%vdf(hyd%num_cells))
+      if (hyd%vel_present) allocate(hyd%vel(hyd%num_cells))
 
       ! time independent items
       hyd%atr_type = ATR_FM

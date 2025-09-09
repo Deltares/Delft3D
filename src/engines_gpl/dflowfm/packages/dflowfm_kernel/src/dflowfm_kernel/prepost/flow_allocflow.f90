@@ -56,7 +56,7 @@ contains
                         workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
                         spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
                         limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, &
-                        turkinepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
+                        turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
                         v, ucxu, ucyu, hu, huvli, au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, &
                         frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
                         salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
@@ -88,7 +88,7 @@ contains
       use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
-      use m_set_kbot_ktop, only: setkbotktop
+      use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
@@ -880,8 +880,10 @@ contains
          call realloc(drhodz, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('drhodz(ndkx)', ierr, ndkx)
 
-         call realloc(turkinepsws, [2, ndkx], stat=ierr, fill=0.0_dp, keepexisting=.false.)
-         call aerr('turkinepsws(2,ndkx)', ierr, ndkx)
+         call realloc(turkinws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('turkinws(ndkx)', ierr, ndkx)
+         call realloc(turepsws, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('turepsws(ndkx)', ierr, ndkx)
 
          call realloc(sqcu, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('sqcu(ndkx)', ierr, ndkx)
@@ -1229,6 +1231,6 @@ contains
          call realloc(nudge_rate, Ndx, fill=DMISS)
       end if
 
-      call setkbotktop(1)
+      call set_kbot_ktop(jazws0=1)
    end subroutine flow_allocflow
 end module m_flow_allocflow

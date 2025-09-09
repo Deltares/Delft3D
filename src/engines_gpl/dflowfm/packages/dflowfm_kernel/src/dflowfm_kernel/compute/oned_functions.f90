@@ -33,9 +33,11 @@
 module m_oned_functions
    use m_vol12d, only: vol12d
    use m_missing, only: dmiss
+   
    implicit none
+   
    private
-
+ 
    public set_1d_roughnesses
    public set_1d_indices_in_network
    public save_1d_nrd_vars_in_stm
@@ -71,7 +73,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_flow, only: frcu, ifrcutp, frcu_mor
 
-      implicit none
+      
 
       ! FRCU and FRCU_MOR should only be used after SETAU - VOL12D.
       ! Therefore initialise these arrays with a negative value.
@@ -95,7 +97,7 @@ contains
       use m_flow, only: nonlin1d, nonlin, flow_solver, flow_solver_sre
       use unstruc_channel_flow, only: default_width, network, cscalculationoption, cs_type_plus
 
-      implicit none
+      
       integer handle_tot
       integer handle
 
@@ -155,7 +157,7 @@ contains
       use precision_basics, only: comparereal
       use m_branch, only: t_branch
 
-      implicit none
+      
 
       integer :: L
       integer :: ibr
@@ -238,7 +240,7 @@ contains
       use m_inquire_flowgeom
       use m_find_flownode, only: find_nearest_flownodes
 
-      implicit none
+      
 
       integer :: i
       type(t_storage), pointer :: pstor
@@ -309,7 +311,7 @@ contains
       use fm_external_forcings_data
       use m_inquire_flowgeom
 
-      implicit none
+      
 
       integer :: nstru
 
@@ -335,7 +337,7 @@ contains
       use messageHandling
       use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
 
-      implicit none
+      
 
       integer :: L
       integer :: ibr
@@ -446,7 +448,7 @@ contains
       use morphology_data_module, only: t_nodefraction, t_noderelation
       use string_module
 
-      implicit none
+      
 
       integer :: ibr, iFrac, iNodeRel
       type(t_branch), pointer :: pbr
@@ -496,17 +498,18 @@ contains
 
    subroutine setbobs_1d()
       use precision, only: dp
+      use m_network, only: msgbuf
+      use network_data, only: zkuni
+      use m_flowgeom, only: ndxi, bl, bob, bob0, ndx2D, lnx1d, lnx1Db, kcu, ln, lnxi
+      use m_flowtimes, only: time_user, tstart_user
+      use messagehandling, only: warn_flush, setmessage, LEVEL_WARN
+      use unstruc_channel_flow, only: network, t_network
+      use m_cross_helper, only: getbobs
+      use m_1d_structures, only: get_crest_level, t_structure
+      use m_storage, only: t_storage
+      use m_flowparameters, only: eps3
 
-      use m_network
-      use m_flowgeom
-      use m_flowtimes
-      use messagehandling
-      use unstruc_channel_flow
-      use m_1d_structures
-      use m_cross_helper
-      use network_data
-
-      implicit none
+      
 
       integer :: i
       integer :: L, L0
@@ -578,14 +581,11 @@ contains
             pstor => network%storS%stor(i)
             n1 = pstor%grid_point
             if (n1 <= 0) cycle
-            if (bl(n1) < pstor%storage_area%x(1)) then
-               call setmessage(LEVEL_WARN, 'At node '//trim(pstor%node_id)//' the bedlevel is below the bedlevel of the assigned storage area.')
-               write (msgbuf, '(''The bedlevel (due to invert levels of incoming channels/pipes) = '', g14.2, '' and the bottom level of the storage area is '', g14.2)') &
-                  bl(n1), pstor%storage_area%x(1)
+            if (bl(n1) + eps3 < pstor%storage_area%x(1)) then
+               call setmessage(LEVEL_WARN, 'At node '//trim(pstor%id)//' the bedlevel is below the bedlevel of the assigned storage area.')
+               write (msgbuf, '(a,f0.2,a,f0.2,a)') 'The bedlevel (due to invert levels of incoming channels/pipes) = ', bl(n1), ' and the bottom level of the storage area is ', pstor%storage_area%x(1), '.'
                call setmessage(-LEVEL_WARN, msgbuf)
-
             end if
-
          end do
       end if
 
@@ -855,7 +855,7 @@ contains
       use m_Storage
       use m_CrossSections
       use m_network
-      implicit none
+      
       type(t_network), intent(inout), target :: network
       type(t_storage), pointer :: pSto
       type(t_administration_1d), pointer :: adm
@@ -935,7 +935,7 @@ contains
       use m_flow, only: s1, vol1, a1, vol1_f, a1m, s1m, nonlin
       use m_alloc
       use unstruc_channel_flow, only: network
-      implicit none
+      
       real(kind=dp), allocatable :: s1_tmp(:), vol1_tmp(:), a1_tmp(:), vol1_ftmp(:), a1m_tmp(:), s1m_tmp(:)
       integer :: ndx1d
       logical, allocatable :: hysteresis_tmp(:, :)
@@ -1014,7 +1014,7 @@ contains
       use m_flow, only: freeboard, s1
       use m_flowgeom, only: ndxi, ndx2d, groundLevel, groundStorage
       use m_network
-      implicit none
+      
       type(t_network), intent(inout), target :: network
       integer :: i, ii
 
@@ -1039,7 +1039,7 @@ contains
       use m_flowtimes, only: time_wetground
       use m_flow, only: s1
       use m_flowgeom, only: ndxi, ndx2d, groundLevel, groundStorage
-      implicit none
+      
       real(kind=dp), intent(in) :: dts !< computational time step
       integer :: i, ii
 
@@ -1061,7 +1061,7 @@ contains
       use m_flowparameters, only: epswetout
       use m_network
       use m_flowgeom, only: ndxi, ndx2d, groundLevel, groundStorage
-      implicit none
+      
       type(t_network), intent(inout), target :: network !< 1D network from flow1d.
 
       integer :: i, ii
@@ -1084,7 +1084,7 @@ contains
       use m_flowparameters, only: epswetout
       use m_flowgeom, only: volMaxUnderground, ndxi, ndx2d, groundLevel, groundStorage
       use m_network
-      implicit none
+      
       type(t_network), intent(inout), target :: network
       integer :: i, ii
 
@@ -1104,7 +1104,7 @@ contains
       use precision, only: dp
       use m_flow, only: vTot1d2d, qCur1d2d, q1
       use m_flowgeom, only: ndx2d, lnx1d, kcu, ln
-      implicit none
+      
       real(kind=dp), intent(in) :: dts ! current computational time step
 
       integer :: Lf, n
@@ -1135,7 +1135,7 @@ contains
       use m_flow, only: vTotLat, qCurLat
       use m_flowgeom, only: ndx2d
       use m_laterals, only: qqlat, numlatsg, n1latsg, n2latsg, nnlat
-      implicit none
+      
       real(kind=dp), intent(in) :: dts ! current computational time step
       integer :: n
       integer :: i_lat, i_node
@@ -1165,7 +1165,7 @@ contains
    subroutine updateS1Gradient()
       use m_flow, only: s1Gradient, s1, hu, epshu
       use m_flowgeom, only: lnx1d, ln, dx
-      implicit none
+      
       integer :: k1, k2, L
 
       s1Gradient = dmiss

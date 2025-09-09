@@ -61,7 +61,7 @@ module m_flow ! flow arrays-999
    integer :: nplot !< vertical profile to be plotted at node nr
    integer :: kplotfrombedorsurface = 2 !< up or down k
    integer :: kplotordepthaveraged = 1 !< 1 = kplot, 2 = averaged
-   integer :: layertype !< 1= all sigma, 2 = all z, 3 = left sigma, 4 = left z
+   integer :: layertype !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
    integer :: numtopsig = 0 !< number of top layers in sigma
    integer :: janumtopsiguniform = 1 !< specified nr of top layers in sigma is same everywhere
 
@@ -74,12 +74,11 @@ module m_flow ! flow arrays-999
    integer :: iStrchType = -1 !< Stretching type for non-uniform layers, 1=user defined, 2=exponential, otherwise=uniform
    integer, parameter :: STRCH_USER = 1
    integer, parameter :: STRCH_EXPONENT = 2
-
+   
    integer :: iturbulencemodel !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
-   real(kind=dp) :: turbulence_lax_factor = 0 !< LAX-scheme factor (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
-   integer :: turbulence_lax_vertical = 1 !< Vertical distribution of turbulence_lax_factor (1: linear increasing from 0.0 to 1.0 in top half only, 2: uniform 1.0 over vertical)
-   integer :: turbulence_lax_horizontal = 2 !< Horizontal method of turbulence_lax_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
+   real(kind=dp) :: tur_time_int_factor = 0 !< Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
+   integer :: tur_time_int_method = TURB_LAX_CONNECTED !< Where to apply tur_time_int_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
    real(kind=dp) :: sigmagrowthfactor !<layer thickness growth factor from bed up
    real(kind=dp) :: dztopuniabovez = -999d0 !< bottom level of lowest uniform layer == blmin if not specified
    real(kind=dp) :: Floorlevtoplay = -999d0 !< floor  level of top zlayer, == sini if not specified
@@ -562,7 +561,7 @@ contains
       mxlays = 1 ! max nr of sigma layers in flow domain
       kplot = 1 ! layer nr to be plotted
       nplot = 1 ! vertical profile to be plotted at node nr
-      layertype = 1 !< 1= all sigma, 2 = all z, 3 = left sigma, 4 = left z
+      layertype = 1 !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
       iturbulencemodel = 3 !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
       ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
       sigmagrowthfactor = 1d0 !<layer thickness growth factor from bed up

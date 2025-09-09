@@ -186,7 +186,7 @@ contains
       integer :: ierr
       character(len=256) :: filnam
 
-      if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_NETCDF_AND_TECPLOT .or. md_mapformat == IFORMAT_UGRID) then !   NetCDF output
+      if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_UGRID) then !   NetCDF output
          if (wavids%ncid /= 0 .and. ((md_unc_conv == UNC_CONV_UGRID .and. wavids%id_tsp%idx_curtime == 0) .or. (md_unc_conv == UNC_CONV_CFOLD .and. it_wav == 0))) then
             ierr = unc_close(wavids%ncid)
             wavids%ncid = 0

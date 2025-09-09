@@ -471,11 +471,11 @@ contains
 
       if (layertype == LAYTP_SIGMA) then ! all sigma layers
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured'
-      elseif (layertype == LAYTP_Z) then ! all z layers
+      elseif (layertype == LAYTP_Z) then ! z layers or z-sigma layers
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z-layers'
-      elseif (layertype == LAYTP_LEFTSIGMA) then ! mixed sigma/z layers
+      elseif (layertype == LAYTP_LEFTSIGMA) then
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-sigma-layers'
-      elseif (layertype == LAYTP_LEFTZ) then ! mixed sigma/z layers
+      elseif (layertype == LAYTP_LEFTZ) then
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-z-layers'
       else ! other?
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured other'
