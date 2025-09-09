@@ -160,7 +160,7 @@ project {
             id = "doc_download_connection"
             name = "Deltares MinIO connection"
             credentialsType = static {
-                accessKeyId = "%keeper:2QeIUOj3PqQarS_ZxV1sBg/field/login%"
+                accessKeyId = "%keeper:C9SEf5IfrFvegFSv0WOHAg/field/login%"
                 secretAccessKey = "%keeper:2QeIUOj3PqQarS_ZxV1sBg/field/password%"
                 useSessionCredentials = false
             }
