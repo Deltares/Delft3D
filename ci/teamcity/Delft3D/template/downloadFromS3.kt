@@ -46,10 +46,4 @@ object TemplateDownloadFromS3 : Template({
             }
         }
     }
-
-    features {
-        provideAwsCredentials {
-            awsConnectionId = "doc_download_connection"
-        }
-    }
 })

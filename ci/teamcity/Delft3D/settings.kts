@@ -36,7 +36,6 @@ project {
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromS3)
     template(TemplateDockerRegistry)
-    template(TemplateKeeperVault)
 
     subProject {
         id("Linux")
@@ -153,19 +152,7 @@ project {
             userName = "%delft3d-user%"
             password = "%delft3d-secret%"
         }
-        awsConnection {
-            id = "doc_download_connection"
-            name = "Deltares MinIO connection"
-            credentialsType = static {
-                accessKeyId = "%s3_dsctestbench_accesskey%"
-                secretAccessKey = "%s3_dsctestbench_secret%"
-                useSessionCredentials = false
-            }
-            allowInSubProjects = true
-            allowInBuilds = true
-        }
         feature {
-            id = "KEEPER_VAULT_DELFT3D"
             type = "OAuthProvider"
             param("displayName", "Keeper Vault Delft3d")
             param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
