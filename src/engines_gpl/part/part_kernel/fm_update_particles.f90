@@ -36,7 +36,7 @@ contains
     subroutine update_particles(q, h0, h1, Dt)
         use m_fm_reconst_vel
         use m_waq_precision
-        use partmem, only: nopart, mpart
+        use partmem, only: mpart, nopart
         use m_particles
         use m_part_geom, only: Ndx, Lnx
         use m_sferic

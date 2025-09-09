@@ -829,7 +829,7 @@ contains
                         if (gettoken(abmmodelname, ierr2) /= 0) goto 9402   ! ABM model name
                         write (lun2, '(/a)') '  Found ABM model name : ', abmmodelname
                         select case (trim(abmmodelname)) ! Set ABM model
-                        case ("test")
+                        case ("general")
                             abmmt = 0        ! model type none
                         case ("european_eel")
                             abmmt = 1        ! model type European eel
