@@ -16,6 +16,14 @@ project {
 
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
+    params {
+        param("delft3d-user", DslContext.getParameter("delft3d-user"))
+        password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
+
+        param("product", "dummy_value")
+
+    }
+
     features {
         dockerRegistry {
             id = "DOCKER_REGISTRY_DELFT3D"
@@ -42,14 +50,6 @@ project {
             allowInSubProjects = true
             allowInBuilds = true
         }
-    }
-
-    params {
-        param("delft3d-user", DslContext.getParameter("delft3d-user"))
-        password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
-
-        param("product", "dummy_value")
-
     }
 
     template(TemplateMergeRequest)
