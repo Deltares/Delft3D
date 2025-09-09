@@ -1,7 +1,8 @@
 languages:
-  - cpp
-  - python
-  - java
+  - name: "C"
+  - name: "C++"
 
-exclude:
-  - "ci/**"
+scope:
+  include:
+    - path: "src/engines_gpl"
+      languages: ["C", "C++"]
