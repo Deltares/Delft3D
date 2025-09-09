@@ -36,6 +36,7 @@ project {
     template(TemplateFunctionalityDocumentation)
     template(TemplateDownloadFromS3)
     template(TemplateDockerRegistry)
+    template(TemplateKeeperVault)
 
     subProject {
         id("Linux")
