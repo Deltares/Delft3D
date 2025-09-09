@@ -1,6 +1,0 @@
-languages:
-  - cpp
-
-include:
-  - "src/engines_gpl/**"
-
