@@ -10,7 +10,6 @@ import Delft3D.template.*
 object FunctionalityDocumentMatrix : BuildType({
     templates(
         TemplateDownloadFromS3,
-        TemplateKeeperVault,
         TemplateFunctionalityDocumentation
     )
 
@@ -37,6 +36,10 @@ object FunctionalityDocumentMatrix : BuildType({
         matrix {
             id = "matrix"
             param("engine_name_and_dir", engineOptions.map { MatrixFeature.Value(it) })
+        }
+        feature {
+            type = "KeeperConnection"
+            param("connectionId", "KEEPER_VAULT_DELFT3D")
         }
     }
 })
