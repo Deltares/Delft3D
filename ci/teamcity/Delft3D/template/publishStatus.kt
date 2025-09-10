@@ -15,9 +15,8 @@ object TemplatePublishStatus : Template({
                 vcsRootExtId = "${DslContext.settingsRoot.id}"
                 publisher = github {
                     githubUrl = "https://api.github.com"
-                    authType = password {
-                        userName = "%keeper:oGh55bFO-GOpNpP_geiS0A/field/login%"
-                        password = "%keeper:oGh55bFO-GOpNpP_geiS0A/field/password%"
+                    authType = personalToken {
+                        token = "%keeper:oGh55bFO-GOpNpP_geiS0A/field/password%"
                     }
                 }
             }
