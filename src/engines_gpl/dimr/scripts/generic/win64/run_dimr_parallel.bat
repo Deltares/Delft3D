@@ -1,15 +1,25 @@
 @ echo off
 title run_dimr_parallel
-    rem When using intelMPI for the first time on a machine:
-    rem Execute "hydra_service.exe -install" as administrator:
-    rem     Preparation: Check that your Delft3D installation contains "...\x64\share\bin\hydra_service.exe". Optionally copy it to a local directory (it will run as a service).
-    rem     "Windows Start button" -> type "cmd", right-click "Command Prompt" App, "Run as Administrator"
-    rem     In this command box:
-    rem         cd ...\x64\share\bin (or your local copy)
-    rem         hydra_service.exe -install
-    rem         mpiexec.exe -register -username <user> -password <password> -noprompt
-    rem     When there is an hydra_service/smpd already running on the machine, it must be ended first, using the Microsoft Task Manager,
-    rem     or in the command  box: hydra_service.exe -uninstall (smpd -uninstall)
+    rem When using Intel MPI for parallel execution:
+    rem 
+    rem For LOCAL parallel execution (most common case):
+    rem No special setup is required. The -localonly flag allows MPI to run
+    rem without the hydra service.
+    rem 
+    rem For REMOTE/CLUSTER parallel execution:
+    rem Modern Intel MPI integrates with cluster resource managers and cloud platforms.
+    rem 
+    rem For HPC clusters:
+    rem   Use your cluster's job scheduler (Slurm, PBS, etc.) - no additional setup needed
+    rem   Example: sbatch, qsub, or similar cluster commands
+    rem
+    rem For cloud environments:
+    rem   Intel MPI has built-in support for AWS, Azure, and Google Cloud
+    rem
+    rem For ad-hoc multi-node execution:
+    rem   Use -hosts option: mpiexec -hosts host1,host2,host3 -n 6 your_program
+    rem   Or use host file: mpiexec -f hostfile -n 6 your_program
+    rem   Requires SSH access between nodes (no hydra service installation needed)
 
     rem
     rem This script runs dimr in parallel mode on Windows
