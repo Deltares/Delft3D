@@ -10,13 +10,15 @@
     rem     When there is an smpd already running on the machine, it must be ended first, using the Microsoft Task Manager, 
     rem     or in the command  box: smpd -uninstall
 
-set dimrdir=\\directory.intra\PROJECT\d-hydro\dimrset\latest
+set dimrdir=C:\checkouts\Delft3D\build_all-testbench\install
+echo %dimrdir%
+
 
 cd dflowfm
-call "%dimrdir%\x64\bin\run_dflowfm.bat" "--partition:ndomains=3:icgsolver=6" westerscheldt.mdu
+call "%dimrdir%\bin\run_dflowfm.bat" "--partition:ndomains=3:icgsolver=6" westerscheldt.mdu
 cd ..
 
-call "%dimrdir%\x64\bin\run_dimr_parallel.bat" 3 dimr_config.xml
+call "%dimrdir%\bin\run_dimr_parallel.bat" 3 dimr_config.xml
 
 
     rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
