@@ -1,0 +1,25 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "mounts": [
+        "source=${localEnv:HOME}/.aws,target=/home/dev/.aws,readonly,type=bind"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-containers",
+                "ms-vscode.cmake-tools",
+                "fortran-lang.linter-gfortran",
+                "ms-vscode.cpptools",
+                "vscjava.vscode-maven",
+                "fwcd.kotlin",
+                "ms-python.python",
+                "ms-python.mypy-type-checker",
+                "charliermarsh.ruff",
+                "tamasfe.even-better-toml",
+                "ms-vscode.hexeditor"
+            ]
+        }
+    }
+}
