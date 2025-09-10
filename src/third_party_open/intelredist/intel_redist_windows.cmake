@@ -38,7 +38,8 @@ if (intel_version LESS_EQUAL 23)
         PATTERN "*.exe"
         PATTERN "debug" EXCLUDE
         PATTERN "release" EXCLUDE
-        PATTERN "tune" EXCLUDE)
+        PATTERN "tune" EXCLUDE
+        PATTERN "hydra*.exe" EXCLUDE)
         install(DIRECTORY ${mpi_path}/libfabric/bin/ DESTINATION lib FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
         install(DIRECTORY ${mpi_path}/bin/release/ DESTINATION lib FILES_MATCHING PATTERN "*.dll")
     endif()
@@ -92,7 +93,8 @@ elseif (intel_version GREATER_EQUAL 24)
         PATTERN "debug" EXCLUDE
         PATTERN "release" EXCLUDE
         PATTERN "mpi" EXCLUDE
-        PATTERN "tune" EXCLUDE)
+        PATTERN "tune" EXCLUDE
+        PATTERN "hydra*.exe" EXCLUDE)
         install(DIRECTORY ${mpi_path}/opt/mpi/libfabric/bin/ DESTINATION lib FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
     endif()
 else()
