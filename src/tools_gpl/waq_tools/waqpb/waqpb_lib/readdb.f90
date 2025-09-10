@@ -37,7 +37,7 @@ subroutine readdb(lu_inp, lu_mes, csv_folder)
     character(len=*), intent(in) :: csv_folder !< Folder containing the CSV files
 
     character(len=255) c255
-    character(len=255) :: all_csv_files_name(15) !< Array of database CSV file names to check existence
+    character(len=255) :: all_csv_files_name(14) !< Array of database CSV file names to check existence
     character(len=10) chkcnf(nconfm),c10
     character(len=1)  swicnf(nconfm),c1dum
     logical :: file_exists
@@ -59,7 +59,6 @@ subroutine readdb(lu_inp, lu_mes, csv_folder)
                           csv_folder//'stochi.csv', &
                           csv_folder//'velocs.csv', &
                           csv_folder//'disps.csv', &
-                          csv_folder//'table5.csv', &
                           csv_folder//'old_items.csv']
     file_exists = .true.
     count_csv_files_missing = 0

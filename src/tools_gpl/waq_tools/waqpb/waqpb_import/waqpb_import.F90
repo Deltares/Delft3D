@@ -153,7 +153,7 @@ program waqpb_import
       line_buffer = adjustl(line_buffer)
       substrings = split_string_non_empty(line_buffer, ' ') !< Split the line into substrings based on spaces
       if (len_trim(substrings(1)) > 10) then
-            write (*, '(A, A, A, I0)') 'Error: process name "', substrings(1), '" exceeds 10 characters at line ', linecount
+            write (*, '(A, A, A, I0)') 'Error: process name "', trim(substrings(1)), '" exceeds 10 characters at line ', linecount
             error stop
       else
          c10 = substrings(1)
@@ -173,7 +173,7 @@ program waqpb_import
       read(io_asc, '(A)', iostat=ierr) line_buffer
       substrings = split_string_non_empty(line_buffer, ' ') !< Split the line into substrings based on spaces
       if (len_trim(substrings(1)) > 10) then
-            write (*, '(A, A, A, I0)') 'Error: name of Fortran subroutine "', substrings(1), '" exceeds 10 characters at line ', linecount
+            write (*, '(A, A, A, I0)') 'Error: name of Fortran subroutine "', trim(substrings(1)), '" exceeds 10 characters at line ', linecount
             error stop
       else
          c10a = substrings(1)

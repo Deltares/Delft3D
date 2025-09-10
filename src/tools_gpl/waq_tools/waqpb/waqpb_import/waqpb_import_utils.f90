@@ -71,7 +71,7 @@ contains
         ! first read the name (or ID) of the item
         temp_string = adjustl(line_buffer(1:11))
         if (len_trim(temp_string) > 10) then
-            write (*, '(A, A, A, I0)') 'Error: item name "', temp_string, '" exceeds 10 characters at line ', linecount
+            write (*, '(A, A, A, I0)') 'Error: item name "', trim(temp_string), '" exceeds 10 characters at line ', linecount
             error stop
         end if
         name = temp_string !< First 10 characters are the name
