@@ -190,6 +190,37 @@ contains
                 return
             end if
 
+            if ( num_layers > 1 ) then
+                ! Ideally:
+                ! laytp = merge( LAYTP_SIGMA, LAYTP_Z, hyd%layertype == 1) - parameters from m_flow
+                ! But we would drag in yet another D-Flow FM module, so hardcode the values
+                !
+                laytp = merge( LAYTP_SIGMA, LAYTP_Z, hyd%layer_type == 1)
+
+                call ug_define_mesh_layer_arrays(imapfile, trim(meshname), meshids, laytp, s1, bldepth, ierr)
+                if (ierr /= UG_NOERR) then
+                    call mess(LEVEL_ERROR, 'Could not write geometry to file map')
+                    return
+                end if
+                ierr = nf90_enddef(imapfile)
+
+                call get_layer_coords( hyd, layer_zs, interface_zs, error, msg )
+                if ( error ) then
+                    return
+                endif
+
+                call ug_write_mesh_layer_arrays(imapfile, meshids, ierr, num_layers, laytp, layer_zs, &
+                         interface_zs, merge( 0, num_layers, zmodel ) )
+
+                deallocate( layer_zs, interface_zs )
+                ierr = nf90_redef(imapfile)
+
+                if (ierr /= nf90_noerr) then
+                    call mess(LEVEL_ERROR, 'Could not write geometry to file map')
+                    return
+                end if
+            endif
+
             cell_method = 'mean' !< Default cell average.
             cell_measures = ''
 
