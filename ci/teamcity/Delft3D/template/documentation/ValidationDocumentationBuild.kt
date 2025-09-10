@@ -19,7 +19,7 @@ object TemplateValidationDocumentation : Template({
 
     params {
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
+        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
     }
 
     vcs {

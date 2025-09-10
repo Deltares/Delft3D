@@ -2438,6 +2438,7 @@ contains
       use m_ec_message
       use m_alloc
       use string_module, only: str_tolower
+      use MessageHandling, only: LEVEL_WARN, LEVEL_INFO, mess
       implicit none
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -2464,6 +2465,7 @@ contains
       integer :: vptyp !< interpretation of the vertical coordinate
       character(len=NF90_MAX_NAME) :: z_positive !< which direction of z is positive ?
       character(len=NF90_MAX_NAME) :: z_standardname !< which direction of z is positive ?
+      character(len=NF90_MAX_NAME) :: dim_name !< helper variable for logging dimension name
       real(dp) :: gnplon, gnplat !< coordinates of shifted north pole obtained from gridmapping
       real(dp) :: gsplon, gsplat !< coordinates of shifted south pole obtained from gridmapping
       real(dp), dimension(:, :), allocatable :: fgd_data !< coordinate data along first dimension's axis
@@ -3009,6 +3011,11 @@ contains
             else
                if (fileReaderPtr%lonx_id < 0) then
                   fileReaderPtr%lonx_id = dimids(1)
+                  ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(1), name=dim_name)
+                  call mess(LEVEL_WARN, 'Dimension name '//trim(dim_name)// ' in '//trim(fileReaderPtr%filename)//' is not supported. ', &
+                                  'Computation proceeds assuming '//trim(dim_name)// ' to be x-dimension.')
+                  call mess(LEVEL_INFO, 'Supported x-dimension names: x, longitude, lon, projected_x, xc, ', &
+                                  'grid_longitude, projection_x_coordinate')
                end if
                ncol = fileReaderPtr%dim_length(fileReaderPtr%lonx_id)
                nrow = 1
@@ -3016,6 +3023,11 @@ contains
                if (size(dimids) >= 2) then
                   if (fileReaderPtr%laty_id < 0) then
                      fileReaderPtr%laty_id = dimids(2)
+                     ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, dimids(2), name=dim_name)
+                     call mess(LEVEL_WARN, 'Dimension name '//trim(dim_name)// ' in '//trim(fileReaderPtr%filename)//' is not supported. ', &
+                                  'Computation proceeds assuming '//trim(dim_name)// ' to be y-dimension.')
+                     call mess(LEVEL_INFO, 'Supported y-dimension names: y, latitude, lon, projected_y, yc, ', &
+                                  'grid_latitude, projection_y_coordinate')
                   end if
                   nrow = fileReaderPtr%dim_length(fileReaderPtr%laty_id)
                   ! Flag indicating that data is stored (X,Y) instead of (Y,X), used to make sure the values are oriented row,column after reading.
@@ -3952,6 +3964,7 @@ contains
    end function items_from_bc_quantities
 
    function ecProviderNetcdfReadvars(fileReaderPtr) result(success)
+      use string_module, only: str_tolower
       use m_alloc
       implicit none
       type(tECFileReader), pointer :: fileReaderPtr
@@ -3985,10 +3998,10 @@ contains
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, name=dim_name)
             write(*,*) trim(dim_name)
             ! Find dimension matching columns and rows
-            select case (trim(dim_name))
-            case ('x', 'longitude', 'projected_x', 'xc', 'grid_longitude', 'projection_x_coordinate')
+            select case (str_tolower(trim(dim_name)))
+            case ('x', 'longitude', 'lon', 'projected_x', 'xc', 'grid_longitude', 'projection_x_coordinate')
                fileReaderPtr%lonx_id = idim
-            case ('y', 'latitude', 'projected_y', 'yc', 'grid_latitude', 'projection_y_coordinate')
+            case ('y', 'latitude', 'lat', 'projected_y', 'yc', 'grid_latitude', 'projection_y_coordinate')
                fileReaderPtr%laty_id = idim
             end select
          end do ! idim

@@ -261,15 +261,7 @@
             "issuedTo": "Microsoft Windows Software Compatibility Publisher"
         },
         {
-            "file": "lib\\msvcp90.dll",
-            "issuedTo": "Microsoft Corporation"
-        },
-        {
             "file": "lib\\msvcr100.dll",
-            "issuedTo": "Microsoft Corporation"
-        },
-        {
-            "file": "lib\\msvcr90.dll",
             "issuedTo": "Microsoft Corporation"
         },
         {
@@ -494,10 +486,6 @@
         },
         {
             "file": "lib\\pthreadVC2.dll",
-            "issuedTo": "Stichting Deltares"
-        },
-        {
-            "file": "lib\\tecio.dll",
             "issuedTo": "Stichting Deltares"
         },
         {
