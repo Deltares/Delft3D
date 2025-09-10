@@ -1,14 +1,24 @@
 @ echo off
-
-    rem When using mpich2 for the first time on a machine:
-    rem Execute "smpd -install" as administrator:
-    rem     Preparation: Check that your Delft3D installation contains "...\x64\bin\smpd.exe". Optionally copy it to a local directory (it will run as a service).
-    rem     "Start" -> "All programs" -> "Accessories", right-click "Command Prompt", "Run as Administrator"
-    rem     In this command box:
-    rem         cd ...\x64\bin
-    rem         smpd -install
-    rem     When there is an smpd already running on the machine, it must be ended first, using the Microsoft Task Manager, 
-    rem     or in the command  box: smpd -uninstall
+    rem When using Intel MPI for parallel execution:
+    rem 
+    rem For LOCAL parallel execution (most common case):
+    rem No special setup is required. The -localonly flag allows MPI to run
+    rem without the hydra service.
+    rem 
+    rem For REMOTE/CLUSTER parallel execution:
+    rem Modern Intel MPI integrates with cluster resource managers and cloud platforms.
+    rem 
+    rem For HPC clusters:
+    rem   Use your cluster's job scheduler (Slurm, PBS, etc.) - no additional setup needed
+    rem   Example: sbatch, qsub, or similar cluster commands
+    rem
+    rem For cloud environments:
+    rem   Intel MPI has built-in support for AWS, Azure, and Google Cloud
+    rem
+    rem For ad-hoc multi-node execution:
+    rem   Use -hosts option: mpiexec -hosts host1,host2,host3 -n 6 your_program
+    rem   Or use host file: mpiexec -f hostfile -n 6 your_program
+    rem   Requires SSH access between nodes (no hydra service installation needed)
 
 set dimrdir=\\directory.intra\PROJECT\d-hydro\dimrset\latest
 
