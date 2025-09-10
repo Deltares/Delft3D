@@ -44,6 +44,15 @@ program tests_aggregate_waqgeom
    integer :: iargc
    real(kind=real_wp), parameter :: tolerance = 0.0001
 
+   type(t_ug_meshgeom) :: input_2d !< 2D model (sigma with only one layer).
+   type(t_ug_meshgeom) :: input_bt_s !< Bottom to top layers and interfaces to be aggregated (sigma).
+   type(t_ug_meshgeom) :: input_bt_z !< Bottom to top layers and interfaces to be aggregated (z).
+   type(t_ug_meshgeom) :: input_bt_zs !< Bottom to top layers and interfaces to be aggregated (z-sigma).
+   type(t_ug_meshgeom) :: input_tb_s !< Top to bottom layers and interfaces to be aggregated (sigma).
+   type(t_ug_meshgeom) :: input_tb_z !< Top to bottom layers and interfaces to be aggregated (z).
+   type(t_ug_meshgeom) :: input_tb_zs !< Top to bottom layers and interfaces to be aggregated (z-sigma).
+   integer, dimension(7, 20) :: layer_mapping_table !< Mapping table flow cells -> waq cells.
+
    ! Determine the number of command line arguments
    iargc = command_argument_count()
    call prepare_tests()
@@ -73,37 +82,11 @@ contains
       !
       ! Note:
       !     This routine merely takes care that the unit tests are indeed run
-      integer :: lunrun
+      integer :: lunrun, i
 
       open (newunit=lunrun, file='ftnunit.run')
       write (lunrun, '(a)') 'ALL'
       close (lunrun)
-   end subroutine prepare_tests
-
-   subroutine show_result
-      ! show_result
-      !     Start the browser to show the result
-      call system('ftnunit.html')
-   end subroutine show_result
-
-   subroutine call_test_aggregate_ugrid_layers_interfaces
-      call test(test_aggregate_ugrid_layers_interfaces, 'Test aggregation of ugrid layers and interfaces')
-   end subroutine
-
-   subroutine test_aggregate_ugrid_layers_interfaces()
-      type(t_ug_meshgeom) :: input_2d !< 2D model (sigma with only one layer).
-      type(t_ug_meshgeom) :: input_bt_s !< Bottom to top layers and interfaces to be aggregated (sigma).
-      type(t_ug_meshgeom) :: input_bt_z !< Bottom to top layers and interfaces to be aggregated (z).
-      type(t_ug_meshgeom) :: input_bt_zs !< Bottom to top layers and interfaces to be aggregated (z-sigma).
-      type(t_ug_meshgeom) :: input_tb_s !< Top to bottom layers and interfaces to be aggregated (sigma).
-      type(t_ug_meshgeom) :: input_tb_z !< Top to bottom layers and interfaces to be aggregated (z).
-      type(t_ug_meshgeom) :: input_tb_zs !< Top to bottom layers and interfaces to be aggregated (z-sigma).
-      type(t_ug_meshgeom), dimension(14) :: output !< Aggregated layers and interfaces.
-      type(t_ug_meshgeom), dimension(14) :: expected_output !< Aggregated layers and interfaces.
-      integer, dimension(7, 20) :: layer_mapping_table !< Mapping table flow cells -> waq cells.
-      logical :: success !< Result status, true if successful.
-      logical :: is_equal !< Result status, true if successful.
-      integer :: i
 
       ! Prepare the inputs
       ! ==================
@@ -218,8 +201,24 @@ contains
       ! 7) 20 -> 8 layers where z and sigma layers are combined (this should fail when %layertype = LAYERTYPE_OCEAN_SIGMA_Z)
       layer_mapping_table(7, :) = [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8]
 
-      ! Actual testing
-      ! ==============
+   end subroutine prepare_tests
+
+   subroutine show_result
+      ! show_result
+      !     Start the browser to show the result
+      call system('ftnunit.html')
+   end subroutine show_result
+
+   subroutine call_test_aggregate_ugrid_layers_interfaces
+      call test(test_aggregate_ugrid_layers_interfaces, 'Test aggregation of ugrid layers and interfaces')
+   end subroutine
+
+   subroutine test_aggregate_ugrid_layers_interfaces()
+      type(t_ug_meshgeom), dimension(14) :: output !< Aggregated layers and interfaces.
+      type(t_ug_meshgeom), dimension(14) :: expected_output !< Aggregated layers and interfaces.
+      logical :: success !< Result status, true if successful.
+      logical :: is_equal !< Result status, true if successful.
+      integer :: i
 
       ! Test with no aggregation
       ! ------------------------
