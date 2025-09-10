@@ -665,7 +665,6 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "RadAve    ","x"," ",   -999.000    ,"(W/m2)              ","average irradiation at the upper-boundary         ","volume    ","volume    "," ","                              "
 "DayL      ","x"," ",   0.580000    ,"(d)                 ","daylength <0-1>                                   ","volume    ","volume    "," ","                              "
 "SWDepAve  ","x"," ",    0.00000    ,"(-)                 ","switch for module DepAve (0=off, 1=on)            ","volume    ","volume    "," ","                              "
-"TimMultBl ","x"," ",    1.00000    ,"(-)                 ","ratio bloom/delwaq time step                      ","volume    ","volume    "," ","                              "
 "BloomDepth","x"," ",    0.00000    ,"(m)                 ","average depth over Bloom time step                ","volume    ","volume    "," ","                              "
 "BlmDep_out","x"," ",   -999.000    ,"(m)                 ","average depth over Bloom time step OUTPUT         ","volume    ","volume    "," ","                              "
 "IDT       ","x"," ",   -999.000    ,"(scu)               ","DELWAQ timestep                                   ","volume    ","volume    "," ","                              "
@@ -14340,3 +14339,4 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "dRS1IM1Buf","x"," ",   -999.000    ,"(g/m3/d)            ","resuspension flux IM1 from layer S1               ","volume    ","volume    "," ","                              "
 "dRS1IM2Buf","x"," ",   -999.000    ,"(g/m3/d)            ","resuspension flux IM2 from layer S1               ","volume    ","volume    "," ","                              "
 "dRS1IM3Buf","x"," ",   -999.000    ,"(g/m3/d)            ","resuspension flux IM3 from layer S1               ","volume    ","volume    "," ","                              "
+"BloomStep ","x"," ",    1.00000    ,"(d)                 ","Time step for BLOOM                               ","volume    ","volume    "," ","                              "
