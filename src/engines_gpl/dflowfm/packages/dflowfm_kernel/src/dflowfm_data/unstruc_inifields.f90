@@ -264,7 +264,8 @@ contains
          !! Step 1: Read each block
          call readIniFieldProvider(inifilename, node_ptr, groupname, qid, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
-         ! convert quantity name used in configuration file to the corresponding internal CF name
+         ! convert quantity name used in configuration file to the corresponding
+         ! internal name (matching CF conventions standard name when available)
          qid = quantity_name_config_file_to_standard_name(qid)
          
          if (ja == 1) then

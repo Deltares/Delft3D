@@ -34,12 +34,15 @@ submodule(m_remove_masked_netcells) m_remove_masked_netcells_
 
    implicit none
 
-contains
+   contains
 
    !> remove "dry"masked netcells (cellmask==1) from netcell administration
    !> typically used in combination with a drypoints file (samples or polygons)
    !> \see polygon_to_cellmask
    !> note: we do not want to alter the netnodes and netlinks and will therefore not change kn and nod%lin
+   !> during the removal process, the netcells are renumbered, so that the remaining cells are numbered 1..numpnew
+   !> this renumbering should also be applied to all quantities defined on netcells, such as bl, ba, xz, yz
+   !> the bl array may not yet be loaded and therefore an optional argument is provided to specify whether bl should be updated
    module subroutine remove_masked_netcells(update_bl)
       use network_data
       use m_flowgeom, only: xz, yz, ba, bl

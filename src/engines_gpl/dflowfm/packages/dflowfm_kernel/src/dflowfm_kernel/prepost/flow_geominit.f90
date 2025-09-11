@@ -57,8 +57,9 @@ module m_flow_geominit
    use m_iadvecini, only: iadvecini
    use m_getdxofconnectedkcu1, only: getdxofconnectedkcu1
    use m_wind, only: jawindpartialdry
-   use m_waveconst
-
+   use m_waveconst, only: WAVE_SURFBEAT
+   use m_alloc, only: realloc, aerr
+   
    implicit none
 
    private
@@ -339,15 +340,16 @@ contains
       if (allocated(kcs)) then
          deallocate (nd, bai, kcs, bai_mor, ba_mor)
       end if
-      ! bl treated separately; it's also used in delete_dry_points_and_areas
-      if (allocated(bl)) then
-         deallocate (bl)
-      end if
-      allocate (nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx), stat=ierr)
-      call aerr('nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx)', ierr, 8 * ndx); kcs = 1
+      allocate (nd(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx), stat=ierr)
+      call aerr('nd(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx)', ierr, 8 * ndx)
+      kcs = 1
       bl = dmiss
       ba_mor = 0d0
-
+      
+      ! bl treated separately; it's also used in delete_dry_points_and_areas
+      call realloc(bl, ndx, keepExisting=.false., stat=ierr)
+      call aerr('bl(ndx)', ierr, ndx)
+      
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then
          call realloc(groundLevel, ndxi - ndx2d, keepExisting=.false., fill=dmiss, stat=ierr)
