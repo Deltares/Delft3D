@@ -29,7 +29,7 @@ object Trigger : BuildType({
         param("testbench_table", "ci/teamcity/Delft3D/vars/dimr_testbench_table.csv")
 
         param("teamcity_user", "svc_dimr_trigger")
-        password("teamcity_pass", "credentialsJSON:15cc6665-e900-4360-8942-00e654f6acfe")
+        password("teamcity_pass", DslContext.getParameter("teamcity_pass"))
 
         param("matrix_list_lnx64", "dummy_value")
         param("matrix_list_win64", "dummy_value")

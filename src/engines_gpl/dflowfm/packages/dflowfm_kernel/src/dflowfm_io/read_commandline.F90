@@ -60,7 +60,7 @@ contains
       use network_data, only: numitcourant, connect1dend, imake1d2dtype, I1D2DTP_1TO1, I1D2DTP_1TON_EMB, I1D2DTP_1TON_LAT, I1D2DTP_LONG
       use m_circumcenter_method, only: circumcenter_method, extract_circumcenter_method
       use m_missing, only: jadelnetlinktyp
-      use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP
+      use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
       implicit none
 
       integer :: istat !< Returned result status

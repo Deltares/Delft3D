@@ -17,8 +17,8 @@ project {
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
     params {
-        param("delft3d-user", "robot${'$'}delft3d")
-        password("delft3d-secret", "credentialsJSON:1dee1a48-252e-42fd-b600-6bf52d940513")
+        param("delft3d-user", DslContext.getParameter("delft3d-user"))
+        password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
 
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
@@ -143,7 +143,7 @@ project {
         DIMRbak,
         Publish
     )
-
+        
     features {
         dockerRegistry {
             id = "DOCKER_REGISTRY_DELFT3D"

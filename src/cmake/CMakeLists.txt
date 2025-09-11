@@ -94,10 +94,6 @@ if (WIN32)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-    # Set the Tecplot path
-    set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
-    message(STATUS "Tecplot set to ${tecplot_path}")
-
     if(intel_version EQUAL 23)
         set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
     else()

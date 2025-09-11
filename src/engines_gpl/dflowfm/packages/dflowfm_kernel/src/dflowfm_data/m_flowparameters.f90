@@ -327,7 +327,7 @@ module m_flowparameters
    real(kind=dp), parameter :: eps6 = 1d-6 !<
    real(kind=dp), parameter :: eps8 = 1d-8 !< implicit diffusion
    real(kind=dp), parameter :: eps10 = 1d-10 !<
-   real(kind=dp), parameter :: eps20 = 1d-20 !< faclax
+   real(kind=dp), parameter :: eps20 = 1d-20 !< turbulenceTimeIntegrationFactor
    real(kind=dp) :: epshsdif = 1d-2 !< hs < epshsdif: no vertical diffusion if hs < epshsdif
    real(kind=dp) :: s01max !< water level threshold (m) between s0 and s1 in validation routine
    real(kind=dp) :: u01max !< velocity threshold (m/s) between u0 and u1 in validation routine

@@ -38,7 +38,6 @@ module m_links_to_centers
    interface links_to_centers
       module procedure links_to_centers_dp
       module procedure links_to_centers_sp
-      module procedure links_to_centers_dp_rank_2
    end interface links_to_centers
 contains
    !> Set flow node value based on flow link values, where vlin is real(kind=dp)
@@ -114,47 +113,5 @@ contains
          !$OMP END PARALLEL DO SIMD
       end if
    end subroutine links_to_centers_sp
-
-   !> Set flow node value based on flow link values, where vlin and vlin2 are mapped to vnod(1,:) and vnod(2,:), respectively
-   subroutine links_to_centers_dp_rank_2(vnod, vlin, vlin2)
-      use precision, only: dp
-      use m_flow, only: lnkx, kmx, lbot, ltop, ktop, kbot, kmxn, ndkx
-      use m_flowgeom, only: lnx, ln, wcL, ndx
-
-      real(kind=dp), dimension(2, ndkx), intent(out) :: vnod
-      real(kind=dp), intent(in) :: vlin(lnkx)
-      real(kind=dp), intent(in) :: vlin2(lnkx)
-      integer :: L, k1, k2, LL, kk, k_start, k_end
-
-      vnod = 0.0_dp
-      if (kmx == 0) then
-         do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
-            vnod(1, k1) = vnod(1, k1) + vlin(L) * wcL(1, L)
-            vnod(1, k2) = vnod(1, k2) + vlin(L) * wcL(2, L)
-            vnod(2, k1) = vnod(2, k1) + vlin2(L) * wcL(1, L)
-            vnod(2, k2) = vnod(2, k2) + vlin2(L) * wcL(2, L)
-         end do
-      else
-         do LL = 1, lnx
-            do L = Lbot(ll), Ltop(ll)
-               k1 = ln(1, L); k2 = ln(2, L)
-               vnod(1, k1) = vnod(1, k1) + vlin(L) * wcL(1, LL)
-               vnod(1, k2) = vnod(1, k2) + vlin(L) * wcL(2, LL)
-               vnod(2, k1) = vnod(2, k1) + vlin2(L) * wcL(1, LL)
-               vnod(2, k2) = vnod(2, k2) + vlin2(L) * wcL(2, LL)
-            end do
-         end do
-
-         !$OMP PARALLEL DO SIMD PRIVATE(kk, k_start, k_end)
-         do kk = 1, ndx
-            k_start = ktop(kk) + 1
-            k_end = kbot(kk) + kmxn(kk) - 1
-            vnod(1, k_start:k_end) = vnod(1, ktop(kk))
-            vnod(2, k_start:k_end) = vnod(2, ktop(kk))
-         end do
-         !$OMP END PARALLEL DO SIMD
-      end if
-   end subroutine links_to_centers_dp_rank_2
 
 end module m_links_to_centers
