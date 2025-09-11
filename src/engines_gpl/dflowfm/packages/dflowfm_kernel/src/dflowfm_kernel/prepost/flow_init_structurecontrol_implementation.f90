@@ -947,10 +947,9 @@ contains
                do k = 1, NUMGENERALKEYWRD ! generalstructure keywords
                   tmpval = dmiss
                   key = generalkeywrd(k)
-                  call read_property(strs_ptr%child_nodes(cgenidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc)
+                  call read_property(strs_ptr%child_nodes(cgenidx(n))%node_ptr, trim(key), rec, tmpval, is_double, strid, successloc, is_required = .false.)
                   if (.not. successloc) then
-                     write (msgbuf, '(a)') 'Required field '//trim(key)//' not available for generalstructure '//trim(strid)//'.'
-                     call msg_flush()
+                     ! All fields are optional.
                      cycle
                   end if
                   if (is_double) then

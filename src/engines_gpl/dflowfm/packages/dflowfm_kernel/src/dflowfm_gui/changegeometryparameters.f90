@@ -73,7 +73,7 @@ contains
       OPTION(6) = 'Kmx, nr of Vertical sigma layers    ( ) '; it(2 * 6) = 2
       OPTION(7) = 'Jazlayercenterbedvel                ( ) '; it(2 * 7) = 2
       OPTION(8) = 'Jasfer3D                            ( ) '; it(2 * 8) = 2
-      OPTION(9) = 'Jalimnor                            ( ) '; it(2 * 9) = 2
+
       OPTION(10) = 'minimum 1D link length,             (m) '; it(2 * 10) = 6
       OPTION(11) = 'Uniform 1D link width               (m) '; it(2 * 11) = 6
       OPTION(12) = '1D profile type                     ( ) '; it(2 * 12) = 2
@@ -106,7 +106,7 @@ contains
       HELPM(7) = '1=orig, 2=sigma-like                                        '
       !HELPM (7) = '0=D3D, 0.5dx outside, 1=on net bnd, 2=on polylin (not yet)  '
       HELPM(8) = '0=org, 1=jasfer3D                                           '
-      HELPM(9) = 'Jalimnor                                                    '
+
       HELPM(10) = 'dxmin1D (except for duikers)                                '
       HELPM(11) = 'wu1DUNI                                                     '
       HELPM(12) = '1=circle, 2=rectan, 3=rectan (peri=wid), 4=3,nonlin         '
@@ -202,7 +202,7 @@ contains
       call IFORMPUTINTEGER(2 * 6, kmx)
       call IFORMPUTINTEGER(2 * 7, Jazlayercenterbedvel)
       call IFORMPUTINTEGER(2 * 8, jasfer3D)
-      call IFORMPUTinteger(2 * 9, jalimnor)
+
       call IFORMPUTdouble(2 * 10, dxmin1D, '(F8.3)')
       call IFORMPUTdouble(2 * 11, wu1DUNI, '(F8.3)')
       call IFORMPUTINTEGER(2 * 12, iproftypuni)
@@ -267,7 +267,7 @@ contains
             call IFORMgeTINTEGER(2 * 6, kmx)
             call IFORMgeTINTEGER(2 * 7, Jazlayercenterbedvel)
             call IFORMgeTINTEGER(2 * 8, jasfer3D)
-            call IFORMgetinteger(2 * 9, jalimnor)
+
             call IFORMgetdouble(2 * 10, dxmin1D)
             call IFORMgetdouble(2 * 11, wu1DUNI)
             call IFORMgeTINTEGER(2 * 12, iproftypuni)

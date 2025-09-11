@@ -90,15 +90,15 @@ if(WIN32)
                          waq_utils_c
                          waq_utils_f
                          interacter_stub
-                         dflowfm_kernel)
+                         dflowfm_kernel
+)
 
 
 target_link_directories(${executable_name} PRIVATE
                         "${mpi_library_path}"
                         "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                         "${petsc_libdir}"
-                        "${checkout_src_root}/third_party_open/pthreads/bin/x64"
-                        "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
+                        "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
 target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
                           "comctl32.lib"
@@ -112,14 +112,14 @@ target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
                           "netcdf.lib"
                           "pthreadVC2.lib"
                           "${mpi_fortran_library}"
-                          "tecio.lib")
+)
 
 
 endif(WIN32)
 
 include_directories(${mpi_module_path}
                     ${petsc_path}
-                    ${tecplot_path})
+)
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source})

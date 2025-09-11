@@ -47,9 +47,6 @@ object LinuxCollect : BuildType({
             name = "Remove system libraries"
             workingDir = "lnx64/lib"
             path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
-            conditions {
-                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
-            }
         }
         script {
             name = "Set execute rights"
@@ -60,7 +57,7 @@ object LinuxCollect : BuildType({
         exec {
             name = "Generate list of version numbers (from what-strings)"
             path = "/usr/bin/python3"
-            arguments = "ci/DIMRset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimrset_version_lnx64.txt"
+            arguments = "ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimrset_version_lnx64.txt"
         }
     }
 

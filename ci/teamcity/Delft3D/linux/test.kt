@@ -49,7 +49,20 @@ object LinuxTest : BuildType({
     }
 
     params {
+        select(
+            name = "distribution",
+            label = "Distribution",
+            value = "alma10",
+            display = ParameterDisplay.PROMPT,
+            options = listOf(
+                "AlmaLinux 8" to "alma8",
+                "AlmaLinux 9" to "alma9",
+                "AlmaLinux 10" to "alma10"
+            )
+        )
+        param("testbench_container_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:%distribution%-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
         select("configfile", processor.activeConfigs.joinToString(","),
+            label = "Testbench XML",
             allowMultiple = true,
             options = processor.configs.zip(processor.labels) { config, label -> label to config },
             display = ParameterDisplay.PROMPT
@@ -58,7 +71,7 @@ object LinuxTest : BuildType({
         checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
+        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
     }
 
     features {
@@ -76,7 +89,7 @@ object LinuxTest : BuildType({
             name = "Run TestBench.py"
             workingDir = "test/deltares_testbench/"
             pythonVersion = customPython {
-                executable = "python3.9"
+                executable = "python3"
             }
             command = file {
                 filename = "TestBench.py"
@@ -92,7 +105,7 @@ object LinuxTest : BuildType({
                     --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
                 """.trimIndent()
             }
-            dockerImage = "%dep.${LinuxRuntimeContainers.id}.testbench_container_image%"
+            dockerImage = "%testbench_container_image%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
             dockerPull = true
             dockerRunParameters = """
@@ -106,7 +119,7 @@ object LinuxTest : BuildType({
             executionMode = BuildStep.ExecutionMode.ALWAYS
             commandType = other {
                 subCommand = "rmi"
-                commandArgs = "%dep.${LinuxRuntimeContainers.id}.testbench_container_image%"
+                commandArgs = "%testbench_container_image%"
             }
         }
         dockerCommand {
@@ -130,6 +143,7 @@ object LinuxTest : BuildType({
         dependency(Trigger) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
         }
         dependency(LinuxRuntimeContainers) {

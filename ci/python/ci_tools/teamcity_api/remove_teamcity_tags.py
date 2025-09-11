@@ -3,8 +3,8 @@ from argparse import ArgumentParser, Namespace
 
 from httpx import HTTPStatusError
 
+from ci_tools.example_utils.logger import Logger, LogLevel
 from ci_tools.teamcity_api.client import TeamcityClient
-from ci_tools.teamcity_api.logger import Logger, LogLevel
 
 
 def parse_arguments() -> Namespace:
@@ -67,8 +67,9 @@ if __name__ == "__main__":
                 logger.log(payload)
                 try:
                     teamcity_client.remove_tag_from_build(build_configuration, tag)
-                except HTTPStatusError:
+                except HTTPStatusError as e:
                     logger.log("Apicall triggered a exception")
+                    logger.log(f"HTTP Exception for {e.request.url} - {e}")
 
                 logger.log(f"Deleted tag. {tag}.")
         else:

@@ -62,7 +62,7 @@ module m_wind
    real(kind=dp), dimension(:), allocatable, target :: cloudiness !< air cloudiness (%)
    real(kind=dp), dimension(:), allocatable, target :: air_density !< air density (kg/m3)
    real(kind=dp), dimension(:), allocatable, target :: solar_radiation !< solar radiation (W/m2)
-   real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< solar radiation (W/m2) incl. albedo correction
+   real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< net solar radiation (W/m2) incl. albedo correction
    real(kind=dp), dimension(:), allocatable, target :: long_wave_radiation !< long wave radiation (W/m2)
    real(kind=dp), dimension(:), allocatable :: heatsrc !< resulting 2D or 3D heat source per cell (Km3/s)
    real(kind=dp), dimension(:), allocatable :: heatsrc0 !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
@@ -78,6 +78,7 @@ module m_wind
    integer :: jaevap !< use evap yes or no
    integer :: ja_airdensity !< use variabele air density yes or no
    logical :: solar_radiation_available = .false. !< solar radiation provided by user
+   logical :: net_solar_radiation_available = .false. !< net solar radiation provided by user
    logical :: long_wave_radiation_available = .false. !< long wave radiation provided by user
    integer :: jaheat_eachstep = 0 !< if 1, do it each step, else in externalforcings (default)
    integer :: jaQext !< use Qin externally provided yes or no

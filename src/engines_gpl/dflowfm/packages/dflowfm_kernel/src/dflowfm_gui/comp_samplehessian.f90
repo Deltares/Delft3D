@@ -68,7 +68,7 @@ contains
 
       real(kind=dp) :: af, dum, Dh
 
-      integer :: i, j, k, nrot, ip, ihasridge
+      integer :: i, j, k, ip, ihasridge
 
 !  compute sample mesh width
       Dh = min(dbdistance(xs(1), ys(1), xs(2), ys(2), jsferic, jasfer3D, dmiss), dbdistance(xs(1), ys(1), xs(1 + MXSAM), ys(1 + MXSAM), jsferic, jasfer3D, dmiss))
@@ -132,7 +132,7 @@ contains
 !           Eigendecompostion
                VV(1, 1) = zxx; VV(1, 2) = zxy
                VV(2, 1) = zyx; VV(2, 2) = zyy
-               call jacobi(VV, 2, 2, S, UU, nrot)
+               !call jacobi
 
 !!           checks
 !            if ( abs(zxy-zyx).gt.1d-8 ) then

@@ -34,7 +34,7 @@ function varargout = d3d_qp(cmd,varargin)
 %   $HeadURL$
 %   $Id$
 
-%VERSION = 2.70
+%VERSION = 2.71
 
 try
     if nargin==0

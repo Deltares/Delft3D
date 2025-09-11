@@ -49,7 +49,7 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     use meteo
     use precision
     use mathconsts
-    use physicalconsts, only: CtoKelvin
+    use physicalconsts, only: celsius_to_kelvin
     !
     use globaldata
     use dfparall
@@ -244,7 +244,6 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp)      :: time    ! time in minutes
     real(fp)      :: tkcube
     real(fp)      :: tkelvi
-    real(fp)      :: tkelvn
     real(fp)      :: tl      ! Latent heat [j/kg]
     real(fp)      :: tm0     ! GMT time in hours after midnight January first (TIMJAN + TIMHR)
     real(fp)      :: tm      ! Actual time in hours after midnight January first (TIMJAN + TIMHR + TIMEZONE)
@@ -254,7 +253,6 @@ subroutine heatu(ktemp     ,anglat    ,sferic    ,timhr     ,keva      , &
     real(fp)      :: zbottom
     real(fp)      :: zdown
     real(fp)      :: ztop
-    real(fp), parameter :: fCtoKelvin = real(CtoKelvin, fp)
     logical       :: success
     character(100):: errmsg
 !
@@ -412,8 +410,8 @@ do l=1,lstsci
              !
              tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,l)
              !
-             easp     = (rhum/100.0_fp) * 23.38_fp * exp( 18.1_fp - 5303.3_fp/(tdryb      +fCtoKelvin) )
-             esvp     =                   23.38_fp * exp( 18.1_fp - 5303.3_fp/(r0(nm,k0,l)+fCtoKelvin) )
+             easp     = (rhum/100.0_fp) * 23.38_fp * exp( 18.1_fp - 5303.3_fp/celsius_to_kelvin(tdryb) )
+             esvp     =                   23.38_fp * exp( 18.1_fp - 5303.3_fp/celsius_to_kelvin(r0(nm,k0,l)) )
              !
              ! No negative evaporation
              ! Assumption: Negative evaporation is caused by
@@ -543,8 +541,8 @@ do l=1,lstsci
              !
              tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,l)
              !
-             easp = (rhum/100.0_fp) * 23.38_fp * exp( 18.1_fp - 5303.3_fp/(tdryb      +fCtoKelvin) )
-             esvp =                   23.38_fp * exp( 18.1_fp - 5303.3_fp/(r0(nm,k0,l)+fCtoKelvin) )
+             easp = (rhum/100.0_fp) * 23.38_fp * exp( 18.1_fp - 5303.3_fp/celsius_to_kelvin(tdryb) )
+             esvp =                   23.38_fp * exp( 18.1_fp - 5303.3_fp/celsius_to_kelvin(r0(nm,k0,l)) )
              !
              ! No negative evaporation
              ! Assumption: Negative evaporation is caused by
@@ -759,11 +757,11 @@ do l=1,lstsci
              tl = 2.5e6_fp - 2.3e3_fp*r0(nm,k0,l)
              !
              if (ivapop == 0) then
-                easp = (rhum/100.0_fp) * 23.38_fp * exp(18.1_fp - 5303.3_fp/(tair        + fCtoKelvin))
+                easp = (rhum/100.0_fp) * 23.38_fp * exp(18.1_fp - 5303.3_fp/celsius_to_kelvin(tair))
              else
                 easp = vapres
              endif
-             esvp =                      23.38_fp * exp(18.1_fp - 5303.3_fp/(r0(nm,k0,l) + fCtoKelvin))
+             esvp =                      23.38_fp * exp(18.1_fp - 5303.3_fp/celsius_to_kelvin(r0(nm,k0,l)))
              !
              ! No negative evaporation
              ! Assumption: Negative evaporation is caused by
@@ -810,7 +808,7 @@ do l=1,lstsci
              ! (see for comparison Eq. B.7 from Deltares internal note; QBL= QAN-QBR)
              ! All units are in SI
              !
-             tkelvi = tair + fCtoKelvin
+             tkelvi = celsius_to_kelvin(tair)
              tkcube = tkelvi * tkelvi * tkelvi
              if (easp > eps) then
                 sq_ea = sqrt(easp)
@@ -1124,15 +1122,14 @@ do l=1,lstsci
                 !
                 rdry   = 287.05_fp
                 rvap   = 461.495_fp
-                tkelvn = fCtoKelvin
                 !
                 ! For sensible heat
                 ! Reduced gravity GRED
                 !
                 pvap   = 100.0_fp * ew
-                rhoa0  = ((presa*100.0_fp-pvap)/rdry + pvap/rvap) / ( r0(nm,k0,l)+tkelvn )
+                rhoa0  = ((presa*100.0_fp-pvap)/rdry + pvap/rvap) / celsius_to_kelvin( r0(nm,k0,l) )
                 pvap   = 100.0_fp * eal
-                rhoa10 = ((presa*100.0_fp-pvap)/rdry + pvap/rvap) / (tair+tkelvn)
+                rhoa10 = ((presa*100.0_fp-pvap)/rdry + pvap/rvap) / celsius_to_kelvin(tair)
                 !
                 ! gred = ag*(rhoa10-rhoa0) / ((rhoa0+rhoa10)/2)
                 !
@@ -1182,7 +1179,7 @@ do l=1,lstsci
              ! heat loss by effective infrared back radiation hl, restricted by
              ! presence of clouds and water vapour in air
              !
-             qbl = em * sboltz * ( (r0(nm,k0,l) + fCtoKelvin)**4.0_fp )                 &
+             qbl = em * sboltz * ( celsius_to_kelvin(r0(nm,k0,l))**4.0_fp )                 &
                  & * (0.39_fp - 0.05_fp*sq_eal) * (1.0_fp - 0.6_fp*cfclou*cfclou)
              !
              qbl = max(0.0_fp, qbl)

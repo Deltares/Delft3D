@@ -38,16 +38,16 @@ Out=In;
 for i=1:length(In)
     switch MNK(In(i).DimFlag(mnk)~=0)
         case ''
-            Out(i).SpatType='';
+            Out(i).Coords='';
         case 'MN'
-            Out(i).SpatType='xy';
+            Out(i).Coords='xy';
         case 'MNK'
-            Out(i).SpatType='xy+z';
+            Out(i).Coords='xy+z';
         case 'K'
-            Out(i).SpatType='z';
+            Out(i).Coords='z';
         case {'MK','NK'}
-            Out(i).SpatType='x+z';
+            Out(i).Coords='x+z';
         case {'M','N'}
-            Out(i).SpatType='x';
+            Out(i).Coords='x';
     end
 end

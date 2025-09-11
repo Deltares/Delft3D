@@ -861,6 +861,9 @@ contains
       use m_qnerror
       use m_find_name, only: find_name
       use messagehandling, only: msgbuf, msg_flush, err_flush
+      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, &
+                                           BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
+                                           BOUNDARY_DISCHARGE_HEAD
 
       character(len=256), intent(in) :: qid !
       character(len=256), intent(in) :: filename !
@@ -895,18 +898,24 @@ contains
          write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numz, ' nr of open bndcells'; call msg_flush()
          nzbnd = nzbnd + 1
 
-         if (qidfm == 'waterlevelbnd') itpbn = 1
-         if (qidfm == 'neumannbnd') itpbn = 2
+         if (qidfm == 'waterlevelbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL
+         end if
+         if (qidfm == 'neumannbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL_NEUMANN
+         end if
          if (qidfm == 'riemannbnd') then
-            itpbn = 5
+            itpbn = BOUNDARY_VELOCITY_RIEMANN
             if (present(tfc)) then
                ftpet(nbndz + 1:nbndz + numz) = tfc(7) ! relaxation time riemann from ext file
             end if
          end if
-         if (qidfm == 'outflowbnd') itpbn = 6
+         if (qidfm == 'outflowbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL_OUTFLOW
+         end if
 
          if (qidfm == 'qhbnd') then
-            itpbn = 7
+            itpbn = BOUNDARY_DISCHARGE_HEAD
             nqhbnd = nqhbnd + 1
             numqh = numz
             if (filetype == poly_tim) then
@@ -2389,6 +2398,8 @@ contains
       use m_get_prof_1D
       use mathconsts, only: pi
       use m_filez, only: doclose
+      use m_physcoef, only: constant_dicoww, dicoww
+      use m_array_or_scalar, only: realloc
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2803,6 +2814,11 @@ contains
       ! (needed to disable possibly invalid statistical output items)
       call check_model_has_structures_across_partitions
 
+      ! Set dicoww to scalar value if not read from inifields file
+      if (.not. allocated(dicoww)) then
+         call realloc(dicoww, constant_dicoww)
+      end if
+
    end subroutine finalize
 
    !> Allocate and initialized atmosperic pressure variable(s)
@@ -2847,7 +2863,7 @@ contains
    function check_keyword_zerozbndinflowadvection() result(success)
       use m_flowparameters, only: jaZerozbndinflowadvection
       use messagehandling, only: LEVEL_ERROR, msgbuf, mess
-      
+
       logical :: success
 
       success = .true.
