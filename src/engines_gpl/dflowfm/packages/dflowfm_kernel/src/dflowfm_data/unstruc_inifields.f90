@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ module unstruc_inifields
    use messagehandling, only: msgbuf, warn_flush, err_flush
    use properties
    use string_module, only: str_lower, strcmpi
-   use precision_basics, only: dp
+   use precision_basics, only: dp, sp
 
    implicit none
    private
@@ -162,7 +162,7 @@ contains
       use tree_data_types
       use tree_structures
       use m_alloc, only: reallocP
-      use m_ec_parameters, only: ec_undef_int, interpolate_spacetime
+      use m_ec_parameters, only: ec_undef_int
       use m_cell_geometry, only: xz, yz
 
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
@@ -175,7 +175,7 @@ contains
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
 
       use m_flow, only: s1, hs, frcu, ndkx, kbot, ktop, ndkx, zcs
-      use m_flowgeom, only: ndx2d, ndxi, ndx, kcs, bl
+      use m_flowgeom, only: ndx2d, ndxi, ndx, bl
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
 
       use fm_external_forcings_data, only: qid, operand, transformcoef, success, trnames
@@ -193,7 +193,9 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_timespaceinitialfield_mpi
       use m_find_name, only: find_name
-
+      use m_get_kbot_ktop, only : getkbotktop
+      use timespace_parameters, only: WEIGHTFACTORS
+      
       implicit none
       character(len=*), intent(in) :: inifilename !< name of initial field file
       integer :: ierr !< Result status (DFM_NOERR on success)
@@ -210,9 +212,10 @@ contains
       character(len=255) :: fnam, filename
       character(len=255) :: basedir
       integer :: istat
-      integer :: i, ib, ja, kx, iconst, itrac, k
+      integer :: i, ib, ja, iconst, itrac, k
       integer :: target_location_type, first_index
       integer :: method, iloctype, filetype, ierr_loc
+      integer :: target_location_count
       logical(kind=c_bool), allocatable :: specified_water_levels(:) !< indices where waterlevels are specified with non-global values
       logical(kind=c_bool), allocatable :: specified_indices(:)
       real(kind=dp) :: global_value, water_level_global_value
@@ -220,12 +223,15 @@ contains
       logical :: time_dependent_array
       integer, allocatable :: kcsini(:) ! node code during initialization
       integer :: ec_item
+      integer :: quantity_value_count
 
       real(kind=dp), pointer, dimension(:) :: target_array, x_loc, y_loc
       real(kind=dp), pointer, dimension(:, :) :: target_array_3d
+      real(kind=sp), pointer, dimension(:, :) :: target_array_3d_sp
       integer, pointer, dimension(:) :: target_array_integer
       integer, dimension(:), allocatable :: mask
       real(kind=dp) :: factor
+      integer, pointer, dimension(:) :: pktop, pkbot
 
       ierr = DFM_NOERR
       success = .true.
@@ -283,8 +289,8 @@ contains
                exit ! Or, consider cycle instead, to try all remaining blocks and return with an error only at the very end.
             end if
             if (strcmpi(qid, 'initialwaterlevel') .or. strcmpi(qid, 'initialwaterdepth') & ! Official names
-               .or. strcmpi(qid, 'waterlevel') .or. strcmpi(qid, 'waterdepth') & ! Backwards compatible names
-               .or. strcmpi(qid, 'initialvelocity')) then
+                .or. strcmpi(qid, 'waterlevel') .or. strcmpi(qid, 'waterdepth') & ! Backwards compatible names
+                .or. strcmpi(qid, 'initialvelocity')) then
                specified_water_levels = specified_water_levels .or. specified_indices
                if (global_value_provided) then
                   water_level_global_value_provided = .true.
@@ -307,41 +313,37 @@ contains
                call process_initial_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
                                           target_array_3d, first_index, method)
             else
-               target_array_3d => null()
                call process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                            target_array_integer)
-            end if
-
-            if (.not. associated(target_array) .and. .not. associated(target_array_3d)) then
-               cycle
+                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count)
             end if
 
             ! This part of the code might be moved or changed. (See UNST-8247)
-            if (qid(1:13) == 'initialtracer' .and. method == interpolate_spacetime) then
+            ! 'initialtracer' with method unequal to WEIGHTFACTORS will be handled by calling fill_field_values below
+            if (qid(1:13) == 'initialtracer' .and. method == WEIGHTFACTORS) then
+               call reallocP(target_array, ndkx, keepExisting=.false., fill=dmiss)
+               ! Get iconst via qid, tracnam, itrac, itrac2const
                call get_tracername(qid, tracnam, qidnam)
                call add_tracer(tracnam, iconst) ! or just gets constituents number if tracer already exists
                itrac = find_name(trnames, tracnam)
-
                if (itrac == 0) then
                   call mess(LEVEL_WARN, 'flow_initexternalforcings: tracer '//trim(tracnam)//' not found')
                   success = .false.
                   return
                end if
                iconst = itrac2const(itrac)
-
-               call reallocP(target_array, ndkx, keepExisting=.false., fill=dmiss)
-               kx = 1
+               !
+               quantity_value_count = 1
                if (allocated(mask)) then
                   deallocate (mask)
                end if
                allocate (mask(ndx), source=1)
                ec_item = ec_undef_int
                call setzcs()
-               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, kx, filename, &
-                                                 filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
-                                                 varname=varname, tgt_item1=ec_item)
+               success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, quantity_value_count, filename, &
+                                                   filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
+                                                   varname=varname, tgt_item1=ec_item)
                success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                                      tunit, tstart_user, target_array)
+                                                                        tunit, tstart_user, target_array)
                if (.not. success) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
                end if
@@ -359,10 +361,22 @@ contains
             end if
 
             if (time_dependent_array) then
-               kx = 1
-               success = ec_addtimespacerelation(qid, x_loc, y_loc, kcs, kx, filename, filetype, method, operand, &
-                                                 varname=varname)
+               call set_coordinates_for_location_type(target_location_type, x_loc, y_loc, target_location_count, iloctype, kcsini)
+               if (target_location_type == UNC_LOC_S3D) then
+                  pkbot => kbot
+                  pktop => ktop
+                  call setzcs()
+                  success = ec_addtimespacerelation(qid, x_loc, y_loc, kcsini, quantity_value_count, filename, filetype, method, operand, &
+                                                    varname=varname, z=zcs, pkbot=pkbot, pktop=pktop)
+               else 
+                  success = ec_addtimespacerelation(qid, x_loc, y_loc, kcsini, quantity_value_count, filename, filetype, method, operand, &
+                                                    varname=varname)
+               end if
             else
+               if (.not. associated(target_array) .and. .not. associated(target_array_3d)) then
+                  cycle
+               end if
+
                call fill_field_values(target_array, target_array_3d, target_location_type, first_index, filename, &
                                       filetype, method, operand, transformcoef, iloctype, kcsini, success)
             end if
@@ -406,9 +420,9 @@ contains
    subroutine fm_quantity_name_to_source_quantity_name(quantity_name, file_type, source_quantity_name)
       use string_module, only: str_tolower
       use timespace_parameters, only: FIELD1D
-      character(len=*), intent(in) :: quantity_name          !< Input quantity name (as it appears in the IniFieldFile).
-      integer, intent(in) :: file_type                       !< Data file type (one from the enum integers in timespace_parameters).
-      character(len=*), intent(out) :: source_quantity_name  !< Source name how the quantity is referred to in the data file. Empty string if combination is not supported.
+      character(len=*), intent(in) :: quantity_name !< Input quantity name (as it appears in the IniFieldFile).
+      integer, intent(in) :: file_type !< Data file type (one from the enum integers in timespace_parameters).
+      character(len=*), intent(out) :: source_quantity_name !< Source name how the quantity is referred to in the data file. Empty string if combination is not supported.
 
       source_quantity_name = ''
 
@@ -448,7 +462,7 @@ contains
       character(len=1), intent(out) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
       real(kind=dp), intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
-      character(len=*), intent(out) :: varname !< variable name within filename; only in case of NetCDF
+      character(len=*), intent(out) :: varname !< Variable name within filename; only in case of NetCDF. Will be empty string if not specified in input.
 
       integer, parameter :: ini_key_len = 32
       integer, parameter :: ini_value_len = 256
@@ -457,14 +471,15 @@ contains
       character(len=ini_value_len) :: averagingType
       character(len=ini_value_len) :: locationType
       character(len=ini_value_len) :: friction_type
-      integer :: iav, extrapolation, averagingNumMin, int_friction_type
+      integer :: iav, averagingNumMin, int_friction_type
+      character(len=ini_value_len) :: extrapolation
       logical :: retVal
       ja = 0
       groupname = tree_get_name(node_ptr)
 
       if (strcmpi(groupname, 'General')) then
          ja = 1
-         goto 888
+         return
       end if
 
       transformcoef = -999.0_dp
@@ -473,7 +488,7 @@ contains
          write (msgbuf, '(5a)') 'Unrecognized block in file ''', trim(inifilename), ''': [', trim(groupname), &
             ']. Ignoring this block.'
          call warn_flush()
-         goto 888
+         return
       end if
 
       ! read quantity
@@ -482,7 +497,7 @@ contains
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), &
             ']. Field ''quantity'' is missing. Ignoring this block.'
          call warn_flush()
-         goto 888
+         return
       end if
 
       ! read datafile
@@ -492,7 +507,7 @@ contains
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), &
             '] for quantity='//trim(quantity)//'. Field ''dataFile'' is missing. Ignoring this block.'
          call warn_flush()
-         goto 888
+         return
       end if
 
       ! read dataFileType
@@ -501,35 +516,46 @@ contains
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), &
             '] for quantity='//trim(quantity)//'. Field ''dataFileType'' is missing. Ignoring this block.'
          call warn_flush()
-         goto 888
+         return
       end if
       filetype = convert_file_type_string_to_integer(dataFileType)
       if (filetype == FILE_TYPE_UNKNOWN) then
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
             //trim(quantity)//'. Field ''dataFileType'' has invalid value '''//trim(dataFileType)//'''. Ignoring this block.'
          call warn_flush()
-         goto 888
+         return
       end if
+
+      varname = ''
+      call prop_get(node_ptr, '', 'dataVariableName ', varname)
 
       ! if dataFileType is 1dField, then it is not necessary to read interpolationMethod, operand, averagingType,
       ! averagingRelSize, averagingNumMin, averagingPercentile, locationType, extrapolationMethod, value
       if (filetype /= field1D) then
          ! read interpolationMethod
          call prop_get(node_ptr, '', 'interpolationMethod ', interpolationMethod, retVal)
-         if (.not. retVal) then
-            write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
-               //trim(quantity)//'. Field ''interpolationMethod'' is missing. Ignoring this block.'
-            call warn_flush()
-            goto 888
+         if (retVal) then
+            method = convert_method_string_to_integer(interpolationMethod)
+            call update_method_with_weightfactor_fallback(dataFileType, method)
+
+            if (method == METHOD_UNKNOWN .or. (method == interpolate_time .and. filetype /= inside_polygon)) then
+               write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+                  //trim(quantity)//'. Field ''interpolationMethod'' has invalid value '''//trim(interpolationMethod)// &
+                  '''. Ignoring this block.'
+               call warn_flush()
+               return
+            end if
+         else
+            method = get_default_method_for_file_type(dataFileType)
+
+            if (method == METHOD_UNKNOWN) then
+               write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+                  //trim(quantity)//'. Field ''interpolationMethod'' is missing. Ignoring this block.'
+               call warn_flush()
+               return
+            end if
          end if
-         method = convert_method_string_to_integer(interpolationMethod)
-         if (method < 0 .or. (method == interpolate_time .and. filetype /= inside_polygon)) then
-            write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
-               //trim(quantity)//'. Field ''interpolationMethod'' has invalid value '''//trim(interpolationMethod)// &
-               '''. Ignoring this block.'
-            call warn_flush()
-            goto 888
-         end if
+
 
          if (method == interpolate_spacetimeSaveWeightFactors) then ! 'averaging'
             ! read averagingType
@@ -544,7 +570,7 @@ contains
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='// &
                   trim(quantity)//'. Field ''averagingType'' has invalid value '''//trim(averagingType)//'''. Ignoring this block.'
                call warn_flush()
-               goto 888
+               return
             end if
 
             ! read averagingRelSize
@@ -618,10 +644,12 @@ contains
 
          ! read extrapolationMethod
          call prop_get(node_ptr, '', 'extrapolationMethod', extrapolation, retVal)
-         if (.not. retVal) then
-            extrapolation = 0
+         if (retVal .and. strcmpi(trim(extrapolation), 'yes')) then
+            ! TODO: implement extrapolation method (see UNST-8626) and then remove this warning
+            write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+               //trim(quantity)//'. Field ''extrapolationMethod'' is not (yet) supported. Continuing without extrapolation.'
+            call warn_flush()
          end if
-         method = method + 100 * extrapolation
 
          ! read value
          if (filetype == inside_polygon) then
@@ -630,7 +658,7 @@ contains
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), &
                   '] for quantity='//trim(quantity)//'. Field ''value'' is missing. Ignore this block.'
                call warn_flush()
-               goto 888
+               return
             end if
          end if
       end if ! .not. strcmpi(dataFileType, '1dField'))
@@ -646,7 +674,7 @@ contains
             write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
                //trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand)//'''. Ignoring this block.'
             call warn_flush()
-            goto 888
+            return
          end if
       end if
 
@@ -659,14 +687,8 @@ contains
          end if
       end if
 
-      varname = ''
-
       ! We've made it to here, success!
       ja = 1
-      return
-
-888   continue
-      ! Some error occurred, return without setting ja=1
       return
 
    end subroutine readIniFieldProvider
@@ -724,7 +746,7 @@ contains
           (.not. strcmpi(quantity, 'waterdepth')) .and. (.not. strcmpi(quantity, 'frictioncoefficient')) .and. &
           (.not. strcmpi(quantity, 'velocity')) .and. &
           (.not. strcmpi(quantity, 'initialvelocity')) & ! Silly exception, because in earlier D-HYDRO Suite 1D2D releases, this was already called 'initialvelocity'. Will phase out in file format 3.00 later.
-         ) then
+          ) then
          num_errors = num_errors + 1
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(ini_file_name), ''': [Global]. Quantity ''', trim(quantity), &
             ''' is unknown.'
@@ -1142,7 +1164,7 @@ contains
 
    !> Subroutine to initialize the subsupl array based on the ibedlevtyp value.
    subroutine initialize_subsupl()
-      use m_subsidence, only: sdu_blp, subsupl_t0, subsupl, subsout, subsupl_tp, jasubsupl
+      use m_subsidence, only: sdu_blp, subsupl_t0, subsupl, subsout, subsupl_tp
       use m_flowparameters, only: ibedlevtyp
       use m_meteo, only: ec_addtimespacerelation
       ! use m_flow, only:
@@ -1154,7 +1176,6 @@ contains
 
       integer, allocatable :: mask(:)
       integer :: kx, ierr
-      logical :: success
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
 
@@ -1233,9 +1254,6 @@ contains
       call aerr('sdu_blp(ndx)', ierr, ndx)
       sdu_blp = 0.0_dp
 
-      if (success) then
-         jasubsupl = 1
-      end if
    end subroutine initialize_subsupl
 
    !> Set the control parameters for the actual reading of either the [Initial] type items from the input file or
@@ -1249,7 +1267,7 @@ contains
       use messageHandling
       use m_alloc, only: realloc, aerr, reallocP
       use m_missing, only: dmiss
-      use m_ec_parameters, only: ec_undef_int, interpolate_spacetime
+      use m_ec_parameters, only: ec_undef_int
 
       use m_meteo, only: ec_addtimespacerelation
       use unstruc_files, only: resolvePath
@@ -1259,8 +1277,8 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_S3D, UNC_LOC_3DV
 
       use fm_external_forcings_data, only: success, transformcoef, trnames, uxini, uyini, inivelx, &
-                                           inively
-      use fm_external_forcings_utils, only: split_qid !, copy_3d_arrays_double_indexed_to_single_indexed
+                                           inively, NAMTRACLEN
+      use fm_external_forcings_utils, only: split_qid, get_tracername !, copy_3d_arrays_double_indexed_to_single_indexed
 
       use m_flow, only: s1, hs, sabot, satop, sa1, ndkx, tem1, h_unsat, kmx
       use m_flowgeom, only: ndx, lnx
@@ -1274,6 +1292,9 @@ contains
       use m_transportdata, only: ISED1, const_names, itrac2const, constituents
       use m_fm_wq_processes, only: wqbotnames, wqbot
       use m_find_name, only: find_name
+      use m_add_bndtracer, only: add_bndtracer
+      use timespace_parameters, only: WEIGHTFACTORS
+
 
       ! use network_data
       ! use dfm_error
@@ -1294,6 +1315,9 @@ contains
       integer :: iostat
       integer :: iconst, isednum, itrac, iwqbot
       character(len=idlen) :: qid_base, qid_specific
+      character(len=NAMTRACLEN) :: tracnam, qidnam
+      character(len=20) :: tracunit
+      integer :: janew
 
       integer :: layer
 
@@ -1405,10 +1429,14 @@ contains
             initem2D = 1
          end if
       case ('initialtracer')
-         if (method == interpolate_spacetime) then
+         if (method == WEIGHTFACTORS) then
             ! handled elsewhere
             return
          end if
+
+         call get_tracername(qid, tracnam, qidnam)
+         tracunit = " "
+         call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          call add_tracer(qid_specific, iconst) ! or just gets constituents number if tracer already exists
          itrac = find_name(trnames, qid_specific)
@@ -1527,7 +1555,7 @@ contains
    !> Set the control parameters for the actual reading of the items from the input file or
    !! connecting the input to the EC-module.
    subroutine process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                      target_array_integer)
+                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index, quantity_value_count)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
       use tree_data_types
@@ -1536,19 +1564,28 @@ contains
       use m_alloc, only: realloc, aerr
       use unstruc_files, only: resolvePath
       use m_missing, only: dmiss
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
-      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL, UNC_LOC_S3D
+      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, waveforcing
       use m_flow, only: frcu
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: success
+      use fm_external_forcings_utils, only: split_qid
+      use m_heatfluxes, only: secchisp
       use m_wind, only: ICdtyp
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemdiam, stemdens, stemheight
-      use unstruc_model, only: md_extfile
+      use unstruc_model, only: md_extfile, md_ptr
+      use m_nudge, only: nudge_time, nudge_rate
       use string_module, only: str_tolower
+      use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
+      use processes_input, only: paname, painp, num_spatial_parameters, &
+                                 funame, funinp, num_time_functions, &
+                                 sfunname, sfuninp, num_spatial_time_fuctions
+      use m_physcoef, only: constant_dicoww, dicoww
+      use m_array_or_scalar, only: assign_pointer_to_t_array, realloc
 
       implicit none
 
@@ -1558,14 +1595,25 @@ contains
       logical, intent(out) :: time_dependent_array !< Logical indicating, whether the quantity is time dependent or not.
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< pointer to the array that corresponds to the quantity (real(kind=dp)).
       integer, dimension(:), pointer, intent(out) :: target_array_integer !< pointer to the array that corresponds to the quantity (integer).
+      real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_3d !< pointer to the array that corresponds to the quantity (real(kind=dp)), if it has an extra dimension.
+      real(kind=sp), dimension(:, :), pointer, intent(out) :: target_array_3d_sp !< pointer to the array that corresponds to the quantity (real(kind=sp)), if it has an extra dimension.
+      integer, intent(out) :: target_quantity_index !< Index of the quantity in the first dimension of target_array_3d, if applicable.
+      integer, intent(out) :: quantity_value_count !< The number of values for this quantity on a single location. E.g. 1 for scalar fields, 2 for vector fields.
 
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
+      character(len=idlen) :: qid_base, qid_specific
       integer :: ierr
 
       target_array => null()
       target_array_integer => null()
+      target_array_3d => null()
+      target_array_3d_sp => null()
       time_dependent_array = .false.
+      target_quantity_index = 1
+      quantity_value_count = 1
+
+      call split_qid(qid, qid_base, qid_specific)
 
       ! UNST-8840: temporarily support hydrological quanties either as [Parameter] or [Initial] blocks.
       call process_hydrological_quantities(qid, inifilename, target_location_type, target_array)
@@ -1574,19 +1622,17 @@ contains
          return
       end if
 
-      select case (str_tolower(qid))
+      select case (str_tolower(qid_base))
       case ('frictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frcu
       case ('advectiontype')
          target_location_type = UNC_LOC_U
          target_array_integer => iadv
-
       case ('groundlayerthickness')
          target_location_type = UNC_LOC_U
          target_array => grounlay
          jagrounlay = 1
-
       case ('bedrocksurfaceelevation')
          call initialize_subsupl()
          time_dependent_array = .true.
@@ -1599,9 +1645,7 @@ contains
             target_location_type = UNC_LOC_CN
          end select
          ! Note: target_array not needed, handled via quantity in ec_addtimespacerelation()
-
       case ('frictiontrtfactor')
-
          if (jatrt /= 1) then
             call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting QUANTITY '//trim(qid)// &
                       ', but [trachytopes] is not switched on in MDU file. Ignoring this block.')
@@ -1616,9 +1660,7 @@ contains
             target_array => cftrtfac
             jacftrtfac = 1
          end if
-
       case ('horizontaleddyviscositycoefficient')
-
          if (javiusp == 0) then
             if (allocated(viusp)) then
                deallocate (viusp)
@@ -1630,9 +1672,7 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => viusp
-
       case ('horizontaleddydiffusivitycoefficient')
-
          if (jadiusp == 0) then
             if (allocated(diusp)) then
                deallocate (diusp)
@@ -1644,13 +1684,10 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => diusp
-
       case ('ibedlevtype')
          target_location_type = UNC_LOC_U
          target_array_integer => ibot
-
       case ('internaltidesfrictioncoefficient')
-
          if (jaFrcInternalTides2D /= 1) then ! not added yet
             if (allocated(frcInternalTides2D)) then
                deallocate (frcInternalTides2D)
@@ -1665,31 +1702,29 @@ contains
             allocate (DissInternalTidesPerArea(Ndx), stat=ierr)
             call aerr(' DissInternalTidesPerArea(Ndx)', ierr, Ndx)
             DissInternalTidesPerArea = 0.0_dp
-
             jaFrcInternalTides2D = 1
          end if
          target_location_type = UNC_LOC_S
          target_array => frcInternalTides2D
-
       case ('linearfrictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frculin
          jafrculin = 1
-      case ('sea_ice_area_fraction', 'sea_ice_thickness')
-
-         ! if ice properties not yet read before, initialize ...
-         if (.not. (ja_ice_area_fraction_read /= 0 .or. ja_ice_thickness_read /= 0)) then
-            call fm_ice_activate_by_ext_forces(ndx)
+      case ('seaiceareafraction', 'seaicethickness')
+         if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
+            call fm_ice_activate_by_ext_forces(ndx, md_ptr)
          end if
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.
-         if (qid == 'sea_ice_area_fraction') then
-            ja_ice_area_fraction_read = 1
-         else
-            ja_ice_thickness_read = 1
-         end if
+      case ('secchidepth')
+         call realloc(secchisp, ndx, keepExisting=.true., fill=dmiss, stat = ierr)
+         target_location_type = UNC_LOC_S
+         target_array => secchisp
+      case ('backgroundverticaleddydiffusivitycoefficient')
+         target_location_type = UNC_LOC_S
+         call realloc(dicoww, ndx, constant_dicoww)
+         call assign_pointer_to_t_array(dicoww, target_array, ierr)
       case ('stemdiameter')
-
          if (.not. allocated(stemdiam)) then
             allocate (stemdiam(ndx), stat=ierr)
             call aerr('stemdiam(ndx)', ierr, ndx)
@@ -1697,9 +1732,7 @@ contains
          end if
          target_location_type = UNC_LOC_S
          target_array => stemdiam
-
       case ('stemdensity')
-
          if (.not. allocated(stemdens)) then
             allocate (stemdens(ndx), stat=ierr)
             call aerr('stemdens(ndx)', ierr, ndx)
@@ -1707,9 +1740,7 @@ contains
          end if
          target_location_type = UNC_LOC_S
          target_array => stemdens
-
       case ('stemheight')
-
          if (.not. allocated(stemheight)) then
             allocate (stemheight(ndx), stat=ierr)
             call aerr('stemheight(ndx)', ierr, ndx)
@@ -1717,9 +1748,7 @@ contains
          end if
          target_location_type = UNC_LOC_S
          target_array => stemheight
-
       case ('windstresscoefficient')
-
          if (jaCdwusp == 0) then
             if (allocated(Cdwusp)) then
                deallocate (Cdwusp)
@@ -1732,16 +1761,81 @@ contains
          target_location_type = UNC_LOC_U
          target_array => Cdwusp
          iCdtyp = 1 ! only 1 coeff
-         !
-      case ('wavesignificantheight')
-         if (jawave == 7) then
+      case ('wavesignificantheight', 'waveperiod', 'wavedirection')
+         if (jawave == WAVE_NC_OFFLINE) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
          else
-            call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 7')
+            write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', QUANTITY "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, '.'
+            call warn_flush()
             success = .false.
          end if
+      case ('wavebreakerdissipation', 'whitecappingdissipation')
+         if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
+            target_location_type = UNC_LOC_S
+            time_dependent_array = .true.
+         else            
+            write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+            call warn_flush()
+            success = .false.
+         end if
+      case ('xwaveforce', 'ywaveforce')
+         if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
+            target_location_type = UNC_LOC_S
+            time_dependent_array = .true.
+         else            
+            write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+                      'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+            call warn_flush()
+            success = .false.
+         end if
+      case ('totalwaveenergydissipation')
+         if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
+            target_location_type = UNC_LOC_S
+            time_dependent_array = .true.
+         else            
+            write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
+                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+            call warn_flush()
+            success = .false.
+         end if
+      case ('waqparameter')
+         target_location_type = UNC_LOC_S
+         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values = painp, index_waq_input = target_quantity_index)
+         target_array_3d_sp => painp
+         ! TODO: UNST-9008: discuss with Michelle whether this case is in fact equal to waqsegmentnumber.
+         ! TODO: UNST-9008: discuss with Michelle generalized 2D/3D handling that is repeated in old code.
+      case ('waqsegmentnumber')
+         target_location_type = UNC_LOC_S
+         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values = painp, index_waq_input = target_quantity_index)
+         target_array_3d_sp => painp
+         ! TODO: UNST-9008: discuss with Michelle generalized 2D/3D handling that is repeated in old code.
+      case ('waqfunction')
+         target_location_type = UNC_LOC_GLOBAL
+         time_dependent_array = .true.
+         call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., waq_values_ptr = funinp, index_waq_input = target_quantity_index)
+      case ('waqsegmentfunction')
+         target_location_type = UNC_LOC_S
+         time_dependent_array = .true.
+         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., waq_values_ptr = sfuninp, index_waq_input = target_quantity_index)
+      case ('nudgesalinitytemperature')
+         target_location_type = UNC_LOC_S3D
+         time_dependent_array = .true.
+         quantity_value_count = 2
+         call alloc_nudging()
+      case ('nudgerate')
+         target_location_type = UNC_LOC_S
+         call alloc_nudging()
+         target_array => nudge_rate
+      case ('nudgetime')
+         target_location_type = UNC_LOC_S
+         call alloc_nudging()
+         target_array => nudge_time
       case default
          write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), &
             ' Field '''//trim(qid)//''' is not a recognized ''[Parameter]'' quantity (refer to User Manual). Ignoring this block.'
@@ -1750,6 +1844,59 @@ contains
       end select
 
    end subroutine process_parameter_block
+
+   !> Allocate nudging arrays.
+   subroutine alloc_nudging()
+      use m_alloc, only: realloc
+      use m_cell_geometry, only: ndx
+      use m_flow, only: ndkx
+      use m_missing, only: dmiss
+      use m_nudge, only: nudge_salinity, nudge_temperature, nudge_time, nudge_rate
+
+      call realloc(nudge_temperature, ndkx, fill=dmiss)
+      call realloc(nudge_salinity, ndkx, fill=dmiss)
+      call realloc(nudge_time, ndx, fill=dmiss)
+      call realloc(nudge_rate, ndx, fill=dmiss)
+   end subroutine alloc_nudging
+
+   !> Search a particular water quality input name in a list of names,
+   !! and if not found, add it to the list, also increasing the associated value array.
+   subroutine find_or_add_waq_input(waq_input_name, waq_names, waq_input_count, is_spatial, waq_values, waq_values_ptr, index_waq_input)
+      use m_find_name, only: find_name
+      use m_waq_precision, only: real_wp
+      use m_flow, only: ndkx
+      use m_alloc, only: realloc, reallocP
+
+      character(len=*), intent(in) :: waq_input_name !< Name of the water quality input that is searched for.
+      character(len=*), allocatable, dimension(:), intent(inout) :: waq_names !< (input index) List of water quality input names to be searched in.
+      integer, intent(inout) :: waq_input_count !< Current count of the water quality inputs. Will be incremented if a new input name is added.
+      logical, intent(in) :: is_spatial !< Whether or not this input is a spatial parameter (as opposed to a temporal function). Determines the length of the second dimension in the waq_values array (space-independent has length 1 there).
+      real(kind=real_wp), allocatable, dimension(:,:), optional, intent(inout) :: waq_values !< (input index, location index) Allocatable array of water quality input values, will be increased if a new input name is added. Use either this one or the _pointer argument.
+      real(kind=dp), pointer, dimension(:,:), optional, intent(inout) :: waq_values_ptr !< (input index, location index) Pointer array List of water quality input values, will be increased if a new input name is added. Use either this one or the previous non-_pointer argument.
+      integer, intent(out) :: index_waq_input !< Index of the found or added water quality input (in the search set, as well as parameter set).
+      
+      integer :: waq_location_count
+      
+      index_waq_input = find_name(waq_names, waq_input_name)
+
+      if (index_waq_input == 0) then
+         waq_input_count = waq_input_count + 1
+         index_waq_input = waq_input_count
+         
+         if (is_spatial) then
+            waq_location_count = Ndkx
+         else
+            waq_location_count = 1 ! Temporal functions are not spatial, so only one value per function.
+         end if
+         call realloc(waq_names, waq_input_count, keepExisting=.true., fill=waq_input_name)
+         if (present(waq_values)) then
+            call realloc(waq_values, [waq_input_count, waq_location_count], keepExisting=.true., fill=0.0_real_wp)
+         end if
+         if (present(waq_values_ptr)) then
+            call reallocP(waq_values_ptr, [waq_input_count, waq_location_count], keepExisting=.true., fill=0.0_dp)
+         end if
+      end if
+   end subroutine find_or_add_waq_input
 
    !> Helper routine to process several hydrological quantities that could either be in a [Parameter]
    !! or [Initial] block (this latter for backwards compatibility).
@@ -1834,6 +1981,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
 
       use m_flow, only: s1, hs, h_unsat
+      use m_flowparameters, only: janudge
       use m_flowgeom, only: ndxi, ndx, bl
       use m_wind, only: jaevap, evap
 
@@ -1842,10 +1990,14 @@ contains
                                   DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap
       use m_grw, only: jaintercept2D
-      use m_fm_icecover, only: fm_ice_activate_by_ext_forces
+      use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
+
+      use m_heatfluxes, only: jasecchisp, secchisp
+      use m_physcoef, only: secchidepth
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemheight, stemheightstd
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+      use m_subsidence, only: jasubsupl
       use string_module, only: str_tolower
       use m_find_name, only: find_name
 
@@ -1855,14 +2007,17 @@ contains
       character(len=*), intent(in) :: qid !< Quantity identifier.
 
       integer :: idum
+      integer :: n
       real(kind=dp), external :: ran0
       character(len=idlen) :: qid_base, qid_specific
 
       call split_qid(qid, qid_base, qid_specific)
 
       select case (str_tolower(qid_base))
-      case ('waterdepth')
+      case ('initialwaterdepth', 'waterdepth')
          s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
+      case ('bedrocksurfaceelevation')
+         jasubsupl = 1
       case ('infiltrationcapacity')
          where (infiltcap /= dmiss)
             infiltcap = infiltcap * 1e-3_dp / (24.0_dp * 3600.0_dp) ! mm/day => m/s
@@ -1890,10 +2045,23 @@ contains
          if (qid == 'interceptionlayerthickness') then
             jaintercept2D = 1
          end if
+      case ('seaiceareafraction')
+         ja_ice_area_fraction_read = 1
+      case('seaicethickness')
+         ja_ice_thickness_read = 1
+      case ('secchidepth')
+         jaSecchisp = 1
+         do n = 1, ndx
+            if (secchisp(n) == dmiss) then
+               secchisp(n) = secchidepth
+            end if
+         end do
       case ('stemheight')
          if (stemheightstd > 0.0_dp) then
             stemheight = stemheight * (1.0_dp + stemheightstd * (ran0(idum) - 0.5_dp))
          end if
+      case ('nudgesalinitytemperature')
+         janudge = 1
       end select
 
    end subroutine finish_initialization
@@ -1957,60 +2125,72 @@ contains
 
       use m_alloc, only: realloc
       use m_cell_geometry, only: xz, yz
+      use network_data, only: xk, yk, numk
       use m_flowgeom, only: ndx, lnx, xu, yu
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_CN
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
 
       integer, intent(in) :: target_location_type !< The spatial type of the target locations: 1D, 2D or all.
       real(kind=dp), pointer, dimension(:), intent(out) :: x_loc, y_loc !< The x and y coordinates of the target locations.
       integer, intent(out) :: num_items !< The number of target locations.
-      integer, intent(in) :: iloctype !< The spatial type of the target locations: 1D, 2D or all.
+      integer, intent(in) :: iloctype !< The spatial type of the target locations: 1D, 2D or all. Used for filling the kcsini mask array. Valid values: ILATTP_1D, ILATTP_2D, ILATTP_ALL.
       integer, dimension(:), allocatable, intent(inout) :: kcsini !< Mask array.
 
       select case (target_location_type)
       case (UNC_LOC_S, UNC_LOC_S3D)
          call realloc(kcsini, ndx)
          call prepare_lateral_mask(kcsini, iloctype)
-         x_loc => xz
-         y_loc => yz
+         x_loc => xz(1:ndx)
+         y_loc => yz(1:ndx)
          num_items = ndx
       case (UNC_LOC_U)
          call realloc(kcsini, lnx, keepExisting=.false.)
          kcsini = 1
-         x_loc => xu
-         y_loc => yu
+         x_loc => xu(1:lnx)
+         y_loc => yu(1:lnx)
          num_items = lnx
+      case (UNC_LOC_CN)
+         call realloc(kcsini, numk, keepExisting=.false.)
+         kcsini = 1
+         x_loc => xk(1:numk)
+         y_loc => yk(1:numk)
+         num_items = numk
       case default
          x_loc => null()
          y_loc => null()
       end select
    end subroutine set_coordinates_for_location_type
 
+   !> The values from the input array on 2D grid cells are copied to the 3D locations in the output array.
+   !! Optionally, a vertical range can be specified, which then only updates the 3D output array elements if their vertical
+   !! position lies within that range. Without this range, all 3D cells in a single vertical column get the same 2D input value.
+
    !> The values from the input array are transferred to the 3d locations in the output array. A bamdwith can be specified,
    !! by using the bandwith_lower_limit and bandwith_upper_limit. If the bandwith is not specified, the values are transferred to all
    !! 3d grid cells
-   subroutine initialfield2Dto3D(input_array_2d, output_array_3d, bandwith_lower_limit, bandwith_upper_limit, operand)
+   subroutine initialfield2Dto3D(input_array_2d, output_array_3d, vertical_range_min, vertical_range_max, operand)
       use m_missing
 
       implicit none
 
-      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells.
-      real(kind=dp), dimension(:), intent(inout), target :: output_array_3d !< The output array on 3d grid cells.
-      real(kind=dp), intent(in) :: bandwith_lower_limit, bandwith_upper_limit !< The value for the first index of the output array.
-      character(len=*), intent(in) :: operand !< The operand to be used for filling the field values.
+      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
+      real(kind=dp), dimension(:), intent(inout), target :: output_array_3d !< The output array on 3d grid cells (1:ndkx).
+      real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
+      real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
+      character(len=*), intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
 
       real(kind=dp), dimension(:, :), pointer :: output_array_3d_tmp
 
       output_array_3d_tmp(1:1, 1:size(output_array_3d)) => output_array_3d
 
-      call initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d_tmp, 1, bandwith_lower_limit, bandwith_upper_limit, operand)
+      call initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d_tmp, 1, vertical_range_min, vertical_range_max, operand)
 
    end subroutine initialfield2Dto3D
 
-   !> The values from the input array are transferred to the 3d locations in the output array. A bamdwith can be specified,
-   !! by using the bandwith_lower_limit and bandwith_upper_limit. If the bandwith is not specified, the values are transferred to all
-   !! 3d grid cells.
-   subroutine initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d, first_index, bandwith_lower_limit, bandwith_upper_limit, operand)
+   !> The values from the input array on 2D grid cells are copied to the 3D locations in the output array.
+   !! Optionally, a vertical range can be specified, which then only updates the 3D output array elements if their vertical
+   !! position lies within that range. Without this range, all 3D cells in a single  vertical column get the same 2D input value.
+   subroutine initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d, first_index, vertical_range_min, vertical_range_max, operand)
       use m_flowgeom, only: ndx
       use precision_basics
       use m_flow, only: kmx, kbot, ktop, zws
@@ -2019,22 +2199,25 @@ contains
 
       implicit none
 
-      real(kind=dp), dimension(:), intent(inout) :: input_array_2d !< The input array on 2d grid cells.
-      real(kind=dp), dimension(:, :), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
-      integer, intent(in) :: first_index !< The value for the first index of the output array.
-      real(kind=dp), intent(in) :: bandwith_lower_limit, bandwith_upper_limit !< The lower and upper limit of the bandwith.
-      character(len=*), intent(in) :: operand !< The operand to be used for filling the field values.
+      real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
+      real(kind=dp), dimension(:,:), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
+                                                                      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
+                                                                      !< The second dimension is the 3D grid cell dimension (1:ndkx)
+      integer, intent(in) :: first_index !< The value for the first "constituent" index of the output array.
+      real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
+      real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
+      character(len=*), intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
 
       real(kind=dp) :: lower_limit, upper_limit, level_at_pressure_point
       integer :: n, k, kb, kt
 
       lower_limit = -huge(1.0_dp)
       upper_limit = huge(1.0_dp)
-      if (bandwith_lower_limit /= dmiss) then
-         lower_limit = bandwith_lower_limit
+      if (vertical_range_min /= dmiss) then
+         lower_limit = vertical_range_min
       end if
-      if (bandwith_upper_limit /= dmiss) then
-         upper_limit = bandwith_upper_limit
+      if (vertical_range_max /= dmiss) then
+         upper_limit = vertical_range_max
       end if
       do n = 1, ndx
          if (input_array_2d(n) /= dmiss) then

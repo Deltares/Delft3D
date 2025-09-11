@@ -1,0 +1,9 @@
+inpupr,inpuit,inpunm,inpude,inpudo,inpusx
+"DecayTFoo ","Foo       ",   1,"N","x",1
+"DecayTFoo ","RcDec20Foo",   2,"Y","x",1
+"DecayTFoo ","TcDecFoo  ",   3,"Y","x",1
+"DecayTFoo ","Temp      ",   4,"Y","x",1
+"DecayTBoo ","Boo       ",   1,"N","x",1
+"DecayTBoo ","RcDec20Boo",   2,"Y","x",1
+"DecayTBoo ","TcDecBoo  ",   3,"Y","x",1
+"DecayTBoo ","Temp      ",   4,"Y","x",1

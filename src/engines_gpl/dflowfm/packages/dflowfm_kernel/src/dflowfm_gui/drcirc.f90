@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,7 +39,7 @@ contains
 
    subroutine DRCIRC(XD, YD, ZD)
       use precision, only: dp
-      use m_three_two
+      use m_three_two, only: drietwee
 
       real(kind=dp) :: x
       real(kind=dp) :: y

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_positiveblok
 contains
 
    subroutine POSITIVEBLOK()
-      use m_grid_block
+      use m_grid_block, only: npt, mb, nb
 
       integer :: mh, nh, m1, n1, m2, n2, i
 

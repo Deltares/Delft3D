@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -68,8 +68,8 @@ module m_hydmod
 
     ! open boundaries
     type t_open_boundary_line
-        integer :: ibnd                   ! boundary number
-        integer :: ibnd_new               ! renumbered boundary number (0 = inactive)
+        integer :: ibnd = 0               ! boundary number
+        integer :: ibnd_new = 0           ! renumbered boundary number (0 = inactive)
         real(kind = 8) :: x1                     ! x1
         real(kind = 8) :: y1                     ! y1
         real(kind = 8) :: x2                     ! x2
@@ -146,6 +146,7 @@ module m_hydmod
         type(t_file) :: file_sal               ! salinity-file
         type(t_file) :: file_tem               ! temperature-file
         type(t_file) :: file_vdf               ! vert-diffusion-file
+        type(t_file) :: file_vel               ! velocities-file
         type(t_file) :: file_srf               ! surfaces-file
         type(t_file) :: file_hsrf              ! horizontal-surfaces-file
         type(t_file) :: file_lgt               ! total-grid-file
@@ -161,6 +162,7 @@ module m_hydmod
         logical :: tem_present            ! indication if temperature is availeble
         logical :: tau_present            ! indication if tau is availeble
         logical :: vdf_present            ! indication if vertical diffusion is availeble
+        logical :: vel_present            ! indication if velocities are availeble
         real :: min_vdf_upper          ! minimum-vert-diffusion-upper-layer
         real :: min_vdf_lower          ! minimum-vert-diffusion-lower-layer
         real :: min_vdf_interface      ! minimum-vert-diffusion-interface-depth
@@ -194,6 +196,7 @@ module m_hydmod
         real, pointer :: tem(:)                 ! tem
         real, pointer :: tau(:)                 ! tau
         real, pointer :: vdf(:)                 ! vdf
+        real, pointer :: vel(:)                 ! flow velocities
         integer, pointer :: lgrid(:, :)             ! active grid table
         integer, pointer :: ipoint(:, :)            ! pointer table
         real, pointer :: xdepth(:, :)            ! x coordinates depth points

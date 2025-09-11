@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -160,7 +160,6 @@ module m_flowtimes
    integer :: it_map !< Nr of snapshots presently in map file
    integer :: it_wav !< Nr of snapshots presently in time-avg'd wave output file JRE
    integer :: it_sed !< Nr of snapshots presently in time-avg'd sedmor output file JRE
-   integer :: it_map_tec !< Nr of snapshots presently in map file, Tecplot format
    integer :: it_his !< Nr of snapshots presently in his file
    integer :: it_inc !< Nr of lines     presently in inc file
    integer :: it_rst !< Nr of snapshots presently in rst file
@@ -286,7 +285,7 @@ contains
 !> Resets only flow times variables intended for a restart of flow simulation.
 !! Upon loading of new model/MDU, use default_flowtimes() instead.
    subroutine reset_flowtimes()
-      use Timers
+
       dtprev = dt_init !< previous computational timestep (s)  (1s is a bit like sobek)
       dts = dt_init !< internal computational timestep (s)
       dti = 1.0_dp / dts !< inverse  computational timestep (1/s)
@@ -332,7 +331,6 @@ contains
       it_wav = 0 !< Nr of snapshots presently in time-avg'd file JRE
       it_sed = 0 !< Nr of snapshots presently in time-avg'd sed file JRE
       it_st = 0 !< Nr of snapshots presently in time-avg'd sedtrails file JRE
-      it_map_tec = 0 !< Nr of snapshots presently in map file
       it_his = 0 !< Nr of snapshots presently in his file
       it_inc = 0 !< Nr of lines     presently in inc file
       it_rst = 0 !< Nr of snapshots presently in rst file
@@ -354,7 +352,7 @@ contains
    end subroutine reset_flowtimes
 
    subroutine reset_timers()
-      use Timers
+      use Timers, only: timini, timon, timstrt
 
       call timini()
       timon = .true.

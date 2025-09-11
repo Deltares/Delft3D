@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,9 +33,9 @@ module m_increase_grid
    implicit none
 contains
    subroutine INCREASEGRID(M, N)
-      use M_GRID
+      use M_GRID, only: mmax, nmax, mnmax, xc, yc, zc, ijc, ijyes
+      use m_alloc, only: realloc
       use M_MISSING, only: dxymis
-      use m_alloc
 
       integer :: m, n
 

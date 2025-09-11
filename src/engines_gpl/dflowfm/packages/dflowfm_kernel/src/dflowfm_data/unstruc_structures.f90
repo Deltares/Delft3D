@@ -2,7 +2,7 @@ module m_structures
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ module m_structures
    use MessageHandling
    use m_flowparameters, only: jahiscgen, jahispump, jahisgate, jahiscdam, jahisweir, jahisdambreak, jahisorif, jahisculv, jahisuniweir, jahiscmpstru, jahislongculv, jahisbridge
    use m_structures_indices ! all of these indices are used in the module
-   
+
    implicit none
 
    type(tree_data), pointer, public :: strs_ptr !< A property list with all input structure specifications of the current model. Not the actual structure set.
@@ -55,30 +55,30 @@ module m_structures
    real(kind=dp), dimension(:, :), allocatable, target :: valorifgen !< Array for orifice, (1:NUMVALS_ORIFGEN,:), the first index include 1:NUMVALS_COMMON (see definitation at top),
    !< and extra varaibles have indices: IVAL_S1ONCREST, IVAL_CRESTL, IVAL_CRESTW, IVAL_STATE,
    !<                                   IVAL_FORCEDIF, IVAL_OPENW, IVAL_EDGEL, IVAL_OPENH, the last one NUMVALS_ORIFGEN is the counter
-   
+
    real(kind=dp), dimension(:, :), allocatable, target :: valbridge !< Array for bridge(1:NUMVALS_BRIDGE,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and NUMEXTVALS_BRIDGE extra variables here.
-      
+
    real(kind=dp), dimension(:, :), allocatable, target :: valdambreak !< Array for dambreak, (1:NUMVALS_DAMBREAK,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and NUMEXTVALS_DAMBREAK extra variables here.
 
    real(kind=dp), dimension(:, :), allocatable, target :: valculvert !< Array for culvert(1:NUMVALS_CULVERT,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
-   
+
    real(kind=dp), dimension(:, :), allocatable, target :: valuniweir !< Array for universal weir(1:NUMVALS_UNIWEIR,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top) and above extra variables.
-   
+
    real(kind=dp), dimension(:, :), allocatable, target :: valgategen !< Array for (new) gate (1:NUMVALS_GATEGEN,:), the first dimension of this array contains
    !< NUMVALS_COMMON_GATE common variables (see definitation at top) and NUMEXTVALS_GATE extra variables.
-   
+
    real(kind=dp), dimension(:, :), allocatable, target :: valcmpstru !< Array for compound structure(1:NUMVALS_CMPSTRU,:)
 
-    real(kind=dp), dimension(:, :), allocatable, target :: valpump !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
+   real(kind=dp), dimension(:, :), allocatable, target :: valpump !< Array for pump, (1:NUMVALS_PUMP,:), the first dimension of this array contains
    !< NUMVALS_COMMON_PUMP common variables (see definitation at top) and NUMEXTVALS_PUMP extra variables.
-    
+
    real(kind=dp), dimension(:, :), allocatable, target :: vallongculvert !< Array for long culvert, (1:NUMVALS_LONGCULVERT,:), the first dimension of this array contains
    !< NUMVALS_COMMON common variables (see definitation at top)and above extra variables.
-   
+
    real(kind=dp), dimension(:, :), allocatable, target :: valgate !< Array for gate;      (1,:) discharge through gate
    real(kind=dp), dimension(:, :), allocatable, target :: valcdam !< Array for cdam;      (1,:) discharge through controlable dam
    !<                      (2,:) Upstream average water levels
@@ -171,7 +171,7 @@ contains
    !! Used for history output and/or restart file output for hydraulic structures.
    subroutine init_structure_hisvalues()
       use fm_external_forcings_data, only: npumpsg, ncgensg, ngatesg, ncdamsg, ngategen, ngenstru, nweirgen
-      use m_alloc
+
       use m_flowtimes, only: ti_rst
       use m_longculverts, only: nlongculverts
       use m_dambreak_breach, only: n_db_signals
@@ -236,7 +236,7 @@ contains
          if (allocated(valdambreak)) then
             deallocate (valdambreak)
          end if
-         allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals), source = 0.0_dp)
+         allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals), source=0.0_dp)
       end if
       if ((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
          if (allocated(valorifgen)) then
@@ -320,10 +320,10 @@ contains
       use m_flow, only: q1, s1, au, hu, hs
       use m_flowgeom, only: wu, ln, teta, bl
       use m_1d_structures, only: get_discharge_under_compound_struc
-      use m_General_Structure
-      use m_GlobalParameters
-      use m_longculverts
+      use m_GlobalParameters, only: st_longculvert, st_pump, st_general_st, st_weir, st_orifice, st_bridge
+      use m_longculverts, only: longculverts
       use m_flowparameters, only: epshs, epshu
+      use m_general_structure, only: t_generalstructure
       implicit none
       real(kind=dp), dimension(:), intent(inout) :: valstruct !< Output values on structure (e.g. valweirgen(:)):
       !< (IVAL_WIDTH) total width, no matter dry or not

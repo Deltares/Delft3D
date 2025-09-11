@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,9 +41,9 @@ contains
       use precision, only: dp
       use m_missing, only: xymis
       use m_wearelt, only: dsix
-      use m_tolocl
-      use m_grid_block
-      use m_smeerfunctie
+      use m_tolocl, only: tolocl
+      use m_grid_block, only: npt, mb, nb
+      use m_smeerfunctie, only: smeerfunctie
 
       integer :: mmax, nmax, mc, nc, mp, np, nump, nloc, in, jn
 

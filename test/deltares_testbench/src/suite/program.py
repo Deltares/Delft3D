@@ -1,6 +1,6 @@
 """Process runner for test suite.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 import copy
@@ -34,11 +34,20 @@ class Program:
             raise RuntimeError("Cannot instantiate a program without a configuration")
         self.__program_config = program_config
         self.__settings: TestBenchSettings = copy.deepcopy(settings)
+        self.__last_return_code: int = 0
 
     @property
     def name(self) -> str:
         """The name of the Program."""
         return self.__program_config.name
+
+    @property
+    def last_return_code(self) -> int:
+        return self.__last_return_code
+
+    @property
+    def ignore_return_code(self) -> bool:
+        return self.__program_config.ignore_return_value
 
     def run(self, logger: ILogger) -> None:
         self.__execute__(logger)
@@ -126,6 +135,7 @@ class Program:
 
             # write output while executing, optionally create a log file
             self.__handle_process_output(logger, completed_process)
+            self.__last_return_code = completed_process.returncode
 
             # check results
             if completed_process.returncode != 0:

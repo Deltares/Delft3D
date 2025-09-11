@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -524,7 +524,7 @@ contains
       integer :: ierr
       character(len=256) :: filnam
 
-      if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_NETCDF_AND_TECPLOT .or. md_mapformat == IFORMAT_UGRID) then
+      if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_UGRID) then
          ! Sedmor output always UGRID
          if (sedids%ncid /= 0 .and. ((md_unc_conv == UNC_CONV_UGRID .and. sedids%id_tsp%idx_curtime == 0))) then
             ierr = unc_close(sedids%ncid)
@@ -615,7 +615,7 @@ contains
          call check_error(ierr, 'def time dim')
          ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_time, nf90_double, (/sedids%id_tsp%id_timedim/), 'time', 'time', '', trim(Tudunitstr))
          ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_interval, nf90_double, (/sedids%id_tsp%id_timedim/), 'averaging interval', 'averaging interval', '', 's')
-         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_morfac, nf90_double, (/sedids%id_tsp%id_timedim/), 'morfac', 'morphological accelaration factor', '', '-')
+         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_morfac, nf90_double, (/sedids%id_tsp%id_timedim/), 'morfac', 'morphological acceleration factor', '', '-')
 
          ierr = nf90_def_dim(sedids%ncid, 'nSedTot', stmpar%lsedtot, sedids%id_tsp%id_sedtotdim)
 

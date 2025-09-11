@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -59,7 +59,7 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
         use m_logger_helper
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
+        use physicalconsts, only : celsius_to_kelvin
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
@@ -67,9 +67,8 @@ contains
         INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
                 IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         integer(kind = int_wp) :: iseg
-        PARAMETER (MNITRO = 14.0, &
-                KELVIN = real(CtoKelvin), &
-                M3TOL = 1.0E-3)
+        REAL(kind = real_wp), PARAMETER :: MNITRO = 14.0, &
+                M3TOL = 1.0E-3
         !
         !     set pointers
         !
@@ -100,14 +99,14 @@ contains
                 TNH4 = process_space_real(IP2)
                 PH = process_space_real(IP3)
                 TEMP = process_space_real(IP4)
-                TEMPK = TEMP + KELVIN
+                TEMPK = celsius_to_kelvin(TEMP)
                 KRF1A = process_space_real(IP5)
                 KRF1B = process_space_real(IP6)
                 SAL = MAX(0.0, process_space_real(IP7))
                 !
                 !     Error messages
                 !
-                IF (TEMP <= -KELVIN) CALL &
+                IF (celsius_to_kelvin(TEMP) <= 0.0_real_wp) CALL &
                         write_error_message ('TEMP in NH3FREE < 0 KELVIN')
                 !
                 !---- Procesformuleringen ---------------------------------------

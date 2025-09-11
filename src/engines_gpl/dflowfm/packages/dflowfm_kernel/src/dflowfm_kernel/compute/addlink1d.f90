@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,15 +42,13 @@ contains
 
    subroutine addlink1D(L, japerim) ! and add area's and volumes of 1D links
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_missing
-      use m_flowparameters
-      use unstruc_channel_flow
-      use precision_basics
-      use m_get_prof_1D
-      use m_get_prof_1D_min
-      use m_get_hpr_nostruc
+      use m_flowgeom, only: dx, ln, kcu, nd, kcs, bob0, lnxi, lbnd1d, prof1d
+      use m_flow, only: dxdoubleat1dendnodes, s1, vol1, epshu, a1, nonlin, s1m, a1m, hu, au, vol1_f
+      use unstruc_channel_flow, only: network
+      use precision_basics, only: comparereal
+      use m_get_prof_1D, only: getprof_1d
+      use m_get_prof_1D_min, only: getprof_1d_min
+      use m_get_hpr_nostruc, only: get_hpr_nostruc
 
       implicit none
 

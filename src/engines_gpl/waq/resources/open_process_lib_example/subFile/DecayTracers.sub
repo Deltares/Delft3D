@@ -1,0 +1,39 @@
+substance 'Foo' active
+   description        'A substance named Foo'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+substance 'Boo' active
+   description        'A substance named Boo'
+   concentration-unit '(g/m3)'
+   waste-load-unit    '-'
+end-substance
+parameter 'RcDec20Foo'
+   description   'Decay rate of Foo at 20oC'
+   unit          '(1/d)'
+   value          0.1000E+00
+end-parameter
+parameter 'TcDecFoo'
+   description   'temperature coefficient decay Foo'
+   unit          '(-)'
+   value          0.1040E+01
+end-parameter
+parameter 'Temp'
+   description   'ambient water temperature'
+   unit          '(oC)'
+   value          0.1500E+02
+end-parameter
+parameter 'RcDec20Boo'
+   description   'Decay rate of Boo at 20oC'
+   unit          '(1/d)'
+   value          0.2000E+00
+end-parameter
+parameter 'TcDecBoo'
+   description   'temperature coefficient decay Boo'
+   unit          '(-)'
+   value          0.1040E+01
+end-parameter
+active-processes
+   name  'DecayTFoo' 'Temperature dependent decay of Foo'
+   name  'DecayTBoo' 'Temperature dependent decay of Boo'
+end-active-processes

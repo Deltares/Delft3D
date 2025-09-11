@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ contains
    subroutine renumber_cutcellmasks(perm)
       use precision, only: dp
       use network_data, only: numL
-      use m_cutcells
+      use m_cutcells, only: jastored, idxl, xdxl, ydxl, pdxl
       implicit none
 
       integer, dimension(numL), intent(in) :: perm !< permuation array

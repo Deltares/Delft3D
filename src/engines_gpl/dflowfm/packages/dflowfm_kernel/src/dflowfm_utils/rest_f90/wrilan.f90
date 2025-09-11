@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,8 @@ contains
 
    subroutine WRILAN(MPOL)
       use precision, only: dp
-      use M_LANDBOUNDARY
-      use m_wrildb
+      use M_LANDBOUNDARY, only: maxlan, mxlan, xlan, ylan, nclan
+      use m_wrildb, only: wrildb
 
       integer :: mpol
       integer :: mx

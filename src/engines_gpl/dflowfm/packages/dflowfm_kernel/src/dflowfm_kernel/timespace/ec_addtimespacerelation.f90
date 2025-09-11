@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -47,14 +47,16 @@ contains
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
       use m_flowtimes, only: refdate_mjd
-      use string_module, only: str_upper
+      use string_module, only: str_upper, str_tolower
       use timespace_parameters
       use timespace
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
-      use m_transportdata, only : NAMLEN
+      use m_transportdata, only: NAMLEN
       use timespace_read, only: maxnamelen
       use precision, only: dp
       use unstruc_messages, only: callback_msg
+      use m_waveconst
+      use m_unit_utils, only: is_correct_unit
 
       character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
       real(kind=dp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
@@ -132,6 +134,7 @@ contains
       character(len=20) :: waqinput
       integer, external :: findname
       type(tEcMask) :: srcmask
+      
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
       logical :: exist, opened, withCharnock, withStress
 
@@ -203,7 +206,7 @@ contains
             end if
             message = 'Adding time-space-relation for forcing '''//trim(name)//''', location='''//trim(location)//''', file='''//trim(forcingfile)//''' failed!'
             call mess(LEVEL_ERROR, message)
-            
+
             goto 1234
          end if
       else
@@ -438,8 +441,8 @@ contains
 
       converterId = ecCreateConverter(ecInstancePtr)
 
-      select case (target_name)
-      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1D', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreakLevelsAndWidths', 'sourcesink_discharge', 'sourcesink_constituentDelta')
+      select case (str_tolower(trim(target_name)))
+      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1d', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreaklevelsandwidths', 'sourcesink_discharge', 'sourcesink_constituentdelta')
          ! for the FM 'target' arrays, the index is provided by the caller
          if (.not. present(targetIndex)) then
             message = 'Internal program error: missing targetIndex for quantity '''//trim(target_name)
@@ -457,7 +460,8 @@ contains
          ! Each qhbnd polytim file replaces exactly one element in the target data array.
          ! Converter will put qh value in target_array(n_qhbnd)
       case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy', 'airdensity', &
-            'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', 'cloudiness', 'solarradiation', 'longwaveradiation')
+            'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', &
+            'cloudiness', 'solarradiation', 'longwaveradiation')
          if (present(srcmaskfile)) then
             if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
                if (.not. ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then
@@ -473,7 +477,19 @@ contains
             end if
          else
             if (ec_filetype == provFile_bc .and. target_name == 'windxy') then
-               ec_convtype = convType_unimagdir
+               fileReaderPtr => ecSupportFindFileReader(ecInstancePtr, fileReaderId)
+               associate(column_units =>fileReaderPtr%bc%quantity%column_units)
+                  if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('velocity', column_units(3))) then
+                     ! windxy is defined by wind in x and wind in y direction
+                     ec_convtype = convtype_uniform
+                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3)) ) then
+                     ec_convtype = convtype_unimagdir
+                  else
+                     msgbuf = 'incorrect units found in bc file concerning the input for windxy. Only the combinations "ms-1, ms-1"'// &
+                              ' or "ms-1, degree" are allowed.'
+                     call err_flush()
+                  end if
+               end associate
             end if
             success = initializeConverter(ecInstancePtr, converterId, ec_convtype, ec_operand, ec_method)
          end if
@@ -555,7 +571,7 @@ contains
       sourceItemId_3 = 0
       sourceItemId_4 = 0
 
-      select case (target_name)
+      select case (str_tolower(trim(target_name)))
       case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin')
          if (checkFileType(ec_filetype, provFile_uniform, target_name)) then
             ! the file reader will have created an item called 'uniform_item'
@@ -566,7 +582,7 @@ contains
             return
          end if
 
-      case ('pump', 'generalstructure', 'damlevel', 'valve1D', 'gateloweredgelevel', 'lateral_discharge', 'dambreakLevelsAndWidths')
+      case ('pump', 'generalstructure', 'damlevel', 'valve1d', 'gateloweredgelevel', 'lateral_discharge', 'dambreaklevelsandwidths')
          if (checkFileType(ec_filetype, provFile_uniform, target_name)) then
             !
             ! *.tim file
@@ -633,7 +649,7 @@ contains
       case ('velocitybnd', 'dischargebnd', 'waterlevelbnd', 'salinitybnd', 'tracerbnd', &
             'neumannbnd', 'riemannbnd', 'absgenbnd', 'outflowbnd', &
             'temperaturebnd', 'sedimentbnd', 'tangentialvelocitybnd', 'uxuyadvectionvelocitybnd', &
-            'normalvelocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'sedfracbnd', 'riemannubnd')
+            'normalvelocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'sedfracbnd')
          if ((.not. checkFileType(ec_filetype, provFile_poly_tim, target_name)) .and. &
              (.not. checkFileType(ec_filetype, provFile_bc, target_name))) then
             return
@@ -677,13 +693,16 @@ contains
          ! the name of the source item created by the file reader will be the same as the ext.force. quant name
          sourceItemName = target_name
          ! this file contains wave data
-         if (jawave == 3) then
+         if (jawave == WAVE_SWAN_ONLINE) then
             ! wave data is read from a com.nc file produced by D-Waves which contains one time field only
             fileReaderPtr%one_time_field = .true.
          end if
       case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
             'wavebreakerdissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
          ! the name of the source item created by the file reader will be the same as the ext.force. var name
+
+         ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
+         ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
          sourceItemName = varname
       case ('airpressure', 'atmosphericpressure')
          if (ec_filetype == provFile_arcinfo) then
@@ -701,6 +720,20 @@ contains
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity wind_p.')
             return
          end if
+      case ('pseudoairpressure')
+         if (ec_filetype == provFile_netcdf) then
+            sourceItemName = 'air_pressure'
+         else
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
+            return
+         end if
+      case ('waterlevelcorrection')
+         if (ec_filetype == provFile_netcdf) then
+            sourceItemName = 'sea_surface_height'
+         else
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
+            return
+         end if
       case ('windx')
          ! the name of the source item depends on the file reader
          if (ec_filetype == provFile_arcinfo) then
@@ -711,6 +744,8 @@ contains
             sourceItemName = 'uniform_item'
          else if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'eastward_wind'
+         else if (ec_filetype == provFile_bc) then
+            sourceItemName = 'WINDX'
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windx.')
             return
@@ -725,6 +760,8 @@ contains
             sourceItemName = 'uniform_item'
          else if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'northward_wind'
+         else if (ec_filetype == provFile_bc) then
+            sourceItemName = 'WINDY'
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity windy.')
             return
@@ -1063,13 +1100,13 @@ contains
          if (success) success = ecAddItemConnection(ecInstancePtr, item_air_density, connectionId)
       case ('solarradiation')
          if (ec_filetype == provFile_netcdf) then
-            sourceItemName = 'surface_net_downward_shortwave_flux'
+            sourceItemName = 'surface_downwelling_shortwave_flux_in_air'
          else
             sourceItemName = 'sw_radiation_flux'
          end if
       case ('longwaveradiation')
          sourceItemName = 'surface_net_downward_longwave_flux'
-      case ('nudge_salinity_temperature')
+      case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          if (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_water_potential_temperature')
             sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_water_salinity')

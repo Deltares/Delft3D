@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
    !> Computes the bottom area of a cell for 1d coordinates.
    subroutine getcellsurface1d(ba, bai)
 
-      use m_flowgeom, only: n1Dend, lnx, ndx2d, dx, wu, ln, lnxi, mx1dend, kcu, ndx1Db, ndx
+      use m_flowgeom, only: lnx, kcu, ln, ndx2d, dx, wu, lnxi, mx1dend, n1Dend, ndx1Db, ndx
       use precision, only: dp
 
       implicit none

@@ -1,7 +1,7 @@
 subroutine corinp_gen(idensform, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -73,7 +73,6 @@ subroutine corinp_gen(idensform, gdp)
 ! Local variables
 !
     integer                :: luntmp
-    integer, external      :: newlun
     integer                :: idis
     real(fp)               :: dummy
     character              :: cdummy

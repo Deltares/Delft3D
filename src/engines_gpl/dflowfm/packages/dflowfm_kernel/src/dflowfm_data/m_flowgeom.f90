@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,6 +39,7 @@ module m_flowgeom
    use grid_dimens_module
    use m_flowparameters, only: jawave
    use m_cell_geometry
+   use m_waveconst
 
    implicit none
 
@@ -347,7 +348,7 @@ contains
 ! useful parameters :
       jaFlowNetChanged = 1 ! To enforce various net(link)-related init routines after renumbering
 
-      if (jawave == 4) then ! reinitialize wave directional grid
+      if (jawave == WAVE_SURFBEAT) then ! reinitialize wave directional grid
          ntheta = 0
          ntheta_s = 0
       end if

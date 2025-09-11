@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,13 +32,13 @@
 
 !>    gives link length
 submodule(m_dlinklength) m_dlinklength_
-
+   use precision, only: dp
    implicit none
 
 contains
 
    real(kind=dp) module function dLinklength(L)
-      use precision, only: dp
+
       use network_data, only: xk, yk, kn
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D

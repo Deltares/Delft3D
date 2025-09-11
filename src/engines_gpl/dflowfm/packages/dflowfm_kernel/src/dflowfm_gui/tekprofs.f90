@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -63,7 +63,7 @@ contains
       use m_depmax2, only: vmax => vmax2, vmin => vmin2
       use m_get_kbot_ktop
       use m_get_czz0
-      use m_physcoef, only: apply_thermobaricity, idensform
+      use m_density_parameters, only: apply_thermobaricity, idensform
       use m_density_formulas, only: DENSITY_OPTION_UNESCO83
 
       implicit none
@@ -202,7 +202,7 @@ contains
                   z1 = 1d0 - zint
                   tkin1ref(k) = tkebot * z1 + tkesur * zint
                   teps1ref(k) = (epsbot / zint + epssur / z1) / h0
-                  teps1ref(k) = max(epseps, teps1ref(k))
+                  teps1ref(k) = max(eps_min, teps1ref(k))
                   vicwref(k) = cmukep * tkin1ref(k)**2 / abs(teps1ref(k))
                end do
 
@@ -383,7 +383,7 @@ contains
             call TEKFN(7, 13, 1, ucy(kb:kt), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'y-velocity', 0, 2, 0d0, kplot)
          end if
 
-         if (jawave > 0 .and. jawaveStokes > 0 .and. .not. flowWithoutWaves) then
+         if (jawave > NO_WAVES .and. jawaveStokes > NO_STOKES_DRIFT .and. .not. flowWithoutWaves) then
             vmin = minval(ucx(kb:kt) - ustokes(Lb:Lt))
             vmax = maxval(ucx(kb:kt) - ustokes(Lb:Lt))
             vmax = max(abs(vmin), abs(vmax)); vmin = -vmax

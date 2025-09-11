@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,8 +44,8 @@ contains
 
    subroutine setbobs_fixedweirs()
       use precision, only: dp
-      use m_flowgeom
-      use m_fixedweirs
+      use m_flowgeom, only: bob
+      use m_fixedweirs, only: nfxw, fxw
 
       integer :: i, ip, iL, Lf
       real(kind=dp) :: alpha, zc

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,6 +57,7 @@ module m_flow_geominit
    use m_iadvecini, only: iadvecini
    use m_getdxofconnectedkcu1, only: getdxofconnectedkcu1
    use m_wind, only: jawindpartialdry
+   use m_waveconst
 
    implicit none
 
@@ -1499,7 +1500,7 @@ contains
       end if
 
 !JRE
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          call xbeach_makethetagrid()
          call makethindamadmin()
          ! now that ntheta is determined:

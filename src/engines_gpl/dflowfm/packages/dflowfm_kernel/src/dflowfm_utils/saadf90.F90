@@ -118,7 +118,7 @@ contains
    end function ddotXXX
 
    subroutine inisaad(epscg_loc, maxmatvecs_loc, alpha_loc)
-      use m_reduce
+      use m_reduce, only: dp, nodtot, nogauss0, nocg0, ndn, noel, row, l2row, l1row
       use m_flowparameters, only: Noderivedtypes
 
       real(kind=dp), intent(in) :: epscg_loc !< threshold in termination criterium
@@ -160,7 +160,7 @@ contains
    end subroutine inisaad
 
    subroutine initsaad(NOCG0, NA, epscg, maxmatvecs, alpha_loc)
-      use m_alloc
+      use m_alloc, only: aerr
       implicit none
 
       integer :: NOCG0, NA
@@ -855,7 +855,7 @@ contains
    end subroutine runrc2
 
    subroutine runrc(n, rhs, sol, sol0, ipar, fpar, wk, guess, a, ja, ia, au, jau, ju, solver)
-      use m_wall_clock_time
+      use m_wall_clock_time, only: wall_clock_time
       implicit none
       integer n, ipar(16), ia(n + 1), ja(5 * n), ju(n), jau(30 * n)
       real(kind=dp) :: fpar(16), rhs(n), sol(n), sol0(n), guess(n), wk(2 * 30 * n), a(5 * n), au(30 * n), cp0, cp1
@@ -1015,7 +1015,7 @@ contains
    end function cfun
 
    function dfun(x, y, z)
-      use GAMMAS
+      use GAMMAS, only: dp, gammax
       real(kind=dp) :: dfun, x, y, z
       no_warning_unused_dummy_argument(z)
       dfun = gammax * exp(x * y)
@@ -1023,7 +1023,7 @@ contains
    end function dfun
 
    function efun(x, y, z)
-      use GAMMAS
+      use GAMMAS, only: dp, gammay
       real(kind=dp) :: efun, x, y, z
       no_warning_unused_dummy_argument(z)
       efun = gammay * exp(-x * y)
@@ -1040,7 +1040,7 @@ contains
    end function ffun
 
    function gfun(x, y, z)
-      use GAMMAS
+      use GAMMAS, only: dp, alpha
 
       real(kind=dp) :: gfun, x, y, z
       no_warning_unused_dummy_argument(x)
@@ -1051,7 +1051,7 @@ contains
    end function gfun
 
    function hfun(x, y, z)
-      use GAMMAS
+      use GAMMAS, only: dp, alpha, gammax, gammay
 
       real(kind=dp) :: hfun, x, y, z
       hfun = alpha * sin(gammax * x + gammay * y - z)
@@ -6528,9 +6528,9 @@ contains
 !> (re)allocate solver
 !>   it is assumed that number of rows, number of non-zero entries, number of non-zero entries in preconditioner and size of work array are set
    subroutine allocSolver(solver, ierror)
-      use m_solver
+      use m_solver, only: tsolver
+      use m_alloc, only: realloc
       use messagehandling, only: LEVEL_ERROR, mess
-      use m_alloc
       implicit none
 
       type(tsolver), intent(inout) :: solver !< solver
@@ -6572,8 +6572,7 @@ contains
 
 !> deallocate solver
    subroutine deallocSolver(solver)
-      use m_solver
-      use m_alloc
+      use m_solver, only: tsolver
       implicit none
 
       type(tsolver), intent(inout) :: solver !< solver
@@ -6601,7 +6600,7 @@ contains
 
 !> solve linear system
    subroutine solveSystem(solver, sol, japrecond, iters, ierror)
-      use m_solver
+      use m_solver, only: tsolver, dp
       implicit none
 
       type(tsolver), intent(in) :: solver !< solver

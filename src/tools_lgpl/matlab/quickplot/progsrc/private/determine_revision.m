@@ -9,7 +9,7 @@ function [revString,repoUrl,hash] = determine_revision(dirname,dbid)
 
 %----- LGPL --------------------------------------------------------------------
 %
-%   Copyright (C) 2011-2024 Stichting Deltares.
+%   Copyright (C) 2011-2025 Stichting Deltares.
 %
 %   This library is free software; you can redistribute it and/or
 %   modify it under the terms of the GNU Lesser General Public
@@ -124,19 +124,27 @@ else
     % if we could remove -n 1, we could look for the latest hash available
     % at the origin, but that triggers a pager to wait for keypresses. The
     % option --no-pager before log seems to work on the command line, but
-    % not when called via system for some reason.
+    % not when called via system for some reason. This call returns
+    % something like:
+    %commit <hash> (HEAD -> <local_branch>, <origin_branch>)
+    %Author: ... author ...
+    %Date:   ... date and time ...
+    %
+    %    ... message ...
+    %
+    % Unfortunately, the branch names don't seem to appear on TeamCity ...
     if a ~= 0
         revString = 'unknown';
         repoUrl   = 'unknown';
         hash      = 'unknown';
     else
-        [commit, b] = strtok(b);
-        [hash, b] = strtok(b);
-        b = strsplit(b, local_newline);
+        [commit, b] = strtok(b); % takes the "commit" string
+        [hash, b] = strtok(b); % takes the <hash>
+        b = strsplit(b, local_newline); % splits to a cell string of which the first entry is the (HEAD ...) part
         
-        if ~isempty(strfind(b{1},'refs/merge-requests'))
-            % We're probably working on a merge-request ... don't look for
-            % origin ...
+        teamcity_build_branch = getenv('TEAMCITY_BUILD_BRANCH');
+        if ~isempty(teamcity_build_branch)
+            % running on TeamCity ... don't look for origin ...
             hasLocalCommits = false;
         else
             hasLocalCommits = isempty(strfind(b{1}, 'origin/'));

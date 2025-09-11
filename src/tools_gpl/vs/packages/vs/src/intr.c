@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2025.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ MINFUNC( DOUBLE, BRea8 )
 MINFUNC( FLOAT,  BRea4 )
 MINFUNC( INT,    BInt4 )
 MINFUNC( SHORT,  BInt2 )
-
+
 /*  @@  This function is used to perform the ViewSel intrinsic
  *      functions AVG (avarage), MAX (maximum) and MIN (minimum)
  */

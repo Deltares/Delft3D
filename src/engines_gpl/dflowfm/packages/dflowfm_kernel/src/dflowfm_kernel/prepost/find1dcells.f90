@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -198,7 +198,7 @@ contains
             ! if the branch order is to be preserved, check if the next found node matches the next node in the branchorder.
             next_found_node = meshgeom1d%nodeidx_inverse(k)
             next_branch_node = nump1d2d - nump + 1
-            if (next_found_node > 0 .and. max(next_branch_node,next_found_node) <= size(meshgeom1d%nodebranchidx)) then
+            if (next_found_node > 0 .and. max(next_branch_node, next_found_node) <= size(meshgeom1d%nodebranchidx)) then
                if (meshgeom1d%nodebranchidx(next_found_node) == meshgeom1d%nodebranchidx(next_branch_node) .and. &
                    comparereal(meshgeom1d%nodeoffsets(next_found_node), meshgeom1d%nodeoffsets(next_branch_node), 1d-6) == 0) then
                   branches_first = .true.

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,43 +31,45 @@
 !
 
 module m_wind
+
    use precision, only: dp
+   
    implicit none
 
-   real(kind=dp), allocatable, target :: wx(:) !< [m/s] wind x velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable, target :: wy(:) !< [m/s] wind y velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
-   real(kind=dp), allocatable, target :: ec_pwxwy_x(:) !< Temporary array, for comparing EC-module to Meteo1.
-   real(kind=dp), allocatable, target :: ec_pwxwy_y(:) !< Temporary array, for comparing EC-module to Meteo1.
-   real(kind=dp), allocatable, target :: ec_pwxwy_c(:) !< Temporary array, for comparing EC-module to Meteo1.
-   real(kind=dp), allocatable, target :: ec_charnock(:) !< Temporary array, for comparing EC-module to Meteo1.
-   real(kind=dp), allocatable, target :: wcharnock(:) !< space var charnock (-) at u point {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), dimension(:), allocatable, target :: wx !< [m/s] wind x velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), dimension(:), allocatable, target :: wy !< [m/s] wind y velocity   (m/s) at u point {"location": "edge", "shape": ["lnx"]}
+   real(kind=dp), dimension(:), allocatable, target :: ec_pwxwy_x !< Temporary array, for comparing EC-module to Meteo1.
+   real(kind=dp), dimension(:), allocatable, target :: ec_pwxwy_y !< Temporary array, for comparing EC-module to Meteo1.
+   real(kind=dp), dimension(:), allocatable, target :: ec_pwxwy_c !< Temporary array, for comparing EC-module to Meteo1.
+   real(kind=dp), dimension(:), allocatable, target :: ec_charnock !< Temporary array, for comparing EC-module to Meteo1.
+   real(kind=dp), dimension(:), allocatable, target :: wcharnock !< space var charnock (-) at u point {"location": "edge", "shape": ["lnx"]}
 
-   real(kind=dp), allocatable, target :: air_pressure(:) !< atmospheric pressure user specified in (N/m2), internally reworked to (m2/s2)
+   real(kind=dp), dimension(:), allocatable, target :: air_pressure !< atmospheric pressure user specified in (N/m2), internally reworked to (m2/s2)
                                                       !! so that it can be merged with tidep later and difpatm/dx = m/s2, saves 1 array , using mode = 'add'
-   real(kind=dp), allocatable, target :: rain(:) !< [mm/day] rain at xz,yz {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: evap(:) !< [m/s] evaporation at xz,yz {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), dimension(:), allocatable, target :: pseudo_air_pressure !< pseudo atmospheric pressure user specified in (N/m2), used for correcting water level
+   real(kind=dp), dimension(:), allocatable, target :: water_level_correction !< water level correction user specified in (m)
+   real(kind=dp), dimension(:), allocatable, target :: rain !< [mm/day] rain at xz,yz {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), dimension(:), allocatable, target :: evap !< [m/s] evaporation at xz,yz {"location": "face", "shape": ["ndx"]}
    integer :: id_first_wind, id_last_wind !< counters to avoid looping over all ec_etims when only interessed in wind
 
-   real(kind=dp), allocatable, target :: qext(:) !< [m3/s] External discharge per cell {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: qextreal(:) !< [m3/s] Realized external discharge per cell {"location": "face", "shape": ["ndkx"]}
-   real(kind=dp), allocatable, target :: vextcum(:) !< [m3] Cumulative realized volume through qext {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), dimension(:), allocatable, target :: qext !< [m3/s] External discharge per cell {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), dimension(:), allocatable, target :: qextreal !< [m3/s] Realized external discharge per cell {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), dimension(:), allocatable, target :: vextcum !< [m3] Cumulative realized volume through qext {"location": "face", "shape": ["ndkx"]}
 
-   real(kind=dp), allocatable, target :: air_temperature(:) !< air temperature (degC)
-   real(kind=dp), allocatable, target :: dew_point_temperature(:) !< dew_point_temperature temperature (degC)
-   real(kind=dp), allocatable, target :: relative_humidity(:) !< air relative humidity (%)
-   real(kind=dp), allocatable, target :: cloudiness(:) !< air cloudiness (%)
-   real(kind=dp), allocatable, target :: air_density(:) !< air density (kg/m3)
-   real(kind=dp), allocatable, target :: solar_radiation(:) !< solar radiation (W/m2)
-   real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< solar radiation (W/m2) incl. albedo correction
-   real(kind=dp), allocatable, target :: long_wave_radiation(:) !< long wave radiation (W/m2)
-   real(kind=dp), allocatable :: heatsrc(:) !< resulting 2D or 3D heat source per cell (Km3/s)
-   real(kind=dp), allocatable :: heatsrc0(:) !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
-   real(kind=dp), allocatable :: tbed(:) !< bed temperature (degC)
-
-   real(kind=dp), allocatable :: cdwcof(:) !< wind stress cd coefficient () , only if jatemp ==5
+   real(kind=dp), dimension(:), allocatable, target :: air_temperature !< air temperature (degC)
+   real(kind=dp), dimension(:), allocatable, target :: dew_point_temperature !< dew_point_temperature temperature (degC)
+   real(kind=dp), dimension(:), allocatable, target :: relative_humidity !< air relative humidity (%)
+   real(kind=dp), dimension(:), allocatable, target :: cloudiness !< air cloudiness (%)
+   real(kind=dp), dimension(:), allocatable, target :: air_density !< air density (kg/m3)
+   real(kind=dp), dimension(:), allocatable, target :: solar_radiation !< solar radiation (W/m2)
+   real(kind=dp), dimension(:), allocatable :: net_solar_radiation !< net solar radiation (W/m2) incl. albedo correction
+   real(kind=dp), dimension(:), allocatable, target :: long_wave_radiation !< long wave radiation (W/m2)
+   real(kind=dp), dimension(:), allocatable :: heatsrc !< resulting 2D or 3D heat source per cell (Km3/s)
+   real(kind=dp), dimension(:), allocatable :: heatsrc0 !< resulting 2D or 3D heat source per cell, only set at timeuser (Km3/s)
+   real(kind=dp), dimension(:), allocatable :: tbed !< bed temperature (degC)
+   real(kind=dp), dimension(:), allocatable :: cdwcof !< wind stress cd coefficient () , only if jatemp ==5
 
    integer :: jawind !< use wind yes or no
-   integer :: air_pressure_available !< use air_pressure yes or no
    integer :: jaspacevarcharn !< use space and time varying Charnock coefficients yes or no
    integer :: jawindstressgiven !< wind given as stress, no conversion needed
    integer :: jastresstowind !< if jawindstressgiven==1, convert stress to wind yes/no 1/0
@@ -76,11 +78,17 @@ module m_wind
    integer :: jaevap !< use evap yes or no
    integer :: ja_airdensity !< use variabele air density yes or no
    logical :: solar_radiation_available = .false. !< solar radiation provided by user
+   logical :: net_solar_radiation_available = .false. !< net solar radiation provided by user
    logical :: long_wave_radiation_available = .false. !< long wave radiation provided by user
    integer :: jaheat_eachstep = 0 !< if 1, do it each step, else in externalforcings (default)
    integer :: jaQext !< use Qin externally provided yes or no
    integer :: jaqin !< use qin , sum of all in fluxes
    integer :: update_wind_stress_each_time_step = 0 !< if 1, update wind (and air pressure) in each computational time step, else in externalforcings (default)
+
+   logical :: air_pressure_available !< use air_pressure yes or no
+   logical :: pseudo_air_pressure_available !< use pseudo_air_pressure yes or no (used for computing water level correction)
+   logical :: water_level_correction_available !< use water_level_correction yes or no (used for correcting water level)
+
    real(kind=dp) :: windxav, windyav !< average wind for plotting
 
    real(kind=dp) :: windsp
@@ -143,7 +151,7 @@ contains
    !> Resets only wind variables intended for a restart of flow simulation.
    !! Upon loading of new model/MDU, call default_wind() instead.
    subroutine reset_wind()
-      air_pressure_available = 0 !< use air_pressure yes or no
+      air_pressure_available = .false. !< use air_pressure yes or no
       jaspacevarcharn = 0 !< use space varying Charnock coefficients
       jawindstressgiven = 0 !< wind stress given in meteo file
       ja_airdensity = 0

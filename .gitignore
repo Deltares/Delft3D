@@ -1,10 +1,7 @@
 # default build directories
 bin*/**
-build_*/**
+build*/**
 install_*/**
-
-# Documentation result directories
-**/result_doc/**
 
 # editor files
 .vscode
@@ -35,9 +32,9 @@ src/test/**/ftnunit.html
 src/test/**/DFM_OUTPUT_*/**
 
 # ignore files created by updating process definition files
-src/engines_gpl/waq/resources/process_lib/csvFiles/*.log
-src/engines_gpl/waq/resources/process_lib/csvFiles/*.asc
-src/engines_gpl/waq/resources/process_lib/csvFiles/coefedit.dat
+src/engines_gpl/waq/resources/process_lib/*.log
+src/engines_gpl/waq/resources/process_lib/*.asc
+src/engines_gpl/waq/resources/process_lib/coefedit.dat
 
 # ignore FortranCInterface header files created on linux
 src/**/config.h
@@ -51,5 +48,4 @@ src/**/FortranCInterface.h
 /doxy_output
 /ci/DIMRset_delivery/venv/**
 /ci/teamcity/Delft3D/target/**
-result_doc
-/src/engines_gpl/dflowfm/result_doc_dot
+**/result_doc/**

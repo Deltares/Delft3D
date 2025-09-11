@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,7 +36,7 @@ contains
 !! polyline. Useful for converting cross sections, thin dams or thin
 !! dykes back to editable polylines.
    subroutine appendCRSPathToPol(path)
-      use m_crspath, only: tcrspath, path
+      use m_crspath, only: tcrspath
       use m_polygon, only: npl, xpl, ypl, zpl, increasepol
       use m_missing, only: dmiss
 

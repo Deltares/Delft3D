@@ -1,6 +1,7 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import jetbrains.buildServer.configs.kotlin.failureConditions.*
 
 object Sign : BuildType({
 
@@ -77,18 +78,49 @@ object Sign : BuildType({
                 """.trimIndent()
             }
         }
-    }
-
-    features {
-        if (DslContext.getParameter("environment") == "production") {
-            commitStatusPublisher {
-                enabled = true
-                vcsRootExtId = "${DslContext.settingsRoot.id}"
-                publisher = gitlab {
-                    authType = vcsRoot()
-                }
+        dependency(AbsoluteId("${DslContext.getParameter("delft3d_project_root")}_WindowsBuild2D3DSP")) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+            artifacts {
+                cleanDestination = true
+                artifactRules = """
+                    ?:*_x64_*.zip!/x64/lib/flow2d3d_sp.dll => to_sign/lib
+                """.trimIndent()
             }
         }
     }
 
+    features {
+        if (DslContext.getParameter("enable_commit_status_publisher").lowercase() == "true") {
+            commitStatusPublisher {
+                enabled = true
+                vcsRootExtId = "${DslContext.settingsRoot.id}"
+                publisher = github {
+                    githubUrl = "https://api.github.com"
+                    authType = vcsRoot()
+                }
+            }
+        }
+        pullRequests {
+            provider = github {
+                authType = token {
+                    token = "%github_deltares-service-account_access_token%"
+                }
+                filterSourceBranch = "+:*"
+                ignoreDrafts = true
+            }
+        }
+    }
+
+    failureConditions {
+        failOnText {
+            conditionType = BuildFailureOnText.ConditionType.CONTAINS
+            pattern = "SignTool Error"
+            failureMessage = "Signtool failed, terminating..."
+            reverse = false
+            stopBuildOnFailure = true
+        }
+    }
 })

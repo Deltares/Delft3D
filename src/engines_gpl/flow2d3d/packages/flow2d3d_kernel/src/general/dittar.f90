@@ -1,7 +1,7 @@
 subroutine dittar(filnam    ,lundia    ,error     ,nttaru    ,gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -75,7 +75,6 @@ subroutine dittar(filnam    ,lundia    ,error     ,nttaru    ,gdp)
     integer, dimension(maxfld)       :: ifield
     integer, dimension(maxfld)       :: itype
     integer, dimension(maxfld)       :: lenchr
-    integer, external                :: newlun
     logical                          :: leql
     logical                          :: lfirst
     logical                          :: lokay

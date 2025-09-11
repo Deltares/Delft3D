@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -92,6 +92,15 @@ subroutine read_hyd_step(hyd, itime, iend)
         read(hyd%file_tau%unit, iostat = ierr) itime, (hyd%tau(i), i = 1, hyd%num_cells)
         if (ierr /= 0) then
             write(*, *) 'ERROR: reading tau file: ', hyd%file_tau%unit, trim(hyd%file_tau%name)
+            call stop_with_error()
+        endif
+    endif
+
+    if (hyd%vel_present) then
+        call hyd%file_vel%open()
+        read(hyd%file_vel%unit, iostat = ierr) itime, (hyd%vel(i), i = 1, hyd%num_cells)
+        if (ierr /= 0) then
+            write(*, *) 'ERROR: reading vel file: ', hyd%file_vel%unit, trim(hyd%file_vel%name)
             call stop_with_error()
         endif
     endif

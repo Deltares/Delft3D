@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,9 +43,9 @@ contains
 
    subroutine updateValuesOnRunupGauges_mpi()
       use precision, only: dp
-      use m_monitoring_runupgauges
-      use m_partitioninfo
-      use m_timer
+      use m_monitoring_runupgauges, only: num_rugs, rug
+      use m_partitioninfo, only: my_rank, reduce_rug, dfm_comm_dfmworld
+      use m_timer, only: jatimer, starttimer, ioutputmpi, stoptimer
       use mpi
 
       integer :: irug, ierror

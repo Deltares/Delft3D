@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,7 +37,7 @@ module m_readprofilesloc
 contains
 
    subroutine readprofilesloc(minp)
-      use m_profiles
+      use m_profiles, only: minproflocnr, maxproflocnr, xpr, ypr, zpr, npr, nproflocs
       use m_filez, only: doclose
 
       integer :: minp

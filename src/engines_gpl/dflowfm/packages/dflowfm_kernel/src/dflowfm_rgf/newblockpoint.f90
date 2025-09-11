@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_newblockpoint
 contains
 
    subroutine NEWBLOCKPOINT(MP, NP, JA, IPT)
-      use m_grid_block
+      use m_grid_block, only: npt, mb, nb
 
       integer :: mp, np, ja, ipt
 !     NIEUW PUNT = 1, OUD PUNT = 0, NIEW PUNT MAAR REEDS VIER PUNTEN = -1

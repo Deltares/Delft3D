@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,7 +46,7 @@ contains
     !! Possibly, one or two of the polylines is flipped and then glued to the other.
    subroutine mergepoly(X, Y, Z, maxpol, n, i1, i2)
       use precision, only: dp
-      use M_MISSING
+      use M_MISSING, only: dmiss
 
       integer, intent(in) :: MAXPOL !< Length of polyline coordinate arrays.
       real(kind=dp), intent(inout) :: X(MAXPOL), Y(MAXPOL) !< Entire polyline coordinate arrays

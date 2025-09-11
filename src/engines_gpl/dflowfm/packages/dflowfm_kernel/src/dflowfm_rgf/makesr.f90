@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,7 +35,7 @@ contains
 
    subroutine MAKESR(AR, S0, S1, SR, MFAC)
       use precision, only: dp
-      integer :: mfac
+      integer, intent(in) :: mfac
       real(kind=dp) :: ar, s0, s1
       real(kind=dp) :: SR(MFAC + 1)
 

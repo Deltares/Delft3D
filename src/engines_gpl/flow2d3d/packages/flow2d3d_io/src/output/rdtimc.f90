@@ -2,7 +2,7 @@ subroutine rdtimc(comfil    ,lundia    ,error     ,commrd    ,itlen     , &
                 & tscale    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -63,7 +63,6 @@ subroutine rdtimc(comfil    ,lundia    ,error     ,commrd    ,itlen     , &
     integer                                       :: ierror ! error flag
     integer                                       :: lfil   ! Actual length of name file COMFIL 
     integer                                       :: luntmp
-    integer                                       :: newlun
     integer       , dimension(1)                  :: idummy ! Help array to write integers
     integer      , dimension(3,5)                 :: uindex
     integer                        , external     :: clsnef

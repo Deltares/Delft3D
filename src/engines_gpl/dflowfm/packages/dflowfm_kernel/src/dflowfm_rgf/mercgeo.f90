@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,7 @@ contains
 
    subroutine MERCGEO(XX, YY, XG, YG)
       use precision, only: dp
-      use M_SFERIC
+      use M_SFERIC, only: rd2dg, ra
 
       real(kind=dp) :: XX, YY, XG, YG, FI2
       XG = RD2DG * XX / RA

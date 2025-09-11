@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,9 +43,9 @@ contains
    subroutine wave_makeplotvars
       use m_waves, only: ustokes, ust_mag, fwav_mag, ustx_cc, usty_cc
       use m_flowparameters, only: jawave
-      use m_flow
-      use m_flowgeom
-      use m_get_Lbot_Ltop
+      use m_flow, only: wave_surfbeat, wave_swan_online, wave_nc_offline, wavfu, wavfv, rhomean, hu, workx, worky, epshu, taubu, taus
+      use m_flowgeom, only: lnx, ln, wcx1, wcy1, wcx2, wcy2, wcl, ndx
+      use m_get_Lbot_Ltop, only: getlbotltop
 
       implicit none
 
@@ -54,7 +54,7 @@ contains
 
       ust_mag = 0d0
       fwav_mag = 0d0
-      if (jawave /= 4) then
+      if (jawave /= WAVE_SURFBEAT) then
          ustx_cc = 0d0
          usty_cc = 0d0
       end if
@@ -73,7 +73,7 @@ contains
       end do
       ust_mag = hypot(ustx_cc, usty_cc)
 
-      if (jawave == 3 .or. jawave == 4 .or. jawave == 7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_SURFBEAT .or. jawave == WAVE_NC_OFFLINE) then
          do L = 1, lnx
             call getLbotLtop(L, Lb, Lt)
             do LL = Lb, Lt

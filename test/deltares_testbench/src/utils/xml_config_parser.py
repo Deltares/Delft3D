@@ -1,6 +1,6 @@
 """Xml Configuration parser.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2025
 """
 
 import copy
@@ -61,7 +61,7 @@ def branch(xml_tree: etree._ElementTree, prefix: str) -> Dict[str, Any]:
 
 
 # Parse the xml configuration file
-class XmlConfigParser(object):
+class XmlConfigParser:
     def __init__(self, settings: Optional[TestBenchSettings] = None) -> None:
         """Initialize defaults."""
         self.__testbench_settings: TestBenchSettings = settings
@@ -69,6 +69,16 @@ class XmlConfigParser(object):
         self.__locations: List[Location] = []
         self.__program_configs: List[ProgramConfig] = []
         self.__default_cases: List[TestCaseConfig] = []
+
+    @property
+    def default_cases(self) -> List[TestCaseConfig]:
+        return self.__default_cases
+
+    def __reset(self) -> None:
+        self.__credentials = []
+        self.__locations = []
+        self.__program_configs = []
+        self.__default_cases = []
 
     def load(
         self, settings: TestBenchSettings, logger: IMainLogger
@@ -87,6 +97,7 @@ class XmlConfigParser(object):
         tuple[LocalPaths, List[ProgramConfig], list]
             Local paths, program configs and test case configs.
         """
+        self.__reset()
         self.__testbench_settings = settings
         self.__validate__()
         self.__credentials.append(settings.credentials)
@@ -132,7 +143,7 @@ class XmlConfigParser(object):
             elif con == "startat":
                 start_at_filter = arg.lower()
             else:
-                error_message = "ERROR: Filter keyword " " + con + " " not recognised"
+                error_message = f"ERROR: Filter keyword {con} not recognised"
                 logger.error(f"{error_message} '{con}'\n")
                 sys.stderr.write(error_message + "\n")
                 raise SyntaxError(error_message + "\n")

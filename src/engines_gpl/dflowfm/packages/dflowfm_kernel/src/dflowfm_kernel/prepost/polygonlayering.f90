@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,16 +43,15 @@ contains
    subroutine polygonlayering(mpol)
       use precision, only: dp
       use m_closedefinedflownode, only: closedefinedflownode
-      use m_flow
-      use m_flowgeom
-      use m_polygon
-      use m_samples
-      use m_missing
-      use m_ec_triangle
+      use m_flow, only: indlaynod, wflaynod, aerr, dmiss, mxlaydefs, laymx, laytyp, kmx, laydefnr, jins, transformcoef
+      use m_flowgeom, only: ndx, ndxi, xz, yz
+      use m_polygon, only: npl, xpl, ypl, zpl, iistart, iiend
+      use m_samples, only: increasesam, xs, ys, zs, ns
+      use m_ec_triangle, only: jagetwf, indxx, wfxx
+      use geometry_module, only: get_startend
+      use m_reapol, only: reapol
       use m_sferic, only: jsferic, jasfer3D
       use m_ec_basic_interpolation, only: TRIINTfast
-      use geometry_module
-      use m_reapol
       use m_filez, only: error
 
       integer :: mpol

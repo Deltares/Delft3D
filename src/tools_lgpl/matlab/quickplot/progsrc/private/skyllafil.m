@@ -18,7 +18,7 @@ function varargout=skyllafil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -345,8 +345,9 @@ for i=size(Out,1):-1:1
             % remove references to non-stored data fields
             Out(i,:)=[];
         else
-            switch Out(i).Name,
-                case 'raai',
+            Out(i).Coords = 'x+z';
+            switch Out(i).Name
+                case 'raai'
             end
         end
     end

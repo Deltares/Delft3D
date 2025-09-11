@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,7 +37,8 @@ module fm_external_forcings
    use m_setsigmabnds, only: setsigmabnds
    use precision_basics, only: hp, dp
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
-   use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
+   use m_waveconst
+
    implicit none
 
    private
@@ -101,6 +102,7 @@ contains
    subroutine print_error_message(time_in_seconds)
       use m_ec_message, only: dumpECMessageStack
       use unstruc_messages, only: callback_msg
+      use messagehandling, only: LEVEL_WARN, mess
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when doing this action
 
@@ -179,6 +181,12 @@ contains
             ! Retrieve wind's p-component for ext-file quantity 'atmosphericpressure'.
          else if (ec_item_id == item_atmosphericpressure) then
             call get_timespace_value_by_item(item_atmosphericpressure)
+            ! Retrieve value for ext-file quantity 'pseudo_air_pressure'.
+         else if (ec_item_id == item_pseudo_air_pressure) then
+            call get_timespace_value_by_item(item_pseudo_air_pressure)
+            ! Retrieve value for ext-file quantity 'water_level_correction'.
+         else if (ec_item_id == item_water_level_correction) then
+            call get_timespace_value_by_item(item_water_level_correction)
          else
             cycle ! avoid updating id_first_wind and id_last_wind
          end if
@@ -238,7 +246,7 @@ contains
          end do
       end if
 
-      if ((jawave == 1 .or. jawave == 2) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flowWithoutWaves) then
          call tauwavefetch(time_in_seconds)
       end if
 
@@ -322,7 +330,7 @@ contains
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when getting and applying winds
       integer, intent(out) :: iresult !< Error indicator
-      if (jawind == 1 .or. air_pressure_available > 0) then
+      if (jawind == 1 .or. air_pressure_available) then
          call prepare_wind_model_data(time_in_seconds, iresult)
          if (iresult /= DFM_NOERR) then
             return
@@ -393,7 +401,7 @@ contains
       integer :: kb !< cell index of boundary cell
       integer :: ki !< cell index of internal cell
 
-      if (jawave == 7 .and. waveforcing == 2) then
+      if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
          do link = 1, number_of_links
             kb = link2cell(1, link)
             ki = link2cell(2, link)
@@ -433,8 +441,7 @@ contains
       use unstruc_files, only: resolvePath
       use m_qnerror
       use m_filez, only: oldfil, doclose
-
-      implicit none
+      use messagehandling, only: msgbuf, msg_flush, err_flush
 
       character(len=256) :: filename
       integer :: filetype
@@ -655,8 +662,7 @@ contains
       use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
       use m_missing, only: dmiss
       use m_qnerror
-
-      implicit none
+      use messagehandling, only: msgbuf, err_flush
 
       character(len=*), intent(in) :: filename
       integer, intent(in) :: nx
@@ -854,8 +860,10 @@ contains
       use m_missing, only: dmiss
       use m_qnerror
       use m_find_name, only: find_name
-
-      implicit none
+      use messagehandling, only: msgbuf, msg_flush, err_flush
+      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, &
+                                           BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
+                                           BOUNDARY_DISCHARGE_HEAD
 
       character(len=256), intent(in) :: qid !
       character(len=256), intent(in) :: filename !
@@ -890,18 +898,24 @@ contains
          write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numz, ' nr of open bndcells'; call msg_flush()
          nzbnd = nzbnd + 1
 
-         if (qidfm == 'waterlevelbnd') itpbn = 1
-         if (qidfm == 'neumannbnd') itpbn = 2
+         if (qidfm == 'waterlevelbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL
+         end if
+         if (qidfm == 'neumannbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL_NEUMANN
+         end if
          if (qidfm == 'riemannbnd') then
-            itpbn = 5
+            itpbn = BOUNDARY_VELOCITY_RIEMANN
             if (present(tfc)) then
                ftpet(nbndz + 1:nbndz + numz) = tfc(7) ! relaxation time riemann from ext file
             end if
          end if
-         if (qidfm == 'outflowbnd') itpbn = 6
+         if (qidfm == 'outflowbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL_OUTFLOW
+         end if
 
          if (qidfm == 'qhbnd') then
-            itpbn = 7
+            itpbn = BOUNDARY_DISCHARGE_HEAD
             nqhbnd = nqhbnd + 1
             numqh = numz
             if (filetype == poly_tim) then
@@ -960,7 +974,7 @@ contains
             call realloc(wwssav_sum, (/2, nqbnd/), keepExisting=.true., fill=0.0_dp)
             call realloc(huqbnd, L2qbnd(nqbnd)); huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0.0_dp
          else if (qidfm == 'absgenbnd') then
-            if (.not. (jawave == 4)) then ! Safety to avoid allocation errors later on
+            if (.not. (jawave == WAVE_SURFBEAT)) then ! Safety to avoid allocation errors later on
                call qnerror('Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.', '  ', ' ')
                write (msgbuf, '(a)') 'Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.'
                call err_flush()
@@ -1121,8 +1135,7 @@ contains
       use m_flowtimes, only: dt_nodal
       use m_qnerror
       use m_find_name, only: find_name
-
-      implicit none
+      use messagehandling, only: LEVEL_WARN, mess
 
       character(len=*), intent(inout) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=*), intent(in) :: filename !< Name of data file for current quantity.
@@ -1233,6 +1246,7 @@ contains
          pzmax => zminmaxuxy(nbnduxy + 1:2 * nbnduxy)
          success = ec_addtimespacerelation(qid, xbnduxy, ybnduxy, kduxy, kx, filename, filetype, method, operand, xy2bnduxy, &
                                            z=sigmabnduxy, pzmin=pzmin, pzmax=pzmax, forcingfile=forcing_file)
+         success = success .and. check_keyword_zerozbndinflowadvection()
 
       else if (nbndn > 0 .and. (qid == 'normalvelocitybnd')) then
          success = ec_addtimespacerelation(qid, xbndn, ybndn, kdn, kx, filename, filetype, method, operand, xy2bndn, forcingfile=forcing_file, targetindex=targetindex)
@@ -1274,8 +1288,7 @@ contains
       use m_transportdata, only: NAMLEN
       use string_module, only: strcmpi
       use timespace_parameters, only: uniform, bcascii, spaceandtime
-
-      implicit none
+      use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
 
       character(len=*), intent(in) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=*), intent(in) :: location_file !< Name of location file (*.pli or *.pol) for current quantity (leave empty when valuestring contains value or filename).
@@ -1443,8 +1456,7 @@ contains
       use m_sediment, only: stm_included
       use m_missing
       use m_find_name, only: find_name
-
-      implicit none
+      use messagehandling, only: msgbuf, err_flush
 
       integer :: thrtlen, i, j, nseg, itrac, ifrac, iconst, n, ierr
       character(len=256) :: qidfm, tracnam, sedfracnam, qidnam
@@ -1673,6 +1685,7 @@ contains
       use m_flow_init_structurecontrol, only: flow_init_structurecontrol
       use m_setzminmax, only: setzminmax
       use m_bnd, only: alloc_bnd, dealloc_bndarr
+      use messagehandling, only: msgbuf, LEVEL_WARN, mess
 
       integer, intent(out) :: iresult
 
@@ -2027,7 +2040,7 @@ contains
       call init_1d2d()
 
       ! JRE ================================================================
-      if (nbndw > 0 .and. .not. (jawave == 4)) then
+      if (nbndw > 0 .and. .not. (jawave == WAVE_SURFBEAT)) then
          call qnerror('Wave energy boundary defined without setting correct wavemodelnr.', ' ', ' ')
          iresult = DFM_WRONGINPUT
       end if
@@ -2385,6 +2398,8 @@ contains
       use m_get_prof_1D
       use mathconsts, only: pi
       use m_filez, only: doclose
+      use m_physcoef, only: constant_dicoww, dicoww
+      use m_array_or_scalar, only: realloc
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2477,7 +2492,7 @@ contains
       end if
 
       if (jawind == 0) then
-         if (jawave > 0 .and. jawave < 3) then
+         if (jawave > NO_WAVES .and. jawave < 3) then
             jawave = 0 ! no wind, no waves
             call mess(LEVEL_INFO, 'No wind, so waves is switched off ')
          end if
@@ -2799,24 +2814,66 @@ contains
       ! (needed to disable possibly invalid statistical output items)
       call check_model_has_structures_across_partitions
 
+      ! Set dicoww to scalar value if not read from inifields file
+      if (.not. allocated(dicoww)) then
+         call realloc(dicoww, constant_dicoww)
+      end if
+
    end subroutine finalize
 
    !> Allocate and initialized atmosperic pressure variable(s)
    function allocate_patm(default_value) result(status)
       use m_wind, only: air_pressure
       use m_cell_geometry, only: ndx
-      use m_alloc, only: aerr
-      use precision_basics, only: hp
+      use m_alloc, only: aerr, realloc
 
-      real(kind=hp), intent(in) :: default_value !< default atmospheric pressure value
+      real(kind=dp), intent(in) :: default_value !< default atmospheric pressure value
       integer :: status
 
-      status = 0
-      if (.not. allocated(air_pressure)) then
-         allocate (air_pressure(ndx), stat=status, source=default_value)
-         call aerr('air_pressure(ndx)', status, ndx)
-      end if
-
+      call realloc(air_pressure, ndx, keepExisting=.true., fill=default_value, stat=status)
+      call aerr('air_pressure(ndx)', status, ndx)
    end function allocate_patm
 
+   !> Allocate and initialized pseudo air pressure variable(s)
+   function allocate_pseudo_air_pressure(default_value) result(status)
+      use m_wind, only: pseudo_air_pressure
+      use m_cell_geometry, only: ndx
+      use m_alloc, only: aerr, realloc
+
+      real(kind=dp), intent(in) :: default_value !< default pseudo air pressure value
+      integer :: status
+
+      call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=default_value, stat=status)
+      call aerr('pseudo_air_pressure(ndx)', status, ndx)
+   end function allocate_pseudo_air_pressure
+
+   !> Allocate and initialized water_level_correction variable(s)
+   function allocate_water_level_correction(default_value) result(status)
+      use m_wind, only: water_level_correction
+      use m_cell_geometry, only: ndx
+      use m_alloc, only: aerr, realloc
+
+      real(kind=dp), intent(in) :: default_value !< default water level correction value
+      integer :: status
+
+      call realloc(water_level_correction, ndx, keepExisting=.true., fill=default_value, stat=status)
+      call aerr('water_level_correction(ndx)', status, ndx)
+   end function allocate_water_level_correction
+
+   function check_keyword_zerozbndinflowadvection() result(success)
+      use m_flowparameters, only: jaZerozbndinflowadvection
+      use messagehandling, only: LEVEL_ERROR, msgbuf, mess
+
+      logical :: success
+
+      success = .true.
+
+      if (jaZerozbndinflowadvection > 0) then
+         write (msgbuf, '(a,i0,a)') &
+            'The combination of prescribing advection velocities via [Boundary]-quantity "uxuyadvectionvelocitybnd" and "Zerozbndinflowadvection" = ', &
+            jaZerozbndinflowadvection, ' is inconsistent and not allowed.'
+         call mess(LEVEL_ERROR, msgbuf)
+         success = .false.
+      end if
+   end function check_keyword_zerozbndinflowadvection
 end module fm_external_forcings

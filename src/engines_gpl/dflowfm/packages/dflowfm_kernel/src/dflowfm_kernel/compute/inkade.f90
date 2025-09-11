@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ contains
 
    subroutine inkade(sx2, sy2, i, j)
       use precision, only: dp
-      use m_ship
+      use m_ship, only: xmxs, xmns, ymxs, ymns
       implicit none
       integer :: i, j
       real(kind=dp) :: sx2, sy2

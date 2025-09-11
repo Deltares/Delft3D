@@ -30,7 +30,7 @@ find config -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
     --volume="${VAHOME}/reference:/data/reference:ro" \
     --volume="${PWD}/{}:/data/{}:ro" \
     --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
-    containers.deltares.nl/delft3d/verschillentool:rename-station --config "/data/{}" ';'
+    containers.deltares.nl/delft3d/verschillentool:release_v1.0.2 --config "/data/{}" ';'
 
 # Use the last part of the REFERENCE_PREFIX as the REFERENCE_TAG
 REFERENCE_TAG="${REFERENCE_PREFIX##*/}"

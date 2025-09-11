@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -47,7 +47,7 @@ contains
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_netw, only: xk, yk, zk, numk, numl
-      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile
+      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
       use m_structures, only: jaoldstr
       use m_meteo
@@ -826,7 +826,7 @@ contains
 
                if (success) then
                   jawind = 1
-                  air_pressure_available = 1
+                  air_pressure_available = .true.
                end if
 
             else if (qid == 'charnock') then
@@ -921,14 +921,29 @@ contains
 
             else if (qid == 'airpressure' .or. qid == 'atmosphericpressure') then
 
-               if (.not. allocated(air_pressure)) then
-                  allocate (air_pressure(ndx), stat=ierr)
-                  call aerr('air_pressure(ndx)', ierr, ndx)
-                  air_pressure = 0.0_dp
-               end if
+               call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('air_pressure(ndx)', ierr, ndx)
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  air_pressure_available = 1
+                  air_pressure_available = .true.
+               end if
+
+            else if (qid == 'pseudoAirPressure') then
+
+               call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('pseudo_air_pressure(ndx)', ierr, ndx)
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  pseudo_air_pressure_available = .true.
+               end if
+
+            else if (qid == 'waterLevelCorrection') then
+
+               call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp, stat=ierr)
+               call aerr('water_level_correction(ndx)', ierr, ndx)
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  water_level_correction_available = .true.
                end if
 
             else if (qid == 'air_temperature') then
@@ -990,7 +1005,7 @@ contains
 
                ! if ice properties not yet read before, initialize ...
                if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
-                  call fm_ice_activate_by_ext_forces(ndx)
+                  call fm_ice_activate_by_ext_forces(ndx, md_ptr)
                end if
                ! add the EC link
                if (len_trim(sourcemask) > 0) then
@@ -1027,6 +1042,19 @@ contains
                if (success) then
                   btempforcingtypS = .true.
                   solar_radiation_available = .true.
+               end if
+
+            else if (qid == 'netsolarradiation') then
+
+               if (.not. allocated(solar_radiation)) then
+                  allocate (solar_radiation(ndx), stat=ierr)
+                  call aerr('solar_radiation(ndx)', ierr, ndx)
+                  solar_radiation = 0.0_dp
+               end if
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  btempforcingtypS = .true.
+                  net_solar_radiation_available = .true.
                end if
 
             else if (qid == 'longwaveradiation') then
@@ -1166,6 +1194,7 @@ contains
                   success = .false.
                else
                   success = .true.
+                  numsrc_old = numsrc_old + 1
                end if
 
                ! 2. Time series hookup is done below, once counting of all numsrc is done.
@@ -1222,11 +1251,9 @@ contains
                   call qnerror('Quantity massbalancearea in the ext-file, but no MbaInterval specified in the mdu-file.', ' ', ' ')
                   success = .false.
                end if
-
-            else if (qid(1:12) == 'waqparameter' .or. qid(1:17) == 'waqmonitoringarea' .or. qid(1:16) == 'waqsegmentnumber') then
+            else if (qid(1:12) == 'waqparameter' .or. qid(1:16) == 'waqsegmentnumber') then
                ! Already taken care of in fm_wq_processes
                success = .true.
-
             else if (qid(1:11) == 'waqfunction') then
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename, filetype, method, operand)
 
@@ -1308,7 +1335,7 @@ contains
                call qnerror(' ', 'Quantity WINDX_WINDY_AIRPRESSURE must be renamed to airpressure_windx_windy in the ext-file.', ' ')
                success = .false.
             else if (trim(qid) == "wavesignificantheight") then
-               if (jawave == 7) then
+               if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "wavesignificantheight" found but "Wavemodelnr" is not 6 or 7')
@@ -1316,7 +1343,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "waveperiod") then
-               if (jawave == 7) then
+               if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "waveperiod" found but "Wavemodelnr" is not 6 or 7')
@@ -1324,7 +1351,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "wavedirection") then
-               if (jawave == 7) then
+               if (jawave == WAVE_NC_OFFLINE) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1333,7 +1360,7 @@ contains
                end if
             else if (trim(qid) == "wavebreakerdissipation") then
                ! wave forces based on dissipation at free surface and water column
-               if (jawave == 7 .and. waveforcing == 3) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1342,7 +1369,7 @@ contains
                end if
             else if (trim(qid) == "whitecappingdissipation") then
                ! wave forces based on dissipation at free surface and water column
-               if (jawave == 7 .and. waveforcing == 3) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1350,7 +1377,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "xwaveforce") then
-               if (jawave == 7 .and. (waveforcing == 1 .or. waveforcing == 3)) then
+               if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1358,7 +1385,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "ywaveforce") then
-               if (jawave == 7 .and. (waveforcing == 1 .or. waveforcing == 3)) then
+               if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1366,7 +1393,7 @@ contains
                   success = .false.
                end if
             else if (trim(qid) == "totalwaveenergydissipation") then
-               if (jawave == 7 .and. waveforcing == 2) then
+               if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
                   success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                else
                   call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', QUANTITY "'''//trim(qid)//'''" found but "Wavemodelnr" is not 7')
@@ -1820,7 +1847,10 @@ contains
          end do
       end if
 
-      if (numsrc > 0) then
+      if (numsrc_old > 0) then
+         if (numsrc_old /= numsrc) then
+            call mess(LEVEL_ERROR, 'Source/sink entries detected in both the old and new ext file. This is not allowed.')
+         end if
          ja = 1
          rewind (mext)
          kx = numconst + 1

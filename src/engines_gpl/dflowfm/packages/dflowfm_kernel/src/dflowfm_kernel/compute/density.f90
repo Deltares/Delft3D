@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -28,14 +28,15 @@
 !-------------------------------------------------------------------------------
 
 module m_density
+   use m_density_parameters
    use precision, only: dp
 
    implicit none
 
    private
 
-   real(kind=dp), parameter, public :: RHO_MIN = 990.0_dp !< lower limit of density [kg/m3]
-   real(kind=dp), parameter, public :: RHO_MAX = 1250.0_dp !< upper limit of density [kg/m3]
+   real(kind=dp), parameter :: RHO_MIN = 990.0_dp !< lower limit of density [kg/m3]
+   real(kind=dp), parameter :: RHO_MAX = 1250.0_dp !< upper limit of density [kg/m3]
 
    interface calculate_density
       module procedure calculate_density_from_salinity_and_temperature
@@ -49,7 +50,6 @@ contains
 
    function calculate_density_from_salinity_and_temperature(salinity, temperature) result(density)
       use m_physcoef, only: rhomean
-      use m_flow, only: idensform
       use MessageHandling, only: LEVEL_ERROR, mess
       use m_density_formulas, only: calculate_density_eckart, calculate_density_unesco, calculate_density_unesco83, &
                                     DENSITY_OPTION_UNIFORM, DENSITY_OPTION_ECKART, DENSITY_OPTION_UNESCO, DENSITY_OPTION_UNESCO83
@@ -162,6 +162,7 @@ contains
    pure subroutine salinity_and_temperature_at_cell(cell_index_3d, salinity, temperature)
       use m_flow, only: jasal, jatem, backgroundsalinity, backgroundwatertemperature
       use m_transportdata, only: isalt, itemp, constituents
+      use m_physcoef, only: temperature_min
 
       integer, intent(in) :: cell_index_3d !< cell index
       real(kind=dp), intent(out) :: salinity !< salinity at cell
@@ -174,7 +175,7 @@ contains
       end if
 
       if (jatem > 0) then
-         temperature = max(-5.0_dp, constituents(itemp, cell_index_3d))
+         temperature = max(temperature_min, constituents(itemp, cell_index_3d))
       else
          temperature = backgroundwatertemperature
       end if
@@ -199,7 +200,7 @@ contains
       use m_turbulence, only: rhowat
       use sediment_basics_module, only: has_advdiff
       use messagehandling, only: LEVEL_ERROR, mess
-      use unstruc_model, only: check_positive_value
+      use m_check_positive_value, only: check_positive_value
 
       implicit none
 

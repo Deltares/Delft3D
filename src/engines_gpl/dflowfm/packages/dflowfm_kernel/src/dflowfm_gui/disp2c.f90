@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,11 +37,11 @@ contains
 !
    subroutine DISP2C(X, Y, N, RCIR, NCOL)
       use precision, only: dp
-      use m_missing
-      use m_jgrline8
-      use m_set_col
-      use m_inview
-      use m_movabs
+      use m_missing, only: dmiss
+      use m_jgrline8, only: jgrline8
+      use m_set_col, only: setcol
+      use m_inview, only: inview
+      use m_movabs, only: movabs
 
       integer :: n, ncol
       real(kind=dp) :: X(N), Y(N), rcir

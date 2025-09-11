@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,21 +35,19 @@ module m_structure_parameters
    public :: structure_parameters
 contains
 
-    subroutine structure_parameters
+   subroutine structure_parameters
       use m_flowgeom, only: ln, wu
-      use m_flow
-      use m_structures
-      use fm_external_forcings_data, only: ngenstru 
+      use m_flow, only: dp, npumpsg, ngatesg, ncdamsg, ncgensg, ngategen, nweirgen, ngenstru, aerr, dmiss, pumpswithlevels, l1pumpsg, l2pumpsg, kpump, l1gatesg, l2gatesg, kgate, q1, s1, l1cdamsg, l2cdamsg, kcdam, l1cgensg, l2cgensg, kcgen, hu, epshu, hs, epshs, gate2cgen, zcgen, weir2cgen, genstru2cgen
+      use m_structures, only: numvals_pump, numvals_gate, numvals_cdam, numvals_cgen, numvals_gategen, numvals_weirgen, numvals_genstru, numvals_dambreak, network, numvals_uniweir, numvals_orifgen, numvals_culvert, numvals_bridge, numvals_cmpstru, numvals_longculvert, valpump, numvals_common_pump, fill_valstruct_perlink, valgate, valcdam, valcgen, valgategen, ival_width, ival_widthwet, ival_dis, ival_widthup, ival_s1up, ival_widthdn, ival_s1dn, ival_widthupdn, ival_head, ival_gate_widthwet, ival_gate_flowh, ival_gate_count, ival_gate_openw, ival_gate_edgel, ival_gate_sillh, valweirgen, fill_valstruct_per_structure, valorifgen, valbridge, valculvert, ival_cl_crestl, ival_cl_state, ival_cl_edgel, ival_cl_openh, valuniweir, ival_uw_crestl, valdambreak, valgenstru, ival_openw, ival_edgel, ival_crestl, valcmpstru, vallongculvert, average_valstruct, ival_crestw, ival_pp_cap, ival_pp_disdir, ival_pp_stag, ival_pp_s1suc, ival_pp_s1del, ival_pp_head, ival_pp_red
+      use m_flowtimes, only: ti_his, time1
+      use m_1d_structures, only: get_crest_level, get_culvert_state, get_gle, get_opening_height, getpumpcapacity, getpumpstage, getpumpreductionfactor
+      use m_GlobalParameters, only: st_pump, st_weir, st_unset, st_orifice, st_bridge, st_culvert, st_uni_weir, st_general_st, st_compound, st_longculvert
       use m_partitioninfo, only: jampi, reducebuf, nreducebuf, my_rank, idomain, reduce_crs
-      use m_flowtimes
-      use m_missing, only: dmiss
-      use unstruc_channel_flow, only: network
-      use m_1d_structures
-      use m_compound
-      use m_GlobalParameters
       use m_longculverts, only: nlongculverts, longculverts, newculverts
       use m_dambreak_breach, only: fill_dambreak_values, n_db_signals
       use m_link_ghostdata, only: link_ghostdata
+      use m_1d_structures, only: t_structure
+      use m_compound, only: t_compound
 
       integer :: i, n, L, Lf, La, ierr, k, ku, kd, istru, nlinks
       real(kind=dp) :: dir

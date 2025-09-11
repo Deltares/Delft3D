@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,12 +42,13 @@ contains
 
    subroutine setwavmubnd()
       use precision, only: dp
-      use m_flowgeom
-      use m_flowparameters
-      use fm_external_forcings_data
+      use m_flowgeom, only: acl, csu, snu
+      use m_flowparameters, only: epshu
+      use fm_external_forcings_data, only: nbndu, kbndu, nbndz, kbndz, nbndn, kbndn
+      use m_waves, only: hminlw, mxwav, mywav
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_flow, only: hu, huvli, wavmubnd, kmx
-      use m_waves
-      use m_get_Lbot_Ltop
+      use m_boundary_condition_type, only: BOUNDARY_VELOCITY_RIEMANN
       implicit none
 
       real(kind=dp) :: ac1, ac2
@@ -86,7 +87,7 @@ contains
       end do
 
       do n = 1, nbndz
-         if (kbndz(4, n) == 5) then ! riemann boundaries
+         if (kbndz(4, n) == BOUNDARY_VELOCITY_RIEMANN) then ! riemann boundaries
             kb = kbndz(1, n)
             ki = kbndz(2, n)
             L = kbndz(3, n)

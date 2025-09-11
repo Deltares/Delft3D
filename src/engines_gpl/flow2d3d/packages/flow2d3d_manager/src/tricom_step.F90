@@ -1,7 +1,7 @@
 subroutine tricom_step(olv_handle, gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -340,7 +340,6 @@ subroutine tricom_step(olv_handle, gdp)
     integer                                       :: iofset        ! Shift of inner part of matrix to remove strips
     integer                                       :: lunfil
     integer                            , external :: modlen
-    integer                            , external :: newlun
     integer                                       :: nhystp
     integer                                       :: nst           ! Current time step counter 
     integer                                       :: nst2go        ! Number of timesteps left 

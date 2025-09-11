@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,6 +57,7 @@ contains
       use mass_balance_areas_routines, only: mba_final
       use m_datum, only: datum
       use m_write_timestep_limiting_cells, only: write_timestep_limiting_cells
+      use m_extract_constituents, only: print_extract_constituents_message
 #ifdef _OPENMP
       use omp_lib
 #endif
@@ -201,6 +202,8 @@ contains
          write (msgbuf, '(a)') 'Viscosity coefficient/Horizontal transport flux were limited on some links in the course of computation.'
          call msg_flush()
       end if
+
+      call print_extract_constituents_message()
 
       do k = 1, 3
          msgbuf = ' '; call msg_flush()

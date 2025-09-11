@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -78,22 +78,40 @@ module m_waq_file
 
 contains
 
-    subroutine open_waq_file(self)
+    subroutine open_waq_file(self, replace)
         !! if successful, the file is opened and the status is set to 1
 
         class(t_file), intent(inout) :: self               ! the file to be opened
+        logical, optional            :: replace            ! is an existing (binary) file to be replaced?
 
         integer :: io_error                  ! error indicator
         character(len = 1000) :: message      ! error message
         integer :: file_unit                 ! unit number report file
+        logical :: exists, replace_
 
         if (self%status == 0) then
             if (self%type == FT_ASC) then
                 open(newunit = self%unit, file = self%name, status = 'unknown', iostat = io_error, &
                         iomsg = message)
             elseif (self%type == FT_BIN) then
-                open(newunit = self%unit, file = self%name, status = 'unknown', access = 'stream', &
-                        iostat = io_error, iomsg = message)
+                replace_ = .false.
+                if ( present(replace) ) then
+                    replace_ = replace
+                endif
+
+                if ( replace_ ) then
+                    inquire( file = self%name, exist = exists )
+                    if ( exists ) then
+                        open(newunit = self%unit, file = self%name, status = 'replace', access = 'stream', &
+                                iostat = io_error, iomsg = message)
+                    else
+                        open(newunit = self%unit, file = self%name, status = 'unknown', access = 'stream', &
+                                iostat = io_error, iomsg = message)
+                    endif
+                else
+                    open(newunit = self%unit, file = self%name, status = 'unknown', access = 'stream', &
+                            iostat = io_error, iomsg = message)
+                endif
             elseif (self%type == FT_UNF) then
                 open(newunit = self%unit, file = self%name, status = 'unknown', form = 'unformatted', &
                         iostat = io_error, iomsg = message)

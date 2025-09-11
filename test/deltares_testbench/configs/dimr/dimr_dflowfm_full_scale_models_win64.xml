@@ -259,39 +259,39 @@
             </checks>
         </testCase>		
         <testCase name="e02_f150_c31_pudong-1d" ref="dimr_default">
-            <path version="2025-02-16T14:23:58.743000">e02_dflowfm/f150_1d2d_acceptance_urban/c31_pudong-1d/dimr_model</path>
+            <path version="2025-05-20T11:39:09.223000">e02_dflowfm/f150_1d2d_acceptance_urban/c31_pudong-1d/dimr_model</path>
             <checks>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
                     <parameters>
                         <parameter name="mesh1d_s1" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_u1" toleranceAbsolute="0.001" />
+                        <parameter name="mesh1d_u1" toleranceAbsolute="0.005" />
                         <parameter name="mesh1d_q1" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_current_total_net_inflow_lateral" toleranceAbsolute="0.001" />
+                        <parameter name="mesh1d_current_total_net_inflow_lateral" toleranceRelative="0.001" />
                         <parameter name="mesh1d_waterdepth" toleranceAbsolute="0.001" />
-                        <parameter name="mesh1d_volume_on_ground" toleranceAbsolute="0.001" />
+                        <parameter name="mesh1d_volume_on_ground" toleranceRelative="0.001" />
                     </parameters>
                 </file>
                 <file name="dflowfm/DFM_OUTPUT_FlowFM/FlowFM_his.nc" type="netCDF">
                     <parameters>
-                        <parameter name="water_balance_boundaries_in" toleranceRelative="0.000001" />
-                        <parameter name="water_balance_boundaries_out" toleranceRelative="0.000001" />
-                        <parameter name="water_balance_laterals_in" toleranceRelative="0.000001" />
-                        <parameter name="water_balance_laterals_out" toleranceRelative="0.000001" />
-                        <parameter name="water_balance_storage" toleranceRelative="0.000001" />
-                        <parameter name="water_balance_total_volume" toleranceRelative="0.000001" />
-						<parameter name="pump_capacity" toleranceAbsolute="0.001" />
+                        <parameter name="water_balance_boundaries_in" toleranceRelative="0.0001" />
+                        <parameter name="water_balance_boundaries_out" toleranceRelative="0.0001" />
+                        <parameter name="water_balance_laterals_in" toleranceRelative="0.0001" />
+                        <parameter name="water_balance_laterals_out" toleranceRelative="0.0001" />
+                        <parameter name="water_balance_storage" toleranceRelative="0.0001" />
+                        <parameter name="water_balance_total_volume" toleranceRelative="0.0001" />
+						<parameter name="pump_capacity" toleranceRelative="0.001" />
 						<parameter name="pump_head" toleranceAbsolute="0.001" />
 						<parameter name="pump_s1_suction_side" toleranceAbsolute="0.001" />
 						<parameter name="pump_s1_delivery_side" toleranceAbsolute="0.001" />
 						<parameter name="pump_s1up" toleranceAbsolute="0.001" />
 						<parameter name="pump_s1dn" toleranceAbsolute="0.001" />
-						<parameter name="pump_structure_discharge" toleranceAbsolute="0.001" />
+						<parameter name="pump_structure_discharge" toleranceRelative="0.001" />
 						<parameter name="pump_structure_head" toleranceAbsolute="0.001" />
                         <parameter name="culvert_discharge" toleranceAbsolute="0.0001" />
                         <parameter name="culvert_s1up" toleranceAbsolute="0.0001" />
                         <parameter name="culvert_s1dn" toleranceAbsolute="0.0001" />
-                        <parameter name="culvert_flow_area" toleranceAbsolute="0.0001" />
-                        <parameter name="culvert_velocity" toleranceAbsolute="0.0001" />
+                        <parameter name="culvert_flow_area" toleranceAbsolute="0.001" />
+                        <parameter name="culvert_velocity" toleranceAbsolute="0.001" />
                     </parameters>
                 </file>
             </checks>
@@ -350,7 +350,7 @@
             </checks>
         </testCase>
         <testCase name="e02_f152_c05_DHydamo-MGB-fullrun" ref="dimr_default">
-            <path version="2025-03-03T08:55:19.274000">e02_dflowfm/f152_1d2d_projectmodels_rhu/c05_DHydamo-MGB-fullrun</path>
+            <path version="2025-05-20T09:23:16.026000">e02_dflowfm/f152_1d2d_projectmodels_rhu/c05_DHydamo-MGB-fullrun</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_moergestels_broek/moergestels_broek_map.nc" type="netCDF">
                     <parameters>

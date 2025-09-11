@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,12 +44,12 @@ contains
 
    subroutine comp_gradC(val, gradx, grady)
       use precision, only: dp
-      use m_flowgeom, only: ln, Lnx, Ndx, Dxi, wcx1, wcy1, wcx2, wcy2
+      use m_flowgeom, only: Lnx, ln, Dxi, wcx1, wcy1, wcx2, wcy2, ndx
       implicit none
 
-      real(kind=dp), dimension(Ndx), intent(in) :: val !< cell-centered data
-      real(kind=dp), dimension(Ndx), intent(out) :: gradx !< x-component of cell-centered gradient vector
-      real(kind=dp), dimension(Ndx), intent(out) :: grady !< y-component of cell-centered gradient vector
+      real(kind=dp), dimension(ndx), intent(in) :: val !< cell-centered data
+      real(kind=dp), dimension(ndx), intent(out) :: gradx !< x-component of cell-centered gradient vector
+      real(kind=dp), dimension(ndx), intent(out) :: grady !< y-component of cell-centered gradient vector
 
       real(kind=dp) :: DvalDn
 

@@ -174,7 +174,7 @@ WaqInterval                          = 0.                                    # I
 StatsInterval                        = 0.                                    # Interval (in s) between simulation statistics output.
 TimingsInterval                      =                                       # Timings output interval
 TimeSplitInterval                    = 0X                                    # Time splitting interval, after which a new output file is started. value+unit, e.g. '1 M', valid units: Y,M,D,h,m,s.
-MapFormat                            = 1                                     # Map file format, 1: netCDF, 2: Tecplot, 3: netCFD and Tecplot, 4: NetCDF-UGRID
+MapFormat                            = 1                                     # Map file format, 1: netCDF, 4: NetCDF-UGRID
 Wrihis_balance                       = 1                                     # Write mass balance totals to his file (1=yes, 0=no)
 Wrihis_structure_gen                 = 1                                     # Write general structure parameters to his file (1=yes, 0=no)
 Wrihis_structure_dam                 = 1                                     # Write dam parameters to his file (1=yes, 0=no)

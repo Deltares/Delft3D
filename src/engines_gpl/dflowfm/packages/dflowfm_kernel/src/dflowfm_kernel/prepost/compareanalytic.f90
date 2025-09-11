@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,10 +46,10 @@ contains
    subroutine compareanalytic(s, x, mmax)
       use precision, only: dp
 
-      use m_flowgeom
-      use m_flow
-      use m_set_col
-      use m_inview
+      use m_flowgeom, only: ndx, xz, yz
+      use m_flow, only: s1
+      use m_set_col, only: setcol
+      use m_inview, only: inview
 
       integer :: mmax
       real(kind=dp) :: s(0:mmax), x(0:mmax)

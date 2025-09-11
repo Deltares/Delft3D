@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
 !!
 !! NOTE: this subroutine is dflowfm's implementation of the MHCallBack::messagebox_iface interface.
    subroutine unstruc_guimessage(msg)
-      use m_qnerror
+      use m_qnerror, only: qnerror
 
       character(len=*), intent(in) :: msg !< Message string
 

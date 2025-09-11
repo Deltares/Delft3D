@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -55,6 +55,7 @@ module process_registration
     use m_caltau
     use m_d40blo
     use m_consbl
+    use m_averad
     use m_dayrad
     use m_ddepth
     use m_covmac
@@ -187,7 +188,6 @@ module process_registration
     use m_sedaap
     use m_plastc
     use m_s12tim
-    use m_respup
     use m_stox3d
     use m_mpbllm
     use m_sulfpr
@@ -265,6 +265,7 @@ contains
                             process_routine_info('EMERSI', EMERSI), &
                             process_routine_info('METEO', METEO), &
                             process_routine_info('HEATFL', HEATFL), &
+                            process_routine_info('AVERAD', AVERAD), &
                             process_routine_info('DAYRAD', DAYRAD), &
                             process_routine_info('TEMPER', TEMPER), &
                             process_routine_info('VELOC', VELOC), &
@@ -397,7 +398,6 @@ contains
                             process_routine_info('DEBGRZ', DEBGRZ), &
                             process_routine_info('FLOCEQ', FLOCEQ), &
                             process_routine_info('DREDGE', dredge_process), &
-                            process_routine_info('RESPUP', RESPUP), &
                             process_routine_info('RESBUF', RESBUF), &
                             process_routine_info('SEDIM ', SEDIM), &
                             process_routine_info('S12TIM', S12TIM), &

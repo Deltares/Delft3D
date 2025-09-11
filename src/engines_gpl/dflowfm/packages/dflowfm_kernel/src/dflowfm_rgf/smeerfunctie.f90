@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,7 +35,7 @@ contains
 
    subroutine SMEERFUNCTIE(I, J, MP, NP, FR, IN, JN)
       use precision, only: dp
-      use m_grid_block
+      use m_grid_block, only: mb, nb
 
       integer :: i, j, mp, np, in, jn
       real(kind=dp) :: fr

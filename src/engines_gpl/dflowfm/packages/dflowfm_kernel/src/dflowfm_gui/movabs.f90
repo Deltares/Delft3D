@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,7 +36,7 @@ contains
    subroutine MOVABS(X, Y)
       use precision, only: dp
       use unstruc_opengl, only: InOpenGLRendering, MoveTo
-      use m_dproject
+      use m_dproject, only: dproject
 
       real(kind=dp) :: x, y, xx, yy
 

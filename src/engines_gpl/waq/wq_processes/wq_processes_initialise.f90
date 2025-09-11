@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -184,7 +184,7 @@ contains
         character(len=80)   swinam
         character(len=80)   blmnam
         character(len=80)   line
-        character(len=80)   identification_text
+        character(len=200)  identification_text
         character(len=20)   rundat
         character(:), allocatable :: config
         logical :: parsing_error, laswi, swi_nopro
@@ -263,7 +263,7 @@ contains
 
         ! Header for lsp
         call getidentification(identification_text)
-        write(lunlsp, '(XA/)') identification_text
+        write(lunlsp, '(XA/)') trim(identification_text)
         call write_date_time(rundat)
         write (lunlsp, '(A,A/)') ' Execution start: ', rundat
 

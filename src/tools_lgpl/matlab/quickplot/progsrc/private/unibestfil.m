@@ -18,7 +18,7 @@ function varargout=unibestfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -77,7 +77,7 @@ else
 end
 
 cmd=lower(cmd);
-switch cmd,
+switch cmd
     case 'size'
         varargout={getsize(FI,Props)};
         return
@@ -182,12 +182,12 @@ varargout={Ans FI};
 
 
 % -----------------------------------------------------------------------------
-function Out=infile(FI,domain);
+function Out=infile(FI,domain)
 
 %======================== SPECIFIC CODE =======================================
-PropNames={'Name'                   'Units'   'DimFlag' 'DataInCell' 'NVal' 'Quant1' 'Quant2' 'MNK'};
-DataProps={'grid'                      ''       [0 0 1 0 0]  0         0       0      0        0
-    '-------'                   ''       [3 0 1 0 0]  0         1      -1      0        1};
+PropNames={'Name'                   'Units'   'DimFlag' 'DataInCell' 'NVal' 'Quant1' 'Quant2' 'MNK' 'Coords'};
+DataProps={'grid'                      ''       [0 0 1 0 0]  0         0       0      0        0    'x'
+    '-------'                          ''       [3 0 1 0 0]  0         1      -1      0        1    'x'};
 if isfield(FI,'RefDate')
     DataProps{2,3}=[1 0 1 0 0];
 end
@@ -209,7 +209,7 @@ if FI.DafVersion>0
     for i=1:size(Tbl,1)
         xcomp=ustrcmpi(Tbl{i,1},FI.Quant.ShortName);
         ycomp=ustrcmpi(Tbl{i,2},FI.Quant.ShortName);
-        if xcomp>0 & ycomp>0
+        if xcomp>0 && ycomp>0
             Out(end+1)=Out(1+xcomp);
             Out(end).Name=Tbl{i,3};
             Out(end).NVal=2;
@@ -233,7 +233,7 @@ sz=[0 0 0 0 0];
 %======================== SPECIFIC CODE =======================================
 if Props.DimFlag(M_)
     sz(M_)=FI.RecSize-1;
-end;
+end
 if Props.DimFlag(T_)
     sz(T_)=FI.NTimes;
 end

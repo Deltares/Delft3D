@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,10 +36,10 @@ contains
    subroutine comp_curv(num, xsp, ysp, xsp2, ysp2, s, curv, dnx, dny, dsx, dsy)
       use precision, only: dp
 
-      use m_sferic
+      use m_sferic, only: jsferic, dg2rd, ra, jasfer3d
+      use m_splint, only: splint
       use geometry_module, only: dbdistance, getdxdy, normalout
       use m_missing, only: dmiss, dxymis
-      use m_splint
 
       integer, intent(in) :: num !< number of spline control points
 

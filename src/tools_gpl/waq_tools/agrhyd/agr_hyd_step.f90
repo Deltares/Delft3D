@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2023.
+!!  Copyright (C)  Stichting Deltares, 2021-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -131,6 +131,19 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
                 ipnt, AGGREGATION_TYPE_WEIGHTED_AVERAGE, &
                 input_hyd%tem, input_hyd%volume, &
                 rwork, output_hyd%tem)
+    endif
+
+    ! flow velocities, averaged with volume
+
+    if (input_hyd%vel_present) then
+        call aggregate_extended(input_hyd%num_cells, output_hyd%num_cells, &
+                1, 1, &
+                1, 1, &
+                1, 1, &
+                1, 1, &
+                ipnt, AGGREGATION_TYPE_WEIGHTED_AVERAGE, &
+                input_hyd%vel, input_hyd%volume, &
+                rwork, output_hyd%vel)
     endif
 
     ! tau, only do last layer, other layers 0.0

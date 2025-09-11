@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,13 +39,13 @@ contains
 
    subroutine comp_sampleHessian(ierror)
       use precision, only: dp
-      use m_comp_samplegradi
-      use m_samples
-      use m_samples_refine
-      use m_missing
+      use m_comp_samplegradi, only: comp_samplegradi
+      use m_samples, only: xs, ys, mxsam, mysam
+      use m_samples_refine, only: zss, ihesstat, ihesstat_ok
+      use m_missing, only: dmiss
+      use m_readyy, only: readyy
       use geometry_module, only: dbdistance
       use m_sferic, only: jsferic, jasfer3D
-      use m_readyy
 
       implicit none
 
@@ -68,7 +68,7 @@ contains
 
       real(kind=dp) :: af, dum, Dh
 
-      integer :: i, j, k, nrot, ip, ihasridge
+      integer :: i, j, k, ip, ihasridge
 
 !  compute sample mesh width
       Dh = min(dbdistance(xs(1), ys(1), xs(2), ys(2), jsferic, jasfer3D, dmiss), dbdistance(xs(1), ys(1), xs(1 + MXSAM), ys(1 + MXSAM), jsferic, jasfer3D, dmiss))
@@ -132,7 +132,7 @@ contains
 !           Eigendecompostion
                VV(1, 1) = zxx; VV(1, 2) = zxy
                VV(2, 1) = zyx; VV(2, 2) = zyy
-               call jacobi(VV, 2, 2, S, UU, nrot)
+               !call jacobi
 
 !!           checks
 !            if ( abs(zxy-zyx).gt.1d-8 ) then

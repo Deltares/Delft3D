@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,13 +42,13 @@ contains
 
    subroutine addlink1D2Dinternal(L, japerim) ! and add area's and volumes of 1D2D links
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: ln, bob0, wu, dx, aifu
+      use m_flow, only: s1, a1, vol1, hu, frcu, ifrcutp, jaconveyance2d, cfuhi, ag, au, u1, v, vol1_f
+      use m_get_link_area_wid2D, only: getlinkareawid2d
+      use m_get_prof2d, only: getprof2d
+      use m_get_hpr_nostruc, only: get_hpr_nostruc
       use unstruc_channel_flow, only: network
-      use m_get_link_area_wid2D
-      use m_get_prof2d
       use m_get_chezy, only: get_chezy
-      use m_get_hpr_nostruc
 
       implicit none
 
@@ -112,7 +112,7 @@ contains
             else
                au(L) = hpr1 * wu(L)
                if (frcn > 0) then
-                Cz = get_chezy(hu(L), frcn, u1(L), v(L), friction_type)
+                  Cz = get_chezy(hu(L), frcn, u1(L), v(L), friction_type)
                   cfuhi(L) = ag / (hu(L) * Cz * Cz)
                else
                   cfuhi(L) = 0d0

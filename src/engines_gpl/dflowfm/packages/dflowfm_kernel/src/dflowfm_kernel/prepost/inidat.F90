@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -70,6 +70,8 @@ contains
       use m_paramtext
       use m_increase_grid
       use m_ini_sferic
+      use m_start_parameters, only: md_jaautostart
+
 
       real(kind=dp) :: dx
       integer :: k

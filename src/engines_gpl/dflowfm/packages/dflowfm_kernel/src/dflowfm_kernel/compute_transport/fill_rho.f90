@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,14 +42,11 @@ contains
 
    subroutine fill_rho()
       use precision, only: dp
-      use m_transport
-      use m_flowgeom
-      use m_flow
-      use m_sediment
-      use m_transport
-      use m_sferic
-      use timers
-      use m_get_kbot_ktop
+      use m_transport, only: constituents, const_sour, const_sink
+      use m_flowgeom, only: ndx
+      use m_flow, only: ndkx, sa1, rho, vol1, sq
+      use timers, only: timon, timstrt, timstop
+      use m_get_kbot_ktop, only: getkbotktop
 
       implicit none
 

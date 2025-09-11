@@ -18,7 +18,7 @@ function varargout=d3d_trimfil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -1477,6 +1477,7 @@ DataProps={'morphologic grid'          ''       [0 0 1 1 0]  0         0    'sQU
     'maximum bed shear stress'         'N/m^2'  [1 0 1 1 0]  1         1    'sQUAD' 'xy'     ''        'z'   'z'       ''      'map-series'     'TAUMAX'  ''       []       0
     'bed shear stress for morphology'  'N/m^2'  [1 0 1 1 0]  1         2    'sQUAD' 'xy'     'u'       'u'   'z'       ''      'map-sed-series' 'TAUB'    ''       []       0
     'excess bed shear ratio'           '-'      [1 0 1 1 0]  1         1    'sQUAD' 'xy'     ''        'z'   'z'       ''      'map-sed-series' 'TAURAT'  ''       'sb1'    0
+    'Chezy roughness'                  'm^{1/2}/s' [1 0 1 1 0]  1      0.9  'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-series'     'CFUROU'  'CFVROU'  []      0
     'bed roughness'                    ''       [1 0 1 1 0]  1         0.9  'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-series'     'ROUMETU' 'ROUMETV' []      0
     'currents related z0 roughness'    'm'      [1 0 1 1 0]  1         0.9  'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-series'     'Z0UCUR'  'Z0VCUR' []       0
     'wave enhanced z0 roughness'       'm'      [1 0 1 1 0]  1         0.9  'sQUAD' 'xy'     ''        'd'   'd'       ''      'map-series'     'Z0UROU'  'Z0VROU' []       0
@@ -1666,6 +1667,21 @@ for i=size(Out,1):-1:1
         if ~all(isand|isilt|iclay)
             Out(i)=[];
         end
+    elseif strcmp(Out(i).Name,'bed roughness')
+        switch strtok(Info.ElmDescription)
+            case 'Chezy'
+                Out(i).Name = 'Chezy C roughness';
+                Out(i).Units = 'm^{1/2}/s';
+            case 'Nikuradse'
+                Out(i).Name = 'White-Colebrook/Nikuradse k roughness';
+                Out(i).Units = 'm';
+            case 'Manning'
+                Out(i).Name = 'Manning n roughness';
+                Out(i).Units = 's/m^{1/3}';
+            case 'Z0'
+                Out(i).Name = 'z_0 roughness';
+                Out(i).Units = 'm';
+        end
     end
 end
 
@@ -1753,8 +1769,14 @@ for i=1:length(Out)
     if isequal(Out(i).Geom,'sQUAD')
         switch Out(i).ReqLoc
             case 'd'
-                Out(i).UseGrid=3;%1;
-                Out(i).Geom='SGRID-NODE';
+                switch Out(i).NVal
+                    case {0.9, 1.9}
+                        Out(i).UseGrid=3;%1;
+                        Out(i).Geom='SGRID-EDGE';
+                    otherwise
+                        Out(i).UseGrid=3;%1;
+                        Out(i).Geom='SGRID-NODE';
+                end
             case 'z'
                 Out(i).UseGrid=3;%2;
                 Out(i).Geom='SGRID-FACE';

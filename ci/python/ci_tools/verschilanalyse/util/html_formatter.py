@@ -146,7 +146,7 @@ class HtmlFormatter:
             water_lvl_stats = output.water_level
             if (
                 water_lvl_stats.avg_max > Tolerances.max(output.output_type, Variable.WATER_LEVEL)
-                or water_lvl_stats.avg_mean > Tolerances.mean(output.output_type, Variable.WATER_LEVEL)
+                or water_lvl_stats.avg_bias > Tolerances.bias(output.output_type, Variable.WATER_LEVEL)
                 or water_lvl_stats.avg_rms > Tolerances.rms(output.output_type, Variable.WATER_LEVEL)
             ):
                 yield model_name
@@ -158,7 +158,7 @@ class HtmlFormatter:
             if (
                 flow_vel_stats.avg_max > Tolerances.max(output.output_type, Variable.FLOW_VELOCITY)
                 or flow_vel_stats.avg_rms > Tolerances.rms(output.output_type, Variable.FLOW_VELOCITY)
-                or flow_vel_stats.avg_mean > Tolerances.mean(output.output_type, Variable.FLOW_VELOCITY)
+                or flow_vel_stats.avg_bias > Tolerances.bias(output.output_type, Variable.FLOW_VELOCITY)
             ):
                 yield model_name
 

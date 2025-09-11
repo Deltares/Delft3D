@@ -18,7 +18,7 @@ function varargout=mikezerofil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -368,10 +368,13 @@ switch DT
             case 1
                 Out(1).DimFlag=[1 0 1 0 0];
                 Out(1).UseGrid=0;
+                Out(1).Coords = 'x';
             case 2
                 Out(1).DimFlag=[1 0 1 1 0];
+                Out(1).Coords = 'xy';
             case 3
                 Out(1).DimFlag=[1 0 1 1 1];
+                Out(1).Coords = 'xy+z';
         end
 end
 if ~isempty(FI.Item)

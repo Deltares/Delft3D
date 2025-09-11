@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,19 +44,18 @@ contains
    ! =================================================================================================
    subroutine setucxucy_mor(u1_loc)
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: lnx1d, kcu, ln, wcx1, wcy1, wcx2, wcy2, lnx, ndxi, csu, snu
+      use m_flow, only: ucx_mor, ucy_mor, kmx, hu, jabarrieradvection, struclink, lbot, kmxl, ln0, jazlayercenterbedvel, kbot, hs, perot_type, perot_volume_based, ktop, zws, nbndz, kbndz, epshs, jacstbnd, jased, jazerozbndinflowadvection, ltop, nbndu, kbndu, kmxn, nbndt, kbndt, kmxd, u0, zbndt, zbnduxyval, dmiss, zbnduxy, nbnduxy, kbnduxy, nbndn, kbndn, zbndn, lnkx
+      use m_sobekdfm, only: nbnd1d2d, kbnd1d2d
+      use m_sediment, only: stm_included
+      use m_sferic, only: jasfer3d
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_fm_erosed, only: ucxq_mor, ucyq_mor
-      use m_sobekdfm
-      use m_sediment, only: jased, stm_included
-      use m_missing
-      use m_flowparameters, only: jabarrieradvection, flow_solver
-      use m_sferic
-      use m_get_Lbot_Ltop
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
+      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
       implicit none
       real(kind=dp), dimension(lnkx), intent(in) :: u1_loc
 
@@ -185,7 +184,7 @@ contains
          cs = csu(LL); sn = snu(LL)
          if (kmx == 0) then
             if (hs(kb) > epshs) then
-               if (jacstbnd == 0 .and. itpbn /= 2) then ! Neumann: always
+               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx_mor(k2), ucy_mor(k2)) * cs + nod2liny(LL, 2, ucx_mor(k2), ucy_mor(k2)) * sn
                      ucx_mor(kb) = uin * lin2nodx(LL, 1, cs, sn)
@@ -230,7 +229,7 @@ contains
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb, Lt
                kbk = ln(1, L); k2k = ln(2, L)
-               if (jacstbnd == 0 .and. itpbn /= 2) then
+               if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx_mor(k2k), ucy_mor(k2k)) * cs + nod2liny(LL, 2, ucx_mor(k2k), ucy_mor(k2k)) * sn
                      ucx_mor(kbk) = uin * lin2nodx(LL, 1, cs, sn)

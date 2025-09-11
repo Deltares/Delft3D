@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,11 +38,10 @@ module m_cls1
 contains
 
    subroutine CLS1()
-      use unstruc_colors
-      use unstruc_display_data
-      use m_drawthis
-      use m_fbox_nop
-      use m_set_col
+      use unstruc_colors, only: nredp, ngreenp, nbluep, nreds, ngreens, nblues, x1, y1, x2, y2
+      use m_drawthis, only: ndraw
+      use m_fbox_nop, only: fboxnop
+      use m_set_col, only: setcol
 
       call IGRAREACLEAR()
 

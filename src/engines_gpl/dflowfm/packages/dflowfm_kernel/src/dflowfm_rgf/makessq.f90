@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,7 +34,7 @@ module m_makessq
 contains
    subroutine MAKESSQ(S, A, SR, SL, SSQ, NT, MFAC, IMAX)
       use precision, only: dp
-      use m_makesr
+      use m_makesr, only: makesr
 
       integer :: nt, mfac, imax
       real(kind=dp) :: S(IMAX), A(IMAX), SR(IMAX), SL(IMAX), SSQ(IMAX)

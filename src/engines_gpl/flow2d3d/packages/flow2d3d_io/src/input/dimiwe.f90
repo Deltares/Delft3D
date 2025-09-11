@@ -2,7 +2,7 @@ subroutine dimiwe(lunmd     ,lundia    ,error     ,nrrec     ,iweflg    , &
                 & kmxdt     ,kmax      ,npiwe     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -70,7 +70,6 @@ subroutine dimiwe(lunmd     ,lundia    ,error     ,nrrec     ,iweflg    , &
     integer              :: lfile  ! Number of non blank characters of file name 
     integer              :: lkw
     integer              :: luntmp ! Unit number of (input par. for) FILIWE 
-    integer              :: newlun
     integer              :: nlook  ! Help var.: nr. of data to look for in the MD-file 
     integer              :: ntrec  ! Help. var to keep track of NRREC 
     logical              :: ex     ! Flag if file exists 

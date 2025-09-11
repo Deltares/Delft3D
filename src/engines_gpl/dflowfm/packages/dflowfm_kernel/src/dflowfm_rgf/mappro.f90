@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,7 +33,7 @@
 module m_mappro
    use m_utmgeo2, only: utmgeo2
    use m_trarot, only: trarot
-   use m_setellips, only: setellips
+   use m_setellipse, only: setellipse
    use m_rdgeo, only: rdgeo
    use m_mercgeo, only: mercgeo
 
@@ -51,7 +51,7 @@ contains
       use m_geomerc, only: geomerc
       use m_affine, only: affine
       use precision, only: dp
-      use M_MISSING
+      use M_MISSING, only: dxymis
 
       integer :: ierr
       integer :: ini
@@ -65,7 +65,7 @@ contains
 
       data INI/0/
       if (INI == 0) then
-         call SETELLIPS(3) ! WGS84
+         call setellipse(3) ! WGS84
          INI = 1
 !         ierr = pjf90_init_plus(proj_latlon, &
 !            '+proj=latlong +datum=WGS84')

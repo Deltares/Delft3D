@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2022-2024.
+!!  Copyright (C)  Stichting Deltares, 2022-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -32,6 +32,7 @@ contains
             noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
             num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         !
         !*******************************************************************************
@@ -40,10 +41,13 @@ contains
         !
         !     Type         Name         I/O Description
         !
+        integer, parameter :: number_inp_out   = 46
+        integer, parameter :: id_switch_buffer = 34
+
         real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(45)  ! I  Array of pointers in process_space_real to get and store the data
-        integer(kind = int_wp) :: increm(45)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+        integer(kind = int_wp) :: ipoint(number_inp_out)  ! I  Array of pointers in process_space_real to get and store the data
+        integer(kind = int_wp) :: increm(number_inp_out)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
         integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
@@ -89,10 +93,11 @@ contains
         ! FrIM1S2Pup    O fraction IM1 in layer S2 pick-up         (gDM/gDM)
         ! dResS2Pup     F pick-up resuspension flux IM1 from S2     (g/m3/d)
 
-        integer(kind = int_wp) :: ipnt(45)   !    local work array for the pointering
-        integer(kind = int_wp) :: iseg        !    local loop counter for computational element loop
+        integer(kind = int_wp) :: ipnt(number_inp_out)    !    local work array for the pointering
+        integer(kind = int_wp) :: iseg                    !    local loop counter for computational element loop
         integer(kind = int_wp) :: iflux
         integer(kind = int_wp) :: ikmrk2
+        integer(kind = int_wp) :: lunrep
 
         ! input items
         real(kind = real_wp) :: im1s2
@@ -164,6 +169,19 @@ contains
         real(kind = real_wp) :: press1im1, press1im2, press1im3, flres1, tims1
 
         ipnt = ipoint
+
+        !
+        ! Check for the switch: is the buffer model correctly set up?
+        if ( nint(process_space_real(ipnt(id_switch_buffer))) /= 1 ) then
+            call get_log_unit_number( lunrep )
+            write(lunrep, '(a)' ) 'Please set the process parameter "SwResBuf" to 1', &
+                                  'otherwise resuspension is not accounted for correctly', &
+                                  'in conjunction with Res_Buffer'
+            write(*,      '(a)' ) 'Please set the process parameter "SwResBuf" to 1', &
+                                  'otherwise resuspension is not accounted for correctly', &
+                                  'in conjunction with Res_Buffer'
+            call stop_with_error
+        endif
 
         iflux = 0
         do iseg = 1, num_cells
@@ -342,18 +360,18 @@ contains
                     fl(5 + iflux) = flrim2s1 / depth
                     fl(6 + iflux) = flrim3s1 / depth
 
-                    process_space_real (ipnt (34)) = flrim1s2
-                    process_space_real (ipnt (35)) = flrim2s2
-                    process_space_real (ipnt (36)) = flrim3s2
-                    process_space_real (ipnt (37)) = flres2
-                    process_space_real (ipnt (38)) = press2
-                    process_space_real (ipnt (39)) = frtims2pup
-                    process_space_real (ipnt (40)) = frpoms2pup
-                    process_space_real (ipnt (41)) = flrim1s1
-                    process_space_real (ipnt (42)) = flrim2s1
-                    process_space_real (ipnt (43)) = flrim3s1
-                    process_space_real (ipnt (44)) = flrdms1
-                    process_space_real (ipnt (45)) = flrdms2
+                    process_space_real (ipnt (35)) = flrim1s2
+                    process_space_real (ipnt (36)) = flrim2s2
+                    process_space_real (ipnt (37)) = flrim3s2
+                    process_space_real (ipnt (38)) = flres2
+                    process_space_real (ipnt (39)) = press2
+                    process_space_real (ipnt (40)) = frtims2pup
+                    process_space_real (ipnt (41)) = frpoms2pup
+                    process_space_real (ipnt (42)) = flrim1s1
+                    process_space_real (ipnt (43)) = flrim2s1
+                    process_space_real (ipnt (44)) = flrim3s1
+                    process_space_real (ipnt (45)) = flrdms1
+                    process_space_real (ipnt (46)) = flrdms2
 
                 endif
             endif

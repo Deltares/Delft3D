@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -32,6 +32,7 @@ contains
             noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
             num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
+        use m_logger_helper, only : stop_with_error, get_log_unit_number
 
         !>\file
         !>       Resuspension total bottom material (dry mass)
@@ -75,10 +76,14 @@ contains
 
         IMPLICIT NONE
 
+        integer, parameter     :: number_inp_out   = 17
+        integer, parameter     :: id_switch_buffer = 13
+        integer(kind = int_wp) :: lunrep
+
         real(kind = real_wp) :: process_space_real(*)     !i/o process manager system array, window of routine to process library
         real(kind = real_wp) :: fl(*)       ! o  array of fluxes made by this process in mass/volume/time
-        integer(kind = int_wp) :: ipoint(16) ! i  array of pointers in process_space_real to get and store the data
-        integer(kind = int_wp) :: increm(16) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
+        integer(kind = int_wp) :: ipoint(number_inp_out) ! i  array of pointers in process_space_real to get and store the data
+        integer(kind = int_wp) :: increm(number_inp_out) ! i  increments in ipoint for segment loop, 0=constant, 1=spatially varying
         integer(kind = int_wp) :: num_cells       ! i  number of computational elements in the whole model schematisation
         integer(kind = int_wp) :: noflux      ! i  number of fluxes, increment in the fl array
         integer(kind = int_wp) :: iexpnt(4, *) ! i  from, to, from-1 and to+1 segment numbers of the exchange surfaces
@@ -87,8 +92,9 @@ contains
         integer(kind = int_wp) :: num_exchanges_v_dir        ! i  nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
         integer(kind = int_wp) :: num_exchanges_z_dir        ! i  nr of exchanges in 3rd direction, vertical direction, pos. downward
         integer(kind = int_wp) :: num_exchanges_bottom_dir        ! i  nr of exchanges in the bottom (bottom layers, specialist use only)
-        integer(kind = int_wp) :: ipnt(16)   !    local work array for the pointering
-        integer(kind = int_wp) :: iseg        !    local loop counter for computational element loop
+
+        integer(kind = int_wp) :: ipnt(number_inp_out)    !    local work array for the pointering
+        integer(kind = int_wp) :: iseg                    !    local loop counter for computational element loop
 
         integer(kind = int_wp) :: iflux
         integer(kind = int_wp) :: ikmrk2
@@ -115,6 +121,20 @@ contains
         real(kind = real_wp) :: mrdms2
 
         ipnt = ipoint
+
+        !
+        ! Check for the switch: is the classic resuspension model correctly set up?
+        if ( nint(process_space_real(ipnt(id_switch_buffer))) /= 0 ) then
+            call get_log_unit_number( lunrep )
+            write(lunrep, '(a)' ) 'Please set the process parameter "SwResBuf" to 0', &
+                                  'otherwise resuspension is not accounted for correctly', &
+                                  'in conjunction with Res_DM'
+            write(*,      '(a)' ) 'Please set the process parameter "SwResBuf" to 1', &
+                                  'otherwise resuspension is not accounted for correctly', &
+                                  'in conjunction with Res_DM'
+            call stop_with_error
+        endif
+
 
         iflux = 0
         do iseg = 1, num_cells
@@ -194,10 +214,10 @@ contains
                         flres2 = min (rfdms2 * press2 * delts2 / delt, mrdms2)
                     endif
 
-                    process_space_real (ipnt (13)) = flres1
-                    process_space_real (ipnt (14)) = flres2
-                    process_space_real (ipnt (15)) = press1
-                    process_space_real (ipnt (16)) = press2
+                    process_space_real (ipnt (14)) = flres1
+                    process_space_real (ipnt (15)) = flres2
+                    process_space_real (ipnt (16)) = press1
+                    process_space_real (ipnt (17)) = press2
 
                 endif
             endif

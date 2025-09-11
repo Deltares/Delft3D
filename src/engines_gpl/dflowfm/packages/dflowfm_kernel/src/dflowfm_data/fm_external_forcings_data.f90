@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -110,13 +110,7 @@ module fm_external_forcings_data
                                                         !! 1,* = index in s1 boundary point
                                                         !! 2,* = index in s1 first point on the inside
                                                         !! 3,* = index in u1 of their connecting link (always positive to the inside)
-                                                        !! 4,* = type indicator :
-                                                        !!                        1 = waterlevel boundary
-                                                        !!                        2 = waterlevel neumann
-                                                        !!                        3 = velocity   normal ingoing component
-                                                        !!                        4 = velocity   flux boundary
-                                                        !!                        5 = velocity   Riemann boundary
-                                                        !!                        6 = waterlevel outflow
+                                                        !! 4,* = type indicator (see m_boundary_condition_type)
                                                         !! 5,* = member of boundary number somuch of this type
                                                         !! 6,* = riemann relaxation time for this point (s)
    real(kind=dp), allocatable :: zkbndz(:, :) !< only for jaceneqtr == 2 : left and right vertical netnode zk levels
@@ -348,7 +342,7 @@ module fm_external_forcings_data
       real(kind=dp), dimension(:), allocatable :: xp, yp
       integer :: np
    end type polygon
-   type(polygon), dimension(:), allocatable :: dambreakPolygons
+   type(polygon), dimension(:), allocatable, target :: dambreakPolygons
 
    integer :: nklep !< nr of kleps
    integer, allocatable :: Lklep(:) !< klep links index array, pos=allow 1->2, neg= allow 2->1
@@ -390,6 +384,7 @@ module fm_external_forcings_data
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
    integer :: numsrc !< nr of point sources/sinks
+   integer :: numsrc_old !< nr of point sources/sinks in old ext-file
    integer :: numvalssrc !< nr of point constituents
    integer :: numsrc_nf !< nr of sources/sinks added for nearfield
    integer :: msrc = 0 !< maximal number of points that polylines contains for all sources/sinks
@@ -481,6 +476,7 @@ contains
       nzbnd = 0
       nubnd = 0
       numsrc = 0
+      numsrc_old = 0
       numsrc_nf = 0
 
    end subroutine default_fm_external_forcing_data

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,9 +42,9 @@ contains
 
    subroutine makethindamadmin()
       use precision, only: dp
-      use m_flowgeom
-      use network_data
-      use m_alloc
+      use m_flowgeom, only: nthd, lne2ln, thindam
+      use network_data, only: nump, netcell, kn, xzw, yzw, xk, yk
+      use m_alloc, only: aerr
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: getdxdy, duitpl, dlinedis
       use m_missing, only: dmiss

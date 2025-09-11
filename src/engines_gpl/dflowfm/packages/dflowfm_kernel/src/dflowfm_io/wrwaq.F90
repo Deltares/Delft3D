@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -471,11 +471,11 @@ contains
 
       if (layertype == LAYTP_SIGMA) then ! all sigma layers
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured'
-      elseif (layertype == LAYTP_Z) then ! all z layers
+      elseif (layertype == LAYTP_Z) then ! z layers or z-sigma layers
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z-layers'
-      elseif (layertype == LAYTP_LEFTSIGMA) then ! mixed sigma/z layers
+      elseif (layertype == LAYTP_LEFTSIGMA) then
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-sigma-layers'
-      elseif (layertype == LAYTP_LEFTZ) then ! mixed sigma/z layers
+      elseif (layertype == LAYTP_LEFTZ) then
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-z-layers'
       else ! other?
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured other'
@@ -848,7 +848,7 @@ contains
 
       use io_ugrid
       use netcdf_utils, only: ncu_ensure_define_mode
-      
+
       implicit none
 
       integer, intent(in) :: igeomfile !< file pointer to netcdf file to write to.
@@ -876,7 +876,7 @@ contains
 
       ! Leave the dataset in the same mode as we got it.
       ierr = ncu_restore_mode(igeomfile, was_in_define_mode)
-      
+
    end subroutine write_face_global_number_variable
 
 !> Creates and initializes mesh geometry that contains the 2D (layered) unstructured network and edge type array.
@@ -1797,7 +1797,7 @@ contains
       end if
 
       ! Taus file (contains taus at the bottom of computational cells)
-      if (jawave == 0 .or. flowWithoutWaves) then ! If jawave > 0, then taus is obtained from subroutine tauwave (taus = taucur + tauwave).
+      if (jawave == NO_WAVES .or. flowWithoutWaves) then ! If jawave > 0, then taus is obtained from subroutine tauwave (taus = taucur + tauwave).
          call gettaus(1, 2)
       else
          call gettauswave(jawaveswartdelwaq)

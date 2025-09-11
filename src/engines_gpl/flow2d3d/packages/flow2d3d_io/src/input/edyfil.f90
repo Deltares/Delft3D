@@ -3,7 +3,7 @@ subroutine edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
                 & dicuv     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -84,7 +84,6 @@ subroutine edyfil(lundia    ,error     ,filedy    ,fmttmp    ,nmax      , &
     integer           :: luntmp  ! Help var. for a unit number of an attribute file 
     integer           :: m       ! Help (loop) var. for M-index 
     integer           :: n       ! Help (loop) var. for N-index 
-    integer, external :: newlun
     character(300)    :: message
     real(fp), dimension(:,:), allocatable :: tmp   ! Temporary array containing dicuv/vicuv of entire domain 
 !

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,16 +43,15 @@ contains
    subroutine setwindstress()
       use precision, only: dp
       use m_setcdwcoefficient, only: setcdwcoefficient
-      use m_flowgeom, only: ln, lnx, snu, csu 
-      use m_flow, only: jamapwind, wind_stress_water_density_option, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
-          viskinair, ag, vonkarw, u1, ltop, v, jatem, jamapwindstress, kmx, ustw
-      use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, wx, wy, relativewind, &
-          jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
-      use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_af
+      use m_flowgeom, only: ln, lnx, snu, csu
+      use m_flow, only: jamapwind, rho_water_in_wind_stress, RHO_MEAN, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
+                        viskinair, ag, vonkarw, u1, ltop, v, jatem, jamapwindstress, kmx, ustw
+      use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, relativewind, jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
+      use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_area_fraction
 
       real(kind=dp) :: uwi, cdw, tuwi, roro, wxL, wyL, uL, vL, uxL, uyL, ust, ust2, tau, z0w, roa, row
-      real(kind=dp) :: local_ice_af
-      integer :: L, numwav, k 
+      real(kind=dp) :: local_ice_area_fraction
+      integer :: L, numwav, k
 
       windxav = 0d0
       windyav = 0d0
@@ -65,7 +64,7 @@ contains
                wy = 0d0
             end if
             do L = 1, lnx
-               if (wind_stress_water_density_option > 0) then
+               if (rho_water_in_wind_stress /= RHO_MEAN) then
                   k = ln(2, L)
                   wdsu(L) = (wdsu_x(L) * csu(L) + wdsu_y(L) * snu(L)) / rho(ktop(k))
                else
@@ -117,13 +116,13 @@ contains
                end if
                call setcdwcoefficient(uwi, cdw, L)
                if (ice_modify_winddrag /= ICE_WINDDRAG_NONE) then
-                  local_ice_af = 0.5d0 * (ice_af(ln(1, L)) + ice_af(ln(2, L)))
-                  cdw = fm_ice_drag_effect(local_ice_af, cdw)
+                  local_ice_area_fraction = 0.5d0 * (ice_area_fraction(ln(1, L)) + ice_area_fraction(ln(2, L)))
+                  cdw = fm_ice_drag_effect(local_ice_area_fraction, cdw)
                end if
                if (jatem == 5) then
                   cdwcof(L) = cdw
                end if
-               if (wind_stress_water_density_option > 0) then
+               if (rho_water_in_wind_stress /= RHO_MEAN) then
                   k = ln(2, L)
                   row = rho(ktop(k))
                end if

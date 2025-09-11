@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,10 +38,10 @@ contains
 
    subroutine DISPF2cir(X, Y, N, Rcx, Rcy, NCOL)
       use precision, only: dp
-      use m_fbox
-      use m_set_col
-      use m_movabs
-      use m_lnabs
+      use m_fbox, only: fbox
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
 
       integer :: i
       integer :: n

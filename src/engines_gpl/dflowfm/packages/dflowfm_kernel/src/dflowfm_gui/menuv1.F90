@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -72,11 +72,7 @@ contains
          OPTION(21) = 'Save network                  (*_net.nc)'
          OPTION(22) = 'Save network with cell info   (*_net.nc)'
          OPTION(23) = 'Save network for Google Earth    (*.kml)'
-#ifdef HAVE_TECPLOT
-         OPTION(24) = 'Save network for Tecplot         (*.plt)'
-#else
          OPTION(24) = 'Not available                           '
-#endif
          OPTION(25) = 'Save curvilinear grid            (*.grd)'
          OPTION(26) = 'Save polygon                     (*.pol)'
          OPTION(27) = 'Save splines                     (*.spl)'

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,8 +37,8 @@ module m_setisoscale2is1
 contains
 
    subroutine SETISOSCALE2IS1()
-      use m_depmax
-      use m_depmax2
+      use m_depmax, only: nv, vmax, vmin, dv, val
+      use m_depmax2, only: jaauto2, nv2, vmax2, vmin2, dv2, val2
       implicit none
 
       if (jaauto2 == 2) then

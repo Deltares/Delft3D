@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,9 +38,9 @@ contains
 
    subroutine ICTEXT(TEX, NX, NY, NCOL)
       use precision, only: dp
-      use unstruc_colors
-      use m_set_col
-      use m_draw_text
+      use unstruc_colors, only: x1, x2, iws, y2, y1, ihs
+      use m_set_col, only: setcol
+      use m_draw_text, only: drawtext
       implicit none
       integer :: l
       integer :: ncol

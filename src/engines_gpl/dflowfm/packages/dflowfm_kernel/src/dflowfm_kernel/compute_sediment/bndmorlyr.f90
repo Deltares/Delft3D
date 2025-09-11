@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,12 +46,13 @@ contains
       !    Function: - Apply bed composition boundary conditions
       !
    !!--declarations----------------------------------------------------------------
-      use precision
+      use precision, only: fp
+      use table_handles, only: gettabledata
       use bedcomposition_module, only: copybedcomp, setmfrac, setvfrac
       use m_flowtimes, only: julrefdat
-      use table_handles, only: handletype, gettabledata
-      use m_fm_erosed, only: bedbndtype, cmpbndtype
       use m_sediment, only: stmtype
+      use handles, only: handletype
+      use morphology_data_module, only: bedbndtype, cmpbndtype
       !
       ! The following list of pointer parameters is used to point inside the gdp structure
       !

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,14 +31,13 @@
 !
 
 module m_getrcir
-
+   use precision, only: dp
    implicit none
 
 contains
 
    real(kind=dp) function GETRCIR()
-      use precision, only: dp
-      use m_wearelt
+      use m_wearelt, only: rcir
 
       GETRCIR = RCIR
    end function GETRCIR

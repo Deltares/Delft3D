@@ -94,10 +94,6 @@ if (WIN32)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-    # Set the Tecplot path
-    set(tecplot_path ${checkout_src_root}/third_party_open/Tecplot/include)
-    message(STATUS "Tecplot set to ${tecplot_path}")
-
     if(intel_version EQUAL 23)
         set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
     else()
@@ -193,7 +189,6 @@ endif(CMAKE_GENERATOR MATCHES "Visual Studio")
 set(all_configuration "ALL")
 set(dflowfm_configuration "DFLOWFM")
 set(dflowfm_configuration_interacter "DFLOWFM_INTERACTER")
-set(tests_configuration "TESTS")
 set(dimr_configuration "DIMR")
 set(dwaq_configuration "DWAQ")
 set(dwaves_configuration "DWAVES")
@@ -208,6 +203,7 @@ set(fbc_configuration "FBC")
 # Combined (multi-component) configurations for running specific testbenches
 # These are equivalent to our branch-prefixes
 set(testbench-all_configuration "ALL-TESTBENCH")
+set(testbench-none_configuration "NONE-TESTBENCH")
 set(testbench-fm_configuration "FM-TESTBENCH")
 set(testbench-d3d4_configuration "D3D4-TESTBENCH")
 set(testbench-rr_configuration "RR-TESTBENCH")
@@ -223,8 +219,7 @@ set(fm-suite_configuration "FM-SUITE")
 set(d3d4-suite_configuration "D3D4-SUITE")
 
 # Determine the configuration to make
-if(NOT (${configuration_type} STREQUAL ${tests_configuration}
-     OR ${configuration_type} STREQUAL ${dflowfm_configuration}
+if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
      OR ${configuration_type} STREQUAL ${dflowfm_configuration_interacter}
      OR ${configuration_type} STREQUAL ${dimr_configuration}
      OR ${configuration_type} STREQUAL ${dwaq_configuration}
@@ -238,8 +233,9 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
      OR ${configuration_type} STREQUAL ${fbc_configuration}
      OR ${configuration_type} STREQUAL ${fm-suite_configuration}
      OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
-     OR ${configuration_type} STREQUAL ${testbench-all_configuration}
      OR ${configuration_type} STREQUAL ${all_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-all_configuration}
+     OR ${configuration_type} STREQUAL ${testbench-none_configuration}
      OR ${configuration_type} STREQUAL ${testbench-fm_configuration}
      OR ${configuration_type} STREQUAL ${testbench-d3d4_configuration}
      OR ${configuration_type} STREQUAL ${testbench-rr_configuration}
@@ -252,12 +248,6 @@ if(NOT (${configuration_type} STREQUAL ${tests_configuration}
 endif()
 
 ### Component configurations
-
-# Tests configuration
-if(${configuration_type} STREQUAL ${tests_configuration})
-    message(STATUS "Generating solution for Tests ...")
-    include(configurations/components/tests_configuration.cmake)
-endif()
 
 # D-Flow FM configuration
 if(${configuration_type} STREQUAL ${dflowfm_configuration})
@@ -340,6 +330,12 @@ if(${configuration_type} STREQUAL ${testbench-all_configuration} OR ${configurat
     include(configurations/testbench/all_configuration.cmake)
 endif()
 
+# NONE configuration
+if(${configuration_type} STREQUAL ${testbench-none_configuration})
+    message(STATUS "Generating solution for none testbenches ...")
+    include(configurations/testbench/waq_configuration.cmake)
+endif()
+
 # D3D4 configuration
 if(${configuration_type} STREQUAL ${testbench-d3d4_configuration})
     message(STATUS "Generating solution for d3d4 testbench ...")
@@ -379,7 +375,7 @@ endif()
 # QUICKPLOT configuration
 if(${configuration_type} STREQUAL ${testbench-qp_configuration})
     message(STATUS "Generating solution for QUICKPLOT testbench ...")
-    include(configurations/testbench/qp_configuration.cmake)
+    include(configurations/testbench/waq_configuration.cmake)
 endif()
 
 ### Composed configurations for releases

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ contains
 
    subroutine ISOFILb(X, Y, Z, n4, NCOLR) ! as isofil, now for depmax2
       use precision, only: dp
-      use m_isofil_color
+      use m_isofil_color, only: isofil_color
       use m_depmax2, only: val => val2, ncols => ncols2, nv => nv2
 
       integer :: n4, ncolr

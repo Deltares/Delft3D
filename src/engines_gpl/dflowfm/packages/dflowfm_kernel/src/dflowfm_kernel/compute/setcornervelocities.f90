@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,12 +43,10 @@ contains
 !> set corner related velocity x- and y components
    subroutine setcornervelocities()
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
-      use m_sferic
-      use m_get_Lbot_Ltop
-      use m_lin2corx, only: lin2corx
-      use m_lin2cory, only: lin2cory
+      use m_flow, only: kmx, jacomp, ucx, ucy, jased, ustbc, ustb, kbotc, kmxc
+      use m_flowgeom, only: ucnx, ucny, lnx1d, lnx, ln, lncn, wcnx3, wcny3, wcnx4, wcny4, mxban, nban, banf, ban, nrcnw, cscnw, sncnw, kcnw, kcu, wcln
+      use m_sferic, only: jasfer3d
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
 

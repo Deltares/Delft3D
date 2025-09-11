@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,33 +43,36 @@ contains
 
    subroutine fill_valobs()
       use precision, only: dp
-      use m_linkstocentercartcomp
-      use m_flow
-      use m_flowtimes
-      use m_transport
+      use m_linkstocentercartcomp, only: linkstocentercartcomp
+      use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, jahistaucurrent, jahisvelocity, jahisvelvec, ucmag, jaeulervel, &
+                        flowwithoutwaves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, jahistur, javiusp, viclu, viusp, &
+                        vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, jatem, jahisrho, &
+                        potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
+                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
+                        rich, jahisrain, jahis_airdensity, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
+                        jahisinfilt, infiltcap, infilt, jahisheatflux, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
+                        use_density
+      use m_flowtimes, only: handle_extra
+      use m_transport, only: constituents, isalt, itemp, itra1, ised1
+      use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
+      use m_observations_data, only : valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, ipnt_wx, ipnt_wy, ipnt_patm, ipnt_waver, ipnt_waveh, ipnt_wavet, ipnt_waved, ipnt_wavel, ipnt_waveu, ipnt_taux, ipnt_tauy, ival_sbcx1, ival_sbcxn, ipnt_sbcx1, ival_sbcy1, ival_sbcyn, ipnt_sbcy1, ival_sscx1, ival_sscxn, ipnt_sscx1, ival_sscy1, ival_sscyn, ipnt_sscy1, ival_sbwx1, ival_sbwxn, ipnt_sbwx1, ival_sbwy1, ival_sbwyn, ipnt_sbwy1, ival_sswx1, ival_sswxn, ipnt_sswx1, ival_sswy1, ival_sswyn, ipnt_sswy1, ipnt_taub, ival_bodsed1, ival_bodsedn, ipnt_bodsed1, ipnt_dpsed, ival_msed1, ival_msedn, ipnt_msed1, ival_lyrfrac1, ival_lyrfracn, ipnt_lyrfrac1, ipnt_poros, ipnt_thlyr, ival_frac1, ival_fracn, ipnt_frac1, ipnt_mudfrac, ipnt_sandfrac, ival_mfluff1, ival_mfluffn, ipnt_mfluff1, ival_fixfac1, ival_fixfacn, ipnt_fixfac1, ival_hidexp1, ival_hidexpn, ipnt_hidexp1, ival_sour1, ival_sourn, ipnt_sour1, ival_sink1, ival_sinkn, ipnt_sink1, ival_wqb1, ival_wqbn, ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipnt_zcs, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, ipnt_tem1, ipnt_viu, ipnt_rhop, ipnt_rho, ipnt_umag, ipnt_qmag, ival_tra1, ival_tran, ipnt_tra1, ival_hwq1, ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot
+      use m_sediment, only: jahissigwav, stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
+      use Timers, only: timon, timstrt, timstop
+      use m_gettaus, only: gettaus
+      use m_gettauswave, only: gettauswave
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getlbotltop
+      use m_get_Lbot_Ltop_max, only: getlbotltopmax
+      use m_get_layer_indices, only: getlayerindices
+      use m_get_layer_indices_l_max, only: getlayerindiceslmax
+      use m_reconstruct_ucz, only: reconstructucz
+      use m_get_ucx_ucy_eul_mag, only: getucxucyeulmag
+      use m_get_link1, only: getlink1
       use m_fm_wq_processes, only: kbx, wqbot, waqoutputs
-      use m_flowgeom
-      use m_observations_data
-      use m_sediment
-      use m_waves, only: hwav, twav, phiwav, rlabda, uorb, ustokes
       use m_xbeach_data, only: R
-      use m_ship
-      use Timers
-      use m_alloc
       use fm_statistical_output, only: model_is_3d
-      use m_gettaus
-      use m_gettauswave
-      use m_get_kbot_ktop
-      use m_get_Lbot_Ltop
-      use m_get_Lbot_Ltop_max
-      use m_get_layer_indices
-      use m_get_layer_indices_l_max
-      use m_reconstruct_ucz
-      use m_get_ucx_ucy_eul_mag
-      use m_get_link1
       use m_links_to_centers, only: links_to_centers
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness
-      use m_turbulence, only: in_situ_density, potential_density, rich, richs
 
       implicit none
 
@@ -96,7 +99,7 @@ contains
          call realloc(ueuy, ndkx, keepExisting=.false., fill=0.0_dp)
       end if
       !
-      if (jawave > 0) then
+      if (jawave > NO_WAVES) then
          if (jahissigwav == 0) then
             wavfac = 1.0_dp
          else
@@ -114,7 +117,7 @@ contains
       end if
 
       if (jahistaucurrent > 0) then
-         if ((jawave == 0 .or. flowWithoutWaves)) then
+         if ((jawave == NO_WAVES .or. flowWithoutWaves)) then
             ! fill taus
             call gettaus(1, 1)
 
@@ -192,7 +195,7 @@ contains
                nlayb = 1
             end if
 
-            if (jawave > 0 .and. .not. flowWithoutWaves) then
+            if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
                wa = 0.0_dp
                call linkstocentercartcomp(k, ustokes, wa) ! wa now 2*1 value or 2*1 vertical slice
             end if
@@ -223,15 +226,17 @@ contains
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                end do
             end if
-            if (air_pressure_available > 0 .and. allocated(air_pressure)) then
+            if (air_pressure_available .and. allocated(air_pressure)) then
                valobs(i, IPNT_PATM) = air_pressure(k)
             end if
 
-            if (jawave == 4 .and. allocated(R)) then
+            if (jawave == WAVE_SURFBEAT .and. allocated(R)) then
                valobs(i, IPNT_WAVER) = R(k)
             end if
+            
+            call collect_ice_values(valobs, i, k)
 
-            if (jawave > 0 .and. allocated(hwav)) then
+            if (jawave > NO_WAVES .and. allocated(hwav)) then
                valobs(i, IPNT_WAVEH) = hwav(k) * wavfac
                valobs(i, IPNT_WAVET) = twav(k)
                if (.not. flowWithoutWaves) then
@@ -263,7 +268,7 @@ contains
                   ii = j - IVAL_SSCY1 + 1
                   valobs(i, IPNT_SSCY1 + ii - 1) = sedtra%sscy(k, ii)
                end do
-               if (jawave > 0 .and. .not. flowWithoutWaves) then
+               if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
                   do j = IVAL_SBWX1, IVAL_SBWXN
                      ii = j - IVAL_SBWX1 + 1
                      valobs(i, IPNT_SBWX1 + ii - 1) = sedtra%sbwx(k, ii)
@@ -388,7 +393,7 @@ contains
                   valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
                end if
 
-               if (jawave > 0 .and. .not. flowWithoutWaves) then
+               if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
                   if (hs(k) > epshu) then
                      if (kmx == 0) then
                         kk_const = 1
@@ -412,7 +417,7 @@ contains
                if (jahistur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
-               if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+               if (use_density() .and. jahisrho > 0) then
                   valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
                   if (apply_thermobaricity) then
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
@@ -479,11 +484,11 @@ contains
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
                   end if
-                  if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+                  if (use_density() .and. jahisrho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
                         valobs(i, IPNT_BRUV + klay - 1) = drhodz(kk) * brunt_vaisala_coefficient
+                        end if
                      end if
-                  end if
                   if (idensform > 0 .and. jaRichardsononoutput > 0) then
                      valobs(i, IPNT_RICHS + klay - 1) = richs(kk)
                   end if
@@ -582,7 +587,47 @@ contains
       end if
 
       if (timon) call timstop(handle_extra(55))
-      return
    end subroutine fill_valobs
+   
+   !> Support routine to collect the values of the ice quantities at the observation stations
+   subroutine collect_ice_values(valobs, i, k)
+      use precision, only: dp
+      use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, fm_is_allocated_ice
+      use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature
+      use m_observations_data, only: IPNT_ICE_S1, IPNT_ICE_ZMIN, IPNT_ICE_ZMAX, &
+         IPNT_ICE_AREA_FRACTION, IPNT_ICE_THICKNESS, IPNT_ICE_PRESSURE, IPNT_ICE_TEMPERATURE, &
+         IPNT_SNOW_THICKNESS, IPNT_SNOW_TEMPERATURE
+      
+      real(kind=dp), dimension(:,:), intent(inout) :: valobs !< values at observations stations
+      integer, intent(in) :: i !< index of the observation station
+      integer, intent(in) :: k !< face index associated with the observation station
+      
+      if (ja_icecover == ICECOVER_NONE .or. .not. fm_is_allocated_ice()) return
+
+      call conditional_assign(valobs, i, IPNT_ICE_S1, ice_s1, k)
+      call conditional_assign(valobs, i, IPNT_ICE_ZMIN, ice_zmin, k)
+      call conditional_assign(valobs, i, IPNT_ICE_ZMAX, ice_zmax, k)
+      call conditional_assign(valobs, i, IPNT_ICE_AREA_FRACTION, ice_area_fraction, k)
+      call conditional_assign(valobs, i, IPNT_ICE_THICKNESS, ice_thickness, k)
+      call conditional_assign(valobs, i, IPNT_ICE_PRESSURE, ice_pressure, k)
+      call conditional_assign(valobs, i, IPNT_ICE_TEMPERATURE, ice_temperature, k)
+      call conditional_assign(valobs, i, IPNT_SNOW_THICKNESS, snow_thickness, k)
+      call conditional_assign(valobs, i, IPNT_SNOW_TEMPERATURE, snow_temperature, k)
+   end subroutine collect_ice_values
+   
+   !> Support routine to conditionally assign values to the target variable
+   subroutine conditional_assign(valobs, i, ipnt, array, k)
+      use precision, only: dp, fp
+      
+      real(kind=dp), dimension(:,:), intent(inout) :: valobs !< values at observations stations
+      integer, intent(in) :: i !< index of the observation station
+      integer, intent(in) :: ipnt !< pointer index in valobs
+      real(kind=fp), dimension(:), intent(in) :: array !< array from which to assign value
+      integer, intent(in) :: k !< face index associated with the observation station
+      
+      if (ipnt > 0) then
+         valobs(i, ipnt) = real(array(k), dp)
+      end if
+   end subroutine conditional_assign
 
 end module m_fill_valobs

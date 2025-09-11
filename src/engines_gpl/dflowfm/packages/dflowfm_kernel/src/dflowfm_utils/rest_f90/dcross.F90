@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,8 +42,8 @@ contains
 #endif
    subroutine dCROSS(X1, Y1, X2, Y2, X3, Y3, X4, Y4, JACROS, SL, SM, XCR, YCR, CRP) ! liggen 3 en 4 aan weerszijden van lijn 12
       use precision, only: dp
-      use m_sferic
-      use geometry_module, only: getdxdy, sphertoCart3D, Cart3Dtospher, crossinbox
+      use m_sferic, only: jsferic, jasfer3d
+      use geometry_module, only: sphertoCart3D, Cart3Dtospher, getdxdy
 
       real(kind=dp) :: det
       real(kind=dp) :: eps

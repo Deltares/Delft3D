@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,11 +42,8 @@ module m_update_geom
 contains
 
    subroutine update_geom(iphase)
-      use m_partitioninfo
-      use m_flowgeom
-      use unstruc_channel_flow
-      use m_crosssections
-      use m_cross_helper
+      use m_partitioninfo, only: update_ghosts, itype_sall, update_ghostboundvals
+      use m_flowgeom, only: ndx, xz, yz, bl
 
       integer, intent(in) :: iphase ! phase, 0 (all), 1 (first) or 2 (second)
       integer :: ierror

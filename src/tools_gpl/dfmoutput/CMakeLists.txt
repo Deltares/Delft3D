@@ -29,7 +29,7 @@ if (UNIX)
                          FLAP
                          netcdff)
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
                           ${oss_dependencies})
 endif(UNIX)
 
@@ -41,7 +41,7 @@ if (WIN32)
                          FLAP
                          netcdff)
 
-    target_link_libraries(${executable_name} ${oss_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 endif(WIN32)
 
 if(UNIX)
@@ -49,7 +49,7 @@ if(UNIX)
    set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 
       include_directories(${version_include_dir}
-					      ${res_path})
+                          ${res_path})
 endif(UNIX)
 
 if (WIN32)
@@ -59,12 +59,12 @@ endif(WIN32)
 set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-#target_link_libraries(${executable_name} netcdf)
+#target_link_libraries(${executable_name} PRIVATE netcdf)
 
 if (WIN32)
-    include_directories(${tecplot_path}
-						${version_include_dir}
-					    ${res_path})
+    include_directories(${version_include_dir}
+                        ${res_path}
+    )
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
@@ -73,9 +73,9 @@ if (WIN32)
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
-                            "${checkout_src_root}/third_party_open/Tecplot/lib/x64")
+    )
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
                           "comctl32.lib"
                           "wsock32.lib"
                           "netapi32.lib"
@@ -87,7 +87,7 @@ if (WIN32)
                           "netcdf.lib"
                           "pthreadVC2.lib"
                           "${mpi_fortran_library}"
-                          "tecio.lib")
+    )
 
     message(STATUS "Setting target_compile_definitions in windows")
     target_compile_definitions(${executable_name} PRIVATE "WIN32")

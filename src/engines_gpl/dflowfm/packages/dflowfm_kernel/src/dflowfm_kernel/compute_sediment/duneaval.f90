@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,11 +42,10 @@ contains
 
    subroutine duneaval(error)
       use precision, only: dp
-      use m_fm_erosed
-      use m_sediment
-      use m_flowgeom
-      use m_flow
-      use message_module
+      use m_fm_erosed, only: hswitch, wetslope, dryslope, e_dzdn, e_dzdt, avaltime, morfac, lsedtot, fixfac, frac, dzmaxdune, rhosol
+      use m_sediment, only: avalflux
+      use m_flowgeom, only: lnx, wu_mor, ln, acl, bl, dx, lnxi, ba
+      use m_flow, only: hs
 
       implicit none
 

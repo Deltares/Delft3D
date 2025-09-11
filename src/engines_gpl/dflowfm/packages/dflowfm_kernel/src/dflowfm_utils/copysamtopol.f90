@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ contains
 
    subroutine copysamtopol()
 
-      use M_SAMPLES
+      use M_SAMPLES, only: ns, xs, ys, zs
       use m_missing, only: dmiss, JINS
       use m_polygon, only: NPL, xpl, ypl, zpl, increasepol, savepol
       use geometry_module, only: dbpinpol

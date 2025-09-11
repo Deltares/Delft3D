@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -53,10 +53,10 @@ contains
         implicit none
 
         real(kind = real_wp) :: process_space_real  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(2), increm(2), num_cells, noflux
+        integer(kind = int_wp) :: ipoint(3), increm(3), num_cells, noflux
         integer(kind = int_wp) :: iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        integer(kind = int_wp) :: ip (2)
+        integer(kind = int_wp) :: ip (3)
         integer(kind = int_wp) :: iseg
         integer(kind = int_wp) :: idx
         integer(kind = int_wp) :: attrib
@@ -64,14 +64,14 @@ contains
         ip = ipoint
 
         do iseg = 1, num_cells
-            idx = process_space_real(ip(1))
+            idx = nint(process_space_real(ip(1)))
             if (idx==0) then
                 attrib = iknmrk(iseg)
             else
                 call extract_waq_attribute(idx, iknmrk(iseg), attrib)
             endif
             ! Store the value
-            process_space_real(ip(2)) = attrib
+            process_space_real(ip(3)) = attrib
 
             ! Next segment
             ip = ip + increm

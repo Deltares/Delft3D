@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -76,6 +76,7 @@
                   if ( hyd%tem_present ) hyd%tem(iseg) = domain_hyd%tem(iseg_domain)
                   if ( hyd%tau_present ) hyd%tau(iseg) = domain_hyd%tau(iseg_domain)
                   if ( hyd%vdf_present ) hyd%vdf(iseg) = domain_hyd%vdf(iseg_domain)
+                  if ( hyd%vel_present ) hyd%vel(iseg) = domain_hyd%vel(iseg_domain)
                   if ( ilay .ne. num_layers ) then
                      iq_domain = domain_hyd%num_exchanges_u_dir + iseg_domain
                      iq_glob   = hyd%num_exchanges_u_dir        + iseg

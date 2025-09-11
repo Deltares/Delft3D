@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,8 +38,7 @@ contains
 
    subroutine QNMESSAGE(TEX)
       use unstruc_display_data, only: npos
-      use unstruc_colors
-      use m_devices, only: iws, ihs
+      use unstruc_colors, only: iws, ihs, hlpfor, hlpbck
       use messagehandling, only: msgbuf, msg_flush
 
       integer :: ih

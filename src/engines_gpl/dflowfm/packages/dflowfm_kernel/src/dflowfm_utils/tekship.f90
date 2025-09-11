@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,13 +41,13 @@ contains
 
    subroutine tekship()
       use precision, only: dp
-      use m_ship
-      use m_set_col
-      use m_movabs
-      use m_lnabs
-      use m_slnabs
-      use m_smovabs
-      use m_shtext
+      use m_ship, only: iniship, nshiptxy, shi, fx2, fy2, fm2, shl, fricx, fricy, fricm, stuwx, stuwy, stuwm, shu, shv, sho, shx, shy, shb, roer
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+      use m_slnabs, only: slnabs
+      use m_smovabs, only: smovabs
+      use m_shtext, only: shtext
 
       real(kind=dp) :: sx2, sy2, css, sns, rr, cr, sr, snum
       integer :: n

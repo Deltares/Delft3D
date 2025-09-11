@@ -4,8 +4,8 @@ rem At present, this runscript will only work after having executed the followin
 rem build.bat all
 rem See README.md there for more information
 
-set build_configuration=build_all
-set script_path=..\..\..\%build_configuration%\x64\dwaq\scripts
+set build_configuration=install_waq
+set script_path=..\..\..\%build_configuration%\bin
 call %script_path%\run_delwaq.bat com-tut_fti_waq.inp
 
 

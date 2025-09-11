@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -302,7 +302,7 @@ contains
    subroutine read_dem_data(fp, dem_info, arr)
       use precision, only: dp
       use messagehandling, only: msgbuf, msg_flush
-      use m_readyy
+      use m_readyy, only: readyy
       integer, intent(in) :: fp
       type(DEMInfo), intent(inout) :: dem_info
       integer, intent(out) :: arr(:, :)

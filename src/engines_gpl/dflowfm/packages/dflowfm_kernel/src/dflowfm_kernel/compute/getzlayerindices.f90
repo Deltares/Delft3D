@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,7 +36,7 @@ contains
    subroutine getzlayerindices(n, nlayb, nrlay)
       use precision, only: dp
       use m_flowgeom, only: bl
-      use m_flow
+      use m_flow, only: laydefnr, laymx, keepzlayeringatbed, keepzlay1bedvol, nlaybn, zslay, numtopsig, janumtopsiguniform, nrlayn
 
       integer, intent(in) :: n !< Flow node/grid cell number
       integer, intent(out) :: nlayb !< Layer number for the bottom layer (in 1:kmx)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
    subroutine comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
       use precision, only: dp
       use m_flowgeom, only: Lnx, Ln ! static mesh information
-      use timers
+      use timers, only: timon, timstrt, timstop
 
       implicit none
 

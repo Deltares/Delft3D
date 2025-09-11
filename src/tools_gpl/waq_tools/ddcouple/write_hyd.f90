@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -123,6 +123,11 @@
          write(lunhyd,'(a,'' '''''',a,'''''''')') vert_diffusion_file, trim(hyd%file_vdf%name)
       else
          write(lunhyd,'(a,'' '''''',a,'''''''')') vert_diffusion_file, 'none'
+      endif
+      if ( hyd%vel_present ) then
+         write(lunhyd,'(a,'' '''''',a,'''''''')') velocities_file, trim(hyd%file_vel%name)
+      else
+         write(lunhyd,'(a,'' '''''',a,'''''''')') velocities_file, 'none'
       endif
       write(lunhyd,'(a,'' '''''',a,'''''''')') surfaces_file, trim(hyd%file_srf%name)
       write(lunhyd,'(a,'' '''''',a,'''''''')') total_grid_file, trim(hyd%file_lgt%name)

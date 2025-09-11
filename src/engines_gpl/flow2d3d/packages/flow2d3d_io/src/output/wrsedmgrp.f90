@@ -4,7 +4,7 @@ subroutine wrsedmgrp(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
                    & mf        ,ml        ,nf        ,nl        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -64,6 +64,7 @@ subroutine wrsedmgrp(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
     integer                         , pointer :: celidt
     type (datagroup)                , pointer :: group4
     type (datagroup)                , pointer :: group5
+    type (moroutputtype)            , pointer :: moroutput
     real(hp)                        , pointer :: morft
     real(fp)                        , pointer :: morfac
     integer                         , pointer :: nmaxgl
@@ -114,6 +115,7 @@ subroutine wrsedmgrp(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
     nmaxgl         => gdp%gdparall%nmaxgl
     morft          => gdp%gdmorpar%morft
     morfac         => gdp%gdmorpar%morfac
+    moroutput      => gdp%gdmorpar%moroutput
     lfbedfrmout    => gdp%gdbedformpar%lfbedfrmout
     sbuu           => gdp%gdr_i_ch%sbuu
     sbvv           => gdp%gdr_i_ch%sbvv
@@ -138,9 +140,12 @@ subroutine wrsedmgrp(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
           call addelm(gdp, lundia, FILOUT_MAP, grnam4, 'ITMAPS', ' ', IO_INT4    , 0, longname='timestep number (ITMAPC*DT*TUNIT := time in sec from ITDATE)')
        endif
        if (lsedtot > 0) then
-          call addelm(gdp, lundia, FILOUT_MAP, grnam4, 'MORFAC', ' ', io_prec , 0, longname='morphological acceleration factor (MORFAC)')
+          if (moroutput%morfac) then
+            call addelm(gdp, lundia, FILOUT_MAP, grnam4, 'MORFAC', ' ', io_prec , 0, longname='morphological acceleration factor (MORFAC)')
+          endif
+          
           call addelm(gdp, lundia, FILOUT_MAP, grnam4, 'MORFT' , ' ', IO_REAL8, 0, longname='morphological time (days since start of simulation)', unit='days')
-       endif
+       end if
        !
        group4%grp_dim = iddim_time
        group5%grp_dim = iddim_time
@@ -160,14 +165,17 @@ subroutine wrsedmgrp(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
        endif
        !
        if (lsedtot > 0) then
+          if (moroutput%morfac) then
+             call wrtvar(fds, filename, filetype, grnam4, celidt, &
+                       & gdp, ierror, lundia, morfac, 'MORFAC')
+             if (ierror/=0) goto 9999
+          end if
+
           call wrtvar(fds, filename, filetype, grnam4, celidt, &
-                    & gdp, ierror, lundia, morfac, 'MORFAC')
-          if (ierror/=0) goto 9999
-          !
-          call wrtvar(fds, filename, filetype, grnam4, celidt, &
-                    & gdp, ierror, lundia, morft, 'MORFT')
+                  & gdp, ierror, lundia, morft, 'MORFT')
           if (ierror/=0) goto 9999
        endif
+
        !
     end select
     !

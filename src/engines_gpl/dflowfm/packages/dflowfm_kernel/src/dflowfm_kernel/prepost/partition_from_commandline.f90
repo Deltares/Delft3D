@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -86,7 +86,7 @@ contains
       netstat = NETSTAT_OK
 
       call delete_dry_points_and_areas()
-      
+
       if (nump1d2d < 1) return
 
       call cosphiunetcheck(1)

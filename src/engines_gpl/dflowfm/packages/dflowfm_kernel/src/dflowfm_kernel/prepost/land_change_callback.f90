@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -59,7 +59,7 @@ contains
       volerr = 0; volerrcum = 0
 
       if (kmx > 0) then
-         call setkbotktop(1) ! dropland_zk
+         call set_kbot_ktop(jazws0=1) ! dropland_zk
       end if
    end subroutine land_change_callback
 

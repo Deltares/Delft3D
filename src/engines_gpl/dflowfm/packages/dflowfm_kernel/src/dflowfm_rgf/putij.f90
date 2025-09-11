@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,15 +35,15 @@ contains
    subroutine PUTIJ(X, XH, MMAX, NMAX, MNMAX, I1, I2, J1, J2)
       use precision, only: dp
       integer :: i
-      integer :: i1
-      integer :: i2
+      integer, intent(in) :: i1
+      integer, intent(in) :: i2
       integer :: j
-      integer :: j1
-      integer :: j2
+      integer, intent(in) :: j1
+      integer, intent(in) :: j2
       integer :: k
-      integer :: mmax
-      integer :: mnmax
-      integer :: nmax
+      integer, intent(in) :: mmax
+      integer, intent(in) :: mnmax
+      integer, intent(in) :: nmax
 !     EN ZET HEM WEER TERUG
 
       real(kind=dp) :: X(MMAX, NMAX), XH(MNMAX)

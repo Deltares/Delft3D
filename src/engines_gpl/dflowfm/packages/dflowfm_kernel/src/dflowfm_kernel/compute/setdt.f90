@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,6 +36,7 @@ module m_setdt
    use m_xbeachwaves, only: xbeach_wave_maxtimestep
    use m_fm_mor_maxtimestep, only: fm_mor_maxtimestep
    use m_setdtmaxavalan, only: setdtmaxavalan
+   use m_waveconst
 
    implicit none
 
@@ -74,7 +75,7 @@ contains
          end if
       end if
 
-      if (jawave == 4 .and. swave == 1) then
+      if (jawave == WAVE_SURFBEAT .and. swave == 1) then
          if (.not. (trim(instat) == 'stat' .or. trim(instat) == 'stat_table')) then
             call xbeach_wave_maxtimestep()
          end if

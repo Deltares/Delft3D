@@ -176,14 +176,21 @@ if (WIN32)
         target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
-    target_link_libraries(${library_name} PRIVATE petsc)
+    target_link_directories(${library_name} PUBLIC
+                                "${mpi_library_path}"
+                                "${petsc_libdir}"
+    )
+
+    target_link_libraries(${library_name} PUBLIC
+                            "${mpi_fortran_library}"
+                            petsc
+    )
 
     include_directories(${petsc_path})
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${mpi_module_path}
-                        ${tecplot_path}
                         ${version_include_dir}
                         ${dflowfm_version_path}
                         ${dflowfm_version_header_path})
@@ -203,7 +210,6 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/read_commandline.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/write_some_final_output.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/wrwaq.F90
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/tecplot.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/unc_write_his.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/unc_write_shp.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_path}/filter.F90
@@ -241,9 +247,9 @@ if (WIN32)
     set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1
-        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_TECPLOT;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
+        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
     else()
-        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_TECPLOT;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=0")
+        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=0")
     endif()
 
     add_warnings_as_errors_post_build_windows(${library_name})
@@ -256,3 +262,5 @@ endif(UNIX)
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${library_source_list})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/dflowfm)
+
+add_subdirectory(test)

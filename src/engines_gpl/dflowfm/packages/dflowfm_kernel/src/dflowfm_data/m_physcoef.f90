@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -34,14 +34,15 @@
 
 module m_physcoef
    use precision, only: dp
-
+   use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
+   use m_array_or_scalar, only: t_array_or_scalar
    implicit none
 
    real(kind=dp) :: ag !< gravitational acceleration (m/s2)
    real(kind=dp) :: sag !< sqrt(ag)
    integer :: jahelmert = 0 !< 1=use Helmerts equation for agp only
    real(kind=dp) :: vonkar !< von Karman constant ()
-   real(kind=dp) :: vonkarw !< von Karman constant used in wind formulations, on Firmijns request ()
+   real(kind=dp) :: vonkarw !< von Karman constant used in wind formulations
    real(kind=dp) :: frcuni !< uniform friction coeff 2D
    real(kind=dp) :: frcuni1D !< uniform friction coeff 1D
    real(kind=dp) :: frcuni1D2D !< uniform friction coeff 1D2D
@@ -67,8 +68,9 @@ module m_physcoef
    real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
    real(kind=dp) :: viuchk !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
 
-   real(kind=dp) :: vicoww !< user specified constant vertical   eddy viscosity  (m2/s)
-   real(kind=dp) :: dicoww !< user specified constant vertical   eddy diffusivity(m2/s)
+   real(kind=dp) :: vicoww !< user specified constant vertical eddy viscosity (m2/s)
+   real(kind=dp) :: constant_dicoww !< user specified constant vertical eddy diffusivity (m2/s)
+   class(t_array_or_scalar), allocatable, target :: dicoww !< abstract class instance for dicoww, either scalar or array depending on user input
 
    real(kind=dp) :: rhomean !< mean ambient density (kg/m3)
    real(kind=dp) :: rhog !< rhomean*g
@@ -97,22 +99,15 @@ module m_physcoef
    real(kind=dp) :: secchidepth2fraction !< (m) fraction of total absorbed by profile 2
    real(kind=dp) :: zab(2), sfr(2) !< help variables
 
-   integer :: idensform !< 0 = Uniform density, 1 = Eckart, 2 = UNESCO, 3 = UNESCO83
-   logical :: apply_thermobaricity !< Check if density is pressure dependent
-   logical :: thermobaricity_in_pressure_gradient !< Apply thermobaricity in computing the baroclinic pressure gradient
-   integer :: max_iterations_pressure_density = 1 !< max nr of density-pressure iterations
-   integer :: rhointerfaces = 0 !< Evaluate rho at interfaces: 0 = linear interpolation, 1 = recompute from salinity and temperature, 2 = use cell density
-   integer :: Jabarocponbnd = 1 !< baroclini pressure on open boundaries yes/no
-
    integer :: limiterhordif !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
    real(kind=dp) :: Stanton !< coeff for convective  heat flux, if negative , take wind Cd
    real(kind=dp) :: Dalton !< coeff for evaporative heat flux, if negative , take wind Cd
-   real(kind=dp) :: Tempmax = -999.0_dp !< limit
-   real(kind=dp) :: Tempmin = 0.0_dp !< limit
-   integer :: Jaallowcoolingbelowzero = 0 !< Allow cooling below 0 degrees C (0=default since 2017)
-   real(kind=dp) :: Salimax = -999.0_dp !< limit
-   real(kind=dp) :: Salimin = 0.0_dp !< limit
+   real(kind=dp) :: temperature_max = -999.0_dp !< upper temperature limit
+   real(kind=dp) :: temperature_min = 0.0_dp !< lower temperature limit
+   logical :: use_salinity_freezing_point = .false. !< a flag to use a salinity dependent freezing point
+   real(kind=dp) :: salinity_max = -999.0_dp !< upper salinity limit
+   real(kind=dp) :: salinity_min = 0.0_dp !< lower salinity limit
    real(kind=dp) :: epshstem = 0.001_dp !< only compute heatflx + evap if depth > trsh
    real(kind=dp) :: surftempsmofac = 0.0_dp !< surface temperature smoothing factor (0 - 10^5)
    real(kind=dp) :: Soiltempthick = 0.0_dp !< if soil buffer desired make thick > 0, e.g. 0.2 m
@@ -128,7 +123,9 @@ module m_physcoef
    real(kind=dp) :: locsaltmax !< maximum salinity for case of lock exchange
 
    integer :: NFEntrainmentMomentum = 0 !< 1: switched on: Momentum transfer in NearField related entrainment
+
 contains
+
 !> Sets all variables in this module to their default values.
    subroutine default_physcoef()
       ag = 9.81_dp
@@ -149,7 +146,7 @@ contains
       Smagorinsky = 0.2_dp
       viuchk = 0.24_dp
       vicoww = 1e-6_dp
-      dicoww = 1e-6_dp
+      constant_dicoww = 1e-6_dp
       rhomean = 1000.0_dp
       c9of1 = 9.0_dp
       backgroundwatertemperature = 20.0_dp
@@ -173,12 +170,12 @@ contains
       tetav = 0.55_dp
       tetavkeps = 0.55_dp
       tetavmom = 0.55_dp
-      locsaltlev = 1.0_dp 
+      locsaltlev = 1.0_dp
       locsaltmin = 5.0_dp
       locsaltmax = 10.0_dp
       NFEntrainmentMomentum = 0
    end subroutine default_physcoef
-   
+
    !> Calculates derived coefficients.
    subroutine calculate_derived_physcoef()
       sag = sqrt(ag)

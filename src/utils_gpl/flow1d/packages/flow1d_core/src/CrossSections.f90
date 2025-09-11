@@ -2,7 +2,7 @@
 module m_CrossSections
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU Affero General Public License as
@@ -1009,7 +1009,7 @@ contains
          tempset%cross(ics) = crs%cross(crsIndices(ics))
          crs%crossSectionIndex(crsIndices(ics)) = ics
       end do
-      crs%cross(:) = tempset%cross(:) !copy temp array to real array
+      crs%cross(1:crsCount) = tempset%cross(1:crsCount) !copy temp array to real array
 
       !ENABLE THIS LOOP TO DEBUG SORTED BRANCH ORDERS IN CASE OF PROBLEMS IN USEBRANCHORDERSCRS
       !do ics = 1, crsCount

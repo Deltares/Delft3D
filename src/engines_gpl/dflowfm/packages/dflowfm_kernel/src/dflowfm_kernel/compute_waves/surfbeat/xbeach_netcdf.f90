@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,6 +35,8 @@ module m_xbeach_netcdf
    use io_ugrid
    use netcdf
    use unstruc_netcdf
+   use m_waveconst
+
    implicit none
 
    type t_unc_wavids
@@ -145,7 +147,7 @@ contains
       integer :: ierr
 
       ierr = 1
-      if ((jawave == 4) .and. (ti_wav > 0) .and. (jaavgwavquant == 1)) then
+      if ((jawave == WAVE_SURFBEAT) .and. (ti_wav > 0) .and. (jaavgwavquant == 1)) then
          if (comparereal(tim, time_wav, eps10) >= 0) then
             if (jamombal > 0) then
                call xbeach_mombalance()
@@ -184,7 +186,7 @@ contains
       integer :: ierr
       character(len=256) :: filnam
 
-      if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_NETCDF_AND_TECPLOT .or. md_mapformat == IFORMAT_UGRID) then !   NetCDF output
+      if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_UGRID) then !   NetCDF output
          if (wavids%ncid /= 0 .and. ((md_unc_conv == UNC_CONV_UGRID .and. wavids%id_tsp%idx_curtime == 0) .or. (md_unc_conv == UNC_CONV_CFOLD .and. it_wav == 0))) then
             ierr = unc_close(wavids%ncid)
             wavids%ncid = 0

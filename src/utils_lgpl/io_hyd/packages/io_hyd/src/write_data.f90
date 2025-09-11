@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2025.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@
 !     initialise file
 !
       num_local_vars  = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
-      call afile%open()
+      call afile%open(replace = .true.)
       lun    = afile%unit
       filtyp = afile%type
       filnam = afile%name

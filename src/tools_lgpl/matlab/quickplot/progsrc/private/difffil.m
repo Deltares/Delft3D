@@ -18,7 +18,7 @@ function varargout=difffil(FI,domain,field,cmd,varargin)
 
 %----- LGPL --------------------------------------------------------------------
 %                                                                               
-%   Copyright (C) 2011-2024 Stichting Deltares.                                     
+%   Copyright (C) 2011-2025 Stichting Deltares.                                     
 %                                                                               
 %   This library is free software; you can redistribute it and/or                
 %   modify it under the terms of the GNU Lesser General Public                   
@@ -612,6 +612,20 @@ else % limit the number of time steps to the number presented to the user
     TimeNr = {1:Props.Size(T_)};
 end
 [success,T] = qp_getdata(FI.Files(1),domain1,Props.Q1,'times',TimeNr{:});
+if ~success
+    error(lasterr)
+end
+% -----------------------------------------------------------------------------
+
+
+% -----------------------------------------------------------------------------
+function [TZshift,TZstr]=gettimezone(FI,domain,Props)
+if ~isfield(FI,'DiffDomain') || isempty(FI.DiffDomain)
+    domain1 = 1;
+else
+    domain1 = FI.DiffDomain(1);
+end
+[success,TZshift,TZstr] = qp_getdata(FI.Files(1),domain1,Props.Q1,'timezone');
 if ~success
     error(lasterr)
 end

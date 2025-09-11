@@ -22,7 +22,7 @@ title run_dflowfm
     rem Usage example:
     rem Execute in the working directory:
     rem path\to\delft3d\installation\x64\bin\run_dimr_parallel.bat
-    rem More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
+    rem More examples: check run scripts in https://github.com/Deltares/Delft3D/tree/main/examples/*
 
 
 
@@ -65,8 +65,8 @@ set libdir=%D3D_HOME%\lib
 
     rem Run
 set PATH=%sharedir%;%libdir%
-echo executing: "%exedir%dflowfm-cli.exe" --autostartstop %*
-                "%exedir%dflowfm-cli.exe" --autostartstop %*
+echo executing: "%exedir%dflowfm-cli.exe" %*
+                "%exedir%dflowfm-cli.exe" %*
 
 goto end
 

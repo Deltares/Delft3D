@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,7 +45,7 @@ contains
 
    subroutine inctime_split(tim)
       use precision, only: dp
-      use m_flowtimes
+      use m_flowtimes, only: ti_split, time_split, time_split0, refdat, ti_split_unit
       use messagehandling, only: LEVEL_WARN, mess
       use m_date_time_from_ref_date, only: date_time_from_ref_date
 

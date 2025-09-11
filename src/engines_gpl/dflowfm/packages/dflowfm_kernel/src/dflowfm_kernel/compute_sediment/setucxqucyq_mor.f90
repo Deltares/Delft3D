@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,15 +44,15 @@ contains
       use precision, only: dp
       use m_fm_erosed, only: ucxq_mor, ucyq_mor, hs_mor, link1, link1sign, ndx_mor
       use m_flowgeom, only: ndx, lnx, lnxi, ln, nd, wcx1, wcx2, wcy1, wcy2, csu, snu, bl, lnx1D, kcs
-      use m_flow, only: hs, hu, zws, kmx, au, q1, lnkx, ndkx
+      use m_flow, only: hs, q1, au, kmx, hu, zws, lnkx, ndkx
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_flowparameters, only: jacstbnd, epshs, eps10, flow_solver, FLOW_SOLVER_FM
       use m_sediment, only: stmpar
       use m_turbulence, only: ln0
       use m_CrossSections, only: GetCSParsFlow
       use unstruc_channel_flow, only: network
       use m_f1dimp, only: f1dimppar
-      use m_get_kbot_ktop
-      use m_get_Lbot_Ltop
 
       implicit none
       real(kind=dp), dimension(lnkx), intent(in) :: u1

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,6 +31,7 @@
 !
 
 module m_wricom
+   use m_waveconst
 
    implicit none
 
@@ -63,13 +64,13 @@ contains
       ! Data did not appear during debugging
       ! This problem was solved by closing/opening the file everytime
       !
-      if (comids%ncid /= 0 .and. jawave == 3) then
+      if (comids%ncid /= 0 .and. jawave == WAVE_SWAN_ONLINE) then
          !
          ! Existing/ongoing communication via com file:
          ! com file already exists
          !
          ierr = nf90_open(filnam, NF90_WRITE, comids%ncid)
-      elseif (comids%ncid == 0 .and. jawave == 3) then
+      elseif (comids%ncid == 0 .and. jawave == WAVE_SWAN_ONLINE) then
          !
          ! No communication yet via com file:
          ! Check whether com file exists

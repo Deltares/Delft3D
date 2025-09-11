@@ -3,7 +3,7 @@ subroutine bchfil(lundia    ,error     ,filbch    ,fmttmp    ,ntof      , &
                 & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2025.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -77,7 +77,6 @@ subroutine bchfil(lundia    ,error     ,filbch    ,fmttmp    ,ntof      , &
     integer           :: lr132       ! Standard length of a record in the attribute file = 132 
     integer           :: luntmp      ! Help var. for a unit number of an attribute file 
     integer           :: n           ! Help var. 
-    integer, external :: newlun
     real(fp)          :: rdef        ! Help var. containing default va- lue(s) for real variable 
     character(300)    :: errmsg      ! Character var. containing the error message to be written to file. The message depend on the error. 
     character(132)    :: rec132      ! Standard rec. length in an attribute file (132) 

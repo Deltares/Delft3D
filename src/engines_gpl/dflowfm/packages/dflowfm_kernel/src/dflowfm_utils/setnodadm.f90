@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,13 +38,12 @@ contains
 !!   the flow1d::network administration, if they were also
 !!   removed from network_data in the first step.
    subroutine setnodadm(jacrosscheck_)
-      use gridoperations
-      use m_network
+      use gridoperations, only: setnodadm_grd_op
+      use m_network, only: msgbuf, warn_flush, update_flow1d_admin
       use m_save_ugrid_state, only: contactnlinks, contactnetlinks, netlink2contact, hashlist_contactids
       use unstruc_channel_flow, only: network
       use network_data, only: lc, numl1d, Lperminv, nlinkremoved
-      use m_alloc
-      use messagehandling, only: msgbuf
+      use m_alloc, only: realloc
 
       integer, intent(in) :: jacrosscheck_ !< Whether or not to remove any crossing netlinks.
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,12 +43,12 @@ contains
 
    subroutine delgrd(KEY, JASAVE, jadelpol)
 !    delete grid
-      use m_confrm
-      use m_grid
-      use m_missing
+      use m_confrm, only: confrm
+      use m_grid, only: xc, yc, mc, nc
+      use m_missing, only: dxymis, dmiss, jins, xymis
+      use m_delpol, only: delpol
       use m_polygon, only: NPL, xpl, ypl, zpl
       use geometry_module, only: dbpinpol
-      use m_delpol
 
       integer :: inhul, ja, i, j
       integer, intent(in) :: jasave, jadelpol

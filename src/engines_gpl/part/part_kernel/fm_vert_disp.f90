@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2025.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -220,7 +220,7 @@ contains
             rise = dvz < 0.0_dp
             sink = dvz > 0.0_dp
             neutral = dvz == 0_dp
-            dhpart = (dvz - vz) / h0(cellid)
+            dhpart = (dvz - vz) / (h0(cellid) + tiny(h0(cellid)))
             if (depthp <= 0.0) then
                 call  v_part_bounce(ipart, depthp, totdepth, dhpart, top_layer, bottom_layer)
             elseif (depthp >= totdepth) then

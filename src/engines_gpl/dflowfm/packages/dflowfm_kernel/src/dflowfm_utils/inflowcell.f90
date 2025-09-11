@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,12 +35,10 @@ contains
    subroutine inflowcell(xp, yp, k, jaoutside, iLocTp) ! is this point in a flowcell
       !FB TODO: this should be a function not a subroutine, return value (k) is not the last argument in list. booleans should be logical not integer.
       use precision, only: dp
-      use m_flowgeom
+      use m_flowgeom, only: ndxi, ndx2d, nd, xz, yz, dx
+      use m_flow, only: jins, dmiss, nbndz, kbndz
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
-      use m_flow
-      use fm_external_forcings_data
       use geometry_module, only: pinpok
-      use m_missing, only: jins, dmiss
 
       real(kind=dp), intent(in) :: xp, yp
       integer, intent(inout) :: k !return value, if flowcell is found k = cell index

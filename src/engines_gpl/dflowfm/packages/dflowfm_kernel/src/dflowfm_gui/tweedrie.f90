@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ contains
 
    subroutine TWEEDRIE(X, Y, XD, YD, ZD)
       use precision, only: dp
-      use m_howtoview
+      use m_howtoview, only: jview, xyz
       implicit none
       real(kind=dp) :: X, Y, XD, YD, ZD
 

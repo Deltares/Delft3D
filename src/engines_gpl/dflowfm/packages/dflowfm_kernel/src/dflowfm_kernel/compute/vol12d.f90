@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2025.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,9 +51,10 @@ contains
       use m_addlink1d, only: addlink1D
       use m_addclosed_2d_walls, only: addclosed_2D_walls
       use m_flowgeom, only: ndx2d, ndx, lnx1d, kcu, wetlink2d, onlywetlinks, lnxi, lnx, wetlinkbnd, ja1d2dinternallinktype
-      use unstruc_channel_flow
-      use m_flow
-      use m_VolumeTables
+      use unstruc_channel_flow, only: usevolumetables, network, get_volume, get_surface
+      use m_flow, only: nonlin1d, nonlin2d, slotw1d, slotw2d, nonlin, vol1, s1, a1, s1m, a1m, nshiptxy, japressurehull, v1ship
+      use m_VolumeTables, only: vltb
+      use m_storage, only: t_storage
 
       implicit none
 
