@@ -1,37 +1,65 @@
 /*****************************************************************************
+* https://freegetopt.sourceforge.net/
 *
+* getopt.h - competent and free getopt library.
+* $Header: /cvsroot/freegetopt/freegetopt/getopt.h,v 1.2 2003/10/26 03:10:20 vindaci Exp $
+*
+* Copyright (c)2002-2003 Mark K. Kim
+* All rights reserved.
+* 
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+*
+*   * Redistributions of source code must retain the above copyright
+*     notice, this list of conditions and the following disclaimer.
+*
+*   * Redistributions in binary form must reproduce the above copyright
+*     notice, this list of conditions and the following disclaimer in
+*     the documentation and/or other materials provided with the
+*     distribution.
+*
+*   * Neither the original author of this software nor the names of its
+*     contributors may be used to endorse or promote products derived
+*     from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+* FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+* COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+* INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+* BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+* OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+* AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+* THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+* DAMAGE.
+*/
+#ifndef GETOPT_H_
+#define GETOPT_H_
 
-*  MODULE NAME : GETOPT.H  
-*  
-*  COPYRIGHTS:  
-*             This module contains code made available by IBM  
-*             Corporation on an AS IS basis.  Any one receiving the  
-*             module is considered to be licensed under IBM copyrights  
-*             to use the IBM-provided source code in any way he or she  
-*             deems fit, including copying it, compiling it, modifying  
-*             it, and redistributing it, with or without  
-*             modifications.  No license under any IBM patents or  
-*             patent applications is to be implied from this copyright  
-*             license.  
-*  
-*             A user of the module should understand that IBM cannot  
-*             provide technical support for the module and will not be  
-*             responsible for any consequences of use of the program.  
-*  
-*             Any notices, including this one, are not to be removed  
-*             from the module without the prior written consent of  
-*             IBM.  
-*  
-*  AUTHOR:   Original author:  
-*                 G. R. Blair (BOBBLAIR at AUSVM1)  
-*                 Internet: bobblair@bobblair.austin.ibm.com  
-*  
-*            Extensively revised by:  
-*                 John Q. Walker II, Ph.D. (JOHHQ at RALVM6)  
-*                 Internet: johnq@ralvm6.vnet.ibm.com  
-*  
-*****************************************************************************/
-extern char * optarg;
-extern int    optind;
-int getopt ( int argc, char **argv, char *optstring);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+extern char* optarg;
+extern int optind;
+extern int opterr;
+extern int optopt;
+
+int getopt(int argc, char** argv, char* optstr);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif /* GETOPT_H_ */
+
+
+/* vim:ts=3
+*/
