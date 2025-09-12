@@ -145,4 +145,4 @@ Filnfl = #COSUMOsettings.xml#
 Nflwdr = 0.0
 NfTimeout = 0.5
 Commnt =                  
-SkipUniqueId = false
+SkipUniqueId = true

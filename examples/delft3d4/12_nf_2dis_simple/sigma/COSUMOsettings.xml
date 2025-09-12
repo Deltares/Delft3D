@@ -12,7 +12,7 @@
       <cmxFile>p:\1207473-tva\models\local\d3d-local-003-intake_a3m\TVA-BrownsFerry-SI-Units-1Diffuser-theta35H0172.cmx</cmxFile>
     </general>
     <comm>
-      <FF2NFdir>c:\checkouts\branches\nearfield\examples\08_nf_2dis_simple\sigma\COSUMO\FF2NF\</FF2NFdir>
+      <FF2NFdir>c:\path\to\COSUMO\FF2NF\</FF2NFdir>
       <!-- rundir: current directory, may be overruled to force COSUMO to write on another location -->
       <FFrundir>rundir</FFrundir>
     </comm>
@@ -55,7 +55,7 @@
       <cmxFile>p:\1207473-tva\models\local\d3d-local-003-intake_a3m\TVA-BrownsFerry-SI-Units-1Diffuser-theta35H0172.cmx</cmxFile>
     </general>
     <comm>
-      <FF2NFdir>c:\checkouts\branches\nearfield\examples\08_nf_2dis_simple\sigma\COSUMO\FF2NF\</FF2NFdir>
+      <FF2NFdir>c:\path\to\sigma\COSUMO\FF2NF\</FF2NFdir>
       <!-- rundir: current directory, may be overruled to force COSUMO to write on another location -->
       <FFrundir>rundir</FFrundir>
     </comm>
