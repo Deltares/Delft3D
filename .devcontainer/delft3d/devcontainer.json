@@ -3,7 +3,11 @@
         "dockerfile": "Dockerfile"
     },
     "mounts": [
-        "source=${localEnv:HOME}/.aws,target=/home/dev/.aws,readonly,type=bind"
+        // Mount the `~/.aws/` directory into the container, which should contain your MinIO credentials.
+        "source=${localEnv:HOME}/.aws,target=/home/dev/.aws,readonly,type=bind",
+        // Persist the bash history into a Docker volume, so you don't lose your bash history when restarting the container.
+        // See: https://code.visualstudio.com/remote/advancedcontainers/persist-bash-history
+        "source=delft3d-bashhistory,target=/commandhistory,type=volume"
     ],
     "customizations": {
         "vscode": {
