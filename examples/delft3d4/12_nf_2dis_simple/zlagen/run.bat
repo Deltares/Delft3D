@@ -10,7 +10,7 @@ rem         Execute this script
 rem 
 
 if "%~1" == "" (
-    set dimrset_bin="..\..\..\install_all\bin"
+    set dimrset_bin="..\..\..\..\install_all\bin"
 ) else (
     set dimrset_bin=%1
 )
