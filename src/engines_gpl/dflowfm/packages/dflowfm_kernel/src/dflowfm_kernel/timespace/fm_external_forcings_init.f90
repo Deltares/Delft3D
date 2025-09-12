@@ -917,17 +917,17 @@ contains
             btempforcingtypD = .true.
          case ('solarradiation')
             if (net_solar_radiation_available) then
-                write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
-                call err_flush()
-                return
+               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
+               call err_flush()
+               return
             end if
             btempforcingtypS = .true.
             solar_radiation_available = .true.
          case ('netsolarradiation')
             if (solar_radiation_available) then
-                write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
-                call err_flush()
-                return
+               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
+               call err_flush()
+               return
             end if
             btempforcingtypS = .true.
             net_solar_radiation_available = .true.

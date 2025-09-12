@@ -1891,6 +1891,7 @@ facedims(id+1:end) = [];
 function merged_mesh = nc_mapmerge(Partitions, hPB)
 P1 = Partitions{1};
 nData = length(P1.Dataset);
+dataNames = {P1.Dataset.Name}';
 nPart = length(Partitions);
 ugrids = zeros(nData,1);
 for i = 1:nData
@@ -1973,8 +1974,13 @@ for mesh = NumMeshes:-1:1
                         end
                     case 2
                         % for net files ...
-                        iFaces{p} = nc_varget(file,'iglobal_s');
-                        faceDomain{p} = nc_varget(file,'idomain');
+                        if ismember([M.Name,'_netelem_domain'], dataNames)
+                            iFaces{p} = nc_varget(file,[M.Name,'_netelem_globalnr']);
+                            faceDomain{p} = nc_varget(file,[M.Name,'_netelem_domain']);
+                        else
+                            iFaces{p} = nc_varget(file,'iglobal_s');
+                            faceDomain{p} = nc_varget(file,'idomain');
+                        end
                     case 3
                         % for com files ...
                         iFaces{p} = nc_varget(file,'FlowElemGlobalNr');

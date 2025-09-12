@@ -321,7 +321,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c041_tidal_flume_sigma_3d" ref="dflowfm_default">
-     <path version="2025-04-04T13:55:06.212000">e02_dflowfm/f019_transport/c041_tidal_flume_sigma_3d</path>
+     <path version="2025-09-09T09:10:17.262000">e02_dflowfm/f019_transport/c041_tidal_flume_sigma_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tfs_his.nc" type="netCDF">
@@ -336,7 +336,7 @@
      </checks>
     </testCase>
     <testCase name="e02_f019_c042_tidal_flume_zmodel_3d" ref="dflowfm_default">
-     <path version="2025-08-19T11:49:05.890000">e02_dflowfm/f019_transport/c042_tidal_flume_zmodel_3d</path>
+     <path version="2025-09-09T09:12:44.883000">e02_dflowfm/f019_transport/c042_tidal_flume_zmodel_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tfz_his.nc" type="netCDF">
@@ -352,7 +352,7 @@
     </testCase>
 
     <testCase name="e02_f019_c043_tidal_flume_zsigma_3d" ref="dflowfm_default">
-     <path version="2025-05-07T11:41:23.657000">e02_dflowfm/f019_transport/c043_tidal_flume_zsigma_3d</path>
+     <path version="2025-09-09T09:13:18.736000">e02_dflowfm/f019_transport/c043_tidal_flume_zsigma_3d</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tfzs_his.nc" type="netCDF">
@@ -832,7 +832,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f202_c002_conservation_z" ref="dflowfm_default">
-      <path version="2025-07-14T09:49:49.333000">e02_dflowfm/f202_3D_z_sigma/c002_conservation_z</path>
+      <path version="2025-09-09T09:13:46.016000">e02_dflowfm/f202_3D_z_sigma/c002_conservation_z</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/csv_z_map.nc" type="netCDF">
@@ -845,7 +845,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f202_c003_conservation_z-sigma_numtopsiguniform0" ref="dflowfm_default">
-      <path version="2025-07-14T09:49:52.554000">e02_dflowfm/f202_3D_z_sigma/c003_conservation_z-sigma_numtopsiguniform0</path>
+      <path version="2025-09-09T09:14:27.189000">e02_dflowfm/f202_3D_z_sigma/c003_conservation_z-sigma_numtopsiguniform0</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/csv_z-sigma_numtopsiguniform0_map.nc" type="netCDF">
@@ -858,7 +858,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f202_c004_conservation_z-sigma_numtopsiguniform1" ref="dflowfm_default">
-      <path version="2025-07-14T09:49:57.628000">e02_dflowfm/f202_3D_z_sigma/c004_conservation_z-sigma_numtopsiguniform1</path>
+      <path version="2025-09-09T09:14:37.674000">e02_dflowfm/f202_3D_z_sigma/c004_conservation_z-sigma_numtopsiguniform1</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/csv_z-sigma_numtopsiguniform1_map.nc" type="netCDF">
@@ -923,7 +923,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f202_c009_turbulence_timeintegration" ref="dflowfm_default">
-        <path version="2025-09-04T13:02:52.897000">e02_dflowfm/f202_3D_z_sigma/c009_turbulence_timeintegration</path>
+        <path version="2025-09-09T09:14:55.642000">e02_dflowfm/f202_3D_z_sigma/c009_turbulence_timeintegration</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="dflowfm/dflowfmoutput/csv_sigma_map.nc" type="netcdf">
@@ -940,8 +940,8 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="platform_specific">
-      <path version="2025-07-15T12:34:23.916000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
+    <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="dflowfm_default">
+      <path version="2025-09-09T09:15:36.025000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_sigma_map.nc" type="netCDF">
@@ -954,7 +954,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f203_c04_Waal_trachytopes_3D_zsigma" ref="dflowfm_default">
-      <path version="2025-07-15T12:34:48.905000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
+      <path version="2025-09-09T09:15:54.481000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_zsigma_map.nc" type="netCDF">
@@ -995,7 +995,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c012_gate_sub_3Dzsigma1" ref="dflowfm_default">
-      <path version="2024-01-11T15:30:00">e02_dflowfm/f208_3D_hydraulic_structures/c012_gate_sub_3Dzsigma1</path>
+      <path version="2025-09-09T10:58:06.416000">e02_dflowfm/f208_3D_hydraulic_structures/c012_gate_sub_3Dzsigma1</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/gatesub_3Dzsigma1_his.nc" type="netCDF">
@@ -1008,7 +1008,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c013_gate_sub_3Dzsigma2" ref="dflowfm_default">
-      <path version="2024-01-11T15:20:00">e02_dflowfm/f208_3D_hydraulic_structures/c013_gate_sub_3Dzsigma2</path>
+      <path version="2025-09-09T13:47:40.300000">e02_dflowfm/f208_3D_hydraulic_structures/c013_gate_sub_3Dzsigma2</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/gatesub_3Dzsigma2_his.nc" type="netCDF">
@@ -1034,7 +1034,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c015_gate_free_3Dz" ref="platform_specific">
-      <path version="2024-01-11T11:50:00">e02_dflowfm/f208_3D_hydraulic_structures/c015_gate_free_3Dz</path>
+      <path version="2025-09-09T13:49:09.133000">e02_dflowfm/f208_3D_hydraulic_structures/c015_gate_free_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/gatefree_3Dz_his.nc" type="netCDF">
@@ -1086,8 +1086,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f208_c019_sill_sub_3Dz" ref="platform_specific">
-      <path version="2024-01-11T11:50:00">e02_dflowfm/f208_3D_hydraulic_structures/c019_sill_sub_3Dz</path>
+    <testCase name="e02_f208_c019_sill_sub_3Dz" ref="dflowfm_default">
+      <path version="2025-09-09T13:50:20.906000">e02_dflowfm/f208_3D_hydraulic_structures/c019_sill_sub_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/weirsub_3Dz_his.nc" type="netCDF">
@@ -1100,7 +1100,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c020_sill_sub_3Dzsigma1" ref="dflowfm_default">
-      <path version="2024-01-11T15:20:00">e02_dflowfm/f208_3D_hydraulic_structures/c020_sill_sub_3Dzsigma1</path>
+      <path version="2025-09-09T13:53:04.965000">e02_dflowfm/f208_3D_hydraulic_structures/c020_sill_sub_3Dzsigma1</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/weirsub_3Dzsigma1_his.nc" type="netCDF">
@@ -1113,7 +1113,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c021_sill_sub_3Dzsigma2" ref="dflowfm_default">
-      <path version="2024-01-11T15:20:00">e02_dflowfm/f208_3D_hydraulic_structures/c021_sill_sub_3Dzsigma2</path>
+      <path version="2025-09-09T13:54:23.594000">e02_dflowfm/f208_3D_hydraulic_structures/c021_sill_sub_3Dzsigma2</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/weirsub_3Dzsigma2_his.nc" type="netCDF">
@@ -1529,7 +1529,7 @@
     </testCase>
 
     <testCase name="e02_f901_c201_tidal_flume_kepsilon_sigma_equi_3d" ref="dflowfm_default">
-      <path version="2025-04-04T14:00:24.099000">e02_dflowfm/f901_tidal_flume/c201_tidal_flume_kepsilon_sigma_equi_3d</path>
+      <path version="2025-09-09T09:20:11.975000">e02_dflowfm/f901_tidal_flume/c201_tidal_flume_kepsilon_sigma_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
@@ -1559,7 +1559,7 @@
     </testCase>
 
     <testCase name="e02_f901_c203_tidal_flume_kepsilon_sigma_nonequi_3d" ref="dflowfm_default">
-      <path version="2025-05-07T11:47:17.847000">e02_dflowfm/f901_tidal_flume/c203_tidal_flume_kepsilon_sigma_nonequi_3d</path>
+      <path version="2025-09-09T09:20:22.852000">e02_dflowfm/f901_tidal_flume/c203_tidal_flume_kepsilon_sigma_nonequi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
@@ -1574,7 +1574,7 @@
     </testCase>
 
     <testCase name="e02_f901_c205_tidal_flume_ktau_sigma_equi_3d" ref="dflowfm_default">
-      <path version="2025-04-04T14:01:10.245000">e02_dflowfm/f901_tidal_flume/c205_tidal_flume_ktau_sigma_equi_3d</path>
+      <path version="2025-09-09T09:20:33.677000">e02_dflowfm/f901_tidal_flume/c205_tidal_flume_ktau_sigma_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
@@ -1588,8 +1588,8 @@
       </checks>
     </testCase>
 
-    <testCase name="e02_f901_c206_tidal_flume_ktau_zmodel_equi_3d" ref="platform_specific">
-      <path version="2025-07-08T09:43:51.978000">e02_dflowfm/f901_tidal_flume/c206_tidal_flume_ktau_zmodel_equi_3d</path>
+    <testCase name="e02_f901_c206_tidal_flume_ktau_zmodel_equi_3d" ref="dflowfm_default">
+      <path version="2025-09-09T09:20:44.055000">e02_dflowfm/f901_tidal_flume/c206_tidal_flume_ktau_zmodel_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
@@ -1604,7 +1604,7 @@
     </testCase>
 
     <testCase name="e02_f901_c207_tidal_flume_ktau_sigma_nonequi_3d" ref="dflowfm_default">
-      <path version="2025-05-07T11:49:08.280000">e02_dflowfm/f901_tidal_flume/c207_tidal_flume_ktau_sigma_nonequi_3d</path>
+      <path version="2025-09-09T09:20:55.184000">e02_dflowfm/f901_tidal_flume/c207_tidal_flume_ktau_sigma_nonequi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
@@ -1867,7 +1867,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f203_c093_chezy_trachytopes_ebb_flood_dependent_3D" ref="dflowfm_default">
-      <path version="2025-07-14T09:50:43.624000">e02_dflowfm/f203_3D_trachytopes/c093_chezy_trachytopes_ebb_flood_dependent_3D</path>
+      <path version="2025-09-09T09:18:30.639000">e02_dflowfm/f203_3D_trachytopes/c093_chezy_trachytopes_ebb_flood_dependent_3D</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tt3_his.nc" type="netCDF">

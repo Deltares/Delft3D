@@ -628,18 +628,18 @@ contains
    !> add output config for sediment transports on observation stations
    !! the unit_transport_rate is known during model initialisation
    subroutine add_station_sedtrans_configs(output_config_set)
-   
+
       use m_ug_nc_attribute, only: ug_nc_attribute
       use netcdf_utils, only: ncu_set_att
       use m_sediment, only: stmpar
-      
+
       implicit none
-      
+
       type(t_output_quantity_config_set), intent(inout) :: output_config_set
       type(ug_nc_attribute) :: atts(4)
-      
+
       call ncu_set_att(atts(1), 'geometry', 'station_geom')
-      
+
       call add_output_config(output_config_set, IDX_HIS_SBCX, &
                              'wrihis_sediment', 'sbcx', &
                              'Current related bedload transport, x-component', &
@@ -672,7 +672,7 @@ contains
                              'wrihis_sediment', 'sscy', &
                              'Current related suspended transport, y-component', &
                              '', stmpar%morpar%moroutput%unit_transport_rate, UNC_LOC_STATION, nc_attributes=atts(1:1), nc_dim_ids=t_station_nc_dimensions(statdim=.true., sedtotdim=.true., timedim=.true.))
-      
+
       output_config_set%configs(IDX_HIS_SBCX)%input_value = '1'
       output_config_set%configs(IDX_HIS_SBCY)%input_value = '1'
       output_config_set%configs(IDX_HIS_SBWX)%input_value = '1'
@@ -681,9 +681,9 @@ contains
       output_config_set%configs(IDX_HIS_SSCY)%input_value = '1'
       output_config_set%configs(IDX_HIS_SSWX)%input_value = '1'
       output_config_set%configs(IDX_HIS_SSWY)%input_value = '1'
-      
+
    end subroutine add_station_sedtrans_configs
-   
+
    !> Set all possible statistical quantity items in the quantity configuration sets.
    subroutine default_fm_statistical_output()
       use netcdf, only: nf90_int
@@ -2248,7 +2248,7 @@ contains
       integer, allocatable, dimension(:) :: idx_his_hwq
       integer, allocatable, dimension(:) :: idx_constituents_crs, idx_tracers_stations
       integer, allocatable, dimension(:) :: idx_wqbot_stations, idx_wqbot3D_stations
-      
+
       ntot = numobs + nummovobs
       !
       ! Mass balance variables
@@ -2724,7 +2724,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SNOW_TEMPERATURE), valobs(:, IPNT_SNOW_TEMPERATURE))
             end if
          end if
-         
+
          ! Sediment model
          if (jased > 0 .and. .not. stm_included) then
             if (model_is_3D()) then

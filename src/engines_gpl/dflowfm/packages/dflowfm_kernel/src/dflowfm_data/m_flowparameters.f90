@@ -213,7 +213,7 @@ module m_flowparameters
    integer, parameter :: BEDLEV_TYPE_MIN = 4
    integer, parameter :: BEDLEV_TYPE_MAX = 5
    integer, parameter :: BEDLEV_TYPE_WATERLEVEL6 = 6
-   
+
    integer :: ibedlevtyp1D !< 1 : same, 1D, 1 = tiles, xz(flow)=zk(net), bob(1,2) = max(zkr,zkl) , 3=mean netnode based
 
    integer :: izbndpos !< 0 : waterlevel boundary location as in D3DFLOW, 1=on network boundary, 2=on specified boundary polyline

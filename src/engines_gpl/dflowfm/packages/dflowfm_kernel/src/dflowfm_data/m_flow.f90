@@ -74,7 +74,7 @@ module m_flow ! flow arrays-999
    integer :: iStrchType = -1 !< Stretching type for non-uniform layers, 1=user defined, 2=exponential, otherwise=uniform
    integer, parameter :: STRCH_USER = 1
    integer, parameter :: STRCH_EXPONENT = 2
-   
+
    integer :: iturbulencemodel !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
    real(kind=dp) :: tur_time_int_factor = 0 !< Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
@@ -726,7 +726,7 @@ contains
    !> Check if salinity, temperature or sediment are simulated, i.e. density needs to be incorporated
    pure function use_density() result(res)
       use m_flowparameters, only: jasal, jatem, jased
-      
+
       logical :: res !< Return value
 
       res = (jasal > 0 .or. jatem > 0 .or. jased > 0)

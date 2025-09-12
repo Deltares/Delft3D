@@ -468,7 +468,7 @@ contains
       end if
 
       call fm_icecover_prepare_output(s1, rho, ag) ! needs to happen before the (final/second) call to flow_obsinit
-      
+
       call timstrt('Observations init 2 ', handle_extra(28)) ! observations init 2
       call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (2nd time required to fill values in observation stations)
       call timstop(handle_extra(28)) ! end observations init 2

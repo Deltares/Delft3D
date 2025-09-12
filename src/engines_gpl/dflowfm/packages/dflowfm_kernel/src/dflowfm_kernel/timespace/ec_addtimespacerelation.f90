@@ -134,7 +134,7 @@ contains
       character(len=20) :: waqinput
       integer, external :: findname
       type(tEcMask) :: srcmask
-      
+
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
       logical :: exist, opened, withCharnock, withStress
 
@@ -478,11 +478,11 @@ contains
          else
             if (ec_filetype == provFile_bc .and. target_name == 'windxy') then
                fileReaderPtr => ecSupportFindFileReader(ecInstancePtr, fileReaderId)
-               associate(column_units =>fileReaderPtr%bc%quantity%column_units)
+               associate (column_units => fileReaderPtr%bc%quantity%column_units)
                   if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('velocity', column_units(3))) then
                      ! windxy is defined by wind in x and wind in y direction
                      ec_convtype = convtype_uniform
-                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3)) ) then
+                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3))) then
                      ec_convtype = convtype_unimagdir
                   else
                      msgbuf = 'incorrect units found in bc file concerning the input for windxy. Only the combinations "ms-1, ms-1"'// &
