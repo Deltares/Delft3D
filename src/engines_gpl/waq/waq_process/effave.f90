@@ -74,7 +74,7 @@ contains
         bloom_step = process_space_real(ipoint(2))
         elapsed_time = elapsed_time + delt
 
-        if ( elapsed_time <= bloom_step + 0.5 * delt ) then
+        if ( abs(elapsed_time - bloom_step) <= 0.5 * delt ) then
             reset        = .true.
             elapsed_time = delt
         endif
@@ -103,7 +103,7 @@ contains
         enddo
 
         !     Update the elapsed time - if necessary, reset
-        if ( elapsed_time > bloom_step + 0.5 * delt ) then
+        if ( abs(elapsed_time - bloom_step) <= 0.5 * delt ) then
             elapsed_time = 0.0_real_wp
         endif
     end

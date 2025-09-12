@@ -89,7 +89,7 @@ contains
         !     Add the current time step to the total elapsed time
 
         ELAPSED_TIME = ELAPSED_TIME + DELT
-        IF (ELAPSED_TIME > BLOOM_STEP) ELAPSED_TIME = BLOOM_STEP
+        IF (ELAPSED_TIME > BLOOM_STEP) ELAPSED_TIME = DELT
 
         !     Loop over segments
 
