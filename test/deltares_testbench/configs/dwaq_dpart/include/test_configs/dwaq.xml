@@ -11467,7 +11467,7 @@
                     <parameter name="SUBST_082" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                 </parameters>
             </file>
-            <file name="bloomcolumn-mussel.ada" type="NEFIS">
+            <file name="bloomcolumn-mussel-shell.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
                     <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
                     <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
