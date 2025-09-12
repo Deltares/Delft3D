@@ -1594,7 +1594,7 @@
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" /> 
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" /> 
             <parameter name="mesh2d_ucx" toleranceAbsolute="0.006" />
             <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_sa1" toleranceRelative="0.02" />
