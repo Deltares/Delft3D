@@ -93,7 +93,7 @@ contains
             z31 = zzn - zz3
             DIS = sqrt(x31 * x31 + y31 * y31 + z31 * z31)
 
-            call Cart3Dtospher(xxn, yyn, zzn, xn, yn, maxval((/x1, x2, x3/)))
+            call Cart3Dtospher(xxn, yyn, zzn, xn, yn, maxval([x1, x2, x3]))
          else
             DIS = dbdistance(x3, y3, x1, y1, jsferic, jasfer3D, dmiss)
          end if

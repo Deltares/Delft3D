@@ -119,7 +119,7 @@ contains
       u_2d1d = 0d0
       call realloc(direction, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
       direction = 0d0
-      call realloc(kindex, (/2, n_1d2d_fixedweirs/), keepExisting=.false., fill=0)
+      call realloc(kindex, [2, n_1d2d_fixedweirs], keepExisting=.false., fill=0)
       kindex = 0
    end subroutine realloc_1d2d_fixedweirs
 

@@ -49,7 +49,7 @@ module m_fm_icecover
    real(fp), dimension(:), pointer :: qh_ice2wat !< module pointer to the qh_ice2wat array inside ice_data
    real(fp), dimension(:), pointer :: snow_thickness !< module pointer to the snow thickness array inside ice_data
    real(fp), dimension(:), pointer :: snow_temperature !< module pointer to the snow temperature array inside ice_data
-   
+
    real(fp), dimension(:), pointer :: ice_s1 !< module pointer to the open water level array inside ice_data
    real(fp), dimension(:), pointer :: ice_zmin !< module pointer to the lower ice cover surface height array inside ice_data
    real(fp), dimension(:), pointer :: ice_zmax !< module pointer to the upper ice cover surface height array inside ice_data
@@ -77,7 +77,7 @@ module m_fm_icecover
    real(fp), pointer :: snow_albedo !< module pointer to snow_albedo inside ice_data
    real(fp), pointer :: snow_conductivity !< module pointer to snow_conductivity inside ice_data
    real(fp), pointer :: snow_latentheat !< module pointer to snow_latentheat inside ice_data
-   
+
    character(len=*), parameter :: MDU_ICE_CHAPTER = 'ice' !< name of the ice chapter in the mdu file
 
 contains
@@ -167,12 +167,12 @@ contains
    end subroutine fm_ice_update_spatial_pointers
 
    !> logical flag for allocation
-   function fm_is_allocated_ice() result (flag)
-       logical :: flag !< logical flag for allocation
-       
-       flag = is_allocated_icecover(ice_data)
+   function fm_is_allocated_ice() result(flag)
+      logical :: flag !< logical flag for allocation
+
+      flag = is_allocated_icecover(ice_data)
    end function fm_is_allocated_ice
-   
+
 !> activation of icecover module based on external forcing input
    subroutine fm_ice_activate_by_ext_forces(ndx, md_ptr)
       use properties, only: tree_data
@@ -198,7 +198,7 @@ contains
 
       integer :: istat !< status flag for allocation
 
-      if (.not.is_allocated_icecover(ice_data)) then
+      if (.not. is_allocated_icecover(ice_data)) then
          istat = alloc_icecover(ice_data, 1, ndx)
          call fm_ice_update_spatial_pointers()
       end if
@@ -271,7 +271,7 @@ contains
       integer :: icount !< number of flow links
       integer :: LL !< flow link index
       logical :: converged !< flag for convergence in iterative process for computation of effective back radiation based on ice or snow
-            
+
       real(fp) :: b !< empirical constant in computation of c_tz
       real(fp) :: p_r !< molecular Prandtl number (-)
       real(fp) :: p_rt !< turbulent Prandtl number (-)
@@ -462,7 +462,7 @@ contains
                   ! no snow: ice freezes or melts due to net heat exchange with air and water
                   ice_thickness_change = dts * (-qh_air2ice(n) + qh_ice2wat(n)) / ice_latentheat
                end if
-               
+
                ice_thickness(n) = ice_thickness(n) + ice_thickness_change
                if (ice_thickness(n) > 0.0_fp) then
                   ice_area_fraction(n) = 1.0_fp
@@ -501,28 +501,28 @@ contains
    subroutine fm_icecover_prepare_output(water_level, rho, ag)
       use m_flowgeom, only: ndx
       use m_get_kbot_ktop, only: getkbotktop
-      
+
       real(dp), dimension(:), intent(in) :: water_level !< water level (m+REF)
       real(dp), dimension(:), intent(in) :: rho !< water density (kg/m3)
       real(dp), intent(in) :: ag !< gravitational acceleration (m/s2)
-      
+
       real(fp), dimension(:), allocatable :: water_level_fp !< water level (m+REF) cast to fp precision
       real(fp), dimension(:), allocatable :: water_density !< near surface water density (kg/m3)
-      
+
       integer :: n !< loop index, grid cell number
       integer :: kb !< index of bottom layer
       integer :: kt !< index of top layer
       real(fp) :: ag_fp !< gravitational acceleration (m/s2)
-      
+
       ag_fp = real(ag, fp)
-      
-      allocate(water_level_fp(ndx), water_density(ndx))
+
+      allocate (water_level_fp(ndx), water_density(ndx))
       do n = 1, ndx
          call getkbotktop(n, kb, kt)
          water_density(n) = real(rho(kt), fp)
       end do
       water_level_fp(:) = real(water_level(:), fp)
-      
+
       call icecover_prepare_output(ice_data, water_level_fp, water_density, ag_fp)
    end subroutine fm_icecover_prepare_output
 

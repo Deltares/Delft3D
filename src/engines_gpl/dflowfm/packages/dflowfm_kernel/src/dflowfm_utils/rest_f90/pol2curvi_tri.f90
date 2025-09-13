@@ -119,8 +119,8 @@ contains
       ic = i3 + N2; if (ic > iend) ic = ic - numsubpol
 
 !  set dimensions of blocks
-      M = (/N1, N3, N2/)
-      N = (/N3, N2, N1/)
+      M = [N1, N3, N2]
+      N = [N3, N2, N1]
 
 !  set pointers of block corners
 !      ileft ------------------
@@ -130,9 +130,9 @@ contains
 !           |------------------|
 !          0                   iright
 
-      i0 = (/i1, i2, i3/)
-      ileft = (/ic, ia, ib/)
-      iright = (/ia, ib, ic/)
+      i0 = [i1, i2, i3]
+      ileft = [ic, ia, ib]
+      iright = [ia, ib, ic]
 
 !   xia = dbdistance(XPL(i1),YPL(i1),XPL(ia),YPL(ia)) / dbdistance(XPL(i1),YPL(i1),XPL(i2),YPL(i2))
 !   xib = dbdistance(XPL(i2),YPL(i2),XPL(ib),YPL(ib)) / dbdistance(XPL(i2),YPL(i2),XPL(i3),YPL(i3))
@@ -201,8 +201,8 @@ contains
          end do
 
 !     allocate arrays with grid coordinates
-         call realloc(xg, (/M(itri) + 1, N(itri) + 1/), keepExisting=.false., fill=DMISS)
-         call realloc(yg, (/M(itri) + 1, N(itri) + 1/), keepExisting=.false., fill=DMISS)
+         call realloc(xg, [M(itri) + 1, N(itri) + 1], keepExisting=.false., fill=DMISS)
+         call realloc(yg, [M(itri) + 1, N(itri) + 1], keepExisting=.false., fill=DMISS)
 
          MFAC = M(itri)
          NFAC = N(itri)

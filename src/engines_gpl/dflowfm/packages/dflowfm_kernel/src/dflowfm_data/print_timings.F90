@@ -61,7 +61,7 @@ contains
       integer :: MFILE
 
       integer, parameter :: Ntvarlist = 13
-      integer, dimension(Ntvarlist), parameter :: itvarlist = (/1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17/)
+      integer, dimension(Ntvarlist), parameter :: itvarlist = [1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
 
       real(kind=dp), dimension(:, :), allocatable :: t_max, t_ave, tcpu_max, tcpu_ave
       integer :: itsol_max

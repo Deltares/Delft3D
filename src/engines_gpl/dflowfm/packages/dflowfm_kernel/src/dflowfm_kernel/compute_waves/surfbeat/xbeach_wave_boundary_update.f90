@@ -1487,14 +1487,14 @@ contains
       ! pick two neighbouring directional bins, including effect of closing circle at
       ! 0 and 2pi rad
       if (iloc > 1 .and. iloc < naint) then
-         peakSd = (/combspec%Sd(iloc - 1), combspec%Sd(iloc), combspec%Sd(iloc + 1)/)
-         peakang = (/combspec%ang(iloc - 1), combspec%ang(iloc), combspec%ang(iloc + 1)/)
+         peakSd = [combspec%Sd(iloc - 1), combspec%Sd(iloc), combspec%Sd(iloc + 1)]
+         peakang = [combspec%ang(iloc - 1), combspec%ang(iloc), combspec%ang(iloc + 1)]
       elseif (iloc == 1) then
-         peakSd = (/combspec%Sd(naint), combspec%Sd(1), combspec%Sd(2)/)
-         peakang = (/combspec%ang(naint) - 2d0 * par_pi, combspec%ang(1), combspec%ang(2)/)
+         peakSd = [combspec%Sd(naint), combspec%Sd(1), combspec%Sd(2)]
+         peakang = [combspec%ang(naint) - 2d0 * par_pi, combspec%ang(1), combspec%ang(2)]
       elseif (iloc == naint) then
-         peakSd = (/combspec%Sd(naint - 1), combspec%Sd(naint), combspec%Sd(1)/)
-         peakang = (/combspec%ang(naint - 1), combspec%ang(naint), combspec%ang(1) + 2d0 * par_pi/)
+         peakSd = [combspec%Sd(naint - 1), combspec%Sd(naint), combspec%Sd(1)]
+         peakang = [combspec%ang(naint - 1), combspec%ang(naint), combspec%ang(1) + 2d0 * par_pi]
       end if
       ! dir0 calculated as mean over peak and two neighbouring cells
       combspec%dir0 = sum(peakSd * peakang) / max(sum(peakSd), dtol)
@@ -1578,14 +1578,14 @@ contains
       ! pick two neighbouring directional bins, including effect of closing circle at
       ! 0 and 2pi rad
       if (iloc > 1 .and. iloc < naint) then
-         peakSd = (/combspec%Sd(iloc - 1), combspec%Sd(iloc), combspec%Sd(iloc + 1)/)
-         peakang = (/combspec%ang(iloc - 1), combspec%ang(iloc), combspec%ang(iloc + 1)/)
+         peakSd = [combspec%Sd(iloc - 1), combspec%Sd(iloc), combspec%Sd(iloc + 1)]
+         peakang = [combspec%ang(iloc - 1), combspec%ang(iloc), combspec%ang(iloc + 1)]
       elseif (iloc == 1) then
-         peakSd = (/combspec%Sd(naint), combspec%Sd(1), combspec%Sd(2)/)
-         peakang = (/combspec%ang(naint) - 2d0 * par_pi, combspec%ang(1), combspec%ang(2)/)
+         peakSd = [combspec%Sd(naint), combspec%Sd(1), combspec%Sd(2)]
+         peakang = [combspec%ang(naint) - 2d0 * par_pi, combspec%ang(1), combspec%ang(2)]
       elseif (iloc == naint) then
-         peakSd = (/combspec%Sd(naint - 1), combspec%Sd(naint), combspec%Sd(1)/)
-         peakang = (/combspec%ang(naint - 1), combspec%ang(naint), combspec%ang(1) + 2d0 * par_pi/)
+         peakSd = [combspec%Sd(naint - 1), combspec%Sd(naint), combspec%Sd(1)]
+         peakang = [combspec%ang(naint - 1), combspec%ang(naint), combspec%ang(1) + 2d0 * par_pi]
       end if
       ! dir0 calculated as mean over peak and two neighbouring cells
       combspec%dir0 = sum(peakSd * peakang) / max(sum(peakSd), dtol)
@@ -1733,7 +1733,7 @@ contains
          if (randnums(wp%K + i) >= cdflocal(1)) then
             call LINEAR_INTERP(cdflocal, combspec%ang, naint, randnums(wp%K + i), wp%thetagen(i), dummy)
          else
-            call LINEAR_INTERP((/0.d0, cdflocal(1)/), (/combspec%ang(naint) - 2 * par_pi, combspec%ang(1)/), &
+            call LINEAR_INTERP([0.d0, cdflocal(1)], [combspec%ang(naint) - 2 * par_pi, combspec%ang(1)], &
                                2, randnums(wp%K + i), wp%thetagen(i), dummy)
          end if
          ! ensure wave direction 0<=theta<2pi
@@ -1867,7 +1867,7 @@ contains
       firstp = maxval(maxloc(findline)) ! Picks the first "1" in temp
 
       allocate (temp(size(findline)))
-      temp = (/(i, i=1, size(findline))/)
+      temp = [(i, i=1, size(findline))]
       lastp = maxval(maxloc(temp * findline)) ! Picks the last "1" in temp
 
       if (present(findlineout)) then

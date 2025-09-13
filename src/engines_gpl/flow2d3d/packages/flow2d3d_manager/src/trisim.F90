@@ -73,7 +73,6 @@ subroutine trisim (numdom, nummap, context_id, fsm_flags, runid, &
     use mod_trisim
     use precision
     use dfparall
-    use d3d_olv_class
     use iso_c_binding, only: c_loc
 
     ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -102,7 +101,6 @@ subroutine trisim (numdom, nummap, context_id, fsm_flags, runid, &
 !
     integer         :: ierr
     integer         :: retval
-    type(OLVHandle) :: olv_handle
     !
     ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
     ! Activate the following line
@@ -130,7 +128,7 @@ subroutine trisim (numdom, nummap, context_id, fsm_flags, runid, &
     !
     nullify(gdp%runid)
     !
-    retval = trisim_init(numdom, nummap, context_id, fsm_flags, runid, olv_handle, gdp)
+    retval = trisim_init(numdom, nummap, context_id, fsm_flags, runid, gdp)
     if (retval /= 0) then
        return
     endif
@@ -140,12 +138,12 @@ subroutine trisim (numdom, nummap, context_id, fsm_flags, runid, &
        return
     endif
     !
-    retval = trisim_step(olv_handle, gdp)
+    retval = trisim_step(gdp)
     if (retval /= 0) then
        return
     endif
     !
-    retval = trisim_finish(olv_handle, gdp)
+    retval = trisim_finish(gdp)
     if (retval /= 0) then
        return
     endif
@@ -171,7 +169,6 @@ end subroutine trisim
 integer function trisim_update(dt, gdp)
     use precision
     use globaldata
-    use d3d_olv_class
     use mod_trisim
     use iso_c_binding, only: c_double
     !
@@ -184,13 +181,12 @@ integer function trisim_update(dt, gdp)
     ! locals
     integer         :: ierr
     real(fp)        :: tend
-    type(OLVHandle) :: olv_handle
     !
     ! body
     ierr   = 0
     tend   = gdp%gdinttim%timsec + real(dt,fp)
     do while (gdp%gdinttim%timsec < tend)
-       ierr = trisim_step(olv_handle, gdp)
+       ierr = trisim_step(gdp)
        if (ierr /= 0) exit
        ierr = trisim_prepare_next_step(gdp)
        if (ierr /= 0) exit
@@ -206,7 +202,6 @@ end function trisim_update
 integer function trisim_finalize(gdp)
     use precision
     use globaldata
-    use d3d_olv_class
     use mod_trisim
     use dfparall
     !
@@ -218,11 +213,10 @@ integer function trisim_finalize(gdp)
     ! locals
     integer         :: ierr
     integer         :: retval
-    type(OLVHandle) :: olv_handle
     !
     ! body
     retval = 0
-    retval = trisim_finish(olv_handle, gdp)
+    retval = trisim_finish(gdp)
     if (retval /= 0) then
        trisim_finalize = retval
        return

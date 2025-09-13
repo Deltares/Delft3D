@@ -130,7 +130,7 @@ contains
          if (numL > ubound(lnn, 1)) then
             numnew = ceiling(1.2d0 * dble(numL))
             call realloc(lnn, numnew, keepExisting=.true.)
-            call realloc(lne, (/2, numnew/), keepExisting=.true.)
+            call realloc(lne, [2, numnew], keepExisting=.true.)
          end if
          lnn(LnL) = 0
          lnn(LnR) = 0
@@ -209,14 +209,14 @@ contains
 !     remove link from original cell, delete two nodes, add one new node and replace two links
          call del_intarrayelem(netcell(ic1)%N, netcell(ic1)%lin, L)
          call del_intarrayelem(netcell(ic1)%N, netcell(ic1)%nod, kL)
-         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%nod, kR, 1, (/kp/))
-         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LL, 1, (/LnLL/))
-         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LR, 1, (/LnRR/))
+         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%nod, kR, 1, [kp])
+         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LL, 1, [LnLL])
+         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LR, 1, [LnRR])
          netcell(ic1)%N = netcell(ic1)%N - 1
 
 !     make new cells
-         call makecell(3, (/kLL, kL, kp/), (/LL, LnL, LnLL/), icLL, ierror)
-         call makecell(3, (/kR, kRR, kp/), (/LnR, LR, LnRR/), icRR, ierror)
+         call makecell(3, [kLL, kL, kp], [LL, LnL, LnLL], icLL, ierror)
+         call makecell(3, [kR, kRR, kp], [LnR, LR, LnRR], icRR, ierror)
          if (ierror /= 0) goto 1234
 
 !     set lnn and lne for new links
@@ -224,7 +224,7 @@ contains
          if (numL > ubound(lnn, 1)) then
             numnew = ceiling(1.2d0 * dble(numL))
             call realloc(lnn, numnew, keepExisting=.true.)
-            call realloc(lne, (/2, numnew/), keepExisting=.true.)
+            call realloc(lne, [2, numnew], keepExisting=.true.)
          end if
          if (i == 1) then
             lnn(LnL) = lnn(L)

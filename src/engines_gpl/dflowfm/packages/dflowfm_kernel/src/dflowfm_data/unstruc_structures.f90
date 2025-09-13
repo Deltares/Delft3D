@@ -429,13 +429,13 @@ contains
          ! 2. More specific valus that apply to certain structure types only
 
          ! 2a. General structure-based structures with a crest.
-         if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
+         if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
             valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) + network%sts%struct(istru)%generalst%sOnCrest(L0) * wu(L)
             valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) + get_force_difference(istru, L) * wu(L)
          end if
 
          ! 2b. General structure-based structures with a (gate) door.
-         if (any(istrtypein == (/ST_GENERAL_ST/))) then ! TODO: ST_GATE
+         if (any(istrtypein == [ST_GENERAL_ST])) then ! TODO: ST_GATE
             k1 = ln(1, L)
             k2 = ln(2, L)
             genstr => network%sts%struct(istru)%generalst
@@ -529,7 +529,7 @@ contains
          valstruct(IVAL_HEAD) = dmiss
       end if
       ! 1b. other generic variables
-      if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
+      if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
          if (valstruct(IVAL_WIDTH) == 0.0_dp) then
             valstruct(IVAL_CRESTL) = dmiss ! crest level
             valstruct(IVAL_CRESTW) = dmiss ! crest width
@@ -543,7 +543,7 @@ contains
             valstruct(IVAL_VEL) = dmiss ! velocity
          end if
 
-         if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
+         if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
             valstruct(IVAL_S1ONCREST) = dmiss ! water level on crest
             valstruct(IVAL_STATE) = dmiss ! state
             valstruct(IVAL_FORCEDIF) = dmiss ! force difference per unit width
@@ -558,7 +558,7 @@ contains
             end if
          end if
 
-         if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
+         if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
             pstru => network%sts%struct(istru)
             valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) / valstruct(IVAL_WIDTHWET) ! water level on crest
             valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) / valstruct(IVAL_WIDTHWET) ! force difference per unit width
@@ -567,7 +567,7 @@ contains
 
       ! 2. More specific valus that apply to certain structure types only
       ! General structure-based structures with a (gate) door.
-      if (any(istrtypein == (/ST_GENERAL_ST, ST_ORIFICE/))) then ! TODO: ST_GATE
+      if (any(istrtypein == [ST_GENERAL_ST, ST_ORIFICE])) then ! TODO: ST_GATE
          if (valstruct(IVAL_WIDTH) == 0.0_dp) then ! zero width
             valstruct(IVAL_OPENW:) = dmiss
          end if
@@ -1410,7 +1410,7 @@ contains
       type(t_structure), pointer :: pstru
       type(t_GeneralStructure), pointer :: genstr
 
-      if (any(istrtypein == (/ST_GENERAL_ST, ST_WEIR, ST_ORIFICE/))) then ! TODO: ST_GATE
+      if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
          pstru => network%sts%struct(istru)
          valstruct(IVAL_CRESTL) = get_crest_level(pstru) ! crest level
          valstruct(IVAL_CRESTW) = get_width(pstru) ! crest width
@@ -1431,7 +1431,7 @@ contains
          end if
       end if
 
-      if (any(istrtypein == (/ST_GENERAL_ST, ST_ORIFICE/))) then ! TODO: ST_GATE
+      if (any(istrtypein == [ST_GENERAL_ST, ST_ORIFICE])) then ! TODO: ST_GATE
          if (nlinks > 0) then ! If it is a new general structure, and there are links
             genstr => network%sts%struct(istru)%generalst
             valstruct(IVAL_OPENW) = genstr%gateopeningwidth_actual ! gate opening width
@@ -1531,11 +1531,11 @@ contains
 
                associate (branch => network%brs%branch(network%sts%struct(j)%IBRAN))
                   if (branch%GRIDPOINTSCOUNT > 0) then
-                     ierr = odu_get_xy_coordinates((/1/), network%sts%struct(j:j)%CHAINAGE, branch%xs, branch%ys, &
-                                                   (/branch%gridpointscount/), (/branch%length/), jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
+                     ierr = odu_get_xy_coordinates([1], network%sts%struct(j:j)%CHAINAGE, branch%xs, branch%ys, &
+                                                   [branch%gridpointscount], [branch%length], jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
                   else
-                     ierr = odu_get_xy_coordinates((/1/), network%sts%struct(j:j)%CHAINAGE, (/branch%FROMNODE%X, branch%TONODE%X/), (/branch%FROMNODE%Y, branch%TONODE%Y/), &
-                                                   (/2/), (/branch%length/), jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
+                     ierr = odu_get_xy_coordinates([1], network%sts%struct(j:j)%CHAINAGE, [branch%FROMNODE%X, branch%TONODE%X], [branch%FROMNODE%Y, branch%TONODE%Y], &
+                                                   [2], [branch%length], jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
                   end if
                   nNodesStructInput(n) = 1
                   i = i + 1

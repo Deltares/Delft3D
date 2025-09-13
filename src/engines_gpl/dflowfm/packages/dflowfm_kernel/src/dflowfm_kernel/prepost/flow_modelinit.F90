@@ -53,7 +53,7 @@ module m_flow_modelinit
 contains
 
    !> Initializes the entire current model (geometry, boundaries, initial state)
- !! @return Error status: error (/=0) or not (0)
+ !! @return Error status: error [=0) or not (0)
    integer function flow_modelinit() result(iresult) ! initialise flowmodel
       use m_flow_geominit, only: flow_geominit
       use m_flow_fourierinit, only: flow_fourierinit
@@ -468,7 +468,7 @@ contains
       end if
 
       call fm_icecover_prepare_output(s1, rho, ag) ! needs to happen before the (final/second) call to flow_obsinit
-      
+
       call timstrt('Observations init 2 ', handle_extra(28)) ! observations init 2
       call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (2nd time required to fill values in observation stations)
       call timstop(handle_extra(28)) ! end observations init 2

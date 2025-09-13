@@ -108,8 +108,8 @@ contains
          allocate (INDX(3, NTX), STAT=IERR); INDX = 0
          call AERR('INDX(3,NTX)', IERR, int(3 * NTX))
 
-         call realloc(EDGEINDX, (/2, Ntx/), keepExisting=.false., fill=0, stat=ierr)
-         call realloc(TRIEDGE, (/3, Ntx/), keepExisting=.false., fill=0, stat=ierr)
+         call realloc(EDGEINDX, [2, Ntx], keepExisting=.false., fill=0, stat=ierr)
+         call realloc(TRIEDGE, [3, Ntx], keepExisting=.false., fill=0, stat=ierr)
 
          NN = NTX
          call increasesam(NS1 + NN)

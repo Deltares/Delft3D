@@ -1196,7 +1196,7 @@ contains
       integer adj(adj_num)
       integer adj_row(node_num + 1)
 
-      adj(1:adj_num) = (/ &
+      adj(1:adj_num) = [ &
                        4, 6, &
                        3, 5, 7, 10, &
                        2, 4, 5, &
@@ -1206,9 +1206,9 @@ contains
                        2, 5, 6, 8, &
                        6, 7, &
                        4, &
-                       2/)
+                       2]
 
-      adj_row(1:node_num + 1) = (/1, 3, 7, 10, 14, 17, 21, 25, 27, 28, 29/)
+      adj_row(1:node_num + 1) = [1, 3, 7, 10, 14, 17, 21, 25, 27, 28, 29]
 
       return
    end
@@ -3560,10 +3560,10 @@ contains
       integer h
       integer m
       integer mm
-      character(len=9), parameter, dimension(12) :: month = (/ &
+      character(len=9), parameter, dimension(12) :: month = [ &
                                                     'January  ', 'February ', 'March    ', 'April    ', &
                                                     'May      ', 'June     ', 'July     ', 'August   ', &
-                                                    'September', 'October  ', 'November ', 'December '/)
+                                                    'September', 'October  ', 'November ', 'December ']
       integer n
       integer s
       integer values(8)
@@ -3748,21 +3748,21 @@ contains
          k = triangle_node(3, tri)
 
          if (i < j) then
-            col(1:4, 3 * (tri - 1) + 1) = (/i, j, 3, tri/)
+            col(1:4, 3 * (tri - 1) + 1) = [i, j, 3, tri]
          else
-            col(1:4, 3 * (tri - 1) + 1) = (/j, i, 3, tri/)
+            col(1:4, 3 * (tri - 1) + 1) = [j, i, 3, tri]
          end if
 
          if (j < k) then
-            col(1:4, 3 * (tri - 1) + 2) = (/j, k, 1, tri/)
+            col(1:4, 3 * (tri - 1) + 2) = [j, k, 1, tri]
          else
-            col(1:4, 3 * (tri - 1) + 2) = (/k, j, 1, tri/)
+            col(1:4, 3 * (tri - 1) + 2) = [k, j, 1, tri]
          end if
 
          if (k < i) then
-            col(1:4, 3 * (tri - 1) + 3) = (/k, i, 2, tri/)
+            col(1:4, 3 * (tri - 1) + 3) = [k, i, 2, tri]
          else
-            col(1:4, 3 * (tri - 1) + 3) = (/i, k, 2, tri/)
+            col(1:4, 3 * (tri - 1) + 3) = [i, k, 2, tri]
          end if
 
       end do
@@ -4295,7 +4295,7 @@ contains
       integer triangle_neighbor(3, triangle_num)
       integer triangle_node(triangle_order, triangle_num)
 
-      node_xy = reshape((/ &
+      node_xy = reshape([ &
                         0.0d+00, 0.0d+00, &
                         1.0d+00, 0.0d+00, &
                         2.0d+00, 0.0d+00, &
@@ -4321,9 +4321,9 @@ contains
                         2.0d+00, 4.0d+00, &
                         3.0d+00, 4.0d+00, &
                         4.0d+00, 4.0d+00 &
-                        /), (/dim_num, node_num/))
+                        ], [dim_num, node_num])
 
-      triangle_node(1:triangle_order, 1:triangle_num) = reshape((/ &
+      triangle_node(1:triangle_order, 1:triangle_num) = reshape([ &
                                                                 1, 2, 6, &
                                                                 7, 6, 2, &
                                                                 2, 3, 7, &
@@ -4355,9 +4355,9 @@ contains
                                                                 18, 19, 23, &
                                                                 24, 23, 19, &
                                                                 19, 20, 24, &
-                                                                25, 24, 20/), (/triangle_order, triangle_num/))
+                                                                25, 24, 20], [triangle_order, triangle_num])
 
-      triangle_neighbor(1:3, 1:triangle_num) = reshape((/ &
+      triangle_neighbor(1:3, 1:triangle_num) = reshape([ &
                                                        -1, 2, -1, &
                                                        9, 1, 3, &
                                                        -1, 4, 2, &
@@ -4389,7 +4389,7 @@ contains
                                                        22, 30, 28, &
                                                        -1, 29, 31, &
                                                        24, 32, 30, &
-                                                       -1, 31, -1/), (/3, triangle_num/))
+                                                       -1, 31, -1], [3, triangle_num])
 
       return
    end
@@ -5127,7 +5127,7 @@ contains
       integer triangle_neighbor(3, triangle_num)
       integer triangle_node(triangle_order, triangle_num)
 
-      node_xy = reshape((/ &
+      node_xy = reshape([ &
                         0.0d+00, 0.0d+00, &
                         1.0d+00, 0.0d+00, &
                         2.0d+00, 0.0d+00, &
@@ -5153,9 +5153,9 @@ contains
                         2.0d+00, 4.0d+00, &
                         3.0d+00, 4.0d+00, &
                         4.0d+00, 4.0d+00 &
-                        /), (/dim_num, node_num/))
+                        ], [dim_num, node_num])
 
-      triangle_node(1:triangle_order, 1:triangle_num) = reshape((/ &
+      triangle_node(1:triangle_order, 1:triangle_num) = reshape([ &
                                                                 1, 3, 11, 2, 7, 6, &
                                                                 13, 11, 3, 12, 7, 8, &
                                                                 3, 5, 13, 4, 9, 8, &
@@ -5163,9 +5163,9 @@ contains
                                                                 11, 13, 21, 12, 17, 16, &
                                                                 23, 21, 13, 22, 17, 18, &
                                                                 13, 15, 23, 14, 19, 18, &
-                                                                25, 23, 15, 24, 19, 20/), (/triangle_order, triangle_num/))
+                                                                25, 23, 15, 24, 19, 20], [triangle_order, triangle_num])
 
-      triangle_neighbor(1:3, 1:triangle_num) = reshape((/ &
+      triangle_neighbor(1:3, 1:triangle_num) = reshape([ &
                                                        -1, 2, -1, &
                                                        5, 1, 3, &
                                                        -1, 4, 2, &
@@ -5173,7 +5173,7 @@ contains
                                                        2, 6, -1, &
                                                        -1, 5, 7, &
                                                        4, 8, 6, &
-                                                       -1, 7, -1/), (/3, triangle_num/))
+                                                       -1, 7, -1], [3, triangle_num])
 
       return
    end

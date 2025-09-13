@@ -156,6 +156,10 @@ if (UNIX)
 elseif (WIN32)
     set(platform_extension bat)
     set(library_suffix dll)
+    
+   set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+   set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "lib")
+    include(InstallRequiredSystemLibraries)
 endif()
 
 # Expat:

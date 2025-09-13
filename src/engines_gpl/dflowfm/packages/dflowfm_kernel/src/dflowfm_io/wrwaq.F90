@@ -829,7 +829,7 @@ contains
       ierr = UG_NOERR
 
       ! Define face domain number variable.
-      ierr = ug_def_var(igeomfile, id_facedomainnumber, (/meshids%dimids(mdim_face)/), nf90_int, UG_LOC_FACE, &
+      ierr = ug_def_var(igeomfile, id_facedomainnumber, [meshids%dimids(mdim_face)], nf90_int, UG_LOC_FACE, &
                         meshName, 'face_domain_number', '', 'Face partition domain number', '', '', '', ifill=-999)
 
       ! Put netcdf file in write mode.
@@ -865,7 +865,7 @@ contains
       ierr = ncu_ensure_define_mode(igeomfile, was_in_define_mode)
 
       ! Define global face number variable.
-      ierr = ug_def_var(igeomfile, id_faceglobalnumber, (/meshids%dimids(mdim_face)/), nf90_int, UG_LOC_FACE, &
+      ierr = ug_def_var(igeomfile, id_faceglobalnumber, [meshids%dimids(mdim_face)], nf90_int, UG_LOC_FACE, &
                         meshName, 'face_global_number', '', 'Global face number (as it was in the full grid, before partitioning)', '', '', '', ifill=-999)
 
       ! Put netcdf file in write mode.
@@ -958,7 +958,7 @@ contains
          meshgeom%numEdge = NUML - NUML1d
 
          ! Get edge nodes connectivity, edge types and edge coordinates (ordered as follows: first flow links, then closed edges).
-         call reallocP(meshgeom%edge_nodes, (/2, meshgeom%numEdge/), fill=missing_value)
+         call reallocP(meshgeom%edge_nodes, [2, meshgeom%numEdge], fill=missing_value)
          call realloc(edge_type, meshgeom%numEdge, fill=missing_value)
          call reallocP(meshgeom%edgex, meshgeom%numEdge, fill=dmiss)
          call reallocP(meshgeom%edgey, meshgeom%numEdge, fill=dmiss)
@@ -977,7 +977,7 @@ contains
          ! Edge z coordinates are unknown.
 
          ! Get edge faces connectivity.
-         call reallocP(meshgeom%edge_faces, (/2, meshgeom%numEdge/))
+         call reallocP(meshgeom%edge_faces, [2, meshgeom%numEdge])
          ! Here need to use reverse_edge_mapping_table to map edges to net links, because edges are ordered as follows: first flow links, then closed edges.
          do edge = 1, meshgeom%numEdge
             meshgeom%edge_faces(1:2, edge) = lne(1:2, reverse_edge_mapping_table(edge))
@@ -1004,9 +1004,9 @@ contains
          end do
 
          ! Get face nodes connectivity, face edges connectivity and face-face connectivity.
-         call reallocP(meshgeom%face_nodes, (/maxNodesPerFace, meshgeom%numFace/), fill=missing_value)
-         call reallocP(meshgeom%face_edges, (/maxNodesPerFace, meshgeom%numFace/), fill=missing_value)
-         call reallocP(meshgeom%face_links, (/maxNodesPerFace, meshgeom%numFace/), fill=missing_value)
+         call reallocP(meshgeom%face_nodes, [maxNodesPerFace, meshgeom%numFace], fill=missing_value)
+         call reallocP(meshgeom%face_edges, [maxNodesPerFace, meshgeom%numFace], fill=missing_value)
+         call reallocP(meshgeom%face_links, [maxNodesPerFace, meshgeom%numFace], fill=missing_value)
          do face = 1, nump
             nodesPerFace = netcell(face)%n
             ! shift node numbers by numk1d
@@ -1141,7 +1141,7 @@ contains
       ! 1. Determine output edge_faces and edge_nodes.
       ! Apply face mapping table to edge faces.
       input_edge_count = input%numEdge
-      call realloc(input_edge_output_faces, (/2, input_edge_count/), fill=missing_value)
+      call realloc(input_edge_output_faces, [2, input_edge_count], fill=missing_value)
       do input_edge = 1, input_edge_count
          do i = 1, 2
             if (input%edge_faces(i, input_edge) /= missing_value) then
@@ -1151,8 +1151,8 @@ contains
       end do ! input_edge
       ! Create edge mapping table and output edge_faces and edge_nodes.
       call realloc(reverse_edge_mapping_table, input_edge_count)
-      call reallocP(output%edge_faces, (/2, input_edge_count/))
-      call reallocP(output%edge_nodes, (/2, input_edge_count/))
+      call reallocP(output%edge_faces, [2, input_edge_count])
+      call reallocP(output%edge_nodes, [2, input_edge_count])
       output_edge = 0
       do input_edge = 1, input_edge_count
          ! If edge points to the same aggregated face on either side, then edge is not needed anymore in the aggregated mesh.
@@ -1172,8 +1172,8 @@ contains
       ! At this point edges have been renumbered automatically from input edge numbers to output edge numbers.
       ! Truncate arrays.
       call realloc(reverse_edge_mapping_table, output_edge_count, keepExisting=.true.)
-      call reallocP(output%edge_faces, (/2, output_edge_count/), keepExisting=.true.)
-      call reallocP(output%edge_nodes, (/2, output_edge_count/), keepExisting=.true.)
+      call reallocP(output%edge_faces, [2, output_edge_count], keepExisting=.true.)
+      call reallocP(output%edge_nodes, [2, output_edge_count], keepExisting=.true.)
 
       ! 2. Determine output edge coordinates and types.
       call reallocP(output%edgex, output_edge_count)
@@ -1232,7 +1232,7 @@ contains
       !    forall (i = 1:output_edge_count*2)
       !        edges_column(i) = (i + 1) / 2
       !    end forall
-      !    faces_column = reshape(output_edge_faces, (/ output_edge_count * 2 /))
+      !    faces_column = reshape(output_edge_faces, [ output_edge_count * 2 ])
       !    ! Sort table on faces column.
       !    ! TODO use quicksort? AK
       !    qsort(faces_column, sorted_faces_column, sorted_indices)
@@ -1267,7 +1267,7 @@ contains
       ! Determine max_nodes_per_face.
       max_nodes_per_face = maxval(face_edge_count)
       ! Determine nodes, edges and faces for each output face.
-      call reallocP(output%face_edges, (/max_nodes_per_face, output_face_count/), fill=missing_value)
+      call reallocP(output%face_edges, [max_nodes_per_face, output_face_count], fill=missing_value)
       ! Re-use face_edge_count array to put edges in the next available spot in the output%face_edges array.
       face_edge_count = 0
       do output_edge = 1, output_edge_count
@@ -1287,7 +1287,7 @@ contains
 
       ! 6. Sort edges for each face in counter clockwise order.
       ! At the same time store sorted nodes of sorted edges in output%face_nodes array.
-      call reallocP(output%face_nodes, (/max_nodes_per_face, output_face_count/), fill=missing_value)
+      call reallocP(output%face_nodes, [max_nodes_per_face, output_face_count], fill=missing_value)
       do output_face = 1, output_face_count
          ! Sort edges for current output face.
          call sort_edges(output_face, output%face_edges(1:face_edge_count(output_face), output_face), output%face_nodes(1:face_edge_count(output_face), output_face), &
@@ -1295,7 +1295,7 @@ contains
       end do
 
       ! 7. Determine output face_links.
-      call reallocP(output%face_links, (/max_nodes_per_face, output_face_count/), fill=missing_value)
+      call reallocP(output%face_links, [max_nodes_per_face, output_face_count], fill=missing_value)
       do output_face = 1, output_face_count
          ! Get output faces that are adjacent to the current output_face.
          call get_adjacent_faces(output_face, output%face_edges, output%edge_faces, output%face_links(1:face_edge_count(output_face), output_face))
@@ -2028,10 +2028,10 @@ contains
       else
          waqpar%num_exchanges = waqpar%noq12 + numsrc + waqpar%numlatwaq
       end if
-      call realloc(waqpar%ifrmto, (/4, waqpar%num_exchanges/), keepExisting=.false., fill=0)
+      call realloc(waqpar%ifrmto, [4, waqpar%num_exchanges], keepExisting=.false., fill=0)
 
       call waq_make_aggr_lnk()
-      call realloc(waqpar%ifrmto, (/4, waqpar%num_exchanges/), keepExisting=.true., fill=0)
+      call realloc(waqpar%ifrmto, [4, waqpar%num_exchanges], keepExisting=.true., fill=0)
       call realloc(waqpar%qag, waqpar%num_exchanges, keepExisting=.false., fill=0d0)
       call realloc(waqpar%area, waqpar%num_exchanges, keepExisting=.false., fill=0d0)
       waqpar%noql = waqpar%noq12 / waqpar%kmxnxa
@@ -2286,7 +2286,7 @@ contains
             end if
          end if
       end do
-      call realloc(waqpar%ifrmtosrc, (/2, waqpar%numsrcwaq/), keepexisting=.true., fill=0)
+      call realloc(waqpar%ifrmtosrc, [2, waqpar%numsrcwaq], keepexisting=.true., fill=0)
       call realloc(qsrcwaq, waqpar%numsrcwaq, keepexisting=.true., fill=0.0d0)
       call realloc(qsrcwaq0, waqpar%numsrcwaq, keepexisting=.true., fill=0.0d0)
       nbnd = ndx - ndxi + waqpar%numsrcbnd ! total number of boudaries
@@ -2373,7 +2373,7 @@ contains
          end if
       end do
       ! Do not skip when numlatsg is zero - we need to have the arrays allocated, even to zero length
-      call realloc(waqpar%ifrmtolat, (/2, waqpar%numlatwaq/), keepexisting=.true., fill=0)
+      call realloc(waqpar%ifrmtolat, [2, waqpar%numlatwaq], keepexisting=.true., fill=0)
       call realloc(qlatwaq, waqpar%numlatwaq, keepexisting=.true., fill=0.0d0)
       call realloc(qlatwaq0, waqpar%numlatwaq, keepexisting=.true., fill=0.0d0)
 
@@ -2441,7 +2441,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      call realloc(lenex, (/2, waqpar%num_exchanges/), keepExisting=.false., fill=0d0)
+      call realloc(lenex, [2, waqpar%num_exchanges], keepExisting=.false., fill=0d0)
       call realloc(noqa, waqpar%noql, keepExisting=.false., fill=0)
 
       do L = 1, lnx

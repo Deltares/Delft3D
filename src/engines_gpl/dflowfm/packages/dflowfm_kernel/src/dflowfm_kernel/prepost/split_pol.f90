@@ -113,13 +113,13 @@ contains
                do i = 1, Ni
                   xb = xa
                   xa = xmin + dble(i) / dble(Ni) * (xmax - xmin)
-                  xccp = (/xa, xb, xb, xa, xa/)
+                  xccp = [xa, xb, xb, xa, xa]
 
                   ya = ymin
                   do j = 1, Nj
                      yb = ya
                      ya = ymin + dble(j) / dble(Nj) * (ymax - ymin)
-                     yccp = (/ya, ya, yb, yb, ya/)
+                     yccp = [ya, ya, yb, yb, ya]
 
                      ierr = 1
                      do while (ierr /= 0 .and. lrwk <= MAXLRWK)
