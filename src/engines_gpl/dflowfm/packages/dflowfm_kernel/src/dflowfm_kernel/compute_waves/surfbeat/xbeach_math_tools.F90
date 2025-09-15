@@ -101,7 +101,7 @@ module math_tools
    ! Optional Parameters:
    !
    !   dim      One dimensional integer array, containing the dimensions to be
-   !            transformed. Default is (/1,...,N/) with N being the rank of
+   !            transformed. Default is [1,...,N] with N being the rank of
    !            array, i.e. complete transform. dim can restrict transformation
    !            to a subset of available dimensions. Its size must not exceed the
    !            rank of array or the size of shape respectivly.
@@ -131,7 +131,7 @@ module math_tools
    !
    !   will do the same in place.
    !
-   !     result = fft(A, dim=(/1,3/))
+   !     result = fft(A, dim=[1,3])
    !
    !   will transform with respect to the first and the third dimension, scaled
    !   by sqrt(L*N).
@@ -348,7 +348,7 @@ contains
          d(1:ndim) = dim(1:ndim)
       else
          ndim = size(d)
-         d = (/(i, i=1, size(d))/)
+         d = [(i, i=1, size(d))]
       end if
 
       ntotal = product(shape)
@@ -1066,7 +1066,7 @@ contains
       temp3 = 0
 
       temp1 = x
-      temp2 = (/(i, i=0, M - 1)/)
+      temp2 = [(i, i=0, M - 1)]
       temp3 = temp1(M - temp2)
       x = temp3
 

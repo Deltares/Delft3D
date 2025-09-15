@@ -122,9 +122,9 @@ contains
       call writelog('l', '', '--------------------------------')
       call writelog('l', '', 'Wave boundary condition parameters: ')
       allocate (allowednames(12), oldnames(12))
-      allowednames = (/'stat        ', 'bichrom     ', 'ts_1        ', 'ts_2        ', 'jons        ', 'swan        ', &
-                       'vardens     ', 'reuse       ', 'off         ', 'stat_table  ', 'jons_table  '/)
-      oldnames = (/'0 ', '1 ', '2 ', '3 ', '4 ', '5 ', '6 ', '7 ', '9 ', '40', '41'/)
+      allowednames = ['stat        ', 'bichrom     ', 'ts_1        ', 'ts_2        ', 'jons        ', 'swan        ', &
+                       'vardens     ', 'reuse       ', 'off         ', 'stat_table  ', 'jons_table  ']
+      oldnames = ['0 ', '1 ', '2 ', '3 ', '4 ', '5 ', '6 ', '7 ', '9 ', '40', '41']
       !             function =   file         key      default  n allowed  n old allowed  allowed names  old allowed names
       instat = readkey_str(md_surfbeatfile, 'instat', 'bichrom', 11, 11, allowednames, oldnames, required=(swave == 1))
       deallocate (allowednames, oldnames)
@@ -240,11 +240,11 @@ contains
       !epsi        = readkey_dbl (md_surfbeatfile,'epsi',     -1.d0,          -1.d0,   0.2d0   )
       hminlw = readkey_dbl(md_surfbeatfile, 'hmin', 0.2d0, 0.001d0, 1.d0)
       allocate (allowednames(2), oldnames(0))
-      allowednames = (/'abs_1d', 'abs_2d'/)
+      allowednames = ['abs_1d', 'abs_2d']
       absgentype = readkey_str(md_surfbeatfile, 'absgentype', 'abs_1d', 2, 0, allowednames, oldnames)
       if (allocated(allowednames)) deallocate (allowednames, oldnames)
       allocate (allowednames(2), oldnames(0))
-      allowednames = (/'instant ', 'velocity'/)
+      allowednames = ['instant ', 'velocity']
       tidetype = readkey_str(md_surfbeatfile, 'tidetype', 'velocity', 2, 0, allowednames, oldnames)
       deallocate (allowednames, oldnames)
       !
@@ -258,8 +258,8 @@ contains
          call writelog('l', '', '--------------------------------')
          call writelog('l', '', 'Wave dissipation parameters: ')
          allocate (allowednames(5), oldnames(5))
-         allowednames = (/'roelvink1    ', 'baldock      ', 'roelvink2    ', 'roelvink_daly', 'janssen      '/)
-         oldnames = (/'1', '2', '3', '4', '5'/)
+         allowednames = ['roelvink1    ', 'baldock      ', 'roelvink2    ', 'roelvink_daly', 'janssen      ']
+         oldnames = ['1', '2', '3', '4', '5']
          if (trim(instat) == 'stat' .or. trim(instat) == 'stat_table') then
             break = readkey_str(md_surfbeatfile, 'break', 'baldock', 5, 5, allowednames, oldnames)
             gamma = readkey_dbl(md_surfbeatfile, 'gamma', 0.78d0, 0.4d0, 0.9d0)
@@ -703,11 +703,11 @@ contains
       call aerr('csx  (ntheta)', ierr, ntheta)
       call realloc(snx, ntheta, stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('snx  (ntheta)', ierr, ntheta)
-      call realloc(thet, (/ntheta, ndx/), stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(thet, [ntheta, ndx], stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('thet  (ntheta,ndx)', ierr, ntheta * ndx)
-      call realloc(costh, (/ntheta, ndx/), stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(costh, [ntheta, ndx], stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('costh  (ntheta,ndx)', ierr, ntheta * ndx)
-      call realloc(sinth, (/ntheta, ndx/), stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(sinth, [ntheta, ndx], stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('sinth  (ntheta,ndx)', ierr, ntheta * ndx)
       call realloc(thetabin, ntheta, stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('thetabin  (ntheta)', ierr, ntheta)
@@ -717,11 +717,11 @@ contains
          ntheta_s = nint((thetamax - thetamin) / dtheta_s)
          call realloc(thetabin_s, ntheta_s, stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('thetabin_s  (ntheta_s)', ierr, ntheta_s)
-         call realloc(thet_s, (/ntheta_s, ndx/), stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(thet_s, [ntheta_s, ndx], stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('thet_s  (ntheta_s,ndx)', ierr, ntheta_s * ndx)
-         call realloc(costh_s, (/ntheta_s, ndx/), stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(costh_s, [ntheta_s, ndx], stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('costh_s  (ntheta_s,ndx)', ierr, ntheta_s * ndx)
-         call realloc(sinth_s, (/ntheta_s, ndx/), stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(sinth_s, [ntheta_s, ndx], stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('sinth_s  (ntheta_s,ndx)', ierr, ntheta_s * ndx)
 
       else
@@ -1747,7 +1747,7 @@ contains
             waveBoundaryParameters(n)%hboundary = hboundary(n)
             waveBoundaryParameters(n)%randomseed = randomseed(n)
 
-            call realloc(ees, (/ntheta_s, LL2 - LL1 + 1/), keepExisting=.false., fill=0d0)
+            call realloc(ees, [ntheta_s, LL2 - LL1 + 1], keepExisting=.false., fill=0d0)
 
             call create_incident_waves_surfbeat(LL2 - LL1 + 1, n, &
                                                 waveBoundaryParameters(n)%ntheta, time0, &
@@ -2885,7 +2885,7 @@ contains
                   L = kbndw(3, LL)
                   i = LL - LL1 + 1
                   call polyindexweight(xu(L), yu(L), xy2bndw(1, LL), xy2bndw(2, LL), &
-                                       xpl, ypl, (/(1, k=1, NPL)/), NPL, &
+                                       xpl, ypl, [(1, k=1, NPL)], NPL, &
                                        kL(i), wL(i), kR(i), wR(i))
                end do
 
@@ -2999,7 +2999,7 @@ contains
          end if
 
          if (single_dir > 0) then
-            call realloc(waveSpectrumAdministration(ibnd)%ee_s, (/ntheta_s, LL2 - LL1 + 1/), keepExisting=.false., fill=0d0)
+            call realloc(waveSpectrumAdministration(ibnd)%ee_s, [ntheta_s, LL2 - LL1 + 1], keepExisting=.false., fill=0d0)
          end if
 
          ! Set time to recompute new boundary condition time series to
@@ -4213,7 +4213,7 @@ contains
          call realloc(thetabinlocal, nthetalocal, keepExisting=.false., fill=0d0)
          call realloc(cgwavlocal, ndx, keepExisting=.false., fill=0d0)
          call realloc(cwavlocal, ndx, keepExisting=.false., fill=0d0)
-         call realloc(cthetalocal, (/nthetalocal, ndx/), keepExisting=.false., fill=0d0)
+         call realloc(cthetalocal, [nthetalocal, ndx], keepExisting=.false., fill=0d0)
          thetabinlocal = thetabin
          cwavlocal = cwav
          cgwavlocal = cgwav
@@ -4225,7 +4225,7 @@ contains
          call realloc(thetabinlocal, nthetalocal, keepExisting=.false., fill=0d0)
          call realloc(cgwavlocal, ndx, keepExisting=.false., fill=0d0)
          call realloc(cwavlocal, ndx, keepExisting=.false., fill=0d0)
-         call realloc(cthetalocal, (/nthetalocal, ndx/), keepExisting=.false., fill=0d0)
+         call realloc(cthetalocal, [nthetalocal, ndx], keepExisting=.false., fill=0d0)
          thetabinlocal = thetabin_s
          cgwavlocal = cgwav_s
          cwavlocal = cwav_s
@@ -5431,13 +5431,13 @@ contains
          ntheta_local = ntheta_s
       end select
 
-      call realloc(w, (/2, ntheta_local, numk/), stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(w, [2, ntheta_local, numk], stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('w  (2,ntheta_local,numk)', ierr, ntheta_local * numk * 2)
-      call realloc(ds, (/ntheta_local, numk/), stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ds, [ntheta_local, numk], stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('ds  (ntheta_local,numk)', ierr, ntheta_local * numk)
       call realloc(inner, numk, stat=ierr, keepExisting=.false., fill=.false.)
       call aerr('inner  (numk)', ierr, numk)
-      call realloc(prev, (/2, ntheta_local, numk/), stat=ierr, keepExisting=.false., fill=0)
+      call realloc(prev, [2, ntheta_local, numk], stat=ierr, keepExisting=.false., fill=0)
       call aerr('prev  (2,ntheta_local,numk)', ierr, ntheta_local * numk * 2)
       call realloc(hhstat, numk, stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('hhstat  (numk)', ierr, numk)
@@ -5447,9 +5447,9 @@ contains
       call aerr('cgstat  (numk)', ierr, numk)
       call realloc(cstat, numk, stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('cstat  (numk)', ierr, numk)
-      call realloc(cthetastat, (/ntheta_local, numk/), stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(cthetastat, [ntheta_local, numk], stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('cthetastat  (ntheta_local,numk)', ierr, numk * ntheta_local)
-      call realloc(eestat, (/ntheta_local, numk/), stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(eestat, [ntheta_local, numk], stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('eestat  (ntheta_local,numk)', ierr, numk * ntheta_local)
       call realloc(fwstat, numk, stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('fwstat  (numk)', ierr, numk)
@@ -5469,11 +5469,11 @@ contains
       call aerr('dhdystat  (numk)', ierr, numk)
       call realloc(dhdystat, numk, stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('dhdystat  (numk)', ierr, numk)
-      call realloc(wmask, (/4, numk/), stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(wmask, [4, numk], stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('wmask  (4,numk)', ierr, 4 * numk)
       call realloc(nmmask, numk, stat=ierr, keepExisting=.false., fill=0)
       call aerr('nmmask  (numk)', ierr, numk)
-      call realloc(kp, (/12, numk/), stat=ierr, keepExisting=.false., fill=0)
+      call realloc(kp, [12, numk], stat=ierr, keepExisting=.false., fill=0)
       call aerr('kp  (12,numk)', ierr, numk * 12)
       call realloc(Hmaxstat, numk, stat=ierr, keepExisting=.false., fill=0d0)
       call aerr('Hmaxstat  (numk)', ierr, numk)
@@ -5481,11 +5481,11 @@ contains
       if (roller > 0) then
          call realloc(Erstat, numk, stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('Erstat  (numk)', ierr, numk)
-         call realloc(wmean, (/2, 1, numk/), stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(wmean, [2, 1, numk], stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('wmean  (2,1,numk)', ierr, numk * 2)
-         call realloc(dsmean, (/1, numk/), stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(dsmean, [1, numk], stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('dsmean  (1,numk)', ierr, numk)
-         call realloc(prevmean, (/2, 1, numk/), stat=ierr, keepExisting=.false., fill=0)
+         call realloc(prevmean, [2, 1, numk], stat=ierr, keepExisting=.false., fill=0)
          call aerr('prevmean  (2,1,numk)', ierr, numk * 2)
          call realloc(Drstat, numk, stat=ierr, keepExisting=.false., fill=0d0)
          call aerr('Drstat  (numk)', ierr, numk)
@@ -5619,7 +5619,7 @@ contains
       ! what time is it
       call system_clock(COUNT=clock)
       ! define the seed vector based on a prime, the clock and the set of integers
-      seed = clock + 37 * (/(i - 1, i=1, n)/)
+      seed = clock + 37 * [(i - 1, i=1, n)]
       ! if mpi do we need a different seed on each node or the same???
       ! if we do need different seeds on each node
       ! seed *= some big prime * rank ?

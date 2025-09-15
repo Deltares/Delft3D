@@ -83,7 +83,7 @@ contains
       end if
 
       knodes = 0
-      knodes(1:N) = (/(netcell(i)%nod(j), j=1, N)/)
+      knodes(1:N) = [(netcell(i)%nod(j), j=1, N)]
 
 !--------------------------------------------------------------
 !  Assume (x,y)' = (x0,y0)' + Jacobian*(xi,eta)'
@@ -97,8 +97,8 @@ contains
 
          call spher2loc(x0, y0, N, xk(knodes(1:N)), yk(knodes(1:N)), xminx0(1:N), yminy0(1:N))
       else
-         xminx0(1:N) = (/(xk(knodes(j)), j=1, N)/)
-         yminy0(1:N) = (/(yk(knodes(j)), j=1, N)/)
+         xminx0(1:N) = [(xk(knodes(j)), j=1, N)]
+         yminy0(1:N) = [(yk(knodes(j)), j=1, N)]
 
          x0 = sum(xminx0(1:N)) / N
          y0 = sum(yminy0(1:N)) / N
@@ -107,7 +107,7 @@ contains
          yminy0 = yminy0 - y0
       end if
 
-      theta(1:N) = (/(k - 1, k=1, N)/)
+      theta(1:N) = [(k - 1, k=1, N)]
       theta(1:N) = theta(1:N) / N * 2d0 * pi
 
       xi(1:N) = cos(theta(1:N))

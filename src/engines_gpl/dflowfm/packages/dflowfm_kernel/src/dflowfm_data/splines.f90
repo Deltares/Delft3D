@@ -71,7 +71,7 @@ contains
 
       if (IERR == 0) return
 
-      ibounds = (/maxspl, maxsplen/)
+      ibounds = [maxspl, maxsplen]
       call realloc(xsp, ibounds, stat=ierr, fill=dxymis)
       call aerr('xsp(maxspl, maxsplen)', ierr, maxspl * maxsplen)
       call realloc(ysp, ibounds, stat=ierr, fill=dxymis)
@@ -171,7 +171,7 @@ contains
       integer, intent(in) :: m
       real(kind=dp), intent(in) :: x, y
 
-      call addSplinePoints(m, (/x/), (/y/))
+      call addSplinePoints(m, [x], [y])
    end subroutine addSplinePoint
 
    subroutine addSplinePoints(m, x, y)

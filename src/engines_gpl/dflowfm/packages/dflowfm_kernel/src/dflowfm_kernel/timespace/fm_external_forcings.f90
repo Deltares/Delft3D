@@ -970,8 +970,8 @@ contains
             call realloc(L2qbnd, nqbnd); L2qbnd(nqbnd) = nbndu + numu
             call realloc(at_all, nqbnd); at_all(nqbnd) = 0.0_dp
             call realloc(at_sum, nqbnd); at_sum(nqbnd) = 0.0_dp
-            call realloc(wwssav_all, (/2, nqbnd/), keepExisting=.true., fill=0.0_dp)
-            call realloc(wwssav_sum, (/2, nqbnd/), keepExisting=.true., fill=0.0_dp)
+            call realloc(wwssav_all, [2, nqbnd], keepExisting=.true., fill=0.0_dp)
+            call realloc(wwssav_sum, [2, nqbnd], keepExisting=.true., fill=0.0_dp)
             call realloc(huqbnd, L2qbnd(nqbnd)); huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0.0_dp
          else if (qidfm == 'absgenbnd') then
             if (.not. (jawave == WAVE_SURFBEAT)) then ! Safety to avoid allocation errors later on
@@ -1045,7 +1045,7 @@ contains
 
          if (janew == 1) then
 !       realloc ketr
-            call realloc(ketr, (/Nx, numtracers/), keepExisting=.true., fill=0)
+            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac) + 1:, itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
          write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtr, ' nr of tracer bndcells'; call msg_flush()
@@ -1062,7 +1062,7 @@ contains
 
          if (janew == 1) then
 !       realloc ketr
-            call realloc(ketr, (/Nx, numtracers/), keepExisting=.true., fill=0)
+            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
       else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
@@ -1073,7 +1073,7 @@ contains
 
             numfracs = numfracs + 1
 !       realloc
-            call realloc(kesf, (/Nx, numfracs/), keepExisting=.true., fill=0)
+            call realloc(kesf, [Nx, numfracs], keepExisting=.true., fill=0)
             call realloc(nbndsf, numfracs, keepExisting=.true., fill=0)
             call realloc(sfnames, numfracs, keepExisting=.true., fill='')
 

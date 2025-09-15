@@ -83,7 +83,7 @@ contains
             k = ln(i, L)
 
 !         compute orientation w.r.t. link mid point
-            call spher2locvec(xz(k), yz(k), 1, (/xL/), (/yL/), (/1d0/), (/0d0/), csb(i, L), snb(i, L), jsferic, jasfer3D, dmiss)
+            call spher2locvec(xz(k), yz(k), 1, [xL], [yL], [1d0], [0d0], csb(i, L), snb(i, L), jsferic, jasfer3D, dmiss)
          end do
       end do
 

@@ -127,7 +127,7 @@ module m_strucs
    integer, parameter :: idx_gateopeningwidth = 26
 
    integer, parameter :: NUMGENERALKEYWRD = 26
-   character(len=256) :: generalkeywrd(NUMGENERALKEYWRD) = (/character(len=256) :: &
+   character(len=256) :: generalkeywrd(NUMGENERALKEYWRD) = [character(len=256) :: &
                                                              'Upstream1Width', & ! ( 1)
                                                              'Upstream1Level', & ! ( 2)
                                                              'Upstream2Width', & ! ( 3)
@@ -154,7 +154,7 @@ module m_strucs
                                                              'dynstructext', & ! (24)
                                                              'GateHeight', & ! (25)
                                                              'GateOpeningWidth' & ! (26)
-                                                             /)
+                                                             ]
    type(tgeneralstruc), allocatable, target :: generalstruc(:)
 
    type tuniversalstruc

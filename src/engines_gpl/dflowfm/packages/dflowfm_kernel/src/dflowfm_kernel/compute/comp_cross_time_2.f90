@@ -104,7 +104,7 @@ contains
       b = 2d0 * dot_product(v1 - v3, x1 - x3)
       c = dot_product(x1 - x3, x1 - x3)
 
-      coeffs = (/0d0, 0d0, a, b, c - dclear * dclear/)
+      coeffs = [0d0, 0d0, a, b, c - dclear * dclear]
       call comp_roots4(coeffs, x)
       do i = 1, 4
          if (x(i) == DMISS .or. x(i) <= 0d0 .or. x(i) > t1) cycle
@@ -133,7 +133,7 @@ contains
       b = 2d0 * dot_product(v1 - v4, x1 - x4)
       c = dot_product(x1 - x4, x1 - x4)
 
-      coeffs = (/0d0, 0d0, a, b, c - dclear * dclear/)
+      coeffs = [0d0, 0d0, a, b, c - dclear * dclear]
       call comp_roots4(coeffs, x)
       do i = 1, 4
          if (x(i) == DMISS .or. x(i) <= 0d0 .or. x(i) > t1) cycle

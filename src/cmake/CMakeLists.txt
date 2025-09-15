@@ -25,6 +25,7 @@ cmake_path(GET PARENT_DIR PARENT_PATH dir)
 # Set unit and integration test root directory
 set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
+set(nefis_tests_dir ${dir}/test/nefis_test)
 
 include(modules.cmake)
 
@@ -155,6 +156,10 @@ if (UNIX)
 elseif (WIN32)
     set(platform_extension bat)
     set(library_suffix dll)
+    
+   set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+   set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "lib")
+    include(InstallRequiredSystemLibraries)
 endif()
 
 # Expat:

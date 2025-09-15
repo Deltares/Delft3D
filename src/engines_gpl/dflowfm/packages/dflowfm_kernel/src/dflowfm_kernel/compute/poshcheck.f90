@@ -61,7 +61,7 @@ contains
       call set_water_level_and_hu_for_dry_cells(s1, hu)
 
       if (jampi == 1) then
-         reduced_data = (/key, nodneg/)
+         reduced_data = [key, nodneg]
 
          if (jatimer == 1) call starttimer(IMPIREDUCE)
          call reduce_int_max(2, reduced_data)

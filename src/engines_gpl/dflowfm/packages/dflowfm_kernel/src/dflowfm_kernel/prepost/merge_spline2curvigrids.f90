@@ -122,8 +122,8 @@ contains
 !     reallocate
          iupperold = ubound(xcnew)
          ilowerold = lbound(xcnew)
-         iupper = (/iendnew, max(jmax, iupperold(2))/)
-         ilower = (/1, min(2 - jmaxother, ilowerold(2))/)
+         iupper = [iendnew, max(jmax, iupperold(2))]
+         ilower = [1, min(2 - jmaxother, ilowerold(2))]
          call realloc(xcnew, iupper, ilower, keepExisting=.true., fill=DMISS)
          call realloc(ycnew, iupper, ilower, keepExisting=.true., fill=DMISS)
 

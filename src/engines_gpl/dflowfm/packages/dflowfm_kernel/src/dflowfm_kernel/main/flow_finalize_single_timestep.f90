@@ -101,7 +101,7 @@ contains
       if (jaQext > 0) then
          call updateCumulativeInflow(dts)
       end if
-      
+
       ! compute some output quantities for ice ...
       ! For the map-file it's good enough to call it from flow_externaloutput, but
       ! we need to call it before updateValuesOnObservationStations for the his-file.

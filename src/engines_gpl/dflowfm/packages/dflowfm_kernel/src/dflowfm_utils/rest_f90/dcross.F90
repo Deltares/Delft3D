@@ -102,7 +102,7 @@ contains
             yycr = 0.5d0 * (yy1 + SL * yy21 + yy3 + SM * yy43)
             zzcr = 0.5d0 * (zz1 + SL * zz21 + zz3 + SM * zz43)
 
-            call Cart3Dtospher(xxcr, yycr, zzcr, xcr, ycr, maxval((/x1, x2, x3, x4/)))
+            call Cart3Dtospher(xxcr, yycr, zzcr, xcr, ycr, maxval([x1, x2, x3, x4]))
 !            CRP = -DET
             crp = -(xxn * xxcr + yyn * yycr + zzn * zzcr) / sqrt(xxcr**2 + yycr**2 + zzcr**2)
             if (SM >= 0d0 .and. SM <= 1d0) then
