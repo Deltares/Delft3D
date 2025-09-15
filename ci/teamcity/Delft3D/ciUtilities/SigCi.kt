@@ -25,6 +25,7 @@ object SigCi : BuildType({
             param("teamcity.step.phase", "")
             param("plugin.docker.run.parameters", "")
             param("customer", "deltares")
+            param("include", "src/engines_gpl")
         }
     }
 

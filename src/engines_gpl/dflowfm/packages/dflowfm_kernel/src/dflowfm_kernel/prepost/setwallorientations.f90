@@ -93,14 +93,14 @@ contains
 
 !      compute orientation of flowlinks w.r.t. wall mid point
          if (L1 > 0) then
-            call spher2locvec(xu(L1), yu(L1), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbw(1, nw), snbw(1, nw), jsferic, jasfer3D, dmiss)
+            call spher2locvec(xu(L1), yu(L1), 1, [xh], [yh], [1d0], [0d0], csbw(1, nw), snbw(1, nw), jsferic, jasfer3D, dmiss)
          end if
          if (L2 > 0) then
-            call spher2locvec(xu(L2), yu(L2), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbw(2, nw), snbw(2, nw), jsferic, jasfer3D, dmiss)
+            call spher2locvec(xu(L2), yu(L2), 1, [xh], [yh], [1d0], [0d0], csbw(2, nw), snbw(2, nw), jsferic, jasfer3D, dmiss)
          end if
 
 !      compute orientation of flownode w.r.t. wall mid point
-         call spher2locvec(xz(k1), yz(k1), 1, (/xh/), (/yh/), (/1d0/), (/0d0/), csbwn(nw), snbwn(nw), jsferic, jasfer3D, dmiss)
+         call spher2locvec(xz(k1), yz(k1), 1, [xh], [yh], [1d0], [0d0], csbwn(nw), snbwn(nw), jsferic, jasfer3D, dmiss)
       end do
 
       return

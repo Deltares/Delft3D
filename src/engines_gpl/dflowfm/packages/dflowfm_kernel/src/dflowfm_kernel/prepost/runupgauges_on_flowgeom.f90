@@ -177,7 +177,7 @@ contains
       icMOD = max(1, num_rugs / 100)
 
       call realloc(numlist, num_rugs, keepExisting=.true., fill=0) ! In case pli-based cross sections have not allocated this yet.
-      call realloc(linklist, (/max(intersection_count, 1), num_rugs/), keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
+      call realloc(linklist, [max(intersection_count, 1), num_rugs], keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
 
       ! todo: caching
       !call copy_cached_cross_sections( crossed_links, polygon_nodes, success )

@@ -1278,7 +1278,7 @@ contains
          !     realloc
          call realloc(wqbotnames, numwqbots, keepExisting=.true., fill=trim(wqbotnam))
          call realloc(wqbotunits, numwqbots, keepExisting=.true., fill=wqbotunit)
-         call realloc(wqbot, (/numwqbots, Ndkx/), keepExisting=.true., fill=0.0d0)
+         call realloc(wqbot, [numwqbots, Ndkx], keepExisting=.true., fill=0.0d0)
       end if
    end subroutine add_wqbot
 

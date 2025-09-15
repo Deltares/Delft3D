@@ -61,7 +61,7 @@ subroutine GAGetParAnalys (flwrun ,hyrtim ,nhytim ,saltim ,&
    &sshh     ,stastep  ,i      ,dattimsim(2)
    real           dtsim    ,estimper ,perstep
    logical        ana
-   character(len=256) flownamhis ,saltnamhis ,gaviewnam(4)
+   character(len=256) flownamhis ,saltnamhis
 
 !
 !     Get start timestep for tidal analysis
@@ -142,13 +142,8 @@ subroutine GAGetParAnalys (flwrun ,hyrtim ,nhytim ,saltim ,&
       dattimsim(1) = yyyy * 10000 + mmdd
       dattimsim(2) = hhmm * 10000 + sshh
 !
-      gaviewnam(1) = gawlev
-      gaviewnam(2) = gadisch
-      gaviewnam(3) = gaveloc
-      gaviewnam(4) = gaconcen
-!
       call GetijAnalyse (flownamhis     ,saltnamhis  ,gaprinam  ,&
-      &gaviewnam      ,hyrtim(nlcflw)         ,&
+      &hyrtim(nlcflw)         ,&
       &saltim(nlcsal) ,dtsim       ,dattimsim ,&
       &nstepsim       ,EstimPer    ,juer      ,&
       &ker            )

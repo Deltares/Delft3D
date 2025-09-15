@@ -1109,7 +1109,7 @@
 			</checks>
 		</testCase>
 		<testCase name="e01_f06_c13-bijker_bailard" ref="flow2d3d_default">
-			<path version="2024-03-22T19:30:00">e01_d3dflow/f06_ols/c13-bijker_bailard</path>
+			<path version="2024-06-03T15:30:00">e01_d3dflow/f06_ols/c13-bijker_bailard</path>
 			<maxRunTime>287.086999893</maxRunTime>
 			<checks>
 				<file name="trih-t10.dat" type="NEFIS">

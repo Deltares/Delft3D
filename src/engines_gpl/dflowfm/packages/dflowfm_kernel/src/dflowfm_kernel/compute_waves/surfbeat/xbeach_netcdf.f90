@@ -266,7 +266,7 @@ contains
          end if
 
          call check_error(ierr, 'def time dim')
-         ierr = unc_def_var_nonspatial(wavids%ncid, wavids%id_time, nf90_double, (/wavids%id_tsp%id_timedim/), 'time', 'time', '', trim(Tudunitstr))
+         ierr = unc_def_var_nonspatial(wavids%ncid, wavids%id_time, nf90_double, [wavids%id_tsp%id_timedim], 'time', 'time', '', trim(Tudunitstr))
 
          if (jaavgwriteall > 0 .or. jaavgwriteH > 0) then
             ierr = unc_def_var_map(wavids%ncid, wavids%id_tsp, wavids%id_H_mean, nf90_double, UNC_LOC_S, 'H_mean', 'mean rms wave height', 'mean rms wave height', 'm')
@@ -384,7 +384,7 @@ contains
 
       wavids%id_tsp%idx_curtime = wavids%id_tsp%idx_curtime + 1
       itim = wavids%id_tsp%idx_curtime
-      ierr = nf90_put_var(wavids%ncid, wavids%id_time, tim, (/itim/))
+      ierr = nf90_put_var(wavids%ncid, wavids%id_time, tim, [itim])
 
       if (jaavgwriteall > 0 .or. jaavgwriteH > 0) then
          temp = 0d0
@@ -826,14 +826,14 @@ contains
       itim = it_wav ! Increment time dimension index
 
       ! Time
-      ierr = nf90_put_var(imapfile, id_time, tim, (/itim/))
+      ierr = nf90_put_var(imapfile, id_time, tim, [itim])
 
       ! Data on flow nodes
       if (jaavgwriteall > 0 .or. jaavgwriteE > 0) then
-         ierr = nf90_put_var(imapfile, id_E_mean, E_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_E_var, E_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_E_max, E_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_E_min, E_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_E_mean, E_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_E_var, E_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_E_max, E_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_E_min, E_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteH > 0) then
@@ -841,41 +841,41 @@ contains
          do k = 1, ndxi ! stack overflow
             temp(k) = sqrt(H_varsquare(k))
          end do
-         ierr = nf90_put_var(imapfile, id_H_mean, temp(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_H_var, H_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_H_max, H_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_H_min, H_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_H_mean, temp(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_H_var, H_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_H_max, H_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_H_min, H_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteR > 0) then
-         ierr = nf90_put_var(imapfile, id_R_mean, R_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_R_var, R_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_R_max, R_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_R_min, R_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_R_mean, R_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_R_var, R_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_R_max, R_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_R_min, R_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteD > 0) then
-         ierr = nf90_put_var(imapfile, id_D_mean, D_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_D_var, D_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_D_max, D_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_D_min, D_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_D_mean, D_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_D_var, D_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_D_max, D_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_D_min, D_min(1:ndxi), [1, itim], [ndxi, 1])
 
-         ierr = nf90_put_var(imapfile, id_DR_mean, DR_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_DR_var, DR_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_DR_max, DR_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_DR_min, DR_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_DR_mean, DR_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_DR_var, DR_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_DR_max, DR_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_DR_min, DR_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteCel > 0) then
-         ierr = nf90_put_var(imapfile, id_cwav_mean, cwav_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_cwav_var, cwav_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_cwav_max, cwav_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_cwav_min, cwav_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_cwav_mean, cwav_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_cwav_var, cwav_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_cwav_max, cwav_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_cwav_min, cwav_min(1:ndxi), [1, itim], [ndxi, 1])
 
-         ierr = nf90_put_var(imapfile, id_cgwav_mean, cgwav_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_cgwav_var, cgwav_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_cgwav_max, cgwav_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_cgwav_min, cgwav_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_cgwav_mean, cgwav_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_cgwav_var, cgwav_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_cgwav_max, cgwav_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_cgwav_min, cgwav_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteDir > 0) then
@@ -883,66 +883,66 @@ contains
          do k = 1, ndxi ! stack
             temp(k) = 270.d0 - mod(2.d0 * pi + atan2(nint(thetamean_mean(k)) / 1d7, mod(thetamean_mean(k), 1.d0) * 1d1), 2.d0 * pi) / pi * 180d0
          end do
-         ierr = nf90_put_var(imapfile, id_thetamean_mean, temp(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_thetamean_var, thetamean_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_thetamean_max, thetamean_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_thetamean_min, thetamean_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_thetamean_mean, temp(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_thetamean_var, thetamean_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_thetamean_max, thetamean_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_thetamean_min, thetamean_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteSigm > 0) then
-         ierr = nf90_put_var(imapfile, id_sigmwav_mean, sigmwav_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_sigmwav_var, sigmwav_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_sigmwav_max, sigmwav_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_sigmwav_min, sigmwav_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_sigmwav_mean, sigmwav_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_sigmwav_var, sigmwav_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_sigmwav_max, sigmwav_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_sigmwav_min, sigmwav_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteS > 0) then
-         ierr = nf90_put_var(imapfile, id_s1_mean, s1_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_s1_var, s1_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_s1_max, s1_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_s1_min, s1_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_s1_mean, s1_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_s1_var, s1_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_s1_max, s1_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_s1_min, s1_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteF > 0) then
-         ierr = nf90_put_var(imapfile, id_Fx_mean, Fx_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_Fx_var, Fx_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_Fx_max, Fx_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_Fx_min, Fx_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_Fx_mean, Fx_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_Fx_var, Fx_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_Fx_max, Fx_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_Fx_min, Fx_min(1:ndxi), [1, itim], [ndxi, 1])
 
-         ierr = nf90_put_var(imapfile, id_Fy_mean, Fy_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_Fy_var, Fy_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_Fy_max, Fy_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_Fy_min, Fy_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_Fy_mean, Fy_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_Fy_var, Fy_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_Fy_max, Fy_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_Fy_min, Fy_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteU > 0) then
-         ierr = nf90_put_var(imapfile, id_ustx_mean, ust_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_ustx_var, ust_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_ustx_max, ust_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_ustx_min, ust_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_ustx_mean, ust_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_ustx_var, ust_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_ustx_max, ust_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_ustx_min, ust_min(1:ndxi), [1, itim], [ndxi, 1])
 
-         ierr = nf90_put_var(imapfile, id_usty_mean, vst_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_usty_var, vst_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_usty_max, vst_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_usty_min, vst_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_usty_mean, vst_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_usty_var, vst_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_usty_max, vst_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_usty_min, vst_min(1:ndxi), [1, itim], [ndxi, 1])
 
-         ierr = nf90_put_var(imapfile, id_u_mean, ucx_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_u_var, ucx_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_u_max, ucx_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_u_min, ucx_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_u_mean, ucx_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_u_var, ucx_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_u_max, ucx_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_u_min, ucx_min(1:ndxi), [1, itim], [ndxi, 1])
 
-         ierr = nf90_put_var(imapfile, id_v_mean, ucy_mean(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_v_var, ucy_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_v_max, ucy_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_v_min, ucy_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_v_mean, ucy_mean(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_v_var, ucy_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_v_max, ucy_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_v_min, ucy_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteUrms > 0) then
          temp = sqrt(urms_varsquare)
-         ierr = nf90_put_var(imapfile, id_urms_mean, temp, (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_urms_var, urms_var(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_urms_max, urms_max(1:ndxi), (/1, itim/), (/ndxi, 1/))
-         ierr = nf90_put_var(imapfile, id_urms_min, urms_min(1:ndxi), (/1, itim/), (/ndxi, 1/))
+         ierr = nf90_put_var(imapfile, id_urms_mean, temp, [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_urms_var, urms_var(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_urms_max, urms_max(1:ndxi), [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(imapfile, id_urms_min, urms_min(1:ndxi), [1, itim], [ndxi, 1])
       end if
    end subroutine unc_write_wav_filepointer
 

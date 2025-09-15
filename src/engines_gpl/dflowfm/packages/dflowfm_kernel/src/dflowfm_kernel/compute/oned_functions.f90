@@ -33,11 +33,11 @@
 module m_oned_functions
    use m_vol12d, only: vol12d
    use m_missing, only: dmiss
-   
+
    implicit none
-   
+
    private
- 
+
    public set_1d_roughnesses
    public set_1d_indices_in_network
    public save_1d_nrd_vars_in_stm
@@ -73,8 +73,6 @@ contains
       use unstruc_channel_flow, only: network
       use m_flow, only: frcu, ifrcutp, frcu_mor
 
-      
-
       ! FRCU and FRCU_MOR should only be used after SETAU - VOL12D.
       ! Therefore initialise these arrays with a negative value.
       if (network%loaded) then
@@ -97,7 +95,6 @@ contains
       use m_flow, only: nonlin1d, nonlin, flow_solver, flow_solver_sre
       use unstruc_channel_flow, only: default_width, network, cscalculationoption, cs_type_plus
 
-      
       integer handle_tot
       integer handle
 
@@ -156,8 +153,6 @@ contains
       use m_flowgeom, only: ln, ndx2d, nd
       use precision_basics, only: comparereal
       use m_branch, only: t_branch
-
-      
 
       integer :: L
       integer :: ibr
@@ -240,8 +235,6 @@ contains
       use m_inquire_flowgeom
       use m_find_flownode, only: find_nearest_flownodes
 
-      
-
       integer :: i
       type(t_storage), pointer :: pstor
       integer, allocatable :: ixy2stor(:), k_tmp(:)
@@ -311,8 +304,6 @@ contains
       use fm_external_forcings_data
       use m_inquire_flowgeom
 
-      
-
       integer :: nstru
 
       nstru = network%sts%count
@@ -336,8 +327,6 @@ contains
       use m_sediment
       use messageHandling
       use m_flowparameters, only: flow_solver, FLOW_SOLVER_SRE
-
-      
 
       integer :: L
       integer :: ibr
@@ -448,8 +437,6 @@ contains
       use morphology_data_module, only: t_nodefraction, t_noderelation
       use string_module
 
-      
-
       integer :: ibr, iFrac, iNodeRel
       type(t_branch), pointer :: pbr
       type(t_nodefraction), pointer :: pFrac
@@ -508,8 +495,6 @@ contains
       use m_1d_structures, only: get_crest_level, t_structure
       use m_storage, only: t_storage
       use m_flowparameters, only: eps3
-
-      
 
       integer :: i
       integer :: L, L0
@@ -855,7 +840,7 @@ contains
       use m_Storage
       use m_CrossSections
       use m_network
-      
+
       type(t_network), intent(inout), target :: network
       type(t_storage), pointer :: pSto
       type(t_administration_1d), pointer :: adm
@@ -935,7 +920,7 @@ contains
       use m_flow, only: s1, vol1, a1, vol1_f, a1m, s1m, nonlin
       use m_alloc
       use unstruc_channel_flow, only: network
-      
+
       real(kind=dp), allocatable :: s1_tmp(:), vol1_tmp(:), a1_tmp(:), vol1_ftmp(:), a1m_tmp(:), s1m_tmp(:)
       integer :: ndx1d
       logical, allocatable :: hysteresis_tmp(:, :)
@@ -1014,7 +999,7 @@ contains
       use m_flow, only: freeboard, s1
       use m_flowgeom, only: ndxi, ndx2d, groundLevel, groundStorage
       use m_network
-      
+
       type(t_network), intent(inout), target :: network
       integer :: i, ii
 
@@ -1039,7 +1024,7 @@ contains
       use m_flowtimes, only: time_wetground
       use m_flow, only: s1
       use m_flowgeom, only: ndxi, ndx2d, groundLevel, groundStorage
-      
+
       real(kind=dp), intent(in) :: dts !< computational time step
       integer :: i, ii
 
@@ -1061,7 +1046,7 @@ contains
       use m_flowparameters, only: epswetout
       use m_network
       use m_flowgeom, only: ndxi, ndx2d, groundLevel, groundStorage
-      
+
       type(t_network), intent(inout), target :: network !< 1D network from flow1d.
 
       integer :: i, ii
@@ -1084,7 +1069,7 @@ contains
       use m_flowparameters, only: epswetout
       use m_flowgeom, only: volMaxUnderground, ndxi, ndx2d, groundLevel, groundStorage
       use m_network
-      
+
       type(t_network), intent(inout), target :: network
       integer :: i, ii
 
@@ -1104,7 +1089,7 @@ contains
       use precision, only: dp
       use m_flow, only: vTot1d2d, qCur1d2d, q1
       use m_flowgeom, only: ndx2d, lnx1d, kcu, ln
-      
+
       real(kind=dp), intent(in) :: dts ! current computational time step
 
       integer :: Lf, n
@@ -1135,7 +1120,7 @@ contains
       use m_flow, only: vTotLat, qCurLat
       use m_flowgeom, only: ndx2d
       use m_laterals, only: qqlat, numlatsg, n1latsg, n2latsg, nnlat
-      
+
       real(kind=dp), intent(in) :: dts ! current computational time step
       integer :: n
       integer :: i_lat, i_node
@@ -1165,7 +1150,7 @@ contains
    subroutine updateS1Gradient()
       use m_flow, only: s1Gradient, s1, hu, epshu
       use m_flowgeom, only: lnx1d, ln, dx
-      
+
       integer :: k1, k2, L
 
       s1Gradient = dmiss

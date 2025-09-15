@@ -92,7 +92,7 @@ contains
             z31 = zzn - zz3
             DIS = sqrt(x31 * x31 + y31 * y31 + z31 * z31)
 
-            call Cart3Dtospher(xxn, yyn, zzn, xn, yn, maxval((/x1, x2, x3/)))
+            call Cart3Dtospher(xxn, yyn, zzn, xn, yn, maxval([x1, x2, x3]))
          end if
 
       end if

@@ -53,6 +53,8 @@ program test4
    CHARACTER coding*1
    CHARACTER*1024 errstr
    CHARACTER*255  version
+   CHARACTER*20  strdata
+
 !
    cpu1   = 0.0
    cpu2   = 0.0
@@ -63,9 +65,9 @@ program test4
 !
    call clock(cpu1)
    error = getnfv(version)
-   write(*,*)
-   write(*,*) trim(version(5:))
-   write(*,*)
+   write(*,*) '-----------------------------------------------'
+   write(*,*) 'Version: '//trim(version(5:))
+   write(*,*) '-----------------------------------------------'
 
    error= Opndef( fds, 'nefis_ex.def', coding)
    if (error .ne. 0) goto 9999
@@ -104,6 +106,10 @@ program test4
 !
    error= Credat( fds, 'DATAGRP_TEST_1B', 'GRP_TEST_1')
    if (error .ne. 0) goto 9999
+!
+   error= Credat( fds, 'DATAGRP_TEST_1C', 'GRP_TEST_2')
+   if (error .ne. 0) goto 9999
+!   
    call clock(cpu2)
    WRITE(*,'(''Initialisation NEFIS files [sec]'',1PE13.5)')&
    &cpu2-cpu1
@@ -183,8 +189,22 @@ program test4
    call clock(cpu2)
    WRITE(*,'(''DATAGRP_TEST_1B read    in [sec]'',1PE13.5)')&
    &cpu2-cpu1
+
+   call clock(cpu1)
+   DO 50 i= 1, imax
+      UINDEX (1,1) = i
+      UINDEX (2,1) = i
+      error= Getelt( fds, 'DATAGRP_TEST_1C', '*'       ,&
+      &UINDEX, 1, 20, strdata)
+      if (error .ne. 0) goto 9999
+      IF (strdata /= 'ABCDEFGHIJKLMNOPQRST') PRINT *,'error, i= ', i, strdata&
+      &,strdata
+50 CONTINUE
+   call clock(cpu2)
+   WRITE(*,'(''DATAGRP_TEST_1C read    in [sec]'',1PE13.5)')&
+   &cpu2-cpu1
    write(*,*)
-!
+
    error= Clsdat( fds)
    error= Clsdef( fds)
 !

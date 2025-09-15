@@ -95,7 +95,7 @@ contains
       real(kind=dp), dimension(:), allocatable :: sum_horizontal_flux !sum of horizontal fluxes
       real(kind=dp), dimension(:), allocatable :: dummy_ndx !only used if `limtyp`=6
 
-      real, dimension(:), allocatable :: dummy_link !ATTENTION single precision
+      real(kind=dp), dimension(:), allocatable :: dummy_link !ATTENTION single precision
 
       !BEGIN
 
@@ -108,10 +108,10 @@ contains
 
       call realloc(dummy, 1, keepExisting=.true., fill=0.0_dp) !no diffusion (it is not used anyway because we pass the optional input `constituent_diffusion`)
 
-      call realloc(horizontal_flux, (/1, lnx/), keepExisting=.true., fill=0.0_dp)
+      call realloc(horizontal_flux, [1, lnx], keepExisting=.true., fill=0.0_dp)
 
-      call realloc(vertical_flux, (/1, ndx/), keepExisting=.true., fill=0.0_dp)
-      call realloc(right_hand_side, (/1, ndx/), keepExisting=.true., fill=0.0_dp)
+      call realloc(vertical_flux, [1, ndx], keepExisting=.true., fill=0.0_dp)
+      call realloc(right_hand_side, [1, ndx], keepExisting=.true., fill=0.0_dp)
 
       allocate (dummy_link(1:lnkx), stat=ierror); dummy_link = 0.0
 
@@ -128,18 +128,18 @@ contains
       end do
 
       !reshape (we only have one constituent)
-      constituent_source = reshape(source, shape=(/1, ndx/))
-      constituent_sink = reshape(sink, shape=(/1, ndx/))
-      constituent_variable = reshape(variable, shape=(/1, ndx/))
+      constituent_source = reshape(source, shape=[1, ndx])
+      constituent_sink = reshape(sink, shape=[1, ndx])
+      constituent_variable = reshape(variable, shape=[1, ndx])
 
-      constituent_diffusion = reshape(diffusion, shape=(/1, lnx/))
+      constituent_diffusion = reshape(diffusion, shape=[1, lnx])
 
       call comp_dxiAu()
       call comp_fluxhor3d(NUMCONST, limiter_type, ndx, lnx, advection_velocity, advection_discharge, sum_flux_out, ba, kbot, lbot, ltop, kmxn, kmxL, constituent_variable, dummy, dummy, dummy_link, NSUBSTEPS, jahorupdate, ndeltasteps, jaupdateconst, horizontal_flux, dummy_ndx, dummy_ndx, 1, dxiAu, difsedsp=constituent_diffusion, background_diffusion_factor=background_diffusion_factor)
       call comp_sumhorflux(1, 0, lnkx, ndkx, lbot, ltop, horizontal_flux, sum_horizontal_flux)
       call solve_2D(1, ndx, ba, kbot, ktop, sum_horizontal_flux, vertical_flux, constituent_source, constituent_sink, 1, jaupdate, ndeltasteps, constituent_variable, right_hand_side)
 
-      variable = reshape(constituent_variable, shape=(/ndx/))
+      variable = reshape(constituent_variable, shape=[ndx])
 
    end subroutine fm_advec_diff_2d
 end module m_fm_advec_diff_2d

@@ -3674,7 +3674,7 @@ contains
             end if
 
             if (stmpar%morlyr%settings%active_layer_diffusion > 0) then
-               ierr = nf90_def_var(irstfile, 'aldiff', nf90_double, (/id_flowlinkdim, id_timedim/), id_aldiff)
+               ierr = nf90_def_var(irstfile, 'aldiff', nf90_double, [id_flowlinkdim, id_timedim], id_aldiff)
                ierr = nf90_put_att(irstfile, id_aldiff, 'coordinates', 'FlowLink_xu FlowLink_yu')
                ierr = nf90_put_att(irstfile, id_aldiff, 'long_name', 'Diffusion coefficient in the active-layer')
                ierr = nf90_put_att(irstfile, id_aldiff, 'units', 'm s-2')
@@ -4727,7 +4727,7 @@ contains
                !V: We have to think were information is stored. DIffusion in the active layer is read at cell centres, because this is what the reader does
                !and it is generic D3D4 and FM, but diffusion is applied at cell edges and the FM variable where this is stored is not in `stmpar`.
                !Furthermore, I am here storing it for all times, as maybe in the future it is time dependent. We could rethink this.
-               ierr = nf90_put_var(irstfile, id_aldiff, aldiff_links(1, 1:lnx), (/1, itim/), (/lnx, 1/))
+               ierr = nf90_put_var(irstfile, id_aldiff, aldiff_links(1, 1:lnx), [1, itim], [lnx, 1])
             end if
          end select
          ! sedshort
@@ -6106,7 +6106,7 @@ contains
                end if
                !
                if (stmpar%morpar%moroutput%aldiff) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aldiff, nc_precision, UNC_LOC_U, 'aldiff', '', 'Diffusion coefficient applied to active layer mass', 'm s-2', dimids=(/-2, -1/), jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aldiff, nc_precision, UNC_LOC_U, 'aldiff', '', 'Diffusion coefficient applied to active layer mass', 'm s-2', dimids=[-2, -1], jabndnd=jabndnd_)
                end if
             end select
             if (stmpar%morlyr%settings%morlyrnum%track_mass_shortage) then
@@ -7445,7 +7445,7 @@ contains
             !
             if (stmpar%morpar%moroutput%aldiff) then
                !ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aldiff, UNC_LOC_U, aldiff_links, locdim=2, jabndnd=jabndnd_)
-               work1d_links = reshape(aldiff_links, shape=(/lnx/))
+               work1d_links = reshape(aldiff_links, shape=[lnx])
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_aldiff, UNC_LOC_U, work1d_links, jabndnd=jabndnd_)
             end if
          case default
