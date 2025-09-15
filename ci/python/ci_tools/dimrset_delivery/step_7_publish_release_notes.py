@@ -3,6 +3,7 @@ import re
 import subprocess
 import requests
 import os
+import sys
 from datetime import date
 from pathlib import Path
 import argparse
@@ -69,44 +70,19 @@ def build_changelog(commits):
             changelog.append(f"- {commit}")
     return changelog
 
-def prepend_or_replace_in_changelog(tag, changes):
-    """Prepend new changelog or replace existing entry for a tag."""
+def prepend_to_changelog(tag, changes):
     new_entry = [
         f"## {tag} - {date.today().isoformat()}",
         "",
         *changes,
         "",
     ]
-    new_text = "\n".join(new_entry)
-
     if CHANGELOG_FILE.exists():
         old_content = CHANGELOG_FILE.read_text(encoding="utf-8")
     else:
         old_content = "# Changelog\n\n"
 
-    lines = old_content.splitlines()
-    new_lines = []
-    i = 0
-    replaced = False
-
-    while i < len(lines):
-        line = lines[i]
-        if line.startswith(f"## {tag} - "):
-            # Skip until the next section or end of file
-            while i < len(lines) and not lines[i].startswith("## "):
-                i += 1
-            # Insert the new entry once
-            new_lines.append(new_text)
-            replaced = True
-        else:
-            new_lines.append(line)
-            i += 1
-
-    if not replaced:
-        # Prepend new entry
-        new_lines = [new_text] + new_lines
-
-    updated = "\n".join(new_lines) + "\n"
+    updated = "\n".join(new_entry) + "\n" + old_content
     CHANGELOG_FILE.write_text(updated, encoding="utf-8")
 
 def main():
@@ -116,12 +92,11 @@ def main():
     commits = get_commits(prev_tag, current_tag)
     changelog = build_changelog(commits)
 
-    prepend_or_replace_in_changelog(current_tag, changelog)
+    prepend_to_changelog(current_tag, changelog)
 
     print(f"Changelog updated in {CHANGELOG_FILE}")
 
 if __name__ == "__main__":
-    import sys
     try:
         main()
         sys.exit(0)
