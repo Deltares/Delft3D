@@ -1843,7 +1843,7 @@
                     "key": "unifFrictCoef",
                     "default_value": 0.023,
                     "value_type": "float",
-                    "description": "Uniform friction coefficient (0: no friction).",
+                    "description": "Uniform friction coefficient.",
                     "unit": "depends on `unifFrictType`",
                     "validation": {
                         "range": {
@@ -1867,8 +1867,21 @@
                     "key": "unifFrictCoef1D",
                     "default_value": 0.023,
                     "value_type": "float",
-                    "description": "Uniform friction coefficient in 1D links (0: no friction).",
+                    "description": "Uniform friction coefficient in 1D links.",
                     "unit": "depends on `unifFrictType`",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+				{
+                    "key": "unifFrictCoef1D2D",
+                    "value_type": "float",
+                    "default_value": 0.023,
+                    "description": "Uniform friction coefficient in 1D2D links.",
+                    "unit": "depends on `unifFrictType`",
+                    "status": "research",
                     "validation": {
                         "range": {
                             "min_inclusive": 0.0
@@ -1879,7 +1892,7 @@
                     "key": "unifFrictCoefLin",
                     "default_value": 0.0,
                     "value_type": "float",
-                    "description": "Uniform linear friction coefficient (0: no friction).",
+                    "description": "Uniform linear friction coefficient.",
                     "unit": "m/s",
                     "validation": {
                         "range": {
@@ -2240,18 +2253,6 @@
                     "value_type": "intbool",
                     "description": "Use momentum transfer in NearField related entrainment.",
                     "status": "research"
-                },
-                {
-                    "key": "unifFrictCoef1D2D",
-                    "value_type": "float",
-                    "default_value": 0.023,
-                    "description": "Uniform friction coefficient in 1D2D links.",
-                    "status": "research",
-                    "validation": {
-                        "range": {
-                            "min_inclusive": 0.0
-                        }
-                    }
                 },
                 {
                     "key": "equili",

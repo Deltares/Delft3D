@@ -295,10 +295,11 @@ In this field, physical model parameters can be inserted, for instance related t
 
 | Keyword | Description | Default | Supported values | Unit |
 | ------- | ----------- | ------- | ---------------- | ---- |
-| `unifFrictCoef` | Uniform friction coefficient (0: no friction). | `0.023` | `≥0.0` | [depends on `unifFrictType`] |
+| `unifFrictCoef` | Uniform friction coefficient. | `0.023` | `≥0.0` | [depends on `unifFrictType`] |
 | `unifFrictType` | Uniform friction type. | `1` | <ul><li>**`0`**: Chezy</li><li>**`1`**: Manning</li><li>**`2`**: White-Colebrook</li><li>**`3`**: White-Colebrook in WAQUA</li></ul> |  |
-| `unifFrictCoef1D` | Uniform friction coefficient in 1D links (0: no friction). | `0.023` | `≥0.0` | [depends on `unifFrictType`] |
-| `unifFrictCoefLin` | Uniform linear friction coefficient (0: no friction). | `0.0` | `≥0.0` | [m/s] |
+| `unifFrictCoef1D` | Uniform friction coefficient in 1D links. | `0.023` | `≥0.0` | [depends on `unifFrictType`] |
+| `unifFrictCoef1D2D` 🔬 | Uniform friction coefficient in 1D2D links. | `0.023` | `≥0.0` | [depends on `unifFrictType`] |
+| `unifFrictCoefLin` | Uniform linear friction coefficient. | `0.0` | `≥0.0` | [m/s] |
 | `vicouv` | Uniform horizontal eddy viscosity. | `0.1` |  | [m²/s] |
 | `dicouv` | Uniform horizontal eddy diffusivity. | `0.1` |  | [m²/s] |
 | `vicoww` | Background vertical eddy viscosity. | `1e-06` |  | [m²/s] |
@@ -346,7 +347,6 @@ In this field, physical model parameters can be inserted, for instance related t
 | `surfTempSmoFac` 🔬 | Horizontal smoothing factor for surface water in heatflux computations. |  | `[0.0, 1.0]` |  |
 | `selfAttractionLoading_correct_wl_with_ini` 🔬 | Correct water level with initial water level in self attraction and loading. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `nfEntrainmentMomentum` 🔬 | Use momentum transfer in NearField related entrainment. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
-| `unifFrictCoef1D2D` 🔬 | Uniform friction coefficient in 1D2D links. | `0.023` | `≥0.0` |  |
 | `equili` 🔬 | Equilibrium spiral flow intensity. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `soilTempThick` 🔬 | Use soil temperature buffer if >0.0 | `0.0` |  | [m] |
 | `selfAttractionLoading` 🔬 | Use self attraction and loading. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li><li>**`2`**: only self attraction</li></ul> |  |
