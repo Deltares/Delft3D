@@ -69,17 +69,30 @@ def build_changelog(commits):
             changelog.append(f"- {commit}")
     return changelog
 
-def prepend_to_changelog(tag, changes):
+def prepend_or_replace_in_changelog(tag, changes):
+    """Prepend new changelog or replace existing entry for a tag."""
     new_entry = [
         f"## {tag} - {date.today().isoformat()}",
         "",
         *changes,
         "",
     ]
+    new_text = "\n".join(new_entry)
+
     if CHANGELOG_FILE.exists():
         old_content = CHANGELOG_FILE.read_text(encoding="utf-8")
     else:
         old_content = "# Changelog\n\n"
+
+    # Regex to find existing section for this tag
+    pattern = re.compile(rf"## {re.escape(tag)} - \d{{4}}-\d{{2}}-\d{{2}}.*?(?=## |\Z)", re.S)
+
+    if pattern.search(old_content):
+        # Replace existing section for this tag
+        updated = pattern.sub(new_text + "\n", old_content, count=1)
+    else:
+        # Prepend new section
+        updated = new_text + "\n" + old_content
 
     updated = "\n".join(new_entry) + "\n" + old_content
     CHANGELOG_FILE.write_text(updated, encoding="utf-8")
@@ -91,7 +104,7 @@ def main():
     commits = get_commits(prev_tag, current_tag)
     changelog = build_changelog(commits)
 
-    prepend_to_changelog(current_tag, changelog)
+    prepend_or_replace_in_changelog(current_tag, changelog)
 
     print(f"Changelog updated in {CHANGELOG_FILE}")
 
