@@ -85,7 +85,7 @@ def prepend_or_replace_in_changelog(tag, changes):
         old_content = "# Changelog\n\n"
 
     # Regex to find existing section for this tag
-    pattern = re.compile(rf"## {re.escape(tag)} - \d{{4}}-\d{{2}}-\d{{2}}.*?(?=## |\Z)", re.S)
+    pattern = re.compile(rf"## {re.escape(tag)} - .*?(?=^## |\Z)", re.S | re.M)
 
     if pattern.search(old_content):
         # Replace existing section for this tag
