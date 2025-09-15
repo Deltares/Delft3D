@@ -61,6 +61,8 @@ object DIMRbak : BuildType({
         param("dimrbakker_username", DslContext.getParameter("dimrbakker_username"))
         password("dimrbakker_password", DslContext.getParameter("dimrbakker_password"))
         password("dimrbakker_personal_access_token", DslContext.getParameter("dimrbakker_personal_access_token"))
+        param("jira_svc_user", DslContext.getParameter("jira_svc_user"))
+        password("jira_svc_token", DslContext.getParameter("jira_svc_token"))
         param("dry_run", if (DslContext.getParameter("enable_dimrbak").lowercase() == "true") "" else "--dry-run")
     }
 
@@ -210,7 +212,12 @@ object DIMRbak : BuildType({
             }
             command = file {
                 filename = "ci_tools/dimrset_delivery/step_7_publish_release_notes.py"
-                scriptArguments = """--output_dir "%output_dir_changelog%""""
+                scriptArguments = """
+                    --output_dir "%output_dir_changelog%
+                    --jira_svc_user "%jira_svc_user%"
+                    --jira_svc_token "%jira_svc_token%"
+                    %dry_run%
+                """.trimIndent()
             }
         }
     }
