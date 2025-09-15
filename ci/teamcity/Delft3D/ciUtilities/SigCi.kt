@@ -14,7 +14,7 @@ object SigCi : BuildType({
         step {
             name = "Upload to sigrid using recipe"
             type = "SigridCiUploadTemplate"
-            param("sourceDir", "src")
+            param("sourceDir", ".")
             param("system", "dflow-flexible")
             param("plugin.docker.imagePlatform", "")
             param("targetquality", "3.5")
@@ -25,7 +25,7 @@ object SigCi : BuildType({
             param("teamcity.step.phase", "")
             param("plugin.docker.run.parameters", "")
             param("customer", "deltares")
-            param("include", "engines_gpl,plugins_lgpl")
+            param("include", "src/cmake,src/engines_gpl,src/plugins_lgpl,src/scripts_lgpl,src/test,src/tools_gpl,src/tools_lgpl,src/utils_gpl,src/utils_lgpl,src/version_includes")
         }
     }
 
