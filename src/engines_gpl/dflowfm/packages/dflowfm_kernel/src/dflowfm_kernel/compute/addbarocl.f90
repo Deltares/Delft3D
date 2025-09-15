@@ -220,7 +220,7 @@ contains
             baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
          end if
 
-         baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = baroclinic_pressure_gradients(link_index_3d - l_bot + 1) + integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
+         baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
          if (link_index_3d > l_bot) then
             baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of cell below
          end if
@@ -374,7 +374,7 @@ contains
             baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
          end if
 
-         baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = baroclinic_pressure_gradients(link_index_3d - l_bot + 1) + integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
+         baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
          if (link_index_3d > l_bot) then
             baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of cell below
          end if
@@ -498,7 +498,7 @@ contains
             baroclinic_pressure3 = 0.5_dp * (baroclinic_pressure1 + baroclinic_pressure2) * (zws(k1 - 1) - zws(k2 - 1))
          end if
 
-         baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = baroclinic_pressure_gradients(link_index_3d - l_bot + 1) + integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
+         baroclinic_pressure_gradients(link_index_3d - l_bot + 1) = integrated_baroclinic_pressure1 - integrated_baroclinic_pressure2 + baroclinic_pressure3
          if (link_index_3d > l_bot) then
             baroclinic_pressure_gradients(link_index_3d - l_bot) = baroclinic_pressure_gradients(link_index_3d - l_bot) - baroclinic_pressure3 ! ceiling of cell below
          end if
