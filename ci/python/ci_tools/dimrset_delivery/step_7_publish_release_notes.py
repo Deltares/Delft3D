@@ -84,17 +84,29 @@ def prepend_or_replace_in_changelog(tag, changes):
     else:
         old_content = "# Changelog\n\n"
 
-    # Regex to find existing section for this tag
-    pattern = re.compile(rf"## {re.escape(tag)} - .*?(?=^## |\Z)", re.S | re.M)
+    lines = old_content.splitlines()
+    new_lines = []
+    i = 0
+    replaced = False
 
-    if pattern.search(old_content):
-        # Replace existing section for this tag
-        updated = pattern.sub(new_text + "\n", old_content, count=1)
-    else:
-        # Prepend new section
-        updated = new_text + "\n" + old_content
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith(f"## {tag} - "):
+            # Skip until the next section or end of file
+            while i < len(lines) and not lines[i].startswith("## "):
+                i += 1
+            # Insert the new entry once
+            new_lines.append(new_text)
+            replaced = True
+        else:
+            new_lines.append(line)
+            i += 1
 
-    updated = "\n".join(new_entry) + "\n" + old_content
+    if not replaced:
+        # Prepend new entry
+        new_lines = [new_text] + new_lines
+
+    updated = "\n".join(new_lines) + "\n"
     CHANGELOG_FILE.write_text(updated, encoding="utf-8")
 
 def main():
