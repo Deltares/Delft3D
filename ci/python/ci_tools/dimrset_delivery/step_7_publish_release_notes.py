@@ -5,6 +5,11 @@ import requests
 import os
 from datetime import date
 from pathlib import Path
+import argparse
+
+parser = argparse.ArgumentParser(description='Publish DIMRset release notes')
+parser.add_argument('--build_working_dir', type=str, required=True, help='The working dir of the build')
+args = parser.parse_args()
 
 # --- Configuration ---
 JIRA_BASE_URL = "https://publicwiki.deltares.nl"
@@ -13,7 +18,8 @@ JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")
 JIRA_PROJECT_KEYS = ["DEVOPSDSC", "UNST", "DELFT3D", "RTCTOOLS", "ECMODULE", "SOFTSUP", 
                      "SWAN", "ESIWACE3", "COMPCORE", "DELWAQ"]  # Project prefixes
 
-CHANGELOG_FILE = Path("dimrset_release_changelog.txt")
+CHANGELOG_DIR = args.build_working_dir
+CHANGELOG_FILE = Path(f"{CHANGELOG_DIR}/dimrset_release_changelog.txt")
 
 # Regex to capture JIRA issue prefixes like DEVOPSDSC-123
 ISSUE_KEY_PATTERN = re.compile(rf"\b({'|'.join(JIRA_PROJECT_KEYS)})-\d+\b")
