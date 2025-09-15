@@ -9,7 +9,7 @@ from pathlib import Path
 import argparse
 
 parser = argparse.ArgumentParser(description='Publish DIMRset release notes')
-parser.add_argument('--output_dir', type=str, required=True, help='The output dir of the changelog')
+parser.add_argument('--output_dir', type=str, required=True, help='The output dir of the changelog', default="/opt/repository/Delft3D-DIMRset")
 parser.add_argument('--dry_run', action='store_true', help='Do not write file, only show result')
 args = parser.parse_args()
 
