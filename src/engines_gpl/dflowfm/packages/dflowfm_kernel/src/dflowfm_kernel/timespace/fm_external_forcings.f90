@@ -655,6 +655,7 @@ contains
       use tree_structures
       use m_flowgeom, only: rrtol
       use fm_external_forcings_data, only: transformcoef
+      use fm_external_forcings_utils, only: read_tracer_properties
       use system_utils
       use unstruc_files, only: resolvePath
       use m_alloc
@@ -681,8 +682,6 @@ contains
       character(len=ini_value_len) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
       character(len=ini_value_len) :: forcing_file !
       real(kind=dp) :: return_time !
-      real(kind=dp) :: tr_ws ! Tracer fall velocity
-      real(kind=dp) :: tr_decay_time ! Tracer decay time
       real(kind=dp) :: rrtolb ! Local, optional boundary tolerance value.
       real(kind=dp) :: width1D ! Local, optional custom 1D boundary width
       real(kind=dp) :: blDepth ! Local, optional custom boundary bed level depth below initial water level
@@ -767,13 +766,7 @@ contains
             call prop_get(node_ptr, '', 'returnTime', return_time)
             call prop_get(node_ptr, '', 'return_time', return_time) ! UNST-2386: Backwards compatibility reading.
 
-            tr_ws = 0.0_dp
-            call prop_get(node_ptr, '', 'tracerFallVelocity', tr_ws)
-            transformcoef(4) = tr_ws
-
-            tr_decay_time = 0.0_dp
-            call prop_get(node_ptr, '', 'tracerDecayTime', tr_decay_time)
-            transformcoef(5) = tr_decay_time
+            call read_tracer_properties(node_ptr, transformcoef)
 
             rrtolb = 0.0_dp
             call prop_get(node_ptr, '', 'openBoundaryTolerance', rrtolb)

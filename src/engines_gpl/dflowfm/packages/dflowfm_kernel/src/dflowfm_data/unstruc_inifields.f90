@@ -445,6 +445,7 @@ contains
    subroutine readIniFieldProvider(inifilename, node_ptr, groupname, quantity, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
       use timespace_parameters
+      use fm_external_forcings_utils, only: read_tracer_properties
       use m_ec_interpolationsettings, only: RCEL_DEFAULT
       use m_ec_parameters, only: interpolate_time, interpolate_spacetimeSaveWeightFactors
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
@@ -684,6 +685,10 @@ contains
          if (int_friction_type > 0) then
             transformcoef(3) = real(int_friction_type, dp)
          end if
+      end if
+
+      if (strcmpi(quantity(1:13), 'initialtracer')) then
+          call read_tracer_properties(node_ptr, transformcoef)
       end if
 
       ! We've made it to here, success!
