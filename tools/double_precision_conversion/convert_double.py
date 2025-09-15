@@ -20,7 +20,6 @@ import argparse
 from pathlib import Path
 from typing import List, Tuple
 
-
 class FortranDoubleConverter:
     """
     Converter for Fortran double precision literals and declarations from D format to _dp format.
@@ -42,19 +41,19 @@ class FortranDoubleConverter:
         # This matches patterns like: 1d0, 1.0d0, .5d0, 123d-5, 0.123d+10, etc.
         self.d_literal_pattern = re.compile(
             r'''
-            \b                          # Word boundary
+            (?<!\w)                     # Not preceded by word character (negative lookbehind)
             (?P<sign>[+-]?)             # Optional sign
             (?P<significand>
-                (?:\d+\.?\d*)           # digit-string . [digit-string] (e.g., 1.0, 1., 123.456)
-                |                       # OR
                 (?:\.\d+)               # . digit-string (e.g., .5, .123)
+                |                       # OR
+                (?:\d+\.?\d*)           # digit-string . [digit-string] (e.g., 1.0, 1., 123.456)
                 |                       # OR
                 (?:\d+)                 # digit-string only (e.g., 123) - for cases like 123d0
             )
             [dD]                        # Exponent letter D or d
             (?P<exponent>[+-]?\d+)      # Signed exponent
             (?!_)                       # Not followed by underscore (avoid already converted)
-            \b                          # Word boundary
+            (?!\w)                      # Not followed by word character (negative lookahead)
             ''',
             re.VERBOSE
         )
@@ -75,7 +74,7 @@ class FortranDoubleConverter:
         )
 
         # Pattern to detect if we're inside a comment or string
-        self.comment_pattern = re.compile(r'(!.*$)', re.MULTILINE)
+        self.comment_pattern = re.compile(r'!.*$', re.MULTILINE)
         self.string_patterns = [
             re.compile(r"'([^']*(?:''[^']*)*)'"),  # Single quotes
             re.compile(r'"([^"]*(?:""[^"]*)*)"'),  # Double quotes
@@ -86,7 +85,7 @@ class FortranDoubleConverter:
 
         # Pattern to find existing precision import
         self.precision_import_pattern = re.compile(
-            r'^\s*use\s+precision\s*(?:,\s*only\s*:\s*dp)?\s*$',
+            r'^\s*use\s+precision\b',
             re.MULTILINE | re.IGNORECASE
         )
 
@@ -295,7 +294,7 @@ class FortranDoubleConverter:
                 # Check if precision import was added
                 if not self.precision_import_pattern.search(original_content) and \
                    self.precision_import_pattern.search(converted_content):
-                    print(f"  Added 'use precision, only: dp' import")
+                    print("  Added 'use precision, only: dp' import")
 
                 return True
             else:
