@@ -63,35 +63,35 @@ contains
       real(kind=dp) :: p1, p2, h, z, uusto, fac
       real(kind=dp) :: rolthk, rmax, erol, crol, mass
 
-      Dfu = 0d0; Dfuc = 0d0; deltau = 0d0; uorbu = 0d0; csw = 1d0; snw = 0d0; costu = 1d0; fw = 0d0
+      Dfu = 0.0_dp; Dfuc = 0.0_dp; deltau = 0.0_dp; uorbu = 0.0_dp; csw = 1.0_dp; snw = 0.0_dp; costu = 1.0_dp; fw = 0.0_dp
 
       call getLbotLtop(LL, Lb, Lt)
       k1 = ln(1, LL); k2 = ln(2, LL)
-      Tsig = 0.5d0 * (twav(k1) + twav(k2))
-      ustokes(Lb:Lt) = 0d0; vstokes(Lb:Lt) = 0d0
-      ustokes(LL) = 0d0; vstokes(LL) = 0d0
+      Tsig = 0.5_dp * (twav(k1) + twav(k2))
+      ustokes(Lb:Lt) = 0.0_dp; vstokes(Lb:Lt) = 0.0_dp
+      ustokes(LL) = 0.0_dp; vstokes(LL) = 0.0_dp
 
-      if (tsig > 0.05d0) then
+      if (tsig > 0.05_dp) then
          omeg = twopi / tsig
       else
-         ustw2 = 0d0
+         ustw2 = 0.0_dp
          return
       end if
 
       phi1 = phiwav(k1); phi2 = phiwav(k2)
-      csw = 0.5d0 * (cos(phi1 * dg2rd) + cos(phi2 * dg2rd))
-      snw = 0.5d0 * (sin(phi1 * dg2rd) + sin(phi2 * dg2rd))
+      csw = 0.5_dp * (cos(phi1 * dg2rd) + cos(phi2 * dg2rd))
+      snw = 0.5_dp * (sin(phi1 * dg2rd) + sin(phi2 * dg2rd))
 
       call getwavenr(hu(LL), tsig, rk)
-      Hrms = 0.5d0 * (hwav(k1) + hwav(k2))
+      Hrms = 0.5_dp * (hwav(k1) + hwav(k2))
       Hrms = min(hrms, gammax * hu(LL))
-      asg = 0.5d0 * Hrms ! Wave amplitude = 0.5*Hrms
+      asg = 0.5_dp * Hrms ! Wave amplitude = 0.5*Hrms
       shs = sinhsafei(rk * hu(LL))
       costu = csw * csu(LL) + snw * snu(LL) ! and compute stokes drift
       sintu = -csw * snu(LL) + snw * csu(LL)
 
       if (jawaveStokes == STOKES_DRIFT_DEPTHUNIFORM) then
-         uusto = 0.5d0 * omeg * asg * asg / hu(LL)
+         uusto = 0.5_dp * omeg * asg * asg / hu(LL)
          ustokes(Lb:Lt) = costu * uusto
          vstokes(Lb:Lt) = sintu * uusto
          ustokes(LL) = costu * uusto ! for convenience
@@ -99,38 +99,38 @@ contains
       else if (jawaveStokes >= STOKES_DRIFT_2NDORDER) then ! to do: add 3D roller contribution for roller model
          f1u = omeg * rk * asg**2
          h = hu(LL)
-         f3u = (1d0 - exp(-2d0 * rk * h))**2
+         f3u = (1.0_dp - exp(-2.0_dp * rk * h))**2
 
          do L = Lb, Lt
-            z = 0.5d0 * (hu(L) + hu(L - 1)) ! here, z is vertical coordinate upward, bed = 0, (not z = 0 at average wl)
-            p1 = max(-25d0, 2d0 * rk * (z - h))
-            p2 = max(-25d0, -4d0 * rk * (z)) ! maximisation not necessary
-            f2u = exp(p1) * (1d0 + exp(p2))
+            z = 0.5_dp * (hu(L) + hu(L - 1)) ! here, z is vertical coordinate upward, bed = 0, (not z = 0 at average wl)
+            p1 = max(-25.0_dp, 2.0_dp * rk * (z - h))
+            p2 = max(-25.0_dp, -4.0_dp * rk * (z)) ! maximisation not necessary
+            f2u = exp(p1) * (1.0_dp + exp(p2))
             uusto = f1u * f2u / f3u
             ustokes(L) = costu * uusto
             vstokes(L) = sintu * uusto
          end do
          ! depth averaged
-         ustokes(LL) = costu * ag * asg * asg * rk / omeg / 2d0 / hu(LL) ! these are needed, also for 3D models (see u bnd furu)
-         vstokes(LL) = sintu * ag * asg * asg * rk / omeg / 2d0 / hu(LL)
+         ustokes(LL) = costu * ag * asg * asg * rk / omeg / 2.0_dp / hu(LL) ! these are needed, also for 3D models (see u bnd furu)
+         vstokes(LL) = sintu * ag * asg * asg * rk / omeg / 2.0_dp / hu(LL)
 
          ! add 3D roller contribution to stokes drift
          if (jawave == WAVE_SURFBEAT .and. roller == 1) then
             ! roller mass flux
-            rmax = 0.125d0 * rhomean * ag * (gammaxxb * h)**2
-            erol = min(0.5d0 * (R(k1) + R(k2)), rmax)
-            crol = max(0.5d0 * (cwav(k1) + cwav(k2)), 1d-1)
-            mass = 2d0 * erol / crol / rhomean
+            rmax = 0.125_dp * rhomean * ag * (gammaxxb * h)**2
+            erol = min(0.5_dp * (R(k1) + R(k2)), rmax)
+            crol = max(0.5_dp * (cwav(k1) + cwav(k2)), 1.0e-1_dp)
+            mass = 2.0_dp * erol / crol / rhomean
             !
             if (Lt > Lb) then
                !
                ! determine roller thickness
                lmin = Lt
-               rolthk = 0d0
+               rolthk = 0.0_dp
                do L = Lt - 1, Lb, -1
                   lmin = L
                   rolthk = hu(Lt) - hu(L)
-                  if (rolthk >= 0.5d0 * hrms) exit
+                  if (rolthk >= 0.5_dp * hrms) exit
                end do
                !
                ! depth dependent contribution
@@ -147,32 +147,32 @@ contains
 
       if (shs > eps10) then
          if (jauorb > 0) then
-            fac = 1d0
+            fac = 1.0_dp
          else
-            fac = sqrt(pi) / 2d0
+            fac = sqrt(pi) / 2.0_dp
          end if
          uorbu = omeg * asg * shs * fac ! Orbital velocity, sqrt factor to match delft3d
          call Swart(Tsig, uorbu, z00, fw, ustw2)
          ustw2 = ftauw * ustw2 ! ustar wave squared times calibrationcoeff ftauw
 
-         dks = 33d0 * z00 ! should be 30 for consistency with getust
+         dks = 33.0_dp * z00 ! should be 30 for consistency with getust
          aks = asg * shs / dks * fac ! uorbu/(omega*ks), uorbu/omega = particle excursion length
 
-         deltau = 0.09d0 * dks * aks**0.82d0 ! thickness of wave boundary layer from Fredsoe and Deigaard
+         deltau = 0.09_dp * dks * aks**0.82_dp ! thickness of wave boundary layer from Fredsoe and Deigaard
          deltau = alfdeltau * max(deltau, ee * z00) ! alfaw = 20d0
-         deltau = min(0.5d0 * hu(LL), deltau) !
+         deltau = min(0.5_dp * hu(LL), deltau) !
 
          call soulsby(tsig, uorbu, z00, fw) ! streaming with different calibration fac fwfac + soulsby fws
-         Dfu = 0.28d0 * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
+         Dfu = 0.28_dp * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
          Dfu = fwfac * Dfu / deltau ! divided by deltau    (m2/s3), missing rho divided out in adve denominator rho*delta
          Dfuc = Dfu * rk / omeg * costu ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
 
       else
-         ustw2 = 0d0
-         Dfu = 0d0
-         Dfuc = 0d0
-         deltau = 0d0
-         uorbu = 0d0
+         ustw2 = 0.0_dp
+         Dfu = 0.0_dp
+         Dfuc = 0.0_dp
+         deltau = 0.0_dp
+         uorbu = 0.0_dp
       end if
 
    end subroutine getustwav

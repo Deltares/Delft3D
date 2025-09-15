@@ -71,12 +71,12 @@ contains
          if (kkcflmx > 0) then
             if (kcflmx == 0) kcflmx = kkcflmx
             if (ja_timestep_auto == 3 .or. ja_timestep_auto == 4) then
-               write (mout, '(3F14.4,2I8,4F14.4)') time0 / 60d0, dts, dtsc, kkcflmx, kcflmx - kbot(kkcflmx) + 1, vol1(kcflmx), squ2D(kkcflmx), squ(kcflmx), sqi(kcflmx)
+               write (mout, '(3F14.4,2I8,4F14.4)') time0 / 60.0_dp, dts, dtsc, kkcflmx, kcflmx - kbot(kkcflmx) + 1, vol1(kcflmx), squ2D(kkcflmx), squ(kcflmx), sqi(kcflmx)
             else
-               write (mout, '(3F14.4,2I8,4F14.4)') time0 / 60d0, dts, dtsc, kkcflmx, kcflmx - kbot(kkcflmx) + 1, vol1(kcflmx), squ(kcflmx), squ(kcflmx), sqi(kcflmx)
+               write (mout, '(3F14.4,2I8,4F14.4)') time0 / 60.0_dp, dts, dtsc, kkcflmx, kcflmx - kbot(kkcflmx) + 1, vol1(kcflmx), squ(kcflmx), squ(kcflmx), sqi(kcflmx)
             end if
          else
-            write (mout, '(3F14.4, I8)') time0 / 60d0, dts, dtsc, kkcflmx
+            write (mout, '(3F14.4, I8)') time0 / 60.0_dp, dts, dtsc, kkcflmx
          end if
       end if
 

@@ -57,7 +57,7 @@ contains
 
       real(kind=dp) :: cosphi
 
-      real(kind=dp), parameter :: TOL = 0d-2
+      real(kind=dp), parameter :: TOL = 0.0e-2_dp
 
       isconvexcell = 1
 
@@ -73,7 +73,7 @@ contains
          cosphi = dcosphi(xk(k1), yk(k1), xk(k2), yk(k2), xk(k2), yk(k2), xk(k3), yk(k3), jsferic, jasfer3D, dxymis)
 
 !      if ( abs(cosphi).lt.TOL .or. abs(1d0-abs(cosphi)).lt.TOL ) cycle
-         if (abs(1d0 - abs(cosphi)) < TOL) cycle
+         if (abs(1.0_dp - abs(cosphi)) < TOL) cycle
 
 !     check counterclockwise
          if (rechtsaf(k1, k2, k3)) then

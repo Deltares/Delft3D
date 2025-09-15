@@ -73,14 +73,14 @@ contains
       integer :: kk, k, kb, kt
       integer :: j
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       integer(4) :: ithndl = 0
 
       if (timon) call timstrt("make_rhs", ithndl)
 
       dt_loc = dts
-      rhs = 0d0
+      rhs = 0.0_dp
 
       if (kmx > 0) then
 !     add vertical fluxes, sources, storage term and time derivative to right-hand side
@@ -99,13 +99,13 @@ contains
             kb = kbot(kk)
             kt = ktop(kk)
             do k = kb, kt
-               dvoli = 1d0 / max(vol1(k), dtol)
-               if (testdryflood == 2) dvoli = 1d0 / max(vol1(k), epshu * ba(kk))
+               dvoli = 1.0_dp / max(vol1(k), dtol)
+               if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk))
 
                do j = 1, NUMCONST
 
-                  rhs(j, k) = ((sumhorflux(j, k) / ndeltasteps(kk) - (1d0 - thetavert(j)) * (fluxver(j, k) - fluxver(j, k - 1))) * dvoli + source(j, k)) * dt_loc + sed(j, k)
-                  sumhorflux(j, k) = 0d0
+                  rhs(j, k) = ((sumhorflux(j, k) / ndeltasteps(kk) - (1.0_dp - thetavert(j)) * (fluxver(j, k) - fluxver(j, k - 1))) * dvoli + source(j, k)) * dt_loc + sed(j, k)
+                  sumhorflux(j, k) = 0.0_dp
 
                end do
 
@@ -120,12 +120,12 @@ contains
             !$OMP PRIVATE(k,j,dvoli )
 
             do k = 1, Ndxi
-               dvoli = 1d0 / max(vol1(k), dtol)
-               if (testdryflood == 2) dvoli = 1d0 / max(vol1(k), epshu * ba(k))
+               dvoli = 1.0_dp / max(vol1(k), dtol)
+               if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
 
                do j = 1, NUMCONST
                   rhs(j, k) = (sumhorflux(j, k) * dvoli + source(j, k)) * dts + sed(j, k)
-                  sumhorflux(j, k) = 0d0
+                  sumhorflux(j, k) = 0.0_dp
                end do
             end do
             !$OMP END PARALLEL DO
@@ -141,12 +141,12 @@ contains
                   dt_loc = dts * ndeltasteps(k)
                end if
 
-               dvoli = 1d0 / max(vol1(k), dtol)
-               if (testdryflood == 2) dvoli = 1d0 / max(vol1(k), epshu * ba(k))
+               dvoli = 1.0_dp / max(vol1(k), dtol)
+               if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
 
                do j = 1, NUMCONST
                   rhs(j, k) = (sumhorflux(j, k) / ndeltasteps(k) * dvoli + source(j, k)) * dt_loc + sed(j, k)
-                  sumhorflux(j, k) = 0d0
+                  sumhorflux(j, k) = 0.0_dp
                end do
             end do
             !$OMP END PARALLEL DO

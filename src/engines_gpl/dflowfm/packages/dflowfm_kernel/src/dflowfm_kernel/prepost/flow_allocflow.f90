@@ -303,7 +303,7 @@ contains
                end do
             end if
 
-            dzm = max(dzm, 1d-2)
+            dzm = max(dzm, 1.0e-2_dp)
             mxlayz = mx
             kmx = mx ! repair code
             laymx(1) = mx

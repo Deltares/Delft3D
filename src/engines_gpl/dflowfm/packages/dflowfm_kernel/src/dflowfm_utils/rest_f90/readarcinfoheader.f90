@@ -48,7 +48,7 @@ contains
       real(kind=dp) :: DumX, DumY
       character(len=132) :: rec
 
-      DumY = -1d10
+      DumY = -1.0e10_dp
 
 10    continue
       read (minp, *, end=100) rec, mmax

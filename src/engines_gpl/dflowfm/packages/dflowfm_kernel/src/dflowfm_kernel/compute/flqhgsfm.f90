@@ -65,7 +65,7 @@ contains
       real(kind=dp) :: husb
       real(kind=dp) :: lambda
       real(kind=dp) :: mugf
-      real(kind=dp) :: rhoast = 1d0
+      real(kind=dp) :: rhoast = 1.0_dp
       real(kind=dp) :: strdamf
       real(kind=dp) :: teken
       real(kind=dp), intent(in) :: uu
@@ -157,11 +157,11 @@ contains
       !     Compute upstream velocity height and energy level
       !
 
-      velhght = uu * uu / (2.0d0 * ag)
+      velhght = uu * uu / (2.0_dp * ag)
       elu = husb + velhght
       hs1 = elu - zs
       !
-      tr = 1d-4
+      tr = 1.0e-4_dp
       if (hs1 < tr .or. wstr < tr .or. dg < tr .or. min(cgf, cgd, cwf, cwd) <= 0.) then !  & dg<.0001) then !hk: or gate closed
 
          formno = 0; return
@@ -172,9 +172,9 @@ contains
          !        sill, dc and water depth at the sill,ds
          !
          dlim = hs1 * (wstr / w2 * 2./3.*sqrt(2./3.))**(2.0 / 3.0)
-         hd1 = max(hdsb, zb2 + dlim * 0.9d0)
+         hd1 = max(hdsb, zb2 + dlim * 0.9_dp)
          !
-         dc = 2.0d0 / 3.0d0 * hs1
+         dc = 2.0_dp / 3.0_dp * hs1
          !
          !        Calculate ds by solving third order algebraic equation
          !
@@ -204,12 +204,12 @@ contains
             !           Adapt Cwf coefficient
             !
             if (cwf < cwd) then
-               if (dpsequfm(dc, 0.0d0, 1.0d-20)) then
+               if (dpsequfm(dc, 0.0_dp, 1.0e-20_dp)) then
                   cwfa = cwf
                else
                   cwfa = max(ds / dc * cwd, cwf)
                end if
-            elseif (ds > 0.0d0) then
+            elseif (ds > 0.0_dp) then
                cwfa = min(dc / ds * cwd, cwf)
             else
                cwfa = cwf
@@ -261,10 +261,10 @@ contains
                !             Adapt coefficients
                !
                if (cgda > cgfa) then
-                  if (.not. dpsequfm(dc, 0.0d0, 1.0d-20)) then
+                  if (.not. dpsequfm(dc, 0.0_dp, 1.0e-20_dp)) then
                      cgfa = max(ds / dc * cgda, cgfa)
                   end if
-               elseif (ds > 0.0d0) then
+               elseif (ds > 0.0_dp) then
                   cgfa = min(dc / ds * cgda, cgfa)
                else
                end if

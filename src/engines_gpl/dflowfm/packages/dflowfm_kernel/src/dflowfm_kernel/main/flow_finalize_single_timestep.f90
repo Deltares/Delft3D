@@ -29,6 +29,7 @@
 
 !> Finalizes a single time step, should be called directly after flow_run_single_timestep
 module m_flow_finalize_single_timestep
+
    use m_fm_wq_processes_sub, only: fm_wq_processes_step
    use m_updatevaluesonsourcesinks, only: updatevaluesonsourcesinks
    use m_updatecumulativeinflow, only: updatecumulativeinflow
@@ -39,6 +40,7 @@ module m_flow_finalize_single_timestep
    use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
    use m_updatevaluesonlaterals, only: updatevaluesonlaterals
 
+use precision, only: dp
    implicit none
 
    private
@@ -82,7 +84,7 @@ contains
 
       ! Timestep has been performed, now finalize it.
 
-      if (ti_waqproc < 0d0) then
+      if (ti_waqproc < 0.0_dp) then
          if (jatimer == 1) call starttimer(IFMWAQ)
          call fm_wq_processes_step(dts, time1)
          if (jatimer == 1) call stoptimer(IFMWAQ)

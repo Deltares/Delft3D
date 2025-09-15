@@ -53,14 +53,14 @@ contains
       integer :: n1, k, L, LL, k3, k4
       real(kind=dp) :: xn1, yn1, a, aa, alf, xt, yt, slope
 
-      xn1 = 0d0; yn1 = 0d0; a = 0d0
+      xn1 = 0.0_dp; yn1 = 0.0_dp; a = 0.0_dp
       do k = 1, size(nd(n1)%ln)
          LL = nd(n1)%ln(k)
          L = abs(LL)
          if (LL < 0) then ! incoming link has positive LL
             alf = acL(L)
          else
-            alf = 1d0 - acL(L)
+            alf = 1.0_dp - acL(L)
          end if
          aa = alf * wu(L) * dx(L); a = a + aa
          k3 = lncn(1, L); k4 = lncn(2, L)
@@ -69,7 +69,7 @@ contains
          xn1 = xn1 + aa * xt * slope
          yn1 = yn1 + aa * yt * slope
       end do
-      if (aa > 0d0) then
+      if (aa > 0.0_dp) then
          xn1 = xn1 / aa
          yn1 = yn1 / aa
       end if

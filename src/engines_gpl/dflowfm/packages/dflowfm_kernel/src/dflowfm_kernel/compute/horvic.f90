@@ -63,7 +63,7 @@ contains
       real(kind=dp) :: txx_k12, tyy_k12
       integer :: ik1, ik2, in3, in4
 
-      horvic = 0d0
+      horvic = 0.0_dp
       csL = csu(L); snL = snu(L)
       k12 = ln(n12, L)
 

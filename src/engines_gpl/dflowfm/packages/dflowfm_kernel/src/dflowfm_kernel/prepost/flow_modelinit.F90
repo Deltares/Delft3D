@@ -155,7 +155,7 @@ contains
       call datum2(rundat2)
       L = len_trim(rundat2)
 
-      if (ti_waq > 0d0) then
+      if (ti_waq > 0.0_dp) then
          call makedir(getoutputdir('waq')) ! No problem if it exists already.
       end if
 

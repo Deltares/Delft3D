@@ -44,7 +44,7 @@ contains
             dcminmod = d2
          end if
       else
-         dcminmod = 0d0
+         dcminmod = 0.0_dp
       end if
       return
    end function dcminmod

@@ -56,17 +56,17 @@ contains
       integer :: kb, ki, L, n, LL, Lb, Lt
       real(kind=dp) :: hminlwi, wavmubndL
 
-      hminlwi = 1d0 / hminlw
+      hminlwi = 1.0_dp / hminlw
 
       !  wavmubnd is defined on the whole mesh, but has non-zero values at the open boundaries only
-      wavmubnd = 0d0
+      wavmubnd = 0.0_dp
 
       do n = 1, nbndu
          kb = kbndu(1, n)
          ki = kbndu(2, n)
          L = kbndu(3, n)
          ac1 = acl(L)
-         ac2 = 1d0 - ac1
+         ac2 = 1.0_dp - ac1
          if (hu(L) < epshu) cycle
 
          ! interpolate cell-centered mass fluxes to flow links
@@ -92,9 +92,9 @@ contains
             ki = kbndz(2, n)
             L = kbndz(3, n)
             ac1 = acl(L)
-            ac2 = 1d0 - ac1
+            ac2 = 1.0_dp - ac1
             if (hu(L) <= epshu) cycle
-            if (wavmubnd(L) /= 0d0) cycle ! ?
+            if (wavmubnd(L) /= 0.0_dp) cycle ! ?
             if (kmx == 0) then
                ! interpolate cell-centered mass fluxes to flow links
                wavmubndL = (ac1 * mxwav(kb) + ac2 * mxwav(ki)) * csu(L) + &
@@ -117,9 +117,9 @@ contains
          ki = kbndn(2, n)
          L = kbndn(3, n)
          ac1 = acl(L)
-         ac2 = 1d0 - ac1
+         ac2 = 1.0_dp - ac1
          if (hu(L) <= epshu) cycle
-         if (wavmubnd(L) /= 0d0) cycle
+         if (wavmubnd(L) /= 0.0_dp) cycle
          if (kmx == 0) then
             ! interpolate cell-centered mass fluxes to flow links
             wavmubndL = (ac1 * mxwav(kb) + ac2 * mxwav(ki)) * csu(L) + &

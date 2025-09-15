@@ -87,15 +87,15 @@ contains
          wcLn(1, L) = wud
          wcLn(2, L) = wud
 
-         csa = max(1d-6, abs(lin2corx(L, 1, csu(L), snu(L))))
-         sna = max(1d-6, abs(lin2cory(L, 1, csu(L), snu(L))))
+         csa = max(1.0e-6_dp, abs(lin2corx(L, 1, csu(L), snu(L))))
+         sna = max(1.0e-6_dp, abs(lin2cory(L, 1, csu(L), snu(L))))
 
          wuL = acn(1, L) * wud
          if (jacomp == 1) then
             ax = csa * wuL
             ay = sna * wuL
          else
-            ax = 0.5d0 * wuL
+            ax = 0.5_dp * wuL
             ay = ax
          end if
          wcnx3(L) = ax
@@ -104,15 +104,15 @@ contains
          wcnxy(1, k3) = wcnxy(1, k3) + ax
          wcnxy(2, k3) = wcnxy(2, k3) + ay
 
-         csa = max(1d-6, abs(lin2corx(L, 2, csu(L), snu(L))))
-         sna = max(1d-6, abs(lin2cory(L, 2, csu(L), snu(L))))
+         csa = max(1.0e-6_dp, abs(lin2corx(L, 2, csu(L), snu(L))))
+         sna = max(1.0e-6_dp, abs(lin2cory(L, 2, csu(L), snu(L))))
 
          wuL = acn(2, L) * wud
          if (jacomp == 1) then
             ax = csa * wuL
             ay = sna * wuL
          else
-            ax = 0.5d0 * wuL
+            ax = 0.5_dp * wuL
             ay = ax
          end if
          wcnx4(L) = ax
@@ -132,10 +132,10 @@ contains
          if (wcnxy(3, k4) /= 0) wcLn(2, L) = wcLn(2, L) / wcnxy(3, k4)
          if (irov == 2) then ! zero cornervelocities for no-slip
             if (int(wcnxy(3, k3)) /= nmk(k3)) then
-               wcnx3(L) = 0d0; wcny3(L) = 0d0
+               wcnx3(L) = 0.0_dp; wcny3(L) = 0.0_dp
             end if
             if (int(wcnxy(3, k4)) /= nmk(k4)) then
-               wcnx4(L) = 0d0; wcny4(L) = 0d0
+               wcnx4(L) = 0.0_dp; wcny4(L) = 0.0_dp
             end if
          end if
       end do

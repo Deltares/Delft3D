@@ -31,6 +31,7 @@
 !
 
 module unstruc_startup
+
 !! Separates some startup/initialization procedures from the main program in net.f90
 
    use m_setcoltabfile, only: setcoltabfile
@@ -43,6 +44,7 @@ module unstruc_startup
    use properties
    use messagehandling, only: err_flush
 
+use precision, only: dp
    implicit none
 
 contains
@@ -493,14 +495,14 @@ contains
 
       TXLIN = ' ' ! alle drie leeg
 
-      TXSIZE = 0.75d0
-      TXXpos = 0.5d0
-      TXYpos = 0.015d0
+      TXSIZE = 0.75_dp
+      TXXpos = 0.5_dp
+      TXYpos = 0.015_dp
 
-      XSC = 0.01d0
-      YSC = 0.07d0
+      XSC = 0.01_dp
+      YSC = 0.07_dp
       NDEC = 3
-      SCALESIZE = 0.5d0
+      SCALESIZE = 0.5_dp
 
       maxarctiler = 0; maxsamarcr = 0
       call prop_get(ini_ptr, 'ARCINFOSAMPLES', 'MAXARCTILE', maxarctiler)

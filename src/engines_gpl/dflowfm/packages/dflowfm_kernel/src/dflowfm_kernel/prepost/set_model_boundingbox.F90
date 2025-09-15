@@ -31,6 +31,8 @@
 !
 module m_set_model_boundingbox
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -94,15 +96,15 @@ contains
          end if
       end if
 
-      mb_xmin = huge(1d0)
-      mb_ymin = huge(1d0)
-      mb_xmax = -huge(1d0)
-      mb_ymax = -huge(1d0)
+      mb_xmin = huge(1.0_dp)
+      mb_ymin = huge(1.0_dp)
+      mb_xmax = -huge(1.0_dp)
+      mb_ymax = -huge(1.0_dp)
 
-      mb_lonmin = huge(1d0)
-      mb_latmin = huge(1d0)
-      mb_lonmax = -huge(1d0)
-      mb_latmax = -huge(1d0)
+      mb_lonmin = huge(1.0_dp)
+      mb_latmin = huge(1.0_dp)
+      mb_lonmax = -huge(1.0_dp)
+      mb_latmax = -huge(1.0_dp)
 
       ! Compute model bounds based on *flowgeom*, intentionally not on network_data (which may include inactive points).
       do n = 1, ndxi
@@ -132,29 +134,29 @@ contains
       end if
 
       ! Reset to dmiss if no bounds were set at all.
-      if (mb_xmin == huge(1d0)) then
+      if (mb_xmin == huge(1.0_dp)) then
          mb_xmin = dmiss
       end if
-      if (mb_ymin == huge(1d0)) then
+      if (mb_ymin == huge(1.0_dp)) then
          mb_ymin = dmiss
       end if
-      if (mb_xmax == -huge(1d0)) then
+      if (mb_xmax == -huge(1.0_dp)) then
          mb_xmax = dmiss
       end if
-      if (mb_ymax == -huge(1d0)) then
+      if (mb_ymax == -huge(1.0_dp)) then
          mb_ymax = dmiss
       end if
 
-      if (mb_lonmin == huge(1d0)) then
+      if (mb_lonmin == huge(1.0_dp)) then
          mb_lonmin = dmiss
       end if
-      if (mb_latmin == huge(1d0)) then
+      if (mb_latmin == huge(1.0_dp)) then
          mb_latmin = dmiss
       end if
-      if (mb_lonmax == -huge(1d0)) then
+      if (mb_lonmax == -huge(1.0_dp)) then
          mb_lonmax = dmiss
       end if
-      if (mb_latmax == -huge(1d0)) then
+      if (mb_latmax == -huge(1.0_dp)) then
          mb_latmax = dmiss
       end if
 

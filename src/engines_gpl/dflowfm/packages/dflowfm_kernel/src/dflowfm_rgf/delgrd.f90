@@ -31,8 +31,10 @@
 !
 
 module m_delgrd
+
    use m_savegrd, only: savegrd
 
+use precision, only: dp
    implicit none
 
    private
@@ -64,10 +66,10 @@ contains
             if (JA == 0) then
                KEY = 0
             else
-               XC = 0d0; YC = 0d0; MC = 0; NC = 0
+               XC = 0.0_dp; YC = 0.0_dp; MC = 0; NC = 0
             end if
          else
-            XC = 0d0; YC = 0d0; MC = 0; NC = 0
+            XC = 0.0_dp; YC = 0.0_dp; MC = 0; NC = 0
          end if
          return
       end if

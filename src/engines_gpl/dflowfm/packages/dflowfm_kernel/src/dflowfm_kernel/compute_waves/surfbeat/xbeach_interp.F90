@@ -32,6 +32,8 @@
 
 module interp
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -69,7 +71,7 @@ contains
       real(dp) :: a, b, dyy
       integer :: j
 
-      yy = 0.0d0
+      yy = 0.0_dp
       if (present(indint)) then
          indint = 0
       end if
@@ -93,7 +95,7 @@ contains
          a = x(j + 1)
          b = x(j)
          if (a == b) then
-            dyy = 0.0d0
+            dyy = 0.0_dp
          else
             dyy = (y(j + 1) - y(j)) / (a - b)
          end if
@@ -219,7 +221,7 @@ contains
       do i2 = 1, n2
          i = iref(1, i2)
          if (i > 0) then
-            f2(i2) = 0.d0
+            f2(i2) = 0.0_dp
             !        i1 = max(i, 1)
             !        ifac = 1 - i/i1
             !        f2(i2) = f2(i2)*ifac
@@ -505,43 +507,43 @@ contains
          ier = 1
          goto 99999
       end if
-      if (abs(x3t - 1.0d0) < 1.0e-7) then
+      if (abs(x3t - 1.0_dp) < 1.0e-7) then
          xi = xt
-         if (abs(y3t - 1.0d0) < 1.0e-7) then
+         if (abs(y3t - 1.0_dp) < 1.0e-7) then
             eta = yt
-         elseif (abs(1.0d0 + (y3t - 1.0d0) * xt) < 1.0e-6) then
+         elseif (abs(1.0_dp + (y3t - 1.0_dp) * xt) < 1.0e-6) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          else
-            eta = yt / (1.0d0 + (y3t - 1.0d0) * xt)
+            eta = yt / (1.0_dp + (y3t - 1.0_dp) * xt)
          end if
-      elseif (abs(y3t - 1.0d0) < 1.0e-6) then
+      elseif (abs(y3t - 1.0_dp) < 1.0e-6) then
          eta = yt
-         if (abs(1.0d0 + (x3t - 1.0d0) * yt) < 1.0e-6) then
+         if (abs(1.0_dp + (x3t - 1.0_dp) * yt) < 1.0e-6) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          else
-            xi = xt / (1.0d0 + (x3t - 1.0d0) * yt)
+            xi = xt / (1.0_dp + (x3t - 1.0_dp) * yt)
          end if
       else
-         a = y3t - 1.0d0
-         b = 1.0d0 + (x3t - 1.0d0) * yt - (y3t - 1.0d0) * xt
+         a = y3t - 1.0_dp
+         b = 1.0_dp + (x3t - 1.0_dp) * yt - (y3t - 1.0_dp) * xt
          c = -xt
-         discr = b * b - 4.0d0 * a * c
+         discr = b * b - 4.0_dp * a * c
          if (discr < 1.0e-6) then
             ! write (*, *) 'extrapolation over too large a distance'
             ier = 1
             goto 99999
          end if
-         xi = (-b + sqrt(discr)) / (2.0d0 * a)
-         eta = ((y3t - 1.0d0) * (xi - xt) + (x3t - 1.0d0) * yt) / (x3t - 1.0d0)
+         xi = (-b + sqrt(discr)) / (2.0_dp * a)
+         eta = ((y3t - 1.0_dp) * (xi - xt) + (x3t - 1.0_dp) * yt) / (x3t - 1.0_dp)
       end if
-      w(1) = (1.0d0 - xi) * (1.0d0 - eta)
-      w(2) = xi * (1.0d0 - eta)
+      w(1) = (1.0_dp - xi) * (1.0_dp - eta)
+      w(2) = xi * (1.0_dp - eta)
       w(3) = xi * eta
-      w(4) = eta * (1.0d0 - xi)
+      w(4) = eta * (1.0_dp - xi)
       return
 99999 continue
    end subroutine bilin5
@@ -563,8 +565,8 @@ contains
          integ = 0
       else
 
-         x1 = max(x1_in, x(1) + 1d-60)
-         x2 = min(x2_in, x(n) - 1d-60)
+         x1 = max(x1_in, x(1) + 1.0e-60_dp)
+         x2 = min(x2_in, x(n) - 1.0e-60_dp)
          dx = (x(n) - x(1)) / (n - 1)
          i1 = floor((x1 - x(1)) / dx) + 1
          i2 = floor((x2 - x(1)) / dx) + 1
@@ -618,7 +620,7 @@ contains
             call linear_interp(x, y, n, xp(ip), yp(ip), indt)
          end do
       end if
-      integ = 0.d0
+      integ = 0.0_dp
       do ip = 1, np - 1
          integ = integ + .5 * (xp(ip + 1) - xp(ip)) * (yp(ip + 1) + yp(ip))
       end do
@@ -690,7 +692,7 @@ contains
          yc(1:n) = y
          do i = n + 1, icycle
             xc(i) = xc(i - 1) + dx
-            yc(i) = 0.d0
+            yc(i) = 0.0_dp
          end do
          xc(icycle + 1) = xc(icycle) + dx
          yc(icycle + 1) = yc(1)
@@ -724,7 +726,7 @@ contains
             yright = yc(iright)
          end if
          facright = mod(xp(ip), dx) / dx
-         facleft = 1.d0 - facright
+         facleft = 1.0_dp - facright
          yp(ip) = facleft * yleft + facright * yright
 
       end do

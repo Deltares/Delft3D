@@ -118,7 +118,7 @@ module m_fourier_analysis
 
    real(kind=fp), parameter :: defaultd = -999.0_fp ! Default value for doubles
    real(kind=fp), parameter :: dmiss_minmax = 1e30_fp ! Default values for min/max calculations
-   real(kind=fp), parameter :: tol_time = 1d-9 ! tolerance for comparing times
+   real(kind=fp), parameter :: tol_time = 1.0e-9_dp ! tolerance for comparing times
 
    public :: fouini
    public :: alloc_fourier_analysis_arrays
@@ -1934,7 +1934,7 @@ contains
 
       case ('a', 'l')
          ! For average
-         if (fousmb(1) > 0d0) then
+         if (fousmb(1) > 0.0_dp) then
             do n = 1, nmaxus
                fousma(n) = fousma(n) / fousmb(1)
             end do

@@ -32,6 +32,8 @@
 
 module m_statisticsnewstep
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -43,9 +45,9 @@ contains
    subroutine statisticsnewstep()
       use m_statistics, only: avedif, sqadif, dmxdif, numdif
 
-      avedif = 0d0 ! for now only, cum dif with analytic sol
-      sqadif = 0d0 ! for now only, cum dif with analytic sol
-      dmxdif = 0d0 ! for now only, cum dif with analytic sol
+      avedif = 0.0_dp ! for now only, cum dif with analytic sol
+      sqadif = 0.0_dp ! for now only, cum dif with analytic sol
+      dmxdif = 0.0_dp ! for now only, cum dif with analytic sol
       numdif = 0
    end subroutine statisticsnewstep
 

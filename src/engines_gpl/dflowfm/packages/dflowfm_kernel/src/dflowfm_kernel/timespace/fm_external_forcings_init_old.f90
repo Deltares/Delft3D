@@ -362,7 +362,7 @@ contains
             else if (qid == 'infiltrationcapacity') then
                if (infiltrationmodel == DFM_HYD_INFILT_CONST) then ! NOTE: old ext file: mm/day (iniFieldFile assumes mm/hr)
                   success = timespaceinitialfield(xz, yz, infiltcap, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_S)
-                  infiltcap = infiltcap * 1d-3 / (24.0_dp * 3600.0_dp) ! mm/day => m/s
+                  infiltcap = infiltcap * 1.0e-3_dp / (24.0_dp * 3600.0_dp) ! mm/day => m/s
                else
                   write (msgbuf, '(a,i0,a)') 'flow_initexternalforcings: quantity '//trim(qid)//' requires ''InfiltrationModel = ', DFM_HYD_INFILT_CONST, ''' in MDU. Skipping file '''//trim(filename)//'''.'
                   call warn_flush()

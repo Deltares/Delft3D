@@ -30,6 +30,7 @@
 !
 !
 module unstruc_display
+
 !! Handles all display settings and screen plotting for Unstruc
 !! (Not yet, a lot is still in REST.F90 [AvD])
 
@@ -55,6 +56,7 @@ module unstruc_display
    use m_lnabs
    use m_waveconst
 
+use precision, only: dp
    implicit none
 
    public dis_info_1d_link
@@ -186,10 +188,10 @@ contains
       call prop_get(dis_ptr, '*', 'Y0           ', Y, success)
       call prop_get(dis_ptr, '*', 'DYH          ', DY, success)
       if (.not. success) then ! to also use old cfg files
-         x = 0.5d0 * (x1 + x2)
+         x = 0.5_dp * (x1 + x2)
          call inqasp(asp)
          dy = (x2 - x1) * asp
-         y = y1 + 0.5d0 * dy
+         y = y1 + 0.5_dp * dy
       end if
 
       call prop_get(dis_ptr, '*', 'SFERTEK      ', JSFERTEK, success)
@@ -256,10 +258,10 @@ contains
       call prop_get(dis_ptr, '*', 'profmin(2)', profmin(2), success)
 
       RCIR = CR * (X2 - X1)
-      VFAC = max(0d0, VFAC)
-      VFACFORCE = max(0d0, VFACFORCE)
-      XLEFT = max(0d0, (min(XLEFT, 0.25d0)))
-      YBOT = max(0d0, (min(YBOT, 0.25d0)))
+      VFAC = max(0.0_dp, VFAC)
+      VFACFORCE = max(0.0_dp, VFACFORCE)
+      XLEFT = max(0.0_dp, (min(XLEFT, 0.25_dp)))
+      YBOT = max(0.0_dp, (min(YBOT, 0.25_dp)))
       JAXIS = min(1, (max(JAXIS, 0)))
       if (JAXIS == 1) then
          if (XLEFT == 0) XLEFT = .15
@@ -495,7 +497,7 @@ contains
       if (ndrawobs == 1) return
 
       call IGrCharJustify('L')
-      call settextsizefac(1.0d0)
+      call settextsizefac(1.0_dp)
 
       do n = 1, numobs + nummovobs
          if (.not. inview(xobs(n), yobs(n))) cycle
@@ -511,7 +513,7 @@ contains
             end if
          end if
          if (ndrawobs == 3) then
-            call settextsizefac(1.5d0)
+            call settextsizefac(1.5_dp)
             call igrcharfont(7)
             call gtext(' '//trim(namobs(n)), xobs(n), yobs(n), klobs)
             call igrcharfont(1)
@@ -546,8 +548,8 @@ contains
                      temt = constituents(itemp, kt)
                      temb = constituents(itemp, kb)
                   else
-                     temt = 32d0 + (9d0 / 5d0) * constituents(itemp, kt)
-                     temb = 32d0 + (9d0 / 5d0) * constituents(itemp, kb)
+                     temt = 32.0_dp + (9.0_dp / 5.0_dp) * constituents(itemp, kt)
+                     temb = 32.0_dp + (9.0_dp / 5.0_dp) * constituents(itemp, kb)
                   end if
                   write (tex, '(2f6.1)') temt, temb
                   call gtext(tex(1:14), xobs(n), yobs(n), ncolblack)
@@ -605,7 +607,7 @@ contains
 
 !           reallocate if necessary
             if (numpi > ubound(xlist, 1)) then
-               numnew = int(1.2d0 * dble(numpi)) + 1
+               numnew = int(1.2_dp * dble(numpi)) + 1
                call realloc(xlist, numnew)
                call realloc(ylist, numnew)
             end if
@@ -736,7 +738,7 @@ contains
 
          character(len=7) :: fmt
          fmt = '(f10.3)'
-         if (val > -1d0 * 10**(numw - numd - 2) .and. val < 10**(numw - numd - 1)) then
+         if (val > -1.0_dp * 10**(numw - numd - 2) .and. val < 10**(numw - numd - 1)) then
             write (fmt(3:4), '(i2)') numw
             write (fmt(6:6), '(i1)') numd
             write (tex(1:numw), fmt) val
@@ -822,8 +824,8 @@ contains
             call setcol(ncolblack)
             do i = 1, nfxw
                L = lnfxw(i); k3 = lncn(1, L); k4 = lncn(2, L)
-               xu = 0.5d0 * (xk(k3) + xk(k4))
-               yu = 0.5d0 * (yk(k3) + yk(k4))
+               xu = 0.5_dp * (xk(k3) + xk(k4))
+               yu = 0.5_dp * (yk(k3) + yk(k4))
                if (ndrawFixedWeirs == 4) then
                   call isocol(bob(1, L), ncol)
                end if
@@ -913,10 +915,10 @@ contains
          ! For a monitoring cross section, plot the positive direction
          ! as an arrow in view area, and show discharge or other quant.
          if (jaArrow == 1) then
-            xt = .5d0 * (path%xk(1, jmin) + path%xk(2, jmin))
-            yt = .5d0 * (path%yk(1, jmin) + path%yk(2, jmin))
+            xt = 0.5_dp * (path%xk(1, jmin) + path%xk(2, jmin))
+            yt = 0.5_dp * (path%yk(1, jmin) + path%yk(2, jmin))
             call normalout(path%xk(1, jmin), path%yk(1, jmin), path%xk(2, jmin), path%yk(2, jmin), rn, rt, jsferic, jasfer3D, dmiss, dxymis)
-            call arrowsxy(xt, yt, rn, rt, 4d0 * rcir)
+            call arrowsxy(xt, yt, rn, rt, 4.0_dp * rcir)
          end if
 
       end if ! path%lnx > 0
@@ -931,7 +933,7 @@ contains
 
    subroutine thicklinetexcol(ncol)
       integer :: ncol
-      call settextsizefac(2.0d0)
+      call settextsizefac(2.0_dp)
       call LINEWIDTH(2)
       call setcol(ncol)
    end subroutine thicklinetexcol
@@ -982,10 +984,10 @@ contains
          ysmin = y0
          ysmax = y0 + dya * (nca - 1)
       else
-         xsmin = 0d0
-         xsmax = 0d0
-         ysmin = 0d0
-         ysmax = 0d0
+         xsmin = 0.0_dp
+         xsmax = 0.0_dp
+         ysmin = 0.0_dp
+         ysmax = 0.0_dp
       end if
 
       if (NDRAW(26) == 1) then
@@ -1054,9 +1056,9 @@ contains
       call DMINMAX(YH, N, YMIN, YMAX, 10)
 
       if (XMAX == XMIN .and. YMAX == YMIN) then
-         XMIN = 0d0; YMIN = 0d0
+         XMIN = 0.0_dp; YMIN = 0.0_dp
          call INQASP(ASPECT)
-         XMAX = 1000d0; Ymax = aspect * 1000d0
+         XMAX = 1000.0_dp; Ymax = aspect * 1000.0_dp
       end if
 
       call MINMAXWORLD(XMIN, YMIN, XMAX, YMAX)
@@ -1470,10 +1472,10 @@ contains
       i1 = int(rshift) + 1
       i1 = min(i1, npl - 1)
       dr = rshift - i1 + 1
-      x00 = (1d0 - dr) * xpl(i1) + dr * xpl(i1 + 1)
-      y00 = (1d0 - dr) * ypl(i1) + dr * ypl(i1 + 1)
-      dxw = 0.5d0 * (x2 - x1)
-      dyw = 0.5d0 * (y2 - y1)
+      x00 = (1.0_dp - dr) * xpl(i1) + dr * xpl(i1 + 1)
+      y00 = (1.0_dp - dr) * ypl(i1) + dr * ypl(i1 + 1)
+      dxw = 0.5_dp * (x2 - x1)
+      dyw = 0.5_dp * (y2 - y1)
       x1 = x00 - dxw
       x2 = x00 + dxw
       y1 = y00 - dyw
@@ -1532,7 +1534,7 @@ contains
 
       if (jawind > 0) then
          xp = 0.90 * x1 + 0.10 * x2
-         vfw = 0.1d0 * (x2 - x1) / 10d0 ! 10 m/s is 0.1*screen
+         vfw = 0.1_dp * (x2 - x1) / 10.0_dp ! 10 m/s is 0.1*screen
          call arrowsxy(xp, yp, windxav, windyav, vfw)
          ws = sqrt(windxav * windxav + windyav * windyav)
          xp = 0.97 * x1 + 0.03 * x2
@@ -1542,7 +1544,7 @@ contains
          call GTEXT(tex, xp, yp, ncolln)
       end if
 
-      if (a1ini == 0d0) then
+      if (a1ini == 0.0_dp) then
          call resetlinesizesetc()
          return
       end if
@@ -1740,7 +1742,7 @@ contains
 
          ncol = ncoltx
          do i = 1, numconst
-            ueaa = 0d0
+            ueaa = 0.0_dp
             do kk = 1, ndxi
                do k = kbot(kk), ktop(kk)
                   ueaa = ueaa + vol1(k) * constituents(i, k)
@@ -1765,7 +1767,7 @@ contains
          yp = 0.85 * y1 + 0.15 * y2
 
          call thicklinetexcol(ncolln)
-         call arrowsxy(xp, yp, csx(itheta_view), snx(itheta_view), 0.1d0 * (x2 - x1))
+         call arrowsxy(xp, yp, csx(itheta_view), snx(itheta_view), 0.1_dp * (x2 - x1))
       end if
 
       call resetlinesizesetc()

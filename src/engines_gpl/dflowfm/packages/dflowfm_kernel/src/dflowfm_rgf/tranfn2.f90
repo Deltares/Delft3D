@@ -113,19 +113,19 @@ contains
             RI = dble(I - 1) / dble(MFAC) ! INDEXWEGING I
             RJ = dble(J - 1) / dble(NFAC) ! INDEXWEGING J
 
-            SI(I, J) = (1d0 - RJ) * D3(I) + RJ * D4(I) ! AFSTANDSWEGING I
-            SJ(I, J) = (1d0 - RI) * D1(J) + RI * D2(J) ! AFSTANDSWEGING J
+            SI(I, J) = (1.0_dp - RJ) * D3(I) + RJ * D4(I) ! AFSTANDSWEGING I
+            SJ(I, J) = (1.0_dp - RI) * D1(J) + RI * D2(J) ! AFSTANDSWEGING J
 
          end do
       end do
 
       do I = 1, MM
          do J = 1, NN
-            W1(I, J) = (1d0 - SJ(I, J)) * T3 + SJ(I, J) * T4 ! AFSTANDSGEWOGEN TOTALE KOORDELENGTE I-RICHTING
-            W2(I, J) = (1d0 - SI(I, J)) * T1 + SI(I, J) * T2 ! AFSTANDSGEWOGEN TOTALE KOORDELENGTE J-RICHTING
+            W1(I, J) = (1.0_dp - SJ(I, J)) * T3 + SJ(I, J) * T4 ! AFSTANDSGEWOGEN TOTALE KOORDELENGTE I-RICHTING
+            W2(I, J) = (1.0_dp - SI(I, J)) * T1 + SI(I, J) * T2 ! AFSTANDSGEWOGEN TOTALE KOORDELENGTE J-RICHTING
             W3(I, J) = W2(I, J) / W1(I, J) ! ATPF
             W4(I, J) = W1(I, J) / W2(I, J)
-            WA = 1d0 / (W3(I, J) + W4(I, J))
+            WA = 1.0_dp / (W3(I, J) + W4(I, J))
             W1(I, J) = WA * W3(I, J)
             W2(I, J) = WA * W4(I, J)
          end do
@@ -148,10 +148,10 @@ contains
       do I = 2, MM - 1 ! BINNENGEBIED 1E SCHATTING MET RANDPUNTEN
          do J = 2, NN - 1
 
-            XRH(I, J) = ((1d0 - SI(I, J)) * X1(J) + SI(I, J) * X2(J)) * W1(I, J) + &
-                        ((1d0 - SJ(I, J)) * X3(I) + SJ(I, J) * X4(I)) * W2(I, J)
-            YRH(I, J) = ((1d0 - SI(I, J)) * Y1(J) + SI(I, J) * Y2(J)) * W1(I, J) + &
-                        ((1d0 - SJ(I, J)) * Y3(I) + SJ(I, J) * Y4(I)) * W2(I, J)
+            XRH(I, J) = ((1.0_dp - SI(I, J)) * X1(J) + SI(I, J) * X2(J)) * W1(I, J) + &
+                        ((1.0_dp - SJ(I, J)) * X3(I) + SJ(I, J) * X4(I)) * W2(I, J)
+            YRH(I, J) = ((1.0_dp - SI(I, J)) * Y1(J) + SI(I, J) * Y2(J)) * W1(I, J) + &
+                        ((1.0_dp - SJ(I, J)) * Y3(I) + SJ(I, J) * Y4(I)) * W2(I, J)
          end do
       end do
 
@@ -159,8 +159,8 @@ contains
 
       do I = 1, MM ! EVEN TERUGGEZET
          do J = 1, NN
-            W1(I, J) = (1d0 - SJ(I, J)) * D3(I) * T3 + SJ(I, J) * D4(I) * T4 ! AFSTANDSGEWOGEN KOORDELENGTE I-RICHTING
-            W2(I, J) = (1d0 - SI(I, J)) * D1(J) * T1 + SI(I, J) * D2(J) * T2 ! AFSTANDSGEWOGEN KOORDELENGTE J-RICHTING
+            W1(I, J) = (1.0_dp - SJ(I, J)) * D3(I) * T3 + SJ(I, J) * D4(I) * T4 ! AFSTANDSGEWOGEN KOORDELENGTE I-RICHTING
+            W2(I, J) = (1.0_dp - SI(I, J)) * D1(J) * T1 + SI(I, J) * D2(J) * T2 ! AFSTANDSGEWOGEN KOORDELENGTE J-RICHTING
          end do
       end do
 
@@ -178,13 +178,13 @@ contains
 
       do I = 2, MM ! atpI over cellen
          do J = 2, NN - 1
-            W1(I, J) = 0.25d0 * (W4(I, J) + W4(I, J + 1) + W4(I - 1, J) + W4(I - 1, J + 1)) / W3(I, J)
+            W1(I, J) = 0.25_dp * (W4(I, J) + W4(I, J + 1) + W4(I - 1, J) + W4(I - 1, J + 1)) / W3(I, J)
          end do
       end do
 
       do I = 2, MM - 1 ! atpJ over cellen
          do J = 2, NN
-            W2(I, J) = 0.25d0 * (W3(I, J) + W3(I, J - 1) + W3(I + 1, J) + W3(I + 1, J - 1)) / W4(I, J)
+            W2(I, J) = 0.25_dp * (W3(I, J) + W3(I, J - 1) + W3(I + 1, J) + W3(I + 1, J - 1)) / W4(I, J)
          end do
       end do
 
@@ -197,7 +197,7 @@ contains
          do I = 2, MM - 1 ! BINNEN
             do J = 2, NN - 1
 
-               WA = 1d0 / (W1(I, J) + W1(I + 1, J) + W2(I, J) + W2(I, J + 1))
+               WA = 1.0_dp / (W1(I, J) + W1(I + 1, J) + W2(I, J) + W2(I, J + 1))
 
                XRH(I, J) = WA * (W3(I - 1, J) * W1(I, J) + W3(I + 1, J) * W1(I + 1, J) + &
                                  W3(I, J - 1) * W2(I, J) + W3(I, J + 1) * W2(I, J + 1))

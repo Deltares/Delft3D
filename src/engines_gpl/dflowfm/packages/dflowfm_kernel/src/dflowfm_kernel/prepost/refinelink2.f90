@@ -58,8 +58,8 @@ contains
 
       KN(1, L12) = 0; KN(2, L12) = 0
 
-      XM = 0.5d0 * (XK(K1) + XK(K2))
-      YM = 0.5d0 * (YK(K1) + YK(K2))
+      XM = 0.5_dp * (XK(K1) + XK(K2))
+      YM = 0.5_dp * (YK(K1) + YK(K2))
 
       call DSETNEWPOINT(XM, YM, K12)
       call NEWLINK(K1, K12, lnu) ! fast version without refinement

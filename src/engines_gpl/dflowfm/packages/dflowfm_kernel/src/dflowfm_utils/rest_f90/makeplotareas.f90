@@ -61,19 +61,19 @@ contains
       NSC = 0
 
       if (numrow == 1) then
-         yz = 0.4d0; yb = 0.8d0 * (1d0 - yz)
+         yz = 0.4_dp; yb = 0.8_dp * (1.0_dp - yz)
       else
-         yz = 0.7d0; yb = 0.8d0 * (1d0 - yz)
+         yz = 0.7_dp; yb = 0.8_dp * (1.0_dp - yz)
       end if
 
       if (numcol < 3) then
-         xz = 0.7d0; xb = 0.5d0 * (1d0 - xz)
+         xz = 0.7_dp; xb = 0.5_dp * (1.0_dp - xz)
       else
-         xz = 0.9d0; xb = 0.001d0 ! 05d0*(1d0-xz)
+         xz = 0.9_dp; xb = 0.001_dp ! 05d0*(1d0-xz)
       end if
 
       if (nsize == 2) then
-         yz = 0.45d0; yb = 0.8d0 * (1d0 - yz)
+         yz = 0.45_dp; yb = 0.8_dp * (1.0_dp - yz)
       end if
       DY = yz / NUMROW
       DX = xz / NUMCOL
@@ -84,8 +84,8 @@ contains
             NSC = NSC + 1
             X1SC(NSC) = xb + (I - 1) * DX + XM
             X2SC(NSC) = xb + (I) * DX - XM
-            Y1SC(NSC) = 1d0 - yb - (J) * DY + YM
-            Y2SC(NSC) = 1d0 - yb - (J - 1) * DY - YM
+            Y1SC(NSC) = 1.0_dp - yb - (J) * DY + YM
+            Y2SC(NSC) = 1.0_dp - yb - (J - 1) * DY - YM
          end do
       end do
       NUMSC = NSC

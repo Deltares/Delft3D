@@ -58,7 +58,7 @@ contains
          do LL = 1, lnx
             Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
-               if (ustokes(L) /= 0d0) then ! link flows
+               if (ustokes(L) /= 0.0_dp) then ! link flows
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   ucxeu(k1) = ucxeu(k1) - wcx1(LL) * ustokes(L)

@@ -88,7 +88,7 @@ contains
       logical :: jaAllPoints
       integer, external :: comp_nfac
       real(kind=dp), external :: comp_dgrow
-      real(kind=dp), parameter :: dnu = -0.50d0
+      real(kind=dp), parameter :: dnu = -0.50_dp
       integer :: nul, nul1(1), nul2(1, 1)
 
 !  Note: edge_vel is the grow velocity per front edge and in Cartesian coordinates
@@ -103,7 +103,7 @@ contains
 !      return
 !   end if
 
-      call READYY('Growing curvilinear grid', 0d0)
+      call READYY('Growing curvilinear grid', 0.0_dp)
 
 !  get the settings from a parameter menu, if user presses 'Esc', do nothing.
       jacancelled = 0
