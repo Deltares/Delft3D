@@ -121,4 +121,10 @@ def main():
     print(f"Changelog updated in {CHANGELOG_FILE}")
 
 if __name__ == "__main__":
-    main()
+    import sys
+    try:
+        main()
+        sys.exit(0)
+    except Exception as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
