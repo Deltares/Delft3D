@@ -1,4 +1,3 @@
-add_custom_target(bundle_all)
 IF(UNIX)
 include(BundleUtilities)
 
