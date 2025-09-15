@@ -200,5 +200,18 @@ object DIMRbak : BuildType({
                 pipArgs = "--editable .[all]"
             }
         }
+        python {
+            name = "Generate DIMRset release notes"
+            id = "Generate_DIMRset_release_notes"
+            workingDir = "ci/python/"
+            environment = venv {
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
+            }
+            command = file {
+                filename = "ci_tools/dimrset_delivery/step_7_publish_release_notes.py"
+                scriptArguments = """--output_dir "%output_dir_changelog%""""
+            }
+        }
     }
 })
