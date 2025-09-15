@@ -19,7 +19,7 @@ JIRA_PROJECT_KEYS = ["DEVOPSDSC", "UNST", "DELFT3D", "RTCTOOLS", "ECMODULE", "SO
                      "SWAN", "ESIWACE3", "COMPCORE", "DELWAQ"]  # Project prefixes
 
 CHANGELOG_DIR = args.build_working_dir
-CHANGELOG_FILE = Path(f"{CHANGELOG_DIR}/ci/python/ci_tools/dimrset_delivery/dimrset_release_changelog.txt")
+CHANGELOG_FILE = Path(f"{CHANGELOG_DIR}/ci_tools/dimrset_delivery/dimrset_release_changelog.txt")
 
 # Regex to capture JIRA issue prefixes like DEVOPSDSC-123
 ISSUE_KEY_PATTERN = re.compile(rf"\b({'|'.join(JIRA_PROJECT_KEYS)})-\d+\b")
