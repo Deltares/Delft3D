@@ -8,7 +8,7 @@ from pathlib import Path
 import argparse
 
 parser = argparse.ArgumentParser(description='Publish DIMRset release notes')
-parser.add_argument('--output-dir', type=str, required=True, help='The output dir of the changelog')
+parser.add_argument('--output_dir', type=str, required=True, help='The output dir of the changelog')
 args = parser.parse_args()
 
 # --- Configuration ---
@@ -18,7 +18,7 @@ JIRA_API_TOKEN = os.getenv("JIRA_API_TOKEN")
 JIRA_PROJECT_KEYS = ["DEVOPSDSC", "UNST", "DELFT3D", "RTCTOOLS", "ECMODULE", "SOFTSUP", 
                      "SWAN", "ESIWACE3", "COMPCORE", "DELWAQ"]  # Project prefixes
 
-CHANGELOG_DIR = args.build_working_dir
+CHANGELOG_DIR = args.output_dir
 CHANGELOG_FILE = Path(f"{CHANGELOG_DIR}/dimrset_release_changelog.txt")
 
 # Regex to capture JIRA issue prefixes like DEVOPSDSC-123
