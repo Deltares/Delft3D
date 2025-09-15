@@ -10,7 +10,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Publish DIMRset release notes')
 parser.add_argument('--output_dir', type=str, required=True, help='The output dir of the changelog')
-parser.add_argument('--dry-run', action='store_true', help='Do not write file, only show result')
+parser.add_argument('--dry_run', action='store_true', help='Do not write file, only show result')
 args = parser.parse_args()
 
 # --- Configuration ---
