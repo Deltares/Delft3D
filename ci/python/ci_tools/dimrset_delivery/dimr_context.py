@@ -13,6 +13,7 @@ class ServiceName(str, Enum):
     """Enum representing application names for DIMR automation."""
 
     ATLASSIAN = "Atlassian"
+    JIRA = "Jira"
     TEAMCITY = "TeamCity"
     SSH = "SSH"
     GIT = "Git"
