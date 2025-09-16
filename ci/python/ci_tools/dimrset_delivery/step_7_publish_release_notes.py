@@ -20,10 +20,10 @@ class ReleaseNotesPublisher(StepExecutorInterface):
     Generates a DIMR release changelog and updates the changelog file.
     """
 
-    def __init__(self, context: DimrAutomationContext, services: Services, output_dir: str) -> None:
+    def __init__(self, context: DimrAutomationContext, services: Services, changelog_dir: str) -> None:
         self.__context = context
         self.__jira = services.jira  # Jira client, set up in Services
-        self.__output_file = Path(f"{output_dir}/dimrset_release_changelog.txt")
+        self.__output_file = Path(f"{changelog_dir}/dimrset_release_changelog.txt")
 
     def __run_git_command(self, cmd: List[str]) -> str:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -119,7 +119,7 @@ def main() -> None:
     context = create_context_from_args(args, require_atlassian=False, require_git=False, require_teamcity=False, require_ssh=False)
     services = Services(context)
 
-    step = ReleaseNotesPublisher(context, services, output_dir=args.output_dir)
+    step = ReleaseNotesPublisher(context, services, changelog_dir=args.changelog_dir)
     success = step.execute_step()
     sys.exit(0 if success else 1)
 
