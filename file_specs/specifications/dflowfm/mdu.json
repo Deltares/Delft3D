@@ -3289,8 +3289,6 @@
                     "description": "Map file format.",
                     "enum_values": {
                         "1": "NetCDF",
-                        "2": "Tecplot",
-                        "3": "NetCDF and Tecplot",
                         "4": "NetCDF UGRID"
                     }
                 },

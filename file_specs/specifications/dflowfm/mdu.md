@@ -563,7 +563,7 @@ This section contains the settings for various output files.
 | `mapInterval` | Map file output, given as 'interval' 'start period' 'end period'. | `1200.0` |  | [s] |
 | `rstInterval` | Restart file output, given as 'interval' 'start period' 'end period'. | `0.0` |  | [s] |
 | `comInterval` | Comfile write times, given as 'interval' 'start period' 'end period' w.r.t. `refDate`. | `300.0` |  | [s] |
-| `mapFormat` | Map file format. | `4` | <ul><li>**`1`**: NetCDF</li><li>**`2`**: Tecplot</li><li>**`3`**: NetCDF and Tecplot</li><li>**`4`**: NetCDF UGRID</li></ul> |  |
+| `mapFormat` | Map file format. | `4` | <ul><li>**`1`**: NetCDF</li><li>**`4`**: NetCDF UGRID</li></ul> |  |
 | `ncFormat` | Format for all NetCDF output files. | `3` | <ul><li>**`3`**: classic</li><li>**`4`**: NetCDF4+HDF5</li></ul> |  |
 | `ncMapDataPrecision` | Precision for NetCDF data in map files (double or single). | `double` | <ul><li>**`double`**: double precision</li><li>**`single`**: single precision</li></ul> |  |
 | `ncHisDataPrecision` | Precision for NetCDF data in his files (double or single). | `double` | <ul><li>**`double`**: double precision</li><li>**`single`**: single precision</li></ul> |  |
