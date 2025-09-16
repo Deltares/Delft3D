@@ -20,7 +20,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
     Generates a DIMR release changelog and updates the changelog file.
     """
 
-    def __init__(self, context: DimrAutomationContext, services: Services, changelog_dir: str) -> None:
+    def __init__(self, context: DimrAutomationContext, services: Services) -> None:
         self.__context = context
         self.__jira = services.jira
         self.__changelog_file = Path(
