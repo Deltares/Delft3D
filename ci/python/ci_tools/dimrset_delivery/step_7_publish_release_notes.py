@@ -68,8 +68,8 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         ]
         new_text = "\n".join(new_entry)
 
-        if self.__output_file.exists():
-            content = self.__output_file.read_text(encoding="utf-8")
+        if self.__changelog_file.exists():
+            content = self.__changelog_file.read_text(encoding="utf-8")
         else:
             content = "# Changelog\n\n"
 
@@ -89,9 +89,9 @@ class ReleaseNotesPublisher(StepExecutorInterface):
             self.__context.log("----- FINAL RESULT -----")
             self.__context.log(updated)
         else:
-            self.__output_file.parent.mkdir(parents=True, exist_ok=True)
-            self.__output_file.write_text(updated, encoding="utf-8")
-            self.__context.log(f"Changelog updated in {self.__output_file}")
+            self.__changelog_file.parent.mkdir(parents=True, exist_ok=True)
+            self.__changelog_file.write_text(updated, encoding="utf-8")
+            self.__context.log(f"Changelog updated in {self.__changelog_file}")
 
     def execute_step(self) -> bool:
         self.__context.log("Generating DIMR release notes...")
