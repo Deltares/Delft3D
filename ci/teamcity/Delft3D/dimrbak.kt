@@ -23,7 +23,7 @@ object DIMRbak : BuildType({
 
     artifactRules = """
         +:ci/python/ci_tools/dimrset_delivery/output/*.html
-        +:ci/python/ci_tools/dimrset_delivery/output/*.txt
+        +:ci/python/ci_tools/dimrset_delivery/output/dimrset_release_changelog.txt"
         +:ci/python/*.xlsx
         +:ci/python/*.txt
     """.trimIndent()
