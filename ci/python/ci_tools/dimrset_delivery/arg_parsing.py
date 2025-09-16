@@ -21,7 +21,7 @@ def parse_common_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="DIMR Automation Script")
 
     parser.add_argument("--build_id", type=str, required=True, help="Build ID chain for the DIMR release")
-    parser.add_argument('--changelog_dir', type=str, default="/opt/repository/Delft3D-DIMRset", required=True, help='Output dir of the release changelog')
+    parser.add_argument('--changelog_dir', type=str, required=True, help='Output dir of the release changelog')
     parser.add_argument(
         "--dry-run", action="store_true", default=False, help="Run in dry-run mode without making any changes"
     )
