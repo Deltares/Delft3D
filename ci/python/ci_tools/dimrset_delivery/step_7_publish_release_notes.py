@@ -26,7 +26,6 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         self.__changelog_file = Path(
             "ci/python/ci_tools/dimrset_delivery/output/dimrset_release_changelog.txt"
         )
-        # ensure directory exists
         self.__changelog_file.parent.mkdir(parents=True, exist_ok=True)
 
     def __run_git_command(self, cmd: List[str]) -> str:
