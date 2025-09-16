@@ -69,7 +69,7 @@ if defined OMP_NUM_THREADS (
 echo OMP_NUM_THREADS is already defined
 ) else (
    rem Getting and setting the number of physical cores
-   for /F "tokens=2 delims==" %%C in ('wmic cpu get NumberOfCores /value ^| findstr NumberOfCores') do set NumberOfPhysicalCores=%%C
+   for /F "tokens=*" %%C in ('powershell -Command "Get-CimInstance -ClassName Win32_Processor | Select-Object -ExpandProperty NumberOfCores | Measure-Object -Sum | Select-Object -ExpandProperty Sum"') do set NumberOfPhysicalCores=%%C
    set /A OMP_NUM_THREADS=!NumberOfPhysicalCores! - 2
    if /I OMP_NUM_THREADS LEQ 2 ( set OMP_NUM_THREADS=2 )
 )

@@ -1,15 +1,7 @@
 @ echo off
 title run_flow2d3d__parallel_dwaves
-    rem When using intelMPI for the first time on a machine:
-    rem Execute "hydra_service.exe -install" as administrator:
-    rem     Preparation: Check that your Delft3D installation contains "...\x64\share\bin\hydra_service.exe". Optionally copy it to a local directory (it will run as a service).
-    rem     "Windows Start button" -> type "cmd", right-click "Command Prompt" App, "Run as Administrator"
-    rem     In this command box:
-    rem         cd ...\x64\share\bin (or your local copy)
-    rem         hydra_service.exe -install
-    rem         mpiexec.exe -register -username <user> -password <password> -noprompt
-    rem     When there is an hydra_service/smpd already running on the machine, it must be ended first, using the Microsoft Task Manager,
-    rem     or in the command  box: hydra_service.exe -uninstall (smpd -uninstall)
+    rem For local parallel execution on Windows. No special setup is required. The -localonly flag allows MPI to run
+    rem without the hydra service.
     rem
     rem This script runs Delft3D-FLOW in parallel online with Delft3D-WAVE on Windows
     rem Adapt and use it for your own purpose
