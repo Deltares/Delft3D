@@ -22,8 +22,12 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
     def __init__(self, context: DimrAutomationContext, services: Services, changelog_dir: str) -> None:
         self.__context = context
-        self.__jira = services.jira  # Jira client, set up in Services
-        self.__output_file = Path(f"{changelog_dir}/dimrset_release_changelog.txt")
+        self.__jira = services.jira
+        self.__changelog_file = Path(
+            "ci/python/ci_tools/dimrset_delivery/output/dimrset_release_changelog.txt"
+        )
+        # ensure directory exists
+        self.__changelog_file.parent.mkdir(parents=True, exist_ok=True)
 
     def __run_git_command(self, cmd: List[str]) -> str:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -119,7 +123,7 @@ def main() -> None:
     context = create_context_from_args(args, require_atlassian=False, require_git=False, require_teamcity=False, require_ssh=False)
     services = Services(context)
 
-    step = ReleaseNotesPublisher(context, services, changelog_dir="ci/python/ci_tools/dimrset_delivery/output/dimrset_release_changelog.txt")
+    step = ReleaseNotesPublisher(context, services)
     success = step.execute_step()
     sys.exit(0 if success else 1)
 
