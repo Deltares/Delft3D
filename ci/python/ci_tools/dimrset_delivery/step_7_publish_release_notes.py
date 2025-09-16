@@ -119,7 +119,7 @@ def main() -> None:
     context = create_context_from_args(args, require_atlassian=False, require_git=False, require_teamcity=False, require_ssh=False)
     services = Services(context)
 
-    step = ReleaseNotesPublisher(context, services, changelog_dir=args.changelog_dir)
+    step = ReleaseNotesPublisher(context, services, changelog_dir="ci/python/ci_tools/dimrset_delivery/output/dimrset_release_changelog.txt")
     success = step.execute_step()
     sys.exit(0 if success else 1)
 
