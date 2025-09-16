@@ -302,7 +302,6 @@ subroutine xbeach_all_input()
    waveps = readkey_dbl(md_surfbeatfile, 'waveps', 0.005d0, 0.001d0, 0.1d0)
    oldhmin = readkey_int(md_surfbeatfile, 'oldhmin', 0, 0, 1, strict=.true.)
    deltahmin = readkey_dbl(md_surfbeatfile, 'deltahmin', 0.1d0, 0.05d0, 0.3d0, strict=.true.)
-   DR_minthresh = readkey_dbl(md_surfbeatfile, 'DR_minthresh', 0.0d0, 0.0d0, 2.0d0, strict=.true.)
    !
    !
    ! Windmodel parameters
@@ -1389,15 +1388,6 @@ subroutine xbeach_wave_compute_flowforcing2D()
       Fx_cc(k1) = Fx_cc(k2)
       Fy_cc(k1) = Fy_cc(k2)
    end do
-
-   ! debug for LSTF case, set forcing to zero outside surf zone
-   !if (roller > 0) then
-   !   where (DR < DR_minthresh .and. hs > 0.3)
-   !      Fx_cc = 0d0
-   !      Fy_cc = 0d0
-   !   end where
-   !end if
-   ! \debug for LSTF case
 
    if (jampi == 1) then
       if (jatimer == 1) call starttimer(IXBEACH)
@@ -4486,11 +4476,6 @@ subroutine xbeach_solve_wave_stationary(callType, ierr)
       phiwav = thetamean * rd2dg
       rlabda = 2d0 * pi / kwav
       !
-      ! debug LSTF case
-      !where (DR < DR_minthresh .and. hh > 0.3d0)
-      !  DR = 0d0
-      !end where
-      !\debug LSTF case
    end if
    !
    ! this part is for online interacter visualisation
