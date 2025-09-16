@@ -21,12 +21,16 @@ def parse_common_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="DIMR Automation Script")
 
     parser.add_argument("--build_id", type=str, required=True, help="Build ID chain for the DIMR release")
+    parser.add_argument('--changelog_dir', type=str, default="/opt/repository/Delft3D-DIMRset", required=True, help='Output dir of the release changelog')
     parser.add_argument(
         "--dry-run", action="store_true", default=False, help="Run in dry-run mode without making any changes"
     )
 
     parser.add_argument("--atlassian-username", type=str, default=None, help="Atlassian/Confluence username")
     parser.add_argument("--atlassian-password", type=str, default=None, help="Atlassian/Confluence password")
+
+    parser.add_argument("--jira-username", type=str, default=None, help="Jira username")
+    parser.add_argument("--jira-PAT", type=str, default=None, help="Jira Personal Access Token")
 
     parser.add_argument("--teamcity-username", type=str, default=None, help="TeamCity username")
     parser.add_argument("--teamcity-password", type=str, default=None, help="TeamCity password")
@@ -43,6 +47,7 @@ def parse_common_arguments() -> argparse.Namespace:
 def create_context_from_args(
     args: argparse.Namespace,
     require_atlassian: bool = True,
+    require_jira: bool = True,
     require_git: bool = True,
     require_teamcity: bool = True,
     require_ssh: bool = True,
@@ -56,6 +61,8 @@ def create_context_from_args(
         Parsed command line arguments.
     require_atlassian : bool, optional
         Whether Atlassian credentials are required. Default is True.
+    require_jira : bool, optional
+        Whether Jira credentials are required. Default is True.
     require_git : bool, optional
         Whether Git credentials are required. Default is True.
     require_teamcity : bool, optional
@@ -74,6 +81,13 @@ def create_context_from_args(
         CredentialEntry(
             required=require_atlassian,
             credential=Credentials(username=args.atlassian_username, password=args.atlassian_password),
+        ),
+    )
+    credentials.add(
+        ServiceName.JIRA,
+        CredentialEntry(
+            required=require_jira,
+            credential=Credentials(username=args.jira_username, password=args.jira_PAT),
         ),
     )
     credentials.add(

@@ -1,0 +1,96 @@
+from types import SimpleNamespace
+from typing import Any, Dict, Optional, Union
+
+import requests
+
+from ci_tools.dimrset_delivery.dimr_context import Credentials, DimrAutomationContext
+from ci_tools.dimrset_delivery.lib.connection_service_interface import ConnectionServiceInterface
+
+
+class Jira(ConnectionServiceInterface):
+    """
+    Atlassian Jira REST API wrapper.
+
+    Provides methods to interact with the Jira API, including connection testing and fetching issue details.
+
+    Usage:
+        client = Jira(credentials, context)
+        issue = client.get_issue("DEVOPSDSC-123")
+    """
+
+    def __init__(self, credentials: Credentials, context: DimrAutomationContext) -> None:
+        """
+        Initialize Jira API client.
+
+        Parameters
+        ----------
+        credentials : Credentials
+            Username (or email) and API token for authentication.
+        context : DimrAutomationContext
+            Automation context for logging and configuration.
+        """
+        self.__auth = (credentials.username, credentials.password)
+        self.__rest_uri = "https://publicwiki.deltares.nl/rest/api/3"
+        self.__default_headers = {"content-type": "application/json", "accept": "application/json"}
+        self.__context = context
+
+    def test_connection(self) -> bool:
+        """
+        Test API connection to Jira.
+
+        Returns
+        -------
+        bool
+            True if connection is successful, False otherwise.
+        """
+        self.__context.log(f"Checking connection to Jira with user: {self.__auth[0]}")
+        endpoint = f"{self.__rest_uri}/myself"
+
+        if self.__context.dry_run:
+            self.__context.log(f"GET request: {endpoint}")
+            result: Union[SimpleNamespace, requests.Response] = SimpleNamespace(
+                status_code=200, content=b"dry-run mock"
+            )
+        else:
+            result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=False)
+
+        if result.status_code == 200:
+            self.__context.log("Successfully connected to the Jira API.")
+            return True
+
+        self.__context.log("Could not connect to the Jira API:")
+        self.__context.log(f"Error : {result.status_code} - {result.content.decode('utf-8')}")
+        return False
+
+    def get_issue(self, issue_key: str) -> Optional[Dict[str, Any]]:
+        """
+        Fetch details for a Jira issue.
+
+        Parameters
+        ----------
+        issue_key : str
+            The Jira issue key, e.g. DEVOPSDSC-123.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            Issue details if successful, None otherwise.
+        """
+        endpoint = f"{self.__rest_uri}/issue/{issue_key}"
+
+        if self.__context.dry_run:
+            self.__context.log(f"GET request: {endpoint}")
+            return {
+                "key": issue_key,
+                "fields": {"summary": f"[dry-run mock] Summary for {issue_key}"}
+            }
+
+        result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=False)
+
+        if result.status_code == 200:
+            return result.json()
+
+        self.__context.log(
+            f"Could not fetch issue {issue_key}: {result.status_code} - {result.content.decode('utf-8')}"
+        )
+        return None
