@@ -23,9 +23,9 @@ object DIMRbak : BuildType({
 
     artifactRules = """
         +:ci/python/ci_tools/dimrset_delivery/output/*.html
+        +:ci/python/ci_tools/dimrset_delivery/output/*.txt
         +:ci/python/*.xlsx
         +:ci/python/*.txt
-        /opt/repository/Delft3D-DIMRset/dimrset_release_changelog.txt => DIMRset_release_changelog.zip
     """.trimIndent()
 
     vcs {
@@ -208,7 +208,6 @@ object DIMRbak : BuildType({
                 module = "ci_tools.dimrset_delivery.step_7_publish_release_notes"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
-                    --changelog_dir "%dimrset_changelog_dir%"
                     --jira-username "%dimrbakker_username%"
                     --jira-password '%dimrbakker_password%'
                     %dry_run%
