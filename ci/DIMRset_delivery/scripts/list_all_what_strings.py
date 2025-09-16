@@ -2,7 +2,7 @@ import argparse
 import os
 import string
 import sys
-from datetime import datetime test
+from datetime import datetime
 
 """
 This script lists all what strings, starting with @(#)Deltares or containing HeadURL,
