@@ -15,7 +15,14 @@ fun BuildSteps.mergeTargetBranch(init: ScriptBuildStep.() -> Unit): ScriptBuildS
         git --version
         git remote add temporary "https://deltares-service-account:%github_deltares-service-account_access_token%@github.com/Deltares/delft3d.git"
         git fetch temporary refs/pull/*:refs/remotes/temporary/pull/* --quiet
-        git checkout temporary/%teamcity.build.branch%/merge
+        pr_num=%teamcity.build.branch%
+        current_head=$(git rev-parse temporary/pull/${pr_num}/head)
+        git checkout temporary/${pr_num}/merge
+        pr_parent=$(git rev-parse HEAD^2)
+        if [ "$pr_parent" != "$current_head" ]; then
+            echo "Merge conflict detected: merge ref is outdated."
+            exit 1
+        fi
         git remote remove temporary
     """.trimIndent()
     return result
