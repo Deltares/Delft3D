@@ -136,7 +136,7 @@ contains
       maxlatsg = tree_count_nodes_byname(bnd_ptr, 'lateral')
       if (maxlatsg > 0) then
          call realloc(balat, maxlatsg, keepExisting=.false., fill=0.0_dp)
-         call realloc(qplat, (/max(1, kmx), maxlatsg/), keepExisting=.false., fill=0.0_dp)
+         call realloc(qplat, [max(1, kmx), maxlatsg], keepExisting=.false., fill=0.0_dp)
          call realloc(lat_ids, maxlatsg, keepExisting=.false.)
          call realloc(n1latsg, maxlatsg, keepExisting=.false., fill=0)
          call realloc(n2latsg, maxlatsg, keepExisting=.false., fill=0)
@@ -331,7 +331,7 @@ contains
 
                   case ('qhbnd')
                      ibqh = ibqh + 1
-                     target_index = (/ibqh/)
+                     target_index = [ibqh]
                      if (filetype /= NODE_ID) then
                         location_file = qhpliname(ibqh)
                      end if
@@ -340,7 +340,7 @@ contains
                      target_index = itpenur(ib)
 
                   case default
-                     target_index = (/-1/)
+                     target_index = [-1]
                   end select
 
                   if (target_index(1) <= 0) then
@@ -624,8 +624,9 @@ contains
       use fm_external_forcings, only: allocatewindarrays
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
-                        jaqin, jaqext, solar_radiation_available, long_wave_radiation_available, ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, &
-                        ec_charnock, wcharnock, rain, qext, pseudo_air_pressure_available, water_level_correction_available
+                        jaqin, jaqext, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
+                        ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, qext, pseudo_air_pressure_available, &
+                        water_level_correction_available
       use m_flowgeom, only: ndx, lnx, xz, yz
       use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
                                   btempforcingtypS, itempforcingtyp
@@ -753,9 +754,6 @@ contains
          case ('pseudoAirPressure')
             kx = 1
             ierr = allocate_pseudo_air_pressure(0.0_dp)
-            write (msgbuf, '(a)') 'quantity '//trim(quantity)//' is found in file '//file_name// &
-                '. Quantity waterLevelCorrection is more preferable.' 
-            call warn_flush()
 
          case ('waterLevelCorrection')
             kx = 1
@@ -918,8 +916,21 @@ contains
             itempforcingtyp = 5
             btempforcingtypD = .true.
          case ('solarradiation')
+            if (net_solar_radiation_available) then
+               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
+               call err_flush()
+               return
+            end if
             btempforcingtypS = .true.
             solar_radiation_available = .true.
+         case ('netsolarradiation')
+            if (solar_radiation_available) then
+               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
+               call err_flush()
+               return
+            end if
+            btempforcingtypS = .true.
+            net_solar_radiation_available = .true.
          case ('longwaveradiation')
             btempforcingtypL = .true.
             long_wave_radiation_available = .true.
@@ -1223,7 +1234,7 @@ contains
       case ('dewpoint')
          call realloc(dew_point_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('dew_point_temperature(ndx)', ierr, ndx)
-      case ('solarradiation')
+      case ('solarradiation', 'netsolarradiation')
          call realloc(solar_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('solar_radiation(ndx)', ierr, ndx)
       case ('longwaveradiation')

@@ -94,8 +94,8 @@ contains
 
 ! GD: memory problems with realloc
          if (allocated(path%xk)) then
-            call realloc(path%xk, (/2, m/))
-            call realloc(path%yk, (/2, m/))
+            call realloc(path%xk, [2, m])
+            call realloc(path%yk, [2, m])
          else
             allocate (path%xk(2, m))
             allocate (path%yk(2, m))

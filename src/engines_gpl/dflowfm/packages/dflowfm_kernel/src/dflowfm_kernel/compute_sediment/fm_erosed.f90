@@ -88,7 +88,7 @@ contains
       use dfparall
       use m_alloc
       use m_missing
-      use m_turbulence, only: vicwws, turkinepsws, rhowat
+      use m_turbulence, only: vicwws, turkinws, rhowat
       use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
       use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor
@@ -214,14 +214,14 @@ contains
       real(fp), dimension(0:kmax2d) :: ws2d
       real(fp), dimension(kmax2d) :: rsdq2d
       real(fp), dimension(kmax2d), save :: sig2d = &
-         (/-0.0874, -0.2472, -0.3797, -0.4897, -0.5809, -0.6565, -0.7193, &
+         [-0.0874, -0.2472, -0.3797, -0.4897, -0.5809, -0.6565, -0.7193, &
          & -0.7713, -0.8145, -0.8503, -0.8800, -0.9046, -0.9250, -0.9419, -0.9560,&
-         & -0.9676, -0.9773, -0.9854, -0.9920, -0.9975/)
+         & -0.9676, -0.9773, -0.9854, -0.9920, -0.9975]
 
       real(fp), dimension(kmax2d), save :: thck2d = &
-         (/0.1747, 0.1449, 0.1202, 0.0997, 0.0827, 0.0686, 0.0569, 0.0472, &
+         [0.1747, 0.1449, 0.1202, 0.0997, 0.0827, 0.0686, 0.0569, 0.0472, &
          & 0.0391, 0.0325, 0.0269, 0.0223, 0.0185, 0.0154, 0.0127, 0.0106, 0.0088,&
-         & 0.0073, 0.0060, 0.0050/)
+         & 0.0073, 0.0060, 0.0050]
 
       real(fp), dimension(max(kmx, 1)) :: concin3d
       real(fp), dimension(kmax2d) :: concin2d
@@ -649,7 +649,6 @@ contains
                ! at layer interfaces, but not at bed and surface  ! to check...
                do l = 1, lsed
                   do k = kb, kt - 1
-                     !seddif(l, k) = max(vicwws(k),dicoww)
                      seddif(l, k) = vicwws(k) ! background dico is added in solve_vertical
                   end do
                end do
@@ -864,7 +863,7 @@ contains
          dll_reals(RP_SNDFR) = real(sandfrac(nm), hp)
          dll_reals(RP_DGSD) = real(dgsd(nm), hp)
          if (iturbulencemodel > 2 .and. kmx > 0) then
-            dll_reals(RP_KTUR) = real(turkinepsws(1, kb), hp) ! 1=k, 2=e
+            dll_reals(RP_KTUR) = real(turkinws(kb), hp)
          end if
          dll_reals(RP_UMEAN) = real(umean, hp)
          dll_reals(RP_VMEAN) = real(vmean, hp)
@@ -992,7 +991,6 @@ contains
                   !
                   klc = 0
                   do k = kt, kb - 1, -1
-                     !seddif(l, k) = max(vicwws(k),dicoww)
                      seddif(l, k) = vicwws(k)
                      klc = klc + 1
                   end do
@@ -1089,7 +1087,6 @@ contains
                   dcwwlc = 0.0_fp
                   wslc = 0.0_fp
                   do kk = kt, kb - 1, -1 ! sigma convention
-                     !dcwwlc(klc) = max(vicwws(kk),dicoww)     ! maximalisation is safety
                      dcwwlc(klc) = vicwws(kk) !  background is added in solve_vertical
                      wslc(klc) = ws(kk, l)
                      klc = klc + 1

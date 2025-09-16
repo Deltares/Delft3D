@@ -1197,8 +1197,8 @@ contains
       real(kind=dp), dimension(8) :: xs
       real(kind=dp), dimension(8) :: ys
 
-      xs = (/x - size / 2, x - size / 8, x, x + size / 8, x + size / 2, x + size / 8, x, x - size / 8/)
-      ys = (/y, y - size / 8, y - size / 2, y - size / 8, y, y + size / 8, y + size / 2, y + size / 8/)
+      xs = [x - size / 2, x - size / 8, x, x + size / 8, x + size / 2, x + size / 8, x, x - size / 8]
+      ys = [y, y - size / 8, y - size / 2, y - size / 8, y, y + size / 8, y + size / 2, y + size / 8]
 
 ! Fill
       call IGrFillPattern(4, 0, 0)

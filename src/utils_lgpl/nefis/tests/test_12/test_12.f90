@@ -45,9 +45,9 @@ program Test12
    CHARACTER*255  version
 
    error = getnfv(version)
-   write(*,*)
-   write(*,*) trim(version(5:))
-   write(*,*)
+   write(*,*) '-----------------------------------------------'
+   write(*,*) 'Version: '//trim(version(5:))
+   write(*,*) '-----------------------------------------------'
 
    CALL WriteFile( 'data_c12a', fds_a, 33 )
    CALL WriteFile( 'data_c12b', fds_b, 39 )

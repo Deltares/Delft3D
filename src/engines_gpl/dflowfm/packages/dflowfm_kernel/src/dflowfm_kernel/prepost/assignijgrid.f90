@@ -105,8 +105,8 @@ contains
 
 ! only one layer of cells will be added during the next iteration at maximum
          call grow_ijc(lowold, uppold, &
-                       (/minval(ic, ic /= IMISS) - 1, minval(jc, jc /= IMISS) - 1/), &
-                       (/maxval(ic, ic /= IMISS) + 1, maxval(jc, jc /= IMISS) + 1/), 0)
+                       [minval(ic, ic /= IMISS) - 1, minval(jc, jc /= IMISS) - 1], &
+                       [maxval(ic, ic /= IMISS) + 1, maxval(jc, jc /= IMISS) + 1], 0)
 
          if (icount == 0) exit
       end do

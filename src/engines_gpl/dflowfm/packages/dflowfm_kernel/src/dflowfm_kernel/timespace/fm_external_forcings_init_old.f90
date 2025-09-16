@@ -47,7 +47,7 @@ contains
       use m_flowtimes, only: handle_extra, irefdate, tunit, tstart_user, tim1fld, ti_mba
       use m_flowgeom, only: lnx, ndx, xz, yz, xu, yu, iadv, ibot, ndxi, lnx1d, grounlay, jagrounlay, kcs
       use m_netw, only: xk, yk, zk, numk, numl
-      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile
+      use unstruc_model, only: md_extfile_dir, md_inifieldfile, md_extfile, md_ptr
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int, ncflow, loctp_polygon_file, loctp_polyline_file, selectelset_internal_links, selectelset_internal_nodes, getmeteoerror, readprovider
       use m_structures, only: jaoldstr
       use m_meteo
@@ -964,7 +964,6 @@ contains
 
             else if (qid == 'airdensity') then
 
-
                if (.not. allocated(air_density)) then
                   allocate (air_density(ndx), stat=ierr)
                   call aerr('air_density(ndx)', ierr, ndx)
@@ -1005,7 +1004,7 @@ contains
 
                ! if ice properties not yet read before, initialize ...
                if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
-                  call fm_ice_activate_by_ext_forces(ndx)
+                  call fm_ice_activate_by_ext_forces(ndx, md_ptr)
                end if
                ! add the EC link
                if (len_trim(sourcemask) > 0) then
@@ -1042,6 +1041,19 @@ contains
                if (success) then
                   btempforcingtypS = .true.
                   solar_radiation_available = .true.
+               end if
+
+            else if (qid == 'netsolarradiation') then
+
+               if (.not. allocated(solar_radiation)) then
+                  allocate (solar_radiation(ndx), stat=ierr)
+                  call aerr('solar_radiation(ndx)', ierr, ndx)
+                  solar_radiation = 0.0_dp
+               end if
+               success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
+               if (success) then
+                  btempforcingtypS = .true.
+                  net_solar_radiation_available = .true.
                end if
 
             else if (qid == 'longwaveradiation') then

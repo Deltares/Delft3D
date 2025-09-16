@@ -69,9 +69,9 @@ program test_14
    CHARACTER*255  version
 
    error = getnfv(version)
-   write(*,*)
-   write(*,*) trim(version(5:))
-   write(*,*)
+   write(*,*) '-----------------------------------------------'
+   write(*,*) 'Version: '//trim(version(5:))
+   write(*,*) '-----------------------------------------------'
 
    elap_w=0
    elap_r=0

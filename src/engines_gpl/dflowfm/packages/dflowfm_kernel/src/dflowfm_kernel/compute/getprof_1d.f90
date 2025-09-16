@@ -93,8 +93,8 @@ contains
 
          if ((japerim == 1) .and. (calcConv == 1)) then
             hydrad = area / perim
-            perim_sub = (/perim, 0d0, 0d0/)
-            af_sub = (/area, 0d0, 0d0/)
+            perim_sub = [perim, 0d0, 0d0]
+            af_sub = [area, 0d0, 0d0]
             !
             ! Calculate the conveyance and Chezy value, using the friction parameters on the internal link, using the
             ! local water depth on this boundary link.

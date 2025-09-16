@@ -29,6 +29,7 @@ object LinuxBuild : BuildType({
         #teamcity:symbolicLinks=as-is
         **/*.log => logging
         build_%product%/install/** => oss_artifacts_lnx64_%build.vcs.number%.tar.gz!lnx64
+        unit-test-report-linux.xml
     """.trimIndent()
 
     outputParams {
@@ -75,6 +76,37 @@ object LinuxBuild : BuildType({
             dockerImagePlatform = ExecBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm"
             dockerPull = true
+        }
+        script {
+            name = "Run unit tests"
+            scriptContent = """
+                #!/usr/bin/env bash
+                source /opt/bashrc
+                ctest --test-dir build_%product% --build-config %build_type% --output-junit ../unit-test-report-linux.xml --output-on-failure
+            """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerRunParameters = "--rm"
+            dockerPull = true
+        }
+        script {
+            name = "Install"
+            scriptContent = """
+                #!/usr/bin/env bash
+                source /opt/bashrc
+                cmake --install build_%product% --config %build_type%
+            """.trimIndent()
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerRunParameters = "--rm"
+            dockerPull = true
+        }
+    }
+
+    features {
+        xmlReport {
+            reportType = XmlReport.XmlReportType.JUNIT
+            rules = "+:unit-test-report-linux.xml"
         }
     }
 

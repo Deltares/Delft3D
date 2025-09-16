@@ -248,16 +248,16 @@ contains
       jagetwf = 1
       jakdtree = 1
       jdla = 1
-      call realloc(indxx, (/3, numk/), keepexisting=.false., fill=0)
-      call realloc(wfxx, (/3, numk/), keepexisting=.false., fill=0d0)
+      call realloc(indxx, [3, numk], keepexisting=.false., fill=0)
+      call realloc(wfxx, [3, numk], keepexisting=.false., fill=0d0)
       call realloc(dumout, numk, keepexisting=.false., fill=dmiss)
 
       transformcoef(6) = 1.1d0
       call triinterp2(xk, yk, dumout, numk, jdla, &
                       xz, yz, bl, ndx, dmiss, jsferic, jins, jasfer3d, npl, 0, 0, xpl, ypl, zpl, transformcoef)
       !
-      call realloc(st_ind, (/3, numk/), keepexisting=.false., fill=0)
-      call realloc(st_wf, (/3, numk/), keepexisting=.false., fill=0d0)
+      call realloc(st_ind, [3, numk], keepexisting=.false., fill=0)
+      call realloc(st_wf, [3, numk], keepexisting=.false., fill=0d0)
       do k = 1, numk
          st_ind(:, k) = indxx(:, k)
          st_wf(:, k) = wfxx(:, k)

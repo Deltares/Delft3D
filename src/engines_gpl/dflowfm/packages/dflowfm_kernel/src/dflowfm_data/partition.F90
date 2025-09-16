@@ -344,7 +344,7 @@ contains
 !       by setting the first node z-value and determine number of partitions
 
 !     make all domain numbers available
-      idum = (/(i, i=1, npartition_pol)/)
+      idum = [(i, i=1, npartition_pol)]
 
 !     see wich domain numbers are already used
       do ipol = 1, npartition_pol
@@ -1856,7 +1856,7 @@ contains
 
 !        check recv array size
          if (icount > 2 * ubound(xy_recv, 2)) then ! reallocate if necessary
-            call realloc(xy_recv, (/2, int(1.2d0 * dble(icount / 2) + 1d0)/), keepExisting=.false., fill=0d0)
+            call realloc(xy_recv, [2, int(1.2d0 * dble(icount / 2) + 1d0)], keepExisting=.false., fill=0d0)
          end if
 
          call mpi_recv(xy_recv, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, status, error)
@@ -3032,7 +3032,7 @@ contains
 
       integer :: ierror
 
-      dum = (/var1, var2/)
+      dum = [var1, var2]
       call mpi_allreduce(dum, var_all, 2, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
       var1 = var_all(1)
       var2 = var_all(2)
@@ -3058,7 +3058,7 @@ contains
 
       integer :: ierror
 
-      dum = (/var1, var2, var3/)
+      dum = [var1, var2, var3]
       call mpi_allreduce(dum, var_all, 3, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
       var1 = var_all(1)
       var2 = var_all(2)
@@ -3086,7 +3086,7 @@ contains
 
       integer :: ierror
 
-      dum = (/var1, var2, var3, var4/)
+      dum = [var1, var2, var3, var4]
       call mpi_allreduce(dum, var_all, 4, mpi_integer, mpi_max, DFM_COMM_DFMWORLD, ierror)
       var1 = var_all(1)
       var2 = var_all(2)
@@ -5581,7 +5581,7 @@ contains
          end if
 
 !        realloc
-         call realloc(xyrec, (/3, num/), keepExisting=.false., fill=0d0)
+         call realloc(xyrec, [3, num], keepExisting=.false., fill=0d0)
 
 !        recieve
          call mpi_recv(xyrec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)

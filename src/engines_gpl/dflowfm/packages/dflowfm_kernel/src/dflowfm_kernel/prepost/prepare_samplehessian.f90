@@ -47,10 +47,13 @@ contains
       use m_comp_samplehessian, only: comp_samplehessian
       use m_samples, only: mxsam, mysam, ns, zs
       use m_samples_refine, only: ihesstat, ihesstat_ok, ndim, nsamplesmooth, zss, nsamplesmooth_last
+      use m_qnerror, only: qnerror
 
       integer, intent(out) :: ierror !< error (1) or not (0)
 
+      call qnerror('Please provide a jacobi routine to compute the samples Hessian', '', '')
       ierror = 1
+      return
 
       if (iHesstat /= iHesstat_OK) then
 !     (re)allocate

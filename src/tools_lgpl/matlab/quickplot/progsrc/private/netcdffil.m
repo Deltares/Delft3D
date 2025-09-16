@@ -54,15 +54,9 @@ if nargin<2
 end
 
 OrigFI = FI;
-if FI.NumDomains>1
-    if isempty(domain)
-        % continue
-    elseif domain>FI.NumDomains || domain==0
-        % continue
-    else
-        FI = FI.Partitions{domain};
-        domain = 1;
-    end
+if nargin >= 2 && load_single_partition(FI, domain)
+    FI = FI.Partitions{domain};
+    domain = 1;
 end
 
 if nargin==2
@@ -128,7 +122,7 @@ if nargin==2
             end
         end
         infileStruct = rmfield(infileStruct,'ncVarName');
-        if domain == FI.NumDomains+1
+        if load_all_partitions(FI, domain)
             for i = 1:length(infileStruct)
                 if infileStruct(i).DimFlag(M_)
                     infileStruct(i).DimFlag(M_) = inf;
@@ -210,11 +204,11 @@ fidx=find(DimFlag);
 if isempty(subf)
     % initialize and read indices ...
     idx(fidx(1:length(varargin))) = varargin;
-    marg = find(fidx==M_);
+    index_m_dimension = find(fidx==M_);
 else
     % initialize and read indices ...
     idx(fidx(1:(length(varargin)-1))) = varargin(2:end);
-    marg = 1 + find(fidx==M_);
+    index_m_dimension = 1 + find(fidx==M_);
 end
 
 if isfield(FI.Attribute,'Name')
@@ -230,19 +224,24 @@ else
 end
 if FI.NumDomains>1
     args = varargin;
-    spatial = false;
-    if ~isempty(marg) && ~isempty(Props.Coords)
-        spatial = ~isempty(strfind(Props.Coords,'xy'));
+    if load_merged_partitions(FI, domain) && ...
+            ~isempty(index_m_dimension) && ~isempty(Props.Coords) && ~isempty(strfind(Props.Coords,'xy'))
+        m = identify_mesh(Props.DimName{M_}, FI.MergedPartitions);
+        merge_needed = ~isempty(m);
+    else
+        merge_needed = false;
     end
-    if domain == FI.NumDomains+2
+    if merge_needed
+        MergedMesh = FI.MergedPartitions(m);
+
         % merged partitions
         if DimFlag(K_)
             cmd = strrep(cmd, 'grid', 'z');
         else
             cmd = strrep(cmd, 'grid', '');
         end
-        if marg <= numel(args)
-            args{marg} = 0;
+        if index_m_dimension <= numel(args)
+            args{index_m_dimension} = 0;
         end
         %
         if iscell(Props.varid)
@@ -253,7 +252,7 @@ if FI.NumDomains>1
                     PFI = FI.Partitions{i};
                     PProps.Geom = 'UGRID2D-EDGE';
                     PProps.varid = Props.varid{2};
-                    PProps.DimName{M_} = PFI.Dataset(PFI.Dataset(PProps.varid+1).Mesh{2}).Mesh{6};
+                    PProps.DimName{M_} = PFI.Dataset(PFI.Dataset(PProps.varid+1).Mesh{3}).Mesh{6};
                     Props.Partitions{i} = PProps;
                 end
                 Props.Geom = 'UGRID2D-EDGE';
@@ -264,7 +263,7 @@ if FI.NumDomains>1
     end
     if isempty(cmd)
         Data = [];
-    elseif ~spatial
+    elseif ~merge_needed && load_merged_partitions(FI, domain)
         % read non-spatial data from the first file ... should be consistent across all files and no way to merge anyway
         Data = netcdffil(FI,1,Props,cmd,args{:});
     else
@@ -282,12 +281,10 @@ if FI.NumDomains>1
             iOut = iOut + 1;
         end
     end
-    if spatial && domain == FI.NumDomains+2
+    if merge_needed
         % merged partitions
         partData = Data;
         Data = [];
-        m = identify_mesh(Props.DimName{M_}, FI.MergedPartitions);
-        MergedMesh = FI.MergedPartitions(m);
         
         % XY values i.e. mesh
         if XYRead
@@ -304,7 +301,11 @@ if FI.NumDomains>1
             end
         end
         
-        valLoc = Props.Geom(end-3:end);
+        if strncmp(Props.Geom, 'UGRID', 5)
+            valLoc = Props.Geom(end-3:end);
+        else
+            valLoc = [];
+        end
         if isfield(partData,'Time') && length(partData(1).Time)>1
             nPrefixDim = 1;
             prefixDim = {':'};
@@ -325,11 +326,15 @@ if FI.NumDomains>1
                 zLoc = valLoc;
             end
             Data = mergePartData(Data, partData, MergedMesh, zLoc,{'Z'}, nPrefixDim, prefixDim);
-            Data.ZLocation = zLoc;
+            if ~isempty(zLoc)
+                Data.ZLocation = zLoc;
+            end
         end
         
-        % data values 
-        Data.ValLocation = valLoc;
+        % data values
+        if ~isempty(valLoc)
+            Data.ValLocation = valLoc;
+        end
         if isfield(partData,'Time')
             Data.Time = partData(1).Time;
         end
@@ -1571,7 +1576,7 @@ if XYRead || XYneeded || ZRead
         end
     end
     %
-    if ~Props.hasCoords
+    if ~Props.hasCoords && Props.DimFlag(M_) && Props.DimFlag(N_)
         %
         % Define a simple regular grid
         %
@@ -1922,6 +1927,7 @@ else
             Insert.Coords = 'xy';
             Insert.hasCoords=1;
         elseif ~isempty(Info.X) && ~isempty(Info.Y)
+            Insert.Coords = 'xy';
             Insert.hasCoords=1;
             mesh = [Info.X Info.Y];
             found = false;
@@ -1937,7 +1943,6 @@ else
             if ~isempty(Info.XBounds) && ~isempty(Info.YBounds)
                 Insert.Geom = 'POLYG';
                 Insert.ClosedPoly = 1;
-                Insert.Coords = 'xy';
                 Insert.DataInCell = 1;
             elseif ~Insert.DimFlag(N_) % 1D data set or unstructured data set
                 if Insert.DimFlag(K_)
@@ -1945,7 +1950,6 @@ else
                     Insert.Coords = 'xy+z';
                 else
                     Insert.Geom = 'PNT';
-                    Insert.Coords = 'xy';
                 end
             end
         elseif ~isempty(Info.Z)
@@ -2195,7 +2199,7 @@ end
 % all partitions ... no index across all partitions ... set DimFlag to inf
 % to display dimension size as ?
 %
-if domain==FI.NumDomains+1
+if load_all_partitions(FI, domain)
     for i = 1:length(Out)
         if Out(i).DimFlag(M_)
             Out(i).DimFlag(M_) = inf;
@@ -2526,6 +2530,7 @@ for m = 1:length(mergedMeshes)
         return
     end
 end
+m = [];
 
 % -----------------------------------------------------------------------------
 function Domains=domains(FI)
@@ -3357,26 +3362,31 @@ end
 
 
 function Data = mergePartData(Data,partData,MergedMesh,valLoc,valFields,nPrefixDim,prefixDim)
-switch valLoc
-    case 'NODE'
-        nloc = MergedMesh.nNodes;
-        domainMask = MergedMesh.nodeDMask;
-        globalIndex = MergedMesh.nodeGIndex;
-    case 'EDGE'
-        nloc = MergedMesh.nEdges;
-        domainMask = MergedMesh.edgeDMask;
-        globalIndex = MergedMesh.edgeGIndex;
-    case 'FACE'
-        nloc = MergedMesh.nFaces;
-        domainMask = MergedMesh.faceDMask;
-        globalIndex = MergedMesh.faceGIndex;
-end
 for v = valFields
     fld = v{1};
     if isfield(partData,fld)
+        switch valLoc
+            case 'NODE'
+                nloc = MergedMesh.nNodes;
+                domainMask = MergedMesh.nodeDMask;
+                globalIndex = MergedMesh.nodeGIndex;
+            case 'EDGE'
+                nloc = MergedMesh.nEdges;
+                domainMask = MergedMesh.edgeDMask;
+                globalIndex = MergedMesh.edgeGIndex;
+            case 'FACE'
+                nloc = MergedMesh.nFaces;
+                domainMask = MergedMesh.faceDMask;
+                globalIndex = MergedMesh.faceGIndex;
+        end
+        %
         sz = size(partData(1).(fld));
         sz(nPrefixDim+1) = nloc;
-        Data.(fld) = NaN(sz);
+        if iscell(partData(1).(fld))
+            Data.(fld) = cell(sz);
+        else
+            Data.(fld) = NaN(sz);
+        end
         for p = 1:length(partData)
             masked = domainMask{p};
             Data.(fld)(prefixDim{:},globalIndex{p}(masked),:) = partData(p).(fld)(prefixDim{:},masked,:);
@@ -3445,3 +3455,12 @@ switch Props.varid{1}
     otherwise
         ui_message('error','Unknown plot type "%s".', Props.varid{1})
 end
+
+function check = load_single_partition(FI, domain)
+check = ~isempty(domain) && FI.NumDomains > 1 && domain <= FI.NumDomains;
+
+function check = load_all_partitions(FI, domain)
+check = domain == FI.NumDomains+1;
+
+function check = load_merged_partitions(FI, domain)
+check = domain == FI.NumDomains+2;

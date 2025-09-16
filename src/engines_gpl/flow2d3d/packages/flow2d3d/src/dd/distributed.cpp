@@ -373,9 +373,6 @@ DD::SlaveProcess (
 
     this->ReadConfig ();
 
-    if (this->flow->flowol)
-        this->flow->flowol->numSubdomains = this->numSubdomains;
-
     //  Create the minimum barrier iterator and join it to all mappers
 
     this->minbarCat = new Category (this, DD::minBarCategoryName);

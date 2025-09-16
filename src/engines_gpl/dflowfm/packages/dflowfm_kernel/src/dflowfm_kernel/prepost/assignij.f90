@@ -66,8 +66,8 @@ contains
       integer :: Lneighbor1, Lneighbor3
       integer :: k1, k2, icnew1, icnew2, jcnew1, jcnew2
 
-      integer, dimension(4), parameter :: Di = (/-1, 0, 1, 0/)
-      integer, dimension(4), parameter :: Dj = (/0, -1, 0, 1/)
+      integer, dimension(4), parameter :: Di = [-1, 0, 1, 0]
+      integer, dimension(4), parameter :: Dj = [0, -1, 0, 1]
 
       integer :: icell, jcell, nodes(4)
       integer :: ilink

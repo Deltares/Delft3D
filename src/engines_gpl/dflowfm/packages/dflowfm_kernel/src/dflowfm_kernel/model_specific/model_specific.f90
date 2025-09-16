@@ -888,7 +888,7 @@ contains
                num = int(1.2 * nl) + 1
                call realloc(dcrs, num)
                call realloc(perm, num)
-               call realloc(var, (/2, num/))
+               call realloc(var, [2, num])
                call realloc(var1, num)
             end if
 
@@ -1012,8 +1012,8 @@ contains
                   var1(j) = s01
                end do
                if (Lwritetime) then
-                  call matlab_write_double(fid, varname1, (/time0/), 1, 1)
-                  call matlab_write_double(fid, varname4, (/dts/), 1, 1)
+                  call matlab_write_double(fid, varname1, [time0], 1, 1)
+                  call matlab_write_double(fid, varname4, [dts], 1, 1)
                end if
                call matlab_write_double(fid, varname2, var, 2, nl)
                call matlab_write_double(fid, varname3, var1, 1, nl)

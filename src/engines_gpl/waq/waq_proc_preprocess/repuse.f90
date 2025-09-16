@@ -26,6 +26,9 @@ module m_repuse
 
     implicit none
 
+    private
+    public :: repuse
+
 contains
 
 
@@ -75,6 +78,7 @@ contains
         integer(kind = int_wp) :: iused            ! index
         integer(kind = int_wp) :: ithndl = 0
         character(len = 24) :: spcl_const_print ! special constants not used printed in brackets for lsp file
+        integer(kind = int_wp) :: noinfo_org
 
         character(len = 17), dimension(21), parameter :: special_constants = & ! names of special constants
                      (/ 'SURF             ', 'SWSCALE          ', &
@@ -92,6 +96,7 @@ contains
         if (timon) call timstrt("repuse", ithndl)
 
         ! write header report output block
+        noinfo_org = noinfo
 
         write (line, '(a)') '# determining the use of the delwaq input'
         call write_log_message(line)
@@ -109,6 +114,7 @@ contains
 
             ! loop over processes
 
+            process_loop: &
             do iproc = num_processes_activated, 1, -1
                 proc => procesdef%procesprops(iproc)
                 if (proc%active) then
@@ -119,18 +125,17 @@ contains
                         if (proc%input_item(i_input)%type == IOTYPE_SEGMENT_INPUT) then
                             if (ipcons == proc%input_item(i_input)%ip_val) then
                                 variable_is_used = .true.
-                                exit
+                                exit process_loop
                             endif
                         endif
                     enddo
-                    if (variable_is_used) exit
                 endif
-            enddo
+            enddo process_loop
 
             ! check if special constants are used
 
-            variable_is_used = ANY(special_constants == str_toupper(coname(icons)))
-
+            variable_is_used = variable_is_used .or. ANY(special_constants == str_toupper(coname(icons))) &
+                                                .or. is_active_proc(coname(icons))
             ! report if not used
 
             if (.not. variable_is_used) then
@@ -243,11 +248,28 @@ contains
             endif
         enddo
 
+        if ( noinfo == noinfo_org ) then
+            call write_log_message(' All constants, functions, parameters and segment functions used in the process system')
+        endif
+
         line = ' '
         call write_log_message(line)
 
         if (timon) call timstop(ithndl)
         return
     end
+
+    ! Check for the ACTIVE_ constants
+    logical function is_active_proc( name )
+        use string_module, only: str_toupper
+
+        character(len=*), intent(in) :: name
+
+        character(len=len(name))     :: name_upper
+
+        name_upper = str_toupper(name)
+
+        is_active_proc = name_upper(1:7) == 'ACTIVE_'
+    end function is_active_proc
 
 end module m_repuse

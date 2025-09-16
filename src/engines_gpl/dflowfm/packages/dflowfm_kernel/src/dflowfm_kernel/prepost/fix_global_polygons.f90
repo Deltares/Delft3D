@@ -340,8 +340,8 @@ contains
                      call delpol()
                      NPL = 5
                      call increasepol(NPL, 0)
-                     xpl(1:NPL) = (/xmin - 90d0, xmin - 90d0, xmin + 360d0 + 90d0, xmin + 360d0 + 90d0, xmin - 90d0/)
-                     ypl(1:NPL) = (/90d0, -90d0, -90d0, 90d0, 90d0/)
+                     xpl(1:NPL) = [xmin - 90d0, xmin - 90d0, xmin + 360d0 + 90d0, xmin + 360d0 + 90d0, xmin - 90d0]
+                     ypl(1:NPL) = [90d0, -90d0, -90d0, 90d0, 90d0]
                      zpl(1:NPL) = dble(idmn)
                      call pol_to_tpoly(npartition_pol, partition_pol, keepExisting=.true.)
                   end if

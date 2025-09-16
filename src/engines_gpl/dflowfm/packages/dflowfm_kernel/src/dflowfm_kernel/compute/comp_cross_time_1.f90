@@ -71,18 +71,18 @@ contains
       b = cross_prod(x13, v34) - cross_prod(x34, v13)
       c = cross_prod(x13, x34)
 
-      coeffs = (/0d0, 0d0, a, b, c/)
-!   coeffs = (/a,b,c,0d0,0d0/)
+      coeffs = [0d0, 0d0, a, b, c]
+!   coeffs = [a,b,c,0d0,0d0]
 
 !  clearance:
 !     ( a t^2 + b t + c )^2 = dclear^2 * (e t^2 + f t + g)
       if (dclear > 0d0) then
-         coeffs = (/a * a, 2d0 * a * b, 2d0 * a * c + b * b, 2d0 * b * c, c * c/)
+         coeffs = [a * a, 2d0 * a * b, 2d0 * a * c + b * b, 2d0 * b * c, c * c]
          e = dot_product(v34, v34)
          f = 2d0 * dot_product(x34, v34)
          g = dot_product(x34, x34)
 
-         coeffs = coeffs - dclear * dclear * (/0d0, 0d0, e, f, g/)
+         coeffs = coeffs - dclear * dclear * [0d0, 0d0, e, f, g]
       end if
 
       t = DMISS

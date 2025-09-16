@@ -92,8 +92,8 @@ contains
       do i = 1, mc - 1
          if (xc(i) == DMISS .or. xc(i + 1) == DMISS) cycle
 
-         x1 = (/xc(i), yc(i)/)
-         x2 = (/xc(i + 1), yc(i + 1)/)
+         x1 = [xc(i), yc(i)]
+         x2 = [xc(i + 1), yc(i + 1)]
          v1 = vel(:, i)
          v2 = vel(:, i + 1)
 
@@ -107,8 +107,8 @@ contains
          call get_LR(mc, xc, yc, iL, iLL, j)
          call get_LR(mc, xc, yc, iR, j, iRR)
 
-         xL = (/xc(iL), yc(iL)/)
-         xR = (/xc(iR), yc(iR)/)
+         xL = [xc(iL), yc(iL)]
+         xR = [xc(iR), yc(iR)]
 
 !     find proximity [imin,imax] on gridline
          idum = iL
@@ -129,8 +129,8 @@ contains
             if (xc1(j) == DMISS .or. xc1(j + 1) == DMISS) cycle
 !         if ( i.eq.j ) cycle
 
-            x3 = (/xc1(j), yc1(j)/)
-            x4 = (/xc1(j + 1), yc1(j + 1)/)
+            x3 = [xc1(j), yc1(j)]
+            x4 = [xc1(j + 1), yc1(j + 1)]
             v3 = vel1(:, j)
             v4 = vel1(:, j + 1)
 
@@ -180,14 +180,14 @@ contains
             end if
 
 !        get a lower bound for the cross time
-            hlow2 = 0.25d0 * max((minval((/d1, d2, d3, d4/)))**2 - (0.5d0 * max(dL1, dL2))**2, 0d0)
+            hlow2 = 0.25d0 * max((minval([d1, d2, d3, d4]))**2 - (0.5d0 * max(dL1, dL2))**2, 0d0)
 
 !        check if the lower bounds is larger than the minimum found so far
             vv1 = sqrt(dot_product(v3 - v1, v3 - v1))
             vv2 = sqrt(dot_product(v3 - v2, v3 - v2))
             vv3 = sqrt(dot_product(v4 - v1, v4 - v1))
             vv4 = sqrt(dot_product(v4 - v2, v4 - v2))
-            maxvv = maxval((/vv1, vv2, vv3, vv4/))
+            maxvv = maxval([vv1, vv2, vv3, vv4])
 
             if (sqrt(hlow2) - dclearance > maxvv * min(tmax(i), tmax(i + 1))) then
                cycle ! no need to proceed
@@ -203,7 +203,7 @@ contains
             t3 = comp_cross_time_2(x3, x1, x2, v3, v1, v2, dclearance)
             t4 = comp_cross_time_2(x4, x1, x2, v4, v1, v2, dclearance)
 
-            tmax1234 = minval((/t1, t2, t3, t4/))
+            tmax1234 = minval([t1, t2, t3, t4])
 
             if (t1 == tmax1234) then
                tmax(i) = min(tmax(i), tmax1234)

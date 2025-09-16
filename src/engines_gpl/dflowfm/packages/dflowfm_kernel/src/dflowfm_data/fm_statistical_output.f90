@@ -891,9 +891,9 @@ contains
                              'Wrihis_structure_gen', 'general_structure_flow_area_under_gate', 'Flow area under gate of general structure', '', &
                              'm2', UNC_LOC_GENSTRU, nc_attributes=atts(1:1))
 
-      call ncu_set_att(atts(2), 'flag_values', (/0, 1, 2, 3, 4/))
+      call ncu_set_att(atts(2), 'flag_values', [0, 1, 2, 3, 4])
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
-      call ncu_set_att(atts(4), 'valid_range', (/0, 4/))
+      call ncu_set_att(atts(4), 'valid_range', [0, 4])
       call add_output_config(config_set_his, IDX_HIS_GENERAL_STRUCTURE_STATE, &
                              'Wrihis_structure_gen', 'general_structure_state', 'Flow state at general structure', '', &
                              '', UNC_LOC_GENSTRU, id_nc_type=id_nc_int, nc_attributes=atts)
@@ -1025,9 +1025,9 @@ contains
                              'Wrihis_structure_weir', 'weirgen_flow_area', 'Flow area at weir', &
                              '', 'm2', UNC_LOC_WEIRGEN, nc_attributes=atts(1:1))
 
-      call ncu_set_att(atts(2), 'flag_values', (/0, 1, 2/))
+      call ncu_set_att(atts(2), 'flag_values', [0, 1, 2])
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged')
-      call ncu_set_att(atts(4), 'valid_range', (/0, 2/))
+      call ncu_set_att(atts(4), 'valid_range', [0, 2])
       call add_output_config(config_set_his, IDX_HIS_WEIRGEN_STATE, &
                              'Wrihis_structure_weir', 'weirgen_state', 'Flow state at weir', &
                              '', '', UNC_LOC_WEIRGEN, nc_attributes=atts, id_nc_type=id_nc_int)
@@ -1070,9 +1070,9 @@ contains
                              'Wrihis_structure_orifice', 'orifice_flow_area', 'Flow area at orifice', '', &
                              'm2', UNC_LOC_ORIFICE, nc_attributes=atts(1:1))
 
-      call ncu_set_att(atts(2), 'flag_values', (/0, 1, 2, 3, 4/))
+      call ncu_set_att(atts(2), 'flag_values', [0, 1, 2, 3, 4])
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
-      call ncu_set_att(atts(4), 'valid_range', (/0, 4/))
+      call ncu_set_att(atts(4), 'valid_range', [0, 4])
       call add_output_config(config_set_his, IDX_HIS_ORIFICE_STATE, &
                              'Wrihis_structure_orifice', 'orifice_state', 'Flow state at orifice', '', &
                              '', UNC_LOC_ORIFICE, nc_attributes=atts, id_nc_type=id_nc_int)
@@ -1149,9 +1149,9 @@ contains
                              'Wrihis_structure_culvert', 'culvert_velocity', 'Velocity through culvert', '', &
                              'm s-1', UNC_LOC_CULVERT, nc_attributes=atts(1:1))
 
-      call ncu_set_att(atts(2), 'flag_values', (/0, 1, 2/))
+      call ncu_set_att(atts(2), 'flag_values', [0, 1, 2])
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow culvert_free culvert_submerged')
-      call ncu_set_att(atts(4), 'valid_range', (/0, 2/))
+      call ncu_set_att(atts(4), 'valid_range', [0, 2])
       call add_output_config(config_set_his, IDX_HIS_CULVERT_STATE, &
                              'Wrihis_structure_culvert', 'culvert_state', 'Flow state at culvert', '', &
                              '', UNC_LOC_CULVERT, nc_attributes=atts, id_nc_type=id_nc_int)
@@ -1506,6 +1506,44 @@ contains
       call add_output_config(config_set_his, IDX_HIS_QTOT, &
                              'Wrihis_heat_fluxes', 'Qtot', 'total heat flux', '', &
                              'W m-2', UNC_LOC_STATION, nc_attributes=atts(1:1), &
+                             nc_dim_ids=station_nc_dims_2D)
+
+      ! Ice cover model
+      call add_output_config(config_set_his, IDX_HIS_ICE_S1, &
+                             'Wrihis_ice_open_water_level', 'ice_open_water_level', 'sea surface height of open water', '', &
+                             'm', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write water level of open water to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_ICE_ZMIN, &
+                             'Wrihis_ice_lower_surface_height', 'ice_lower_surface_height', 'lower surface height of ice cover', '', &
+                             'm', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write lower surface height of ice cover to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_ICE_ZMAX, &
+                             'Wrihis_ice_surface_height', 'ice_surface_height', 'upper surface height of ice cover', '', &
+                             'm', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write upper surface height of ice cover to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_ICE_AREA_FRACTION, &
+                             'Wrihis_ice_area_fraction', 'ice_area_fraction', 'area fraction covered by ice', 'sea_ice_area_fraction', &
+                             '1', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write area fraction covered by ice to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_ICE_THICKNESS, &
+                             'Wrihis_ice_thickness', 'ice_thickness', 'ice thickness', 'sea_ice_thickness', &
+                             'm', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write ice thickness to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_ICE_PRESSURE, &
+                             'Wrihis_ice_pressure', 'ice_pressure', 'ice pressure', '', &
+                             'Pa', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write ice pressure to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_ICE_TEMPERATURE, &
+                             'Wrihis_ice_temperature', 'ice_temperature', 'ice temperature', 'sea_ice_temperature', &
+                             'K', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write ice temperature to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_SNOW_THICKNESS, &
+                             'Wrihis_snow_thickness', 'snow_thickness', 'snow thickness', 'surface_snow_thickness', &
+                             'm', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write snow thickness to his-file', &
+                             nc_dim_ids=station_nc_dims_2D)
+      call add_output_config(config_set_his, IDX_HIS_SNOW_TEMPERATURE, &
+                             'Wrihis_snow_temperature', 'snow_temperature', 'snow temperature', 'temperature_in_surface_snow', &
+                             'K', UNC_LOC_STATION, nc_attributes=atts(1:1), description='Write snow temperature to his-file', &
                              nc_dim_ids=station_nc_dims_2D)
 
       ! Sediment model
@@ -2196,6 +2234,7 @@ contains
       use m_wind, only: air_pressure_available, jawind, jarain, ja_airdensity, ja_computed_airdensity, cloudiness, relative_humidity
       use m_dambreak_breach, only: n_db_signals
       use m_waveconst
+      use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use, intrinsic :: iso_c_binding
 
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
@@ -2564,7 +2603,7 @@ contains
             end if
          end if
 
-         if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+         if (use_density() .and. jahisrho > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_RHOP:IPNT_RHOP + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POTENTIAL_DENSITY), temp_pointer)
@@ -2653,6 +2692,37 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFRCON), valobs(:, IPNT_QFRC))
             end if
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QTOT), valobs(:, IPNT_QTOT))
+         end if
+
+         ! Ice model
+         if (ja_icecover /= ICECOVER_NONE) then
+            if (IPNT_ICE_S1 > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ICE_S1), valobs(:, IPNT_ICE_S1))
+            end if
+            if (IPNT_ICE_ZMIN > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ICE_ZMIN), valobs(:, IPNT_ICE_ZMIN))
+            end if
+            if (IPNT_ICE_ZMAX > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ICE_ZMAX), valobs(:, IPNT_ICE_ZMAX))
+            end if
+            if (IPNT_ICE_AREA_FRACTION > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ICE_AREA_FRACTION), valobs(:, IPNT_ICE_AREA_FRACTION))
+            end if
+            if (IPNT_ICE_THICKNESS > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ICE_THICKNESS), valobs(:, IPNT_ICE_THICKNESS))
+            end if
+            if (IPNT_ICE_PRESSURE > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ICE_PRESSURE), valobs(:, IPNT_ICE_PRESSURE))
+            end if
+            if (IPNT_ICE_TEMPERATURE > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ICE_TEMPERATURE), valobs(:, IPNT_ICE_TEMPERATURE))
+            end if
+            if (IPNT_SNOW_THICKNESS > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SNOW_THICKNESS), valobs(:, IPNT_SNOW_THICKNESS))
+            end if
+            if (IPNT_SNOW_TEMPERATURE > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SNOW_TEMPERATURE), valobs(:, IPNT_SNOW_TEMPERATURE))
+            end if
          end if
 
          ! Sediment model

@@ -236,7 +236,7 @@ contains
                   ib = (k12 - 1) * 2 + i
                   k = abs(klnup(iup, L))
                   if (k > 0) then
-                     call spher2locvec(xz(k), yz(k), 1, (/xu(L)/), (/yu(L)/), (/1d0/), (/0d0/), csbup(ib, L), snbup(ib, L), jsferic, jasfer3D, dmiss)
+                     call spher2locvec(xz(k), yz(k), 1, [xu(L)], [yu(L)], [1d0], [0d0], csbup(ib, L), snbup(ib, L), jsferic, jasfer3D, dmiss)
                   end if
                end do
             end do

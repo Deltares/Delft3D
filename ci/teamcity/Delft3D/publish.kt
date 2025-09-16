@@ -48,7 +48,7 @@ object Publish : BuildType({
     }
 
     params {
-        select("release_type", "weekly", display = ParameterDisplay.PROMPT, options = listOf("daily", "weekly", "release"))
+        select("release_type", "pre-release", display = ParameterDisplay.PROMPT, options = listOf("pre-release", "release"))
         text("release_version", "2.29.xx", 
             label = "Release version", 
             description = "e.g. '2.29.03' or '2025.02'", 
@@ -59,9 +59,8 @@ object Publish : BuildType({
             display = ParameterDisplay.PROMPT)
         param("reverse.dep.*.product", "all-testbench")
         param("commit_id_short", "%dep.${LinuxBuild.id}.commit_id_short%")
-        param("source_image", "containers.deltares.nl/delft3d-dev/test/delft3d-test-container:alma10-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
-        param("destination_image_generic", "containers.deltares.nl/delft3d/%brand%:%release_type%")
-        param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_type%-%release_version%")
+        param("source_image", "containers.deltares.nl/delft3d-dev/delft3d-runtime-container:alma10-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
+        param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_version%-%release_type%")
     }
 
     if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
@@ -124,13 +123,6 @@ object Publish : BuildType({
             }
         }
         dockerCommand {
-            name = "Tag generic image"
-            commandType = other {
-                subCommand = "tag"
-                commandArgs = "%source_image% %destination_image_generic%"
-            }
-        }
-        dockerCommand {
             name = "Tag specific image"
             commandType = other {
                 subCommand = "tag"
@@ -155,13 +147,13 @@ object Publish : BuildType({
             """.trimIndent()
         }
         dockerCommand {
-            name = "Push generic and specific images"
+            name = "Push release image"
             commandType = push {
                 namesAndTags = """
-                    "%destination_image_generic%"
                     "%destination_image_specific%"
                 """.trimIndent()
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         script {
             name = "Replace default image in run_docker.sh scripts"
@@ -171,6 +163,7 @@ object Publish : BuildType({
                     sed -i 's@^image=[^ ]*@image=%destination_image_specific%@' ${'$'}file
                 done
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         script {
             name = "Replace branding delft3dfm->dhydro"
@@ -184,6 +177,7 @@ object Publish : BuildType({
                     src/scripts_lgpl/singularity/readme.txt \
                     src/scripts_lgpl/singularity/submit_singularity_h7.sh
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         exec {
             name = "Create Docker ZIP file in /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Docker/"
@@ -193,6 +187,7 @@ object Publish : BuildType({
                 --release-version %release_version%
                 --commit-id-short %commit_id_short%
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         script {
             name = "Copy Apptainer packages to share"
@@ -208,6 +203,7 @@ object Publish : BuildType({
                 # Copy the artifact to network
                 cp -vf %brand%_%release_type%-%release_version%.tar.gz /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Singularity
             """.trimIndent()
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
     }
 })

@@ -58,6 +58,9 @@ module m_turbulence
    integer, parameter :: kmxx = 2000 !< max dim of nr of vertical layers
    integer, parameter :: mg = 4 !< max dim of nr of sediment fractions
 
+   integer, parameter :: TURB_LAX_ALL = 1
+   integer, parameter :: TURB_LAX_CONNECTED = 2
+
    real(kind=dp) :: dijdij(0:kmxx) !< dudz(k)**2+dvdz(k)**2 vertical shear squared
    real(kind=dp) :: buoflu(kmxx)
    real(kind=dp) :: bruva(kmxx)
@@ -80,9 +83,9 @@ module m_turbulence
    real(kind=dp) :: hcref(kmxx) !< mid-layer heigths
    real(kind=dp) :: hwref(0:kmxx) !< layer interface height, 0=bed
 
-   real(kind=dp) :: epstke = 1d-32 ! D3D: - 7, dpm: -32
-   real(kind=dp) :: epseps = 1d-32 ! D3D: - 7, dpm: -32
-   real(kind=dp) :: epsd = 1d-32 ! D3D: - 7, dpm: -32
+   real(kind=dp), parameter :: MINIMUM_VALUE_K_EPS_TAU = 1e-32_dp
+   real(kind=dp) :: tke_min
+   real(kind=dp) :: eps_min
 
    real(kind=dp), allocatable, dimension(:) :: turkin0 ! k old (m2/s2)  , at layer interface at u     these will become global, rename to : turkinwu0
    real(kind=dp), allocatable, dimension(:), target :: turkin1 !< [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
@@ -116,7 +119,8 @@ module m_turbulence
    real(kind=dp), allocatable, dimension(:) :: sigdifi !< inverse prandtl schmidt nrs
    real(kind=dp), allocatable, dimension(:) :: wsf !< fall velocities of all numconst constituents
 
-   real(kind=dp), allocatable, dimension(:, :) :: turkinepsws !< k and eps,1,2     at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turkinws !< k   at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turepsws !< eps at layer interface at c , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turkinws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
    real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps
@@ -144,6 +148,8 @@ contains
       c3e_stable = 0.0_dp
       c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
 
+      tke_min = MINIMUM_VALUE_K_EPS_TAU
+      eps_min = MINIMUM_VALUE_K_EPS_TAU
    end subroutine default_turbulence
 
    !> Calculates derived coefficients for turbulence

@@ -98,7 +98,7 @@ contains
                if (jacros == 1 .and. SL > E .and. SL < E1 .and. SM > E .and. SM < E1) then
                   if (nlinkcross >= ncrossmax) then
                      ncrossmax = int(1.2 * ncrossmax) + 1
-                     call realloc(linkcross, (/2, ncrossmax/), fill=0)
+                     call realloc(linkcross, [2, ncrossmax], fill=0)
                   end if
                   nlinkcross = nlinkcross + 1
                   linkcross(1, nlinkcross) = L

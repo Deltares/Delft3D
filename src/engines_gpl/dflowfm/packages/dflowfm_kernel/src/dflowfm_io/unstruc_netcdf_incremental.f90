@@ -587,7 +587,7 @@ contains
 
       integer :: i
 
-      call realloc(bnds_table, (/2, N + 1/), keepExisting=.false., fill=nf90_fill_double)
+      call realloc(bnds_table, [2, N + 1], keepExisting=.false., fill=nf90_fill_double)
       if (present(lbound)) then
          bnds_table(1, 1) = lbound
       end if

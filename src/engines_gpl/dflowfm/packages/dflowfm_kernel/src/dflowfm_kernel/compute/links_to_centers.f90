@@ -30,131 +30,55 @@
 !
 !
 module m_links_to_centers
+   use precision, only: dp
+   use m_flow, only: lnkx, ndkx, kmx, kmxn, ktop, kbot, lbot, ltop
+   use m_flowgeom, only: lnx, ln, wcL, ndx
+
    implicit none
    private
 
    public :: links_to_centers
 
-   interface links_to_centers
-      module procedure links_to_centers_dp
-      module procedure links_to_centers_sp
-      module procedure links_to_centers_dp_rank_2
-   end interface links_to_centers
 contains
    !> Set flow node value based on flow link values, where vlin is real(kind=dp)
-   subroutine links_to_centers_dp(vnod, vlin)
-      use precision, only: dp
-      use m_flow, only: lnkx, ndkx, kmx, kmxn, ktop, kbot, lbot, ltop
-      use m_flowgeom, only: lnx, ln, wcL, ndx
-
-      real(kind=dp), intent(out) :: vnod(ndkx)
+   subroutine links_to_centers(vnod, vlin)
+      real(kind=dp), intent(out), contiguous :: vnod(:)
       real(kind=dp), intent(in) :: vlin(lnkx)
-      integer :: L, k1, k2, LL, kk, k_start, k_end
+      integer :: L, k1, k2, LL, kk, k_start, k_end, k
 
       vnod = 0.0_dp
 
       if (kmx == 0) then
          do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             vnod(k1) = vnod(k1) + vlin(L) * wcL(1, L)
             vnod(k2) = vnod(k2) + vlin(L) * wcL(2, L)
          end do
       else
          do LL = 1, lnx
             do L = Lbot(LL), Ltop(LL)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                vnod(k1) = vnod(k1) + vlin(L) * wcL(1, LL)
                vnod(k2) = vnod(k2) + vlin(L) * wcL(2, LL)
             end do
          end do
 
-         !$OMP PARALLEL DO SIMD PRIVATE(kk, k_start, k_end)
+         !$OMP PARALLEL DO PRIVATE(kk, k_start, k_end, k)
          do kk = 1, ndx
             k_start = ktop(kk) + 1
             k_end = kbot(kk) + kmxn(kk) - 1
-            vnod(k_start:k_end) = vnod(ktop(kk))
-         end do
-         !$OMP END PARALLEL DO SIMD
-      end if
-   end subroutine links_to_centers_dp
-
-   !> Set flow node value based on flow link values, where vlin is single precision
-   subroutine links_to_centers_sp(vnod, vlin) ! set flow node value based on flow link values scalar
-      use precision, only: dp, sp
-      use m_flow, only: lnkx, ndkx, kmx, kmxn, ktop, kbot, lbot, ltop
-      use m_flowgeom, only: lnx, ln, wcL, ndx
-
-      real(kind=dp), intent(out) :: vnod(ndkx)
-      real(kind=sp), intent(in) :: vlin(lnkx)
-      integer :: L, k1, k2, LL, kk, k_start, k_end
-
-      vnod = 0.0_dp
-
-      if (kmx == 0) then
-         do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
-            vnod(k1) = vnod(k1) + vlin(L) * wcL(1, L)
-            vnod(k2) = vnod(k2) + vlin(L) * wcL(2, L)
-         end do
-      else
-         do LL = 1, lnx
-            do L = Lbot(LL), Ltop(LL)
-               k1 = ln(1, L); k2 = ln(2, L)
-               vnod(k1) = vnod(k1) + vlin(L) * wcL(1, LL)
-               vnod(k2) = vnod(k2) + vlin(L) * wcL(2, LL)
+            !$OMP SIMD ASSERT
+            do k = k_start, k_end
+               if (k <= ndkx) then ! Vector/simd code may go out of bounds without explicit check
+                  vnod(k) = vnod(ktop(kk))
+               end if
             end do
          end do
-
-         !$OMP PARALLEL DO SIMD PRIVATE(kk, k_start, k_end)
-         do kk = 1, ndx
-            k_start = ktop(kk) + 1
-            k_end = kbot(kk) + kmxn(kk) - 1
-            vnod(k_start:k_end) = vnod(ktop(kk))
-         end do
-         !$OMP END PARALLEL DO SIMD
+         !$OMP END PARALLEL DO
       end if
-   end subroutine links_to_centers_sp
 
-   !> Set flow node value based on flow link values, where vlin and vlin2 are mapped to vnod(1,:) and vnod(2,:), respectively
-   subroutine links_to_centers_dp_rank_2(vnod, vlin, vlin2)
-      use precision, only: dp
-      use m_flow, only: lnkx, kmx, lbot, ltop, ktop, kbot, kmxn, ndkx
-      use m_flowgeom, only: lnx, ln, wcL, ndx
-
-      real(kind=dp), dimension(2, ndkx), intent(out) :: vnod
-      real(kind=dp), intent(in) :: vlin(lnkx)
-      real(kind=dp), intent(in) :: vlin2(lnkx)
-      integer :: L, k1, k2, LL, kk, k_start, k_end
-
-      vnod = 0.0_dp
-      if (kmx == 0) then
-         do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
-            vnod(1, k1) = vnod(1, k1) + vlin(L) * wcL(1, L)
-            vnod(1, k2) = vnod(1, k2) + vlin(L) * wcL(2, L)
-            vnod(2, k1) = vnod(2, k1) + vlin2(L) * wcL(1, L)
-            vnod(2, k2) = vnod(2, k2) + vlin2(L) * wcL(2, L)
-         end do
-      else
-         do LL = 1, lnx
-            do L = Lbot(ll), Ltop(ll)
-               k1 = ln(1, L); k2 = ln(2, L)
-               vnod(1, k1) = vnod(1, k1) + vlin(L) * wcL(1, LL)
-               vnod(1, k2) = vnod(1, k2) + vlin(L) * wcL(2, LL)
-               vnod(2, k1) = vnod(2, k1) + vlin2(L) * wcL(1, LL)
-               vnod(2, k2) = vnod(2, k2) + vlin2(L) * wcL(2, LL)
-            end do
-         end do
-
-         !$OMP PARALLEL DO SIMD PRIVATE(kk, k_start, k_end)
-         do kk = 1, ndx
-            k_start = ktop(kk) + 1
-            k_end = kbot(kk) + kmxn(kk) - 1
-            vnod(1, k_start:k_end) = vnod(1, ktop(kk))
-            vnod(2, k_start:k_end) = vnod(2, ktop(kk))
-         end do
-         !$OMP END PARALLEL DO SIMD
-      end if
-   end subroutine links_to_centers_dp_rank_2
+   end subroutine links_to_centers
 
 end module m_links_to_centers
