@@ -48,7 +48,7 @@ contains
       real(kind=dp) :: sln1, sln2, sln3
       integer :: i, ip, k1, k2, kdum
 
-      integer, dimension(3) :: icolor = (/31, 221, 31/)
+      integer, dimension(3) :: icolor = [31, 221, 31]
 
       i = 0
       do ip = 0, 3, 3

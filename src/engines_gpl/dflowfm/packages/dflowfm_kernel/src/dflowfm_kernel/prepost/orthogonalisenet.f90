@@ -433,7 +433,7 @@ contains
          end if
 
 !     volume-based smoother
-         ibounds = (/nmkx2, numk/)
+         ibounds = [nmkx2, numk]
          call realloc(ww2x, ibounds, fill=0d0)
          call realloc(ww2y, ibounds, fill=0d0)
          if (smoothorarea /= 1d0) then
@@ -502,7 +502,7 @@ contains
                   DUM = 0d0
 
 !              determine atpf    ***INOPERATIVE***
-!               atpf_loc  = minval((/ atpf_nodes(kk2(1:nmk2(k),k)) /) )
+!               atpf_loc  = minval([ atpf_nodes(kk2(1:nmk2(k),k)) ] )
 !               atpf_loc  = atpf_nodes(k)
 !               if ( (nb(k).eq.1) .and. (nmk(k).ne.4) ) atpf_loc = ATPF   ! only for quads
 !
@@ -1140,8 +1140,8 @@ contains
 !      if ( Lsavematlab) then
 !         open(newunit=ioutfile, file='c:\cygwin\home\pijl\develop\test\testww2x.m')
 !
-!         call matlab_write_int(ioutfile, 'nmkx2', (/ nmkx2 /), 1,    1)
-!         call matlab_write_int(ioutfile, 'nmk2',  (/ nmk2  /), Numk, 1)
+!         call matlab_write_int(ioutfile, 'nmkx2', [ nmkx2 ], 1,    1)
+!         call matlab_write_int(ioutfile, 'nmk2',  [ nmk2  ], Numk, 1)
 !         call matlab_write_int(ioutfile, 'kk2',   kk2,     nmkx2, Numk)
 !         call matlab_write_double(ioutfile, 'ww2x', ww2x, nmkx2, Numk)
 !         call matlab_write_double(ioutfile, 'ww2y', ww2y, nmkx2, Numk)
@@ -1278,7 +1278,7 @@ contains
          end if
 
 !     reallocate memory for weights ww2 if necessary
-         if (ubound(ww2, 1) < nmkx2) call realloc(ww2, (/nmkx2, numk/))
+         if (ubound(ww2, 1) < nmkx2) call realloc(ww2, [nmkx2, numk])
 
 !     compose the discretization
          do k0 = 1, numk ! attraction parameters
@@ -1328,15 +1328,15 @@ contains
 !               return
                end if
 
-               a1 = (/J(4, k0), -J(3, k0)/) / det
-               a2 = (/-J(2, k0), J(1, k0)/) / det
+               a1 = [J(4, k0), -J(3, k0)] / det
+               a2 = [-J(2, k0), J(1, k0)] / det
 
 !--------------------------------------------------------------
 !           compute the Singular Value Decomposition of the Jacobian matrix
 !--------------------------------------------------------------
                if (Lsavematlabfile) then
-                  UU(1, :) = (/J(1, k0), J(3, k0)/)
-                  UU(2, :) = (/J(2, k0), J(4, k0)/)
+                  UU(1, :) = [J(1, k0), J(3, k0)]
+                  UU(2, :) = [J(2, k0), J(4, k0)]
                   call svdcmp(UU, 2, 2, 2, 2, S, VV)
 
                   aspect = min(S(1) / (S(2) + EPS), S(2) / (S(1) + EPS))
@@ -1480,8 +1480,8 @@ contains
                   call matlab_write_double(imat, 'Jxi', op%Jxi(1:nmk2(k0)), nmk2(k0), 1)
                   call matlab_write_double(imat, 'Jeta', op%Jeta(1:nmk2(k0)), nmk2(k0), 1)
 
-                  call matlab_write_double(imat, 'u1', (/uu1, vv1/), 2, 1)
-                  call matlab_write_double(imat, 'u2', (/uu2, vv2/), 2, 1)
+                  call matlab_write_double(imat, 'u1', [uu1, vv1], 2, 1)
+                  call matlab_write_double(imat, 'u2', [uu2, vv2], 2, 1)
                   call matlab_write_double(imat, 's', S, 2, 1)
 
                   close (imat)
@@ -1573,8 +1573,8 @@ contains
 
 !        compute the contravariant base vectors
             det = J(1, k0) * J(4, k0) - J(3, k0) * J(2, k0) + 1d-9
-            a1 = (/J(4, k0), -J(3, k0)/) / det
-            a2 = (/-J(2, k0), J(1, k0)/) / det
+            a1 = [J(4, k0), -J(3, k0)] / det
+            a2 = [-J(2, k0), J(1, k0)] / det
 
             dudxi = sum(ops(ktopo(k0))%Jxi(1:nmk2(k0)) * u_smooth(kk2(1:nmk2(k0), k0)))
             dudeta = sum(ops(ktopo(k0))%Jeta(1:nmk2(k0)) * u_smooth(kk2(1:nmk2(k0), k0)))
@@ -1587,7 +1587,7 @@ contains
             if (Phi(k0) > 1d-14) then
                vdir(:, k0) = vdir(:, k0) / Phi(k0)
             else
-               vdir(:, k0) = (/1d0, 0d0/)
+               vdir(:, k0) = [1d0, 0d0]
             end if
 
 !         Phi(k0) = sqrt( 1d0 + Phi(k0)**2 ) - 1d0        ! refinement based on gradients of u
@@ -1635,7 +1635,7 @@ contains
 
          case default ! Winslow
             do k0 = 1, Numk
-               G_tmp(:, k0) = (/1d0, 0d0, 0d0, 1d0/) * (1d0 + alpha * Phi(k0))
+               G_tmp(:, k0) = [1d0, 0d0, 0d0, 1d0] * (1d0 + alpha * Phi(k0))
             end do
          end select
 
@@ -1646,10 +1646,10 @@ contains
 
          do k0 = 1, Numk
             if (nb(k0) == 1 .or. nb(k0) == 2 .or. nb(k0) == 4) then
-               Ginv(1:4, k0) = (/G(4, k0), -G(2, k0), -G(3, k0), G(1, k0)/)
+               Ginv(1:4, k0) = [G(4, k0), -G(2, k0), -G(3, k0), G(1, k0)]
                Ginv(1:4, k0) = Ginv(:, k0) / (G(1, k0) * G(4, k0) - G(3, k0) * G(2, k0))
             else
-               Ginv(1:4, k0) = (/1d0, 0d0, 0d0, 1d0/)
+               Ginv(1:4, k0) = [1d0, 0d0, 0d0, 1d0]
             end if
          end do
 
@@ -1663,7 +1663,7 @@ contains
             call matlab_write_double(imat, 'Ginv', Ginv, 4, Numk)
             call matlab_write_double(imat, 'vdir', vdir, 2, Numk)
             call matlab_write_double(imat, 'Phi', Phi, Numk, 1)
-            call matlab_write_double(imat, 'Phi_ave', (/Phi_ave/), 1, 1)
+            call matlab_write_double(imat, 'Phi_ave', [Phi_ave], 1, 1)
             call matlab_write_double(imat, 'u', u, Numk, 1)
             call matlab_write_double(imat, 'u_smooth', u_smooth, Numk, 1)
 
@@ -1737,7 +1737,7 @@ contains
 !        resize kk2 array if necessary
             if (adm%nmk2 > nmkx2) then
                nmkx2 = adm%nmk2
-               call realloc(kk2, (/nmkx2, numk/), fill=0)
+               call realloc(kk2, [nmkx2, numk], fill=0)
             end if
 
 !        fill global administration arrays with local
@@ -1955,7 +1955,7 @@ contains
             !    check array size and increase if necessary
             newbound = ubound(top%xi)
             if (adm%nmk2 > newbound(1) .or. numtopo > newbound(2)) then
-               newbound = (/max(adm%nmk2, newbound(1)), max(numtopo, newbound(2))/)
+               newbound = [max(adm%nmk2, newbound(1)), max(numtopo, newbound(2))]
                call realloc(top%xi, newbound, fill=DMISS)
                call realloc(top%eta, newbound, fill=DMISS)
                call realloc(top%nmk, newbound(2))

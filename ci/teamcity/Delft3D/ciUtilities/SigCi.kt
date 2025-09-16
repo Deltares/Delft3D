@@ -25,7 +25,30 @@ object SigCi : BuildType({
             param("teamcity.step.phase", "")
             param("plugin.docker.run.parameters", "")
             param("customer", "deltares")
-            param("include", "src/engines_gpl")
+            param(
+                "include",
+                """
+                src/cmake,
+                src/engines_gpl,
+                src/plugins_lgpl,
+                src/scripts_lgpl,
+                src/test,
+                src/tools_gpl,
+                src/tools_lgpl,
+                src/utils_gpl/flow1d,
+                src/utils_gpl/morphology,
+                src/utils_gpl/trachytopes,
+                src/utils_lgpl/deltares_common,
+                src/utils_lgpl/ec_module,
+                src/utils_lgpl/ftnunit,
+                src/utils_lgpl/gridgeom,
+                src/utils_lgpl/io_netcdf,
+                src/utils_lgpl/kdtree_wrapper,
+                src/utils_lgpl/metistools,
+                src/utils_lgpl/unittests,
+                src/version_includes
+                """.trimIndent()
+            )
         }
     }
 

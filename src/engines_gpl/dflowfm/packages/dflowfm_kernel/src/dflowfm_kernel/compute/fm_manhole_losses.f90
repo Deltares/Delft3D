@@ -28,7 +28,7 @@
 !
 !-------------------------------------------------------------------------------
 module fm_manhole_losses
-   use precision, only: dp 
+   use precision, only: dp
 
    implicit none
    public calculate_manhole_losses, init_manhole_losses
@@ -93,10 +93,10 @@ contains
          if (hasTableData(pstor%angle_loss)) then
             q_temp = 0
             do iL = 1, nd(nod)%lnx
-               if (kcu(abs(nd(nod)%ln(iL))) /=1) then
+               if (kcu(abs(nd(nod)%ln(iL))) /= 1) then
                   cycle
                end if
-            
+
                call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
                reference_angle = 0_dp
                if (q_manhole_to_pipe > 0_dp .and. q_manhole_to_pipe > q_temp) then !we want the link with the biggest discharge as reference_angle
@@ -109,7 +109,7 @@ contains
                !Calculate bend loss K value
                count = 0
                do iL = 1, nd(nod)%lnx
-                  if (kcu(abs(nd(nod)%ln(iL))) /=1) then
+                  if (kcu(abs(nd(nod)%ln(iL))) /= 1) then
                      cycle
                   end if
 
@@ -138,7 +138,7 @@ contains
             total_outflow_from_manhole_area = 0_dp
             total_inflow_to_manhole_area = 0_dp
             do iL = 1, nd(nod)%lnx
-               if (kcu(abs(nd(nod)%ln(iL))) /=1) then
+               if (kcu(abs(nd(nod)%ln(iL))) /= 1) then
                   cycle
                end if
                call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
@@ -174,7 +174,7 @@ contains
             v_squared_inflow_to_manhole = 0_dp
             count = 0
             do iL = 1, nd(nod)%lnx
-               if (kcu(abs(nd(nod)%ln(iL))) /=1) then
+               if (kcu(abs(nd(nod)%ln(iL))) /= 1) then
                   cycle
                end if
                call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)
@@ -188,20 +188,20 @@ contains
                end if
             end do
             k_correction = 0.0_dp
-            if (comparereal(v_squared_outflow_from_manhole, eps6 ) ==1) then
+            if (comparereal(v_squared_outflow_from_manhole, eps6) == 1) then
                ! No need to apply losses when outflow is equal to 0. (prevent division by zero)
                factor = 2_dp * ag
-               minimal_energy_loss = 0.05_dp * v_squared_outflow_from_manhole /factor
+               minimal_energy_loss = 0.05_dp * v_squared_outflow_from_manhole / factor
                maximal_energy_loss = (v_squared_inflow_to_manhole + 0.5_dp * v_squared_outflow_from_manhole) / factor
-               required_energy_loss = min ( max(minimal_energy_loss, energy_loss_total), maximal_energy_loss)
+               required_energy_loss = min(max(minimal_energy_loss, energy_loss_total), maximal_energy_loss)
                k_correction = (required_energy_loss - energy_loss_total) * factor / v_squared_outflow_from_manhole
-            else 
+            else
                k_correction = 0.0_dp
             end if
 
             !Apply losses to ADVI
             do iL = 1, nd(nod)%lnx
-               if (kcu(abs(nd(nod)%ln(iL))) /=1) then
+               if (kcu(abs(nd(nod)%ln(iL))) /= 1) then
                   cycle
                end if
                call calc_q_manhole_to_pipe(nod, iL, L, q_manhole_to_pipe)

@@ -1003,7 +1003,7 @@ contains
 
       call reallocP(meshgeom1d%nbranchorder, meshgeom1d%nbranches, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nbranchgeometrynodes, meshgeom1d%nbranches, keepexisting=.true., fill=-999)
-      call reallocP(meshgeom1d%nedge_nodes, (/2, meshgeom1d%nbranches/), keepexisting=.true.)
+      call reallocP(meshgeom1d%nedge_nodes, [2, meshgeom1d%nbranches], keepexisting=.true.)
       call reallocP(meshgeom1d%nbranchlengths, meshgeom1d%nbranches, keepexisting=.true., fill=-999d0)
       call realloc(nbranchids, meshgeom1d%nbranches, keepexisting=.true., fill='')
 
@@ -1041,9 +1041,9 @@ contains
          call longculvert_check_polyline(jstart, yplCulv, xplCulv)
          call longculvert_check_polyline(jend, yplCulv, xplCulv)
          !net nodes are start + end points of 1d branch
-         meshgeom1d%nnodex(newnetnodeindex:newnetnodeindex + 1) = (/xplCulv(jstart), xplCulv(jend)/)
-         meshgeom1d%nnodey(newnetnodeindex:newnetnodeindex + 1) = (/yplCulv(jstart), yplCulv(jend)/)
-         meshgeom1d%nedge_nodes(1:2, currentbranchindex) = (/newnetnodeindex, newnetnodeindex + 1/)
+         meshgeom1d%nnodex(newnetnodeindex:newnetnodeindex + 1) = [xplCulv(jstart), xplCulv(jend)]
+         meshgeom1d%nnodey(newnetnodeindex:newnetnodeindex + 1) = [yplCulv(jstart), yplCulv(jend)]
+         meshgeom1d%nedge_nodes(1:2, currentbranchindex) = [newnetnodeindex, newnetnodeindex + 1]
          write (nodechar, '(I0)') newnetnodeindex
          nnodeids(newnetnodeindex) = 'BR_longCulvert_'//trim(ipolychar)//'_node_'//trim(nodechar)
          write (nodechar, '(I0)') newnetnodeindex + 1

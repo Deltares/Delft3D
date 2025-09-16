@@ -136,7 +136,7 @@ contains
       maxlatsg = tree_count_nodes_byname(bnd_ptr, 'lateral')
       if (maxlatsg > 0) then
          call realloc(balat, maxlatsg, keepExisting=.false., fill=0.0_dp)
-         call realloc(qplat, (/max(1, kmx), maxlatsg/), keepExisting=.false., fill=0.0_dp)
+         call realloc(qplat, [max(1, kmx), maxlatsg], keepExisting=.false., fill=0.0_dp)
          call realloc(lat_ids, maxlatsg, keepExisting=.false.)
          call realloc(n1latsg, maxlatsg, keepExisting=.false., fill=0)
          call realloc(n2latsg, maxlatsg, keepExisting=.false., fill=0)
@@ -331,7 +331,7 @@ contains
 
                   case ('qhbnd')
                      ibqh = ibqh + 1
-                     target_index = (/ibqh/)
+                     target_index = [ibqh]
                      if (filetype /= NODE_ID) then
                         location_file = qhpliname(ibqh)
                      end if
@@ -340,7 +340,7 @@ contains
                      target_index = itpenur(ib)
 
                   case default
-                     target_index = (/-1/)
+                     target_index = [-1]
                   end select
 
                   if (target_index(1) <= 0) then
@@ -917,17 +917,17 @@ contains
             btempforcingtypD = .true.
          case ('solarradiation')
             if (net_solar_radiation_available) then
-                write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
-                call err_flush()
-                return
+               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
+               call err_flush()
+               return
             end if
             btempforcingtypS = .true.
             solar_radiation_available = .true.
          case ('netsolarradiation')
             if (solar_radiation_available) then
-                write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
-                call err_flush()
-                return
+               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
+               call err_flush()
+               return
             end if
             btempforcingtypS = .true.
             net_solar_radiation_available = .true.
