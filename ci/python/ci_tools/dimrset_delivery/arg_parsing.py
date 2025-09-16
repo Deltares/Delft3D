@@ -30,7 +30,7 @@ def parse_common_arguments() -> argparse.Namespace:
     parser.add_argument("--atlassian-password", type=str, default=None, help="Atlassian/Confluence password")
 
     parser.add_argument("--jira-username", type=str, default=None, help="Jira username")
-    parser.add_argument("--jira-pat", type=str, default=None, help="Jira Personal Access Token")
+    parser.add_argument("--jira-password", type=str, default=None, help="Jira password")
 
     parser.add_argument("--teamcity-username", type=str, default=None, help="TeamCity username")
     parser.add_argument("--teamcity-password", type=str, default=None, help="TeamCity password")
@@ -87,7 +87,7 @@ def create_context_from_args(
         ServiceName.JIRA,
         CredentialEntry(
             required=require_jira,
-            credential=Credentials(username=args.jira_username, password=args.jira_pat),
+            credential=Credentials(username=args.jira_username, password=args.jira_password),
         ),
     )
     credentials.add(
