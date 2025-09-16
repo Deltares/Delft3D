@@ -25,6 +25,7 @@ object DIMRbak : BuildType({
         +:ci/python/ci_tools/dimrset_delivery/output/*.html
         +:ci/python/*.xlsx
         +:ci/python/*.txt
+        /opt/repository/Delft3D-DIMRset/dimrset_release_changelog.txt => DIMRset_release_changelog.zip
     """.trimIndent()
 
     vcs {
