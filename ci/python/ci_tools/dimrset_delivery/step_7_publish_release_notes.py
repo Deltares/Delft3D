@@ -23,10 +23,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
     def __init__(self, context: DimrAutomationContext, services: Services) -> None:
         self.__context = context
         self.__jira = services.jira
-        self.__changelog_file = Path(
-            "ci/python/ci_tools/dimrset_delivery/output/dimrset_release_changelog.txt"
-        )
-        # self.__changelog_file.parent.mkdir(parents=True, exist_ok=True)
+        self.__changelog_file = Path("dimrset_release_changelog.txt")
 
     def __run_git_command(self, cmd: List[str]) -> str:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
