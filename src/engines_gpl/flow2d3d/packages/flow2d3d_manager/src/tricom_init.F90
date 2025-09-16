@@ -1,4 +1,4 @@
-subroutine tricom_init(olv_handle, gdp)
+subroutine tricom_init(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -51,12 +51,9 @@ subroutine tricom_init(olv_handle, gdp)
     use sync_flowcouple
     use sync_flowwave
     use flow2d3d_timers
-    use D3DOnline
-    use D3DPublish
     use D3D_Sobek 
     use globaldata
     use dfparall
-    use d3d_olv_class
     !
     implicit none
     !
@@ -397,10 +394,6 @@ subroutine tricom_init(olv_handle, gdp)
     real(fp)                            , pointer :: ti_sedtrans   ! Sediment transport start time
     integer                             , pointer :: iti_sedtrans  ! Sediment transport start time step
     
-!
-! Global variables
-!
-    type(olvhandle) :: olv_handle
 !
 ! Local variables
 !
@@ -1530,16 +1523,6 @@ subroutine tricom_init(olv_handle, gdp)
     if (tstprt) then
        call nm_to_diag(gdp)
     endif
-    !
-    ! Make D3D data available to online applications
-    !
-    call new_olv(olv_handle)
-    call publishGDP(olv_handle, gdp, runid, zmodel)
-    !
-    ! Not multi threaded
-    !
-    call publishUtils(olv_handle)
-    call setEndTimeStep(olv_handle, itstop)
     !
     ! Synchronisation point 2
     ! =======================

@@ -964,7 +964,6 @@ contains
 
             else if (qid == 'airdensity') then
 
-
                if (.not. allocated(air_density)) then
                   allocate (air_density(ndx), stat=ierr)
                   call aerr('air_density(ndx)', ierr, ndx)

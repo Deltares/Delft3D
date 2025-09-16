@@ -214,8 +214,8 @@ contains
          call realloc(nd(n)%x, num + 1, keepExisting=.true.)
          call realloc(nd(n)%y, num + 1, keepExisting=.true.)
 
-         nd(n)%x = (/xx(1:num), xx(1)/)
-         nd(n)%y = (/yy(1:num), yy(1)/)
+         nd(n)%x = [xx(1:num), xx(1)]
+         nd(n)%y = [yy(1:num), yy(1)]
       end if
 
       !------------------------------------------------------

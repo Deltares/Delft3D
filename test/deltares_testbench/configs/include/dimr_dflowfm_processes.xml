@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 <testCase name="e02_f030_c001_frisianinlet_dynamo" ref="dflowfm_default">
-  <path version="2025-07-21T12:26:56.701000">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
+  <path version="2025-09-03T12:20:29.004000">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_map.nc" type="netCDF">
       <parameters>
@@ -108,7 +108,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c002_frisianinlet_BLOOM" ref="dflowfm_default">
-  <path version="2025-07-21T12:27:00.506000">e02_dflowfm/f030_water_quality_processes/c002_frisianinlet_BLOOM</path>
+  <path version="2025-09-03T12:21:43.464000">e02_dflowfm/f030_water_quality_processes/c002_frisianinlet_BLOOM</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_map.nc" type="netCDF">
       <parameters>
@@ -483,8 +483,8 @@
     </file>
   </checks>
 </testCase>
-<testCase name="e02_f030_c011_frisianinlet_dynamo_restart" ref="dflowfm_platform_specific_refs_restart">
-  <path version="2025-07-21T12:27:11.243000">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
+<testCase name="e02_f030_c011_frisianinlet_dynamo_restart" ref="dflowfm_default_restart">
+  <path version="2025-09-03T12:22:11.626000">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_restart_map.nc" type="netCDF">
       <parameters>
@@ -592,7 +592,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c012_frisianinlet_BLOOM_restart" ref="dflowfm_default_restart">
-  <path version="2025-07-21T12:27:16.266000">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
+  <path version="2025-09-03T12:23:05.532000">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_restart_map.nc" type="netCDF">
       <parameters>
@@ -1282,7 +1282,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c300_opendllso" ref="dflowfm_default">
-  <path version="2025-07-10T18:52:46.049000">e02_dflowfm/f030_water_quality_processes/c300_opendllso</path>
+  <path version="2025-09-03T12:23:33.055000">e02_dflowfm/f030_water_quality_processes/c300_opendllso</path>
   <programs>
     <program ref="dimr_opl" seq="1">
       <arguments>

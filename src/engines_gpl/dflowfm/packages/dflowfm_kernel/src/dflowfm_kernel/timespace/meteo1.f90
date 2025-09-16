@@ -202,7 +202,7 @@ contains
       logical, save :: alreadyPrinted = .false. !< flag to avoid printing the same message many times
 
       integer, parameter :: NUMGENERALKEYWRD_OLD = 26
-      character(len=256) :: generalkeywrd_old(NUMGENERALKEYWRD_OLD) = (/character(len=256) :: &
+      character(len=256) :: generalkeywrd_old(NUMGENERALKEYWRD_OLD) = [character(len=256) :: &
                                                                         'widthleftW1', & ! ( 1)
                                                                         'levelleftZb1', & ! ( 2)
                                                                         'widthleftWsdl', & ! ( 3)
@@ -229,7 +229,7 @@ contains
                                                                         'dynstructext', & ! (24)
                                                                         'gatedoorheight', & ! (25)
                                                                         'door_opening_width' & ! (26)
-                                                                        /)
+                                                                        ]
 
       if (minp == 0) then
          ja = 0
@@ -822,9 +822,9 @@ contains
          allocate (jasea(i1:i2, j1:j2), stat=ierr)
 
          if (jakdtree == 1) then
-            call realloc(xx, (/Ni, Nj/), keepExisting=.false., fill=0.0_dp)
-            call realloc(yy, (/Ni, Nj/), keepExisting=.false., fill=0.0_dp)
-            call realloc(kk, (/Ni, Nj/), keepExisting=.false., fill=0)
+            call realloc(xx, [Ni, Nj], keepExisting=.false., fill=0.0_dp)
+            call realloc(yy, [Ni, Nj], keepExisting=.false., fill=0.0_dp)
+            call realloc(kk, [Ni, Nj], keepExisting=.false., fill=0)
             do j = j1, j2
                do i = i1, i2
                   xx(i - i1 + 1, j - j1 + 1) = dble(i)

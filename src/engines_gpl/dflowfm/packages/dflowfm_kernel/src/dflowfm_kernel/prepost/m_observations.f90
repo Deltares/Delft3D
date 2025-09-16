@@ -160,7 +160,7 @@ contains
       IVAL_QFRE = 0
       IVAL_QFRC = 0
       IVAL_QTOT = 0
-      
+
       IVAL_RAIN = 0
       IVAL_INFILTCAP = 0
       IVAL_INFILTACT = 0
@@ -517,13 +517,13 @@ contains
       IPNT_NUM = ivalpoint(0, kmx, nlyrs) - 1
 
    end subroutine init_valobs_pointers
-   
+
    !> set the value indices for ice variables
    subroutine set_value_indices_for_ice(i)
       use m_fm_icecover, only: ice_data, icecover_output_flags
-      
+
       integer, intent(inout) :: i !< current index
-      
+
       type(icecover_output_flags), pointer :: hisout
 
       hisout => ice_data%hisout
@@ -543,7 +543,7 @@ contains
       integer, intent(inout) :: current_index !< current index
       integer, optional, intent(in) :: increment !< increment value
       integer :: res
-      
+
       if (present(increment)) then
          current_index = current_index + increment
       else
@@ -557,19 +557,19 @@ contains
       logical, intent(in) :: condition !< condition to check
       integer, intent(inout) :: current_index !< current index
       integer :: res
-      
+
       if (condition) then
          res = next_index(current_index)
       else
          res = 0
       end if
    end function conditional_next_index
-   
+
    !> set pointers of ice variables in valobs work array
    subroutine set_valobs_pointers_for_ice(kmx, nlyrs)
       integer, intent(in) :: kmx !< number of layers
       integer, intent(in) :: nlyrs !< number of bed layers
-      
+
       IPNT_ICE_S1 = conditional_ivalpoint(IVAL_ICE_S1, kmx, nlyrs)
       IPNT_ICE_ZMIN = conditional_ivalpoint(IVAL_ICE_ZMIN, kmx, nlyrs)
       IPNT_ICE_ZMAX = conditional_ivalpoint(IVAL_ICE_ZMAX, kmx, nlyrs)
@@ -635,14 +635,14 @@ contains
          call mess(LEVEL_ERROR, 'ivalpoint: numbering error')
       end if
    end function ivalpoint
-   
+
    !> retrieve pointer of variable in valobs work array, or 0 if variable index is not set
    function conditional_ivalpoint(ival, kmx, nlyrs) result(ipnt)
       integer, intent(in) :: ival !< index of the variable
       integer, intent(in) :: kmx !< number of layers
       integer, intent(in) :: nlyrs !< number of bed layers
       integer :: ipnt !< pointer to the variable in the valobs array
-      
+
       if (ival > 0) then
          ipnt = ivalpoint(ival, kmx, nlyrs)
       else

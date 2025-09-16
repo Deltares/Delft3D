@@ -73,7 +73,7 @@ module m_bedform_data
 
       real(fp), dimension(:), pointer :: bedformD50 !< 50-percentile of sediment diameters (if no sediment simulated)
       real(fp), dimension(:), pointer :: bedformD90 !< 90-percentile of sediment diameters (if no sediment simulated)
-      real(fp), dimension(:), pointer :: hdpar !< Coefficients for duneheight (/a, b, c/) on basis of power relation a*(h**b) of (epsilon, 0) in Sieben04MPM
+      real(fp), dimension(:), pointer :: hdpar !< Coefficients for duneheight [a, b, c] on basis of power relation a*(h**b) of (epsilon, 0) in Sieben04MPM
       real(fp), dimension(:), pointer :: ldpar !< Coefficients for dunelength on basis of power relation
       real(fp), dimension(:), pointer :: cdpar !< Coefficients to calculate the bedform celerity (a * u ** b)
       real(fp), dimension(:), pointer :: kdpar !< Coefficients for rksd on basis of power relation

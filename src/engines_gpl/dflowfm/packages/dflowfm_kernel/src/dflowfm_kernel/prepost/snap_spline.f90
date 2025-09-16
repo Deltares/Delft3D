@@ -102,7 +102,7 @@ contains
 !  compute the spline to fine-spline matrix
       Numnew = 1
       do
-         call realloc(A, (/Numnew, num/))
+         call realloc(A, [Numnew, num])
          call comp_Afinespline(num, Nref, Numnew, A, ierror)
 !     check if the arrays were large enough and reallocate if not so
          if (ierror /= 2) then

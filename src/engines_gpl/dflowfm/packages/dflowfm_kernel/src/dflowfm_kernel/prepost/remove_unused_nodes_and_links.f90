@@ -176,9 +176,9 @@ contains
          ! adjust the size of the node arrays
          call realloc(lnn, numl_new)
          call aerr('lnn [realloc]', ierr, numl_new)
-         call realloc(lne, (/2, numl_new/))
+         call realloc(lne, [2, numl_new])
          call aerr('lne [realloc]', ierr, 2 * numl_new)
-         call realloc(kn, (/3, numl_new/))
+         call realloc(kn, [3, numl_new])
          call aerr('kn [realloc]', ierr, 3 * numl_new)
 
          ! update the arrays running over the number of faces/netcells

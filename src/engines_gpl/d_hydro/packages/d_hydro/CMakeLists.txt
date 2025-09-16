@@ -108,3 +108,4 @@ endif(WIN32)
 message(STATUS "build_config ${build_config}")
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/create_config_xml.tcl DESTINATION bin)

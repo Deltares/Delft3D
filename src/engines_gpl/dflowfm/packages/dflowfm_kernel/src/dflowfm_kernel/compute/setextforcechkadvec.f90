@@ -101,7 +101,7 @@ contains
                   end if
 
                   Lt = Ltop(LL)
-                 
+
                   alf = 1.0_dp
                   if (jawindhuorzwsbased == 0 .and. Lt > 1) then
                      dzt = hu(Lt) - hu(Lt - 1)

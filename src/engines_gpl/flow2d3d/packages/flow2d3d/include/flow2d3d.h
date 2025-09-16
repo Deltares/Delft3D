@@ -147,7 +147,6 @@ extern "C" {
 
 #include "dd.h"
 #include "esm.h"
-#include "flowol.h"
 #include "precision.h"
 
 
@@ -214,7 +213,6 @@ class Flow2D3D : public Component {
         XmlTree *   config;         // top of Flow2D3D XML configuration tree
         const char * mdfFile;
         char *      runid;
-        FlowOL *    flowol;         // Flow online (via DelftOnline)
         DD *        dd;             // domain decomposition object
         int         esm_flags;
         void *      gdp;

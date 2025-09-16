@@ -222,14 +222,8 @@ void FlowDD_Process (
     // Run Flow now
     //
 
-    if (FLOW2D3D->flowol != NULL)
-        FLOW2D3D->flowol->RegisterSubdomain (name);
-
     int initOnly      = 0;
     TRISIM (&FLOW2D3D->dd->numSubdomains, &numNeighborMappers, &esmContextID, &esmfsm_flags, name, &initOnly, &FLOW2D3D->gdp,strlen (name));
-
-    if (FLOW2D3D->flowol != NULL)
-        FLOW2D3D->flowol->UnregisterSubdomain ();
 
 }
 

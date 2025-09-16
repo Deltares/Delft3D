@@ -58,15 +58,15 @@ contains
             status = nf90_def_dim(id_file, 'id_1', dim1, id_1)
             status = nf90_def_dim(id_file, 'ncgen', ncgen, id_ncgen)
 
-            status = nf90_def_var(id_file, 'general_structure_fu_v1', nf90_double, (/id_1, id_ncgen/), id_fusav)
+            status = nf90_def_var(id_file, 'general_structure_fu_v1', nf90_double, [id_1, id_ncgen], id_fusav)
             call check_netcdf_status_and_writes_error_message(status, 'with creating general_structure_fu ID')
             status = nf90_put_att(id_file, id_fusav, 'long_name', 'partial computational value for fu (under/over/between gate, respectively) of general structure')
 
-            status = nf90_def_var(id_file, 'general_structure_ru_v1', nf90_double, (/id_1, id_ncgen/), id_rusav)
+            status = nf90_def_var(id_file, 'general_structure_ru_v1', nf90_double, [id_1, id_ncgen], id_rusav)
             call check_netcdf_status_and_writes_error_message(status, 'with creating general_structure_ru ID')
             status = nf90_put_att(id_file, id_rusav, 'long_name', 'partial computational value for ru (under/over/between gate, respectively) of general structure')
 
-            status = nf90_def_var(id_file, 'general_structure_au_v1', nf90_double, (/id_1, id_ncgen/), id_ausav)
+            status = nf90_def_var(id_file, 'general_structure_au_v1', nf90_double, [id_1, id_ncgen], id_ausav)
             call check_netcdf_status_and_writes_error_message(status, 'with creating general_structure_au ID')
             status = nf90_put_att(id_file, id_ausav, 'long_name', 'partial computational value for au (under/over/between gate, respectively) of general structure')
 
@@ -74,17 +74,17 @@ contains
             dim1 = size(fusav, 1)
             status = nf90_inq_varid(id_file, 'general_structure_fu_v1', id_fusav)
             call check_netcdf_status_and_writes_error_message(status, 'with getting general_structure_fu ID')
-            status = nf90_put_var(id_file, id_fusav, fusav, (/1, ITIM/), (/dim1, ncgen/))
+            status = nf90_put_var(id_file, id_fusav, fusav, [1, ITIM], [dim1, ncgen])
             call check_netcdf_status_and_writes_error_message(status, 'with writing general_structure_fu array')
 
             status = nf90_inq_varid(id_file, 'general_structure_ru_v1', id_rusav)
             call check_netcdf_status_and_writes_error_message(status, 'with getting general_structure_ru ID')
-            status = nf90_put_var(id_file, id_rusav, rusav, (/1, ITIM/), (/dim1, ncgen/))
+            status = nf90_put_var(id_file, id_rusav, rusav, [1, ITIM], [dim1, ncgen])
             call check_netcdf_status_and_writes_error_message(status, 'with writing general_structure_ru array')
 
             status = nf90_inq_varid(id_file, 'general_structure_au_v1', id_ausav)
             call check_netcdf_status_and_writes_error_message(status, 'with getting general_structure_au ID')
-            status = nf90_put_var(id_file, id_ausav, ausav, (/1, ITIM/), (/dim1, ncgen/))
+            status = nf90_put_var(id_file, id_ausav, ausav, [1, ITIM], [dim1, ncgen])
             call check_netcdf_status_and_writes_error_message(status, 'with writing general_structure_au array')
 
          case (READ_DATA_FROM_FILE)

@@ -95,7 +95,7 @@ contains
 
 !   vol1ini needs to be global
          if (jampi == 1) then
-            call reduce_double_sum(1, (/vol1ini/), dum)
+            call reduce_double_sum(1, [vol1ini], dum)
             vol1ini = dum(1)
          end if
       end if

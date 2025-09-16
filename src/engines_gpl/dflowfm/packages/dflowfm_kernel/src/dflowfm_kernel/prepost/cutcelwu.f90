@@ -263,7 +263,7 @@ contains
 
                   if (jamasks == 0 .or. jamasks == 1) then
                      if (kc(kn(1, L)) == 1 .or. kc(kn(2, L)) == 1) then
-                        call CROSSLINKPOLY(L, 0, 0, (/0/), (/0/), XM, YM, JA)
+                        call CROSSLINKPOLY(L, 0, 0, [0], [0], XM, YM, JA)
                      else
                         ja = 0
                      end if

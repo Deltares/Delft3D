@@ -184,7 +184,7 @@ contains
       icMOD = max(1, ncrs / 100)
 
       call realloc(numlist, ncrs, keepExisting=.true., fill=0) ! In case pli-based cross sections have not allocated this yet.
-      call realloc(linklist, (/max(intersection_count, 1), ncrs/), keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
+      call realloc(linklist, [max(intersection_count, 1), ncrs], keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
 
       call copy_cached_cross_sections(crossed_links, polygon_nodes, success)
 
