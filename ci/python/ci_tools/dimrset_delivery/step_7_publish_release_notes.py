@@ -39,16 +39,16 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         log = self.__run_git_command(["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%s"])
         return log.splitlines()
 
-    def __build_changelog(self, commits: List[str], issue_key_pattern: re.Pattern) -> List[str]:
+    def __build_changelog(self, commits: List[str], issue_number_pattern: re.Pattern) -> List[str]:
         changelog = []
         for commit in commits:
-            match = issue_key_pattern.search(commit)
+            match = issue_number_pattern.search(commit)
             if match:
-                issue_key = match.group(0)
-                issue = self.__jira.get_issue(issue_key) if self.__jira else None
+                issue_number = match.group(0)
+                issue = self.__jira.get_issue(issue_number) if self.__jira else None
                 if issue:
                     summary = issue["fields"]["summary"]
-                    changelog.append(f"- {issue_key}: {summary}")
+                    changelog.append(f"- {issue_number}: {summary}")
                 else:
                     changelog.append(f"- {commit}")
             else:
@@ -105,9 +105,9 @@ class ReleaseNotesPublisher(StepExecutorInterface):
             "DEVOPSDSC", "UNST", "DELFT3D", "RTCTOOLS", "ECMODULE", "SOFTSUP",
             "SWAN", "ESIWACE3", "COMPCORE", "DELWAQ"
         ]
-        issue_key_pattern = re.compile(rf"\b({'|'.join(project_keys)})-\d+\b")
+        issue_number_pattern = re.compile(rf"\b({'|'.join(project_keys)})-\d+\b")
 
-        changelog = self.__build_changelog(commits, issue_key_pattern)
+        changelog = self.__build_changelog(commits, issue_number_pattern)
 
         self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
 

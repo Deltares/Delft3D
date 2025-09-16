@@ -62,27 +62,27 @@ class Jira(ConnectionServiceInterface):
         self.__context.log(f"Error : {result.status_code} - {result.content.decode('utf-8')}")
         return False
 
-    def get_issue(self, issue_key: str) -> Optional[Dict[str, Any]]:
+    def get_issue(self, issue_number: str) -> Optional[Dict[str, Any]]:
         """
         Fetch details for a Jira issue.
 
         Parameters
         ----------
-        issue_key : str
-            The Jira issue key, e.g. DEVOPSDSC-123.
+        issue_number : str
+            The Jira issue number, e.g. DEVOPSDSC-123.
 
         Returns
         -------
         Optional[Dict[str, Any]]
             Issue details if successful, None otherwise.
         """
-        endpoint = f"{self.__rest_uri}/issue/{issue_key}"
+        endpoint = f"{self.__rest_uri}/issue/{issue_number}"
 
         if self.__context.dry_run:
             self.__context.log(f"GET request: {endpoint}")
             return {
-                "key": issue_key,
-                "fields": {"summary": f"[dry-run mock] Summary for {issue_key}"}
+                "key": issue_number,
+                "fields": {"summary": f"[dry-run mock] Summary for {issue_number}"}
             }
 
         result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=False)
@@ -91,6 +91,6 @@ class Jira(ConnectionServiceInterface):
             return result.json()
 
         self.__context.log(
-            f"Could not fetch issue {issue_key}: {result.status_code} - {result.content.decode('utf-8')}"
+            f"Could not fetch issue {issue_number}: {result.status_code} - {result.content.decode('utf-8')}"
         )
         return None

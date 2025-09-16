@@ -62,7 +62,6 @@ object DIMRbak : BuildType({
         param("dimrbakker_username", DslContext.getParameter("dimrbakker_username"))
         password("dimrbakker_password", DslContext.getParameter("dimrbakker_password"))
         password("dimrbakker_personal_access_token", DslContext.getParameter("dimrbakker_personal_access_token"))
-        param("dimrset_changelog_dir", DslContext.getParameter("dimrset_changelog_dir"))
         param("dry_run", if (DslContext.getParameter("enable_dimrbak").lowercase() == "true") "" else "--dry-run")
     }
 
