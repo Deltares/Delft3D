@@ -116,7 +116,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
 def main() -> None:
     args = parse_common_arguments()
-    context = create_context_from_args(args)
+    context = create_context_from_args(args, require_atlassian=False, require_git=False, require_teamcity=False, require_ssh=False)
     services = Services(context)
 
     step = ReleaseNotesPublisher(context, services, output_dir=args.output_dir)
