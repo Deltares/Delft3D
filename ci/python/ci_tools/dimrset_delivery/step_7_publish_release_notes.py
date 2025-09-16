@@ -79,11 +79,11 @@ class ReleaseNotesPublisher(StepExecutorInterface):
             action = f"Prepended new section for {tag}"
 
         if dry_run:
-            self.__context.log(f"[DRY-RUN] {action}", severity=LogLevel.INFO)
-            self.__context.log("----- NEW ENTRY -----", severity=LogLevel.DEBUG)
-            self.__context.log(new_text, severity=LogLevel.DEBUG)
-            self.__context.log("----- FINAL RESULT -----", severity=LogLevel.DEBUG)
-            self.__context.log(updated, severity=LogLevel.DEBUG)
+            self.__context.log(f"[DRY-RUN] {action}")
+            self.__context.log("----- NEW ENTRY -----")
+            self.__context.log(new_text)
+            self.__context.log("----- FINAL RESULT -----")
+            self.__context.log(updated)
         else:
             self.__output_file.parent.mkdir(parents=True, exist_ok=True)
             self.__output_file.write_text(updated, encoding="utf-8")
