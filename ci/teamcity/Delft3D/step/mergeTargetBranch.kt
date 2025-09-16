@@ -18,7 +18,7 @@ fun BuildSteps.mergeTargetBranch(init: ScriptBuildStep.() -> Unit): ScriptBuildS
         pr_num=%teamcity.build.branch%
         pr_id=${'$'}{pr_num##*/}
         current_head=${'$'}(git rev-parse temporary/pull/${'$'}pr_id/head)
-        git checkout temporary/${'$'}pr_id/merge
+        git checkout temporary/pull/${'$'}pr_id/merge
         pr_parent=${'$'}(git rev-parse HEAD^2)
         if [ "${'$'}pr_parent" != "${'$'}current_head" ]; then
             echo "Merge conflict detected: merge ref is outdated."
