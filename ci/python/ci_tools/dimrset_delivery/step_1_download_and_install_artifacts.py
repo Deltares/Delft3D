@@ -2,10 +2,11 @@
 """Download the artifacts and install them on Linux machine."""
 
 import os
+import shutil
 import sys
 import tarfile
 import zipfile
-from typing import List
+from typing import List, Optional
 
 from ci_tools.dimrset_delivery.arg_parsing import create_context_from_args, parse_common_arguments
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
@@ -124,6 +125,7 @@ class ArtifactInstaller(StepExecutorInterface):
         self.__download_and_deploy_artifact_by_name(
             str(linux_collect_id) if linux_collect_id is not None else "",
             self.context.settings.name_of_dimr_release_signed_linux_artifact,
+            exclude_directories=["lnx64/test"],
         )
 
     def __install_dimr_on_remote_system(self) -> None:
@@ -163,7 +165,9 @@ class ArtifactInstaller(StepExecutorInterface):
 
         return command
 
-    def __download_and_deploy_artifact_by_name(self, build_id: str, artifact_name_key: str) -> None:
+    def __download_and_deploy_artifact_by_name(
+        self, build_id: str, artifact_name_key: str, exclude_directories: Optional[List[str]] = None
+    ) -> None:
         """
         Download and unpack artifacts from a TeamCity build that match the specified artifact name key.
 
@@ -173,21 +177,29 @@ class ArtifactInstaller(StepExecutorInterface):
             The ID of the TeamCity build to retrieve artifacts from.
         artifact_name_key : str
             Substring to filter artifact names for downloading.
+        exclude_directories : Optional[List[str]]
+            List of directory names to exclude from deploying.
 
         Raises
         ------
         ValueError
             If artifact names cannot be retrieved.
         """
+        if exclude_directories is None:
+            exclude_directories = []
         if self.__teamcity is None:
             raise ValueError("TeamCity client is required but not initialized")
         artifact_names = self.__teamcity.get_build_artifact_names(build_id=build_id)
         if artifact_names is None:
             raise ValueError(f"Could not retrieve artifact names for build {build_id}")
         artifacts_to_download = [a["name"] for a in artifact_names["file"] if artifact_name_key in a["name"]]
-        self.__download_and_unpack_dimr_artifacts(artifacts_to_download=artifacts_to_download, build_id=build_id)
+        self.__download_and_unpack_dimr_artifacts(
+            artifacts_to_download=artifacts_to_download, build_id=build_id, exclude_directories=exclude_directories
+        )
 
-    def __download_and_unpack_dimr_artifacts(self, artifacts_to_download: List[str], build_id: str) -> None:
+    def __download_and_unpack_dimr_artifacts(
+        self, artifacts_to_download: List[str], build_id: str, exclude_directories: Optional[List[str]]
+    ) -> None:
         """
         Download the provided artifact names from the specified TeamCity build ID.
 
@@ -197,11 +209,13 @@ class ArtifactInstaller(StepExecutorInterface):
             A list of artifact names to download.
         build_id : str
             The build ID for the build to download the artifacts from.
+        exclude_directories : Optional[List[str]]
+            List of directory names to exclude from deploying.
         """
         self.__ensure_version_directory_exists()
 
         for artifact_name in artifacts_to_download:
-            self.__download_extract_and_deploy_artifact(artifact_name, build_id)
+            self.__download_extract_and_deploy_artifact(artifact_name, build_id, exclude_directories)
 
     def __ensure_version_directory_exists(self) -> None:
         """Ensure the version directory exists for artifact storage."""
@@ -209,7 +223,9 @@ class ArtifactInstaller(StepExecutorInterface):
         if not os.path.exists(file_path):
             os.makedirs(file_path)
 
-    def __download_extract_and_deploy_artifact(self, artifact_name: str, build_id: str) -> None:
+    def __download_extract_and_deploy_artifact(
+        self, artifact_name: str, build_id: str, exclude_directories: Optional[List[str]]
+    ) -> None:
         """
         Download, extract, and deploy a single artifact.
 
@@ -219,6 +235,8 @@ class ArtifactInstaller(StepExecutorInterface):
             The name of the artifact to download.
         build_id : str
             The build ID to download the artifact from.
+        exclude_directories : Optional[List[str]]
+            List of directory names to exclude from deploying.
 
         Raises
         ------
@@ -243,6 +261,15 @@ class ArtifactInstaller(StepExecutorInterface):
         print(f"Unpacking {artifact_name}...")
         file_path = f"{self.__dimr_version}"
         self.__extract_archive(artifact_name, file_path)
+
+        # Clean up the downloaded archive
+        if exclude_directories is None:
+            exclude_directories = []
+        for exclude_directory in exclude_directories:
+            directory = os.path.join(self.__dimr_version, exclude_directory)
+            if os.path.exists(directory):
+                print(f"Removing {directory}...")
+                shutil.rmtree(directory)
 
         print(f"Deleting {artifact_name}...")
         os.remove(artifact_name)
