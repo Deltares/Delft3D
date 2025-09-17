@@ -40,6 +40,7 @@ object StartVerschilanalyse : BuildType({
             unchecked = "false",
         )
         param("current_prefix", "output/weekly/latest")
+        param("model_path", "input")
         param("model_filter", "")
         checkbox(
             "send_email",
@@ -133,6 +134,7 @@ object StartVerschilanalyse : BuildType({
                     --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
                     --current-prefix='%current_prefix%' \
                     --reference-prefix='%reference_prefix%' \
+                    --model-path='%model_path%' \
                     --model-filter='%model_filter%'
                 popd
             """.trimIndent()
