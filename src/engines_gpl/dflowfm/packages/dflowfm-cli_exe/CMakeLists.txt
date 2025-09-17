@@ -65,6 +65,7 @@ if(UNIX)
     message(STATUS "Setting target_compile_definitions in Unix")
     target_compile_definitions(${executable_name} PRIVATE "HAVE_DISPLAY=0;HAVE_MPI;HAVE_PETSC")
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
+    set_target_properties(${executable_name} PROPERTIES OUTPUT_NAME dflowfm)
 endif(UNIX)
 
 
