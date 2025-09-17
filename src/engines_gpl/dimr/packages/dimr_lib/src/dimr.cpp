@@ -1579,6 +1579,9 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
         // Store communicator var name in component.
         newComp->mpiCommVar = commElement->charData;
     }
+    else {
+      newComp->mpiCommVar = nullptr;
+    }
 
     // Element inputFile (optional?)
     XmlTree* inputFileElement = xmlComponent->Lookup("inputFile");
