@@ -1,9 +1,8 @@
 import os
 from dataclasses import dataclass
+from enum import Enum
 from getpass import getpass
 from typing import Dict, Iterator, Optional
-
-from enum import Enum
 
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 from ci_tools.example_utils.logger import Logger, LogLevel

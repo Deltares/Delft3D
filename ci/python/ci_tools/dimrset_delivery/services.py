@@ -2,8 +2,8 @@ from typing import Optional
 
 from ci_tools.dimrset_delivery.dimr_context import CredentialEntry, DimrAutomationContext, ServiceName
 from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
-from ci_tools.dimrset_delivery.lib.jira import Jira
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
+from ci_tools.dimrset_delivery.lib.jira import Jira
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 
