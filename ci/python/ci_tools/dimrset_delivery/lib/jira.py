@@ -1,5 +1,5 @@
 from types import SimpleNamespace
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union, cast
 
 import requests
 
@@ -88,7 +88,7 @@ class Jira(ConnectionServiceInterface):
         result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=False)
 
         if result.status_code == 200:
-            return result.json()
+            return cast(Dict[str, Any], result.json())
 
         self.__context.log(
             f"Could not fetch issue {issue_number}: {result.status_code} - {result.content.decode('utf-8')}"

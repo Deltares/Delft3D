@@ -29,7 +29,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         return result.stdout.strip()
 
-    def __get_last_two_tags(self) -> (str, str):
+    def __get_last_two_tags(self) -> tuple[str, str]:
         tags = self.__run_git_command(["git", "tag", "--sort=creatordate"]).splitlines()
         if len(tags) < 2:
             raise RuntimeError("Not enough tags found in repository.")
