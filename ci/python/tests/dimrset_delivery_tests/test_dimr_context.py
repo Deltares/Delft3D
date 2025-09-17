@@ -160,13 +160,14 @@ class TestDimrAutomationContext:
             patch.multiple(
                 "ci_tools.dimrset_delivery.services",
                 Atlassian=Mock(spec=Atlassian),
+                Jira=Mock(spec=Jira),
                 SshClient=Mock(spec=SshClient),
                 GitClient=Mock(spec=GitClient),
             ),
             patch.multiple(
                 "ci_tools.dimrset_delivery.dimr_context",
-                input=Mock(side_effect=["atlas_user", "tc_user", "ssh_user", "git_user"]),
-                getpass=Mock(side_effect=["atlas_pass", "tc_pass", "ssh_pass", "git_token"]),
+                input=Mock(side_effect=["atlas_user", "jira_user", "tc_user", "ssh_user", "git_user"]),
+                getpass=Mock(side_effect=["atlas_pass", "jira_pass", "tc_pass", "ssh_pass", "git_token"]),
             ),
         ):
             teamcity_mock = Mock(spec=TeamCity)
@@ -188,6 +189,7 @@ class TestDimrAutomationContext:
 
             assert context.build_id == "12345"
             assert services.atlassian is not None
+            assert services.jira is not None
             assert services.teamcity is not None
             assert services.ssh is not None
             assert services.git is not None
@@ -262,6 +264,7 @@ class TestDimrAutomationContext:
                 build_id="12345",
                 dry_run=False,
                 require_atlassian=True,
+                require_jira=False,
                 require_teamcity=False,
                 require_ssh=False,
                 require_git=False,
