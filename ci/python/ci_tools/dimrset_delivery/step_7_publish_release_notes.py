@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Generate and publish DIMR release notes (changelog)."""
 
-import sys
 import re
 import subprocess
-from datetime import date
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import List
 
@@ -16,9 +16,7 @@ from ci_tools.example_utils.logger import LogLevel
 
 
 class ReleaseNotesPublisher(StepExecutorInterface):
-    """
-    Generates a DIMR release changelog and updates the changelog file.
-    """
+    """Generates a DIMR release changelog and updates the changelog file."""
 
     def __init__(self, context: DimrAutomationContext, services: Services) -> None:
         self.__context = context
@@ -57,7 +55,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
     def __prepend_or_replace_in_changelog(self, tag: str, changes: List[str], dry_run: bool) -> None:
         new_entry = [
-            f"## {tag} - {date.today().isoformat()}",
+            f"## {tag} - {datetime.now(timezone.utc).date().isoformat()}",
             "",
             *changes,
             "",
@@ -90,6 +88,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
             self.__context.log(f"Changelog updated in {self.__changelog_file}")
 
     def execute_step(self) -> bool:
+        """Execute the release notes publishing step."""
         self.__context.log("Generating DIMR release notes...")
 
         if self.__jira is None:
@@ -115,8 +114,15 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         return True
 
 def main() -> None:
+    """Entry point for the release notes publisher."""
     args = parse_common_arguments()
-    context = create_context_from_args(args, require_atlassian=False, require_git=False, require_teamcity=False, require_ssh=False)
+    context = create_context_from_args(
+        args,
+        require_atlassian=False,
+        require_git=False,
+        require_teamcity=False,
+        require_ssh=False,
+    )
     services = Services(context)
 
     step = ReleaseNotesPublisher(context, services)
