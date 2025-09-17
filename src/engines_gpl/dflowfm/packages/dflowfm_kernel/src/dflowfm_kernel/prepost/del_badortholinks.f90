@@ -140,9 +140,9 @@ contains
 
             if (dorthosum > dmaxorthop) then
 !            store neighboring cell administration
-               call local_netstore((/k1, k2/))
-               xz_st = (/xz(k1), xz(k2)/)
-               yz_st = (/yz(k1), yz(k2)/)
+               call local_netstore([k1, k2])
+               xz_st = [xz(k1), xz(k2)]
+               yz_st = [yz(k1), yz(k2)]
 
 !            merge cells
                call mergecells(k1, k2, jatek)

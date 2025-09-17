@@ -101,7 +101,7 @@ contains
          call half(x3, y3, x4, y4, xref, yref, jsferic, jasfer3D)
 
 !   get outward normal in frame reference point
-         call spher2locvec(xd, yd, 1, (/xref/), (/yref/), (/rx/), (/ry/), rxloc, ryloc, jsferic, jasfer3D, dmiss)
+         call spher2locvec(xd, yd, 1, [xref], [yref], [rx], [ry], rxloc, ryloc, jsferic, jasfer3D, dmiss)
 
 !   xcb = xd + dis*rx
          call xpav(xd, yd, dis, rxloc(1), ryloc(1), xcb, ycb, jsferic, jasfer3D)
@@ -109,11 +109,11 @@ contains
          call xpav(xd, yd, 2d0 * rrtol * dis, rxloc(1), ryloc(1), xmir, ymir, jsferic, jasfer3D)
 
 !   x5 = x3 + dis*rx
-         call spher2locvec(x3, y3, 1, (/xref/), (/yref/), (/rx/), (/ry/), rxloc, ryloc, jsferic, jasfer3D, dmiss)
+         call spher2locvec(x3, y3, 1, [xref], [yref], [rx], [ry], rxloc, ryloc, jsferic, jasfer3D, dmiss)
          call xpav(x3, y3, dis, rxloc(1), ryloc(1), x5, y5, jsferic, jasfer3D)
 
 !   x6 = x4 + dis*rx
-         call spher2locvec(x4, y4, 1, (/xref/), (/yref/), (/rx/), (/ry/), rxloc, ryloc, jsferic, jasfer3D, dmiss)
+         call spher2locvec(x4, y4, 1, [xref], [yref], [rx], [ry], rxloc, ryloc, jsferic, jasfer3D, dmiss)
          call xpav(x4, y4, dis, rxloc(1), ryloc(1), x6, y6, jsferic, jasfer3D)
 
 !   dout = rx*(y4-y3) - ry*(x4-x3)

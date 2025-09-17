@@ -74,7 +74,7 @@ contains
 
 !   netcell0(1: nump1d2d) = netcell(1: nump1d2d)
 
-      call realloc(lne0, (/2, numl/), stat=ierr, keepExisting=.false.)
+      call realloc(lne0, [2, numl], stat=ierr, keepExisting=.false.)
       call realloc(lnn0, numl, stat=ierr, keepExisting=.false.)
       lne0 = lne
       lnn0 = lnn

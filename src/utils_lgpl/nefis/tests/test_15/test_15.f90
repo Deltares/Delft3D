@@ -36,8 +36,7 @@ program test15
    &)
 
    INTEGER*4 fds
-   INTEGER&
-   &Clsnef,&
+   INTEGER Clsnef,&
    &Credat,&
    &Defcel,&
    &Defelm,&
@@ -68,9 +67,10 @@ program test15
    CHARACTER*255  version
 
    error = getnfv(version)
-   write(*,*)
-   write(*,*) trim(version(5:))
-   write(*,*)
+   write(*,*) '-----------------------------------------------'
+   write(*,*) 'Version: '//trim(version(5:))
+   write(*,*) '-----------------------------------------------'
+
 !
 ! Test to check cells with different element types
 ! (cell according dwqtim on comm. file)

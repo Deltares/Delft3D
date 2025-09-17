@@ -55,8 +55,8 @@ contains
       ierror = 0
 
 !   allocate if necessary
-      call realloc(workmatbd, (/2, Ndx/), keepExisting=.true., fill=0d0)
-      call realloc(workmatc, (/2, Lnx/), keepExisting=.true., fill=0d0)
+      call realloc(workmatbd, [2, Ndx], keepExisting=.true., fill=0d0)
+      call realloc(workmatc, [2, Lnx], keepExisting=.true., fill=0d0)
 
 !   fill work arrays
       do i = 1, numsend_sall

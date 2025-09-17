@@ -104,9 +104,9 @@ contains
 
       if (is_numndvals > 0) then
          if (stm_included) then
-            call realloc(is_sumvalsnd, (/is_numndvals, ndx, lsedtot/), keepExisting=.false., fill=0d0)
+            call realloc(is_sumvalsnd, [is_numndvals, ndx, lsedtot], keepExisting=.false., fill=0d0)
          else
-            call realloc(is_sumvalsnd, (/is_numndvals, ndx, 1/), keepExisting=.false., fill=0d0)
+            call realloc(is_sumvalsnd, [is_numndvals, ndx, 1], keepExisting=.false., fill=0d0)
          end if
       end if
 

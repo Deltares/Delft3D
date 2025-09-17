@@ -613,14 +613,14 @@ contains
          !
          ierr = nf90_def_dim(sedids%ncid, 'time', nf90_unlimited, sedids%id_tsp%id_timedim)
          call check_error(ierr, 'def time dim')
-         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_time, nf90_double, (/sedids%id_tsp%id_timedim/), 'time', 'time', '', trim(Tudunitstr))
-         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_interval, nf90_double, (/sedids%id_tsp%id_timedim/), 'averaging interval', 'averaging interval', '', 's')
-         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_morfac, nf90_double, (/sedids%id_tsp%id_timedim/), 'morfac', 'morphological acceleration factor', '', '-')
+         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_time, nf90_double, [sedids%id_tsp%id_timedim], 'time', 'time', '', trim(Tudunitstr))
+         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_interval, nf90_double, [sedids%id_tsp%id_timedim], 'averaging interval', 'averaging interval', '', 's')
+         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_morfac, nf90_double, [sedids%id_tsp%id_timedim], 'morfac', 'morphological acceleration factor', '', '-')
 
          ierr = nf90_def_dim(sedids%ncid, 'nSedTot', stmpar%lsedtot, sedids%id_tsp%id_sedtotdim)
 
          if (stmpar%morpar%moroutput%dmsedcum) then
-            ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, sedids%id_dmsedcum, nf90_double, UNC_LOC_S, 'dmsedcum', 'net sedimentation flux over time interval', '', 'kg m-2', dimids=(/-2, sedids%id_tsp%id_sedtotdim, -1/))
+            ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, sedids%id_dmsedcum, nf90_double, UNC_LOC_S, 'dmsedcum', 'net sedimentation flux over time interval', '', 'kg m-2', dimids=[-2, sedids%id_tsp%id_sedtotdim, -1])
          end if
          !
          stmpar%morpar%moroutput%statunt(3) = trim(stmpar%morpar%moroutput%unit_transport_rate) ! bed load
@@ -634,20 +634,20 @@ contains
             select case (iq)
             case (1)
                call realloc(dimids_, 2)
-               dimids_ = (/-2, -1/)
+               dimids_ = [-2, -1]
             case (2)
                call realloc(dimids_, 2)
-               dimids_ = (/-2, -1/)
+               dimids_ = [-2, -1]
             case (3)
                !call realloc(dimids_, 3 )
-               !dimids_= (/ -2, sedids%id_tsp%id_sedtotdim, -1 /)
+               !dimids_= [ -2, sedids%id_tsp%id_sedtotdim, -1 ]
                call realloc(dimids_, 2)
-               dimids_ = (/-2, -1/)
+               dimids_ = [-2, -1]
             case (4)
                !call realloc(dimids_, 3 )
-               !dimids_= (/ -2, sedids%id_tsp%id_sedtotdim, -1 /)
+               !dimids_= [ -2, sedids%id_tsp%id_sedtotdim, -1 ]
                call realloc(dimids_, 2)
-               dimids_ = (/-2, -1/)
+               dimids_ = [-2, -1]
             end select
 
             idx = stmpar%morpar%moroutput%statflg(1, iq)
@@ -758,9 +758,9 @@ contains
       morft0 = stmpar%morpar%morft
       hydrt0 = time1
       !
-      ierr = nf90_put_var(sedids%ncid, sedids%id_time, tim, (/itim/))
-      ierr = nf90_put_var(sedids%ncid, sedids%id_interval, morstatqnt(1, 1) * ti_sed, (/itim/))
-      ierr = nf90_put_var(sedids%ncid, sedids%id_morfac, morfc, (/itim/))
+      ierr = nf90_put_var(sedids%ncid, sedids%id_time, tim, [itim])
+      ierr = nf90_put_var(sedids%ncid, sedids%id_interval, morstatqnt(1, 1) * ti_sed, [itim])
+      ierr = nf90_put_var(sedids%ncid, sedids%id_morfac, morfc, [itim])
       !
       if (stmpar%morpar%moroutput%dmsedcum) then
          allocate (work(ndx, stmpar%lsedtot))

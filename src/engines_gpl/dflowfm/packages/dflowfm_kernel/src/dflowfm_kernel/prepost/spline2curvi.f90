@@ -178,11 +178,11 @@ contains
             call normalout(xg1(i), yg1(i), xg1(i + 1), yg1(i + 1), nx, ny, jsferic, jasfer3D, dmiss, dxymis)
 
             if (jsferic /= 1) then
-               xs1 = xe + 2d0 * hmax * (/-nx, nx/)
-               ys1 = ye + 2d0 * hmax * (/-ny, ny/)
+               xs1 = xe + 2d0 * hmax * [-nx, nx]
+               ys1 = ye + 2d0 * hmax * [-ny, ny]
             else
-               xs1 = xe + 2d0 * hmax * (/-nx, nx/) / (Ra * dg2rd)
-               ys1 = ye + 2d0 * hmax * (/-ny, ny/) / (Ra * dg2rd)
+               xs1 = xe + 2d0 * hmax * [-nx, nx] / (Ra * dg2rd)
+               ys1 = ye + 2d0 * hmax * [-ny, ny] / (Ra * dg2rd)
             end if
 
             isnew = mcs + 1

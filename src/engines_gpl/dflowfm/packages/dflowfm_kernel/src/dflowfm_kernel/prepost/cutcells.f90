@@ -91,7 +91,7 @@ contains
 
                if (KNEW(L) == 0) then
 
-                  call CROSSLINKPOLY(L, 0, 0, (/0/), (/0/), XM, YM, JA)
+                  call CROSSLINKPOLY(L, 0, 0, [0], [0], XM, YM, JA)
 
                   if (JA == 1) then
                      call DSETNEWPOINT(XM, YM, KM)

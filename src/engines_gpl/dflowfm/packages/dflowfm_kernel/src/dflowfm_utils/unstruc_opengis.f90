@@ -607,7 +607,7 @@ contains
       keymaxlen = transfer(lenmaxdata, 123)
 
       ! Print the tree by traversing it depth-first, pass mout and lenmax by transfer into data variable.
-      call tree_traverse(dicttree, print_foam_dict, transfer((/mout, keymaxlen/), node_value), dummylog)
+      call tree_traverse(dicttree, print_foam_dict, transfer([mout, keymaxlen], node_value), dummylog)
 
       write (mout, '(a)') '}'
 

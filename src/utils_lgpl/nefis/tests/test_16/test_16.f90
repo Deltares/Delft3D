@@ -45,9 +45,9 @@ program Test16
    CHARACTER*255  version
 
    error = getnfv(version)
-   write(*,*)
-   write(*,*) trim(version(5:))
-   write(*,*)
+   write(*,*) '-----------------------------------------------'
+   write(*,*) 'Version: '//trim(version(5:))
+   write(*,*) '-----------------------------------------------'
 
    write(*,'('' Same test as test test_12'',&
    &          '' but open en close files 1000 times '')')

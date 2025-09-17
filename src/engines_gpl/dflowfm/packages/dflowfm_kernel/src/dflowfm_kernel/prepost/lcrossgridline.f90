@@ -62,8 +62,8 @@ contains
 !   return
 
       do i = 1, mc - 1 ! loop over the edges
-         x3 = (/xc(i, j), yc(i, j)/)
-         x4 = (/xc(i + 1, j), yc(i + 1, j)/)
+         x3 = [xc(i, j), yc(i, j)]
+         x4 = [xc(i + 1, j), yc(i + 1, j)]
 
          if (x3(1) == DMISS .or. x4(1) == DMISS) cycle
 

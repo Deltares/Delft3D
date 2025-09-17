@@ -60,8 +60,8 @@ contains
       real(kind=dp), parameter :: FAC = 1.2 ! growfactor of blocksizes
 
       if (init == 1) then
-         blocklow = (/1, 1/)
-         blockupp = (/1, 1/)
+         blocklow = [1, 1]
+         blockupp = [1, 1]
       end if
 
       lownew = lowold

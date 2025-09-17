@@ -241,7 +241,7 @@ contains
       !$OMP END PARALLEL DO
       if (timon) call timstop(ithndl)
    end subroutine solve_vertical
-   
+
    !> Get vertical diffusivity at a given node and add constituent specific molecular diffusivity.
    pure function get_difsedw(node_index, constituent_index) result(val)
       use m_physcoef, only: dicoww

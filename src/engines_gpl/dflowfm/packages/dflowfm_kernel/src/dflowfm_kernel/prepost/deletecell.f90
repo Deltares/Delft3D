@@ -121,7 +121,7 @@ contains
 !   if ( Lnogo ) goto 1234
 
 !  store the affected part of the network
-      call local_netstore((/k, kdirect(1:ndirect), kindirect(1:nindirect)/))
+      call local_netstore([k, kdirect(1:ndirect), kindirect(1:nindirect)])
 
 !  compute new node coordinates
       N = netcell(k)%N
