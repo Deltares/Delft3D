@@ -1,6 +1,4 @@
 # Specify the modules to be included
-include(${CMAKE_CURRENT_LIST_DIR}/../miscellaneous/unit_test_configuration.cmake)
-
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()

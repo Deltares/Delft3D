@@ -183,12 +183,7 @@ set(FPP_SWITCH ${FPP_SWITCH} CACHE STRING "preprocessor switch")
 set(file2fpp "${CMAKE_CURRENT_SOURCE_DIR}/assertions_gtest.fpp")
 set(file2 "${CMAKE_CURRENT_BINARY_DIR}/assertions_gtest.f90")
 add_library(f90twi_gtest OBJECT "${file2}")
-# Place the assertions_gtest module in the global module directory so all targets can find it
-if(DEFINED CMAKE_Fortran_MODULE_DIRECTORY)
-    set_target_properties(f90twi_gtest PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_Fortran_MODULE_DIRECTORY}")
-else()
-    set_target_properties(f90twi_gtest PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-endif()
+
 set_property(TARGET f90twi_gtest
         APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${file2}"
 )

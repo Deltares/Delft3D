@@ -1,3 +1,5 @@
+include(${CMAKE_CURRENT_LIST_DIR}/../miscellaneous/unit_test_configuration.cmake)
+
 set(waq_include_dir ${CMAKE_CURRENT_LIST_DIR}/dwaq)
 include(${waq_include_dir}/dwaq_functions.cmake)
 
