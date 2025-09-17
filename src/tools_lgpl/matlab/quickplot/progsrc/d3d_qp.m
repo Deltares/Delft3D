@@ -53,10 +53,6 @@ function outdata=d3d_qp_core(cmd,varargin)
 persistent qpversion qpversionbase gitrepo githash qpcreationdate
 persistent logfile logtype
 
-fprintf('d3d_qp_core called with command: %s\n', cmd)
-dbstack
-cmd0 = cmd;
-
 if isempty(qpversion)
     qpversionbase = 'v<VERSION>';
     gitrepo = '<GITREPO>';
@@ -123,12 +119,7 @@ if isempty(gcbf) || ~strcmp(get(gcbf,'tag'),'Delft3D-QUICKPLOT')
     mfig=findobj(allchild(0),'flat','tag','Delft3D-QUICKPLOT');
     
     if isempty(mfig) && none(strcmp(cmd,{'initialize','initialize_background','closefigure','printfigure','dayok'}))
-        try
-            d3d_qp_core('initialize')
-        catch e
-            e
-            stack2str(e.stack)
-        end
+        d3d_qp
         mfig=findobj(allchild(0),'flat','tag','Delft3D-QUICKPLOT');
         if isempty(mfig)
             %
@@ -328,7 +319,12 @@ switch cmd
             qp_updaterecentfiles(mfig)
         end
         if showUI
-            figure(mfig);
+            try
+                % The next command fails on Linux when DISPLAY is not set.
+                % Some bringToFront function isn't available in that case.
+                figure(mfig);
+            catch
+            end
         end
         init_netcdf_settings
         if isstandalone
@@ -5262,7 +5258,6 @@ switch cmd
             error('Unknown command in d3d_qp: %s',cmd)
         end
 end
-fprintf('END OF d3d_qp_core called with command: %s\n', cmd0)
 
 function check_nonprivate_files
 thisfile=mfilename('fullpath');

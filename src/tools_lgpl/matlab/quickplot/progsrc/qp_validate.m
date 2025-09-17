@@ -257,13 +257,6 @@ try
         qp_settings('delwaq_procdef',new_procdef)
     end
     %
-    if teamcity
-        fprintf('The MATLAB path is:\n');
-        matlabpath
-        fprintf('The netCDF reader is located at:\n');
-        which('nc_info')
-    end
-    %
     sumt = 0;
     numt = 0;
     for i=1:length(d)
