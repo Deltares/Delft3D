@@ -1284,25 +1284,28 @@ contains
       ! Upwind scheme for bed load and wave driven transport
       ! Convert sand bed load transport to velocity points using upwind scheme
       !
-      if (bed > 0.0_fp) then
-         !
-         ! Upwind bed load transport
-         !
-         call fm_upwbed(lsedtot, sbcx, sbcy, sxtot, sytot, e_sbcn, e_sbct)
-      end if
       !
-      if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+      if (stmpar%morpar%mornum%bedloadupwindorder == 1) then
+         if (bed > 0.0_fp) then
+            !
+            ! Upwind bed load transport
+            !
+            call fm_upwbed(lsedtot, sbcx, sbcy, sxtot, sytot, e_sbcn, e_sbct)
+         end if
          !
-         ! Upwind wave-related bed load load transports
+         if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+            !
+            ! Upwind wave-related bed load load transports
+            !
+            call fm_upwbed(lsedtot, sbwx, sbwy, sxtot, sytot, e_sbwn, e_sbwt)
+         end if
          !
-         call fm_upwbed(lsedtot, sbwx, sbwy, sxtot, sytot, e_sbwn, e_sbwt)
-      end if
-      !
-      if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
-         !
-         ! Upwind wave-related suspended load transports
-         !
-         call fm_upwbed(lsedtot, sswx, sswy, sxtot, sytot, e_sswn, e_sswt)
+         if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
+            !
+            ! Upwind wave-related suspended load transports
+            !
+            call fm_upwbed(lsedtot, sswx, sswy, sxtot, sytot, e_sswn, e_sswt)
+         end if
       end if
       !
       ! Update sourse fluxes due to sand-mud interaction

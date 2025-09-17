@@ -307,6 +307,7 @@ end type moroutputtype
 type mornumericstype
     logical :: pure1d                   ! temporary switch for 1D treatment in FM
     logical :: upwindbedload            ! switch for upwind bedload in UPWBED
+    logical :: bedloadupwindorder       ! upwind order for bedload reconstruction
     logical :: laterallyaveragedbedload ! bedload transport laterally averaged in UPWBED
     logical :: maximumwaterdepth        ! limit minimum water depth at zeta point for morphodynamics 
     double precision :: maximumwaterdepthfrac   ! if `maximumwaterdepth=.true.`, the minimum water depth
@@ -1585,6 +1586,7 @@ subroutine nullmorpar(morpar)
     !
     morpar%mornum%pure1d                   = .false.
     morpar%mornum%upwindbedload            = .true.
+    morpar%mornum%bedloadupwindorder       = 1
     morpar%mornum%laterallyaveragedbedload = .false.
     morpar%mornum%maximumwaterdepth        = .false.
     morpar%mornum%maximumwaterdepthfrac    = 1.0d0 !by default, if `maximumwaterdepth=.true.`, `hs_mor=max(hs,hu)`, which is the old functionality. 
