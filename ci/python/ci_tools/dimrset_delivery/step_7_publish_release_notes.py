@@ -101,8 +101,16 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         commits = self.__get_commits(prev_tag, current_tag)
 
         project_keys = [
-            "DEVOPSDSC", "UNST", "DELFT3D", "RTCTOOLS", "ECMODULE", "SOFTSUP",
-            "SWAN", "ESIWACE3", "COMPCORE", "DELWAQ"
+            "DEVOPSDSC",
+            "UNST",
+            "DELFT3D",
+            "RTCTOOLS",
+            "ECMODULE",
+            "SOFTSUP",
+            "SWAN",
+            "ESIWACE3",
+            "COMPCORE",
+            "DELWAQ",
         ]
         issue_number_pattern = re.compile(rf"\b({'|'.join(project_keys)})-\d+\b")
 
@@ -112,6 +120,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
         self.__context.log("Release notes generation completed successfully!")
         return True
+
 
 def main() -> None:
     """Entry point for the release notes publisher."""

@@ -80,10 +80,7 @@ class Jira(ConnectionServiceInterface):
 
         if self.__context.dry_run:
             self.__context.log(f"GET request: {endpoint}")
-            return {
-                "key": issue_number,
-                "fields": {"summary": f"[dry-run mock] Summary for {issue_number}"}
-            }
+            return {"key": issue_number, "fields": {"summary": f"[dry-run mock] Summary for {issue_number}"}}
 
         result = requests.get(url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=False)
 
