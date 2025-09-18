@@ -14,7 +14,7 @@ import CsvProcessor
 
 object WindowsTest : BuildType({
 
-    description = "Run TestBench.py on a list of testbench XML files. (This is not containerized as we'd need more Docker-pool agents.)"
+    description = "Run TestBench.py on a list of testbench XML files."
 
     templates(
         TemplateMergeRequest,
@@ -92,6 +92,9 @@ object WindowsTest : BuildType({
                     --teamcity
                 """.trimIndent()
             }
+            dockerImage = "containers.deltares.nl/docker-proxy/python:windowsservercore-ltsc2025"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
         }
         script {
             name = "Copy cases"
@@ -99,12 +102,6 @@ object WindowsTest : BuildType({
             conditions { equals("copy_cases", "true") }
             workingDir = "test/deltares_testbench"
             scriptContent = "cp -r data/cases copy_cases"
-        }
-        script {
-            name = "Kill dimr.exe, mpiexec.exe, and hydra_pmi_proxy.exe"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            val script = File("${DslContext.baseDir}/windows/scripts/killExes.bat")
-            scriptContent = Util.readScript(script)
         }
     }
 
