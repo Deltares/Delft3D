@@ -75,7 +75,7 @@ contains
       integer :: nn !< Which horizontal node to print
       nn = min(nplot, ndx)
 
-      call SETTEXTSIZEFAC(2d0)
+      call SETTEXTSIZEFAC(2.0_dp)
 
       if (index(md_ident, 'bend') > 0 .and. size(crs) > 0) then
          QCURV = crs(1)%sumvalcur(IPNT_Q1C)
@@ -95,7 +95,7 @@ contains
          write (TEX(16:), '(f7.4)') znod(nn)
          call ICTEXT(trim(TEX), 6, 27, 221)
       else if (md_ident == 'equator1d') then
-         call SETTEXTSIZEFAC(1.5d0)
+         call SETTEXTSIZEFAC(1.5_dp)
          TEX = ' '; ! u=C*sqrt(hi): h=10, i=10-4,  u=C*0.03162277
 
          !       1        1         2         3         4         5         6         7         8         9
@@ -119,7 +119,7 @@ contains
 
          !       1        1         2         3         4         5         6         7         8         9
          tex = 'Computed amplitude =           (m), comp/analytic=  '
-         amplicomp = 0.5d0 * (maxval(s1) - minval(s1))
+         amplicomp = 0.5_dp * (maxval(s1) - minval(s1))
          write (TEX(22:30), '(F9.6)') amplicomp
          write (TEX(52:60), '(F9.3)') amplicomp / amplitotal
          call ICTEXT(trim(TEX), 6, 33, 221)
@@ -193,7 +193,7 @@ contains
 
       end if
 
-      call SETTEXTSIZEFAC(1d0)
+      call SETTEXTSIZEFAC(1.0_dp)
    end subroutine textflowspecific
 
    subroutine update_turkin_modelspecific(Lf)
@@ -215,11 +215,11 @@ contains
       kxL = Lt - Lb + 1 ! nr of layers
 
       if (trim(md_specific) == 'splitter') then ! Model: Splitter plate
-         if (u1(Lt) >= 0d0 .and. Lf > lnxi) then ! Boundary: velocity inflow side
+         if (u1(Lt) >= 0.0_dp .and. Lf > lnxi) then ! Boundary: velocity inflow side
 
             ! Prepare z/interface coords at link position.
-            if (dnt <= 1d0 .and. Lf >= lnxi) then
-               zw1(1) = 0d0
+            if (dnt <= 1.0_dp .and. Lf >= lnxi) then
+               zw1(1) = 0.0_dp
                do L = Lb, Lt
                   zw1(L - Lb + 2) = min(hu(L), hu(Lt))
                end do
@@ -260,7 +260,7 @@ contains
       real(kind=dp), allocatable :: xz_copy(:)
       integer :: L, k1, k2, n, i, lunfil
 
-      if (t == 0d0) then
+      if (t == 0.0_dp) then
          if (allocated(uexa)) deallocate (uexa, zexa, xexa, iexa)
          allocate (uexa(ndx), zexa(ndx), xexa(ndx), iexa(ndx))
          xz_copy = xz(1:ndx)
@@ -272,15 +272,15 @@ contains
       deltax = dbdistance(xz(k1), yz(k1), xz(k2), yz(k2), jsferic, jasfer3D, dmiss)
       call equatorialexact(t, xz, uexa, zexa, ndx, deltax)
 
-      if (t == 0d0) then
+      if (t == 0.0_dp) then
          s1(1:ndx) = zexa(1:ndx); s0 = s1
          do L = 1, lnx
             k1 = ln(1, L); k2 = ln(2, L)
-            u1(L) = 0.5d0 * csu(L) * (uexa(k1) + uexa(k2)); u0 = u1
+            u1(L) = 0.5_dp * csu(L) * (uexa(k1) + uexa(k2)); u0 = u1
          end do
       end if
 
-      if (t == 18000d0) then
+      if (t == 18000.0_dp) then
          do n = 1, ndx
             i = iexa(n)
             if (n < 40) then
@@ -292,7 +292,7 @@ contains
 
       do L = 1, lnx
          k1 = ln(1, L); k2 = ln(2, L)
-         if (abs(xz(k1) - xz(k2)) < 180d0) then
+         if (abs(xz(k1) - xz(k2)) < 180.0_dp) then
             call movabs(xz(k1), zexa(k1))
             call lnabs(xz(k2), zexa(k2))
          end if
@@ -315,11 +315,11 @@ contains
       real(kind=dp) :: tt0, F, cforc, cfree, per, lam, omfree
       real(kind=dp) :: deltax, czf, reltim, relday, rnrel
 
-      Ue0 = 0d0
+      Ue0 = 0.0_dp
       g = ag
       h = abs(zkuni)
 
-      if (frcuni == 0d0) then
+      if (frcuni == 0.0_dp) then
          fr = 0
       else
          czf = h**0.1666666 / frcuni
@@ -980,7 +980,7 @@ contains
                   yL = crs(icrs)%path%yp(ip1)
                   yR = crs(icrs)%path%yp(ip1 + 1)
 
-                  alpha = 1d0 - crs(icrs)%path%wfp(i)
+                  alpha = 1.0_dp - crs(icrs)%path%wfp(i)
 
                   x1 = xL + alpha * (xR - xL)
                   y1 = yL + alpha * (yR - yL)
@@ -1030,7 +1030,7 @@ contains
             if (Lwriteheader) then
                Lwriteheader = .false.
                icount = 1
-               time2write = 0d0
+               time2write = 0.0_dp
             else
                icount = icount + 1
                time2write = time2write + ti_map

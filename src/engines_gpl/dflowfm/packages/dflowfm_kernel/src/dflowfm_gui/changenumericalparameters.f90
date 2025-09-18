@@ -31,9 +31,11 @@
 !
 
 module m_changenumericalparameters
+
    use m_iadvecini, only: iadvecini
    use m_confrm
 
+use precision, only: dp
    implicit none
 
 contains
@@ -259,7 +261,7 @@ contains
             call IFormgetDouble(2 * 21, Corioadamsbashfordfac)
             call IFormgetinteger(2 * 22, Newcorio)
 
-            epshs = 0.2d0 * epshu ! minimum waterdepth for setting cfu
+            epshs = 0.2_dp * epshu ! minimum waterdepth for setting cfu
             if (niadvec /= iadvec) then
                if (nfxw > 0) then
                   call confrm('If Fixedweirs present, please reinitialise the model', ja)

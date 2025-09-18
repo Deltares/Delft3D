@@ -54,7 +54,7 @@ module m_fixedweirs
    real(kind=dp), allocatable :: weirdte(:) ! loss coeff
    integer, allocatable :: iweirtxw(:) ! weir type
 
-   real(kind=dp) :: sillheightmin = 0.0d0 ! waqua dams with both sillheights > sillheightmin go to fixedweirs.pli
+   real(kind=dp) :: sillheightmin = 0.0_dp ! waqua dams with both sillheights > sillheightmin go to fixedweirs.pli
    ! the rest goes to
 contains
 

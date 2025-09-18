@@ -51,14 +51,14 @@ contains
 
       integer :: k
 
-      if (jsferic == 1 .and. xboundmax - xboundmin > 180d0) then
+      if (jsferic == 1 .and. xboundmax - xboundmin > 180.0_dp) then
          do k = 1, numk
-            if (xk(k) - 360d0 >= xboundmin) then
-               xk(k) = xk(k) - 360d0
+            if (xk(k) - 360.0_dp >= xboundmin) then
+               xk(k) = xk(k) - 360.0_dp
             end if
 
             if (xk(k) < xboundmin) then
-               xk(k) = xk(k) + 360d0
+               xk(k) = xk(k) + 360.0_dp
             end if
          end do
       end if

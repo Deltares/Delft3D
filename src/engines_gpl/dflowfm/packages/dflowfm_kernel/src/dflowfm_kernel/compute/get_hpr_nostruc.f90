@@ -53,7 +53,7 @@ contains
       hpr = hu(L)
       if (changeVelocityAtStructures) then
          if (bob(1, L) /= bob0(1, L) .or. bob(1, L) /= bob0(1, L)) then
-            if (u1(L) > 0d0) then
+            if (u1(L) > 0.0_dp) then
                ! In case of structure links Hu is the waterdepth at the crest. We want to use the waterdepth
                ! with respect to the channel bed level for a correct flow area of the channel
                hpr = hu(L) + bob(1, L) - bob0(1, L)

@@ -64,7 +64,7 @@ contains
       call SAVEgrd()
 
       call mess(LEVEL_DEBUG, 'DEREFINE BY: ', MFAC, NFAC)
-      call READYY('DEREFINE', 0d0)
+      call READYY('DEREFINE', 0.0_dp)
 
       XR = dmiss
       YR = dmiss
@@ -111,8 +111,8 @@ contains
 !     MC = INOW
 !     NC = JNOW
 
-      call READYY('DEREFINE', 1d0)
-      call READYY('DEREFINE', -1d0)
+      call READYY('DEREFINE', 1.0_dp)
+      call READYY('DEREFINE', -1.0_dp)
       deallocate (XR, YR)
       return
    end subroutine derefine

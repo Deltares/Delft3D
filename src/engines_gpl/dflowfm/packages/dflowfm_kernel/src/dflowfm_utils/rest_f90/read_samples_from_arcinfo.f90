@@ -34,6 +34,8 @@
 !! Samples are being stored in a global dataset of m_samples.
 module m_read_samples_from_arcinfo
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -59,11 +61,11 @@ contains
       integer :: i, j, istep, marc
       character(len=10) :: TEX
 
-      call READYY('Reading arcinfo file', 0d0)
+      call READYY('Reading arcinfo file', 0.0_dp)
       call oldfil(marc, filnam)
       call reaarc(marc, japrompt)
       call DOCLOSE(marc)
-      call READYY('Reading arcinfo file', 1d0)
+      call READYY('Reading arcinfo file', 1.0_dp)
 
       if (mca <= 0 .or. nca <= 0) then
          call message('No samples read from file ', filnam, ' ')
@@ -79,12 +81,12 @@ contains
       call INCREASEsam(ns + mca * nca)
 
       write (TEX, '(I10)') mca * nca
-      call READYY('Filtering '//trim(TEX)//' Samples Points', 0d0)
-      istep = max(int(mca / 100d0 + .5d0), 1)
+      call READYY('Filtering '//trim(TEX)//' Samples Points', 0.0_dp)
+      istep = max(int(mca / 100.0_dp + 0.5_dp), 1)
 ! SPvdP: j needs to be fastest running index
       do i = 1, mca
          if (mod(i, istep) == 0) then
-            call READYY('Filtering '//trim(TEX)//' Samples Points', min(1d0, dble(i) / mca))
+            call READYY('Filtering '//trim(TEX)//' Samples Points', min(1.0_dp, dble(i) / mca))
          end if
 
          do j = nca, 1, -1 ! SPvdP: first line needs to be nca'th row
@@ -96,7 +98,7 @@ contains
 !            endif
          end do
       end do
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
 !   mark samples as structured, and in supply block sizes
       MXSAM = nca ! j is fastest running index

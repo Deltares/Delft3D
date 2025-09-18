@@ -83,7 +83,7 @@ contains
                end if
             end do
             if (K3 == 3) then
-               K3 = 1d0 * K3
+               K3 = 1.0_dp * K3
             end if
 
             if (K3 == 1 .and. NN == 5) then

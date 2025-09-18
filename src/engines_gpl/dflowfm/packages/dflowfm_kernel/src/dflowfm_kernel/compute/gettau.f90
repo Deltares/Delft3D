@@ -74,17 +74,17 @@ contains
       real(kind=dp) :: cf, cfn, cz, frcn, ar, wa, ust, ust2, fw, z00 !< Local intermediate variables
       !
       ! Body
-      ustw2 = 0d0
-      czc = 0d0
-      cfn = 0d0
-      wa = 0d0
-      ust = 0d0
-      z00 = 0d0
+      ustw2 = 0.0_dp
+      czc = 0.0_dp
+      cfn = 0.0_dp
+      wa = 0.0_dp
+      ust = 0.0_dp
+      z00 = 0.0_dp
 
       do nn = 1, nd(n)%lnx
          LL = abs(nd(n)%ln(nn))
          frcn = frcu(LL)
-         if (frcn > 0d0 .and. hu(LL) > 0d0) then
+         if (frcn > 0.0_dp .and. hu(LL) > 0.0_dp) then
             cz = get_chezy(hu(LL), frcn, u1(LL), v(LL), ifrcutp(LL))
             cf = ag / (cz * cz)
             ar = au(LL) * dx(LL)
@@ -99,7 +99,7 @@ contains
             z00 = z00 + ar * z0ucur(LL) ! z0ucur, to avoid double counting
          end if
       end do
-      if (wa > 0d0) then
+      if (wa > 0.0_dp) then
          cfn = cfn / wa
          ust = ust / wa
          z00 = z00 / wa
@@ -110,7 +110,7 @@ contains
          czc = sqrt(ag / cfn)
       end if
       !
-      ust2 = 0d0
+      ust2 = 0.0_dp
       if (kmx == 0) then
          ust2 = cfn * (ucx(n) * ucx(n) + ucy(n) * ucy(n))
       else
@@ -120,7 +120,7 @@ contains
       if (jawaveswartdelwaq_par == WAVE_WAQ_SHEAR_STRESS_HYD) then
          taucurc = rhomean * ust2
       else if (jawaveSwartDelwaq_par == WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM) then
-         if (twav(n) > 1d-2) then
+         if (twav(n) > 1.0e-2_dp) then
             call Swart(twav(n), uorb(n), z00, fw, ustw2)
             ust2 = ust2 + ftauw * ustw2
          end if

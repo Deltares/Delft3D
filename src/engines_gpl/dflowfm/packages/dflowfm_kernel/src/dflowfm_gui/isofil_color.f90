@@ -106,7 +106,7 @@ contains
                      if (Z(J2) > ZNOW) then
                         DZN = ZNOW - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1
@@ -115,7 +115,7 @@ contains
                      if (Z(J2) > ZNEX) then
                         DZN = ZNEX - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1
@@ -125,7 +125,7 @@ contains
                      if (Z(J2) < ZNEX) then
                         DZN = ZNEX - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1
@@ -134,7 +134,7 @@ contains
                      if (Z(J2) < ZNOW) then
                         DZN = ZNOW - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1
@@ -147,7 +147,7 @@ contains
                      if (Z(J2) < ZNOW) then
                         DZN = ZNOW - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1
@@ -155,7 +155,7 @@ contains
                      else if (Z(J2) > ZNEX) then
                         DZN = ZNEX - Z(J1)
                         FRAC = DZN / DZ(J1)
-                        if (FRAC > 0d0 .and. FRAC <= 1d0) then
+                        if (FRAC > 0.0_dp .and. FRAC <= 1.0_dp) then
                            XH(IH) = X(J1) + FRAC * DX(J1)
                            YH(IH) = Y(J1) + FRAC * DY(J1)
                            IH = IH + 1

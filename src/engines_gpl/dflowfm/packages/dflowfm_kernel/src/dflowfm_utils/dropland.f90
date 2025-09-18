@@ -75,7 +75,7 @@ contains
                zk(k) = zk(k) + dropstep
                if (jaceneqtr == 2 .and. jased > 0 .and. jased < 4) then
                   do j = 1, mxgr
-                     grainlay(j, k) = max(0d0, grainlay(j, k) + dropstep / mxgr)
+                     grainlay(j, k) = max(0.0_dp, grainlay(j, k) + dropstep / mxgr)
                   end do
                end if
                call isocol(zk(k), ncol)
@@ -94,7 +94,7 @@ contains
                   zk(k) = zk(k) + dropstep
                   if (jaceneqtr == 2 .and. jased > 0) then
                      do j = 1, mxgr
-                        grainlay(j, k) = max(0d0, grainlay(j, k) + dropstep / mxgr)
+                        grainlay(j, k) = max(0.0_dp, grainlay(j, k) + dropstep / mxgr)
                      end do
                   end if
                   call isocol(zk(k), ncol)

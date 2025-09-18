@@ -70,7 +70,7 @@ contains
 
       if (IPNT_NUM > 0) then
          allocate (valobs(numobs + nummovobs, IPNT_NUM))
-         valobs = 0d0 ! should not be DMISS, since DMISS is used for global reduction in parallel computations
+         valobs = 0.0_dp ! should not be DMISS, since DMISS is used for global reduction in parallel computations
       end if
    end subroutine alloc_valobs
 
@@ -760,8 +760,8 @@ contains
       namobs(inew) = name_
       kobs(inew) = -999 ! Cell number is set elsewhere
       lobs(inew) = -999 ! Flow link number is set elsewhere
-      smxobs(inew) = -999d0 ! max waterlevel
-      cmxobs(inew) = -999d0 ! max velocity mag.
+      smxobs(inew) = -999.0_dp ! max waterlevel
+      cmxobs(inew) = -999.0_dp ! max velocity mag.
       locTpObs(inew) = loctype_
       if (present(iOP)) then
          obs2OP(inew) = iOP ! mapping from global obs index to local *.ini obs

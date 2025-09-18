@@ -66,7 +66,7 @@ contains
       real(kind=dp) :: ucinx, uciny
       integer :: nn12
 
-      Quk1 = 0d0
+      Quk1 = 0.0_dp
 
       k12 = ln(n12, LL)
       do La = 1, nd(k12)%lnx ! loop over all attached links
@@ -96,7 +96,7 @@ contains
                   end if
                end if
                if (LLL > 0) then ! incoming link
-                  ucin = -1d0 * ucin
+                  ucin = -1.0_dp * ucin
                end if
                Lkin = min(Lk - Lb2 + 1, Lt - Lb + 1) ! for fixed layers just add to top index
                Quk1(1, Lkin) = Quk1(1, Lkin) + qa(Lk) * ucin
