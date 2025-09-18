@@ -164,8 +164,4 @@ object WindowsTest : BuildType({
             reverse = false
         }
     }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Windows Server 2025")
-    }
 })
