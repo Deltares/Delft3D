@@ -145,6 +145,11 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     integer(pntrsize)                    , pointer :: zprecp
     integer(pntrsize)                    , pointer :: zevap
     integer(pntrsize)                    , pointer :: hydprs
+    integer(pntrsize)                    , pointer :: vicmud
+    integer(pntrsize)                    , pointer :: dudz
+    integer(pntrsize)                    , pointer :: dvdz
+    integer(pntrsize)                    , pointer :: kfsmin
+    integer(pntrsize)                    , pointer :: kfsmax
     integer(pntrsize)                    , pointer :: mnksrc
     integer(pntrsize)                    , pointer :: nambar
     integer(pntrsize)                    , pointer :: namcon
@@ -295,6 +300,11 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
     zprecp              => gdp%gdr_i_ch%zprecp
     zevap               => gdp%gdr_i_ch%zevap
     hydprs              => gdp%gdr_i_ch%hydprs
+   vicmud              => gdp%gdr_i_ch%vicmud
+    dudz                => gdp%gdr_i_ch%dudz
+    dvdz                => gdp%gdr_i_ch%dvdz
+    kfsmin              => gdp%gdr_i_ch%kfsmin
+    kfsmax              => gdp%gdr_i_ch%kfsmax
     mnksrc              => gdp%gdr_i_ch%mnksrc
     nambar              => gdp%gdr_i_ch%nambar
     namcon              => gdp%gdr_i_ch%namcon
@@ -455,7 +465,8 @@ subroutine wrh_main(lundia    ,error     ,selhis    ,grdang    ,dtsec     , &
                     & r(zwndsp) ,r(zwnddr) ,r(zairp)  ,wind      ,sferic    , &
                     & r(zprecp) ,r(zevap)  ,itdate    ,dtsec     ,irequest  , &
                     & fds       ,nostatto  ,nostatgl  ,order_sta ,ntruvto   , &
-                    & ntruvgl   ,order_tra ,nsluv     ,r(cbuv)   ,r(zwndcd) ,gdp       )
+                    & ntruvgl   ,order_tra ,nsluv     ,r(cbuv)   ,r(zwndcd) , &
+                    & i(kfsmin) ,i(kfsmax) ,r(vicmud) ,r(dudz)   ,r(dvdz)   ,gdp       )
           if (error) goto 9999
           !
           if (nsrc>0 .and. gdp%gdflwpar%flwoutput%hisdis) then

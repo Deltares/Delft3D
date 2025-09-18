@@ -11,10 +11,11 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                & rxx       ,rxy       ,kcs       ,kcu       ,kfu       ,kfv       , &
                & kfs       ,kspu      ,kadu      ,kadv      ,dfu       ,deltau    , &
                & tp        ,rlabda    ,cfurou    ,cfvrou    ,rttfu     , &
-               & r0        ,diapl     ,rnpl      ,taubpu    ,taubsu    , &
+               & vicmud    ,r0        ,diapl     ,rnpl      ,taubpu    ,taubsu    , &
                & windsu    ,patm      ,fcorio    ,ubrlsu    ,uwtypu    , &
                & hkru      ,pship     ,tgfsep    ,dteu      ,ua        , &
-               & ub        ,ustokes   ,mom_output,u1        ,s1        ,gdp       )
+               & ub        ,ustokes   ,mom_output,u1        ,s1        , &
+               & kfushr    ,kfvshr    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -95,6 +96,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     integer                      , pointer :: ibaroc
     logical                      , pointer :: cstbnd
     logical                      , pointer :: old_corio
+    logical                      , pointer :: stressStrainRelation
     character(8)                 , pointer :: dpsopt
     character(6)                 , pointer :: momsol
     logical                      , pointer :: slplim
@@ -102,6 +104,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)                     , pointer :: rhofrac
     real(fp)                     , pointer :: ag
     real(fp)                     , pointer :: vicmol
+    real(fp)                     , pointer :: vicThresh
     integer                      , pointer :: iro
     integer                      , pointer :: irov
     logical                      , pointer :: wind
@@ -149,6 +152,8 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     integer, dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)               :: kspu    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub, kmax)   , intent(in)  :: kadu    !  Description and declaration in esm_alloc_int.f90
     integer, dimension(gdp%d%nmlb:gdp%d%nmub, kmax)   , intent(in)  :: kadv    !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax) , intent(in)  :: kfushr    !  Description and declaration in esm_alloc_int.f90
+    integer, dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax) , intent(in)  :: kfvshr    !  Description and declaration in esm_alloc_int.f90
     real(fp)                                                        :: betac   !  Description and declaration in tricom.igs
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: deltau  !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub)                      :: dfu     !  Description and declaration in esm_alloc_real.f90
@@ -214,6 +219,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                :: ustokes !  Description and declaration in trisol.igs
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                :: v1      !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax+2)              :: vicuv   !  Description and declaration in esm_alloc_real.f90
+    real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)              :: vicmud  !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(gdp%d%nmlb:gdp%d%nmub, kmax, lstsci)        :: r0      !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                                       :: sig     !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(kmax)                                       :: thick   !  Description and declaration in esm_alloc_real.f90
@@ -229,6 +235,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     integer                    :: iada
     integer                    :: iadc
     integer                    :: icxy    ! MAX value of ICX and ICY
+    integer                    :: irobed  ! factor for mud layer ( 0 means no slip at bed)
     integer                    :: isrc
     integer                    :: idis
     integer                    :: k
@@ -259,6 +266,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)                   :: bdmwrp
     real(fp)                   :: bdmwrs
     real(fp)                   :: bi
+    real(fp)                   :: cbot
     real(fp)                   :: corioforce
     real(fp)                   :: cnurh
     real(fp)                   :: ddza
@@ -294,6 +302,8 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)                   :: umod
     real(fp)                   :: uuu
     real(fp)                   :: uweir
+    real(fp)                   :: vicd
+    real(fp)                   :: vicu
     real(fp)                   :: viz1
     real(fp)                   :: viz2
     real(fp)                   :: vvv
@@ -312,6 +322,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     ibaroc     => gdp%gdnumeco%ibaroc
     cstbnd     => gdp%gdnumeco%cstbnd
     old_corio  => gdp%gdnumeco%old_corio
+    stressStrainRelation => gdp%gdsedpar%stressStrainRelation
     dpsopt     => gdp%gdnumeco%dpsopt
     momsol     => gdp%gdnumeco%momsol
     slplim     => gdp%gdnumeco%slplim
@@ -319,6 +330,7 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
     rhofrac    => gdp%gdphysco%rhofrac
     ag         => gdp%gdphysco%ag
     vicmol     => gdp%gdphysco%vicmol
+    vicThresh  => gdp%gdsedpar%vicThresh
     iro        => gdp%gdphysco%iro
     irov       => gdp%gdphysco%irov
     wind       => gdp%gdprocs%wind
@@ -618,7 +630,19 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
              ddk(nm, 1)    = ddk(nm, 1) - qwind/rhow
           endif
           !
-          bdmwrp = h0i*taubpu(nm)/thick(kmax)
+          ! Slurry
+          !
+          if (stressStrainRelation) then
+             if (vicmud(nm,kmax) > victhresh) then
+                irobed = 0
+             else
+                irobed = 1
+             endif
+          else
+            irobed = 1
+          endif
+          cbot   = taubpu(nm) * real(irobed,fp)
+          bdmwrp = h0i*cbot/thick(kmax)
           bdmwrs = h0i*taubsu(nm)/thick(kmax)
           if (mom_output) then
              mom_m_bedforce(nm)      = mom_m_bedforce(nm) &
@@ -803,25 +827,53 @@ subroutine cucnp(dischy    ,icreep    ,dpdksi    ,s0        ,u0        , &
                 !
                 cnurh = h0i * h0i
                 !
-                ! viz1 calculation 
+                ! vicd calculation 
                 ! restriction is moved from TURCLO to here
+                ! defined at lower interface
                 !
-                viz1  = 0.25 * (2 + kfw*(1 - kfw)) * ap1             &
-                      & * (2.0*vicmol + redvic(vicww(nm , kdo), gdp) &
-                      &               + redvic(vicww(nmu, kdo), gdp))
+                ! In points with mud: no slip at the bed!
                 !
-                ! viz1 calculation 
+                vicd  = 0.25 * (2 + kfw*(1 - kfw)) * ap1              &
+                      & * (2.0*vicmol + redvic(vicww(nm , kdo), gdp)  &
+                      &               + redvic(vicww(nmu, kdo), gdp)) &
+                      & + 0.50 * (2 + kfw*(1 - kfw))*max(vicmud(nm ,kdo),vicmud(nmu, kdo))
+                !
+                ! vicu calculation 
                 ! restriction is moved from TURCLO to here
+                ! defined at upper interface
                 !
-                viz2 = 0.25 * (2 - kfw*(1 + kfw)) * ap2            &
+                ! For slurry:
+                if (k==kmax .and. irobed==0) then 
+                   kfw = 0
+                endif
+                !
+                vicu = 0.25 * (2 - kfw*(1 + kfw)) * ap2            &
                      & * (2.0*vicmol + redvic(vicww(nm , k), gdp)  &
-                     &               + redvic(vicww(nmu, k), gdp))
-                ddza = 2.0 * cnurh * viz1 / (tsg1*thick(k))
-                ddzc = 2.0 * cnurh * viz2 / (tsg2*thick(k))
+                     &               + redvic(vicww(nmu, k), gdp)) &
+                     & + 0.50 * (2 - kfw*(1 + kfw))*max(vicmud(nm ,k),vicmud(nmu, k))
+                !
+                ! upper bound for VICD and VICU
+                vicd = min(vicd, 100.0_fp)
+                vicu = min(vicu, 100.0_fp)
+                !
+                ddza = 2.0 * cnurh * vicd / (tsg1*thick(k))
+                ddzc = 2.0 * cnurh * vicu / (tsg2*thick(k))
                 !
                 ddza = iada * ddza
                 ddzc = iadc * ddzc
-                ddzb = -ddza - ddzc
+                !
+                if (k==kmax .and. irobed==0) then
+                   !
+                   ! No slip at the bed.
+                   ! Implicitly at the bed for no-slip condition
+                   ! change 25 april 2014
+                   !
+                   !  ddzb = -h0i*(3.*vicu + vicd)/(2.*thick(kmax))
+                   ddzb = -ddza-h0i*(2.*vicu )/(thick(kmax))                   
+                   ddzc = 0.0
+                else
+                   ddzb = -ddza - ddzc
+                endif
                 !
                 ! substitution in coefficients
                 !

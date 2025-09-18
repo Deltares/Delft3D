@@ -133,6 +133,9 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     integer(pntrsize)                    , pointer :: umnldf
     integer(pntrsize)                    , pointer :: uorb
     integer(pntrsize)                    , pointer :: v1
+    integer(pntrsize)                    , pointer :: vicmud
+    integer(pntrsize)                    , pointer :: dudz
+    integer(pntrsize)                    , pointer :: dvdz
     integer(pntrsize)                    , pointer :: vicuv
     integer(pntrsize)                    , pointer :: vicww
     integer(pntrsize)                    , pointer :: vmnldf
@@ -323,6 +326,9 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
     umnldf              => gdp%gdr_i_ch%umnldf
     uorb                => gdp%gdr_i_ch%uorb
     v1                  => gdp%gdr_i_ch%v1
+    vicmud              => gdp%gdr_i_ch%vicmud
+    dudz                => gdp%gdr_i_ch%dudz
+    dvdz                => gdp%gdr_i_ch%dvdz
     vicuv               => gdp%gdr_i_ch%vicuv
     vicww               => gdp%gdr_i_ch%vicww
     vmnldf              => gdp%gdr_i_ch%vmnldf
@@ -592,7 +598,8 @@ subroutine wrm_main(lundia    ,error     ,selmap    ,grdang    ,dtsec     , &
                     & r(cvalv0) ,r(cfurou) ,r(cfvrou) ,rouflo    ,r(patm)   , &
                     & r(z0ucur) ,r(z0vcur) ,r(z0urou) ,r(z0vrou) ,ktemp     , &
                     & r(precip) ,r(evap)   ,irequest  ,fds       ,iarrc     , &
-                    & mf        ,ml        ,nf        ,nl        ,gdp       )
+                    & mf        ,ml        ,nf        ,nl        ,r(vicmud) , &
+                    & r(dudz)   ,r(dvdz)   ,gdp       )
           if (error) goto 9999
           !
           if (lsedtot>0 .or. lfbedfrm .or. lfsdu) then

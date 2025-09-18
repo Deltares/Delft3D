@@ -190,7 +190,20 @@ integer, parameter, public :: WS_RP_VMEAN = 20 ! Depth-averaged flow velocity co
 integer, parameter, public :: WS_RP_CHEZY = 21 ! Chezy roughness
 integer, parameter, public :: WS_RP_SHTUR = 22 ! Turbulent shear stress [N/m2]
 integer, parameter, public :: WS_RP_CCLAY = 23 ! Clay concenrtration [kg/m3]
-integer, parameter, public :: WS_MAX_RP   = 23
+integer, parameter, public :: WS_RP_CTOTA = 24 ! CTOT in cell Above
+integer, parameter, public :: WS_RP_SILIN = 25
+integer, parameter, public :: WS_RP_RHOCF = 26
+integer, parameter, public :: WS_RP_CFVIC = 27
+integer, parameter, public :: WS_RP_PHICL = 28
+integer, parameter, public :: WS_RP_PHISI = 29
+integer, parameter, public :: WS_RP_PHISA = 30
+integer, parameter, public :: WS_RP_SHR   = 31
+integer, parameter, public :: WS_RP_CLYINT= 32
+integer, parameter, public :: WS_RP_SLTINT= 33
+integer, parameter, public :: WS_RP_SNDINT= 34
+integer, parameter, public :: WS_RP_FOROPT= 35
+integer, parameter, public :: WS_RP_PHISIM= 36 
+integer, parameter, public :: WS_MAX_RP   = 36
 !
 integer, parameter, public :: WS_IP_NM    =  1
 integer, parameter, public :: WS_IP_N     =  2
@@ -218,6 +231,11 @@ integer,parameter, public  :: MOR_STAT_CUM = 16
 
 integer,parameter,public   :: MOR_STAT_TIME= 1
 integer,parameter,public   :: MOR_STAT_BODS= 2
+
+integer,parameter, public  :: RHEOLOGY_DEFAULT               = -1
+integer,parameter, public  :: RHEOLOGY_WINTERWERP_KRANENBURG = 0
+integer,parameter, public  :: RHEOLOGY_JACOBS_VANKESTEREN    = 1
+integer,parameter, public  :: RHEOLOGY_THOMAS                = 2
 !
 ! Soulsby & Clarke skin friction options
 !
@@ -591,6 +609,68 @@ type sedpar_type
     real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
     real(fp) :: version   !  interpreter version
     !
+    ! Slurry:
+    real(fp) :: pow_bng_mix   !  power in yield stress Bingham viscosity mixture, Uittenbogaard and Talmon (2014)
+    real(fp) :: pow_bng_silt  !  power in yield stress Bingham viscosity fines,   Uittenbogaard and Talmon (2014)
+    real(fp) :: pow_rich_zaki !  power in fall velocity sand (hindered settling)
+    real(fp) :: flcnf
+    real(fp) :: flcnf_floc
+    real(fp) :: flck2         !  k2    parameter winterwerp 2004
+    real(fp) :: flck3         !  k3    parameter winterwerp 2004
+    real(fp) :: flck4         !  k4    parameter winterwerp 2004
+    real(fp) :: flcd0         !  d0    parameter winterwerp 2004
+    real(fp) :: flcr          !  r     parameter winterwerp 2004
+    real(fp) :: flwsmin       !  wsmin parameter winterwerp 2004
+    real(fp) :: erosk1        !  k1 proportionality coefficient for BED erosion coefficient M formulation
+    real(fp) :: erosk2        !  k2 proportionality coefficient for crtical shear stress for erosion of the bed.
+    real(fp) :: erosns        !  sand content             Schelde critical shear stress formulation
+    real(fp) :: eroscv        !  consolidation coeficient Schelde critical shear stress formulation
+    real(fp) :: eroscu        !  undrained schear trength Schelde critical shear stress formulation
+    real(fp) :: erosd50       !  mean diameter            Schelde critical shear stress formulation
+    real(fp) :: cons_kk       !  coefficient for permeability used in consolidation model
+    real(fp) :: cons_ksig     !  coefficient for diffusion used in consolidation model
+    real(fp) :: cons_eta      !  coefficient for transition between settling velocity and consolidation velocity
+    real(fp) :: flcnf_cons    !  fractal dimension for consolidationmodel
+    real(fp) :: bin_cvisco    !  proportionality coefficient for Bingham stress depending on Volume concentration
+    real(fp) :: bin_cnvisco   !  power of volume concentration yielding particle-particle viscosity
+    real(fp) :: bin_cyield    !  Bingham yield stress
+    real(fp) :: bin_abingh    !  relaxation coefficient for equivalent viscosity in Bingham model
+    real(fp) :: nstress_intfc !  vertical normal stress criterion for internal erosion
+    real(fp) :: erosk1_int    !  k1 proportionality coefficient for INTERNAL erosion coefficient M formulation
+    real(fp) :: erosk2_int    !  k2 proportionality coefficient for crtical shear stress for INTERNAL erosion.
+    real(fp) :: xme_int       !  Erosion coefficient for INTERNAL erosion.
+    real(fp) :: shbotmin      !  minimum height for the bottom layers (sum of all bottom layers)
+    real(fp) :: sdzbot        !  layer thickness at bed for sediment transport routine
+    real(fp) :: sdzintfc      !  layer thickness ot the interface
+    real(fp) :: sedcint       !  Sediment concentration at the interface (around which the vertical grid is constructed)
+    real(fp) :: power         !  power dependent on fractal dimension floc
+    real(fp) :: vicThresh     !  Threshold value for vicmud at the bed to switch on no slip condition
+    !
+    ! Rheology
+    ! M1: Winterwerp_Kranenburg
+    ! M2: Jacobs_vanKesteren
+    ! M3: Thomas
+    !
+    real(fp) :: rheo_phisim  ! M1, M2, M3
+    real(fp) :: rheo_ayield  ! M1, M2, M3
+    real(fp) :: rheo_powyie  !     M2, M3
+    real(fp) :: rheo_yieldk  !         M3
+    real(fp) :: rheo_frcdim  ! M1
+    real(fp) :: rheo_bety    ! M1, M2
+    real(fp) :: rheo_watmu   ! M1, M2, M3
+    real(fp) :: rheo_avic    ! M1, M2
+    real(fp) :: rheo_bvic    !         M3
+    real(fp) :: rheo_visck   !         M3
+    real(fp) :: rheo_powvic  !     M2
+    real(fp) :: rheo_powa    ! M1
+    real(fp) :: rheo_betv    ! M1, M2
+    real(fp) :: rheo_shrco   ! M1, M2, M3
+    !
+    real(fp) :: SluSettParam1 !  coefficient used to compute hindered settling in slurry
+    real(fp) :: SluSettParam2 !  coefficient used to compute hindered settling in slurry
+    real(fp) :: Shearsettle_w_opt !  coefficient used to choose the correct option
+
+    !
     ! reals
     !
     !
@@ -603,6 +683,7 @@ type sedpar_type
     integer  :: sc_mudfac      !  formulation used for determining bed roughness length for Soulsby & Clarke (2005): SC_MUDFRAC, or SC_MUDTHC
     integer  :: max_mud_sedtyp !  largest sediment type associated with mud
     integer  :: min_dxx_sedtyp !  smallest sediment type included in computation of characteristic sediment diameters
+    integer  :: rheologymodel    ! Enumerated values: Winterwerp_Kranenburg, Jacobs_vanKesteren, Thomas
     !
     ! pointers
     !
@@ -637,6 +718,16 @@ type sedpar_type
     real(fp)      , dimension(:)    , pointer :: mudcnt     !  mud content / mud fraction field (non-zero only if mud
                                                             !  is not included simulation)
     real(fp)      , dimension(:)    , pointer :: pmcrit     !  Critical mud fraction for non-cohesive behaviour
+    real(fp)      , dimension(:,:)  , pointer :: rhocf      !  Density(nm,k)   of carrier fluid (only when carrier fluid /= water)
+    real(fp)      , dimension(:,:)  , pointer :: cfvic      !  Apparent viscosity(nm,k) of carrier fluid (only when carrier fluid /= water)
+    real(fp)      , dimension(:,:)  , pointer :: cfmu       !  Viscosity(nm,k) of carrier fluid (only when carrier fluid /= water)
+    real(fp)      , dimension(:,:)  , pointer :: xmu        !  Viscosity(nm,k) of mixture
+    real(fp)      , dimension(:,:)  , pointer :: cfty       !  Yield stress(nm,k) carrierfluid
+    real(fp)      , dimension(:,:)  , pointer :: cftau      !  Shear stress(nm,k) carrierfluid
+    real(fp)      , dimension(:,:)  , pointer :: tyield     !  Yield stress(nm,k) mixture
+    real(fp)      , dimension(:,:)  , pointer :: taubh      !  Shear stress(nm,k) mixture
+    real(fp)      , dimension(:,:)  , pointer :: phiclay    !  Volume concentration(nm,k) of all summed cohesive           fractions
+    real(fp)      , dimension(:,:)  , pointer :: phisand    !  Volume concentration(nm,k) of all summed non-cohesive huge  fractions
     integer       , dimension(:)    , pointer :: nseddia    !  Number of characteristic sediment diameters
     integer       , dimension(:)    , pointer :: sedtyp     !  Sediment type: SEDTYP_CLAY, SEDTYP_SILT, SEDTYP_SAND, SEDTYP_GRAVEL
     integer       , dimension(:)    , pointer :: tratyp     !  Transport method type: TRA_BEDLOAD, TRA_ADVDIFF, TRA_COMBINE
@@ -654,6 +745,13 @@ type sedpar_type
     !
     logical :: anymud     ! Flag to indicate whether a mud fraction is included in the simulation.
     logical :: bsskin     ! Flag to indicate whether a bed stress should be computed according to Soulsby 2004
+    logical :: falflc               ! Flag to indicate whether the fall velocity is computed according to winterwerp 2004 or not
+    logical :: eroschel             ! Flag to indicate whether the erosion parameters are computed following Winterwerp and van Kesteren 2004 or not
+    logical :: cons_mud             ! Flag to indicate whether consolidation of mud should be taken following Winterwerp and van Kesteren 2004 or not
+    logical :: stressStrainRelation ! Flag to indicate whether a non-Newtonina rheological model should be used. This flag replaces the bingham flag
+    logical :: ero_intfc            ! Flag to indicate whether erosion should occur at the interface defined by conc_intfc
+    logical :: shearSettling        ! Flag to indicate whether the fall velocity of sand is computed according to the shear settling formulation (dependent on mud concentration)
+    logical :: vmudToVicuv          ! True: Add min(vicmud,cellsize) to vicuv, only when stressStrainRelation = true
     !
     ! characters
     !
@@ -1262,10 +1360,66 @@ subroutine nullsedpar(sedpar)
     !
     sedpar%anymud    = .false.
     sedpar%bsskin    = .false.
+    sedpar%rheologymodel = -1
     !
     sedpar%flsdia   = ' '
     sedpar%flsmdc   = ' '
     sedpar%flspmc   = ' '
+    sedpar%version       = 2.0_fp
+    sedpar%flcnf         = 0.0_fp
+    sedpar%pow_bng_mix   = 0.0_fp
+    sedpar%pow_bng_silt  = 0.0_fp
+    sedpar%pow_rich_zaki = 0.0_fp
+    sedpar%flcnf_floc    = 0.0_fp
+    sedpar%flck2         = 0.0_fp
+    sedpar%flck3         = 0.0_fp
+    sedpar%flck4         = 0.0_fp
+    sedpar%flcd0         = 0.0_fp
+    sedpar%flcr          = 0.0_fp
+    sedpar%flwsmin       = 0.0_fp
+    sedpar%erosk1        = 0.0_fp
+    sedpar%erosk2        = 0.0_fp
+    sedpar%erosns        = 0.0_fp
+    sedpar%eroscv        = 0.0_fp
+    sedpar%eroscu        = 0.0_fp
+    sedpar%erosd50       = 0.0_fp
+    sedpar%cons_kk       = 0.0_fp
+    sedpar%cons_ksig     = 0.0_fp
+    sedpar%cons_eta      = 0.0_fp
+    sedpar%flcnf_cons    = 0.0_fp
+    sedpar%bin_cvisco    = 0.0_fp
+    sedpar%bin_cnvisco   = 0.0_fp
+    sedpar%bin_cyield    = 0.0_fp
+    sedpar%bin_abingh    = 0.0_fp
+    sedpar%nstress_intfc = 0.0_fp
+    sedpar%erosk1_int    = 0.0_fp
+    sedpar%erosk2_int    = 0.0_fp
+    sedpar%xme_int       = 0.0_fp
+    sedpar%version       = 0.0_fp
+    sedpar%shbotmin      = 0.0_fp
+    sedpar%sdzbot        = 0.0_fp
+    sedpar%sdzintfc      = 0.0_fp
+    sedpar%sedcint       = 0.0_fp
+    sedpar%power         = 0.0_fp
+    sedpar%vicThresh     = 0.0_fp
+    sedpar%SluSettParam1 = 0.0_fp
+    sedpar%SluSettParam2 = 0.0_fp
+    sedpar%Shearsettle_w_opt = 0.0_fp
+    !
+    sedpar%rheo_phisim   = 0.0_fp
+    sedpar%rheo_ayield   = 0.0_fp
+    sedpar%rheo_powyie   = 0.0_fp
+    sedpar%rheo_yieldk   = 0.0_fp
+    sedpar%rheo_frcdim   = 0.0_fp
+    sedpar%rheo_bety     = 0.0_fp
+    sedpar%rheo_watmu    = 0.0_fp
+    sedpar%rheo_avic     = 0.0_fp
+    sedpar%rheo_bvic     = 0.0_fp
+    sedpar%rheo_visck    = 0.0_fp
+    sedpar%rheo_powvic   = 0.0_fp
+    sedpar%rheo_powa     = 0.0_fp
+    sedpar%rheo_betv     = 0.0_fp
+    sedpar%rheo_shrco    = 0.0_fp
     !
     nullify(sedpar%sedblock)
     !
@@ -1292,6 +1446,16 @@ subroutine nullsedpar(sedpar)
     nullify(sedpar%mudcnt)
     nullify(sedpar%pmcrit)
     nullify(sedpar%sedtrcfac)
+    nullify(sedpar%rhocf)
+    nullify(sedpar%cfvic)
+    nullify(sedpar%cfmu)
+    nullify(sedpar%xmu)
+    nullify(sedpar%cfty)
+    nullify(sedpar%cftau)
+    nullify(sedpar%tyield)
+    nullify(sedpar%taubh)
+    nullify(sedpar%phiclay)
+    nullify(sedpar%phisand)
     !
     nullify(sedpar%nseddia)
     nullify(sedpar%sedtyp)
@@ -1344,6 +1508,16 @@ subroutine clrsedpar(istat     ,sedpar  )
     if (associated(sedpar%tcguni))     deallocate(sedpar%tcguni,     STAT = istat)
     if (associated(sedpar%mudcnt))     deallocate(sedpar%mudcnt,     STAT = istat)
     if (associated(sedpar%pmcrit))     deallocate(sedpar%pmcrit,     STAT = istat)
+    if (associated(sedpar%rhocf))      deallocate(sedpar%rhocf,      STAT = istat)
+    if (associated(sedpar%cfvic))      deallocate(sedpar%cfvic,      STAT = istat)
+    if (associated(sedpar%cfmu))       deallocate(sedpar%cfmu,       STAT = istat)
+    if (associated(sedpar%xmu))        deallocate(sedpar%xmu,        STAT = istat)
+    if (associated(sedpar%cfty))       deallocate(sedpar%cfty,       STAT = istat)
+    if (associated(sedpar%cftau))      deallocate(sedpar%cftau,      STAT = istat)
+    if (associated(sedpar%tyield))     deallocate(sedpar%tyield,     STAT = istat)
+    if (associated(sedpar%taubh))      deallocate(sedpar%taubh,      STAT = istat)
+    if (associated(sedpar%phiclay))    deallocate(sedpar%phiclay,    STAT = istat)
+    if (associated(sedpar%phisand))    deallocate(sedpar%phisand,    STAT = istat)
     !
     if (associated(sedpar%nseddia))    deallocate(sedpar%nseddia,    STAT = istat)
     if (associated(sedpar%sedtyp))     deallocate(sedpar%sedtyp,     STAT = istat)

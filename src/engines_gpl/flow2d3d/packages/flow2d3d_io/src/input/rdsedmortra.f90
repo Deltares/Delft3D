@@ -81,13 +81,16 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     logical                                  :: cmpupdall
     logical                                  :: cmpupdany
     integer                                  :: i
+    integer                                  :: istat
     real(fp)                                 :: fwfacmor
     character(256)                           :: filmor
     character(256)                           :: filsed
+    character(256)                           :: filslu
     character(256)                           :: filtrn
     character(256)                           :: string
     type(tree_data)               , pointer  :: mor_ptr
     type(tree_data)               , pointer  :: sed_ptr
+    type(tree_data)               , pointer  :: slu_ptr
     integer, dimension(2,NPARDEF)            :: ipardef
     real(fp), dimension(NPARDEF)             :: rpardef
 !
@@ -127,12 +130,38 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     !
     call tree_get_node_by_name( gdp%input_tree, 'Sediment Input', sed_ptr )
     !
+    ! Read name of slurry input file
+    !
+    filslu = ' '
+    call prop_get_string(gdp%mdfile_ptr, '*', 'Filslu', filslu)
+    !
+    ! Create slurry branch in input tree
+    !
+    call tree_create_node(gdp%input_tree, 'Slurry Input', slu_ptr )
+    call tree_put_data(slu_ptr, transfer(trim(filslu),node_value), 'STRING' )
+    !
+    ! Put slu-file in input tree
+    !
+    call prop_file('ini', trim(filslu), slu_ptr, istat)
+    if (istat /= 0) then
+       select case (istat)
+       case(1)
+          call write_error(FILE_NOT_FOUND//trim(filslu), unit=lundia)
+       case(3)
+          call write_error(PREMATURE_EOF//trim(filslu), unit=lundia)
+       case default
+          call write_error(FILE_READ_ERROR//trim(filslu), unit=lundia)
+       endselect
+       error = .true.
+       return
+    endif
+    !
     ! Read data from that file
     !
     call rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              & lsedtot   ,lstsci    ,ltur      ,namcon    ,iopsus    , &
-             & gdp%d%nmlb,gdp%d%nmub,filsed    ,sed_ptr   , &
-             & gdp%gdsedpar,gdp%gdtrapar, gdp%griddim)
+             & gdp%d%nmlb,gdp%d%nmub,gdp%d%kmax,filsed    ,sed_ptr   , &
+             & slu_ptr   ,gdp%gdsedpar,gdp%gdtrapar, gdp%griddim)
     endif
     if (.not.error) then
     !
@@ -223,7 +252,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        ! Echo sediment and transport parameters
        !
        call echosed(lundia    ,error     ,lsed      ,lsedtot   , &
-                  & iopsus    ,gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd)
+                  & iopsus    ,1000.0_fp, 9.81_fp, gdp%gdsedpar, gdp%gdtrapar, gdp%gdmorpar%cmpupd)
     endif
     if (.not.error) then
        !

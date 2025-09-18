@@ -13,7 +13,8 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
                 & cvalv0    ,cfurou    ,cfvrou    ,rouflo    ,patm      , &
                 & z0ucur    ,z0vcur    ,z0urou    ,z0vrou    ,ktemp     , &
                 & precip    ,evap      ,irequest  ,fds       ,iarrc     , &
-                & mf        ,ml        ,nf        ,nl        ,gdp       )
+                & mf        ,ml        ,nf        ,nl        ,vicmud    , &
+                & dudz      ,dvdz      ,gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -60,6 +61,7 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
     use globaldata
     use wrtarray, only: wrtarray_nm, wrtarray_nm_2d, wrtarray_nmk, wrtarray_nmkl, wrtarray_nmkli, wrtarray_nmkl_ptr, wrtvar
     use netcdf
+    use morphology_data_module
     !
     implicit none
     !
@@ -99,6 +101,13 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
     real(fp) , dimension(:)         , pointer :: tairarr
     real(fp) , dimension(:)         , pointer :: clouarr
     real(fp) , dimension(:)         , pointer :: qmis_out
+    real(fp) , dimension(:,:)       , pointer :: cfvic
+    real(fp) , dimension(:,:)       , pointer :: cfmu
+    real(fp) , dimension(:,:)       , pointer :: xmu
+    real(fp) , dimension(:,:)       , pointer :: cfty
+    real(fp) , dimension(:,:)       , pointer :: cftau
+    real(fp) , dimension(:,:)       , pointer :: tyield
+    real(fp) , dimension(:,:)       , pointer :: taubh
     real(fp), dimension(:,:,:)      , pointer :: disnf
     real(fp), dimension(:,:,:)      , pointer :: disnf_intake
     real(fp), dimension(:,:,:,:)    , pointer :: sournf
@@ -107,7 +116,8 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
     logical                         , pointer :: tair_file
     logical                         , pointer :: clou_file
     logical                         , pointer :: prcp_file
-    logical                         , pointer :: free_convec    
+    logical                         , pointer :: free_convec
+    logical                         , pointer :: stressStrainRelation
     type (datagroup)                , pointer :: group1
     type (datagroup)                , pointer :: group3
     type (flwoutputtype)            , pointer :: flwoutput
@@ -160,6 +170,9 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
     real(fp)      , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub)               , intent(in)  :: cvalv0      !  Description and declaration in esm_alloc_real.f90
     real(fp)      , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax)       , intent(in)  :: dicww       !  Description and declaration in esm_alloc_real.f90
     real(fp)      , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax)       , intent(in)  :: rich        !  Description and declaration in esm_alloc_real.f90
+    real(fp)      , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax)       , intent(in)  :: vicmud      !  Description and declaration in esm_alloc_real.f90
+    real(fp)      , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax)       , intent(in)  :: dudz        !  Description and declaration in esm_alloc_real.f90
+    real(fp)      , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax)       , intent(in)  :: dvdz        !  Description and declaration in esm_alloc_real.f90
     real(fp)      , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax)       , intent(in)  :: vicww       !  Description and declaration in esm_alloc_real.f90
     real(fp)      , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax)       , intent(in)  :: w1          !  Description and declaration in esm_alloc_real.f90
     real(fp)      , dimension(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, 0:kmax, ltur) , intent(in)  :: rtur1       !  Description and declaration in esm_alloc_real.f90
@@ -290,11 +303,19 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
     rhumarr        => gdp%gdheat%rhumarr
     tairarr        => gdp%gdheat%tairarr
     clouarr        => gdp%gdheat%clouarr
+    cfvic          => gdp%gdsedpar%cfvic
+    cfmu           => gdp%gdsedpar%cfmu
+    xmu            => gdp%gdsedpar%xmu
+    cfty           => gdp%gdsedpar%cfty
+    cftau          => gdp%gdsedpar%cftau
+    tyield         => gdp%gdsedpar%tyield
+    taubh          => gdp%gdsedpar%taubh
     rhum_file      => gdp%gdheat%rhum_file
     tair_file      => gdp%gdheat%tair_file
     clou_file      => gdp%gdheat%clou_file
     prcp_file      => gdp%gdheat%prcp_file
     free_convec    => gdp%gdheat%free_convec
+    stressStrainRelation => gdp%gdsedpar%stressStrainRelation
     !
     ! Initialize local variables
     !
@@ -449,6 +470,18 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
        endif
        if (index(selmap(2:2), 'Y')>0 .and. zmodel) then
           call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'HYDPRES', ' ', io_prec          , 3, dimids=(/iddim_n, iddim_m, iddim_kmaxout_restr/), longname='Non-hydrostatic pressure at each layer in zeta point', unit='N/m2', acl='z')
+       endif
+       call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'VICMUD', ' ', IO_REAL4         , 3, dimids=(/iddim_n, iddim_m, iddim_kmaxout/), longname='Apparent viscosity of mixture', unit='m2/s', acl='z')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'dudz', ' ', IO_REAL4         , 3, dimids=(/iddim_n, iddim_m, iddim_kmaxout/), longname='Vertical gradient of u comp. at layer interface dudz', unit='m/s/m', acl='z')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'dvdz', ' ', IO_REAL4         , 3, dimids=(/iddim_n, iddim_m, iddim_kmaxout/), longname='Vertical gradient of v comp. at layer interface dvdz', unit='m/s/m', acl='z')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'XMU', ' ', IO_REAL4         , 3, dimids=(/iddim_n, iddim_m, iddim_kmax/), longname='Viscosity of mixture', unit='m2/s', acl='z')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'TYIELD', ' ', IO_REAL4         , 3, dimids=(/iddim_n, iddim_m, iddim_kmax/), longname='Yield stress of mixture', unit='m2/s', acl='z')
+       call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'TAUBH', ' ', IO_REAL4         , 3, dimids=(/iddim_n, iddim_m, iddim_kmax/), longname='Shear stress of mixture', unit='m2/s', acl='z')
+       if (stressStrainRelation) then
+          call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'CFVIC', ' ', IO_REAL4         , 3, dimids=(/iddim_n, iddim_m, iddim_kmax/), longname='Apparent viscosity of carrier fluid', unit='m2/s', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'CFMU', ' ', IO_REAL4         , 3, dimids=(/iddim_n, iddim_m, iddim_kmax/), longname='Viscosity of carrier fluid', unit='m2/s', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'CFTY', ' ', IO_REAL4         , 3, dimids=(/iddim_n, iddim_m, iddim_kmax/), longname='Yield stress of carrier fluid', unit='m2/s', acl='z')
+          call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'CFTAU', ' ', IO_REAL4         , 3, dimids=(/iddim_n, iddim_m, iddim_kmax/), longname='Shear stress of carrier fluid', unit='m2/s', acl='z')
        endif
        if (flwoutput%air) then
           call addelm(gdp, lundia, FILOUT_MAP, grnam3, 'WINDU', ' ', io_prec            , 2, dimids=(/iddim_n, iddim_m/), longname='Wind speed in x-direction (zeta point)', unit='m/s', acl='z')
@@ -1249,6 +1282,163 @@ subroutine wrtmap(lundia    ,error     ,filename  ,selmap    ,itmapc    , &
                         & nf, nl, mf, ml, iarrc, gdp, &
                         & 1, kmax, ierror, lundia, p1, 'HYDPRES', &
                         & smlay_restr, kmaxout_restr, kfsmin, kfsmax)
+          if (ierror /= 0) goto 9999
+       endif
+       !
+       ! element 'VICMUD'
+       !
+       call wrtarray_nmk(fds, filename, filetype, grnam3, celidt, &
+                     & nf, nl, mf, ml, iarrc, gdp, &
+                     & 0, kmax, ierror, lundia, vicmud, 'VICMUD', &
+                     & smlay, kmaxout, kfsmin, kfsmax)
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'dudz'
+       !
+       call wrtarray_nmk(fds, filename, filetype, grnam3, celidt, &
+                     & nf, nl, mf, ml, iarrc, gdp, &
+                     & 0, kmax, ierror, lundia, dudz, 'dudz', &
+                     & smlay, kmaxout, kfsmin, kfsmax)
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'dvdz'
+       !
+       call wrtarray_nmk(fds, filename, filetype, grnam3, celidt, &
+                     & nf, nl, mf, ml, iarrc, gdp, &
+                     & 0, kmax, ierror, lundia, dvdz, 'dvdz', &
+                     & smlay, kmaxout, kfsmin, kfsmax)
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'XMU'
+       !
+       allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax) )
+       rbuff3 = -9999.0_fp
+       do m = 1, mmax
+          do n = 1, nmaxus
+             call n_and_m_to_nm(n, m, nm, gdp)
+             do k = 1, kmax
+                rbuff3(n, m, k) = xmu(nm, k)
+             enddo
+          enddo
+       enddo
+       call wrtarray_nmk(fds, filename, filetype, grnam3, celidt, &
+                     & nf, nl, mf, ml, iarrc, gdp, &
+                     & 1, kmax, ierror, lundia, rbuff3, 'XMU')
+       deallocate(rbuff3)
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'TYIELD'
+       !
+       allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax) )
+       rbuff3 = -9999.0_fp
+       do m = 1, mmax
+          do n = 1, nmaxus
+             call n_and_m_to_nm(n, m, nm, gdp)
+             do k = 1, kmax
+                rbuff3(n, m, k) = tyield(nm, k)
+                !write(22,*)tyield(nm, k)
+             enddo
+          enddo
+       enddo
+       call wrtarray_nmk(fds, filename, filetype, grnam3, celidt, &
+                     & nf, nl, mf, ml, iarrc, gdp, &
+                     & 1, kmax, ierror, lundia, rbuff3, 'TYIELD')
+       deallocate(rbuff3)
+       if (ierror /= 0) goto 9999
+       !
+       ! element 'TAUBH'
+       !
+       allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax) )
+       rbuff3 = -9999.0_fp
+       do m = 1, mmax
+          do n = 1, nmaxus
+             call n_and_m_to_nm(n, m, nm, gdp)
+             do k = 1, kmax
+                rbuff3(n, m, k) = taubh(nm, k)
+             enddo
+          enddo
+       enddo
+       call wrtarray_nmk(fds, filename, filetype, grnam3, celidt, &
+                     & nf, nl, mf, ml, iarrc, gdp, &
+                     & 1, kmax, ierror, lundia, rbuff3, 'TAUBH')
+       deallocate(rbuff3)
+       if (ierror /= 0) goto 9999
+       !
+       ! Carrier Fluid parameters
+       !
+       if (stressStrainRelation) then
+          !
+          ! element 'CFVIC'
+          !
+          allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax) )
+          rbuff3 = -9999.0_fp
+          do m = 1, mmax
+             do n = 1, nmaxus
+                call n_and_m_to_nm(n, m, nm, gdp)
+                do k = 1, kmax
+                   rbuff3(n, m, k) = cfvic(nm, k)
+                enddo
+             enddo
+          enddo
+          call wrtarray_nmk(fds, filename, filetype, grnam3, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, &
+                        & 1, kmax, ierror, lundia, rbuff3, 'CFVIC')
+          deallocate(rbuff3)
+          if (ierror /= 0) goto 9999
+          !
+          ! element 'CFMU'
+          !
+          allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax) )
+          rbuff3 = -9999.0_fp
+          do m = 1, mmax
+             do n = 1, nmaxus
+                call n_and_m_to_nm(n, m, nm, gdp)
+                do k = 1, kmax
+                   rbuff3(n, m, k) = cfmu(nm, k)
+                enddo
+             enddo
+          enddo
+          call wrtarray_nmk(fds, filename, filetype, grnam3, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, &
+                        & 1, kmax, ierror, lundia, rbuff3, 'CFMU')
+          deallocate(rbuff3)
+          if (ierror /= 0) goto 9999
+          !
+          ! element 'CFTY'
+          !
+          allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax) )
+          rbuff3 = -9999.0_fp
+          do m = 1, mmax
+             do n = 1, nmaxus
+                call n_and_m_to_nm(n, m, nm, gdp)
+                do k = 1, kmax
+                   rbuff3(n, m, k) = cfty(nm, k)
+                   !write(55,*)cfty(nm, k)
+                enddo
+             enddo
+          enddo
+          call wrtarray_nmk(fds, filename, filetype, grnam3, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, &
+                        & 1, kmax, ierror, lundia, rbuff3, 'CFTY')
+          deallocate(rbuff3)
+          if (ierror /= 0) goto 9999
+          !
+          ! element 'CFTAU'
+          !
+          allocate( rbuff3(gdp%d%nlb:gdp%d%nub, gdp%d%mlb:gdp%d%mub, kmax) )
+          rbuff3 = -9999.0_fp
+          do m = 1, mmax
+             do n = 1, nmaxus
+                call n_and_m_to_nm(n, m, nm, gdp)
+                do k = 1, kmax
+                   rbuff3(n, m, k) = cftau(nm, k)
+                enddo
+             enddo
+          enddo
+          call wrtarray_nmk(fds, filename, filetype, grnam3, celidt, &
+                        & nf, nl, mf, ml, iarrc, gdp, &
+                        & 1, kmax, ierror, lundia, rbuff3, 'CFTAU')
+          deallocate(rbuff3)
           if (ierror /= 0) goto 9999
        endif
        !

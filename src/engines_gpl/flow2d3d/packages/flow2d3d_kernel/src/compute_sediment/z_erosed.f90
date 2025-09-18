@@ -535,6 +535,17 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     !
     allocate (localpar (npar), stat = istat)
     !
+    kmxsed  = 1
+    do nm = 1, nmmax 
+       do k = kfsmin(nm), kfsmax(nm)
+          do l = 1, lsed
+             seddif(nm, k, l) = dicww(nm, k)
+             if (sedtyp(l) == SEDTYP_SAND) kmxsed(nm, l) = kfsmin(nm)
+          enddo
+       enddo
+    enddo
+    return
+    !
     if (varyingmorfac .and. icall==1) then
        call updmorfac(gdp%gdmorpar, timhr, julday)
     endif

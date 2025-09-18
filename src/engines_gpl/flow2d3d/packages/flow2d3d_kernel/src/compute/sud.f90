@@ -15,14 +15,14 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
              & wsbodyu   ,idry      ,crbc      ,vicuv     ,hu0       , &
              & vnu2d     ,vicww     ,rxx       ,rxy       ,dfu       , &
              & deltau    ,tp        ,rlabda    ,cfurou    ,cfvrou    , &
-             & rttfu     ,diapl     ,rnpl      , &
+             & vicmud    ,rttfu     ,diapl     ,rnpl      , &
              & windsu    ,patm      ,fcorio    ,evap      ,ubrlsu    , &
              & uwtypu    ,hkru      ,pship     ,tgfsep    ,a         , &
              & b         ,c         ,d         ,aa        ,bb        , &
              & cc        ,dd        ,tetau     ,aak       ,bbk       , &
              & cck       ,ddk       ,d0        ,d0k       ,bbka      , &
              & bbkc      ,ua        ,ub        ,soumud    ,            &
-             & precip    ,ustokes   ,gdp       )
+             & precip    ,ustokes   ,kfushr    ,kfvshr    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -146,6 +146,8 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     integer      , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)                     :: kspu    !  Description and declaration in esm_alloc_int.f90
     integer      , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                       :: kadu    !  Description and declaration in esm_alloc_int.f90
     integer      , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)                       :: kadv    !  Description and declaration in esm_alloc_int.f90
+    integer      , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax) , intent(in)        :: kfushr  !  Description and declaration in esm_alloc_int.f90
+    integer      , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax) , intent(in)        :: kfvshr  !  Description and declaration in esm_alloc_int.f90
     real(fp)                                                                    :: betac   !  Description and declaration in tricom.igs
     real(fp)     , dimension(12, norow)                                         :: crbc    !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(4, norow)                                          :: circ2d  !  Description and declaration in esm_alloc_real.f90
@@ -192,6 +194,7 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: tp      !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: umean   !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: uwtypu  !  Description and declaration in esm_alloc_real.f90
+    real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)                     :: vicmud  !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: vnu2d   !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: windsu  !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(gdp%d%nmlb:gdp%d%nmub)                             :: wsu     !  Description and declaration in esm_alloc_real.f90
@@ -264,6 +267,7 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     logical       :: error   ! Flag for detection of closure error in mass-balance
     real(hp)      :: bi
     real(hp)      :: fac
+    real(fp)      :: d0ksca
     real(fp)      :: epsomb
     real(fp)      :: hdti
     real(fp)      :: hnm
@@ -377,10 +381,11 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
              & rxx       ,rxy       ,kcs       ,kcu       ,kfu       ,kfv       , &
              & kfs       ,kspu      ,kadu      ,kadv      ,dfu       ,deltau    , &
              & tp        ,rlabda    ,cfurou    ,cfvrou    ,rttfu     , &
-             & r0        ,diapl     ,rnpl      ,taubpu    ,taubsu    , &
+             & vicmud    ,r0        ,diapl     ,rnpl      ,taubpu    ,taubsu    , &
              & windsu    ,patm      ,fcorio    ,ubrlsu    ,uwtypu    , &
              & hkru      ,pship     ,tgfsep    ,dteu      ,ua        , &
-             & ub        ,ustokes   ,.false.   ,u1        ,s1        ,gdp       )
+             & ub        ,ustokes   ,.false.   ,u1        ,s1        , &
+             & kfushr    ,kfvshr    ,gdp       )
     call timer_stop(timer_sud_cucnp, gdp)
     !
     ! INITIALISATION OF ITERATION OVER CONTINUITY EQUATION
@@ -389,7 +394,9 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     do k = 1, kmax
        do nm = 1, nmmax
           if (kcs(nm) > 0) then
-             d0k(nm, k) = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
+             ! d0k(nm, k) = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
+             ! implementation changed for Slurry3D
+             d0k(nm, k) = 0.0
           endif
        enddo
     enddo
@@ -532,7 +539,8 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
     enddo
     do k = 1, kmax
        do nm = 1, nmmax
-          if (kcs(nm)==1) d0(nm) = d0(nm) + d0k(nm, k)
+          d0ksca = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) + qyk(nm - icy, k)
+          if (kcs(nm)==1) d0(nm) = d0(nm) + d0ksca + d0k(nm, k)
        enddo
     enddo
     call timer_stop(timer_sud_rest, gdp)
@@ -977,9 +985,11 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
        do k = 1, kmax
           do nm = 1, nmmax
              if (kcs(nm)==1) then
-                w1(nm, k) = w1(nm, k - 1) + thick(k)*s1(nm)*hdti        &
-                          & + (qxk(nm, k) - qxk(nm - icx, k)            &
-                          &    - d0k(nm, k)                 ) / gsqs(nm)
+                d0ksca    = gsqs(nm)*thick(k)*s0(nm)*hdti - qyk(nm, k) &
+                          & + qyk(nm - icy, k)
+                w1(nm, k) = w1(nm, k - 1) + thick(k)*s1(nm)*hdti       &
+                          & + (qxk(nm, k) - qxk(nm - icx, k)           &
+                          & - d0k(nm, k) - d0ksca) / gsqs(nm)
                 qzk(nm, k) = w1(nm, k)*gsqs(nm)
              endif
           enddo
@@ -1031,10 +1041,11 @@ subroutine sud(dischy    ,nst       ,icreep    ,betac     ,mmax      , &
                 & rxx       ,rxy       ,kcs       ,kcu       ,kfu       ,kfv       , &
                 & kfs       ,kspu      ,kadu      ,kadv      ,dfu       ,deltau    , &
                 & tp        ,rlabda    ,cfurou    ,cfvrou    ,rttfu     , &
-                & r0        ,diapl     ,rnpl      ,taubpu    ,taubsu    , &
+                & vicmud    ,r0        ,diapl     ,rnpl      ,taubpu    ,taubsu    , &
                 & windsu    ,patm      ,fcorio    ,ubrlsu    ,uwtypu    , &
                 & hkru      ,pship     ,tgfsep    ,dteu      ,ua        , &
-                & ub        ,ustokes   ,.true.    ,u1        ,s1        ,gdp       )
+                & ub        ,ustokes   ,.true.    ,u1        ,s1        , &
+                & kfushr    ,kfvshr    ,gdp       )
        call timer_stop(timer_sud_cucnp, gdp)
     endif
 end subroutine sud

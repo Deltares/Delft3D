@@ -1,9 +1,9 @@
 recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
              & u1        ,v         ,w1        ,umean     , &
-             & hu        ,hv        ,guu       ,gvv       ,gvu       ,gsqs      , &
+             & hu        ,hv        ,guu       ,gvv       ,gvu       ,guv       ,gsqs      , &
              & gvd       ,gud       ,gvz       ,gsqiu     ,qxk       ,qyk       , &
              & disch     ,umdis     ,dismmt    ,mnksrc    ,kcu       , &
-             & kcs       ,kfu       ,kfv       ,kfs       , &
+             & kcs       ,kfu       ,kfv       ,kfs       ,kfushr    ,kfvshr    , &
              & kspu      ,kadu      ,kadv      ,norow     ,icx       ,icy       , &
              & irocol    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
              & nsrc      ,lsecfl    ,lstsci    ,betac     ,nst       , &
@@ -13,7 +13,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
              & ub        ,taubpu    ,taubsu    ,rho       ,sumrho    , &
              & thick     ,sig       ,dps       ,wsu       ,fxw       ,wsbodyu   , &
              & vicuv     ,vnu2d     ,vicww     ,rxx       ,rxy       , &
-             & dfu       ,deltau    ,tp        ,rlabda    , &
+             & vicmud    ,dfu       ,deltau    ,tp        ,rlabda    , &
              & diapl     ,rnpl      , &
              & cfurou    ,cfvrou    ,rttfu     ,r0        ,windsu    , &
              & patm      ,fcorio    ,ubrlsu    ,hkru      , &
@@ -101,11 +101,13 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     logical                 , pointer :: cstbnd
     character(6)            , pointer :: momsol
     logical                 , pointer :: old_corio
+    logical                 , pointer :: stressStrainRelation
     logical                 , pointer :: slplim
     real(fp)                , pointer :: rhow
     real(fp)                , pointer :: rhofrac
     real(fp)                , pointer :: ag
     real(fp)                , pointer :: vicmol
+    real(fp)                , pointer :: vicThresh
     integer                 , pointer :: iro
     integer                 , pointer :: irov
     logical                 , pointer :: wind
@@ -155,6 +157,8 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)              :: kspu    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)  , intent(in)  :: kadu    !  Description and declaration in esm_alloc_int.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)  , intent(in)  :: kadv    !  Description and declaration in esm_alloc_int.f90
+    integer , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)  , intent(in)  :: kfushr  !  Description and declaration in esm_alloc_int.f90
+    integer , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)  , intent(in)  :: kfvshr  !  Description and declaration in esm_alloc_int.f90
     real(fp)                                                          :: betac   !  Description and declaration in tricom.igs
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: deltau  !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: dfu     !  Description and declaration in esm_alloc_real.f90
@@ -168,6 +172,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: guu     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: gvd     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: gvu     !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: guv     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: gvv     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: gvz     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: hkru    !  Description and declaration in esm_alloc_real.f90
@@ -182,6 +187,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)         , intent(in) :: tgfsep  !  Water elev. induced by tide gen.force
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: tp      !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: umean   !  Description and declaration in esm_alloc_real.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)              :: vicmud  !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: vnu2d   !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)        , intent(in)  :: windsu  !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                      :: wsu     !  Description and declaration in esm_alloc_real.f90
@@ -242,6 +248,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     integer            :: idifc
     integer            :: idifd
     integer            :: idifu  ! Work space, Identification if numeri- cal diffusive flux is added 
+    integer            :: irobed ! factor for mud layer ( 0 means no slip at bed)
     integer            :: idis
     integer            :: isrc
     integer            :: istat
@@ -287,6 +294,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)           :: bdmwrp
     real(fp)           :: bdmwrs
     real(fp)           :: bi
+    real(fp)           :: cbot
     real(fp)           :: cnurh
     real(fp)           :: corioforce
     real(fp)           :: dpsmax
@@ -332,8 +340,9 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)           :: umod
     real(fp)           :: uuu
     real(fp)           :: vih
-    real(fp)           :: viz1
-    real(fp)           :: viz2
+    real(fp)           :: vicd
+    real(fp)           :: vicmax
+    real(fp)           :: vicu
     real(fp)           :: vvv
     real(fp)           :: vvvc   ! Tangential velocity component used in Coriolis term
     real(fp)           :: wsbodyul ! local, modified wsbodyu
@@ -341,6 +350,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     real(fp)           :: wsumax
     real(fp)           :: www
     real(fp)           :: zz
+    real(fp)           :: janst
     character(20)      :: errtxt
     integer            :: nm_pos ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
 !
@@ -355,11 +365,13 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
     cstbnd     => gdp%gdnumeco%cstbnd
     momsol     => gdp%gdnumeco%momsol
     old_corio  => gdp%gdnumeco%old_corio
+    stressStrainRelation => gdp%gdsedpar%stressStrainRelation
     slplim     => gdp%gdnumeco%slplim
     rhow       => gdp%gdphysco%rhow
     rhofrac    => gdp%gdphysco%rhofrac
     ag         => gdp%gdphysco%ag
     vicmol     => gdp%gdphysco%vicmol
+    vicThresh  => gdp%gdsedpar%vicThresh
     iro        => gdp%gdphysco%iro
     irov       => gdp%gdphysco%irov
     wind       => gdp%gdprocs%wind
@@ -565,6 +577,9 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
              flowresist = 0.5*rttfu(nm, k)*umod
              corioforce = ff*fcorio(nm)*vvvc
              densforce  = - ag*(1. - icreep)/(gvu(nm)*rhow)*nbaroc*(sig(k)*rhou*(hr - hl) + (sumrho(nmu, k)*hr - sumrho(nm, k)*hl))
+             if (kfushr(nm,k)==1) then
+               janst=1
+             endif
              !
              ! limit barotropic and baroclinic pressure term in case of drying/flooding on steep slopes
              !
@@ -655,7 +670,19 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
              ddk(nm, 1)    = ddk(nm, 1) - qwind/rhow
           endif
           !
-          bdmwrp = h0i*taubpu(nm)/thick(kmax)
+          ! Slurry
+          !
+          if (stressStrainRelation) then
+             if (vicmud(nm,kmax) > vicThresh) then
+                irobed = 0
+             else
+                irobed = 1
+             endif
+          else
+            irobed = 1
+          endif
+          cbot   = taubpu(nm) * real(irobed,fp)
+          bdmwrp = h0i*cbot/thick(kmax)
           bdmwrs = h0i*taubsu(nm)/thick(kmax)
           if (mom_output) then
              mom_m_bedforce(nm)      = mom_m_bedforce(nm) &
@@ -842,7 +869,17 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                 !     (2*VIH*(D2U/DX2 + D2U/DY2) - OPERATOR SPLITTING IS USED )
                 !     VISCOSITY TERM HERE IS APPLIED ONLY IN THIS HALF TIMESTEP
                 !
-                vih = vicuv(nm, k) + vicuv(nmu, k) + vnu2d(nm) + vnu2d(ndm)
+                if (stressStrainRelation) then
+                    !
+                    ! limit the addition of vicmud based on the horizontal size of the cell
+                    ! compare with chkvic
+                    vicmax = 1.0/(guv(nm)*guv(nm)) + 1.0/(gvu(nm)*gvu(nm))
+                    vicmax = 0.9 / (4.0*hdt*vicmax)
+                    vih    = vicuv(nm, k) + vicuv(nmu, k) + vnu2d(nm) + vnu2d(ndm) + 2.0*Max(vicmud(nm,k),vicmud(nmu,k))
+                    vih    = min (vih, vicmax)
+                else
+                    vih = vicuv(nm, k) + vicuv(nmu, k) + vnu2d(nm) + vnu2d(ndm)
+                endif
                 termc  = 2.*vih/(gksid*gksiu)*idifc
                 termux = vih/(gksiu*gksi)*idifc
                 termdx = vih/(gksid*gksi)*idifc
@@ -944,25 +981,53 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
                 endif
                 cnurh = h0i * h0i
                 !
-                ! viz1 calculation 
+                ! vicd calculation
                 ! restriction is moved from TURCLO to here
+                ! defined at lower interface
                 !
-                viz1  = 0.25 * (2 + kfw*(1 - kfw)) * ap1             &
+                ! In points with mud (how to determine?), we assume no slip at the bed!
+                !
+                vicd  = 0.25 * (2 + kfw*(1 - kfw)) * ap1              &
                       & * (2.0*vicmol + redvic(vicww(nm , kdo), gdp) &
-                      &               + redvic(vicww(nmu, kdo), gdp))
+                      &               + redvic(vicww(nmu, kdo), gdp)) &
+                      & + 0.50 * (2 + kfw*(1 - kfw))*max(vicmud(nm ,kdo),vicmud(nmu, kdo))
                 !
-                ! viz2 calculation
+                ! vicu calculation
                 ! restriction is moved from TURCLO to here
+                ! defined at upper interface
                 !
-                viz2 = 0.25 * (2 - kfw*(1 + kfw)) * ap2           &
+                ! For slurry:
+                if (k==kmax .and. irobed==0) then 
+                   kfw = 0
+                endif
+                !
+                vicu = 0.25 * (2 - kfw*(1 + kfw)) * ap2            &
                      & * (2.0*vicmol + redvic(vicww(nm , k), gdp) &
-                     &               + redvic(vicww(nmu, k), gdp))
-                ddza  = 2.0 * cnurh * viz1 / (tsg1*thick(k))
-                ddzc  = 2.0 * cnurh * viz2 / (tsg2*thick(k))
+                     &               + redvic(vicww(nmu, k), gdp)) &
+                     & + 0.50 * (2 - kfw*(1 + kfw))*max(vicmud(nm ,k),vicmud(nmu, k))
                 !
+                ! upper bound for VICD and VICU
+                vicd = min(vicd, 100.0_fp)
+                vicu = min(vicu, 100.0_fp)
+                !
+                ddza  = 2.0 * cnurh * vicd / (tsg1*thick(k))
+                ddzc  = 2.0 * cnurh * vicu / (tsg2*thick(k))
                 ddza  =  iada * ddza
                 ddzc  =  iadc * ddzc
-                ddzb  = -ddza - ddzc
+                !
+                if (k==kmax .and. irobed==0) then
+                   !
+                   ! No slip at the bed.
+                   ! Implicitly at the bed for no-slip condition
+                   !
+                   ! change 25 april 2014
+                   !
+                   !
+                   ddzb = -ddza-h0i*(2.*vicu )/( thick(kmax))                   
+                   ddzc = 0.0
+                else
+                   ddzb  = -ddza - ddzc
+                endif
                 !
                 aak(nm, k) = aak(nm, k) - ddza
                 bbk(nm, k) = bbk(nm, k) - ddzb
@@ -1399,10 +1464,10 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
        gdp%gdflwpar%mom_accum = gdp%gdflwpar%mom_accum + 1.0_fp
        call uzd(icreep    ,dpdksi    ,s0        ,u0        , &
               & u1        ,v         ,w1        ,umean     , &
-              & hu        ,hv        ,guu       ,gvv       ,gvu       ,gsqs      , &
+              & hu        ,hv        ,guu       ,gvv       ,gvu       ,guv       ,gsqs      , &
               & gvd       ,gud       ,gvz       ,gsqiu     ,qxk       ,qyk       , &
               & disch     ,umdis     ,dismmt    ,mnksrc    ,kcu       , &
-              & kcs       ,kfu       ,kfv       ,kfs       , &
+              & kcs       ,kfu       ,kfv       ,kfs       ,kfushr    ,kfvshr    , &
               & kspu      ,kadu      ,kadv      ,norow     ,icx       ,icy       , &
               & irocol    ,j         ,nmmaxj    ,nmmax     ,kmax      , &
               & nsrc      ,lsecfl    ,lstsci    ,betac     ,nst       , &
@@ -1412,7 +1477,7 @@ recursive subroutine uzd(icreep    ,dpdksi    ,s0        ,u0        , &
               & ub        ,taubpu    ,taubsu    ,rho       ,sumrho    , &
               & thick     ,sig       ,dps       ,wsu       ,fxw       ,wsbodyu   , &
               & vicuv     ,vnu2d     ,vicww     ,rxx       ,rxy       , &
-              & dfu       ,deltau    ,tp        ,rlabda    , &
+              & vicmud    ,dfu       ,deltau    ,tp        ,rlabda    , &
               & diapl     ,rnpl      , &
               & cfurou    ,cfvrou    ,rttfu     ,r0        ,windsu    , &
               & patm      ,fcorio    ,ubrlsu    ,hkru      , &
