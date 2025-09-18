@@ -63,7 +63,7 @@ contains
       end if
 
       ! Compute realized discharge
-      qLatReal = 0d0
+      qLatReal = 0.0_dp
       ! sum over 3rd dimension of qqlat
       do i = 1, numlatsg
          do k1 = n1latsg(i), n2latsg(i)
@@ -96,11 +96,11 @@ contains
       ! At the history output time, compute average discharge in the past His-interval
       if (comparereal(tim1, time_his, eps10) == 0 .and. ti_his > 0) then
          if (jampi == 1) then
-            call realloc(qLatRealMPI, numlatsg, keepExisting=.false., fill=0d0)
+            call realloc(qLatRealMPI, numlatsg, keepExisting=.false., fill=0.0_dp)
             call reduce_double_sum(numlatsg, qLatReal, qLatRealMPI)
             qLatReal(1:numlatsg) = qLatRealMPI(1:numlatsg)
 
-            call realloc(qLatRealCumTmp, numlatsg, keepExisting=.false., fill=0d0)
+            call realloc(qLatRealCumTmp, numlatsg, keepExisting=.false., fill=0.0_dp)
             call reduce_double_sum(numlatsg, qLatRealCum, qLatRealCumTmp)
          end if
          do i_lat = 1, numlatsg

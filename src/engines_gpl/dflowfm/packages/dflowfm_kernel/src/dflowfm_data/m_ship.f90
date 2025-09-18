@@ -52,29 +52,29 @@ module m_ship
    real(kind=dp), allocatable, target :: shL(:) !< [m] ship size L/2, B/2, D  ! for now, fixed max nr =2 {"shape": [2]}
    real(kind=dp), allocatable, target :: shB(:) !< [m] ship size L/2, B/2, D  ! for now, fixed max nr =2 {"shape": [2]}
    real(kind=dp), allocatable, target :: shd(:) !< [m] ship size L/2, B/2, D  ! for now, fixed max nr =2 {"shape": [2]}
-   real(kind=dp) :: epsi = 1d0
-   real(kind=dp) :: fx2(2) = 0d0, fy2(2) = 0d0, fm2(2) = 0d0 !< pressure force in global coordinate sys (interacting with flow)
-   real(kind=dp) :: squat(2) = 0d0, squatbow(2) = 0d0 !< squat and squat bow (m)
-   real(kind=dp) :: fricx(2) = 0d0, fricy(2) = 0d0, fricm(2) = 0d0 !< friction force in global coordinate sys (interacting with flow)
-   real(kind=dp) :: fricxe(2) = 0d0, fricye(2) = 0d0, fricme(2) = 0d0 !< friction force in global coordinate sys (interacting with flow) explicit
-   real(kind=dp) :: fricxi(2) = 0d0, fricyi(2) = 0d0, fricmi(2) = 0d0 !< friction force in global coordinate sys (interacting with flow) implicit
-   real(kind=dp) :: fricxnet(2) = 0d0, fricynet(2) = 0d0, fricmnet(2) = 0d0 !< net friction forces
-   real(kind=dp) :: stuwx(2) = 0d0, stuwy(2) = 0d0, stuwm(2) = 0d0 !< thrust    force in global coordinate sys (interacting with flow)
-   real(kind=dp) :: fextx(2) = 0d0, fexty(2) = 0d0, fextm(2) = 0d0 !< external  force in global coordinate sys (          not on flow)
+   real(kind=dp) :: epsi = 1.0_dp
+   real(kind=dp) :: fx2(2) = 0.0_dp, fy2(2) = 0.0_dp, fm2(2) = 0.0_dp !< pressure force in global coordinate sys (interacting with flow)
+   real(kind=dp) :: squat(2) = 0.0_dp, squatbow(2) = 0.0_dp !< squat and squat bow (m)
+   real(kind=dp) :: fricx(2) = 0.0_dp, fricy(2) = 0.0_dp, fricm(2) = 0.0_dp !< friction force in global coordinate sys (interacting with flow)
+   real(kind=dp) :: fricxe(2) = 0.0_dp, fricye(2) = 0.0_dp, fricme(2) = 0.0_dp !< friction force in global coordinate sys (interacting with flow) explicit
+   real(kind=dp) :: fricxi(2) = 0.0_dp, fricyi(2) = 0.0_dp, fricmi(2) = 0.0_dp !< friction force in global coordinate sys (interacting with flow) implicit
+   real(kind=dp) :: fricxnet(2) = 0.0_dp, fricynet(2) = 0.0_dp, fricmnet(2) = 0.0_dp !< net friction forces
+   real(kind=dp) :: stuwx(2) = 0.0_dp, stuwy(2) = 0.0_dp, stuwm(2) = 0.0_dp !< thrust    force in global coordinate sys (interacting with flow)
+   real(kind=dp) :: fextx(2) = 0.0_dp, fexty(2) = 0.0_dp, fextm(2) = 0.0_dp !< external  force in global coordinate sys (          not on flow)
    real(kind=dp), allocatable, target :: stuw(:) !< [N] actual thrust force in ship dir  {"shape": [2]}
    real(kind=dp), allocatable, target :: fstuw(:) !< [-] thrust setting 0-1 {"shape": [2]}
    real(kind=dp), allocatable, target :: stuwmx(:) !< [N] max thrust {"shape": [2]}
    real(kind=dp), allocatable, target :: roer(:) !< [degree] actual rudder angle {"shape": [2]}
    real(kind=dp), allocatable, target :: froer(:) !< [degree] actual rudder setting 0-1 {"shape": [2]}
    real(kind=dp), allocatable, target :: roermx(:) !< [degree] max rudder angle {"shape": [2]}
-   real(kind=dp) :: dxcog(2) = 0d0 !< delta x c.o.g.
+   real(kind=dp) :: dxcog(2) = 0.0_dp !< delta x c.o.g.
    real(kind=dp) :: powermx(2), speedmx(2) !< mx engine power (Hp on input, then Watts), max ship velocity (Knts on input, then m/s)
    real(kind=dp) :: deadw(2), deadwi(2), checkdw(2) !< inertia (x,y), moment
    real(kind=dp) :: xmxs, xmns, ymxs, ymns !< minmax of shipping domain
-   real(kind=dp) :: Trelax = 4d0, depmin = 18d0 !< relax period pressureforces (s), ships no deeper than depmi
-   real(kind=dp) :: Cfskin = 0.0015d0 !< skin friction coefficient tau/rho=Cfskin*Udif**2
-   real(kind=dp) :: alfahull = 0d0 !< 0d0 = pressure forcing just hydrostatic, 1.0 = plus correction previous step
-   real(kind=dp) :: vicuship = 0d0 !< increase background eddy viscosity under ship
+   real(kind=dp) :: Trelax = 4.0_dp, depmin = 18.0_dp !< relax period pressureforces (s), ships no deeper than depmi
+   real(kind=dp) :: Cfskin = 0.0015_dp !< skin friction coefficient tau/rho=Cfskin*Udif**2
+   real(kind=dp) :: alfahull = 0.0_dp !< 0d0 = pressure forcing just hydrostatic, 1.0 = plus correction previous step
+   real(kind=dp) :: vicuship = 0.0_dp !< increase background eddy viscosity under ship
    integer :: japhifromtxy = 1 !< for Icontroltyp 1,2 compute phi from txy yesno
    integer :: icontroltyp(2) = 3 !< 1 = prescribed t,x,y and flow blocakage sluides,
    !< 2 = prescribed t,x,y, ship
@@ -89,8 +89,8 @@ module m_ship
    integer :: ithull, ithullmx
    integer :: ihullmethod = 0 !< 0 = some analytic, 1 = arcinfo cellcentre, 2=arcinfo netnode
    integer :: numsmo = 2 !< nr of hull smooting steps
-   real(kind=dp) :: wsmo = 0.1d0 !< smooting factor
-   real(kind=dp) :: cfav = 0.d0 !< average skin friction
-   real(kind=dp) :: Returb = 5700d0 !< Transition from laminar to turbulent at Reynolds = Returb
+   real(kind=dp) :: wsmo = 0.1_dp !< smooting factor
+   real(kind=dp) :: cfav = 0.0_dp !< average skin friction
+   real(kind=dp) :: Returb = 5700.0_dp !< Transition from laminar to turbulent at Reynolds = Returb
 
 end module m_ship

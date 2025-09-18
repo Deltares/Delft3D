@@ -249,15 +249,15 @@ contains
             KEEPSTARTDIR = min(1, KEEPSTARTDIR)
             !MFAC = MAX(1,MFAC)
             !NFAC = MAX(1,NFAC)
-            CSMO = max(0d0, CSMO)
-            RFAC = max(0d0, RFAC)
-            BAAS2 = max(0d0, min(BAAS2, 1d0))
-            SPLFAC = max(0d0, min(SPLFAC, 1d0))
-            SPLFAC2 = max(0d0, min(SPLFAC2, 1d0))
-            FACMIR = max(0.1d0, min(FACMIR, 10d0))
+            CSMO = max(0.0_dp, CSMO)
+            RFAC = max(0.0_dp, RFAC)
+            BAAS2 = max(0.0_dp, min(BAAS2, 1.0_dp))
+            SPLFAC = max(0.0_dp, min(SPLFAC, 1.0_dp))
+            SPLFAC2 = max(0.0_dp, min(SPLFAC2, 1.0_dp))
+            FACMIR = max(0.1_dp, min(FACMIR, 10.0_dp))
             jsferic = max(0, min(jsferic, 1))
 
-            if (pil_rad < 0d0) then ! cre
+            if (pil_rad < 0.0_dp) then ! cre
                if (maxpol < mfac + 1) then
                   call increasepol(mfac + 1, 0)
                end if

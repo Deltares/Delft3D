@@ -66,8 +66,8 @@ contains
                kp = kk + 1; if (kp > kkx) kp = kp - kkx
                km = netcell(np)%nod(km)
                kp = netcell(np)%nod(kp)
-               if (abs(yk(km) - yk(k)) < 1d-10 .and. abs(yk(kp) - yk(k)) < 1d-10 .or. &
-                   abs(xk(km) - xk(k)) < 1d-10 .and. abs(xk(kp) - xk(k)) < 1d-10) then
+               if (abs(yk(km) - yk(k)) < 1.0e-10_dp .and. abs(yk(kp) - yk(k)) < 1.0e-10_dp .or. &
+                   abs(xk(km) - xk(k)) < 1.0e-10_dp .and. abs(xk(kp) - xk(k)) < 1.0e-10_dp) then
                   km = kk - 2; if (km < 1) km = km + kkx
                   kp = kk + 2; if (kp > kkx) kp = kp - kkx
                   km = netcell(np)%nod(km)
@@ -99,7 +99,7 @@ contains
 
       do L = 1, numL
          k1 = kn(1, L); k2 = kn(2, L)
-         if (abs(xk(k1) - xk(k2)) > 1d-10 .and. abs(yk(k1) - yk(k2)) > 1d-10) then
+         if (abs(xk(k1) - xk(k2)) > 1.0e-10_dp .and. abs(yk(k1) - yk(k2)) > 1.0e-10_dp) then
             kn(1, L) = 0; kn(2, L) = 0; kn(3, L) = 0
          end if
       end do
@@ -121,12 +121,12 @@ contains
       integer :: k, k1, k2, ja
       real(kind=dp) :: X3, Y3, X1, Y1, X2, Y2, disn, dist, XN, YN, rl, hh, phase, bedwid2, bedrepose, gridsize
 
-      x1 = 0d0
-      y1 = 0d0
+      x1 = 0.0_dp
+      y1 = 0.0_dp
       x2 = cos(bedslopedir * dg2rd)
       y2 = sin(bedslopedir * dg2rd)
       hh = abs(zkuni)
-      bedwid2 = 0.5d0 * bedwidth
+      bedwid2 = 0.5_dp * bedwidth
       k1 = kn(1, 1); k2 = kn(2, 1)
       call dbdistancehk(xk(k1), yk(k1), xk(k2), yk(k2), gridsize)
 
@@ -138,14 +138,14 @@ contains
 
          zk(k) = zkuni + bedslope * dist ! in tangential of vector
 
-         if (bedwavelength /= 0d0) then ! idem
+         if (bedwavelength /= 0.0_dp) then ! idem
             phase = twopi * dist / bedwavelength
             zk(k) = zk(k) + bedwaveamplitude * cos(phase)
          end if
 
-         if (bedwidth > 0d0) then
-            bedrepose = hh * atan(0.5d0 * pi / bedwid2)
-            zk(k) = zk(k) + hh * (1d0 - cos(disn * tan(bedrepose / hh))) ! normal to vector
+         if (bedwidth > 0.0_dp) then
+            bedrepose = hh * atan(0.5_dp * pi / bedwid2)
+            zk(k) = zk(k) + hh * (1.0_dp - cos(disn * tan(bedrepose / hh))) ! normal to vector
             if (disn > bedwid2 + 2 * gridsize) then
                xk(k) = dmiss; yk(k) = dmiss; zk(k) = dmiss
             end if

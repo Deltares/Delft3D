@@ -134,7 +134,7 @@ contains
       character(len=20) :: waqinput
       integer, external :: findname
       type(tEcMask) :: srcmask
-      
+
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
       logical :: exist, opened, withCharnock, withStress
 
@@ -233,7 +233,7 @@ contains
 
             if (present(forcingfile)) then
                if (present(dtnodal)) then
-                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal / 86400.d0)
+                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal / 86400.0_dp)
                else
                   success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile)
                end if
@@ -253,7 +253,7 @@ contains
                   success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename(1:index(filename, '.'))//'qh', refdate_mjd, tzone, ec_second, name)
                else
                   if (present(dtnodal)) then
-                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.d0, varname=varname)
+                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.0_dp, varname=varname)
                   else
                      if (present(varname2)) then
                         success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
@@ -478,11 +478,11 @@ contains
          else
             if (ec_filetype == provFile_bc .and. target_name == 'windxy') then
                fileReaderPtr => ecSupportFindFileReader(ecInstancePtr, fileReaderId)
-               associate(column_units =>fileReaderPtr%bc%quantity%column_units)
+               associate (column_units => fileReaderPtr%bc%quantity%column_units)
                   if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('velocity', column_units(3))) then
                      ! windxy is defined by wind in x and wind in y direction
                      ec_convtype = convtype_uniform
-                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3)) ) then
+                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3))) then
                      ec_convtype = convtype_unimagdir
                   else
                      msgbuf = 'incorrect units found in bc file concerning the input for windxy. Only the combinations "ms-1, ms-1"'// &
@@ -511,10 +511,10 @@ contains
                itargetMaskSelect = 1
             end if
             if (itargetMaskSelect == 1) then
-               transformcoef = 1.0d0
+               transformcoef = 1.0_dp
                srcmask%msk = 0
             else
-               transformcoef = 0.0d0
+               transformcoef = 0.0_dp
                srcmask%msk = 1
             end if
 

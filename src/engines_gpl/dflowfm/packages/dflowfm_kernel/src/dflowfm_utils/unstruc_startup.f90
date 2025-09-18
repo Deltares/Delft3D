@@ -31,6 +31,7 @@
 !
 
 module unstruc_startup
+
 !! Separates some startup/initialization procedures from the main program in net.f90
 
    use m_setcoltabfile, only: setcoltabfile
@@ -43,6 +44,7 @@ module unstruc_startup
    use properties
    use messagehandling, only: err_flush
 
+use precision, only: dp
    implicit none
 
 contains
@@ -428,38 +430,38 @@ contains
       call prop_get(ini_ptr, 'display', 'JAFULLBOTTOMLINE', jafullbottomline)
 
       rgbvalues(:, :) = 0
-      rgbvalues(1:4, 1) = (/210, 3, 3, 3/)
-      rgbvalues(1:4, 2) = (/211, 1, 128, 255/) ! NCOLRN = SHOW ALL LINKS/prev net
-      rgbvalues(1:4, 3) = (/212, 255, 160, 192/) ! NCOLRG = prev grid
-      rgbvalues(1:4, 4) = (/210, 200, 200, 200/) ! NCOLTX = SOME TEXTST
-      rgbvalues(1:4, 5) = (/230, 32, 176, 0/) ! NCOLCRS = CROSS SECTIONS
-      rgbvalues(1:4, 6) = (/231, 255, 0, 0/) ! NCOLTHD = THIN DAMS
-      rgbvalues(1:4, 7) = (/232, 255, 106, 0/) ! NCOLFXW = FIXED WEIRS
-      rgbvalues(1:4, 8) = (/227, 0, 200, 200/) ! KLOBS = OBS.STATIONS
-      rgbvalues(1:4, 9) = (/203, 0, 255, 255/) ! NCOLLN = LAND BOUNDARY
-      rgbvalues(1:4, 10) = (/204, 255, 255, 150/) ! NCOLSP = SPLINES
-      rgbvalues(1:4, 11) = (/205, 255, 255, 150/) ! NCOLNN = NET NODES (in case they differ from splines)
+      rgbvalues(1:4, 1) = [210, 3, 3, 3]
+      rgbvalues(1:4, 2) = [211, 1, 128, 255] ! NCOLRN = SHOW ALL LINKS/prev net
+      rgbvalues(1:4, 3) = [212, 255, 160, 192] ! NCOLRG = prev grid
+      rgbvalues(1:4, 4) = [210, 200, 200, 200] ! NCOLTX = SOME TEXTST
+      rgbvalues(1:4, 5) = [230, 32, 176, 0] ! NCOLCRS = CROSS SECTIONS
+      rgbvalues(1:4, 6) = [231, 255, 0, 0] ! NCOLTHD = THIN DAMS
+      rgbvalues(1:4, 7) = [232, 255, 106, 0] ! NCOLFXW = FIXED WEIRS
+      rgbvalues(1:4, 8) = [227, 0, 200, 200] ! KLOBS = OBS.STATIONS
+      rgbvalues(1:4, 9) = [203, 0, 255, 255] ! NCOLLN = LAND BOUNDARY
+      rgbvalues(1:4, 10) = [204, 255, 255, 150] ! NCOLSP = SPLINES
+      rgbvalues(1:4, 11) = [205, 255, 255, 150] ! NCOLNN = NET NODES (in case they differ from splines)
 
       ! Initialise more standard colors.
       ! Used most colors from the HTML 4.01 specification, see http://www.w3.org/TR/REC-html40/types.html#h-6.5
       ! and added some basic colors.
       !call IGRPALETTERGB(ncolgray, 128, 128, 128) ! gray is already set by default (background color).
       i = 11
-      i = i + 1; rgbvalues(1:4, i) = (/ncolblack, 0, 0, 0/)
-      i = i + 1; rgbvalues(1:4, i) = (/ncolwhite, 255, 255, 255/)
-      i = i + 1; rgbvalues(1:4, i) = (/ncolred, 255, 0, 0/)
-      i = i + 1; rgbvalues(1:4, i) = (/ncolyellow, 255, 255, 0/)
-      i = i + 1; rgbvalues(1:4, i) = (/ncolgreen, 0, 255, 0/) !< lime
-      i = i + 1; rgbvalues(1:4, i) = (/ncolcyan, 0, 255, 255/) !< aqua
-      i = i + 1; rgbvalues(1:4, i) = (/ncolblue, 0, 0, 255/)
-      i = i + 1; rgbvalues(1:4, i) = (/ncolmagenta, 255, 0, 255/) !< fuchsia
-      i = i + 1; rgbvalues(1:4, i) = (/ncolmaroon, 128, 0, 0/)
-      i = i + 1; rgbvalues(1:4, i) = (/ncoldarkgreen, 0, 128, 0/) !< green
-      i = i + 1; rgbvalues(1:4, i) = (/ncolteal, 0, 128, 128/)
-      i = i + 1; rgbvalues(1:4, i) = (/ncolpink, 255, 0, 128/)
-      i = i + 1; rgbvalues(1:4, i) = (/ncolorange, 255, 128, 0/)
-      i = i + 1; rgbvalues(1:4, i) = (/ncollavender, 128, 128, 255/)
-      i = i + 1; rgbvalues(1:4, i) = (/ncolbrown, 128, 64, 0/)
+      i = i + 1; rgbvalues(1:4, i) = [ncolblack, 0, 0, 0]
+      i = i + 1; rgbvalues(1:4, i) = [ncolwhite, 255, 255, 255]
+      i = i + 1; rgbvalues(1:4, i) = [ncolred, 255, 0, 0]
+      i = i + 1; rgbvalues(1:4, i) = [ncolyellow, 255, 255, 0]
+      i = i + 1; rgbvalues(1:4, i) = [ncolgreen, 0, 255, 0] !< lime
+      i = i + 1; rgbvalues(1:4, i) = [ncolcyan, 0, 255, 255] !< aqua
+      i = i + 1; rgbvalues(1:4, i) = [ncolblue, 0, 0, 255]
+      i = i + 1; rgbvalues(1:4, i) = [ncolmagenta, 255, 0, 255] !< fuchsia
+      i = i + 1; rgbvalues(1:4, i) = [ncolmaroon, 128, 0, 0]
+      i = i + 1; rgbvalues(1:4, i) = [ncoldarkgreen, 0, 128, 0] !< green
+      i = i + 1; rgbvalues(1:4, i) = [ncolteal, 0, 128, 128]
+      i = i + 1; rgbvalues(1:4, i) = [ncolpink, 255, 0, 128]
+      i = i + 1; rgbvalues(1:4, i) = [ncolorange, 255, 128, 0]
+      i = i + 1; rgbvalues(1:4, i) = [ncollavender, 128, 128, 255]
+      i = i + 1; rgbvalues(1:4, i) = [ncolbrown, 128, 64, 0]
       K = 1
       ! First load default colours into Interacter colors:
       do
@@ -493,14 +495,14 @@ contains
 
       TXLIN = ' ' ! alle drie leeg
 
-      TXSIZE = 0.75d0
-      TXXpos = 0.5d0
-      TXYpos = 0.015d0
+      TXSIZE = 0.75_dp
+      TXXpos = 0.5_dp
+      TXYpos = 0.015_dp
 
-      XSC = 0.01d0
-      YSC = 0.07d0
+      XSC = 0.01_dp
+      YSC = 0.07_dp
       NDEC = 3
-      SCALESIZE = 0.5d0
+      SCALESIZE = 0.5_dp
 
       maxarctiler = 0; maxsamarcr = 0
       call prop_get(ini_ptr, 'ARCINFOSAMPLES', 'MAXARCTILE', maxarctiler)

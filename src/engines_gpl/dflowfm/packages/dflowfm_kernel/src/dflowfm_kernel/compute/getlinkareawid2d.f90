@@ -40,17 +40,17 @@ contains
       real(kind=dp), intent(out) :: ar, wid
       real(kind=dp) :: hp2
 
-      if (ai < 1d-3) then
+      if (ai < 1.0e-3_dp) then
          ! if (dz == 0d0) then
          wid = wu2; wid = wid + slotw2D
          ar = wid * hpr
       else if (hpr < dz) then
          wid = wu2 * hpr / dz; wid = wid + slotw2D
-         ar = 0.5d0 * wid * hpr
+         ar = 0.5_dp * wid * hpr
       else
          wid = wu2; wid = wid + slotw2D
          hp2 = hpr - dz
-         ar = wid * 0.5d0 * (hpr + hp2)
+         ar = wid * 0.5_dp * (hpr + hp2)
       end if
 
    end subroutine getlinkareawid2D

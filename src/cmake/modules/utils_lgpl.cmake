@@ -62,6 +62,7 @@ set(test_ec_module              test/utils_lgpl/ec_module/packages/ec_module_tes
 set(test_io_netcdf              test/utils_lgpl/io_netcdf/packages/test_io_netcdf)
 set(test_waq_utils_f            test/engines_gpl/waq/waq_utils_f)
 set(test_dflowfm_kernel         test/engines_gpl/dflowfm/packages/dflowfm_kernel)
+set(test_nefis                  ${utils_lgpl_path}/nefis/tests)
 
 # Unit tests
 # utils_lgpl

@@ -45,7 +45,7 @@ contains
       use m_netw
 
       integer :: KP
-      real(kind=dp) :: XP, YP, eps = 1d-6
+      real(kind=dp) :: XP, YP, eps = 1.0e-6_dp
 
       integer :: K
       KP = 0

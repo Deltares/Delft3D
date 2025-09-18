@@ -41,7 +41,7 @@ contains
 !     AFSTAND VAN PUNT XX,YY TOT SPLINEPUNT MET PARM TV
 
       real(kind=dp) :: X(N), X2(N), Y(N), Y2(N), TV, XX, YY, XV, YV
-      TV = max(0d0, min(TV, N - 1d0))
+      TV = max(0.0_dp, min(TV, N - 1.0_dp))
       call SPLINT(X, X2, N, TV, XV)
       call SPLINT(Y, Y2, N, TV, YV)
 !     CALL DISTANCE(XV,YV,XX,YY,DIST)

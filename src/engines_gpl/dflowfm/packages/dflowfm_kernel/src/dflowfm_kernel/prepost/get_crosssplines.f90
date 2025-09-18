@@ -74,13 +74,13 @@ contains
 !  find the cross splines
       ncs = 0
       ics = 0
-      t = 1d99 ! default values will cause sorting to disregard non cross splines
+      t = 1.0e99_dp ! default values will cause sorting to disregard non cross splines
       do js = 1, mcs
          call nump(js, numj)
 
 !     reallocate if necessary
          if (numj > ubound(xlist, 1)) then
-            numnew = int(1.2d0 * dble(numj)) + 1
+            numnew = int(1.2_dp * dble(numj)) + 1
             call realloc(xlist, numnew)
             call realloc(ylist, numnew)
          end if
@@ -95,13 +95,13 @@ contains
                      max(num, numj), crp, num, numj, numcro, tt, tj, xp, yp)
 
          if (abs(crp) < dtolcos) then
-            numcro = 0d0
+            numcro = 0.0_dp
          end if
 
          if (numcro == 1) then ! intersection found
             ncs = ncs + 1
             ics(js) = js
-            if (crp > 0d0) then
+            if (crp > 0.0_dp) then
                Lorient(js) = .false.
             else
                Lorient(js) = .true.

@@ -94,7 +94,7 @@ contains
 
       if (INCX == 1 .and. INCY == 1) then
 
-         DOTs = 0d0
+         DOTs = 0.0_dp
 
          if (jasafe /= 1) then
             !$OMP PARALLEL DO                                     &
@@ -200,9 +200,9 @@ contains
       end do
       call aerr('wk(nwk)', IERR, nwk)
 
-      ao = 0.d0; a = 0.d0
-      solo = 0.d0; rhs = 0.d0; alu = 0.d0; wk = 0.d0
-      sol = 0d0
+      ao = 0.0_dp; a = 0.0_dp
+      solo = 0.0_dp; rhs = 0.0_dp; alu = 0.0_dp; wk = 0.0_dp
+      sol = 0.0_dp
 
       ipar = 0 ! initialize all params to 0
       ipar(2) = 1 ! no (0), left (1), right (2), both (3) precond
@@ -223,8 +223,8 @@ contains
 !   SPARSKIT SQRT(DDOT(residualvector,residualvector)) is considered, which is
 !   weighing of residualvector in L2 norm *times* the number of unknowns per
 !   direction
-      fpar = 0d0 ! initialize all params to 0
-      fpar(1) = 0.0d-16 ! relative tolerance ('exact' solve, except
+      fpar = 0.0_dp ! initialize all params to 0
+      fpar(1) = 0.0e-16_dp ! relative tolerance ('exact' solve, except
 !     fpar(2) = 1.0D-14 * 1.0D2 ! absolute tolerance  for round-off errors)
 !             = 1.0D-14 as in method GS * underestimation of number of unknowns
 !     fpar(2) = 1.0D-8  * 1.0D0 ! MB: set lower tolerance
@@ -238,7 +238,7 @@ contains
 !     alpha = 0.00000D0 ! SPvdP: set it to 0 for ILU preconditioning
       alpha = alpha_loc
 
-      tol = 0.50d-2
+      tol = 0.50e-2_dp
 
 !                       ***** PERMUTATIONS *****
 !     permselect = 1    ! MB: no permutation
@@ -769,7 +769,7 @@ contains
 !     normal execution
 !
       its = 0
-      res = 0.0d0
+      res = 0.0_dp
 !
       ! do i = 1, n
       !   sol(i) = guess(i)
@@ -1920,7 +1920,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one
-      parameter(one=1.0d0)
+      parameter(one=1.0_dp)
 !
 !     local variables
 !
@@ -2508,7 +2508,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
 !     local variables
 !
@@ -3127,7 +3127,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hess points to the Hessenberg matrix,
@@ -3428,8 +3428,8 @@ contains
 !     local variables
 !
       real(kind=dp) :: one, zero, deps
-      parameter(one=1.0d0, zero=0.0d0)
-      parameter(deps=1.0d-33)
+      parameter(one=1.0_dp, zero=0.0_dp)
+      parameter(deps=1.0e-33_dp)
 !
       integer i, ii, j, jp1, j0, k, ptrw, ptrv, iv, iw, ic, is, ihm, ihd, lb, ptr
       real(kind=dp) :: alpha, beta, psi, c, s
@@ -3747,7 +3747,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hess points to the Hessenberg matrix,
@@ -4053,7 +4053,7 @@ contains
 !     local variables
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
       real(kind=dp) :: t, sqrt, ss, res, beta, ss1, delta, x, zeta, umm
       integer k, j, i, i2, ip2, ju, lb, lbm1, np, indp
@@ -4469,7 +4469,7 @@ contains
 !     (See P 202 of "matrix computation" by Golub and van Loan.)
 !-----------------------------------------------------------------------
       real(kind=dp) :: t, one, zero
-      parameter(zero=0.0d0, one=1.0d0)
+      parameter(zero=0.0_dp, one=1.0_dp)
 !
       no_warning_unused_dummy_argument(c)
       if (x == zero .and. y == zero) then
@@ -4565,7 +4565,7 @@ contains
 !     Some common operations required before terminating the CG routines
 !-----------------------------------------------------------------------
       real(kind=dp) :: zero
-      parameter(zero=0.0d0)
+      parameter(zero=0.0_dp)
 !
       if (ipar(12) /= 0) then
          ipar(1) = ipar(12)
@@ -4595,7 +4595,7 @@ contains
       implicit none
       integer ipar(16)
       real(kind=dp) :: alpha, beta, zero, one
-      parameter(zero=0.0d0, one=1.0d0)
+      parameter(zero=0.0_dp, one=1.0_dp)
 !-----------------------------------------------------------------------
 !     test whether alpha is zero or an abnormal number, if yes,
 !     this routine will return .true.
@@ -4635,7 +4635,7 @@ contains
 !     some common initializations for the iterative solvers
 !-----------------------------------------------------------------------
       real(kind=dp) :: zero, one
-      parameter(zero=0.0d0, one=1.0d0)
+      parameter(zero=0.0_dp, one=1.0_dp)
       no_warning_unused_dummy_argument(dsc)
 !
 !     ipar(1) = -2 inidcate that there are not enough space in the work
@@ -4679,8 +4679,8 @@ contains
             ipar(1) = -4
             return
          else
-            fpar(1) = 1.0d-6
-            fpar(2) = 1.0d-16
+            fpar(1) = 1.0e-6_dp
+            fpar(2) = 1.0e-16_dp
          end if
       end if
 !     .. clear the fpar elements
@@ -4736,7 +4736,7 @@ contains
 !-----------------------------------------------------------------------
       integer i, k
       real(kind=dp) :: nrm0, nrm1, fct, thr, zero, one, reorth
-      parameter(zero=0.0d0, one=1.0d0, reorth=0.98d0)
+      parameter(zero=0.0_dp, one=1.0_dp, reorth=0.98_dp)
 !
 !     compute the norm of the input vector
 !
@@ -4864,10 +4864,10 @@ contains
 !
 !     this is the identity matrix.
 !
-      xyke(1, 1) = 1.0d0
-      xyke(2, 2) = 1.0d0
-      xyke(1, 2) = 0.0d0
-      xyke(2, 1) = 0.0d0
+      xyke(1, 1) = 1.0_dp
+      xyke(2, 2) = 1.0_dp
+      xyke(1, 2) = 0.0_dp
+      xyke(2, 1) = 0.0_dp
 
       return
    end subroutine xyk
@@ -5021,7 +5021,7 @@ contains
 !     some constants
 !
       real(kind=dp) :: one
-      parameter(one=1.0d0)
+      parameter(one=1.0_dp)
 !
 !     local variables
 !
@@ -5144,7 +5144,7 @@ contains
 !     some constants
 !
       real(kind=dp) :: zero, half
-      parameter(zero=0.0d0, half=0.5d0)
+      parameter(zero=0.0_dp, half=0.5_dp)
 !
 !     local variables
 !
@@ -5814,7 +5814,7 @@ contains
 !     some constants
 !
       real(kind=dp) :: half, zero, one, two
-      parameter(half=0.5d0, zero=0.0d0, one=1.0d0, two=2.0d0)
+      parameter(half=0.5_dp, zero=0.0_dp, one=1.0_dp, two=2.0_dp)
 !
 !     local variables
 !
@@ -6111,7 +6111,7 @@ contains
 !     CSR matrix
 !-----------------------------------------------------------------------
       do k = ia(i), ia(i + 1) - 1
-         a(k) = 0.0d0
+         a(k) = 0.0_dp
       end do
 !
       return

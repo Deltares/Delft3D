@@ -48,12 +48,12 @@ contains
       ! locals
       integer :: ierr
       character(len=256) :: filnam
-      real(kind=dp), save :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
+      real(kind=dp), save :: curtime_split = 0.0_dp ! Current time-partition that the file writer has open.
       integer :: ndx1d, ndims
       integer :: jabndnd
 
       ! Another time-partitioned file needs to start, reset iteration count (and file).
-      if (ti_split > 0d0 .and. curtime_split /= time_split0) then
+      if (ti_split > 0.0_dp .and. curtime_split /= time_split0) then
          mapids%id_tsp%idx_curtime = 0
          it_map = 0
          curtime_split = time_split0
@@ -76,7 +76,7 @@ contains
 
          call timstrt('wrimap unc_create', handle_extra(82))
          if (mapids%ncid == 0) then
-            if (ti_split > 0d0) then
+            if (ti_split > 0.0_dp) then
                filnam = defaultFilename('map', timestamp=time_split0)
             else
                filnam = defaultFilename('map')

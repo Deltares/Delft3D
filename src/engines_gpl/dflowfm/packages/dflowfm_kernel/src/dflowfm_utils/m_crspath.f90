@@ -77,7 +77,7 @@ contains
       end if
 
       if (maxnp > 0 .and. maxnp > mcur) then
-         m = max(2, int(1.5d0 * maxnp))
+         m = max(2, int(1.5_dp * maxnp))
          call realloc(path%xp, m)
          call realloc(path%yp, m)
          call realloc(path%zp, m)
@@ -89,13 +89,13 @@ contains
       end if
 
       if (maxlnx > 0 .and. maxlnx > mcur) then
-         m = max(5, int(1.5d0 * maxlnx))
+         m = max(5, int(1.5_dp * maxlnx))
          call realloc(path%ln, m)
 
 ! GD: memory problems with realloc
          if (allocated(path%xk)) then
-            call realloc(path%xk, (/2, m/))
-            call realloc(path%yk, (/2, m/))
+            call realloc(path%xk, [2, m])
+            call realloc(path%yk, [2, m])
          else
             allocate (path%xk(2, m))
             allocate (path%yk(2, m))
@@ -265,19 +265,19 @@ contains
 
 !   Check whether flow link intersects with a polyline segment of this cross section path.
       do ip = 1, path%np - 1
-         crp = 0d0
+         crp = 0.0_dp
          if (zork == 1) then
             call CROSSinbox(path%XP(ip), path%YP(ip), path%XP(ip + 1), path%YP(ip + 1), xza, yza, xzb, yzb, jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
          else
             call CROSSinbox(path%XP(ip), path%YP(ip), path%XP(ip + 1), path%YP(ip + 1), xk3, yk3, xk4, yk4, jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
          end if
          if (jacros == 1) then
-            if (SM == 1d0) then
-               if (crp > 0d0) then
+            if (SM == 1.0_dp) then
+               if (crp > 0.0_dp) then
                   cycle
                end if
-            else if (SM == 0d0) then
-               if (crp < 0d0) then
+            else if (SM == 0.0_dp) then
+               if (crp < 0.0_dp) then
                   cycle
                end if
             end if
@@ -286,10 +286,10 @@ contains
             path%lnx = path%lnx + 1
 
             path%indexp(path%lnx) = ip
-            path%wfp(path%lnx) = 1d0 - SL ! SL=rel.pos on segment. Weight of left points is 1-SL
-            path%wfk1k2(path%lnx) = 1d0 - SM ! SM=rel.pos on flow link       of left points is 1-SM
+            path%wfp(path%lnx) = 1.0_dp - SL ! SL=rel.pos on segment. Weight of left points is 1-SL
+            path%wfk1k2(path%lnx) = 1.0_dp - SM ! SM=rel.pos on flow link       of left points is 1-SM
 
-            if (crp < 0d0) then
+            if (crp < 0.0_dp) then
                path%ln(path%lnx) = linknr
                path%xk(1, path%lnx) = xk3
                path%yk(1, path%lnx) = yk3

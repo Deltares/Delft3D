@@ -102,7 +102,7 @@ contains
 !  compute the spline to fine-spline matrix
       Numnew = 1
       do
-         call realloc(A, (/Numnew, num/))
+         call realloc(A, [Numnew, num])
          call comp_Afinespline(num, Nref, Numnew, A, ierror)
 !     check if the arrays were large enough and reallocate if not so
          if (ierror /= 2) then
@@ -128,13 +128,13 @@ contains
       do i = 1, Numnew
          iL = max(i - 1, 1)
          iR = min(i + 1, Numnew)
-         w(i) = 1d0 / sqrt(dbdistance(xf(iL), yf(iL), xf(ir), yf(iR), jsferic, jasfer3D, dmiss) / dble(iR - iL))
+         w(i) = 1.0_dp / sqrt(dbdistance(xf(iL), yf(iL), xf(ir), yf(iR), jsferic, jasfer3D, dmiss) / dble(iR - iL))
       end do
 
 !  compute normal vectors at contrained spline nodes
       call spline(xsp(ispline, 1:num), num, xspp)
       call spline(ysp(ispline, 1:num), num, yspp)
-      call comp_curv(num, xsp(ispline, 1:num), ysp(ispline, 1:num), xspp, yspp, 0d0, curv, dn1x, dn1y, dsx, dsy)
+      call comp_curv(num, xsp(ispline, 1:num), ysp(ispline, 1:num), xspp, yspp, 0.0_dp, curv, dn1x, dn1y, dsx, dsy)
       call comp_curv(num, xsp(ispline, 1:num), ysp(ispline, 1:num), xspp, yspp, dble(num - 1), curv, dn2x, dn2y, dsx, dsy)
 
 ! DEBUG
@@ -144,7 +144,7 @@ contains
 !  make matrix
       do i = 1, num
          do j = 1, num
-            AtWA(i, j) = 0d0
+            AtWA(i, j) = 0.0_dp
             do k = 1, Numnew
                AtWA(i, j) = AtWA(i, j) + A(k, i) * w(k) * A(k, j)
             end do
@@ -153,17 +153,17 @@ contains
 
 !  compute inverse matrix
       AtWAi = AtWA
-      rhsx = 0d0 ! dummy for now
+      rhsx = 0.0_dp ! dummy for now
       call gaussj(AtWAi, num, num, rhsx, 1, 1)
 
 !  make the contraints
-      B = 0d0
-      C = 0d0
+      B = 0.0_dp
+      C = 0.0_dp
       B(1, 1) = dn1y; C(1, 1) = -dn1x; d(1) = dn1y * xx1 - dn1x * yy1
       B(2, num) = dn2y; C(2, num) = -dn2x; d(2) = dn2y * xx2 - dn2x * yy2
 !  compute Schur complement
       E = matmul(B, matmul(AtWAi, transpose(B))) + matmul(C, matmul(AtWAi, transpose(C)))
-      lambda = 0d0
+      lambda = 0.0_dp
 !  invert Schur complement
       call gaussj(E, Numconstr, Numconstr, lambda, 1, 1)
 
@@ -178,8 +178,8 @@ contains
          write (6, "('elapsed time:', F7.2, ' sec.')") t1 - t0
 
          do i = 1, num
-            AtWxb(i) = 0d0
-            AtWyb(i) = 0d0
+            AtWxb(i) = 0.0_dp
+            AtWyb(i) = 0.0_dp
             do k = 1, Numnew
                AtWxb(i) = AtWxb(i) + A(k, i) * w(k) * xb(k)
                AtWyb(i) = AtWyb(i) + A(k, i) * w(k) * yb(k)

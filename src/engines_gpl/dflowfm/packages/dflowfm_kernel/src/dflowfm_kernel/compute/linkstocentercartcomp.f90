@@ -50,7 +50,7 @@ contains
 
       integer :: L, k1, k2, k3, LL, LLL, Lb, Lt
 
-      vnod = 0d0
+      vnod = 0.0_dp
       if (kmx == 0) then
          do L = 1, nd(knod)%lnx
             LL = abs(L)

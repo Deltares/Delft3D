@@ -28,11 +28,13 @@
 !-------------------------------------------------------------------------------
 
 module m_inidat
+
    use m_wrilan, only: wrilan
    use m_ininumbers, only: ininumbers
    use m_wrirgf, only: wrirgf
    use m_maketekaltimes, only: maketekaltimes
 
+use precision, only: dp
    implicit none
 
    private
@@ -71,7 +73,6 @@ contains
       use m_increase_grid
       use m_ini_sferic
       use m_start_parameters, only: md_jaautostart
-
 
       real(kind=dp) :: dx
       integer :: k
@@ -218,22 +219,22 @@ contains
       KC = 0; KC0 = 0
       LC = 0; LC0 = 0
 
-      DX = 1.0d20
+      DX = 1.0e20_dp
       RMISS = -999
-      ZUPW = 1d0
-      AG = 9.81d0
+      ZUPW = 1.0_dp
+      AG = 9.81_dp
       PI = acos(-1.)
       RHOW = 1000
       JVAST = 0
       RLENGTH = 1
-      RWIDTH = 0.01d0
-      RTHICK = 0.01d0
+      RWIDTH = 0.01_dp
+      RTHICK = 0.01_dp
       LFAC = 2
       MOMENTS = 1
 
       XYZ = 0
 
-      TWOPI = 2 * acos(-1d0)
+      TWOPI = 2 * acos(-1.0_dp)
       WAVLEN = WAVCEL * WAVPER
       WAVKX = TWOPI / WAVLEN
       WAVOM = TWOPI / WAVPER

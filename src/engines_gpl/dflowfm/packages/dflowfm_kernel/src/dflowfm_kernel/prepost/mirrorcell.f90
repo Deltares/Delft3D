@@ -80,12 +80,12 @@ contains
          !   x3 = x3 + floor( (180d0+xz(n)-x3)/360d0 ) * 360d0
          !   x4 = x4 + floor( (180d0+xz(n)-x4)/360d0 ) * 360d0
 
-         x3 = x3 + nint((xz(n) - x3) / 360d0) * 360d0
-         x4 = x4 + nint((xz(n) - x4) / 360d0) * 360d0
+         x3 = x3 + nint((xz(n) - x3) / 360.0_dp) * 360.0_dp
+         x4 = x4 + nint((xz(n) - x4) / 360.0_dp) * 360.0_dp
       end if
 
       call DLINEDIS(Xzw(n), Yzw(n), X3, Y3, X4, Y4, JA, DIS, Xd, Yd, jsferic, jasfer3D, dmiss) ! dis is half cell size in boundary normal dir
-      if (jadismxbnd == 1) dis = max(dis, 0.5d0 * sqrt(ba(n)))
+      if (jadismxbnd == 1) dis = max(dis, 0.5_dp * sqrt(ba(n)))
       ! dis = max(dis,0.5d0*sqrt(ba(n)))
 
 ! (rx,ry) outward normal in reference frame of half(x3,y3,x4,y4)
@@ -101,19 +101,19 @@ contains
          call half(x3, y3, x4, y4, xref, yref, jsferic, jasfer3D)
 
 !   get outward normal in frame reference point
-         call spher2locvec(xd, yd, 1, (/xref/), (/yref/), (/rx/), (/ry/), rxloc, ryloc, jsferic, jasfer3D, dmiss)
+         call spher2locvec(xd, yd, 1, [xref], [yref], [rx], [ry], rxloc, ryloc, jsferic, jasfer3D, dmiss)
 
 !   xcb = xd + dis*rx
          call xpav(xd, yd, dis, rxloc(1), ryloc(1), xcb, ycb, jsferic, jasfer3D)
 !   xmir = xd + 2*rrtol*dis*rx
-         call xpav(xd, yd, 2d0 * rrtol * dis, rxloc(1), ryloc(1), xmir, ymir, jsferic, jasfer3D)
+         call xpav(xd, yd, 2.0_dp * rrtol * dis, rxloc(1), ryloc(1), xmir, ymir, jsferic, jasfer3D)
 
 !   x5 = x3 + dis*rx
-         call spher2locvec(x3, y3, 1, (/xref/), (/yref/), (/rx/), (/ry/), rxloc, ryloc, jsferic, jasfer3D, dmiss)
+         call spher2locvec(x3, y3, 1, [xref], [yref], [rx], [ry], rxloc, ryloc, jsferic, jasfer3D, dmiss)
          call xpav(x3, y3, dis, rxloc(1), ryloc(1), x5, y5, jsferic, jasfer3D)
 
 !   x6 = x4 + dis*rx
-         call spher2locvec(x4, y4, 1, (/xref/), (/yref/), (/rx/), (/ry/), rxloc, ryloc, jsferic, jasfer3D, dmiss)
+         call spher2locvec(x4, y4, 1, [xref], [yref], [rx], [ry], rxloc, ryloc, jsferic, jasfer3D, dmiss)
          call xpav(x4, y4, dis, rxloc(1), ryloc(1), x6, y6, jsferic, jasfer3D)
 
 !   dout = rx*(y4-y3) - ry*(x4-x3)
@@ -129,8 +129,8 @@ contains
 
          xcb = xd + rx * dis
          ycb = yd + ry * dis
-         xmir = xd + rx * 2d0 * rrtol * dis
-         ymir = yd + ry * 2d0 * rrtol * dis
+         xmir = xd + rx * 2.0_dp * rrtol * dis
+         ymir = yd + ry * 2.0_dp * rrtol * dis
 
          x5 = x3 + dis * rx
          y5 = y3 + dis * ry
@@ -146,7 +146,7 @@ contains
       !call toemaar()
 
 ! store ordered contour of cell
-      if (dout > 0d0) then
+      if (dout > 0.0_dp) then
          xx(1) = x3; yy(1) = y3
          xx(2) = x5; yy(2) = y5
          xx(3) = x6; yy(3) = y6

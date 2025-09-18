@@ -29,13 +29,13 @@
 
 !> Utilities module with functions for initializing and updating external forcings.
 module fm_external_forcings_utils
-   use precision_basics, only: hp
+   use precision_basics, only: dp
+
    implicit none
+
    private
-   public :: split_qid
-   public :: get_tracername
-   public :: get_sedfracname
-   public :: get_constituent_name
+
+   public :: split_qid, get_tracername, get_sedfracname, get_constituent_name, read_tracer_properties
 
 contains
 
@@ -186,5 +186,25 @@ contains
 
       return
    end subroutine get_constituent_name
+
+   !> Read tracer properties from an ini file node.
+   subroutine read_tracer_properties(node_ptr, transformcoef)
+      use properties
+      use tree_data_types, only: tree_data
+
+      type(tree_data), pointer :: node_ptr !< The tree structure containing a single ini-file chapter/block.
+      real(kind=dp), intent(inout) :: transformcoef(:) !< Transformation coefficients
+
+      real(kind=dp) :: tracer_fall_velocity ! Tracer fall velocity
+      real(kind=dp) :: tracer_decay_time ! Tracer decay time
+
+      tracer_fall_velocity = 0.0_dp
+      call prop_get(node_ptr, '', 'tracerFallVelocity', tracer_fall_velocity)
+      transformcoef(24) = tracer_fall_velocity
+
+      tracer_decay_time = 0.0_dp
+      call prop_get(node_ptr, '', 'tracerDecayTime', tracer_decay_time)
+      transformcoef(25) = tracer_decay_time
+   end subroutine
 
 end module fm_external_forcings_utils

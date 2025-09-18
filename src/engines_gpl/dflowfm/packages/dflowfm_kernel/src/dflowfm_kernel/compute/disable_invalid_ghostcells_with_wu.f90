@@ -38,6 +38,8 @@
 !>     -is not a member of ghostlist_sall
 module m_disable_invalid_ghostcells_with_wu
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -75,7 +77,7 @@ contains
          if (imask(k) == 0 .and. idomain(k) /= my_rank) then
             do i = 1, nd(k)%lnx
                L = abs(nd(k)%ln(i))
-               wu(L) = 0d0
+               wu(L) = 0.0_dp
             end do
          end if
       end do

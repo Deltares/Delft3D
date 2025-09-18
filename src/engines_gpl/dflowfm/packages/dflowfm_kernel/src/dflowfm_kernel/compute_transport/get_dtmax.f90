@@ -69,18 +69,18 @@ contains
 
       real(kind=dp) :: sqtot, bak
 
-      real(kind=dp), parameter :: dtmax_default = 1d4
+      real(kind=dp), parameter :: dtmax_default = 1.0e4_dp
 
       integer(4) :: ithndl = 0
 
       if (timon) call timstrt("get_dtmax", ithndl)
 
-      dtmin_transp = huge(1d0)
+      dtmin_transp = huge(1.0_dp)
       kk_dtmin = 0
 
       if (jalimitdtdiff == 1) then
 !     determine contribution of diffusion to time-step limitation, mostly copied from "comp_fluxhor3D"
-         sumdifflim = 0d0
+         sumdifflim = 0.0_dp
          do LL = 1, Lnx
             if (jadiusp == 1) then
                diuspL = diusp(LL)
@@ -95,7 +95,7 @@ contains
                k1 = ln(1, L)
                k2 = ln(2, L)
 
-               difcoeff = 0d0
+               difcoeff = 0.0_dp
 
 !           compute maximum diffusion coefficient
                do j = 1, NUMCONST

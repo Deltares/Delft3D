@@ -54,9 +54,9 @@ program test9
    CHARACTER*255  version
 
    error = getnfv(version)
-   write(*,*)
-   write(*,*) trim(version(5:))
-   write(*,*)
+   write(*,*) '-----------------------------------------------'
+   write(*,*) 'Version: '//trim(version(5:))
+   write(*,*) '-----------------------------------------------'
 
    write(*,'(''Maak file met Complexe getallen'')')
 

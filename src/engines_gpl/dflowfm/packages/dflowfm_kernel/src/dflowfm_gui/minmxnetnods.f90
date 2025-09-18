@@ -49,9 +49,9 @@ contains
       ! BEPAAL MINIMUM EN MAXIMUM VAN DIEPTES BINNEN VIEWING AREA
 
       if (JAAUTO > 0) then
-         RMIN = 1.0d30
+         RMIN = 1.0e30_dp
          NODMIN = 0
-         RMAX = -1.0d30
+         RMAX = -1.0e30_dp
          NODMAX = 0
          do K = 1, NUMK
             if (INVIEW(XK(K), YK(K))) then

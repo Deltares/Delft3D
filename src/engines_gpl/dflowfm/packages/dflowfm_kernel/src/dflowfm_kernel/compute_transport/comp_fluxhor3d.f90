@@ -76,7 +76,7 @@ contains
       real(kind=dp), dimension(NUMCONST), intent(in) :: difsed !< scalar-specific diffusion coefficent (dicouv)
       real(kind=dp), dimension(NUMCONST, lnx), optional, intent(in) :: difsedsp !< spatially-varying diffusion coefficient (optional). If present, it overwrites the scalar in `difsed`
       real(kind=dp), dimension(NUMCONST), optional, intent(in) :: background_diffusion_factor !< factor multipling background diffusion `dicouv` (optional). By default it is 1.0, so background diffusion is applied. If set to 0.0, background diffusion is not applied.
-      real, dimension(Lnkx), intent(in) :: viu !< spatially varying horizontal eddy viscosity, NOTE: real, not double
+      real(kind=dp), dimension(Lnkx), intent(in) :: viu !< spatially varying horizontal eddy viscosity, NOTE: real, not double
       real(kind=dp), dimension(NUMCONST), intent(in) :: sigdifi !< 1/(Prandtl number) for heat, 1/(Schmidt number) for mass
       integer, intent(in) :: nsubsteps !< number of substeps
       integer, dimension(Lnx), intent(in) :: jaupdatehorflux !< update horizontal flux (1) or not (0)
@@ -119,7 +119,7 @@ contains
 
       if (limtyp == 6) then
 
-         dsedx = 0d0; dsedy = 0d0
+         dsedx = 0.0_dp; dsedy = 0.0_dp
          do LL = 1, lnx
             Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
@@ -169,11 +169,11 @@ contains
             kk2R = (1 - iswitchR) * klnup(5, LL) + iswitchR * kk1R ! make kk2R safe for when it is not intented to be used
 
 !        get the weights in the stencil
-            sl1L = (dble(1 - iswitchL) * slnup(1, LL) + dble(iswitchL) * 1d0)
+            sl1L = (dble(1 - iswitchL) * slnup(1, LL) + dble(iswitchL) * 1.0_dp)
             sl2L = dble(1 - iswitchL) * slnup(2, LL)
             sl3L = slnup(3, LL)
 
-            sl1R = (dble(1 - iswitchR) * slnup(4, LL) + dble(iswitchR) * 1d0)
+            sl1R = (dble(1 - iswitchR) * slnup(4, LL) + dble(iswitchR) * 1.0_dp)
             sl2R = dble(1 - iswitchR) * slnup(5, LL)
             sl3R = slnup(6, LL)
 
@@ -232,14 +232,14 @@ contains
 
             end if
 
-            if (u1(L) > 0d0) then
+            if (u1(L) > 0.0_dp) then
                is = 1; ku = k1; half = acL(LL)
             else
-               is = -1; ku = k2; half = 1d0 - acl(LL)
+               is = -1; ku = k2; half = 1.0_dp - acl(LL)
             end if
 
-            QL = max(q1(L), 0d0)
-            QR = min(q1(L), 0d0)
+            QL = max(q1(L), 0.0_dp)
+            QR = min(q1(L), 0.0_dp)
 
             do j = 1, NUMCONST
                if (jaupdateconst(j) /= 1) cycle
@@ -248,45 +248,45 @@ contains
                sedR = sed(j, k2)
 
                if (Limtyp == 7) then
-                  flux(j, L) = q1(L) * 0.5d0 * (sedR + sedL) ! central only for cursusdemo
+                  flux(j, L) = q1(L) * 0.5_dp * (sedR + sedL) ! central only for cursusdemo
                else if (Limtyp == 6) then
                   if (klnup(1, LL) /= 0) then ! used to detect disabled higher-order
                      ds2 = is * (sedR - sedL)
                      ds1 = is * (dsedx(j, ku) * csu(LL) + dsedy(j, ku) * snu(LL)) * Dx(LL)
-                     flux(j, L) = q1(L) * (sed(j, ku) + half * max(0d0, 1d0 - cf) * dlimitercentral(ds1, ds2, limtyp))
+                     flux(j, L) = q1(L) * (sed(j, ku) + half * max(0.0_dp, 1.0_dp - cf) * dlimitercentral(ds1, ds2, limtyp))
                   end if
                else if (limtyp == 9) then ! MC on non-equidistant mesh
-                  if (kk1L /= 0 .and. q1(L) > 0d0 .and. jaL > 0) then
+                  if (kk1L /= 0 .and. q1(L) > 0.0_dp .and. jaL > 0) then
                      sedkuL = sed(j, k1L) * sl1L + sed(j, k2L) * sl2L
                      ds2L = sed(j, k2) - sed(j, k1)
                      ds1L = (sed(j, k1) - sedkuL) * sl3L
 !                   sedL = sedL +      acl(LL) *max(0d0,1d0-cf) * dlimiter_nonequi(ds1L,ds2L,acl(LL),sl3L) * ds2L
-                     sedL = sedL + acl(LL) * max(0d0, 1d0 - cf) * dlimiter_nonequi(ds1L, ds2L, acl(LL), 1d0) * ds2L
+                     sedL = sedL + acl(LL) * max(0.0_dp, 1.0_dp - cf) * dlimiter_nonequi(ds1L, ds2L, acl(LL), 1.0_dp) * ds2L
                   end if
 
-                  if (kk1R /= 0 .and. q1(L) < 0d0 .and. jaR > 0) then
+                  if (kk1R /= 0 .and. q1(L) < 0.0_dp .and. jaR > 0) then
                      sedkuR = sed(j, k1R) * sl1R + sed(j, k2R) * sl2R
                      ds2R = sed(j, k1) - sed(j, k2)
                      ds1R = (sed(j, k2) - sedkuR) * sl3R
 !                   sedR = sedR + (1d0-acl(LL))*max(0d0,1d0-cf) * dlimiter_nonequi(ds1R,ds2R,1d0-acl(LL),sl3R) * ds2R
-                     sedR = sedR + (1d0 - acl(LL)) * max(0d0, 1d0 - cf) * dlimiter_nonequi(ds1R, ds2R, 1d0 - acl(LL), 1d0) * ds2R
+                     sedR = sedR + (1.0_dp - acl(LL)) * max(0.0_dp, 1.0_dp - cf) * dlimiter_nonequi(ds1R, ds2R, 1.0_dp - acl(LL), 1.0_dp) * ds2R
                   end if
 
                   flux(j, L) = QL * sedL + QR * sedR
                else
 
-                  if (kk1L /= 0 .and. q1(L) > 0d0 .and. jaL > 0) then
+                  if (kk1L /= 0 .and. q1(L) > 0.0_dp .and. jaL > 0) then
                      sedkuL = sed(j, k1L) * sl1L + sed(j, k2L) * sl2L
                      ds2L = sed(j, k2) - sed(j, k1)
                      ds1L = (sed(j, k1) - sedkuL) * sl3L
-                     sedL = sedL + acl(LL) * max(0d0, 1d0 - cf) * dlimiter(ds1L, ds2L, limtyp) * ds2L
+                     sedL = sedL + acl(LL) * max(0.0_dp, 1.0_dp - cf) * dlimiter(ds1L, ds2L, limtyp) * ds2L
                   end if
 
-                  if (kk1R /= 0 .and. q1(L) < 0d0 .and. jaR > 0) then
+                  if (kk1R /= 0 .and. q1(L) < 0.0_dp .and. jaR > 0) then
                      sedkuR = sed(j, k1R) * sl1R + sed(j, k2R) * sl2R
                      ds2R = sed(j, k1) - sed(j, k2)
                      ds1R = (sed(j, k2) - sedkuR) * sl3R
-                     sedR = sedR + (1d0 - acl(LL)) * max(0d0, 1d0 - cf) * dlimiter(ds1R, ds2R, limtyp) * ds2R
+                     sedR = sedR + (1.0_dp - acl(LL)) * max(0.0_dp, 1.0_dp - cf) * dlimiter(ds1R, ds2R, limtyp) * ds2R
                   end if
 
                   flux(j, L) = QL * sedL + QR * sedR
@@ -301,7 +301,7 @@ contains
 !$OMP END PARALLEL DO
 
 !  diffusion
-      if (dicouv >= 0d0 .and. jalimitdiff /= 3) then
+      if (dicouv >= 0.0_dp .and. jalimitdiff /= 3) then
          number_limited_links = 0
          !$OMP PARALLEL DO                             &
          !$OMP PRIVATE(LL,dfac1,dfac2,Lb,Lt,L,k1,k2,fluxfacMaxL,fluxfacMaxR,j,difcoeff,fluxfac,diuspL,flux_max_limit,difsed_const) &
@@ -322,8 +322,8 @@ contains
                !dfac1 = 0.2d0
                !dfac2 = 0.2d0
 
-               dfac1 = 1d0 / dble(nd(ln(1, LL))%lnx)
-               dfac2 = 1d0 / dble(nd(ln(2, LL))%lnx)
+               dfac1 = 1.0_dp / dble(nd(ln(1, LL))%lnx)
+               dfac2 = 1.0_dp / dble(nd(ln(2, LL))%lnx)
             end if
 
             if (jadiusp == 1) then
@@ -364,7 +364,7 @@ contains
                         number_limited_links = number_limited_links + 1
                      end if
                   end if
-                  fluxfac = max(fluxfac, 0d0)
+                  fluxfac = max(fluxfac, 0.0_dp)
                   if (jacreep /= 1) then
                      flux(j, L) = flux(j, L) - fluxfac * (sed(j, k2) - sed(j, k1))
                   else

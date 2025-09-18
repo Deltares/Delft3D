@@ -86,7 +86,7 @@ contains
 
          AEL = PI * THICK * THICK / 4 ! RDIAM in mm
          SIZ = SIZE
-         HS = SIZE * 0.5d0
+         HS = SIZE * 0.5_dp
          CS = cos(ANGLE * PI / 180.); SN = sin(ANGLE * PI / 180.)
 
          if (NTYP <= 2) then
@@ -96,9 +96,9 @@ contains
             DX = SIZ * cos(ANGLE * PI / 180.)
             DY = SIZ * sin(ANGLE * PI / 180.)
          else if (NTYP == 4) then
-            DX = 0.5d0 * SIZ; DY = DX * sqrt(3d0)
+            DX = 0.5_dp * SIZ; DY = DX * sqrt(3.0_dp)
          else if (NTYP == 5) then
-            DX = HS; DY = sqrt(3d0) * DX
+            DX = HS; DY = sqrt(3.0_dp) * DX
          end if
 
          if (NPL > 0) then
@@ -120,16 +120,16 @@ contains
                   YC(M, N) = Y0 + (M - 1) * DX * SN + (N - 1) * DY * CS
                   if (jsferic == 1 .and. n > 1) then
                      c = cos(dg2rd * yc(m, n - 1))
-                     asp = c * 1d0 + (1d0 - c) * 0.3d0
+                     asp = c * 1.0_dp + (1.0_dp - c) * 0.3_dp
                      dy = dx * c * asp
                      YC(M, N) = YC(M, N - 1) + dy
                   end if
 
                end do
                if (jsferic == 1) then
-                  if (dy * dg2rd * ra < 20000.d0) then
+                  if (dy * dg2rd * ra < 20000.0_dp) then
                      nc = n + 1
-                     yc(1:mc, nc) = 90d0
+                     yc(1:mc, nc) = 90.0_dp
                      xc(1:mc, nc) = xc(1:mc, nc - 1)
                      exit
                   end if
@@ -150,7 +150,7 @@ contains
 
             call INCREASENETW(K0 + NUMKN, L0 + NUMLN)
 
-            call readyy('makenet', 0d0)
+            call readyy('makenet', 0.0_dp)
 
             Z = Z0
             do N = 1, NRY
@@ -170,8 +170,8 @@ contains
                      XX = XX - DX0
                      X(4) = X0 + XX * CS - YY * SN; NN = 4
                      Y(4) = Y0 + YY * CS + XX * SN
-                     XD = 0.25d0 * (X(1) + X(2) + X(3) + X(4))
-                     YD = 0.25d0 * (Y(1) + Y(2) + Y(3) + Y(4))
+                     XD = 0.25_dp * (X(1) + X(2) + X(3) + X(4))
+                     YD = 0.25_dp * (Y(1) + Y(2) + Y(3) + Y(4))
                   else if (NTYP == 1) then
                      XD = X0 + DX + dble(M - 1) * 2 * DX; NN = 4
                      YD = Y0 + DY + dble(N - 1) * 2 * DY
@@ -229,11 +229,11 @@ contains
 
       else if (NTYP == 6) then
 
-         dx0 = 360d0 / nrx
+         dx0 = 360.0_dp / nrx
          dy0 = dx0
          JAFIVE = 0
          jsferic = 1; jasfer3D = 1; jaklaar = 0; z = dmiss
-         YY = 0d0
+         YY = 0.0_dp
          dy0 = dx0
 
          K0 = NUMK
@@ -247,17 +247,17 @@ contains
 
             call getdeltay(yy, dx0, dy0)
 
-            if (yy + 1.5d0 * dy0 > 90d0) then
-               dy0 = 90d0 - YY; jaklaar = 1; jafive = 0
+            if (yy + 1.5_dp * dy0 > 90.0_dp) then
+               dy0 = 90.0_dp - YY; jaklaar = 1; jafive = 0
             else
                if (dy0 * dg2rd * ra < dxdouble .and. jafive == 0) then
-                  dx0 = 2d0 * dx0; jafive = 1
+                  dx0 = 2.0_dp * dx0; jafive = 1
                   call getdeltay(yy, dx0, dy0)
                else
                   jafive = 0; n12 = 0
                end if
-               if (yy + 1.5d0 * dy0 > 90d0) then
-                  dy0 = 0.51d0 * (90d0 - yy)
+               if (yy + 1.5_dp * dy0 > 90.0_dp) then
+                  dy0 = 0.51_dp * (90.0_dp - yy)
                end if
             end if
 
@@ -276,7 +276,7 @@ contains
                   Y(4) = YY + dy0
                   NN = 4
                else
-                  x(2) = XX + 0.5d0 * DX0
+                  x(2) = XX + 0.5_dp * DX0
                   y(2) = YY
                   X(3) = XX + dx0
                   Y(3) = YY
@@ -288,7 +288,7 @@ contains
                end if
 
                call PINPOK(XD, YD, NPL, XPL, YPL, IN, jins, dmiss)
-               if (IN == 1 .and. x(3) <= xwleft + 360d0) then
+               if (IN == 1 .and. x(3) <= xwleft + 360.0_dp) then
                   jafive = 0
                   call ADDMAZE(X, Y, Z, NN, JAFIVE)
                   call ADDMAZE(X, -Y, Z, NN, JAFIVE)
@@ -319,17 +319,17 @@ contains
          NUMLN = NRX
          call INCREASENETW(2 * NUMKN, 2 * NUMLN)
          dphi = -pi / nrx
-         dxt = 0d0
+         dxt = 0.0_dp
          rr = radius
          dx0 = dphi * rr
          do i = 1, 3
-            phi = angle + pi + 0.5d0 * dphi
-            dxt = 0d0
+            phi = angle + pi + 0.5_dp * dphi
+            dxt = 0.0_dp
             k = k0 + 1
             L = L0
             xk(k) = x0 + rr * cos(phi)
             yk(k) = y0 + rr * sin(phi)
-            zk(k) = zkuni - 0.5d0 * dx0 * bedslope
+            zk(k) = zkuni - 0.5_dp * dx0 * bedslope
             do LL = 1, nrx - 1
                phi = phi + dphi; k = k + 1; L = L + 1
                xk(k) = x0 + rr * cos(phi)
@@ -347,9 +347,9 @@ contains
          end do
 
          k = k + 1
-         xk(k) = x0 - 1.5d0 * radius
-         yk(k) = y0 + 0.5d0 * dx0
-         zk(k) = zkuni - 0.5d0 * dx0 * bedslope
+         xk(k) = x0 - 1.5_dp * radius
+         yk(k) = y0 + 0.5_dp * dx0
+         zk(k) = zkuni - 0.5_dp * dx0 * bedslope
 
          !call add2Dcell(xk(k)+3d0*radius,yk(k),zkuni,bedslope)
 
@@ -368,7 +368,7 @@ contains
          rl = pi * radius
          dd = rl / dble(nrx)
          z2 = -(rl + dd) * bedslope
-         zbn = -5d0 - (rl - 0.5d0 * dd) * bedslope
+         zbn = -5.0_dp - (rl - 0.5_dp * dd) * bedslope
 
          fnam = 'c128_0001.tim'
          write (fnam(2:4), '(i3.3)') nrx
@@ -384,11 +384,11 @@ contains
          call INCREASENETW(2 * NUMKN, 2 * NUMLN)
 
          K = 1; xk(k) = x0; yk(k) = y0; zk(k) = zkuni - 0.5 * bedslope * dx0
-         L = 0; xd = 1d0; yd = 0d0
+         L = 0; xd = 1.0_dp; yd = 0.0_dp
          do LL = 1, nrx
             k = k + 1; L = L + 1
             if (LL > nrx / 2) then
-               xd = -0.5d0 * sqrt(2d0)
+               xd = -0.5_dp * sqrt(2.0_dp)
                yd = xd
             end if
             xk(k) = xk(k - 1) + dx0 * xd
@@ -404,7 +404,7 @@ contains
       end if
 
       call SETNODADM(0)
-      call readyy('makenet', -1d0)
+      call readyy('makenet', -1.0_dp)
 
       return
    end subroutine MAKENET

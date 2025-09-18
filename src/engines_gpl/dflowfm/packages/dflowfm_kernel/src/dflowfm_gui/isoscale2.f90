@@ -82,8 +82,8 @@ contains
 
       INC = NV / 30 + 1 ! Max 30 color boxes, otherwise increment > 1
 
-      WI = 10 * WIC + 1.8d0 * HIC
-      if (XSC < 0.6d0) then
+      WI = 10 * WIC + 1.8_dp * HIC
+      if (XSC < 0.6_dp) then
          XSC1 = X1 + XSC * (X2 - X1)
       else
          XSC1 = X2 - (1 - XSC) * (X2 - X1) - WI
@@ -95,9 +95,9 @@ contains
       write (MAXTEX, '("MAX:", E12.5)') VMAX
 
       if (VMAX > VMIN .and. NDRAW(11) >= 2) then
-         YSC2 = min(YSC1 + (NV / INC + 1d0) * HIC + 2.5d0 * HIC, Y2)
+         YSC2 = min(YSC1 + (NV / INC + 1.0_dp) * HIC + 2.5_dp * HIC, Y2)
       else
-         YSC2 = min(YSC1 + (1d0) * HIC + 3.5d0 * HIC, Y2)
+         YSC2 = min(YSC1 + (1.0_dp) * HIC + 3.5_dp * HIC, Y2)
          XSC2 = XSC2 + 2 * WIC
       end if
 
@@ -140,9 +140,9 @@ contains
          call FBOXnop(XSC1, YT - 4 * HIC, XSC2, YT)
          call SETCOL(KLTEX)
          call BOXnop(XSC1, YT - 4 * HIC, XSC2, YT)
-         VFAC2 = 0.3d0 * (XSC2 - XSC1)
+         VFAC2 = 0.3_dp * (XSC2 - XSC1)
          call SETCOL(KLVEC)
-         call ARROWS(XSC1 + WIC, YT - 2 * HIC, 1d0, 0d0, 0d0, VFAC2)
+         call ARROWS(XSC1 + WIC, YT - 2 * HIC, 1.0_dp, 0.0_dp, 0.0_dp, VFAC2)
          TEX = ' 2.3 m/s'
          ! WRITE(TEX(1:4),'(F4.1)')  VFAC2/(DX*VFAC)
          write (TEX(1:4), '(F4.1)') real(VFAC2 / (VFAC))

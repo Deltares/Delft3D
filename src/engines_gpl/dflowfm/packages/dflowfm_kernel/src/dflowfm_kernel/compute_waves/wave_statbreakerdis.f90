@@ -58,10 +58,10 @@ contains
 
       real(kind=dp) :: alpha, Hb
 
-      alpha = 1d0 ! can be slope dependent, see work of Bertin et al
+      alpha = 1.0_dp ! can be slope dependent, see work of Bertin et al
 
-      Hb = 0.88d0 / k * tanh(gammax * k * h / 0.88d0)
-      D = 0.25d0 * alpha * rhomean * ag / tp * exp(-(Hb / hrms)**2) * (Hb**3 + hrms**3) / gammax / h
+      Hb = 0.88_dp / k * tanh(gammax * k * h / 0.88_dp)
+      D = 0.25_dp * alpha * rhomean * ag / tp * exp(-(Hb / hrms)**2) * (Hb**3 + hrms**3) / gammax / h
 
    end subroutine wave_statbreakerdis
 

@@ -32,6 +32,8 @@
 
 module m_apply_sediment_bc
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -80,7 +82,7 @@ contains
                LLL = bndsf(ll)%k(3, k)
                call getLbotLtop(LLL, Lb, Lt)
                if (Lt < Lb) cycle
-               if (hu(LLL) > 0d0) then
+               if (hu(LLL) > 0.0_dp) then
                   do L = Lb, Lt
                      kb = ln(1, L); ki = ln(2, L)
                      kk = kmxd * (k - 1) + L - Lb + 1
@@ -94,7 +96,7 @@ contains
                   !                 set other values (e.g. dry links)
                   do L = Lb, Lb + kmxL(LLL) - 1
                      kb = ln(1, L)
-                     constituents(iconst, kb) = 0d0
+                     constituents(iconst, kb) = 0.0_dp
                   end do
                end if
             end do

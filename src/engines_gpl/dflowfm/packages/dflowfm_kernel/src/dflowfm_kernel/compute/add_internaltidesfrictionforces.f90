@@ -69,7 +69,7 @@ contains
 
 !     compute cell-centered forces
       ierror = 0
-      DissInternalTides = 0d0
+      DissInternalTides = 0.0_dp
       do k = 1, Ndx
          dum = sqrt(workx(k)**2 + worky(k)**2)
          GradHinUc = workx(k) * ucx(k) + worky(k) * ucy(k)
@@ -78,7 +78,7 @@ contains
 
          if (hs(k) > epshs) then
 
-            if (ITcap > 0d0) then
+            if (ITcap > 0.0_dp) then
 !              limit with ITcap
                diss = -rho(k) * (workx(k) * ucx(k) + worky(k) * ucy(k)) ! (kg/m3)*(m3/s3) = kg/s3
 
@@ -93,8 +93,8 @@ contains
 !           check time step
 !           estimate eigenvalue
             Lambda = FrcInternalTides2D(k) * dum**2 / hs(k) ! (m/s)*( )/ (m) = (1/s)
-            if (Lambda * dts > 1d0) then
-               dfac = 1d0 / (Lambda * dts)
+            if (Lambda * dts > 1.0_dp) then
+               dfac = 1.0_dp / (Lambda * dts)
                !              write(str, "('k = ', I8, ': gamma ||grad H||^2 / H = ', E15.5, ' > 1/Delta t =', E15.5, ', H=', E15.5, ', ||grad H||=', E15.5, ', gamma=', E15.5, ', reduce factor=', E15.5)") k, Lambda, 1d0/dts, hs(k), dum, FrcInternalTides2D(k), dfac
                !              call mess(LEVEL_WARN, trim(str))
 !               ierror = 1
@@ -121,7 +121,7 @@ contains
 
 !     interpolate to faces, project in face-normal direction, divide by water depth and add to adve
       do L = 1, Lnx
-         if (hu(L) > 0d0) then
+         if (hu(L) > 0.0_dp) then
             k1 = ln(1, L)
             k2 = ln(2, L)
 
@@ -136,8 +136,8 @@ contains
             dumy2 = nod2liny(L, 2, workx(k2), worky(k2))
 
             adve(L) = adve(L) - huvli(L) * &
-                      ((acL(L) * dumx1 + (1d0 - acL(L)) * dumx2) * csu(L) + &
-                       (acL(L) * dumy1 + (1d0 - acL(L)) * dumy2) * snu(L))
+                      ((acL(L) * dumx1 + (1.0_dp - acL(L)) * dumx2) * csu(L) + &
+                       (acL(L) * dumy1 + (1.0_dp - acL(L)) * dumy2) * snu(L))
 
          end if
       end do

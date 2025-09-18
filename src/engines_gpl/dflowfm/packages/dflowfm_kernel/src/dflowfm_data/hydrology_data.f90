@@ -110,7 +110,7 @@ contains
       interceptionmodel = 0
 
       infiltrationmodel = DFM_HYD_NOINFILT
-      infiltcapuni = 0d0
+      infiltcapuni = 0.0_dp
 
       call reset_hydrology_data()
    end subroutine default_hydrology_data

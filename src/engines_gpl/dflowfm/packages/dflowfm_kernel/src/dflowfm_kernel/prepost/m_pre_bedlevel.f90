@@ -131,7 +131,7 @@ contains
 
       allocate (dzdx(1:ndx), dzdy(1:ndx), stat=istat)
 
-      dzdx = 0d0; dzdy = 0d0
+      dzdx = 0.0_dp; dzdy = 0.0_dp
 !only internal links because the bed level at the ghost is wrong (mirrored)
       do L = 1, lnxi
          k1 = ln(1, L); k2 = ln(2, L)

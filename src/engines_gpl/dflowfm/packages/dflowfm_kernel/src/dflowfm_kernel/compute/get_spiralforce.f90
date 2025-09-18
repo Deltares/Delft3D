@@ -49,24 +49,24 @@ contains
       real(kind=dp) :: betas, beta, alfa
       real(kind=dp) :: fx, fy, fxl
 
-      ht_xx = 0d0; ht_xy = 0d0
+      ht_xx = 0.0_dp; ht_xy = 0.0_dp
 
       do k = 1, ndxi
-         ht_xx(k) = 0d0
-         ht_xy(k) = 0d0
-         if (spirucm(k) < 1.0d-3) cycle
+         ht_xx(k) = 0.0_dp
+         ht_xy(k) = 0.0_dp
+         if (spirucm(k) < 1.0e-3_dp) cycle
          if (hs(k) < epshu) cycle
          alfa = sag / vonkar / czssf(k)
-         betas = spirbeta * (5.0d0 * alfa - 15.6d0 * alfa**2 + 37.5d0 * alfa**3)
+         betas = spirbeta * (5.0_dp * alfa - 15.6_dp * alfa**2 + 37.5_dp * alfa**3)
          beta = betas * spirint(k) / spirucm(k)
-         ht_xx(k) = -2.0d0 * hs(k) * beta * ucx(k) * ucy(k)
+         ht_xx(k) = -2.0_dp * hs(k) * beta * ucx(k) * ucy(k)
          ht_xy(k) = hs(k) * beta * (ucx(k) * ucx(k) - ucy(k) * ucy(k))
       end do
 
       do L = lnxi + 1, lnx ! Boundary conditions for spiral flow forces
          k1 = ln(1, L); k2 = ln(2, L)
-         ht_xy(k1) = 0d0
-         ht_xy(k1) = 0d0
+         ht_xy(k1) = 0.0_dp
+         ht_xy(k1) = 0.0_dp
          if (hs(k2) < epshu) cycle
          ht_xx(k1) = ht_xx(k2)
          ht_xy(k1) = ht_xy(k2)
@@ -74,16 +74,16 @@ contains
 
       do k = 1, ndxi
          k1 = k
-         spirfx(k1) = 0d0
-         spirfy(k1) = 0d0
+         spirfx(k1) = 0.0_dp
+         spirfy(k1) = 0.0_dp
          if (hs(k1) < epshu) cycle
-         cofa = 0.0d0
-         cofb = 0.0d0
-         cofc = 0.0d0
-         cofd = 0.0d0
-         cofe = 0.0d0
-         coff = 0.0d0
-         cofg = 0.0d0
+         cofa = 0.0_dp
+         cofb = 0.0_dp
+         cofc = 0.0_dp
+         cofd = 0.0_dp
+         cofe = 0.0_dp
+         coff = 0.0_dp
+         cofg = 0.0_dp
          n = 0
          do LL = 1, nd(k1)%lnx
             L = abs(nd(k1)%ln(LL))
@@ -95,8 +95,8 @@ contains
             coftxx = ht_xx(k2) - ht_xx(k1)
             coftxy = ht_xy(k2) - ht_xy(k1)
             cof0 = sqrt(cofx * cofx + cofy * cofy)
-            cofw = 1.0d0 / cof0
-            if (cof0 < 1.0d-6) cofw = 1.0d6
+            cofw = 1.0_dp / cof0
+            if (cof0 < 1.0e-6_dp) cofw = 1.0e6_dp
             cofx = cofw * cofx
             cofy = cofw * cofy
             coftxx = cofw * coftxx
@@ -111,7 +111,7 @@ contains
          end do
          cof0 = cofa * cofc - cofb * cofb
 
-         if (cof0 == 0d0 .or. n < 2) cycle
+         if (cof0 == 0.0_dp .or. n < 2) cycle
          dtxxdx = (cofd * cofc - cofb * cofe) / cof0
          dtxxdy = (cofa * cofe - cofd * cofb) / cof0
          dtxydx = (coff * cofc - cofb * cofg) / cof0
@@ -128,8 +128,8 @@ contains
 
       do L = 1, lnx ! Mapping forces from global coordinates to local
          k1 = ln(1, L); k2 = ln(2, L)
-         fx = acl(L) * spirfx(k1) + (1.0d0 - acl(L)) * spirfx(k2)
-         fy = acl(L) * spirfy(k1) + (1.0d0 - acl(L)) * spirfy(k2)
+         fx = acl(L) * spirfx(k1) + (1.0_dp - acl(L)) * spirfx(k2)
+         fy = acl(L) * spirfy(k1) + (1.0_dp - acl(L)) * spirfy(k2)
          fxl = csu(L) * fx + snu(L) * fy
          adve(L) = adve(L) - fxl ! Adding the local forces to the momentum equation
       end do

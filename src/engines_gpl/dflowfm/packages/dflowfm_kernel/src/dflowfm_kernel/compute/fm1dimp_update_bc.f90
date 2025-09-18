@@ -69,7 +69,7 @@ contains
          !x (time)
          ktab = table_number * table_length - 1
          f1dimppar%table(ktab) = time1
-         f1dimppar%table(ktab + 1) = time1 + 1d0 !It does not matter, as the query time will be <time1>
+         f1dimppar%table(ktab + 1) = time1 + 1.0_dp !It does not matter, as the query time will be <time1>
          !y (var)
          ktab = number_BC_tables * table_length + table_number * table_length - 1
          f1dimppar%table(ktab) = zbndz(k)
@@ -82,7 +82,7 @@ contains
          !x (time)
          ktab = table_number * table_length - 1
          f1dimppar%table(ktab) = time1
-         f1dimppar%table(ktab + 1) = time1 + 1d0 !It does not matter, as the query time will be <time1>
+         f1dimppar%table(ktab + 1) = time1 + 1.0_dp !It does not matter, as the query time will be <time1>
          !y (var)
          ktab = number_BC_tables * table_length + table_number * table_length - 1
 
@@ -97,7 +97,7 @@ contains
          f1dimppar%table(ktab + 1) = zbndq(k) * au(L)
       end do
 
-!f1dimppar%table=(/ 0d0,86400d0,0d0,10000d0,1.00666656855963d0,1.00666656855963d0,100d0,100d0 /)
+!f1dimppar%table=[ 0d0,86400d0,0d0,10000d0,1.00666656855963d0,1.00666656855963d0,100d0,100d0 ]
 !                     call INTTAB (ntab(1,itab), ntab(4,itab),
 !     +                            table(ntab(3,itab)),
 !     +                            table(ntab(2,itab)),

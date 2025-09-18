@@ -21,6 +21,7 @@ object ReportVerschilanalyse: BuildType({
     params {
         param("current_prefix", "output/weekly/latest")
         param("reference_prefix", "output/release/2025.01")
+        param("send_email", "true")
 
         param("env.TEAMCITY_SERVER_URL", DslContext.serverUrl.replace(Regex("/+$"), ""))
         param("env.EMAIL_SERVER", "smtp.directory.intra")
@@ -78,6 +79,9 @@ object ReportVerschilanalyse: BuildType({
         python {
             name = "Send email"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
+            conditions {
+                equals("send_email", "true")
+            }
             pythonVersion = customPython {
                 executable = "python3.11"
             }
