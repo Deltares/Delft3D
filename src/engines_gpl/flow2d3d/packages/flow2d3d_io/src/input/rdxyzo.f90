@@ -117,7 +117,7 @@ subroutine rdxyzo(lunmd     ,lundia    ,error     ,nrrec     ,mdfrec    , &
     real(fp)                         :: rdef     ! Help var. containing default value(s) for real variable
     real(fp)                         :: rmissval
     real(fp)     , dimension(kmax)   :: rval     ! Help array (real) where the data, recently read from the MD-file, are stored temporarily
-    real(fp)     , dimension(2)      :: dxdy     ! Help array for readin dx and dy
+    real(fp)     , dimension(2)      :: dxdy     ! Help array for reading dx and dy
     character(1)                     :: cdef     ! Default value for chulp
     character(11)                    :: fmtdef   ! Default file format (usually=blank)
     character(11)                    :: fmttmp   ! Character string defining the format of the curvi-linear grid file, file will be read formatted
