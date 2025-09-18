@@ -19,7 +19,7 @@ object WindowsTest : BuildType({
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
         TemplateDockerRegistry
     )
 
