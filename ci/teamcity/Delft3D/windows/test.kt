@@ -20,6 +20,7 @@ object WindowsTest : BuildType({
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance
+        TemplateDockerRegistry
     )
 
     name = "Test"
