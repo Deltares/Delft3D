@@ -95,6 +95,26 @@ object WindowsTest : BuildType({
             dockerImage = "containers.deltares.nl/docker-proxy/python:windowsservercore-ltsc2025"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
             dockerPull = true
+            dockerRunParameters = """
+                --rm
+                --pull always
+            """.trimIndent()
+        }
+        dockerCommand {
+            name = "Remove container"
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+            commandType = other {
+                subCommand = "rmi"
+                commandArgs = "containers.deltares.nl/docker-proxy/python:windowsservercore-ltsc2025"
+            }
+        }
+        dockerCommand {
+            name = "Prune"
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+            commandType = other {
+                subCommand = "system"
+                commandArgs = "prune -f"
+            }
         }
         script {
             name = "Copy cases"
