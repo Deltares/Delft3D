@@ -4,7 +4,7 @@ from argparse import ArgumentParser, Namespace
 from httpx import HTTPStatusError
 
 from ci_tools.example_utils.logger import Logger, LogLevel
-from ci_tools.teamcity_api.client import TeamcityClient
+from ci_tools.teamcity.client import TeamcityClient
 
 
 def parse_arguments() -> Namespace:
