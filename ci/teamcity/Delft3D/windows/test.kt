@@ -163,8 +163,4 @@ object WindowsTest : BuildType({
             reverse = false
         }
     }
-
-    requirements {
-        startsWith("teamcity.agent.jvm.os.name", "Windows 1")
-    }
 })
