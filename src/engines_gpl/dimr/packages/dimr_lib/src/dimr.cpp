@@ -332,7 +332,10 @@ void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component, bo
         throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: undefined component.");
     }
     bool multipleProcessesCheck = isMaster || component->numProcesses > 1;
-    if (use_mpi && component->mpiCommVar != NULL && multipleProcessesCheck) {
+    if (use_mpi && multipleProcessesCheck) {
+        if (component->mpiCommVar == NULL) {
+            throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: communicator handle undefined for component \"%s\".", component->name);
+        }
         ierr = MPI_Group_incl(mpiGroupWorld, component->numProcesses, component->processes, &mpiGroupComp);
         if (ierr != MPI_SUCCESS) {
             throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot create a subgroup of %d processes for component \"%s\". Code: %d.", component->numProcesses, component->name, ierr);
@@ -351,7 +354,6 @@ void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component, bo
             *fComm = MPI_Comm_c2f(component->mpiComm);
         }
     }
-
 }
 
 
@@ -1578,6 +1580,9 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
     if (commElement != NULL) {
         // Store communicator var name in component.
         newComp->mpiCommVar = commElement->charData;
+    }
+    else {
+        newComp->mpiCommVar = nullptr;
     }
 
     // Element inputFile (optional?)
