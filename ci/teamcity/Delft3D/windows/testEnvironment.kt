@@ -24,7 +24,7 @@ object TestEnvironment : BuildType({
 
     params {
         param("trigger.type", "")
-        param("container.tag", "test")
+        param("container.tag", "test-environment")
     }
 
     vcs {
@@ -52,16 +52,16 @@ object TestEnvironment : BuildType({
             }
         }
         dockerCommand {
-            name = "Docker build dhydro test container"
+            name = "Docker build dhydro test-environment container"
             commandType = build {
                 source = file {
-                    path = "ci/dockerfiles/windows/Dockerfile-dhydro-test"
+                    path = "ci/dockerfiles/windows/Dockerfile-dhydro-test-environment"
                 }
                 contextDir = "ci/dockerfiles/windows"
                 platform = DockerCommandStep.ImagePlatform.Windows
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-test-windows:%container.tag%
-                    containers.deltares.nl/delft3d-dev/delft3d-test-windows:%build.vcs.number%
+                    containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%
+                    containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%build.vcs.number%
                 """.trimIndent()
                 commandArgs = "--no-cache"
             }
@@ -70,7 +70,7 @@ object TestEnvironment : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-test-windows:%build.vcs.number%
+                    containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%build.vcs.number%
                 """.trimIndent()
             }
         }
@@ -78,7 +78,7 @@ object TestEnvironment : BuildType({
             name = "Docker push"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-test-windows:%container.tag%
+                    containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%
                 """.trimIndent()
             }
             enabled = "%trigger.type%" == "vcs"
