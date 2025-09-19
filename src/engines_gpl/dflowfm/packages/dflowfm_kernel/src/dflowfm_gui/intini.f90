@@ -31,11 +31,13 @@
 !
 
 module m_intini
+
    use m_settextsize
    use m_setgrafmod
    use m_setcolortable
    use m_minmaxworld
 
+use precision, only: dp
    implicit none
 
 contains
@@ -82,7 +84,7 @@ contains
 !      CALL INSERTOVER('OVER')
 
 !     set size crosshair cursor
-      ICRHF = 1d0 / CROSHRSZ
+      ICRHF = 1.0_dp / CROSHRSZ
 
       call IGRINPUTOPTIONS(5, ICRHF)
 !
@@ -115,16 +117,16 @@ contains
       call SETTEXTSIZE()
       call IGRFILLPATTERN(4, 0, 0)
 
-      YBOT = 0d0
-      XLEFT = 0d0
+      YBOT = 0.0_dp
+      XLEFT = 0.0_dp
       JAXIS = 0
       call viewport(0.0, 0.0, 1.0, 1.0)
 !      CALL IPGAREA(0.0,0.0,1.0,1.0)
 
-      XMIN = 0d0
-      XMAX = 1d0
-      YMIN = 0d0
-      YMAX = 1d0
+      XMIN = 0.0_dp
+      XMAX = 1.0_dp
+      YMIN = 0.0_dp
+      YMAX = 1.0_dp
       X1 = XMIN
       X2 = XMAX
       Y1 = YMIN

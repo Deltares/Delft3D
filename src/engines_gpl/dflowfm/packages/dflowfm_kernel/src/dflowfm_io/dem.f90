@@ -324,7 +324,7 @@ contains
 
       ! sample the DEM values into our regular grid
 
-      call READYY('Reading DEM data', 0d0)
+      call READYY('Reading DEM data', 0.0_dp)
       do c = 1, dem_info%cols
 
          ! Read the Logical Record Type B at the start of the column
@@ -418,7 +418,7 @@ contains
 
       end do ! c=1,dem_info%cols
 
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
    end subroutine read_dem_data
 !

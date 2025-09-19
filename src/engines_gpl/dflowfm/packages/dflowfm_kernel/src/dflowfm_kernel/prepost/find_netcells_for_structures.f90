@@ -84,11 +84,11 @@ contains
       allocate (istrulinks(numl))
       allocate (polygon_nodes_tmp(numl))
       allocate (polygon_segment_weights_tmp(numl))
-      xpl_tmp = 0d0
-      ypl_tmp = 0d0
+      xpl_tmp = 0.0_dp
+      ypl_tmp = 0.0_dp
       istrulinks = 0
       polygon_nodes_tmp = 0
-      polygon_segment_weights_tmp = 0d0
+      polygon_segment_weights_tmp = 0.0_dp
       minp_tmp = 0
       npl_tmp = 0
       nstrulinks = 0

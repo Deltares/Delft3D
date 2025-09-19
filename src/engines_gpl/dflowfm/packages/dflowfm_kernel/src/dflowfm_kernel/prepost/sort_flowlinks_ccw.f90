@@ -83,7 +83,7 @@ contains
             end if
 
             call getdxdy(xz(k1), yz(k1), xz(k2), yz(k2), dx, dy, jsferic)
-            if (abs(dx) < 1d-14 .and. abs(dy) < 1d-14) then
+            if (abs(dx) < 1.0e-14_dp .and. abs(dy) < 1.0e-14_dp) then
                if (dy < 0) then
                   phi = -pi / 2
                else
@@ -97,7 +97,7 @@ contains
             end if
 
             arglin(L) = phi - phi0
-            if (arglin(L) < 0d0) arglin(L) = arglin(L) + 2d0 * pi
+            if (arglin(L) < 0.0_dp) arglin(L) = arglin(L) + 2.0_dp * pi
          end do
 
          call sort_index(arglin(1:lnxx), inn(1:lnxx))

@@ -53,12 +53,12 @@ contains
       integer :: n, ja2
 
       if (jaauto > 0) then
-         rmin = 1d30; ndmin = 0
-         rmax = -1d30; ndmax = 0
+         rmin = 1.0e30_dp; ndmin = 0
+         rmax = -1.0e30_dp; ndmax = 0
 
          do n = 1, ndx
             ja2 = 1
-            if (wetplot > 0d0) then
+            if (wetplot > 0.0_dp) then
                if (hs(n) < wetplot) then
                   ja2 = 0
                end if

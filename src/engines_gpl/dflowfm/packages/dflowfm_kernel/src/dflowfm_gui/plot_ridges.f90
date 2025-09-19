@@ -66,11 +66,11 @@ contains
 
             ip = i + (j - 1) * MXSAM
 
-            if (abs(zss(5, i, j)) > 0.5d0 * Dh .or. zss(4, i, j) > -1d-8 .or. zss(5, i, j) == DMISS) cycle
+            if (abs(zss(5, i, j)) > 0.5_dp * Dh .or. zss(4, i, j) > -1.0e-8_dp .or. zss(5, i, j) == DMISS) cycle
 
             Dx = zss(3, i, j)
             Dy = -zss(2, i, j)
-            dum = Dh / sqrt(Dx**2 + Dy**2 + 1d-16)
+            dum = Dh / sqrt(Dx**2 + Dy**2 + 1.0e-16_dp)
             Dx = Dx * dum
             Dy = Dy * dum
 
@@ -78,10 +78,10 @@ contains
 
             x0 = xs(ip) + zss(2, i, j) * zss(5, i, j)
             y0 = ys(ip) + zss(3, i, j) * zss(5, i, j)
-            x1 = min(max(x0 - Dx, xs(ip) - 0.5d0 * Dh), xs(ip) + 0.5 * Dh)
-            y1 = min(max(y0 - Dy, ys(ip) - 0.5d0 * Dh), ys(ip) + 0.5 * Dh)
-            x2 = min(max(x0 + Dx, xs(ip) - 0.5d0 * Dh), xs(ip) + 0.5 * Dh)
-            y2 = min(max(y0 + Dy, ys(ip) - 0.5d0 * Dh), ys(ip) + 0.5 * Dh)
+            x1 = min(max(x0 - Dx, xs(ip) - 0.5_dp * Dh), xs(ip) + 0.5 * Dh)
+            y1 = min(max(y0 - Dy, ys(ip) - 0.5_dp * Dh), ys(ip) + 0.5 * Dh)
+            x2 = min(max(x0 + Dx, xs(ip) - 0.5_dp * Dh), xs(ip) + 0.5 * Dh)
+            y2 = min(max(y0 + Dy, ys(ip) - 0.5_dp * Dh), ys(ip) + 0.5 * Dh)
 
             call movabs(x1, y1)
             call lnabs(x2, y2)

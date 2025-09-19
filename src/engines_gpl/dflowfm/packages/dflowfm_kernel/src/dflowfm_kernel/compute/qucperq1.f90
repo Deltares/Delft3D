@@ -62,7 +62,7 @@ contains
       real(kind=dp) :: cs, sn, ucin, ucinx, uciny
       integer :: nn12
 
-      QucPerq1 = 0d0
+      QucPerq1 = 0.0_dp
       cs = csu(L)
       sn = snu(L)
 
@@ -71,7 +71,7 @@ contains
          LLL = nd(k12)%ln(LL)
          LLLL = abs(LLL)
 
-         if (qa(LLLL) == 0d0) then ! include own link
+         if (qa(LLLL) == 0.0_dp) then ! include own link
 
          else
 

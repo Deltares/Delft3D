@@ -84,17 +84,17 @@ contains
       j0 = max(jcur - Nwidth, 1)
       j1 = min(jcur + Nwidth, MYSAM)
 
-      zs_max = -1d99
+      zs_max = -1.0e99_dp
 
 !  determine sample meshwidth
 !  i-dir
       ip1 = i0 + (jcur - 1) * MXSAM
       ip2 = i1 + (jcur - 1) * MXSAM
-      Dh = dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(i1 - i0), 1d0)
+      Dh = dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(i1 - i0), 1.0_dp)
 !  j-dir
       ip1 = icur + (j1 - 1) * MXSAM
       ip2 = icur + (j1 - 1) * MXSAM
-      Dh = max(dh, dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(j1 - j0), 1d0))
+      Dh = max(dh, dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(j1 - j0), 1.0_dp))
 
       do i = i0, i1
          do j = j0, j1
@@ -113,7 +113,7 @@ contains
             if (ipprev /= ipcur .and. ipprev > 0) then
                dcsphi = dcosphi(xs(ipprev), ys(ipprev), xs(ipcur), ys(ipcur), xs(ipcur), ys(ipcur), xs(ip), ys(ip), jsferic, jasfer3D, dxymis)
 
-               if (dcsphi < 0.5d0) cycle
+               if (dcsphi < 0.5_dp) cycle
             end if
 
 !        make subbath
@@ -127,15 +127,15 @@ contains
                if (i /= icur) then
                   djsub = dble(isub - icur) / dble(i - icur) * dble(j - jcur) + jcur
                else
-                  djsub = 0d0
+                  djsub = 0.0_dp
                end if
                do jsub = j00, j11
                   if (j /= jcur) then
                      disub = dble(jsub - jcur) / dble(j - jcur) * dble(i - icur) + icur
                   else
-                     disub = 0d0
+                     disub = 0.0_dp
                   end if
-                  if (abs(isub - disub) < 1d0 .or. abs(jsub - djsub) < 1d0) then
+                  if (abs(isub - disub) < 1.0_dp .or. abs(jsub - djsub) < 1.0_dp) then
                      Nlist = Nlist + 1
                      iplist(Nlist) = isub + (jsub - 1) * MXSAM
                   end if
@@ -143,7 +143,7 @@ contains
             end do
 
 !        compute average sample value
-            zs_ave = 0d0
+            zs_ave = 0.0_dp
             num = 0
             do ii = 1, Nlist
                iploc = iplist(ii)
@@ -194,7 +194,7 @@ contains
                zs_max = zs_ave
 !          reallocate if necessary
                if (Nlist > ubound(ipsub, 1)) then
-                  Nsub = int(1.2d0 * dble(Nlist)) + 1
+                  Nsub = int(1.2_dp * dble(Nlist)) + 1
                   ierror = -Nsub
                   goto 1234
                end if

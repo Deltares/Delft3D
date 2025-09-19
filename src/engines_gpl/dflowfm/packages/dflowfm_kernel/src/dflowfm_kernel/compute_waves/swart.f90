@@ -47,18 +47,18 @@ contains
       real(kind=dp) :: Tsig, uorbu, z00, fw, ustw2
       real(kind=dp) :: astar
 
-      if (uorbu == 0d0) then
-         fw = 0d0; ustw2 = 0d0; return
+      if (uorbu == 0.0_dp) then
+         fw = 0.0_dp; ustw2 = 0.0_dp; return
       end if
 
       astar = Tsig * uorbu / z00
-      if (astar > 296.088d0) then ! 30pipi
-         fw = 0.00251d0 * exp(14.1d0 / (astar**0.19d0)) ! astar=Tuorb/z00
+      if (astar > 296.088_dp) then ! 30pipi
+         fw = 0.00251_dp * exp(14.1_dp / (astar**0.19_dp)) ! astar=Tuorb/z00
       else
-         fw = 0.3d0
+         fw = 0.3_dp
       end if
 
-      ustw2 = 0.5d0 * fw * uorbu * uorbu
+      ustw2 = 0.5_dp * fw * uorbu * uorbu
 
    end subroutine Swart
 

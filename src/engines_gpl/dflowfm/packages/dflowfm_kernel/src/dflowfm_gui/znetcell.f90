@@ -71,7 +71,7 @@ contains
          if (ba(k) > 0) then
             znetcell = dbdistance(xz(k), yz(k), xzw(k), yzw(k), jsferic, jasfer3D, dmiss) / sqrt(ba(k))
          else
-            znetcell = 0d0
+            znetcell = 0.0_dp
          end if
       else if (ndraw(33) == 10 .or. ndraw(33) == 11) then ! slope
          k1 = netcell(k)%nod(1)
@@ -99,7 +99,7 @@ contains
                if (ndraw(33) == 11) then
                   DEPTH = -(ZK(K1) + ZK(K2) + ZK(K3)) / 3
                   if (DEPTH >= .01) then
-                     TSIG = 5d0
+                     TSIG = 5.0_dp
                      call getwavenr(depth, tsig, rk)
                      znetcell = SLOPE / (DEPTH * RK)
                   else

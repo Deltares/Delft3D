@@ -51,7 +51,7 @@ contains
       real(kind=dp) :: curv
       logical :: Lcurv
 
-      Lcurv = (H > 1d-8)
+      Lcurv = (H > 1.0e-8_dp)
 
       TS = min(TS, dble(N))
       DT = 0.1
@@ -63,16 +63,16 @@ contains
       T1 = T0 + DT
       if (T1 < TS) then
          call SPLINTXY(X, Y, X2, Y2, N, T1, XT1, YT1)
-         if (Lcurv) call comp_curv(N, X, Y, X2, Y2, 0.5d0 * (T0 + T1), curv, dnx, dny, dsx, dsy)
+         if (Lcurv) call comp_curv(N, X, Y, X2, Y2, 0.5_dp * (T0 + T1), curv, dnx, dny, dsx, dsy)
       else
          call SPLINTXY(X, Y, X2, Y2, N, TS, XT1, YT1)
-         if (Lcurv) call comp_curv(N, X, Y, X2, Y2, 0.5d0 * (T0 + TS), curv, dnx, dny, dsx, dsy)
+         if (Lcurv) call comp_curv(N, X, Y, X2, Y2, 0.5_dp * (T0 + TS), curv, dnx, dny, dsx, dsy)
       end if
       if (.not. Lcurv) then
 !         SS  = SS + SQRT( (XT1-XT0)**2 + (YT1-YT0)**2 )
          SS = SS + dbdistance(xt0, yt0, xt1, yt1, jsferic, jasfer3D, dmiss)
       else
-         SS = SS + dbdistance(xt0, yt0, xt1, yt1, jsferic, jasfer3D, dmiss) * (1d0 + H * curv)
+         SS = SS + dbdistance(xt0, yt0, xt1, yt1, jsferic, jasfer3D, dmiss) * (1.0_dp + H * curv)
       end if
 
       T0 = T1

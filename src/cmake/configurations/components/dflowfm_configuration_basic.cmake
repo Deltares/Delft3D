@@ -243,12 +243,6 @@ if(NOT WITH_INTERACTER)
     endif()
 endif(NOT WITH_INTERACTER)
 
-
-if(UNIX)
-    # install
-    add_subdirectory(${checkout_src_root}/${install_dflowfm_module} install_dflowfm)
-endif()
-
 # Plugins
 if(NOT TARGET plugin_culvert)
     add_subdirectory(${checkout_src_root}/plugins_lgpl/plugin_culvert plugin_culvert)

@@ -273,7 +273,7 @@ contains
 
          ! If it is branch start node and first grid point is also on that start of branch:
          if (pbranch%fromnode%index == nodeindex &
-             .and. comparereal(pbranch%gridPointsChainages(1), 0d0, flow1d_eps10) == 0) then
+             .and. comparereal(pbranch%gridPointsChainages(1), 0.0_dp, flow1d_eps10) == 0) then
             if (L == -1) then
                L = pbranch%lin(1)
             else

@@ -57,7 +57,7 @@ contains
       real(kind=dp) :: zkk
       real(kind=dp) :: xprange(4), yprange(4)
       real(kind=dp) :: xk1p, yk1p, xk2p, yk2p, rx, ry
-      real(kind=dp) :: H = 0.5d0
+      real(kind=dp) :: H = 0.5_dp
 
 ! store
       jins_old = jins

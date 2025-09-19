@@ -50,7 +50,7 @@ contains
       AX = T(1)
       CX = T(NT)
       BX = (AX + CX) / 2
-      TOL = 0.00001d0
+      TOL = 0.00001_dp
 !     Dan bijhorende T zoeken
       call GOLDDIS(AX, BX, CX, TOL, X, X2, Y, Y2, N, TT, DIS, SSQ, H)
 

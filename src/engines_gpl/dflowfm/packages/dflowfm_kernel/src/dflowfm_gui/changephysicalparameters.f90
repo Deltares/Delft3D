@@ -238,16 +238,16 @@ contains
                frcu = frcuni
             end if
 
-            if (rainuni > 0d0) then
+            if (rainuni > 0.0_dp) then
                if (.not. allocated(rain)) then
-                  allocate (rain(ndx), stat=ierr); rain = 0d0
+                  allocate (rain(ndx), stat=ierr); rain = 0.0_dp
                   call aerr('rain(ndx)', ierr, ndx)
                end if
                jarain = 1; jaqin = 1
             end if
 
-            wall_z0 = wall_ks / 30d0
-            if (windsp /= 0d0) then
+            wall_z0 = wall_ks / 30.0_dp
+            if (windsp /= 0.0_dp) then
                call setuniformwind()
             end if
 

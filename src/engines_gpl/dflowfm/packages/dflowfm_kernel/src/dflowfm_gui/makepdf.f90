@@ -32,6 +32,8 @@
 
 module m_makepdf
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -43,11 +45,11 @@ contains
       real :: r(n), s
       integer :: k, L
       if (n == 0) return
-      xpdf = 0d0
+      xpdf = 0.0_dp
       do L = 1, n
          do k = 1, npdf
             if (r(L) >= ypdf(k)) then
-               xpdf(k) = xpdf(k) + 1d0
+               xpdf(k) = xpdf(k) + 1.0_dp
                exit
             end if
          end do

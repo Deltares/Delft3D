@@ -63,7 +63,7 @@ contains
 !     IMPLICIT real(kind=dp) ::(A-H,O-Z)
       real(kind=dp) :: A(MMAX, NMAX), B(MMAX, NMAX), C(MMAX, NMAX), D(MMAX, NMAX), E(MMAX, NMAX), U(MMAX, NMAX)
 
-      parameter(ZERO=0d0, HALF=.5d0, QTR=.25d0, ONE=1d0)
+      parameter(ZERO=0.0_dp, HALF=0.5_dp, QTR=0.25_dp, ONE=1.0_dp)
       real(kind=dp) :: RESID, OMEGA
 !     WRITE (MDIA,*) 'MEGS AVAILABLE SOR ', N4*4.096*0.001,
 !      (N1+N2)*4.096*0.001d0

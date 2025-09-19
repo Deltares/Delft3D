@@ -80,12 +80,12 @@ module m_flow ! flow arrays-999
    real(kind=dp) :: tur_time_int_factor = 0 !< Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
    integer :: tur_time_int_method = TURB_LAX_CONNECTED !< Where to apply tur_time_int_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
    real(kind=dp) :: sigmagrowthfactor !<layer thickness growth factor from bed up
-   real(kind=dp) :: dztopuniabovez = -999d0 !< bottom level of lowest uniform layer == blmin if not specified
-   real(kind=dp) :: Floorlevtoplay = -999d0 !< floor  level of top zlayer, == sini if not specified
-   real(kind=dp) :: dztop = -999d0 !< if specified, dz of top layer, kmx = computed, if not, dz = (ztop-zbot)/kmx
+   real(kind=dp) :: dztopuniabovez = -999.0_dp !< bottom level of lowest uniform layer == blmin if not specified
+   real(kind=dp) :: Floorlevtoplay = -999.0_dp !< floor  level of top zlayer, == sini if not specified
+   real(kind=dp) :: dztop = -999.0_dp !< if specified, dz of top layer, kmx = computed, if not, dz = (ztop-zbot)/kmx
    integer :: jaorgFloorlevtoplaydef = 0 !< 0=correct floorlevtoplay, 1 = org wrong floorlevtoplay
-   real(kind=dp) :: zlaybot = -999d0 !< if specified, first zlayer starts from zlaybot, if not, it starts from the lowest bed point
-   real(kind=dp) :: zlaytop = -999d0 !< if specified, highest zlayer ends at zlaytop, if not, it ends at the initial water level
+   real(kind=dp) :: zlaybot = -999.0_dp !< if specified, first zlayer starts from zlaybot, if not, it starts from the lowest bed point
+   real(kind=dp) :: zlaytop = -999.0_dp !< if specified, highest zlayer ends at zlaytop, if not, it ends at the initial water level
    real(kind=dp), allocatable :: aak(:) !< coefficient vertical mom exchange of kmx layers
    real(kind=dp), allocatable :: bbk(:) !< coefficient vertical mom exchange of kmx layers
    real(kind=dp), allocatable :: cck(:) !< coefficient vertical mom exchange of kmx layers
@@ -260,8 +260,8 @@ module m_flow ! flow arrays-999
    real(kind=dp), dimension(:), allocatable :: spiratx !< x component of normalised vector in direction of depth averaged velocity    (-)
    real(kind=dp), dimension(:), allocatable :: spiraty !< y component of normalised vector in direction of depth averaged velocity    (-)
 
-   real(kind=dp) :: spirE = 0d0 !< factor for weighing the effect of the spiral flow intensity on transport angle, Eq 11.45 of Delft3D manual
-   real(kind=dp) :: spirbeta = 0d0 !< factor for weighing the effect of the spiral flow on flow dispersion stresses, Eq 9.155 of Delft3D manual
+   real(kind=dp) :: spirE = 0.0_dp !< factor for weighing the effect of the spiral flow intensity on transport angle, Eq 11.45 of Delft3D manual
+   real(kind=dp) :: spirbeta = 0.0_dp !< factor for weighing the effect of the spiral flow on flow dispersion stresses, Eq 9.155 of Delft3D manual
    integer :: numoptsf
 
 ! Anti-creep
@@ -463,7 +463,7 @@ module m_flow ! flow arrays-999
    ! basis zout
    real(kind=dp) :: sam0tot !< Total mass start of timestep            (m3ppt)
    real(kind=dp) :: sam1tot !< Total mass   end of timestep            (m3ppt)
-   real(kind=dp) :: sam1ini = -1d0 !< Total mass initially                    (m3ppt)
+   real(kind=dp) :: sam1ini = -1.0_dp !< Total mass initially                    (m3ppt)
 
    real(kind=dp) :: saminbnd !< Actual mass in  boundaries of timestep  (m3ppt)
    real(kind=dp) :: samoutbnd !< Actual mass out boundaries of timestep  (m3ppt)
@@ -475,8 +475,8 @@ module m_flow ! flow arrays-999
 
    real(kind=dp) :: epsmaxvol !< eps vol diff (m3) ! both not used now
    real(kind=dp) :: difmaxlev !< max lev diff (m)
-   real(kind=dp) :: epsmaxlev = 1d-8 !< eps lev diff (m)
-   real(kind=dp) :: epsmaxlevm = 1d-8 !< eps lev diff (m) minus part
+   real(kind=dp) :: epsmaxlev = 1.0e-8_dp !< eps lev diff (m)
+   real(kind=dp) :: epsmaxlevm = 1.0e-8_dp !< eps lev diff (m) minus part
 
    logical :: debugon !< texts  yes or no
    logical :: validateon !< should we validate flow state yes or no (switched off at water drop)
@@ -498,7 +498,7 @@ module m_flow ! flow arrays-999
 
    integer, parameter :: MAX_IDX = 40
    real(kind=dp), dimension(MAX_IDX) :: volcur !< Volume totals in *current* timestep only (only needed for MPI reduction)
-   real(kind=dp), dimension(MAX_IDX) :: cumvolcur = 0d0 !< Cumulative volume totals starting from the previous His output time, cumulate with volcur (only needed for MPI reduction)
+   real(kind=dp), dimension(MAX_IDX) :: cumvolcur = 0.0_dp !< Cumulative volume totals starting from the previous His output time, cumulate with volcur (only needed for MPI reduction)
    real(kind=dp), dimension(MAX_IDX), target :: voltot
    character(len=100), dimension(MAX_IDX) :: voltotname
    integer, parameter :: IDX_VOLTOT = 1
@@ -564,7 +564,7 @@ contains
       layertype = 1 !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
       iturbulencemodel = 3 !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
       ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
-      sigmagrowthfactor = 1d0 !<layer thickness growth factor from bed up
+      sigmagrowthfactor = 1.0_dp !<layer thickness growth factor from bed up
 
       ! Remaining of variables is handled in reset_flow()
       call reset_flow()
@@ -579,10 +579,10 @@ contains
 ! basis
       vol0tot = 0 ! total volume start of timestep          (m3)
       vol1tot = 0 ! total volume   end of timestep          (m3)
-      vol1icept = 0d0 ! total volume interception end of timestep (m3)
-      vol1ini = -1d0 ! total volume   initially                (m3)
+      vol1icept = 0.0_dp ! total volume interception end of timestep (m3)
+      vol1ini = -1.0_dp ! total volume   initially                (m3)
       Volgrw = 0 ! total grw volume                        (m3)
-      Volgrwini = 0d0 ! total grw volume initially              (m3)
+      Volgrwini = 0.0_dp ! total grw volume initially              (m3)
 
       qinbnd = 0 ! total inflow boundaries                 (m3/s) Actual values
       qoutbnd = 0 ! total outflow boundaries                (m3/s)
@@ -601,7 +601,7 @@ contains
       voutcelcum = 0 ! total volume out cells                  (m3)
       volerrcum = 0 !     (m3)
 
-      dvolbot = 0d0 !     (m3)
+      dvolbot = 0.0_dp !     (m3)
 
       ! extra
       qinrain = 0 ! total inflow rain                       (m3/s)
@@ -641,7 +641,7 @@ contains
       vinextcum(1:2) = 0 ! total inflow from Qext (1D and 2D)      (m3)
       voutextcum(1:2) = 0 ! total outflow to  Qext (1D and 2D)      (m3)
 
-      DissInternalTides = 0d0 !< total Internal Tides Dissipation (J/s)
+      DissInternalTides = 0.0_dp !< total Internal Tides Dissipation (J/s)
 
       a0tot = 0 ! total wet surface area start of timestep (m2)
       a1tot = 0 ! total wet surface area   end of timestep (m2)
@@ -651,7 +651,7 @@ contains
       ep1rela = 0 ! time relaxe ep1tot
       hsaver = 0 ! average waterdepth (m), vol/are
 
-      epsmaxvol = 1d-9 ! eps vol diff (m3) ! both not used now
+      epsmaxvol = 1.0e-9_dp ! eps vol diff (m3) ! both not used now
       difmaxlev = 0 ! max lev diff (m3)
       !epsmaxlev   = 1d-8 ! eps lev diff (m)  ! max waterlevel difference in Newton iterations
       !epsmaxlevm  = 1d-8 ! eps lev diff (m)  ! max waterlevel difference in Newton iterations
@@ -670,11 +670,11 @@ contains
       Lnmin = 0 ! link nr where min zlin is found in viewing area
       Lnmax = 0 ! link nr where max zlin is found in viewing area
 
-      sam0tot = 0d0 !< Total mass start of timestep            (m3ppt)
-      sam1tot = 0d0 !< Total mass   end of timestep            (m3ppt)
-      samerr = 0d0 !< vol1tot - vol0tot - vinbnd + voutbnd - vincel + voutcel   (m3)
+      sam0tot = 0.0_dp !< Total mass start of timestep            (m3ppt)
+      sam1tot = 0.0_dp !< Total mass   end of timestep            (m3ppt)
+      samerr = 0.0_dp !< vol1tot - vol0tot - vinbnd + voutbnd - vincel + voutcel   (m3)
 
-      voltot(:) = 0d0
+      voltot(:) = 0.0_dp
       voltotname(IDX_VOLTOT) = 'total_volume'
       voltotname(IDX_STOR) = 'storage'
       voltotname(IDX_VOLERR) = 'volume_error'

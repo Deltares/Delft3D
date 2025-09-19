@@ -72,7 +72,7 @@ contains
 
       character(len=128) :: txt
 
-      real(kind=dp), parameter :: dtol2 = 1d-8 ! sample-on-top of each other tolerance, squared
+      real(kind=dp), parameter :: dtol2 = 1.0e-8_dp ! sample-on-top of each other tolerance, squared
 
       character OUD * 8
       NSORG = NS
@@ -94,9 +94,9 @@ contains
          jsferic = 0
 !        get non-missing sample coordinates
          allocate (xx(NS))
-         xx = 0d0
+         xx = 0.0_dp
          allocate (yy(NS))
-         yy = 0d0
+         yy = 0.0_dp
          allocate (iperm(NS))
          iperm = 0
 

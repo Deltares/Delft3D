@@ -77,7 +77,7 @@ contains
       integer :: i, j, i1, j1, i2, j2, iL, iR, nummax, idum, imin, imax
       integer :: iLL, iRR, jsferic_old
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 !   real(kind=dp), parameter                        :: dtolLR= 1d-2
 
 !  work in model-coordinates
@@ -156,14 +156,14 @@ contains
 !         dclearance = 0.5d0*max(dL1,dL2)
 
 !        26-06-12: set clearence to 0 in all cases
-            dclearance = 0d0
+            dclearance = 0.0_dp
 
             i1 = idx1(1, j)
             i2 = idx1(1, j + 1)
             j1 = idx1(2, j)
             j2 = idx1(2, j + 1)
             if ((i1 >= imin .and. i1 <= imax) .or. (i2 >= imin .and. i2 <= imax)) then
-               dclearance = 0d0 ! in proximity on same gridline
+               dclearance = 0.0_dp ! in proximity on same gridline
             end if
 
 !        do not include directly neighboring edges
@@ -180,7 +180,7 @@ contains
             end if
 
 !        get a lower bound for the cross time
-            hlow2 = 0.25d0 * max((minval([d1, d2, d3, d4]))**2 - (0.5d0 * max(dL1, dL2))**2, 0d0)
+            hlow2 = 0.25_dp * max((minval([d1, d2, d3, d4]))**2 - (0.5_dp * max(dL1, dL2))**2, 0.0_dp)
 
 !        check if the lower bounds is larger than the minimum found so far
             vv1 = sqrt(dot_product(v3 - v1, v3 - v1))
@@ -210,7 +210,7 @@ contains
 !            tmax1(j)   = min( tmax1(j),   tmax1234 )
 !            tmax1(j+1) = min( tmax1(j+1), tmax1234 )
             else if (t2 == tmax1234) then
-               if (tmax1234 < 1d6 .and. i == 2) then
+               if (tmax1234 < 1.0e6_dp .and. i == 2) then
                   continue
                end if
                tmax(i + 1) = min(tmax(i + 1), tmax1234)
@@ -221,7 +221,7 @@ contains
                tmax(i + 1) = min(tmax(i + 1), tmax1234)
             end if
 
-            if (tmax1234 == 0d0) exit
+            if (tmax1234 == 0.0_dp) exit
 
          end do
       end do

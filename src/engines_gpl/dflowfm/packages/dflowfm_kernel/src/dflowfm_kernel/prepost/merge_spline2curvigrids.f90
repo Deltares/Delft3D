@@ -62,7 +62,7 @@ contains
 
       logical :: Lconnected
 
-      real(kind=dp), parameter :: dtol = 1d-6
+      real(kind=dp), parameter :: dtol = 1.0e-6_dp
 
 !  allocate
       allocate (xcnew(1, 1), ycnew(1, 1))

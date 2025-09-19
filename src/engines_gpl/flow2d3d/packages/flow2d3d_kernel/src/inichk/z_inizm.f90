@@ -138,8 +138,8 @@ subroutine z_inizm(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     integer        :: nmu
     integer        :: num
     integer        :: nm_pos     ! indicating the array to be exchanged has nm index at the 2nd place, e.g., dbodsd(lsedtot,nm)
-    real(fp)       :: dpsmax
-    real(fp)       :: dpsmin
+    real(prec)     :: dpsmax
+    real(prec)     :: dpsmin
     real(fp)       :: gridheight
     real(fp)       :: s1u
     real(fp)       :: s1v
@@ -167,8 +167,8 @@ subroutine z_inizm(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     !
     ddb     = gdp%d%ddbound
     dzmin   = 0.1_fp*dryflc
-    dpsmax  = -1.0e+32_fp
-    dpsmin  =  1.0e+32_fp
+    dpsmax  = -1.0e+32_prec
+    dpsmin  =  1.0e+32_prec
     icxy    = max(icx, icy)
     nm_pos  = 1
     !
@@ -191,16 +191,14 @@ subroutine z_inizm(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
           kfu(nm) = min(1, kcu(nm))
           kfv(nm) = min(1, kcv(nm))
        endif
-       if (kcs(nm) == 1) then
-          dpsmax = max(dpsmax, real(dps(nm),fp))
-          dpsmin = min(dpsmin, real(dps(nm),fp))
-       endif
     enddo
+    dpsmax = maxval(dps, mask=kcs==1)
+    dpsmin = minval(dps, mask=kcs==1)
     !
     ! zbot should be lower then maximum depth (zbot<-dpsmax => dpsmax+zbot<0)
     ! otherwise an error is given
     !
-    if (dpsmax+zbot > 0.0_fp) then
+    if (real(dpsmax,fp) + zbot > 0.0_fp) then
        write (errmsg, '(a,g10.3,a)') 'Depth value ', dpsmax, &
              & ' (m) exceeds ZBOT specified in input; change ZBOT to this value'
        call prterr(lundia, 'P004', trim(errmsg))
@@ -211,7 +209,7 @@ subroutine z_inizm(j         ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
     ! ztop should be higher then minimum depth (ztop>-dpsmin => dpsmin+ztop>0)
     ! otherwise an error is given and a suggestion to change these cells to permanently dry points
     !
-    if (dpsmin < -ztop) then
+    if (real(dpsmin,fp) < -ztop) then
        write (errmsg, '(a      )' ) 'One or more depth values exceed ZTOP specified in input'
        call prterr(lundia, 'P004', trim(errmsg))
        write (lundia, '(a      )' ) 'Options:'

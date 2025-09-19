@@ -84,7 +84,7 @@ contains
             call fm_wq_processes_step(ti_waqproc, time_user)
             if (jatimer == 1) call stoptimer(IFMWAQ)
             tem_dif = (time_user - tstart_user) / ti_waqproc
-            time_waqproc = tstart_user + (floor(tem_dif + 0.001d0) + 1) * ti_waqproc
+            time_waqproc = tstart_user + (floor(tem_dif + 0.001_dp) + 1) * ti_waqproc
          end if
       end if
 
@@ -94,7 +94,7 @@ contains
             call mba_update(time0)
             tem_dif = time_user / ti_mba
             tem_dif = (time_user - tstart_user) / ti_mba
-            time_mba = min(tstart_user + (floor(tem_dif + 0.001d0) + 1) * ti_mba, tstop_user)
+            time_mba = min(tstart_user + (floor(tem_dif + 0.001_dp) + 1) * ti_mba, tstop_user)
          end if
       end if
 
