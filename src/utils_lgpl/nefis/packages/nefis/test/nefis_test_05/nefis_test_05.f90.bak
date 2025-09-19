@@ -1,0 +1,30 @@
+module m_nefis_test_05
+   use assertions_gtest
+   use tests_nefis_helper
+   implicit none
+
+   character(len=30), dimension(3) :: skiplines = [ "Version", "version", "-----" ]
+   
+contains
+
+   !$f90tw TESTCODE(TEST, nefis_tests, test_05, test_05,
+   subroutine test_05() bind(C)
+   character(len=30) :: filename1
+   character(len=30) :: filename2
+   integer file_unit
+   
+   ! delete previous output files if they exist
+   filename1='test.out'
+   filename2='test.scr'
+   call delete_file(filename1) 
+   
+   open(newunit=file_unit,file=filename1)
+
+   close(file_unit)
+   !
+   call compare_text_files(filename1, filename2, skiplines)   
+   
+   end subroutine test_05
+   !$f90tw)
+   
+end module m_nefis_test_05
