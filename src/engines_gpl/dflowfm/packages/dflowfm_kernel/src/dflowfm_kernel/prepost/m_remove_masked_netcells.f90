@@ -44,12 +44,8 @@ module m_remove_masked_netcells
       !> typically used in combination with a drypoints file (samples or polygons)
       !> \see polygon_to_cellmask
       !> note: we do not want to alter the netnodes and netlinks and will therefore not change kn and nod%lin
-      !> during the removal process, the netcells are renumbered, so that the remaining cells are numbered 1..numpnew
-      !> this renumbering should also be applied to all quantities defined on netcells, such as bl, ba, xz, yz
-      !> the bl array may not yet be loaded and therefore an optional argument is provided to specify whether bl should be updated
-      module subroutine remove_masked_netcells(update_bl)
+      module subroutine remove_masked_netcells()
          implicit none
-         logical, optional, intent(in) :: update_bl !< flag to specify whether bl should be updated
       end subroutine remove_masked_netcells
 
    end interface

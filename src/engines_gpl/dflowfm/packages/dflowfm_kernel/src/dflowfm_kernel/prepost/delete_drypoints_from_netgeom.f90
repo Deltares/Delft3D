@@ -168,7 +168,7 @@ contains
                   ierror = 0
                end if
 
-               call remove_masked_netcells(update_bl=.true.)
+               call remove_masked_netcells()
 
             end if
          else

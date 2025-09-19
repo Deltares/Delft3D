@@ -17,7 +17,7 @@ uv sync --extra dimrset_delivery
 pip install --editable .[dimrset_delivery]
 ```
 
-Once the packages have been successfully installed, you can run the main script (`DimrAutomation.py`). This will prompt you to enter your Deltares username and password. It requires this information to make use of the TeamCity and Atlassian REST API.
+Once the packages have been successfully installed, you can run the main script (`DimrAutomation.py`). This will prompt you to enter your Deltares username and password. It requires this information to make use of the TeamCity REST API.
 
 ## Assumptions
 
@@ -25,10 +25,6 @@ Once the packages have been successfully installed, you can run the main script 
 - This script assumes that you are on the Deltares network (either on location or via VPN).
 - This script assumes that you want to automate the release steps for the latest TeamCity DIMR build.
 - It also assumes that the previous successful build is the release build for the previous release, as some information has to be looked up about the previous release (such as how many tests failed the last time vs. how many tests failed in this release).
-
-## What does the code do?
-
-Two libraries have been created for this script. One library is a wrapper for the TeamCity REST API. The other is a wrapper for the Atlassian Confluence REST API (Public Wiki). They can be found in the `/lib` folder. These libraries offer a very small subset of the capabilities of both REST APIs, as only functionality has been implemented that was required for the DIMR release process automation (due to time constraints). Feel free to expand the functionality of these libraries.
 
 Several helper functions have been created that make use of these APIs in various ways. For example: there is an ExcelHelper that is responsible for gathering all the required information and actually appending that information into an Excel sheet. There is a PublicWikiHelper that is responsible for gathering all information required to update the Public Wiki and for actually updating the PublicWiki.
 
@@ -39,7 +35,7 @@ Finally, the main class putting everything together is the DimrAutomation class.
 ## Module Structure
 
 - `helpers/` - Helper modules for various automation tasks
-- `lib/` - Library wrappers for TeamCity and Atlassian APIs
+- `lib/` - Library wrappers
 - `settings/` - Configuration constants and settings
 - `scripts/` - Utility scripts
 - `templates/` - HTML templates for email and wiki generation
