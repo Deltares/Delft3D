@@ -42,17 +42,14 @@ submodule(m_remove_masked_netcells) m_remove_masked_netcells_
    !> note: we do not want to alter the netnodes and netlinks and will therefore not change kn and nod%lin
    !> during the removal process, the netcells are renumbered, so that the remaining cells are numbered 1..numpnew
    !> this renumbering should also be applied to all quantities defined on netcells, such as bl, ba, xz, yz
-   !> the bl array may not yet be loaded and therefore an optional argument is provided to specify whether bl should be updated
-   module subroutine remove_masked_netcells(update_bl)
+   module subroutine remove_masked_netcells()
       use network_data
       use m_flowgeom, only: xz, yz, ba, bl
       use m_alloc
       use m_partitioninfo, only: idomain, iglobal_s
       
-      logical, optional, intent(in) :: update_bl !< flag to specify whether bl should be updated
-      
       integer, dimension(:), allocatable :: numnew ! permutation array
-      logical :: update_bl_ ! flag equal to update_bl if present, otherwise false
+      logical :: update_bl ! flag indicating whether bl should be updated
 
       integer :: i, ic, icL, icR, icnew, isL, isR, L, num, N, numpnew
 
@@ -60,10 +57,10 @@ submodule(m_remove_masked_netcells) m_remove_masked_netcells_
       integer :: jaiglobal_s
 
       num = 0
-      if (present(update_bl) .and. allocated(bl)) then
-         update_bl_ = update_bl
+      if (allocated(bl)) then
+         update_bl = .true.
       else
-         update_bl_ = .false.
+         update_bl = .false.
       end if
 
 !     check if cellmask array is allocated
@@ -192,7 +189,7 @@ submodule(m_remove_masked_netcells) m_remove_masked_netcells_
             xzw(icnew) = xzw(ic)
             yzw(icnew) = yzw(ic)
             ba(icnew) = ba(ic)
-            if (update_bl_) then
+            if (update_bl) then
                bl(icnew) = bl(ic)
             end if
          end if

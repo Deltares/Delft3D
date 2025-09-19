@@ -12709,8 +12709,8 @@ contains
          !       make sure to store vertical orientation of variable.
          ! TODO: handle _FillValue correctly, and make sure that the mesh writing
          !       stays consistent with the fill/dmiss value that we use here.
-      else
-         call realloc(bl, 0)
+      elseif (allocated(bl)) then
+         deallocate(bl)
       end if
    end subroutine read_mesh2d_face_z
 
