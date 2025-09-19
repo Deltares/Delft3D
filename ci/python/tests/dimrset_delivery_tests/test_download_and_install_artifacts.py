@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock, Mock, call, patch
 
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
-from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
@@ -396,7 +395,6 @@ class TestIntegration:
         # Arrange
         with patch.multiple(
             "ci_tools.dimrset_delivery.services",
-            Atlassian=Mock(spec=Atlassian),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
             GitClient=Mock(spec=GitClient),
