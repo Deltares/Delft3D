@@ -34,10 +34,7 @@ if [%1] EQU [--help] ( goto usage )
 if defined OMP_NUM_THREADS (
 echo OMP_NUM_THREADS is already defined
 ) else (
-   rem Getting and setting the number of physical cores
-   for /F "tokens=*" %%C in ('powershell -Command "Get-CimInstance -ClassName Win32_Processor | Select-Object -ExpandProperty NumberOfCores | Measure-Object -Sum | Select-Object -ExpandProperty Sum"') do set NumberOfPhysicalCores=%%C
-   set /A OMP_NUM_THREADS=!NumberOfPhysicalCores! - 2
-   if /I OMP_NUM_THREADS LEQ 2 ( set OMP_NUM_THREADS=2 )
+set OMP_NUM_THREADS=1
 )
 
 set workdir=%CD%
