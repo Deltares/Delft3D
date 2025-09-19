@@ -371,7 +371,12 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
         if (cb->subBlocks[i].type == CT_START) {
             if (cb->masterSubBlockId == -1) {
                 cb->masterSubBlockId = i;
-                log->Write(DEBUG, my_rank, "Master: %s", cb->subBlocks[cb->masterSubBlockId].unit.component->name);
+                if (cb->subBlocks[cb->masterSubBlockId].unit.component) {
+                  log->Write(DEBUG, my_rank, "Master: %s", cb->subBlocks[cb->masterSubBlockId].unit.component->name);
+                }
+                else {
+                  throw Exception(true, Exception::ERR_INVALID_INPUT, "runParallelInit: the specified component in the start element was not found.");
+                }
             }
             else {
                 throw Exception(true, Exception::ERR_INVALID_INPUT, "runParallelInit: a parallel block cannot have more than one start element.");
@@ -1783,8 +1788,6 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
     }
 }
 
-
-
 //------------------------------------------------------------------------------
 // Search for a named component in the list of components
 dimr_component* Dimr::getComponent(const char* compName) {
@@ -1793,9 +1796,8 @@ dimr_component* Dimr::getComponent(const char* compName) {
             return &(componentsList.components[i]);
         }
     }
+    throw Exception(true, Exception::ERR_INVALID_INPUT, "Found no component with name \"%s\".", compName);
 }
-
-
 
 //------------------------------------------------------------------------------
 // Search for a named coupler in the list of couplers
@@ -1805,8 +1807,8 @@ dimr_coupler* Dimr::getCoupler(const char* coupName) {
             return &(couplersList.couplers[i]);
         }
     }
+    return nullptr;
 }
-
 
 //------------------------------------------------------------------------------
 // Search for a named coupler in the list of couplers
