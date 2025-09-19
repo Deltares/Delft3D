@@ -8,7 +8,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.schedule
 import Delft3D.template.*
 import Delft3D.step.*
 
-object TestEnvironment : BuildType({
+object WindowsTestEnvironment : BuildType({
 
     description = "Test-environment container image to test our Delf3D software in."
 

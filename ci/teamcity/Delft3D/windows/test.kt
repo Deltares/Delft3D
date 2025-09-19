@@ -123,6 +123,12 @@ object WindowsTest : BuildType({
                 artifactRules = "dimrset_x64_*.zip!/x64/**=>test/deltares_testbench/data/engines/teamcity_artifacts/x64"
             }
         }
+        dependency(WindowsTestEnvironment) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+        }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
             buildRule = lastSuccessful()
             cleanDestination = true
