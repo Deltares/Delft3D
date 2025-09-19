@@ -95,7 +95,7 @@ object WindowsTest : BuildType({
                 """.trimIndent()
             }
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
-            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
             dockerPull = true
         }
         script {
