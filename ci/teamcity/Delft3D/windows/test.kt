@@ -55,6 +55,7 @@ object WindowsTest : BuildType({
             options = processor.configs.zip(processor.labels) { config, label -> label to config },
             display = ParameterDisplay.PROMPT
         )
+        param("container.tag", "test")
         param("product", "unknown")
         checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
@@ -93,29 +94,9 @@ object WindowsTest : BuildType({
                     --teamcity
                 """.trimIndent()
             }
-            dockerImage = "containers.deltares.nl/docker-proxy/python:windowsservercore-ltsc2025"
-            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-test-windows:%container.tag%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
-            dockerRunParameters = """
-                --rm
-                --pull always
-            """.trimIndent()
-        }
-        dockerCommand {
-            name = "Remove container"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            commandType = other {
-                subCommand = "rmi"
-                commandArgs = "containers.deltares.nl/docker-proxy/python:windowsservercore-ltsc2025"
-            }
-        }
-        dockerCommand {
-            name = "Prune"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            commandType = other {
-                subCommand = "system"
-                commandArgs = "prune -f"
-            }
         }
         script {
             name = "Copy cases"
