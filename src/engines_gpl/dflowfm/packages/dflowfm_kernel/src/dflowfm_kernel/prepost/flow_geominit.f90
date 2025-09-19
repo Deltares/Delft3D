@@ -57,9 +57,8 @@ module m_flow_geominit
    use m_iadvecini, only: iadvecini
    use m_getdxofconnectedkcu1, only: getdxofconnectedkcu1
    use m_wind, only: jawindpartialdry
-   use m_waveconst, only: WAVE_SURFBEAT
-   use m_alloc, only: realloc, aerr
-   
+   use m_waveconst
+
    implicit none
 
    private
@@ -336,19 +335,14 @@ contains
 ! increase netcell admin. to include boundary nodes (safety)
       call add_boundarynetcells()
 
-      ! allocate geometry related node arrays
       if (allocated(kcs)) then
-         deallocate (nd, bai, kcs, bai_mor, ba_mor)
+         deallocate (nd, bl, bai, kcs, bai_mor, ba_mor) ! and allocate geometry related node arrays
       end if
-      allocate (nd(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx), stat=ierr)
-      call aerr('nd(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx)', ierr, 8 * ndx)
+      allocate (nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx), stat=ierr)
+      call aerr('nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx)', ierr, 8 * ndx); kcs = 1
+      bl = dmiss
       ba_mor = 0.0_dp
-      kcs = 1
-      
-      ! bl treated separately; it is also used in delete_dry_points_and_areas
-      call realloc(bl, ndx, keepExisting=.false., fill=dmiss, stat=ierr)
-      call aerr('bl(ndx)', ierr, ndx)
-      
+
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then
          call realloc(groundLevel, ndxi - ndx2d, keepExisting=.false., fill=dmiss, stat=ierr)

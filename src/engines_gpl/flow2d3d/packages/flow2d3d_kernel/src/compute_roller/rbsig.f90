@@ -1,5 +1,5 @@
 subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
-               & filrol_in ,lundia    ,gdp       )
+               & filrol    ,lundia    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -102,7 +102,7 @@ subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
     real(fp), dimension(ncmax)              :: ombc !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(ncmax)              :: phibc !  Description and declaration in esm_alloc_real.f90
     real(fp), dimension(ncmax)              :: thetbc !  Description and declaration in esm_alloc_real.f90
-    character(*)          , intent(in)  :: filrol_in
+    character(*)          , intent(in)  :: filrol
 !
 ! Local variables
 !
@@ -116,7 +116,6 @@ subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
     real(fp)          :: omspl
     character(35)     :: msg
     character(78)     :: string
-    character(:), allocatable :: filrol
 !
 !! executable statements -------------------------------------------------------
 !
@@ -129,8 +128,7 @@ subroutine rbsig(ncmax     ,ampbc     ,ombc      ,phibc     ,thetbc    , &
     timtap    => gdp%gdbcdat%timtap
     depbnd    => gdp%gdbcdat%depbnd
     !
-    filrol = filrol_in
-    call remove_leading_spaces(filrol ,lfile     )
+    call remove_leading_spaces(filrol    ,lfile     )
     !
     inquire (file = filrol(1:lfile), exist = ex)
     if (ex) then

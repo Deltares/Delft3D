@@ -60,7 +60,6 @@ module unstruc_netcdf
    use m_waveconst
    use m_get_Lbot_Ltop_max, only: getLbotLtopmax
    use m_reconstruct_hydrodynamics, only: reconstruct_hu_2D_from_3D
-   use m_flowgeom, only: bl
 
    implicit none
 
@@ -81,7 +80,7 @@ module unstruc_netcdf
               t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
               unc_def_idomain, unc_def_iglobal, fill_netlink_geometry, &
               open_files_, open_datasets_, nopen_files_, unc_read_merged_map, t_unc_merged, &
-              read_mesh2d_face_z, face_z_stdname
+              blcell, read_mesh2d_face_z, face_z_stdname
 
    integer, parameter :: UNC_CONV_CFOLD = 1 !< Old CF-only conventions.
    integer, parameter :: UNC_CONV_UGRID = 2 !< New CF+UGRID conventions.
@@ -587,6 +586,7 @@ module unstruc_netcdf
       module procedure unc_put_att_char
    end interface unc_put_att
 
+   real(kind=hp), allocatable :: blcell(:)
    character(len=:), allocatable :: face_z_stdname
 
 contains
@@ -12060,10 +12060,10 @@ contains
             ye(Lnew) = 0.5_dp * (yk(K1) + yk(K2)) ! TODO: AvD: make this sferic+3D-safe
          end do
 
-         if (allocated(iglobal_s) .and. size(bl) > 0) then
+         if (allocated(iglobal_s) .and. size(blcell) > 0) then
             call realloc(zf, nump, fill=dmiss, keepExisting=.false.)
             do i = 1, nump
-               zf(i) = bl(iglobal_s(i))
+               zf(i) = blcell(iglobal_s(i))
             end do
          end if
 
@@ -12684,7 +12684,7 @@ contains
 
    end subroutine unc_read_net_ugrid
 
-!> read mesh2d_face_z and store result in m_flowgeom::bl.
+!> read mesh2d_face_z and store result in module variable blcell.
 !! Also keep standard name used in face_z_stdname
    subroutine read_mesh2d_face_z(ioncid, im, numface)
       use io_netcdf
@@ -12702,15 +12702,15 @@ contains
          if (ierr == nf90_noerr) exit
       end do
       if (ierr == nf90_noerr) then
-         call realloc(bl, numface, keepExisting=.false.)
+         call realloc(blcell, numface, keepExisting=.false.)
          ierr = ionc_get_ncid(ioncid, ncid)
-         ierr = nf90_get_var(ncid, id_netnodef, bl)
+         ierr = nf90_get_var(ncid, id_netnodef, blcell)
          ! TODO: for future use inside setbedlevelfromnetfile(),
          !       make sure to store vertical orientation of variable.
          ! TODO: handle _FillValue correctly, and make sure that the mesh writing
          !       stays consistent with the fill/dmiss value that we use here.
       else
-         call realloc(bl, 0)
+         call realloc(blcell, 0)
       end if
    end subroutine read_mesh2d_face_z
 
