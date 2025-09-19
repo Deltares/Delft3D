@@ -200,7 +200,7 @@ contains
 
         real   (sp), pointer :: v_swim(:)         ! horizontal swimming velocity m/s
         real   (sp), pointer :: d_swim(:)         ! horizontal swimming direction (degree)
-        real   (dp)          :: vw_net            ! net wind velocity (corrected for wind) 
+        real   (dp)          :: vw_net            ! net wind velocity (corrected for wind)
         !**   local parameters
 
         integer(int_wp) :: icounz                  ! count the number of vertical bounces
@@ -402,7 +402,7 @@ contains
             sq6 = sqrt(6.0)
             twopi = 8.0 * atan(1.0)
             oilmod = modtyp == model_oil
-            if (oilmod) then 
+            if (oilmod) then
                 defang = defang * twopi / 360.0    !  deflection angle oil modelling
             elseif (leeway) then
                 defang = leeway_angle  * twopi / 360.0    !  divergence angle when using leeway
@@ -810,7 +810,7 @@ contains
 
             icounz = 0
             !   scale dvz dependt on the keyword scale_vdif_depth and particles in the top layer (depth)
-            if (apply_wind_drag .and. scale_vdif_depth <1.0) then 
+            if (apply_wind_drag .and. scale_vdif_depth <1.0) then
                 if (kp==ktopp) then
                     zpabs = zp * locdep(n0, kp)
                     if (zpabs < max_wind_drag_depth) then
@@ -1276,9 +1276,9 @@ contains
                             vxw  = - wvelo(n0) * sin( wdirr + leeway_ang_sign * defang + sangl )
                             vyw  = - wvelo(n0) * cos( wdirr + leeway_ang_sign * defang + sangl )
                             vw_net = sqrt((vxw-vxr)**2 + (vyw-vyr)**2)  ! net wind for drag (to accommodate scaling the modifier)
-!                           drag on the difference vector: cd * (wind - flow)
-                            if ( vw_net .gt. 0 ) then    ! if no net wind velocity (so no drag) then nothing will happen 
-                                xnew = xnew  + ((cdrag*(vxw-vxr) + leeway_modifier * sin ((vxw-vxr)/vw_net))/dxp) * itdelt    ! THis modifier may need to be adjusted de to the angle
+                            ! drag on the difference vector: cd * (wind - flow)
+                            if ( vw_net .gt. 0 ) then    ! if no net wind velocity (so no drag) then nothing will happen
+                                xnew = xnew  + ((cdrag*(vxw-vxr) + leeway_modifier * sin ((vxw-vxr)/vw_net))/dxp) * itdelt    ! This modifier may need to be adjusted to the angle
                                 ynew = ynew  + ((cdrag*(vyw-vyr) + leeway_modifier * cos ((vyw-vyr)/vw_net))/dyp) * itdelt    !
                             endif
                         end if

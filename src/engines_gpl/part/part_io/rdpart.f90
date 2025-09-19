@@ -703,13 +703,13 @@ contains
                         if (gettoken (max_wind_drag_depth, ierr2) /= 0) goto 9005
                         if (max_wind_drag_depth<0.0) goto 9005
                         write (lun2, '(/a,f13.4)') ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
-                    case ('scale_vdif_depth') 
+                    case ('scale_vdif_depth')
                         write (lun2, '(/a)') ' Found keyword "scale_vdif_depth".'
                         apply_wind_drag = .true.
                         if (gettoken (scale_vdif_depth, ierr2) /= 0) goto 9005
                         if (scale_vdif_depth<0.0) goto 9005
                         write (lun2, '(/a,f13.4)') ' Scale factor for vertical diffusion for particles in top layer: ', scale_vdif_depth
-                        
+
                     case ('write_restart_file')
                         write (lun2, '(/a)') '  Found keyword "write_restart_file".'
                         write (lun2, '(/a,a)') '  At the end of a simulation, delpar will write ', &
@@ -875,36 +875,17 @@ contains
                         if ( gettoken( leeway_multiplier     , ierr2 ) .ne. 0 ) goto 9409   ! Give stage for release
                         if ( gettoken( leeway_modifier     , ierr2 ) .ne. 0 ) goto 9409   ! Give stage for release
                         if ( gettoken( leeway_angle     , ierr2 ) .ne. 0 ) goto 9409   ! Give stage for release
-                        write ( lun2, 3601 )leeway_multiplier, leeway_modifier, leeway_angle
+                        write ( lun2, 3601 ) leeway_multiplier, leeway_modifier, leeway_angle
                         leeway = .true.
                         apply_wind_drag = .true.
                         write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
                     case ('leeway_csvfile')
                         if (modtyp /= 1) goto 9408
-                        call get_command_argument(0, cbuffer)
-                        ! get path and add the name of the leeway file, TODO: how to organise the location (debug/release)
-                        cindex = scan( cbuffer, '\/', back= .true.)
-                        leeway_csvfile = 'leewayfactors.csv'
-                        write ( lun2, '(/a)' ) '  Found leeway csvfile.'
+                        call get_leeway_params_from_csv(lun2, substi(1), leeway_multiplier, leeway_modifier, leeway_angle)
                         leeway = .true.
                         apply_wind_drag = .true.
-                        call get_command_argument(0, cbuffer)
-                        leeway_csvfile = TRIM(cbuffer(:cindex)//'../share/delft3d/' // leeway_csvfile)
                         write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
-                        open( newunit = lunfil, file = leeway_csvfile )
-                        read( lunfil, '(256a)') line
-                        read(line,*)leeway_id
-                        do while ( substi(1) .ne. leeway_id )
-                          read( lunfil, '(256a)' ) line
-                          read(line,*)leeway_id
-                        enddo
-                        cindex = 1
-                        do iindex = 1, 5
-                          cindex = cindex + index(line(cindex:) , ",")
-                        enddo
-                        read(line(cindex:), *)leeway_multiplier, leeway_modifier, leeway_angle
-                        write ( lun2, 3601 )leeway_multiplier, leeway_modifier, leeway_angle
-                        close( lunfil )
+                        write ( lun2, 3601 ) leeway_multiplier, leeway_modifier, leeway_angle
                     case default
                         write (lun2, '(/a,a)') '  Unrecognised keyword: ', trim(cbuffer)
                         goto 9000
@@ -2291,9 +2272,9 @@ contains
         3508 format(/'  ', A, ' is NOT active in the current model, settings not used!'/)
         3509 format(/'  No parameters found for plastic named : ', A)
         3510 format(/'  Parameters were found for all plastics'/)
-        3601 format(12x,'leeway multiplier          :   ',f7.3, /,     &
-                 12x,'leeway modifier            : ',f7.3, /,     &
-                 12x,'leeway divergence       [%] : ',f7.1,/)
+        3601 format(12x,'leeway multiplier           : ',f7.3, /,     &
+                    12x,'leeway modifier             : ',f7.3, /,     &
+                    12x,'leeway divergence       [%] : ',f7.1,/)
 
 
         11    write(*, *) ' Error when reading the model type '
@@ -2791,5 +2772,59 @@ contains
         return
     end function more_data
 
+
+    subroutine get_leeway_params_from_csv(lun2, subst_name, leeway_multiplier, leeway_modifier, leeway_angle)
+
+        use system_utils, only: get_executable_directory
+
+        integer, intent(in)          :: lun2
+        character(len=*), intent(in) :: subst_name
+        real(sp), intent(out)        :: leeway_multiplier, leeway_angle
+        real(dp), intent(out)        :: leeway_modifier
+
+        character(20)                :: leeway_id                 ! character buffer
+        character(256)               :: cbuffer, exe_dir          ! character buffer
+        character(256)               :: leeway_csvfile            ! name of the CSV file
+        integer                      :: i, cindex, ierr, lunfil
+        logical                      :: found
+
+        ! get path and add the name of the leeway file
+        call get_executable_directory( exe_dir, ierr)
+        leeway_csvfile = trim(exe_dir) // '../share/delft3d/leewayfactors.csv'
+        write ( lun2, '(/a,a)' ) '  Using leeway csvfile:', trim(leeway_csvfile)
+
+        open( newunit = lunfil, file = leeway_csvfile, status = 'old', iostat = ierr )
+
+        if ( ierr /= 0 ) then
+            write ( lun2, '(/a,a)' ) '  ERROR: leeway csvfile could not be opened - please check'
+            call stop_exit(1)
+        endif
+
+        found = .false.
+
+        read( lunfil, '(a)') cbuffer
+        read( cbuffer, * ) leeway_id
+        do
+            read( lunfil, '(a)' ) cbuffer
+            read( cbuffer, * ) leeway_id
+            if ( subst_name == leeway_id ) then
+                found = .true.
+                exit
+            endif
+        enddo
+
+        if ( .not. found ) then
+            write ( lun2, '(/a,a)' ) '  ERROR: object ', trim(subst_name), ' not found in leeway csvfile. Please check'
+            call stop_exit(1)
+        endif
+
+        cindex = 1
+        do i = 1, 5
+            cindex = cindex + index(cbuffer(cindex:) , ",")
+        enddo
+        read( cbuffer(cindex:), * ) leeway_multiplier, leeway_modifier, leeway_angle
+        close( lunfil )
+
+    end subroutine get_leeway_params_from_csv
 
 end module m_rdpart

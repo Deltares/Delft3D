@@ -194,31 +194,25 @@ contains
             time0 = time1
             time1 = min(tstop_user, time0 + dts)
             call part_readhydstep(hyd, itime, istat)
-            if (nopart >= 27) write(88,*)' Itime is: ', itime
-            if (nopart >= 27) write(88, *)' before partdecay call cellnr(27): ',abs(cell2nod(mpart(27)))   
             if (idtset > 0)                                                    &
                     call part17 (itime, nosubs, idtset, idtime, decay, &
                             decays)
             call partfm_decay()
 
             !     interpolation for wind speed/direction in the wind table
-            if (nopart >= 27) write(88, *)' before part15 call cellnr(27): ',abs(cell2nod(mpart(27)))   
             call part15 (lun(2), itime, spawnd, numcells, nowind, &
                     iwndtm, wveloa, wdira, wvelo, wdir)
 
             !     transport (advection, dispersion, winddrag)
             !      jsfer_old = jsferic
             !      jsferic = 0 ! everything in part10fm is in meters
-            if (nopart >= 27) write(88, *)' before update_part call cellnr(27): ',abs(cell2nod(mpart(27)))   
             call update_part(itime)
-            if (nopart >= 27) write(88, *)' before part10fm call cellnr(27): ',abs(cell2nod(mpart(27)))   
             call part10fm()
             !      jsferic = jsfer_old ! back to what it should be
             if (oil) then
                 call oildspfm(itime)
             end if
-            if (nopart >= 27) write(88, *)' before abm call cellnr(27): ',abs(cell2nod(mpart(27)))   
-            if (abmmodel) then 
+            if (abmmodel) then
                 call fm_abm(lunpr, itime, nmaxp, mmaxp, &
                 layt, ndx/kmx, kmx, mnmaxk, lgrid, &
                 lgrid2, lgrid3, nopart, npwndw, nosubs, &
@@ -228,10 +222,8 @@ contains
                 vdiff1, salin1, temper1, v_swim, d_swim, &
                 itstrtp, vel1, vel2, zmodel, laybot, laytop)
             endif
-            if (nopart >= 27) write(88, *)' after abm call cellnr(27): ',abs(cell2nod(mpart(27)))   
             call fm_vert_disp(lun(2), itime)
-            if (nopart >= 27) write(88, *)' after vertcall cellnr(27): ',abs(cell2nod(mpart(27)))   
-            
+
             !     interpolation for wind speed/direction in the wind table
         end do
 
