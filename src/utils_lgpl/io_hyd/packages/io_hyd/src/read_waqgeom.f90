@@ -69,7 +69,10 @@ contains
       integer :: id_idomain
       integer :: id_iglobal
       integer :: file_size
-      integer :: i_mesh, i_netw, ifill
+      integer :: i_mesh, i_netw, ifill, varid
+      logical :: found_sigma, found_z
+      real(kind=dp), allocatable, dimension(:) :: layer_s, interface_s, layer_z, interface_z
+      integer :: end_z_layers
 
       success = .false.
       ierr = nf90_noerr
@@ -175,6 +178,111 @@ contains
       call add_edgexy_waqgeom(waqgeom)
       call add_facelinks_waqgeom(waqgeom)
 
+      ! Read the layer information
+      ! Deternmine layer type
+      found_sigma = nf90_inq_varid(ncid, trim(waqgeom%meshname)//'_layer_sigma', varid) == nf90_noerr
+      found_z = nf90_inq_varid(ncid, trim(waqgeom%meshname)//'_layer_z', varid) == nf90_noerr
+      if (found_sigma.and.found_z) then
+         waqgeom%layertype = LAYERTYPE_OCEAN_SIGMA_Z
+      else if (found_sigma) then
+         waqgeom%layertype = LAYERTYPE_OCEANSIGMA
+      else if (found_z) then
+         waqgeom%layertype = LAYERTYPE_Z
+      else
+         waqgeom%layertype = -1
+      end if
+
+      ! Read layer information when available
+      if(waqgeom%layertype > 0) then
+         ! Read number of layers
+         ierr = nf90_inq_dimid(ncid, trim(waqgeom%meshname)//'_nLayers', varid)
+         if (ierr /= nf90_noerr) then
+            call mess(LEVEL_ERROR, 'Unable to read layer_dimension in UGRID file: '//trim(filename))
+            return
+         end if
+         ierr = nf90_inquire_dimension(ncid, varid, len=waqgeom%num_layers)
+         if (ierr /= nf90_noerr) then
+            call mess(LEVEL_ERROR, 'Unable to read layer_dimension in UGRID file: '//trim(filename))
+            return
+         end if
+         
+         ! Allocate layer arrays
+         call reallocP(waqgeom%layer_zs, waqgeom%num_layers, keepExisting=.false.)
+         call reallocP(waqgeom%interface_zs, waqgeom%num_layers + 1, keepExisting=.false.)
+         
+         ! Read layers and interfaces
+         if (found_sigma) then
+            call realloc(layer_s, waqgeom%num_layers, keepExisting=.false.)
+            layer_s = -999.0_dp            
+            ierr = nf90_inq_varid(ncid, trim(waqgeom%meshname)//"_layer_sigma", varid)
+            if (ierr == nf90_noerr) then
+               ierr = nf90_get_var(ncid, varid, layer_s, count=(/waqgeom%num_layers/))
+            end if
+            if (ierr /= nf90_noerr) then
+               call mess(LEVEL_ERROR, 'Unable to read layer_sigma table in UGRID file: '//trim(filename))
+               return
+            end if
+
+            call realloc(interface_s, waqgeom%num_layers + 1, keepExisting=.false.)
+            ierr = nf90_inq_varid(ncid, trim(waqgeom%meshname)//"_interface_sigma", varid)
+            if (ierr == nf90_noerr) then
+               ierr = nf90_get_var(ncid, varid, interface_s, count=(/waqgeom%num_layers + 1/))
+            end if
+            if (ierr /= nf90_noerr) then
+               call mess(LEVEL_ERROR, 'Unable to read interface_sigma table in UGRID file: '//trim(filename))
+               return
+            end if
+         end if
+
+         if (found_z) then
+            call realloc(layer_z, waqgeom%num_layers, keepExisting=.false.)
+            ierr = nf90_inq_varid(ncid, trim(waqgeom%meshname)//"_layer_z", varid)
+            if (ierr == nf90_noerr) then
+               ierr = nf90_get_var(ncid, varid, layer_z, count=(/waqgeom%num_layers/))
+            end if
+            if (ierr /= nf90_noerr) then
+               call mess(LEVEL_ERROR, 'Unable to read layer_z table in UGRID file: '//trim(filename))
+               return
+            end if
+
+            call realloc(interface_z, waqgeom%num_layers + 1, keepExisting=.false.)
+            ierr = nf90_inq_varid(ncid, trim(waqgeom%meshname)//"_interface_z", varid)
+            if (ierr == nf90_noerr) then
+               ierr = nf90_get_var(ncid, varid, interface_z, count=(/waqgeom%num_layers + 1/))
+            end if
+            if (ierr /= nf90_noerr) then
+               call mess(LEVEL_ERROR, 'Unable to read interface_z table in UGRID file: '//trim(filename))
+               return
+            end if
+         end if
+
+         ! Fill the layer arrays in waqgeom depending on layer type
+         if (waqgeom%layertype == LAYERTYPE_OCEANSIGMA) then
+            ! Copy the sigma layers
+            waqgeom%layer_zs = layer_s
+            waqgeom%interface_zs = interface_s
+         else if (waqgeom%layertype == LAYERTYPE_Z) then
+            ! Copy the z layers
+            waqgeom%layer_zs = layer_z
+            waqgeom%interface_zs = interface_z
+         else if  (waqgeom%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
+            ! Merge z and sigma layers
+            ! Find number of sigma layers on top of z layers
+            waqgeom%numtopsig = waqgeom%num_layers - count(abs(layer_s) > 1.0_dp)
+            if (waqgeom%numtopsig == 0) then
+               call mess(LEVEL_ERROR, 'The z-sigma model has no sigma layers on top of z layers in UGRID file: '//trim(filename))
+               return
+            end if
+            ! Combine the arrays
+            end_z_layers = waqgeom%num_layers - waqgeom%numtopsig
+            waqgeom%layer_zs(1:end_z_layers) = layer_z(1:end_z_layers)
+            waqgeom%layer_zs(end_z_layers + 1:waqgeom%num_layers) = layer_s(end_z_layers + 1:waqgeom%num_layers)
+            waqgeom%interface_zs(1:end_z_layers + 1) = interface_z(1:end_z_layers + 1)
+            waqgeom%interface_zs(end_z_layers + 2:waqgeom%num_layers + 1) = interface_s(end_z_layers + 2:waqgeom%num_layers + 1)
+         end if
+      end if
+
       success = .true.
-      end function read_waqgeom_file
-   end module
+   end function read_waqgeom_file
+end module
+   

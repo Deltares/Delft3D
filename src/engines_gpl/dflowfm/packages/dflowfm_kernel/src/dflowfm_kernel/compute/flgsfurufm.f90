@@ -57,7 +57,7 @@ contains
 !
 ! Local parameters
 !
-      real(kind=dp), parameter :: relax = 0.0d0, alfa = 0.9d0
+      real(kind=dp), parameter :: relax = 0.0_dp, alfa = 0.9_dp
 !
 ! Global variables
 !
@@ -152,7 +152,7 @@ contains
       if (formno == 0) then
          ! closed or dry
          ! hu(m) = 0d0
-         au(m) = 0d0; fu(m) = 0d0; ru(m) = 0d0
+         au(m) = 0.0_dp; fu(m) = 0.0_dp; ru(m) = 0.0_dp
       else
          again = .true.
       end if
@@ -168,33 +168,33 @@ contains
          itgenstr = itgenstr + 1
          if (formno == 1) then
             !           free weir flow
-            cu = cwfa**2 * ag / 1.5d0
+            cu = cwfa**2 * ag / 1.5_dp
             !TEM        WRITE (11,*) cu,cwfa
-            au(m) = wstr * hs1 * 2.0d0 / 3.0d0
-            ustru = cwfa * sqrt(ag * 2.0d0 / 3.0d0 * hs1)
+            au(m) = wstr * hs1 * 2.0_dp / 3.0_dp
+            ustru = cwfa * sqrt(ag * 2.0_dp / 3.0_dp * hs1)
             rhsc = cu * (hdsb + velhght - zs) * teken
          elseif (formno == 2) then
             !           drowned weir flow
-            cu = cwd**2 * 2.0d0 * ag
+            cu = cwd**2 * 2.0_dp * ag
             au(m) = wstr * ds
-            dh = max(hs1 - ds, 0.d0)
-            ustru = cwd * sqrt(ag * 2.0d0 * dh)
+            dh = max(hs1 - ds, 0.0_dp)
+            ustru = cwd * sqrt(ag * 2.0_dp * dh)
             rhsc = cu * (hdsb + velhght - (ds + zs)) * teken
          elseif (formno == 3) then
             !           free gate flow
             mu = mugfa * cgfa
-            cu = mu**2 * 2.0d0 * ag
+            cu = mu**2 * 2.0_dp * ag
             au(m) = wstr * dg
-            dh = max(hs1 - dc, 0.d0)
-            ustru = mu * sqrt(ag * 2.0d0 * dh)
+            dh = max(hs1 - dc, 0.0_dp)
+            ustru = mu * sqrt(ag * 2.0_dp * dh)
             rhsc = cu * (hdsb + velhght - (dc + zs)) * teken
          elseif (formno == 4) then
             !           drowned gate flow
             mu = mugfa * cgda
-            cu = mu**2 * 2.0d0 * ag
+            cu = mu**2 * 2.0_dp * ag
             au(m) = wstr * dg
-            dh = max(hs1 - ds, 0.d0)
-            ustru = mu * sqrt(ag * 2.0d0 * dh)
+            dh = max(hs1 - ds, 0.0_dp)
+            ustru = mu * sqrt(ag * 2.0_dp * dh)
             rhsc = cu * (hdsb + velhght - (ds + zs)) * teken
          else
          end if

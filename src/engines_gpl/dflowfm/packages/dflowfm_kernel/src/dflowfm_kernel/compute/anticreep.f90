@@ -288,7 +288,7 @@ contains
       do k = kmx, 1, -1
          ztop = acl(L) * zws(kbl + k - 1) + (1.0_dp - acl(L)) * zws(kbr + k - 1)
          zbot = acl(L) * zws(kbl + k - 2) + (1.0_dp - acl(L)) * zws(kbr + k - 2)
-         if (ztop - zbot < 1d-4) then
+         if (ztop - zbot < 1.0e-4_dp) then
             cycle
          end if
          zmid = (zbot + ztop) * 0.5_dp

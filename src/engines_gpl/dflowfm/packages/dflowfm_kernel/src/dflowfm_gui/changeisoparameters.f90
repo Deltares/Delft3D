@@ -262,12 +262,12 @@ contains
 
             call IFormGetDouble(16, XSC)
             call IFormGetDouble(18, YSC)
-            XSC = max(0d0, min(XSC, 1d0))
-            YSC = max(0d0, min(YSC, 1d0))
+            XSC = max(0.0_dp, min(XSC, 1.0_dp))
+            YSC = max(0.0_dp, min(YSC, 1.0_dp))
             call IFORMGETINTEGER(20, NDEC)
             if (NDEC > 7) NDEC = 7
             call IFormGetDouble(22, SCALESIZE)
-            SCALESIZE = max(0d0, min(SCALESIZE, 1d0))
+            SCALESIZE = max(0.0_dp, min(SCALESIZE, 1.0_dp))
 
             if (DVNU /= DVI .or. VMAXN /= VMAX .or. VMINN /= VMIN) JAAUTO = 0
 

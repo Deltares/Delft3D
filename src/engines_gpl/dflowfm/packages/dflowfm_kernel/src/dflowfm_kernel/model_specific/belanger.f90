@@ -55,14 +55,14 @@ contains
 
       allocate (xx(0:mmax), ss(0:mmax), uu(0:mmax))
 
-      x0 = 0d0 ! left
+      x0 = 0.0_dp ! left
 
       kb = kbndz(1, 1)
       x1 = xz(kb) ! right
       bot = bl(kb)
 
       h1 = s1(kb) - bot ! exact    right
-      h0 = 20d0 ! geschat  left
+      h0 = 20.0_dp ! geschat  left
 
       slope = abs((bl(ln(1, 3)) - bl(ln(2, 3))) * dxi(3))
 
@@ -72,22 +72,22 @@ contains
       Chezy = get_chezy(hav, frcuni, u1(L), v(L), ifrctypuni)
       cf = ag / Chezy**2
 
-      q = 1500d0 / 50d0
+      q = 1500.0_dp / 50.0_dp
       hc3 = q * q / ag
-      hc = hc3**0.333333333d0
+      hc = hc3**0.333333333_dp
 
-      constant = 0.25d0 * h1**4 - h1 * hc**3 + x1 * cf * hc**3
+      constant = 0.25_dp * h1**4 - h1 * hc**3 + x1 * cf * hc**3
 
       call movabs(x1, h1 + bot)
       x = x1; h = h1
       xx(mmax) = x1; ss(mmax) = h1 + bot
 
-      if (slope == 0d0) then ! analytic
+      if (slope == 0.0_dp) then ! analytic
 
          do k = 1, -num
-            a = 1d0 - dble(k - 1) / dble(num - 1)
-            h = h0 * (1d0 - a) + h1 * a
-            x = (constant - 0.25d0 * h**4 + h * hc**3) / (cf * hc**3)
+            a = 1.0_dp - dble(k - 1) / dble(num - 1)
+            h = h0 * (1.0_dp - a) + h1 * a
+            x = (constant - 0.25_dp * h**4 + h * hc**3) / (cf * hc**3)
             if (x > x0) then
                call lnabs(x, h + bot)
             end if
@@ -98,9 +98,9 @@ contains
       end if
 
       do k = mmax - 1, 0, -1
-         x = x - 1d0
+         x = x - 1.0_dp
          h3 = h**3
-         if (slope == 0d0) then
+         if (slope == 0.0_dp) then
             if (iadvec == 0) then
                h = h + (cf * hc**3) / h3 !  - hc**3)
             else

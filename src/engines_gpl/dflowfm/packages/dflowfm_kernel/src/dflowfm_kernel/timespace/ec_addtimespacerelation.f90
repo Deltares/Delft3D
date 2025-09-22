@@ -233,7 +233,7 @@ contains
 
             if (present(forcingfile)) then
                if (present(dtnodal)) then
-                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal / 86400.d0)
+                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal / 86400.0_dp)
                else
                   success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile)
                end if
@@ -253,7 +253,7 @@ contains
                   success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename(1:index(filename, '.'))//'qh', refdate_mjd, tzone, ec_second, name)
                else
                   if (present(dtnodal)) then
-                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.d0, varname=varname)
+                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.0_dp, varname=varname)
                   else
                      if (present(varname2)) then
                         success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
@@ -511,10 +511,10 @@ contains
                itargetMaskSelect = 1
             end if
             if (itargetMaskSelect == 1) then
-               transformcoef = 1.0d0
+               transformcoef = 1.0_dp
                srcmask%msk = 0
             else
-               transformcoef = 0.0d0
+               transformcoef = 0.0_dp
                srcmask%msk = 1
             end if
 

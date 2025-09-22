@@ -65,7 +65,7 @@ contains
          call linewidth(3)
       end if
 
-      call DISP3C(XLAN, YLAN, ZLAN, NCLAN, MXLAN, 0d0, NCOL)
+      call DISP3C(XLAN, YLAN, ZLAN, NCLAN, MXLAN, 0.0_dp, NCOL)
 
       NCOLD = 0
       do K = 1, MXLAN

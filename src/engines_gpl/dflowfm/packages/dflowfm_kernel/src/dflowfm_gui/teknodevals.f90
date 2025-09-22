@@ -75,7 +75,7 @@ contains
 
       KMOD = max(1, NUMK / 100)
 
-      H = 0.5d0
+      H = 0.5_dp
 
       if (met == 3) then ! smooth iso of netnode stuff based upon netcells
 
@@ -98,7 +98,7 @@ contains
          end do
 
       else if (MET > 3) then
-         D = 0.5d0 * GETRCIR() !
+         D = 0.5_dp * GETRCIR() !
          do K1 = 1, NUMK
             if (mod(K1, KMOD) == 0) then
                call HALT2(KEY)
@@ -157,11 +157,11 @@ contains
                else if (MET == 5 .or. MET == 8) then
                   call DRCIRC(XX1, YY1, ZZ1)
                else if (MET == 9) then
-                  if (VV /= dmiss .and. VV < vmin + 0.05d0 * (vmax - vmin)) then
+                  if (VV /= dmiss .and. VV < vmin + 0.05_dp * (vmax - vmin)) then
                      call CIRR(Xx1, Yy1, ncolhl)
                   end if
                else if (MET == 10) then
-                  if (VV /= dmiss .and. VV > vmax - 0.05d0 * (vmax - vmin)) then
+                  if (VV /= dmiss .and. VV > vmax - 0.05_dp * (vmax - vmin)) then
                      call CIRR(Xx1, Yy1, ncolhl)
                   end if
                end if

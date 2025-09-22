@@ -225,9 +225,9 @@ contains
             end if
 !          IF (ITS.EQ.30) PAUSE 'No convergence in 30 iterations'
             if (ITS == 30) then ! SPvdP: error handling
-               A = 0d0
-               W = 0d0
-               V = 0d0
+               A = 0.0_dp
+               W = 0.0_dp
+               V = 0.0_dp
                return
             end if
             X = W(L)

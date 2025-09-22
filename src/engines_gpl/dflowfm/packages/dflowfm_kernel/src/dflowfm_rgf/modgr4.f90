@@ -55,7 +55,7 @@ contains
       integer :: m1, m2, n1, n2, i, j, in, jn, ncs, jdum
       real(kind=dp) :: EPS, X0, Y0, XN, YN, DIS, RL
 !     TO LAND
-      data EPS/0.00001d0/
+      data EPS/0.00001_dp/
       if (LANDORSPLINE == 1) then
          if (MXLAN == 0) then
             call QNERROR('FIRST LOAD A LANDBOUNDARY', ' ', ' ')

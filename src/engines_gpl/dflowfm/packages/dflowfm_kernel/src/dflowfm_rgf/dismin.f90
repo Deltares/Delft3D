@@ -54,10 +54,10 @@ contains
       real(kind=dp) :: AX, BX, CX, TOL, DIS
 
 !     RLEN = SQRT((X(1)-X(2))**2+(Y(1)-Y(2))**2)
-      TOL = 0.000001d0
+      TOL = 0.000001_dp
 !     TOL  = 0.000005*RLEN
       RN = dble(N)
-      AX = 0d0
+      AX = 0.0_dp
       BX = TV
       CX = RN
       call GOLD(AX, BX, CX, TOL, TV, X, X2, Y, Y2, XX, YY, N, DIS)

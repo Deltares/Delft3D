@@ -11,7 +11,6 @@ from ci_tools.example_utils.logger import Logger, LogLevel
 class ServiceName(str, Enum):
     """Enum representing application names for DIMR automation."""
 
-    ATLASSIAN = "Atlassian"
     JIRA = "Jira"
     TEAMCITY = "TeamCity"
     SSH = "SSH"

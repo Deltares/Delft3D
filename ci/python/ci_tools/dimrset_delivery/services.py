@@ -1,7 +1,6 @@
 from typing import Optional
 
 from ci_tools.dimrset_delivery.dimr_context import CredentialEntry, DimrAutomationContext, ServiceName
-from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.jira import Jira
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
@@ -12,12 +11,11 @@ class Services:
     """
     Stores initialized service clients for automation tasks.
 
-    This class provides access to Atlassian, TeamCity, SSH, and Git clients
+    This class provides access to TeamCity, SSH, and Git clients
     based on the requirements and credentials provided in the context.
     Usage: Instantiate with a DimrAutomationContext to initialize required services.
     """
 
-    atlassian: Optional[Atlassian] = None
     jira: Optional[Jira] = None
     teamcity: Optional[TeamCity] = None
     ssh: Optional[SshClient] = None
@@ -52,12 +50,7 @@ class Services:
         if not entry.required:
             return
 
-        if service_name == ServiceName.ATLASSIAN:
-            self.atlassian = Atlassian(
-                credentials=entry.credential,
-                context=context,
-            )
-        elif service_name == ServiceName.JIRA:
+        if service_name == ServiceName.JIRA:
             self.jira = Jira(
                 credentials=entry.credential,
                 context=context,

@@ -25,9 +25,6 @@ def parse_common_arguments() -> argparse.Namespace:
         "--dry-run", action="store_true", default=False, help="Run in dry-run mode without making any changes"
     )
 
-    parser.add_argument("--atlassian-username", type=str, default=None, help="Atlassian/Confluence username")
-    parser.add_argument("--atlassian-password", type=str, default=None, help="Atlassian/Confluence password")
-
     parser.add_argument("--jira-username", type=str, default=None, help="Jira username")
     parser.add_argument("--jira-PAT", type=str, default=None, help="Jira Personal Access Token")
 
@@ -45,7 +42,6 @@ def parse_common_arguments() -> argparse.Namespace:
 
 def create_context_from_args(
     args: argparse.Namespace,
-    require_atlassian: bool = True,
     require_jira: bool = True,
     require_git: bool = True,
     require_teamcity: bool = True,
@@ -58,8 +54,6 @@ def create_context_from_args(
     ----------
     args : argparse.Namespace
         Parsed command line arguments.
-    require_atlassian : bool, optional
-        Whether Atlassian credentials are required. Default is True.
     require_jira : bool, optional
         Whether Jira credentials are required. Default is True.
     require_git : bool, optional
@@ -75,13 +69,6 @@ def create_context_from_args(
         The constructed automation context.
     """
     credentials = ServiceAuthenticateStore()
-    credentials.add(
-        ServiceName.ATLASSIAN,
-        CredentialEntry(
-            required=require_atlassian,
-            credential=Credentials(username=args.atlassian_username, password=args.atlassian_password),
-        ),
-    )
     credentials.add(
         ServiceName.JIRA,
         CredentialEntry(

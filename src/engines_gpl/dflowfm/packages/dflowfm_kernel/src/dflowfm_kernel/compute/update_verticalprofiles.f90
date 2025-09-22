@@ -313,12 +313,12 @@ contains
                   if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                      k1 = ln(1, LL); k2 = ln(2, LL)
                      ac1 = acl(LL); ac2 = 1.0_dp - ac1
-                     hrmsLL = min(max(ac1 * hwav(k1) + ac2 * hwav(k2), 1d-2), gammax * hu(LL))
+                     hrmsLL = min(max(ac1 * hwav(k1) + ac2 * hwav(k2), 1.0e-2_dp), gammax * hu(LL))
                      if (hrmsLL > 0.0) then
                         call wave_fillsurdis(k1, dis1)
                         call wave_fillsurdis(k2, dis2)
                         surdisLL = ac1 * dis1 + ac2 * dis2
-                        if (surdisLL < 1d-2) surdisLL = 0.0_dp
+                        if (surdisLL < 1.0e-2_dp) surdisLL = 0.0_dp
                         rhoLL = rhomean
                         pkwmag = fbreak * 2.0_dp * surdisLL / (rhoLL * fwavpendep * hrmsLL)
                         ! tke dirichlet boundary condition at surface
@@ -407,7 +407,7 @@ contains
                   end if
 
                   if (jarichardsononoutput > 0) then
-                     rich(L) = sigrho * bruva(k) / max(1d-8, dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
+                     rich(L) = sigrho * bruva(k) / max(1.0e-8_dp, dijdij(k)) ! sigrho because bruva premultiplied by 1/sigrho
                   end if
 
                   sourtu = max(vicwwu(L), vicwminb) * dijdij(k)
@@ -641,7 +641,7 @@ contains
                      !
                      ! Add wave dissipation production term
                      if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
-                        sourtu = sourtu + pkwav(k) * c1e * tureps0(L) / max(turkin0(L), 1d-7)
+                        sourtu = sourtu + pkwav(k) * c1e * tureps0(L) / max(turkin0(L), 1.0e-7_dp)
                      end if
 
                      tkedisL = 0.0_dp ! tkedis(L)

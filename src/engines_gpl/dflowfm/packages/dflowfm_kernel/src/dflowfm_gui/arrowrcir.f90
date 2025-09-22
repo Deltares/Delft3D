@@ -48,8 +48,8 @@ contains
       real(kind=dp) :: x0
       real(kind=dp) :: y0
       real(kind=dp) :: X(3), Y(3), XR(3), YR(3)
-      data X(1)/0.8d0/, X(2)/1d0/, X(3)/0.8d0/, &
-         Y(1)/-0.1d0/, Y(2)/0d0/, Y(3)/0.1d0/
+      data X(1)/0.8_dp/, X(2)/1.0_dp/, X(3)/0.8_dp/, &
+         Y(1)/-0.1_dp/, Y(2)/0.0_dp/, Y(3)/0.1_dp/
 
       do I = 1, 3
          XR(I) = X0 + 3 * rcir * (X(I) * CS - Y(I) * SN)

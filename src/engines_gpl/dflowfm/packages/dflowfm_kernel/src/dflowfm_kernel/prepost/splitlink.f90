@@ -116,7 +116,7 @@ contains
       if (N2Dcells == 0) then
          !  add node
          !call setnewpoint(0.5d0*(xk(k1)+xk(k2)), 0.5d0*(yk(k1)+yk(k2)), zp, kp)
-         call dsetnewpoint(0.5d0 * (xk(k1) + xk(k2)), 0.5d0 * (yk(k1) + yk(k2)), kp)
+         call dsetnewpoint(0.5_dp * (xk(k1) + xk(k2)), 0.5_dp * (yk(k1) + yk(k2)), kp)
 
          call connectdbn(k1, kp, LnL)
          if (jatek == 1) call teklink(LnL, ncoldn)
@@ -128,7 +128,7 @@ contains
          !     set lnn and lne for new links
          !     reallocate if necessary
          if (numL > ubound(lnn, 1)) then
-            numnew = ceiling(1.2d0 * dble(numL))
+            numnew = ceiling(1.2_dp * dble(numL))
             call realloc(lnn, numnew, keepExisting=.true.)
             call realloc(lne, [2, numnew], keepExisting=.true.)
          end if
@@ -176,7 +176,7 @@ contains
 !     add node and make new links (once)
          if (i == 1) then
             !  add node
-            call dsetnewpoint(0.5d0 * (xk(kL) + xk(kR)), 0.5d0 * (yk(kL) + yk(kR)), kp)
+            call dsetnewpoint(0.5_dp * (xk(kL) + xk(kR)), 0.5_dp * (yk(kL) + yk(kR)), kp)
             call connectdbn(kL, kp, LnL)
             if (jatek == 1) call teklink(LnL, ncoldn)
             kn(3, LnL) = k3
@@ -222,7 +222,7 @@ contains
 !     set lnn and lne for new links
 !     reallocate if necessary
          if (numL > ubound(lnn, 1)) then
-            numnew = ceiling(1.2d0 * dble(numL))
+            numnew = ceiling(1.2_dp * dble(numL))
             call realloc(lnn, numnew, keepExisting=.true.)
             call realloc(lne, [2, numnew], keepExisting=.true.)
          end if
@@ -366,7 +366,7 @@ contains
                                   xk(kL), yk(kL), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
                   dcos3 = dcosphi(xk(kLLL), yk(kLLL), xk(kLL), yk(kLL), &
                                   xk(kLL), yk(kLL), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
-                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9d0) then
+                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9_dp) then
                      call mergecells(icL, icLL, jatek)
                   end if
                end if
@@ -380,7 +380,7 @@ contains
                                   xk(kR), yk(kR), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
                   dcos3 = dcosphi(xk(kRRR), yk(kRRR), xk(kRR), yk(kRR), &
                                   xk(kRR), yk(kRR), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
-                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9d0) then
+                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9_dp) then
                      call mergecells(icR, icRR, jatek)
                   end if
                end if

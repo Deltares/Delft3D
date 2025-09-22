@@ -33,6 +33,8 @@
 !> Initializes all administration necessary for writing lateral discharge output to his-files.
 module m_init_lateral_his
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -48,13 +50,13 @@ contains
 
       ! At the starting time of history output, initialize variables
       if (jahislateral > 0 .and. numlatsg > 0) then
-         call realloc(qplatCum, numlatsg, keepExisting=.false., fill=0d0)
-         call realloc(qplatCumPre, numlatsg, keepExisting=.false., fill=0d0)
-         call realloc(qplatAve, numlatsg, keepExisting=.false., fill=0d0)
-         call realloc(qLatReal, numlatsg, keepExisting=.false., fill=0d0)
-         call realloc(qLatRealCum, numlatsg, keepExisting=.false., fill=0d0)
-         call realloc(qLatRealCumPre, numlatsg, keepExisting=.false., fill=0d0)
-         call realloc(qLatRealAve, numlatsg, keepExisting=.false., fill=0d0)
+         call realloc(qplatCum, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qplatCumPre, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qplatAve, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qLatReal, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qLatRealCum, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qLatRealCumPre, numlatsg, keepExisting=.false., fill=0.0_dp)
+         call realloc(qLatRealAve, numlatsg, keepExisting=.false., fill=0.0_dp)
       end if
    end subroutine init_lateral_his
 

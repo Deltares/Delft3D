@@ -53,10 +53,10 @@ module m_1d2d_fixedweirs
 
    real(kind=dp), private :: kdx_i_2d !< pi*1d0/16d0
    real(kind=dp), private :: kdx_I_1d !< pi*3d0/8d0
-   real(kind=dp), parameter :: ce = 1d0 !< Weir coefficients (fixed for now).
-   real(kind=dp), parameter :: cw = 1d0 !< Weir coefficients (fixed for now).
+   real(kind=dp), parameter :: ce = 1.0_dp !< Weir coefficients (fixed for now).
+   real(kind=dp), parameter :: cw = 1.0_dp !< Weir coefficients (fixed for now).
    real(kind=dp), public :: lat_fix_weir_umin !< Coefficients for "tweaking" the 1d2d iteration loop, not used for now.
-   real(kind=dp), public :: lat_fix_weir_relax = 0.1d0 !< Coefficients for "tweaking" the 1d2d iteration loop, not used for now.
+   real(kind=dp), public :: lat_fix_weir_relax = 0.1_dp !< Coefficients for "tweaking" the 1d2d iteration loop, not used for now.
    integer, public :: lat_fix_weir_umin_method !< Coefficients for "tweaking" the 1d2d iteration loop, not used for now.
    real(kind=dp), public :: lat_fix_weir_minimal_1d2d_embankment !< Minimal crest height of 1D2D Lateral_fixedweir embankments (height, not level).
    real(kind=dp), public :: lat_fix_weir_dx !< Model specific delta x, can be used for smoothing the solution.
@@ -66,13 +66,13 @@ contains
    !> Sets ALL (scalar) variables in this module to their default values.
    subroutine default_1d2d_fixedweirs()
       use m_GlobalParameters, only: pi
-      lat_fix_weir_umin = 0d0
-      lat_fix_weir_relax = 0.1d0
+      lat_fix_weir_umin = 0.0_dp
+      lat_fix_weir_relax = 0.1_dp
       lat_fix_weir_umin_method = 0
       lat_fix_weir_minimal_1d2d_embankment = 0
-      lat_fix_weir_dx = 200d0
-      kdx_I_2d = pi * 1d0 / 32d0
-      kdx_I_1d = pi * 3d0 / 16d0
+      lat_fix_weir_dx = 200.0_dp
+      kdx_I_2d = pi * 1.0_dp / 32.0_dp
+      kdx_I_1d = pi * 3.0_dp / 16.0_dp
 
    end subroutine default_1d2d_fixedweirs
 
@@ -81,44 +81,44 @@ contains
       use m_alloc, only: realloc
 
       call realloc(index_1d2d_fixedweirs, n_1d2d_fixedweirs, keepexisting=.true.)
-      call realloc(dx_i, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      dx_i = 0d0
-      call realloc(b0_1ds, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      b0_1ds = 0d0
-      call realloc(b0_1dq, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      b0_1dq = 0d0
-      call realloc(d0_1d, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      d0_1d = 0d0
-      call realloc(b0_2di, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      b0_2di = 0d0
-      call realloc(b0_2dv, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      b0_2dv = 0d0
-      call realloc(d1p_2dv, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      d1p_2dv = 0d0
-      call realloc(s0_2dv, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      s0_2dv = 0d0
-      call realloc(b_i, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      b_i = 0d0
-      call realloc(s0_1d, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      s0_1d = 0d0
-      call realloc(s1_2dv, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      s1_2dv = 0d0
+      call realloc(dx_i, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      dx_i = 0.0_dp
+      call realloc(b0_1ds, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      b0_1ds = 0.0_dp
+      call realloc(b0_1dq, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      b0_1dq = 0.0_dp
+      call realloc(d0_1d, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      d0_1d = 0.0_dp
+      call realloc(b0_2di, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      b0_2di = 0.0_dp
+      call realloc(b0_2dv, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      b0_2dv = 0.0_dp
+      call realloc(d1p_2dv, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      d1p_2dv = 0.0_dp
+      call realloc(s0_2dv, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      s0_2dv = 0.0_dp
+      call realloc(b_i, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      b_i = 0.0_dp
+      call realloc(s0_1d, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      s0_1d = 0.0_dp
+      call realloc(s1_2dv, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      s1_2dv = 0.0_dp
       call realloc(L_1d, n_1d2d_fixedweirs, keepExisting=.false., fill=0)
-      L_1d = 0d0
-      call realloc(CFL, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      CFL = 0d0
-      call realloc(sb_1d2d, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      sb_1d2d = 0d0
+      L_1d = 0.0_dp
+      call realloc(CFL, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      CFL = 0.0_dp
+      call realloc(sb_1d2d, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      sb_1d2d = 0.0_dp
       call realloc(FlowCond, n_1d2d_fixedweirs, keepExisting=.false., fill=0)
-      FlowCond = 0d0
-      call realloc(qzeta_1d2d, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      qzeta_1d2d = 0d0
-      call realloc(qlat_1d2d, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      qlat_1d2d = 0d0
-      call realloc(u_2d1d, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      u_2d1d = 0d0
-      call realloc(direction, n_1d2d_fixedweirs, keepExisting=.false., fill=0d0)
-      direction = 0d0
+      FlowCond = 0.0_dp
+      call realloc(qzeta_1d2d, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      qzeta_1d2d = 0.0_dp
+      call realloc(qlat_1d2d, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      qlat_1d2d = 0.0_dp
+      call realloc(u_2d1d, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      u_2d1d = 0.0_dp
+      call realloc(direction, n_1d2d_fixedweirs, keepExisting=.false., fill=0.0_dp)
+      direction = 0.0_dp
       call realloc(kindex, [2, n_1d2d_fixedweirs], keepExisting=.false., fill=0)
       kindex = 0
    end subroutine realloc_1d2d_fixedweirs
@@ -160,17 +160,17 @@ contains
          L = index_1d2d_fixedweirs(i)
          ! Set advection and teta
          iadv(L) = 0
-         teta(L) = 1d0
+         teta(L) = 1.0_dp
 
          ! Fill array kindex and direction
          if (ln(1, L) <= ndx2d) then
             kindex(2, i) = ln(1, L)
             kindex(1, i) = ln(2, L)
-            direction(i) = 1d0
+            direction(i) = 1.0_dp
          else
             kindex(1, i) = ln(1, L)
             kindex(2, i) = ln(2, L)
-            direction(i) = -1d0
+            direction(i) = -1.0_dp
          end if
 
          ! Determine the L-index for the 1d flow width
@@ -251,17 +251,17 @@ contains
          k1d = kindex(1, i)
          k2d = kindex(2, i)
 
-         CFL(i) = 0d0
+         CFL(i) = 0.0_dp
 
          zs = bob(1, L)
 
          s1p_1d = s1(k1d)
-         if (comparereal(b0_2dv(i), 0d0) /= 0) then
+         if (comparereal(b0_2dv(i), 0.0_dp) /= 0) then
             s1_2dv(i) = d1p_2dv(i) / b0_2dv(i) - (b0_2di(i) / b0_2dv(i)) * s1(k2d)
          else
             s1_2dv(i) = s1(k2d)
          end if
-         s1_2dv_at_interface = (s1_2dv(i) + s1(k2d)) * 0.5d0
+         s1_2dv_at_interface = (s1_2dv(i) + s1(k2d)) * 0.5_dp
 
          if (s0_2dv(i) > s0(k1d)) then
             ! flow from 2d to 1d
@@ -284,9 +284,9 @@ contains
             case (1)
                u_c = sqrt(lat_fix_weir_umin**2 + u0(L)**2)
             case (2)
-               u_c = (lat_fix_weir_umin**4 + u0(L)**4)**0.25d0
+               u_c = (lat_fix_weir_umin**4 + u0(L)**4)**0.25_dp
             case (3)
-               u_c = (lat_fix_weir_umin**8 + u0(L)**8)**0.125d0
+               u_c = (lat_fix_weir_umin**8 + u0(L)**8)**0.125_dp
             case (4)
                u_c = max(lat_fix_weir_umin, abs(u0(L)))
             end select
@@ -296,84 +296,84 @@ contains
                ! no flow condition
                Q_1d2d = 0
                s1p_1d = zs
-               alfa0_1d = 0d0
-               beta0_1d = 1d0
-               alfa0_2d = 0d0
-               beta0_2d = 1d0
-               alfa_sf = 1d0 / 3d0
-               ru(L) = 0d0
-               u0(L) = 0d0
-               f = 0d0
+               alfa0_1d = 0.0_dp
+               beta0_1d = 1.0_dp
+               alfa0_2d = 0.0_dp
+               beta0_2d = 1.0_dp
+               alfa_sf = 1.0_dp / 3.0_dp
+               ru(L) = 0.0_dp
+               u0(L) = 0.0_dp
+               f = 0.0_dp
 
-            elseif ((s0(k2d) - zs >= 3d0 / 2d0 * (s0(k1d) - zs)) .or. (s0(k1d) - zs > 3d0 / 2d0 * (s0(k2d) - zs))) then
+            elseif ((s0(k2d) - zs >= 3.0_dp / 2.0_dp * (s0(k1d) - zs)) .or. (s0(k1d) - zs > 3.0_dp / 2.0_dp * (s0(k2d) - zs))) then
                ! Free flow condition
-               b_i(i) = au(L)**2 * u_c / ((2d0 / 3d0)**3 * dx_ui * (dx_i(i) * ce * cw * (s0_up - zs))**2)
-               f = (3d0 * dx_1d2d / dx_ui + dts * b_i(i)) * dx_ui / (ag * dts)
+               b_i(i) = au(L)**2 * u_c / ((2.0_dp / 3.0_dp)**3 * dx_ui * (dx_i(i) * ce * cw * (s0_up - zs))**2)
+               f = (3.0_dp * dx_1d2d / dx_ui + dts * b_i(i)) * dx_ui / (ag * dts)
 
-               if (s0(k2d) - zs >= 3d0 / 2d0 * (s0(k1d) - zs)) then
+               if (s0(k2d) - zs >= 3.0_dp / 2.0_dp * (s0(k1d) - zs)) then
                   ! Free flow from 2d to 1d (situation 2.1, 2.2)
                   FlowCond(i) = 2
 
                   Q_1d2d = -au(L) * (fu(L) * (s1(k2d) - s1_2dv(i)) + direction(i) * ru(L))
                   s1p_1d = zs
-                  alfa0_1d = 0d0
-                  beta0_1d = 1d0
-                  alfa0_2d = 1d0
-                  beta0_2d = 0d0
-                  alfa_sf = 1d0 / 3d0
+                  alfa0_1d = 0.0_dp
+                  beta0_1d = 1.0_dp
+                  alfa0_2d = 1.0_dp
+                  beta0_2d = 0.0_dp
+                  alfa_sf = 1.0_dp / 3.0_dp
                else
                   ! Free flow from 1d to 2d (situation 3.1, 3.2)
                   FlowCond(i) = 1
 
                   Q_1d2d = qzeta_1d2d(i) * s1p_1d + qlat_1d2d(i)
                   s1_2dv_at_interface = zs
-                  alfa0_1d = 1d0
+                  alfa0_1d = 1.0_dp
                   beta0_1d = f * fu(L)
-                  alfa0_2d = 0d0
-                  beta0_2d = 1d0
-                  alfa_sf = 1d0 / 3d0
+                  alfa0_2d = 0.0_dp
+                  beta0_2d = 1.0_dp
+                  alfa_sf = 1.0_dp / 3.0_dp
                end if
             else
                ! submerged flow (situation 1.1, 1.2)
                FlowCond(i) = 3
                width_1d = wu(L_1d(i))
-               if (width_1d < 1d-4) then
-                  width_1d = 1d-4
+               if (width_1d < 1.0e-4_dp) then
+                  width_1d = 1.0e-4_dp
                end if
 
                Q_1d2d = qzeta_1d2d(i) * s1p_1d + qlat_1d2d(i)
                CFL(i) = sqrt(teta(L) * dts * au(L) * fu(L) / (dx_uI * dx_I(i)))
-               alfa0_1d = 1d0
-               alfa0_2d = 1d0
-               b_i(i) = au(L)**2 * u_c / (2d0 * dx_ui * (dx_i(i) * ce * cw * (s0_down - zs))**2)
+               alfa0_1d = 1.0_dp
+               alfa0_2d = 1.0_dp
+               b_i(i) = au(L)**2 * u_c / (2.0_dp * dx_ui * (dx_i(i) * ce * cw * (s0_down - zs))**2)
 
                f = (dx_1d2d / dx_ui + dts * b_i(i)) * dx_ui / (ag * dts)
 
-               beta0_1d = f * fu(L) + sqrt(1d0 + 4d0 * (sin(kdx_I_1d / 2d0) * CFL(i))**2 + 4d0 * CFL(i)**2) / &
-                          (2d0 * sqrt(1d0 + 4d0 * (sin(kdx_I_1d / 2d0) * CFL(i))**2))
-               beta0_2d = (dx_uI * CFL(i)**2) / (width_1d * (1d0 + 4d0 * (sin(kdx_I_2d / 2d0) * CFL(i))**2))
-               alfa_sf = 1d0
+               beta0_1d = f * fu(L) + sqrt(1.0_dp + 4.0_dp * (sin(kdx_I_1d / 2.0_dp) * CFL(i))**2 + 4.0_dp * CFL(i)**2) / &
+                          (2.0_dp * sqrt(1.0_dp + 4.0_dp * (sin(kdx_I_1d / 2.0_dp) * CFL(i))**2))
+               beta0_2d = (dx_uI * CFL(i)**2) / (width_1d * (1.0_dp + 4.0_dp * (sin(kdx_I_2d / 2.0_dp) * CFL(i))**2))
+               alfa_sf = 1.0_dp
             end if
 
-            b0_2dv(i) = 0.5d0 * alfa0_2d + (beta0_2d + alfa0_2d * f * fu(L))
-            b0_2di(i) = 0.5d0 * alfa0_2d - (beta0_2d + alfa0_2d * f * fu(L))
-            if (fu(L) == 0d0 .or. au(L) == 0d0) then
-               d1p_2dv(i) = 0d0
+            b0_2dv(i) = 0.5_dp * alfa0_2d + (beta0_2d + alfa0_2d * f * fu(L))
+            b0_2di(i) = 0.5_dp * alfa0_2d - (beta0_2d + alfa0_2d * f * fu(L))
+            if (fu(L) == 0.0_dp .or. au(L) == 0.0_dp) then
+               d1p_2dv(i) = 0.0_dp
             else
                d1p_2dv(i) = alfa0_2d * s1p_1d + beta0_2d / (teta(L) * au(L) * fu(L)) * Q_1d2d + &
                             alfa0_2d * s_cI * (f * ru(L) - (dx_1d2d * u0(L)) / (alfa_sf * ag * dts)) + &
-                            beta0_2d * s_cI / (teta(L) * fu(L)) * (teta(L) * ru(L) + (1d0 - teta(L)) * u0(L))
+                            beta0_2d * s_cI / (teta(L) * fu(L)) * (teta(L) * ru(L) + (1.0_dp - teta(L)) * u0(L))
             end if
             !
             b0_1ds(i) = alfa0_1d
-            if (teta(L) * fu(L) * au(L) <= 1d-10) then
-               b0_1dq(i) = 1d0
-               b0_1ds(i) = 0d0
-               d0_1d(i) = 0d0
+            if (teta(L) * fu(L) * au(L) <= 1.0e-10_dp) then
+               b0_1dq(i) = 1.0_dp
+               b0_1ds(i) = 0.0_dp
+               d0_1d(i) = 0.0_dp
             else
                b0_1dq(i) = -beta0_1d / (teta(L) * fu(L) * au(L))
                d0_1d(i) = alfa0_1d * s1_2dv_at_interface + (beta0_1d - alfa0_1d * f * fu(L)) * (s1(k2d) - s1_2dv(i)) &
-                          - alfa0_1d * s_cI * (f * ru(L) - dx_1d2d / (ag * dts * alfa_sf) * u0(L)) + beta0_1d * s_cI / (teta(L) * fu(L)) * (teta(L) * ru(L) + (1d0 - teta(L)) * u0(L))
+                          - alfa0_1d * s_cI * (f * ru(L) - dx_1d2d / (ag * dts * alfa_sf) * u0(L)) + beta0_1d * s_cI / (teta(L) * fu(L)) * (teta(L) * ru(L) + (1.0_dp - teta(L)) * u0(L))
             end if
          else
             FlowCond(i) = 0
@@ -417,7 +417,7 @@ contains
             cc_cfi = ccr(lv2(L))
             ccr(Lv2(L)) = ccr(Lv2(L)) + aufu
 
-            auru = tetau * ru(L) + (1d0 - teta(L)) * au(L) * u0(L) !     q1(L)
+            auru = tetau * ru(L) + (1.0_dp - teta(L)) * au(L) * u0(L) !     q1(L)
             ddr(k1d) = ddr(k1d) - direction(i) * auru
 
             ! Now put the coefficients for the 1d2d fixed weirs into the matrix
@@ -429,8 +429,8 @@ contains
          else
             ! no flow
 
-            qzeta_1d2d(i) = 0d0
-            qlat_1d2d(i) = 0d0
+            qzeta_1d2d(i) = 0.0_dp
+            qlat_1d2d(i) = 0.0_dp
          end if
       end do
    end subroutine set_matrix_coefficients
@@ -455,9 +455,9 @@ contains
          k2d = kindex(2, i)
 
          if (hu(L) > 0) then
-            if (b0_1dq(i) == 0d0) then
-               qzeta_1d2d(i) = 0d0
-               qlat_1d2d(i) = 0d0
+            if (b0_1dq(i) == 0.0_dp) then
+               qzeta_1d2d(i) = 0.0_dp
+               qlat_1d2d(i) = 0.0_dp
             else
                qzeta_1d2d(i) = -b0_1ds(i) / b0_1dq(i)
                qlat_1d2d(i) = d0_1d(i) / b0_1dq(i)
@@ -472,27 +472,27 @@ contains
             k1 = ln(1, L); k2 = ln(2, L)
             bbr(k1) = bbr(k1) - aufu
             bbr(k2) = bbr(k2) - aufu
-            ccr(Lv2(L)) = 0d0
+            ccr(Lv2(L)) = 0.0_dp
 
-            auru = tetau * ru(L) + (1d0 - teta(L)) * au(L) * u0(L) !     q1(L)
+            auru = tetau * ru(L) + (1.0_dp - teta(L)) * au(L) * u0(L) !     q1(L)
             ddr(k1) = ddr(k1) + auru
             ddr(k2) = ddr(k2) - auru
 
             ! Impose the computed discharge.
-            fu(L) = 0d0
-            if (au(L) > 0d0) then
+            fu(L) = 0.0_dp
+            if (au(L) > 0.0_dp) then
                ru(l) = (qzeta_1d2d(i) * s1(k1d) + qlat_1d2d(i)) / au(L)
                auru = tetau * ru(L)
                ddr(k1) = ddr(k1) - auru
                ddr(k2) = ddr(k2) + auru
             else
-               ru(L) = 0d0
+               ru(L) = 0.0_dp
             end if
          else
             ! no flow
 
-            qzeta_1d2d(i) = 0d0
-            qlat_1d2d(i) = 0d0
+            qzeta_1d2d(i) = 0.0_dp
+            qlat_1d2d(i) = 0.0_dp
          end if
       end do
    end subroutine set_discharge_on_1d2d_fixedweirs
@@ -518,11 +518,11 @@ contains
          k1d = kindex(1, i)
          k2d = kindex(2, i)
 
-         if (hu(L) > 0d0) then
+         if (hu(L) > 0.0_dp) then
             dx_i(i) = au(L) / hu(L)
          end if
 
-         if (comparereal(b0_2dv(i), 0d0) == 0d0) then
+         if (comparereal(b0_2dv(i), 0.0_dp) == 0.0_dp) then
             s0_2dv(i) = s0(k2d)
          else
             s1_2dv(i) = d1p_2dv(i) / b0_2dv(i) - (b0_2di(i) / b0_2dv(i)) * s1(k2d)
@@ -531,20 +531,20 @@ contains
 
          ! The virtual water level is located at the velocity point. For the upstream water level
          ! this water level must be extrapolated to the water level point.
-         slopec = 0d0
+         slopec = 0.0_dp
 
          agp = ag
          gdxi = agp * dxi(L)
          cu = gdxi * teta(L)
          du = dti * u0(L)
 
-         if (direction(i) > 0d0) then
-            ds = 2d0 * (s0_2dv(i) - s0(k2d))
+         if (direction(i) > 0.0_dp) then
+            ds = 2.0_dp * (s0_2dv(i) - s0(k2d))
          else
-            ds = 2d0 * (s0(k2d) - s0_2dv(i))
+            ds = 2.0_dp * (s0(k2d) - s0_2dv(i))
          end if
-         if (teta(L) /= 1d0) then
-            du = du - (1d0 - teta(L)) * gdxi * ds
+         if (teta(L) /= 1.0_dp) then
+            du = du - (1.0_dp - teta(L)) * gdxi * ds
          end if
 
          u1L = u0(L)
@@ -555,13 +555,13 @@ contains
 
          frL = cfuhi(L) * sqrt(u1L * u1L) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
 
-         bui = 1d0 / (dti + frL)
+         bui = 1.0_dp / (dti + frL)
          fu(L) = cu * bui
          ru(L) = du * bui
          u1L0 = u1L
          u1L = ru(L) - fu(L) * ds
          itu1 = itu1 + 1
-         if (huvli(L) > 1d0 .and. itu1 < 4 .and. abs(u1L - u1L0) > 1d-2) then ! less than 1 m deep
+         if (huvli(L) > 1.0_dp .and. itu1 < 4 .and. abs(u1L - u1L0) > 1.0e-2_dp) then ! less than 1 m deep
             goto 10
          end if
       end do
@@ -584,10 +584,10 @@ contains
 
       do i = 1, n_1d2d_fixedweirs
          L = index_1d2d_fixedweirs(i)
-         if (Hu(L) > 0d0) then
+         if (Hu(L) > 0.0_dp) then
             Q_2d1d = au(L) * u_2d1d(i)
             Q_1d2d = (qzeta_1d2d(i) * s1(kindex(1, i)) + qlat_1d2d(i))
-            if (comparereal(Q_1d2d, -Q_2d1d, eps=1d-4) /= 0) then
+            if (comparereal(Q_1d2d, -Q_2d1d, eps=1.0e-4_dp) /= 0) then
                check_convergence_1d2d_fixedweirs = .false.
                exit
             end if

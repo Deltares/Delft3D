@@ -78,7 +78,7 @@ module m_petsc
 end module m_petsc
 
 submodule(m_solve_petsc) m_solve_petsc_
-
+   use precision, only: dp
    implicit none
 
 contains
@@ -402,9 +402,9 @@ contains
       joffsav = joff
 
 !     create vectors
-      rhs_val = 0d0
-      sol_val = 0d0
-      res_val = 0d0
+      rhs_val = 0.0_dp
+      sol_val = 0.0_dp
+      res_val = 0.0_dp
       if (ierr == PETSC_OK) call VecCreateMPIWithArray(PETSC_COMM_WORLD, singletonBlocks, &
                                                        numrows, PETSC_DECIDE, rhs_val, rhs, ierr)
       if (ierr == PETSC_OK) call VecCreateMPIWithArray(PETSC_COMM_WORLD, singletonBlocks, &
@@ -452,8 +452,8 @@ contains
 !     count zero rows
       numzerorows = 0
       izerorow = 0
-      adia = 0d0
-      aoff = 0d0
+      adia = 0.0_dp
+      aoff = 0.0_dp
 
       Lstop = .false.
 

@@ -897,7 +897,7 @@ program tests_debgrz_computations
     end subroutine test_debgrz_calculate_respiration
 
     subroutine test_debgrz_calculate_shell_formation_fluxes()
-        real(kind=real_wp) :: pv                      !< Overhead costs per volume                      [J/ind/d]
+        real(kind=real_wp) :: pv1, pv2                !< Overhead costs per volume                      [J/ind/d]
         real(kind=real_wp) :: fpgrosmo1, fpgrosmo2    !< Growth-based contribution to shell matrix            [-]
         real(kind=real_wp) :: fpdissmo1, fpdissmo2,   &
                               fpdissmo3               !< Dissipation-based contribution to shell matrix       [-]
@@ -912,12 +912,13 @@ program tests_debgrz_computations
         real(kind=real_wp) :: pm, pja, pjj, prj       !< Maintenance costs                              [J/ind/d]
 
         ! Arrange - with DELWAQ-843 the meaning of frsmosmi changes
-        pv        = 2.0
-        fpgrosmo1 = 3.0
-        ycacosmo1 = 1.0 / 5.0
-        ycacosmo2 = 0.0
-        fpgrosmo2 = -3.0
-        ycacosmo3 = 0.0   ! Should not lead to division by zero!
+        pv1       =  2.0
+        pv2       = -2.0
+        fpgrosmo1 =  3.0
+        ycacosmo1 =  1.0 / 5.0
+        ycacosmo2 =  0.0
+        fpgrosmo2 =  3.0
+        ycacosmo3 =  0.0   ! Should not lead to division by zero!
 
         ! pm, etc. chosen so that we retain the old values - before DELWAQ-843
         pm        = 0.0
@@ -930,46 +931,47 @@ program tests_debgrz_computations
         fpdissmo3 = 1.0
 
         ! Act
-        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo1, fpdissmo1, ycacosmo1, ddis1, pomm1, pca1)
-        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo1, fpdissmo2, ycacosmo2, ddis2, pomm2, pca2)
-        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo2, fpdissmo3, ycacosmo1, ddis3, pomm3, pca3)
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv1, fpgrosmo1, fpdissmo1, ycacosmo1, ddis1, pomm1, pca1)
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv1, fpgrosmo1, fpdissmo2, ycacosmo2, ddis2, pomm2, pca2)
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv2, fpgrosmo2, fpdissmo3, ycacosmo1, ddis3, pomm3, pca3)
 
         pm        = 1.0
         pja       = 1.0
         pjj       = 1.0
         prj       = 1.0
 
-        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo1, fpdissmo3, ycacosmo3, ddis4, pomm4, pca4)
-        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv, fpgrosmo1, fpdissmo3, ycacosmo1, ddis5, pomm5, pca5)
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv1, fpgrosmo1, fpdissmo3, ycacosmo3, ddis4, pomm4, pca4)
+        call calculate_shell_formation_fluxes(pm, pja, pjj, prj, pv1, fpgrosmo1, fpdissmo3, ycacosmo1, ddis5, pomm5, pca5)
 
 
         ! Assert
-        call assert_comparable(ddis1,  0.0, tolerance, 'Validate ddis: Energy flux to organic shell matrix, pomm > 0, pca > 0')
-        call assert_comparable(pomm1,  6.0, tolerance, 'Validate pomm: Energy flux to organic shell matrix, pomm > 0, pca > 0')
-        call assert_comparable(pca1,  30.0, tolerance, 'Validate pca:  Energy flux to calcification of shell matrix, pomm > 0, pca >0')
+        call assert_comparable(ddis1,  0.0, tolerance, 'Validate ddis (1): Energy flux to organic shell matrix, pomm > 0, pca > 0')
+        call assert_comparable(pomm1,  6.0, tolerance, 'Validate pomm (1): Energy flux to organic shell matrix, pomm > 0, pca > 0')
+        call assert_comparable(pca1,  30.0, tolerance, 'Validate pca (1):  Energy flux to calcification of shell matrix, pomm > 0, pca >0')
 
-        call assert_comparable(ddis2,  0.0, tolerance, 'Validate ddis: Energy flux to organic shell matrix, pomm > 0, pca > 0')
-        call assert_comparable(pomm2,  6.0, tolerance, 'Validate pomm: Energy flux to organic shell matrix, pomm > 0, pca == 0')
-        call assert_comparable(pca2,   0.0, tolerance, 'Validate pca:  Energy flux to calcification of shell matrix, pomm > 0, pca == 0')
+        call assert_comparable(ddis2,  0.0, tolerance, 'Validate ddis (2): Energy flux to organic shell matrix, pomm > 0, pca > 0')
+        call assert_comparable(pomm2,  6.0, tolerance, 'Validate pomm (2): Energy flux to organic shell matrix, pomm > 0, pca == 0')
+        call assert_comparable(pca2,   0.0, tolerance, 'Validate pca (2):  Energy flux to calcification of shell matrix, pomm > 0, pca == 0')
 
-        call assert_comparable(ddis3,  0.0, tolerance, 'Validate ddis: Energy flux to organic shell matrix, pomm > 0, pca > 0')
-        call assert_comparable(pomm3,  0.0, tolerance, 'Validate pomm: Energy flux to organic shell matrix, pomm == 0')
-        call assert_comparable(pca3,   0.0, tolerance, 'Validate pca:  Energy flux to calcification of shell matrix, pomm == 0')
+        ! Main purpose of this test: if pv is negative, then no shell increase
+        call assert_comparable(ddis3,  0.0, tolerance, 'Validate ddis (3): Energy flux to organic shell matrix, ddiss == 0, pomm == 0, pca == 0')
+        call assert_comparable(pomm3,  0.0, tolerance, 'Validate pomm (3): Energy flux to organic shell matrix, ddiss == 0, pomm == 0, pca == 0')
+        call assert_comparable(pca3,   0.0, tolerance, 'Validate pca (3):  Energy flux to calcification of shell matrix, ddiss == 0, pomm == 0, pca == 0')
 
-        call assert_comparable(ddis4,  4.0, tolerance, 'Validate ddis: Energy flux to organic shell matrix, diss > 0, pomm > 0, pca == 0')
-        call assert_comparable(pomm4, 10.0, tolerance, 'Validate pomm: Energy flux to organic shell matrix, diss > 0, pomm > 0, pca == 0')
-        call assert_comparable(pca4,   0.0, tolerance, 'Validate pca:  Energy flux to calcification of shell matrix, diss > 0, pomm > 0, pca == 0')
+        call assert_comparable(ddis4,  4.0, tolerance, 'Validate ddis (4): Energy flux to organic shell matrix, diss > 0, pomm > 0, pca == 0')
+        call assert_comparable(pomm4, 10.0, tolerance, 'Validate pomm (4): Energy flux to organic shell matrix, diss > 0, pomm > 0, pca == 0')
+        call assert_comparable(pca4,   0.0, tolerance, 'Validate pca (4):  Energy flux to calcification of shell matrix, diss > 0, pomm > 0, pca == 0')
 
-        call assert_comparable(ddis5,  4.0, tolerance, 'Validate ddis: Energy flux to organic shell matrix, diss > 0, pomm > 0, pca > 0')
-        call assert_comparable(pomm5, 10.0, tolerance, 'Validate pomm: Energy flux to organic shell matrix, diss > 0, pomm > 0, pca > 0')
-        call assert_comparable(pca5,  50.0, tolerance, 'Validate pca:  Energy flux to calcification of shell matrix, diss > 0, pomm > 0, pca > 0')
+        call assert_comparable(ddis5,  4.0, tolerance, 'Validate ddis (5): Energy flux to organic shell matrix, diss > 0, pomm > 0, pca > 0')
+        call assert_comparable(pomm5, 10.0, tolerance, 'Validate pomm (5): Energy flux to organic shell matrix, diss > 0, pomm > 0, pca > 0')
+        call assert_comparable(pca5,  50.0, tolerance, 'Validate pca (5):  Energy flux to calcification of shell matrix, diss > 0, pomm > 0, pca > 0')
 
     end subroutine test_debgrz_calculate_shell_formation_fluxes
 
     subroutine test_debgrz_calculate_mortality()
         real(kind=real_wp) :: rmor_ref1, rmor_ref2                   !< Reference mortality rate grazers           [1/d]
         real(kind=real_wp) :: vtot                                   !< Structural biomass grazer pop.  [gC/m3 or gC/m2]
-        real(kind=real_wp) :: ddmfk1, ddmfk2, ddmfk3                 !< Half concentration for density dependent 
+        real(kind=real_wp) :: ddmfk1, ddmfk2, ddmfk3                 !< Half concentration for density dependent
                                                                      !< mortality factor                [gC/m3 or gC/m2]
         real(kind=real_wp) :: cmor                                   !< Length-dep coefficient mortality rate      [1/d]
         real(kind=real_wp) :: conv_j_gc                              !< Conversion factor from energy into mass   [gC/J]

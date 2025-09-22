@@ -45,8 +45,8 @@ contains
       real(kind=dp), intent(in) :: dheight0 !< first grid layer height
       integer, intent(in) :: nfac !< number of grid layers
 
-      if (abs(dgrow - 1d0) > 1d-8) then
-         comp_h = (dgrow**nfac - 1d0) / (dgrow - 1d0) * dheight0
+      if (abs(dgrow - 1.0_dp) > 1.0e-8_dp) then
+         comp_h = (dgrow**nfac - 1.0_dp) / (dgrow - 1.0_dp) * dheight0
       else
          comp_h = nfac * dheight0
       end if

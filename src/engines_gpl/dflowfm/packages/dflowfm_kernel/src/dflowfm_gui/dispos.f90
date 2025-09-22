@@ -30,6 +30,8 @@
 !
 !
 module m_dispos
+
+   use precision, only: dp
    implicit none
 contains
    subroutine DISPOS()
@@ -51,8 +53,8 @@ contains
       end if
 
       if (jsferic == 1) then ! nou ja, laat maar even staan
-         IXMIN = int(log10(max(1d-6, min(abs(xlc), abs(ylc)))))
-         IXMax = int(log10(max(1d-6, max(abs(xlc), abs(ylc)))))
+         IXMIN = int(log10(max(1.0e-6_dp, min(abs(xlc), abs(ylc)))))
+         IXMax = int(log10(max(1.0e-6_dp, max(abs(xlc), abs(ylc)))))
 
          Ixy = abs(max(ixmin, ixmax))
          NXY = IXY + 3

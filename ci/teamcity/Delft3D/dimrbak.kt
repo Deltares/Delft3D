@@ -78,8 +78,6 @@ object DIMRbak : BuildType({
                 module = "ci_tools.dimrset_delivery.step_0_assert_preconditions"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
-                    --atlassian-username "%dimrbakker_username%"
-                    --atlassian-password "%dimrbakker_password%"
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
                     --ssh-username "%dimrbakker_username%"
@@ -189,28 +187,9 @@ object DIMRbak : BuildType({
             }
         }
         python {
-            name = "Update public wiki"
-            command = module {
-                module = "ci_tools.dimrset_delivery.step_6_update_public_wiki"
-                scriptArguments = """
-                    --build_id "%teamcity.build.id%"
-                    --atlassian-username "%dimrbakker_username%"
-                    --atlassian-password "%dimrbakker_password%"
-                    --teamcity-username "%dimrbakker_username%"
-                    --teamcity-password "%dimrbakker_password%"
-                    %dry_run%
-                """.trimIndent()
-            }
-            workingDir = "ci/python"
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable .[all]"
-            }
-        }
-        python {
             name = "Generate DIMRset release notes"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_7_publish_release_notes"
+                module = "ci_tools.dimrset_delivery.step_6_publish_release_notes"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --jira-username "%dimrbakker_username%"
