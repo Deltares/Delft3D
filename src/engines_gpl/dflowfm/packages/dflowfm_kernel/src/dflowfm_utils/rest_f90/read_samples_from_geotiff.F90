@@ -86,7 +86,7 @@ contains
       ! Register all available gdal drivers
       call gdalallregister()
 
-      call READYY('Reading GeoTIFF file', 0d0)
+      call READYY('Reading GeoTIFF file', 0.0_dp)
       ! Opening a GeoTIFF gdal dataset for reading
       dataset = gdalopen(trim(filename)//char(0), GA_ReadOnly)
       if (.not. gdalassociated(dataset)) then
@@ -143,7 +143,7 @@ contains
       dya = geotransform(6)
 
       ! Throw warning if rotated TIFF was given
-      eps = 1d-6
+      eps = 1.0e-6_dp
       if (abs(geotransform(3)) > eps .or. abs(geotransform(5)) > eps) then
          call mess(LEVEL_WARN, 'Rotated GeoTIFF files are currently not supported: '//trim(filename))
          goto 888
@@ -161,20 +161,20 @@ contains
       end if
 
       if (is_area) then
-         pixeloffset = .5d0
+         pixeloffset = 0.5_dp
       else
-         pixeloffset = 0d0
+         pixeloffset = 0.0_dp
       end if
 
-      call READYY('Reading GeoTIFF file', 0.5d0)
+      call READYY('Reading GeoTIFF file', 0.5_dp)
 
       ! Set global sample arrays xs, ys, zs of m_samples
       call increasesam(nx * ny)
-      istep = max(int(nx / 100d0 + .5d0), 1)
+      istep = max(int(nx / 100.0_dp + 0.5_dp), 1)
       ns = 0
       do i = 1, nx
          if (mod(i, istep) == 0) then
-            call readyy('Reading GeoTIFF file', min(1d0, .5d0 + .5d0 * dble(i) / nx))
+            call readyy('Reading GeoTIFF file', min(1.0_dp, 0.5_dp + 0.5_dp * dble(i) / nx))
          end if
          do j = ny, 1, -1
             ns = ns + 1
@@ -209,7 +209,7 @@ contains
       call get_samples_boundingbox()
       ipstat = IPSTAT_OK
 
-      call READYY('Reading GeoTIFF file', 1d0)
+      call READYY('Reading GeoTIFF file', 1.0_dp)
       success = .true.
       return
 

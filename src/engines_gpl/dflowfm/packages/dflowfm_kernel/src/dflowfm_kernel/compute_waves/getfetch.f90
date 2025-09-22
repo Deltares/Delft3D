@@ -56,24 +56,24 @@ contains
       integer :: L, nw1, nw2
       real(kind=dp) :: alfa1, alfa2, dir
 
-      FetchL = 0d0; FetchD = 0d0
+      FetchL = 0.0_dp; FetchD = 0.0_dp
 
-      if (Hs(k) > 0d0) then
+      if (Hs(k) > 0.0_dp) then
          call getlink1(k, L) ! het is maar voor wind
          U10 = sqrt(WX(L) * WX(L) + WY(L) * WY(L))
-         if (U10 < 1d0) return
+         if (U10 < 1.0_dp) return
 
          DIR = atan2(WY(L), WX(L))
-         if (DIR < 0d0) DIR = DIR + TWOPI
+         if (DIR < 0.0_dp) DIR = DIR + TWOPI
 
          dir = dir / twopi
-         if (dir >= 1d0) dir = 0d0
+         if (dir >= 1.0_dp) dir = 0.0_dp
          NW1 = DIR * (nwf - 1) + 1
          NW2 = NW1 + 1
 
-         if (fetch(nw1, k) > 0d0 .or. fetch(nw2, k) > 0d0) then
+         if (fetch(nw1, k) > 0.0_dp .or. fetch(nw2, k) > 0.0_dp) then
             alfa2 = (nwf - 1) * (dir - dble(nw1 - 1) / dble(nwf - 1))
-            alfa1 = 1d0 - alfa2
+            alfa1 = 1.0_dp - alfa2
             fetchL = alfa1 * fetch(nw1, k) + alfa2 * fetch(nw2, k)
             fetchD = alfa1 * fetdp(nw1, k) + alfa2 * fetdp(nw2, k)
          end if

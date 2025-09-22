@@ -187,7 +187,7 @@ contains
             do L = 1, lnx
                wfac = 1.0_dp
                if (ice_reduce_waves) then
-                  wfac = wfac * (1.0d0 - 0.5d0 * (ice_area_fraction(ln(1, L)) + ice_area_fraction(ln(2, L))))
+                  wfac = wfac * (1.0_dp - 0.5_dp * (ice_area_fraction(ln(1, L)) + ice_area_fraction(ln(2, L))))
                end if
                adve(L) = adve(L) - wfac * wavfu(L)
             end do
@@ -195,7 +195,7 @@ contains
             do LL = 1, lnx
                wfac = 1.0_dp
                if (ice_reduce_waves) then
-                  wfac = wfac * (1.0d0 - 0.5d0 * (ice_area_fraction(ln(1, LL)) + ice_area_fraction(ln(2, LL))))
+                  wfac = wfac * (1.0_dp - 0.5_dp * (ice_area_fraction(ln(1, LL)) + ice_area_fraction(ln(2, LL))))
                end if
                call getLbotLtop(LL, Lb, Lt)
                if (Lt < Lb) cycle

@@ -231,7 +231,7 @@ contains
          end if
          rhom = rho
          do i = itra1, itran
-            rho = rho + (1d-3) * constituents(i, cell) * (SEDIMENT_DENSITY - rhom) / SEDIMENT_DENSITY
+            rho = rho + (1.0e-3_dp) * constituents(i, cell) * (SEDIMENT_DENSITY - rhom) / SEDIMENT_DENSITY
          end do
       else if (jaseddenscoupling > 0) then ! jased < 4
          rhom = rho

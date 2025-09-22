@@ -57,7 +57,7 @@ module m_flowgeom
 
    real(kind=dp) :: bamin !< minimum 2D cell area
    real(kind=dp) :: bamin1D !< minimum cell area 1d nodes
-   real(kind=dp) :: dxmin = 1d-3 !< minimum link length 1D (m)
+   real(kind=dp) :: dxmin = 1.0e-3_dp !< minimum link length 1D (m)
    real(kind=dp) :: dxmin1D !< minimum link length 1D (m)
    real(kind=dp) :: dxmin2D !< minimum link length 2D (m)
    real(kind=dp) :: dxwuimin2D !< smallest fraction dx/wu , may increase dx if > 0
@@ -198,7 +198,7 @@ module m_flowgeom
    real(kind=dp), dimension(:), allocatable :: wigr !< spatially varying ground layer top width
    real(kind=dp), dimension(:), allocatable :: pergr !< spatially varying ground layer perimeter
 
-   real(kind=dp) :: grounlayuni = -999d0 !< used if >= 0, default = dmiss
+   real(kind=dp) :: grounlayuni = -999.0_dp !< used if >= 0, default = dmiss
    integer :: jagrounlay = 0 !< use groundlayer 0/1
    integer, target :: wetLinkCount !< [-] nr of flow links that are wet
    integer, target :: wetLink2D !< Startposition of 2d links in onlywetLinks
@@ -284,8 +284,8 @@ module m_flowgeom
    real(kind=dp), dimension(:), allocatable :: thetabin_s !< bin-means of theta-grid singledir
 
    ! Villemonte calibration coefficients :
-   real(kind=dp) :: VillemonteCD1 = 1.0d0 !< default for VillemonteCD1 = 1
-   real(kind=dp) :: VillemonteCD2 = 10.0d0 !< default for VillemonteCD2 = 10
+   real(kind=dp) :: VillemonteCD1 = 1.0_dp !< default for VillemonteCD1 = 1
+   real(kind=dp) :: VillemonteCD2 = 10.0_dp !< default for VillemonteCD2 = 10
 
 ! Debug parameter
    integer :: cmd_icgsolver = 4 !< save commandline icgsolver
@@ -305,23 +305,23 @@ contains
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, call reset_flowgeom() instead.
    subroutine default_flowgeom()
-      bamin = 1d-6 ! 1d0    ! minimum 2D cell area
-      bamin1D = 0d-2 ! minimum cell area 1d nodes
-      dxmin1D = 1d-3 ! minimum link length 1D (m)
-      dxmin2D = 1d-3 ! minimum link length 2D (m)
-      dxwuimin2D = 0.0d0 ! smallest fraction dx/wu , may increase dx if > 0
+      bamin = 1.0e-6_dp ! 1d0    ! minimum 2D cell area
+      bamin1D = 0.0e-2_dp ! minimum cell area 1d nodes
+      dxmin1D = 1.0e-3_dp ! minimum link length 1D (m)
+      dxmin2D = 1.0e-3_dp ! minimum link length 2D (m)
+      dxwuimin2D = 0.0_dp ! smallest fraction dx/wu , may increase dx if > 0
 
-      wu1DUNI = 2d0 ! Uniform 1D profile width
-      hh1DUNI = 3d3 ! Uniform 1D profile height
+      wu1DUNI = 2.0_dp ! Uniform 1D profile width
+      hh1DUNI = 3.0e3_dp ! Uniform 1D profile height
 
-      wu1DUNI5 = 0.2d0 !< uniform 1D profile width in drain or street inlet
-      hh1DUNI5 = 0.1d0 !< uniform 1D profile height in drain or street inlet
+      wu1DUNI5 = 0.2_dp !< uniform 1D profile width in drain or street inlet
+      hh1DUNI5 = 0.1_dp !< uniform 1D profile height in drain or street inlet
 
-      wu1DUNI7 = 0.1d0 !< uniform 1D profile width roofgutterpipe
-      hh1DUNI7 = 0.1d0 !< uniform 1D profile height roofgutterpipe
+      wu1DUNI7 = 0.1_dp !< uniform 1D profile width roofgutterpipe
+      hh1DUNI7 = 0.1_dp !< uniform 1D profile height roofgutterpipe
 
       ! useful parameters :
-      rrtol = 3d0 ! relative cellsize factor in search tolerance ()
+      rrtol = 3.0_dp ! relative cellsize factor in search tolerance ()
       jaAllowBndAtBifurcation = 0
 
       jarenumber = 1

@@ -47,6 +47,7 @@ else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
 include(compiler_options/compiler_warning_targets.cmake)
+include(compiler_options/automatic_conversions.cmake)
 
 # Set available build configurations
 set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)

@@ -32,6 +32,8 @@
 
 module m_setfixedweirscheme3onlink
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -45,7 +47,7 @@ contains
 
       integer :: L, nn, n12, kk, LL
 
-      teta(L) = 1d0
+      teta(L) = 1.0_dp
 
       if (iadv(L) /= IADV_TABELLENBOEK_WEIR .and. iadv(L) /= IADV_VILLEMONTE_WEIR) then ! no change in advection for Tabellenboek and Villemonte
          do nn = 1, 2
@@ -55,7 +57,7 @@ contains
                if (iadv(LL) < IADV_SUBGRID_WEIR .or. iadv(LL) > IADV_VILLEMONTE_WEIR) then
                   iadv(LL) = 4
                end if
-               teta(LL) = 1d0
+               teta(LL) = 1.0_dp
             end do
          end do
       end if

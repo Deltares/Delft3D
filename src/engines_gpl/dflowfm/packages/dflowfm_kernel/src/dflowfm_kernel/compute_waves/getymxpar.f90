@@ -92,27 +92,27 @@ contains
 
       data coeffi/0.80, 0.67, 0.82, 0.67, 0.82, 1.00, 0.64, 0.77/
 
-      if (tauwav < 1.0d-8) then
-         xpar = 1d0
-         ypar = 1d0
-         ymxpar = 1d0
+      if (tauwav < 1.0e-8_dp) then
+         xpar = 1.0_dp
+         ypar = 1.0_dp
+         ymxpar = 1.0_dp
       else
          xpar = taucur / (taucur + tauwav)
-         if (xpar < 1.0d-8 .or. modind > 8) then
-            ypar = 0d0
-            ymxpar = 1d0
+         if (xpar < 1.0e-8_dp .or. modind > 8) then
+            ypar = 0.0_dp
+            ymxpar = 1.0_dp
          else
             lfc = log10(fw / cdrag)
             cj = abscos**coeffj(modind)
             coeffb = (bb(modind, 1) + bb(modind, 2) * cj) + (bb(modind, 3) + bb(modind, 4) * cj) * lfc
             coeffp = (pp(modind, 1) + pp(modind, 2) * cj) + (pp(modind, 3) + pp(modind, 4) * cj) * lfc
             coeffq = (qq(modind, 1) + qq(modind, 2) * cj) + (qq(modind, 3) + qq(modind, 4) * cj) * lfc
-            ypar = xpar * (1d0 + coeffb * (xpar**coeffp) * ((1d0 - xpar)**coeffq))
+            ypar = xpar * (1.0_dp + coeffb * (xpar**coeffp) * ((1.0_dp - xpar)**coeffq))
             ci = abscos**coeffi(modind)
             coeffa = (aa(modind, 1) + aa(modind, 2) * ci) + (aa(modind, 3) + aa(modind, 4) * ci) * lfc
             coeffm = (mm(modind, 1) + mm(modind, 2) * ci) + (mm(modind, 3) + mm(modind, 4) * ci) * lfc
             coeffn = (nn(modind, 1) + nn(modind, 2) * ci) + (nn(modind, 3) + nn(modind, 4) * ci) * lfc
-            ymxpar = 1d0 + coeffa * (xpar**coeffm) * ((1d0 - xpar)**coeffn)
+            ymxpar = 1.0_dp + coeffa * (xpar**coeffm) * ((1.0_dp - xpar)**coeffn)
          end if
       end if
    end subroutine getymxpar

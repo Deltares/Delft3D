@@ -146,7 +146,7 @@ contains
          isleft = .false.
 
          if (x /= DMISS .and. y /= DMISS) then
-            if ((x - xa) * sx + (y - ya) * sy >= 0d0) then
+            if ((x - xa) * sx + (y - ya) * sy >= 0.0_dp) then
                isleft = .true.
             end if
          end if

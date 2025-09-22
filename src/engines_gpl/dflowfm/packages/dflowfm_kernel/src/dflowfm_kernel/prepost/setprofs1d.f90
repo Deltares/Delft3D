@@ -138,13 +138,13 @@ contains
                call aerr('iconnsam(Nproflocs)', ierr, Nproflocs)
             end if
 
-            xlsam = 0d0
-            distsam = 1d99
+            xlsam = 0.0_dp
+            distsam = 1.0e99_dp
             iconnsam = 0
             if (Lnx1D > 0) then
                do ibr = 1, mxnetbr ! SET UP BRANCH DISTANCE COORDINATE
                   if (jampi == 0) then
-                     XLB = 0d0
+                     XLB = 0.0_dp
                   else
                      XLB = netbr(ibr)%doff
                   end if
@@ -210,7 +210,7 @@ contains
             if (Lnx1D > 0) then
                do ibr = 1, mxnetbr ! SET UP BRANCH AGAIN, NOW WITH LINK POSITIONS
                   if (jampi == 0) then
-                     XLB = 0d0
+                     XLB = 0.0_dp
                   else
                      XLB = netbr(ibr)%doff
                   end if
@@ -223,7 +223,7 @@ contains
                      end if
                      dxB = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
                      XLB = XLB + dxB
-                     XLLIN(LA) = xLB - 0.5d0 * DXB
+                     XLLIN(LA) = xLB - 0.5_dp * DXB
                   end do
                end do
 
@@ -304,9 +304,9 @@ contains
                         end if
 
                         if (K1 == 0) then ! IN FIRST SEGMENT, VALUE IS THAT OF K1
-                           ALFA = 0d0
+                           ALFA = 0.0_dp
                         else if (K1 == NSBR(IBR)) then ! IN LAST  SEGMENT, VALUE IS THAT OF K2
-                           ALFA = 1d0
+                           ALFA = 1.0_dp
                         else ! IN BETWEEN, REGULAR INTERPOLATION
                            ALFA = (XL - XLH(K1)) / (XLH(K2) - XLH(K1))
                         end if
@@ -322,8 +322,8 @@ contains
                         end if
                         KA = NPR(KA); KB = NPR(KB)
                         if (profiles1D(ka)%ityp <= 3 .and. profiles1D(ka)%ityp == profiles1D(kb)%ityp) then ! identical simple profs are interpolated immediately
-                           PROF1D(1, LA) = (1d0 - alfa) * profiles1D(ka)%width + alfa * profiles1D(kb)%width
-                           PROF1D(2, LA) = (1d0 - alfa) * profiles1D(ka)%height + alfa * profiles1D(kb)%height
+                           PROF1D(1, LA) = (1.0_dp - alfa) * profiles1D(ka)%width + alfa * profiles1D(kb)%width
+                           PROF1D(2, LA) = (1.0_dp - alfa) * profiles1D(ka)%height + alfa * profiles1D(kb)%height
                            PROF1D(3, LA) = PROFILES1D(KA)%ITYP
                         else ! POINTEREN VOOR YZPROF OR MIXED PROFILE TYPES
                            PROF1D(1, LA) = -KA
@@ -345,7 +345,7 @@ contains
 
                   allocate (zkk(numk), wkk(numk))
                   do kn3now = 6, 1, -5
-                     wkk = 0d0; zkk = 0d0
+                     wkk = 0.0_dp; zkk = 0.0_dp
                      do L = 1, lnx1D
                         if (abs(kcu(L)) == 1 .and. kn(3, ln2lne(L)) == kn3now) then ! regular 1D links
                            KA = PROF1D(1, L)
@@ -356,8 +356,8 @@ contains
                               ZB = profiles1D(-KB)%ZMIN
                               WA = profiles1D(-KA)%width
                               WB = profiles1D(-KB)%width
-                              zuL = (1d0 - ALFA) * ZA + ALFA * ZB ! z on these links
-                              wuL = 1d0 ! (1d0-ALFA)*WA + ALFA*WB  ! z on these links
+                              zuL = (1.0_dp - ALFA) * ZA + ALFA * ZB ! z on these links
+                              wuL = 1.0_dp ! (1d0-ALFA)*WA + ALFA*WB  ! z on these links
                               LL = abs(ln2lne(L))
                               k = kn(1, LL)
                               zkk(k) = zkk(k) + zul * wuL

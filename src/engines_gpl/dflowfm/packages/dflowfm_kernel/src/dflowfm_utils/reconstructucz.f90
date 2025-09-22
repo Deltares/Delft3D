@@ -70,14 +70,14 @@ contains
             call getkbotktop(k1, kb, kt)
             dzL = zws(kb) - bl(k1); 
             wsigma2 = (zws(kb) - zws0(kb)) / dts
-            ucz(kb) = (ww1(kb) + wsigma2) * 0.5d0 * dzL * ba(k1) ! ww1 at bed level = 0
+            ucz(kb) = (ww1(kb) + wsigma2) * 0.5_dp * dzL * ba(k1) ! ww1 at bed level = 0
             do kk = kb + 1, kt
                !
                dzL = zws(kk) - zws(kk - 1); 
                wsigma1 = (zws(kk - 1) - zws0(kk - 1)) / dts
                wsigma2 = (zws(kk) - zws0(kk)) / dts
-               ucz(kk) = +(ww1(kk - 1) + wsigma1) * 0.5d0 * dzL * ba(k1) ! add velocity at surface level (kk-1)
-               ucz(kk) = ucz(kk) + (ww1(kk) + wsigma2) * 0.5d0 * dzL * ba(k1) ! add velocity at surface level (kk)
+               ucz(kk) = +(ww1(kk - 1) + wsigma1) * 0.5_dp * dzL * ba(k1) ! add velocity at surface level (kk-1)
+               ucz(kk) = ucz(kk) + (ww1(kk) + wsigma2) * 0.5_dp * dzL * ba(k1) ! add velocity at surface level (kk)
                !
             end do
          end do
@@ -93,28 +93,28 @@ contains
             zLc2 = bl(k2)
             kk1 = kb1
             kk2 = kb2
-            Lsign1 = 1d0
-            Lsign2 = -1d0
+            Lsign1 = 1.0_dp
+            Lsign2 = -1.0_dp
             do LL = Lb, Lt
-               zlu = min(bob(1, L), bob(2, L)) + hu(LL) * 0.5d0 + hu(LL - 1) * 0.5d0 ! update flow link elevation
+               zlu = min(bob(1, L), bob(2, L)) + hu(LL) * 0.5_dp + hu(LL - 1) * 0.5_dp ! update flow link elevation
                !
                ! update first flow node
                !
                dzL1 = zws(kk1) - zws(kk1 - 1)
-               zlc1 = zlc1 + 0.5d0 * dzL1
+               zlc1 = zlc1 + 0.5_dp * dzL1
                dz1 = zlu - zlc1
                ucz(kk1) = ucz(kk1) + Lsign1 * u1(LL) * wu(L) * (hu(LL) - hu(LL - 1)) * dz1
                !
-               zlc1 = zlc1 + 0.5d0 * dzL1
+               zlc1 = zlc1 + 0.5_dp * dzL1
                !
                ! update second flow node
                !
                dzL2 = zws(kk2) - zws(kk2 - 1)
-               zlc2 = zlc2 + 0.5d0 * dzL2
+               zlc2 = zlc2 + 0.5_dp * dzL2
                dz2 = zlu - zlc2
                ucz(kk2) = ucz(kk2) + Lsign2 * u1(LL) * wu(L) * (hu(LL) - hu(LL - 1)) * dz2
                !
-               zlc2 = zlc2 + 0.5d0 * dzL2
+               zlc2 = zlc2 + 0.5_dp * dzL2
                !
                ! update vertical counters
                !
@@ -126,7 +126,7 @@ contains
          do k1 = 1, ndxi
             call getkbotktop(k1, kb, kt)
             do kk = kb, kt
-               if (vol1(kk) > 0d0) then
+               if (vol1(kk) > 0.0_dp) then
                   ucz(kk) = ucz(kk) / vol1(kk) ! divide by volume
                end if
             end do
@@ -139,14 +139,14 @@ contains
          !ucz(kb) = 0.0d0
          dzL = zws(kb) - zws(kb - 1)
          wsigma2 = (zws(kb) - zws0(kb)) / dts
-         ucz(kb) = (ww1(kb) + wsigma2) * 0.5d0 * dzL * ba(k) ! ww1 at bed level = 0
+         ucz(kb) = (ww1(kb) + wsigma2) * 0.5_dp * dzL * ba(k) ! ww1 at bed level = 0
          do kk = kb + 1, kt
             !
             dzL = zws(kk) - zws(kk - 1); 
             wsigma1 = (zws(kk - 1) - zws0(kk - 1)) / dts
             wsigma2 = (zws(kk) - zws0(kk)) / dts
-            ucz(kk) = +(ww1(kk - 1) + wsigma1) * 0.5d0 * dzL * ba(k) ! add velocity at surface level (kk-1)
-            ucz(kk) = ucz(kk) + (ww1(kk) + wsigma2) * 0.5d0 * dzL * ba(k) ! add velocity at surface level (kk)
+            ucz(kk) = +(ww1(kk - 1) + wsigma1) * 0.5_dp * dzL * ba(k) ! add velocity at surface level (kk-1)
+            ucz(kk) = ucz(kk) + (ww1(kk) + wsigma2) * 0.5_dp * dzL * ba(k) ! add velocity at surface level (kk)
             !
          end do
          !get neighbouring flow links
@@ -156,14 +156,14 @@ contains
             !                                      >0 indicates the flow link ends at the current flow node   )
             L = abs(nd(k)%ln(Lidx)) ! link numbers
             if (L == Ls) then ! determine horizontal distance dx1 from flow link to u point
-               Lsign = -1d0 ! Lsign (velocity directed towards current flow node)
-               dx1 = dx(L) * (1d0 - acl(L)) !
+               Lsign = -1.0_dp ! Lsign (velocity directed towards current flow node)
+               dx1 = dx(L) * (1.0_dp - acl(L)) !
                dx2 = acl(L) * dx(L) !
                ko = LN(1, L) ! outside associated flow node number
             else
-               Lsign = 1d0 ! Lsign (velocity directed away from current flow node)
+               Lsign = 1.0_dp ! Lsign (velocity directed away from current flow node)
                dx1 = dx(L) * acl(L) !
-               dx2 = dx(L) * (1d0 - acl(L)) !
+               dx2 = dx(L) * (1.0_dp - acl(L)) !
                ko = LN(2, L) ! outside flow node number
             end if
 
@@ -175,16 +175,16 @@ contains
             dzhu = hu(Lb) ! height of the bottom layer at flow link
             do LL = Lb, Lt ! get link numbers in the vertical
                dzL = zws(kk) - zws(kk - 1); 
-               zlc = zlc + 0.5d0 * dzL
+               zlc = zlc + 0.5_dp * dzL
                !zlu = dx2*bl(k)*dxi(L) + dx1*bl(ko)*dxi(L) + hu(LL)*0.5+hu(LL-1)*0.5  (interpolated bed level at u-point)
-               zlu = min(bob(1, L), bob(2, L)) + hu(LL) * 0.5d0 + hu(LL - 1) * 0.5d0
+               zlu = min(bob(1, L), bob(2, L)) + hu(LL) * 0.5_dp + hu(LL - 1) * 0.5_dp
                !
                ! u_vertical,new  =  u_vertical,old + Lsign*u_horizontal*width*depth_layer
                !
                dz1 = zlu - zlc
                ucz(kk) = ucz(kk) + Lsign * u1(LL) * wu(L) * (hu(LL) - hu(LL - 1)) * dz1
                !
-               zlc = zlc + 0.5d0 * dzL
+               zlc = zlc + 0.5_dp * dzL
                kk = kk + 1 ! update vertical counter
                !
             end do

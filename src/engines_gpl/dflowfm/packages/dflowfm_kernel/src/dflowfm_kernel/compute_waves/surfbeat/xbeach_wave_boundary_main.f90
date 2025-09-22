@@ -30,6 +30,8 @@
 !
 !
 module wave_boundary_main_module
+
+   use precision, only: dp
    implicit none
    private
    public create_incident_waves_surfbeat
@@ -194,12 +196,12 @@ contains
          waveBoundaryParameters(ibnd)%nonhspectrum = nonhspectrum
       end if
       if (.not. present(sprdthr)) then
-         waveBoundaryParameters(ibnd)%sprdthr = 0.08d0
+         waveBoundaryParameters(ibnd)%sprdthr = 0.08_dp
       else
          waveBoundaryParameters(ibnd)%sprdthr = sprdthr
       end if
       if (.not. present(trepfac)) then
-         waveBoundaryParameters(ibnd)%trepfac = 0.01d0
+         waveBoundaryParameters(ibnd)%trepfac = 0.01_dp
       else
          waveBoundaryParameters(ibnd)%trepfac = trepfac
       end if
@@ -214,22 +216,22 @@ contains
          waveBoundaryParameters(ibnd)%nspr = nspr
       end if
       if (.not. present(nmax)) then
-         waveBoundaryParameters(ibnd)%nmax = 0.8d0
+         waveBoundaryParameters(ibnd)%nmax = 0.8_dp
       else
          waveBoundaryParameters(ibnd)%nmax = nmax
       end if
       if (.not. present(fcutoff)) then
-         waveBoundaryParameters(ibnd)%fcutoff = 0.0d0
+         waveBoundaryParameters(ibnd)%fcutoff = 0.0_dp
       else
          waveBoundaryParameters(ibnd)%fcutoff = fcutoff
       end if
       if (.not. present(rho)) then
-         waveBoundaryParameters(ibnd)%rho = 1025.d0
+         waveBoundaryParameters(ibnd)%rho = 1025.0_dp
       else
          waveBoundaryParameters(ibnd)%rho = rho ! JRE TO DO: accomodate varying rho
       end if
       if (.not. present(swkhmin)) then
-         waveboundaryParameters(ibnd)%swkhmin = -0.01d0
+         waveboundaryParameters(ibnd)%swkhmin = -0.01_dp
       else
          waveboundaryParameters(ibnd)%swkhmin = swkhmin
       end if
@@ -247,13 +249,13 @@ contains
       end if
       !
       if (.not. present(wbcEvarreduce)) then
-         waveboundaryParameters(ibnd)%wbcEvarreduce = 1d0
+         waveboundaryParameters(ibnd)%wbcEvarreduce = 1.0_dp
       else
          waveboundaryParameters(ibnd)%wbcEvarreduce = wbcEvarreduce
       end if
       !
       if (.not. present(wbcQvarreduce)) then
-         waveboundaryParameters(ibnd)%wbcQvarreduce = 1d0
+         waveboundaryParameters(ibnd)%wbcQvarreduce = 1.0_dp
       else
          waveboundaryParameters(ibnd)%wbcQvarreduce = wbcQvarreduce
       end if

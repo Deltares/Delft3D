@@ -156,8 +156,11 @@ if isempty(fig) || ~ishandle(fig)
     
     fig=qp_uifigure('Message Window','','UI_MESSAGE window',rect);
     set(fig,'closerequestfcn','ui_message close','resize','on','resizefcn','ui_message resize')
-    if ~isstandalone && matlabversionnumber >= 7 && usejava('jvm')
-        set(fig,'DockControls','on')
+    if ~isstandalone
+        try
+            set(fig,'DockControls','on')
+        catch
+        end
     end
     
     setappdata(fig,'WL_UserInterface',1)
@@ -235,9 +238,9 @@ else
             end
             if strcmp(Cmd,'error')
                 stdbeep
-                figure(fig)
+                bring_to_front(fig)
             elseif strcmp(Cmd,'warning')
-                figure(fig)
+                bring_to_front(fig)
             end
             Separator={};
             if isempty(errors)
@@ -373,3 +376,9 @@ UD.MessageOffset=MessageOffset;
 UD.MaxNMessages=MaxNMessages;
 UD.LastType=LastType;
 set(fig,'userdata',UD);
+
+function bring_to_front(fig)
+try
+    figure(fig) % focus(fig)
+catch
+end

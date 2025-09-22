@@ -75,19 +75,19 @@ contains
       allocate (idum(1))
       idum = 0
 
-      pi = 4.0d0 * atan(1d0)
+      pi = 4.0_dp * atan(1.0_dp)
 
       if (japillar == 2) then
          if (allocated(cdeq)) deallocate (cdeq, npil)
          allocate (cdeq(ndx), npil(ndx))
-         cdeq = 0d0
+         cdeq = 0.0_dp
          npil = 0
          do m = 1, size(pillar)
             do i = 1, pillar(m)%np
-               if (pillar(m)%dia(i) == -999d0 .or. pillar(m)%cd(i) == -999d0) cycle
+               if (pillar(m)%dia(i) == -999.0_dp .or. pillar(m)%cd(i) == -999.0_dp) cycle
                call incells(pillar(m)%xcor(i), pillar(m)%ycor(i), j)
                if (j == 0) cycle
-               rnveg(j) = rnveg(j) + pillar(m)%dia(i)**2 * pi * 0.25d0 / ba(j)
+               rnveg(j) = rnveg(j) + pillar(m)%dia(i)**2 * pi * 0.25_dp / ba(j)
                cdeq(j) = cdeq(j) + pillar(m)%cd(i) * pillar(m)%dia(i)
                npil(j) = npil(j) + 1
             end do
@@ -95,7 +95,7 @@ contains
          do j = 1, ndx
             if (npil(j) == 0) cycle
             diaveg(j) = diaveg(j) + cdeq(j) / npil(j)
-            stemheight(j) = 1d30
+            stemheight(j) = 1.0e30_dp
          end do
          deallocate (cdeq)
          deallocate (npil)
@@ -106,24 +106,24 @@ contains
          do j = 1, ndx
             Aeff(j) = ba(j)
          end do
-         cdeq = 0d0
+         cdeq = 0.0_dp
          do m = 1, size(pillar)
             do i = 1, pillar(m)%np
-               if (pillar(m)%dia(i) == -999d0 .or. pillar(m)%cd(i) == -999d0) cycle
+               if (pillar(m)%dia(i) == -999.0_dp .or. pillar(m)%cd(i) == -999.0_dp) cycle
                call incells(pillar(m)%xcor(i), pillar(m)%ycor(i), j)
                if (j == 0) cycle
                cdeq(j) = cdeq(j) + pillar(m)%cd(i) * pillar(m)%dia(i)
-               Aeff(j) = Aeff(j) - pillar(m)%dia(i)**2 * pi * 0.25d0
+               Aeff(j) = Aeff(j) - pillar(m)%dia(i)**2 * pi * 0.25_dp
             end do
          end do
-         Cpil = 0d0
+         Cpil = 0.0_dp
          do j = 1, ndx
             if (cdeq(j) == 0) cycle
-            if (Aeff(j) <= 0d0) then
-               Cpil(j) = 1d30
+            if (Aeff(j) <= 0.0_dp) then
+               Cpil(j) = 1.0e30_dp
                cycle
             end if
-            Cpil(j) = cdeq(j) * 0.25d0 / Aeff(j) * sqrt(ba(j) * pi)
+            Cpil(j) = cdeq(j) * 0.25_dp / Aeff(j) * sqrt(ba(j) * pi)
          end do
          deallocate (Aeff)
          deallocate (cdeq)
@@ -133,9 +133,9 @@ contains
          allocate (Aeff(lnx), cdeq(lnx), linktype(lnx))
          linktype = 0
          Aeff = wu
-         cdeq = 0d0
+         cdeq = 0.0_dp
          do m = 1, size(pillar)
-            call pol_to_flowlinks(pillar(m)%xcor, pillar(m)%ycor, pillar(m)%xcor * 0d0, pillar(m)%np, nPath, Path)
+            call pol_to_flowlinks(pillar(m)%xcor, pillar(m)%ycor, pillar(m)%xcor * 0.0_dp, pillar(m)%np, nPath, Path)
             do n = 1, nPath
                call crspath_on_flowgeom(Path(n), 1, 0, 1, idum, 0, 1)
                do L = 1, Path(n)%lnx
@@ -145,7 +145,7 @@ contains
                end do
             end do
             do i = 1, pillar(m)%np
-               if (pillar(m)%dia(i) == -999d0 .or. pillar(m)%cd(i) == -999d0) cycle
+               if (pillar(m)%dia(i) == -999.0_dp .or. pillar(m)%cd(i) == -999.0_dp) cycle
                call incells(pillar(m)%xcor(i), pillar(m)%ycor(i), k)
                if (k == 0) cycle
                do L = 1, nd(k)%lnx
@@ -157,14 +157,14 @@ contains
                end do
             end do
          end do
-         Cpil = 0d0
+         Cpil = 0.0_dp
          do L = 1, lnx
             if (cdeq(L) == 0) cycle
-            if (Aeff(L) <= 0d0) then
-               Cpil(L) = 1d30
+            if (Aeff(L) <= 0.0_dp) then
+               Cpil(L) = 1.0e30_dp
                cycle
             end if
-            Cpil(L) = cdeq(L) * 0.5d0 * wu(L) / Aeff(L)**2
+            Cpil(L) = cdeq(L) * 0.5_dp * wu(L) / Aeff(L)**2
          end do
          deallocate (Aeff)
          deallocate (cdeq)

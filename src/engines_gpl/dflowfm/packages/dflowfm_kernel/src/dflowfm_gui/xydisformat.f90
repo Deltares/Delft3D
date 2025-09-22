@@ -32,6 +32,8 @@
 
 module m_xydisformat
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -62,12 +64,12 @@ contains
       xlc = max(x1, min(x2, xlc))
       ylc = max(y1, min(y2, ylc))
 
-      IXMIN = int(log10(max(1d-6, abs(X1))))
-      IXMAX = int(log10(max(1d-6, abs(X2))))
-      IYMIN = int(log10(max(1d-6, abs(Y1))))
-      IYMAX = int(log10(max(1d-6, abs(Y2))))
-      IZMIN = int(log10(max(1d0, abs(VMIN))))
-      IZMAX = int(log10(max(1d0, abs(VMAX))))
+      IXMIN = int(log10(max(1.0e-6_dp, abs(X1))))
+      IXMAX = int(log10(max(1.0e-6_dp, abs(X2))))
+      IYMIN = int(log10(max(1.0e-6_dp, abs(Y1))))
+      IYMAX = int(log10(max(1.0e-6_dp, abs(Y2))))
+      IZMIN = int(log10(max(1.0_dp, abs(VMIN))))
+      IZMAX = int(log10(max(1.0_dp, abs(VMAX))))
 
       IX = max(IXMIN, IXMAX)
       IY = max(IYMIN, IYMAX)

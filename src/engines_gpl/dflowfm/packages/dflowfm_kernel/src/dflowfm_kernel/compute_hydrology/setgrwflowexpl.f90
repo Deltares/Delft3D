@@ -49,14 +49,14 @@ contains
       use horton, only: infiltration_horton_formula
       use m_wind, only: jarain, rain
 
-      real(kind=dp), parameter :: mmphr_to_mps = 1d-3 / 3600d0
+      real(kind=dp), parameter :: mmphr_to_mps = 1.0e-3_dp / 3600.0_dp
 
       integer :: k1, k2, L, k
       integer :: ierr
       real(kind=dp) :: z1, z2, h1, h2, dh, dQ, hunsat, hunsat1, hunsat2, fac, qgrw, h2Q
       real(kind=dp) :: fc, conduct, h_upw, Qmx
 
-      qingrw = 0d0; qoutgrw = 0d0; Volgrw = 0d0
+      qingrw = 0.0_dp; qoutgrw = 0.0_dp; Volgrw = 0.0_dp
 
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then ! Horton's infiltration equation
          ierr = infiltration_horton_formula(ndx, HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, infiltcap0, infiltcap, &
@@ -68,7 +68,7 @@ contains
 
          do k = 1, ndx2D
             hunsat = bl(k) - sgrw1(k)
-            if (qin(k) > 0d0 .and. hunsat > 0d0) then
+            if (qin(k) > 0.0_dp .and. hunsat > 0.0_dp) then
                h2Q = ba(k) / dts
                dh = min(hunsat, qin(k) / h2Q)
                dQ = dh * h2Q
@@ -82,7 +82,7 @@ contains
       else if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) &
                .and. jagrw == 0) then ! spatially varying prescribed max infiltration capacity
          do k = 1, ndx2D
-            Qmx = max(0d0, vol1(k) / dts + qin(k))
+            Qmx = max(0.0_dp, vol1(k) / dts + qin(k))
             infilt(k) = infiltcap(k) * ba(k) ! Prescribed infiltration flux m3/s
             infilt(k) = min(Qmx, infilt(k))
             qin(k) = qin(k) - infilt(k)
@@ -103,18 +103,18 @@ contains
 
             k1 = ln(1, L); k2 = ln(2, L)
             hunsat1 = bl(k1) - sgrw0(k1)
-            fac = min(1d0, max(0d0, hunsat1 / h_transfer)) ! 0 at bed, 1 at sgrw
-            z1 = sgrw1(k1) * fac + s1(k1) * (1d0 - fac)
+            fac = min(1.0_dp, max(0.0_dp, hunsat1 / h_transfer)) ! 0 at bed, 1 at sgrw
+            z1 = sgrw1(k1) * fac + s1(k1) * (1.0_dp - fac)
             pgrw(k1) = z1
 
             hunsat2 = bl(k2) - sgrw0(k2)
-            fac = min(1d0, max(0d0, hunsat2 / h_transfer))
-            z2 = sgrw1(k2) * fac + s1(k2) * (1d0 - fac)
+            fac = min(1.0_dp, max(0.0_dp, hunsat2 / h_transfer))
+            z2 = sgrw1(k2) * fac + s1(k2) * (1.0_dp - fac)
             pgrw(k2) = z2
 
             h1 = sgrw1(k1) - bgrw(k1)
             h2 = sgrw1(k2) - bgrw(k2)
-            h_upw = max(0d0, min(h1, h2)) ! safe, not upw
+            h_upw = max(0.0_dp, min(h1, h2)) ! safe, not upw
 
             Qgrw = Conductivity * h_upw * wu(L) * (z1 - z2) * dxi(L) * dts ! (m3/s)*s
             sgrw1(k1) = sgrw1(k1) - Qgrw * bai(k1) / porosgrw
@@ -130,11 +130,11 @@ contains
                qingrw = qingrw - hunsat * h2Q
             else ! groundwater below bed => seepage from open water
                Qmx = vol1(k) / dts + qin(k)
-               fac = min(1d0, max(0d0, (hunsat / h_transfer))) ! 0 at bed, 1 at sgrw
+               fac = min(1.0_dp, max(0.0_dp, (hunsat / h_transfer))) ! 0 at bed, 1 at sgrw
                if (infiltrationmodel == DFM_HYD_INFILT_CONST) then
                   Qgrw = Infiltcap(k) * ba(k) ! Prescribed infiltration velocity m3/s
                else if (infiltrationmodel == DFM_HYD_INFILT_DARCY) then
-                  fc = min(1d0, max(0d0, (sgrw1(k) + h_capillair - bl(k)) / h_capillair))
+                  fc = min(1.0_dp, max(0.0_dp, (sgrw1(k) + h_capillair - bl(k)) / h_capillair))
                   Conduct = Conductivity * (fc + unsatfac * (1 - fc)) ! lineair weight sat - unsat over capillair zone
                   Qgrw = Conduct * (sgrw1(k) - bgrw(k)) * (s1(k) - bl(k)) ! Darcy in vertical m3/s
                end if

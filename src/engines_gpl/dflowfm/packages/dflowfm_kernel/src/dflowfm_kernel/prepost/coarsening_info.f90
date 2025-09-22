@@ -61,7 +61,7 @@ contains
       real(kind=dp) :: area, area_tot, Darea
       real(kind=dp) :: funct
 
-      real(kind=dp) :: area_opt = 1d5
+      real(kind=dp) :: area_opt = 1.0e5_dp
 
       integer :: kk
 
@@ -71,8 +71,8 @@ contains
 
       if (ndirect < 1 .or. nindirect < 1) return
 
-      area_tot = 0d0
-      funct = 0d0
+      area_tot = 0.0_dp
+      funct = 0.0_dp
 
       call getcellsurface(k, area, xc, yc)
       area_tot = area_tot + area
@@ -95,7 +95,7 @@ contains
       end do
 
       coarsening_info = -funct
-      if (coarsening_info <= 0d0) coarsening_info = DMISS
+      if (coarsening_info <= 0.0_dp) coarsening_info = DMISS
 
       return
    end function

@@ -260,9 +260,9 @@ contains
       end if
 
       ! Set default values
-      rug(num_rugs)%max_x = 0d0
-      rug(num_rugs)%max_y = 0d0
-      rug(num_rugs)%max_rug_height = -huge(0d0)
+      rug(num_rugs)%max_x = 0.0_dp
+      rug(num_rugs)%max_y = 0.0_dp
+      rug(num_rugs)%max_rug_height = -huge(0.0_dp)
 
    end subroutine add_runup_gauges
 
@@ -270,9 +270,9 @@ contains
       integer :: i
       ! Reset data for next iteration
       do i = 1, num_rugs
-         rug(i)%max_rug_height = -huge(0d0)
-         rug(i)%max_x = 0d0
-         rug(i)%max_y = 0d0
+         rug(i)%max_rug_height = -huge(0.0_dp)
+         rug(i)%max_x = 0.0_dp
+         rug(i)%max_y = 0.0_dp
       end do
    end subroutine
 

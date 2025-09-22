@@ -141,7 +141,7 @@ contains
 
       integer :: ngenstru_, n
 
-      real(kind=dp), save :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
+      real(kind=dp), save :: curtime_split = 0.0_dp ! Current time-partition that the file writer has open.
       integer :: ntot, i, j, ierr, nNodeTot, nNodes, k1, k2, nlinks
 
       character(len=255) :: filename
@@ -176,7 +176,7 @@ contains
       if (timon) call timstrt("unc_write_his", handle_extra(54))
 
       ! Another time-partitioned file needs to start, reset iteration count (and file).
-      if (ti_split > 0d0 .and. curtime_split /= time_split0) then
+      if (ti_split > 0.0_dp .and. curtime_split /= time_split0) then
          it_his = 0
          curtime_split = time_split0
       end if
@@ -223,7 +223,7 @@ contains
                        NUMVALS_DAMBREAK, NUMVALS_ORIFGEN, NUMVALS_BRIDGE, NUMVALS_CULVERT, &
                        NUMVALS_UNIWEIR, NUMVALS_CMPSTRU, NUMVALS_LONGCULVERT)
 
-         if (ti_split > 0d0) then
+         if (ti_split > 0.0_dp) then
             filename = defaultFilename('his', timestamp=time_split0)
          else
             filename = defaultFilename('his')

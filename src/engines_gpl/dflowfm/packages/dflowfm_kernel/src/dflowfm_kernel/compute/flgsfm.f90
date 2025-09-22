@@ -176,7 +176,7 @@ contains
 
       if (kmx > 0) then
          call getLbotLtop(Lf, Lb, Lt)
-         ff3(:, :) = 0d0
+         ff3(:, :) = 0.0_dp
       end if
 
       if (husb > zs) then ! in all three tests of this type we do not have risc of immediate drying after opening, (sills usually above bed)
@@ -188,16 +188,16 @@ contains
                        cgf, cgd, cwf, cwd, mugf, lambda, strdamf, jarea, ds)
          fusav(1, n) = fu(Lf); rusav(1, n) = ru(Lf); ausav(1, n) = au(Lf) * gatefraction
       else
-         fusav(1, n) = 0d0
-         rusav(1, n) = 0d0
-         ausav(1, n) = 0d0
+         fusav(1, n) = 0.0_dp
+         rusav(1, n) = 0.0_dp
+         ausav(1, n) = 0.0_dp
       end if
 
-      if (gatedoorheight > 0d0) then ! now add water overflowing top of gate
+      if (gatedoorheight > 0.0_dp) then ! now add water overflowing top of gate
          zs = gateloweredgelevel + gatedoorheight
          zbi(2) = zs
          if (husb > zs) then ! husb = upwind waterlevel instead of height
-            dg = 1d9 ! sky is the limit, this gate fully open
+            dg = 1.0e9_dp ! sky is the limit, this gate fully open
             u1(Lf) = rusav(2, n) - fusav(2, n) * dsL; u0(Lf) = u1(Lf); q1(Lf) = ausav(2, n) * u1(Lf)
             call flgtarfm(ng, L0, wu(Lf), bl(kL), bl(kR), tekenstr, zs, wstr, w2, wsd, zb2, ds1, ds2, cgf, cgd, &
                           cwf, cwd, mugf, lambda, strdamf, gatedoorheight)
@@ -206,35 +206,35 @@ contains
             fusav(2, n) = fu(Lf); rusav(2, n) = ru(Lf); ausav(2, n) = au(Lf) * gatefraction
 
          else
-            fusav(2, n) = 0d0
-            rusav(2, n) = 0d0
-            ausav(2, n) = 0d0
+            fusav(2, n) = 0.0_dp
+            rusav(2, n) = 0.0_dp
+            ausav(2, n) = 0.0_dp
          end if
       else
-         fusav(2, n) = 0d0
-         rusav(2, n) = 0d0
-         ausav(2, n) = 0d0
+         fusav(2, n) = 0.0_dp
+         rusav(2, n) = 0.0_dp
+         ausav(2, n) = 0.0_dp
       end if
 
       zs = min(bob(1, Lf), bob(2, Lf)) ! == zcgen(3*ng - 2) crest/silllevel
-      if (husb > zs .and. (1d0 - gatefraction) > 1d-9) then ! and add flow around the tip of the floating gate (e.g. for SVKW)
+      if (husb > zs .and. (1.0_dp - gatefraction) > 1.0e-9_dp) then ! and add flow around the tip of the floating gate (e.g. for SVKW)
          zbi(3) = zs ! 1d-9 prevents unneccesary evaluation
-         dg = huge(1d0)
+         dg = huge(1.0_dp)
          u1(Lf) = rusav(3, n) - fusav(3, n) * dsL; u0(Lf) = u1(Lf); q1(Lf) = ausav(3, n) * u1(Lf)
          call flgtarfm(ng, L0, wu(Lf), bl(kL), bl(kR), tekenstr, zs, wstr, w2, wsd, zb2, ds1, ds2, cgf, cgd, &
                        cwf, cwd, mugf, lambda, strdamf, gatedoorheight)
          call flqhgsfm(Lf, teken, husb, hdsb, uu, zs, wstr, wstr, wstr, zb2, ds1, ds2, dg, & ! no width variation here, 3 times wstr,
                        cgf, cgd, cwf, cwd, mugf, lambda, strdamf, jarea, ds) ! easy to see in the call
-         fusav(3, n) = fu(Lf); rusav(3, n) = ru(Lf); ausav(3, n) = au(Lf) * (1d0 - gatefraction)
+         fusav(3, n) = fu(Lf); rusav(3, n) = ru(Lf); ausav(3, n) = au(Lf) * (1.0_dp - gatefraction)
       else
-         fusav(3, n) = 0d0
-         rusav(3, n) = 0d0
-         ausav(3, n) = 0d0
+         fusav(3, n) = 0.0_dp
+         rusav(3, n) = 0.0_dp
+         ausav(3, n) = 0.0_dp
       end if
 
       au(Lf) = ausav(1, n) + ausav(2, n) + ausav(3, n)
 
-      if (au(Lf) > 0d0) then
+      if (au(Lf) > 0.0_dp) then
          fu(Lf) = (fusav(1, n) * ausav(1, n) + fusav(2, n) * ausav(2, n) + fusav(3, n) * ausav(3, n)) / au(Lf)
          ru(Lf) = (rusav(1, n) * ausav(1, n) + rusav(2, n) * ausav(2, n) + rusav(3, n) * ausav(3, n)) / au(Lf)
          if (kmx > 0) then
@@ -249,7 +249,7 @@ contains
                   zti(2) = zbi(2) + hhi(2)
                end if
                if (ausav(3, n) > 0) then
-                  hhi(3) = ausav(3, n) / ((1d0 - gatefraction) * wstr)
+                  hhi(3) = ausav(3, n) / ((1.0_dp - gatefraction) * wstr)
                   zti(3) = zbi(3) + hhi(3)
                end if
 
@@ -262,15 +262,15 @@ contains
                else
                   iup = 2
                end if
-               ff3(:, 0) = 0d0
+               ff3(:, 0) = 0.0_dp
                do LL = Lb, Lt
                   kk = ln(iup, LL)
-                  if (ausav(1, n) > 0) ff3(1, LL - Lb + 1) = max(0d0, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
-                  if (ausav(2, n) > 0) ff3(2, LL - Lb + 1) = max(0d0, min(zti(2), zws(kk)) - zbi(2)) / hhi(2)
-                  if (ausav(3, n) > 0) ff3(3, LL - Lb + 1) = max(0d0, min(zti(3), zws(kk)) - zbi(3)) / hhi(3)
+                  if (ausav(1, n) > 0) ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
+                  if (ausav(2, n) > 0) ff3(2, LL - Lb + 1) = max(0.0_dp, min(zti(2), zws(kk)) - zbi(2)) / hhi(2)
+                  if (ausav(3, n) > 0) ff3(3, LL - Lb + 1) = max(0.0_dp, min(zti(3), zws(kk)) - zbi(3)) / hhi(3)
                end do
 
-               au0 = 0d0
+               au0 = 0.0_dp
                do LL = Lb, Lt
                   au1 = ausav(1, n) * (ff3(1, LL - Lb + 1) - ff3(1, LL - Lb))
                   au2 = ausav(2, n) * (ff3(2, LL - Lb + 1) - ff3(2, LL - Lb))
@@ -280,8 +280,8 @@ contains
                      fu(LL) = (fusav(1, n) * au1 + fusav(2, n) * au2 + fusav(3, n) * au3) / au(LL)
                      ru(LL) = (rusav(1, n) * au1 + rusav(2, n) * au2 + rusav(3, n) * au3) / au(LL)
                   else
-                     fu(LL) = 0d0
-                     ru(LL) = 0d0
+                     fu(LL) = 0.0_dp
+                     ru(LL) = 0.0_dp
                   end if
                end do
             else ! default: all layers are equal
@@ -293,14 +293,14 @@ contains
 
          end if
       else
-         fu(Lf) = 0d0
-         ru(Lf) = 0d0
+         fu(Lf) = 0.0_dp
+         ru(Lf) = 0.0_dp
       end if
 
-      if (au(Lf) == 0d0) then
-         hu(Lf) = 0d0
+      if (au(Lf) == 0.0_dp) then
+         hu(Lf) = 0.0_dp
          if (kmx > 0) then
-            au(Lb:Lt) = 0d0
+            au(Lb:Lt) = 0.0_dp
          end if
       end if
 

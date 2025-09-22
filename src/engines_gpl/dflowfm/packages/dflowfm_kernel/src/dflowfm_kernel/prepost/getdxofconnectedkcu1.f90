@@ -52,7 +52,7 @@ contains
 
       integer :: Lf, L, LL, k, kk, n, k1, k2, k3, k4, n1, n2, n2d
       real(kind=dp) :: wu1, wu2, wuL
-      wu1 = 0d0; n = 0
+      wu1 = 0.0_dp; n = 0
 
       !if (kcs(ln(1,L) ) == 21)  k = ln(2,L)
       !if (kcs(ln(2,L) ) == 21)  k = ln(1,L)

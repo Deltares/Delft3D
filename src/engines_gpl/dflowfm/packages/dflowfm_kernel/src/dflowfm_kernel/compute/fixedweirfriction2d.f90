@@ -52,7 +52,7 @@ contains
       real(kind=dp) :: umod, uin, frLk1, frLk2, ucxk, ucyk, Cz, weirheight, weirlength, flatlength, a, ff
 
       if (frcu(L) == 0 .or. hu(L) < epshu) then
-         frL = 0d0; return
+         frL = 0.0_dp; return
       end if
 
       if (fixedweirtopfrictcoef /= dmiss) then ! standard friction on weirtop only
@@ -66,52 +66,52 @@ contains
       frLk1 = frL ! on side 1
       frLk2 = frL ! on side 2
 
-      weirheight = max(0d0, 0.5d0 * (bob(1, L) + bob(2, L)) - 0.5d0 * (bl(k1) + bl(k2)))
+      weirheight = max(0.0_dp, 0.5_dp * (bob(1, L) + bob(2, L)) - 0.5_dp * (bl(k1) + bl(k2)))
       weirlength = fixedweirtopwidth
-      flatlength = max(weirlength, dx(L) - (weirlength + 2d0 * weirheight * fixedweirtalud))
+      flatlength = max(weirlength, dx(L) - (weirlength + 2.0_dp * weirheight * fixedweirtalud))
       a = weirlength / (weirlength + flatlength)
 
       if (ifxedweirfrictscheme == 1) then ! simple bedlevel&velocity
          ! assumption + direct linearisation
-         if (hs(k1) > 0d0) then
-            ff = min(1d0, hu(L) / hs(k1))
+         if (hs(k1) > 0.0_dp) then
+            ff = min(1.0_dp, hu(L) / hs(k1))
             umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
             Cz = get_chezy(hs(k1), frcu(L), u1(L), v(L), ifrcutp(L))
             frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
          end if
 
-         if (hs(k2) > 0d0) then
-            ff = min(1d0, hu(L) / hs(k2))
+         if (hs(k2) > 0.0_dp) then
+            ff = min(1.0_dp, hu(L) / hs(k2))
             umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
             Cz = get_chezy(hs(k2), frcu(L), u1(L), v(L), ifrcutp(L))
             frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
          end if
 
-         frL = a * frL + (1d0 - a) * ((frLk1 + frLk2) * 0.5d0)
+         frL = a * frL + (1.0_dp - a) * ((frLk1 + frLk2) * 0.5_dp)
 
       else if (ifxedweirfrictscheme == 2) then ! Without weir like WAQUA
 
-         if (hs(k1) > 0d0) then
-            ff = min(1d0, hu(L) / hs(k1))
+         if (hs(k1) > 0.0_dp) then
+            ff = min(1.0_dp, hu(L) / hs(k1))
             umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
             Cz = get_chezy(hs(k1), frcu(L), u1(L), v(L), ifrcutp(L))
             frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
          end if
 
-         if (hs(k2) > 0d0) then
-            ff = min(1d0, hu(L) / hs(k2))
+         if (hs(k2) > 0.0_dp) then
+            ff = min(1.0_dp, hu(L) / hs(k2))
             umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
             Cz = get_chezy(hs(k2), frcu(L), u1(L), v(L), ifrcutp(L))
             frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
          end if
 
-         frL = (frLk1 + frLk2) * 0.5d0
+         frL = (frLk1 + frLk2) * 0.5_dp
 
       else if (ifxedweirfrictscheme == 3) then ! full undisturbed velocity reconstruction
 
-         if (abs(u1(L)) > 0.1d0) then
+         if (abs(u1(L)) > 0.1_dp) then
 
-            if (hs(k1) > 0d0) then
+            if (hs(k1) > 0.0_dp) then
                call getucxucynoweirs(k1, ucxk, ucyk)
                umod = sqrt(ucxk * ucxk + ucyk * ucyk)
                uin = abs(ucxk * csu(L) + ucyk * snu(L))
@@ -119,7 +119,7 @@ contains
                frLk1 = umod * uin * ag / (Cz * Cz * hs(k1) * u1(L))
             end if
 
-            if (hs(k2) > 0d0) then
+            if (hs(k2) > 0.0_dp) then
                call getucxucynoweirs(k2, ucxk, ucyk)
                umod = sqrt(ucxk * ucxk + ucyk * ucyk)
                uin = abs(ucxk * csu(L) + ucyk * snu(L))
@@ -129,28 +129,28 @@ contains
 
          end if
 
-         frL = a * frL + (1d0 - a) * ((frLk1 + frLk2) * 0.5d0)
+         frL = a * frL + (1.0_dp - a) * ((frLk1 + frLk2) * 0.5_dp)
 
       else if (ifxedweirfrictscheme == 4) then ! full undisturbed velocity reconstruction
 
          flatlength = max(weirlength, dx(L) - (weirlength + weirheight * fixedweirtalud))
          a = weirlength / (weirlength + flatlength)
 
-         if (hs(k1) > 0d0) then
-            ff = min(1d0, hu(L) / hs(k1))
+         if (hs(k1) > 0.0_dp) then
+            ff = min(1.0_dp, hu(L) / hs(k1))
             umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
             Cz = get_chezy(hs(k1), frcu(L), u1(L), v(L), ifrcutp(L))
             frLk1 = umod * ff * ag / (Cz * Cz * hs(k1))
          end if
 
-         if (hs(k2) > 0d0) then
-            ff = min(1d0, hu(L) / hs(k2))
+         if (hs(k2) > 0.0_dp) then
+            ff = min(1.0_dp, hu(L) / hs(k2))
             umod = sqrt(u1(L) * u1(L) * ff * ff + v(L) * v(L))
             Cz = get_chezy(hs(k2), frcu(L), u1(L), v(L), ifrcutp(L))
             frLk2 = umod * ff * ag / (Cz * Cz * hs(k2))
          end if
 
-         frL = a * frL + (1d0 - a) * ((frLk1 + frLk2) * 0.5d0)
+         frL = a * frL + (1.0_dp - a) * ((frLk1 + frLk2) * 0.5_dp)
 
       end if
 

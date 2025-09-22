@@ -59,17 +59,17 @@ contains
 
       integer :: i, jsferic_old
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
 !  work in model-coordinates
       jsferic_old = jsferic
       jsferic = 0
 
 !  take unit time-step for edge length increase
-      dt = 1d0
+      dt = 1.0_dp
 
 !  check for self-crossing
-      edge_incr = 1d99
+      edge_incr = 1.0e99_dp
       do i = 1, mc - 1
          if (xc(i) == DMISS .or. xc(i + 1) == DMISS) cycle
 
@@ -80,7 +80,7 @@ contains
       end do
 
       do i = 1, mc - 1
-         if (edge_incr(i) < 0d0) then
+         if (edge_incr(i) < 0.0_dp) then
             tmax(i) = -edge_width(i) / edge_incr(i)
          end if
       end do
