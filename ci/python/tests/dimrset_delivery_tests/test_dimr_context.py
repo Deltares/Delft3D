@@ -94,7 +94,7 @@ class TestDimrAutomationContext:
                 build_id="12345",
                 dry_run=False,
                 jira_username="jira_user",
-                jira_PAT="jira_pass",
+                jira_password="jira_token",
                 teamcity_username="tc_user",
                 teamcity_password="tc_pass",
                 ssh_username="ssh_user",
@@ -370,7 +370,7 @@ class TestParseCommonArguments:
             assert args.build_id == "12345"
             assert args.dry_run is False
             assert args.jira_username is None
-            assert args.jira_password is None
+            assert args.jira_PAT is None
             assert args.teamcity_username is None
             assert args.teamcity_password is None
             assert args.ssh_username is None
