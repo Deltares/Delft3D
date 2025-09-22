@@ -23,7 +23,7 @@ object DIMRbak : BuildType({
 
     artifactRules = """
         +:ci/python/ci_tools/dimrset_delivery/output/*.html
-        +:ci/python/ci_tools/dimrset_delivery/output/dimrset_release_changelog.txt
+        +:ci/python/ci_tools/dimrset_delivery/output/*.txt
         +:ci/python/*.xlsx
         +:ci/python/*.txt
     """.trimIndent()
@@ -44,6 +44,12 @@ object DIMRbak : BuildType({
                     onDependencyFailure = FailureAction.FAIL_TO_START
                     onDependencyCancel = FailureAction.CANCEL
                 }
+            }
+            artifacts(RelativeId("DIMRbak")) {
+                buildRule = lastSuccessful()
+                artifactRules = """
+                    ?:*.txt => ci/python/ci_tools/dimrset_delivery/output/
+                """.trimIndent()
             }
         }
     }
@@ -208,7 +214,9 @@ object DIMRbak : BuildType({
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --jira-username "%dimrbakker_username%"
-                    --jira-password '%dimrbakker_password%'
+                    --jira-PAT "%dimrbakker_password%"
+                    --git-username "deltares-service-account"
+                    --git-PAT "%github_deltares-service-account_access_token%"
                     %dry_run%
                 """.trimIndent()
             }
