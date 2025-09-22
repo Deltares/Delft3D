@@ -47,7 +47,7 @@ class Jira(ConnectionServiceInterface):
         bool
             True if connection is successful, False otherwise.
         """
-        self.__context.log(f"Checking connection to Jira...")
+        self.__context.log("Checking connection to Jira...")
         endpoint = f"{self.__rest_uri}/myself"
 
         if self.__context.dry_run:

@@ -1,7 +1,7 @@
 import hashlib
+import re
 import subprocess
 import sys
-import re
 from typing import List, Tuple
 
 from ci_tools.dimrset_delivery.dimr_context import Credentials, DimrAutomationContext
@@ -96,48 +96,47 @@ class GitClient(ConnectionServiceInterface):
             sys.exit(1)
 
     def run_git_command(self, cmd: List[str]) -> str:
-            """Run a git command and return its stdout as string."""
-            try:
-                if self.__context.dry_run:
-                    self.__context.log(f"[dry-run] git command: {' '.join(cmd)}")
-                    return ""
-                result = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                    timeout=30,
-                )
-                return result.stdout.strip()
-            except subprocess.CalledProcessError as e:
-                self.__context.log(f"Git command failed: {e.stderr}", severity=LogLevel.ERROR)
-                raise
-            except Exception as e:
-                self.__context.log(f"Unexpected error running git command: {e}", severity=LogLevel.ERROR)
-                raise
+        """Run a git command and return its stdout as string."""
+        try:
+            if self.__context.dry_run:
+                self.__context.log(f"[dry-run] git command: {' '.join(cmd)}")
+                return ""
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=30,
+            )
+            return result.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            self.__context.log(f"Git command failed: {e.stderr}", severity=LogLevel.ERROR)
+            raise
+        except Exception as e:
+            self.__context.log(f"Unexpected error running git command: {e}", severity=LogLevel.ERROR)
+            raise
 
     def normalize_issue_keys(self, message: str) -> str:
-            """Normalize Jira issue keys in a commit message (e.g., devopsdsc 761 -> DEVOPSDSC-761)."""
-            def replacer(match: re.Match) -> str:
-                key = match.group(1).upper()
-                num = match.group(2)
-                return f"{key}-{num}"
+        """Normalize Jira issue keys in a commit message (e.g., devopsdsc 761 -> DEVOPSDSC-761)."""
 
-            pattern = re.compile(r"\b([A-Za-z]+)[\s-]?(\d+)\b")
-            return pattern.sub(replacer, message)
+        def replacer(match: re.Match) -> str:
+            key = match.group(1).upper()
+            num = match.group(2)
+            return f"{key}-{num}"
+
+        pattern = re.compile(r"\b([A-Za-z]+)[\s-]?(\d+)\b")
+        return pattern.sub(replacer, message)
 
     def get_last_two_tags(self) -> Tuple[str, str]:
-            """Return the last two Git tags (most recent first)."""
-            tags = self.run_git_command(["git", "tag", "--sort=creatordate"]).splitlines()
-            if len(tags) < 2:
-                raise RuntimeError("At least two tags are required to generate the release notes.")
-            return tags[-2], tags[-1]
+        """Return the last two Git tags (most recent first)."""
+        tags = self.run_git_command(["git", "tag", "--sort=creatordate"]).splitlines()
+        if len(tags) < 2:
+            raise RuntimeError("At least two tags are required to generate the release notes.")
+        return tags[-2], tags[-1]
 
     def get_commits(self, from_tag: str, to_tag: str) -> List[str]:
         """Return commit messages between two tags."""
-        log = self.run_git_command(
-            ["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%s"]
-        )
+        log = self.run_git_command(["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%s"])
         commits = log.splitlines()
         return [self.normalize_issue_keys(msg) for msg in commits]
 

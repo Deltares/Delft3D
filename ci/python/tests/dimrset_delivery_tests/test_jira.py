@@ -7,10 +7,12 @@ from ci_tools.dimrset_delivery.lib.jira import Jira
 test_user = ""
 test_token = "dummy_value"
 
+
 def make_jira(dry_run: bool = False) -> Jira:
     mock_context = Mock(spec=DimrAutomationContext)
     mock_context.dry_run = dry_run
     return Jira(credentials=Credentials(username=test_user, password=test_token), context=mock_context)
+
 
 def test_test_connection_success() -> None:
     jira = make_jira()
@@ -24,6 +26,7 @@ def test_test_connection_success() -> None:
         # Assert
         assert result is True
 
+
 def test_test_connection_failure() -> None:
     jira = make_jira()
     with patch("ci_tools.dimrset_delivery.lib.jira.requests.get") as mock_get:
@@ -36,6 +39,7 @@ def test_test_connection_failure() -> None:
         # Assert
         assert result is False
 
+
 def test_test_connection_dry_run() -> None:
     jira = make_jira(dry_run=True)
 
@@ -43,6 +47,7 @@ def test_test_connection_dry_run() -> None:
     result = jira.test_connection()
 
     assert result is True  # dry-run always returns 200
+
 
 def test_get_issue_success() -> None:
     jira = make_jira()
@@ -59,6 +64,7 @@ def test_get_issue_success() -> None:
         assert issue["key"] == issue_key
         assert "summary" in issue["fields"]
 
+
 def test_get_issue_failure() -> None:
     jira = make_jira()
     issue_key = "DEVOPSDSC-404"
@@ -71,6 +77,7 @@ def test_get_issue_failure() -> None:
         issue = jira.get_issue(issue_key)
 
         assert issue is None
+
 
 def test_get_issue_dry_run() -> None:
     jira = make_jira(dry_run=True)

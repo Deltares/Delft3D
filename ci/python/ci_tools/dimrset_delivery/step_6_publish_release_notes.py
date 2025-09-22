@@ -16,7 +16,7 @@ from ci_tools.example_utils.logger import LogLevel
 
 class ReleaseNotesPublisher(StepExecutorInterface):
     """Generates a DIMR release changelog and updates the changelog file."""
-    
+
     def __init__(self, context: DimrAutomationContext, services: Services) -> None:
         self.__context = context
         self.__settings = context.settings
@@ -25,9 +25,9 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         current_dir = Path(__file__)
         path_to_output_folder = Path(current_dir.parents[0], self.__settings.relative_path_to_output_folder)
         self.__changelog_file = Path(path_to_output_folder, self.__settings.path_to_release_changelog_artifact)
-    
+
     def __issue_number_pattern(self) -> re.Pattern:
-        """Returns the regex pattern for matching issue numbers based on teamcity_project_keys."""
+        """Return the regex pattern for matching issue numbers based on teamcity_project_keys."""
         project_keys = self.__settings.teamcity_project_keys
         if not project_keys:
             self.__context.log("No project keys found in settings, issue matching may fail", severity=LogLevel.WARNING)
@@ -36,14 +36,15 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
     def __build_changelog(self, commits: List[str], issue_number_pattern: re.Pattern) -> List[str]:
         """
-        Builds a changelog from a list of commits by extracting Jira issue numbers.
+        Build a changelog from a list of commits by extracting Jira issue numbers.
 
         Args:
             commits (List[str]): List of commit messages to process.
             issue_number_pattern (re.Pattern): Compiled regex pattern to match Jira issue numbers
                 (e.g., 'DEVOPSDSC-123') based on project keys from settings.
 
-        Returns:
+        Returns
+        -------
             List[str]: List of changelog entries, where each entry is either a formatted
                 issue summary (e.g., '- DEVOPSDSC-123: Summary') or the raw commit message
                 if no issue is found or Jira lookup fails.
@@ -67,13 +68,12 @@ class ReleaseNotesPublisher(StepExecutorInterface):
                         else:
                             self.__context.log(
                                 f"Failed to retrieve issue {issue_number} from Jira, using raw commit",
-                                severity=LogLevel.WARNING
+                                severity=LogLevel.WARNING,
                             )
                             changelog.append(f"- {commit}")
                     except Exception as e:
                         self.__context.log(
-                            f"Error retrieving issue {issue_number} from Jira: {str(e)}",
-                            severity=LogLevel.WARNING
+                            f"Error retrieving issue {issue_number} from Jira: {str(e)}", severity=LogLevel.WARNING
                         )
                         changelog.append(f"- {commit}")
                 else:
@@ -93,7 +93,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
         The method reads the existing changelog file (if it exists) or creates a new one.
         It uses a regular expression to identify and replace an existing section for the
-        given tag or prepend a new section. 
+        given tag or prepend a new section.
 
         Explanation of the regex pattern:
         - `^`: Matches the start of a line (with `re.M` flag).
@@ -153,7 +153,11 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         if self.__jira is None:
             self.__context.log("Jira client is required but not initialized", severity=LogLevel.ERROR)
             return False
-        
+
+        if self.__git is None:
+            self.__context.log("Git client is required but not initialized", severity=LogLevel.ERROR)
+            return False
+
         prev_tag, current_tag = self.__git.get_last_two_tags()
         self.__context.log(f"Generating changelog from {prev_tag} to {current_tag}")
 
@@ -171,7 +175,6 @@ def main() -> None:
     args = parse_common_arguments()
     context = create_context_from_args(
         args,
-        require_atlassian=False,
         require_teamcity=False,
         require_ssh=False,
     )

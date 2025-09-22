@@ -29,7 +29,7 @@ class TestDimrAutomationContext:
         build_id: str = "12345",
         dry_run: bool = False,
         jira_username: str = "",
-        jira_password: str = "",
+        jira_PAT: str = "",
         teamcity_username: str = "",
         teamcity_password: str = "",
         ssh_username: str = "",
@@ -54,7 +54,7 @@ class TestDimrAutomationContext:
                 ServiceName.JIRA,
                 CredentialEntry(
                     required=require_jira,
-                    credential=Credentials(username=jira_username, password=jira_password),
+                    credential=Credentials(username=jira_username, password=jira_PAT),
                 ),
             )
             credentials.add(
@@ -94,7 +94,7 @@ class TestDimrAutomationContext:
                 build_id="12345",
                 dry_run=False,
                 jira_username="jira_user",
-                jira_password="jira_pass",
+                jira_PAT="jira_pass",
                 teamcity_username="tc_user",
                 teamcity_password="tc_pass",
                 ssh_username="ssh_user",
@@ -124,7 +124,7 @@ class TestDimrAutomationContext:
                 build_id="12345",
                 dry_run=True,
                 jira_username="jira_user",
-                jira_password="jira_pass",
+                jira_PAT="jira_pass",
                 teamcity_username="tc_user",
                 teamcity_password="tc_pass",
                 ssh_username="ssh_user",
@@ -194,7 +194,7 @@ class TestDimrAutomationContext:
                 build_id="12345",
                 dry_run=False,
                 jira_username="jira_user",
-                jira_password="jira_pass",
+                jira_PAT="jira_pass",
                 git_username="git_user",
                 git_password="git_token",
             )
@@ -237,7 +237,7 @@ class TestDimrAutomationContext:
                 build_id="12345",
                 dry_run=True,
                 jira_username="user",
-                jira_password="pass",
+                jira_PAT="pass",
                 teamcity_username="user",
                 teamcity_password="pass",
                 ssh_username="user",
@@ -263,7 +263,7 @@ class TestDimrAutomationContext:
                 build_id="12345",
                 dry_run=False,
                 jira_username="user",
-                jira_password="pass",
+                jira_PAT="pass",
                 teamcity_username="user",
                 teamcity_password="pass",
                 ssh_username="user",
@@ -297,7 +297,7 @@ class TestDimrAutomationContext:
                 build_id="12345",
                 dry_run=True,
                 jira_username="user",
-                jira_password="pass",
+                jira_PAT="pass",
                 teamcity_username="user",
                 teamcity_password="pass",
                 ssh_username="user",
@@ -343,7 +343,7 @@ class TestDimrAutomationContext:
                 build_id="12345",
                 dry_run=False,
                 jira_username="user",
-                jira_password="pass",
+                jira_PAT="pass",
                 teamcity_username="user",
                 teamcity_password="pass",
                 ssh_username="user",
@@ -370,7 +370,7 @@ class TestParseCommonArguments:
             assert args.build_id == "12345"
             assert args.dry_run is False
             assert args.jira_username is None
-            assert args.jira_password is None
+            assert args.jira_PAT is None
             assert args.teamcity_username is None
             assert args.teamcity_password is None
             assert args.ssh_username is None
@@ -408,7 +408,7 @@ class TestParseCommonArguments:
             assert args.build_id == "12345"
             assert args.dry_run is True
             assert args.jira_username == "jira_user"
-            assert args.jira_password == "jira_pass"
+            assert args.jira_PAT == "jira_pass"
             assert args.teamcity_username == "tc_user"
             assert args.teamcity_password == "tc_pass"
             assert args.ssh_username == "ssh_user"
@@ -435,7 +435,7 @@ class TestCreateContextFromArgs:
             build_id="12345",
             dry_run=False,
             jira_username="jira_user",
-            jira_password="jira_pass",
+            jira_PAT="jira_pass",
             teamcity_username="tc_user",
             teamcity_password="tc_pass",
             ssh_username="ssh_user",
@@ -468,7 +468,7 @@ class TestCreateContextFromArgs:
             build_id="12345",
             dry_run=True,
             jira_username=None,
-            jira_password=None,
+            jira_PAT=None,
             teamcity_username=None,
             teamcity_password=None,
             ssh_username=None,
@@ -499,7 +499,7 @@ class TestCreateContextFromArgs:
             build_id="12345",
             dry_run=False,
             jira_username=None,
-            jira_password=None,
+            jira_PAT=None,
             teamcity_username=None,
             teamcity_password=None,
             ssh_username=None,
