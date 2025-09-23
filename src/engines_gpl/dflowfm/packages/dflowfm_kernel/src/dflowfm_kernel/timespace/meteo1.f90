@@ -6734,6 +6734,26 @@ contains
       end select
    end subroutine operand_fm_to_ec
 
+   !> Convert quantity names as given in user input (ini/ext file)
+   !! to accepted standard names (as used in data files and code)
+   pure function quantity_name_config_file_to_standard_name(quantity_input_name) result (quantity_standard_name)
+      character(len=*), intent(in) :: quantity_input_name !< given by the user in ini/ext file
+      character(len=:), allocatable :: quantity_standard_name !< known standard name
+      
+      select case(str_tolower(trim(quantity_input_name)))
+      case ('seaiceareafraction')
+         quantity_standard_name = 'sea_ice_area_fraction'
+      case ('seaicethickness')
+         quantity_standard_name = 'sea_ice_thickness'
+      case ('bedrocksurfaceelevation')
+         quantity_standard_name = 'bedrock_surface_elevation'
+      case default
+         ! keep unrecognized names as they are
+         quantity_standard_name = trim(quantity_input_name)
+      end select
+         
+   end function quantity_name_config_file_to_standard_name
+
    !> Convert quantity names as given in user input (ext file)
    !! to accepted Unstruc names (as used in Fortran code)
    !! Note: for old-style ext quantities, fm_name==input_name, e.g. waterlevelbnd.
@@ -7104,7 +7124,7 @@ contains
             'friction_coefficient_whitecolebrook', 'friction_coefficient_stricklernikuradse', &
             'friction_coefficient_strickler', 'friction_coefficient_debosbijkerk')
          itemPtr1 => item_frcutim ! the same for all types (type is stored elsewhere)
-      case ('bedrocksurfaceelevation', 'bedrock_surface_elevation')
+      case ('bedrock_surface_elevation')
          itemPtr1 => item_subsiduplift
          dataPtr1 => subsupl
       case default

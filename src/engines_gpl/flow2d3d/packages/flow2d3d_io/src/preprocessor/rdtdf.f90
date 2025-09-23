@@ -1,4 +1,4 @@
-subroutine rdtdf(lundia    ,luntdp    ,error     ,filnam    ,fmttmp    , &
+subroutine rdtdf(lundia    ,luntdp    ,error     ,filnam_in ,fmttmp    , &
                & nrval     ,rval      ,dt        ,itstrt    ,itfinish  , &
                & gdp       )
 !----- GPL ---------------------------------------------------------------------
@@ -63,7 +63,7 @@ subroutine rdtdf(lundia    ,luntdp    ,error     ,filnam    ,fmttmp    , &
                                                           !  RVAL   (1,I) = Values at t=TIM0
                                                           !  RVAL   (2,I) = Values at t=TIM1
                                                           !  I=1,.,NDIM   = nr. of REC. to read
-    character(*)                , intent(in)  :: filnam   !  Name of the relevant file
+    character(*)                , intent(in)  :: filnam_in !  Name of the relevant file
     character(11)               , intent(in)  :: fmttmp   !  Format of the relevant file
 !
 ! Local variables
@@ -80,6 +80,7 @@ subroutine rdtdf(lundia    ,luntdp    ,error     ,filnam    ,fmttmp    , &
     real(fp)                       :: t
     real(fp)                       :: timrd  ! Time in minutes read 
     character(300)                 :: errmsg ! Character var. containing the error message to be written to file. The message depend on the error. 
+    character(:), allocatable      :: filnam ! Name of the relevant file
 !
 !
 !! executable statements -------------------------------------------------------
@@ -87,6 +88,7 @@ subroutine rdtdf(lundia    ,luntdp    ,error     ,filnam    ,fmttmp    , &
     !
     !-----define length of file name
     !
+    filnam = filnam_in
     call remove_leading_spaces(filnam    ,lfile     )
     !
     !-----test file existence <YES>
