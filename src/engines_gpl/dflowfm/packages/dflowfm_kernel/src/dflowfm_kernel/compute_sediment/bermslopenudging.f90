@@ -95,8 +95,8 @@ contains
          !
          ! Transports positive outgoing
          !
-         slope = max(hypot(e_dzdn(L), e_dzdt(L)), 1d-8)
-         slpfac = bermslopefac * (-e_dzdn(L) + bermslope * e_dzdn(L) / slope) / max(morfac, 1d0)
+         slope = max(hypot(e_dzdn(L), e_dzdt(L)), 1.0e-8_dp)
+         slpfac = bermslopefac * (-e_dzdn(L) + bermslope * e_dzdn(L) / slope) / max(morfac, 1.0_dp)
          do lsd = 1, lsedtot
             !
             ! slope magnitude smaller than bermslope leads to transport away from the cell, ie outward

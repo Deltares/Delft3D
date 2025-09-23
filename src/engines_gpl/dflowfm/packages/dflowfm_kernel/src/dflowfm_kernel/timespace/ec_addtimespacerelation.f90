@@ -47,7 +47,7 @@ contains
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
       use m_flowtimes, only: refdate_mjd
-      use string_module, only: str_upper
+      use string_module, only: str_upper, str_tolower
       use timespace_parameters
       use timespace
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
@@ -134,7 +134,7 @@ contains
       character(len=20) :: waqinput
       integer, external :: findname
       type(tEcMask) :: srcmask
-      
+
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
       logical :: exist, opened, withCharnock, withStress
 
@@ -233,7 +233,7 @@ contains
 
             if (present(forcingfile)) then
                if (present(dtnodal)) then
-                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal / 86400.d0)
+                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal / 86400.0_dp)
                else
                   success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile)
                end if
@@ -253,7 +253,7 @@ contains
                   success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename(1:index(filename, '.'))//'qh', refdate_mjd, tzone, ec_second, name)
                else
                   if (present(dtnodal)) then
-                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.d0, varname=varname)
+                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.0_dp, varname=varname)
                   else
                      if (present(varname2)) then
                         success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
@@ -441,8 +441,8 @@ contains
 
       converterId = ecCreateConverter(ecInstancePtr)
 
-      select case (target_name)
-      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1D', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreakLevelsAndWidths', 'sourcesink_discharge', 'sourcesink_constituentDelta')
+      select case (str_tolower(trim(target_name)))
+      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1d', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreaklevelsandwidths', 'sourcesink_discharge', 'sourcesink_constituentdelta')
          ! for the FM 'target' arrays, the index is provided by the caller
          if (.not. present(targetIndex)) then
             message = 'Internal program error: missing targetIndex for quantity '''//trim(target_name)
@@ -478,11 +478,11 @@ contains
          else
             if (ec_filetype == provFile_bc .and. target_name == 'windxy') then
                fileReaderPtr => ecSupportFindFileReader(ecInstancePtr, fileReaderId)
-               associate(column_units =>fileReaderPtr%bc%quantity%column_units)
+               associate (column_units => fileReaderPtr%bc%quantity%column_units)
                   if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('velocity', column_units(3))) then
                      ! windxy is defined by wind in x and wind in y direction
                      ec_convtype = convtype_uniform
-                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3)) ) then
+                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3))) then
                      ec_convtype = convtype_unimagdir
                   else
                      msgbuf = 'incorrect units found in bc file concerning the input for windxy. Only the combinations "ms-1, ms-1"'// &
@@ -511,10 +511,10 @@ contains
                itargetMaskSelect = 1
             end if
             if (itargetMaskSelect == 1) then
-               transformcoef = 1.0d0
+               transformcoef = 1.0_dp
                srcmask%msk = 0
             else
-               transformcoef = 0.0d0
+               transformcoef = 0.0_dp
                srcmask%msk = 1
             end if
 
@@ -571,7 +571,7 @@ contains
       sourceItemId_3 = 0
       sourceItemId_4 = 0
 
-      select case (target_name)
+      select case (str_tolower(trim(target_name)))
       case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin')
          if (checkFileType(ec_filetype, provFile_uniform, target_name)) then
             ! the file reader will have created an item called 'uniform_item'
@@ -582,7 +582,7 @@ contains
             return
          end if
 
-      case ('pump', 'generalstructure', 'damlevel', 'valve1D', 'gateloweredgelevel', 'lateral_discharge', 'dambreakLevelsAndWidths')
+      case ('pump', 'generalstructure', 'damlevel', 'valve1d', 'gateloweredgelevel', 'lateral_discharge', 'dambreaklevelsandwidths')
          if (checkFileType(ec_filetype, provFile_uniform, target_name)) then
             !
             ! *.tim file
@@ -649,7 +649,7 @@ contains
       case ('velocitybnd', 'dischargebnd', 'waterlevelbnd', 'salinitybnd', 'tracerbnd', &
             'neumannbnd', 'riemannbnd', 'absgenbnd', 'outflowbnd', &
             'temperaturebnd', 'sedimentbnd', 'tangentialvelocitybnd', 'uxuyadvectionvelocitybnd', &
-            'normalvelocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'sedfracbnd', 'riemannubnd')
+            'normalvelocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'sedfracbnd')
          if ((.not. checkFileType(ec_filetype, provFile_poly_tim, target_name)) .and. &
              (.not. checkFileType(ec_filetype, provFile_bc, target_name))) then
             return
@@ -720,14 +720,14 @@ contains
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity wind_p.')
             return
          end if
-      case ('pseudoAirPressure')
+      case ('pseudoairpressure')
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'air_pressure'
          else
             call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: Unsupported filetype for quantity '//trim(target_name)//'.')
             return
          end if
-      case ('waterLevelCorrection')
+      case ('waterlevelcorrection')
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'sea_surface_height'
          else
@@ -1106,7 +1106,7 @@ contains
          end if
       case ('longwaveradiation')
          sourceItemName = 'surface_net_downward_longwave_flux'
-      case ('nudge_salinity_temperature')
+      case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          if (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_water_potential_temperature')
             sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_water_salinity')

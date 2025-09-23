@@ -76,14 +76,10 @@ object WindowsBuild : BuildType({
             name = "Build"
             scriptContent = """
                 call C:/set-env-vs2022.cmd
-
                 cmake ./src/cmake -G %generator% -T fortran=%intel_fortran_compiler% -D CMAKE_BUILD_TYPE=%build_type% -D CONFIGURATION_TYPE:STRING=%product% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install -D ENABLE_CODE_COVERAGE=%enable_code_coverage_flag%
+                cmake --build ./build_%product% -j --target install --config %build_type%
 
-                cd build_%product%
-
-                cmake --build . -j --target install --config %build_type%
-
-                ctest --test-dir . --build-config %build_type% --output-junit ../unit-test-report-windows.xml --output-on-failure
+                ctest --test-dir ./build_%product% --build-config %build_type% --output-junit ../unit-test-report-windows.xml --output-on-failure
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows

@@ -103,15 +103,15 @@ contains
 
       if (N < 2) return
 
-      Fx1 = 1.0d20
-      Fx2 = -1.0d20
+      Fx1 = 1.0e20_dp
+      Fx2 = -1.0e20_dp
       do I = 1, N
          Fx1 = min(X(I), Fx1)
          Fx2 = max(X(I), Fx2)
       end do
 
-      Fy1 = 1.0d20
-      Fy2 = -1.0d20
+      Fy1 = 1.0e20_dp
+      Fy2 = -1.0e20_dp
       do I = 1, N
          Fy1 = min(y(I), Fy1)
          Fy2 = max(y(I), Fy2)
@@ -119,20 +119,20 @@ contains
 
       if (JAUTO == 1) then
          X1 = Fx1
-         X2 = max(Fx2, Fx1 + 1d-4)
+         X2 = max(Fx2, Fx1 + 1.0e-4_dp)
 
-         if (fy1 < 2d0 * y1 - y2) return
-         if (fy2 > 2d0 * y2 - y1) return
-         if (fx1 < 2d0 * x1 - x2) return
-         if (fx2 > 2d0 * x2 - x1) return
+         if (fy1 < 2.0_dp * y1 - y2) return
+         if (fy2 > 2.0_dp * y2 - y1) return
+         if (fx1 < 2.0_dp * x1 - x2) return
+         if (fx2 > 2.0_dp * x2 - x1) return
       end if
 
-      if (Fx1 < -1.0d6 .or. Fx2 > 1.0d6) then
+      if (Fx1 < -1.0e6_dp .or. Fx2 > 1.0e6_dp) then
          call KTEXT(TITLE, 2, 2, 60)
          call KTEXT('TOO LARGE FOR PLOTTING', 3, 3, 60)
          return
       end if
-      if (Fy1 < -1.0d6 .or. Fy2 > 1.0d6) then
+      if (Fy1 < -1.0e6_dp .or. Fy2 > 1.0e6_dp) then
          call KTEXT(TITLE, 2, 2, 60)
          call KTEXT('TOO LARGE FOR PLOTTING', 3, 3, 60)
          return
@@ -150,14 +150,14 @@ contains
          write (tex(2:10), '(F8.1)') fy2 - fy1
          call DRAWTEXT(real(X1), real(Y2 + DYH), TITLE//tex)
 
-         if (abs(x1) < 1d3) then
+         if (abs(x1) < 1.0e3_dp) then
             write (TEX, '(F8.3)') X1
          else
             write (TEX, '(e10.3)') X1
          end if
          call DRAWTEXT(real(X1), real(Y1 - DYH), TEX)
 
-         if (abs(x2) < 1d3) then
+         if (abs(x2) < 1.0e3_dp) then
             write (TEX, '(F8.3)') X2
             call DRAWTEXT(real(X2 - 6 * DXH), real(Y1 - DYH), TEX)
          end if
@@ -171,8 +171,8 @@ contains
          if (JP == 1) then
             call DISPF2(X, Y, N, N, NCOL) ! HUIDIGE PROFIEL TEKENEN
          else
-            rcx = 5d-3 * (x2 - x1)
-            rcy = 5d-3 * (y2 - y1)
+            rcx = 5.0e-3_dp * (x2 - x1)
+            rcy = 5.0e-3_dp * (y2 - y1)
             call DISPF2cir(X, Y, N, RCx, rcy, NCOL)
             if (kp > 0 .and. kp <= n) then ! print layer value
                if (kplotfrombedorsurface /= 1) then
@@ -191,7 +191,7 @@ contains
                call GTEXT(TEX, xtx, ytx, NCOL)
 
                write (TEX, '(F13.5)') y(kp) - y1
-               ytx = ytx - 0.05d0 * (y2 - y1)
+               ytx = ytx - 0.05_dp * (y2 - y1)
                call GTEXT(TEX, xtx, ytx, NCOL)
 
             end if
@@ -199,7 +199,7 @@ contains
 
          if (JW == 1) then ! ALLEEN BIJ PROFIELEN EN ALS WINDOW GETEKEND WORDT
             ! WRITE (TEX,'(E16.5)') FMX(NF)   ! max profile value
-            xtx = X2 - 10d0 * DXH
+            xtx = X2 - 10.0_dp * DXH
             ytx = Y2 - DYH
             ! CALL GTEXT(TEX, xtx, ytx, 0)
             write (TEX, '(E16.5)') Fx2

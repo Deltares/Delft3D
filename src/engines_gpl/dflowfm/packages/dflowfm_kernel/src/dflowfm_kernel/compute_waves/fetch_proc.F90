@@ -77,7 +77,7 @@ contains
       integer :: flow_node, isearch, j0
       real(kind=dp), dimension(:), allocatable :: xz_proc, yz_proc
       logical :: iglobal_s_exist_on_fetch_proc = .false.
-      real(kind=dp), parameter :: tolerance = 1.0d-3
+      real(kind=dp), parameter :: tolerance = 1.0e-3_dp
 
 #ifdef HAVE_MPI
       if (allocated(ndx_over_procs)) deallocate (ndx_over_procs)

@@ -72,7 +72,7 @@ contains
 
       topo_info = -dble(n)
 
-      if (topo_info <= 0d0) topo_info = DMISS
+      if (topo_info <= 0.0_dp) topo_info = DMISS
 
       return
 

@@ -66,7 +66,6 @@ set(googletest_module ${third_party_open_path}/googletest)
 set(f90tw_module ${third_party_open_path}/f90tw)
 
 if(WIN32)
-    set(Tecplot_module ${third_party_open_path}/Tecplot)
     set(pthreads_module ${third_party_open_path}/pthreads)
     set(expat_module ${third_party_open_path}/expat)
 endif(WIN32)

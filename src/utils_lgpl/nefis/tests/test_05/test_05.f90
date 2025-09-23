@@ -55,9 +55,9 @@ PROGRAM test5
    CHARACTER*255  version
 !
    error = getnfv(version)
-   write(*,*)
-   write(*,*) trim(version(5:))
-   write(*,*)
+   write(*,*) '-----------------------------------------------'
+   write(*,*) 'Version: '//trim(version(5:))
+   write(*,*) '-----------------------------------------------'
 
    coding=' '
    error= Opndef( fds, 'nefis_ex.def', coding)

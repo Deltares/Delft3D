@@ -47,11 +47,11 @@ contains
       implicit none
       ! get wavenr from waterdepth and period, see d3d doc
 
-      real(kind=dp), parameter :: a1 = 5.060219360721177d-01, a2 = 2.663457535068147d-01, &
-                                  a3 = 1.108728659243231d-01, a4 = 4.197392043833136d-02, &
-                                  a5 = 8.670877524768146d-03, a6 = 4.890806291366061d-03, &
-                                  b1 = 1.727544632667079d-01, b2 = 1.191224998569728d-01, &
-                                  b3 = 4.165097693766726d-02, b4 = 8.674993032204639d-03
+      real(kind=dp), parameter :: a1 = 5.060219360721177e-01_dp, a2 = 2.663457535068147e-01_dp, &
+                                  a3 = 1.108728659243231e-01_dp, a4 = 4.197392043833136e-02_dp, &
+                                  a5 = 8.670877524768146e-03_dp, a6 = 4.890806291366061e-03_dp, &
+                                  b1 = 1.727544632667079e-01_dp, b2 = 1.191224998569728e-01_dp, &
+                                  b3 = 4.165097693766726e-02_dp, b4 = 8.674993032204639e-03_dp
 
       real(kind=dp), intent(in) :: h !  Waterheight
       real(kind=dp), intent(in) :: t !  Period
@@ -62,8 +62,8 @@ contains
       real(kind=dp) :: ome2
 
       ome2 = ((twopi / T)**2) * h / ag
-      num = 1.0d0 + ome2 * (a1 + ome2 * (a2 + ome2 * (a3 + ome2 * (a4 + ome2 * (a5 + ome2 * a6)))))
-      den = 1.0d0 + ome2 * (b1 + ome2 * (b2 + ome2 * (b3 + ome2 * (b4 + ome2 * a6))))
+      num = 1.0_dp + ome2 * (a1 + ome2 * (a2 + ome2 * (a3 + ome2 * (a4 + ome2 * (a5 + ome2 * a6)))))
+      den = 1.0_dp + ome2 * (b1 + ome2 * (b2 + ome2 * (b3 + ome2 * (b4 + ome2 * a6))))
       k = sqrt(ome2 * num / den) / h
 
    end subroutine getwavenr

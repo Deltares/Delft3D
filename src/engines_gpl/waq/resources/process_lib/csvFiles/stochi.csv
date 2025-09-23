@@ -745,12 +745,12 @@ stocfl,stocsu,stocsc
 "dRIM2S2Pup","IM2S2     ",  -1.00000
 "dRIM3S2Pup","IM3       ",   1.00000
 "dRIM3S2Pup","IM3S2     ",  -1.00000
-"dResS1IM1 ","IM1       ",   1.00000
-"dResS1IM1 ","IM1S1     ",  -1.00000
-"dResS1IM2 ","IM2       ",   1.00000
-"dResS1IM2 ","IM2S1     ",  -1.00000
-"dResS1IM3 ","IM3       ",   1.00000
-"dResS1IM3 ","IM3S1     ",  -1.00000
+"dRS1IM1Buf","IM1       ",   1.00000
+"dRS1IM1Buf","IM1S1     ",  -1.00000
+"dRS1IM2Buf","IM2       ",   1.00000
+"dRS1IM2Buf","IM2S1     ",  -1.00000
+"dRS1IM3Buf","IM3       ",   1.00000
+"dRS1IM3Buf","IM3S1     ",  -1.00000
 "dSedIM1   ","IM1       ",  -1.00000
 "dSedIM1   ","IM1S1     ",   1.00000
 "dSedIM1S2 ","IM1       ",  -1.00000
@@ -1042,6 +1042,8 @@ stocfl,stocsu,stocsc
 "dDigS1MPB2","MPB2psamS1",   1.00000
 "dDigS1MPB2","MPB2psamS2",  -1.00000
 "dDigS2MPB2","MPB2psamS2",   1.00000
+"dResS1IM1 ","IM1       ",   1.00000
+"dResS1IM1 ","IM1S1     ",  -1.00000
 "dResS2IM1 ","IM1S2     ",  -1.00000
 "dResS2IM1 ","IM1       ",   1.00000
 "dBurS1IM1 ","IM1S1     ",  -1.00000
@@ -1050,6 +1052,8 @@ stocfl,stocsu,stocsc
 "dDigS1IM1 ","IM1S1     ",   1.00000
 "dDigS1IM1 ","IM1S2     ",  -1.00000
 "dDigS2IM1 ","IM1S2     ",   1.00000
+"dResS1IM2 ","IM2       ",   1.00000
+"dResS1IM2 ","IM2S1     ",  -1.00000
 "dResS2IM2 ","IM2S2     ",  -1.00000
 "dResS2IM2 ","IM2       ",   1.00000
 "dBurS1IM2 ","IM2S1     ",  -1.00000
@@ -1058,6 +1062,8 @@ stocfl,stocsu,stocsc
 "dDigS1IM2 ","IM2S1     ",   1.00000
 "dDigS1IM2 ","IM2S2     ",  -1.00000
 "dDigS2IM2 ","IM2S2     ",   1.00000
+"dResS1IM3 ","IM3       ",   1.00000
+"dResS1IM3 ","IM3S1     ",  -1.00000
 "dResS2IM3 ","IM3S2     ",  -1.00000
 "dResS2IM3 ","IM3       ",   1.00000
 "dBurS1IM3 ","IM3S1     ",  -1.00000

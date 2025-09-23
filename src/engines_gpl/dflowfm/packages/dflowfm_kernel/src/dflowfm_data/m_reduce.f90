@@ -94,8 +94,8 @@ module m_reduce
    integer, allocatable :: intbuf(:) !< Work array in pointonstack>ijtrue
    logical, allocatable :: logbuf(:) !< Work array in pointonstack>ijtrue
 
-   real(kind=dp) :: epscg = 1d-14 ! epsilon waterlevels cg method (maximum)
-   real(kind=dp) :: epsdiff = 1d-3 ! tolerance in (outer) Schwarz iterations (for Schwarz solver)
+   real(kind=dp) :: epscg = 1.0e-14_dp ! epsilon waterlevels cg method (maximum)
+   real(kind=dp) :: epsdiff = 1.0e-3_dp ! tolerance in (outer) Schwarz iterations (for Schwarz solver)
    integer :: maxmatvecs = 100000 ! maximum number of matrix-vector multiplications in Saad solver
 
    real(kind=dp), allocatable :: bbr(:), bbl(:) ! not left !

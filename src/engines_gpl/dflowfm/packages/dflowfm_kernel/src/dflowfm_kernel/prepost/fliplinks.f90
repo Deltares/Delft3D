@@ -121,8 +121,8 @@ contains
 
 !  Monte-Carlo settings
       MAXITER = 10
-      beta = 2d0
-      Etot = 0d0
+      beta = 2.0_dp
+      Etot = 0.0_dp
       Emin = Etot
 
 !  allocate
@@ -203,10 +203,10 @@ contains
                !    change cells
                !      orientation, i.e. clockwise vs. counterclockwise, not sorted out here
                !      tiangles only
-               netcell(icellL)%nod(1:3) = (/kL, kR, k1/)
-               netcell(icellL)%lin(1:3) = (/L, L1R, L1L/)
-               netcell(icellR)%nod(1:3) = (/kL, kR, k2/)
-               netcell(icellR)%lin(1:3) = (/L, L2R, L2L/)
+               netcell(icellL)%nod(1:3) = [kL, kR, k1]
+               netcell(icellL)%lin(1:3) = [L, L1R, L1L]
+               netcell(icellR)%nod(1:3) = [kL, kR, k2]
+               netcell(icellR)%lin(1:3) = [L, L2R, L2L]
 
                if (lne(1, L1R) == icellR) then
                   lne(1, L1R) = icellL
@@ -230,23 +230,23 @@ contains
                !    delete link from nod(k1)
                kk = 1; do while (nod(k1)%lin(kk) /= L .and. kk <= nmk(k1)); kk = kk + 1; end do
                if (nod(k1)%lin(kk) /= L) goto 1234
-               nod(k1)%lin(1:nmk(k1)) = (/nod(k1)%lin(1:kk - 1), nod(k1)%lin(kk + 1:nmk(k1) + 1)/)
+               nod(k1)%lin(1:nmk(k1)) = [nod(k1)%lin(1:kk - 1), nod(k1)%lin(kk + 1:nmk(k1) + 1)]
                call realloc(nod(k1)%lin, nmk(k1))
 
                !    delete link from nod(k2)
                kk = 1; do while (nod(k2)%lin(kk) /= L .and. kk <= nmk(k2)); kk = kk + 1; end do
                if (nod(k2)%lin(kk) /= L) goto 1234
-               nod(k2)%lin(1:nmk(k2)) = (/nod(k2)%lin(1:kk - 1), nod(k2)%lin(kk + 1:nmk(k2) + 1)/)
+               nod(k2)%lin(1:nmk(k2)) = [nod(k2)%lin(1:kk - 1), nod(k2)%lin(kk + 1:nmk(k2) + 1)]
                call realloc(nod(k2)%lin, nmk(k2))
 
                !    add link to nod(kL)
                call realloc(nod(kL)%lin, nmk(kL))
-               nod(kL)%lin = (/nod(kL)%lin(1:nmk(kL) - 1), L/)
+               nod(kL)%lin = [nod(kL)%lin(1:nmk(kL) - 1), L]
                call sort_links_ccw(kL, maxlin)
 
                !    add link to nod(kR)
                call realloc(nod(kR)%lin, nmk(kR))
-               nod(kR)%lin = (/nod(kR)%lin(1:nmk(kR) - 1), L/)
+               nod(kR)%lin = [nod(kR)%lin(1:nmk(kR) - 1), L]
                call sort_links_ccw(kR, maxlin)
 
                !   highlight new link

@@ -17,8 +17,8 @@ project {
     description = "contact: BlackOps (black-ops@deltares.nl)"
 
     params {
-        param("delft3d-user", "robot${'$'}delft3d")
-        password("delft3d-secret", "credentialsJSON:1dee1a48-252e-42fd-b600-6bf52d940513")
+        param("delft3d-user", DslContext.getParameter("delft3d-user"))
+        password("delft3d-secret", DslContext.getParameter("delft3d-secret"))
 
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
@@ -116,9 +116,10 @@ project {
         buildType(TestPythonCiTools)
         buildType(TestBenchValidation)
         buildType(CopyExamples)
+        buildType(SigCi)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, CopyExamples
+            TestPythonCiTools, TestBenchValidation, CopyExamples, SigCi
         )
     }
 
@@ -142,7 +143,7 @@ project {
         DIMRbak,
         Publish
     )
-
+        
     features {
         dockerRegistry {
             id = "DOCKER_REGISTRY_DELFT3D"
@@ -161,6 +162,12 @@ project {
             }
             allowInSubProjects = true
             allowInBuilds = true
+        }
+        feature {
+            type = "OAuthProvider"
+            param("displayName", "Keeper Vault Delft3d")
+            param("secure:client-secret", "credentialsJSON:bcf00886-4ae4-4c0a-9701-4e37efab8504")
+            param("providerType", "teamcity-ksm")
         }
     }
 }

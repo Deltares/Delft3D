@@ -57,7 +57,7 @@ contains
 
       real(kind=dp) :: XM, YM
 
-      call READYY('CUTCELLS', 0d0)
+      call READYY('CUTCELLS', 0.0_dp)
 
       call FINDCELLS(0) ! ALL FACES INSIDE LANDBOUNDARY PIECE
 
@@ -91,7 +91,7 @@ contains
 
                if (KNEW(L) == 0) then
 
-                  call CROSSLINKPOLY(L, 0, 0, (/0/), (/0/), XM, YM, JA)
+                  call CROSSLINKPOLY(L, 0, 0, [0], [0], XM, YM, JA)
 
                   if (JA == 1) then
                      call DSETNEWPOINT(XM, YM, KM)
@@ -164,7 +164,7 @@ contains
 
       call SETNODADM(0)
 
-      call READYY('CUTCELLS', -1d0)
+      call READYY('CUTCELLS', -1.0_dp)
 
    end subroutine CUTCELLS
 

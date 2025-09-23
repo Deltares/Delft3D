@@ -32,6 +32,8 @@
 
 module m_write_some_final_output
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -82,11 +84,11 @@ contains
       tcpustep = tim_get_wallclock(handle_steps)
       tcpusol = tim_get_wallclock(handle_sol)
 
-      frac = tcpusol / max(1d-10, tcpustep)
+      frac = tcpusol / max(1.0e-10_dp, tcpustep)
       call timstop(handle_all)
 
-      tot = tim_get_wallclock(handle_all) / max(1d0, ndx * (dnt - 1))
-      dtav = (time1 - tstart_user) / max(1d0, dnt)
+      tot = tim_get_wallclock(handle_all) / max(1.0_dp, ndx * (dnt - 1))
+      dtav = (time1 - tstart_user) / max(1.0_dp, dnt)
 
       do k = 1, 3
          msgbuf = ' '; call msg_flush()
@@ -95,7 +97,7 @@ contains
       do i = 1, size(handle_extra)
          if (handle_extra(i) > 0) then
             time_cpu = tim_get_wallclock(handle_extra(i))
-            if (time_cpu > 0.01d0) then ! only the relevant
+            if (time_cpu > 0.01_dp) then ! only the relevant
                write (msgbuf, '(a,a,F25.10)') 'extra timer:', tim_get_label(handle_extra(i)), time_cpu; call msg_flush()
             end if
          end if
@@ -117,7 +119,7 @@ contains
       msgbuf = ' '; call msg_flush()
       msgbuf = ' '; call msg_flush()
 
-      f = 24d0 * 3600d0
+      f = 24.0_dp * 3600.0_dp
       totalcomp = tim_get_wallclock(handle_all)
       timeloop = tim_get_wallclock_inc(handle_all)
       write (msgbuf, '(a,F25.10)') 'simulation period      (d)  :', (tstop - tstart_user) / f; call msg_flush()
@@ -127,7 +129,7 @@ contains
 
       msgbuf = ' '; call msg_flush()
 
-      f = 3600d0
+      f = 3600.0_dp
       write (msgbuf, '(a,F25.10)') 'simulation period      (h)  :', (tstop - tstart_user) / f; call msg_flush()
       write (msgbuf, '(a,F25.10)') 'total computation time (h)  :', (totalcomp) / f; call msg_flush()
       write (msgbuf, '(a,F25.10)') 'time modelinit         (h)  :', (totalcomp - timeloop) / f; call msg_flush()
@@ -162,7 +164,7 @@ contains
       write (msgbuf, '(a,F25.10)') 'time steps             (s)  :', tim_get_wallclock(handle_steps); call msg_flush()
       write (msgbuf, '(a,F25.10)') 'fraction solve/steps   ( )  :', frac; call msg_flush()
       write (msgbuf, '(a,F25.10)') 'total/(dnt*ndx)        (s)  :', tot; call msg_flush()
-      write (msgbuf, '(a,F25.10)') 'av nr of cont. it s1it ( )  :', dnums1it / max(dnt, 1d-8); call msg_flush()
+      write (msgbuf, '(a,F25.10)') 'av nr of cont. it s1it ( )  :', dnums1it / max(dnt, 1.0e-8_dp); call msg_flush()
 
       if (jatimer == 1) then
          write (msgbuf, '(a,F25.10)') 'time transport         (s)  :', gettimer(1, ITRANSPORT)
@@ -192,7 +194,7 @@ contains
          if (jased > 0 .and. stm_included) then
             write (msgbuf, '(a,F25.10)') 'time erosed            (s)  :', gettimer(1, IEROSED)
             call msg_flush()
-            write (msgbuf, '(a,F25.3)') 'mass error from ssc limitation (10^6 kg)  :', maserrsed / 1d6
+            write (msgbuf, '(a,F25.3)') 'mass error from ssc limitation (10^6 kg)  :', maserrsed / 1.0e6_dp
             call msg_flush()
          end if
       end if
@@ -214,8 +216,8 @@ contains
       write (msgbuf, '(a,a)') 'Computation finished at: ', rundat0; call msg_flush()
       msgbuf = ' '; call msg_flush()
 
-      write (msgbuf, '(a,F25.10)') 'simulation period      (h)  :', (tstop - tstart_user) / 3600d0; call msg_flush()
-      write (msgbuf, '(a,F25.10)') 'total time in timeloop (h)  :', (timeloop) / 3600d0; call msg_flush()
+      write (msgbuf, '(a,F25.10)') 'simulation period      (h)  :', (tstop - tstart_user) / 3600.0_dp; call msg_flush()
+      write (msgbuf, '(a,F25.10)') 'total time in timeloop (h)  :', (timeloop) / 3600.0_dp; call msg_flush()
 
 #ifdef HAVE_MPI
       if (jampi == 1) then

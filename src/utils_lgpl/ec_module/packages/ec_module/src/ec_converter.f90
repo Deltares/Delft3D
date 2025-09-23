@@ -529,6 +529,9 @@ contains
                      if (cx + rd >= x0 .and. cx - rd <= x1 .and. cy + rd >= y0 .and. cy - rd <= y1) then ! check if source point within the rectangle of interest
                         call make_queryvector_kdtree(treeinst, cx, cy, jsferic)
                         nresult = kdtree2_r_count(treeinst%tree, treeinst%qv, r2)
+                        if (nresult == 0) then
+                           cycle
+                        end if
                         call realloc_results_kdtree(treeinst, nresult)
                         call kdtree2_n_nearest(treeinst%tree, treeinst%qv, nresult, treeinst%results)
                         ! loop over find results with pinpok

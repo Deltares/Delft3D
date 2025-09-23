@@ -72,7 +72,7 @@ contains
          width = 2 * sq
          if (japerim == 1) perim = 2 * fi * r
       else
-         area = 0.5d0 * pi * r * r + (hpr - r) * dia
+         area = 0.5_dp * pi * r * r + (hpr - r) * dia
          width = dia
          if (japerim == 1) then
             if (hpr < dia) then

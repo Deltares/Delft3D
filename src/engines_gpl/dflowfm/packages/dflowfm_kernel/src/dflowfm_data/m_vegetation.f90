@@ -38,7 +38,7 @@ module m_vegetation
    integer :: jabaptist = 0 ! 1 = use standard baptist, only cfuhi      unfortunately, taubed/ro is not computed correctly
    ! 2 = use DFM formulation for cfuhi and alfaveg, such that taubed/ro=cfu*umod**2
    ! 3 = use cfuveg and alfaveg provided by python, such that taubed/ro=cfu*umod**2
-   real(kind=dp) :: densvegminbap = 0d0 ! minimum vegetation density for baptist formulation (1/m2)
+   real(kind=dp) :: densvegminbap = 0.0_dp ! minimum vegetation density for baptist formulation (1/m2)
    integer :: jaCdvegsp = 0 ! 1 = use bmi for Cdvegsp
    real(kind=dp), allocatable, target :: rnveg(:) !< [1/m2] 3D plant density , 2D part is basis input (1/m2) {"location": "face", "shape": ["ndkx"]}
    real(kind=dp), allocatable, target :: diaveg(:) !< [m] 3D plant diameter, 2D part is basis input (m) {"location": "face", "shape": ["ndkx"]}
@@ -51,25 +51,25 @@ module m_vegetation
    real(kind=dp), allocatable :: alfav(:) !< [1/m] used in DFM, computed onboard for jabaptist==2, or pyton if jabaptist==3
    real(kind=dp), allocatable :: phiv(:) ! 2D plant stem angle ()
    real(kind=dp), allocatable :: phivt(:) ! 2D plant angle velocity (1/s)
-   real(kind=dp) :: Clveg = 0.8d0 ! factor on average stem distance ( ) (eps. eq.)
-   real(kind=dp) :: Cdveg = 0.7d0 ! Cd drag coefficient  ( )
-   real(kind=dp) :: Cbveg = 0.0d0 ! Bend stiffness coefficient (kg.m2/s2) Moment=Cbveg.phiv
-   real(kind=dp) :: Rhoveg = 0d0 ! if > 0d0 then floatmodel
-   real(kind=dp) :: Stemheightstd = 0d0 ! stemheight standard deviation
+   real(kind=dp) :: Clveg = 0.8_dp ! factor on average stem distance ( ) (eps. eq.)
+   real(kind=dp) :: Cdveg = 0.7_dp ! Cd drag coefficient  ( )
+   real(kind=dp) :: Cbveg = 0.0_dp ! Bend stiffness coefficient (kg.m2/s2) Moment=Cbveg.phiv
+   real(kind=dp) :: Rhoveg = 0.0_dp ! if > 0d0 then floatmodel
+   real(kind=dp) :: Stemheightstd = 0.0_dp ! stemheight standard deviation
    character(len=128) :: stemheightConvention = 'upward_from_bed' ! User/MDU-setting. Stem height convention: 'upward_from_bed' or 'downward_from_surface'
    integer, parameter :: UPWARD_FROM_BED = 1
    integer, parameter :: DOWNWARD_FROM_SURFACE = 2
    integer :: stemheight_convention = UPWARD_FROM_BED
-   real(kind=dp) :: r3 = .333333d0 !
+   real(kind=dp) :: r3 = 0.333333_dp !
    real(kind=dp) :: growthunidicouv ! uniform values in veg growth model diffusion coef
    real(kind=dp) :: growthunidiam ! uniform values in veg growth model diam
    real(kind=dp) :: growthuniheight ! uniform values in veg growth model height
 
-   real(kind=dp) :: expchistem = 0d0
-   real(kind=dp) :: uchistem = 0d0
-   real(kind=dp) :: expchileaf = 0d0
-   real(kind=dp) :: uchileaf = 0d0
-   real(kind=dp) :: arealeaf = 0d0
-   real(kind=dp) :: Cdleaf = 1d0
+   real(kind=dp) :: expchistem = 0.0_dp
+   real(kind=dp) :: uchistem = 0.0_dp
+   real(kind=dp) :: expchileaf = 0.0_dp
+   real(kind=dp) :: uchileaf = 0.0_dp
+   real(kind=dp) :: arealeaf = 0.0_dp
+   real(kind=dp) :: Cdleaf = 1.0_dp
 
 end module m_vegetation

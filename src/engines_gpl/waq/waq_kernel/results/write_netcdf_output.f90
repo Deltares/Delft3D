@@ -385,11 +385,11 @@ contains
             endif
 
             if (meshid2d > 0) then
-                allocate(laythickness(num_layers))
-                laythickness = 1.0 / real(num_layers)  ! Uniform distribution for now !!
-                inc_error = create_layer_dimension(ncidmap, mesh_name2d, num_layers, laythickness, nolayid)
-
-                if (num_layers == 1) then
+                if (num_layers > 1) then
+                    allocate(laythickness(num_layers))
+                    laythickness = 1.0 / real(num_layers)  ! Uniform distribution for now !!
+                    inc_error = create_layer_dimension(ncid, ncidmap, mesh_name2d, num_layers, laythickness, nolayid)
+                else
                     nolayid = dlwqnc_type2d
                 endif
 
@@ -405,7 +405,6 @@ contains
                 write(lunut, 2581)
                 goto 800
             endif
-
 
             ! Write output variables and process library info to NetCDF-file
             ! long name and unit will follow later, they are in the ouput.wrk-file!
@@ -463,19 +462,19 @@ contains
                 !           Always add volume
                 !           Note: the standard name for "volume" is fixed for the moment, but the NetCDF standard is
                 !           far from complete.
-                inc_error = create_variable(ncidmap, mesh_name2d, 'volume', 'volume (m3)', &
-                        'sea_water_volume', 'm3', ntimeid, noseglid2d, nolayid, wqidvolume_2d3d)
-                if (inc_error /= nf90_noerr) then
-                    write(lunut, 2583)
-                    goto 800
-                endif
                 if (num_layers > 1) then
                     inc_error = create_variable(ncidmap, mesh_name2d, 'volume', 'volume (m3)', &
-                            'sea_water_volume', 'm3', ntimeid, noseglid2d, dlwqnc_type2d, wqidvolume_2d)
+                            'sea_water_volume', 'm3', ntimeid, noseglid2d, nolayid, wqidvolume_2d3d)
                     if (inc_error /= nf90_noerr) then
                         write(lunut, 2583)
                         goto 800
                     endif
+                endif
+                inc_error = create_variable(ncidmap, mesh_name2d, 'volume', 'volume (m3)', &
+                        'sea_water_volume', 'm3', ntimeid, noseglid2d, dlwqnc_type2d, wqidvolume_2d)
+                if (inc_error /= nf90_noerr) then
+                    write(lunut, 2583)
+                    goto 800
                 endif
             endif
 
@@ -536,30 +535,28 @@ contains
                 do isegl = 1, noseglmesh2d
                     if (aggr2d3d(isegl, ilay)>0) then
                         dlwq_values_2d3d(isegl, ilay) = volume(aggr2d3d(isegl, ilay))
-                        if (num_layers > 1 .and. btest(iknmrk(aggr2d3d(isegl, ilay)), 0)) then
+                        if (btest(iknmrk(aggr2d3d(isegl, ilay)), 0)) then
                             dlwq_volume_2d(isegl) = dlwq_volume_2d(isegl) + volume(aggr2d3d(isegl, ilay))
                         endif
                     else
                         dlwq_values_2d3d(isegl, ilay) = -999.0
-                        if (num_layers > 1) then
-                            dlwq_volume_2d(isegl) = -999.0
-                        endif
+                        dlwq_volume_2d(isegl)         = -999.0
                     endif
                 enddo
             enddo
 
-            inc_error = dlwqnc_write_wqvariable(ncidmap, wqidvolume_2d3d, mncrec, dlwq_values_2d3d)
-            if (inc_error /= nf90_noerr) then
-                write(lunut, 2591)
-                goto 800
-            endif
-
             if (num_layers > 1) then
-                inc_error = dlwqnc_write_wqvariable(ncidmap, wqidvolume_2d, mncrec, dlwq_volume_2d)
+                inc_error = dlwqnc_write_wqvariable(ncidmap, wqidvolume_2d3d, mncrec, dlwq_values_2d3d)
                 if (inc_error /= nf90_noerr) then
                     write(lunut, 2591)
                     goto 800
                 endif
+            endif
+
+            inc_error = dlwqnc_write_wqvariable(ncidmap, wqidvolume_2d, mncrec, dlwq_volume_2d)
+            if (inc_error /= nf90_noerr) then
+                write(lunut, 2591)
+                goto 800
             endif
 
             !        First set of output
@@ -604,8 +601,10 @@ contains
                 if (num_layers > 1) then
                     if (.not. sumconc1(iout)) then
                         do isegl = 1, noseglmesh2d
-                            if(dlwq_volume_2d(isegl)/=-999.0) then
+                            if (dlwq_volume_2d(isegl) /= -999.0 .and. dlwq_volume_2d(isegl) /= 0.0) then
                                 dlwq_values_2d(isegl) = dlwq_values_2d(isegl) / dlwq_volume_2d(isegl)
+                            else
+                                dlwq_values_2d(isegl) = -999.0
                             endif
                         enddo
                     endif
@@ -661,8 +660,10 @@ contains
                 if (num_layers > 1) then
                     if (.not. sumconc2(iout)) then
                         do isegl = 1, noseglmesh2d
-                            if(dlwq_volume_2d(isegl)/=-999.0) then
+                            if (dlwq_volume_2d(isegl) /= -999.0 .and. dlwq_volume_2d(isegl) /= 0.0) then
                                 dlwq_values_2d(isegl) = dlwq_values_2d(isegl) / dlwq_volume_2d(isegl)
+                            else
+                                dlwq_values_2d(isegl) = -999.0
                             endif
                         enddo
                     endif

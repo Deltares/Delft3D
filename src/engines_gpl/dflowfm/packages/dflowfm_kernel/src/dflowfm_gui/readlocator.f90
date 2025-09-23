@@ -36,7 +36,7 @@ contains
       use precision, only: dp
       use m_wearelt
       use m_devices
-      use m_partitioninfo, only: jampi
+      use m_partitioninfo, only: jampi, reduce_key
       use m_locatora
       use m_timlin
       use m_dproject
@@ -46,7 +46,7 @@ contains
       use m_givekey
 
       real(kind=dp) :: dpx
-      real(kind=dp), save :: f = 1d0
+      real(kind=dp), save :: f = 1.0_dp
       integer :: ini, key, ixp, iyp
       integer, save :: keyold = 0
       real :: xloc, yloc
@@ -69,8 +69,7 @@ contains
             call InKeyEvent(KEY)
          else
             call InKeyEventIMM(KEY)
-!           reduce key
-!            call reduce_key(key)
+            call reduce_key(key)
          end if
       end if
 
@@ -83,8 +82,8 @@ contains
             F = 1
          end if
          KEYOLD = KEY
-         F = F * 1.08d0
-         F = min(F, 10d0)
+         F = F * 1.08_dp
+         F = min(F, 10.0_dp)
          if (KEY == 128) then
             YLC = YLC + DPX * F
          else if (KEY == 129) then

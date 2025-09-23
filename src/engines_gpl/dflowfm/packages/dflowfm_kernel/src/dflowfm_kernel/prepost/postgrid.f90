@@ -51,8 +51,8 @@ contains
       real(kind=dp) :: dcos, dcosR, xn, yn
       integer :: i, iL, iR, iRR, idum, iL0, iR0, j, ja, iter, numchanged
       real(kind=dp), parameter :: dcosmax = 0.93969
-      real(kind=dp), parameter :: dtol = 1d-2
-      real(kind=dp), parameter :: dtolcos = 1d-2
+      real(kind=dp), parameter :: dtol = 1.0e-2_dp
+      real(kind=dp), parameter :: dtolcos = 1.0e-2_dp
 
       call tekgrid(i)
 
@@ -114,8 +114,8 @@ contains
                            numchanged = numchanged + 1
                            write (6, "(I0, '-', I0, 'R ')", advance="no") iR, iRR - 1
                         else ! move both nodes
-                           xn = 0.5d0 * (xc(i, j) + xc(iR, j))
-                           yn = 0.5d0 * (yc(i, j) + yc(iR, j))
+                           xn = 0.5_dp * (xc(i, j) + xc(iR, j))
+                           yn = 0.5_dp * (yc(i, j) + yc(iR, j))
                            call cirr(xn, yn, 211)
                            xc(i:iR - 1, j) = xn
                            yc(i:iR - 1, j) = yn

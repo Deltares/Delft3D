@@ -160,7 +160,6 @@ module m_flowtimes
    integer :: it_map !< Nr of snapshots presently in map file
    integer :: it_wav !< Nr of snapshots presently in time-avg'd wave output file JRE
    integer :: it_sed !< Nr of snapshots presently in time-avg'd sedmor output file JRE
-   integer :: it_map_tec !< Nr of snapshots presently in map file, Tecplot format
    integer :: it_his !< Nr of snapshots presently in his file
    integer :: it_inc !< Nr of lines     presently in inc file
    integer :: it_rst !< Nr of snapshots presently in rst file
@@ -213,9 +212,9 @@ contains
       dt_user = 120.0_dp !< User specified time step (s) for external forcing update.
       dt_nodal = 21600.0_dp !< User specified time step (s) for nodal factors update.
       dt_max = 30.0_dp !< Computational timestep limit by user.
-      dtmin = 1d-4 !< dt < dtmin : surely crashed
+      dtmin = 1.0e-4_dp !< dt < dtmin : surely crashed
       dtminbreak = 0.0_dp !< smallest allowed timestep, otherwise break: off
-      dtminhis = 9d9 !< smallest timestep within most recent his interval
+      dtminhis = 9.0e9_dp !< smallest timestep within most recent his interval
       dt_init = 1.0_dp
       dt_trach = 1200.0_dp !< User specified DtTrt Trachytope roughness update time interval (s)
       dt_fac_max = 1.1_dp !< default setting
@@ -332,7 +331,6 @@ contains
       it_wav = 0 !< Nr of snapshots presently in time-avg'd file JRE
       it_sed = 0 !< Nr of snapshots presently in time-avg'd sed file JRE
       it_st = 0 !< Nr of snapshots presently in time-avg'd sedtrails file JRE
-      it_map_tec = 0 !< Nr of snapshots presently in map file
       it_his = 0 !< Nr of snapshots presently in his file
       it_inc = 0 !< Nr of lines     presently in inc file
       it_rst = 0 !< Nr of snapshots presently in rst file

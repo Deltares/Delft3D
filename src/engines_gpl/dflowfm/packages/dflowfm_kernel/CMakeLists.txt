@@ -116,6 +116,7 @@ target_link_libraries(${library_name} PRIVATE
     mute_unwanted_compiler_warnings
     additional_compiler_warnings
 )
+check_style_double_precision(${library_name})
 
 target_link_libraries(${library_name} PRIVATE
                       deltares_common
@@ -191,7 +192,6 @@ endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${mpi_module_path}
-                        ${tecplot_path}
                         ${version_include_dir}
                         ${dflowfm_version_path}
                         ${dflowfm_version_header_path})
@@ -211,7 +211,6 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/read_commandline.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/write_some_final_output.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/wrwaq.F90
-                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/tecplot.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/unc_write_his.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/unc_write_shp.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_path}/filter.F90
@@ -249,9 +248,9 @@ if (WIN32)
     set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1
-        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_TECPLOT;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
+        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
     else()
-        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_TECPLOT;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=0")
+        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=0")
     endif()
 
     add_warnings_as_errors_post_build_windows(${library_name})

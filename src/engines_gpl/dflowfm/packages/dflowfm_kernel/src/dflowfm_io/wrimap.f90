@@ -34,14 +34,13 @@ contains
    subroutine wrimap(tim)
       use precision, only: dp
       use m_flow, only: jamapbnd
-      use m_flowtimes
       use unstruc_netcdf
       use unstruc_model
       use unstruc_files, only: defaultFilename
       use m_fm_update_crosssections, only: fm_update_mor_width_mean_bedlevel
       use m_flowgeom, only: ndx2d, ndxi
+      use m_flowtimes, only: ti_split, time_split0, it_map, handle_extra
       use Timers
-      use m_tecplot, only: wrimap_tecplot, wrinet_tecplot
 
       implicit none
       real(kind=dp), intent(in) :: tim
@@ -49,19 +48,18 @@ contains
       ! locals
       integer :: ierr
       character(len=256) :: filnam
-      real(kind=dp), save :: curtime_split = 0d0 ! Current time-partition that the file writer has open.
+      real(kind=dp), save :: curtime_split = 0.0_dp ! Current time-partition that the file writer has open.
       integer :: ndx1d, ndims
       integer :: jabndnd
 
       ! Another time-partitioned file needs to start, reset iteration count (and file).
-      if (ti_split > 0d0 .and. curtime_split /= time_split0) then
+      if (ti_split > 0.0_dp .and. curtime_split /= time_split0) then
          mapids%id_tsp%idx_curtime = 0
          it_map = 0
-         it_map_tec = 0
          curtime_split = time_split0
       end if
 
-      if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_NETCDF_AND_TECPLOT .or. md_mapformat == IFORMAT_UGRID) then !   NetCDF output
+      if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_UGRID) then ! NetCDF output
          call timstrt('wrimap inq ncid', handle_extra(81))
          if (mapids%ncid /= 0 .and. ((md_unc_conv == UNC_CONV_UGRID .and. mapids%id_tsp%idx_curtime == 0) .or. (md_unc_conv == UNC_CONV_CFOLD .and. it_map == 0))) then
             ierr = unc_close(mapids%ncid)
@@ -78,7 +76,7 @@ contains
 
          call timstrt('wrimap unc_create', handle_extra(82))
          if (mapids%ncid == 0) then
-            if (ti_split > 0d0) then
+            if (ti_split > 0.0_dp) then
                filnam = defaultFilename('map', timestamp=time_split0)
             else
                filnam = defaultFilename('map')
@@ -114,20 +112,6 @@ contains
             ierr = nf90_sync(mapids%ncid) ! Flush file
          end if
          call timstop(handle_extra(83))
-      end if
-
-      if (md_mapformat == IFORMAT_TECPLOT .or. md_mapformat == IFORMAT_NETCDF_AND_TECPLOT) then ! TecPlot output
-!      write grid in Tecplot format only once
-         if (it_map_tec == 0) then
-            filnam = defaultFilename('net.plt')
-            call wrinet_tecplot(filnam) ! do not call findcells
-         end if
-
-!      write solution in Tecplot format
-         filnam = defaultFilename('map.plt', timestamp=tim)
-         call wrimap_tecplot(filnam)
-
-         it_map_tec = it_map_tec + 1
       end if
    end subroutine wrimap
 end module m_wrimap

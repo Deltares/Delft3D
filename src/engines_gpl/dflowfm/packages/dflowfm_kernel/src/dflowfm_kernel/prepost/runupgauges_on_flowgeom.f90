@@ -121,7 +121,7 @@ contains
          allocate (polygon_nodes(Lnx))
          polygon_nodes = 0
          allocate (polygon_segment_weights(Lnx))
-         polygon_segment_weights = 0d0
+         polygon_segment_weights = 0.0_dp
          ! use itype 3, as we want crossing the edge, not the connection between adjoint cells
          call find_crossed_links_kdtree2(treeglob, num, xx, yy, ITYPE_NETLINK, Lnx, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
 
@@ -177,12 +177,12 @@ contains
       icMOD = max(1, num_rugs / 100)
 
       call realloc(numlist, num_rugs, keepExisting=.true., fill=0) ! In case pli-based cross sections have not allocated this yet.
-      call realloc(linklist, (/max(intersection_count, 1), num_rugs/), keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
+      call realloc(linklist, [max(intersection_count, 1), num_rugs], keepExisting=.true., fill=0) ! In addition to pli-based cross sections (if any), also support 1D branchid-based cross sections.
 
       ! todo: caching
       !call copy_cached_cross_sections( crossed_links, polygon_nodes, success )
 
-      call READYY('Enabling runup gauges on grid', 0d0)
+      call READYY('Enabling runup gauges on grid', 0.0_dp)
       do ic = 1, num_rugs
          if (mod(ic, icMOD) == 0) then
             call READYY('Enabling runup gauges on grid', dble(ic) / dble(num_rugs))
@@ -197,7 +197,7 @@ contains
          !end if
       end do
 
-      call READYY('Enabling runup gauges on grid', -1d0)
+      call READYY('Enabling runup gauges on grid', -1.0_dp)
 
 1234  continue
 

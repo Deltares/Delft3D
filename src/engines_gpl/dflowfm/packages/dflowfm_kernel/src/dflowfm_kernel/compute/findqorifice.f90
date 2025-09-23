@@ -59,25 +59,25 @@ contains
       h3 = min(h3, h1 - 0.0001) ! hg = gateheight * contractie = effectieve keeldoorsnee
       d = crestheight
       a = gateheight
-      h1 = max(h1, 0.0001d0)
-      h3 = max(h3, 0.00001d0)
+      h1 = max(h1, 0.0001_dp)
+      h3 = max(h3, 0.00001_dp)
       h2 = h3
-      qermin = 1d9
+      qermin = 1.0e9_dp
 
-      hg = gateheight * 0.5d0 ! lower boundary
-      hg = max(hg, 0.0001d0)
+      hg = gateheight * 0.5_dp ! lower boundary
+      hg = max(hg, 0.0001_dp)
 
       if (gateheight >= h1) then ! gate above water
-         q = 11111d0
+         q = 11111.0_dp
          regime = 'gate above water'
          return
       else if (gateheight < 0.001) then
-         q = 0d0
+         q = 0.0_dp
          regime = 'gate closed, a<0.001 '
          return
       end if
 
-      qcrit = sqrt(2d0 * g * (h1 - hg) / (hg**(-2) - h1**(-2)))
+      qcrit = sqrt(2.0_dp * g * (h1 - hg) / (hg**(-2) - h1**(-2)))
       if (h3 < 0.60 * h1) then
          regime = 'free gate flow '
          q = qcrit
@@ -90,8 +90,8 @@ contains
          call qorifdif(hg, d, h1, h3, ha, qda)
          call qorifdif(hg, d, h1, h3, hb, qdb)
 
-         num = 0; qdc = 1d9
-         do while (abs(qdc) > 1d-6 .and. abs(qda - qdb) > 1d-6 .and. num < 50)
+         num = 0; qdc = 1.0e9_dp
+         do while (abs(qdc) > 1.0e-6_dp .and. abs(qda - qdb) > 1.0e-6_dp .and. num < 50)
 
             num = num + 1
 
@@ -115,13 +115,13 @@ contains
          call getq1(hg, d, h1, h2, qa)
          call getq2(hg, h2, h3, qb)
          call getq3(hg, a, h1, h2, qc)
-         q = 0.5d0 * (qa + qb)
+         q = 0.5_dp * (qa + qb)
          qer = abs(q - qc)
          if (qer < qermin) then
             qermin = qer; qf = q; hgf = hg; h2f = h2; nummin = num
          end if
 
-         hg = hg + 0.01d0 * a
+         hg = hg + 0.01_dp * a
 
          regime = 'submerged gate flow '
 

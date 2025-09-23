@@ -54,14 +54,14 @@ contains
       if (MET == 1) return
 
       if (MET == 9 .and. allocated(ban)) then
-         RNOD = 0d0
+         RNOD = 0.0_dp
          do L = 1, LNXi
             K3 = LNCN(1, L)
             K4 = LNCN(2, L)
             K1 = LN(1, L)
             K2 = LN(2, L)
-            UAR = CSU(L) * (ACL(L) * UCX(K1) + (1d0 - ACL(L)) * UCX(K2)) + &
-                  SNU(L) * (ACL(L) * UCY(K1) + (1d0 - ACL(L)) * UCY(K2))
+            UAR = CSU(L) * (ACL(L) * UCX(K1) + (1.0_dp - ACL(L)) * UCX(K2)) + &
+                  SNU(L) * (ACL(L) * UCY(K1) + (1.0_dp - ACL(L)) * UCY(K2))
             UAR = UAR * DX(L)
             RNOD(K3) = RNOD(K3) - UAR
             RNOD(K4) = RNOD(K4) + UAR
@@ -69,7 +69,7 @@ contains
          do L = LNXi + 1, lnx
             K3 = LNCN(1, L)
             K4 = LNCN(2, L)
-            UAR = DX(L) * (1d0 - acl(L)) * U1(L)
+            UAR = DX(L) * (1.0_dp - acl(L)) * U1(L)
             RNOD(K3) = RNOD(K3) - UAR
             RNOD(K4) = RNOD(K4) + UAR
          end do
@@ -78,8 +78,8 @@ contains
             k3 = walls(2, k)
             k4 = walls(3, k)
             if (irov == 0 .or. irov == 1) then ! free slip or partial slip hardly show vorticity
-               RNOD(K3) = 0d0
-               RNOD(K4) = 0d0
+               RNOD(K3) = 0.0_dp
+               RNOD(K4) = 0.0_dp
             else
                !if (irov == 1) then         ! partial slip
                !   uar = walls(16,k)
@@ -87,14 +87,14 @@ contains
                !   uar = 0.d0 ! walls(16,k)               ! *(1d0/walls(6,k) - 1d0/vonkar)
                !endif
                uar = walls(16, k)
-               UAR = 0.5d0 * UAR * WALLS(9, K)
+               UAR = 0.5_dp * UAR * WALLS(9, K)
                RNOD(K3) = RNOD(K3) + UAR
                RNOD(K4) = RNOD(K4) + UAR
             end if
          end do
 
          do K = 1, NUMK
-            if (BAN(K) > 0d0) then
+            if (BAN(K) > 0.0_dp) then
                RNOD(K) = RNOD(K) / BAN(K)
             end if
          end do

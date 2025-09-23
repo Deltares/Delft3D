@@ -34,7 +34,7 @@ function varargout = d3d_qp(cmd,varargin)
 %   $HeadURL$
 %   $Id$
 
-%VERSION = 2.70
+%VERSION = 2.71
 
 try
     if nargin==0
@@ -100,6 +100,9 @@ if nargout~=0
         outdata = {[]};
     elseif strcmp(cmd,'iswl')
         outdata = {isequal(qp_settings('WLextensions','off'),'on')};
+        return
+    elseif strcmp(cmd,'iconpath')
+        outdata = {[qp_basedir('exe') filesep 'private' filesep 'd3d_qp.png']};
         return
     elseif strcmp(cmd,'version')
         if nargin>1
@@ -319,7 +322,12 @@ switch cmd
             qp_updaterecentfiles(mfig)
         end
         if showUI
-            figure(mfig);
+            try
+                % The next command fails on Linux when DISPLAY is not set.
+                % Some bringToFront function isn't available in that case.
+                figure(mfig);
+            catch
+            end
         end
         init_netcdf_settings
         if isstandalone

@@ -100,7 +100,7 @@ contains
         do char_index = 1, len(input_string)
             ascii_value = iachar(input_string(char_index:char_index))
             if (ascii_value >= ASCII__A .and. ascii_value <= ASCII_Z) then
-                ascii_value = ascii_value - case_offset
+                ascii_value = ascii_value + case_offset
             endif
             lowercase_string(char_index:char_index) = achar(ascii_value)
         enddo
@@ -1188,7 +1188,7 @@ contains
 
     end function create_time_variable
 
-    integer function create_variable(nc_id, mesh_name, delwaq_variable_name, long_name, standard_name, unit, &
+    integer function create_variable(nc_id, mesh_name, delwaq_variable_name_in, long_name, standard_name, unit, &
             time_dimension_id, segments_num, layers_num, variable_id)
         !! Create a WQ variable in the output file
         !!
@@ -1199,18 +1199,17 @@ contains
         !!     time ID? mesh ID? Roles?
         use netcdf_utils, only : ncu_get_att
 
-        integer, intent(in) :: nc_id              !! ID of the output NetCDF file
-        character(len = *), intent(in) :: mesh_name !! Name of the mesh
-        character(len = *), intent(in) :: delwaq_variable_name    !! DELWAQ name of the WQ variable
-        character(len = *), intent(in) :: long_name  !! Long descriptive name of the WQ variable
-        character(len = *), intent(in) :: standard_name
-        !! Standard name according to CF convention (or identical to wqname)
-        character(len = *), intent(in) :: unit      !! String defining the unit of the WQ variable
-        integer, intent(in) :: time_dimension_id              !! Dimension: number of times
-        integer, intent(in) :: segments_num             !! Dimension: number of cells per layer
-        integer, intent(in) :: layers_num              !! DimensionL number of layers (or -999 if 2D variable - use
-        !! dlwqnc_type2d, or -111 if 1D variable - use dlwqnc_type1d)
-        integer, intent(out) :: variable_id                !! ID of the WQ variable in the output file
+        integer, intent(in) :: nc_id                                 !! ID of the output NetCDF file
+        character(len = *), intent(in) :: mesh_name                  !! Name of the mesh
+        character(len = *), intent(in) :: delwaq_variable_name_in    !! DELWAQ name of the WQ variable
+        character(len = *), intent(in) :: long_name                  !! Long descriptive name of the WQ variable
+        character(len = *), intent(in) :: standard_name              !! Standard name according to CF convention (or identical to wqname)
+        character(len = *), intent(in) :: unit                       !! String defining the unit of the WQ variable
+        integer, intent(in) :: time_dimension_id                     !! Dimension: number of times
+        integer, intent(in) :: segments_num                          !! Dimension: number of cells per layer
+        integer, intent(in) :: layers_num                            !! Dimension: number of layers (or -999 if 2D variable - use
+                                                                     !! dlwqnc_type2d, or -111 if 1D variable - use dlwqnc_type1d)
+        integer, intent(out) :: variable_id                          !! ID of the WQ variable in the output file
 
         integer :: i
         integer :: k, k2
@@ -1222,10 +1221,19 @@ contains
         character(len = nf90_max_name), dimension(5) :: dim_name
         character(len = 3 * nf90_max_name) :: methods
         character(len = :), allocatable :: coords
+        character(len = len(delwaq_variable_name_in)) :: delwaq_variable_name
 
         allocate(character(len = 0) :: coords)
 
         create_variable = nf90_noerr
+
+        !
+        ! Make sure the preselected variable "volume" is created once only
+        !
+        delwaq_variable_name = delwaq_variable_name_in
+        if (lowercase(delwaq_variable_name) == 'volume') then
+            delwaq_variable_name = 'volume'
+        endif
 
         ierror = nf90_redef(nc_id)
 
@@ -1418,9 +1426,10 @@ contains
 
     end function create_variable
 
-    integer function create_layer_dimension(nc_id, mesh_name, num_layers, thickness, layers_dim_id)
+    integer function create_layer_dimension(source_nc_id, nc_id, mesh_name, num_layers, thickness, layers_dim_id)
         !! Create the dimension and variables for the layers in the NetCDF file
         !! Returns nf90_noerr if all okay, otherwise an error code
+        integer, intent(in) :: source_nc_id             !! ID of the waqgeom NetCDF file
         integer, intent(in) :: nc_id                    !! ID of the output NetCDF file
         character(len = *), intent(in) :: mesh_name     !! Name of the mesh
         integer, intent(in) :: num_layers               !! Number of layers
@@ -1429,21 +1438,18 @@ contains
 
         integer :: i, k
         integer :: ierror
-        integer :: cum_layer_var_id
-        character(len = nf90_max_name) :: layer_dim_name
+        integer :: cum_layer_var_id, var_z_id, var_sigma_id, dlwq_z_id, dlwq_sigma_id, &
+                   var_sigma_z_id, dlwq_sigma_z_id, var_sigmazdepth_id, dlwq_sigmazdepth_id, &
+                   var_interface_sigma_id, dlwq_interface_sigma_id, &
+                   var_interface_z_id, dlwq_interface_z_id, &
+                   var_interface_sigma_z_id, dlwq_interface_sigma_z_id, interfaces_dim_id
+
+        character(len = nf90_max_name) :: layer_dim_name, var_name
         real, dimension(size(thickness)) :: z_centre
+        real(kind=kind(1.0d0)), dimension(size(thickness)) :: var_value
         real :: z_sum
 
-        character(len = 20), dimension(5) :: attname = &
-                (/ 'long_name    ', 'units        ', 'axis         ', 'positive     ', 'standard_name' /)
-        character(len = 20), dimension(5) :: attvalue = &
-                (/ 'depth of layer', 'm             ', 'Z             ', 'down          ', 'depth         '/)
-        character(len = 40), dimension(5) :: z_attvalue = &
-                (/ 'sigma layer coordinate at element center', &
-                        '                                        ', &
-                        'Z                                       ', &
-                        'up                                      ', &
-                        'ocean_sigma_coordinate                  '  /)
+        dlwqnc_debug = .false.
 
         create_layer_dimension = nf90_noerr
 
@@ -1470,46 +1476,134 @@ contains
             return
         endif
 
-        ! Cumulative sigma coordinate
-        write(layer_dim_name, '(3a)') mesh_name(1:k), '_layer_dlwq'
-        ierror = nf90_def_var(nc_id, layer_dim_name, nf90_float, (/ layers_dim_id /), cum_layer_var_id)
+        write(layer_dim_name, '(2a)') mesh_name(1:k), '_nInterfacesDlwq'
+        ierror = nf90_def_dim(nc_id, layer_dim_name, num_layers+1, interfaces_dim_id)
         if (ierror /= 0) then
-            if (dlwqnc_debug) write(*, *) 'Note: Creating layer dimension failed (def_var): ', ierror
+            if (dlwqnc_debug) write(*, *) 'Note: Creating interface dimension failed (def_dim): ', ierror
+            if (dlwqnc_debug) write(*, *) 'Note: Name: ', trim(layer_dim_name), ' number: ', num_layers
             create_layer_dimension = ierror
             return
         endif
 
-        do i = 1, 5
-            ierror = nf90_put_att(nc_id, cum_layer_var_id, attname(i), z_attvalue(i))
-            if (ierror /= 0) then
-                if (dlwqnc_debug) write(*, *) 'Note: Creating layer dimension failed (put_att): ', ierror
-                create_layer_dimension = ierror
-                return
-            endif
-        enddo
+        ! Cumulative sigma/z coordinate
 
+        ! Get the layer coordinates - sigma or z (or a combination)
+        ! Simply write all elements that might be present, but ignore
+        ! the errors that result if they are absent.
+        dlwq_z_id                 = 0
+        dlwq_sigma_id             = 0
+        dlwq_sigma_z_id           = 0
+        dlwq_sigmazdepth_id       = 0
+        dlwq_interface_z_id       = 0
+        dlwq_interface_sigma_id   = 0
+        dlwq_interface_sigma_z_id = 0
+        write(var_name, '(2a)') mesh_name(1:k), '_layer_z'
+        ierror = nf90_inq_varid(source_nc_id, var_name, var_z_id)
+        if (ierror == nf90_noerr) then
+            ierror = nf90_def_var(nc_id, trim(var_name) // '_dlwq', nf90_float, (/ layers_dim_id /), dlwq_z_id)
+            ierror = copy_variable_attributes(source_nc_id, nc_id, var_z_id, dlwq_z_id)
+        endif
+
+        write(var_name, '(2a)') mesh_name(1:k), '_layer_sigma'
+        ierror = nf90_inq_varid(source_nc_id, var_name, var_sigma_id)
+        if (ierror == nf90_noerr) then
+            ierror = nf90_def_var(nc_id, trim(var_name) // '_dlwq', nf90_float, (/ layers_dim_id /), dlwq_sigma_id)
+            ierror = copy_variable_attributes(source_nc_id, nc_id, var_sigma_id, dlwq_sigma_id)
+        endif
+
+        write(var_name, '(2a)') mesh_name(1:k), '_layer_sigma_z'
+        ierror = nf90_inq_varid(source_nc_id, var_name, var_sigma_z_id)
+        if (ierror == nf90_noerr) then
+            ierror = nf90_def_var(nc_id, trim(var_name) // '_dlwq', nf90_float, (/ layers_dim_id /), dlwq_sigma_z_id)
+            ierror = copy_variable_attributes(source_nc_id, nc_id, var_sigma_z_id, dlwq_sigma_z_id)
+        endif
+
+        write(var_name, '(2a)') mesh_name(1:k), '_sigmazdepth'
+        ierror = nf90_inq_varid(source_nc_id, var_name, var_sigmazdepth_id)
+        if (ierror == nf90_noerr) then
+            ierror = nf90_def_var(nc_id, trim(var_name) // '_dlwq', nf90_float, dlwq_sigmazdepth_id)
+            ierror = copy_variable_attributes(source_nc_id, nc_id, var_sigmazdepth_id, dlwq_sigmazdepth_id)
+        endif
+
+        write(var_name, '(2a)') mesh_name(1:k), '_interface_z'
+        ierror = nf90_inq_varid(source_nc_id, var_name, var_interface_z_id)
+        if (ierror == nf90_noerr) then
+            ierror = nf90_def_var(nc_id, trim(var_name) // '_dlwq', nf90_float, (/ interfaces_dim_id /), dlwq_interface_z_id)
+            ierror = copy_variable_attributes(source_nc_id, nc_id, var_interface_z_id, dlwq_interface_z_id)
+        endif
+
+        write(var_name, '(2a)') mesh_name(1:k), '_interface_sigma'
+        ierror = nf90_inq_varid(source_nc_id, var_name, var_interface_sigma_id)
+        if (ierror == nf90_noerr) then
+            ierror = nf90_def_var(nc_id, trim(var_name) // '_dlwq', nf90_float, (/ interfaces_dim_id /), dlwq_interface_sigma_id)
+            ierror = copy_variable_attributes(source_nc_id, nc_id, var_interface_sigma_id, dlwq_interface_sigma_id)
+        endif
+
+        write(var_name, '(2a)') mesh_name(1:k), '_interface_sigma_z'
+        ierror = nf90_inq_varid(source_nc_id, var_name, var_interface_sigma_z_id)
+        if (ierror == nf90_noerr) then
+            ierror = nf90_def_var(nc_id, trim(var_name) // '_dlwq', nf90_float, (/ interfaces_dim_id /), dlwq_interface_sigma_z_id)
+            ierror = copy_variable_attributes(source_nc_id, nc_id, var_interface_sigma_z_id, dlwq_interface_sigma_z_id)
+        endif
+
+        ! We have the relevant element, so get the data
         ierror = nf90_enddef(nc_id)
-        if (ierror /= 0) then
-            if (dlwqnc_debug) write(*, *) 'Note: Creating layer dimension failed (enddef): ', ierror
-            create_layer_dimension = ierror
-            return
+
+        if ( dlwq_z_id > 0 ) then
+            ierror = nf90_get_var(source_nc_id, var_z_id, var_value)
+            if (ierror == nf90_noerr) then
+                ierror = nf90_put_var(nc_id, dlwq_z_id, real(var_value))
+            endif
         endif
 
-        ! Construct the cumulative sigma coordinate and write it to the file
-        ! Note: following the D-FLOW-FM convention, sigma = 0 is the bottom
-        z_sum = 0.0
-        do i = num_layers, 1, -1
-            z_centre(i) = z_sum + 0.5 * thickness(i)
-            z_sum = z_sum + thickness(i)
-        enddo
-
-        ierror = nf90_put_var(nc_id, cum_layer_var_id, z_centre)
-        if (ierror /= 0) then
-            if (dlwqnc_debug) write(*, *) 'Note: Creating layer dimension failed (put_var): ', ierror
-            create_layer_dimension = ierror
-            return
+        if ( dlwq_sigma_id > 0 ) then
+            ierror = nf90_get_var(source_nc_id, var_sigma_id, var_value)
+            if (ierror == nf90_noerr) then
+                ierror = nf90_put_var(nc_id, dlwq_sigma_id, real(var_value))
+            endif
         endif
 
+        if ( dlwq_sigma_z_id > 0 ) then
+            ierror = nf90_get_var(source_nc_id, var_sigma_z_id, var_value)
+            if (ierror == nf90_noerr) then
+                ierror = nf90_put_var(nc_id, dlwq_sigma_z_id, real(var_value))
+            endif
+        endif
+
+        if ( dlwq_sigmazdepth_id > 0 ) then
+            ierror = nf90_get_var(source_nc_id, var_sigmazdepth_id, var_value(1))
+            if (ierror == nf90_noerr) then
+                ierror = nf90_put_var(nc_id, dlwq_sigmazdepth_id, real(var_value(1)))
+            endif
+        endif
+
+        if ( dlwq_interface_z_id > 0 ) then
+            ierror = nf90_get_var(source_nc_id, var_interface_z_id, var_value)
+            if (ierror == nf90_noerr) then
+                ierror = nf90_put_var(nc_id, dlwq_interface_z_id, real(var_value))
+            endif
+        endif
+
+        if ( dlwq_interface_sigma_id > 0 ) then
+            ierror = nf90_get_var(source_nc_id, var_interface_sigma_id, var_value)
+            if (ierror == nf90_noerr) then
+                ierror = nf90_put_var(nc_id, dlwq_interface_sigma_id, real(var_value))
+            endif
+        endif
+
+        if ( dlwq_interface_sigma_z_id > 0 ) then
+            ierror = nf90_get_var(source_nc_id, var_interface_sigma_z_id, var_value)
+            if (ierror == nf90_noerr) then
+                ierror = nf90_put_var(nc_id, dlwq_interface_sigma_z_id, real(var_value))
+            endif
+        endif
+
+        ! If some error occurred retrieving the data, try the fallback option
+        if (dlwq_z_id == 0 .and. dlwq_sigma_id == 0) then
+            call fallback_layer_dimension
+        endif
+
+        ! Back to definition mode
         ierror = nf90_redef(nc_id)
         if (ierror /= 0) then
             if (dlwqnc_debug) write(*, *) 'Note: Creating layer dimension failed (redef): ', ierror
@@ -1518,6 +1612,58 @@ contains
         endif
 
         create_layer_dimension = ierror
+
+    contains
+
+        subroutine fallback_layer_dimension
+            integer :: i, k
+
+            character(len = 20), dimension(5) :: attname = &
+                    (/ 'long_name    ', 'units        ', 'axis         ', 'positive     ', 'standard_name' /)
+            character(len = 20), dimension(5) :: attvalue = &
+                    (/ 'depth of layer', 'm             ', 'Z             ', 'down          ', 'depth         '/)
+            character(len = 40), dimension(5) :: z_attvalue = &
+                    (/ 'sigma layer coordinate at element center', &
+                            '                                        ', &
+                            'Z                                       ', &
+                            'up                                      ', &
+                            'ocean_sigma_coordinate                  '  /)
+
+            write(layer_dim_name, '(3a)') mesh_name(1:k), '_layer_dlwq'
+            ierror = nf90_def_var(nc_id, layer_dim_name, nf90_float, (/ layers_dim_id /), cum_layer_var_id)
+            if (ierror /= 0) then
+                if (dlwqnc_debug) write(*, *) 'Note: Creating layer dimension failed (def_var): ', ierror
+                return
+            endif
+
+            do i = 1, 5
+                ierror = nf90_put_att(nc_id, cum_layer_var_id, attname(i), z_attvalue(i))
+                if (ierror /= 0) then
+                    if (dlwqnc_debug) write(*, *) 'Note: Creating layer dimension failed (put_att): ', ierror
+                    return
+                endif
+            enddo
+
+            ierror = nf90_enddef(nc_id)
+            if (ierror /= 0) then
+                if (dlwqnc_debug) write(*, *) 'Note: Creating layer dimension failed (enddef): ', ierror
+                return
+            endif
+
+            ! Construct the cumulative sigma coordinate and write it to the file
+            ! Note: following the D-FLOW-FM convention, sigma = 0 is the bottom
+            z_sum = 0.0
+            do i = num_layers, 1, -1
+                z_centre(i) = z_sum + 0.5 * thickness(i)
+                z_sum = z_sum + thickness(i)
+            enddo
+
+            ierror = nf90_put_var(nc_id, cum_layer_var_id, z_centre)
+            if (ierror /= 0) then
+                if (dlwqnc_debug) write(*, *) 'Note: Creating layer dimension failed (put_var): ', ierror
+                return
+            endif
+        end subroutine fallback_layer_dimension
     end function create_layer_dimension
 
     integer function create_dimension(nc_id, num_cells, num_layers, dimension_ids, dimension_sizes)

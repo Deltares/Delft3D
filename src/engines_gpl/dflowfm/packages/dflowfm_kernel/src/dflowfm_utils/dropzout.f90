@@ -48,7 +48,7 @@ contains
       use m_flow, only: sdropstep, dmiss, jins, kplot, sam1tot, vol0, vol1, nplot, kmx
       use m_transportdata, only: constituents, isalt
       use m_get_kbot_ktop, only: getkbotktop
-      use m_set_kbot_ktop, only: setkbotktop
+      use m_set_kbot_ktop, only: set_kbot_ktop
       use m_pfiller, only: pfiller
       use geometry_module, only: dbpinpol
 
@@ -73,7 +73,7 @@ contains
                end if
                do k = kb, kt
                   sam1tot = sam1tot - constituents(isalt, k) * vol0(k)
-                  constituents(isalt, k) = max(0d0, constituents(isalt, k) + dropstep)
+                  constituents(isalt, k) = max(0.0_dp, constituents(isalt, k) + dropstep)
                   sam1tot = sam1tot + constituents(isalt, k) * vol1(k)
                   call isocol(constituents(isalt, n), ncol)
                   nn = size(nd(n)%x)
@@ -88,7 +88,7 @@ contains
          call getkbotktop(n, kb, kt)
          k = kb + kplot - 1
          sam1tot = sam1tot - constituents(isalt, k) * vol0(k)
-         constituents(isalt, k) = max(0d0, constituents(isalt, k) + dropstep)
+         constituents(isalt, k) = max(0.0_dp, constituents(isalt, k) + dropstep)
          sam1tot = sam1tot + constituents(isalt, k) * vol1(k)
          call isocol(constituents(isalt, n), ncol)
          nn = size(nd(n)%x)
@@ -96,7 +96,7 @@ contains
       end if
 
       if (kmx > 0) then
-         call setkbotktop(1) ! drop
+         call set_kbot_ktop(jazws0=1) ! drop
       end if
 
    end subroutine dropzout

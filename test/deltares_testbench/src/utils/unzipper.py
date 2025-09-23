@@ -10,7 +10,7 @@ import zipfile
 from src.utils.logging.i_logger import ILogger
 
 
-class Unzipper(object):
+class Unzipper:
     """Compare files on ASCII content equality."""
 
     def __unzip__(self, zip_file_path: str) -> None:

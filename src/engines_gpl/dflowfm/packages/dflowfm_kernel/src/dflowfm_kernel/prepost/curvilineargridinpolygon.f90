@@ -96,7 +96,7 @@ contains
       if (npl < 4) return
 
 !     create O-type pillar grid if the pillar radius .ne. 0d0
-      if (pil_rad /= 0d0) then
+      if (pil_rad /= 0.0_dp) then
          call pillargrid(ierror)
          if (ierror == 0) return ! otherwise, generate non-pillar grid
       end if
@@ -119,7 +119,7 @@ contains
       end if
 
       NPO = NPL
-      allocate (DPO(NPO), XPO(NPO), YPO(NPO), STAT=IERR); DPO = 0d0
+      allocate (DPO(NPO), XPO(NPO), YPO(NPO), STAT=IERR); DPO = 0.0_dp
       call AERR('DPO(NPO) , XPO(NPO), YPO(NPO)', IERR, NPO)
       XPO(1:NPO) = XPL(1:NPO)
       YPO(1:NPO) = YPL(1:NPO)
@@ -134,7 +134,7 @@ contains
          prin = dcosphi(XPO(N - 1), YPO(N - 1), XPO(N), YPO(N), &
                         XPO(N), YPO(N), XPO(N + 1), YPO(N + 1), jsferic, jasfer3D, dxymis)
          prin = abs(prin)
-         if (PRIN < 0.5d0) then
+         if (PRIN < 0.5_dp) then
             call RCIRC(XPL(1), YPL(1))
             NR = NR + 1
             if (NR <= 4) then
@@ -178,7 +178,7 @@ contains
       MNX = 5 * max(MC, NC)
       allocate (XH(MNX, 4), YH(MNX, 4))
 
-      allocate (DPA(MNX), XPA(MNX), YPA(MNX), STAT=IERR); DPA = 0d0
+      allocate (DPA(MNX), XPA(MNX), YPA(MNX), STAT=IERR); DPA = 0.0_dp
       call AERR('DPA(MNX) , XPA(MNX), YPA(MNX)', IERR, MNX)
 
       call accumulateDistance(XPO, YPO, DPO, NPO) ! OORSPRONKELIJKE LENGTECOORDINAAT
@@ -193,7 +193,7 @@ contains
 
          TXO = DPO(N2) - DPO(N1); DXO = TXO / (MAXP - 1)
 
-         DPA = 0d0
+         DPA = 0.0_dp
          do K = 1, MAXP
             DPA(K) = DPO(N1)
             DPO(N1) = DPO(N1) + DXO
@@ -253,7 +253,7 @@ contains
                    YH(1, 4), YH(1, 2), YH(1, 1), YH(1, 3), & ! 4   2       1   2
                    MNMAX, MMAX, NMAX, XC, YC) ! . 1 .       . 3 .
 
-      zc = 0d0 !zkuni
+      zc = 0.0_dp !zkuni
 
       NDRAW8ORG = NDRAW(8); NDRAW(8) = 0
       if (MFO /= 0 .and. NFO /= 0) then

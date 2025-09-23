@@ -159,12 +159,12 @@ contains
 !     SQUARE ROOT OF WALL SHEAR STRESS: UWALL IN MM/S
 !       ,,    ,,     SHEAR STRESS ON SPLITTERPLATE: UPLATE IN MM/S
 !
-      data UWALL/11.44d0/, UPLATE/9.11d0/
-      data KAP/0.41d0/, CMU/0.09d0/, ST/1.0d0/
+      data UWALL/11.44_dp/, UPLATE/9.11_dp/
+      data KAP/0.41_dp/, CMU/0.09_dp/, ST/1.0_dp/
 !
       NUPNTS = 50
 !
-      Y = 1000.0d0 * Y0(J)
+      Y = 1000.0_dp * Y0(J)
 !
       if (Y > AU(NUPNTS, 1)) then
          write (*, *) '   STOP **** ERROR DETECTED IN ROUTINE ENTRY:'
@@ -184,18 +184,18 @@ contains
 !
 !     OPTION FOR DERIVATIVE DUDY = DU/DY:
 !
-      DUDY = AU(IP, 3) + DY * (2d0 * AU(IP, 4) + 3d0 * DY * AU(IP, 5))
+      DUDY = AU(IP, 3) + DY * (2.0_dp * AU(IP, 4) + 3.0_dp * DY * AU(IP, 5))
 !
 !     INLET CONDITION FOR TURBULENT KINETIC ENERGY (TKE):
 !
       if (Y < 110.) then
-         TKE = 500d0 - 4d0 * Y
+         TKE = 500.0_dp - 4.0_dp * Y
       elseif (Y < 217.) then
-         TKE = 60d0
+         TKE = 60.0_dp
       elseif (Y < 323.) then
-         TKE = -383d0 + 2.037d0 * Y
+         TKE = -383.0_dp + 2.037_dp * Y
       elseif (Y < 415.4) then
-         TKE = 974.4d0 - 2.165d0 * Y
+         TKE = 974.4_dp - 2.165_dp * Y
       else
          TKE = 76.
       end if
@@ -215,9 +215,9 @@ contains
 
 !      CONVERSION FROM (MM) TO (M):
 
-      U = U * 1.d-3
-      TKE = TKE * 1.d-6
-      EPS = EPS * 1.d-6
+      U = U * 1.0e-3_dp
+      TKE = TKE * 1.0e-6_dp
+      EPS = EPS * 1.0e-6_dp
 
       NUT = CMU * TKE * TKE / EPS
       GAMT = NUT / ST

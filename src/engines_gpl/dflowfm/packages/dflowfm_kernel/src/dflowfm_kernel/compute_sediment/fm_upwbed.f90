@@ -165,8 +165,8 @@ contains
                   if (.not. has_bedload(tratyp(l))) cycle ! cycle if this fraction doesn't include bedload
                   !
                   if (kfsed(k1) * kfsed(k2) == 0) then
-                     e_sn(Lf, l) = 0d0
-                     e_st(Lf, l) = 0d0
+                     e_sn(Lf, l) = 0.0_dp
+                     e_st(Lf, l) = 0.0_dp
                      cycle
                   end if
                   !
@@ -176,7 +176,7 @@ contains
                      else
                         e_sn(Lf, l) = link1sign(k2) * sx(k2, l) ! TODO: check
                      end if
-                     e_st(Lf, l) = 0d0
+                     e_st(Lf, l) = 0.0_dp
                   else
                      e_sn(Lf, l) = csu(Lf) * sx(k2, l) + snu(Lf) * sy(k2, l)
                      e_st(Lf, l) = -snu(Lf) * sx(k2, l) + csu(Lf) * sy(k2, l)
@@ -195,8 +195,8 @@ contains
                   if (.not. has_bedload(tratyp(l))) cycle ! cycle if this fraction doesn't include bedload
                   !
                   if (kfsed(k1) * kfsed(k2) == 0) then
-                     e_sn(Lf, l) = 0d0
-                     e_st(Lf, l) = 0d0
+                     e_sn(Lf, l) = 0.0_dp
+                     e_st(Lf, l) = 0.0_dp
                      cycle
                   end if
                   !

@@ -118,7 +118,7 @@ module m_fourier_analysis
 
    real(kind=fp), parameter :: defaultd = -999.0_fp ! Default value for doubles
    real(kind=fp), parameter :: dmiss_minmax = 1e30_fp ! Default values for min/max calculations
-   real(kind=fp), parameter :: tol_time = 1d-9 ! tolerance for comparing times
+   real(kind=fp), parameter :: tol_time = 1.0e-9_dp ! tolerance for comparing times
 
    public :: fouini
    public :: alloc_fourier_analysis_arrays
@@ -1912,7 +1912,7 @@ contains
          ! First for Maximum or Minimum
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmas)
@@ -1926,7 +1926,7 @@ contains
          ! for time above/below threshold
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousma)
@@ -1934,7 +1934,7 @@ contains
 
       case ('a', 'l')
          ! For average
-         if (fousmb(1) > 0d0) then
+         if (fousmb(1) > 0.0_dp) then
             do n = 1, nmaxus
                fousma(n) = fousma(n) / fousmb(1)
             end do
@@ -1943,7 +1943,7 @@ contains
          end if
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousma)
@@ -1954,7 +1954,7 @@ contains
          call replace_dummy(fousmas)
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmas)
@@ -1964,10 +1964,10 @@ contains
          call replace_dummy(fousmas)
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
             if (idvar(1, fouvar + 1) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar + 1), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar + 1), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmas)
@@ -1979,7 +1979,7 @@ contains
          call replace_dummy(fousmbs)
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousmbs)
@@ -1990,10 +1990,10 @@ contains
          call fourier_final(ifou, nmaxus)
          if (gdfourier%founam(ifou) == 'fb' .or. gdfourier%founam(ifou) == 'wdog' .or. gdfourier%founam(ifou) == 'vog') then
             if (idvar(1, fouvar) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
             if (idvar(1, fouvar + 1) > 0 .and. nmaxus > 0) then
-               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar + 1), fousmas, start=(/1, fileids%id_tsp%idx_curtime/))
+               ierror = nf90_put_var(fileids%ncid, idvar(1, fouvar + 1), fousmas, start=[1, fileids%id_tsp%idx_curtime])
             end if
          else
             ierror = unc_put_var_map(fileids%ncid, fileids%id_tsp, idvar(:, fouvar), iloc, fousma)

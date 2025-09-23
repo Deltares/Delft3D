@@ -655,6 +655,7 @@ contains
       use tree_structures
       use m_flowgeom, only: rrtol
       use fm_external_forcings_data, only: transformcoef
+      use fm_external_forcings_utils, only: read_tracer_properties
       use system_utils
       use unstruc_files, only: resolvePath
       use m_alloc
@@ -681,8 +682,6 @@ contains
       character(len=ini_value_len) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
       character(len=ini_value_len) :: forcing_file !
       real(kind=dp) :: return_time !
-      real(kind=dp) :: tr_ws ! Tracer fall velocity
-      real(kind=dp) :: tr_decay_time ! Tracer decay time
       real(kind=dp) :: rrtolb ! Local, optional boundary tolerance value.
       real(kind=dp) :: width1D ! Local, optional custom 1D boundary width
       real(kind=dp) :: blDepth ! Local, optional custom boundary bed level depth below initial water level
@@ -767,13 +766,7 @@ contains
             call prop_get(node_ptr, '', 'returnTime', return_time)
             call prop_get(node_ptr, '', 'return_time', return_time) ! UNST-2386: Backwards compatibility reading.
 
-            tr_ws = 0.0_dp
-            call prop_get(node_ptr, '', 'tracerFallVelocity', tr_ws)
-            transformcoef(4) = tr_ws
-
-            tr_decay_time = 0.0_dp
-            call prop_get(node_ptr, '', 'tracerDecayTime', tr_decay_time)
-            transformcoef(5) = tr_decay_time
+            call read_tracer_properties(node_ptr, transformcoef)
 
             rrtolb = 0.0_dp
             call prop_get(node_ptr, '', 'openBoundaryTolerance', rrtolb)
@@ -861,6 +854,9 @@ contains
       use m_qnerror
       use m_find_name, only: find_name
       use messagehandling, only: msgbuf, msg_flush, err_flush
+      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, &
+                                           BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
+                                           BOUNDARY_DISCHARGE_HEAD
 
       character(len=256), intent(in) :: qid !
       character(len=256), intent(in) :: filename !
@@ -895,18 +891,24 @@ contains
          write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numz, ' nr of open bndcells'; call msg_flush()
          nzbnd = nzbnd + 1
 
-         if (qidfm == 'waterlevelbnd') itpbn = 1
-         if (qidfm == 'neumannbnd') itpbn = 2
+         if (qidfm == 'waterlevelbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL
+         end if
+         if (qidfm == 'neumannbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL_NEUMANN
+         end if
          if (qidfm == 'riemannbnd') then
-            itpbn = 5
+            itpbn = BOUNDARY_VELOCITY_RIEMANN
             if (present(tfc)) then
                ftpet(nbndz + 1:nbndz + numz) = tfc(7) ! relaxation time riemann from ext file
             end if
          end if
-         if (qidfm == 'outflowbnd') itpbn = 6
+         if (qidfm == 'outflowbnd') then
+            itpbn = BOUNDARY_WATER_LEVEL_OUTFLOW
+         end if
 
          if (qidfm == 'qhbnd') then
-            itpbn = 7
+            itpbn = BOUNDARY_DISCHARGE_HEAD
             nqhbnd = nqhbnd + 1
             numqh = numz
             if (filetype == poly_tim) then
@@ -961,8 +963,8 @@ contains
             call realloc(L2qbnd, nqbnd); L2qbnd(nqbnd) = nbndu + numu
             call realloc(at_all, nqbnd); at_all(nqbnd) = 0.0_dp
             call realloc(at_sum, nqbnd); at_sum(nqbnd) = 0.0_dp
-            call realloc(wwssav_all, (/2, nqbnd/), keepExisting=.true., fill=0.0_dp)
-            call realloc(wwssav_sum, (/2, nqbnd/), keepExisting=.true., fill=0.0_dp)
+            call realloc(wwssav_all, [2, nqbnd], keepExisting=.true., fill=0.0_dp)
+            call realloc(wwssav_sum, [2, nqbnd], keepExisting=.true., fill=0.0_dp)
             call realloc(huqbnd, L2qbnd(nqbnd)); huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0.0_dp
          else if (qidfm == 'absgenbnd') then
             if (.not. (jawave == WAVE_SURFBEAT)) then ! Safety to avoid allocation errors later on
@@ -1036,7 +1038,7 @@ contains
 
          if (janew == 1) then
 !       realloc ketr
-            call realloc(ketr, (/Nx, numtracers/), keepExisting=.true., fill=0)
+            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac) + 1:, itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
          write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtr, ' nr of tracer bndcells'; call msg_flush()
@@ -1053,7 +1055,7 @@ contains
 
          if (janew == 1) then
 !       realloc ketr
-            call realloc(ketr, (/Nx, numtracers/), keepExisting=.true., fill=0)
+            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
       else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
@@ -1064,7 +1066,7 @@ contains
 
             numfracs = numfracs + 1
 !       realloc
-            call realloc(kesf, (/Nx, numfracs/), keepExisting=.true., fill=0)
+            call realloc(kesf, [Nx, numfracs], keepExisting=.true., fill=0)
             call realloc(nbndsf, numfracs, keepExisting=.true., fill=0)
             call realloc(sfnames, numfracs, keepExisting=.true., fill='')
 
@@ -2389,6 +2391,8 @@ contains
       use m_get_prof_1D
       use mathconsts, only: pi
       use m_filez, only: doclose
+      use m_physcoef, only: constant_dicoww, dicoww
+      use m_array_or_scalar, only: realloc
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2803,6 +2807,11 @@ contains
       ! (needed to disable possibly invalid statistical output items)
       call check_model_has_structures_across_partitions
 
+      ! Set dicoww to scalar value if not read from inifields file
+      if (.not. allocated(dicoww)) then
+         call realloc(dicoww, constant_dicoww)
+      end if
+
    end subroutine finalize
 
    !> Allocate and initialized atmosperic pressure variable(s)
@@ -2847,7 +2856,7 @@ contains
    function check_keyword_zerozbndinflowadvection() result(success)
       use m_flowparameters, only: jaZerozbndinflowadvection
       use messagehandling, only: LEVEL_ERROR, msgbuf, mess
-      
+
       logical :: success
 
       success = .true.

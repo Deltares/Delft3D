@@ -127,13 +127,13 @@ module m_sediment
    real(kind=dp), allocatable :: uniformerodablethickness(:) !< Uniform erodable thickness per fraction (m)
    real(kind=dp), allocatable :: sedini(:) !< uniform initial sedcon     (kg/m3)
 
-   real(kind=dp) :: rhobulkrhosed = 1650d0 / 2650d0 !< rho of bulk sand / rho of sedimentmaterial
+   real(kind=dp) :: rhobulkrhosed = 1650.0_dp / 2650.0_dp !< rho of bulk sand / rho of sedimentmaterial
    real(kind=dp) :: sedmax !< user defined max sediment concentration (kg/m3)
    real(kind=dp) :: dmorfac ! morphological acceleration factor() , 0.0 = no bottom update, 1.0 = realtime, 10.0 = ten times faster
    real(kind=dp) :: tmorfspinup ! time period without morfac
-   real(kind=dp) :: alfabed = 1d0 ! calibration par bed       load
-   real(kind=dp) :: alfasus = 1d0 ! calibration par suspended load
-   real(kind=dp) :: crefcav = 20d0 ! cref / caverage in Engelund Hansen wse = ws*crefcav
+   real(kind=dp) :: alfabed = 1.0_dp ! calibration par bed       load
+   real(kind=dp) :: alfasus = 1.0_dp ! calibration par suspended load
+   real(kind=dp) :: crefcav = 20.0_dp ! cref / caverage in Engelund Hansen wse = ws*crefcav
 
    integer :: jamorf ! 0 or 1 do morf
 
@@ -157,17 +157,17 @@ contains
       mxgr = 0
       mxgrKrone = 0
 
-      sedmax = 30d0
-      dmorfac = 1d0
-      tmorfspinup = 0d0
-      alfabed = 1d0
-      alfasus = 1d0
+      sedmax = 30.0_dp
+      dmorfac = 1.0_dp
+      tmorfspinup = 0.0_dp
+      alfabed = 1.0_dp
+      alfasus = 1.0_dp
       jamorf = 0
       jabndtreatment = 0
       jamorcfl = 1
-      dzbdtmax = 0.1d0
+      dzbdtmax = 0.1_dp
       jamormergedtuser = 0
-      upperlimitssc = 1d6
+      upperlimitssc = 1.0e6_dp
       inmorphopol = 1
 
    end subroutine default_sediment
@@ -187,21 +187,21 @@ contains
       allocate (d50(m), rhosed(m), erosionpar(m), ustcre2(m), ws(m), sedini(m), uniformerodablethickness(m), &
                 d50ca(m), d50cb(m), d50wa(m), d50wb(m), d50wc(m), bwcr(m))
       allocate (sigsed(m))
-      d50 = 0.2d-3 ! 1d-3
+      d50 = 0.2e-3_dp ! 1d-3
       rhosed = 2650.0
-      erosionpar = 1d-4 ! krone
-      taucre = 0.3d0
+      erosionpar = 1.0e-4_dp ! krone
+      taucre = 0.3_dp
       ustcre2 = taucre / rhomean ! krone, i.e. taucre = 0.3
-      ws = 3d-4
-      sedini = 0d0
-      uniformerodablethickness = 1d0
-      d50ca = 0.19d0
-      d50cb = 0.1d0
-      d50wa = 0.24d0
-      d50wb = 0.66d0
-      d50wc = 0.33d0
-      bwcr = 0.33d0
-      sigsed = 1.0d0
+      ws = 3.0e-4_dp
+      sedini = 0.0_dp
+      uniformerodablethickness = 1.0_dp
+      d50ca = 0.19_dp
+      d50cb = 0.1_dp
+      d50wa = 0.24_dp
+      d50wb = 0.66_dp
+      d50wc = 0.33_dp
+      bwcr = 0.33_dp
+      sigsed = 1.0_dp
 
    end subroutine allocgrains
 
