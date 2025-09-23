@@ -151,7 +151,7 @@ object StartVerschilanalyse : BuildType({
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
                     --model-filter='%model_filter%' \
-                    '$MINIO_UPLOAD_FLAG'
+                    "\$MINIO_UPLOAD_FLAG"
                 popd
             """.trimIndent()
             targetUrl = "h7.directory.intra"
