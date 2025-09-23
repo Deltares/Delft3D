@@ -138,9 +138,8 @@ object StartVerschilanalyse : BuildType({
                 export BRANCH_NAME='%teamcity.build.branch%'
                 export SEND_EMAIL='%send_email%'
 
-                if [[ "%minio_upload%" == "true" ]]; then
-                    MINIO_UPLOAD_FLAG=""
-                else
+                MINIO_UPLOAD_FLAG=""
+                if [[ '%minio_upload%' != "true" ]]; then
                     MINIO_UPLOAD_FLAG="--disable-minio-upload"
                 fi
 
@@ -151,7 +150,7 @@ object StartVerschilanalyse : BuildType({
                     --reference-prefix='%reference_prefix%' \
                     --models-path='%models_path%' \
                     --model-filter='%model_filter%' \
-                    "${MINIO_UPLOAD_FLAG}"
+                    ${MINIO_UPLOAD_FLAG}
                 popd
             """.trimIndent()
             targetUrl = "h7.directory.intra"
