@@ -56,7 +56,7 @@ while true; do
             MODEL_FILTER="$2"
             shift 2
             ;;
-        -d|disable-minio-upload)
+        -d|--disable-minio-upload)
             MINIO_UPLOAD=false
             shift
             ;;
