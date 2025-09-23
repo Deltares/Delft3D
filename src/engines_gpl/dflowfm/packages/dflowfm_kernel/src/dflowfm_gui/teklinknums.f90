@@ -72,9 +72,9 @@ contains
                K2 = KN(2, L)
                if (K1 /= 0 .and. K2 /= 0) then
                   if (.not. INVNOD(K1) .and. .not. INVNOD(K2)) cycle
-                  XP = 0.5d0 * (XK(K1) + XK(K2))
-                  YP = 0.5d0 * (YK(K1) + YK(K2))
-                  ZP = 0.5d0 * (ZK(K1) + ZK(K2))
+                  XP = 0.5_dp * (XK(K1) + XK(K2))
+                  YP = 0.5_dp * (YK(K1) + YK(K2))
+                  ZP = 0.5_dp * (ZK(K1) + ZK(K2))
                   if (NDRAW(7) == 2 .or. NDRAW(7) == 3 .or. (NDRAW(7) >= 10 .and. ndraw(7) /= 16 .and. ndraw(7) /= 17 .and. ndraw(7) /= 18)) then
                      call DHITEXT(int(VV), XP, YP)
                   else

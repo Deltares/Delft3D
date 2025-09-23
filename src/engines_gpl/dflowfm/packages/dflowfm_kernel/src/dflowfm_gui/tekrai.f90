@@ -167,7 +167,7 @@ contains
       end do
 
       if (jased == 1 .or. jased == 2 .and. zminrai == dmiss) then
-         dlay = 0d0
+         dlay = 0.0_dp
          if (jaceneqtr == 1) then
             mx = ndxi
          else
@@ -195,26 +195,26 @@ contains
       end if
 
       if (zmn == zmx) then
-         zmn = zmn - 1d-3
-         zmx = zmx + 1d-3
+         zmn = zmn - 1.0e-3_dp
+         zmx = zmx + 1.0e-3_dp
       else
-         zmn = zmn - 1d-2 * (zmx - zmn)
+         zmn = zmn - 1.0e-2_dp * (zmx - zmn)
       end if
 
       if (xmn == xmx) then
-         xmn = xmn - 1d-3
-         xmx = xmx + 1d-3
+         xmn = xmn - 1.0e-3_dp
+         xmx = xmx + 1.0e-3_dp
       end if
 
       if (nsiz == 1) then
-         zmx = zmn + 1.2d0 * (zmx - zmn)
+         zmx = zmn + 1.2_dp * (zmx - zmn)
       else
-         zmx = zmn + 1.5d0 * (zmx - zmn)
+         zmx = zmn + 1.5_dp * (zmx - zmn)
       end if
 
       if (zminrai /= -999) then
          zmn = zminrai
-         zmx = max(zmn + 1d-2, zmaxrai)
+         zmx = max(zmn + 1.0e-2_dp, zmaxrai)
       end if
 
       if (md_ident == 'transport1d') then
@@ -226,7 +226,7 @@ contains
          if (ymx /= ymn) then
             yfac = (zmx - zmn) / (ymx - ymn)
          else
-            yfac = 0d-4
+            yfac = 0.0e-4_dp
          end if
       end if
 
@@ -253,8 +253,8 @@ contains
                if (.not. allocated(plotlin2)) then
                   allocate (plotlin2(lnkx), ip(lnkx), ip2(lnkx))
                end if
-               plotlin = 0d0
-               plotlin2 = 0d0
+               plotlin = 0.0_dp
+               plotlin2 = 0.0_dp
                ip = 0
                ip2 = 0
                do LL = 1, lnx
@@ -355,7 +355,7 @@ contains
                      call isocol(zn, ncol)
 
                      if (ndraw(19) == 2) then
-                        call dhtext(zn, xz(N), 0.5d0 * (YP(1) + YP(3)), 0.5d0 * (YP(1) + YP(3)))
+                        call dhtext(zn, xz(N), 0.5_dp * (YP(1) + YP(3)), 0.5_dp * (YP(1) + YP(3)))
                      else
                         call PFILLER(xp, yp, 4, ncol, ncol)
                      end if
@@ -394,8 +394,8 @@ contains
                   call isocol2(zn, ncol)
 
                   if (ndraw(11) == 2) then
-                     xp1 = 0.25d0 * (xp(1) + xp(2) + xp(3) + xp(4))
-                     yp1 = 0.25d0 * (yp(1) + yp(2) + yp(3) + yp(4))
+                     xp1 = 0.25_dp * (xp(1) + xp(2) + xp(3) + xp(4))
+                     yp1 = 0.25_dp * (yp(1) + yp(2) + yp(3) + yp(4))
                      call dhtext(zn, xp1, yp1, yp1)
                   else
                      call PFILLER(xp, yp, 4, ncol, ncol)
@@ -446,8 +446,8 @@ contains
          k = max(k, kbot(n))
          xxmn = minval(nd(n)%x)
          xxmx = maxval(nd(n)%x)
-         xp(1) = 0.5d0 * (xxmx + xxmn)
-         yp(1) = 0.5d0 * (zws(k) + zws(k - 1))
+         xp(1) = 0.5_dp * (xxmx + xxmn)
+         yp(1) = 0.5_dp * (zws(k) + zws(k - 1))
          if (kmx == 0) then
             call cirr(xp(1), yp(1), ncolblack)
          else
@@ -507,8 +507,8 @@ contains
                do k = kbot(n), ktop(n)
 
                   uu = ucx(k)
-                  ww = 0.5d0 * (ww1(k) + ww1(k - 1))
-                  yp(1) = 0.5d0 * (zws(k) + zws(k - 1))
+                  ww = 0.5_dp * (ww1(k) + ww1(k - 1))
+                  yp(1) = 0.5_dp * (zws(k) + zws(k - 1))
                   call arrowsxyzfac(xp(1), yp(1), uu, ww, VFAC, zfac)
 
                end do
@@ -559,8 +559,8 @@ contains
             xz1 = xz(n1); xz2 = xz(n2)
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L); k2 = ln(2, L)
-               zz1 = 0.5d0 * (zws(k1) + zws(k1 - 1))
-               zz2 = 0.5d0 * (zws(k2) + zws(k2 - 1))
+               zz1 = 0.5_dp * (zws(k1) + zws(k1 - 1))
+               zz2 = 0.5_dp * (zws(k2) + zws(k2 - 1))
                call movabs(xz1, zz1)
                call lnabs(xz2, zz2)
             end do
@@ -573,8 +573,8 @@ contains
       if (md_IDENT == 'transport1d') then
          call tektransport1D(time1 - tstart_user)
          call setcol(3)
-         call movabs(xmn, 0d0)
-         call lnabs(xmx, 0d0)
+         call movabs(xmn, 0.0_dp)
+         call lnabs(xmx, 0.0_dp)
          !call htext( 1d0, xmx, 1d0)
       else if (md_IDENT == 'carrier') then
          call carrier(time1 - tstart_user)
@@ -605,7 +605,7 @@ contains
             end if
 
             bup = min(bob(1, L), bob(2, L))
-            call fbox(xz(k1), zgaten, xz(k2), zgaten + 20d0)
+            call fbox(xz(k1), zgaten, xz(k2), zgaten + 20.0_dp)
             ! call fbox(xz(k1),bup   ,xz(k2),bup-10d0)
          end do
       end do
@@ -621,9 +621,9 @@ contains
             end if
 
             bup = min(bob(1, L), bob(2, L))
-            doorh = 10d0
-            if (generalstruc(ng)%gatedoorheight < 1d10 .and. generalstruc(ng)%gatedoorheight < 1d10) then
-               if (generalstruc(ng)%gatedoorheight > 0d0) doorh = generalstruc(ng)%gatedoorheight
+            doorh = 10.0_dp
+            if (generalstruc(ng)%gatedoorheight < 1.0e10_dp .and. generalstruc(ng)%gatedoorheight < 1.0e10_dp) then
+               if (generalstruc(ng)%gatedoorheight > 0.0_dp) doorh = generalstruc(ng)%gatedoorheight
                call fbox(xz(k1), zgaten, xz(k2), zgaten + doorh)
             end if
 
@@ -639,7 +639,7 @@ contains
             end if
 
             bup = bob(2, L) ! min( bob(1,L), bob(2,L) )
-            call fbox(xz(k1), bup, xz(k2), bup - 10d0)
+            call fbox(xz(k1), bup, xz(k2), bup - 10.0_dp)
          end do
       end do
 
@@ -654,9 +654,9 @@ contains
 
             if (kk /= 0 .and. ksrc(2, n) > 0) then
                xp(1) = xz(kk)
-               bup = 0.1d0 * sqrt(ba(kk))
+               bup = 0.1_dp * sqrt(ba(kk))
                do k = ksrc(2, n), ksrc(3, n)
-                  yp(1) = 0.5d0 * (zws(k) + zws(k - 1))
+                  yp(1) = 0.5_dp * (zws(k) + zws(k - 1))
                   ! CALL KCIR(XP(1),YP(1),qsrck)
                   call fbox(xz(kk) - bup, zws(k - 1), xz(kk) + bup, zws(k))
                end do
@@ -669,9 +669,9 @@ contains
 
             if (kk /= 0 .and. ksrc(5, n) > 0) then
                xp(1) = xz(kk)
-               bup = 0.1d0 * sqrt(ba(kk))
+               bup = 0.1_dp * sqrt(ba(kk))
                do k = ksrc(5, n), ksrc(6, n)
-                  yp(1) = 0.5d0 * (zws(k) + zws(k - 1))
+                  yp(1) = 0.5_dp * (zws(k) + zws(k - 1))
                   ! CALL KCIR(XP(1),YP(1),qsrck)
                   call fbox(xz(kk) - bup, zws(k - 1), xz(kk) + bup, zws(k))
                end do
@@ -686,7 +686,7 @@ contains
                if (kc(kk) == 0) cycle
             end if
 
-            if (stemheight(k) > 0d0) then
+            if (stemheight(k) > 0.0_dp) then
                call movabs(xz(k), zws(kbot(k) - 1))
                xx = stemheight(k) * sin(phiv(k))
                yy = stemheight(k) * cos(phiv(k))
@@ -700,14 +700,14 @@ contains
       if (nsiz > 1 .and. jtextflow > 0) then
          ! assen in 'gewone' aspect=1 wereld coordinaten, anders wordt de text plat afgedrukt in interacter
          !   CALL IGrUnits (0.0,0.0,1.0,1.0)
-         call setwor(0d0, 0d0, 1d0, 1d0)
+         call setwor(0.0_dp, 0.0_dp, 1.0_dp, 1.0_dp)
 
          call setcol(3) ! zwart
          zz = 0.05 * (zmx - zmn) / nsiz
-         call htext_rai(zmn, x1 + 12d0 * rcir, zmn - 2d0 * zz, rcir, zz, 1)
-         call htext_rai(zmx, x1 + 12d0 * rcir, zmx, rcir, zz, 1)
-         call htext_rai(x1 + 10d0 * rcir, x1 + 12d0 * rcir, zmn - 2d0 * zz, rcir, zz, 2)
-         call htext_rai(x2 - 10d0 * rcir, x2 - 12d0 * rcir, zmn - 2d0 * zz, rcir, zz, 2)
+         call htext_rai(zmn, x1 + 12.0_dp * rcir, zmn - 2.0_dp * zz, rcir, zz, 1)
+         call htext_rai(zmx, x1 + 12.0_dp * rcir, zmx, rcir, zz, 1)
+         call htext_rai(x1 + 10.0_dp * rcir, x1 + 12.0_dp * rcir, zmn - 2.0_dp * zz, rcir, zz, 2)
+         call htext_rai(x2 - 10.0_dp * rcir, x2 - 12.0_dp * rcir, zmn - 2.0_dp * zz, rcir, zz, 2)
       end if
       kplotfrombedorsurface = kplotfrombedorsurfacesav
       call setwor(x1, y1, x2, y2)

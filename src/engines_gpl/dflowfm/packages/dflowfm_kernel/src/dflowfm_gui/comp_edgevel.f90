@@ -69,7 +69,7 @@ contains
       nfacmax = nfac
 
       edgevel = DMISS
-      dgrow1 = 1d0
+      dgrow1 = 1.0_dp
       nfac1(1, :) = 1
       nfac1(2:Nsubmax, :) = 0
       allocate (eheight(Nsubmax, mc - 1))
@@ -113,11 +113,11 @@ contains
 !     Left, uniform part
             if ((NsubL > 1 .and. NsubL == NsubR) .or. NsubL > NsubR) then
                hmax = maxval(eheight(1, igL:igL + mfac - 1))
-               NuniL = floor(hmax / dheight0 + 0.99999d0)
+               NuniL = floor(hmax / dheight0 + 0.99999_dp)
 !        at maximum nfacUNImax grid layers in uniform part
                NuniL = min(NuniL, nfacUNImax)
 
-               h_h0_maxL = 0d0 ! (h/h0)_max
+               h_h0_maxL = 0.0_dp ! (h/h0)_max
                do i = igL, igL + mfac - 1
                   nfac1(1, i) = NuniL
                   edgevel(i) = eheight(1, i) / NuniL
@@ -126,7 +126,7 @@ contains
             else
 !        only one subinterval: no uniform part
                NuniL = 0
-               h_h0_maxL = 0d0 ! (h/h0)_max
+               h_h0_maxL = 0.0_dp ! (h/h0)_max
                do i = igL, igL + mfac - 1
                   nfac1(1, i) = NuniL
                   edgevel(i) = dheight0
@@ -149,11 +149,11 @@ contains
 !     Right, uniform part
             if ((NsubR > 1 .and. NsubL == NsubR) .or. NsubR > NsubL) then
                hmax = maxval(eheight(1, igR:igR + mfac - 1))
-               NuniR = floor(hmax / dheight0 + 0.99999d0)
+               NuniR = floor(hmax / dheight0 + 0.99999_dp)
 !        at maximum nfacmax grid layers in uniform part
                NuniR = min(NuniR, nfacUNImax)
 
-               h_h0_maxR = 0d0 ! (h/h0)_max
+               h_h0_maxR = 0.0_dp ! (h/h0)_max
                do i = igR, igR + mfac - 1
                   nfac1(1, i) = NuniR
                   edgevel(i) = eheight(1, i) / NuniR
@@ -162,7 +162,7 @@ contains
             else
 !        only one subinterval: no uniform part
                NuniR = 0
-               h_h0_maxR = 0d0 ! (h/h0)_max
+               h_h0_maxR = 0.0_dp ! (h/h0)_max
                do i = igR, igR + mfac - 1
                   nfac1(1, i) = NuniR
                   edgevel(i) = dheight0
@@ -215,7 +215,7 @@ contains
 
             dgrow1(2, i) = comp_dgrow(eheight(2, i), edgevel(i), nfac1(2, i), ierror)
             if (ierror == 1) then
-               dgrow1(2, i) = 1d0
+               dgrow1(2, i) = 1.0_dp
 !            goto 1234
             end if
 

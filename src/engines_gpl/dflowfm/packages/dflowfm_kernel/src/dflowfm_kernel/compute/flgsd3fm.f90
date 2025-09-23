@@ -48,7 +48,7 @@ contains
 !
 ! Local parameters
 !
-      real(kind=dp), parameter :: c23 = 2.0d0 / 3.0d0, c13 = 1.0d0 / 3.0d0
+      real(kind=dp), parameter :: c23 = 2.0_dp / 3.0_dp, c13 = 1.0_dp / 3.0_dp
 !
 ! Global variables
 !
@@ -147,48 +147,48 @@ contains
       d2 = hd - zb2
       hsl = elu - zs
       !JK   WRITE (11,*)  'hsl',hsl
-      term = ((4.0d0 * cwd * cwd * rhoast * wstr * wstr) / (w2 * d2)) * (1.0d0 + lambda / d2)
+      term = ((4.0_dp * cwd * cwd * rhoast * wstr * wstr) / (w2 * d2)) * (1.0_dp + lambda / d2)
       !
-      aw = (-term * hsl - 4.0d0 * cwd * wstr + (1.0d0 - rhoast)                       &
-         & * (w2 / 12.0d0 + wsd / 4.0d0) + 0.5d0 * (rhoast + 1.0d0) * (c13 * w2 + c23 * wsd))  &
+      aw = (-term * hsl - 4.0_dp * cwd * wstr + (1.0_dp - rhoast)                       &
+         & * (w2 / 12.0_dp + wsd / 4.0_dp) + 0.5_dp * (rhoast + 1.0_dp) * (c13 * w2 + c23 * wsd))  &
          & / term
       !
-      bw = (4.0d0 * cwd * wstr * hsl + (1.0d0 - rhoast)                                 &
-           & * ((d2 + ds1) * (w2 + wsd) / 6.d0 + ds1 * wsd * c13) + 0.5d0 * (rhoast + 1.0d0)   &
+      bw = (4.0_dp * cwd * wstr * hsl + (1.0_dp - rhoast)                                 &
+           & * ((d2 + ds1) * (w2 + wsd) / 6.0_dp + ds1 * wsd * c13) + 0.5_dp * (rhoast + 1.0_dp)   &
            & * ((ds1 + ds2 - d2) * (c13 * w2 + c23 * wsd) + (c23 * d2 + c13 * ds1)             &
                & * w2 + (c13 * d2 + c23 * ds1) * wsd)) / term
       !
-      cw = ((1.0d0 - rhoast) * ((d2 + ds1)**2 * (w2 + wsd) / 12.d0 + ds1**2 * wsd / 6.0d0)  &
-         & + 0.5d0 * (rhoast + 1.0d0) * (ds1 + ds2 - d2)                              &
+      cw = ((1.0_dp - rhoast) * ((d2 + ds1)**2 * (w2 + wsd) / 12.0_dp + ds1**2 * wsd / 6.0_dp)  &
+         & + 0.5_dp * (rhoast + 1.0_dp) * (ds1 + ds2 - d2)                              &
          & * ((c23 * d2 + c13 * ds1) * w2 + (c13 * d2 + c23 * ds1) * wsd)) / term
       !
       !     Solve the equation ds**3 + aw*ds**2 + bw*ds +cw to get the water
       !     level at the sill
       !
-      p = bw / 3.0d0 - aw * aw / 9.0d0
-      q = aw * aw * aw / 27.0d0 - aw * bw / 6.0d0 + cw / 2.0d0
+      p = bw / 3.0_dp - aw * aw / 9.0_dp
+      q = aw * aw * aw / 27.0_dp - aw * bw / 6.0_dp + cw / 2.0_dp
       hulp = q * q + p * p * p
       !
-      if (hulp < 0.0d0) then
+      if (hulp < 0.0_dp) then
          p = abs(p)
-         phi = acos(abs(q) / p / sqrt(p)) / 3.0d0
-         r60 = acos(0.5d0)
-         fac = sign(2.d0, q) * sqrt(p)
+         phi = acos(abs(q) / p / sqrt(p)) / 3.0_dp
+         r60 = acos(0.5_dp)
+         fac = sign(2.0_dp, q) * sqrt(p)
          h2a = -fac * cos(phi)
          h2b = fac * cos(r60 - phi)
          h2c = fac * cos(r60 + phi)
-         ds = max(h2a, h2b, h2c) - aw / 3.0d0
+         ds = max(h2a, h2b, h2c) - aw / 3.0_dp
       else
          hulp = sqrt(hulp)
          hulp1 = -q + hulp
          if (abs(hulp1) < 1e-6) then
             u = 0; v = 0
          else ! hk: ook fix for Erwin, ARS 15132
-            u = abs(hulp1)**c13 * sign(1.0d0, hulp1)
+            u = abs(hulp1)**c13 * sign(1.0_dp, hulp1)
             hulp1 = -q - hulp
-            v = abs(hulp1)**c13 * sign(1.0d0, hulp1)
+            v = abs(hulp1)**c13 * sign(1.0_dp, hulp1)
          end if
-         ds = u + v - aw / 3.0d0
+         ds = u + v - aw / 3.0_dp
       end if
    end subroutine flgsd3fm
 

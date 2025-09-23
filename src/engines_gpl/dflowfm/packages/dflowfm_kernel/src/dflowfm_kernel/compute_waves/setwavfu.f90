@@ -62,28 +62,28 @@ contains
       integer :: k1, k2
 
       if (jawaveforces == WAVE_FORCES_OFF) then
-         wavfu = 0d0
-         wavfv = 0d0
+         wavfu = 0.0_dp
+         wavfv = 0.0_dp
          return
       end if
 
       ! Set correct limiting depth
       if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
          hminlw = m_waves_hminlw
-         hminlwi = 1d0 / m_waves_hminlw
+         hminlwi = 1.0_dp / m_waves_hminlw
          gammaloc = gammax
       end if
 
       if (jawave == WAVE_SURFBEAT) then
          hminlw = xb_hminlw
-         hminlwi = 1d0 / xb_hminlw
+         hminlwi = 1.0_dp / xb_hminlw
          gammaloc = gammaxxb
       end if
 
-      facmax = 0.25d0 * sag * rhomean * gammaloc**2
+      facmax = 0.25_dp * sag * rhomean * gammaloc**2
 
-      wavfu = 0d0
-      wavfv = 0d0
+      wavfu = 0.0_dp
+      wavfv = 0.0_dp
 
       if (kmx == 0) then
          do L = 1, lnx
@@ -91,7 +91,7 @@ contains
             if (L > lnx1D) then
                k1 = ln(1, L); k2 = ln(2, L)
                ac1 = acl(L)
-               ac2 = 1d0 - ac1
+               ac2 = 1.0_dp - ac1
 
                wavfx = ac1 * sxwav(k1) + ac2 * sxwav(k2)
                wavfy = ac1 * sywav(k1) + ac2 * sywav(k2)
@@ -102,7 +102,7 @@ contains
                twavL = ac1 * twav(k1) + ac2 * twav(k2)
 
                ! limit forces
-               fmax = facmax * hu(L)**1.5 / max(0.1d0, twavL)
+               fmax = facmax * hu(L)**1.5 / max(0.1_dp, twavL)
 
                ! projection in face-normal direction
                wavfu_loc = wavfx * csu(L) + wavfy * snu(L)
@@ -134,10 +134,10 @@ contains
             call getLbotLtop(LL, Lb, Lt)
             if (Lt < Lb) cycle
             k1 = ln(1, LL); k2 = ln(2, LL)
-            ac1 = acL(LL); ac2 = 1d0 - ac1
+            ac1 = acL(LL); ac2 = 1.0_dp - ac1
             !
-            hwavL = max(ac1 * hwav(k1) + ac2 * hwav(k2), 0.01d0)
-            twavL = max(ac1 * twav(k1) + ac2 * twav(k2), 0.1d0)
+            hwavL = max(ac1 * hwav(k1) + ac2 * hwav(k2), 0.01_dp)
+            twavL = max(ac1 * twav(k1) + ac2 * twav(k2), 0.1_dp)
             fmax = facmax * hu(LL)**1.5 / twavL
             rhoL = rhomean
             !

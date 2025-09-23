@@ -61,7 +61,7 @@ contains
 
       else if (ndrawpol == 3) then
 
-         call DISP2C(XPL, YPL, NPL, 0d0, NCOLPL)
+         call DISP2C(XPL, YPL, NPL, 0.0_dp, NCOLPL)
 
       else if (ndrawpol == 4) then
 
@@ -73,7 +73,7 @@ contains
 
       else if (ndrawpol >= 5 .and. ndrawpol <= 10) then
 
-         call DISP2C(XPL, YPL, NPL, 0d0, NCOLPL)
+         call DISP2C(XPL, YPL, NPL, 0.0_dp, NCOLPL)
          call SETCOL(NCOLBLACK)
          do k = 1, npl
             if (inview(xpl(k), ypl(k))) then
@@ -112,15 +112,15 @@ contains
                   dy = rcir * c
                   dx = -rcir * s
 
-                  k2 = max(2, int(d / (3d0 * rcir)))
+                  k2 = max(2, int(d / (3.0_dp * rcir)))
                   do kk = 1, k2
-                     a = 1d0 - dble(kk) / dble(k2)
-                     b = 1d0 - a
+                     a = 1.0_dp - dble(kk) / dble(k2)
+                     b = 1.0_dp - a
                      x = a * xpl(k) + b * xpl(k + 1)
                      y = a * ypl(k) + b * ypl(k + 1)
                      z = a * zpl(k) + b * zpl(k + 1)
 
-                     dc = a * dcrest(k) + b * dcrest(k + 1); dc = 0.5d0 * dc ! crest width
+                     dc = a * dcrest(k) + b * dcrest(k + 1); dc = 0.5_dp * dc ! crest width
                      dy = dc * c; dcyR = dy; dcyL = dy
                      dx = -dc * s; dcxR = dx; dcxL = dx
 
@@ -130,19 +130,19 @@ contains
                      sL = a * dtL(k) + b * dtL(k + 1) ! slope left
                      sR = a * dtR(k) + b * dtR(k + 1) ! slope right
 
-                     if (dL > 0d0 .and. dR == 0d0) then ! baseline is probably wrong with slope, set 1 instead of 10
-                        sL = 1d0; dcxL = 0; dcyL = 0d0
+                     if (dL > 0.0_dp .and. dR == 0.0_dp) then ! baseline is probably wrong with slope, set 1 instead of 10
+                        sL = 1.0_dp; dcxL = 0; dcyL = 0.0_dp
                      end if
 
-                     if (dR > 0d0 .and. dL == 0d0) then ! baseline is probably wrong with slope, set 1 instead of 10
-                        sR = 1d0; dcxR = 0; dcyR = 0d0
+                     if (dR > 0.0_dp .and. dL == 0.0_dp) then ! baseline is probably wrong with slope, set 1 instead of 10
+                        sR = 1.0_dp; dcxR = 0; dcyR = 0.0_dp
                      end if
 
                      dc = dR * sR
                      dyR = dc * c
                      dxR = -dc * s
                      call isoline(x - dcxR, y - dcyR, z, x, y, z) ! half crest width to right
-                     if (dR == 0d0) then
+                     if (dR == 0.0_dp) then
                         call rcirc(x - dcxR, y - dcyR)
                      else
                         call isoline(x - dcxR, y - dcyR, z, x - dcxR - dxR, y - dcyR - dyR, z - dR) ! slope to right
@@ -152,7 +152,7 @@ contains
                      dyL = dc * c
                      dxL = -dc * s
                      call isoline(x + dcxL, y + dcyL, z, x, y, z) ! half crest width to left
-                     if (dL == 0d0) then
+                     if (dL == 0.0_dp) then
                         call rcirc(x + dcxL, y + dcyL)
                      else
                         call isoline(x + dcxL, y + dcyL, z, x + dcxL + dxL, y + dcyL + dyL, z - dL)

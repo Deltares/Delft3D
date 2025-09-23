@@ -75,7 +75,7 @@ contains
       else
          if (kmx == 0) then
             do L = 1, Lnx
-               if (au(L) > 0d0) then
+               if (au(L) > 0.0_dp) then
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   hh = min(hs(k1), hs(k2), hu(L))
@@ -84,15 +84,15 @@ contains
                   end if
                   dxiAu(L) = dxi(L) * wu(L) * hh
                else
-                  dxiAu(L) = 0d0
+                  dxiAu(L) = 0.0_dp
                end if
             end do
          else
             do LL = 1, Lnx
-               if (au(LL) > 0d0) then
+               if (au(LL) > 0.0_dp) then
                   call getLbotLtop(LL, Lb, Lt)
                   do L = Lb, Lt
-                     if (au(L) > 0d0) then
+                     if (au(L) > 0.0_dp) then
                         k1 = ln(1, L)
                         k2 = ln(2, L)
                         hh = min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1), hu(L) - hu(L - 1))
@@ -101,7 +101,7 @@ contains
                         end if
                         dxiAu(L) = dxi(LL) * wu(LL) * hh
                      else
-                        dxiAu(L) = 0d0
+                        dxiAu(L) = 0.0_dp
                      end if
                   end do
                end if
@@ -113,7 +113,7 @@ contains
          do i = 1, nfxw
             L = lnfxw(i)
             if (L > 0) then
-               if (au(L) > 0d0) then
+               if (au(L) > 0.0_dp) then
                   k1 = ln(1, L); k2 = ln(2, L)
                   hh = max(s1(k1), s1(k2)) - max(bob(1, L), bob(2, L))
                   if (hh > 0) then
@@ -132,7 +132,7 @@ contains
          do LL = lnxi + 1, lnx
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb, Lt
-               dxiAu(L) = 0d0
+               dxiAu(L) = 0.0_dp
             end do
          end do
       end if

@@ -92,26 +92,26 @@ contains
                 ATP(MX, NX), XO(MX, NX), YO(MX, NX))
 
       IN = 1
-      PI = acos(-1d0)
+      PI = acos(-1.0_dp)
       MCR = MC
       NCR = NC
 
-      if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', 0d0)
+      if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', 0.0_dp)
       call ISITU()
-      if (NDRAW(8) == 0) call READYY(' ', 0.05d0)
+      if (NDRAW(8) == 0) call READYY(' ', 0.05_dp)
 
       if (JSFERIC == 1) call MAKEF(XC, YC, MMAX, NMAX)
 
       call GETSPL2(XC, XI2, XJ2, MC, NC, MMAX, NMAX)
-      if (NDRAW(8) == 0) call READYY(' ', 0.10d0)
+      if (NDRAW(8) == 0) call READYY(' ', 0.10_dp)
 
       call GETSPL2(YC, YI2, YJ2, MC, NC, MMAX, NMAX)
-      if (NDRAW(8) == 0) call READYY(' ', 0.15d0)
+      if (NDRAW(8) == 0) call READYY(' ', 0.15_dp)
 
       XR = XC
       YR = YC
 
-      RJAC = 0.9d0
+      RJAC = 0.9_dp
 !     RJAC1 = (COS(PI/MCR) * (XM**2)*COS(PI/NCR)) / (1 + XM**2)
 !     RJAC2 = 2*(COS(PI/MCR)/XM + COS(PI/NCR)) / (1 + 1/XM)
 !     VUL DE COEFFICIENTEN-MATRICES
@@ -128,14 +128,14 @@ contains
 !        JAMMER IN DEZE LOOP, IJC WORDT EERST VERKLOOT IN SOMDIST
 !        CALL SETINTERNALBOUNDARIES(IJC)
          call FIXDDBOUNDARIES()
-         if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', 0.20d0)
+         if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', 0.20_dp)
 
          call ORTSOR(XR, YR, A, B, C, D, E, ATP, M1, N1, M2, N2, &
                      XI2, YI2, XJ2, YJ2, XO, YO, &
                      RJAC)
       end do
 
-      if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', -1d0)
+      if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', -1.0_dp)
 
       XC = XR; YC = YR
 

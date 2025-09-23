@@ -72,7 +72,7 @@ contains
 
 !           compute base vectors
          exxp = [cos(phi0) * cos(lambda0), cos(phi0) * sin(lambda0), sin(phi0)]
-         eyyp = [-sin(lambda0), cos(lambda0), 0d0]
+         eyyp = [-sin(lambda0), cos(lambda0), 0.0_dp]
          ezzp = [-sin(phi0) * cos(lambda0), -sin(phi0) * sin(lambda0), cos(phi0)]
 
          do i = 1, N

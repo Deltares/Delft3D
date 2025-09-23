@@ -36,9 +36,9 @@ contains
       use precision, only: dp
       real(kind=dp) :: hg, a, h1, h2, q
       real(kind=dp) :: g, t, r, tr
-      g = 9.81d0
+      g = 9.81_dp
       t = g * a * (h2 - h1)
-      r = 1.0 / h1 - 1d0 / hg
+      r = 1.0 / h1 - 1.0_dp / hg
       tr = t / r
       q = sqrt(tr)
    end subroutine getq3

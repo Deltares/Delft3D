@@ -75,7 +75,7 @@ contains
 
       integer :: numltot, ii, jj, i, j, indx, isgn, k, kk, k1, k2, km, L, LL, p, p1, bw, bwrn, sumdiff, sumdiffrn
 
-      call readyy('Renumber flow nodes', 0d0)
+      call readyy('Renumber flow nodes', 0.0_dp)
 
       jaFlowNetChanged = 1
       numltot = 2 * numl ! Undirected links: 2 adjacency elements per link.
@@ -118,7 +118,7 @@ contains
          adj_tmp(k, k2) = k1
          adj_tmp2(k2) = km + 1
       end do
-      call readyy('Renumber flow nodes', .15d0)
+      call readyy('Renumber flow nodes', 0.15_dp)
 
       ! Flatten the adjacency list.
       j = 1
@@ -131,14 +131,14 @@ contains
       end do
       adj_row(NUMP + 1) = j
 
-      call readyy('Renumber flow nodes', .18d0)
+      call readyy('Renumber flow nodes', 0.18_dp)
 
       bw = adj_bandwidth(NUMP, numltot, adj_row, adj)
 
       ! Find a renumbering (permutation)
       call genrcm(NUMP, numltot, adj_row, adj, perm)
       call perm_inverse3(NUMP, perm, perm_inv)
-      call readyy('Renumber flow nodes', .35d0)
+      call readyy('Renumber flow nodes', 0.35_dp)
 
       ! Now apply the permutation to relevant net cell numbers
       ! (This will propagate automatically to all flow node related arrays in flow_geominit)
@@ -219,7 +219,7 @@ contains
          sumdiffrn = sumdiffrn + abs(abs(lne(1, L)) - abs(lne(2, L)))
       end do
 
-      call readyy('Renumber flow nodes', 0.5d0)
+      call readyy('Renumber flow nodes', 0.5_dp)
       bwrn = adj_perm_bandwidth(NUMP, numltot, adj_row, adj, perm, perm_inv)
 
       write (msgbuf, *) 'Renumber flow nodes...'
@@ -275,7 +275,7 @@ contains
          perm_inv_lnk(perm_lnk(L)) = L
       end do
 
-      call readyy('Renumber flow nodes', 0.7d0)
+      call readyy('Renumber flow nodes', 0.7_dp)
 
       ! Now perm_lnk contains the desired reordering of link numbers.
       ! Permute kn and lne
@@ -328,7 +328,7 @@ contains
 !   permute cutcell related arrays
 !    call permute_cutcellmasks(iperm_lnk)
 
-      call readyy('Renumber flow nodes', 1d0)
+      call readyy('Renumber flow nodes', 1.0_dp)
 
       deallocate (adj_row)
       deallocate (adj)
@@ -343,7 +343,7 @@ contains
       deallocate (adj_tmp)
       deallocate (adj_tmp2)
 
-      call readyy('Renumber flow nodes', -1d0)
+      call readyy('Renumber flow nodes', -1.0_dp)
 
 !   DO NOT CALL FINDCELLS FROM NOW ON, IT WILL DESTROY THE RENUMBERING
       netstat = NETSTAT_OK

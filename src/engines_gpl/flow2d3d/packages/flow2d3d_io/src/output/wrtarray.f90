@@ -35,8 +35,12 @@ module wrtarray
 ! NONE
 !!--declarations----------------------------------------------------------------
 use dffunctionals, only: FILTER_LAST, FILTER_SUM
+use precision, only: hp, sp
+
 private FILTER_LAST
 private FILTER_SUM
+private hp
+private sp
 
 interface wrtvar
     module procedure wrtarray_int_0d
@@ -93,7 +97,6 @@ contains
 
 subroutine wrtarray_int_0d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -161,7 +164,6 @@ end subroutine wrtarray_int_0d
 
 subroutine wrtarray_int_1d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -232,7 +234,6 @@ end subroutine wrtarray_int_1d
 
 subroutine wrtarray_int_2d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -307,7 +308,6 @@ end subroutine wrtarray_int_2d
 
 subroutine wrtarray_int_3d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -384,7 +384,6 @@ end subroutine wrtarray_int_3d
 
 subroutine wrtarray_hp_0d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -444,7 +443,7 @@ subroutine wrtarray_hp_0d(fds, filename, filetype, grpnam, &
                 if (nbytsg==hp) then
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, var)
                 else
-                   lvar = real(var,sp)
+                   lvar = realsp(var)
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, lvar)
                 endif
              endif
@@ -459,7 +458,7 @@ subroutine wrtarray_hp_0d(fds, filename, filetype, grpnam, &
              endif
              call nc_check_err(lundia, ierr, 'writing '//varnam, filename)
           case (FTYPE_UNFORM32)
-             write (fds) real(var,sp)
+             write (fds) realsp(var)
              ierr = 0
           case (FTYPE_UNFORM64)
              write (fds) var
@@ -473,7 +472,6 @@ end subroutine wrtarray_hp_0d
 
 subroutine wrtarray_hp_1d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -538,9 +536,7 @@ subroutine wrtarray_hp_1d(fds, filename, filetype, grpnam, &
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, var)
                 else
                    allocate(lvar(u1))
-                   do i1 = 1,u1
-                      lvar(i1) = real(var(i1),sp)
-                   enddo
+                   lvar(:) = realsp(var(:))
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, lvar)
                    deallocate(lvar)
                 endif
@@ -556,7 +552,7 @@ subroutine wrtarray_hp_1d(fds, filename, filetype, grpnam, &
              endif
              call nc_check_err(lundia, ierr, 'writing '//varnam, filename)
           case (FTYPE_UNFORM32)
-             write (fds) (real(var(i1),sp), i1 = 1,u1)
+             write (fds) (realsp(var(i1)), i1 = 1,u1)
              ierr = 0
           case (FTYPE_UNFORM64)
              write (fds) (var(i1), i1 = 1,u1)
@@ -570,7 +566,6 @@ end subroutine wrtarray_hp_1d
 
 subroutine wrtarray_hp_2d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -638,11 +633,7 @@ subroutine wrtarray_hp_2d(fds, filename, filetype, grpnam, &
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, var)
                 else
                    allocate(lvar(u1,u2))
-                   do i2 = 1,u2
-                      do i1 = 1,u1
-                         lvar(i1,i2) = real(var(i1,i2),sp)
-                      enddo
-                   enddo
+                   lvar(:,:) = realsp(var(:,:))
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, lvar)
                    deallocate(lvar)
                 endif
@@ -658,7 +649,7 @@ subroutine wrtarray_hp_2d(fds, filename, filetype, grpnam, &
              endif
              call nc_check_err(lundia, ierr, 'writing '//varnam, filename)
           case (FTYPE_UNFORM32)
-             write (fds) ((real(var(i1,i2),sp), i2 = 1,u2), i1 = 1,u1)
+             write (fds) ((realsp(var(i1,i2)), i2 = 1,u2), i1 = 1,u1)
              ierr = 0
           case (FTYPE_UNFORM64)
              write (fds) ((var(i1,i2), i2 = 1,u2), i1 = 1,u1)
@@ -672,7 +663,6 @@ end subroutine wrtarray_hp_2d
 
 subroutine wrtarray_hp_3d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -743,13 +733,7 @@ subroutine wrtarray_hp_3d(fds, filename, filetype, grpnam, &
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, var)
                 else
                    allocate(lvar(u1,u2,u3))
-                   do i3 = 1,u3
-                      do i2 = 1,u2
-                         do i1 = 1,u1
-                            lvar(i1,i2,i3) = real(var(i1,i2,i3),sp)
-                         enddo
-                      enddo
-                   enddo
+                   lvar(:,:,:) = realsp(var(:,:,:))
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, lvar)
                    deallocate(lvar)
                 endif
@@ -766,7 +750,7 @@ subroutine wrtarray_hp_3d(fds, filename, filetype, grpnam, &
              call nc_check_err(lundia, ierr, 'writing '//varnam, filename)
           case (FTYPE_UNFORM32)
              do i3 = 1,u3
-                write (fds) ((real(var(i1,i2,i3),sp), i2 = 1,u2), i1 = 1,u1)
+                write (fds) ((realsp(var(i1,i2,i3)), i2 = 1,u2), i1 = 1,u1)
              enddo
              ierr = 0
           case (FTYPE_UNFORM64)
@@ -783,7 +767,6 @@ end subroutine wrtarray_hp_3d
                        
 subroutine wrtarray_hp_4d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -857,15 +840,7 @@ subroutine wrtarray_hp_4d(fds, filename, filetype, grpnam, &
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, var)
                 else
                    allocate(lvar(u1,u2,u3,u4))
-                   do i4 = 1,u4
-                      do i3 = 1,u3
-                         do i2 = 1,u2
-                            do i1 = 1,u1
-                               lvar(i1,i2,i3,i4) = real(var(i1,i2,i3,i4),sp)
-                            enddo
-                         enddo
-                      enddo
-                   enddo
+                   lvar(:,:,:,:) = realsp(var(:,:,:,:))
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, lvar)
                    deallocate(lvar)
                 endif
@@ -883,7 +858,7 @@ subroutine wrtarray_hp_4d(fds, filename, filetype, grpnam, &
           case (FTYPE_UNFORM32)
              do i4 = 1,u4
                 do i3 = 1,u3
-                   write (fds) ((real(var(i1,i2,i3,i4),sp), i2 = 1,u2), i1 = 1,u1)
+                   write (fds) ((realsp(var(i1,i2,i3,i4)), i2 = 1,u2), i1 = 1,u1)
                 enddo
              enddo
              ierr = 0
@@ -903,7 +878,6 @@ end subroutine wrtarray_hp_4d
 
 subroutine wrtarray_hp_5d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -980,17 +954,7 @@ subroutine wrtarray_hp_5d(fds, filename, filetype, grpnam, &
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, var)
                 else
                    allocate(lvar(u1,u2,u3,u4,u5))
-                   do i5 = 1,u5
-                      do i4 = 1,u4
-                         do i3 = 1,u3
-                            do i2 = 1,u2
-                               do i1 = 1,u1
-                                  lvar(i1,i2,i3,i4,i5) = real(var(i1,i2,i3,i4,i5),sp)
-                               enddo
-                            enddo
-                         enddo
-                      enddo
-                   enddo
+                   lvar(:,:,:,:,:) = realsp(var(:,:,:,:,:))
                    ierr = putelt(fds, grpnam_nfs, varnam_nfs, uindex, 1, lvar)
                    deallocate(lvar)
                 endif
@@ -1009,7 +973,7 @@ subroutine wrtarray_hp_5d(fds, filename, filetype, grpnam, &
              do i5 = 1,u5
                 do i4 = 1,u4
                    do i3 = 1,u3
-                      write (fds) ((real(var(i1,i2,i3,i4,i5),sp), i2 = 1,u2), i1 = 1,u1)
+                      write (fds) ((realsp(var(i1,i2,i3,i4,i5)), i2 = 1,u2), i1 = 1,u1)
                    enddo
                 enddo
              enddo
@@ -1032,7 +996,6 @@ end subroutine wrtarray_hp_5d
 
 subroutine wrtarray_sp_0d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -1121,7 +1084,6 @@ end subroutine wrtarray_sp_0d
 
 subroutine wrtarray_sp_1d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -1218,7 +1180,6 @@ end subroutine wrtarray_sp_1d
 
 subroutine wrtarray_sp_2d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -1320,7 +1281,6 @@ end subroutine wrtarray_sp_2d
 
 subroutine wrtarray_sp_3d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -1431,7 +1391,6 @@ end subroutine wrtarray_sp_3d
 
 subroutine wrtarray_sp_4d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -1551,7 +1510,6 @@ end subroutine wrtarray_sp_4d
 
 subroutine wrtarray_sp_5d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -1680,7 +1638,6 @@ end subroutine wrtarray_sp_5d
 
 subroutine wrtarray_char_0d(fds, filename, filetype, grpnam, &
                           & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -1748,7 +1705,6 @@ end subroutine wrtarray_char_0d
 
 subroutine wrtarray_char_1d(fds, filename, filetype, grpnam, &
                        & itime, gdp, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master
     use netcdf, only: nf90_inq_varid, nf90_noerr, nf90_put_var
     use globaldata
@@ -1820,7 +1776,6 @@ end subroutine wrtarray_char_1d
 subroutine wrtarray_n_char(fds, filename, filetype, grpnam, &
                     & itime, ub1, ub1sum, ub1global, order, gdp, &
                     & ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master, parll
     use dffunctionals, only: dfgather_filter
     use globaldata
@@ -1869,7 +1824,6 @@ end subroutine wrtarray_n_char
 subroutine wrtarray_n_fp(fds, filename, filetype, grpnam, &
                     & itime, ub1, ub1sum, ub1global, order, gdp, &
                     & ierr, lundia, var, varnam, operation)
-    use precision
     use dfparall, only: inode, master, parll
     use dffunctionals, only: dfgather_filter
     use globaldata
@@ -1920,7 +1874,6 @@ subroutine wrtarray_nk_fp(fds, filename, filetype, grpnam, &
                    & itime, ub1, ub1sum, ub1global, order, gdp, &
                    & shlay, kmaxout, lb2, ub2, &
                    & ierr, lundia, var, varnam, operation)
-    use precision
     use dfparall, only: inode, master, parll
     use dffunctionals, only: dfgather_filter
     use globaldata
@@ -1985,7 +1938,6 @@ subroutine wrtarray_nl_int(fds, filename, filetype, grpnam, &
                     & itime, ub1, ub1sum, ub1global, order, gdp, &
                     & ub2, &
                     & ierr, lundia, var, varnam, operation, mergedim)
-    use precision
     use dfparall, only: inode, master, parll
     use dffunctionals, only: dfgather_filter
     use globaldata
@@ -2052,7 +2004,6 @@ subroutine wrtarray_nl_fp(fds, filename, filetype, grpnam, &
                     & itime, ub1, ub1sum, ub1global, order, gdp, &
                     & ub2, &
                     & ierr, lundia, var, varnam, operation, mergedim)
-    use precision
     use dfparall, only: inode, master, parll
     use dffunctionals, only: dfgather_filter
     use globaldata
@@ -2119,7 +2070,6 @@ subroutine wrtarray_nkl_fp(fds, filename, filetype, grpnam, &
                     & itime, ub1, ub1sum, ub1global, order, gdp, &
                     & shlay, kmaxout, lb2, ub2, ub3, &
                     & ierr, lundia, var, varnam, operation)
-    use precision
     use dfparall, only: inode, master, parll
     use dffunctionals, only: dfgather_filter
     use globaldata
@@ -2185,7 +2135,6 @@ subroutine wrtarray_nmkl_ptr(fds, filename, filetype, grpnam, &
                      & itime, nf, nl, mf, ml, iarrc, gdp, &
                      & lk, uk, ul, ierr, lundia, varptr, varnam, &
                      & smlay, kmaxout, kfmin, kfmax)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use globaldata
     !
@@ -2247,7 +2196,6 @@ subroutine wrtarray_nmkl(fds, filename, filetype, grpnam, &
                      & itime, nf, nl, mf, ml, iarrc, gdp, &
                      & lk, uk, ul,ierr, lundia, var, varnam, &
                      & smlay, kmaxout, kfmin, kfmax)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use dffunctionals, only: dfgather, dfgather_seq
     use globaldata
@@ -2341,7 +2289,6 @@ subroutine wrtarray_nmkli(fds, filename, filetype, grpnam, &
                      & itime, nf, nl, mf, ml, iarrc, gdp, &
                      & lk, uk, ul, ui, ierr, lundia, var, varnam, &
                      & smlay, kmaxout, kfmin, kfmax)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use dffunctionals, only: dfgather, dfgather_seq
     use globaldata
@@ -2440,7 +2387,6 @@ end subroutine wrtarray_nmkli
 subroutine wrtarray_nmll(fds, filename, filetype, grpnam, &
                     & itime, nf, nl, mf, ml, iarrc, gdp, &
                     & u3, u4, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use dffunctionals, only: dfgather, dfgather_seq
     use globaldata
@@ -2501,7 +2447,6 @@ subroutine wrtarray_nmk_ptr(fds, filename, filetype, grpnam, &
                      & itime, nf, nl, mf, ml, iarrc, gdp, &
                      & lk, uk, ierr, lundia, varptr, varnam, &
                      & smlay, kmaxout, kfmin, kfmax)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use globaldata
     !
@@ -2562,7 +2507,6 @@ subroutine wrtarray_nmk(fds, filename, filetype, grpnam, &
                     & itime, nf, nl, mf, ml, iarrc, gdp, &
                     & lk, uk, ierr, lundia, var, varnam, &
                     & smlay, kmaxout, kfmin, kfmax)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use dffunctionals, only: dfgather, dfgather_seq
     use globaldata
@@ -2650,7 +2594,6 @@ end subroutine wrtarray_nmk
 subroutine wrtarray_nml_2d_ptr(fds, filename, filetype, grpnam, &
                      & itime, nf, nl, mf, ml, iarrc, gdp, &
                      & ul, ierr, lundia, varptr, varnam)
-    use precision
     use dfparall, only: nproc
     use globaldata
     !
@@ -2691,7 +2634,6 @@ end subroutine wrtarray_nml_2d_ptr
 subroutine wrtarray_nml_3d_ptr(fds, filename, filetype, grpnam, &
                      & itime, nf, nl, mf, ml, iarrc, gdp, &
                      & ul, ierr, lundia, varptr, varnam)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use globaldata
     !
@@ -2745,7 +2687,6 @@ end subroutine wrtarray_nml_3d_ptr
 subroutine wrtarray_nml(fds, filename, filetype, grpnam, &
                     & itime, nf, nl, mf, ml, iarrc, gdp, &
                     & ul, ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use dffunctionals, only: dfgather, dfgather_seq
     use globaldata
@@ -2804,7 +2745,6 @@ end subroutine wrtarray_nml
 subroutine wrtarray_nm_sp_1d_ptr(fds, filename, filetype, grpnam, &
                      & itime, nf, nl, mf, ml, iarrc, gdp, &
                      & ierr, lundia, varptr, varnam)
-    use precision
     use dfparall, only: nproc
     use globaldata
     !
@@ -2844,7 +2784,6 @@ end subroutine wrtarray_nm_sp_1d_ptr
 subroutine wrtarray_nm_hp_1d_ptr(fds, filename, filetype, grpnam, &
                      & itime, nf, nl, mf, ml, iarrc, gdp, &
                      & ierr, lundia, varptr, varnam)
-    use precision
     use dfparall, only: nproc
     use globaldata
     !
@@ -2884,7 +2823,6 @@ end subroutine wrtarray_nm_hp_1d_ptr
 subroutine wrtarray_nm_sp_2d_ptr(fds, filename, filetype, grpnam, &
                      & itime, nf, nl, mf, ml, iarrc, gdp, &
                      & ierr, lundia, varptr, varnam)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use dffunctionals, only: dfgather, dfgather_seq
     use globaldata
@@ -2938,7 +2876,6 @@ end subroutine wrtarray_nm_sp_2d_ptr
 subroutine wrtarray_nm_hp_2d_ptr(fds, filename, filetype, grpnam, &
                      & itime, nf, nl, mf, ml, iarrc, gdp, &
                      & ierr, lundia, varptr, varnam)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use globaldata
     !
@@ -2991,7 +2928,6 @@ end subroutine wrtarray_nm_hp_2d_ptr
 subroutine wrtarray_nm_2d(fds, filename, filetype, grpnam, &
                    & itime, nf, nl, mf, ml, iarrc, gdp, &
                    & ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: nproc
     use globaldata
     !
@@ -3026,7 +2962,6 @@ end subroutine wrtarray_nm_2d
 subroutine wrtarray_nm_sp(fds, filename, filetype, grpnam, &
                    & itime, nf, nl, mf, ml, iarrc, gdp, &
                    & ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use dffunctionals, only: dfgather, dfgather_seq
     use globaldata
@@ -3081,7 +3016,6 @@ end subroutine wrtarray_nm_sp
 subroutine wrtarray_nm_hp(fds, filename, filetype, grpnam, &
                    & itime, nf, nl, mf, ml, iarrc, gdp, &
                    & ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use dffunctionals, only: dfgather, dfgather_seq
     use globaldata
@@ -3136,7 +3070,6 @@ end subroutine wrtarray_nm_hp
 subroutine wrtarray_nm_int(fds, filename, filetype, grpnam, &
                    & itime, nf, nl, mf, ml, iarrc, gdp, &
                    & ierr, lundia, var, varnam)
-    use precision
     use dfparall, only: inode, master, nproc, parll
     use dffunctionals, only: dfgather, dfgather_seq
     use globaldata
@@ -3186,5 +3119,13 @@ subroutine wrtarray_nm_int(fds, filename, filetype, grpnam, &
         ierr = 0
     endif
 end subroutine wrtarray_nm_int
+
+elemental function realsp(x) result(y)
+    implicit none
+    real(hp), intent(in) :: x
+    real(sp)             :: y
+    real(hp), parameter :: HUGE_SP_AS_HP = real(huge(1.0_sp),hp)
+    y = real(max(-HUGE_SP_AS_HP,min(x,HUGE_SP_AS_HP)), sp)
+end function realsp
 
 end module wrtarray

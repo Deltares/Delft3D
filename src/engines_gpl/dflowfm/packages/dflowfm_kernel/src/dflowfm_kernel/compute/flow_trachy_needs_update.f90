@@ -33,6 +33,8 @@
 !> helper function to make sure that the check for updating cross sections is in line with the flow_trachyupdate
 module m_flow_trachy_needs_update
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -48,7 +50,7 @@ contains
 
       dt_trachy = dt_user * real(itimtt, hp)
       ntrtsteps = (time1 - tstart_user) / dt_trachy
-      flow_trachy_needs_update = (abs(ntrtsteps - floor(ntrtsteps)) < 1d-6)
+      flow_trachy_needs_update = (abs(ntrtsteps - floor(ntrtsteps)) < 1.0e-6_dp)
    end function flow_trachy_needs_update
 
 end module m_flow_trachy_needs_update

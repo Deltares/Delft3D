@@ -7,25 +7,28 @@ source util.sh
 
 function show_help {
     cat - <<EOF
-Usage: $0 -a <apptainer-image> -r <s3-path-prefix> -o <s3-path-prefix> [-f <comma-separated list>]
+Usage: $0 -a <apptainer-image> -r <s3-path-prefix> -o <s3-path-prefix> [-m <models-path>] [-f <comma-separated list>]
 -a|--apptainer oras://repo/image:tag
     Either a path to a '.sif' file or a link to a repository e.g. 'oras://<repo>/<image>:<tag>'.
 -c|--current-prefix path/to/output
     The output of the verschilanalyse will be stored in this location in the verschilanalyse bucket
 -r|--reference-prefix path/to/references
     The reference output is read from this location in the verschilanalyse bucket.
+-m|--models-path input
+    The S3 path and local directory name for model data (default: input)
 -f|--model-filter grevelingen,volkerakzoommeer
     Comma-separated list of patterns. Only models with paths matching one of these patterns will be run.
 EOF
 }
 
 # Parse command line options
-PARSED_OPTIONS=$(getopt -o 'a:c:r:f:' -l 'apptainer:,current-prefix:,reference-prefix:,model-filter:' -- "$@")
+PARSED_OPTIONS=$(getopt -o 'a:c:r:m:f:' -l 'apptainer:,current-prefix:,reference-prefix:,models-path:,model-filter:' -- "$@")
 eval set -- "$PARSED_OPTIONS"
 
 APPTAINER=
 REFERENCE_PREFIX=
 CURRENT_PREFIX=
+MODELS_PATH=
 MODEL_FILTER=
 
 while true; do
@@ -40,6 +43,10 @@ while true; do
             ;;
         -r|--reference-prefix)
             REFERENCE_PREFIX="$2"
+            shift 2
+            ;;
+        -m|--models-path)
+            MODELS_PATH="$2"
             shift 2
             ;;
         -f|--model-filter)
@@ -61,6 +68,10 @@ done
 if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX ; then
     show_help
     exit 1
+fi
+
+if [[ -z "$MODELS_PATH" ]]; then
+    MODELS_PATH="input"
 fi
 
 if [[ -z "$MODEL_FILTER" ]]; then
@@ -90,15 +101,15 @@ module purge
 module load apptainer/1.2.5
 
 # Create log dir and input dir.
-mkdir -p "${LOG_DIR}/models" "${VAHOME}/input"
+mkdir -p "${LOG_DIR}/models" "${VAHOME}/${MODELS_PATH}"
 
 # Get latest input data from MinIO.
 srun --nodes=1 --ntasks=1 --cpus-per-task=16 --partition=16vcpu_spot \
     --account=verschilanalyse --qos=verschilanalyse \
-    docker run --rm --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VAHOME}/input:/data" \
+    docker run --rm --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VAHOME}/${MODELS_PATH}:/data" \
     docker.io/amazon/aws-cli:2.22.7 \
     --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
-    s3 sync --delete --no-progress "${BUCKET}/input/" /data
+    s3 sync --delete --no-progress "${BUCKET}/${MODELS_PATH}/" /data
 
 # Download reference output data.
 DOWNLOAD_REFS_JOB_ID=$( \
@@ -116,7 +127,7 @@ apptainer pull --force "$DELFT3D_SIF" "$APPTAINER"
 
 # Find and submit all 'submit_apptainer_h7.sh' scripts.
 JOB_IDS=()
-SUBMIT_SCRIPTS=$(find "${VAHOME}/input" -type f -name submit_apptainer_h7.sh -iregex "$MODEL_REGEX")
+SUBMIT_SCRIPTS=$(find "${VAHOME}/${MODELS_PATH}" -type f -name submit_apptainer_h7.sh -iregex "$MODEL_REGEX")
 for SCRIPT in $SUBMIT_SCRIPTS; do
     MODEL_DIR=$(echo "$SCRIPT" | sed -n -e 's|^\([-/_0-9A-Za-z]*\)/computations/.*$|\1|p')
 

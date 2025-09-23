@@ -65,18 +65,18 @@ contains
 
       if (stm_included) return
 
-      seq = 0d0; flx = 0d0
+      seq = 0.0_dp; flx = 0.0_dp
 
       if (jaceneqtr == 1) then
          k = kk
          if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! tile type
             hsk = s1(k) - bl(k)
          else ! u-netwnodes / conv type
-            hsk = 0d0; nn = 0
+            hsk = 0.0_dp; nn = 0
             do n = 1, netcell(k)%n
                n1 = netcell(k)%nod(n)
-               dh = max(0d0, s1(k) - zk(n1))
-               if (dh > 0d0) then
+               dh = max(0.0_dp, s1(k) - zk(n1))
+               if (dh > 0.0_dp) then
                   nn = nn + 1
                   hsk = hsk + dh
                end if
@@ -88,19 +88,19 @@ contains
       else
          n = nban(1, kk) ! net node
          k = nban(2, kk) ! flow node
-         hsk = 0d0
+         hsk = 0.0_dp
          if (jabanhydrad == 1) then ! Hydraulic radius for this ban
             wu2 = dbdistance(xz(k), yz(k), xk(n), yk(n), jsferic, jasfer3D, dmiss)
             L = nban(3, kk)
-            zbu = 9d9
+            zbu = 9.0e9_dp
             if (L > 0) then
-               zbu = 0.5d0 * (bob(1, L) + bob(2, L))
+               zbu = 0.5_dp * (bob(1, L) + bob(2, L))
             end if
 
             L = nban(4, kk)
             if (L > 0) then
-               zbu = 0.5d0 * (bob(1, L) + bob(2, L)) + zbu
-               zbu = 0.5d0 * zbu
+               zbu = 0.5_dp * (bob(1, L) + bob(2, L)) + zbu
+               zbu = 0.5_dp * zbu
             end if
 
             if (s1(k) > zbu) then
@@ -123,12 +123,12 @@ contains
 
       ! or whatever comes out of the roughness predictor, and van Rijn takes z0 = 3D90
 
-      dks = 30d0 * z0k ! nikuradse roughness (m)
-      if (dks > 0.5d0 * hsk) then !0.2
+      dks = 30.0_dp * z0k ! nikuradse roughness (m)
+      if (dks > 0.5_dp * hsk) then !0.2
          return
       end if
 
-      hdune = 0d0 ! half duneheight (m)
+      hdune = 0.0_dp ! half duneheight (m)
       wse = ws
 
       if (jaceneqtr == 1) then
@@ -139,23 +139,23 @@ contains
 
       if (jased == 3) then ! Engelund:
          cf = sqcf * sqcf
-         qeng = 0.05d0 * cf * sqcf * (ucur**5) / (D50(1) * (rhodelta(1) * ag)**2) ! (m2/s)
+         qeng = 0.05_dp * cf * sqcf * (ucur**5) / (D50(1) * (rhodelta(1) * ag)**2) ! (m2/s)
 
-         sseq = qeng / (max(ucur, 1d-2) * hsk) ! ( ) dimensionless equilibrium 2D transport suspended sediment concentration
+         sseq = qeng / (max(ucur, 1.0e-2_dp) * hsk) ! ( ) dimensionless equilibrium 2D transport suspended sediment concentration
          sseq = alfasus * sseq
          seq(1) = rhosed(1) * sseq ! equilibrium transport concentration bed + suspended (kg/m3)
          wse(1) = wse(1) * crefcav
       else
 
-         ueff = ucur; beta = 1d0; twave = 0d0 !
+         ueff = ucur; beta = 1.0_dp; twave = 0.0_dp !
          ustar2swart = sqcf * sqcf * Ueff * Ueff
-         if (jawave > NO_WAVES .and. ueff > 0d0 .and. .not. flowWithoutWaves) then
-            if (twav(k) > 1d-2) then
+         if (jawave > NO_WAVES .and. ueff > 0.0_dp .and. .not. flowWithoutWaves) then
+            if (twav(k) > 1.0e-2_dp) then
                twave = twav(k)
                uwave = uorb(k) ! (m/s) for jased == 2, tauwav contains uorb
                do nn = 1, nd(k)%lnx
                   LL = abs(nd(n)%ln(nn))
-                  if (hu(LL) > 0d0) then
+                  if (hu(LL) > 0.0_dp) then
                      ar = au(LL) * dx(LL)
                      wa = wa + ar ! area  weigthed
                      !z00 = z00 + ar*hu(LL)*exp(-1d0 - vonkar*cz/sag)   ! z0ucur, to avoid double counting
@@ -169,7 +169,7 @@ contains
 
                beta = ucur / (ucur + uwave) ! ( )
 
-               Ueff = Ucur + 0.4d0 * uwave ! (m/s) SvR 2007
+               Ueff = Ucur + 0.4_dp * uwave ! (m/s) SvR 2007
 
                if (MxgrKrone > 0) then
                   call Swart(Twave, uwave, z00, fw, ustw2)
@@ -205,19 +205,19 @@ contains
 
                if (Twave > 0) then
                   Ucrw = Awcr(j) * Twave**Bwcr(j) !  = 0.24d0*(rhodelta*ag)**0.66d0*D50**0.33d0
-                  Ucr = beta * Ucr + (1d0 - beta) * Ucrw ! (m/s)
+                  Ucr = beta * Ucr + (1.0_dp - beta) * Ucrw ! (m/s)
                end if
 
                if (isusandorbed >= 2) then
                   Pmob = (Ueff - Ucr) / sqsgd50(j) ! ( ) dimensionless mobility parameter
-                  sbeq = 0d0
+                  sbeq = 0.0_dp
                   if (Pmob > 0) then
 
-                     Pmob = Pmob**1.5d0 ! ( ) dimensionless mobility, old power was 2.4d0
+                     Pmob = Pmob**1.5_dp ! ( ) dimensionless mobility, old power was 2.4d0
 
-                     D50h = (D50(j) / hsk)**1.2d0 ! ( )
+                     D50h = (D50(j) / hsk)**1.2_dp ! ( )
 
-                     sbeq = 0.015d0 * D50h * Pmob ! ( ) dimensionless equilibrium bedload concentration, formula 12 , so bed load transport =
+                     sbeq = 0.015_dp * D50h * Pmob ! ( ) dimensionless equilibrium bedload concentration, formula 12 , so bed load transport =
                      !  qb = u.h.sbeq.rhosed ( (m/s) . m . ( ). (kg/m3) ) = ( kg/(sm) ), old alfa was .005
 
                      seq(j) = sbeq * rhosed(j) ! equilibrium concentration (kg/m3)
@@ -226,16 +226,16 @@ contains
                end if
                ! reference height is max of (nikuradse and half dune height) (m)
                aref = max(dks, hdune) ! vRijns book page 7.65 (line 6)
-               aref = max(aref, 0.01d0 * hsk) ! vRijns book page 7.64 (line 3)
-               aref = min(aref, 0.25d0 * hsk) ! check, always < .25 waterdepth
+               aref = max(aref, 0.01_dp * hsk) ! vRijns book page 7.64 (line 3)
+               aref = min(aref, 0.25_dp * hsk) ! check, always < .25 waterdepth
                ! vrijns book pag 8.50 r 3 ????
                Tmob = (Ueff * Ueff - Ucr * Ucr) / (Ucr * Ucr) ! Mobility parameter T ( )
-               if (Tmob > 0 .and. ustar > 0d0) then
+               if (Tmob > 0 .and. ustar > 0.0_dp) then
                   rouse = ws(j) / (vonkar * ustar)
-                  crefa = 0.015d0 * (D50(j) / aref) * (Tmob**1.5d0) * Dstar03(j) ! dimensionless reference concentration ( ), (book vRijn 1993, (7.3.31) )
+                  crefa = 0.015_dp * (D50(j) / aref) * (Tmob**1.5_dp) * Dstar03(j) ! dimensionless reference concentration ( ), (book vRijn 1993, (7.3.31) )
                   !crefa = min(crefa, 0.65d0)                                   ! max ref concentration ( )               or (book Garcia 2008, (2-226) )
                   !crefa = min(crefa, 0.15d0)
-                  crefa = min(crefa, 0.05d0) ! vRijns book ?
+                  crefa = min(crefa, 0.05_dp) ! vRijns book ?
 
                   if (kmx == 0) then
                      call check_einstein_garcia2(aref, hsk, z0k, rouse, eincheck2) ! numerical check einstein integrals, now used as vertical integrator anyway
@@ -246,7 +246,7 @@ contains
 
                      !qsseq = qssevr84
 
-                     sseq = qsseq / (max(ucur, 1d-2) * hsk) ! ( ) dimensionless equilibrium 2D transport suspended sediment concentration
+                     sseq = qsseq / (max(ucur, 1.0e-2_dp) * hsk) ! ( ) dimensionless equilibrium 2D transport suspended sediment concentration
 
                      ! call checksuspended_transport()
 
@@ -270,21 +270,21 @@ contains
 
       end if ! !jased 1, 2
 
-      sumlay = 0d0 ! check bed material
+      sumlay = 0.0_dp ! check bed material
 
       if (jaceneqtr == 1) then
          kg = k
       else
          kg = n
       end if
-      sumlay = 0d0 ! check bed material
+      sumlay = 0.0_dp ! check bed material
       do j = 1, mxgr
          sumlay = sumlay + grainlay(j, kg)
       end do
 
-      dmorfacL = max(1d0, dmorfac)
-      if (sumlay == 0d0) then
-         seq(1:mxgr) = 0d0
+      dmorfacL = max(1.0_dp, dmorfac)
+      if (sumlay == 0.0_dp) then
+         seq(1:mxgr) = 0.0_dp
       else
          do j = 1, mxgr
             seq(j) = seq(j) * grainlay(j, kg) / sumlay ! normed with erodable fraction (kg/m3)

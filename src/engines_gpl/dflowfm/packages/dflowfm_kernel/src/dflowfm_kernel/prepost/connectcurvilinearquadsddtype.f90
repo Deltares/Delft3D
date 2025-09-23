@@ -126,7 +126,7 @@ contains
       merg = 0; kins = 0; kins2 = 0
 
       allocate (dist(2 * nx))
-      dist = 0d0
+      dist = 0.0_dp
       allocate (idx(2 * nx))
       idx = 0
       allocate (kdum(2 * nx))
@@ -250,8 +250,8 @@ contains
                   call newlink(kins(1), k1a, lnu) ! two diagonals from inside point to opp. corners
                   call newlink(kins(1), k2a, lnu)
                else if (ins == 2) then ! 1-on-3 coupling:
-                  xm = 0.5d0 * (xk(k1a) + xk(k2a)) !
-                  ym = 0.5d0 * (yk(k1a) + yk(k2a)) ! +-+---1---+
+                  xm = 0.5_dp * (xk(k1a) + xk(k2a)) !
+                  ym = 0.5_dp * (yk(k1a) + yk(k2a)) ! +-+---1---+
                   call dsetnewpoint(xm, ym, km) ! | | / |   |
                   call newlink(kins(1), km, lnu) ! +-i   |   |
                   call newlink(kins(1), k1a, lnu) ! | | > m   |
@@ -270,8 +270,8 @@ contains
 
                else if (ins == 3) then
 
-                  xm = 0.5d0 * (xk(k1a) + xk(k2a))
-                  ym = 0.5d0 * (yk(k1a) + yk(k2a))
+                  xm = 0.5_dp * (xk(k1a) + xk(k2a))
+                  ym = 0.5_dp * (yk(k1a) + yk(k2a))
                   call dsetnewpoint(xm, ym, km)
                   call newlink(kins(2), km, lnu)
                   call newlink(km, k2a, lnu)
@@ -323,16 +323,16 @@ contains
                      end if
                   end if
 
-                  xm = 0.75d0 * xk(k1a) + 0.25d0 * xk(k2a)
-                  ym = 0.75d0 * yk(k1a) + 0.25d0 * yk(k2a)
+                  xm = 0.75_dp * xk(k1a) + 0.25_dp * xk(k2a)
+                  ym = 0.75_dp * yk(k1a) + 0.25_dp * yk(k2a)
                   call dsetnewpoint(xm, ym, km1)
 
-                  xm = 0.50d0 * xk(k1a) + 0.50d0 * xk(k2a)
-                  ym = 0.50d0 * yk(k1a) + 0.50d0 * yk(k2a)
+                  xm = 0.50_dp * xk(k1a) + 0.50_dp * xk(k2a)
+                  ym = 0.50_dp * yk(k1a) + 0.50_dp * yk(k2a)
                   call dsetnewpoint(xm, ym, km2)
 
-                  xm = 0.25d0 * xk(k1a) + 0.75d0 * xk(k2a)
-                  ym = 0.25d0 * yk(k1a) + 0.75d0 * yk(k2a)
+                  xm = 0.25_dp * xk(k1a) + 0.75_dp * xk(k2a)
+                  ym = 0.25_dp * yk(k1a) + 0.75_dp * yk(k2a)
                   call dsetnewpoint(xm, ym, km3)
 
                   call newlink(kins(2), km2, lnu)
@@ -352,12 +352,12 @@ contains
                   call dellink(La)
                   if (npb == 0) cycle
 
-                  xm = 0.66d0 * xk(k1b) + 0.34d0 * xk(k2b)
-                  ym = 0.66d0 * yk(k1b) + 0.34d0 * yk(k2b)
+                  xm = 0.66_dp * xk(k1b) + 0.34_dp * xk(k2b)
+                  ym = 0.66_dp * yk(k1b) + 0.34_dp * yk(k2b)
                   call dsetnewpoint(xm, ym, km1b)
 
-                  xm = 0.34d0 * xk(k1b) + 0.66d0 * xk(k2b)
-                  ym = 0.34d0 * yk(k1b) + 0.66d0 * yk(k2b)
+                  xm = 0.34_dp * xk(k1b) + 0.66_dp * xk(k2b)
+                  ym = 0.34_dp * yk(k1b) + 0.66_dp * yk(k2b)
                   call dsetnewpoint(xm, ym, km2b)
 
                   call newlink(km1, km1b, lnu)
@@ -372,8 +372,8 @@ contains
                   call dellink(Lb)
                   if (npd == 0) cycle
 
-                  xm = 0.5d0 * xk(k1d) + 0.5d0 * xk(k2d)
-                  ym = 0.5d0 * yk(k1d) + 0.5d0 * yk(k2d)
+                  xm = 0.5_dp * xk(k1d) + 0.5_dp * xk(k2d)
+                  ym = 0.5_dp * yk(k1d) + 0.5_dp * yk(k2d)
                   call dsetnewpoint(xm, ym, kmd)
 
                   call newlink(km1b, kmd, lnu)
@@ -430,7 +430,7 @@ contains
 
                if (k3 == 0 .or. k4 == 0) exit
 
-               r2 = DBDISTANCE(XK(K3), YK(K3), XK(K4), YK(K4), jsferic, jasfer3D, dmiss); r2 = 0.3d0 * r2
+               r2 = DBDISTANCE(XK(K3), YK(K3), XK(K4), YK(K4), jsferic, jasfer3D, dmiss); r2 = 0.3_dp * r2
 
                if (kc(k3) > 0) then
                   call closeenough(XK(K3), YK(K3), XK(K1), YK(K1), r2, ja1)
@@ -476,8 +476,8 @@ contains
                   call newlink(kins(1), k2a, lnu)
                else if (ins == 2) then
 
-                  xm = 0.5d0 * (xk(k1a) + xk(k2a))
-                  ym = 0.5d0 * (yk(k1a) + yk(k2a))
+                  xm = 0.5_dp * (xk(k1a) + xk(k2a))
+                  ym = 0.5_dp * (yk(k1a) + yk(k2a))
                   call dsetnewpoint(xm, ym, km)
                   call newlink(kins(1), km, lnu)
                   call newlink(kins(1), k1a, lnu)
@@ -496,8 +496,8 @@ contains
 
                else if (ins == 3) then
 
-                  xm = 0.5d0 * (xk(k1a) + xk(k2a))
-                  ym = 0.5d0 * (yk(k1a) + yk(k2a))
+                  xm = 0.5_dp * (xk(k1a) + xk(k2a))
+                  ym = 0.5_dp * (yk(k1a) + yk(k2a))
                   call dsetnewpoint(xm, ym, km)
                   call newlink(kins(2), km, lnu)
                   call newlink(km, k2a, lnu)
@@ -522,16 +522,16 @@ contains
                   call nextcel(npb, Lb, npd, k1d, k2d, Ld)
                   call nextcel(npd, LD, npe, k1e, k2e, Le)
 
-                  xm = 0.75d0 * xk(k1a) + 0.25d0 * xk(k2a)
-                  ym = 0.75d0 * yk(k1a) + 0.25d0 * yk(k2a)
+                  xm = 0.75_dp * xk(k1a) + 0.25_dp * xk(k2a)
+                  ym = 0.75_dp * yk(k1a) + 0.25_dp * yk(k2a)
                   call dsetnewpoint(xm, ym, km1)
 
-                  xm = 0.50d0 * xk(k1a) + 0.50d0 * xk(k2a)
-                  ym = 0.50d0 * yk(k1a) + 0.50d0 * yk(k2a)
+                  xm = 0.50_dp * xk(k1a) + 0.50_dp * xk(k2a)
+                  ym = 0.50_dp * yk(k1a) + 0.50_dp * yk(k2a)
                   call dsetnewpoint(xm, ym, km2)
 
-                  xm = 0.25d0 * xk(k1a) + 0.75d0 * xk(k2a)
-                  ym = 0.25d0 * yk(k1a) + 0.75d0 * yk(k2a)
+                  xm = 0.25_dp * xk(k1a) + 0.75_dp * xk(k2a)
+                  ym = 0.25_dp * yk(k1a) + 0.75_dp * yk(k2a)
                   call dsetnewpoint(xm, ym, km3)
 
                   call newlink(kins(2), km2, lnu)
@@ -551,12 +551,12 @@ contains
                   call dellink(La)
                   if (npb == 0) exit
 
-                  xm = 0.66d0 * xk(k1b) + 0.34d0 * xk(k2b)
-                  ym = 0.66d0 * yk(k1b) + 0.34d0 * yk(k2b)
+                  xm = 0.66_dp * xk(k1b) + 0.34_dp * xk(k2b)
+                  ym = 0.66_dp * yk(k1b) + 0.34_dp * yk(k2b)
                   call dsetnewpoint(xm, ym, km1b)
 
-                  xm = 0.34d0 * xk(k1b) + 0.66d0 * xk(k2b)
-                  ym = 0.34d0 * yk(k1b) + 0.66d0 * yk(k2b)
+                  xm = 0.34_dp * xk(k1b) + 0.66_dp * xk(k2b)
+                  ym = 0.34_dp * yk(k1b) + 0.66_dp * yk(k2b)
                   call dsetnewpoint(xm, ym, km2b)
 
                   call newlink(km1, km1b, lnu)
@@ -571,8 +571,8 @@ contains
                   call dellink(Lb)
                   if (npd == 0) exit
 
-                  xm = 0.5d0 * xk(k1d) + 0.5d0 * xk(k2d)
-                  ym = 0.5d0 * yk(k1d) + 0.5d0 * yk(k2d)
+                  xm = 0.5_dp * xk(k1d) + 0.5_dp * xk(k2d)
+                  ym = 0.5_dp * yk(k1d) + 0.5_dp * yk(k2d)
                   call dsetnewpoint(xm, ym, kmd)
 
                   call newlink(km1b, kmd, lnu)

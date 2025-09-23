@@ -37,10 +37,10 @@ contains
       use m_dcminmod, only: dcminmod
       real(kind=dp) d1, d2
 
-      if (d1 * d2 > 0d0) then
-         dcentral = dcminmod((d1 + d2) * 0.5d0, dcminmod(2d0 * d1, 2d0 * d2))
+      if (d1 * d2 > 0.0_dp) then
+         dcentral = dcminmod((d1 + d2) * 0.5_dp, dcminmod(2.0_dp * d1, 2.0_dp * d2))
       else
-         dcentral = 0d0
+         dcentral = 0.0_dp
       end if
       return
    end function dcentral

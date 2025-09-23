@@ -32,8 +32,10 @@
 
 !>  assign indices (i,j) to the curvi-linear grid
 module m_assignijgrid
+
    use m_grow_ijc, only: grow_ijc
 
+use precision, only: dp
    implicit none
 
    private
@@ -76,10 +78,10 @@ contains
 
       numiter_guess = sqrt(dble(nump)) * 10
 
-      call readyy('creating curvilinear grid', 0d0)
+      call readyy('creating curvilinear grid', 0.0_dp)
 
       do iter = 1, MAXITER
-         call readyy('creating curvilinear grid', min(dble(iter - 1) / dble(numiter_guess - 1), 1d0))
+         call readyy('creating curvilinear grid', min(dble(iter - 1) / dble(numiter_guess - 1), 1.0_dp))
 
          icount = 0
 
@@ -113,7 +115,7 @@ contains
 
       if (iter == MAXITER) write (6, *) 'assignijgrid: iter=MAXITER'
 
-      call readyy('creating curvilinear grid', -1d0)
+      call readyy('creating curvilinear grid', -1.0_dp)
 
    end subroutine assignijgrid
 

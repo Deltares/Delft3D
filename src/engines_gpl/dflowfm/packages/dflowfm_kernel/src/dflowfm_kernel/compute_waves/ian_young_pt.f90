@@ -64,7 +64,7 @@ contains
       E = U10**4 * epsilon / ag**2 ! total energy from non-dim energy
       Hsig = 4 * sqrt(E) ! significant wave height
       fp = nu * ag / U10 ! peak freq from non-dim freq, Hz
-      Tsig = 1d0 / fp
+      Tsig = 1.0_dp / fp
    end subroutine ian_young_pt
 
 end module m_ian_young_pt

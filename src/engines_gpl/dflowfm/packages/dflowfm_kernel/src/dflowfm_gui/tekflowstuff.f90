@@ -137,7 +137,7 @@ contains
                call isocol(zn, ncol)
 
                ja2 = 1
-               if (wetplot > 0d0 .and. hu(LL) > 0d0) then
+               if (wetplot > 0.0_dp .and. hu(LL) > 0.0_dp) then
                   if (hs(k1) < wetplot) then
                      ja2 = 0
                   end if
@@ -232,8 +232,8 @@ contains
                   if (L > lnx1D) then
                      k3 = lncn(1, L)
                      k4 = lncn(2, L)
-                     X3 = 0.5d0 * (Xk(k3) + Xk(k4))
-                     Y3 = 0.5d0 * (Yk(k3) + Yk(k4))
+                     X3 = 0.5_dp * (Xk(k3) + Xk(k4))
+                     Y3 = 0.5_dp * (Yk(k3) + Yk(k4))
                   else ! Arrows for 1D links
                      X3 = XX1
                      Y3 = YY1

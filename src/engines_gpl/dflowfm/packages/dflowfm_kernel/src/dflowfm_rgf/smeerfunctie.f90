@@ -40,7 +40,7 @@ contains
       integer :: i, j, mp, np, in, jn
       real(kind=dp) :: fr
       real(kind=dp) :: pi, phi, fri, frj
-      PI = acos(-1d0)
+      PI = acos(-1.0_dp)
 
       if (I == MP) then
          PHI = 0

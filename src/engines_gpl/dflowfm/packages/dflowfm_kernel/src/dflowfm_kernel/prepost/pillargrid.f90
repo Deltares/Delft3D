@@ -95,7 +95,7 @@ contains
 !        determine relative position on the gridline
 !        uniform:
             alpha = dble(j - 1) / dble(nc - 1)
-            beta = (1d0 - alpha) * R0 / R1 + alpha
+            beta = (1.0_dp - alpha) * R0 / R1 + alpha
 
             xc(i, j) = x0 + beta * (x1 - x0)
             yc(i, j) = y0 + beta * (y1 - y0)

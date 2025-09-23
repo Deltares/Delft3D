@@ -3996,7 +3996,6 @@ contains
          do idim = 1, ndim
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, len=fileReaderPtr%dim_length(idim))
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, name=dim_name)
-            write(*,*) trim(dim_name)
             ! Find dimension matching columns and rows
             select case (str_tolower(trim(dim_name)))
             case ('x', 'longitude', 'lon', 'projected_x', 'xc', 'grid_longitude', 'projection_x_coordinate')

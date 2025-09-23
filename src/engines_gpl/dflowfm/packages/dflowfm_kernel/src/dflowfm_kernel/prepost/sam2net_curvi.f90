@@ -113,7 +113,7 @@ contains
       call disable_outside_curvigrid(numk, NS, xk, yk, xs, ys, imaskk, imasks)
 
 !  assign (xi,eta) to the grid nodes
-      etamin = huge(1d0)
+      etamin = huge(1.0_dp)
       etamax = -etamin
       do i = 1, mc
          xiloc = dble(i - 1)

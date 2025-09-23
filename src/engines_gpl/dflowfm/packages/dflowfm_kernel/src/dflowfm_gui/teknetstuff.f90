@@ -79,8 +79,8 @@ contains
             K1 = KN(1, LINMAX)
             K2 = KN(2, LINMAX)
             if (K1 /= 0 .and. K2 /= 0) then
-               XP = 0.5d0 * (XK(K1) + XK(K2))
-               YP = 0.5d0 * (YK(K1) + YK(K2))
+               XP = 0.5_dp * (XK(K1) + XK(K2))
+               YP = 0.5_dp * (YK(K1) + YK(K2))
             end if
             call gtext('NETLINMax', XP, YP, 31)
          end if
@@ -88,8 +88,8 @@ contains
             K1 = KN(1, LINMIN)
             K2 = KN(2, LINMIN)
             if (K1 /= 0 .and. K2 /= 0) then
-               XP = 0.5d0 * (XK(K1) + XK(K2))
-               YP = 0.5d0 * (YK(K1) + YK(K2))
+               XP = 0.5_dp * (XK(K1) + XK(K2))
+               YP = 0.5_dp * (YK(K1) + YK(K2))
                call gtext('NETLINMin', XP, YP, 221)
             end if
          end if

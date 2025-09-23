@@ -99,8 +99,13 @@ object PublishToGui : BuildType({
             dependency(LinuxCollect) {
                 snapshot {
                 }
+                
                 artifacts {
-                    artifactRules = "dimrset_lnx64_*.tar.gz!**=>source"
+                    artifactRules = """
+                        dimrset_lnx64_*.tar.gz!lnx64/bin/** => source/bin
+                        dimrset_lnx64_*.tar.gz!lnx64/lib/** => source/lib
+                        ?:dimrset_lnx64_*.tar.gz!lnx64/share/** => source/share
+                    """.trimIndent()
                 }
             }
             dependency(WindowsCollect) {

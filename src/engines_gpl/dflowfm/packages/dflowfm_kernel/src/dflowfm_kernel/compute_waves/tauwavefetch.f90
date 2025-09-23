@@ -117,7 +117,7 @@ contains
             end if
 
             time_fetch = max(tim, time_fetch + tifetch)
-            if (tifetch == 0d0) time_fetch = 1d30
+            if (tifetch == 0.0_dp) time_fetch = 1.0e30_dp
 
             if (use_fetch_proc == 0 .or. my_rank == fetch_proc_rank) then
                call calculate_fetch_values_for_all_wind_directions(total_nr_cells)
@@ -133,14 +133,14 @@ contains
          end do
       end if
 
-      rsqrt2 = 1.0d0 / sqrt(2d0)
+      rsqrt2 = 1.0_dp / sqrt(2.0_dp)
       do cell = 1, ndx2d
-         Hwav(cell) = 0d0
-         Twav(cell) = 0d0
-         Uorb(cell) = 0d0
-         rlabda(cell) = 0d0
+         Hwav(cell) = 0.0_dp
+         Twav(cell) = 0.0_dp
+         Uorb(cell) = 0.0_dp
+         rlabda(cell) = 0.0_dp
 
-         if (hs(cell) > 0.01d0) then
+         if (hs(cell) > 0.01_dp) then
 
             call getfetch(cell, U10, FetchL, FetchD)
             if (FetchL > 0) then
@@ -232,7 +232,7 @@ contains
 
             xp = 0.90 * x1 + 0.10 * x2
             yp = 0.15 * y1 + 0.85 * y2
-            vfw = 0.1d0 * (x2 - x1) / 10d0 ! 10 m/s is 0.1*screen
+            vfw = 0.1_dp * (x2 - x1) / 10.0_dp ! 10 m/s is 0.1*screen
             call arrowsxy(xp, yp, u_wind, v_wind, vfw)
          end if
 
@@ -313,7 +313,7 @@ contains
          call aerr('data_at_upwind_cells(2,number_of_upwind_cells(ndxi))', error, 2 * number_of_upwind_cells(ndxi))
       end if
       list_of_upwind_cells = 0
-      data_at_upwind_cells = 0d0
+      data_at_upwind_cells = 0.0_dp
 
       do cell = 1, ndxi
          if (calculate_for(cell)) then
@@ -334,13 +334,13 @@ contains
                         return
                      end if
                      list_of_upwind_cells(number_of_upwind_cells(cell - 1) + index) = cell2
-                     if (cs * cs < 1d0) then
-                        sn = sqrt(1d0 - cs * cs)
+                     if (cs * cs < 1.0_dp) then
+                        sn = sqrt(1.0_dp - cs * cs)
                      else
-                        sn = 0d0
+                        sn = 0.0_dp
                      end if
                      prin = dx(link) * cs
-                     www = (cs + 0.05d0 * sn) * wu(link) / dx(link) ! some diffusion
+                     www = (cs + 0.05_dp * sn) * wu(link) / dx(link) ! some diffusion
                      data_at_upwind_cells(1, number_of_upwind_cells(cell - 1) + index) = www
                      data_at_upwind_cells(2, number_of_upwind_cells(cell - 1) + index) = prin
                   end if
@@ -391,7 +391,7 @@ contains
          end if
 
          node2 = netcell(cell)%nod(netcell(cell)%n)
-         max_cell_size = 0d0
+         max_cell_size = 0.0_dp
          do index_cell_node = 1, netcell(cell)%n
             node1 = netcell(cell)%nod(index_cell_node)
             max_cell_size = max(max_cell_size, dbdistance(xk(node1), yk(node1), xk(node2), yk(node2), jsferic, jasfer3D, dmiss))
@@ -408,7 +408,7 @@ contains
             end if
          end do
 
-         min_distance_node = 0; min_distance = 1d10; 
+         min_distance_node = 0; min_distance = 1.0e10_dp; 
          do index_cell_node = 1, netcell(cell)%n
             link = netcell(cell)%lin(index_cell_node)
             node1 = netcell(cell)%nod(index_cell_node)
@@ -418,17 +418,17 @@ contains
                node2 = netcell(cell)%nod(index_cell_node + 1)
             end if
             wdep = s1(cell) - min(zk(node1), zk(node2))
-            if (lnn(link) == 1 .or. wdep < 0.5d0 .or. kn(3, link) == 0 .or. jaopen == 1) then ! link shallow or closed => start fetch here
+            if (lnn(link) == 1 .or. wdep < 0.5_dp .or. kn(3, link) == 0 .or. jaopen == 1) then ! link shallow or closed => start fetch here
                call normalout(xk(node1), yk(node1), xk(node2), yk(node2), xn, yn, jsferic, jasfer3D, dmiss, dxymis)
                prin = u_wind * xn + v_wind * yn
-               if (prin < 0d0) then ! if upwind
+               if (prin < 0.0_dp) then ! if upwind
                   crp = xn; xn = -yn; yn = crp
-                  crp = 0d0
+                  crp = 0.0_dp
                   xnode1 = xk(node1) - 2 * max_cell_size * xn
                   ynode1 = yk(node1) - 2 * max_cell_size * yn
                   xnode2 = xk(node2) + 2 * max_cell_size * xn
                   ynode2 = yk(node2) + 2 * max_cell_size * yn
-                  call cross(xnode1, ynode1, xnode2, ynode2, xzw(cell), yzw(cell), xzw(cell) - 1d4 * u_wind, yzw(cell) - 1d4 * v_wind, &
+                  call cross(xnode1, ynode1, xnode2, ynode2, xzw(cell), yzw(cell), xzw(cell) - 1.0e4_dp * u_wind, yzw(cell) - 1.0e4_dp * v_wind, &
                              jacros, sl, sm, xcr, ycr, crp, jsferic, dmiss)
                   if (jacros == 1) then
                      dist = dbdistance(xz(cell), yz(cell), xcr, ycr, jsferic, jasfer3D, dmiss)
@@ -443,11 +443,11 @@ contains
          if (min_distance_node > 0) then
             calculate_for(cell) = .false.
             if (jaopen == 1) then
-               fetch_temp(1, cell) = 1d5
+               fetch_temp(1, cell) = 1.0e5_dp
             else
                fetch_temp(1, cell) = min(min_distance, max_cell_size)
             end if
-            fetch_temp(2, cell) = max(s1(cell) - bl(cell), .1d0)
+            fetch_temp(2, cell) = max(s1(cell) - bl(cell), 0.1_dp)
             if (jagui > 0) then
                !CALL rCIRc(xz(k),yz(k) ) !, fetch(n,k))
                !call adddot(xz(k),yz(k),1d0)
@@ -505,10 +505,10 @@ contains
                   prin = data_at_upwind_cells(2, index_upwind_cell)
                   fetch_length = fetch_length + www * (fetch_temp(1, upwind_cell) + prin)
                   fetch_depthw = fetch_depthw + www * (fetch_temp(1, upwind_cell) + prin) * &
-                                 max(.1d0, 0.8d0 * fetch_temp(2, upwind_cell) + 0.2d0 * (s1(cell) - bl(cell)))
+                                 max(0.1_dp, 0.8_dp * fetch_temp(2, upwind_cell) + 0.2_dp * (s1(cell) - bl(cell)))
                   sumw = sumw + www
                end do
-               if (sumw > 0d0) then
+               if (sumw > 0.0_dp) then
                   calculate_for(cell) = .false.
                   fetch_temp(1, cell) = fetch_length / sumw
                   fetch_temp(2, cell) = fetch_depthw / fetch_length
@@ -516,7 +516,7 @@ contains
                   if (jagui > 0) then
                      !CALL rCIRc(xz(k),yz(k) )
                      !call adddot(xz(k),yz(k),2d0)
-                     call KCIR(xz(cell), yz(cell), 1d0)
+                     call KCIR(xz(cell), yz(cell), 1.0_dp)
                   end if
                end if
             else
@@ -553,7 +553,7 @@ contains
 
       call realloc(wxc, ndx, keepExisting=.false.)
       call realloc(wyc, ndx, keepExisting=.false.)
-      wxc = 0d0; wyc = 0d0
+      wxc = 0.0_dp; wyc = 0.0_dp
       do link = 1, lnx
          k1 = ln(1, link); k2 = ln(2, link)
          wxc(k1) = wxc(k1) + wcL(1, link) * wx(link)
@@ -561,7 +561,7 @@ contains
          wyc(k1) = wyc(k1) + wcL(1, link) * wy(link)
          wyc(k2) = wyc(k2) + wcL(2, link) * wy(link)
       end do
-      phiwav = atan2(wyc, wxc) * 180d0 / pi
+      phiwav = atan2(wyc, wxc) * 180.0_dp / pi
 
    end subroutine get_phiwav_values
 

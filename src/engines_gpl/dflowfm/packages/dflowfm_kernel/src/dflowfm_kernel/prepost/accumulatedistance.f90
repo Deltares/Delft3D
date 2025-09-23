@@ -54,7 +54,7 @@ contains
 
       integer :: k
 
-      T(1) = 0d0
+      T(1) = 0.0_dp
       do K = 2, MMAX
          T(K) = T(K - 1) + dbdistance(x(k), y(k), x(k - 1), y(k - 1), jsferic, jasfer3D, dmiss)
       end do

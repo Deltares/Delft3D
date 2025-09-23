@@ -30,6 +30,8 @@
 !
 !
 module m_get_samples_boundingbox
+
+   use precision, only: dp
    implicit none
 contains
 !>    determine sample bounding box
@@ -39,10 +41,10 @@ contains
 
       integer :: i
 
-      xsammin = huge(1d0)
-      xsammax = -huge(1d0)
-      ysammin = huge(1d0)
-      ysammax = -huge(1d0)
+      xsammin = huge(1.0_dp)
+      xsammax = -huge(1.0_dp)
+      ysammin = huge(1.0_dp)
+      ysammax = -huge(1.0_dp)
 
       do i = 1, NS
          if (xs(i) /= DMISS .and. ys(i) /= DMISS .and. zs(i) /= DMISS) then

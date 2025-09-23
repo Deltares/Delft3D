@@ -77,28 +77,28 @@ contains
 
       if (MXSAM < 3 .or. MYSAM < 3) goto 1234
 
-      zss(4, 1:MXSAM, 1:MYSAM) = 0d0
+      zss(4, 1:MXSAM, 1:MYSAM) = 0.0_dp
       zss(5, 1:MXSAM, 1:MYSAM) = DMISS
 
-      call readyy('Computing sample Hessians', 0d0)
+      call readyy('Computing sample Hessians', 0.0_dp)
       do i = 2, MXSAM - 1
          af = dble(i - 2) / dble(max(MXSAM - 3, 1))
          call readyy('Computing sample Hessians', af)
          do j = 2, MYSAM - 1
 !         if ( i.eq.614 .and. j.eq.154 )
             ip = i + (j - 1) * MXSAM
-            if (abs(xs(ip) - 87270) < 1d-8 .and. abs(ys(ip) - 415570) < 1d-8) then
+            if (abs(xs(ip) - 87270) < 1.0e-8_dp .and. abs(ys(ip) - 415570) < 1.0e-8_dp) then
                continue
             end if
-            zxx = 0d0
-            zxy = 0d0
-            zyx = 0d0
-            zyy = 0d0
-            UU = 0d0
-            VV = 0d0
-            zx = 0d0
-            zy = 0d0
-            S = 0d0
+            zxx = 0.0_dp
+            zxy = 0.0_dp
+            zyx = 0.0_dp
+            zyy = 0.0_dp
+            UU = 0.0_dp
+            VV = 0.0_dp
+            zx = 0.0_dp
+            zy = 0.0_dp
+            S = 0.0_dp
             k = 0
             ihasridge = 0
             do
@@ -120,14 +120,14 @@ contains
                zyx = (gradiR(2) * SniR(1) - gradiL(2) * SniL(1) + gradjR(2) * SnjR(1) - gradjL(2) * SnjL(1)) / area
                zyy = (gradiR(2) * SniR(2) - gradiL(2) * SniL(2) + gradjR(2) * SnjR(2) - gradjL(2) * SnjL(2)) / area
 
-               zx = (0.5d0 * (zss(1, i + 1, j) + zss(1, i, j)) * SniR(1) &
-                     - 0.5d0 * (zss(1, i - 1, j) + zss(1, i, j)) * SniL(1) &
-                     + 0.5d0 * (zss(1, i, j + 1) + zss(1, i, j)) * SnjR(1) &
-                     - 0.5d0 * (zss(1, i, j - 1) + zss(1, i, j)) * SnjL(1)) / area
-               zy = (0.5d0 * (zss(1, i + 1, j) + zss(1, i, j)) * SniR(2) &
-                     - 0.5d0 * (zss(1, i - 1, j) + zss(1, i, j)) * SniL(2) &
-                     + 0.5d0 * (zss(1, i, j + 1) + zss(1, i, j)) * SnjR(2) &
-                     - 0.5d0 * (zss(1, i, j - 1) + zss(1, i, j)) * SnjL(2)) / area
+               zx = (0.5_dp * (zss(1, i + 1, j) + zss(1, i, j)) * SniR(1) &
+                     - 0.5_dp * (zss(1, i - 1, j) + zss(1, i, j)) * SniL(1) &
+                     + 0.5_dp * (zss(1, i, j + 1) + zss(1, i, j)) * SnjR(1) &
+                     - 0.5_dp * (zss(1, i, j - 1) + zss(1, i, j)) * SnjL(1)) / area
+               zy = (0.5_dp * (zss(1, i + 1, j) + zss(1, i, j)) * SniR(2) &
+                     - 0.5_dp * (zss(1, i - 1, j) + zss(1, i, j)) * SniL(2) &
+                     + 0.5_dp * (zss(1, i, j + 1) + zss(1, i, j)) * SnjR(2) &
+                     - 0.5_dp * (zss(1, i, j - 1) + zss(1, i, j)) * SnjL(2)) / area
 
 !           Eigendecompostion
                VV(1, 1) = zxx; VV(1, 2) = zxy
@@ -171,7 +171,7 @@ contains
 !           ridge detection
                dum = UU(1, k) * zx + UU(2, k) * zy
 
-               zss(5, i, j) = -dum / (S(k) + 1d-8) ! ridge distance in maximum change direction
+               zss(5, i, j) = -dum / (S(k) + 1.0e-8_dp) ! ridge distance in maximum change direction
 
                exit
             end do
@@ -179,7 +179,7 @@ contains
          end do
       end do
 
-      call readyy('Compute sample Hessians', -1d0)
+      call readyy('Compute sample Hessians', -1.0_dp)
 
       iHesstat = iHesstat_OK
 

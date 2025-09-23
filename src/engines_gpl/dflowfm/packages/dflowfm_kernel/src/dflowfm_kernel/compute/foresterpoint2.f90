@@ -58,14 +58,14 @@ contains
 
          do k = 1, km - 1
             dif = d(k + 1) - d(k)
-            if (dif * ip > eps6 .or. d(k) < 0d0 .or. d(k + 1) < 0d0) then
+            if (dif * ip > eps6 .or. d(k) < 0.0_dp .or. d(k + 1) < 0.0_dp) then
                if (vol(k) > eps10 .and. vol(k + 1) > eps10) then
                   ja = 1
-                  dif = 0.1666666666667d0 * dif * (vol(k + 1) + vol(k))
+                  dif = 0.1666666666667_dp * dif * (vol(k + 1) + vol(k))
                   a(k) = a(k) + dif / vol(k)
                   a(k + 1) = a(k + 1) - dif / vol(k + 1)
                else
-                  dif = 0d0
+                  dif = 0.0_dp
                end if
             end if
          end do

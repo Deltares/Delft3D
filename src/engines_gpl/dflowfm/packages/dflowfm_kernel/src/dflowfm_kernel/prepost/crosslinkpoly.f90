@@ -67,7 +67,7 @@ contains
       integer :: ku
       real(kind=dp) :: XP1, YP1, XP2, YP2, SL, SM, XCR, YCR, CRP, dis
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       integer :: i
       integer :: janew
@@ -78,8 +78,8 @@ contains
       K1 = KN(1, L); K2 = KN(2, L)
 
 ! initialization
-      xm = 0d0
-      ym = 0d0
+      xm = 0.0_dp
+      ym = 0.0_dp
 
       JA = 0
       numcrossed = 0
@@ -118,7 +118,7 @@ contains
          call CROSSinbox(XK(K1), YK(K1), XK(K2), YK(K2), XP1, YP1, XP2, YP2, jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
 
 !    fix for spherical coordinates (enforce same reference point for local projections)
-         if (jsferic == 1 .and. SM > 0.75d0 .and. jacros == 1) then
+         if (jsferic == 1 .and. SM > 0.75_dp .and. jacros == 1) then
             call CROSSinbox(XK(K1), YK(K1), XK(K2), YK(K2), XP2, YP2, XP1, YP1, jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
          end if
 
@@ -160,8 +160,8 @@ contains
       else
          !  odd number of intersections: take one (average)
          ja = 1
-         xm = 0d0
-         ym = 0d0
+         xm = 0.0_dp
+         ym = 0.0_dp
          xm = xcross(1)
          ym = ycross(1)
       end if

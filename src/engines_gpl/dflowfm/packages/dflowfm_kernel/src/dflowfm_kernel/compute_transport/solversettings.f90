@@ -33,6 +33,8 @@
 !> default solver settings
 module m_solversettings
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -61,12 +63,12 @@ contains
       solver%ipar(5) = 10 ! size of Krylov subspace in GMRES and variants
       solver%ipar(6) = 1000 ! max number of mat-vec multiplies
 
-      solver%fpar(1) = 0.0d-16 ! relative tolerance ('exact' solve, except
-      solver%fpar(2) = 1.0d-14 ! absolute tolerance
+      solver%fpar(1) = 0.0e-16_dp ! relative tolerance ('exact' solve, except
+      solver%fpar(2) = 1.0e-14_dp ! absolute tolerance
 
       solver%lfil = 3
-      solver%alpha = 1d0
-      solver%tol = 0.50d-2
+      solver%alpha = 1.0_dp
+      solver%tol = 0.50e-2_dp
 
       solver%jabcgstab = 1
    end subroutine SolverSettings

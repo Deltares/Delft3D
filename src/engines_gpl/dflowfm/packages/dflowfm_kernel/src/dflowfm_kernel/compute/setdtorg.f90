@@ -64,7 +64,7 @@ contains
       real(kind=dp) :: squloc
 
       jareduced = 0
-      if (jamapdtcell > 0) dtcell = 0d0
+      if (jamapdtcell > 0) dtcell = 0.0_dp
 
       if (ja_timestep_auto >= 1) then
 
@@ -72,7 +72,7 @@ contains
             plotlin = dt_max
          end if
 
-         dts = 1d9; kkcflmx = 0; kcflmx = 0
+         dts = 1.0e9_dp; kkcflmx = 0; kcflmx = 0
 
          if (ja_timestep_auto == 1) then ! depth averaged timestep
             if (itstep /= 4) then ! non-explicit time-step
@@ -106,7 +106,7 @@ contains
 
                   ! DO not include negative qin in timestep
                   if (ja_timestep_noqout > 0) then
-                     squloc = squloc - max(-qin(k), 0d0)
+                     squloc = squloc - max(-qin(k), 0.0_dp)
                   end if
 
                   if (squloc > eps10) then ! outflow only
@@ -123,7 +123,7 @@ contains
                         if (dtsc < dts) then
                            dts = dtsc; kkcflmx = k
                         end if
-                        if (dtsc == 0d0) then
+                        if (dtsc == 0.0_dp) then
                            kkcflmx = k
                         end if
                      end if
@@ -259,14 +259,14 @@ contains
             do LL = 1, Lnxi
                n1 = ln(1, LL); n2 = ln(2, LL)
                call getLbotLtop(LL, Lb, Lt)
-               rhomin = 2d3; rhomax = -1d0
+               rhomin = 2.0e3_dp; rhomax = -1.0_dp
                do L = Lb, Lt
                   k1 = ln(1, L); k2 = ln(2, L)
                   rhomin = min(rhomin, rho(k1), rho(k2))
                   rhomax = max(rhomax, rho(k1), rho(k2))
                end do
                drho = rhomax - rhomin
-               cbaroc = sqrt(0.25d0 * ag * hu(LL) * drho * 0.001d0) ! rhomax-rhomin
+               cbaroc = sqrt(0.25_dp * ag * hu(LL) * drho * 0.001_dp) ! rhomax-rhomin
                do L = Lb, Lt
                   squ(n1) = squ(n1) + au(L) * cbaroc
                   squ(n2) = squ(n2) + au(L) * cbaroc
@@ -326,7 +326,7 @@ contains
                   if (idomain(kk) /= my_rank) cycle
                end if
                if (hs(kk) > epshu) then
-                  dtsc = 9d9
+                  dtsc = 9.0e9_dp
                   if (squ(kk) > eps10) then
                      dtsc = cflmx * vol1(kk) / squ(kk)
                   end if
@@ -353,7 +353,7 @@ contains
                   if (idomain(kk) /= my_rank) cycle
                end if
                if (hs(kk) > epshu) then
-                  dtsc = 9d9
+                  dtsc = 9.0e9_dp
                   if (squ(kk) > eps10) then
                      dtsc = cflmx * vol1(kk) / squ(kk)
                   end if
@@ -391,10 +391,10 @@ contains
                            dxiAu = min(hs(k1), hs(k2)) * dxiAu
                         end if
 
-                        huv = 0.5d0 * (hs(k1) + hs(k2))
+                        huv = 0.5_dp * (hs(k1) + hs(k2))
 
-                        if (dxiAu > 0d0 .and. vicLu(L) > 0d0 .and. huv > epshu) then ! see "setumod" for huv
-                           dtsc = 0.2d0 / (dxiAu * vicLu(L))
+                        if (dxiAu > 0.0_dp .and. vicLu(L) > 0.0_dp .and. huv > epshu) then ! see "setumod" for huv
+                           dtsc = 0.2_dp / (dxiAu * vicLu(L))
                            if (istresstyp == 3) then
                               dtsc = dtsc * huv
                            end if
@@ -438,10 +438,10 @@ contains
                            dxiAu = min(zws(k1) - zws(k1 - 1), zws(k2) - zws(k2 - 1)) * dxiAu
                         end if
 
-                        huv = 0.5d0 * ((zws(k1) - zws(k1 - 1)) + (zws(k2) - zws(k2 - 1)))
+                        huv = 0.5_dp * ((zws(k1) - zws(k1 - 1)) + (zws(k2) - zws(k2 - 1)))
 
-                        if (dxiAu > 0d0 .and. vicLu(L) > 0d0 .and. huv > epshu) then
-                           dtsc = 0.2d0 / (dxiAu * vicLu(L))
+                        if (dxiAu > 0.0_dp .and. vicLu(L) > 0.0_dp .and. huv > epshu) then
+                           dtsc = 0.2_dp / (dxiAu * vicLu(L))
                            if (istresstyp == 3) then
                               dtsc = dtsc * huv
                            end if
@@ -501,7 +501,7 @@ contains
 !    endif
       else
          dts = dt_max
-         dtsc = 0d0 ! SPvdP: safety, was undefined but could be used later
+         dtsc = 0.0_dp ! SPvdP: safety, was undefined but could be used later
          kkcflmx = 0 ! SPvdP: safety, was undefined but could be used later
       end if
 

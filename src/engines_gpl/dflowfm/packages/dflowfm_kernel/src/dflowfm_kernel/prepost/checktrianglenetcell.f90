@@ -54,7 +54,7 @@ contains
       integer :: k0, k1, k2, n0, n2, nn
       real(kind=dp) :: X0, Y0, X1, Y1, X2, Y2, COSPHI, PHI
       JA = 1
-      phimin = 1d3; phimax = 0d0
+      phimin = 1.0e3_dp; phimax = 0.0_dp
       do NN = 1, 3
          N0 = NN - 1; if (N0 < 1) N0 = N0 + 3
          N2 = NN + 1; if (N2 > 3) N2 = N2 - 3
@@ -66,7 +66,7 @@ contains
          X1 = Xk(K1); Y1 = Yk(K1)
          X2 = Xk(K2); Y2 = Yk(K2)
          COSPHI = DCOSPHI(X1, Y1, X0, Y0, X1, Y1, X2, Y2, jsferic, jasfer3D, dxymis)
-         PHI = acos(min(max(COSPHI, -1d0), 1d0)) * RD2DG
+         PHI = acos(min(max(COSPHI, -1.0_dp), 1.0_dp)) * RD2DG
          phimin = min(phimin, phi)
          phimax = max(phimax, phi)
          if (PHI < TRIANGLEMINANGLE .or. PHI > TRIANGLEMAXANGLE) then ! TOO SHARP

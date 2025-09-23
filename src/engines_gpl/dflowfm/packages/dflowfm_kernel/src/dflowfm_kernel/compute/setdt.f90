@@ -132,7 +132,7 @@ contains
          end if
       else
          dts = dt_max
-         dtsc = 0d0 ! SPvdP: safety, was undefined but could be used later
+         dtsc = 0.0_dp ! SPvdP: safety, was undefined but could be used later
          kkcflmx = 0 ! SPvdP: safety, was undefined but could be used later
       end if
 
@@ -156,7 +156,7 @@ contains
 
       call timestepanalysis(dtsc_loc)
 
-      dti = 1d0 / dts
+      dti = 1.0_dp / dts
 
       if (jaGUI == 1) then
          call tekcflmx()

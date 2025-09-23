@@ -84,7 +84,7 @@ contains
       K = K0
       L = L0 ! COUNT MAX NR OF ATTACHED LINKS PER NODE
 
-      call READYY('Arranging curvilinear grid-in network', 0d0)
+      call READYY('Arranging curvilinear grid-in network', 0.0_dp)
 
       if (allocated(mn)) then
          deallocate (mn)
@@ -102,7 +102,7 @@ contains
       end do
       numk = k
 
-      af = 0.2d0
+      af = 0.2_dp
       call READYY('Arranging curvilinear grid-in network', af)
 
       do I = 1, MC - 1
@@ -116,7 +116,7 @@ contains
          end do
       end do
 
-      af = 0.4d0
+      af = 0.4_dp
       call READYY('Arranging curvilinear grid-in network', af)
 
       do I = 1, MC
@@ -130,13 +130,13 @@ contains
          end do
       end do
 
-      af = 0.6d0
+      af = 0.6_dp
       call READYY('Arranging curvilinear grid-in network', af)
 
       numl = l
       call setnodadm(0)
 
-      call READYY('Arranging curvilinear grid-in network', -1d0)
+      call READYY('Arranging curvilinear grid-in network', -1.0_dp)
 
       ! call copydeptosam()
 
@@ -144,17 +144,17 @@ contains
 
          JA = 1
 
-         call readyy('Merging networks', 0d0)
+         call readyy('Merging networks', 0.0_dp)
          call findcells(0)
 
 !     merge nodes
 
-         if (tooclose > 1d-16 .and. k0 > 0) then
+         if (tooclose > 1.0e-16_dp .and. k0 > 0) then
             call CONFRM('MERGE NODES ? ', JA)
             if (JA == 1) call MERGENODESINPOLYGON()
          end if
 
-         call readyy('Merging networks', -1d0)
+         call readyy('Merging networks', -1.0_dp)
 
       end if
 

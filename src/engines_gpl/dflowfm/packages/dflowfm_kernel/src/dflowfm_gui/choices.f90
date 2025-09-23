@@ -69,6 +69,7 @@
 ! subroutines from net.F90
 !----------------------------------------------------------------------
 module m_choices
+
    use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
    use m_zerolan, only: zerolan
    use m_stopint, only: stopint
@@ -145,6 +146,7 @@ module m_choices
    use m_connecthangingnodes, only: connecthangingnodes, removelinksofhangingnodes, makeZKbedlevels
    use m_partition_to_idomain, only: partition_to_idomain
 
+use precision, only: dp
    implicit none
 
 contains
@@ -247,7 +249,7 @@ contains
             call REFINECELLSANDFACES2() !  REFINECELLSONLY()
          else if (NWHAT == 14) then
             call SAVENET()
-            call derefine_mesh(0d0, 0d0, .false.)
+            call derefine_mesh(0.0_dp, 0.0_dp, .false.)
          else if (NWHAT == 15) then
             call SAVENET()
             call connectcurvilinearquadsddtype()

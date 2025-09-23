@@ -69,9 +69,9 @@ contains
          do k = kb + 1, kt
             xx(k - kb + 1) = xx(k - kb + 1) / (s1(n) - bl(n)) + xx(k - kb)
          end do
-         xxx(1) = 0.5d0 * xx(1) ! cell centre coordinate values
+         xxx(1) = 0.5_dp * xx(1) ! cell centre coordinate values
          do k = kb + 1, kt
-            xxx(k - kb + 1) = 0.5d0 * (xx(k - kb + 1) + xx(k - kb))
+            xxx(k - kb + 1) = 0.5_dp * (xx(k - kb + 1) + xx(k - kb))
          end do
 
          ktx = kt - kb + 1

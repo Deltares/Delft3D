@@ -119,7 +119,7 @@ contains
          !
          if (formno == 1) then
             !           free weir flow
-            au(m) = wstr * hs1 * 2.0d0 / 3.0d0
+            au(m) = wstr * hs1 * 2.0_dp / 3.0_dp
          elseif (formno == 2) then
             !           drowned weir flow
             au(m) = wstr * ds

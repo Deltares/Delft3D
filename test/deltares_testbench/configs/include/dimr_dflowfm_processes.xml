@@ -901,6 +901,46 @@
     </file>
   </checks>
 </testCase>
+<testCase name="e02_f030_c045_simple_solar_radiation_model_all_defaults_BLOOM" ref="dflowfm_default">
+  <path version="2025-09-11T23:30:00">e02_dflowfm/f030_water_quality_processes/c045_simple_solar_radiation_model_all_defaults_BLOOM</path>
+  <checks>
+    <file name="output/model_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_water_quality_output_3" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+<testCase name="e02_f030_c046_simple_solar_radiation_model_default_albedo_BLOOM" ref="dflowfm_default">
+  <path version="2025-09-11T23:30:00">e02_dflowfm/f030_water_quality_processes/c046_simple_solar_radiation_model_default_albedo_BLOOM</path>
+  <checks>
+    <file name="output/model_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_water_quality_output_3" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+<testCase name="e02_f030_c047_simple_solar_radiation_model_custom_albedo_BLOOM" ref="dflowfm_default">
+  <path version="2025-09-11T23:30:00">e02_dflowfm/f030_water_quality_processes/c047_simple_solar_radiation_model_custom_albedo_BLOOM</path>
+  <checks>
+    <file name="output/model_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_water_quality_output_3" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+<testCase name="e02_f030_c048_simple_net_solar_radiation_model_BLOOM" ref="dflowfm_default">
+  <path version="2025-09-11T23:30:00">e02_dflowfm/f030_water_quality_processes/c048_simple_net_solar_radiation_model_BLOOM</path>
+  <checks>
+    <file name="output/model_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_water_quality_output_3" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
 <testCase name="e02_f030_c100_spatial_parameters_2D" ref="dflowfm_default">
   <path version="2024-01-11T16:30:00">e02_dflowfm/f030_water_quality_processes/c100_spatial_parameters_2D</path>
   <checks>

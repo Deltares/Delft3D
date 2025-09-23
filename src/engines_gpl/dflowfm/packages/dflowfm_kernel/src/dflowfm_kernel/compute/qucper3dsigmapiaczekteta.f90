@@ -67,13 +67,13 @@ contains
       real(kind=dp) :: ucinx, uciny
       integer :: nn12
 
-      ae = 0d0; ai = 0d0
+      ae = 0.0_dp; ai = 0.0_dp
 
       do n12 = 1, 2
          if (n12 == 1) then
             ac = acL(LL)
          else
-            ac = 1d0 - acL(LL)
+            ac = 1.0_dp - acL(LL)
          end if
          k12 = ln(n12, LL)
          do La = 1, nd(k12)%lnx ! loop over all attached links
@@ -86,18 +86,18 @@ contains
 
                if (qa(Lk) /= 0) then ! include own link
                   k1 = ln(1, Lb + Lk - Lb2); k2 = ln(2, Lb + Lk - Lb2)
-                  volu = acL(LL) * vol1(k1) + (1d0 - acl(LL)) * vol1(k2)
-                  if (volu > 0d0) then
+                  volu = acL(LL) * vol1(k1) + (1.0_dp - acl(LL)) * vol1(k2)
+                  if (volu > 0.0_dp) then
                      cfl = abs(qa(Lk)) * dts / volu
-                     if (nd(k12)%lnx == 3) cfl = 1.4d0 * cfl
-                     if (cfl > 0d0) then
-                        tet = max(0d0, 1d0 - 1d0 / cfl)
+                     if (nd(k12)%lnx == 3) cfl = 1.4_dp * cfl
+                     if (cfl > 0.0_dp) then
+                        tet = max(0.0_dp, 1.0_dp - 1.0_dp / cfl)
                         if (jasfer3D == 0) then
-                           ucin = ucxu(Lk) * cs + ucyu(Lk) * sn - (1d0 - tet) * u1(Lb + Lk - Lb2)
+                           ucin = ucxu(Lk) * cs + ucyu(Lk) * sn - (1.0_dp - tet) * u1(Lb + Lk - Lb2)
                         else
                            ucinx = lin2nodx(LLLL, nn12, ucxu(Lk), ucyu(Lk))
                            uciny = lin2nody(LLLL, nn12, ucxu(Lk), ucyu(Lk))
-                           ucin = nod2linx(LL, n12, ucinx, uciny) * cs + nod2liny(LL, n12, ucinx, uciny) * sn - (1d0 - tet) * u1(Lb + Lk - Lb2)
+                           ucin = nod2linx(LL, n12, ucinx, uciny) * cs + nod2liny(LL, n12, ucinx, uciny) * sn - (1.0_dp - tet) * u1(Lb + Lk - Lb2)
                         end if
 
                         acq = ac * qa(Lk) / volu

@@ -90,10 +90,10 @@ contains
       HALF = 0
       call READYY('Writing Grid File', HALF)
       call ECRTAB(Xc, MC, NC, MRGF, HALF, mmax, nmax)
-      HALF = 0.5d0
+      HALF = 0.5_dp
       call ECRTAB(Yc, MC, NC, MRGF, HALF, mmax, nmax)
 
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call DOCLOSE(MRGF)
 
       write (NAME2(IPNT + 1:), '(A)') 'asc'

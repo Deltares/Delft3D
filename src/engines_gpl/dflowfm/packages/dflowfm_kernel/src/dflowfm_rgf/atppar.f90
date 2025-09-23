@@ -76,7 +76,7 @@ contains
 
       A = DXYMIS; B = DXYMIS; C = DXYMIS; D = DXYMIS; E = DXYMIS; ATP = DXYMIS
 
-      DG2RD = (acos(-1d0)) / 180d0
+      DG2RD = (acos(-1.0_dp)) / 180.0_dp
 !     A,B = METRISCH EN SOM, ATP,E = STUUR, C,D = SOM ATP EN E
 !     A,ATP EN C IN M-RICHTING
       do I = M1, M2
@@ -152,7 +152,7 @@ contains
       end do
       !     CALL TEKSHOW(X, Y, M2, N2, ATP, 2,'FINAL ATP')
 
-      A = 0d0; B = 0d0; C = 0d0; D = 0d0; E = 0d0
+      A = 0.0_dp; B = 0.0_dp; C = 0.0_dp; D = 0.0_dp; E = 0.0_dp
       do I = M1 + 1, M2
          do J = N1 + 1, N2
             if (IJC(I, J) == 10) then
@@ -169,8 +169,8 @@ contains
 
                A(I, J) = (ATP(I, J - 1) + ATP(I, J))
                B(I, J) = (ATP(I - 1, J - 1) + ATP(I - 1, J))
-               C(I, J) = (1d0 / ATP(I - 1, J) + 1d0 / ATP(I, J))
-               D(I, J) = (1d0 / ATP(I - 1, J - 1) + 1d0 / ATP(I, J - 1))
+               C(I, J) = (1.0_dp / ATP(I - 1, J) + 1.0_dp / ATP(I, J))
+               D(I, J) = (1.0_dp / ATP(I - 1, J - 1) + 1.0_dp / ATP(I, J - 1))
 
                E(I, J) = -(A(I, J) + B(I, J) + C(I, J) + D(I, J))
             end if

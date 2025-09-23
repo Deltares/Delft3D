@@ -56,7 +56,7 @@ contains
 !     SCHRIJFROUTINE RGF-FORMAT
       real(kind=dp) :: X(MMAX, NMAX)
       do J = 1, NC
-         AF = HALF + 0.5d0 * dble(J) / dble(NC)
+         AF = HALF + 0.5_dp * dble(J) / dble(NC)
          call READYY(' ', AF)
          write (MRGF, 888) J, (X(I, J), I=1, MC)
       end do

@@ -73,7 +73,7 @@ contains
          !i = (xz(n) + 0.5*dxw) / dxw
          if (i > 2 .and. i < mmax - 1) then
             alf = (xz(n) - x(i)) / (x(i + 1) - x(i))
-            if (alf < 0d0 .or. alf > 1d0) then
+            if (alf < 0.0_dp .or. alf > 1.0_dp) then
                si = 0
             else
                si = (1 - alf) * s(i) + alf * s(i + 1)

@@ -3392,7 +3392,7 @@ contains
             if (indu(j) == 0) then
 !     .. new entry ..
                if (value2 /= 0) then
-                  if (ao(ipos) /= 0.0d0) then
+                  if (ao(ipos) /= 0.0_dp) then
                      indu(j) = k
                      jao(k) = jao(ipos)
                      ao(k) = ao(ipos)
@@ -3668,7 +3668,7 @@ contains
 !
       do j = 1, ndiag
          do i = 1, nrow
-            coef(i, j) = 0.0d0
+            coef(i, j) = 0.0_dp
             jcoef(i, j) = i
          end do
       end do
@@ -3737,7 +3737,7 @@ contains
       ia(1) = kpos
       do i = 1, nrow
          do k = 1, ndiag
-            if (coef(i, k) /= 0.0d0) then
+            if (coef(i, k) /= 0.0_dp) then
                if (kpos > nzmax) then
                   ierr = kpos
                   return
@@ -3824,7 +3824,7 @@ contains
 ! store away diagonal elements and count nonzero diagonal elements.
 !
       do i = 1, n
-         wk(i) = 0.0d0
+         wk(i) = 0.0_dp
          iwk(i + 1) = ia(i + 1) - ia(i)
          do k = ia(i), ia(i + 1) - 1
             if (ja(k) == i) then
@@ -4334,7 +4334,7 @@ contains
 50    continue
       do j = 1, idiag
          do i = 1, n
-            diag(i, j) = 0.0d0
+            diag(i, j) = 0.0_dp
          end do
       end do
 !-----------------------------------------------------------------------
@@ -4424,7 +4424,7 @@ contains
             j = i + ioff(jj)
             if (j < 1 .or. j > n) cycle
             t = diag(i, jj)
-            if (job == 0 .and. t == 0.0d0) cycle
+            if (job == 0 .and. t == 0.0_dp) cycle
             a(ko) = t
             ja(ko) = j
             ko = ko + 1
@@ -4701,7 +4701,7 @@ contains
 !     initialize new block to zero -- then copy nonzero element
 !
                      do i = 1, m2
-                        ao(i, ko) = 0.0d0
+                        ao(i, ko) = 0.0_dp
                      end do
                      ij = j * m + irow + 1
                      ao(ij, ko) = a(k)
@@ -4869,7 +4869,7 @@ contains
       do i = 1, m
          ii = lowd - i + 1
          do j = 1, n
-            abd(ii, j) = 0.0d0
+            abd(ii, j) = 0.0_dp
          end do
       end do
 !---------------------------------------------------------------------
@@ -4963,7 +4963,7 @@ contains
             if (j <= 0) goto 19
             if (j > n) goto 21
             t = abd(i, j)
-            if (t == 0.0d0) goto 19
+            if (t == 0.0_dp) goto 19
             if (ko > len) then
                ierr = irow
                return
@@ -5197,7 +5197,7 @@ contains
 ! copy element into output matrix unless it is a zero element.
 !
          do k = kstart, kend
-            if (asky(k) == 0.0d0) cycle
+            if (asky(k) == 0.0_dp) cycle
             j = i - (kend - k)
             jao(next) = j
             ao(next) = asky(k)
@@ -5529,7 +5529,7 @@ contains
       integer i, j, k, ip
       real(dp) :: zero
       logical copyval
-      parameter(zero=0.0d0)
+      parameter(zero=0.0_dp)
 !     .. first executable statement ..
       copyval = (job /= 0)
       if (lda < n) then

@@ -32,6 +32,8 @@
 
 module m_update_matrix
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -55,8 +57,8 @@ contains
       ierror = 0
 
 !   allocate if necessary
-      call realloc(workmatbd, [2, Ndx], keepExisting=.true., fill=0d0)
-      call realloc(workmatc, [2, Lnx], keepExisting=.true., fill=0d0)
+      call realloc(workmatbd, [2, Ndx], keepExisting=.true., fill=0.0_dp)
+      call realloc(workmatc, [2, Lnx], keepExisting=.true., fill=0.0_dp)
 
 !   fill work arrays
       do i = 1, numsend_sall
@@ -68,7 +70,7 @@ contains
       do i = 1, numsend_u
          L = isendlist_u(i)
          workmatc(1, L) = ccr(Lv2(L))
-         workmatc(2, L) = 1d0 ! used to "undo" orientation correction in update_ghosts(ITYPE_U,...)
+         workmatc(2, L) = 1.0_dp ! used to "undo" orientation correction in update_ghosts(ITYPE_U,...)
       end do
 
 !   update work arrays

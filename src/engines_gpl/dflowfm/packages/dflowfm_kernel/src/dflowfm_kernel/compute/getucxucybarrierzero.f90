@@ -49,7 +49,7 @@ contains
       integer :: ku, L, LL, Ls, n12, Lf
       real(kind=dp) :: ucxku, ucyku, ww, ac1, cs, sn
 
-      ucxku = 0d0; ucyku = 0d0
+      ucxku = 0.0_dp; ucyku = 0.0_dp
 
       do LL = 1, nd(ku)%lnx
          Ls = nd(ku)%ln(LL); L = abs(Ls)
@@ -57,7 +57,7 @@ contains
             ac1 = acL(L)
             n12 = 1
          else
-            ac1 = 1d0 - acL(L)
+            ac1 = 1.0_dp - acL(L)
             n12 = 2
          end if
          ww = ac1 * dx(L) * wu(L)

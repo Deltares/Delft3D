@@ -46,19 +46,19 @@ contains
       implicit none
       real(kind=dp) :: hpr, dz, wu2, wid, ar, hyr
       real(kind=dp) :: per, hp2
-      if (dz / wu2 < 1d-3) then
+      if (dz / wu2 < 1.0e-3_dp) then
          wid = wu2; wid = wid + slotw2D
          ar = wid * hpr
          hyr = hpr
       else if (hpr < dz) then
          wid = wu2 * hpr / dz; wid = wid + slotw2D
-         ar = 0.5d0 * wid * hpr
+         ar = 0.5_dp * wid * hpr
          per = sqrt(hpr * hpr + wid * wid)
          hyr = ar / per
       else
          wid = wu2; wid = wid + slotw2D ! wid = max(wid, slotw2d)
          hp2 = hpr - dz
-         ar = wid * 0.5d0 * (hpr + hp2)
+         ar = wid * 0.5_dp * (hpr + hp2)
          per = sqrt(dz * dz + wid * wid)
          hyr = ar / per
       end if

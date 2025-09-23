@@ -96,7 +96,7 @@ contains
       MERR = 0
       MC = 0
 
-      xymis = 0d0 ! this is the default for this file type
+      xymis = 0.0_dp ! this is the default for this file type
 
       read (mrgf, '(a)', iostat=istat) rec
       if (istat > 0) goto 888
@@ -317,7 +317,7 @@ contains
 
 888   continue
       call QNERROR('Reading Error, Try UX2DOS or DOS2UX', ' ', ' ')
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call DOCLOSE(MRGF)
       return
 

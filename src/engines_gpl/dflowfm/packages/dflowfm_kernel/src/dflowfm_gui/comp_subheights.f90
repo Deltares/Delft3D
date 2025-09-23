@@ -57,8 +57,8 @@ contains
 
       real(kind=dp), dimension(Nsubmax) :: hdum
 
-      hL = 0d0
-      hR = 0d0
+      hL = 0.0_dp
+      hR = 0.0_dp
 
 !  for this cross spline, find the left and right neighboring splines w.r.t. the center spline
       kL = 0
@@ -95,7 +95,7 @@ contains
 !         hR(NsubR) = cosphi(ncs)*hR(NsubR)
 !     end test
 
-      if (NsubR < Nsubmax) hR(NsubR + 1:Nsubmax) = 0d0
+      if (NsubR < Nsubmax) hR(NsubR + 1:Nsubmax) = 0.0_dp
 
       NsubL = 0
       kkL = k
@@ -113,13 +113,13 @@ contains
 
       end do
       NsubL = NsubL + 1
-      hL(NsubL) = splinelength_int(num, xs, ys, 0d0, t(kkL))
+      hL(NsubL) = splinelength_int(num, xs, ys, 0.0_dp, t(kkL))
 
 !     begin test
 !         hL(NsubL) = cosphi(1)*hL(NsubL)
 !     end test
 
-      if (NsubL < Nsubmax) hL(NsubL + 1:Nsubmax) = 0d0
+      if (NsubL < Nsubmax) hL(NsubL + 1:Nsubmax) = 0.0_dp
 
 !  check orientation
       if (.not. Lorient) then

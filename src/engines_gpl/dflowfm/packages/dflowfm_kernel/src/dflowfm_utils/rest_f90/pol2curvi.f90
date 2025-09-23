@@ -142,8 +142,8 @@ contains
 !     interpolate fourth side
          do i = 1, nc
             xi = dble(i - 1) / dble(nc - 1)
-            xh(i, 1) = (1d0 - xi) * xpl(i1) + xi * xpl(i4)
-            yh(i, 1) = (1d0 - xi) * ypl(i1) + xi * ypl(i4)
+            xh(i, 1) = (1.0_dp - xi) * xpl(i1) + xi * xpl(i4)
+            yh(i, 1) = (1.0_dp - xi) * ypl(i1) + xi * ypl(i4)
          end do
       end if
 

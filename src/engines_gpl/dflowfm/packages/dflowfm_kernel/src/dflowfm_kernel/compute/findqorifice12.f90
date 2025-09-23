@@ -57,30 +57,30 @@ contains
       h2 = min(h2, h1 - 0.0001) ! hg = gateheight * contractie = effectieve keeldoorsnee
       d = crestheight
       a = gateheight
-      h1 = max(h1, 0.00010d0)
-      h2 = max(h2, 0.00001d0)
+      h1 = max(h1, 0.00010_dp)
+      h2 = max(h2, 0.00001_dp)
 
-      hg = gateheight * 0.5d0 ! lower boundary
-      hg = max(hg, 0.0001d0)
+      hg = gateheight * 0.5_dp ! lower boundary
+      hg = max(hg, 0.0001_dp)
 
       if (gateheight >= h1) then ! gate above water
-         q = 11111d0
+         q = 11111.0_dp
          regime = 'gate above water'
          return
       else if (gateheight < 0.001) then
-         q = 0d0
+         q = 0.0_dp
          regime = 'gate closed, a<0.001 '
          return
       end if
 
-      qcrit = sqrt(2d0 * g * (h1 - hg) / (hg**(-2) - h1**(-2)))
+      qcrit = sqrt(2.0_dp * g * (h1 - hg) / (hg**(-2) - h1**(-2)))
 
       ha = hg; hb = h2
       call qorifdif12(ha, d, a, h1, h2, qda)
       call qorifdif12(hb, d, a, h1, h2, qdb)
 
-      num = 0; qdc = 1d9
-      do while (abs(qdc) > 1d-6 .and. abs(qda - qdb) > 1d-6 .and. num < 50)
+      num = 0; qdc = 1.0e9_dp
+      do while (abs(qdc) > 1.0e-6_dp .and. abs(qda - qdb) > 1.0e-6_dp .and. num < 50)
 
          num = num + 1
 
@@ -103,14 +103,14 @@ contains
 
       do k = 1, 10
 
-         a = 0.1d0 * dble(k) * h1
+         a = 0.1_dp * dble(k) * h1
 
-         aa = 2d0 * (h1 - a)
-         bb = -2d0 * h1**2
+         aa = 2.0_dp * (h1 - a)
+         bb = -2.0_dp * h1**2
          cc = a * h1 * h1
 
-         hgb = (-bb + sqrt(bb * bb - 4d0 * aa * cc)) / (2d0 * aa)
-         hgc = (-bb - sqrt(bb * bb - 4d0 * aa * cc)) / (2d0 * aa)
+         hgb = (-bb + sqrt(bb * bb - 4.0_dp * aa * cc)) / (2.0_dp * aa)
+         hgc = (-bb - sqrt(bb * bb - 4.0_dp * aa * cc)) / (2.0_dp * aa)
 
          hgb = hgb / h1
          hgc = hgc / h1

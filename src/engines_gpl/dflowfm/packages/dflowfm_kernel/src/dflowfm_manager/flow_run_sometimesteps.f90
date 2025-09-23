@@ -65,7 +65,7 @@ contains
 
       iresult = DFM_GENERICERROR
       if (dtrange < 0) then
-         timetarget = time1 + epsilon(1d0) ! dtrange < 0 means: auto pick a *single* timestep. Enforce this with a target time *just* larger than current time.
+         timetarget = time1 + epsilon(1.0_dp) ! dtrange < 0 means: auto pick a *single* timestep. Enforce this with a target time *just* larger than current time.
       else
          timetarget = time1 + dtrange
       end if

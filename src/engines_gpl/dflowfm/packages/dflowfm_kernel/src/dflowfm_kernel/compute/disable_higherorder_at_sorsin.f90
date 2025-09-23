@@ -119,7 +119,7 @@ contains
 !           check if higher-order reconstruction of this link has been disabled
             Ldisabled = .true.
             do i = 1, 6
-               if (dum(i, LL) /= 0d0) then
+               if (dum(i, LL) /= 0.0_dp) then
                   Ldisabled = .false.
                   exit
                end if

@@ -62,7 +62,7 @@ contains
       ! Links are close to eachother, now also check whether they're almost parallel
       if (ja == 1) then
          cosphi = dcosphi(x1, y1, x2, y2, x3, y3, x4, y4, jsferic, jasfer3D, dxymis)
-         if (abs(cosphi) > .9d0 .and. abs(cosphi) <= 1d0) then
+         if (abs(cosphi) > 0.9_dp .and. abs(cosphi) <= 1.0_dp) then
             ja = 1
             if (k1k > 0) k1k = kn(k1k, L2)
             if (k2k > 0) k2k = kn(k2k, L2)

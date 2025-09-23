@@ -51,7 +51,7 @@ contains
 
       integer :: n, k
 
-      ein = 0d0
+      ein = 0.0_dp
       n = numintverticaleinstein
       g = 1.1
       d1 = (h - aref) * (1 - g) / (1 - g**n)
@@ -88,7 +88,7 @@ contains
 
             ucrouse2 = zlm * ((h - z2) / z2)**rs
          end if
-         ein = ein + 0.5d0 * (ucrouse1 + ucrouse2) * di
+         ein = ein + 0.5_dp * (ucrouse1 + ucrouse2) * di
          di = g * di
       end do
       ein = ein * (aref / (h - aref))**rs

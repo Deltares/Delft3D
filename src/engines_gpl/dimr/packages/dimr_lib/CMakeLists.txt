@@ -49,6 +49,7 @@ if(UNIX)
 
     target_link_libraries(${library_name} ${oss_dependencies})
     target_compile_options(${library_name} PRIVATE ${cpp_compiler_flags})
+    set_target_properties(${library_name} PROPERTIES OUTPUT_NAME dimr)
 endif()
 
 if(WIN32)
@@ -92,9 +93,4 @@ endif()
 # Create the vfproj structure
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${source} ${headers} ${rc_version_file})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/dimr)
-if(UNIX)
-    install(TARGETS ${library_name} RUNTIME DESTINATION lib)
-endif(UNIX)
-if(WIN32)
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME dimr.${library_suffix} DESTINATION lib)
-endif(WIN32)
+install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ${library_prefix}dimr.${library_suffix} DESTINATION lib)

@@ -152,7 +152,7 @@ contains
 
       do i = 1, nopenbndsect !faster, in general few TH-boundary conditions
          rettim = threttim(iconst, i)
-         if (rettim <= 0d0) then
+         if (rettim <= 0.0_dp) then
             cycle
          end if
          do j = 1, nbnd
@@ -161,16 +161,16 @@ contains
             end if
             lf = kbnd(3, j)
             q = q1(lf)
-            if (q > 0d0) then !inflow condition
-               tht(j) = max(tht(j) - dt_user, 0d0)
-               thfactor = 0.5 * (1d0 + cos((tht(j) / rettim) * pi_hp))
+            if (q > 0.0_dp) then !inflow condition
+               tht(j) = max(tht(j) - dt_user, 0.0_dp)
+               thfactor = 0.5 * (1.0_dp + cos((tht(j) / rettim) * pi_hp))
                call getLbotLtop(lf, lb, lt)
                do l = lb, lt
                   m = (j - 1) * kmxd + (l - lb + 1)
                   zbnd(m) = thz(m) + thfactor * (zbnd(m) - thz(m))
                end do
-            else if (q == 0d0) then
-               tht(j) = 0d0
+            else if (q == 0.0_dp) then
+               tht(j) = 0.0_dp
             else !outflow condition
                tht(j) = rettim
                call getLbotLtop(lf, lb, lt)

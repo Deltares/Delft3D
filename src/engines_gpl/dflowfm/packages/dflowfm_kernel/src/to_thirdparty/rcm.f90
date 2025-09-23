@@ -4296,31 +4296,31 @@ contains
       integer triangle_node(triangle_order, triangle_num)
 
       node_xy = reshape([ &
-                        0.0d+00, 0.0d+00, &
-                        1.0d+00, 0.0d+00, &
-                        2.0d+00, 0.0d+00, &
-                        3.0d+00, 0.0d+00, &
-                        4.0d+00, 0.0d+00, &
-                        0.0d+00, 1.0d+00, &
-                        1.0d+00, 1.0d+00, &
-                        2.0d+00, 1.0d+00, &
-                        3.0d+00, 1.0d+00, &
-                        4.0d+00, 1.0d+00, &
-                        0.0d+00, 2.0d+00, &
-                        1.0d+00, 2.0d+00, &
-                        2.0d+00, 2.0d+00, &
-                        3.0d+00, 2.0d+00, &
-                        4.0d+00, 2.0d+00, &
-                        0.0d+00, 3.0d+00, &
-                        1.0d+00, 3.0d+00, &
-                        2.0d+00, 3.0d+00, &
-                        3.0d+00, 3.0d+00, &
-                        4.0d+00, 3.0d+00, &
-                        0.0d+00, 4.0d+00, &
-                        1.0d+00, 4.0d+00, &
-                        2.0d+00, 4.0d+00, &
-                        3.0d+00, 4.0d+00, &
-                        4.0d+00, 4.0d+00 &
+                        0.0e+00_dp, 0.0e+00_dp, &
+                        1.0e+00_dp, 0.0e+00_dp, &
+                        2.0e+00_dp, 0.0e+00_dp, &
+                        3.0e+00_dp, 0.0e+00_dp, &
+                        4.0e+00_dp, 0.0e+00_dp, &
+                        0.0e+00_dp, 1.0e+00_dp, &
+                        1.0e+00_dp, 1.0e+00_dp, &
+                        2.0e+00_dp, 1.0e+00_dp, &
+                        3.0e+00_dp, 1.0e+00_dp, &
+                        4.0e+00_dp, 1.0e+00_dp, &
+                        0.0e+00_dp, 2.0e+00_dp, &
+                        1.0e+00_dp, 2.0e+00_dp, &
+                        2.0e+00_dp, 2.0e+00_dp, &
+                        3.0e+00_dp, 2.0e+00_dp, &
+                        4.0e+00_dp, 2.0e+00_dp, &
+                        0.0e+00_dp, 3.0e+00_dp, &
+                        1.0e+00_dp, 3.0e+00_dp, &
+                        2.0e+00_dp, 3.0e+00_dp, &
+                        3.0e+00_dp, 3.0e+00_dp, &
+                        4.0e+00_dp, 3.0e+00_dp, &
+                        0.0e+00_dp, 4.0e+00_dp, &
+                        1.0e+00_dp, 4.0e+00_dp, &
+                        2.0e+00_dp, 4.0e+00_dp, &
+                        3.0e+00_dp, 4.0e+00_dp, &
+                        4.0e+00_dp, 4.0e+00_dp &
                         ], [dim_num, node_num])
 
       triangle_node(1:triangle_order, 1:triangle_num) = reshape([ &
@@ -5128,31 +5128,31 @@ contains
       integer triangle_node(triangle_order, triangle_num)
 
       node_xy = reshape([ &
-                        0.0d+00, 0.0d+00, &
-                        1.0d+00, 0.0d+00, &
-                        2.0d+00, 0.0d+00, &
-                        3.0d+00, 0.0d+00, &
-                        4.0d+00, 0.0d+00, &
-                        0.0d+00, 1.0d+00, &
-                        1.0d+00, 1.0d+00, &
-                        2.0d+00, 1.0d+00, &
-                        3.0d+00, 1.0d+00, &
-                        4.0d+00, 1.0d+00, &
-                        0.0d+00, 2.0d+00, &
-                        1.0d+00, 2.0d+00, &
-                        2.0d+00, 2.0d+00, &
-                        3.0d+00, 2.0d+00, &
-                        4.0d+00, 2.0d+00, &
-                        0.0d+00, 3.0d+00, &
-                        1.0d+00, 3.0d+00, &
-                        2.0d+00, 3.0d+00, &
-                        3.0d+00, 3.0d+00, &
-                        4.0d+00, 3.0d+00, &
-                        0.0d+00, 4.0d+00, &
-                        1.0d+00, 4.0d+00, &
-                        2.0d+00, 4.0d+00, &
-                        3.0d+00, 4.0d+00, &
-                        4.0d+00, 4.0d+00 &
+                        0.0e+00_dp, 0.0e+00_dp, &
+                        1.0e+00_dp, 0.0e+00_dp, &
+                        2.0e+00_dp, 0.0e+00_dp, &
+                        3.0e+00_dp, 0.0e+00_dp, &
+                        4.0e+00_dp, 0.0e+00_dp, &
+                        0.0e+00_dp, 1.0e+00_dp, &
+                        1.0e+00_dp, 1.0e+00_dp, &
+                        2.0e+00_dp, 1.0e+00_dp, &
+                        3.0e+00_dp, 1.0e+00_dp, &
+                        4.0e+00_dp, 1.0e+00_dp, &
+                        0.0e+00_dp, 2.0e+00_dp, &
+                        1.0e+00_dp, 2.0e+00_dp, &
+                        2.0e+00_dp, 2.0e+00_dp, &
+                        3.0e+00_dp, 2.0e+00_dp, &
+                        4.0e+00_dp, 2.0e+00_dp, &
+                        0.0e+00_dp, 3.0e+00_dp, &
+                        1.0e+00_dp, 3.0e+00_dp, &
+                        2.0e+00_dp, 3.0e+00_dp, &
+                        3.0e+00_dp, 3.0e+00_dp, &
+                        4.0e+00_dp, 3.0e+00_dp, &
+                        0.0e+00_dp, 4.0e+00_dp, &
+                        1.0e+00_dp, 4.0e+00_dp, &
+                        2.0e+00_dp, 4.0e+00_dp, &
+                        3.0e+00_dp, 4.0e+00_dp, &
+                        4.0e+00_dp, 4.0e+00_dp &
                         ], [dim_num, node_num])
 
       triangle_node(1:triangle_order, 1:triangle_num) = reshape([ &
@@ -5324,17 +5324,17 @@ contains
       nn = n + 1
 
 ! Algorithm fails if the leading coefficient is zero.
-      if (op(1) == 0.d0) then
+      if (op(1) == 0.0_dp) then
          fail = .true.
          degree = 0
          return
       end if
 
 ! Remove the zeros at the origin if any
-10    if (op(nn) == 0.0d0) then
+10    if (op(nn) == 0.0_dp) then
          j = degree - n + 1
-         zeror(j) = 0.d0
-         zeroi(j) = 0.d0
+         zeror(j) = 0.0_dp
+         zeroi(j) = 0.0_dp
          nn = nn - 1
          n = n - 1
          GO TO 10
@@ -5355,7 +5355,7 @@ contains
 ! calculate the final zero or pair of zeros
          if (n /= 2) then
             zeror(degree) = -p(2) / p(1)
-            zeroi(degree) = 0.0d0
+            zeroi(degree) = 0.0_dp
             return
          end if
          call quad(p(1), p(2), p(3), zeror(degree - 1), zeroi(degree - 1), &
@@ -5385,8 +5385,8 @@ contains
          if (infin / sc < MAX) GO TO 60
       end if
       l = log(sc) / log(base) + .5
-      factor = (base * 1.0d0)**l
-      if (factor /= 1.d0) then
+      factor = (base * 1.0_dp)**l
+      if (factor /= 1.0_dp) then
          p(1:nn) = factor * p(1:nn)
       end if
 
@@ -5438,7 +5438,7 @@ contains
       k(1) = p(1)
       aa = p(nn)
       bb = p(n)
-      zerok = k(n) == 0.d0
+      zerok = k(n) == 0.0_dp
       do jj = 1, 5
          cc = k(n)
          if (.not. zerok) then
@@ -5456,8 +5456,8 @@ contains
                j = nn - i
                k(j) = k(j - 1)
             end do
-            k(1) = 0.d0
-            zerok = k(n) == 0.d0
+            k(1) = 0.0_dp
+            zerok = k(n) == 0.0_dp
          end if
       end do
 
@@ -5475,7 +5475,7 @@ contains
          xx = xxx
          sr = bnd * xx
          si = bnd * yy
-         u = -2.0d0 * sr
+         u = -2.0_dp * sr
          v = bnd
 
 ! second stage calculation, fixed quadratic
@@ -5543,7 +5543,7 @@ contains
 
 ! Estimate s
          ss = 0.
-         if (k(n) /= 0.d0) ss = -p(nn) / k(n)
+         if (k(n) /= 0.0_dp) ss = -p(nn) / k(n)
          tv = 1.
          ts = 1.
          if (j /= 1 .and. type /= 3) then
@@ -5646,11 +5646,11 @@ contains
       j = 0
 
 ! Main loop
-10    call quad(1.d0, u, v, szr, szi, lzr, lzi)
+10    call quad(1.0_dp, u, v, szr, szi, lzr, lzi)
 
 ! Return if roots of the quadratic are real and not
 ! close to multiple or nearly equal and  of opposite sign.
-      if (abs(abs(szr) - abs(lzr)) > .01d0 * abs(lzr)) return
+      if (abs(abs(szr) - abs(lzr)) > 0.01_dp * abs(lzr)) return
 
 ! Evaluate polynomial by quadratic synthetic division
       call quadsd(nn, u, v, p, qp, a, b)
@@ -5669,7 +5669,7 @@ contains
 
 ! Iteration has converged sufficiently if the
 ! polynomial value is less than 20 times this bound
-      if (mp <= 20.d0 * ee) then
+      if (mp <= 20.0_dp * ee) then
          nz = 2
          return
       end if
@@ -5704,7 +5704,7 @@ contains
       call newest(type, ui, vi)
 
 ! If vi is zero the iteration is not converging
-      if (vi == 0.d0) return
+      if (vi == 0.0_dp) return
       relstp = abs((vi - v) / vi)
       u = ui
       v = vi
@@ -5751,10 +5751,10 @@ contains
 
 ! Iteration has converged sufficiently if the
 ! polynomial value is less than 20 times this bound
-      if (mp <= 20.d0 * ((are + mre) * ee - mre * mp)) then
+      if (mp <= 20.0_dp * ((are + mre) * ee - mre * mp)) then
          nz = 1
          szr = s
-         szi = 0.d0
+         szi = 0.0_dp
          return
       end if
       j = j + 1
@@ -5762,7 +5762,7 @@ contains
 ! Stop iteration after 10 steps
       if (j > 10) return
       if (j >= 2) then
-         if (abs(t) <= .001d0 * abs(s - t) .and. mp > omp) then
+         if (abs(t) <= 0.001_dp * abs(s - t) .and. mp > omp) then
 ! A cluster of zeros near the real axis has been encountered,
 ! return with iflag set to initiate a quadratic iteration
             iflag = 1
@@ -5790,7 +5790,7 @@ contains
          end do
       else
 ! Use unscaled form
-         k(1) = 0.0d0
+         k(1) = 0.0_dp
          do i = 2, n
             k(i) = qk(i - 1)
          end do
@@ -5799,7 +5799,7 @@ contains
       do i = 2, n
          kv = kv * s + k(i)
       end do
-      t = 0.d0
+      t = 0.0_dp
       if (abs(kv) > abs(k(n)) * 10.*eta) t = -pv / kv
       s = s + t
       GO TO 10
@@ -5863,7 +5863,7 @@ contains
          if (type == 1) temp = b
          if (abs(a1) <= abs(temp) * eta * 10.) then
 ! If a1 is nearly zero then use a special form of the recurrence
-            k(1) = 0.d0
+            k(1) = 0.0_dp
             k(2) = -a7 * qp(1)
             do i = 3, n
                k(i) = a3 * qk(i - 2) - a7 * qp(i - 1)
@@ -5883,8 +5883,8 @@ contains
       end if
 
 ! Use unscaled form of the recurrence if type is 3
-      k(1) = 0.d0
-      k(2) = 0.d0
+      k(1) = 0.0_dp
+      k(2) = 0.0_dp
       do i = 3, n
          k(i) = qk(i - 2)
       end do
@@ -5920,7 +5920,7 @@ contains
          c3 = b1 * b1 * a3
          c4 = c1 - c2 - c3
          temp = a5 + b1 * a4 - c4
-         if (temp /= 0.d0) then
+         if (temp /= 0.0_dp) then
             uu = u - (u * (c3 + c2) + v * (b1 * a1 + b2 * a7)) / temp
             vv = v * (1.+c4 / temp)
             return
@@ -5928,8 +5928,8 @@ contains
       end if
 
 ! If type=3 the quadratic is zeroed
-      uu = 0.d0
-      vv = 0.d0
+      uu = 0.0_dp
+      vv = 0.0_dp
       return
    end subroutine newest
 
@@ -5970,38 +5970,38 @@ contains
 
       real(kind=dp) :: b, d, e
 
-      if (a /= 0.d0) GO TO 20
-      sr = 0.d0
-      if (b1 /= 0.d0) sr = -c / b1
-      lr = 0.d0
-10    si = 0.d0
-      li = 0.d0
+      if (a /= 0.0_dp) GO TO 20
+      sr = 0.0_dp
+      if (b1 /= 0.0_dp) sr = -c / b1
+      lr = 0.0_dp
+10    si = 0.0_dp
+      li = 0.0_dp
       return
 
-20    if (c == 0.d0) then
-         sr = 0.d0
+20    if (c == 0.0_dp) then
+         sr = 0.0_dp
          lr = -b1 / a
          GO TO 10
       end if
 
 ! Compute discriminant avoiding overflow
-      b = b1 / 2.d0
+      b = b1 / 2.0_dp
       if (abs(b) >= abs(c)) then
-         e = 1.d0 - (a / b) * (c / b)
+         e = 1.0_dp - (a / b) * (c / b)
          d = sqrt(abs(e)) * abs(b)
       else
          e = a
-         if (c < 0.d0) e = -a
+         if (c < 0.0_dp) e = -a
          e = b * (b / abs(c)) - e
          d = sqrt(abs(e)) * sqrt(abs(c))
       end if
-      if (e >= 0.d0) then
+      if (e >= 0.0_dp) then
 
 ! Real zeros
-         if (b >= 0.d0) d = -d
+         if (b >= 0.0_dp) d = -d
          lr = (-b + d) / a
-         sr = 0.d0
-         if (lr /= 0.d0) sr = (c / lr) / a
+         sr = 0.0_dp
+         if (lr /= 0.0_dp) sr = (c / lr) / a
          GO TO 10
       end if
 ! complex conjugate zeros

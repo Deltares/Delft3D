@@ -64,15 +64,15 @@ contains
 
       r1 = dbdistance(x1, y1, x2, y2, jsferic, jasfer3D, dmiss)
       r2 = dbdistance(x3, y3, x4, y4, jsferic, jasfer3D, dmiss)
-      rm = 0.4d0 * min(r1, r2)
+      rm = 0.4_dp * min(r1, r2)
       if (r1 <= r2) then
-         xm = 0.5d0 * (x1 + x2); ym = 0.5d0 * (y1 + y2)
+         xm = 0.5_dp * (x1 + x2); ym = 0.5_dp * (y1 + y2)
          call DLINEDIS(Xm, Ym, X3, Y3, X4, Y4, JA1, DIS1, Xd, Yd, jsferic, jasfer3D, dmiss)
          if (ja1 == 1 .and. dis1 < rm) then
             ja = 1
          end if
       else
-         xm = 0.5d0 * (x3 + x4); ym = 0.5d0 * (y3 + y4)
+         xm = 0.5_dp * (x3 + x4); ym = 0.5_dp * (y3 + y4)
          call DLINEDIS(Xm, Ym, X1, Y1, X2, Y2, JA1, DIS1, Xd, Yd, jsferic, jasfer3D, dmiss)
          if (ja1 == 1 .and. dis1 < rm) then
             ja = 1

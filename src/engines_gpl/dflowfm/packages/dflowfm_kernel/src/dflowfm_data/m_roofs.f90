@@ -32,7 +32,7 @@
 
 module m_roofs
    use precision, only: dp
-   real(kind=dp) :: roofheightuni = 2.7d0 ! if not dmiss, rooflevel = av gr
-   real(kind=dp) :: roofedgeheight = 0.1d0
-   real(kind=dp) :: dxminroofgutterpipe = 10.0d0
+   real(kind=dp) :: roofheightuni = 2.7_dp ! if not dmiss, rooflevel = av gr
+   real(kind=dp) :: roofedgeheight = 0.1_dp
+   real(kind=dp) :: dxminroofgutterpipe = 10.0_dp
 end module m_roofs

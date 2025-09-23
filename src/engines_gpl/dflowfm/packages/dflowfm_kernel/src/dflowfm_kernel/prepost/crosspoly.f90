@@ -53,7 +53,7 @@ contains
 
       isec = 0
       JA = 0
-      distanceStartPolygon = 0.0d0
+      distanceStartPolygon = 0.0_dp
       do K = 1, NPL - 1
          KU = K + 1
          XP1 = XPL(K); YP1 = YPL(K)

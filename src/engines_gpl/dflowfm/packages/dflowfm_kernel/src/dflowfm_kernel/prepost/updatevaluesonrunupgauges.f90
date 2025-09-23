@@ -55,9 +55,9 @@ contains
       real(kind=dp) :: max_x, max_y, maxz, maxk
 
 !   update runup on gauge locations
-      hs = max(s1 - bl, 0d0)
+      hs = max(s1 - bl, 0.0_dp)
       do irug = 1, num_rugs
-         maxz = -huge(0d0)
+         maxz = -huge(0.0_dp)
          max_x = dmiss
          max_y = dmiss
          maxk = 0

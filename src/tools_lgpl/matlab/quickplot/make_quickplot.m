@@ -141,7 +141,6 @@ X = {'*.asv'
     '*.a'
     '*.lib'
     '*.scc'
-    'private'
     'compileonly'
     '@qp_data'
     '@qp_data_resource'};
@@ -154,6 +153,9 @@ else
         '*.exp'});
 end
 cleanup(X)
+cd private
+cleanup(X)
+cd ..
 diary off
 cd ..
 fprintf('Finished.\n');

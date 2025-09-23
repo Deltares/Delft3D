@@ -72,15 +72,15 @@ contains
       allocate (xi2(mmax, nmax), xj2(mmax, nmax), yi2(mmax, nmax), yj2(mmax, nmax), &
                 xr(mmax, nmax), yr(mmax, nmax), xrh(mmax, nmax), yrh(mmax, nmax))
 
-      call READYY('INTERPOLATION', 0d0)
+      call READYY('INTERPOLATION', 0.0_dp)
       call ISITU() !      X,      Y,     MC,  NC,    IJC,  IJYES)
-      call READYY(' ', 0.10d0)
+      call READYY(' ', 0.10_dp)
 
       call GETSPL2(Xc, XI2, XJ2, MC, NC, mmax, nmax)
-      call READYY(' ', 0.15d0)
+      call READYY(' ', 0.15_dp)
 
       call GETSPL2(Yc, YI2, YJ2, MC, NC, mmax, nmax)
-      call READYY(' ', 0.20d0)
+      call READYY(' ', 0.20_dp)
 
       if (MFAC /= 1 .or. NFAC /= 1) then
          call XYSPLN(Xc, Yc, XR, YR, &
@@ -88,7 +88,7 @@ contains
                      mmax, nmax, mnmax, &
                      M1, N1, M2, N2, MC, NC, &
                      MFAC, NFAC, IJYES)
-         call READYY(' ', 0.90d0)
+         call READYY(' ', 0.90_dp)
       end if
 
       call PUTARR(XR, Xc, MMAX, NMAX)
@@ -97,8 +97,8 @@ contains
       MC = MCR
       NC = NCR
 
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       deallocate (XI2, XJ2, YI2, YJ2, XR, YR, XRH, YRH)
 
       return

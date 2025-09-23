@@ -48,17 +48,17 @@ contains
 
       integer :: mx, nx, i, j, L
 
-      shft = 0d0
+      shft = 0.0_dp
       mx = size(spw, 2)
       nx = size(spw, 3)
       if (sum(xu(:)) < 0) then
-         shft = 1d0
+         shft = 1.0_dp
       end if
       if (mx /= 0 .and. nx /= 0) then
          do i = 1, mx - 1
             do j = 1, nx
                call setcol(221)
-               call arrowsxy(spw(1, i, j) - shft * 360d0, spw(2, i, j), spw(3, i, j), spw(4, i, j), 0.05 * VFAC)
+               call arrowsxy(spw(1, i, j) - shft * 360.0_dp, spw(2, i, j), spw(3, i, j), spw(4, i, j), 0.05 * VFAC)
             end do
          end do
       end if

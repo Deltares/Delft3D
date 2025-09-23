@@ -258,7 +258,7 @@ contains
 
          if (jagui == 1) then
             ja = 1
-            dxxmax = -huge(1d0); dxxmin = -dxxmax
+            dxxmax = -huge(1.0_dp); dxxmin = -dxxmax
             do L = 1, numL
                dl = dlinklength(L)
                dxxmin = min(dxxmin, dl)
@@ -516,7 +516,7 @@ contains
 !         end do
 
 !        get the cell polygon that is safe for periodic, spherical coordinates, inluding poles
-            call get_cellpolygon(ic, M, N, 1d0, xloc, yloc, LnnL, Lorg, zz)
+            call get_cellpolygon(ic, M, N, 1.0_dp, xloc, yloc, LnnL, Lorg, zz)
 
 !        compute orientation vectors of netcell
 !         call orthonet_compute_orientation(aspect, u(1), v(1), u(2), v(2), ic)
@@ -616,7 +616,7 @@ contains
          integer :: ivar, k, kp1, num, ierror, jdla
          integer :: landsea ! cell: 0=sea, 1=landsea, 2=land
          integer :: linkcourant ! link oriented courant icw cell landsea
-         real(kind=dp), parameter :: FAC = 1d0
+         real(kind=dp), parameter :: FAC = 1.0_dp
          real(kind=dp), dimension(6) :: transformcoef = 0
          integer :: mxsam, mysam, m
          type(TerrorInfo) :: errorInfo
@@ -634,9 +634,9 @@ contains
 !     initialization
          zc = DMISS
 
-         dmincellsize = 1d99
-         dmaxcellsize = 0d0
-         xc(1) = 0d0; yc(1) = 0d0
+         dmincellsize = 1.0e99_dp
+         dmaxcellsize = 0.0_dp
+         xc(1) = 0.0_dp; yc(1) = 0.0_dp
          do k = 1, N
             kp1 = k + 1; if (kp1 > N) kp1 = kp1 - N
             dsize = dbdistance(x(k), y(k), x(kp1), y(kp1), jsferic, jasfer3D, dmiss)
@@ -677,9 +677,9 @@ contains
 !          diff = max(abs(DzsDx*u(1)+DzsDy*u(2)), abs(DzsDx*v(1)+DzsDy*v(2)))
 !          dcellsize = sqrt(max(u(1)*u(1), u(2)*u(2)))
 
-            dcellsize_wanted = threshold / (abs(zc(4)) + 1d-8)
+            dcellsize_wanted = threshold / (abs(zc(4)) + 1.0e-8_dp)
 
-            if (dcellsize > dcellsize_wanted .and. dcellsize > 2d0 * hmin .and. abs(zc(4)) > thresholdmin) then
+            if (dcellsize > dcellsize_wanted .and. dcellsize > 2.0_dp * hmin .and. abs(zc(4)) > thresholdmin) then
 !          if ( abs(zc(4)).gt.thresholdmin ) then
                jarefine = 1
                jarefinelink = 1
@@ -701,7 +701,7 @@ contains
             end if
 
 !        only interpolate samples if necessary
-            if (Dt_maxcour > 0d0 .or. irefinetype == ITYPE_MESHWIDTH) then
+            if (Dt_maxcour > 0.0_dp .or. irefinetype == ITYPE_MESHWIDTH) then
                zc = DMISS
                if (interpolationtype == 1) then
                   if (ic == 1) then
@@ -718,16 +718,16 @@ contains
                else if (interpolationtype == 4) then
                   !landsea = 0
 
-                  zmx = -1d9; zmn = 1d9
+                  zmx = -1.0e9_dp; zmn = 1.0e9_dp
                   do m = 1, N
                      call bilinarcinfo(x(m), y(m), z(m))
                      zmx = max(zmx, z(m))
                      zmn = min(zmn, z(m))
                   end do
-                  if (zmn > 0d0) then ! land
-                     zc(1) = 9d9; landsea = 3 ! no refine
-                  else if (zmx >= 0d0 .and. zmn <= 0d0) then ! land/sea
-                     zc(1) = 0d9; landsea = 1 ! always refine
+                  if (zmn > 0.0_dp) then ! land
+                     zc(1) = 9.0e9_dp; landsea = 3 ! no refine
+                  else if (zmx >= 0.0_dp .and. zmn <= 0.0_dp) then ! land/sea
+                     zc(1) = 0.0e9_dp; landsea = 1 ! always refine
                   else
                      call bilinarcinfo(xc(1), yc(1), zc(1)); landsea = 2
                   end if
@@ -744,7 +744,7 @@ contains
                end if
                dval = zc(1)
             else
-               dval = 0d0
+               dval = 0.0_dp
             end if
 
             if (dval == DMISS) then
@@ -761,7 +761,7 @@ contains
                   cycle
                end if
 
-               dlinklengthnew = 0.5d0 * dlinklength(k)
+               dlinklengthnew = 0.5_dp * dlinklength(k)
 
                if (irefinetype == ITYPE_WAVECOURANT) then
 !              compute wave speed
@@ -771,9 +771,9 @@ contains
                   linkcourant = 1 ! checking land sea mask of arcinfo grid and Courant based upon links instead of cells
                   if (linkcourant == 1) then
                      if (landsea == 1) then ! coast always refine
-                        C = 0d0
+                        C = 0.0_dp
                      else if (landsea == 3) then ! land no refine
-                        C = 9d9
+                        C = 9.0e9_dp
                      else
                         if (k < N) then
                            k2 = k + 1
@@ -781,16 +781,16 @@ contains
                            k2 = 1
                         end if
 
-                        if (z(k) * z(k2) < 0d0) then
-                           C = 0d0
+                        if (z(k) * z(k2) < 0.0_dp) then
+                           C = 0.0_dp
                         else
-                           dval = 0.5d0 * (z(k) + z(k2))
+                           dval = 0.5_dp * (z(k) + z(k2))
                            C = sqrt(AG * abs(dval))
                         end if
                      end if
                   else
-                     if (dval == 0d0) then
-                        C = 0d0
+                     if (dval == 0.0_dp) then
+                        C = 0.0_dp
                      else
                         C = sqrt(AG * abs(dval))
                      end if
@@ -800,7 +800,7 @@ contains
                   Courant = C * Dt_maxcour / dlinklength(k)
                   !if ( Courant.lt.1 .and. 0.5d0*dlinklength(k).gt.FAC*hmin ) then
                   !if ( Courant.lt.1 .and. abs(dlinklengthnew-Dx_mincour).lt.abs(dlinklength(k)-Dx_mincour) ) then
-                  if (Courant < 1d0 .and. dlinklengthnew > Dx_mincour) then
+                  if (Courant < 1.0_dp .and. dlinklengthnew > Dx_mincour) then
                      num = num + 1
                      jarefinelink(k) = 1
                   else
@@ -1021,8 +1021,8 @@ contains
             if (jalink(L) /= 0) then
                k1 = kn(1, L)
                k2 = kn(2, L)
-               xnew = 0.5d0 * (xk(k1) + xk(k2))
-               ynew = 0.5d0 * (yk(k1) + yk(k2))
+               xnew = 0.5_dp * (xk(k1) + xk(k2))
+               ynew = 0.5_dp * (yk(k1) + yk(k2))
 
                if (jsferic == 1) then
                   call comp_middle_latitude(yk(k1), yk(k2), ynew, ierr)
@@ -1030,13 +1030,13 @@ contains
 
 !           fix for spherical, periodic coordinates
                if (jsferic == 1) then
-                  if (abs(xk(k1) - xk(k2)) > 180d0) then
-                     xnew = xnew + 180d0
+                  if (abs(xk(k1) - xk(k2)) > 180.0_dp) then
+                     xnew = xnew + 180.0_dp
                   end if
 
 !              fix at the poles (xk can have any value at the pole)
-                  Lpole1 = abs(abs(yk(k1)) - 90d0) < dtol_pole
-                  Lpole2 = abs(abs(yk(k2)) - 90d0) < dtol_pole
+                  Lpole1 = abs(abs(yk(k1)) - 90.0_dp) < dtol_pole
+                  Lpole2 = abs(abs(yk(k2)) - 90.0_dp) < dtol_pole
                   if (Lpole1 .and. .not. Lpole2) then
                      xnew = xk(k2)
                   else if (.not. Lpole1 .and. Lpole2) then
@@ -1074,7 +1074,7 @@ contains
             end do
 
 !        fix for global. spherical coordinates
-            call get_cellpolygon(k, MMAX, nn, 1d0, xv, yv, LnnL, Lorg, zz)
+            call get_cellpolygon(k, MMAX, nn, 1.0_dp, xv, yv, LnnL, Lorg, zz)
 
 !        find the number of hanging nodes
             num = 0 ! number of non-hanging nodes
@@ -1174,7 +1174,7 @@ contains
 
             if (Np == 4) then
                if (jsferic == 1) then
-                  ymin = 1d99
+                  ymin = 1.0e99_dp
                   ymax = -ymin
                   do i = 1, Np
                      if (yp(i) < ymin) then
@@ -1191,8 +1191,8 @@ contains
 
                if (jsferic == 1) then
                   call comp_middle_latitude(ymin, ymax, ynew, ierr)
-                  if (ierr == 0 .and. ymax - ymin > 1d-8) then
-                     yz = ymin + 2d0 * (ynew - ymin) / (ymax - ymin) * (yz - ymin)
+                  if (ierr == 0 .and. ymax - ymin > 1.0e-8_dp) then
+                     yz = ymin + 2.0_dp * (ynew - ymin) / (ymax - ymin) * (yz - ymin)
                   end if
                end if
             else
@@ -1240,7 +1240,7 @@ contains
 !           set the brother links
                Lsize = ubound(linkbrother, 1)
                if (numL > ubound(linkbrother, 1)) then
-                  Lsize = ceiling(1.2d0 * dble(numL + 1))
+                  Lsize = ceiling(1.2_dp * dble(numL + 1))
                   call realloc(linkbrother, Lsize, keepExisting=.true., fill=0)
                end if
                linkbrother(Lnew) = L

@@ -38,7 +38,7 @@ module m_plotdots
    real(kind=dp), dimension(:), allocatable :: xdots, ydots ! dot coordinates, dim(NSIZE)
    real(kind=dp), dimension(:), allocatable :: zdots ! dot z-value
    integer, dimension(:), allocatable :: colnumber ! colour number
-   real(kind=dp), parameter :: ZDOTDEFAULT = 0d0
+   real(kind=dp), parameter :: ZDOTDEFAULT = 0.0_dp
 
 contains
 
@@ -50,7 +50,7 @@ contains
       integer, intent(in) :: N
 
       if (N > NSIZE) then
-         NSIZE = 1 + int(1.2d0 * dble(N))
+         NSIZE = 1 + int(1.2_dp * dble(N))
 
          call realloc(xdots, NSIZE, keepExisting=.true., fill=DMISS)
          call realloc(ydots, NSIZE, keepExisting=.true., fill=DMISS)

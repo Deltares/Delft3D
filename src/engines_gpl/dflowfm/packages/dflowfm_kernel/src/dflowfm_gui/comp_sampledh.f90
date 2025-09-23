@@ -60,15 +60,15 @@ contains
       ipjL = i + (max(j - 1, 1) - 1) * MXSAM
       ipjR = i + (min(j + 1, MYSAM) - 1) * MXSAM
 
-      comp_sampleDh = 0d0
+      comp_sampleDh = 0.0_dp
       dum = dbdistance(xs(ip), ys(ip), xs(ipiL), ys(ipiL), jsferic, jasfer3D, dmiss)
-      if (dum > 0d0) comp_sampleDh = max(comp_sampleDh, dum)
+      if (dum > 0.0_dp) comp_sampleDh = max(comp_sampleDh, dum)
       dum = dbdistance(xs(ip), ys(ip), xs(ipiR), ys(ipiR), jsferic, jasfer3D, dmiss)
-      if (dum > 0d0) comp_sampleDh = max(comp_sampleDh, dum)
+      if (dum > 0.0_dp) comp_sampleDh = max(comp_sampleDh, dum)
       dum = dbdistance(xs(ip), ys(ip), xs(ipjL), ys(ipjR), jsferic, jasfer3D, dmiss)
-      if (dum > 0d0) comp_sampleDh = max(comp_sampleDh, dum)
+      if (dum > 0.0_dp) comp_sampleDh = max(comp_sampleDh, dum)
       dum = dbdistance(xs(ip), ys(ip), xs(ipjR), ys(ipjR), jsferic, jasfer3D, dmiss)
-      if (dum > 0d0) comp_sampleDh = max(comp_sampleDh, dum)
+      if (dum > 0.0_dp) comp_sampleDh = max(comp_sampleDh, dum)
 
 1234  continue
 

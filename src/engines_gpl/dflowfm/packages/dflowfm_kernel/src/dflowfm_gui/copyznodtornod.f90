@@ -55,7 +55,7 @@ contains
       end if
       if (ja == 1) then
          allocate (rn(numk), stat=ierr)
-         call aerr('rn(numk)', ierr, numk); rn = 0d0
+         call aerr('rn(numk)', ierr, numk); rn = 0.0_dp
          do n = 1, ndx2d
             nn = size(nd(n)%nod)
             do kk = 1, nn
@@ -65,10 +65,10 @@ contains
          end do
       end if
 
-      rnod = 0d0
+      rnod = 0.0_dp
       do n = 1, ndx2d
          znn = znod(n)
-         if (znn /= 0d0) then
+         if (znn /= 0.0_dp) then
             nn = size(nd(n)%nod)
             do kk = 1, nn
                kkk = nd(n)%nod(kk)

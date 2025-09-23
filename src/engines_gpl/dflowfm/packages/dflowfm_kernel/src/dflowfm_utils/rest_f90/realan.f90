@@ -71,7 +71,7 @@ contains
          call increaselan(10000)
       end if
 
-      call READYY('READING land boundary', 0d0)
+      call READYY('READING land boundary', 0.0_dp)
 10    continue
       read (MLAN, '(A)', end=777, ERR=887) MATR
       if (MATR(1:1) == '*') goto 10
@@ -97,7 +97,7 @@ contains
 
          XLR = XL
 
-881      if (XL == 999.999d0 .or. XLR == 999.999d0) then
+881      if (XL == 999.999_dp .or. XLR == 999.999_dp) then
             XL = dmiss
             YL = dmiss
             ZL = dmiss
@@ -119,7 +119,7 @@ contains
             NCLAN(NTOT) = NCL
          end if
          if (mod(I, 1000) == 0) then
-            call READYY(' ', min(1d0, dble(I) / MAXLAN))
+            call READYY(' ', min(1.0_dp, dble(I) / MAXLAN))
          end if
       end do
       NTOT = NTOT + 1
@@ -132,8 +132,8 @@ contains
 
 777   continue
       MXLAN = NTOT
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call doclose(MLAN)
 
       if (present(antot)) then
@@ -162,29 +162,29 @@ contains
 
 666   call QNREADERROR('SEARCHING NROWS,NCOLS, BUT GETTING', REC, MLAN)
       MXLAN = NTOT
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call doclose(MLAN)
       return
 
 888   call QNREADERROR('SEARCHING COORDINATES, BUT GETTING', REC, MLAN)
       MXLAN = NTOT
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call doclose(MLAN)
       return
 
 887   call QNREADERROR('EXPECTING 4 CHAR, BUT GETTING', MATR, MLAN)
       MXLAN = NTOT
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call doclose(MLAN)
       return
 
 999   call QNEOFERROR(MLAN)
       MXLAN = NTOT
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call doclose(MLAN)
       return
 

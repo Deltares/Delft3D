@@ -84,7 +84,7 @@ contains
       call INQASP(ASPECT)
       XL = XLC
       YL = YLC
-      dy = dyh / 3d0
+      dy = dyh / 3.0_dp
       DX = DY / ASPECT
       if (JSFERTEK >= 1) then
          call dPROJECT(XLC, YLC, XL, YL, 1)
@@ -115,8 +115,8 @@ contains
       else if (KEY == 22) then
          JA = 3
       else if (KEY == 90 .or. KEY == 90 + 32) then
-         DY = 3d0 * dyh
-         if (JSFERTEK >= 1) DY = min(DY, 179d0)
+         DY = 3.0_dp * dyh
+         if (JSFERTEK >= 1) DY = min(DY, 179.0_dp)
          JA = 1
       else if (KEY == 23) then
          KEY = 3
@@ -135,7 +135,7 @@ contains
          call BOXnop(X1B, Y1B, X2B, Y2B)
          JADRAW = 1
          if (KEY == 162 .or. KEY == 43) then
-            DY = DY * 1.01; if (JSFERTEK >= 1) DY = min(DY, 179d0)
+            DY = DY * 1.01; if (JSFERTEK >= 1) DY = min(DY, 179.0_dp)
          else if (KEY == 160 .or. KEY == 45) then
             DY = DY / 1.01
          end if

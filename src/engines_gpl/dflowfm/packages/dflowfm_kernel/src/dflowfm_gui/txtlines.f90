@@ -32,6 +32,8 @@
 
 module m_txtlines
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -47,7 +49,7 @@ contains
 
       do i = 1, 3
          if (len_trim(TXLIN(i)) > 0) then
-            call MTEXT(TXLIN(i), TXXpos, TXYpos + 0.04d0 * (4 - i), 3)
+            call MTEXT(TXLIN(i), TXXpos, TXYpos + 0.04_dp * (4 - i), 3)
          end if
       end do
 

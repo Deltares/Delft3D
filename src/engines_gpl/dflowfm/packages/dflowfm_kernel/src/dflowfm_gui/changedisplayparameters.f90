@@ -31,8 +31,10 @@
 !
 
 module m_changedisplayparameters
+
    use m_settextsize
 
+use precision, only: dp
    implicit none
 
 contains
@@ -325,10 +327,10 @@ contains
             call IFORMGETINTEGER(2 * 32, kplotfrombedorsurface)
             call IFORMGETINTEGER(2 * 33, kplotordepthaveraged)
 
-            VFAC = max(0d0, VFAC)
-            VFACFORCE = max(0d0, VFACFORCE)
-            XLEFT = max(0d0, (min(XLEFT, 0.25d0)))
-            YBOT = max(0d0, (min(YBOT, 0.25d0)))
+            VFAC = max(0.0_dp, VFAC)
+            VFACFORCE = max(0.0_dp, VFACFORCE)
+            XLEFT = max(0.0_dp, (min(XLEFT, 0.25_dp)))
+            YBOT = max(0.0_dp, (min(YBOT, 0.25_dp)))
             JAXIS = min(1, (max(JAXIS, 0)))
             if (JAXIS == 1) then
                if (XLEFT == 0) XLEFT = .15

@@ -67,9 +67,9 @@ contains
       logical :: isGhost
       integer :: i_layer, layer_index, index_active_bottom_layer
 
-      bb = 0d0
-      ccr = 0d0
-      dd = 0d0
+      bb = 0.0_dp
+      ccr = 0.0_dp
+      dd = 0.0_dp
 
       if (jagrw > 0 .or. numsrc > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
          jaqin = 1
@@ -79,42 +79,42 @@ contains
          if (jatem > 1) then
             heatsrc = heatsrc0 ! heatsrc0 established in heatu at interval usertimestep
          else
-            heatsrc = 0d0 ! just prior to setsorsin that may add to heatsrc
+            heatsrc = 0.0_dp ! just prior to setsorsin that may add to heatsrc
          end if
       end if
 
       if (jaqin > 0) then ! sources and sinks through meteo
 
-         qin = 0d0
-         qinrain = 0d0
-         qinrainground = 0d0
-         qouteva = 0d0
-         qoutevaicept = 0d0
-         qinlat(1:2) = 0d0
-         qoutlat(1:2) = 0d0
-         qinext(1:2) = 0d0
-         qoutext(1:2) = 0d0
+         qin = 0.0_dp
+         qinrain = 0.0_dp
+         qinrainground = 0.0_dp
+         qouteva = 0.0_dp
+         qoutevaicept = 0.0_dp
+         qinlat(1:2) = 0.0_dp
+         qoutlat(1:2) = 0.0_dp
+         qinext(1:2) = 0.0_dp
+         qoutext(1:2) = 0.0_dp
          if (jarain > 0) then
-            if (rainuni > 0d0) then
-               rain = rainuni * 24d0 ! mm/hr  => mm/day
+            if (rainuni > 0.0_dp) then
+               rain = rainuni * 24.0_dp ! mm/hr  => mm/day
             end if
 
             do k = 1, ndxi
-               Qrain = rain(k) * bare(k) * 1d-3 / (24d0 * 3600d0) ! mm/day => m3/s
+               Qrain = rain(k) * bare(k) * 1.0e-3_dp / (24.0_dp * 3600.0_dp) ! mm/day => m3/s
                if (Qrain > 0) then
                   qinrain = qinrain + Qrain ! rain can be pos or neg, to allow for prescribed evaporation
                else if (hs(k) > epshu) then
-                  Qrain = -min(0.5d0 * vol1(k) / dts, -Qrain)
+                  Qrain = -min(0.5_dp * vol1(k) / dts, -Qrain)
                   qouteva = qouteva - Qrain
                else
-                  Qrain = 0d0
+                  Qrain = 0.0_dp
                end if
 
-               if (Qrain > 0d0 .and. interceptionmodel == DFM_HYD_INTERCEPT_LAYER) then ! Is there rainfall AND interception?
+               if (Qrain > 0.0_dp .and. interceptionmodel == DFM_HYD_INTERCEPT_LAYER) then ! Is there rainfall AND interception?
                   Qicept = min(Qrain, dti * bare(k) * (InterceptThickness(k) - InterceptHs(k)))
                   InterceptHs(k) = InterceptHs(k) + dts * Qicept / bare(k)
                else
-                  Qicept = 0d0
+                  Qicept = 0.0_dp
                end if
                qin(k) = Qrain - Qicept
                if (Qrain - Qicept > 0) then
@@ -141,7 +141,7 @@ contains
                   ! It is capped by the available water plus the incoming rain calculated in the code above.
                   ! qin is used explicitly in the following , therefore an additional safety factor of 0.5
                   ! is introduced to prevent negative water depths.
-                  Qeva_ow = -min(0.5d0 * vol1(k) * dti + qin(k), -evap(k) * bare(k))
+                  Qeva_ow = -min(0.5_dp * vol1(k) * dti + qin(k), -evap(k) * bare(k))
                   if (jadhyd == 1) then ! TODO: this is can be removed once jaevap and jadhyd have been merged
                      ActEvap(k) = -Qeva_ow / bare(k) ! m s-1
                   end if
@@ -178,10 +178,10 @@ contains
                   Qextk = qext(k) ! Qext can be pos or neg
                   qinext(idim) = qinext(idim) + Qextk
                else if (hs(k) > epshu) then
-                  Qextk = -min(0.5d0 * vol1(k) / dts, -qext(k))
+                  Qextk = -min(0.5_dp * vol1(k) / dts, -qext(k))
                   qoutext(idim) = qoutext(idim) - Qextk
                else ! (almost) no water
-                  Qextk = 0.0d0
+                  Qextk = 0.0_dp
                end if
                qextreal(k) = Qextk
                qin(k) = qin(k) + Qextk
@@ -222,12 +222,12 @@ contains
                            qinlat(idim) = qinlat(idim) + qqLat(i_layer, k1) ! qqlat can be pos or neg
                         end if
                      else if (hs(k) > epshu) then
-                        qqlat(i_layer, k1) = -min(0.5d0 * vol1(k) / dts, -qqlat(i_layer, k1))
+                        qqlat(i_layer, k1) = -min(0.5_dp * vol1(k) / dts, -qqlat(i_layer, k1))
                         if (.not. isGhost) then
                            qoutlat(idim) = qoutlat(idim) - qqlat(i_layer, k1)
                         end if
                      else
-                        qqlat(i_layer, k1) = 0d0
+                        qqlat(i_layer, k1) = 0.0_dp
                      end if
                      qin(k) = qin(k) + qqlat(i_layer, k1)
                      if (kmx > 0) then
@@ -283,13 +283,13 @@ contains
             ! qin = qin - qinship
          end if
 
-         qincel = 0d0
-         qoutcel = 0d0
+         qincel = 0.0_dp
+         qoutcel = 0.0_dp
 
          do k = 1, ndxi
-            if (qin(k) > 0d0) then
+            if (qin(k) > 0.0_dp) then
                dd(k) = qin(k)
-            else if (qin(k) < 0d0) then
+            else if (qin(k) < 0.0_dp) then
 
                hsk = s0(k) - bl(k)
                if (a1(k) > 0.0) then
@@ -308,7 +308,7 @@ contains
                   end if
                   qin(k) = -ds * aloc / dts
 
-               else if (hsk > 0d0) then ! all explicit
+               else if (hsk > 0.0_dp) then ! all explicit
                   dd(k) = -min(vol1(k) / dts, abs(qin(k)))
                   qin(k) = dd(k)
 
@@ -338,7 +338,7 @@ contains
                bb(k2) = bb(k2) + aufu
                ccr(Lv2(L)) = ccr(Lv2(L)) - aufu
 
-               auru = tetau * ru(L) + (1d0 - teta(L)) * au(L) * u0(L) !     q1(L)
+               auru = tetau * ru(L) + (1.0_dp - teta(L)) * au(L) * u0(L) !     q1(L)
                dd(k1) = dd(k1) - auru
                dd(k2) = dd(k2) + auru
             end if
@@ -360,7 +360,7 @@ contains
                      bb(k2) = bb(k2) + aufu
                      ccr(Lv2(LL)) = ccr(Lv2(LL)) - aufu
 
-                     auru = tetau * ru(L) + (1d0 - teta(LL)) * au(L) * u0(L) !     q1(L)
+                     auru = tetau * ru(L) + (1.0_dp - teta(LL)) * au(L) * u0(L) !     q1(L)
                      dd(k1) = dd(k1) - auru
                      dd(k2) = dd(k2) + auru
                   end if

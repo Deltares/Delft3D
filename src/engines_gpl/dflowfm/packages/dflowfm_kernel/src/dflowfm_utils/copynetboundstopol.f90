@@ -233,7 +233,7 @@ contains
             isegc = iseg
             ia = abs(isegstart(iseg))
             ib = ia + 1
-            crp = 0d0
+            crp = 0.0_dp
             call CROSS(xpl(i1), ypl(i1), xpl(i2), ypl(i2), xph(ia), yph(ia), xph(ib), yph(ib), JACROS1, SL1, SM, XCR, YCR, CRP, jsferic, dmiss)
 
             ia = abs(isegstart(iseg + 1)) - 2

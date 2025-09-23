@@ -244,7 +244,7 @@ contains
 
       if (jaavgwriteall > 0 .or. jaavgwriteH > 0 .or. jaavgwriteUrms > 0 .or. jaavgwriteDir > 0) then
          allocate (temp(ndx), stat=ierr)
-         temp = 0d0
+         temp = 0.0_dp
       end if
 
       ! Use nr of dimensions in netCDF file a quick check whether vardefs were written
@@ -387,7 +387,7 @@ contains
       ierr = nf90_put_var(wavids%ncid, wavids%id_time, tim, [itim])
 
       if (jaavgwriteall > 0 .or. jaavgwriteH > 0) then
-         temp = 0d0
+         temp = 0.0_dp
          do k = 1, ndx ! stack overflow
             temp(k) = sqrt(H_varsquare(k))
          end do
@@ -478,7 +478,7 @@ contains
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteUrms > 0) then
-         temp = 0d0
+         temp = 0.0_dp
          do k = 1, ndx
             temp(k) = sqrt(urms_varsquare(k))
          end do
@@ -489,9 +489,9 @@ contains
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteDir > 0) then
-         temp = 0d0
+         temp = 0.0_dp
          do k = 1, ndx
-            temp(k) = 270.d0 - mod(atan2(nint(thetamean_mean(k)) / 1d7, mod(thetamean_mean(k), 1.d0) * 1d1), 2.d0 * pi) / pi * 180d0
+            temp(k) = 270.0_dp - mod(atan2(nint(thetamean_mean(k)) / 1.0e7_dp, mod(thetamean_mean(k), 1.0_dp) * 1.0e1_dp), 2.0_dp * pi) / pi * 180.0_dp
          end do
          ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_mean, UNC_LOC_S, temp)
          ierr = unc_put_var_map(wavids%ncid, wavids%id_tsp, wavids%id_thetamean_var, UNC_LOC_S, thetamean_var)
@@ -837,7 +837,7 @@ contains
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteH > 0) then
-         temp = 0d0
+         temp = 0.0_dp
          do k = 1, ndxi ! stack overflow
             temp(k) = sqrt(H_varsquare(k))
          end do
@@ -879,9 +879,9 @@ contains
       end if
 
       if (jaavgwriteall > 0 .or. jaavgwriteDir > 0) then
-         temp = 0d0
+         temp = 0.0_dp
          do k = 1, ndxi ! stack
-            temp(k) = 270.d0 - mod(2.d0 * pi + atan2(nint(thetamean_mean(k)) / 1d7, mod(thetamean_mean(k), 1.d0) * 1d1), 2.d0 * pi) / pi * 180d0
+            temp(k) = 270.0_dp - mod(2.0_dp * pi + atan2(nint(thetamean_mean(k)) / 1.0e7_dp, mod(thetamean_mean(k), 1.0_dp) * 1.0e1_dp), 2.0_dp * pi) / pi * 180.0_dp
          end do
          ierr = nf90_put_var(imapfile, id_thetamean_mean, temp(1:ndxi), [1, itim], [ndxi, 1])
          ierr = nf90_put_var(imapfile, id_thetamean_var, thetamean_var(1:ndxi), [1, itim], [ndxi, 1])
@@ -973,14 +973,14 @@ contains
       real(kind=dp), allocatable :: oldmean(:), ust_cc(:), vst_cc(:), ux(:), uy(:), ucmag_(:)
 
       ierr = 1
-      call realloc(tvar_sin, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-      call realloc(tvar_cos, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-      call realloc(oldmean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-      call realloc(ust_cc, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-      call realloc(vst_cc, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-      call realloc(ux, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-      call realloc(uy, ndx, stat=ierr, keepExisting=.false., fill=0d0)
-      call realloc(ucmag_, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(tvar_sin, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+      call realloc(tvar_cos, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+      call realloc(oldmean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+      call realloc(ust_cc, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+      call realloc(vst_cc, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+      call realloc(ux, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+      call realloc(uy, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
+      call realloc(ucmag_, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
 
       if (jamombal > 0) then ! save GLM velocities for momentum balance
          jaeulervel_ = 0
@@ -988,21 +988,21 @@ contains
          jaeulervel_ = jaeulervel
       end if
 
-      mult = max(dt / ti_wav, 0.d0)
+      mult = max(dt / ti_wav, 0.0_dp)
       !multcum = multcum + mult
       !write(*,*) 'Multiplier: ', mult, ', cumulative proportion: ', multcum
 
    !! Data on flow nodes
       ! H
       oldmean = H_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       H_mean = H_mean + mult * H
-      H_varcross = H_varcross / oldmean * H_mean + mult * 2.d0 * H * H_mean
+      H_varcross = H_varcross / oldmean * H_mean + mult * 2.0_dp * H * H_mean
       H_varsquare = H_varsquare + mult * (H)**2
       H_var = H_varsquare - H_varcross + H_mean**2
       H_max = max(H_max, H)
@@ -1010,14 +1010,14 @@ contains
 
       ! E
       oldmean = E_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       E_mean = E_mean + mult * E
-      E_varcross = E_varcross / oldmean * E_mean + mult * 2.d0 * E * E_mean
+      E_varcross = E_varcross / oldmean * E_mean + mult * 2.0_dp * E * E_mean
       E_varsquare = E_varsquare + mult * (E)**2
       E_var = E_varsquare - E_varcross + E_mean**2
       E_max = max(E_max, E)
@@ -1025,14 +1025,14 @@ contains
 
       !R
       oldmean = R_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       R_mean = R_mean + mult * R
-      R_varcross = R_varcross / oldmean * R_mean + mult * 2.d0 * R * R_mean
+      R_varcross = R_varcross / oldmean * R_mean + mult * 2.0_dp * R * R_mean
       R_varsquare = R_varsquare + mult * (R)**2
       R_var = R_varsquare - R_varcross + R_mean**2
       R_max = max(R_max, R)
@@ -1040,14 +1040,14 @@ contains
 
       ! D
       oldmean = D_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       D_mean = D_mean + mult * D
-      D_varcross = D_varcross / oldmean * D_mean + mult * 2.d0 * D * D_mean
+      D_varcross = D_varcross / oldmean * D_mean + mult * 2.0_dp * D * D_mean
       D_varsquare = D_varsquare + mult * (D)**2
       D_var = D_varsquare - D_varcross + D_mean**2
       D_max = max(D_max, D)
@@ -1055,15 +1055,15 @@ contains
 
       ! DR
       oldmean = DR_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
 
       DR_mean = DR_mean + mult * DR
-      DR_varcross = 1d-20 + DR_varcross / oldmean * DR_mean + mult * 2.d0 * DR * DR_mean
+      DR_varcross = 1.0e-20_dp + DR_varcross / oldmean * DR_mean + mult * 2.0_dp * DR * DR_mean
       DR_varsquare = DR_varsquare + mult * (DR)**2
       DR_var = DR_varsquare - DR_varcross + DR_mean**2
       DR_max = max(DR_max, DR)
@@ -1071,14 +1071,14 @@ contains
 
       ! cwav
       oldmean = cwav_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       cwav_mean = cwav_mean + mult * cwav
-      cwav_varcross = cwav_varcross / oldmean * cwav_mean + mult * 2.d0 * cwav * cwav_mean
+      cwav_varcross = cwav_varcross / oldmean * cwav_mean + mult * 2.0_dp * cwav * cwav_mean
       cwav_varsquare = cwav_varsquare + mult * (cwav)**2
       cwav_var = cwav_varsquare - cwav_varcross + cwav_mean**2
       cwav_max = max(cwav_max, cwav)
@@ -1086,14 +1086,14 @@ contains
 
       ! cgwav
       oldmean = cgwav_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       cgwav_mean = cgwav_mean + mult * cgwav
-      cgwav_varcross = cgwav_varcross / oldmean * cgwav_mean + mult * 2.d0 * cgwav * cgwav_mean
+      cgwav_varcross = cgwav_varcross / oldmean * cgwav_mean + mult * 2.0_dp * cgwav * cgwav_mean
       cgwav_varsquare = cgwav_varsquare + mult * (cgwav)**2
       cgwav_var = cgwav_varsquare - cgwav_varcross + cgwav_mean**2
       cgwav_max = max(cgwav_max, cgwav)
@@ -1101,14 +1101,14 @@ contains
 
       ! sigmwav
       oldmean = sigmwav_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       sigmwav_mean = sigmwav_mean + mult * sigmwav
-      sigmwav_varcross = sigmwav_varcross / oldmean * sigmwav_mean + mult * 2.d0 * sigmwav * sigmwav_mean
+      sigmwav_varcross = sigmwav_varcross / oldmean * sigmwav_mean + mult * 2.0_dp * sigmwav * sigmwav_mean
       sigmwav_varsquare = sigmwav_varsquare + mult * (sigmwav)**2
       sigmwav_var = sigmwav_varsquare - sigmwav_varcross + sigmwav_mean**2
       sigmwav_max = max(sigmwav_max, sigmwav)
@@ -1116,36 +1116,36 @@ contains
 
       ! thetamean
       oldmean = thetamean_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
-      thetamean_sin = nint(thetamean_mean) / 1d1 + nint(mult * sin(thetamean) * 1e6)
-      thetamean_cos = mod(thetamean_mean, 1.d0) * 1d7 + nint(mult * cos(thetamean) * 1e6)
+      thetamean_sin = nint(thetamean_mean) / 1.0e1_dp + nint(mult * sin(thetamean) * 1e6)
+      thetamean_cos = mod(thetamean_mean, 1.0_dp) * 1.0e7_dp + nint(mult * cos(thetamean) * 1e6)
       thetamean_mean = thetamean_sin * 1e1 + thetamean_cos / 1e7
-      thetamean_varcross = thetamean_varcross / oldmean * thetamean_mean + mult * 2.d0 * thetamean * thetamean_mean
+      thetamean_varcross = thetamean_varcross / oldmean * thetamean_mean + mult * 2.0_dp * thetamean * thetamean_mean
       thetamean_varsquare = thetamean_varsquare + mult * (thetamean)**2
       thetamean_var = thetamean_varsquare - thetamean_varcross + thetamean_mean**2
       thetamean_max = max(thetamean_max, thetamean)
       thetamean_min = min(thetamean_min, thetamean)
 
-      call realloc(oldmean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(oldmean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('oldmean  (ndx)', ierr, ndx)
 
       ! in terms of vel amplitude:
       call getucxucyeulmag(ndx, ux, uy, ucmag_, jaeulervel_, 1)
       ! ucx
       oldmean = ucx_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       ucx_mean = ucx_mean + mult * ux
-      ucx_varcross = ucx_varcross / oldmean * ucx_mean + mult * 2.d0 * ux * ucx_mean
+      ucx_varcross = ucx_varcross / oldmean * ucx_mean + mult * 2.0_dp * ux * ucx_mean
       ucx_varsquare = ucx_varsquare + mult * (ux)**2
       ucx_var = ucx_varsquare - ucx_varcross + ucx_mean**2
       ucx_max = max(ucx_max, ux)
@@ -1153,14 +1153,14 @@ contains
       !
       ! ucy
       oldmean = ucy_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       ucy_mean = ucy_mean + mult * uy
-      ucy_varcross = ucy_varcross / oldmean * ucy_mean + mult * 2.d0 * uy * ucy_mean
+      ucy_varcross = ucy_varcross / oldmean * ucy_mean + mult * 2.0_dp * uy * ucy_mean
       ucy_varsquare = ucy_varsquare + mult * (uy)**2
       ucy_var = ucy_varsquare - ucy_varcross + ucy_mean**2
       ucy_max = max(ucy_max, uy)
@@ -1168,28 +1168,28 @@ contains
 
       ! wave forces
       oldmean = fx_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       fx_mean = fx_mean + mult * fx_cc
-      fx_varcross = fx_varcross / oldmean * fx_mean + mult * 2.d0 * fx_cc * fx_mean
+      fx_varcross = fx_varcross / oldmean * fx_mean + mult * 2.0_dp * fx_cc * fx_mean
       fx_varsquare = fx_varsquare + mult * (fx_cc)**2
       fx_var = fx_varsquare - fx_varcross + fx_mean**2
       fx_max = max(fx_max, fx_cc)
       fx_min = min(fx_min, fx_cc)
       !
       oldmean = fy_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       fy_mean = fy_mean + mult * fy_cc
-      fy_varcross = fy_varcross / oldmean * fy_mean + mult * 2.d0 * fy_cc * fy_mean
+      fy_varcross = fy_varcross / oldmean * fy_mean + mult * 2.0_dp * fy_cc * fy_mean
       fy_varsquare = fy_varsquare + mult * (fy_cc)**2
       fy_var = fy_varsquare - fy_varcross + fy_mean**2
       fy_max = max(fy_max, fy_cc)
@@ -1198,28 +1198,28 @@ contains
       ! wave mass flux
       call reconstruct_cc_stokesdrift(ndx, ust_cc, vst_cc)
       oldmean = ust_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       ust_mean = ust_mean + mult * ust_cc
-      ust_varcross = ust_varcross / oldmean * ust_mean + mult * 2.d0 * ust_cc * ust_mean
+      ust_varcross = ust_varcross / oldmean * ust_mean + mult * 2.0_dp * ust_cc * ust_mean
       ust_varsquare = ust_varsquare + mult * (ust_cc)**2
       ust_var = ust_varsquare - ust_varcross + ust_mean**2
       ust_max = max(ust_max, ust_cc)
       ust_min = min(ust_min, ust_cc)
       !
       oldmean = vst_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       vst_mean = vst_mean + mult * vst_cc
-      vst_varcross = vst_varcross / oldmean * vst_mean + mult * 2.d0 * vst_cc * vst_mean
+      vst_varcross = vst_varcross / oldmean * vst_mean + mult * 2.0_dp * vst_cc * vst_mean
       vst_varsquare = vst_varsquare + mult * (vst_cc)**2
       vst_var = vst_varsquare - vst_varcross + vst_mean**2
       vst_max = max(vst_max, vst_cc)
@@ -1227,14 +1227,14 @@ contains
 
       ! urms
       oldmean = urms_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       urms_mean = urms_mean + mult * uorb
-      urms_varcross = urms_varcross / oldmean * urms_mean + mult * 2.d0 * uorb * urms_mean
+      urms_varcross = urms_varcross / oldmean * urms_mean + mult * 2.0_dp * uorb * urms_mean
       urms_varsquare = urms_varsquare + mult * (uorb)**2
       urms_var = urms_varsquare - urms_varcross + urms_mean**2
       urms_max = max(urms_max, uorb)
@@ -1242,14 +1242,14 @@ contains
 
       ! s1
       oldmean = s1_mean
-      where (oldmean < epsilon(0.d0) .and. oldmean >= 0.d0)
-         oldmean = epsilon(0.d0)
+      where (oldmean < epsilon(0.0_dp) .and. oldmean >= 0.0_dp)
+         oldmean = epsilon(0.0_dp)
       end where
-      where (oldmean > -1.d0 * epsilon(0.d0) .and. oldmean < 0.d0)
-         oldmean = -1.d0 * epsilon(0.d0)
+      where (oldmean > -1.0_dp * epsilon(0.0_dp) .and. oldmean < 0.0_dp)
+         oldmean = -1.0_dp * epsilon(0.0_dp)
       end where
       s1_mean = s1_mean + mult * s1
-      s1_varcross = s1_varcross / oldmean * s1_mean + mult * 2.d0 * s1 * s1_mean
+      s1_varcross = s1_varcross / oldmean * s1_mean + mult * 2.0_dp * s1 * s1_mean
       s1_varsquare = s1_varsquare + mult * (s1)**2
       s1_var = s1_varsquare - s1_varcross + s1_mean**2
       s1_max = max(s1_max, s1)
@@ -1279,26 +1279,26 @@ contains
 
       ierr = 1
       !multcum = 0d0
-      H_mean = 0d0; H_var = 0d0; H_min = huge(0d0); H_max = -1d0 * huge(0d0); H_varcross = 0d0; H_varsquare = 0d0
-      E_mean = 0d0; E_var = 0d0; E_min = huge(0d0); E_max = -1d0 * huge(0d0); E_varcross = 0d0; E_varsquare = 0d0
-      R_mean = 0d0; R_var = 0d0; R_min = huge(0d0); R_max = -1d0 * huge(0d0); R_varcross = 0d0; R_varsquare = 0d0
-      D_mean = 0d0; D_var = 0d0; D_min = huge(0d0); D_max = -1d0 * huge(0d0); D_varcross = 0d0; D_varsquare = 0d0
-      DR_mean = 0d0; DR_var = 0d0; DR_min = huge(0d0); DR_max = -1d0 * huge(0d0); DR_varcross = 0d0; DR_varsquare = 0d0
-      ust_mean = 0d0; ust_var = 0d0; ust_min = huge(0d0); ust_max = -1d0 * huge(0d0); ust_varcross = 0d0; ust_varsquare = 0d0
-      vst_mean = 0d0; vst_var = 0d0; vst_min = huge(0d0); vst_max = -1d0 * huge(0d0); vst_varcross = 0d0; vst_varsquare = 0d0
-      urms_mean = 0d0; urms_var = 0d0; urms_min = huge(0d0); urms_max = -1d0 * huge(0d0); urms_varcross = 0d0; urms_varsquare = 0d0
-      thetamean_mean = 0d0; thetamean_var = 0d0; thetamean_min = huge(0d0); thetamean_max = -1d0 * huge(0d0); thetamean_varcross = 0d0; 
-      thetamean_varsquare = 0d0; thetamean_sin = 0d0; thetamean_cos = 0d0
-      cwav_mean = 0d0; cwav_var = 0d0; cwav_min = huge(0d0); cwav_max = -1d0 * huge(0d0); cwav_varcross = 0d0; cwav_varsquare = 0d0
-      cgwav_mean = 0d0; cgwav_var = 0d0; cgwav_min = huge(0d0); cgwav_max = -1d0 * huge(0d0); cgwav_varcross = 0d0; cgwav_varsquare = 0d0
-      Fx_mean = 0d0; Fx_var = 0d0; Fx_min = huge(0d0); Fx_max = -1d0 * huge(0d0); fx_varcross = 0d0; fx_varsquare = 0d0
-      Fy_mean = 0d0; Fy_var = 0d0; Fy_min = huge(0d0); Fy_max = -1d0 * huge(0d0); fy_varcross = 0d0; fy_varsquare = 0d0
-      s1_mean = 0d0; s1_var = 0d0; s1_min = huge(0d0); s1_max = -1d0 * huge(0d0); s1_varcross = 0d0; s1_varsquare = 0d0
-      sigmwav_mean = 0d0; sigmwav_var = 0d0; sigmwav_min = huge(0d0); sigmwav_max = -1d0 * huge(0d0); sigmwav_varcross = 0d0; sigmwav_varsquare = 0d0
-      ucx_mean = 0d0; ucx_var = 0d0; ucx_min = huge(0d0); ucx_max = -1d0 * huge(0d0); ucx_varcross = 0d0; ucx_varsquare = 0d0
-      ucy_mean = 0d0; ucy_var = 0d0; ucy_min = huge(0d0); ucy_max = -1d0 * huge(0d0); ucy_varcross = 0d0; ucy_varsquare = 0d0
-      visx = 0d0; visy = 0d0
-      ududx = 0d0; udvdx = 0d0; vdudy = 0d0; vdvdy = 0d0
+      H_mean = 0.0_dp; H_var = 0.0_dp; H_min = huge(0.0_dp); H_max = -1.0_dp * huge(0.0_dp); H_varcross = 0.0_dp; H_varsquare = 0.0_dp
+      E_mean = 0.0_dp; E_var = 0.0_dp; E_min = huge(0.0_dp); E_max = -1.0_dp * huge(0.0_dp); E_varcross = 0.0_dp; E_varsquare = 0.0_dp
+      R_mean = 0.0_dp; R_var = 0.0_dp; R_min = huge(0.0_dp); R_max = -1.0_dp * huge(0.0_dp); R_varcross = 0.0_dp; R_varsquare = 0.0_dp
+      D_mean = 0.0_dp; D_var = 0.0_dp; D_min = huge(0.0_dp); D_max = -1.0_dp * huge(0.0_dp); D_varcross = 0.0_dp; D_varsquare = 0.0_dp
+      DR_mean = 0.0_dp; DR_var = 0.0_dp; DR_min = huge(0.0_dp); DR_max = -1.0_dp * huge(0.0_dp); DR_varcross = 0.0_dp; DR_varsquare = 0.0_dp
+      ust_mean = 0.0_dp; ust_var = 0.0_dp; ust_min = huge(0.0_dp); ust_max = -1.0_dp * huge(0.0_dp); ust_varcross = 0.0_dp; ust_varsquare = 0.0_dp
+      vst_mean = 0.0_dp; vst_var = 0.0_dp; vst_min = huge(0.0_dp); vst_max = -1.0_dp * huge(0.0_dp); vst_varcross = 0.0_dp; vst_varsquare = 0.0_dp
+      urms_mean = 0.0_dp; urms_var = 0.0_dp; urms_min = huge(0.0_dp); urms_max = -1.0_dp * huge(0.0_dp); urms_varcross = 0.0_dp; urms_varsquare = 0.0_dp
+      thetamean_mean = 0.0_dp; thetamean_var = 0.0_dp; thetamean_min = huge(0.0_dp); thetamean_max = -1.0_dp * huge(0.0_dp); thetamean_varcross = 0.0_dp; 
+      thetamean_varsquare = 0.0_dp; thetamean_sin = 0.0_dp; thetamean_cos = 0.0_dp
+      cwav_mean = 0.0_dp; cwav_var = 0.0_dp; cwav_min = huge(0.0_dp); cwav_max = -1.0_dp * huge(0.0_dp); cwav_varcross = 0.0_dp; cwav_varsquare = 0.0_dp
+      cgwav_mean = 0.0_dp; cgwav_var = 0.0_dp; cgwav_min = huge(0.0_dp); cgwav_max = -1.0_dp * huge(0.0_dp); cgwav_varcross = 0.0_dp; cgwav_varsquare = 0.0_dp
+      Fx_mean = 0.0_dp; Fx_var = 0.0_dp; Fx_min = huge(0.0_dp); Fx_max = -1.0_dp * huge(0.0_dp); fx_varcross = 0.0_dp; fx_varsquare = 0.0_dp
+      Fy_mean = 0.0_dp; Fy_var = 0.0_dp; Fy_min = huge(0.0_dp); Fy_max = -1.0_dp * huge(0.0_dp); fy_varcross = 0.0_dp; fy_varsquare = 0.0_dp
+      s1_mean = 0.0_dp; s1_var = 0.0_dp; s1_min = huge(0.0_dp); s1_max = -1.0_dp * huge(0.0_dp); s1_varcross = 0.0_dp; s1_varsquare = 0.0_dp
+      sigmwav_mean = 0.0_dp; sigmwav_var = 0.0_dp; sigmwav_min = huge(0.0_dp); sigmwav_max = -1.0_dp * huge(0.0_dp); sigmwav_varcross = 0.0_dp; sigmwav_varsquare = 0.0_dp
+      ucx_mean = 0.0_dp; ucx_var = 0.0_dp; ucx_min = huge(0.0_dp); ucx_max = -1.0_dp * huge(0.0_dp); ucx_varcross = 0.0_dp; ucx_varsquare = 0.0_dp
+      ucy_mean = 0.0_dp; ucy_var = 0.0_dp; ucy_min = huge(0.0_dp); ucy_max = -1.0_dp * huge(0.0_dp); ucy_varcross = 0.0_dp; ucy_varsquare = 0.0_dp
+      visx = 0.0_dp; visy = 0.0_dp
+      ududx = 0.0_dp; udvdx = 0.0_dp; vdudy = 0.0_dp; vdvdy = 0.0_dp
 
       ierr = 0
 1234  continue
@@ -1317,249 +1317,249 @@ contains
       integer :: ierr
 
       if (jamombal > 0) then
-         call realloc(xbdsdx, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(xbdsdx, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('xbdsdx  (ndx)', ierr, ndx)
-         call realloc(xbdsdy, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(xbdsdy, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('xbdsdy  (ndx)', ierr, ndx)
 
-         call realloc(ududx, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(ududx, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('ududx  (ndx)', ierr, ndx)
-         call realloc(vdudy, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(vdudy, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('vdudy  (ndx)', ierr, ndx)
-         call realloc(udvdx, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(udvdx, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('udvdx  (ndx)', ierr, ndx)
-         call realloc(vdvdy, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(vdvdy, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('vdvdy  (ndx)', ierr, ndx)
 
-         call realloc(visx, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(visx, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('visx  (ndx)', ierr, ndx)
-         call realloc(visy, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(visy, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('visy  (ndx)', ierr, ndx)
       end if
 
-      call realloc(E_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(E_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('E_mean  (ndx)', ierr, ndx)
-      call realloc(E_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(E_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('E_var  (ndx)', ierr, ndx)
-      call realloc(E_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(E_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('E_min  (ndx)', ierr, ndx)
-      call realloc(E_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(E_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('E_max  (ndx)', ierr, ndx)
-      call realloc(E_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(E_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('E_varcross  (ndx)', ierr, ndx)
-      call realloc(E_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(E_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('E_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(H_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(H_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('H_mean  (ndx)', ierr, ndx)
-      call realloc(H_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(H_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('H_var  (ndx)', ierr, ndx)
-      call realloc(H_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(H_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('H_min  (ndx)', ierr, ndx)
-      call realloc(H_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(H_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('H_max  (ndx)', ierr, ndx)
-      call realloc(H_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(H_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('H_varcross  (ndx)', ierr, ndx)
-      call realloc(H_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(H_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('H_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(R_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(R_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('R_mean  (ndx)', ierr, ndx)
-      call realloc(R_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(R_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('R_var  (ndx)', ierr, ndx)
-      call realloc(R_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(R_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('R_min  (ndx)', ierr, ndx)
-      call realloc(R_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(R_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('R_max  (ndx)', ierr, ndx)
-      call realloc(R_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(R_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('R_varcross  (ndx)', ierr, ndx)
-      call realloc(R_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(R_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('R_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(D_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(D_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('D_mean  (ndx)', ierr, ndx)
-      call realloc(D_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(D_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('D_var  (ndx)', ierr, ndx)
-      call realloc(D_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(D_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('D_min  (ndx)', ierr, ndx)
-      call realloc(D_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(D_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('D_max  (ndx)', ierr, ndx)
-      call realloc(D_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(D_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('D_varcross  (ndx)', ierr, ndx)
-      call realloc(D_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(D_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('D_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(DR_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(DR_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('DR_mean  (ndx)', ierr, ndx)
-      call realloc(DR_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(DR_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('DR_var  (ndx)', ierr, ndx)
-      call realloc(DR_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(DR_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('DR_min  (ndx)', ierr, ndx)
-      call realloc(DR_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(DR_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('DR_max  (ndx)', ierr, ndx)
-      call realloc(DR_varcross, ndx, stat=ierr, keepExisting=.false., fill=tiny(0d0))
+      call realloc(DR_varcross, ndx, stat=ierr, keepExisting=.false., fill=tiny(0.0_dp))
       call aerr('DR_varcross  (ndx)', ierr, ndx)
-      call realloc(DR_varsquare, ndx, stat=ierr, keepExisting=.false., fill=tiny(0d0))
+      call realloc(DR_varsquare, ndx, stat=ierr, keepExisting=.false., fill=tiny(0.0_dp))
       call aerr('DR_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(ust_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ust_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ust_mean  (ndx)', ierr, ndx)
-      call realloc(ust_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ust_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ust_var  (ndx)', ierr, ndx)
-      call realloc(ust_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(ust_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('ust_min  (ndx)', ierr, ndx)
-      call realloc(ust_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(ust_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('ust_max  (ndx)', ierr, ndx)
-      call realloc(ust_varcross, ndx, stat=ierr, keepExisting=.false., fill=tiny(0d0))
+      call realloc(ust_varcross, ndx, stat=ierr, keepExisting=.false., fill=tiny(0.0_dp))
       call aerr('ust_varcross  (ndx)', ierr, ndx)
-      call realloc(ust_varsquare, ndx, stat=ierr, keepExisting=.false., fill=tiny(0d0))
+      call realloc(ust_varsquare, ndx, stat=ierr, keepExisting=.false., fill=tiny(0.0_dp))
       call aerr('ust_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(vst_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(vst_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('vst_mean  (ndx)', ierr, ndx)
-      call realloc(vst_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(vst_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('vst_var  (ndx)', ierr, ndx)
-      call realloc(vst_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(vst_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('vst_min  (ndx)', ierr, ndx)
-      call realloc(vst_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(vst_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('vst_max  (ndx)', ierr, ndx)
-      call realloc(vst_varcross, ndx, stat=ierr, keepExisting=.false., fill=tiny(0d0))
+      call realloc(vst_varcross, ndx, stat=ierr, keepExisting=.false., fill=tiny(0.0_dp))
       call aerr('vst_varcross  (ndx)', ierr, ndx)
-      call realloc(vst_varsquare, ndx, stat=ierr, keepExisting=.false., fill=tiny(0d0))
+      call realloc(vst_varsquare, ndx, stat=ierr, keepExisting=.false., fill=tiny(0.0_dp))
       call aerr('vst_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(urms_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(urms_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('urms_mean  (ndx)', ierr, ndx)
-      call realloc(urms_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(urms_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('urms_var  (ndx)', ierr, ndx)
-      call realloc(urms_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(urms_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('urms_min  (ndx)', ierr, ndx)
-      call realloc(urms_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(urms_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('urms_max  (ndx)', ierr, ndx)
-      call realloc(urms_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(urms_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('urms_varcross  (ndx)', ierr, ndx)
-      call realloc(urms_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(urms_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('urms_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(thetamean_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(thetamean_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('thetamean_mean  (ndx)', ierr, ndx)
-      call realloc(thetamean_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(thetamean_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('thetamean_var  (ndx)', ierr, ndx)
-      call realloc(thetamean_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(thetamean_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('thetamean_min  (ndx)', ierr, ndx)
-      call realloc(thetamean_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(thetamean_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('thetamean_max  (ndx)', ierr, ndx)
-      call realloc(thetamean_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(thetamean_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('thetamean_varcross  (ndx)', ierr, ndx)
-      call realloc(thetamean_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(thetamean_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('thetamean_varsquare  (ndx)', ierr, ndx)
-      call realloc(thetamean_sin, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(thetamean_sin, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('thetamean_sin  (ndx)', ierr, ndx)
-      call realloc(thetamean_cos, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(thetamean_cos, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('thetamean_cos  (ndx)', ierr, ndx)
 
-      call realloc(sigmwav_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(sigmwav_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('sigmwav_mean  (ndx)', ierr, ndx)
-      call realloc(sigmwav_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(sigmwav_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('sigmwav_var  (ndx)', ierr, ndx)
-      call realloc(sigmwav_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(sigmwav_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('sigmwav_min  (ndx)', ierr, ndx)
-      call realloc(sigmwav_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(sigmwav_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('sigmwav_max  (ndx)', ierr, ndx)
-      call realloc(sigmwav_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(sigmwav_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('sigmwav_varcross  (ndx)', ierr, ndx)
-      call realloc(sigmwav_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(sigmwav_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('sigmwav_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(cwav_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(cwav_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('cwav_mean  (ndx)', ierr, ndx)
-      call realloc(cwav_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(cwav_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('cwav_var  (ndx)', ierr, ndx)
-      call realloc(cwav_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(cwav_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('cwav_min  (ndx)', ierr, ndx)
-      call realloc(cwav_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(cwav_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('cwav_max  (ndx)', ierr, ndx)
-      call realloc(cwav_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(cwav_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('cwav_varcross  (ndx)', ierr, ndx)
-      call realloc(cwav_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(cwav_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('cwav_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(cgwav_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(cgwav_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('cgwav_mean  (ndx)', ierr, ndx)
-      call realloc(cgwav_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(cgwav_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('cgwav_var  (ndx)', ierr, ndx)
-      call realloc(cgwav_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(cgwav_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('cgwav_min  (ndx)', ierr, ndx)
-      call realloc(cgwav_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(cgwav_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('cgwav_max  (ndx)', ierr, ndx)
-      call realloc(cgwav_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(cgwav_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('cgwav_varcross  (ndx)', ierr, ndx)
-      call realloc(cgwav_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(cgwav_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('cgwav_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(s1_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(s1_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('s1_mean  (ndx)', ierr, ndx)
-      call realloc(s1_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(s1_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('s1_var  (ndx)', ierr, ndx)
-      call realloc(s1_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(s1_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('s1_min  (ndx)', ierr, ndx)
-      call realloc(s1_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(s1_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('s1_max  (ndx)', ierr, ndx)
-      call realloc(s1_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(s1_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('s1_varcross  (ndx)', ierr, ndx)
-      call realloc(s1_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(s1_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('s1_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(ucx_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ucx_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ucx_mean  (ndx)', ierr, ndx)
-      call realloc(ucx_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ucx_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ucx_var  (ndx)', ierr, ndx)
-      call realloc(ucx_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(ucx_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('ucx_min  (ndx)', ierr, ndx)
-      call realloc(ucx_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(ucx_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('ucx_max  (ndx)', ierr, ndx)
-      call realloc(ucx_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ucx_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ucx_varcross  (ndx)', ierr, ndx)
-      call realloc(ucx_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ucx_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ucx_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(ucy_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ucy_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ucy_mean  (ndx)', ierr, ndx)
-      call realloc(ucy_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ucy_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ucy_var  (ndx)', ierr, ndx)
-      call realloc(ucy_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(ucy_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('ucy_min  (ndx)', ierr, ndx)
-      call realloc(ucy_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(ucy_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('ucy_max  (ndx)', ierr, ndx)
-      call realloc(ucy_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ucy_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ucy_varcross  (ndx)', ierr, ndx)
-      call realloc(ucy_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(ucy_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('ucy_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(fx_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(fx_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('fx_mean  (ndx)', ierr, ndx)
-      call realloc(fx_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(fx_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('fx_var  (ndx)', ierr, ndx)
-      call realloc(fx_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(fx_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('fx_min  (ndx)', ierr, ndx)
-      call realloc(fx_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(fx_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('fx_max  (ndx)', ierr, ndx)
-      call realloc(fx_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(fx_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('fx_varcross  (ndx)', ierr, ndx)
-      call realloc(fx_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(fx_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('fx_varsquare  (ndx)', ierr, ndx)
 
-      call realloc(fy_mean, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(fy_mean, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('fy_mean  (ndx)', ierr, ndx)
-      call realloc(fy_var, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(fy_var, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('fy_var  (ndx)', ierr, ndx)
-      call realloc(fy_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0d0))
+      call realloc(fy_min, ndx, stat=ierr, keepExisting=.false., fill=huge(0.0_dp))
       call aerr('fy_min  (ndx)', ierr, ndx)
-      call realloc(fy_max, ndx, stat=ierr, keepExisting=.false., fill=-1d0 * huge(0d0))
+      call realloc(fy_max, ndx, stat=ierr, keepExisting=.false., fill=-1.0_dp * huge(0.0_dp))
       call aerr('fy_max  (ndx)', ierr, ndx)
-      call realloc(fy_varcross, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(fy_varcross, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('fy_varcross  (ndx)', ierr, ndx)
-      call realloc(fy_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(fy_varsquare, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('fy_varsquare  (ndx)', ierr, ndx)
 
       ! bss
@@ -1608,8 +1608,8 @@ contains
          allocate (ducxdx_(1:ndx), ducxdy_(1:ndx), ducydx_(1:ndx), ducydy_(1:ndx))
       end if
 
-      xbdsdx = 0d0; xbdsdy = 0d0; 
-      ududx = 0.0; vdudy = 0d0; udvdx = 0d0; vdvdy = 0d0
+      xbdsdx = 0.0_dp; xbdsdy = 0.0_dp; 
+      ududx = 0.0; vdudy = 0.0_dp; udvdx = 0.0_dp; vdvdy = 0.0_dp
 
       call getcellcentergradients(s1_mean, xbdsdx, xbdsdy)
       call getcellcentergradients(ucx_mean, ducxdx_, ducxdy_)

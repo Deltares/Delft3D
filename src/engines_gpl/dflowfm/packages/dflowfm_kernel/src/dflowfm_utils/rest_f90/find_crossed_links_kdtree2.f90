@@ -113,7 +113,7 @@ contains
       allocate (treeinst%qv(NTREEDIM))
 
 !     determine maximum polygon section length, and administer polygon sections
-      dmaxpollen = 0d0
+      dmaxpollen = 0.0_dp
       num = 0
       do i = 1, NPL - 1
          if (xpl(i) /= DMISS .and. xpl(i + 1) /= DMISS) then
@@ -186,10 +186,10 @@ contains
                n1 = ln(1, L); n2 = ln(2, L)
                xc = xz(n1); yc = yz(n1)
                xd = xz(n2); yd = yz(n2)
-               xa = 0.5d0 * (xc + xd) - 0.5d0 * (yd - yc)
-               ya = 0.5d0 * (yc + yd) + 0.5d0 * (xd - xc)
-               xb = 0.5d0 * (xc + xd) + 0.5d0 * (yd - yc)
-               yb = 0.5d0 * (yc + yd) - 0.5d0 * (xd - xc)
+               xa = 0.5_dp * (xc + xd) - 0.5_dp * (yd - yc)
+               ya = 0.5_dp * (yc + yd) + 0.5_dp * (xd - xc)
+               xb = 0.5_dp * (xc + xd) + 0.5_dp * (yd - yc)
+               yb = 0.5_dp * (yc + yd) - 0.5_dp * (xd - xc)
                call movabs(xa, ya)
                call lnabs(xb, yb)
             else ! flowlinks, cross with netlinks in 2D
@@ -207,7 +207,7 @@ contains
          dlinlen = dbdistance(xa, ya, xb, yb, jsferic, jasfer3D, dmiss)
 
 !        determine square search radius
-         R2search = 1.1d0 * (dlinlen + dmaxpollen)**2 ! 1.1d0: safety
+         R2search = 1.1_dp * (dlinlen + dmaxpollen)**2 ! 1.1d0: safety
 
 !        count number of points in search area
          NN = kdtree2_r_count(treeinst%tree, treeinst%qv, R2search)
@@ -241,7 +241,7 @@ contains
 
       call sort_crossed_links(crossed_links, polygon_nodes, polygon_segment_weights, n_links_polyline_nodes, intersection_count)
 
-      call readyy(' ', -1d0)
+      call readyy(' ', -1.0_dp)
 
       call mess(LEVEL_INFO, 'done')
 

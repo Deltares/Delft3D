@@ -85,15 +85,15 @@ contains
 
          call zoekinteger(minp, 'NSHIPN', nn, ja)
          call zoekinteger(minp, 'ICONTROLTYP', icontroltyp(n), ja)
-         call zoekdouble(minp, 'SHL', shL(n), ja); if (ja == 1) shL(n) = 0.5d0 * shL(n) ! shiplenght on input, then half length
-         call zoekdouble(minp, 'SHB', shB(n), ja); if (ja == 1) shB(n) = 0.5d0 * shB(n) ! idem width
-         call zoekdouble(minp, 'SHD', shd(n), ja); if (ja == 1) chkadvd = min(chkadvd, 1d-2 * shd(n))
-         call zoekdouble(minp, 'DEADW', deadw(n), ja); if (ja == 1) deadw(n) = 1000d0 * deadw(n) !kg
-         call zoekdouble(minp, 'POWERMX', powermx(n), ja); if (ja == 1) powermx(n) = 1000d0 * 0.75d0 * powermx(n) ! conversion hp to kw
-         call zoekdouble(minp, 'SPEEDMX', speedmx(n), ja); if (ja == 1) speedmx(n) = 0.514444d0 * speedmx(n) ! conversion knots to m/s
+         call zoekdouble(minp, 'SHL', shL(n), ja); if (ja == 1) shL(n) = 0.5_dp * shL(n) ! shiplenght on input, then half length
+         call zoekdouble(minp, 'SHB', shB(n), ja); if (ja == 1) shB(n) = 0.5_dp * shB(n) ! idem width
+         call zoekdouble(minp, 'SHD', shd(n), ja); if (ja == 1) chkadvd = min(chkadvd, 1.0e-2_dp * shd(n))
+         call zoekdouble(minp, 'DEADW', deadw(n), ja); if (ja == 1) deadw(n) = 1000.0_dp * deadw(n) !kg
+         call zoekdouble(minp, 'POWERMX', powermx(n), ja); if (ja == 1) powermx(n) = 1000.0_dp * 0.75_dp * powermx(n) ! conversion hp to kw
+         call zoekdouble(minp, 'SPEEDMX', speedmx(n), ja); if (ja == 1) speedmx(n) = 0.514444_dp * speedmx(n) ! conversion knots to m/s
 
-         if (ja == 1 .and. speedmx(n) /= 0d0) then
-            stuwmx(n) = 0.65d0 * powermx(n) / speedmx(n) ! propellor efficiency 0.65
+         if (ja == 1 .and. speedmx(n) /= 0.0_dp) then
+            stuwmx(n) = 0.65_dp * powermx(n) / speedmx(n) ! propellor efficiency 0.65
          end if
 
          call zoekdouble(minp, 'FSTUW', fstuw(n), ja)
@@ -106,7 +106,7 @@ contains
          call zoekdouble(minp, 'SHV', shv(n), ja)
          call zoekdouble(minp, 'SHO', sho(n), ja)
 
-         if (ja == 1 .and. sho(n) /= 0d0) then
+         if (ja == 1 .and. sho(n) /= 0.0_dp) then
             sho(n) = twopi / sho(n)
          end if
 
@@ -120,12 +120,12 @@ contains
       if (jawel) then
          call oldfil(minp, trim(md_shipdeffile(1:L1))//'_hull.asc')
          call REAARC(MINP, -1)
-         dxa = 1d0 / (mca - 1)
-         dya = 1d0 / (nca - 1)
+         dxa = 1.0_dp / (mca - 1)
+         dya = 1.0_dp / (nca - 1)
          do i = 1, mca
             do j = 1, nca
                if (d(i, j) == dmiss) then
-                  d(i, j) = 0d0
+                  d(i, j) = 0.0_dp
                else
                   d(i, j) = d(i, j) * shD(1)
                end if
@@ -134,7 +134,7 @@ contains
          if (1 == 0) then
             mca = mca + 2
             nca = nca + 2
-            allocate (e(mca, nca)); e = 0d0
+            allocate (e(mca, nca)); e = 0.0_dp
             do i = 2, mca - 1
                do j = 2, nca - 1
                   e(i, j) = d(i - 1, j - 1)
@@ -147,11 +147,11 @@ contains
          end if
       end if
 
-      if (vicuship /= 0d0) then
+      if (vicuship /= 0.0_dp) then
          if (allocated(vicushp)) then
             deallocate (vicushp)
          end if
-         allocate (vicushp(lnx), stat=ierr); vicushp = 0d0
+         allocate (vicushp(lnx), stat=ierr); vicushp = 0.0_dp
          call aerr('vicushp(lnx)', ierr, lnx)
       end if
 

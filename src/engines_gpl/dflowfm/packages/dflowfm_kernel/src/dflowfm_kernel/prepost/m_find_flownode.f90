@@ -210,7 +210,7 @@ contains
          call make_queryvector_kdtree(treeinst, xz(k), yz(k), jsferic)
 
          ! compute maximum flowcell dimension
-         dmaxsize = 0d0
+         dmaxsize = 0.0_dp
          N = size(nd(k)%x)
          do i = 1, N
             ip1 = i + 1
@@ -221,10 +221,10 @@ contains
          end do
 
          ! determine square search radius
-         R2search = 1.1d0 * dmaxsize**2 ! 1.1d0: safety
+         R2search = 1.1_dp * dmaxsize**2 ! 1.1d0: safety
 
          ! get the cell polygon that is safe for periodic, spherical coordinates, inluding poles
-         call get_cellpolygon(k, Msize, N, 1d0, xloc, yloc, LnnL, Lorg, zz)
+         call get_cellpolygon(k, Msize, N, 1.0_dp, xloc, yloc, LnnL, Lorg, zz)
 
          if (N < 1) then
             if (k <= Ndxi) then

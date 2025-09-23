@@ -62,7 +62,7 @@ contains
 
       integer :: nn12
 
-      QufPer = 0d0
+      QufPer = 0.0_dp
       cs = csu(L)
       sn = snu(L)
 
@@ -71,7 +71,7 @@ contains
          LLL = nd(k12)%ln(LL)
          LLLL = abs(LLL)
 
-         if (qa(LLLL) == 0d0) then ! include own link
+         if (qa(LLLL) == 0.0_dp) then ! include own link
 
          else
 

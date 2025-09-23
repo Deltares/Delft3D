@@ -46,10 +46,10 @@ contains
       integer :: k, k1, k2, L
       real(kind=dp) :: xx, yy, ux, uy, yyy, uuu, ykmx
 
-      uy = -0.5d0
-      ux = 0.5d0 * sqrt(3d0)
+      uy = -0.5_dp
+      ux = 0.5_dp * sqrt(3.0_dp)
 
-      ykmx = 100d0 ! 0d0
+      ykmx = 100.0_dp ! 0d0
 
       do k = 1, ndx
          xx = xz(k)
@@ -75,15 +75,15 @@ contains
             ucx(k) = uuu * ux
             ucy(k) = uuu * uy
          else if (iuvfield == 6) then ! random
-            ucx(k) = 2 + sin(0.1d0 * k)
-            ucy(k) = cos(1.5d0 * k)
+            ucx(k) = 2 + sin(0.1_dp * k)
+            ucy(k) = cos(1.5_dp * k)
          end if
 
       end do
       do L = 1, lnx
          k1 = ln(1, L); k2 = ln(2, L)
-         u1(L) = ((1d0 - acl(L)) * ucx(k1) + acl(L) * ucx(k2)) * csu(L) + & ! reversed acl weighting
-                 ((1d0 - acl(L)) * ucy(k1) + acl(L) * ucy(k2)) * snu(L)
+         u1(L) = ((1.0_dp - acl(L)) * ucx(k1) + acl(L) * ucx(k2)) * csu(L) + & ! reversed acl weighting
+                 ((1.0_dp - acl(L)) * ucy(k1) + acl(L) * ucy(k2)) * snu(L)
       end do
 
       u0 = u1

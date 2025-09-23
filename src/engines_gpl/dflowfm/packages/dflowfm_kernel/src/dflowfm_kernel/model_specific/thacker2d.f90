@@ -57,20 +57,20 @@ contains
       call DMINMAX(xz, ndx, xzmin, xzmax, ndx)
       call DMINMAX(yz, ndx, yzmin, yzmax, ndx)
 
-      r0 = 0.5d0 * (xzmax - xzmin) * 0.85
-      x0 = 0.5d0 * (xzmax + xzmin)
-      y0 = 0.5d0 * (yzmax + yzmin)
-      h0 = 10d0
-      zz0 = 2d0
+      r0 = 0.5_dp * (xzmax - xzmin) * 0.85
+      x0 = 0.5_dp * (xzmax + xzmin)
+      y0 = 0.5_dp * (yzmax + yzmin)
+      h0 = 10.0_dp
+      zz0 = 2.0_dp
 
       omeg = twopi / (12 * 3600) ! period = 12 hrs
       omeg = sqrt(8 * ag * h0 / (r0 * r0))
 
-      fcorio = 0d0 ! omeg/2
+      fcorio = 0.0_dp ! omeg/2
 
       a = ((h0 + zz0)**2 - h0 * h0) / ((h0 + zz0)**2 + h0 * h0)
 
-      r0 = sqrt(8d0 * ag * h0 / (omeg * omeg - fcorio * fcorio)) ! Casulli 2008 (31) mind you, no - sign in front of fcorio
+      r0 = sqrt(8.0_dp * ag * h0 / (omeg * omeg - fcorio * fcorio)) ! Casulli 2008 (31) mind you, no - sign in front of fcorio
 
       st = sin(omeg * t)
       ct = cos(omeg * t)
@@ -80,30 +80,30 @@ contains
             xx = xk(k) - x0; yy = yk(k) - y0
             r = sqrt(xx * xx + yy * yy)
             rr0 = (r * r) / (r0 * r0)
-            zk(k) = -h0 * (1d0 - rr0)
+            zk(k) = -h0 * (1.0_dp - rr0)
          end do
          call setbobs()
       end if
 
-      rms = 0d0
+      rms = 0.0_dp
       do k = 1, ndx
          xx = xz(k) - x0; yy = yz(k) - y0
          r = sqrt(xx * xx + yy * yy)
          rr0 = (r * r) / (r0 * r0)
          if (ibedlevtyp /= 3) then
-            bl(k) = -h0 * (1d0 - rr0)
+            bl(k) = -h0 * (1.0_dp - rr0)
          end if
 
-         a1c = 1d0 - a * ct
-         a12 = 1d0 - a * a
+         a1c = 1.0_dp - a * ct
+         a12 = 1.0_dp - a * a
          sa12 = sqrt(a12)
 
-         s1k = h0 * (sa12 / a1c - 1d0 - rr0 * (a12 / (a1c * a1c) - 1d0))
+         s1k = h0 * (sa12 / a1c - 1.0_dp - rr0 * (a12 / (a1c * a1c) - 1.0_dp))
          s1k = max(bl(k), s1k)
          if (ini == 1) then
             s1(k) = s1k
-            ur = omeg * r * a * st / (2d0 * a1c)
-            ut = (fcorio * r / (2d0 * a1c)) * (sa12 + a * ct - 1d0)
+            ur = omeg * r * a * st / (2.0_dp * a1c)
+            ut = (fcorio * r / (2.0_dp * a1c)) * (sa12 + a * ct - 1.0_dp)
             cs = xx / r; sn = yy / r
             ucx(k) = ur * cs - ut * sn
             ucy(k) = ur * sn + ut * cs
@@ -118,8 +118,8 @@ contains
       if (ini == 1) then
          do L = 1, lnx
             k1 = ln(1, L); k2 = ln(2, L)
-            u1(L) = (acl(L) * ucx(k1) + (1d0 - acl(L)) * ucx(k2)) * csu(L) &
-                    + (acl(L) * ucy(k1) + (1d0 - acl(L)) * ucy(k2)) * snu(L)
+            u1(L) = (acl(L) * ucx(k1) + (1.0_dp - acl(L)) * ucx(k2)) * csu(L) &
+                    + (acl(L) * ucy(k1) + (1.0_dp - acl(L)) * ucy(k2)) * snu(L)
          end do
 
          call setbobs()

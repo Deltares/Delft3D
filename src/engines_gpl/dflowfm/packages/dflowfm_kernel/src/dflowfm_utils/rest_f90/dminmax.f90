@@ -51,8 +51,8 @@ contains
          return
       end if
 
-      XMIN = 10d20
-      XMAX = -10d20
+      XMIN = 10.0e20_dp
+      XMAX = -10.0e20_dp
       do I = 1, MXLAN
          XX = X(I)
          if (XX /= dmiss) then
@@ -60,8 +60,8 @@ contains
             XMAX = max(XMAX, XX)
          end if
       end do
-      if (XMIN == 10d20) XMIN = 0
-      if (XMAX == -10d20) XMAX = 0
+      if (XMIN == 10.0e20_dp) XMIN = 0
+      if (XMAX == -10.0e20_dp) XMAX = 0
       return
    end
 

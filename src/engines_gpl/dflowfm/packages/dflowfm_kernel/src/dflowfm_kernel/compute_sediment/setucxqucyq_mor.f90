@@ -77,9 +77,9 @@ contains
       do k = 1, ndx
          hs_mor(k) = hs(k)
          if (kcs(k) == 1) then
-            ucxq_mor(k) = 0d0
-            ucyq_mor(k) = 0d0
-            area(k) = 0d0
+            ucxq_mor(k) = 0.0_dp
+            ucyq_mor(k) = 0.0_dp
+            area(k) = 0.0_dp
          else
             ucxq_mor(k) = ucxq(k)
             ucyq_mor(k) = ucyq(k)
@@ -138,7 +138,7 @@ contains
             do k = 1, ndx
                if (kcs(k) == 1) then
                   ucxq_mor(k) = ucxq_mor(k) / area(k)
-                  ucyq_mor(k) = 0d0
+                  ucyq_mor(k) = 0.0_dp
                else
                   ucxq_mor(k) = ucxq(k)
                   ucyq_mor(k) = ucyq(k)
@@ -148,7 +148,7 @@ contains
             deallocate (area)
 
          else ! 2D/3D
-            ucxq_mor = 0d0; ucyq_mor = 0d0; 
+            ucxq_mor = 0.0_dp; ucyq_mor = 0.0_dp; 
             if (.not. maximumwaterdepth) then
                if (kmx == 0) then
                   do k = 1, ndx
@@ -169,7 +169,7 @@ contains
 
             if (kmx == 0) then
                do L = 1, lnx
-                  if (u1(L) == 0d0) cycle
+                  if (u1(L) == 0.0_dp) cycle
                   k1 = ln(1, L); k2 = ln(2, L)
                   wcxu = wcx1(L) * u1(L)
                   ucxq_mor(k1) = ucxq_mor(k1) + wcxu * hu(L)
@@ -207,8 +207,8 @@ contains
                      ucxq_mor(k) = ucxq_mor(k) / hs_mor(k)
                      ucyq_mor(k) = ucyq_mor(k) / hs_mor(k)
                   else
-                     ucxq_mor(k) = 0d0
-                     ucyq_mor(k) = 0d0
+                     ucxq_mor(k) = 0.0_dp
+                     ucyq_mor(k) = 0.0_dp
                   end if
                end do
             else ! 3D, max waterdepth

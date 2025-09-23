@@ -51,8 +51,8 @@ contains
       integer :: i, l, k1, k2
 
       if (jaauto > 0) then
-         rmin = 1d30; lnmin = 0
-         rmax = -1d30; lnmax = 0
+         rmin = 1.0e30_dp; lnmin = 0
+         rmax = -1.0e30_dp; lnmax = 0
          do L = 1, lnx
             k1 = ln(1, L)
             k2 = ln(2, L)

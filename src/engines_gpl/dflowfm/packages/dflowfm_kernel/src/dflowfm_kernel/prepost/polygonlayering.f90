@@ -66,7 +66,7 @@ contains
       if (allocated(indlaynod)) deallocate (indlaynod, wflaynod)
       allocate (indlaynod(3, ndxi), stat=ierr); indlaynod = 0
       call aerr('indlaynod(3,ndxi)', ierr, ndxi)
-      allocate (wflaynod(3, ndxi), stat=ierr); wflaynod = 0d0
+      allocate (wflaynod(3, ndxi), stat=ierr); wflaynod = 0.0_dp
       call aerr(' wflaynod(3,ndxi)', ierr, ndxi)
 
       allocate (ndn(ndxi + npl), stat=ierr)

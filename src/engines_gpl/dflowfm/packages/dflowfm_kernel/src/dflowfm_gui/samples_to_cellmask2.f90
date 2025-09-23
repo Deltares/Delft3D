@@ -33,6 +33,8 @@
 ! update cellmask from samples
 module m_samples_to_cellmask2
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -67,7 +69,7 @@ contains
             npl = npl + 1
             xpl(npl) = xk(kk)
             ypl(npl) = yk(kk)
-            zpl(npl) = 1d0
+            zpl(npl) = 1.0_dp
          end do
          npl = npl + 1; xpl(npl) = dmiss; ypl(npl) = dmiss; zpl(npl) = dmiss
 

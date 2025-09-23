@@ -85,6 +85,13 @@ pos(1:2)=PosUR-dims;
 pos(3:4)=dims;
 
 mfig = qp_uifigure('Delft3D-QUICKPLOT','','Delft3D-QUICKPLOT',pos);
+try
+    icon_filename = d3d_qp('iconpath');
+    if exist(icon_filename,'file')
+        set(mfig,'Icon',icon_filename)
+    end
+catch
+end
 MW.Fig = mfig;
 UD.Active=qp_settings('UIActiveColor');
 UD.Inactive=qp_settings('UIInActiveColor');
@@ -139,15 +146,25 @@ m1=qp_uimenu(mfig,'&Help', ...
 
 a0 = axes('Parent',mfig, ...
     'Visible','off', ...
+    'HitTest','off', ...
     'Units','pixels', ...
     'Position',[1 1 dims], ...
     'Xlim',[1 dims(1)], ...
     'Ylim',[1 dims(2)]);
+try
+    set(a0,'PickableParts','none')
+catch
+end
+try
+    set(a0.Toolbar,'Visible','off')
+catch
+end
+
 
 offset=350;
 width=panewidth-36;
-l1=line(offset-10+[1 1],[0 dims(2)],[0 0],'color',[1 1 1],'parent',a0);
-l2=line(offset-10+[0 0],[0 dims(2)],[0 0],'color',[128 128 128]/255,'parent',a0);
+l1=line(offset-10+[1 1],[0 dims(2)],[0 0],'color',[1 1 1],'parent',a0,'hittest','off');
+l2=line(offset-10+[0 0],[0 dims(2)],[0 0],'color',[128 128 128]/255,'parent',a0,'hittest','off');
 
 UD.State=qp_state_startup;
 MW.TB = uitoolbar('Parent',mfig);

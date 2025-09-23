@@ -47,7 +47,7 @@ contains
       implicit none
 
       integer :: n, k, kk, kk2
-      real(kind=dp) :: qsrck, dvoli, dtol = 1d-4
+      real(kind=dp) :: qsrck, dvoli, dtol = 1.0e-4_dp
 
       do n = 1, numsrc
          if (ksrc(2, n) == 0 .and. ksrc(5, n) == 0) cycle ! due to initialisation
@@ -58,18 +58,18 @@ contains
          qsrck = qsrc(n)
 
          if (kk > 0) then ! FROM Point
-            k = ksrc(2, n); dvoli = 1d0 / max(vol1(k), dtol)
+            k = ksrc(2, n); dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then ! FROM k to k2
                turkinws(k) = turkinws(k) - dts * qsrck * dvoli * turkinws(k)
             else if (qsrck < 0) then ! FROM k2 to k
-               turkinws(k) = turkinws(k) - dts * qsrck * dvoli * 0.5d0 * (qsrck / arsrc(n))**2
+               turkinws(k) = turkinws(k) - dts * qsrck * dvoli * 0.5_dp * (qsrck / arsrc(n))**2
             end if
          end if
 
          if (kk2 > 0) then ! TO Point
-            k = ksrc(5, n); dvoli = 1d0 / max(vol1(k), dtol)
+            k = ksrc(5, n); dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then
-               turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5d0 * (qsrck / arsrc(n))**2
+               turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / arsrc(n))**2
             else if (qsrck < 0) then
                turkinws(k) = turkinws(k) + dts * qsrck * dvoli * turkinws(k)
             end if

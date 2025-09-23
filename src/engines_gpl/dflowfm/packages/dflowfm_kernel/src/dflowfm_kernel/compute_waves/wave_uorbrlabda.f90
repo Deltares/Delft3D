@@ -57,15 +57,15 @@ contains
       real(kind=dp) :: hss, per, omeg, k0, k0h, rk
 
       do k = 1, ndx
-         hss = max(1d-2, s1(k) - bl(k))
-         per = max(1d-2, twav(k)) ! wave period
+         hss = max(1.0e-2_dp, s1(k) - bl(k))
+         per = max(1.0e-2_dp, twav(k)) ! wave period
 
-         omeg = 2d0 * pi / per
+         omeg = 2.0_dp * pi / per
          k0 = omeg * omeg / ag
          k0h = k0 * hss
          if (k0h > pi) then ! if deep water
             rk = k0
-         elseif (k0h < 5d-3) then ! if very shallow water
+         elseif (k0h < 5.0e-3_dp) then ! if very shallow water
             rk = omeg / sqrt(ag * hss)
          else
             call getwavenr(hss, per, rk)
@@ -73,19 +73,19 @@ contains
          if (wlenwav_from_SWAN == 1) then
             rlabda(k) = wlenwav(k)
          else
-            rlabda(k) = 2d0 * pi / rk
+            rlabda(k) = 2.0_dp * pi / rk
          end if
-         if (rk * hss < 80d0) then ! if not very deep water
+         if (rk * hss < 80.0_dp) then ! if not very deep water
             if (jauorbfromswan == 1) then
                uorb(k) = uorbwav(k)
             else
-               uorb(k) = 0.5d0 * hwav(k) * omeg / sinh(rk * hss)
+               uorb(k) = 0.5_dp * hwav(k) * omeg / sinh(rk * hss)
                if (jauorb == 0) then ! old d3d convention
-                  uorb(k) = uorb(k) * sqrt(pi) / 2d0 ! only on hrms derived value, not on SWAN read uorb
+                  uorb(k) = uorb(k) * sqrt(pi) / 2.0_dp ! only on hrms derived value, not on SWAN read uorb
                end if
             end if
          else
-            uorb(k) = 0d0
+            uorb(k) = 0.0_dp
          end if
       end do
 

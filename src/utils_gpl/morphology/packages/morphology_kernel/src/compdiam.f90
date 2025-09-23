@@ -110,7 +110,7 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
 !
 !! executable statements -------------------------------------------------------
 !
-    if (lsedtot==1 .and. seddm(1)<0.0_fp) then
+    if (lsedtot==1 .and. seddm(1)<0.0_fp .and. sedtyp(1) >= min_dxx_sedtyp) then
        !
        ! Handle case with spatially varying sediment diameter
        ! separately using the same approximation of the lognormal

@@ -63,7 +63,7 @@ contains
 
       integer :: nn12
 
-      QucPeri = 0d0
+      QucPeri = 0.0_dp
       cs = csu(L)
       sn = snu(L)
 
@@ -72,9 +72,9 @@ contains
          LLL = nd(k12)%ln(LL)
          LLLL = abs(LLL)
 
-         if (qa(LLLL) == 0d0) then ! include own link
+         if (qa(LLLL) == 0.0_dp) then ! include own link
 
-         else if (LLL * qa(LLLL) > 0d0) then ! only incoming
+         else if (LLL * qa(LLLL) > 0.0_dp) then ! only incoming
 
 !       ucin = ucxu(LLLL)*cs + ucyu(LLLL)*sn  - u1(L)
             nn12 = 1; if (LLL > 0) nn12 = 2

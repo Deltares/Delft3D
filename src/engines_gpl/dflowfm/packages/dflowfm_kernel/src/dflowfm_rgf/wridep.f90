@@ -49,13 +49,13 @@ contains
       real(kind=dp) :: ZC(mmax, nmax)
       real(kind=dp) :: AF
 
-      call READYY('Writing Depth File ', 0d0)
+      call READYY('Writing Depth File ', 0.0_dp)
       do N = N1, NC
          AF = dble(N) / dble(NC)
          call READYY('Writing Dept File', AF)
          write (MMDD, '(12(1PE13.5))') (ZC(M, N), M=M1, MC)
       end do
-      call READYY('writing Dept File', -1d0)
+      call READYY('writing Dept File', -1.0_dp)
       call DOCLOSE(MMDD)
       return
    end

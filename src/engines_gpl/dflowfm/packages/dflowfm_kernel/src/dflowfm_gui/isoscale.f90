@@ -85,9 +85,9 @@ contains
 
       INC = NV / 30 + 1 ! Max 30 color boxes, otherwise increment > 1
 
-      WI = 11 * WIC + 1.8d0 * HIC
+      WI = 11 * WIC + 1.8_dp * HIC
       XSC0 = 1 - XSC
-      if (XSC0 < 0.6d0) then
+      if (XSC0 < 0.6_dp) then
          XSC1 = X1 + XSC0 * (X2 - X1)
       else
          XSC1 = X2 - (1 - XSC0) * (X2 - X1) - WI
@@ -101,9 +101,9 @@ contains
       write (MAXTEX(4:15), '(E11.4)') VMAX
 
       if (VMAX > VMIN .and. NDRAW(19) >= 2) then
-         YSC2 = min(YSC1 + (NV / INC + 1d0) * HIC + 2.5d0 * HIC, Y2)
+         YSC2 = min(YSC1 + (NV / INC + 1.0_dp) * HIC + 2.5_dp * HIC, Y2)
       else
-         YSC2 = min(YSC1 + (1d0) * HIC + 3.5d0 * HIC, Y2)
+         YSC2 = min(YSC1 + (1.0_dp) * HIC + 3.5_dp * HIC, Y2)
          XSC2 = XSC2 + 2 * WIC
       end if
 

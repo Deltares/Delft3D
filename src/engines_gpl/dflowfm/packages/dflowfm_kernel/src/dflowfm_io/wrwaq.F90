@@ -454,7 +454,7 @@ contains
       integer :: itdate, julday, idatum, itijd, iyea, imon, iday, ihou, imin, isec
       real(kind=dp) :: anl
       real(kind=dp) :: x1, y1, x2, y2
-      real(kind=dp), parameter :: rmissval = -999.0d0
+      real(kind=dp), parameter :: rmissval = -999.0_dp
       !
    !! executable statements -------------------------------------------------------
       !
@@ -1616,10 +1616,10 @@ contains
 
             if (Lf <= 0 .or. Lf > lnx) then
                n = 0
-               x1 = 0d0
-               y1 = 0d0
-               x2 = 0d0
-               y2 = 0d0
+               x1 = 0.0_dp
+               y1 = 0.0_dp
+               x2 = 0.0_dp
+               y2 = 0.0_dp
             else
                n = ln(1, Lf)
                if (kn(3, L) == 1) then ! 1D link
@@ -1634,10 +1634,10 @@ contains
                   xn = wu(Lf) * xn
                   yn = wu(Lf) * yn
 
-                  x1 = .5d0 * (xz(n1) + xz(n2)) - .5d0 * xn
-                  y1 = .5d0 * (yz(n1) + yz(n2)) - .5d0 * yn
-                  x2 = .5d0 * (xz(n1) + xz(n2)) + .5d0 * xn
-                  y2 = .5d0 * (yz(n1) + yz(n2)) + .5d0 * yn
+                  x1 = 0.5_dp * (xz(n1) + xz(n2)) - 0.5_dp * xn
+                  y1 = 0.5_dp * (yz(n1) + yz(n2)) - 0.5_dp * yn
+                  x2 = 0.5_dp * (xz(n1) + xz(n2)) + 0.5_dp * xn
+                  y2 = 0.5_dp * (yz(n1) + yz(n2)) + 0.5_dp * yn
                else
                   x1 = xk(kn(1, L))
                   y1 = yk(kn(1, L))
@@ -1821,16 +1821,16 @@ contains
 
          ! Write a dummy last record in area and flow file to make them complete.
          if (time == ti_waqe) then
-            au = 0d0
-            q1waq = 0d0
+            au = 0.0_dp
+            q1waq = 0.0_dp
             if (kmx > 0) then
-               qwwaq = 0d0
+               qwwaq = 0.0_dp
             end if
             if (numsrc > 0) then
-               qsrcwaq = 0d0 ! Reset accumulated discharges
+               qsrcwaq = 0.0_dp ! Reset accumulated discharges
             end if
             if (numlatsg > 0) then
-               qlatwaq = 0d0 ! Reset accumulated discharges
+               qlatwaq = 0.0_dp ! Reset accumulated discharges
             end if
 
             ! Dummy area record
@@ -1840,15 +1840,15 @@ contains
             call waq_wri_flo(itim, int(ti_waq), defaultFilename('flo'), waqpar%lunflo)
          end if
       end if
-      q1waq = 0d0 ! Reset accumulated discharges
+      q1waq = 0.0_dp ! Reset accumulated discharges
       if (kmx > 0) then
-         qwwaq = 0d0 ! Reset accumulated discharges
+         qwwaq = 0.0_dp ! Reset accumulated discharges
       end if
       if (numsrc > 0) then
-         qsrcwaq = 0d0 ! Reset accumulated discharges
+         qsrcwaq = 0.0_dp ! Reset accumulated discharges
       end if
       if (numlatsg > 0) then
-         qlatwaq = 0d0 ! Reset accumulated discharges
+         qlatwaq = 0.0_dp ! Reset accumulated discharges
       end if
       itim_prev = itim
    end subroutine waq_wri_couple_files
@@ -2001,12 +2001,12 @@ contains
 
       waqpar%num_cells = waqpar%nosegl * waqpar%kmxnxa
       call realloc(waqpar%nosega, waqpar%num_cells, keepExisting=.false., fill=0)
-      call realloc(waqpar%vol, waqpar%num_cells, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%vel, waqpar%num_cells, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%sal, waqpar%num_cells, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%tem, waqpar%num_cells, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%tau, waqpar%num_cells, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%vdf, waqpar%num_cells, keepExisting=.false., fill=0d0)
+      call realloc(waqpar%vol, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%vel, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%sal, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%tem, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%tau, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%vdf, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
       call realloc(waqpar%kmk1, waqpar%num_cells, keepExisting=.false., fill=0)
       call realloc(waqpar%kmk2, waqpar%num_cells, keepExisting=.false., fill=0)
 
@@ -2032,8 +2032,8 @@ contains
 
       call waq_make_aggr_lnk()
       call realloc(waqpar%ifrmto, [4, waqpar%num_exchanges], keepExisting=.true., fill=0)
-      call realloc(waqpar%qag, waqpar%num_exchanges, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%area, waqpar%num_exchanges, keepExisting=.false., fill=0d0)
+      call realloc(waqpar%qag, waqpar%num_exchanges, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%area, waqpar%num_exchanges, keepExisting=.false., fill=0.0_dp)
       waqpar%noql = waqpar%noq12 / waqpar%kmxnxa
    end subroutine waq_prepare_aggr
 !
@@ -2287,8 +2287,8 @@ contains
          end if
       end do
       call realloc(waqpar%ifrmtosrc, [2, waqpar%numsrcwaq], keepexisting=.true., fill=0)
-      call realloc(qsrcwaq, waqpar%numsrcwaq, keepexisting=.true., fill=0.0d0)
-      call realloc(qsrcwaq0, waqpar%numsrcwaq, keepexisting=.true., fill=0.0d0)
+      call realloc(qsrcwaq, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
+      call realloc(qsrcwaq0, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
       nbnd = ndx - ndxi + waqpar%numsrcbnd ! total number of boudaries
       ibnd = ndx - ndxi ! starting number for sink source boundaries
 
@@ -2374,8 +2374,8 @@ contains
       end do
       ! Do not skip when numlatsg is zero - we need to have the arrays allocated, even to zero length
       call realloc(waqpar%ifrmtolat, [2, waqpar%numlatwaq], keepexisting=.true., fill=0)
-      call realloc(qlatwaq, waqpar%numlatwaq, keepexisting=.true., fill=0.0d0)
-      call realloc(qlatwaq0, waqpar%numlatwaq, keepexisting=.true., fill=0.0d0)
+      call realloc(qlatwaq, waqpar%numlatwaq, keepexisting=.true., fill=0.0_dp)
+      call realloc(qlatwaq0, waqpar%numlatwaq, keepexisting=.true., fill=0.0_dp)
 
       ibnd = (ndx - ndxi + waqpar%numsrcbnd) * waqpar%kmxnxa
       ilatwaq = 0
@@ -2441,7 +2441,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      call realloc(lenex, [2, waqpar%num_exchanges], keepExisting=.false., fill=0d0)
+      call realloc(lenex, [2, waqpar%num_exchanges], keepExisting=.false., fill=0.0_dp)
       call realloc(noqa, waqpar%noql, keepExisting=.false., fill=0)
 
       do L = 1, lnx
@@ -2449,10 +2449,10 @@ contains
          if (ip > 0) then
             ! MJ: TODO for now a simple average of the dispersion lengths, may be better to weight by wu (link initial width)
             lenex(1, ip) = lenex(1, ip) + dx(L) * acl(L)
-            lenex(2, ip) = lenex(2, ip) + dx(L) * (1d0 - acl(L))
+            lenex(2, ip) = lenex(2, ip) + dx(L) * (1.0_dp - acl(L))
             noqa(ip) = noqa(ip) + 1
          else if (ip < 0) then
-            lenex(1, -ip) = lenex(1, -ip) + dx(L) * (1d0 - acl(L))
+            lenex(1, -ip) = lenex(1, -ip) + dx(L) * (1.0_dp - acl(L))
             lenex(2, -ip) = lenex(2, -ip) + dx(L) * acl(L)
             noqa(-ip) = noqa(-ip) + 1
          end if
@@ -2471,20 +2471,20 @@ contains
 
       !   dummy lengthes for sinks/sources
       do ip = waqpar%noq12 + 1, waqpar%noq12s
-         lenex(1, ip) = 1d5
-         lenex(2, ip) = 1d5
+         lenex(1, ip) = 1.0e5_dp
+         lenex(2, ip) = 1.0e5_dp
       end do
 
       !   dummy lengthes for laterals
       do ip = waqpar%noq12s + 1, waqpar%noq12sl
-         lenex(1, ip) = 1d5
-         lenex(2, ip) = 1d5
+         lenex(1, ip) = 1.0e5_dp
+         lenex(2, ip) = 1.0e5_dp
       end do
 
       !   dummy lengthes in third direction for all layers (will be calculated by WAQ from volume and surface)
       do ip = waqpar%noq12sl + 1, waqpar%num_exchanges
-         lenex(1, ip) = 1d0
-         lenex(2, ip) = 1d0
+         lenex(1, ip) = 1.0_dp
+         lenex(2, ip) = 1.0_dp
       end do
 
       ! Call the waq-len file writer
@@ -2514,13 +2514,13 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      call realloc(waqpar%horsurf, waqpar%num_cells, keepExisting=.false., fill=0d0)
+      call realloc(waqpar%horsurf, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
       !
    !! executable statements -------------------------------------------------------
       !
       ! AvD: TODO: What if ba(..) < 0.
       do k = 1, ndxi
-         waqpar%horsurf(waqpar%iapnt(k)) = waqpar%horsurf(waqpar%iapnt(k)) + max(ba(k), 0d0)
+         waqpar%horsurf(waqpar%iapnt(k)) = waqpar%horsurf(waqpar%iapnt(k)) + max(ba(k), 0.0_dp)
       end do
 
       ! Copy to all layers
@@ -2595,7 +2595,7 @@ contains
             end if
 
             if (num > 0) then
-               dv = 0d0
+               dv = 0.0_dp
                do k = 1, ndxi
                   call getkbotktopmax(k, kb, kt, ktx)
                   do kk = kb, ktx
@@ -2603,7 +2603,7 @@ contains
                   end do
                end do
 
-               dv1 = 0d0
+               dv1 = 0.0_dp
                do L = 1, lnx
                   call getLbotLtopmax(L, Lb, Lt)
                   do LL = Lb, Lt
@@ -2627,8 +2627,8 @@ contains
                   call getkbotktopmax(k, kb, kt, ktx)
                   do kk = kb, ktx
                      errvol = dv(kk) - dv1(kk)
-                     if (errvol > 1d-6) then
-                        errvol = 0d0
+                     if (errvol > 1.0e-6_dp) then
+                        errvol = 0.0_dp
                      end if
                   end do
                end do
@@ -2636,7 +2636,7 @@ contains
             num = 1
          end if
 
-         waqpar%vol = 0d0
+         waqpar%vol = 0.0_dp
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
@@ -2645,7 +2645,7 @@ contains
          end do
 
       else
-         waqpar%vol = 0d0
+         waqpar%vol = 0.0_dp
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
@@ -2681,7 +2681,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%vel = 0d0
+      waqpar%vel = 0.0_dp
 
       if (.not. allocated(ucmag)) then
          call realloc(ucmag, ndkx, keepExisting=.false.)
@@ -2712,11 +2712,11 @@ contains
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
-               waqpar%vel(waqpar%isaggr(kk)) = waqpar%vel(waqpar%isaggr(kk)) + ucmag(kk) * max(ba(k), 0d0)
+               waqpar%vel(waqpar%isaggr(kk)) = waqpar%vel(waqpar%isaggr(kk)) + ucmag(kk) * max(ba(k), 0.0_dp)
             end do
          end do
          do i = 1, waqpar%num_cells
-            if (waqpar%horsurf(i) > 1d-25) then
+            if (waqpar%horsurf(i) > 1.0e-25_dp) then
                waqpar%vel(i) = waqpar%vel(i) / waqpar%horsurf(i)
             end if
          end do
@@ -2750,10 +2750,10 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%sal = 0d0
+      waqpar%sal = 0.0_dp
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
          do i = 1, ndxi
-            if (vol1(i) > 1d-25) then
+            if (vol1(i) > 1.0e-25_dp) then
                waqpar%sal(i) = constituents(isalt, i)
             end if
          end do
@@ -2761,7 +2761,7 @@ contains
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%sal(waqpar%isaggr(kk)) = constituents(isalt, kk)
                end if
             end do
@@ -2771,16 +2771,16 @@ contains
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%sal(waqpar%isaggr(kk)) = waqpar%sal(waqpar%isaggr(kk)) + constituents(isalt, kk) * vol1(kk)
                end if
             end do
          end do
          do i = 1, waqpar%num_cells
-            if (waqpar%vol(i) > 1d-25) then
+            if (waqpar%vol(i) > 1.0e-25_dp) then
                waqpar%sal(i) = waqpar%sal(i) / waqpar%vol(i)
             else
-               waqpar%sal(i) = 0d0
+               waqpar%sal(i) = 0.0_dp
             end if
          end do
       end if
@@ -2812,10 +2812,10 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%tem = 0d0
+      waqpar%tem = 0.0_dp
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
          do i = 1, ndxi
-            if (vol1(i) > 1d-25) then
+            if (vol1(i) > 1.0e-25_dp) then
                waqpar%tem(i) = constituents(itemp, i) !  tem1(i)
             end if
          end do
@@ -2823,7 +2823,7 @@ contains
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%tem(waqpar%isaggr(kk)) = constituents(itemp, kk)
                end if
             end do
@@ -2833,16 +2833,16 @@ contains
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%tem(waqpar%isaggr(kk)) = waqpar%tem(waqpar%isaggr(kk)) + constituents(itemp, kk) * vol1(kk)
                end if
             end do
          end do
          do i = 1, waqpar%num_cells
-            if (waqpar%vol(i) > 1d-25) then
+            if (waqpar%vol(i) > 1.0e-25_dp) then
                waqpar%tem(i) = waqpar%tem(i) / waqpar%vol(i)
             else
-               waqpar%tem(i) = 0d0
+               waqpar%tem(i) = 0.0_dp
             end if
          end do
       end if
@@ -2873,7 +2873,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%tau = 0d0
+      waqpar%tau = 0.0_dp
 
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
          do i = 1, ndxi
@@ -2889,10 +2889,10 @@ contains
       else
          ! Taus are aggregated horizontal surface weighted
          do k = 1, ndxi
-            waqpar%tau(waqpar%isaggr(k)) = waqpar%tau(waqpar%isaggr(k)) + taus(k) * max(ba(k), 0d0)
+            waqpar%tau(waqpar%isaggr(k)) = waqpar%tau(waqpar%isaggr(k)) + taus(k) * max(ba(k), 0.0_dp)
          end do
          do i = 1, waqpar%nosegl
-            if (waqpar%horsurf(i) > 1d-25) then
+            if (waqpar%horsurf(i) > 1.0e-25_dp) then
                waqpar%tau(i) = waqpar%tau(i) / waqpar%horsurf(i)
             end if
          end do

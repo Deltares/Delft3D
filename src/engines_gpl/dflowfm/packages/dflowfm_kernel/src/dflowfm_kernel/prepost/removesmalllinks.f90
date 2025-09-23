@@ -91,7 +91,7 @@ contains
                      call GETCELLSURFACE(KN2a, AN2, XZWr, YZWr)
                      call GETCELLWEIGHTEDCENTER(KN1a, XL, YL, ZZZ)
                      call GETCELLWEIGHTEDCENTER(KN2a, XR, YR, ZZZ)
-                     R01 = 0.5d0 * (sqrt(AN1) + sqrt(AN2)) ! TYPICAL SIDE
+                     R01 = 0.5_dp * (sqrt(AN1) + sqrt(AN2)) ! TYPICAL SIDE
                      R02 = DBDISTANCE(XL, YL, XR, YR, jsferic, jasfer3D, dmiss) ! CIRCUMDISTANCE
                      if (R02 < removesmalllinkstrsh * R01) then
                         KN(1, L) = 0; KN(2, L) = 0; KN(3, L) = -1 ! CALL DELLINK(L)
@@ -118,7 +118,7 @@ contains
 
          if (LNN(LT) == 1 .and. NN == 3) then ! SMALL BOUNDARY TRIANGLES
 
-            TAREA = 0d0; NUMT = 0
+            TAREA = 0.0_dp; NUMT = 0
             do LL = 1, 3 ! ESTABLISH TYPICAL CELLSIZE ADJACENT QUADS
                L = NETCELL(N)%LIN(LL)
                if (LNN(L) == 2) then
@@ -139,10 +139,10 @@ contains
             end if
             if (TAREA /= 0) then
                call GETCELLSURFACE(N, AREA, XZWr, YZWr)
-               if (AREA > 0d0) then
+               if (AREA > 0.0_dp) then
                   FRAC = AREA / TAREA
                   if (FRAC < TRIAREAREMFRAC) then
-                     COSMIN = 1d0
+                     COSMIN = 1.0_dp
                      do LL = 1, 3 ! FIND KHOEK
                         LU = LL + 1; if (LU == 4) LU = 1
                         LD = LL - 1; if (LD == 0) LD = 3

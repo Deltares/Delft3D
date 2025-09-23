@@ -32,6 +32,8 @@
 
 module m_velocities_explicit
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -48,7 +50,7 @@ contains
       integer :: n, L, LL, k1, k2
 
       if (itstep == 1) then
-         u1 = (u0 - dts * adve) / (1d0 + dts * advi)
+         u1 = (u0 - dts * adve) / (1.0_dp + dts * advi)
          do n = 1, nbndu !       boundaries at u points
             L = kbndu(3, n)
             u1(L) = zbndu(n)
@@ -56,7 +58,7 @@ contains
       end if
       q1 = u1 * au
 
-      squ = 0d0; sqi = 0d0
+      squ = 0.0_dp; sqi = 0.0_dp
       if (kmx == 0) then
          do L = 1, lnx
             if (q1(L) > 0) then

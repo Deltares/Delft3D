@@ -65,11 +65,11 @@ contains
       real(kind=dp) :: XG, YG
 
       INI = 1
-      DELTX = 0d0
-      DELTY = 0d0
-      FI = 0d0
-      XF = 1d0
-      YF = 1d0
+      DELTX = 0.0_dp
+      DELTY = 0.0_dp
+      FI = 0.0_dp
+      XF = 1.0_dp
+      YF = 1.0_dp
       ! IZONE  =  UTMZONE DIE JE WIL, NZONE = ADVIESZONE
       ! ITYPE  = 1  ! 0 = ROTATIE/TRANSLATIE, 1 = UTM, 2=RD, 3 = PARIJS, 5 = AFFINE
 

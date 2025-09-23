@@ -90,7 +90,7 @@ contains
                alfa = prof1d(3, LL)
                if (profiles1D(ka)%frccf /= dmiss .and. profiles1D(kb)%frccf /= dmiss .and. &
                    profiles1D(ka)%frctp == profiles1D(kb)%frctp) then
-                  zlin = (1d0 - alfa) * profiles1D(ka)%frccf + alfa * profiles1D(kb)%frccf
+                  zlin = (1.0_dp - alfa) * profiles1D(ka)%frccf + alfa * profiles1D(kb)%frccf
                end if
             end if
          end if
@@ -129,7 +129,7 @@ contains
          else
             k1 = ln(1, L); k2 = ln(2, L)
             if (diaveg(k1) > 0 .and. diaveg(k2) > 0) then
-               zlin = 0.5d0 * (diaveg(k1) + diaveg(k2))
+               zlin = 0.5_dp * (diaveg(k1) + diaveg(k2))
             else
                zlin = max(diaveg(k1), diaveg(k2))
             end if
@@ -139,7 +139,7 @@ contains
             zlin = (s1(ln(2, LL)) - s1(ln(1, LL))) * dxi(LL)
          else
             k1 = ln(1, L); k2 = ln(2, L)
-            zlin = 0.5d0 * (rnveg(k1) + rnveg(k2))
+            zlin = 0.5_dp * (rnveg(k1) + rnveg(k2))
          end if
       else if (linval == 24) then
          if (javeg == 0) then
@@ -147,7 +147,7 @@ contains
          else
             k1 = ln(1, L); k2 = ln(2, L)
             if (stemheight(k1) > 0 .and. stemheight(k2) > 0) then
-               zlin = 0.5d0 * (stemheight(k1) + stemheight(k2))
+               zlin = 0.5_dp * (stemheight(k1) + stemheight(k2))
             else
                zlin = max(stemheight(k1), stemheight(k2))
             end if
@@ -220,7 +220,7 @@ contains
             omega1 = qw(k1) / a1(ln(1, LL))
             omega2 = qw(k2) / a1(ln(2, LL))
 
-            zlin = 0.5d0 * omega1 + 0.5d0 * omega2 + 0.5d0 * (u0(L) + u0(L + 1)) * (zws(k2) - zb2 - (zws(k1) - zb1)) * dxi(LL)
+            zlin = 0.5_dp * omega1 + 0.5_dp * omega2 + 0.5_dp * (u0(L) + u0(L + 1)) * (zws(k2) - zb2 - (zws(k1) - zb1)) * dxi(LL)
          end if
       else if (linval == 46) then
          if (hu(LL) > epshu) then
@@ -239,31 +239,31 @@ contains
       else if (linval == 54 .and. stm_included) then
          select case (sedparopt)
          case (1)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedtot
                dum = dum + sedtra%e_sbcn(LL, lll)
             end do
             zlin = dum
          case (2)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedsus
                dum = dum + sedtra%e_ssn(LL, lll)
             end do
             zlin = dum
          case (3)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedtot
                dum = dum + sedtra%e_sbwn(LL, lll)
             end do
             zlin = dum
          case (4)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedtot
                dum = dum + sedtra%e_sswn(LL, lll)
             end do
             zlin = dum
          case (5)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedsus
                dum = dum + sedtra%e_ssn(LL, lll)
             end do
@@ -272,16 +272,16 @@ contains
             end do
             zlin = dum
          case (6)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedtot
                dum = dum + bermslopecontrib(LL, lll)
             end do
             zlin = dum
          case (7)
-            zlin = merge(1.0d0, 0.0d0, bermslopeindex(LL))
+            zlin = merge(1.0_dp, 0.0_dp, bermslopeindex(LL))
          end select
       else if (linval == 49) then
-         zlin = Ltop(LL) - Lbot(LL) + 1; zlin = max(zlin, 0d0)
+         zlin = Ltop(LL) - Lbot(LL) + 1; zlin = max(zlin, 0.0_dp)
       else if (linval == 50) then
          zlin = kmxL(LL)
       else if (linval == 51) then

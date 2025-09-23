@@ -55,8 +55,8 @@ contains
 
       integer :: k1, k2, L
 
-      gradx = 0d0
-      grady = 0d0
+      gradx = 0.0_dp
+      grady = 0.0_dp
 
       do L = 1, Lnx
          k1 = ln(1, L)

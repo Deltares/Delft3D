@@ -113,12 +113,12 @@ contains
          call get_meshbounds(xboundmin, xboundmax)
       end if
 
-      call READYY(' ', 0.5d0)
+      call READYY(' ', 0.5_dp)
 
       kint = max(numk / 100, 1)
       if (tooclose > 0) then
 
-         call READYY('Merging nodes', 0d0)
+         call READYY('Merging nodes', 0.0_dp)
 
          jadone = 0
 
@@ -128,9 +128,9 @@ contains
 
 !       get coordinates of nodes in polygon
             allocate (xx(numk))
-            xx = 0d0
+            xx = 0.0_dp
             allocate (yy(numk))
-            yy = 0d0
+            yy = 0.0_dp
             allocate (iperm(numk))
             iperm = 0
 
@@ -166,7 +166,7 @@ contains
                   if (k == 0) cycle ! already merged
 
                   if (mod(K, kint) == 0) then
-                     call READYY(' ', min(1d0, dble(k) / kint))
+                     call READYY(' ', min(1.0_dp, dble(k) / kint))
                   end if
 
 !              fill query vector
@@ -230,7 +230,7 @@ contains
 !       non-kdtree
             do K = 1, NUMK
                if (mod(K, kint) == 0) then
-                  call READYY(' ', min(1d0, dble(k) / kint))
+                  call READYY(' ', min(1.0_dp, dble(k) / kint))
                end if
 
                if (KC(K) > 0) then
@@ -253,16 +253,16 @@ contains
             call rearrange_worldmesh(xboundmin, xboundmax)
          end if
 
-         call READYY(' ', -1d0)
+         call READYY(' ', -1.0_dp)
       end if
 
       if (connect1dend > 0) then
 
-         call READYY('Connecting 1D nodes', 0d0)
+         call READYY('Connecting 1D nodes', 0.0_dp)
 
          do K = 1, NUMK ! MERGE 1d ENDPOINTS TO 1d ENDPOINTS THAT ARE REALLY CLOSE
             if (mod(K, kint) == 0) then
-               call READYY(' ', .5d0 * min(1d0, dble(k) / kint))
+               call READYY(' ', 0.5_dp * min(1.0_dp, dble(k) / kint))
             end if
             if (KC(K) == 1 .and. NMK(K) == 1) then
                do KK = K + 1, NUMK
@@ -281,7 +281,7 @@ contains
 
          call SETBRANCH_LC(nrl1d)
          if (nrl1d == 0) then
-            call READYY(' ', -1d0); netstat = NETSTAT_OK
+            call READYY(' ', -1.0_dp); netstat = NETSTAT_OK
             return
          end if
 
@@ -295,7 +295,7 @@ contains
          Lint = max(NUML / 100, 1)
          do L = 1, NUML
             if (mod(L, Lint) == 0) then
-               call READYY(' ', .5d0 + .5d0 * min(1d0, dble(L) / Lint))
+               call READYY(' ', 0.5_dp + 0.5_dp * min(1.0_dp, dble(L) / Lint))
             end if
             if (KN(3, L) == 1 .or. KN(3, L) == 4) then
                kn3 = kn(3, L)
@@ -309,7 +309,7 @@ contains
                   end if
 
                   if (KA /= 0) then
-                     DISMIN = 1d9; KM = 0
+                     DISMIN = 1.0e9_dp; KM = 0
                      do K = 1, NUMK
                         if (KA /= K .and. KC(K) == 1) then
                            JADUM = 1
@@ -349,7 +349,7 @@ contains
             end if
 
          end do
-         call READYY(' ', -1d0)
+         call READYY(' ', -1.0_dp)
          call setnodadm(0)
          netstat = NETSTAT_OK
       end if

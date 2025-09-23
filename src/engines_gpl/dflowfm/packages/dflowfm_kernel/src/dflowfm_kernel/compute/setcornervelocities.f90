@@ -64,11 +64,11 @@ contains
                k1 = ln(1, L); k2 = ln(2, L)
                k3 = lncn(1, L); k4 = lncn(2, L)
                if (jasfer3D == 0) then
-                  uLx = 0.5d0 * (ucx(k1) + ucx(k2))
-                  uLy = 0.5d0 * (ucy(k1) + ucy(k2))
+                  uLx = 0.5_dp * (ucx(k1) + ucx(k2))
+                  uLy = 0.5_dp * (ucy(k1) + ucy(k2))
                else
-                  uLx = 0.5d0 * (nod2linx(L, 1, ucx(k1), ucy(k1)) + nod2linx(L, 2, ucx(k2), ucy(k2)))
-                  uLy = 0.5d0 * (nod2liny(L, 1, ucx(k1), ucy(k1)) + nod2liny(L, 2, ucx(k2), ucy(k2)))
+                  uLx = 0.5_dp * (nod2linx(L, 1, ucx(k1), ucy(k1)) + nod2linx(L, 2, ucx(k2), ucy(k2)))
+                  uLy = 0.5_dp * (nod2liny(L, 1, ucx(k1), ucy(k1)) + nod2liny(L, 2, ucx(k2), ucy(k2)))
                end if
 
                ucnx(k3) = ucnx(k3) + uLx * wcnx3(L)
@@ -102,7 +102,7 @@ contains
       else
 
          if (jased > 0 .and. jased < 4) then
-            ustbc = 0d0
+            ustbc = 0.0_dp
          end if
 
          if (jacomp == jacomp) then ! for now in 3D use org method
@@ -114,11 +114,11 @@ contains
                      k1 = ln(1, L); k2 = ln(2, L)
                      k3 = lncn(1, L); k4 = lncn(2, L)
                      if (jasfer3D == 0) then
-                        uLx = 0.5d0 * (ucx(k1) + ucx(k2))
-                        uLy = 0.5d0 * (ucy(k1) + ucy(k2))
+                        uLx = 0.5_dp * (ucx(k1) + ucx(k2))
+                        uLy = 0.5_dp * (ucy(k1) + ucy(k2))
                      else
-                        uLx = 0.5d0 * (nod2linx(LL, 1, ucx(k1), ucy(k1)) + nod2linx(LL, 2, ucx(k2), ucy(k2)))
-                        uLy = 0.5d0 * (nod2liny(LL, 1, ucx(k1), ucy(k1)) + nod2liny(LL, 2, ucx(k2), ucy(k2)))
+                        uLx = 0.5_dp * (nod2linx(LL, 1, ucx(k1), ucy(k1)) + nod2linx(LL, 2, ucx(k2), ucy(k2)))
+                        uLy = 0.5_dp * (nod2liny(LL, 1, ucx(k1), ucy(k1)) + nod2liny(LL, 2, ucx(k2), ucy(k2)))
                      end if
 
                      ucnx(k3) = ucnx(k3) + uLx * wcnx3(LL)

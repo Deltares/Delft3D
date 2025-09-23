@@ -30,7 +30,7 @@
 !
 !
 module unstruc_netcdf_map_class
-   use precision, only: hp
+   use precision, only: dp
    use precision_basics, only: comparereal
    use m_flow, only: s1, hs, ucmag, workx, worky, ndkx, kmx, ucx, ucy
    use m_flowtimes, only: map_classes_s1, map_classes_hs, map_classes_ucmag, map_classes_ucdir, ti_classmape, ti_classmaps, ti_classmap, Tudunitstr
@@ -99,7 +99,7 @@ contains
       use fm_location_types
       use m_get_ucx_ucy_eul_mag
       type(t_unc_mapids), intent(inout) :: incids !< class file and other NetCDF ids.
-      real(kind=hp), intent(in) :: tim !< simulation time
+      real(kind=dp), intent(in) :: tim !< simulation time
 
       integer :: ierr, ndim, i
       integer, parameter :: jabndnd_ = 0 !< Whether to include boundary nodes (1) or not (0). Default: no.
@@ -107,9 +107,9 @@ contains
       integer :: id_twodim
       character(len=:), allocatable :: errmsg
       logical :: isLast, need_flush
-      real(kind=hp), allocatable :: ucdir(:)
-      real(kind=hp) :: angle
-      real(kind=hp), allocatable :: workbounds(:, :)
+      real(kind=dp), allocatable :: ucdir(:)
+      real(kind=dp) :: angle
+      real(kind=dp), allocatable :: workbounds(:, :)
       integer :: nclasses_s1, nclasses_hs, nclasses_ucmag, nclasses_ucdir
 
       ierr = nf90_noerr
@@ -235,8 +235,8 @@ contains
          do i = 1, ndkx ! only works for ndkx==ndx in 2D mode now
             angle = atan2(workx(i), worky(i))
             ! CF:  The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.
-            angle = 90d0 - raddeg_hp * angle
-            if (angle < 0d0) angle = 360d0 + angle
+            angle = 90.0_dp - raddeg_hp * angle
+            if (angle < 0.0_dp) angle = 360.0_dp + angle
             ucdir(i) = angle
          end do
          call put_in_classes(map_classes_ucdir, ucdir(1:ndx), current_ucdir)
@@ -278,19 +278,19 @@ contains
             previous_s1 => current_s1
          end if
          if (nclasses_hs > 0) then
-            call classes_to_classbounds(nclasses_hs, map_classes_hs, workbounds, lbound=0d0)
+            call classes_to_classbounds(nclasses_hs, map_classes_hs, workbounds, lbound=0.0_dp)
             if (ierr == nf90_noerr) ierr = nf90_put_var(incids%ncid, id_class_hs, workbounds)
             if (ierr == nf90_noerr) ierr = write_initial_classes(incids, current_hs, buffer_hs, 'hs', id_jumps_hs)
             previous_hs => current_hs
          end if
          if (nclasses_ucmag > 0 .and. kmx == 0) then
-            call classes_to_classbounds(nclasses_ucmag, map_classes_ucmag, workbounds, lbound=0d0)
+            call classes_to_classbounds(nclasses_ucmag, map_classes_ucmag, workbounds, lbound=0.0_dp)
             if (ierr == nf90_noerr) ierr = nf90_put_var(incids%ncid, id_class_ucmag, workbounds)
             if (ierr == nf90_noerr) ierr = write_initial_classes(incids, current_ucmag, buffer_ucmag, 'ucmag', id_jumps_ucmag)
             previous_ucmag => current_ucmag
          end if
          if (nclasses_ucdir > 0 .and. kmx == 0) then
-            call classes_to_classbounds(nclasses_ucdir, map_classes_ucdir, workbounds, lbound=0d0, ubound=360d0)
+            call classes_to_classbounds(nclasses_ucdir, map_classes_ucdir, workbounds, lbound=0.0_dp, ubound=360.0_dp)
             if (ierr == nf90_noerr) ierr = nf90_put_var(incids%ncid, id_class_ucdir, workbounds)
             if (ierr == nf90_noerr) ierr = write_initial_classes(incids, current_ucdir, buffer_ucdir, 'ucdir', id_jumps_ucdir)
             previous_ucdir => current_ucdir
@@ -385,10 +385,10 @@ contains
       integer :: ierr !< function result. 0=ok
 
       integer :: id_class, actual_chunksize, ids(MAX_ID_VAR), ndims(2), i
-      real(kind=hp), pointer :: map_classes(:)
+      real(kind=dp), pointer :: map_classes(:)
       character(len=:), allocatable :: unit
       character(len=:), allocatable :: classbndsname
-      real(kind=hp) :: lbound, ubound
+      real(kind=dp) :: lbound, ubound
 
       ! By default, first and last classes are open ended:
       lbound = dmiss
@@ -406,7 +406,7 @@ contains
          id_class = id_class_dim_hs
          ids = incids%id_hs
          map_classes => map_classes_hs
-         lbound = 0d0
+         lbound = 0.0_dp
       else if (name == 'ucmag') then
          unit = 'm s-1'
          if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES) then
@@ -418,7 +418,7 @@ contains
          id_class = id_class_dim_ucmag
          ids = incids%id_ucmag
          map_classes => map_classes_ucmag
-         lbound = 0d0
+         lbound = 0.0_dp
       else if (name == 'ucdir') then
          unit = 'degree'
          if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES) then
@@ -430,8 +430,8 @@ contains
          id_class = id_class_dim_ucdir
          ids = incids%id_ucdir
          map_classes => map_classes_ucdir
-         lbound = 0d0
-         ubound = 360d0
+         lbound = 0.0_dp
+         ubound = 360.0_dp
       else
          call mess(LEVEL_FATAL, 'programming error in def_var_incremental_ugrid')
       end if
@@ -460,8 +460,8 @@ contains
 
 !> helper function to put the actual data in classes
    subroutine put_in_classes(incr_classes, full_field, classes)
-      real(kind=hp), intent(in) :: incr_classes(:) !< list with class boundaries
-      real(kind=hp), intent(in) :: full_field(:) !< actual data in doubles
+      real(kind=dp), intent(in) :: incr_classes(:) !< list with class boundaries
+      real(kind=dp), intent(in) :: full_field(:) !< actual data in doubles
       integer(kind=int8), intent(out) :: classes(:) !< converted data in byte with class number
 
       integer :: i, j, num_classes
@@ -580,10 +580,10 @@ contains
       use string_module, only: replace_char
       use m_alloc
       integer, intent(in) :: N !< Number of input classes
-      real(kind=hp), intent(in) :: class_bnds(:) !< (N) class boundary values
-      real(kind=hp), allocatable, intent(inout) :: bnds_table(:, :) !< (2, N+1) output table with class bounds
-      real(kind=hp), optional, intent(in) :: lbound !< (Optional) Value that represents the lower bound of the first class. (Only needed when not open ended.)
-      real(kind=hp), optional, intent(in) :: ubound !< (Optional) Value that represents the upper bound of the last class. (Only needed when not open ended.)
+      real(kind=dp), intent(in) :: class_bnds(:) !< (N) class boundary values
+      real(kind=dp), allocatable, intent(inout) :: bnds_table(:, :) !< (2, N+1) output table with class bounds
+      real(kind=dp), optional, intent(in) :: lbound !< (Optional) Value that represents the lower bound of the first class. (Only needed when not open ended.)
+      real(kind=dp), optional, intent(in) :: ubound !< (Optional) Value that represents the upper bound of the last class. (Only needed when not open ended.)
 
       integer :: i
 
@@ -607,18 +607,18 @@ contains
       use m_missing, only: dmiss
       integer, intent(in) :: ncid !< NetCDF file id
       integer, intent(in) :: varid !< variable id of the data variable that is stored using classes/flag values.
-      real(kind=hp), intent(in) :: class_bnds(:) !< class boundaries, used to construct the meanings string.
+      real(kind=dp), intent(in) :: class_bnds(:) !< class boundaries, used to construct the meanings string.
       character(len=*), intent(inout) :: unit !< the unit of the variable (spaces, if any, are removed)
       character(len=*), intent(in) :: classbnds_name !< Name of another variable containing the class bounds table. Used in flag_bounds attribute.
-      real(kind=hp), optional, intent(in) :: lbound !< (Optional) Value that represents the lower bound of the first class (or use dmiss when open ended).
-      real(kind=hp), optional, intent(in) :: ubound !< (Optional) Value that represents the upper bound of the last class (or use dmiss when open ended).
+      real(kind=dp), optional, intent(in) :: lbound !< (Optional) Value that represents the lower bound of the first class (or use dmiss when open ended).
+      real(kind=dp), optional, intent(in) :: ubound !< (Optional) Value that represents the upper bound of the last class (or use dmiss when open ended).
       integer :: ierr !< function result; 0=OK
 
       integer :: i, max_user_classes
       character(len=:), allocatable :: meanings, meaning
       integer(kind=int8), allocatable :: values(:)
       character(len=12) :: meaning_p, meaning_c
-      real(kind=hp) :: lbound_, ubound_
+      real(kind=dp) :: lbound_, ubound_
 
       ierr = nf90_noerr
 

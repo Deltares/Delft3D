@@ -57,7 +57,7 @@ contains
       integer :: L, LL, Lb, Lt, k1, k2
       real(kind=dp) :: ustL
 
-      ust_x = 0d0; ust_y = 0d0
+      ust_x = 0.0_dp; ust_y = 0.0_dp
 
       if (kmx == 0) then
          do L = 1, lnx

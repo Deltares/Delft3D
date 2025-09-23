@@ -116,6 +116,7 @@ target_link_libraries(${library_name} PRIVATE
     mute_unwanted_compiler_warnings
     additional_compiler_warnings
 )
+check_style_double_precision(${library_name})
 
 target_link_libraries(${library_name} PRIVATE
                       deltares_common

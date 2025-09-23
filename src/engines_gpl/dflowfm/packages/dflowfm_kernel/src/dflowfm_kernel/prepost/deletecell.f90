@@ -125,16 +125,16 @@ contains
 
 !  compute new node coordinates
       N = netcell(k)%N
-      xc = 0d0
-      yc = 0d0
-      factot = 0d0
+      xc = 0.0_dp
+      yc = 0.0_dp
+      factot = 0.0_dp
       do kk = 1, N
-         fac = 1d0
+         fac = 1.0_dp
          k1 = netcell(k)%nod(kk)
          if (nb(k1) == 2 .or. nb(k1) == 4) then
-            fac = 1d45
+            fac = 1.0e45_dp
          else if (nb(k1) == 3) then
-            factot = 1d0
+            factot = 1.0_dp
             xc = xk(k1)
             yc = yk(k1)
             exit

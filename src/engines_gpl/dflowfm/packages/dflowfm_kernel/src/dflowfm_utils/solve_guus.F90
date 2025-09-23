@@ -31,6 +31,8 @@
 !
 module m_solve_guus
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -672,7 +674,7 @@ contains
                ntot = row(ndn)%l
                do j = 1, ntot
                   jj = row(ndn)%a(j)
-                  if (ccr(jj) /= 0d0) then
+                  if (ccr(jj) /= 0.0_dp) then
                      i = row(ndn)%j(j)
                      if (kfs(i) == 1) then
                         nietnul = nietnul + 1
@@ -735,7 +737,7 @@ contains
                   ntot = row(ndn)%l
                   do j = 1, ntot
                      jj = row(ndn)%a(j)
-                     if (ccr(jj) /= 0d0) then
+                     if (ccr(jj) /= 0.0_dp) then
                         i = row(ndn)%j(j)
                         if (kfs(i) == 1) then
                            na = na + 1
@@ -799,7 +801,7 @@ contains
                   ntot = row(ndn)%l
                   do j = 1, ntot
                      jj = row(ndn)%a(j)
-                     if (ccr(jj) /= 0d0) then
+                     if (ccr(jj) /= 0.0_dp) then
                         i = row(ndn)%j(j)
                         if (kfs(i) == 1) then
                         else ! internal boundary: add to right-hand side
@@ -890,7 +892,7 @@ contains
 !    check error
          if (ierror /= 0) then
 !      all is not lost, check residual
-            if (res <= 1d4 * epscg) then ! allow a larger error
+            if (res <= 1.0e4_dp * epscg) then ! allow a larger error
                call mess(LEVEL_INFO, 'conjugategradientSAAD: non-fatal error')
             else
                call qnerror('conjugategradientSAAD: error', ' ', ' ')
@@ -972,8 +974,8 @@ contains
       if (nocg <= 0) return
 
       nocgiter = 0
-      eps = 0d0
-      rkzki = 0d0
+      eps = 0.0_dp
+      rkzki = 0.0_dp
 
       ! make matrix L
       if (ipre == 2) then ! make L
@@ -1011,7 +1013,7 @@ contains
 
 10    continue
 
-      pkapki = 0d0
+      pkapki = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
          apk(ndn) = bbr(ndn) * pk(ndn)
@@ -1024,7 +1026,7 @@ contains
          pkapki = pkapki + pk(ndn) * apk(ndn)
       end do
       alfak = rkzki / pkapki
-      eps = 0d0
+      eps = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
          s1(ndn) = s1(ndn) + alfak * pk(ndn)
@@ -1089,7 +1091,7 @@ contains
       end if
 
       rkzki0 = rkzki
-      rkzki = 0d0
+      rkzki = 0.0_dp
 
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
@@ -1118,8 +1120,8 @@ contains
       if (nocg <= 0) return
 
       nocgiter = 0
-      eps = 0d0
-      rkzki = 0d0
+      eps = 0.0_dp
+      rkzki = 0.0_dp
 
       !$xxOMP PARALLEL DO                                           &
       !$xxOMP PRIVATE(n,ndn,j)                                      &
@@ -1144,7 +1146,7 @@ contains
 
 10    continue
 
-      pkapki = 0d0
+      pkapki = 0.0_dp
 !$xxOMP PARALLEL DO                                           &
 !$xxOMP PRIVATE(n,ndn,j)                                      &
 !$xxOMP REDUCTION(+:pkapki)
@@ -1169,7 +1171,7 @@ contains
       end do
       !$OMP END PARALLEL DO
 
-      eps = 0d0
+      eps = 0.0_dp
 
       if (ipre == 0) then
          !$OMP PARALLEL DO                                  &
@@ -1241,7 +1243,7 @@ contains
       end if
 
       rkzki0 = rkzki
-      rkzki = 0d0
+      rkzki = 0.0_dp
       !$xOMP PARALLEL DO                              &
       !$xOMP PRIVATE(n,ndn)                           &
       !$xOMP REDUCTION(+:rkzki)
@@ -1279,8 +1281,8 @@ contains
       if (nocg <= 0) return
 
       nocgiter = 0
-      eps = 0d0
-      rkzki = 0d0
+      eps = 0.0_dp
+      rkzki = 0.0_dp
 
       !$OMP PARALLEL DO                                           &
       !$OMP PRIVATE(n,ndn,j)                                      &
@@ -1306,7 +1308,7 @@ contains
 
 10    continue
 
-      pkapki = 0d0
+      pkapki = 0.0_dp
 !$OMP PARALLEL DO                                           &
 !$OMP PRIVATE(n,ndn,j)                                      &
 !$OMP REDUCTION(+:pkapki)
@@ -1331,7 +1333,7 @@ contains
       end do
       !$OMP END PARALLEL DO
 
-      eps = 0d0
+      eps = 0.0_dp
 
       if (ipre == 0) then
          !$OMP PARALLEL DO                                  &
@@ -1396,7 +1398,7 @@ contains
       end if
 
       rkzki0 = rkzki
-      rkzki = 0d0
+      rkzki = 0.0_dp
       !$OMP PARALLEL DO                              &
       !$OMP PRIVATE(n,ndn)                           &
       !$OMP REDUCTION(+:rkzki)
@@ -1556,7 +1558,7 @@ contains
       implicit none
       !real(kind=dp) :: ccc(500)
       integer j, k, m, n, np, m1, nodm1, m1m2
-      ccc = 0d0
+      ccc = 0.0_dp
       do n = 1, nogauss
          ndn = noel(n)
          np = row(ndn)%l
@@ -1588,7 +1590,7 @@ contains
       !real(kind=dp) :: ccc(500)
       integer j, k, m, n, m1, nodm1, m1m2, mm, jj
 
-      ccc = 0d0
+      ccc = 0.0_dp
       do n = 1, nogauss
          ndn = noel(n)
          ddr(ndn) = ddr(ndn) / bbr(ndn)
@@ -1699,11 +1701,11 @@ contains
       if (nodtot <= maxdge) maxdge = nodtot
 
       !
-      call readyy('ini Gauss/CG', 0d0)
+      call readyy('ini Gauss/CG', 0.0_dp)
       call inireduce()
-      call readyy('ini Gauss/CG', .35d0)
+      call readyy('ini Gauss/CG', 0.35_dp)
       call mindegree()
-      call readyy('ini Gauss/CG', .40d0)
+      call readyy('ini Gauss/CG', 0.40_dp)
       nogauss = 0
       nocg = 0
       nn = 0
@@ -1727,13 +1729,13 @@ contains
             nn = 0
          end if
       end do
-      call readyy('ini Gauss/CG', .75d0)
+      call readyy('ini Gauss/CG', 0.75_dp)
       call cijadres()
-      call readyy('ini Gauss/CG', .80d0)
+      call readyy('ini Gauss/CG', 0.80_dp)
       call inigauss()
-      call readyy('ini Gauss/CG', .90d0)
+      call readyy('ini Gauss/CG', 0.90_dp)
       if (nogauss < noactive) call inicg()
-      call readyy('ini Gauss/CG', .95d0)
+      call readyy('ini Gauss/CG', 0.95_dp)
 
       deallocate (ij)
       deallocate (nbrstk, nodstk, nodbr2)
@@ -1760,14 +1762,14 @@ contains
       end if
 
       call mess(LEVEL_INFO, 'nogauss , nocg : ', nogauss, nocg)
-      call readyy('ini Gauss/CG', -1d0)
+      call readyy('ini Gauss/CG', -1.0_dp)
 
       if (icgsolver == 4 .or. icgsolver == 44 .or. icgsolver == 5 .or. (icgsolver == 7 .and. (ipre == 3 .or. ipre == 4))) then
          if (icgsolver /= 7) then
-            call inisaad(epscg, maxmatvecs, 1d0) ! 1d0: with MILU preconditioner
+            call inisaad(epscg, maxmatvecs, 1.0_dp) ! 1d0: with MILU preconditioner
             !call inisaad(epscg,1d0)   ! 1d0: with MILU preconditioner
          else ! use Saad as preconditioner
-            call inisaad(epscg, maxmatvecs, 0.d0) ! 0.0d0: as ILU/MILU preconditioner, for robustness sake
+            call inisaad(epscg, maxmatvecs, 0.0_dp) ! 0.0d0: as ILU/MILU preconditioner, for robustness sake
             !call inisaad(epscg,0.d0) ! 0.0d0: as ILU/MILU preconditioner, for robustness sake
          end if
       else if (icgsolver == 6) then
@@ -1831,7 +1833,7 @@ contains
       apk = 0
       rk = 0
 
-      ccc = 0d0
+      ccc = 0.0_dp
 
       return
    end subroutine allocate_arrays
@@ -1911,8 +1913,8 @@ contains
 
 #ifdef HAVE_MPI
 
-      eps = 0d0
-      rkzki = 0d0
+      eps = 0.0_dp
+      rkzki = 0.0_dp
 
       if (nocg > 0) then
          if (ipre == 2) then
@@ -1925,7 +1927,7 @@ contains
          end if
 
       else
-         rk = 0d0
+         rk = 0.0_dp
       end if
 
 ! BEGIN MPI
@@ -1969,7 +1971,7 @@ contains
                if (ierror /= 0) goto 1234
             end if
          else
-            zkr = 0d0
+            zkr = 0.0_dp
          end if
       else
          do n = nogauss + 1, nogauss + nocg

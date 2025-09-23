@@ -37,6 +37,6 @@ module m_boat
    real(kind=dp), allocatable :: XBOOT(:), YBOOT(:), ZBOOT(:) ! AFBEELDEN LIJNEN
    integer, allocatable :: NCBOAT(:) !
    integer :: MXBOAT, MAXBOAT, NCLBOAT
-   real(kind=dp) :: BLEN = 25, BHEIGHT = 4, BWIDTH = 5, BHPMAX = 1000, BHPPERC = 0.5d0
+   real(kind=dp) :: BLEN = 25, BHEIGHT = 4, BWIDTH = 5, BHPMAX = 1000, BHPPERC = 0.5_dp
    integer :: KKB(10) = 0
 end module m_boat

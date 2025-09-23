@@ -219,8 +219,8 @@ contains
       !
       ! Source: number of source points is going to be determined. start with 1.
       nf_sour_track_max = 1
-      nf_sour_wght = 0.0d0
-      nf_sour_wght_sum = 0.0d0
+      nf_sour_wght = 0.0_dp
+      nf_sour_wght_sum = 0.0_dp
       !
       ! Intake: May vary per diffuser. Start with 0 or 1
       call realloc(nf_numintake_idif, nf_num_dif, keepExisting=.false., fill=nf_numintake)
@@ -229,7 +229,7 @@ contains
       else
          nf_intake_cnt_max = 1
       end if
-      nf_intake_wght = 0.0d0
+      nf_intake_wght = 0.0_dp
       !
       ! For each diffuser
       do idif = 1, nf_num_dif

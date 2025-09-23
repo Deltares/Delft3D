@@ -31,6 +31,7 @@
 !
 
 module m_compute_wave_forcing_rhs
+
    use m_xbeachwaves, only: xbeach_waves, xbeach_flow_bc, xbeach_wave_compute_flowforcing2D, xbeach_apply_wave_bc, xbeach_wave_bc, xbeach_wave_compute_flowforcing3D
    use m_wave_makeplotvars, only: wave_makeplotvars
    use m_tauwave, only: tauwave
@@ -38,6 +39,7 @@ module m_compute_wave_forcing_rhs
    use m_setwavfu, only: setwavfu
    use m_waveconst
 
+use precision, only: dp
    implicit none
 
    private
@@ -94,8 +96,8 @@ contains
                call xbeach_makeaverages(dts) ! time-averaged stats
             end if
          else
-            uin = 0d0
-            vin = 0d0
+            uin = 0.0_dp
+            vin = 0.0_dp
          end if
          !
          if (kmx == 0) then

@@ -71,7 +71,7 @@ contains
 
       integer :: j, k, N
 
-      real(kind=dp), parameter :: EPS = 1d-4
+      real(kind=dp), parameter :: EPS = 1.0e-4_dp
 
 !--------------------------------------------------------------
 !  compute the Jacobian matrix J of net cell i
@@ -108,16 +108,16 @@ contains
       end if
 
       theta(1:N) = [(k - 1, k=1, N)]
-      theta(1:N) = theta(1:N) / N * 2d0 * pi
+      theta(1:N) = theta(1:N) / N * 2.0_dp * pi
 
       xi(1:N) = cos(theta(1:N))
       eta(1:N) = sin(theta(1:N))
 
-      A = 0d0
+      A = 0.0_dp
       A(1:N, 1) = xi(1:N)
       A(1:N, 2) = eta(1:N)
 
-      R = 0d0
+      R = 0.0_dp
       R(1:N, 1) = xminx0
       R(1:N, 2) = yminy0
 
@@ -127,7 +127,7 @@ contains
 !     C = inv(A'A) = inv(B)
       D = B(1, 1) * B(2, 2) - B(1, 2) * B(2, 1) ! determinant
 
-      if (D == 0d0) then
+      if (D == 0.0_dp) then
          call qnerror('orthonet_compute_orientation: D==0', ' ', ' ')
          return
       end if

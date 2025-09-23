@@ -55,11 +55,11 @@ contains
 
       integer :: iter
 
-      real(kind=dp), parameter :: dtol = 1d-8
-      real(kind=dp), parameter :: deps = 1d-16
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
+      real(kind=dp), parameter :: deps = 1.0e-16_dp
       integer, parameter :: MAXITER = 1000
 
-      y2 = 0.5d0 * (y1_ + y3_)
+      y2 = 0.5_dp * (y1_ + y3_)
 
       if (jsferic == 0 .or. y1_ == y3_ .or. jamidlat == 0) then
          ierr = 0
@@ -69,29 +69,29 @@ contains
       y1 = dg2rd * y1_
       y3 = dg2rd * y3_
 
-      y2max = 0.5d0 * pi - deps
+      y2max = 0.5_dp * pi - deps
       y2min = -y2max
 
       ierr = 1
 
-      y2 = 0.5d0 * (y1 + y3)
+      y2 = 0.5_dp * (y1 + y3)
       do iter = 1, MAXITER
-         A = abs(y3 - y2) * cos(0.5d0 * (y1 + y2)) - abs(y2 - y1) * cos(0.5d0 * (y2 + y3))
+         A = abs(y3 - y2) * cos(0.5_dp * (y1 + y2)) - abs(y2 - y1) * cos(0.5_dp * (y2 + y3))
 
          if (abs(A) < dtol) then
             ierr = 0
             exit
          end if
 
-         dAdy2 = -sign(1d0, y3 - y2) * cos(0.5d0 * (y1 + y2)) - 0.5d0 * abs(y3 - y2) * sin(0.5d0 * (y1 + y2)) - &
-                 sign(1d0, y3 - y2) * cos(0.5d0 * (y2 + y3)) + 0.5d0 * abs(y2 - y1) * sin(0.5d0 * (y2 + y3))
+         dAdy2 = -sign(1.0_dp, y3 - y2) * cos(0.5_dp * (y1 + y2)) - 0.5_dp * abs(y3 - y2) * sin(0.5_dp * (y1 + y2)) - &
+                 sign(1.0_dp, y3 - y2) * cos(0.5_dp * (y2 + y3)) + 0.5_dp * abs(y2 - y1) * sin(0.5_dp * (y2 + y3))
          y2 = y2 - A / dAdy2
          y2 = min(max(y2, y2min), y2max)
       end do
 
       if (ierr /= 0) then
 !      error
-         y2 = 0.5d0 * (y1_ + y3_)
+         y2 = 0.5_dp * (y1_ + y3_)
       else
          y2 = y2 / dg2rd
       end if

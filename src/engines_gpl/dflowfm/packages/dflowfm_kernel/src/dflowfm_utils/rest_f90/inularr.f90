@@ -32,6 +32,8 @@
 
 module m_inularr
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -48,7 +50,7 @@ contains
       integer, intent(inout) :: X(MMAX, NMAX)
       do J = 1, NMAX
          do I = 1, MMAX
-            X(I, J) = 0d0
+            X(I, J) = 0.0_dp
          end do
       end do
       return

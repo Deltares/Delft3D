@@ -113,6 +113,13 @@
       hyd%crs  = d_hyd%crs
       hyd%conv_type  = d_hyd%conv_type
       hyd%conv_version  = d_hyd%conv_version
+      
+      ! copy waqgeom layer information from first domain
+      hyd%waqgeom%num_layers = d_hyd%waqgeom%num_layers
+      hyd%waqgeom%numtopsig = d_hyd%waqgeom%numtopsig
+      hyd%waqgeom%layertype = d_hyd%waqgeom%layertype
+      allocate( hyd%waqgeom%layer_zs, source = d_hyd%waqgeom%layer_zs )
+      allocate( hyd%waqgeom%interface_zs, source = d_hyd%waqgeom%interface_zs )
 
       ! init totals
       hyd%num_rows  = 1

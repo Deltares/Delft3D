@@ -102,7 +102,7 @@ contains
 
       logical :: Lteknet
 
-      real(kind=dp), parameter :: EPS = 1d-4
+      real(kind=dp), parameter :: EPS = 1.0e-4_dp
 
       real(kind=dp) :: mu, mumin, mumax, mumat, wwx, wwy
 
@@ -132,7 +132,7 @@ contains
 ! return if the network comprises three nodes or less
       if (numk < 4) return
 
-      if (jaswan == 1 .and. atpf <= 0.8d0) then
+      if (jaswan == 1 .and. atpf <= 0.8_dp) then
          call fliplinks()
       end if
 
@@ -143,11 +143,11 @@ contains
       circormass_bak = circumormasscenter
 
 !   ATPF = 0d0
-      mumax = (1d0 - smoothorarea) * 0.5d0
-      mumin = 1d-2
+      mumax = (1.0_dp - smoothorarea) * 0.5_dp
+      mumin = 1.0e-2_dp
       mumin = min(mumin, mumax)
 
-      ATPF1 = 1d0 - ATPF
+      ATPF1 = 1.0_dp - ATPF
 
 !  make the node mask
       kc = 0
@@ -233,15 +233,15 @@ contains
       allocate (kk2(nmkx2, numk))
       kk2 = 0
       allocate (ww2(nmkx2, numk))
-      ww2 = 0d0
+      ww2 = 0.0_dp
 
 !-------------------------------------------------
 ! initialise
       xkb = xk(1:numk)
       ykb = yk(1:numk)
-      rhs = 0d0
+      rhs = 0.0_dp
       aspect = DMISS
-      smp_mu = 1d0
+      smp_mu = 1.0_dp
       ja = 1
       ja3 = 0
       Lteknet = .true.
@@ -249,7 +249,7 @@ contains
       numtopo = 0
       ktopo = 0
       Lcopymu = .true.
-      atpf_min = 0.8d0
+      atpf_min = 0.8_dp
 
       if (idir == -999) idir = 0
 
@@ -293,7 +293,7 @@ contains
       allocate (iloc(numk + 1))
 
       if (jsferic == 1 .and. jasfer3D == 1) then
-         if (ATPF < 1d0) then
+         if (ATPF < 1.0_dp) then
             ierror = 1
             call orthonet_comp_ops(ops, ierror) ! will make kk2 administration
             if (ierror /= 0) goto 1234
@@ -313,7 +313,7 @@ contains
 !----------------------
 !  iterations
 !----------------------
-      call readyy('Orthogonalising net', 0d0)
+      call readyy('Orthogonalising net', 0.0_dp)
       tp: do no = 1, itatp
          !     call removesmalllinks()
 
@@ -325,12 +325,12 @@ contains
             call comp_local_coords(iloc, kk1, xk, yk, iloc(numk + 1) - 1, xloc, yloc)
          end if
 
-         call readyy('Orthogonalising net', dble(no - 1 + .35d0) / itatp)
+         call readyy('Orthogonalising net', dble(no - 1 + 0.35_dp) / itatp)
 
 !------------------------------------------------------------------------
 !     mesh adaptation
 !------------------------------------------------------------------------
-         if (Ns == 0 .and. Lcopymu .and. ATPF < 1d0 .and. adapt_beta > 0d0) then
+         if (Ns == 0 .and. Lcopymu .and. ATPF < 1.0_dp .and. adapt_beta > 0.0_dp) then
 !        use old mesh data: set smp_mu to 1/(determinant of Jacobian), scaled
 !        only once, use initial mesh
 
@@ -341,9 +341,9 @@ contains
                if (ierror /= 0) goto 1234
             end if
 
-            J = 0d0
-            smpminn = 0d0
-            smpmaxx = -1d99
+            J = 0.0_dp
+            smpminn = 0.0_dp
+            smpmaxx = -1.0e99_dp
 !        compute Jacobian matrices and assign intended sample values to netnodes
             do k = 1, Numk
                if (nb(k) /= 1 .and. nb(k) /= 2 .and. nb(k) /= 3 .and. nb(k) /= 4) cycle
@@ -368,7 +368,7 @@ contains
             end do
 
             if (smpmaxx == smpminn) then ! really weird
-               smpmaxx = smpminn + 1d0
+               smpmaxx = smpminn + 1.0_dp
             end if
             where (zk /= DMISS) zk = (smpmaxx - zk) / (smpmaxx - smpminn)
 
@@ -383,7 +383,7 @@ contains
          end if
 
 !     interpolate samples to network for grid refinement
-         if (Ns > 0 .and. adapt_beta > 0d0) then
+         if (Ns > 0 .and. adapt_beta > 0.0_dp) then
             if (Ns > kmax) then
                call qnerror('ORTHOGONALISENET: Ns.gt.kmax', ' ', ' ')
                goto 1234
@@ -393,9 +393,9 @@ contains
             call triinterp2(xk, yk, smp_mu, numk, ja, &
                             XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef) ! ,0) hk: 0 is not used
             ja = 0 !     hk: triangulation only needed in first cycle
-            where (smp_mu == dmiss) smp_mu = 0d0
+            where (smp_mu == dmiss) smp_mu = 0.0_dp
          else
-            smp_mu = 0d0
+            smp_mu = 0.0_dp
          end if
 
 !     for post-processing, copy smp_mu to zk
@@ -403,15 +403,15 @@ contains
 
 !-------------------------------------------------
 !     compute the weights and right-hand sides
-         ww = 0d0
-         rhs = 0d0
+         ww = 0.0_dp
+         rhs = 0.0_dp
 
 !     orthogonaliser
          call orthonet_compute_aspect(aspect)
          call orthonet_compweights(nmkx, kk1, aspect, ww, rhs)
 
 !     inverse-map smoother
-         if (ATPF < 1d0 .or. smoothorarea < 1d0) then ! we also need administration for volume-based smoother
+         if (ATPF < 1.0_dp .or. smoothorarea < 1.0_dp) then ! we also need administration for volume-based smoother
 
             if (jsferic == 1 .and. jasfer3D == 1) then
 !           compute local coordinates
@@ -434,9 +434,9 @@ contains
 
 !     volume-based smoother
          ibounds = [nmkx2, numk]
-         call realloc(ww2x, ibounds, fill=0d0)
-         call realloc(ww2y, ibounds, fill=0d0)
-         if (smoothorarea /= 1d0) then
+         call realloc(ww2x, ibounds, fill=0.0_dp)
+         call realloc(ww2y, ibounds, fill=0.0_dp)
+         if (smoothorarea /= 1.0_dp) then
             call orthonet_compweights_vol(nmkx2, nmk2, kk2, ww2x, ww2y, ierror)
             if (ierror == 1) then
                call qnerror('orthonet: orthonet_compweights_vol gave error', ' ', ' ')
@@ -444,16 +444,16 @@ contains
                goto 1234
             end if
          else
-            ww2x = 0d0
-            ww2y = 0d0
+            ww2x = 0.0_dp
+            ww2y = 0.0_dp
          end if
 
-         call readyy('Orthogonalising net', dble(no - 1 + .8d0) / itatp)
+         call readyy('Orthogonalising net', dble(no - 1 + 0.8_dp) / itatp)
 !-------------------------------------------------
 ! 3. Solve the 'Laplacian' for orthogonalization/Move all points in a few iteration steps.
 
-         relaxin = 0.75d0
-         relax1 = 1d0 - relaxin
+         relaxin = 0.75_dp
+         relax1 = 1.0_dp - relaxin
 
          do i = 1, itbnd
             do n = 1, itin
@@ -493,13 +493,13 @@ contains
                   if (nb(k) == 2) then
                      atpf_loc = max(ATPF_B, ATPF) ! we need some smoothing
                   end if
-                  atpf1_loc = 1d0 - atpf_loc
+                  atpf1_loc = 1.0_dp - atpf_loc
 
-                  x0 = 0d0; y0 = 0d0
-                  Dx0 = 0d0; Dy0 = 0d0
+                  x0 = 0.0_dp; y0 = 0.0_dp
+                  Dx0 = 0.0_dp; Dy0 = 0.0_dp
                   x00 = xk1(k); y00 = yk1(k)
-                  w0 = 0d0
-                  DUM = 0d0
+                  w0 = 0.0_dp
+                  DUM = 0.0_dp
 
 !              determine atpf    ***INOPERATIVE***
 !               atpf_loc  = minval([ atpf_nodes(kk2(1:nmk2(k),k)) ] )
@@ -512,7 +512,7 @@ contains
 !               zk(k) = atpf_loc
 
 !              determine ratio inverse-map/volume-based smoother
-                  if (ww2x(1, k) /= 0d0 .or. ww2y(1, k) /= 0d0) then
+                  if (ww2x(1, k) /= 0.0_dp .or. ww2y(1, k) /= 0.0_dp) then
                      mumat = mu * ww2(1, k) / max(ww2x(1, k), ww2y(1, k))
                   else
                      mumat = mu
@@ -521,10 +521,10 @@ contains
 !               if ( mumat.eq.0d0 ) mumat = 1d0
                   do kk = 2, max(nmk2(k), nmk(k) + 1) ! do not include center node
 !                 combine the weights
-                     wwx = 0d0
-                     wwy = 0d0
+                     wwx = 0.0_dp
+                     wwy = 0.0_dp
 !                 smoother
-                     if (ATPF1_loc > 0d0) then
+                     if (ATPF1_loc > 0.0_dp) then
                         if (nb(k) == 1) then ! inner points only
                            wwx = ATPF1_loc * (mumat * ww2x(kk, k) + ww2(kk, k))
                            wwy = ATPF1_loc * (mumat * ww2y(kk, k) + ww2(kk, k))
@@ -551,7 +551,7 @@ contains
                            DUM(2) = wwy * Ra * dg2rd
                         else
                            y1 = yk(k1)
-                           DUM(1) = wwx * cos(0.5d0 * (y00 + y1) * dg2rd) * Ra * dg2rd
+                           DUM(1) = wwx * cos(0.5_dp * (y00 + y1) * dg2rd) * Ra * dg2rd
                            DUM(2) = wwy * Ra * dg2rd
                         end if
                      else
@@ -659,14 +659,14 @@ contains
 
          end do !itbnd
 
-         mu = min(2d0 * mu, mumax)
+         mu = min(2.0_dp * mu, mumax)
 
 !-------------------------------------------------
 !     compute the new cell centers
          if (keepcircumcenters /= 1) call update_cell_circumcenters()
 
 !     increase atpf_min for next cycle
-         atpf_min = 1d0 - (1d0 - atpf_min) * 0.99d0
+         atpf_min = 1.0_dp - (1.0_dp - atpf_min) * 0.99_dp
 
          call readyy('Orthogonalising net', dble(no) / itatp)
 
@@ -674,7 +674,7 @@ contains
 
 1234  continue
 
-      call readyy('Orthogonalising net', -1d0)
+      call readyy('Orthogonalising net', -1.0_dp)
 
 !-------------------------------------------------
 !   call removesmalllinks()
@@ -851,16 +851,16 @@ contains
          real(kind=dp) :: dummy ! used for debug purposes only
          real(kind=dp) :: SfR ! SLR/R01
          real(kind=dp) :: factor
-         real(kind=dp), parameter :: EPS = 1d-4
+         real(kind=dp), parameter :: EPS = 1.0e-4_dp
 
          dummy = ATPF
          !  ATPF needs to be set to 1d0, since smoothing is performed seperately
-         ATPF = 1d0
+         ATPF = 1.0_dp
 
-         ATPF1 = 1d0 - ATPF
+         ATPF1 = 1.0_dp - ATPF
 
-         rhs = 0d0
-         ww = 0d0
+         rhs = 0.0_dp
+         ww = 0.0_dp
 
          do k0 = 1, numk ! attraction parameters
 
@@ -874,7 +874,7 @@ contains
 
                SfR = aspect(L)
 
-               mu = 1d0
+               mu = 1.0_dp
 
                if (SfR /= DMISS) then
                   !-------------------------------------------------------------------------
@@ -903,20 +903,20 @@ contains
                      y3 = yzw(kL)
 
                      call normaloutchk(x0, y0, x1, y1, x3, y3, xn, yn, ja, jsferic, jasfer3D, dmiss, dxymis)
-                     if (JSFERIC == 1 .and. jasfer3D == 0) xn = xn * cos(dg2rd * 0.5d0 * (y0 + y1)) ! normal vector needs to be in Cartesian coordinates
+                     if (JSFERIC == 1 .and. jasfer3D == 0) xn = xn * cos(dg2rd * 0.5_dp * (y0 + y1)) ! normal vector needs to be in Cartesian coordinates
 
                      rhs(1, k0) = rhs(1, k0) + (atpf * R01 * xn / 2 + &
-                                                atpf1 * SLR * xn * 0.5d0 / mu)
+                                                atpf1 * SLR * xn * 0.5_dp / mu)
                      rhs(2, k0) = rhs(2, k0) + (atpf * R01 * yn / 2 + &
-                                                atpf1 * SLR * yn * 0.5d0 / mu)
+                                                atpf1 * SLR * yn * 0.5_dp / mu)
 
-                     ww(kk, k0) = atpf * 0.5d0 * SfR + &
-                                  atpf1 * 0.5d0 * mu
+                     ww(kk, k0) = atpf * 0.5_dp * SfR + &
+                                  atpf1 * 0.5_dp * mu
                      !-------------------------------------------------------------------------
                   end if
                else
                   ! R01 -> 0
-                  ww(kk, k0) = 0d0
+                  ww(kk, k0) = 0.0_dp
                end if
 
             end do numkk
@@ -924,7 +924,7 @@ contains
 !        normalise
             factor = sum(ww(:, k0))
             if (abs(factor) > 1e-14) then
-               factor = 1d0 / factor
+               factor = 1.0_dp / factor
                ww(:, k0) = factor * ww(:, k0)
                rhs(1, k0) = factor * rhs(1, k0)
                rhs(2, k0) = factor * rhs(2, k0)
@@ -982,8 +982,8 @@ contains
          allocate (Vx(nmkx2, Nump), Vy(nmkx2, Nump))
 
 !     initialize
-         Vx = 0d0
-         Vy = 0d0
+         Vx = 0.0_dp
+         Vy = 0.0_dp
 
 !     for Matlab output
 !      lne1 = Nump+1
@@ -1008,11 +1008,11 @@ contains
             x0 = xk(k0); y0 = yk(k0); 
             x1 = xk(k1); y1 = yk(k1); 
 !        contribution to the volume of the left cell
-            DvolL = 0.5d0 * ((x0 - xL) * (y1 - yL) - (x1 - xL) * (y0 - yL))
+            DvolL = 0.5_dp * ((x0 - xL) * (y1 - yL) - (x1 - xL) * (y0 - yL))
 
 !        Get the (0-1)/(L-R) frame in the right orientation by swapping nodes 0 and 1 if necessary
 !        the contribution to volume of cell L needs to be positive
-            if (DvolL < 0d0) then ! swap nodes 0 and 1
+            if (DvolL < 0.0_dp) then ! swap nodes 0 and 1
                kdum = k0; k0 = k1; k1 = kdum
                kdum = kk0L; kk0L = kk1L; kk1L = kdum
 
@@ -1022,11 +1022,11 @@ contains
                DvolL = -DvolL
             end if
 
-            Vx(kk0L, icL) = Vx(kk0L, icL) + 0.5d0 * y1
-            Vx(kk1L, icL) = Vx(kk1L, icL) - 0.5d0 * y0
+            Vx(kk0L, icL) = Vx(kk0L, icL) + 0.5_dp * y1
+            Vx(kk1L, icL) = Vx(kk1L, icL) - 0.5_dp * y0
 
-            Vy(kk0L, icL) = Vy(kk0L, icL) - 0.5d0 * x1
-            Vy(kk1L, icL) = Vy(kk1L, icL) + 0.5d0 * x0
+            Vy(kk0L, icL) = Vy(kk0L, icL) - 0.5_dp * x1
+            Vy(kk1L, icL) = Vy(kk1L, icL) + 0.5_dp * x0
 
 !        for Matlab output
 !         kn1(ilink)  = k0
@@ -1042,10 +1042,10 @@ contains
                yR = sum(yk(netcell(icR)%nod(1:N))) / dble(max(N, 1))
 
 !           contribution to the volume of the left cell
-               DvolR = 0.5d0 * ((x1 - xR) * (y0 - yR) - (x0 - xR) * (y1 - yR))
+               DvolR = 0.5_dp * ((x1 - xR) * (y0 - yR) - (x0 - xR) * (y1 - yR))
 
 !           DvolR should be larger then zero
-               if (DvolR < 0d0) then
+               if (DvolR < 0.0_dp) then
 
                   call qnerror('orthonet_compweights_vol: DvolR<0', ' ', ' ')
                   call teklink(ilink, ncolhl)
@@ -1065,11 +1065,11 @@ contains
                   goto 1234
                end if
 
-               Vx(kk0R, icR) = Vx(kk0R, icR) - 0.5d0 * y1
-               Vx(kk1R, icR) = Vx(kk1R, icR) + 0.5d0 * y0
+               Vx(kk0R, icR) = Vx(kk0R, icR) - 0.5_dp * y1
+               Vx(kk1R, icR) = Vx(kk1R, icR) + 0.5_dp * y0
 
-               Vy(kk0R, icR) = Vy(kk0R, icR) + 0.5d0 * x1
-               Vy(kk1R, icR) = Vy(kk1R, icR) - 0.5d0 * x0
+               Vy(kk0R, icR) = Vy(kk0R, icR) + 0.5_dp * x1
+               Vy(kk1R, icR) = Vy(kk1R, icR) - 0.5_dp * x0
 
 !           for Matlab output
 !            lne2(ilink) = lne(2,ilink)
@@ -1080,8 +1080,8 @@ contains
 !       [ ww2x    0] = [-Vx'*Vx       0]
 !       [    0 ww2y] = [      0 -Vy' Vy]
 
-         ww2x = 0d0
-         ww2y = 0d0
+         ww2x = 0.0_dp
+         ww2y = 0.0_dp
 
          do icell = 1, Nump
             N = netcell(icell)%N
@@ -1129,10 +1129,10 @@ contains
 
          do k0 = 1, Numk
             if (nb(k0) == 1 .or. nb(k0) == 4) cycle ! non-internal cells only
-            ww2x(1, k0) = 1d0
-            ww2y(1, k0) = 1d0
-            ww2x(2:nmk2(k0), k0) = 0d0
-            ww2y(2:nmk2(k0), k0) = 0d0
+            ww2x(1, k0) = 1.0_dp
+            ww2y(1, k0) = 1.0_dp
+            ww2x(2:nmk2(k0), k0) = 0.0_dp
+            ww2y(2:nmk2(k0), k0) = 0.0_dp
          end do
 
          ierror = 0
@@ -1239,10 +1239,10 @@ contains
          allocate (xi(nmkx2), eta(nmkx2))
          allocate (J(4, Numk), Ginv(4, Numk))
 
-         J = 0d0
+         J = 0.0_dp
 !     compute Jacobian matrices
          do k0 = 1, Numk
-            dcosfac = 1d0
+            dcosfac = 1.0_dp
             if (jsferic == 1) then
                dcosfac = cos(yk(k0) * dg2rd)
             end if
@@ -1272,9 +1272,9 @@ contains
          if (Ns > 0) then
             call orthonet_comp_Ginv(u, ops, J, Ginv)
          else
-            Ginv(1, :) = 1d0
-            Ginv(2:3, :) = 0d0
-            Ginv(4, :) = 1d0
+            Ginv(1, :) = 1.0_dp
+            Ginv(2:3, :) = 0.0_dp
+            Ginv(4, :) = 1.0_dp
          end if
 
 !     reallocate memory for weights ww2 if necessary
@@ -1321,7 +1321,7 @@ contains
                !        compute the contravariant base vectors
                det = J(1, k0) * J(4, k0) - J(3, k0) * J(2, k0)
 
-               if (det == 0d0) then
+               if (det == 0.0_dp) then
 !               call qnerror('orthonet_compweights_smooth: det=0', ' ', ' ')
                   call cirr(xk(k0), yk(k0), ncolhl)
                   cycle
@@ -1350,7 +1350,7 @@ contains
 !        compose the discretization
 !--------------------------------------------------------------
 
-               ww2(:, k0) = 0d0
+               ww2(:, k0) = 0.0_dp
 
                DGinvDxi = matmul(Ginv(:, kk2(1:nmk2(k0), k0)), op%Jxi)
                DGinvDeta = matmul(Ginv(:, kk2(1:nmk2(k0), k0)), op%Jeta)
@@ -1372,10 +1372,10 @@ contains
                                      )
 
                !        monotonicity: all off-diagonal elements should be >= 0
-               alpha = 0d0
+               alpha = 0.0_dp
                do k = 2, nmk2(k0)
 !               alpha = max(alpha, -ww2(k,k0))
-                  alpha = max(alpha, -ww2(k, k0) / max(1d0, op%ww2(k)))
+                  alpha = max(alpha, -ww2(k, k0) / max(1.0_dp, op%ww2(k)))
                end do
 
 !           firstly, correct with the node-average with some threshold
@@ -1388,7 +1388,7 @@ contains
 !           03-08-11: threshold set to zero
 !            ww2(2:nmk2(k0),k0) = ww2(2:nmk2(k0),k0)+alpha
 !           04-08-11:
-               ww2(2:nmk2(k0), k0) = ww2(2:nmk2(k0), k0) + alpha * max(op%ww2(2:nmk2(k0)), 1d0)
+               ww2(2:nmk2(k0), k0) = ww2(2:nmk2(k0), k0) + alpha * max(op%ww2(2:nmk2(k0)), 1.0_dp)
 
 !           then, set the remaining negative off-diagonal weights to zero
 !            do k=2,nmk2(k0)
@@ -1398,7 +1398,7 @@ contains
                ww2(1, k0) = -sum(ww2(2:nmk2(k0), k0))
 
                !        normalise
-               ww2(:, k0) = -ww2(:, k0) / (ww2(1, k0) + 1d-8)
+               ww2(:, k0) = -ww2(:, k0) / (ww2(1, k0) + 1.0e-8_dp)
 
 !         else if ( nb(k0).eq.2 ) then  ! will never be reached
 !-------------------------------------------------------------------------
@@ -1559,11 +1559,11 @@ contains
 !     allocate
          allocate (u_smooth(Numk), vdir(2, Numk), Phi(Numk), G(4, Numk), G_tmp(4, Numk))
 
-         G_tmp = 0d0
-         Phi = 0d0
-         vdir = 0d0
-         Phi_ave = 0d0
-         vol = 0d0
+         G_tmp = 0.0_dp
+         Phi = 0.0_dp
+         vdir = 0.0_dp
+         Phi_ave = 0.0_dp
+         vol = 0.0_dp
 
          call orthonet_smooth_u(u, adapt_niter_u, u_smooth) ! <1: no smoothing
 
@@ -1572,7 +1572,7 @@ contains
             if (nb(k0) /= 1 .and. nb(k0) /= 2 .and. nb(k0) /= 4) cycle ! internal and boundary nodes only
 
 !        compute the contravariant base vectors
-            det = J(1, k0) * J(4, k0) - J(3, k0) * J(2, k0) + 1d-9
+            det = J(1, k0) * J(4, k0) - J(3, k0) * J(2, k0) + 1.0e-9_dp
             a1 = [J(4, k0), -J(3, k0)] / det
             a2 = [-J(2, k0), J(1, k0)] / det
 
@@ -1584,14 +1584,14 @@ contains
 
             Phi(k0) = sqrt(sum(vdir(:, k0)**2)) ! temporarily, will be redefined hereafter
 
-            if (Phi(k0) > 1d-14) then
+            if (Phi(k0) > 1.0e-14_dp) then
                vdir(:, k0) = vdir(:, k0) / Phi(k0)
             else
-               vdir(:, k0) = [1d0, 0d0]
+               vdir(:, k0) = [1.0_dp, 0.0_dp]
             end if
 
 !         Phi(k0) = sqrt( 1d0 + Phi(k0)**2 ) - 1d0        ! refinement based on gradients of u
-            Phi(k0) = sqrt(1d0 + u_smooth(k0)**2) - 1d0 ! refinement based on smoothed u
+            Phi(k0) = sqrt(1.0_dp + u_smooth(k0)**2) - 1.0_dp ! refinement based on smoothed u
 !         Phi(k0) = sqrt( 1d0 + u(k0)**2 ) - 1d0   ! refinement based on u itself
 
             Phi_ave = Phi_ave + Phi(k0) * abs(det)
@@ -1600,42 +1600,42 @@ contains
 
          Phi_ave = Phi_ave / vol
 
-         alpha = 1d0
-         adapt_beta = min(adapt_beta, 0.99d0)
-         if (Phi_ave /= 0d0) alpha = adapt_beta / (Phi_ave * (1d0 - adapt_beta))
+         alpha = 1.0_dp
+         adapt_beta = min(adapt_beta, 0.99_dp)
+         if (Phi_ave /= 0.0_dp) alpha = adapt_beta / (Phi_ave * (1.0_dp - adapt_beta))
 
          select case (adapt_method)
          case (1) ! arc-length
             do k0 = 1, Numk
-               lambda1 = 1d0 + alpha * Phi(k0)
+               lambda1 = 1.0_dp + alpha * Phi(k0)
 
-               lambda2 = 1d0
+               lambda2 = 1.0_dp
 
-               lfac = lambda1 / lambda2 - 1d0
-               G_tmp(1, k0) = 1d0 + lfac * vdir(1, k0) * vdir(1, k0)
+               lfac = lambda1 / lambda2 - 1.0_dp
+               G_tmp(1, k0) = 1.0_dp + lfac * vdir(1, k0) * vdir(1, k0)
                G_tmp(2, k0) = lfac * vdir(2, k0) * vdir(1, k0)
                G_tmp(3, k0) = lfac * vdir(1, k0) * vdir(2, k0)
-               G_tmp(4, k0) = 1d0 + lfac * vdir(2, k0) * vdir(2, k0)
+               G_tmp(4, k0) = 1.0_dp + lfac * vdir(2, k0) * vdir(2, k0)
                G_tmp(:, k0) = G_tmp(:, k0) * lambda2
             end do
 
          case (2) ! Harmonic map
             do k0 = 1, Numk
-               lambda1 = 1d0 + alpha * Phi(k0)
+               lambda1 = 1.0_dp + alpha * Phi(k0)
 
-               lambda2 = 1d0 / lambda1
+               lambda2 = 1.0_dp / lambda1
 
-               lfac = lambda1 / lambda2 - 1d0
-               G_tmp(1, k0) = 1d0 + lfac * vdir(1, k0) * vdir(1, k0)
+               lfac = lambda1 / lambda2 - 1.0_dp
+               G_tmp(1, k0) = 1.0_dp + lfac * vdir(1, k0) * vdir(1, k0)
                G_tmp(2, k0) = lfac * vdir(2, k0) * vdir(1, k0)
                G_tmp(3, k0) = lfac * vdir(1, k0) * vdir(2, k0)
-               G_tmp(4, k0) = 1d0 + lfac * vdir(2, k0) * vdir(2, k0)
+               G_tmp(4, k0) = 1.0_dp + lfac * vdir(2, k0) * vdir(2, k0)
                G_tmp(:, k0) = G_tmp(:, k0) * lambda2
             end do
 
          case default ! Winslow
             do k0 = 1, Numk
-               G_tmp(:, k0) = [1d0, 0d0, 0d0, 1d0] * (1d0 + alpha * Phi(k0))
+               G_tmp(:, k0) = [1.0_dp, 0.0_dp, 0.0_dp, 1.0_dp] * (1.0_dp + alpha * Phi(k0))
             end do
          end select
 
@@ -1649,7 +1649,7 @@ contains
                Ginv(1:4, k0) = [G(4, k0), -G(2, k0), -G(3, k0), G(1, k0)]
                Ginv(1:4, k0) = Ginv(:, k0) / (G(1, k0) * G(4, k0) - G(3, k0) * G(2, k0))
             else
-               Ginv(1:4, k0) = [1d0, 0d0, 0d0, 1d0]
+               Ginv(1:4, k0) = [1.0_dp, 0.0_dp, 0.0_dp, 1.0_dp]
             end if
          end do
 
@@ -1714,8 +1714,8 @@ contains
          allocate (adm%kkc(M, adm%Ncell))
          adm%kkc = 0
          allocate (xi(nmkx2), eta(nmkx2))
-         xi = 0d0
-         eta = 0d0
+         xi = 0.0_dp
+         eta = 0.0_dp
 
 !     allocate saved arrays
          allocate (top%nmk(1), top%nmk2(1))
@@ -1746,8 +1746,8 @@ contains
 
 !        resize xi and eta arrays if necessary
             if (adm%nmk2 > ubound(xi, 1)) then
-               call realloc(xi, adm%nmk2, fill=0d0)
-               call realloc(eta, adm%nmk2, fill=0d0)
+               call realloc(xi, adm%nmk2, fill=0.0_dp)
+               call realloc(eta, adm%nmk2, fill=0.0_dp)
             end if
 
 !     assign (xi, eta) and find and save the unique topologies
@@ -2047,24 +2047,24 @@ contains
          if (present(ierror)) ierror = ierror_
 
 !     initialize
-         op%Az = 0d0
-         op%Gxi = 0d0
-         op%Geta = 0d0
-         op%Divxi = 0d0
-         op%Diveta = 0d0
-         op%Jxi = 0d0
-         op%Jeta = 0d0
+         op%Az = 0.0_dp
+         op%Gxi = 0.0_dp
+         op%Geta = 0.0_dp
+         op%Divxi = 0.0_dp
+         op%Diveta = 0.0_dp
+         op%Jxi = 0.0_dp
+         op%Jeta = 0.0_dp
 
-         volxi = 0d0
+         volxi = 0.0_dp
 
          kbound = 0
-         xis = 0d0
-         etas = 0d0
+         xis = 0.0_dp
+         etas = 0.0_dp
 
-         xinodes = 0d0
-         etanodes = 0d0
+         xinodes = 0.0_dp
+         etanodes = 0.0_dp
 
-         volwwxi = 0d0
+         volwwxi = 0.0_dp
 
          if (k0 == 81) then
             continue
@@ -2077,8 +2077,8 @@ contains
 !        note: linkL and linkR refer to the directly connected left and right nodes
             linkL = ic + 1 ! by construction
             linkR = linkL + 1; if (linkR > adm%Ncell + 1) linkR = linkR - adm%Ncell
-            RlinkL = sqrt(xi(linkL)**2 + eta(linkL)**2 + 1d-16)
-            RlinkR = sqrt(xi(linkR)**2 + eta(linkR)**2 + 1d-16)
+            RlinkL = sqrt(xi(linkL)**2 + eta(linkL)**2 + 1.0e-16_dp)
+            RlinkR = sqrt(xi(linkR)**2 + eta(linkR)**2 + 1.0e-16_dp)
             cDPhi = (xi(linkR) * xi(linkL) + eta(linkR) * eta(linkL)) / (RlinkL * RlinkR)
 
             N = netcell(adm%icell(ic))%n
@@ -2087,14 +2087,14 @@ contains
             kL = k - 1; if (kL < 1) kL = kL + N
             kR = k + 1; if (kR > N) kR = kR - N
             if (N == 3) then ! triangles: circumcenter
-               alpha = 1d0 / (1d0 - cDphi**2 + 1e-8)
-               alphaL = 0.5d0 * (1d0 - RlinkL / RlinkR * cDphi) * alpha
-               alphaR = 0.5d0 * (1d0 - RlinkR / RlinkL * cDphi) * alpha
-               op%Az(adm%kkc(k, ic), ic) = 1d0 - (alphaL + alphaR)
+               alpha = 1.0_dp / (1.0_dp - cDphi**2 + 1e-8)
+               alphaL = 0.5_dp * (1.0_dp - RlinkL / RlinkR * cDphi) * alpha
+               alphaR = 0.5_dp * (1.0_dp - RlinkR / RlinkL * cDphi) * alpha
+               op%Az(adm%kkc(k, ic), ic) = 1.0_dp - (alphaL + alphaR)
                op%Az(adm%kkc(kL, ic), ic) = alphaL
                op%Az(adm%kkc(kR, ic), ic) = alphaR
             else
-               op%Az(adm%kkc(1:N, ic), ic) = 1d0 / dble(N)
+               op%Az(adm%kkc(1:N, ic), ic) = 1.0_dp / dble(N)
             end if
          end do
 
@@ -2120,7 +2120,7 @@ contains
             xi1 = xi(klink + 1) ! by construction
             eta1 = eta(klink + 1)
 
-            I_LR_SWAP = 1d0 ! Left and Right are swapped when the boundary is at the left
+            I_LR_SWAP = 1.0_dp ! Left and Right are swapped when the boundary is at the left
 
             if (lnn(L) == 1) then
 !-----------------------------------------------------------------------------------
@@ -2136,7 +2136,7 @@ contains
 !           find the boundary cell in the icell array
 !           assume boundary at the right
 !           swap Left and Right if the boundary is at the left with I_SWAP_LR
-               if (klink /= kcellL) I_LR_SWAP = -1d0
+               if (klink /= kcellL) I_LR_SWAP = -1.0_dp
 
                xiL = sum(xi(1:adm%nmk2) * op%Az(1:adm%nmk2, kcellL))
                etaL = sum(eta(1:adm%nmk2) * op%Az(1:adm%nmk2, kcellL))
@@ -2154,21 +2154,21 @@ contains
                alpha = alpha / (xi1**2 + eta1**2)
 
                alpha_x = alpha; 
-               if (alpha_x /= 0.5d0) then
+               if (alpha_x /= 0.5_dp) then
                   continue
                end if
 
                xi_bc = alpha * xi1
                eta_bc = alpha * eta1
 
-               xiR = 2d0 * xi_bc - xiL
-               etaR = 2d0 * eta_bc - etaL
+               xiR = 2.0_dp * xi_bc - xiL
+               etaR = 2.0_dp * eta_bc - etaL
 
 !           compute the cell center coordinates (x, y)
-               x_bc = (1d0 - alpha_x) * xk(k0) + alpha_x * xk(k1)
-               y_bc = (1d0 - alpha_x) * yk(k0) + alpha_x * yk(k1)
-               xR(klink) = 2d0 * x_bc - xL(klink)
-               yR(klink) = 2d0 * y_bc - yL(klink)
+               x_bc = (1.0_dp - alpha_x) * xk(k0) + alpha_x * xk(k1)
+               y_bc = (1.0_dp - alpha_x) * yk(k0) + alpha_x * yk(k1)
+               xR(klink) = 2.0_dp * x_bc - xL(klink)
+               yR(klink) = 2.0_dp * y_bc - yL(klink)
             else
 
 !           find the left- and right-hand-side cells with respect to the link
@@ -2208,8 +2208,8 @@ contains
             end if
 
 !        compute the halfway link coordinates for Divxi and Diveta
-            xis(klink) = 0.5d0 * (xiL + xiR)
-            etas(klink) = 0.5d0 * (etaL + etaR)
+            xis(klink) = 0.5_dp * (xiL + xiR)
+            etas(klink) = 0.5_dp * (etaL + etaR)
 
 !        compute link vectors eLR and e01
             exiLR = (xiR - xiL)
@@ -2217,7 +2217,7 @@ contains
             exi01 = xi1
             eeta01 = eta1
 
-            fac = 1d0 / abs(exi01 * eetaLR - eeta01 * exiLR + 1d-16)
+            fac = 1.0_dp / abs(exi01 * eetaLR - eeta01 * exiLR + 1.0e-16_dp)
             facxi1 = -eetaLR * fac * I_LR_SWAP
             facxi0 = -facxi1
             faceta1 = exiLR * fac * I_LR_SWAP
@@ -2229,12 +2229,12 @@ contains
 
 !        boundary link
             if (lnn(L) == 1) then
-               facxi1 = facxi1 - facxiL * 2d0 * alpha_x
-               facxi0 = facxi0 - facxiL * 2d0 * (1 - alpha_x)
+               facxi1 = facxi1 - facxiL * 2.0_dp * alpha_x
+               facxi0 = facxi0 - facxiL * 2.0_dp * (1 - alpha_x)
                facxiL = facxiL + facxiL
 !           note that facxiR does not exist
-               faceta1 = faceta1 - facetaL * 2d0 * alpha_x
-               faceta0 = faceta0 - facetaL * 2d0 * (1 - alpha_x)
+               faceta1 = faceta1 - facetaL * 2.0_dp * alpha_x
+               faceta0 = faceta0 - facetaL * 2.0_dp * (1 - alpha_x)
                facetaL = facetaL + facetaL
 !           note that facetaR does not exist
             end if
@@ -2243,8 +2243,8 @@ contains
             kknode1 = klink + 1
             kknode0 = 1
 
-            op%Gxi(:, klink) = 0d0
-            op%Geta(:, klink) = 0d0
+            op%Gxi(:, klink) = 0.0_dp
+            op%Geta(:, klink) = 0.0_dp
 
 !        fill the weights
             op%Gxi(:, klink) = facxiL * op%Az(:, kcellL)
@@ -2269,16 +2269,16 @@ contains
 !            op%Divxi( klink) = 0.5d0*op%Divxi( klink)
 !            op%Diveta(klink) = 0.5d0*op%Diveta(klink)
 
-               op%Divxi(klink) = 0.5d0 * op%Divxi(klink) + eta_bc * I_LR_SWAP
-               op%Diveta(klink) = 0.5d0 * op%Diveta(klink) - xi_bc * I_LR_SWAP
+               op%Divxi(klink) = 0.5_dp * op%Divxi(klink) + eta_bc * I_LR_SWAP
+               op%Diveta(klink) = 0.5_dp * op%Diveta(klink) - xi_bc * I_LR_SWAP
             end if
 
             xinodes(klink + 1) = xi1
             etanodes(klink + 1) = eta1
          end do
 
-         xinodes(1) = 0d0
-         etanodes(1) = 0d0
+         xinodes(1) = 0.0_dp
+         etanodes(1) = 0.0_dp
 
 !     Add boundary contribution to node-based gradient
 !      if ( kbound(2).gt.0 ) then
@@ -2286,11 +2286,11 @@ contains
 !         op%Diveta(kbound) = op%Diveta(kbound) - 0.5d0*sum(op%Diveta)
 !      end if
 
-         volxi = 0d0
+         volxi = 0.0_dp
          do klink = 1, nmk(k0)
             volxi = volxi + 0.5 * (op%Divxi(klink) * xis(klink) + op%Diveta(klink) * etas(klink))
          end do
-         if (volxi == 0d0) volxi = 1d0
+         if (volxi == 0.0_dp) volxi = 1.0_dp
 
          op%Divxi = op%Divxi / volxi
          op%Diveta = op%Diveta / volxi
@@ -2300,23 +2300,23 @@ contains
             if (lnn(nod(k0)%lin(k)) == 2) then ! internal link
                kR = k - 1 ! right neighboring cell, left one is k by construction
                if (kR < 1) kR = kR + nmk(k0)
-               op%Jxi(1:nmk2(k0)) = op%Jxi(1:nmk2(k0)) + op%Divxi(k) * 0.5d0 * (op%Az(1:nmk2(k0), k) + op%Az(1:nmk2(k0), kR))
-               op%Jeta(1:nmk2(k0)) = op%Jeta(1:nmk2(k0)) + op%Diveta(k) * 0.5d0 * (op%Az(1:nmk2(k0), k) + op%Az(1:nmk2(k0), kR))
+               op%Jxi(1:nmk2(k0)) = op%Jxi(1:nmk2(k0)) + op%Divxi(k) * 0.5_dp * (op%Az(1:nmk2(k0), k) + op%Az(1:nmk2(k0), kR))
+               op%Jeta(1:nmk2(k0)) = op%Jeta(1:nmk2(k0)) + op%Diveta(k) * 0.5_dp * (op%Az(1:nmk2(k0), k) + op%Az(1:nmk2(k0), kR))
             else ! boundary link, 1: center node, k+1: connected node through link k
 !            op%Jxi(  1)  = op%Jxi(  1)  + op%Divxi(k)  * 0.5d0
 !            op%Jxi(k+1)  = op%Jxi(k+1)  + op%Divxi(k)  * 0.5d0
 !            op%Jeta(  1) = op%Jeta(  1) + op%Diveta(k) * 0.5d0
 !            op%Jeta(k+1) = op%Jeta(k+1) + op%Diveta(k) * 0.5d0
 
-               op%Jxi(1) = op%Jxi(1) + op%Divxi(k) * 0.5d0
-               op%Jxi(k + 1) = op%Jxi(k + 1) + op%Divxi(k) * 0.5d0
-               op%Jeta(1) = op%Jeta(1) + op%Diveta(k) * 0.5d0
-               op%Jeta(k + 1) = op%Jeta(k + 1) + op%Diveta(k) * 0.5d0
+               op%Jxi(1) = op%Jxi(1) + op%Divxi(k) * 0.5_dp
+               op%Jxi(k + 1) = op%Jxi(k + 1) + op%Divxi(k) * 0.5_dp
+               op%Jeta(1) = op%Jeta(1) + op%Diveta(k) * 0.5_dp
+               op%Jeta(k + 1) = op%Jeta(k + 1) + op%Diveta(k) * 0.5_dp
             end if
          end do
 
 !     compute the weights in the Laplacian smoother
-         op%ww2(:) = 0d0
+         op%ww2(:) = 0.0_dp
          do k = 1, nmk(k0)
             op%ww2(1:nmk2(k0)) = op%ww2(1:nmk2(k0)) + &
                                  op%Divxi(k) * op%Gxi(:, k) + op%Diveta(k) * op%Geta(:, k)
@@ -2354,7 +2354,7 @@ contains
 
          integer :: k, kk, ic, L, N, kL, kR, k1, kk1, L1, kcell
 
-         real(kind=dp) :: FAC = 1d0 ! part of the full circle that needs to be filled
+         real(kind=dp) :: FAC = 1.0_dp ! part of the full circle that needs to be filled
 
          integer :: Nnodes, Ntri, Ntri_square, Nquad, icL, icR
          real(kind=dp) :: DPhi, DPhitri, DPhitri_square, DPhiquad, DPhimin
@@ -2374,21 +2374,21 @@ contains
 
          if (present(ierror)) ierror = ierror_
 
-         FAC = 1d0
-         if (nb(k0) == 2) FAC = 0.5d0 ! boundary node
-         if (nb(k0) == 3) FAC = 0.25d0 ! corner node
+         FAC = 1.0_dp
+         if (nb(k0) == 2) FAC = 0.5_dp ! boundary node
+         if (nb(k0) == 3) FAC = 0.25_dp ! corner node
 
 !     initialize xi and eta to zero
-         xi = 0d0
-         eta = 0d0
+         xi = 0.0_dp
+         eta = 0.0_dp
 
 !     first, determine the 'skewness' factor dmu
 !     only skew triangles: discriminate between triangles and non-triangels
-         DPhimin = 15d0 / 180d0 * pi
-         DPhitot = 0d0
-         Dphitri_square = 0d0
-         Dphitri = 0d0
-         Dphiquad = 0d0
+         DPhimin = 15.0_dp / 180.0_dp * pi
+         DPhitot = 0.0_dp
+         Dphitri_square = 0.0_dp
+         Dphitri = 0.0_dp
+         Dphiquad = 0.0_dp
          Ntri = 0
          Ntri_square = 0
          Nquad = 0
@@ -2436,12 +2436,12 @@ contains
             if (L_is_square) then
                if (nb(k1) == 1 .or. nb(k1) == 4) then ! inner node
                   Nquad = nmk(k1) - 2
-                  theta_square(kk + 1) = (2d0 - dble(Nquad) * 0.5d0) * pi
+                  theta_square(kk + 1) = (2.0_dp - dble(Nquad) * 0.5_dp) * pi
                else if (nb(k1) == 2) then ! boundary node
                   Nquad = nmk(k1) - 1 - lnn(L)
-                  theta_square(kk + 1) = (1d0 - dble(Nquad) * 0.5d0) * pi
+                  theta_square(kk + 1) = (1.0_dp - dble(Nquad) * 0.5_dp) * pi
                else if (nb(k1) == 3) then ! corner node
-                  theta_square(kk + 1) = 0.5d0 * pi
+                  theta_square(kk + 1) = 0.5_dp * pi
                end if
 
 !           check the total number of quads connected
@@ -2469,7 +2469,7 @@ contains
             if (Nnodes == 4) then
                do kk = 1, Nnodes
                   if (adm%kkc(kk, ic) <= adm%Ncell + 1) cycle ! center and directly-connected cells
-                  theta_square(adm%kkc(kk, ic)) = 0.5d0 * pi
+                  theta_square(adm%kkc(kk, ic)) = 0.5_dp * pi
                end do
             end if
          end do
@@ -2514,19 +2514,19 @@ contains
 !        end if
          end do
 
-         dmu = 1d0
-         dmutri_square = 1d0
-         dmutri = 1d0
+         dmu = 1.0_dp
+         dmutri_square = 1.0_dp
+         dmutri = 1.0_dp
          if (Ntri > 0) then
 !         dmutri = ( FAC*2d0*pi - max(DPhitot-DPhitri, dble(Ntri)*DPhimin) ) / DPhitri
-            dmutri = (FAC * 2d0 * pi - (DPhitot - DPhitri)) / DPhitri
+            dmutri = (FAC * 2.0_dp * pi - (DPhitot - DPhitri)) / DPhitri
             dmutri = max(dmutri, dble(Ntri) * Dphimin / DPhitri)
             if (dmutri < 1e-4) then
                continue
             end if
          else
             if (Ntri_square > 0) then
-               dmutri_square = max(FAC * 2d0 * pi - (DPhitot - DPhitri_square), dble(Ntri_square) * DPhimin) / DPhitri_square
+               dmutri_square = max(FAC * 2.0_dp * pi - (DPhitot - DPhitri_square), dble(Ntri_square) * DPhimin) / DPhitri_square
             end if
          end if
 
@@ -2545,7 +2545,7 @@ contains
 
 !     L_is_square = .true.
          if (Dphitot > 1e-18) then
-            dmu = FAC * 2d0 * pi / (Dphitot - (1 - dmutri) * DPhitri - (1 - dmutri_square) * DPhitri_square)
+            dmu = FAC * 2.0_dp * pi / (Dphitot - (1 - dmutri) * DPhitri - (1 - dmutri_square) * DPhitri_square)
          else if (adm%Ncell > 0) then
             call qnerror('orthonet_assign_xieta: Dphitot=0', ' ', ' ')
             call cirr(xk(k0), yk(k0), ncolhl)
@@ -2558,12 +2558,12 @@ contains
          end if
 !-------------------------------------------------------------------------------------------------
 !     loop over the cells
-         Phi0 = 0d0
-         Dphi0 = 0d0
-         Dphi = 0d0
+         Phi0 = 0.0_dp
+         Dphi0 = 0.0_dp
+         Dphi = 0.0_dp
          do ic = 1, adm%Ncell
 !        add half the angle of the previous cell
-            Phi0 = Phi0 + 0.5d0 * Dphi
+            Phi0 = Phi0 + 0.5_dp * Dphi
 
             Philink(ic) = Phi0
             if (adm%icell(ic) < 1) then ! fictitious boundary cell
@@ -2571,14 +2571,14 @@ contains
                   Dphi = pi
                else
                   if (nb(k0) == 3) then ! corner node
-                     DPhi = 1.5d0 * pi
+                     DPhi = 1.5_dp * pi
                   else ! inappropriate fictitious boundary cell
                      call qnerror('orthonet_assign_xieta: inappropriate fictitious boundary cell', ' ', ' ')
                      call cirr(xk(k0), yk(k0), ncolhl)
                      return
                   end if
                end if
-               Phi0 = Phi0 + 0.5d0 * DPhi
+               Phi0 = Phi0 + 0.5_dp * DPhi
                cycle
             end if
 
@@ -2606,7 +2606,7 @@ contains
 !        if ( .not.L_is_square_cell(ic) ) Dphi = dmutri*DPhi
 
 !        add half the angle of the current cell
-            Phi0 = Phi0 + 0.5d0 * DPhi
+            Phi0 = Phi0 + 0.5_dp * DPhi
 
 !        in this cell: find the node k that corresponds to the center node
             k = 1
@@ -2619,7 +2619,7 @@ contains
             end if
 
 !        compute the optimal angle
-            Dtheta = 2d0 * pi / dble(netcell(adm%icell(ic))%n)
+            Dtheta = 2.0_dp * pi / dble(netcell(adm%icell(ic))%n)
 
 !        determine the orientation of the cell (necessary for folded cells)
             kp1 = k + 1; if (kp1 > Nnodes) kp1 = kp1 - Nnodes
@@ -2630,10 +2630,10 @@ contains
             end if
 
 !        compute the aspect ratio
-            aspect = (1d0 - cos(Dtheta)) / sin(abs(Dtheta)) * tan(0.5d0 * dPhi)
+            aspect = (1.0_dp - cos(Dtheta)) / sin(abs(Dtheta)) * tan(0.5_dp * dPhi)
 
 !        compute the radius
-            R0 = cos(0.5d0 * dPhi) / (1d0 - cos(Dtheta))
+            R0 = cos(0.5_dp * dPhi) / (1.0_dp - cos(Dtheta))
 
 !        loop over all nodes comprising the netcell
             do kk = 1, N
@@ -2669,15 +2669,15 @@ contains
          lblink_ = .false.
          if (present(lblink)) lblink_ = lblink
 
-         opt_angle = pi * (1 - 2d0 / dble(Nnodes))
+         opt_angle = pi * (1 - 2.0_dp / dble(Nnodes))
 
          if (present(theta1)) then ! 'square' angle
             if (present(theta2)) then
                if (Nnodes == 3) then
-                  opt_angle = 0.25d0 * pi
-                  if (theta1 + theta2 == pi .and. .not. lblink_) opt_angle = 0.5d0 * pi
+                  opt_angle = 0.25_dp * pi
+                  if (theta1 + theta2 == pi .and. .not. lblink_) opt_angle = 0.5_dp * pi
                else if (Nnodes == 4) then
-                  opt_angle = 0.5d0 * pi
+                  opt_angle = 0.5_dp * pi
                end if
             end if
          end if
@@ -2709,9 +2709,9 @@ contains
          allocate (ww2(nmkx2))
          allocate (u_temp(numk))
 
-         alpha = 0.5d0
+         alpha = 0.5_dp
 
-         alpha1 = 1d0 - alpha
+         alpha1 = 1.0_dp - alpha
 
          u_temp = u
          u_smooth = u
@@ -2721,10 +2721,10 @@ contains
                if (nb(k0) /= 1 .and. nb(k0) /= 2 .and. nb(k0) /= 4) cycle
 
                !        get the Laplacian weights
-               ww2 = 0d0
+               ww2 = 0.0_dp
 !            ww2(1:nmk2(k0)) = ops(ktopo(k0))%ww2(1:nmk2(k0))
 
-               ww2(1:nmk2(k0)) = 1d0; 
+               ww2(1:nmk2(k0)) = 1.0_dp; 
                ww2(1) = -sum(ww2(2:nmk2(k0)))
 
                u_temp(k0) = -sum(ww2(2:nmk2(k0)) * u_smooth(kk2(2:nmk2(k0), k0))) / ww2(1)

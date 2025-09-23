@@ -39,6 +39,8 @@
 !! calling subroutine should also be taken over in this routine!
 module m_update_waq_sink_source_fluxes
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -133,14 +135,14 @@ contains
                   else
                      ! multiple layers on both side... it's a bit more complicated...
                      ! determine fractions on sink side
-                     call realloc(fsin, kmx, keepExisting=.false., fill=0.0d0)
+                     call realloc(fsin, kmx, keepExisting=.false., fill=0.0_dp)
                      dzss = zws(ktsin) - zws(kbsin - 1)
                      do k = kbsin, ktsin
                         ilaysin = kktxsin - k + 1
                         if (dzss > epshs) then
                            fsin(ilaysin) = (zws(k) - zws(k - 1)) / dzss
                         else
-                           fsin(ilaysin) = 1.0d0 / (ktsin - kbsin + 1)
+                           fsin(ilaysin) = 1.0_dp / (ktsin - kbsin + 1)
                         end if
                      end do
                      ! distribute sink side fractions over source side
@@ -150,7 +152,7 @@ contains
                         if (dzss > epshs) then
                            fsor = (zws(k1) - zws(k1 - 1)) / dzss
                         else
-                           fsor = 1.0d0 / (ktsor - kbsor + 1)
+                           fsor = 1.0_dp / (ktsor - kbsor + 1)
                         end if
                         do k2 = kbsin, ktsin
                            ilaysin = kktxsin - k2 + 1

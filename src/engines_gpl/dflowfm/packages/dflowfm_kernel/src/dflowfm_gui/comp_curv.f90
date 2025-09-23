@@ -55,7 +55,7 @@ contains
 
       integer :: iL, iR
 
-      real(kind=dp), parameter :: EPS = 1d-4
+      real(kind=dp), parameter :: EPS = 1.0e-4_dp
 
       iL = max(min(int(s) + 1, num - 1), 1)
       iR = max(iL + 1, 1)
@@ -66,8 +66,8 @@ contains
       call splint(xsp, xsp2, num, s, x)
       call splint(ysp, ysp2, num, s, y)
 
-      xp = -xsp(iL) + xsp(iR) + ((-3d0 * A**2 + 1d0) * xsp2(iL) + (3d0 * B**2 - 1d0) * xsp2(iR)) / 6d0
-      yp = -ysp(iL) + ysp(iR) + ((-3d0 * A**2 + 1d0) * ysp2(iL) + (3d0 * B**2 - 1d0) * ysp2(iR)) / 6d0
+      xp = -xsp(iL) + xsp(iR) + ((-3.0_dp * A**2 + 1.0_dp) * xsp2(iL) + (3.0_dp * B**2 - 1.0_dp) * xsp2(iR)) / 6.0_dp
+      yp = -ysp(iL) + ysp(iR) + ((-3.0_dp * A**2 + 1.0_dp) * ysp2(iL) + (3.0_dp * B**2 - 1.0_dp) * ysp2(iR)) / 6.0_dp
 
       xpp = A * xsp2(iL) + B * xsp2(iR)
       ypp = A * ysp2(iL) + B * ysp2(iR)
@@ -80,7 +80,7 @@ contains
          ypp = ypp * dg2rd * Ra
       end if
 
-      curv = abs(xpp * yp - ypp * xp) / (xp**2 + yp**2 + 1d-8)**1.5
+      curv = abs(xpp * yp - ypp * xp) / (xp**2 + yp**2 + 1.0e-8_dp)**1.5
 
       x1 = x + EPS * xp
       y1 = y + EPS * yp

@@ -93,7 +93,7 @@ contains
 
       integer :: kt1, kt2, n1, n2, kb1, kb2, Ltx0, ktx01, ktx02, ktx1, ktx2, Ltx, L1, ksb, kst
       real(kind=dp) :: hs1, hs2, vo1, vo2
-      real(kind=dp) :: tol = 1d-4, sl, dzu, dzk, du1, du2, dux, duy
+      real(kind=dp) :: tol = 1.0e-4_dp, sl, dzu, dzk, du1, du2, dux, duy
 
       real(kind=dp) :: quuk1(0:kmxx), quuk2(0:kmxx), volk1(0:kmxx), volk2(0:kmxx), sqak1(0:kmxx), sqak2(0:kmxx)
       real(kind=dp) :: quuL1(0:kmxx), quuL2(0:kmxx), volL1(0:kmxx), volL2(0:kmxx), sqaL1(0:kmxx), sqaL2(0:kmxx)
@@ -155,7 +155,7 @@ contains
 
       call sethigherorderadvectionvelocities()
 
-      uqcx = 0d0; uqcy = 0d0; sqa = 0d0
+      uqcx = 0.0_dp; uqcy = 0.0_dp; sqa = 0.0_dp
 
       if (kmx == 0) then
 
@@ -218,7 +218,7 @@ contains
             do kk = 1, ndxi
                call getkbotktop(kk, kb, kt)
                do k = kb, kt - 1
-                  if (qw(k) > 0d0) then
+                  if (qw(k) > 0.0_dp) then
                      uqcx(k + 1) = uqcx(k + 1) - qw(k) * ucx(k)
                      uqcx(k) = uqcx(k) + qw(k) * ucx(k)
                      uqcy(k + 1) = uqcy(k + 1) - qw(k) * ucy(k)
@@ -231,18 +231,18 @@ contains
                            du2 = (ucx(k + 1) - ucx(k))
                            du1 = (ucx(k) - ucx(k - 1)) * sl
                            ! dux =  0.5d0*dlimiter(du1,du2,4)
-                           dux = 0.5d0 * dslim(du1, du2, 4)
+                           dux = 0.5_dp * dslim(du1, du2, 4)
                            du2 = (ucy(k + 1) - ucy(k))
                            du1 = (ucy(k) - ucy(k - 1)) * sl
                            ! duy =  0.5d0*dlimiter(du1,du2,4)
-                           duy = 0.5d0 * dslim(du1, du2, 4)
+                           duy = 0.5_dp * dslim(du1, du2, 4)
                            uqcx(k + 1) = uqcx(k + 1) - qw(k) * dux
                            uqcx(k) = uqcx(k) + qw(k) * dux
                            uqcy(k + 1) = uqcy(k + 1) - qw(k) * duy
                            uqcy(k) = uqcy(k) + qw(k) * duy
                         end if
                      end if
-                  else if (qw(k) < 0d0) then
+                  else if (qw(k) < 0.0_dp) then
                      uqcx(k + 1) = uqcx(k + 1) - qw(k) * ucx(k + 1)
                      uqcx(k) = uqcx(k) + qw(k) * ucx(k + 1)
                      uqcy(k + 1) = uqcy(k + 1) - qw(k) * ucy(k + 1)
@@ -255,11 +255,11 @@ contains
                            du2 = (ucx(k) - ucx(k + 1))
                            du1 = (ucx(k + 1) - ucx(k + 2)) * sl
                            ! dux =  0.5d0*dlimiter(du1,du2,4)
-                           dux = 0.5d0 * dslim(du1, du2, 4)
+                           dux = 0.5_dp * dslim(du1, du2, 4)
                            du2 = (ucy(k) - ucy(k + 1))
                            du1 = (ucy(k + 1) - ucy(k + 2)) * sl
                            ! duy =  0.5d0*dlimiter(du1,du2,4)
-                           duy = 0.5d0 * dslim(du1, du2, 4)
+                           duy = 0.5_dp * dslim(du1, du2, 4)
 
                            uqcx(k + 1) = uqcx(k + 1) - qw(k) * dux
                            uqcx(k) = uqcx(k) + qw(k) * dux
@@ -276,12 +276,12 @@ contains
          else
             do kk = 1, ndxi
                do k = kbot(kk), ktop(kk) - 1
-                  if (qw(k) > 0d0) then
+                  if (qw(k) > 0.0_dp) then
                      uqcx(k + 1) = uqcx(k + 1) - qw(k) * ucx(k) * rho(k)
                      uqcx(k) = uqcx(k) + qw(k) * ucx(k) * rho(k)
                      uqcy(k + 1) = uqcy(k + 1) - qw(k) * ucy(k) * rho(k)
                      uqcy(k) = uqcy(k) + qw(k) * ucy(k) * rho(k)
-                  else if (qw(k) < 0d0) then
+                  else if (qw(k) < 0.0_dp) then
                      uqcx(k + 1) = uqcx(k + 1) - qw(k) * ucx(k + 1) * rho(k + 1)
                      uqcx(k) = uqcx(k) + qw(k) * ucx(k + 1) * rho(k + 1)
                      uqcy(k + 1) = uqcy(k + 1) - qw(k) * ucy(k + 1) * rho(k + 1)
@@ -821,20 +821,20 @@ contains
                end if
                cs = csu(LL); sn = snu(LL)
                Lb = Lbot(LL); Lt = Ltop(LL)
-               ac1 = acl(LL); ac2 = 1d0 - ac1
+               ac1 = acl(LL); ac2 = 1.0_dp - ac1
 
                if (iadv(LL) == 3) then
                   call QucPer3Dsigma(1, LL, Lb, Lt, cs, sn, quk1) ! sum of (Q*uc cell centre upwind normal) at side 1 of basis link LL
                   call QucPer3Dsigma(2, LL, Lb, Lt, cs, sn, quk2) ! sum of (Q*uc cell centre upwind normal) at side 2 of basis link LL
 
                   do L = Lb, Lt
-                     advel = 0d0 ! advi (1/s), adve (m/s2)
+                     advel = 0.0_dp ! advi (1/s), adve (m/s2)
                      k1 = ln(1, L); k2 = ln(2, L)
-                     qu1 = 0d0
+                     qu1 = 0.0_dp
                      if (vol1(k1) > 0) then
                         qu1 = quk1(1, L - Lb + 1) * ac1 ! Perot weigthing
                      end if
-                     qu2 = 0d0
+                     qu2 = 0.0_dp
                      if (vol1(k2) > 0) then
                         qu2 = quk2(1, L - Lb + 1) * ac2 ! Perot weigthing
                      end if
@@ -872,11 +872,11 @@ contains
                               n12 = 2
                            end if
                            if (jasfer3D == 1) then
-                              advel = 2d0 * (u1(L) - (cs * nod2linx(LL, n12, ucx(k), ucy(k)) + sn * nod2liny(LL, n12, ucx(k), ucy(k)))) * dxi(LL)
+                              advel = 2.0_dp * (u1(L) - (cs * nod2linx(LL, n12, ucx(k), ucy(k)) + sn * nod2liny(LL, n12, ucx(k), ucy(k)))) * dxi(LL)
                            else
-                              advel = 2d0 * (u1(L) - (cs * ucx(k) + sn * ucy(k))) * dxi(LL)
+                              advel = 2.0_dp * (u1(L) - (cs * ucx(k) + sn * ucy(k))) * dxi(LL)
                            end if
-                           if (advel > 0d0) then
+                           if (advel > 0.0_dp) then
                               advi(L) = advi(L) + advel
                            else
                               adve(L) = adve(L) - cs * u1(L) * advel
@@ -929,7 +929,7 @@ contains
                   else if (layertype == 2 .and. jahazlayer == 0) then ! default fixed layers
 
                      Ltx = Lt - Lb + 1
-                     volukk(1:Ltx) = 0d0
+                     volukk(1:Ltx) = 0.0_dp
                      do L = Lb, Lt
                         k1 = ln(1, L); k2 = ln(2, L)
                         if (jarhoxu > 0) then
@@ -985,7 +985,7 @@ contains
                      call getkbotktop(n2, kb2, kt2); ktx2 = kt2 - kb2 + 1
                      Ltx = Lt - Lb + 1
 
-                     volukk(1:Ltx) = 0d0
+                     volukk(1:Ltx) = 0.0_dp
 
                      do L = Lb, Lt
                         k1 = ln(1, L); k2 = ln(2, L); L1 = L - Lb + 1
@@ -1026,7 +1026,7 @@ contains
                      ktx01 = kt1 - kb1 + 1
                      ktx02 = kt2 - kb2 + 1
 
-                     volk1(0) = 0d0; quuk1(0) = 0d0; sqak1(0) = 0d0; sigk1(0) = 0d0
+                     volk1(0) = 0.0_dp; quuk1(0) = 0.0_dp; sqak1(0) = 0.0_dp; sigk1(0) = 0.0_dp
                      do k = kb1, kt1
                         volk1(k - kb1 + 1) = volk1(k - kb1) + vol1(k)
                         if (jasfer3D == 1) then
@@ -1038,7 +1038,7 @@ contains
                         sigk1(k - kb1 + 1) = (zws(k) - zws(kb1 - 1)) / hs1
                      end do
 
-                     volk2(0) = 0d0; quuk2(0) = 0d0; sqak2(0) = 0d0; sigk2(0) = 0d0
+                     volk2(0) = 0.0_dp; quuk2(0) = 0.0_dp; sqak2(0) = 0.0_dp; sigk2(0) = 0.0_dp
                      do k = kb2, kt2
                         volk2(k - kb2 + 1) = volk2(k - kb2) + vol1(k)
                         if (jasfer3D == 1) then
@@ -1050,7 +1050,7 @@ contains
                         sigk2(k - kb2 + 1) = (zws(k) - zws(kb2 - 1)) / hs2
                      end do
 
-                     do L = Lb, Lt; Ltx0 = Lt - Lb + 1; siguL(0) = 0d0
+                     do L = Lb, Lt; Ltx0 = Lt - Lb + 1; siguL(0) = 0.0_dp
                         siguL(L - Lb + 1) = hu(L) / hu(LL)
                      end do
 
@@ -1078,7 +1078,7 @@ contains
 
                      Ltx = Lt - Lb + 1
 
-                     volukk(1:Ltx) = 0d0; quuk1(1:Ltx) = 0d0; sqak1(1:Ltx) = 0d0
+                     volukk(1:Ltx) = 0.0_dp; quuk1(1:Ltx) = 0.0_dp; sqak1(1:Ltx) = 0.0_dp
 
                      do k = kb1, ln(1, Lb) - 1 ! below Lb n1
                         volukk(1) = volukk(1) + ac1 * vol1(k)
@@ -1137,7 +1137,7 @@ contains
                         if (volukk(L1) > 0) then
                            adveL = (quuk1(L1) - u1(L) * sqak1(L1)) / volukk(L1)
                            if (abs(advel) > 0.05) then
-                              advel = 1d0 * advel
+                              advel = 1.0_dp * advel
                            end if
                            adve(L) = adve(L) + adveL
                         end if
@@ -1154,7 +1154,7 @@ contains
                   do L = Lb, Lt
                      advel = 0 ! advi (1/s), adve (m/s2)
                      k1 = ln(1, L); k2 = ln(2, L)
-                     qu1 = 0d0
+                     qu1 = 0.0_dp
                      if (vol1(k1) > 0) then
                         qu1 = quk1(1, L - Lb + 1) * ac1 * baik1
                      end if
@@ -1163,7 +1163,7 @@ contains
                         qu2 = quk2(1, L - Lb + 1) * ac2 * baik2 ! Perot weigthing
                      end if
                      huvL = ac1 * (zws(k1) - zws(k1 - 1)) + ac2 * (zws(k2) - zws(k2 - 1))
-                     if (huvL > 0d0) then
+                     if (huvL > 0.0_dp) then
                         advel = (qu1 + qu2) / huvL ! dimension: ((m4/s2) / m3) =   (m/s2)
                         adve(L) = adve(L) + advel
                      end if

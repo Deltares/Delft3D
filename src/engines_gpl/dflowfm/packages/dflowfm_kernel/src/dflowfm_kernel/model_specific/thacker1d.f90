@@ -59,34 +59,34 @@ contains
       integer :: is, k
       real(kind=dp) :: omeg, r, r0, rr0, psi, samp, st, ct, ux, uy, s1k, dif, xx, yy, period
 
-      dep = 10d0
-      fcorio = 0d0
+      dep = 10.0_dp
+      fcorio = 0.0_dp
       ! omeg   = twopi/(12*3600)  ! period = 12 hrs
       ! r0     = sqrt( 2d0*ag*dep/ ( omeg*( omeg+fcorio) ) )  ! Casulli 2007 (19) mind you, no - sign in front of fcorio
 
-      r0 = 120d0
-      omeg = sqrt(2d0 * ag * dep / (r0 * r0))
+      r0 = 120.0_dp
+      omeg = sqrt(2.0_dp * ag * dep / (r0 * r0))
       period = twopi / omeg
 
       if (ini == 1) then
          if (ibedlevtyp == 3) then
             do k = 1, numk
-               r = xk(k) - 150d0
+               r = xk(k) - 150.0_dp
                rr0 = (r * r) / (r0 * r0)
-               zk(k) = -dep * (1d0 - rr0)
+               zk(k) = -dep * (1.0_dp - rr0)
             end do
          else
             do k = 1, ndx
-               r = xz(k) - 150d0
+               r = xz(k) - 150.0_dp
                rr0 = (r * r) / (r0 * r0)
-               bl(k) = -dep * (1d0 - rr0)
+               bl(k) = -dep * (1.0_dp - rr0)
             end do
          end if
          call setbobs()
       end if
 
       !psi    = 0.25d0*r0
-      psi = 0.23d0 * r0
+      psi = 0.23_dp * r0
       samp = psi * dep / (r0 * r0)
       st = sin(omeg * t)
       ct = cos(omeg * t)
@@ -96,8 +96,8 @@ contains
 !    r     = xz(k) - 150d0  ! sqrt(  xz(k)*xz(k) + yz(k)*yz(k) )
 !    s1k   = samp*r*ct
 
-         xx = xz(k) - 150d0; yy = 0
-         s1k = samp * (2d0 * xx * ct - 2d0 * yy * st - psi * ct * ct)
+         xx = xz(k) - 150.0_dp; yy = 0
+         s1k = samp * (2.0_dp * xx * ct - 2.0_dp * yy * st - psi * ct * ct)
 
          if (ini == 1) then
             s1(k) = max(bl(k), s1k)

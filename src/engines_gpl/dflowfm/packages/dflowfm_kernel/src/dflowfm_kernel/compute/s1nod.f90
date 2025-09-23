@@ -69,7 +69,7 @@ contains
       real(kind=dp) :: sqrtgfh, cffu, rowsum, fuL, ruL, huL, hep
       integer :: i, ierr
       character(len=2) :: dim_text
-      real(kind=dp), parameter :: HBMIN = 1d-3
+      real(kind=dp), parameter :: HBMIN = 1.0e-3_dp
       real(kind=dp), pointer, dimension(:) :: gridPointsChainages
       type(t_branch), pointer, dimension(:) :: branch
       logical :: domainCheck

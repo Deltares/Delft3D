@@ -76,7 +76,7 @@ contains
 
       if (kmx /= 0 .or. lnx1D == 0) return
 
-      uc1D = 0d0
+      uc1D = 0.0_dp
       do n = ndx2D + 1, ndxi
          nx = nd(n)%lnx
 
@@ -89,15 +89,15 @@ contains
          if (ja1D == 0) cycle
          if (jaJunction1D == 0 .and. nx > 2) cycle
 
-         qu_in = 0d0
-         qu_out = 0d0
-         q_in = 0d0
-         q_out = 0d0
+         qu_in = 0.0_dp
+         qu_out = 0.0_dp
+         q_in = 0.0_dp
+         q_out = 0.0_dp
          do LL = 1, nx ! loop over all links of the upstream node
             L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
             La = abs(L)
 
-            if (L * u1(La) >= 0d0) then ! inflowing: positive flow to this node, or negative flow from this node
+            if (L * u1(La) >= 0.0_dp) then ! inflowing: positive flow to this node, or negative flow from this node
                qu_in = qu_in + qa(La) * u1(La)
                q_in = q_in + abs(qa(La))
             else ! outflowing: positive flow from this node, or negative flow to this node
@@ -106,10 +106,10 @@ contains
             end if
          end do
 
-         if (q_in > 0d0 .and. q_out > 0d0) then
-            uc = 0.5d0 * (qu_in / q_in + qu_out / q_out)
+         if (q_in > 0.0_dp .and. q_out > 0.0_dp) then
+            uc = 0.5_dp * (qu_in / q_in + qu_out / q_out)
          else ! all inflow, all outflow, or stagnant
-            uc = 0d0
+            uc = 0.0_dp
          end if
 
          L1 = abs(nd(n)%ln(1))
@@ -127,7 +127,7 @@ contains
       end do
 
       if (jaPure1D == 1 .or. jaPure1D == 2) then
-         u1Du = 0d0
+         u1Du = 0.0_dp
          do L = 1, lnx
             if (qa(L) > 0 .and. abs(uc1D(ln(1, L))) > 0) then ! set upwind ucxu, ucyu  on links
                u1Du(L) = uc1D(ln(1, L))
@@ -138,12 +138,12 @@ contains
 
       elseif (jaPure1D >= 3) then
 
-         q1D = 0d0
-         au1D = 0d0
-         sar1D = 0d0
-         volu1D = 0d0
-         alpha_mom_1D = 0d0
-         alpha_ene_1D = 0d0
+         q1D = 0.0_dp
+         au1D = 0.0_dp
+         sar1D = 0.0_dp
+         volu1D = 0.0_dp
+         alpha_mom_1D = 0.0_dp
+         alpha_ene_1D = 0.0_dp
          do n = ndx2D + 1, ndxi
             nx = nd(n)%lnx
 
@@ -157,8 +157,8 @@ contains
             if (jaJunction1D == 0 .and. nx > 2) cycle
 
             ! compute total net discharge into the node
-            q_net_in = 0d0
-            surface_area = 0d0
+            q_net_in = 0.0_dp
+            surface_area = 0.0_dp
             do LL = 1, nx ! loop over all links connected to the node
                L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
                La = abs(L)
@@ -170,7 +170,7 @@ contains
                   k = 1
                end if
 
-               h = max(0d0, s1(n) - bob(k, La)) ! cross sectional area
+               h = max(0.0_dp, s1(n) - bob(k, La)) ! cross sectional area
                call getprof_1D(La, h, total_cs_area, total_width, JACSTOT, CALCCONV, perim)
                call getprof_1D(La, h, flow_cs_area, flow_width, JACSFLW, CALCCONV, perim)
                link_surface_area = total_width * half_link_length
@@ -184,10 +184,10 @@ contains
                q_net_in = q_net_in + dble(sign(1, L)) * qa(La)
             end do
 
-            qu_in = 0d0
-            qu_out = 0d0
-            qu2_in = 0d0
-            qu2_out = 0d0
+            qu_in = 0.0_dp
+            qu_out = 0.0_dp
+            qu2_in = 0.0_dp
+            qu2_out = 0.0_dp
             dzw_dt = q_net_in / surface_area
             do LL = 1, nx ! loop over all links connected to the node
                L = nd(n)%ln(LL) ! positive if link points to node, negative if links points from node
@@ -205,7 +205,7 @@ contains
                   q1D(1, La) = q
                end if
 
-               if ((L * q) >= 0d0) then ! inflowing: positive flow to this node, or negative flow from this node
+               if ((L * q) >= 0.0_dp) then ! inflowing: positive flow to this node, or negative flow from this node
                   u = u1(La)
                   if ((q * u) > 0) then ! flow direction at link equal to flow direction at node
                      qu_in = qu_in + abs(q * u)
@@ -213,7 +213,7 @@ contains
                   else ! flow direction at link opposite to flow direction at node, so use 0 velocity inflow
                      ! no contribution if u = 0
                   end if
-               elseif (flow_cs_area > 0d0) then ! outflowing: negative flow to this node, or positive flow from this node
+               elseif (flow_cs_area > 0.0_dp) then ! outflowing: negative flow to this node, or positive flow from this node
                   u = q / flow_cs_area
                   qu_out = qu_out + abs(q * u)
                   qu2_out = qu2_out + abs(q * u**2)

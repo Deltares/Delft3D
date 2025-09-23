@@ -31,8 +31,10 @@
 !
 
 module m_getshipcontrol
+
    use m_tekship, only: tekship
 
+use precision, only: dp
    implicit none
 
 contains
@@ -49,38 +51,38 @@ contains
       n = 0
       !        pijltjesbeweging
       if (KEY == 128) then
-         fstuw(1) = min(1d0, fstuw(1) + 0.02)
+         fstuw(1) = min(1.0_dp, fstuw(1) + 0.02)
          n = 1
       else if (KEY == 129) then
-         fstuw(1) = max(-1d0, fstuw(1) - 0.02)
+         fstuw(1) = max(-1.0_dp, fstuw(1) - 0.02)
          n = 1
       else if (KEY == 130) then
-         fROER(1) = min(1d0, fROER(1) + 0.02)
+         fROER(1) = min(1.0_dp, fROER(1) + 0.02)
          n = 1
       else if (KEY == 131) then
-         fROER(1) = max(-1d0, fROER(1) - 0.02)
+         fROER(1) = max(-1.0_dp, fROER(1) - 0.02)
          n = 1
       else if (KEY == 53) then
-         FSTUW(1) = 0d0
-         FROER(1) = 0d0
+         FSTUW(1) = 0.0_dp
+         FROER(1) = 0.0_dp
          n = 1
       end if
 
       if (KEY == 87 .or. KEY == 87 + 32) then ! W
-         fstuw(2) = min(1d0, fstuw(2) + 0.02)
+         fstuw(2) = min(1.0_dp, fstuw(2) + 0.02)
          n = 2
       else if (KEY == 83 .or. KEY == 83 + 32) then ! S
-         fstuw(2) = max(-1d0, fstuw(2) - 0.02)
+         fstuw(2) = max(-1.0_dp, fstuw(2) - 0.02)
          n = 2
       else if (KEY == 68 .or. KEY == 68 + 32) then
-         fROER(2) = min(1d0, fROER(2) + 0.02)
+         fROER(2) = min(1.0_dp, fROER(2) + 0.02)
          n = 2
       else if (KEY == 65 .or. KEY == 65 + 32) then
-         fROER(2) = max(-1d0, fROER(2) - 0.02)
+         fROER(2) = max(-1.0_dp, fROER(2) - 0.02)
          n = 2
       else if (KEY == 81 .or. KEY == 81 + 32) then
-         FSTUW(2) = 0d0
-         FROER(2) = 0d0
+         FSTUW(2) = 0.0_dp
+         FROER(2) = 0.0_dp
          n = 2
       end if
 

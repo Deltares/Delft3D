@@ -125,7 +125,7 @@ contains
       IONBENOEMD = 0
 6     continue
       do I = 1, NUMSPL
-         call READYY(' ', 0.01d0 + 0.3d0 * dble(I - 1) / dble(NUMSPL))
+         call READYY(' ', 0.01_dp + 0.3_dp * dble(I - 1) / dble(NUMSPL))
          do J = I + 1, NUMSPL
             call NUMPold(X, mmax, nmax, I, NUMPI)
             call NUMPold(X, mmax, nmax, J, NUMPJ)
@@ -364,7 +364,7 @@ contains
          end do
       end do
 
-      call READYY(' ', 0.95d0)
+      call READYY(' ', 0.95_dp)
 
       do I = 1, NUMSPL
          write (msgbuf, *) I, (MN12(I, J), J=1, 3)

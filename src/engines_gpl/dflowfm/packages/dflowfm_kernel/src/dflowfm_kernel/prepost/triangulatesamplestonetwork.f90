@@ -87,7 +87,7 @@ contains
       integer, allocatable :: KS(:)
       real(kind=dp) :: XP, YP, THIRD, phimin, phimax
 
-      THIRD = 1d0 / 3d0
+      THIRD = 1.0_dp / 3.0_dp
 
       call FINDCELLS(0)
 
@@ -234,13 +234,13 @@ contains
          call lnabs(xk(kn(2, L)), yk(kn(2, L)))
 
          if (L > LMAX) then
-            write (*, *) 'INCREASENETW(KMAX, INT(1.2d0*NUML) )', NUML
+            write (*, *) 'INCREASENETW(KMAX, INT(1.2_dp*NUML) )', NUML
             call INCREASENETW(KMAX, int(1.2d0 * NUML))
          end if
 
       end do
 
-      call READYY('TRIANGULATING', -1d0)
+      call READYY('TRIANGULATING', -1.0_dp)
 
       NUMK = K0 + NSIN
       NUML = L

@@ -47,7 +47,7 @@ contains
 
       do n = 1, ndx
          call getkbotktop(n, kb, kt)
-         sal(n) = 0d0
+         sal(n) = 0.0_dp
          if (vol1(n) > 0) then
             do k = kb, kt
                sal(n) = sal(n) + sal(k) * vol1(k)

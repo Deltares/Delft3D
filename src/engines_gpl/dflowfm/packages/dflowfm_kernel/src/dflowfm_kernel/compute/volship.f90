@@ -50,12 +50,12 @@ contains
 
       integer :: L, k1, k2, k3, k4
       real(kind=dp) :: BL1, BL2, b21, wu2, ai, wid1, hpr1, dx1, dx2, ar1, slotsav
-      slotsav = slotw2D; slotw2D = 0d0
-      v1ship = 0d0
+      slotsav = slotw2D; slotw2D = 0.0_dp
+      v1ship = 0.0_dp
       do L = 1, lnx
          k1 = ln(1, L); k2 = ln(2, L)
          k3 = lncn(1, L); k4 = lncn(2, L)
-         if (zspc(k3) /= 0d0 .or. zspc(k4) /= 0d0) then
+         if (zspc(k3) /= 0.0_dp .or. zspc(k4) /= 0.0_dp) then
             if (zspc(k3) < zspc(k4)) then
                BL1 = zspc(k3); BL2 = zspc(k4)
             else
@@ -63,11 +63,11 @@ contains
             end if
             wu2 = wu(L); b21 = BL2 - BL1; ai = b21 / wu2
 
-            hpr1 = 0d0 - BL1
-            if (hpr1 > 0d0) then
+            hpr1 = 0.0_dp - BL1
+            if (hpr1 > 0.0_dp) then
                call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
-               dx1 = 0.5d0 * dx(L) * acl(L)
-               dx2 = 0.5d0 * dx(L) * (1d0 - acl(L))
+               dx1 = 0.5_dp * dx(L) * acl(L)
+               dx2 = 0.5_dp * dx(L) * (1.0_dp - acl(L))
 
                v1ship(k1) = v1ship(k1) + dx1 * ar1
                v1ship(k2) = v1ship(k2) + dx2 * ar1

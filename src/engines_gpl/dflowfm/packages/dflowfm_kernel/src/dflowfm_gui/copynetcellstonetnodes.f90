@@ -57,7 +57,7 @@ contains
          call aerr('rn(numk)', ierr, numk)
       end if
 
-      rnod = 0d0; rn = 0d0
+      rnod = 0.0_dp; rn = 0.0_dp
       do n = 1, ndx2d
          nn4 = netcell(n)%n
 

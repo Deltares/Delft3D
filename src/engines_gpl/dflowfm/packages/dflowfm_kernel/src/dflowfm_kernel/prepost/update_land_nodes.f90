@@ -62,7 +62,7 @@ contains
          zk(k) = new_zk
          if (jaceneqtr == 2 .and. jased > 0) then
             do j = 1, mxgr
-               grainlay(j, k) = max(0d0, grainlay(j, k) + (old_zk - new_zk) / mxgr)
+               grainlay(j, k) = max(0.0_dp, grainlay(j, k) + (old_zk - new_zk) / mxgr)
             end do
          end if
          call isocol(zk(k), ncol)
@@ -73,7 +73,7 @@ contains
          zk(k) = new_zk
          if (jaceneqtr == 2 .and. jased > 0) then
             do j = 1, mxgr
-               grainlay(j, k) = max(0d0, grainlay(j, k) + (old_zk - new_zk) / mxgr)
+               grainlay(j, k) = max(0.0_dp, grainlay(j, k) + (old_zk - new_zk) / mxgr)
             end do
          end if
          call isocol(zk(k), ncol)

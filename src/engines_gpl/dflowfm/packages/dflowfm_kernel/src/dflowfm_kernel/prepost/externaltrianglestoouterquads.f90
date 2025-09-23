@@ -65,19 +65,19 @@ contains
       real(kind=dp) :: yp
       real(kind=dp) :: zp
 
-      real(kind=dp) :: XL, YL, ZL = 0d0
+      real(kind=dp) :: XL, YL, ZL = 0.0_dp
 
       do L = 1, NUML
          K1 = KN(1, L); K2 = KN(2, L)
          if (NMK(K1) <= 3 .and. NMK(K2) <= 3) then
-            XL = 0.5d0 * (XK(K1) + XK(K2))
-            YL = 0.5d0 * (YK(K1) + YK(K2))
+            XL = 0.5_dp * (XK(K1) + XK(K2))
+            YL = 0.5_dp * (YK(K1) + YK(K2))
             call DPINPOK(XL, YL, ZL, NPL, XPL, YPL, IN, jins, dmiss)
             if (IN == 1) then
                call GETQUAD(L, K1, K2, K3, K4)
                if (K3 /= 0) then
-                  XP = 0.5d0 * (2 * XK(K1) - XK(K4) + 2 * XK(K2) - XK(K3))
-                  YP = 0.5d0 * (2 * YK(K1) - YK(K4) + 2 * YK(K2) - YK(K3))
+                  XP = 0.5_dp * (2 * XK(K1) - XK(K4) + 2 * XK(K2) - XK(K3))
+                  YP = 0.5_dp * (2 * YK(K1) - YK(K4) + 2 * YK(K2) - YK(K3))
                   call GIVENEWNODENUM(KP)
                   call SETPOINT(XP, YP, ZP, KP)
                   call CONNECTDB(K2, KP, LNU)

@@ -52,23 +52,23 @@ contains
       real(kind=dp), intent(out) :: hyr
       integer, intent(in) :: L
 
-      real(kind=dp) :: d83 = 2.666666d0, d16 = 0.166666d0, d23 = 0.666666d0, d43 = 1.333333d0
+      real(kind=dp) :: d83 = 2.666666_dp, d16 = 0.166666_dp, d23 = 0.666666_dp, d43 = 1.333333_dp
       real(kind=dp) :: hp2, Cz, cman, per, hav, conv
-      real(kind=dp) :: d38 = 0.375d0, d311 = 0.27272727d0, hpr83, hp283
+      real(kind=dp) :: d38 = 0.375_dp, d311 = 0.27272727_dp, hpr83, hp283
       integer :: jac
 
       ! for jaconv >= 1, this routine gets conveyance, but without friction surface to horizontal plane surface ratio influence on conveyance
       ! this constant value, (1+(dz/dy)**2)**0.25 is computed once and is volume cell based instead of link based
       ! Aconv = (A/K)**2 = 1/(C.C.R), K=Conv=sum(ACsqrt(R))
 
-      if (ai < 1d-3) then
+      if (ai < 1.0e-3_dp) then
          ! if (dz == 0d0) then
          wid = wu2; wid = wid + slotw2D ! wid = max(wid, slotw2d)
          ar = wid * hpr
          hyr = hpr
       else if (hpr < dz) then
          wid = wu2 * hpr / dz; wid = wid + slotw2D ! wid = max(wid, slotw2d)
-         ar = 0.5d0 * wid * hpr
+         ar = 0.5_dp * wid * hpr
          if (jaconv == 1) then
             per = sqrt(hpr * hpr + wid * wid)
             hyr = ar / per
@@ -76,7 +76,7 @@ contains
       else
          wid = wu2; wid = wid + slotw2D ! wid = max(wid, slotw2d)
          hp2 = hpr - dz
-         ar = wid * 0.5d0 * (hpr + hp2)
+         ar = wid * 0.5_dp * (hpr + hp2)
          if (jaconv == 1) then
             per = sqrt(dz * dz + wid * wid)
             hyr = ar / per
@@ -85,32 +85,32 @@ contains
 
       if (jaconv == 0) then
          return
-      else if (frcn == 0d0) then
-         aconv = 0d0; return
+      else if (frcn == 0.0_dp) then
+         aconv = 0.0_dp; return
       else if (jaconv == 1) then ! hydraulic radius type
 
          Cz = get_chezy(hyr, frcn, u1(L), v(L), friction_type)
-         aconv = 1d0 / (Cz * Cz * hyr)
+         aconv = 1.0_dp / (Cz * Cz * hyr)
 
       else if (jaconv >= 2) then ! 1D analytic conveyance type
          if (friction_type == 1) then
             cman = frcn
          else
-            if (ai < 1d-3) then
+            if (ai < 1.0e-3_dp) then
                hav = hpr
             else if (hpr < dz) then
-               hav = 0.5d0 * hpr
+               hav = 0.5_dp * hpr
             else
-               hav = hpr - 0.5d0 * dz
+               hav = hpr - 0.5_dp * dz
             end if
             Cz = get_chezy(hav, frcn, u1(L), v(L), friction_type)
             cman = hav**d16 / Cz
          end if
 
          jac = jaconv
-         if (jaconv == 3 .and. beta == 0d0) jac = 2
+         if (jaconv == 3 .and. beta == 0.0_dp) jac = 2
          if (jac == 2) then
-            if (ai < 1d-3) then ! see sysdoc 5 1D conveyance
+            if (ai < 1.0e-3_dp) then ! see sysdoc 5 1D conveyance
                aconv = (cman / hpr**d23)**2
             else if (hpr < dz) then
                aconv = (d43 * cman / hpr**d23)**2
@@ -118,7 +118,7 @@ contains
                aconv = (d43 * cman * (hpr * hpr - hp2 * hp2) / (hpr**d83 - hp2**d83))**2
             end if
          else
-            if (ai < 1d-3) then ! see sysdoc 5 2D conveyance
+            if (ai < 1.0e-3_dp) then ! see sysdoc 5 2D conveyance
                aconv = (cman / (beta * hpr**d23))**2
             else if (hpr < dz) then
                hpr83 = hpr**d83

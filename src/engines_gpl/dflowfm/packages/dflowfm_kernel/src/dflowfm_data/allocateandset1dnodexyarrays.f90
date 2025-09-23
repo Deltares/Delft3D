@@ -80,7 +80,7 @@ contains
          end if
          dxt = getdx(xz(k1), yz(k1), xz(k2), yz(k2), jsferic)
          dyt = getdy(xz(k1), yz(k1), xz(k2), yz(k2), jsferic)
-         if (abs(dxt) < 1d-14 .and. abs(dyt) < 1d-14) then
+         if (abs(dxt) < 1.0e-14_dp .and. abs(dyt) < 1.0e-14_dp) then
             if (dyt < 0) then
                phi = -pi / 2
             else
@@ -118,7 +118,7 @@ contains
 ! Use last link to prepare connection for 1st link in following loop:
       La = abs(linnrs(nd(n)%lnx))
       cs = csu(La); sn = snu(La)
-      hwu = 0.5d0 * wu(La)
+      hwu = 0.5_dp * wu(La)
       if (jsferic == 1) then
          hwu = rd2dg * hwu / ra
       end if
@@ -143,7 +143,7 @@ contains
 
          n1 = ln(1, La); n2 = ln(2, La)
          cs = csu(La); sn = snu(La)
-         hwu = 0.5d0 * wu(La)
+         hwu = 0.5_dp * wu(La)
          if (jsferic == 1) then
             hwu = rd2dg * hwu / ra
          end if
@@ -209,7 +209,7 @@ contains
          call realloc(xx, m, keepExisting=.false.)
          call realloc(yy, m, keepExisting=.false.)
 
-         call make_dual_cell(k, m, 1d0, xx, yy, num, Wu1Duni)
+         call make_dual_cell(k, m, 1.0_dp, xx, yy, num, Wu1Duni)
 
          call realloc(nd(n)%x, num + 1, keepExisting=.true.)
          call realloc(nd(n)%y, num + 1, keepExisting=.true.)

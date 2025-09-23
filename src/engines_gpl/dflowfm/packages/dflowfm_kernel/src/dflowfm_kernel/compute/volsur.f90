@@ -56,7 +56,7 @@ contains
          !$OMP PARALLEL DO                              &
          !$OMP PRIVATE(n,hh)
          do n = 1, ndx2d
-            hh = max(0d0, s1(n) - bl(n))
+            hh = max(0.0_dp, s1(n) - bl(n))
             vol1(n) = ba(n) * hh
             a1(n) = ba(n)
          end do
@@ -64,26 +64,26 @@ contains
 
       else
 
-         vol1(1:ndx2d) = 0d0
-         a1(1:ndx2d) = 0d0
+         vol1(1:ndx2d) = 0.0_dp
+         a1(1:ndx2d) = 0.0_dp
 
       end if
 
       if (nonlin == 0) then
 
          do n = ndx2d + 1, ndxi
-            hh = max(0d0, s1(n) - bl(n))
+            hh = max(0.0_dp, s1(n) - bl(n))
             vol1(n) = ba(n) * hh
             a1(n) = ba(n)
          end do
 
       else
-         vol1(ndx2D + 1:ndxi) = 0d0
-         a1(ndx2D + 1:ndxi) = 0d0
+         vol1(ndx2D + 1:ndxi) = 0.0_dp
+         a1(ndx2D + 1:ndxi) = 0.0_dp
       end if
 
       if (nonlin >= 2) then
-         a1m = 0d0
+         a1m = 0.0_dp
       end if
 
       call VOL12D(japerim) ! and add area's and volumes of 1D links

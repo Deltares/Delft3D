@@ -155,7 +155,7 @@ contains
       type(tpoly), dimension(:), allocatable :: pli
       real(kind=dp), dimension(6) :: transformcoef ! don't override externalforcing setting
 
-      transformcoef = 0d0
+      transformcoef = 0.0_dp
 
       ! detect grid enclosure for this partition/overlapping part of grids
       call savepol()
@@ -224,8 +224,8 @@ contains
       numk = size(indices)
       !
       ! reallocate nodes arrays and copy values
-      call realloc(xk1, size(xk), keepexisting=.false., fill=0d0)
-      call realloc(yk1, size(xk), keepexisting=.false., fill=0d0)
+      call realloc(xk1, size(xk), keepexisting=.false., fill=0.0_dp)
+      call realloc(yk1, size(xk), keepexisting=.false., fill=0.0_dp)
       xk1 = xk
       yk1 = yk
       if (jampi > 0) then
@@ -236,8 +236,8 @@ contains
          deallocate (iwork)
       end if
 
-      call realloc(xk, numk, keepexisting=.false., fill=0d0)
-      call realloc(yk, numk, keepexisting=.false., fill=0d0)
+      call realloc(xk, numk, keepexisting=.false., fill=0.0_dp)
+      call realloc(yk, numk, keepexisting=.false., fill=0.0_dp)
       xk = xk1(indices)
       yk = yk1(indices)
       deallocate (xk1, yk1)
@@ -249,15 +249,15 @@ contains
       jakdtree = 1
       jdla = 1
       call realloc(indxx, [3, numk], keepexisting=.false., fill=0)
-      call realloc(wfxx, [3, numk], keepexisting=.false., fill=0d0)
+      call realloc(wfxx, [3, numk], keepexisting=.false., fill=0.0_dp)
       call realloc(dumout, numk, keepexisting=.false., fill=dmiss)
 
-      transformcoef(6) = 1.1d0
+      transformcoef(6) = 1.1_dp
       call triinterp2(xk, yk, dumout, numk, jdla, &
                       xz, yz, bl, ndx, dmiss, jsferic, jins, jasfer3d, npl, 0, 0, xpl, ypl, zpl, transformcoef)
       !
       call realloc(st_ind, [3, numk], keepexisting=.false., fill=0)
-      call realloc(st_wf, [3, numk], keepexisting=.false., fill=0d0)
+      call realloc(st_wf, [3, numk], keepexisting=.false., fill=0.0_dp)
       do k = 1, numk
          st_ind(:, k) = indxx(:, k)
          st_wf(:, k) = wfxx(:, k)

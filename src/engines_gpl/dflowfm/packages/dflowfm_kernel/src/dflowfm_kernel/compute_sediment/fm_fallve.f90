@@ -125,7 +125,7 @@ contains
    !!
    !!! executable statements -------------------------------------------------------
    !!
-      call realloc(z0rou, ndx, keepExisting=.false., fill=0d0)
+      call realloc(z0rou, ndx, keepExisting=.false., fill=0.0_dp)
 
       csoil => stmpar%sedpar%csoil
       rhosol => stmpar%sedpar%rhosol
@@ -168,8 +168,8 @@ contains
          ! compute depth-averaged velocities
          !
          if (kmx > 0) then ! 3D
-            um = 0d0
-            vm = 0d0
+            um = 0.0_dp
+            vm = 0.0_dp
             call getkbotktop(k, kb, kt)
             do kk = kb, kt
                thick = zws(kk) - zws(kk - 1)
@@ -218,12 +218,12 @@ contains
                if (iturbulencemodel == 3) then ! k-eps
                   tur_k = turkinws(kk)
                else
-                  tur_k = -999.0d0
+                  tur_k = -999.0_dp
                end if
                if (iturbulencemodel == 3) then
                   tur_eps = turepsws(kk)
                else
-                  tur_eps = -999.0d0
+                  tur_eps = -999.0_dp
                end if
                if (iturbulencemodel == 3) then ! k-eps
                   call get_tshear_tdiss(tshear, tur_eps, rhoint, tke=tur_k)
@@ -233,7 +233,7 @@ contains
 
             else ! 2D
                if (jasal > 0) then
-                  salint = max(0d0, constituents(isalt, k))
+                  salint = max(0.0_dp, constituents(isalt, k))
                else
                   salint = backgroundsalinity
                end if
@@ -248,15 +248,15 @@ contains
                !
                u = ucx_mor(k) ! x component
                v = ucy_mor(k) ! y component
-               w = -999d0 ! z component
+               w = -999.0_dp ! z component
                !
-               tur_k = -999d0
-               tur_eps = -999d0
+               tur_k = -999.0_dp
+               tur_eps = -999.0_dp
                call get_tshear_tdiss(tshear, tur_eps, rhoint, taub=taub(k), waterdepth=h0, vonkar=vonkar)
             end if
             !
-            ctot = 0d0
-            cclay = 0d0
+            ctot = 0.0_dp
+            cclay = 0.0_dp
             do ll = 1, lsed
                ctot = ctot + sed(ll, kk)
                if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + sed(ll, kk)

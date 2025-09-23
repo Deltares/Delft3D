@@ -32,6 +32,8 @@
 
 module m_flow_single_timestep
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -70,8 +72,8 @@ contains
          !V: During model initialization, the time advances 1 s. This is very annoying when using
          !an implicit solver with fixed time step. Here we take it out considering the case in
          !which the time step is set to 1 s. This should be done in a better way (not sure how).
-         if ((time0 == 1d0) .and. (dts /= 1d0)) then
-            time0 = 0d0
+         if ((time0 == 1.0_dp) .and. (dts /= 1.0_dp)) then
+            time0 = 0.0_dp
          end if
          time1 = time0 + dts
       end if

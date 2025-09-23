@@ -82,7 +82,7 @@ contains
 
          profiles1D(1:mxprof)%ityp = 0
          profiles1D(1:mxprof)%width = 0
-         profiles1D(1:mxprof)%height = 3d3
+         profiles1D(1:mxprof)%height = 3.0e3_dp
          profiles1D(1:mxprof)%zmin = -999
 
 20       read (minp, '(A)', end=888) rec
@@ -113,7 +113,7 @@ contains
                L = index(rec, 'WIDTH=') ! profile width
                if (L > 0) then
                   read (rec(L + 6:), *) width
-                  if (width < 1d-3) then
+                  if (width < 1.0e-3_dp) then
                      call qnerror('profile width too small', rec, ' ')
                   end if
                   profiles1D(n)%width = width
@@ -122,7 +122,7 @@ contains
                L = index(rec, 'HEIGHT=') ! profile height
                if (L > 0) then
                   read (rec(L + 7:), *) height
-                  if (height < 1d-3) then
+                  if (height < 1.0e-3_dp) then
                      call qnerror('profile height too small', rec, ' ')
                   end if
                   profiles1D(n)%height = height
@@ -135,13 +135,13 @@ contains
                end if
 
                L = index(rec, 'BASE=') ! trapezoid base
-               base = 0d0
+               base = 0.0_dp
                if (L > 0) then
                   read (rec(L + 5:), *) base
                end if
 
                L = index(rec, 'TALUD=') ! trapezoid base
-               talud = 0d0
+               talud = 0.0_dp
                if (L > 0) then
                   read (rec(L + 6:), *) talud
                end if
@@ -176,8 +176,8 @@ contains
                   if (nyz == 0) then
                      call qnerror(' xyzprofile not found ', ' ', ' ')
                   else
-                     allocate (profiles1D(n)%y(nyz), stat=ierr); profiles1D(n)%y = 0d0
-                     allocate (profiles1D(n)%z(nyz), stat=ierr); profiles1D(n)%z = 0d0
+                     allocate (profiles1D(n)%y(nyz), stat=ierr); profiles1D(n)%y = 0.0_dp
+                     allocate (profiles1D(n)%z(nyz), stat=ierr); profiles1D(n)%z = 0.0_dp
                      do k = 1, nyz
                         profiles1D(n)%y(k) = yyh(k)
                         profiles1D(n)%z(k) = zzh(k)
@@ -194,29 +194,29 @@ contains
                   allocate (profiles1D(n)%y(nyz), stat=ierr)
                   allocate (profiles1D(n)%z(nyz), stat=ierr)
                   do k = 1, nyz
-                     profiles1D(n)%y(k) = profiles1D(n)%width * (dble(k - 1) / dble(nyz - 1) - 0.5d0)
+                     profiles1D(n)%y(k) = profiles1D(n)%width * (dble(k - 1) / dble(nyz - 1) - 0.5_dp)
                      profiles1D(n)%z(k) = profiles1D(n)%height
                   end do
-                  profiles1D(n)%z(2) = 0d0
+                  profiles1D(n)%z(2) = 0.0_dp
                   profiles1D(n)%ityp = profiles1D(n)%ityp + 96
                end if
 
                if (profiles1D(n)%ityp == 6 .or. profiles1D(n)%ityp == 7) then ! Trapezoid comes as a yz type
-                  if (base == 0d0 .and. talud /= 0.d0) then
-                     base = max(0d0, profiles1D(n)%width - 2d0 * profiles1D(n)%height * talud)
+                  if (base == 0.0_dp .and. talud /= 0.0_dp) then
+                     base = max(0.0_dp, profiles1D(n)%width - 2.0_dp * profiles1D(n)%height * talud)
                   end if
 
                   nyz = 4
                   allocate (profiles1D(n)%y(nyz), stat=ierr)
                   allocate (profiles1D(n)%z(nyz), stat=ierr)
-                  profiles1D(n)%y(1) = -profiles1D(n)%width / 2d0
-                  profiles1D(n)%y(2) = profiles1D(n)%y(1) + (profiles1D(n)%width - base) / 2d0
+                  profiles1D(n)%y(1) = -profiles1D(n)%width / 2.0_dp
+                  profiles1D(n)%y(2) = profiles1D(n)%y(1) + (profiles1D(n)%width - base) / 2.0_dp
                   profiles1D(n)%y(3) = profiles1D(n)%y(2) + base
-                  profiles1D(n)%y(4) = profiles1D(n)%width / 2d0
+                  profiles1D(n)%y(4) = profiles1D(n)%width / 2.0_dp
 
                   profiles1D(n)%z(1) = profiles1D(n)%height
-                  profiles1D(n)%z(2) = 0d0
-                  profiles1D(n)%z(3) = 0d0
+                  profiles1D(n)%z(2) = 0.0_dp
+                  profiles1D(n)%z(3) = 0.0_dp
                   profiles1D(n)%z(4) = profiles1D(n)%height
                   profiles1D(n)%ityp = profiles1D(n)%ityp + 94
                end if

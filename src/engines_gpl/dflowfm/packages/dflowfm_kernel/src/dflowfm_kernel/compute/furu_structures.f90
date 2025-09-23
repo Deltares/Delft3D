@@ -145,7 +145,7 @@ contains
 
                      call GetCSParsFlow(network%adm%line2cross(L, 2), network%crs%cross, dpt, wetdown, perimeter, width)
 
-                     wetdown = max(wetdown, 0.0001d0)
+                     wetdown = max(wetdown, 0.0001_dp)
                      call computeculvert(pstru%culvert, pstru%fu(L0), pstru%ru(L0), pstru%au(L0), width, s1(k1), s1(k2), &
                                          pstru%u1(L0), dx(L), dts, wetdown)
 
@@ -181,13 +181,13 @@ contains
                   ! store computed fu, ru and au in structure object. In case this structure
                   ! is a part of a compound structure this data will be used in computeCompound
                else
-                  fu(L) = 0d0
-                  ru(L) = 0d0
-                  au(L) = 0d0
+                  fu(L) = 0.0_dp
+                  ru(L) = 0.0_dp
+                  au(L) = 0.0_dp
                   if (pstru%type == ST_GENERAL_ST) then
-                     pstru%generalst%fu(:, L0) = 0d0
-                     pstru%generalst%ru(:, L0) = 0d0
-                     pstru%generalst%au(:, L0) = 0d0
+                     pstru%generalst%fu(:, L0) = 0.0_dp
+                     pstru%generalst%ru(:, L0) = 0.0_dp
+                     pstru%generalst%au(:, L0) = 0.0_dp
                      pstru%generalst%state(:, L0) = 0
                   else if (pstru%type == ST_CULVERT) then
                      pstru%culvert%state = 0

@@ -29,6 +29,8 @@
 
 module m_fill_onlywetlinks
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -55,7 +57,7 @@ contains
       wetLink2D = lnx + 1
       wetLinkBnd = lnx + 1
       do L = 1, lnx
-         if ((hu(L) > 0d0) .or. (s1(ln(1, L)) - bl(ln(1, L)) > 0d0) .or. (s1(ln(2, L)) - bl(ln(2, L)) > 0d0)) then
+         if ((hu(L) > 0.0_dp) .or. (s1(ln(1, L)) - bl(ln(1, L)) > 0.0_dp) .or. (s1(ln(2, L)) - bl(ln(2, L)) > 0.0_dp)) then
             wetLinkCount = wetLinkCount + 1
             onlyWetLinks(wetLinkCount) = L
             if (L > lnx1d .and. wetLinkCount < wetLink2D) then

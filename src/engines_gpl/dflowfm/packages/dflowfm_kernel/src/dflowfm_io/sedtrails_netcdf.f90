@@ -247,7 +247,7 @@ contains
 
       end do
 
-      call realloc(zk, numk_read, keepExisting=.false., fill=0d0)
+      call realloc(zk, numk_read, keepExisting=.false., fill=0.0_dp)
 
       ! Success
 888   continue
@@ -480,9 +480,9 @@ contains
 
       ! analysis:
       if (stm_included) then
-         call realloc(work, [numk, lsedtot], keepexisting=.false., fill=0d0)
+         call realloc(work, [numk, lsedtot], keepexisting=.false., fill=0.0_dp)
       else
-         call realloc(work, [numk, 1], keepexisting=.false., fill=0d0)
+         call realloc(work, [numk, 1], keepexisting=.false., fill=0.0_dp)
       end if
 
       ! bottom level

@@ -51,7 +51,7 @@ contains
       implicit none
 
       integer :: kk, k, kb, kt
-      real(kind=dp) :: dvoli, dtol = 1d-8
+      real(kind=dp) :: dvoli, dtol = 1.0e-8_dp
 
       integer(4) :: ithndl = 0
 
@@ -66,9 +66,9 @@ contains
       do kk = 1, Ndx
          call getkbotktop(kk, kb, kt)
          do k = kb, kt
-            dvoli = 1d0 / max(vol1(k), dtol)
+            dvoli = 1.0_dp / max(vol1(k), dtol)
             const_sour(1, k) = -rho(k) * sq(k) * dvoli
-            const_sink(1, k) = 0d0
+            const_sink(1, k) = 0.0_dp
          end do
       end do
 

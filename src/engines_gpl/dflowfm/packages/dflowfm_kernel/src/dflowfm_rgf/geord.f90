@@ -77,19 +77,19 @@ contains
 
       call wgs842bessel(ygeo, xgeo, yy, xx)
 !!
-      ugeo = 0.3600d0 * xx - 1.9395500d0
-      vgeo = 0.3600d0 * yy - 18.7762178d0
+      ugeo = 0.3600_dp * xx - 1.9395500_dp
+      vgeo = 0.3600_dp * yy - 18.7762178_dp
 
 !
 !     perform conversion
 !
-      xrd = 190066.91d0 * ugeo - 11831d0 * ugeo * vgeo - &
-            114.2d0 * ugeo * (vgeo**2) - 32.39d0 * (ugeo**3) - &
-            2.33d0 * ugeo * (vgeo**3) - 0.61d0 * vgeo * (ugeo**3)
-      yrd = 309020.34d0 * vgeo + 3638.36d0 * (ugeo**2) + &
-            72.92d0 * (vgeo**2) - 157.97d0 * vgeo * (ugeo**2) + &
-            59.77d0 * (vgeo**3) + 0.09d0 * (ugeo**4) - &
-            6.45d0 * (vgeo**2) * (ugeo**2) + 0.07d0 * (vgeo**4)
+      xrd = 190066.91_dp * ugeo - 11831.0_dp * ugeo * vgeo - &
+            114.2_dp * ugeo * (vgeo**2) - 32.39_dp * (ugeo**3) - &
+            2.33_dp * ugeo * (vgeo**3) - 0.61_dp * vgeo * (ugeo**3)
+      yrd = 309020.34_dp * vgeo + 3638.36_dp * (ugeo**2) + &
+            72.92_dp * (vgeo**2) - 157.97_dp * vgeo * (ugeo**2) + &
+            59.77_dp * (vgeo**3) + 0.09_dp * (ugeo**4) - &
+            6.45_dp * (vgeo**2) * (ugeo**2) + 0.07_dp * (vgeo**4)
 !
 
       if (JAPARIJS == 1) then

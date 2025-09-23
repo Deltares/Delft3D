@@ -52,8 +52,10 @@
 
 !> Interface module to METIS's native error codes.
 module m_metis
+
 ! the parameters and enumerators are taken from
 !   ../third_party_open/metis-<version>/include/metis.h
+   use precision, only: dp
    integer, parameter :: METIS_NOPTIONS = 40
 
    integer, dimension(METIS_NOPTIONS) :: opts
@@ -237,9 +239,9 @@ module m_partitioninfo
    integer :: nbndint ! number of interface links
    integer, allocatable :: kbndint(:, :) ! interface administration, similar to kbndz, etc., dim(3,nbndint)
    real(kind=dp), allocatable :: zbndint(:, :) ! (1,:): beta value, (2,:): interface value, dim(2,nbndint)
-   real(kind=dp) :: stoptol = 1d-4 ! parameter of stopping criteria for subsolver of Schwarz method
-   real(kind=dp) :: sbeta = 10d0 ! beta value in Robin-Robin coupling for Schwarz iterations
-   real(kind=dp) :: prectol = 0.50d-2 ! tolerance for drop of preconditioner
+   real(kind=dp) :: stoptol = 1.0e-4_dp ! parameter of stopping criteria for subsolver of Schwarz method
+   real(kind=dp) :: sbeta = 10.0_dp ! beta value in Robin-Robin coupling for Schwarz iterations
+   real(kind=dp) :: prectol = 0.50e-2_dp ! tolerance for drop of preconditioner
    integer :: jabicgstab = 1 !
    integer :: Nsubiters = 1000
 
@@ -1442,7 +1444,7 @@ contains
       integer :: node
 
       integer :: jafound
-      real(kind=dp), parameter :: TOLERANCE = 1d-4
+      real(kind=dp), parameter :: TOLERANCE = 1.0e-4_dp
       character(len=80) :: message2, message3
 
       ierror = 1
@@ -1524,7 +1526,7 @@ contains
       else
          numnew = nr_send_list(numdomains - 1) + num
          if (numnew > ubound(send_list, 1)) then
-            call realloc(send_list, int(1.2d0 * dble(numnew) + 1d0), fill=0, keepExisting=.true.)
+            call realloc(send_list, int(1.2_dp * dble(numnew) + 1.0_dp), fill=0, keepExisting=.true.)
          end if
       end if
 
@@ -1856,7 +1858,7 @@ contains
 
 !        check recv array size
          if (icount > 2 * ubound(xy_recv, 2)) then ! reallocate if necessary
-            call realloc(xy_recv, [2, int(1.2d0 * dble(icount / 2) + 1d0)], keepExisting=.false., fill=0d0)
+            call realloc(xy_recv, [2, int(1.2_dp * dble(icount / 2) + 1.0_dp)], keepExisting=.false., fill=0.0_dp)
          end if
 
          call mpi_recv(xy_recv, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, status, error)
@@ -1919,7 +1921,7 @@ contains
 
       integer :: i, k, k1, k2, L, num
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       ierror = 1
 
@@ -1957,7 +1959,7 @@ contains
          L = abs(ighostlist_u(i))
 
 !        safety check
-         dum = abs(abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L)) - 1d0)
+         dum = abs(abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L)) - 1.0_dp)
          if (dum >= dtol) then
 !           check if this is a valid ghostlink (see also subroutine "disable_invalid_ghostcells_with_wu")
             k1 = ln(1, L)
@@ -1971,7 +1973,7 @@ contains
             end if
          end if
 
-         if (abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L) + 1d0) < dtol) then
+         if (abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L) + 1.0_dp) < dtol) then
             ighostlist_u(i) = -ighostlist_u(i)
             num = num + 1
          end if
@@ -2413,7 +2415,7 @@ contains
       end if
 
       if (ubound(work, 1) < num) then
-         call realloc(work, int(1.2d0 * dble(num) + 1d0))
+         call realloc(work, int(1.2_dp * dble(num) + 1.0_dp))
       end if
 
 !     fill work array
@@ -2540,7 +2542,7 @@ contains
       end if
 
       if (ubound(workrec, 1) < num) then
-         call realloc(workrec, int(1.2d0 * dble(num) + 1d0))
+         call realloc(workrec, int(1.2_dp * dble(num) + 1.0_dp))
       end if
 
       if (ja3d /= 1) then
@@ -3377,8 +3379,8 @@ contains
 
       integer :: i, other_domain, in, k1, ierror
 
-      real(kind=dp), parameter :: DPENALTY = 1d10 ! should be smaller than DREJECT
-      real(kind=dp), parameter :: DREJECT = 2d99 ! should be larger than DPENALTY
+      real(kind=dp), parameter :: DPENALTY = 1.0e10_dp ! should be smaller than DREJECT
+      real(kind=dp), parameter :: DREJECT = 2.0e99_dp ! should be larger than DPENALTY
 
       if (N < 1) return
 
@@ -3398,7 +3400,7 @@ contains
 !        determine preference
          if (in == 1) then
             if (idomain(k1) == my_rank) then
-               dist(i) = 0d0
+               dist(i) = 0.0_dp
             else
                dist(i) = DPENALTY
             end if
@@ -3442,18 +3444,18 @@ contains
       end do
 
 !     safety: check uniqueness
-      dist = 0d0
+      dist = 0.0_dp
       do i = 1, N
          if (kobs(i) > 0) then
-            dist(i) = 1d0
+            dist(i) = 1.0_dp
          end if
       end do
       call mpi_allreduce(dist, dist_all, N, MPI_DOUBLE_PRECISION, MPI_SUM, DFM_COMM_DFMWORLD, ierror) ! re-use (part of) dist_all
       do i = 1, N
-         if (comparereal(dist_all(i, 0), 1d0) == 1) then
+         if (comparereal(dist_all(i, 0), 1.0_dp) == 1) then
             call mess(LEVEL_ERROR, 'reduce_kobs: non-unique observation station(s)')
          end if
-         if (comparereal(dist_all(i, 0), 0d0) == 0) then
+         if (comparereal(dist_all(i, 0), 0.0_dp) == 0) then
             call mess(LEVEL_WARN, 'reduce_kobs: observation station '//trim(namobs(i))//' was not snapped to a valid flownode on any partition.')
          end if
       end do
@@ -3478,7 +3480,7 @@ contains
       integer, intent(in) :: numobs !< number of observation stations
       real(kind=dp), dimension(numobs, numvals), intent(inout) :: valobs !< values at obervations stations to be output.
 
-      real(kind=dp), parameter :: dsmall = -huge(1d0)
+      real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
       integer :: iobs, ival
       integer :: ierror
 
@@ -3520,7 +3522,7 @@ contains
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that we wish to update.
 
-      real(kind=dp), parameter :: dsmall = -huge(1d0)
+      real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
       integer :: i_stat, i_loc
       real(kind=dp), pointer :: stat_output(:) !< pointer to statistical output data array that is to be written to the Netcdf file after reduction across partitions.
       real(kind=dp), allocatable :: send_buffer(:) !< send buffer for mpi reduction because MPI_IN_PLACE does not work for unknown reasons.
@@ -3596,17 +3598,17 @@ contains
 
       integer, dimension(:), allocatable :: idum
 
-      real(kind=dp), parameter :: dtol = 1d-8
-      real(kind=dp), parameter :: DLARGE = 1d99
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
+      real(kind=dp), parameter :: DLARGE = 1.0e99_dp
       real(kind=dp), parameter :: ILARGE = 10000
 
       integer :: i, ierror
 
       allocate (dum(Nproflocs))
-      dum = 0d0
+      dum = 0.0_dp
 
       allocate (idum(Nproflocs))
-      idum = 0d0
+      idum = 0.0_dp
 
       call MPI_allreduce(distsam, dum, Nproflocs, MPI_DOUBLE_PRECISION, MPI_MIN, DFM_COMM_DFMWORLD, ierror)
       if (ierror /= 0) goto 1234
@@ -3686,7 +3688,7 @@ contains
 #ifdef HAVE_MPI
 !     allocate
       allocate (resu_all(2, num_rugs))
-      resu_all = 0d0
+      resu_all = 0.0_dp
 
       call mpi_allreduce(resu, resu_all, num_rugs, mpi_2double_precision, mpi_maxloc, DFM_COMM_DFMWORLD, ierror)
       if (ierror /= 0) then
@@ -3727,7 +3729,7 @@ contains
       klp: do k = 1, Ndxi
          do LL = 1, nd(k)%lnx
             L = abs(nd(k)%ln(LL))
-            if (wu(L) /= 0d0) then
+            if (wu(L) /= 0.0_dp) then
                cycle klp
             end if
          end do
@@ -3826,7 +3828,7 @@ contains
 
       logical :: Lleftfound, Lrightfound
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
 !     count the number of branches
       numnetbr = mxnetbr
@@ -3864,18 +3866,18 @@ contains
       allocate (iordened_branches(numallnetbr))
       allocate (ipoint(numallnetbr + 1))
 
-      xyL_loc = 0d0
-      xyR_loc = 0d0
+      xyL_loc = 0.0_dp
+      xyR_loc = 0.0_dp
 
       do ibr = 1, numnetbr
          iglob = ibr + iglobalbranch_first - 1
          num = netbr(ibr)%NX
          LL = netbr(ibr)%LN(1)
          LR = netbr(ibr)%LN(num)
-         xyL_loc(1, iglob) = 0.5d0 * (xk(kn(1, abs(LL))) + xk(kn(2, abs(LL))))
-         xyL_loc(2, iglob) = 0.5d0 * (yk(kn(1, abs(LL))) + yk(kn(2, abs(LL))))
-         xyR_loc(1, iglob) = 0.5d0 * (xk(kn(1, abs(LR))) + xk(kn(2, abs(LR))))
-         xyR_loc(2, iglob) = 0.5d0 * (yk(kn(1, abs(LR))) + yk(kn(2, abs(LR))))
+         xyL_loc(1, iglob) = 0.5_dp * (xk(kn(1, abs(LL))) + xk(kn(2, abs(LL))))
+         xyL_loc(2, iglob) = 0.5_dp * (yk(kn(1, abs(LL))) + yk(kn(2, abs(LL))))
+         xyR_loc(1, iglob) = 0.5_dp * (xk(kn(1, abs(LR))) + xk(kn(2, abs(LR))))
+         xyR_loc(2, iglob) = 0.5_dp * (yk(kn(1, abs(LR))) + yk(kn(2, abs(LR))))
 
          xyL_loc(3, iglob) = dLinkangle(LL)
          xyR_loc(3, iglob) = dLinkangle(LR)
@@ -3896,9 +3898,9 @@ contains
 !     connect branches and make new global branch numbering
       inew = 0
       numnew = 0
-      dlL = 0d0
-      dlR = 0d0
-      dltot = 0d0
+      dlL = 0.0_dp
+      dlR = 0.0_dp
+      dltot = 0.0_dp
       iorient = 0
       ipoint(1) = 1
       do ibr = 1, numallnetbr
@@ -3947,8 +3949,8 @@ contains
                Lconnect = 0
             end if
 
-            dleft = 0d0
-            dlength = 0d0
+            dleft = 0.0_dp
+            dlength = 0.0_dp
             do k = 1, N
                L = netbr(ibrr)%LN(k)
                dlength = dlength + dlinklength(L)
@@ -3980,7 +3982,7 @@ contains
 
 !     compute the offset lengths and fill local branch properties
       do i = 1, numnew
-         dconnected = 0d0
+         dconnected = 0.0_dp
          do k = ipoint(i), ipoint(i + 1) - 1
             ibr_glob = abs(iordened_branches(k))
             ibrr = ibr_glob - iglobalbranch_first + 1

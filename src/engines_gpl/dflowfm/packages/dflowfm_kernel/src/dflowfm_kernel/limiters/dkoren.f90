@@ -37,11 +37,11 @@ contains
       use precision, only: dp
 
       real(kind=dp) d1, d2, r
-      if (d1 * d2 > 0d0) then
+      if (d1 * d2 > 0.0_dp) then
          r = d2 / d1
-         dkoren = max(0d0, min(r + r, min((1d0 + r + r) / 3d0, 2d0)))
+         dkoren = max(0.0_dp, min(r + r, min((1.0_dp + r + r) / 3.0_dp, 2.0_dp)))
       else
-         dkoren = 0d0
+         dkoren = 0.0_dp
       end if
       return
    end function dkoren

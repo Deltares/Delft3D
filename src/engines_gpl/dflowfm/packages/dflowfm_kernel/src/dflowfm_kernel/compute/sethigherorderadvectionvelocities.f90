@@ -69,7 +69,7 @@ contains
          do L = 1, lnx ! upwind (supq) + limited high order (dsq)
 
             LL = L
-            if (qa(LL) /= 0d0) then
+            if (qa(LL) /= 0.0_dp) then
 
                k1 = ln(1, L); k2 = ln(2, L)
 
@@ -80,7 +80,7 @@ contains
                   ib = 0
                else
                   !   <-      ds2   ds1
-                  k = k2; kd = k1; is = -1; half = 1d0 - acl(LL); ip = 3 !   <-   kd     k     ku
+                  k = k2; kd = k1; is = -1; half = 1.0_dp - acl(LL); ip = 3 !   <-   kd     k     ku
                   n12 = 2
                   ib = 2
                end if
@@ -141,7 +141,7 @@ contains
                end if
 
                cf = dts * abs(u1(L)) * dxi(LL) ! cflj(L)  !cfli(k ) ! cflj(L)
-               cf = half * max(0d0, 1d0 - cf)
+               cf = half * max(0.0_dp, 1.0_dp - cf)
                if (jasfer3D == 0) then
                   ds2x = ucx(kd) - ucx(k)
                   ds2y = ucy(kd) - ucy(k)
@@ -178,7 +178,7 @@ contains
 
          do LL = 1, lnx ! upwind (supq) + limited high order (dsq)
 
-            if (qa(LL) /= 0d0) then
+            if (qa(LL) /= 0.0_dp) then
 
                call getLbotLtop(LL, Lb, Lt)
 
@@ -194,7 +194,7 @@ contains
 
                   else
                      !   <-      ds2   ds1
-                     k = k2; kd = k1; is = -1; half = 1d0 - acl(LL); ip = 3 !   <-   kd     k     ku
+                     k = k2; kd = k1; is = -1; half = 1.0_dp - acl(LL); ip = 3 !   <-   kd     k     ku
                      n12 = 2
                      ib = 2
 
@@ -259,7 +259,7 @@ contains
                   end if
 
                   cf = dts * abs(u1(L)) * dxi(LL) ! cflj(L)  !cfli(k ) ! cflj(L)
-                  cf = half * max(0d0, 1d0 - cf)
+                  cf = half * max(0.0_dp, 1.0_dp - cf)
                   if (jasfer3D == 0) then
                      ds2x = ucx(kd) - ucx(k)
                      ds2y = ucy(kd) - ucy(k)

@@ -54,15 +54,15 @@ contains
          call movabs(xa, ya)
          xa = fx * (x + xx - xw1m) / (xw2m - xw1m) + xs1m
          call lnabs(xa, ya)
-         xa = fx * (x - 11d0 * xx - xw1m) / (xw2m - xw1m) + xs1m
+         xa = fx * (x - 11.0_dp * xx - xw1m) / (xw2m - xw1m) + xs1m
       else if (ihv == 2) then
          xa = fx * (x - xw1m) / (xw2m - xw1m) + xs1m
          ya = fy * (y - zz - yw1m) / (yw2m - yw1m) + ys1m
          call movabs(xa, ya)
          ya = fy * (y + zz - yw1m) / (yw2m - yw1m) + ys1m
          call lnabs(xa, ya)
-         xa = fx * (x - 5d0 * xx - xw1m) / (xw2m - xw1m) + xs1m
-         ya = fy * (y - 3d0 * zz - yw1m) / (yw2m - yw1m) + ys1m
+         xa = fx * (x - 5.0_dp * xx - xw1m) / (xw2m - xw1m) + xs1m
+         ya = fy * (y - 3.0_dp * zz - yw1m) / (yw2m - yw1m) + ys1m
       end if
       call htext(val, xa, ya)
    end subroutine htext_rai

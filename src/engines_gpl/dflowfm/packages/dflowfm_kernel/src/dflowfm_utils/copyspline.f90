@@ -63,7 +63,7 @@ contains
 
       integer :: i, j, num
 
-      real(kind=dp), parameter :: EPS = 1d-4
+      real(kind=dp), parameter :: EPS = 1.0e-4_dp
 
       integer, parameter :: Nresample = 1
 
@@ -84,7 +84,7 @@ contains
          end if
 
          alphan = dcosphi(x0, y0, x0 + EPS * dnx, y0 + EPS * dny, x0, y0, xp, yp, jsferic, jasfer3D, dxymis) * ds
-         alphas = 0d0
+         alphas = 0.0_dp
 
          call newspline()
 

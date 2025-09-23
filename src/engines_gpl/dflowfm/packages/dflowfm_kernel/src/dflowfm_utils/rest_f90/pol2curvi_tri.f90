@@ -142,13 +142,13 @@ contains
       xib = dble(N3) / dble(Nb)
       xic = dble(N2) / dble(Ncc)
 
-      xm = (((1d0 - xia) * XPL(i1) + xia * XPL(i2)) * xic + (1d0 - xic) * XPL(i3) + &
-            ((1d0 - xib) * XPL(i2) + xib * XPL(i3)) * xia + (1d0 - xia) * XPL(i1) + &
-            ((1d0 - xic) * XPL(i3) + xic * XPL(i1)) * xib + (1d0 - xib) * XPL(i2)) / 3d0
+      xm = (((1.0_dp - xia) * XPL(i1) + xia * XPL(i2)) * xic + (1.0_dp - xic) * XPL(i3) + &
+            ((1.0_dp - xib) * XPL(i2) + xib * XPL(i3)) * xia + (1.0_dp - xia) * XPL(i1) + &
+            ((1.0_dp - xic) * XPL(i3) + xic * XPL(i1)) * xib + (1.0_dp - xib) * XPL(i2)) / 3.0_dp
 
-      ym = (((1d0 - xia) * YPL(i1) + xia * YPL(i2)) * xic + (1d0 - xic) * YPL(i3) + &
-            ((1d0 - xib) * YPL(i2) + xib * YPL(i3)) * xia + (1d0 - xia) * YPL(i1) + &
-            ((1d0 - xic) * YPL(i3) + xic * YPL(i1)) * xib + (1d0 - xib) * YPL(i2)) / 3d0
+      ym = (((1.0_dp - xia) * YPL(i1) + xia * YPL(i2)) * xic + (1.0_dp - xic) * YPL(i3) + &
+            ((1.0_dp - xib) * YPL(i2) + xib * YPL(i3)) * xia + (1.0_dp - xia) * YPL(i1) + &
+            ((1.0_dp - xic) * YPL(i3) + xic * YPL(i1)) * xib + (1.0_dp - xib) * YPL(i2)) / 3.0_dp
 
 !  allocate arrays with boundary coordinates
       Nh = max(maxval(M), maxval(N)) + 1
@@ -190,14 +190,14 @@ contains
 
          do i = 1, M(itri) + 1
             xia = dble(i - 1) / dble(M(itri))
-            xh(i, 4) = (1d0 - xia) * XPL(ileft(itri)) + xia * xm
-            yh(i, 4) = (1d0 - xia) * YPL(ileft(itri)) + xia * ym
+            xh(i, 4) = (1.0_dp - xia) * XPL(ileft(itri)) + xia * xm
+            yh(i, 4) = (1.0_dp - xia) * YPL(ileft(itri)) + xia * ym
          end do
 
          do i = 1, N(itri) + 1
             xia = dble(i - 1) / dble(N(itri))
-            xh(i, 2) = (1d0 - xia) * XPL(iright(itri)) + xia * xm
-            yh(i, 2) = (1d0 - xia) * YPL(iright(itri)) + xia * ym
+            xh(i, 2) = (1.0_dp - xia) * XPL(iright(itri)) + xia * xm
+            yh(i, 2) = (1.0_dp - xia) * YPL(iright(itri)) + xia * ym
          end do
 
 !     allocate arrays with grid coordinates

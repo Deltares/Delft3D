@@ -84,7 +84,7 @@ contains
                do L = Lt + 1, Lb + kmxL(LL) - 1
                   kb = ln(1, L)
                   ki = ln(2, L)
-                  if (q1(Lt) > 0d0) then
+                  if (q1(Lt) > 0.0_dp) then
                      constituents(iconst, kb) = valtop
                   else
                      constituents(iconst, kb) = constituents(iconst, ki)

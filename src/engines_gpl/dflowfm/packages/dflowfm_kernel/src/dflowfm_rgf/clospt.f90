@@ -51,7 +51,7 @@ contains
 
       real(kind=dp) :: rmin, r
       integer :: i, j
-      RMIN = 1d+20
+      RMIN = 1.0e+20_dp
 
       do I = 1, MC
          do J = 1, NC

@@ -27,6 +27,7 @@
 !-------------------------------------------------------------------------------
 
 module mass_balance_areas_routines
+   use precision, only: dp
    implicit none
 
    private
@@ -292,9 +293,9 @@ contains
          call reduce_int_array_sum(2 * numsrc, mbasorsinout)
       end if
 
-      call realloc(flxdmp, [2, num_fluxes, nomba], keepExisting=.false., fill=0.0d0) !< Fluxes at dump segments
-      call realloc(flxdmpreduce, [2, num_fluxes, nomba], keepExisting=.false., fill=0.0d0) !< Fluxes at dump segments
-      call realloc(flxdmptot, [2, num_fluxes, nomba], keepExisting=.false., fill=0.0d0) !< Fluxes at dump segments
+      call realloc(flxdmp, [2, num_fluxes, nomba], keepExisting=.false., fill=0.0_dp) !< Fluxes at dump segments
+      call realloc(flxdmpreduce, [2, num_fluxes, nomba], keepExisting=.false., fill=0.0_dp) !< Fluxes at dump segments
+      call realloc(flxdmptot, [2, num_fluxes, nomba], keepExisting=.false., fill=0.0_dp) !< Fluxes at dump segments
 
       call mba_sum_area(nomba, mbadefdomain, mbaarea)
       call mba_sum(nombs, nomba, mbadefdomain, mbavolumeend, mbamassend)
@@ -405,7 +406,6 @@ contains
    end subroutine get_mbainputname
 
    subroutine mba_update(time)
-      use precision, only: dp
       use m_mass_balance_areas
       use m_fm_wq_processes
       use m_partitioninfo
@@ -520,23 +520,22 @@ contains
       end if
 
       ! reset flux accumulators
-      mbaflowhor = 0.0d0
-      mbaflowsorsin = 0.0d0
-      mbaflowraineva = 0.0d0
-      mbafloweva = 0.0d0
-      mbafluxhor = 0.0d0
-      mbafluxsorsin = 0.0d0
-      mbafluxheat = 0.0d0
+      mbaflowhor = 0.0_dp
+      mbaflowsorsin = 0.0_dp
+      mbaflowraineva = 0.0_dp
+      mbafloweva = 0.0_dp
+      mbafluxhor = 0.0_dp
+      mbafluxsorsin = 0.0_dp
+      mbafluxheat = 0.0_dp
       flxdmp = 0.0
 
       if (stm_included) then
-         mbasedflux(:, :, :, :) = 0.0d0
+         mbasedflux(:, :, :, :) = 0.0_dp
       end if
 
    end subroutine mba_update
 
    subroutine mba_final(time)
-      use precision, only: dp
       use m_mass_balance_areas
       use m_fm_wq_processes
       use m_partitioninfo
@@ -587,7 +586,6 @@ contains
    end subroutine mba_final
 
    subroutine mba_sum(nombs, nomba, mbadef, mbavolume, mbamass)
-      use precision, only: dp
 
       use m_fm_wq_processes, only: numwqbots, wqbot
       use m_partitioninfo
@@ -603,8 +601,8 @@ contains
 
       integer :: k, kk, kb, kt, iconst, iwqbot, imba
 
-      mbavolume = 0.0d0
-      mbamass = 0.0d0
+      mbavolume = 0.0_dp
+      mbamass = 0.0_dp
 
       do kk = 1, ndxi
          if (jampi == 1) then
@@ -626,7 +624,6 @@ contains
    end subroutine mba_sum
 
    subroutine mba_sum_morphology(lsedtot, nomba, mbadef, mbamorfac, mbabedmass, mbabedshortmass, mbafluffmass, mbamassreduce)
-      use precision, only: dp
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_flowgeom, only: ndxi, ba
       use m_fm_erosed, only: lsed, stmpar, mfluff, morfac, iflufflyr
@@ -647,10 +644,10 @@ contains
       integer :: nm !< flow cell number
 
       mbamorfac = morfac
-      mbabedmass = 0.0d0
-      mbabedshortmass = 0.0d0
+      mbabedmass = 0.0_dp
+      mbabedshortmass = 0.0_dp
       if (allocated(mbafluffmass)) then
-         mbafluffmass = 0.0d0
+         mbafluffmass = 0.0_dp
       end if
 
       do nm = 1, ndxi
@@ -696,8 +693,6 @@ contains
    end subroutine mba_sum_morphology
 
    subroutine mba_sum_area(nomba, mbadef, mbaba)
-      use precision, only: dp
-
       use m_partitioninfo
       use m_flowgeom
 
@@ -707,7 +702,7 @@ contains
 
       integer :: kk, imba
 
-      mbaba = 0.0d0
+      mbaba = 0.0_dp
 
       do kk = 1, ndxi
          if (jampi == 1) then
@@ -720,7 +715,6 @@ contains
    end subroutine mba_sum_area
 
    subroutine comp_horflowmba()
-      use precision, only: dp
       use m_flow, only: Lbot, Ltop, q1
       use m_flowtimes, only: dts
       use fm_external_forcings_data, only: numsrc, qsrc
@@ -768,7 +762,6 @@ contains
    end subroutine comp_horflowmba
 
    subroutine comp_horfluxmba()
-      use precision, only: dp
       use m_flow, only: Lbot, Ltop
       use m_flowtimes, only: dts
       use m_mass_balance_areas
@@ -821,7 +814,6 @@ contains
    end subroutine comp_horfluxmba
 
    subroutine comp_bedload_fluxmba()
-      use precision, only: dp
       use m_flowtimes, only: dts
       use m_mass_balance_areas, only: nombaln, mbalnlist, mbalnfromto, mbasedflux
       use m_fm_erosed, only: lsedtot, e_sbn, morfac
@@ -842,7 +834,7 @@ contains
             k1 = mbalnfromto(1, i)
             k2 = mbalnfromto(2, i)
             flx = e_sbn(LL, ised) * wu_mor(LL)
-            if (flx > 0.0d0) then
+            if (flx > 0.0_dp) then
                mbasedflux(2, ised, k1, k2) = mbasedflux(2, ised, k1, k2) + flx * dtmor
                mbasedflux(1, ised, k2, k1) = mbasedflux(1, ised, k2, k1) + flx * dtmor
             else
@@ -1053,7 +1045,7 @@ contains
          allocate (bal_group%bal_area(imba)%values(2, num_fluxes))
       end do
 
-      bal_group%bal_cumerror = 0d0
+      bal_group%bal_cumerror = 0.0_dp
    end subroutine allocate_value_arrays
 
    subroutine add_name(balance, group, name)
@@ -1077,7 +1069,6 @@ contains
    end subroutine add_name
 
    subroutine add_values(bal_values, ii, values, jalump, has_entry)
-      use precision, only: dp
       real(kind=dp), dimension(:, :), intent(inout) :: bal_values !< array containing the flux values
       integer, intent(inout) :: ii !< last written index into flow_or_flux
       real(kind=dp), dimension(2), intent(in) :: values !< vector
@@ -1111,7 +1102,6 @@ contains
    end subroutine add_values
 
    subroutine add_value_change(bal_values, ii, val_beg, val_end)
-      use precision, only: dp
       use m_mass_balance_areas, only: DIR_FROM, DIR_TO
 
       real(kind=dp), dimension(:, :), intent(inout) :: bal_values !< array containing the flux values
@@ -1264,7 +1254,6 @@ contains
    end subroutine mba_prepare_names_flows
 
    subroutine mba_prepare_values_flows(imba, overall_balance)
-      use precision, only: dp
       use m_flowparameters, only: jatem, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc
@@ -1301,7 +1290,7 @@ contains
       end if
 
       flows => water_flow%bal_area(imba)%values
-      flows = 0d0
+      flows = 0.0_dp
 
       imbf = 0
       ! storage
@@ -1341,7 +1330,7 @@ contains
 
       ! computed evaporation
       if (jaevap > 0 .and. jatem > 3) then
-         call add_values(flows, imbf, [0d0, p_mbafloweva(imba)])
+         call add_values(flows, imbf, [0.0_dp, p_mbafloweva(imba)])
       end if
 
       water_flow%bal_error(imba) = sum(flows(DIR_TO, :)) - sum(flows(DIR_FROM, :))
@@ -1405,7 +1394,6 @@ contains
    end subroutine mba_prepare_names_flows_whole_model
 
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
-      use precision, only: dp
       use m_flowparameters, only: jatem, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc
@@ -1441,7 +1429,7 @@ contains
       end if
 
       flows => water_flow%bal_area(nomba + 1)%values
-      flows = 0d0
+      flows = 0.0_dp
 
       imbf = 0
       ! storage
@@ -1473,7 +1461,7 @@ contains
 
       ! computed evaporation
       if (jaevap > 0 .and. jatem > 3) then
-         call add_values(flows, imbf, [0d0, sum(p_mbafloweva(:))])
+         call add_values(flows, imbf, [0.0_dp, sum(p_mbafloweva(:))])
       end if
 
       water_flow%bal_error(nomba + 1) = sum(flows(DIR_TO, :)) - sum(flows(DIR_FROM, :))
@@ -1632,7 +1620,6 @@ contains
    end subroutine mba_prepare_names_fluxes
 
    subroutine mba_prepare_values_fluxes(imbs, imba, overall_balance)
-      use precision, only: dp
       use m_flowparameters, only: jatem, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc
       use m_flowparameters, only: jatem
@@ -1703,7 +1690,7 @@ contains
       end if
 
       fluxes => const_flux(imbs)%bal_area(imba)%values
-      fluxes = 0d0
+      fluxes = 0.0_dp
 
       imbf = 0
       ! storage
@@ -1922,7 +1909,6 @@ contains
    end subroutine mba_prepare_names_fluxes_whole_model
 
    subroutine mba_prepare_values_fluxes_whole_model(imbs, overall_balance)
-      use precision, only: dp
       use m_flowparameters, only: jatem, jambalumpbnd, jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc
       use m_flowparameters, only: jatem
@@ -1992,7 +1978,7 @@ contains
       end if
 
       fluxes => const_flux(imbs)%bal_area(nomba + 1)%values
-      fluxes = 0d0
+      fluxes = 0.0_dp
 
       imbf = 0
       ! storage
@@ -2079,7 +2065,6 @@ contains
    end subroutine mba_prepare_values_fluxes_whole_model
 
    subroutine mba_write_netcdf_header()
-      use precision, only: dp
       use unstruc_netcdf, only: unc_create, unc_close
       use unstruc_files, only: defaultFilename
       use m_flowtimes, only: Tudunitstr
@@ -2309,7 +2294,6 @@ contains
    end function mba_write_netcdf_flux_names
 
    subroutine mba_write_netcdf_step()
-      use precision, only: dp
       use m_flowtimes, only: time1
       use m_mass_balance_areas
       use netcdf, only: nf90_write, nf90_put_var, nf90_strerror
@@ -2409,7 +2393,6 @@ contains
    end subroutine mba_write_netcdf_final
 
    subroutine mba_write_bal_time_step(lunbal, timestart, timeend, datestart, dateend, overall_balance)
-      use precision, only: dp
       use m_mass_balance_areas
       use m_fm_wq_processes, ifluxdummy => iflux
       use m_transport, only: numconst
@@ -2435,8 +2418,8 @@ contains
       real(kind=dp) :: summbamassend !< sum mass of mass balance area
       real(kind=dp) :: reference !< reference for relative error
       real(kind=dp) :: relative_error !< relative error
-      real(kind=dp), parameter :: zero = 0.0d0 !< zero
-      real(kind=dp), parameter :: tiny = 1.0d-10 !< tiny
+      real(kind=dp), parameter :: zero = 0.0_dp !< zero
+      real(kind=dp), parameter :: tiny = 1.0e-10_dp !< tiny
 
       type(balance_type), pointer :: balance !< derived type containing the flux groups, names and values
 
@@ -2498,7 +2481,7 @@ contains
          write (lunbal, 2010) totals(2) - totals(1)
          reference = max(abs(p_mbavolumebegin(imba)), abs(mbavolumeend(imba)), totals(1), totals(2))
          if (reference > tiny) then
-            relative_error = 1.0d2 * abs(totals(2) - totals(1)) / reference
+            relative_error = 1.0e2_dp * abs(totals(2) - totals(1)) / reference
             write (lunbal, 2011) relative_error
          else
             write (lunbal, 2012)
@@ -2541,7 +2524,7 @@ contains
             write (lunbal, 2020) mbsname(imbs), totals(2) - totals(1)
             reference = max(abs(p_mbamassbegin(imbs, imba)), abs(mbamassend(imbs, imba)), totals(1), totals(2))
             if (reference > tiny) then
-               relative_error = 1.0d2 * abs(totals(2) - totals(1)) / reference
+               relative_error = 1.0e2_dp * abs(totals(2) - totals(1)) / reference
                write (lunbal, 2021) mbsname(imbs), relative_error
             else
                write (lunbal, 2022) mbsname(imbs)
@@ -2574,7 +2557,7 @@ contains
       write (lunbal, 2010) totals(2) - totals(1)
       reference = max(abs(summbavolumebegin), abs(summbavolumeend), totals(1), totals(2))
       if (reference > tiny) then
-         relative_error = 1.0d2 * abs(totals(2) - totals(1)) / reference
+         relative_error = 1.0e2_dp * abs(totals(2) - totals(1)) / reference
          write (lunbal, 2011) relative_error
       else
          write (lunbal, 2012)
@@ -2619,7 +2602,7 @@ contains
          write (lunbal, 2020) mbsname(imbs), totals(2) - totals(1)
          reference = max(abs(summbamassbegin), abs(summbamassend), totals(1), totals(2))
          if (reference > tiny) then
-            relative_error = 1.0d2 * abs(totals(2) - totals(1)) / reference
+            relative_error = 1.0e2_dp * abs(totals(2) - totals(1)) / reference
             write (lunbal, 2021) mbsname(imbs), relative_error
          else
             write (lunbal, 2022) mbsname(imbs)
@@ -2670,8 +2653,6 @@ contains
    end subroutine mba_write_bal_time_step
 
    subroutine mba_write_csv_time_step(luncsvm, luncsvmb, datestart, dateend)
-      use precision, only: dp
-
       use m_mass_balance_areas
       use m_fm_wq_processes, ifluxdummy => iflux
 
@@ -2689,8 +2670,8 @@ contains
       real(kind=dp) :: summbavolumeend ! sum volume of mass balance area end
       real(kind=dp) :: summbamassbegin ! sum mass of mass balance area
       real(kind=dp) :: summbamassend ! sum mass of mass balance area
-      real(kind=dp), parameter :: zero = 0.0d0 ! zero
-      real(kind=dp), parameter :: tiny = 1.0d-10 ! tiny
+      real(kind=dp), parameter :: zero = 0.0_dp ! zero
+      real(kind=dp), parameter :: tiny = 1.0e-10_dp ! tiny
 
       character(len=128) :: datetimmbambs
 

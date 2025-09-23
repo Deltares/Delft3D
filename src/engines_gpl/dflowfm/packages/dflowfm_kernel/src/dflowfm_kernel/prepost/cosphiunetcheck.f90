@@ -86,7 +86,7 @@ contains
          numdots = 0
          do i = 1, nlinkbadortho
             L = linkbadqual(i)
-            call adddot(0.5d0 * (xk(kn(1, L)) + xk(kn(2, L))), 0.5d0 * (yk(kn(1, L)) + yk(kn(2, L))))
+            call adddot(0.5_dp * (xk(kn(1, L)) + xk(kn(2, L))), 0.5_dp * (yk(kn(1, L)) + yk(kn(2, L))))
          end do
 
          if (jausererror == 1) then

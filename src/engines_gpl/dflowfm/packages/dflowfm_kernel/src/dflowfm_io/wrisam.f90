@@ -49,7 +49,7 @@ contains
       real(kind=dp) :: af
       integer :: i
 
-      call READYY('Writing Samples File', 0d0)
+      call READYY('Writing Samples File', 0.0_dp)
 
       if (MCA * NCA == NS) then
          call wriarcsam(MSAM, ZS, MCA, NCA, MCA, NCA, X0, Y0, DXA, DYA, DMISS)
@@ -66,9 +66,9 @@ contains
             call READYY('Writing Samples File', AF)
          end if
          ! if (xs(i) > 179.87d0) xs(i) = xs(i) - 360d0
-         if (abs(zs(i)) < 1d6) then
+         if (abs(zs(i)) < 1.0e6_dp) then
             write (MSAM, '(3(F16.7))') XS(I), YS(I), ZS(I)
-         else if (abs(zs(i)) < 1d16) then
+         else if (abs(zs(i)) < 1.0e16_dp) then
             write (MSAM, "(2F16.7, ' ', F26.7)") XS(I), YS(I), ZS(I)
          else
             call qnerror('wrisam: format error', ' ', ' ')
@@ -77,7 +77,7 @@ contains
 
 1234  continue
       call DOCLOSE(MSAM)
-      call READYY('Writing Samples File', -1d0)
+      call READYY('Writing Samples File', -1.0_dp)
 
       return
    end subroutine WRISAM

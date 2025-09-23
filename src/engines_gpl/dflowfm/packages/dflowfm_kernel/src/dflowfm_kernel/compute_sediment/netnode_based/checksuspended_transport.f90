@@ -55,12 +55,12 @@ contains
 
       integer :: j, i, mout, nx = 4
 
-      ag = 9.81d0
+      ag = 9.81_dp
       sag = sqrt(ag)
-      vonkar = 0.41d0
-      ee = exp(1d0)
+      vonkar = 0.41_dp
+      ee = exp(1.0_dp)
 
-      ucur = 1d0 ! depth avaraged flow velocity
+      ucur = 1.0_dp ! depth avaraged flow velocity
       ueff = ucur ! effective velocity, possibly plus wave contribution
 
       call newfil(mout, 'rvrcheck.xyz')

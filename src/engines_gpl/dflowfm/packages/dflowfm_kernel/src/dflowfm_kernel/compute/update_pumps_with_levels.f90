@@ -32,6 +32,8 @@
 
 module m_update_pumps_with_levels
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -57,9 +59,9 @@ contains
       if (nPumpsWithLevels > 0) then
 
          ! Initialize
-         pumpAveraging = 0.0d0
-         waterLevelsPumpLeft = 0.0d0
-         waterLevelsPumpRight = 0.0d0
+         pumpAveraging = 0.0_dp
+         waterLevelsPumpLeft = 0.0_dp
+         waterLevelsPumpRight = 0.0_dp
 
          ! Compute sumQuantitiesByWeight and sumWeights for the suction side
          !LC: TODO, do the average only over open links
@@ -67,7 +69,7 @@ contains
          if (ierr /= 0) success = .false.
 
          do n = 1, npumpsg
-            if (pumpAveraging(2, n) > 0.0d0) then
+            if (pumpAveraging(2, n) > 0.0_dp) then
                waterLevelsPumpLeft(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
             end if
          end do
@@ -77,7 +79,7 @@ contains
          if (ierr /= 0) success = .false.
 
          do n = 1, npumpsg
-            if (pumpAveraging(2, n) > 0.0d0) then
+            if (pumpAveraging(2, n) > 0.0_dp) then
                waterLevelsPumpRight(n) = pumpAveraging(1, n) / pumpAveraging(2, n)
             end if
          end do

@@ -56,7 +56,7 @@ contains
          aa1 = walls(17, n)
          hh1 = s1(k1) - bl1
          a1(k1) = a1(k1) + aa1
-         if (hh1 > 0d0) then
+         if (hh1 > 0.0_dp) then
             vol1(k1) = vol1(k1) + aa1 * hh1
          end if
       end do

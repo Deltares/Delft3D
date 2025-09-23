@@ -75,10 +75,10 @@ contains
 
       gradx = DMISS
       grady = DMISS
-      Sx = 0d0
-      Sy = 0d0
-      dareaL = 0d0
-      dareaR = 0d0
+      Sx = 0.0_dp
+      Sy = 0.0_dp
+      dareaL = 0.0_dp
+      dareaR = 0.0_dp
 
       x0 = xs(ip0)
       y0 = ys(ip0)
@@ -90,13 +90,13 @@ contains
 
       if (x0 == DMISS .or. y1 == DMISS .or. x1 == DMISS .or. y1 == DMISS) goto 1234
 
-      xL = 0.25d0 * (xs(ip0) + xs(ip1) + xs(ip0L) + xs(ip1L))
-      yL = 0.25d0 * (ys(ip0) + ys(ip1) + ys(ip0L) + ys(ip1L))
-      zL = 0.25d0 * (zss(1, ip0) + zss(1, ip1) + zss(1, ip0L) + zss(1, ip1L))
+      xL = 0.25_dp * (xs(ip0) + xs(ip1) + xs(ip0L) + xs(ip1L))
+      yL = 0.25_dp * (ys(ip0) + ys(ip1) + ys(ip0L) + ys(ip1L))
+      zL = 0.25_dp * (zss(1, ip0) + zss(1, ip1) + zss(1, ip0L) + zss(1, ip1L))
 
-      xR = 0.25d0 * (xs(ip0) + xs(ip1) + xs(ip0R) + xs(ip1R))
-      yR = 0.25d0 * (ys(ip0) + ys(ip1) + ys(ip0R) + ys(ip1R))
-      zR = 0.25d0 * (zss(1, ip0) + zss(1, ip1) + zss(1, ip0R) + zss(1, ip1R))
+      xR = 0.25_dp * (xs(ip0) + xs(ip1) + xs(ip0R) + xs(ip1R))
+      yR = 0.25_dp * (ys(ip0) + ys(ip1) + ys(ip0R) + ys(ip1R))
+      zR = 0.25_dp * (zss(1, ip0) + zss(1, ip1) + zss(1, ip0R) + zss(1, ip1R))
 
       call getdxdy(xL, yL, xR, yR, cy1, cx1, jsferic); cx1 = -cx1
       call getdxdy(x0, y0, x1, y1, cyL, cxL, jsferic); cxL = -cxL
@@ -110,7 +110,7 @@ contains
       cxR = -cxL
       cyR = -cyL
 
-      darea = 0.5d0 * (cx0 * x0 + cy0 * y0 + cx1 * x1 + cy1 * y1 + cxL * xL + cyL * yL + cxR * xR + cyR * yR)
+      darea = 0.5_dp * (cx0 * x0 + cy0 * y0 + cx1 * x1 + cy1 * y1 + cxL * xL + cyL * yL + cxR * xR + cyR * yR)
 
 !     gradx and grady can be composed
 
@@ -121,10 +121,10 @@ contains
          grady = (cy1 * z1 + cyL * zL + cy0 * z0 + cyR * zR) / darea
       end if
 
-      Sx = 2d0 * cx1
-      Sy = 2d0 * cy1
-      DareaL = 0.5d0 * abs(dprodout(x0, y0, xR, yR, x0, y0, xL, yL, jsferic, jasfer3D))
-      DareaR = 0.5d0 * abs(dprodout(x1, y1, xR, yR, x1, y1, xL, yL, jsferic, jasfer3D))
+      Sx = 2.0_dp * cx1
+      Sy = 2.0_dp * cy1
+      DareaL = 0.5_dp * abs(dprodout(x0, y0, xR, yR, x0, y0, xL, yL, jsferic, jasfer3D))
+      DareaR = 0.5_dp * abs(dprodout(x1, y1, xR, yR, x1, y1, xL, yL, jsferic, jasfer3D))
 
 1234  continue
 

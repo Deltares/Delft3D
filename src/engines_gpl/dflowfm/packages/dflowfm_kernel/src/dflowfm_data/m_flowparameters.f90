@@ -222,8 +222,8 @@ module m_flowparameters
    real(kind=dp) :: blminabove !<  : if not -999d0, above this level the cell centre bedlevel is the min of surrouding netnodes
    real(kind=dp) :: blmin !<  : lowest bedlevel point in model
 
-   real(kind=dp) :: upot0 = -999d0 !<  : initial potential energy
-   real(kind=dp) :: ukin0 = -999d0 !<  : initial potential energy
+   real(kind=dp) :: upot0 = -999.0_dp !<  : initial potential energy
+   real(kind=dp) :: ukin0 = -999.0_dp !<  : initial potential energy
 
    integer :: jaupdbndbl !< Update bl at boundary (1 = update, 0 = no update)
    integer :: jaupdbobbl1d !< Update bl and bobs for 1d network (call to setbobs_1d only at initialization)
@@ -710,7 +710,7 @@ contains
       !29 : vk = alfa LR (Tx, Ty) . (ucxk*vol1k , ucyk*vol1k ) / avoluk   identical to advec33
       !30 : vk = alfa LR (Tx, Ty) . (ucxk*vol1  , ucyk*vol1  ) / avolu
 
-      hhtrshcor = 0d0 ! 0=no safety on hu/hs in corio
+      hhtrshcor = 0.0_dp ! 0=no safety on hu/hs in corio
 
       trshcorio = 1.0 ! below this depth coriolis force scaled down linearly to 0
 
@@ -720,7 +720,7 @@ contains
       jaSELFALcorrectWLwithIni = 0 !< correct water level with initial atmospheric pressure in SAL
 
       ! DOODSONSTART = 55.565D0 ; DOODSONSTOP = 375.575D0 ; Doodsoneps = .00D0    ! standaard TRIWAQ alle 484 cmp
-      DOODSONSTART = 55.565d0; DOODSONSTOP = 375.575d0; Doodsoneps = .00d0 !
+      DOODSONSTART = 55.565_dp; DOODSONSTOP = 375.575_dp; Doodsoneps = 0.00_dp !
       ! DOODSONSTART = 57.555D0 ; DOODSONSTOP = 275.555D0 ; Doodsoneps = .03D0    ! Delft3D
 
       jasecflow = 0 ! include secondary flow (0=no, 1=yes)
@@ -804,8 +804,8 @@ contains
       ! 4 : Bottom levels at velocity points  (=flow links), using min  network levels xk, yk, zk  bl = lowest connected link
       ! 5 : Bottom levels at velocity points  (=flow links), using max  network levels xk, yk, zk  bl = lowest connected link
 
-      blmeanbelow = -999d0
-      blminabove = -999d0
+      blmeanbelow = -999.0_dp
+      blminabove = -999.0_dp
 
       ibedlevtyp1D = 3 !< 1 : same, 1D, 1 = tiles, xz(flow)=zk(net), bob(1,2) = max(zkr,zkl) , 3=mean netnode based
 
@@ -819,25 +819,25 @@ contains
       iproftypuni5 = -2 !< 1 : circle, 2 : rectan R=A/P , 3 = rectan, R=H
       iproftypuni7 = -2 !< 1 : circle, 2 : rectan R=A/P , 3 = rectan, R=H
 
-      slotw2D = 0d-3
-      slotw1D = 1d-3
+      slotw2D = 0.0e-3_dp
+      slotw1D = 1.0e-3_dp
       jafullgridoutput = 0 !output grid in compact manner or full manner
       jaeulervel = 0 !GLM velocities
 
       jaconveyance2D = 1 !
 
-      bedslope = 0d0 ! bottom inclination testcases
-      Slopedrop2D = 0d0 ! Apply droplosses only if local bottom slope > Slopedrop2D, negative = no droplosses
+      bedslope = 0.0_dp ! bottom inclination testcases
+      Slopedrop2D = 0.0_dp ! Apply droplosses only if local bottom slope > Slopedrop2D, negative = no droplosses
       Drop1D = .false.
-      Drop2D = 0d0 ! Apply droplosses in 2D yes or no 1 or 0
-      Drop3D = 1d0 ! Apply droplosses in 3D yes or no 1 or 0
+      Drop2D = 0.0_dp ! Apply droplosses in 2D yes or no 1 or 0
+      Drop3D = 1.0_dp ! Apply droplosses in 3D yes or no 1 or 0
       jacstbnd = 0
       jajre = 0
       jasourcesink = 1
 
-      cflmx = 0.7d0 ! max Courant nr ()
-      cflw = 0.1d0 ! wave velocity fraction, total courant vel = u + cflw*wavevelocity
-      teta0 = 0.55d0 ! 1.00d0   ! .52      ! uniform teta in horizontal (),
+      cflmx = 0.7_dp ! max Courant nr ()
+      cflw = 0.1_dp ! wave velocity fraction, total courant vel = u + cflw*wavevelocity
+      teta0 = 0.55_dp ! 1.00d0   ! .52      ! uniform teta in horizontal (),
       ivariableteta = 0 ! 0=fully implicit,   1=teta constant,        2=variable teta
       ! (set teta=1.0)      (set teta=0.51->0.99)   (set teta<0)
 
@@ -853,10 +853,10 @@ contains
 
       ifixedweirscheme = 6 !< 0 = no special treatment, setbobs only, 1 = compact stencil, 2 = whole tile lifted, full subgrid weir + factor
       ifixedweirscheme1D2D = 0 !< 0 = use regular fixedweirscheme also on 1D2D links, 1 = iterative 1d2d lateral coupling on 1D2D links
-      fixedweircontraction = 1d0 !< flow width = flow width*fixedweircontraction
-      fixedweirtopwidth = 3d0 !< e.g. 4.00 (m)
-      fixedweirtopfrictcoef = -999d0 !< if .ne. dmiss, use this friction coefficient on top width
-      fixedweirtalud = 4d0 !< e.g. 1 to 4 talud
+      fixedweircontraction = 1.0_dp !< flow width = flow width*fixedweircontraction
+      fixedweirtopwidth = 3.0_dp !< e.g. 4.00 (m)
+      fixedweirtopfrictcoef = -999.0_dp !< if .ne. dmiss, use this friction coefficient on top width
+      fixedweirtalud = 4.0_dp !< e.g. 1 to 4 talud
       isimplefixedweirs = 1
       ifxedweirfrictscheme = 0 !< 0 = friction based on hu, 1 = friction based on subgrid weirfriction scheme
 
@@ -866,38 +866,38 @@ contains
       filterorder = 2
       jacheckmonitor = 0
 
-      sini = 0d0 ! uniform initial waterlevel (m),   (uniform bottom level = zkuni)
-      waterdepthini1D = -999d0
+      sini = 0.0_dp ! uniform initial waterlevel (m),   (uniform bottom level = zkuni)
+      waterdepthini1D = -999.0_dp
       uini = 0 ! uniform initial velocity   (m/s)
-      salini = 0d0 !< uniform initial sal       (ppt)
-      temini = 6d0 !< uniform initial temp      (degC)
-      spirini = 0d0 !< uniform initial spirint   (m/s)
+      salini = 0.0_dp !< uniform initial sal       (ppt)
+      temini = 6.0_dp !< uniform initial temp      (degC)
+      spirini = 0.0_dp !< uniform initial spirint   (m/s)
 
-      Sal0abovezlev = -999d0 !< if not dmiss, only seta salini below this level
-      zkdropstep = 1d-2 !< Amount of bottomlevel to be added with dropland (m)
-      sdropstep = 1d0 !< Amount of water to be added with dropwater (m)
-      uniformhu = -999d0 !< Uniformhu
+      Sal0abovezlev = -999.0_dp !< if not dmiss, only seta salini below this level
+      zkdropstep = 1.0e-2_dp !< Amount of bottomlevel to be added with dropland (m)
+      sdropstep = 1.0_dp !< Amount of water to be added with dropwater (m)
+      uniformhu = -999.0_dp !< Uniformhu
 
-      zbnd = 2d0 ! for now only, uniform waterlevel on boundary
+      zbnd = 2.0_dp ! for now only, uniform waterlevel on boundary
 
-      s01max = 0d0 ! max. water level change: off
-      u01max = 0d0 ! max. velocity change: off
-      umagmax = 0d0 ! max. velocity: off
+      s01max = 0.0_dp ! max. water level change: off
+      u01max = 0.0_dp ! max. velocity change: off
+      umagmax = 0.0_dp ! max. velocity: off
       ! See also: m_flowtimes::dtminbreak
-      s01warn = 0d0
-      u01warn = 0d0
-      umagwarn = 0d0
-      sscmax = 0d0
+      s01warn = 0.0_dp
+      u01warn = 0.0_dp
+      umagwarn = 0.0_dp
+      sscmax = 0.0_dp
 
       ! parameters controlling flooding/drying/solving
-      epshu = 1d-4 ! minimum waterdepth for setting hu>0
-      epshs = .2d0 * epshu ! minimum waterdepth for setting cfu
-      epsz0 = 1d-5 ! minimum value for z0
-      chkhuexpl = 0.1d0 ! only for step_explicit:  check computed flux beneath this waterdepth
-      chkadvd = 0.1d0 ! check advection  for 'drying' below this (upwind) waterdepth
-      chkdifd = 0.01d0 ! check diffusion only for jatransportautotimestepdiff == 1
-      chkwndd = 0.1d0 ! check windstress              below this waterdepth
-      chktempdep = 0.1d0 ! check heatfluxes              below this waterdepth
+      epshu = 1.0e-4_dp ! minimum waterdepth for setting hu>0
+      epshs = 0.2_dp * epshu ! minimum waterdepth for setting cfu
+      epsz0 = 1.0e-5_dp ! minimum value for z0
+      chkhuexpl = 0.1_dp ! only for step_explicit:  check computed flux beneath this waterdepth
+      chkadvd = 0.1_dp ! check advection  for 'drying' below this (upwind) waterdepth
+      chkdifd = 0.01_dp ! check diffusion only for jatransportautotimestepdiff == 1
+      chkwndd = 0.1_dp ! check windstress              below this waterdepth
+      chktempdep = 0.1_dp ! check heatfluxes              below this waterdepth
       testdryflood = 0 ! test different options for drying flooding:
       !                                0 = standard D-Flow FM
       !                                1 = Delft3D-FLOW check in water level points
@@ -917,7 +917,7 @@ contains
       ipre = 0 ! preconditioner, 0=rowscaling, 1=GS, 2=trial
       Noderivedtypes = 5 ! 0=use derived types in gauss and substi, 5=use simple Fortran arrays (faster)
 
-      hwetbed = 0.2d0 ! for case wetbed
+      hwetbed = 0.2_dp ! for case wetbed
 
       javau = 6 !< vert. adv. u1   : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, 5=Quick, 6=centerbased upw. expl.
       javakeps = 3 !< vert. adv. keps : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL
@@ -934,26 +934,26 @@ contains
 
       jaanalytic = 0 !< analytic solution available in black sideview => do not also show computed surface in black
       jaustarint = 1 !< 1=integral bed layer velocity,  0=velocity at half bed layer
-      Eddyviscositybedfacmax = 0d0 !< eddyviscosityatbed = min(eddyviscosityatbed, eddyviscosityatbedfacmax*eddyviscosityatbed+1 )
-      Eddyviscositysurfacmax = 0d0 !< eddyviscosityatbed = min(eddyviscosityatsur, eddyviscosityatseufacmax*eddyviscosityatsur-1 )
+      Eddyviscositybedfacmax = 0.0_dp !< eddyviscosityatbed = min(eddyviscosityatbed, eddyviscosityatbedfacmax*eddyviscosityatbed+1 )
+      Eddyviscositysurfacmax = 0.0_dp !< eddyviscosityatbed = min(eddyviscosityatsur, eddyviscosityatseufacmax*eddyviscosityatsur-1 )
       inisal2D = 0 !< 1 if specified through meteo module
       initem2D = 0 !< 1 if specified through meteo module
       inised2D = 0 !< 1 if specified through meteo module
       inivel = 0 !< initial velocities prescribed (1) or not (other)
 
-      toplayminthick = 0.01d0 ! minimum top layer thickness (m)
+      toplayminthick = 0.01_dp ! minimum top layer thickness (m)
 
       jbasqbnddownwindhs = 0 !< 0 : original hu on qbnd, 1 = downwind hs on qbnd
 
       maxitverticalforestersal = 0 !< 100, max iterations vertical forester
       maxitverticalforestertem = 0 !< 100, max iterations vertical forester
 
-      salmax = 0d0 !< filter if sal > maxsal
+      salmax = 0.0_dp !< filter if sal > maxsal
       ! Remaining of variables is handled in reset_flowparameters()
       ! call reset_flowparameters()
 
       iparms = 0 ! parms-default
-      dparms = 0d0 ! parms-default
+      dparms = 0.0_dp ! parms-default
 
       jaupwindsrc = 1
       jalogsolverconvergence = 0
@@ -1084,8 +1084,8 @@ contains
 
       ispirparopt = 1
 
-      Tnudgeuni = 3600d0 !< uniform nudge relaxation time (s)
-      ITcap = 0d0 !< limit to Internal Tides Dissipation / area (J/(m^2 s))
+      Tnudgeuni = 3600.0_dp !< uniform nudge relaxation time (s)
+      ITcap = 0.0_dp !< limit to Internal Tides Dissipation / area (J/(m^2 s))
 
       jatransportautotimestepdiff = 0
       implicitdiffusion2D = 0

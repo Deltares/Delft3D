@@ -67,11 +67,11 @@ contains
       if (jsferic == 1) then ! jglobe
          xmn = minval(nd(n)%x)
          xmx = maxval(nd(n)%x)
-         if (xmx - xmn > 180d0) then
+         if (xmx - xmn > 180.0_dp) then
             do m = 1, nn
                k = netcell(n)%NOD(m)
-               if (xmx - nd(n)%x(m) > 180d0) then
-                  nd(n)%x(m) = nd(n)%x(m) + 360d0
+               if (xmx - nd(n)%x(m) > 180.0_dp) then
+                  nd(n)%x(m) = nd(n)%x(m) + 360.0_dp
                end if
             end do
          end if

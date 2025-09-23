@@ -63,7 +63,7 @@ contains
       h0 = 5
       T0 = 32
       s = .04
-      etinbr = 0.5d0 ! eta in /eta br
+      etinbr = 0.5_dp ! eta in /eta br
       dc = .09906
       ic1 = 1
       ic2 = 100
@@ -71,9 +71,9 @@ contains
       tol = .0001
 
       pi = 4.*atan(1.)
-      g = 9.81d0
+      g = 9.81_dp
 
-      etabr = 1./sqrt(128.) / (pi**3) * s**2.5d0 * T0**2.5d0 * g**1.25d0 * h0**(-.25)
+      etabr = 1./sqrt(128.) / (pi**3) * s**2.5_dp * T0**2.5_dp * g**1.25_dp * h0**(-.25)
       etain = etinbr * etabr
       A = etain * pi / sqrt(.125 * s * T0 * sqrt(g / h0))
 
@@ -118,7 +118,7 @@ contains
          hh = (C * C / g - s * x) / A
          uu = u / (A * omega / s)
 
-         xx = 125d0 - x / 2
+         xx = 125.0_dp - x / 2
 
          ahh = a * hh
          if (ic == ic1) then

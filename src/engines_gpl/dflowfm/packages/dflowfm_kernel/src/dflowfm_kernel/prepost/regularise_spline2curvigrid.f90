@@ -60,7 +60,7 @@ contains
 
       integer :: ierror
 
-      real(kind=dp), parameter :: FAC = 1d-1 ! regularisation parameter
+      real(kind=dp), parameter :: FAC = 1.0e-1_dp ! regularisation parameter
 
       call savegrd()
 
@@ -70,7 +70,7 @@ contains
       dtolLR_bak = dtolLR
 
 !  compute maximum mesh width and get dtolLR in the proper dimension
-      dhmax = 0d0
+      dhmax = 0.0_dp
       do i = 1, mc
          do j = 1, nc - 1
             if (xc(i, j) == DMISS .or. xc(i, j + 1) == DMISS) cycle
@@ -89,8 +89,8 @@ contains
 !           regularise grid on right hand side of this node (asymmetric)
                do ih = i + 1, iR - 1
                   xi = dble(ih - i) / dble(iR - i) * FAC
-                  xc(ih, j) = (1d0 - xi) * xc(i, j) + xi * xc(iR, j)
-                  yc(ih, j) = (1d0 - xi) * yc(i, j) + xi * yc(iR, j)
+                  xc(ih, j) = (1.0_dp - xi) * xc(i, j) + xi * xc(iR, j)
+                  yc(ih, j) = (1.0_dp - xi) * yc(i, j) + xi * yc(iR, j)
                end do
             else ! just advance pointer
                iR = i + 1

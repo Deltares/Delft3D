@@ -60,11 +60,11 @@ contains
             allocate (adve0(lnkx))
          end if
 
-         dta = 0.7d0 * dts / cflmx
+         dta = 0.7_dp * dts / cflmx
          das = dta / dts
          do k = 1, 2
 
-            adve = 0d0
+            adve = 0.0_dp
 
             call advec()
             if (k == 1) then
@@ -73,7 +73,7 @@ contains
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
                ds = ag * dxi(L) * (s0(k2) - s0(k1))
-               u1(L) = (u1(L) * (1d0 - das) + u0(L) * das - dta * (adve(L) + ds)) / (1d0 + dta * advi(L))
+               u1(L) = (u1(L) * (1.0_dp - das) + u0(L) * das - dta * (adve(L) + ds)) / (1.0_dp + dta * advi(L))
             end do
             if (Perot_type == NOT_DEFINED) then
                call reconst2nd()

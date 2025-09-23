@@ -52,7 +52,7 @@ contains
 
       call getymxpar(modind, tauwav, taucur, fw, cdrag, abscos, ypar, ymxpar)
 
-      taubpuLL = ypar * (taucur + tauwav) / (umod * rhomean + 1d-4) ! umod*ag/C2, (m/s)
+      taubpuLL = ypar * (taucur + tauwav) / (umod * rhomean + 1.0e-4_dp) ! umod*ag/C2, (m/s)
       taubxuLL = ymxpar * (taucur + tauwav) ! Max shear stress needed in Erosed, (N/m2)
 
    end subroutine getsoulsbywci

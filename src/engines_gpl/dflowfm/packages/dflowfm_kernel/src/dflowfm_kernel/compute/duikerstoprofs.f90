@@ -69,14 +69,14 @@ contains
          x1 = xpl(n); y1 = ypl(n); z1 = zpl(n); w1 = dzL(n); h1 = dzR(n)
          x2 = xpl(n + 1); y2 = ypl(n + 1); z2 = zpl(n + 1); w2 = dzL(n + 1); h2 = dzR(n + 1)
          if (x1 == DMISS .or. x2 == DMISS) cycle
-         if (w1 <= 0d0 .or. w2 <= 0d0) then
+         if (w1 <= 0.0_dp .or. w2 <= 0.0_dp) then
             call qnerror(' pipes: width <= 0d0, fourth column', 'in', md_pipefile)
             call qnerror(' pipes: width <= 0d0, fourth column', 'in', md_pipefile)
          end if
 
          if (x1 /= dmiss .and. x2 /= dmiss) then
-            xc = 0.5d0 * (x1 + x2)
-            yc = 0.5d0 * (y1 + y2)
+            xc = 0.5_dp * (x1 + x2)
+            yc = 0.5_dp * (y1 + y2)
             call CLOSETO1Dnetlink(Xc, Yc, LS, XLS, YLS, dum, 0)
             if (Ls > 0) then
                Lf = lne2ln(Ls)

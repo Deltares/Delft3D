@@ -48,7 +48,7 @@ contains
       real(kind=dp) :: wdir
 
       jawind = 2
-      wdir = (90d0 - winddir) * dg2rd
+      wdir = (90.0_dp - winddir) * dg2rd
 
       call allocatewindarrays()
 

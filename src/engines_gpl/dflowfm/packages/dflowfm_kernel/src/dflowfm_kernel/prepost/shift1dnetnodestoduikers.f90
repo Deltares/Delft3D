@@ -70,8 +70,8 @@ contains
          x1 = xpl(n); y1 = ypl(n); z1 = zpl(n)
          x2 = xpl(n + 1); y2 = ypl(n + 1); z2 = zpl(n + 1)
          if (x1 /= dmiss .and. x2 /= dmiss) then
-            xc = 0.5d0 * (x1 + x2)
-            yc = 0.5d0 * (y1 + y2)
+            xc = 0.5_dp * (x1 + x2)
+            yc = 0.5_dp * (y1 + y2)
             zx = max(z1, z2)
             call CLOSETO1Dnetlink(Xc, Yc, LS, XLS, YLS, dum, 0)
             if (Ls > 0) then
@@ -82,11 +82,11 @@ contains
                dis22 = dbdistance(x2, y2, xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
                disL = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
                disd = dbdistance(x1, y1, x2, y2, jsferic, jasfer3D, dmiss)
-               alf = min(1d0, disd / disL); half = 0.5d0 * alf
+               alf = min(1.0_dp, disd / disL); half = 0.5_dp * alf
                if (nmk(k1) > 0 .and. nmk(k2) > 0) then ! both fixed, shift to centre
                   ! call splitlink(x1, y1, L_, 0.9d0, 1, ierror)
-                  xkc = 0.5d0 * (xk(k2) + xk(k1))
-                  ykc = 0.5d0 * (yk(k2) + yk(k1))
+                  xkc = 0.5_dp * (xk(k2) + xk(k1))
+                  ykc = 0.5_dp * (yk(k2) + yk(k1))
                   xL = xkc - half * (xk(k2) - xk(k1))
                   yL = ykc - half * (yk(k2) - yk(k1))
                   xR = xkc + half * (xk(k2) - xk(k1))

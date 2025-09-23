@@ -58,9 +58,9 @@ contains
          allocate (xy_red(2, num_rugs))
       end if
 
-      ruh = 0d0 ! safety
-      xy = 0d0
-      xy_red = 0d0
+      ruh = 0.0_dp ! safety
+      xy = 0.0_dp
+      xy_red = 0.0_dp
 
       do irug = 1, num_rugs
          ruh(1, irug) = rug(irug)%max_rug_height

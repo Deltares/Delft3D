@@ -58,18 +58,18 @@ contains
             allocate (fcori(lnx), stat=ierr)
             call aerr('fcori(lnx)', ierr, lnx)
             do L = 1, lnx
-               fcori(L) = 2d0 * omega * sin(yu(L) * dg2rd)
+               fcori(L) = 2.0_dp * omega * sin(yu(L) * dg2rd)
             end do
             if (jacorioconstant == 2) then ! beta plane)
                if (jsferic == 0) then
                   y0 = anglat
                else
-                  y0 = 0.5d0 * (ykmin + ykmax)
+                  y0 = 0.5_dp * (ykmin + ykmax)
                end if
                beta = (cos(y0 * dg2rd)) / Ra
                do L = 1, lnx
                   call dbdistancehk(xu(L), y0, xu(L), yu(L), dy); if (yu(L) < y0) dy = -dy
-                  fcori(L) = 2d0 * omega * (sin(anglat * dg2rd) + beta * dy)
+                  fcori(L) = 2.0_dp * omega * (sin(anglat * dg2rd) + beta * dy)
                end do
             end if
 
@@ -77,24 +77,24 @@ contains
             allocate (fcori(ndx), stat=ierr)
             call aerr('fcori(ndx)', ierr, ndx)
             do k = 1, ndx
-               fcori(k) = 2d0 * omega * sin(yz(k) * dg2rd)
+               fcori(k) = 2.0_dp * omega * sin(yz(k) * dg2rd)
             end do
             if (jacorioconstant == 2) then ! beta plane)
                if (jsferic == 0) then
                   y0 = anglat
                else
-                  y0 = 0.5d0 * (ykmin + ykmax)
+                  y0 = 0.5_dp * (ykmin + ykmax)
                end if
                beta = (cos(y0 * dg2rd)) / Ra
                do k = 1, ndx
                   call dbdistancehk(xz(k), y0, xz(k), yz(k), dy); if (yu(L) < y0) dy = -dy
-                  fcori(k) = 2d0 * omega * (sin(anglat * dg2rd) + beta * dy)
+                  fcori(k) = 2.0_dp * omega * (sin(anglat * dg2rd) + beta * dy)
                end do
             end if
          end if
 
          if (jacorioconstant == 1) then
-            fcori = 2d0 * omega * sin(anglat * dg2rd)
+            fcori = 2.0_dp * omega * sin(anglat * dg2rd)
          end if
 
       end if
@@ -108,7 +108,7 @@ contains
          allocate (fcoris(ndx), stat=ierr)
          call aerr('fcoris(ndx)', ierr, ndx)
          do k = 1, ndx
-            fcoris(k) = 2d0 * omega * sin(yz(k) * dg2rd)
+            fcoris(k) = 2.0_dp * omega * sin(yz(k) * dg2rd)
          end do
       end if
 
@@ -157,7 +157,7 @@ contains
       if (k > 0) then
          !call newfil(msgbu, trim(getoutputdir())//trim(md_ident)//'_Cdwcoeff.tek')
          !call newfil(mout,'fcori.xyz')
-         fcormin = huge(1d0); fcormax = -huge(1d0)
+         fcormin = huge(1.0_dp); fcormax = -huge(1.0_dp)
          do i = 1, k
             fcormin = min(fcormin, real(fcori(i), dp))
             fcormax = max(fcormax, real(fcori(i), dp))

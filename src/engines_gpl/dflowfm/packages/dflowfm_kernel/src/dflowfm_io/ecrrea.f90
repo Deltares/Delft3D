@@ -50,8 +50,8 @@ contains
       integer :: i, j
 
       do J = 1, NC
-         if (HALF > -1d0) then
-            AF = HALF + 0.5d0 * dble(J) / dble(NC)
+         if (HALF > -1.0_dp) then
+            AF = HALF + 0.5_dp * dble(J) / dble(NC)
             call READYY('Reading Grid File', AF)
          end if
          read (MRGF, *, err=777, end=999) dummy, dummy, (X(I, J), I=1, MC)
@@ -62,8 +62,8 @@ contains
 777   backspace (MRGF)
       backspace (MRGF)
       do J = 1, NC
-         if (HALF > -1d0) then
-            AF = HALF + 0.5d0 * dble(J) / dble(NC)
+         if (HALF > -1.0_dp) then
+            AF = HALF + 0.5_dp * dble(J) / dble(NC)
             call READYY('Reading Grid File', AF)
          end if
          read (MRGF, '(10X,5F12.0)', err=888, end=999) (X(I, J), I=1, MC)

@@ -60,7 +60,7 @@ contains
       type(t_structure), pointer :: pstru
       integer :: ierror
 
-      squ = 0d0; sqi = 0d0; qinbnd = 0d0; qoutbnd = 0d0
+      squ = 0.0_dp; sqi = 0.0_dp; qinbnd = 0.0_dp; qoutbnd = 0.0_dp
       ! u1  = 0d0 ; q1  = 0d0 ;  qa = 0d0
 
       if (kmx < 1) then ! original 2D coding              ! 1D2D
@@ -69,15 +69,15 @@ contains
             !$OMP PARALLEL DO           &
             !$OMP PRIVATE(L,k1,k2)
             do L = 1, lnx
-               if (hu(L) > 0d0) then
+               if (hu(L) > 0.0_dp) then
                   k1 = ln(1, L); k2 = ln(2, L)
                   u1(L) = ru(L) - fu(L) * (s1(k2) - s1(k1))
-                  q1(L) = au(L) * (teta(L) * u1(L) + (1d0 - teta(L)) * u0(L))
+                  q1(L) = au(L) * (teta(L) * u1(L) + (1.0_dp - teta(L)) * u0(L))
                   qa(L) = au(L) * u1(L)
                else
-                  u1(L) = 0d0
-                  q1(L) = 0d0
-                  qa(L) = 0d0
+                  u1(L) = 0.0_dp
+                  q1(L) = 0.0_dp
+                  qa(L) = 0.0_dp
                end if
             end do
             !$OMP END PARALLEL DO
@@ -88,12 +88,12 @@ contains
             !$OMP PARALLEL DO           &
             !$OMP PRIVATE(L,k1,k2)
             do L = 1, Lnx
-               if (hu(L) > 0d0) then
+               if (hu(L) > 0.0_dp) then
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   u1(L) = ru(L) - fu(L) * (s1(k2) - s1(k1))
                else
-                  u1(L) = 0d0
+                  u1(L) = 0.0_dp
                end if
             end do
             !$OMP END PARALLEL DO
@@ -110,11 +110,11 @@ contains
                if (hu(L) > 0) then
                   k1 = ln(1, L)
                   k2 = ln(2, L)
-                  q1(L) = au(L) * (teta(L) * u1(L) + (1d0 - teta(L)) * u0(L))
+                  q1(L) = au(L) * (teta(L) * u1(L) + (1.0_dp - teta(L)) * u0(L))
                   qa(L) = au(L) * u1(L)
                else
-                  q1(L) = 0d0
-                  qa(L) = 0d0
+                  q1(L) = 0.0_dp
+                  qa(L) = 0.0_dp
                end if
             end do
             !$OMP END PARALLEL DO
@@ -136,14 +136,14 @@ contains
                sqi(k1) = sqi(k1) - q1(L)
             end if
 
-            if (ti_waq > 0d0) then
+            if (ti_waq > 0.0_dp) then
                q1waq(L) = q1waq(L) + q1(L) * dts
             end if
 
          end do
 
          if (iadvec == 40) then
-            voldhu = 0d0
+            voldhu = 0.0_dp
             do L = 1, lnx
 
                if (q1(L) > 0) then
@@ -156,7 +156,7 @@ contains
             end do
 
             do k = 1, ndxi
-               if (squ(k) > 0d0) then
+               if (squ(k) > 0.0_dp) then
                   voldhu(k) = ba(k) * voldhu(k) / squ(k)
                else
                   voldhu(k) = vol1(k)
@@ -167,7 +167,7 @@ contains
 
          if (jaqin > 0) then
             do k = 1, ndxi
-               if (qin(k) > 0d0) then
+               if (qin(k) > 0.0_dp) then
                   sqi(k) = sqi(k) + qin(k)
                else
                   squ(k) = squ(k) - qin(k)
@@ -176,12 +176,12 @@ contains
          end if
 
          if (itstep == 4) then ! explicit time-step
-            sqwave = 0d0
+            sqwave = 0.0_dp
             do L = 1, Lnx
                k1 = ln(1, L); k2 = ln(2, L)
-               qwave = 2d0 * sqrt(hu(L) * ag) * Au(L) ! 2d0: safety
-               sqwave(k1) = sqwave(k1) + max(q1(L) + qwave, 0d0)
-               sqwave(k2) = sqwave(k2) - min(q1(L) - qwave, 0d0)
+               qwave = 2.0_dp * sqrt(hu(L) * ag) * Au(L) ! 2d0: safety
+               sqwave(k1) = sqwave(k1) + max(q1(L) + qwave, 0.0_dp)
+               sqwave(k2) = sqwave(k2) - min(q1(L) - qwave, 0.0_dp)
             end do
          end if
 
@@ -209,7 +209,7 @@ contains
             dsL = (s1(k2) - s1(k1))
 
             Lb = Lbot(LL); Lt = Ltop(LL); kmxLL = kmxL(LL)
-            if (hu(LL) > 0d0) then
+            if (hu(LL) > 0.0_dp) then
 
                do L = Lb, Lt
                   u1(L) = ru(L) - fu(L) * dsL
@@ -221,7 +221,7 @@ contains
 
             else
 
-               u1(Lb:Lb + kmxLL - 1) = 0d0
+               u1(Lb:Lb + kmxLL - 1) = 0.0_dp
 
             end if
 
@@ -259,11 +259,11 @@ contains
 
          do LL = 1, lnx
             n1 = ln(1, LL); n2 = ln(2, LL)
-            q1(LL) = 0d0; u1(LL) = 0d0; au(LL) = 0d0
+            q1(LL) = 0.0_dp; u1(LL) = 0.0_dp; au(LL) = 0.0_dp
             Lb = Lbot(LL); Lt = Ltop(LL)
             do L = Lb, Lt ! flux update after velocity update
-               if (au(L) > 0d0) then
-                  q1(L) = au(L) * (teta(LL) * u1(L) + (1d0 - teta(LL)) * u0(L))
+               if (au(L) > 0.0_dp) then
+                  q1(L) = au(L) * (teta(LL) * u1(L) + (1.0_dp - teta(LL)) * u0(L))
                   qa(L) = au(L) * u1(L)
                   q1(LL) = q1(LL) + q1(L) ! depth integrated result
                   qa(LL) = qa(LL) + qa(L) ! depth integrated result
@@ -281,7 +281,7 @@ contains
                      sqi(n1) = sqi(n1) - q1(L)
                      squ(n2) = squ(n2) - q1(L)
                   end if
-                  if (ti_waq > 0d0) then
+                  if (ti_waq > 0.0_dp) then
                      q1waq(L) = q1waq(L) + q1(L) * dts
                      if (layertype /= LAYTP_SIGMA) then
 !                  check for differences with original linkage in cases other than sigma models
@@ -303,16 +303,16 @@ contains
                      end if
                   end if
                else
-                  q1(L) = 0d0
-                  qa(L) = 0d0
+                  q1(L) = 0.0_dp
+                  qa(L) = 0.0_dp
                end if
             end do
-            if (au(LL) > 0d0) then ! depth averaged velocity
+            if (au(LL) > 0.0_dp) then ! depth averaged velocity
                u1(LL) = q1(LL) / au(LL)
             else
-               u1(LL) = 0d0
-               q1(LL) = 0d0
-               qa(LL) = 0d0
+               u1(LL) = 0.0_dp
+               q1(LL) = 0.0_dp
+               qa(LL) = 0.0_dp
             end if
 
          end do
@@ -350,7 +350,7 @@ contains
                   if (k <= kt) then
 
                      if (jaqin > 0) then
-                        if (qin(k) > 0d0) then
+                        if (qin(k) > 0.0_dp) then
                            sqi(k) = sqi(k) + qin(k)
                         else
                            squ(k) = squ(k) - qin(k)
@@ -359,7 +359,7 @@ contains
 
                      km = k - 1
                      if (k == kb) then
-                        wb = 0d0; qwb = 0d0
+                        wb = 0.0_dp; qwb = 0.0_dp
                      else
                         wb = ww1(km); qwb = qw(km)
                      end if
@@ -373,13 +373,13 @@ contains
 !                qw(k)  = ww1(k) * a1(nn)
 !               END DEBUG
                   else
-                     qw(k) = 0d0
-                     ww1(k) = 0d0
+                     qw(k) = 0.0_dp
+                     ww1(k) = 0.0_dp
                   end if
                end do
             else
-               qw(kb:kt) = 0d0
-               ww1(kb:kt) = 0d0
+               qw(kb:kt) = 0.0_dp
+               ww1(kb:kt) = 0.0_dp
             end if
             do k = kb, kt
                if (k == kt) then
@@ -421,14 +421,14 @@ contains
          do L0 = 1, pstru%numlinks
             L = abs(pstru%linknumbers(L0))
             if (L < 1) then
-               pstru%u1(L0) = 0d0
+               pstru%u1(L0) = 0.0_dp
             else
                if (hu(L) > 0) then
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   call set_u1q1_structure(pstru, L0, s1(k1), s1(k2), teta(L))
                else
-                  pstru%u1(L0) = 0d0
+                  pstru%u1(L0) = 0.0_dp
                end if
             end if
          end do

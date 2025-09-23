@@ -73,7 +73,7 @@ contains
                end if
                do k = kb, kt
                   sam1tot = sam1tot - constituents(isalt, k) * vol0(k)
-                  constituents(isalt, k) = max(0d0, constituents(isalt, k) + dropstep)
+                  constituents(isalt, k) = max(0.0_dp, constituents(isalt, k) + dropstep)
                   sam1tot = sam1tot + constituents(isalt, k) * vol1(k)
                   call isocol(constituents(isalt, n), ncol)
                   nn = size(nd(n)%x)
@@ -88,7 +88,7 @@ contains
          call getkbotktop(n, kb, kt)
          k = kb + kplot - 1
          sam1tot = sam1tot - constituents(isalt, k) * vol0(k)
-         constituents(isalt, k) = max(0d0, constituents(isalt, k) + dropstep)
+         constituents(isalt, k) = max(0.0_dp, constituents(isalt, k) + dropstep)
          sam1tot = sam1tot + constituents(isalt, k) * vol1(k)
          call isocol(constituents(isalt, n), ncol)
          nn = size(nd(n)%x)

@@ -169,20 +169,20 @@ contains
 
       jaupdate = 1
 
-      fluxhor = 0d0 ! not necessary
-      sumhorflux = 0d0
+      fluxhor = 0.0_dp ! not necessary
+      sumhorflux = 0.0_dp
 
       if (stm_included) then
-         fluxhortot = 0d0
-         sinksetot = 0d0
-         sinkftot = 0d0
-         u1sed = 0d0
-         q1sed = 0d0
+         fluxhortot = 0.0_dp
+         sinksetot = 0.0_dp
+         sinkftot = 0.0_dp
+         u1sed = 0.0_dp
+         q1sed = 0.0_dp
       end if
 
       do istep = 0, nsubsteps - 1
          if (kmx > 0) then
-            fluxver = 0d0
+            fluxver = 0.0_dp
          end if
 
 !     determine which fluxes need to be updated

@@ -63,8 +63,8 @@ contains
       ierror = 1
 
       !
-      ustokes = 0d0
-      vstokes = 0d0
+      ustokes = 0.0_dp
+      vstokes = 0.0_dp
 
       ! switch off stokes drifts
       if (jawavestokes == NO_STOKES_DRIFT) then
@@ -75,10 +75,10 @@ contains
          allocate (mx(1:ndx), my(1:ndx), stat=ierror)
       end if
 
-      deltahmin = 0.1d0 ! should be a parameter
+      deltahmin = 0.1_dp ! should be a parameter
       !
       do k = 1, ndx
-         massflux_max = 1d0 / 8d0 * sag * (hs(k)**1.5) * (gammax**2)
+         massflux_max = 1.0_dp / 8.0_dp * sag * (hs(k)**1.5) * (gammax**2)
          mnorm = min(sqrt(mxwav(k)**2 + mywav(k)**2), massflux_max)
          mangle = atan2(mywav(k), mxwav(k))
          mx(k) = mnorm * cos(mangle)
@@ -94,14 +94,14 @@ contains
          if (hu(L) > epshu) then
             !
             k1 = ln(1, L); k2 = ln(2, L)
-            ac1 = acl(L); ac2 = 1d0 - ac1
+            ac1 = acl(L); ac2 = 1.0_dp - ac1
             !
             ! civilized behaviour in shallow surf zone
             huL = max(hs(k1), hs(k2), epshu)
-            hwavL = 0.5d0 * (hwav(k1) + hwav(k2))
+            hwavL = 0.5_dp * (hwav(k1) + hwav(k2))
             gammal = hwavL / huL
-            if (gammal > 1.d0) then
-               hstokes = deltahmin * (gammal - 1.d0) * hwavL + huL
+            if (gammal > 1.0_dp) then
+               hstokes = deltahmin * (gammal - 1.0_dp) * hwavL + huL
             else
                hstokes = huL
             end if
@@ -115,8 +115,8 @@ contains
             ustokes(L) = Mu / hstokes
             vstokes(L) = Mv / hstokes
          else
-            ustokes(L) = 0d0
-            vstokes(L) = 0d0
+            ustokes(L) = 0.0_dp
+            vstokes(L) = 0.0_dp
          end if
       end do
 
@@ -129,8 +129,8 @@ contains
             huL = hu(L) ! despite hu(L)>epshu, hs(k2) can still be 0.0 on inflow bnd
             hwavL = hwav(k2)
             gammal = hwavL / huL
-            if (gammal > 1.d0) then
-               hstokes = deltahmin * (gammal - 1.d0) * hwavL + huL
+            if (gammal > 1.0_dp) then
+               hstokes = deltahmin * (gammal - 1.0_dp) * hwavL + huL
             else
                hstokes = huL
             end if
@@ -145,8 +145,8 @@ contains
             ustokes(L) = Mu / hstokes
             vstokes(L) = Mv / hstokes
          else
-            ustokes(L) = 0d0
-            vstokes(L) = 0d0
+            ustokes(L) = 0.0_dp
+            vstokes(L) = 0.0_dp
          end if
       end do
 

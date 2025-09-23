@@ -57,7 +57,7 @@ contains
       call meteo_tidepotential(julrefdat, TIMmin, doodsonstart, doodsonstop, doodsoneps)
 
       if (md_ident == 'equator1d') then
-         tt = 60d0 * timmin - tstart_user
+         tt = 60.0_dp * timmin - tstart_user
          do kk = 1, ndx
             tidep(1, kk) = ZP * sin(om * tt - nmode * dg2rd * xz(kk))
          end do

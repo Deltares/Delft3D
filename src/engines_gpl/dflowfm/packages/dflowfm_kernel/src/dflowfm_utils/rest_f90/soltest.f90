@@ -73,13 +73,13 @@ contains
       integer :: ierror
 
       jarenumber = 0
-      CFL = 10d0
+      CFL = 10.0_dp
 !      maxdge = 0d0
 !      icgsolver = 4
 !      ipre = 0
       Nruns = 1
 
-      if (iCFL > 0d0) then
+      if (iCFL > 0.0_dp) then
          CFL = dble(iCFL)
       end if
 
@@ -89,11 +89,11 @@ contains
       end if
 
       if (iepsdiff > 0) then
-         epsdiff = 10d0**(-iepsdiff)
+         epsdiff = 10.0_dp**(-iepsdiff)
       end if
 
       if (iepscg > 0) then
-         epscg = 10d0**(-iepscg)
+         epscg = 10.0_dp**(-iepscg)
       end if
 
       if (maxsubmatvecs > 0) then

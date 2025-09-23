@@ -152,7 +152,7 @@ contains
                   goto 1234
                end if
 
-               if ((j == jstart .and. rL < 0d0) .or. (j == jend - 1 .and. rL > 1d0)) then
+               if ((j == jstart .and. rL < 0.0_dp) .or. (j == jend - 1 .and. rL > 1.0_dp)) then
 !              prevent projection to end points of land boundary segments:
                   if (Ladd_land) then
 !                 add new land boundary segment that connects the two others and project

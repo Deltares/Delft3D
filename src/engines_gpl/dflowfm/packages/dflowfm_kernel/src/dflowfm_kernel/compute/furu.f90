@@ -72,7 +72,7 @@ contains
       real(kind=dp) :: slopec, hup, hdo, u1L, v2, frL, u1L0, zbndun, zbndu0n
       real(kind=dp) :: qk0, qk1, dzb, hdzb, z00 !
       real(kind=dp) :: st2
-      real(kind=dp) :: twot = 2d0 / 3d0, hb, h23, ustbLL, agp, vLL
+      real(kind=dp) :: twot = 2.0_dp / 3.0_dp, hb, h23, ustbLL, agp, vLL
       real(kind=dp) :: fsqrtt, uorbL
 
       integer :: np, L1 ! pumpstuff
@@ -83,7 +83,7 @@ contains
       integer :: jaustarintsave
       real(kind=dp) :: sqcfi
 
-      fsqrtt = sqrt(0.5d0)
+      fsqrtt = sqrt(0.5_dp)
       call timstrt('Furu', handle_furu)
 
       if (kmx == 0 .or. ifixedweirscheme > 0) then ! original 2D coding
@@ -104,7 +104,7 @@ contains
 
                k1 = ln(1, L); k2 = ln(2, L)
 
-               slopec = 0d0
+               slopec = 0.0_dp
                if (L > lnx1D) then
                   if (Slopedrop2D > 0) then ! 2D droplosses at ridge points and at 2D/1D2D couplings
                      if (iadv(L) == IADV_ORIGINAL_LATERAL_OVERFLOW) then
@@ -144,7 +144,7 @@ contains
                agp = ag
                if (jahelmert > 0 .and. jsferic > 0) then
                   st2 = sin(dg2rd * yu(L))**2
-                  agp = 9.7803253359 * (1d0 + 0.00193185265241 * st2) / sqrt(1d0 - 0.00669437999013 * st2)
+                  agp = 9.7803253359 * (1.0_dp + 0.00193185265241 * st2) / sqrt(1.0_dp - 0.00669437999013 * st2)
                end if
                gdxi = agp * dxi(L)
                if (jarhoxu >= 2) then
@@ -154,15 +154,15 @@ contains
                cu = gdxi * teta(L)
                du = dti * u0(L) - adve(L) + gdxi * slopec
                ds = s0(k2) - s0(k1)
-               if (teta(L) /= 1d0) then
-                  du = du - (1d0 - teta(L)) * gdxi * ds
+               if (teta(L) /= 1.0_dp) then
+                  du = du - (1.0_dp - teta(L)) * gdxi * ds
                end if
                du0 = du
 
                u1L = u0(L)
 
                if (jaconveyance2D >= 3 .or. L <= lnx1D) then
-                  v2 = 0d0
+                  v2 = 0.0_dp
                else
                   v2 = v(L) * v(L)
                end if
@@ -182,8 +182,8 @@ contains
                   elseif (modind == 9) then
                      frL = cfhi_vanrijn(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
                   elseif (modind == 10) then ! Ruessink 2003
-                     uorbL = .5d0 * (uorb(k1) + uorb(k2))
-                     frL = cfuhi(L) * sqrt((u1L - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16d0 * uorbL * fsqrtt)**2)
+                     uorbL = 0.5_dp * (uorb(k1) + uorb(k2))
+                     frL = cfuhi(L) * sqrt((u1L - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16_dp * uorbL * fsqrtt)**2)
                   end if
                   !
                   du = du0 + frL * ustokes(L)
@@ -205,13 +205,13 @@ contains
                   frL = cfuhi(L) * sqrt(u1L * u1L + v2) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
                end if
 
-               bui = 1d0 / (dti + advi(L) + frL)
+               bui = 1.0_dp / (dti + advi(L) + frL)
                fu(L) = cu * bui
                ru(L) = du * bui
                u1L0 = u1L
                u1L = ru(L) - fu(L) * ds
                itu1 = itu1 + 1
-               if (huvli(L) > 1d0 .and. itu1 < 4 .and. abs(u1L - u1L0) > 1d-2) then ! less than 1 m deep
+               if (huvli(L) > 1.0_dp .and. itu1 < 4 .and. abs(u1L - u1L0) > 1.0e-2_dp) then ! less than 1 m deep
                   goto 10
                end if
 
@@ -223,15 +223,15 @@ contains
          if (npump > 0) then ! model has at least one pump link
             do np = 1, npumpsg ! loop over pump signals, sethu
                qp = qpump(np)
-               ap = 0d0
-               vp = 0d0
+               ap = 0.0_dp
+               vp = 0.0_dp
                do n = L1pumpsg(np), L2pumpsg(np)
                   k1 = kpump(1, n)
                   k2 = kpump(2, n)
                   L1 = kpump(3, n)
                   L = abs(L1)
-                  hu(L) = 0d0; au(L) = 0d0
-                  fu(L) = 0d0; ru(L) = 0d0
+                  hu(L) = 0.0_dp; au(L) = 0.0_dp
+                  fu(L) = 0.0_dp; ru(L) = 0.0_dp
                   if (qp * L1 >= 0) then
                      kup = k1
                      kdo = k2
@@ -242,7 +242,7 @@ contains
                      iup = 2
                   end if
 
-                  if (hs(kup) > 1d-2 .and. ispumpon(np, s1(kup)) == 1) then
+                  if (hs(kup) > 1.0e-2_dp .and. ispumpon(np, s1(kup)) == 1) then
                      hup = s1(kup) - bob0(iup, L)
                      hdo = s1(kdo) - bob0(3 - iup, L)
                      hu(L) = max(hup, hdo) ! 1d0
@@ -251,15 +251,15 @@ contains
                      vp = vp + vol1(k1)
                   end if
                end do
-               if (qp > 0.5d0 * vp / dts) then
-                  qp = 0.5d0 * vp / dts
+               if (qp > 0.5_dp * vp / dts) then
+                  qp = 0.5_dp * vp / dts
                end if
 
-               if (ap > 0d0) then
+               if (ap > 0.0_dp) then
                   do n = L1pumpsg(np), L2pumpsg(np)
                      L1 = kpump(3, n)
                      L = abs(L1)
-                     if (au(L) > 0d0) then
+                     if (au(L) > 0.0_dp) then
                         if (L1 > 0) then
                            ru(L) = qp / ap
                         else
@@ -301,17 +301,17 @@ contains
             zbndun = zbndu((n - 1) * kmxd + 1)
          end if
 
-         if (alfsmo < 1d0) then
+         if (alfsmo < 1.0_dp) then
             zbndu0n = u0(LL)
-            zbndun = alfsmo * zbndun + (1d0 - alfsmo) * zbndu0n ! i.c. smoothing, start from 0
+            zbndun = alfsmo * zbndun + (1.0_dp - alfsmo) * zbndu0n ! i.c. smoothing, start from 0
          end if
 
          if (itpbn == 8) then ! Criticaloutflowbnd
-            if (hu(LL) > 0d0) then
+            if (hu(LL) > 0.0_dp) then
                zbndun = -sqrt(ag * (s1(k2) - min(bob(1, LL), bob(2, LL))))
             end if
          else if (itpbn == 9) then ! Weiroutflowbnd 2/3h(sqrt
-            if (hu(LL) > 0d0) then
+            if (hu(LL) > 0.0_dp) then
                hb = s1(k2) - min(bob(1, LL), bob(2, LL))
                h23 = twot * hb
                au(LL) = twot * au(LL)
@@ -323,7 +323,7 @@ contains
             u1(LL) = zbndun
             jaustarintsave = jaustarint
             if (jaustarint == 0 .or. jaustarint == 3) jaustarint = 1
-            vLL = v(LL); v(LL) = 0d0
+            vLL = v(LL); v(LL) = 0.0_dp
             call getustbcfuhi(LL, LL, ustbLL, cfuhi(LL), hdzb, z00, cfuhi3D) ! call with Lb = LL => layer integral profile
             ! JRE with HK, used to be in getustb
             if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM) then ! Ustokes correction at bed
@@ -331,33 +331,33 @@ contains
             end if
             v(LL) = vLL
             jaustarint = jaustarintsave
-            qk0 = 0d0
+            qk0 = 0.0_dp
          end if
 
          do L = Lb, Lt
-            fu(L) = 0d0
+            fu(L) = 0.0_dp
             ru(L) = zbndun
 
             if (Lt > Lb) then
                if (jaLogprofatubndin /= 1 .and. itpbn == 3) then ! non logprof and vertical profile specified
-                  ru(L) = zbndu((n - 1) * kmxd + L - Lb + 1) * min(1d0, alfsmo)
-               else if (abs(u1(Lb)) > 1d-4 .and. z00 > 0d0) then
+                  ru(L) = zbndu((n - 1) * kmxd + L - Lb + 1) * min(1.0_dp, alfsmo)
+               else if (abs(u1(Lb)) > 1.0e-4_dp .and. z00 > 0.0_dp) then
                   if (jaustarint == 0 .or. jaustarint == 3 .or. jaustarint == 1) then
                      dzb = hu(L) + c9of1 * z00
-                     sqcfi = (log(dzb / z00) - 1d0) / vonkar
+                     sqcfi = (log(dzb / z00) - 1.0_dp) / vonkar
                   else if (jaustarint == 2) then
                      dzb = hu(L) / ee + c9of1 * z00
                      sqcfi = (log(dzb / z00)) / vonkar
                   else if (jaustarint == 4) then
-                     dzb = hu(L) / ee + c9of1 * z00 * 0.66d0
+                     dzb = hu(L) / ee + c9of1 * z00 * 0.66_dp
                      sqcfi = (log(dzb / z00)) / vonkar
                   else if (jaustarint == 5) then
                      dzb = hu(L)
-                     sqcfi = ((1.0d0 + c9of1 * z00 / dzb) * log(dzb / z00 + c9of1) - c9of1 * z00 / dzb * log(c9of1) - 1.0d0) / vonkar
+                     sqcfi = ((1.0_dp + c9of1 * z00 / dzb) * log(dzb / z00 + c9of1) - c9of1 * z00 / dzb * log(c9of1) - 1.0_dp) / vonkar
                   end if
                   qk1 = hu(L) * ustbLL * sqcfi ! integral flux till level k
                   ru(L) = (qk1 - qk0) / (hu(L) - hu(L - 1))
-                  if (zbndun < 0d0) ru(L) = -1d0 * ru(L)
+                  if (zbndun < 0.0_dp) ru(L) = -1.0_dp * ru(L)
                   qk0 = qk1
                end if
             end if
@@ -390,7 +390,7 @@ contains
             kb = kbndz(1, n)
             k2 = kbndz(2, n)
             L = kbndz(3, n)
-            if (au(L) > 0d0 .and. qh_gamma(i) /= 0d0 .and. atqh_all(i) /= 0d0) then
+            if (au(L) > 0.0_dp .and. qh_gamma(i) /= 0.0_dp .and. atqh_all(i) /= 0.0_dp) then
                fu(L) = abs(q1(L) / atqh_all(i)) * qh_gamma(i) / au(L)
                ru(L) = q1(L) / au(L)
                continue

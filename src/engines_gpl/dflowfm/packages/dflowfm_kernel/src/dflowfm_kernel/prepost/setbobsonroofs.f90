@@ -328,7 +328,7 @@ contains
          call mess(LEVEL_INFO, 'Number of flow Links with roof attributes :: ', nt2)
       end if
 
-      call readyy(' ', -1d0)
+      call readyy(' ', -1.0_dp)
 
 1234  continue
 

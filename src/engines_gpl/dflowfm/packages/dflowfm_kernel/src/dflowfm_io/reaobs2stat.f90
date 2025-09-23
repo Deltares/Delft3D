@@ -56,8 +56,8 @@ contains
       read (rec(1:), '(a)') name
       read (rec(21:), *) m, n
 
-      xce = 0.25d0 * (xc(m - 1, n) + xc(m - 1, n - 1) + xc(m, n) + xc(m, n - 1))
-      yce = 0.25d0 * (yc(m - 1, n) + yc(m - 1, n - 1) + yc(m, n) + yc(m, n - 1))
+      xce = 0.25_dp * (xc(m - 1, n) + xc(m - 1, n - 1) + xc(m, n) + xc(m, n - 1))
+      yce = 0.25_dp * (yc(m - 1, n) + yc(m - 1, n - 1) + yc(m, n) + yc(m, n - 1))
 
       write (mout, *) xce, yce, name
 

@@ -54,7 +54,7 @@ contains
       if (kmx == 0 .and. growthunidicouv > 0.0) then
 
          if (.not. allocated(supq)) allocate (supq(ndx))
-         supq = 0d0
+         supq = 0.0_dp
          do L = 1, lnxi
             k1 = ln(1, L); k2 = ln(2, L)
             qds = growthunidicouv * dxi(L) * wu(L)
@@ -64,20 +64,20 @@ contains
             supq(k1) = supq(k1) + qsa
          end do
          do k = 1, ndxi
-            rnveg(k) = max(0d0, rnveg(k) + dts * supq(k) * bai(k))
+            rnveg(k) = max(0.0_dp, rnveg(k) + dts * supq(k) * bai(k))
          end do
          return
       end if
 
       num = 1
-      if (rhoveg > 0d0) then
+      if (rhoveg > 0.0_dp) then
          num = 10
          rhodif = rhomean - rhoveg
       end if
 
       do kk = 1, ndxi
 
-         if (diaveg(kk) > 0d0) then
+         if (diaveg(kk) > 0.0_dp) then
 
             phi = phiv(kk) ! stem phi [1/s]
             phit = phivt(kk) ! stem omega [1/s2]
@@ -88,23 +88,23 @@ contains
 
                stemcos = cos(phi); stemsin = sin(phi)
 
-               if (rhoveg > 0d0) then
+               if (rhoveg > 0.0_dp) then
 
                   Pm = calculate_plant_mass(Pl, diaveg(kk), rhoveg) ! kg
                   Pmi = calculate_plant_inertia_moment(Pm, Pl) ! kg.m2
-                  Tdti = 2d0 * Pmi / dts ! kg.m2/s
+                  Tdti = 2.0_dp * Pmi / dts ! kg.m2/s
 
-                  Bendm = 0d0
+                  Bendm = 0.0_dp
                   do k = kbot(kk), ktop(kk)
-                     Fbe = -0.5d0 * rhomean * Cdveg * diaveg(k) * (zws(k) - zws(k - 1)) * ucx(k) * sqrt(ucx(k) * ucx(k) + ucy(k) * ucy(k)) ! kg.m/s2
-                     Bendm = Bendm + Fbe * 0.5d0 * (zws(k) + zws(k - 1)) * stemcos ! kg.m2/s2
+                     Fbe = -0.5_dp * rhomean * Cdveg * diaveg(k) * (zws(k) - zws(k - 1)) * ucx(k) * sqrt(ucx(k) * ucx(k) + ucy(k) * ucy(k)) ! kg.m/s2
+                     Bendm = Bendm + Fbe * 0.5_dp * (zws(k) + zws(k - 1)) * stemcos ! kg.m2/s2
                   end do
 
-                  Fbu = ag * rhodif * diaveg(kk) * diaveg(kk) * 0.25d0 * pi * Pl ! kg.m/s2
-                  Buoym = Fbu * 0.5d0 * Pl * stemsin ! kg.m2/s2
+                  Fbu = ag * rhodif * diaveg(kk) * diaveg(kk) * 0.25_dp * pi * Pl ! kg.m/s2
+                  Buoym = Fbu * 0.5_dp * Pl * stemsin ! kg.m2/s2
 
-                  Bp = 0.5d0 * rhomean * Cdveg * diaveg(kk) * ((0.5 * Pl)**4)
-                  Bp = Bp * max(0.1d0, phivt(kk)) ! kg.m2/s
+                  Bp = 0.5_dp * rhomean * Cdveg * diaveg(kk) * ((0.5 * Pl)**4)
+                  Bp = Bp * max(0.1_dp, phivt(kk)) ! kg.m2/s
 
                   phit = (phit * Tdti + (Bendm - Buoym)) / (Tdti + Bp)
                   ep = 0.1
@@ -114,8 +114,8 @@ contains
                      phit = -ep
                   end if
                   phivt(kk) = phit
-                  phi = (phi / dts + phit) / (1d0 / dts + cbveg / Tdti)
-                  phi = max(-1.5d0, min(phi, 1.5d0))
+                  phi = (phi / dts + phit) / (1.0_dp / dts + cbveg / Tdti)
+                  phi = max(-1.5_dp, min(phi, 1.5_dp))
                   phiv(kk) = phi
 
                   stemcos = cos(phi)
@@ -139,8 +139,8 @@ contains
                         diaveg(k) = diaveg(kk)
                         rnveg(k) = rnveg(kk) * (stemh - h0) / (h1 - h0)
                      else
-                        diaveg(k) = 0d0
-                        rnveg(k) = 0d0
+                        diaveg(k) = 0.0_dp
+                        rnveg(k) = 0.0_dp
                      end if
                   end do
                end if
@@ -167,7 +167,7 @@ contains
       pure function calculate_plant_inertia_moment(mass, plant_length) result(inertia_moment)
          real(kind=dp), intent(in) :: mass, plant_length
          real(kind=dp) :: inertia_moment
-         inertia_moment = (1.0d0 / 6.0d0) * mass * plant_length**2 ! Moment of inertia = (1/6) * m * L^2
+         inertia_moment = (1.0_dp / 6.0_dp) * mass * plant_length**2 ! Moment of inertia = (1/6) * m * L^2
       end function calculate_plant_inertia_moment
 
    end subroutine setveg

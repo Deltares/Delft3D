@@ -59,21 +59,21 @@ contains
       real(kind=dp) :: waveps, huLL, uuu, vvv, umax, uorbhs, csw, snw, abscos
 
       if (hu(LL) <= epshu) then ! safety
-         taubpuLL = 0d0
+         taubpuLL = 0.0_dp
          z0urouL = epsz0
          return
       end if
-      waveps = 1d-4
+      waveps = 1.0e-4_dp
       k1 = ln(1, LL); k2 = ln(2, LL)
-      ac1 = acL(LL); ac2 = 1d0 - ac1
+      ac1 = acL(LL); ac2 = 1.0_dp - ac1
       Lb = Lbot(LL)
-      huLL = max(hu(LL), 1d-3) ! cfr taubot
+      huLL = max(hu(LL), 1.0e-3_dp) ! cfr taubot
 
       ! wave data on links
-      uorbhs = sqrt(2.0d0) * (0.5d0 * (uorb(k1) + uorb(k2)))
-      hrmsu = 0.5d0 * (hwav(k1) + hwav(k2))
-      tpu = 0.5d0 * (twav(k1) + twav(k2))
-      rlabdau = 0.5d0 * (rlabda(k1) + rlabda(k2))
+      uorbhs = sqrt(2.0_dp) * (0.5_dp * (uorb(k1) + uorb(k2)))
+      hrmsu = 0.5_dp * (hwav(k1) + hwav(k2))
+      tpu = 0.5_dp * (twav(k1) + twav(k2))
+      rlabdau = 0.5_dp * (rlabda(k1) + rlabda(k2))
       cosk1 = cosd(phiwav(k1)); cosk2 = cosd(phiwav(k2))
       sink1 = sind(phiwav(k1)); sink2 = sind(phiwav(k2))
       csw = ac1 * cosk1 + ac2 * cosk2; snw = ac1 * sink1 + ac2 * sink2
@@ -84,38 +84,38 @@ contains
       ! euler velocities
       uuu = u1(Lb) - ustokes(Lb)
       if (jaconveyance2D >= 3 .or. LL <= lnx1D) then ! based on subroutine furu
-         vvv = 0.0d0
+         vvv = 0.0_dp
       else
          vvv = v(Lb) - vstokes(Lb)
       end if
       !
-      rr = -0.4d0 * sqrt(2.d0) / huLL + 1d0
-      umax = rr * 2d0 * uorbhs
+      rr = -0.4_dp * sqrt(2.0_dp) / huLL + 1.0_dp
+      umax = rr * 2.0_dp * uorbhs
       t1 = tpu * sqrt(ag / huLL)
       u11 = umax / sqrt(ag * huLL)
-      a11 = -0.0049d0 * t1**2 - 0.069d0 * t1 + 0.2911d0
-      raih = max(0.5d0, -5.25d0 - 6.1d0 * tanh(a11 * u11 - 1.76d0))
-      rmax = max(0.62d0, min(0.75d0, -2.5d0 * huLL / max(rlabdau, 1.d-2) + 0.85d0))
-      uon = umax * (0.5d0 + (rmax - 0.5d0) * tanh((raih - 0.5d0) / (rmax - 0.5d0)))
+      a11 = -0.0049_dp * t1**2 - 0.069_dp * t1 + 0.2911_dp
+      raih = max(0.5_dp, -5.25_dp - 6.1_dp * tanh(a11 * u11 - 1.76_dp))
+      rmax = max(0.62_dp, min(0.75_dp, -2.5_dp * huLL / max(rlabdau, 1.0e-2_dp) + 0.85_dp))
+      uon = umax * (0.5_dp + (rmax - 0.5_dp) * tanh((raih - 0.5_dp) / (rmax - 0.5_dp)))
       uoff = umax - uon
-      uon = max(1d-5, uon)
-      uoff = max(1d-5, uoff)
-      uwbih = (0.5d0 * uon**3 + 0.5d0 * uoff**3)**(1.0d0 / 3.0d0)
-      rksru = 0.5d0 * (bfmpar%rksr(k1) + bfmpar%rksr(k2))
-      rksmru = 0.5d0 * (bfmpar%rksmr(k1) + bfmpar%rksmr(k2))
+      uon = max(1.0e-5_dp, uon)
+      uoff = max(1.0e-5_dp, uoff)
+      uwbih = (0.5_dp * uon**3 + 0.5_dp * uoff**3)**(1.0_dp / 3.0_dp)
+      rksru = 0.5_dp * (bfmpar%rksr(k1) + bfmpar%rksr(k2))
+      rksmru = 0.5_dp * (bfmpar%rksmr(k1) + bfmpar%rksmr(k2))
       !
       ! Van Rijn 2004 formulation
       !
       abscos = abs(uuu * cphi + vvv * sphi) / umod
-      phi = acos(sign(1d0, (uuu * cphi + vvv * sphi)) * min(abscos, 1d0)) ! avoid overflows
-      gamma = 0.8d0 + phi - 0.3d0 * phi**2
+      phi = acos(sign(1.0_dp, (uuu * cphi + vvv * sphi)) * min(abscos, 1.0_dp)) ! avoid overflows
+      gamma = 0.8_dp + phi - 0.3_dp * phi**2
       ksc = sqrt(rksru**2 + rksmru**2)
-      uratio = min(uwbih / (u2dh + waveps), 5d0)
+      uratio = min(uwbih / (u2dh + waveps), 5.0_dp)
       ka = ksc * exp(gamma * uratio)
-      ka = min(ka, 10d0 * ksc, 0.2d0 * huLL)
+      ka = min(ka, 10.0_dp * ksc, 0.2_dp * huLL)
       ca = 18.0_fp * log10(12.0_fp * huLL / ka)
       taubpuLL = ag * (u2dh * u2dh / umod) / ca**2
-      z0urouL = max(3.33d-5, ka / 30d0)
+      z0urouL = max(3.33e-5_dp, ka / 30.0_dp)
    end subroutine getvanrijnwci
 
 end module m_getvanrijnwci

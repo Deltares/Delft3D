@@ -107,7 +107,7 @@ contains
                call appendCRSPathToPol(thd(ic))
                if (NPL > 0) then
                   if (NPL > ubound(idum, 1)) then
-                     call realloc(idum, 1 + int(1.2d0 * dble(NPL)), keepExisting=.true., fill=0)
+                     call realloc(idum, 1 + int(1.2_dp * dble(NPL)), keepExisting=.true., fill=0)
                   end if
                   idum(NPL_prev + 1:NPL) = ic
                end if

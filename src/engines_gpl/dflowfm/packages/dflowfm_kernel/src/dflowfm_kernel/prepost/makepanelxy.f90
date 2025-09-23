@@ -177,13 +177,13 @@ contains
             if (JVIEW == 1) then
                XK(K) = XKK
                YK(K) = YKK
-               ZK(K) = 0d0
+               ZK(K) = 0.0_dp
             else if (JVIEW == 2) then
                XK(K) = XKK
-               YK(K) = 0d0
+               YK(K) = 0.0_dp
                ZK(K) = YKK
             else if (JVIEW == 3) then
-               XK(K) = 0d0
+               XK(K) = 0.0_dp
                YK(K) = XKK
                ZK(K) = YKK
             end if

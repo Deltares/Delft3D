@@ -46,7 +46,7 @@ module m_step_to_screen
 contains
 
    subroutine step_to_screen()
-      use precision, only: long, fp, hp
+      use precision, only: long, dp
       use Timers, only: tim_get_wallclock
       use m_flowtimes, only: tstop_user, time_user, dt_user, dnt_user, handle_steps, time1, dnt, tstart_user
       use messagehandling, only: msgbuf, msg_flush
@@ -60,14 +60,14 @@ contains
       integer :: min2go !!  minutes remaining
       integer :: hours2go !!  hours remaining
       integer :: days2go !!  days remaining
-      real(fp) :: perc_compl !!  completed percentage of simulation
+      real(dp) :: perc_compl !!  completed percentage of simulation
       character(32) :: timeremstr !!  string for remaining time
       character(20) :: string !!  string for remaining time
       integer, save :: ifirsttime = 1
-      real(fp) :: dt_ave
-      real(fp) :: tcpu
-      real(fp), save :: timesav = 0d0
-      real(fp), save :: dntsav = 0d0
+      real(dp) :: dt_ave
+      real(dp) :: tcpu
+      real(dp), save :: timesav = 0.0_dp
+      real(dp), save :: dntsav = 0.0_dp
 !
 !! executable statements -------------------------------------------------------
 !
@@ -76,8 +76,8 @@ contains
          write (msgbuf, '(a)') '   Sim. time done   Sim. time left   Real time used   Real time left Steps left Complete% Interval-averaged time step'
          call msg_flush()
          ifirsttime = 0
-         timesav = 0d0
-         dntsav = 0d0
+         timesav = 0.0_dp
+         dntsav = 0.0_dp
       end if
 
       !
@@ -88,7 +88,7 @@ contains
       itstrt = 0
       itfinish = dnt_user + nst2go ! completed user time steps + estimated remaining user time steps
 
-      perc_compl = 100.0_fp * (real(dnt_user - itstrt, fp) / real(max(itfinish - itstrt, 1), fp))
+      perc_compl = 100.0_dp * (real(dnt_user - itstrt, dp) / real(max(itfinish - itstrt, 1), dp))
       !
       ! initialise the remaining minutes, hours and days
       !
@@ -99,7 +99,7 @@ contains
       ! determine total seconds remaining from timer_simulation
       !
       tcpu = tim_get_wallclock(handle_steps)
-      sec2go_long = nint(tcpu * real(nst2go, hp) / real(max(int(dnt_user) - itstrt, 1), hp), long)
+      sec2go_long = nint(tcpu * real(nst2go, dp) / real(max(int(dnt_user) - itstrt, 1), dp), long)
       if (tcpu <= 0.0) then
          sec2go_long = -1
       end if
@@ -146,9 +146,9 @@ contains
 
 !   compute (sliding) average time step
 
-      dt_ave = 0d0
-      if (timesav > 0d0) then
-         dt_ave = (time1 - timesav) / max(dnt - dntsav, 1d0)
+      dt_ave = 0.0_dp
+      if (timesav > 0.0_dp) then
+         dt_ave = (time1 - timesav) / max(dnt - dntsav, 1.0_dp)
       end if
       timesav = time1
       dntsav = dnt
@@ -170,7 +170,7 @@ contains
          nst2go, &
          perc_compl, &
          '%', &
-         max(0d0, dt_ave)
+         max(0.0_dp, dt_ave)
       call msg_flush()
    end subroutine step_to_screen
 

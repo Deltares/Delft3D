@@ -33,6 +33,8 @@
 !> compute change in topology functional and get the nodes and cells involved
 module m_comp_ntopo
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -128,8 +130,8 @@ contains
             call comp_nnow(kL, k1, k2, nL)
             call comp_nnow(kR, k1, k2, nR)
 
-            ntopo = (n1L - 1)**2 + (n1R - 1)**2 + (n2L - 1)**2 + (n2R - 1)**2 + 2d0 * ((nL + 1)**2 + (nR + 1)**2) - &
-                    (n1L**2 + n1R**2 + n2L**2 + n2R**2 + 2d0 * (nL**2 + nR**2))
+            ntopo = (n1L - 1)**2 + (n1R - 1)**2 + (n2L - 1)**2 + (n2R - 1)**2 + 2.0_dp * ((nL + 1)**2 + (nR + 1)**2) - &
+                    (n1L**2 + n1R**2 + n2L**2 + n2R**2 + 2.0_dp * (nL**2 + nR**2))
 
             if (n1L /= n1R .or. n2L /= n2R) then
                continue

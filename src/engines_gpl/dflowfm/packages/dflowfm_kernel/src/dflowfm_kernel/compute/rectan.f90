@@ -61,7 +61,7 @@ contains
       end if
       area = hp * br
       width = br
-      perim = 2d0 * hp + br
+      perim = 2.0_dp * hp + br
       if (hpr >= hr .and. closed .and. newculverts) then
          perim = perim + br
       end if

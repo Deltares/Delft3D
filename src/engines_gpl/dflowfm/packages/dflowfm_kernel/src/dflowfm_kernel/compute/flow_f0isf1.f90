@@ -30,8 +30,10 @@
 !
 !
 module m_flow_f0isf1
+
    use m_a1vol1tot, only: a1vol1tot
 
+use precision, only: dp
    implicit none
 contains
    subroutine flow_f0isf1() ! Todo: make pointer stucture and reset pointers
@@ -52,7 +54,7 @@ contains
       !           if ( idomain(n).ne.my_rank ) cycle
       ! UNST-904: AND, create some reduce_bal() subroutine
 
-      hsaver = 0d0
+      hsaver = 0.0_dp
       if (a1tot /= 0) then
          hsaver = vol1tot / a1tot
       end if
@@ -94,10 +96,10 @@ contains
          vingrw = qingrw * dts
          voutgrw = qoutgrw * dts
 
-         qinsrc = 0d0
-         qoutsrc = 0d0
+         qinsrc = 0.0_dp
+         qoutsrc = 0.0_dp
          do i = 1, numsrc
-            if (qsrc(i) > 0d0) then
+            if (qsrc(i) > 0.0_dp) then
                k1 = ksrc(1, i)
                k2 = ksrc(4, i)
             else
@@ -137,9 +139,9 @@ contains
          volcur(IDX_BNDIN) = vinbnd
          volcur(IDX_BNDOUT) = voutbnd
          volcur(IDX_BNDTOT) = (vinbnd - voutbnd)
-         volcur(IDX_EXCHIN) = 0d0
-         volcur(IDX_EXCHOUT) = 0d0
-         volcur(IDX_EXCHTOT) = 0d0
+         volcur(IDX_EXCHIN) = 0.0_dp
+         volcur(IDX_EXCHOUT) = 0.0_dp
+         volcur(IDX_EXCHTOT) = 0.0_dp
          do i = 1, nbnd1d2d
             Lf = kbnd1d2d(3, i)
             volcur(IDX_EXCHTOT) = volcur(IDX_EXCHTOT) + q1(Lf) * dts
@@ -159,21 +161,21 @@ contains
          if (jaFrcInternalTides2D == 1) then
             volcur(IDX_InternalTidesDIssipation) = DissInternalTides * dts
          else
-            volcur(IDX_InternalTidesDIssipation) = 0d0
+            volcur(IDX_InternalTidesDIssipation) = 0.0_dp
          end if
 
          if (jatidep > 0 .or. jaselfal > 0) then
             volcur(IDX_GravInput) = GravInput * dts
          else
-            volcur(IDX_GravInput) = 0d0
+            volcur(IDX_GravInput) = 0.0_dp
          end if
 
          if (jaselfal > 0) then
             volcur(IDX_SALInput) = SALInput * dts
             volcur(IDX_SALInput2) = SALInput2 * dts
          else
-            volcur(IDX_SALInput) = 0d0
-            volcur(IDX_SALInput2) = 0d0
+            volcur(IDX_SALInput) = 0.0_dp
+            volcur(IDX_SALInput2) = 0.0_dp
          end if
          volcur(IDX_GRWIN) = vingrw
          volcur(IDX_GRWOUT) = voutgrw

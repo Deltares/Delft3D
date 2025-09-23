@@ -125,9 +125,9 @@ contains
       end if
 
       do i = 1, size(cs)
-         call realloc(cs(i)%sumvalcur, maxnval, fill=0.0d0, keepExisting=.true.)
-         call realloc(cs(i)%sumvalcum, maxnval, fill=0.0d0, keepExisting=.true.)
-         call realloc(cs(i)%sumvalavg, maxnval, fill=0.0d0, keepExisting=.true.)
+         call realloc(cs(i)%sumvalcur, maxnval, fill=0.0_dp, keepExisting=.true.)
+         call realloc(cs(i)%sumvalcum, maxnval, fill=0.0_dp, keepExisting=.true.)
+         call realloc(cs(i)%sumvalavg, maxnval, fill=0.0_dp, keepExisting=.true.)
       end do
    end subroutine ReallocCrossSectionSums
 

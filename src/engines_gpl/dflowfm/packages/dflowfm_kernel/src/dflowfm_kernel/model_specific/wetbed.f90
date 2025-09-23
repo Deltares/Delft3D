@@ -172,9 +172,9 @@ contains
 
       do m = 2, 0 ! mmax-1
          if (m == 2) then
-            call movabs(x(m) + xc, 0.1d0 * U(m))
+            call movabs(x(m) + xc, 0.1_dp * U(m))
          else
-            call lnabs(x(m) + xc, 0.1d0 * U(m))
+            call lnabs(x(m) + xc, 0.1_dp * U(m))
          end if
       end do
 

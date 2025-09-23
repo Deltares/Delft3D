@@ -50,7 +50,7 @@ contains
       do kk = 1, ndx
          fcoriocof = fcorio
          if (icorio > 0 .and. jsferic == 1) fcoriocof = fcoris(kk)
-         spir_ce = fcorio * hs(kk) * 0.5d0
+         spir_ce = fcorio * hs(kk) * 0.5_dp
          spir_be = hs(kk) * spircrv(kk) * spirucm(kk)
          spirint(kk) = spir_be - spir_ce
       end do

@@ -90,7 +90,7 @@ contains
 
       KI1 = 0
       do I1 = 1, MC - 1
-         AF = 0.20d0 + 0.70d0 * dble(I1 - 1) / (MC - 1)
+         AF = 0.20_dp + 0.70_dp * dble(I1 - 1) / (MC - 1)
          call READYY(' ', AF)
          if (I1 >= M1 .and. I1 < M2) then
             MFA = MFAA

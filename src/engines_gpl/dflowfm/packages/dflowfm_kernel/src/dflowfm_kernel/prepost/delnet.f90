@@ -108,7 +108,7 @@ contains
                      inall = 1 ! todo: check als LNN(L) == 0
                      do ip = 1, LNN(L)
                         n = netcell(LNE(ip, L))%n
-                        XL = 0d0; YL = 0d0
+                        XL = 0.0_dp; YL = 0.0_dp
                         do ic = 1, n
                            XL = XL + XK(netcell(LNE(ip, L))%nod(ic))
                            YL = YL + YK(netcell(LNE(ip, L))%nod(ic))
@@ -123,8 +123,8 @@ contains
                      end do
                   else
                      ! Rare case: 2D link without surrounding cells.
-                     XL = 0.5d0 * (XK(K1) + XK(K2))
-                     YL = 0.5d0 * (YK(K1) + YK(K2))
+                     XL = 0.5_dp * (XK(K1) + XK(K2))
+                     YL = 0.5_dp * (YK(K1) + YK(K2))
                      call DBPINPOL(XL, YL, inall, dmiss, JINS, NPL, xpl, ypl, zpl)
                   end if
                   if (inall == 1) then
@@ -132,8 +132,8 @@ contains
                      KN(2, L) = 0; KC(K2) = 0
                   end if
                else ! Old behaviour: just check by link mids.
-                  XL = 0.5d0 * (XK(K1) + XK(K2))
-                  YL = 0.5d0 * (YK(K1) + YK(K2))
+                  XL = 0.5_dp * (XK(K1) + XK(K2))
+                  YL = 0.5_dp * (YK(K1) + YK(K2))
                   call DBPINPOL(XL, YL, INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
                   if (INHUL == 1) then
                      KN(1, L) = 0; KC(K1) = 0

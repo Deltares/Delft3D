@@ -56,7 +56,7 @@ contains
          R2 = R2 * R2
          if (R2 /= 0) then
             RL = (X31 * X21 + Y31 * Y21) / R2
-            if (0d0 <= RL .and. RL <= 1d0) then
+            if (0.0_dp <= RL .and. RL <= 1.0_dp) then
                JA = 1
             end if
             XN = X1 + RL * (x2 - x1)
@@ -80,9 +80,9 @@ contains
          z31 = zz3 - zz1
 
          r2 = x21 * x21 + y21 * y21 + z21 * z21
-         if (r2 /= 0d0) then
+         if (r2 /= 0.0_dp) then
             RL = (X31 * X21 + Y31 * Y21 + Z31 * Z21) / R2
-            if (0d0 <= RL .and. RL <= 1d0) then
+            if (0.0_dp <= RL .and. RL <= 1.0_dp) then
                JA = 1
             end if
             XXN = xx1 + RL * x21

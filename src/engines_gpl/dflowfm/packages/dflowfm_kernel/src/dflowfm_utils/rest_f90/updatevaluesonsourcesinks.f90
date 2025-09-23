@@ -49,11 +49,11 @@ contains
 
       real(kind=dp), intent(in) :: tim1 !< Current (new) time
 
-      real(kind=dp), save :: timprev = -1d0 ! TODO: save is unsafe, replace by using time1 and time0, also two other occurrences
+      real(kind=dp), save :: timprev = -1.0_dp ! TODO: save is unsafe, replace by using time1 and time0, also two other occurrences
       real(kind=dp) :: timstep
       integer :: i
 
-      if (timprev < 0d0) then
+      if (timprev < 0.0_dp) then
          ! This realloc should not be needed
          call reallocsrc(numsrc, 0)
       else

@@ -212,9 +212,9 @@ contains
       dt_user = 120.0_dp !< User specified time step (s) for external forcing update.
       dt_nodal = 21600.0_dp !< User specified time step (s) for nodal factors update.
       dt_max = 30.0_dp !< Computational timestep limit by user.
-      dtmin = 1d-4 !< dt < dtmin : surely crashed
+      dtmin = 1.0e-4_dp !< dt < dtmin : surely crashed
       dtminbreak = 0.0_dp !< smallest allowed timestep, otherwise break: off
-      dtminhis = 9d9 !< smallest timestep within most recent his interval
+      dtminhis = 9.0e9_dp !< smallest timestep within most recent his interval
       dt_init = 1.0_dp
       dt_trach = 1200.0_dp !< User specified DtTrt Trachytope roughness update time interval (s)
       dt_fac_max = 1.1_dp !< default setting

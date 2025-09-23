@@ -238,7 +238,7 @@ contains
          deallocate (morstatqnt)
       end if
       allocate (morstatqnt(ndx, nmorstatqnt))
-      morstatqnt = 0d0
+      morstatqnt = 0.0_dp
       !
       ! Set minima and maxima start values
       !
@@ -275,53 +275,53 @@ contains
 
       integer :: iqnt
 
-      morstatqnt(:, 1) = 0d0
-      morstatqnt(:, 2:stmpar%lsedtot + 1) = 0d0
+      morstatqnt(:, 1) = 0.0_dp
+      morstatqnt(:, 2:stmpar%lsedtot + 1) = 0.0_dp
 
       do iqnt = 1, 4
          select case (iqnt)
          case (1) ! waterdepth
             ! min
             if (stmpar%morpar%moroutput%statflg(2, iqnt) > 0) then
-               morstatqnt(:, morstatflg(2, iqnt)) = 1d10
+               morstatqnt(:, morstatflg(2, iqnt)) = 1.0e10_dp
             end if
             ! max
             if (stmpar%morpar%moroutput%statflg(3, iqnt) > 0) then
-               morstatqnt(:, morstatflg(3, iqnt)) = -1d10
+               morstatqnt(:, morstatflg(3, iqnt)) = -1.0e10_dp
             end if
             !
             if (stmpar%morpar%moroutput%statflg(4, iqnt) > 0) then
-               morstatqnt(:, morstatflg(4, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(4, iqnt)) = 0.0_dp
             end if
             !
             if (stmpar%morpar%moroutput%statflg(5, iqnt) > 0) then
-               morstatqnt(:, morstatflg(5, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(5, iqnt)) = 0.0_dp
             end if
             !
             if (stmpar%morpar%moroutput%statflg(6, iqnt) > 0) then
-               morstatqnt(:, morstatflg(6, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(6, iqnt)) = 0.0_dp
             end if
          case default ! vectors
             ! min
             if (stmpar%morpar%moroutput%statflg(2, iqnt) > 0) then
-               morstatqnt(:, morstatflg(2, iqnt)) = 1d10
-               morstatqnt(:, morstatflg(3, iqnt)) = 1d10
+               morstatqnt(:, morstatflg(2, iqnt)) = 1.0e10_dp
+               morstatqnt(:, morstatflg(3, iqnt)) = 1.0e10_dp
             end if
             ! max
             if (stmpar%morpar%moroutput%statflg(3, iqnt) > 0) then
-               morstatqnt(:, morstatflg(4, iqnt)) = 0d0 ! comparison on magnitude
-               morstatqnt(:, morstatflg(5, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(4, iqnt)) = 0.0_dp ! comparison on magnitude
+               morstatqnt(:, morstatflg(5, iqnt)) = 0.0_dp
             end if
             if (stmpar%morpar%moroutput%statflg(4, iqnt) > 0) then
-               morstatqnt(:, morstatflg(6, iqnt)) = 0d0
-               morstatqnt(:, morstatflg(7, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(6, iqnt)) = 0.0_dp
+               morstatqnt(:, morstatflg(7, iqnt)) = 0.0_dp
             end if
             if (stmpar%morpar%moroutput%statflg(5, iqnt) > 0) then
-               morstatqnt(:, morstatflg(8, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(8, iqnt)) = 0.0_dp
             end if
             if (stmpar%morpar%moroutput%statflg(6, iqnt) > 0) then
-               morstatqnt(:, morstatflg(9, iqnt)) = 0d0
-               morstatqnt(:, morstatflg(10, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(9, iqnt)) = 0.0_dp
+               morstatqnt(:, morstatflg(10, iqnt)) = 0.0_dp
             end if
          end select
       end do
@@ -379,13 +379,13 @@ contains
       !
       if (nmorstatqnt == 0) return
       !
-      wght = max(dts / ti_sed, 0d0) ! time weighted is default, as opposed to original D3D implementation which used accreted volume
+      wght = max(dts / ti_sed, 0.0_dp) ! time weighted is default, as opposed to original D3D implementation which used accreted volume
       !
       do k = 1, ndx
          if (stmpar%morpar%moroutput%weightflg == MOR_STAT_BODS) then
-            wght = 0d0
+            wght = 0.0_dp
             do ll = 1, stmpar%lsedtot
-               wght = wght + max(0d0, dbodsd(ll, k))
+               wght = wght + max(0.0_dp, dbodsd(ll, k))
             end do
          end if
          !
@@ -754,7 +754,7 @@ contains
       itim = sedids%id_tsp%idx_curtime
       if (itim == 1) return
       !
-      morfc = (stmpar%morpar%morft - morft0) / (time1 - hydrt0) * 86400d0
+      morfc = (stmpar%morpar%morft - morft0) / (time1 - hydrt0) * 86400.0_dp
       morft0 = stmpar%morpar%morft
       hydrt0 = time1
       !
@@ -797,23 +797,23 @@ contains
             if (iand(idx, MOR_STAT_MEAN) > 0 .or. iand(idx, MOR_STAT_STD) > 0) then
                if (allocated(wghtfac)) deallocate (wghtfac, work2)
                allocate (wghtfac(1:ndx), work2(1:ndx))
-               wghtfac = 1d0; work2 = 0d0
+               wghtfac = 1.0_dp; work2 = 0.0_dp
                if (stmpar%morpar%moroutput%weightflg == MOR_STAT_BODS) then
-                  wghtfac = 1d0 / max(morstatqnt(:, 1), eps10)
+                  wghtfac = 1.0_dp / max(morstatqnt(:, 1), eps10)
                end if
             end if
 
             if (dim == 1) then ! just waterlevel
                if (iand(idx, MOR_STAT_MIN) > 0) then
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(2, iq)) = -999d0
+                     morstatqnt(:, morstatflg(2, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_min_x, UNC_LOC_S, morstatqnt(:, morstatflg(2, iq)))
                end if
                !
                if (iand(idx, MOR_STAT_MAX) > 0) then
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(3, iq)) = -999d0
+                     morstatqnt(:, morstatflg(3, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_x, UNC_LOC_S, morstatqnt(:, morstatflg(3, iq)))
                end if
@@ -821,7 +821,7 @@ contains
                if (iand(idx, MOR_STAT_MEAN) > 0) then
                   work2 = morstatqnt(:, morstatflg(4, iq)) * wghtfac
                   where (morstatqnt(:, 1) <= 0.0)
-                     work2 = -999d0
+                     work2 = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, work2)
                end if
@@ -838,23 +838,23 @@ contains
                   end do
 
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(5, iq)) = -999d0
+                     morstatqnt(:, morstatflg(5, iq)) = -999.0_dp
                   end where
 
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, morstatqnt(:, morstatflg(5, iq)))
                end if
             else
                if (iq == 2) then
-                  morfc = 1d0
+                  morfc = 1.0_dp
                else
-                  morfc = max(morfc, 1d0)
+                  morfc = max(morfc, 1.0_dp)
                end if
 
                if (iand(idx, MOR_STAT_MIN) > 0) then
 
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(2, iq)) = -999d0
-                     morstatqnt(:, morstatflg(3, iq)) = -999d0
+                     morstatqnt(:, morstatflg(2, iq)) = -999.0_dp
+                     morstatqnt(:, morstatflg(3, iq)) = -999.0_dp
                   end where
 
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_min_x, UNC_LOC_S, morstatqnt(:, morstatflg(2, iq)))
@@ -863,8 +863,8 @@ contains
                !
                if (iand(idx, MOR_STAT_MAX) > 0) then
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(4, iq)) = -999d0
-                     morstatqnt(:, morstatflg(5, iq)) = -999d0
+                     morstatqnt(:, morstatflg(4, iq)) = -999.0_dp
+                     morstatqnt(:, morstatflg(5, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_x, UNC_LOC_S, morstatqnt(:, morstatflg(4, iq)))
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_y, UNC_LOC_S, morstatqnt(:, morstatflg(5, iq)))
@@ -873,12 +873,12 @@ contains
                if (iand(idx, MOR_STAT_MEAN) > 0) then
                   work2 = morstatqnt(:, morstatflg(6, iq)) * wghtfac * morfc
                   where (morstatqnt(:, 1) <= 0.0)
-                     work2 = -999d0
+                     work2 = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, work2)
                   work2 = morstatqnt(:, morstatflg(7, iq)) * wghtfac * morfc
                   where (morstatqnt(:, 1) <= 0.0)
-                     work2 = -999d0
+                     work2 = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_y, UNC_LOC_S, work2)
                end if
@@ -894,18 +894,18 @@ contains
                      end if
                   end do
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(8, iq)) = -999d0
+                     morstatqnt(:, morstatflg(8, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_std_x, UNC_LOC_S, morstatqnt(:, morstatflg(8, iq)))
                end if
                !
                if (iand(idx, MOR_STAT_CUM) > 0 .and. (iq == 3 .or. iq == 4)) then
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(9, iq)) = -999d0
+                     morstatqnt(:, morstatflg(9, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_net_x, UNC_LOC_S, morstatqnt(:, morstatflg(9, iq)) * morfc)
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(10, iq)) = -999d0
+                     morstatqnt(:, morstatflg(10, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_net_y, UNC_LOC_S, morstatqnt(:, morstatflg(10, iq)) * morfc)
                end if

@@ -119,7 +119,7 @@ contains
                cycle
             end if
 
-            dorthosum = 0d0
+            dorthosum = 0.0_dp
             num = 0
 !         compute current orthogonality
             do kk = 1, 2
@@ -153,7 +153,7 @@ contains
 
 !            compute new orthogonality
                numnew = 0
-               dorthosumnew = 0d0
+               dorthosumnew = 0.0_dp
                do kk = 1, 2
                   k = lne(kk, L)
                   do LL = 1, netcell(k)%N

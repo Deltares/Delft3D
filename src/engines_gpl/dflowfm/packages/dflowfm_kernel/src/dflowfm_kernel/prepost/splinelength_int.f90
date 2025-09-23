@@ -67,15 +67,15 @@ contains
 
       call splinxy(xspl, yspl, xspl2, yspl2, num)
 
-      dt = 1d0 / dble(NSAM)
+      dt = 1.0_dp / dble(NSAM)
 !  number of intervals
-      N = max(floor(0.9999d0 + (s1 - s0) / dt), Nmin)
+      N = max(floor(0.9999_dp + (s1 - s0) / dt), Nmin)
       dt = (s1 - s0) / dble(N)
 
 !   tR = s0
 !   call splintxy(xspl,yspl,xspl2,yspl2,num,tR,xR,yR)
 
-      splinelength_int = 0d0
+      splinelength_int = 0.0_dp
       tR = s0
       call splintxy(xspl, yspl, xspl2, yspl2, num, tR, xR, yR)
       do i = 1, N
@@ -83,7 +83,7 @@ contains
          xL = xR
          yL = yR
          fac = dble(i) / dble(N)
-         tR = (1d0 - fac) * s0 + fac * s1
+         tR = (1.0_dp - fac) * s0 + fac * s1
          call splintxy(xspl, yspl, xspl2, yspl2, num, tR, xR, yR)
          splinelength_int = splinelength_int + dbdistance(xL, yL, xR, yR, jsferic, jasfer3D, dmiss)
       end do

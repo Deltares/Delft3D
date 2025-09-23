@@ -125,14 +125,14 @@ contains
             if (kmx == 0) then
 
                do k = 1, ndx
-                  workx(k) = taus(k) * ueux(k) / max(ucmag(k), 1d-4)
-                  worky(k) = taus(k) * ueuy(k) / max(ucmag(k), 1d-4)
+                  workx(k) = taus(k) * ueux(k) / max(ucmag(k), 1.0e-4_dp)
+                  worky(k) = taus(k) * ueuy(k) / max(ucmag(k), 1.0e-4_dp)
                end do
             else
                do k = 1, ndx
                   call getkbotktop(k, kb, kt)
                   ux = ueux(kb); uy = ueuy(kb)
-                  um = max(hypot(ux, uy), 1d-4)
+                  um = max(hypot(ux, uy), 1.0e-4_dp)
                   workx(k) = taus(k) * ux / um
                   worky(k) = taus(k) * uy / um
                end do
@@ -538,9 +538,9 @@ contains
 
 !        Infiltration
             if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
-               valobs(i, IPNT_INFILTCAP) = infiltcap(k) * 1d3 * 3600.0_dp ! m/s -> mm/hr
+               valobs(i, IPNT_INFILTCAP) = infiltcap(k) * 1.0e3_dp * 3600.0_dp ! m/s -> mm/hr
                if (ba(k) > 0.0_dp) then
-                  valobs(i, IPNT_INFILTACT) = infilt(k) / ba(k) * 1d3 * 3600.0_dp ! m/s -> mm/hr
+                  valobs(i, IPNT_INFILTACT) = infilt(k) / ba(k) * 1.0e3_dp * 3600.0_dp ! m/s -> mm/hr
                else
                   valobs(i, IPNT_INFILTACT) = 0.0_dp
                end if

@@ -48,7 +48,7 @@ contains
       integer :: mmax, nmax, mc, nc, nump
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)
       real(kind=dp) :: EPS, dx1, dy1, dx2, dy2, fac, efac
-      data EPS/0.00001d0/
+      data EPS/0.00001_dp/
       integer :: m1, m2, n1, n2, in, jn, i1, j1, klast, num, i, j, i2, j2, ii, jj
 !     LINESHIFT
 

@@ -44,11 +44,11 @@ contains
       use precision, only: dp
 
       real(kind=dp) :: pi, dg2rd, rd2dg, ra
-      RA = 6370000d0
+      RA = 6370000.0_dp
 !     RA    = dble(6378000.0)   DIT IN MEESTE ANDERE LITERATUUR
-      PI = acos(-1d0)
-      DG2RD = PI / 180d0
-      RD2DG = 180d0 / PI
+      PI = acos(-1.0_dp)
+      DG2RD = PI / 180.0_dp
+      RD2DG = 180.0_dp / PI
       return
    end
 

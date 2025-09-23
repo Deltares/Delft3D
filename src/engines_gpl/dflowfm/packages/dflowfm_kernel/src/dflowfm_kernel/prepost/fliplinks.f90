@@ -121,8 +121,8 @@ contains
 
 !  Monte-Carlo settings
       MAXITER = 10
-      beta = 2d0
-      Etot = 0d0
+      beta = 2.0_dp
+      Etot = 0.0_dp
       Emin = Etot
 
 !  allocate

@@ -95,9 +95,9 @@ contains
                      exit
                   end if
                end do
-               aref = 0d0
+               aref = 0.0_dp
                do i = 2, iref
-                  aref = aref + (cdef%flowWidth(i) + cdef%flowWidth(i - 1)) * (cdef%height(i) - cdef%height(i - 1)) * 0.5d0
+                  aref = aref + (cdef%flowWidth(i) + cdef%flowWidth(i - 1)) * (cdef%height(i) - cdef%height(i - 1)) * 0.5_dp
                end do
                href = cdef%height(iref)
                w_active = cdef%flowWidth(iref)
@@ -122,7 +122,7 @@ contains
                   !
                   ! raise/lower proportional to the depth relative to reference level
                   !
-                  fac = 1d0 - (da / aref)
+                  fac = 1.0_dp - (da / aref)
                   do i = 1, iref - 1
                      cdef%height(i) = href - (href - cdef%height(i)) * fac
                   end do
@@ -132,7 +132,7 @@ contains
                   !
                   do i = iref, cdef%levelscount - 1
                      da = da - aref
-                     aref = (cdef%flowWidth(i + 1) + cdef%flowWidth(i)) * (cdef%height(i + 1) - cdef%height(i)) * 0.5d0
+                     aref = (cdef%flowWidth(i + 1) + cdef%flowWidth(i)) * (cdef%height(i + 1) - cdef%height(i)) * 0.5_dp
                      if (da < aref) then
                         exit
                      else
@@ -151,7 +151,7 @@ contains
                   !
                   ! fill proportional to the depth relative to reference level
                   !
-                  fac = 1d0 - (da / aref)
+                  fac = 1.0_dp - (da / aref)
                   do i = 1, iref - 1
                      cdef%height(i) = href - (href - cdef%height(i)) * fac
                   end do
@@ -179,7 +179,7 @@ contains
          pnod => network%nds%node(inod)
          if (pnod%nodeType == nt_LinkNode) then ! connection node
             nm = pnod%gridnumber ! TODO: Not safe in parallel models (check gridpointsseq as introduced in UNST-5013)
-            blmin = 999999d0
+            blmin = 999999.0_dp
             !V: When using FM1DIMP, we set `gridpoint2cross(nm)%num_cross_sections=0` such that
             !we do not loop over the cross-sections for updating the bed level. This is
             !necessary because the bed level change in <gridpoint2cross(nm)%cross(j)> does not
@@ -217,8 +217,8 @@ contains
             idx_l1 = abs(nd_mor(kd)%ln(1))
             idx_l2 = abs(nd_mor(kd)%ln(2))
             idx_ns = f1dimppar%grd_fmmv_fmsv(kd)
-            e_sbn_tot_1 = 0.0d0
-            e_sbn_tot_2 = 0.0d0
+            e_sbn_tot_1 = 0.0_dp
+            e_sbn_tot_2 = 0.0_dp
             do kl = 1, lsedtot
                e_sbn_tot_1 = e_sbn_tot_1 + e_sbn(idx_l1, kl)
                e_sbn_tot_2 = e_sbn_tot_2 + e_sbn(idx_l2, kl)
@@ -255,14 +255,14 @@ contains
          !
          ! compute the total cell length
          !
-         ds = 0d0
+         ds = 0.0_dp
          do i = 1, nd_mor(nm)%lnx
             LL = nd_mor(nm)%ln(i)
             L = abs(LL)
             if (LL < 0) then
                ds = ds + dx(L) * acl(L)
             else
-               ds = ds + dx(L) * (1d0 - acl(L))
+               ds = ds + dx(L) * (1.0_dp - acl(L))
             end if
          end do
       else
@@ -271,7 +271,7 @@ contains
          if (LL < 0) then
             ds = dx(L) * acl(L)
          else
-            ds = dx(L) * (1d0 - acl(L))
+            ds = dx(L) * (1.0_dp - acl(L))
          end if
       end if
 
@@ -311,7 +311,7 @@ contains
             cdef1 => network%crs%cross(icrs1)%tabdef
             cdef2 => network%crs%cross(icrs2)%tabdef
             if (cdef1%crosstype == CS_TABULATED .and. cdef2%crosstype == CS_TABULATED) then
-               wu_mor(L) = (1.0d0 - factor) * cdef1%plains(1) + factor * cdef2%plains(1)
+               wu_mor(L) = (1.0_dp - factor) * cdef1%plains(1) + factor * cdef2%plains(1)
             else
                wu_mor(L) = wu(L)
             end if
@@ -324,13 +324,13 @@ contains
          end do
 
          ! Compute morphologically active areas
-         ba_mor(ndx2D + 1:ndx1Db) = 0d0
+         ba_mor(ndx2D + 1:ndx1Db) = 0.0_dp
 
          do L = 1, lnx1d
             k1 = ln(1, L)
             k2 = ln(2, L)
             ba_mor(k1) = ba_mor(k1) + dx(L) * wu_mor(L) * acl(L)
-            ba_mor(k2) = ba_mor(k2) + dx(L) * wu_mor(L) * (1d0 - acl(L))
+            ba_mor(k2) = ba_mor(k2) + dx(L) * wu_mor(L) * (1.0_dp - acl(L))
          end do
 
          ! Compute morphologically active areas at boundary links
@@ -338,12 +338,12 @@ contains
             k1 = ln(1, L)
             k2 = ln(2, L)
             ba_mor(k1) = dx(L) * wu_mor(L) ! area point outside
-            ba_mor(k2) = ba_mor(k2) + dx(L) * wu_mor(L) * (1d0 - acl(L)) ! area point inside (added to loop above)
+            ba_mor(k2) = ba_mor(k2) + dx(L) * wu_mor(L) * (1.0_dp - acl(L)) ! area point inside (added to loop above)
          end do
 
          ! Compute inverse of morphologically active areas
          do k = ndx2D + 1, ndx1Db
-            bai_mor(k) = 1d0 / ba_mor(k)
+            bai_mor(k) = 1.0_dp / ba_mor(k)
          end do
 
       end if
@@ -374,8 +374,8 @@ contains
       ! Generate level change averaged over the main channel
       !
       do nm = ndx2D + 1, ndxi ! only for internal 1D nodes
-         href_tot = 0d0
-         ba_mor_tot = 0d0
+         href_tot = 0.0_dp
+         ba_mor_tot = 0.0_dp
          do j = 1, gridpoint2cross(nm)%num_cross_sections
             c = gridpoint2cross(nm)%cross(j)
             if (c == -999) cycle
@@ -395,7 +395,7 @@ contains
                end do
                blref = cdef%flowWidth(1) * cdef%height(1)
                do i = 2, iref
-                  blref = blref + (cdef%flowWidth(i) - cdef%flowWidth(i - 1)) * (cdef%height(i) + cdef%height(i - 1)) * 0.5d0
+                  blref = blref + (cdef%flowWidth(i) - cdef%flowWidth(i - 1)) * (cdef%height(i) + cdef%height(i - 1)) * 0.5_dp
                end do
                href_tot = href_tot + blref * ds
                ba_mor_tot = ba_mor_tot + cdef%flowWidth(iref) * ds
@@ -404,7 +404,7 @@ contains
                call err_flush()
             end if
          end do
-         if (ba_mor_tot > 0d0) then
+         if (ba_mor_tot > 0.0_dp) then
             bl_ave(nm) = href_tot / ba_mor_tot
          else
             bl_ave(nm) = bl(nm)

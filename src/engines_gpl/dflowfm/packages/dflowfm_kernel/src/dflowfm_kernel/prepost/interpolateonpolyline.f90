@@ -56,11 +56,11 @@ contains
       end if
       JA = 1
       DT = T(I) - T(I - 1)
-      TI = 0d0
-      if (DT /= 0d0) TI = (TP - T(I - 1)) / DT
-      XP = (1d0 - TI) * X(I - 1) + TI * X(I)
-      YP = (1d0 - TI) * Y(I - 1) + TI * Y(I)
-      ZP = (1d0 - TI) * Z(I - 1) + TI * Z(I)
+      TI = 0.0_dp
+      if (DT /= 0.0_dp) TI = (TP - T(I - 1)) / DT
+      XP = (1.0_dp - TI) * X(I - 1) + TI * X(I)
+      YP = (1.0_dp - TI) * Y(I - 1) + TI * Y(I)
+      ZP = (1.0_dp - TI) * Z(I - 1) + TI * Z(I)
       return
    end subroutine interpolateOnPolyline
 end module m_interpolateOnPolyline

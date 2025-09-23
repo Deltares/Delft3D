@@ -32,6 +32,8 @@
 
 module m_wave_makeplotvars
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -52,11 +54,11 @@ contains
       integer :: ierror
       integer :: L, LL, Lb, Lt, k1, k2
 
-      ust_mag = 0d0
-      fwav_mag = 0d0
+      ust_mag = 0.0_dp
+      fwav_mag = 0.0_dp
       if (jawave /= WAVE_SURFBEAT) then
-         ustx_cc = 0d0
-         usty_cc = 0d0
+         ustx_cc = 0.0_dp
+         usty_cc = 0.0_dp
       end if
 
       do L = 1, lnx ! safe for 3D
@@ -83,12 +85,12 @@ contains
             end do
          end do
       else
-         fwav_mag = 0d0
+         fwav_mag = 0.0_dp
       end if
       !
       ! bed shear stress
-      workx = 0d0
-      worky = 0d0
+      workx = 0.0_dp
+      worky = 0.0_dp
       do L = 1, lnx
          k1 = ln(1, L)
          k2 = ln(2, L)
