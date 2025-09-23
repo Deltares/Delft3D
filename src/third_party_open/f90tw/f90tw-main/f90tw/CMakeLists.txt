@@ -150,7 +150,7 @@ function(F90TWTEST NAME)
             COMMAND_EXPAND_LISTS
         )
     endif()
-    gtest_discover_tests(${NAME})
+    gtest_discover_tests(${NAME} WORKING_DIRECTORY $<TARGET_FILE_DIR:${NAME}>)
 endfunction()
 
 # resolve the preprocessor to be used. it is assumed that on unix-based systems

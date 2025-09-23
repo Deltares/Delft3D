@@ -19,3 +19,17 @@ foreach(resource_file IN LISTS test_resources)
             "$<TARGET_FILE_DIR:nefis_test_05>/${resource_file}"
     )
 endforeach()
+
+add_custom_command(
+    TARGET nefis_test_05 PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "C:/Program Files (x86)/Intel/oneAPI/compiler/latest/bin/libifcoremdd.dll"
+        "$<TARGET_FILE_DIR:nefis_test_05>/libifcoremdd.dll"
+)
+
+add_custom_command(
+    TARGET nefis_test_05 PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "C:/Program Files (x86)/Intel/oneAPI/compiler/latest/bin/libmmd.dll"
+        "$<TARGET_FILE_DIR:nefis_test_05>/libmmd.dll"
+)
