@@ -122,7 +122,6 @@ object StartVerschilanalyse : BuildType({
         sshExec {
             name = "Schedule verschilanalyse run"
             commands = """
-                #!/bin/bash
                 set -eo pipefail
 
                 rm -rf bundle
@@ -145,6 +144,8 @@ object StartVerschilanalyse : BuildType({
                 fi
 
                 pushd bundle
+                echo "HALLOOOOOOOO {'$'}MINIO_UPLOAD_FLAG"
+
                 ./start_verschilanalyse.sh \
                     --apptainer='%va_harbor_protocol%://%harbor_webhook.image.url%' \
                     --current-prefix='%current_prefix%' \
