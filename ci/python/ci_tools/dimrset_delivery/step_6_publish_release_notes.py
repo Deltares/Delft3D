@@ -35,35 +35,35 @@ class ReleaseNotesPublisher(StepExecutorInterface):
             self.__context.log("No project keys found in settings, issue matching may fail", severity=LogLevel.WARNING)
             return re.compile(r"\b(a|b)-\d+\b")  # Fallback pattern
         return re.compile(rf"\b({'|'.join(project_keys)})-\d+(?=\b|[^A-Za-z0-9])")
-        
+
     def __normalize_issue_keys(self, commits: List[str], project_keys: List[str]) -> List[str]:
-            """
-            Normalize issue references in commit messages.
+        """
+        Normalize issue references in commit messages.
 
-            Converts lowercase project keys and missing dashes into proper Jira keys,
-            e.g. `devopsdsc 761` → `DEVOPSDSC-761`.
+        Converts lowercase project keys and missing dashes into proper Jira keys,
+        e.g. `devopsdsc 761` → `DEVOPSDSC-761`.
 
-            Parameters
-            ----------
-            commits : List[str]
-                Commit messages to scan.
-            project_keys : List[str]
-                Allowed Jira project keys (e.g., ["DEVOPSDSC", "UNST"]).
+        Parameters
+        ----------
+        commits : List[str]
+            Commit messages to scan.
+        project_keys : List[str]
+            Allowed Jira project keys (e.g., ["DEVOPSDSC", "UNST"]).
 
-            Returns
-            -------
-            List[str]
-                Updated commit messages with normalized issue keys.
-            """
-            if not project_keys:
-                return commits  # nothing to normalize
+        Returns
+        -------
+        List[str]
+            Updated commit messages with normalized issue keys.
+        """
+        if not project_keys:
+            return commits  # nothing to normalize
 
-            pattern = re.compile(rf"\b({'|'.join(project_keys)})[\s-]?(\d+)\b", re.IGNORECASE)
+        pattern = re.compile(rf"\b({'|'.join(project_keys)})[\s-]?(\d+)\b", re.IGNORECASE)
 
-            def replacer(match: re.Match) -> str:
-                return f"{match.group(1).upper()}-{match.group(2)}"
+        def replacer(match: re.Match) -> str:
+            return f"{match.group(1).upper()}-{match.group(2)}"
 
-            return [pattern.sub(replacer, commit) for commit in commits]
+        return [pattern.sub(replacer, commit) for commit in commits]
 
     def __build_changelog(self, commits: List[str], issue_number_pattern: re.Pattern) -> List[str]:
         """
@@ -201,13 +201,13 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
         commits = self.__git.get_commits(prev_tag, current_tag)
         commits = self.__normalize_issue_keys(commits, self.__settings.teamcity_project_keys)
-        
+
         changelog = self.__build_changelog(commits, self.__issue_number_pattern())
 
         self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
 
         self.__context.log("Release notes generation completed successfully!")
-        
+
         path_to_release_notes_file = f"/p/d-hydro/dimrset/{self.__changelog_file.name}"
 
         self.__ssh.secure_copy(
@@ -217,17 +217,14 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         )
 
         self.__context.log(f"Release notes file copied successfully to {path_to_release_notes_file}")
-        
+
         return True
-    
+
 
 def main() -> None:
     """Entry point for the release notes publisher."""
     args = parse_common_arguments()
-    context = create_context_from_args(
-        args,
-        require_teamcity=False
-    )
+    context = create_context_from_args(args, require_teamcity=False)
     services = Services(context)
 
     step = ReleaseNotesPublisher(context, services)
