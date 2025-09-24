@@ -124,9 +124,7 @@ class GitClient(ConnectionServiceInterface):
 
     def get_commits(self, from_tag: str, to_tag: str) -> List[Tuple[str, str]]:
         """Return list of (commit_hash, commit_message) between two tags."""
-        log = self.run_git_command(
-            ["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%h%x09%s"]
-        )
+        log = self.run_git_command(["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%h%x09%s"])
         commits: List[Tuple[str, str]] = []
         for line in log.splitlines():
             if "\t" in line:

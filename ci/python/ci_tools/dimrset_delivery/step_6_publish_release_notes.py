@@ -38,7 +38,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
     def __normalize_issue_keys(self, commits: List[Tuple[str, str]], project_keys: List[str]) -> List[Tuple[str, str]]:
         """
-        Normalize issue keys in commit messages by ensuring they match the format PROJECT-123.  
+        Normalize issue keys in commit messages by ensuring they match the format PROJECT-123.
 
         Args:
             commits (List[Tuple[str, str]]): List of (commit_hash, commit_message).
