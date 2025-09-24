@@ -116,17 +116,6 @@ class GitClient(ConnectionServiceInterface):
             self.__context.log(f"Unexpected error running git command: {e}", severity=LogLevel.ERROR)
             raise
 
-    def normalize_issue_keys(self, message: str) -> str:
-        """Normalize Jira issue keys in a commit message (e.g., devopsdsc 761 -> DEVOPSDSC-761)."""
-
-        def replacer(match: re.Match) -> str:
-            key = match.group(1).upper()
-            num = match.group(2)
-            return f"{key}-{num}"
-
-        pattern = re.compile(r"\b([A-Za-z]+)[\s-]?(\d+)\b")
-        return pattern.sub(replacer, message)
-
     def get_last_two_tags(self) -> Tuple[str, str]:
         """Return the last two Git tags (most recent first)."""
         tags = self.run_git_command(["git", "tag", "--sort=creatordate"]).splitlines()
@@ -136,9 +125,10 @@ class GitClient(ConnectionServiceInterface):
 
     def get_commits(self, from_tag: str, to_tag: str) -> List[str]:
         """Return commit messages between two tags."""
-        log = self.run_git_command(["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%s"])
-        commits = log.splitlines()
-        return [self.normalize_issue_keys(msg) for msg in commits]
+        log = self.run_git_command(
+            ["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%s"]
+        )
+        return log.splitlines()
 
     def test_connection(self) -> bool:
         """Test the connection to the Git repository.

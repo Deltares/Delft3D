@@ -45,12 +45,6 @@ object DIMRbak : BuildType({
                     onDependencyCancel = FailureAction.CANCEL
                 }
             }
-            artifacts(RelativeId("DIMRbak")) {
-                buildRule = lastSuccessful()
-                artifactRules = """
-                    ?:*.txt => ci/python/ci_tools/dimrset_delivery/output/
-                """.trimIndent()
-            }
         }
     }
 
@@ -196,6 +190,8 @@ object DIMRbak : BuildType({
                     --jira-PAT "%dimrbakker_password%"
                     --git-username "deltares-service-account"
                     --git-PAT "%github_deltares-service-account_access_token%"
+                    --ssh-username "%dimrbakker_username%"
+                    --ssh-password "%dimrbakker_password%"
                     %dry_run%
                 """.trimIndent()
             }

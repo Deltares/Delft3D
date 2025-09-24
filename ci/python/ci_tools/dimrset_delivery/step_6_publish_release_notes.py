@@ -9,6 +9,7 @@ from typing import List
 
 from ci_tools.dimrset_delivery.arg_parsing import create_context_from_args, parse_common_arguments
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.lib.ssh_client import Direction
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.step_executer_interface import StepExecutorInterface
 from ci_tools.example_utils.logger import LogLevel
@@ -22,6 +23,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         self.__settings = context.settings
         self.__jira = services.jira
         self.__git = services.git
+        self.__ssh = services.ssh
         current_dir = Path(__file__)
         path_to_output_folder = Path(current_dir.parents[0], self.__settings.relative_path_to_output_folder)
         self.__changelog_file = Path(path_to_output_folder, self.__settings.path_to_release_changelog_artifact)
@@ -32,7 +34,36 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         if not project_keys:
             self.__context.log("No project keys found in settings, issue matching may fail", severity=LogLevel.WARNING)
             return re.compile(r"\b(a|b)-\d+\b")  # Fallback pattern
-        return re.compile(rf"\b({'|'.join(project_keys)})-\d+\b")
+        return re.compile(rf"\b({'|'.join(project_keys)})-\d+(?=\b|[^A-Za-z0-9])")
+        
+    def __normalize_issue_keys(self, commits: List[str], project_keys: List[str]) -> List[str]:
+            """
+            Normalize issue references in commit messages.
+
+            Converts lowercase project keys and missing dashes into proper Jira keys,
+            e.g. `devopsdsc 761` → `DEVOPSDSC-761`.
+
+            Parameters
+            ----------
+            commits : List[str]
+                Commit messages to scan.
+            project_keys : List[str]
+                Allowed Jira project keys (e.g., ["DEVOPSDSC", "UNST"]).
+
+            Returns
+            -------
+            List[str]
+                Updated commit messages with normalized issue keys.
+            """
+            if not project_keys:
+                return commits  # nothing to normalize
+
+            pattern = re.compile(rf"\b({'|'.join(project_keys)})[\s-]?(\d+)\b", re.IGNORECASE)
+
+            def replacer(match: re.Match) -> str:
+                return f"{match.group(1).upper()}-{match.group(2)}"
+
+            return [pattern.sub(replacer, commit) for commit in commits]
 
     def __build_changelog(self, commits: List[str], issue_number_pattern: re.Pattern) -> List[str]:
         """
@@ -57,28 +88,31 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         changelog = []
         for commit in commits:
             match = issue_number_pattern.search(commit)
-            if match:
-                issue_number = match.group(0)
-                if self.__jira:
-                    try:
-                        issue = self.__jira.get_issue(issue_number)
-                        if issue and "fields" in issue and "summary" in issue["fields"]:
-                            summary = issue["fields"]["summary"]
-                            changelog.append(f"- {issue_number}: {summary}")
-                        else:
-                            self.__context.log(
-                                f"Failed to retrieve issue {issue_number} from Jira, using raw commit",
-                                severity=LogLevel.WARNING,
-                            )
-                            changelog.append(f"- {commit}")
-                    except Exception as e:
-                        self.__context.log(
-                            f"Error retrieving issue {issue_number} from Jira: {str(e)}", severity=LogLevel.WARNING
-                        )
-                        changelog.append(f"- {commit}")
+            if not match:
+                changelog.append(f"- {commit}")
+                continue
+
+            issue_number = match.group(0)
+            if not self.__jira:
+                changelog.append(f"- {issue_number}")
+                continue
+
+            try:
+                issue = self.__jira.get_issue(issue_number)
+                if issue and "fields" in issue and "summary" in issue["fields"]:
+                    summary = issue["fields"]["summary"]
+                    changelog.append(f"- {issue_number}: {summary}")
                 else:
+                    self.__context.log(
+                        f"Failed to retrieve issue {issue_number} from Jira, using commit message",
+                        severity=LogLevel.WARNING,
+                    )
                     changelog.append(f"- {commit}")
-            else:
+            except Exception as e:
+                self.__context.log(
+                    f"Error retrieving issue {issue_number} from Jira: {str(e)}",
+                    severity=LogLevel.WARNING,
+                )
                 changelog.append(f"- {commit}")
         return changelog
 
@@ -150,6 +184,10 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         """Execute the release notes publishing step."""
         self.__context.log("Generating DIMR release notes...")
 
+        if self.__ssh is None:
+            self.__context.log("SSH client is required but not initialized", severity=LogLevel.ERROR)
+            return False
+
         if self.__jira is None:
             self.__context.log("Jira client is required but not initialized", severity=LogLevel.ERROR)
             return False
@@ -162,21 +200,33 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         self.__context.log(f"Generating changelog from {prev_tag} to {current_tag}")
 
         commits = self.__git.get_commits(prev_tag, current_tag)
+        commits = self.__normalize_issue_keys(commits, self.__settings.teamcity_project_keys)
+        
         changelog = self.__build_changelog(commits, self.__issue_number_pattern())
 
         self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
 
         self.__context.log("Release notes generation completed successfully!")
-        return True
+        
+        path_to_release_notes_file = f"/p/d-hydro/dimrset/{self.__changelog_file.name}"
 
+        self.__ssh.secure_copy(
+            str(self.__changelog_file),
+            path_to_release_notes_file,
+            Direction.TO,
+        )
+
+        self.__context.log(f"Release notes file copied successfully to {path_to_release_notes_file}")
+        
+        return True
+    
 
 def main() -> None:
     """Entry point for the release notes publisher."""
     args = parse_common_arguments()
     context = create_context_from_args(
         args,
-        require_teamcity=False,
-        require_ssh=False,
+        require_teamcity=False
     )
     services = Services(context)
 
