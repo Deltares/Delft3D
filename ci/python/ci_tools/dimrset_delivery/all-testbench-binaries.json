@@ -543,6 +543,14 @@
         {
             "file": "lib\\flow2d3d_sp.dll",
             "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\vcomp140.dll",
+            "issuedTo": "Microsoft Corporation"
+        },
+        {
+            "file": "lib\\ucrtbased.dll",
+            "issuedTo": "Microsoft Corporation"
         }
     ],
     "notSigned": [
