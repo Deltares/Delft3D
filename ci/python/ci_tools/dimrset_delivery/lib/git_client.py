@@ -1,5 +1,4 @@
 import hashlib
-import re
 import subprocess
 import sys
 from typing import List, Tuple
@@ -125,9 +124,7 @@ class GitClient(ConnectionServiceInterface):
 
     def get_commits(self, from_tag: str, to_tag: str) -> List[str]:
         """Return commit messages between two tags."""
-        log = self.run_git_command(
-            ["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%s"]
-        )
+        log = self.run_git_command(["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%s"])
         return log.splitlines()
 
     def test_connection(self) -> bool:
