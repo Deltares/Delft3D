@@ -7,10 +7,17 @@ function varargout=inifile(cmd,varargin)
 %   Info = INIFILE('new')
 %   Create a new INI file structure in memory.
 %
-%   Info = INIFILE('write', FileName, Info)
+%   Info = INIFILE('write', FileName, Info, ... options ...)
 %   Open and write the INI file; the data in the file is overwritten without
-%   asking.
-%
+%   asking. The options may be used to set the file formatting:
+%     * 'compact' : compact formatting without any extra indentation.
+%     * 'standard': default formatting without indentation, equal-signs
+%           aligned, one space inserted after the equal-signs.
+%     * 'pretty'  : equal to standard, but with additional indentation of
+%           keywords, a space between longest keyword and equal-sign, and
+%           an empty line before each new chapter.
+%     * 'precision', floatPrec : use the specified precision for floating
+%           point values (default: %g).
 %
 %   ListOfChapters = INIFILE('chapters', Info)
 %   Retrieve the list of Chapter names as a cell array of strings.
@@ -306,18 +313,33 @@ while i < length(varargin)
 end
 
 
-function FI = writefile(filename,FI,formatStyle)
+function FI = writefile(filename,FI,varargin)
 FI.FileName = filename;
 S = FI.Data;
 fid = fopen(filename,'w');
 if fid<0
     error('Error opening %s.',filename)
 end
-if nargin<3
-    formatStyle = 'standard';
-end
 compact = false;
 pretty  = false;
+float_precision = '%g';
+iarg = 1;
+while iarg <= length(varargin)
+    switch lower(varargin{iarg})
+        case 'compact'
+            compact = true;
+        case 'pretty'
+            pretty = true;
+        case 'standard'
+            % skip
+        case 'precision'
+            iarg = iarg+1;
+            float_precision = varargin{iarg};
+        otherwise
+            error('Unknown argument: %s.', varargin{iarg})
+    end
+    iarg = iarg+1;
+end
 switch formatStyle
     case 'compact'
         compact = true;
@@ -361,9 +383,17 @@ for i = 1:size(S,1)
     end
     SF = S{i,2};
     for j = 1:size(SF,1)
-        Str = SF{j,2};
-        if ~ischar(Str)
-            Str = sprintf('%g ',Str);
+        Val = SF{j,2};
+        if ischar(Val)
+            Str = Val;
+        else
+            if all(Val == round(Val))
+                % all integers
+                Str = sprintf('%i ', Val);
+            else
+                % at least one float
+                Str = sprintf([float_precision ' '],Val);
+            end
             Str(end) = [];
         end
         if isempty(SF{j,1})
