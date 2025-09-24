@@ -37,33 +37,19 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         return re.compile(rf"\b({'|'.join(project_keys)})-\d+(?=\b|[^A-Za-z0-9])")
 
     def __normalize_issue_keys(self, commits: List[str], project_keys: List[str]) -> List[str]:
-        """
-        Normalize issue references in commit messages.
+        """Normalize issue keys in a list of commit messages."""
+        normalized: List[str] = []
+        pattern = re.compile(rf"\b({'|'.join(project_keys)})-\d+\b", re.IGNORECASE) if project_keys else None
 
-        Converts lowercase project keys and missing dashes into proper Jira keys,
-        e.g. `devopsdsc 761` → `DEVOPSDSC-761`.
-
-        Parameters
-        ----------
-        commits : List[str]
-            Commit messages to scan.
-        project_keys : List[str]
-            Allowed Jira project keys (e.g., ["DEVOPSDSC", "UNST"]).
-
-        Returns
-        -------
-        List[str]
-            Updated commit messages with normalized issue keys.
-        """
-        if not project_keys:
-            return commits  # nothing to normalize
-
-        pattern = re.compile(rf"\b({'|'.join(project_keys)})[\s-]?(\d+)\b", re.IGNORECASE)
-
-        def replacer(match: re.Match) -> str:
-            return f"{match.group(1).upper()}-{match.group(2)}"
-
-        return [pattern.sub(replacer, commit) for commit in commits]
+        for commit in commits:
+            if pattern:
+                # Replace only the first matching issue key (normalize casing)
+                match = pattern.search(commit)
+                if match:
+                    normalized.append(match.group(0).upper())
+                    continue
+            normalized.append(commit)
+        return normalized
 
     def __build_changelog(self, commits: List[str], issue_number_pattern: re.Pattern) -> List[str]:
         """
