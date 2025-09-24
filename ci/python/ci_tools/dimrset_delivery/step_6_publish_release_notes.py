@@ -60,7 +60,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
         return normalized_commits
 
-    def __build_changelog(self, commits: List[str], issue_number_pattern: re.Pattern) -> List[str]:
+    def __build_changelog(self, commits: list[tuple[str, str]], issue_number_pattern: re.Pattern) -> list[str]:
         """
         Build a changelog from a list of commit hash and commit by extracting Jira issue numbers.
 
