@@ -47,15 +47,11 @@ object WindowsCollect : BuildType({
         powerShell {
             name = "Copy DLLs"
             scriptMode = script {
-                content = """
-                    $sourceDir = "C:\\Windows\\System32"
-                    $targetDir = "x64\\lib"
-
-                    Copy-Item "$sourceDir\\vcomp140.dll" -Destination "$targetDir" -Force
-                    Copy-Item "$sourceDir\\ucrtbased.dll" -Destination "$targetDir" -Force
-                """.trimIndent()
+            content = """
+                Copy-Item "C:\Windows\System32\vcomp140.dll" -Destination "x64\lib" -Force
+                Copy-Item "C:\Windows\System32\ucrtbased.dll" -Destination "x64\lib" -Force
+            """.trimIndent()
             }
-            executionMode = BuildStep.ExecutionMode.RUN_ON_AGENT
         }
         python {
             name = "Generate list of version numbers (from what-strings)"
