@@ -5,7 +5,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 from ci_tools.dimrset_delivery.arg_parsing import create_context_from_args, parse_common_arguments
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
@@ -36,24 +36,33 @@ class ReleaseNotesPublisher(StepExecutorInterface):
             return re.compile(r"\b(a|b)-\d+\b")  # Fallback pattern
         return re.compile(rf"\b({'|'.join(project_keys)})-\d+(?=\b|[^A-Za-z0-9])")
 
-    def __normalize_issue_keys(self, commits: List[str], project_keys: List[str]) -> List[str]:
-        """Normalize issue keys in a list of commit messages."""
-        normalized: List[str] = []
-        pattern = re.compile(rf"\b({'|'.join(project_keys)})-\d+\b", re.IGNORECASE) if project_keys else None
+    def __normalize_issue_keys(self, commits: List[Tuple[str, str]], project_keys: List[str]) -> List[Tuple[str, str]]:
+        """
+        Normalize issue keys in commit messages by ensuring they match the format PROJECT-123.  
 
-        for commit in commits:
-            if pattern:
-                # Replace only the first matching issue key (normalize casing)
-                match = pattern.search(commit)
-                if match:
-                    normalized.append(match.group(0).upper())
-                    continue
-            normalized.append(commit)
-        return normalized
+        Args:
+            commits (List[Tuple[str, str]]): List of (commit_hash, commit_message).
+            project_keys (List[str]): List of valid project keys (e.g., ['DEVOPSDSC', 'UNST']).
+
+        Returns
+        -------
+            List[Tuple[str, str]]: Normalized commits with corrected issue keys in the message.
+        """
+        if not project_keys:
+            return commits
+
+        pattern = re.compile(rf"\b((?:{'|'.join(project_keys)}))\s*(\d+)\b", re.IGNORECASE)
+
+        normalized_commits: List[Tuple[str, str]] = []
+        for commit_hash, message in commits:
+            normalized_message = pattern.sub(lambda m: f"{m.group(1).upper()}-{m.group(2)}", message)
+            normalized_commits.append((commit_hash, normalized_message))
+
+        return normalized_commits
 
     def __build_changelog(self, commits: List[str], issue_number_pattern: re.Pattern) -> List[str]:
         """
-        Build a changelog from a list of commits by extracting Jira issue numbers.
+        Build a changelog from a list of commit hash and commit by extracting Jira issue numbers.
 
         Args:
             commits (List[str]): List of commit messages to process.
@@ -72,34 +81,32 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         issue numbers that cannot be resolved in Jira.
         """
         changelog = []
-        for commit in commits:
-            match = issue_number_pattern.search(commit)
-            if not match:
-                changelog.append(f"- {commit}")
-                continue
-
-            issue_number = match.group(0)
-            if not self.__jira:
-                changelog.append(f"- {issue_number}")
-                continue
-
-            try:
-                issue = self.__jira.get_issue(issue_number)
-                if issue and "fields" in issue and "summary" in issue["fields"]:
-                    summary = issue["fields"]["summary"]
-                    changelog.append(f"- {issue_number}: {summary}")
+        for commit_hash, message in commits:
+            match = issue_number_pattern.search(message)
+            if match:
+                issue_number = match.group(0)
+                if self.__jira:
+                    try:
+                        issue = self.__jira.get_issue(issue_number)
+                        if issue and "fields" in issue and "summary" in issue["fields"]:
+                            summary = issue["fields"]["summary"]
+                            changelog.append(f"- {issue_number}: {summary} ({commit_hash})")
+                        else:
+                            self.__context.log(
+                                f"Failed to retrieve issue {issue_number} from Jira, using raw commit",
+                                severity=LogLevel.WARNING,
+                            )
+                            changelog.append(f"- {message} ({commit_hash})")
+                    except Exception as e:
+                        self.__context.log(
+                            f"Error retrieving issue {issue_number} from Jira: {str(e)}",
+                            severity=LogLevel.WARNING,
+                        )
+                        changelog.append(f"- {message} ({commit_hash})")
                 else:
-                    self.__context.log(
-                        f"Failed to retrieve issue {issue_number} from Jira, using commit message",
-                        severity=LogLevel.WARNING,
-                    )
-                    changelog.append(f"- {commit}")
-            except Exception as e:
-                self.__context.log(
-                    f"Error retrieving issue {issue_number} from Jira: {str(e)}",
-                    severity=LogLevel.WARNING,
-                )
-                changelog.append(f"- {commit}")
+                    changelog.append(f"- {message} ({commit_hash})")
+            else:
+                changelog.append(f"- {message} ({commit_hash})")
         return changelog
 
     def __prepend_or_replace_in_changelog(self, tag: str, changes: List[str], dry_run: bool) -> None:

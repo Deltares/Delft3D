@@ -122,10 +122,17 @@ class GitClient(ConnectionServiceInterface):
             raise RuntimeError("At least two tags are required to generate the release notes.")
         return tags[-2], tags[-1]
 
-    def get_commits(self, from_tag: str, to_tag: str) -> List[str]:
-        """Return commit messages between two tags."""
-        log = self.run_git_command(["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%s"])
-        return log.splitlines()
+    def get_commits(self, from_tag: str, to_tag: str) -> List[Tuple[str, str]]:
+        """Return list of (commit_hash, commit_message) between two tags."""
+        log = self.run_git_command(
+            ["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%h%x09%s"]
+        )
+        commits: List[Tuple[str, str]] = []
+        for line in log.splitlines():
+            if "\t" in line:
+                commit_hash, message = line.split("\t", 1)
+                commits.append((commit_hash, message))
+        return commits
 
     def test_connection(self) -> bool:
         """Test the connection to the Git repository.
