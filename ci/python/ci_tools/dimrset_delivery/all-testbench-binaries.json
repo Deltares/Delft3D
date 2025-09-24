@@ -546,7 +546,7 @@
         },
         {
             "file": "lib\\vcomp140.dll",
-            "issuedTo": "Microsoft Corporation"
+            "issuedTo": "Microsoft Windows Software Compatibility Publisher"
         },
         {
             "file": "lib\\ucrtbased.dll",
