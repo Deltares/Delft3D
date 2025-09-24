@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Dict, cast, List
+from typing import Any, Dict, List, cast
 
 
 def pascal_case_to_snake_case(name: str) -> str:
