@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Dict, cast
+from typing import Any, Dict, cast, List
 
 
 def pascal_case_to_snake_case(name: str) -> str:
@@ -94,7 +94,7 @@ class Settings:
         """
         settings = self.__load_settings(json_settings_path)
         self.teamcity_ids = TeamcityIds(settings.get(pascal_case_to_snake_case(TeamcityIds.__name__), {}))
-        self.teamcity_project_keys = INIT_VALUE
+        self.teamcity_project_keys: List[str] = settings.get("teamcity_project_keys", [])
 
         self.path_to_windows_version_artifact = INIT_VALUE
         self.path_to_linux_version_artifact = INIT_VALUE
