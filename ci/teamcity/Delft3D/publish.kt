@@ -17,6 +17,7 @@ object Publish : BuildType({
     description = "Currently only used for publishing the container."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
+    allowExternalStatus = true
 
     artifactRules = """
         #teamcity:symbolicLinks=as-is
