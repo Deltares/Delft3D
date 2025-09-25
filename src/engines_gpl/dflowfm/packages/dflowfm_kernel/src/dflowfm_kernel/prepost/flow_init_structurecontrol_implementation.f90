@@ -249,7 +249,7 @@ contains
       use m_readstructures, only: readpump
       use unstruc_model, only: md_structurefile_dir
       use unstruc_files, only: resolvePath
-      use string_module, only: str_lower, strcmpi
+      use string_module, only: str_tolower, strcmpi
       use m_longculverts, only: nlongculverts
       use m_partitioninfo, only: jampi
       use m_qnerror, only: qnerror
@@ -924,8 +924,7 @@ contains
                   write (msgbuf, '(a,a,a)') 'Optional field ''GateOpeningHorizontalDirection'' not available for gate ''', trim(strid), '''. Use default value.'
                   call msg_flush()
                end if
-               call str_lower(rec)
-               select case (trim(rec))
+               select case (str_tolower(trim(rec)))
                case ('from_left', 'fromleft')
                   istrtmp = IOPENDIR_FROMLEFT
                case ('from_right', 'fromright')
