@@ -34,7 +34,7 @@ set(Boost_USE_RELEASE_LIBS ON)
 
 # version 1.65 is a minimum version
 if(LINUX)
-   find_package(Boost 1.65 REQUIRED COMPONENTS system filesystem)
+   find_package(Boost REQUIRED COMPONENTS system filesystem)
    find_package(XercesC REQUIRED)
    if(XercesC_FOUND)
       message(STATUS "Found Xerces-C: ${XercesC_VERSION}")
@@ -54,16 +54,16 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W3")
     set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG} /W3")
 else()
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -std=c++11 -lboost_filesystem -lboost_system -lboost_date_time") 
-    set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG} -Wall -std=c++11 -lboost_filesystem -lboost_system -lboost_date_time")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -std=c++11")
+    set(CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG} -Wall -std=c++11")
 endif()
 
 if(MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /W0")
     set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE} /W0")
 else()
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11 -lboost_filesystem -lboost_system -lboost_date_time") 
-    set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE} -std=c++11 -lboost_filesystem -lboost_system -lboost_date_time")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -std=c++11")
+    set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE} -std=c++11")
 endif()
 
 set (version_include_dir ${PROJECT_SOURCE_DIR}/../../version/)
@@ -107,21 +107,21 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 # Define BMI library
     add_library(FBCTools_BMI SHARED src/rtcToolsBMI.cpp src/bmi.h)
 endif()
-    
+
 # Link dependencies
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    set(LINK_LIBRARIES FBCTools_static 
+    set(LINK_LIBRARIES FBCTools_static
                        xerces-c_3)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(LINK_LIBRARIES FBCTools_static 
+    set(LINK_LIBRARIES FBCTools_static
                        ${XercesC_LIBRARIES}
                        dl
-                       boost_system
-                       boost_date_time
-                       boost_filesystem)
+                       Boost::system
+                       Boost::boost
+                       Boost::filesystem)
 endif()
 
-if(${CMAKE_COMPILER_IS_GNUCXX}) 
+if(${CMAKE_COMPILER_IS_GNUCXX})
     set(LINK_LIBRARIES ${LINK_LIBRARIES} gomp)
 endif()
 

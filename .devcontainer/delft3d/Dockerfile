@@ -1,4 +1,4 @@
-FROM containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-2024-ifx-release AS base
+FROM localhost/third-party-libs:precice_poc AS base
 
 ARG USERNAME=dev
 ARG USER_UID=1000

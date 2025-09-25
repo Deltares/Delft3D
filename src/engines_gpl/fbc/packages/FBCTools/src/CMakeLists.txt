@@ -115,8 +115,7 @@ add_library(FBCTools_static STATIC
             ${PROJECT_SOURCE_DIR}/../../version/fbc_version.h
 )
 set_target_properties (FBCTools_static PROPERTIES FOLDER engines_gpl/fbc)
-target_link_libraries(FBCTools_static PRIVATE ${LINK_LIBRARIES} ${Boost_LIBRARIES})
-target_include_directories(FBCTools_static PRIVATE ${Boost_INCLUDE_DIR})
+target_link_libraries(FBCTools_static PRIVATE ${LINK_LIBRARIES} Boost::filesystem Boost::boost Boost::system)
 if (WIN32)
     # FBCTools_static is a large file, and the object cannot be created in RelWithDebInfo on windows unless /bigobj is given
     target_compile_options(FBCTools_static PRIVATE /bigobj)
