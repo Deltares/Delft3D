@@ -148,10 +148,8 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
         if self.__changelog_file.exists():
             content = self.__changelog_file.read_text(encoding="utf-8")
-            self.__context.log(f"Found existing changelog at {self.__changelog_file}, will prepend/replace.")
         else:
             content = "# Changelog\n"
-            self.__context.log(f"No existing changelog found at {self.__changelog_file}, creating a new one.")
 
         changelog_section_pattern = re.compile(rf"^[ \t]*## {re.escape(tag)} - .*?(?=^[ \t]*## |\Z)", re.S | re.M)
 
@@ -163,7 +161,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
             action = f"Prepended new section for {tag}"
 
         if dry_run:
-            self.__context.log(f"{action}")
+            self.__context.log(f"[DRY-RUN] {action}")
             self.__context.log("----- NEW ENTRY -----")
             self.__context.log(new_text)
             self.__context.log("----- FINAL RESULT -----")
@@ -197,11 +195,26 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
         changelog = self.__build_changelog(commits, self.__issue_number_pattern())
 
-        self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
-
         self.__context.log("Release notes generation completed successfully!")
 
         path_to_release_notes_file = f"/p/d-hydro/dimrset/{self.__changelog_file.name}"
+
+        if not self.__context.dry_run:
+            try:
+                # Check if remote changelog exists by trying to fetch it
+                self.__context.log(f"Attempting to download existing changelog from {path_to_release_notes_file}")
+                self.__ssh.secure_copy(
+                    path_to_release_notes_file,   # remote file on Windows node
+                    str(self.__changelog_file),   # local file
+                    Direction.FROM,
+                )
+                self.__context.log(f"Downloaded existing changelog from {path_to_release_notes_file}")
+            except Exception:
+                self.__context.log(f"No existing changelog found at {path_to_release_notes_file}, will create new one.")
+        else:
+            self.__context.log(f"(dry-run) Would check and possibly download changelog from {path_to_release_notes_file}")
+
+        self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
 
         if self.__context.dry_run:
             self.__context.log(f"Would copy {self.__changelog_file} to {path_to_release_notes_file}")
