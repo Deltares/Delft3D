@@ -2835,6 +2835,8 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SANDFRAC), valobs(:, IPNT_SANDFRAC))
             end if
          end if
+
+         call mess(LEVEL_INFO, '! Water quality variables')
          ! Water quality variables
          if (jawaqproc > 0 .and. num_wq_user_outputs > 0) then
             call add_station_water_quality_configs(config_set_his, idx_his_hwq)
@@ -2847,6 +2849,7 @@ contains
             end do
          end if
 
+         call mess(LEVEL_INFO, '! Water quality bottom substances')
          ! Water quality bottom substances
          if (numwqbots > 0) then
             call add_station_wqbot_configs(output_config_set, idx_wqbot_stations)
@@ -2857,6 +2860,7 @@ contains
             end if
          end if
 
+         call mess(LEVEL_INFO, '! Transported constituents')
          ! Transported constituents
          if (model_has_tracers()) then
             call add_station_tracer_configs(output_config_set, idx_tracers_stations)
