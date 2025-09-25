@@ -416,7 +416,7 @@ contains
          call prop_get(str_ptr, '', 'branchid', branchid, success)
          if (.not. success) call prop_get(str_ptr, '', 'numCoordinates', branchid, success)
          if (success) then
-            if (trim(strtype) /= 'pump' .and. trim(strtype) /= 'dambreak') then
+            if (.not. strcmpi(strtype, 'pump') .and. .not. strcmpi(strtype, 'dambreak')) then
                cycle
             end if
          end if
@@ -460,7 +460,7 @@ contains
 
          end if
 
-         select case (strtype)
+         select case (str_tolower(strtype))
          case ('gateloweredgelevel') ! Old-style controllable gateloweredgelevel
             !else if (qid == 'gateloweredgelevel' ) then
 
@@ -562,7 +562,7 @@ contains
 
             ncgen = ncgen + numgen
             ! For later usage split up the set of all generalstructures into weirs, gates or true general structures (in user input)
-            select case (strtype)
+            select case (str_tolower(strtype))
             case ('weir')
                nweirgen = nweirgen + 1
             case ('gate')
@@ -709,7 +709,7 @@ contains
             call resolvePath(plifile, md_structurefile_dir)
 
             ! Start with some general structure default params, and thereafter, make changes depending on actual strtype
-            if (strtype /= 'generalstructure') then
+            if (.not. strcmpi(strtype, 'generalstructure')) then
                hulp(idx_upstream1width, n) = huge(1.0_dp) ! Upstream1Width
                hulp(idx_upstream1level, n) = -huge(1.0_dp) ! Upstream1Level
                hulp(idx_upstream2width, n) = huge(1.0_dp) ! Upstream2Width
@@ -738,7 +738,7 @@ contains
                hulp(idx_gateopeningwidth, n) = 0.0_dp ! GateOpeningWidth
             end if
 
-            select case (strtype)
+            select case (str_tolower(strtype))
       !! WEIR !!
             case ('weir')
                rec = ' '
