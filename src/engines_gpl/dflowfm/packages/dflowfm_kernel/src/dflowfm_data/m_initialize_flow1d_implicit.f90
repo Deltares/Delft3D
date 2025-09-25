@@ -1333,6 +1333,7 @@ contains
 !
 
       integer :: kbr, ksre, k2, idx_fm, idx_crs
+      integer :: last_friction_type !< to check that friction type is the same in all sections
 
 !----------------------------------------
 !BEGIN POINT
@@ -1383,6 +1384,8 @@ contains
 
       end do !kbr
 
+      last_friction_type=network%rgs%rough(1)%frictiontype !initially the overall value. It has already been checked it is the same for all section. 
+      
       do ksre = 1, ngrid
 
          idx_fm = grd_sre_fm(ksre) !index of the global grid point in fm for the global gridpoint <k> in SRE
@@ -1390,13 +1393,27 @@ contains
          !bfrictp
          idx_crs = grd_sre_cs(ksre)
 
+         !In FM it is possible that the friction type is different in the main channel than in the
+         !floodplains. This is not possible in SOBEK-RE. Here we check that all are equal.
+         do k2 = 1, network%crs%cross(idx_crs)%frictionsectionscount
+            if (last_friction_type /= network%crs%cross(idx_crs)%frictiontypepos(k2)) then
+               write (msgbuf, '(a)') 'The same type of friction must be applied to all sections (i.e., main channel, floodplain 1, floodplain 2, ...) at all cross-sections.'
+               call err_flush()
+               iresult = 1
+            end if
+            last_friction_type=network%crs%cross(idx_crs)%frictiontypepos(k2)
+         end do
+         
+
+         !network%crs%cross(idx_crs)%frictiontypepos
+
          bfricp(1, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(1)
          bfricp(2, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(1)
          !deal properly with the values below when friction per section varies.
-         bfricp(3, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(1)
-         bfricp(4, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(1)
-         bfricp(5, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(1)
-         bfricp(6, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(1)
+         bfricp(3, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(2)
+         bfricp(4, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(2)
+         bfricp(5, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(3)
+         bfricp(6, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(3)
 !bfricp(6,ngrid)   I  Bed friction parameters:
 !                     (1,i) = Parameter for positive flow direction
 !                             in main section (depending on friction
