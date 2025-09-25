@@ -1354,8 +1354,8 @@ contains
       do kbr = 1, nbran
 
          !bfrict
-         do k2 = 1, 3 !< main channel, floodplain 1, floodplain 2
-            select case (network%rgs%rough(k2)%frictiontype) !< where is the information per branch? add when several branches!
+         do k2 = 1, network%rgs%count !< network%rgs%count = 3 - > main channel, floodplain 1, floodplain 2
+            select case (network%rgs%rough(k2)%frictiontype) 
             case (0)
                bfrict(k2, kbr) = 1
             case default
@@ -1363,6 +1363,13 @@ contains
                call err_flush()
                iresult = 1
             end select
+            if (k2>1) then
+                if (bfrict(k2, kbr) /= bfrict(k2-1, kbr)) then
+                   write (msgbuf, '(a)') 'The same type of friction must be applied to all sections (i.e., main channel, floodplain 1, floodplain 2, ...).'
+                   call err_flush()
+                   iresult = 1
+                end if
+            end if 
          end do
 !
 !bfrict(1,i)=cfrchc (1) : Chezy constant
