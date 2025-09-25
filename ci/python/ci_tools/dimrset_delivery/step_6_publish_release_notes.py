@@ -163,7 +163,7 @@ class ReleaseNotesPublisher(StepExecutorInterface):
             action = f"Prepended new section for {tag}"
 
         if dry_run:
-            self.__context.log(f"[DRY-RUN] {action}")
+            self.__context.log(f"{action}")
             self.__context.log("----- NEW ENTRY -----")
             self.__context.log(new_text)
             self.__context.log("----- FINAL RESULT -----")
@@ -203,13 +203,15 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
         path_to_release_notes_file = f"/p/d-hydro/dimrset/{self.__changelog_file.name}"
 
-        self.__ssh.secure_copy(
-            str(self.__changelog_file),
-            path_to_release_notes_file,
-            Direction.TO,
-        )
-
-        self.__context.log(f"Release notes file copied successfully to {path_to_release_notes_file}")
+        if self.__context.dry_run:
+            self.__context.log(f"Would copy {self.__changelog_file} to {path_to_release_notes_file}")
+        else:
+            self.__ssh.secure_copy(
+                str(self.__changelog_file),
+                path_to_release_notes_file,
+                Direction.TO,
+            )
+            self.__context.log(f"Release notes file copied successfully to {path_to_release_notes_file}")
 
         return True
 

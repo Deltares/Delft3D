@@ -98,8 +98,7 @@ class GitClient(ConnectionServiceInterface):
         """Run a git command and return its stdout as string."""
         try:
             if self.__context.dry_run:
-                self.__context.log(f"[dry-run] git command: {' '.join(cmd)}")
-                return ""
+                self.__context.log(f"git command: {' '.join(cmd)}")
             result = subprocess.run(
                 cmd,
                 capture_output=True,
