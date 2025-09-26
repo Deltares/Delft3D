@@ -52,7 +52,7 @@
       <path>thirdparty\checkhydbal\win64\checkhydbal.exe</path>
     </program>
 	
-    <program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true">
+    <program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="false">
 	    <path>bin/run_mormerge.bat</path>
         <location ref="reference_engines" type="reference">
             <from>win64</from>
