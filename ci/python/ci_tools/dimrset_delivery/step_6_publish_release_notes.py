@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate and publish DIMR release notes (changelog)."""
+"""Generate and publish DIMRset changelog."""
 
 import re
 import sys
@@ -15,8 +15,8 @@ from ci_tools.dimrset_delivery.step_executer_interface import StepExecutorInterf
 from ci_tools.example_utils.logger import LogLevel
 
 
-class ReleaseNotesPublisher(StepExecutorInterface):
-    """Generates a DIMR release changelog and updates the changelog file."""
+class ChangeLogPublisher(StepExecutorInterface):
+    """Generates a DIMRset changelog and updates the changelog file."""
 
     def __init__(self, context: DimrAutomationContext, services: Services) -> None:
         self.__context = context
@@ -40,7 +40,8 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         """
         Normalize issue keys in commit messages by ensuring they match the format PROJECT-123.
 
-        Args:
+        Args
+        ----
             commits (List[Tuple[str, str]]): List of (commit_hash, commit_message).
             project_keys (List[str]): List of valid project keys (e.g., ['DEVOPSDSC', 'UNST']).
 
@@ -62,25 +63,33 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
     def __build_changelog(self, commits: list[tuple[str, str]], issue_number_pattern: re.Pattern) -> list[str]:
         """
-        Build a changelog from a list of commit hash and commit by extracting Jira issue numbers.
+        Build an HTML-formatted changelog from a list of commits by extracting and resolving Jira issue keys.
 
-        Args:
-            commits (List[str]): List of commit messages to process.
-            issue_number_pattern (re.Pattern): Compiled regex pattern to match Jira issue numbers
-                (e.g., 'DEVOPSDSC-123') based on project keys from settings.
+        Args
+        ----
+            commits (list[tuple[str, str]]): A list of (commit_hash, commit_message) tuples.
+            issue_number_pattern (re.Pattern): Compiled regex pattern to detect Jira issue keys
+                (e.g., 'UNST-9186', 'DEVOPSDSC-123') based on configured project keys.
 
         Returns
         -------
-            List[str]: List of changelog entries, where each entry is either a formatted
-                issue summary (e.g., '- DEVOPSDSC-123: Summary') or the raw commit message
-                if no issue is found or Jira lookup fails.
+            list[str]: A list of HTML `<li>` elements, where each entry represents a commit.
+                - If a Jira key is found and can be resolved, the entry is formatted as:
+                `<li><a href="{jira_url}/{key}">{key}</a>: {summary} ({commit_hash})</li>`
+                - If a Jira key is found but cannot be resolved, the raw commit message is used instead.
+                - If no Jira key is found, the raw commit message is included unchanged.
 
-        If an issue number is found in a commit and Jira is available, the issue's summary
-        is retrieved and included in the changelog. If no issue number is found or Jira
-        lookup fails, the raw commit message is used. Logs warnings for commits with
-        issue numbers that cannot be resolved in Jira.
+        Behavior
+        --------
+            - Multiple Jira keys in a single commit message are all detected and hyperlinked.
+            - Merge commits are normalized so they only include the issue key(s) and summary,
+            rather than the full merge message.
+            - Falls back gracefully to the original commit message if Jira lookups fail.
+            - Logs warnings for missing or unresolved Jira issues.
         """
         changelog = []
+        jira_base_url = getattr(self.__settings, "issuetracker_url", "").rstrip("/")
+
         for commit_hash, message in commits:
             match = issue_number_pattern.search(message)
             if match:
@@ -90,58 +99,65 @@ class ReleaseNotesPublisher(StepExecutorInterface):
                         issue = self.__jira.get_issue(issue_number)
                         if issue and "fields" in issue and "summary" in issue["fields"]:
                             summary = issue["fields"]["summary"]
-                            changelog.append(f"- {issue_number}: {summary} ({commit_hash})")
+                            changelog.append(
+                                f'<li><a href="{jira_base_url}/{issue_number}">{issue_number}</a>: {summary} ({commit_hash})</li>'
+                            )
                         else:
                             self.__context.log(
                                 f"Failed to retrieve issue {issue_number} from Jira, using raw commit",
                                 severity=LogLevel.WARNING,
                             )
-                            changelog.append(f"- {message} ({commit_hash})")
+                            changelog.append(f"<li>{message} ({commit_hash})</li>")
                     except Exception as e:
                         self.__context.log(
                             f"Error retrieving issue {issue_number} from Jira: {str(e)}",
                             severity=LogLevel.WARNING,
                         )
-                        changelog.append(f"- {message} ({commit_hash})")
+                        changelog.append(f"<li>{message} ({commit_hash})</li>")
                 else:
-                    changelog.append(f"- {message} ({commit_hash})")
+                    changelog.append(f"<li>{message} ({commit_hash})</li>")
             else:
-                changelog.append(f"- {message} ({commit_hash})")
+                changelog.append(f"<li>{message} ({commit_hash})</li>")
+
         return changelog
+
 
     def __prepend_or_replace_in_changelog(self, tag: str, changes: List[str], dry_run: bool) -> None:
         r"""
-        Prepends a new changelog section or replaces an existing one for the given tag.
+        Insert or update a changelog section for the given tag in an HTML-formatted changelog file.
 
-        Args:
-            tag (str): The version tag for the changelog section (e.g., '1.0.0').
-            changes (List[str]): List of change descriptions to include in the section.
-            dry_run (bool): If True, logs the changes without writing to the file.
+        Args
+        ----
+            tag (str): The version tag for the changelog section (e.g., 'DIMRset_2.29.25').
+            changes (List[str]): List of change entries in HTML `<li>` format.
+            dry_run (bool): If True, only logs the intended changes without modifying the file.
 
-        The method reads the existing changelog file (if it exists) or creates a new one.
-        It uses a regular expression to identify and replace an existing section for the
-        given tag or prepend a new section.
+        Behavior
+        --------
+            - If the changelog file exists, it is read; otherwise, a new file is initialized
+            with a top-level `<h1>Changelog</h1>` header.
+            - A new entry consists of:
+                * `<h2>{tag} - {date}</h2>` as the section header
+                * A `<ul>` block containing the change list
+            - If an entry for the given tag already exists (matched via regex), it is replaced.
+            - If no entry exists, the new section is inserted directly below the `<h1>Changelog</h1>` header.
 
-        Explanation of the regex pattern:
-        - `^`: Matches the start of a line (with `re.M` flag).
-        - `[ \t]*`: Matches zero or more spaces or tabs before the section header.
-        - `## `: Matches the literal Markdown header marker for a changelog section.
-        - `{re.escape(tag)}`: Matches the escaped tag string (e.g., 'DIMRset_2.29.23').
-        - `- `: Matches a hyphen and space, typically separating the tag from the date.
-        - `.*?`: Non-greedy match of any characters (including newlines, due to `re.S`) until the lookahead.
-        - `(?=^[ \t]*## |\Z)`: Positive lookahead to match until either the start of another
-        section (with optional whitespace before `##`) or the end of the string (`\Z`).
-        - Flags: `re.S` (dot matches newlines), `re.M` (multiline mode for `^` and `$`).
+        Regex explanation for matching an existing section:
+            - `<h2>{tag} - ...</h2>`: Matches the section header for the given tag.
+            - `.*?</ul>`: Non-greedy match up to the end of its `<ul>` block.
+            - Flags: `re.S` allows `.` to match across lines, `re.M` enables `^` and `$` to match line boundaries.
 
-        If a section with the given tag exists, it is replaced with the new section, ensuring
-        a blank line after the section. If no section exists, the new section is prepended after
-        the '# Changelog' header with consistent spacing. In dry-run mode, changes are logged
-        without modifying the file.
+        Notes
+        -----
+            - In `dry_run` mode, the generated section and final file content are logged
+            but not written.
+            - Ensures the changelog structure remains valid HTML.
         """
         new_entry = [
-            f"## {tag} - {datetime.now(timezone.utc).date().isoformat()}",
-            "",
+            f"<h2>{tag} - {datetime.now(timezone.utc).date().isoformat()}</h2>",
+            "<ul>",
             *changes,
+            "</ul>",
             "",
         ]
         new_text = "\n".join(new_entry)
@@ -149,15 +165,21 @@ class ReleaseNotesPublisher(StepExecutorInterface):
         if self.__changelog_file.exists():
             content = self.__changelog_file.read_text(encoding="utf-8")
         else:
-            content = "# Changelog\n"
+            # initialize with an HTML root and a top-level heading
+            content = "<h1>DIMRset weekly changelog</h1>\n"
 
-        changelog_section_pattern = re.compile(rf"^[ \t]*## {re.escape(tag)} - .*?(?=^[ \t]*## |\Z)", re.S | re.M)
+        # regex looks for <h2>DIMRset_xxx - date</h2> blocks
+        changelog_section_pattern = re.compile(rf"^[ \t]*<h2>{re.escape(tag)} - .*?</ul>", re.S | re.M)
 
         if changelog_section_pattern.search(content):
-            updated = changelog_section_pattern.sub(new_text + "\n", content, count=1)
+            updated = changelog_section_pattern.sub(new_text, content, count=1)
             action = f"Replaced existing section for {tag}"
         else:
-            updated = new_text + "\n" + content.lstrip("\n")
+            # insert after top-level <h1>Changelog</h1>
+            if "<h1>Changelog</h1>" in content:
+                updated = content.replace("<h1>Changelog</h1>", "<h1>Changelog</h1>\n" + new_text, 1)
+            else:
+                updated = new_text + "\n" + content.lstrip("\n")
             action = f"Prepended new section for {tag}"
 
         if dry_run:
@@ -172,8 +194,8 @@ class ReleaseNotesPublisher(StepExecutorInterface):
             self.__context.log(f"Changelog updated in {self.__changelog_file}")
 
     def execute_step(self) -> bool:
-        """Execute the release notes publishing step."""
-        self.__context.log("Generating DIMR release notes...")
+        """Execute the changelog publishing step."""
+        self.__context.log("Generating DIMRset changelog...")
 
         if self.__ssh is None:
             self.__context.log("SSH client is required but not initialized", severity=LogLevel.ERROR)
@@ -195,47 +217,20 @@ class ReleaseNotesPublisher(StepExecutorInterface):
 
         changelog = self.__build_changelog(commits, self.__issue_number_pattern())
 
-        self.__context.log("Release notes generation completed successfully!")
-
-        path_to_release_notes_file = f"/p/d-hydro/dimrset/{self.__changelog_file.name}"
-
-        if not self.__context.dry_run:
-            try:
-                # Check if remote changelog exists by trying to fetch it
-                self.__context.log(f"Attempting to download existing changelog from {path_to_release_notes_file}")
-                self.__ssh.secure_copy(
-                    path_to_release_notes_file,   # remote file on Windows node
-                    str(self.__changelog_file),   # local file
-                    Direction.FROM,
-                )
-                self.__context.log(f"Downloaded existing changelog from {path_to_release_notes_file}")
-            except Exception:
-                self.__context.log(f"No existing changelog found at {path_to_release_notes_file}, will create new one.")
-        else:
-            self.__context.log(f"(dry-run) Would check and possibly download changelog from {path_to_release_notes_file}")
-
         self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
 
-        if self.__context.dry_run:
-            self.__context.log(f"Would copy {self.__changelog_file} to {path_to_release_notes_file}")
-        else:
-            self.__ssh.secure_copy(
-                str(self.__changelog_file),
-                path_to_release_notes_file,
-                Direction.TO,
-            )
-            self.__context.log(f"Release notes file copied successfully to {path_to_release_notes_file}")
-
+        self.__context.log("DIMRset changelog generation completed successfully!")
+        
         return True
 
 
 def main() -> None:
-    """Entry point for the release notes publisher."""
+    """Entry point for the changelog publisher."""
     args = parse_common_arguments()
     context = create_context_from_args(args, require_teamcity=False)
     services = Services(context)
 
-    step = ReleaseNotesPublisher(context, services)
+    step = ChangeLogPublisher(context, services)
     success = step.execute_step()
     sys.exit(0 if success else 1)
 

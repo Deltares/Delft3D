@@ -113,6 +113,7 @@ class Settings:
         self.linux_address = INIT_VALUE
         self.relative_path_to_wiki_template = INIT_VALUE
         self.delft3d_git_repo = INIT_VALUE
+        self.issuetracker_url = INIT_VALUE
         self.relative_path_to_email_template = INIT_VALUE
         self.lower_bound_percentage_successful_tests = INIT_VALUE
         self.versions_excel_filename = INIT_VALUE
