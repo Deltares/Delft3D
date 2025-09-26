@@ -9,7 +9,6 @@ from typing import List, Tuple
 
 from ci_tools.dimrset_delivery.arg_parsing import create_context_from_args, parse_common_arguments
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
-from ci_tools.dimrset_delivery.lib.ssh_client import Direction
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.step_executer_interface import StepExecutorInterface
 from ci_tools.example_utils.logger import LogLevel
@@ -100,7 +99,10 @@ class ChangeLogPublisher(StepExecutorInterface):
                         if issue and "fields" in issue and "summary" in issue["fields"]:
                             summary = issue["fields"]["summary"]
                             changelog.append(
-                                f'<li><a href="{jira_base_url}/{issue_number}">{issue_number}</a>: {summary} ({commit_hash})</li>'
+                                f'<li>'
+                                f'<a href="{jira_base_url}/{issue_number}">{issue_number}</a>: '
+                                f'{summary} ({commit_hash})'
+                                f'</li>'
                             )
                         else:
                             self.__context.log(
@@ -120,7 +122,6 @@ class ChangeLogPublisher(StepExecutorInterface):
                 changelog.append(f"<li>{message} ({commit_hash})</li>")
 
         return changelog
-
 
     def __prepend_or_replace_in_changelog(self, tag: str, changes: List[str], dry_run: bool) -> None:
         r"""
@@ -220,7 +221,7 @@ class ChangeLogPublisher(StepExecutorInterface):
         self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
 
         self.__context.log("DIMRset changelog generation completed successfully!")
-        
+
         return True
 
 
