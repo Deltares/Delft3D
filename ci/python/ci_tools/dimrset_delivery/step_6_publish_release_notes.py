@@ -99,10 +99,10 @@ class ChangeLogPublisher(StepExecutorInterface):
                         if issue and "fields" in issue and "summary" in issue["fields"]:
                             summary = issue["fields"]["summary"]
                             changelog.append(
-                                f'<li>'
+                                f"<li>"
                                 f'<a href="{jira_base_url}/{issue_number}">{issue_number}</a>: '
-                                f'{summary} ({commit_hash})'
-                                f'</li>'
+                                f"{summary} ({commit_hash})"
+                                f"</li>"
                             )
                         else:
                             self.__context.log(
