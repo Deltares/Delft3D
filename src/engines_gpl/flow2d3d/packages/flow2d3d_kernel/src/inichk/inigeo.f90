@@ -93,6 +93,8 @@ subroutine inigeo(lundia    ,error     ,filrgf    ,sferic    ,            &
 !
 ! Local variables
 !
+    real(fp), parameter :: MINIMUM_AREA = 1e-10_fp
+    
     integer                :: ddb
     integer                :: kenm
     integer                :: kenmu
@@ -800,7 +802,7 @@ subroutine inigeo(lundia    ,error     ,filrgf    ,sferic    ,            &
              if (new_area_method) then
                 gsqiu(n, m) = 2.0_fp / (gsqs(n, m)+gsqs(n,mu))
              else
-                gsqiu(n, m) = 1.0_fp / (gvu(n, m)*guu(n, m))
+                gsqiu(n, m) = 1.0_fp / max(gvu(n, m)*guu(n, m), MINIMUM_AREA)
              endif
           else
              gsqiu(n, m) = 0.0_fp
@@ -809,7 +811,7 @@ subroutine inigeo(lundia    ,error     ,filrgf    ,sferic    ,            &
              if (new_area_method) then
                 gsqiv(n, m) = 2.0_fp / (gsqs(n, m)+gsqs(nu,m))
              else
-                gsqiv(n, m) = 1.0_fp / (guv(n, m)*gvv(n, m))
+                gsqiv(n, m) = 1.0_fp / max(guv(n, m)*gvv(n, m), MINIMUM_AREA)
              endif
           else
              gsqiv(n, m) = 0.0_fp

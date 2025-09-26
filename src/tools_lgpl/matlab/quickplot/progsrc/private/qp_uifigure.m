@@ -64,7 +64,10 @@ if ~isempty(closecom)
     end
 end
 %
-H = figure('Visible','off', ...
+% create_figure = @uifigure; % uifigures allow you to set the Icon, but they are slower ...
+create_figure = @figure;
+
+H = create_figure('Visible','off', ...
     'DefaultUicontrolBackgroundColor',Inactive, ...
     'DefaultUicontrolForegroundColor',qp_settings('UIForeGroundColor'), ...
     uicontrolfont, ...
@@ -82,7 +85,14 @@ H = figure('Visible','off', ...
     'Tag',tag);
 setappdata(H,'WL_UserInterface',1)
 if matlabversionnumber >= 7
-    set(H,'WindowStyle','normal','DockControls','off')
+    set(H,'WindowStyle','normal')
+end
+if true %is_uifigure(H)
+    set(H,'WindowStyle','normal','AutoResizeChildren','off')
+else    
+    if matlabversionnumber >= 7
+        set(H,'WindowStyle','normal','DockControls','off')
+    end
 end
 
 function keypress(handle,event)

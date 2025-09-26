@@ -62,8 +62,8 @@ contains
          n = nban(1, kk) ! net node
          k = nban(2, kk) ! flow node
 
-         x = 0.5d0 * (xk(n) + xz(k))
-         y = 0.5d0 * (yk(n) + yz(k))
+         x = 0.5_dp * (xk(n) + xz(k))
+         y = 0.5_dp * (yk(n) + yz(k))
          v = seq(jgrtek)
          call isocol(v, ncol)
 

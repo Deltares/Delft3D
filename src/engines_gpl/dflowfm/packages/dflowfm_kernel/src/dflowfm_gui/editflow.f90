@@ -239,7 +239,7 @@ contains
          if (jasal > 0) then
             call getkbotktop(nplot, kb, kt)
             k = kb + kplot - 1
-            constituents(isalt, k) = constituents(isalt, k) + 1d0
+            constituents(isalt, k) = constituents(isalt, k) + 1.0_dp
          end if
       else if (KEY == 43 .or. KEY == 140) then ! -
          call KPLOTPLUSMIN(-1)

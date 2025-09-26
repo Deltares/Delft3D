@@ -46,15 +46,15 @@ module m_statistics
    real(kind=dp), allocatable :: xpdf(:), ypdf(:)
 contains
    subroutine reset_statistics()
-      avedif = 0d0 ! for now only, cum dif with analytic sol
-      sqadif = 0d0
-      rmsdif = 0d0 ! for now only, cum dif with analytic sol
-      dmxdif = 0d0 ! for now only, cum dif with analytic sol
+      avedif = 0.0_dp ! for now only, cum dif with analytic sol
+      sqadif = 0.0_dp
+      rmsdif = 0.0_dp ! for now only, cum dif with analytic sol
+      dmxdif = 0.0_dp ! for now only, cum dif with analytic sol
       numdif = 0
 
-      cumavedif = 0d0 ! for now only, cum dif with analytic sol
-      cumrmsdif = 0d0 ! for now only, cum dif with analytic sol
-      cumdmxdif = 0d0 ! for now only, cum dif with analytic sol
+      cumavedif = 0.0_dp ! for now only, cum dif with analytic sol
+      cumrmsdif = 0.0_dp ! for now only, cum dif with analytic sol
+      cumdmxdif = 0.0_dp ! for now only, cum dif with analytic sol
       numcum = 0
       npdf = 0
    end subroutine reset_statistics

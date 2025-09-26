@@ -109,7 +109,7 @@ contains
          end do lr
       end do
 
-      call readyy('Checking net link crossings', -1d0)
+      call readyy('Checking net link crossings', -1.0_dp)
       deallocate (linkQueue)
       deallocate (jaLinkVisited)
    contains

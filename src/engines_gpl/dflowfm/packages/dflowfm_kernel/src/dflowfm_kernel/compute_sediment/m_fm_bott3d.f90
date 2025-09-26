@@ -460,7 +460,7 @@ contains
                               ! c(z) = c_a*(a/z)^R = c_a*(z/a)^-R
                               !
                               z = zktop + dzup / 2.0_fp
-                              apower = log(max(r1avg / ceavg, 1d-5)) / log(z / aksu)
+                              apower = log(max(r1avg / ceavg, 1.0e-5_dp)) / log(z / aksu)
                               if (apower > -1.05_dp .and. apower <= -1.0_dp) then ! you have decide on the eq to -1.0
                                  apower = -1.05_dp
                               elseif (apower > -1.0_dp .and. apower < -0.95_dp) then
@@ -1297,7 +1297,7 @@ contains
             ! Re-distribute THET % of erosion in nm to surrounding cells
             ! THETSD is a user-specified maximum value, range 0-1
             !
-            if (totfixfrac > 1d-7) then
+            if (totfixfrac > 1.0e-7_dp) then
                !
                ! Compute local re-distribution factor THET
                !
@@ -1703,7 +1703,7 @@ contains
             call getLbotLtop(L, Lb, Lt)
             if (Lt < Lb) cycle
             do iL = Lb, Lt
-               e_ssn(L, ll) = e_ssn(L, ll) + fluxhortot(j, iL) / max(wu_mor(L), 1d-3) ! timestep transports per layer [kg/s/m]
+               e_ssn(L, ll) = e_ssn(L, ll) + fluxhortot(j, iL) / max(wu_mor(L), 1.0e-3_dp) ! timestep transports per layer [kg/s/m]
             end do
             e_ssn(L, ll) = e_ssn(L, ll) + e_scrn(L, ll) ! bottom layer correction
          end do

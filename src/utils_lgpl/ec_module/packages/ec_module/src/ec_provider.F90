@@ -1752,12 +1752,12 @@ contains
 
    !> Create subproviders, which create source Items and their contained types.
       !! meteo1.f90: read1polylin
-   function ecProviderCreatePolyTimItemsBC(instancePtr, fileReaderPtr, bctfilename, quantityname) result(success)
+   function ecProviderCreatePolyTimItemsBC(instancePtr, fileReaderPtr, bctfilename, quantityname_in) result(success)
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       type(tEcFileReader), pointer :: fileReaderPtr !< intent(inout)
       character(len=*), intent(in) :: bctfilename !< in case of bct-data, we neeed the explicit filename
-      character(len=*), intent(in) :: quantityname !< in case of bct-data, we neeed the explicit quantityname
+      character(len=*), intent(in) :: quantityname_in !< in case of bct-data, we neeed the explicit quantityname
       !
       real(dp), dimension(:), allocatable :: xs !< x-coordinates of support points
       real(dp), dimension(:), allocatable :: ys !< y-coordinates of support points
@@ -1765,6 +1765,7 @@ contains
       integer :: n_points !< number of support points
       integer :: n_signals !< Number of forcing signals created (at most n_signals==n_points, but warn if n_signals==0)
       character(len=:), allocatable :: rec !< a read line
+      character(len=:), allocatable :: quantityname !< in case of bct-data, we neeed the explicit quantityname
       integer :: i !< loop counters
       integer :: istat !< status of read operation
       character(len=:), allocatable :: plipointlbl !< temporary name of current pli-point in bct context
@@ -1788,6 +1789,7 @@ contains
       !
 
 !        initialization
+      quantityname = quantityname_in
       success = .false.
       itemPT => null()
       sourceItem => null()
@@ -3996,7 +3998,6 @@ contains
          do idim = 1, ndim
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, len=fileReaderPtr%dim_length(idim))
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, name=dim_name)
-            write(*,*) trim(dim_name)
             ! Find dimension matching columns and rows
             select case (str_tolower(trim(dim_name)))
             case ('x', 'longitude', 'lon', 'projected_x', 'xc', 'grid_longitude', 'projection_x_coordinate')

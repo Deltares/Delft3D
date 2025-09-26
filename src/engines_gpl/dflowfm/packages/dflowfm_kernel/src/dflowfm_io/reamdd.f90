@@ -53,7 +53,7 @@ contains
       real(kind=dp) :: af
 
       character REC * 132
-      call READYY('Reading md-Dept File', 0d0)
+      call READYY('Reading md-Dept File', 0.0_dp)
 5     continue
       read (MMDD, '(A)', end=999) REC
       if (REC(1:1) == '*') goto 5
@@ -64,20 +64,20 @@ contains
          call READYY('Reading md-Dept File', AF)
          read (MMDD, *, end=999, ERR=888) (RD1(M, N), M=1, MC)
       end do
-      call READYY('Reading md-Dept File', -1d0)
+      call READYY('Reading md-Dept File', -1.0_dp)
       call DOCLOSE(MMDD)
       JA = 1
       return
 
 999   continue
       call QNEOFERROR(MMDD)
-      call READYY('Reading md-Dept File', -1d0)
+      call READYY('Reading md-Dept File', -1.0_dp)
       call DOCLOSE(MMDD)
       JA = 0
       return
 
 888   call QNREADERROR('Reading, DD Depth File With Wrong Dimensions', ' ', MMDD)
-      call READYY('Reading md-Dept File', -1d0)
+      call READYY('Reading md-Dept File', -1.0_dp)
       call DOCLOSE(MMDD)
       JA = 0
    end subroutine REAMDD

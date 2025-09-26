@@ -72,7 +72,7 @@ contains
 
             read (myzprofs, '(a)', end=999) rec
             read (rec, *, err=777) xx0, yy0, zz0
-            yy(1) = 0d0
+            yy(1) = 0.0_dp
             zz(1) = zz0
             zmin = zz0
 
@@ -84,7 +84,7 @@ contains
                !         read(myzprofs,*,err=777) xx1, yy1, zz1
                dy = dbdistance(xx0, yy0, xx1, yy1, jsferic, jasfer3D, dmiss)
                !dy = sqrt( (xx1-xx0)**2 + (yy1-yy0)**2)
-               if (dy > 0d0) then
+               if (dy > 0.0_dp) then
                   nn = nn + 1
                   yy(nn) = yy(nn - 1) + dy
                   zz(nn) = zz1
@@ -98,7 +98,7 @@ contains
                zmin = min(zmin, zz1)
             end do
             nyz = nn ! Some points may have been discarded
-            zmax = -9d9
+            zmax = -9.0e9_dp
             do n = 1, nyz
                zz(n) = zz(n) - zmin
                zmax = max(zmax, zz(n))
@@ -118,7 +118,7 @@ contains
                   else
                      y02 = yy(n2) - yy(n0)
                      y01 = yy(n1) - yy(n0)
-                     b = y01 / y02; a = 1d0 - b
+                     b = y01 / y02; a = 1.0_dp - b
                      zn1 = a * zz(n0) + b * zz(n2)
                      dif = abs(zz(n1) - zn1)
                      if (dif > tolzprof) then

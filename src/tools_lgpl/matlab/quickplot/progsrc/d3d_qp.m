@@ -101,6 +101,9 @@ if nargout~=0
     elseif strcmp(cmd,'iswl')
         outdata = {isequal(qp_settings('WLextensions','off'),'on')};
         return
+    elseif strcmp(cmd,'iconpath')
+        outdata = {[qp_basedir('exe') filesep 'private' filesep 'd3d_qp.png']};
+        return
     elseif strcmp(cmd,'version')
         if nargin>1
             outdata = {qp_checkversion(varargin{:})};
@@ -319,7 +322,12 @@ switch cmd
             qp_updaterecentfiles(mfig)
         end
         if showUI
-            figure(mfig);
+            try
+                % The next command fails on Linux when DISPLAY is not set.
+                % Some bringToFront function isn't available in that case.
+                figure(mfig);
+            catch
+            end
         end
         init_netcdf_settings
         if isstandalone
@@ -1247,7 +1255,7 @@ switch cmd
             File=get(Handle_SelectFile,'userdata');
             NrInList=get(Handle_SelectFile,'value');
             [Chk,NewFileInfo,cmdargs]=qp_getdata(File(NrInList),'options',UD.FilOpt.Fig,varargin{:});
-            if Chk && ~isequal(NewFileInfo,[]),
+            if Chk && ~isequal(NewFileInfo,[])
                 File(NrInList)=NewFileInfo;
                 set(Handle_SelectFile,'userdata',File,'value',NrInList);
                 d3d_qp updatedomains
@@ -1353,7 +1361,7 @@ switch cmd
                     'userdata',Props);
             else
                 names={Props.Name};
-                if isempty(names),
+                if isempty(names)
                     set(datafields,'string','<no datafields found>','value',1,'enable','off','backgroundcolor',Inactive,'userdata',Props);
                 else
                     df=1;
@@ -1362,9 +1370,9 @@ switch cmd
                         df=get(datafields,'value');
                         pname=pnames{df};
                         df=ustrcmpi(pname,names); % first check equality and longer names
-                        if df<0, % no matches
+                        if df<0 % no matches
                             df=ustrcmpi(names,pname); % check (equality and) shorter names
-                            if df<0, % still no matches
+                            if df<0 % still no matches
                                 df=1;
                             end
                         end

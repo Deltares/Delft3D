@@ -44,8 +44,8 @@ contains
 
       real(kind=dp), intent(inout) :: dts !< timestep to use
 
-      if (dts > avaltime / 2d0 - 1d0) then
-         dts = avaltime / 2d0 - 1d0 !make sure timestep is smaller than half the avaltime (e.g. with default avaltime 9 seconds)
+      if (dts > avaltime / 2.0_dp - 1.0_dp) then
+         dts = avaltime / 2.0_dp - 1.0_dp !make sure timestep is smaller than half the avaltime (e.g. with default avaltime 9 seconds)
       end if
 
    end subroutine setdtmaxavalan

@@ -145,8 +145,8 @@ contains
             end if
 
             if (Ldoit) then
-               area_tot = 0d0
-               funct = 0d0
+               area_tot = 0.0_dp
+               funct = 0.0_dp
 
                call getcellsurface(k, area, xc, yc)
                area_tot = area_tot + area
@@ -161,7 +161,7 @@ contains
                if (nindirect > 0) then
                   Darea = area_tot / dble(nindirect)
                else
-                  Darea = 0d0
+                  Darea = 0.0_dp
                end if
 
                !     compute the change in the functional
@@ -174,7 +174,7 @@ contains
 
                !        funct = -1d0
 
-               if (funct < 0d0) then ! delete cell
+               if (funct < 0.0_dp) then ! delete cell
                   !     if (k.eq.395 ) then
                   if (Lstepbystep) then
                      !           unhighlight mesh

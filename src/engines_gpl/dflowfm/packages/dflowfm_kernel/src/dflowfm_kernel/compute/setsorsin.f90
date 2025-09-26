@@ -52,9 +52,9 @@ contains
 
       integer :: n, kk, k, kb, kt, kk2, ku, numvals, L
       real(kind=dp) :: qsrck, qsrckk, dzss
-      real(kind=dp) :: frac = 0.5d0 ! cell volume fraction that can at most be extracted in one step
+      real(kind=dp) :: frac = 0.5_dp ! cell volume fraction that can at most be extracted in one step
 
-      srsn = 0d0; vcsrc = 0d0
+      srsn = 0.0_dp; vcsrc = 0.0_dp
       do n = 1, numsrc
          kk = ksrc(1, n) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
          kk2 = ksrc(4, n) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
@@ -97,7 +97,7 @@ contains
                      exit
                   end if
                end do
-               if (srsn(1, n) > 0d0) then
+               if (srsn(1, n) > 0.0_dp) then
                   do L = 1, numconst
                      srsn(1 + L, n) = srsn(1 + L, n) / srsn(1, n)
                   end do
@@ -151,7 +151,7 @@ contains
                      exit
                   end if
                end do
-               if (srsn(1 + numconst + 1, n) > 0d0) then
+               if (srsn(1 + numconst + 1, n) > 0.0_dp) then
                   do L = 1, numconst
                      srsn(1 + numconst + 1 + L, n) = srsn(1 + numconst + 1 + L, n) / srsn(1 + numconst + 1, n)
                   end do

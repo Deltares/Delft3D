@@ -70,7 +70,7 @@ contains
       real(kind=dp) XD, YD, ZD, DX, DY, DZ, XX1, YY1, ZZ1, XX2, YY2, ZZ2, X3, Y3, Z3
       real(kind=dp) :: X(4), Y(4), Z(4)
 
-      D = 0.5d0 * GETRCIR() !
+      D = 0.5_dp * GETRCIR() !
       if (MET >= 3) then
          LMOD = max(1, NUML / 100)
          do L = 1, NUML
@@ -123,22 +123,22 @@ contains
                         call lnabs(x(2), y(2))
                      end if
                   else if (MET == 5 .or. MET == 8) then
-                     X3 = 0.5d0 * (XX1 + XX2)
-                     Y3 = 0.5d0 * (YY1 + YY2)
-                     Z3 = 0.5d0 * (ZZ1 + ZZ2)
+                     X3 = 0.5_dp * (XX1 + XX2)
+                     Y3 = 0.5_dp * (YY1 + YY2)
+                     Z3 = 0.5_dp * (ZZ1 + ZZ2)
                      call DRCIRC(X3, Y3, Z3)
                   else if (MET == 9) then
-                     if (VV /= dmiss .and. VV < vmin + 0.05d0 * (vmax - vmin)) then
-                        X3 = 0.5d0 * (XX1 + XX2)
-                        Y3 = 0.5d0 * (YY1 + YY2)
-                        Z3 = 0.5d0 * (ZZ1 + ZZ2)
+                     if (VV /= dmiss .and. VV < vmin + 0.05_dp * (vmax - vmin)) then
+                        X3 = 0.5_dp * (XX1 + XX2)
+                        Y3 = 0.5_dp * (YY1 + YY2)
+                        Z3 = 0.5_dp * (ZZ1 + ZZ2)
                         call CIRR(X3, Y3, ncolhl)
                      end if
                   else if (MET == 10) then
-                     if (VV /= dmiss .and. VV > vmax - 0.05d0 * (vmax - vmin)) then
-                        X3 = 0.5d0 * (XX1 + XX2)
-                        Y3 = 0.5d0 * (YY1 + YY2)
-                        Z3 = 0.5d0 * (ZZ1 + ZZ2)
+                     if (VV /= dmiss .and. VV > vmax - 0.05_dp * (vmax - vmin)) then
+                        X3 = 0.5_dp * (XX1 + XX2)
+                        Y3 = 0.5_dp * (YY1 + YY2)
+                        Z3 = 0.5_dp * (ZZ1 + ZZ2)
                         call CIRR(X3, Y3, ncolhl)
                      end if
                   end if

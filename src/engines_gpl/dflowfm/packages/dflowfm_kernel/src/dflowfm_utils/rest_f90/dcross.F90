@@ -63,7 +63,7 @@ contains
       real(kind=dp) :: xxcr, yycr, zzcr
 
       JACROS = 0
-      EPS = 0.00001d0
+      EPS = 0.00001_dp
 !     SL     = LABDA TUSSEN 0 EN 1 OP EERSTE PAAR
 !     Sm     = LABDA TUSSEN 0 EN 1 OP TWEEDE PAAR
 
@@ -98,14 +98,14 @@ contains
             SL = (xxn * (yy43 * zz31 - zz43 * yy31) + yyn * (zz43 * xx31 - xx43 * zz31) + zzn * (xx43 * yy31 - yy43 * xx31)) / det2
             SM = (xxn * (yy21 * zz31 - zz21 * yy31) + yyn * (zz21 * xx31 - xx21 * zz31) + zzn * (xx21 * yy31 - yy21 * xx31)) / det2
 
-            xxcr = 0.5d0 * (xx1 + SL * xx21 + xx3 + SM * xx43)
-            yycr = 0.5d0 * (yy1 + SL * yy21 + yy3 + SM * yy43)
-            zzcr = 0.5d0 * (zz1 + SL * zz21 + zz3 + SM * zz43)
+            xxcr = 0.5_dp * (xx1 + SL * xx21 + xx3 + SM * xx43)
+            yycr = 0.5_dp * (yy1 + SL * yy21 + yy3 + SM * yy43)
+            zzcr = 0.5_dp * (zz1 + SL * zz21 + zz3 + SM * zz43)
 
             call Cart3Dtospher(xxcr, yycr, zzcr, xcr, ycr, maxval([x1, x2, x3, x4]))
 !            CRP = -DET
             crp = -(xxn * xxcr + yyn * yycr + zzn * zzcr) / sqrt(xxcr**2 + yycr**2 + zzcr**2)
-            if (SM >= 0d0 .and. SM <= 1d0) then
+            if (SM >= 0.0_dp .and. SM <= 1.0_dp) then
                JACROS = 1
             end if
          end if
@@ -125,12 +125,12 @@ contains
             else if (abs(Y21) > EPS) then
                SL = (SM * Y43 + Y31) / Y21
             else
-               SL = 0d0
+               SL = 0.0_dp
             end if
             XCR = X1 + SL * (X2 - X1)
             YCR = Y1 + SL * (Y2 - Y1)
             CRP = -DET
-            if (SM >= 0d0 .and. SM <= 1d0) then
+            if (SM >= 0.0_dp .and. SM <= 1.0_dp) then
                JACROS = 1
             end if
          end if

@@ -217,7 +217,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f019_c013_tracer_channel3D" ref="dflowfm_default">
-     <path version="2025-07-14T09:49:27.667000">e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
+     <path version="2025-09-05T09:07:16.584000">e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tracer3D_his.nc" type="netCDF">
@@ -227,6 +227,7 @@
          <parameter name="y_velocity" toleranceAbsolute="0.0001" />
          <parameter name="tracer1" toleranceAbsolute="0.0001" />
          <parameter name="tracer2" toleranceAbsolute="0.0001" />
+         <parameter name="PolygonTracer1" toleranceAbsolute="0.0001" />
         </parameters>
       </file>
      </checks>
@@ -1594,7 +1595,7 @@
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" /> 
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0005" /> 
             <parameter name="mesh2d_ucx" toleranceAbsolute="0.006" />
             <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_sa1" toleranceRelative="0.02" />

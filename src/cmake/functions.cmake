@@ -147,7 +147,8 @@ function(get_fortran_source_files source_directory source_files)
                         ${source_directory}/*.F90
                         ${source_directory}/*.for
                         ${source_directory}/*.f
-                        ${source_directory}/*.F)
+                        ${source_directory}/*.F
+                        ${source_directory}/*.inc)
     set(${source_files} ${source} PARENT_SCOPE)
 endfunction()
 # get_fortran_source_files_recursive

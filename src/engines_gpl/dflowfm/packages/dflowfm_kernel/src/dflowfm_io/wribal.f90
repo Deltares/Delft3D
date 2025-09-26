@@ -30,6 +30,8 @@
 !
 !
 module m_wribal
+
+   use precision, only: dp
    implicit none
 contains
 !> Writes the current water balance quantities to file.
@@ -79,7 +81,7 @@ contains
 
       end if
 
-      write (ibal, '(100(F20.4))') time1 / 60d0, &
+      write (ibal, '(100(F20.4))') time1 / 60.0_dp, &
          vinraincum, voutevacum, vinbndcum, voutbndcum, vingrwcum, voutgrwcum, vol1tot, vol1ini, volgrw, volgrwini, &
          qinrain, qouteva, qinbnd, qoutbnd, qingrw, qoutgrw
 

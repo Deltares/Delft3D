@@ -93,7 +93,7 @@ contains
 
             Dh = comp_sampleDh(i, j)
 
-            if (abs(zss(5, i, j)) > 0.5d0 * Dh .or. zss(4, i, j) > -1d-8 .or. zss(5, i, j) == DMISS) then
+            if (abs(zss(5, i, j)) > 0.5_dp * Dh .or. zss(4, i, j) > -1.0e-8_dp .or. zss(5, i, j) == DMISS) then
                xs(ip) = DMISS
                ys(ip) = DMISS
 !            zs(ip) = DMISS

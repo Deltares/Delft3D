@@ -108,8 +108,8 @@ contains
    subroutine initimer()
       implicit none
 
-      t = 0d0
-      tcpu = 0d0
+      t = 0.0_dp
+      tcpu = 0.0_dp
       itstat = 0
 
       numtsteps = 0
@@ -151,7 +151,7 @@ contains
       integer, intent(in) :: itvar !< timer number
 
       real(kind=dp) :: tloc
-      real(kind=dp), parameter :: dtol = 1d-3 !< timer tolerance
+      real(kind=dp), parameter :: dtol = 1.0e-3_dp !< timer tolerance
 
 !     check status
       if (itstat(itvar) /= 1) then
