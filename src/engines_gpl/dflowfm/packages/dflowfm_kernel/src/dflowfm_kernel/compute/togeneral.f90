@@ -74,11 +74,11 @@ contains
       generalstruc(ng)%neg_contrcoeffreegate = hulp(22)
       generalstruc(ng)%extraresistance = hulp(23) ! lambda = L*g/ (C*C)
       generalstruc(ng)%dynstructext = hulp(24)
-      if (hulp(25) > 0d0) then
+      if (hulp(25) > 0.0_dp) then
          generalstruc(ng)%gatedoorheight = hulp(25)
       end if
       generalstruc(ng)%dooropeningwidth = hulp(26)
-      generalstruc(ng)%stabilitycounter = 0d0
+      generalstruc(ng)%stabilitycounter = 0.0_dp
 
       call realloc(generalstruc(ng)%widthcenteronlink, ngen)
       generalstruc(ng)%widthcenteronlink(1:ngen) = widths(1:ngen)
@@ -86,7 +86,7 @@ contains
       generalstruc(ng)%gateheightonlink(1:ngen) = generalstruc(ng)%gateheight
       generalstruc(ng)%numlinks = ngen
 
-      call realloc(generalstruc(ng)%gateclosedfractiononlink, ngen, fill=0d0)
+      call realloc(generalstruc(ng)%gateclosedfractiononlink, ngen, fill=0.0_dp)
    end subroutine togeneral
 
 end module m_togeneral

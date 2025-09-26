@@ -78,7 +78,7 @@ contains
 
       allocate (k(nsep))
       status = nf90_inq_varid(id_nc, "k", id_k)
-      status = nf90_get_var(id_nc, id_k, k, count=(/nsep/))
+      status = nf90_get_var(id_nc, id_k, k, count=[nsep])
       status = nf90_inq_varid(id_nc, "lon", id_lon)
 !    if (status .ne. nf90_noerr) msgtxt = nf90_strerror(status)
 
@@ -95,8 +95,8 @@ contains
       call increaselan(npts)
       !call setProgress(pbar, 5)
 
-      status = nf90_get_var(id_nc, id_lon, xlan, count=(/npts/))
-      status = nf90_get_var(id_nc, id_lat, ylan, count=(/npts/))
+      status = nf90_get_var(id_nc, id_lon, xlan, count=[npts])
+      status = nf90_get_var(id_nc, id_lat, ylan, count=[npts])
 
       !call multiFeatureSetCapacity(polylines, nsep-1+10)
       do i = 1, nsep

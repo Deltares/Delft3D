@@ -44,13 +44,13 @@ contains
       character TEXT * 6, TEXT2 * 10
 
       if (NCOLNOW >= 0) then
-         if (-1.000d0 < VAL .and. VAL < 10.000d0) then
+         if (-1.000_dp < VAL .and. VAL < 10.000_dp) then
             write (TEXT(1:6), '(F6.3)') VAL
             call DRAWTEXT(real(X), real(Y), TEXT)
-         else if (-10.000d0 < VAL .and. VAL < 100.000d0) then
+         else if (-10.000_dp < VAL .and. VAL < 100.000_dp) then
             write (TEXT(1:6), '(F6.2)') VAL
             call DRAWTEXT(real(X), real(Y), TEXT)
-         else if (-100.000d0 < VAL .and. VAL < 1000.000d0) then
+         else if (-100.000_dp < VAL .and. VAL < 1000.000_dp) then
             write (TEXT(1:6), '(F6.1)') VAL
             call DRAWTEXT(real(X), real(Y), TEXT)
          else

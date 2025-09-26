@@ -32,6 +32,8 @@
 
 module m_changenumericalparameters3
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -240,9 +242,9 @@ contains
             call IFORMGETdouble(2 * 3, Rhoveg)
             call IFORMGETdouble(2 * 4, Cbveg)
             call IFORMGETdouble(2 * 5, stemheightstd)
-            call IFORMGETdouble(2 * 6, hwavuni); if (hwavuni > 0d0) hwav = hwavuni
-            call IFORMGETdouble(2 * 7, twavuni); if (twavuni > 0d0) twav = twavuni
-            call IFORMGETdouble(2 * 8, phiwavuni); if (phiwavuni > 0d0) phiwav = phiwavuni
+            call IFORMGETdouble(2 * 6, hwavuni); if (hwavuni > 0.0_dp) hwav = hwavuni
+            call IFORMGETdouble(2 * 7, twavuni); if (twavuni > 0.0_dp) twav = twavuni
+            call IFORMGETdouble(2 * 8, phiwavuni); if (phiwavuni > 0.0_dp) phiwav = phiwavuni
             call IFORMGETinteger(2 * 9, modind)
             call IFORMGETdouble(2 * 10, Slotw1D)
             call IFORMGETdouble(2 * 11, Slotw2D)

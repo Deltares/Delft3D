@@ -1,5 +1,5 @@
 subroutine GetijAnalyse(flownamhis ,saltnamhis ,gaprinam  ,&
-&gaviewnam  ,flowframe  ,saltframe ,&
+&flowframe  ,saltframe ,&
 &dtsim      ,dattimsim  ,nstepsim  ,&
 &EstimPer   ,juer       ,ker       )
 !
@@ -15,7 +15,7 @@ subroutine GetijAnalyse(flownamhis ,saltnamhis ,gaprinam  ,&
 ! Module:             GetijAnalyse
 !
 ! Module description: Tidal analyses of flow and salt file. The results are
-!                     written to Ascii and to a file readable by ODSVIEW.
+!                     written to Ascii.
 !
 !-----------------------------------------------------------------------
 ! Parameters:
@@ -24,23 +24,21 @@ subroutine GetijAnalyse(flownamhis ,saltnamhis ,gaprinam  ,&
 ! 2  saltnamhis        I  file name of his-file with salt time series
 ! 3  gapriname         I  file name containing print report tidal
 !                         analyses results.
-! 4  gaviewname        I  file names of files containing tidal analyses
-!                         results readable for ODSVIEW
-! 5  flowframe         I  time frame for flow output to his-file
+! 4  flowframe         I  time frame for flow output to his-file
 !                         1: begin step number
 !                         2: end step number
 !                         3: step interval
-! 6  saltframe         I  time frame for salt output to his-file
+! 5  saltframe         I  time frame for salt output to his-file
 !                         1: begin step number
 !                         2: end step number
 !                         3: step interval
-! 7  dtsim             I  simulation time step in seconds (flow module)
-! 8  dattimsim(2)      I  start date and time of simulation
+! 6  dtsim             I  simulation time step in seconds (flow module)
+! 7  dattimsim(2)      I  start date and time of simulation
 !                         (Sobeksim format)
-! 9  nstepsim          I  number of simulation time steps
-!10  EstimPer          I  estimated tidal period in seconds
-!11  juer              I  Unit number of error file.
-!12  ker               O  Error code:
+! 8  nstepsim          I  number of simulation time steps
+! 9  EstimPer          I  estimated tidal period in seconds
+!10  juer              I  Unit number of error file.
+!11  ker               O  Error code:
 !                         ok     (0) : No error
 !                         info   (1) : Informative message
 !                         warnng (2) : Warning
@@ -49,7 +47,6 @@ subroutine GetijAnalyse(flownamhis ,saltnamhis ,gaprinam  ,&
 ! Subprogram calls:
 ! GetijAnalyse1File      Getij Analyse van 1 file
 ! GAPrintResults         Getij Analyse, Print Results
-! GAODSVIEWResults       Getij Analyse, ODSVIEW Results
 !=======================================================================
 !
 !     Declaration of Parameters:
@@ -60,8 +57,7 @@ subroutine GetijAnalyse(flownamhis ,saltnamhis ,gaprinam  ,&
    integer   nstepsim ,juer        ,ker
    integer   dattimsim(2)          ,flowframe(3) ,saltframe(3)
    real      EstimPer ,dtsim
-   character(len=256) flownamhis, saltnamhis, gaprinam,&
-   &gaviewnam(4)
+   character(len=256) flownamhis, saltnamhis, gaprinam
 !
 !     Declaration of local variables:
 !
@@ -81,7 +77,6 @@ subroutine GetijAnalyse(flownamhis ,saltnamhis ,gaprinam  ,&
       if (ker.eq.fatal) goto 1000
       do ir = 1,vreeks
          call GAPrintResults   (luanpri ,dattimsim ,ir)
-         call GAODSVIEWResults (gaviewnam ,dattimsim ,ir)
       enddo
    endif
 !
@@ -94,7 +89,6 @@ subroutine GetijAnalyse(flownamhis ,saltnamhis ,gaprinam  ,&
 !
       do ir = creeks,greeks
          call GAPrintResults (luanpri ,dattimsim ,ir)
-         call GAODSVIEWResults (gaviewnam ,dattimsim ,ir)
       enddo
    endif
 !

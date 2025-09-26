@@ -90,7 +90,7 @@ contains
       end do
       if (ISHOT == 1) goto 666
       MVOL = 0
-      call DISVAL(0, 0, 0d0)
+      call DISVAL(0, 0, 0.0_dp)
       return
    end subroutine ispoin
 

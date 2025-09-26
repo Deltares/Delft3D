@@ -86,7 +86,7 @@ contains
          return
       end if
 
-      call READYY('SAVE KML', 0d0)
+      call READYY('SAVE KML', 0.0_dp)
 
       allocate (xloc(numl + 1), yloc(numl + 1), zloc(numl + 1), lc(numl))
       lc = 0
@@ -95,9 +95,9 @@ contains
       call kml_write_netstyles(kmlunit)
 
       if (kml_jadepth == 1) then
-         half = .5d0
+         half = 0.5_dp
       else
-         half = 1d0
+         half = 1.0_dp
       end if
 
       if (kml_janet == 1) then
@@ -139,7 +139,7 @@ contains
                !if (zk(kcur) /= dmiss) then
                !    zloc(1) = transform_altitude(zk(kcur))
                !else
-               zloc(1) = 0d0
+               zloc(1) = 0.0_dp
                !end if
 
                kcur = kn(2, i)
@@ -148,7 +148,7 @@ contains
                !if (zk(kcur) /= dmiss) then
                !    zloc(2) = transform_altitude(zk(kcur))
                !else
-               zloc(2) = 0d0
+               zloc(2) = 0.0_dp
                !end if
                iloc = 2
                lc(i) = 1
@@ -607,7 +607,7 @@ contains
       keymaxlen = transfer(lenmaxdata, 123)
 
       ! Print the tree by traversing it depth-first, pass mout and lenmax by transfer into data variable.
-      call tree_traverse(dicttree, print_foam_dict, transfer((/mout, keymaxlen/), node_value), dummylog)
+      call tree_traverse(dicttree, print_foam_dict, transfer([mout, keymaxlen], node_value), dummylog)
 
       write (mout, '(a)') '}'
 

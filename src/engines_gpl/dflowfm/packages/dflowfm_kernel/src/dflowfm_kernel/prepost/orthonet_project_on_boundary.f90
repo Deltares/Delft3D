@@ -91,10 +91,10 @@ contains
             call dlinedis3(x0, y0, xkb(k), ykb(k), x3, y3, ja3, dis3, xn3, yn3, r3)
             if (dis2 < dis3) then
                x0 = xn2; y0 = yn2
-               if ((r2 > 0.5d0) .and. (nb(kL) /= 3)) k_bc(k0) = kL
+               if ((r2 > 0.5_dp) .and. (nb(kL) /= 3)) k_bc(k0) = kL
             else
                x0 = xn3; y0 = yn3
-               if ((r3 > 0.5d0) .and. (nb(kR) /= 3)) k_bc(k0) = kR
+               if ((r3 > 0.5_dp) .and. (nb(kR) /= 3)) k_bc(k0) = kR
             end if
 
             xk(k0) = x0; yk(k0) = y0

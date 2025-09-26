@@ -116,7 +116,7 @@ contains
       if (N2Dcells == 0) then
          !  add node
          !call setnewpoint(0.5d0*(xk(k1)+xk(k2)), 0.5d0*(yk(k1)+yk(k2)), zp, kp)
-         call dsetnewpoint(0.5d0 * (xk(k1) + xk(k2)), 0.5d0 * (yk(k1) + yk(k2)), kp)
+         call dsetnewpoint(0.5_dp * (xk(k1) + xk(k2)), 0.5_dp * (yk(k1) + yk(k2)), kp)
 
          call connectdbn(k1, kp, LnL)
          if (jatek == 1) call teklink(LnL, ncoldn)
@@ -128,9 +128,9 @@ contains
          !     set lnn and lne for new links
          !     reallocate if necessary
          if (numL > ubound(lnn, 1)) then
-            numnew = ceiling(1.2d0 * dble(numL))
+            numnew = ceiling(1.2_dp * dble(numL))
             call realloc(lnn, numnew, keepExisting=.true.)
-            call realloc(lne, (/2, numnew/), keepExisting=.true.)
+            call realloc(lne, [2, numnew], keepExisting=.true.)
          end if
          lnn(LnL) = 0
          lnn(LnR) = 0
@@ -176,7 +176,7 @@ contains
 !     add node and make new links (once)
          if (i == 1) then
             !  add node
-            call dsetnewpoint(0.5d0 * (xk(kL) + xk(kR)), 0.5d0 * (yk(kL) + yk(kR)), kp)
+            call dsetnewpoint(0.5_dp * (xk(kL) + xk(kR)), 0.5_dp * (yk(kL) + yk(kR)), kp)
             call connectdbn(kL, kp, LnL)
             if (jatek == 1) call teklink(LnL, ncoldn)
             kn(3, LnL) = k3
@@ -209,22 +209,22 @@ contains
 !     remove link from original cell, delete two nodes, add one new node and replace two links
          call del_intarrayelem(netcell(ic1)%N, netcell(ic1)%lin, L)
          call del_intarrayelem(netcell(ic1)%N, netcell(ic1)%nod, kL)
-         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%nod, kR, 1, (/kp/))
-         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LL, 1, (/LnLL/))
-         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LR, 1, (/LnRR/))
+         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%nod, kR, 1, [kp])
+         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LL, 1, [LnLL])
+         call replace_intarrayelem(netcell(ic1)%N - 1, netcell(ic1)%lin, LR, 1, [LnRR])
          netcell(ic1)%N = netcell(ic1)%N - 1
 
 !     make new cells
-         call makecell(3, (/kLL, kL, kp/), (/LL, LnL, LnLL/), icLL, ierror)
-         call makecell(3, (/kR, kRR, kp/), (/LnR, LR, LnRR/), icRR, ierror)
+         call makecell(3, [kLL, kL, kp], [LL, LnL, LnLL], icLL, ierror)
+         call makecell(3, [kR, kRR, kp], [LnR, LR, LnRR], icRR, ierror)
          if (ierror /= 0) goto 1234
 
 !     set lnn and lne for new links
 !     reallocate if necessary
          if (numL > ubound(lnn, 1)) then
-            numnew = ceiling(1.2d0 * dble(numL))
+            numnew = ceiling(1.2_dp * dble(numL))
             call realloc(lnn, numnew, keepExisting=.true.)
-            call realloc(lne, (/2, numnew/), keepExisting=.true.)
+            call realloc(lne, [2, numnew], keepExisting=.true.)
          end if
          if (i == 1) then
             lnn(LnL) = lnn(L)
@@ -366,7 +366,7 @@ contains
                                   xk(kL), yk(kL), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
                   dcos3 = dcosphi(xk(kLLL), yk(kLLL), xk(kLL), yk(kLL), &
                                   xk(kLL), yk(kLL), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
-                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9d0) then
+                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9_dp) then
                      call mergecells(icL, icLL, jatek)
                   end if
                end if
@@ -380,7 +380,7 @@ contains
                                   xk(kR), yk(kR), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
                   dcos3 = dcosphi(xk(kRRR), yk(kRRR), xk(kRR), yk(kRR), &
                                   xk(kRR), yk(kRR), xk(kp), yk(kp), jsferic, jasfer3D, dxymis)
-                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9d0) then
+                  if (abs(dcos1) > DCOSMIN .and. abs(dcos2) > DCOSMIN .and. dcos3 > -0.9_dp) then
                      call mergecells(icR, icRR, jatek)
                   end if
                end if

@@ -32,6 +32,8 @@
 
 module m_alloc9basicwavearrays
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -84,21 +86,21 @@ contains
       call aerr('twav    (ndx)', ierr, ndx)
       call realloc(phiwav, ndx, stat=ierr, keepExisting=.false., fill=phiwavuni)
       call aerr('phiwav  (ndx)', ierr, ndx)
-      call realloc(rlabda, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(rlabda, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('rlabda  (ndx)', ierr, ndx)
-      call realloc(uorb, ndx, stat=ierr, keepExisting=.false., fill=0d0)
+      call realloc(uorb, ndx, stat=ierr, keepExisting=.false., fill=0.0_dp)
       call aerr('uorb    (ndx)', ierr, ndx)
       if (.not. flowwithoutwaves) then
-         call realloc(ustokes, lnkx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(ustokes, lnkx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('ustokes(lnkx)', ierr, lnkx)
-         call realloc(vstokes, lnkx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(vstokes, lnkx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('vstokes(lnkx)', ierr, lnkx)
-         call realloc(wblt, lnx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(wblt, lnx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('wblt(lnx)', ierr, lnx)
-         call realloc(cfwavhi, lnx, stat=ierr, keepExisting=.false., fill=0d0)
+         call realloc(cfwavhi, lnx, stat=ierr, keepExisting=.false., fill=0.0_dp)
          call aerr('cfwavhi(lnx)', ierr, lnx)
          if (modind == 9 .and. kmx == 0) then
-            call realloc(cfhi_vanrijn, lnx, stat=ierr, keepExisting=.false., fill=0d0)
+            call realloc(cfhi_vanrijn, lnx, stat=ierr, keepExisting=.false., fill=0.0_dp)
             call aerr('cfhi_vanrijn(lnx)', ierr, lnx)
          end if
       end if

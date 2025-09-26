@@ -65,7 +65,7 @@ contains
          call ITEXTCOLOUR('BLACK', 'BWHITE')
          call IWinOutStringXY(2, 2, BALK(1:IW))
       else
-         NAF = max(AF * IW, 1d0)
+         NAF = max(AF * IW, 1.0_dp)
          call FILLUP(BALK, 'X', NAF)
          call IWinOutStringXY(1, 2, BALK(1:NAF))
       end if

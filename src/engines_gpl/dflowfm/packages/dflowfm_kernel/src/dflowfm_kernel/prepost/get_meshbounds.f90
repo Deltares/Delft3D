@@ -52,8 +52,8 @@ contains
 
       integer :: L, k1, k2
 
-      xboundmin = huge(1d0)
-      xboundmax = -huge(1d0)
+      xboundmin = huge(1.0_dp)
+      xboundmax = -huge(1.0_dp)
       do L = 1, numL
          if (kn(3, L) == 2) then
             k1 = kn(1, L)

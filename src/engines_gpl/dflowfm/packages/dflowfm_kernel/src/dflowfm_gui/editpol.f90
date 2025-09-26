@@ -188,7 +188,7 @@ contains
             call SETCOL(0)
             call MOVABS(XP, YP)
             if (MP == 1) then
-               call CIR(1.4d0 * RCIR)
+               call CIR(1.4_dp * RCIR)
             else
                call CIR(RCIR)
             end if

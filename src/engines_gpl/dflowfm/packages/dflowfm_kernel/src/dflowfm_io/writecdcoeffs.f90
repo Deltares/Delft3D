@@ -91,13 +91,13 @@ contains
       end if
 
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
-         fetchL = 20000d0
-         fetchD = 4d0
+         fetchL = 20000.0_dp
+         fetchD = 4.0_dp
          allocate (hwavsav(ndx), twavsav(ndx))
          hwavsav = hwav; twavsav = twav
       end if
 
-      uwi = 0.1d0
+      uwi = 0.1_dp
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
          hwav = hsig; twav = tsig
@@ -109,7 +109,7 @@ contains
          write (msgbu, '(2F14.6)') uwi, Cd10
       end if
 
-      uwi = 0.2d0
+      uwi = 0.2_dp
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
          hwav = hsig; twav = tsig
@@ -122,7 +122,7 @@ contains
       end if
 
       do k = 1, 28
-         uwi = uwi + 0.2d0
+         uwi = uwi + 0.2_dp
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
             hwav = hsig; twav = tsig
@@ -136,7 +136,7 @@ contains
       end do
 
       do k = 1, 24
-         uwi = uwi + 1.0d0
+         uwi = uwi + 1.0_dp
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
             hwav = hsig; twav = tsig
@@ -150,7 +150,7 @@ contains
       end do
 
       do k = 1, 8
-         uwi = uwi + 10d0
+         uwi = uwi + 10.0_dp
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
             hwav = hsig; twav = tsig

@@ -185,7 +185,7 @@ contains
                                   DFM_HYD_INTERCEPT_LAYER
       use m_transportdata, only: itrac2const, constituents
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, quantity_name_config_file_to_internal_name
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_3DV
       use fm_external_forcings_utils, only: get_tracername
 
@@ -193,9 +193,9 @@ contains
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use m_timespaceinitialfield_mpi
       use m_find_name, only: find_name
-      use m_get_kbot_ktop, only : getkbotktop
+      use m_get_kbot_ktop, only: getkbotktop
       use timespace_parameters, only: WEIGHTFACTORS
-      
+
       implicit none
       character(len=*), intent(in) :: inifilename !< name of initial field file
       integer :: ierr !< Result status (DFM_NOERR on success)
@@ -264,6 +264,9 @@ contains
          !! Step 1: Read each block
          call readIniFieldProvider(inifilename, node_ptr, groupname, qid, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
+         ! convert quantity name used in configuration file to a consistent internal name
+         qid = quantity_name_config_file_to_internal_name(qid)
+         
          if (ja == 1) then
             call resolvePath(filename, basedir)
             ib = ib + 1
@@ -368,7 +371,7 @@ contains
                   call setzcs()
                   success = ec_addtimespacerelation(qid, x_loc, y_loc, kcsini, quantity_value_count, filename, filetype, method, operand, &
                                                     varname=varname, z=zcs, pkbot=pkbot, pktop=pktop)
-               else 
+               else
                   success = ec_addtimespacerelation(qid, x_loc, y_loc, kcsini, quantity_value_count, filename, filetype, method, operand, &
                                                     varname=varname)
                end if
@@ -445,6 +448,7 @@ contains
    subroutine readIniFieldProvider(inifilename, node_ptr, groupname, quantity, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
       use timespace_parameters
+      use fm_external_forcings_utils, only: read_tracer_properties
       use m_ec_interpolationsettings, only: RCEL_DEFAULT
       use m_ec_parameters, only: interpolate_time, interpolate_spacetimeSaveWeightFactors
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
@@ -555,7 +559,6 @@ contains
                return
             end if
          end if
-
 
          if (method == interpolate_spacetimeSaveWeightFactors) then ! 'averaging'
             ! read averagingType
@@ -685,6 +688,10 @@ contains
          if (int_friction_type > 0) then
             transformcoef(3) = real(int_friction_type, dp)
          end if
+      end if
+
+      if (strcmpi(quantity(1:13), 'initialtracer')) then
+          call read_tracer_properties(node_ptr, transformcoef)
       end if
 
       ! We've made it to here, success!
@@ -1295,7 +1302,6 @@ contains
       use m_add_bndtracer, only: add_bndtracer
       use timespace_parameters, only: WEIGHTFACTORS
 
-
       ! use network_data
       ! use dfm_error
 
@@ -1633,7 +1639,7 @@ contains
          target_location_type = UNC_LOC_U
          target_array => grounlay
          jagrounlay = 1
-      case ('bedrocksurfaceelevation')
+      case ('bedrock_surface_elevation')
          call initialize_subsupl()
          time_dependent_array = .true.
          select case (ibedlevtyp)
@@ -1710,14 +1716,14 @@ contains
          target_location_type = UNC_LOC_U
          target_array => frculin
          jafrculin = 1
-      case ('seaiceareafraction', 'seaicethickness')
+      case ('sea_ice_area_fraction', 'sea_ice_thickness')
          if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
             call fm_ice_activate_by_ext_forces(ndx, md_ptr)
          end if
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.
       case ('secchidepth')
-         call realloc(secchisp, ndx, keepExisting=.true., fill=dmiss, stat = ierr)
+         call realloc(secchisp, ndx, keepExisting=.true., fill=dmiss, stat=ierr)
          target_location_type = UNC_LOC_S
          target_array => secchisp
       case ('backgroundverticaleddydiffusivitycoefficient')
@@ -1767,7 +1773,7 @@ contains
             time_dependent_array = .true.
          else
             write (msgbuf, '(a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', QUANTITY "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, '.'
+               ''', QUANTITY "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, '.'
             call warn_flush()
             success = .false.
          end if
@@ -1775,9 +1781,9 @@ contains
          if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_3D) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
-         else            
+         else
             write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+               ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
                       'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
             call warn_flush()
             success = .false.
@@ -1786,9 +1792,9 @@ contains
          if (jawave == WAVE_NC_OFFLINE .and. (waveforcing == WAVEFORCING_RADIATION_STRESS .or. waveforcing == WAVEFORCING_DISSIPATION_3D)) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
-         else            
+         else
             write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+               ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
                       'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
             call warn_flush()
             success = .false.
@@ -1797,32 +1803,32 @@ contains
          if (jawave == WAVE_NC_OFFLINE .and. waveforcing == WAVEFORCING_DISSIPATION_TOTAL) then
             target_location_type = UNC_LOC_S
             time_dependent_array = .true.
-         else            
+         else
             write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
-                      ''', quantity "' // trim(qid) // '" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', ' // &
+               ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
                       'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
             call warn_flush()
             success = .false.
          end if
       case ('waqparameter')
          target_location_type = UNC_LOC_S
-         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values = painp, index_waq_input = target_quantity_index)
+         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values=painp, index_waq_input=target_quantity_index)
          target_array_3d_sp => painp
          ! TODO: UNST-9008: discuss with Michelle whether this case is in fact equal to waqsegmentnumber.
          ! TODO: UNST-9008: discuss with Michelle generalized 2D/3D handling that is repeated in old code.
       case ('waqsegmentnumber')
          target_location_type = UNC_LOC_S
-         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values = painp, index_waq_input = target_quantity_index)
+         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., waq_values=painp, index_waq_input=target_quantity_index)
          target_array_3d_sp => painp
          ! TODO: UNST-9008: discuss with Michelle generalized 2D/3D handling that is repeated in old code.
       case ('waqfunction')
          target_location_type = UNC_LOC_GLOBAL
          time_dependent_array = .true.
-         call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., waq_values_ptr = funinp, index_waq_input = target_quantity_index)
+         call find_or_add_waq_input(qid_specific, funame, num_time_functions, .false., waq_values_ptr=funinp, index_waq_input=target_quantity_index)
       case ('waqsegmentfunction')
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.
-         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., waq_values_ptr = sfuninp, index_waq_input = target_quantity_index)
+         call find_or_add_waq_input(qid_specific, sfunname, num_spatial_time_fuctions, .true., waq_values_ptr=sfuninp, index_waq_input=target_quantity_index)
       case ('nudgesalinitytemperature')
          target_location_type = UNC_LOC_S3D
          time_dependent_array = .true.
@@ -1871,18 +1877,18 @@ contains
       character(len=*), allocatable, dimension(:), intent(inout) :: waq_names !< (input index) List of water quality input names to be searched in.
       integer, intent(inout) :: waq_input_count !< Current count of the water quality inputs. Will be incremented if a new input name is added.
       logical, intent(in) :: is_spatial !< Whether or not this input is a spatial parameter (as opposed to a temporal function). Determines the length of the second dimension in the waq_values array (space-independent has length 1 there).
-      real(kind=real_wp), allocatable, dimension(:,:), optional, intent(inout) :: waq_values !< (input index, location index) Allocatable array of water quality input values, will be increased if a new input name is added. Use either this one or the _pointer argument.
-      real(kind=dp), pointer, dimension(:,:), optional, intent(inout) :: waq_values_ptr !< (input index, location index) Pointer array List of water quality input values, will be increased if a new input name is added. Use either this one or the previous non-_pointer argument.
+      real(kind=real_wp), allocatable, dimension(:, :), optional, intent(inout) :: waq_values !< (input index, location index) Allocatable array of water quality input values, will be increased if a new input name is added. Use either this one or the _pointer argument.
+      real(kind=dp), pointer, dimension(:, :), optional, intent(inout) :: waq_values_ptr !< (input index, location index) Pointer array List of water quality input values, will be increased if a new input name is added. Use either this one or the previous non-_pointer argument.
       integer, intent(out) :: index_waq_input !< Index of the found or added water quality input (in the search set, as well as parameter set).
-      
+
       integer :: waq_location_count
-      
+
       index_waq_input = find_name(waq_names, waq_input_name)
 
       if (index_waq_input == 0) then
          waq_input_count = waq_input_count + 1
          index_waq_input = waq_input_count
-         
+
          if (is_spatial) then
             waq_location_count = Ndkx
          else
@@ -2016,7 +2022,7 @@ contains
       select case (str_tolower(qid_base))
       case ('initialwaterdepth', 'waterdepth')
          s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
-      case ('bedrocksurfaceelevation')
+      case ('bedrock_surface_elevation')
          jasubsupl = 1
       case ('infiltrationcapacity')
          where (infiltcap /= dmiss)
@@ -2045,9 +2051,9 @@ contains
          if (qid == 'interceptionlayerthickness') then
             jaintercept2D = 1
          end if
-      case ('seaiceareafraction')
+      case ('sea_ice_area_fraction')
          ja_ice_area_fraction_read = 1
-      case('seaicethickness')
+      case ('sea_ice_thickness')
          ja_ice_thickness_read = 1
       case ('secchidepth')
          jaSecchisp = 1
@@ -2200,7 +2206,7 @@ contains
       implicit none
 
       real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
-      real(kind=dp), dimension(:,:), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
+      real(kind=dp), dimension(:, :), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
                                                                       !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
                                                                       !< The second dimension is the 3D grid cell dimension (1:ndkx)
       integer, intent(in) :: first_index !< The value for the first "constituent" index of the output array.

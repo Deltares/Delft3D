@@ -59,7 +59,7 @@ contains
       real(kind=dp) :: a, b, c, det, time, DdDt
       real(kind=dp) :: e, f, g
       integer :: i
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
 !  a t^2 + b t + c = 0
 
@@ -71,18 +71,18 @@ contains
       b = cross_prod(x13, v34) - cross_prod(x34, v13)
       c = cross_prod(x13, x34)
 
-      coeffs = (/0d0, 0d0, a, b, c/)
-!   coeffs = (/a,b,c,0d0,0d0/)
+      coeffs = [0.0_dp, 0.0_dp, a, b, c]
+!   coeffs = [a,b,c,0d0,0d0]
 
 !  clearance:
 !     ( a t^2 + b t + c )^2 = dclear^2 * (e t^2 + f t + g)
-      if (dclear > 0d0) then
-         coeffs = (/a * a, 2d0 * a * b, 2d0 * a * c + b * b, 2d0 * b * c, c * c/)
+      if (dclear > 0.0_dp) then
+         coeffs = [a * a, 2.0_dp * a * b, 2.0_dp * a * c + b * b, 2.0_dp * b * c, c * c]
          e = dot_product(v34, v34)
-         f = 2d0 * dot_product(x34, v34)
+         f = 2.0_dp * dot_product(x34, v34)
          g = dot_product(x34, x34)
 
-         coeffs = coeffs - dclear * dclear * (/0d0, 0d0, e, f, g/)
+         coeffs = coeffs - dclear * dclear * [0.0_dp, 0.0_dp, e, f, g]
       end if
 
       t = DMISS
@@ -102,15 +102,15 @@ contains
       end do
 !   end if
 
-      time = 1d99
+      time = 1.0e99_dp
       do i = 1, 4
-         if (beta(i) >= 0d0 .and. beta(i) <= 1d0 .and. t(i) >= 0d0 .and. t(i) /= DMISS) then
-            if (dclear > 0d0) then
-               DdDt = (2d0 * (a * t(i)**2 + b * t(i) + c) * (2d0 * a * t(i) + b) - dclear**2 * (2d0 * e * t(i) + f)) / (2d0 * dclear * (e * t(i)**2 + f * t(i) + g))
+         if (beta(i) >= 0.0_dp .and. beta(i) <= 1.0_dp .and. t(i) >= 0.0_dp .and. t(i) /= DMISS) then
+            if (dclear > 0.0_dp) then
+               DdDt = (2.0_dp * (a * t(i)**2 + b * t(i) + c) * (2.0_dp * a * t(i) + b) - dclear**2 * (2.0_dp * e * t(i) + f)) / (2.0_dp * dclear * (e * t(i)**2 + f * t(i) + g))
             else
-               DdDt = -1d99
+               DdDt = -1.0e99_dp
             end if
-            if (DdDt < 0d0) time = min(time, t(i))
+            if (DdDt < 0.0_dp) time = min(time, t(i))
          end if
       end do
 

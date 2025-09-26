@@ -113,13 +113,13 @@ contains
                do i = 1, Ni
                   xb = xa
                   xa = xmin + dble(i) / dble(Ni) * (xmax - xmin)
-                  xccp = (/xa, xb, xb, xa, xa/)
+                  xccp = [xa, xb, xb, xa, xa]
 
                   ya = ymin
                   do j = 1, Nj
                      yb = ya
                      ya = ymin + dble(j) / dble(Nj) * (ymax - ymin)
-                     yccp = (/ya, ya, yb, yb, ya/)
+                     yccp = [ya, ya, yb, yb, ya]
 
                      ierr = 1
                      do while (ierr /= 0 .and. lrwk <= MAXLRWK)
@@ -127,7 +127,7 @@ contains
                         call PPINPO(XCCP, YCCP, NCCP, pli(ipol)%x, pli(ipol)%y, pli(ipol)%len, rwrk, iwrk, lrwk, addtopol, ierr)
                         if (ierr /= 0) then
                            NPL = NPL_prev ! Restore the counter that was modified by callback addtopol().
-                           lrwk = int(1.2d0 * dble(lrwk)) + 1
+                           lrwk = int(1.2_dp * dble(lrwk)) + 1
                            call realloc(rwrk, lrwk, keepExisting=.false.)
                            call realloc(iwrk, lrwk, keepExisting=.false.)
                         else
@@ -165,9 +165,9 @@ contains
 
       if (ierr /= 0) then ! fallback
 
-         xmin = huge(1d0)
+         xmin = huge(1.0_dp)
          xmax = -xmin
-         ymin = huge(1d0)
+         ymin = huge(1.0_dp)
          ymax = -ymin
          do i = 1, NPL
             if (xpl(i) /= DMISS .and. ypl(i) /= DMISS) then

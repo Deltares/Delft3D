@@ -37,11 +37,11 @@ contains
       real(kind=dp) :: aref, h, z0, rs, ein, ucrouse, z, dz
       integer :: num, k
 
-      ein = 0d0
+      ein = 0.0_dp
       z = aref
       num = 10000
       dz = (h - z) / dble(num)
-      z = z - 0.5d0 * dz
+      z = z - 0.5_dp * dz
       do k = 1, num
          z = z + dz
          ucrouse = log(z / z0) * ((aref / (h - aref)) * ((h - z) / z))**rs

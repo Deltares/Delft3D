@@ -39,9 +39,9 @@ contains
       real(kind=dp), intent(in) :: phiwgs, lamwgs
       real(kind=dp), intent(out) :: phibes, lambes
 
-      real(kind=dp), dimension(2), parameter :: A1 = (/1.00011715371927d+00, -3.29086810736171d-06/)
-      real(kind=dp), dimension(2), parameter :: A2 = (/1.25032982802497d-06, 1.00014669151113d+00/)
-      real(kind=dp), dimension(2), parameter :: b = (/-5.12951110000526d-03, -1.83260002653070d-04/)
+      real(kind=dp), dimension(2), parameter :: A1 = [1.00011715371927e+00_dp, -3.29086810736171e-06_dp]
+      real(kind=dp), dimension(2), parameter :: A2 = [1.25032982802497e-06_dp, 1.00014669151113e+00_dp]
+      real(kind=dp), dimension(2), parameter :: b = [-5.12951110000526e-03_dp, -1.83260002653070e-04_dp]
 
       phibes = A1(1) * phiwgs + A2(1) * lamwgs + b(1)
       lambes = A1(2) * phiwgs + A2(2) * lamwgs + b(2)

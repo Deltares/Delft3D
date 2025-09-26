@@ -80,11 +80,11 @@ contains
 
       type(tpoly), dimension(:), allocatable :: pli_loc
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       jakdtree = 1
 
-      call READYY('CUTCELWU', 0d0)
+      call READYY('CUTCELWU', 0.0_dp)
 
       IN = -1
 
@@ -118,9 +118,9 @@ contains
                !
                ! gravity point of polygon
                !
-               Area = 0d0
-               cx = 0d0
-               cy = 0d0
+               Area = 0.0_dp
+               cx = 0.0_dp
+               cy = 0.0_dp
                num = 0
                do i = 1, NPL
                   ip1 = i + 1; if (ip1 > NPL) ip1 = ip1 - NPL
@@ -132,16 +132,16 @@ contains
                   cy = cy + (ypl(i) + ypl(ip1)) * cof0
                   num = num + 1
                end do
-               area = area * 0.5d0
+               area = area * 0.5_dp
 
-               if (area == 0d0) cycle
+               if (area == 0.0_dp) cycle
 
-               cx = cx / area / 6.0d0
-               cy = cy / area / 6.0d0
+               cx = cx / area / 6.0_dp
+               cy = cy / area / 6.0_dp
                !
                ! find the circumcircle
                !
-               R2search = 0d0
+               R2search = 0.0_dp
                do i = 1, npl - 1
                   R2search = max(R2search, dbdistance(xpl(i), ypl(i), cx, cy, jsferic, jasfer3D, dmiss)**2)
                end do
@@ -263,7 +263,7 @@ contains
 
                   if (jamasks == 0 .or. jamasks == 1) then
                      if (kc(kn(1, L)) == 1 .or. kc(kn(2, L)) == 1) then
-                        call CROSSLINKPOLY(L, 0, 0, (/0/), (/0/), XM, YM, JA)
+                        call CROSSLINKPOLY(L, 0, 0, [0], [0], XM, YM, JA)
                      else
                         ja = 0
                      end if
@@ -299,7 +299,7 @@ contains
                            IC = IC + 1; XXC(IC) = XM; YYC(IC) = YM
                            IC = IC + 1; XXC(IC) = XK(K2); YYC(IC) = YK(K2)
                            if (Lf > 0) then
-                              if (wu(LF) /= 0d0) WU(LF) = DBDISTANCE(XM, YM, XK(K2), YK(K2), jsferic, jasfer3D, dmiss)
+                              if (wu(LF) /= 0.0_dp) WU(LF) = DBDISTANCE(XM, YM, XK(K2), YK(K2), jsferic, jasfer3D, dmiss)
                            end if
                         else if (kc(k1) /= 1 .and. kc(k2) == 1) then
                            if (IC == 0) then
@@ -307,10 +307,10 @@ contains
                            end if
                            IC = IC + 1; XXC(IC) = XM; YYC(IC) = YM
                            if (Lf > 0) then
-                              if (wu(LF) /= 0d0) WU(LF) = DBDISTANCE(XM, YM, XK(K1), YK(K1), jsferic, jasfer3D, dmiss)
+                              if (wu(LF) /= 0.0_dp) WU(LF) = DBDISTANCE(XM, YM, XK(K1), YK(K1), jsferic, jasfer3D, dmiss)
                            end if
                         else if (kc(k1) == 1 .and. kc(k2) == 1 .and. Lf > 0) then
-                           wu(Lf) = 0d0
+                           wu(Lf) = 0.0_dp
                         end if
                      else if (N12 == 4) then
                         kfs(n) = 1 ! temporary cutcell flag, TO CHANGE LINKTOCENTER AND LINKTOCORNERSWEIGHTING FOR CUTCELLS
@@ -370,19 +370,19 @@ contains
                   if (IC < 3) then
 
                      do KL = 1, nd(n)%lnx
-                        L = abs(nd(n)%ln(KL)); wu(L) = 0d0
+                        L = abs(nd(n)%ln(KL)); wu(L) = 0.0_dp
                      end do
-                     ba(n) = 0d0
+                     ba(n) = 0.0_dp
 
                   else
 
                      call dAREAN(XXC, YYC, IC, DAREA, DLENGTH, DLENMX) ! AREA AND LENGTH OF POLYGON
 
-                     if (DAREA / BA(n) < 0.05d0) then
+                     if (DAREA / BA(n) < 0.05_dp) then
                         do KL = 1, nd(n)%lnx
-                           L = abs(nd(n)%ln(KL)); wu(L) = 0d0
+                           L = abs(nd(n)%ln(KL)); wu(L) = 0.0_dp
                         end do
-                        ba(n) = 0d0
+                        ba(n) = 0.0_dp
                      else
                         BA(N) = max(DAREA, BAMIN) ! ; BAI(N) = 1D0/BA(N)    ! BAI ZIT IN ADVECTIEWEGING
                         deallocate (ND(N)%X, ND(N)%Y)
@@ -436,7 +436,7 @@ contains
          end if
       end if
 
-      call READYY('CUTCELWU', -1d0)
+      call READYY('CUTCELWU', -1.0_dp)
 
    end subroutine CUTCELwu
 

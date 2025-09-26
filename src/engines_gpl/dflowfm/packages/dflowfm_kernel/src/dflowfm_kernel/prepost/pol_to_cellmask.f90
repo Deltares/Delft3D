@@ -36,6 +36,8 @@
 !>   2) outside ALL "-1"-polygons (enclosures)
 module m_pol_to_cellmask
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -61,7 +63,7 @@ contains
 
       if (NPL == 0) return ! no polygon
 
-      call READYY('Applying polygon cellmask', 0d0)
+      call READYY('Applying polygon cellmask', 0.0_dp)
       KMOD = max(1, NUMP / 100)
 
       !  generate cell mask
@@ -81,10 +83,10 @@ contains
             cellmask(k) = 1
          end if
          if (mod(k, KMOD) == 0) then
-            call READYY(' ', min(1d0, dble(k) / nump))
+            call READYY(' ', min(1.0_dp, dble(k) / nump))
          end if
       end do
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
       return
    end subroutine pol_to_cellmask

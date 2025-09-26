@@ -136,7 +136,7 @@ contains
          allocate (czn(1:ndx), stat=ierr)
          allocate (u1eul(1:lnkx), stat=ierr)
       end if
-      czn = 0d0; czu = 0d0; u1eul = 0d0
+      czn = 0.0_dp; czu = 0.0_dp; u1eul = 0.0_dp
       !
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          u1eul = u1 - ustokes
@@ -399,13 +399,13 @@ contains
       lsedtot => stmpar%lsedtot
       tcmp => stmpar%morpar%tcmp
       !
-      call realloc(dh, ndx, keepExisting=.false., fill=0d0)
-      call realloc(uxbf, ndx, keepExisting=.false., fill=0d0)
-      call realloc(uybf, ndx, keepExisting=.false., fill=0d0)
-      call realloc(sour, ndx, keepExisting=.false., fill=0d0)
-      call realloc(sink, ndx, keepExisting=.false., fill=0d0)
-      call realloc(diff, lnx, keepExisting=.false., fill=0d0)
-      call realloc(ubedformu, lnx, keepExisting=.false., fill=0d0)
+      call realloc(dh, ndx, keepExisting=.false., fill=0.0_dp)
+      call realloc(uxbf, ndx, keepExisting=.false., fill=0.0_dp)
+      call realloc(uybf, ndx, keepExisting=.false., fill=0.0_dp)
+      call realloc(sour, ndx, keepExisting=.false., fill=0.0_dp)
+      call realloc(sink, ndx, keepExisting=.false., fill=0.0_dp)
+      call realloc(diff, lnx, keepExisting=.false., fill=0.0_dp)
+      call realloc(ubedformu, lnx, keepExisting=.false., fill=0.0_dp)
       !
       ! The time step used for the bedform adaptation depends on the
       ! interpretation of the morphological factor. In a tidal environment
@@ -478,7 +478,7 @@ contains
                if (hs(k) > epshs) then
                   ubedform(k) = hypot(uxbf(k), uybf(k))
                else
-                  ubedform(k) = 0d0
+                  ubedform(k) = 0.0_dp
                end if
             end do
             !
@@ -525,7 +525,7 @@ contains
             if (hs(k) > epshs) then
                ubedform(k) = hypot(uxbf(k), uybf(k))
             else
-               ubedform(k) = 0d0
+               ubedform(k) = 0.0_dp
             end if
          end do
       end select
@@ -541,8 +541,8 @@ contains
             qbedformt(L) = qbedformt(L) * wu(L)
          end do
       else
-         qbedformn = 0d0
-         qbedformt = 0d0
+         qbedformn = 0.0_dp
+         qbedformt = 0.0_dp
       end if
       !
       ! Determine local subtimestep for bedform advection
@@ -551,7 +551,7 @@ contains
       if (lfbedfrmADV) then
          lfbedfrmCFL = .true.
          do k = 1, ndx
-            dum = 0d0
+            dum = 0.0_dp
             do kk = 1, nd(k)%lnx
                L = abs(nd(k)%ln(kk))
                k1 = ln(1, L)
@@ -564,7 +564,7 @@ contains
                end if
             end do
 
-            if (dum > tiny(0d0)) then
+            if (dum > tiny(0.0_dp)) then
                hdtb_max = min(hdtb_max, ba(k) / dum)
             end if
          end do
@@ -728,7 +728,7 @@ contains
          allocate (z0rou(1:ndx), stat=ierr)
          allocate (deltas(1:ndx), stat=ierr)
       end if
-      z0rou = 0d0; deltas = 0d0
+      z0rou = 0.0_dp; deltas = 0.0_dp
       !
       ! Calculate Eulerian velocities at old time level
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -769,15 +769,15 @@ contains
          relaxmr = exp(-dt_user / max(1.0e-20_fp, par5))
          relaxd = exp(-dt_user / max(1.0e-20_fp, par6))
          !
-         maxdepfrac = 0.05d0
+         maxdepfrac = 0.05_dp
          if (v2dwbl > 0 .and. jawave > NO_WAVES .and. kmx > 0) then
-            deltas = 0d0
+            deltas = 0.0_dp
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
                deltas(k1) = deltas(k1) + wcl(1, L) * wblt(L)
                deltas(k2) = deltas(k2) + wcl(2, L) * wblt(L)
             end do
-            maxdepfrac = 0.5d0
+            maxdepfrac = 0.5_dp
          end if
          !
          do k = 1, ndxi
@@ -794,10 +794,10 @@ contains
                   ! Determine representative 2Dh velocity based on velocities in first layer above wave boundary layer
                   ! kmaxx is the first layer with its centre above the wave boundary layer
                   !
-                  zcc = 0d0
+                  zcc = 0.0_dp
                   !
                   do kk = kb, kt
-                     zcc = 0.5d0 * (zws(kk - 1) + zws(kk)) ! cell centre position in vertical layer admin, using absolute height
+                     zcc = 0.5_dp * (zws(kk - 1) + zws(kk)) ! cell centre position in vertical layer admin, using absolute height
                      kmaxx = kk
                      if (zcc >= (bl(k) + maxdepfrac * depth) .or. zcc >= (bl(k) + deltas(k))) then
                         exit
@@ -813,7 +813,7 @@ contains
                   u2dh = umod
                else
                   zz = 0.5 * (zws(kmaxx) + zws(kmaxx - 1)) - bl(k)
-                  u2dh = umod * (log((1d0 + hs(k)) / z0rou(k)) - 1d0) / (log(zz / z0rou(k)) - 1d0)
+                  u2dh = umod * (log((1.0_dp + hs(k)) / z0rou(k)) - 1.0_dp) / (log(zz / z0rou(k)) - 1.0_dp)
                end if
                !
                if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -823,7 +823,7 @@ contains
                   if (arg > 50.0_fp) then
                      uw = 0.0_fp
                   else
-                     uw = 2.0_fp * pi * hh / (2.0_fp * sinh(arg) * max(twav(k), 0.1d0))
+                     uw = 2.0_fp * pi * hh / (2.0_fp * sinh(arg) * max(twav(k), 0.1_dp))
                   end if
                   rr = -0.4_fp * hh / depth + 1.0_fp
                   umax = rr * 2.0_fp * uw

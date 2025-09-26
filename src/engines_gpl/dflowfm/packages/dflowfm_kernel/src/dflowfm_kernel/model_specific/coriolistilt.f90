@@ -55,12 +55,12 @@ contains
       integer :: k, L
       real(kind=dp) :: s1k, yy, samp, ux, uy, dif, alf, tim
 
-      ux = 0.1d0; uy = 0d0; samp = ux * fcorio / ag
-      if (tim == 0d0) then
+      ux = 0.1_dp; uy = 0.0_dp; samp = ux * fcorio / ag
+      if (tim == 0.0_dp) then
 
          do k = 1, numk
             alf = (yk(k) - ykmin) / (ykmax - ykmin)
-            zk(k) = -600d0 + 500d0 * cos(pi * alf)
+            zk(k) = -600.0_dp + 500.0_dp * cos(pi * alf)
          end do
 
          call setbobs()
@@ -76,7 +76,7 @@ contains
          yy = yz(k)
          s1k = -samp * yy
 
-         if (tim == 0d0) then
+         if (tim == 0.0_dp) then
             s1(k) = max(bl(k), s1k); s0(k) = s1(k)
          end if
 

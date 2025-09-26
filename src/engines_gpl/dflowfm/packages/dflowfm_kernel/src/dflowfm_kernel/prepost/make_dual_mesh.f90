@@ -117,8 +117,8 @@ contains
 
                k1 = kn(1, L)
                k2 = kn(2, L)
-               xk_new(numk_new) = 0.5d0 * (xk(k1) + xk(k2))
-               yk_new(numk_new) = 0.5d0 * (yk(k1) + yk(k2))
+               xk_new(numk_new) = 0.5_dp * (xk(k1) + xk(k2))
+               yk_new(numk_new) = 0.5_dp * (yk(k1) + yk(k2))
                zk_new(numk_new) = DMISS
                newnode(L) = numk_new
 
@@ -240,7 +240,7 @@ contains
          integer, intent(inout) :: numcur_k !< current (in) and new (out) array size
 
          if (numk_new > numcur_k) then
-            numcur_k = int(1.2d0 * dble(numk_new) + 1d0)
+            numcur_k = int(1.2_dp * dble(numk_new) + 1.0_dp)
             call realloc(xk_new, numcur_k, keepExisting=.true., fill=DMISS)
             call realloc(yk_new, numcur_k, keepExisting=.true., fill=DMISS)
             call realloc(zk_new, numcur_k, keepExisting=.true., fill=DMISS)
@@ -256,8 +256,8 @@ contains
          integer, intent(inout) :: numcur_L !< current (in) and new (out) array size
 
          if (numL_new > numcur_L) then
-            numcur_L = int(1.2d0 * dble(numL_new) + 1d0)
-            call realloc(kn_new, (/3, numcur_L/), keepExisting=.true., fill=0)
+            numcur_L = int(1.2_dp * dble(numL_new) + 1.0_dp)
+            call realloc(kn_new, [3, numcur_L], keepExisting=.true., fill=0)
          end if
 
          return

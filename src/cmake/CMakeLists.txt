@@ -25,6 +25,7 @@ cmake_path(GET PARENT_DIR PARENT_PATH dir)
 # Set unit and integration test root directory
 set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
+set(nefis_tests_dir ${dir}/test/nefis_test)
 
 include(modules.cmake)
 
@@ -46,6 +47,7 @@ else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
 include(compiler_options/compiler_warning_targets.cmake)
+include(compiler_options/automatic_conversions.cmake)
 
 # Set available build configurations
 set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
@@ -152,9 +154,14 @@ endif(UNIX)
 if (UNIX)
     set(platform_extension sh)
     set(library_suffix so)
+    set(library_prefix lib)
 elseif (WIN32)
     set(platform_extension bat)
     set(library_suffix dll)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "lib")
+    set(library_prefix "")
+    include(InstallRequiredSystemLibraries)
 endif()
 
 # Expat:
@@ -390,4 +397,8 @@ endif()
 if(${configuration_type} STREQUAL ${d3d4-suite_configuration})
     message(STATUS "Generating solution for Delft3D4 ...")
     include(configurations/suites/d3d4_configuration.cmake)
+endif()
+
+if(UNIX)
+    add_subdirectory(${checkout_src_root}/${install_all_module} install_all)
 endif()

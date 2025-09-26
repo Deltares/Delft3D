@@ -81,9 +81,9 @@ contains
       sna = sin(dg2rd * ANGLE)
 
 !  get polygon min/max in rotated (xi,eta) coordinaes
-      ximin = huge(1d0)
+      ximin = huge(1.0_dp)
       ximax = -ximin
-      etamin = huge(1d0)
+      etamin = huge(1.0_dp)
       etamax = -etamin
       do i = 1, NPL
          if (xpl(i) /= DMISS) then

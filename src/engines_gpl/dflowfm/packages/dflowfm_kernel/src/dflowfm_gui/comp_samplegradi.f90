@@ -53,10 +53,10 @@ contains
 
       integer :: ip0, ip1, ip0L, ip0R, ip1L, ip1R
 
-      grad = 0d0
-      Sn = 0d0
-      DareaL = 0d0
-      DareaR = 0d0
+      grad = 0.0_dp
+      Sn = 0.0_dp
+      DareaL = 0.0_dp
+      DareaR = 0.0_dp
 
       if (IDIR == 0) then
 !     i-edge gradient at (i+1/2,j) location

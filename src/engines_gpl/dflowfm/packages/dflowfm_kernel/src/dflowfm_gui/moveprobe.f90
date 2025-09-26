@@ -60,8 +60,8 @@ contains
          call in_flowcell(xp, yp, KK)
       else
 !           determine direction vector
-         csdir = mod(idir - 1, 3) - 1d0
-         sndir = int((idir - 1) / 3) - 1d0
+         csdir = mod(idir - 1, 3) - 1.0_dp
+         sndir = int((idir - 1) / 3) - 1.0_dp
          dum = sqrt(csdir**2 + sndir**2)
          csdir = csdir / dum
          sndir = sndir / dum
@@ -96,7 +96,7 @@ contains
 
 !           find next flownode
          knext = 0
-         dmaxinprod = -huge(0d0)
+         dmaxinprod = -huge(0.0_dp)
          do i = 1, nd(kk)%lnx
             L = nd(kk)%ln(i)
             if (L < 0) then
@@ -104,7 +104,7 @@ contains
             else
                dum = -(csdir * csu(L) + sndir * snu(L))
             end if
-            if (dum > 0d0 .and. dum > dmaxinprod) then
+            if (dum > 0.0_dp .and. dum > dmaxinprod) then
                knext = ln(1, abs(L)) + ln(2, abs(L)) - kk
                dmaxinprod = dum
             end if

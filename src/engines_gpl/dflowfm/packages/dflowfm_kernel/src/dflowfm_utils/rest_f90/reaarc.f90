@@ -102,10 +102,10 @@ contains
 !           automatic istep, jstep
             dsqrtnumcur = sqrt(dble(iend - istart + 1)) * sqrt(dble(jend - jstart + 1))
             distep = dsqrtnumcur / sqrt(dble(MAXARCTILE))
-            distep = dble(int(distep + 0.5d0))
+            distep = dble(int(distep + 0.5_dp))
             djstep = distep
 
-            if (distep > 1d0) then ! only if necessary
+            if (distep > 1.0_dp) then ! only if necessary
                call getreal("istep = ", distep)
                call getreal("jstep = ", djstep)
             end if
@@ -137,8 +137,8 @@ contains
 !        modife arcinfo module data
 !         X0 = X0 + dble(istep-1)*0.5d0*DXa
 !         Y0 = Y0 + dble(jstep-1)*0.5d0*DYa
-         X0 = X0 + (istart - 1) * Dxa + dble(istep - 1) * 0.5d0 * DXa
-         Y0 = Y0 + (jstart - 1) * Dya + dble(jstep - 1) * 0.5d0 * DYa
+         X0 = X0 + (istart - 1) * Dxa + dble(istep - 1) * 0.5_dp * DXa
+         Y0 = Y0 + (jstart - 1) * Dya + dble(jstep - 1) * 0.5_dp * DYa
          DXa = dble(istep) * DXa
          DYa = dble(jstep) * DYa
 

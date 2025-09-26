@@ -517,7 +517,7 @@ contains
       character(132) :: rec132
       character(10) :: ltmp
 
-      real(kind=dp) :: dtol_cl = 1d-4
+      real(kind=dp) :: dtol_cl = 1.0e-4_dp
       real(kind=dp) :: x
       real(kind=dp) :: y
       real(kind=dp) :: dist
@@ -536,7 +536,7 @@ contains
          if (istat == 0) allocate (clddata%rttar(ncll), stat=istat) ! area fraction
          if (istat == 0) allocate (clddata%sumar(numl), stat=istat)
          if (istat == 0) allocate (clddata%linar(ncll), stat=istat) ! line numbers in file
-         clddata%sumar = 0.d0
+         clddata%sumar = 0.0_dp
          clddata%linar = intmiss
       end if
 !
@@ -703,7 +703,7 @@ contains
             clddata%rttar(icll) = rfield(5)
             clddata%linar(icll) = mcurec
             clddata%sumar(L) = clddata%sumar(L) + clddata%rttar(icll)
-            if (clddata%sumar(L) > 1d0) then
+            if (clddata%sumar(L) > 1.0_dp) then
                ! check that sum of areas per link <= 1
                errmsg = 'Areal sum larger than 1 in file: '//trim(filnam)
                errmsg = trim(errmsg)//'. See line numbers: '
@@ -790,7 +790,7 @@ contains
       integer :: L
       integer :: icld
 
-      cfclval = 0.d0
+      cfclval = 0.0_dp
       do icll = 1, ncll
          L = clddata%ittar(icll, 1)
          if (L /= CL_NOT_IN_SUBDOMAIN) then
@@ -801,7 +801,7 @@ contains
 
       ! add background calibration factor == 1 for parts missing areal definition
       do L = 1, numl
-         cfclval(L) = cfclval(L) + (1.d0 - clddata%sumar(L)) !*1.d0
+         cfclval(L) = cfclval(L) + (1.0_dp - clddata%sumar(L)) !*1.d0
       end do
 
    end subroutine update_clldata

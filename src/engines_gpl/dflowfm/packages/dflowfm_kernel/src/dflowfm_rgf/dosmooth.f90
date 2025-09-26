@@ -66,7 +66,7 @@ contains
 
       allocate (XH(MMAX, NMAX), YH(MMAX, NMAX))
 
-      if (NDRAW(8) == 0) call READYY('SMOOTHING GRID', 0d0)
+      if (NDRAW(8) == 0) call READYY('SMOOTHING GRID', 0.0_dp)
 !      CALL ISITU(      X,      Y,     MC,   NC,    IJC,  IJYES)!!!Oud
       ! Deze routine dosmooth wordt alleen uit editgridlineblock aangeroepen
       ! met de xc, ijyes, etc. uit m_grid. Diezelfde m_grid wordt in isitu gebruikt
@@ -101,7 +101,7 @@ contains
                         if ((M2 - M1) /= 0) then
                            call SMEERFUNCTIE(I, J, MB(1), J, FR, 1, 0)
                         else
-                           FR = 1d0
+                           FR = 1.0_dp
                         end if
 
                         if (JS == 1) then
@@ -154,8 +154,8 @@ contains
                         if (JS == 1) then
                            if (R1 > R2) then
                               R3 = (R1 - R2) / 2
-                              if (abs(R1) < 1d-8) then
-                                 A = 0.5d0
+                              if (abs(R1) < 1.0e-8_dp) then
+                                 A = 0.5_dp
                               else
                                  A = FR * CSMO * R3 / R1
                               end if
@@ -163,8 +163,8 @@ contains
                               YY = YH(I, J) + A * (YH(I - 1, J) - Yc(I, J))
                            else
                               R3 = (R2 - R1) / 2
-                              if (abs(R2) < 1d-8) then
-                                 A = 0.5d0
+                              if (abs(R2) < 1.0e-8_dp) then
+                                 A = 0.5_dp
                               else
                                  A = FR * CSMO * R3 / R2
                               end if
@@ -280,7 +280,7 @@ contains
       call PUTARR(XH, Xc, MMAX, NMAX)
       call PUTARR(YH, Yc, MMAX, NMAX)
       deallocate (XH, YH)
-      if (NDRAW(8) == 0) call READYY(' ', -1d0)
+      if (NDRAW(8) == 0) call READYY(' ', -1.0_dp)
 
       return
    end subroutine dosmooth

@@ -32,6 +32,8 @@
 
 module m_iadvecini
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -49,7 +51,7 @@ contains
 
       jado = 0
       if (jado == 1) then
-         if (cflmx > 0.9d0) then
+         if (cflmx > 0.9_dp) then
             if (iadvec == 3) then
                iadvec = 5
             else if (iadvec == 4) then
@@ -58,7 +60,7 @@ contains
                iadvec = 5
             end if
             call mess(LEVEL_INFO, 'CFLMax > 0.9, Advectype switched to semi implicit Piaczek&Williams ')
-         else if (cflmx < 0.71d0) then
+         else if (cflmx < 0.71_dp) then
             if (iadvec == 5) then
                iadvec = 3
                call mess(LEVEL_INFO, 'CFLMax < 0.71 Advectype switched to explicit ')

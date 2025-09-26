@@ -81,7 +81,7 @@ dwaq drtc,dimr/dimr_dwaq_drtc_win64.xml,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,F
 dwaves,dimr/dimr_dwaves_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 dwaves,dimr/dimr_dwaves_win64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
 dpart structured,dwaq_dpart/lnx64/dpart_structured.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
-dpart structured,dwaq_dpart/win64/dpart_structured.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Fails in matrix build for unknown reason.
+dpart structured,dwaq_dpart/win64/dpart_structured.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,Fails in matrix build for unknown reason.
 dpart unstructured,dwaq_dpart/lnx64/dpart_unstructured.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dpart unstructured,dwaq_dpart/win64/dpart_unstructured.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dwaq dpart,dwaq_dpart/lnx64/dwaq_dpart.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,

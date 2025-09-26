@@ -32,6 +32,8 @@
 
 module m_copynetlinkstosam
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -61,8 +63,8 @@ contains
             K1 = KN(1, L)
             K2 = KN(2, L)
             ! calculate the centre of the link
-            xe(l) = .5d0 * (xk(K1) + xk(K2)) ! TODO: LC: make this sferic+3D-safe
-            ye(l) = .5d0 * (yk(K1) + yk(K2))
+            xe(l) = 0.5_dp * (xk(K1) + xk(K2)) ! TODO: LC: make this sferic+3D-safe
+            ye(l) = 0.5_dp * (yk(K1) + yk(K2))
             call DBPINPOL(xe(l), ye(l), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
             if (IN == 1) then
                LC(l) = 1

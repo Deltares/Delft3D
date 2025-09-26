@@ -52,8 +52,8 @@ contains
       kml_jadepth3d = 0 !< Whether or not (1/0) to export bathymetry view in 3D.
       kml_altfact = 5 !< Altitude exaggeration factor: altitude differences are multiplied by this.
       kml_jaoffsetzk = 1 !< Whether or not (1/0) to offset all altitudes with deepest zk-value.
-      kml_useroffset = 0d0 !< Additional user offset for altitude values.
-      kml_dmiss = 99d0 !< Dummy altitude to replace missing zk values.
+      kml_useroffset = 0.0_dp !< Additional user offset for altitude values.
+      kml_dmiss = 99.0_dp !< Dummy altitude to replace missing zk values.
    end subroutine default_kml_parameters
 
 end module m_kml_parameters

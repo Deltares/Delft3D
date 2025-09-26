@@ -46,7 +46,7 @@ contains
       !$OMP PRIVATE(n)
       do n = 1, ndx
          if (kfs(n) == 1) then
-            bbi(n) = 1d0 / bbr(n)
+            bbi(n) = 1.0_dp / bbr(n)
             db(n) = ddr(n) * bbi(n)
          end if
       end do
@@ -54,7 +54,7 @@ contains
 
       itmxjac = 100000
       itsol = 0
-      ds = 1d10
+      ds = 1.0e10_dp
 
       do while (ds > epscg) ! Jacobi
 
@@ -71,7 +71,7 @@ contains
                s1(n) = db(n)
                do nn = 1, nd(n)%lnx
                   L = nd(n)%ln(nn); La = abs(L)
-                  if (ccr(Lv2(La)) < 0d0) then
+                  if (ccr(Lv2(La)) < 0.0_dp) then
                      if (L > 0) then
                         s1(n) = s1(n) - ccr(Lv2(La)) * s1(ln(1, La)) * bbi(n)
                      else
@@ -92,7 +92,7 @@ contains
                   rrn = ddr(n) - bbr(n) * s1(n) ! For explicit points db = s0, so this does won't hurt
                   do nn = 1, nd(n)%lnx
                      L = nd(n)%ln(nn); La = abs(L)
-                     if (ccr(Lv2(La)) < 0d0) then
+                     if (ccr(Lv2(La)) < 0.0_dp) then
                         if (L > 0) then
                            rrn = rrn - ccr(Lv2(La)) * s1(ln(1, La))
                         else

@@ -49,8 +49,8 @@ contains
 
       integer :: k, L, m, n, k1, k2
       real(kind=dp) :: zu, ai, bi, zkk
-      aifu = 1d0
-      bz = 0d0
+      aifu = 1.0_dp
+      bz = 0.0_dp
       do m = 1, mxban ! bz based on netnodes area
          k = nban(1, m)
          n = nban(2, m)
@@ -67,17 +67,17 @@ contains
          k1 = Ln(1, L); k2 = Ln(2, L)
          ai = (bob(2, L) - bob(1, L)) * wui(L)
          if (L <= lnx1D) then
-            bi = 0d0
+            bi = 0.0_dp
          else if (L > Lnxi) then
-            zu = 0.5d0 * (bob(1, L) + bob(2, L))
-            bi = (bz(k2) - zu) * dxi(L) / max(eps4, 1d0 - acL(L))
+            zu = 0.5_dp * (bob(1, L) + bob(2, L))
+            bi = (bz(k2) - zu) * dxi(L) / max(eps4, 1.0_dp - acL(L))
          else
             bi = (bz(k2) - bz(k1)) * dxi(L)
          end if
          if (jaconveyance2D == 1) then
-            aifu(L) = 1d0 + bi * bi
+            aifu(L) = 1.0_dp + bi * bi
          else
-            aifu(L) = 1d0 + ai * ai + bi * bi
+            aifu(L) = 1.0_dp + ai * ai + bi * bi
          end if
          aifu(L) = sqrt(aifu(L))
       end do

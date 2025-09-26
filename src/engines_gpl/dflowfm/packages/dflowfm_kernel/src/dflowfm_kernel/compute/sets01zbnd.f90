@@ -118,9 +118,9 @@ contains
          end if
       end do
 
-      !if (s0_was_updated) then
-      !   call update_vertical_coordinates_boundary() ! Ensure that zws and other 3d variables are aligned with the new s0 values.
-      !end if
+      if (s0_was_updated) then
+         call update_vertical_coordinates_boundary() ! Ensure that zws and other 3d variables are aligned with the new s0 values.
+      end if
 
       call set_1d2d_01()
    end subroutine sets01zbnd

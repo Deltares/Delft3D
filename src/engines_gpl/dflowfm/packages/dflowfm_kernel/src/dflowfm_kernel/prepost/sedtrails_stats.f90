@@ -90,8 +90,8 @@ contains
 
       implicit none
 
-      is_sumvalsnd(1:is_numndvals, :, :) = 0d0
-      is_dtint = 0d0
+      is_sumvalsnd(1:is_numndvals, :, :) = 0.0_dp
+      is_dtint = 0.0_dp
    end subroutine reset_sedtrails_stats
 
    subroutine alloc_sedtrails_stats()
@@ -104,9 +104,9 @@ contains
 
       if (is_numndvals > 0) then
          if (stm_included) then
-            call realloc(is_sumvalsnd, (/is_numndvals, ndx, lsedtot/), keepExisting=.false., fill=0d0)
+            call realloc(is_sumvalsnd, [is_numndvals, ndx, lsedtot], keepExisting=.false., fill=0.0_dp)
          else
-            call realloc(is_sumvalsnd, (/is_numndvals, ndx, 1/), keepExisting=.false., fill=0d0)
+            call realloc(is_sumvalsnd, [is_numndvals, ndx, 1], keepExisting=.false., fill=0.0_dp)
          end if
       end if
 
@@ -134,10 +134,10 @@ contains
       integer :: k, l
       integer :: kk, kbot, ktop
       real(kind=dp) :: ssc !< sediment concentration [kg/m3]
-      real(kind=dp), parameter :: sqrttwo = sqrt(2d0)
+      real(kind=dp), parameter :: sqrttwo = sqrt(2.0_dp)
       real(kind=dp), parameter :: halfsqrttwo = 0.5 * sqrttwo
       real(kind=dp) :: twopi
-      real(kind=dp), parameter :: facua = 0.1d0 !< scaling factor wave asymmetry/skewness [-]
+      real(kind=dp), parameter :: facua = 0.1_dp !< scaling factor wave asymmetry/skewness [-]
       real(kind=dp) :: kw !< wave number [rad/m]
       real(kind=dp) :: hw !< sign wave height [m]
       real(kind=dp) :: urms !< rms orbital velocity [m/s]
@@ -195,7 +195,7 @@ contains
                do k = 1, ndx
                   if (hs(k) <= epshu) cycle
                   call getkbotktop(k, kbot, ktop)
-                  ssc = 0d0
+                  ssc = 0.0_dp
                   do kk = kbot, ktop
                      ssc = ssc + constituents(ISED1 + l - 1, kk) * vol1(kk)
                   end do
@@ -206,11 +206,11 @@ contains
       end if
 
       if (jawave > NO_WAVES) then
-         twopi = 2d0 * pi
+         twopi = 2.0_dp * pi
          do k = 1, ndx
             h = hs(k)
             if (h > epshu) then
-               kw = twopi / max(rlabda(k), 1d-12)
+               kw = twopi / max(rlabda(k), 1.0e-12_dp)
                hw = sqrttwo * hwav(k)
                urms = uorb(k) * halfsqrttwo
                call ruessink_etal_2012(kw, hw, h, sk, as, phi_phase, urs, bm)

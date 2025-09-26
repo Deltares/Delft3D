@@ -50,7 +50,7 @@ contains
 
       DISTAN = 'DIS:'
       DIS = dbdistance(xa, ya, xlc, ylc, jsferic, jasfer3D, dmiss)
-      write (DISTAN(6:), '(F17.5)') min(DIS, 1d9)
+      write (DISTAN(6:), '(F17.5)') min(DIS, 1.0e9_dp)
       call KTEXT(DISTAN, IWS - 24, 3, 15)
 
       return

@@ -100,7 +100,7 @@ contains
 
       call FINDCELLS(4); LC = 0
 
-      call READYY('Refine quads', 0d0)
+      call READYY('Refine quads', 0.0_dp)
 
       allocate (KNP(NUMP)); KNP = 0
       do N = 1, NUMP
@@ -152,8 +152,8 @@ contains
 
             if (M13QUAD == 0) then
 
-               XM = 0.25d0 * (XK(K1) + XK(K2) + XK(K3) + XK(K4))
-               YM = 0.25d0 * (YK(K1) + YK(K2) + YK(K3) + YK(K4))
+               XM = 0.25_dp * (XK(K1) + XK(K2) + XK(K3) + XK(K4))
+               YM = 0.25_dp * (YK(K1) + YK(K2) + YK(K3) + YK(K4))
 
                call DSETNEWPOINT(XM, YM, KM); KC(KM) = 2
 
@@ -249,7 +249,7 @@ contains
          end if
       end do
 
-      call READYY('Refine quads', -1d0)
+      call READYY('Refine quads', -1.0_dp)
 
       call SETNODADM(0)
 

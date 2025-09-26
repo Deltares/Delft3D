@@ -478,7 +478,7 @@ DataProps={'depth grid'               ''       [0 0 1 1 0]  0        0      0   
     'weir crest level'                'm'      [0 0 1 1 0]  0        0     0.6    'd'   'd'       ''     ''      'weirs-cresth'   ''    'MESH_WEIPOS'
     'weir sill level (low M/N)'       'm'      [0 0 1 1 0]  0        0     0.6    'd'   'd'       ''     ''      'weirs-sill1'    ''    'MESH_WEIPOS'
     'weir sill level (high M/N)'      'm'      [0 0 1 1 0]  0        0     0.6    'd'   'd'       ''     ''      'weirs-sill2'    ''    'MESH_WEIPOS'
-    'weir crest level'                'm'      [0 0 1 1 0]  0        0     0.6    'd'   'd'       ''     ''      'weirs2-cresth ' ''    'MESH_WEIRS'
+    'weir crest level'                'm'      [0 0 1 1 0]  0        0     0.6    'd'   'd'       ''     ''      'weirs2-cresth'  ''    'MESH_WEIRS'
     'weir sill level (low M/N)'       'm'      [0 0 1 1 0]  0        0     0.6    'd'   'd'       ''     ''      'weirs2-sill1'   ''    'MESH_WEIRS'
     'weir sill level (high M/N)'      'm'      [0 0 1 1 0]  0        0     0.6    'd'   'd'       ''     ''      'weirs2-sill2'   ''    'MESH_WEIRS'
     'weir crest length'               ''       [0 0 1 1 0]  0        0     0.6    'd'   'd'       ''     ''      'weirs2-crestl'  ''    'MESH_WEIRS'
