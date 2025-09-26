@@ -108,8 +108,7 @@ contains
          return
       end if
       if (nmesh > 1) then
-         call mess(LEVEL_ERROR, 'More than one mesh found in UGRID file: '//trim(filename))
-         return
+         call mess(LEVEL_WARN, 'More than one mesh found in UGRID file: '//trim(filename) // ' - allowed with 1D/2D grids')
       end if
       i_mesh = 1
       i_netw = -1
@@ -205,15 +204,15 @@ contains
             call mess(LEVEL_ERROR, 'Unable to read layer_dimension in UGRID file: '//trim(filename))
             return
          end if
-         
+
          ! Allocate layer arrays
          call reallocP(waqgeom%layer_zs, waqgeom%num_layers, keepExisting=.false.)
          call reallocP(waqgeom%interface_zs, waqgeom%num_layers + 1, keepExisting=.false.)
-         
+
          ! Read layers and interfaces
          if (found_sigma) then
             call realloc(layer_s, waqgeom%num_layers, keepExisting=.false.)
-            layer_s = -999.0_dp            
+            layer_s = -999.0_dp
             ierr = nf90_inq_varid(ncid, trim(waqgeom%meshname)//"_layer_sigma", varid)
             if (ierr == nf90_noerr) then
                ierr = nf90_get_var(ncid, varid, layer_s, count=(/waqgeom%num_layers/))
@@ -285,4 +284,4 @@ contains
       success = .true.
    end function read_waqgeom_file
 end module
-   
+

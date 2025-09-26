@@ -61,7 +61,7 @@ program checkhydbal
    integer :: ntime
    real(kind=8) :: dt
    real(kind=8) :: mimimum_reference_flow = 1.d-3 ! minimum flow (m3/s)
-   real(kind=8) :: mimimum_reference_waterdepth = 1.d-4 ! minimum reference waterdepth (m)
+   real(kind=8) :: mimimum_reference_waterdepth = 1.d-2 ! minimum reference waterdepth (m)
    real(kind=8) :: mimimum_reference_surface = 1.d0 ! minimum reference surface (m2)
    real(kind=8) :: reference_volume
    real(kind=8) :: qmax
