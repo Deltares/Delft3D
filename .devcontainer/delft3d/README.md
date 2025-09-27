@@ -42,6 +42,60 @@ CI environment and the development environment are kept in sync. All of the dock
 and devcontainer configuration should be tracked in this Git repository. So we can easily
 plan, perform, review and share changes.
 
-## Prerequisites (Windows)
+## Prerequisites
+
+You need [Docker](https://docker.com) to build and run the devcontainer, and an
+IDE that supports opening a project in the devcontainer. For supported IDEs you
+can visit [containers.dev](https://containers.dev/supporting#editors) for an
+up-to-date list. At the time of writing they are:
+- Visual Studio Code
+- Visual Studio
+- IntelliJ IDEA
+
+The steps required to open this project inside a devcontainer depends on the IDE.
+To maximize your chances of success we suggest following the instructions on the site
+of your IDE of choice.
+
+### Docker
+If you are on Windows, we assume you will have 
+[WSL](https://learn.microsoft.com/en-us/windows/wsl/install) installed, along with a 
+Linux distribution of your choice. You should be able to at least open a terminal 
+inside the Linux distribution, or to open a directory inside the Linux distribution 
+in your IDE of choice.
+
+#### [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+One option is to install Docker Desktop on Windows. Docker Desktop comes with an
+install wizard that will install Docker not just on Windows, but also in all Linux
+distributions you have installed with WSL. The `docker` command line program is
+available in both Windows and your WSL Linux distributions. In addition you will
+get the Docker Desktop GUI in Windows, that you can use to configure your Docker
+installation and to do most things that you can also do with the `docker` command
+line tool. In addition you will be able to switch between running 'Linux containers'
+and 'Windows containers'. You will need a license to use Docker Desktop. If you are 
+a Deltares employee you can request a Docker Desktop license by contacting Edward Melger.
+
+#### Installing Docker in Linux (WSL or native)
+Docker Desktop requires a license. But the official "Docker Engine", which includes
+the `docker` command line tool and the "Docker daemon", is
+[open source](https://docs.docker.com/engine/#licensing) software and doesn't require 
+a license. Some people may prefer to install Docker directly in their Linux
+distribution of choice (be it on Windows using WSL, or on a native Linux installation).
+Usually docker can be installed using the Linux distribution's standard package manager.
+You should be aware of the following:
+1. You will only be able to run Linux containers (You can't run Windows containers on Linux).
+2. In some Linux distributions, you will need to configure the package manager to install
+   the official Docker engine. Read [this page](https://docs.docker.com/engine/install/#installation-procedures-for-supported-platforms) 
+   for instructions.
+3. [Podman](https://docs.docker.com/engine/install/#installation-procedures-for-supported-platforms)
+   is an alternative to Docker Engine. It provides the `podman` command line tool that acts
+   as a drop-in replacement for the `docker` command line tool and supports most of the same
+   options. The advantage of Podman is that, unlike Docker Engine, it does not require you
+   to run a daemon with elevated privileges on your Linux system, and so it is more secure.
+   On some Linux distribution, installing "docker" using the default package manager will
+   actually install Podman instead.
+   Podman supports most of the Docker Engine's features. But it is sometimes behind. We may
+   end up relying on Docker Engine features that Podman does not support yet. We have run into
+   compatibility issues between Podman and Docker Engine mostly when 'building' container
+   images with [BuildKit](https://docs.docker.com/build/buildkit/) features. 
 
 
