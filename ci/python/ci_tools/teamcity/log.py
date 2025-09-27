@@ -1,17 +1,16 @@
 import contextlib
 import enum
 import logging
-import math
 import re
-import sys
-import traceback
 from datetime import datetime, timezone
-from typing import Callable, Iterator
+from typing import Callable, Iterator, Literal
 
 from typing_extensions import override
 
 
 class MessageName(enum.StrEnum):
+    """Supported TeamCity message names."""
+
     MESSAGE = "message"
     TEST_STARTED = "testStarted"
     TEST_FINISHED = "testFinished"
@@ -20,6 +19,21 @@ class MessageName(enum.StrEnum):
 
 @contextlib.contextmanager
 def enter_test_context(test_id: str, logger: logging.Logger) -> Iterator[None]:
+    """Enter a test context.
+
+    Adds a `test_id` attribute to log records when using `logger` in this
+    context. Upon entering this context manager, log a `testStarted` message.
+    Upon leaving this context manager, log a `testFinished` message. This
+    context manager catches any exception, and logs a `testFailed` message
+    when it does so.
+
+    Parameters
+    ----------
+    test_id : str
+        The name of the test. Should be unique Within the TeamCity build.
+    logger : logging.Logger
+        The logger to attache the `test_id` attribute to.
+    """
     try:
         test_id_filter = _filter_factory(test_id)
         logger.addFilter(test_id_filter)
@@ -41,7 +55,19 @@ def _filter_factory(test_id: str) -> Callable[[logging.LogRecord], bool]:
 
 
 class TeamCityFormatter(logging.Formatter):
-    def __init__(self, fmt: str | None = None, datefmt: str | None = None, style="%"):
+    """A `logging.Formatter` that formats logs as TeamCity service messages.
+
+    Notes
+    -----
+    See: https://www.jetbrains.com/help/teamcity/cloud/service-messages.html
+    """
+
+    def __init__(
+        self,
+        fmt: str | None = None,
+        datefmt: str | None = None,
+        style: Literal["%", "{", "$"] = "%",
+    ) -> None:
         super().__init__(fmt=fmt, datefmt=datefmt, style=style)
 
     @override
@@ -103,12 +129,12 @@ class TeamCityFormatter(logging.Formatter):
 
 
 def escape_service_message(message: str) -> str:
-    r"""Replace regular escape sequences in string with TeamCity escape sequences.
+    r"""Escape TeamCity service message special characters in message.
 
     TeamCity uses the alternative escape character '|' (vertical bar) instead of
-    '\\' (back-slash) to encode things like unicode characters and line feeds. In
+    '\' (back-slash) to encode things like unicode characters and line feeds. In
     addition, square brackets ('[', ']') have special meaning in the teamcity logs.
-    These need to be escaped as well.
+    These need to be escaped.
 
     Parameters
     ----------
@@ -118,11 +144,9 @@ def escape_service_message(message: str) -> str:
     Returns
     -------
     str
-        String with regular escape sequences replaced with TeamCity escape sequences.
 
     Notes
     -----
-    TeamCity documentation:
     https://www.jetbrains.com/help/teamcity/cloud/service-messages.html#Escaped+Values
     """
 

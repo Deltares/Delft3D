@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ci_tools.documentation.documentation_builder import DocumentationBuilder
 from ci_tools.documentation.table_of_contents_writer import TableOfContentsWriter
-from ci_tools.teamcity.logging import TeamCityFormatter
+from ci_tools.teamcity.log import TeamCityFormatter
 
 
 def _validate_dir(path_str: str) -> Path:

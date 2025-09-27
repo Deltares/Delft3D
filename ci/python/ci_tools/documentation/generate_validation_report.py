@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ci_tools.documentation.documentation_builder import DocumentationBuilder
-from ci_tools.teamcity.logging import TeamCityFormatter
+from ci_tools.teamcity.log import TeamCityFormatter
 
 
 def _validate_file(path_str: str) -> Path:

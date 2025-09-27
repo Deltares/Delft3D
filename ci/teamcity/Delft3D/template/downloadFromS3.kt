@@ -18,8 +18,8 @@ object TemplateDownloadFromS3 : Template({
             "",
             description = "When empty; get timestamp from latest Git commit. Override with format: 2025-04-03 14:25:08 +0000",
             display = ParameterDisplay.PROMPT,
-            regex = """^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$""",
-            validationMessage = "format: 2025-04-03T14:25:08+0000"
+            regex = """^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}$""",
+            validationMessage = "format: 2025-04-03 14:25:08 +0000"
         )
     }
 

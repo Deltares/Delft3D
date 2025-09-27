@@ -49,5 +49,3 @@ src/**/FortranCInterface.h
 /ci/DIMRset_delivery/venv/**
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
-
-/ci/data/

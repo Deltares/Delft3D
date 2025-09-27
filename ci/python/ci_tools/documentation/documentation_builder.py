@@ -2,14 +2,14 @@ import logging
 import subprocess
 from pathlib import Path
 
-from ci_tools.teamcity.logging import enter_test_context
+from ci_tools.teamcity.log import enter_test_context
 
 
 class Launcher:
-    """Launches commands in the standard shell using `subprocess.call`."""
+    """Launches commands in the shell using `subprocess.call`."""
 
     def shell(self, command_line: str, working_dir: Path, stdout_file: Path, stderr_file: Path) -> int:
-        """Run a command line.
+        """Run a command line in the shell.
 
         Parameters
         ----------
