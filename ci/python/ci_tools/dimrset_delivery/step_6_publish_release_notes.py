@@ -205,7 +205,7 @@ class ChangeLogPublisher(StepExecutorInterface):
             self.__changelog_file.write_text(updated, encoding="utf-8")
             self.__context.log(f"Changelog updated in {self.__changelog_file}")
 
-    def __sync_changelog_file(self, current_tag: str, changelog: list[str]) -> None:
+    def __sync_changelog_file(self, current_tag: str, changelog: list[str]) -> bool:
         """
         Synchronize the changelog file with the remote location.
 
@@ -245,6 +245,7 @@ class ChangeLogPublisher(StepExecutorInterface):
             Direction.TO,
         )
         self.__context.log(f"Changelog copied successfully to {path_to_release_notes_file}")
+        return True
 
     def execute_step(self) -> bool:
         """Execute the changelog publishing step."""
