@@ -988,10 +988,9 @@ contains
 !
 ! Functions
 !
-      logical :: ctrl_real
-      real(kind=dp) :: GetRRin
-      integer :: GetIIin
-      integer :: IndexInReallist
+      logical ctrl_real
+      integer GetIIin
+      integer IndexInReallist
 !
 ! Init
 !
