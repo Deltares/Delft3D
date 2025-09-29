@@ -185,8 +185,7 @@ contains
 
       logical :: parsing_error
       logical :: l_stop
-      integer, save :: istep
-      integer, save :: time_bloom_next
+      integer, save :: istep = 0
 
       ! jvb  Store fractional step flag in common CFRACS
       common / cfracs / ifracs
@@ -233,8 +232,6 @@ contains
             call stop_with_error()
          end if
          ifirst = 0
-
-         time_bloom_next = itime
       end if
 
       ! Count calls of this module
@@ -282,19 +279,11 @@ contains
          iv_idx = varidx(ivar)
          ip_arr = arrpoi(iarr)
          ipndt = ip_arr + iv_idx - 1
-
-         ! Calculate the "quasi-number" of time steps for BLOOM
-         ! Given BLOOM step is in days
-
-         ndtblo = nint( 86400.0 * a(ipndt) / idt )
+         ndtblo = nint(a(ipndt))
          prondt(bloom_status_ind) = ndtblo
 
          ! This timestep fractional step ?
-         ! Enclose the time in an interval, rather look for equality, as the time step
-         ! may be dynamic.
-         if ( time_bloom_next >= itime .and. &
-              time_bloom_next <  itime + idt ) then
-            time_bloom_next = time_bloom_next + nint(86400.0 * a(ipndt))
+         if (mod(istep - 1, ndtblo) == 0) then
 
             ! Set CONC on the Bloom grid if that is not the first grid
             igrblo = progrd(bloom_status_ind)
