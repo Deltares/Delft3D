@@ -28,6 +28,10 @@ module m_capsim
    use precision_basics, only : dp
    implicit none
    private
+   
+   public simgro_ovz
+   public readunsa
+   public readroot
 
    integer :: nute
    integer :: nuspun
@@ -102,8 +106,6 @@ contains
 !
 ! Functions
 !
-      real(kind=dp) :: ActualEvaporation
-      
       status = 0
       ib = message_unit
       id = debug_unit
@@ -544,7 +546,7 @@ contains
 !
    end
 !>     Checks whether string is blank.
-    function isbl(chline, bg, ed) result(RESHAPE)
+    function isbl(chline, bg, ed) result(res)
 !
       logical * 4 :: res
       integer*4 :: bg, ed, ii
@@ -596,13 +598,6 @@ contains
       real(kind=dp) :: r_frpric
       integer :: r_icselo
       real(kind=dp) :: RRin
-!
-! Functions
-!
-      logical :: isbl
-      logical :: ctrl_int
-      integer :: GetIIin
-      real(kind=dp) :: GetRRin
 !
 ! Init
 !
@@ -765,8 +760,6 @@ contains
 !
 ! Functions
 !
-      logical :: ctrl_real
-      logical :: isbl
 !
 ! Init
 !
@@ -988,9 +981,6 @@ contains
 !
 ! Functions
 !
-      logical ctrl_real
-      integer GetIIin
-      integer IndexInReallist
 !
 ! Init
 !
@@ -1341,7 +1331,6 @@ contains
       real(kind=dp) :: dpgwtp ! Lokale variabele voor diepte grondwaterstand
       real(kind=dp) :: va01, va02
       real(kind=dp) :: fr
-      real(kind=dp) :: unfudp
 !
 !        Setup of subroutine:
 !
