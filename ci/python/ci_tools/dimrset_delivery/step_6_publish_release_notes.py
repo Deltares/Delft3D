@@ -9,6 +9,7 @@ from typing import List, Tuple
 
 from ci_tools.dimrset_delivery.arg_parsing import create_context_from_args, parse_common_arguments
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.lib.ssh_client import Direction
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.step_executer_interface import StepExecutorInterface
 from ci_tools.example_utils.logger import LogLevel
@@ -24,8 +25,8 @@ class ChangeLogPublisher(StepExecutorInterface):
         self.__git = services.git
         self.__ssh = services.ssh
         current_dir = Path(__file__)
-        path_to_output_folder = Path(current_dir.parents[0], self.__settings.relative_path_to_output_folder)
-        self.__changelog_file = Path(path_to_output_folder, self.__settings.path_to_release_changelog_artifact)
+        self.__path_to_output_folder = Path(current_dir.parents[0], self.__settings.relative_path_to_output_folder)
+        self.__changelog_file = Path(self.__path_to_output_folder, self.__settings.path_to_release_changelog_artifact)
 
     def __issue_number_pattern(self) -> re.Pattern:
         """Return the regex pattern for matching issue numbers based on teamcity_project_keys."""
@@ -127,32 +128,39 @@ class ChangeLogPublisher(StepExecutorInterface):
         r"""
         Insert or update a changelog section for the given tag in an HTML-formatted changelog file.
 
-        Args
-        ----
-            tag (str): The version tag for the changelog section (e.g., 'DIMRset_2.29.25').
-            changes (List[str]): List of change entries in HTML `<li>` format.
-            dry_run (bool): If True, only logs the intended changes without modifying the file.
+        Parameters
+        ----------
+        tag : str
+            The version tag for the changelog section (e.g., 'DIMRset_2.29.25').
+        changes : List[str]
+            List of change entries in HTML `<li>` format.
+        dry_run : bool
+            If True, only logs the intended changes without modifying the file.
 
         Behavior
         --------
-            - If the changelog file exists, it is read; otherwise, a new file is initialized
-            with a top-level `<h1>Changelog</h1>` header.
-            - A new entry consists of:
-                * `<h2>{tag} - {date}</h2>` as the section header
-                * A `<ul>` block containing the change list
-            - If an entry for the given tag already exists (matched via regex), it is replaced.
-            - If no entry exists, the new section is inserted directly below the `<h1>Changelog</h1>` header.
+        - If the changelog file exists, it is read; otherwise, a new file is initialized
+        with a top-level `<h1>Changelog</h1>` header.
+        - A new section consists of:
+            * `<h2>{tag} - {date}</h2>` as the section header.
+            * A `<ul>` block containing the list of changes.
+        - If a section for the given tag already exists, it is fully replaced.
+        - If no section exists, the new section is inserted directly below the
+        `<h1>Changelog</h1>` header, ensuring the newest release appears first.
 
-        Regex explanation for matching an existing section:
-            - `<h2>{tag} - ...</h2>`: Matches the section header for the given tag.
-            - `.*?</ul>`: Non-greedy match up to the end of its `<ul>` block.
-            - Flags: `re.S` allows `.` to match across lines, `re.M` enables `^` and `$` to match line boundaries.
+        Regex Details
+        -------------
+        - `<h2>{tag} - ...</h2>`: Matches the section header for the given tag.
+        - `.*?</ul>`: Non-greedy match capturing the full `<ul>` block.
+        - Flags: 
+            * `re.S` → allows `.` to span multiple lines.
+            * `re.M` → enables `^` and `$` to work across lines.
 
         Notes
         -----
-            - In `dry_run` mode, the generated section and final file content are logged
-            but not written.
-            - Ensures the changelog structure remains valid HTML.
+        - In `dry_run` mode, the generated section and final file content are logged
+        but not written to disk.
+        - Guarantees the changelog remains valid, structured HTML.
         """
         new_entry = [
             f"<h2>{tag} - {datetime.now(timezone.utc).date().isoformat()}</h2>",
@@ -166,21 +174,24 @@ class ChangeLogPublisher(StepExecutorInterface):
         if self.__changelog_file.exists():
             content = self.__changelog_file.read_text(encoding="utf-8")
         else:
-            # initialize with an HTML root and a top-level heading
-            content = "<h1>DIMRset weekly changelog</h1>\n"
+            content = "<h1>DIMRset weekly changelog</h1>\n\n"
 
-        # regex looks for <h2>DIMRset_xxx - date</h2> blocks
-        changelog_section_pattern = re.compile(rf"^[ \t]*<h2>{re.escape(tag)} - .*?</ul>", re.S | re.M)
+        # Match a full release section: <h2>tag - date</h2> ... </ul>
+        changelog_section_pattern = re.compile(
+            rf"<h2>{re.escape(tag)} - .*?</h2>\s*<ul>.*?</ul>",
+            re.S | re.M,
+        )
 
         if changelog_section_pattern.search(content):
             updated = changelog_section_pattern.sub(new_text, content, count=1)
             action = f"Replaced existing section for {tag}"
         else:
-            # insert after top-level <h1>Changelog</h1>
-            if "<h1>Changelog</h1>" in content:
-                updated = content.replace("<h1>Changelog</h1>", "<h1>Changelog</h1>\n" + new_text, 1)
+            # Insert new release *just after the main header*
+            header_pattern = re.compile(r"(<h1>.*?<\/h1>\s*)", re.S | re.M)
+            if header_pattern.search(content):
+                updated = header_pattern.sub(r"\1" + new_text + "\n", content, count=1)
             else:
-                updated = new_text + "\n" + content.lstrip("\n")
+                updated = "<h1>DIMRset weekly changelog</h1>\n\n" + new_text + "\n" + content
             action = f"Prepended new section for {tag}"
 
         if dry_run:
@@ -193,6 +204,45 @@ class ChangeLogPublisher(StepExecutorInterface):
             self.__changelog_file.parent.mkdir(parents=True, exist_ok=True)
             self.__changelog_file.write_text(updated, encoding="utf-8")
             self.__context.log(f"Changelog updated in {self.__changelog_file}")
+
+    def __sync_changelog_file(self, current_tag: str, changelog: list[str]) -> None:
+        """
+        Synchronize the changelog file with the remote location.
+
+        Behavior
+        --------
+        - Attempts to download the existing changelog from the remote path.
+        - If no changelog exists remotely, falls back to the local file.
+        - Prepends or replaces the changelog section for the given tag.
+        - Uploads the updated changelog back to the remote location.
+        """
+        path_to_release_notes_file = (
+            f"/p/d-hydro/dimrset/{self.__context.settings.path_to_release_changelog_artifact}"
+        )
+
+        self.__context.log(f"Downloading changelog from {path_to_release_notes_file}")
+        try:
+            self.__ssh.secure_copy(
+                self.__path_to_output_folder,
+                path_to_release_notes_file,
+                Direction.FROM,
+            )
+        except AssertionError:
+            self.__context.log(
+                f"No existing changelog found at {path_to_release_notes_file}, using local file",
+                severity=LogLevel.WARNING,
+            )
+
+        self.__context.log("Prepending/replacing changelog section")
+        self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
+
+        self.__context.log(f"Copying {self.__changelog_file.name} to {path_to_release_notes_file}")
+        self.__ssh.secure_copy(
+            self.__changelog_file,
+            path_to_release_notes_file,
+            Direction.TO,
+        )
+        self.__context.log(f"Changelog copied successfully to {path_to_release_notes_file}")
 
     def execute_step(self) -> bool:
         """Execute the changelog publishing step."""
@@ -218,10 +268,13 @@ class ChangeLogPublisher(StepExecutorInterface):
 
         changelog = self.__build_changelog(commits, self.__issue_number_pattern())
 
-        self.__prepend_or_replace_in_changelog(current_tag, changelog, dry_run=self.__context.dry_run)
-
         self.__context.log("DIMRset changelog generation completed successfully!")
 
+        if self.__context.dry_run:
+            self.__context.log("Dry run mode, skipping file sync")
+            return True
+
+        self.__sync_changelog_file(current_tag, changelog)
         return True
 
 
