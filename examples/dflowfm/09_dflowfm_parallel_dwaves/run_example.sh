@@ -31,5 +31,6 @@ else
         run_dflowfm.sh --partition:ndomains=${nPart}:icgsolver=6 ${mduFile}
     popd
     echo "Starting computation..."
+    export OMP_NUM_THREADS=1
     run_dimr.sh -c ${nProc} -m ${dimrFile}
 fi
