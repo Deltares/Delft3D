@@ -255,8 +255,6 @@ contains
       precice_component_name = "fm"
       precice_config_name = "../precice_config.xml"
 
-      call precicef_create(precice_component_name, precice_config_name, 0, 1, 2, 21)
-
       c_iresult = 0 ! TODO: is this return value BMI-compliant?
       jampi = 0
       numranks = 1
@@ -300,6 +298,12 @@ contains
       write (sdmn, '(I4.4)') my_rank
 
 #endif
+      !! Initialize precice
+      !! precice is initialised after mpi ranks are known, however precice's official fortran bindings
+      !! do not support passing mpi communicator, so we need to use MPI_COMM_WORLD in the dimr_config.xml
+      !! An unofficial extension to precice fortran binding exists and can be evaluated in future
+      !! https://github.com/ivan-pi/fortran-module/blob/participant/src/precice_participant_api.F90
+      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, 2, 21)
 
       ! do this until default has changed
       jaGUI = 0
