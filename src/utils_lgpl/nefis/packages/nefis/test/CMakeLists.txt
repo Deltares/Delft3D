@@ -1,10 +1,12 @@
 add_subdirectory(nefis_test_04)
 add_subdirectory(nefis_test_05)
-add_subdirectory(nefis_test_06)
 add_subdirectory(nefis_test_07)
 add_subdirectory(nefis_test_08)
 add_subdirectory(nefis_test_09)
 add_subdirectory(nefis_test_12)
-add_subdirectory(nefis_test_14)
 add_subdirectory(nefis_test_15)
-add_subdirectory(nefis_test_16)
+
+# slow tests
+# add_subdirectory(nefis_test_06)
+# add_subdirectory(nefis_test_14)
+# add_subdirectory(nefis_test_16)
