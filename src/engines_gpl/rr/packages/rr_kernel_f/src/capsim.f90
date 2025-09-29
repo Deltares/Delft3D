@@ -25,15 +25,14 @@
 !
 !-------------------------------------------------------------------------------
 module m_capsim
-   use precision, only : dp
-
+   use precision_basics, only : dp
    implicit none
    private
 
-      integer nute
-      integer nuspun
-      integer nurz
-      integer nufrsw
+   integer :: nute
+   integer :: nuspun
+   integer :: nurz
+   integer :: nufrsw
 
 !  Deze source-code bevat de vier onderdelen uit de notitie
 !  over de koppeling CAPSIM-SOBEK-RR
@@ -49,63 +48,62 @@ contains
 
       use globals
       !In/Out
-      integer debug_unit
-      integer message_unit
-      integer status
-      character(len=*) debug_file, message_file
+      integer :: debug_unit
+      integer :: message_unit
+      integer :: status
+      character(len=*) :: debug_file, message_file
 !In
-      integer nxte ! Maxumum number of land use forms
-      integer nxspun ! Maximum number of soil physical units
-      integer nxrz ! Maximum number of root zones in table
-      integer nxdpun ! Maximum number of groundwater depths in table
-      integer nxfrsw ! Maximum number of data in inundation table
-      integer nt ! Gewasnummer
-      integer ns ! Soil physical unit number
-      real(kind=dp) dpin ! Diepte grondwater initieel (m-gl)
-      real(kind=dp) dproot ! Root zone depth (m)
-      real(kind=dp) dt ! Time step (d)
-      real(kind=dp) pn ! Net precipitation (m/d)
-      real(kind=dp) vmrzin ! Initial moisture content root zone (m)
-      real(kind=dp) fmevpt ! Potential evapotranspiration (m/d)
-      integer nudpun(nxspun, nxrz) ! number of groundwater depth data in table
-      real(kind=dp) srrz(nxspun, nxrz, nxdpun) ! Storage root zone table (m)
-      real(kind=dp) fmca(nxspun, nxrz, nxdpun) ! Capillary rise table (m/d)
-      real(kind=dp) scsa(nxspun, nxrz, nxdpun) ! Storage coefficient table (m)
-      real(kind=dp) dprzun(nxrz) ! Root zone depths in table (cm)
-      real(kind=dp) dpgwun(nxspun, nxrz, nxdpun) ! Groundwater depths in table (m-gl)
-      real(kind=dp) dpfrsw(nxfrsw) ! Depth of groundwater in inundation table (m-gl)
-      real(kind=dp) frsw(nxfrsw) ! Inundation table (-)
-      real(kind=dp) frev(nxspun, nxte, 5) ! Evapotranspiration curves (-)
+      integer :: nxte ! Maxumum number of land use forms
+      integer :: nxspun ! Maximum number of soil physical units
+      integer :: nxrz ! Maximum number of root zones in table
+      integer :: nxdpun ! Maximum number of groundwater depths in table
+      integer :: nxfrsw ! Maximum number of data in inundation table
+      integer :: nt ! Gewasnummer
+      integer :: ns ! Soil physical unit number
+      real(kind=dp) :: dpin ! Diepte grondwater initieel (m-gl)
+      real(kind=dp) :: dproot ! Root zone depth (m)
+      real(kind=dp) :: dt ! Time step (d)
+      real(kind=dp) :: pn ! Net precipitation (m/d)
+      real(kind=dp) :: vmrzin ! Initial moisture content root zone (m)
+      real(kind=dp) :: fmevpt ! Potential evapotranspiration (m/d)
+      integer :: nudpun(nxspun, nxrz) ! number of groundwater depth data in table
+      real(kind=dp) :: srrz(nxspun, nxrz, nxdpun) ! Storage root zone table (m)
+      real(kind=dp) :: fmca(nxspun, nxrz, nxdpun) ! Capillary rise table (m/d)
+      real(kind=dp) :: scsa(nxspun, nxrz, nxdpun) ! Storage coefficient table (m)
+      real(kind=dp) :: dprzun(nxrz) ! Root zone depths in table (cm)
+      real(kind=dp) :: dpgwun(nxspun, nxrz, nxdpun) ! Groundwater depths in table (m-gl)
+      real(kind=dp) :: dpfrsw(nxfrsw) ! Depth of groundwater in inundation table (m-gl)
+      real(kind=dp) :: frsw(nxfrsw) ! Inundation table (-)
+      real(kind=dp) :: frev(nxspun, nxte, 5) ! Evapotranspiration curves (-)
 ! Out
-      real(kind=dp) fmevac ! Actual evapotranspiration (m/d)
-      real(kind=dp) fmpe ! Percolation (m/d)
-      real(kind=dp) vmrzac ! Actual storage in root zone (m)
+      real(kind=dp) :: fmevac ! Actual evapotranspiration (m/d)
+      real(kind=dp) :: fmpe ! Percolation (m/d)
+      real(kind=dp) :: vmrzac ! Actual storage in root zone (m)
 !
 ! Local variables
 !
-      integer ib, id
-      real(kind=dp) de
-      logical issw
+      integer :: ib, id
+      real(kind=dp) :: de
+      logical :: issw
       real(kind=dp) :: Frrdca = 0.0_dp
-      real(kind=dp) dtgw
-      real(kind=dp) icselo
-      real(kind=dp) vmrzpt
-      real(kind=dp) vmrzeq0
-      real(kind=dp) vmrzeq1
-      real(kind=dp) vmrzeq2
-      real(kind=dp) vmrzeq10
-      real(kind=dp) vmrzeq
-      real(kind=dp) frpe, frtp
-      real(kind=dp) frswtp
-      real(kind=dp) dptp
-      real(kind=dp) fmevptsw ! Potential evapotranspiration surface water (m/d)
-      integer ios
+      real(kind=dp) :: dtgw
+      real(kind=dp) :: icselo
+      real(kind=dp) :: vmrzpt
+      real(kind=dp) :: vmrzeq0
+      real(kind=dp) :: vmrzeq1
+      real(kind=dp) :: vmrzeq2
+      real(kind=dp) :: vmrzeq10
+      real(kind=dp) :: vmrzeq
+      real(kind=dp) :: frpe, frtp
+      real(kind=dp) :: frswtp
+      real(kind=dp) :: dptp
+      real(kind=dp) :: fmevptsw ! Potential evapotranspiration surface water (m/d)
+      integer :: ios
 !
 ! Functions
 !
-      real(kind=dp) ActualEvaporation
-      real(kind=dp) Unsa
-
+      real(kind=dp) :: ActualEvaporation
+      
       status = 0
       ib = message_unit
       id = debug_unit
@@ -363,7 +361,7 @@ contains
 !
 3900  return
 !
-555   format( /'Argument ', A, ' out of range; is ', I4, ' but should be 1 <= n <= ', I3)
+555   format(/'Argument ', A, ' out of range; is ', I4, ' but should be 1 <= n <= ', I3)
 !
    end
 
@@ -372,31 +370,33 @@ contains
 !>     factor voor de hoeveelheid vocht in de onverzadigde zone berekend. De potentiele
 !>     verdamping is dan de actuele.
 !>     Bij andere landgebruiken kan nog worden gecorrigeerd voor inundatie.
-   real(kind=dp) function ActualEvaporation(fmevptte, frev1, frev2, frev3, &
-                                               frev4, frev5, epf, &
-                                               IsSurfaceWater, &
-                                               fmevptsw, frswtp, icselo)
+   function ActualEvaporation(fmevptte, frev1, frev2, frev3, &
+                                            frev4, frev5, epf, &
+                                            IsSurfaceWater, &
+                                            fmevptsw, frswtp, icselo) result(res)
+   
 !
 ! Arguments
 !
-      real(kind=dp) fmevptte ! Potential evaporation
-      real(kind=dp) frev1 ! Reductionfactor at 100 % moisture in unsatured zone
-      real(kind=dp) frev2 ! Reductionfactor
-      real(kind=dp) frev3 ! Reductionfactor at 5 mm evaporation a day
-      real(kind=dp) frev4 ! Reductionfactor at 1 mm evaporation a day
-      real(kind=dp) frev5 ! Reductionfactor at zero contents of iunsat zone
-      real(kind=dp) epf ! Actuele fractie van inhoude wortelzone
+      real(kind=dp) :: res
+      real(kind=dp) :: fmevptte ! Potential evaporation
+      real(kind=dp) :: frev1 ! Reductionfactor at 100 % moisture in unsatured zone
+      real(kind=dp) :: frev2 ! Reductionfactor
+      real(kind=dp) :: frev3 ! Reductionfactor at 5 mm evaporation a day
+      real(kind=dp) :: frev4 ! Reductionfactor at 1 mm evaporation a day
+      real(kind=dp) :: frev5 ! Reductionfactor at zero contents of iunsat zone
+      real(kind=dp) :: epf ! Actuele fractie van inhoude wortelzone
 
-      logical IsSurfaceWater ! Is dit gewas oppervlaktewater
-      real(kind=dp) fmevptsw ! Evaporation surface water
-      real(kind=dp) frswtp ! Fraction surfacewater (inundation)
-      real(kind=dp) icselo ! Sensitivity for water logging (4 = reed)
+      logical :: IsSurfaceWater ! Is dit gewas oppervlaktewater
+      real(kind=dp) :: fmevptsw ! Evaporation surface water
+      real(kind=dp) :: frswtp ! Fraction surfacewater (inundation)
+      real(kind=dp) :: icselo ! Sensitivity for water logging (4 = reed)
 !
 ! Local variables
 !
-      real(kind=dp) e1, e2, e3, e4 ! Points of graph for calculating redunction
-      real(kind=dp) beta ! Reductionfactor
-      real(kind=dp) de
+      real(kind=dp) :: e1, e2, e3, e4 ! Points of graph for calculating redunction
+      real(kind=dp) :: beta ! Reductionfactor
+      real(kind=dp) :: de
 !
 ! Begin
 ! Als het oppervlaktewater is dan is de actuele verdamping gelijk aan de
@@ -468,11 +468,12 @@ contains
 !
 ! End
 !
-      ActualEvaporation = de
+      res = de
    end
 
-   real(kind=dp) function GetRRin()
-      getRRIn = -9.99e9_dp
+   function GetRRin() result(res)
+      real(kind=dp)  res
+      res = -9.99e9_dp
    end
 
    integer function GetIIin()
@@ -485,15 +486,15 @@ contains
       use globals
 ! Arguments
 !
-      character(len=*) filenam
-      integer nm
-      logical ex
-      integer ib
-      integer id
+      character(len=*) :: filenam
+      integer :: nm
+      logical :: ex
+      integer :: ib
+      integer :: id
 !
 ! Local variables
 !
-      integer ios
+      integer :: ios
 !
 ! Begin
 !
@@ -511,7 +512,7 @@ contains
          write (ib, 23) filenam(1:len_trim(filenam))
       end if
 !
-23    format( /, '** E23  readvar  **', 1X, ' Cannot open table ', A, '.inp for read')
+23    format(/, '** E23  readvar  **', 1X, ' Cannot open table ', A, '.inp for read')
 !
    end
 !
@@ -522,13 +523,13 @@ contains
 !
 ! Arguments
 !
-      character(len=*) filenam
-      integer nm
-      integer status
+      character(len=*) :: filenam
+      integer :: nm
+      integer :: status
 !
 ! Local variables
 !
-      integer ios
+      integer :: ios
 !
 ! Begin
 !
@@ -543,15 +544,16 @@ contains
 !
    end
 !>     Checks whether string is blank.
-   logical * 4 function isbl(chline, bg, ed)
+    function isbl(chline, bg, ed) result(RESHAPE)
 !
-      integer * 4 bg, ed, ii
-      character(len=*) chline
+      logical * 4 :: res
+      integer*4 :: bg, ed, ii
+      character(len=*) :: chline
 !
-      isbl = .true.
+      res = .true.
       do ii = bg, ed
          if (chline(ii:ii) /= ' ') then
-            isbl = .false.
+            res = .false.
          end if
       end do
 !
@@ -563,44 +565,44 @@ contains
 !
 ! Arguments
 !
-      integer ib ! Message unit
-      integer id ! debug unit
-      character(len=*) dirnam
-      integer nxte
-      integer nxspun
-      integer icselo(nxte)
-      real(kind=dp) frev(nxspun, nxte, 5)
-      integer Status
+      integer :: ib ! Message unit
+      integer :: id ! debug unit
+      character(len=*) :: dirnam
+      integer :: nxte
+      integer :: nxspun
+      integer :: icselo(nxte)
+      real(kind=dp) :: frev(nxspun, nxte, 5)
+      integer :: Status
 !
 ! Local variables
 !
-      logical ex
-      logical er
-      character(len=132) nafi
-      character(len=132) chline
-      integer nuwa
-      integer nuer
-      logical kyer
-      integer nmli
-      integer nmlicm
-      integer nm
-      integer nt
-      integer ns
-      integer iiin
-      integer r_nmteex
-      character(len=15) r_tena
-      integer r_ipfa
-      integer r_ipagte
-      real(kind=dp) r_frpric
-      integer r_icselo
-      real(kind=dp) RRin
+      logical :: ex
+      logical :: er
+      character(len=132) :: nafi
+      character(len=132) :: chline
+      integer :: nuwa
+      integer :: nuer
+      logical :: kyer
+      integer :: nmli
+      integer :: nmlicm
+      integer :: nm
+      integer :: nt
+      integer :: ns
+      integer :: iiin
+      integer :: r_nmteex
+      character(len=15) :: r_tena
+      integer :: r_ipfa
+      integer :: r_ipagte
+      real(kind=dp) :: r_frpric
+      integer :: r_icselo
+      real(kind=dp) :: RRin
 !
 ! Functions
 !
-      logical isbl
-      logical ctrl_int
-      integer GetIIin
-      real(kind=dp) GetRRin
+      logical :: isbl
+      logical :: ctrl_int
+      integer :: GetIIin
+      real(kind=dp) :: GetRRin
 !
 ! Init
 !
@@ -728,43 +730,43 @@ contains
 !
 ! Arguments
 !
-      integer nxspun
-      integer nxte
-      real(kind=dp) dprz(nxspun, nxte)
-      real(kind=dp) frev(nxspun, nxte, 5)
-      integer file_unit, nm
-      integer message_unit, ib
-      integer debug_unit, id
-      character(len=*) filenam, message_file, debug_file
-      integer Status
+      integer :: nxspun
+      integer :: nxte
+      real(kind=dp) :: dprz(nxspun, nxte)
+      real(kind=dp) :: frev(nxspun, nxte, 5)
+      integer :: file_unit, nm
+      integer :: message_unit, ib
+      integer :: debug_unit, id
+      character(len=*) :: filenam, message_file, debug_file
+      integer :: Status
 !
 ! Local variables
 !
-      logical er
-      logical ex
+      logical :: er
+      logical :: ex
       integer :: nmli = 0
       integer :: nmlicm = 0
       integer :: nuwa = 0
       integer :: nuer = 0
-      character(len=132) chline
-      logical kyer
-      integer ns
-      integer nt
-      real(kind=dp) r_dprz
-      real(kind=dp) r_frev01
-      real(kind=dp) r_frev02
-      real(kind=dp) r_frev03
-      real(kind=dp) r_frev04
-      real(kind=dp) r_frev05
-      integer r_spun
-      integer r_nmteex
-      integer ii
-      integer ios
+      character(len=132) :: chline
+      logical :: kyer
+      integer :: ns
+      integer :: nt
+      real(kind=dp) :: r_dprz
+      real(kind=dp) :: r_frev01
+      real(kind=dp) :: r_frev02
+      real(kind=dp) :: r_frev03
+      real(kind=dp) :: r_frev04
+      real(kind=dp) :: r_frev05
+      integer :: r_spun
+      integer :: r_nmteex
+      integer :: ii
+      integer :: ios
 !
 ! Functions
 !
-      logical ctrl_real
-      logical isbl
+      logical :: ctrl_real
+      logical :: isbl
 !
 ! Init
 !
@@ -831,7 +833,7 @@ contains
          ns = r_spun
          if (ns < 1 .or. ns > nxspun) then
             write (ib, 28) 'soil physical units', 'root_sim', nxspun
-28          format( /'** E28  readvar  **', 1X, ' Maximum number of ', A, ' exceeded in table ', A, '.inp', /, 20X, &
+28          format(/'** E28  readvar  **', 1X, ' Maximum number of ', A, ' exceeded in table ', A, '.inp', /, 20X, &
                     ' According to input parameter maximum is: ', I5)
             nuer = nuer + 1
          else
@@ -906,7 +908,7 @@ contains
             do ii = 1, 4
                if ((frev(ns, nt, ii) - frev(ns, nt, ii + 1)) < -1.0e-4_dp) then
                   write (ib, 58) ns, nt !spunex(ns),nmteex(nt)
-58                format( /, '** E58  readvar  **', 1X, &
+58                format(/, '** E58  readvar  **', 1X, &
                           ' Inconsistency in root_sim.inp ', /, 20X, &
                           ' in evapotranspiration or irrigation fractions', /, 20X, &
                           ' for soil physical unit ', I5, ' and land use ', I5)
@@ -934,61 +936,62 @@ contains
                        nxspun, nxte, nxrz, nxdpun, srrz, fmca, scsa, &
                        dpgwun, dprzun, nudpun)
       use globals
+      
 ! Arguments
 !
-      integer message_unit, ib
-      integer debug_unit, id
-      integer nxrz
-      integer nxspun
-      integer nxte
-      integer Status
-      integer nxdpun
-      character(len=*) filenam, message_file, debug_file
-      integer file_unit, nm
-      real(kind=dp) srrz(nxspun, nxrz, nxdpun)
-      real(kind=dp) fmca(nxspun, nxrz, nxdpun)
-      real(kind=dp) dpgwun(nxspun, nxrz, nxdpun)
-      real(kind=dp) dprzun(nxrz)
-      real(kind=dp) scsa(nxspun, nxrz, nxdpun)
-      integer nudpun(nxspun, nxrz)
+      integer :: message_unit, ib
+      integer :: debug_unit, id
+      integer :: nxrz
+      integer :: nxspun
+      integer :: nxte
+      integer :: Status
+      integer :: nxdpun
+      character(len=*) :: filenam, message_file, debug_file
+      integer :: file_unit, nm
+      real(kind=dp) :: srrz(nxspun, nxrz, nxdpun)
+      real(kind=dp) :: fmca(nxspun, nxrz, nxdpun)
+      real(kind=dp) :: dpgwun(nxspun, nxrz, nxdpun)
+      real(kind=dp) :: dprzun(nxrz)
+      real(kind=dp) :: scsa(nxspun, nxrz, nxdpun)
+      integer :: nudpun(nxspun, nxrz)
 !
 ! Local variables
 !
-      logical ex, er
-      integer ii
-      real(kind=dp) rrin
-      integer nuwa
-      integer nuer
-      logical kyer
-      integer nmli
-      integer nmlicm
-      character(len=132) chline
-      integer rz
-      integer iiin
-      integer ns
-      integer r_spun
-      integer r_dprzun
-      real(kind=dp) r_dpgwun
-      real(kind=dp) r_srrz
-      real(kind=dp) r_srrzwc
-      real(kind=dp) r_fmca
-      real(kind=dp) r_scsa
-      real(kind=dp) r_scsapl
-      integer artp(nxrz + nxdpun) ! Dynamic array
-      integer ix(nxrz + nxdpun) ! Dynamic array
-      real(kind=dp) fmcatp(nxrz + nxdpun)
-      real(kind=dp) scsatp(nxrz + nxdpun)
-      real(kind=dp) srrztp(nxrz + nxdpun)
-      real(kind=dp) dpgwuntp(nxrz + nxdpun)
-      integer i378
-      integer ios
+      logical :: ex, er
+      integer :: ii
+      real(kind=dp) :: rrin
+      integer :: nuwa
+      integer :: nuer
+      logical :: kyer
+      integer :: nmli
+      integer :: nmlicm
+      character(len=132) :: chline
+      integer :: rz
+      integer :: iiin
+      integer :: ns
+      integer :: r_spun
+      integer :: r_dprzun
+      real(kind=dp) :: r_dpgwun
+      real(kind=dp) :: r_srrz
+      real(kind=dp) :: r_srrzwc
+      real(kind=dp) :: r_fmca
+      real(kind=dp) :: r_scsa
+      real(kind=dp) :: r_scsapl
+      integer :: artp(nxrz + nxdpun) ! Dynamic array
+      integer :: ix(nxrz + nxdpun) ! Dynamic array
+      real(kind=dp) :: fmcatp(nxrz + nxdpun)
+      real(kind=dp) :: scsatp(nxrz + nxdpun)
+      real(kind=dp) :: srrztp(nxrz + nxdpun)
+      real(kind=dp) :: dpgwuntp(nxrz + nxdpun)
+      integer :: i378
+      integer :: ios
 !
 ! Functions
 !
-      logical ctrl_real
-      real(kind=dp) GetRRin
-      integer GetIIin
-      integer IndexInReallist
+      logical :: ctrl_real
+      real(kind=dp) :: GetRRin
+      integer :: GetIIin
+      integer :: IndexInReallist
 !
 ! Init
 !
@@ -1075,7 +1078,7 @@ contains
          if (r_spun < 1 .or. r_spun > nxspun) then
             nuer = nuer + 1
             write (ib, 28) 'soil physical units', 'unsa_sim', nxspun
-28          format( /, '** E28  readvar  **', 1X, ' Maximum number of ', A, ' exceeded in table ', A, '.inp', /, 20X, &
+28          format(/, '** E28  readvar  **', 1X, ' Maximum number of ', A, ' exceeded in table ', A, '.inp', /, 20X, &
                     ' According to input parameter maximum is: ', I5)
          end if
 !
@@ -1204,16 +1207,16 @@ contains
          do rz = 1, nurz
             if (nudpun(ns, rz) == 0) then
                write (ib, 37) 'unsa_sim', ns, nint(dprzun(rz))
-37             format( /, '** E37  readvar  **', 1X, 1X, A, '.inp; missing input', /, 20X, &
+37             format(/, '** E37  readvar  **', 1X, 1X, A, '.inp; missing input', /, 20X, &
                        ' soil physical unit ', I5, ' and root zone depth ', I4)
                nuer = nuer + 1
 !
             else
                if (dpgwun(ns, rz, 1) > 1.0e-4_dp) then
                   write (ib, 26) 'unsa_sim', 'dpgwun', 'ns', ns, 'rz', nint(dprzun(rz))
-26                format( /, '** E26  readvar  **', 1X, &
+26                format(/, '** E26  readvar  **', 1X, &
                           ' Table ', A, '.inp; Missing variable ', A, ' with position:', &
-                          5( /21X, A, ' = ', I5))
+                          5(/21X, A, ' = ', I5))
                   nuwa = nuwa + 1
                end if
 !
@@ -1221,9 +1224,9 @@ contains
                   if ((srrz(ns, rz, ii - 1) - srrz(ns, rz, ii)) < -1.0e-4_dp) then
                      write (ib, 38) 'unsa_sim', ns, nint(dprzun(rz)), &
                         dpgwun(ns, rz, ii - 1), srrz(ns, rz, ii - 1), dpgwun(ns, rz, ii), srrz(ns, rz, ii)
-38                   format( /, '** E38  readvar  **', 1X, 1X, A, '.inp; unit ', I5, ' rzd ', I5, ' drying conditions', /, 20X, &
+38                   format(/, '** E38  readvar  **', 1X, 1X, A, '.inp; unit ', I5, ' rzd ', I5, ' drying conditions', /, 20X, &
                              ' Storage in root zone inconsistent with groundwater depth:', &
-                             2( /20X, ' depth = ', F10.3, ' storage = ', F10.3))
+                             2(/20X, ' depth = ', F10.3, ' storage = ', F10.3))
                      nuwa = nuwa + 1
                   end if
                end do
@@ -1235,9 +1238,9 @@ contains
                   if ((fmca(ns, rz, ii - 1) - fmca(ns, rz, ii)) < -1.0e-4_dp) then
                      write (ib, 40) 'unsa_sim', ns, nint(dprzun(rz)), &
                         dpgwun(ns, rz, ii - 1), fmca(ns, rz, ii - 1), dpgwun(ns, rz, ii), fmca(ns, rz, ii)
-40                   format( /, '** E40  readvar  **', 1X, 1X, A, '.inp; unit ', I5, ' rzd ', I5 / 20X, &
+40                   format(/, '** E40  readvar  **', 1X, 1X, A, '.inp; unit ', I5, ' rzd ', I5 / 20X, &
                              ' Capillary rise flux inconsistent with groundwater depth:', &
-                             2( /20X, ' depth = ', F10.3, ' cap. rise = ', F10.3))
+                             2(/20X, ' depth = ', F10.3, ' cap. rise = ', F10.3))
                      nuwa = nuwa + 1
                   end if
                end do
@@ -1284,13 +1287,13 @@ contains
 !
 ! Arguments
 !
-      real(kind=dp) x
-      real(kind=dp) l(*)
-      integer n
+      real(kind=dp) :: x
+      real(kind=dp) :: l(*)
+      integer :: n
 !
 ! local variables
 !
-      integer i
+      integer :: i
 !
 ! Begin
 !
@@ -1312,33 +1315,34 @@ contains
 !>
 !>     If the groundwater depth is above or below the tabulates depths,
 !>     the outcome is kept constant at the extreme value
-   real(kind=dp) function unsa(ns, nt, dp, dproot, unda, &
-                                  debug_unit, message_unit, status, &
-                                  nxte, nxspun, nxrz, nxdpun, &
-                                  nurz, dprzun, dpgwun, nudpun)
-      integer debug_unit
-      integer message_unit
-      integer status
-      integer nxte
-      integer nxspun
-      integer nxrz
-      integer nxdpun
+   function unsa(ns, nt, groundwater_depth, dproot, unda, &
+                               debug_unit, message_unit, status, &
+                               nxte, nxspun, nxrz, nxdpun, &
+                               nurz, dprzun, dpgwun, nudpun) result(res)
+      
+      real(kind=dp) :: res
+      integer*4 :: ns, nt
+      integer :: debug_unit
+      integer :: message_unit
+      integer :: status
+      integer :: nxte
+      integer :: nxspun
+      integer :: nxrz, nurz
+      integer :: nxdpun
 
-      integer Nt
-      real(kind=dp) Dp, dproot
+      real(kind=dp) :: groundwater_depth, dproot
 
-      real(kind=dp) unda(nxspun, nxrz, nxdpun) ! Unsaturated data (Eq. moist. cont. etc)
-      real(kind=dp) Dprzun(nxrz)
-      real(kind=dp) Dpgwun(nxspun, nxrz, nxdpun)
-      integer Nudpun(nxspun, nxrz)
+      real(kind=dp) :: unda(nxspun, nxrz, nxdpun) ! Unsaturated data (Eq. moist. cont. etc)
+      real(kind=dp) :: Dprzun(nxrz)
+      real(kind=dp) :: Dpgwun(nxspun, nxrz, nxdpun)
+      integer :: Nudpun(nxspun, nxrz)
 
-      integer * 4 ii, i1
-      integer * 4 ns ! Nummer soil physical unit
-      real(kind=dp) dprztp ! wortelzone in cm
-      real(kind=dp) dpgwtp ! Lokale variabele voor diepte grondwaterstand
-      real(kind=dp) va01, va02
-      real(kind=dp) fr
-      real(kind=dp) unfudp
+      integer*4 :: ii, i1
+      real(kind=dp) :: dprztp ! wortelzone in cm
+      real(kind=dp) :: dpgwtp ! Lokale variabele voor diepte grondwaterstand
+      real(kind=dp) :: va01, va02
+      real(kind=dp) :: fr
+      real(kind=dp) :: unfudp
 !
 !        Setup of subroutine:
 !
@@ -1347,13 +1351,13 @@ contains
 !        3 calculate eq. moisture content/capill. rise for both root zones
 !        4 interpolate between root zones
 !
-!        The variable temporary depth (DPGWTP) is used to manipulate DP only
+!        The variable temporary depth (DPGWTP) is used to manipulate groundwater_depth only
 !        within this subroutine
 !
 !        1 Set variables
 !
       dprztp = dproot * 100
-      dpgwtp = dp
+      dpgwtp = groundwater_depth
 !
 !        2 Calculate root zones
 !
@@ -1396,10 +1400,10 @@ contains
 !
          fr = dprzun(i1 + 1) - dprztp
          fr = fr / (dprzun(i1 + 1) - dprzun(i1))
-         unsa = va01 + (fr * (va02 - Va01))
+         res = va01 + (fr * (va02 - Va01))
 
       else
-         unsa = 0.0_dp
+         res = 0.0_dp
       end if
 !
    end
@@ -1407,20 +1411,20 @@ contains
 !>     Calculates the capillary rise flux, equilibrium
 !>     moisture content of the root zone for drying or storage coefficient.
 !>     The matrix for the interpolation is unda (unsaturated data).
-   real(kind=dp) function unfudp(ns, rz, dp, unda, dpgwun, nudpun, nxspun, nxrz, nxdpun)
-      integer nxspun, nxrz, nxdpun
-      real(kind=dp) dpgwun(nxspun, nxrz, nxdpun)
-      integer nudpun(nxspun, nxrz)
-      integer * 4 ns, rz
-      real(kind=dp) dp, unda(nxspun, nxrz, nxdpun)
+   real(kind=dp) function unfudp(ns, rz, groundwater_depth, unda, dpgwun, nudpun, nxspun, nxrz, nxdpun)
+      integer :: nxspun, nxrz, nxdpun
+      real(kind=dp) :: dpgwun(nxspun, nxrz, nxdpun)
+      integer :: nudpun(nxspun, nxrz)
+      integer*4 :: ns, rz
+      real(kind=dp) :: groundwater_depth, unda(nxspun, nxrz, nxdpun)
 
 !
-      integer * 4 i1, ii
-      real(kind=dp) dpgwtp, fr
+      integer*4 :: i1, ii
+      real(kind=dp) :: dpgwtp, fr
 
       !        1 Set variables
 !
-      dpgwtp = dp
+      dpgwtp = groundwater_depth
 !
 !        2 Calculate groundwater levels for interpolation
 !
@@ -1466,12 +1470,12 @@ contains
 !>     If no error condition occurs, function is true
    logical function ctrl_real(nafi, nmli, va, vamn, vamx, tyva, nava, deva, ib)
 !
-      integer ib
-      integer * 4 tyva, nmli
-      real(kind=dp) va, vamn, vamx, vaod
-      character(len=*) nava
-      character(len=*) nafi
-      character(len=*) deva
+      integer :: ib
+      integer*4 :: tyva, nmli
+      real(kind=dp) :: va, vamn, vamx, vaod
+      character(len=*) :: nava
+      character(len=*) :: nafi
+      character(len=*) :: deva
 !
 !
       ctrl_real = .true.
@@ -1501,50 +1505,50 @@ contains
          end if
       end if
 !
-108   format( /'** W08  ctrl_rea **', 1X, &
+108   format(/'** W08  ctrl_rea **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                        ', G11.4 / 20X, &
               ' and exceeds maximum value ', G11.4 / 20X, &
               ' Therefore the variable is set to maximum')
-109   format( /'** W09  ctrl_rea **', 1X, &
+109   format(/'** W09  ctrl_rea **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                        ', G11.4 / 20X, &
               ' and exceeds maximum value ', G11.4 / 20X, &
               ' Check your input, run will continue with old value')
-11    format( /'** E11  ctrl_rea **', 1X, &
+11    format(/'** E11  ctrl_rea **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                        ', G11.4 / 20X, &
               ' and exceeds maximum value ', G11.4 / 20X, &
               ' Run will stop due to error condition')
-12    format( /'** E12  ctrl_rea **', 1X, &
+12    format(/'** E12  ctrl_rea **', 1X, &
               ' parameter file'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                        ', G11.4 / 20X, &
               ' and exceeds maximum value ', G11.4 / 20X, &
               ' Run will stop due to error condition')
 !
-110   format( /'** W10  ctrl_rea **', 1X, &
+110   format(/'** W10  ctrl_rea **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                             ', G11.4 / 20X, &
               ' and is less than minimum value ', G11.4 / 20X, &
               ' Therefore the variable is set to minimum')
-111   format( /'** W11  ctrl_rea **', 1X, &
+111   format(/'** W11  ctrl_rea **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                             ', G11.4 / 20X, &
               ' and is less than minimum value ', G11.4 / 20X, &
               ' Check your input, run will continue with old value')
-13    format( /'** E13  ctrl_rea **', 1X, &
+13    format(/'** E13  ctrl_rea **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                             ', G11.4 / 20X, &
               ' and is less than minimum value ', G11.4 / 20X, &
               ' Run will stop due to error condition')
-14    format( /'** E14  ctrl_rea **', 1X, &
+14    format(/'** E14  ctrl_rea **', 1X, &
               ' Parameter file'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                             ', G11.4 / 20X, &
@@ -1557,12 +1561,12 @@ contains
 !>     If no error condition occurs, function is true
    logical function ctrl_int(nafi, nmli, va, vamn, vamx, tyva, nava, deva, ib)
 !
-      integer ib
-      integer * 4 tyva, nmli
-      integer * 4 va, vamn, vamx, vaod
-      character(len=*) nava
-      character(len=*) nafi
-      character(len=*) deva
+      integer :: ib
+      integer*4 :: tyva, nmli
+      integer*4 :: va, vamn, vamx, vaod
+      character(len=*) :: nava
+      character(len=*) :: nafi
+      character(len=*) :: deva
 !
 !
       ctrl_int = .true.
@@ -1592,50 +1596,50 @@ contains
          end if
       end if
 !
-108   format( /'** W08  ctrl_int **', 1X, &
+108   format(/'** W08  ctrl_int **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                        ', I5 / 20X, &
               ' and exceeds maximum value ', I5 / 20X, &
               ' Therefore the variable is set to maximum')
-109   format( /'** W09  ctrl_int **', 1X, &
+109   format(/'** W09  ctrl_int **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                        ', I5 / 20X, &
               ' and exceeds maximum value ', I5 / 20X, &
               ' Check your input, run will continue with old value')
-11    format( /'** E11  ctrl_int **', 1X, &
+11    format(/'** E11  ctrl_int **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                        ', I5 / 20X, &
               ' and exceeds maximum value ', I5 / 20X, &
               ' Run will stop due to error condition')
-12    format( /'** E12  ctrl_int **', 1X, &
+12    format(/'** E12  ctrl_int **', 1X, &
               ' Parameter file'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                        ', I5 / 20X, &
               ' and exceeds maximum value ', I5 / 20X, &
               ' Run will stop due to error condition')
 !
-110   format( /'** W10  ctrl_int **', 1X, &
+110   format(/'** W10  ctrl_int **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                             ', I5 / 20X, &
               ' and is less than minimum value ', I5 / 20X, &
               ' Therefore the variable is set to minimum')
-111   format( /'** W11  ctrl_int **', 1X, &
+111   format(/'** W11  ctrl_int **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                             ', I5 / 20X, &
               ' and is less than minimum value ', I5 / 20X, &
               ' Check your input, run will continue with old value')
-13    format( /'** E13  ctrl_int **', 1X, &
+13    format(/'** E13  ctrl_int **', 1X, &
               ' Line ', I5, ' of file ', A, '.inp'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                             ', I5 / 20X, &
               ' and is less than minimum value ', I5 / 20X, &
               ' Run will stop due to error condition')
-14    format( /'** E14  ctrl_int **', 1X, &
+14    format(/'** E14  ctrl_int **', 1X, &
               ' Parameter file'/20X, &
               ' Variable ', A, 1X, A / 20X, &
               ' is                             ', I5 / 20X, &
@@ -1649,10 +1653,10 @@ contains
 !>     j=NB,NB+1,...,NE
    subroutine indexx(n, arrin, indx)
 !
-      integer * 4 i, j, n, l, nr, q
-      integer * 4 indxt
-      integer * 4 arrin(*)
-      integer * 4 indx(*)
+      integer*4 :: i, j, n, l, nr, q
+      integer*4 :: indxt
+      integer*4 :: arrin(*)
+      integer*4 :: indx(*)
 !
       do j = 1, n
          indx(j) = j
@@ -1693,3 +1697,4 @@ contains
       go to 10
 !
    end
+end module m_capsim
