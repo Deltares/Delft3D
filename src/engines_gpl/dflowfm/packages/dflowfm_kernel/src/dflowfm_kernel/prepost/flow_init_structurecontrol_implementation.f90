@@ -265,7 +265,7 @@ contains
       character(len=256) :: fnam, rec, key
       integer, allocatable :: pumpidx(:), gateidx(:), cdamidx(:), cgenidx(:), dambridx(:) ! temp
       real(kind=dp) :: tmpval
-      integer :: istrtype, itmp
+      integer :: istrtype, num_stages
       integer :: numg, numd, npum, ngs, numgen, ndambr
       type(tree_data), pointer :: str_ptr
       real(kind=dp), allocatable :: widths(:)
@@ -1274,8 +1274,8 @@ contains
             istrtype = getStructype_from_string(strtype)
 
             ! Do a try-read to determine whether this is a staged flow1d pump. If not, just continue (capacity is enough then).
-            call prop_get(str_ptr, 'structure', 'numStages', itmp, success) ! UNST-2709: new consistent keyword
-            if (success) then
+            call prop_get(str_ptr, 'structure', 'numStages', num_stages, success)
+            if (success .and. num_stages > 0) then
                ! flow1d_io library: add and read SOBEK pump
                ! just use the first link of the the structure (the network%sts%struct(istrtmp)%link_number  is not used in computations)
                if (L1pumpsg(n) <= L2pumpsg(n)) then
@@ -1286,6 +1286,8 @@ contains
                      call readPump(network%sts%struct(istrtmp)%pump, str_ptr, strid, network%forcinglist, success)
                   end if
                end if
+            else
+               success = .false.
             end if
 
             ! mapping for qpump array
