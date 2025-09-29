@@ -32,6 +32,8 @@
 
 module m_iterfurufm
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -82,7 +84,7 @@ contains
 ! Local variables
 !
 !
-      real(kind=dp), parameter :: relax = 0d0
+      real(kind=dp), parameter :: relax = 0.0_dp
       real(kind=dp) :: bu
       real(kind=dp) :: du, Cz
       real(kind=dp) :: u1mi, dxfrL
@@ -90,25 +92,25 @@ contains
 !
 !! executable statements -------------------------------- -----------------------
 !
-      dxfrL = 0d0
+      dxfrL = 0.0_dp
       if (lambda == 0) then ! if structure defined friction == 0, use standard friction
          if (kmx == 0) then
             dxfrL = dx(m) * cfuhi(m)
-         else if (frcu(m) > 0d0) then
+         else if (frcu(m) > 0.0_dp) then
             Cz = get_chezy(hu(m), frcu(m), u1(m), v(m), ifrcutp(m)) ! standard Chezy coeff
             dxfrl = dx(m) * ag / (Cz * Cz * hu(m))
          end if
       end if
 
       bu = dxdt + (1.0 + relax + dxfrL) * ustru
-      du = (strucalfa * q1(m) / max(au(m), 1d-4) + (1 - strucalfa) * u0(m)) * dxdt + relax * ustru * u1(m) + rhsc
+      du = (strucalfa * q1(m) / max(au(m), 1.0e-4_dp) + (1 - strucalfa) * u0(m)) * dxdt + relax * ustru * u1(m) + rhsc
       fu(m) = cu / bu
       ru(m) = du / bu
       u1mi = u1(m)
       u1(m) = ru(m) + fu(m) * (su - sd)
       if (relax == 0.0) then
          iterfurufm = .false.
-      else if (abs(u1mi - u1(m)) > 1.0d-6) then
+      else if (abs(u1mi - u1(m)) > 1.0e-6_dp) then
          iterfurufm = .true.
       else
          iterfurufm = .false.

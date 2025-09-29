@@ -1,14 +1,6 @@
 @ echo off
-
-    rem When using mpich2 for the first time on a machine:
-    rem Execute "smpd -install" as administrator:
-    rem     Preparation: Check that your Delft3D installation contains "...\x64\bin\smpd.exe". Optionally copy it to a local directory (it will run as a service).
-    rem     "Start" -> "All programs" -> "Accessories", right-click "Command Prompt", "Run as Administrator"
-    rem     In this command box:
-    rem         cd ...\x64\bin
-    rem         smpd -install
-    rem     When there is an smpd already running on the machine, it must be ended first, using the Microsoft Task Manager, 
-    rem     or in the command  box: smpd -uninstall
+    rem For local parallel execution on Windows. No special setup is required. The -localonly flag allows MPI to run
+    rem without the hydra service.
 
 set dimrdir=\\directory.intra\PROJECT\d-hydro\dimrset\latest
 

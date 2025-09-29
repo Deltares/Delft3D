@@ -585,7 +585,7 @@ contains
 
             ! write CRESTWIDTH
             if (allocated(gates)) then
-               j = dbfwriteattribute(shphandle, ishape, id_sillwidth, min(1d10, gates(n)%sill_width))
+               j = dbfwriteattribute(shphandle, ishape, id_sillwidth, min(1.0e10_dp, gates(n)%sill_width))
             end if
 
             if (j /= 1) then

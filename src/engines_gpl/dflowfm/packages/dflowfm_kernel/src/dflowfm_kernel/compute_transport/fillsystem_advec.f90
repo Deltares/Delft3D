@@ -61,20 +61,20 @@ contains
 
       ierror = 1
 
-      ux = 1d0
-      uy = 0.1d0
+      ux = 1.0_dp
+      uy = 0.1_dp
 
       do LL = 1, Lnx
          k1 = ln(1, LL)
          k2 = ln(2, LL)
 !         dfac = qa(LL)
          dfac = (csu(LL) * ux + snu(LL) * uy) * Au(LL)
-         dfluxfac(1, LL) = max(dfac, 0d0)
-         dfluxfac(2, LL) = min(dfac, 0d0)
+         dfluxfac(1, LL) = max(dfac, 0.0_dp)
+         dfluxfac(2, LL) = min(dfac, 0.0_dp)
       end do
 
 !     initialize matrix entries
-      aC = 0d0
+      aC = 0.0_dp
 
       ipoint = 0
       irow = 0

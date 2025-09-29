@@ -64,7 +64,7 @@ contains
          K1 = NETCELL(N)%NOD(1); K2 = NETCELL(N)%NOD(2); K3 = NETCELL(N)%NOD(3)
 
 !     fix for spherical, periodic coordinates
-         if (jsferic == 1 .and. abs(abs(yk(k1)) - 90d0) < dtol_pole) then
+         if (jsferic == 1 .and. abs(abs(yk(k1)) - 90.0_dp) < dtol_pole) then
             kdum = k1
             k1 = k2
             k2 = k3
@@ -74,14 +74,14 @@ contains
          call getdxdy(XK(K1), YK(K1), XK(K2), YK(K2), dx2, dy2, jsferic)
          call getdxdy(XK(K1), YK(K1), XK(K3), YK(K3), dx3, dy3, jsferic)
          den = dy2 * dx3 - dy3 * dx2
-         if (DEN == 0d0) then
+         if (DEN == 0.0_dp) then
             do LL = 1, 3
                L = NETCELL(N)%LIN(LL)
                KN(1, L) = 0; KN(2, L) = 0
             end do
             NNW(1, N) = K1; NNW(2, N) = K2; NNW(3, N) = K3
-            XNW(N) = (XK(K1) + XK(K2) + XK(K3)) / 3d0
-            YNW(N) = (YK(K1) + YK(K2) + YK(K3)) / 3d0
+            XNW(N) = (XK(K1) + XK(K2) + XK(K3)) / 3.0_dp
+            YNW(N) = (YK(K1) + YK(K2) + YK(K3)) / 3.0_dp
          end if
       end do
 

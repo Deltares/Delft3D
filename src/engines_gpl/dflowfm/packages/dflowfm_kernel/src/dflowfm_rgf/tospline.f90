@@ -55,7 +55,7 @@ contains
 
       IN = 1 ! Pick first spline
       call NUMP(IN, NUMPI)
-      TV = NUMPI / 2d0
+      TV = NUMPI / 2.0_dp
       call get_ij(XSP, XI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
       call get_ij(YSP, YI, maxspl, maxsplen, maxsplen, IN, IN, 1, NUMPI)
       call SPLINE(XI, NUMPI, XI2)

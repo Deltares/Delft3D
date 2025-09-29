@@ -54,9 +54,9 @@ contains
       integer :: k1, k2, L
 
       bbr = 1 / CFL**2
-      ccr = 0d0
+      ccr = 0.0_dp
       do L = 1, lnx
-         aufu = 1d0
+         aufu = 1.0_dp
          k1 = ln(1, L)
          k2 = ln(2, L)
          bbr(k1) = bbr(k1) + aufu

@@ -65,12 +65,12 @@ contains
 
       call splinxy(xspl, yspl, xspl2, yspl2, num)
 
-      tR = 0d0
+      tR = 0.0_dp
       call splintxy(xspl, yspl, xspl2, yspl2, num, tR, xR, yR)
 
-      dt = 1d0 / dble(NSAM)
+      dt = 1.0_dp / dble(NSAM)
 
-      splinelength = 0d0
+      splinelength = 0.0_dp
       do i = 1, num - 1
          tR = dble(i - 1)
          do j = 1, NSAM

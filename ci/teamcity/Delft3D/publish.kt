@@ -17,6 +17,7 @@ object Publish : BuildType({
     description = "Currently only used for publishing the container."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
+    allowExternalStatus = true
 
     artifactRules = """
         #teamcity:symbolicLinks=as-is
@@ -48,7 +49,7 @@ object Publish : BuildType({
     }
 
     params {
-        select("release_type", "weekly", display = ParameterDisplay.PROMPT, options = listOf("daily", "weekly", "release"))
+        select("release_type", "pre-release", display = ParameterDisplay.PROMPT, options = listOf("pre-release", "release"))
         text("release_version", "2.29.xx", 
             label = "Release version", 
             description = "e.g. '2.29.03' or '2025.02'", 
@@ -60,8 +61,7 @@ object Publish : BuildType({
         param("reverse.dep.*.product", "all-testbench")
         param("commit_id_short", "%dep.${LinuxBuild.id}.commit_id_short%")
         param("source_image", "containers.deltares.nl/delft3d-dev/delft3d-runtime-container:alma10-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
-        param("destination_image_generic", "containers.deltares.nl/delft3d/%brand%:%release_type%")
-        param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_type%-%release_version%")
+        param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_version%-%release_type%")
     }
 
     if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
@@ -124,13 +124,6 @@ object Publish : BuildType({
             }
         }
         dockerCommand {
-            name = "Tag generic image"
-            commandType = other {
-                subCommand = "tag"
-                commandArgs = "%source_image% %destination_image_generic%"
-            }
-        }
-        dockerCommand {
             name = "Tag specific image"
             commandType = other {
                 subCommand = "tag"
@@ -155,10 +148,9 @@ object Publish : BuildType({
             """.trimIndent()
         }
         dockerCommand {
-            name = "Push generic and specific images"
+            name = "Push release image"
             commandType = push {
                 namesAndTags = """
-                    "%destination_image_generic%"
                     "%destination_image_specific%"
                 """.trimIndent()
             }

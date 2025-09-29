@@ -101,7 +101,7 @@ contains
                if (jacheckba == 1) then
                   write (mbalat, *) xz(k), yz(k), ba(k)
                   if (ns > 0) then
-                     dismin = 1d9; nf = 0
+                     dismin = 1.0e9_dp; nf = 0
                      do n = 1, ns
                         call dbdistancehk(xz(k), yz(k), xs(n), ys(n), dist)
                         if (dist < dismin) then
@@ -109,8 +109,8 @@ contains
                            nf = n
                         end if
                      end do
-                     if (nf > 0 .and. dismin < 1d0) then
-                        if (abs(ba(k) - zs(nf)) > 1d-4) then
+                     if (nf > 0 .and. dismin < 1.0_dp) then
+                        if (abs(ba(k) - zs(nf)) > 1.0e-4_dp) then
                            write (mwrong, '(4F20.5)') xz(k), yz(k), ba(k), zs(nf)
                         end if
                      end if

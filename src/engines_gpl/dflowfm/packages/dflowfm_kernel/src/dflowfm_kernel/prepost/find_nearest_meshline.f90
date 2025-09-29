@@ -81,7 +81,7 @@ contains
       real(kind=dp) :: xn, yn, ddis, rL, ddismin ! in toland
       real(kind=dp) :: xn_prev, yn_prev, ddis_prev, rL_prev
 
-      real(kind=dp), parameter :: DISNEAREST = 2d0
+      real(kind=dp), parameter :: DISNEAREST = 2.0_dp
 
       logical, parameter :: LMASK = .true.
 
@@ -205,8 +205,8 @@ contains
          !  set the outer land boundary points
          jleft = jend - 1
          jright = jstart
-         rLleft = 1d0
-         rLright = 0d0
+         rLleft = 1.0_dp
+         rLright = 0.0_dp
 
          if (jstart < 1 .or. jstart > MXLAN .or. jstart > jend) return
 
@@ -1026,7 +1026,7 @@ contains
          call dbpinpol(x1, y1, in, dmiss, JINS, NPL, xpl, ypl, zpl)
          if (in /= 1) return
 
-         dmeshwidth = 0d0
+         dmeshwidth = 0.0_dp
          do kk = 1, nmk(k)
             L = nod(k)%lin(kk)
             kother = kn(1, L) + kn(2, L) - k

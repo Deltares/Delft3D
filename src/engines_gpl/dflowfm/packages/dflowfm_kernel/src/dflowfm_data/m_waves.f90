@@ -57,9 +57,9 @@ module m_waves
    real(kind=dp), allocatable, target :: dwcap(:) !< [w/m2] wave energy dissipation rate due to white capping
    real(kind=dp), allocatable, target :: distot(:) !< [w/m2] total wave energy dissipation rate, "DISTOT" in WAVE
 
-   real(kind=dp) :: hwavuni = 0d0 !< uniform (*.mdu) value of ...
-   real(kind=dp) :: twavuni = 0d0 !< uniform (*.mdu) value of ...
-   real(kind=dp) :: phiwavuni = 0d0 !< uniform (*.mdu) value of ...
+   real(kind=dp) :: hwavuni = 0.0_dp !< uniform (*.mdu) value of ...
+   real(kind=dp) :: twavuni = 0.0_dp !< uniform (*.mdu) value of ...
+   real(kind=dp) :: phiwavuni = 0.0_dp !< uniform (*.mdu) value of ...
 
    real(kind=dp) :: ftauw !< Swartfactor, tune bed shear stress
    real(kind=dp) :: fwfac !< Soulsby factor, tune streaming
@@ -95,7 +95,7 @@ module m_waves
 
    ! parameters, may be overwritten by user in mdu-file
    real(kind=dp) :: gammax !< Maximum wave height/water depth ratio
-   real(kind=dp) :: alfdeltau = 20d0 !< coeff for thickness of wave bed boundary layer
+   real(kind=dp) :: alfdeltau = 20.0_dp !< coeff for thickness of wave bed boundary layer
    real(kind=dp) :: hminlw !< [m] minimum depth for wave forcing in flow momentum equation RHS.
    integer :: jatpwav = TPWAVDEFAULT !< TPWAV, TPWAVSMOOTH, TPWAVRELATIVE
    integer :: jauorb !< multiply with factor sqrt(pi)/2 (=0), or not (=1). Default 0, delft3d style
@@ -111,17 +111,17 @@ contains
    subroutine default_waves()
 
       rouwav = 'FR84'
-      gammax = 1.0d0 !< Maximum wave height/water depth ratio
-      hminlw = 0.2d0 !< [-] minimum depth for wave forcing in flow momentum equation RHS.
+      gammax = 1.0_dp !< Maximum wave height/water depth ratio
+      hminlw = 0.2_dp !< [-] minimum depth for wave forcing in flow momentum equation RHS.
       jatpwav = TPWAVDEFAULT !< TPWAV, TPWAVSMOOTH, TPWAVRELATIVE
       jauorb = 0
       jahissigwav = 1
       jamapsigwav = 0 ! Present behaviour
       jauorbfromswan = 0
-      ftauw = 1d0
-      fwfac = 1d0
-      fbreak = 1d0
-      fwavpendep = 1.5d0 ! best setting based on sensitivity
+      ftauw = 1.0_dp
+      fwfac = 1.0_dp
+      fbreak = 1.0_dp
+      fwavpendep = 1.5_dp ! best setting based on sensitivity
 
       call reset_waves()
    end subroutine default_waves

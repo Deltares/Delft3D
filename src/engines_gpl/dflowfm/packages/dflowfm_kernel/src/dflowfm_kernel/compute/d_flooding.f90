@@ -95,13 +95,13 @@ module m_sobekdfm !
    logical, save, public :: sbkdfm_first_timestep
 
    !TODO JNg: verliescoefficienten ce en cw implementeren
-   real(kind=dp), parameter :: ce = 1d0
-   real(kind=dp), parameter :: cw = 1d0
+   real(kind=dp), parameter :: ce = 1.0_dp
+   real(kind=dp), parameter :: cw = 1.0_dp
    real(kind=dp) :: dx_1d2d
    real(kind=dp), public :: sbkdfm_umin
-   real(kind=dp) :: sbkdfm_relax = 0.1d0
+   real(kind=dp) :: sbkdfm_relax = 0.1_dp
    integer :: sbkdfm_umin_method
-   real(kind=dp), parameter :: dryingAccur = 1d-4
+   real(kind=dp), parameter :: dryingAccur = 1.0e-4_dp
    real(kind=dp) :: sbkdfm_minimal_1d2d_embankment !< Minimal crest height of 1D2D SOBEK-DFM embankments (height, not level).
 
 contains
@@ -110,8 +110,8 @@ contains
 !! For a reinit prior to flow computation, only call reset_sobekdfm() instead.
    subroutine default_sobekdfm()
 !   dx_1d2d     = 10d0
-      sbkdfm_umin = 0d0
-      sbkdfm_minimal_1d2d_embankment = 0.01d0
+      sbkdfm_umin = 0.0_dp
+      sbkdfm_minimal_1d2d_embankment = 0.01_dp
 
       call reset_sobekdfm()
    end subroutine default_sobekdfm
@@ -142,29 +142,29 @@ contains
                 b_i(nbnd1d2d), width_1d(nbnd1d2d), FlowCond(nbnd1d2d), sb_1d2d(nbnd1d2d), edgenumbers1d2d(nbnd1d2d), stat=ierr)
       call aerr('OneDtwoDarrays(nbnd1d2d)', ierr, nbnd1d2d * (17 + n4))
 
-      xbnd1d2d = 0d0
-      ybnd1d2d = 0d0
-      xy2bnd1d2d = 0d0
-      zbnd1d2d1 = 0d0
-      zbnd1d2d0 = 0d0
+      xbnd1d2d = 0.0_dp
+      ybnd1d2d = 0.0_dp
+      xy2bnd1d2d = 0.0_dp
+      zbnd1d2d1 = 0.0_dp
+      zbnd1d2d0 = 0.0_dp
       kbnd1d2d = 0
-      b1ds = 0d0
-      b1dq = 1d0
-      d1d = 0d0
-      b_2di = 0d0
-      b_2dv = 0d0
-      d_2dv = 0d0
-      s0_2d = 0d0
-      b_i = 0d0
-      s0_1d = 0d0
-      s1_2d = 0d0
-      CFL = 0d0
-      sb_1d2d = 0d0
+      b1ds = 0.0_dp
+      b1dq = 1.0_dp
+      d1d = 0.0_dp
+      b_2di = 0.0_dp
+      b_2dv = 0.0_dp
+      d_2dv = 0.0_dp
+      s0_2d = 0.0_dp
+      b_i = 0.0_dp
+      s0_1d = 0.0_dp
+      s1_2d = 0.0_dp
+      CFL = 0.0_dp
+      sb_1d2d = 0.0_dp
       FlowCond = 0
-      qzeta_1d2d = 0d0
-      qlat_1d2d = 0d0
-      qtotal_1d2d = 0d0
-      width_1d = 100d0
+      qzeta_1d2d = 0.0_dp
+      qlat_1d2d = 0.0_dp
+      qtotal_1d2d = 0.0_dp
+      width_1d = 100.0_dp
    end subroutine realloc_1d2d
 
    subroutine dealloc_1d2d()
@@ -257,7 +257,7 @@ contains
 
          do n = 1, nd(kbi)%lnx
             L = abs(nd(kbi)%ln(n))
-            teta(L) = 1d0
+            teta(L) = 1.0_dp
          end do
 
          if (iadvec /= 0) then
@@ -266,8 +266,8 @@ contains
 
       end do
 
-      kdx_I_2d = pi * 1d0 / 16d0
-      kdx_I_1d = pi * 3d0 / 8d0
+      kdx_I_2d = pi * 1.0_dp / 16.0_dp
+      kdx_I_1d = pi * 3.0_dp / 8.0_dp
 
    end subroutine init_1d2d
 
@@ -362,7 +362,7 @@ contains
 
       ! Program code
 
-      CFL = 0d0
+      CFL = 0.0_dp
 
       do ibnd = 1, nbnd1d2d
          kb = kbnd1d2d(1, ibnd)
@@ -381,19 +381,19 @@ contains
 
          if (sbkdfm_new_timestep) then
             if (sbkdfm_first_timestep) then
-               s0_2d(ibnd) = 0.5d0 * (s0(kb) + s0(k2))
+               s0_2d(ibnd) = 0.5_dp * (s0(kb) + s0(k2))
                s0_1d(ibnd) = zbnd1d2d0(ibnd)
             else
-               s0_2d(ibnd) = sbkdfm_relax * 0.5d0 * (s0(kb) + s0(k2)) + (1d0 - sbkdfm_relax) * s0_2d(ibnd)
-               s0_1d(ibnd) = sbkdfm_relax * zbnd1d2d0(ibnd) + (1d0 - sbkdfm_relax) * s0_1d(ibnd)
+               s0_2d(ibnd) = sbkdfm_relax * 0.5_dp * (s0(kb) + s0(k2)) + (1.0_dp - sbkdfm_relax) * s0_2d(ibnd)
+               s0_1d(ibnd) = sbkdfm_relax * zbnd1d2d0(ibnd) + (1.0_dp - sbkdfm_relax) * s0_1d(ibnd)
 
             end if
 
          end if
 
-         s1_2d(ibnd) = 0.5d0 * (s1(kb) + s1(k2))
+         s1_2d(ibnd) = 0.5_dp * (s1(kb) + s1(k2))
 
-         dir = -1d0
+         dir = -1.0_dp
 
          if (s0_2d(ibnd) > s0_1d(ibnd)) then
             ! flow from 2d to 1d
@@ -415,9 +415,9 @@ contains
             case (1)
                u_c = sqrt(sbkdfm_umin**2 + u_2d1d**2)
             case (2)
-               u_c = (sbkdfm_umin**4 + u_2d1d**4)**0.25d0
+               u_c = (sbkdfm_umin**4 + u_2d1d**4)**0.25_dp
             case (3)
-               u_c = (sbkdfm_umin**8 + u_2d1d**8)**0.125d0
+               u_c = (sbkdfm_umin**8 + u_2d1d**8)**0.125_dp
             case (4)
                u_c = max(sbkdfm_umin, abs(u_2d1d))
             end select
@@ -427,83 +427,83 @@ contains
                ! no flow condition
                Q_1d2d = 0
                s1_1d = zs
-               alfa_1d = 0d0
-               beta_1d = 1d0
-               alfa_2d = 0d0
-               beta_2d = 1d0
-               alfa_sf = 1d0 / 3d0
-               ru(L) = 0d0
-               u0(L) = 0d0
-               f = 0d0
+               alfa_1d = 0.0_dp
+               beta_1d = 1.0_dp
+               alfa_2d = 0.0_dp
+               beta_2d = 1.0_dp
+               alfa_sf = 1.0_dp / 3.0_dp
+               ru(L) = 0.0_dp
+               u0(L) = 0.0_dp
+               f = 0.0_dp
 
-            elseif ((s0_2d(ibnd) - zs >= 3d0 / 2d0 * (s0_1d(ibnd) - zs)) .or. (s0_1d(ibnd) - zs > 3d0 / 2d0 * (s0_2d(ibnd) - zs))) then
+            elseif ((s0_2d(ibnd) - zs >= 3.0_dp / 2.0_dp * (s0_1d(ibnd) - zs)) .or. (s0_1d(ibnd) - zs > 3.0_dp / 2.0_dp * (s0_2d(ibnd) - zs))) then
                ! Free flow condition
-               b_i(ibnd) = au(L)**2 * u_c / ((2d0 / 3d0)**3 * dx_ui * (dx_i * ce * cw * (s0_up - zs))**2)
-               f = (3d0 * dx_1d2d / dx_ui + dts * b_i(ibnd)) * dx_ui / (gravity * dts)
+               b_i(ibnd) = au(L)**2 * u_c / ((2.0_dp / 3.0_dp)**3 * dx_ui * (dx_i * ce * cw * (s0_up - zs))**2)
+               f = (3.0_dp * dx_1d2d / dx_ui + dts * b_i(ibnd)) * dx_ui / (gravity * dts)
 
-               if (s0_2d(ibnd) - zs >= 3d0 / 2d0 * (s0_1d(ibnd) - zs)) then
+               if (s0_2d(ibnd) - zs >= 3.0_dp / 2.0_dp * (s0_1d(ibnd) - zs)) then
                   ! Free flow from 2d to 1d (situation 2.1, 2.2)
                   FlowCond(ibnd) = 2
 
                   Q_1d2d = -au(L) * (fu(L) * (s1(k2) - s1(kb)) + dir * ru(L))
                   s1_1d = zs
-                  alfa_1d = 0d0
-                  beta_1d = 1d0
-                  alfa_2d = 1d0
-                  beta_2d = 0d0
-                  alfa_sf = 1d0 / 3d0
+                  alfa_1d = 0.0_dp
+                  beta_1d = 1.0_dp
+                  alfa_2d = 1.0_dp
+                  beta_2d = 0.0_dp
+                  alfa_sf = 1.0_dp / 3.0_dp
                else
                   ! Free flow from 1d to 2d (situation 3.1, 3.2)
                   FlowCond(ibnd) = 1
 
                   Q_1d2d = qzeta_1d2d(ibnd) * s1_1d + qlat_1d2d(ibnd)
                   s1_2d(ibnd) = zs
-                  alfa_1d = 1d0
+                  alfa_1d = 1.0_dp
                   beta_1d = f * fu(L)
-                  alfa_2d = 0d0
-                  beta_2d = 1d0
-                  alfa_sf = 1d0 / 3d0
+                  alfa_2d = 0.0_dp
+                  beta_2d = 1.0_dp
+                  alfa_sf = 1.0_dp / 3.0_dp
                end if
             else
                ! submerged flow (situation 1.1, 1.2)
                FlowCond(ibnd) = 3
-               if (width_1d(ibnd) < 1d-4) then
-                  width_1d = 100d0
+               if (width_1d(ibnd) < 1.0e-4_dp) then
+                  width_1d = 100.0_dp
                end if
 
                Q_1d2d = qzeta_1d2d(ibnd) * s1_1d + qlat_1d2d(ibnd)
                CFL(ibnd) = sqrt(teta(L) * dts * au(L) * fu(L) / (dx_uI * dx_I))
-               alfa_1d = 1d0
-               alfa_2d = 1d0
-               b_i(ibnd) = au(L)**2 * u_c / (2d0 * dx_ui * (dx_i * ce * cw * (s0_down - zs))**2)
+               alfa_1d = 1.0_dp
+               alfa_2d = 1.0_dp
+               b_i(ibnd) = au(L)**2 * u_c / (2.0_dp * dx_ui * (dx_i * ce * cw * (s0_down - zs))**2)
 !               b_i(ibnd) = au(L)**2*(sbkdfm_umin + abs(u_2d1d))/(2d0*dx_ui*(dx_i*ce*cw*(s0_down - zs))**2)
                f = (dx_1d2d / dx_ui + dts * b_i(ibnd)) * dx_ui / (gravity * dts)
 
-               beta_1d = f * fu(L) + sqrt(1d0 + 4d0 * (sin(kdx_I_1d / 2d0) * CFL(ibnd))**2 + 4d0 * CFL(ibnd)**2) / &
-                         (2d0 * sqrt(1d0 + 4d0 * (sin(kdx_I_1d / 2d0) * CFL(ibnd))**2))
-               beta_2d = (dx_uI * CFL(ibnd)**2) / (width_1d(ibnd) * (1d0 + 4d0 * (sin(kdx_I_2d / 2d0) * CFL(ibnd))**2))
-               alfa_sf = 1d0
+               beta_1d = f * fu(L) + sqrt(1.0_dp + 4.0_dp * (sin(kdx_I_1d / 2.0_dp) * CFL(ibnd))**2 + 4.0_dp * CFL(ibnd)**2) / &
+                         (2.0_dp * sqrt(1.0_dp + 4.0_dp * (sin(kdx_I_1d / 2.0_dp) * CFL(ibnd))**2))
+               beta_2d = (dx_uI * CFL(ibnd)**2) / (width_1d(ibnd) * (1.0_dp + 4.0_dp * (sin(kdx_I_2d / 2.0_dp) * CFL(ibnd))**2))
+               alfa_sf = 1.0_dp
             end if
 
-            b_2dv(ibnd) = 0.5d0 * alfa_2d + (beta_2d + alfa_2d * f * fu(L))
-            b_2di(ibnd) = 0.5d0 * alfa_2d - (beta_2d + alfa_2d * f * fu(L))
-            if (fu(L) == 0d0) then
-               d_2dv(ibnd) = 0d0
+            b_2dv(ibnd) = 0.5_dp * alfa_2d + (beta_2d + alfa_2d * f * fu(L))
+            b_2di(ibnd) = 0.5_dp * alfa_2d - (beta_2d + alfa_2d * f * fu(L))
+            if (fu(L) == 0.0_dp) then
+               d_2dv(ibnd) = 0.0_dp
             else
                d_2dv(ibnd) = alfa_2d * s1_1d + beta_2d / (teta(L) * au(L) * fu(L)) * Q_1d2d + &
                              alfa_2d * s_cI * (f * ru(L) - (dx_1d2d * u0(L)) / (alfa_sf * gravity * dts)) + &
-                             beta_2d * s_cI / (teta(L) * fu(L)) * (teta(L) * ru(L) + (1d0 - teta(L)) * u0(L))
+                             beta_2d * s_cI / (teta(L) * fu(L)) * (teta(L) * ru(L) + (1.0_dp - teta(L)) * u0(L))
             end if
             !
             b1ds(ibnd) = alfa_1d
-            if (teta(L) * fu(L) * au(L) <= 1d-10) then
-               b1dq(ibnd) = 1d0
-               b1ds(ibnd) = 0d0
-               d1d(ibnd) = 0d0
+            if (teta(L) * fu(L) * au(L) <= 1.0e-10_dp) then
+               b1dq(ibnd) = 1.0_dp
+               b1ds(ibnd) = 0.0_dp
+               d1d(ibnd) = 0.0_dp
             else
                b1dq(ibnd) = -beta_1d / (teta(L) * fu(L) * au(L))
                d1d(ibnd) = alfa_1d * s1_2d(ibnd) + (beta_1d - alfa_1d * f * fu(L)) * (s1(k2) - s1(kb)) &
-                           - alfa_1d * s_cI * (f * ru(L) - dx_1d2d / (gravity * dts * alfa_sf) * u0(L)) + beta_1d * s_cI / (teta(L) * fu(L)) * (teta(L) * ru(L) + (1d0 - teta(L)) * u0(L))
+                           - alfa_1d * s_cI * (f * ru(L) - dx_1d2d / (gravity * dts * alfa_sf) * u0(L)) + beta_1d * s_cI / (teta(L) * fu(L)) * (teta(L) * ru(L) + (1.0_dp - teta(L)) * u0(L))
             end if
 
             qzeta_1d2d(ibnd) = -b1ds(ibnd) / b1dq(ibnd)
@@ -514,8 +514,8 @@ contains
             ! no flow
             FlowCond(ibnd) = 0
 
-            qzeta_1d2d(ibnd) = 0d0
-            qlat_1d2d(ibnd) = 0d0
+            qzeta_1d2d(ibnd) = 0.0_dp
+            qlat_1d2d(ibnd) = 0.0_dp
          end if
       end do
       sbkdfm_new_timestep = .false.

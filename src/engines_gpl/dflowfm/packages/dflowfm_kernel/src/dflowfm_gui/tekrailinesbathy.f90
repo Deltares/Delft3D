@@ -127,11 +127,11 @@ contains
          end if
 
          if (jsferic == 1) then ! jglobe
-            if (abs(xz(ln(1, L)) - xz(ln(2, L))) > 10d0) cycle
+            if (abs(xz(ln(1, L)) - xz(ln(2, L))) > 10.0_dp) cycle
          end if
 
-         if (abs(zz1) < 1d-6) zz1 = 0d0 ! heh heh, eindelijk
-         if (abs(zz2) < 1d-6) zz2 = 0d0
+         if (abs(zz1) < 1.0e-6_dp) zz1 = 0.0_dp ! heh heh, eindelijk
+         if (abs(zz2) < 1.0e-6_dp) zz2 = 0.0_dp
 
          call movabs(xx1, zz1)
          call lnabs(xx2, zz2)

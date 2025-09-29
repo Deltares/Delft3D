@@ -200,14 +200,14 @@ contains
                      taubxuLL = 0d0
                   end if
                else if (modind == 0) then ! exception where you don't want wave influence on bed shear stress with jawave>0
-                  if (sqcf > 0d0) then
-                     z0urouL = dzb * exp(-vonkar / sqcf - 1d0) ! inverse of jaustarint == 1 above
+                  if (sqcf > 0.0_dp) then
+                     z0urouL = dzb * exp(-vonkar / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above
                      taubpuLL = ustbLL * ustbLL / umod ! use flow ustar
                      taubxuLL = rhoL * taubpuLL * umod
                   else
                      z0urouL = epsz0
-                     taubpuLL = 0d0
-                     taubxuLL = 0d0
+                     taubpuLL = 0.0_dp
+                     taubxuLL = 0.0_dp
                   end if
                end if
                ustbLL = sqrt(umod * taubpuLL) ! taubpu = (g*U)/C**2 = tau/rho/u
@@ -217,9 +217,9 @@ contains
                taubxu(LL) = taubxuLL
                !
                ! set wave enhanced z0 for turbulence and morphology
-               if (sqcf > 0d0) then
-                  z0urou(LL) = dzb * exp(-vonkar / sqcf - 1d0) ! inverse of jaustarint == 1 above, updated ustar
-                  z0urou(LL) = min(z0urou(LL), 10d0)
+               if (sqcf > 0.0_dp) then
+                  z0urou(LL) = dzb * exp(-vonkar / sqcf - 1.0_dp) ! inverse of jaustarint == 1 above, updated ustar
+                  z0urou(LL) = min(z0urou(LL), 10.0_dp)
                else
                   z0urou(LL) = epsz0
                end if
@@ -231,15 +231,15 @@ contains
                if (stm_included) wblt(LL) = deltau
                !
                ! Streaming below deltau with linear distribution
-               if (jawavestreaming > WAVE_STREAMING_OFF .and. deltau > 1d-7) then ! Streaming below deltau with linear distribution
+               if (jawavestreaming > WAVE_STREAMING_OFF .and. deltau > 1.0e-7_dp) then ! Streaming below deltau with linear distribution
                   Dfu0 = Dfuc ! (m/s2)
                   do L = Lb, Ltop(LL)
                      if (hu(L) <= deltau) then
                         htop = min(hu(L), deltau) ! max height within waveboundarylayer
-                        alin = 1d0 - htop / deltau ! linear from 1 at bed to 0 at deltau
+                        alin = 1.0_dp - htop / deltau ! linear from 1 at bed to 0 at deltau
                         Dfu1 = Dfuc * alin
                         dzu = htop - hu(L - 1)
-                        adve(L) = adve(L) - 0.5d0 * (Dfu0 + Dfu1) * dzu / deltau
+                        adve(L) = adve(L) - 0.5_dp * (Dfu0 + Dfu1) * dzu / deltau
                         Dfu0 = Dfu1
                      end if
                      if (hu(L) > deltau) then
@@ -251,14 +251,14 @@ contains
                   end do
                end if
             else
-               if (sqcf > 0d0) then
+               if (sqcf > 0.0_dp) then
                   ! taubu for too small wave case needs to be filled
                   z0urou(LL) = z00 ! just use current only z0
                   taubpuLL = ustbLL * ustbLL / umod ! use flow ustar
                   taubxuLL = rhoL * taubpuLL * umod
                else
-                  taubu(LL) = 0d0
-                  taubxu(LL) = 0d0
+                  taubu(LL) = 0.0_dp
+                  taubxu(LL) = 0.0_dp
                   z0urou(LL) = epsz0
                end if
             end if
@@ -284,17 +284,17 @@ contains
          end if
 
          r = umod * hu(Lb) / viskin ! Local re-number:
-         r = max(r, 0.001d0)
+         r = max(r, 0.001_dp)
          er = e * r
          if (r < rv) then ! Viscous sublayer:
             s = sqrt(r)
          else
 
-            s = 12d0 ! In log-layer; initial trial for s:
+            s = 12.0_dp ! In log-layer; initial trial for s:
 100         continue
             nit = nit + 1
             sd = s
-            ers = max(er / sd, 1.0001d0)
+            ers = max(er / sd, 1.0001_dp)
             s = log(ers) / vonkar
 
             if (nit >= nitm) then
@@ -309,16 +309,16 @@ contains
             end if
          end if
 
-         if (s > 0d0) then
-            sqcf = 1d0 / s
+         if (s > 0.0_dp) then
+            sqcf = 1.0_dp / s
          else
-            sqcf = 0d0
+            sqcf = 0.0_dp
          end if
          ustbLL = sqcf * umod ! ustar based upon bottom layer velocity
          cfuhiLL = sqcf * sqcf / hu(Lb)
-         hdzb = 0.5d0 * hu(Lb)
+         hdzb = 0.5_dp * hu(Lb)
 
-         if (cfuhiLL > 100d0) then
+         if (cfuhiLL > 100.0_dp) then
             nit = nit + 1
          end if
 
@@ -328,11 +328,11 @@ contains
       else if (friction_type == 11) then ! Noslip
 
          !    advi(Lb) = advi(Lb) +  2d0*(vicwwu(Lb)+vicouv)/hu(Lb)**2
-         cfuhi3D = 2d0 * (vicwwu(Lb) + vicoww) / hu(Lb)**2
+         cfuhi3D = 2.0_dp * (vicwwu(Lb) + vicoww) / hu(Lb)**2
 
       end if
 
-      if (hu(LL) < trsh_u1Lb .and. abs(gsx) > 1d-3 .and. nit <= 3) then
+      if (hu(LL) < trsh_u1Lb .and. abs(gsx) > 1.0e-3_dp .and. nit <= 3) then
          ! u1Lb = ( u1(Lb)*dti - adve(Lb) - gsx ) / (cfuhi3D + dti)
          u1Lb = (u1(Lb) * dti - gsx) / (cfuhi3D + dti)
          nit = nit + 1

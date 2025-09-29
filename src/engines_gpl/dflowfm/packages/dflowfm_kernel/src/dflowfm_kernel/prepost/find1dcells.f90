@@ -28,6 +28,7 @@
 !-------------------------------------------------------------------------------
 
 module m_find1dcells
+
    use network_data
    use m_alloc
    use m_flowgeom, only: xz, yz, ba
@@ -35,6 +36,7 @@ module m_find1dcells
    use MessageHandling
    use m_save_ugrid_state
    use m_inquire_flowgeom
+   use precision, only: dp
    implicit none
 
    private
@@ -111,7 +113,7 @@ contains
       call realloc(yzw, nump1d2d)
       call realloc(xz, nump1d2d)
       call realloc(yz, nump1d2d)
-      call realloc(ba, nump1d2d, KeepExisting=.true., fill=0d0) ! 1D ba's will be filled halfway through flow_geominit, just allocate and initialize 1D part here
+      call realloc(ba, nump1d2d, KeepExisting=.true., fill=0.0_dp) ! 1D ba's will be filled halfway through flow_geominit, just allocate and initialize 1D part here
       call increasenetcells(nump1d2d, 1.0, .true.)
       do k = nump + 1, nump1d2d
          netcell(k)%N = 0
@@ -200,7 +202,7 @@ contains
             next_branch_node = nump1d2d - nump + 1
             if (next_found_node > 0 .and. max(next_branch_node, next_found_node) <= size(meshgeom1d%nodebranchidx)) then
                if (meshgeom1d%nodebranchidx(next_found_node) == meshgeom1d%nodebranchidx(next_branch_node) .and. &
-                   comparereal(meshgeom1d%nodeoffsets(next_found_node), meshgeom1d%nodeoffsets(next_branch_node), 1d-6) == 0) then
+                   comparereal(meshgeom1d%nodeoffsets(next_found_node), meshgeom1d%nodeoffsets(next_branch_node), 1.0e-6_dp) == 0) then
                   branches_first = .true.
                else
                   branches_first = .false.

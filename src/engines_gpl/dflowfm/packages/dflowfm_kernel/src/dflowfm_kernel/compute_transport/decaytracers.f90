@@ -58,9 +58,9 @@ contains
 
       do i = ITRA1, ITRAN
          decaytime = decaytimetracers(i - itra1 + 1)
-         if (decaytime > 0d0) then
+         if (decaytime > 0.0_dp) then
             do k = 1, ndkx
-               constituents(i, k) = constituents(i, k) / (1d0 + dts / decaytime)
+               constituents(i, k) = constituents(i, k) / (1.0_dp + dts / decaytime)
             end do
          end if
       end do

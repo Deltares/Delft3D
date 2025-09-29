@@ -70,7 +70,7 @@ class TestEmailHelper:
 
     def test_load_and_save_template(self, tmp_path: Path) -> None:
         # Integration-style: test that generate_template creates an output file
-        template_content = "Hello @@@DIMR_VERSION@@@ @@@LINK_TO_PUBLIC_WIKI@@@ @@@SUMMARY_TABLE_BODY@@@"
+        template_content = "Hello @@@DIMR_VERSION@@@ @@@SUMMARY_TABLE_BODY@@@"
         template_path = tmp_path / "template.html"
         template_path.write_text(template_content)
         helper = self.make_helper(template_path=template_path)
@@ -86,28 +86,6 @@ class TestEmailHelper:
         assert out_files, "No output file generated"
         content = out_files[0].read_text()
         assert "Hello" in content
-
-    def test_generate_wiki_link(self) -> None:
-        """Test wiki link generation for different version formats."""
-        helper = self.make_helper(dimr_version="1.2.3")
-        # Access the private method using name mangling
-        wiki_link = helper._EmailHelper__generate_wiki_link()  # type: ignore
-
-        expected_url = "https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+1.2.3"
-        expected_link = f'<a href="{expected_url}">{expected_url}</a>'
-        assert wiki_link == expected_link
-
-    def test_generate_wiki_link_with_different_versions(self) -> None:
-        """Test wiki link generation with different version formats."""
-        test_cases = ["2025.01", "10.20.30", "1.0.0", "2.29.03"]
-
-        for version in test_cases:
-            helper = self.make_helper(dimr_version=version)
-            wiki_link = helper._EmailHelper__generate_wiki_link()  # type: ignore
-
-            expected_url = f"https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+{version}"
-            expected_link = f'<a href="{expected_url}">{expected_url}</a>'
-            assert wiki_link == expected_link
 
     @patch("ci_tools.dimrset_delivery.step_5_prepare_email.KERNELS", [])
     def test_get_email_friendly_kernel_name_empty_kernels(self) -> None:
@@ -222,12 +200,10 @@ class TestEmailHelper:
     def test_insert_summary_table_header(self) -> None:
         """Test summary table header insertion."""
         helper = self.make_helper(dimr_version="2.29.03")
-        helper._EmailHelper__template = "Version: @@@DIMR_VERSION@@@ Link: @@@LINK_TO_PUBLIC_WIKI@@@"  # type: ignore
+        helper._EmailHelper__template = "Version: @@@DIMR_VERSION@@@"  # type: ignore
 
         helper._EmailHelper__insert_summary_table_header()  # type: ignore
-
-        expected_link = '<a href="https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+2.29.03">https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+2.29.03</a>'
-        expected_template = f"Version: 2.29.03 Link: {expected_link}"
+        expected_template = "Version: 2.29.03"
 
         assert helper._EmailHelper__template == expected_template  # type: ignore
 

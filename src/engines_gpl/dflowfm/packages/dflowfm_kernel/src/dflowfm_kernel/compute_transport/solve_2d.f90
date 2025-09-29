@@ -75,7 +75,7 @@ contains
 
       if (timon) call timstrt("solve_2D", ithndl)
 
-      thetavert = 0d0
+      thetavert = 0.0_dp
 
       dt_loc = dts
 
@@ -96,7 +96,7 @@ contains
          end if
 
          do j = 1, NUMCONST
-            sed(j, k) = rhs(j, k) / (1d0 + dt_loc * sink(j, k))
+            sed(j, k) = rhs(j, k) / (1.0_dp + dt_loc * sink(j, k))
          end do
       end do
       !$OMP END PARALLEL DO

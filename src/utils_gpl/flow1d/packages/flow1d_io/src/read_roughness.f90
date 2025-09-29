@@ -136,7 +136,7 @@ contains
          file = inputfiles(1:isemi-1)
          inputfiles = inputfiles(isemi+1:)
             
-         call remove_leading_spaces(trim(file))
+         call remove_leading_spaces(file)
          call read_roughnessfile(rgs, brs, spdata, file, default, def_type)
       enddo
 

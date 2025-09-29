@@ -75,7 +75,7 @@ contains
          end if
          if (nodewhat >= 2) then
             ja2 = 1
-            if (wetplot > 0d0) then
+            if (wetplot > 0.0_dp) then
                if (hs(k) < wetplot) then
                   ja2 = 0
                end if

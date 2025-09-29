@@ -92,8 +92,8 @@ contains
       integer, parameter :: CENTRAL_FROM_BED_TIL_SECOND_OR_FIRST_ABOVE_LOCAL_BOB = 1
       integer, parameter :: ALL_CENTRAL = 2
       integer, parameter :: CENTRAL_FROM_BED_TILL_HIGHEST_LAYER_WITH_EQUAL_LEVELS = 3
-      real(kind=dp), parameter :: FOR_CUT_CELL = 0d0
-      real(kind=dp), parameter :: TWO_THIRDS = 2d0 / 3d0
+      real(kind=dp), parameter :: FOR_CUT_CELL = 0.0_dp
+      real(kind=dp), parameter :: TWO_THIRDS = 2.0_dp / 3.0_dp
 
       integer :: link_in_3d
       integer :: kb, kb0, kt, Lb
@@ -117,7 +117,7 @@ contains
          call sets01zbnd(USE_S0, DO_NOT_SET_BlDepth)
       end if
 
-      if (uniformhu > 0d0) then
+      if (uniformhu > 0.0_dp) then
          hu(:) = uniformhu
          return
       end if
@@ -143,8 +143,8 @@ contains
       do link = 1, lnx
 
          if (wu(link) == FOR_CUT_CELL) then
-            hu(link) = 0d0
-            au(link) = 0d0
+            hu(link) = 0.0_dp
+            au(link) = 0.0_dp
             cycle
          end if
 
@@ -189,8 +189,8 @@ contains
             end if
 
          else
-            hu(link) = 0d0
-            au(link) = 0d0
+            hu(link) = 0.0_dp
+            au(link) = 0.0_dp
          end if
 
          if (kmx > 0) then ! only in sub3D
@@ -222,12 +222,12 @@ contains
       end do
 
       do link = 1, lnx ! why is it here?- it is not hu
-         huvli(link) = 1d0 / max(epshs, acl(link) * hs(ln(1, link)) + (1d0 - acl(link)) * hs(ln(2, link)))
+         huvli(link) = 1.0_dp / max(epshs, acl(link) * hs(ln(1, link)) + (1.0_dp - acl(link)) * hs(ln(2, link)))
       end do
 
       if (lincontin == LINEAR_CONTINUITY) then ! is this only for 2D? why not at the beginning?
          do link = 1, lnx
-            hu(link) = -0.5d0 * (bob(1, link) + bob(2, link))
+            hu(link) = -0.5_dp * (bob(1, link) + bob(2, link))
          end do
       end if
 
@@ -257,7 +257,7 @@ contains
 !> calculate_vhei_and_eup
       subroutine calculate_vhei_and_eup()
 
-         vhei = 0.5d0 * u_in * u_in / ag
+         vhei = 0.5_dp * u_in * u_in / ag
          eup = water_height + vhei
 
       end subroutine calculate_vhei_and_eup
@@ -275,7 +275,7 @@ contains
             if (water_height < TWO_THIRDS * eup) then ! supercritical
                water_height = TWO_THIRDS * eup
                hup = hu_crest - water_height
-               if (hup < 0d0) then
+               if (hup < 0.0_dp) then
                   adve(link) = adve(link) - direction_sign * hup * ag * dxi(link)
                end if
             end if
@@ -294,8 +294,8 @@ contains
          call calculate_advection_block_subgrid_and_Rajaratnam()
 
          ufac = water_height_no_weir / water_height ! compensates for undisturbed field velocity
-         efac = 1d0 - (1d0 / ufac**2)
-         advi(link) = advi(link) + 0.5d0 * dxi(link) * abs(u1(link)) * ufac * ufac * efac
+         efac = 1.0_dp - (1.0_dp / ufac**2)
+         advi(link) = advi(link) + 0.5_dp * dxi(link) * abs(u1(link)) * ufac * ufac * efac
          water_height = water_height_no_weir
 
       end subroutine calculate_advection_Rajaratnam
@@ -352,7 +352,7 @@ contains
          hkru_in = -bed_level_at_u_point
 
          ! determine sill height downstream of weir
-         if (u_in >= 0d0) then
+         if (u_in >= 0.0_dp) then
             d1 = shrxw(nfw)
             slope_upstream = taludlxw(nfw)
             slope_downstream = taludrxw(nfw)
@@ -362,49 +362,49 @@ contains
             slope_downstream = taludlxw(nfw)
          end if
 
-         vhei = 0.5d0 * u_in * u_in / ag
-         energy_height_upstream = max(0.000001d0, wsbov + hkru_in) + vhei
-         qvolk = avolk * energy_height_upstream**1.5d0
+         vhei = 0.5_dp * u_in * u_in / ag
+         energy_height_upstream = max(0.000001_dp, wsbov + hkru_in) + vhei
+         qvolk = avolk * energy_height_upstream**1.5_dp
          qunit = abs(u_in) * water_height_no_weir
 
-         vben = qunit / max(0.000001d0, wsben - bl(downstream_cell))
-         vhei = 0.5d0 * vben * vben / ag
-         energy_height_downstream = max(0.000001d0, wsben + hkru_in) + vhei
+         vben = qunit / max(0.000001_dp, wsben - bl(downstream_cell))
+         vhei = 0.5_dp * vben * vben / ag
+         energy_height_downstream = max(0.000001_dp, wsben + hkru_in) + vhei
          energy_height_downstream = min(energy_height_downstream, energy_height_upstream)
 
          hov = wsbov + hkru_in
          vov = qunit / hov
-         if (vov < 0.5d0) then
+         if (vov < 0.5_dp) then
             itel = 0
             hvolk = TWO_THIRDS * energy_height_upstream
-            tol = 0.001d0 * max(0.0001d0, qunit)
-            qov = 0d0
+            tol = 0.001_dp * max(0.0001_dp, qunit)
+            qov = 0.0_dp
             do while (itel < 100 .and. (abs(qunit - qov)) > tol)
                itel = itel + 1
                vov = qunit / hov
-               hov = max(hvolk, energy_height_upstream - (vov**2) / (2d0 * ag))
+               hov = max(hvolk, energy_height_upstream - (vov**2) / (2.0_dp * ag))
                qov = vov * hov
             end do
          end if
          dte0 = weirdte(nfw)
-         dtefri = 0.0d0
+         dtefri = 0.0_dp
          call enloss(ag, d1, energy_height_upstream, hkru_in, qunit, qvolk, toest, vov, &
                      energy_height_downstream, wsbov, wsben, weirdte(nfw), dtefri, iadv(link), crestlxw(nfw), &
                      slope_upstream, slope_downstream, vegxw(nfw), testfixedweirs)
-         weirdte(nfw) = (1d0 - waquaweirthetaw) * weirdte(nfw) + waquaweirthetaw * dte0
+         weirdte(nfw) = (1.0_dp - waquaweirthetaw) * weirdte(nfw) + waquaweirthetaw * dte0
 
          ! attention total waterdepth instead of water above crest
          vbov = abs(u_in)
          if (toest == 'volk') then
-            vbov = qvolk / max(water_height_no_weir, 1d-6)
+            vbov = qvolk / max(water_height_no_weir, 1.0e-6_dp)
          end if
-         if (vbov > 1d-8) then
+         if (vbov > 1.0e-8_dp) then
             agwdxi = ag * weirdte(nfw) * dxi(link)
             if (kmx == 0) then
                advi(link) = advi(link) + agwdxi / vbov ! 1/s
             else
                do link_in_3d = Lbot(link), Ltop(link)
-                  advi(link_in_3d) = advi(link_in_3d) + agwdxi / max(1d-4, abs(u1(link_in_3d)))
+                  advi(link_in_3d) = advi(link_in_3d) + agwdxi / max(1.0e-4_dp, abs(u1(link_in_3d)))
                end do
             end if
             map_fixed_weir_energy_loss(link) = weirdte(nfw)
@@ -430,13 +430,13 @@ contains
 
          integer, parameter :: AVERAGE_BED_CEILING = 2
 
-         if (hu(link) <= 0d0) then
+         if (hu(link) <= 0.0_dp) then
             Ltop(link) = DRY_FLAG
          else
             call get_lkbot_set_ltop_upwind(link, upstream_cell, upstream_cell_index, Lb, kb, kt)
             kb0 = kb - 1
-            au(link) = 0d0
-            hu(Lb - 1) = 0d0
+            au(link) = 0.0_dp
+            hu(Lb - 1) = 0.0_dp
 
             if (Lb == Ltop(link)) then
                call calculate_hu_au_for_one_layer()
@@ -472,7 +472,7 @@ contains
          ktd = ktop(downstream_cell)
          kbd = min(ln0(3 - upstream_cell_index, Lb), ktd)
          kbd0 = kbd - 1
-         hub = 0d0
+         hub = 0.0_dp
          if (ktd == kbd) then
             ! downwind side one layer => default upwind sigma
             LLbc = Lb - 1
@@ -517,7 +517,7 @@ contains
          LLbc = Ltop(link)
          do link_in_3d = Ltop(link) - 1, Lb + 1, -1
             if (zws(kb + link_in_3d - Lb) > bed_level_at_u_point .and. &
-                abs(zws(kb + link_in_3d - Lb) - zws(kbd + link_in_3d - Lb)) < 1d-10) then
+                abs(zws(kb + link_in_3d - Lb) - zws(kbd + link_in_3d - Lb)) < 1.0e-10_dp) then
                LLbc = link_in_3d
                exit
             end if
@@ -561,7 +561,7 @@ contains
                if (zws(kbd + link_in_3d - Lb) > zws(kbd0) .and. zws(kbd + LLbc - Lb) > zws(kbd0)) then
                   sigma_downstream = (zws(kbd + link_in_3d - Lb) - zws(kbd0)) / (zws(kbd + LLbc - Lb) - zws(kbd0))
                   if (ihuzcsig == option_AVERAGE) then
-                     sigma = 0.5d0 * (sigma + sigma_downstream)
+                     sigma = 0.5_dp * (sigma + sigma_downstream)
                   else if (ihuzcsig == option_MAX) then
                      sigma = max(sigma, sigma_downstream)
                   else if (ihuzcsig == option_MIN) then
@@ -606,7 +606,7 @@ contains
             ! different numbers of layers
             ktd = ktop(downstream_cell)
             kbd = min(ln0(3 - upstream_cell_index, Lb), ktd)
-            if (zws(ktd) - max(zws(kbd - 1), bl(downstream_cell)) > 0d0) then
+            if (zws(ktd) - max(zws(kbd - 1), bl(downstream_cell)) > 0.0_dp) then
                call calculate_hu_au_downwind_wet()
             else
                call calculate_hu_au_downwind_dry()
@@ -716,7 +716,7 @@ contains
 
       implicit none
 
-      upstream_water_level = 0.5d0 * (s0(left_cell) + s0(right_cell))
+      upstream_water_level = 0.5_dp * (s0(left_cell) + s0(right_cell))
 
    end function get_upstream_water_level_central_limiter
 
@@ -728,7 +728,7 @@ contains
 
       implicit none
 
-      upstream_water_level = acl(link) * s0(left_cell) + (1d0 - acl(link)) * s0(right_cell)
+      upstream_water_level = acl(link) * s0(left_cell) + (1.0_dp - acl(link)) * s0(right_cell)
 
    end function get_upstream_water_level_perot_alfa_limiter
 
@@ -740,7 +740,7 @@ contains
 
       implicit none
 
-      upstream_water_level = acl(link) * s0(right_cell) + (1d0 - acl(link)) * s0(left_cell)
+      upstream_water_level = acl(link) * s0(right_cell) + (1.0_dp - acl(link)) * s0(left_cell)
 
    end function get_upstream_water_level_regular_linear_interpolation
 

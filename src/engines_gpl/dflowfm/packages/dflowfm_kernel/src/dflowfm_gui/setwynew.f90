@@ -51,13 +51,13 @@ contains
 
       FAC = 1
       call INQASP(ASP)
-      DY = max(DY, 1d-8)
+      DY = max(DY, 1.0e-8_dp)
       dyh = dy
 
       if (JSFERTEK >= 1) then
-         DY = min(DY, 180d0)
-         X = max(-360.0d0, min(X, 360.0d0))
-         Y = max(-89.9d0, min(Y, 89.9d0))
+         DY = min(DY, 180.0_dp)
+         X = max(-360.0_dp, min(X, 360.0_dp))
+         Y = max(-89.9_dp, min(Y, 89.9_dp))
       end if
 
       Y0 = Y
@@ -67,7 +67,7 @@ contains
       Y2 = Y + DY / 2
 
       if (JSFERTEK >= 1) then
-         FAC = 1d0
+         FAC = 1.0_dp
          call dPROJECT(X, Y1, XA, Y1A, 1)
          call dPROJECT(X, Y2, XA, Y2A, 1)
          if (Y2 - Y1 > 1e-10) FAC = (Y2 - Y1) / (Y2A - Y1A)

@@ -95,7 +95,7 @@ contains
       real(kind=dp), dimension(:), allocatable :: sum_horizontal_flux !sum of horizontal fluxes
       real(kind=dp), dimension(:), allocatable :: dummy_ndx !only used if `limtyp`=6
 
-      real, dimension(:), allocatable :: dummy_link !ATTENTION single precision
+      real(kind=dp), dimension(:), allocatable :: dummy_link !ATTENTION single precision
 
       !BEGIN
 

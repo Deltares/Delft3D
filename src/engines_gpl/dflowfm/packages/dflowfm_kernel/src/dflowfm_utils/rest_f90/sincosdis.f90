@@ -52,12 +52,12 @@ contains
       dx1 = getdx(x1, y1, x2, y2, jsferic)
       dy1 = getdy(x1, y1, x2, y2, jsferic)
       d = sqrt(dx1 * dx1 + dy1 * dy1)
-      if (d > 0d0) then
+      if (d > 0.0_dp) then
          s = dy1 / d
          c = dx1 / d
       else
-         s = 0d0
-         c = 0d0
+         s = 0.0_dp
+         c = 0.0_dp
       end if
    end subroutine sincosdis
 

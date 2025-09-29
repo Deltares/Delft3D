@@ -38,13 +38,13 @@ contains
       use m_sferic, only: pi, twopi, dg2rd, rd2dg, omega, fcorio, anglat, dy2dg, ra
 
       real(kind=dp) :: sidereal
-      pi = acos(-1d0)
-      twopi = 2d0 * pi
-      dg2rd = pi / 180d0
-      rd2dg = 180d0 / pi
-      sidereal = 23d0 * 3600d0 + 56d0 * 60d0 + 4.1d0
+      pi = acos(-1.0_dp)
+      twopi = 2.0_dp * pi
+      dg2rd = pi / 180.0_dp
+      rd2dg = 180.0_dp / pi
+      sidereal = 23.0_dp * 3600.0_dp + 56.0_dp * 60.0_dp + 4.1_dp
       omega = twopi / sidereal
-      fcorio = 2d0 * omega * sin(anglat * dg2rd)
+      fcorio = 2.0_dp * omega * sin(anglat * dg2rd)
       dy2dg = rd2dg / ra
    end subroutine inisferic
 end module m_ini_sferic

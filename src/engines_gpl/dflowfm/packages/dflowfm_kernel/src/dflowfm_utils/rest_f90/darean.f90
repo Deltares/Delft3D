@@ -60,11 +60,11 @@ contains
       real(kind=dp) :: Y0, DLE
       real(kind=dp) :: xcg, ycg
       integer :: jacounterclockwise
-      DAREA = 0d0
-      DLENGTH = 0d0
-      Y0 = 1d30
+      DAREA = 0.0_dp
+      DLENGTH = 0.0_dp
+      Y0 = 1.0e30_dp
       NEND = 0
-      DLENMX = 0.d0
+      DLENMX = 0.0_dp
 
       call get_startend(N, XX, YY, jstart, jend, dmiss)
 

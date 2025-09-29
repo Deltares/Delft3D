@@ -71,14 +71,14 @@ contains
       case (WAVE_FETCH_HURDLE, WAVE_FETCH_YOUNG, WAVE_UNIFORM)
          hsk = s1(k) - bl(k)
          if (hsk > epshu) then
-            if (twav(k) < 0.1d0) then
-               surdis = 0d0
+            if (twav(k) < 0.1_dp) then
+               surdis = 0.0_dp
                return
             end if
             rk = 2 * pi / rlabda(k)
             call wave_statbreakerdis(hsk, hwav(k), twav(k), rk, surdis)
          else
-            surdis = 0d0
+            surdis = 0.0_dp
          end if
       end select
 

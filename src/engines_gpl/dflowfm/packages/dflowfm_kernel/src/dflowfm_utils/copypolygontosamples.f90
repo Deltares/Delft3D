@@ -71,7 +71,7 @@ contains
                end if
                XS(N) = XPL(K)
                YS(N) = YPL(K)
-               ZS(N) = ZPL(K); if (ZS(N) == DMISS) ZS(N) = 1d0
+               ZS(N) = ZPL(K); if (ZS(N) == DMISS) ZS(N) = 1.0_dp
             end if
 
             if (JAKOL45 > 0 .and. ZPL(K) /= DMISS) then
@@ -81,8 +81,8 @@ contains
                   if (K > 1) then
                      if (XPL(K - 1) /= DMISS) then
                         call normalout(XPL(K - 1), YPL(K - 1), XPL(K), YPL(K), rx2, ry2, jsferic, jasfer3D, dmiss, dxymis)
-                        RX2 = 0.5d0 * (RX1 + RX2)
-                        RY2 = 0.5d0 * (RY1 + RY2)
+                        RX2 = 0.5_dp * (RX1 + RX2)
+                        RY2 = 0.5_dp * (RY1 + RY2)
                      end if
                   end if
 
@@ -91,11 +91,11 @@ contains
                      call INCREASESAM(2 * N)
                   end if
 
-                  WIDL = 0.1d0
-                  WIDR = 0.1d0
+                  WIDL = 0.1_dp
+                  WIDR = 0.1_dp
                   if (DZR(K) > Sillheightmin .and. DZL(K) > Sillheightmin) then
-                     WIDL = 2d0 * DZL(K)
-                     WIDR = 2d0 * DZR(K)
+                     WIDL = 2.0_dp * DZL(K)
+                     WIDR = 2.0_dp * DZR(K)
                   end if
 
                   XS(N) = XPL(K) - RX2 * WIDL
@@ -109,12 +109,12 @@ contains
             end if
 
             V = DBDISTANCE(XPL(K), YPL(K), XPL(KU), YPL(KU), jsferic, jasfer3D, dmiss)
-            if (V > 0d0 .and. UNIDX1D > 0) then
+            if (V > 0.0_dp .and. UNIDX1D > 0) then
                R = V / UNIDX1D
-               if (R > 1d0) then
+               if (R > 1.0_dp) then
                   KKN = R + 1
                   do KK = 1, KKN - 1
-                     A = dble(KK) / dble(KKN); B = 1d0 - A
+                     A = dble(KK) / dble(KKN); B = 1.0_dp - A
 
                      if (jakol45 == 0) then
                         N = N + 1
@@ -125,19 +125,19 @@ contains
                         YS(N) = B * YPL(K) + A * YPL(KU)
                         ZS(N) = B * ZPL(K) + A * ZPL(KU)
                         if (ZPL(K) == DMISS .or. ZPL(KU) == DMISS) then
-                           ZS(N) = 1d0
+                           ZS(N) = 1.0_dp
                         end if
                      end if
 
                      if (JAKOL45 > 0 .and. ZPL(K) /= DMISS .and. ZPL(KU) /= DMISS) then
 
-                        WIDL = 0.1d0
-                        WIDR = 0.1d0
+                        WIDL = 0.1_dp
+                        WIDR = 0.1_dp
                         DL = B * DZL(K) + A * DZL(KU)
                         DR = B * DZR(K) + A * DZR(KU)
                         if (DL > Sillheightmin .and. DR > Sillheightmin) then ! slope assumed
-                           WIDL = 2d0 * DL
-                           WIDR = 2d0 * DR
+                           WIDL = 2.0_dp * DL
+                           WIDR = 2.0_dp * DR
                         end if
 
                         N = N + 1
@@ -173,18 +173,18 @@ contains
                   end if
                   XS(N) = XPL(KU)
                   YS(N) = YPL(KU)
-                  ZS(N) = ZPL(KU); if (ZS(N) == DMISS) ZS(N) = 1d0
+                  ZS(N) = ZPL(KU); if (ZS(N) == DMISS) ZS(N) = 1.0_dp
                end if
 
                if (JAKOL45 > 0 .and. ZPL(KU) /= DMISS) then
 
-                  WIDL = 0.1d0
-                  WIDR = 0.1d0
+                  WIDL = 0.1_dp
+                  WIDR = 0.1_dp
                   DL = DZL(KU)
                   DR = DZR(KU)
                   if (DL > Sillheightmin .and. DR > Sillheightmin) then
-                     WIDL = 2d0 * DL
-                     WIDR = 2d0 * DR
+                     WIDL = 2.0_dp * DL
+                     WIDR = 2.0_dp * DR
                   end if
 
                   N = N + 1
