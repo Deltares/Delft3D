@@ -153,15 +153,12 @@ contains
         real(kind = dp) :: ndt                              ! Help variable time step multiplier
         real(kind = dp) :: atfac                            ! Help variable
 
-        real(kind = dp), save :: time_bloom_next = -huge(time_bloom_next)
+        save    istep
+        data    istep  / 0 /
 
         integer(4) :: ithndl =  0
 
         if (timon) call timstrt ("wq_processes_proces", ithndl)
-
-        if ( time_bloom_next == -huge(time_bloom_next) ) then
-            time_bloom_next = time
-        endif
 
         IFRACS = 1
 
@@ -181,19 +178,12 @@ contains
             iv_idx = varidx(ivar)
             ip_arr = arrpoi(iarr)
             ipndt = ip_arr + iv_idx - 1
-
-            ! Calculate the "quasi-number" of time steps for BLOOM
-            ! Given BLOOM step is in days
-            ndtblo = nint( 86400.0_dp * a(ipndt) / dts )
+            ndtblo = nint(a(ipndt))  ! This picks up TimMultBl from BLOOM (without checking the name!)
             prondt(bloom_status_ind) = ndtblo
 
-            ! This timestep fractional step ?
-            ! Enclose the time in an interval, rather than look for equality, as the time step
-            ! may be dynamic. (The half timestep is to neutralise the rounding errors)
-            if ( time_bloom_next >  time - 0.5_dp * dts .and. &
-                 time_bloom_next <= time + 1.5_dp * dts ) then
-                time_bloom_next = time_bloom_next + 86400.0_dp * a(ipndt)
+            !        This timestep fractional step ?
 
+            if (mod(istep - 1, ndtblo) == 0) then
                 flux = 0.0
 
                 !           set dts and delt, bloom itself will multiply with prondt

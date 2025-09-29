@@ -51,11 +51,14 @@ contains
 
         INTEGER(kind = int_wp) :: LUNREP
 
-        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6, IP7
-        REAL(kind = real_wp) :: DEPTH, ADEPTH, DELT, BLOOM_STEP
-        INTEGER(kind = int_wp) :: NSWITS, ISEG
-        LOGICAL, SAVE ::  FIRST = .TRUE.
-        REAL(kind = real_wp), SAVE :: ELAPSED_TIME = 0.0_real_wp
+        INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, IP6
+        REAL(kind = real_wp) :: DEPTH, ADEPTH
+        INTEGER(kind = int_wp) :: TELLER, NAVERA, NSWITS, ISEG
+        LOGICAL  FIRST
+        SAVE     FIRST
+        DATA     FIRST /.TRUE./
+        SAVE     TELLER
+        DATA     TELLER /0/
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -63,7 +66,6 @@ contains
         IP4 = IPOINT(4)
         IP5 = IPOINT(5)
         IP6 = IPOINT(6)
-        IP7 = IPOINT(7)
 
         !     Check whether certain input parameters are independent of X
 
@@ -82,14 +84,13 @@ contains
 
         !     Retrieve switch for averaging and nr. of steps to be averaged
 
-        NSWITS     = NINT(process_space_real(IP1))
-        BLOOM_STEP = NINT(process_space_real(IP2))
-        DELT       = NINT(process_space_real(IP3))
+        NSWITS = NINT(process_space_real(IP1))
+        NAVERA = NINT(process_space_real(IP2))
 
-        !     Add the current time step to the total elapsed time
+        !     Add 1 to counter and check for period
 
-        ELAPSED_TIME = ELAPSED_TIME + DELT
-        IF (ELAPSED_TIME > BLOOM_STEP) ELAPSED_TIME = ELAPSED_TIME - BLOOM_STEP + DELT
+        TELLER = TELLER + 1
+        IF (TELLER > NAVERA) TELLER = TELLER - NAVERA
 
         !     Loop over segments
 
@@ -97,9 +98,9 @@ contains
 
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
 
-                DEPTH = process_space_real(IP4)
-                ADEPTH = process_space_real(IP5)
-                process_space_real(IP7) = ADEPTH
+                DEPTH = process_space_real(IP3)
+                ADEPTH = process_space_real(IP4)
+                process_space_real(IP6) = ADEPTH
 
                 IF (NSWITS == 0) THEN
 
@@ -110,11 +111,9 @@ contains
                 ELSE
 
                     !                 Averaging: FANCY FORMULA!!!!!
-                    !                 We calculate the running average, it is
-                    !                 automatically (!) reset at the start of a new interval
 
-                    process_space_real(IP6) = (ADEPTH * (ELAPSED_TIME - DELT) + DEPTH * DELT) &
-                            / ELAPSED_TIME
+                    process_space_real(IP5) = (ADEPTH * REAL(TELLER - 1) + DEPTH) &
+                            / REAL(TELLER)
                 ENDIF
             ENDIF
             !
@@ -124,7 +123,6 @@ contains
             IP4 = IP4 + INCREM(4)
             IP5 = IP5 + INCREM(5)
             IP6 = IP6 + INCREM(6)
-            IP7 = IP7 + INCREM(7)
             !
         end do
         !
