@@ -273,7 +273,9 @@ class ChangeLogPublisher(StepExecutorInterface):
             self.__context.log("Dry run mode, skipping file sync")
             return True
 
-        self.__sync_changelog_file(current_tag, changelog)
+        if not self.__sync_changelog_file(current_tag, changelog):
+            return False
+
         return True
 
 
