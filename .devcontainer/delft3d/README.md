@@ -15,6 +15,7 @@ to install anything else. These tools include but are not limited to:
 - Linters
 - Formatters
 - Profilers
+- Version control tools
 
 The [`devcontainer.json`](https://containers.dev/implementors/json_reference/) 
 is a configuration file that your IDE should read to initialize the devcontainer.
@@ -52,9 +53,16 @@ up-to-date list. At the time of writing they are:
 - Visual Studio
 - IntelliJ IDEA
 
-The steps required to open this project inside a devcontainer depends on the IDE.
+The steps required to open this project inside a devcontainer depend on the IDE.
 To maximize your chances of success we suggest following the instructions on the site
-of your IDE of choice.
+of your IDE of choice. The `devcontainers.json` file contains a `customizations` section
+that can be used to declare IDE plugins or extensions to install in the devcontainer
+automatically. These "customizations" are specific for your IDE. At the time of writing
+this section only contains extensions to install in Visual Studio Code. If you have
+no preference for an IDE, you should probabily go with Visual Studio Code. If you have
+experience using the devcontainer in other IDE's, feel free to suggest extensions to
+add to the `devcontainers.json`. This file is tracked in git, so anything you add in this
+file will be visible to everyone else once your changes to it get merged to the `main` branch.
 
 ### Docker
 If you are on Windows, we assume you will have 
@@ -71,8 +79,8 @@ available in both Windows and your WSL Linux distributions. In addition you will
 get the Docker Desktop GUI in Windows, that you can use to configure your Docker
 installation and to do most things that you can also do with the `docker` command
 line tool. In addition you will be able to switch between running 'Linux containers'
-and 'Windows containers'. You will need a license to use Docker Desktop. If you are 
-a Deltares employee you can request a Docker Desktop license by contacting Edward Melger.
+and 'Windows containers'. You need a license to use Docker Desktop. If you are a
+Deltares employee you can request a Docker Desktop license by contacting Edward Melger.
 
 #### Installing Docker in Linux (WSL or native)
 Docker Desktop requires a license. But the official "Docker Engine", which includes
@@ -84,7 +92,7 @@ Usually docker can be installed using the Linux distribution's standard package 
 You should be aware of the following:
 1. You will only be able to run Linux containers (You can't run Windows containers on Linux).
 2. In some Linux distributions, you will need to configure the package manager to install
-   the official Docker engine. Read [this page](https://docs.docker.com/engine/install/#installation-procedures-for-supported-platforms) 
+   the official Docker Engine. Read [this page](https://docs.docker.com/engine/install/#installation-procedures-for-supported-platforms) 
    for instructions.
 3. [Podman](https://docs.docker.com/engine/install/#installation-procedures-for-supported-platforms)
    is an alternative to Docker Engine. It provides the `podman` command line tool that acts
@@ -98,4 +106,115 @@ You should be aware of the following:
    compatibility issues between Podman and Docker Engine mostly when 'building' container
    images with [BuildKit](https://docs.docker.com/build/buildkit/) features. 
 
+### Opening Delft3D 'in the devcontainer' in your IDE
+Once you have Docker installed you can follow the instructions for your IDE to open the
+Delft3D repository inside the devcontainer. If you are on Windows, we **strongly recommend**
+cloning the Delft3D repository in your WSL Linux distribution's filesystem. Somewhere under
+your home directory in Linux, for example (e.g. `/home/${USER}/repo/delft3d`). 
+That means that you will most likely have two separate checkouts of the Delft3D repository on
+your computer (one in your `C:\` drive and one in your WSL Linux distribution). Once you open 
+the Delft3D repository inside the devcontainer, your IDE will 'mount' the directory containing 
+the Delft3D repository on the 'host' inside the 'container'. For example, this means that the 
+files in WSL Linux under `/home/${USER}/repo/delft3d` will be available in the container under 
+`/workspaces/delft3d`. It is possible to mount a directory from the `C:\`
+drive inside the container, but we **discourage** this for the following reasons:
+1. The performance of file system operations (reading and writing files to disk) is noticably
+   worse when a directory in the `C:\` drive is mounted inside the devcontainer. This means, 
+   for example, that compiling D-Hydro may take over four times longer than usual.
+2. You have used Git on Windows to clone the Delft3D repository on the `C:\`
+   drive. This means that most of the text files inside the repository have been 
+   written to disk using 'Windows line endings' (`\r\n`) instead of 'Unix line endings' 
+   (`\n`). Inside the devcontainer, some tools (most notably Git itself) will have trouble
+   handling 'Windows line endings' in the text files.
+
+After cloning the Delft3D repository to a directory on Linux, you should first open
+that directory in your IDE. On Windows, Visual Studio Code requires a "WSL" extension
+to open a directory in a WSL Linux distribution. You can search for this extension in
+the 'Extensions' menu. While you are at it, you should also search for the "Dev Containers"
+extension. You will need to install both of these extensions.
+
+Deltares hosts it's own our 'container registry' at
+[containers.deltares.nl](https://containers.deltares.nl). Our devcontainer is based on the
+'third-party-libs' build container stored under the `delft3d-dev` project in 
+`containers.deltares.nl`. You will need access to the `delft3d-dev` project before you can
+use the build container. Then you need to login with the `docker` command line tool. You
+can do so with the following command:
+```bash
+docker login --username $YOUR_EMAIL_ADDRESS --password $YOUR_CLI_SECRET containers.deltares.nl
+```
+When you log into the 
+[web interface of `containers.deltares.nl`](https://containers.deltares.nl),
+you can find the missing values you need to pass to the `--username` and `--password` 
+arguments in your 'User Profile'.
+
+If you feel uneasy about your "CLI secret" ending up in your bash history. You can instead save
+it in a file somewhere (e.g. ~/.cli-secret) and use the following command:
+```bash
+cat ~/.cli-secret | docker login --username $YOUR_EMAIL_ADDRESS --password-stdin containers.deltares.nl
+```
+
+Now you're finally ready to open the Delft3D repository in the devcontainer. The first time
+you do so it may take a few minutes. The devcontainer extension must do the following:
+1. Pull the 'third-party-libs' base container image from `containers.deltares.nl`
+2. Run the instructions in the `Dockerfile` to create the final devcontainer image. 
+
+Once the devcontainer image is done building it is cached on your computer. It will show
+up in `docker image ls`. This will ensure
+that the next time you open your IDE, it will connect to the devcontainer much faster. You
+do not need to repeat the `docker login` command and wait for the container to build anymore,
+unless you explicitly request to rebuild the container and pull the latest version of the
+'third-party-libs' container from `containers.deltares.nl`.
+
+Please don't hesitate to contact us if you need access to the `delft3d-dev` project in
+`containers.deltares.nl`, or you run into any errors using or starting to use the
+devcontainer. We have probably run into the same problems and are able to help you out.
+
+## Configuring your IDE
+
+### Visual Studio Code
+Now that you are able to open Delft3D in the devcontainer it's time to start reaping the
+benefits. The first thing you can do to start exploring the devcontainer is to open a 
+terminal in your IDE and explore it. Most likely, the terminal will open `bash` in the
+`/workspaces/delft3d` directory. This is the directory containing the Delft3D repository.
+Your IDE has mounted the directory from the Linux "host" (e.g. `/home/${USER}/repo/delft3d`) 
+to the `/workspaces/delft3d` directory inside the container. Any changes that you
+make to the files inside the `/workspaces/delft3d` directory are persisted in the
+`/home/${USER}/repo/delft3d` directory in the host. If you restart your computer, the changes
+you saved in `/workspaces/delft3d` will still be there. in Docker terminology this is called
+a [bind mount](https://docs.docker.com/engine/storage/bind-mounts/).
+
+Outside of `/workspaces/delft3d`, the file system in the container looks completely different
+from the one in your host (WSL) Linux system. Inside the container, you are logged in as the
+user `dev`. `dev`'s home directory is in `/home/dev` inside the container. While in the
+container you can change the files inside `/home/dev`, but these changes will not be persisted.
+If you restart your computer the files in this directory will be reset to how they are saved
+inside the devcontainer image. The only way to persist changes to files inside a container is 
+by using [volumes](https://docs.docker.com/engine/storage/volumes/) (or bind mounts).
+
+The tools you need for development should already installed. You can check by running the
+following commands:
+```bash
+git --version
+cmake --version
+ifx --version
+```
+
+If you are familiar with the command line tools you should be good to go. The real benefit
+of the devcontainer is being able to use the IDE's editing and debugging capabilities with
+the tools in the container. This requires language specific extensions, and configuring your
+editor. In the case of Visual Studio Code, some common extensions you will likely need are
+installed automatically. Some extensions will work right away. Other extensions will need
+some configuration to work at all, or work in a way you are satisfied with. Visual Studio
+Code configuration files live inside the `.vscode` directory in the root directory of the
+repository. This directory is in our `.gitignore` file, because editor configuration is
+platform dependent, environment dependent, and usually contains personal preference. We do
+provide example configuration files for Visual Studio Code in the 
+`.devcontainer/delft3d/.vscode-example/` directory. You can copy the contents of this directory
+to the `.vscode/` directory as a starting point.
+
+There are three files inside the `.vscode/` directory:
+- [`settings.json`](https://code.visualstudio.com/docs/configure/settings#_settings-json-file): VSCodes settings specific for this project. Includes extension settings.
+- [`launch.json`](https://code.visualstudio.com/docs/debugtest/debugging-configuration): Configuration for running and debugging code.
+- [`tasks.json`](https://code.visualstudio.com/docs/debugtest/tasks): Custom scripts/programs
+  for common development tasks.
 
