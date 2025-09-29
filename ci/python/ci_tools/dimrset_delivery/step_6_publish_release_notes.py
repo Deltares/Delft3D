@@ -152,7 +152,7 @@ class ChangeLogPublisher(StepExecutorInterface):
         -------------
         - `<h2>{tag} - ...</h2>`: Matches the section header for the given tag.
         - `.*?</ul>`: Non-greedy match capturing the full `<ul>` block.
-        - Flags: 
+        - Flags:
             * `re.S` → allows `.` to span multiple lines.
             * `re.M` → enables `^` and `$` to work across lines.
 
@@ -216,9 +216,7 @@ class ChangeLogPublisher(StepExecutorInterface):
         - Prepends or replaces the changelog section for the given tag.
         - Uploads the updated changelog back to the remote location.
         """
-        path_to_release_notes_file = (
-            f"/p/d-hydro/dimrset/{self.__context.settings.path_to_release_changelog_artifact}"
-        )
+        path_to_release_notes_file = f"/p/d-hydro/dimrset/{self.__context.settings.path_to_release_changelog_artifact}"
 
         self.__context.log(f"Downloading changelog from {path_to_release_notes_file}")
         try:
