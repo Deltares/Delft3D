@@ -25,6 +25,8 @@
 !
 !-------------------------------------------------------------------------------
 module m_capsim
+   use precision, only : dp
+
    implicit none
    private
 
@@ -35,17 +37,6 @@ module m_capsim
 
 !  Deze source-code bevat de vier onderdelen uit de notitie
 !  over de koppeling CAPSIM-SOBEK-RR
-!
-!  Ab Veldhuizen
-!  30 juli 1998
-!  21 april 1999
-
-!  convert to F90 - Geert Prinsen, Oct 2008
-!  double precision Oct 2012
-!
-! Benodigde invoer
-!
-! Onderdeel:
 !
 contains
 !
@@ -70,50 +61,50 @@ contains
       integer nxfrsw ! Maximum number of data in inundation table
       integer nt ! Gewasnummer
       integer ns ! Soil physical unit number
-      double precision dpin ! Diepte grondwater initieel (m-gl)
-      double precision dproot ! Root zone depth (m)
-      double precision dt ! Time step (d)
-      double precision pn ! Net precipitation (m/d)
-      double precision vmrzin ! Initial moisture content root zone (m)
-      double precision fmevpt ! Potential evapotranspiration (m/d)
+      real(kind=dp) dpin ! Diepte grondwater initieel (m-gl)
+      real(kind=dp) dproot ! Root zone depth (m)
+      real(kind=dp) dt ! Time step (d)
+      real(kind=dp) pn ! Net precipitation (m/d)
+      real(kind=dp) vmrzin ! Initial moisture content root zone (m)
+      real(kind=dp) fmevpt ! Potential evapotranspiration (m/d)
       integer nudpun(nxspun, nxrz) ! number of groundwater depth data in table
-      double precision srrz(nxspun, nxrz, nxdpun) ! Storage root zone table (m)
-      double precision fmca(nxspun, nxrz, nxdpun) ! Capillary rise table (m/d)
-      double precision scsa(nxspun, nxrz, nxdpun) ! Storage coefficient table (m)
-      double precision dprzun(nxrz) ! Root zone depths in table (cm)
-      double precision dpgwun(nxspun, nxrz, nxdpun) ! Groundwater depths in table (m-gl)
-      double precision dpfrsw(nxfrsw) ! Depth of groundwater in inundation table (m-gl)
-      double precision frsw(nxfrsw) ! Inundation table (-)
-      double precision frev(nxspun, nxte, 5) ! Evapotranspiration curves (-)
+      real(kind=dp) srrz(nxspun, nxrz, nxdpun) ! Storage root zone table (m)
+      real(kind=dp) fmca(nxspun, nxrz, nxdpun) ! Capillary rise table (m/d)
+      real(kind=dp) scsa(nxspun, nxrz, nxdpun) ! Storage coefficient table (m)
+      real(kind=dp) dprzun(nxrz) ! Root zone depths in table (cm)
+      real(kind=dp) dpgwun(nxspun, nxrz, nxdpun) ! Groundwater depths in table (m-gl)
+      real(kind=dp) dpfrsw(nxfrsw) ! Depth of groundwater in inundation table (m-gl)
+      real(kind=dp) frsw(nxfrsw) ! Inundation table (-)
+      real(kind=dp) frev(nxspun, nxte, 5) ! Evapotranspiration curves (-)
 ! Out
-      double precision fmevac ! Actual evapotranspiration (m/d)
-      double precision fmpe ! Percolation (m/d)
-      double precision vmrzac ! Actual storage in root zone (m)
+      real(kind=dp) fmevac ! Actual evapotranspiration (m/d)
+      real(kind=dp) fmpe ! Percolation (m/d)
+      real(kind=dp) vmrzac ! Actual storage in root zone (m)
 !
 ! Local variables
 !
       integer ib, id
-      double precision de
+      real(kind=dp) de
       logical issw
-      double precision :: Frrdca = 0.0d0
-      double precision dtgw
-      double precision icselo
-      double precision vmrzpt
-      double precision vmrzeq0
-      double precision vmrzeq1
-      double precision vmrzeq2
-      double precision vmrzeq10
-      double precision vmrzeq
-      double precision frpe, frtp
-      double precision frswtp
-      double precision dptp
-      double precision fmevptsw ! Potential evapotranspiration surface water (m/d)
+      real(kind=dp) :: Frrdca = 0.0_dp
+      real(kind=dp) dtgw
+      real(kind=dp) icselo
+      real(kind=dp) vmrzpt
+      real(kind=dp) vmrzeq0
+      real(kind=dp) vmrzeq1
+      real(kind=dp) vmrzeq2
+      real(kind=dp) vmrzeq10
+      real(kind=dp) vmrzeq
+      real(kind=dp) frpe, frtp
+      real(kind=dp) frswtp
+      real(kind=dp) dptp
+      real(kind=dp) fmevptsw ! Potential evapotranspiration surface water (m/d)
       integer ios
 !
 ! Functions
 !
-      double precision ActualEvaporation
-      double precision Unsa
+      real(kind=dp) ActualEvaporation
+      real(kind=dp) Unsa
 
       status = 0
       ib = message_unit
@@ -203,24 +194,24 @@ contains
             write (debug_unit, '(1x,a)') 'Calculate actual evap.'
          end if
 !
-         if (vmrzeq1 > 0.0d0) then
+         if (vmrzeq1 > 0.0_dp) then
             frtp = vmrzin / vmrzeq1
             if (frtp > 1.) then
-               vmrzeq0 = unsa(ns, nt, 0.d0, dproot, srrz, &
+               vmrzeq0 = unsa(ns, nt, 0._dp, dproot, srrz, &
                               debug_unit, message_unit, status, &
                               nxte, nxspun, nxrz, nxdpun, &
                               nurz, dprzun, dpgwun, nudpun)
 
-               if (vmrzeq0 > 0.0d0) then
+               if (vmrzeq0 > 0.0_dp) then
                   frtp = vmrzin / vmrzeq0
                   frtp = max(frtp, frev(ns, nt, 3))
                else
-                  frtp = 0.0d0
+                  frtp = 0.0_dp
                end if
             end if
 
          else
-            frtp = 0.0d0
+            frtp = 0.0_dp
          end if
          !
          de = ActualEvaporation(fmevpt, &
@@ -301,13 +292,13 @@ contains
 !
       if (vmrzpt >= vmrzeq) then
 !                 Percolation as excess moisture -  fmpe neg
-         if (dptp < (2.d0 + dproot)) then
+         if (dptp < (2.0_dp + dproot)) then
             fmpe = (vmrzeq - vmrzpt) / dtgw
          else
 !                 It is assumed that the equilibrium moisture content of
 !                 the root zone stabilizes if the groundwater level becomes
 !                 lower than 2.+dproot m-gl.
-            vmrzeq2 = unsa(ns, nt, 2.d0 + dproot, dproot, srrz, &
+            vmrzeq2 = unsa(ns, nt, 2.0_dp + dproot, dproot, srrz, &
                            debug_unit, message_unit, status, &
                            nxte, nxspun, nxrz, nxdpun, &
                            nurz, dprzun, dpgwun, nudpun)
@@ -327,7 +318,7 @@ contains
             write (debug_unit, '(1x,a)') 'Calculate eq.moisture 10'
          end if
 !
-         vmrzeq10 = unsa(ns, nt, 10.0d0, dproot, srrz, &
+         vmrzeq10 = unsa(ns, nt, 10.0_dp, dproot, srrz, &
                          debug_unit, message_unit, status, &
                          nxte, nxspun, nxrz, nxdpun, &
                          nurz, dprzun, dpgwun, nudpun)
@@ -348,9 +339,9 @@ contains
 !              Reduce the capillary rise in case of a small deficit
 !              in the root zone (Paul van Walsum)
 !
-         if (vmrzeq > vmrzeq10 + 1.d-4 .and. vmrzin > vmrzeq10 + 1.d-4) then
+         if (vmrzeq > vmrzeq10 + 1.0e-4_dp .and. vmrzin > vmrzeq10 + 1.0e-4_dp) then
             frpe = (vmrzeq - vmrzin) / (vmrzeq - vmrzeq10)
-            frpe = max(frpe, 0.d0)
+            frpe = max(frpe, 0.0_dp)
             fmpe = sqrt(frpe) * fmpe
          end if
          vmrzac = vmrzpt + dtgw * fmpe
@@ -358,7 +349,7 @@ contains
          if (vmrzac > vmrzeq) then
 !                    Reduce capillary rise because moisture content
 !                    exceeds equilibrium
-            fmpe = ((1.0d0 - frrdca) * (vmrzeq - vmrzpt)) / dtgw
+            fmpe = ((1.0_dp - frrdca) * (vmrzeq - vmrzpt)) / dtgw
             vmrzac = vmrzpt + dtgw * fmpe
          end if
       end if
@@ -381,31 +372,31 @@ contains
 !>     factor voor de hoeveelheid vocht in de onverzadigde zone berekend. De potentiele
 !>     verdamping is dan de actuele.
 !>     Bij andere landgebruiken kan nog worden gecorrigeerd voor inundatie.
-   double precision function ActualEvaporation(fmevptte, frev1, frev2, frev3, &
+   real(kind=dp) function ActualEvaporation(fmevptte, frev1, frev2, frev3, &
                                                frev4, frev5, epf, &
                                                IsSurfaceWater, &
                                                fmevptsw, frswtp, icselo)
 !
 ! Arguments
 !
-      double precision fmevptte ! Potential evaporation
-      double precision frev1 ! Reductionfactor at 100 % moisture in unsatured zone
-      double precision frev2 ! Reductionfactor
-      double precision frev3 ! Reductionfactor at 5 mm evaporation a day
-      double precision frev4 ! Reductionfactor at 1 mm evaporation a day
-      double precision frev5 ! Reductionfactor at zero contents of iunsat zone
-      double precision epf ! Actuele fractie van inhoude wortelzone
+      real(kind=dp) fmevptte ! Potential evaporation
+      real(kind=dp) frev1 ! Reductionfactor at 100 % moisture in unsatured zone
+      real(kind=dp) frev2 ! Reductionfactor
+      real(kind=dp) frev3 ! Reductionfactor at 5 mm evaporation a day
+      real(kind=dp) frev4 ! Reductionfactor at 1 mm evaporation a day
+      real(kind=dp) frev5 ! Reductionfactor at zero contents of iunsat zone
+      real(kind=dp) epf ! Actuele fractie van inhoude wortelzone
 
       logical IsSurfaceWater ! Is dit gewas oppervlaktewater
-      double precision fmevptsw ! Evaporation surface water
-      double precision frswtp ! Fraction surfacewater (inundation)
-      double precision icselo ! Sensitivity for water logging (4 = reed)
+      real(kind=dp) fmevptsw ! Evaporation surface water
+      real(kind=dp) frswtp ! Fraction surfacewater (inundation)
+      real(kind=dp) icselo ! Sensitivity for water logging (4 = reed)
 !
 ! Local variables
 !
-      double precision e1, e2, e3, e4 ! Points of graph for calculating redunction
-      double precision beta ! Reductionfactor
-      double precision de
+      real(kind=dp) e1, e2, e3, e4 ! Points of graph for calculating redunction
+      real(kind=dp) beta ! Reductionfactor
+      real(kind=dp) de
 !
 ! Begin
 ! Als het oppervlaktewater is dan is de actuele verdamping gelijk aan de
@@ -420,12 +411,12 @@ contains
 !
 !        Geen oppervlaktewater.
 !
-         if (fmevptte > 5.0d-3) then
+         if (fmevptte > 5.0e-3_dp) then
 !
 !            Potentiele verdamping mag niet groter dan 5.0e-3
 !
             e3 = frev3
-         else if (fmevptte < 1.0d-3) then
+         else if (fmevptte < 1.0e-3_dp) then
 !
 !            Potentiele verdamping mag niet kleiner dan 5.0e-3
 !
@@ -434,7 +425,7 @@ contains
 !
 !            Interpoleer tussen 1.0e-3 en 5.0e-3 (die grafiek)
 !
-            e3 = frev4 * (5.0d-3 - fmevptte) / 4.0d-3 + frev3 * (fmevptte - 1.0d-3) / 4.0d-3
+            e3 = frev4 * (5.0e-3_dp - fmevptte) / 4.0e-3_dp + frev3 * (fmevptte - 1.0e-3_dp) / 4.0e-3_dp
          end if
 !
 ! Bereken nu de correctiefactor. Deze ligt tussen 0.0 en 1.0
@@ -443,25 +434,25 @@ contains
          e1 = frev1
          e2 = frev2
          e4 = frev5
-         beta = 1.0d0 ! Reductie factor van potentieel naar actueel
+         beta = 1.0_dp ! Reductie factor van potentieel naar actueel
          if (epf < e4) then ! VARIABELE E4 <<<====================
             beta = 0.0
          elseif (epf < e3) then
             beta = (epf - e4) / (e3 - e4)
          end if
 !
-         if (epf > (e2 + 0.0001d0) .and. epf < e1) then
+         if (epf > (e2 + 0.0001_dp) .and. epf < e1) then
             beta = (e1 - epf) / (e1 - e2)
          end if
-         if (epf > (e1 + 0.0001d0)) then
-            if (e1 > 0.99d0) then
-               beta = 1.0d0
+         if (epf > (e1 + 0.0001_dp)) then
+            if (e1 > 0.99_dp) then
+               beta = 1.0_dp
             else
                beta = 0.0
             end if
          end if
 !
-         if (beta > 1.00d0) beta = 1.0d0
+         if (beta > 1.00_dp) beta = 1.0_dp
 !
 !                 The actual evapotranspirations depends on
 !                 potential evapotranspiration
@@ -471,7 +462,7 @@ contains
          if (icselo == 4) then
             de = beta * fmevptte
          else
-            de = beta * fmevptte * (1.d0 - frswtp) + fmevptsw * frswtp
+            de = beta * fmevptte * (1._dp - frswtp) + fmevptsw * frswtp
          end if
       end if
 !
@@ -480,8 +471,8 @@ contains
       ActualEvaporation = de
    end
 
-   double precision function GetRRin()
-      getRRIn = -9.99d9
+   real(kind=dp) function GetRRin()
+      getRRIn = -9.99e9_dp
    end
 
    integer function GetIIin()
@@ -578,7 +569,7 @@ contains
       integer nxte
       integer nxspun
       integer icselo(nxte)
-      double precision frev(nxspun, nxte, 5)
+      real(kind=dp) frev(nxspun, nxte, 5)
       integer Status
 !
 ! Local variables
@@ -600,16 +591,16 @@ contains
       character(len=15) r_tena
       integer r_ipfa
       integer r_ipagte
-      double precision r_frpric
+      real(kind=dp) r_frpric
       integer r_icselo
-      double precision RRin
+      real(kind=dp) RRin
 !
 ! Functions
 !
       logical isbl
       logical ctrl_int
       integer GetIIin
-      double precision GetRRin
+      real(kind=dp) GetRRin
 !
 ! Init
 !
@@ -739,8 +730,8 @@ contains
 !
       integer nxspun
       integer nxte
-      double precision dprz(nxspun, nxte)
-      double precision frev(nxspun, nxte, 5)
+      real(kind=dp) dprz(nxspun, nxte)
+      real(kind=dp) frev(nxspun, nxte, 5)
       integer file_unit, nm
       integer message_unit, ib
       integer debug_unit, id
@@ -759,12 +750,12 @@ contains
       logical kyer
       integer ns
       integer nt
-      double precision r_dprz
-      double precision r_frev01
-      double precision r_frev02
-      double precision r_frev03
-      double precision r_frev04
-      double precision r_frev05
+      real(kind=dp) r_dprz
+      real(kind=dp) r_frev01
+      real(kind=dp) r_frev02
+      real(kind=dp) r_frev03
+      real(kind=dp) r_frev04
+      real(kind=dp) r_frev05
       integer r_spun
       integer r_nmteex
       integer ii
@@ -855,14 +846,14 @@ contains
             if (nt > nute) nute = nt
          end if
 !
-         if (.not. ctrl_real('root_sim', nmli + nmlicm, r_dprz, 1.d-1, 1.d1, 2, 'r_dprz', 'root zone depth', ib)) then
+         if (.not. ctrl_real('root_sim', nmli + nmlicm, r_dprz, 1.0e-1_dp, 1.0e1_dp, 2, 'r_dprz', 'root zone depth', ib)) then
             nuwa = nuwa + 1
          elseif (.not. kyer) then
             dprz(r_spun, r_nmteex) = r_dprz
          end if
 !
          if (.not. isbl(chline, 21, 28)) then
-            if (.not. ctrl_real('root_sim', nmli + nmlicm, r_frev01, 0.d0, 1.d0, 2, 'r_frev', 'evaporation fraction', ib)) then
+            if (.not. ctrl_real('root_sim', nmli + nmlicm, r_frev01, 0.0_dp, 1.0_dp, 2, 'r_frev', 'evaporation fraction', ib)) then
                nuwa = nuwa + 1
             elseif (.not. kyer) then
                frev(r_spun, r_nmteex, 1) = r_frev01
@@ -870,7 +861,7 @@ contains
          end if
 !
          if (.not. isbl(chline, 29, 36)) then
-            if (.not. ctrl_real('root_sim', nmli + nmlicm, r_frev02, 0.d0, 1.d0, 2, 'r_frev', 'evaporation fraction', ib)) then
+            if (.not. ctrl_real('root_sim', nmli + nmlicm, r_frev02, 0.0_dp, 1.0_dp, 2, 'r_frev', 'evaporation fraction', ib)) then
                nuwa = nuwa + 1
             elseif (.not. kyer) then
                frev(r_spun, r_nmteex, 2) = r_frev02
@@ -878,7 +869,7 @@ contains
          end if
 !
          if (.not. isbl(chline, 37, 44)) then
-            if (.not. ctrl_real('root_sim', nmli + nmlicm, r_frev03, 0.d0, 1.d0, 2, 'r_frev', 'evaporation fraction', ib)) then
+            if (.not. ctrl_real('root_sim', nmli + nmlicm, r_frev03, 0.0_dp, 1.0_dp, 2, 'r_frev', 'evaporation fraction', ib)) then
                nuwa = nuwa + 1
             elseif (.not. kyer) then
                frev(r_spun, r_nmteex, 3) = r_frev03
@@ -886,7 +877,7 @@ contains
          end if
 !
          if (.not. isbl(chline, 45, 52)) then
-            if (.not. ctrl_real('root_sim', nmli + nmlicm, r_frev04, 0.d0, 1.d0, 2, 'r_frev', 'evaporation fraction', ib)) then
+            if (.not. ctrl_real('root_sim', nmli + nmlicm, r_frev04, 0.0_dp, 1.0_dp, 2, 'r_frev', 'evaporation fraction', ib)) then
                nuwa = nuwa + 1
             elseif (.not. kyer) then
                frev(r_spun, r_nmteex, 4) = r_frev04
@@ -894,7 +885,7 @@ contains
          end if
 !
          if (.not. isbl(chline, 53, 60)) then
-            if (.not. ctrl_real('root_sim', nmli + nmlicm, r_frev05, 0.d0, 1.d0, 2, 'r_frev', 'evaporation fraction', ib)) then
+            if (.not. ctrl_real('root_sim', nmli + nmlicm, r_frev05, 0.0_dp, 1.0_dp, 2, 'r_frev', 'evaporation fraction', ib)) then
                nuwa = nuwa + 1
             elseif (.not. kyer) then
                frev(r_spun, r_nmteex, 5) = r_frev05
@@ -913,7 +904,7 @@ contains
       do ns = 1, nxspun
          do nt = 1, nxte
             do ii = 1, 4
-               if ((frev(ns, nt, ii) - frev(ns, nt, ii + 1)) < -1.d-4) then
+               if ((frev(ns, nt, ii) - frev(ns, nt, ii + 1)) < -1.0e-4_dp) then
                   write (ib, 58) ns, nt !spunex(ns),nmteex(nt)
 58                format( /, '** E58  readvar  **', 1X, &
                           ' Inconsistency in root_sim.inp ', /, 20X, &
@@ -954,18 +945,18 @@ contains
       integer nxdpun
       character(len=*) filenam, message_file, debug_file
       integer file_unit, nm
-      double precision srrz(nxspun, nxrz, nxdpun)
-      double precision fmca(nxspun, nxrz, nxdpun)
-      double precision dpgwun(nxspun, nxrz, nxdpun)
-      double precision dprzun(nxrz)
-      double precision scsa(nxspun, nxrz, nxdpun)
+      real(kind=dp) srrz(nxspun, nxrz, nxdpun)
+      real(kind=dp) fmca(nxspun, nxrz, nxdpun)
+      real(kind=dp) dpgwun(nxspun, nxrz, nxdpun)
+      real(kind=dp) dprzun(nxrz)
+      real(kind=dp) scsa(nxspun, nxrz, nxdpun)
       integer nudpun(nxspun, nxrz)
 !
 ! Local variables
 !
       logical ex, er
       integer ii
-      double precision rrin
+      real(kind=dp) rrin
       integer nuwa
       integer nuer
       logical kyer
@@ -977,25 +968,25 @@ contains
       integer ns
       integer r_spun
       integer r_dprzun
-      double precision r_dpgwun
-      double precision r_srrz
-      double precision r_srrzwc
-      double precision r_fmca
-      double precision r_scsa
-      double precision r_scsapl
+      real(kind=dp) r_dpgwun
+      real(kind=dp) r_srrz
+      real(kind=dp) r_srrzwc
+      real(kind=dp) r_fmca
+      real(kind=dp) r_scsa
+      real(kind=dp) r_scsapl
       integer artp(nxrz + nxdpun) ! Dynamic array
       integer ix(nxrz + nxdpun) ! Dynamic array
-      double precision fmcatp(nxrz + nxdpun)
-      double precision scsatp(nxrz + nxdpun)
-      double precision srrztp(nxrz + nxdpun)
-      double precision dpgwuntp(nxrz + nxdpun)
+      real(kind=dp) fmcatp(nxrz + nxdpun)
+      real(kind=dp) scsatp(nxrz + nxdpun)
+      real(kind=dp) srrztp(nxrz + nxdpun)
+      real(kind=dp) dpgwuntp(nxrz + nxdpun)
       integer i378
       integer ios
 !
 ! Functions
 !
       logical ctrl_real
-      double precision GetRRin
+      real(kind=dp) GetRRin
       integer GetIIin
       integer IndexInReallist
 !
@@ -1109,7 +1100,7 @@ contains
             goto 3900
          end if
 !
-         if (.not. ctrl_real('unsa_sim', nmli + nmlicm, r_dpgwun, -1.d1, 1.d2, 2, 'r_dpgwun', 'depth of groundwater', ib)) then
+         if (.not. ctrl_real('unsa_sim', nmli + nmlicm, r_dpgwun, -1.0_dp, 1.0_dp, 2, 'r_dpgwun', 'depth of groundwater', ib)) then
             kyer = .true.
             nuer = nuer + 1
          elseif (.not. kyer) then
@@ -1123,18 +1114,18 @@ contains
             dpgwun(r_spun, r_dprzun, ii) = r_dpgwun
          end if
 !
-         if (.not. ctrl_real('unsa_sim', nmli + nmlicm, r_srrz, 0.d0, 5.d3, 2, 'r_srrz', 'storage root zone drying conditions', ib)) then
+         if (.not. ctrl_real('unsa_sim', nmli + nmlicm, r_srrz, 0.0_dp, 5.0_dp, 2, 'r_srrz', 'storage root zone drying conditions', ib)) then
             nuwa = nuwa + 1
          elseif (.not. kyer) then
             srrz(r_spun, r_dprzun, ii) = r_srrz
          end if
-         if (.not. ctrl_real('unsa_sim', nmli + nmlicm, r_fmca, 0.d0, 1.d2, 2, 'r_fmca', 'capillary rise flux (mm/d)', ib)) then
+         if (.not. ctrl_real('unsa_sim', nmli + nmlicm, r_fmca, 0.0_dp, 1.0_dp, 2, 'r_fmca', 'capillary rise flux (mm/d)', ib)) then
             nuwa = nuwa + 1
          elseif (.not. kyer) then
             fmca(r_spun, r_dprzun, ii) = r_fmca
          end if
 !
-         if (.not. ctrl_real('unsa_sim', nmli + nmlicm, r_scsa, 0.d0, 1.d2, 2, 'r_scsa', 'storage coefficient', ib)) then
+         if (.not. ctrl_real('unsa_sim', nmli + nmlicm, r_scsa, 0.0_dp, 1.0_dp, 2, 'r_scsa', 'storage coefficient', ib)) then
             nuwa = nuwa + 1
          elseif (.not. kyer) then
             scsa(r_spun, r_dprzun, ii) = r_scsa
@@ -1218,7 +1209,7 @@ contains
                nuer = nuer + 1
 !
             else
-               if (dpgwun(ns, rz, 1) > 1.d-4) then
+               if (dpgwun(ns, rz, 1) > 1.0e-4_dp) then
                   write (ib, 26) 'unsa_sim', 'dpgwun', 'ns', ns, 'rz', nint(dprzun(rz))
 26                format( /, '** E26  readvar  **', 1X, &
                           ' Table ', A, '.inp; Missing variable ', A, ' with position:', &
@@ -1227,7 +1218,7 @@ contains
                end if
 !
                do ii = 2, nudpun(ns, rz)
-                  if ((srrz(ns, rz, ii - 1) - srrz(ns, rz, ii)) < -1.d-4) then
+                  if ((srrz(ns, rz, ii - 1) - srrz(ns, rz, ii)) < -1.0e-4_dp) then
                      write (ib, 38) 'unsa_sim', ns, nint(dprzun(rz)), &
                         dpgwun(ns, rz, ii - 1), srrz(ns, rz, ii - 1), dpgwun(ns, rz, ii), srrz(ns, rz, ii)
 38                   format( /, '** E38  readvar  **', 1X, 1X, A, '.inp; unit ', I5, ' rzd ', I5, ' drying conditions', /, 20X, &
@@ -1241,7 +1232,7 @@ contains
                   if (int(100.*dpgwun(ns, rz, ii)) <= dprzun(rz)) then
                      fmca(ns, rz, ii) = fmca(ns, rz, 1)
                   end if
-                  if ((fmca(ns, rz, ii - 1) - fmca(ns, rz, ii)) < -1.d-4) then
+                  if ((fmca(ns, rz, ii - 1) - fmca(ns, rz, ii)) < -1.0e-4_dp) then
                      write (ib, 40) 'unsa_sim', ns, nint(dprzun(rz)), &
                         dpgwun(ns, rz, ii - 1), fmca(ns, rz, ii - 1), dpgwun(ns, rz, ii), fmca(ns, rz, ii)
 40                   format( /, '** E40  readvar  **', 1X, 1X, A, '.inp; unit ', I5, ' rzd ', I5 / 20X, &
@@ -1252,12 +1243,12 @@ contains
                end do
 !
                do ii = 1, nudpun(ns, rz)
-                  if (abs(scsa(ns, rz, ii) - rrin) < 1.d-4) then
+                  if (abs(scsa(ns, rz, ii) - rrin) < 1.0e-4_dp) then
                   end if
-                  if (srrz(ns, rz, ii) > 1.d-4) then
+                  if (srrz(ns, rz, ii) > 1.0e-4_dp) then
                      srrz(ns, rz, ii) = srrz(ns, rz, ii) / 1000.
                   end if
-                  if (fmca(ns, rz, ii) > 1.d-4) then
+                  if (fmca(ns, rz, ii) > 1.0e-4_dp) then
                      fmca(ns, rz, ii) = fmca(ns, rz, ii) / 1000.
                   end if
                end do
@@ -1293,8 +1284,8 @@ contains
 !
 ! Arguments
 !
-      double precision x
-      double precision l(*)
+      real(kind=dp) x
+      real(kind=dp) l(*)
       integer n
 !
 ! local variables
@@ -1321,7 +1312,7 @@ contains
 !>
 !>     If the groundwater depth is above or below the tabulates depths,
 !>     the outcome is kept constant at the extreme value
-   double precision function unsa(ns, nt, dp, dproot, unda, &
+   real(kind=dp) function unsa(ns, nt, dp, dproot, unda, &
                                   debug_unit, message_unit, status, &
                                   nxte, nxspun, nxrz, nxdpun, &
                                   nurz, dprzun, dpgwun, nudpun)
@@ -1334,20 +1325,20 @@ contains
       integer nxdpun
 
       integer Nt
-      double precision Dp, dproot
+      real(kind=dp) Dp, dproot
 
-      double precision unda(nxspun, nxrz, nxdpun) ! Unsaturated data (Eq. moist. cont. etc)
-      double precision Dprzun(nxrz)
-      double precision Dpgwun(nxspun, nxrz, nxdpun)
+      real(kind=dp) unda(nxspun, nxrz, nxdpun) ! Unsaturated data (Eq. moist. cont. etc)
+      real(kind=dp) Dprzun(nxrz)
+      real(kind=dp) Dpgwun(nxspun, nxrz, nxdpun)
       integer Nudpun(nxspun, nxrz)
 
       integer * 4 ii, i1
       integer * 4 ns ! Nummer soil physical unit
-      double precision dprztp ! wortelzone in cm
-      double precision dpgwtp ! Lokale variabele voor diepte grondwaterstand
-      double precision va01, va02
-      double precision fr
-      double precision unfudp
+      real(kind=dp) dprztp ! wortelzone in cm
+      real(kind=dp) dpgwtp ! Lokale variabele voor diepte grondwaterstand
+      real(kind=dp) va01, va02
+      real(kind=dp) fr
+      real(kind=dp) unfudp
 !
 !        Setup of subroutine:
 !
@@ -1408,7 +1399,7 @@ contains
          unsa = va01 + (fr * (va02 - Va01))
 
       else
-         unsa = 0.0d0
+         unsa = 0.0_dp
       end if
 !
    end
@@ -1416,16 +1407,16 @@ contains
 !>     Calculates the capillary rise flux, equilibrium
 !>     moisture content of the root zone for drying or storage coefficient.
 !>     The matrix for the interpolation is unda (unsaturated data).
-   double precision function unfudp(ns, rz, dp, unda, dpgwun, nudpun, nxspun, nxrz, nxdpun)
+   real(kind=dp) function unfudp(ns, rz, dp, unda, dpgwun, nudpun, nxspun, nxrz, nxdpun)
       integer nxspun, nxrz, nxdpun
-      double precision dpgwun(nxspun, nxrz, nxdpun)
+      real(kind=dp) dpgwun(nxspun, nxrz, nxdpun)
       integer nudpun(nxspun, nxrz)
       integer * 4 ns, rz
-      double precision dp, unda(nxspun, nxrz, nxdpun)
+      real(kind=dp) dp, unda(nxspun, nxrz, nxdpun)
 
 !
       integer * 4 i1, ii
-      double precision dpgwtp, fr
+      real(kind=dp) dpgwtp, fr
 
       !        1 Set variables
 !
@@ -1465,7 +1456,7 @@ contains
          unfudp = unda(ns, rz, i1 + 1) + fr * (unda(ns, rz, i1) - unda(ns, rz, i1 + 1))
 
       else
-         unfudp = 0.0d0
+         unfudp = 0.0_dp
       end if
 !
    end
@@ -1477,7 +1468,7 @@ contains
 !
       integer ib
       integer * 4 tyva, nmli
-      double precision va, vamn, vamx, vaod
+      real(kind=dp) va, vamn, vamx, vaod
       character(len=*) nava
       character(len=*) nafi
       character(len=*) deva
