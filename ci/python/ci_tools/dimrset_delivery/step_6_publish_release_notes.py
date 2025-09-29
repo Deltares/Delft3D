@@ -216,6 +216,10 @@ class ChangeLogPublisher(StepExecutorInterface):
         - Prepends or replaces the changelog section for the given tag.
         - Uploads the updated changelog back to the remote location.
         """
+        if self.__ssh is None:
+            self.__context.log("SSH client is required but not initialized", severity=LogLevel.ERROR)
+            return False
+        
         path_to_release_notes_file = f"/p/d-hydro/dimrset/{self.__context.settings.path_to_release_changelog_artifact}"
 
         self.__context.log(f"Downloading changelog from {path_to_release_notes_file}")
@@ -236,7 +240,7 @@ class ChangeLogPublisher(StepExecutorInterface):
 
         self.__context.log(f"Copying {self.__changelog_file.name} to {path_to_release_notes_file}")
         self.__ssh.secure_copy(
-            self.__changelog_file,
+            str(self.__changelog_file),
             path_to_release_notes_file,
             Direction.TO,
         )
@@ -245,10 +249,6 @@ class ChangeLogPublisher(StepExecutorInterface):
     def execute_step(self) -> bool:
         """Execute the changelog publishing step."""
         self.__context.log("Generating DIMRset changelog...")
-
-        if self.__ssh is None:
-            self.__context.log("SSH client is required but not initialized", severity=LogLevel.ERROR)
-            return False
 
         if self.__jira is None:
             self.__context.log("Jira client is required but not initialized", severity=LogLevel.ERROR)
