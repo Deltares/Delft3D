@@ -6,7 +6,7 @@ import jetbrains.buildServer.configs.kotlin.failureConditions.*
 object Sign : BuildType({
 
     name = "Sign"
-    description = "Sign all unsigned binaries (except tclkitsh852.exe)."
+    description = "Sign all unsigned binaries (except tclkitsh863.exe)."
     buildNumberPattern = "%build.vcs.number%"
     artifactRules = "to_sign => oss_artifacts_x64_%build.vcs.number%.zip!x64"
 
@@ -24,7 +24,7 @@ object Sign : BuildType({
             scriptArgs = "-source to_sign -destination signed"
         }
         powerShell {
-            name = "Move exception binary tclkitsh852.exe"
+            name = "Move exception binary tclkitsh863.exe"
             platform = PowerShellStep.Platform.x64
             scriptMode = script {
                 // We cannot sing this binary, see: https://wiki.tcl-lang.org/page/SDX+under+Windows
@@ -32,7 +32,7 @@ object Sign : BuildType({
                     if (-Not (Test-Path -Path dont_sign\\bin)) {
                         New-Item -ItemType Directory -Path dont_sign\\bin
                     }
-                    Move-Item -Path to_sign\\bin\\tclkitsh852.exe -Destination dont_sign\\bin\\tclkitsh852.exe -Force
+                    Move-Item -Path to_sign\\bin\\tclkitsh863.exe -Destination dont_sign\\bin\\tclkitsh863.exe -Force
                 """.trimIndent()
             }
         }
@@ -56,10 +56,10 @@ object Sign : BuildType({
             scriptArgs = "-source signed -destination to_sign"
         }
         powerShell {
-            name = "Move back exception binary tclkitsh852.exe"
+            name = "Move back exception binary tclkitsh863.exe"
             platform = PowerShellStep.Platform.x64
             scriptMode = script {
-                content = """Move-Item -Path dont_sign\\bin\\tclkitsh852.exe -Destination to_sign\\bin\\tclkitsh852.exe -Force""".trimIndent()
+                content = """Move-Item -Path dont_sign\\bin\\tclkitsh863.exe -Destination to_sign\\bin\\tclkitsh863.exe -Force""".trimIndent()
             }
         }
     }
