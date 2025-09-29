@@ -219,13 +219,13 @@ class ChangeLogPublisher(StepExecutorInterface):
         if self.__ssh is None:
             self.__context.log("SSH client is required but not initialized", severity=LogLevel.ERROR)
             return False
-        
+
         path_to_release_notes_file = f"/p/d-hydro/dimrset/{self.__context.settings.path_to_release_changelog_artifact}"
 
         self.__context.log(f"Downloading changelog from {path_to_release_notes_file}")
         try:
             self.__ssh.secure_copy(
-                self.__path_to_output_folder,
+                str(self.__path_to_output_folder),
                 path_to_release_notes_file,
                 Direction.FROM,
             )
