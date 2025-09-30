@@ -183,7 +183,7 @@ object DIMRbak : BuildType({
         python {
             name = "Generate DIMRset release notes"
             command = module {
-                module = "ci_tools.dimrset_delivery.step_6_publish_release_notes"
+                module = "ci_tools.dimrset_delivery.step_6_publish_release_changelog"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
                     --jira-username "%dimrbakker_username%"

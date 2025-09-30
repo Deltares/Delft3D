@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate and publish DIMRset changelog."""
+"""Generate and publish DIMRset release changelog."""
 
 import re
 import sys
