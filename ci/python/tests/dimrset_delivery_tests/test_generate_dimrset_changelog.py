@@ -1,9 +1,13 @@
 """Tests for step_6_publish_release_changelog.py."""
 
 import re
+import sys
 from pathlib import Path
 from unittest.mock import Mock
 
+import pytest
+
+from ci_tools.dimrset_delivery import step_6_publish_release_changelog as changelog_module
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.step_6_publish_release_changelog import ChangeLogPublisher
 from ci_tools.example_utils.logger import LogLevel
@@ -146,6 +150,11 @@ class TestPublishReleaseChangelog:
         result = self.helper._ChangeLogPublisher__build_changelog(commits, re.compile(r"(?:UNST|DEVOPSDSC)-\d+"))
         assert "Breaks" in result[0]
 
+    def test_build_changelog_returns_empty_when_no_commits(self) -> None:
+        """No commits should return an empty changelog list."""
+        result = self.helper._ChangeLogPublisher__build_changelog([], re.compile(r"(?:UNST|DEVOPSDSC)-\d+"))
+        assert result == []
+
     # ---------------- __prepend_or_replace_in_changelog ----------------
 
     def test_prepend_or_replace_new_section(self, tmp_path: Path) -> None:
@@ -185,3 +194,69 @@ class TestPublishReleaseChangelog:
         assert any(
             "DRY-RUN" in str(call) or "[DRY-RUN]" in str(call) for call in self.mock_context.log.call_args_list
         ), f"Expected a DRY-RUN log, got: {self.mock_context.log.call_args_list}"
+
+    def test_prepend_or_replace_new_file(self, tmp_path: Path) -> None:
+        """If changelog file doesn't exist, header should be prepended."""
+        changelog_file = tmp_path / "CHANGELOG.html"
+        self.helper._ChangeLogPublisher__changelog_file = changelog_file
+
+        self.helper._ChangeLogPublisher__prepend_or_replace_in_changelog(
+            "DIMRset_2.99.99", ["<li>New entry</li>"], dry_run=False
+        )
+
+        content = changelog_file.read_text()
+        assert content.startswith("<h1>DIMRset weekly changelog</h1>")
+        assert "DIMRset_2.99.99" in content
+
+    # ---------------- __issue_number_pattern ----------------
+
+    def test_fallback_project_keys_regex(self) -> None:
+        """If no project keys are configured, fallback regex is returned and warning is logged."""
+        # Arrange: no keys before creating the publisher
+        self.mock_context.settings.teamcity_project_keys = []
+
+        # Act
+        publisher = ChangeLogPublisher(self.mock_context, self.mock_services)
+        regex = publisher._ChangeLogPublisher__issue_number_pattern()
+
+        # Force evaluation: actually try to match something
+        assert regex.match("a-123")
+        assert regex.match("b-999")
+        assert not regex.match("XYZ-1")
+
+        # Assert: warning logged
+        found = any("No project keys found in settings" in str(call) for call in self.mock_context.log.call_args_list)
+        assert found, f"Expected warning log, got: {self.mock_context.log.call_args_list}"
+
+
+# ---------------- main ----------------
+
+
+def test_main_entrypoint(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Cover the __main__ function."""
+    monkeypatch.setattr(sys, "argv", ["prog", "--dry-run"])
+
+    monkeypatch.setattr(
+        changelog_module,
+        "parse_common_arguments",
+        lambda: ["--dry-run"],
+    )
+    monkeypatch.setattr(
+        changelog_module,
+        "create_context_from_args",
+        lambda *a, **kw: changelog_module.Services(Mock()),
+    )
+    monkeypatch.setattr(
+        changelog_module,
+        "Services",
+        lambda context: Mock(),
+    )
+    monkeypatch.setattr(
+        changelog_module,
+        "ChangeLogPublisher",
+        lambda context, services: Mock(execute_step=lambda: True),
+    )
+
+    with pytest.raises(SystemExit) as excinfo:
+        changelog_module.main()
+    assert excinfo.value.code == 0
