@@ -1752,8 +1752,8 @@ switch cmd
         end
     case {'save0', 'save90', 'save180', 'save270'}
         angle = str2double(cmd(5:end));
-        if nargin>4
-            pf = varargin{2};
+        if nargin>3
+            pf = varargin{1};
             [p,f] = fileparts(pf);
         else
             cwd = pwd;
