@@ -3,7 +3,6 @@
 
 import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Tuple
 
@@ -142,7 +141,7 @@ class ChangeLogPublisher(StepExecutorInterface):
         - If the changelog file exists, it is read; otherwise, a new file is initialized
         with a top-level `<h1>Changelog</h1>` header.
         - A new section consists of:
-            * `<h2>{tag} - {date}</h2>` as the section header.
+            * `<h2>{tag}</h2>` as the section header.
             * A `<ul>` block containing the list of changes.
         - If a section for the given tag already exists, it is fully replaced.
         - If no section exists, the new section is inserted directly below the
@@ -176,11 +175,8 @@ class ChangeLogPublisher(StepExecutorInterface):
         else:
             content = "<h1>DIMRset weekly changelog</h1>\n\n"
 
-        # Match a full release section: <h2>tag - date</h2> ... </ul>
-        changelog_section_pattern = re.compile(
-            rf"<h2>{re.escape(tag)} - .*?</h2>\s*<ul>.*?</ul>",
-            re.S | re.M,
-        )
+        # Regex to detect an existing section by tag
+        changelog_section_pattern = re.compile(rf"<h2>{re.escape(tag)}.*?</ul>", re.DOTALL)
 
         if changelog_section_pattern.search(content):
             updated = changelog_section_pattern.sub(new_text, content, count=1)
