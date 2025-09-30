@@ -290,6 +290,75 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e02_f014_c102_baltic_bedlevtype1_on_netfile" ref="dimr_platform_specific">
+      <path version="2025-09-08T14:50:00">e02_dflowfm/f014_parallel/c102_baltic_bedlevtype1_on_netfile</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>--partition:ndomains=4</argument>
+            <argument>FlowFM.mdu</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="kemi_refined9-v2_0000_net.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_face_z" toleranceAbsolute="0.00001" />
+           </parameters>
+        </file>
+        <file name="kemi_refined9-v2_0001_net.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_face_z" toleranceAbsolute="0.00001" />
+           </parameters>
+        </file>
+        <file name="kemi_refined9-v2_0002_net.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_face_z" toleranceAbsolute="0.00001" />
+           </parameters>
+        </file>
+        <file name="kemi_refined9-v2_0003_net.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_face_z" toleranceAbsolute="0.00001" />
+           </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f014_c103_baltic_bedlevtype1_on_netfile_partpoly" ref="dimr">
+      <path version="2025-09-08T14:50:00">e02_dflowfm/f014_parallel/c103_baltic_bedlevtype1_on_netfile_partpoly</path>
+      <programs>
+        <program ref="dflowfm" seq="1">
+          <arguments>
+            <argument>--partition</argument>
+            <argument>FlowFM.mdu</argument>
+            <argument>kemi_refined9-v2_part.pol</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="kemi_refined9-v2_0000_net.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_face_z" toleranceAbsolute="0.00001" />
+           </parameters>
+        </file>
+        <file name="kemi_refined9-v2_0001_net.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_face_z" toleranceAbsolute="0.00001" />
+           </parameters>
+        </file>
+        <file name="kemi_refined9-v2_0002_net.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_face_z" toleranceAbsolute="0.00001" />
+           </parameters>
+        </file>
+        <file name="kemi_refined9-v2_0003_net.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_face_z" toleranceAbsolute="0.00001" />
+           </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f014_c120" ref="dimr">
         <path version="2025-09-05T12:19:18.739000">e02_dflowfm/f014_parallel/c120_trachytopes_discharge_dependent</path>
         <programs>
