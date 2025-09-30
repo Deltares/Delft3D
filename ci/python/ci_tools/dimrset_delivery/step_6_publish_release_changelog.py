@@ -163,7 +163,7 @@ class ChangeLogPublisher(StepExecutorInterface):
         - Guarantees the changelog remains valid, structured HTML.
         """
         new_entry = [
-            f"<h2>{tag} - {datetime.now(timezone.utc).date().isoformat()}</h2>",
+            f"<h2>{tag}</h2>",
             "<ul>",
             *changes,
             "</ul>",
