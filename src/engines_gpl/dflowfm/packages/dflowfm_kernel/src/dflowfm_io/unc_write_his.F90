@@ -485,7 +485,6 @@ contains
             call definencvar(ihisfile, id_comp_time, nc_precision, [id_timedim], 'comp_time')
          end if
 
-         call mess(LEVEL_INFO, '! WAQ statistic outputs are kept outside of the statistical output framework")
          ! WAQ statistic outputs are kept outside of the statistical output framework
          if (jawaqproc > 0) then
             ierr = unc_def_his_station_waq_statistic_outputs(id_hwq)

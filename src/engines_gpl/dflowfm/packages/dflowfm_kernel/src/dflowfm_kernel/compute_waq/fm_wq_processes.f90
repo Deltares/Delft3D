@@ -809,41 +809,36 @@ contains
       if (ierr /= 0) then
          call mess(LEVEL_ERROR, 'Something went wrong during initialisation of the processes. Check the lsp-file: ', trim(proc_log_file))
       end if
+      call mess(LEVEL_INFO, 'Water quality processes initialisation was successful')
+      call mess(LEVEL_INFO, '==========================================================================')
 
       !     proces fractional step multiplier is 1 for all
       prondt = 1
 
       !     Allocate the work arrays for the pointers
-      call mess(LEVEL_INFO, 'call realloc(process_space_int, process_space_int_len, keepExisting=.false., fill=0)')
       call realloc(process_space_int, process_space_int_len, keepExisting=.false., fill=0)
-      call mess(LEVEL_INFO, 'call realloc(increm, process_space_int_len, keepExisting=.false., fill=0)')
       call realloc(increm, process_space_int_len, keepExisting=.false., fill=0)
 
       !     allocate deriv array - holds all derivatives
-      call mess(LEVEL_INFO, 'call realloc(deriv, [num_cells, num_substances_total], keepExisting=.false., fill=0.0_dp) !< Model derivatives (= stochi(num_substances_total ,noflux) * flux(noflux, num_cells))')
       call realloc(deriv, [num_cells, num_substances_total], keepExisting=.false., fill=0.0_dp) !< Model derivatives (= stochi(num_substances_total ,noflux) * flux(noflux, num_cells))
 
       !     Determine size of a array from process system and num_cells/num_exchanges_z_dir, and allocate it
-      call mess(LEVEL_INFO, 'call wq_processes_pmsa_size(lunlsp, num_cells, num_exchanges_z_dir, sizepmsa)')
       call wq_processes_pmsa_size(lunlsp, num_cells, num_exchanges_z_dir, sizepmsa)
       !     And actually allocate and zero the A array
-      call mess(LEVEL_INFO, 'call realloc(process_space_real, sizepmsa, keepExisting=.false., fill=0.0)')
       call realloc(process_space_real, sizepmsa, keepExisting=.false., fill=0.0)
 
-      call mess(LEVEL_INFO, '!     constants from the substance file')
       !     constants from the substance file
       ip = arrpoi(iicons)
       do i = 1, num_constants
          process_space_real(ip + i - 1) = constants%constant(i)
       end do
 
-      call mess(LEVEL_INFO, '!     defaults from the proces library')
+      !     defaults from the proces library
       ip = arrpoi(iidefa)
       do i = 1, num_defaults
          process_space_real(ip + i - 1) = defaul(i)
       end do
 
-      call mess(LEVEL_INFO, '!     parameters from ext-file')
       !     parameters from ext-file
       !     spatially varying constants provided trough the ext-file that remain fixed during the run
       !      -> fill using abcdabcdabcd partern
@@ -862,7 +857,6 @@ contains
       !      -> or can be used for 2D values when calculating only one water column
       !      -> updated in waqfil
 
-      call mess(LEVEL_INFO, '!     exchange areas')
       !     exchange areas
       ip = arrpoi(iiarea)
       iex = 0
@@ -897,9 +891,7 @@ contains
          bloom_ind = 0
       end if
 
-      call mess(LEVEL_INFO, 'call realloc(waqoutputs, [noout, num_cells], keepExisting=.false., fill=-999.0_dp)')
       call realloc(waqoutputs, [noout, num_cells], keepExisting=.false., fill=-999.0_dp)
-      call mess(LEVEL_INFO, 'call realloc(outvar, noout, keepExisting=.false., fill=0)')
       call realloc(outvar, noout, keepExisting=.false., fill=0)
       do j = 1, noout
          ivar = index_in_array(outputs%names(j), varnam)
@@ -921,9 +913,6 @@ contains
             wqdoproc(k) = comparereal(painp(ipar, k), 0.0e0) == 0
          end do
       end if
-
-      call mess(LEVEL_INFO, 'Water quality processes initialisation was successful')
-      call mess(LEVEL_INFO, '==========================================================================')
 
       jawaqproc = 2 ! processes succesfully initiated
 

@@ -477,10 +477,8 @@ contains
       call structure_parameters() ! initialize structure values, after flow_flowinit() so that initial water levels and discharges are already set.
       call timstop(handle_extra(29)) ! end structure parameters
 
-      call mess(LEVEL_INFO, '! Prepare for his/map/clm output via statistical_output module')
       ! Prepare for his/map/clm output via statistical_output module
       call flow_init_statistical_output_his(config_set_his, out_variable_set_his)
-      call mess(LEVEL_INFO, '! finished prepare for his/map/clm output via statistical_output module')
 
       call timstrt('Trachy update       ', handle_extra(30)) ! trachy update
       if (jatrt == 1) then
