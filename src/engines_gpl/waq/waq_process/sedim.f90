@@ -131,7 +131,7 @@ contains
                     !
                     CONC = MAX (0.0, process_space_real(IP1))
                     ZERSED = process_space_real(IP2)
-                    VSED = MAX (0.0, process_space_real(IP3))    ! Avoid inadvertent source if VSED negative (Delft3D-35562)
+                    VSED = MAX (0.0, process_space_real(IP3)) * 2   ! Avoid inadvertent source if VSED negative (Delft3D-35562)
                     TAU = process_space_real(IP4)
                     TCRSED = process_space_real(IP5)
                     DEPTH = process_space_real(IP6)
