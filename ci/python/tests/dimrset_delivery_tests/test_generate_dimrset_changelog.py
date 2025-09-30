@@ -9,7 +9,7 @@ from ci_tools.dimrset_delivery.step_6_publish_release_changelog import ChangeLog
 from ci_tools.example_utils.logger import LogLevel
 
 
-class TestPublishReleaseNotes:
+class TestPublishReleaseChangelog:
     """Test cases for the publish_release_changelog step."""
 
     def setup_method(self) -> None:
