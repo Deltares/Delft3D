@@ -20,6 +20,7 @@ ARG CACHE_ID_SUFFIX
 
 RUN --mount=type=cache,target=/var/cache/src/,id=compression-libs-${CACHE_ID_SUFFIX} <<"EOF-compression-libs"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 export CC=icx CXX=icpx
@@ -56,6 +57,7 @@ ARG CACHE_ID_SUFFIX
 
 RUN --mount=type=cache,target=/var/cache/src/,id=uuid-${CACHE_ID_SUFFIX} <<"EOF-uuid"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.40/util-linux-2.40.2.tar.gz'
@@ -85,6 +87,7 @@ ARG CACHE_ID_SUFFIX
 
 RUN --mount=type=cache,target=/var/cache/src/,id=metis-${CACHE_ID_SUFFIX} <<"EOF-metis"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 GKLIB_COMMIT_ID='8bd6bad750b2b0d90800c632cf18e8ee93ad72d7'
@@ -131,6 +134,7 @@ ARG CACHE_ID_SUFFIX
 
 RUN --mount=type=cache,target=/var/cache/src/,id=expat-${CACHE_ID_SUFFIX} <<"EOF-expat"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/libexpat/libexpat/archive/refs/tags/R_2_6_2.tar.gz'
@@ -159,6 +163,7 @@ ARG CACHE_ID_SUFFIX
 
 RUN --mount=type=cache,target=/var/cache/src/,id=xerxes-c-${CACHE_ID_SUFFIX} <<"EOF-xerces-c"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/apache/xerces-c/archive/refs/tags/v3.2.5.tar.gz'
@@ -195,6 +200,7 @@ ARG CACHE_ID_SUFFIX
 
 RUN --mount=type=cache,target=/var/cache/src/,id=petsc-${CACHE_ID_SUFFIX} <<"EOF-petsc"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.19.0.tar.gz'
@@ -231,6 +237,7 @@ COPY --from=compression-libs --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=sqlite3-${CACHE_ID_SUFFIX} <<"EOF-sqlite3"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://www.sqlite.org/2024/sqlite-autoconf-3460100.tar.gz'
@@ -262,6 +269,7 @@ COPY --from=compression-libs --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=tiff-${CACHE_ID_SUFFIX} <<"EOF-tiff"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz'
@@ -299,6 +307,7 @@ COPY --from=compression-libs --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=hdf5-${CACHE_ID_SUFFIX} <<"EOF-hdf5"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_14_2.tar.gz'
@@ -316,7 +325,7 @@ MPIFC="mpi${INTEL_FORTRAN_COMPILER}"
 pushd "/var/cache/src/${BASEDIR}"
 ./configure CC=mpiicx CXX=mpiicpx FC=$MPIFC \
     --prefix=/usr/local \
-    --enable-build-mode=$BUILD_MODE \
+    --enable-build-mode="production" \
     --enable-fortran \
     --enable-parallel \
     --with-zlib=/usr/local/include,/usr/local/lib \
@@ -336,6 +345,7 @@ COPY --from=hdf5 --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=netcdf-c-${CACHE_ID_SUFFIX} <<"EOF-netcdf-c"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/Unidata/netcdf-c/archive/refs/tags/v4.9.2.tar.gz'
@@ -370,6 +380,7 @@ EOF-netcdf-c
 
 RUN --mount=type=cache,target=/var/cache/src/,id=netcdf-fortran-${CACHE_ID_SUFFIX} <<"EOF-netcdf-fortran"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/Unidata/netcdf-fortran/archive/refs/tags/v4.6.1.tar.gz'
@@ -409,6 +420,7 @@ COPY --from=sqlite3 --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=proj-${CACHE_ID_SUFFIX} <<"EOF-proj"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://download.osgeo.org/proj/proj-9.2.0.tar.gz'
@@ -450,6 +462,7 @@ COPY --from=proj --link /usr/local/ /usr/local/
 
 RUN --mount=type=cache,target=/var/cache/src/,id=gdal-${CACHE_ID_SUFFIX} <<"EOF-gdal"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/OSGeo/gdal/releases/download/v3.9.2/gdal-3.9.2.tar.gz'
@@ -505,6 +518,7 @@ else
     wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
 fi
 
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 pushd "/var/cache/src/${BASEDIR}"
@@ -542,16 +556,19 @@ FROM base AS boost
 
 RUN <<"EOF-boost" 
 set -eo pipefail
-dnf install --assumeyes boost-devel
+dnf install --assumeyes boost1.78-devel
 
 mkdir -p /usr/local/lib
 cp /usr/lib64/libboost_*.so* /usr/local/lib/
 
 mkdir -p /usr/local/include
-cp -r /usr/include/boost /usr/local/include/
+cp -r /usr/include/boost1.78 /usr/local/include/
 
-mkdir -p /usr/local/share/licenses/boost-devel
-cp /usr/share/licenses/boost-devel/LICENSE_1_0.txt /usr/local/share/licenses/boost-devel/
+mkdir -p /usr/local/lib/cmake
+cp -r /usr/lib64/cmake/* /usr/local/lib/cmake
+
+mkdir -p /usr/local/share/licenses/boost1.78-devel
+cp /usr/share/licenses/boost1.78-devel/LICENSE_1_0.txt /usr/local/share/licenses/boost1.78-devel/
 EOF-boost
 
 FROM base AS googletest
@@ -568,13 +585,106 @@ mkdir -p /usr/local/include
 cp -r /usr/include/gtest /usr/local/include/
 EOF-googletest
 
+FROM base AS eigen
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+RUN --mount=type=cache,target=/var/cache/src/,id=eigen-${CACHE_ID_SUFFIX} <<"EOF-eigen"
+set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
+source /opt/intel/oneapi/setvars.sh
+
+URL='https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz'
+BASEDIR='eigen-3.4.0'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+mkdir --parents "/var/cache/src/${BASEDIR}/build"
+pushd "/var/cache/src/${BASEDIR}/build"
+
+cmake .. \
+    -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DBUILD_TESTING=OFF
+
+cmake --build . --target install
+popd
+EOF-eigen
+
+FROM base AS libxml2
+
+RUN <<"EOF-libxml2"
+set -eo pipefail
+dnf install --assumeyes libxml2-devel
+
+mkdir -p /usr/local/lib
+cp /usr/lib64/libxml2.so* /usr/local/lib/
+
+mkdir -p /usr/local/include
+cp -r /usr/include/libxml2 /usr/local/include/
+
+mkdir -p /usr/local/bin
+cp /usr/bin/xmllint /usr/local/bin/ || true
+cp /usr/bin/xmlcatalog /usr/local/bin/ || true
+
+mkdir -p /usr/local/lib/pkgconfig
+cp /usr/lib64/pkgconfig/libxml-2.0.pc /usr/local/lib/pkgconfig/ || true
+EOF-libxml2
+
+FROM base AS precice
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+COPY --from=libxml2 --link /usr/local/ /usr/local/
+COPY --from=eigen --link /usr/local/ /usr/local/
+COPY --from=boost --link /usr/local/ /usr/local/
+
+RUN --mount=type=cache,target=/var/cache/src/,id=precice-${CACHE_ID_SUFFIX} <<"EOF-precice"
+set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
+source /opt/intel/oneapi/setvars.sh
+
+URL='https://github.com/precice/precice/archive/v3.2.0.tar.gz'
+BASEDIR='precice-3.2.0'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+pushd "/var/cache/src/${BASEDIR}"
+
+[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
+
+cmake --preset=development \
+    -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DPRECICE_FEATURE_PETSC_MAPPING=OFF \
+    -DPRECICE_FEATURE_PYTHON_ACTIONS=OFF \
+    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -DCMAKE_CXX_FLAGS="-Wno-enum-constexpr-conversion"
+
+cmake --build build/ --parallel $(nproc)
+cmake --install build/
+popd
+EOF-precice
+
 FROM base AS all
 
 RUN set -eo pipefail && \
     cat <<EOT >> /opt/bashrc
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 export FC=mpi${INTEL_FORTRAN_COMPILER}
-export CXX=mpicxx # We would like to use mpiicpx, but some tests get different results
+export CXX=mpiicpx
 export CC=mpiicx
 export LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH
@@ -588,3 +698,4 @@ COPY --from=gdal --link /usr/local/ /usr/local/
 COPY --from=esmf --link /usr/local/ /usr/local/
 COPY --from=boost --link /usr/local/ /usr/local/
 COPY --from=googletest --link /usr/local/ /usr/local/
+COPY --from=precice --link /usr/local/ /usr/local/

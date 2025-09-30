@@ -22,12 +22,18 @@ EOT
 dnf update --assumeyes
 dnf install --assumeyes epel-release
 dnf config-manager --set-enabled powertools
+
+# Install GNU compiler collection with modern versions
 # gcc and gcc-c++ are dependencies of the intel compilers.
 # For oneAPI 2023, they are not listed as dependencies in dnf, so
-# we have to install them explicitly
+# we have to install them explicitly. We install a modern version
+# since Intel C++ compiler depends on GNU stdlib.
 dnf install --assumeyes \
-    which binutils patchelf diffutils procps m4 make gcc gcc-c++ \
+    which binutils patchelf diffutils procps m4 make gcc-toolset-14 \
     openssl openssl-devel wget perl python3 xz curl-devel
+
+# Enable the modern GCC toolset by default
+echo 'source /opt/rh/gcc-toolset-14/enable' >> /etc/bashrc
 
 # For Intel oneAPI, explicitly list the common-vars version, otherwise some much newer versions of packages will also be installed
 # as dependencies. Furthure, do not use intel 2023.2.1, since the dependencies of mkl 2023.2.0 will then also install the C++
@@ -63,6 +69,7 @@ EOF
 # Build autotools, because some libraries require recent versions of it.
 RUN --mount=type=cache,target=/var/cache/src/,id=autotools-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 for URL in \
@@ -101,6 +108,7 @@ EOF
 # CMake
 RUN --mount=type=cache,target=/var/cache/src/,id=cmake-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
 set -eo pipefail
+source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
 URL='https://github.com/Kitware/CMake/releases/download/v3.30.3/cmake-3.30.3.tar.gz'
