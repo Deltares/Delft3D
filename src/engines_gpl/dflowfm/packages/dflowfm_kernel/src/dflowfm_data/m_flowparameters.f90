@@ -35,6 +35,7 @@ module m_flowparameters
    use m_sediment, only: jased
    use m_missing
    use m_waveconst
+   use messagehandling, only : idlen
 
    implicit none
 
@@ -373,7 +374,11 @@ module m_flowparameters
 
    integer :: javakeps !< vert. adv. keps : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL
 
-   integer :: javasal !< vert. adv. sa1  : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, switched to 3 for neg. strat.
+   character(len=Idlen) :: vertical_advection_type !< Vertical advection type for turbulence quantities: CentralImplicit, HigherOrderUpwindExplicit
+   integer, parameter :: VERTICAL_ADVECTION_CENTRAL_IMPLICIT = 4
+   integer, parameter :: VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT = 6
+
+   integer :: javasal !< vert. adv. sa1  : 4=CentraLimpL, switched to 3 for neg. strat.
 
    integer :: javatem !< vert. adv. tem1 : 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, switched to 3 for neg. strat.
 
