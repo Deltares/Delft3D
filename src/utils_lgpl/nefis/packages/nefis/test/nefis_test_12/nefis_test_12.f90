@@ -66,7 +66,7 @@ contains
    
    error = getnfv(version)
    write(file_unit,*) '-----------------------------------------------'
-   write(file_unit,*) 'Version: '//trim(version(5:))
+   write(file_unit,'(a)') 'Version: '//trim(version(5:))
    write(file_unit,*) '-----------------------------------------------'
 
    CALL WriteFile( 'data_c12a', fds_a, 33, file_unit)

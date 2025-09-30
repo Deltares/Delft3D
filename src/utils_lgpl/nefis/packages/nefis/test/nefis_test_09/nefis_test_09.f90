@@ -78,7 +78,7 @@ contains
 
    error = getnfv(version)
    write(file_unit,*) '-----------------------------------------------'
-   write(file_unit,*) 'Version: '//trim(version(5:))
+   write(file_unit,'(a)') 'Version: '//trim(version(5:))
    write(file_unit,*) '-----------------------------------------------'
 
    write(file_unit,'(''Maak file met Complexe getallen'')')
