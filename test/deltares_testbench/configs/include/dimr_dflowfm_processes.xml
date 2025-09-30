@@ -1009,7 +1009,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c105_mass_balance_areas_complete" ref="dflowfm_default">
-  <path version="2025-07-21T12:27:30.519000">e02_dflowfm/f030_water_quality_processes/c105_mass_balance_areas_complete</path>
+  <path version="2025-09-23T10:18:49.504000">e02_dflowfm/f030_water_quality_processes/c105_mass_balance_areas_complete</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1019,7 +1019,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c106_mass_balance_areas_incomplete" ref="dflowfm_default">
-  <path version="2025-07-21T12:27:33.007000">e02_dflowfm/f030_water_quality_processes/c106_mass_balance_areas_incomplete</path>
+  <path version="2025-09-23T10:18:52.467000">e02_dflowfm/f030_water_quality_processes/c106_mass_balance_areas_incomplete</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
