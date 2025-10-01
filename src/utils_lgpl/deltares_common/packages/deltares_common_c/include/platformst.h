@@ -69,6 +69,7 @@ typedef struct sockaddr_in  Sockaddr;       // socket address
 
 #include <winsock2.h>  // Use Winsock 2 instead of winsock.h
 #include <ws2tcpip.h>  // For getaddrinfo, getnameinfo
+#include <io.h>
 
 // ToDo: Replace following with real definitions
 typedef unsigned int        IPaddr;         // IP address (in_addr_t equivalent)

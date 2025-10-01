@@ -55,7 +55,7 @@
 #   include <winsock2.h>  // Must be first; includes ws2def.h
 #   include <ws2tcpip.h>
 #   pragma comment(lib, "ws2_32.lib")
-#   define close _close
+#   define close closesocket  // Use closesocket for sockets on Windows
 #else
 #   include <sys/types.h>
 #   include <netdb.h>
