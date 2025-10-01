@@ -52,16 +52,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 
-// Network resolution includes (IPv4 only)
-#include <netdb.h>      // For getaddrinfo, freeaddrinfo, gai_strerror
-#include <arpa/inet.h>  // For inet_ntoa
-#include <netinet/in.h> // For AF_INET, SOCK_STREAM, struct sockaddr_in
-
-#if defined (WIN32)
-//#include <Winsock2.h>
+#if defined(WIN32)
+#   include <winsock2.h>
+#   include <ws2tcpip.h>
+#   pragma comment(lib, "ws2_32.lib")  // Links the Winsock library automatically
 #   define close _close
+#   // Windows provides sys/types.h equivalents via Winsock
+#else
+#   include <sys/types.h>
+#   include <netdb.h>
+#   include <arpa/inet.h>
+#   include <netinet/in.h>  // For AF_INET, SOCK_STREAM, struct sockaddr_in
 #endif
 
 #if defined (ALTIX)
@@ -774,31 +776,39 @@ Stream::parse_name (
 
 
 char *
-Stream::lookup_host (
-    char *  hostname
-    ) {
+Stream::lookup_host(char *hostname) {
+    // Map host name string to dotted IPv4 address string (IPv4-only, cross-platform)
 
-    // Map host name string to dotted ip address string (IPv4 only)
+    static char ipaddr[MAXSTRING];  // Not thread-safe, but OK as-is
+    struct addrinfo hints = {0};
+    struct addrinfo *result = NULL;
 
-    static char ipaddr [MAXSTRING];     // not thread safe, but OK
-    struct addrinfo hints, *res;
-    int status;
+    // Enforce IPv4-only resolution
+    hints.ai_family = AF_INET;      // Restrict to IPv4
+    hints.ai_socktype = SOCK_STREAM;  // Assuming stream (TCP); adjust if UDP
+    hints.ai_protocol = IPPROTO_TCP;  // Optional: specify TCP
 
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;      // IPv4 only
-    hints.ai_socktype = SOCK_STREAM; // optional, but specifies stream socket
-
-    status = getaddrinfo(hostname, NULL, &hints, &res);
+    int status = getaddrinfo(hostname, NULL, &hints, &result);
     if (status != 0) {
-        printf("Cannot get address of host \"%s\": %s\n", hostname, gai_strerror(status));
+        printf("Cannot get IPv4 address of host \"%s\": %s\n", hostname, gai_strerror(status));
         exit(1);
     }
 
-    // Assume at least one result; take the first IPv4 address
-    struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
-    strcpy(ipaddr, inet_ntoa(ipv4->sin_addr));
+    if (result == NULL || result->ai_addrlen != sizeof(struct sockaddr_in)) {
+        freeaddrinfo(result);
+        printf("No valid IPv4 address found for \"%s\"\n", hostname);
+        exit(1);
+    }
 
-    freeaddrinfo(res);
+    // Extract and format the IPv4 address as dotted quad
+    struct sockaddr_in *ipv4 = (struct sockaddr_in *)result->ai_addr;
+    sprintf(ipaddr, "%d.%d.%d.%d",
+            (unsigned char)ipv4->sin_addr.s_addr & 0xFF,
+            (unsigned char)(ipv4->sin_addr.s_addr >> 8) & 0xFF,
+            (unsigned char)(ipv4->sin_addr.s_addr >> 16) & 0xFF,
+            (unsigned char)(ipv4->sin_addr.s_addr >> 24) & 0xFF);
+
+    freeaddrinfo(result);
     return ipaddr;
     }
 
