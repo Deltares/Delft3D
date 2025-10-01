@@ -850,6 +850,127 @@
     </file>
   </checks>
 </testCase>
+
+<testCase name="e02_f030_c031_frisianinlet_waqbot_restart_2D" ref="dflowfm_default_restart">
+  <path version="2025-09-24T10:44:34.308000">e02_dflowfm/f030_water_quality_processes/c031_frisianinlet_waqbot_restart_2D</path>
+  <checks>
+    <file name="dflowfmoutput/f34_waqbot_restart_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testbot" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testuni" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+    <file name="dflowfmoutput/f34_waqbot_restart_his.nc" type="netCDF">
+      <parameters>
+        <parameter name="Continuity" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testbot" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testuni" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+    <file name="dflowfmoutput/f34_waqbot_restart_mass_balances.txt" type="ASCII">
+      <parameters>
+        <parameter name="balances" toleranceAbsolute="1.0e10" toleranceRelative="0.0001" />
+      </parameters>
+      <skipline>balance error</skipline>
+    </file>
+  </checks>
+</testCase>
+<testCase name="e02_f030_c032_frisianinlet_waqbot_restart" ref="dflowfm_default_restart">
+  <path version="2025-09-24T10:55:48.426000">e02_dflowfm/f030_water_quality_processes/c032_frisianinlet_waqbot_restart</path>
+  <checks>
+    <file name="dflowfmoutput/f34_waqbot_restart_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testbot" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testuni" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+    <file name="dflowfmoutput/f34_waqbot_restart_his.nc" type="netCDF">
+      <parameters>
+        <parameter name="Continuity" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testbot" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testuni" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <!-- Exclude these for the moment - are they filled correctly? DELWAQ-1208
+        <parameter name="testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        -->
+      </parameters>
+    </file>
+    <file name="dflowfmoutput/f34_waqbot_restart_mass_balances.txt" type="ASCII">
+      <parameters>
+        <parameter name="balances" toleranceAbsolute="1.0e10" toleranceRelative="0.0001" />
+      </parameters>
+      <skipline>balance error</skipline>
+    </file>
+  </checks>
+</testCase>
+<testCase name="e02_f030_c033_frisianinlet_waqbot_restart_z" ref="dflowfm_default_restart">
+  <path version="2025-09-24T10:55:53.930000">e02_dflowfm/f030_water_quality_processes/c033_frisianinlet_waqbot_restart_z</path>
+  <checks>
+    <file name="dflowfmoutput/f34_waqbot_restart_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testbot" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testuni" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="mesh2d_testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+    <file name="dflowfmoutput/f34_waqbot_restart_his.nc" type="netCDF">
+      <parameters>
+        <parameter name="Continuity" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testbot" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testuni" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl1" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl4" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl8" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <!-- Exclude these for the moment - are they filled correctly? DELWAQ-1208
+        <parameter name="testbot_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testuni_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl1_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl4_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        <parameter name="testl8_3D" toleranceAbsolute="1.0e-5" toleranceRelative="1.0e-6"/>
+        -->
+      </parameters>
+    </file>
+    <file name="dflowfmoutput/f34_waqbot_restart_mass_balances.txt" type="ASCII">
+      <parameters>
+        <parameter name="balances" toleranceAbsolute="1.0e10" toleranceRelative="0.0001" />
+      </parameters>
+      <skipline>balance error</skipline>
+    </file>
+  </checks>
+</testCase>
+
+
+
 <testCase name="e02_f030_c040_radsurfave_from_waqinput" ref="dflowfm_default">
   <path version="2025-07-17T23:30:00">e02_dflowfm/f030_water_quality_processes/c040_radsurfave_from_waqinput</path>
   <checks>
