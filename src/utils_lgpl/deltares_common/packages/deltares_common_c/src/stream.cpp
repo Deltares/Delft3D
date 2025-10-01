@@ -41,19 +41,18 @@
 //
 //------------------------------------------------------------------------------
 
+// Protective defines for Winsock 2 (must be BEFORE ANY #include)
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600  // Target Windows Vista+ for full Winsock 2 (adjust if needed for older targets)
+#define _WIN32_WINNT 0x0600  // Enables full Winsock 2 support (Vista+; use 0x0501 for XP if needed)
 #endif
-#define WIN32_LEAN_AND_MEAN  // Exclude rarely-used stuff from windows.h, including winsock.h
+#define WIN32_LEAN_AND_MEAN  // Prevents <windows.h> from including <winsock.h>
+#define _WINSOCK_DEPRECATED_NO_WARNINGS  // Suppresses deprecation warnings
 
 #include "stream.h"
 
-// The following definition is needed since VisualStudio2015 before including <pthread.h>:
-#define HAVE_STRUCT_TIMESPEC
-
-// Network resolution includes FIRST (to preempt conflicts)
+// Network resolution includes (Winsock 2 first on Windows)
 #if defined(WIN32)
-#   include <winsock2.h>
+#   include <winsock2.h>  // Must be first; includes ws2def.h
 #   include <ws2tcpip.h>
 #   pragma comment(lib, "ws2_32.lib")
 #   define close _close
@@ -65,7 +64,6 @@
 #endif
 
 #include <errno.h>
-#include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -675,17 +673,18 @@ Stream::initialize (
     if (! Stream::initialized) {
         Stream::initialized = true;
 #if defined(WIN32)
-        // Upgrade to Winsock 2.2 for getaddrinfo() support
+        // Use Winsock 2.2 for getaddrinfo() support
         WORD wVersionRequested = MAKEWORD(2, 2);
         WSADATA wsaData;
-        if (WSAStartup(wVersionRequested, &wsaData) != 0)
+        if (WSAStartup(wVersionRequested, &wsaData) != 0) {
             error("Initialising Winsock 2 on Windows failed: %d", WSAGetLastError());
+        }
 #else
         if (pthread_mutex_init (&Stream::mutex, NULL) != 0)
             error ("Pthreads error: Cannot create stream class mutex, errno=%d", errno);
 #endif
-        }
     }
+}
 
 
 int
@@ -822,42 +821,34 @@ Stream::lookup_dotaddr (
     char *  ipdotaddr
     ) {
 
-    // Map dotted ip address to an unqualified host name
+    // Map dotted IP address to an unqualified host name (IPv4-only, cross-platform)
 
-    static char hostname [MAXSTRING];   // not thread safe, but OK
-    struct hostent *hostinfo;
+    static char hostname [MAXSTRING];   // Not thread-safe, but OK
+    struct sockaddr_in addr = {0};
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr(ipdotaddr);
 
-    unsigned int a, b, c, d;
-    if (sscanf (ipdotaddr, "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
-        error ("Cannot parse dotted IP address \"%s\"\n", ipdotaddr);
-
-#if defined(linux) || defined(IRIX)
-    IPaddr addr = a | b << 8 | c << 16 | d << 24;
-#elif defined(WIN32)
-    struct in_addr addr;
-    addr.s_addr = inet_addr(ipdotaddr);
-#elif defined(reversebyteorder)
-    IPaddr addr = d | c << 8 | b << 16 | a << 24;
-#else
-    undefined system type in lookup_dotaddr
-#endif
-
-#if defined(WIN32)
-    if ((hostinfo = gethostbyaddr ((char *)&addr, 4, AF_INET)) == NULL)
-        error ("Cannot get hostname of \"%s\" (0x%x) -- error code: %d\n", ipdotaddr, addr, WSAGetLastError());
-#else
-    if ((hostinfo = gethostbyaddr ((char *)&addr, sizeof addr, AF_INET)) == NULL)
-        error ("Cannot get hostname of \"%s\" (0x%x)\n", ipdotaddr, addr);
-#endif
-
-    const char * cp = hostinfo->h_name;
-    char * dp = hostname;
-    while (cp != NULL && *cp != '\0' && *cp != '.')
-        *dp++ = *cp++;
-
-    *dp = '\0';
-    return hostname;
+    if (addr.sin_addr.s_addr == INADDR_NONE) {
+        error("Cannot parse dotted IP address \"%s\"", ipdotaddr);
     }
+
+    char host[MAXSTRING];
+    socklen_t addrlen = sizeof(struct sockaddr_in);
+    int status = getnameinfo((struct sockaddr*)&addr, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
+    if (status != 0) {
+        error("Cannot get hostname of \"%s\": %s", ipdotaddr, gai_strerror(status));
+    }
+
+    // Truncate at first dot (unqualified hostname)
+    char *dp = hostname;
+    const char *cp = host;
+    while (*cp != '\0' && *cp != '.') {
+        *dp++ = *cp++;
+    }
+    *dp = '\0';
+
+    return hostname;
+}
 
 
 char *
