@@ -50,8 +50,8 @@
 
 #include "stream.h"
 
-// Network resolution includes (Winsock 2 first on Windows)
-#if defined(WIN32)
+// Network resolution includes (use _WIN32 for Windows detection)
+#if defined(_WIN32)  // Changed from WIN32 to _WIN32
 #   include <winsock2.h>  // Must be first; includes ws2def.h
 #   include <ws2tcpip.h>
 #   pragma comment(lib, "ws2_32.lib")
@@ -81,7 +81,6 @@
 #define ntohl(x) __bswap_constant_32(x)
 #endif
 
-
 //------------------------------------------------------------------------------
 //  Static class members and Constants
 
@@ -107,13 +106,12 @@ enum {
 
 
 // Provide missing entities for Windows
-//
-#if defined (WIN32)
+#if defined(_WIN32)
 
-typedef int socklen_t;   // From WINSOCK.H which defines the accept() prototype
+typedef int socklen_t;   // Matches POSIX accept() prototype
 
-void usleep( long time ) {
-    Sleep( time/1000.0 );    // sleep() under Windows uses milliseconds - don't ask why
+void usleep(long time) {
+    Sleep(time / 1000);  // Convert microseconds to milliseconds (integer division)
 }
 #endif
 
@@ -715,20 +713,20 @@ Stream::next_seqn (
 
 
 void
-Stream::trace (
-    char * reason,
+Stream::trace(
+    const char *reason,  // Changed from char* to const char*
     ...
-    ) {
+) {
+    va_list arguments;
+    char string[MAXSTRING];
 
-    va_list     arguments;
-    char        string [MAXSTRING];
+    va_start(arguments, reason);
+    vsprintf(string, reason, arguments);
+    va_end(arguments);
 
-    va_start (arguments, reason);
-    vsprintf (string, reason, arguments);
-    va_end (arguments);
-
-    this->tracefunction (string);
-    }
+    if (this->tracefunction != NULL)
+        this->tracefunction(string);
+}
 
 
 char *
@@ -817,13 +815,12 @@ Stream::lookup_host(char *hostname) {
 
 
 char *
-Stream::lookup_dotaddr (
-    char *  ipdotaddr
-    ) {
-
+Stream::lookup_dotaddr(
+    char *ipdotaddr
+) {
     // Map dotted IP address to an unqualified host name (IPv4-only, cross-platform)
 
-    static char hostname [MAXSTRING];   // Not thread-safe, but OK
+    static char hostname[MAXSTRING];   // Not thread-safe, but OK
     struct sockaddr_in addr = {0};
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(ipdotaddr);
@@ -870,26 +867,24 @@ Stream::dotipaddr (
 
 
 void
-Stream::error (
-    char * reason,
+Stream::error(
+    const char *reason,  // Changed from char* to const char*
     ...
-    ) {
+) {
+    va_list arguments;
+    char string[MAXSTRING];
 
-    va_list     arguments;
-    char        string [MAXSTRING];
-
-    va_start (arguments, reason);
-    vsprintf (string, reason, arguments);
-    va_end (arguments);
+    va_start(arguments, reason);
+    vsprintf(string, reason, arguments);  // Safe: vsprintf writes to string, not reason
+    va_end(arguments);
 
     if (this->errorfunction != NULL)
-        this->errorfunction (string);
-
+        this->errorfunction(string);
     else {
-        fflush (stdout);
-        fprintf (stderr, "Fatal error: %s\n", string);
-        fflush (stderr);
-        exit (2);
-        }
+        fflush(stdout);
+        fprintf(stderr, "Fatal error: %s\n", string);
+        fflush(stderr);
+        exit(2);
     }
+}
 

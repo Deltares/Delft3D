@@ -65,21 +65,20 @@ typedef struct sockaddr_in  Sockaddr;       // socket address
 //------------------------------------------------------------------------------
 //  Microsoft Windows
 
-#elif defined (WIN32)
+#elif defined(_WIN32)  // Changed from WIN32 to _WIN32
 
-#include <io.h>
-#include <winsock2.h>  // Modern Winsock
+#include <winsock2.h>  // Use Winsock 2 instead of winsock.h
 #include <ws2tcpip.h>  // For getaddrinfo, getnameinfo
 
-typedef in_addr_t           IPaddr;         // Use proper Winsock type
-typedef in_port_t           IPport;         // Use proper Winsock type
-typedef struct sockaddr_in  Sockaddr;       // Already defined in winsock2.h
+// ToDo: Replace following with real definitions
+typedef unsigned int        IPaddr;         // IP address (in_addr_t equivalent)
+typedef unsigned short      IPport;         // IP port number (in_port_t equivalent)
+typedef struct sockaddr_in  Sockaddr;       // socket address
 
-#define MicroSleep  Sleep  // Windows uses milliseconds
+#define MicroSleep  Sleep  // Windows Sleep uses milliseconds
 
 //------------------------------------------------------------------------------
 //  Undefined platform; syntax error to force compiler abort
-
 #else
     Error: Platform not set!
 #endif
