@@ -41,7 +41,7 @@ echo D3D_HOME         : %D3D_HOME%
 
 set bindir=%~dp0
 set dmorscripts=%bindir%
-set TCL_EXE=%bindir%\tclkitsh863.exe
+set TCL_EXE=%bindir%\tclkitsh852.exe
 set scriptname=%dmorscripts%/mormerge.tcl
 
 
