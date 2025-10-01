@@ -83,6 +83,7 @@
 #define Sleep sleep
 #endif
 #if defined(_WIN32)  // Changed from WIN32 to _WIN32 for consistency
+#   include <winsock2.h>
 #   include <windows.h>
 #   define strdup _strdup
 #endif
