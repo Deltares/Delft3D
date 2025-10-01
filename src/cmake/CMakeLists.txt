@@ -21,7 +21,6 @@ set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the locat
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
 cmake_path(GET PARENT_DIR PARENT_PATH dir)
 
-
 # Set unit and integration test root directory
 set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
@@ -254,6 +253,9 @@ if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
 endif()
 
 ### Component configurations
+
+# Unit test configuration, should be findable for every configuration
+include(configurations/miscellaneous/unit_test_configuration.cmake)
 
 # D-Flow FM configuration
 if(${configuration_type} STREQUAL ${dflowfm_configuration})

@@ -1,6 +1,3 @@
-# Include unit test configuration for single precision flow2d3d build
-include(${CMAKE_CURRENT_LIST_DIR}/../miscellaneous/unit_test_configuration.cmake)
-
 # Specify the modules to be included
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
