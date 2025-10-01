@@ -293,6 +293,9 @@ aws_access_key_id=<your-access-key-id>
 aws_secret_access_key=<your-secret-access-key>
 ```
 
+The directory `/home/dev/.aws` is mounted in the devcontainer as a volume. So any files written there will
+be persisted. You should only need to write your MinIO keys to this file once.
+
 You can try running a test case to verify that the path to the binaries and your credentials work. This
 command runs only a single test case from the `configs/dimr/dimr_dflowfm_lnx64.xml` testbench config.
 ```bash
