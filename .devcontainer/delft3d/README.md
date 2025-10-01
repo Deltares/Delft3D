@@ -78,7 +78,7 @@ distributions you have installed with WSL. The `docker` command line program is
 available in both Windows and your WSL Linux distributions. In addition you will
 get the Docker Desktop GUI in Windows, that you can use to configure your Docker
 installation and to do most things that you can also do with the `docker` command
-line tool. In addition you will be able to switch between running 'Linux containers'
+line tool. You are also able to switch between running 'Linux containers'
 and 'Windows containers'. You need a license to use Docker Desktop. If you are a
 Deltares employee you can request a Docker Desktop license by contacting Edward Melger.
 
@@ -86,10 +86,10 @@ Deltares employee you can request a Docker Desktop license by contacting Edward 
 Docker Desktop requires a license. But the official "Docker Engine", which includes
 the `docker` command line tool and the "Docker daemon", is
 [open source](https://docs.docker.com/engine/#licensing) software and doesn't require 
-a license. Some people may prefer to install Docker directly in their Linux
-distribution of choice (be it on Windows using WSL, or on a native Linux installation).
-Usually docker can be installed using the Linux distribution's standard package manager.
-You should be aware of the following:
+a commercial license to use. For this reason, some people may prefer to install Docker 
+directly in their Linux distribution of choice (be it on Windows using WSL, or on a native 
+Linux installation). Usually docker can be installed using the Linux distribution's standard
+package manager. If you do that, you should be aware of the following:
 1. You will only be able to run Linux containers (You can't run Windows containers on Linux).
 2. In some Linux distributions, you will need to configure the package manager to install
    the official Docker Engine. Read [this page](https://docs.docker.com/engine/install/#installation-procedures-for-supported-platforms) 
@@ -259,10 +259,26 @@ a path other than `src/cmake/CMakePresets.json` is not supported at the moment.
 
 #### Python virtual environment for running `TestBench.py`
 There's a shell script: `.devcontainer/delft3d/scripts/post_create_command.sh` that should install
-all of the required Python dependencies for `TestBench.py` in `test/deltares_testbench`. This
-script is run automatically after (re-)building the devcontainer. If the directory `test/deltares_testbench/.venv`
-already exists this step will be skipped. Before running `TestBench.py`, you may need to activate the 
-"virtual environment" (or "venv"). This ensures that the correct version of `Python` occurs first on your `PATH`,
+all of the required Python dependencies for `TestBench.py` in `test/deltares_testbench` 
+in a "virtual environment" (or "venv"). This script is run automatically after 
+(re-)building the devcontainer. If the directory `test/deltares_testbench/.venv`
+already exists this step will be *skipped*.
+
+Remember that the files under  `/workspaces/delft3d` are bind mounted from the host
+inside the container. If you already had installed a virtual environment in 
+`test/deltares_testbench` before on the host, it is probably referencing a version
+of Python that only exists on the host as well. Inside the container this venv will
+not work. To work around this you can delete the existing `.venv` directory and
+make a new one from within the devcontainer:
+```bash
+# From test/deltares_testbench
+rm -rf .venv
+uv venv --python=3.12 .venv
+uv pip sync pip/lnx-dev-requirements.txt
+```
+
+Before running `TestBench.py`, you need to first activate the venv. This ensures
+that the correct version of `Python` occurs first on your `PATH`,
 and that `Python` has access to all of the installed dependencies:
 
 ```bash
@@ -272,16 +288,19 @@ source ./.venv/bin/activate
 python TestBench.py --help
 ```
 
+##### Setting the path to the Delft3D binaries
 For historical reasons, `TestBench.py` tries to look for programs to run in the directory 
-`./data/engines/teamcity_artifacts/lnx64/`. To point `TestBench.py` to the Delft3D binaries, 
-this directory should be a "symbolic link" to the CMake install directory. If this symbolic 
-link does not exist yet, or you want to modify the location of the binaries, you can do the following:
+`./data/engines/teamcity_artifacts/lnx64/`. To point `TestBench.py` to your own
+freshly built Delft3D binaries, you can make this a "symbolic link" to the CMake install
+directory. If this symbolic link does not exist yet, or you want to modify the location of 
+the binaries, you can do the following:
 ```bash
 # The following commands should be executed in `test/deltares_testbench`
 mkdir -p data/engines/teamcity_artifacts/
 ln -s -T $(realpath ../../build_fm-suite/install/) data/engines/teamcity_artifacts/lnx64
 ```
 
+##### Installing your MinIO credentials
 To run testbench configs `TestBench.py` automatically downloads case and reference files from MinIO 
 (https://s3.deltares.nl). Accessing files on MinIO requires your personal MinIO credentials.
 You can generate an "access key id" and "secret access key" on the 
@@ -294,8 +313,9 @@ aws_secret_access_key=<your-secret-access-key>
 ```
 
 The directory `/home/dev/.aws` is mounted in the devcontainer as a volume. So any files written there will
-be persisted. You should only need to write your MinIO keys to this file once.
+be persisted. You only have to write your MinIO keys to this file once.
 
+##### Running a test case
 You can try running a test case to verify that the path to the binaries and your credentials work. This
 command runs only a single test case from the `configs/dimr/dimr_dflowfm_lnx64.xml` testbench config.
 ```bash
