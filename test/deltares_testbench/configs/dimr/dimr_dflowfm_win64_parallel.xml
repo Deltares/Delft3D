@@ -99,6 +99,22 @@
             </location>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
+        <testCase name="dimr_platform_specific">
+            <programs>
+                <program ref="dimr">
+                    <arguments>
+                        <argument>3 dimr.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
         <testCase name="postproc">
             <location ref="reference_results" type="reference">
                 <from>win64</from>
