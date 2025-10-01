@@ -714,7 +714,7 @@ Stream::next_seqn (
 
 void
 Stream::trace(
-    const char *reason,  // Changed from char* to const char*
+    char *reason,  // Revert to char* to match stream.h
     ...
 ) {
     va_list arguments;
@@ -868,14 +868,14 @@ Stream::dotipaddr (
 
 void
 Stream::error(
-    const char *reason,  // Changed from char* to const char*
+    char *reason,  // Revert to char* to match stream.h
     ...
 ) {
     va_list arguments;
     char string[MAXSTRING];
 
     va_start(arguments, reason);
-    vsprintf(string, reason, arguments);  // Safe: vsprintf writes to string, not reason
+    vsprintf(string, reason, arguments);
     va_end(arguments);
 
     if (this->errorfunction != NULL)
