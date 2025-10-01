@@ -41,10 +41,35 @@
 //
 //------------------------------------------------------------------------------
 
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600  // Target Windows Vista+ for full Winsock 2 (adjust if needed for older targets)
+#endif
+#define WIN32_LEAN_AND_MEAN  // Exclude rarely-used stuff from windows.h, including winsock.h
+#include <windows.h>  // If needed; otherwise omit
+
 #include "stream.h"
+
+// Winsock 2 protection (add this before any other includes)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600  // Enable Winsock 2 features
+#endif
+#define WIN32_LEAN_AND_MEAN
 
 // The following definition is needed since VisualStudio2015 before including <pthread.h>:
 #define HAVE_STRUCT_TIMESPEC
+
+// Network resolution includes FIRST (to preempt conflicts)
+#if defined(WIN32)
+#   include <winsock2.h>
+#   include <ws2tcpip.h>
+#   pragma comment(lib, "ws2_32.lib")
+#   define close _close
+#else
+#   include <sys/types.h>
+#   include <netdb.h>
+#   include <arpa/inet.h>
+#   include <netinet/in.h>
+#endif
 
 #include <errno.h>
 #include <pthread.h>
@@ -52,19 +77,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#if defined(WIN32)
-#   include <winsock2.h>
-#   include <ws2tcpip.h>
-#   pragma comment(lib, "ws2_32.lib")  // Links the Winsock library automatically
-#   define close _close
-#   // Windows provides sys/types.h equivalents via Winsock
-#else
-#   include <sys/types.h>
-#   include <netdb.h>
-#   include <arpa/inet.h>
-#   include <netinet/in.h>  // For AF_INET, SOCK_STREAM, struct sockaddr_in
-#endif
 
 #if defined (ALTIX)
 // Intel C compiler (icc/icpc) on Itanium doesn't like GNU __extension__ functions
