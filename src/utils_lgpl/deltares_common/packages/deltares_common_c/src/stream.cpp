@@ -45,15 +45,8 @@
 #define _WIN32_WINNT 0x0600  // Target Windows Vista+ for full Winsock 2 (adjust if needed for older targets)
 #endif
 #define WIN32_LEAN_AND_MEAN  // Exclude rarely-used stuff from windows.h, including winsock.h
-#include <windows.h>  // If needed; otherwise omit
 
 #include "stream.h"
-
-// Winsock 2 protection (add this before any other includes)
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600  // Enable Winsock 2 features
-#endif
-#define WIN32_LEAN_AND_MEAN
 
 // The following definition is needed since VisualStudio2015 before including <pthread.h>:
 #define HAVE_STRUCT_TIMESPEC
@@ -682,16 +675,15 @@ Stream::initialize (
     if (! Stream::initialized) {
         Stream::initialized = true;
 #if defined(WIN32)
-        // See: http://www.exegesis.uklinux.net/gandalf/winsock/winsock1.htm
-        WORD wVersionRequested = MAKEWORD(1, 1);
-                WSADATA wsaData;
-        if ( WSAStartup( wVersionRequested, &wsaData ) != 0 )
-            error("Initialising sockets on Windows failed");
+        // Upgrade to Winsock 2.2 for getaddrinfo() support
+        WORD wVersionRequested = MAKEWORD(2, 2);
+        WSADATA wsaData;
+        if (WSAStartup(wVersionRequested, &wsaData) != 0)
+            error("Initialising Winsock 2 on Windows failed: %d", WSAGetLastError());
 #else
         if (pthread_mutex_init (&Stream::mutex, NULL) != 0)
             error ("Pthreads error: Cannot create stream class mutex, errno=%d", errno);
 #endif
-
         }
     }
 
@@ -802,14 +794,14 @@ Stream::lookup_host(char *hostname) {
 
     int status = getaddrinfo(hostname, NULL, &hints, &result);
     if (status != 0) {
-        printf("Cannot get IPv4 address of host \"%s\": %s\n", hostname, gai_strerror(status));
-        exit(1);
+        error("Cannot get IPv4 address of host \"%s\": %s", hostname, gai_strerror(status));
+        return NULL;  // Won't reach due to error(), but for completeness
     }
 
     if (result == NULL || result->ai_addrlen != sizeof(struct sockaddr_in)) {
         freeaddrinfo(result);
-        printf("No valid IPv4 address found for \"%s\"\n", hostname);
-        exit(1);
+        error("No valid IPv4 address found for \"%s\"", hostname);
+        return NULL;
     }
 
     // Extract and format the IPv4 address as dotted quad
@@ -822,7 +814,7 @@ Stream::lookup_host(char *hostname) {
 
     freeaddrinfo(result);
     return ipaddr;
-    }
+}
 
 
 char *
