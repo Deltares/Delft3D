@@ -273,13 +273,13 @@ python TestBench.py --help
 ```
 
 For historical reasons, `TestBench.py` tries to look for programs to run in the directory 
-`./data/engines/teamcity_artifacts/lnx64/`. To point `TestBench.py` to the D-Hydro binaries, 
+`./data/engines/teamcity_artifacts/lnx64/`. To point `TestBench.py` to the Delft3D binaries, 
 this directory should be a "symbolic link" to the CMake install directory. If this symbolic 
 link does not exist yet, or you want to modify the location of the binaries, you can do the following:
 ```bash
 # The following commands should be executed in `test/deltares_testbench`
 mkdir -p data/engines/teamcity_artifacts/
-ln -s -T ../../build_fm-suite/install/ data/engines/teamcity_artifacts/lnx64
+ln -s -T $(realpath ../../build_fm-suite/install/) data/engines/teamcity_artifacts/lnx64
 ```
 
 To run testbench configs `TestBench.py` automatically downloads case and reference files from MinIO 
