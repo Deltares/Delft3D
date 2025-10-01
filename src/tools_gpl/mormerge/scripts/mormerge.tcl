@@ -2202,7 +2202,7 @@ if { $queuesys != "none" } {
          }
       }
    } else {
-      set nodelist "local"
+      set nodelist "127.0.0.1"
    }
 }
 putsDebug "number of nodes   : $infillist(numnodes)"
