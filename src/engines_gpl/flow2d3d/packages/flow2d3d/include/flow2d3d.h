@@ -43,8 +43,9 @@
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-// Existing includes
-#include <windows.h>  // If present, move after defines
+#if defined(_WIN32)
+#   include <windows.h>
+#endif
 
 #include "d_hydro.h"
 
