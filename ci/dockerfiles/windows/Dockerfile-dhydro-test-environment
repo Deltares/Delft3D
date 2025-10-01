@@ -4,6 +4,9 @@ FROM containers.deltares.nl/base_windows_containers/server:ltsc2022
 # Set powershell as shell
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
 
+# Disable IPv6 by setting the registry key
+RUN Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters\' -Name 'DisabledComponents' -Value 0xFF
+
 # Enable long pathnames
 RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
 
