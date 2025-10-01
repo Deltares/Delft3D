@@ -303,4 +303,3 @@ command runs only a single test case from the `configs/dimr/dimr_dflowfm_lnx64.x
 source ./.venv/bin/activate  # Only necessary if the venv is not already active.
 python TestBench.py --compare --config configs/dimr/dimr_dflowfm_lnx64.xml --filter 'testcase=e02_f002_c100'
 ```
-
