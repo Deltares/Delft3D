@@ -67,7 +67,7 @@ using namespace std;
 #include <mpi.h>
 #include <netcdf.h>
 #include <ctime>
-# include <stdio.h>
+#include <stdio.h>
 #include <fstream>
 #include <iomanip>
 
@@ -76,7 +76,7 @@ using namespace std;
 #  include <Strsafe.h>
 #  include <windows.h>
 #  include <direct.h>
-#include <errno.h>
+#  include <errno.h>
 #  include <io.h>
 #  include <sys/stat.h>
 
