@@ -54,6 +54,11 @@
 #include <string.h>
 #include <sys/types.h>
 
+// Network resolution includes (IPv4 only)
+#include <netdb.h>      // For getaddrinfo, freeaddrinfo, gai_strerror
+#include <arpa/inet.h>  // For inet_ntoa
+#include <netinet/in.h> // For AF_INET, SOCK_STREAM, struct sockaddr_in
+
 #if defined (WIN32)
 //#include <Winsock2.h>
 #   define close _close
@@ -773,20 +778,27 @@ Stream::lookup_host (
     char *  hostname
     ) {
 
-    // Map host name string to dotted ip address string
+    // Map host name string to dotted ip address string (IPv4 only)
 
     static char ipaddr [MAXSTRING];     // not thread safe, but OK
-    struct hostent * hostinfo;
+    struct addrinfo hints, *res;
+    int status;
 
-    if ((hostinfo = gethostbyname (hostname)) == NULL)
-        { printf ("Cannot get address of host \"%s\"\n", hostname); exit (1); }
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;      // IPv4 only
+    hints.ai_socktype = SOCK_STREAM; // optional, but specifies stream socket
 
-    sprintf (ipaddr, "%d.%d.%d.%d",
-                            (unsigned char) hostinfo->h_addr_list[0][0],
-                            (unsigned char) hostinfo->h_addr_list[0][1],
-                            (unsigned char) hostinfo->h_addr_list[0][2],
-                            (unsigned char) hostinfo->h_addr_list[0][3]
-                            );
+    status = getaddrinfo(hostname, NULL, &hints, &res);
+    if (status != 0) {
+        printf("Cannot get address of host \"%s\": %s\n", hostname, gai_strerror(status));
+        exit(1);
+    }
+
+    // Assume at least one result; take the first IPv4 address
+    struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
+    strcpy(ipaddr, inet_ntoa(ipv4->sin_addr));
+
+    freeaddrinfo(res);
     return ipaddr;
     }
 
