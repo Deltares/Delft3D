@@ -114,16 +114,27 @@ class GitClient(ConnectionServiceInterface):
             self.__context.log(f"Unexpected error running git command: {e}", severity=LogLevel.ERROR)
             raise
 
-    def get_last_two_tags(self) -> Tuple[str, str]:
+    def get_last_two_tags(self, dry_run: bool = False) -> Tuple[str, str]:
         """Return the last two Git tags (most recent first)."""
+        if self.__context.dry_run:
+            return "v0.0.1", "v0.0.2"
+
         tags = self.run_git_command(["git", "tag", "--sort=creatordate"]).splitlines()
         if len(tags) < 2:
             raise RuntimeError("At least two tags are required to generate the release notes.")
         return tags[-2], tags[-1]
 
-    def get_commits(self, from_tag: str, to_tag: str) -> List[Tuple[str, str]]:
+    def get_commits(self, from_tag: str, to_tag: str, dry_run: bool = False) -> List[Tuple[str, str]]:
         """Return list of (commit_hash, commit_message) between two tags."""
-        log = self.run_git_command(["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%h%x09%s"])
+        if self.__context.dry_run:
+            return [
+                ("deadbee", "Dummy commit 1 for dry-run"),
+                ("cafebabe", "Dummy commit 2 for dry-run"),
+            ]
+
+        log = self.run_git_command([
+            "git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%h%x09%s"
+        ])
         commits: List[Tuple[str, str]] = []
         for line in log.splitlines():
             if "\t" in line:
