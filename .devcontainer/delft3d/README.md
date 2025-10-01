@@ -33,14 +33,14 @@ enable syntax highlighting for certain source files. The extensions declared in
 `devcontainer.json` are isolated to your 'devcontainer' environment, and should be
 installed automatically when opening the project in the devcontainer.
 
-We want to make it as easier for people to set up a development environment for Delft3D
-on Linux. The large amount of third-party libraries required have made this difficult in
+We want to make it easier for people to set up a development environment for Delft3D
+on Linux. The large amount of required third-party libraries have made this difficult in
 the past. Now that we're already using "build containers" in our CI pipelines to do our
 builds, we can reuse them to make "development containers" as well. Any change made to the
 build container can automatically be applied to the development container (provided
 that a clean pull/rebuild of the development container is performed). This ensures that the
 CI environment and the development environment are kept in sync. All of the dockerfiles
-and devcontainer configuration should be tracked in this Git repository. So we can easily
+and devcontainer configuration should be tracked in this repository. So we can easily
 plan, perform, review and share changes.
 
 ## Prerequisites
@@ -119,8 +119,7 @@ files in WSL Linux under `/home/${USER}/repo/delft3d` will be available in the c
 `/workspaces/delft3d`. It is possible to mount a directory from the `C:\`
 drive inside the container, but we **discourage** this for the following reasons:
 1. The performance of file system operations (reading and writing files to disk) is noticably
-   worse when a directory in the `C:\` drive is mounted inside the devcontainer. This means, 
-   for example, that compiling D-Hydro may take over four times longer than usual.
+   worse when a directory in the `C:\` drive is mounted inside the devcontainer. For example, we've noticed that compilation can take over four times longer than usual.
 2. You have used Git on Windows to clone the Delft3D repository on the `C:\`
    drive. This means that most of the text files inside the repository have been 
    written to disk using 'Windows line endings' (`\r\n`) instead of 'Unix line endings' 
@@ -154,8 +153,8 @@ cat ~/.cli-secret | docker login --username $YOUR_EMAIL_ADDRESS --password-stdin
 ```
 
 Now you're finally ready to open the Delft3D repository in the devcontainer. The first time
-you do so it may take a few minutes. The devcontainer extension must do the following:
-1. Pull the 'third-party-libs' base container image from `containers.deltares.nl`
+you do this may take a few minutes. The devcontainer extension must do the following:
+1. Pull the 'third-party-libs' base container image from `containers.deltares.nl` (Which is quite large)
 2. Run the instructions in the `Dockerfile` to create the final devcontainer image. 
 
 Once the devcontainer image is done building it is cached on your computer. It will show
@@ -172,9 +171,9 @@ devcontainer. We have probably run into the same problems and are able to help y
 ## Configuring your IDE
 
 ### Visual Studio Code
-Now that you are able to open Delft3D in the devcontainer it's time to start reaping the
-benefits. The first thing you can do to start exploring the devcontainer is to open a 
-terminal in your IDE and explore it. Most likely, the terminal will open `bash` in the
+Now that you are able to open Delft3D in the devcontainer it's time to start using it.
+The first thing you can do to start exploring the devcontainer is to open a 
+terminal in your IDE and look around a bit. Most likely, the terminal will open `bash` in the
 `/workspaces/delft3d` directory. This is the directory containing the Delft3D repository.
 Your IDE has mounted the directory from the Linux "host" (e.g. `/home/${USER}/repo/delft3d`) 
 to the `/workspaces/delft3d` directory inside the container. Any changes that you
@@ -187,7 +186,7 @@ Outside of `/workspaces/delft3d`, the file system in the container looks complet
 from the one in your host (WSL) Linux system. Inside the container, you are logged in as the
 user `dev`. `dev`'s home directory is in `/home/dev` inside the container. While in the
 container you can change the files inside `/home/dev`, but these changes will not be persisted.
-If you restart your computer the files in this directory will be reset to how they are saved
+If you restart your computer the files in this directory will be reset to how they were saved
 inside the devcontainer image. The only way to persist changes to files inside a container is 
 by using [volumes](https://docs.docker.com/engine/storage/volumes/) (or bind mounts).
 
@@ -199,22 +198,106 @@ cmake --version
 ifx --version
 ```
 
-If you are familiar with the command line tools you should be good to go. The real benefit
+If you are familiar with the command line tools you should be good to go. However, the real benefit
 of the devcontainer is being able to use the IDE's editing and debugging capabilities with
 the tools in the container. This requires language specific extensions, and configuring your
 editor. In the case of Visual Studio Code, some common extensions you will likely need are
 installed automatically. Some extensions will work right away. Other extensions will need
 some configuration to work at all, or work in a way you are satisfied with. Visual Studio
 Code configuration files live inside the `.vscode` directory in the root directory of the
-repository. This directory is in our `.gitignore` file, because editor configuration is
-platform dependent, environment dependent, and usually contains personal preference. We do
-provide example configuration files for Visual Studio Code in the 
-`.devcontainer/delft3d/.vscode-example/` directory. You can copy the contents of this directory
-to the `.vscode/` directory as a starting point.
+repository. This directory is in our `.gitignore` file, because editor configuration is often
+platform dependent, environment dependent, and dependent on the "personal preferences" of
+the developer. We do provide example configuration files for Visual Studio Code in the 
+`.devcontainer/delft3d/examples/.vscode-example/` directory. You can copy the contents of this directory
+to the `.vscode/` directory (in the repository root) as a starting point.
 
-There are three files inside the `.vscode/` directory:
-- [`settings.json`](https://code.visualstudio.com/docs/configure/settings#_settings-json-file): VSCodes settings specific for this project. Includes extension settings.
-- [`launch.json`](https://code.visualstudio.com/docs/debugtest/debugging-configuration): Configuration for running and debugging code.
-- [`tasks.json`](https://code.visualstudio.com/docs/debugtest/tasks): Custom scripts/programs
-  for common development tasks.
+We currently have two files inside the `.vscode/` directory:
+- [`settings.json`](https://code.visualstudio.com/docs/configure/settings#_settings-json-file): VSCode settings specific for this project. Includes extension settings.
+- [`launch.json`](https://code.visualstudio.com/docs/debugtest/debugging-configuration): Configuration for running and debugging code. These show up in the 'Debug' menu.
+
+Thankfully, most extensions don't require any customization in `settings.json` and will work fine with
+the default settings. There are a few exceptions, that we will list here:
+
+#### The Modern Fortran extension
+This extension provides syntax highlighting for Fortran source code and the Fortran language server: `fortls`
+(which is pre-installed in the devcontainer). It is listed in the `devcontainer.json` file as one of the
+extensions to install. Unfortunately, the extension fails to install when (re-)building the devcontainer. But
+installing the extension 'manually' still works. Navigate to the "extensions" menu in VSCode and search for
+"Modern Fortran". The "Install" button may be greyed out, with the following warning:
+
+```⚠️ This extension is not signed by the Extension Marketplace.```
+
+You can work around this by doing the following:
+1. Clicking on the extension menu item.
+2. Then clicking on the gear (⚙️) icon.
+3. Clicking on "Install" in the context menu.
+
+This may open a dialog box, repeating the warning that the extension is not signed by the extension marketplace.
+But you can opt to install it anyway.
+
+The developers of the extension have been made aware of the issue, but it doesn't seem fixed yet.
+See: https://fortran-lang.discourse.group/t/cant-install-vscode-modern-fortran-not-signed-by-marketplace/8709
+
+#### The CMake VSCode extension
+This extension enables the "CMake menu". Look for the CMake icon in the column at the far left
+of the VSCode window. You can use this menu to configure, build and install our products.
+However, it requires a file called `CMakePresets.json` in the CMake source directory to work
+properly. There's an example `CMakePresets.json` file in `.devcontainer/delft3d/examples/cmake-example`.
+You can copy this file to `src/cmake/CMakePresets.json`. The CMake extension will automatically
+read this file, so you can use the extension to configure and build the project. The example currenlty
+only has examples to configure and build the `fm-suite` product in `Debug` and `Release`. But this example
+can be extended to build only `dflowfm` or other products.
+
+The CMake extension will also discover any unit tests that have been added in the CMake configuration.
+These tests show up in the "Test menu". And you should be able to run and debug individual unit tests
+after a build.
+
+We currently don't track `src/cmake/CMakePresets.json` in git because we have trouble making a
+`CMakePresets.json` file that will work on both Linux and Windows without problems. Making two
+separate platform specific preset files and configuring `CMake` to load a specific preset file from
+a path other than `src/cmake/CMakePresets.json` is not supported at the moment.
+
+#### Python virtual environment for running `TestBench.py`
+There's a shell script: `.devcontainer/delft3d/scripts/post_create_command.sh` that should install
+all of the required Python dependencies for `TestBench.py` in `test/deltares_testbench`. This
+script is run automatically after (re-)building the devcontainer. If the directory `test/deltares_testbench/.venv`
+already exists this step will be skipped. Before running `TestBench.py`, you may need to activate the 
+"virtual environment" (or "venv"). This ensures that the correct version of `Python` occurs first on your `PATH`,
+and that `Python` has access to all of the installed dependencies:
+
+```bash
+# Activating the virtual environment in this shell session:
+# The following commands should be executed in `test/deltares_testbench`
+source ./.venv/bin/activate
+python TestBench.py --help
+```
+
+For historical reasons, `TestBench.py` tries to look for programs to run in the directory 
+`./data/engines/teamcity_artifacts/lnx64/`. To point `TestBench.py` to the D-Hydro binaries, 
+this directory should be a "symbolic link" to the CMake install directory. If this symbolic 
+link does not exist yet, or you want to modify the location of the binaries, you can do the following:
+```bash
+# The following commands should be executed in `test/deltares_testbench`
+mkdir -p data/engines/teamcity_artifacts/
+ln -s -T ../../build_fm-suite/install/ data/engines/teamcity_artifacts/lnx64
+```
+
+To run testbench configs `TestBench.py` automatically downloads case and reference files from MinIO 
+(https://s3.deltares.nl). Accessing files on MinIO requires your personal MinIO credentials.
+You can generate an "access key id" and "secret access key" on the 
+[MinIO web interface](https://s3-console.deltares.nl/access-keys). You can save these values in the file
+`/home/dev/.aws/credentials` with the following content:
+```
+[default]
+aws_access_key_id=<your-access-key-id>
+aws_secret_access_key=<your-secret-access-key>
+```
+
+You can try running a test case to verify that the path to the binaries and your credentials work. This
+command runs only a single test case from the `configs/dimr/dimr_dflowfm_lnx64.xml` testbench config.
+```bash
+# The following commands should be executed in `test/deltares_testbench`
+source ./.venv/bin/activate  # Only necessary if the venv is not already active.
+python TestBench.py --compare --config configs/dimr/dimr_dflowfm_lnx64.xml --filter 'testcase=e02_f002_c100'
+```
 
