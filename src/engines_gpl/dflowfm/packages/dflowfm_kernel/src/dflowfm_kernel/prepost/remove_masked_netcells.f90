@@ -46,7 +46,7 @@ contains
       use m_alloc
       use m_partitioninfo, only: idomain, iglobal_s
       
-      logical, intent(in) :: update_blcell
+      logical, intent(in) :: update_blcell !< Flag specifying whether the blcell array should be updated after removing dry cells.
       
       integer, dimension(:), allocatable :: numnew ! permutation array
 
@@ -54,6 +54,16 @@ contains
 
       integer :: jaidomain
       integer :: jaiglobal_s
+      logical :: update_blcell_and_non_empty !< local flag indicating that blcell should be updated and is not empty
+      
+      update_blcell_and_non_empty = .false.
+      if (update_blcell) then
+         if (allocated(blcell)) then
+            if (size(blcell) > 0) then
+               update_blcell_and_non_empty = .true.
+            end if
+         end if
+      end if
 
       num = 0
 
@@ -184,7 +194,7 @@ contains
             yzw(icnew) = yzw(ic)
             ba(icnew) = ba(ic)
             
-            if (update_blcell) then
+            if (update_blcell_and_non_empty) then
                blcell(icnew) = blcell(ic)
             end if
          end if
@@ -193,7 +203,7 @@ contains
 !     update number of cells
       nump1d2d = num
       nump = numpnew
-      if (update_blcell) then
+      if (update_blcell_and_non_empty) then
          call realloc(blcell, nump, keepExisting=.true.)
       end if
 

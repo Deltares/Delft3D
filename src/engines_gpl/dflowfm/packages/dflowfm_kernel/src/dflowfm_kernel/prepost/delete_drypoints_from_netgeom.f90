@@ -66,7 +66,7 @@ contains
       character(*), intent(inout) :: dryptsfilelist !< List of file names to process for deleting dry parts. (Supported formats: .xyz, .pol)
       integer, intent(in) :: jaconfirm !< Whether (1) or not (0) to interactively prompt for inclusion of each individual file from the list.
       integer, intent(in) :: jinside !< Override the inside check of polygon files. 0: use ZPL polygon (no override), 1: Always delete inside polygon, -1: always delete outside polygon.
-      logical, intent(in) :: update_blcell
+      logical, intent(in) :: update_blcell !< Flag specifying whether the blcell array should be updated after removing dry cells.
       character(len=128) :: ext
 
       character(len=255) :: dryptsfile

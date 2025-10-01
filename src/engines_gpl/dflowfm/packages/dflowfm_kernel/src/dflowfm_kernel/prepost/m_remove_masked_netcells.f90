@@ -46,7 +46,7 @@ module m_remove_masked_netcells
       !> note: we do not want to alter the netnodes and netlinks and will therefore not change kn and nod%lin
       module subroutine remove_masked_netcells(update_blcell)
          implicit none
-         logical, intent(in) :: update_blcell
+         logical, intent(in) :: update_blcell !< Flag specifying whether the blcell array should be updated after removing dry cells.
       end subroutine remove_masked_netcells
 
    end interface
