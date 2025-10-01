@@ -34,8 +34,17 @@
 //  6 mar 13
 //------------------------------------------------------------------------------
 
-
 #pragma once
+
+// Protective defines for Winsock 2 (must be BEFORE ANY #include)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+#define WIN32_LEAN_AND_MEAN
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
+// Existing includes
+#include <windows.h>  // If present, move after defines
 
 #include "d_hydro.h"
 

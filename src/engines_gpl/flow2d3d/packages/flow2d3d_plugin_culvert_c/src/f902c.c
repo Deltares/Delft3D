@@ -35,6 +35,7 @@
 #  include <winsock2.h>
 #  include <windows.h>
 #elif defined(salford32)
+#  include <winsock2.h>
 #  include <windows.h>
 #elif defined(HAVE_CONFIG_H)
 #  include <dlfcn.h>
