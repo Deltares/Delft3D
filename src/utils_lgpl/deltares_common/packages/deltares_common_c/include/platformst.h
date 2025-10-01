@@ -35,12 +35,17 @@
 //
 //------------------------------------------------------------------------------
 
-
-
+// Protective defines for Winsock 2 (must be first)
+#if defined(WIN32)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600  // Enable Winsock 2 (Vista+)
+#endif
+#define WIN32_LEAN_AND_MEAN
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#endif
 
 //------------------------------------------------------------------------------
 //  Linux
-
 
 #if defined (linux) || defined (IRIX)
 
@@ -51,30 +56,26 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-
 typedef in_addr_t           IPaddr;         // IP address
 typedef in_port_t           IPport;         // IP port number
 typedef struct sockaddr_in  Sockaddr;       // socket address
 
 #define MicroSleep  usleep
 
-
 //------------------------------------------------------------------------------
 //  Microsoft Windows
-
 
 #elif defined (WIN32)
 
 #include <io.h>
-#include <winsock.h>
+#include <winsock2.h>  // Modern Winsock
+#include <ws2tcpip.h>  // For getaddrinfo, getnameinfo
 
-// ToDo: Replace following with real definitions
-typedef int                 IPaddr;         // IP address
-typedef short               IPport;         // IP port number
-typedef struct sockaddr_in  Sockaddr;       // socket address
+typedef in_addr_t           IPaddr;         // Use proper Winsock type
+typedef in_port_t           IPport;         // Use proper Winsock type
+typedef struct sockaddr_in  Sockaddr;       // Already defined in winsock2.h
 
-#define MicroSleep  _sleep
-
+#define MicroSleep  Sleep  // Windows uses milliseconds
 
 //------------------------------------------------------------------------------
 //  Undefined platform; syntax error to force compiler abort
