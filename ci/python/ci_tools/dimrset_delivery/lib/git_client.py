@@ -132,9 +132,7 @@ class GitClient(ConnectionServiceInterface):
                 ("cafebabe", "Dummy commit 2 for dry-run"),
             ]
 
-        log = self.run_git_command([
-            "git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%h%x09%s"
-        ])
+        log = self.run_git_command(["git", "log", f"{from_tag}..{to_tag}", "--pretty=format:%h%x09%s"])
         commits: List[Tuple[str, str]] = []
         for line in log.splitlines():
             if "\t" in line:
