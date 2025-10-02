@@ -41,13 +41,6 @@
 //
 //------------------------------------------------------------------------------
 
-// Protective defines for Winsock 2 (must be BEFORE ANY #include)
-#ifndef _WIN32_WINNT
-#   define _WIN32_WINNT 0x0600  // Enables full Winsock 2 support
-#endif
-#define WIN32_LEAN_AND_MEAN  // Prevents <windows.h> from including <winsock.h>
-#define _WINSOCK_DEPRECATED_NO_WARNINGS  // Suppresses deprecation warnings#include "stream.h"
-
 #include "stream.h"
 
 // The following definition is needed since VisualStudio2015 before including <pthread.h>:
