@@ -46,8 +46,8 @@
 // The following definition is needed since VisualStudio2015 before including <pthread.h>:
 #define HAVE_STRUCT_TIMESPEC
 
-// Network resolution includes (use _WIN32 for Windows detection)
-#if defined(WIN32)  // Changed from WIN32 to _WIN32
+// Network resolution includes
+#if defined(WIN32)
 #   include <winsock2.h>  // Must be first; includes ws2def.h
 #   include <ws2tcpip.h>
 #   pragma comment(lib, "ws2_32.lib")
@@ -669,7 +669,6 @@ Stream::initialize (
     if (! Stream::initialized) {
         Stream::initialized = true;
 #if defined(WIN32)
-        // See: http://www.exegesis.uklinux.net/gandalf/winsock/winsock1.htm
         WORD wVersionRequested = MAKEWORD(2, 2);
                 WSADATA wsaData;
         if ( WSAStartup( wVersionRequested, &wsaData ) != 0 )
