@@ -37,31 +37,24 @@
 
 
 
-
 //------------------------------------------------------------------------------
 //  Linux
 
-
 #if defined (linux) || defined (IRIX)
-
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <unistd.h>
-
-
+#   include <arpa/inet.h>
+#   include <netdb.h>
+#   include <netinet/in.h>
+#   include <sys/socket.h>
+#   include <sys/time.h>
+#   include <unistd.h>
 typedef in_addr_t           IPaddr;         // IP address
 typedef in_port_t           IPport;         // IP port number
 typedef struct sockaddr_in  Sockaddr;       // socket address
-
-#define MicroSleep  usleep
+#   define MicroSleep  usleep
 
 
 //------------------------------------------------------------------------------
 //  Microsoft Windows
-
 
 #elif defined (WIN32)
 #   ifndef _WIN32_WINNT
@@ -69,17 +62,13 @@ typedef struct sockaddr_in  Sockaddr;       // socket address
 #   endif
 #   define WIN32_LEAN_AND_MEAN
 #   define _WINSOCK_DEPRECATED_NO_WARNINGS
-#endif
-
-#include <winsock2.h>  // Use Winsock 2 instead of winsock.h
-#include <io.h>
-
+#   include <winsock2.h>  // Use Winsock 2 instead of winsock.h
+#   include <io.h>
 // ToDo: Replace following with real definitions
 typedef int                 IPaddr;         // IP address
 typedef short               IPport;         // IP port number
 typedef struct sockaddr_in  Sockaddr;       // socket address
-
-#define MicroSleep  _sleep
+#   define MicroSleep  _sleep
 
 
 //------------------------------------------------------------------------------
