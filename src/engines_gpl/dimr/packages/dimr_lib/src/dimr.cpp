@@ -331,7 +331,7 @@ void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component, bo
     if (component == NULL) {
         throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: undefined component.");
     }
-    bool multipleProcessesCheck = isMaster && component->numProcesses > 1;
+    bool multipleProcessesCheck = component->numProcesses > 1;
     if (use_mpi && multipleProcessesCheck) {
         if (component->mpiCommVar == NULL) {
             throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: communicator handle undefined for component \"%s\".", component->name);
