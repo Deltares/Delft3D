@@ -64,6 +64,8 @@
 #   include <netinet/in.h>
 #endif
 
+#include "stream.h"
+
 #include <errno.h>
 #include <pthread.h>
 #include <stdarg.h>
@@ -82,8 +84,6 @@
 #define htonl(x) __bswap_constant_32(x)
 #define ntohl(x) __bswap_constant_32(x)
 #endif
-
-#include "stream.h"
 
 //------------------------------------------------------------------------------
 //  Static class members and Constants

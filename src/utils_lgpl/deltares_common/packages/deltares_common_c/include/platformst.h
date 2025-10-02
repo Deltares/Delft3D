@@ -63,6 +63,7 @@ typedef struct sockaddr_in  Sockaddr;       // socket address
 #   define WIN32_LEAN_AND_MEAN
 #   define _WINSOCK_DEPRECATED_NO_WARNINGS
 #   include <winsock2.h>  // Use Winsock 2 instead of winsock.h
+#   include <ws2tcpip.h>
 #   include <io.h>
 // ToDo: Replace following with real definitions
 typedef int                 IPaddr;         // IP address
