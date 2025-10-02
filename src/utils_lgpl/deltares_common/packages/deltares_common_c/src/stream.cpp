@@ -83,6 +83,7 @@
 #define ntohl(x) __bswap_constant_32(x)
 #endif
 
+#include "stream.h"
 
 //------------------------------------------------------------------------------
 //  Static class members and Constants
