@@ -152,7 +152,7 @@ Stream::Stream (
             break;
 
         default:
-            error ("Unknown stream type in initial constructor");
+            error((char *)"Unknown stream type in initial constructor");
             break;
         }
     }
@@ -189,7 +189,7 @@ Stream::Stream (
             break;
 
         default:
-            error ("Unknown stream type in secondary constructor");
+            error((char *)"Unknown stream type in secondary constructor");
             break;
         }
     }
@@ -215,7 +215,7 @@ Stream::~Stream (
             break;
 
         default:
-            error ("Unknown stream type in destructor");
+            error((char *)"Unknown stream type in destructor");
             break;
         }
     }
@@ -231,7 +231,7 @@ Stream::construct_TCPIP (
     ) {
 
     if ((stream->local.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
-        error ("Cannot create local socket for unpaired stream");
+        error((char *)"Cannot create local socket for unpaired stream");
 
     stream->local.addr.sin_family = AF_INET;
     stream->local.addr.sin_addr.s_addr = INADDR_ANY;
@@ -247,7 +247,7 @@ Stream::construct_TCPIP (
         }
 
     if (port >= LAST_PORT)
-        error ("Cannot bind stream socket to any port in range [%d,%d]\n", FIRST_PORT, LAST_PORT - 1);
+        error((char *)"Cannot bind stream socket to any port in range [%d,%d]\n", FIRST_PORT, LAST_PORT - 1);
 
     char buffer [MAXSTRING];
     sprintf (buffer, "%s:%d", hostname (), port);
@@ -255,7 +255,7 @@ Stream::construct_TCPIP (
     strcpy (stream->local.handle, buffer);
 
     if (stream->tracefunction != NULL)
-        trace ("Created handle %s", stream->local.handle);
+        trace((char *)"Created handle %s", stream->local.handle);
     }
 
 
@@ -266,7 +266,7 @@ Stream::connect_TCPIP (
     ) {
 
     if (handle == NULL || handle[0] == '\0')
-        error ("Null or empty handle (hostname:port) string in Stream constructor");
+        error((char *)"Null or empty handle (hostname:port) string in Stream constructor");
 
     // Parse the hostname:port string
 
@@ -281,7 +281,7 @@ Stream::connect_TCPIP (
     port = atoi (handle+1);
 
     if ((stream->remote.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
-        error ("Cannot create remote socket for paired stream");
+        error((char *)"Cannot create remote socket for paired stream");
 
     stream->remote.addr.sin_family = AF_INET;
     stream->remote.addr.sin_addr.s_addr = inet_addr (lookup_host (hostname));
@@ -296,7 +296,7 @@ Stream::connect_TCPIP (
     // not have done a receive yet.
 
     if (stream->tracefunction != NULL)
-        trace ("Attempting to connect to %s", stream->remote.handle);
+        trace((char *)"Attempting to connect to %s", stream->remote.handle);
 
     int attempt;
     for (attempt = 0 ; attempt < MAXTRIES ; attempt++) {
@@ -306,7 +306,7 @@ Stream::connect_TCPIP (
         }
 
     if (attempt == MAXTRIES)
-        error ("Cannot connect to remote socket for paired stream (%s): %s",
+        error((char *)"Cannot connect to remote socket for paired stream (%s): %s",
                             stream->remote.handle,
                             strerror (errno)
                             );
@@ -317,7 +317,7 @@ Stream::connect_TCPIP (
     int got = recvfrom (stream->remote.sock, (void *) buffer, MAXSTRING, 0, NULL, 0);
 #endif
     if (got == -1)
-        error ("Recvfrom of local side from new peer fails (%s)", strerror (errno));
+        error((char *)"Recvfrom of local side from new peer fails (%s)", strerror (errno));
 
     stream->local.handle = new char [strlen (buffer) + 1];
     strcpy (stream->local.handle, buffer);
@@ -325,7 +325,7 @@ Stream::connect_TCPIP (
     stream->connected = true;
 
     if (stream->tracefunction != NULL)
-        trace ("Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
+        trace((char *)"Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
     }
 
 
@@ -350,7 +350,7 @@ Stream::construct_MPI (
     stream->connected = false;
 
     if (stream->tracefunction != NULL)
-        trace ("Created handle %s", stream->local.handle);
+        trace((char *)"Created handle %s", stream->local.handle);
     }
 
 
@@ -363,7 +363,7 @@ Stream::connect_MPI (
     stream->remote.handle = new char [Stream::MAXHANDLE];
     strcpy (stream->remote.handle, handle);
     if (sscanf (handle, "%*[^:]:%d:%d", &stream->remote.rank, &stream->remote.seqn) != 2)
-        error ("Invalid MPI stream handle \"%s\"", handle);
+        error((char *)"Invalid MPI stream handle \"%s\"", handle);
 
     stream->local.seqn = next_seqn ();
 #if defined (NO_CPP_MPI)
@@ -384,7 +384,7 @@ Stream::connect_MPI (
 #endif
 
     if (stream->tracefunction != NULL)
-        trace ("Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
+        trace((char *)"Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
     }
 
 #endif
@@ -413,7 +413,7 @@ Stream::Connect (
             break;
 
         default:
-            error ("Unknown stream type in Connect");
+            error((char *)"Unknown stream type in Connect");
             break;
         }
     }
@@ -426,10 +426,10 @@ Stream::Send (
     ) {
 
     if (! this->connected)
-        error ("Attempting to send to an unconnected stream (local side is %s)", this->local.handle);
+        error((char *)"Attempting to send to an unconnected stream (local side is %s)", this->local.handle);
 
     if (this->tracefunction != NULL)
-        trace ("Sending message from %s to %s (%d bytes)", this->local.handle, this->remote.handle, length);
+        trace((char *)"Sending message from %s to %s (%d bytes)", this->local.handle, this->remote.handle, length);
 
     switch (streamtype) {
 #if defined (WITH_MPI)
@@ -444,20 +444,20 @@ Stream::Send (
         case Stream::TCPIP:
 #if defined(WIN32)
             if (sendto (this->remote.sock, (char *) buffer, length, 0, (struct sockaddr *) &this->local.addr, sizeof (struct sockaddr)) != length)
-                error ("Sendto %s fails (%s)", this->remote.handle, strerror (errno));
+                error((char *)"Sendto %s fails (%s)", this->remote.handle, strerror (errno));
 #else
             if (sendto (this->remote.sock, (void *) buffer, length, 0, (struct sockaddr *) &this->local.addr, sizeof (struct sockaddr)) != length)
-                error ("Sendto %s fails (%s)", this->remote.handle, strerror (errno));
+                error((char *)"Sendto %s fails (%s)", this->remote.handle, strerror (errno));
 #endif
             break;
 
         default:
-            error ("Unknown stream type in Send");
+            error((char *)"Unknown stream type in Send");
             break;
         }
 
     if (this->tracefunction != NULL)
-        trace ("Sent message from %s to %s (%d bytes)", this->local.handle, this->remote.handle, length);
+        trace((char *)"Sent message from %s to %s (%d bytes)", this->local.handle, this->remote.handle, length);
     }
 
 
@@ -479,7 +479,7 @@ Stream::Receive (
             break;
 
         default:
-            error ("Unknown stream type in Receive");
+            error((char *)"Unknown stream type in Receive");
             break;
         }
     }
@@ -495,14 +495,14 @@ Stream::first_receive_TCPIP (
     ) {
 
     if (listen (stream->local.sock, BACKLOG) != 0)
-        error ("Cannot listen to local socket");
+        error((char *)"Cannot listen to local socket");
 
     if (stream->tracefunction != NULL)
-        trace ("Waiting for connection on %s", stream->local.handle);
+        trace((char *)"Waiting for connection on %s", stream->local.handle);
 
     socklen_t addrlen = sizeof (struct sockaddr);
     if ((stream->remote.sock = accept (stream->local.sock, (struct sockaddr *) &stream->remote.addr, &addrlen)) == -1)
-        error ("Cannot accept connection on stream");
+        error((char *)"Cannot accept connection on stream");
 
     IPaddr addr = stream->remote.addr.sin_addr.s_addr;
     IPport port = stream->remote.addr.sin_port;
@@ -511,16 +511,16 @@ Stream::first_receive_TCPIP (
 
 #if defined(WIN32)
     if (sendto (stream->remote.sock, (char *) stream->remote.handle, Stream::MAXHANDLE, 0, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr)) != Stream::MAXHANDLE)
-        error ("Sendto of local side to %s fails (%s)", stream->remote.handle, strerror (errno));
+        error((char *)"Sendto of local side to %s fails (%s)", stream->remote.handle, strerror (errno));
 #else
     if (sendto (stream->remote.sock, (void *) stream->remote.handle, Stream::MAXHANDLE, 0, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr)) != Stream::MAXHANDLE)
-        error ("Sendto of local side to %s fails (%s)", stream->remote.handle, strerror (errno));
+        error((char *)"Sendto of local side to %s fails (%s)", stream->remote.handle, strerror (errno));
 #endif
 
     stream->connected = true;
 
     if (stream->tracefunction != NULL)
-        trace ("Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
+        trace((char *)"Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
     }
 
 
@@ -532,28 +532,28 @@ Stream::receive_TCPIP (
     ) {
 
     if (stream->tracefunction != NULL)
-        trace ("Waiting for message from %s to %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
+        trace((char *)"Waiting for message from %s to %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
 
     int need = length;
     while (need > 0) {
         int got;
 #if defined(WIN32)
         if ((got = recvfrom (stream->remote.sock, (char *) buffer, need, 0, NULL, 0)) < 0) {
-            error ("Recvfrom %s fails (%s; %d)", stream->remote.handle, strerror (errno), WSAGetLastError());
+            error((char *)"Recvfrom %s fails (%s; %d)", stream->remote.handle, strerror (errno), WSAGetLastError());
                         return;} // Endless loop otherwise
 #else
         if ((got = recvfrom (stream->remote.sock, (void *) buffer, need, 0, NULL, 0)) < 0)
-            error ("Recvfrom %s fails (%s)", stream->remote.handle, strerror (errno));
+            error((char *)"Recvfrom %s fails (%s)", stream->remote.handle, strerror (errno));
 #endif
         if (got == 0)
-            error ("Recvfrom %s returns 0 bytes. Is the peer process dead?", stream->remote.handle);
+            error((char *)"Recvfrom %s returns 0 bytes. Is the peer process dead?", stream->remote.handle);
 
         need -= got;
         buffer += got;
         }
 
     if (stream->tracefunction != NULL)
-        trace ("Got message from %s on %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
+        trace((char *)"Got message from %s on %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
     }
 
 
@@ -579,12 +579,12 @@ Stream::first_receive_MPI (
 #endif
 
     if (sscanf (stream->remote.handle, "%*[^:]:%d:%d", &stream->remote.rank, &stream->remote.seqn) != 2)
-        error ("Invalid MPI stream handle \"%s\"", stream->remote.handle);
+        error((char *)"Invalid MPI stream handle \"%s\"", stream->remote.handle);
 
     stream->connected = true;
 
     if (stream->tracefunction != NULL)
-        trace ("Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
+        trace((char *)"Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
     }
 
 
@@ -596,7 +596,7 @@ Stream::receive_MPI (
     ) {
 
     if (stream->tracefunction != NULL)
-        trace ("Waiting for message from %s to %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
+        trace((char *)"Waiting for message from %s to %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
 
 #if defined (NO_CPP_MPI)
     MPI_Status status;
@@ -605,17 +605,17 @@ Stream::receive_MPI (
     int count;
     MPI_Get_count (&status, MPI_CHAR, &count);
     if (length != count)
-        error ("Receive gets message from %s to %s of different length (%d) than requested (%d)", stream->remote.handle, stream->local.handle, count, length);
+        error((char *)"Receive gets message from %s to %s of different length (%d) than requested (%d)", stream->remote.handle, stream->local.handle, count, length);
 #else
     MPI::Status status;
     MPI::COMM_WORLD.Recv ((void *) buffer, length, MPI::CHAR, stream->remote.rank, stream->local.seqn, status);
 
     if (length != status.Get_count (MPI::CHAR))
-        error ("Receive gets message from %s to %s of different length (%d) than requested (%d)", stream->remote.handle, stream->local.handle, status.Get_count (MPI::CHAR), length);
+        error((char *)"Receive gets message from %s to %s of different length (%d) than requested (%d)", stream->remote.handle, stream->local.handle, status.Get_count (MPI::CHAR), length);
 #endif
 
     if (stream->tracefunction != NULL)
-        trace ("Got message from %s on %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
+        trace((char *)"Got message from %s on %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
     }
 
 #endif
@@ -672,10 +672,10 @@ Stream::initialize (
         WORD wVersionRequested = MAKEWORD(2, 2);
                 WSADATA wsaData;
         if ( WSAStartup( wVersionRequested, &wsaData ) != 0 )
-            error("Initialising Winsock 2 on Windows failed: %d", WSAGetLastError());
+            error((char *)"Initialising Winsock 2 on Windows failed: %d", WSAGetLastError());
 #else
         if (pthread_mutex_init (&Stream::mutex, NULL) != 0)
-            error ("Pthreads error: Cannot create stream class mutex, errno=%d", errno);
+            error((char *)"Pthreads error: Cannot create stream class mutex, errno=%d", errno);
 #endif
 
         }
@@ -693,7 +693,7 @@ Stream::next_seqn (
     // nothing
 #else
     if (pthread_mutex_lock (&Stream::mutex) != 0)
-        error ("Pthreads error: Cannot lock stream class mutex, errno=%d", errno);
+        error((char *)"Pthreads error: Cannot lock stream class mutex, errno=%d", errno);
 #endif
 
     int nextseqn = seqn++;
@@ -702,7 +702,7 @@ Stream::next_seqn (
     // nothing
 #else
     if (pthread_mutex_unlock (&Stream::mutex) != 0)
-        error ("Pthreads error: Cannot unlock stream class mutex, errno=%d", errno);
+        error((char *)"Pthreads error: Cannot unlock stream class mutex, errno=%d", errno);
 #endif
 
     return nextseqn;
@@ -739,9 +739,9 @@ Stream::hostname (
 
         buffer[MAXSTRING] = '\0';
         if (gethostname (buffer, sizeof buffer) != 0)
-            error ("Cannot get hostname");
+            error((char *)"Cannot get hostname");
         if (strlen (buffer) == MAXSTRING)
-            error ("hostname too long");
+            error((char *)"hostname too long");
 
         for (char *bp = buffer ; *bp != '\0' ; *bp++) {     // truncate domain
             if (*bp == '.') {
@@ -763,7 +763,7 @@ Stream::parse_name (
     ) {
 
     if (string == NULL)
-        error ("Null string in parse_name");
+        error((char *)"Null string in parse_name");
 
     while (*string != '\0' && *string != ':')
         *hostname++ = *string++;
@@ -791,13 +791,13 @@ Stream::lookup_host (
 
     int status = getaddrinfo(hostname, NULL, &hints, &result);
     if (status != 0) {
-        error("Cannot get IPv4 address of host \"%s\": %s", hostname, gai_strerror(status));
+        error((char *)"Cannot get IPv4 address of host \"%s\": %s", hostname, gai_strerror(status));
         return NULL;  // Won't reach due to error(), but for completeness
     }
 
     if (result == NULL || result->ai_addrlen != sizeof(struct sockaddr_in)) {
         freeaddrinfo(result);
-        error("No valid IPv4 address found for \"%s\"", hostname);
+        error((char *)"No valid IPv4 address found for \"%s\"", hostname);
         return NULL;
     }
 
@@ -827,14 +827,14 @@ Stream::lookup_dotaddr (
     addr.sin_addr.s_addr = inet_addr(ipdotaddr);
 
     if (addr.sin_addr.s_addr == INADDR_NONE) {
-        error("Cannot parse dotted IP address \"%s\"", ipdotaddr);
+        error((char *)"Cannot parse dotted IP address \"%s\"", ipdotaddr);
     }
 
     char host[MAXSTRING];
     socklen_t addrlen = sizeof(struct sockaddr_in);
     int status = getnameinfo((struct sockaddr*)&addr, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
     if (status != 0) {
-        error("Cannot get hostname of \"%s\": %s", ipdotaddr, gai_strerror(status));
+        error((char *)"Cannot get hostname of \"%s\": %s", ipdotaddr, gai_strerror(status));
     }
 
     // Truncate at first dot (unqualified hostname)
