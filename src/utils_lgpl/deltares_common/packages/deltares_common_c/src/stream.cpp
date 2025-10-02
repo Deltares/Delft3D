@@ -41,10 +41,28 @@
 //
 //------------------------------------------------------------------------------
 
-#include "stream.h"
+// Protective defines for Winsock 2 (must be BEFORE ANY #include)
+#ifndef _WIN32_WINNT
+#   define _WIN32_WINNT 0x0600  // Enables full Winsock 2 support (Vista+; use 0x0501 for XP if needed)
+#endif
+#define WIN32_LEAN_AND_MEAN  // Prevents <windows.h> from including <winsock.h>
+#define _WINSOCK_DEPRECATED_NO_WARNINGS  // Suppresses deprecation warnings#include "stream.h"
 
 // The following definition is needed since VisualStudio2015 before including <pthread.h>:
 #define HAVE_STRUCT_TIMESPEC
+
+// Network resolution includes (use _WIN32 for Windows detection)
+#if defined(WIN32)  // Changed from WIN32 to _WIN32
+#   include <winsock2.h>  // Must be first; includes ws2def.h
+#   include <ws2tcpip.h>
+#   pragma comment(lib, "ws2_32.lib")
+#   define close closesocket  // Use closesocket for sockets on Windows
+#else
+#   include <sys/types.h>
+#   include <netdb.h>
+#   include <arpa/inet.h>
+#   include <netinet/in.h>
+#endif
 
 #include <errno.h>
 #include <pthread.h>
@@ -52,12 +70,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-
-#if defined (WIN32)
-//#include <Winsock2.h>
-#   define close _close
-#endif
 
 #if defined (ALTIX)
 // Intel C compiler (icc/icpc) on Itanium doesn't like GNU __extension__ functions
@@ -664,10 +676,10 @@ Stream::initialize (
         Stream::initialized = true;
 #if defined(WIN32)
         // See: http://www.exegesis.uklinux.net/gandalf/winsock/winsock1.htm
-        WORD wVersionRequested = MAKEWORD(1, 1);
+        WORD wVersionRequested = MAKEWORD(2, 2);
                 WSADATA wsaData;
         if ( WSAStartup( wVersionRequested, &wsaData ) != 0 )
-            error("Initialising sockets on Windows failed");
+            error("Initialising Winsock 2 on Windows failed: %d", WSAGetLastError());
 #else
         if (pthread_mutex_init (&Stream::mutex, NULL) != 0)
             error ("Pthreads error: Cannot create stream class mutex, errno=%d", errno);
@@ -773,20 +785,38 @@ Stream::lookup_host (
     char *  hostname
     ) {
 
-    // Map host name string to dotted ip address string
+    // Map host name string to dotted IPv4 address string (IPv4-only, cross-platform)
 
-    static char ipaddr [MAXSTRING];     // not thread safe, but OK
-    struct hostent * hostinfo;
+    static char ipaddr[MAXSTRING];  // Not thread-safe, but OK as-is
+    struct addrinfo hints = {0};
+    struct addrinfo *result = NULL;
 
-    if ((hostinfo = gethostbyname (hostname)) == NULL)
-        { printf ("Cannot get address of host \"%s\"\n", hostname); exit (1); }
+    // Enforce IPv4-only resolution
+    hints.ai_family = AF_INET;      // Restrict to IPv4
+    hints.ai_socktype = SOCK_STREAM;  // Assuming stream (TCP); adjust if UDP
+    hints.ai_protocol = IPPROTO_TCP;  // Optional: specify TCP
 
-    sprintf (ipaddr, "%d.%d.%d.%d",
-                            (unsigned char) hostinfo->h_addr_list[0][0],
-                            (unsigned char) hostinfo->h_addr_list[0][1],
-                            (unsigned char) hostinfo->h_addr_list[0][2],
-                            (unsigned char) hostinfo->h_addr_list[0][3]
-                            );
+    int status = getaddrinfo(hostname, NULL, &hints, &result);
+    if (status != 0) {
+        error("Cannot get IPv4 address of host \"%s\": %s", hostname, gai_strerror(status));
+        return NULL;  // Won't reach due to error(), but for completeness
+    }
+
+    if (result == NULL || result->ai_addrlen != sizeof(struct sockaddr_in)) {
+        freeaddrinfo(result);
+        error("No valid IPv4 address found for \"%s\"", hostname);
+        return NULL;
+    }
+
+    // Extract and format the IPv4 address as dotted quad
+    struct sockaddr_in *ipv4 = (struct sockaddr_in *)result->ai_addr;
+    sprintf(ipaddr, "%d.%d.%d.%d",
+            (unsigned char)ipv4->sin_addr.s_addr & 0xFF,
+            (unsigned char)(ipv4->sin_addr.s_addr >> 8) & 0xFF,
+            (unsigned char)(ipv4->sin_addr.s_addr >> 16) & 0xFF,
+            (unsigned char)(ipv4->sin_addr.s_addr >> 24) & 0xFF);
+
+    freeaddrinfo(result);
     return ipaddr;
     }
 
@@ -796,40 +826,32 @@ Stream::lookup_dotaddr (
     char *  ipdotaddr
     ) {
 
-    // Map dotted ip address to an unqualified host name
+    // Map dotted IP address to an unqualified host name (IPv4-only, cross-platform)
 
-    static char hostname [MAXSTRING];   // not thread safe, but OK
-    struct hostent *hostinfo;
+    static char hostname[MAXSTRING];   // Not thread-safe, but OK
+    struct sockaddr_in addr = {0};
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr(ipdotaddr);
 
-    unsigned int a, b, c, d;
-    if (sscanf (ipdotaddr, "%d.%d.%d.%d", &a, &b, &c, &d) != 4)
-        error ("Cannot parse dotted IP address \"%s\"\n", ipdotaddr);
+    if (addr.sin_addr.s_addr == INADDR_NONE) {
+        error("Cannot parse dotted IP address \"%s\"", ipdotaddr);
+    }
 
-#if defined(linux) || defined(IRIX)
-    IPaddr addr = a | b << 8 | c << 16 | d << 24;
-#elif defined(WIN32)
-    struct in_addr addr;
-    addr.s_addr = inet_addr(ipdotaddr);
-#elif defined(reversebyteorder)
-    IPaddr addr = d | c << 8 | b << 16 | a << 24;
-#else
-    undefined system type in lookup_dotaddr
-#endif
+    char host[MAXSTRING];
+    socklen_t addrlen = sizeof(struct sockaddr_in);
+    int status = getnameinfo((struct sockaddr*)&addr, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
+    if (status != 0) {
+        error("Cannot get hostname of \"%s\": %s", ipdotaddr, gai_strerror(status));
+    }
 
-#if defined(WIN32)
-    if ((hostinfo = gethostbyaddr ((char *)&addr, 4, AF_INET)) == NULL)
-        error ("Cannot get hostname of \"%s\" (0x%x) -- error code: %d\n", ipdotaddr, addr, WSAGetLastError());
-#else
-    if ((hostinfo = gethostbyaddr ((char *)&addr, sizeof addr, AF_INET)) == NULL)
-        error ("Cannot get hostname of \"%s\" (0x%x)\n", ipdotaddr, addr);
-#endif
-
-    const char * cp = hostinfo->h_name;
-    char * dp = hostname;
-    while (cp != NULL && *cp != '\0' && *cp != '.')
+    // Truncate at first dot (unqualified hostname)
+    char *dp = hostname;
+    const char *cp = host;
+    while (*cp != '\0' && *cp != '.') {
         *dp++ = *cp++;
-
+    }
     *dp = '\0';
+
     return hostname;
     }
 
