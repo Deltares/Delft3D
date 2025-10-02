@@ -48,6 +48,8 @@
 #define WIN32_LEAN_AND_MEAN  // Prevents <windows.h> from including <winsock.h>
 #define _WINSOCK_DEPRECATED_NO_WARNINGS  // Suppresses deprecation warnings#include "stream.h"
 
+#include "stream.h"
+
 // The following definition is needed since VisualStudio2015 before including <pthread.h>:
 #define HAVE_STRUCT_TIMESPEC
 
@@ -63,8 +65,6 @@
 #   include <arpa/inet.h>
 #   include <netinet/in.h>
 #endif
-
-#include "stream.h"
 
 #include <errno.h>
 #include <pthread.h>
