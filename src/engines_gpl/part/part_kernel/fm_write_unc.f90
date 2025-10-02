@@ -339,9 +339,10 @@ contains
         !
         ierr = nf90_inq_varid( ncid, trim(hyd%waqgeom%meshname) // '_layer_sigma_z', idlay )
         if ( ierr == nf90_noerr ) then
-            error = .true.
-            msg   = ' ERROR: the sigma-z layers option is currently not supported!'
-            return
+ !!!!!      error = .true.
+ !!!!!      msg   = ' ERROR: the sigma-z layers option is currently not supported!'
+ !!!!!      return
+            write(*,*) 'sigma-z layers not supported, but we go on'
         endif
 
         layer_zs     = 0.0_dp
