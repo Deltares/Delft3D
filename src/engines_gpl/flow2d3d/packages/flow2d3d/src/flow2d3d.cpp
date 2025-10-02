@@ -70,7 +70,7 @@
 
 // Protective defines for Winsock 2 (must be BEFORE ANY #include)
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600  // Vista+ for full Winsock 2 support
+#   define _WIN32_WINNT 0x0600  // Vista+ for full Winsock 2 support
 #endif
 #define WIN32_LEAN_AND_MEAN  // Prevent <windows.h> from including <winsock.h>
 #define _WINSOCK_DEPRECATED_NO_WARNINGS  // Suppress deprecation warnings
@@ -80,7 +80,7 @@
 #include "flow2d3d.h"
 
 #if defined(HAVE_CONFIG_H)
-#define Sleep sleep
+#   define Sleep sleep
 #endif
 #if defined (WIN32)
 #   include <winsock2.h>
