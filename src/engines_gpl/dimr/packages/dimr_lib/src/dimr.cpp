@@ -325,7 +325,7 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
 
 
 //------------------------------------------------------------------------------
-void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component, bool isMaster) {
+void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component) {
     MPI_Group mpiGroupComp;
     int ierr;
     if (component == NULL) {
@@ -396,8 +396,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
     dimr_component* masterComponent = cb->subBlocks[cb->masterSubBlockId].unit.component;
 
     // Create an MPI subgroup and subcommunicator and pass it on to the masterComponent
-    bool isMaster = true;
-    createDistributeMPISubGroupCommunicator(masterComponent, isMaster);
+    createDistributeMPISubGroupCommunicator(masterComponent);
 
     if (masterComponent->onThisRank) {
         chdir(masterComponent->workingDir);
@@ -459,8 +458,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                     dimr_component* thisComponent = cb->subBlocks[i].subBlocks[j].unit.component;
 
                     // Create an MPI subgroup and subcommunicator and pass it on to thisComponent (similar to block for masterComponent above)
-                    bool isMaster = false;
-                    createDistributeMPISubGroupCommunicator(thisComponent, isMaster);
+                    createDistributeMPISubGroupCommunicator(thisComponent);
 
                     if (thisComponent->onThisRank) { // TODO: AvD/AM: if FM is not start, but startblock, we need all the MPI stuff here as well: make a generic initializeComponent helper routine.
 
