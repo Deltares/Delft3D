@@ -646,10 +646,10 @@ Stream::RemoteHandle (
         switch (streamtype) {
 #if defined (WITH_MPI)
             case Stream::MPI:
-                return "[mpi]:*:*";
+                return (char *)"[mpi]:*:*";
 #endif
             case Stream::TCPIP:
-                return "[unknown]:0";
+                return (char *)"[unknown]:0";
             default:
                 return NULL;
             }
