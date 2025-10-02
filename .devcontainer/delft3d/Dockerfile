@@ -8,7 +8,7 @@ SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 # Install some tools from the almalinux package manager
 RUN --mount=type=cache,target=/var/cache/dnf,sharing=locked <<"EOF"
 dnf install -y sudo git dos2unix which less tree \
-    java-17-openjdk java-17-openjdk-devel maven
+    java-17-openjdk java-17-openjdk-devel maven jq
 update-alternatives --set java java-17-openjdk.x86_64
 EOF
 

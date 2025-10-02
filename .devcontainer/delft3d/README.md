@@ -238,6 +238,11 @@ But you can opt to install it anyway.
 The developers of the extension have been made aware of the issue, but it doesn't seem fixed yet.
 See: https://fortran-lang.discourse.group/t/cant-install-vscode-modern-fortran-not-signed-by-marketplace/8709
 
+You can easily verify that the "Modern Fortan" extension is installed by opening any Fortran source code file.
+By default the extension enables syntax highlighting. You may get a dialog in the bottom right of the screen
+saying "Couldn't update fortls". You can ignore this warning. We don't want the extension to be able to update
+`fortls` anyway.
+
 #### The CMake VSCode extension
 This extension enables the "CMake menu". Look for the CMake icon in the column at the far left
 of the VSCode window. You can use this menu to configure, build and install our products.
@@ -257,6 +262,15 @@ We currently don't track `src/cmake/CMakePresets.json` in git because we have tr
 separate platform specific preset files and configuring `CMake` to load a specific preset file from
 a path other than `src/cmake/CMakePresets.json` is not supported at the moment.
 
+##### Building `fm-suite` with CMake
+You can use the CMake menu to select the "FM-suite Debug" or the "FM-suite Release" preset, listed in the example
+`CMakePresets.json`. If you select the target `install` in the "Build" menu, then the install phase will run after the build has succeeded (This copies the executables and libraries to `./build_fm-suite/install`). 
+Start a build by hovering over the "Build" menu item and clicking the icon that appears. The CMake 'configure' phase will automatically be performed if necessary. The `./build_fm-suite` directory should appear in the repository root.
+
+The CMake extension will show all of the CMake command line invocations it is doing in the terminal. If you
+prefer working with the `cmake` command line tool, you can see what the extension is doing and repeat the
+same commands in the command line yourself.
+
 #### Python virtual environment for running `TestBench.py`
 There's a shell script: `.devcontainer/delft3d/scripts/post_create_command.sh` that should install
 all of the required Python dependencies for `TestBench.py` in `test/deltares_testbench` 
@@ -264,12 +278,15 @@ in a "virtual environment" (or "venv"). This script is run automatically after
 (re-)building the devcontainer. If the directory `test/deltares_testbench/.venv`
 already exists this step will be *skipped*.
 
+There is a potential problem if you already had an existing venv inside the
+`test/deltares_testbench` directory before you started working in the devcontainer.
 Remember that the files under  `/workspaces/delft3d` are bind mounted from the host
-inside the container. If you already had installed a virtual environment in 
-`test/deltares_testbench` before on the host, it is probably referencing a version
+inside the container. If you already had installed a venv in 
+`test/deltares_testbench` before on the host, then this venv is referencing a version
 of Python that only exists on the host as well. Inside the container this venv will
 not work. To work around this you can delete the existing `.venv` directory and
 make a new one from within the devcontainer:
+
 ```bash
 # From test/deltares_testbench
 rm -rf .venv
@@ -277,6 +294,14 @@ uv venv --python=3.12 .venv
 uv pip sync pip/lnx-dev-requirements.txt
 ```
 
+The `settings.json` example sets the `python.defaultInterpreterPath` setting to the
+python version inside the venv created in `test/deltares_testbench`. The linter, formatter
+and type checker are also installed in this venv, and they should automatically
+activate when you're browsing the testbench source code. There is an additional
+extension (the "Ruff" extension) that runs the formatter on the python source code
+whenever you change and save a python source code file.
+
+#### Running `TestBench.py`
 Before running `TestBench.py`, you need to first activate the venv. This ensures
 that the correct version of `Python` occurs first on your `PATH`,
 and that `Python` has access to all of the installed dependencies:
@@ -321,5 +346,13 @@ command runs only a single test case from the `configs/dimr/dimr_dflowfm_lnx64.x
 ```bash
 # The following commands should be executed in `test/deltares_testbench`
 source ./.venv/bin/activate  # Only necessary if the venv is not already active.
+
+# To run a single test case
 python TestBench.py --compare --config configs/dimr/dimr_dflowfm_lnx64.xml --filter 'testcase=e02_f002_c100'
+
+# To run all of the test cases in the `dimr_dflowfm_lnx64.xml` config (The --parallel flag is recommended)
+python TestBench.py --compare --config configs/dimr/dimr_dflowfm_lnx64.xml --parallel
 ```
+
+`TestBench.py` saves the case input files downloaded from MinIO in `./data/cases`, and the "references" 
+in `./data/reference_results`. The logs for each test case are saved in `./logs`.
