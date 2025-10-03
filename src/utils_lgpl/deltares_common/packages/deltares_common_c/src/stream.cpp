@@ -65,6 +65,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #if defined (ALTIX)
 // Intel C compiler (icc/icpc) on Itanium doesn't like GNU __extension__ functions
