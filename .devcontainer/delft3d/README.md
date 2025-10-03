@@ -264,8 +264,8 @@ a path other than `src/cmake/CMakePresets.json` is not supported at the moment.
 
 ##### Building `fm-suite` with CMake
 You can use the CMake menu to select the "FM-suite Debug" or the "FM-suite Release" preset, listed in the example
-`CMakePresets.json`. If you select the target `install` in the "Build" menu, then the install phase will run after the build has succeeded (This copies the executables and libraries to `./build_fm-suite/install`). 
-Start a build by hovering over the "Build" menu item and clicking the icon that appears. The CMake 'configure' phase will automatically be performed if necessary. The `./build_fm-suite` directory should appear in the repository root.
+`CMakePresets.json`. If you select the target `install` in the "Build" menu, then the install phase will run after the build has succeeded (This copies the executables and libraries to `./build_fm-suite_{debug,release}/install`). 
+Start a build by hovering over the "Build" menu item and clicking the icon that appears. The CMake 'configure' phase will automatically be performed if necessary. The `./build_fm-suite_{debug,release}` directory should appear in the repository root.
 
 The CMake extension will show all of the CMake command line invocations it is doing in the terminal. If you
 prefer working with the `cmake` command line tool, you can see what the extension is doing and repeat the
@@ -281,7 +281,7 @@ already exists this step will be *skipped*.
 There is a potential problem if you already had an existing venv inside the
 `test/deltares_testbench` directory before you started working in the devcontainer.
 Remember that the files under  `/workspaces/delft3d` are bind mounted from the host
-inside the container. If you already had installed a venv in 
+to the container. If you already had installed a venv in 
 `test/deltares_testbench` before on the host, then this venv is referencing a version
 of Python that only exists on the host as well. Inside the container this venv will
 not work. To work around this you can delete the existing `.venv` directory and
@@ -313,6 +313,11 @@ source ./.venv/bin/activate
 python TestBench.py --help
 ```
 
+If successful, after the "sourcing" the activation script in `.venv/bin/activate`, the
+text `(.venv)` will appear in your command prompt. This way, you can be sure that whenever
+you invoke `python` you will be using the correct interpreter and the dependencies you
+need for running the `TestBench.py` are installed.
+
 ##### Setting the path to the Delft3D binaries
 For historical reasons, `TestBench.py` tries to look for programs to run in the directory 
 `./data/engines/teamcity_artifacts/lnx64/`. To point `TestBench.py` to your own
@@ -322,7 +327,7 @@ the binaries, you can do the following:
 ```bash
 # The following commands should be executed in `test/deltares_testbench`
 mkdir -p data/engines/teamcity_artifacts/
-ln -s -T $(realpath ../../build_fm-suite/install/) data/engines/teamcity_artifacts/lnx64
+ln -s -T $(realpath ../../build_fm-suite_release/install/) data/engines/teamcity_artifacts/lnx64
 ```
 
 ##### Installing your MinIO credentials

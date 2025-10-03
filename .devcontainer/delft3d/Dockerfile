@@ -22,8 +22,9 @@ echo "dev ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/dev
 chmod 0440 /etc/sudoers.d/dev
 EOF
 
-WORKDIR /home/dev
+# Change user from 'root' to 'dev', and set 'dev's home directory as the image workdir.
 USER dev
+WORKDIR /home/dev
 
 # Create mount points for bash history and MinIO credentials in the user's home directory.
 RUN <<"EOF"
@@ -36,11 +37,14 @@ EOF
 RUN curl -LsSf https://astral.sh/uv/0.8.4/install.sh | sh
 ENV PATH=/home/dev/.local/bin:$PATH \
     UV_LINK_MODE=copy
-RUN uv python install 3.12
-RUN uv tool install fortls
+RUN <<"EOF"
+uv python install 3.12
+uv tool install fortls
+uv tool install fprettify
+EOF
 
 # Install git prompt and completion scripts.
-ADD --chmod=755 --chown=dev:dev \
+ADD --chmod=755 \
     https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash \
     https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh \
     /home/dev/.local/bin/
@@ -50,10 +54,6 @@ RUN cat >> /home/dev/.bashrc <<EOF
 # Source Intel OneApi 
 source /opt/intel/oneapi/setvars.sh
 
-# Bash history
-export PROMPT_COMMAND='history -a'
-export HISTFILE=/home/dev/.history/.bash_history
-
 # Set Compilers and library path
 export LD_LIBRARY_PATH=/usr/local/lib:\$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:\$PKG_CONFIG_PATH
@@ -61,12 +61,16 @@ export FC=mpiifx
 export CXX=mpicxx
 export CC=mpiicx
 
-# Aliases
-alias ls='ls --color=auto'
+# Bash history
+export PROMPT_COMMAND='history -a'
+export HISTFILE=/home/dev/.history/.bash_history
 
 # Git completion and prompt support.
 source /home/dev/.local/bin/git-completion.bash
 source /home/dev/.local/bin/git-prompt.sh
+
+# Aliases
+alias ls='ls --color=auto'
 
 # Set bash prompt.
 export PS1='[\u@\h \w\$(__git_ps1 " (%s)")]\n\\$ '
