@@ -864,6 +864,8 @@ Stream::lookup_dotaddr (
     char *  ipdotaddr
     ) {
 
+    // Map dotted IP address to an unqualified host name (IPv6 dual-stack, cross-platform)
+
     static char hostname[MAXSTRING];   // Not thread-safe, but OK
     struct sockaddr_in6 addr = {0};
     addr.sin6_family = AF_INET6;
@@ -919,13 +921,21 @@ Stream::lookup_dotaddr (
 
 char *
 Stream::dotipaddr (
-    IPaddr addr  // Changed from IPaddr
+    struct in6_addr addr
     ) {
 
-    // Convert IPv6 address to string
+    // Convert IP address to string
 
     static char dotaddr [INET6_ADDRSTRLEN];   // not thread safe, but OK
-    inet_ntop(AF_INET6, &addr, dotaddr, sizeof(dotaddr));
+
+    if (IN6_IS_ADDR_V4MAPPED(&addr)) {
+        // Extract and format IPv4
+        uint32_t ipv4 = ntohl(((uint32_t*)&addr.s6_addr[12])[0]);
+        sprintf(dotaddr, "%d.%d.%d.%d", (ipv4 >> 24) & 0xFF, (ipv4 >> 16) & 0xFF, (ipv4 >> 8) & 0xFF, ipv4 & 0xFF);
+    } else {
+        inet_ntop(AF_INET6, &addr, dotaddr, sizeof(dotaddr));
+    }
+
     return dotaddr;
     }
 
