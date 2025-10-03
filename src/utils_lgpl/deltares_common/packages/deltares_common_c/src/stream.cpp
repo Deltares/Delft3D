@@ -236,13 +236,13 @@ Stream::construct_TCPIP (
         int opt = 0;
         setsockopt(stream->local.sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt));
 
-        stream->local.addr.sin6_family = AF_INET6;
-        stream->local.addr.sin6_addr = IN6ADDR_ANY_INIT;
+        ((struct sockaddr_in6*)&stream->local.addr)->sin6_family = AF_INET6;
+        ((struct sockaddr_in6*)&stream->local.addr)->sin6_addr = IN6ADDR_ANY_INIT;
 
         // Find an available port (IPv6)
         IPport port;
         for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
-            stream->local.addr.sin6_port = htons (port);
+            ((struct sockaddr_in6*)&stream->local.addr)->sin6_port = htons (port);
             if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr_in6)) == 0) {
                 break;
             }
@@ -257,13 +257,13 @@ Stream::construct_TCPIP (
         if (stream->local.sock == -1)
             error((char *)"Cannot create local socket for unpaired stream");
 
-        stream->local.addr.sin_family = AF_INET;
-        stream->local.addr.sin_addr.s_addr = INADDR_ANY;
+        ((struct sockaddr_in*)&stream->local.addr)->sin_family = AF_INET;
+        ((struct sockaddr_in*)&stream->local.addr)->sin_addr.s_addr = INADDR_ANY;
 
         // Find an available port (IPv4)
         IPport port;
         for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
-            stream->local.addr.sin_port = htons (port);
+            ((struct sockaddr_in*)&stream->local.addr)->sin_port = htons (port);
             if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr_in)) ==  0) {
                 break;
             }
