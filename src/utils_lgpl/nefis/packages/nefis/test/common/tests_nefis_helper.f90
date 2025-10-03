@@ -85,6 +85,7 @@ contains
 
          lines_are_the_same = (trim(line1) == trim(line2))
          call f90_assert_eq(lines_are_the_same, .true., "Difference in "//trim(filename1)//":("//trim(linestr1)//") "" "//trim(line1)//" "" versus "//trim(filename2)//":("//trim(linestr2)//") "" "//trim(line2)//""".")
+         
          !call f90_assert_streq(trim_line_endings(trim(line1)), trim_line_endings(trim(line2)), "Difference in line number "// trim(linestr1) // " and " // trim(linestr2) )
 
       end do
@@ -122,6 +123,7 @@ contains
    function trim_line_endings(str) result(cleaned)
       character(len=*, kind=c_char), intent(in) :: str
       character(len=len(str), kind=c_char) :: cleaned
+      
       integer :: i, last
 
       last = len_trim(str)
