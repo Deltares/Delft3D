@@ -500,10 +500,10 @@ contains
                   if (success) then
                      do kk = 1, Ndx
                         if (viuh(kk) /= dmiss) then
-                           constituents(iconst, kk) = viuh(kk)
+                           sed(iconst - ISED1 + 1, kk) = viuh(kk)
                            call getkbotktop(kk, kb, kt)
                            do k = kb, kb + kmxn(kk) - 1
-                              constituents(iconst, k) = constituents(iconst, kk) ! fill array with vertically uniform values
+                              sed(iconst - ISED1 + 1, k) = sed(iconst - ISED1 + 1, kk) ! fill array with vertically uniform values
                            end do
                         end if
                      end do
@@ -524,7 +524,7 @@ contains
                   allocate (tt(1:ndkx))
                   tt = dmiss
                   call setinitialverticalprofile(tt, ndkx, filename); success = .true.
-                  constituents(iconst, :) = tt
+                  sed(iconst - ISED1 + 1, :) = tt
                   deallocate (tt)
                end if
 
@@ -538,7 +538,7 @@ contains
                   allocate (tt(1:ndkx))
                   tt = dmiss
                   call setinitialverticalprofilesigma(tt, ndkx, filename); success = .true.
-                  constituents(iconst, :) = tt
+                  sed(iconst - ISED1 + 1, :) = tt
                   deallocate (tt)
                end if
 
