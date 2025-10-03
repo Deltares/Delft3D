@@ -113,13 +113,6 @@ rem =================================
         goto :usage
     )
 
-    set configs="all fm-suite d3d4-suite dflowfm_interacter dimr drr dwaq dwaves flow2d3d swan tools tools_gpl"
-    set "modified=!configs:%-config%=!"
-    if !modified!==!configs! (
-        echo ERROR: Configuration !-config! not recognized
-        goto :argument_error
-    )
-
     set config=!-config!
 
     set compilers="ifort ifx"
