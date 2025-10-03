@@ -813,32 +813,46 @@ Stream::lookup_host (
     char *  hostname
     ) {
 
-    // Map host name string to IPv6 address string (IPv6 dual-stack, cross-platform)
-
     static char ipaddr[INET6_ADDRSTRLEN];  // Not thread-safe, but OK as-is
     struct addrinfo hints = {0};
     struct addrinfo *result = NULL;
 
-    // Enforce IPv6 resolution
-    hints.ai_family = AF_INET6;      // Restrict to IPv6
-    hints.ai_socktype = SOCK_STREAM;  // Assuming stream (TCP); adjust if UDP
-    hints.ai_protocol = IPPROTO_TCP;  // Optional: specify TCP
+    // Try IPv6 first
+    hints.ai_family = AF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
 
     int status = getaddrinfo(hostname, NULL, &hints, &result);
-    if (status != 0) {
-        error((char *)"Cannot get IPv6 address of host \"%s\": %s", hostname, gai_strerror(status));
-        return NULL;  // Won't reach due to error(), but for completeness
+    if (status == 0 && result != NULL) {
+        if (result->ai_addrlen == sizeof(struct sockaddr_in6)) {
+            struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)result->ai_addr;
+            inet_ntop(AF_INET6, &ipv6->sin6_addr, ipaddr, sizeof(ipaddr));
+            freeaddrinfo(result);
+            return ipaddr;
+        }
+        freeaddrinfo(result);
     }
 
-    if (result == NULL || result->ai_addrlen != sizeof(struct sockaddr_in6)) {
-        freeaddrinfo(result);
-        error((char *)"No valid IPv6 address found for \"%s\"", hostname);
+    // Fallback to IPv4
+    hints.ai_family = AF_INET;
+    status = getaddrinfo(hostname, NULL, &hints, &result);
+    if (status != 0) {
+        error((char *)"Cannot get IP address of host \"%s\": %s", hostname, gai_strerror(status));
         return NULL;
     }
 
-    // Extract and format the IPv6 address
-    struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)result->ai_addr;
-    inet_ntop(AF_INET6, &ipv6->sin6_addr, ipaddr, sizeof(ipaddr));
+    if (result == NULL || result->ai_addrlen != sizeof(struct sockaddr_in)) {
+        freeaddrinfo(result);
+        error((char *)"No valid IP address found for \"%s\"", hostname);
+        return NULL;
+    }
+
+    struct sockaddr_in *ipv4 = (struct sockaddr_in *)result->ai_addr;
+    sprintf(ipaddr, "%d.%d.%d.%d",
+            (unsigned char)ipv4->sin_addr.s_addr & 0xFF,
+            (unsigned char)(ipv4->sin_addr.s_addr >> 8) & 0xFF,
+            (unsigned char)(ipv4->sin_addr.s_addr >> 16) & 0xFF,
+            (unsigned char)(ipv4->sin_addr.s_addr >> 24) & 0xFF);
 
     freeaddrinfo(result);
     return ipaddr;
@@ -850,33 +864,56 @@ Stream::lookup_dotaddr (
     char *  ipdotaddr
     ) {
 
-    // Map dotted IP address to an unqualified host name (IPv6-only, cross-platform)
-
     static char hostname[MAXSTRING];   // Not thread-safe, but OK
     struct sockaddr_in6 addr = {0};
     addr.sin6_family = AF_INET6;
-    inet_pton(AF_INET6, ipdotaddr, &addr.sin6_addr);
+    int status = inet_pton(AF_INET6, ipdotaddr, &addr.sin6_addr);
 
-    if (IN6_IS_ADDR_UNSPECIFIED(&addr.sin6_addr)) {
-        error((char *)"Cannot parse dotted IP address \"%s\"", ipdotaddr);
+    if (status == 1) {
+        // IPv6 success
+        char host[MAXSTRING];
+        socklen_t addrlen = sizeof(struct sockaddr_in6);
+        int name_status = getnameinfo((struct sockaddr*)&addr, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
+        if (name_status != 0) {
+            error((char *)"Cannot get hostname of \"%s\": %s", ipdotaddr, gai_strerror(name_status));
+        }
+
+        // Truncate at first dot (unqualified hostname)
+        char *dp = hostname;
+        const char *cp = host;
+        while (*cp != '\0' && *cp != '.') {
+            *dp++ = *cp++;
+        }
+        *dp = '\0';
+
+        return hostname;
+    } else {
+        // Fallback to IPv4
+        struct sockaddr_in addr4 = {0};
+        addr4.sin_family = AF_INET;
+        addr4.sin_addr.s_addr = inet_addr(ipdotaddr);
+
+        if (addr4.sin_addr.s_addr == INADDR_NONE) {
+            error((char *)"Cannot parse dotted IP address \"%s\"", ipdotaddr);
+        }
+
+        char host[MAXSTRING];
+        socklen_t addrlen = sizeof(struct sockaddr_in);
+        int name_status = getnameinfo((struct sockaddr*)&addr4, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
+        if (name_status != 0) {
+            error((char *)"Cannot get hostname of \"%s\": %s", ipdotaddr, gai_strerror(name_status));
+        }
+
+        // Truncate at first dot (unqualified hostname)
+        char *dp = hostname;
+        const char *cp = host;
+        while (*cp != '\0' && *cp != '.') {
+            *dp++ = *cp++;
+        }
+        *dp = '\0';
+
+        return hostname;
     }
-
-    char host[MAXSTRING];
-    socklen_t addrlen = sizeof(struct sockaddr_in6);
-    int status = getnameinfo((struct sockaddr*)&addr, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
-    if (status != 0) {
-        error((char *)"Cannot get hostname of \"%s\": %s", ipdotaddr, gai_strerror(status));
-    }
-
-    // Truncate at first dot (unqualified hostname)
-    char *dp = hostname;
-    const char *cp = host;
-    while (*cp != '\0' && *cp != '.') {
-        *dp++ = *cp++;
-    }
-    *dp = '\0';
-
-    return hostname;
     }
 
 
