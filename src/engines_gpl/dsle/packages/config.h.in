@@ -1,0 +1,6 @@
+#ifndef ZSF_CONFIG_H
+#define ZSF_CONFIG_H
+
+#define ZSF_GIT_DESCRIBE "${git_describe}"
+
+#endif

@@ -3,7 +3,7 @@
         {
             "file": "bin\\agrhyd.exe",
             "issuedTo": "Stichting Deltares"
-        },
+        },        
         {
             "file": "bin\\ddcouple.exe",
             "issuedTo": "Stichting Deltares"
@@ -542,6 +542,10 @@
         },
         {
             "file": "lib\\flow2d3d_sp.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\zsf.dll",
             "issuedTo": "Stichting Deltares"
         }
     ],
