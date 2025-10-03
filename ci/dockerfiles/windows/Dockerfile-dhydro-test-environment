@@ -13,7 +13,7 @@ RUN Start-Process python-3.12.7-amd64.exe -ArgumentList '/quiet InstallAllUsers=
 RUN Remove-Item C:\\python-3.12.7-amd64.exe
 RUN New-Item -ItemType SymbolicLink -Path 'C:\\Program Files\\Python312\\python3.exe' -Target 'C:\\Program Files\\Python312\\python.exe'
 
-ADD test/deltares_testbench/pip/win-requirements.txt C:\\temp\\win-requirements.txt
+ADD win-requirements.txt C:\\temp\\win-requirements.txt
 
 RUN set -eo pipefail && \
     curl https://bootstrap.pypa.io/get-pip.py | python3 - && \
