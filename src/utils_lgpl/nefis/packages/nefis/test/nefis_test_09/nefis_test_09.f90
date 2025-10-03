@@ -117,74 +117,74 @@ contains
       call clock(cpu1)
 
       UINDEX(incr, 1) = 1
-      do 10 i = 1, 1000
+      do i = 1, 1000
          UINDEX(start, 1) = i
          UINDEX(stop, 1) = i
          val = (10.0, 15.0)
          error = Putelt(fds, 'DATAGRP_TEST_1A', 'ELEM_R_4',&
          &UINDEX, 1, val)
          if (error /= 0) goto 9999
-10       continue
-         call clock(cpu2)
-         write (file_unit, '(''DATAGRP_TEST_1A written in [sec]'',1PE13.5)')&
-         &cpu2 - cpu1
+      end do
+      call clock(cpu2)
+      write (file_unit, '(''DATAGRP_TEST_1A written in [sec]'',1PE13.5)')&
+      &cpu2 - cpu1
 !
-         call clock(cpu1)
-         do 20 i = 1000, 1, -1
-            UINDEX(start, 1) = i
-            UINDEX(stop, 1) = i
-            val = (1.0, 1.0)
-            error = Putelt(fds, 'DATAGRP_TEST_1B', 'ELEM_R_4',&
-            &UINDEX, 1, val)
-            if (error /= 0) goto 9999
-20          continue
+      call clock(cpu1)
+      do i = 1000, 1, -1
+         UINDEX(start, 1) = i
+         UINDEX(stop, 1) = i
+         val = (1.0, 1.0)
+         error = Putelt(fds, 'DATAGRP_TEST_1B', 'ELEM_R_4',&
+         &UINDEX, 1, val)
+         if (error /= 0) goto 9999
+      end do
 !
-            call clock(cpu2)
-            write (file_unit, '(''DATAGRP_TEST_1B written in [sec]'',1PE13.5)')&
-            &cpu2 - cpu1
+      call clock(cpu2)
+      write (file_unit, '(''DATAGRP_TEST_1B written in [sec]'',1PE13.5)')&
+      &cpu2 - cpu1
 !
-            write (file_unit, '(''Lees elementen'')')
+      write (file_unit, '(''Lees elementen'')')
 !
-            call clock(cpu2)
-            do 30 i = 1000, 1, -1
-               UINDEX(start, 1) = i
-               UINDEX(stop, 1) = i
-               error = Getelt(fds, 'DATAGRP_TEST_1A', 'ELEM_R_4',&
-               &UINDEX, 1, 16, val)
-               if (error /= 0) goto 9999
-30             continue
+      call clock(cpu2)
+      do i = 1000, 1, -1
+         UINDEX(start, 1) = i
+         UINDEX(stop, 1) = i
+         error = Getelt(fds, 'DATAGRP_TEST_1A', 'ELEM_R_4',&
+         &UINDEX, 1, 16, val)
+         if (error /= 0) goto 9999
+      end do
 !
-               call clock(cpu2)
-               write (file_unit, '(''DATAGRP_TEST_1A read    in [sec]'',1PE13.5)')&
-               &cpu2 - cpu1
+      call clock(cpu2)
+      write (file_unit, '(''DATAGRP_TEST_1A read    in [sec]'',1PE13.5)')&
+      &cpu2 - cpu1
 !
-               call clock(cpu1)
-               do 40 i = 1, 1000
-                  UINDEX(start, 1) = i
-                  UINDEX(stop, 1) = i
-                  error = Getelt(fds, 'DATAGRP_TEST_1B', 'ELEM_R_4',&
-                  &UINDEX, 1, 16, val)
-                  if (error /= 0) goto 9999
-40                continue
-                  call clock(cpu2)
-                  write (file_unit, '(''DATAGRP_TEST_1B read    in [sec]'',1PE13.5)')&
-                  &cpu2 - cpu1
+      call clock(cpu1)
+      do i = 1, 1000
+         UINDEX(start, 1) = i
+         UINDEX(stop, 1) = i
+         error = Getelt(fds, 'DATAGRP_TEST_1B', 'ELEM_R_4',&
+         &UINDEX, 1, 16, val)
+         if (error /= 0) goto 9999
+      end do
+      call clock(cpu2)
+      write (file_unit, '(''DATAGRP_TEST_1B read    in [sec]'',1PE13.5)')&
+      &cpu2 - cpu1
 !
 
-9999              continue
+9999  continue
 
-                  if (error /= 0) error = neferr(1, errstr)
+      if (error /= 0) error = neferr(1, errstr)
 
-                  error = Clsdat(fds)
-                  error = Clsdef(fds)
-                  error = neferr(0, errstr)
-                  write (file_unit, '(a)') trim(errstr)
+      error = Clsdat(fds)
+      error = Clsdef(fds)
+      error = neferr(0, errstr)
+      write (file_unit, '(a)') trim(errstr)
 
-                  close (file_unit)
-                  !
-                  call compare_text_files(filename1, filename2, skiplines)
+      close (file_unit)
+      !
+      call compare_text_files(filename1, filename2, skiplines)
 
-                  end subroutine test_09
-                  !$f90tw)
+   end subroutine test_09
+   !$f90tw)
 
-                  end module m_nefis_test_09
+end module m_nefis_test_09

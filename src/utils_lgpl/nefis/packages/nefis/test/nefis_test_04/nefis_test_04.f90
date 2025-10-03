@@ -143,103 +143,103 @@ contains
 !
       call clock(cpu1)
       UINDEX(3, 1) = 1
-      do 10 i = 1, imax
+      do i = 1, imax
          UINDEX(1, 1) = i
          UINDEX(2, 1) = i
          error = Putelt(fds, 'DATAGRP_TEST_1A', '*',&
          &UINDEX, 1, real(i))
          if (error /= 0) goto 9999
-10       continue
-         call clock(cpu2)
-         write (file_unit, '(''DATAGRP_TEST_1A written in [sec]'',1PE13.5)')&
-         &cpu2 - cpu1
+      end do
+      call clock(cpu2)
+      write (file_unit, '(''DATAGRP_TEST_1A written in [sec]'',1PE13.5)')&
+      &cpu2 - cpu1
 
-         call clock(cpu1)
-         do 20 i = imax, 1, -1
-            UINDEX(1, 1) = i
-            UINDEX(2, 1) = i
-            error = Putelt(fds, 'DATAGRP_TEST_1B', '*',&
-            &UINDEX, 1, -1.*real(i))
-            if (error /= 0) goto 9999
-20          continue
-            call clock(cpu2)
-            write (file_unit, '(''DATAGRP_TEST_1B written in [sec]'',1PE13.5)')&
-            &cpu2 - cpu1
+      call clock(cpu1)
+      do i = imax, 1, -1
+         UINDEX(1, 1) = i
+         UINDEX(2, 1) = i
+         error = Putelt(fds, 'DATAGRP_TEST_1B', '*',&
+         &UINDEX, 1, -1.*real(i))
+         if (error /= 0) goto 9999
+      end do
+      call clock(cpu2)
+      write (file_unit, '(''DATAGRP_TEST_1B written in [sec]'',1PE13.5)')&
+      &cpu2 - cpu1
 
-            call clock(cpu1)
-            do 21 i = imax, 1, -1
-               UINDEX(1, 1) = i
-               UINDEX(2, 1) = i
-               error = Putelt(fds, 'DATAGRP_TEST_1C', '*',&
-               &UINDEX, 1, 'ABCDEFGHIJKLMNOPQRST')
-               if (error /= 0) goto 9999
-21             continue
+      call clock(cpu1)
+      do i = imax, 1, -1
+         UINDEX(1, 1) = i
+         UINDEX(2, 1) = i
+         error = Putelt(fds, 'DATAGRP_TEST_1C', '*',&
+         &UINDEX, 1, 'ABCDEFGHIJKLMNOPQRST')
+         if (error /= 0) goto 9999
+      end do
 
-               call clock(cpu2)
-               write (file_unit, '(''DATAGRP_TEST_1C written in [sec]'',1PE13.5)')&
-               &cpu2 - cpu1
+      call clock(cpu2)
+      write (file_unit, '(''DATAGRP_TEST_1C written in [sec]'',1PE13.5)')&
+      &cpu2 - cpu1
 
 !
 !=====================================================================
-               write (file_unit, *)
-               write (file_unit, '(''Lees elementen'')')
-               write (file_unit, *)
+      write (file_unit, *)
+      write (file_unit, '(''Lees elementen'')')
+      write (file_unit, *)
 !
-               call clock(cpu1)
-               do 30 i = imax, 1, -1
-                  UINDEX(1, 1) = i
-                  UINDEX(2, 1) = i
-                  error = Getelt(fds, 'DATAGRP_TEST_1A', '*',&
-                  &UINDEX, 1, 4, buffer)
-                  if (error /= 0) goto 9999
-                  if (nint(buffer) /= i) print *, 'error, i= ', i, buffer&
-                  &, nint(buffer)
-30                continue
-                  call clock(cpu2)
-                  write (file_unit, '(''DATAGRP_TEST_1A read    in [sec]'',1PE13.5)')&
-                  &cpu2 - cpu1
+      call clock(cpu1)
+      do i = imax, 1, -1
+         UINDEX(1, 1) = i
+         UINDEX(2, 1) = i
+         error = Getelt(fds, 'DATAGRP_TEST_1A', '*',&
+         &UINDEX, 1, 4, buffer)
+         if (error /= 0) goto 9999
+         if (nint(buffer) /= i) print *, 'error, i= ', i, buffer&
+         &, nint(buffer)
+      end do
+      call clock(cpu2)
+      write (file_unit, '(''DATAGRP_TEST_1A read    in [sec]'',1PE13.5)')&
+      &cpu2 - cpu1
 !
-                  call clock(cpu1)
-                  do 40 i = 1, imax
-                     UINDEX(1, 1) = i
-                     UINDEX(2, 1) = i
-                     error = Getelt(fds, 'DATAGRP_TEST_1B', '*',&
-                     &UINDEX, 1, 4, buffer)
-                     if (error /= 0) goto 9999
-                     if (nint(buffer) /= -1 * i) print *, 'error, i= ', i, buffer&
-                     &, nint(buffer)
-40                   continue
-                     call clock(cpu2)
-                     write (file_unit, '(''DATAGRP_TEST_1B read    in [sec]'',1PE13.5)')&
-                     &cpu2 - cpu1
+      call clock(cpu1)
+      do i = 1, imax
+         UINDEX(1, 1) = i
+         UINDEX(2, 1) = i
+         error = Getelt(fds, 'DATAGRP_TEST_1B', '*',&
+         &UINDEX, 1, 4, buffer)
+         if (error /= 0) goto 9999
+         if (nint(buffer) /= -1 * i) print *, 'error, i= ', i, buffer&
+         &, nint(buffer)
+      end do
+      call clock(cpu2)
+      write (file_unit, '(''DATAGRP_TEST_1B read    in [sec]'',1PE13.5)')&
+      &cpu2 - cpu1
 
-                     call clock(cpu1)
-                     do 50 i = 1, imax
-                        UINDEX(1, 1) = i
-                        UINDEX(2, 1) = i
-                        error = Getelt(fds, 'DATAGRP_TEST_1C', '*',&
-                        &UINDEX, 1, 20, strdata)
-                        if (error /= 0) goto 9999
-                        if (strdata /= 'ABCDEFGHIJKLMNOPQRST') print *, 'error, i= ', i, strdata&
-                        &, strdata
-50                      continue
-                        call clock(cpu2)
-                        write (file_unit, '(''DATAGRP_TEST_1C read    in [sec]'',1PE13.5)')&
-                        &cpu2 - cpu1
-                        write (file_unit, *)
+      call clock(cpu1)
+      do i = 1, imax
+         UINDEX(1, 1) = i
+         UINDEX(2, 1) = i
+         error = Getelt(fds, 'DATAGRP_TEST_1C', '*',&
+         &UINDEX, 1, 20, strdata)
+         if (error /= 0) goto 9999
+         if (strdata /= 'ABCDEFGHIJKLMNOPQRST') print *, 'error, i= ', i, strdata&
+         &, strdata
+      end do
+      call clock(cpu2)
+      write (file_unit, '(''DATAGRP_TEST_1C read    in [sec]'',1PE13.5)')&
+      &cpu2 - cpu1
+      write (file_unit, *)
 
-                        error = Clsdat(fds)
-                        error = Clsdef(fds)
+      error = Clsdat(fds)
+      error = Clsdef(fds)
 !
-9999                    continue
+9999  continue
 !
-                        error = Neferr(0, errstr)
-                        write (file_unit, '(a)') trim(errstr)
-                        close (file_unit)
-                        !
-                        call compare_text_files(filename1, filename2, skiplines)
+      error = Neferr(0, errstr)
+      write (file_unit, '(a)') trim(errstr)
+      close (file_unit)
+      !
+      call compare_text_files(filename1, filename2, skiplines)
 
-                        end subroutine test_04
-                        !$f90tw)
+   end subroutine test_04
+   !$f90tw)
 
-                        end module m_nefis_test_04
+end module m_nefis_test_04

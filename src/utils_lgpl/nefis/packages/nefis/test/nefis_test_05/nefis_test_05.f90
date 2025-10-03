@@ -129,73 +129,73 @@ contains
       error = Credat(fds, 'DATAGRP_TEST_2B', 'GRP_TEST_2B')
       if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-      do 10 i = 1, 748
+      do i = 1, 748
          buffer(i) = i
-10       continue
+      end do
 !
-         write (file_unit, '(''schrijf DATAGRP_TEST_2A'')')
-         UINDEX(start, 1) = 1
-         UINDEX(stop, 1) = 1
+      write (file_unit, '(''schrijf DATAGRP_TEST_2A'')')
+      UINDEX(start, 1) = 1
+      UINDEX(stop, 1) = 1
+      UINDEX(incr, 1) = 1
+      error = Putelt(fds, 'DATAGRP_TEST_2A', '*',&
+      &UINDEX, 1, buffer)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+!
+      write (file_unit, '(''schrijf DATAGRP_TEST_2B'')')
+      do i = 1, 100
+         UINDEX(start, 1) = i
+         UINDEX(stop, 1) = i
          UINDEX(incr, 1) = 1
-         error = Putelt(fds, 'DATAGRP_TEST_2A', '*',&
+         do j = 1, 748
+            buffer(j) = real(i) * real(j)
+         end do
+         error = Putelt(fds, 'DATAGRP_TEST_2B', '*',&
          &UINDEX, 1, buffer)
          if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      end do
+      error = flsdat(fds)
+      error = flsdef(fds)
 !
-         write (file_unit, '(''schrijf DATAGRP_TEST_2B'')')
-         do 30 i = 1, 100
-            UINDEX(start, 1) = i
-            UINDEX(stop, 1) = i
-            UINDEX(incr, 1) = 1
-            do 20 j = 1, 748
-               buffer(j) = real(i) * real(j)
-20             continue
-               error = Putelt(fds, 'DATAGRP_TEST_2B', '*',&
-               &UINDEX, 1, buffer)
-               if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
-30             continue
-               error = flsdat(fds)
-               error = flsdef(fds)
+      write (file_unit, '(''lees DATAGRP_TEST_2B'')')
+      do i = 100, 1, -1
+         UINDEX(start, 1) = i
+         UINDEX(stop, 1) = i
+         error = Getelt(fds, 'DATAGRP_TEST_2B', '*',&
+         &UINDEX, 1, 748 * 4, buffer)
+         if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+         do j = 1, 748
+            if (int(buffer(j) / real(i) - j) /= 0)&
+            &write (file_unit, '(''error, i='',i3)') i
+         end do
+      end do
 !
-               write (file_unit, '(''lees DATAGRP_TEST_2B'')')
-               do 50 i = 100, 1, -1
-                  UINDEX(start, 1) = i
-                  UINDEX(stop, 1) = i
-                  error = Getelt(fds, 'DATAGRP_TEST_2B', '*',&
-                  &UINDEX, 1, 748 * 4, buffer)
-                  if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
-                  do 40 j = 1, 748
-                     if (int(buffer(j) / real(i) - j) /= 0)&
-                     &write (file_unit, '(''error, i='',i3)') i
-40                   continue
-50                   continue
-!
-                     write (file_unit, '(''lees DATAGRP_TEST_2A'')')
-                     UINDEX(start, 1) = 1
-                     UINDEX(stop, 1) = 1
-                     error = Getelt(fds, 'DATAGRP_TEST_2A', '*',&
-                     &UINDEX, 1, 748 * 4, buffer)
-                     if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
-                     do 60 j = 1, 748
+      write (file_unit, '(''lees DATAGRP_TEST_2A'')')
+      UINDEX(start, 1) = 1
+      UINDEX(stop, 1) = 1
+      error = Getelt(fds, 'DATAGRP_TEST_2A', '*',&
+      &UINDEX, 1, 748 * 4, buffer)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      do j = 1, 748
 !      PRINT *, buffer(j),j, INT(buffer(j)-j)
-                        if (int(buffer(j) - j) /= 0) print *, 'error, i= ', i
-60                      continue
+         if (int(buffer(j) - j) /= 0) print *, 'error, i= ', i
+      end do
 
-                        write (file_unit, *)
-                        error = Clsdat(fds)
-                        if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      write (file_unit, *)
+      error = Clsdat(fds)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-                        error = Clsdef(fds)
-                        if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      error = Clsdef(fds)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-                        ERROR = NEFERR(0, ERRSTR)
-                        write (file_unit, '(a)') trim(trim_line_endings(errstr))
-                        write (file_unit, *) '-----------------------------------------------'
+      ERROR = NEFERR(0, ERRSTR)
+      write (file_unit, '(a)') trim(trim_line_endings(errstr))
+      write (file_unit, *) '-----------------------------------------------'
 
-                        close (file_unit)
-                        !
-                        call compare_text_files(filename1, filename2, skiplines)
+      close (file_unit)
+      !
+      call compare_text_files(filename1, filename2, skiplines)
 
-                        end subroutine test_05
-                        !$f90tw)
+   end subroutine test_05
+   !$f90tw)
 
-                        end module m_nefis_test_05
+end module m_nefis_test_05

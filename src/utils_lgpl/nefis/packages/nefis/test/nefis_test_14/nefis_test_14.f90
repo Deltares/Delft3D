@@ -157,106 +157,106 @@ contains
 
          write (file_unit,&
          &'(I5,'' schrijfopdrachten van '',I9,'' bytes'')') NTIMES, BUFSIZ * 4
-         do 20 j = 1, NTIMES
-            do 10 i = 1, BUFSIZ
+         do j = 1, NTIMES
+            do i = 1, BUFSIZ
                buffer(i) = 1000 * i + j
-10             continue
-               if (ntimes > 1000) then
-                  if (mod(j, 100) == 1)&
-                  &write (file_unit, '(''opdracht '', i3, '' van '', i3)') j, ntimes
-               elseif (ntimes > 100) then
-                  if (mod(j, 10) == 1)&
-                  &write (file_unit, '(''opdracht '', i3, '' van '', i3)') j, ntimes
-               elseif (ntimes > 10) then
-                  write (file_unit, '(''opdracht '', i3, '' van '', i3)') j, ntimes
-               end if
-               UINDEX(start, 1) = j
-               UINDEX(stp, 1) = j
-               call clock(cpu1)
-               if (j == 265) then
-                  write (file_unit, *)
-               end if
-
-               error = Putelt(fds, 'DATAGRP_TEST_3D',&
-               &'ELEM_R_4_DIM_1', UINDEX, usrord, buffer)
-               call clock(cpu2)
-               elap_w = elap_w + cpu2 - cpu1
-               if (error /= 0) then
-                  ierror = neferr(0, errstr)
-                  write (file_unit, *)
-                  write (file_unit, '(a)') trim(errstr)
-                  goto 9999
-               end if
-20             continue
-               write (file_unit, '(''Writing (real time) [sec]:'',1PE13.5)') elap_w
+            end do
+            if (ntimes > 1000) then
+               if (mod(j, 100) == 1)&
+               &write (file_unit, '(''opdracht '', i3, '' van '', i3)') j, ntimes
+            elseif (ntimes > 100) then
+               if (mod(j, 10) == 1)&
+               &write (file_unit, '(''opdracht '', i3, '' van '', i3)') j, ntimes
+            elseif (ntimes > 10) then
+               write (file_unit, '(''opdracht '', i3, '' van '', i3)') j, ntimes
+            end if
+            UINDEX(start, 1) = j
+            UINDEX(stp, 1) = j
+            call clock(cpu1)
+            if (j == 265) then
                write (file_unit, *)
-               error = Clsnef(fds)
-               end if
+            end if
 
-               coding = ' '
-               error = crenef(fds, dat_name, def_name, coding, 'R')
-               if (error /= 0) then
-                  ierror = neferr(0, errstr)
-                  write (file_unit, *)
-                  write (file_unit, '(a)') trim(errstr)
-                  goto 9999
-               end if
-               write (file_unit,&
-               &'(''Lees '', I5, '' keer '', I9, '' bytes'')') NTIMES, BUFSIZ * 4
-               do 40 j = NTIMES - 9, NTIMES + 1
+            error = Putelt(fds, 'DATAGRP_TEST_3D',&
+            &'ELEM_R_4_DIM_1', UINDEX, usrord, buffer)
+            call clock(cpu2)
+            elap_w = elap_w + cpu2 - cpu1
+            if (error /= 0) then
+               ierror = neferr(0, errstr)
+               write (file_unit, *)
+               write (file_unit, '(a)') trim(errstr)
+               goto 9999
+            end if
+         end do
+         write (file_unit, '(''Writing (real time) [sec]:'',1PE13.5)') elap_w
+         write (file_unit, *)
+         error = Clsnef(fds)
+      end if
+
+      coding = ' '
+      error = crenef(fds, dat_name, def_name, coding, 'R')
+      if (error /= 0) then
+         ierror = neferr(0, errstr)
+         write (file_unit, *)
+         write (file_unit, '(a)') trim(errstr)
+         goto 9999
+      end if
+      write (file_unit,&
+      &'(''Lees '', I5, '' keer '', I9, '' bytes'')') NTIMES, BUFSIZ * 4
+      do j = NTIMES - 9, NTIMES + 1
 !      DO 40 j=NTIMES, NTIMES+1
-                  write (file_unit, '(''opdracht '', I3)') j
-                  UINDEX(start, 1) = j
-                  UINDEX(stp, 1) = j
-                  UINDEX(incr, 1) = 1
-                  usrord(1) = 1
-                  call clock(cpu1)
-                  error = Getelt(fds, 'DATAGRP_TEST_3D',&
-                  &'ELEM_R_4_DIM_1', UINDEX, usrord, BUFSIZ * 4,&
-                  &buffer)
-                  call clock(cpu2)
-                  elap_r = elap_r + cpu2 - cpu1
-                  if (error /= 0) then
-                     ierror = neferr(0, errstr)
-                     write (file_unit, *)
-                     write (file_unit, '(a)') trim(errstr)
-                     goto 9999
-                  else
-                     do 30 i = 1, BUFSIZ
-                        if ((buffer(i) - (1000 * i + j)) /= 0) then
-                           print *, 'error, i= ', i, buffer(i), 1000 * i + j
-                        end if
-30                      continue
-                        end if
-40                      continue
-                        write (file_unit, '(''Writing (real time) [sec]:'',1PE13.5)') elap_w
-                        write (file_unit, '(''Reading (real time) [sec]:'',1PE13.5)') elap_r
+         write (file_unit, '(''opdracht '', I3)') j
+         UINDEX(start, 1) = j
+         UINDEX(stp, 1) = j
+         UINDEX(incr, 1) = 1
+         usrord(1) = 1
+         call clock(cpu1)
+         error = Getelt(fds, 'DATAGRP_TEST_3D',&
+         &'ELEM_R_4_DIM_1', UINDEX, usrord, BUFSIZ * 4,&
+         &buffer)
+         call clock(cpu2)
+         elap_r = elap_r + cpu2 - cpu1
+         if (error /= 0) then
+            ierror = neferr(0, errstr)
+            write (file_unit, *)
+            write (file_unit, '(a)') trim(errstr)
+            goto 9999
+         else
+            do i = 1, BUFSIZ
+               if ((buffer(i) - (1000 * i + j)) /= 0) then
+                  print *, 'error, i= ', i, buffer(i), 1000 * i + j
+               end if
+            end do
+         end if
+      end do
+      write (file_unit, '(''Writing (real time) [sec]:'',1PE13.5)') elap_w
+      write (file_unit, '(''Reading (real time) [sec]:'',1PE13.5)') elap_r
 
-9999                    continue
+      end do
 
-                        error = Clsdat(fds)
-                        if (error /= 0) then
-                           ierror = neferr(0, errstr)
-                           write (file_unit, *)
-                           write (file_unit, '(a)') trim(errstr)
-                        end if
+      error = Clsdat(fds)
+      if (error /= 0) then
+         ierror = neferr(0, errstr)
+         write (file_unit, *)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 
-                        error = Clsdef(fds)
-                        if (error /= 0) then
-                           ierror = neferr(0, errstr)
-                           write (file_unit, *)
-                           write (file_unit, '(a)') trim(errstr)
-                        end if
+      error = Clsdef(fds)
+      if (error /= 0) then
+         ierror = neferr(0, errstr)
+         write (file_unit, *)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 
-                        ierror = neferr(0, errstr)
-                        write (file_unit, *)
-                        write (file_unit, '(a)') trim(errstr)
+      ierror = neferr(0, errstr)
+      write (file_unit, *)
+      write (file_unit, '(a)') trim(errstr)
 
-                        close (file_unit)
-                        !
-                        call compare_text_files(filename1, filename2, skiplines)
+      close (file_unit)
+      !
+      call compare_text_files(filename1, filename2, skiplines)
 
-                        end subroutine test_14
-                        !$f90tw)
+      end subroutine test_14
+      !$f90tw)
 
-                        end module m_nefis_test_14
+   end module m_nefis_test_14

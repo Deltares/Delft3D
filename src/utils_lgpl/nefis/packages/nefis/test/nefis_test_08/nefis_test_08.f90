@@ -268,111 +268,111 @@ contains
 
       write (file_unit, '(''TEST8: Put real and integer array'')')
       UINDEX(INCR, 1) = 1
-      do 20 J = 1, 10
+      do J = 1, 10
          UINDEX(START, 1) = J
          UINDEX(stop, 1) = J
-         do 10 I = 1, 142
-            do 5 K = 1, 65
+         do I = 1, 142
+            do K = 1, 65
                ARRAY(I, K) = J * 1000.+I + K / 1000.
-5              continue
-               IARRIN(I) = J * 1000 + I
-10             continue
+            end do !end do
+            IARRIN(I) = J * 1000 + I
+         end do
 
-               ERROR = PUTELT(FDS, 'Grpnam',&
-               &'Elmnam', UINDEX, 1, ARRAY)
-               if (error /= 0) write (file_unit, *) ' PUTELT:', error
-               if (error /= 0) goto 9999
+         ERROR = PUTELT(FDS, 'Grpnam',&
+         &'Elmnam', UINDEX, 1, ARRAY)
+         if (error /= 0) write (file_unit, *) ' PUTELT:', error
+         if (error /= 0) goto 9999
 
-               ERROR = PUTELT(FDS, 'Grpnam',&
-               &'ElmInt', UINDEX, 1, IARRIN)
-               if (error /= 0) write (file_unit, *) ' PUTELT:', error
-               if (error /= 0) goto 9999
+         ERROR = PUTELT(FDS, 'Grpnam',&
+         &'ElmInt', UINDEX, 1, IARRIN)
+         if (error /= 0) write (file_unit, *) ' PUTELT:', error
+         if (error /= 0) goto 9999
 
-               ERROR = FLSDAT(FDS)
-               if (error /= 0) write (file_unit, *) ' FLSDAT:', error
-               if (error /= 0) goto 9999
+         ERROR = FLSDAT(FDS)
+         if (error /= 0) write (file_unit, *) ' FLSDAT:', error
+         if (error /= 0) goto 9999
 
-20             continue
+      end do
 
-               write (file_unit, '(''TEST8: Get real and integer array'')')
-               do 30 J = 1, 10
-                  UINDEX(START, 1) = J
-                  UINDEX(stop, 1) = J
-                  ERROR = GETELT(FDS, 'Grpnam',&
-                  &'Elmnam', UINDEX, 1, 142 * 65 * 4, ARROUT)
-                  if (error /= 0) write (file_unit, '('' GETELT:'',i4,1x,3(1pe14.6,1x))')&
-                  &error, arrout(142, 65), arrout(142, 64), arrout(141, 65)
-                  if (error /= 0) goto 9999
+      write (file_unit, '(''TEST8: Get real and integer array'')')
+      do J = 1, 10
+         UINDEX(START, 1) = J
+         UINDEX(stop, 1) = J
+         ERROR = GETELT(FDS, 'Grpnam',&
+         &'Elmnam', UINDEX, 1, 142 * 65 * 4, ARROUT)
+         if (error /= 0) write (file_unit, '('' GETELT:'',i4,1x,3(1pe14.6,1x))')&
+         &error, arrout(142, 65), arrout(142, 64), arrout(141, 65)
+         if (error /= 0) goto 9999
 
-                  ERROR = GETELT(FDS, 'Grpnam',&
-                  &'ElmInt', UINDEX, 1, 142 * 4, IARROU)
-                  if (error /= 0)&
-                  &write (file_unit, *) ' GETELT:', error, iarrou(1), iarrou(142)
-                  if (error /= 0) goto 9999
+         ERROR = GETELT(FDS, 'Grpnam',&
+         &'ElmInt', UINDEX, 1, 142 * 4, IARROU)
+         if (error /= 0)&
+         &write (file_unit, *) ' GETELT:', error, iarrou(1), iarrou(142)
+         if (error /= 0) goto 9999
 
-30                continue
+      end do
 
-                  write (file_unit, '(''TEST8: Flush memory to files'')')
+      write (file_unit, '(''TEST8: Flush memory to files'')')
 
-                  ERROR = FLSDAT(FDS)
-                  if (error /= 0) write (file_unit, *) ' FLSDAT:', error
-                  if (error /= 0) goto 9999
+      ERROR = FLSDAT(FDS)
+      if (error /= 0) write (file_unit, *) ' FLSDAT:', error
+      if (error /= 0) goto 9999
 
-                  ERROR = FLSDEF(FDS)
-                  if (error /= 0) write (file_unit, *) ' FLSDEF:', error
-                  if (error /= 0) goto 9999
+      ERROR = FLSDEF(FDS)
+      if (error /= 0) write (file_unit, *) ' FLSDEF:', error
+      if (error /= 0) goto 9999
 
-                  write (file_unit, '(''TEST8: Loop all groups'')')
+      write (file_unit, '(''TEST8: Loop all groups'')')
 
-                  ERROR = INQFST(FDS, GRPNAM, GRPDEF)
-                  if (error /= 0) write (file_unit, *) ' INQFST:', error, grpnam, grpdef
+      ERROR = INQFST(FDS, GRPNAM, GRPDEF)
+      if (error /= 0) write (file_unit, *) ' INQFST:', error, grpnam, grpdef
 
-                  ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
-                  if (error /= 0) write (file_unit, *) ' INQNXT:', error, grpnam, grpdef
+      ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
+      if (error /= 0) write (file_unit, *) ' INQNXT:', error, grpnam, grpdef
 
-                  ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
-                  if (error /= 0) write (file_unit, *) ' INQNXT:', error, grpnam, grpdef
+      ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
+      if (error /= 0) write (file_unit, *) ' INQNXT:', error, grpnam, grpdef
 
-                  ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
-                  if (error /= 0) then
-                     error = neferr(0, errstr)
-                     write (file_unit, '(a)') trim(errstr)
-                  end if
+      ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
+      if (error /= 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 
-                  ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
-                  if (error /= 0) then
-                     error = neferr(0, errstr)
-                     write (file_unit, '(a)') trim(errstr)
-                  end if
+      ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
+      if (error /= 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 
-                  ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
-                  if (error /= 0) then
-                     error = neferr(0, errstr)
-                     write (file_unit, '(a)') trim(errstr)
-                  end if
+      ERROR = INQNXT(FDS, GRPNAM, GRPDEF)
+      if (error /= 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 
 !     write(file_unit,'('' SO FAR SO GOOD'
-                  goto 8888
-9999              continue
-                  error = neferr(0, errstr)
-                  write (file_unit, '(a)') trim(errstr)
-                  write (file_unit, '('' NOT SO GOOD'')')
-8888              continue
+      goto 8888
+9999  continue
+      error = neferr(0, errstr)
+      write (file_unit, '(a)') trim(errstr)
+      write (file_unit, '('' NOT SO GOOD'')')
+8888  continue
 
-                  ERROR = CLSDAT(FDS)
-                  if (error /= 0) write (file_unit, *) ' CLSDAT:', error
+      ERROR = CLSDAT(FDS)
+      if (error /= 0) write (file_unit, *) ' CLSDAT:', error
 
-                  ERROR = CLSDEF(FDS)
-                  if (error /= 0) write (file_unit, *) ' CLSDEF:', error
+      ERROR = CLSDEF(FDS)
+      if (error /= 0) write (file_unit, *) ' CLSDEF:', error
 
-                  error = neferr(0, errstr)
-                  write (file_unit, '(a)') trim(errstr)
+      error = neferr(0, errstr)
+      write (file_unit, '(a)') trim(errstr)
 
-                  close (file_unit)
-                  !
-                  call compare_text_files(filename1, filename2, skiplines)
+      close (file_unit)
+      !
+      call compare_text_files(filename1, filename2, skiplines)
 
-                  end subroutine test_08
-                  !$f90tw)
+   end subroutine test_08
+   !$f90tw)
 
-                  end module m_nefis_test_08
+end module m_nefis_test_08
