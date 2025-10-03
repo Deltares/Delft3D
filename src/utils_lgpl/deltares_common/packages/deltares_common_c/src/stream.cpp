@@ -238,8 +238,6 @@ Stream::construct_TCPIP (
 
     stream->local.addr.sin6_family = AF_INET6;
     stream->local.addr.sin6_addr = IN6ADDR_ANY_INIT;
-    IPport port = 0;  // Add before the for loop
-    stream->local.addr.sin6_port = htons(port);
 
     // Find an available port
 
