@@ -230,18 +230,22 @@ Stream::construct_TCPIP (
     Stream * stream
     ) {
 
-    if ((stream->local.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
+    if ((stream->local.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP)) == -1)
         error((char *)"Cannot create local socket for unpaired stream");
 
-    stream->local.addr.sin_family = AF_INET;
-    stream->local.addr.sin_addr.s_addr = INADDR_ANY;
+    int opt = 0;
+    setsockopt(stream->local.sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt));
+
+    stream->local.addr.sin6_family = AF_INET6;
+    stream->local.addr.sin6_addr = IN6ADDR_ANY_INIT;
+    stream->local.addr.sin6_port = htons(port);
 
     // Find an available port
 
     IPport port;
     for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
-        stream->local.addr.sin_port = htons (port);
-        if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr)) ==  0) {
+        stream->local.addr.sin6_port = htons (port);
+        if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr_in6)) ==  0) {
             break;
             }
         }
@@ -280,12 +284,12 @@ Stream::connect_TCPIP (
     *hp = '\0';
     port = atoi (handle+1);
 
-    if ((stream->remote.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP)) == -1)
+    if ((stream->remote.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP)) == -1)
         error((char *)"Cannot create remote socket for paired stream");
 
-    stream->remote.addr.sin_family = AF_INET;
-    stream->remote.addr.sin_addr.s_addr = inet_addr (lookup_host (hostname));
-    stream->remote.addr.sin_port = htons (port);
+    stream->remote.addr.sin6_family = AF_INET6;
+    inet_pton(AF_INET6, lookup_host(hostname), &stream->remote.addr.sin6_addr);
+    stream->remote.addr.sin6_port = htons(port);
 
     char buffer [MAXSTRING];
     sprintf (buffer, "%s:%d", hostname, port);
@@ -300,7 +304,7 @@ Stream::connect_TCPIP (
 
     int attempt;
     for (attempt = 0 ; attempt < MAXTRIES ; attempt++) {
-        if (connect (stream->remote.sock, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr)) == 0)
+        if (connect (stream->remote.sock, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr_in6)) == 0)
             break;
         usleep (1000 * TRYSLEEP);
         }
@@ -500,20 +504,21 @@ Stream::first_receive_TCPIP (
     if (stream->tracefunction != NULL)
         trace((char *)"Waiting for connection on %s", stream->local.handle);
 
-    socklen_t addrlen = sizeof (struct sockaddr);
+    socklen_t addrlen = sizeof (struct sockaddr_in6);
     if ((stream->remote.sock = accept (stream->local.sock, (struct sockaddr *) &stream->remote.addr, &addrlen)) == -1)
         error((char *)"Cannot accept connection on stream");
 
-    IPaddr addr = stream->remote.addr.sin_addr.s_addr;
-    IPport port = stream->remote.addr.sin_port;
+    char addr_str[INET6_ADDRSTRLEN];
+    inet_ntop(AF_INET6, &stream->remote.addr.sin6_addr, addr_str, sizeof(addr_str));
+    IPport port = stream->remote.addr.sin6_port;
     stream->remote.handle = new char [Stream::MAXHANDLE];
-    sprintf (stream->remote.handle, "%s:%d", lookup_dotaddr (dotipaddr (addr)), ntohs (port));
+    sprintf (stream->remote.handle, "%s:%d", lookup_dotaddr (addr_str), ntohs (port));
 
 #if defined(WIN32)
-    if (sendto (stream->remote.sock, (char *) stream->remote.handle, Stream::MAXHANDLE, 0, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr)) != Stream::MAXHANDLE)
+    if (sendto (stream->remote.sock, (char *) stream->remote.handle, Stream::MAXHANDLE, 0, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr_in6)) != Stream::MAXHANDLE)
         error((char *)"Sendto of local side to %s fails (%s)", stream->remote.handle, strerror (errno));
 #else
-    if (sendto (stream->remote.sock, (void *) stream->remote.handle, Stream::MAXHANDLE, 0, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr)) != Stream::MAXHANDLE)
+    if (sendto (stream->remote.sock, (void *) stream->remote.handle, Stream::MAXHANDLE, 0, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr_in6)) != Stream::MAXHANDLE)
         error((char *)"Sendto of local side to %s fails (%s)", stream->remote.handle, strerror (errno));
 #endif
 
@@ -778,16 +783,13 @@ Stream::lookup_host (
     char *  hostname
     ) {
 
-    // Map host name string to dotted IPv4 address string (IPv4-only, cross-platform)
-
     static char ipaddr[MAXSTRING];  // Not thread-safe, but OK as-is
     struct addrinfo hints = {0};
     struct addrinfo *result = NULL;
 
-    // Enforce IPv4-only resolution
-    hints.ai_family = AF_INET;      // Restrict to IPv4
-    hints.ai_socktype = SOCK_STREAM;  // Assuming stream (TCP); adjust if UDP
-    hints.ai_protocol = IPPROTO_TCP;  // Optional: specify TCP
+    hints.ai_family = AF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
 
     int status = getaddrinfo(hostname, NULL, &hints, &result);
     if (status != 0) {
@@ -819,19 +821,19 @@ Stream::lookup_dotaddr (
     char *  ipdotaddr
     ) {
 
-    // Map dotted IP address to an unqualified host name (IPv4-only, cross-platform)
+    // Map dotted IP address to an unqualified host name (IPv6-only, cross-platform)
 
     static char hostname[MAXSTRING];   // Not thread-safe, but OK
-    struct sockaddr_in addr = {0};
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr(ipdotaddr);
+    struct sockaddr_in6 addr = {0};
+    addr.sin6_family = AF_INET6;
+    inet_pton(AF_INET6, ipdotaddr, &addr.sin6_addr);
 
-    if (addr.sin_addr.s_addr == INADDR_NONE) {
+    if (IN6_IS_ADDR_UNSPECIFIED(&addr.sin6_addr)) {
         error((char *)"Cannot parse dotted IP address \"%s\"", ipdotaddr);
     }
 
     char host[MAXSTRING];
-    socklen_t addrlen = sizeof(struct sockaddr_in);
+    socklen_t addrlen = sizeof(struct sockaddr_in6);
     int status = getnameinfo((struct sockaddr*)&addr, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
     if (status != 0) {
         error((char *)"Cannot get hostname of \"%s\": %s", ipdotaddr, gai_strerror(status));
@@ -851,18 +853,13 @@ Stream::lookup_dotaddr (
 
 char *
 Stream::dotipaddr (
-    IPaddr   addr
+    struct in6_addr addr  // Changed from IPaddr
     ) {
 
     // Convert 32-bit packed ip address to dotted string
 
-    static char dotaddr [16];   // not thread safe, but OK
-    sprintf (dotaddr, "%d.%d.%d.%d",
-                        (addr >>  0) & 0xFF,
-                        (addr >>  8) & 0xFF,
-                        (addr >> 16) & 0xFF,
-                        (addr >> 24) & 0xFF
-                        );
+    static char dotaddr [INET6_ADDRSTRLEN];   // not thread safe, but OK
+    inet_ntop(AF_INET6, &addr, dotaddr, sizeof(dotaddr));
     return dotaddr;
     }
 
