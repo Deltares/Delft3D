@@ -12,3 +12,11 @@ ADD python-3.12.7-amd64.exe C:\\python-3.12.7-amd64.exe
 RUN Start-Process python-3.12.7-amd64.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -Wait
 RUN Remove-Item C:\\python-3.12.7-amd64.exe
 RUN New-Item -ItemType SymbolicLink -Path 'C:\\Program Files\\Python312\\python3.exe' -Target 'C:\\Program Files\\Python312\\python.exe'
+
+ADD test/deltares_testbench/pip/win-requirements.txt C:\\temp\\win-requirements.txt
+
+RUN set -eo pipefail && \
+    curl https://bootstrap.pypa.io/get-pip.py | python3 - && \
+    python3 -m pip install --upgrade pip && \
+    python3 -m pip install --requirement "C:\\temp\\win-requirements.txt" && \
+    rm --verbose "C:\\temp\\win-requirements.txt"
