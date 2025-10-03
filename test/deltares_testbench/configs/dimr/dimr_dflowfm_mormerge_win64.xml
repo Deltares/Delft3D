@@ -52,7 +52,7 @@
       <path>thirdparty\checkhydbal\win64\checkhydbal.exe</path>
     </program>
 	
-    <program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="false">
+    <program name="mormerge" logOutputToFile="true" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true">
 	    <path>bin/run_mormerge.bat</path>
         <location ref="reference_engines" type="reference">
             <from>win64</from>
@@ -165,5 +165,46 @@
         </checks>
     </testCase>
 
+    <testCase name="e123_f02_c01_trench_VanRijn1993_mormerge_e02_f22_c01" ref="dflowfm_default">
+        <path version="2024-03-22T19:30:00">e123_dflowfm-mormerge/f02_mergedtuser/c01_trench_VanRijn1993_mormerge_e02_f22_c01</path>
+        <maxRunTime>600.0000000</maxRunTime>
+        <programs>
+            <program ref="mormerge">
+				<workingDirectory>merge</workingDirectory>
+				<arguments>
+					<argument>trench_windows.mm</argument>
+				</arguments>
+			</program>
+		</programs>
+		<checks>
+			<file name="strong/dflowfmoutput/test_his.nc" type="netCDF">
+				<parameters>
+					<parameter name="waterlevel" toleranceAbsolute="0.1"/>
+					<parameter name="bedlevel"   toleranceAbsolute="0.1"/>
+				</parameters>
+			</file>
+			<file name="weak/dflowfmoutput/test_his.nc" type="netCDF">
+				<parameters>
+					<parameter name="waterlevel" toleranceAbsolute="0.1"/>
+					<parameter name="bedlevel"   toleranceAbsolute="0.1"/>
+				</parameters>
+			</file>
+			<file name="strong/dflowfmoutput/test_map.nc" type="netCDF">
+				<parameters>
+					<parameter name="mesh2d_s1"     toleranceAbsolute="0.1"/>
+					<parameter name="mesh2d_u1"     toleranceAbsolute="0.1"/>
+					<parameter name="mesh2d_mor_bl" toleranceAbsolute="0.1"/>
+				</parameters>
+			</file>
+			<file name="weak/dflowfmoutput/test_map.nc" type="netCDF">
+				<parameters>
+					<parameter name="mesh2d_s1"     toleranceAbsolute="0.1"/>
+					<parameter name="mesh2d_u1"     toleranceAbsolute="0.1"/>
+					<parameter name="mesh2d_mor_bl" toleranceAbsolute="0.1"/>
+				</parameters>
+			</file>
+		</checks>
+	</testCase>
+    
 </testCases>
 </deltaresTestbench_v3>
