@@ -37,7 +37,6 @@ def assign_attributes_from_settings(instance: object, settings: Dict[str, Any], 
     """
     for attr_name in attribute_names:
         if attr_name in settings:
-            print(f"Set '{attr_name}' in {instance.__class__.__name__}")
             setattr(instance, attr_name, settings.get(attr_name, ""))
         else:
             print(f"Setting '{attr_name}' not found in configuration. Using default empty string.")
