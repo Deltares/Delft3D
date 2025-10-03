@@ -32,170 +32,170 @@ module m_nefis_test_05
    use tests_nefis_helper
    implicit none
 
-   character(len=30), dimension(3) :: skiplines = [ "Version", "version", "-----" ]
-   
+   character(len=30), dimension(3) :: skiplines = ["Version", "version", "-----"]
+
 contains
 
    !$f90tw TESTCODE(TEST, nefis_tests, test_05, test_05,
    subroutine test_05() bind(C)
-   INTEGER start, stop, incr
-   PARAMETER (start=1, stop=2, incr=3)
-   INTEGER clsdat,&
-   &clsdef,&
-   &credat,&
-   &defcel,&
-   &defelm,&
-   &defgrp,&
-   &flsdat,&
-   &flsdef,&
-   &getnfv,&
-   &getelt
-   INTEGER neferr,&
-   &opndat,&
-   &opndef,&
-   &putelt
-   INTEGER error,&
-   &idum,&
-   &i, j,&
-   &elmdms(5),&
-   &UINDEX(3,1),&
-   &fds
-   REAL buffer(748)
-   CHARACTER names(3)*14, coding*1
-   CHARACTER ERRSTR*1024
-   CHARACTER*255  version
-   character(len=30) :: filename1
-   character(len=30) :: filename2
-   integer file_unit
-   
-   ! delete previous output files if they exist
-   filename1='test.out'
-   filename2='test.scr'
-   call delete_file(filename1) 
-   call delete_file('nefis_ex.def')
-   call delete_file('nefis_ex.dat')
-   
-   open(newunit=file_unit,file=filename1)
+      integer start, stop, incr
+      parameter(start=1, stop=2, incr=3)
+      integer clsdat,&
+      &clsdef,&
+      &credat,&
+      &defcel,&
+      &defelm,&
+      &defgrp,&
+      &flsdat,&
+      &flsdef,&
+      &getnfv,&
+      &getelt
+      integer neferr,&
+      &opndat,&
+      &opndef,&
+      &putelt
+      integer error,&
+      &idum,&
+      &i, j,&
+      &elmdms(5),&
+      &UINDEX(3, 1),&
+      &fds
+      real buffer(748)
+      character names(3) * 14, coding * 1
+      character ERRSTR * 1024
+      character * 255 version
+      character(len=30) :: filename1
+      character(len=30) :: filename2
+      integer file_unit
 
-   error = getnfv(version)
-   write(file_unit,*) '-----------------------------------------------'
-   write(file_unit,'(a)') 'Version: '//trim(version(5:))
-   write(file_unit,*) '-----------------------------------------------'
+      ! delete previous output files if they exist
+      filename1 = 'test.out'
+      filename2 = 'test.scr'
+      call delete_file(filename1)
+      call delete_file('nefis_ex.def')
+      call delete_file('nefis_ex.dat')
 
-   coding=' '
-   error= Opndef( fds, 'nefis_ex.def', coding)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      open (newunit=file_unit, file=filename1)
+
+      error = getnfv(version)
+      write (file_unit, *) '-----------------------------------------------'
+      write (file_unit, '(a)') 'Version: '//trim(version(5:))
+      write (file_unit, *) '-----------------------------------------------'
+
+      coding = ' '
+      error = Opndef(fds, 'nefis_ex.def', coding)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   error= Opndat( fds, 'nefis_ex.dat', coding)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      error = Opndat(fds, 'nefis_ex.dat', coding)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   error= Defelm( fds, 'ELEM_R_4_DIM_1', 'REAL', 4,&
-   &'GROOTHEID 2', 'eenheid 2','Beschrijving 2',&
-   &1, 3)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      error = Defelm(fds, 'ELEM_R_4_DIM_1', 'REAL', 4,&
+      &'GROOTHEID 2', 'eenheid 2', 'Beschrijving 2',&
+      &1, 3)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   elmdms(1)= 5
-   elmdms(2)= 5
-   error= Defelm( fds, 'ELEM_R_4_DIM_2', 'REAL', 4,&
-   &'GROOTHEID 3', 'eenheid 3','Beschrijving 3',&
-   &2, elmdms)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      elmdms(1) = 5
+      elmdms(2) = 5
+      error = Defelm(fds, 'ELEM_R_4_DIM_2', 'REAL', 4,&
+      &'GROOTHEID 3', 'eenheid 3', 'Beschrijving 3',&
+      &2, elmdms)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   elmdms(1)= 2
-   elmdms(2)= 3
-   elmdms(3)= 4
-   elmdms(4)= 5
-   elmdms(5)= 6
-   error= Defelm( fds, 'ELEM_R_4_DIM_5', 'REAL', 4,&
-   &'GROOTHEID 4', 'eenheid 4','Beschrijving 4',&
-   &5, elmdms)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      elmdms(1) = 2
+      elmdms(2) = 3
+      elmdms(3) = 4
+      elmdms(4) = 5
+      elmdms(5) = 6
+      error = Defelm(fds, 'ELEM_R_4_DIM_5', 'REAL', 4,&
+      &'GROOTHEID 4', 'eenheid 4', 'Beschrijving 4',&
+      &5, elmdms)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   names(1)= 'ELEM_R_4_DIM_1'
-   names(2)= 'ELEM_R_4_DIM_2'
-   names(3)= 'ELEM_R_4_DIM_5'
-   error= Defcel( fds, 'CEL_TEST_2', 3, names)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      names(1) = 'ELEM_R_4_DIM_1'
+      names(2) = 'ELEM_R_4_DIM_2'
+      names(3) = 'ELEM_R_4_DIM_5'
+      error = Defcel(fds, 'CEL_TEST_2', 3, names)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   error= Defgrp( fds, 'GRP_TEST_2A', 'CEL_TEST_2', 0, idum, idum)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      error = Defgrp(fds, 'GRP_TEST_2A', 'CEL_TEST_2', 0, idum, idum)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   error= Defgrp( fds, 'GRP_TEST_2B', 'CEL_TEST_2', 1, 100, 1)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      error = Defgrp(fds, 'GRP_TEST_2B', 'CEL_TEST_2', 1, 100, 1)
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   error= Credat( fds, 'DATAGRP_TEST_2A', 'GRP_TEST_2A')
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      error = Credat(fds, 'DATAGRP_TEST_2A', 'GRP_TEST_2A')
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   error= Credat( fds, 'DATAGRP_TEST_2B', 'GRP_TEST_2B')
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+      error = Credat(fds, 'DATAGRP_TEST_2B', 'GRP_TEST_2B')
+      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   DO 10 i= 1, 748
-      buffer(i)= i
-10 CONTINUE
+      do 10 i = 1, 748
+         buffer(i) = i
+10       continue
 !
-   write(file_unit,'(''schrijf DATAGRP_TEST_2A'')')
-   UINDEX(start ,1) = 1
-   UINDEX(stop  ,1) = 1
-   UINDEX(incr  ,1) = 1
-   error = Putelt( fds, 'DATAGRP_TEST_2A', '*',&
-   &UINDEX, 1, buffer)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+         write (file_unit, '(''schrijf DATAGRP_TEST_2A'')')
+         UINDEX(start, 1) = 1
+         UINDEX(stop, 1) = 1
+         UINDEX(incr, 1) = 1
+         error = Putelt(fds, 'DATAGRP_TEST_2A', '*',&
+         &UINDEX, 1, buffer)
+         if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   write(file_unit,'(''schrijf DATAGRP_TEST_2B'')')
-   DO 30 i= 1, 100
-      UINDEX(start,1) = i
-      UINDEX(stop ,1) = i
-      UINDEX(incr ,1) = 1
-      DO 20 j= 1, 748
-         buffer(j)= REAL(i)* REAL(j)
-20    CONTINUE
-      error = Putelt( fds, 'DATAGRP_TEST_2B', '*',&
-      &UINDEX, 1, buffer)
-      IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
-30 CONTINUE
-   error = flsdat ( fds )
-   error = flsdef ( fds )
+         write (file_unit, '(''schrijf DATAGRP_TEST_2B'')')
+         do 30 i = 1, 100
+            UINDEX(start, 1) = i
+            UINDEX(stop, 1) = i
+            UINDEX(incr, 1) = 1
+            do 20 j = 1, 748
+               buffer(j) = real(i) * real(j)
+20             continue
+               error = Putelt(fds, 'DATAGRP_TEST_2B', '*',&
+               &UINDEX, 1, buffer)
+               if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+30             continue
+               error = flsdat(fds)
+               error = flsdef(fds)
 !
-   write(file_unit,'(''lees DATAGRP_TEST_2B'')')
-   DO 50 i= 100, 1, -1
-      UINDEX(start,1) = i
-      UINDEX(stop ,1) = i
-      error= Getelt( fds, 'DATAGRP_TEST_2B', '*',&
-      &UINDEX, 1, 748*4, buffer)
-      IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
-      DO 40 j= 1, 748
-         IF (INT( buffer(j)/ REAL(i)-j).NE.0)&
-         &write(file_unit,'(''error, i='',i3)') i
-40    CONTINUE
-50 CONTINUE
+               write (file_unit, '(''lees DATAGRP_TEST_2B'')')
+               do 50 i = 100, 1, -1
+                  UINDEX(start, 1) = i
+                  UINDEX(stop, 1) = i
+                  error = Getelt(fds, 'DATAGRP_TEST_2B', '*',&
+                  &UINDEX, 1, 748 * 4, buffer)
+                  if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+                  do 40 j = 1, 748
+                     if (int(buffer(j) / real(i) - j) /= 0)&
+                     &write (file_unit, '(''error, i='',i3)') i
+40                   continue
+50                   continue
 !
-   write(file_unit,'(''lees DATAGRP_TEST_2A'')')
-   UINDEX(start,1) = 1
-   UINDEX(stop ,1) = 1
-   error= Getelt( fds, 'DATAGRP_TEST_2A', '*',&
-   &UINDEX, 1, 748*4, buffer)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
-   DO 60 j= 1, 748
+                     write (file_unit, '(''lees DATAGRP_TEST_2A'')')
+                     UINDEX(start, 1) = 1
+                     UINDEX(stop, 1) = 1
+                     error = Getelt(fds, 'DATAGRP_TEST_2A', '*',&
+                     &UINDEX, 1, 748 * 4, buffer)
+                     if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+                     do 60 j = 1, 748
 !      PRINT *, buffer(j),j, INT(buffer(j)-j)
-      IF (INT( buffer(j)-j).NE. 0) PRINT *,'error, i= ', i
-60 CONTINUE
+                        if (int(buffer(j) - j) /= 0) print *, 'error, i= ', i
+60                      continue
 
-   write(file_unit,*)
-   error= Clsdat( fds)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+                        write (file_unit, *)
+                        error = Clsdat(fds)
+                        if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   error= Clsdef( fds)
-   IF (ERROR.NE.0) ERROR = NEFERR( 1, ERRSTR)
+                        error = Clsdef(fds)
+                        if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
 !
-   ERROR = NEFERR( 0, ERRSTR)
-   write(file_unit,'(a)') trim(trim_line_endings(errstr))
-   write(file_unit,*) '-----------------------------------------------'
-   
-   close(file_unit)
-   !
-   call compare_text_files(filename1, filename2, skiplines)   
-   
-   end subroutine test_05
-   !$f90tw)
-   
-end module m_nefis_test_05
+                        ERROR = NEFERR(0, ERRSTR)
+                        write (file_unit, '(a)') trim(trim_line_endings(errstr))
+                        write (file_unit, *) '-----------------------------------------------'
+
+                        close (file_unit)
+                        !
+                        call compare_text_files(filename1, filename2, skiplines)
+
+                        end subroutine test_05
+                        !$f90tw)
+
+                        end module m_nefis_test_05

@@ -32,109 +32,107 @@ module m_nefis_test_16
    use tests_nefis_helper
    implicit none
 
-   character(len=30), dimension(3) :: skiplines = [ "Version", "version", "-----" ]
-   
+   character(len=30), dimension(3) :: skiplines = ["Version", "version", "-----"]
+
 contains
 
    !$f90tw TESTCODE(TEST, nefis_tests, test_16, test_16,
    subroutine test_16() bind(C)
-   INTEGER*4 fds_a,&
-   &fds_b,&
-   &fds_c
-   INTEGER clsdat,&
-   &clsdef,&
-   &getnfv,&
-   &NEFERR
-   INTEGER i, error
-   CHARACTER ERRSTR*1024
-   CHARACTER*255  version
-   character(len=30) :: filename1
-   character(len=30) :: filename2
-   integer file_unit
-   
-   ! delete previous output files if they exist
-   filename1='test.out'
-   filename2='test.scr'
-   call delete_file(filename1) 
-   call delete_file('data_c16a.def')
-   call delete_file('data_c16a.dat')
-   call delete_file('data_c16b.def')
-   call delete_file('data_c16b.dat')
-   call delete_file('data_c16c.def')
-   call delete_file('data_c16c.dat')
-   
-   open(newunit=file_unit,file=filename1)
+      integer * 4 fds_a,&
+      &fds_b,&
+      &fds_c
+      integer clsdat,&
+      &clsdef,&
+      &getnfv,&
+      &NEFERR
+      integer i, error
+      character ERRSTR * 1024
+      character * 255 version
+      character(len=30) :: filename1
+      character(len=30) :: filename2
+      integer file_unit
 
-   error = getnfv(version)
-   write(file_unit,*) '-----------------------------------------------'
-   write(file_unit,'(a)') 'Version: '//trim(version(5:))
-   write(file_unit,*) '-----------------------------------------------'
+      ! delete previous output files if they exist
+      filename1 = 'test.out'
+      filename2 = 'test.scr'
+      call delete_file(filename1)
+      call delete_file('data_c16a.def')
+      call delete_file('data_c16a.dat')
+      call delete_file('data_c16b.def')
+      call delete_file('data_c16b.dat')
+      call delete_file('data_c16c.def')
+      call delete_file('data_c16c.dat')
 
-   write(file_unit,'('' Same test as test test_12'',&
-   &          '' but open en close files 10 times '')')
+      open (newunit=file_unit, file=filename1)
 
-   do i=1, 10
-      write(file_unit,'(i0)') i
-   
-      CALL WriteFile2( 'data_c16a', fds_a, 33, file_unit)
-      CALL WriteFile2( 'data_c16b', fds_b, 39, file_unit)
-      CALL WriteFile2( 'data_c16c', fds_c, 78, file_unit)
+      error = getnfv(version)
+      write (file_unit, *) '-----------------------------------------------'
+      write (file_unit, '(a)') 'Version: '//trim(version(5:))
+      write (file_unit, *) '-----------------------------------------------'
 
-      CALL ReadFile2( fds_a, 33, file_unit)
-      CALL ReadFile2( fds_b, 39, file_unit)
-      CALL ReadFile2( fds_c, 78, file_unit)
+      write (file_unit, '('' Same test as test test_12'',&
+      &          '' but open en close files 10 times '')')
 
+      do i = 1, 10
+         write (file_unit, '(i0)') i
 
-      error= Clsdat( fds_a )
-      if (error.ne.0) then
-         error = neferr( 0, errstr)
-         write(file_unit,'(a)') trim(errstr)
-      endif
+         call WriteFile2('data_c16a', fds_a, 33, file_unit)
+         call WriteFile2('data_c16b', fds_b, 39, file_unit)
+         call WriteFile2('data_c16c', fds_c, 78, file_unit)
 
-      error= Clsdat( fds_b )
-      if (error.ne.0) then
-         error = neferr( 0, errstr)
-         write(file_unit,'(a)') trim(errstr)
-      endif
+         call ReadFile2(fds_a, 33, file_unit)
+         call ReadFile2(fds_b, 39, file_unit)
+         call ReadFile2(fds_c, 78, file_unit)
 
-      error= Clsdat( fds_c )
-      if (error.ne.0) then
-         error = neferr( 0, errstr)
-         write(file_unit,'(a)') trim(errstr)
-      endif
+         error = Clsdat(fds_a)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
 
-      error= Clsdef( fds_a )
-      if (error.ne.0) then
-         error = neferr( 0, errstr)
-         write(file_unit,'(a)') trim(errstr)
-      endif
+         error = Clsdat(fds_b)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
 
-      error= Clsdef( fds_b )
-      if (error.ne.0) then
-         error = neferr( 0, errstr)
-         write(file_unit,'(a)') trim(errstr)
-      endif
+         error = Clsdat(fds_c)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
 
-      error= Clsdef( fds_c )
-      if (error.ne.0) then
-         error = neferr( 0, errstr)
-         write(file_unit,'(a)') trim(errstr)
-      endif
+         error = Clsdef(fds_a)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
 
+         error = Clsdef(fds_b)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
 
-   enddo
+         error = Clsdef(fds_c)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
 
-   if (error.eq.0) then
-      error =neferr( 0, errstr)
-      write(file_unit,'(a)')
-      write(file_unit,'(a)') trim(errstr)
-   endif
+      end do
 
-   close(file_unit)
-   !
-   call compare_text_files(filename1, filename2, skiplines)   
-   
+      if (error == 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)')
+         write (file_unit, '(a)') trim(errstr)
+      end if
+
+      close (file_unit)
+      !
+      call compare_text_files(filename1, filename2, skiplines)
+
    end subroutine test_16
    !$f90tw)
-   
+
 end module m_nefis_test_16

@@ -1,4 +1,4 @@
-   !----- LGPL --------------------------------------------------------------------
+!----- LGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2025.
 !
@@ -32,210 +32,210 @@ module m_nefis_test_07
    use tests_nefis_helper
    implicit none
 
-   character(len=30), dimension(3) :: skiplines = [ "Version", "version", "-----" ]
-   
+   character(len=30), dimension(3) :: skiplines = ["Version", "version", "-----"]
+
 contains
 
    !$f90tw TESTCODE(TEST, nefis_tests, test_07, test_07,
    subroutine test_07() bind(C)
-   INTEGER*4 fds
-   INTEGER clsdat,&
-   &clsdef,&
-   &getnfv,&
-   &getiat,&
-   &getrat
-   INTEGER getsat,&
-   &opndat,&
-   &opndef,&
-   &putiat,&
-   &putrat,&
-   &putsat,&
-   &neferr
-   INTEGER error, ival
-   CHARACTER attrib*16, attval*16, coding*1
-   REAL    rval
-   CHARACTER ERRSTR*1024
-   CHARACTER*255  version
-   character(len=30) :: filename1
-   character(len=30) :: filename2
-   integer file_unit
-   
-   ! delete previous output files if they exist
-   filename1='test.out'
-   filename2='test.scr'
-   call delete_file(filename1) 
-   
-   open(newunit=file_unit,file=filename1)
+      integer * 4 fds
+      integer clsdat,&
+      &clsdef,&
+      &getnfv,&
+      &getiat,&
+      &getrat
+      integer getsat,&
+      &opndat,&
+      &opndef,&
+      &putiat,&
+      &putrat,&
+      &putsat,&
+      &neferr
+      integer error, ival
+      character attrib * 16, attval * 16, coding * 1
+      real rval
+      character ERRSTR * 1024
+      character * 255 version
+      character(len=30) :: filename1
+      character(len=30) :: filename2
+      integer file_unit
 
-   error = getnfv(version)
-   write(file_unit,*) '-----------------------------------------------'
-   write(file_unit,'(a)') 'Version: '//trim(version(5:))
-   write(file_unit,*) '-----------------------------------------------'
+      ! delete previous output files if they exist
+      filename1 = 'test.out'
+      filename2 = 'test.scr'
+      call delete_file(filename1)
 
-   coding = ' '
-   error= Opndef( fds, 'nefis_ex.def', coding)
-   IF (error .NE. 0) goto 9999
+      open (newunit=file_unit, file=filename1)
 
-   error= Opndat( fds, 'nefis_ex.dat', coding)
-   IF (error .NE. 0) goto 9999
+      error = getnfv(version)
+      write (file_unit, *) '-----------------------------------------------'
+      write (file_unit, '(a)') 'Version: '//trim(version(5:))
+      write (file_unit, *) '-----------------------------------------------'
 
-   error= Putiat( fds, 'DATAGRP_TEST_3A',&
-   &'INTEGER ATTRIB 1', 101)
-   IF (error .NE. 0) goto 9999
+      coding = ' '
+      error = Opndef(fds, 'nefis_ex.def', coding)
+      if (error /= 0) goto 9999
 
-   error= Putiat( fds, 'DATAGRP_TEST_3A',&
-   &'INTEGER ATTRIB 2', 102)
-   IF (error .NE. 0) goto 9999
+      error = Opndat(fds, 'nefis_ex.dat', coding)
+      if (error /= 0) goto 9999
 
-   error= Putiat( fds, 'DATAGRP_TEST_3A',&
-   &'INTEGER ATTRIB 3', 103)
-   IF (error .NE. 0) goto 9999
+      error = Putiat(fds, 'DATAGRP_TEST_3A',&
+      &'INTEGER ATTRIB 1', 101)
+      if (error /= 0) goto 9999
 
-   error= Putiat( fds, 'DATAGRP_TEST_3A',&
-   &'INTEGER ATTRIB 4', 104)
-   IF (error .NE. 0) goto 9999
+      error = Putiat(fds, 'DATAGRP_TEST_3A',&
+      &'INTEGER ATTRIB 2', 102)
+      if (error /= 0) goto 9999
 
-   error= Putiat( fds, 'DATAGRP_TEST_3A',&
-   &'INTEGER ATTRIB 5', 105)
-   IF (error .NE. 0) goto 9999
+      error = Putiat(fds, 'DATAGRP_TEST_3A',&
+      &'INTEGER ATTRIB 3', 103)
+      if (error /= 0) goto 9999
 
-   error= Putrat( fds, 'DATAGRP_TEST_3B',&
-   &'REAL ATTRIBUUT 1', 201.)
-   IF (error .NE. 0) goto 9999
+      error = Putiat(fds, 'DATAGRP_TEST_3A',&
+      &'INTEGER ATTRIB 4', 104)
+      if (error /= 0) goto 9999
 
-   error= Putrat( fds, 'DATAGRP_TEST_3B',&
-   &'REAL ATTRIBUUT 2', 202.)
-   IF (error .NE. 0) goto 9999
+      error = Putiat(fds, 'DATAGRP_TEST_3A',&
+      &'INTEGER ATTRIB 5', 105)
+      if (error /= 0) goto 9999
 
-   error= Putrat( fds, 'DATAGRP_TEST_3B',&
-   &'REAL ATTRIBUUT 3', 203.)
-   IF (error .NE. 0) goto 9999
+      error = Putrat(fds, 'DATAGRP_TEST_3B',&
+      &'REAL ATTRIBUUT 1', 201.)
+      if (error /= 0) goto 9999
 
-   error= Putrat( fds, 'DATAGRP_TEST_3B',&
-   &'REAL ATTRIBUUT 4', 204.)
-   IF (error .NE. 0) goto 9999
+      error = Putrat(fds, 'DATAGRP_TEST_3B',&
+      &'REAL ATTRIBUUT 2', 202.)
+      if (error /= 0) goto 9999
 
-   error= Putrat( fds, 'DATAGRP_TEST_3B',&
-   &'REAL ATTRIBUUT 5', 205.)
-   IF (error .NE. 0) goto 9999
+      error = Putrat(fds, 'DATAGRP_TEST_3B',&
+      &'REAL ATTRIBUUT 3', 203.)
+      if (error /= 0) goto 9999
 
-   error= Putsat( fds, 'DATAGRP_TEST_3C',&
-   &'TEXT ATTRIBUUT 1', 'ATR1')
-   IF (error .NE. 0) goto 9999
+      error = Putrat(fds, 'DATAGRP_TEST_3B',&
+      &'REAL ATTRIBUUT 4', 204.)
+      if (error /= 0) goto 9999
 
-   error= Putsat( fds, 'DATAGRP_TEST_3C',&
-   &'TEXT ATTRIBUUT 2', 'ATR2')
-   IF (error .NE. 0) goto 9999
+      error = Putrat(fds, 'DATAGRP_TEST_3B',&
+      &'REAL ATTRIBUUT 5', 205.)
+      if (error /= 0) goto 9999
 
-   error= Putsat( fds, 'DATAGRP_TEST_3C',&
-   &'TEXT ATTRIBUUT 3', 'ATR3')
-   IF (error .NE. 0) goto 9999
+      error = Putsat(fds, 'DATAGRP_TEST_3C',&
+      &'TEXT ATTRIBUUT 1', 'ATR1')
+      if (error /= 0) goto 9999
 
-   error= Putsat( fds, 'DATAGRP_TEST_3C',&
-   &'TEXT ATTRIBUUT 4', 'ATR4')
-   IF (error .NE. 0) goto 9999
+      error = Putsat(fds, 'DATAGRP_TEST_3C',&
+      &'TEXT ATTRIBUUT 2', 'ATR2')
+      if (error /= 0) goto 9999
 
-   error= Putsat( fds, 'DATAGRP_TEST_3C',&
-   &'TEXT ATTRIBUUT 5', 'ATR5')
-   IF (error .NE. 0) goto 9999
+      error = Putsat(fds, 'DATAGRP_TEST_3C',&
+      &'TEXT ATTRIBUUT 3', 'ATR3')
+      if (error /= 0) goto 9999
 
-   error= Putsat( fds, 'DATAGRP_TEST_3A',&
-   &'TEXT ATTRIBUUT 1', 'DATAGRP_TEST_3C')
-   IF (error .NE. 0) goto 9999
+      error = Putsat(fds, 'DATAGRP_TEST_3C',&
+      &'TEXT ATTRIBUUT 4', 'ATR4')
+      if (error /= 0) goto 9999
+
+      error = Putsat(fds, 'DATAGRP_TEST_3C',&
+      &'TEXT ATTRIBUUT 5', 'ATR5')
+      if (error /= 0) goto 9999
+
+      error = Putsat(fds, 'DATAGRP_TEST_3A',&
+      &'TEXT ATTRIBUUT 1', 'DATAGRP_TEST_3C')
+      if (error /= 0) goto 9999
 !
 !     Get  text attributes
 !
-   error= Getsat( fds, 'DATAGRP_TEST_3A',&
-   &'TEXT ATTRIBUUT 1', attrib)
-   IF (attrib .NE. 'DATAGRP_TEST_3C')&
-   &write(file_unit,*) 'Attribute value (=DATA_GRP_TEST_3C): ', attrib
-   IF (error .NE. 0) goto 9999
+      error = Getsat(fds, 'DATAGRP_TEST_3A',&
+      &'TEXT ATTRIBUUT 1', attrib)
+      if (attrib /= 'DATAGRP_TEST_3C')&
+      &write (file_unit, *) 'Attribute value (=DATA_GRP_TEST_3C): ', attrib
+      if (error /= 0) goto 9999
 
-   error= Getsat( fds, attrib,&
-   &'TEXT ATTRIBUUT 3', attval)
-   IF (attval .NE. 'ATR3')&
-   &write(file_unit,*) 'Attribute value (=ATR3): ', attval
-   IF (error .NE. 0) goto 9999
+      error = Getsat(fds, attrib,&
+      &'TEXT ATTRIBUUT 3', attval)
+      if (attval /= 'ATR3')&
+      &write (file_unit, *) 'Attribute value (=ATR3): ', attval
+      if (error /= 0) goto 9999
 !
 !     Get  integer attributes
 !
-   error= Getiat( fds, 'DATAGRP_TEST_3A',&
-   &'INTEGER ATTRIB 1', ival)
-   IF (ival .NE. 101)&
-   &write(file_unit,*) 'Attribute value (=101): ', ival
-   IF (error .NE. 0) goto 9999
+      error = Getiat(fds, 'DATAGRP_TEST_3A',&
+      &'INTEGER ATTRIB 1', ival)
+      if (ival /= 101)&
+      &write (file_unit, *) 'Attribute value (=101): ', ival
+      if (error /= 0) goto 9999
 
-   error= Getiat( fds, 'DATAGRP_TEST_3A',&
-   &'INTEGER ATTRIB 2', ival)
-   IF (ival .NE. 102)&
-   &write(file_unit,*) 'Attribute value (=102): ', ival
-   IF (error .NE. 0) goto 9999
+      error = Getiat(fds, 'DATAGRP_TEST_3A',&
+      &'INTEGER ATTRIB 2', ival)
+      if (ival /= 102)&
+      &write (file_unit, *) 'Attribute value (=102): ', ival
+      if (error /= 0) goto 9999
 !
 !     Put integer attributes
 !
-   error= Putiat( fds, 'DATAGRP_TEST_3B',&
-   &'INTEGER ATTRIB 1', 1000)
-   IF (error .NE. 0) goto 9999
+      error = Putiat(fds, 'DATAGRP_TEST_3B',&
+      &'INTEGER ATTRIB 1', 1000)
+      if (error /= 0) goto 9999
 
-   error= Putiat( fds, 'DATAGRP_TEST_3C',&
-   &'INTEGER ATTRIB 1', 1001)
-   IF (error .NE. 0) goto 9999
+      error = Putiat(fds, 'DATAGRP_TEST_3C',&
+      &'INTEGER ATTRIB 1', 1001)
+      if (error /= 0) goto 9999
 !
 !     Get integer attributes
 !
-   error= Getiat( fds, 'DATAGRP_TEST_3B',&
-   &'INTEGER ATTRIB 1', ival)
-   IF (ival .NE. 1000)&
-   &write(file_unit,*) 'Attribute value (=1000): ', ival
-   IF (error .NE. 0) goto 9999
+      error = Getiat(fds, 'DATAGRP_TEST_3B',&
+      &'INTEGER ATTRIB 1', ival)
+      if (ival /= 1000)&
+      &write (file_unit, *) 'Attribute value (=1000): ', ival
+      if (error /= 0) goto 9999
 
-   error= Getiat( fds, 'DATAGRP_TEST_3C',&
-   &'INTEGER ATTRIB 1', ival)
-   IF (ival .NE. 1001)&
-   &write(file_unit,*) 'Attribute value (=1001): ', ival
-   IF (error .NE. 0) goto 9999
+      error = Getiat(fds, 'DATAGRP_TEST_3C',&
+      &'INTEGER ATTRIB 1', ival)
+      if (ival /= 1001)&
+      &write (file_unit, *) 'Attribute value (=1001): ', ival
+      if (error /= 0) goto 9999
 !
 !     Get  real attributes
 !
-   error= Getrat( fds, 'DATAGRP_TEST_3B',&
-   &'REAL ATTRIBUUT 1', rval)
-   IF (rval .NE. 201.)&
-   &write(file_unit,*) 'Attribute value (=201.): ', rval
-   IF (error .NE. 0) goto 9999
+      error = Getrat(fds, 'DATAGRP_TEST_3B',&
+      &'REAL ATTRIBUUT 1', rval)
+      if (rval /= 201.)&
+      &write (file_unit, *) 'Attribute value (=201.): ', rval
+      if (error /= 0) goto 9999
 
-   error= Getrat( fds, 'DATAGRP_TEST_3B',&
-   &'REAL ATTRIBUUT 2', rval)
-   IF (rval .NE. 202.)&
-   &write(file_unit,*) 'Attribute value (=202.): ', rval
-   IF (error .NE. 0) goto 9999
+      error = Getrat(fds, 'DATAGRP_TEST_3B',&
+      &'REAL ATTRIBUUT 2', rval)
+      if (rval /= 202.)&
+      &write (file_unit, *) 'Attribute value (=202.): ', rval
+      if (error /= 0) goto 9999
 
-   error= Getrat( fds, 'DATAGRP_TEST_3B',&
-   &'REAL ATTRIBUUT 5', rval)
-   IF (rval .NE. 205.)&
-   &write(file_unit,*) 'Attribute value (=205.): ', rval
-   IF (error .NE. 0) goto 9999
+      error = Getrat(fds, 'DATAGRP_TEST_3B',&
+      &'REAL ATTRIBUUT 5', rval)
+      if (rval /= 205.)&
+      &write (file_unit, *) 'Attribute value (=205.): ', rval
+      if (error /= 0) goto 9999
 
-   error= Clsdat( fds)
-   IF (error .NE. 0) goto 9999
+      error = Clsdat(fds)
+      if (error /= 0) goto 9999
 
-   error= Clsdef( fds)
-   IF (error .NE. 0) goto 9999
+      error = Clsdef(fds)
+      if (error /= 0) goto 9999
 
-   goto 8888
+      goto 8888
 
-9999 continue
-   write(file_unit,*) ' Error detected in program Test7'
-8888 continue
+9999  continue
+      write (file_unit, *) ' Error detected in program Test7'
+8888  continue
 
-   error = neferr( 0, errstr)
-   write(file_unit,*)
-   write(file_unit,'(a)') trim(errstr)
-   
-   close(file_unit)
-   !
-   call compare_text_files(filename1, filename2, skiplines)   
+      error = neferr(0, errstr)
+      write (file_unit, *)
+      write (file_unit, '(a)') trim(errstr)
+
+      close (file_unit)
+      !
+      call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_07
    !$f90tw)
-   
+
 end module m_nefis_test_07
