@@ -35,7 +35,7 @@ module m_slow_nefis_tests
    character(len=30), dimension(3) :: skiplines = ["Version", "version", "-----"]
 
 contains
-   
+
    !$f90tw TESTCODE(TEST, slow_nefis_tests, test_06, test_06,
    subroutine test_06() bind(C)
       character(len=30) :: filename1
@@ -76,13 +76,13 @@ contains
       filename2 = 'test06.scr'
       nefis_filename_def = 'nefis_ex6.def'
       nefis_filename_dat = 'nefis_ex6.dat'
-      
+
       call delete_file(filename1)
       call delete_file(nefis_filename_def)
       call delete_file(nefis_filename_dat)
       open (newunit=file_unit, file=filename1)
-      
-      error=reserr()
+
+      error = reserr()
       error = getnfv(version)
       write (file_unit, *) '-----------------------------------------------'
       write (file_unit, '(a)') 'Version: '//trim(version(5:))
@@ -1101,7 +1101,7 @@ contains
 
       open (newunit=file_unit, file=filename1)
 
-      error=reserr()
+      error = reserr()
       error = getnfv(version)
       write (file_unit, *) '-----------------------------------------------'
       write (file_unit, '(a)') 'Version: '//trim(version(5:))
@@ -1246,7 +1246,7 @@ contains
       write (file_unit, '(''Writing (real time) [sec]:'',1PE13.5)') elap_w
       write (file_unit, '(''Reading (real time) [sec]:'',1PE13.5)') elap_r
 
-9999 continue
+9999  continue
 
       error = Clsdat(fds)
       if (error /= 0) then
@@ -1271,7 +1271,7 @@ contains
       call compare_text_files(filename1, filename2, skiplines)
 
    end subroutine test_14
-      !$f90tw)
+   !$f90tw)
 
    !$f90tw TESTCODE(TEST, slow_nefis_tests, test_16, test_16,
    subroutine test_16() bind(C)
@@ -1303,7 +1303,7 @@ contains
 
       open (newunit=file_unit, file=filename1)
 
-      error=reserr()
+      error = reserr()
       error = getnfv(version)
       write (file_unit, *) '-----------------------------------------------'
       write (file_unit, '(a)') 'Version: '//trim(version(5:))
@@ -1373,5 +1373,5 @@ contains
 
    end subroutine test_16
    !$f90tw)
-   
+
 end module m_slow_nefis_tests

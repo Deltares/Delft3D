@@ -35,7 +35,7 @@ module m_nefis_tests
    character(len=30), dimension(3) :: skiplines = ["Version", "version", "-----"]
 
 contains
-   
+
    !$f90tw TESTCODE(TEST, nefis_tests, test_04, test_04,
    subroutine test_04() bind(C)
       integer * 4 fds
@@ -403,7 +403,7 @@ contains
 
    end subroutine test_05
    !$f90tw)
-   
+
    !$f90tw TESTCODE(TEST, nefis_tests, test_07, test_07,
    subroutine test_07() bind(C)
       integer * 4 fds
@@ -1107,7 +1107,7 @@ contains
       &clsdef,&
       &getnfv,&
       &NEFERR,&
-      &reserr    
+      &reserr
       integer error
       character ERRSTR * 1024
       character * 255 version
@@ -1556,6 +1556,5 @@ contains
 
    end subroutine test_15
    !$f90tw)
-   
-   
+
 end module m_nefis_tests
