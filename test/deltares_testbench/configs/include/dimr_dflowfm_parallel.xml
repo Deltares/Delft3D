@@ -290,7 +290,10 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f014_c102_baltic_bedlevtype1_on_netfile" ref="dimr_platform_specific">
+    
+    <!-- the results of the following test case are platform dependent because METIS results are platform dependent -->
+    <!-- this test case is included to guarantee that the METIS workflow works correctly -->
+    <testCase name="e02_f014_c102" ref="generic_platform_specific">
       <path version="2025-09-08T14:50:00">e02_dflowfm/f014_parallel/c102_baltic_bedlevtype1_on_netfile</path>
       <programs>
         <program ref="dflowfm" seq="1">
@@ -324,7 +327,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f014_c103_baltic_bedlevtype1_on_netfile_partpoly" ref="dimr">
+    
+    <testCase name="e02_f014_c103" ref="generic">
       <path version="2025-09-08T14:50:00">e02_dflowfm/f014_parallel/c103_baltic_bedlevtype1_on_netfile_partpoly</path>
       <programs>
         <program ref="dflowfm" seq="1">
@@ -359,6 +363,7 @@
         </file>
       </checks>
     </testCase>
+    
     <testCase name="e02_f014_c120" ref="dimr">
         <path version="2025-09-05T12:19:18.739000">e02_dflowfm/f014_parallel/c120_trachytopes_discharge_dependent</path>
         <programs>
