@@ -230,27 +230,48 @@ Stream::construct_TCPIP (
     Stream * stream
     ) {
 
-    if ((stream->local.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP)) == -1)
-        error((char *)"Cannot create local socket for unpaired stream");
+    // Try IPv6 dual-stack first
+    stream->local.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+    if (stream->local.sock != -1) {
+        int opt = 0;
+        setsockopt(stream->local.sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt));
 
-    int opt = 0;
-    setsockopt(stream->local.sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt));
+        stream->local.addr.sin6_family = AF_INET6;
+        stream->local.addr.sin6_addr = IN6ADDR_ANY_INIT;
 
-    stream->local.addr.sin6_family = AF_INET6;
-    stream->local.addr.sin6_addr = IN6ADDR_ANY_INIT;
-
-    // Find an available port
-
-    IPport port;
-    for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
-        stream->local.addr.sin6_port = htons (port);
-        if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr_in6)) ==  0) {
-            break;
+        // Find an available port (IPv6)
+        IPport port;
+        for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
+            stream->local.addr.sin6_port = htons (port);
+            if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr_in6)) == 0) {
+                break;
             }
         }
 
-    if (port >= LAST_PORT)
-        error((char *)"Cannot bind stream socket to any port in range [%d,%d]\n", FIRST_PORT, LAST_PORT - 1);
+        if (port >= LAST_PORT) {
+            error((char *)"Cannot bind IPv6 stream socket to any port in range [%d,%d]\n", FIRST_PORT, LAST_PORT - 1);
+        }
+    } else {
+        // Fallback to IPv4
+        stream->local.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (stream->local.sock == -1)
+            error((char *)"Cannot create local socket for unpaired stream");
+
+        stream->local.addr.sin_family = AF_INET;
+        stream->local.addr.sin_addr.s_addr = INADDR_ANY;
+
+        // Find an available port (IPv4)
+        IPport port;
+        for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
+            stream->local.addr.sin_port = htons (port);
+            if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr_in)) ==  0) {
+                break;
+            }
+        }
+
+        if (port >= LAST_PORT)
+            error((char *)"Cannot bind IPv4 stream socket to any port in range [%d,%d]\n", FIRST_PORT, LAST_PORT - 1);
+    }
 
     char buffer [MAXSTRING];
     sprintf (buffer, "%s:%d", hostname (), port);
