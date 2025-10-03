@@ -27,6 +27,9 @@
 !
 !-------------------------------------------------------------------------------
 
+!
+!
+
 !> get maximum timestep for water columns (see setdtorg)
 module m_get_dtmax
 
@@ -76,7 +79,7 @@ contains
       kk_dtmin = 0
 
       if (jalimitdtdiff == 1) then
-!        determine contribution of diffusion to time-step limitation, mostly copied from "comp_fluxhor3D"
+!     determine contribution of diffusion to time-step limitation, mostly copied from "comp_fluxhor3D"
          sumdifflim = 0.0_dp
          do LL = 1, Lnx
             if (jadiusp == 1) then
@@ -94,9 +97,9 @@ contains
 
                difcoeff = 0.0_dp
 
-!              compute maximum diffusion coefficient
+!           compute maximum diffusion coefficient
                do j = 1, NUMCONST
-!                 compute diffusion coefficient (copied from "comp_fluxhor3D")
+!              compute diffusion coefficient (copied from "comp_fluxhor3D")
                   difcoeff = max(difcoeff, sigdifi(j) * viu(L) + difsedu(j) + diuspL) ! without smagorinsky, viu is 0 ,
                   ! difsed only contains molecular value,
                   ! so then you only get user specified value
@@ -113,6 +116,8 @@ contains
          do k = 1, Ndxi
             dtmax(k) = dtmax_default
 
+!         if ( s1(k)-bl(k).gt.epshu ) then
+
             if (jalimitdtdiff == 0) then
                if (squ(k) > eps10) then
                   dtmax(k) = min(dtmax(k), cflmx * vol1(k) / squ(k))
@@ -120,8 +125,18 @@ contains
             else
                if (sqi(k) + sumdifflim(k) > eps10) then
                   dtmax(k) = min(dtmax(k), cflmx * vol1(k) / (sqi(k) + sumdifflim(k)))
+!                  dtmax = min(dtmax(k), cflmx*vol1(k)/(squ(k)+sumdifflim(k)))
                end if
             end if
+
+! BEGIN DEBUG
+!            do LL=1,nd(k)%lnx
+!               L = abs(nd(k)%ln(LL))
+!               if ( hu(L).gt.0d0 .and. u1(L).gt.0d0 ) then
+!                  dtmax(k) = min(dtmax(k),cflmx*Dx(L)/u1(L))
+!               end if
+!            end do
+! END DEBUG
 
             if (jampi == 1) then
 !              do not include ghost cells
@@ -132,6 +147,7 @@ contains
                dtmin_transp = dtmax(k)
                kk_dtmin = k
             end if
+!         end if
 
          end do
 
@@ -146,6 +162,7 @@ contains
                   if (stm_included .and. ISED1 > 0 .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
+                        !sqtot = max(sqi(k),maxval(mtd%ws(k,:))*bak)
                         sqtot = sqi(k) + maxval(mtd%ws(k, :)) * bak
                         if (squ(k) > eps10 .or. sqtot > eps10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / max(squ(k), sqtot))
@@ -162,26 +179,29 @@ contains
                   if (stm_included .and. ISED1 > 0 .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
+                        !sqtot = max(sqi(k)+sumdifflim(k),maxval(mtd%ws(k,:))*bak)
                         sqtot = sqi(k) + sumdifflim(k) + maxval(mtd%ws(k, :)) * bak
                         if (sqtot > eps10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / sqtot)
+                           ! dtmax(kk) = min(dtmax(kk),vol1(k)/(squ(k)+sumdifflim(k)))
                         end if
                      end do
                   else
                      do k = kb, kt
                         if (sqi(k) + sumdifflim(k) > eps10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / (sqi(k) + sumdifflim(k)))
+                           ! dtmax(kk) = min(dtmax(kk),vol1(k)/(squ(k)+sumdifflim(k)))
                         end if
                      end do
                   end if
                end if
                dtmax(kk) = cflmx * dtmax(kk)
-               
+
                if (jampi == 1) then
-!                 do not include ghost cells
+!              do not include ghost cells
                   if (idomain(kk) /= my_rank) cycle
                end if
-               
+
                if (dtmax(kk) < dtmin_transp) then
                   dtmin_transp = dtmax(kk)
                   kk_dtmin = kk
@@ -195,9 +215,9 @@ contains
       time_dtmax = time1
 
       if (jampi == 1) then
-!        update dtmax
+!     update dtmax
          call update_ghosts(ITYPE_Sall, 1, Ndx, dtmax, ierror)
-!        globally reduce maximum time-step
+!     globally reduce maximum time-step
          if (jatimer == 1) call starttimer(IMPIREDUCE)
          call reduce_double_min(dtmin_transp)
          if (jatimer == 1) call stoptimer(IMPIREDUCE)
