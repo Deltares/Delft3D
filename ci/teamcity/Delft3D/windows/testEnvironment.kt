@@ -40,7 +40,7 @@ object WindowsTestEnvironment : BuildType({
             scriptMode = script {
                 content = """                    
                     # Get the current working directory
-                    ${'$'}destinationDir = ci/dockerfiles/windows
+                    ${'$'}destinationDir = "ci\\dockerfiles\\windows"
                     
                     # Copy the files from the source to the destination
                     Copy-Item -Path "\\directory.intra\project\d-hydro\dsc-tools\toolchain2024\python-3.12.7-amd64.exe" -Destination ${'$'}destinationDir
