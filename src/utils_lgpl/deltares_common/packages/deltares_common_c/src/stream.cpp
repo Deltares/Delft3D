@@ -230,6 +230,8 @@ Stream::construct_TCPIP (
     Stream * stream
     ) {
 
+    IPport port;  // Declare outside branches
+
     // Try IPv6 dual-stack first
     stream->local.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP);
     if (stream->local.sock != -1) {
@@ -240,7 +242,6 @@ Stream::construct_TCPIP (
         ((struct sockaddr_in6*)&stream->local.addr)->sin6_addr = IN6ADDR_ANY_INIT;
 
         // Find an available port (IPv6)
-        IPport port;
         for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
             ((struct sockaddr_in6*)&stream->local.addr)->sin6_port = htons (port);
             if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr_in6)) == 0) {
@@ -261,7 +262,6 @@ Stream::construct_TCPIP (
         ((struct sockaddr_in*)&stream->local.addr)->sin_addr.s_addr = INADDR_ANY;
 
         // Find an available port (IPv4)
-        IPport port;
         for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
             ((struct sockaddr_in*)&stream->local.addr)->sin_port = htons (port);
             if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr_in)) ==  0) {
