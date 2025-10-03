@@ -37,14 +37,14 @@ object WindowsTestEnvironment : BuildType({
         powerShell {
             name = "Get tooling from network share"
             platform = PowerShellStep.Platform.x64
-            workingDir = "ci/dockerfiles/windows"
             scriptMode = script {
                 content = """                    
                     # Get the current working directory
-                    ${'$'}destinationDir = Get-Location
+                    ${'$'}destinationDir = ci/dockerfiles/windows
                     
                     # Copy the files from the source to the destination
                     Copy-Item -Path "\\directory.intra\project\d-hydro\dsc-tools\toolchain2024\python-3.12.7-amd64.exe" -Destination ${'$'}destinationDir
+                    Copy-Item -Path "test\\deltares_testbench\\pip\\win-requirements.txt" -Destination ${'$'}destinationDir
 
                     # List all the files in the destination directory
                     Get-ChildItem -Path ${'$'}destinationDir
