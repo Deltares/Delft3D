@@ -109,6 +109,7 @@ class Stream {
 
         StreamType  streamtype;
         bool        connected;
+        bool        is_ipv6;  // Flag to indicate if using IPv6 (dual-stack) or IPv4-only
 
         typedef struct {
             char *      handle;     // TCP/IP & MPI
@@ -150,4 +151,3 @@ class Stream {
     };
 
 #endif
-

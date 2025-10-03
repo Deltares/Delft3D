@@ -141,6 +141,7 @@ Stream::Stream (
 
     this->connected = false;
     this->streamtype = streamtype;
+    this->is_ipv6 = false;  // Will be set in construct_*
 
     switch (streamtype) {
 #if defined (WITH_MPI)
@@ -179,6 +180,8 @@ Stream::Stream (
     memset (&this->remote, 0, sizeof this->remote);
 
     this->streamtype = streamtype;
+    this->is_ipv6 = false;  // Will be set in connect_*
+
     switch (streamtype) {
 #if defined (WITH_MPI)
         case Stream::MPI:
@@ -235,17 +238,19 @@ Stream::construct_TCPIP (
 
     // Try IPv6 dual-stack first
     stream->local.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP);
-    if (stream->local.sock != -1) {
+    stream->is_ipv6 = (stream->local.sock != -1);
+    if (stream->is_ipv6) {
         int opt = 0;
         setsockopt(stream->local.sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt));
 
-        ((struct sockaddr_in6*)&stream->local.addr)->sin6_family = AF_INET6;
-        ((struct sockaddr_in6*)&stream->local.addr)->sin6_addr = IN6ADDR_ANY_INIT;
+        struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&stream->local.addr;
+        sin6->sin6_family = AF_INET6;
+        sin6->sin6_addr = IN6ADDR_ANY_INIT;
 
         // Find an available port (IPv6)
         for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
-            ((struct sockaddr_in6*)&stream->local.addr)->sin6_port = htons (port);
-            if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr_in6)) == 0) {
+            sin6->sin6_port = htons (port);
+            if (bind (stream->local.sock, (struct sockaddr *) sin6, sizeof (struct sockaddr_in6)) == 0) {
                 break;
             }
         }
@@ -259,13 +264,14 @@ Stream::construct_TCPIP (
         if (stream->local.sock == -1)
             error((char *)"Cannot create local socket for unpaired stream");
 
-        ((struct sockaddr_in*)&stream->local.addr)->sin_family = AF_INET;
-        ((struct sockaddr_in*)&stream->local.addr)->sin_addr.s_addr = INADDR_ANY;
+        struct sockaddr_in *sin = (struct sockaddr_in *)&stream->local.addr;
+        sin->sin_family = AF_INET;
+        sin->sin_addr.s_addr = INADDR_ANY;
 
         // Find an available port (IPv4)
         for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
-            ((struct sockaddr_in*)&stream->local.addr)->sin_port = htons (port);
-            if (bind (stream->local.sock, (struct sockaddr *) &stream->local.addr, sizeof (struct sockaddr_in)) ==  0) {
+            sin->sin_port = htons (port);
+            if (bind (stream->local.sock, (struct sockaddr *) sin, sizeof (struct sockaddr_in)) ==  0) {
                 break;
             }
         }
@@ -295,8 +301,8 @@ Stream::connect_TCPIP (
 
     // Parse the hostname:port string
 
-    char hostname [MAXSTRING];
-    char *hp = hostname;
+    char hostname_str [MAXSTRING];
+    char *hp = hostname_str;
     int port;
 
     while (*handle != '\0' && *handle != ':')
@@ -305,37 +311,58 @@ Stream::connect_TCPIP (
     *hp = '\0';
     port = atoi (handle+1);
 
-    // Try IPv6 first
+    char *ipstr = stream->lookup_host(hostname_str);
+
+    // Try IPv6 dual-stack first
     stream->remote.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP);
-    if (stream->remote.sock != -1) {
-        ((struct sockaddr_in6*)&stream->remote.addr)->sin6_family = AF_INET6;
-        inet_pton(AF_INET6, lookup_host(hostname), &((struct sockaddr_in6*)&stream->remote.addr)->sin6_addr);
-        ((struct sockaddr_in6*)&stream->remote.addr)->sin6_port = htons(port);
+    stream->is_ipv6 = (stream->remote.sock != -1);
+    if (stream->is_ipv6) {
+        struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&stream->remote.addr;
+        sin6->sin6_family = AF_INET6;
+        sin6->sin6_port = htons(port);
+
+        struct in6_addr in6;
+        if (inet_pton(AF_INET6, ipstr, &in6) != 1) {
+            // Assume IPv4 and map to IPv4-mapped IPv6
+            struct in_addr in4;
+            if (inet_pton(AF_INET, ipstr, &in4) != 1) {
+                error((char *)"Invalid IP address format for host '%s': %s", hostname_str, ipstr);
+            }
+            memset(&in6, 0, sizeof(in6));
+            in6.s6_addr[10] = 0xFF;
+            in6.s6_addr[11] = 0xFF;
+            memcpy(&in6.s6_addr[12], &in4, sizeof(in4));
+        }
+        sin6->sin6_addr = in6;
     } else {
         // Fallback to IPv4
         stream->remote.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (stream->remote.sock == -1)
             error((char *)"Cannot create remote socket for paired stream");
 
-        ((struct sockaddr_in*)&stream->remote.addr)->sin_family = AF_INET;
-        ((struct sockaddr_in*)&stream->remote.addr)->sin_addr.s_addr = inet_addr (lookup_host (hostname));
-        ((struct sockaddr_in*)&stream->remote.addr)->sin_port = htons (port);
+        struct sockaddr_in *sin = (struct sockaddr_in *)&stream->remote.addr;
+        sin->sin_family = AF_INET;
+        sin->sin_port = htons(port);
+        if (inet_pton(AF_INET, ipstr, &sin->sin_addr) != 1) {
+            error((char *)"Invalid IPv4 address format for host '%s': %s", hostname_str, ipstr);
+        }
     }
 
     char buffer [MAXSTRING];
-    sprintf (buffer, "%s:%d", hostname, port);
+    sprintf (buffer, "%s:%d", hostname_str, port);
     stream->remote.handle = new char [strlen (buffer) + 1];
     strcpy (stream->remote.handle, buffer);
 
-    // Connect to remote address.  Try stream a few times bacause the other side may
-    // not have done a receive yet.
+    // Connect to remote address.  Try a few times because the other side may
+    // not have done a listen yet.
 
     if (stream->tracefunction != NULL)
         trace((char *)"Attempting to connect to %s", stream->remote.handle);
 
     int attempt;
     for (attempt = 0 ; attempt < MAXTRIES ; attempt++) {
-        if (connect (stream->remote.sock, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr_in6)) == 0)
+        socklen_t addrlen = stream->is_ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+        if (connect (stream->remote.sock, (struct sockaddr *) &stream->remote.addr, addrlen) == 0)
             break;
         usleep (1000 * TRYSLEEP);
         }
@@ -346,13 +373,9 @@ Stream::connect_TCPIP (
                             strerror (errno)
                             );
 
-#if defined(WIN32)
-    int got = recvfrom (stream->remote.sock, (char *) buffer, MAXSTRING, 0, NULL, 0);
-#else
-    int got = recvfrom (stream->remote.sock, (void *) buffer, MAXSTRING, 0, NULL, 0);
-#endif
+    int got = recv (stream->remote.sock, buffer, MAXSTRING, 0);
     if (got == -1)
-        error((char *)"Recvfrom of local side from new peer fails (%s)", strerror (errno));
+        error((char *)"Recv of local side from new peer fails (%s)", strerror (errno));
 
     stream->local.handle = new char [strlen (buffer) + 1];
     strcpy (stream->local.handle, buffer);
@@ -477,13 +500,8 @@ Stream::Send (
             break;
 #endif
         case Stream::TCPIP:
-#if defined(WIN32)
-            if (sendto (this->remote.sock, (char *) buffer, length, 0, (struct sockaddr *) &this->local.addr, sizeof (struct sockaddr)) != length)
-                error((char *)"Sendto %s fails (%s)", this->remote.handle, strerror (errno));
-#else
-            if (sendto (this->remote.sock, (void *) buffer, length, 0, (struct sockaddr *) &this->local.addr, sizeof (struct sockaddr)) != length)
-                error((char *)"Sendto %s fails (%s)", this->remote.handle, strerror (errno));
-#endif
+            if (send (this->remote.sock, buffer, length, 0) != length)
+                error((char *)"Send to %s fails (%s)", this->remote.handle, strerror (errno));
             break;
 
         default:
@@ -535,23 +553,25 @@ Stream::first_receive_TCPIP (
     if (stream->tracefunction != NULL)
         trace((char *)"Waiting for connection on %s", stream->local.handle);
 
-    socklen_t addrlen = sizeof (struct sockaddr_in6);
+    socklen_t addrlen = stream->is_ipv6 ? sizeof (struct sockaddr_in6) : sizeof (struct sockaddr_in);
     if ((stream->remote.sock = accept (stream->local.sock, (struct sockaddr *) &stream->remote.addr, &addrlen)) == -1)
         error((char *)"Cannot accept connection on stream");
 
-    char addr_str[INET6_ADDRSTRLEN];
-    inet_ntop(AF_INET6, &stream->remote.addr.sin6_addr, addr_str, sizeof(addr_str));
-    IPport port = stream->remote.addr.sin6_port;
+    char addr_str [INET6_ADDRSTRLEN];
+    IPport port;
+    if (stream->is_ipv6) {
+        inet_ntop(AF_INET6, &((struct sockaddr_in6 *)&stream->remote.addr)->sin6_addr, addr_str, sizeof(addr_str));
+        port = ((struct sockaddr_in6 *)&stream->remote.addr)->sin6_port;
+    } else {
+        inet_ntop(AF_INET, &((struct sockaddr_in *)&stream->remote.addr)->sin_addr, addr_str, sizeof(addr_str));
+        port = ((struct sockaddr_in *)&stream->remote.addr)->sin_port;
+    }
+
     stream->remote.handle = new char [Stream::MAXHANDLE];
     sprintf (stream->remote.handle, "%s:%d", lookup_dotaddr (addr_str), ntohs (port));
 
-    #if defined(WIN32)
-    if (sendto (stream->remote.sock, (char *) stream->remote.handle, Stream::MAXHANDLE, 0, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr_in6)) != Stream::MAXHANDLE)
-        error((char *)"Sendto of local side to %s fails (%s)", stream->remote.handle, strerror (errno));
-    #else
-    if (sendto (stream->remote.sock, (void *) stream->remote.handle, Stream::MAXHANDLE, 0, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr_in6)) != Stream::MAXHANDLE)
-        error((char *)"Sendto of local side to %s fails (%s)", stream->remote.handle, strerror (errno));
-    #endif
+    if (send (stream->remote.sock, stream->remote.handle, Stream::MAXHANDLE, 0) != Stream::MAXHANDLE)
+        error((char *)"Send of remote side to %s fails (%s)", stream->remote.handle, strerror (errno));
 
     stream->connected = true;
 
@@ -573,16 +593,10 @@ Stream::receive_TCPIP (
     int need = length;
     while (need > 0) {
         int got;
-#if defined(WIN32)
-        if ((got = recvfrom (stream->remote.sock, (char *) buffer, need, 0, NULL, 0)) < 0) {
-            error((char *)"Recvfrom %s fails (%s; %d)", stream->remote.handle, strerror (errno), WSAGetLastError());
-                        return;} // Endless loop otherwise
-#else
-        if ((got = recvfrom (stream->remote.sock, (void *) buffer, need, 0, NULL, 0)) < 0)
-            error((char *)"Recvfrom %s fails (%s)", stream->remote.handle, strerror (errno));
-#endif
+        if ((got = recv (stream->remote.sock, buffer, need, 0)) < 0)
+            error((char *)"Recv from %s fails (%s)", stream->remote.handle, strerror (errno));
         if (got == 0)
-            error((char *)"Recvfrom %s returns 0 bytes. Is the peer process dead?", stream->remote.handle);
+            error((char *)"Recv from %s returns 0 bytes. Is the peer process dead?", stream->remote.handle);
 
         need -= got;
         buffer += got;
@@ -849,11 +863,7 @@ Stream::lookup_host (
     }
 
     struct sockaddr_in *ipv4 = (struct sockaddr_in *)result->ai_addr;
-    sprintf(ipaddr, "%d.%d.%d.%d",
-            (unsigned char)ipv4->sin_addr.s_addr & 0xFF,
-            (unsigned char)(ipv4->sin_addr.s_addr >> 8) & 0xFF,
-            (unsigned char)(ipv4->sin_addr.s_addr >> 16) & 0xFF,
-            (unsigned char)(ipv4->sin_addr.s_addr >> 24) & 0xFF);
+    inet_ntop(AF_INET, &ipv4->sin_addr, ipaddr, sizeof(ipaddr));
 
     freeaddrinfo(result);
     return ipaddr;
@@ -880,7 +890,10 @@ Stream::lookup_dotaddr (
         socklen_t addrlen = sizeof(struct sockaddr_in6);
         int name_status = getnameinfo((struct sockaddr*)&addr, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
         if (name_status != 0) {
-            error((char *)"Cannot get hostname of \"%s\": %s", ipdotaddr, gai_strerror(name_status));
+            // Fallback to IP string if reverse DNS fails
+            strncpy(hostname, ipdotaddr, MAXSTRING);
+            hostname[MAXSTRING - 1] = '\0';
+            return hostname;
         }
 
         // Truncate at first dot (unqualified hostname)
@@ -896,17 +909,16 @@ Stream::lookup_dotaddr (
         // Fallback to IPv4
         struct sockaddr_in addr4 = {0};
         addr4.sin_family = AF_INET;
-        addr4.sin_addr.s_addr = inet_addr(ipdotaddr);
-
-        if (addr4.sin_addr.s_addr == INADDR_NONE) {
-            error((char *)"Cannot parse dotted IP address \"%s\"", ipdotaddr);
-        }
+        inet_pton(AF_INET, ipdotaddr, &addr4.sin_addr);
 
         char host[MAXSTRING];
         socklen_t addrlen = sizeof(struct sockaddr_in);
         int name_status = getnameinfo((struct sockaddr*)&addr4, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
         if (name_status != 0) {
-            error((char *)"Cannot get hostname of \"%s\": %s", ipdotaddr, gai_strerror(name_status));
+            // Fallback to IP string if reverse DNS fails
+            strncpy(hostname, ipdotaddr, MAXSTRING);
+            hostname[MAXSTRING - 1] = '\0';
+            return hostname;
         }
 
         // Truncate at first dot (unqualified hostname)
@@ -969,4 +981,3 @@ Stream::error (
         exit (2);
         }
     }
-
