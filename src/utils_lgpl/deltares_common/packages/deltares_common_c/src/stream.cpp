@@ -238,6 +238,7 @@ Stream::construct_TCPIP (
 
     stream->local.addr.sin6_family = AF_INET6;
     stream->local.addr.sin6_addr = IN6ADDR_ANY_INIT;
+    IPport port = 0;  // Add before the for loop
     stream->local.addr.sin6_port = htons(port);
 
     // Find an available port
@@ -315,11 +316,11 @@ Stream::connect_TCPIP (
                             strerror (errno)
                             );
 
-#if defined(WIN32)
+    #if defined(WIN32)
     int got = recvfrom (stream->remote.sock, (char *) buffer, MAXSTRING, 0, NULL, 0);
-#else
+    #else
     int got = recvfrom (stream->remote.sock, (void *) buffer, MAXSTRING, 0, NULL, 0);
-#endif
+    #endif
     if (got == -1)
         error((char *)"Recvfrom of local side from new peer fails (%s)", strerror (errno));
 
@@ -514,13 +515,13 @@ Stream::first_receive_TCPIP (
     stream->remote.handle = new char [Stream::MAXHANDLE];
     sprintf (stream->remote.handle, "%s:%d", lookup_dotaddr (addr_str), ntohs (port));
 
-#if defined(WIN32)
+    #if defined(WIN32)
     if (sendto (stream->remote.sock, (char *) stream->remote.handle, Stream::MAXHANDLE, 0, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr_in6)) != Stream::MAXHANDLE)
         error((char *)"Sendto of local side to %s fails (%s)", stream->remote.handle, strerror (errno));
-#else
+    #else
     if (sendto (stream->remote.sock, (void *) stream->remote.handle, Stream::MAXHANDLE, 0, (struct sockaddr *) &stream->remote.addr, sizeof (struct sockaddr_in6)) != Stream::MAXHANDLE)
         error((char *)"Sendto of local side to %s fails (%s)", stream->remote.handle, strerror (errno));
-#endif
+    #endif
 
     stream->connected = true;
 
@@ -783,33 +784,32 @@ Stream::lookup_host (
     char *  hostname
     ) {
 
-    static char ipaddr[MAXSTRING];  // Not thread-safe, but OK as-is
+    // Map host name string to IPv6 address string (IPv6 dual-stack, cross-platform)
+
+    static char ipaddr[INET6_ADDRSTRLEN];  // Not thread-safe, but OK as-is
     struct addrinfo hints = {0};
     struct addrinfo *result = NULL;
 
-    hints.ai_family = AF_INET6;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
+    // Enforce IPv6 resolution
+    hints.ai_family = AF_INET6;      // Restrict to IPv6
+    hints.ai_socktype = SOCK_STREAM;  // Assuming stream (TCP); adjust if UDP
+    hints.ai_protocol = IPPROTO_TCP;  // Optional: specify TCP
 
     int status = getaddrinfo(hostname, NULL, &hints, &result);
     if (status != 0) {
-        error((char *)"Cannot get IPv4 address of host \"%s\": %s", hostname, gai_strerror(status));
+        error((char *)"Cannot get IPv6 address of host \"%s\": %s", hostname, gai_strerror(status));
         return NULL;  // Won't reach due to error(), but for completeness
     }
 
-    if (result == NULL || result->ai_addrlen != sizeof(struct sockaddr_in)) {
+    if (result == NULL || result->ai_addrlen != sizeof(struct sockaddr_in6)) {
         freeaddrinfo(result);
-        error((char *)"No valid IPv4 address found for \"%s\"", hostname);
+        error((char *)"No valid IPv6 address found for \"%s\"", hostname);
         return NULL;
     }
 
-    // Extract and format the IPv4 address as dotted quad
-    struct sockaddr_in *ipv4 = (struct sockaddr_in *)result->ai_addr;
-    sprintf(ipaddr, "%d.%d.%d.%d",
-            (unsigned char)ipv4->sin_addr.s_addr & 0xFF,
-            (unsigned char)(ipv4->sin_addr.s_addr >> 8) & 0xFF,
-            (unsigned char)(ipv4->sin_addr.s_addr >> 16) & 0xFF,
-            (unsigned char)(ipv4->sin_addr.s_addr >> 24) & 0xFF);
+    // Extract and format the IPv6 address
+    struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)result->ai_addr;
+    inet_ntop(AF_INET6, &ipv6->sin6_addr, ipaddr, sizeof(ipaddr));
 
     freeaddrinfo(result);
     return ipaddr;
@@ -853,10 +853,10 @@ Stream::lookup_dotaddr (
 
 char *
 Stream::dotipaddr (
-    struct in6_addr addr  // Changed from IPaddr
+    IPaddr addr  // Changed from IPaddr
     ) {
 
-    // Convert 32-bit packed ip address to dotted string
+    // Convert IPv6 address to string
 
     static char dotaddr [INET6_ADDRSTRLEN];   // not thread safe, but OK
     inet_ntop(AF_INET6, &addr, dotaddr, sizeof(dotaddr));
