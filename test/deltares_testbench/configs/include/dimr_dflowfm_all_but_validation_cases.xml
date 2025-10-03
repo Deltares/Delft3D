@@ -6219,7 +6219,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f032_c22_erosilt_chassagne_safar_nflocsizes_2" ref="dflowfm_default">
-      <path version="2025-07-18T17:38:08.230000">e02_dflowfm/f032_flocculation/c22_erosilt_chassagne_safar_nflocsizes_2</path>
+      <path version="2025-08-12T11:18:43.230000">e02_dflowfm/f032_flocculation/c22_erosilt_chassagne_safar_nflocsizes_2</path>
       <maxRunTime>15000.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tst_his.nc" type="netCDF">
@@ -6481,7 +6481,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f037_c46_shoal_ds_IBedCond0_us_IBedCond1_cn_suspended" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c46_shoal_ds_IBedCond0_us_IBedCond1_cn_suspended</path>
+      <path version="2025-08-01T08:39:30.261000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c46_shoal_ds_IBedCond0_us_IBedCond1_cn_suspended</path>
       <maxRunTime>200.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/c36_map.nc" type="netCDF">

@@ -56,11 +56,11 @@ contains
                         vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, &
                         potential_density, in_situ_density, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
       use Timers, only: timstrt, timstop
-      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr
+      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr, stmpar
       use m_netw, only: zk
       use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra
       use m_flowparameters, only: jadiagnostictransport
-      use m_transport, only: numconst, constituents, isalt, itemp
+      use m_transport, only: numconst, constituents, isalt, itemp, ised1
       use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -69,7 +69,7 @@ contains
       integer :: L, k, k1, k2, kb, n
 
       real(kind=dp) :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
-      integer :: j, ki, jastep, cell_index_2d, cell_index_3d, kk
+      integer :: j, jj, ki, jastep, cell_index_2d, cell_index_3d, kk
       integer :: LL, Lb, Lt, kt, km
 
       real(kind=dp) :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
@@ -188,7 +188,7 @@ contains
          sam0tot = sam1tot
          sam1tot = 0.0_dp
 
-         !$OMP PARALLEL DO &
+         !$OMP PARALLEL DO                &
          !$OMP PRIVATE(cell_index_3d,kb,kt,km) &
          !$OMP REDUCTION(+:sam1tot)
          do cell_index_2d = 1, ndxi
@@ -240,7 +240,7 @@ contains
       end if
 
       if (stm_included) then
-         !$OMP PARALLEL DO &
+         !$OMP PARALLEL DO             &
          !$OMP PRIVATE(cell_index_2d,kb,kt,cell_index_3d)
          do cell_index_2d = 1, ndx
             call getkbotktop(cell_index_2d, kb, kt)
@@ -272,7 +272,7 @@ contains
 
             jastep = 1 ! 1 = first hor. transport, then limiting
 
-            !$OMP PARALLEL DO &
+            !$OMP PARALLEL DO    &
             !$OMP PRIVATE(k,flx,seq,wse,hsk,dtvi,wsemx,j,qb,dgrlay,kb) &
             !$OMP REDUCTION(+:dvolbot)
             do k = 1, ndxi
@@ -327,7 +327,7 @@ contains
 
             sedi = 0.0_dp
 
-            !$OMP PARALLEL DO &
+            !$OMP PARALLEL DO    &
             !$OMP PRIVATE(kk,flx, seq, wse, hsk,n,k,dtvi,wsemx,j,qb,dgrlay,kb) &
             !$OMP REDUCTION(+:dvolbot)
 
@@ -371,7 +371,7 @@ contains
             end do
             !$OMP END PARALLEL DO
 
-            !$OMP PARALLEL DO &
+            !$OMP PARALLEL DO    &
             !$OMP PRIVATE(k,j,kb)
             do k = 1, ndxi
                kb = kbot(k)
@@ -400,9 +400,16 @@ contains
                   constituents(itemp, kb) = constituents(itemp, ki)
                end if
                if (jased > 0) then
-                  do j = 1, mxgr
-                     sed(j, kb) = sed(j, ki)
-                  end do
+                  if (.not. stm_included) then
+                     do j = 1, mxgr
+                        sed(j, kb) = sed(j, ki)
+                     end do
+                  else
+                     do j = 1, stmpar%lsedsus
+                        jj = ised1 + j - 1
+                        constituents(jj, kb) = constituents(jj, ki)
+                     end do
+                  end if
                end if
             end if
          end do

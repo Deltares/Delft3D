@@ -1,7 +1,7 @@
 subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
                   & logsedsig, nseddia, logseddia, nmmax, nmlb, &
                   & nmub, xx, nxx, max_mud_sedtyp, min_dxx_sedtyp, &
-                  & sedd50fld, dm, dg, dxx, dgsd)
+                  & spatial_d50, sedd50fld, dm, dg, dxx, dgsd)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -74,7 +74,8 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
     real(fp), dimension(lsedtot)                        , intent(in)  :: seddm          ! mean diameter of sediment fraction
     real(fp), dimension(lsedtot)                        , intent(in)  :: sedd50         ! D50 of sediment fraction
     real(fp), dimension(lsedtot)                        , intent(in)  :: logsedsig      ! std deviation of sediment diameter
-    real(fp), dimension(nmlb:nmub)                      , intent(in)  :: sedd50fld      ! D50 field (in case of 1 sediment fraction)
+    logical                                             , intent(in)  :: spatial_d50    ! Flag to indicate whether the model uses spatially varying D50
+    real(fp), dimension(nmlb:nmub)                      , intent(in)  :: sedd50fld      ! D50 field in case of spatial_d50
     real(fp), dimension(nxx)                            , intent(in)  :: xx             ! percentile: the xx of Dxx, i.e. 0.5 for D50
     real(fp), dimension(2,101,lsedtot)                  , intent(in)  :: logseddia      ! percentile and log-diameter per fraction
     real(fp), dimension(nmlb:nmub)                      , intent(out) :: dg             ! geometric mean diameter field
@@ -110,7 +111,7 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
 !
 !! executable statements -------------------------------------------------------
 !
-    if (lsedtot==1 .and. seddm(1)<0.0_fp .and. sedtyp(1) >= min_dxx_sedtyp) then
+    if (spatial_d50) then
        !
        ! Handle case with spatially varying sediment diameter
        ! separately using the same approximation of the lognormal

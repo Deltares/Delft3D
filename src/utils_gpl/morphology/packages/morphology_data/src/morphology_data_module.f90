@@ -618,7 +618,7 @@ type sedpar_type
     real(fp)      , dimension(:)    , pointer :: logsedsig             !  Standard deviation on log scale (log of geometric std.) [-]
     real(fp)      , dimension(:)    , pointer :: sedd10                !  10% Diameter sediment fraction [m]
     real(fp)      , dimension(:)    , pointer :: sedd50                !  50% Diameter sediment fraction [m]
-    real(fp)      , dimension(:)    , pointer :: sedd50fld  => null()  !  Spatially varying 50% sediment diameter [m]
+    real(fp)      , dimension(:)    , pointer :: sedd50fld  => null()  !  Spatially varying 50% sediment diameter [m] in case of spatial_d50
     real(fp)      , dimension(:)    , pointer :: seddm                 !  Arithmetic mean sediment diameter [m]
     real(fp)      , dimension(:)    , pointer :: sedd90                !  90% Diameter sediment fraction [m]
     !
@@ -652,8 +652,9 @@ type sedpar_type
     ! 
     ! logicals
     !
-    logical :: anymud     ! Flag to indicate whether a mud fraction is included in the simulation.
-    logical :: bsskin     ! Flag to indicate whether a bed stress should be computed according to Soulsby 2004
+    logical :: anymud      ! Flag to indicate whether a mud fraction is included in the simulation.
+    logical :: bsskin      ! Flag to indicate whether a bed stress should be computed according to Soulsby 2004
+    logical :: spatial_d50 ! Flag to indicate whether the model uses spatially varying D50
     !
     ! characters
     !
@@ -1260,8 +1261,9 @@ subroutine nullsedpar(sedpar)
     sedpar%max_mud_sedtyp = SEDTYP_SILT
     sedpar%min_dxx_sedtyp = SEDTYP_SAND
     !
-    sedpar%anymud    = .false.
-    sedpar%bsskin    = .false.
+    sedpar%anymud      = .false.
+    sedpar%bsskin      = .false.
+    sedpar%spatial_d50 = .false.
     !
     sedpar%flsdia   = ' '
     sedpar%flsmdc   = ' '

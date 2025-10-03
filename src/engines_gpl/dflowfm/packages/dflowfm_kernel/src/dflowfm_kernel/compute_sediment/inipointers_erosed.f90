@@ -44,7 +44,7 @@ contains
    ! ========================================================================================
    !
    subroutine inipointers_erosed()
-      use m_fm_erosed, only : stm_included, dzbdt, mtd, seddif, blchg, sed, ws, uau, lsed, stmpar, lsedtot, nmudfrac, max_mud_sedtyp, cmpupdfrac, rhosol, cdryb, logseddia, logsedsig, sedd10, sedd50, sedd90, sedd50fld, dstar, taucr, tetacr, mudcnt, pmcrit, nseddia, sedtyp, tratyp, anymud, sedtrcfac, bsskin, thcmud, tpsnumber, dss, min_dxx_sedtyp, flocmod, nflocpop, nflocsizes, floclist, tbreakup, tfloc, thresh, sus, suscorfac, bed, susw, sedthr, bedw, i10, i15, i50, i90, nxx, xx, multi, eqmbcsand, eqmbcmud, factcr, factsd, ihidexp, asklhe, mwwjhe, ffthresh, morfac, varyingmorfac, morft, hydrt, espir, epspar, camax, aksfac, rdc, iopkcw, oldmudfrac, sinkf, sourf, iflufflyr, depfac, mfluff, alfabs, alfabn, wetslope, avaltime, duneavalan, dryslope, hswitch, dzmaxdune, ashld, bshld, cshld, dshld, alfpa, thcrpa, islope, ti_sedtrans, tmor, tcmp, itmor, bedupd, neglectentrainment, dzmax, hmaxth, thetsd, eulerisoglm, l_suscor, bermslopetransport, bermslopebed, bermslopesus, bermslope, bermslopefac, bermslopegamma, bermslopedepth, iform, par, npar, max_integers, max_reals, max_strings, dll_function, dll_handle, dll_integers, dll_reals, dll_strings, dll_usrfil, aks, sedtra, bc_mor_array, dbodsd, dcwwlc, dm, dg, dgsd, dxx, e_dzdn, e_dzdt, epsclc, epswlc, fixfac, frac, kfsed, kmxsed, mudfrac, sandfrac, hidexp, rsdqlc, rsedeq, sbcx, sbcy, e_sbcn, e_sbct, e_sbn, e_sbt, e_ssn, e_sst, e_sbnc, e_sbtc, e_ssnc, e_scrn, e_scrt, sbwx, sbwy, sscx, sscy, e_sbwn, e_sbwt, sddflc, sswx, sswy, e_sswn, e_sswt, sxtot, sytot, sbxcum, sbycum, ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt
+      use m_fm_erosed, only : stm_included, dzbdt, mtd, seddif, blchg, ws, uau, lsed, stmpar, lsedtot, nmudfrac, max_mud_sedtyp, cmpupdfrac, rhosol, cdryb, logseddia, logsedsig, sedd10, sedd50, sedd90, sedd50fld, dstar, taucr, tetacr, mudcnt, pmcrit, nseddia, sedtyp, tratyp, anymud, sedtrcfac, bsskin, thcmud, tpsnumber, dss, min_dxx_sedtyp, flocmod, nflocpop, nflocsizes, floclist, tbreakup, tfloc, thresh, sus, suscorfac, bed, susw, sedthr, bedw, i10, i15, i50, i90, nxx, xx, multi, eqmbcsand, eqmbcmud, factcr, factsd, ihidexp, asklhe, mwwjhe, ffthresh, morfac, varyingmorfac, morft, hydrt, espir, epspar, camax, aksfac, rdc, iopkcw, oldmudfrac, sinkf, sourf, iflufflyr, depfac, mfluff, alfabs, alfabn, wetslope, avaltime, duneavalan, dryslope, hswitch, dzmaxdune, ashld, bshld, cshld, dshld, alfpa, thcrpa, islope, ti_sedtrans, tmor, tcmp, itmor, bedupd, neglectentrainment, dzmax, hmaxth, thetsd, eulerisoglm, l_suscor, bermslopetransport, bermslopebed, bermslopesus, bermslope, bermslopefac, bermslopegamma, bermslopedepth, iform, par, npar, max_integers, max_reals, max_strings, dll_function, dll_handle, dll_integers, dll_reals, dll_strings, dll_usrfil, aks, sedtra, bc_mor_array, dbodsd, dcwwlc, dm, dg, dgsd, dxx, e_dzdn, e_dzdt, epsclc, epswlc, fixfac, frac, kfsed, kmxsed, mudfrac, sandfrac, hidexp, rsdqlc, rsedeq, sbcx, sbcy, e_sbcn, e_sbct, e_sbn, e_sbt, e_ssn, e_sst, e_sbnc, e_sbtc, e_ssnc, e_scrn, e_scrt, sbwx, sbwy, sscx, sscy, e_sbwn, e_sbwt, sddflc, sswx, sswy, e_sswn, e_sswt, sxtot, sytot, sbxcum, sbycum, ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt, spatial_d50
 
       if (.not. stm_included) return
 
@@ -52,7 +52,6 @@ contains
       dzbdt => mtd%dzbdt
       seddif => mtd%seddif
       blchg => mtd%blchg
-      sed => mtd%sed
       ws => mtd%ws
       uau => mtd%uau
 
@@ -64,6 +63,7 @@ contains
       nmudfrac => stmpar%sedpar%nmudfrac
       max_mud_sedtyp => stmpar%sedpar%max_mud_sedtyp
       cmpupdfrac => stmpar%sedpar%cmpupdfrac
+      spatial_d50 => stmpar%sedpar%spatial_d50
       rhosol => stmpar%sedpar%rhosol
       cdryb => stmpar%sedpar%cdryb
       logseddia => stmpar%sedpar%logseddia
