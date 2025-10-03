@@ -27,7 +27,7 @@
 !
 !
 
-module m_nefis_test_06
+module m_slow_nefis_tests
    use assertions_gtest
    use tests_nefis_helper
    implicit none
@@ -35,11 +35,13 @@ module m_nefis_test_06
    character(len=30), dimension(3) :: skiplines = ["Version", "version", "-----"]
 
 contains
-
-   !$f90tw TESTCODE(TEST, nefis_tests, test_06, test_06,
+   
+   !$f90tw TESTCODE(TEST, slow_nefis_tests, test_06, test_06,
    subroutine test_06() bind(C)
       character(len=30) :: filename1
       character(len=30) :: filename2
+      character(len=30) :: nefis_filename_def
+      character(len=30) :: nefis_filename_dat
       integer file_unit
       integer START, stop, INCR
       parameter(START=1, stop=2, INCR=3)
@@ -52,7 +54,8 @@ contains
       &defgrp,&
       &getelt,&
       &getnfv,&
-      &neferr
+      &neferr,&
+      &reserr
       integer opndat,&
       &opndef,&
       &putelt
@@ -69,13 +72,17 @@ contains
       character * 255 version
 
       ! delete previous output files if they exist
-      filename1 = 'test.out'
-      filename2 = 'test.scr'
+      filename1 = 'test06.out'
+      filename2 = 'test06.scr'
+      nefis_filename_def = 'nefis_ex6.def'
+      nefis_filename_dat = 'nefis_ex6.dat'
+      
       call delete_file(filename1)
-      call delete_file('nefis_ex.def')
-      call delete_file('nefis_ex.dat')
+      call delete_file(nefis_filename_def)
+      call delete_file(nefis_filename_dat)
       open (newunit=file_unit, file=filename1)
-
+      
+      error=reserr()
       error = getnfv(version)
       write (file_unit, *) '-----------------------------------------------'
       write (file_unit, '(a)') 'Version: '//trim(version(5:))
@@ -83,26 +90,26 @@ contains
 
       call clock(cpu1)
       coding = ' '
-      error = Opndef(fds, 'nefis_ex.def', coding)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      error = Opndef(fds, nefis_filename_def, coding)
+      if (error /= 0) goto 9999
 
-      error = Opndat(fds, 'nefis_ex.dat', coding)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      error = Opndat(fds, nefis_filename_dat, coding)
+      if (error /= 0) goto 9999
 
       error = Defelm(fds, 'ELEM_R_4', 'REAL', 4,&
       &'GROOTHEID 1', 'eenheid 1', 'Beschrijving 1',&
       &0, 0)
-      if (error /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       error = Defelm(fds, 'ELEM_R_4_DIM_1', 'REAL', 4,&
       &'GROOTHEID 2', 'eenheid 2', 'Beschrijving 2',&
       &1, 3)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       names(1) = 'ELEM_R_4_DIM_1'
       names(2) = 'ELEM_R_4'
       error = Defcel(fds, 'CEL_TEST_3', 2, names)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       grpdms(1) = 4
       grpdms(2) = 5
@@ -117,7 +124,7 @@ contains
       grpord(5) = 5
       error = Defgrp(fds, 'GRP_TEST_3A', 'CEL_TEST_3', 5,&
       &grpdms, grpord)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       grpord(1) = 5
       grpord(2) = 4
@@ -126,7 +133,7 @@ contains
       grpord(5) = 1
       error = Defgrp(fds, 'GRP_TEST_3B', 'CEL_TEST_3', 5,&
       &grpdms, grpord)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       grpord(1) = 5
       grpord(2) = 3
@@ -135,7 +142,7 @@ contains
       grpord(5) = 4
       error = Defgrp(fds, 'GRP_TEST_3C', 'CEL_TEST_3', 5,&
       &grpdms, grpord)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       grpdms(1) = 0
 
@@ -147,19 +154,19 @@ contains
 
       error = Defgrp(fds, 'GRP_TEST_3D', 'CEL_TEST_3', 5,&
       &grpdms, grpord)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 !---------------------------------------------------------------------
       error = Credat(fds, 'DATAGRP_TEST_3A', 'GRP_TEST_3A')
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       error = Credat(fds, 'DATAGRP_TEST_3B', 'GRP_TEST_3B')
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       error = Credat(fds, 'DATAGRP_TEST_3C', 'GRP_TEST_3C')
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       error = Credat(fds, 'DATAGRP_TEST_3D', 'GRP_TEST_3D')
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 !---------------------------------------------------------------------
       call clock(cpu2)
       write (file_unit, '(''Initialisation NEFIS files [sec]'',1PE13.5)')&
@@ -201,7 +208,7 @@ contains
                      end do
                      error = Putelt(fds, 'DATAGRP_TEST_3A',&
                      &'*', UINDEX, usrord, buffer)
-                     if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+                     if (error /= 0) goto 9999
                   end do
                end do
             end do
@@ -236,7 +243,7 @@ contains
                      end do
                      error = Putelt(fds, 'DATAGRP_TEST_3B',&
                      &'*', UINDEX, usrord, buffer)
-                     if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+                     if (error /= 0) goto 9999
                   end do
                end do
             end do
@@ -271,7 +278,7 @@ contains
                      end do
                      error = Putelt(fds, 'DATAGRP_TEST_3C',&
                      &'*', UINDEX, usrord, buffer)
-                     if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+                     if (error /= 0) goto 9999
                   end do
                end do
             end do
@@ -306,7 +313,7 @@ contains
                      end do
                      error = Putelt(fds, 'DATAGRP_TEST_3D',&
                      &'*', UINDEX, usrord, buffer)
-                     if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+                     if (error /= 0) goto 9999
                   end do
                end do
             end do
@@ -343,7 +350,7 @@ contains
                      error = Getelt(fds, 'DATAGRP_TEST_3A',&
                      &'*', UINDEX, usrord, 4 * 4, buffer)
                      !call f90_assert_eq(to_c(error), to_c(0), 'error')
-                     if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+                     if (error /= 0) goto 9999
                      do n = 1, 4
                         if (int(buffer(n) / real(i) / real(j) / real(k) / real(l) /&
                         &real(m) - n) /= 0) print *, 'error, i= ', i
@@ -378,7 +385,7 @@ contains
                      UINDEX(stop, 5) = M
                      error = Getelt(fds, 'DATAGRP_TEST_3B',&
                      &'*', UINDEX, usrord, 4 * 4, buffer)
-                     if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+                     if (error /= 0) goto 9999
                      do n = 1, 4
                         if (int(buffer(n) / real(i) / real(j) / real(k) / real(l) /&
                         &real(m) - 2 * n) /= 0) print *, 'error, i= ', i
@@ -413,7 +420,7 @@ contains
                      UINDEX(stop, 5) = M
                      error = Getelt(fds, 'DATAGRP_TEST_3C',&
                      &'*', UINDEX, usrord, 4 * 4, buffer)
-                     if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+                     if (error /= 0) goto 9999
                      do n = 1, 4
                         if (int(buffer(n) / real(i) / real(j) / real(k) / real(l) /&
                         &real(m) - 3 * n) /= 0) print *, 'error, i= ', i
@@ -448,7 +455,7 @@ contains
                      UINDEX(stop, 5) = M
                      error = Getelt(fds, 'DATAGRP_TEST_3D',&
                      &'*', UINDEX, usrord, 4 * 4, buffer)
-                     if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+                     if (error /= 0) goto 9999
                      do n = 1, 4
                         if (int(buffer(n) / real(i) / real(j) / real(k) / real(l) /&
                         &real(m) - 2 * n) /= 0) print *, 'error, i= ', i
@@ -498,7 +505,7 @@ contains
       end do
       error = Putelt(fds, 'DATAGRP_TEST_3A',&
       &'ELEM_R_4', UINDEX, usrord, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       call clock(cpu2)
       elap_w = elap_w + cpu2 - cpu1
       write (file_unit, '(''DATAGRP_TEST_3A'',&
@@ -522,7 +529,7 @@ contains
       end do
       error = Putelt(fds, 'DATAGRP_TEST_3B',&
       &'ELEM_R_4', UINDEX, usrord, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       call clock(cpu2)
       elap_w = elap_w + cpu2 - cpu1
       write (file_unit, '(''DATAGRP_TEST_3B'',&
@@ -546,7 +553,7 @@ contains
       end do
       error = Putelt(fds, 'DATAGRP_TEST_3C',&
       &'ELEM_R_4', UINDEX, usrord, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       call clock(cpu2)
       elap_w = elap_w + cpu2 - cpu1
       write (file_unit, '(''DATAGRP_TEST_3C'',&
@@ -570,7 +577,7 @@ contains
       end do
       error = Putelt(fds, 'DATAGRP_TEST_3D',&
       &'ELEM_R_4', UINDEX, usrord, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       call clock(cpu2)
       elap_w = elap_w + cpu2 - cpu1
       write (file_unit, '(''DATAGRP_TEST_3D'',&
@@ -609,7 +616,7 @@ contains
       end do
       error = Putelt(fds, 'DATAGRP_TEST_3A',&
       &'ELEM_R_4_DIM_1', UINDEX, usrord, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       call clock(cpu2)
       elap_w = elap_w + cpu2 - cpu1
       write (file_unit, '(''DATAGRP_TEST_3A'',&
@@ -636,7 +643,7 @@ contains
       end do
       error = Putelt(fds, 'DATAGRP_TEST_3B',&
       &'ELEM_R_4_DIM_1', UINDEX, usrord, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       call clock(cpu2)
       elap_w = elap_w + cpu2 - cpu1
       write (file_unit, '(''DATAGRP_TEST_3B'',&
@@ -663,7 +670,7 @@ contains
       end do
       error = Putelt(fds, 'DATAGRP_TEST_3C',&
       &'ELEM_R_4_DIM_1', UINDEX, usrord, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       call clock(cpu2)
       elap_w = elap_w + cpu2 - cpu1
       write (file_unit, '(''DATAGRP_TEST_3C'',&
@@ -690,7 +697,7 @@ contains
       end do
       error = Putelt(fds, 'DATAGRP_TEST_3D',&
       &'ELEM_R_4_DIM_1', UINDEX, usrord, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       call clock(cpu2)
       elap_w = elap_w + cpu2 - cpu1
       write (file_unit, '(''DATAGRP_TEST_3D'',&
@@ -711,7 +718,7 @@ contains
       UINDEX(stop, 5) = 2
       error = Getelt(fds, 'DATAGRP_TEST_3A',&
       &'*', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       do i = 1, 3
          if (int(buffer(i) - (2 * 2 * 2 * 2 * 2 * i)) /= 0) print *, 'error, i= ', i
       end do
@@ -735,7 +742,7 @@ contains
       UINDEX(stop, 5) = 3
       error = Getelt(fds, 'DATAGRP_TEST_3B',&
       &'*', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       do i = 1, 3
          if (int(buffer(i) - (3 * 3 * 3 * 3 * 3 * 2 * i)) /= 0) print *, 'error, i= ', i
       end do
@@ -759,7 +766,7 @@ contains
       UINDEX(stop, 5) = 4
       error = Getelt(fds, 'DATAGRP_TEST_3C',&
       &'*', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       do i = 1, 3
          if (int(buffer(i) - (4 * 4 * 4 * 4 * 4 * 3 * i)) /= 0) print *, 'error, i= ', i
       end do
@@ -783,7 +790,7 @@ contains
       UINDEX(stop, 5) = 3
       error = Getelt(fds, 'DATAGRP_TEST_3D',&
       &'*', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       do i = 1, 3
          if (int(buffer(i) - (3 * 3 * 3 * 3 * 3 * 4 * i)) /= 0) then
             print *, 'error, i=', i, ' buffer=', nint(buffer(i))
@@ -818,7 +825,7 @@ contains
       call clock(cpu1)
       error = Getelt(fds, 'DATAGRP_TEST_3A',&
       &'ELEM_R_4', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       n = 0
       do i = 1, 7
          do j = 1, 5
@@ -843,7 +850,7 @@ contains
       call clock(cpu1)
       error = Getelt(fds, 'DATAGRP_TEST_3B',&
       &'ELEM_R_4', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       n = 0
       do i = 1, 7
          do j = 1, 5
@@ -868,7 +875,7 @@ contains
       call clock(cpu1)
       error = Getelt(fds, 'DATAGRP_TEST_3C',&
       &'ELEM_R_4', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       n = 0
       do i = 1, 7
          do j = 1, 5
@@ -893,7 +900,7 @@ contains
       call clock(cpu1)
       error = Getelt(fds, 'DATAGRP_TEST_3D',&
       &'ELEM_R_4', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       n = 0
       do i = 1, 7
          do j = 1, 5
@@ -919,7 +926,7 @@ contains
 !        call clock(cpu1)
       error = Getelt(fds, 'DATAGRP_TEST_3A',&
       &'ELEM_R_4_DIM_1', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       n = 0
       do i = 1, 7
          do j = 1, 5
@@ -946,7 +953,7 @@ contains
       call clock(cpu1)
       error = Getelt(fds, 'DATAGRP_TEST_3B',&
       &'ELEM_R_4_DIM_1', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       n = 0
       do i = 1, 7
          do j = 1, 5
@@ -973,7 +980,7 @@ contains
       call clock(cpu1)
       error = Getelt(fds, 'DATAGRP_TEST_3C',&
       &'ELEM_R_4_DIM_1', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       n = 0
       do i = 1, 7
          do j = 1, 5
@@ -1000,7 +1007,7 @@ contains
       call clock(cpu1)
       error = Getelt(fds, 'DATAGRP_TEST_3D',&
       &'ELEM_R_4_DIM_1', UINDEX, usrord, 26880 * 4, buffer)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
       n = 0
       do i = 1, 7
          do j = 1, 5
@@ -1021,12 +1028,12 @@ contains
       elap_r = elap_r + cpu2 - cpu1
       write (file_unit, '(''DATAGRP_TEST_3D'',&
       &          '' read in [sec]'',1PE13.5)') cpu2 - cpu1
-
+9999  continue
       error = Clsdat(fds)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       error = Clsdef(fds)
-      if (ERROR /= 0) ERROR = NEFERR(1, ERRSTR)
+      if (error /= 0) goto 9999
 
       ERROR = NEFERR(0, ERRSTR)
       write (file_unit, *)
@@ -1041,4 +1048,330 @@ contains
    end subroutine test_06
    !$f90tw)
 
-end module m_nefis_test_06
+   !$f90tw TESTCODE(TEST, slow_nefis_tests, test_14, test_14,
+   subroutine test_14() bind(C)
+
+      integer NTIMES, BUFSIZ
+!
+! size of nefis file: 4.800 Mbyte = 4xNTIMESxBUFSIZ: NTIMES=600, BUFSIZ=2000000
+! size of nefis file: 3.200 Mbyte = 4xNTIMESxBUFSIZ: NTIMES=400, BUFSIZ=2000000
+!
+!      PARAMETER (NTIMES=600, BUFSIZ=2000000)  ! 4.8 Gbyte
+      parameter(NTIMES=400, BUFSIZ=2000000) ! 3.2 Gbyte
+!      PARAMETER (NTIMES=400000, BUFSIZ=2000) ! 3.2 Gbyte
+!      PARAMETER (NTIMES=20, BUFSIZ=200)
+
+      integer START, stp, INCR
+      parameter(START=1, stp=2, INCR=3)
+      integer fds
+      integer clsdat,&
+      &clsdef,&
+      &credat,&
+      &defelm,&
+      &defcel,&
+      &defgrp,&
+      &getnfv,&
+      &getelt
+      integer crenef,&
+      &putelt,&
+      &clsnef,&
+      &neferr,&
+      &reserr
+      integer error, ierror,&
+      &i, j,&
+      &grpdms(1),&
+      &grpord(1),&
+      &usrord(1),&
+      &UINDEX(3, 5)
+      integer buffer(BUFSIZ)
+      character names * 14, coding * 1
+      character ERRSTR * 1024
+      character * 16 dat_name, def_name
+      real cpu1, cpu2
+      real elap_r, elap_w
+      character * 255 version
+      character(len=30) :: filename1
+      character(len=30) :: filename2
+      integer file_unit
+
+      ! delete previous output files if they exist
+      filename1 = 'test14.out'
+      filename2 = 'test14.scr'
+      call delete_file(filename1)
+
+      open (newunit=file_unit, file=filename1)
+
+      error=reserr()
+      error = getnfv(version)
+      write (file_unit, *) '-----------------------------------------------'
+      write (file_unit, '(a)') 'Version: '//trim(version(5:))
+      write (file_unit, *) '-----------------------------------------------'
+
+      elap_w = 0
+      elap_r = 0
+      call clock(cpu1)
+      if (0 == 0) then
+         coding = 'B'
+         dat_name = 'data_c14.dat'
+         def_name = 'data_c14.def'
+         error = crenef(fds, dat_name, def_name, coding, 'C')
+
+         if (error /= 0) then
+            ierror = neferr(0, errstr)
+            write (file_unit, *)
+            write (file_unit, '(a)') trim(errstr)
+            goto 9999
+         end if
+
+         error = Defelm(fds, 'ELEM_R_4_DIM_1', 'INTEGER', 4,&
+         &'GROOTHEID 2', 'eenheid 2', 'Beschrijving 2',&
+         &1, BUFSIZ)
+         if (error /= 0) then
+            ierror = neferr(0, errstr)
+            write (file_unit, *)
+            write (file_unit, '(a)') trim(errstr)
+            goto 9999
+         end if
+
+         names = 'ELEM_R_4_DIM_1'
+         error = Defcel(fds, 'CEL_TEST_3', 1, names)
+         if (error /= 0) then
+            ierror = neferr(0, errstr)
+            write (file_unit, *)
+            write (file_unit, '(a)') trim(errstr)
+            goto 9999
+         end if
+
+         grpdms(1) = 0
+         grpord(1) = 1
+         error = Defgrp(fds, 'GRP_TEST_3D', 'CEL_TEST_3', 1,&
+         &grpdms, grpord)
+         if (error /= 0) then
+            ierror = neferr(0, errstr)
+            write (file_unit, *)
+            write (file_unit, '(a)') trim(errstr)
+            goto 9999
+         end if
+!---------------------------------------------------------------------
+         error = Credat(fds, 'DATAGRP_TEST_3D', 'GRP_TEST_3D')
+         if (error /= 0) then
+            ierror = neferr(0, errstr)
+            write (file_unit, *)
+            write (file_unit, '(a)') trim(errstr)
+            goto 9999
+         end if
+!---------------------------------------------------------------------
+         call clock(cpu2)
+         write (file_unit, '(''Initialisation (real time) [sec]:'',1PE13.5)')&
+         &cpu2 - cpu1
+         write (file_unit, *)
+
+         usrord(1) = 1
+         UINDEX(incr, 1) = 1
+
+         write (file_unit,&
+         &'(I5,'' schrijfopdrachten van '',I9,'' bytes'')') NTIMES, BUFSIZ * 4
+         do j = 1, NTIMES
+            do i = 1, BUFSIZ
+               buffer(i) = 1000 * i + j
+            end do
+            if (ntimes > 1000) then
+               if (mod(j, 100) == 1)&
+               &write (file_unit, '(''opdracht '', i3, '' van '', i3)') j, ntimes
+            elseif (ntimes > 100) then
+               if (mod(j, 10) == 1)&
+               &write (file_unit, '(''opdracht '', i3, '' van '', i3)') j, ntimes
+            elseif (ntimes > 10) then
+               write (file_unit, '(''opdracht '', i3, '' van '', i3)') j, ntimes
+            end if
+            UINDEX(start, 1) = j
+            UINDEX(stp, 1) = j
+            call clock(cpu1)
+            if (j == 265) then
+               write (file_unit, *)
+            end if
+
+            error = Putelt(fds, 'DATAGRP_TEST_3D',&
+            &'ELEM_R_4_DIM_1', UINDEX, usrord, buffer)
+            call clock(cpu2)
+            elap_w = elap_w + cpu2 - cpu1
+            if (error /= 0) then
+               ierror = neferr(0, errstr)
+               write (file_unit, *)
+               write (file_unit, '(a)') trim(errstr)
+               goto 9999
+            end if
+         end do
+         write (file_unit, '(''Writing (real time) [sec]:'',1PE13.5)') elap_w
+         write (file_unit, *)
+         error = Clsnef(fds)
+      end if
+
+      coding = ' '
+      error = crenef(fds, dat_name, def_name, coding, 'R')
+      if (error /= 0) then
+         ierror = neferr(0, errstr)
+         write (file_unit, *)
+         write (file_unit, '(a)') trim(errstr)
+         goto 9999
+      end if
+      write (file_unit,&
+      &'(''Lees '', I5, '' keer '', I9, '' bytes'')') NTIMES, BUFSIZ * 4
+      do j = NTIMES - 9, NTIMES + 1
+!      DO 40 j=NTIMES, NTIMES+1
+         write (file_unit, '(''opdracht '', I3)') j
+         UINDEX(start, 1) = j
+         UINDEX(stp, 1) = j
+         UINDEX(incr, 1) = 1
+         usrord(1) = 1
+         call clock(cpu1)
+         error = Getelt(fds, 'DATAGRP_TEST_3D',&
+         &'ELEM_R_4_DIM_1', UINDEX, usrord, BUFSIZ * 4,&
+         &buffer)
+         call clock(cpu2)
+         elap_r = elap_r + cpu2 - cpu1
+         if (error /= 0) then
+            ierror = neferr(0, errstr)
+            write (file_unit, *)
+            write (file_unit, '(a)') trim(errstr)
+            goto 9999
+         else
+            do i = 1, BUFSIZ
+               if ((buffer(i) - (1000 * i + j)) /= 0) then
+                  print *, 'error, i= ', i, buffer(i), 1000 * i + j
+               end if
+            end do
+         end if
+      end do
+      write (file_unit, '(''Writing (real time) [sec]:'',1PE13.5)') elap_w
+      write (file_unit, '(''Reading (real time) [sec]:'',1PE13.5)') elap_r
+
+9999 continue
+
+      error = Clsdat(fds)
+      if (error /= 0) then
+         ierror = neferr(0, errstr)
+         write (file_unit, *)
+         write (file_unit, '(a)') trim(errstr)
+      end if
+
+      error = Clsdef(fds)
+      if (error /= 0) then
+         ierror = neferr(0, errstr)
+         write (file_unit, *)
+         write (file_unit, '(a)') trim(errstr)
+      end if
+
+      ierror = neferr(0, errstr)
+      write (file_unit, *)
+      write (file_unit, '(a)') trim(errstr)
+
+      close (file_unit)
+      !
+      call compare_text_files(filename1, filename2, skiplines)
+
+   end subroutine test_14
+      !$f90tw)
+
+   !$f90tw TESTCODE(TEST, slow_nefis_tests, test_16, test_16,
+   subroutine test_16() bind(C)
+      integer * 4 fds_a,&
+      &fds_b,&
+      &fds_c
+      integer clsdat,&
+      &clsdef,&
+      &getnfv,&
+      &NEFERR,&
+      &reserr
+      integer i, error
+      character ERRSTR * 1024
+      character * 255 version
+      character(len=30) :: filename1
+      character(len=30) :: filename2
+      integer file_unit
+
+      ! delete previous output files if they exist
+      filename1 = 'test16.out'
+      filename2 = 'test16.scr'
+      call delete_file(filename1)
+      call delete_file('data_c16a.def')
+      call delete_file('data_c16a.dat')
+      call delete_file('data_c16b.def')
+      call delete_file('data_c16b.dat')
+      call delete_file('data_c16c.def')
+      call delete_file('data_c16c.dat')
+
+      open (newunit=file_unit, file=filename1)
+
+      error=reserr()
+      error = getnfv(version)
+      write (file_unit, *) '-----------------------------------------------'
+      write (file_unit, '(a)') 'Version: '//trim(version(5:))
+      write (file_unit, *) '-----------------------------------------------'
+
+      write (file_unit, '('' Same test as test test_12'',&
+      &          '' but open en close files 10 times '')')
+
+      do i = 1, 10
+         write (file_unit, '(i0)') i
+
+         call WriteFile2('data_c16a', fds_a, 33, file_unit)
+         call WriteFile2('data_c16b', fds_b, 39, file_unit)
+         call WriteFile2('data_c16c', fds_c, 78, file_unit)
+
+         call ReadFile2(fds_a, 33, file_unit)
+         call ReadFile2(fds_b, 39, file_unit)
+         call ReadFile2(fds_c, 78, file_unit)
+
+         error = Clsdat(fds_a)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
+
+         error = Clsdat(fds_b)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
+
+         error = Clsdat(fds_c)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
+
+         error = Clsdef(fds_a)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
+
+         error = Clsdef(fds_b)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
+
+         error = Clsdef(fds_c)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
+
+      end do
+
+      if (error == 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)')
+         write (file_unit, '(a)') trim(errstr)
+      end if
+
+      close (file_unit)
+      !
+      call compare_text_files(filename1, filename2, skiplines)
+
+   end subroutine test_16
+   !$f90tw)
+   
+end module m_slow_nefis_tests
