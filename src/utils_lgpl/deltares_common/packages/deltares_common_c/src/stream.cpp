@@ -304,12 +304,22 @@ Stream::connect_TCPIP (
     *hp = '\0';
     port = atoi (handle+1);
 
-    if ((stream->remote.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP)) == -1)
-        error((char *)"Cannot create remote socket for paired stream");
+    // Try IPv6 first
+    stream->remote.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+    if (stream->remote.sock != -1) {
+        ((struct sockaddr_in6*)&stream->remote.addr)->sin6_family = AF_INET6;
+        inet_pton(AF_INET6, lookup_host(hostname), &((struct sockaddr_in6*)&stream->remote.addr)->sin6_addr);
+        ((struct sockaddr_in6*)&stream->remote.addr)->sin6_port = htons(port);
+    } else {
+        // Fallback to IPv4
+        stream->remote.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (stream->remote.sock == -1)
+            error((char *)"Cannot create remote socket for paired stream");
 
-    stream->remote.addr.sin6_family = AF_INET6;
-    inet_pton(AF_INET6, lookup_host(hostname), &stream->remote.addr.sin6_addr);
-    stream->remote.addr.sin6_port = htons(port);
+        ((struct sockaddr_in*)&stream->remote.addr)->sin_family = AF_INET;
+        ((struct sockaddr_in*)&stream->remote.addr)->sin_addr.s_addr = inet_addr (lookup_host (hostname));
+        ((struct sockaddr_in*)&stream->remote.addr)->sin_port = htons (port);
+    }
 
     char buffer [MAXSTRING];
     sprintf (buffer, "%s:%d", hostname, port);
@@ -335,11 +345,11 @@ Stream::connect_TCPIP (
                             strerror (errno)
                             );
 
-    #if defined(WIN32)
+#if defined(WIN32)
     int got = recvfrom (stream->remote.sock, (char *) buffer, MAXSTRING, 0, NULL, 0);
-    #else
+#else
     int got = recvfrom (stream->remote.sock, (void *) buffer, MAXSTRING, 0, NULL, 0);
-    #endif
+#endif
     if (got == -1)
         error((char *)"Recvfrom of local side from new peer fails (%s)", strerror (errno));
 
