@@ -2,10 +2,18 @@
 #include <string_view>
 #include <algorithm>
 #include <vector>
+#include <ranges>
 #include "precice/precice.hpp"
 
 int main(int argc, char** argv) {
     std::print("[greeter_dummy] Starting up.\n");
+
+    // Check if mesh name is provided as command line argument
+    if (argc < 2) {
+        std::print("[greeter_dummy] Error: Please provide mesh name as command line argument.\n");
+        std::print("[greeter_dummy] Usage: {} <mesh_name>\n", argv[0]);
+        return 1;
+    }
 
     constexpr int commRank = 0;
     constexpr int commSize = 1;
@@ -14,7 +22,7 @@ int main(int argc, char** argv) {
     precice::Participant participant{solverName, configFileName, commRank, commSize};
 
     const std::vector<double> boundingBox{-1.0, 1.0, -1.0, 1.0};
-    constexpr std::string_view meshName{"fm-mesh"};
+    const std::string_view meshName{argv[1]};
     participant.setMeshAccessRegion(meshName, boundingBox);
 
     participant.initialize();
@@ -32,9 +40,11 @@ int main(int argc, char** argv) {
 
     constexpr std::string_view greeting = "Hello there, I am greeter_dummy.";
 
-    std::vector<double> asciiCodes(meshVertexSize);
-    std::transform(greeting.begin(), greeting.begin() + std::min(asciiCodes.size(), greeting.size()), asciiCodes.begin(),
-                   [](char c) { return static_cast<double>(c); });
+    std::vector<double> asciiCodes(meshVertexSize, 0.0);
+
+    std::ranges::transform(greeting | std::views::take(meshVertexSize),
+                          asciiCodes.begin(),
+                          [](char c) { return static_cast<double>(c); });
 
     participant.writeData(meshName, dataName, vertexIds, asciiCodes);
     std::print("[greeter_dummy] I wrote the data.\n");
