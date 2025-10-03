@@ -284,201 +284,196 @@ contains
 
       write (file_unit,&
       &'(I5,'' schrijfopdrachten van '',I9,'' bytes'')') NTIMES, BUFSIZ * 8
-      do 20 j = 1, NTIMES
-         do 10 i = 1, BUFSIZ
+      do j = 1, NTIMES
+         do i = 1, BUFSIZ
             buffer(i) = dble(i) * dble(j) * dble(bias)
-10          continue
-            write (file_unit, '(''Opdracht '', I3)') j
-            UINDEX(1) = j
-            UINDEX(2) = j
-            error = Putelt(fds, 'DATAGRP_TEST_3D',&
-            &'ELEM_R_8_DIM_1', UINDEX, usrord, buffer)
-            if (error /= 0) then
-               error = neferr(0, errstr)
-               write (file_unit, *) trim(errstr)
+         end do
+         write (file_unit, '(''Opdracht '', I3)') j
+         UINDEX(1) = j
+         UINDEX(2) = j
+         error = Putelt(fds, 'DATAGRP_TEST_3D',&
+         &'ELEM_R_8_DIM_1', UINDEX, usrord, buffer)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, *) trim(errstr)
+         end if
+      end do
+   end subroutine WriteFile
+!
+!
+   subroutine ReadFile(fds, bias, file_unit)
+      implicit none
+      integer * 4 fds,&
+      &bias
+      integer, intent(in) :: file_unit
+
+      integer NTIMES, BUFSIZ
+      parameter(NTIMES=40, BUFSIZ=10000)
+
+      integer error,&
+      &i, j,&
+      &usrord,&
+      &UINDEX(3),&
+      &NEFERR,&
+      &Getelt
+      character ERRSTR * 1024
+      real * 8 buffer(BUFSIZ)
+
+      UINDEX(3) = 1
+      usrord = 1
+
+      write (file_unit,&
+      &'(''Lees '', I5, '' keer '',I9,'' bytes'')') NTIMES, BUFSIZ * 8
+      do j = 1, NTIMES
+         write (file_unit, '(''Opdracht '', I3)') j
+         UINDEX(1) = j
+         UINDEX(2) = j
+         error = Getelt(fds, 'DATAGRP_TEST_3D',&
+         &'ELEM_R_8_DIM_1', UINDEX, usrord, BUFSIZ * 8,&
+         &buffer)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, *) trim(errstr)
+            exit
+         end if
+         do i = 1, BUFSIZ
+            if (int(buffer(i) - dble(i) * dble(j) * dble(bias)) /= 0) then
+               write (file_unit, *) 'error, i= ', i
+               exit
             end if
-20          continue
+         end do
+      end do
+   end subroutine ReadFile
 
-         end
+   subroutine WriteFile2(fName, fds, bias, file_unit)
+      implicit none
+      character * (*) fName
+      integer * 4 fds,&
+      &bias
+      integer, intent(in) :: file_unit
 
-!
-!
-         subroutine ReadFile(fds, bias, file_unit)
-            implicit none
-            integer * 4 fds,&
-            &bias
-            integer, intent(in) :: file_unit
+      integer NTIMES, BUFSIZ
+      parameter(NTIMES=40, BUFSIZ=10000)
 
-            integer NTIMES, BUFSIZ
-            parameter(NTIMES=40, BUFSIZ=10000)
+      integer Credat,&
+      &Defelm,&
+      &Defcel,&
+      &Defgrp
+      integer Opndat,&
+      &Opndef,&
+      &Putelt,&
+      &NEFERR
+      integer error,&
+      &i, j,&
+      &grpdms,&
+      &grpord,&
+      &usrord,&
+      &UINDEX(3)
+      real * 8 buffer(BUFSIZ)
+      character names * 14, coding * 1
+      character ERRSTR * 1024
 
-            integer error,&
-            &i, j,&
-            &usrord,&
-            &UINDEX(3),&
-            &NEFERR,&
-            &Getelt
-            character ERRSTR * 1024
-            real * 8 buffer(BUFSIZ)
+      coding = 'B'
+      error = Opndef(fds, fName//'.def', coding)
+      if (error /= 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 
-            UINDEX(3) = 1
-            usrord = 1
+      error = Opndat(fds, fName//'.dat', coding)
+      if (error /= 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 
-            write (file_unit,&
-            &'(''Lees '', I5, '' keer '',I9,'' bytes'')') NTIMES, BUFSIZ * 8
-            do 40 j = 1, NTIMES
-               write (file_unit, '(''Opdracht '', I3)') j
-               UINDEX(1) = j
-               UINDEX(2) = j
-               error = Getelt(fds, 'DATAGRP_TEST_3D',&
-               &'ELEM_R_8_DIM_1', UINDEX, usrord, BUFSIZ * 8,&
-               &buffer)
-               if (error /= 0) then
-                  error = neferr(0, errstr)
-                  write (file_unit, *) trim(errstr)
-                  exit
-               end if
-               do 30 i = 1, BUFSIZ
-                  if (int(buffer(i) - dble(i) * dble(j) * dble(bias)) /= 0) then
-                     write (file_unit, *) 'error, i= ', i
-                     exit
-                  end if
-30                continue
-40                continue
+      error = Defelm(fds, 'ELEM_R_8_DIM_1', 'REAL8', 8,&
+      &'GROOTHEID 2', 'eenheid 2', 'Beschrijving 2',&
+      &1, BUFSIZ)
+      if (error /= 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 
-               end
+      names = 'ELEM_R_8_DIM_1'
+      error = Defcel(fds, 'CEL_TEST_3', 1, names)
+      if (error /= 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 
-               subroutine WriteFile2(fName, fds, bias, file_unit)
-                  implicit none
-                  character * (*) fName
-                  integer * 4 fds,&
-                  &bias
-                  integer, intent(in) :: file_unit
-
-                  integer NTIMES, BUFSIZ
-                  parameter(NTIMES=40, BUFSIZ=10000)
-
-                  integer Credat,&
-                  &Defelm,&
-                  &Defcel,&
-                  &Defgrp
-                  integer Opndat,&
-                  &Opndef,&
-                  &Putelt,&
-                  &NEFERR
-                  integer error,&
-                  &i, j,&
-                  &grpdms,&
-                  &grpord,&
-                  &usrord,&
-                  &UINDEX(3)
-                  real * 8 buffer(BUFSIZ)
-                  character names * 14, coding * 1
-                  character ERRSTR * 1024
-
-                  coding = 'B'
-                  error = Opndef(fds, fName//'.def', coding)
-                  if (error /= 0) then
-                     error = neferr(0, errstr)
-                     write (file_unit, '(a)') trim(errstr)
-                  end if
-
-                  error = Opndat(fds, fName//'.dat', coding)
-                  if (error /= 0) then
-                     error = neferr(0, errstr)
-                     write (file_unit, '(a)') trim(errstr)
-                  end if
-
-                  error = Defelm(fds, 'ELEM_R_8_DIM_1', 'REAL8', 8,&
-                  &'GROOTHEID 2', 'eenheid 2', 'Beschrijving 2',&
-                  &1, BUFSIZ)
-                  if (error /= 0) then
-                     error = neferr(0, errstr)
-                     write (file_unit, '(a)') trim(errstr)
-                  end if
-
-                  names = 'ELEM_R_8_DIM_1'
-                  error = Defcel(fds, 'CEL_TEST_3', 1, names)
-                  if (error /= 0) then
-                     error = neferr(0, errstr)
-                     write (file_unit, '(a)') trim(errstr)
-                  end if
-
-                  grpdms = 0
-                  grpord = 1
-                  error = Defgrp(fds, 'GRP_TEST_3D', 'CEL_TEST_3', 1,&
-                  &grpdms, grpord)
-                  if (error /= 0) then
-                     error = neferr(0, errstr)
-                     write (file_unit, '(a)') trim(errstr)
-                  end if
+      grpdms = 0
+      grpord = 1
+      error = Defgrp(fds, 'GRP_TEST_3D', 'CEL_TEST_3', 1,&
+      &grpdms, grpord)
+      if (error /= 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 !---------------------------------------------------------------------
-                  error = Credat(fds, 'DATAGRP_TEST_3D', 'GRP_TEST_3D')
-                  if (error /= 0) then
-                     error = neferr(0, errstr)
-                     write (file_unit, '(a)') trim(errstr)
-                  end if
+      error = Credat(fds, 'DATAGRP_TEST_3D', 'GRP_TEST_3D')
+      if (error /= 0) then
+         error = neferr(0, errstr)
+         write (file_unit, '(a)') trim(errstr)
+      end if
 !---------------------------------------------------------------------
 
-                  usrord = 1
+      usrord = 1
 
-                  UINDEX(3) = 1
+      UINDEX(3) = 1
 
-                  do 20 j = 1, NTIMES
-                     do 10 i = 1, BUFSIZ
-                        buffer(i) = dble(i) * dble(j) * dble(bias)
-10                      continue
-                        UINDEX(1) = j
-                        UINDEX(2) = j
-                        error = Putelt(fds, 'DATAGRP_TEST_3D',&
-                        &'ELEM_R_8_DIM_1', UINDEX, usrord, buffer)
-                        if (error /= 0) then
-                           error = neferr(0, errstr)
-                           write (file_unit, '(a)') trim(errstr)
-                        end if
-20                      continue
+      do j = 1, NTIMES
+         do i = 1, BUFSIZ
+            buffer(i) = dble(i) * dble(j) * dble(bias)
+         end do
+         UINDEX(1) = j
+         UINDEX(2) = j
+         error = Putelt(fds, 'DATAGRP_TEST_3D',&
+         &'ELEM_R_8_DIM_1', UINDEX, usrord, buffer)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
+      end do
 
-                     end
-
+   end subroutine WriteFile2
 !
 !
-                     subroutine ReadFile2(fds, bias, file_unit)
-                        implicit none
-                        integer * 4 fds,&
-                        &bias
-                        integer, intent(in) :: file_unit
+   subroutine ReadFile2(fds, bias, file_unit)
+      implicit none
+      integer * 4 fds,&
+      &bias
+      integer, intent(in) :: file_unit
 
-                        integer NTIMES, BUFSIZ
-                        parameter(NTIMES=40, BUFSIZ=10000)
+      integer NTIMES, BUFSIZ
+      parameter(NTIMES=40, BUFSIZ=10000)
 
-                        integer error,&
-                        &i, j,&
-                        &usrord,&
-                        &UINDEX(3),&
-                        &NEFERR,&
-                        &Getelt
-                        character ERRSTR * 1024
-                        real * 8 buffer(BUFSIZ)
+      integer error,&
+      &i, j,&
+      &usrord,&
+      &UINDEX(3),&
+      &NEFERR,&
+      &Getelt
+      character ERRSTR * 1024
+      real * 8 buffer(BUFSIZ)
 
-                        UINDEX(3) = 1
-                        usrord = 1
+      UINDEX(3) = 1
+      usrord = 1
 
-                        do 40 j = 1, NTIMES
-                           UINDEX(1) = j
-                           UINDEX(2) = j
-                           error = Getelt(fds, 'DATAGRP_TEST_3D',&
-                           &'ELEM_R_8_DIM_1', UINDEX, usrord, BUFSIZ * 8,&
-                           &buffer)
-                           if (error /= 0) then
-                              error = neferr(0, errstr)
-                              write (file_unit, '(a)') trim(errstr)
-                           end if
-                           do 30 i = 1, BUFSIZ
-                              if (int(buffer(i) - dble(i) * dble(j) * dble(bias)) /= 0)&
-                              &print *, 'error, i= ', i
-30                            continue
-40                            continue
+      do j = 1, NTIMES
+         UINDEX(1) = j
+         UINDEX(2) = j
+         error = Getelt(fds, 'DATAGRP_TEST_3D',&
+         &'ELEM_R_8_DIM_1', UINDEX, usrord, BUFSIZ * 8,&
+         &buffer)
+         if (error /= 0) then
+            error = neferr(0, errstr)
+            write (file_unit, '(a)') trim(errstr)
+         end if
+         do i = 1, BUFSIZ
+            if (int(buffer(i) - dble(i) * dble(j) * dble(bias)) /= 0)&
+            &print *, 'error, i= ', i
+         end do
+      end do
+   end subroutine ReadFile2
 
-                           end
-
-                           end module tests_nefis_helper
+end module tests_nefis_helper
