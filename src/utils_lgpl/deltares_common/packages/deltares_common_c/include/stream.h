@@ -139,7 +139,7 @@ class Stream {
         void    receive_MPI         (Stream *, char *, int);
 #endif
 
-        char *  dotipaddr           (IPaddr);
+        char *  dotipaddr           (struct in6_addr);
         char *  hostname            (void);
         char *  lookup_dotaddr      (char *);
         char *  lookup_host         (char *);
