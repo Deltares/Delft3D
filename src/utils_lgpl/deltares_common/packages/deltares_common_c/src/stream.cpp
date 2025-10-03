@@ -864,7 +864,7 @@ Stream::lookup_dotaddr (
     char *  ipdotaddr
     ) {
 
-    // Map dotted IP address to an unqualified host name (IPv6 dual-stack, cross-platform)
+    // Map IP address to an unqualified host name (IPv6 dual-stack, cross-platform)
 
     static char hostname[MAXSTRING];   // Not thread-safe, but OK
     struct sockaddr_in6 addr = {0};
@@ -872,7 +872,9 @@ Stream::lookup_dotaddr (
     int status = inet_pton(AF_INET6, ipdotaddr, &addr.sin6_addr);
 
     if (status == 1) {
-        // IPv6 success
+        if (IN6_IS_ADDR_UNSPECIFIED(&addr.sin6_addr)) {
+            return (char *)"localhost";  // Or appropriate hostname
+        }
         char host[MAXSTRING];
         socklen_t addrlen = sizeof(struct sockaddr_in6);
         int name_status = getnameinfo((struct sockaddr*)&addr, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
