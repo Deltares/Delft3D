@@ -606,6 +606,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
 !
 !! executable statements -------------------------------------------------------
 !
+    write(101,*) 'Start of TRISOL'
     iwrk1               => gdp%gdaddress%iwrk1
     iwrk2               => gdp%gdaddress%iwrk2
     wrka1               => gdp%gdaddress%wrka1
@@ -1167,6 +1168,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     ! f0isf1 moved to here for OpenDA (before dmpveg since it uses s0)
     !
     stage = 'stage1'
+    write(101,*) 'stage1'
     !
     call timer_start(timer_f0isf1, gdp)
     call f0isf1(stage     ,dischy    ,nst       ,zmodel    ,jstart    , &
@@ -1934,6 +1936,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           !
           if (lsed > 0) then
              call timer_start(timer_fallve, gdp)
+!             write(101,*) 'calling fallve'
              call d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, &
                        & r(r0), i(kfs), i(kfsmn0), i(kfsmx0), hdt, gdp)
              call fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
@@ -1944,6 +1947,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                        & r(umean)  ,r(vmean)  ,r(z0urou) ,r(z0vrou) ,i(kfu)    , &
                        & i(kfv)    ,zmodel    ,i(kfsmx0) ,i(kfsmn0) ,r(dzs0)   , &
                        & r(taubmx) ,lstsci    ,r(rich)   ,gdp       )        
+!             write(101,*) 'return'
              call timer_stop(timer_fallve, gdp)
           endif
           !
@@ -1971,6 +1975,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              ! Note uses work arrays wrkc1, wrka12..wrka15 locally
              !
              call timer_start(timer_erosed, gdp)
+!             write(101,*) 'calling erosed'
              call erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                     & nst       ,lsed      ,lsedtot   ,lsal      ,ltem      , &
                     & lsecfl    ,i(kfs)    ,i(kfu)    ,i(kfv)    ,r(sig)    , &
@@ -1986,6 +1991,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & r(hv)     ,r(ubot)   ,r(rtur0)  , &
                     & temeqs    ,r(gsqs)   ,r(guu)    ,r(gvv)    ,hdt       , &
                     & 1         ,r(deltau) ,r(deltav) ,gdp       )
+!             write(101,*) 'return'
              call timer_stop(timer_erosed, gdp)
           endif
           call timer_stop(timer_3dmor, gdp)
@@ -2202,6 +2208,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              vmor = v1
           endif
           call timer_start(timer_bott3d, gdp)
+!          write(101,*) 'calling bott3d'
           call bott3d(nmmax     ,kmax      ,lsed      , &
                     & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
                     & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
@@ -2214,6 +2221,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & r(guv)    ,r(gvu)    ,i(kcu)    , &
                     & i(kcv)    ,icx       ,icy       ,timhr     , &
                     & nto       ,r(volum0) ,r(volum1) ,hdt       , gdp       )
+!          write(101,*) 'return'
           call timer_stop(timer_bott3d, gdp)
           if (bedupd) then
                 !
@@ -2266,6 +2274,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! S0=S1, U0=U1, V0=V1, R0=R1 etc
        !
        stage = 'stage2'
+       write(101,*) 'stage2'
        !
        call timer_start(timer_f0isf1, gdp)
        call f0isf1(stage     ,dischy    ,nst       ,zmodel    ,jstart    , &
@@ -3007,6 +3016,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           !
           if (lsed > 0) then
              call timer_start(timer_fallve, gdp)
+!             write(101,*) 'calling fallve'
              call d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, &
                        & r(r0), i(kfs), i(kfsmn0), i(kfsmx0), hdt, gdp)
              call fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
@@ -3017,6 +3027,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                        & r(umean)  ,r(vmean)  ,r(z0urou) ,r(z0vrou) ,i(kfu)    , &
                        & i(kfv)    ,zmodel    ,i(kfsmx0) ,i(kfsmn0) ,r(dzs0)   , &
                        & r(taubmx) ,lstsci    ,r(rich)   ,gdp       )
+!             write(101,*) 'return'
              call timer_stop(timer_fallve, gdp)
           endif
           !
@@ -3044,6 +3055,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              ! Note uses work arrays wrkc1, wrka12..wrka15 locally
              !
              call timer_start(timer_erosed, gdp)
+!             write(101,*) 'calling erosed'
              call erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                        & nst       ,lsed      ,lsedtot   ,lsal      ,ltem      , &
                        & lsecfl    ,i(kfs)    ,i(kfu)    ,i(kfv)    ,r(sig)    , &
@@ -3059,6 +3071,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                        & r(hv)     ,r(ubot)   ,r(rtur0)  , &
                        & temeqs    ,r(gsqs)   ,r(guu)    ,r(gvv)    ,hdt       , &
                        & 2         ,r(deltau) ,r(deltav) ,gdp       )
+!             write(101,*) 'return'
              call timer_stop(timer_erosed, gdp)
           endif
           call timer_stop(timer_3dmor, gdp)
@@ -3276,6 +3289,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
              vmor = v1
           endif
           call timer_start(timer_bott3d, gdp)
+!          write(101,*) 'calling bott3d'
           call bott3d(nmmax     ,kmax      ,lsed      , &
                     & lsedtot   ,lsal      ,ltem      ,i(kfs)    ,i(kfu)    , &
                     & i(kfv)    ,r(r1)     ,r(s0)     ,i(kcs)    , &
@@ -3288,6 +3302,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & r(guv)    ,r(gvu)    ,i(kcu)    , &
                     & i(kcv)    ,icx       ,icy       ,timhr     , &
                     & nto       ,r(volum0) ,r(volum1) ,hdt       ,gdp       )
+!          write(101,*) 'return'
           call timer_stop(timer_bott3d, gdp)
        endif
        !
@@ -3402,4 +3417,5 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(vortic) ,r(enstro) ,r(wrkb1)  ,gdp       )
        call timer_stop(timer_cvort, gdp)
     endif
+    write(101,*) 'End of TRISOL'
 end subroutine trisol
