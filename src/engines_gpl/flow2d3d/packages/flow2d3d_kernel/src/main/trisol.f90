@@ -1168,7 +1168,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     ! f0isf1 moved to here for OpenDA (before dmpveg since it uses s0)
     !
     stage = 'stage1'
-    write(101,*) 'stage1'
+    !write(101,*) 'stage1'
     !
     call timer_start(timer_f0isf1, gdp)
     call f0isf1(stage     ,dischy    ,nst       ,zmodel    ,jstart    , &
@@ -2274,7 +2274,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        ! S0=S1, U0=U1, V0=V1, R0=R1 etc
        !
        stage = 'stage2'
-       write(101,*) 'stage2'
+       !write(101,*) 'stage2'
        !
        call timer_start(timer_f0isf1, gdp)
        call f0isf1(stage     ,dischy    ,nst       ,zmodel    ,jstart    , &
