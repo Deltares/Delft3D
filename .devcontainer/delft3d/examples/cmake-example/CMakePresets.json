@@ -42,12 +42,14 @@
         {
             "configurePreset": "fm-suite-debug",
             "name": "fm-suite-debug-test",
-            "displayName": "FM-suite Debug Test"
+            "displayName": "FM-suite Debug Test",
+            "configuration": "Debug"
         },
         {
             "configurePreset": "fm-suite-release",
             "name": "fm-suite-release-test",
-            "displayName": "FM-suite Release Test"
+            "displayName": "FM-suite Release Test",
+            "configuration": "Release"
         }
     ]
 }
