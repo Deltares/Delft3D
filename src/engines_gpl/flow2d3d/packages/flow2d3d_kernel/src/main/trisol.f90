@@ -3417,5 +3417,5 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(vortic) ,r(enstro) ,r(wrkb1)  ,gdp       )
        call timer_stop(timer_cvort, gdp)
     endif
-    write(101,*) 'End of TRISOL'
+    !write(101,*) 'End of TRISOL'
 end subroutine trisol
