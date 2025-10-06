@@ -1866,7 +1866,14 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
    }
 
    putsDebug "Flow Run command:$shellscriptname"
-   set returnval [runcmd $shellfilname "flow:$condition"]
+   
+   if { [catch {set returnval [runcmd $shellfilname "flow:$condition"]} errmsg] } {
+     putsDebug "\nERROR : Unable to start process flow:$condition:"
+     putsDebug   "          $errmsg"
+    } else {
+     putsDebug "Successfully started proces flow:$condition"
+    }
+   
    #after [expr 10000 + $waittime]
    set fileexists 0
    set waitcount 0
