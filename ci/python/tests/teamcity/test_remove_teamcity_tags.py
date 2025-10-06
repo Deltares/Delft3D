@@ -3,7 +3,7 @@ import pytest
 from httpx import Client, HTTPStatusError, Request, Response
 from pytest_mock import MockerFixture
 
-from ci_tools.teamcity_api.client import TeamcityClient
+from ci_tools.teamcity.client import TeamcityClient
 
 
 def test_client_create_client(mocker: MockerFixture) -> None:
