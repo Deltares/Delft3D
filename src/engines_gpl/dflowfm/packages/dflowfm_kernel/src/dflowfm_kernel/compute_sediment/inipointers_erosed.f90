@@ -63,7 +63,6 @@ contains
       nmudfrac => stmpar%sedpar%nmudfrac
       max_mud_sedtyp => stmpar%sedpar%max_mud_sedtyp
       cmpupdfrac => stmpar%sedpar%cmpupdfrac
-      spatial_d50 => stmpar%sedpar%spatial_d50
       rhosol => stmpar%sedpar%rhosol
       cdryb => stmpar%sedpar%cdryb
       logseddia => stmpar%sedpar%logseddia
