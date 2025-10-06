@@ -105,4 +105,21 @@
                 </file>
             </checks>
         </testCase>
-    </testCases>
+        <testCase name="e119_f001_c007_3D_ca_1sl_me_uic_profile_1" ref="dimr">
+            <path version="2025-10-06T13:53:49.856000">e119_dflowfm_dsle/f001/c007_3D_ca_1sl_me_uic_profile_1</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="3D_dhydro_zlayer_rst/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="3D_dhydro_zlayer_rst/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="salinity" toleranceAbsolute="0.0001" />
+                        <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
