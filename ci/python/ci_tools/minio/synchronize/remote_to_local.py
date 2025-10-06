@@ -219,6 +219,8 @@ class RemoteToLocal(Synchronizer):
             return
 
         if list_item.size == 0:
+            # If the object size is zero, the content is empty.
+            # `get_object` raises an error when called with zero offset and length
             content = bytes()
         else:
             part_size = self._plan.part_size
