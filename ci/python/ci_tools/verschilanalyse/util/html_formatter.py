@@ -283,14 +283,14 @@ class HtmlFormatter:
 
         result = cls.TEMPLATE.format(
             style=cls._indent(cls.STYLESHEET, 3),
+            his_tolerance_list=cls._indent(his_tolerance_list, 2),
+            map_tolerance_list=cls._indent(map_tolerance_list, 2),
             table=cls._indent(table, 2),
             current_commit_id=current_commit_id,
             reference_commit_id=reference_commit_id,
             current_prefix=f"{verschilanalyse.s3_current_prefix}/output",
             reference_prefix=f"{verschilanalyse.s3_reference_prefix}/output",
             model_list=cls._indent(model_list, 2),
-            his_tolerance_list=cls._indent(his_tolerance_list, 2),
-            map_tolerance_list=cls._indent(map_tolerance_list, 2),
             links_section=cls._indent(links_section, 2),
         )
 

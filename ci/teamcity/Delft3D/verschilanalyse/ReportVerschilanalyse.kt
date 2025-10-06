@@ -27,7 +27,7 @@ object ReportVerschilanalyse: BuildType({
         param("env.EMAIL_SERVER", "smtp.directory.intra")
         param("env.EMAIL_PORT", "25")
         param("env.EMAIL_FROM", "black-ops@deltares.nl")
-        param("env.EMAIL_TO", "dflowfm-verschilanalyse@deltares.nl")
+        param("env.EMAIL_TO", "bart.steur@deltares.nl")
     }
 
     vcs {
