@@ -209,7 +209,7 @@ contains
             call get_log_unit_number(lunrep)
             call blfile(lunrep)
 
-            blstep = process_space_real(ipoint(1)) / 2.0 ! AM: obvious bug to trigger test suite to fail - DELWAQ-1209
+            blstep = process_space_real(ipoint(1))
             deltat = process_space_real(ipoint(19))
             rdcnt = - blstep
             id = 0
