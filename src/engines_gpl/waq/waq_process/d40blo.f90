@@ -210,7 +210,7 @@ contains
             call get_log_unit_number(lunrep)
             call blfile(lunrep)
 
-            timmul = 10000000.0 !process_space_real(ipoint(1))
+            timmul = process_space_real(ipoint(1))
             deltat = process_space_real(ipoint(19))
             blstep = timmul * deltat
             rdcnt = - blstep
