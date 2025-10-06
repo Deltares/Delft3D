@@ -17,4 +17,20 @@
                 </file>
             </checks>
         </testCase>
-    </testCases>
+        <testCase name="e119_f001_c002_2D_ca_2sl_me_uic_cbc" ref="dimr">
+            <path version="2025-10-06T12:45:00.594000">e119_dflowfm_dsle/f001/c002_2D_ca_2sl_me_uic_cbc</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
