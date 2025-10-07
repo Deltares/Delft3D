@@ -14,8 +14,8 @@ from ci_tools.dimrset_delivery.dimr_context import (
     ServiceAuthenticateStore,
     ServiceName,
 )
-from ci_tools.dimrset_delivery.lib.atlassian import Atlassian
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
+from ci_tools.dimrset_delivery.lib.jira import Jira
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
@@ -28,15 +28,15 @@ class TestDimrAutomationContext:
         self,
         build_id: str = "12345",
         dry_run: bool = False,
-        atlassian_username: str = "",
-        atlassian_password: str = "",
+        jira_username: str = "",
+        jira_password: str = "",
         teamcity_username: str = "",
         teamcity_password: str = "",
         ssh_username: str = "",
         ssh_password: str = "",
         git_username: str = "",
         git_password: str = "",
-        require_atlassian: bool = True,
+        require_jira: bool = True,
         require_teamcity: bool = True,
         require_ssh: bool = True,
         require_git: bool = True,
@@ -51,10 +51,10 @@ class TestDimrAutomationContext:
         if credentials is None:
             credentials = ServiceAuthenticateStore()
             credentials.add(
-                ServiceName.ATLASSIAN,
+                ServiceName.JIRA,
                 CredentialEntry(
-                    required=require_atlassian,
-                    credential=Credentials(username=atlassian_username, password=atlassian_password),
+                    required=require_jira,
+                    credential=Credentials(username=jira_username, password=jira_password),
                 ),
             )
             credentials.add(
@@ -85,7 +85,7 @@ class TestDimrAutomationContext:
         """Test initialization when all credentials are provided."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.services",
-            Atlassian=Mock(spec=Atlassian),
+            Jira=Mock(spec=Jira),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
             GitClient=Mock(spec=GitClient),
@@ -93,8 +93,8 @@ class TestDimrAutomationContext:
             context = self._create_context(
                 build_id="12345",
                 dry_run=False,
-                atlassian_username="atlas_user",
-                atlassian_password="atlas_pass",
+                jira_username="jira_user",
+                jira_password="jira_token",
                 teamcity_username="tc_user",
                 teamcity_password="tc_pass",
                 ssh_username="ssh_user",
@@ -106,7 +106,7 @@ class TestDimrAutomationContext:
 
             assert context.build_id == "12345"
             assert context.dry_run is False
-            assert services.atlassian is not None
+            assert services.jira is not None
             assert services.teamcity is not None
             assert services.ssh is not None
             assert services.git is not None
@@ -115,7 +115,7 @@ class TestDimrAutomationContext:
         """Test initialization in dry run mode."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.services",
-            Atlassian=Mock(spec=Atlassian),
+            Jira=Mock(spec=Jira),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
             GitClient=Mock(spec=GitClient),
@@ -123,8 +123,8 @@ class TestDimrAutomationContext:
             context = self._create_context(
                 build_id="12345",
                 dry_run=True,
-                atlassian_username="atlas_user",
-                atlassian_password="atlas_pass",
+                jira_username="jira_user",
+                jira_password="jira_token",
                 teamcity_username="tc_user",
                 teamcity_password="tc_pass",
                 ssh_username="ssh_user",
@@ -141,14 +141,14 @@ class TestDimrAutomationContext:
             patch("ci_tools.dimrset_delivery.services.TeamCity") as teamcity_patch,
             patch.multiple(
                 "ci_tools.dimrset_delivery.services",
-                Atlassian=Mock(spec=Atlassian),
+                Jira=Mock(spec=Jira),
                 SshClient=Mock(spec=SshClient),
                 GitClient=Mock(spec=GitClient),
             ),
             patch.multiple(
                 "ci_tools.dimrset_delivery.dimr_context",
-                input=Mock(side_effect=["atlas_user", "tc_user", "ssh_user", "git_user"]),
-                getpass=Mock(side_effect=["atlas_pass", "tc_pass", "ssh_pass", "git_token"]),
+                input=Mock(side_effect=["jira_user", "tc_user", "ssh_user", "git_user"]),
+                getpass=Mock(side_effect=["jira_token", "tc_pass", "ssh_pass", "git_token"]),
             ),
         ):
             teamcity_mock = Mock(spec=TeamCity)
@@ -169,7 +169,7 @@ class TestDimrAutomationContext:
             services = Services(context)
 
             assert context.build_id == "12345"
-            assert services.atlassian is not None
+            assert services.jira is not None
             assert services.teamcity is not None
             assert services.ssh is not None
             assert services.git is not None
@@ -179,8 +179,8 @@ class TestDimrAutomationContext:
         with (
             patch.multiple(
                 "ci_tools.dimrset_delivery.services",
-                Atlassian=Mock(spec=Atlassian),
                 TeamCity=Mock(spec=TeamCity),
+                Jira=Mock(spec=Jira),
                 SshClient=Mock(spec=SshClient),
                 GitClient=Mock(spec=GitClient),
             ),
@@ -193,15 +193,15 @@ class TestDimrAutomationContext:
             context = self._create_context(
                 build_id="12345",
                 dry_run=False,
-                atlassian_username="atlas_user",
-                atlassian_password="atlas_pass",
+                jira_username="jira_user",
+                jira_password="jira_token",
                 git_username="git_user",
                 git_password="git_token",
             )
             services = Services(context)
 
             assert context.build_id == "12345"
-            assert services.atlassian is not None
+            assert services.jira is not None
             assert services.teamcity is not None
             assert services.ssh is not None
             assert services.git is not None
@@ -211,44 +211,24 @@ class TestDimrAutomationContext:
         context = self._create_context(
             build_id="12345",
             dry_run=False,
-            require_atlassian=False,
+            require_jira=False,
             require_teamcity=False,
             require_ssh=False,
             require_git=False,
         )
         services = Services(context)
         assert context.build_id == "12345"
-        assert services.atlassian is None
+        assert services.jira is None
         assert services.teamcity is None
         assert services.ssh is None
         assert services.git is None
-
-    def test_init_raises_error_for_missing_required_credentials(self) -> None:
-        """Test initialization raises error when required credentials are missing."""
-        # Mock input to return empty strings (simulating user not providing credentials)
-        with (
-            patch.multiple(
-                "ci_tools.dimrset_delivery.dimr_context",
-                input=Mock(return_value=""),
-                getpass=Mock(return_value=""),
-            ),
-            pytest.raises(ValueError, match="Atlassian credentials are required but not provided"),
-        ):
-            self._create_context(
-                build_id="12345",
-                dry_run=False,
-                require_atlassian=True,
-                require_teamcity=False,
-                require_ssh=False,
-                require_git=False,
-            )
 
     @patch("builtins.print")
     def test_log_dry_run_mode(self, mock_print: Mock) -> None:
         """Test log method in dry run mode."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.services",
-            Atlassian=Mock(spec=Atlassian),
+            Jira=Mock(spec=Jira),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
             GitClient=Mock(spec=GitClient),
@@ -256,8 +236,8 @@ class TestDimrAutomationContext:
             context = self._create_context(
                 build_id="12345",
                 dry_run=True,
-                atlassian_username="user",
-                atlassian_password="pass",
+                jira_username="user",
+                jira_password="token",
                 teamcity_username="user",
                 teamcity_password="pass",
                 ssh_username="user",
@@ -274,7 +254,7 @@ class TestDimrAutomationContext:
         """Test log method in normal mode."""
         with patch.multiple(
             "ci_tools.dimrset_delivery.services",
-            Atlassian=Mock(spec=Atlassian),
+            Jira=Mock(spec=Jira),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
             GitClient=Mock(spec=GitClient),
@@ -282,8 +262,8 @@ class TestDimrAutomationContext:
             context = self._create_context(
                 build_id="12345",
                 dry_run=False,
-                atlassian_username="user",
-                atlassian_password="pass",
+                jira_username="user",
+                jira_password="token",
                 teamcity_username="user",
                 teamcity_password="pass",
                 ssh_username="user",
@@ -308,7 +288,7 @@ class TestDimrAutomationContext:
 
         with (
             patch("ci_tools.dimrset_delivery.services.TeamCity", return_value=teamcity_mock),
-            patch("ci_tools.dimrset_delivery.services.Atlassian", Mock(spec=Atlassian)),
+            patch("ci_tools.dimrset_delivery.services.Jira", Mock(spec=Jira)),
             patch("ci_tools.dimrset_delivery.services.SshClient", Mock(spec=SshClient)),
             patch("ci_tools.dimrset_delivery.services.GitClient", Mock(spec=GitClient)),
             patch("builtins.print"),
@@ -316,8 +296,8 @@ class TestDimrAutomationContext:
             context = self._create_context(
                 build_id="12345",
                 dry_run=True,
-                atlassian_username="user",
-                atlassian_password="pass",
+                jira_username="user",
+                jira_password="token",
                 teamcity_username="user",
                 teamcity_password="pass",
                 ssh_username="user",
@@ -354,7 +334,7 @@ class TestDimrAutomationContext:
 
         with (
             patch("ci_tools.dimrset_delivery.services.TeamCity", return_value=teamcity_mock),
-            patch("ci_tools.dimrset_delivery.services.Atlassian", Mock(spec=Atlassian)),
+            patch("ci_tools.dimrset_delivery.services.Jira", Mock(spec=Jira)),
             patch("ci_tools.dimrset_delivery.services.SshClient", Mock(spec=SshClient)),
             patch("ci_tools.dimrset_delivery.services.GitClient", Mock(spec=GitClient)),
             patch("builtins.print"),
@@ -362,8 +342,8 @@ class TestDimrAutomationContext:
             context = self._create_context(
                 build_id="12345",
                 dry_run=False,
-                atlassian_username="user",
-                atlassian_password="pass",
+                jira_username="user",
+                jira_password="token",
                 teamcity_username="user",
                 teamcity_password="pass",
                 ssh_username="user",
@@ -389,8 +369,8 @@ class TestParseCommonArguments:
 
             assert args.build_id == "12345"
             assert args.dry_run is False
-            assert args.atlassian_username is None
-            assert args.atlassian_password is None
+            assert args.jira_username is None
+            assert args.jira_PAT is None
             assert args.teamcity_username is None
             assert args.teamcity_password is None
             assert args.ssh_username is None
@@ -404,10 +384,10 @@ class TestParseCommonArguments:
             "--build_id",
             "12345",
             "--dry-run",
-            "--atlassian-username",
-            "atlas_user",
-            "--atlassian-password",
-            "atlas_pass",
+            "--jira-username",
+            "jira_user",
+            "--jira-PAT",
+            "jira_token",
             "--teamcity-username",
             "tc_user",
             "--teamcity-password",
@@ -427,8 +407,8 @@ class TestParseCommonArguments:
 
             assert args.build_id == "12345"
             assert args.dry_run is True
-            assert args.atlassian_username == "atlas_user"
-            assert args.atlassian_password == "atlas_pass"
+            assert args.jira_username == "jira_user"
+            assert args.jira_PAT == "jira_token"
             assert args.teamcity_username == "tc_user"
             assert args.teamcity_password == "tc_pass"
             assert args.ssh_username == "ssh_user"
@@ -454,8 +434,8 @@ class TestCreateContextFromArgs:
         args = argparse.Namespace(
             build_id="12345",
             dry_run=False,
-            atlassian_username="atlas_user",
-            atlassian_password="atlas_pass",
+            jira_username="jira_user",
+            jira_PAT="jira_token",
             teamcity_username="tc_user",
             teamcity_password="tc_pass",
             ssh_username="ssh_user",
@@ -466,7 +446,7 @@ class TestCreateContextFromArgs:
         # Act
         with patch.multiple(
             "ci_tools.dimrset_delivery.services",
-            Atlassian=Mock(spec=Atlassian),
+            Jira=Mock(spec=Jira),
             TeamCity=Mock(spec=TeamCity),
             SshClient=Mock(spec=SshClient),
             GitClient=Mock(spec=GitClient),
@@ -477,7 +457,7 @@ class TestCreateContextFromArgs:
             # Assert
             assert context.build_id == "12345"
             assert context.dry_run is False
-            assert services.atlassian is not None
+            assert services.jira is not None
             assert services.teamcity is not None
             assert services.ssh is not None
             assert services.git is not None
@@ -487,8 +467,8 @@ class TestCreateContextFromArgs:
         args = argparse.Namespace(
             build_id="12345",
             dry_run=True,
-            atlassian_username=None,
-            atlassian_password=None,
+            jira_username=None,
+            jira_PAT=None,
             teamcity_username=None,
             teamcity_password=None,
             ssh_username=None,
@@ -499,7 +479,7 @@ class TestCreateContextFromArgs:
 
         context = create_context_from_args(
             args,
-            require_atlassian=False,
+            require_jira=False,
             require_git=False,
             require_teamcity=False,
             require_ssh=False,
@@ -508,7 +488,7 @@ class TestCreateContextFromArgs:
 
         assert context.build_id == "12345"
         assert context.dry_run is True
-        assert services.atlassian is None
+        assert services.jira is None
         assert services.teamcity is None
         assert services.ssh is None
         assert services.git is None
@@ -518,8 +498,8 @@ class TestCreateContextFromArgs:
         args = argparse.Namespace(
             build_id="12345",
             dry_run=False,
-            atlassian_username=None,
-            atlassian_password=None,
+            jira_username=None,
+            jira_PAT=None,
             teamcity_username=None,
             teamcity_password=None,
             ssh_username=None,
@@ -530,7 +510,7 @@ class TestCreateContextFromArgs:
         with pytest.raises(AttributeError):
             create_context_from_args(
                 args,
-                require_atlassian=False,
+                require_jira=False,
                 require_git=False,
                 require_teamcity=False,
                 require_ssh=False,

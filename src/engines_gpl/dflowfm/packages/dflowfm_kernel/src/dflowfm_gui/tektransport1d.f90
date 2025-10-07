@@ -49,15 +49,15 @@ contains
       real(kind=dp) :: cwave, period, omeg, wlen, rk, phi, xx, yy, dif
       integer :: k
 
-      cwave = 60d0 * sqrt(10d0 * 1d-4) ! chezy
-      period = 90d0 * 60d0
+      cwave = 60.0_dp * sqrt(10.0_dp * 1.0e-4_dp) ! chezy
+      period = 90.0_dp * 60.0_dp
       omeg = twopi / period ! s
       wlen = cwave * period
       rk = twopi / wlen
       do k = 1, 600
-         xx = -50d0 + (k - 1) * 100d0
+         xx = -50.0_dp + (k - 1) * 100.0_dp
          phi = rk * xx - omeg * tim
-         yy = 15d0 + 10d0 * cos(phi)
+         yy = 15.0_dp + 10.0_dp * cos(phi)
          if (k == 1) then
             call movabs(xx, yy)
          else
@@ -67,11 +67,11 @@ contains
 
       if (ndxi < 1) return
 
-      avedif = 0d0
+      avedif = 0.0_dp
       do k = 1, ndxi
          xx = xz(k)
          phi = rk * xx - omeg * tim
-         yy = 15d0 + 10d0 * cos(phi)
+         yy = 15.0_dp + 10.0_dp * cos(phi)
          dif = abs(constituents(isalt, k) - yy)
          avedif = avedif + dif
       end do

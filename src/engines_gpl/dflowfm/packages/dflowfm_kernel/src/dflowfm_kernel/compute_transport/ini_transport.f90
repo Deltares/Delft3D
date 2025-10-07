@@ -33,6 +33,8 @@
 !> initialize transport, set the enumerators
 module m_ini_transport
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -145,7 +147,7 @@ contains
 
       if (ISALT > 0) then
          if (javasal == 6) then
-            thetavert(ISALT) = 0d0 ! Ho explicit
+            thetavert(ISALT) = 0.0_dp ! Ho explicit
          else
             thetavert(ISALT) = tetav ! Central implicit
          end if
@@ -154,7 +156,7 @@ contains
 
       if (ITEMP > 0) then
          if (javatem == 6) then
-            thetavert(ITEMP) = 0d0 ! Ho explicit
+            thetavert(ITEMP) = 0.0_dp ! Ho explicit
          else
             thetavert(ITEMP) = tetav ! Central implicit  0.55d0
          end if
@@ -163,7 +165,7 @@ contains
 
       if (ISED1 > 0) then
          if (javased == 6) then
-            thetavert(ISED1:ISEDN) = 0d0
+            thetavert(ISED1:ISEDN) = 0.0_dp
          else
             thetavert(ISED1:ISEDN) = tetav
          end if
@@ -175,15 +177,13 @@ contains
             end do
          else
             !
-            maserrsed = 0d0 ! initialise mass error counter
+            maserrsed = 0.0_dp ! initialise mass error counter
             !
             ! Map fraction names from sed to constituents (moved from ini_transport)
             !
             do i = ISED1, ISEDN
                ised = i - ISED1 + 1
                const_names(i) = trim(stmpar%sedpar%NAMSED(sedtot2sedsus(ised))) ! JRE - netcdf output somehow does not tolerate spaces in varnames?
-               !call remove_all_spaces(const_names(i))                             ! see whether this fix works
-               !const_names(i) = trim(const_names(i))
             end do
             !
             !   Map sfnames to const_names
@@ -254,7 +254,7 @@ contains
       iconst_cur = min(NUMCONST, 1)
 
 !  local timestepping
-      time_dtmax = -1d0 ! cfl-numbers not evaluated
+      time_dtmax = -1.0_dp ! cfl-numbers not evaluated
       nsubsteps = 1
       ndeltasteps = 1
       jaupdatehorflux = 1

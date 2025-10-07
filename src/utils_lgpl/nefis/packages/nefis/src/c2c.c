@@ -129,6 +129,7 @@
 #define PUT_REAL_ATTRIBUTE      Putrat
 #define PUT_STRING_ATTRIBUTE    Putsat
 #define RESET_FILE_VERSION      Resnfv
+#define RESET_ERROR_COUNT       Reserr
 
 /*==========================================================================*/
 /* Start of C-functions                                                     */
@@ -2684,4 +2685,12 @@ DLLEXPORT BInt4 RESET_FILE_VERSION  ( BInt4 fd, BInt4 file_version)
   nefis_errno = OC_reset_file_version(fd, file_version);
 
   return nefis_errno;
+}
+
+DLLEXPORT BInt4 RESET_ERROR_COUNT()
+{
+    nefis_errno = 0;
+    nefis_errcnt = 0;
+
+    return nefis_errno;
 }

@@ -71,8 +71,8 @@ contains
 
       if (zupstream < zdownstream) return
 
-      pi = 4.0d0 * atan(1.0d0)
-      g = 9.81d0
+      pi = 4.0_dp * atan(1.0_dp)
+      g = 9.81_dp
       d = crestheight
       z1 = zupstream
       h1 = z1 + d
@@ -80,13 +80,13 @@ contains
 ! compute critical depth on crest by solving: z^3-3*h1^z+2*h1^2*zupstream=0
 ! equation is solved analytically method of Gardano
 
-      p = 3.0d0 * (h1**2)
-      q = 2.0d0 * (h1**2) * z1
+      p = 3.0_dp * (h1**2)
+      q = 2.0_dp * (h1**2) * z1
       cosfi = z1 / h1
       fi = acos(cosfi)
-      zc1 = -2.0d0 * h1 * cos(fi / 3.0d0)
-      zc2 = -2.0d0 * h1 * cos(fi / 3.0d0 + 2.0d0 * pi / 3.0d0)
-      zc3 = -2.0d0 * h1 * cos(-fi / 3.0d0 + 2.0d0 * pi / 3.0d0)
+      zc1 = -2.0_dp * h1 * cos(fi / 3.0_dp)
+      zc2 = -2.0_dp * h1 * cos(fi / 3.0_dp + 2.0_dp * pi / 3.0_dp)
+      zc3 = -2.0_dp * h1 * cos(-fi / 3.0_dp + 2.0_dp * pi / 3.0_dp)
 
       if (zc3 < 0) return
 ! write(5,'(3e14.5)') zc1,zc2,zc3
@@ -106,15 +106,15 @@ contains
 ! compute maximum down stream water level for perfect weir or minimum water level for submerged weir
 ! for this the equation F=q^2/h3+0.5*g*h3^2 is solved analytically with Gardano
 
-      ff = qd * u2 + 0.5d0 * g * h2 * h2
-      p = 2.0d0 * ff / g
-      q = 2.0d0 * qd**2 / g
-      cosfi = 0.5 * q / sqrt((p / 3.0d0)**3)
-      cosfi = max(-1d0, min(cosfi, 1d0))
+      ff = qd * u2 + 0.5_dp * g * h2 * h2
+      p = 2.0_dp * ff / g
+      q = 2.0_dp * qd**2 / g
+      cosfi = 0.5 * q / sqrt((p / 3.0_dp)**3)
+      cosfi = max(-1.0_dp, min(cosfi, 1.0_dp))
       fi = acos(cosfi)
-      zc1 = -2.0d0 * sqrt(p / 3.0d0) * cos(fi / 3.0d0)
-      zc2 = -2.0d0 * sqrt(p / 3.0d0) * cos(fi / 3.0d0 + 2.0d0 * pi / 3.0d0)
-      zc3 = -2.0d0 * sqrt(p / 3.0d0) * cos(-fi / 3.0d0 + 2.0d0 * pi / 3.0d0)
+      zc1 = -2.0_dp * sqrt(p / 3.0_dp) * cos(fi / 3.0_dp)
+      zc2 = -2.0_dp * sqrt(p / 3.0_dp) * cos(fi / 3.0_dp + 2.0_dp * pi / 3.0_dp)
+      zc3 = -2.0_dp * sqrt(p / 3.0_dp) * cos(-fi / 3.0_dp + 2.0_dp * pi / 3.0_dp)
 !write(5,'(3e14.5)') zc1-d,zc2-d,zc3-d
       res1 = zc1**3 - p * zc1 + q
       res2 = zc2**3 - p * zc2 + q
@@ -127,7 +127,7 @@ contains
       zcrestperfect = z2critical
       h3 = d + z3
 
-      fz2 = 4.0d0 * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
+      fz2 = 4.0_dp * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
 
 !write(5,'(d15.5)') fz2
 
@@ -150,15 +150,15 @@ contains
       z3 = z3inp
       h3 = z3inp + d
       z2a = z2
-      fz2a = 4.0d0 * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
+      fz2a = 4.0_dp * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
       z2b = z3inp
       h2 = z2b + d
       z2 = z2b
-      fz2b = 4.0d0 * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
+      fz2b = 4.0_dp * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
       z2c = z1
       z2 = z2c
       h2 = z2c + d
-      fz2c = 4.0d0 * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
+      fz2c = 4.0_dp * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
 ! write(5,'(3d14.5)') fz2a,fz2b,fz2c
 
 ! apply bisection
@@ -171,7 +171,7 @@ contains
          zc = 0.5 * (z2a + z2b)
          z2 = zc
          h2 = zc + d
-         fc = 4.0d0 * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
+         fc = 4.0_dp * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
       else if (fz2b * fz2c < 0) then
          za = z2b
          zb = z2c
@@ -180,24 +180,24 @@ contains
          zc = 0.5 * (za + zb)
          z2 = zc
          h2 = zc + d
-         fc = 4.0d0 * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
+         fc = 4.0_dp * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
       end if
 
-      do while (abs(fc) > 1.0d-10)
+      do while (abs(fc) > 1.0e-10_dp)
          if (fa * fc < 0) then
             zb = zc
             fb = fc
             zc = 0.5 * (za + zb)
             z2 = zc
             h2 = zc + d
-            fc = 4.0d0 * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
+            fc = 4.0_dp * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
          else if (fb * fc < 0) then
             za = zc
             fa = fc
             zc = 0.5 * (za + zb)
             z2 = zc
             h2 = zc + d
-            fc = 4.0d0 * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
+            fc = 4.0_dp * (z2 - z1) * h1**2 * z2 * (h3 - z2) - (h3**2 - h2**2) * (z2**2 - h1**2) * h3
          end if
       end do
 
@@ -205,7 +205,7 @@ contains
       h1 = z1 + d
       h2 = z2 ! +d
       h3 = z3 + d
-      qd = sqrt((2.0d0 * g * (z2 - z1) * h1**2 * z2**2) / (z2**2 - h1**2))
+      qd = sqrt((2.0_dp * g * (z2 - z1) * h1**2 * z2**2) / (z2**2 - h1**2))
 ! qdb=sqrt(0.5d0*g*(h3**2-h2**2)*z2*h3/(h3-z2))
 
 ! write(5,'('' discharge/m:'',d15.5)') qd

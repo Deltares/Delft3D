@@ -214,14 +214,14 @@ contains
       real(fp), dimension(0:kmax2d) :: ws2d
       real(fp), dimension(kmax2d) :: rsdq2d
       real(fp), dimension(kmax2d), save :: sig2d = &
-         (/-0.0874, -0.2472, -0.3797, -0.4897, -0.5809, -0.6565, -0.7193, &
+         [-0.0874, -0.2472, -0.3797, -0.4897, -0.5809, -0.6565, -0.7193, &
          & -0.7713, -0.8145, -0.8503, -0.8800, -0.9046, -0.9250, -0.9419, -0.9560,&
-         & -0.9676, -0.9773, -0.9854, -0.9920, -0.9975/)
+         & -0.9676, -0.9773, -0.9854, -0.9920, -0.9975]
 
       real(fp), dimension(kmax2d), save :: thck2d = &
-         (/0.1747, 0.1449, 0.1202, 0.0997, 0.0827, 0.0686, 0.0569, 0.0472, &
+         [0.1747, 0.1449, 0.1202, 0.0997, 0.0827, 0.0686, 0.0569, 0.0472, &
          & 0.0391, 0.0325, 0.0269, 0.0223, 0.0185, 0.0154, 0.0127, 0.0106, 0.0088,&
-         & 0.0073, 0.0060, 0.0050/)
+         & 0.0073, 0.0060, 0.0050]
 
       real(fp), dimension(max(kmx, 1)) :: concin3d
       real(fp), dimension(kmax2d) :: concin2d
@@ -252,7 +252,7 @@ contains
       if ((istat == 0) .and. (.not. allocated(u1_tmp))) allocate (u1_tmp(1:lnx), ucxq_tmp(1:ndx), ucyq_tmp(1:ndx), stat=ierr)
 
       localpar = 0.0_fp
-      ua = 0d0; va = 0d0; z0rouk = 0d0; z0curk = 0d0; 
+      ua = 0.0_dp; va = 0.0_dp; z0rouk = 0.0_dp; z0curk = 0.0_dp; 
       if (istat /= 0) then
          error = .true.
          write (errmsg, '(a)') 'fm_erosed::error allocating memory.'
@@ -280,7 +280,7 @@ contains
          call setucxucy_mor(u1_tmp)
       else
          !   Calculate cell centre velocities ucxq, ucyq
-         if (maxval(u_to_umain) /= 1d0 .or. minval(u_to_umain) /= 1d0) then
+         if (maxval(u_to_umain) /= 1.0_dp .or. minval(u_to_umain) /= 1.0_dp) then
             call setucxucy_mor(u1_tmp)
          end if
       end if
@@ -297,7 +297,7 @@ contains
 
       if (jawave > WAVE_FETCH_YOUNG) then
          if ((.not. (jawave == WAVE_SURFBEAT .or. jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE)) .or. flowWithoutWaves) then
-            ktb = 0d0 ! no roller turbulence
+            ktb = 0.0_dp ! no roller turbulence
          else
             do k = 1, ndx
                call rollerturbulence(k) ! sets ktb values
@@ -404,7 +404,7 @@ contains
          h1 = s1(k) - bl(k) ! To ensure to get the same results from interpolation based on constant frcu and ifrcutp in the cell centre
          ! with considering hs
          if (nd(k)%lnx == 0) then
-            z0curk(k) = 1d-5 ! safety if nd(k)%lnx==0. Happens sometimes in case of thin dams
+            z0curk(k) = 1.0e-5_dp ! safety if nd(k)%lnx==0. Happens sometimes in case of thin dams
             cycle
          end if
 
@@ -412,8 +412,8 @@ contains
             Lf = nd(k)%ln(LL)
             L = abs(Lf)
             if (javegczu) then
-               if (cfuhi(L) > 0d0) then ! use bed contribution of baptist>1
-                  czu = 1d0 / (cfuhi(L) * max(hu(L), epshu))
+               if (cfuhi(L) > 0.0_dp) then ! use bed contribution of baptist>1
+                  czu = 1.0_dp / (cfuhi(L) * max(hu(L), epshu))
                   czu = sqrt(czu * ag)
                else
                   czu = get_chezy(hu(L), frcuni, u1(L), v(L), ifrctypuni)
@@ -426,7 +426,7 @@ contains
                end if
             end if
             !
-            z0u = hu(L) * exp(-vonkar * czu / sag - 1d0) ! differs from delft3d
+            z0u = hu(L) * exp(-vonkar * czu / sag - 1.0_dp) ! differs from delft3d
             if (Lf < 0) then
                z0curk(k) = z0curk(k) + wcl(1, L) * z0u
             else
@@ -436,7 +436,7 @@ contains
          z0curk(k) = max(epsz0, z0curk(k))
       end do
       !
-      taub = 0d0
+      taub = 0.0_dp
       do L = 1, lnx
          k1 = ln(1, L); k2 = ln(2, L)
          z0rouk(k1) = z0rouk(k1) + wcl(1, L) * z0urou(L)
@@ -446,23 +446,23 @@ contains
       end do
       !
       if (kmx > 0) then ! 3D
-         deltas = 0.05d0
+         deltas = 0.05_dp
          maxdepfrac = 0.05
          if (jawave > NO_WAVES .and. v2dwbl > 0) then
-            deltas = 0d0
+            deltas = 0.0_dp
             do L = 1, lnx
                k1 = ln(1, L); k2 = ln(2, L)
                deltas(k1) = deltas(k1) + wcl(1, L) * wblt(L)
                deltas(k2) = deltas(k2) + wcl(2, L) * wblt(L)
             end do
-            maxdepfrac = 0.5d0 ! cases where you want 2D velocity above the wbl, make sure 2nd criterion applies
+            maxdepfrac = 0.5_dp ! cases where you want 2D velocity above the wbl, make sure 2nd criterion applies
          end if
-         zcc = 0d0
+         zcc = 0.0_dp
 
          do kk = 1, ndx
             call getkbotktop(kk, kb, kt)
             do k = kb, kt
-               zcc = 0.5d0 * (zws(k - 1) + zws(k)) ! cell centre position in vertical layer admin, using absolute height
+               zcc = 0.5_dp * (zws(k - 1) + zws(k)) ! cell centre position in vertical layer admin, using absolute height
                kmxvel = k
                if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. zcc >= (bl(kk) + deltas(kk))) then
                   exit
@@ -584,7 +584,7 @@ contains
       !
       ! compute normal component of bed slopes at edges    (e_xxx refers to edges)
 
-      dzdx = 0d0; dzdy = 0d0
+      dzdx = 0.0_dp; dzdy = 0.0_dp
 
       do L = 1, lnx
          ! Get the bottom slope components in the cell centres; keep these, needed later on
@@ -619,7 +619,7 @@ contains
          k1 = ln(1, L); k2 = ln(2, L)
          !       e_dzdn(L) = acl(L)*(csu(L)*dzdx(k1) + snu(L)*dzdy(k1)) + (1d0-acl(L))*(csu(L)*dzdx(k2) + snu(L)*dzdy(k2))
          e_dzdn(L) = -dxi(L) * (bl(k2) - bl(k1)) ! more accurate near boundaries
-         e_dzdt(L) = acl(L) * (-snu(L) * dzdx(k1) + csu(L) * dzdy(k1)) + (1d0 - acl(L)) * (-snu(L) * dzdx(k2) + csu(L) * dzdy(k2)) ! affected near boundaries due to interpolation
+         e_dzdt(L) = acl(L) * (-snu(L) * dzdx(k1) + csu(L) * dzdy(k1)) + (1.0_dp - acl(L)) * (-snu(L) * dzdx(k2) + csu(L) * dzdy(k2)) ! affected near boundaries due to interpolation
       end do
       !
       !================================================================
@@ -653,7 +653,7 @@ contains
                   end do
                end do
                !
-               rsedeq(nm, :) = 0d0
+               rsedeq(nm, :) = 0.0_dp
             end if
             cycle
          end if
@@ -714,7 +714,7 @@ contains
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             ubot = uorb(nm) ! array uitgespaard
          else
-            ubot = 0d0
+            ubot = 0.0_dp
          end if
          !
          ! Calculate total (possibly wave enhanced) roughness
@@ -739,7 +739,7 @@ contains
             if (iflufflyr > 0) then
                afluff = get_alpha_fluff(iflufflyr, lsed, nm, mfluff(:, nm), stmpar%trapar, stmpar%sedpar, timhr)
             else
-               afluff = 0d0
+               afluff = 0.0_dp
             end if
             !
             if (wave) then
@@ -747,20 +747,20 @@ contains
                                 & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
                                 & rhowat(kbed), vismol, stmpar%sedpar, afluff)
             else
-               call compbsskin(umean, vmean, h1, wave, 0d0, 0d0, &
+               call compbsskin(umean, vmean, h1, wave, 0.0_dp, 0.0_dp, &
                                 & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
                                 & rhowat(kbed), vismol, stmpar%sedpar, afluff)
             end if
          end if
          !
-         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, 1d-5))
+         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, 1.0e-5_dp))
          !
          ! To be in line with rest of FM, this should be
          !ustarc = umod(nm)*vonkar/log(zumod(nm)/z0rou - 1d0)
          !
          !if (scour) then
          !
-         tauadd = 0d0
+         tauadd = 0.0_dp
          !
          ! Compute effective depth averaged velocity
          !
@@ -781,7 +781,7 @@ contains
             temperature = backgroundwatertemperature
          end if
          !
-         taks0 = 0d0
+         taks0 = 0.0_dp
          !
          ! Calculate Van Rijn's reference height
          !
@@ -1004,7 +1004,7 @@ contains
                cycle
             end if
             !
-            ! sediment transport governed by bedoad vector and reference concentration
+            ! sediment transport governed by bedload vector and reference concentration
             !
             suspfrac = has_advdiff(tratyp(l))
             !

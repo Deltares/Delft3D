@@ -86,7 +86,7 @@ contains
     subroutine delwaq2_main_finalise(action, file_unit, rundat)
 
         use m_actions
-        use m_date_time_utils_external, only: write_date_time
+        use m_date_time_utils_external, only: fill_in_date_time
         use m_logger_helper, only: get_log_unit_number
 
         integer(kind=int_wp), intent(in) :: action
@@ -102,7 +102,7 @@ contains
             write (*, *)
             write (file_unit, *)
             write (file_unit, '(A)') ' Simulation ended normal'
-            call write_date_time(rundat)
+            call fill_in_date_time(rundat)
             write (file_unit, '(2A)') ' Execution stop : ', rundat
 
             close (file_unit)

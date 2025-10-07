@@ -67,11 +67,11 @@ contains
       MYSAM = 0
       IPSTAT = IPSTAT_NOTOK
       nkol = 0
-      call READYY('Counting nr. of Samples ', 0d0)
+      call READYY('Counting nr. of Samples ', 0.0_dp)
 11    read (MSAM, '()', end=31)
       NSM = NSM + 1
       goto 11
-31    NSMAX = 1.2d0 * (NSM + JADOORLADEN * NS)
+31    NSMAX = 1.2_dp * (NSM + JADOORLADEN * NS)
       if (NSMAX > 100000) NDRAW(32) = 7
       if (NSMAX > 500000) NDRAW(32) = 3
       if (allocated(XS)) deallocate (XS, YS, ZS)
@@ -82,12 +82,12 @@ contains
       end if
       allocate (ipsam(NSMAX), stat=ierr)
       call aerr('ipsam(NSMAX)', ierr, NSMAX)
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
       rewind (MSAM)
 
       write (TEX, '(I10)') NSM
-      call READYY('Reading '//trim(TEX)//' Sample Points', 0d0)
+      call READYY('Reading '//trim(TEX)//' Sample Points', 0.0_dp)
       if (JADOORLADEN == 0) then
          call XMISAR(XS, NSMAX)
          call XMISAR(YS, NSMAX)
@@ -133,7 +133,7 @@ contains
             read (REC, *, ERR=40) NUM, XX, YY, ZZ
          else if (NKOL == 4) then
             read (REC, *, ERR=40) XX, YY, ZZ, ZZ2
-            if (zz /= -999d0) then
+            if (zz /= -999.0_dp) then
                zz = sqrt(zz * zz + zz2 * zz2)
             end if
          else
@@ -142,7 +142,7 @@ contains
          end if
 
          if (K <= NSMAX - 1 .and. XX /= XYMIS .and. &
-             ZZ /= dmiss .and. ZZ /= 999.999d0 .and. &
+             ZZ /= dmiss .and. ZZ /= 999.999_dp .and. &
              .not. (ieee_is_nan(XX) .or. ieee_is_nan(YY) .or. ieee_is_nan(ZZ))) then
             K = K + 1
             NS = K
@@ -151,7 +151,7 @@ contains
             ZS(K) = ZZ
          end if
          if (mod(K - K0, KMOD) == 0) then
-            call READYY(' ', min(1d0, dble(K) / NSM))
+            call READYY(' ', min(1.0_dp, dble(K) / NSM))
          end if
       end if
       goto 10
@@ -167,15 +167,15 @@ contains
          write (TEX, '(I8)') K
          call QNERROR('YOU TRIED TO LOAD', TEX, 'SAMPLE POINTS')
       end if
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       write (TEX, '(I10)') NS
-      call READYY('Sorting '//trim(TEX)//' Samples Points', 0d0)
+      call READYY('Sorting '//trim(TEX)//' Samples Points', 0.0_dp)
       if (NS > 1) then
          call TIDYSAMPLES(XS, YS, ZS, IPSAM, NS, MXSAM, MYSAM)
          call get_samples_boundingbox()
          IPSTAT = IPSTAT_OK
       end if
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call doclose(MSAM)
       return
    end

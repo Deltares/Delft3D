@@ -51,8 +51,8 @@ contains
       integer :: k, i
 
       if (jaauto > 0) then
-         rmin = 1d30
-         rmax = -1d30
+         rmin = 1.0e30_dp
+         rmax = -1.0e30_dp
 
          do k = 1, ns
             if (zs(k) == DMISS) cycle
@@ -96,8 +96,8 @@ contains
       integer :: m, n, i
 
       if (jaauto > 0) then
-         rmin = 1d30
-         rmax = -1d30
+         rmin = 1.0e30_dp
+         rmax = -1.0e30_dp
 
          do n = 1, nca
             do m = 1, mca

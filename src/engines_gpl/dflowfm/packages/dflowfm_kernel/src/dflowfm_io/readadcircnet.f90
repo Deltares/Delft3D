@@ -74,7 +74,7 @@ contains
       end if
 
       JA = 0
-      call READYY('Converting ADCIRC data...', 0d0)
+      call READYY('Converting ADCIRC data...', 0.0_dp)
       read (MNET, '(A)', end=777) REC ! COMMENT
 
       read (MNET, '(A)', end=777) REC
@@ -83,7 +83,7 @@ contains
       NUMLN = 3 * NUMP
       call INCREASENETW(K0 + NUMKN, L0 + NUMLN)
 
-      call READYY('Converting ADCIRC data...', .2d0)
+      call READYY('Converting ADCIRC data...', 0.2_dp)
       do K = K0 + 1, K0 + NUMKN
          read (MNET, '(A)', end=777) REC
          read (REC, *, ERR=999) KK, XK(K), YK(K), ZK(K)
@@ -103,11 +103,11 @@ contains
 
       NUML = L
 
-      call READYY('Converting ADCIRC data...', .4d0)
+      call READYY('Converting ADCIRC data...', 0.4_dp)
       call SETNODADM(0)
       call SAVENET()
 
-      call READYY('Converting ADCIRC data...', .7d0)
+      call READYY('Converting ADCIRC data...', 0.7_dp)
       read (MNET, '(A)', end=777) REC ! NOPE param
       read (REC, *, err=555) NOPE
 
@@ -169,8 +169,8 @@ contains
                XLAN(MXLAN + NVELL + 1) = XK(k2); YLAN(MXLAN + NVELL + 1) = YK(k2); ZLAN(MXLAN + NVELL + 1) = BARINHT ! second side comes after the end of the first side
 
                if (jamergeweirnodes == 1) then
-                  XK(k2) = .5d0 * (XK0(K1) + XK0(K2))
-                  YK(k2) = .5d0 * (YK0(K1) + YK0(K2))
+                  XK(k2) = 0.5_dp * (XK0(K1) + XK0(K2))
+                  YK(k2) = 0.5_dp * (YK0(K1) + YK0(K2))
                   ZK(k2) = max(ZK(K1), ZK(K2))
 
                   NPL = NPL + 1

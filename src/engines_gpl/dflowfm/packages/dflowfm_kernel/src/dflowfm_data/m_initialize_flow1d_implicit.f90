@@ -630,7 +630,7 @@ contains
          nl = network%brs%branch(kbr)%upointscount !only internal
          do kl = 1, nl
             L = network%brs%branch(kbr)%LIN(kl)
-            grd_fmL_sre(L, :) = (/idx_i + kl - 1, idx_i + kl/)
+            grd_fmL_sre(L, :) = [idx_i + kl - 1, idx_i + kl]
 
             !FM1DIMP2DO: Do we need this?
             !search for the GRD with <n1>?

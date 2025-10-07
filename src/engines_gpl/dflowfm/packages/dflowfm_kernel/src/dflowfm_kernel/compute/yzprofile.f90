@@ -65,7 +65,7 @@ contains
 
       numseg = size(profiles1D(ka)%y) - 1
 
-      area = 0d0; width = 0d0; convall = 0d0; perim = 0d0
+      area = 0.0_dp; width = 0.0_dp; convall = 0.0_dp; perim = 0.0_dp
 
       jac = 0
       if (japerim == 1) then
@@ -85,7 +85,7 @@ contains
          end if
          hpr2 = hpr - bl1 ! TODO: LUMBRICUS: HK: is hpr niet een hu en bl een echte/nep BL?
 
-         if (hpr2 > 0d0) then
+         if (hpr2 > 0.0_dp) then
             b21 = BL2 - BL1
             wu2 = abs(profiles1D(ka)%y(k) - profiles1D(ka)%y(k + 1))
             ai = b21 / wu2
@@ -106,7 +106,7 @@ contains
             aconv = (area / convall)**2
             cfhi = ag * aconv
          else
-            cfhi = 0d0
+            cfhi = 0.0_dp
          end if
       end if
 

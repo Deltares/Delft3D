@@ -46,15 +46,15 @@ contains
       real(kind=dp) :: vmin, vmax, v(n)
 
       if (profmin(num) == dmiss) then
-         vmin = 1d9
+         vmin = 1.0e9_dp
          vmin = min(vmin, minval(v(1:n)))
       else
          vmin = profmin(num)
       end if
 
       if (profmax(num) == dmiss) then
-         vmax = -1d9
-         vmax = max(vmax, maxval(v(1:n)), vmin + 1d-5)
+         vmax = -1.0e9_dp
+         vmax = max(vmax, maxval(v(1:n)), vmin + 1.0e-5_dp)
       else
          vmax = profmax(num)
       end if

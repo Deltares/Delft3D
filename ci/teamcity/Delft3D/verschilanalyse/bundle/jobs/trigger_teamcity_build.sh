@@ -9,7 +9,7 @@
 set -eo pipefail
 
 VARIABLES=( \
-    "BUCKET" "CURRENT_PREFIX" "REFERENCE_PREFIX" "LOG_DIR" \
+    "BUCKET" "CURRENT_PREFIX" "REFERENCE_PREFIX" "LOG_DIR" "SEND_EMAIL" \
     "TEAMCITY_SERVER_URL" "REPORT_BUILD_TYPE_ID" "START_BUILD_TYPE_ID" \
     "BUILD_ID" "VCS_ROOT_ID" "VCS_REVISION" "BRANCH_NAME" \
 )
@@ -53,7 +53,7 @@ curl --fail --silent --show-error -X POST \
         ]
     },
     "properties": {
-        "count": 2,
+        "count": 3,
         "property": [
             {
                 "name": "current_prefix",
@@ -62,6 +62,10 @@ curl --fail --silent --show-error -X POST \
             {
                 "name": "reference_prefix",
                 "value": "${REFERENCE_PREFIX}"
+            },
+            {
+                "name": "send_email",
+                "value": "${SEND_EMAIL}"
             }
         ]
     },

@@ -31,6 +31,7 @@
 !
 
 module m_step_reduce_transport_morpho
+
    use m_subsupl_update_s1, only: subsupl_update_s1
    use m_setucxucy_mor, only: setucxucy_mor
    use m_fm_flocculate, only: fm_flocculate
@@ -40,6 +41,7 @@ module m_step_reduce_transport_morpho
    use m_u1q1, only: u1q1
    use m_transport_sub, only: transport
 
+use precision, only: dp
    implicit none
 
    private
@@ -105,7 +107,7 @@ contains
          call update_s_explicit()
       end if
       hs = s1 - bl
-      hs = max(hs, 0d0)
+      hs = max(hs, 0.0_dp)
 
       if (jased > 0 .and. stm_included) then
          if (time1 >= tstart_user + ti_sedtrans * tfac) then
@@ -158,14 +160,6 @@ contains
          if (kmx > 0) then
             call set_kbot_ktop(jazws0=0) ! and 3D for cell volumes
          end if
-      end if
-
-      ! Moved to flow_finalize_single_timestep: call flow_f0isf1()                                  ! mass balance and vol0 = vol1
-
-      if (layertype > 1 .and. kmx > 0) then
-
-         ! ln = ln0 ! was ok.
-
       end if
 
    end subroutine step_reduce_transport_morpho

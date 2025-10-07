@@ -88,8 +88,8 @@ contains
       real(kind=dp) :: dt_loc, dt_tot
       real(kind=dp) :: dtolLR_bak, dhmax
       integer :: i, ii, iL, iR, ja3
-      real(kind=dp), parameter :: dtol = 1d-8
-      real(kind=dp), parameter :: dclearance = 5d2
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
+      real(kind=dp), parameter :: dclearance = 5.0e2_dp
       logical :: Lalllines = .false. ! all gridlines (.true.) or not (.false.)
 
       integer, save :: numgrow = 0
@@ -111,12 +111,12 @@ contains
 
       ifrontold = ifront
 
-      dt_tot = 0d0
+      dt_tot = 0.0_dp
       xc1 = xc(:, j - idir)
       yc1 = yc(:, j - idir)
 
 !  compute maximum mesh width and get dtolLR in the proper dimension
-      dhmax = 0d0
+      dhmax = 0.0_dp
       do i = 1, mc - 1
          if (xc(i, 1) == DMISS .or. xc(i + 1, 1) == DMISS) cycle
          dhmax = max(dhmax, dbdistance(xc(i, 1), yc(i, 1), xc(i + 1, 1), yc(i + 1, 1), jsferic, jasfer3D, dmiss))
@@ -171,20 +171,20 @@ contains
 
 !     compute maximum allowable growth time; node merger in grid layer
          istop = 0
-         dt_other = 1d99
-         dtmax_self = 1d99
+         dt_other = 1.0e99_dp
+         dtmax_self = 1.0e99_dp
          call comp_tmax_self(mc, xc1, yc1, vel, dtmax_self)
          dt_loc = min(dt - dt_tot, minval(dtmax_self))
 
          if (jaCheckFrontCollision == 1) then
             !     collision with front
-            dtmax = dt_loc + 1d0 ! a bit larger, for safety
-            dtmax2 = 1d99 ! not used
+            dtmax = dt_loc + 1.0_dp ! a bit larger, for safety
+            dtmax2 = 1.0e99_dp ! not used
             call comp_tmax_other(mc, j, xc1, yc1, vel, nf, xf, yf, velf, idxf, dtmax)
 
             dt_other = minval(dtmax)
          else
-            dt_other = 1d99
+            dt_other = 1.0e99_dp
          end if
 
 !     update new frontmask
@@ -225,7 +225,7 @@ contains
 !     update new grid layer coordinates
          do i = 1, mc
             if (ifrontold(i) == 1 .and. vel(1, i) /= DMISS) then
-               if (vel(1, i) == 0d0 .and. vel(2, i) == 0d0) then
+               if (vel(1, i) == 0.0_dp .and. vel(2, i) == 0.0_dp) then
                   continue
                end if
                xc1(i) = xc1(i) + dt_loc * vel(1, i)
@@ -338,7 +338,7 @@ contains
       ifront = ifrontnew
 
       if (Lalllines) then
-         dt = min(dt, 5d2)
+         dt = min(dt, 5.0e2_dp)
       end if
 
 !  deallocate

@@ -45,7 +45,7 @@ module fm_external_forcings
 
    public set_external_forcings_boundaries, allocatewindarrays, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints
 
-   integer, parameter :: max_registered_item_id = 128
+   integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
    character(len=max_registered_item_id), allocatable :: registered_items(:)
    integer :: num_registered_items = 0
@@ -655,6 +655,7 @@ contains
       use tree_structures
       use m_flowgeom, only: rrtol
       use fm_external_forcings_data, only: transformcoef
+      use fm_external_forcings_utils, only: read_tracer_properties
       use system_utils
       use unstruc_files, only: resolvePath
       use m_alloc
@@ -681,8 +682,6 @@ contains
       character(len=ini_value_len) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
       character(len=ini_value_len) :: forcing_file !
       real(kind=dp) :: return_time !
-      real(kind=dp) :: tr_ws ! Tracer fall velocity
-      real(kind=dp) :: tr_decay_time ! Tracer decay time
       real(kind=dp) :: rrtolb ! Local, optional boundary tolerance value.
       real(kind=dp) :: width1D ! Local, optional custom 1D boundary width
       real(kind=dp) :: blDepth ! Local, optional custom boundary bed level depth below initial water level
@@ -767,13 +766,7 @@ contains
             call prop_get(node_ptr, '', 'returnTime', return_time)
             call prop_get(node_ptr, '', 'return_time', return_time) ! UNST-2386: Backwards compatibility reading.
 
-            tr_ws = 0.0_dp
-            call prop_get(node_ptr, '', 'tracerFallVelocity', tr_ws)
-            transformcoef(4) = tr_ws
-
-            tr_decay_time = 0.0_dp
-            call prop_get(node_ptr, '', 'tracerDecayTime', tr_decay_time)
-            transformcoef(5) = tr_decay_time
+            call read_tracer_properties(node_ptr, transformcoef)
 
             rrtolb = 0.0_dp
             call prop_get(node_ptr, '', 'openBoundaryTolerance', rrtolb)
@@ -970,8 +963,8 @@ contains
             call realloc(L2qbnd, nqbnd); L2qbnd(nqbnd) = nbndu + numu
             call realloc(at_all, nqbnd); at_all(nqbnd) = 0.0_dp
             call realloc(at_sum, nqbnd); at_sum(nqbnd) = 0.0_dp
-            call realloc(wwssav_all, (/2, nqbnd/), keepExisting=.true., fill=0.0_dp)
-            call realloc(wwssav_sum, (/2, nqbnd/), keepExisting=.true., fill=0.0_dp)
+            call realloc(wwssav_all, [2, nqbnd], keepExisting=.true., fill=0.0_dp)
+            call realloc(wwssav_sum, [2, nqbnd], keepExisting=.true., fill=0.0_dp)
             call realloc(huqbnd, L2qbnd(nqbnd)); huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0.0_dp
          else if (qidfm == 'absgenbnd') then
             if (.not. (jawave == WAVE_SURFBEAT)) then ! Safety to avoid allocation errors later on
@@ -1045,7 +1038,7 @@ contains
 
          if (janew == 1) then
 !       realloc ketr
-            call realloc(ketr, (/Nx, numtracers/), keepExisting=.true., fill=0)
+            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac) + 1:, itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
          write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtr, ' nr of tracer bndcells'; call msg_flush()
@@ -1062,7 +1055,7 @@ contains
 
          if (janew == 1) then
 !       realloc ketr
-            call realloc(ketr, (/Nx, numtracers/), keepExisting=.true., fill=0)
+            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
       else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
@@ -1073,7 +1066,7 @@ contains
 
             numfracs = numfracs + 1
 !       realloc
-            call realloc(kesf, (/Nx, numfracs/), keepExisting=.true., fill=0)
+            call realloc(kesf, [Nx, numfracs], keepExisting=.true., fill=0)
             call realloc(nbndsf, numfracs, keepExisting=.true., fill=0)
             call realloc(sfnames, numfracs, keepExisting=.true., fill='')
 

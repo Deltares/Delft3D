@@ -73,18 +73,18 @@ contains
       integer :: direction_sign
       real(kind=dp) :: velocity
 
-      real(kind=dp), parameter :: FAC23 = 0.6666666666667d0
+      real(kind=dp), parameter :: FAC23 = 0.6666666666667_dp
 
       if (kmx == 0) then
 
          if (nonlin == 0) then
             do n = ndx2d + 1, ndxi
-               hh = max(0d0, s1(n) - bl(n))
+               hh = max(0.0_dp, s1(n) - bl(n))
                vol1_f(n) = ba(n) * hh
                a1(n) = ba(n)
             end do
          else
-            vol1_f(ndx2D + 1:ndxi) = 0d0
+            vol1_f(ndx2D + 1:ndxi) = 0.0_dp
          end if
 
          call vol12D(1)
@@ -99,30 +99,30 @@ contains
       end if
 
       do ng = 1, ngatesg ! loop over gate signals, setau
-         zgaten = zgate(ng); bupmin = 9d9
+         zgaten = zgate(ng); bupmin = 9.0e9_dp
          do n = L1gatesg(ng), L2gatesg(ng)
             LL = kgate(3, n)
-            if (hu(LL) > 0d0) then
+            if (hu(LL) > 0.0_dp) then
                bup = min(bob(1, LL), bob(2, LL))
                bupmin = min(bupmin, bup)
                sup = bup + hu(LL)
                openfact = (min(sup, zgaten) - bup) / hu(LL)
-               afac = min(1d0, max(0d0, 1d0 - openfact))
+               afac = min(1.0_dp, max(0.0_dp, 1.0_dp - openfact))
                if (sup > zgaten) then
                   hu(LL) = hu(LL) - (sup - zgaten); au(LL) = hu(LL) * wu(LL)
-                  advi(LL) = advi(LL) + afac * 0.5d0 * abs(u1(LL)) * dxi(LL)
+                  advi(LL) = advi(LL) + afac * 0.5_dp * abs(u1(LL)) * dxi(LL)
                end if
                if (hu(LL) < epshu) then
-                  hu(LL) = 0d0; au(LL) = 0d0
+                  hu(LL) = 0.0_dp; au(LL) = 0.0_dp
                else if (kmx > 0) then
                   do L = Lbot(LL), Lbot(LL) + kmxL(LL) - 1
                      if (hu(L) > hu(L - 1)) then
                         ZLu = bup + hu(L - 1)
                         fac = (zgaten - zLu) / (hu(L) - hu(L - 1))
-                        fac = max(0d0, min(1d0, fac))
+                        fac = max(0.0_dp, min(1.0_dp, fac))
                         Lnu = L
-                        advi(L) = advi(L) + afac * 0.5d0 * abs(u1(L)) * dxi(LL)
-                        if (fac < 0.1d0 .and. L > Lbot(LL)) then
+                        advi(L) = advi(L) + afac * 0.5_dp * abs(u1(L)) * dxi(LL)
+                        if (fac < 0.1_dp .and. L > Lbot(LL)) then
                            Lnu = L - 1
                            !Ltop(LL) =    Lnu   ! keep total baroclinic pressure
                            hu(Lnu) = hu(Lnu) + fac * (hu(L) - hu(L - 1))
@@ -134,33 +134,33 @@ contains
                         end if
                      end if
                   end do
-                  au(Lnu + 1:Lbot(LL) + kmxL(LL) - 1) = 0d0 ! -12346d0 ! 6 not 5
-                  hu(Lnu + 1:Lbot(LL) + kmxL(LL) - 1) = 0d0 ! -12346d0 ! 6 not 5
+                  au(Lnu + 1:Lbot(LL) + kmxL(LL) - 1) = 0.0_dp ! -12346d0 ! 6 not 5
+                  hu(Lnu + 1:Lbot(LL) + kmxL(LL) - 1) = 0.0_dp ! -12346d0 ! 6 not 5
 
                end if
             end if
          end do
-         if (bupmin /= 9d9) then
+         if (bupmin /= 9.0e9_dp) then
             zgate(ng) = max(zgate(ng), bupmin)
          end if
 
       end do
 
       do ng = 1, ncgensg ! loop over generalstruc signals, sethu
-         zgaten = zcgen(3 * (ng - 1) + 2); bupmin = 9d9
+         zgaten = zcgen(3 * (ng - 1) + 2); bupmin = 9.0e9_dp
          ! wufac  = zcgen(3*(ng-1)+3)
          do n = L1cgensg(ng), L2cgensg(ng)
             LL = kcgen(3, n)
-            if (hu(LL) > 0d0) then
+            if (hu(LL) > 0.0_dp) then
                bup = min(bob(1, LL), bob(2, LL))
                if (kmx > 0) then
                   do L = Lbot(LL), Lbot(LL) + kmxL(LL) - 1
                      if (hu(L) > hu(L - 1)) then
                         ZLu = bup + hu(L - 1)
                         fac = (zgaten - zLu) / (hu(L) - hu(L - 1))
-                        fac = max(0d0, min(1d0, fac))
+                        fac = max(0.0_dp, min(1.0_dp, fac))
                         Lnu = L
-                        if (fac < 0.1d0) then
+                        if (fac < 0.1_dp) then
                            Lnu = L - 1
                            ! Ltop(LL) =    Lnu
                            hu(Lnu) = hu(Lnu) + fac * (hu(L) - hu(L - 1))
@@ -172,11 +172,11 @@ contains
                         end if
                      end if
                   end do
-                  au(Ltop(LL) + 1:Lbot(LL) + kmxL(LL) - 1) = 0d0 ! -12346d0 ! 6 not 5
+                  au(Ltop(LL) + 1:Lbot(LL) + kmxL(LL) - 1) = 0.0_dp ! -12346d0 ! 6 not 5
                end if
             end if
          end do
-         if (bupmin /= 9d9) then
+         if (bupmin /= 9.0e9_dp) then
             zcgen(3 * (ng - 1) + 2) = max(zcgen(3 * (ng - 1) + 2), bupmin)
          end if
 
@@ -186,37 +186,37 @@ contains
          L = abs(Lklep(n))
          call getflowdir(L, iup)
          if (iup * Lklep(n) < 0) then
-            hu(L) = 0d0; au(L) = 0d0
+            hu(L) = 0.0_dp; au(L) = 0.0_dp
             if (kmx > 0) then
-               hu(Lbot(L):Ltop(L)) = 0d0
-               au(Lbot(L):Ltop(L)) = 0d0
+               hu(Lbot(L):Ltop(L)) = 0.0_dp
+               au(Lbot(L):Ltop(L)) = 0.0_dp
             end if
          end if
       end do
 
       do n = 1, nvalv ! smoren
          L = Lvalv(n)
-         fac = max(0d0, min(1d0, valv(n)))
-         if (fac > 1d-6) then
+         fac = max(0.0_dp, min(1.0_dp, valv(n)))
+         if (fac > 1.0e-6_dp) then
             au(L) = fac * au(L)
          else
-            hu(L) = 0d0; au(L) = 0d0
+            hu(L) = 0.0_dp; au(L) = 0.0_dp
             if (kmx > 0) then
-               hu(Lbot(L):Ltop(L)) = 0d0
-               au(Lbot(L):Ltop(L)) = 0d0
+               hu(Lbot(L):Ltop(L)) = 0.0_dp
+               au(Lbot(L):Ltop(L)) = 0.0_dp
             end if
          end if
       end do
 
       if (nqbnd == 0) return
 
-      huqbnd = 0d0
+      huqbnd = 0.0_dp
 
       if (jbasqbnddownwindhs == 0) then
          do nq = 1, nqbnd ! discharge normalising Manning conveyance
-            at = 0d0
+            at = 0.0_dp
 
-            ssav = 0d0; wwav = 0d0
+            ssav = 0.0_dp; wwav = 0.0_dp
             do n = L1qbnd(nq), L2qbnd(nq)
                L = kbndu(3, n)
                k2 = kbndu(2, n)
@@ -228,7 +228,7 @@ contains
                   end if
                end if
 
-               if (hu(L) > 0d0) then
+               if (hu(L) > 0.0_dp) then
                   ssav = ssav + s1(k2) * wu(L)
                   wwav = wwav + wu(L)
                end if
@@ -245,7 +245,7 @@ contains
       end if
 
       do nq = 1, nqbnd ! discharge normalising Manning conveyance
-         at = 0d0
+         at = 0.0_dp
 
          if (jbasqbnddownwindhs == 0) then
             wwav = wwssav_all(1, nq)
@@ -255,9 +255,9 @@ contains
                ssav = ssav / wwav
                do n = L1qbnd(nq), L2qbnd(nq)
                   L = kbndu(3, n)
-                  if (hu(L) > 0d0) then
+                  if (hu(L) > 0.0_dp) then
 !                hu(L) = max(0d0, ssav - min( bob(1,L), bob(2,L) ) )
-                     huqbnd(n) = max(0d0, ssav - min(bob(1, L), bob(2, L)))
+                     huqbnd(n) = max(0.0_dp, ssav - min(bob(1, L), bob(2, L)))
                   end if
                end do
             end if
@@ -286,8 +286,8 @@ contains
                huqbnd(n) = hu(L)
             end if
 
-            if (zbndq(n) < 0d0 .and. hu(L) < qbndhutrs) then
-               hu(L) = 0d0; au(L) = 0d0
+            if (zbndq(n) < 0.0_dp .and. hu(L) < qbndhutrs) then
+               hu(L) = 0.0_dp; au(L) = 0.0_dp
             else
                if (jampi == 0) then
 !            at = at + au(L)*hu(L)**FAC23

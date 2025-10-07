@@ -32,6 +32,8 @@
 
 module m_setkfs
 
+
+   use precision, only: dp
    implicit none
 
    private
@@ -53,7 +55,7 @@ contains
 
       ! open all grid points with positive lateral inflow
       do ndn = 1, ndx
-         if (qin(ndn) > 1d-12) then
+         if (qin(ndn) > 1.0e-12_dp) then
             kfs(ndn) = 1
          end if
       end do
@@ -61,7 +63,7 @@ contains
       if (ivariableteta <= 1) then ! fully implicit and teta=constant
 
          do L = 1, lnx ! implicit points
-            if (hu(L) > 0d0) then ! if you want hs==0 in dry points, you need hu>epshu here
+            if (hu(L) > 0.0_dp) then ! if you want hs==0 in dry points, you need hu>epshu here
                kfs(ln(1, L)) = 1
                kfs(ln(2, L)) = 1
             end if
@@ -70,7 +72,7 @@ contains
       else ! set kfs ic. teta; 0=not, 1 =impl, 2 = expl
 
          do L = 1, lnx ! explicit points
-            if (hu(L) > 0d0) then
+            if (hu(L) > 0.0_dp) then
                if (teta(L) == 0) then
                   kfs(ln(1, L)) = 2
                   kfs(ln(2, L)) = 2

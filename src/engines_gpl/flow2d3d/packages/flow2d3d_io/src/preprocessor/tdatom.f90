@@ -1,4 +1,4 @@
-subroutine tdatom(runid, filmrs, nuerr, gdp) 
+subroutine tdatom(runid_in, filmrs, nuerr, gdp) 
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -141,8 +141,8 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
     integer        , intent(out) :: nuerr  !! Exit code: 0 := ok, < 0 then error
     character(12)  , intent(in)  :: filmrs !! File name for DELFT3D_MOR FLOW 
                                            !! input file (MD-flow.xxx) 
-    character(*)   , intent(in)  :: runid  !! Run identification code for the current simulation
-                                           !! (used to determine the names of the in/output files used by the system)
+    character(*)   , intent(in)  :: runid_in !! Run identification code for the current simulation
+                                             !! (used to determine the names of the in/output files used by the system)
 ! 
 ! Local variables 
 ! 
@@ -271,6 +271,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
     character(6)                                        :: prgnm       ! Help var. determining the prog. name currently active  
     character(9)                                        :: keyw        ! Name of record to look for in the MD-file 
     character(5)                                        :: versio 
+    character(:), allocatable                           :: runid       ! Run identification code for the current simulation
 ! 
 !! executable statements ------------------------------------------------------- 
 ! 
@@ -412,6 +413,7 @@ subroutine tdatom(runid, filmrs, nuerr, gdp)
     ! 
     ! Initializing tdatom part of FLOW simulation program 
     ! 
+    runid = runid_in
     call sysini(error     ,runid     ,filmrs    ,prgnm     , & 
               & versio    ,filmd     ,gdp       ) 
     ! 

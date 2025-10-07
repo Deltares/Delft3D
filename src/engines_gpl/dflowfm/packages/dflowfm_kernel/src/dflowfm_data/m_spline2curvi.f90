@@ -66,20 +66,20 @@ module m_spline2curvi
 
    integer :: jaoutside = 1 ! grow the grid outside the prescribed grid height
 
-   real(kind=dp) :: daspect = 0.1d0 ! aspect ratio
-   real(kind=dp) :: dgrow = 1.1d0 ! grow factor of aspect ratio
-   real(kind=dp) :: dheight0 = 1.0d1 ! grid layer height
-   real(kind=dp) :: maxaspect = 1.0d0 ! maximum cell aspect ratio *inoperative*
-   real(kind=dp) :: dwidth = 0.5d3 ! average mesh width on center spline
+   real(kind=dp) :: daspect = 0.1_dp ! aspect ratio
+   real(kind=dp) :: dgrow = 1.1_dp ! grow factor of aspect ratio
+   real(kind=dp) :: dheight0 = 1.0e1_dp ! grid layer height
+   real(kind=dp) :: maxaspect = 1.0_dp ! maximum cell aspect ratio *inoperative*
+   real(kind=dp) :: dwidth = 0.5e3_dp ! average mesh width on center spline
 
-   real(kind=dp) :: dtolLR = 1d-4 ! on-top-of-each-other tolerance *IMPORTANT*
-   real(kind=dp) :: dtolcos = 0.95d0 ! minimum allowed absolute value of crossing-angle cosine
+   real(kind=dp) :: dtolLR = 1.0e-4_dp ! on-top-of-each-other tolerance *IMPORTANT*
+   real(kind=dp) :: dtolcos = 0.95_dp ! minimum allowed absolute value of crossing-angle cosine
 
    integer :: NFACUNIMAX = 5 ! maximum number of layers in the uniform part
 
    integer :: jaCheckFrontCollision = 0 ! check for collisions with other parts of the front (1) or not (0)
 
-   real(kind=dp) :: dunigridsize = 0d0 ! uniform grid size (netboundary to grid only)
+   real(kind=dp) :: dunigridsize = 0.0_dp ! uniform grid size (netboundary to grid only)
 
    integer :: jacurv = 1 ! curvature adapted grid spacing (1) or not (0)
 

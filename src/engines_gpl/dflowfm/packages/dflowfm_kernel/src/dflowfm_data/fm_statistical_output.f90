@@ -117,7 +117,7 @@ contains
       do l = 1, stmpar%lsedtot
          select case (stmpar%morpar%moroutput%transptype)
          case (0)
-            rhol = 1d0
+            rhol = 1.0_dp
          case (1)
             rhol = stmpar%sedpar%cdryb(l)
          case (2)
@@ -138,7 +138,7 @@ contains
 
       call allocate_and_associate(source_input, dadpar%dredge_dimension_length, time_dredged, time_ploughed)
 
-      cof0 = 1d0; if (time1 > 0d0) cof0 = time1
+      cof0 = 1.0_dp; if (time1 > 0.0_dp) cof0 = time1
       time_dredged = dadpar%tim_dredged / cof0
       time_ploughed = dadpar%tim_ploughed / cof0
 
@@ -386,14 +386,14 @@ contains
             l = sedtot2sedsus(num - ISED1 + 1)
             select case (stmpar%morpar%moroutput%transptype)
             case (0)
-               rhol = 1d0
+               rhol = 1.0_dp
             case (1)
                rhol = stmpar%sedpar%cdryb(l)
             case (2)
                rhol = stmpar%sedpar%rhosol(l)
             end select
          else
-            rhol = 1d0 ! dummy
+            rhol = 1.0_dp ! dummy
          end if
          do i = 1, ncrs
             obscrs_data(i, 5 + (num - 1) * 2 + 1) = crs(i)%sumvalcur(IP) / rhol
@@ -891,9 +891,9 @@ contains
                              'Wrihis_structure_gen', 'general_structure_flow_area_under_gate', 'Flow area under gate of general structure', '', &
                              'm2', UNC_LOC_GENSTRU, nc_attributes=atts(1:1))
 
-      call ncu_set_att(atts(2), 'flag_values', (/0, 1, 2, 3, 4/))
+      call ncu_set_att(atts(2), 'flag_values', [0, 1, 2, 3, 4])
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
-      call ncu_set_att(atts(4), 'valid_range', (/0, 4/))
+      call ncu_set_att(atts(4), 'valid_range', [0, 4])
       call add_output_config(config_set_his, IDX_HIS_GENERAL_STRUCTURE_STATE, &
                              'Wrihis_structure_gen', 'general_structure_state', 'Flow state at general structure', '', &
                              '', UNC_LOC_GENSTRU, id_nc_type=id_nc_int, nc_attributes=atts)
@@ -1025,9 +1025,9 @@ contains
                              'Wrihis_structure_weir', 'weirgen_flow_area', 'Flow area at weir', &
                              '', 'm2', UNC_LOC_WEIRGEN, nc_attributes=atts(1:1))
 
-      call ncu_set_att(atts(2), 'flag_values', (/0, 1, 2/))
+      call ncu_set_att(atts(2), 'flag_values', [0, 1, 2])
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged')
-      call ncu_set_att(atts(4), 'valid_range', (/0, 2/))
+      call ncu_set_att(atts(4), 'valid_range', [0, 2])
       call add_output_config(config_set_his, IDX_HIS_WEIRGEN_STATE, &
                              'Wrihis_structure_weir', 'weirgen_state', 'Flow state at weir', &
                              '', '', UNC_LOC_WEIRGEN, nc_attributes=atts, id_nc_type=id_nc_int)
@@ -1070,9 +1070,9 @@ contains
                              'Wrihis_structure_orifice', 'orifice_flow_area', 'Flow area at orifice', '', &
                              'm2', UNC_LOC_ORIFICE, nc_attributes=atts(1:1))
 
-      call ncu_set_att(atts(2), 'flag_values', (/0, 1, 2, 3, 4/))
+      call ncu_set_att(atts(2), 'flag_values', [0, 1, 2, 3, 4])
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow weir_free weir_submerged gate_free gate_submerged')
-      call ncu_set_att(atts(4), 'valid_range', (/0, 4/))
+      call ncu_set_att(atts(4), 'valid_range', [0, 4])
       call add_output_config(config_set_his, IDX_HIS_ORIFICE_STATE, &
                              'Wrihis_structure_orifice', 'orifice_state', 'Flow state at orifice', '', &
                              '', UNC_LOC_ORIFICE, nc_attributes=atts, id_nc_type=id_nc_int)
@@ -1149,9 +1149,9 @@ contains
                              'Wrihis_structure_culvert', 'culvert_velocity', 'Velocity through culvert', '', &
                              'm s-1', UNC_LOC_CULVERT, nc_attributes=atts(1:1))
 
-      call ncu_set_att(atts(2), 'flag_values', (/0, 1, 2/))
+      call ncu_set_att(atts(2), 'flag_values', [0, 1, 2])
       call ncu_set_att(atts(3), 'flag_meanings', 'no_flow culvert_free culvert_submerged')
-      call ncu_set_att(atts(4), 'valid_range', (/0, 2/))
+      call ncu_set_att(atts(4), 'valid_range', [0, 2])
       call add_output_config(config_set_his, IDX_HIS_CULVERT_STATE, &
                              'Wrihis_structure_culvert', 'culvert_state', 'Flow state at culvert', '', &
                              '', UNC_LOC_CULVERT, nc_attributes=atts, id_nc_type=id_nc_int)

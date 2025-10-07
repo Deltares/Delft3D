@@ -50,12 +50,12 @@ contains
    !!--declarations----------------------------------------------------------------
       use precision
       use m_physcoef, only: ag, sag, vonkar, backgroundsalinity, backgroundwatertemperature, vismol
-      use m_sediment, only: stmpar, mtd, sed
+      use m_sediment, only: stmpar, mtd
       use m_flowtimes, only: time1
       use m_flowgeom, only: ndx, ln, bl, wcl, lnx
       use m_flow, only: iturbulencemodel, kmx, zws, ucxq, ucyq, ucz, s1, z0urou, ucx_mor, ucy_mor
       use m_flowparameters, only: jasal, jatem, epshs, epsz0
-      use m_transport, only: constituents, isalt, itemp
+      use m_transport, only: constituents, isalt, itemp, ised1
       use m_turbulence, only: turkinws, turepsws, rhowat
       use sediment_basics_module, only: SEDTYP_CLAY
       use morphology_data_module
@@ -125,7 +125,7 @@ contains
    !!
    !!! executable statements -------------------------------------------------------
    !!
-      call realloc(z0rou, ndx, keepExisting=.false., fill=0d0)
+      call realloc(z0rou, ndx, keepExisting=.false., fill=0.0_dp)
 
       csoil => stmpar%sedpar%csoil
       rhosol => stmpar%sedpar%rhosol
@@ -160,7 +160,7 @@ contains
       end do
 
       do k = 1, ndx
-         if (s1(k) - bl(k) < epshs) cycle
+         if (s1(k) - bl(k) <= epshs) cycle
          !
          h0 = s1(k) - bl(k)
          chezy = sag * log(h0 / ee / max(epsz0, z0rou(k))) / vonkar ! consistency with getczz0
@@ -168,8 +168,8 @@ contains
          ! compute depth-averaged velocities
          !
          if (kmx > 0) then ! 3D
-            um = 0d0
-            vm = 0d0
+            um = 0.0_dp
+            vm = 0.0_dp
             call getkbotktop(k, kb, kt)
             do kk = kb, kt
                thick = zws(kk) - zws(kk - 1)
@@ -193,7 +193,7 @@ contains
          do kk = kb, kt - 1
             ! HK: is this better than first establish fallvelocity in a cell, next interpolate to interfaces?
 
-            if (kmx > 0) then ! 3D
+            if (kmx > 1) then ! 3D
                tka = zws(kk + 1) - zws(kk) ! thickness above
                tkb = zws(kk) - zws(kk - 1) ! thickness below
                tkt = tka + tkb
@@ -218,12 +218,12 @@ contains
                if (iturbulencemodel == 3) then ! k-eps
                   tur_k = turkinws(kk)
                else
-                  tur_k = -999.0d0
+                  tur_k = -999.0_dp
                end if
                if (iturbulencemodel == 3) then
                   tur_eps = turepsws(kk)
                else
-                  tur_eps = -999.0d0
+                  tur_eps = -999.0_dp
                end if
                if (iturbulencemodel == 3) then ! k-eps
                   call get_tshear_tdiss(tshear, tur_eps, rhoint, tke=tur_k)
@@ -233,7 +233,7 @@ contains
 
             else ! 2D
                if (jasal > 0) then
-                  salint = max(0d0, constituents(isalt, k))
+                  salint = max(0.0_dp, constituents(isalt, k))
                else
                   salint = backgroundsalinity
                end if
@@ -248,18 +248,18 @@ contains
                !
                u = ucx_mor(k) ! x component
                v = ucy_mor(k) ! y component
-               w = -999d0 ! z component
+               w = -999.0_dp ! z component
                !
-               tur_k = -999d0
-               tur_eps = -999d0
+               tur_k = -999.0_dp
+               tur_eps = -999.0_dp
                call get_tshear_tdiss(tshear, tur_eps, rhoint, taub=taub(k), waterdepth=h0, vonkar=vonkar)
             end if
             !
-            ctot = 0d0
-            cclay = 0d0
+            ctot = 0.0_dp
+            cclay = 0.0_dp
             do ll = 1, lsed
-               ctot = ctot + sed(ll, kk)
-               if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + sed(ll, kk)
+               ctot = ctot + constituents(ised1 + ll - 1, kk)
+               if (sedtyp(ll) == SEDTYP_CLAY) cclay = cclay + constituents(ised1 + ll - 1, kk)
             end do
             !
             do ll = 1, lsed
@@ -283,7 +283,7 @@ contains
                dll_reals(WS_RP_SALIN) = real(salint, hp)
                dll_reals(WS_RP_TEMP) = real(temint, hp)
                dll_reals(WS_RP_RHOWT) = real(rhoint, hp)
-               dll_reals(WS_RP_CFRCB) = real(sed(ll, kk), hp)
+               dll_reals(WS_RP_CFRCB) = real(constituents(ised1 + ll - 1, kk), hp)
                dll_reals(WS_RP_CTOT) = real(ctot, hp)
                dll_reals(WS_RP_KTUR) = real(tur_k, hp)
                dll_reals(WS_RP_EPTUR) = real(tur_eps, hp)

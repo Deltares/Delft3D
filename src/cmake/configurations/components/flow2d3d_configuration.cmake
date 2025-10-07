@@ -1,5 +1,4 @@
 # Specify the modules to be included
-
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()
@@ -78,6 +77,9 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_base.cma
 
 if(NOT TARGET nefis)
     add_subdirectory(${checkout_src_root}/${nefis_module} nefis)
+endif()
+if(NOT TARGET test_nefis)
+    add_subdirectory(${checkout_src_root}/${test_nefis} test_nefis)
 endif()
 if(NOT TARGET trim2dep)
     add_subdirectory(${checkout_src_root}/${trim2dep} trim2dep)

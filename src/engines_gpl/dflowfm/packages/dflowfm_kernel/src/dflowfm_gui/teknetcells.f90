@@ -224,24 +224,24 @@ contains
                if (jacol == 1) call setcol(3)
 
                if (jsferic == 1) then
-                  xfac = 1d0 / cos(yzw(k) * dg2rd)
+                  xfac = 1.0_dp / cos(yzw(k) * dg2rd)
                else
-                  xfac = 1d0
+                  xfac = 1.0_dp
                end if
 
                if (uu1**2 + vv1**2 < uu2**2 + vv2**2) then
                   if (jacol == 1) call setcol(3)
-                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, 0.5d0 * VFAC)
-                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, -0.5d0 * VFAC)
+                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, 0.5_dp * VFAC)
+                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, -0.5_dp * VFAC)
                   if (jacol == 1) call setcol(221)
                else
                   if (jacol == 1) call setcol(221)
-                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, 0.5d0 * VFAC)
-                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, -0.5d0 * VFAC)
+                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, 0.5_dp * VFAC)
+                  call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, -0.5_dp * VFAC)
                   if (jacol == 1) call setcol(3)
                end if
-               call arrowsxy(xzw(k), yzw(k), uu2 * xfac, vv2, 0.5d0 * VFAC)
-               call arrowsxy(xzw(k), yzw(k), uu2 * xfac, vv2, -0.5d0 * VFAC)
+               call arrowsxy(xzw(k), yzw(k), uu2 * xfac, vv2, 0.5_dp * VFAC)
+               call arrowsxy(xzw(k), yzw(k), uu2 * xfac, vv2, -0.5_dp * VFAC)
             end if
          end do
       end if

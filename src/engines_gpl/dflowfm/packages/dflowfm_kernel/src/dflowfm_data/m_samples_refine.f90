@@ -38,9 +38,9 @@ module m_samples_refine ! used in refinecellsandfaces2 and in sample paths
    integer :: Nsamplesmooth = 0 !< number of sample smoothing iterations
    integer :: Nsamplesmooth_last = -1 !< last number of sample smoothing iterations
    integer :: MAXLEVEL = 10 !< maximum number of refinement levels
-   real(kind=dp) :: threshold = 1d2 !< typical obstacle height in grid refinement
-   real(kind=dp) :: thresholdmin = 1d0 !< minimum obstacle height grid refinement
-   real(kind=dp) :: hmin = 1d3 !< minimum cell size
+   real(kind=dp) :: threshold = 1.0e2_dp !< typical obstacle height in grid refinement
+   real(kind=dp) :: thresholdmin = 1.0_dp !< minimum obstacle height grid refinement
+   real(kind=dp) :: hmin = 1.0e3_dp !< minimum cell size
    integer :: jadirectional = 0 !< directional refinement (1) or not (0)
 
    integer, parameter :: iHesstat_OK = 0 !< sample Hessians up-to-date
@@ -52,9 +52,9 @@ module m_samples_refine ! used in refinecellsandfaces2 and in sample paths
    integer, parameter :: ITYPE_MESHWIDTH = 3 !< criterion based on maximum mesh width
    integer :: irefinetype = ITYPE_WAVECOURANT !< refinement criterion type
    integer :: jaconnect = 1 !< connect hanging nodes (1) or not (0)
-   real(kind=dp) :: Dt_maxcour = 120d0 !< maximum time-step in courant grid
+   real(kind=dp) :: Dt_maxcour = 120.0_dp !< maximum time-step in courant grid
    real(kind=dp) :: Dx_mincour = 750. !< minimum edge length in courant grid
-   real(kind=dp) :: dminsampledist = 0d0 !< minimum sample distance
+   real(kind=dp) :: dminsampledist = 0.0_dp !< minimum sample distance
    integer :: jaoutsidecell = 1 !< take samples outside cell into account (1) or not (0)
    integer :: numrefcycles = 20, numrefcyc = 0 !< max and act nr of non interactive cycles
 end module m_samples_refine

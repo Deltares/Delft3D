@@ -62,7 +62,7 @@ contains
                                   maxitverticalforestersal, maxitverticalforestertem
       use m_flow, only: hs, kmx, kbot, ktop, ndkx, spirint, vol1
       use m_flowgeom, only: ndx, ndxi, bai_mor
-      use m_flowtimes, only: dts, tfac, time1, tstart_user
+      use m_flowtimes, only: dts
       use m_fm_icecover, only: freezing_temperature
       use m_get_kbot_ktop, only: getkbotktop
       use m_missing, only: dmiss
@@ -110,7 +110,9 @@ contains
                   maserrsed = maserrsed + vol1(k) * (constituents(iconst, k) - upperlimitssc)
                   constituents(iconst, k) = upperlimitssc
                end if
-               sed(grain, k) = constituents(iconst, k)
+               if (.not. stm_included) then
+                  sed(grain, k) = constituents(iconst, k)
+               end if
             end do
          end do
 
@@ -189,22 +191,21 @@ contains
          call doforester()
       end if
       !
-      ! When a cell become dries, keep track of the mass in the water column in sscum array. This will be accounted
+      ! When a cell become dry, keep track of the mass in the water column in ssccum array. This will be accounted
       ! for in the bottom update when the cell becomes wet again. This prevents large concentration gradients and
       ! exploding bed levels.
       if (stm_included .and. ised1 > 0) then
-         if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor * tfac) then
-            do grain = 1, mxgr
-               do k = 1, ndx
-                  if (hs(k) < stmpar%morpar%sedthr) then
-                     call getkbotktop(k, kb, kt)
-                     ssccum(grain, k) = ssccum(grain, k) + sum(constituents(ised1 + grain - 1, kb:kt)) / &
-                                        dts * bai_mor(k) * vol1(k)
-                     constituents(ised1 + grain - 1, kb:kt) = 0.0_dp
-                  end if
-               end do
+         do grain = 1, mxgr
+            do k = 1, ndx
+               if (hs(k) <= stmpar%morpar%sedthr) then
+                  call getkbotktop(k, kb, kt)
+                  ssccum(grain, k) = ssccum(grain, k) + sum(constituents(ISED1 + grain - 1, kb:kt)*vol1(kb:kt)) / &
+                                     dts * bai_mor(k)
+                  constituents(ISED1 + grain - 1, kb:kt) = 0.0_dp
+                  constituents(ISED1 + grain - 1, k) = 0.0_dp
+               end if
             end do
-         end if
+         end do
       end if
 
       if (timon) then

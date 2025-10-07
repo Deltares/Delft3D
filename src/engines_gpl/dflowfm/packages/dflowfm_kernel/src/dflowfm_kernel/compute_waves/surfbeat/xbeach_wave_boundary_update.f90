@@ -93,7 +93,7 @@ module wave_boundary_update_module
    integer, parameter :: nfint = 801 ! size of standard 2D spectrum in frequency dimension
    integer, parameter :: naint = 401 ! size of standard 2D spectrum in angular dimension
    integer, parameter :: Kmin = 200 ! minimum number of wave train components
-   real(dp), parameter :: wdmax = 5.d0 ! maximum depth*reliable angular wave frequency that can be resolved by
+   real(dp), parameter :: wdmax = 5.0_dp ! maximum depth*reliable angular wave frequency that can be resolved by
    ! nonhydrostatic wave model. All frequencies above this are removed
    ! from nonhspectrum generation
    ! Shortcut pointers to commonly used parameters
@@ -103,9 +103,9 @@ module wave_boundary_update_module
    integer :: singledir
    real(dp) :: hb0
    ! Physical constants
-   real(dp), parameter :: par_pi = 4.d0 * atan(1.d0)
-   real(dp), parameter :: par_g = 9.81d0
-   complex(kind(0.0d0)), parameter :: par_compi = (0.0d0, 1.0d0)
+   real(dp), parameter :: par_pi = 4.0_dp * atan(1.0_dp)
+   real(dp), parameter :: par_g = 9.81_dp
+   complex(kind(0.0_dp)), parameter :: par_compi = (0.0_dp, 1.0_dp)
    ! others
    integer, save :: ind_end_taper
    real(dp), dimension(:, :), allocatable, save :: lastwaveelevation ! wave height at the end of the last spectrum
@@ -159,7 +159,7 @@ contains
          ! call to this subroutine. Modify time axis to reflect shift in time since the
          ! previous call
          waveBoundaryTimeSeries(ibnd)%tbc = min(waveBoundaryTimeSeries(ibnd)%tbc, &
-                                                huge(0.d0) - waveBoundaryAdministration(ibnd)%startComputeNewSeries) + &
+                                                huge(0.0_dp) - waveBoundaryAdministration(ibnd)%startComputeNewSeries) + &
                                             waveBoundaryAdministration(ibnd)%startComputeNewSeries
 
       else
@@ -175,7 +175,7 @@ contains
          end if
 
          ! Read through input spectra files
-         fmax = 1.d0 ! assume 1Hz as maximum frequency. Increase in loop below if needed.
+         fmax = 1.0_dp ! assume 1Hz as maximum frequency. Increase in loop below if needed.
          do iloc = 1, nspectra
 
             call writelog('sl', '(a,i0)', 'Reading spectrum at location ', iloc)
@@ -202,7 +202,7 @@ contains
             call writelog('sl', '', 'Values calculated from interpolated spectrum:')
             call writelog('sl', '(a,f0.2,a)', 'Hm0       = ', specinterp(iloc)%hm0, ' m')
             call writelog('sl', '(a,f0.2,a)', 'Trep      = ', specinterp(iloc)%trep, ' s')
-            call writelog('sl', '(a,f0.2,a)', 'Mean dir  = ', mod(specinterp(iloc)%dirm, 360.d0), ' degN')
+            call writelog('sl', '(a,f0.2,a)', 'Mean dir  = ', mod(specinterp(iloc)%dirm, 360.0_dp), ' degN')
 
          end do
 
@@ -238,7 +238,7 @@ contains
 
          ! We can now apply a correction to the wave train components if necessary. This section can be
          ! improved later
-         if (nspectra == 1 .and. specin(1)%scoeff > 1000.d0) then
+         if (nspectra == 1 .and. specin(1)%scoeff > 1000.0_dp) then
             ! this can be used both for Jonswap and vardens input
             wp%thetagen = mod(specin(1)%dir0, 2 * par_pi)
          end if
@@ -267,7 +267,7 @@ contains
          if (.not. waveBoundaryParameters(ibnd)%nonhspectrum) then
             ! if we want to send some low-frequency swell waves into the model in the NLSWE then
             ! separate here into a mix of wave action balance and NLSWE components
-            if (waveBoundaryParameters(ibnd)%swkhmin > 0.d0) then
+            if (waveBoundaryParameters(ibnd)%swkhmin > 0.0_dp) then
                ! recalculate Trep
                call tpDcalc(sum(wp%Sfinterp, DIM=1) / (npb) * (1 - wp%PRindex), wp%fgen, waveSpectrumAdministration(ibnd)%Tbc, &
                             & waveBoundaryParameters(ibnd)%trepfac, waveBoundaryParameters(ibnd)%Tm01switch)
@@ -312,7 +312,7 @@ contains
          deallocate (wp%PRindex)
          if (.not. waveBoundaryParameters(ibnd)%nonhspectrum) then
             deallocate (wp%WDindex)
-            if (waveBoundaryParameters(ibnd)%swkhmin > 0.d0) then
+            if (waveBoundaryParameters(ibnd)%swkhmin > 0.0_dp) then
                deallocate (wp%zsits)
                deallocate (wp%uits)
             end if
@@ -483,29 +483,29 @@ contains
          ! Read the spectral parameters for all spectrum components
          !
          ! Wave height (required)
-         Hm0 = readkey_dblvec(readfile, 'Hm0', nmodal, nmodal, 0.0d0, 0.0d0, 5.0d0, bcast=.false., required=.true.)
+         Hm0 = readkey_dblvec(readfile, 'Hm0', nmodal, nmodal, 0.0_dp, 0.0_dp, 5.0_dp, bcast=.false., required=.true.)
          !
          ! Wave period (required)
          ! allow both Tp and fp specification to bring in line with params.txt
          if (isSetParameter(readfile, 'Tp', bcast=.false.) .and. .not. isSetParameter(readfile, 'fp', bcast=.false.)) then
-            fp = 1.d0 / readkey_dblvec(readfile, 'Tp', nmodal, nmodal, 12.5d0, 2.5d0, 20.0d0, bcast=.false.)
+            fp = 1.0_dp / readkey_dblvec(readfile, 'Tp', nmodal, nmodal, 12.5_dp, 2.5_dp, 20.0_dp, bcast=.false.)
          elseif (isSetParameter(readfile, 'fp', bcast=.false.) .and. .not. isSetParameter(readfile, 'Tp', bcast=.false.)) then
-            fp = readkey_dblvec(readfile, 'fp', nmodal, nmodal, 0.08d0, 0.0625d0, 0.4d0, bcast=.false.)
+            fp = readkey_dblvec(readfile, 'fp', nmodal, nmodal, 0.08_dp, 0.0625_dp, 0.4_dp, bcast=.false.)
          elseif (.not. isSetParameter(readfile, 'fp', bcast=.false.) .and. .not. isSetParameter(readfile, 'Tp', bcast=.false.)) then
             call writelog('lswe', '', 'Error: missing required value for parameter ''Tp'' or ''fp'' in ', trim(readfile))
             call xbeach_errorhandler()
          else
-            fp = 1.d0 / readkey_dblvec(readfile, 'Tp', nmodal, nmodal, 12.5d0, 2.5d0, 20.0d0, bcast=.false.)
+            fp = 1.0_dp / readkey_dblvec(readfile, 'Tp', nmodal, nmodal, 12.5_dp, 2.5_dp, 20.0_dp, bcast=.false.)
             call writelog('lsw', '', 'Warning: selecting to read peak period (Tp) instead of frequency (fp) in ', trim(readfile))
          end if
          !
          ! Wave spreading in frequency domain (peakedness)
          !
-         gam = readkey_dblvec(readfile, 'gammajsp', nmodal, nmodal, 3.3d0, 1.0d0, 5.0d0, bcast=.false.)
+         gam = readkey_dblvec(readfile, 'gammajsp', nmodal, nmodal, 3.3_dp, 1.0_dp, 5.0_dp, bcast=.false.)
          !
          ! Wave spreading in directional domain
          !
-         scoeff = readkey_dblvec(readfile, 's', nmodal, nmodal, 10.0d0, 1.0d0, 1000.0d0, bcast=.false.)
+         scoeff = readkey_dblvec(readfile, 's', nmodal, nmodal, 10.0_dp, 1.0_dp, 1000.0_dp, bcast=.false.)
          !
          ! TMA
          !
@@ -516,25 +516,25 @@ contains
          if (isSetParameter(readfile, 'mainang', bcast=.false.) .and. &
              .not. isSetParameter(readfile, 'dir0', bcast=.false.)) then
             mainang = readkey_dblvec(readfile, 'mainang', nmodal, nmodal, &
-                                     270.0d0, 0.0d0, 360.0d0, bcast=.false.)
+                                     270.0_dp, 0.0_dp, 360.0_dp, bcast=.false.)
          elseif (isSetParameter(readfile, 'dir0', bcast=.false.) .and. &
                  .not. isSetParameter(readfile, 'mainang', bcast=.false.)) then
             mainang = readkey_dblvec(readfile, 'dir0', nmodal, nmodal, &
-                                     270.0d0, 0.0d0, 360.0d0, bcast=.false.)
+                                     270.0_dp, 0.0_dp, 360.0_dp, bcast=.false.)
          elseif (.not. isSetParameter(readfile, 'dir0', bcast=.false.) .and. &
                  .not. isSetParameter(readfile, 'mainang', bcast=.false.)) then
-            mainang = 270.d0
+            mainang = 270.0_dp
          else
-            mainang = readkey_dblvec(readfile, 'mainang', nmodal, nmodal, 270.0d0, 0.0d0, 360.0d0, bcast=.false.)
+            mainang = readkey_dblvec(readfile, 'mainang', nmodal, nmodal, 270.0_dp, 0.0_dp, 360.0_dp, bcast=.false.)
             call writelog('lsw', '', 'Warning: selecting to read ''mainang'' instead of ''dir0'' in ', trim(readfile))
          end if
          !
          ! Nyquist parameters used only in this subroutine
          ! are not read individually for each spectrum partition
          if (oldnyq == 1) then
-            fnyq = readkey_dbl(readfile, 'fnyq', 0.3d0, 0.2d0, 1.0d0, bcast=.false.)
+            fnyq = readkey_dbl(readfile, 'fnyq', 0.3_dp, 0.2_dp, 1.0_dp, bcast=.false.)
          else
-            fnyq = readkey_dbl(readfile, 'fnyq', max(0.3d0, 3.d0 * maxval(fp)), 0.2d0, 1.0d0, bcast=.false.)
+            fnyq = readkey_dbl(readfile, 'fnyq', max(0.3_dp, 3.0_dp * maxval(fp)), 0.2_dp, 1.0_dp, bcast=.false.)
          end if
          dfj = readkey_dbl(readfile, 'dfj', fnyq / 200, fnyq / 1000, fnyq / 20, bcast=.false.)
          !
@@ -575,8 +575,8 @@ contains
          !if (     morfacopt==1) then
          !   wp%rtbc = wp%rtbc/max(     morfac,1.d0)
          !endif
-         fp(1) = 1.d0 / Tp
-         fnyq = 3.d0 * fp(1)
+         fp(1) = 1.0_dp / Tp
+         fnyq = 3.0_dp * fp(1)
          dfj = fp(1) / 50
          tma(1) = 0
          close (fid)
@@ -624,42 +624,42 @@ contains
          ! characteristics
          if (tma(ip) == 1) then
             do ii = 1, specin%nf
-               LL0 = par_g * (1 / specin%f(ii))**2 / 2d0 / par_pi ! deep water wave length
+               LL0 = par_g * (1 / specin%f(ii))**2 / 2.0_dp / par_pi ! deep water wave length
                LL = iteratedispersion(LL0, LL0, par_pi, hb0)
-               if (LL < 0.d0) then
+               if (LL < 0.0_dp) then
                   call writelog('lsw', '', 'No dispersion convergence found for wave train ', i, &
                                 ' in boundary condition generation')
                   LL = -LL
                end if
                k = 2 * par_pi / LL
                hh = hb0
-               nn = 0.5d0 * (1 + k * hh * ((1 - tanh(k * hh)**2) / (tanh(k * hh))))
-               sigmatma = ((1 / 2.d0 / nn) * tanh(k * hh)**2)
+               nn = 0.5_dp * (1 + k * hh * ((1 - tanh(k * hh)**2) / (tanh(k * hh))))
+               sigmatma = ((1 / 2.0_dp / nn) * tanh(k * hh)**2)
                y(ii) = y(ii) * sigmatma
             end do
          end if
-         y = (Hm0(ip) / (4.d0 * sqrt(sum(y) * dfj)))**2 * y
+         y = (Hm0(ip) / (4.0_dp * sqrt(sum(y) * dfj)))**2 * y
          ! Convert main angle from degrees to radians and from nautical convention to
          ! internal grid
-         mainang(ip) = (1.5d0 * par_pi) - mainang(ip) * par_pi / 180
+         mainang(ip) = (1.5_dp * par_pi) - mainang(ip) * par_pi / 180
          ! Make sure the main angle is defined between 0 and 2*pi
-         do while (mainang(ip) > 2 * par_pi .or. mainang(ip) < 0.d0) !Robert en Ap
+         do while (mainang(ip) > 2 * par_pi .or. mainang(ip) < 0.0_dp) !Robert en Ap
             if (mainang(ip) > 2 * par_pi) then
                mainang(ip) = mainang(ip) - 2 * par_pi
-            elseif (mainang(ip) < 0.d0) then
+            elseif (mainang(ip) < 0.0_dp) then
                mainang(ip) = mainang(ip) + 2 * par_pi
             end if
          end do
          ! Convert 200 directions relative to main angle to directions relative to
          ! internal grid
          ! Bas: apparently division by 2 for cosine law happens already here
-         tempdir = (specin%ang - mainang(ip)) / 2d0
+         tempdir = (specin%ang - mainang(ip)) / 2.0_dp
          ! Make sure all directions around the main angle are defined between 0 and 2*pi
-         do while (any(tempdir > 2d0 * par_pi) .or. any(tempdir < 0.d0))
-            where (tempdir > 2d0 * par_pi)
-               tempdir = tempdir - 2d0 * par_pi
-            elsewhere(tempdir < 0.d0)
-               tempdir = tempdir + 2d0 * par_pi
+         do while (any(tempdir > 2.0_dp * par_pi) .or. any(tempdir < 0.0_dp))
+            where (tempdir > 2.0_dp * par_pi)
+               tempdir = tempdir - 2.0_dp * par_pi
+            elsewhere(tempdir < 0.0_dp)
+               tempdir = tempdir + 2.0_dp * par_pi
             end where
          end do
          ! Calculate directional spreading based on cosine law
@@ -696,10 +696,10 @@ contains
          specin%fp = fp(ind) ! not really used in further calculation
          specin%dir0 = mainang(ind) ! again not really used in further calculation
          ! if all scoeff>1000 then all waves should be in the same direction exactly
-         if (all(scoeff >= 1024.d0) .and. all(mainang == mainang(ind))) then
-            specin%scoeff = 1024.d0
+         if (all(scoeff >= 1024.0_dp) .and. all(mainang == mainang(ind))) then
+            specin%scoeff = 1024.0_dp
          else
-            specin%scoeff = min(scoeff(ind), 999.d0)
+            specin%scoeff = min(scoeff(ind), 999.0_dp)
          end if
          ! Now we have to loop over all partitioned spectra. Where two or more spectra
          ! overlap, only the largest is counted, and all others are set to zero. Afterwards
@@ -716,15 +716,15 @@ contains
          end do
          allocate (scalefac1(nmodal)) ! this is the scaling factor required to maintain Hm0
          ! including that parts of the spectrum are set to zero
-         scalefac1 = 1.d0
+         scalefac1 = 1.0_dp
          allocate (scalefac2(nmodal)) ! this is the scaling factor required to maintain Hm0
          ! in the previous iteration
-         scalefac2 = 1.d0
+         scalefac2 = 1.0_dp
          allocate (avgscale(nmodal))
-         avgscale = 1.d0
+         avgscale = 1.0_dp
          ! these are convergence criteria
-         newconv = 0.d0
-         oldconv = huge(0.d0)
+         newconv = 0.0_dp
+         oldconv = huge(0.0_dp)
          cont = .true.
          allocate (tempmax(nmodal)) ! used to store maximum value in f,theta space
          allocate (oldvariance(nmodal)) ! used to store the sum of variance in the original partitions
@@ -757,7 +757,7 @@ contains
                   ind = minval(maxloc(tempmax))
                   do ip = 1, nmodal
                      if (ip /= ind) then
-                        scaledspec(ip)%S(ii, i) = 0.d0
+                        scaledspec(ip)%S(ii, i) = 0.0_dp
                      end if
                   end do
                end do
@@ -767,17 +767,17 @@ contains
             scalefac2 = scalefac1 ! keep previous results
             do ip = 1, nmodal
                newvariance(ip) = sum(scaledspec(ip)%S)
-               if (newvariance(ip) > 0.01d0 * oldvariance(ip)) then
+               if (newvariance(ip) > 0.01_dp * oldvariance(ip)) then
                   scalefac1(ip) = oldvariance(ip) / newvariance(ip) ! want to maximise to a factor 2
                   ! else can generate rediculous results
                else
-                  scalefac1(ip) = 0.d0 ! completely remove this spectrum
+                  scalefac1(ip) = 0.0_dp ! completely remove this spectrum
                end if
             end do
             !
             ! check convergence criteria (if error is increasing, we have passed best fit)
             newconv = maxval(abs(scalefac2 - scalefac1) / scalefac1)
-            if (newconv < 0.0001d0 .or. abs(newconv - oldconv) < 0.0001d0) then
+            if (newconv < 0.0001_dp .or. abs(newconv - oldconv) < 0.0001_dp) then
                cont = .false.
             end if
             oldconv = newconv
@@ -798,12 +798,12 @@ contains
          do ip = 1, nmodal
             indvec = maxloc(scaledspec(ip)%S)
             scalefac1(ip) = scaledspec(ip)%S(indvec(1), indvec(2)) / &
-                            multinomalspec(ip)%S(indvec(1), indvec(2)) - 1.d0
+                            multinomalspec(ip)%S(indvec(1), indvec(2)) - 1.0_dp
          end do
          !
          ! Warning and/or error criteria here if spectra overlap each other too much
          do ip = 1, nmodal
-            if (scalefac1(ip) > 0.5d0) then
+            if (scalefac1(ip) > 0.5_dp) then
                if (forcepartition == 1) then
                   call writelog('lsw', '(a,f0.0,a,i0,a,a,a)', &
                                 'Warning: ', scalefac1(ip) * 100, '% of energy in spectrum partition ''', ip, &
@@ -819,12 +819,12 @@ contains
                                 'set ''forcepartition = 1'' in ', trim(readfile))
                   call xbeach_errorhandler()
                end if
-            elseif (scalefac1(ip) > 0.2d0 .and. scalefac1(ip) <= 0.5d0) then
+            elseif (scalefac1(ip) > 0.2_dp .and. scalefac1(ip) <= 0.5_dp) then
                call writelog('lsw', '(a,f0.0,a,i0,a,a,a)', &
                              'Warning: ', scalefac1(ip) * 100, '% of energy in spectrum partition ''', ip, &
                              ''' in  ', trim(readfile), ' is overlapped by other partitions')
                call writelog('lsw', '', ' Check spectral partitioning in ', trim(readfile))
-            elseif (scalefac1(ip) < 0.d0) then
+            elseif (scalefac1(ip) < 0.0_dp) then
                call writelog('lsw', '(a,i0,a,a,a)', 'Warning: spectrum partition ''', ip, ''' in  ', trim(readfile), &
                              ' has been removed')
                call writelog('lsw', '', 'This spectrum is entirely overlapped by another spectrum partition.', &
@@ -834,7 +834,7 @@ contains
          !
          ! Now set total spectrum
          allocate (specin%S(specin%nf, specin%nang))
-         specin%S = 0.d0
+         specin%S = 0.0_dp
          do ip = 1, nmodal
             specin%S = specin%S + scaledspec(ip)%S
          end do
@@ -848,7 +848,7 @@ contains
       ! We need frequency spectrum to ensure Sf remains correct between interpolation
       ! routines
       allocate (specin%Sf(specin%nf))
-      specin%Sf = 0.d0
+      specin%Sf = 0.0_dp
       do i = 1, specin%nf
          do ii = 1, specin%nang
             if (ii == 1) then
@@ -892,25 +892,25 @@ contains
 
       xa = abs(x)
 
-      where (xa == 0d0)
+      where (xa == 0.0_dp)
          xa = 1e-20
       end where
 
       sigma = xa
 
-      where (sigma < 1d0)
+      where (sigma < 1.0_dp)
          sigma = 0.07
       end where
 
-      where (sigma >= 1d0)
+      where (sigma >= 1.0_dp)
          sigma = 0.09
       end where
 
-      temp = 0d0 * xa + 1d0
+      temp = 0.0_dp * xa + 1.0_dp
 
-      fac1 = xa**(-5d0)
-      fac2 = exp(-1.25 * (xa**(-4d0)))
-      fac3 = (gam * temp)**(exp(-((xa - 1)**2d0) / (2.*(sigma**2d0))))
+      fac1 = xa**(-5.0_dp)
+      fac2 = exp(-1.25 * (xa**(-4.0_dp)))
+      fac3 = (gam * temp)**(exp(-((xa - 1)**2.0_dp) / (2.*(sigma**2.0_dp))))
 
       y = fac1 * fac2 * fac3
       y = y / maxval(y)
@@ -1018,7 +1018,7 @@ contains
       ! Convert angles to cartesian degrees relative to East
       if (switch == 1) then
          ! nautical to cartesian East
-         specin%ang = 270.d0 - specin%ang
+         specin%ang = 270.0_dp - specin%ang
       else
          ! cartesian to cartesian East
          specin%ang = specin%ang - dthetaS_XB
@@ -1035,13 +1035,13 @@ contains
       nt = 0
       Ashift = 0
       ! Make sure that all angles are in range of 0 to 360 degrees
-      if (minval(specin%ang) < 0.d0) then
+      if (minval(specin%ang) < 0.0_dp) then
          allocate (temp(specin%nang))
          Ashift = -1
-         temp = 0.d0
+         temp = 0.0_dp
          do i = 1, specin%nang
-            if (specin%ang(i) < 0.d0) then
-               specin%ang(i) = specin%ang(i) + 360.0d0
+            if (specin%ang(i) < 0.0_dp) then
+               specin%ang(i) = specin%ang(i) + 360.0_dp
                nt = nt + 1
             end if
          end do
@@ -1049,13 +1049,13 @@ contains
          temp(specin%nang - nt + 1:specin%nang) = specin%ang(1:nt)
          specin%ang = temp
          deallocate (temp)
-      elseif (maxval(specin%ang) > 360.0d0) then
+      elseif (maxval(specin%ang) > 360.0_dp) then
          allocate (temp(specin%nang))
          Ashift = 1
-         temp = 0.d0
+         temp = 0.0_dp
          do i = 1, specin%nang
-            if (specin%ang(i) > 360.d0) then
-               specin%ang(i) = specin%ang(i) - 360.0d0
+            if (specin%ang(i) > 360.0_dp) then
+               specin%ang(i) = specin%ang(i) - 360.0_dp
                nt = nt + 1
             end if
          end do
@@ -1126,7 +1126,7 @@ contains
 
       ! Replace exception value
       where (specin%S == exc)
-         specin%S = 0.d0
+         specin%S = 0.0_dp
       end where
 
       ! If angles were decreasing, flip S_array as also dir is flipped
@@ -1165,14 +1165,14 @@ contains
 
       ! We need a value for spreading. The assumption is that it is less than 1000
       ! This way, wp%fgen will not be set to just one angle.
-      specin%scoeff = -1.d0
+      specin%scoeff = -1.0_dp
       ! We need to know if hm0 was set explicitly, not the case for Swan files
-      specin%hm0 = -1.d0
+      specin%hm0 = -1.0_dp
 
       ! We need frequency spectrum to ensure Sf remains correct between interpoloation
       ! routines
       allocate (specin%Sf(specin%nf))
-      specin%Sf = 0.d0
+      specin%Sf = 0.0_dp
       do i = 1, specin%nf
          do ii = 1, specin%nang
             if (ii == 1) then
@@ -1263,18 +1263,18 @@ contains
       ! a high value (greater than 1000). Else set spreading to a negative value.
       allocate (specin%Sd(specin%nang))
       specin%Sd = sum(specin%S, DIM=1)
-      nnz = count(specin%Sd > 0.d0)
+      nnz = count(specin%Sd > 0.0_dp)
       if (nnz == 1) then
-         specin%scoeff = 1024.d0
+         specin%scoeff = 1024.0_dp
          specin%dir0 = specin%ang(minval(maxloc(specin%Sd)))
       else
-         specin%scoeff = -1.d0
+         specin%scoeff = -1.0_dp
       end if
 
       ! We need frequency spectrum to ensure Sf remains correct between interpoloation
       ! routines
       allocate (specin%Sf(specin%nf))
-      specin%Sf = 0.d0
+      specin%Sf = 0.0_dp
       do i = 1, specin%nf
          do ii = 1, specin%nang
             if (ii == 1) then
@@ -1282,13 +1282,13 @@ contains
             elseif (ii == specin%nang) then
                specin%Sf(i) = specin%Sf(i) + specin%S(i, ii) * abs(specin%ang(ii) - specin%ang(ii - 1))
             else
-               specin%Sf(i) = specin%Sf(i) + specin%S(i, ii) * abs(specin%ang(ii + 1) - specin%ang(ii - 1)) / 2d0
+               specin%Sf(i) = specin%Sf(i) + specin%S(i, ii) * abs(specin%ang(ii + 1) - specin%ang(ii - 1)) / 2.0_dp
             end if
          end do
       end do
 
       ! We need to know if hm0 was set explicitly, not the case for vardens files
-      specin%hm0 = -1.d0
+      specin%hm0 = -1.0_dp
 
    end subroutine read_vardens_file
 
@@ -1313,7 +1313,7 @@ contains
       real(dp) :: hm0pre, hm0post, Sfnow, factor, tempt0
       real(dp), dimension(:, :), allocatable :: Stemp
 
-      real(kind=dp), parameter :: dtol = 1d-16
+      real(kind=dp), parameter :: dtol = 1.0e-16_dp
 
       real(kind=dp) :: xcycle
 
@@ -1333,13 +1333,13 @@ contains
          specinterp%f(i) = (i - 1) * specinterp%df
       end do
       specinterp%nang = naint
-      specinterp%dang = 2d0 * par_pi / (naint - 1) ! this is exactly the same as in the JONSWAP construction
+      specinterp%dang = 2.0_dp * par_pi / (naint - 1) ! this is exactly the same as in the JONSWAP construction
       do i = 1, specinterp%nang
          specinterp%ang(i) = (i - 1) * specinterp%dang
       end do
 
       ! If hm0 was set explicitly, then use that, else calculate hm0
-      if (specin%hm0 > 0.d0) then
+      if (specin%hm0 > 0.0_dp) then
          hm0pre = specin%hm0
       else
          ! pre-interpolation hm0 value (can be on a non-monotonic f,ang grid)
@@ -1351,18 +1351,18 @@ contains
                m0 = m0 + specin%S(i, j) * df * dang
             end do
          end do
-         hm0pre = 4d0 * sqrt(m0)
+         hm0pre = 4.0_dp * sqrt(m0)
       end if
 
       ! interpolation (no extrapolation) of input 2D spectrum to standard 2D spectrum
-      xcycle = 2.d0 * par_pi
+      xcycle = 2.0_dp * par_pi
       do i = 1, specin%nf
          call interp_in_cyclic_function(specin%ang, specin%S(i, :), specin%nang, xcycle, specinterp%ang, naint, Stemp(i, :))
       end do
       do j = 1, naint
          do i = 1, nfint
             if (specinterp%f(i) > specin%f(specin%nf) .or. specinterp%f(i) < specin%f(1)) then
-               specinterp%S(i, j) = 0.d0
+               specinterp%S(i, j) = 0.0_dp
             else
                call linear_interp(specin%f, Stemp(:, j), specin%nf, specinterp%f(i), specinterp%S(i, j), dummy)
             end if
@@ -1372,7 +1372,7 @@ contains
       deallocate (Stemp)
       ! hm0 post (is always on a monotonic f,ang grid)
       m0 = sum(specinterp%S) * specinterp%df * specinterp%dang
-      hm0post = 4d0 * sqrt(m0)
+      hm0post = 4.0_dp * sqrt(m0)
 
       ! calculate 1D spectrum, summed over directions
       specinterp%Sf = sum(specinterp%S, DIM=2) * specinterp%dang
@@ -1381,13 +1381,13 @@ contains
       do i = 1, nfint
          if (specinterp%f(i) >= minval(specin%f) .and. specinterp%f(i) <= maxval(specin%f)) then
             call LINEAR_INTERP(specin%f, specin%Sf, specin%nf, specinterp%f(i), Sfnow, dummy)
-            if (specinterp%Sf(i) > 0.d0 .and. Sfnow > 0.d0) then
+            if (specinterp%Sf(i) > 0.0_dp .and. Sfnow > 0.0_dp) then
                factor = Sfnow / specinterp%Sf(i)
                specinterp%Sf(i) = specinterp%Sf(i) * factor
                specinterp%S(i, :) = specinterp%S(i, :) * factor
-            elseif (Sfnow == 0.d0) then
-               specinterp%Sf(i) = 0.d0
-               specinterp%S(i, :) = 0.d0
+            elseif (Sfnow == 0.0_dp) then
+               specinterp%Sf(i) = 0.0_dp
+               specinterp%S(i, :) = 0.0_dp
             else
                specinterp%Sf(i) = Sfnow
                dummy = maxval(maxloc(specin%S(i, :)))
@@ -1400,17 +1400,17 @@ contains
 
       ! calculate other wave statistics from interpolated spectrum
       m0 = sum(specinterp%Sf) * specinterp%df
-      specinterp%hm0 = 4d0 * sqrt(m0)
+      specinterp%hm0 = 4.0_dp * sqrt(m0)
       specinterp%Sd = sum(specinterp%S, DIM=1) * specinterp%df
       i = maxval(maxloc(specinterp%Sd))
-      specinterp%dir0 = 270.d0 - specinterp%ang(i) * 180d0 / par_pi ! converted back into nautical degrees
+      specinterp%dir0 = 270.0_dp - specinterp%ang(i) * 180.0_dp / par_pi ! converted back into nautical degrees
       i = maxval(maxloc(specinterp%Sf))
       specinterp%fp = specinterp%f(i)
       call tpDcalc(specinterp%Sf, specinterp%f, specinterp%trep, waveBoundaryParameters(ibnd)%trepfac, waveBoundaryParameters(ibnd)%Tm01switch)
-      specinterp%dirm = 270.d0 - 180.d0 / par_pi * atan2(sum(sin(specinterp%ang) * specinterp%Sd) / sum(specinterp%Sd), &
+      specinterp%dirm = 270.0_dp - 180.0_dp / par_pi * atan2(sum(sin(specinterp%ang) * specinterp%Sd) / sum(specinterp%Sd), &
                                                          sum(cos(specinterp%ang) * specinterp%Sd) / sum(specinterp%Sd))
 
-      specinterp%dirm = mod(specinterp%dirm, 360.d0)
+      specinterp%dirm = mod(specinterp%dirm, 360.0_dp)
 
    end subroutine interpolate_spectrum
 
@@ -1452,7 +1452,7 @@ contains
       real(dp), dimension(3) :: peakSd, peakang
       real(dp), dimension(:), allocatable :: tempSf
 
-      real(kind=dp), parameter :: dtol = 1d-16
+      real(kind=dp), parameter :: dtol = 1.0e-16_dp
 
       allocate (combspec%f(nfint))
       allocate (combspec%Sf(nfint))
@@ -1465,11 +1465,11 @@ contains
       combspec%ang = specinterp(1)%ang
       combspec%nang = naint
       combspec%dang = specinterp(1)%dang
-      combspec%trep = 0.d0
-      combspec%S = 0.d0
-      combspec%Sf = 0.d0
-      combspec%Sd = 0.d0
-      combspec%hm0 = 0.d0
+      combspec%trep = 0.0_dp
+      combspec%S = 0.0_dp
+      combspec%Sf = 0.0_dp
+      combspec%Sd = 0.0_dp
+      combspec%hm0 = 0.0_dp
 
       do iloc = 1, nspectra
          do ifn = 1, nfint
@@ -1487,30 +1487,30 @@ contains
       ! pick two neighbouring directional bins, including effect of closing circle at
       ! 0 and 2pi rad
       if (iloc > 1 .and. iloc < naint) then
-         peakSd = (/combspec%Sd(iloc - 1), combspec%Sd(iloc), combspec%Sd(iloc + 1)/)
-         peakang = (/combspec%ang(iloc - 1), combspec%ang(iloc), combspec%ang(iloc + 1)/)
+         peakSd = [combspec%Sd(iloc - 1), combspec%Sd(iloc), combspec%Sd(iloc + 1)]
+         peakang = [combspec%ang(iloc - 1), combspec%ang(iloc), combspec%ang(iloc + 1)]
       elseif (iloc == 1) then
-         peakSd = (/combspec%Sd(naint), combspec%Sd(1), combspec%Sd(2)/)
-         peakang = (/combspec%ang(naint) - 2d0 * par_pi, combspec%ang(1), combspec%ang(2)/)
+         peakSd = [combspec%Sd(naint), combspec%Sd(1), combspec%Sd(2)]
+         peakang = [combspec%ang(naint) - 2.0_dp * par_pi, combspec%ang(1), combspec%ang(2)]
       elseif (iloc == naint) then
-         peakSd = (/combspec%Sd(naint - 1), combspec%Sd(naint), combspec%Sd(1)/)
-         peakang = (/combspec%ang(naint - 1), combspec%ang(naint), combspec%ang(1) + 2d0 * par_pi/)
+         peakSd = [combspec%Sd(naint - 1), combspec%Sd(naint), combspec%Sd(1)]
+         peakang = [combspec%ang(naint - 1), combspec%ang(naint), combspec%ang(1) + 2.0_dp * par_pi]
       end if
       ! dir0 calculated as mean over peak and two neighbouring cells
       combspec%dir0 = sum(peakSd * peakang) / max(sum(peakSd), dtol)
       ! return to 0<=dir0<=2*par_pi
       if (combspec%dir0 > 2 * par_pi) then
-         combspec%dir0 = combspec%dir0 - 2d0 * par_pi
+         combspec%dir0 = combspec%dir0 - 2.0_dp * par_pi
       elseif (combspec%dir0 < 0) then
-         combspec%dir0 = combspec%dir0 + 2d0 * par_pi
+         combspec%dir0 = combspec%dir0 + 2.0_dp * par_pi
       end if
       !
       ! Compute peak wave frequency
       !
       allocate (tempSf(size(combspec%Sf)))
-      tempSf = 0d0 * combspec%Sf
+      tempSf = 0.0_dp * combspec%Sf
       ! find frequency range of 95% wave energy around peak
-      where (combspec%Sf > 0.95d0 * maxval(combspec%Sf))
+      where (combspec%Sf > 0.95_dp * maxval(combspec%Sf))
          tempSf = combspec%Sf
       end where
       ! smoothed peak is weighted mean frequency of 95% range
@@ -1543,7 +1543,7 @@ contains
       real(dp), dimension(3) :: peakSd, peakang
       real(dp), dimension(:), allocatable :: tempSf
 
-      real(kind=dp), parameter :: dtol = 1d-16
+      real(kind=dp), parameter :: dtol = 1.0e-16_dp
 
       allocate (combspec%f(nfint))
       allocate (combspec%Sf(nfint))
@@ -1556,11 +1556,11 @@ contains
       combspec%ang = specinterp(1)%ang
       combspec%nang = naint
       combspec%dang = specinterp(1)%dang
-      combspec%trep = 0.d0
-      combspec%S = 0.d0
-      combspec%Sf = 0.d0
-      combspec%Sd = 0.d0
-      combspec%hm0 = 0.d0
+      combspec%trep = 0.0_dp
+      combspec%S = 0.0_dp
+      combspec%Sf = 0.0_dp
+      combspec%Sd = 0.0_dp
+      combspec%hm0 = 0.0_dp
 
       do iloc = 1, npb
          combspec%S = combspec%S + wL(iloc) * specinterp(kL(iloc))%S + wR(iloc) * specinterp(kR(iloc))%S
@@ -1578,30 +1578,30 @@ contains
       ! pick two neighbouring directional bins, including effect of closing circle at
       ! 0 and 2pi rad
       if (iloc > 1 .and. iloc < naint) then
-         peakSd = (/combspec%Sd(iloc - 1), combspec%Sd(iloc), combspec%Sd(iloc + 1)/)
-         peakang = (/combspec%ang(iloc - 1), combspec%ang(iloc), combspec%ang(iloc + 1)/)
+         peakSd = [combspec%Sd(iloc - 1), combspec%Sd(iloc), combspec%Sd(iloc + 1)]
+         peakang = [combspec%ang(iloc - 1), combspec%ang(iloc), combspec%ang(iloc + 1)]
       elseif (iloc == 1) then
-         peakSd = (/combspec%Sd(naint), combspec%Sd(1), combspec%Sd(2)/)
-         peakang = (/combspec%ang(naint) - 2d0 * par_pi, combspec%ang(1), combspec%ang(2)/)
+         peakSd = [combspec%Sd(naint), combspec%Sd(1), combspec%Sd(2)]
+         peakang = [combspec%ang(naint) - 2.0_dp * par_pi, combspec%ang(1), combspec%ang(2)]
       elseif (iloc == naint) then
-         peakSd = (/combspec%Sd(naint - 1), combspec%Sd(naint), combspec%Sd(1)/)
-         peakang = (/combspec%ang(naint - 1), combspec%ang(naint), combspec%ang(1) + 2d0 * par_pi/)
+         peakSd = [combspec%Sd(naint - 1), combspec%Sd(naint), combspec%Sd(1)]
+         peakang = [combspec%ang(naint - 1), combspec%ang(naint), combspec%ang(1) + 2.0_dp * par_pi]
       end if
       ! dir0 calculated as mean over peak and two neighbouring cells
       combspec%dir0 = sum(peakSd * peakang) / max(sum(peakSd), dtol)
       ! return to 0<=dir0<=2*par_pi
       if (combspec%dir0 > 2 * par_pi) then
-         combspec%dir0 = combspec%dir0 - 2d0 * par_pi
+         combspec%dir0 = combspec%dir0 - 2.0_dp * par_pi
       elseif (combspec%dir0 < 0) then
-         combspec%dir0 = combspec%dir0 + 2d0 * par_pi
+         combspec%dir0 = combspec%dir0 + 2.0_dp * par_pi
       end if
       !
       ! Compute peak wave frequency
       !
       allocate (tempSf(size(combspec%Sf)))
-      tempSf = 0d0 * combspec%Sf
+      tempSf = 0.0_dp * combspec%Sf
       ! find frequency range of 95% wave energy around peak
-      where (combspec%Sf > 0.95d0 * maxval(combspec%Sf))
+      where (combspec%Sf > 0.95_dp * maxval(combspec%Sf))
          tempSf = combspec%Sf
       end where
       ! smoothed peak is weighted mean frequency of 95% range
@@ -1650,7 +1650,7 @@ contains
       else
          ! this is really already taken into account
          ! by specifying waveBoundaryParameters%sprdthr
-         fmax = 2d0 * maxval(combspec%f)
+         fmax = 2.0_dp * maxval(combspec%f)
       end if
 
       ! Determine frequencies around peak frequency of one-dimensional
@@ -1733,7 +1733,7 @@ contains
          if (randnums(wp%K + i) >= cdflocal(1)) then
             call LINEAR_INTERP(cdflocal, combspec%ang, naint, randnums(wp%K + i), wp%thetagen(i), dummy)
          else
-            call LINEAR_INTERP((/0.d0, cdflocal(1)/), (/combspec%ang(naint) - 2 * par_pi, combspec%ang(1)/), &
+            call LINEAR_INTERP([0.d0, cdflocal(1)], [combspec%ang(naint) - 2 * par_pi, combspec%ang(1)], &
                                2, randnums(wp%K + i), wp%thetagen(i), dummy)
          end if
          ! ensure wave direction 0<=theta<2pi
@@ -1867,7 +1867,7 @@ contains
       firstp = maxval(maxloc(findline)) ! Picks the first "1" in temp
 
       allocate (temp(size(findline)))
-      temp = (/(i, i=1, size(findline))/)
+      temp = [(i, i=1, size(findline))]
       lastp = maxval(maxloc(temp * findline)) ! Picks the last "1" in temp
 
       if (present(findlineout)) then
@@ -2479,8 +2479,8 @@ contains
       end do
       ! add 'inifinite ends to the time series in case of mismatch at the end or start of the time
       ! series generation and interpolation at each time step
-      waveBoundaryTimeSeries(ibnd)%tbc(1) = -1.d0 * huge(0.d0)
-      waveBoundaryTimeSeries(ibnd)%tbc(wp%tslenbc + 2) = 1.d0 * huge(0.d0)
+      waveBoundaryTimeSeries(ibnd)%tbc(1) = -1.0_dp * huge(0.0_dp)
+      waveBoundaryTimeSeries(ibnd)%tbc(wp%tslenbc + 2) = 1.0_dp * huge(0.0_dp)
       if (.not. allocated(E_t)) allocate (E_t(wp%tslen))
       if (wp%dtchanged) then
          ! Interpolate from internal time axis to output time axis
@@ -2969,9 +2969,9 @@ contains
 
       allocate (angcart(combspec%nang))
       allocate (Sdcart(combspec%nang))
-      allocate (eet(ntheta_s)); eet = 0d0
+      allocate (eet(ntheta_s)); eet = 0.0_dp
 
-      xcycle = 2d0 * pi
+      xcycle = 2.0_dp * pi
       ! combspec%ang contains nautical directions from 0 to 2 pi; convert to cartesian from -3/2pi to 1/2 pi
       ! in reverse order
 

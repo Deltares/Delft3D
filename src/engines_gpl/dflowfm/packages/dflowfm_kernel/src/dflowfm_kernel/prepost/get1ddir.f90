@@ -57,7 +57,7 @@ contains
 
       integer :: n2, k, L, LL, ka, kb, k1, k2
 
-      xt = 0d0; yt = 0d0; ka = 0; kb = 0; n2 = 0
+      xt = 0.0_dp; yt = 0.0_dp; ka = 0; kb = 0; n2 = 0
       do k = 1, size(nd(n1)%ln)
          LL = nd(n1)%ln(k)
          L = abs(LL)

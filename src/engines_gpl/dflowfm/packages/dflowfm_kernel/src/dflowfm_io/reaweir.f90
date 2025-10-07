@@ -91,7 +91,7 @@ contains
 
 999   continue
       call QNEOFERROR(MMDD)
-      call READYY('Reading SIMONA *.bottom File', -1d0)
+      call READYY('Reading SIMONA *.bottom File', -1.0_dp)
       call DOCLOSE(MMDD)
       JA = 0
       return

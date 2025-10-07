@@ -58,7 +58,7 @@ contains
       real(kind=dp) :: ar1, wid1, ar2, wid2, dx1, dx2, widu, perim
       real(kind=dp) :: hpr
 
-      dx1 = 0.5d0 * dx(L)
+      dx1 = 0.5_dp * dx(L)
       dx2 = dx1
       k1 = ln(1, L)
       k2 = ln(2, L)
@@ -66,10 +66,10 @@ contains
       if (dxDoubleAt1DEndNodes) then
          if (kcu(L) == 1) then
             if (nd(k1)%lnx == 1) then
-               dx1 = 2d0 * dx1
+               dx1 = 2.0_dp * dx1
             end if
             if (nd(k2)%lnx == 1) then
-               dx2 = 2d0 * dx2
+               dx2 = 2.0_dp * dx2
             end if
          end if
       end if
@@ -80,7 +80,7 @@ contains
 
          if (kcs(k1) == 1) then ! TODO: consider *also* adding storage area to the 2D side k1, if kcu(L)==5, maybe not for kcu(L)==7
             hpr = s1(k1) - bob0(1, L)
-            if (hpr >= 0d0) then
+            if (hpr >= 0.0_dp) then
                call getprof_1D(L, hpr, ar1, wid1, japerim, calcConv, perim)
                vol1(k1) = vol1(k1) + dx1 * ar1
                if (hpr < epshu) then
@@ -93,7 +93,7 @@ contains
 
          if (kcs(k2) == 1) then ! TODO: consider *also* adding storage area to the 2D side k2, if kcu(L)==5, maybe not for kcu(L)==7
             hpr = s1(k2) - bob0(2, L)
-            if (hpr >= 0d0) then
+            if (hpr >= 0.0_dp) then
                call getprof_1D(L, hpr, ar2, wid2, japerim, calcConv, perim)
                vol1(k2) = vol1(k2) + dx2 * ar2
                if (hpr < epshu) then
@@ -112,15 +112,15 @@ contains
             end if
 
             if (network%loaded) then
-               hpr = max(0d0, s1m(k1) - bob0(1, L)) ! this statement is called most nr of times through waterlevel iteration
-               if (hpr > 0d0) then
+               hpr = max(0.0_dp, s1m(k1) - bob0(1, L)) ! this statement is called most nr of times through waterlevel iteration
+               if (hpr > 0.0_dp) then
                   call getprof_1D_min(L, hpr, ar1, wid1)
                   a1m(k1) = a1m(k1) + dx1 * wid1
                   vol1(k1) = vol1(k1) - dx1 * ar1
                end if
 
-               hpr = max(0d0, s1m(k2) - bob0(2, L)) ! this statement is called most nr of times through waterlevel iteration
-               if (hpr > 0d0) then
+               hpr = max(0.0_dp, s1m(k2) - bob0(2, L)) ! this statement is called most nr of times through waterlevel iteration
+               if (hpr > 0.0_dp) then
                   call getprof_1D_min(L, hpr, ar2, wid2)
                   a1m(k2) = a1m(k2) + dx2 * wid2
                   vol1(k2) = vol1(k2) - dx2 * ar2
@@ -128,16 +128,16 @@ contains
 
             elseif (prof1D(3, LL) < 0) then ! closed
                if (kcs(k1) == 1) then
-                  hpr = max(0d0, s1m(k1) - bob0(1, L)) ! this statement is called most nr of times through waterlevel iteration
-                  if (hpr > 0.5d0 * prof1D(2, LL)) then
+                  hpr = max(0.0_dp, s1m(k1) - bob0(1, L)) ! this statement is called most nr of times through waterlevel iteration
+                  if (hpr > 0.5_dp * prof1D(2, LL)) then
                      call getprof_1D_min(L, hpr, ar1, wid1)
                      a1m(k1) = a1m(k1) + dx1 * wid1
                      vol1(k1) = vol1(k1) - dx1 * ar1
                   end if
                end if
                if (kcs(k2) == 1) then
-                  hpr = max(0d0, s1m(k2) - bob0(2, L)) ! this statement is called most nr of times through waterlevel iteration
-                  if (hpr > 0.5d0 * prof1D(2, LL)) then
+                  hpr = max(0.0_dp, s1m(k2) - bob0(2, L)) ! this statement is called most nr of times through waterlevel iteration
+                  if (hpr > 0.5_dp * prof1D(2, LL)) then
                      call getprof_1D_min(L, hpr, ar2, wid2)
                      a1m(k2) = a1m(k2) + dx2 * wid2
                      vol1(k2) = vol1(k2) - dx2 * ar2
@@ -165,7 +165,7 @@ contains
             if (kcs(k1) == 1) then
                ! flow volume
                hpr = s1(k1) - bob0(1, L)
-               if (hpr > 0d0) then
+               if (hpr > 0.0_dp) then
                   if (comparereal(hu(L), hpr) == 0) then
                      vol1_f(k1) = vol1_f(k1) + dx1 * au(L)
                   else
@@ -177,7 +177,7 @@ contains
 
             if (kcs(k2) == 1) then
                hpr = s1(k2) - bob0(2, L)
-               if (hpr > 0d0) then
+               if (hpr > 0.0_dp) then
                   ! flow volume
                   if (comparereal(hu(L), hpr) == 0) then
                      vol1_f(k2) = vol1_f(k2) + dx2 * au(L)

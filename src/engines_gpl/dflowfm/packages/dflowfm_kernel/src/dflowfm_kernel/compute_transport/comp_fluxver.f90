@@ -78,13 +78,13 @@ contains
       integer :: kk, k, kb, kt, kL, kR, kLL, kRR
       integer :: j, ll
 
-      real(kind=dp), parameter :: DTOL = 1d-8
+      real(kind=dp), parameter :: DTOL = 1.0e-8_dp
 
       integer(4) :: ithndl = 0
 
       if (timon) call timstrt("comp_fluxver", ithndl)
 
-      if (sum(1d0 - thetavert(1:NUMCONST)) < DTOL) goto 1234 ! nothing to do
+      if (sum(1.0_dp - thetavert(1:NUMCONST)) < DTOL) goto 1234 ! nothing to do
 
       !if ( limtyp.eq.6 ) then
       !   call message(LEVEL_ERROR, 'transport/comp_fluxver: limtyp==6 not supported')
@@ -112,7 +112,7 @@ contains
          kt = ktop(kk)
          dz(1) = max(dtol, zws(kb) - zws(kb - 1))
          ! dz(2:kt-kb+1) = max(dtol, 0.5d0*(zws(kb+1:kt)-zws(kb-1:kt-1))  ) ! thickness between cell centers org
-         dz(2:kt - kb + 1) = max(dtol, 0.5d0 * (zws(kb + 1:kt) - zws(kb - 1:kt - 2))) ! thickness between cell centers
+         dz(2:kt - kb + 1) = max(dtol, 0.5_dp * (zws(kb + 1:kt) - zws(kb - 1:kt - 2))) ! thickness between cell centers
 
          dz(kt - kb + 2) = max(dtol, zws(kt) - zws(kt - 1))
 
@@ -141,42 +141,42 @@ contains
                   end if
                end if
 
-               if (cffacver > 0d0) then
+               if (cffacver > 0.0_dp) then
                   cf = cffacver * dt_loc * abs(qw_loc) / (ba(kk) * dz(k - kb + 2)) ! courant nr
-                  cf = max(0d0, 1d0 - cf) ! use high order only for small courant
+                  cf = max(0.0_dp, 1.0_dp - cf) ! use high order only for small courant
                else
-                  cf = 1d0 ! or always use it, is MUSCL = default
+                  cf = 1.0_dp ! or always use it, is MUSCL = default
                end if
 
-               if (thetavert(j) == 1d0) cycle
+               if (thetavert(j) == 1.0_dp) cycle
 
                sedL = sed(j, kL)
                sedR = sed(j, kR)
 
-               if (thetavert(j) > 0d0) then ! semi-explicit, use central scheme
-                  flux(j, k) = flux(j, k) + qw_loc * 0.5d0 * (sedL + sedR)
+               if (thetavert(j) > 0.0_dp) then ! semi-explicit, use central scheme
+                  flux(j, k) = flux(j, k) + qw_loc * 0.5_dp * (sedL + sedR)
                else ! fully explicit
                   !  if (limtyp.ne.0  ) then
-                  if (k > kb - 1 .and. qw_loc > 0d0) then
+                  if (k > kb - 1 .and. qw_loc > 0.0_dp) then
                      kLL = max(k - 1, kb)
                      sL3L = dz(k - kb + 2) / dz(k - kb + 1)
 
                      ds2L = sedR - sedL
                      ds1L = (sedL - sed(j, kLL)) * sl3L
-                     sedL = sedL + 0.5d0 * cf * dlimiter(ds1L, ds2L, limtyp) * ds2L
+                     sedL = sedL + 0.5_dp * cf * dlimiter(ds1L, ds2L, limtyp) * ds2L
                   end if
 
-                  if (k < kt .and. qw_loc < 0d0 .and. s1(kk) - zws(kb - 1) > epshsdif) then
+                  if (k < kt .and. qw_loc < 0.0_dp .and. s1(kk) - zws(kb - 1) > epshsdif) then
                      kRR = min(k + 2, kt)
                      sL3R = dz(k - kb + 2) / dz(k - kb + 3)
 
                      ds2R = sedL - sedR
                      ds1R = (sedR - sed(j, kRR)) * sl3R
-                     sedR = sedR + 0.5d0 * cf * dlimiter(ds1R, ds2R, limtyp) * ds2R
+                     sedR = sedR + 0.5_dp * cf * dlimiter(ds1R, ds2R, limtyp) * ds2R
                   end if
                   !  end if
 
-                  flux(j, k) = flux(j, k) + max(qw_loc, 0d0) * sedL + min(qw_loc, 0d0) * sedR
+                  flux(j, k) = flux(j, k) + max(qw_loc, 0.0_dp) * sedL + min(qw_loc, 0.0_dp) * sedR
                end if
             end do
          end do

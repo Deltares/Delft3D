@@ -76,7 +76,7 @@ contains
          ! Also include waterdepth ==0 in order to make a1 /=0, this prevents SAAD errors                                                                       ! == 1,2: (ibedlevtyp=3), hrad = A/P   , link or node
          if (hpr1 >= 0) then
             call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
-            dx1 = 0.5d0 * dx(L) * 0.5d0 ! acl(L)
+            dx1 = 0.5_dp * dx(L) * 0.5_dp ! acl(L)
             !if (k1 > ndx2D) dx1 = 2*dx1
             a1(k1) = a1(k1) + dx1 * wid1
             vol1(k1) = vol1(k1) + dx1 * ar1
@@ -86,14 +86,14 @@ contains
          ! Also include waterdepth ==0 in order to make a1 /=0, this prevents SAAD errors
          if (hpr2 >= 0) then
             call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
-            dx2 = 0.5d0 * dx(L) * 0.5d0 ! (1d0-acl(L))
+            dx2 = 0.5_dp * dx(L) * 0.5_dp ! (1d0-acl(L))
             !if (k2 > ndx2D) dx2 = 2*dx2
             a1(k2) = a1(k2) + dx2 * wid2
             vol1(k2) = vol1(k2) + dx2 * ar2
          end if
 
       else
-         if (hu(L) > 0d0) then
+         if (hu(L) > 0.0_dp) then
 
             hpr1 = get_hpr_nostruc(L)
             frcn = frcu(L)
@@ -106,7 +106,7 @@ contains
                if (frcn > 0) then
                   cfuhi(L) = aifu(L) * ag * aconvu
                else
-                  cfuhi(L) = 0d0
+                  cfuhi(L) = 0.0_dp
                end if
                au(L) = aru
             else
@@ -115,7 +115,7 @@ contains
                   Cz = get_chezy(hu(L), frcn, u1(L), v(L), friction_type)
                   cfuhi(L) = ag / (hu(L) * Cz * Cz)
                else
-                  cfuhi(L) = 0d0
+                  cfuhi(L) = 0.0_dp
                end if
             end if
          end if
@@ -125,7 +125,7 @@ contains
             ! Also include waterdepth ==0 in order to make a1 /=0, this prevents SAAD errors                                                                       ! == 1,2: (ibedlevtyp=3), hrad = A/P   , link or node
             if (hpr1 >= 0) then
                call getlinkareawid2D(wu2, b21, ai, hpr1, ar1, wid1)
-               dx1 = 0.5d0 * dx(L) * 0.5d0 ! acl(L)
+               dx1 = 0.5_dp * dx(L) * 0.5_dp ! acl(L)
                !if (k1 > ndx2D) dx1 = 2*dx1
                vol1_f(k1) = vol1_f(k1) + dx1 * ar1
             end if
@@ -134,7 +134,7 @@ contains
             ! Also include waterdepth ==0 in order to make a1 /=0, this prevents SAAD errors
             if (hpr2 >= 0) then
                call getlinkareawid2D(wu2, b21, ai, hpr2, ar2, wid2)
-               dx2 = 0.5d0 * dx(L) * 0.5d0 ! (1d0-acl(L))
+               dx2 = 0.5_dp * dx(L) * 0.5_dp ! (1d0-acl(L))
                !if (k2 > ndx2D) dx2 = 2*dx2
                vol1_f(k2) = vol1_f(k2) + dx2 * ar2
             end if

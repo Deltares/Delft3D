@@ -67,7 +67,7 @@ using namespace std;
 #include <mpi.h>
 #include <netcdf.h>
 #include <ctime>
-# include <stdio.h>
+#include <stdio.h>
 #include <fstream>
 #include <iomanip>
 
@@ -76,7 +76,7 @@ using namespace std;
 #  include <Strsafe.h>
 #  include <windows.h>
 #  include <direct.h>
-#include <errno.h>
+#  include <errno.h>
 #  include <io.h>
 #  include <sys/stat.h>
 
@@ -325,14 +325,17 @@ void Dimr::runStartBlock(dimr_control_block* cb, double tStep, int phase) {
 
 
 //------------------------------------------------------------------------------
-void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component, bool isMaster) {
+void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component) {
     MPI_Group mpiGroupComp;
     int ierr;
     if (component == NULL) {
         throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: undefined component.");
     }
-    bool multipleProcessesCheck = isMaster || component->numProcesses > 1;
-    if (use_mpi && component->mpiCommVar != NULL && multipleProcessesCheck) {
+    bool multipleProcessesCheck = component->numProcesses > 1;
+    if (use_mpi && multipleProcessesCheck) {
+        if (component->mpiCommVar == NULL) {
+            throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: communicator handle undefined for component \"%s\".", component->name);
+        }
         ierr = MPI_Group_incl(mpiGroupWorld, component->numProcesses, component->processes, &mpiGroupComp);
         if (ierr != MPI_SUCCESS) {
             throw Exception(true, Exception::ERR_MPI, "createDistributeMPISubGroupCommunicator: cannot create a subgroup of %d processes for component \"%s\". Code: %d.", component->numProcesses, component->name, ierr);
@@ -350,8 +353,9 @@ void Dimr::createDistributeMPISubGroupCommunicator(dimr_component* component, bo
             }
             *fComm = MPI_Comm_c2f(component->mpiComm);
         }
+    } else {
+       component->mpiComm = NULL;
     }
-
 }
 
 
@@ -369,7 +373,12 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
         if (cb->subBlocks[i].type == CT_START) {
             if (cb->masterSubBlockId == -1) {
                 cb->masterSubBlockId = i;
-                log->Write(DEBUG, my_rank, "Master: %s", cb->subBlocks[cb->masterSubBlockId].unit.component->name);
+                if (cb->subBlocks[cb->masterSubBlockId].unit.component) {
+                  log->Write(DEBUG, my_rank, "Master: %s", cb->subBlocks[cb->masterSubBlockId].unit.component->name);
+                }
+                else {
+                  throw Exception(true, Exception::ERR_INVALID_INPUT, "runParallelInit: the specified component in the start element was not found.");
+                }
             }
             else {
                 throw Exception(true, Exception::ERR_INVALID_INPUT, "runParallelInit: a parallel block cannot have more than one start element.");
@@ -387,8 +396,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
     dimr_component* masterComponent = cb->subBlocks[cb->masterSubBlockId].unit.component;
 
     // Create an MPI subgroup and subcommunicator and pass it on to the masterComponent
-    bool isMaster = true;
-    createDistributeMPISubGroupCommunicator(masterComponent, isMaster);
+    createDistributeMPISubGroupCommunicator(masterComponent);
 
     if (masterComponent->onThisRank) {
         chdir(masterComponent->workingDir);
@@ -450,8 +458,7 @@ void Dimr::runParallelInit(dimr_control_block* cb) {
                     dimr_component* thisComponent = cb->subBlocks[i].subBlocks[j].unit.component;
 
                     // Create an MPI subgroup and subcommunicator and pass it on to thisComponent (similar to block for masterComponent above)
-                    bool isMaster = false;
-                    createDistributeMPISubGroupCommunicator(thisComponent, isMaster);
+                    createDistributeMPISubGroupCommunicator(thisComponent);
 
                     if (thisComponent->onThisRank) { // TODO: AvD/AM: if FM is not start, but startblock, we need all the MPI stuff here as well: make a generic initializeComponent helper routine.
 
@@ -1579,6 +1586,9 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp) {
         // Store communicator var name in component.
         newComp->mpiCommVar = commElement->charData;
     }
+    else {
+        newComp->mpiCommVar = nullptr;
+    }
 
     // Element inputFile (optional?)
     XmlTree* inputFileElement = xmlComponent->Lookup("inputFile");
@@ -1778,8 +1788,6 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
     }
 }
 
-
-
 //------------------------------------------------------------------------------
 // Search for a named component in the list of components
 dimr_component* Dimr::getComponent(const char* compName) {
@@ -1788,9 +1796,8 @@ dimr_component* Dimr::getComponent(const char* compName) {
             return &(componentsList.components[i]);
         }
     }
+    throw Exception(true, Exception::ERR_INVALID_INPUT, "Found no component with name \"%s\".", compName);
 }
-
-
 
 //------------------------------------------------------------------------------
 // Search for a named coupler in the list of couplers
@@ -1800,8 +1807,8 @@ dimr_coupler* Dimr::getCoupler(const char* coupName) {
             return &(couplersList.couplers[i]);
         }
     }
+    return nullptr;
 }
-
 
 //------------------------------------------------------------------------------
 // Search for a named coupler in the list of couplers

@@ -303,7 +303,7 @@ contains
                end do
             end if
 
-            dzm = max(dzm, 1d-2)
+            dzm = max(dzm, 1.0e-2_dp)
             mxlayz = mx
             kmx = mx ! repair code
             laymx(1) = mx
@@ -942,9 +942,9 @@ contains
       call aerr('au(lnkx)', ierr, lnkx)
       call realloc(au_nostrucs, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('au_nostrucs(lnkx)', ierr, lnkx)
-      call realloc(viu, lnkx, stat=ierr, fill=0.0_sp, keepexisting=.false.)
+      call realloc(viu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('viu(lnkx)', ierr, lnkx)
-      call realloc(vicLu, lnkx, stat=ierr, fill=0.0_sp, keepexisting=.false.)
+      call realloc(vicLu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('vicLu(lnkx)', ierr, lnkx)
       call realloc(suu, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('suu(lnkx)', ierr, lnkx)

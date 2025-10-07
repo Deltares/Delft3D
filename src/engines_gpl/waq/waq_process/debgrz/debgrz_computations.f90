@@ -666,7 +666,7 @@ module m_debgrz_computations
         real(kind=real_wp), intent(  out) :: pca      !< Energy flux to calcification of shell matrix   [J/ind/d]
 
         ddis = pm + pja + pjj + prj
-        pomm = max( 0.0, pv * fpgrosmo + ddis * fpdissmo )
+        pomm = max( 0.0, pv ) * fpgrosmo + ddis * fpdissmo
         if ( ycacosmo > 0.0 ) then
             pca  = max( 0.0, pomm / ycacosmo )
         else
@@ -710,7 +710,7 @@ module m_debgrz_computations
 
         real(kind=real_wp), intent(in   ) :: rmor_ref    !< Reference mortality rate grazers           [1/d]
         real(kind=real_wp), intent(in   ) :: vtot        !< Structural biomass grazer pop.  [gC/m3 or gC/m2]
-        real(kind=real_wp), intent(in   ) :: ddmfk       !< Halfrate concentration for density dependent 
+        real(kind=real_wp), intent(in   ) :: ddmfk       !< Halfrate concentration for density dependent
                                                          !< mortality factor                [gC/m3 or gC/m2]
         real(kind=real_wp), intent(in   ) :: cmor        !< Length-dep coefficient mortality rate      [1/d]
         real(kind=real_wp), intent(in   ) :: conv_j_gc   !< Conversion factor from energy into mass   [gC/J]

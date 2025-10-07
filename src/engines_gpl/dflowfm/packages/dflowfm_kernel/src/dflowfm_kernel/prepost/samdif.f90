@@ -57,8 +57,8 @@ contains
       integer :: i, ipnt, ierror
       integer :: numnoval
 
-      real(kind=dp), parameter :: VAL_NOPNT = 1234d0
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: VAL_NOPNT = 1234.0_dp
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       if (NS < 1 .or. NS3 < 2) goto 1234
 

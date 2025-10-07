@@ -68,10 +68,7 @@ if  %debugLevel% EQU -1 (
 if defined OMP_NUM_THREADS (
 echo OMP_NUM_THREADS is already defined
 ) else (
-   rem Getting and setting the number of physical cores
-   for /F "tokens=2 delims==" %%C in ('wmic cpu get NumberOfCores /value ^| findstr NumberOfCores') do set NumberOfPhysicalCores=%%C
-   set /A OMP_NUM_THREADS=!NumberOfPhysicalCores! - 2
-   if /I OMP_NUM_THREADS LEQ 2 ( set OMP_NUM_THREADS=2 )
+set OMP_NUM_THREADS=1
 )
 echo OMP_NUM_THREADS is %OMP_NUM_THREADS%
 

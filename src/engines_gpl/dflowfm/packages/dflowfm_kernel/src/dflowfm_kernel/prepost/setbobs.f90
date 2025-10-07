@@ -59,7 +59,7 @@ contains
       if (ibedlevmode == BLMODE_D3D) then
          ! DPSOPT=MAX equivalent: deepest zk/corner point
          do k = 1, ndx2d ! TODO: [TRUNKMERGE] WO: I restored ndx2d (was: ndx1db in sedmor)
-            bl(k) = huge(1d0)
+            bl(k) = huge(1.0_dp)
             do kk = 1, netcell(k)%n
                zn1 = zk(netcell(k)%nod(kk)); if (zn1 == dmiss) zn1 = zkuni
                bl(k) = min(bl(k), zn1)
@@ -74,10 +74,10 @@ contains
                end if
             end do
          else if (ibedlevtyp > BEDLEV_TYPE_WATERLEVEL .and. ibedlevtyp <= BEDLEV_TYPE_MAX) then
-            bl = 1d30
+            bl = 1.0e30_dp
          else if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then ! quick and dirty flownodes tile depth like taken from netnodes, to be able to at least run netnode zk defined models
             do k = 1, ndxi ! Was: ndx2d, but netcell includes 1D too
-               bl(k) = 0d0
+               bl(k) = 0.0_dp
                mis = 0
                do kk = 1, netcell(k)%n
                   bl(k) = bl(k) + zk(netcell(k)%nod(kk))
@@ -186,7 +186,7 @@ contains
                      bl(n2) = zn2
                   end if
                else
-                  bedlevel_at_link = 0.5d0 * (zn1 + zn2) ! same as 2D, based on network, but now in flow link dir. In 2D this is net link dir
+                  bedlevel_at_link = 0.5_dp * (zn1 + zn2) ! same as 2D, based on network, but now in flow link dir. In 2D this is net link dir
                   bob(1, L) = bedlevel_at_link
                   bob(2, L) = bedlevel_at_link ! revisit
                   bl(n1) = min(bl(n1), bedlevel_at_link)
@@ -241,12 +241,12 @@ contains
             bl(n1) = min(bl(n1), bedlevel_at_link)
             bl(n2) = min(bl(n2), bedlevel_at_link)
          else if (kcu(L) == 5 .or. kcu(L) == 7) then ! keep 1D and 2D levels
-            if (bl(n1) /= 1d30) then
+            if (bl(n1) /= 1.0e30_dp) then
                bob(1, L) = bl(n1)
             else
                bob(1, L) = zn1
             end if
-            if (bl(n2) /= 1d30) then
+            if (bl(n2) /= 1.0e30_dp) then
                bob(2, L) = bl(n2)
             else
                bob(2, L) = zn2
@@ -267,7 +267,7 @@ contains
       end do
 
       do k = 1, ndx !losse punten die geen waarde kregen
-         if (bl(k) == 1d30) then
+         if (bl(k) == 1.0e30_dp) then
             bl(k) = zkuni
          end if
       end do
@@ -310,7 +310,7 @@ contains
 !          SPvdP: previous expression is problematic when zk(k2) and/or zk(k3) have missing values
                zn2 = zk(k2); if (zn2 == dmiss) zn2 = zkuni
                zn3 = zk(k3); if (zn3 == dmiss) zn3 = zkuni
-               zn1 = 1.5d0 * zn2 - 0.5d0 * zn3 ! note: actual locations of cells centers not taken into account
+               zn1 = 1.5_dp * zn2 - 0.5_dp * zn3 ! note: actual locations of cells centers not taken into account
 
                bob(1, L) = zn1
                bob(2, L) = zn1
@@ -350,19 +350,19 @@ contains
       else
          call longculvertsToProfs(.false.)
       end if
-      if (blmeanbelow /= -999d0) then
+      if (blmeanbelow /= -999.0_dp) then
          do n = 1, ndx2D
-            wn = 0d0; bln = 0d0
+            wn = 0.0_dp; bln = 0.0_dp
             do LL = 1, nd(n)%lnx
                Ls = nd(n)%ln(LL); L = abs(Ls)
-               bln = bln + wu(L) * 0.5d0 * (bob(1, L) + bob(2, L))
+               bln = bln + wu(L) * 0.5_dp * (bob(1, L) + bob(2, L))
                wn = wn + wu(L)
             end do
-            if (wn > 0d0) then
+            if (wn > 0.0_dp) then
                bln = bln / wn
-               alf = min(1d0, (blminabove - bln) / (blminabove - blmeanbelow))
-               if (alf > 0d0) then
-                  bl(n) = alf * bln + (1d0 - alf) * bl(n)
+               alf = min(1.0_dp, (blminabove - bln) / (blminabove - blmeanbelow))
+               if (alf > 0.0_dp) then
+                  bl(n) = alf * bln + (1.0_dp - alf) * bl(n)
                end if
             end if
          end do
@@ -416,7 +416,7 @@ contains
          if (jaconveyance2D >= 1) then ! left right
             bedlevel_at_link = min(zn1, zn2)
          else if (ibedlevtyp == BEDLEV_TYPE_MEAN) then ! mean
-            bedlevel_at_link = 0.5d0 * (zn1 + zn2)
+            bedlevel_at_link = 0.5_dp * (zn1 + zn2)
          else if (ibedlevtyp == BEDLEV_TYPE_MIN) then ! min
             bedlevel_at_link = min(zn1, zn2)
          else if (ibedlevtyp == BEDLEV_TYPE_MAX) then ! max

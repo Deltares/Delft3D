@@ -73,7 +73,7 @@ contains
 
       integer :: ierror
 
-      real(kind=dp), parameter :: dsigma = 0.95d0
+      real(kind=dp), parameter :: dsigma = 0.95_dp
 
       ierror = 1
       ic = 0
@@ -85,13 +85,13 @@ contains
 !  allocate
       allocate (xc(nump), yc(nump))
 
-      call readyy(' ', -1d0)
-      call readyy('Computing orthocenters (press right mouse button to cancel)', 0d0)
+      call readyy(' ', -1.0_dp)
+      call readyy('Computing orthocenters (press right mouse button to cancel)', 0.0_dp)
 
 !  compute the initial cell centers
       do iter = 1, MAXITER
-         dmaxabscosphi = 0d0
-         drmsabscosphi = 0d0
+         dmaxabscosphi = 0.0_dp
+         drmsabscosphi = 0.0_dp
          do ic = 1, nump
             N = netcell(ic)%N
             if (N > N6) then
@@ -125,8 +125,8 @@ contains
                   drmsabscosphi = drmsabscosphi + dabscosphi**2
                else
                   !           boundary link
-                  xflist(i) = 0.5d0 * (xk(k) + xk(kp1))
-                  yflist(i) = 0.5d0 * (yk(k) + yk(kp1))
+                  xflist(i) = 0.5_dp * (xk(k) + xk(kp1))
+                  yflist(i) = 0.5_dp * (yk(k) + yk(kp1))
                end if
             end do
 
@@ -160,7 +160,7 @@ contains
       ierror = 0
 1234  continue
 
-      call readyy(' ', -1d0)
+      call readyy(' ', -1.0_dp)
 
       if (ierror /= 0) then
 !      call qnerror('make_orthocenters: error', ' ', ' ')

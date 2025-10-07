@@ -106,21 +106,8 @@ class EmailHelper(StepExecutorInterface):
         html = self.__template
 
         html = html.replace("@@@DIMR_VERSION@@@", self.__dimr_version)
-        html = html.replace("@@@LINK_TO_PUBLIC_WIKI@@@", self.__generate_wiki_link())
 
         self.__template = html
-
-    def __generate_wiki_link(self) -> str:
-        """
-        Generate a link to the public wiki for the DIMR version.
-
-        Returns
-        -------
-        str
-            HTML anchor element linking to the public wiki.
-        """
-        link = f"https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+{self.__dimr_version}"
-        return f'<a href="{link}">{link}</a>'
 
     def __create_status_span(self, value: str, is_percentage: bool = False) -> str:
         """
@@ -325,7 +312,7 @@ class EmailHelper(StepExecutorInterface):
 if __name__ == "__main__":
     try:
         args = parse_common_arguments()
-        context = create_context_from_args(args, require_atlassian=False, require_git=False, require_ssh=False)
+        context = create_context_from_args(args, require_git=False, require_ssh=False, require_jira=False)
         services = Services(context)
 
         context.log("Starting email template preparation...")

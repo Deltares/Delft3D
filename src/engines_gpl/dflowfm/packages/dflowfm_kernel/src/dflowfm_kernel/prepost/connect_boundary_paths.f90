@@ -82,12 +82,12 @@ contains
          if (lanseg_map(k1) >= 1 .and. lanseg_map(k2) < 1 .and. nodemask(k1) > 0 .and. nodemask(k2) > 0) then
 !        allocate
             allocate (nodelist_loc(3))
-            nodelist_loc(1:2) = (/k1, k2/)
+            nodelist_loc(1:2) = [k1, k2]
             numnodes_loc = 2
          else if (lanseg_map(k1) < 1 .and. lanseg_map(k2) >= 1 .and. nodemask(k1) > 0 .and. nodemask(k2) > 0) then
 !        allocate
             allocate (nodelist_loc(3))
-            nodelist_loc(1:2) = (/k2, k1/)
+            nodelist_loc(1:2) = [k2, k1]
             numnodes_loc = 2
          else ! not a valid link
             return
@@ -152,7 +152,7 @@ contains
                   goto 1234
                end if
 
-               if ((j == jstart .and. rL < 0d0) .or. (j == jend - 1 .and. rL > 1d0)) then
+               if ((j == jstart .and. rL < 0.0_dp) .or. (j == jend - 1 .and. rL > 1.0_dp)) then
 !              prevent projection to end points of land boundary segments:
                   if (Ladd_land) then
 !                 add new land boundary segment that connects the two others and project
@@ -262,10 +262,10 @@ contains
          Nlanseg = Nlanseg + 1
 
          if (Nlanseg > ubound(lanseg_startend, 2)) then
-            call realloc(lanseg_startend, (/2, Nlanseg/))
+            call realloc(lanseg_startend, [2, Nlanseg])
          end if
 
-         lanseg_startend(:, Nlanseg) = (/MXLAN - 1, MXLAN/)
+         lanseg_startend(:, Nlanseg) = [MXLAN - 1, MXLAN]
          numseg = Nlanseg
          return
       end subroutine add_land

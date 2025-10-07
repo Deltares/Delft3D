@@ -261,7 +261,7 @@ contains
             L = abs(ln2lne(Lf))
             if (L > 0) then
                if (lnn(L) == 0) then
-                  wu(Lf) = 0d0
+                  wu(Lf) = 0.0_dp
                end if
             end if
          end do

@@ -66,8 +66,8 @@ contains
          nsubsteps = 1
          ndeltasteps = 1
       else
-         logtwo = log(2d0)
-         nsubsteps = max(1, 2**int(log(dts / dtmin) / logtwo + 0.9999d0))
+         logtwo = log(2.0_dp)
+         nsubsteps = max(1, 2**int(log(dts / dtmin) / logtwo + 0.9999_dp))
          dtmin = dts / nsubsteps
 
 !     get number of substeps
