@@ -234,6 +234,7 @@ object Trigger : BuildType({
                 fi
             """.trimIndent()
         }
+    }
 
     if (DslContext.getParameter("enable_pre_merge_trigger").lowercase() == "true") {
         triggers {
