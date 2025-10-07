@@ -173,7 +173,7 @@ class ExcelHelper(StepExecutorInterface):
 if __name__ == "__main__":
     try:
         args = parse_common_arguments()
-        context = create_context_from_args(args, require_git=False)
+        context = create_context_from_args(args, require_git=False, require_jira=False)
         services = Services(context)
 
         context.log("Starting Excel sheet update...")

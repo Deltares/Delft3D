@@ -74,6 +74,8 @@ object DIMRbak : BuildType({
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
+                    --jira-username "%dimrbakker_username%"
+                    --jira-PAT "%dimrbakker_password%"
                     --ssh-username "%dimrbakker_username%"
                     --ssh-password "%dimrbakker_password%"
                     --git-username "deltares-service-account"

@@ -58,7 +58,6 @@ module m_fm_erosed
    logical :: link1_initialized = .false.
 
    real(fp), dimension(:, :), pointer :: seddif !< Sediment diffusion
-   real(fp), dimension(:, :), pointer :: sed !< Sediment concentration work array
    real(fp), dimension(:), pointer :: blchg !< Bed level change (> 0 = sedimentation, < 0 = erosion)
    real(fp), dimension(:), pointer :: dzbdt !< Bed level change time rate
    real(fp), dimension(:), pointer :: uau !< velocity asymmetry

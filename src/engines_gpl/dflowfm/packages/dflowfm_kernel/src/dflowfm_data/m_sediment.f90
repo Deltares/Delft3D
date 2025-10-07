@@ -43,7 +43,6 @@ module m_sediment
       real(fp), dimension(:), pointer :: uau !< velocity asymmetry in u points
       real(fp), dimension(:, :), pointer :: ws !< Temporary variable Fall velocity
       real(fp), dimension(:, :), pointer :: seddif !< Temporary variable vertical sediment diffusivity
-      real(fp), dimension(:, :), pointer :: sed !< sediment concentration
       real(fp), dimension(:), pointer :: blchg !< bed level change  [m]
       real(fp), dimension(:), pointer :: dzbdt !< bed level change rate [m/s]
       type(message_stack), pointer :: messages

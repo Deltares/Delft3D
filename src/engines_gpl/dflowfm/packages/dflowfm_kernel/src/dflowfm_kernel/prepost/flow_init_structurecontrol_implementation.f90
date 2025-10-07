@@ -249,7 +249,7 @@ contains
       use m_readstructures, only: readpump
       use unstruc_model, only: md_structurefile_dir
       use unstruc_files, only: resolvePath
-      use string_module, only: str_lower, strcmpi
+      use string_module, only: str_tolower, strcmpi
       use m_longculverts, only: nlongculverts
       use m_partitioninfo, only: jampi
       use m_qnerror, only: qnerror
@@ -265,7 +265,7 @@ contains
       character(len=256) :: fnam, rec, key
       integer, allocatable :: pumpidx(:), gateidx(:), cdamidx(:), cgenidx(:), dambridx(:) ! temp
       real(kind=dp) :: tmpval
-      integer :: istrtype, itmp
+      integer :: istrtype, num_stages
       integer :: numg, numd, npum, ngs, numgen, ndambr
       type(tree_data), pointer :: str_ptr
       real(kind=dp), allocatable :: widths(:)
@@ -416,7 +416,7 @@ contains
          call prop_get(str_ptr, '', 'branchid', branchid, success)
          if (.not. success) call prop_get(str_ptr, '', 'numCoordinates', branchid, success)
          if (success) then
-            if (trim(strtype) /= 'pump' .and. trim(strtype) /= 'dambreak') then
+            if (.not. strcmpi(strtype, 'pump') .and. .not. strcmpi(strtype, 'dambreak')) then
                cycle
             end if
          end if
@@ -460,7 +460,7 @@ contains
 
          end if
 
-         select case (strtype)
+         select case (str_tolower(strtype))
          case ('gateloweredgelevel') ! Old-style controllable gateloweredgelevel
             !else if (qid == 'gateloweredgelevel' ) then
 
@@ -562,7 +562,7 @@ contains
 
             ncgen = ncgen + numgen
             ! For later usage split up the set of all generalstructures into weirs, gates or true general structures (in user input)
-            select case (strtype)
+            select case (str_tolower(strtype))
             case ('weir')
                nweirgen = nweirgen + 1
             case ('gate')
@@ -709,7 +709,7 @@ contains
             call resolvePath(plifile, md_structurefile_dir)
 
             ! Start with some general structure default params, and thereafter, make changes depending on actual strtype
-            if (strtype /= 'generalstructure') then
+            if (.not. strcmpi(strtype, 'generalstructure')) then
                hulp(idx_upstream1width, n) = huge(1.0_dp) ! Upstream1Width
                hulp(idx_upstream1level, n) = -huge(1.0_dp) ! Upstream1Level
                hulp(idx_upstream2width, n) = huge(1.0_dp) ! Upstream2Width
@@ -738,7 +738,7 @@ contains
                hulp(idx_gateopeningwidth, n) = 0.0_dp ! GateOpeningWidth
             end if
 
-            select case (strtype)
+            select case (str_tolower(strtype))
       !! WEIR !!
             case ('weir')
                rec = ' '
@@ -924,8 +924,7 @@ contains
                   write (msgbuf, '(a,a,a)') 'Optional field ''GateOpeningHorizontalDirection'' not available for gate ''', trim(strid), '''. Use default value.'
                   call msg_flush()
                end if
-               call str_lower(rec)
-               select case (trim(rec))
+               select case (str_tolower(trim(rec)))
                case ('from_left', 'fromleft')
                   istrtmp = IOPENDIR_FROMLEFT
                case ('from_right', 'fromright')
@@ -1274,8 +1273,8 @@ contains
             istrtype = getStructype_from_string(strtype)
 
             ! Do a try-read to determine whether this is a staged flow1d pump. If not, just continue (capacity is enough then).
-            call prop_get(str_ptr, 'structure', 'numStages', itmp, success) ! UNST-2709: new consistent keyword
-            if (success) then
+            call prop_get(str_ptr, 'structure', 'numStages', num_stages, success)
+            if (success .and. num_stages > 0) then
                ! flow1d_io library: add and read SOBEK pump
                ! just use the first link of the the structure (the network%sts%struct(istrtmp)%link_number  is not used in computations)
                if (L1pumpsg(n) <= L2pumpsg(n)) then
@@ -1286,6 +1285,8 @@ contains
                      call readPump(network%sts%struct(istrtmp)%pump, str_ptr, strid, network%forcinglist, success)
                   end if
                end if
+            else
+               success = .false.
             end if
 
             ! mapping for qpump array

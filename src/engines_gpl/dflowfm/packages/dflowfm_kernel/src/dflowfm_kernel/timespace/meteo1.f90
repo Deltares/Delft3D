@@ -6600,7 +6600,6 @@ contains
       end if
       allocate (item_sedfracbnd(numfracs))
       item_sedfracbnd = ec_undef_int
-      ! TO ADD: initial concentration field?
 
       if (allocated(item_waqfun)) then
          deallocate (item_waqfun)
@@ -6966,7 +6965,7 @@ contains
       case ('damlevel')
          itemPtr1 => item_damlevel
       case ('dambreaklevelsandwidths')
-          ! itemPtr1 and dataPtr1 are provided at a dambreak call
+         ! itemPtr1 and dataPtr1 are provided at a dambreak call
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
