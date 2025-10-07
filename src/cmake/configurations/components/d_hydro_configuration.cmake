@@ -2,6 +2,10 @@
 add_subdirectory(${checkout_src_root}/${d_hydro_module} d_hydro)
 
 # Specify the modules to be included
+if(NOT TARGET getopt)
+  add_subdirectory(${checkout_src_root}/${getopt_module} getopt)
+endif()
+
 if(NOT TARGET deltares_common)
   add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()

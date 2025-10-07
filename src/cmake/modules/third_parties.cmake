@@ -65,6 +65,9 @@ set(microsoftredist_module ${third_party_open_path}/microsoftredist)
 set(googletest_module ${third_party_open_path}/googletest)
 set(f90tw_module ${third_party_open_path}/f90tw)
 
+# getopt
+set(getopt_module ${third_party_open_path}/getopt/${cmake_directory})
+
 if(WIN32)
     set(pthreads_module ${third_party_open_path}/pthreads)
     set(expat_module ${third_party_open_path}/expat)
