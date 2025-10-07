@@ -141,7 +141,6 @@ Stream::Stream (
 
     this->connected = false;
     this->streamtype = streamtype;
-    this->is_ipv6 = false;  // Will be set in construct_*
 
     switch (streamtype) {
 #if defined (WITH_MPI)
@@ -180,7 +179,6 @@ Stream::Stream (
     memset (&this->remote, 0, sizeof this->remote);
 
     this->streamtype = streamtype;
-    this->is_ipv6 = false;  // Will be set in connect_*
 
     switch (streamtype) {
 #if defined (WITH_MPI)
