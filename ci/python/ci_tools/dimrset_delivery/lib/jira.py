@@ -25,14 +25,13 @@ class Jira(ConnectionServiceInterface):
         Parameters
         ----------
         credentials : Credentials
-            API bearer token for authentication.
+            Username and API token for authentication.
         context : DimrAutomationContext
             Automation context for logging and configuration.
         """
-        self.__auth = credentials.password
+        self.__auth = (credentials.username, credentials.password)
         self.__rest_uri = "https://issuetracker.deltares.nl/rest/api/latest"
         self.__default_headers = {
-            "Authorization": f"Bearer {self.__auth}",
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
@@ -56,7 +55,9 @@ class Jira(ConnectionServiceInterface):
                 status_code=200, content=b"dry-run mock"
             )
         else:
-            result = requests.get(url=endpoint, headers=self.__default_headers, verify=True, timeout=(5, 30))
+            result = requests.get(
+                url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=True, timeout=(5, 30)
+            )
 
         if result.status_code == 200:
             self.__context.log("Successfully connected to the Jira API.")
@@ -86,7 +87,9 @@ class Jira(ConnectionServiceInterface):
             self.__context.log(f"GET request: {endpoint}")
             return {"key": issue_number, "fields": {"summary": f"[dry-run mock] Summary for {issue_number}"}}
 
-        result = requests.get(url=endpoint, headers=self.__default_headers, verify=True, timeout=(5, 30))
+        result = requests.get(
+            url=endpoint, headers=self.__default_headers, auth=self.__auth, verify=True, timeout=(5, 30)
+        )
 
         if result.status_code == 200:
             return cast(Dict[str, Any], result.json())

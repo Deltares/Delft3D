@@ -362,3 +362,7 @@ class CommandLineError(Exception):
     def __str__(self) -> str:
         """Return the error message."""
         return self._message
+
+
+if __name__ == "__main__":
+    CommandLine.run()
