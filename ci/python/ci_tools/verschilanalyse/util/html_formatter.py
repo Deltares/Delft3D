@@ -40,6 +40,14 @@ class HtmlFormatter:
                 <h2>New weekly verschilanalyse</h2>
                 <p>
                     A new weekly automated verschilanalyse has been completed.
+                    The verschillentool compared the new output files to the
+                    &quot;reference&quot; output files, and found the following results:
+                </p>
+                <h3>His-file comparison results</h3>
+                {his_tolerance_list}
+                <h3>Map-file comparison results</h3>
+                {map_tolerance_list}
+                <p>
                     The following table shows which models were included in this week's
                     verschilanalyse.
                     The table shows, for every model, whether or not it completed
@@ -75,14 +83,6 @@ class HtmlFormatter:
                     the following models:
                 </p>
                 {model_list}
-                <p>
-                    The verschillentool compared the new output files to the
-                    &quot;reference&quot; output files, and found the following results:
-                </p>
-                <h3>His-file comparison results</h3>
-                {his_tolerance_list}
-                <h3>Map-file comparison results</h3>
-                {map_tolerance_list}
                 <h3>Links</h3>
                 {links_section}
             </body>
@@ -283,14 +283,14 @@ class HtmlFormatter:
 
         result = cls.TEMPLATE.format(
             style=cls._indent(cls.STYLESHEET, 3),
-            his_tolerance_list=cls._indent(his_tolerance_list, 2),
-            map_tolerance_list=cls._indent(map_tolerance_list, 2),
             table=cls._indent(table, 2),
             current_commit_id=current_commit_id,
             reference_commit_id=reference_commit_id,
             current_prefix=f"{verschilanalyse.s3_current_prefix}/output",
             reference_prefix=f"{verschilanalyse.s3_reference_prefix}/output",
             model_list=cls._indent(model_list, 2),
+            his_tolerance_list=cls._indent(his_tolerance_list, 2),
+            map_tolerance_list=cls._indent(map_tolerance_list, 2),
             links_section=cls._indent(links_section, 2),
         )
 
