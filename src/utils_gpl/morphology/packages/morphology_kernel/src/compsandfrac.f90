@@ -1,5 +1,5 @@
 subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
-                      & max_mud_sedtyp, sandfrac, sedd50fld, &
+                      & max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
                       & nmlb, nmub )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -54,7 +54,8 @@ subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
     real(fp), dimension(nmlb:nmub, lsedtot) , intent(in)  :: frac           ! fractional composition of sediment
     real(fp), dimension(lsedtot)            , intent(in)  :: seddm          ! mean diameter of sediment fraction
     real(fp), dimension(nmlb:nmub)          , intent(out) :: sandfrac       ! sand fraction
-    real(fp), dimension(nmlb:nmub)          , intent(in)  :: sedd50fld      ! D50 field (in case of 1 sediment fraction)
+    logical                                 , intent(in)  :: spatial_d50    ! Flag to indicate whether the model uses spatially varying D50
+    real(fp), dimension(nmlb:nmub)          , intent(in)  :: sedd50fld      ! D50 field in case of spatial_d50
 !
 ! Local variables
 !
@@ -65,7 +66,7 @@ subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
 !
 !! executable statements -------------------------------------------------------
 !
-    if (lsedtot==1 .and. seddm(1) < 0.0_fp) then
+    if (spatial_d50) then
        ! Single size fraction
        do nm = 1, nmmax
           if (sedd50fld(nm) < dgravel) then
