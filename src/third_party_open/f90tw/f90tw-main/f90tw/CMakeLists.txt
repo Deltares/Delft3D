@@ -150,7 +150,7 @@ function(F90TWTEST NAME)
             COMMAND_EXPAND_LISTS
         )
     endif()
-    gtest_discover_tests(${NAME})
+    gtest_discover_tests(${NAME} WORKING_DIRECTORY $<TARGET_FILE_DIR:${NAME}>)
 endfunction()
 
 # resolve the preprocessor to be used. it is assumed that on unix-based systems
@@ -182,21 +182,21 @@ set(FPP_SWITCH ${FPP_SWITCH} CACHE STRING "preprocessor switch")
 
 set(file2fpp "${CMAKE_CURRENT_SOURCE_DIR}/assertions_gtest.fpp")
 set(file2 "${CMAKE_CURRENT_BINARY_DIR}/assertions_gtest.f90")
-add_library(f90twi_gtest OBJECT "${file2}")
-# Place the assertions_gtest module in the global module directory so all targets can find it
-if(DEFINED CMAKE_Fortran_MODULE_DIRECTORY)
-    set_target_properties(f90twi_gtest PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_Fortran_MODULE_DIRECTORY}")
-else()
-    set_target_properties(f90twi_gtest PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-endif()
-set_property(TARGET f90twi_gtest
-        APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${file2}"
-)
 
 F90TWFPP("${file2fpp}" "${file2}"
     EXE ${FPP_EXE}
     OPTIONS ${FPP_OPTIONS}
     SWITCH ${FPP_SWITCH}
+)
+
+# Create a custom target to ensure the file generation completes before library compilation
+add_custom_target(generate_assertions_gtest_f90 DEPENDS "${file2}")
+
+add_library(f90twi_gtest OBJECT "${file2}")
+add_dependencies(f90twi_gtest generate_assertions_gtest_f90)
+
+set_property(TARGET f90twi_gtest
+        APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${file2}"
 )
 
 add_library(f90tw_gtest STATIC gtest_assertions.cpp)

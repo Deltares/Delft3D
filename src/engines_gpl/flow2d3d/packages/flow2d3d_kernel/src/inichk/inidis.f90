@@ -1,4 +1,4 @@
-subroutine inidis(lundia    ,error     ,runid     ,cyclic    ,timnow    , &
+subroutine inidis(lundia    ,error     ,runid_in  ,cyclic    ,timnow    , &
                 & itdis     ,itstrt    ,itfinish  ,sferic    ,grdang    , &
                 & nsrc      ,nsrcd     ,lstsc     ,j         ,nmmaxj    , &
                 & icx       ,icy       ,namsrc    ,disint    ,dismmt    , &
@@ -97,7 +97,7 @@ subroutine inidis(lundia    ,error     ,runid     ,cyclic    ,timnow    , &
     real(fp)     , dimension(nsrcd)                                                           :: vmdis    !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(nsrcd)                                                           :: vmdis0   !  Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(nsrcd)                                                           :: vmdis1   !  Description and declaration in esm_alloc_real.f90
-    character(*)                                                                , intent(in)  :: runid
+    character(*)                                                                , intent(in)  :: runid_in !  Run identification code for the current simulation
     character(1) , dimension(nsrcd)                                                           :: disint   !  Description and declaration in esm_alloc_char.f90
     character(1) , dimension(nsrcd)                                                           :: dismmt   !  Description and declaration in esm_alloc_char.f90
     character(20), dimension(lstsc)                                             , intent(in)  :: namcon   !  Description and declaration in esm_alloc_char.f90
@@ -144,6 +144,7 @@ subroutine inidis(lundia    ,error     ,runid     ,cyclic    ,timnow    , &
     character(256)                             :: filnam      ! Help var. for file name 
     character(36), dimension(:), allocatable   :: parnam      ! Number of parameter records in time dependent direct access files for DIS 
     character(36), dimension(3)                :: defpar      ! Default parameters 
+    character(:), allocatable                  :: runid       ! Run identification code for the current simulation
 !
 !! executable statements -------------------------------------------------------
 !
@@ -170,6 +171,7 @@ subroutine inidis(lundia    ,error     ,runid     ,cyclic    ,timnow    , &
     !
     ! define length of RUNID
     !
+    runid = runid_in
     call remove_leading_spaces(runid     ,lrid      )
     !
     ! Time dependent discharges

@@ -185,7 +185,7 @@ contains
                                   DFM_HYD_INTERCEPT_LAYER
       use m_transportdata, only: itrac2const, constituents
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, quantity_name_config_file_to_internal_name
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_3DV
       use fm_external_forcings_utils, only: get_tracername
 
@@ -264,6 +264,9 @@ contains
          !! Step 1: Read each block
          call readIniFieldProvider(inifilename, node_ptr, groupname, qid, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
+         ! convert quantity name used in configuration file to a consistent internal name
+         qid = quantity_name_config_file_to_internal_name(qid)
+         
          if (ja == 1) then
             call resolvePath(filename, basedir)
             ib = ib + 1
@@ -340,10 +343,10 @@ contains
                ec_item = ec_undef_int
                call setzcs()
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, quantity_value_count, filename, &
-                                                 filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
-                                                 varname=varname, tgt_item1=ec_item)
+                                                   filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
+                                                   varname=varname, tgt_item1=ec_item)
                success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                                      tunit, tstart_user, target_array)
+                                                                        tunit, tstart_user, target_array)
                if (.not. success) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
                end if
@@ -1636,7 +1639,7 @@ contains
          target_location_type = UNC_LOC_U
          target_array => grounlay
          jagrounlay = 1
-      case ('bedrocksurfaceelevation')
+      case ('bedrock_surface_elevation')
          call initialize_subsupl()
          time_dependent_array = .true.
          select case (ibedlevtyp)
@@ -1713,7 +1716,7 @@ contains
          target_location_type = UNC_LOC_U
          target_array => frculin
          jafrculin = 1
-      case ('seaiceareafraction', 'seaicethickness')
+      case ('sea_ice_area_fraction', 'sea_ice_thickness')
          if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
             call fm_ice_activate_by_ext_forces(ndx, md_ptr)
          end if
@@ -1781,7 +1784,7 @@ contains
          else
             write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
                ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
-               'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
             call warn_flush()
             success = .false.
          end if
@@ -1792,7 +1795,7 @@ contains
          else
             write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
                ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
-               'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+                      'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
             call warn_flush()
             success = .false.
          end if
@@ -1803,7 +1806,7 @@ contains
          else
             write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
                ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
-               'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
             call warn_flush()
             success = .false.
          end if
@@ -2019,7 +2022,7 @@ contains
       select case (str_tolower(qid_base))
       case ('initialwaterdepth', 'waterdepth')
          s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
-      case ('bedrocksurfaceelevation')
+      case ('bedrock_surface_elevation')
          jasubsupl = 1
       case ('infiltrationcapacity')
          where (infiltcap /= dmiss)
@@ -2048,9 +2051,9 @@ contains
          if (qid == 'interceptionlayerthickness') then
             jaintercept2D = 1
          end if
-      case ('seaiceareafraction')
+      case ('sea_ice_area_fraction')
          ja_ice_area_fraction_read = 1
-      case ('seaicethickness')
+      case ('sea_ice_thickness')
          ja_ice_thickness_read = 1
       case ('secchidepth')
          jaSecchisp = 1
@@ -2204,8 +2207,8 @@ contains
 
       real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
       real(kind=dp), dimension(:, :), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
-      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
-      !< The second dimension is the 3D grid cell dimension (1:ndkx)
+                                                                      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
+                                                                      !< The second dimension is the 3D grid cell dimension (1:ndkx)
       integer, intent(in) :: first_index !< The value for the first "constituent" index of the output array.
       real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
       real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.

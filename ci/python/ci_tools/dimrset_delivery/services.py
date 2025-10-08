@@ -2,6 +2,7 @@ from typing import Optional
 
 from ci_tools.dimrset_delivery.dimr_context import CredentialEntry, DimrAutomationContext, ServiceName
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
+from ci_tools.dimrset_delivery.lib.jira import Jira
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 
@@ -15,6 +16,7 @@ class Services:
     Usage: Instantiate with a DimrAutomationContext to initialize required services.
     """
 
+    jira: Optional[Jira] = None
     teamcity: Optional[TeamCity] = None
     ssh: Optional[SshClient] = None
     git: Optional[GitClient] = None
@@ -48,7 +50,12 @@ class Services:
         if not entry.required:
             return
 
-        if service_name == ServiceName.TEAMCITY:
+        if service_name == ServiceName.JIRA:
+            self.jira = Jira(
+                credentials=entry.credential,
+                context=context,
+            )
+        elif service_name == ServiceName.TEAMCITY:
             self.teamcity = TeamCity(
                 credentials=entry.credential,
                 context=context,

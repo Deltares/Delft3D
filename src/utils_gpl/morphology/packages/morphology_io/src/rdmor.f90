@@ -38,7 +38,7 @@ public echomor
 contains
 
 !> Reads attribute file for 3D morphology computation
-subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
+subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                & lsed      ,nmaxus    ,nto       ,lfbedfrm  , &
                & nambnd    ,julday    ,mor_ptr   ,sedpar    ,morpar    , &
                & fwfac     ,morlyr    ,griddim)
@@ -71,7 +71,7 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
     integer                        , intent(in)  :: lsedtot !<  Description and declaration in esm_alloc_int.f90
     logical                        , intent(in)  :: lfbedfrm    
     logical                        , intent(out) :: error
-    character(len=*)               , intent(in)  :: filmor
+    character(len=*)               , intent(in)  :: filmor_in
     character(20) , dimension(nto)               :: nambnd  !<  Description and declaration in esm_alloc_char.f90
     type(tree_data)                , pointer     :: mor_ptr
     type(sedpar_type)              , pointer     :: sedpar
@@ -99,9 +99,11 @@ subroutine rdmor(lundia    ,error     ,filmor    ,lsec      ,lsedtot   , &
     character(256)                                                    :: pxxstr
     character(256)                                                    :: string
     character(11)                                                     :: fmttmp !< Format file ('formatted  ')
+    character(:), allocatable                                         :: filmor
 !
 !! executable statements -------------------------------------------------------
 !
+    filmor        = filmor_in
     error         = .false.
     rfield(:)     = -999.0_fp
     version       = -1

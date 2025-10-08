@@ -99,7 +99,7 @@ contains
       jamba = 1
       ibflag = 1
 
-      timembastart = tstart_user ! when DFM doesn't start at t=0.0??
+      timembastart = tstart_user ! when DFM doesn't start at t=0.0_dp??
       timembastarttot = timembastart
 
       flxdmp = 0.0
@@ -141,68 +141,68 @@ contains
 
       nombabnd = nomba + nopenbndsect
 
-      call realloc(mbaarea, nomba, keepExisting=.false., fill=0d0)
+      call realloc(mbaarea, nomba, keepExisting=.false., fill=0.0_dp)
 
-      call realloc(mbavolumebegin, nomba, keepExisting=.false., fill=0d0)
-      call realloc(mbavolumebegintot, nomba, keepExisting=.false., fill=0d0)
-      call realloc(mbavolumeend, nomba, keepExisting=.false., fill=0d0)
+      call realloc(mbavolumebegin, nomba, keepExisting=.false., fill=0.0_dp)
+      call realloc(mbavolumebegintot, nomba, keepExisting=.false., fill=0.0_dp)
+      call realloc(mbavolumeend, nomba, keepExisting=.false., fill=0.0_dp)
 
-      call realloc(mbaflowhor, [2, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
-      call realloc(mbaflowhortot, [2, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
-      call realloc(mbaflowsorsin, [2, numsrc], keepExisting=.false., fill=0d0)
-      call realloc(mbaflowsorsintot, [2, numsrc], keepExisting=.false., fill=0d0)
-      call realloc(mbaflowraineva, [2, nomba], keepExisting=.false., fill=0d0)
-      call realloc(mbaflowrainevatot, [2, nomba], keepExisting=.false., fill=0d0)
-      call realloc(mbafloweva, nomba, keepExisting=.false., fill=0d0)
-      call realloc(mbaflowevatot, nomba, keepExisting=.false., fill=0d0)
+      call realloc(mbaflowhor, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbaflowhortot, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbaflowsorsin, [2, numsrc], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbaflowsorsintot, [2, numsrc], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbaflowraineva, [2, nomba], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbaflowrainevatot, [2, nomba], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbafloweva, nomba, keepExisting=.false., fill=0.0_dp)
+      call realloc(mbaflowevatot, nomba, keepExisting=.false., fill=0.0_dp)
 
-      call realloc(mbamassbegin, [nombs, nomba], keepExisting=.false., fill=0d0)
-      call realloc(mbamassbegintot, [nombs, nomba], keepExisting=.false., fill=0d0)
-      call realloc(mbamassend, [nombs, nomba], keepExisting=.false., fill=0d0)
+      call realloc(mbamassbegin, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbamassbegintot, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbamassend, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
 
       if (stm_included) then
-         call realloc(mbabedmassbegin, [lsedtot, nomba], keepExisting=.false., fill=0d0)
-         call realloc(mbabedmassbegintot, [lsedtot, nomba], keepExisting=.false., fill=0d0)
-         call realloc(mbabedmassend, [lsedtot, nomba], keepExisting=.false., fill=0d0)
+         call realloc(mbabedmassbegin, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbabedmassbegintot, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbabedmassend, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
 
-         call realloc(mbabedshortmassbegin, [lsedtot, nomba], keepExisting=.false., fill=0d0)
-         call realloc(mbabedshortmassbegintot, [lsedtot, nomba], keepExisting=.false., fill=0d0)
-         call realloc(mbabedshortmassend, [lsedtot, nomba], keepExisting=.false., fill=0d0)
+         call realloc(mbabedshortmassbegin, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbabedshortmassbegintot, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbabedshortmassend, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
 
          if (iflufflyr > 0) then
-            call realloc(mbafluffmassbegin, [lsedtot, nomba], keepExisting=.false., fill=0d0)
-            call realloc(mbafluffmassbegintot, [lsedtot, nomba], keepExisting=.false., fill=0d0)
-            call realloc(mbafluffmassend, [lsedtot, nomba], keepExisting=.false., fill=0d0)
+            call realloc(mbafluffmassbegin, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+            call realloc(mbafluffmassbegintot, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
+            call realloc(mbafluffmassend, [lsedtot, nomba], keepExisting=.false., fill=0.0_dp)
          end if
 
-         call realloc(mbasedflux, [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
-         call realloc(mbasedfluxtot, [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
+         call realloc(mbasedflux, [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbasedfluxtot, [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
          if (jampi == 1) then
-            call realloc(mbasedfluxreduce, [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
+            call realloc(mbasedfluxreduce, [2, lsedtot, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
          end if
       end if
 
-      call realloc(mbafluxhor, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
-      call realloc(mbafluxhortot, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
-      call realloc(mbafluxsorsin, [2, 2, numconst, numsrc], keepExisting=.false., fill=0d0)
-      call realloc(mbafluxsorsintot, [2, 2, numconst, numsrc], keepExisting=.false., fill=0d0)
-      call realloc(mbafluxheat, [2, nomba], keepExisting=.false., fill=0d0)
-      call realloc(mbafluxheattot, [2, nomba], keepExisting=.false., fill=0d0)
+      call realloc(mbafluxhor, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbafluxhortot, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbafluxsorsin, [2, 2, numconst, numsrc], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbafluxsorsintot, [2, 2, numconst, numsrc], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbafluxheat, [2, nomba], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbafluxheattot, [2, nomba], keepExisting=.false., fill=0.0_dp)
 
       if (.not. allocated(srcname)) then
          allocate (srcname(0))
       end if
 
       if (jampi == 1) then
-         call realloc(mbavolumereduce, nomba, keepExisting=.false., fill=0d0)
-         call realloc(mbaflowhorreduce, [2, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
-         call realloc(mbaflowsorsinreduce, [2, numsrc], keepExisting=.false., fill=0d0)
-         call realloc(mbaflowrainevareduce, [2, nomba], keepExisting=.false., fill=0d0)
-         call realloc(mbaflowevareduce, nomba, keepExisting=.false., fill=0d0)
-         call realloc(mbamassreduce, [nombs, nomba], keepExisting=.false., fill=0d0)
-         call realloc(mbafluxhorreduce, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0d0)
-         call realloc(mbafluxsorsinreduce, [2, 2, numconst, numsrc], keepExisting=.false., fill=0d0)
-         call realloc(mbafluxheatreduce, [2, nomba], keepExisting=.false., fill=0d0)
+         call realloc(mbavolumereduce, nomba, keepExisting=.false., fill=0.0_dp)
+         call realloc(mbaflowhorreduce, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbaflowsorsinreduce, [2, numsrc], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbaflowrainevareduce, [2, nomba], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbaflowevareduce, nomba, keepExisting=.false., fill=0.0_dp)
+         call realloc(mbamassreduce, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbafluxhorreduce, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbafluxsorsinreduce, [2, 2, numconst, numsrc], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbafluxheatreduce, [2, nomba], keepExisting=.false., fill=0.0_dp)
       end if
 
 !  Determine 2D pointers fo links (from balance area to balance area)
@@ -411,30 +411,17 @@ contains
       use m_partitioninfo
       use fm_external_forcings_data, only: numsrc
       use m_flowparameters, only: jambawritetxt, jambawritecsv, jambawritenetcdf, jambawritecsv, jambawritetxt
-      use m_flowtimes, only: refdate_mjd
       use m_transport, only: numconst
       use m_sediment, only: stm_included
       use m_fm_erosed, only: lsedtot, iflufflyr
-      use time_module, only: mjd2date
 
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
 
-      integer :: iyear, imonth, iday, ihour, imin
-      real(kind=dp) :: sec
       character(len=19) :: datembastart, datembaend
       logical :: write_balance !< flag specifying whether balance should be written
       logical :: overall_balance !< balance period: use the total begin arrays, or just the last period
 
       timembaend = time
-
-      datembastart = ""
-      if (mjd2date(refdate_mjd + timembastart / 86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
-         write (datembastart, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
-      end if
-      datembaend = ""
-      if (mjd2date(refdate_mjd + timembaend / 86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
-         write (datembaend, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
-      end if
 
 !  New total volumes and masses
       call mba_sum(nombs, nomba, mbadefdomain, mbavolumeend, mbamassend)
@@ -496,6 +483,10 @@ contains
       if (write_balance) then
          overall_balance = .false.
          call mba_prepare_values(overall_balance)
+         if (jambawritetxt == 1 .or. jambawritecsv == 1) then
+            call mba_datestr(timembastart, datembastart)
+            call mba_datestr(timembaend, datembaend)
+         end if
          if (jambawritetxt == 1) then
             call mba_write_bal_time_step(lunmbabal, timembastart, timembaend, datembastart, datembaend, overall_balance)
          end if
@@ -535,32 +526,39 @@ contains
 
    end subroutine mba_update
 
+   subroutine mba_datestr(time, datestr)
+      use m_flowtimes, only: refdate_mjd
+      use time_module, only: mjd2date
+
+      real(dp), intent(in) :: time !< time represented in seconds since refdate
+      character(len=19), intent(out) :: datestr !< time represented as string
+
+      integer :: iyear !< year
+      integer :: imonth !< month number
+      integer :: iday !< day number
+      integer :: ihour !< hours
+      integer :: imin !< minutes
+      real(dp) :: sec !< (fractional) seconds
+
+      datestr = ""
+      if (mjd2date(refdate_mjd + time / 86400.0_dp, iyear, imonth, iday, ihour, imin, sec) /= 0) then
+         write (datestr, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
+      end if
+   end subroutine mba_datestr
+
    subroutine mba_final(time)
       use m_mass_balance_areas
       use m_fm_wq_processes
       use m_partitioninfo
       use m_flowparameters, only: jambawritetxt, jambawritenetcdf
-      use m_flowtimes, only: refdate_mjd
-      use time_module, only: mjd2date
 
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
 
-      integer :: iyear, imonth, iday, ihour, imin
-      real(kind=dp) :: sec
       character(len=19) :: datembastart, datembaend
       logical :: write_balance !< flag specifying whether balance should be written
       logical :: overall_balance !< balance period: use the total begin arrays, or just the last period
 
       timembaend = time
-
-      datembastart = ""
-      if (mjd2date(refdate_mjd + timembastarttot / 86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
-         write (datembastart, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
-      end if
-      datembaend = ""
-      if (mjd2date(refdate_mjd + timembaend / 86400.0, iyear, imonth, iday, ihour, imin, sec) /= 0) then
-         write (datembaend, '(i4,"-",i2.2,"-",i2.2," ",i2.2,":",i2.2,":",i2.2)') iyear, imonth, iday, ihour, imin, int(sec)
-      end if
 
       write_balance = .true.
       if (jampi == 1) then
@@ -571,6 +569,8 @@ contains
          overall_balance = .true.
          call mba_prepare_values(overall_balance)
          if (jambawritetxt == 1) then
+            call mba_datestr(timembastart, datembastart)
+            call mba_datestr(timembaend, datembaend)
             write (lunmbabal, 1000)
             call mba_write_bal_time_step(lunmbabal, timembastarttot, timembaend, datembastart, datembaend, overall_balance)
          end if
@@ -2049,14 +2049,14 @@ contains
          end do
 
          ! change in bed mass
-         call add_value_change(fluxes, imbf, sum(mbabedmassbegin(ised, :)), sum(mbabedmassend(ised, :)))
+         call add_value_change(fluxes, imbf, sum(p_mbabedmassbegin(ised, :)), sum(mbabedmassend(ised, :)))
 
          ! change in bed shortage mass
-         call add_value_change(fluxes, imbf, sum(mbabedshortmassbegin(ised, :)), sum(mbabedshortmassend(ised, :)))
+         call add_value_change(fluxes, imbf, sum(p_mbabedshortmassbegin(ised, :)), sum(mbabedshortmassend(ised, :)))
 
          if (ised <= lsed .and. iflufflyr > 0) then
             ! fluff layer
-            call add_value_change(fluxes, imbf, sum(mbafluffmassbegin(ised, :)), sum(mbafluffmassend(ised, :)))
+            call add_value_change(fluxes, imbf, sum(p_mbafluffmassbegin(ised, :)), sum(mbafluffmassend(ised, :)))
          end if
       end if
 

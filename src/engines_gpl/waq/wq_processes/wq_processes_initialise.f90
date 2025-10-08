@@ -66,7 +66,7 @@ contains
         use m_blmeff
         use m_algrep
         use m_actrep
-        use m_date_time_utils_external, only : write_date_time
+        use m_date_time_utils_external, only : fill_in_date_time
         use m_logger_helper, only : stop_with_error, write_log_message
         use m_rd_stt
         use m_getidentification
@@ -265,7 +265,7 @@ contains
         ! Header for lsp
         call getidentification(identification_text)
         write(lunlsp, '(XA/)') trim(identification_text)
-        call write_date_time(rundat)
+        call fill_in_date_time(rundat)
         write (lunlsp, '(A,A/)') ' Execution start: ', rundat
 
         ! Active/inactive substance list

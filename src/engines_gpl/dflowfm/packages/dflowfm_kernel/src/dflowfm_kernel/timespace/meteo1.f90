@@ -6600,7 +6600,6 @@ contains
       end if
       allocate (item_sedfracbnd(numfracs))
       item_sedfracbnd = ec_undef_int
-      ! TO ADD: initial concentration field?
 
       if (allocated(item_waqfun)) then
          deallocate (item_waqfun)
@@ -6733,6 +6732,27 @@ contains
          ec_operand = operand_undefined
       end select
    end subroutine operand_fm_to_ec
+
+   !> Convert quantity names as given in user input (ini/ext file)
+   !! to a consistent internal representation.
+   pure function quantity_name_config_file_to_internal_name(quantity_input_name) result (quantity_internal_name)
+      character(len=*), intent(in) :: quantity_input_name !< given by the user in ini/ext file
+      character(len=:), allocatable :: quantity_internal_name !< consistent internal name
+      
+      ! it's not safe to assume that the internal representation is always lower case
+      quantity_internal_name = trim(quantity_input_name)
+      select case(str_tolower(quantity_internal_name))
+      case ('seaiceareafraction')
+         quantity_internal_name = 'sea_ice_area_fraction'
+      case ('seaicethickness')
+         quantity_internal_name = 'sea_ice_thickness'
+      case ('bedrocksurfaceelevation')
+         quantity_internal_name = 'bedrock_surface_elevation'
+      case default
+         ! keep other names unchanged
+      end select
+         
+   end function quantity_name_config_file_to_internal_name
 
    !> Convert quantity names as given in user input (ext file)
    !! to accepted Unstruc names (as used in Fortran code)
@@ -6945,7 +6965,7 @@ contains
       case ('damlevel')
          itemPtr1 => item_damlevel
       case ('dambreaklevelsandwidths')
-          ! itemPtr1 and dataPtr1 are provided at a dambreak call
+         ! itemPtr1 and dataPtr1 are provided at a dambreak call
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
@@ -7104,7 +7124,7 @@ contains
             'friction_coefficient_whitecolebrook', 'friction_coefficient_stricklernikuradse', &
             'friction_coefficient_strickler', 'friction_coefficient_debosbijkerk')
          itemPtr1 => item_frcutim ! the same for all types (type is stored elsewhere)
-      case ('bedrocksurfaceelevation', 'bedrock_surface_elevation')
+      case ('bedrock_surface_elevation')
          itemPtr1 => item_subsiduplift
          dataPtr1 => subsupl
       case default
