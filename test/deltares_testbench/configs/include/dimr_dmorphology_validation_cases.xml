@@ -29,7 +29,7 @@
       <path version="2025-10-25T09:20:00">e02_dflowfm/f022_morphology_2D/c106_flow_wave_morpho_straightcoast</path>
       <maxRunTime>500.0</maxRunTime>
       <checks>
-        <file name="output/FlowFM_map.nc" type="netCDF">
+        <file name="fm/output/FlowFM_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001" />
