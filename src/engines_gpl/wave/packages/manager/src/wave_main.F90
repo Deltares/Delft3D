@@ -61,6 +61,52 @@ module wave_main
 
 contains
 
+#ifdef IS_WAVE_WITH_GREETER
+subroutine couple_to_greeter_dummy()
+   use m_alloc, only: realloc
+   use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
+      precicef_set_vertices, precicef_read_data, &
+      precicef_get_data_dimensions, precicef_get_max_time_step_size
+
+   integer(kind=c_int), parameter :: precice_component_name_length = 4
+   character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "wave"
+   integer(kind=c_int), parameter :: precice_config_name_length = 21
+   character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
+   integer(kind=c_int), parameter :: mesh_name_length = 9
+   character(kind=c_char, len=mesh_name_length), parameter :: mesh_name = "wave-mesh"
+   integer(kind=c_int), parameter :: max_greeting_length = 34
+   integer(kind=c_int) :: mesh_dimensions
+   real(kind=c_double), dimension(max_greeting_length * 2) :: mesh_coordinates
+   integer(kind=c_int), dimension(max_greeting_length) :: vertex_ids
+   integer(kind=c_int), parameter :: data_name_length = 8
+   character(kind=c_char, len=data_name_length), parameter :: data_name = "greeting"
+   integer :: data_size, data_dimension
+   real(kind=c_double), dimension(:), allocatable :: data_values
+   character(kind=c_char), dimension(:), allocatable :: converted_data
+   real(kind=c_double) :: precice_time_step
+
+   call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
+   call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, mesh_name_length)
+   print *, '[wave] The number of dimensions of the wave-mesh is ', mesh_dimensions
+
+   mesh_coordinates = 0.0_c_double
+   call precicef_set_vertices(mesh_name, max_greeting_length, mesh_coordinates, vertex_ids, mesh_name_length)
+   call precicef_initialize()
+
+   call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, mesh_name_length, data_name_length)
+   data_size = data_dimension * max_greeting_length
+   print *, '[wave] data dimension: ', data_dimension, ' data size: ', data_size
+   call realloc(data_values, data_size)
+
+   call precicef_get_max_time_step_size(precice_time_step)
+   print *, '[wave] max time step: ', precice_time_step
+   call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, precice_time_step, data_values, &
+                              mesh_name_length, data_name_length)
+
+   converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
+   print *, '[wave] message read: ', converted_data
+end subroutine couple_to_greeter_dummy
+#endif // IS_WAVE_WITH_GREETER
 !
 ! ====================================================================================
 function wave_main_init(mode_in, mdw_file) result(retval)
@@ -72,10 +118,6 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    ! use ifcore
    ! 
    use deltares_common_version_module
-   use m_alloc, only: realloc
-   use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
-      precicef_set_vertices, precicef_read_data, &
-      precicef_get_data_dimensions, precicef_get_max_time_step_size
    implicit none
 !
 ! return value
@@ -98,22 +140,6 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    ! See also statements below
    !
    ! INTEGER*4 OLD_FPE_FLAGS, NEW_FPE_FLAGS
-   integer(kind=c_int), parameter :: precice_component_name_length = 4
-   character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "wave"
-   integer(kind=c_int), parameter :: precice_config_name_length = 21
-   character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
-   integer(kind=c_int), parameter :: mesh_name_length = 9
-   character(kind=c_char, len=mesh_name_length), parameter :: mesh_name = "wave-mesh"
-   integer(kind=c_int), parameter :: max_greeting_length = 34
-   integer(kind=c_int) :: mesh_dimensions
-   real(kind=c_double), dimension(max_greeting_length * 2) :: mesh_coordinates
-   integer(kind=c_int), dimension(max_greeting_length) :: vertex_ids
-   integer(kind=c_int), parameter :: data_name_length = 8
-   character(kind=c_char, len=data_name_length), parameter :: data_name = "greeting"
-   integer :: data_size, data_dimension
-   real(kind=c_double), dimension(:), allocatable :: data_values
-   character(kind=c_char), dimension(:), allocatable :: converted_data
-   real(kind=c_double) :: precice_time_step
 !
 !! executable statements -----------------------------------------------
 !
@@ -144,27 +170,9 @@ function wave_main_init(mode_in, mdw_file) result(retval)
    call initialize_wave_mpi()
    retval = wave_init(mode_in, mdw_file)
 
-   !! register precice participant now
-   call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
-   call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, mesh_name_length)
-   print *, '[wave] The number of dimensions of the wave-mesh is ', mesh_dimensions
-
-   mesh_coordinates = 0.0_c_double
-   call precicef_set_vertices(mesh_name, max_greeting_length, mesh_coordinates, vertex_ids, mesh_name_length)
-   call precicef_initialize()
-
-   call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, mesh_name_length, data_name_length)
-   data_size = data_dimension * max_greeting_length
-   print *, '[wave] data dimension: ', data_dimension, ' data size: ', data_size
-   call realloc(data_values, data_size)
-
-   call precicef_get_max_time_step_size(precice_time_step)
-   print *, '[wave] max time step: ', precice_time_step
-   call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, precice_time_step, data_values, &
-                              mesh_name_length, data_name_length)
-
-   converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
-   print *, '[wave] message read: ', converted_data
+#ifdef IS_WAVE_WITH_GREETER
+   call couple_to_greeter_dummy()
+#endif // IS_WAVE_WITH_GREETER
 end function wave_main_init
 
 !
@@ -606,7 +614,10 @@ function wave_main_finish() result(retval)
       !
       retval = 0
    endif
+
+#ifdef IS_WAVE_WITH_GREETER
    call precicef_finalize()
+#endif // IS_WAVE_WITH_GREETER
 end function wave_main_finish
 
 

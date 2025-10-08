@@ -39,6 +39,11 @@ target_link_libraries(${library_name} PRIVATE
                       precice_module
 )
 
+option(IS_FM_WITH_GREETER "Compile FM with preCICE greeter_dummy coupling" OFF)
+if(IS_FM_WITH_GREETER)
+    target_compile_definitions(${library_name} PRIVATE IS_FM_WITH_GREETER)
+endif()
+
 if(UNIX)
     message(STATUS "Setting target_compile_definitions in Unix")
     target_compile_definitions(${library_name} PRIVATE "HAVE_MPI;HAVE_PETSC")
