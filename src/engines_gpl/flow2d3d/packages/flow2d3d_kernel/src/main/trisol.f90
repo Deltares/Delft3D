@@ -1101,6 +1101,10 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     nrcmp               => gdp%gdtfzeta%nrcmp
     typbnd              => gdp%gdr_i_ch%typbnd
     !
+    if (.false.) then
+       write(101,*) 'write for e23_f01_c09'
+    end if
+    !
     icx     = 0
     icy     = 0
     nmaxddb = nmax + 2*gdp%d%ddbound
