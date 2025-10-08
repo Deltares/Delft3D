@@ -232,7 +232,7 @@ void Stream::construct_TCPIP(void)
     IPport port; // Declare outside branches
 
     // Try IPv6 dual-stack first
-    this->local.sock = socket(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+    this->local.sock = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
     this->is_ipv6 = (this->local.sock != -1);
     if (this->is_ipv6)
     {
@@ -263,7 +263,7 @@ void Stream::construct_TCPIP(void)
     else
     {
         // Fallback to IPv4
-        this->local.sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        this->local.sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (this->local.sock == -1)
             error("Cannot create local socket for unpaired stream");
 
@@ -319,7 +319,7 @@ void Stream::connect_TCPIP(
     char *ipstr = this->lookup_host(hostname_str);
 
     // Try IPv6 dual-stack first
-    this->remote.sock = socket(PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+    this->remote.sock = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP);
     this->is_ipv6 = (this->remote.sock != -1);
     if (this->is_ipv6)
     {
@@ -346,7 +346,7 @@ void Stream::connect_TCPIP(
     else
     {
         // Fallback to IPv4
-        this->remote.sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        this->remote.sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (this->remote.sock == -1)
             error("Cannot create remote socket for paired stream");
 
