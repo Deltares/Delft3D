@@ -59,37 +59,38 @@ contains
 
       use globals
       !In/Out
-      integer :: debug_unit
-      integer :: message_unit
-      integer :: status
-      character(len=*) :: debug_file, message_file
+      integer, intent(inout) :: debug_unit
+      character(len=*), intent(inout) :: debug_file
+      integer, intent(inout) :: message_unit
+      character(len=*), intent(inout) :: message_file
+      integer, intent(inout) :: status
 !In
-      integer :: nxte ! Maxumum number of land use forms
-      integer :: nxspun ! Maximum number of soil physical units
-      integer :: nxrz ! Maximum number of root zones in table
-      integer :: nxdpun ! Maximum number of groundwater depths in table
-      integer :: nxfrsw ! Maximum number of data in inundation table
-      integer :: nt ! Gewasnummer
-      integer :: ns ! Soil physical unit number
-      real(kind=dp) :: dpin ! Diepte grondwater initieel (m-gl)
-      real(kind=dp) :: dproot ! Root zone depth (m)
-      real(kind=dp) :: dt ! Time step (d)
-      real(kind=dp) :: pn ! Net precipitation (m/d)
-      real(kind=dp) :: vmrzin ! Initial moisture content root zone (m)
-      real(kind=dp) :: fmevpt ! Potential evapotranspiration (m/d)
-      integer :: nudpun(nxspun, nxrz) ! number of groundwater depth data in table
-      real(kind=dp) :: srrz(nxspun, nxrz, nxdpun) ! Storage root zone table (m)
-      real(kind=dp) :: fmca(nxspun, nxrz, nxdpun) ! Capillary rise table (m/d)
-      real(kind=dp) :: scsa(nxspun, nxrz, nxdpun) ! Storage coefficient table (m)
-      real(kind=dp) :: dprzun(nxrz) ! Root zone depths in table (cm)
-      real(kind=dp) :: dpgwun(nxspun, nxrz, nxdpun) ! Groundwater depths in table (m-gl)
-      real(kind=dp) :: dpfrsw(nxfrsw) ! Depth of groundwater in inundation table (m-gl)
-      real(kind=dp) :: frsw(nxfrsw) ! Inundation table (-)
-      real(kind=dp) :: frev(nxspun, nxte, 5) ! Evapotranspiration curves (-)
+      integer, intent(in) :: nxspun !< Maximum number of soil physical units
+      integer, intent(in) :: nxte !< Maxumum number of land use forms
+      integer, intent(in) :: nxrz !< Maximum number of root zones in table
+      integer, intent(in) :: nxdpun !< Maximum number of groundwater depths in table
+      integer, intent(in) :: nxfrsw !< Maximum number of data in inundation table
+      integer, intent(in) :: ns !< Soil physical unit number
+      integer, intent(in) :: nt !< Gewasnummer
+      real(kind=dp), intent(in) :: dpin !< Diepte grondwater initieel (m-gl)
+      real(kind=dp), intent(in) :: dproot !< Root zone depth (m)
+      real(kind=dp), intent(in) :: dt !< Time step (d)
+      real(kind=dp), intent(in) :: pn !< Net precipitation (m/d)
+      real(kind=dp), intent(in) :: vmrzin !< Initial moisture content root zone (m)
+      real(kind=dp), intent(in) :: fmevpt !< Potential evapotranspiration (m/d)
+      real(kind=dp), intent(in) :: srrz(nxspun, nxrz, nxdpun) !< Storage root zone table (m)
+      real(kind=dp), intent(in) :: fmca(nxspun, nxrz, nxdpun) !< Capillary rise table (m/d)
+      real(kind=dp), intent(in) :: scsa(nxspun, nxrz, nxdpun) !< Storage coefficient table (m)
+      real(kind=dp), intent(in) :: dprzun(nxrz) !< Root zone depths in table (cm)
+      real(kind=dp), intent(in) :: dpgwun(nxspun, nxrz, nxdpun) !< Groundwater depths in table (m-gl)
+      integer, intent(in) :: nudpun(nxspun, nxrz) !< number of groundwater depth data in table
+      real(kind=dp), intent(in) :: dpfrsw(nxfrsw) !< Depth of groundwater in inundation table (m-gl)
+      real(kind=dp), intent(in) :: frsw(nxfrsw) !< Inundation table (-)
+      real(kind=dp), intent(in) :: frev(nxspun, nxte, 5) !< Evapotranspiration curves (-)
 ! Out
-      real(kind=dp) :: fmevac ! Actual evapotranspiration (m/d)
-      real(kind=dp) :: fmpe ! Percolation (m/d)
-      real(kind=dp) :: vmrzac ! Actual storage in root zone (m)
+      real(kind=dp), intent(out) :: fmevac !< Actual evapotranspiration (m/d)
+      real(kind=dp), intent(out) :: fmpe !< Percolation (m/d)
+      real(kind=dp), intent(out) :: vmrzac !< Actual storage in root zone (m)
 !
 ! Local variables
 !
@@ -387,19 +388,20 @@ contains
 !
 ! Arguments
 !
-      real(kind=dp) :: res
-      real(kind=dp) :: fmevptte ! Potential evaporation
-      real(kind=dp) :: frev1 ! Reductionfactor at 100 % moisture in unsatured zone
-      real(kind=dp) :: frev2 ! Reductionfactor
-      real(kind=dp) :: frev3 ! Reductionfactor at 5 mm evaporation a day
-      real(kind=dp) :: frev4 ! Reductionfactor at 1 mm evaporation a day
-      real(kind=dp) :: frev5 ! Reductionfactor at zero contents of iunsat zone
-      real(kind=dp) :: epf ! Actuele fractie van inhoude wortelzone
+      real(kind=dp), intent(in) :: fmevptte !< Potential evaporation
+      real(kind=dp), intent(in) :: frev1 !< Reductionfactor at 100 % moisture in unsatured zone
+      real(kind=dp), intent(in) :: frev2 !< Reductionfactor
+      real(kind=dp), intent(in) :: frev3 !< Reductionfactor at 5 mm evaporation a day
+      real(kind=dp), intent(in) :: frev4 !< Reductionfactor at 1 mm evaporation a day
+      real(kind=dp), intent(in) :: frev5 !< Reductionfactor at zero contents of iunsat zone
+      real(kind=dp), intent(in) :: epf !< Actuele fractie van inhoude wortelzone
 
-      logical :: IsSurfaceWater ! Is dit gewas oppervlaktewater
-      real(kind=dp) :: fmevptsw ! Evaporation surface water
-      real(kind=dp) :: frswtp ! Fraction surfacewater (inundation)
-      real(kind=dp) :: icselo ! Sensitivity for water logging (4 = reed)
+      logical, intent(in) :: IsSurfaceWater !< Is dit gewas oppervlaktewater
+      real(kind=dp), intent(in) :: fmevptsw !< Evaporation surface water
+      real(kind=dp), intent(in) :: frswtp !< Fraction surfacewater (inundation)
+      real(kind=dp), intent(in) :: icselo !< Sensitivity for water logging (4 = reed)
+
+      real(kind=dp) :: res !< Result value for actual evaporation.
 !
 ! Local variables
 !
@@ -1643,15 +1645,17 @@ contains
 !
    end
 
-!>     Indexes in array ARRIN (nb:ne), ie outputs the
+!>     Indexes in array ARRIN (1:n), i.e. outputs the
 !>     array INDX such that ARRIN(INDX(J)) is in ascending order for
-!>     j=NB,NB+1,...,NE
+!>     j=1,N
    subroutine indexx(n, arrin, indx)
 !
-      integer*4 :: i, j, n, l, nr, q
+      integer*4, intent(in) :: n
+      integer*4, dimension(:), intent(in) :: arrin
+      integer*4, dimension(:), intent(out) :: indx
+
+      integer*4 :: i, j, l, nr, q
       integer*4 :: indxt
-      integer*4 :: arrin(*)
-      integer*4 :: indx(*)
 !
       do j = 1, n
          indx(j) = j
