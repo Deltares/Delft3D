@@ -853,9 +853,11 @@ Stream::lookup_dotaddr(
     // Map IP address to an unqualified host name (IPv6 dual-stack, cross-platform)
 
     static char hostname[MAXSTRING]; // Not thread-safe, but OK
+    char host[MAXSTRING];
     struct sockaddr_in6 addr = {0};
     addr.sin6_family = AF_INET6;
     int status = inet_pton(AF_INET6, ipdotaddr, &addr.sin6_addr);
+    int name_status;
 
     if (status == 1)
     {
@@ -863,57 +865,37 @@ Stream::lookup_dotaddr(
         {
             return (char *)"localhost"; // Or appropriate hostname
         }
-        char host[MAXSTRING];
         socklen_t addrlen = sizeof(struct sockaddr_in6);
-        int name_status = getnameinfo((struct sockaddr *)&addr, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
-        if (name_status != 0)
-        {
-            // Fallback to IP string if reverse DNS fails
-            strncpy(hostname, ipdotaddr, MAXSTRING);
-            hostname[MAXSTRING - 1] = '\0';
-            return hostname;
-        }
-
-        // Truncate at first dot (unqualified hostname)
-        char *dp = hostname;
-        const char *cp = host;
-        while (*cp != '\0' && *cp != '.')
-        {
-            *dp++ = *cp++;
-        }
-        *dp = '\0';
-
-        return hostname;
+        name_status = getnameinfo((struct sockaddr *)&addr, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
     }
     else
     {
         // Fallback to IPv4
         struct sockaddr_in addr4 = {0};
         addr4.sin_family = AF_INET;
-        inet_pton(AF_INET, ipdotaddr, &addr4.sin_addr);
-
-        char host[MAXSTRING];
+        status = inet_pton(AF_INET, ipdotaddr, &addr4.sin_addr);
         socklen_t addrlen = sizeof(struct sockaddr_in);
-        int name_status = getnameinfo((struct sockaddr *)&addr4, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
-        if (name_status != 0)
-        {
-            // Fallback to IP string if reverse DNS fails
-            strncpy(hostname, ipdotaddr, MAXSTRING);
-            hostname[MAXSTRING - 1] = '\0';
-            return hostname;
-        }
+        name_status = getnameinfo((struct sockaddr *)&addr4, addrlen, host, MAXSTRING, NULL, 0, NI_NAMEREQD);
+    }
 
-        // Truncate at first dot (unqualified hostname)
-        char *dp = hostname;
-        const char *cp = host;
-        while (*cp != '\0' && *cp != '.')
-        {
-            *dp++ = *cp++;
-        }
-        *dp = '\0';
-
+    if (name_status != 0)
+    {
+        // Fallback to IP string if reverse DNS fails
+        strncpy(hostname, ipdotaddr, MAXSTRING);
+        hostname[MAXSTRING - 1] = '\0';
         return hostname;
     }
+
+    // Truncate at first dot (unqualified hostname)
+    char *dp = hostname;
+    const char *cp = host;
+    while (*cp != '\0' && *cp != '.')
+    {
+        *dp++ = *cp++;
+    }
+    *dp = '\0';
+
+    return hostname;
 }
 
 char *
