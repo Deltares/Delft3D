@@ -55,7 +55,7 @@ contains
       use m_mass_balance_areas, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_sferic, only: jsferic, fcorio
-      use m_flowtimes, only: dts, time1, tstart_user, tfac
+      use m_flowtimes, only: dts
       use m_flowparameters, only: janudge, jasecflow, jatem, jaequili, epshu, epshs, testdryflood, icorio
       use m_laterals, only: add_lateral_load_and_sink, apply_transport_is_used
       use m_missing, only: dmiss
@@ -89,29 +89,13 @@ contains
             constituents(ISPIR, k) = spirint(k)
          end if
 
-         if (ISED1 /= 0) then
+         if (ISED1 /= 0 .and. .not. stm_included) then
             do jsed = 1, mxgr
                iconst = ISED1 + jsed - 1
                constituents(iconst, k) = sed(jsed, k)
             end do
          end if
       end do
-
-      if (stm_included) then
-         if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor * tfac) then
-            if (ISED1 /= 0) then
-               do k = 1, ndx
-                  if (hs(k) < stmpar%morpar%sedthr) then
-                     do jsed = 1, mxgr
-                        iconst = ISED1 + jsed - 1
-                        call getkbotktop(k, kb, kt)
-                        constituents(iconst, kb:kt) = 0.0_dp
-                     end do
-                  end if
-               end do
-            end if
-         end if
-      end if
 
       difsedu = 0.0_dp; molecular_diffusion_coeff = 0.0_dp; sigdifi = 0.0_dp
 

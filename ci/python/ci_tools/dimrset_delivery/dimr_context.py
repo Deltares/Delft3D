@@ -1,9 +1,8 @@
 import os
 from dataclasses import dataclass
+from enum import Enum
 from getpass import getpass
 from typing import Dict, Iterator, Optional
-
-from pyparsing import Enum
 
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
 from ci_tools.example_utils.logger import Logger, LogLevel
@@ -12,6 +11,7 @@ from ci_tools.example_utils.logger import Logger, LogLevel
 class ServiceName(str, Enum):
     """Enum representing application names for DIMR automation."""
 
+    JIRA = "Jira"
     TEAMCITY = "TeamCity"
     SSH = "SSH"
     GIT = "Git"

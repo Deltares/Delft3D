@@ -89,6 +89,7 @@ set(rtc_plugin_c_module "${rtc_module_path}/plugin_rtc_c")
 set(rtc_kernel_module "${rtc_module_path}/rtc_kernel")
 
 set(fbc_module_path "${engines_gpl_path}/fbc/packages/FBCTools")
+set(dsle_module_path "${engines_gpl_path}/dsle/packages")
 
 # Install
 set(install_all_module cmake/install_all)
