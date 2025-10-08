@@ -1,3 +1,7 @@
+module m_erosed
+   
+contains
+   
 subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                 & nst       ,lsed      ,lsedtot   ,lsal      ,ltem      , &
                 & lsecfl    ,kfs       ,kfu       ,kfv       ,sig       , &
@@ -1513,4 +1517,6 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     !
     nhystp = nxtstp(d3dflow_sediment, gdp)
     deallocate (localpar, stat = istat)
-    end subroutine erosed
+end subroutine erosed
+                
+end module m_erosed
