@@ -146,8 +146,8 @@ class Stream {
         char *  lookup_host         (char *);
         int     next_seqn           (void);
         void    parse_name          (char *, char *, int *);
-        void    error               (char *, ...);
-        void    trace               (char *, ...);
+        void    error               (const char * const, ...);
+        void    trace               (const char * const, ...);
     };
 
 #endif
