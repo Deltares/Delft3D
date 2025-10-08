@@ -128,16 +128,16 @@ class Stream {
         // Internal functions
 
         void    initialize          (void);
-        void    construct_TCPIP     (Stream *);
-        void    connect_TCPIP       (Stream *, const char *);
-        void    first_receive_TCPIP (Stream *);
-        void    receive_TCPIP       (Stream *, char *, int);
+        void    construct_TCPIP     (void);
+        void    connect_TCPIP       (const char *);
+        void    first_receive_TCPIP (void);
+        void    receive_TCPIP       (char *, int);
 
 #ifdef WITH_MPI
-        void    construct_MPI       (Stream *);
-        void    connect_MPI         (Stream *, const char *);
-        void    first_receive_MPI   (Stream *);
-        void    receive_MPI         (Stream *, char *, int);
+        void    construct_MPI       (void);
+        void    connect_MPI         (const char *);
+        void    first_receive_MPI   (void);
+        void    receive_MPI         (char *, int);
 #endif
 
         char *  dotipaddr           (struct in6_addr);

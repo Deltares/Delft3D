@@ -145,11 +145,11 @@ Stream::Stream (
     switch (streamtype) {
 #if defined (WITH_MPI)
         case Stream::MPI:
-            construct_MPI (this);
+            construct_MPI ();
             break;
 #endif
         case Stream::TCPIP:
-            construct_TCPIP (this);
+            construct_TCPIP ();
             break;
 
         default:
@@ -183,11 +183,11 @@ Stream::Stream (
     switch (streamtype) {
 #if defined (WITH_MPI)
         case Stream::MPI:
-            connect_MPI (this, handle);
+            connect_MPI (handle);
             break;
 #endif
         case Stream::TCPIP:
-            connect_TCPIP (this, handle);
+            connect_TCPIP (handle);
             break;
 
         default:
@@ -228,27 +228,25 @@ Stream::~Stream (
 
 
 void
-Stream::construct_TCPIP (
-    Stream * stream
-    ) {
+Stream::construct_TCPIP (void) {
 
     IPport port;  // Declare outside branches
 
     // Try IPv6 dual-stack first
-    stream->local.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP);
-    stream->is_ipv6 = (stream->local.sock != -1);
-    if (stream->is_ipv6) {
+    this->local.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+    this->is_ipv6 = (this->local.sock != -1);
+    if (this->is_ipv6) {
         int opt = 0;
-        setsockopt(stream->local.sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt));
+        setsockopt(this->local.sock, IPPROTO_IPV6, IPV6_V6ONLY, (char*)&opt, sizeof(opt));
 
-        struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&stream->local.addr;
+        struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&this->local.addr;
         sin6->sin6_family = AF_INET6;
         sin6->sin6_addr = IN6ADDR_ANY_INIT;
 
         // Find an available port (IPv6)
         for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
             sin6->sin6_port = htons (port);
-            if (bind (stream->local.sock, (struct sockaddr *) sin6, sizeof (struct sockaddr_in6)) == 0) {
+            if (bind (this->local.sock, (struct sockaddr *) sin6, sizeof (struct sockaddr_in6)) == 0) {
                 break;
             }
         }
@@ -258,18 +256,18 @@ Stream::construct_TCPIP (
         }
     } else {
         // Fallback to IPv4
-        stream->local.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (stream->local.sock == -1)
+        this->local.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (this->local.sock == -1)
             error((char *)"Cannot create local socket for unpaired stream");
 
-        struct sockaddr_in *sin = (struct sockaddr_in *)&stream->local.addr;
+        struct sockaddr_in *sin = (struct sockaddr_in *)&this->local.addr;
         sin->sin_family = AF_INET;
         sin->sin_addr.s_addr = INADDR_ANY;
 
         // Find an available port (IPv4)
         for (port = FIRST_PORT ; port < LAST_PORT ; port++) {
             sin->sin_port = htons (port);
-            if (bind (stream->local.sock, (struct sockaddr *) sin, sizeof (struct sockaddr_in)) ==  0) {
+            if (bind (this->local.sock, (struct sockaddr *) sin, sizeof (struct sockaddr_in)) ==  0) {
                 break;
             }
         }
@@ -280,17 +278,16 @@ Stream::construct_TCPIP (
 
     char buffer [MAXSTRING];
     sprintf (buffer, "%s:%d", hostname (), port);
-    stream->local.handle = new char [strlen (buffer) + 1];
-    strcpy (stream->local.handle, buffer);
+    this->local.handle = new char [strlen (buffer) + 1];
+    strcpy (this->local.handle, buffer);
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Created handle %s", stream->local.handle);
+    if (this->tracefunction != NULL)
+        trace((char *)"Created handle %s", this->local.handle);
     }
 
 
 void
 Stream::connect_TCPIP (
-    Stream * stream,
     const char *  handle
     ) {
 
@@ -309,13 +306,13 @@ Stream::connect_TCPIP (
     *hp = '\0';
     port = atoi (handle+1);
 
-    char *ipstr = stream->lookup_host(hostname_str);
+    char *ipstr = this->lookup_host(hostname_str);
 
     // Try IPv6 dual-stack first
-    stream->remote.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP);
-    stream->is_ipv6 = (stream->remote.sock != -1);
-    if (stream->is_ipv6) {
-        struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&stream->remote.addr;
+    this->remote.sock = socket (PF_INET6, SOCK_STREAM, IPPROTO_TCP);
+    this->is_ipv6 = (this->remote.sock != -1);
+    if (this->is_ipv6) {
+        struct sockaddr_in6 *sin6 = (struct sockaddr_in6 *)&this->remote.addr;
         sin6->sin6_family = AF_INET6;
         sin6->sin6_port = htons(port);
 
@@ -334,11 +331,11 @@ Stream::connect_TCPIP (
         sin6->sin6_addr = in6;
     } else {
         // Fallback to IPv4
-        stream->remote.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP);
-        if (stream->remote.sock == -1)
+        this->remote.sock = socket (PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (this->remote.sock == -1)
             error((char *)"Cannot create remote socket for paired stream");
 
-        struct sockaddr_in *sin = (struct sockaddr_in *)&stream->remote.addr;
+        struct sockaddr_in *sin = (struct sockaddr_in *)&this->remote.addr;
         sin->sin_family = AF_INET;
         sin->sin_port = htons(port);
         if (inet_pton(AF_INET, ipstr, &sin->sin_addr) != 1) {
@@ -348,40 +345,40 @@ Stream::connect_TCPIP (
 
     char buffer [MAXSTRING];
     sprintf (buffer, "%s:%d", hostname_str, port);
-    stream->remote.handle = new char [strlen (buffer) + 1];
-    strcpy (stream->remote.handle, buffer);
+    this->remote.handle = new char [strlen (buffer) + 1];
+    strcpy (this->remote.handle, buffer);
 
     // Connect to remote address.  Try a few times because the other side may
     // not have done a listen yet.
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Attempting to connect to %s", stream->remote.handle);
+    if (this->tracefunction != NULL)
+        trace((char *)"Attempting to connect to %s", this->remote.handle);
 
     int attempt;
     for (attempt = 0 ; attempt < MAXTRIES ; attempt++) {
-        socklen_t addrlen = stream->is_ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
-        if (connect (stream->remote.sock, (struct sockaddr *) &stream->remote.addr, addrlen) == 0)
+        socklen_t addrlen = this->is_ipv6 ? sizeof(struct sockaddr_in6) : sizeof(struct sockaddr_in);
+        if (connect (this->remote.sock, (struct sockaddr *) &this->remote.addr, addrlen) == 0)
             break;
         usleep (1000 * TRYSLEEP);
         }
 
     if (attempt == MAXTRIES)
         error((char *)"Cannot connect to remote socket for paired stream (%s): %s",
-                            stream->remote.handle,
+                            this->remote.handle,
                             strerror (errno)
                             );
 
-    int got = recv (stream->remote.sock, buffer, MAXSTRING, 0);
+    int got = recv (this->remote.sock, buffer, MAXSTRING, 0);
     if (got == -1)
         error((char *)"Recv of local side from new peer fails (%s)", strerror (errno));
 
-    stream->local.handle = new char [strlen (buffer) + 1];
-    strcpy (stream->local.handle, buffer);
+    this->local.handle = new char [strlen (buffer) + 1];
+    strcpy (this->local.handle, buffer);
 
-    stream->connected = true;
+    this->connected = true;
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
+    if (this->tracefunction != NULL)
+        trace((char *)"Created handle %s attached to %s", this->local.handle, this->remote.handle);
     }
 
 
@@ -391,56 +388,53 @@ Stream::connect_TCPIP (
 #if defined (WITH_MPI)
 
 void
-Stream::construct_MPI (
-    Stream * stream
-    ) {
+Stream::construct_MPI (void) {
 
-    stream->local.seqn = next_seqn ();
+    this->local.seqn = next_seqn ();
 #if defined (NO_CPP_MPI)
-    MPI_Comm_rank (MPI_COMM_WORLD, &stream->local.rank);
+    MPI_Comm_rank (MPI_COMM_WORLD, &this->local.rank);
 #else
-    stream->local.rank = MPI::COMM_WORLD.Get_rank ();
+    this->local.rank = MPI::COMM_WORLD.Get_rank ();
 #endif
-    stream->local.handle = new char [Stream::MAXHANDLE];
-    sprintf (stream->local.handle, "%s:%d:%d", hostname (), stream->local.rank, stream->local.seqn);
-    stream->connected = false;
+    this->local.handle = new char [Stream::MAXHANDLE];
+    sprintf (this->local.handle, "%s:%d:%d", hostname (), this->local.rank, this->local.seqn);
+    this->connected = false;
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Created handle %s", stream->local.handle);
+    if (this->tracefunction != NULL)
+        trace((char *)"Created handle %s", this->local.handle);
     }
 
 
 void
 Stream::connect_MPI (
-    Stream * stream,
     const char *  handle
     ) {
 
-    stream->remote.handle = new char [Stream::MAXHANDLE];
-    strcpy (stream->remote.handle, handle);
-    if (sscanf (handle, "%*[^:]:%d:%d", &stream->remote.rank, &stream->remote.seqn) != 2)
+    this->remote.handle = new char [Stream::MAXHANDLE];
+    strcpy (this->remote.handle, handle);
+    if (sscanf (handle, "%*[^:]:%d:%d", &this->remote.rank, &this->remote.seqn) != 2)
         error((char *)"Invalid MPI stream handle \"%s\"", handle);
 
-    stream->local.seqn = next_seqn ();
+    this->local.seqn = next_seqn ();
 #if defined (NO_CPP_MPI)
-    MPI_Comm_rank (MPI_COMM_WORLD, &stream->local.rank);
+    MPI_Comm_rank (MPI_COMM_WORLD, &this->local.rank);
 #else
-    stream->local.rank = MPI::COMM_WORLD.Get_rank ();
+    this->local.rank = MPI::COMM_WORLD.Get_rank ();
 #endif
-    stream->local.handle = new char [Stream::MAXHANDLE];
-    sprintf (stream->local.handle, "%s:%d:%d", hostname (), stream->local.rank, stream->local.seqn);
-    stream->connected = true;
+    this->local.handle = new char [Stream::MAXHANDLE];
+    sprintf (this->local.handle, "%s:%d:%d", hostname (), this->local.rank, this->local.seqn);
+    this->connected = true;
 
     // Send first message with local handle so peer knows who I am
 
 #if defined (NO_CPP_MPI)
-    MPI_Send ((void *) stream->local.handle, Stream::MAXHANDLE, MPI_CHAR, stream->remote.rank, CONNECT_TAG + stream->remote.seqn, MPI_COMM_WORLD);
+    MPI_Send ((void *) this->local.handle, Stream::MAXHANDLE, MPI_CHAR, this->remote.rank, CONNECT_TAG + this->remote.seqn, MPI_COMM_WORLD);
 #else
-    MPI::COMM_WORLD.Send ((void *) stream->local.handle, Stream::MAXHANDLE, MPI::CHAR, stream->remote.rank, CONNECT_TAG + stream->remote.seqn);
+    MPI::COMM_WORLD.Send ((void *) this->local.handle, Stream::MAXHANDLE, MPI::CHAR, this->remote.rank, CONNECT_TAG + this->remote.seqn);
 #endif
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
+    if (this->tracefunction != NULL)
+        trace((char *)"Created handle %s attached to %s", this->local.handle, this->remote.handle);
     }
 
 #endif
@@ -451,9 +445,7 @@ Stream::connect_MPI (
 
 
 void
-Stream::Connect (
-    void
-    ) {
+Stream::Connect (void) {
 
     // This function is called by the first end-point of a stream to
     // complete the connection. This is a blocking call.
@@ -461,11 +453,11 @@ Stream::Connect (
     switch (streamtype) {
 #if defined (WITH_MPI)
         case Stream::MPI:
-            first_receive_MPI (this);
+            first_receive_MPI ();
             break;
 #endif
         case Stream::TCPIP:
-            first_receive_TCPIP (this);
+            first_receive_TCPIP ();
             break;
 
         default:
@@ -521,12 +513,12 @@ Stream::Receive (
     switch (streamtype) {
 #if defined (WITH_MPI)
         case Stream::MPI:
-            receive_MPI (this, buffer, length);
+            receive_MPI (buffer, length);
             break;
 #endif
 
         case Stream::TCPIP:
-            receive_TCPIP (this, buffer, length);
+            receive_TCPIP (buffer, length);
             break;
 
         default:
@@ -541,67 +533,64 @@ Stream::Receive (
 
 
 void
-Stream::first_receive_TCPIP (
-    Stream * stream
-    ) {
+Stream::first_receive_TCPIP (void) {
 
-    if (listen (stream->local.sock, BACKLOG) != 0)
+    if (listen (this->local.sock, BACKLOG) != 0)
         error((char *)"Cannot listen to local socket");
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Waiting for connection on %s", stream->local.handle);
+    if (this->tracefunction != NULL)
+        trace((char *)"Waiting for connection on %s", this->local.handle);
 
-    socklen_t addrlen = stream->is_ipv6 ? sizeof (struct sockaddr_in6) : sizeof (struct sockaddr_in);
-    if ((stream->remote.sock = accept (stream->local.sock, (struct sockaddr *) &stream->remote.addr, &addrlen)) == -1)
+    socklen_t addrlen = this->is_ipv6 ? sizeof (struct sockaddr_in6) : sizeof (struct sockaddr_in);
+    if ((this->remote.sock = accept (this->local.sock, (struct sockaddr *) &this->remote.addr, &addrlen)) == -1)
         error((char *)"Cannot accept connection on stream");
 
     char addr_str [INET6_ADDRSTRLEN];
     IPport port;
-    if (stream->is_ipv6) {
-        inet_ntop(AF_INET6, &((struct sockaddr_in6 *)&stream->remote.addr)->sin6_addr, addr_str, sizeof(addr_str));
-        port = ((struct sockaddr_in6 *)&stream->remote.addr)->sin6_port;
+    if (this->is_ipv6) {
+        inet_ntop(AF_INET6, &((struct sockaddr_in6 *)&this->remote.addr)->sin6_addr, addr_str, sizeof(addr_str));
+        port = ((struct sockaddr_in6 *)&this->remote.addr)->sin6_port;
     } else {
-        inet_ntop(AF_INET, &((struct sockaddr_in *)&stream->remote.addr)->sin_addr, addr_str, sizeof(addr_str));
-        port = ((struct sockaddr_in *)&stream->remote.addr)->sin_port;
+        inet_ntop(AF_INET, &((struct sockaddr_in *)&this->remote.addr)->sin_addr, addr_str, sizeof(addr_str));
+        port = ((struct sockaddr_in *)&this->remote.addr)->sin_port;
     }
 
-    stream->remote.handle = new char [Stream::MAXHANDLE];
-    sprintf (stream->remote.handle, "%s:%d", lookup_dotaddr (addr_str), ntohs (port));
+    this->remote.handle = new char [Stream::MAXHANDLE];
+    sprintf (this->remote.handle, "%s:%d", lookup_dotaddr (addr_str), ntohs (port));
 
-    if (send (stream->remote.sock, stream->remote.handle, Stream::MAXHANDLE, 0) != Stream::MAXHANDLE)
-        error((char *)"Send of remote side to %s fails (%s)", stream->remote.handle, strerror (errno));
+    if (send (this->remote.sock, this->remote.handle, Stream::MAXHANDLE, 0) != Stream::MAXHANDLE)
+        error((char *)"Send of remote side to %s fails (%s)", this->remote.handle, strerror (errno));
 
-    stream->connected = true;
+    this->connected = true;
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
+    if (this->tracefunction != NULL)
+        trace((char *)"Created handle %s attached to %s", this->local.handle, this->remote.handle);
     }
 
 
 void
 Stream::receive_TCPIP (
-    Stream * stream,
     char *  buffer,
     int     length
     ) {
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Waiting for message from %s to %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
+    if (this->tracefunction != NULL)
+        trace((char *)"Waiting for message from %s to %s (%d bytes)", this->remote.handle, this->local.handle, length);
 
     int need = length;
     while (need > 0) {
         int got;
-        if ((got = recv (stream->remote.sock, buffer, need, 0)) < 0)
-            error((char *)"Recv from %s fails (%s)", stream->remote.handle, strerror (errno));
+        if ((got = recv (this->remote.sock, buffer, need, 0)) < 0)
+            error((char *)"Recv from %s fails (%s)", this->remote.handle, strerror (errno));
         if (got == 0)
-            error((char *)"Recv from %s returns 0 bytes. Is the peer process dead?", stream->remote.handle);
+            error((char *)"Recv from %s returns 0 bytes. Is the peer process dead?", this->remote.handle);
 
         need -= got;
         buffer += got;
         }
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Got message from %s on %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
+    if (this->tracefunction != NULL)
+        trace((char *)"Got message from %s on %s (%d bytes)", this->remote.handle, this->local.handle, length);
     }
 
 
@@ -612,58 +601,55 @@ Stream::receive_TCPIP (
 #if defined (WITH_MPI)
 
 void
-Stream::first_receive_MPI (
-    Stream * stream
-    ) {
+Stream::first_receive_MPI (void) {
 
-    stream->remote.handle = new char [Stream::MAXHANDLE];
+    this->remote.handle = new char [Stream::MAXHANDLE];
 
 #if defined (NO_CPP_MPI)
     MPI_Status status;
-    MPI_Recv ((void *) stream->remote.handle, Stream::MAXHANDLE, MPI_CHAR, MPI_ANY_SOURCE, CONNECT_TAG + this->local.seqn, MPI_COMM_WORLD, &status);
+    MPI_Recv ((void *) this->remote.handle, Stream::MAXHANDLE, MPI_CHAR, MPI_ANY_SOURCE, CONNECT_TAG + this->local.seqn, MPI_COMM_WORLD, &status);
 #else
     MPI::Status status;
-    MPI::COMM_WORLD.Recv ((void *) stream->remote.handle, Stream::MAXHANDLE, MPI::CHAR, MPI::ANY_SOURCE, CONNECT_TAG + this->local.seqn, status);
+    MPI::COMM_WORLD.Recv ((void *) this->remote.handle, Stream::MAXHANDLE, MPI::CHAR, MPI::ANY_SOURCE, CONNECT_TAG + this->local.seqn, status);
 #endif
 
-    if (sscanf (stream->remote.handle, "%*[^:]:%d:%d", &stream->remote.rank, &stream->remote.seqn) != 2)
-        error((char *)"Invalid MPI stream handle \"%s\"", stream->remote.handle);
+    if (sscanf (this->remote.handle, "%*[^:]:%d:%d", &this->remote.rank, &this->remote.seqn) != 2)
+        error((char *)"Invalid MPI stream handle \"%s\"", this->remote.handle);
 
-    stream->connected = true;
+    this->connected = true;
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Created handle %s attached to %s", stream->local.handle, stream->remote.handle);
+    if (this->tracefunction != NULL)
+        trace((char *)"Created handle %s attached to %s", this->local.handle, this->remote.handle);
     }
 
 
 void
 Stream::receive_MPI (
-    Stream * stream,
     char *  buffer,
     int     length
     ) {
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Waiting for message from %s to %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
+    if (this->tracefunction != NULL)
+        trace((char *)"Waiting for message from %s to %s (%d bytes)", this->remote.handle, this->local.handle, length);
 
 #if defined (NO_CPP_MPI)
     MPI_Status status;
-    MPI_Recv ((void *) buffer, length, MPI_CHAR, stream->remote.rank, stream->local.seqn, MPI_COMM_WORLD, &status);
+    MPI_Recv ((void *) buffer, length, MPI_CHAR, this->remote.rank, this->local.seqn, MPI_COMM_WORLD, &status);
 
     int count;
     MPI_Get_count (&status, MPI_CHAR, &count);
     if (length != count)
-        error((char *)"Receive gets message from %s to %s of different length (%d) than requested (%d)", stream->remote.handle, stream->local.handle, count, length);
+        error((char *)"Receive gets message from %s to %s of different length (%d) than requested (%d)", this->remote.handle, this->local.handle, count, length);
 #else
     MPI::Status status;
-    MPI::COMM_WORLD.Recv ((void *) buffer, length, MPI::CHAR, stream->remote.rank, stream->local.seqn, status);
+    MPI::COMM_WORLD.Recv ((void *) buffer, length, MPI::CHAR, this->remote.rank, this->local.seqn, status);
 
     if (length != status.Get_count (MPI::CHAR))
-        error((char *)"Receive gets message from %s to %s of different length (%d) than requested (%d)", stream->remote.handle, stream->local.handle, status.Get_count (MPI::CHAR), length);
+        error((char *)"Receive gets message from %s to %s of different length (%d) than requested (%d)", this->remote.handle, this->local.handle, status.Get_count (MPI::CHAR), length);
 #endif
 
-    if (stream->tracefunction != NULL)
-        trace((char *)"Got message from %s on %s (%d bytes)", stream->remote.handle, stream->local.handle, length);
+    if (this->tracefunction != NULL)
+        trace((char *)"Got message from %s on %s (%d bytes)", this->remote.handle, this->local.handle, length);
     }
 
 #endif
