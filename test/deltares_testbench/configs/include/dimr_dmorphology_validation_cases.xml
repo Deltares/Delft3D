@@ -26,19 +26,19 @@
       </checks>
     </testCase>    
     <testCase name="e02_f022_c106_flow_wave_morpho_straightcoast" ref="dflowfm_default">
-      <path version="2025-10-25T09:20:00">e02_dflowfm/f022_morphology_2D/c106_flow_wave_morpho_straightcoast</path>
+      <path version="2025-10-08T13:41:00">e02_dflowfm/f022_morphology_2D/c106_flow_wave_morpho_straightcoast</path>
       <maxRunTime>500.0</maxRunTime>
       <checks>
         <file name="fm/output/FlowFM_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001" />
-            <parameter name="mesh2d_hwav" toleranceAbsolute="0.001" />
-            <parameter name="mesh2d_twav" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.001"/>
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001"/>
+            <parameter name="mesh2d_hwav" toleranceAbsolute="0.001"/>
+            <parameter name="mesh2d_twav" toleranceAbsolute="0.001"/>
             <parameter name="mesh2d_taus" toleranceAbsolute="0.01"/>
             <parameter name="mesh2d_tausmax" toleranceAbsolute="0.01"/>
             <parameter name="mesh2d_taub" toleranceAbsolute="0.01"/>
-            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.001"/>
             <parameter name="mesh2d_msed" toleranceAbsolute="0.01"/>
           </parameters>
         </file>
