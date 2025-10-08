@@ -40,6 +40,14 @@ class HtmlFormatter:
                 <h2>New weekly verschilanalyse</h2>
                 <p>
                     A new weekly automated verschilanalyse has been completed.
+                    The new output and the reference output are archived in our MinIO bucket under the following prefixes: 
+                </p>
+                <ul id="prefix-list">
+                    <li>Current output: {current_prefix}</li>
+                    <li>Reference output: {reference_prefix}</li>
+                </ul>
+                <h3>Verschillentool output</h3>
+                <p>
                     The verschillentool compared the new output files to the
                     &quot;reference&quot; output files, and found the following results:
                 </p>
@@ -65,18 +73,6 @@ class HtmlFormatter:
                 <ul id="commit-id-list">
                     <li>Current verschilanalyse: {current_commit_id}</li>
                     <li>Reference verschilanalyse: {reference_commit_id}</li>
-                </ul>
-                <h3>Verschillentool output</h3>
-                <p>
-                    In addition, the verschillentool has compared the output
-                    of this week's verschilanalyse with the output of the
-                    &quot;reference&quot; verschilanalyse. The new output
-                    and the reference output are archived in our MinIO bucket
-                    under the following prefixes:
-                </p>
-                <ul id="prefix-list">
-                    <li>Current verschilanalyse: {current_prefix}</li>
-                    <li>Reference verschilanalyse: {reference_prefix}</li>
                 </ul>
                 <p>
                     The verschillentool successfully compared the output of
