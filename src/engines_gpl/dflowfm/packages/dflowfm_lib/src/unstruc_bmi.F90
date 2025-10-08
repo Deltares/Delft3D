@@ -313,6 +313,7 @@ contains
 
 #endif
 
+
       !! Initialize precice
       !! precice is initialised after mpi ranks are known, however precice's official fortran bindings
       !! do not support passing mpi communicator, so we need to use MPI_COMM_WORLD in the dimr_config.xml
@@ -338,6 +339,14 @@ contains
 
       converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
       print *, '[FM] message read: ', converted_data
+
+#ifdef HAVE_MPI
+      if (jampi == 1) then
+         print *, '[FM] rank ', my_rank, ' at barrier.'
+         call mpi_barrier(DFM_COMM_DFMWORLD, inerr)
+         print *, '[FM] rank ', my_rank, ' passed barrier. inerr: ', inerr
+      end if
+#endif
 
       ! do this until default has changed
       jaGUI = 0

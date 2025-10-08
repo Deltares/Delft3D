@@ -12,7 +12,7 @@
   </participant>
 
   <participant name="dummy">
-    <receive-mesh name="fm-mesh" from="fm" />
+    <receive-mesh name="fm-mesh" from="fm" api-access="true" />
     <write-data name="greeting" mesh="fm-mesh" />
   </participant>
 

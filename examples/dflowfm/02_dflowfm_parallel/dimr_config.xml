@@ -13,7 +13,7 @@
     <component name="myNameDFlowFM">
         <library>dflowfm</library>
         <process>0 1 2</process>
-        <mpiCommunicator>DFM_COMM_DFMWORLD</mpiCommunicator>
+        <mpiCommunicator>MPI_COMM_WORLD</mpiCommunicator>
         <workingDir>dflowfm</workingDir>
         <inputFile>westerscheldt.mdu</inputFile>
     </component>

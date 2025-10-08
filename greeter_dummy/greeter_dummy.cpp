@@ -3,11 +3,12 @@
 #include <algorithm>
 #include <vector>
 #include <ranges>
+#include <mpi.h>
 #include "precice/precice.hpp"
 
 int main(int argc, char** argv) {
     std::print("[greeter_dummy] Starting up.\n");
-
+    MPI_Init(&argc, &argv);
     // Check if mesh name is provided as command line argument
     if (argc < 2) {
         std::print("[greeter_dummy] Error: Please provide mesh name as command line argument.\n");
@@ -15,8 +16,10 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    constexpr int commRank = 0;
-    constexpr int commSize = 1;
+    int commSize = 1;
+    MPI_Comm_size(MPI_COMM_WORLD, &commSize);
+    int commRank = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &commRank);
     constexpr std::string_view configFileName{"../precice_config.xml"};
     constexpr std::string_view solverName{"dummy"};
     precice::Participant participant{solverName, configFileName, commRank, commSize};
@@ -31,8 +34,8 @@ int main(int argc, char** argv) {
     const int meshDimension = participant.getMeshDimensions(meshName);
     constexpr std::string_view dataName{"greeting"};
     const int dataDimension = participant.getDataDimensions(meshName, dataName);
-    std::print("[greeter_dummy] mesh vertex size: {0}, mesh dimension: {1}, data dimension: {2}\n",
-        meshVertexSize, meshDimension, dataDimension);
+    std::print("[greeter_dummy {0}/{1}] mesh vertex size: {2}, mesh dimension: {3}, data dimension: {4}\n",
+        commRank, commSize, meshVertexSize, meshDimension, dataDimension);
 
     std::vector<int> vertexIds(meshVertexSize);
     std::vector<double> vertexCoordinates(meshVertexSize * meshDimension);
@@ -40,16 +43,18 @@ int main(int argc, char** argv) {
 
     constexpr std::string_view greeting = "Hello there, I am greeter_dummy.";
 
-    std::vector<double> asciiCodes(meshVertexSize, 0.0);
+    std::vector<double> asciiCodes(meshVertexSize * meshDimension, 0.0);
 
     std::ranges::transform(greeting | std::views::take(meshVertexSize),
                           asciiCodes.begin(),
                           [](char c) { return static_cast<double>(c); });
 
     participant.writeData(meshName, dataName, vertexIds, asciiCodes);
-    std::print("[greeter_dummy] I wrote the data.\n");
+    std::print("[greeter_dummy {0}/{1}] I wrote the data.\n", commRank, commSize);
 
     const double timeStep = participant.getMaxTimeStepSize();
     participant.advance(timeStep);
+
+    MPI_Finalize();
     return 0;
 }
