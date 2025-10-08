@@ -74,7 +74,7 @@ set idstring " "
 # waittime is used to wait for files to appear (1000 = 1 sec)
 # default: 500
 global waittime
-set waittime 500
+set waittime 10000
 
 # maximum trials to wait for a file to appear before continuing
 # default: 100
