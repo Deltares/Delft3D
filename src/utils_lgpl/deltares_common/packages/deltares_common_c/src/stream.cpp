@@ -244,16 +244,18 @@ void Stream::construct_TCPIP(void)
         sin6->sin6_addr = IN6ADDR_ANY_INIT;
 
         // Find an available port (IPv6)
+        bool port_found = false;
         for (port = FIRST_PORT; port < LAST_PORT; port++)
         {
             sin6->sin6_port = htons(port);
             if (bind(this->local.sock, (struct sockaddr *)sin6, sizeof(struct sockaddr_in6)) == 0)
             {
+                port_found = true;
                 break;
             }
         }
 
-        if (port >= LAST_PORT)
+        if (!port_found)
         {
             error("Cannot bind IPv6 stream socket to any port in range [%d,%d]\n", FIRST_PORT, LAST_PORT - 1);
         }
@@ -270,17 +272,21 @@ void Stream::construct_TCPIP(void)
         sin->sin_addr.s_addr = INADDR_ANY;
 
         // Find an available port (IPv4)
+        bool port_found = false;
         for (port = FIRST_PORT; port < LAST_PORT; port++)
         {
             sin->sin_port = htons(port);
             if (bind(this->local.sock, (struct sockaddr *)sin, sizeof(struct sockaddr_in)) == 0)
             {
+                port_found = true;
                 break;
             }
         }
 
-        if (port >= LAST_PORT)
+        if (!port_found)
+        {
             error("Cannot bind IPv4 stream socket to any port in range [%d,%d]\n", FIRST_PORT, LAST_PORT - 1);
+        }
     }
 
     char buffer[MAXSTRING];
