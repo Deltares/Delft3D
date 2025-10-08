@@ -47,7 +47,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     use bedcomposition_module, only: getfrac, bedcomp_data
     use m_compdiam, only: compdiam
     use m_comphidexp, only: comphidexp
-    !
+    use m_compsandfrac, only: compsandfrac    !
     implicit none
     !
     ! Function/routine arguments

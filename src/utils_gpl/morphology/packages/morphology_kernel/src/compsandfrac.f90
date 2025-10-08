@@ -1,3 +1,5 @@
+module m_compsandfrac
+contains
 subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
                       & max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
                       & nmlb, nmub )
@@ -96,3 +98,5 @@ subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
        enddo
     endif
 end subroutine compsandfrac
+
+end module m_compsandfrac

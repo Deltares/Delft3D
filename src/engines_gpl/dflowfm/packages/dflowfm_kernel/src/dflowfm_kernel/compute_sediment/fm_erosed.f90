@@ -38,6 +38,9 @@ module m_fm_erosed_sub
    use m_fm_upwbed, only: fm_upwbed
    use m_fm_red_soursin, only: fm_red_soursin
    use m_waveconst
+   use m_compdiam, only: compdiam
+   use m_comphidexp, only: comphidexp
+   use m_compsandfrac, only: compsandfrac
 
    implicit none
 
