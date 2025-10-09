@@ -289,7 +289,7 @@ class HtmlFormatter:
 
         his_tolerance_list, water_lvl_items_his, flow_vel_items_his = cls._format_tolerance_list(verschilanalyse.his_outputs, OutputType.HIS)
         map_tolerance_list, water_lvl_items_map, flow_vel_items_map = cls._format_tolerance_list(verschilanalyse.map_outputs, OutputType.MAP)
-        table = cls._format_model_run_table(log_comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, flow_vel_items_map)
+        table = cls._format_model_run_table(log_comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, "dflowfm2d-grevelingen-j19_6-v2a")
         model_list = cls._format_model_list(verschilanalyse.his_outputs.keys())
         links_section = cls._format_links(report_build_url, artifact_base_url.rstrip("/"))
 
