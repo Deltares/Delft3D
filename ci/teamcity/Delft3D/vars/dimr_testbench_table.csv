@@ -43,8 +43,8 @@ fm rws acceptance parallel,dimr/dimr_dflowfm_lnx64_rws_acceptance_parallel.xml,F
 fm,dimr/dimr_dflowfm_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm mormerge,dimr/dimr_dflowfm_mormerge_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm mormerge,dimr/dimr_dflowfm_mormerge_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm processes,dimr/dimr_dflowfm_processes_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-fm processes,dimr/dimr_dflowfm_processes_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm processes,dimr/dimr_dflowfm_processes_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm processes,dimr/dimr_dflowfm_processes_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm rws acceptance,dimr/dimr_dflowfm_rws_acceptance_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Is not used/maintained and fails.
 fm rws waq parallel,dimr/dimr_dflowfm_rws_waq_models_parallel_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm rws waq parallel,dimr/dimr_dflowfm_rws_waq_models_parallel_win64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
@@ -57,6 +57,7 @@ fm validation,dimr/dimr_dflowfm_validation_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,
 fm validation,dimr/dimr_dflowfm_validation_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm wanda,dimr/dimr_dflowfm_wanda_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Parallel run is flaky.
 fm wanda,dimr/dimr_dflowfm_wanda_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm dsle,dimr/dimr_dflowfm_dsle_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq 1d2d,dimr/dimr_dflowfm_waq_coupling_1D2D_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq 1d2d,dimr/dimr_dflowfm_waq_coupling_1D2D_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq aggregation,dimr/dimr_dflowfm_waq_coupling_aggregation_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,

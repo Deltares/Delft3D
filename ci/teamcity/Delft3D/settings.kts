@@ -55,7 +55,6 @@ project {
         buildType(LinuxCollect)
         buildType(LinuxRuntimeContainers)
         buildType(LinuxRunAllContainerExamples)
-        buildType(LinuxLegacyDockerTest)
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
@@ -64,7 +63,6 @@ project {
             LinuxCollect,
             LinuxRuntimeContainers,
             LinuxRunAllContainerExamples,
-            LinuxLegacyDockerTest,
             LinuxUnitTest,
             LinuxTest
         )
@@ -74,8 +72,8 @@ project {
         id("Windows")
         name = "Windows"
 
-        buildType(WindowsBuildEnvironment)
         buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsTestEnvironment)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
         buildType(WindowsCollect)
@@ -83,8 +81,8 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironment,
             WindowsBuildEnvironmentI24,
+            WindowsTestEnvironment,
             WindowsBuild,
             WindowsBuild2D3DSP,
             WindowsCollect,

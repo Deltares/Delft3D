@@ -1,0 +1,193 @@
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+        <testCase name="e119_f001_c001_2D_ca_1sl_me_uic_cbc" ref="dimr">
+            <path version="2025-10-06T12:33:14.449000">e119_dflowfm_dsle/f001/c001_2D_ca_1sl_me_uic_cbc</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="salinity" toleranceAbsolute="0.0001" />
+                        <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c002_2D_ca_2sl_me_uic_cbc" ref="dimr">
+            <path version="2025-10-06T12:45:00.594000">e119_dflowfm_dsle/f001/c002_2D_ca_2sl_me_uic_cbc</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c003_2D_pw_1sl_uic_cbc" ref="dimr">
+            <path version="2025-10-06T13:27:07.659000">e119_dflowfm_dsle/f001/c003_2D_pw_1sl_uic_cbc</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c004_2D_pw_2sl_uic_cbc" ref="dimr">
+            <path version="2025-10-06T13:31:34.959000">e119_dflowfm_dsle/f001/c004_2D_pw_2sl_uic_cbc</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c005_3D_ca_1sl_1e_nuic_profile_1" ref="dimr">
+            <path version="2025-10-06T13:39:17.763000">e119_dflowfm_dsle/f001/c005_3D_ca_1sl_1e_nuic_profile_1</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="3D_dhydro_zlayer_rst/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="3D_dhydro_zlayer_rst/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="salinity" toleranceAbsolute="0.0001" />
+                        <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c006_3D_ca_1sl_1e_uic_profile_2" ref="dimr">
+            <path version="2025-10-06T13:50:16.533000">e119_dflowfm_dsle/f001/c006_3D_ca_1sl_1e_uic_profile_2</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="3D_dhydro_zlayer_rst/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="3D_dhydro_zlayer_rst/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="salinity" toleranceAbsolute="0.0001" />
+                        <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c007_3D_ca_1sl_me_uic_profile_1" ref="dimr">
+            <path version="2025-10-06T13:53:49.856000">e119_dflowfm_dsle/f001/c007_3D_ca_1sl_me_uic_profile_1</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="3D_dhydro_zlayer_rst/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="3D_dhydro_zlayer_rst/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="salinity" toleranceAbsolute="0.0001" />
+                        <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c008_3D_ca_2sl_me_uic_cbc" ref="dimr">
+            <path version="2025-10-06T13:57:45.928000">e119_dflowfm_dsle/f001/c008_3D_ca_2sl_me_uic_cbc</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c009_3D_ca_2sl_me_uic_cbc_3s" ref="dimr">
+            <path version="2025-10-06T14:02:04.144000">e119_dflowfm_dsle/f001/c009_3D_ca_2sl_me_uic_cbc_3s</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c010_3D_pw_1sl_uic_cbc" ref="dimr">
+            <path version="2025-10-06T14:04:51.960000">e119_dflowfm_dsle/f001/c010_3D_pw_1sl_uic_cbc</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c011_3D_pw_2sl_uic_cbc" ref="dimr">
+            <path version="2025-10-06T14:07:20.821000">e119_dflowfm_dsle/f001/c011_3D_pw_2sl_uic_cbc</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+    </testCases>

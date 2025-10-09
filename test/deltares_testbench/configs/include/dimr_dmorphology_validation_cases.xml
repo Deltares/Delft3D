@@ -26,7 +26,7 @@
       </checks>
     </testCase>    
     <testCase name="e02_f039_c01_sedimentationtest" ref="dflowfm_default">
-      <path version="2024-09-25T07:09:00">e02_dflowfm/f039_morphology_3d/c01_sedimentationtest</path>
+      <path version="2025-07-16T09:23:33.809000">e02_dflowfm/f039_morphology_3d/c01_sedimentationtest</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/massbal_1frac_map.nc" type="netCDF">
@@ -99,7 +99,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c07_sediment_ini_3d_uniform_polygon" ref="dflowfm_default">
-      <path version="2024-09-25T07:10:00">e02_dflowfm/f039_morphology_3d/c07_sediment_ini_3d_uniform_polygon</path>
+      <path version="2025-07-16T09:23:56.532000">e02_dflowfm/f039_morphology_3d/c07_sediment_ini_3d_uniform_polygon</path>
       <maxRunTime>90.0</maxRunTime>
       <checks> 
         <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
@@ -112,7 +112,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c08_sediment_ini_3d_uniform_samples" ref="dflowfm_default">
-      <path version="2024-09-25T07:11:00">e02_dflowfm/f039_morphology_3d/c08_sediment_ini_3d_uniform_samples</path>
+      <path version="2025-07-16T09:24:06.094000">e02_dflowfm/f039_morphology_3d/c08_sediment_ini_3d_uniform_samples</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
@@ -125,7 +125,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c09_sediment_ini_3d_verticalprofile" ref="dflowfm_default">
-      <path version="2024-09-25T07:12:00">e02_dflowfm/f039_morphology_3d/c09_sediment_ini_3d_verticalprofile</path>
+      <path version="2025-07-16T09:24:15.825000">e02_dflowfm/f039_morphology_3d/c09_sediment_ini_3d_verticalprofile</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
@@ -138,7 +138,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c10_sediment_ini_3d_verticalsigmaprofile" ref="dflowfm_default">
-      <path version="2024-09-25T07:12:00">e02_dflowfm/f039_morphology_3d/c10_sediment_ini_3d_verticalsigmaprofile</path>
+      <path version="2025-07-16T09:24:26.016000">e02_dflowfm/f039_morphology_3d/c10_sediment_ini_3d_verticalsigmaprofile</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
