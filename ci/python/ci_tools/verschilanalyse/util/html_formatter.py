@@ -56,11 +56,11 @@ class HtmlFormatter:
                 <h3>Map-file comparison results</h3>
                 {map_tolerance_list}
                 <p>
-                    The following table shows which models were included in this week's
-                    verschilanalyse.
-                    The table shows, for every model, whether or not it completed
-                    successfully and the total computation time in seconds in both the
-                    &quot;current&quot; and the &quot;reference&quot; verschilanalyse.
+                    The following table shows which models were included in this week'sverschilanalyse.
+                    The table shows, for every model, whether or not it completed successfully 
+                    and whether a water level tolerance (his or map) or flow velocity tolerance (his or map) was exceeded.
+                    Moreover, he total computation time in seconds in both the &quot;current&quot; 
+                    and the &quot;reference&quot; verschilanalyse are displayed.
                 </p>
                 {table}
                 <p>
@@ -289,7 +289,7 @@ class HtmlFormatter:
 
         his_tolerance_list, water_lvl_items_his, flow_vel_items_his = cls._format_tolerance_list(verschilanalyse.his_outputs, OutputType.HIS)
         map_tolerance_list, water_lvl_items_map, flow_vel_items_map = cls._format_tolerance_list(verschilanalyse.map_outputs, OutputType.MAP)
-        table = cls._format_model_run_table(log_comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, "dflowfm2d-grevelingen-j19_6-v2a")
+        table = cls._format_model_run_table(log_comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, flow_vel_items_map)
         model_list = cls._format_model_list(verschilanalyse.his_outputs.keys())
         links_section = cls._format_links(report_build_url, artifact_base_url.rstrip("/"))
 
