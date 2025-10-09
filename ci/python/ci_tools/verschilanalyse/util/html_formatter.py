@@ -59,8 +59,9 @@ class HtmlFormatter:
                     The following table shows which models were included in this week'sverschilanalyse.
                     The table shows, for every model, whether or not it completed successfully 
                     and whether a water level tolerance (his or map) or flow velocity tolerance (his or map) was exceeded.
-                    Moreover, he total computation time in seconds in both the &quot;current&quot; 
-                    and the &quot;reference&quot; verschilanalyse are displayed.
+                    Moreover, the total computation time in seconds in both the &quot;current&quot; 
+                    and the &quot;reference&quot; verschilanalyse 
+                    and the tolerance (20 percent) between the current and reference computation time are displayed.
                 </p>
                 {table}
                 <p>
