@@ -119,10 +119,10 @@ class HtmlFormatter:
                 [
                     f"<td>{model_name}</td>",
                     f"<td>{crash}</td>",
-                    f'<td class="align-right">{cur_comp_time}</td>',
-                    f'<td class="align-right">{ref_comp_time}</td>',
                     f"<td>{water_tolerance}</td>",
                     f"<td>{flow_tolerance}</td>",
+                    f'<td class="align-right">{cur_comp_time}</td>',
+                    f'<td class="align-right">{ref_comp_time}</td>',
                 ]
             )
 
