@@ -172,21 +172,25 @@ class HtmlFormatter:
 
     @classmethod
     def _format_tolerance_list(cls, output_stats: dict[str, VerschillentoolOutput], output_type: OutputType) -> tuple[str, str, str]:
+        exceeded_html = '<span style="color:red;">exceeded</span>'
+        
         water_lvl_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_water_level_models(output_stats))
         if not water_lvl_items:
+            exceeded_html = "exceeded"
             water_lvl_items = "<li>None: All water level differences are within tolerances.</li>"
 
         flow_vel_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_flow_velocity_models(output_stats))
         if not flow_vel_items:
+            exceeded_html = "exceeded"
             flow_vel_items = "<li>None: All flow velocity differences are within tolerances.</li>"
 
         template = textwrap.dedent(
             """
-            <p>Models where the water level tolerances were <span style="color:red;">exceeded</span>:</p>
+            <p>Models where the water level tolerances were {exceeded_html}:</p>
             <ul id="{output_type}-water-level-tolerance-list">
                 {water_lvl_items}
             </ul>
-            <p>Models where the flow velocity tolerances were <span style="color:red;">exceeded</span>:</p>
+            <p>Models where the flow velocity tolerances were {exceeded_html}:</p>
             <ul id="{output_type}-flow-velocity-tolerance-list">
                 {flow_vel_items}
             </ul>
