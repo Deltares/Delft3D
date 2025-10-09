@@ -185,7 +185,7 @@ class HtmlFormatter:
             flow_vel_items = "<li>None: All flow velocity differences are within tolerances.</li>"
 
         template = textwrap.dedent(
-            """
+            f"""
             <p>Models where the water level tolerances were {exceeded_html}:</p>
             <ul id="{output_type}-water-level-tolerance-list">
                 {water_lvl_items}
