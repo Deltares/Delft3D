@@ -108,7 +108,9 @@ class HtmlFormatter:
                 ref_comp_time = f"{reference.mean_computation_time:.3f} s"
 
             comp_time_tolerance = "✅ Success"
-            comp_time_percentage = abs(current.mean_computation_time - reference.mean_computation_time) / reference.mean_computation_time 
+            comp_time_diff = abs(current.mean_computation_time - reference.mean_computation_time)
+            comp_time_percentage = comp_time_diff / reference.mean_computation_time 
+            print(comp_time_diff, comp_time_percentage)
             if comp_time_percentage > 20:
                 comp_time_tolerance = "❌ Exceeded"
 
