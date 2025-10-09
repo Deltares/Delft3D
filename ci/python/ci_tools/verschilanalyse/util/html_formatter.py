@@ -92,7 +92,7 @@ class HtmlFormatter:
         return s.replace("\n", "\n" + spaces * " ")
 
     @staticmethod
-    def _to_rows(comparisons: dict[str, LogComparison]) -> Iterator[str]:
+    def _to_rows(comparisons: dict[str, LogComparison], water_lvl_items_his: str, flow_vel_items_his: str, water_lvl_items_map: str, flow_vel_items_map: str) -> Iterator[str]:
         for model_name, comparison in sorted(comparisons.items()):
             current = comparison.current
             reference = comparison.reference
@@ -107,26 +107,38 @@ class HtmlFormatter:
             if reference is not None and reference.mean_computation_time != 0.0:
                 ref_comp_time = f"{reference.mean_computation_time:.3f} s"
 
+            water_tolerance = "✅ Success"
+            if model_name in water_lvl_items_his or model_name in water_lvl_items_map:
+                water_tolerance = "❌ Exceeded"
+
+            flow_tolerance = "✅ Success"
+            if model_name in flow_vel_items_his or model_name in flow_vel_items_map:
+                flow_tolerance = "❌ Exceeded"
+
             yield "".join(
                 [
                     f"<td>{model_name}</td>",
                     f"<td>{crash}</td>",
                     f'<td class="align-right">{cur_comp_time}</td>',
                     f'<td class="align-right">{ref_comp_time}</td>',
+                    f"<td>{water_tolerance}</td>",
+                    f"<td>{flow_tolerance}</td>",
                 ]
             )
 
     @classmethod
-    def _format_model_run_table(cls, comparisons: dict[str, LogComparison]) -> str:
-        rows = "\n".join(f"<tr>{row}</tr>" for row in cls._to_rows(comparisons))
+    def _format_model_run_table(cls, comparisons: dict[str, LogComparison], water_lvl_items_his: str, flow_vel_items_his: str, water_lvl_items_map: str, flow_vel_items_map: str) -> str:
+        rows = "\n".join(f"<tr>{row}</tr>" for row in cls._to_rows(comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, flow_vel_items_map))
 
         template = textwrap.dedent(
             """
             <table id="model-run-table">
                 <tr>
                     <th>Model name</th>
-                    <th>Status</th>
-                    <th>Current computation time</th>
+                    <th>Execution status</th>
+                    <th>Water level tolerance(s)</th>
+                    <th>Flow velocity tolerance (s)</th>
+                    <th>Reference computation time</th>
                     <th>Reference computation time</th>
                 </tr>
                 {rows}
@@ -159,14 +171,14 @@ class HtmlFormatter:
                 yield model_name
 
     @classmethod
-    def _format_tolerance_list(cls, output_stats: dict[str, VerschillentoolOutput], output_type: OutputType) -> str:
+    def _format_tolerance_list(cls, output_stats: dict[str, VerschillentoolOutput], output_type: OutputType) -> tuple[str, str, str]:
         water_lvl_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_water_level_models(output_stats))
-        # if not water_lvl_items:
-        #     water_lvl_items = "<li>None: All water level differences are within tolerances.</li>"
+        if not water_lvl_items:
+            water_lvl_items = "<li>None: All water level differences are within tolerances.</li>"
 
         flow_vel_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_flow_velocity_models(output_stats))
-        # if not flow_vel_items:
-        #     flow_vel_items = "<li>None: All flow velocity differences are within tolerances.</li>"
+        if not flow_vel_items:
+            flow_vel_items = "<li>None: All flow velocity differences are within tolerances.</li>"
 
         template = textwrap.dedent(
             """
@@ -185,7 +197,7 @@ class HtmlFormatter:
             output_type=output_type.value,
             water_lvl_items=cls._indent(water_lvl_items, 1),
             flow_vel_items=cls._indent(flow_vel_items, 1),
-        )
+        ), water_lvl_items, flow_vel_items
 
     @classmethod
     def _format_model_list(cls, model_names: Iterable[str]) -> str:
@@ -271,10 +283,10 @@ class HtmlFormatter:
         log_comparisons = verschilanalyse.get_log_comparisons()
         current_commit_id, reference_commit_id = cls._get_commit_ids(log_comparisons)
 
-        table = cls._format_model_run_table(log_comparisons)
+        his_tolerance_list, water_lvl_items_his, flow_vel_items_his = cls._format_tolerance_list(verschilanalyse.his_outputs, OutputType.HIS)
+        map_tolerance_list, water_lvl_items_map, flow_vel_items_map = cls._format_tolerance_list(verschilanalyse.map_outputs, OutputType.MAP)
+        table = cls._format_model_run_table(log_comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, flow_vel_items_map)
         model_list = cls._format_model_list(verschilanalyse.his_outputs.keys())
-        his_tolerance_list = cls._format_tolerance_list(verschilanalyse.his_outputs, OutputType.HIS)
-        map_tolerance_list = cls._format_tolerance_list(verschilanalyse.map_outputs, OutputType.MAP)
         links_section = cls._format_links(report_build_url, artifact_base_url.rstrip("/"))
 
         result = cls.TEMPLATE.format(
