@@ -182,14 +182,14 @@ class HtmlFormatter:
 
         template = textwrap.dedent(
             """
-            &lt;p&gt;Models where the water level tolerances were <span style="color:red; font-weight:bold;">exceeded</span>:&lt;/p&gt;
-            &lt;ul id="{output_type}-water-level-tolerance-list"&gt;
+            <p>Models where the water level tolerances were <span style="color:red;">exceeded</span>:</p>
+            <ul id="{output_type}-water-level-tolerance-list">
                 {water_lvl_items}
-            &lt;/ul&gt;
-            &lt;p&gt;Models where the flow velocity tolerances were <span style="color:red; font-weight:bold;">exceeded</span>:&lt;/p&gt;
-            &lt;ul id="{output_type}-flow-velocity-tolerance-list"&gt;
+            </ul>
+            <p>Models where the flow velocity tolerances were <span style="color:red;">exceeded</span>:</p>
+            <ul id="{output_type}-flow-velocity-tolerance-list">
                 {flow_vel_items}
-            &lt;/ul&gt;
+            </ul>
             """
         ).strip()
 
