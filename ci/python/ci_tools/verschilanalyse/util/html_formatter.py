@@ -107,6 +107,11 @@ class HtmlFormatter:
             if reference is not None and reference.mean_computation_time != 0.0:
                 ref_comp_time = f"{reference.mean_computation_time:.3f} s"
 
+            comp_time_tolerance = "✅ Success"
+            comp_time_percentage = abs(current.mean_computation_time - reference.mean_computation_time) / reference.mean_computation_time 
+            if comp_time_percentage > 20:
+                comp_time_tolerance = "❌ Exceeded"
+
             water_tolerance = "✅ Success"
             if model_name in water_lvl_items_his or model_name in water_lvl_items_map:
                 water_tolerance = "❌ Exceeded"
@@ -123,6 +128,7 @@ class HtmlFormatter:
                     f"<td>{flow_tolerance}</td>",
                     f'<td class="align-right">{cur_comp_time}</td>',
                     f'<td class="align-right">{ref_comp_time}</td>',
+                    f"<td>{comp_time_tolerance}</td>",
                 ]
             )
 
@@ -136,10 +142,11 @@ class HtmlFormatter:
                 <tr>
                     <th>Model name</th>
                     <th>Execution status</th>
-                    <th>Water level tolerance(s)</th>
-                    <th>Flow velocity tolerance (s)</th>
+                    <th>Water level tolerances</th>
+                    <th>Flow velocity tolerances</th>
+                    <th>Current computation time</th>
                     <th>Reference computation time</th>
-                    <th>Reference computation time</th>
+                    <th>Computation time tolerance</th>
                 </tr>
                 {rows}
             </table>
