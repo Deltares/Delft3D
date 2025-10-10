@@ -139,7 +139,7 @@ class HtmlFormatter:
     @classmethod
     def _format_model_run_table(cls, comparisons: dict[str, LogComparison], water_lvl_items_his: str,
                                 flow_vel_items_his: str, water_lvl_items_map: str, flow_vel_items_map: str) -> str:
-        rows = "\n".join(f"<tr>{row}</tr>" for row in cls._to_rows(comparisons, 
+        rows = "\n".join(f"<tr>{row}</tr>" for row in cls._to_rows(comparisons,
                                                                    water_lvl_items_his, flow_vel_items_his,
                                                                    water_lvl_items_map, flow_vel_items_map))
 
