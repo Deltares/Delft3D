@@ -94,8 +94,12 @@ class HtmlFormatter:
         return s.replace("\n", "\n" + spaces * " ")
 
     @staticmethod
-    def _to_rows(comparisons: dict[str, LogComparison], water_lvl_items_his: str, flow_vel_items_his: str,
-                 water_lvl_items_map: str, flow_vel_items_map: str) -> Iterator[str]:
+    def _to_rows(comparisons: dict[str, LogComparison],
+                 water_lvl_items_his: str,
+                 flow_vel_items_his: str,
+                 water_lvl_items_map: str,
+                 flow_vel_items_map: str,
+                ) -> Iterator[str]:
         for model_name, comparison in sorted(comparisons.items()):
             current = comparison.current
             reference = comparison.reference
@@ -137,11 +141,20 @@ class HtmlFormatter:
             )
 
     @classmethod
-    def _format_model_run_table(cls, comparisons: dict[str, LogComparison], water_lvl_items_his: str,
-                                flow_vel_items_his: str, water_lvl_items_map: str, flow_vel_items_map: str) -> str:
-        rows = "\n".join(f"<tr>{row}</tr>" for row in cls._to_rows(comparisons,
-                                                                   water_lvl_items_his, flow_vel_items_his,
-                                                                   water_lvl_items_map, flow_vel_items_map))
+    def _format_model_run_table(
+        cls,
+        comparisons: dict[str, LogComparison],
+        water_lvl_items_his: str,
+        flow_vel_items_his: str,
+        water_lvl_items_map: str,
+        flow_vel_items_map: str,
+    ) -> str:
+        rows = "\n".join(
+            f"<tr>{row}</tr>" 
+            for row in cls._to_rows(
+                comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, flow_vel_items_map
+            )
+        )
 
         template = textwrap.dedent(
             """
@@ -185,8 +198,9 @@ class HtmlFormatter:
                 yield model_name
 
     @classmethod
-    def _format_tolerance_list(cls, output_stats: dict[str, VerschillentoolOutput],
-                               output_type: str) -> tuple[str, str, str]:
+    def _format_tolerance_list(
+        cls, output_stats: dict[str, VerschillentoolOutput], output_type: str
+    ) -> tuple[str, str, str]:
         exceeded_html = '<span style="color:red;">exceeded</span>'
 
         water_lvl_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_water_level_models(output_stats))
@@ -212,11 +226,15 @@ class HtmlFormatter:
             """
         ).strip()
 
-        return template.format(
-            output_type=output_type,
-            water_lvl_items=cls._indent(water_lvl_items, 1),
-            flow_vel_items=cls._indent(flow_vel_items, 1),
-        ), water_lvl_items, flow_vel_items
+        return (
+            template.format(
+                output_type=output_type,
+                water_lvl_items=cls._indent(water_lvl_items, 1),
+                flow_vel_items=cls._indent(flow_vel_items, 1),
+            ),
+            water_lvl_items,
+            flow_vel_items,
+        )
 
     @classmethod
     def _format_model_list(cls, model_names: Iterable[str]) -> str:
@@ -302,12 +320,15 @@ class HtmlFormatter:
         log_comparisons = verschilanalyse.get_log_comparisons()
         current_commit_id, reference_commit_id = cls._get_commit_ids(log_comparisons)
 
-        his_tolerance_list, water_lvl_items_his, flow_vel_items_his = \
-            cls._format_tolerance_list(verschilanalyse.his_outputs, OutputType.HIS.value)
-        map_tolerance_list, water_lvl_items_map, flow_vel_items_map = \
-            cls._format_tolerance_list(verschilanalyse.map_outputs, OutputType.MAP.value)
-        table = cls._format_model_run_table(log_comparisons, water_lvl_items_his, flow_vel_items_his,
-                                            water_lvl_items_map, flow_vel_items_map)
+        his_tolerance_list, water_lvl_items_his, flow_vel_items_his = cls._format_tolerance_list(
+            verschilanalyse.his_outputs, OutputType.HIS.value
+        )
+        map_tolerance_list, water_lvl_items_map, flow_vel_items_map = cls._format_tolerance_list(
+            verschilanalyse.map_outputs, OutputType.MAP.value
+        )
+        table = cls._format_model_run_table(
+            log_comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, flow_vel_items_map
+        )
         model_list = cls._format_model_list(verschilanalyse.his_outputs.keys())
         links_section = cls._format_links(report_build_url, artifact_base_url.rstrip("/"))
 
