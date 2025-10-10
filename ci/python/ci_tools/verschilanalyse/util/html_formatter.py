@@ -40,7 +40,7 @@ class HtmlFormatter:
                 <h2>New weekly verschilanalyse</h2>
                 <p>
                     A new weekly automated verschilanalyse has been completed.
-                    The new output and the reference output are archived in our MinIO bucket under the following prefixes: 
+                    The current output and the reference output are archived in our MinIO bucket under the following prefixes: 
                 </p>
                 <ul id="prefix-list">
                     <li>Current output: {current_prefix}</li>
@@ -48,19 +48,18 @@ class HtmlFormatter:
                 </ul>
                 <h3>Verschillentool output</h3>
                 <p>
-                    The verschillentool compared the new output files to the
-                    &quot;reference&quot; output files, and found the following results:
+                    The verschillentool compared the current output files to the
+                    reference output files, and found the following results:
                 </p>
                 <h3>His-file comparison results</h3>
                 {his_tolerance_list}
                 <h3>Map-file comparison results</h3>
                 {map_tolerance_list}
                 <p>
-                    The following table shows which models were included in this week'sverschilanalyse.
+                    The following table shows which models were included in this week's verschilanalyse.
                     The table shows, for every model, whether or not it completed successfully 
                     and whether a water level tolerance (his or map) or flow velocity tolerance (his or map) was exceeded.
-                    Moreover, the total computation time in seconds in both the &quot;current&quot; 
-                    and the &quot;reference&quot; verschilanalyse 
+                    Moreover, the total computation time in seconds in both the current and the reference verschilanalyse 
                     and the tolerance (20 percent) between the current and reference computation time are displayed.
                 </p>
                 {table}
