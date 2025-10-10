@@ -224,7 +224,6 @@ This section contains the settings of specific parts of the flow solver, such as
 | `jasfer3D` | Corrections for spherical coordinates. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `cfFacVer` 🔬 | Factor for including (1-CFL) in HO term vertical. | `0.0` | `[0.0, 1.0]` |  |
 | `eddyViscosityBedFacmax` 🔬 | Limit eddy viscosity at bed by factor of first layer above. | `0.0` | `[0.0, 1.0]` |  |
-| `epsEPS` 🔬 | EPS=max(EPS, `epsEPS`) | `1e-32` |  |  |
 | `lateral_fixedweir_umin_method` 🔬 | Method for minimal velocity treshold for weir losses in iterative lateral 1D2D weir coupling. |  |  |  |
 | `lateral_fixedweir_minimal_1d2d_embankment` 🔬 | Minimal crest height of 1D2D SOBEK-DFM embankments. |  |  |  |
 | `testFixedWeirs` 🔬 | Test for fixed weir algorithms. |  | <ul><li>**`0`**: original Villemonte (Sieben2010) approach</li><li>**`1`**: Sieben2007</li></ul> |  |
@@ -275,7 +274,6 @@ This section contains the settings of specific parts of the flow solver, such as
 | `huWeirRegular` 🔬 | For Villemonte and Tabellenboek, regular hu below `huWeirRegular`. |  |  |  |
 | `structureLayersActive` 🔬 | For Villemonte and Tabellenboek, regular hu below `huWeirRegular`. |  | <ul><li>**`0`**: structure flow through all layers</li><li>**`1`**: structure flow only through open layers</li></ul> |  |
 | `baOrgFracMin` 🔬 | Cell area = max(orgcellarea\*`baOrgFracMin`, cut cell area). |  |  |  |
-| `epsTKE` 🔬 | TKE=max(TKE, `epsTKE`). | `1e-32` |  |  |
 | `subsuplupdates1` 🔬 | Update water levels (s1) due to subsidence/uplift. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `linkDriedMx` 🔬 | Maximum numberr of Au growth steps after having dried. |  |  |  |
 | `lateral_fixedweir_relax` 🔬 | Relaxation factor for iterative lateral 1D2D weir coupling algorithm. |  |  |  |
@@ -306,6 +304,9 @@ In this field, physical model parameters can be inserted, for instance related t
 | `dicoww` | Background vertical eddy diffusivity. | `1e-06` |  | [m²/s] |
 | `vicwminb` | Minimum viscosity in production and buoyancy term. | `0.0` |  | [m²/s] |
 | `xlOzmidov` | Ozmidov length scale, 0.0=no contribution of internal waves to vertical diffusion. | `0.0` |  | [m] |
+| `TKEMin` 🔬 | Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model. | `1e-32` |  | [m²/s²] |
+| `EPSMin` 🔬 | Minimum turbulent dissipation rate (EPS) value in k-eps turbulence model. | `1e-32` |  | [m²/s²] |
+| `TAUMin` 🔬 | Minimum turbulent time scale (TAU) value in k-tau turbulence model. | `1e-32` |  | [m²/s²] |
 | `Smagorinsky` | Add Smagorinsky horizontal turbulence: vicu = vicu + ((`Smagorinsky`\*dx)^2)\*S. | `0.2` |  | [-] |
 | `Elder` | Add Elder contribution: vicu = vicu + (`Elder`\*kappa\*ustar\*H/6); e.g. 1.0. | `0.0` |  | [-] |
 | `irov` | Wall friction. | `0` | <ul><li>**`0`**: free slip</li><li>**`1`**: partial slip using `wall_ks`</li></ul> |  |

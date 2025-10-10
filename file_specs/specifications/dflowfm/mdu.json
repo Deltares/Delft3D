@@ -1259,13 +1259,6 @@
                     }
                 },
                 {
-                    "key": "epsEPS",
-                    "default_value": 1e-32,
-                    "value_type": "float",
-                    "description": "EPS=max(EPS, `epsEPS`)",
-                    "status": "research"
-                },
-                {
                     "key": "lateral_fixedweir_umin_method",
                     "value_type": "int",
                     "description": "Method for minimal velocity treshold for weir losses in iterative lateral 1D2D weir coupling.",
@@ -1740,13 +1733,6 @@
                     "status": "research"
                 },
                 {
-                    "key": "epsTKE",
-                    "value_type": "float",
-                    "default_value": 1e-32,
-                    "description": "TKE=max(TKE, `epsTKE`).",
-                    "status": "research"
-                },
-                {
                     "key": "subsuplupdates1",
                     "value_type": "intbool",
                     "description": "Update water levels (s1) due to subsidence/uplift.",
@@ -1941,6 +1927,30 @@
                     "value_type": "float",
                     "description": "Ozmidov length scale, 0.0=no contribution of internal waves to vertical diffusion.",
                     "unit": "m"
+                },
+				{
+                    "key": "TKEMin",
+                    "default_value": 1e-32,
+                    "value_type": "float",
+                    "description": "Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model.",
+                    "status": "research",
+					"unit": "m²/s²"
+                },
+                {
+                    "key": "EPSMin",
+                    "default_value": 1e-32,
+                    "value_type": "float",
+                    "description": "Minimum turbulent dissipation rate (EPS) value in k-eps turbulence model.",
+                    "status": "research",
+					"unit": "m²/s²"
+                },
+                {
+                    "key": "TAUMin",
+                    "default_value": 1e-32,
+                    "value_type": "float",
+                    "description": "Minimum turbulent time scale (TAU) value in k-tau turbulence model.",
+                    "status": "research",
+					"unit": "m²/s²"
                 },
                 {
                     "key": "Smagorinsky",
