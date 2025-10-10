@@ -391,11 +391,11 @@ contains
       end do
 
       ! write new crsdef file
-      call newfil(mout, crsdef_output)
+      !call newfil(mout, crsdef_output)
       call prop_write_inifile(mout, prop_ptr, ierr)
       call tree_destroy(prop_ptr)
       ! write new structures file
-      call newfil(mout, structures_output)
+      !call newfil(mout, structures_output)
       call prop_write_inifile(mout, strs_ptr, ierr)
       call tree_destroy(strs_ptr)
 

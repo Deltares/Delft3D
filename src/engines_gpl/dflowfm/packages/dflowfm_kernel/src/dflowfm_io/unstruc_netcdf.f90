@@ -15658,6 +15658,8 @@ contains
       use Timers
       use m_modelbounds
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
+      use m_inquire_link_type, only: is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
+
       implicit none
 
       integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
@@ -15715,9 +15717,6 @@ contains
       n1d2dcontacts = 0
       n1dedges = 0
       start_index = 1
-      !if (present(id_tsp_)) then
-      !   id_tsp = id_tsp_
-      !endif
 
       if (ndxi <= 0) then
          call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
@@ -15791,31 +15790,27 @@ contains
             x1dn(n) = xz(ndx2d + n)
             y1dn(n) = yz(ndx2d + n)
 
-            if (n <= ndx1d) then ! exclude boundary nodes
+            if (n <= ndx1d .and. associated(meshgeom1d%ngeopointx)) then ! exclude boundary nodes
                ! Also store the original mesh1d/network variables in the new flowgeom order for ndx1d nodes:
                k1 = nodePermutation(nd(ndx2d + n)%nod(1)) ! This is the node index from *before* setnodadm(),
                ! i.e., as was read from input *_net.nc file.
-               if (k1 > 0 .and. associated(meshgeom1d%ngeopointx)) then ! Indicates that no Deltares-0.10 network topology/branchids have been read.
+               if (k1 <= 0 .or. k1 > ndx1d) then
+                  k1 = n
+               end if
                   nodebranchidx_remap(n) = meshgeom1d%nodebranchidx(k1)
                   nodeoffsets_remap(n) = meshgeom1d%nodeoffsets(k1)
-                  nodeids_remap(n) = nodeids(k1)
+                  if (allocated(nodeids)) then
+                     nodeids_remap(n) = nodeids(k1)
+                  end if
+                  if (allocated(nodelongnames)) then
                   nodelongnames_remap(n) = nodelongnames(k1)
-               end if
+                  end if
             end if
          end do
 
-         !count 1d mesh edges and 1d2d contacts
-         n1dedges = 0
-         n1d2dcontacts = 0
-         do L = 1, lnx1d
-            if (kcu(L) == 1) then
-               n1dedges = n1dedges + 1
-            else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
-               n1d2dcontacts = n1d2dcontacts + 1
-            else
-               continue
-            end if
-         end do
+         n1dedges = count_1d_edges(numl1d)
+         n1d2dcontacts = count(is_valid_1d2d_netlink([(l, l=1, numl1d)]))
+
          if (jabndnd_ == 1) then
             ! when writing boundary points, include the boundary links as well
             n1dedges = n1dedges + (lnx1db - lnxi)
@@ -15847,7 +15842,7 @@ contains
             else
                L = lnxi + (Li - lnx1d)
             end if
-            if (abs(kcu(L)) == 1) then ! internal 1D edges and open boundary links
+            if (is_valid_1d_netlink(l)) then ! internal 1D edges and open boundary links
                n1dedges = n1dedges + 1
                edge_nodes(1:2, n1dedges) = ln(1:2, L) - ndx2d !only 1d edge nodes
                !mappings
@@ -15856,13 +15851,15 @@ contains
                y1du(n1dedges) = yu(L)
                L1 = Lperm(ln2lne(L)) ! This is the edge index from *before* setnodadm(),
                ! i.e., as was read from input *_net.nc file.
-               if (L1 > 0 .and. associated(meshgeom1d%ngeopointx)) then ! Indicates that no Deltares-0.10 network topology/branchids have been read.
+               if (L1 <= 0 .or. L1 > size(edgebranchidx_remap)) then ! Indicates that no Deltares-0.10 network topology/branchids have been read.
+                  l1 = n1dedges
+               end if
+               if(associated(meshgeom1d%ngeopointx)) then
                   edgebranchidx_remap(n1dedges) = meshgeom1d%edgebranchidx(L1)
                   edgeoffsets_remap(n1dedges) = meshgeom1d%edgeoffsets(L1)
-               else
-                  continue
                end if
-            else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
+
+            else if (is_valid_1d2d_netlink(l)) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
                ! 1D2D link, find the 2D flow node and store its cell center as '1D' node coordinates
                n1d2dcontacts = n1d2dcontacts + 1
                id_tsp%contactstoln(n1d2dcontacts) = L

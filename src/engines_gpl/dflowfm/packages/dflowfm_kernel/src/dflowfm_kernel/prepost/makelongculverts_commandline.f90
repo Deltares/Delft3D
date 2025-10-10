@@ -47,18 +47,22 @@ contains
       use system_utils
       use m_set_nod_adm
       use messagehandling, only: IDLEN
+      use gridoperations, only: findcells
 
       character(len=1024) :: fnamesstring
       character(len=:), allocatable :: converted_fnamesstring
       character(len=:), allocatable :: converted_crsdefsstring
       character(len=:), allocatable :: tempstring_crsdef
       character(len=:), allocatable :: tempstring_fnames
-      character(len=:), allocatable :: tempstring_netfile
+      !character(len=:), allocatable :: tempstring_netfile
       character(len=200), dimension(:), allocatable :: fnames
-      character(len=IDLEN) :: temppath, tempname, tempext
+     ! character(len=IDLEN) :: temppath, tempname, tempext
 
       integer :: istat, ifil
-
+      call findcells(0)
+      if (len(trim(md_culvertprefix))==0) then
+         md_culvertprefix = 'converted_'
+      end if
       if (len_trim(md_1dfiles%structures) > 0) then
 
          fnamesstring = md_1dfiles%structures
@@ -78,17 +82,17 @@ contains
          call setnodadm(0)
          call finalizeLongCulvertsInNetwork()
 
-         call split_filename(md_netfile, temppath, tempname, tempext)
-         tempname = trim(md_culvertprefix)//tempname
-         tempstring_netfile = cat_filename(temppath, tempname, tempext)
+         !call split_filename(md_netfile, temppath, tempname, tempext)
+         !tempname = trim(md_culvertprefix)//tempname
+         !tempstring_netfile = cat_filename(temppath, tempname, tempext)
 
-         call unc_write_net(tempstring_netfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
-
-         md_netfile = tempstring_netfile
-         md_1dfiles%structures = converted_fnamesstring
-         md_1dfiles%cross_section_definitions = converted_crsdefsstring
-         converted_fnamesstring = trim(trim(md_culvertprefix)//md_ident)//'.mdu'
-         call writeMDUFile(converted_fnamesstring, istat)
+         !call unc_write_net(tempstring_netfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
+   
+         !md_netfile = tempstring_netfile
+         !md_1dfiles%structures = converted_fnamesstring
+         !md_1dfiles%cross_section_definitions = converted_crsdefsstring
+         !converted_fnamesstring = trim(trim(md_culvertprefix)//md_ident)//'.mdu'
+         !call writeMDUFile(converted_fnamesstring, istat)
       end if
 
    end subroutine makelongculverts_commandline

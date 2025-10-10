@@ -361,7 +361,6 @@ program unstruc
       call load_displaysettings(md_cfgfile)
    end if
    if (md_convertlongculverts == 1) then
-      call findcells(0)
       call makelongculverts_commandline()
       goto 1234 !      stop
    end if

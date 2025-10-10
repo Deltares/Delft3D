@@ -426,11 +426,11 @@ contains
       use m_realan, only: realan
       use m_filez, only: oldfil
       use unstruc_messages, only: threshold_abort
+      use m_makelongculverts_commandline, only: makelongculverts_commandline
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
       character(len=200), dimension(:), allocatable :: fnames
-      character(len=1024) :: fnamesstring
       real(kind=dp), dimension(2) :: tempbob
 
       integer :: istat, minp, ifil, jadoorladen
@@ -496,19 +496,8 @@ contains
          call readStructures(network, md_1dfiles%structures, is_path_relative=md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
 
-         if (md_convertlongculverts == 0) then
-            fnamesstring = md_1dfiles%structures
-            call strsplit(fnamesstring, 1, fnames, 1)
-            call loadLongCulvertsAsNetwork(fnames(1), 0, istat)
-            do ifil = 2, size(fnames)
-               call loadLongCulvertsAsNetwork(fnames(ifil), 1, istat)
-            end do
-            deallocate (fnames)
-            if (.not. newculverts .and. nlongculverts > 0) then
-               call setnodadm(0)
-               call finalizeLongCulvertsInNetwork()
-            end if
-         end if
+            call makelongculverts_commandline()
+
       end if
 
       call timstop(timerHandle)
