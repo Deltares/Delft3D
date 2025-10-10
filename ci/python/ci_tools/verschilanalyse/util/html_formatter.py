@@ -94,12 +94,13 @@ class HtmlFormatter:
         return s.replace("\n", "\n" + spaces * " ")
 
     @staticmethod
-    def _to_rows(comparisons: dict[str, LogComparison],
-                 water_lvl_items_his: str,
-                 flow_vel_items_his: str,
-                 water_lvl_items_map: str,
-                 flow_vel_items_map: str,
-                ) -> Iterator[str]:
+    def _to_rows(
+        comparisons: dict[str, LogComparison],
+        water_lvl_items_his: str,
+        flow_vel_items_his: str,
+        water_lvl_items_map: str,
+        flow_vel_items_map: str,
+    ) -> Iterator[str]:
         for model_name, comparison in sorted(comparisons.items()):
             current = comparison.current
             reference = comparison.reference
@@ -150,7 +151,7 @@ class HtmlFormatter:
         flow_vel_items_map: str,
     ) -> str:
         rows = "\n".join(
-            f"<tr>{row}</tr>" 
+            f"<tr>{row}</tr>"
             for row in cls._to_rows(
                 comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, flow_vel_items_map
             )
