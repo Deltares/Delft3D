@@ -678,7 +678,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           !
           if (lsedtot == 1) then
              call prop_get(sedblock_ptr, '*', 'SedD50', filsed, is_float, sedd50(l), filename)
-             if (filename == ' ' .and. comparereal(sedd50(l), rmissval)) then
+             if (filename == ' ' .and. comparereal(sedd50(l), rmissval) == 0) then
                 !
                 ! Alternative for SedD50 is SedDia (backward compatibility)
                 !
@@ -867,7 +867,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           ! If the file does not exist, assume that 'SdBUni' contains a uniform value (real)
           !
           call prop_get(sedblock_ptr, '*', 'IniSedThick', filsed, is_float, sdbuni(l), filename)
-          if (filename == ' ' .and. comparereal(sdbuni(l), rmissval)) then
+          if (filename == ' ' .and. comparereal(sdbuni(l), rmissval) == 0) then
              inisedunit(l) = 'kg/m2'
              call prop_get(sedblock_ptr, '*', 'SdBUni', filsed, is_float, sdbuni(l), filename)
           else

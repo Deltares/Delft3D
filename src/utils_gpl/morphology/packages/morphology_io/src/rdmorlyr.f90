@@ -1444,7 +1444,7 @@ contains
                            end if
                         else
                            write (message, '(3a,i2,2a)')  &
-                              & 'Invalid file or value "', trim(filename), '" assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)
+                              & 'File not found: "', trim(filename), '" assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)
                            call mess(LEVEL_ERROR, message)
                            error = .true.
                            return
@@ -1517,7 +1517,7 @@ contains
                               end if
                            else
                               write (message, '(7a,i2,2a)')  &
-                                 & 'Invalid file or value "', trim(filename), '" assigned to ', trim(parname), ' of ', trim(layertype), ' layer ', ilyr, ' in file ', trim(flcomp)
+                                 & 'File not found: "', trim(filename), '" assigned to ', trim(parname), ' of ', trim(layertype), ' layer ', ilyr, ' in file ', trim(flcomp)
                               call mess(LEVEL_ERROR, message)
                               error = .true.
                               return
