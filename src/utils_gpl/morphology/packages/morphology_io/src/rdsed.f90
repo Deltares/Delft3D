@@ -866,6 +866,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           ! First assume that 'IniSedThick'/'SdBUni' contains a filename
           ! If the file does not exist, assume that 'SdBUni' contains a uniform value (real)
           !
+          sdbuni(l) = rmissval
           call prop_get(sedblock_ptr, '*', 'IniSedThick', filsed, is_float, sdbuni(l), filename)
           if (filename == ' ' .and. comparereal(sdbuni(l), rmissval) == 0) then
              inisedunit(l) = 'kg/m2'
