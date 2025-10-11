@@ -38,7 +38,10 @@ end subroutine tests_combinepaths
 ! The comments in the source file define a nice set of test cases - use these to test the code
 !
 subroutine test_combine
+    use m_combinepaths, only: combinepaths
+    
     character(len=20), dimension(9) :: firstname, secondname, expected
+    character(len=:), allocatable   :: combined_name
 
     integer                               :: i
 
@@ -57,9 +60,9 @@ subroutine test_combine
     ! Check each case
     !
     do i = 1,size(firstname)
-        call combinepaths( firstname(i), secondname(i) )
+        combined_name = combinepaths( firstname(i), secondname(i) )
 
-        call assert_equal( secondname(i), expected(i), "Constructed name is as expected" )
+        call assert_equal( combined_name, expected(i), "Constructed name is as expected" )
     enddo
 end subroutine test_combine
 

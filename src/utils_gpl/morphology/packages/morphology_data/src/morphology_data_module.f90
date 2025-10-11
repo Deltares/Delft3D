@@ -538,7 +538,7 @@ type morpar_type
     character(256) :: telfil       !  name of file containing exchange layer thickness
     character(256) :: ttlfil       !  name of file containing transport layer thickness
     character(256) :: aldifffil    !  name of file containing active-layer diffusion
-    character(256) :: flsthetsd    !  name of file containing dry cell erosion factor
+    character(:), allocatable :: flsthetsd    !  name of file containing dry cell erosion factor
     !
 end type morpar_type
 

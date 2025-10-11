@@ -482,6 +482,7 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     integer                                    :: nparopt
     integer                                    :: version
     integer                      , external    :: open_shared_library
+    logical                                    :: is_float
     logical                                    :: lex
     real(fp)                                   :: nodef
     real(fp)       , dimension(:), allocatable :: pardef
@@ -490,6 +491,7 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     character(80)                              :: string
     character(256)                             :: errmsg
     character(256)                             :: rec
+    character(:), allocatable                  :: filename
     type(tree_data)              , pointer     :: tran_ptr
     type(tree_data)              , pointer     :: sed_ptr
 !
@@ -508,7 +510,7 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     else
        write (lundia, '(a,a)') '    Input file                   : ',trim(flname)
        call remove_leading_spaces(flname, lfile)
-       !
+       ! combinepaths already called in rdsed
        inquire (file = flname(1:lfile), exist = lex)
        !
        if (.not.lex) then
@@ -706,6 +708,7 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     else
        do i = 1, nparreq+nparopt
           i10 = i+10
+          is_float = .true.
           if (version==1) then
              par(i10,l) = pardef(i)
              parfilename(i10,l) = ' '
@@ -715,8 +718,8 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
                 call prop_get(tran_ptr,'TransportFormula',parname(i,l),par(i10,l))
              elseif (associated(sed_ptr%node_name)) then
                 ! parameter not in transport file, now check sedblock
-                call prop_get(sed_ptr,'Sediment',parname(i,l),parfilename(i10,l))
-                call prop_get(sed_ptr,'Sediment',parname(i,l),par(i10,l))
+                call prop_get(sed_ptr,'Sediment',parname(i,l),flname,is_float,par(i10,l),filename)
+                parfilename(i10,l) = filename
              endif
           else
              par(i10,l) = pardef(i)
@@ -724,23 +727,27 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
              !
              if (ifrac>0 .and. associated(sed_ptr%node_name)) then
                 ! try to locate parameter in sedblock
-                call prop_get(sed_ptr,'Sediment',parname(i,l),parfilename(i10,l))
-                call prop_get(sed_ptr,'Sediment',parname(i,l),par(i10,l))
+                call prop_get(sed_ptr,'Sediment',parname(i,l),flname,is_float,par(i10,l),filename)
+                parfilename(i10,l) = filename
              endif
           endif
           !
-          if (parfilename(i10,l) /= ' ') then
-             if (file_exists(flname, parfilename(i10,l))) then
-                nparfile = nparfile + 1
-                iparfile(i10,l) = nparfile
-             endif
-          endif
-          !
-          if (iparfile(i10,l) == 0 .and. comparereal(par(i10,l),nodef) == 0) then
+          if (is_float) then
              error  = .true.
              errmsg = 'No value obtained for parameter '//trim(parname(i,l))//' without default value.'
              call write_error(errmsg, unit=lundia)
-          endif
+             exit
+          else
+             inquire(file=flname, exist=lex)
+             if (lex) then
+                nparfile = nparfile + 1
+                iparfile(i10,l) = nparfile
+             else
+                error = .true.
+                call write_error(trim(parname(i,l))//' file "'//trim(parfilename(i10,l))//'" not found', unit=lundia)
+                exit
+             end if
+          end if
        enddo
     endif
     !
@@ -753,18 +760,6 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     deallocate(sed_ptr)
     deallocate(pardef)
 end subroutine rdtrafrm0
-
-
-!> Check whether a file exists
-function file_exists(flname, parfile) result (exists)
-    character(*)                 , intent(in)    :: flname
-    character(*)                 , intent(inout) :: parfile
-
-    logical :: exists !< flag indicating whether file exists
-    
-    call combinepaths(flname, parfile)
-    inquire (file = parfile, exist = exists)
-end function file_exists
 
 
 !> Read transport formula parameter files (time- or space-varying)

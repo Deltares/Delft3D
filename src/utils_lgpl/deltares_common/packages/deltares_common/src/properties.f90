@@ -93,6 +93,7 @@ module properties
       module procedure prop_get_subtree_logical
       module procedure prop_get_subtree_double
       module procedure prop_get_subtree_doubles
+      module procedure prop_get_value_or_filename
    end interface
 
    interface prop_set
@@ -3198,6 +3199,44 @@ contains
       end if
 
    end subroutine prop_get_strings
+   
+   !> Returns the value of a property as a float or as a filename.
+   subroutine prop_get_value_or_filename(tree, chapter, key, reference, is_float, value, filename)
+   use string_module, only: convert_to_real
+   use m_combinepaths, only: combinepaths
+   use precision, only: fp
+   
+   type(tree_data), pointer :: tree !< the property tree
+   character(*), intent(in) :: chapter !< chapter in property tree
+   character(*), intent(in) :: key !< key in property tree
+   character(*), intent(in) :: reference !< reference path for relative filenames
+   logical, intent(out) :: is_float !< .true. if string is a float; .false. if string is a filename
+   real(fp), intent(inout) :: value !< float if string represent float; unchanged otherwise
+   character(len=:), allocatable, intent(out) :: filename !< filename if string is a valid filename; ' ' otherwise
+   
+   integer :: ierr !< error flag for convert_to_real
+   character(:), allocatable :: string !< string from property tree
+   
+   string = ' '
+   call prop_get_alloc_string(tree, chapter, key, string)
+   
+   filename = ' '
+   is_float = .true.
+   if (string == ' ') then
+      ! empty string: use default value
+   else
+      ! non empty string: try to convert to float
+      call convert_to_real(string, value, ierr)
+      if (ierr == 0) then
+         ! valid float
+      else
+         ! not a valid float; string must be a filename
+         filename = combinepaths(reference, string)
+         is_float = .false.
+      end if
+   end if
+   
+   end subroutine prop_get_value_or_filename
 
    !> Returns the version number found in the ini file default location is "[General], fileVersion".
    !! FileVersion should contain <<major>>.<<minor>><<additional info>>.
