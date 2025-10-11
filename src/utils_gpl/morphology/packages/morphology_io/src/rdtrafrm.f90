@@ -232,8 +232,8 @@ end subroutine initrafrm
 
 subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
                   & ipardef   ,rpardef   ,npardef   ,trapar    , &
-                  & sedparout ,sedtyp    ,sedblock  ,dims      , &
-                  & julrefday ,max_mud_sedtyp)
+                  & sedparout ,sedtyp    ,filsed    ,sedblock  , &
+                  & dims      ,julrefday ,max_mud_sedtyp)
 !!--description-----------------------------------------------------------------
 !
 ! Reads transport formula and parameters
@@ -257,6 +257,7 @@ subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
     real(fp), dimension(npardef) , intent(in)   :: rpardef        !<
     logical                      , intent(in)   :: sedparout      !< flag whether intermediate output of sediment transport formula should be written
     integer, dimension(:)        , intent(in)   :: sedtyp         !< sediment type
+    character(*)                 , intent(in)   :: filsed         !< filename of sed file from which the sedblock was read
     type(tree_data), dimension(:), intent(in)   :: sedblock       !< 
     type (griddimtype), target   , intent(in)   :: dims           !< grid dimensions
     integer                      , intent(in)   :: julrefday      !< Julian reference date
@@ -356,7 +357,7 @@ subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
                  & parfilename,iparfile  , &
                  & nparfile  ,0         ,SEDTYP_SAND, max_mud_sedtyp, &
                  & filtrn    ,name      ,dll_handle,dll_name  ,dll_function, &
-                 & dll_usrfil,ipardef   ,rpardef   ,npardef   ,sedblock  , &
+                 & dll_usrfil,ipardef   ,rpardef   ,npardef   ,filsed, sedblock, &
                  & parname    ,noutpar   ,outpar_name, outpar_longname)
     if (error) return
     iformdef = iform(1)
@@ -398,7 +399,7 @@ subroutine rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
                        & parfilename,iparfile  , &
                        & nparfile  ,ll        ,sedtyp(ll), max_mud_sedtyp, &
                        & flstrn(ll),name      ,dll_handle,dll_name  ,dll_function, &
-                       & dll_usrfil,ipardef   ,rpardef   ,npardef   ,sedblock  , &
+                       & dll_usrfil,ipardef   ,rpardef   ,npardef   ,filsed, sedblock, &
                        & parname   ,noutpar   ,outpar_name, outpar_longname)
        else
           iform(ll) = iformdef
@@ -429,7 +430,7 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
                    & parfilename,iparfile  , &
                    & nparfile  ,ifrac     ,sedtyp    ,max_mud_sedtyp, &
                    & flname    ,name      ,dll_handle,dll_name  ,dll_func  , &
-                   & dll_usrfil,ipardef   ,rpardef   ,npardef   ,sedblock  , &
+                   & dll_usrfil,ipardef   ,rpardef   ,npardef   ,filsed, sedblock  , &
                    & parname   ,noutpar   ,outpar_name, outpar_longname)
 !!--description-----------------------------------------------------------------
 !
@@ -469,6 +470,7 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
     character(*), dimension(:)                       :: dll_usrfil
     integer, dimension(2,npardef)    , intent(in)    :: ipardef
     real(fp), dimension(npardef)     , intent(in)    :: rpardef
+    character(*)                                     :: filsed !< filename of sed file from which sedblock was read
     type(tree_data), dimension(:)    , intent(in)    :: sedblock
 !
 ! Local variables
@@ -710,26 +712,20 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
        do i = 1, nparreq+nparopt
           i10 = i+10
           is_float = .true.
+          par(i10,l) = pardef(i)
+          parfilename(i10,l) = ' '
           if (version==1) then
-             par(i10,l) = pardef(i)
-             parfilename(i10,l) = ' '
-             !
              call prop_get(tran_ptr,'TransportFormula',parname(i,l),parfilename(i10,l))
              if (parfilename(i10,l) /= ' ') then
-                call prop_get(tran_ptr,'TransportFormula',parname(i,l),par(i10,l))
+                call prop_get(tran_ptr,'TransportFormula',parname(i,l),flname,is_float,par(i10,l),filename)
              elseif (associated(sed_ptr%node_name)) then
                 ! parameter not in transport file, now check sedblock
-                call prop_get(sed_ptr,'Sediment',parname(i,l),flname,is_float,par(i10,l),filename)
-                parfilename(i10,l) = filename
+                call prop_get(sed_ptr,'Sediment',parname(i,l),filsed,is_float,par(i10,l),filename)
              endif
           else
-             par(i10,l) = pardef(i)
-             parfilename(i10,l) = ' '
-             !
              if (ifrac>0 .and. associated(sed_ptr%node_name)) then
                 ! try to locate parameter in sedblock
-                call prop_get(sed_ptr,'Sediment',parname(i,l),flname,is_float,par(i10,l),filename)
-                parfilename(i10,l) = filename
+                call prop_get(sed_ptr,'Sediment',parname(i,l),filsed,is_float,par(i10,l),filename)
              endif
           endif
           !
@@ -741,13 +737,14 @@ subroutine rdtrafrm0(lundia    ,error     ,iform     ,npar      ,par       , &
                 exit
              end if
           else
-             inquire(file=flname, exist=lex)
+             inquire(file=filename, exist=lex)
              if (lex) then
+                parfilename(i10,l) = filename
                 nparfile = nparfile + 1
                 iparfile(i10,l) = nparfile
              else
                 error = .true.
-                call write_error(trim(parname(i,l))//' file "'//trim(parfilename(i10,l))//'" not found', unit=lundia)
+                call write_error(trim(parname(i,l))//' file "'//filename//'" not found', unit=lundia)
                 exit
              end if
           end if
