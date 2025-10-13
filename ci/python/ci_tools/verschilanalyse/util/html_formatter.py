@@ -100,13 +100,11 @@ class HtmlFormatter:
         his_outputs: dict[str, VerschillentoolOutput],
         map_outputs: dict[str, VerschillentoolOutput],
     ) -> Iterator[str]:
-        water_lvl_exceeded = (
-            set(cls._exceeded_water_level_models(his_outputs)) | set(
-                cls._exceeded_water_level_models(map_outputs))
+        water_lvl_exceeded = set(cls._exceeded_water_level_models(his_outputs)) | set(
+            cls._exceeded_water_level_models(map_outputs)
         )
-        flow_vel_exceeded = (
-            set(cls._exceeded_flow_velocity_models(his_outputs)) | set(
-                cls._exceeded_flow_velocity_models(map_outputs))
+        flow_vel_exceeded = set(cls._exceeded_flow_velocity_models(his_outputs)) | set(
+            cls._exceeded_flow_velocity_models(map_outputs)
         )
 
         for model_name, comparison in sorted(comparisons.items()):
