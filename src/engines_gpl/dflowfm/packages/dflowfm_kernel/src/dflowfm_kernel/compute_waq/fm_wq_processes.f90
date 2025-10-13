@@ -1807,7 +1807,6 @@ contains
       md_subfile = ''
       md_ehofile = ''
       md_sttfile = ''
-      md_thetav_waq = 0.0_dp
       md_dt_waqproc = 0.0_dp
 
       return

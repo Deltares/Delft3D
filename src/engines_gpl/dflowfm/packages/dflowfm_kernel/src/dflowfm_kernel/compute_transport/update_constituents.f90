@@ -238,9 +238,9 @@ contains
          if (kmx < 1) then ! 2D, call to 3D as well for now
             call solve_2D(NUMCONST, Ndkx, vol1, kbot, ktop, sumhorflux, fluxver, const_sour, const_sink, nsubsteps, jaupdate, ndeltasteps, constituents, rhs)
          else
-            call comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, zws, qw, kbot, ktop, constituents, nsubsteps, jaupdate, ndeltasteps, fluxver, wsf)
+            call comp_fluxver(NUMCONST, limtyp, tetavert, Ndkx, zws, qw, kbot, ktop, constituents, nsubsteps, jaupdate, ndeltasteps, fluxver, wsf)
 
-            call solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
+            call solve_vertical(NUMCONST, ISED1, ISEDN, tetavert, Ndkx, kmx, &
                                 zws, qw, vol1, kbot, ktop, &
                                 sumhorflux, fluxver, const_sour, const_sink, &
                                 sigdifi, vicwws, nsubsteps, jaupdate, ndeltasteps, constituents, &
