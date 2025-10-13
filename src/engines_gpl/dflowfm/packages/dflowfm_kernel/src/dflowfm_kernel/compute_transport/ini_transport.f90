@@ -57,7 +57,6 @@ contains
 
       use m_fm_wq_processes
       use m_alloc
-      use unstruc_model, only: md_thetav_waq
       use m_bedform, only: bfmpar
 
       implicit none
@@ -145,30 +144,20 @@ contains
          call alloc_transport(.false.)
       end if
 
+      if (vertical_advection_type == VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT) then
+         tetavert = 0.0_dp ! Ho explicit
+      else
+         tetavert = tetav ! Central implicit
+      end if
       if (ISALT > 0) then
-         if (javasal == 6) then
-            thetavert(ISALT) = 0.0_dp ! Ho explicit
-         else
-            thetavert(ISALT) = tetav ! Central implicit
-         end if
          const_names(ISALT) = 'salt'
       end if
 
       if (ITEMP > 0) then
-         if (javatem == 6) then
-            thetavert(ITEMP) = 0.0_dp ! Ho explicit
-         else
-            thetavert(ITEMP) = tetav ! Central implicit  0.55d0
-         end if
          const_names(ITEMP) = 'temperature'
       end if
 
       if (ISED1 > 0) then
-         if (javased == 6) then
-            thetavert(ISED1:ISEDN) = 0.0_dp
-         else
-            thetavert(ISED1:ISEDN) = tetav
-         end if
          if (.not. stm_included) then ! Andere naamgeving in flow_sedmorinit, fracties van sed file
             do i = ISED1, ISEDN
                ised = i - ISED1 + 1
@@ -240,13 +229,12 @@ contains
       end if
 
       if (jawaqproc > 0) then
-!     fill administration for WAQ substances with fall velocities, and thetavert
+!     fill administration for WAQ substances with fall velocities, and tetavert
          do isys = 1, num_substances_transported
             i = itrac2const(isys2trac(isys))
             isys2const(isys) = i
             iconst2sys(i) = isys
 
-            thetavert(i) = md_thetav_waq
          end do
       end if
 

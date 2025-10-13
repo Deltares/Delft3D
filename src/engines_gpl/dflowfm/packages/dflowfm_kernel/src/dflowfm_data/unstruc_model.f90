@@ -180,7 +180,6 @@ module unstruc_model
    character(len=255) :: md_oplfile = ' ' !< [-] open process library dll/so file
    character(len=255) :: md_blmfile = ' ' !< [-] BLOOM aglae species definition file
    character(len=255) :: md_sttfile = ' ' !< statistics definition file
-   real(kind=dp) :: md_thetav_waq = 0.0_dp !< thetav for waq
    real(kind=dp) :: md_dt_waqproc = 0.0_dp !< processes time step
    real(kind=dp) :: md_dt_waqbal = 0.0_dp !< mass balance output time step (old)
 
@@ -1087,28 +1086,20 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport)
 
-      call prop_get(md_ptr, 'numerics', 'verticalAdvectionType', vertical_advection_type, success)
+      call prop_get(md_ptr, 'numerics', 'verticalAdvectionType', tmpstr, success)
       if (success) then
-         call str_lower(vertical_advection_type)
-         select case (vertical_advection_type)
+         call str_lower(tmpstr)
+         select case (tmpstr)
          case ('centralimplicit')
-            javasal = VERTICAL_ADVECTION_CENTRAL_IMPLICIT
-            javatem = VERTICAL_ADVECTION_CENTRAL_IMPLICIT
-            md_thetav_waq = 0.55_dp
+            vertical_advection_type = VERTICAL_ADVECTION_CENTRAL_IMPLICIT
          case ('higherorderupwindexplicit')
-            javasal = VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT
-            javatem = VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT
-            md_thetav_waq = 0.0_dp
+            vertical_advection_type = VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT
          case default
-            write (msgbuf, '(a,a)') 'Did not recognise VerticalAdvectionType value: ', trim(vertical_advection_type)
+            write (msgbuf, '(a,a)') 'Did not recognise VerticalAdvectionType value: ', trim(tmpstr)
             call mess(LEVEL_ERROR, trim(msgbuf))
             write (msgbuf, '(a)') 'Supported values are: centralImplicit and higherOrderUpwindExplicit'
             call mess(-LEVEL_ERROR, trim(msgbuf))
          end select
-      else
-         call prop_get(md_ptr, 'numerics', 'Vertadvtypsal', javasal)
-         call prop_get(md_ptr, 'numerics', 'Vertadvtyptem', javatem)
-         call prop_get(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
       end if
 
       call prop_get(md_ptr, 'numerics', 'Vertadvtypmom', javau)
@@ -3010,12 +3001,13 @@ contains
 
       call prop_set(prop_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport, 'Diagnostic ("frozen") transport (0: prognostic transport, 1: diagnostic transport)')
 
-      if (len_trim(vertical_advection_type) > 0) then
-         call prop_set(prop_ptr, 'numerics', 'VerticalAdvectionType', trim(vertical_advection_type), 'String defining vertical advection types for transport constitiuents.')
+      if (vertical_advection_type == VERTICAL_ADVECTION_CENTRAL_IMPLICIT) then
+         tmpstr = 'centralImplicit'
       else
-         call prop_set(prop_ptr, 'numerics', 'Vertadvtypsal', Javasal, 'Vertical advection type for salinity (0: none, 4: Theta implicit, 6: higher order explicit, no Forester filter).')
-         call prop_set(prop_ptr, 'numerics', 'Vertadvtyptem', Javatem, 'Vertical advection type for temperature (0: none, 4: Theta implicit, 6: higher order explicit, no Forester filter).')
+         tmpstr = 'higherOrderUpwindExplicit'
       end if
+      call prop_set(prop_ptr, 'numerics', 'VerticalAdvectionType', tmpstr, 'String defining vertical advection types for transport constitiuents.')
+
       call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom', javau, 'Vertical advection type in momentum equation; 3: Upwind implicit, 6: centerbased upwind explicit.')
       if (writeall .or. javau3onbnd /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom3onbnd', javau3onbnd, 'vert. adv. u1 bnd UpwimpL: 0=follow javau , 1 = on bnd, 2= on and near bnd')
@@ -3968,9 +3960,6 @@ contains
       call prop_set(prop_ptr, 'processes', 'SubstanceFile', trim(md_subfile), 'substance file')
       call prop_set(prop_ptr, 'processes', 'AdditionalHistoryOutputFile', trim(md_ehofile), 'extra history output file')
       call prop_set(prop_ptr, 'processes', 'StatisticsFile', trim(md_sttfile), 'statistics file')
-      if (len_trim(vertical_advection_type) == 0) then
-         call prop_set(prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
-      end if
       call prop_set(prop_ptr, 'processes', 'DtProcesses', md_dt_waqproc, 'waq processes time step')
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')

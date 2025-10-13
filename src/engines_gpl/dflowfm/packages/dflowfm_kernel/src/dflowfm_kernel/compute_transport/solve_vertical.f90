@@ -42,7 +42,7 @@ module m_solve_vertical
 
 contains
 
-   subroutine solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
+   subroutine solve_vertical(NUMCONST, ISED1, ISEDN, tetavert, Ndkx, kmx, &
                              zws, qw, vol1, kbot, ktop, &
                              sumhorflux, fluxver, source, sink, &
                              sigdifi, vicwws, &
@@ -65,7 +65,7 @@ contains
       integer, intent(in) :: NUMCONST !< number of transported quantities
       integer, intent(in) :: ISED1 !< index of first sediment fraction in constituents array
       integer, intent(in) :: ISEDN !< index of last  sediment fraction in constituents array
-      real(kind=dp), dimension(NUMCONST), intent(in) :: thetavert !< vertical advection explicit (0) or implicit (1)
+      real(kind=dp), intent(in) :: tetavert !< vertical advection explicit (0) or implicit (1)
       integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
       integer, intent(in) :: kmx !< maximum number of layers
       real(kind=dp), dimension(Ndkx), intent(in) :: zws !< vertical coordinate of layers at interface/center locations
@@ -106,7 +106,7 @@ contains
       cc = 0.0_dp
       dc = 0.0_dp
 
-      call make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
+      call make_rhs(NUMCONST, tetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
 
       ! construct and solve system
       !$OMP PARALLEL DO                                                 &
@@ -183,7 +183,7 @@ contains
                a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
 
                ! advection
-               if (thetavert(j) > 0.0_dp) then ! semi-implicit, use central scheme
+               if (tetavert > 0.0_dp) then ! semi-implicit, use central scheme
                   if (jased > 0 .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                      if (jased < 4) then
                         qw_loc = qw(k) - wsf(j) * a1(kk)
@@ -193,7 +193,7 @@ contains
                   else
                      qw_loc = qw(k)
                   end if
-                  fluxfac = qw_loc * 0.5_dp * thetavert(j) * dt_loc
+                  fluxfac = qw_loc * 0.5_dp * tetavert * dt_loc
 
                   a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
                   b(n + 1, j) = b(n + 1, j) - fluxfac * dvol2i

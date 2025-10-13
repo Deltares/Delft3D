@@ -79,7 +79,6 @@ contains
       call realloc(dsedx, [NUMCONST, Ndkx], keepExisting=KeepExisting, fill=0.0_dp)
       call realloc(dsedy, [NUMCONST, Ndkx], keepExisting=KeepExisting, fill=0.0_dp)
 
-      call realloc(thetavert, NUMCONST, keepExisting=KeepExisting, fill=0.0_dp)
       !call realloc(wstracers, NUMCONST, keepExisting=KeepExisting, fill=0d0)
       call realloc(wstracers, NUMCONST, keepExisting=.true., fill=0.0_dp)
 

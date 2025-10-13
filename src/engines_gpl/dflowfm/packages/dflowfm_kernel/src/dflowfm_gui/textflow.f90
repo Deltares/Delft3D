@@ -136,12 +136,12 @@ contains
       if (kmx == 0) then
          write (TEX, '( A,i8,  A,I8,  A,I4,  A,I8,1  A,I8,  A,I4, A, I2.0, I1, I1, I1, I1, A, A, A15 )') &
             '#ndx: ', ndx, ' #lnx: ', lnx, ' #kmx : ', kmx, ' #CG: ', nocg, ' #Gauss: ', nogauss, &
-            ' #s1it: ', min(9999, nums1it), ' iad: ', iadvec, limtypmom, limtypsa, javasal, javau, ' runid: '//trim(md_ident), ' ', c_lts
+            ' #s1it: ', min(9999, nums1it), ' iad: ', iadvec, limtypmom, limtypsa, javau, ' runid: '//trim(md_ident), ' ', c_lts
       else
          call getlink1(nn, LL)
          write (TEX, '( A,i8,  A,I8,  A,I4,  A, F8.5, A, F8.5,  A,I4, A, I2.0, I1, I1, I1, I1, A, A, A14)') &
             '#ndx: ', ndx, ' #lnx: ', lnx, ' #kmx : ', kmx, ' ustB ', min(ustb(LL), 1.0e2_dp), ' ustW ', ustw(LL), &
-            ' #s1it: ', min(9999, nums1it), ' iad: ', iadvec, limtypmom, limtypsa, javasal, javau, ' runid: '//trim(md_ident), ' ', c_lts
+            ' #s1it: ', min(9999, nums1it), ' iad: ', iadvec, limtypmom, limtypsa, javau, ' runid: '//trim(md_ident), ' ', c_lts
       end if
 
       call ICTEXT(trim(TEX), 13, 4, 221)

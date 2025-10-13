@@ -62,8 +62,7 @@ Limtypmom                         = 4                   # Limiter type for cell 
 Limtypsa                          = 4                   # Limiter type for salinity transport (0: none, 1: minmod, 2: van Leer, 3: Kooren, 4: monotone central)
 TransportMethod                   = 1                   # Transport method (0: Herman's method, 1: transport module)
 TransportTimestepping             = 0                   # Timestepping method in Transport module, 0 = global (default) , 1 = local
-Vertadvtypsal                     = 6                   # Vertical advection type for salinity (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)
-Vertadvtyptem                     = 6                   # Vertical advection type for temperature (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)
+verticalAdvectionType = higherOrderUpwindExplicit                   # Vertical advection type for salinity (0: none, 1: upwind explicit, 2: central explicit, 3: upwind implicit, 4: central implicit, 5: central implicit but upwind for neg. stratif., 6: higher order explicit, no Forester)
 Cffacver                          = 0.                  # Factor for including (1-CFL) in HO term vertical   (0d0: no, 1d0: yes)
 Jarhoxu                           = 0                   # Inlcude density gradient in advection term (0: no, 1: yes, 2: Also in barotrop and baroclin pressure term)
 Horadvtypzlayer                   = 0                   # Horizontal advection treatment of z-layers (1: default, 2: sigma-like)

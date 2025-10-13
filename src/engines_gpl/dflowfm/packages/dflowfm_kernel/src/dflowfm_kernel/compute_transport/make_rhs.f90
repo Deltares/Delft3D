@@ -41,7 +41,7 @@ module m_make_rhs
 
 contains
 
-   subroutine make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
+   subroutine make_rhs(NUMCONST, tetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
       use precision, only: dp
       use m_flowgeom, only: Ndxi, ba, ndx
       use timers, only: timon, timstrt, timstop ! static mesh information
@@ -51,7 +51,7 @@ contains
       implicit none
 
       integer, intent(in) :: NUMCONST !< number of transported quantities
-      real(kind=dp), dimension(NUMCONST), intent(in) :: thetavert !< vertical advection explicit (0) or implicit (1)
+      real(kind=dp), intent(in) :: tetavert !< vertical advection explicit (0) or implicit (1)
       integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
       integer, intent(in) :: kmx !< maximum number of layers
 !   real(kind=dp), dimension(Ndkx),      intent(in)    :: sq       !< flux balance (inward positive)
@@ -104,7 +104,7 @@ contains
 
                do j = 1, NUMCONST
 
-                  rhs(j, k) = ((sumhorflux(j, k) / ndeltasteps(kk) - (1.0_dp - thetavert(j)) * (fluxver(j, k) - fluxver(j, k - 1))) * dvoli + source(j, k)) * dt_loc + sed(j, k)
+                  rhs(j, k) = ((sumhorflux(j, k) / ndeltasteps(kk) - (1.0_dp - tetavert) * (fluxver(j, k) - fluxver(j, k - 1))) * dvoli + source(j, k)) * dt_loc + sed(j, k)
                   sumhorflux(j, k) = 0.0_dp
 
                end do

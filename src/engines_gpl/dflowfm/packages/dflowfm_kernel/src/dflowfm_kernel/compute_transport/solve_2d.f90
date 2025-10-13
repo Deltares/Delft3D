@@ -65,7 +65,7 @@ contains
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sed !< transported quantities
       real(kind=dp), dimension(NUMCONST, Ndkx) :: rhs ! work array: right-hand side, dim(NUMCONST,Ndkx)
 
-      real(kind=dp), dimension(NUMCONST) :: thetavert
+      real(kind=dp) :: tetavert
 
       real(kind=dp) :: dt_loc
 
@@ -75,11 +75,11 @@ contains
 
       if (timon) call timstrt("solve_2D", ithndl)
 
-      thetavert = 0.0_dp
+      tetavert = 0.0_dp
 
       dt_loc = dts
 
-      call make_rhs(NUMCONST, thetavert, Ndkx, 0, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
+      call make_rhs(NUMCONST, tetavert, Ndkx, 0, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
 
       !$OMP PARALLEL DO         &
       !$OMP PRIVATE(k,j)        &
