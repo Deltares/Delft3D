@@ -184,10 +184,6 @@ contains
 
       call timstop(handle_extra(1)) ! End basic steps
 
-      if (jagui == 1) then
-         call timini() ! this seems to work, initimer and timini pretty near to each other
-      end if
-
 ! JRE
       if (jawave == WAVE_SURFBEAT) then
          call timstrt('Surfbeat input init', handle_extra(2)) ! Wave input

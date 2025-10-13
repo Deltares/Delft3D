@@ -451,4 +451,36 @@
             </file>
         </checks>
     </testCase>
+    <!-- The testcase below is copied "as is" from "dimr_dflowfm_all_but_validation_cases.xml" .
+         Here it is executed again, but now with "mpiexec -c 1" prepended.
+         Motivation: Slurm related scripts always prepend mpiexec
+      -->
+    <testCase name="e02_f004_c080_chezy_uniform" ref="dimr">
+      <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f004_bottomfriction/c080_chezy_uniform</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+        <programs>
+          <program ref="dimr">
+             <arguments>
+                 <argument>-c 1 -m dimr.xml</argument>
+             </arguments>
+          </program>
+        </programs>
+      <checks>
+        <file name="dflowfmoutput/tt3_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
+            <parameter name="cross_section_cumulative_discharge" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/tt3_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
 </testCases>

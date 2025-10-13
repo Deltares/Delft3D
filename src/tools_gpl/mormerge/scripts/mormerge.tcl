@@ -74,7 +74,7 @@ set idstring " "
 # waittime is used to wait for files to appear (1000 = 1 sec)
 # default: 500
 global waittime
-set waittime 500
+set waittime 10000
 
 # maximum trials to wait for a file to appear before continuing
 # default: 100
@@ -1866,7 +1866,14 @@ proc startFlow { inflist alist condition runids waveonline tdatomexe flowexe wav
    }
 
    putsDebug "Flow Run command:$shellscriptname"
-   set returnval [runcmd $shellfilname "flow:$condition"]
+   
+   if { [catch {set returnval [runcmd $shellfilname "flow:$condition"]} errmsg] } {
+     putsDebug "\nERROR : Unable to start process flow:$condition:"
+     putsDebug   "          $errmsg"
+    } else {
+     putsDebug "Successfully started proces flow:$condition"
+    }
+   
    #after [expr 10000 + $waittime]
    set fileexists 0
    set waitcount 0
