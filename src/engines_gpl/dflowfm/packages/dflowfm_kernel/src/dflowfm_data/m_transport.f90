@@ -80,7 +80,7 @@ module m_transport
    real(kind=dp), dimension(:, :), allocatable :: sinksetot ! sum of sed sinks at local time stepping
    real(kind=dp), dimension(:, :), allocatable :: sinkftot ! sum of  fluff sinks at local time stepping
 
-   real(kind=dp), dimension(:), allocatable :: thetavert ! vertical advection fluxes explicit (0) or implicit (1)
+   real(kind=dp)  :: tetavert ! vertical advection fluxes explicit (0) or implicit (1)
 
    real(kind=dp), dimension(:), allocatable :: difsedu ! sum of molecular and user-specified diffusion coefficient
    real(kind=dp), dimension(:), allocatable :: molecular_diffusion_coeff ! molecular diffusion coefficient

@@ -41,7 +41,7 @@ module m_comp_fluxver
 
 contains
 
-   subroutine comp_fluxver(NUMCONST, limtyp, thetavert, Ndkx, zws, qw, kbot, ktop, sed, nsubsteps, jaupdate, ndeltasteps, flux, wsf)
+   subroutine comp_fluxver(NUMCONST, limtyp, tetavert, Ndkx, zws, qw, kbot, ktop, sed, nsubsteps, jaupdate, ndeltasteps, flux, wsf)
       use precision, only: dp
       use m_flowgeom, only: Ndx, ba, kfs ! static mesh information
       use m_flowtimes, only: dts
@@ -56,7 +56,7 @@ contains
 
       integer, intent(in) :: NUMCONST !< number of transported quantities
       integer, intent(in) :: limtyp !< limiter type
-      real(kind=dp), dimension(NUMCONST), intent(in) :: thetavert !< compute fluxes (<1) or not (1)
+      real(kind=dp), intent(in) :: tetavert !< compute fluxes (<1) or not (1)
       integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
       real(kind=dp), dimension(Ndkx), intent(in) :: zws !< vertical coordinate of layers at interface/center locations
       real(kind=dp), dimension(Ndkx), intent(in) :: qw !< flow-field vertical discharges
@@ -84,7 +84,7 @@ contains
 
       if (timon) call timstrt("comp_fluxver", ithndl)
 
-      if (sum(1.0_dp - thetavert(1:NUMCONST)) < DTOL) goto 1234 ! nothing to do
+      if (1.0_dp - tetavert < DTOL) goto 1234 ! nothing to do
 
       !if ( limtyp.eq.6 ) then
       !   call message(LEVEL_ERROR, 'transport/comp_fluxver: limtyp==6 not supported')
@@ -148,12 +148,12 @@ contains
                   cf = 1.0_dp ! or always use it, is MUSCL = default
                end if
 
-               if (thetavert(j) == 1.0_dp) cycle
+               if (tetavert == 1.0_dp) cycle
 
                sedL = sed(j, kL)
                sedR = sed(j, kR)
 
-               if (thetavert(j) > 0.0_dp) then ! semi-explicit, use central scheme
+               if (tetavert > 0.0_dp) then ! semi-explicit, use central scheme
                   flux(j, k) = flux(j, k) + qw_loc * 0.5_dp * (sedL + sedR)
                else ! fully explicit
                   !  if (limtyp.ne.0  ) then
