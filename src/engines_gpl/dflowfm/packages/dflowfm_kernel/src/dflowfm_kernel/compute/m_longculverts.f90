@@ -438,9 +438,6 @@ contains
 
       nlongculverts0 = nlongculverts ! Remember any old longculvert count
 
-      msgbuf = 'Reading long culverts from '//trim(structurefile)//'.'
-      call msg_flush()
-
       if (jaKeepExisting == 0) then
          nlongculverts = 0
          if (allocated(longculverts)) then
@@ -1357,5 +1354,103 @@ contains
       end if
 
    end subroutine longculvert_check_polyline
+
+   !> Counts the number of long culverts in the structure file, and determine the input type (with crsdef/brid or only polyline)
+   subroutine count_long_culverts_in_structure_file(structurefiles)
+      use dfm_error
+      use string_module, only: strcmpi
+      use m_polygon
+      use m_missing
+      use m_Roughness
+      use m_readstructures
+      use m_network
+      use messageHandling
+      use properties
+      use unstruc_channel_flow
+
+      implicit none
+
+      character(len=*), intent(in) :: structurefiles !< File name of the structure.ini file.
+
+      type(tree_data), pointer :: strs_ptr
+      type(tree_data), pointer :: str_ptr
+      character(len=IdLen) :: typestr
+      character(len=IdLen) :: st_id
+
+      integer :: readerr, nstr, i, numcoords
+      logical :: success
+      integer :: ifil, ierr
+      character(len=256), dimension(:), allocatable :: structurefiles_array
+      character(:), allocatable :: structurefile
+      integer, dimension(:), allocatable :: longculvert_indices
+      type(tree_data), dimension(:), allocatable :: nodes
+      ierr = DFM_NOERR
+
+      call strsplit(structurefiles, 1, structurefiles_array, 1)
+      do ifil = 1, size(structurefiles_array)
+         structurefile = structurefiles_array(ifil)
+
+         ! Temporarily put structures.ini file into a property tree
+         call tree_create(trim(structurefile), strs_ptr)
+         call prop_inifile(structurefile, strs_ptr, readerr)
+         ! check if file was successfully opened
+         if (readerr /= 0) then
+            ierr = DFM_WRONGINPUT
+            call mess(LEVEL_ERROR, 'Error opening file ''', trim(structurefile), ''' for loading the long culverts.')
+         end if
+         nstr = tree_num_nodes(strs_ptr)
+         do i = 1, nstr
+            nodes(i) = strs_ptr%child_nodes(i)%node_ptr
+         end do
+
+         longculvert_indices = pack([(i, i=1, nstr)], strcmpi(tree_get_name(nodes), 'Structure'))
+
+         nstr = tree_num_nodes(strs_ptr)
+         do i = 1, nstr
+            str_ptr => strs_ptr%child_nodes(i)%node_ptr
+            success = .true.
+            if (.not. strcmpi(tree_get_name(str_ptr), 'Structure')) then
+               ! Only read [Structure] blocks, skip any other (e.g., [General]).
+               cycle
+            end if
+
+            typestr = ' '
+            call prop_get(str_ptr, '', 'type', typestr, success)
+            if (.not. success .or. .not. strcmpi(typestr, 'longCulvert')) then
+               cycle
+            end if
+
+            nlongculverts = nlongculverts + 1
+
+            call prop_get(str_ptr, '', 'id', st_id, success)
+            if (.not. success) then
+               write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ' from '''//trim(structurefile)//''', id is missing.'
+               call err_flush()
+            end if
+            if (success) call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+         end do
+      end do
+   end subroutine count_long_culverts_in_structure_file
+
+   elemental function node_istype(node, typestr) result(isType)
+      use string_module, only: strcmpi
+      use tree_data_types, only: tree_data
+      use tree_structures, only: tree_get_name
+      type(tree_data), intent(in) :: node
+      character(len=*), intent(in) :: typestr
+      logical :: isType
+      integer :: i
+
+      istype = .false.
+      if (associated(node%child_nodes)) then
+         do i = 1, size(node%child_nodes)
+            if (strcmpi(tree_get_name(node%child_nodes(i)%node_ptr), typestr)) then
+               istype = .true.
+               return
+            end if
+         end do
+      end if
+
+   end function node_istype
 
 end module m_longculverts
