@@ -48,7 +48,7 @@ class TestCommandLineInterface:
         [
             pytest.param(
                 "timestamp",
-                ["--timestamp=2025-01-01T00:00:00"],
+                ["--timestamp=2025-01-01T00:00:00+00:00"],
                 datetime(2025, 1, 1, tzinfo=timezone.utc),
                 datetime,
                 id="timestamp",
@@ -95,7 +95,7 @@ class TestCommandLineInterface:
         [
             pytest.param(
                 "timestamp",
-                ["-t=2025-01-01T00:00:00"],
+                ["-t=2025-01-01T00:00:00+00:00"],
                 datetime(2025, 1, 1, tzinfo=timezone.utc),
                 datetime,
                 id="timestamp",
