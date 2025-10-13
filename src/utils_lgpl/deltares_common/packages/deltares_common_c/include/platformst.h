@@ -49,7 +49,7 @@
 #   include <unistd.h>
 typedef in_addr_t           IPaddr;         // IP address
 typedef in_port_t           IPport;         // IP port number
-typedef struct sockaddr_in  Sockaddr;       // socket address
+typedef struct sockaddr_in6 Sockaddr;       // socket address
 #   define MicroSleep  usleep
 
 
@@ -68,7 +68,7 @@ typedef struct sockaddr_in  Sockaddr;       // socket address
 // ToDo: Replace following with real definitions
 typedef int                 IPaddr;         // IP address
 typedef short               IPport;         // IP port number
-typedef struct sockaddr_in  Sockaddr;       // socket address
+typedef struct sockaddr_in6 Sockaddr;       // socket address
 #   define MicroSleep  _sleep
 
 

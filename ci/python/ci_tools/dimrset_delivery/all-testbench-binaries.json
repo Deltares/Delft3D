@@ -547,6 +547,14 @@
         {
             "file": "lib\\zsf.dll",
             "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\vcomp140.dll",
+            "issuedTo": "Microsoft Windows Software Compatibility Publisher"
+        },
+        {
+            "file": "lib\\ucrtbased.dll",
+            "issuedTo": "Microsoft Corporation"
         }
     ],
     "notSigned": [

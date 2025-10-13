@@ -11,9 +11,13 @@ get_module_include_path(${checkout_src_root}/${d_hydro_lib_module}
 get_module_include_path(${checkout_src_root}/${deltares_common_c_module} 
                         ${executable_name}
                         deltares_common_c_include_path)
+get_module_include_path(${checkout_src_root}/${getopt_module} 
+                        ${executable_name}
+                        getopt_include_path)
 
 message(STATUS "Configuring '${executable_name}' with the following d_hydro_lib include path: '${d_hydro_lib_include_path}'")
 message(STATUS "Configuring '${executable_name}' with the following deltares_common_c include path: '${deltares_common_c_include_path}'")
+message(STATUS "Configuring '${executable_name}' with the following getopt include path: '${getopt_include_path}'")
 
 # Set version file variables
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
@@ -23,6 +27,7 @@ set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 
 include_directories(${include_path}
                     ${deltares_common_c_include_path}
+                    ${getopt_include_path}
                     ${d_hydro_lib_include_path}
                     ${version_include_dir})
 
@@ -42,6 +47,7 @@ add_executable(${executable_name}   ${source}
 # Common UNIX and WIN32 link library dependency
 if(UNIX)
    set(oss_dependencies    deltares_common_c
+                           getopt
                            d_hydro_lib
                            expat)
 
@@ -50,6 +56,7 @@ if(UNIX)
                                PRIVATE  
                                ${header_path}
                               "${d_hydro_lib_path}/include"
+                              "${getopt_include_path}"
                               "${expat_include_path}")
 
     target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
@@ -62,7 +69,8 @@ endif(UNIX)
 
 if (WIN32)
    set(oss_dependencies    deltares_common_c
-                           d_hydro_lib) 
+                           getopt
+                           d_hydro_lib)
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
     target_compile_definitions(${executable_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)
@@ -71,6 +79,7 @@ if (WIN32)
                                 PRIVATE  
                                 ${header_path}
                                 "${d_hydro_lib_path}/include"
+                                "${getopt_include_path}"
                                 "${expat_include_path}"
                                 "${mpi_include_path}"
                                 "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
@@ -80,6 +89,7 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
+                            "${getopt_library_path_win}"
                             "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")

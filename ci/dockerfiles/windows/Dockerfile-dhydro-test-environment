@@ -1,0 +1,22 @@
+# Use the  Windows Server Core 2022 image form ICT.
+FROM containers.deltares.nl/base_windows_containers/server:ltsc2022
+
+# Set powershell as shell
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
+
+# Enable long pathnames
+RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
+
+# Download and install Python 3.12.7
+ADD python-3.12.7-amd64.exe C:\\python-3.12.7-amd64.exe
+RUN Start-Process python-3.12.7-amd64.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -Wait
+RUN Remove-Item C:\\python-3.12.7-amd64.exe
+RUN New-Item -ItemType SymbolicLink -Path 'C:\\Program Files\\Python312\\python3.exe' -Target 'C:\\Program Files\\Python312\\python.exe'
+
+ADD win-requirements.txt C:\\temp\\win-requirements.txt
+
+RUN Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'C:\\temp\\get-pip.py'; \
+    & 'C:\\Program Files\\Python312\\python.exe' C:\\temp\\get-pip.py; \
+    & 'C:\\Program Files\\Python312\\python.exe' -m pip install --upgrade pip; \
+    & 'C:\\Program Files\\Python312\\python.exe' -m pip install -r C:\\temp\\win-requirements.txt; \
+    Remove-Item C:\\temp\\win-requirements.txt,C:\\temp\\get-pip.py
