@@ -170,6 +170,14 @@ if (WIN32)
     set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
 endif(WIN32)
 
+# getopt:
+#     Windows: use prebuild library in ".../getopt/x64"
+#     Linux  : compile source code  using ".../getopt/cmake_deltares/CMakeLists.txt"
+set(getopt_include_path ${checkout_src_root}/third_party_open/getopt)
+if (WIN32)
+    set(getopt_library_path_win ${checkout_src_root}/third_party_open/getopt/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
+endif(WIN32)
+
 ### Configuration names
 
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
