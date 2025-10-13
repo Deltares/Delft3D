@@ -94,9 +94,20 @@ class HtmlFormatter:
         return s.replace("\n", "\n" + spaces * " ")
 
     @classmethod
-    def _to_rows(cls, comparisons: dict[str, LogComparison], his_outputs: dict[str, VerschillentoolOutput], map_outputs: dict[str, VerschillentoolOutput]) -> Iterator[str]:
-        water_lvl_exceeded = set(cls._exceeded_water_level_models(his_outputs)) | set(cls._exceeded_water_level_models(map_outputs))
-        flow_vel_exceeded = set(cls._exceeded_flow_velocity_models(his_outputs)) | set(cls._exceeded_flow_velocity_models(map_outputs))
+    def _to_rows(
+        cls,
+        comparisons: dict[str, LogComparison],
+        his_outputs: dict[str, VerschillentoolOutput],
+        map_outputs: dict[str, VerschillentoolOutput],
+    ) -> Iterator[str]:
+        water_lvl_exceeded = (
+            set(cls._exceeded_water_level_models(his_outputs))
+            | set(cls._exceeded_water_level_models(map_outputs))
+        )
+        flow_vel_exceeded = (
+            set(cls._exceeded_flow_velocity_models(his_outputs))
+            | set(cls._exceeded_flow_velocity_models(map_outputs))
+        )
 
         for model_name, comparison in sorted(comparisons.items()):
             current = comparison.current
@@ -139,7 +150,12 @@ class HtmlFormatter:
             )
 
     @classmethod
-    def _format_model_run_table(cls, comparisons: dict[str, LogComparison], his_outputs: dict[str, VerschillentoolOutput], map_outputs: dict[str, VerschillentoolOutput]) -> str:
+    def _format_model_run_table(
+        cls,
+        comparisons: dict[str, LogComparison],
+        his_outputs: dict[str, VerschillentoolOutput],
+        map_outputs: dict[str, VerschillentoolOutput],
+    ) -> str:
         rows = "\n".join(f"<tr>{row}</tr>" for row in cls._to_rows(comparisons, his_outputs, map_outputs))
 
         template = textwrap.dedent(
@@ -184,7 +200,7 @@ class HtmlFormatter:
                 yield model_name
 
     @classmethod
-    def _format_tolerance_list(cls, output_stats: dict[str, VerschillentoolOutput], output_type: OutputType) -> str:
+    def _format_tolerance_list(cls, output_stats: dict[str, VerschillentoolOutput], output_type: str) -> str:
         exceeded_html = '<span style="color:red;">exceeded</span>'
 
         water_lvl_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_water_level_models(output_stats))
@@ -299,8 +315,8 @@ class HtmlFormatter:
         """
         log_comparisons = verschilanalyse.get_log_comparisons()
         current_commit_id, reference_commit_id = cls._get_commit_ids(log_comparisons)
-        his_tolerance_list = cls._format_tolerance_list(verschilanalyse.his_outputs, OutputType.HIS)
-        map_tolerance_list = cls._format_tolerance_list(verschilanalyse.map_outputs, OutputType.MAP)
+        his_tolerance_list = cls._format_tolerance_list(verschilanalyse.his_outputs, OutputType.HIS.value)
+        map_tolerance_list = cls._format_tolerance_list(verschilanalyse.map_outputs, OutputType.MAP.value)
         table = cls._format_model_run_table(log_comparisons, verschilanalyse.his_outputs, verschilanalyse.map_outputs)
         model_list = cls._format_model_list(verschilanalyse.his_outputs.keys())
         links_section = cls._format_links(report_build_url, artifact_base_url.rstrip("/"))
