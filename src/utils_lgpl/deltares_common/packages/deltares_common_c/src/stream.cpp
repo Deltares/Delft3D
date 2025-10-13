@@ -348,7 +348,9 @@ void Stream::connect_TCPIP(
         // Fallback to IPv4
         this->remote.sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (this->remote.sock == -1)
+        {
             error("Cannot create remote socket for paired stream");
+        }
 
         struct sockaddr_in *sin = (struct sockaddr_in *)&this->remote.addr;
         sin->sin_family = AF_INET;
@@ -496,8 +498,9 @@ void Stream::Send(
         break;
 #endif
     case Stream::TCPIP:
-        if (send(this->remote.sock, buffer, length, 0) != length)
+        if (send(this->remote.sock, buffer, length, 0) != length) {
             error("Send to %s fails (%s)", this->remote.handle, strerror(errno));
+        }
         break;
 
     default:
