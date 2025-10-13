@@ -1358,7 +1358,7 @@ contains
    !> Counts the number of long culverts in the structure file, and determine the input type (with crsdef/brid or only polyline)
    subroutine count_long_culverts_in_structure_file(structurefiles)
       use dfm_error
-      use string_module, only: strcmpi
+      use string_module, only: strcmpi, strsplit
       use m_polygon
       use m_missing
       use m_Roughness
@@ -1373,18 +1373,16 @@ contains
       character(len=*), intent(in) :: structurefiles !< File name of the structure.ini file.
 
       type(tree_data), pointer :: strs_ptr
-      type(tree_data), pointer :: str_ptr
-      character(len=IdLen) :: typestr
-      character(len=IdLen) :: st_id
 
-      integer :: readerr, nstr, i, numcoords
-      logical :: success
+      integer :: readerr, nstr, i
+      integer :: num_longculverts, num_newculverts
       integer :: ifil, ierr
       character(len=256), dimension(:), allocatable :: structurefiles_array
       character(:), allocatable :: structurefile
       integer, dimension(:), allocatable :: longculvert_indices
       type(tree_data), dimension(:), allocatable :: nodes
-      ierr = DFM_NOERR
+      num_longculverts = 0
+      num_newculverts = 0
 
       call strsplit(structurefiles, 1, structurefiles_array, 1)
       do ifil = 1, size(structurefiles_array)
@@ -1403,36 +1401,25 @@ contains
             nodes(i) = strs_ptr%child_nodes(i)%node_ptr
          end do
 
-         longculvert_indices = pack([(i, i=1, nstr)], strcmpi(tree_get_name(nodes), 'Structure'))
+         longculvert_indices = pack([(i, i=1, nstr)], strcmpi(tree_get_name(nodes), 'Structure') .and. node_hastype(nodes, 'longCulvert'))
+         nodes = nodes(longculvert_indices)
 
-         nstr = tree_num_nodes(strs_ptr)
-         do i = 1, nstr
-            str_ptr => strs_ptr%child_nodes(i)%node_ptr
-            success = .true.
-            if (.not. strcmpi(tree_get_name(str_ptr), 'Structure')) then
-               ! Only read [Structure] blocks, skip any other (e.g., [General]).
-               cycle
-            end if
-
-            typestr = ' '
-            call prop_get(str_ptr, '', 'type', typestr, success)
-            if (.not. success .or. .not. strcmpi(typestr, 'longCulvert')) then
-               cycle
-            end if
-
-            nlongculverts = nlongculverts + 1
-
-            call prop_get(str_ptr, '', 'id', st_id, success)
-            if (.not. success) then
-               write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ' from '''//trim(structurefile)//''', id is missing.'
-               call err_flush()
-            end if
-            if (success) call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
-         end do
+         num_longculverts = num_longculverts + size(nodes)
+         num_newculverts = num_newculverts + count(node_hastype(nodes, 'branchId'))
       end do
+      if (num_longculverts > 0) then
+         nlongculverts = num_longculverts
+         if (num_newculverts > 0) then
+            newculverts = .true.
+            if (num_newculverts /= num_longculverts) then
+               call mess(LEVEL_ERROR, 'Error loading long culverts, only one input type is supported!')
+            end if
+         end if
+      end if
+
    end subroutine count_long_culverts_in_structure_file
 
-   elemental function node_istype(node, typestr) result(isType)
+   elemental function node_hastype(node, typestr) result(isType)
       use string_module, only: strcmpi
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_get_name
@@ -1451,6 +1438,6 @@ contains
          end do
       end if
 
-   end function node_istype
+   end function node_hastype
 
 end module m_longculverts
