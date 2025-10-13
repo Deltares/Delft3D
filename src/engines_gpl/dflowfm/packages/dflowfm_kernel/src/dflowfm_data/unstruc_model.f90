@@ -426,7 +426,6 @@ contains
       use m_realan, only: realan
       use m_filez, only: oldfil
       use unstruc_messages, only: threshold_abort
-      use m_makelongculverts_commandline, only: makelongculverts_commandline
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
@@ -495,9 +494,7 @@ contains
          call SetMessage(LEVEL_INFO, 'Reading Structures ...')
          call readStructures(network, md_1dfiles%structures, is_path_relative=md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
-
-            call makelongculverts_commandline()
-
+         call initialize_long_culverts(md_1dfiles%structures)
       end if
 
       call timstop(timerHandle)

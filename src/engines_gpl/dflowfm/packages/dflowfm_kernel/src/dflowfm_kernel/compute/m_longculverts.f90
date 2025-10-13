@@ -40,6 +40,8 @@ module m_longculverts
    use m_missing
    use iso_c_binding
 
+   implicit none
+
    private
    public realloc
 
@@ -54,6 +56,7 @@ module m_longculverts
    public get_valve_relative_opening_c_loc
    public find1d2dculvertlinks
    public setlongculvert1d2dlinkangles
+   public initialize_Long_Culverts
 
    !> Type definition for longculvert data.
    type, public :: t_longculvert
@@ -1368,8 +1371,6 @@ contains
       use properties
       use unstruc_channel_flow
 
-      implicit none
-
       character(len=*), intent(in) :: structurefiles !< File name of the structure.ini file.
 
       type(tree_data), pointer :: strs_ptr
@@ -1418,6 +1419,43 @@ contains
       end if
 
    end subroutine count_long_culverts_in_structure_file
+
+   subroutine initialize_long_culverts(structure_files)
+      use m_makelongculverts_commandline, only: makelongculverts_commandline
+      character(len=*), intent(in) :: structure_files !< File name of the structure.ini file.
+
+      call count_long_culverts_in_structure_file(structure_files)
+      if (nlongculverts > 0) then
+         if (newculverts) then
+            call initialize_existing_long_culverts(structure_files)
+            !TODO: move this block so that it is only called for Herman's old style long culverts
+            !if (.not. newculverts .and. nlongculverts > 0) then
+            !   call setnodadm(0)
+            !   call finalizeLongCulvertsInNetwork()
+            !end if
+         else
+            call makelongculverts_commandline()
+         end if
+      end if
+
+   end subroutine initialize_long_culverts
+
+   subroutine initialize_existing_long_culverts(structure_files)
+      use dfm_error
+      use string_module, only: strsplit
+      implicit none
+      character(len=*), intent(in) :: structure_files !< File name of the structure.ini file.
+      integer :: ierr
+      integer :: ifil
+      character(len=256), dimension(:), allocatable :: structure_files_array
+
+      ierr = 0
+      call strsplit(structure_files, 1, structure_files_array, 1)
+      call loadLongCulvertsAsNetwork(structure_files_array(1), 0, ierr)
+      do ifil = 2, size(structure_files_array)
+         call loadLongCulvertsAsNetwork(structure_files_array(ifil), 1, ierr)
+      end do
+   end subroutine initialize_existing_long_culverts
 
    elemental function node_hastype(node, typestr) result(isType)
       use string_module, only: strcmpi
