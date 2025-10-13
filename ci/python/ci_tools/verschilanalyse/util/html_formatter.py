@@ -58,7 +58,7 @@ class HtmlFormatter:
                 {map_tolerance_list}
                 <p>
                     The following table shows which models were included in this week's verschilanalyse.
-                    The table shows, for every model, whether or not it completed successfully
+                    The table shows, for every model, whether or not it executed successfully
                     and whether a water level tolerance (his or map) or flow velocity tolerance (his or map) was
                     exceeded. Moreover, the total computation time in seconds in both the current and the reference
                     verschilanalyse and the tolerance (1 percent) between the current and reference computation time
