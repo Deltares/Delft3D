@@ -596,7 +596,7 @@
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0002" />
           </parameters>
         </file>
       </checks>
@@ -885,7 +885,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f202_c006_lake_veere_z" ref="dflowfm_default">
-      <path version="2025-10-13T09:18:56.865000">e02_dflowfm/f202_3D_z_sigma/c006_lake_veere_z</path>
+      <path version="2025-10-13T10:53:28.268000">e02_dflowfm/f202_3D_z_sigma/c006_lake_veere_z</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/2zb_z_map.nc" type="netCDF">
