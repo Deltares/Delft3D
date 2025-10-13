@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -49,9 +49,16 @@ class TestCommandLineInterface:
             pytest.param(
                 "timestamp",
                 ["--timestamp=2025-01-01T00:00:00"],
-                datetime(2025, 1, 1),  # noqa: DTZ001
+                datetime(2025, 1, 1, tzinfo=timezone.utc),
                 datetime,
                 id="timestamp",
+            ),
+            pytest.param(
+                "timestamp",
+                ["--timestamp=2025-01-01T00:00:00+02:00"],
+                datetime(2024, 12, 31, 22, 0, 0, tzinfo=timezone.utc),
+                datetime,
+                id="timestamp-non-utc",
             ),
             pytest.param("mode", ["--delete"], Mode.DELETE, Mode, id="delete"),
             pytest.param("mode", ["--no-delete"], Mode.NO_DELETE, Mode, id="no-delete"),
@@ -89,9 +96,16 @@ class TestCommandLineInterface:
             pytest.param(
                 "timestamp",
                 ["-t=2025-01-01T00:00:00"],
-                datetime(2025, 1, 1),  # noqa: DTZ001
+                datetime(2025, 1, 1, tzinfo=timezone.utc),
                 datetime,
                 id="timestamp",
+            ),
+            pytest.param(
+                "timestamp",
+                ["-t=2025-01-01T00:00:00+02:00"],
+                datetime(2024, 12, 31, 22, 0, 0, tzinfo=timezone.utc),
+                datetime,
+                id="timestamp-non-utc",
             ),
             pytest.param("log_level", ["-l=DEBUG"], "DEBUG", str, id="log-level"),
             pytest.param("jobs", ["-j=4"], 4, int, id="jobs"),
