@@ -93,7 +93,7 @@ class HtmlFormatter:
         spaces = level * spaces_per_level
         return s.replace("\n", "\n" + spaces * " ")
 
-    @staticmethod
+    @classmethod
     def _to_rows(cls, comparisons: dict[str, LogComparison], his_outputs: dict[str, VerschillentoolOutput], map_outputs: dict[str, VerschillentoolOutput]) -> Iterator[str]:
         water_lvl_exceeded = set(cls._exceeded_water_level_models(his_outputs)) | set(cls._exceeded_water_level_models(map_outputs))
         flow_vel_exceeded = set(cls._exceeded_flow_velocity_models(his_outputs)) | set(cls._exceeded_flow_velocity_models(map_outputs))
