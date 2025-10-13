@@ -210,14 +210,10 @@ class HtmlFormatter:
             """
         ).strip()
 
-        return (
-            template.format(
-                output_type=output_type,
-                water_lvl_items=cls._indent(water_lvl_items, 1),
-                flow_vel_items=cls._indent(flow_vel_items, 1),
-            ),
-            water_lvl_items,
-            flow_vel_items,
+        return template.format(
+            output_type=output_type,
+            water_lvl_items=cls._indent(water_lvl_items, 1),
+            flow_vel_items=cls._indent(flow_vel_items, 1),
         )
 
     @classmethod
