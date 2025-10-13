@@ -61,7 +61,7 @@ class HtmlFormatter:
                     The table shows, for every model, whether or not it completed successfully
                     and whether a water level tolerance (his or map) or flow velocity tolerance (his or map) was
                     exceeded. Moreover, the total computation time in seconds in both the current and the reference
-                    verschilanalyse and the tolerance (20 percent) between the current and reference computation time
+                    verschilanalyse and the tolerance (1 percent) between the current and reference computation time
                     are displayed.
                 </p>
                 {table}
@@ -94,13 +94,10 @@ class HtmlFormatter:
         return s.replace("\n", "\n" + spaces * " ")
 
     @staticmethod
-    def _to_rows(
-        comparisons: dict[str, LogComparison],
-        water_lvl_items_his: str,
-        flow_vel_items_his: str,
-        water_lvl_items_map: str,
-        flow_vel_items_map: str,
-    ) -> Iterator[str]:
+    def _to_rows(cls, comparisons: dict[str, LogComparison], his_outputs: dict[str, VerschillentoolOutput], map_outputs: dict[str, VerschillentoolOutput]) -> Iterator[str]:
+        water_lvl_exceeded = set(cls._exceeded_water_level_models(his_outputs)) | set(cls._exceeded_water_level_models(map_outputs))
+        flow_vel_exceeded = set(cls._exceeded_flow_velocity_models(his_outputs)) | set(cls._exceeded_flow_velocity_models(map_outputs))
+
         for model_name, comparison in sorted(comparisons.items()):
             current = comparison.current
             reference = comparison.reference
@@ -118,15 +115,15 @@ class HtmlFormatter:
                 comp_time_diff = abs(current.mean_computation_time - reference.mean_computation_time)
                 comp_time_percentage = (comp_time_diff / reference.mean_computation_time) * 100
                 comp_time_tolerance = "✅ Success"
-                if comp_time_percentage > 20:
+                if comp_time_percentage > 1:
                     comp_time_tolerance = "❌ Exceeded"
 
             water_tolerance = "✅ Success"
-            if model_name in water_lvl_items_his or model_name in water_lvl_items_map:
+            if model_name in water_lvl_exceeded:
                 water_tolerance = "❌ Exceeded"
 
             flow_tolerance = "✅ Success"
-            if model_name in flow_vel_items_his or model_name in flow_vel_items_map:
+            if model_name in flow_vel_exceeded:
                 flow_tolerance = "❌ Exceeded"
 
             yield "".join(
@@ -142,20 +139,8 @@ class HtmlFormatter:
             )
 
     @classmethod
-    def _format_model_run_table(
-        cls,
-        comparisons: dict[str, LogComparison],
-        water_lvl_items_his: str,
-        flow_vel_items_his: str,
-        water_lvl_items_map: str,
-        flow_vel_items_map: str,
-    ) -> str:
-        rows = "\n".join(
-            f"<tr>{row}</tr>"
-            for row in cls._to_rows(
-                comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, flow_vel_items_map
-            )
-        )
+    def _format_model_run_table(cls, comparisons: dict[str, LogComparison], his_outputs: dict[str, VerschillentoolOutput], map_outputs: dict[str, VerschillentoolOutput]) -> str:
+        rows = "\n".join(f"<tr>{row}</tr>" for row in cls._to_rows(comparisons, his_outputs, map_outputs))
 
         template = textwrap.dedent(
             """
@@ -199,9 +184,7 @@ class HtmlFormatter:
                 yield model_name
 
     @classmethod
-    def _format_tolerance_list(
-        cls, output_stats: dict[str, VerschillentoolOutput], output_type: str
-    ) -> tuple[str, str, str]:
+    def _format_tolerance_list(cls, output_stats: dict[str, VerschillentoolOutput], output_type: OutputType) -> str:
         exceeded_html = '<span style="color:red;">exceeded</span>'
 
         water_lvl_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_water_level_models(output_stats))
@@ -320,16 +303,9 @@ class HtmlFormatter:
         """
         log_comparisons = verschilanalyse.get_log_comparisons()
         current_commit_id, reference_commit_id = cls._get_commit_ids(log_comparisons)
-
-        his_tolerance_list, water_lvl_items_his, flow_vel_items_his = cls._format_tolerance_list(
-            verschilanalyse.his_outputs, OutputType.HIS.value
-        )
-        map_tolerance_list, water_lvl_items_map, flow_vel_items_map = cls._format_tolerance_list(
-            verschilanalyse.map_outputs, OutputType.MAP.value
-        )
-        table = cls._format_model_run_table(
-            log_comparisons, water_lvl_items_his, flow_vel_items_his, water_lvl_items_map, flow_vel_items_map
-        )
+        his_tolerance_list = cls._format_tolerance_list(verschilanalyse.his_outputs, OutputType.HIS)
+        map_tolerance_list = cls._format_tolerance_list(verschilanalyse.map_outputs, OutputType.MAP)
+        table = cls._format_model_run_table(log_comparisons, verschilanalyse.his_outputs, verschilanalyse.map_outputs)
         model_list = cls._format_model_list(verschilanalyse.his_outputs.keys())
         links_section = cls._format_links(report_build_url, artifact_base_url.rstrip("/"))
 
