@@ -19,9 +19,10 @@ int main(int argc, char** argv) {
     constexpr int commSize = 1;
     double dummy_time = 0.0;
     double precice_timeStep = 0.1;
-    double solver_timeStep = 1000;
+    double solver_timeStep = 100;
     double timeStep = 0.1;
     int dummy_iteration = 0;
+    std::string greeting_iter;
     constexpr std::string_view configFileName{"../precice_config.xml"};
     constexpr std::string_view solverName{"dummy"};
     precice::Participant participant{solverName, configFileName, commRank, commSize};
@@ -59,10 +60,15 @@ int main(int argc, char** argv) {
         ++dummy_iteration;
         precice_timeStep = participant.getMaxTimeStepSize();
         timeStep = std::min(precice_timeStep, solver_timeStep);
-                // Update greeting with current iteration        std::string greeting = std::format("Greeter Dummy Iteration {}", dummy_iteration);
-
+        
+        // Clear and refill greeting
+        greeting_iter.clear();
+        greeting_iter = std::format("Greeter Dummy Iteration {}", dummy_iteration);
+        // Clear ASCII codes vector
+        std::fill(asciiCodes.begin(), asciiCodes.end(), 0.0);
+    
         // Convert greeting to ASCII codes
-        std::ranges::transform(greeting | std::views::take(meshVertexSize),
+        std::ranges::transform(greeting_iter | std::views::take(meshVertexSize),
                              asciiCodes.begin(),
                              [](char c) { return static_cast<double>(c); });
 

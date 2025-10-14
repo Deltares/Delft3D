@@ -66,9 +66,6 @@ contains
 
 
 #if defined(HAS_PRECICE_FM_GREETER_COUPLING)
-
-
-
    subroutine couple_to_greeter_dummy()
 
       !! Initialize precice
@@ -101,24 +98,27 @@ contains
 
    subroutine read_from_greeter_dummy()
       !! Insert calls to read from another participant using preCICE coupling here, if needed.
-
-      call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, precice_time_step, data_values, &
-                              mesh_name_length, data_name_length)
+      call realloc(data_values, data_size)
+      call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, timestep, data_values, &
+                             mesh_name_length, data_name_length)
       converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
       print *, '[FM] message read: ', converted_data
    end subroutine read_from_greeter_dummy
 
    subroutine advance_coupling_greeter_dummy()
       !! Insert calls to write to another participant using preCICE coupling here, if needed.
-
       !! Advance preCICE by the minimum of its suggested timestep and dtuser
       call precicef_is_coupling_ongoing(coupling_ongoing)
-      if (coupling_ongoing.NE.0) then             
-         call precicef_get_max_time_step_size(precice_time_step)
-         timestep = min(dt_user, precice_time_step)        
+      if (coupling_ongoing.NE.0) then                 
          call precicef_advance(timestep)
       end if
    end subroutine advance_coupling_greeter_dummy
+
+   subroutine calculate_timestep()
+         call precicef_get_max_time_step_size(precice_time_step)
+         timestep = min(dt_user, precice_time_step)
+   end subroutine calculate_timestep
+
 
    subroutine write_to_greeter_dummy()
       ! To be implemented
@@ -163,7 +163,8 @@ contains
 
       do while (time1 < timetarget) ! nb, outside flow_singletimestep, time0=time1 !
 
-#if defined(HAS_PRECICE_FM_GREETER_COUPLING)
+#if defined(HAS_PRECICE_FM_GREETER_COUPLING)         
+         call calculate_timestep()  
          call read_from_greeter_dummy()
 #endif
     !! INIT only in case of new user timestep
