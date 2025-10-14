@@ -34,11 +34,11 @@
 module m_flow_run_sometimesteps
    use m_alloc, only: realloc
    use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
-         precicef_set_vertices, precicef_read_data, &
+         precicef_set_vertices, precicef_read_data, precicef_write_data, &
          precicef_get_data_dimensions, precicef_get_max_time_step_size, &
          precicef_is_coupling_ongoing, precicef_advance, precicef_finalize
    use m_partitioninfo, only: my_rank, numranks
-   use m_flowtimes, only: dt_user
+   use m_flowtimes, only: dt_user, time1
    use, intrinsic :: iso_c_binding, only: c_char, c_int, c_double
    implicit none
 
@@ -53,10 +53,10 @@ module m_flow_run_sometimesteps
    integer(kind=c_int) :: mesh_dimensions
    real(kind=c_double), dimension(max_greeting_length * 2) :: mesh_coordinates
    integer(kind=c_int), dimension(max_greeting_length) :: vertex_ids
-   integer(kind=c_int), parameter :: data_name_length = 8
-   character(kind=c_char, len=data_name_length), parameter :: data_name = "greeting"
-   integer :: data_size, data_dimension, coupling_ongoing
-   real(kind=c_double), dimension(:), allocatable :: data_values
+   integer(kind=c_int), parameter :: data_name_length = 8, response_name_length = 8
+   character(kind=c_char, len=data_name_length), parameter :: data_name = "greeting", response_name = "response"
+   integer :: data_size, data_dimension, coupling_ongoing, response_dimension, response_size
+   real(kind=c_double), dimension(:), allocatable :: data_values, converted_response_values
    character(kind=c_char), dimension(:), allocatable :: converted_data
    real(kind=c_double) :: precice_time_step, timestep
 
@@ -82,9 +82,13 @@ contains
       call precicef_initialize()
 
       call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, mesh_name_length, data_name_length)
+      call precicef_get_data_dimensions(mesh_name, response_name, response_dimension, mesh_name_length, response_name_length)
       data_size = data_dimension * max_greeting_length
+      response_size = response_dimension * max_greeting_length
       print *, '[FM] data dimension: ', data_dimension, ' data size: ', data_size
+      print *, '[FM] response dimension: ', response_dimension, ' response size: ', response_size
       call realloc(data_values, data_size)
+      call realloc(converted_response_values, response_size)
 
       call precicef_get_max_time_step_size(precice_time_step)
       print *, '[FM] max time step: ', precice_time_step
@@ -109,7 +113,9 @@ contains
       !! Insert calls to write to another participant using preCICE coupling here, if needed.
       !! Advance preCICE by the minimum of its suggested timestep and dtuser
       call precicef_is_coupling_ongoing(coupling_ongoing)
-      if (coupling_ongoing.NE.0) then                 
+      if (coupling_ongoing.NE.0) then
+         !! Calling writeData(...) is forbidden if coupling is not ongoing, because the data you are trying to write will not be used anymore.
+         call write_to_greeter_dummy()                 
          call precicef_advance(timestep)
       end if
    end subroutine advance_coupling_greeter_dummy
@@ -121,7 +127,30 @@ contains
 
 
    subroutine write_to_greeter_dummy()
-      ! To be implemented
+      
+      character(len=50) :: temp_string
+      integer :: i, string_length
+   
+      ! Create response message with current time
+      write(temp_string, '(A,F12.6)') 'FM: My current time is ', time1   
+      ! Get actual length of the string (without trailing spaces)
+      string_length = len_trim(temp_string)   
+      ! Ensure we don't exceed max_greeting_length
+      string_length = min(string_length, max_greeting_length)
+   
+      call realloc(converted_response_values, response_size)
+      converted_response_values = 0.0_c_double
+   
+      ! Direct conversion to ASCII values
+      do i = 1, string_length
+         converted_response_values(i) = real(iachar(temp_string(i:i)), kind=c_double)
+      end do
+
+      call precicef_write_data(mesh_name, response_name, response_size, vertex_ids, converted_response_values, &
+                                mesh_name_length, response_name_length)
+
+      print *, '[FM] Response sent: ', temp_string(1:string_length)   
+   
    end subroutine write_to_greeter_dummy
 
    subroutine finalize_greeter_dummy_coupling()

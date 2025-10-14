@@ -36,9 +36,12 @@ int main(int argc, char** argv) {
     const int meshVertexSize = participant.getMeshVertexSize(meshName);
     const int meshDimension = participant.getMeshDimensions(meshName);
     constexpr std::string_view dataName{"greeting"};
+    constexpr std::string_view responseName{"response"};
     const int dataDimension = participant.getDataDimensions(meshName, dataName);
+    const int responseDimension = participant.getDataDimensions(meshName, responseName);
     std::print("[greeter_dummy] mesh vertex size: {0}, mesh dimension: {1}, data dimension: {2}\n",
         meshVertexSize, meshDimension, dataDimension);
+    std::print("[greeter_dummy] response dimension: {0}\n", responseDimension);
 
     std::vector<int> vertexIds(meshVertexSize);
     std::vector<double> vertexCoordinates(meshVertexSize * meshDimension);
@@ -47,6 +50,7 @@ int main(int argc, char** argv) {
     std::string_view greeting = "Hello there, I am greeter_dummy.";
 
     std::vector<double> asciiCodes(meshVertexSize, 0.0);
+    std::vector<double> responseCodes(meshVertexSize, 0.0);
 
     std::ranges::transform(greeting | std::views::take(meshVertexSize),
                           asciiCodes.begin(),
@@ -60,7 +64,24 @@ int main(int argc, char** argv) {
         ++dummy_iteration;
         precice_timeStep = participant.getMaxTimeStepSize();
         timeStep = std::min(precice_timeStep, solver_timeStep);
-        
+
+        //read response
+        participant.readData(meshName, responseName, vertexIds, timeStep, responseCodes);
+        //std::print("[greeter_dummy] I read the data.\n");
+            // Convert response codes back to string using transform
+        std::string responseMessage(meshVertexSize, '\0');
+        std::ranges::transform(responseCodes,
+                          responseMessage.begin(),
+                          [](double code) { 
+                              return (code > 0 && code <= 127) ? static_cast<char>(code) : '\0'; 
+                          });
+    
+        // Remove trailing null characters
+        responseMessage.erase(std::find(responseMessage.begin(), responseMessage.end(), '\0'), 
+                         responseMessage.end());
+        // Add print statement for the response message
+        std::print("[greeter_dummy] Response received: '{}'\n", responseMessage);
+
         // Clear and refill greeting
         greeting_iter.clear();
         greeting_iter = std::format("Greeter Dummy Iteration {}", dummy_iteration);
