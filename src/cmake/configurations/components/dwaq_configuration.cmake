@@ -25,8 +25,11 @@ if(${configuration_type} STREQUAL ${dwaq_configuration} OR
     list(APPEND CMAKE_MESSAGE_INDENT "   ")
 
     add_target_with_subdirectory(intelredist ${intelredist_module})
+
     if(WIN32)
-        add_target_with_subdirectory(pthreads ${pthreads_module})
+        if(NOT TARGET pthreads)
+            add_subdirectory(${checkout_src_root}/${pthreads_module} pthreads)
+        endif()
     endif(WIN32)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
