@@ -1422,6 +1422,8 @@ contains
    end subroutine count_long_culverts_in_structure_file
 
    subroutine initialize_long_culverts(structure_files)
+      use unstruc_model, only: md_convertlongculverts
+      use m_set_nod_adm, only: setnodadm
       character(len=*), intent(in) :: structure_files !< File name of the structure.ini file.
 
       call count_long_culverts_in_structure_file(structure_files)
@@ -1429,13 +1431,14 @@ contains
          nlongculverts = 0 ! makelongculverts breaks if culverts are counted but not created
          if (newculverts) then
             call initialize_existing_long_culverts(structure_files)
-            !TODO: move this block so that it is only called for Herman's old style long culverts
-            !if (.not. newculverts .and. nlongculverts > 0) then
-            !   call setnodadm(0)
-            !   call finalizeLongCulvertsInNetwork()
-            !end if
-         else  
-            call makelongculverts_commandline()
+         else  !> old style long culvert input
+            if (md_convertlongculverts > 0) then !> convert on-the-fly
+               call makelongculverts_commandline()
+            else ! initialize old-style (Herman) long culverts
+               call initialize_existing_long_culverts(structure_files)
+               call setnodadm(0)
+               call finalizeLongCulvertsInNetwork()
+            end if            
          end if
       end if
 
