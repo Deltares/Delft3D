@@ -650,8 +650,17 @@ set -eo pipefail
 source /opt/rh/gcc-toolset-14/enable
 source /opt/intel/oneapi/setvars.sh
 
-URL='https://github.com/precice/precice/archive/v3.2.0.tar.gz'
-BASEDIR='precice-3.2.0'
+# Precice requires python > 3.9 to discover tests
+curl -LsSf https://astral.sh/uv/0.8.4/install.sh | sh
+export PATH=/root/.local/bin:$PATH
+uv python install 3.12
+
+PYTHON_EXECUTABLE=$(uv python find 3.12)
+PYTHON_DIR=$(dirname "$PYTHON_EXECUTABLE")
+export PATH="$PYTHON_DIR:$PATH"
+
+URL='https://github.com/precice/precice/archive/v3.3.0.tar.gz'
+BASEDIR='precice-3.3.0'
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"
 else
@@ -669,6 +678,7 @@ cmake --preset=development \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DPRECICE_FEATURE_PETSC_MAPPING=OFF \
     -DPRECICE_FEATURE_PYTHON_ACTIONS=OFF \
+    -DPython3_EXECUTABLE="$PYTHON_EXECUTABLE" \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DCMAKE_CXX_FLAGS="-Wno-enum-constexpr-conversion"
 
