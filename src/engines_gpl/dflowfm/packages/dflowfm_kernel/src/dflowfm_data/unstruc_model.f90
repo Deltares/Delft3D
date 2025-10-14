@@ -3004,7 +3004,7 @@ contains
       if (vertical_advection_type == VERTICAL_ADVECTION_CENTRAL_IMPLICIT) then
          tmpstr = 'centralImplicit'
       else
-         tmpstr = 'higerOrderUpwindExplicit'
+         tmpstr = 'higherOrderUpwindExplicit'
       end if
       call prop_set(prop_ptr, 'numerics', 'VerticalAdvectionType', tmpstr, 'String defining vertical advection types for transport constitiuents.')
 
