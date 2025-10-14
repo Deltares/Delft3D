@@ -1434,7 +1434,8 @@ contains
             !   call setnodadm(0)
             !   call finalizeLongCulvertsInNetwork()
             !end if
-         else
+         else  
+            nlongculverts = 0 ! makelongculverts breaks if culverts are counted but not created
             call makelongculverts_commandline()
          end if
       end if
