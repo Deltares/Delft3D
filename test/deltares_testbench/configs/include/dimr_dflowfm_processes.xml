@@ -1160,7 +1160,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c108_frisianinlet_dynamo_statistics" ref="dflowfm_default">
-  <path version="2025-07-21T12:27:39.469000">e02_dflowfm/f030_water_quality_processes/c108_frisianinlet_dynamo_statistics</path>
+  <path version="2025-09-30T23:27:39.469000">e02_dflowfm/f030_water_quality_processes/c108_frisianinlet_dynamo_statistics</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_map.nc" type="netCDF">
       <parameters>
@@ -1197,12 +1197,6 @@
         <parameter name="mesh2d_water_quality_stat_31" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_water_quality_stat_32" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_water_quality_stat_33" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_34" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_35" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_36" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_37" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_38" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_39" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
       </parameters>
     </file>
     <file name="dflowfmoutput/f34_dynamo_his.nc" type="netCDF">
@@ -1240,18 +1234,12 @@
         <parameter name="water_quality_stat_31" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="water_quality_stat_32" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="water_quality_stat_33" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_34" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_35" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_36" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_37" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_38" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_39" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
       </parameters>
     </file>
   </checks>
 </testCase>
 <testCase name="e02_f030_c109_westernscheldt_dynamo_2D_statistics" ref="dflowfm_platform_specific_refs">
-  <path version="2025-07-21T12:27:42.553000">e02_dflowfm/f030_water_quality_processes/c109_westernscheldt_dynamo_2D_statistics</path>
+  <path version="2025-09-30T23:27:42.553000">e02_dflowfm/f030_water_quality_processes/c109_westernscheldt_dynamo_2D_statistics</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1288,12 +1276,6 @@
         <parameter name="mesh2d_water_quality_stat_31" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_water_quality_stat_32" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="mesh2d_water_quality_stat_33" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_34" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_35" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_36" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_37" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_38" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="mesh2d_water_quality_stat_39" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
       </parameters>
     </file>
     <file name="dflowfmoutput/westernscheldt_his.nc" type="netCDF">
@@ -1331,12 +1313,6 @@
         <parameter name="water_quality_stat_31" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="water_quality_stat_32" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
         <parameter name="water_quality_stat_33" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_34" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_35" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_36" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_37" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_38" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
-        <parameter name="water_quality_stat_39" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
       </parameters>
     </file>
   </checks>
