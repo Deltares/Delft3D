@@ -4,9 +4,9 @@ include(CTest)
 add_library(test_dependencies INTERFACE)
 target_link_libraries(test_dependencies INTERFACE
     Unity
-    zsf-static
+    dsle-static
 )
-target_compile_definitions(test_dependencies INTERFACE ZSF_STATIC)
+target_compile_definitions(test_dependencies INTERFACE DSLE_STATIC)
 set_target_properties(test_dependencies PROPERTIES C_STANDARD 23)
 
 # Test executables and add them to CTest

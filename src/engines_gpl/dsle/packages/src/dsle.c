@@ -6,9 +6,9 @@
 
 #include "config.h"
 #include "util.h"
-#include "zsf.h"
+#include "dsle.h"
 
-// The zsf_calculate loop can take advantage of shared values (e.g. a
+// The dsle_calculate loop can take advantage of shared values (e.g. a
 // reciprocal volume) between steps and the derivative parameters. Most
 // compilers cannot seem to recognize the ~20% speedup that can be gained this
 // way, so we have to force it.
@@ -26,7 +26,7 @@
 #  define forceinline inline
 #endif
 
-#ifdef ZSF_USE_FAST_TANH
+#ifdef DSLE_USE_FAST_TANH
 inline double TANH(const double x) {
   const double ax = fabs(x);
   const double x2 = x * x;
@@ -44,19 +44,19 @@ inline double TANH(const double x) {
 #endif
 
 #define ERROR_CODES(X)                                                                             \
-  X(ZSF_SUCCESS, "Success")                                                                        \
-  X(ZSF_SHIP_TOO_BIG, "The ship is too large for the lock")                                        \
-  X(ZSF_ERR_REMAINING_HEAD_DIFF, "Remaining head difference when opening doors")                   \
-  X(ZSF_ERR_SAL_LOCK_OUT_OF_BOUNDS, "The salinity of the lock exceeds that of the boundaries")
+  X(DSLE_SUCCESS, "Success")                                                                        \
+  X(DSLE_SHIP_TOO_BIG, "The ship is too large for the lock")                                        \
+  X(DSLE_ERR_REMAINING_HEAD_DIFF, "Remaining head difference when opening doors")                   \
+  X(DSLE_ERR_SAL_LOCK_OUT_OF_BOUNDS, "The salinity of the lock exceeds that of the boundaries")
 
 #define ERROR_ENUM(ID, TEXT) ID,
-enum error_ids { ERROR_CODES(ERROR_ENUM) ZSF_NUM_ERRORS };
+enum error_ids { ERROR_CODES(ERROR_ENUM) DSLE_NUM_ERRORS };
 #undef ERROR_ENUM
 
 #define ERROR_TEXT(ID, TEXT)                                                                       \
   case ID:                                                                                         \
     return TEXT;
-const char *ZSF_CALLCONV zsf_error_msg(int code) {
+const char *DSLE_CALLCONV dsle_error_msg(int code) {
   switch (code) { ERROR_CODES(ERROR_TEXT) }
   return "Unknown error";
 }
@@ -78,9 +78,9 @@ typedef struct derived_parameters_t {
   double density_average;
 } derived_parameters_t;
 
-const char *ZSF_CALLCONV zsf_version() { return ZSF_GIT_DESCRIBE; }
+const char *DSLE_CALLCONV dsle_version() { return DSLE_GIT_DESCRIBE; }
 
-static forceinline void calculate_derived_parameters(const zsf_param_t *p,
+static forceinline void calculate_derived_parameters(const dsle_param_t *p,
                                                      derived_parameters_t *o) {
   // Gravitational constant
   o->g = 9.81;
@@ -113,24 +113,24 @@ static forceinline void calculate_derived_parameters(const zsf_param_t *p,
              sal_2_density(p->salinity_sea, p->temperature_sea, p->rtol, p->atol));
 }
 
-static int check_parameters_state(const zsf_param_t *p, const derived_parameters_t *o,
-                                  const zsf_phase_state_t *state) {
+static int check_parameters_state(const dsle_param_t *p, const derived_parameters_t *o,
+                                  const dsle_phase_state_t *state) {
 
   if (fmax(p->ship_volume_lake_to_sea, p->ship_volume_sea_to_lake) >
       fmin(o->volume_lock_at_lake, o->volume_lock_at_sea)) {
-    return ZSF_SHIP_TOO_BIG;
+    return DSLE_SHIP_TOO_BIG;
   }
   if ((state->salinity_lock > fmax(p->salinity_lake, p->salinity_sea) + 1E-8) ||
       (state->salinity_lock < fmin(p->salinity_lake, p->salinity_sea) - 1E-8)) {
-    return ZSF_ERR_SAL_LOCK_OUT_OF_BOUNDS;
+    return DSLE_ERR_SAL_LOCK_OUT_OF_BOUNDS;
   }
 
-  return ZSF_SUCCESS;
+  return DSLE_SUCCESS;
 }
 
-void ZSF_CALLCONV zsf_param_default(zsf_param_t *p) {
+void DSLE_CALLCONV dsle_param_default(dsle_param_t *p) {
   /* */
-  memset(p, 0, sizeof(zsf_param_t));
+  memset(p, 0, sizeof(dsle_param_t));
 
   // Lock properties
   p->lock_length = 100.0;
@@ -158,7 +158,7 @@ void ZSF_CALLCONV zsf_param_default(zsf_param_t *p) {
   p->sill_height_lake = 0.0;
 
   // Initial condition
-  p->salinity_lock = ZSF_NAN;
+  p->salinity_lock = DSLE_NAN;
 
   // Boundary conditions
   p->head_sea = 0.0;
@@ -176,9 +176,9 @@ void ZSF_CALLCONV zsf_param_default(zsf_param_t *p) {
   p->allowed_head_difference = 1E-8;
 }
 
-static forceinline void step_phase_1(const zsf_param_t *p, const derived_parameters_t *o,
-                                     double t_level, zsf_phase_state_t *state,
-                                     zsf_phase_transports_t *results) {
+static forceinline void step_phase_1(const dsle_param_t *p, const derived_parameters_t *o,
+                                     double t_level, dsle_phase_state_t *state,
+                                     dsle_phase_transports_t *results) {
   // Phase 1: Leveling lock to lake side
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //              Low Tide                                       High Tide
@@ -235,9 +235,9 @@ static forceinline void step_phase_1(const zsf_param_t *p, const derived_paramet
   // state->volume_ship_in_lock = state->volume_ship_in_lock;  /* Unchanged */
 }
 
-static forceinline void step_phase_2(const zsf_param_t *p, const derived_parameters_t *o,
-                                     double t_open_lake, zsf_phase_state_t *state,
-                                     zsf_phase_transports_t *results) {
+static forceinline void step_phase_2(const dsle_param_t *p, const derived_parameters_t *o,
+                                     double t_open_lake, dsle_phase_state_t *state,
+                                     dsle_phase_transports_t *results) {
   // Phase 2: Gate opening at lake side
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //              Low Tide                                       High Tide
@@ -399,9 +399,9 @@ static forceinline void step_phase_2(const zsf_param_t *p, const derived_paramet
   state->volume_ship_in_lock = p->ship_volume_lake_to_sea;
 }
 
-static forceinline void step_phase_3(const zsf_param_t *p, const derived_parameters_t *o,
-                                     double t_level, zsf_phase_state_t *state,
-                                     zsf_phase_transports_t *results) {
+static forceinline void step_phase_3(const dsle_param_t *p, const derived_parameters_t *o,
+                                     double t_level, dsle_phase_state_t *state,
+                                     dsle_phase_transports_t *results) {
   // Phase 3: Leveling lock to sea side
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //              Low Tide                                       High Tide
@@ -457,9 +457,9 @@ static forceinline void step_phase_3(const zsf_param_t *p, const derived_paramet
   // state->volume_ship_in_lock = state->volume_ship_in_lock;  /* Unchanged */
 }
 
-static forceinline void step_phase_4(const zsf_param_t *p, const derived_parameters_t *o,
-                                     double t_open_sea, zsf_phase_state_t *state,
-                                     zsf_phase_transports_t *results) {
+static forceinline void step_phase_4(const dsle_param_t *p, const derived_parameters_t *o,
+                                     double t_open_sea, dsle_phase_state_t *state,
+                                     dsle_phase_transports_t *results) {
   // Phase 4: Gate opening at sea side
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //              Low Tide                                       High Tide
@@ -630,9 +630,9 @@ static forceinline void step_phase_4(const zsf_param_t *p, const derived_paramet
   state->volume_ship_in_lock = p->ship_volume_sea_to_lake;
 }
 
-static forceinline void step_flush_doors_closed(const zsf_param_t *p, const derived_parameters_t *o,
-                                                double t_flushing, zsf_phase_state_t *state,
-                                                zsf_phase_transports_t *results) {
+static forceinline void step_flush_doors_closed(const dsle_param_t *p, const derived_parameters_t *o,
+                                                double t_flushing, dsle_phase_state_t *state,
+                                                dsle_phase_transports_t *results) {
   // Flushing with gates closed
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   //            Low Tide (for example)
@@ -703,18 +703,18 @@ static forceinline void step_flush_doors_closed(const zsf_param_t *p, const deri
   // state->volume_ship_in_lock = state->ship_volume_lake_to_sea; /* Unchanged */
 }
 
-int ZSF_CALLCONV zsf_initialize_state(const zsf_param_t *p, zsf_phase_state_t *state,
+int DSLE_CALLCONV dsle_initialize_state(const dsle_param_t *p, dsle_phase_state_t *state,
                                       double sal_lock, double head_lock) {
   state->salinity_lock = sal_lock;
   state->saltmass_lock = sal_lock * (p->lock_length * p->lock_width * (head_lock - p->lock_bottom));
   state->head_lock = head_lock;
   state->volume_ship_in_lock = 0.0;
 
-  return ZSF_SUCCESS;
+  return DSLE_SUCCESS;
 }
 
-int ZSF_CALLCONV zsf_step_phase_1(const zsf_param_t *p, double t_level, zsf_phase_state_t *state,
-                                  zsf_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_phase_1(const dsle_param_t *p, double t_level, dsle_phase_state_t *state,
+                                  dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -726,11 +726,11 @@ int ZSF_CALLCONV zsf_step_phase_1(const zsf_param_t *p, double t_level, zsf_phas
 
   step_phase_1(p, &o, t_level, state, results);
 
-  return ZSF_SUCCESS;
+  return DSLE_SUCCESS;
 }
 
-int ZSF_CALLCONV zsf_step_phase_2(const zsf_param_t *p, double t_open_lake,
-                                  zsf_phase_state_t *state, zsf_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_phase_2(const dsle_param_t *p, double t_open_lake,
+                                  dsle_phase_state_t *state, dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -740,17 +740,17 @@ int ZSF_CALLCONV zsf_step_phase_2(const zsf_param_t *p, double t_open_lake,
     return err;
   }
   if (fabs(state->head_lock - p->head_lake) > p->allowed_head_difference) {
-    return ZSF_ERR_REMAINING_HEAD_DIFF;
+    return DSLE_ERR_REMAINING_HEAD_DIFF;
   }
 
   step_phase_2(p, &o, t_open_lake, state, results);
 
-  return ZSF_SUCCESS;
+  return DSLE_SUCCESS;
 }
 
-int ZSF_CALLCONV zsf_step_flush_doors_closed(const zsf_param_t *p, double t_flushing,
-                                             zsf_phase_state_t *state,
-                                             zsf_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_flush_doors_closed(const dsle_param_t *p, double t_flushing,
+                                             dsle_phase_state_t *state,
+                                             dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -762,11 +762,11 @@ int ZSF_CALLCONV zsf_step_flush_doors_closed(const zsf_param_t *p, double t_flus
 
   step_flush_doors_closed(p, &o, t_flushing, state, results);
 
-  return ZSF_SUCCESS;
+  return DSLE_SUCCESS;
 }
 
-int ZSF_CALLCONV zsf_step_phase_3(const zsf_param_t *p, double t_level, zsf_phase_state_t *state,
-                                  zsf_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_phase_3(const dsle_param_t *p, double t_level, dsle_phase_state_t *state,
+                                  dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -778,11 +778,11 @@ int ZSF_CALLCONV zsf_step_phase_3(const zsf_param_t *p, double t_level, zsf_phas
 
   step_phase_3(p, &o, t_level, state, results);
 
-  return ZSF_SUCCESS;
+  return DSLE_SUCCESS;
 }
 
-int ZSF_CALLCONV zsf_step_phase_4(const zsf_param_t *p, double t_open_sea, zsf_phase_state_t *state,
-                                  zsf_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_phase_4(const dsle_param_t *p, double t_open_sea, dsle_phase_state_t *state,
+                                  dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -792,25 +792,25 @@ int ZSF_CALLCONV zsf_step_phase_4(const zsf_param_t *p, double t_open_sea, zsf_p
     return err;
   }
   if (fabs(state->head_lock - p->head_sea) > p->allowed_head_difference) {
-    return ZSF_ERR_REMAINING_HEAD_DIFF;
+    return DSLE_ERR_REMAINING_HEAD_DIFF;
   }
 
   step_phase_4(p, &o, t_open_sea, state, results);
 
-  return ZSF_SUCCESS;
+  return DSLE_SUCCESS;
 }
 
-int ZSF_CALLCONV zsf_calc_steady(const zsf_param_t *p, zsf_results_t *results,
-                                 zsf_aux_results_t *aux_results) {
+int DSLE_CALLCONV dsle_calc_steady(const dsle_param_t *p, dsle_results_t *results,
+                                 dsle_aux_results_t *aux_results) {
 
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
 
   // Start salinity and salt mass
-  zsf_phase_state_t state;
+  dsle_phase_state_t state;
 
   double sal_lock_4 = p->salinity_lock;
-  if (sal_lock_4 == ZSF_NAN)
+  if (sal_lock_4 == DSLE_NAN)
     sal_lock_4 = 0.5 * (p->salinity_sea + p->salinity_lake);
 
   state.volume_ship_in_lock = p->ship_volume_sea_to_lake;
@@ -827,19 +827,19 @@ int ZSF_CALLCONV zsf_calc_steady(const zsf_param_t *p, zsf_results_t *results,
     // Backup old salinity value for convergence check
     double sal_lock_4_prev = sal_lock_4;
 
-    zsf_phase_transports_t tp1;
+    dsle_phase_transports_t tp1;
     step_phase_1(p, &o, p->leveling_time, &state, &tp1);
     double sal_lock_1 = state.salinity_lock;
 
-    zsf_phase_transports_t tp2;
+    dsle_phase_transports_t tp2;
     step_phase_2(p, &o, o.t_open_lake, &state, &tp2);
     double sal_lock_2 = state.salinity_lock;
 
-    zsf_phase_transports_t tp3;
+    dsle_phase_transports_t tp3;
     step_phase_3(p, &o, p->leveling_time, &state, &tp3);
     double sal_lock_3 = state.salinity_lock;
 
-    zsf_phase_transports_t tp4;
+    dsle_phase_transports_t tp4;
     step_phase_4(p, &o, o.t_open_sea, &state, &tp4);
 
     sal_lock_4 = state.salinity_lock;
@@ -931,15 +931,15 @@ int ZSF_CALLCONV zsf_calc_steady(const zsf_param_t *p, zsf_results_t *results,
         aux_results->salinity_lock_4 = sal_lock_4;
 
         // Transports in each phase
-        memcpy(&aux_results->transports_phase_1, &tp1, sizeof(zsf_phase_transports_t));
-        memcpy(&aux_results->transports_phase_2, &tp2, sizeof(zsf_phase_transports_t));
-        memcpy(&aux_results->transports_phase_3, &tp3, sizeof(zsf_phase_transports_t));
-        memcpy(&aux_results->transports_phase_4, &tp4, sizeof(zsf_phase_transports_t));
+        memcpy(&aux_results->transports_phase_1, &tp1, sizeof(dsle_phase_transports_t));
+        memcpy(&aux_results->transports_phase_2, &tp2, sizeof(dsle_phase_transports_t));
+        memcpy(&aux_results->transports_phase_3, &tp3, sizeof(dsle_phase_transports_t));
+        memcpy(&aux_results->transports_phase_4, &tp4, sizeof(dsle_phase_transports_t));
       }
 
       break;
     }
   }
 
-  return ZSF_SUCCESS;
+  return DSLE_SUCCESS;
 }

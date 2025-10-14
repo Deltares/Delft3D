@@ -1,6 +1,6 @@
-#ifndef ZSF_CONFIG_H
-#define ZSF_CONFIG_H
+#ifndef DSLE_CONFIG_H
+#define DSLE_CONFIG_H
 
-#define ZSF_GIT_DESCRIBE "${git_describe}"
+#define DSLE_GIT_DESCRIBE "${git_describe}"
 
 #endif
