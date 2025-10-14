@@ -1398,15 +1398,16 @@ contains
             call mess(LEVEL_ERROR, 'Error opening file ''', trim(structurefile), ''' for loading the long culverts.')
          end if
          nstr = tree_num_nodes(strs_ptr)
+         allocate(nodes(nstr))
          do i = 1, nstr
             nodes(i) = strs_ptr%child_nodes(i)%node_ptr
          end do
 
-         longculvert_indices = pack([(i, i=1, nstr)], strcmpi(tree_get_name(nodes), 'Structure') .and. node_hastype(nodes, 'longCulvert'))
+         longculvert_indices = pack([(i, i=1, nstr)], strcmpi(tree_get_name(nodes), 'Structure') .and. node_has_key(nodes, 'type', 'longCulvert'))
          nodes = nodes(longculvert_indices)
 
          num_longculverts = num_longculverts + size(nodes)
-         num_newculverts = num_newculverts + count(node_hastype(nodes, 'branchId'))
+         num_newculverts = num_newculverts + count(node_has_key(nodes, 'branchId'))
       end do
       if (num_longculverts > 0) then
          nlongculverts = num_longculverts
@@ -1457,25 +1458,32 @@ contains
       end do
    end subroutine initialize_existing_long_culverts
 
-   elemental function node_hastype(node, typestr) result(isType)
+   elemental function node_has_key(node, keystr, valuestr) result(has_key)
       use string_module, only: strcmpi
       use tree_data_types, only: tree_data
-      use tree_structures, only: tree_get_name
+      use tree_structures, only: tree_get_name, tree_get_data
       type(tree_data), intent(in) :: node
-      character(len=*), intent(in) :: typestr
-      logical :: isType
+      character(len=*), intent(in) :: keystr
+      character(len=*), intent(in), optional :: valuestr
+      logical :: has_key
       integer :: i
 
-      istype = .false.
+      has_key = .false.
       if (associated(node%child_nodes)) then
          do i = 1, size(node%child_nodes)
-            if (strcmpi(tree_get_name(node%child_nodes(i)%node_ptr), typestr)) then
-               istype = .true.
-               return
+            if (strcmpi(tree_get_name(node%child_nodes(i)%node_ptr), keystr)) then
+               if (present(valuestr)) then
+                  if (strcmpi(tree_get_data(node%child_nodes(i)%node_ptr), trim(valuestr))) then
+                     has_key = .true.
+                     return
+                  end if
+               else
+                  has_key = .true.
+                  return
+               end if
             end if
          end do
       end if
-
-   end function node_hastype
+   end function node_has_key
 
 end module m_longculverts

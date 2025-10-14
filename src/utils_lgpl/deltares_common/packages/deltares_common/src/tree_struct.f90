@@ -389,8 +389,8 @@ contains
 ! Arguments:
 !    tree         The tree or node
 !
-   function tree_get_data(tree) result(node_data)
-      type(tree_data), pointer :: tree
+elemental function tree_get_data(tree) result(node_data)
+      type(tree_data), intent(in) :: tree
       character(len=80) :: node_data
 
       integer :: length
