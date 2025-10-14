@@ -443,13 +443,6 @@ contains
             md_blmfile = inarg
             call mess(LEVEL_INFO, 'Using bloom species definition file: '//trim(md_blmfile))
 
-         case ('convertlongculverts')
-            md_convertlongculverts = 1
-            k = k + 1
-            call get_command_argument(k, inarg)
-            md_culvertprefix = inarg
-            call mess(LEVEL_INFO, 'Generating culvert files with prefix: '//trim(md_culvertprefix))
-
          case default
             inquire (FILE=trim(inarg), EXIST=JAWEL)
             if (JAWEL) then
