@@ -131,11 +131,9 @@ sync_input_data() {
 
 download_output_data() {
     # Download reference output data.
-    DOWNLOAD_REFS_JOB_ID=$( \
-        sbatch --parsable \
-            --output="${LOG_DIR}/va-download-refs-%j.out" \
-            ./jobs/download_references.sh \
-    )
+    sbatch --parsable \
+        --output="${LOG_DIR}/va-download-refs-%j.out" \
+        ./jobs/download_references.sh
 }
 
 pull_apptainer_image() {
@@ -149,7 +147,6 @@ pull_apptainer_image() {
 
 submit_jobs() {
     # Find and submit all 'submit_apptainer_h7.sh' scripts.
-    local JOB_IDS
     local SUBMIT_SCRIPTS
     SUBMIT_SCRIPTS=$(find "${VAHOME}/${MODELS_PATH}" -type f -name submit_apptainer_h7.sh -iregex "$MODEL_REGEX")
     for SCRIPT in $SUBMIT_SCRIPTS; do
@@ -170,8 +167,6 @@ submit_jobs() {
         )
         JOB_IDS+=("$JOB_ID")
     done
-    
-    JOB_IDS=("${JOB_IDS[@]}")
 }
 
 archive_and_upload_output() {
@@ -208,6 +203,7 @@ main() {
     MODELS_PATH=${MODELS_PATH:-input}
     build_model_regex
     prepare_environment
+    JOB_IDS=()
     cleanup_old_builds
     prepare_modules
     prepare_directories
