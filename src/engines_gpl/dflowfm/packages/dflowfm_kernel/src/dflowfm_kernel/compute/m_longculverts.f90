@@ -1427,6 +1427,7 @@ contains
 
       call count_long_culverts_in_structure_file(structure_files)
       if (nlongculverts > 0) then
+         nlongculverts = 0 ! makelongculverts breaks if culverts are counted but not created
          if (newculverts) then
             call initialize_existing_long_culverts(structure_files)
             !TODO: move this block so that it is only called for Herman's old style long culverts
@@ -1435,7 +1436,6 @@ contains
             !   call finalizeLongCulvertsInNetwork()
             !end if
          else  
-            nlongculverts = 0 ! makelongculverts breaks if culverts are counted but not created
             call makelongculverts_commandline()
          end if
       end if
