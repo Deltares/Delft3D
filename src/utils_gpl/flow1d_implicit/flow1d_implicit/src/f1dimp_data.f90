@@ -192,6 +192,25 @@ module m_f1dimp_data
                                                                  !	 <bfricp(5,i)> Parameter for positive flow direction in sub sec 2 (depending on friction type). Same definition as <bfricp (3,i)>.
                                                                  !	 <bfricp(6,i)> Parameter for negative flow direction in sub sec 2 (depending on friction type). Same definition as <bfricp (3,i)>.
       
+      real   , allocatable, dimension(:,:)             :: sectc !`sectc(:,1)` = `subsec` 
+                                                                ! subsec(ngrid)     I  Defines the number of sub sections for every
+                                                                !                      cross section:
+                                                                !                      c1sec (0) : Main section only (0 sub sections
+                                                                !                      c2sec (1) : 1 sub section
+         )                                                      !                      c3sec (2) : 2 sub sections
+                                                                !                      (For a circle cross section   : 0 ;
+                                                                !                       For a sedredge cross section : 1 )         
+                                                                !
+                                                                !`sectc(:,2)` = `wfh0` 
+                                                                ! wfh0(ngrid)       I  Flow width Wf at water level h=h0 for every
+                                                                !                      grid point.
+                                                                !
+                                                                !`sectc(:,3)` = `wfh1` 
+                                                                ! wfh1(ngrid)       I  Flow width Wf at water level h=h1 for every
+                                                                ! 
+         
+         
+      
       real   , allocatable, dimension(:,:)             :: waoft ! <waoft>: P, double(<ngrid>,14): cross-sectional variables
       
       double precision, allocatable, dimension(:)      :: bedlevel  !lowest level of the cross-section

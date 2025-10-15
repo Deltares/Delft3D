@@ -424,6 +424,10 @@ contains
       end if
       allocate (f1dimppar%bedlevel(ngrid))
 
+      if (allocated(f1dimppar%sectc)) then
+         deallocate (f1dimppar%sectc)
+      end if
+      allocate (f1dimppar%sectc(ngrid,3))
 !
 !cross-section (gridpoint,level)
 !
@@ -1404,7 +1408,25 @@ contains
             last_friction_type=network%crs%cross(idx_crs)%frictiontypepos(k2)
          end do
          
-
+         !`sectc(:,1)` = `subsec` 
+         ! subsec(ngrid)     I  Defines the number of sub sections for every
+         !                      cross section:
+         !                      c1sec (0) : Main section only (0 sub sections)
+         !                      c2sec (1) : 1 sub section
+         !                      c3sec (2) : 2 sub sections
+         !                      (For a circle cross section   : 0 ;
+         !                       For a sedredge cross section : 1 )
+         sectc(ksre,1)=network%crs%cross(idx_crs)%frictionsectionscount-1
+         
+         !
+         !`sectc(:,2)` = `wfh0` 
+         ! wfh0(ngrid)       I  Flow width Wf at water level h=h0 for every
+         !                      grid point.
+         !
+         !`sectc(:,3)` = `wfh1` 
+         ! wfh1(ngrid)       I  Flow width Wf at water level h=h1 for every
+         !                      grid point.
+         
          !network%crs%cross(idx_crs)%frictiontypepos
 
          bfricp(1, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(1)
