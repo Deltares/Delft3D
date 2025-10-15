@@ -1,0 +1,22 @@
+{
+    // CMake extension configuration
+    "cmake.sourceDirectory": "${workspaceFolder}/src/cmake",
+    "cmake.buildBeforeRun": false,
+    "cmake.automaticReconfigure": false,
+    "cmake.ctest.testExplorerIntegrationEnabled": true,
+    "cmake.ctest.debugLaunchTarget": "ctest",
+    // TestBench configuration
+    "python.defaultInterpreterPath": "${workspaceFolder}/test/deltares_testbench/.venv/bin/python",
+    "python.testing.pytestEnabled": true,
+    "mypy-type-checker.preferDaemon": false,
+    "mypy-type-checker.args": [
+        "--config-file=${workspaceFolder}/test/deltares_testbench/pyproject.toml"
+    ],
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "always"
+        }
+    },
+}
