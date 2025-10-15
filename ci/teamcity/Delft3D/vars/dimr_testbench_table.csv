@@ -36,8 +36,8 @@ fm dwaves,dimr/dimr_dflowfm_dwaves_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FA
 fm full-scale,dimr/dimr_dflowfm_full_scale_models_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm hyd,dimr/dimr_dflowfm_hyd_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm hyd,dimr/dimr_dflowfm_hyd_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-"fm lim-waves,dimr/dimr_dflowfm_lim_waves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,""Do NOT run for wave branch, as this is an FM wave function. Case names mention waq, but that is not used."""
-"fm lim-waves,dimr/dimr_dflowfm_lim_waves_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,""Do NOT run for wave branch, as this is an FM wave function. Case names mention waq, but that is not used."""
+fm lim-waves,dimr/dimr_dflowfm_lim_waves_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Do NOT run for wave branch, as this is an FM wave function. Case names mention waq, but that is not used."
+fm lim-waves,dimr/dimr_dflowfm_lim_waves_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,"Do NOT run for wave branch, as this is an FM wave function. Case names mention waq, but that is not used."
 fm parallel,dimr/dimr_dflowfm_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm rws acceptance parallel,dimr/dimr_dflowfm_lnx64_rws_acceptance_parallel.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Well known to be flaky.
 fm,dimr/dimr_dflowfm_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
@@ -77,8 +77,6 @@ drr unpaved,dimr/dimr_drr_unpaved_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FA
 drr unpaved,dimr/dimr_drr_unpaved_win64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 drr walrus,dimr/dimr_drr_walrus_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 drr walrus,dimr/dimr_drr_walrus_win64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-drr scs,dimr/dimr_drr_scs_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
-drr scs,dimr/dimr_drr_scs_win64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dwaq drtc,dimr/dimr_dwaq_drtc_lnx64.xml,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,TRUE,TRUE,
 dwaq drtc,dimr/dimr_dwaq_drtc_win64.xml,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,FALSE,TRUE,TRUE,
 dwaves,dimr/dimr_dwaves_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,
