@@ -181,6 +181,7 @@ contains
             s1_s0_abs_max_all = sum(s1_s0_abs_max)/real(NUMDTWINDOWSIZE, kind=dp)
             if (s1_s0_abs_max_all < max_water_level_change_break) then
                write (msgbuf, '(a)') 'Water level change below threshold MaxWaterlevelChangeBreak'
+               call warn_flush()
                q = 1
             end if
          end if
