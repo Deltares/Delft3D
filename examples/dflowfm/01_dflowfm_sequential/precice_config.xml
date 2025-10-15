@@ -26,7 +26,7 @@
   <m2n:sockets acceptor="dummy" connector="fm" exchange-directory=".." />
 
   <coupling-scheme:serial-explicit>
-    <max-time value="90000.0"   />    
+    <max-time value="90000.0" />
     <time-window-size value="9000" method="fixed"/> <!--method='first-participant'/> -->
     <max-time-windows value="10"/> <!--comment out when using cyclical advance , also update aprticipant first and second-->
     <participants first="fm" second="dummy" />
