@@ -52,7 +52,7 @@ TimeStepType                         = 2                                     #  
 Limtyphu                             = 0                                     # Limiter type for waterdepth in continuity eq., 0=no, 1=minmod,2=vanLeer,3=Kooren,4=Monotone Central
 Limtypmom                            = 4                                     # Limiter type for cell center advection velocity, 0=no, 1=minmod,2=vanLeer,3=Kooren,4=Monotone Central
 Limtypsa                             = 4                                     # Limiter type for salinity transport,           0=no, 1=minmod,2=vanLeer,3=Kooren,4=Monotone Central
-Vertadvtypsal                        = 5                                     # Vertical advection type for salinity, 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, 5=4 but 3 for neg. stratif., 6=higher order expl, no forester
+verticalAdvectionType = centralImplicit                                     # Vertical advection type for salinity, 0=No, 1=UpwexpL, 2=Centralexpl, 3=UpwimpL, 4=CentraLimpL, 5=4 but 3 for neg. stratif., 6=higher order expl, no forester
 Horadvtypzlayer                      = 0                                     # Horizontal advection treatment zlayer, 1=default, 2 = Sigma like
 Icgsolver                            = 2                                     # Solver type , 1 = sobekGS_OMP, 2 = sobekGS_OMPthreadsafe, 3 = sobekGS, 4 = sobekGS + Saadilud, 5 = parallel/global Saad, 6 = parallel/Petsc, 7 = parallel/GS
 Maxdegree                            = 6                                     # Maximum degree in Gauss elimination
