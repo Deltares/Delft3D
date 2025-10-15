@@ -703,15 +703,11 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                    return
                 endif
              endif
-          else
-             ex = .false.
           endif
           !
-          ! If there are multiple sediment fractions, or if no spatially
-          ! varying grain size file was specified, read the sediment size
-          ! properties.
+          ! If the grain size is not spatially varying, read all sediment size properties.
           !
-          if (.not. ex) then
+          if (flsdia /= ' ') then
              do j = 0, 100
                 seddxx = rmissval
                 if (j == 0) then
@@ -1557,13 +1553,13 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
           write (lundia, '(2a,e12.4)') txtput1, ':', exp(logsedsig(l))
           txtput1 = '  SedD50'
           write (lundia, '(3a)') txtput1, ':  ', trim(flsdia)
-       elseif (nseddia(l) > 0) then
+       else
           !
           ! Determine various sediment diameters in case of
           ! sand or bedload.
           !
           txtput1 = '  sed. distribution'
-          if (nseddia(l) == 0) then
+          if (nseddia(l) == 0 .and. sedtyp(l) > sedpar%min_dxx_sedtyp) then
              !
              ! error: no sediment diameter specified!
              !
