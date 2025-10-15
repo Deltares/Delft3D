@@ -178,7 +178,7 @@ contains
             ! and increment start index, cycling back to 1 if necessary.
             s1_s0_abs_max(it_s1_s0_abs_max) = s1_s0_abs_max_current
             it_s1_s0_abs_max = mod(it_s1_s0_abs_max, NUMDTWINDOWSIZE) + 1
-            s1_s0_abs_max_all = maxval(s1_s0_abs_max)
+            s1_s0_abs_max_all = sum(s1_s0_abs_max)/real(NUMDTWINDOWSIZE, kind=dp)
             if (s1_s0_abs_max_all < max_water_level_change_break) then
                write (msgbuf, '(a)') 'Water level change below threshold MaxWaterlevelChangeBreak'
                q = 1
