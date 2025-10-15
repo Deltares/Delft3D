@@ -1126,7 +1126,6 @@ contains
       endif
       if (errStatus .eq. 6) then
          call SetMessage(LEVEL_WARN, 'In Landsc, percolation set to 0')
-         if (idebug .ne. 0) write(idebug,*) ' timestep', itmstp, 'In Landsc, percolation status 6'
       endif
 !
 ! store results
@@ -1215,7 +1214,6 @@ contains
          WRITE(IDEBUG,*) ' Runoff Impervious area      :', ROIMP
          WRITE(IDEBUG,*) ' Channel Inflow (mm)         :', QF
          WRITE(IDEBUG,*) ' Channel Inflow (m3/s)       :', QF2
-         WRITE(IDEBUG,*) ' Percolation (mm)            :', PercAct
          WRITE(IDEBUG,*) ' Loss flow Side+Ssout        :', SacLossFlow(ISacr)
          WRITE(IDEBUG,*) ' ADIMC                       :', ADIMC(ISacr)
          WRITE(IDEBUG,*) ' Storage                     :', STOR(ISacr)

@@ -1,6 +1,7 @@
     <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
-        <testCase name="e108(drr)_f03(walrus)_c01_Regge-regression-test" ref="drr_windowsref">
-            <path version="2025-09-11T13:49:56.593000">e108_drr/f03_walrus/c01_Regge-regression-test</path>
+	<!-- ======================================================================== -->
+        <testCase name="e108(drr)_f03(walrus)_c01_Regge-regression-test" ref="drr_default">
+            <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c01_Regge-regression-test</path>
             <checks>
                 <file name="rr/rrrunoff.his" type="HIS">
                     <parameters>
@@ -29,7 +30,7 @@
                         <parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />	
                         <parameter name="Walrus_ActualFXS" location="9" toleranceAbsolute="0.0001" />	
 					</parameters>
-                </file>
+                </file>              
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -59,14 +60,14 @@
                         <parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />	
                         <parameter name="Walrus_ActualFXS" location="9" toleranceAbsolute="0.0001" />	
 					</parameters>
-                </file>
+                </file>  
 		-->	
 		
 			</checks>
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <!-- ======================================================================== -->
+	    <!-- ======================================================================== --> 
         <testCase name="e108(drr)_f03(walrus)_c02_Aa-en-Maas-regression-test" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c02_Aa-en-Maas-regression-test</path>
             <checks>
@@ -93,12 +94,12 @@
                         <parameter name="Walrus_BetaEvapReductFact" location="9" toleranceAbsolute="0.0001" />
                         <parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file> 
                 <file name="rr/rrbalans.his" type="HIS">
                     <parameters>
                         <parameter name="Balance error RR Rural" location="Total RR system" toleranceAbsolute="0.0001" />
                    </parameters>
-                </file>
+                </file> 
                 <file name="rr/balansdt.his" type="HIS">
                     <parameters>
                         <parameter name="CumBalanceError" location="1" toleranceAbsolute="0.4" />
@@ -107,7 +108,7 @@
                         <parameter name="CumBalanceError" location="6" toleranceAbsolute="0.4" />
 						<parameter name="CumBalanceError" location="9" toleranceAbsolute="0.4" />
 					</parameters>
-                </file>
+                </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -133,9 +134,9 @@
                         <parameter name="Walrus_BetaEvapReductFact" location="9" toleranceAbsolute="0.0001" />
                         <parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file>  
 		-->		
-
+           
 		<!-- Waits for SOBEK3-1457 to be fixed
 		   <file name="rr/rrbalans.nc" type="NETCDF">
                     <parameters>
@@ -164,7 +165,7 @@
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <!-- ======================================================================== -->
+	    <!-- ======================================================================== -->   
         <testCase name="e108(drr)_f03(walrus)_c03_wetness-index" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c03_wetness-index</path>
             <checks>
@@ -173,7 +174,7 @@
                         <parameter name="Walrus_WetnessIndex" location="1" toleranceAbsolute="0.0001" />
                         <parameter name="Walrus_WetnessIndex" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -181,14 +182,14 @@
                         <parameter name="Walrus_WetnessIndex" location="1" toleranceAbsolute="0.0001" />
                         <parameter name="Walrus_WetnessIndex" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file>  
 		-->		
-
+           
 			</checks>
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <!-- ======================================================================== -->
+	    <!-- ======================================================================== -->   
         <testCase name="e108(drr)_f03(walrus)_c04_transpiration-reduction-factor" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c04_transpiration-reduction-factor</path>
             <checks>
@@ -197,7 +198,7 @@
                         <parameter name="Walrus_BetaEvapReductFact" location="5" toleranceAbsolute="0.0001" />
                         <parameter name="Walrus_BetaEvapReductFact" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -205,9 +206,9 @@
                         <parameter name="Walrus_BetaEvapReductFact" location="5" toleranceAbsolute="0.0001" />
                         <parameter name="Walrus_BetaEvapReductFact" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file>  
 		-->		
-
+           
 			</checks>
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
@@ -221,7 +222,7 @@
                         <parameter name="Walrus_dVequilibrium" location="4" toleranceAbsolute="0.0001" />
                         <parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -229,14 +230,14 @@
                         <parameter name="Walrus_dVequilibrium" location="4" toleranceAbsolute="0.0001" />
                         <parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file>  
 		-->		
-
+           
 			</checks>
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <!-- ======================================================================== -->
+	    <!-- ======================================================================== -->   
         <testCase name="e108(drr)_f03(walrus)_c06_stage-discharge-relationship" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c06_stage-discharge-relationship</path>
             <checks>
@@ -249,7 +250,7 @@
 						<parameter name="Walrus_hSmin" location="6" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -261,14 +262,14 @@
 						<parameter name="Walrus_hSmin" location="6" toleranceAbsolute="0.0001" />
                         <parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file>  
 		-->		
-
+           
 			</checks>
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <!-- ======================================================================== -->
+	    <!-- ======================================================================== -->   
         <testCase name="e108(drr)_f03(walrus)_c07_contiguous-simulation-part1and2" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c07_contiguous-simulation-part1and2</path>
             <checks>
@@ -280,7 +281,7 @@
 						<parameter name="Walrus_DepthQuickflo" location="9" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -291,14 +292,14 @@
 						<parameter name="Walrus_DepthQuickflowReservoir" location="9" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
 						</parameters>
-                </file>
+                </file>  
 		-->		
-
+           
 			</checks>
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <!-- ======================================================================== -->
+	    <!-- ======================================================================== -->   
         <testCase name="e108(drr)_f03(walrus)_c08_generate-restart-file-part1" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c08_generate-restart-file-part1</path>
             <checks>
@@ -310,7 +311,7 @@
 						<parameter name="Walrus_DepthQuickflo" location="9" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -321,14 +322,14 @@
 						<parameter name="Walrus_DepthQuickflowReservoir" location="9" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
 						</parameters>
-                </file>
+                </file>  
 		-->		
-
+           
 			</checks>
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <!-- ======================================================================== -->
+	    <!-- ======================================================================== -->   
 		    <testCase name="e108(drr)_f03(walrus)_c09_start-from-restart-file-part2" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c09_start-from-restart-file-part2</path>
             <checks>
@@ -340,7 +341,7 @@
 						<parameter name="Walrus_DepthQuickflo" location="9" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -351,14 +352,14 @@
 						<parameter name="Walrus_DepthQuickflowReservoir" location="9" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
 						</parameters>
-                </file>
+                </file>  
 		-->		
-
+           
 			</checks>
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <!-- ======================================================================== -->
+	    <!-- ======================================================================== -->   
 		    <testCase name="e108(drr)_f03(walrus)_c10_crest-level-weir-surface-water-reservoir" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c10_crest-level-weir-surface-water-reservoir</path>
             <checks>
@@ -371,7 +372,7 @@
 						<parameter name="Walrus_hSmin" location="1" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -383,14 +384,14 @@
 						<parameter name="Walrus_hSmin" location="1" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_hSmin" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file>  
 		-->		
-
+           
 			</checks>
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <!-- ======================================================================== -->
+	    <!-- ======================================================================== -->   
 		    <testCase name="e108(drr)_f03(walrus)_c11_different-computational-time-steps" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f03_walrus/c11_different-computational-time-steps</path>
             <checks>
@@ -404,7 +405,7 @@
 						<parameter name="Walrus_DepthSurfaceW" location="9" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file> 
 
 		<!-- Waits for SOBEK3-1457 to be fixed
 				<file name="rr/rrrunoff.nc" type="NETCDF">
@@ -417,42 +418,13 @@
 						<parameter name="Walrus_DepthSurfaceWaterReservoir" location="9" toleranceAbsolute="0.0001" />
 						<parameter name="Walrus_dVequilibrium" location="9" toleranceAbsolute="0.0001" />
 					</parameters>
-                </file>
+                </file>  
 		-->		
-
+           
 			</checks>
             <maxRunTime>120.0</maxRunTime>
             <!-- seconds -->
         </testCase>
-	    <testCase name="e108_f03_c13_WalrusSurfaceWaterRsvFull" ref="drr_windowsref">
-            <path version="2025-10-14T12:00:00">e108_drr/f03_walrus/c13_WalrusSurfaceWaterRsvFull</path>
-            <maxRunTime>60.0</maxRunTime>
-            <checks>
-                <file name="rr/rrrunoff.nc" type="netcdf">
-                    <parameters>
-                        <parameter name="Walrus_PrecipQuick" toleranceAbsolute="0.0001" />
-                        <parameter name="Walrus_dVequilibrium" toleranceAbsolute="0.0001" />
-                        <parameter name="Walrus_DepthGroundwater" toleranceAbsolute="0.0001" />
-                        <parameter name="Walrus_PrecipVadoseZone" toleranceAbsolute="0.0001" />
-                        <parameter name="Walrus_QuickFlow_fQS" toleranceAbsolute="0.0001" />
-                        <parameter name="Walrus_SurfWaterOutflow" toleranceAbsolute="0.0001" />
-                        <parameter name="Walrus_DepthSurfaceWaterReservoir" toleranceAbsolute="0.0001" />
-                        <parameter name="Walrus_DepthQuickflowReservoir" toleranceAbsolute="0.0001" />
-                        <parameter name="Rainfall" toleranceAbsolute="0.0001" />
-                        <parameter name="Walrus_StorageDeficit" toleranceAbsolute="0.0001" />
-                        <parameter name="Walrus_GroundwaterDrainage_fGS" toleranceAbsolute="0.0001" />
-                        <parameter name="Walrus_PrecipSurfWater" toleranceAbsolute="0.0001" />
-                    </parameters>
-                </file>
-                <file name="rr/balansdt.nc" type="netcdf">
-                    <parameters>
-                        <parameter name="CumBalanceError" toleranceAbsolute="0.0001" />
-                        <parameter name="Cum_InAtNode" toleranceAbsolute="0.0001" />
-                        <parameter name="Cum_OutViaLinks" toleranceAbsolute="0.0001" />
-                        <parameter name="Cum_OutAtNode" toleranceAbsolute="0.0001" />
-                        <parameter name="CumDeltaStorage" toleranceAbsolute="0.0001" />
-                    </parameters>
-                </file>
-            </checks>
-        </testCase>
-    </testCases>
+	    <!-- ======================================================================== -->   
+	
+		</testCases>
