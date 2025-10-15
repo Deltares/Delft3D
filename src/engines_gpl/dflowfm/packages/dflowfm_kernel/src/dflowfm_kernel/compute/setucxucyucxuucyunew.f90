@@ -117,7 +117,7 @@ contains
                      u1correction = - u1(L)
                   else
                      !There is no flow at the link, so no correction. 
-                     continue !to next structure
+                     cycle !to next structure
                      !It would be the same as:
                      !u1correction=0.0_dp
                      !But this way we skip the rest of the loop.
