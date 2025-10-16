@@ -55,7 +55,7 @@ contains
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
-      use m_observations_data, only : valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, ipnt_wx, ipnt_wy, ipnt_patm, ipnt_waver, ipnt_waveh, ipnt_wavet, ipnt_waved, ipnt_wavel, ipnt_waveu, ipnt_taux, ipnt_tauy, ival_sbcx1, ival_sbcxn, ipnt_sbcx1, ival_sbcy1, ival_sbcyn, ipnt_sbcy1, ival_sscx1, ival_sscxn, ipnt_sscx1, ival_sscy1, ival_sscyn, ipnt_sscy1, ival_sbwx1, ival_sbwxn, ipnt_sbwx1, ival_sbwy1, ival_sbwyn, ipnt_sbwy1, ival_sswx1, ival_sswxn, ipnt_sswx1, ival_sswy1, ival_sswyn, ipnt_sswy1, ipnt_taub, ival_bodsed1, ival_bodsedn, ipnt_bodsed1, ipnt_dpsed, ival_msed1, ival_msedn, ipnt_msed1, ival_lyrfrac1, ival_lyrfracn, ipnt_lyrfrac1, ipnt_poros, ipnt_thlyr, ival_frac1, ival_fracn, ipnt_frac1, ipnt_mudfrac, ipnt_sandfrac, ival_mfluff1, ival_mfluffn, ipnt_mfluff1, ival_fixfac1, ival_fixfacn, ipnt_fixfac1, ival_hidexp1, ival_hidexpn, ipnt_hidexp1, ival_sour1, ival_sourn, ipnt_sour1, ival_sink1, ival_sinkn, ipnt_sink1, ival_wqb1, ival_wqbn, ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipnt_zcs, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, ipnt_tem1, ipnt_viu, ipnt_rhop, ipnt_rho, ipnt_umag, ipnt_qmag, ival_tra1, ival_tran, ipnt_tra1, ival_hwq1, ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot
+      use m_observations_data, only : valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, ipnt_wx, ipnt_wy, ipnt_patm, ipnt_waver, ipnt_waveh, ipnt_wavet, ipnt_waved, ipnt_wavel, ipnt_waveu, ipnt_taux, ipnt_tauy, ival_sbcx1, ival_sbcxn, ipnt_sbcx1, ival_sbcy1, ival_sbcyn, ipnt_sbcy1, ival_sscx1, ival_sscxn, ipnt_sscx1, ival_sscy1, ival_sscyn, ipnt_sscy1, ival_sbwx1, ival_sbwxn, ipnt_sbwx1, ival_sbwy1, ival_sbwyn, ipnt_sbwy1, ival_sswx1, ival_sswxn, ipnt_sswx1, ival_sswy1, ival_sswyn, ipnt_sswy1, ipnt_taub, ival_bodsed1, ival_bodsedn, ipnt_bodsed1, ipnt_dpsed, ival_msed1, ival_msedn, ipnt_msed1, ival_lyrfrac1, ival_lyrfracn, ipnt_lyrfrac1, ipnt_poros, ipnt_thlyr, ival_frac1, ival_fracn, ipnt_frac1, ipnt_mudfrac, ipnt_sandfrac, ival_mfluff1, ival_mfluffn, ipnt_mfluff1, ival_fixfac1, ival_fixfacn, ipnt_fixfac1, ival_hidexp1, ival_hidexpn, ipnt_hidexp1, ival_sour1, ival_sourn, ipnt_sour1, ival_sink1, ival_sinkn, ipnt_sink1, ival_wqb1, ival_wqbn, ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipnt_zcs, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, ipnt_tem1, ipnt_viu, ipnt_rhop, ipnt_rho, ipnt_umag, ipnt_qmag, ival_tra1, ival_tran, ipnt_tra1, ival_hwq1, ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot,neighbour_nodes_obs,neighbour_weights_obs, intobs
       use m_sediment, only: jahissigwav, stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
       use Timers, only: timon, timstrt, timstop
       use m_gettaus, only: gettaus
@@ -73,6 +73,7 @@ contains
       use fm_statistical_output, only: model_is_3d
       use m_links_to_centers, only: links_to_centers
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness
+      use fm_location_types
 
       implicit none
 
@@ -87,9 +88,13 @@ contains
       real(kind=dp), allocatable :: poros(:)
       real(kind=dp), allocatable :: ueux(:)
       real(kind=dp), allocatable :: ueuy(:)
+      real(kind=dp), allocatable :: tmp_interp(:)
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
 
       kmx_const = kmx
+      if (kmx == 0) then
+         kmx_const = 1 ! to make numbering work
+      end if
       nlyrs = 0
 
       if (timon) call timstrt("fill_valobs", handle_extra(55))
@@ -97,6 +102,10 @@ contains
       if (.not. allocated(ueux)) then
          call realloc(ueux, ndkx, keepExisting=.false., fill=0.0_dp)
          call realloc(ueuy, ndkx, keepExisting=.false., fill=0.0_dp)
+      end if
+      if (.not. allocated(tmp_interp)) then
+         ! Allocate as 2D arry for water levels etc.
+         call realloc(tmp_interp, ndx, keepExisting=.false., fill=0.0_dp)
       end if
       !
       if (jawave > NO_WAVES) then
@@ -183,6 +192,16 @@ contains
       do i = 1, numobs + nummovobs
          k = max(kobs(i), 1)
          link_id_nearest = lobs(i)
+        if (intobs(i) == 0) then
+            ! Treat snapped stations as interpolated ones!
+            neighbour_nodes_obs(1,i)   = k
+            neighbour_nodes_obs(2,i)   = k
+            neighbour_nodes_obs(3,i)   = k
+            neighbour_weights_obs(1,i) = 1.0
+            neighbour_weights_obs(2,i) = 0.0
+            neighbour_weights_obs(3,i) = 0.0
+         end if
+
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
 
             if (model_is_3D()) then
@@ -202,8 +221,9 @@ contains
 
 !        store values in valobs work array
             valobs(i, :) = dmiss ! Intended to have dmiss on inactive layers for output.
-            ! It is taken care of in subroutine reduce_valobs for parallel computation.
-            valobs(i, IPNT_S1) = s1(k)
+            ! Fill valobs with water levels (ando so on, and so on!)
+            call interpolate_horizontal (s1,i,IPNT_S1,UNC_LOC_S) 
+            
             if (nshiptxy > 0) then
                if (allocated(zsp)) then
                   valobs(i, IPNT_S1) = valobs(i, IPNT_S1) + zsp(k)
@@ -629,5 +649,66 @@ contains
          valobs(i, ipnt) = real(array(k), dp)
       end if
    end subroutine conditional_assign
+   
+   subroutine interpolate_horizontal (rarray,istat,IPNT,locType)
+
+      ! Interpolate (horizontally, within a computational layer) to a position from 3 surrounding snapped points
+      ! rarray can be constituents (3D) or water levels (2D)
+      !
+      use precision,             only: dp
+      use fm_statistical_output, only: model_is_3d
+      use m_observations_data
+      use m_get_kbot_ktop
+      use m_get_layer_indices
+      use fm_location_types
+
+      integer      , intent(in)                       :: istat, IPNT,locType
+      real(kind=dp), intent(in), allocatable          :: rarray (:)
+
+      real(kind=dp)                                   :: value
+      real(kind=dp)                                   :: weighttot
+
+      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), iwght, kstart, kstop, pntnr, klay, oneDown
+
+      oneDown = 0
+
+      do iwght = 1, 3
+          if (model_is_3D() .and. (locType == UNC_LOC_S3D .or. LocType == UNC_LOC_W)) then
+              call getkbotktop    (neighbour_nodes_obs(iwght,istat), kb_tmp(iwght), kt_tmp(iwght))
+              call getlayerindices(neighbour_nodes_obs(iwght,istat), nlayb_tmp(iwght), nrlay_tmp(iwght))
+
+          else
+              kb_tmp   (iwght) = neighbour_nodes_obs(iwght,istat)
+              kt_tmp   (iwght) = neighbour_nodes_obs(iwght,istat)
+              nlayb_tmp(iwght) = 1
+              nrlay_tmp(iwght) = 1
+          end if
+      end do
+
+      ! Values ar interfaces stored 1 below (interface 1 effectively corresponds with layer 0)
+      if (LocType == UNC_LOC_W) then
+          nrlay_tmp = nrlay_tmp + 1
+          oneDown   = 1
+      end if
+
+      ! Determine start and stop layer nr for interpolated values
+      kstart = minval(nlayb_tmp)
+      kstop  = maxval(nlayb_tmp + nrlay_tmp - 1)
+
+      do klay = kstart, kstop
+
+         value     = 0.0_dp
+         weighttot = 0.0_dp
+
+         do iwght = 1, 3
+             if ((klay >= nlayb_tmp(iwght)) .and. (klay <= nlayb_tmp(iwght) + nrlay_tmp(iwght) - 1)) then
+               pntnr     = kb_tmp(iwght) - nlayb_tmp(iwght) + klay - oneDown
+               value     = value     + rarray(pntnr)*neighbour_weights_obs(iwght,istat)
+               weighttot = weighttot + neighbour_weights_obs(iwght,istat)
+             end if
+         end do
+         valobs(istat, IPNT + klay - 1) = value/weighttot
+      end do
+   end subroutine interpolate_horizontal           
 
 end module m_fill_valobs
