@@ -1,8 +1,8 @@
-module zsf
+module dsle
   use, intrinsic :: iso_c_binding, only : c_char, c_double, c_f_pointer, c_int, c_ptr, c_size_t
   implicit none
 
-  type, bind(C) :: zsf_param_t
+  type, bind(C) :: dsle_param_t
     real(c_double) :: lock_length
     real(c_double) :: lock_width
     real(c_double) :: lock_bottom
@@ -30,9 +30,9 @@ module zsf
     real(c_double) :: sill_height_lake
     real(c_double) :: rtol
     real(c_double) :: atol
-  end type zsf_param_t
+  end type dsle_param_t
 
-  type, bind(C) :: zsf_results_t
+  type, bind(C) :: dsle_results_t
     real(c_double) :: mass_transport_lake
     real(c_double) :: salt_load_lake
     real(c_double) :: discharge_from_lake
@@ -44,16 +44,16 @@ module zsf
     real(c_double) :: discharge_from_sea
     real(c_double) :: discharge_to_sea
     real(c_double) :: salinity_to_sea
-  end type zsf_results_t
+  end type dsle_results_t
 
-  type, bind(C) :: zsf_phase_state_t
+  type, bind(C) :: dsle_phase_state_t
     real(c_double) :: salinity_lock
     real(c_double) :: saltmass_lock
     real(c_double) :: head_lock
     real(c_double) :: volume_ship_in_lock
-  end type zsf_phase_state_t
+  end type dsle_phase_state_t
 
-  type, bind(C) :: zsf_phase_transports_t
+  type, bind(C) :: dsle_phase_transports_t
     real(c_double) :: mass_transport_lake
     real(c_double) :: volume_from_lake
     real(c_double) :: volume_to_lake
@@ -67,9 +67,9 @@ module zsf
     real(c_double) :: discharge_from_sea
     real(c_double) :: discharge_to_sea
     real(c_double) :: salinity_to_sea
-  end type zsf_phase_transports_t
+  end type dsle_phase_transports_t
 
-  type, bind(C) :: zsf_aux_results_t
+  type, bind(C) :: dsle_aux_results_t
     real(c_double) :: z_fraction
     real(c_double) :: dimensionless_door_open_time
     real(c_double) :: volume_to_lake
@@ -86,81 +86,81 @@ module zsf
     real(c_double) :: salinity_lock_2
     real(c_double) :: salinity_lock_3
     real(c_double) :: salinity_lock_4
-    type(zsf_phase_transports_t) :: transports_phase_1
-    type(zsf_phase_transports_t) :: transports_phase_2
-    type(zsf_phase_transports_t) :: transports_phase_3
-    type(zsf_phase_transports_t) :: transports_phase_4
-  end type zsf_aux_results_t
+    type(dsle_phase_transports_t) :: transports_phase_1
+    type(dsle_phase_transports_t) :: transports_phase_2
+    type(dsle_phase_transports_t) :: transports_phase_3
+    type(dsle_phase_transports_t) :: transports_phase_4
+  end type dsle_aux_results_t
 
   interface
-    integer(c_int) function zsf_initialize_state(p, state, salinity_lock, head_lock) bind(C, name='zsf_initialize_state')
-      import c_int, zsf_param_t, zsf_phase_state_t, c_double
-      type(zsf_param_t), intent(in) :: p
-      type(zsf_phase_state_t), intent(inout) :: state
+    integer(c_int) function dsle_initialize_state(p, state, salinity_lock, head_lock) bind(C, name='dsle_initialize_state')
+      import c_int, dsle_param_t, dsle_phase_state_t, c_double
+      type(dsle_param_t), intent(in) :: p
+      type(dsle_phase_state_t), intent(inout) :: state
       real(c_double), intent(in), value :: salinity_lock
       real(c_double), intent(in), value :: head_lock
-    end function zsf_initialize_state
+    end function dsle_initialize_state
 
-    integer(c_int) function zsf_step_phase_1(p, t_level, state, results) bind(C, name='zsf_step_phase_1')
-      import c_int, zsf_param_t, c_double, zsf_phase_state_t, zsf_phase_transports_t
-      type(zsf_param_t), intent(in) :: p
+    integer(c_int) function dsle_step_phase_1(p, t_level, state, results) bind(C, name='dsle_step_phase_1')
+      import c_int, dsle_param_t, c_double, dsle_phase_state_t, dsle_phase_transports_t
+      type(dsle_param_t), intent(in) :: p
       real(c_double), intent(in), value :: t_level
-      type(zsf_phase_state_t), intent(inout) :: state
-      type(zsf_phase_transports_t), intent(inout) :: results
-      end function zsf_step_phase_1
+      type(dsle_phase_state_t), intent(inout) :: state
+      type(dsle_phase_transports_t), intent(inout) :: results
+      end function dsle_step_phase_1
 
-    integer(c_int) function zsf_step_phase_2(p, t_open_lake, state, results) bind(C, name='zsf_step_phase_2')
-      import c_int, zsf_param_t, c_double, zsf_phase_state_t, zsf_phase_transports_t
-      type(zsf_param_t), intent(in) :: p
+    integer(c_int) function dsle_step_phase_2(p, t_open_lake, state, results) bind(C, name='dsle_step_phase_2')
+      import c_int, dsle_param_t, c_double, dsle_phase_state_t, dsle_phase_transports_t
+      type(dsle_param_t), intent(in) :: p
       real(c_double), intent(in), value :: t_open_lake
-      type(zsf_phase_state_t), intent(inout) :: state
-      type(zsf_phase_transports_t), intent(inout) :: results
-    end function zsf_step_phase_2
+      type(dsle_phase_state_t), intent(inout) :: state
+      type(dsle_phase_transports_t), intent(inout) :: results
+    end function dsle_step_phase_2
 
-    integer(c_int) function zsf_step_phase_3(p, t_level, state, results) bind(C, name='zsf_step_phase_3')
-      import c_int, zsf_param_t, c_double, zsf_phase_state_t, zsf_phase_transports_t
-      type(zsf_param_t), intent(in) :: p
+    integer(c_int) function dsle_step_phase_3(p, t_level, state, results) bind(C, name='dsle_step_phase_3')
+      import c_int, dsle_param_t, c_double, dsle_phase_state_t, dsle_phase_transports_t
+      type(dsle_param_t), intent(in) :: p
       real(c_double), intent(in), value :: t_level
-      type(zsf_phase_state_t), intent(inout) :: state
-      type(zsf_phase_transports_t), intent(inout) :: results
-    end function zsf_step_phase_3
+      type(dsle_phase_state_t), intent(inout) :: state
+      type(dsle_phase_transports_t), intent(inout) :: results
+    end function dsle_step_phase_3
 
-    integer(c_int) function zsf_step_phase_4(p, t_open_sea, state, results) bind(C, name='zsf_step_phase_4')
-      import c_int, zsf_param_t, c_double, zsf_phase_state_t, zsf_phase_transports_t
-      type(zsf_param_t), intent(in) :: p
+    integer(c_int) function dsle_step_phase_4(p, t_open_sea, state, results) bind(C, name='dsle_step_phase_4')
+      import c_int, dsle_param_t, c_double, dsle_phase_state_t, dsle_phase_transports_t
+      type(dsle_param_t), intent(in) :: p
       real(c_double), intent(in), value :: t_open_sea
-      type(zsf_phase_state_t), intent(inout) :: state
-      type(zsf_phase_transports_t), intent(inout) :: results
-    end function zsf_step_phase_4
+      type(dsle_phase_state_t), intent(inout) :: state
+      type(dsle_phase_transports_t), intent(inout) :: results
+    end function dsle_step_phase_4
 
-    integer(c_int) function zsf_step_flush_doors_closed(p, t_flushing, state, results) bind(C, name='zsf_step_flush_doors_closed')
-      import c_int, zsf_param_t, c_double, zsf_phase_state_t, zsf_phase_transports_t
-      type(zsf_param_t), intent(in) :: p
+    integer(c_int) function dsle_step_flush_doors_closed(p, t_flushing, state, results) bind(C, name='dsle_step_flush_doors_closed')
+      import c_int, dsle_param_t, c_double, dsle_phase_state_t, dsle_phase_transports_t
+      type(dsle_param_t), intent(in) :: p
       real(c_double), intent(in), value :: t_flushing
-      type(zsf_phase_state_t), intent(inout) :: state
-      type(zsf_phase_transports_t), intent(inout) :: results
-    end function zsf_step_flush_doors_closed
+      type(dsle_phase_state_t), intent(inout) :: state
+      type(dsle_phase_transports_t), intent(inout) :: results
+    end function dsle_step_flush_doors_closed
 
-    subroutine zsf_param_default(p) bind(C, name='zsf_param_default')
-      import zsf_param_t
-      type(zsf_param_t), intent(inout) :: p
-    end subroutine zsf_param_default
+    subroutine dsle_param_default(p) bind(C, name='dsle_param_default')
+      import dsle_param_t
+      type(dsle_param_t), intent(inout) :: p
+    end subroutine dsle_param_default
 
-    integer(c_int) function zsf_calc_steady(p, results, aux_results) bind(C, name='zsf_calc_steady')
-      import c_int, zsf_param_t, zsf_results_t, zsf_aux_results_t
-      type(zsf_param_t), intent(in) :: p
-      type(zsf_results_t), intent(inout) :: results
-      type(zsf_aux_results_t), intent(inout) :: aux_results
-    end function zsf_calc_steady
+    integer(c_int) function dsle_calc_steady(p, results, aux_results) bind(C, name='dsle_calc_steady')
+      import c_int, dsle_param_t, dsle_results_t, dsle_aux_results_t
+      type(dsle_param_t), intent(in) :: p
+      type(dsle_results_t), intent(inout) :: results
+      type(dsle_aux_results_t), intent(inout) :: aux_results
+    end function dsle_calc_steady
 
-    type(c_ptr) function zsf_error_msg__raw(code) bind(C, name='zsf_error_msg')
+    type(c_ptr) function dsle_error_msg__raw(code) bind(C, name='dsle_error_msg')
       import c_int, c_ptr
       integer(c_int), intent(in), value :: code
-    end function zsf_error_msg__raw
+    end function dsle_error_msg__raw
 
-    type(c_ptr) function zsf_version__raw() bind(C, name='zsf_version')
+    type(c_ptr) function dsle_version__raw() bind(C, name='dsle_version')
       import c_ptr
-    end function zsf_version__raw
+    end function dsle_version__raw
 
     integer(c_size_t) function c_strlen(s) bind(c, name="strlen")
       import c_size_t, c_ptr
@@ -171,12 +171,12 @@ module zsf
   contains
 
   ! See https://fortran-lang.discourse.group/t/iso-c-binding-interface-to-a-c-function-returning-a-string/527/14
-  function zsf_version() result(str)
+  function dsle_version() result(str)
     character(:, c_char), allocatable :: str
     type(c_ptr) :: cstr
     integer(c_size_t) :: n
 
-    cstr = zsf_version__raw()
+    cstr = dsle_version__raw()
     n = c_strlen(cstr)
     allocate(character(len=n, kind=c_char) :: str)
     block
@@ -186,15 +186,15 @@ module zsf
     end block
     ! Note that we do not have to free the returned string,
     ! as it was not dynamically allocated.
-  end function zsf_version
+  end function dsle_version
 
-  function zsf_error_msg(code) result(str)
+  function dsle_error_msg(code) result(str)
     integer(c_int), intent(in) :: code
     character(:, c_char), allocatable :: str
     type(c_ptr) :: cstr
     integer(c_size_t) :: n
 
-    cstr = zsf_error_msg__raw(code)
+    cstr = dsle_error_msg__raw(code)
     n = c_strlen(cstr)
     allocate(character(len=n, kind=c_char) :: str)
     block
@@ -204,5 +204,5 @@ module zsf
     end block
     ! Note that we do not have to free the returned string,
     ! as it was not dynamically allocated.
-  end function zsf_error_msg
+  end function dsle_error_msg
 end module
