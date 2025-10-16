@@ -210,11 +210,11 @@ class TestTestCaseIndex:
 
         # Act
         result = index.find_test_case(TestCasePattern(name_filter="foo"))
-        test_case, configs = result.test_case_data, result.configs
+
         # Assert
-        assert all(path in configs for path in paths)
-        assert test_case is not None
-        assert test_case.name == "foo"
+        assert all(path in result.configs for path in paths)
+        assert result.test_case_data is not None
+        assert result.test_case_data.name == "foo"
 
     def test_find_test_case__with_glob__find_case_in_matching_configs(self, mocker: MockerFixture) -> None:
         # Arrange
@@ -230,14 +230,13 @@ class TestTestCaseIndex:
 
         # Act
         result = index.find_test_case(TestCasePattern(name_filter="foo", config_glob="foo/*.xml"))
-        test_case, configs = result.test_case_data, result.configs
 
         # Assert
-        assert test_case is not None
-        assert test_case.name == "foo"
-        assert len(configs) == 2
-        assert paths[-1] not in configs
-        assert all(path in configs for path in paths[:2])
+        assert result.test_case_data is not None
+        assert result.test_case_data.name == "foo"
+        assert len(result.configs) == 2
+        assert paths[-1] not in result.configs
+        assert all(path in result.configs for path in paths[:2])
 
     def test_find_test_case__multiple_matches_in_config__raise_error(self, mocker: MockerFixture) -> None:
         # Arrange

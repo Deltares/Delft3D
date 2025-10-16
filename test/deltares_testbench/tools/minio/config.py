@@ -441,14 +441,14 @@ class TestCaseIndex:
 
         for pattern in test_case_patterns:
             find_result = self.find_test_case(pattern)
-            test_case, configs = find_result.test_case_data, find_result.configs
-            if test_case is None:
+            found_test_case, found_configs = find_result.test_case_data, find_result.configs
+            if found_test_case is None:
                 continue
 
-            for config_path in configs:
-                test_cases = all_matching_configs[config_path]
-                if not any(case.name == test_case.name for case in test_cases):
-                    test_cases.append(test_case)
+            for found_config in found_configs:
+                other_test_cases = all_matching_configs[found_config]
+                if not any(case.name == found_test_case.name for case in other_test_cases):
+                    other_test_cases.append(found_test_case)
 
         return all_matching_configs
 
