@@ -1597,6 +1597,16 @@
                     }
                 },
                 {
+                    "key": "verticalAdvectionType",
+                    "default_value": "higherOrderUpwindExplicit",
+                    "value_type": "enum",
+                    "description": "Vertical advection type for salinity. Note that `verticalAdvectionType`=`centralImplicit` leads to less numerical dissipation than `verticalAdvectionType`=`higherOrderUpwindExplicit`.",
+                    "enum_values": {
+                        "centralImplicit": "theta implicit",
+                        "higherOrderUpwindExplicit": "higher order explicit, no Forester filter"
+                    }
+                },
+                {
                     "key": "vertAdvTypSal",
                     "default_value": 6,
                     "value_type": "intenum",
