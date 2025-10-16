@@ -30,9 +30,9 @@ add_executable(test_timestamp test_timestamp.c)
 target_link_libraries(test_timestamp PRIVATE test_dependencies)
 add_test(NAME dsle_test_timestamp COMMAND test_timestamp)
 
-add_executable(test_zsf_config test_zsf_config.c)
-target_link_libraries(test_zsf_config PRIVATE test_dependencies)
-add_test(NAME dsle_test_zsf_config COMMAND test_zsf_config)
+add_executable(test_dsle_config test_dsle_config.c)
+target_link_libraries(test_dsle_config PRIVATE test_dependencies)
+add_test(NAME dsle_test_dsle_config COMMAND test_dsle_config)
 
 add_executable(test_sealock test_sealock.c)
 target_link_libraries(test_sealock PRIVATE test_dependencies)
@@ -44,7 +44,7 @@ foreach(test_target
     test_load_csv
     test_ini_read
     test_timestamp
-    test_zsf_config
+    test_dsle_config
     test_sealock
 )
     set_target_properties(${test_target} PROPERTIES FOLDER tests/engines_gpl/dsle)

@@ -13,14 +13,14 @@ static void test_sealock_defaults(void) {
 
     TEST_ASSERT_EQUAL(0, result);
     
-    zsf_phase_wise_args_t expected_phase_args = PHASE_WISE_CLEAR_ARGS();
-    TEST_ASSERT_EQUAL_MEMORY(&expected_phase_args, &lock.phase_args, sizeof(zsf_phase_wise_args_t));
+    dsle_phase_wise_args_t expected_phase_args = PHASE_WISE_CLEAR_ARGS();
+    TEST_ASSERT_EQUAL_MEMORY(&expected_phase_args, &lock.phase_args, sizeof(dsle_phase_wise_args_t));
 
     // Assert lock.parameters is default.
-    zsf_param_t expected_parameters;
-    zsf_param_default(&expected_parameters);
+    dsle_param_t expected_parameters;
+    dsle_param_default(&expected_parameters);
     expected_parameters.allowed_head_difference = 0.1; // This parameter default is overridden in sealock_defaults.
-    TEST_ASSERT_EQUAL_MEMORY(&expected_parameters, &lock.parameters, sizeof(zsf_param_t));
+    TEST_ASSERT_EQUAL_MEMORY(&expected_parameters, &lock.parameters, sizeof(dsle_param_t));
 
     // Assert dfm_volume_t's are default.
     dfm_volumes_t *volumes[] = {
