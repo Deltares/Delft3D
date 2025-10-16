@@ -159,6 +159,16 @@ target_link_libraries(${library_name} PRIVATE
                       spherepack
 )
 
+#add preCICE
+if(HAS_PRECICE_FM_GREETER_COUPLING)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(precice REQUIRED IMPORTED_TARGET libprecice)
+    
+    target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_FM_GREETER_COUPLING)
+    target_include_directories(${library_name} PRIVATE precice_module)
+    target_link_libraries(${library_name} PRIVATE PkgConfig::precice)
+endif()
+
 # Add dependencies
 if (UNIX)
     # the `pkg_check_modules` function is created with this call

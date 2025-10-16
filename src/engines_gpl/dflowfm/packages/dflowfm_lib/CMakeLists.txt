@@ -39,6 +39,15 @@ target_link_libraries(${library_name} PRIVATE
                       precice_module
 )
 
+option(HAS_PRECICE_FM_GREETER_COUPLING "Compile FM with preCICE greeter_dummy coupling" OFF)
+if(HAS_PRECICE_FM_GREETER_COUPLING)
+    target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_FM_GREETER_COUPLING)
+endif()
+
+if(HAS_PRECICE_FM_WAVE_COUPLING)
+    target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_FM_WAVE_COUPLING)
+endif()
+
 if(UNIX)
     message(STATUS "Setting target_compile_definitions in Unix")
     target_compile_definitions(${library_name} PRIVATE "HAVE_MPI;HAVE_PETSC")
@@ -81,7 +90,7 @@ if (WIN32)
 endif(WIN32)
 
 # Change the name of the target library to dflowfm.dll
-set_target_properties (${library_name} PROPERTIES OUTPUT_NAME  dflowfm)
+set_target_properties (${library_name} PROPERTIES OUTPUT_NAME dflowfm)
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source} ${includes})

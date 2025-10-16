@@ -12,12 +12,22 @@ set(library_name wave_manager)
 add_library(${library_name} ${source_files})
 
 # Set dependencies
-set(oss_dependencies    wave_data
-                        delftio
-                        deltares_common
-                        ec_module
-                        wave_io
-                        wave_kernel) 
+set(oss_dependencies wave_data
+                     delftio
+                     deltares_common
+                     ec_module
+                     wave_io
+                     wave_kernel
+)
+
+option(HAS_PRECICE_WAVE_GREETER_COUPLING "Compile wave with preCICE greeter_dummy coupling" OFF)
+if(HAS_PRECICE_WAVE_GREETER_COUPLING)
+    target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_WAVE_GREETER_COUPLING)
+endif()
+
+if(HAS_PRECICE_FM_WAVE_COUPLING)
+    target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_FM_WAVE_COUPLING)
+endif()
 
 target_link_libraries(${library_name} PRIVATE ${oss_dependencies} precice_module)
 

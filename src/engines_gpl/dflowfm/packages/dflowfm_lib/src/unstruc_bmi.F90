@@ -44,6 +44,9 @@ module bmi
    use m_cosphiunetcheck, only: cosphiunetcheck
    use m_flow_run_usertimestep, only: flow_run_usertimestep
    use m_flow_run_sometimesteps, only: flow_run_sometimesteps
+#if defined(HAS_PRECICE_FM_GREETER_COUPLING)
+   use m_flow_run_sometimesteps, only: couple_to_greeter_dummy
+#endif // defined(HAS_PRECICE_FM_GREETER_COUPLING)
    use m_flow_init_usertimestep, only: flow_init_usertimestep
    use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
    use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
@@ -217,6 +220,21 @@ contains
       c_att_value = string_to_char_array(trim(att_value), len(trim(att_value)))
    end subroutine get_attribute
 
+
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   subroutine couple_to_wave()
+      use precice, only: precicef_create
+
+      integer(kind=c_int), parameter :: precice_component_name_length = 2
+      character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "fm"
+      integer(kind=c_int), parameter :: precice_config_name_length = 21
+      character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
+
+      ! precicef_create_with_communicator
+      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
+   end subroutine couple_to_wave
+#endif // defined(HAS_PRECICE_FM_WAVE_COUPLING)
+
 !! modelinformation
 !! \}
 
@@ -237,11 +255,6 @@ contains
       use unstruc_files
       use m_partitioninfo
       use check_mpi_env
-      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
-         precicef_set_vertices, precicef_read_data, &
-         precicef_get_data_dimensions, precicef_get_max_time_step_size
-      use m_alloc, only: realloc
-      use, intrinsic :: iso_c_binding, only: c_char, c_int
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -252,22 +265,6 @@ contains
       ! Extra local variables
       integer :: inerr ! number of the initialisation error
       logical :: mpi_initd
-      integer(kind=c_int), parameter :: precice_component_name_length = 2
-      character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "fm"
-      integer(kind=c_int), parameter :: precice_config_name_length = 21
-      character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
-      integer(kind=c_int), parameter :: mesh_name_length = 7
-      character(kind=c_char, len=mesh_name_length), parameter :: mesh_name = "fm-mesh"
-      integer(kind=c_int), parameter :: max_greeting_length = 34
-      integer(kind=c_int) :: mesh_dimensions
-      real(kind=c_double), dimension(max_greeting_length * 2) :: mesh_coordinates
-      integer(kind=c_int), dimension(max_greeting_length) :: vertex_ids
-      integer(kind=c_int), parameter :: data_name_length = 8
-      character(kind=c_char, len=data_name_length), parameter :: data_name = "greeting"
-      integer :: data_size, data_dimension
-      real(kind=c_double), dimension(:), allocatable :: data_values
-      character(kind=c_char), dimension(:), allocatable :: converted_data
-      real(kind=c_double) :: precice_time_step
 
       c_iresult = 0 ! TODO: is this return value BMI-compliant?
       jampi = 0
@@ -313,31 +310,12 @@ contains
 
 #endif
 
-      !! Initialize precice
-      !! precice is initialised after mpi ranks are known, however precice's official fortran bindings
-      !! do not support passing mpi communicator, so we need to use MPI_COMM_WORLD in the dimr_config.xml
-      !! An unofficial extension to precice fortran binding exists and can be evaluated in future
-      !! https://github.com/ivan-pi/fortran-module/blob/participant/src/precice_participant_api.F90
-      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
-      call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, mesh_name_length)
-      print *, '[FM] The number of dimensions of the fm-mesh is ', mesh_dimensions
-
-      mesh_coordinates = 0.0_c_double
-      call precicef_set_vertices(mesh_name, max_greeting_length, mesh_coordinates, vertex_ids, mesh_name_length)
-      call precicef_initialize()
-
-      call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, mesh_name_length, data_name_length)
-      data_size = data_dimension * max_greeting_length
-      print *, '[FM] data dimension: ', data_dimension, ' data size: ', data_size
-      call realloc(data_values, data_size)
-
-      call precicef_get_max_time_step_size(precice_time_step)
-      print *, '[FM] max time step: ', precice_time_step
-      call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, precice_time_step, data_values, &
-                              mesh_name_length, data_name_length)
-
-      converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
-      print *, '[FM] message read: ', converted_data
+#if defined(HAS_PRECICE_FM_GREETER_COUPLING)
+      call couple_to_greeter_dummy()
+#endif // defined(HAS_PRECICE_FM_GREETER_COUPLING)
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   call couple_to_wave()
+#endif // defined(HAS_PRECICE_FM_WAVE_COUPLING)
 
       ! do this until default has changed
       jaGUI = 0
@@ -548,7 +526,6 @@ contains
    integer function finalize() bind(C, name="finalize")
       !DEC$ ATTRIBUTES DLLEXPORT :: finalize
       use m_partitioninfo
-      use precice, only: precicef_finalize
 
       call write_some_final_output()
 
@@ -560,8 +537,6 @@ contains
       call flowfinalize()
 
       finalize = 0
-
-      call precicef_finalize()
 
    end function finalize
 

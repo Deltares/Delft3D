@@ -4,27 +4,33 @@
     <sink type="stream" output="stdout" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
   </log>
   <data:scalar name="greeting" />
+  <data:scalar name="response" />
 
   <mesh name="fm-mesh" dimensions="2">
     <use-data name="greeting" />
+    <use-data name="response" />
   </mesh>
 
   <participant name="fm">
     <provide-mesh name="fm-mesh" />
     <read-data name="greeting" mesh="fm-mesh" />
+    <write-data name="response" mesh="fm-mesh" />
   </participant>
 
   <participant name="dummy">
     <receive-mesh name="fm-mesh" from="fm" api-access="true" />
     <write-data name="greeting" mesh="fm-mesh" />
+    <read-data name="response" mesh="fm-mesh" />
   </participant>
 
   <m2n:sockets acceptor="dummy" connector="fm" exchange-directory=".." />
 
   <coupling-scheme:serial-explicit>
-    <time-window-size value="1.0" />
-    <max-time value="2.0" />
-    <participants first="dummy" second="fm" />
+    <max-time value="300.0" />
+    <time-window-size value="30" method="fixed"/> <!--method='first-participant'/> -->
+    <!--<max-time-windows value="10"/>-->
+    <participants first="fm" second="dummy" />
     <exchange data="greeting" mesh="fm-mesh" from="dummy" to="fm" />
+    <exchange data="response" mesh="fm-mesh" from="fm" to="dummy" />
   </coupling-scheme:serial-explicit>
 </precice-configuration>
