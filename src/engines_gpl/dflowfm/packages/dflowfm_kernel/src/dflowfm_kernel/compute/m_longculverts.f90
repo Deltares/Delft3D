@@ -39,6 +39,7 @@ module m_longculverts
    use MessageHandling
    use m_missing
    use iso_c_binding
+   use m_longculverts_data
 
    implicit none
 
@@ -58,32 +59,6 @@ module m_longculverts
    public setlongculvert1d2dlinkangles
    public initialize_Long_Culverts
 
-   !> Type definition for longculvert data.
-   type, public :: t_longculvert
-      character(len=IdLen) :: id
-      character(len=IdLen) :: branchid !< if newculverts, corresponding network branch
-      integer :: numlinks !< Number of links of the long culvert
-      integer, dimension(:), allocatable :: netlinks !< Net link numbers of the long culvert
-      integer, dimension(:), allocatable :: flowlinks !< Flow link numbers of the long culvert
-      integer :: friction_type = -999 !< Friction type
-      integer :: allowed_flowdir !< Allowed flowdir:
-      !< 0 all directions
-      !< 1 only positive flow
-      !< 2 only negative flow
-      !< 3 no flow allowed
-      real(kind=dp) :: friction_value = -999.0_dp !< Friction value
-      real(kind=dp), dimension(:), allocatable :: xcoords !< X-coordinates of the numlinks+1 points
-      real(kind=dp), dimension(:), allocatable :: ycoords !< Y-coordinates of the numlinks+1 points
-      real(kind=dp), dimension(:), allocatable :: bl !< Bed level on numlinks+1 points
-      real(kind=dp) :: width !< Width of the rectangular culvert
-      real(kind=dp) :: height !< Height of the rectangular culvert
-      real(kind=dp) :: valve_relative_opening !< Relative valve opening: 0 = fully closed, 1 = fully open
-      integer :: flownode_up = 0 !< Flow node index at upstream
-      integer :: flownode_dn = 0 !< Flow node index at downstream
-   end type
-   type(t_longculvert), dimension(:), allocatable, public :: longculverts !< Array containing long culvert data (size >= nlongculverts)
-   integer, public :: nlongculverts !< Number of longculverts
-   logical, public :: newculverts
    interface realloc
       module procedure reallocLongCulverts
    end interface
@@ -1012,6 +987,7 @@ contains
       !allocate(nnodeids(meshgeom1d%nnodes))
       call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
       call reallocP(meshgeom1d%nodeidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
+      call reallocP(meshgeom1d%nodeidx_inverse, numk, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nodebranchidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nodeoffsets, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%edgebranchidx, meshgeom1d%numedge, keepexisting=.true., fill=-999)
@@ -1078,6 +1054,7 @@ contains
             !node
             meshgeom1d%nodebranchidx(newnodeindex) = currentbranchindex
             meshgeom1d%nodeidx(newnodeindex) = k2
+            meshgeom1d%nodeidx_inverse(k2) = newnodeindex
             pathlength = pathlength + pathdiff
             meshgeom1d%nodeoffsets(newnodeindex) = pathlength
             newnodeindex = newnodeindex + 1
@@ -1398,7 +1375,7 @@ contains
             call mess(LEVEL_ERROR, 'Error opening file ''', trim(structurefile), ''' for loading the long culverts.')
          end if
          nstr = tree_num_nodes(strs_ptr)
-         allocate(nodes(nstr))
+         allocate (nodes(nstr))
          do i = 1, nstr
             nodes(i) = strs_ptr%child_nodes(i)%node_ptr
          end do
@@ -1421,24 +1398,27 @@ contains
 
    end subroutine count_long_culverts_in_structure_file
 
-   subroutine initialize_long_culverts(structure_files)
-      use unstruc_model, only: md_convertlongculverts
+   subroutine initialize_long_culverts(md_1dfiles, md_convertlongculverts)
       use m_set_nod_adm, only: setnodadm
-      character(len=*), intent(in) :: structure_files !< File name of the structure.ini file.
+      use m_globalparameters, only: t_filenames
 
+      type(t_filenames), intent(in) :: md_1dfiles
+      integer, intent(in) :: md_convertlongculverts !< Flag to indicate whether to convert old-style long culverts on-the-fly.
+      character(:), allocatable :: structure_files
+      structure_files = md_1dfiles%structures
       call count_long_culverts_in_structure_file(structure_files)
       if (nlongculverts > 0) then
          nlongculverts = 0 ! makelongculverts breaks if culverts are counted but not created
          if (newculverts) then
             call initialize_existing_long_culverts(structure_files)
-         else  !> old style long culvert input
+         else !> old style long culvert input
             if (md_convertlongculverts > 0) then !> convert on-the-fly
-               call makelongculverts_commandline()
+               call makelongculverts_commandline(md_1dfiles)
             else ! initialize old-style (Herman) long culverts
                call initialize_existing_long_culverts(structure_files)
                call setnodadm(0)
                call finalizeLongCulvertsInNetwork()
-            end if            
+            end if
          end if
       end if
 
@@ -1461,8 +1441,7 @@ contains
       end do
    end subroutine initialize_existing_long_culverts
 
-   subroutine makelongculverts_commandline()
-      use unstruc_model
+   subroutine makelongculverts_commandline(md_1dfiles)
       use m_readstructures
       use string_module, only: strsplit
       use unstruc_netcdf, only: unc_write_net, UNC_CONV_UGRID
@@ -1470,25 +1449,24 @@ contains
       use m_set_nod_adm
       use messagehandling, only: IDLEN
       use gridoperations, only: findcells
+      use m_globalparameters, only: t_filenames
 
-      character(len=1024) :: fnamesstring
+      type(t_filenames), intent(in) :: md_1dfiles
+      character(len=9), allocatable :: md_culvertprefix
       character(len=:), allocatable :: converted_fnamesstring
       character(len=:), allocatable :: converted_crsdefsstring
       character(len=:), allocatable :: tempstring_crsdef
       character(len=:), allocatable :: tempstring_fnames
       !character(len=:), allocatable :: tempstring_netfile
       character(len=200), dimension(:), allocatable :: fnames
-     ! character(len=IDLEN) :: temppath, tempname, tempext
+      ! character(len=IDLEN) :: temppath, tempname, tempext
 
       integer :: istat, ifil
       call findcells(0)
-      if (len(trim(md_culvertprefix))==0) then
-         md_culvertprefix = 'converted_'
-      end if
+      md_culvertprefix = 'converted_'
       if (len_trim(md_1dfiles%structures) > 0) then
 
-         fnamesstring = md_1dfiles%structures
-         call strsplit(fnamesstring, 1, fnames, 1)
+         call strsplit(md_1dfiles%structures, 1, fnames, 1)
 
          if (len_trim(md_1dfiles%cross_section_definitions) > 0) then
             call convertLongCulvertsAsNetwork(fnames(1), 0, md_culvertprefix, converted_fnamesstring, converted_crsdefsstring, istat, md_1dfiles%cross_section_definitions)
@@ -1509,7 +1487,7 @@ contains
          !tempstring_netfile = cat_filename(temppath, tempname, tempext)
 
          !call unc_write_net(tempstring_netfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
-   
+
          !md_netfile = tempstring_netfile
          !md_1dfiles%structures = converted_fnamesstring
          !md_1dfiles%cross_section_definitions = converted_crsdefsstring
@@ -1518,7 +1496,6 @@ contains
       end if
 
    end subroutine makelongculverts_commandline
-
 
    elemental function node_has_key(node, keystr, valuestr) result(has_key)
       use string_module, only: strcmpi

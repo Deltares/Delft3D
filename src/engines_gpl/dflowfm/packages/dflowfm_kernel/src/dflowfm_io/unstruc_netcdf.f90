@@ -2959,7 +2959,7 @@ contains
       use m_partitioninfo, only : jampi, idomain, iglobal_s
       use m_structures, only : get_max_numlinks, valculvert, valgenstru, valweirgen, valorifgen, valpump
       use m_globalparameters, only : st_general_st, st_weir, st_orifice
-      use m_longculverts, only : nlongculverts, longculverts
+      use m_longculverts_data, only : nlongculverts, longculverts
       use m_structures_saved_parameters, only : process_structures_saved_parameters, define_ncdf_data_id, write_data_to_file
       use m_gettaus, only : gettaus
       use m_gettauswave, only : gettauswave
@@ -15792,10 +15792,10 @@ contains
 
             if (n <= ndx1d .and. associated(meshgeom1d%ngeopointx)) then ! exclude boundary nodes
                ! Also store the original mesh1d/network variables in the new flowgeom order for ndx1d nodes:
-               k1 = nodePermutation(nd(ndx2d + n)%nod(1)) ! This is the node index from *before* setnodadm(),
+               k1 = nodePermutation(nd(ndx2d + n)%nod(1)) ! This is the netnode index from *before* setnodadm(),
                ! i.e., as was read from input *_net.nc file.
-               if (k1 <= 0 .or. k1 > ndx1d) then
-                  k1 = n
+               if (size(meshgeom1d%nodeidx_inverse) > 0) then
+                  k1 = meshgeom1d%nodeidx_inverse(k1)
                end if
                   nodebranchidx_remap(n) = meshgeom1d%nodebranchidx(k1)
                   nodeoffsets_remap(n) = meshgeom1d%nodeoffsets(k1)
@@ -17367,7 +17367,7 @@ contains
       use m_1d_structures
       use m_General_Structure
       use fm_external_forcings_data
-      use m_longculverts
+      use m_longculverts_data, only : longculverts, nlongculverts
       implicit none
       integer, intent(in) :: ncid !< ID of the rst file
       character(len=*), intent(in) :: filename !< Name of rst file.

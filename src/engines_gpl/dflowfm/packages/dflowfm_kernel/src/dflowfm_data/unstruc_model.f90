@@ -416,7 +416,7 @@ contains
       use fm_external_forcings_data, only: pillar
       use m_sferic
       use unstruc_caching
-      use m_longculverts
+      use m_longculverts, only: initialize_long_culverts
       use unstruc_channel_flow
       use unstruc_netcdf, only: unc_meta_net_file
       use system_utils, only: remove_path
@@ -494,7 +494,7 @@ contains
          call SetMessage(LEVEL_INFO, 'Reading Structures ...')
          call readStructures(network, md_1dfiles%structures, is_path_relative=md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
-         call initialize_long_culverts(md_1dfiles%structures)
+         call initialize_long_culverts(md_1dfiles, md_convertlongculverts)
       end if
 
       call timstop(timerHandle)

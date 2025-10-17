@@ -48,7 +48,8 @@ contains
       use m_sediment, only: stm_included
       use m_oned_functions, only: setbobs_1d
       use m_structures, only: network
-      use m_longculverts
+      use m_longculverts, only: find1d2dculvertlinks, setLongCulvert1D2DLinkAngles, longculvertsToProfs
+      use m_longculverts_data, only: newculverts, nlongculverts, longculverts
 
       integer :: L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, Lf, mis, i, numcoords, ibotL
       real(kind=dp) :: bl1, bl2, bedlevel_at_link, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
