@@ -987,7 +987,7 @@ contains
       !allocate(nnodeids(meshgeom1d%nnodes))
       call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
       call reallocP(meshgeom1d%nodeidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
-      call reallocP(meshgeom1d%nodeidx_inverse, numk, keepexisting=.true., fill=-999)
+      call reallocP(meshgeom1d%nodeidx_inverse, size(kc), keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nodebranchidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nodeoffsets, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%edgebranchidx, meshgeom1d%numedge, keepexisting=.true., fill=-999)
