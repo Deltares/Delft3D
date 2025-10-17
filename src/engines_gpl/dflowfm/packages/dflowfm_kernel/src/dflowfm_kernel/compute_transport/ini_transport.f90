@@ -184,8 +184,6 @@ contains
             do i = ISED1, ISEDN
                ised = i - ISED1 + 1
                const_names(i) = trim(stmpar%sedpar%NAMSED(sedtot2sedsus(ised))) ! JRE - netcdf output somehow does not tolerate spaces in varnames?
-               !call remove_all_spaces(const_names(i))                             ! see whether this fix works
-               !const_names(i) = trim(const_names(i))
             end do
             !
             !   Map sfnames to const_names

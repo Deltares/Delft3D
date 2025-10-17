@@ -1004,7 +1004,7 @@ contains
                cycle
             end if
             !
-            ! sediment transport governed by bedoad vector and reference concentration
+            ! sediment transport governed by bedload vector and reference concentration
             !
             suspfrac = has_advdiff(tratyp(l))
             !

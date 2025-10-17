@@ -5,6 +5,10 @@
             "issuedTo": "Stichting Deltares"
         },
         {
+            "file": "lib\\dsle.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
             "file": "bin\\ddcouple.exe",
             "issuedTo": "Stichting Deltares"
         },

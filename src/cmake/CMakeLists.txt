@@ -21,11 +21,9 @@ set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the locat
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
 cmake_path(GET PARENT_DIR PARENT_PATH dir)
 
-
 # Set unit and integration test root directory
 set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
-set(nefis_tests_dir ${dir}/test/nefis_test)
 
 include(modules.cmake)
 
@@ -172,6 +170,14 @@ if (WIN32)
     set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
 endif(WIN32)
 
+# getopt:
+#     Windows: use prebuild library in ".../getopt/x64"
+#     Linux  : compile source code  using ".../getopt/cmake_deltares/CMakeLists.txt"
+set(getopt_include_path ${checkout_src_root}/third_party_open/getopt)
+if (WIN32)
+    set(getopt_library_path_win ${checkout_src_root}/third_party_open/getopt/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
+endif(WIN32)
+
 ### Configuration names
 
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
@@ -206,6 +212,7 @@ set(tools_gpl_configuration "TOOLS_GPL")
 set(drr_configuration "DRR")
 set(rtc_configuration "RTC")
 set(fbc_configuration "FBC")
+set(dsle_configuration "DSLE")
 
 # Combined (multi-component) configurations for running specific testbenches
 # These are equivalent to our branch-prefixes
@@ -238,6 +245,7 @@ if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
      OR ${configuration_type} STREQUAL ${drr_configuration}
      OR ${configuration_type} STREQUAL ${rtc_configuration}
      OR ${configuration_type} STREQUAL ${fbc_configuration}
+     OR ${configuration_type} STREQUAL ${dsle_configuration}
      OR ${configuration_type} STREQUAL ${fm-suite_configuration}
      OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
      OR ${configuration_type} STREQUAL ${all_configuration}
@@ -255,6 +263,9 @@ if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
 endif()
 
 ### Component configurations
+
+# Unit test configuration, should be findable for every configuration
+include(configurations/miscellaneous/unit_test_configuration.cmake)
 
 # D-Flow FM configuration
 if(${configuration_type} STREQUAL ${dflowfm_configuration})
@@ -327,6 +338,11 @@ endif()
 if(${configuration_type} STREQUAL ${fbc_configuration})
     message(STATUS "Generating solution for FBC-tools ...")
     include(configurations/components/fbc_configuration.cmake)
+endif()
+
+if(${configuration_type} STREQUAL ${dsle_configuration})
+    message(STATUS "Generating solution for D-SLE ...")
+    include(configurations/components/dsle_configuration.cmake)
 endif()
 
 ### Composed configurations for testbenches

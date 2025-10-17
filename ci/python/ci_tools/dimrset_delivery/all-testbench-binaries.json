@@ -3,7 +3,7 @@
         {
             "file": "bin\\agrhyd.exe",
             "issuedTo": "Stichting Deltares"
-        },
+        },        
         {
             "file": "bin\\ddcouple.exe",
             "issuedTo": "Stichting Deltares"
@@ -543,6 +543,18 @@
         {
             "file": "lib\\flow2d3d_sp.dll",
             "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\dsle.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\vcomp140.dll",
+            "issuedTo": "Microsoft Windows Software Compatibility Publisher"
+        },
+        {
+            "file": "lib\\ucrtbased.dll",
+            "issuedTo": "Microsoft Corporation"
         }
     ],
     "notSigned": [
