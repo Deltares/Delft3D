@@ -15851,8 +15851,8 @@ contains
                y1du(n1dedges) = yu(L)
                L1 = Lperm(ln2lne(L)) ! This is the edge index from *before* setnodadm(),
                ! i.e., as was read from input *_net.nc file.
-               if (L1 <= 0 .or. L1 > size(edgebranchidx_remap)) then ! Indicates that no Deltares-0.10 network topology/branchids have been read.
-                  l1 = n1dedges
+               if (associated(meshgeom1d%linkedge)) then 
+                  L1 = meshgeom1d%linkedge(L1)
                end if
                if(associated(meshgeom1d%ngeopointx)) then
                   edgebranchidx_remap(n1dedges) = meshgeom1d%edgebranchidx(L1)

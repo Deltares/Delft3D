@@ -987,10 +987,11 @@ contains
       !allocate(nnodeids(meshgeom1d%nnodes))
       call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
       call reallocP(meshgeom1d%nodeidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
-      call reallocP(meshgeom1d%nodeidx_inverse, size(kc), keepexisting=.true., fill=-999)
+      call reallocP(meshgeom1d%nodeidx_inverse, size(kc), keepexisting=.false., fill=-999)
       call reallocP(meshgeom1d%nodebranchidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nodeoffsets, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%edgebranchidx, meshgeom1d%numedge, keepexisting=.true., fill=-999)
+      call reallocP(meshgeom1d%linkedge, size(kc), keepexisting=.false., fill=-999)
       call reallocP(meshgeom1d%edgeoffsets, meshgeom1d%numedge, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%ngeopointx, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%ngeopointy, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
@@ -1059,6 +1060,9 @@ contains
             meshgeom1d%nodeoffsets(newnodeindex) = pathlength
             newnodeindex = newnodeindex + 1
             call connectdbn(k1, k2, linksCulv(j))
+            if (kn3typ /= 5) then ! Save 1D edge mapping for flowgeom writing
+               meshgeom1d%linkedge(linksCulv(j)) = newedgeindex - 1
+            end if
             if (allocated(dxe)) then
                dxe(linksCulv(j)) = pathdiff
             end if
