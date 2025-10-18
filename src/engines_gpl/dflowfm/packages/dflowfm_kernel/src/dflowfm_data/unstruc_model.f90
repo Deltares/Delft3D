@@ -43,7 +43,7 @@ module unstruc_model
    use netcdf, only: nf90_double
    use properties, only: prop_get, prop_file, tree_create, tree_destroy
    use m_waveconst
-   use m_flow_parameters, only: min_water_level_change_break
+   use m_flowparameters, only: min_water_level_change_break
 
    implicit none
 
