@@ -42,7 +42,7 @@ module m_comp_fluxver
 contains
 
    subroutine comp_fluxver(NUMCONST, limtyp, tetavert, Ndkx, zws, qw, kbot, ktop, sed, nsubsteps, jaupdate, ndeltasteps, flux, wsf)
-      use precision, only: dp
+      use precision, only: dp, comparereal
       use m_flowgeom, only: Ndx, ba, kfs ! static mesh information
       use m_flowtimes, only: dts
       use m_flow, only: s1, epshsdif, cffacver, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
@@ -84,7 +84,7 @@ contains
 
       if (timon) call timstrt("comp_fluxver", ithndl)
 
-      if (1.0_dp - tetavert < DTOL) goto 1234 ! nothing to do
+      if (comparereal(tetavert, 1.0_dp)) goto 1234 ! nothing to do
 
       !if ( limtyp.eq.6 ) then
       !   call message(LEVEL_ERROR, 'transport/comp_fluxver: limtyp==6 not supported')
@@ -147,8 +147,6 @@ contains
                else
                   cf = 1.0_dp ! or always use it, is MUSCL = default
                end if
-
-               if (tetavert == 1.0_dp) cycle
 
                sedL = sed(j, kL)
                sedR = sed(j, kR)
