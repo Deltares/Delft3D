@@ -85,22 +85,6 @@
             </location>
             <maxRunTime>60.0</maxRunTime> <!-- seconds -->
         </testCase>
-        <testCase name="drr_windowsref">
-            <programs>
-                <program ref="dimr">
-                    <arguments>
-                        <argument>dimr.xml</argument>
-                    </arguments>
-                </program>
-            </programs>
-            <location ref="reference_results" type="reference">
-                <from>win64</from>
-            </location>
-            <location ref="cases" type="input">
-                <from>.</from>
-            </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
-        </testCase>
     </defaultTestCases>
     <!--
     testCases

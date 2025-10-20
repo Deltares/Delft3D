@@ -1,5 +1,5 @@
 
-#include "zsf_config.h"
+#include "dsle_config.h"
 #include "csv/load_csv.h"
 #include "ini/ini_read.h"
 #include "timestamp.h"
@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int zsf_ini_handler(char *section, char *key, char *value, void *data_ptr) {
-  zsf_config_t *config_ptr = (zsf_config_t *)data_ptr;
+static int dsle_ini_handler(char *section, char *key, char *value, void *data_ptr) {
+  dsle_config_t *config_ptr = (dsle_config_t *)data_ptr;
   int status = INI_OK;
 
   assert(section);
@@ -21,7 +21,7 @@ static int zsf_ini_handler(char *section, char *key, char *value, void *data_ptr
     sealock_index_t lock_index = config_ptr->num_locks - 1;
     assert(!*key || lock_index >= 0);
     if (!*key) {
-      if (config_ptr->num_locks < ZSF_MAX_LOCKS) {
+      if (config_ptr->num_locks < DSLE_MAX_LOCKS) {
         status = sealock_defaults(&config_ptr->locks[config_ptr->num_locks]);
         config_ptr->num_locks++;
       } else {
@@ -115,7 +115,7 @@ static int zsf_ini_handler(char *section, char *key, char *value, void *data_ptr
   return status;
 }
 
-int zsf_config_load(zsf_config_t *config_ptr, const char *filepath) {
+int dsle_config_load(dsle_config_t *config_ptr, const char *filepath) {
   assert(config_ptr);
   assert(filepath);
   config_ptr->num_locks = 0;
@@ -124,10 +124,10 @@ int zsf_config_load(zsf_config_t *config_ptr, const char *filepath) {
   config_ptr->end_time = 0.0;
   config_ptr->current_time = 0.0;
   config_ptr->log_level = logINFO;
-  return ini_read(filepath, zsf_ini_handler, config_ptr);
+  return ini_read(filepath, dsle_ini_handler, config_ptr);
 }
 
-void zsf_config_unload(zsf_config_t *config_ptr) {
+void dsle_config_unload(dsle_config_t *config_ptr) {
   if (config_ptr) {
     while (config_ptr->num_locks) {
       config_ptr->num_locks--;
@@ -141,7 +141,7 @@ void zsf_config_unload(zsf_config_t *config_ptr) {
 
 // Find sealock in config by id.
 // Returns -1 if not found.
-sealock_index_t zsf_config_get_lock_index(const zsf_config_t *config_ptr, const char *lock_id) {
+sealock_index_t dsle_config_get_lock_index(const dsle_config_t *config_ptr, const char *lock_id) {
   for (sealock_index_t index = 0; index < config_ptr->num_locks; index++) {
     if (!strcmp(lock_id, config_ptr->locks[index].id)) {
       return index;

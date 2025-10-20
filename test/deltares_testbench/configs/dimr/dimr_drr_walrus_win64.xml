@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:xi="http://www.w3.org/2001/XInclude"
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3" 
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xmlns:xi="http://www.w3.org/2001/XInclude" 
         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
     <!--
     Basic Windows configuration file: For "wes" (Wind Enhanced Scheme)
@@ -65,23 +65,6 @@
     -->
     <defaultTestCases>
         <testCase name="drr_default">
-            <programs>
-                <program ref="dimr">
-                    <arguments>
-                        <argument>dimr.xml</argument>
-                    </arguments>
-                </program>
-            </programs>
-            <location ref="reference_results" type="reference">
-                <from>win64</from>
-            </location>
-            <location ref="cases" type="input">
-                <from>.</from>
-            </location>
-            <maxRunTime>60.0</maxRunTime>
-            <!-- seconds -->
-        </testCase>
-        <testCase name="drr_windowsref">
             <programs>
                 <program ref="dimr">
                     <arguments>

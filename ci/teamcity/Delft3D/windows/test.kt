@@ -78,9 +78,6 @@ object WindowsTest : BuildType({
         python {
             name = "Run TestBench.py"
             workingDir = "test/deltares_testbench/"
-            environment = venv {
-                requirementsFile = "pip/win-requirements.txt"
-            }
             command = file {
                 filename = "TestBench.py"
                 scriptArguments = """

@@ -7,7 +7,7 @@ ffibuilder = FFI()
 
 ffibuilder.cdef(
     """
-    typedef struct zsf_param_t {
+    typedef struct dsle_param_t {
         double lock_length;
         double lock_width;
         double lock_bottom;
@@ -35,9 +35,9 @@ ffibuilder.cdef(
         double sill_height_lake;
         double rtol;
         double atol;
-    } zsf_param_t;
+    } dsle_param_t;
 
-    typedef struct zsf_results_t {
+    typedef struct dsle_results_t {
         double mass_transport_lake;
         double salt_load_lake;
         double discharge_from_lake;
@@ -49,16 +49,16 @@ ffibuilder.cdef(
         double discharge_from_sea;
         double discharge_to_sea;
         double salinity_to_sea;
-    } zsf_results_t;
+    } dsle_results_t;
 
-    typedef struct zsf_phase_state_t {
+    typedef struct dsle_phase_state_t {
         double salinity_lock;
         double saltmass_lock;
         double head_lock;
         double volume_ship_in_lock;
-    } zsf_phase_state_t;
+    } dsle_phase_state_t;
 
-    typedef struct zsf_phase_transports_t {
+    typedef struct dsle_phase_transports_t {
         double mass_transport_lake;
         double volume_from_lake;
         double volume_to_lake;
@@ -72,9 +72,9 @@ ffibuilder.cdef(
         double discharge_from_sea;
         double discharge_to_sea;
         double salinity_to_sea;
-    } zsf_phase_transports_t;
+    } dsle_phase_transports_t;
 
-    typedef struct zsf_aux_results_t {
+    typedef struct dsle_aux_results_t {
         double z_fraction;
         double dimensionless_door_open_time;
         double volume_to_lake;
@@ -91,44 +91,44 @@ ffibuilder.cdef(
         double salinity_lock_2;
         double salinity_lock_3;
         double salinity_lock_4;
-        zsf_phase_transports_t transports_phase_1;
-        zsf_phase_transports_t transports_phase_2;
-        zsf_phase_transports_t transports_phase_3;
-        zsf_phase_transports_t transports_phase_4;
-    } zsf_aux_results_t;
+        dsle_phase_transports_t transports_phase_1;
+        dsle_phase_transports_t transports_phase_2;
+        dsle_phase_transports_t transports_phase_3;
+        dsle_phase_transports_t transports_phase_4;
+    } dsle_aux_results_t;
 
-    int zsf_initialize_state(const zsf_param_t *p, zsf_phase_state_t *state,
+    int dsle_initialize_state(const dsle_param_t *p, dsle_phase_state_t *state,
                               double salinity_lock, double head_lock);
 
-    int zsf_step_phase_1(const zsf_param_t *p, double t_level,
-                          zsf_phase_state_t *state,
-                          zsf_phase_transports_t *results);
+    int dsle_step_phase_1(const dsle_param_t *p, double t_level,
+                          dsle_phase_state_t *state,
+                          dsle_phase_transports_t *results);
 
-    int zsf_step_phase_2(const zsf_param_t *p, double t_open_lake,
-                          zsf_phase_state_t *state,
-                          zsf_phase_transports_t *results);
+    int dsle_step_phase_2(const dsle_param_t *p, double t_open_lake,
+                          dsle_phase_state_t *state,
+                          dsle_phase_transports_t *results);
 
-    int zsf_step_phase_3(const zsf_param_t *p, double t_level,
-                          zsf_phase_state_t *state,
-                          zsf_phase_transports_t *results);
+    int dsle_step_phase_3(const dsle_param_t *p, double t_level,
+                          dsle_phase_state_t *state,
+                          dsle_phase_transports_t *results);
 
-    int zsf_step_phase_4(const zsf_param_t *p, double t_open_sea,
-                          zsf_phase_state_t *state,
-                          zsf_phase_transports_t *results);
+    int dsle_step_phase_4(const dsle_param_t *p, double t_open_sea,
+                          dsle_phase_state_t *state,
+                          dsle_phase_transports_t *results);
 
-    int zsf_step_flush_doors_closed(const zsf_param_t *p,
+    int dsle_step_flush_doors_closed(const dsle_param_t *p,
                                     double t_flushing,
-                                    zsf_phase_state_t *state,
-                                    zsf_phase_transports_t *results);
+                                    dsle_phase_state_t *state,
+                                    dsle_phase_transports_t *results);
 
-    void zsf_param_default(zsf_param_t *p);
+    void dsle_param_default(dsle_param_t *p);
 
-    int zsf_calc_steady(const zsf_param_t *p, zsf_results_t *results,
-                         zsf_aux_results_t *aux_results);
+    int dsle_calc_steady(const dsle_param_t *p, dsle_results_t *results,
+                         dsle_aux_results_t *aux_results);
 
-    const char * zsf_error_msg(int code);
+    const char * dsle_error_msg(int code);
 
-    const char * zsf_version();
+    const char * dsle_version();
 """
 )
 
@@ -138,10 +138,10 @@ else:
     extra_compile_args = ["/MD"]
 
 ffibuilder.set_source(
-    "pyzsf._zsf_cffi",
-    '#include "zsf.h"',
-    libraries=["zsf-static"],
-    define_macros=[("ZSF_STATIC", None), ("Py_LIMITED_API", None)],
+    "pydsle._dsle_cffi",
+    '#include "dsle.h"',
+    libraries=["dsle-static"],
+    define_macros=[("DSLE_STATIC", None), ("Py_LIMITED_API", None)],
     py_limited_api=True,
     extra_compile_args=extra_compile_args,
 )
