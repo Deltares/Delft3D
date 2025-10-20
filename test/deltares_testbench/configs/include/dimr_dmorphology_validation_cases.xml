@@ -45,7 +45,7 @@
       </checks>
     </testCase>    
     <testCase name="e02_f039_c01_sedimentationtest" ref="dflowfm_default">
-      <path version="2025-07-16T09:23:33.809000">e02_dflowfm/f039_morphology_3d/c01_sedimentationtest</path>
+      <path version="2025-10-16T07:23:09.081000">e02_dflowfm/f039_morphology_3d/c01_sedimentationtest</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/massbal_1frac_map.nc" type="netCDF">
@@ -105,7 +105,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c06_sediment_bc_3d_bc_varying" ref="dflowfm_default">
-      <path version="2025-04-04T13:59:28.929000">e02_dflowfm/f039_morphology_3d/c06_sediment_bc_3d_bc_varying</path>
+      <path version="2025-10-16T07:23:13.391000">e02_dflowfm/f039_morphology_3d/c06_sediment_bc_3d_bc_varying</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/channel_his.nc" type="netCDF">
@@ -118,7 +118,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c07_sediment_ini_3d_uniform_polygon" ref="dflowfm_default">
-      <path version="2025-07-16T09:23:56.532000">e02_dflowfm/f039_morphology_3d/c07_sediment_ini_3d_uniform_polygon</path>
+      <path version="2025-10-16T07:23:17.607000">e02_dflowfm/f039_morphology_3d/c07_sediment_ini_3d_uniform_polygon</path>
       <maxRunTime>90.0</maxRunTime>
       <checks> 
         <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
@@ -131,7 +131,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c08_sediment_ini_3d_uniform_samples" ref="dflowfm_default">
-      <path version="2025-07-16T09:24:06.094000">e02_dflowfm/f039_morphology_3d/c08_sediment_ini_3d_uniform_samples</path>
+      <path version="2025-10-16T07:23:21.931000">e02_dflowfm/f039_morphology_3d/c08_sediment_ini_3d_uniform_samples</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
@@ -144,7 +144,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c09_sediment_ini_3d_verticalprofile" ref="dflowfm_default">
-      <path version="2025-07-16T09:24:15.825000">e02_dflowfm/f039_morphology_3d/c09_sediment_ini_3d_verticalprofile</path>
+      <path version="2025-10-16T07:23:26.074000">e02_dflowfm/f039_morphology_3d/c09_sediment_ini_3d_verticalprofile</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
@@ -157,7 +157,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c10_sediment_ini_3d_verticalsigmaprofile" ref="dflowfm_default">
-      <path version="2025-07-16T09:24:26.016000">e02_dflowfm/f039_morphology_3d/c10_sediment_ini_3d_verticalsigmaprofile</path>
+      <path version="2025-10-16T07:23:30.108000">e02_dflowfm/f039_morphology_3d/c10_sediment_ini_3d_verticalsigmaprofile</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/massbal_1frac_his.nc" type="netCDF">
@@ -170,7 +170,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f039_c11_rouse_algebraic_30lyrs" ref="dflowfm_default">
-      <path version="2025-04-04T13:59:45.212000">e02_dflowfm/f039_morphology_3d/c11_rouse_algebraic_30lyrs</path>
+      <path version="2025-10-16T07:23:34.466000">e02_dflowfm/f039_morphology_3d/c11_rouse_algebraic_30lyrs</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/rouse_his.nc" type="netCDF">
@@ -183,7 +183,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f022_c99_duneheight" ref="dflowfm_default">
-      <path version="2024-10-03T13:45:00">e02_dflowfm/f022_morphology_2D/c99_duneheight</path>
+      <path version="2025-10-16T07:20:13.024000">e02_dflowfm/f022_morphology_2D/c99_duneheight</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
@@ -194,7 +194,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f022_c101_duneadvection" ref="dflowfm_default">
-      <path version="2025-02-24T13:43:54.742000">e02_dflowfm/f022_morphology_2D/c101_duneadvection</path>
+      <path version="2025-10-16T07:18:51.758000">e02_dflowfm/f022_morphology_2D/c101_duneadvection</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
@@ -205,7 +205,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f022_c102_dunediffusion" ref="dflowfm_default">
-      <path version="2025-02-24T13:47:31.996000">e02_dflowfm/f022_morphology_2D/c102_dunediffusion</path>
+      <path version="2025-10-16T07:18:57.585000">e02_dflowfm/f022_morphology_2D/c102_dunediffusion</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_r001/r001_map.nc" type="netCDF">
