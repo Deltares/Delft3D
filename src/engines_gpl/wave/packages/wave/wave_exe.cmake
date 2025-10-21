@@ -1,5 +1,5 @@
 # Gather source files
-set(executable_files ${src_path}/wave_exe.f90) # Because the .dll and the .exe are defined in the same directory, retrieve the relevant files for the executable alone
+set(executable_files ${src_path}/wave_exe.F90) # Because the .dll and the .exe are defined in the same directory, retrieve the relevant files for the executable alone
 
 # Define icon
 set(icon_file resource/wl.ico)
@@ -9,6 +9,10 @@ set(executable_name wave_exe)
 add_executable(${executable_name}   ${executable_files}
                                     ${rc_version_file}
                                     ${icon_file})
+
+if(HAS_PRECICE_FM_WAVE_COUPLING)
+    target_compile_definitions(${executable_name} PRIVATE HAS_PRECICE_FM_WAVE_COUPLING)
+endif()
 
 # Set dependencies
 if (WIN32)

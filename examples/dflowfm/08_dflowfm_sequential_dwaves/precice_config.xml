@@ -1,46 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <precice-configuration>
   <log>
-    <sink type="stream" output="stdout" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
+    <sink type="file" output="precice_debug_output.txt" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
   </log>
 
-  <data:scalar name="fm-message" />
-  <data:scalar name="wave-message" />
+  <data:scalar name="fm-data" />
+  <data:scalar name="wave-data" />
 
   <mesh name="fm-mesh" dimensions="2">
-    <use-data name="fm-message" />
-    <use-data name="wave-message" />
+    <use-data name="fm-data" />
+    <use-data name="wave-data" />
   </mesh>
 
   <mesh name="wave-mesh" dimensions="2">
-    <use-data name="wave-message" />
-    <use-data name="fm-message" />
+    <use-data name="wave-data" />
+    <use-data name="fm-data" />
   </mesh>
 
   <participant name="fm">
     <provide-mesh name="fm-mesh" />
     <receive-mesh name="wave-mesh" from="wave"/>
-    <write-data name="fm-message" mesh="fm-mesh"/>
-    <read-data name="wave-message" mesh="fm-mesh"/>
+    <write-data name="fm-data" mesh="fm-mesh"/>
+    <read-data name="wave-data" mesh="fm-mesh"/>
     <mapping:nearest-neighbor direction="write" from="fm-mesh" to="wave-mesh" constraint="consistent"/>
-    <mapping:nearest-neighbor direction="read" from="wave-mesh" to="fm-mesh" constraint="consistent"/>
   </participant>
 
   <participant name="wave">
     <provide-mesh name="wave-mesh" />
     <receive-mesh name="fm-mesh" from="fm"/>
-    <write-data name="wave-message" mesh="wave-mesh"/>
-    <read-data name="fm-message" mesh="wave-mesh"/>
+    <write-data name="wave-data" mesh="wave-mesh"/>
+    <read-data name="fm-data" mesh="wave-mesh"/>
     <mapping:nearest-neighbor direction="write" from="wave-mesh" to="fm-mesh" constraint="consistent"/>
-    <mapping:nearest-neighbor direction="read" from="fm-mesh" to="wave-mesh" constraint="consistent"/>
   </participant>
 
   <m2n:sockets acceptor="fm" connector="wave" exchange-directory=".." />
 
   <coupling-scheme:serial-explicit>
-    <time-window-size value="-1" method="first-participant"/>
-    <participants first="fm" second="wave" />
-    <exchange data="fm-message" mesh="wave-mesh" from="fm" to="wave" />
-    <exchange data="wave-message" mesh="fm-mesh" from="wave" to="fm" />
+    <time-window-size value="3600" method="fixed" />
+    <max-time value="90000" />
+    <participants first="wave" second="fm" />
+    <exchange data="fm-data" mesh="wave-mesh" from="fm" to="wave" />
+    <exchange data="wave-data" mesh="fm-mesh" from="wave" to="fm" />
   </coupling-scheme:serial-explicit>
 </precice-configuration>

@@ -49,6 +49,11 @@ module wave_main
    public wave_main_init
    public wave_main_step
    public wave_main_finish
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   public :: initialize_fm_coupling
+   public :: is_fm_coupling_ongoing
+   public :: advance_fm_time_window
+#endif
    
    public wavedata
 !
@@ -109,18 +114,52 @@ end subroutine couple_to_greeter_dummy
 #endif
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   subroutine couple_to_fm()
-      use precice, only: precicef_create
+   subroutine initialize_fm_coupling()
+      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data
+      use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none (type, external)
 
-      integer(kind=c_int), parameter :: precice_component_name_length = 4
-      character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "wave"
-      integer(kind=c_int), parameter :: precice_config_name_length = 21
-      character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
+      character(kind=c_char, len=*), parameter :: precice_component_name = "wave"
+      character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
+      character(kind=c_char, len=*), parameter :: mesh_name = "wave-mesh"
+      character(kind=c_char, len=*), parameter :: data_name = "wave-data"
+      integer(kind=c_int), parameter :: number_of_vertices = 12;
+      real(kind=c_double), dimension(number_of_vertices * 2) :: mesh_coordinates
+      integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
+      real(kind=c_double), dimension(number_of_vertices) :: initial_data
 
-      ! precicef_create_with_communicator
-      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
-   end subroutine couple_to_fm
+      integer(kind=c_int) :: mesh_dimensions
+
+      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
+      call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
+      print *, '[D-Waves] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
+
+      mesh_coordinates = [(real(i / 2, kind=c_double) + 0.5_c_double, integer :: i = 1, 2 * number_of_vertices)] ! Diagonal line {(0.5,0.5), (1.5,1.5), (2.5,2.5), ...}
+      call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
+
+      initial_data = [(hypot(mesh_coordinates(2 * i - 1), mesh_coordinates(2 * i)), integer :: i = 1, number_of_vertices)] ! wave-data is equal to distance from origin
+      call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
+
+      call precicef_initialize()
+   end subroutine initialize_fm_coupling
+
+   function is_fm_coupling_ongoing() result(is_ongoing)
+      use precice, only: precicef_is_coupling_ongoing
+      use, intrinsic :: iso_c_binding, only: c_int
+      integer(kind=c_int) :: is_ongoing
+
+      call precicef_is_coupling_ongoing(is_ongoing)
+   end function is_fm_coupling_ongoing
+
+   subroutine advance_fm_time_window()
+      use, intrinsic :: iso_c_binding, only: c_double
+      use precice, only: precicef_get_max_time_step_size, precicef_advance
+
+      real(kind=c_double) :: max_time_step
+
+      call precicef_get_max_time_step_size(max_time_step)
+      call precicef_advance(max_time_step)
+   end subroutine advance_fm_time_window
 #endif
 !
 ! ====================================================================================
@@ -187,9 +226,6 @@ function wave_main_init(mode_in, mdw_file) result(retval)
 
 #if defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
    call couple_to_greeter_dummy()
-#endif
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   call couple_to_fm()
 #endif
 end function wave_main_init
 

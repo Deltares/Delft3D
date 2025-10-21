@@ -51,20 +51,39 @@ module unstruc_api
    implicit none
 
    real(kind=dp) :: cpuall0
+
 contains
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_wave_coupling()
-      use precice, only: precicef_create
+      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, precicef_advance
       use m_partitioninfo, only: numranks, my_rank
-      use, intrinsic :: iso_c_binding, only: c_int, c_char
+      use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
+      implicit none (type, external)
 
-      integer(kind=c_int), parameter :: precice_component_name_length = 2
-      character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "fm"
-      integer(kind=c_int), parameter :: precice_config_name_length = 21
-      character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
+      character(kind=c_char, len=*), parameter :: precice_component_name = "fm"
+      character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
+      character(kind=c_char, len=*), parameter :: mesh_name = "fm-mesh"
+      character(kind=c_char, len=*), parameter :: data_name = "fm-data"
+      integer(kind=c_int), parameter :: number_of_vertices = 13;
+      real(kind=c_double), dimension(number_of_vertices * 2) :: mesh_coordinates
+      integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
+      real(kind=c_double), dimension(number_of_vertices) :: initial_data
 
-      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
+      integer(kind=c_int) :: mesh_dimensions
+
+      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
+      call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
+      print *, '[FM] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
+
+      mesh_coordinates = [(real(i / 2, kind=c_double), integer :: i = 1, 2 * number_of_vertices)] ! Diagonal line {(0,0), (1,1), (2,2), ...}
+      call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
+
+      initial_data = [(real(i, kind=c_double), integer :: i = 1, number_of_vertices)] ! fm-data is equal to x-coordinates
+      call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
+
+      call precicef_initialize()
+
    end subroutine initialize_wave_coupling
 
    subroutine finalize_wave_coupling()
@@ -371,6 +390,12 @@ contains
       use dfm_error
       use m_drawthis
       use m_draw_nu
+      use m_flowtimes, only: dt_user
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+      use precice, only: precicef_advance
+      use, intrinsic :: iso_c_binding, only: c_double
+#endif
+      implicit none (type, external)
 
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
@@ -386,10 +411,11 @@ contains
          goto 1234
       end if
 
-      ! call inctime_user()
-
       call flow_usertimestep(key, iresult) ! one user_step consists of several flow computational time steps
 
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+      call precicef_advance(real(dt_user, kind=c_double))
+#endif
       if (iresult /= DFM_NOERR) then
          jastop = 1
          goto 888

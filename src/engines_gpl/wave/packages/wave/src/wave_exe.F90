@@ -34,6 +34,11 @@ program waves_main
 !!--declarations----------------------------------------------------------------
    use wave_main, only: wave_main_init, wave_main_step, wave_main_finish
    use precision
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   use precice, only: precicef_get_max_time_step_size
+   use, intrinsic :: iso_c_binding, only: c_double
+   use wave_main, only: initialize_fm_coupling, is_fm_coupling_ongoing, advance_fm_time_window
+#endif
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
    ! Activate the following line
@@ -56,6 +61,9 @@ program waves_main
    real(hp)                                     :: stepsize
    character(20)                                :: tmpchar
    character(256)                               :: mdw_file     ! filename mdw file
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   real(kind=c_double) :: max_time_step
+#endif
 
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -94,15 +102,27 @@ program waves_main
    do i=1,len(mdw_file)
       if (ichar(mdw_file(i:i)) == 0) mdw_file(i:i) = ' '
    enddo
-   !
+
    retval = wave_main_init(mode_in, mdw_file)
-   !
-   ! ====================================================================================
-   ! RUN
-   ! ====================================================================================
-   !
+
+
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   call initialize_fm_coupling()
+
+   ! DIMR calls wave ones, updating it to 0.0 seconds, before running FM and wave at later time points
+   retval = wave_main_step(0.0_hp)
+   call advance_fm_time_window()
+
+   do while(is_fm_coupling_ongoing())
+      call precicef_get_max_time_step_size(max_time_step)
+      stepsize = real(max_time_step, kind=hp)
+      retval = wave_main_step(stepsize)
+      call advance_fm_time_window()
+   end do
+#else
    stepsize = -1.0_hp
    retval = wave_main_step(stepsize)
+#endif
    !
    ! ====================================================================================
    ! FINALIZE
