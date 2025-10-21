@@ -219,22 +219,77 @@ contains
                call linkstocentercartcomp(k, ustokes, wa) ! wa now 2*1 value or 2*1 vertical slice
             end if
 
-!        store values in valobs work array
             valobs(i, :) = dmiss ! Intended to have dmiss on inactive layers for output.
-            ! Fill valobs with water levels (ando so on, and so on!)
+            ! Fill valobs: Start with interpolateds values of hydrodynamic quantities needed for off-line nesting
+            !              (water levells, velocities, sality and temperature). Treat other quanitities (water quality, morpholgy, turbulence) as before (snapped)
+            !
+            ! Water levels
+            
             call interpolate_horizontal (s1,i,IPNT_S1,UNC_LOC_S) 
             
-            if (nshiptxy > 0) then
+           if (nshiptxy > 0) then
                if (allocated(zsp)) then
-                  valobs(i, IPNT_S1) = valobs(i, IPNT_S1) + zsp(k)
+                  tmp_interp = s1 + zsp
+                  call interpolate_horizontal (tmp_interp,i,IPNT_S1,UNC_LOC_S)
                end if
             end if
 
-            valobs(i, IPNT_HS) = s1(k) - bl(k)
+            ! Water Depth
+            tmp_interp = s1 - bl
+            call interpolate_horizontal (tmp_interp,i,IPNT_HS,UNC_LOC_S)
 
-            valobs(i, IPNT_BL) = bl(k)
-
+            ! Bed level
+            call interpolate_horizontal (bl        ,i,IPNT_BL,UNC_LOC_S)
             valobs(i, IPNT_CMX) = cmxobs(i)
+
+            ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
+            ! First       : allocate tmp_interp for 3D quantities
+            call realloc(tmp_interp, ndkx, keepExisting=.false., fill=0.0_dp)
+
+            ! Horizontal velocities (3D)
+            if (jahisvelocity > 0 .or. jahisvelvec > 0) then
+               call interpolate_horizontal (ueux,i,IPNT_UCX,UNC_LOC_S3D)
+               call interpolate_horizontal (ueuy,i,IPNT_UCY,UNC_LOC_S3D)
+            end if
+
+            ! Vertical velocities (3D)
+            if (model_is_3D()) then
+               call interpolate_horizontal (ucz,i,IPNT_UCZ,UNC_LOC_S3D)
+            end if
+
+            ! Velocity magnitude (3D)
+            if (jahisvelocity > 0) then
+               call interpolate_horizontal (ucmag,i,IPNT_UMAG,UNC_LOC_S3D)
+            end if
+
+            ! Depth averaged velocities (first ndx points of ucx/ucy array)
+            if (model_is_3D()) then
+               call interpolate_horizontal (ucx,i,IPNT_UCXQ,UNC_LOC_S)
+               call interpolate_horizontal (ucy,i,IPNT_UCYQ,UNC_LOC_S)
+            end if                    
+            
+            ! Salinity (interpolated)
+            if (jasal > 0) then
+               tmp_interp = constituents(isalt,:)
+               call interpolate_horizontal (tmp_interp,i,IPNT_SA1,UNC_LOC_S3D)
+            end if
+            
+            ! Temperature
+            if (jatem > 0) then
+               tmp_interp = constituents(itemp,:)
+               call interpolate_horizontal (tmp_interp,i,IPNT_TEM1,UNC_LOC_S3D)
+            end if
+            
+            ! Finally; vertical positions
+            !          interface
+            call interpolate_horizontal (zws,i,IPNT_ZWS,UNC_LOC_W)
+            !          centre: make temporary array with cellcentres
+            do j = 2, ndkx
+               tmp_interp(j) = 0.5_dp * (zws(j) + zws(j - 1))
+            end do
+            call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)     
+
+            ! Frome here: everything as snapped!!!
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0.0_dp
                valobs(i, IPNT_wy) = 0.0_dp
@@ -396,22 +451,24 @@ contains
                end do
             end if
 
-            if (model_is_3D()) then
-               valobs(i, IPNT_UCXQ) = ucx(k)
-               valobs(i, IPNT_UCYQ) = ucy(k)
-            end if
+            ! Taken care off by interpolate_horizontal
+!            if (model_is_3D()) then
+!               valobs(i, IPNT_UCXQ) = ucx(k)
+!               valobs(i, IPNT_UCYQ) = ucy(k)
+!            end if
 
             do kk = kb, kt
                klay = kk - kb + nlayb
+               ! Taken care off by interpolate_horizontal
+!               if (model_is_3D()) then
+!                  valobs(i, IPNT_ZCS + klay - 1) = 0.5_dp * (zws(kk) + zws(kk - 1))
+!               end if
 
-               if (model_is_3D()) then
-                  valobs(i, IPNT_ZCS + klay - 1) = 0.5_dp * (zws(kk) + zws(kk - 1))
-               end if
-
-               if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-                  valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
-                  valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
-               end if
+               ! Taken care off by interpolate_horizontal
+!               if (jahisvelocity > 0 .or. jahisvelvec > 0) then
+!                  valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
+!                  valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
+!               end if
 
                if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
                   if (hs(k) > epshu) then
@@ -425,15 +482,16 @@ contains
                   end if
                end if
 
-               if (model_is_3D()) then
-                  valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
-               end if
-               if (jasal > 0) then
-                  valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
-               end if
-               if (jatem > 0) then
-                  valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
-               end if
+!              Taken care off by interpolate horizontal (directly after water levels!)
+!               if (model_is_3D()) then
+!                  valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
+!               end if
+!               if (jasal > 0) then
+!                  valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
+!               end if
+!               if (jatem > 0) then
+!                  valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
+!               end if
                if (jahistur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
@@ -443,9 +501,11 @@ contains
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
                end if
-               if (jahisvelocity > 0) then
-                  valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
-               end if
+               
+               ! Taken care of by interpolate_horizontal
+               !if (jahisvelocity > 0) then
+               !   valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
+               !end if
                valobs(i, IPNT_QMAG + klay - 1) = 0.5_dp * (squ(kk) + sqi(kk))
 
                if (kmx == 0) then
@@ -499,7 +559,8 @@ contains
                call getlayerindices(k, nlayb, nrlay)
                do kk = kb - 1, kt
                   klay = kk - kb + nlayb + 1
-                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
+                  ! Taken care of by interpolate_horizontal
+!                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
                   if (iturbulencemodel >= 2 .and. jahistur > 0) then
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
