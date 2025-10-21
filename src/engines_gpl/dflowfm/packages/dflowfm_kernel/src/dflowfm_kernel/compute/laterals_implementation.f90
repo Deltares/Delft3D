@@ -260,12 +260,12 @@ contains
       
       if (.not. this%is_used) return
       
-      total_waterlevel = 0.0_dp
-      total_surface_area = 0.0_dp
       do i_lateral = 1, numlatsg
+         total_waterlevel = 0.0_dp
+         total_surface_area = 0.0_dp
          do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
             i_node = nnlat(i_nnlat)
-            total_waterlevel = total_waterlevel + s1(i_node)
+            total_waterlevel = total_waterlevel + s1(i_node)*a1(i_node)
             total_surface_area = total_surface_area + a1(i_node)
          end do
          this%data(i_lateral) = total_waterlevel / max(total_surface_area, eps10)
