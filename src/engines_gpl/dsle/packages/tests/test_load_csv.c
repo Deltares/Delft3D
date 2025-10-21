@@ -34,7 +34,7 @@ static void test_read_csv() {
   status = def_csv_column(&ctx, "label", string_type, set_label);
   TEST_ASSERT_MESSAGE(status == CSV_OK, "Failed to define label column.");
   /* load csv file */
-  status = load_csv(&ctx, "test_csv_input.csv");
+  status = load_csv(&ctx, "test_data/load_csv/test_csv_input.csv");
   TEST_ASSERT_MESSAGE(status == CSV_OK, "Failed to load CSV file.");
   /* get_csv_num_rows */
   TEST_ASSERT_EQUAL_size_t_MESSAGE(4, get_csv_num_rows(&ctx), "Unexpected number of rows.");

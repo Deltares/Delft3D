@@ -304,6 +304,7 @@ int load_csv(csv_context_t *context, char *filepath) {
   context->filepath = filepath;
   while (!feof(fp) && status == CSV_OK) {
     if (fgets(line, CSV_MAX_LINE_LENGTH, fp)) {
+     
       status = parse_line(context, line);
     }
   }
