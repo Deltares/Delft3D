@@ -238,6 +238,53 @@ contains
 
    end subroutine get_lateral_volume_per_layer
 
+   !> !< Initialize flowparameter, allocate arrays and set pointers
+   module subroutine initialize_flowparameter(this, num_elements, input_variable, weighing_variable)
+      class(t_flowparameter), intent(inout) :: this !< General structure for Flow parameters that require averaging.
+      real(kind=dp), dimension(:), pointer, intent(in) :: input_variable !< Input variable (e.g. water levels at flow nodes)
+      real(kind=dp), dimension(:), pointer, intent(in) :: weighing_variable !< Weighing variable (e.g. cell volumes at flow nodes)
+      integer, intent(in) :: num_elements !< Number of elements for which the flowparameter is computed.
+
+      allocate (this%values(num_elements))
+      this%num_elements = num_elements
+      this%input_variable => input_variable
+      this%weighing_variable => weighing_variable
+      this%is_used = .true.
+
+   end subroutine initialize_flowparameter
+
+   !> Set indexing parameters for flowparameter. These parameters define how the input_variable and weighing_variable
+   !! are mapped to the elements for which the flowparameter is computed.
+   module subroutine set_indexing_parameters_flowparameter(this, index_start, index_end, index_to_node)
+      class(t_flowparameter), intent(inout) :: this !< General structure for Flow parameters that require averaging.
+      integer, dimension(:), pointer, intent(in) :: index_start, index_end !< Indexing arrays defining the mapping of the indices for the different elements.
+      integer, dimension(:), pointer, intent(in) :: index_to_node !< Indexing array mapping indices to flow nodes.
+
+      this%index_start => index_start
+      this%index_end => index_end
+      this%index_to_node => index_to_node
+   end subroutine set_indexing_parameters_flowparameter
+
+   !> !< Update flowparameter, perform averaging.
+   module subroutine update_flowparameter(this)
+      class(t_flowparameter), intent(inout) :: this !< General structure for Flow parameters that require averaging.
+      real(kind=dp) :: cumulative_value, cumulative_weight
+      integer :: i_element, i_index, i_node
+
+      if (.not. this%is_used) return
+
+      do i_element = 1, this%num_elements
+         cumulative_value = 0.0_dp
+         cumulative_weight = 0.0_dp
+         do i_index = this%index_start(i_element), this%index_end(i_element)
+            i_node = this%index_to_node(i_index)
+            cumulative_value = cumulative_value + this%input_variable(i_node) * this%weighing_variable(i_node)
+            cumulative_weight = cumulative_weight + this%weighing_variable(i_node)
+         end do
+         this%values(i_element) = cumulative_value / max(cumulative_weight, eps10)
+      end do
+   end subroutine update_flowparameter
+
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !!In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
    !! While in finish_outgoing_lat_concentration, the average over time is actually computed.

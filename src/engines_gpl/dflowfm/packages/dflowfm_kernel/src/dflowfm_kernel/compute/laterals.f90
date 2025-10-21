@@ -86,6 +86,44 @@ module m_laterals
    real(kind=dp), allocatable, target, dimension(:, :, :), public :: incoming_lat_concentration !< Concentration of the inflowing water at the lateral discharge location.
    real(kind=dp), allocatable, target, dimension(:, :), public :: lateral_volume_per_layer !< Total water volume per layer, for each lateral (kmx,numlatsg).
 
+   type t_flowparameter !< General structure for Flow parameters that require averaging.
+      real(kind=dp), dimension(:), allocatable :: values !< Averaged values of the flow parameter.
+      logical :: is_used = .false. !< Indicates whether this flow parameter is used.
+      real(kind=dp), dimension(:), pointer :: input_variable !< Input variable to be averaged.
+      real(kind=dp), dimension(:), pointer :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
+      integer :: num_elements
+      integer, dimension(:), pointer :: index_start, index_end, index_to_node !< Indexing parameters for mapping input variable to flow parameter locations.
+   contains
+      procedure :: set_indexing_parameters => set_indexing_parameters_flowparameter !< Set indexing parameters for flowparameter
+      procedure :: initialize => initialize_flowparameter !< Initialize flowparameter, allocate arrays and set pointers
+      procedure :: update => update_flowparameter !< Update flowparameter, perform averaging
+   end type t_flowparameter
+
+   interface set_indexing_parameters_flowparameter
+      module subroutine set_indexing_parameters_flowparameter(this, index_start, index_end, index_to_node)
+         class(t_flowparameter), intent(inout) :: this !< Flow parameter object
+         integer, dimension(:), pointer, intent(in) :: index_start, index_end !< Indexing parameters for mapping input variable to flow parameter locations.
+         integer, dimension(:), pointer, intent(in) :: index_to_node !< Index mapping to flow nodes.
+      end subroutine set_indexing_parameters_flowparameter
+   end interface set_indexing_parameters_flowparameter
+
+   interface initialize_flowparameter
+      module subroutine initialize_flowparameter(this, num_elements, input_variable, weighing_variable)
+         class(t_flowparameter), intent(inout) :: this !< Flow parameter object
+         integer, intent(in) :: num_elements !< Number of elements in the flow parameter.
+         real(kind=dp), dimension(:), pointer, intent(in) :: input_variable !< Input variable to be averaged.
+         real(kind=dp), dimension(:), pointer, intent(in) :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
+      end subroutine initialize_flowparameter
+   end interface initialize_flowparameter
+
+   interface update_flowparameter
+      module subroutine update_flowparameter(this)
+         class(t_flowparameter), intent(inout) :: this
+      end subroutine update_flowparameter
+   end interface update_flowparameter
+
+   type(t_flowparameter), public, target :: average_waterlevels_per_lateral !< Flow parameter structure for laterals concentration.
+
    integer, allocatable, target, dimension(:), public :: apply_transport !< Flag to apply transport for laterals (0 means only water and no substances are transported).
    logical, public :: apply_transport_is_used
 
