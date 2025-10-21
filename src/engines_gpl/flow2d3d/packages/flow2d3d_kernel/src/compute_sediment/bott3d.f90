@@ -52,6 +52,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
 !              in bottom sediment.
 !              Includes erosion of dry points and associated
 !              bathymetry changes
+!              Includes slope failure erosion routine
 ! Method used: Attention: pointer ll for 'standard' FLOW
 !              arrays is shifted with lstart
 !
@@ -66,6 +67,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     use dfparall
     use sediment_basics_module
     use morstatistics, only: morstats
+    use m_slope_failure_erosion, only: slope_failure_erosion
     !
     implicit none
     !
@@ -868,7 +870,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
              gsqsmin    = gsqs(nm)
              totfixfrac = 0.0_fp
              !
-             from_ndm = kfsed(ndm)==0 .and. kcs(ndm) /= 0 .and. kcs(ndm)<3 .and. kcv(ndm)==1 .and. dps(ndm)<dps(nm)
+             from_ndm = kfsed(ndm)==0 .and. kcs(ndm) /= 0 .and. kcs(ndm)<3 .and. abs(kcv(ndm))==1 .and. dps(ndm)<dps(nm)
              if (from_ndm) then
                 gsqsmin = min(gsqsmin,gsqs(ndm))
                 do l = 1, lsedtot
@@ -876,7 +878,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 enddo
              endif
              !
-             from_nmd = kfsed(nmd)==0 .and. kcs(nmd) /= 0 .and. kcs(nmd)<3 .and. kcu(nmd)==1 .and. dps(nmd)<dps(nm)
+             from_nmd = kfsed(nmd)==0 .and. kcs(nmd) /= 0 .and. kcs(nmd)<3 .and. abs(kcu(nmd))==1 .and. dps(nmd)<dps(nm)
              if (from_nmd) then
                 gsqsmin = min(gsqsmin,gsqs(nmd))
                 do l = 1, lsedtot
@@ -884,7 +886,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 enddo
              endif
              !
-             from_nmu = kfsed(nmu)==0 .and. kcs(nmu) /= 0 .and. kcs(nmu)<3 .and. kcu(nm)==1 .and. dps(nmu)<dps(nm)
+             from_nmu = kfsed(nmu)==0 .and. kcs(nmu) /= 0 .and. kcs(nmu)<3 .and. abs(kcu(nm))==1 .and. dps(nmu)<dps(nm)
              if (from_nmu) then
                 gsqsmin = min(gsqsmin,gsqs(nmu))
                 do l = 1, lsedtot
@@ -892,7 +894,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 enddo
              endif
              !
-             from_num = kfsed(num)==0 .and. kcs(num) /= 0 .and. kcs(num)<3 .and. kcv(nm)==1 .and. dps(num)<dps(nm)
+             from_num = kfsed(num)==0 .and. kcs(num) /= 0 .and. kcs(num)<3 .and. abs(kcv(nm))==1 .and. dps(num)<dps(nm)
              if (from_num) then
                 gsqsmin = min(gsqsmin,gsqs(num))
                 do l = 1, lsedtot
@@ -957,6 +959,14 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
              endif    ! totfixfrac > 1.0e-7
           endif       ! totdbodsd < 0.0
        enddo          ! nm
+       
+       call slope_failure_erosion(&
+           !input
+           icx,icy,nmmax,kcu,kcv,kcs,kfs,dps,s1,lsedtot,gsqs,guu,guv,gvu,gvv,dtmor,&
+           !input/output
+           sbuu,sbvv, &
+           !global
+           gdp)
        !
        nm_pos = 2
        call dfexchg(dbodsd, 1, lsedtot, dfloat, nm_pos, gdp)
