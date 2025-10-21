@@ -103,8 +103,8 @@
                   if ( zmodel ) then ! not all layers may be active
                      if (k < kfsmin(i,j) ) then
                         cycle 
-                     end
-                  end
+                     endif
+                  endif
                   iseg = isaggr(i,j,k)
                   if ( vol1(i,j,k) .gt. 1.0E-25 ) then
                      vol(iseg) = vol(iseg) + vol1(i,j,k)
@@ -126,8 +126,8 @@
                      if ( zmodel ) then ! not all layers may be active
                         if (k < kfsmin(i,j) ) then
                            cycle 
-                        end
-                     end
+                        endif
+                     endif
                      iseg = isaggr(i,j,k)
                      if ( vol1(i,j,k) .gt. 1.0E-25 ) then
                         con(iseg) = con(iseg) + conc(i,j,k,lsal)*vol1(i,j,k)
@@ -155,8 +155,8 @@
                      if ( zmodel ) then ! not all layers may be active
                         if (k < kfsmin(i,j) ) then
                            cycle 
-                        end
-                     end
+                        endif
+                     endif
                      iseg = isaggr(i,j,k)
                      if ( vol1(i,j,k) .gt. 1.0E-25 ) then
                         con(iseg) = con(iseg) + conc(i,j,k,ltem)*vol1(i,j,k)
@@ -259,8 +259,8 @@
                      if ( zmodel ) then ! not all layers may be active
                         if (k < kfsmin(i,j) ) then
                            cycle 
-                        end
-                     end
+                        endif
+                     endif
                      iseg = isaggr(i,j,k)
                      if ( vol1(i,j,k) .gt. 1.0E-25 ) then
                         do l = 1,lsed
