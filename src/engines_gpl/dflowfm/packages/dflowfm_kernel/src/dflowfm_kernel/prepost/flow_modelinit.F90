@@ -129,6 +129,7 @@ contains
       use m_init_openmp, only: init_openmp
       use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
       use m_tauwavefetch, only: tauwavefetch
+      use m_fill_constituents, only: fill_constituents
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -182,10 +183,6 @@ contains
       call reset_nearfieldData()
 
       call timstop(handle_extra(1)) ! End basic steps
-
-      if (jagui == 1) then
-         call timini() ! this seems to work, initimer and timini pretty near to each other
-      end if
 
 ! JRE
       if (jawave == WAVE_SURFBEAT) then
@@ -436,6 +433,7 @@ contains
 
       call timstrt('MBA init            ', handle_extra(24)) ! MBA init
       if (ti_mba > 0) then
+         call fill_constituents(1) ! mba_init assumes that the concentrations are in the constituents array ...
          call mba_init()
       end if
       call timstop(handle_extra(24)) ! end MBA init

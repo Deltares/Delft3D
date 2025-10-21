@@ -40,17 +40,30 @@ contains
    !> typically used in combination with a drypoints file (samples or polygons)
    !> \see polygon_to_cellmask
    !> note: we do not want to alter the netnodes and netlinks and will therefore not change kn and nod%lin
-   module subroutine remove_masked_netcells()
+   module subroutine remove_masked_netcells(update_blcell)
       use network_data
-      use m_flowgeom, only: xz, yz, ba
+      use m_cell_geometry, only: xz, yz, ba, blcell
       use m_alloc
       use m_partitioninfo, only: idomain, iglobal_s
+      
+      logical, intent(in) :: update_blcell !< Flag specifying whether the blcell array should be updated after removing dry cells.
+      
       integer, dimension(:), allocatable :: numnew ! permutation array
 
       integer :: i, ic, icL, icR, icnew, isL, isR, L, num, N, numpnew
 
       integer :: jaidomain
       integer :: jaiglobal_s
+      logical :: update_blcell_and_non_empty !< local flag indicating that blcell should be updated and is not empty
+      
+      update_blcell_and_non_empty = .false.
+      if (update_blcell) then
+         if (allocated(blcell)) then
+            if (size(blcell) > 0) then
+               update_blcell_and_non_empty = .true.
+            end if
+         end if
+      end if
 
       num = 0
 
@@ -180,12 +193,19 @@ contains
             xzw(icnew) = xzw(ic)
             yzw(icnew) = yzw(ic)
             ba(icnew) = ba(ic)
+            
+            if (update_blcell_and_non_empty) then
+               blcell(icnew) = blcell(ic)
+            end if
          end if
       end do
 
 !     update number of cells
       nump1d2d = num
       nump = numpnew
+      if (update_blcell_and_non_empty) then
+         call realloc(blcell, nump, keepExisting=.true.)
+      end if
 
 1234  continue
 

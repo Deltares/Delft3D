@@ -5,7 +5,7 @@ import os
 import re
 import sys
 import textwrap
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import ClassVar
 from urllib.parse import urlparse
@@ -291,7 +291,7 @@ class CommandLine:
     def _timestamp(timestamp: str) -> datetime:
         """Parse a timestamp string into a datetime object."""
         try:
-            return datetime.fromisoformat(timestamp)
+            return datetime.fromisoformat(timestamp).astimezone(timezone.utc)
         except ValueError as exc:
             message = textwrap.dedent(
                 f"""
@@ -362,3 +362,7 @@ class CommandLineError(Exception):
     def __str__(self) -> str:
         """Return the error message."""
         return self._message
+
+
+if __name__ == "__main__":
+    CommandLine.run()

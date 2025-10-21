@@ -50,7 +50,6 @@ contains
       use m_transport_sub, only: transport
       use m_step_reduce_transport_morpho, only: step_reduce_transport_morpho
       use m_step_reduce_hydro, only: step_reduce_hydro
-      use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
       use m_setlinktocenterweights, only: setlinktocenterweights
       use m_getcellsurface1d, only: getcellsurface1d
 
@@ -61,7 +60,6 @@ contains
       use unstruc_netcdf
       use m_timer
       use dfm_error
-      use m_wrimap
 
       integer :: key
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful. DFM_TIMESETBACK if succesful, but with timestep setbacks.
@@ -92,25 +90,6 @@ contains
          time1 = time0 + dts ! progress without pressure coupling
       end if
 
-      if (jaeverydt > 0) then
-         if ((comparereal(time1, ti_maps, eps10) >= 0) .and. (comparereal(time1, ti_mape, eps10) <= 0)) then
-            if (jamapFlowAnalysis > 0) then
-               ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
-               call updateFlowAnalysisParameters()
-            end if
-
-            call wrimap(time1)
-
-            if (jamapFlowAnalysis > 0) then
-               ! Reset the interval related flow analysis arrays
-               negativeDepths = 0
-               noiterations = 0
-               limitingTimestepEstimation = 0
-               flowCourantNumber = 0.0_dp
-            end if
-
-         end if
-      end if
       ! Finalize timestep code used to be here, now flow_finalize_single_timestep()
 
       if (iresult /= DFM_TIMESETBACK) then

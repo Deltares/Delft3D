@@ -162,14 +162,6 @@ contains
          end if
       end if
 
-      ! Moved to flow_finalize_single_timestep: call flow_f0isf1()                                  ! mass balance and vol0 = vol1
-
-      if (layertype > 1 .and. kmx > 0) then
-
-         ! ln = ln0 ! was ok.
-
-      end if
-
    end subroutine step_reduce_transport_morpho
 
 end module m_step_reduce_transport_morpho

@@ -35,9 +35,15 @@
 //
 //------------------------------------------------------------------------------
 
-
 #ifndef STREAM_H
 #define STREAM_H
+
+// Protective defines for Winsock 2 (must be BEFORE ANY #include)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600 // Enables full Winsock 2 support
+#endif
+#define WIN32_LEAN_AND_MEAN             // Prevents <windows.h> from including <winsock.h>
+#define _WINSOCK_DEPRECATED_NO_WARNINGS // Suppresses deprecation warnings#include "stream.h"
 
 #include <platformst.h>
 
@@ -46,7 +52,7 @@
 
 #include <pthread.h>
 
-#if !defined (IRIX)
+#if !defined(IRIX)
 #include <cstddef>
 #endif
 
@@ -57,90 +63,90 @@
 #include <mpi.h>
 #endif
 
-
 //------------------------------------------------------------------------------
 //  Stream object
 
+class Stream
+{
+public:
+    typedef enum
+    {
+        MAXHANDLE = 100,
+        X = 0
+    } StreamConstants;
 
-class Stream {
-    public:
-        typedef enum {
-            MAXHANDLE = 100,
-            X = 0
-            } StreamConstants;
+    typedef enum
+    {
+        UNDEFINED = 200,
+        TCPIP,
+        MPI,
+        DEFAULT = TCPIP
+    } StreamType;
 
-        typedef enum {
-            UNDEFINED = 200,
-            TCPIP,
-            MPI,
-            DEFAULT = TCPIP
-            } StreamType;
+    Stream(
+        StreamType streamtype,
+        void (*errorfunction)(char *) = NULL,
+        void (*tracefunction)(char *) = NULL);
+    Stream(
+        StreamType streamtype,
+        const char *hostport,
+        void (*errorfunction)(char *) = NULL,
+        void (*tracefunction)(char *) = NULL);
 
-        Stream (
-            StreamType streamtype,
-            void (*errorfunction) (char *) = NULL,
-            void (*tracefunction) (char *) = NULL
-            );
-        Stream (
-            StreamType streamtype,
-            const char * hostport,
-            void (*errorfunction) (char *) = NULL,
-            void (*tracefunction) (char *) = NULL
-            );
+    ~Stream(void);
 
-        ~Stream (void);
+    void Connect(void);
+    void Send(const char *buffer, int size);
+    void Receive(char *buffer, int size);
+    char *LocalHandle(void);
+    char *RemoteHandle(void);
 
-        void    Connect             (void);
-        void    Send                (const char * buffer, int size);
-        void    Receive             (char * buffer, int size);
-        char *  LocalHandle         (void);
-        char *  RemoteHandle        (void);
+private:
+    static bool initialized;
+    static pthread_mutex_t mutex;
 
-    private:
-        static bool initialized;
-        static pthread_mutex_t mutex;
+    StreamType streamtype;
+    bool connected;
+    bool is_ipv6 = false; // Flag to indicate if using IPv6 (dual-stack) or IPv4-only
 
-        StreamType  streamtype;
-        bool        connected;
+    typedef struct
+    {
+        char *handle;  // TCP/IP & MPI
+        Sockaddr addr; // TCP/IP packed protocol, host address, port
+        int sock;      // TCP/IP socket for I/O operations
+        int rank;      // MPI
+        int seqn;      // MPI
+    } Address;
 
-        typedef struct {
-            char *      handle;     // TCP/IP & MPI
-            Sockaddr    addr;       // TCP/IP packed protocol, host address, port
-            int         sock;       // TCP/IP socket for I/O operations
-            int         rank;       // MPI
-            int         seqn;       // MPI
-            } Address;
+    Address local;
+    Address remote;
 
-        Address     local;
-        Address     remote;
+    void (*errorfunction)(char *);
+    void (*tracefunction)(char *);
 
-        void    (*errorfunction)    (char *);
-        void    (*tracefunction)    (char *);
+    // Internal functions
 
-        // Internal functions
-
-        void    initialize          (void);
-        void    construct_TCPIP     (Stream *);
-        void    connect_TCPIP       (Stream *, const char *);
-        void    first_receive_TCPIP (Stream *);
-        void    receive_TCPIP       (Stream *, char *, int);
+    void initialize(void);
+    void construct_TCPIP(void);
+    void connect_TCPIP(const char *);
+    void first_receive_TCPIP(void);
+    void receive_TCPIP(char *, int);
 
 #ifdef WITH_MPI
-        void    construct_MPI       (Stream *);
-        void    connect_MPI         (Stream *, const char *);
-        void    first_receive_MPI   (Stream *);
-        void    receive_MPI         (Stream *, char *, int);
+    void construct_MPI(void);
+    void connect_MPI(const char *);
+    void first_receive_MPI(void);
+    void receive_MPI(char *, int);
 #endif
 
-        char *  dotipaddr           (IPaddr);
-        char *  hostname            (void);
-        char *  lookup_dotaddr      (char *);
-        char *  lookup_host         (char *);
-        int     next_seqn           (void);
-        void    parse_name          (char *, char *, int *);
-        void    error               (char *, ...);
-        void    trace               (char *, ...);
-    };
+    char *dotipaddr(struct in6_addr);
+    char *hostname(void);
+    char *lookup_dotaddr(char *);
+    char *lookup_host(char *);
+    int next_seqn(void);
+    void parse_name(char *, char *, int *);
+    void error(const char *const, ...);
+    void trace(const char *const, ...);
+};
 
 #endif
-

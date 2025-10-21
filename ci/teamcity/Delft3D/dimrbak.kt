@@ -23,6 +23,7 @@ object DIMRbak : BuildType({
 
     artifactRules = """
         +:ci/python/ci_tools/dimrset_delivery/output/*.html
+        +:ci/python/ci_tools/dimrset_delivery/output/*.txt
         +:ci/python/*.xlsx
         +:ci/python/*.txt
     """.trimIndent()
@@ -73,6 +74,8 @@ object DIMRbak : BuildType({
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
+                    --jira-username "%dimrbakker_username%"
+                    --jira-PAT "%dimrbakker_password%"
                     --ssh-username "%dimrbakker_username%"
                     --ssh-password "%dimrbakker_password%"
                     --git-username "deltares-service-account"
@@ -174,6 +177,27 @@ object DIMRbak : BuildType({
                 """.trimIndent()
             }
             workingDir = "ci/python"
+            environment = venv {
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
+            }
+        }
+        python {
+            name = "Generate DIMRset release notes"
+            command = module {
+                module = "ci_tools.dimrset_delivery.step_6_publish_release_changelog"
+                scriptArguments = """
+                    --build_id "%teamcity.build.id%"
+                    --jira-username "%dimrbakker_username%"
+                    --jira-PAT "%dimrbakker_password%"
+                    --git-username "deltares-service-account"
+                    --git-PAT "%github_deltares-service-account_access_token%"
+                    --ssh-username "%dimrbakker_username%"
+                    --ssh-password "%dimrbakker_password%"
+                    %dry_run%
+                """.trimIndent()
+            }
+            workingDir = "ci/python/"
             environment = venv {
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"

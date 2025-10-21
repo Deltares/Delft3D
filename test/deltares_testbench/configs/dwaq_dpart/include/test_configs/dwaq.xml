@@ -350,7 +350,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c06_test006" ref="dwaq_default">
-        <path version="2025-09-16T11:15:55.837000">e03_waq/f01_general/c06_test006</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f01_general/c06_test006</path>
         <checks>
             <file name="d3d-waq-test006.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -1163,7 +1163,7 @@
     </testCase>
     -->
     <testCase name="e03_f01_c13_test013" ref="dwaq_default">
-        <path version="2025-09-16T11:15:13.736000">e03_waq/f01_general/c13_test013</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f01_general/c13_test013</path>
         <checks>
             <file name="d3d-waq-test013.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2013,7 +2013,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c31_test031" ref="dwaq_default">
-        <path version="2025-09-16T11:15:22.786000">e03_waq/f01_general/c31_test031</path>
+        <path version="2025-06-25T22:20:00">e03_waq/f01_general/c31_test031</path>
         <checks>
             <file name="d3d-waq-test031.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">

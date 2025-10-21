@@ -113,7 +113,7 @@ class Dimr {
 
         void           freeLibs(void);
         void           processWaitFile(void);
-        void           createDistributeMPISubGroupCommunicator(dimr_component *, bool);
+        void           createDistributeMPISubGroupCommunicator(dimr_component *);
         void           runControlBlock  (dimr_control_block *, double, int);
         void           runParallelInit  (dimr_control_block *);
         void           runParallelFinish(dimr_control_block *);

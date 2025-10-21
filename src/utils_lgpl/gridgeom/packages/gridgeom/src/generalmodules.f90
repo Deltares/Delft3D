@@ -278,15 +278,17 @@
    ! Stores the coordinates of the cells
    !
    module m_cell_geometry
+   use precision, only: dp
    ! TODO: UNST-1705: LC: I want ndx2d and ndx back into m_flowgeom, as these are flowgeom and not netgeom. Only findcells and update_cell_circumcenters need a change first.
    integer, target                       :: ndx2d      !< [-] Number of 2D flow cells (= NUMP). {"rank": 0}
    integer, target                       :: ndx        !< [-] Number of flow nodes (internal + boundary). {"rank": 0}
-   double precision, allocatable, target :: xz (:)     !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable         :: xz0(:)     !< backup of xz
-   double precision, allocatable, target :: yz (:)     !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable         :: yz0(:)     !< backup of yz
-   double precision, allocatable, target :: ba (:)     !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
-   double precision, allocatable         :: ba0(:)     ! Backup of ba
+   real(dp), allocatable, target         :: xz (:)     !< [m/degrees_east] waterlevel point / cell centre, x-coordinate (m) {"location": "face", "shape": ["ndx"]}
+   real(dp), allocatable                 :: xz0(:)     !< backup of xz
+   real(dp), allocatable, target         :: yz (:)     !< [m/degrees_north] waterlevel point / cell centre, y-coordinate (m) {"location": "face", "shape": ["ndx"]}
+   real(dp), allocatable                 :: yz0(:)     !< backup of yz
+   real(dp), allocatable, target         :: ba (:)     !< [m2] bottom area, if < 0 use table in node type {"location": "face", "shape": ["ndx"]}
+   real(dp), allocatable                 :: ba0(:)     ! Backup of ba
+   real(dp), allocatable, target         :: blcell(:)  !< [m+REF] bed level at faces during partitioning
    ! TODO: UNST-1705: LC: the above variables used to be automatically available in the dflowfm BMI, via the JSON annotated documentation string, this is now broken, needs fixing.
 
    end module m_cell_geometry

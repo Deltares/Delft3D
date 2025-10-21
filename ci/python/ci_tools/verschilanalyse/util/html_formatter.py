@@ -40,11 +40,29 @@ class HtmlFormatter:
                 <h2>New weekly verschilanalyse</h2>
                 <p>
                     A new weekly automated verschilanalyse has been completed.
-                    The following table shows which models were included in this week's
-                    verschilanalyse.
-                    The table shows, for every model, whether or not it completed
-                    successfully and the total computation time in seconds in both the
-                    &quot;current&quot; and the &quot;reference&quot; verschilanalyse.
+                    The current output and the reference output are archived in our MinIO bucket under the following
+                    prefixes:
+                </p>
+                <ul id="prefix-list">
+                    <li>Current output: {current_prefix}</li>
+                    <li>Reference output: {reference_prefix}</li>
+                </ul>
+                <h3>Verschillentool output</h3>
+                <p>
+                    The verschillentool compared the current output files to the
+                    reference output files, and found the following results:
+                </p>
+                <h3>His-file comparison results</h3>
+                {his_tolerance_list}
+                <h3>Map-file comparison results</h3>
+                {map_tolerance_list}
+                <p>
+                    The following table shows which models were included in this week's verschilanalyse.
+                    The table shows, for every model, whether or not it executed successfully
+                    and whether a water level tolerance (his or map) or flow velocity tolerance (his or map) was
+                    exceeded. Moreover, the total computation time in seconds in both the current and the reference
+                    verschilanalyse and the tolerance (1 percent) between the current and reference computation time
+                    are displayed.
                 </p>
                 {table}
                 <p>
@@ -58,31 +76,11 @@ class HtmlFormatter:
                     <li>Current verschilanalyse: {current_commit_id}</li>
                     <li>Reference verschilanalyse: {reference_commit_id}</li>
                 </ul>
-                <h3>Verschillentool output</h3>
-                <p>
-                    In addition, the verschillentool has compared the output
-                    of this week's verschilanalyse with the output of the
-                    &quot;reference&quot; verschilanalyse. The new output
-                    and the reference output are archived in our MinIO bucket
-                    under the following prefixes:
-                </p>
-                <ul id="prefix-list">
-                    <li>Current verschilanalyse: {current_prefix}</li>
-                    <li>Reference verschilanalyse: {reference_prefix}</li>
-                </ul>
                 <p>
                     The verschillentool successfully compared the output of
                     the following models:
                 </p>
                 {model_list}
-                <p>
-                    The verschillentool compared the new output files to the
-                    &quot;reference&quot; output files, and found the following results:
-                </p>
-                <h3>His-file comparison results</h3>
-                {his_tolerance_list}
-                <h3>Map-file comparison results</h3>
-                {map_tolerance_list}
                 <h3>Links</h3>
                 {links_section}
             </body>
@@ -95,8 +93,20 @@ class HtmlFormatter:
         spaces = level * spaces_per_level
         return s.replace("\n", "\n" + spaces * " ")
 
-    @staticmethod
-    def _to_rows(comparisons: dict[str, LogComparison]) -> Iterator[str]:
+    @classmethod
+    def _to_rows(
+        cls,
+        comparisons: dict[str, LogComparison],
+        his_outputs: dict[str, VerschillentoolOutput],
+        map_outputs: dict[str, VerschillentoolOutput],
+    ) -> Iterator[str]:
+        water_lvl_exceeded = set(cls._exceeded_water_level_models(his_outputs)) | set(
+            cls._exceeded_water_level_models(map_outputs)
+        )
+        flow_vel_exceeded = set(cls._exceeded_flow_velocity_models(his_outputs)) | set(
+            cls._exceeded_flow_velocity_models(map_outputs)
+        )
+
         for model_name, comparison in sorted(comparisons.items()):
             current = comparison.current
             reference = comparison.reference
@@ -108,30 +118,55 @@ class HtmlFormatter:
                 cur_comp_time = f"{current.mean_computation_time:.3f} s"
 
             ref_comp_time = "❓"
+            comp_time_tolerance = "❓"
             if reference is not None and reference.mean_computation_time != 0.0:
                 ref_comp_time = f"{reference.mean_computation_time:.3f} s"
+                comp_time_diff = abs(current.mean_computation_time - reference.mean_computation_time)
+                comp_time_percentage = (comp_time_diff / reference.mean_computation_time) * 100
+                comp_time_tolerance = "✅ Success"
+                if comp_time_percentage > 1:
+                    comp_time_tolerance = "❌ Exceeded"
+
+            water_tolerance = "✅ Success"
+            if model_name in water_lvl_exceeded:
+                water_tolerance = "❌ Exceeded"
+
+            flow_tolerance = "✅ Success"
+            if model_name in flow_vel_exceeded:
+                flow_tolerance = "❌ Exceeded"
 
             yield "".join(
                 [
                     f"<td>{model_name}</td>",
                     f"<td>{crash}</td>",
+                    f"<td>{water_tolerance}</td>",
+                    f"<td>{flow_tolerance}</td>",
                     f'<td class="align-right">{cur_comp_time}</td>',
                     f'<td class="align-right">{ref_comp_time}</td>',
+                    f"<td>{comp_time_tolerance}</td>",
                 ]
             )
 
     @classmethod
-    def _format_model_run_table(cls, comparisons: dict[str, LogComparison]) -> str:
-        rows = "\n".join(f"<tr>{row}</tr>" for row in cls._to_rows(comparisons))
+    def _format_model_run_table(
+        cls,
+        comparisons: dict[str, LogComparison],
+        his_outputs: dict[str, VerschillentoolOutput],
+        map_outputs: dict[str, VerschillentoolOutput],
+    ) -> str:
+        rows = "\n".join(f"<tr>{row}</tr>" for row in cls._to_rows(comparisons, his_outputs, map_outputs))
 
         template = textwrap.dedent(
             """
             <table id="model-run-table">
                 <tr>
                     <th>Model name</th>
-                    <th>Status</th>
+                    <th>Execution status</th>
+                    <th>Water level tolerances</th>
+                    <th>Flow velocity tolerances</th>
                     <th>Current computation time</th>
                     <th>Reference computation time</th>
+                    <th>Computation time tolerance</th>
                 </tr>
                 {rows}
             </table>
@@ -163,22 +198,26 @@ class HtmlFormatter:
                 yield model_name
 
     @classmethod
-    def _format_tolerance_list(cls, output_stats: dict[str, VerschillentoolOutput], output_type: OutputType) -> str:
+    def _format_tolerance_list(cls, output_stats: dict[str, VerschillentoolOutput], output_type: str) -> str:
+        exceeded_html = '<span style="color:red;">exceeded</span>'
+
         water_lvl_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_water_level_models(output_stats))
         if not water_lvl_items:
+            exceeded_html = "exceeded"
             water_lvl_items = "<li>None: All water level differences are within tolerances.</li>"
 
         flow_vel_items = "\n".join(f"<li>{model}</li>" for model in cls._exceeded_flow_velocity_models(output_stats))
         if not flow_vel_items:
+            exceeded_html = "exceeded"
             flow_vel_items = "<li>None: All flow velocity differences are within tolerances.</li>"
 
         template = textwrap.dedent(
-            """
-            <p>Models where the water level tolerances were exceeded:</p>
+            f"""
+            <p>Models where the water level tolerances were {exceeded_html}:</p>
             <ul id="{output_type}-water-level-tolerance-list">
                 {water_lvl_items}
             </ul>
-            <p>Models where the flow velocity tolerances were exceeded:</p>
+            <p>Models where the flow velocity tolerances were {exceeded_html}:</p>
             <ul id="{output_type}-flow-velocity-tolerance-list">
                 {flow_vel_items}
             </ul>
@@ -186,7 +225,7 @@ class HtmlFormatter:
         ).strip()
 
         return template.format(
-            output_type=output_type.value,
+            output_type=output_type,
             water_lvl_items=cls._indent(water_lvl_items, 1),
             flow_vel_items=cls._indent(flow_vel_items, 1),
         )
@@ -274,11 +313,10 @@ class HtmlFormatter:
         """
         log_comparisons = verschilanalyse.get_log_comparisons()
         current_commit_id, reference_commit_id = cls._get_commit_ids(log_comparisons)
-
-        table = cls._format_model_run_table(log_comparisons)
+        his_tolerance_list = cls._format_tolerance_list(verschilanalyse.his_outputs, OutputType.HIS.value)
+        map_tolerance_list = cls._format_tolerance_list(verschilanalyse.map_outputs, OutputType.MAP.value)
+        table = cls._format_model_run_table(log_comparisons, verschilanalyse.his_outputs, verschilanalyse.map_outputs)
         model_list = cls._format_model_list(verschilanalyse.his_outputs.keys())
-        his_tolerance_list = cls._format_tolerance_list(verschilanalyse.his_outputs, OutputType.HIS)
-        map_tolerance_list = cls._format_tolerance_list(verschilanalyse.map_outputs, OutputType.MAP)
         links_section = cls._format_links(report_build_url, artifact_base_url.rstrip("/"))
 
         result = cls.TEMPLATE.format(
