@@ -1684,12 +1684,14 @@ module Output
                    RSLMAP19_RRRunoff(NStartLGSI+23,ILOC,1) = LGSI_NewGWL(IRRRunoffSub,1)
                    RSLMAP19_RRRunoff(NStartLGSI+28,ILOC,1) = LGSI_SurfaceLevel(IRRRunoffSub,1) - LGSI_NewGWL(IRRRunoffSub,1)
                    If (LGSI_NrSubAreas(IRRRunoffSub) .eq. 2) then
-                      RSLMAP19_RRRunoff(1,ILOC,1) = ( RSLMAP19_RRRunoff(2,ILOC,1)  * LGSI_Area(iRRRunoffSub,1) + &
+                      ! correct indices RSLMAP19 in rhs of equation 2,3,4 instead of 2,3,4; UNST-8973
+                      RSLMAP19_RRRunoff(1,ILOC,1) = ( RSLMAP19_RRRunoff(1,ILOC,1)  * LGSI_Area(iRRRunoffSub,1) + &
                                                        LGSI_Precipitation(IRRRunoffSub,2)  * LGSI_Area(iRRRunoffSub,2) ) / Area_RRRunoffNode(INR)
-                      RSLMAP19_RRRunoff(2,ILOC,1) = ( RSLMAP19_RRRunoff(3,ILOC,1)  * LGSI_Area(iRRRunoffSub,1) + &
+                      RSLMAP19_RRRunoff(2,ILOC,1) = ( RSLMAP19_RRRunoff(2,ILOC,1)  * LGSI_Area(iRRRunoffSub,1) + &
                                                        LGSI_PotEvap(IRRRunoffSub,2) * LGSI_Area(iRRRunoffSub,2) ) / Area_RRRunoffNode(INR)
-                      RSLMAP19_RRRunoff(3,ILOC,1) = ( RSLMAP19_RRRunoff(4,ILOC,1) * LGSI_Area(iRRRunoffSub,1) + &
+                      RSLMAP19_RRRunoff(3,ILOC,1) = ( RSLMAP19_RRRunoff(3,ILOC,1) * LGSI_Area(iRRRunoffSub,1) + &
                                                        LGSI_Evaporation(IRRRunoffSub,2) * LGSI_Area(iRRRunoffSub,2) ) / Area_RRRunoffNode(INR)
+                      ! end correction
                       RSLMAP19_RRRunoff(NStartLGSI+1,ILOC,1) = LGSI_Precipitation(IRRRunoffSub,2)
                       RSLMAP19_RRRunoff(NStartLGSI+3,ILOC,1) = LGSI_PotEvap(IRRRunoffSub,2)
                       RSLMAP19_RRRunoff(NStartLGSI+5,ILOC,1) = LGSI_Evaporation(IRRRunoffSub,2)
