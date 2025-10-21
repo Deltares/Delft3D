@@ -86,6 +86,28 @@ module m_laterals
    real(kind=dp), allocatable, target, dimension(:, :, :), public :: incoming_lat_concentration !< Concentration of the inflowing water at the lateral discharge location.
    real(kind=dp), allocatable, target, dimension(:, :), public :: lateral_volume_per_layer !< Total water volume per layer, for each lateral (kmx,numlatsg).
 
+   type t_flowparameter  !< General structure for Flow parameters that require updating.
+      real(kind=dp), dimension(:), allocatable :: data
+      logical :: is_used = .false.
+      contains 
+         procedure :: initialize => initialize_flowparameter
+         procedure :: update => update_flowparameter
+   end type t_flowparameter
+
+   interface initialize_flowparameter
+      module subroutine initialize_flowparameter(this)
+         class(t_flowparameter), intent(inout) :: this
+      end subroutine initialize_flowparameter
+   end interface initialize_flowparameter
+
+   interface update_flowparameter
+      module subroutine update_flowparameter(this)
+         class(t_flowparameter), intent(inout) :: this
+      end subroutine update_flowparameter
+   end interface update_flowparameter
+   
+   type(t_flowparameter), public, target :: average_waterlevels_per_lateral !< Flow parameter structure for laterals concentration.
+
    integer, allocatable, target, dimension(:), public :: apply_transport !< Flag to apply transport for laterals (0 means only water and no substances are transported).
    logical, public :: apply_transport_is_used
 
@@ -161,6 +183,13 @@ module m_laterals
          real(kind=dp), dimension(:, :), intent(out) :: lateral_volume_per_layer !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
       end subroutine get_lateral_volume_per_layer
    end interface get_lateral_volume_per_layer
+
+   !> Compute average water levels per lateral.
+   interface get_average_waterlevels_per_lateral
+      module subroutine get_average_waterlevels_per_lateral(average_waterlevels_per_lateral)
+         real(kind=dp), dimension(:), intent(out) :: average_waterlevels_per_lateral !< Average water levels per lateral (m+NAP)
+      end subroutine get_average_waterlevels_per_lateral
+   end interface get_average_waterlevels_per_lateral
 
    !> Distributes provided lateral discharge across flow nodes.
    !! Input is lateral discharge per layer per lateral, output is per layer per lateral per cell.

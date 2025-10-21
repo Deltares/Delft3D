@@ -68,6 +68,7 @@ contains
       incoming_lat_concentration = 0._dp
       call realloc(outgoing_lat_concentration, [num_layers, num_const, numlatsg])
       call realloc(lateral_volume_per_layer, [num_layers, numlatsg])
+      !call realloc(average_waterlevels_per_lateral, numlatsg)
       call realloc(qqlat, [num_layers, nlatnd], fill=0._dp)
 
    end subroutine initialize_lateraldata
@@ -79,6 +80,7 @@ contains
          deallocate (incoming_lat_concentration)
          deallocate (outgoing_lat_concentration)
          deallocate (lateral_volume_per_layer)
+         !deallocate (average_waterlevels_per_lateral)
          deallocate (qqlat)
       end if
 
@@ -237,6 +239,39 @@ contains
       end do
 
    end subroutine get_lateral_volume_per_layer
+
+   !> Compute average water levels per lateral.
+   module subroutine initialize_flowparameter(this)
+      use m_laterals, only: numlatsg
+      class(t_flowparameter), intent(inout) :: this !< Average water levels per lateral (m+NAP)
+
+      allocate(this%data(numlatsg))
+      this%is_used = .true.
+
+   end subroutine initialize_flowparameter
+
+   module subroutine update_flowparameter(this)
+      use m_flow, only: s1, a1
+      use m_laterals, only: numlatsg, n1latsg, n2latsg, nnlat
+      class(t_flowparameter), intent(inout) :: this !< Average water levels per lateral (m+NAP)
+
+      integer :: i_lateral, i_nnlat, i_node
+      real(kind=dp) :: total_waterlevel, total_surface_area
+      
+      if (.not. this%is_used) return
+      
+      total_waterlevel = 0.0_dp
+      total_surface_area = 0.0_dp
+      do i_lateral = 1, numlatsg
+         do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
+            i_node = nnlat(i_nnlat)
+            total_waterlevel = total_waterlevel + s1(i_node)
+            total_surface_area = total_surface_area + a1(i_node)
+         end do
+         this%data(i_lateral) = total_waterlevel / max(total_surface_area, eps10)
+      end do
+   end subroutine update_flowparameter
+
 
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !!In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
