@@ -1,0 +1,178 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e108_f08_c01_Springendal" ref="drr_default">
+        <path version="2025-10-16T14:33:47.533000">e108_drr/f08_lgsi/c01_Springendal</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrrunoff.nc" type="netcdf">
+                <parameters>
+                    <parameter name="LGSIRecharge1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIDrainflow1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIPotEvap2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIActEvap2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIPotEvap1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIRiverflow1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIOvrlndflow2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIRecharge2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIActEvap1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSISeepage2_1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIGWTableDepth2_mbs" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIQpDirect1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIQpDirect2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIDrainflow2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIGWTableDepth1_mbs" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIRiverflow2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIOvrlndflow1" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/balansdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Cum_InAtNode" toleranceAbsolute="0.001" />
+                    <parameter name="Cum_OutViaLinks" toleranceAbsolute="0.001" />
+                    <parameter name="Cum_OutAtNode" toleranceAbsolute="0.001" />
+                    <parameter name="CumDeltaStorage" toleranceAbsolute="0.001" />
+                    <parameter name="CumBalanceError" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f08_c02_Roelinksbeek" ref="drr_default">
+        <path version="2025-10-16T14:43:54.703000">e108_drr/f08_lgsi/c02_Roelinksbeek</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrrunoff.nc" type="netcdf">
+                <parameters>
+                    <parameter name="LGSIOvrlndflow2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIGWLvl1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIOvrlndflow1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIQdelayed" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIRecharge1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIRecharge2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIQtot" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIQpDirect2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIRiverflow1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIGWLvl2" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIQpDirect1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIDrainflow1" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/balansdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Cum_InAtNode" toleranceAbsolute="0.0001" />
+                    <parameter name="Cum_OutAtNode" toleranceAbsolute="0.0001" />
+                    <parameter name="Cum_OutViaLinks" toleranceAbsolute="0.0001" />
+                    <parameter name="CumDeltaStorage" toleranceAbsolute="0.0001" />
+                    <parameter name="CumBalanceError" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f08_c03_Rijssen" ref="drr_default">
+        <path version="2025-10-16T14:55:10.969000">e108_drr/f08_lgsi/c03_Rijssen</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrrunoff.nc" type="netcdf">
+                <parameters>
+                    <parameter name="PotEvap" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIRiverflow1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIOvrlndflow1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIGWLvl2" toleranceAbsolute="0.0001" />
+                    <parameter name="ActEvap" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIGWLvl1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIDrainflow1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIQtot" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIQpDirect1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIQdelayed" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.001" />
+                    <parameter name="NetLoss_Sacr_LGSI_Wagmod" toleranceAbsolute="0.001" />
+                    <parameter name="Boundaries_out" toleranceAbsolute="0.001" />
+                    <parameter name="Evaporation_RRRunoff_HBV_Wagmod_Walrus" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_change_RRRunoff" toleranceAbsolute="0.001" />
+                    <parameter name="Balance_error_RR_Rural" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f08_c04_Dimmie" ref="drr_default">
+        <path version="2025-10-16T15:02:26.007000">e108_drr/f08_lgsi/c04_Dimmie</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrrunoff.nc" type="netcdf">
+                <parameters>
+                    <parameter name="LGSIGWLvl1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIGWLvl2" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/balansdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Cum_InAtNode" toleranceAbsolute="0.0001" />
+                    <parameter name="Cum_OutAtNode" toleranceAbsolute="0.0001" />
+                    <parameter name="Cum_OutViaLinks" toleranceAbsolute="0.0001" />
+                    <parameter name="CumDeltaStorage" toleranceAbsolute="0.0001" />
+                    <parameter name="CumBalanceError" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f08_c05_3juli" ref="drr_default">
+        <path version="2025-10-16T15:05:56.491000">e108_drr/f08_lgsi/c05_3juli</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrrunoff.nc" type="netcdf">
+                <parameters>
+                    <parameter name="LGSIGWLvl1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIGWLvl2" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Evaporation_RRRunoff_HBV_Wagmod_Walrus" toleranceAbsolute="0.001" />
+                    <parameter name="Boundaries_out" toleranceAbsolute="0.001" />
+                    <parameter name="NetLoss_Sacr_LGSI_Wagmod" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_change_RRRunoff" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.001" />
+                    <parameter name="Balance_error_RR_Rural" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f08_c06_DinkelwithCachefile" ref="drr_default">
+        <path version="2025-10-16T15:20:57.026000">e108_drr/f08_lgsi/c06_DinkelwithCachefile</path>
+        <maxRunTime>90.0</maxRunTime>
+        <checks>
+            <file name="rr/rrrunoff.his" type="HIS">
+                <parameters>
+                    <parameter name="Rainfall" toleranceAbsolute="0.0001" />
+                    <parameter name="Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIRiverflow1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIQpDirect1" toleranceAbsolute="0.0001" />
+                    <parameter name="LGSIDrainflow1" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_BaseFlow" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_InterFlow" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_DirectRunoff" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/rrbalans.his" type="HIS">
+                <parameters>
+                    <parameter name="Evaporation_RRRunoff_HBV_Wagmod_Walrus" toleranceAbsolute="0.001" />
+                    <parameter name="Boundaries_out" toleranceAbsolute="0.001" />
+                    <parameter name="NetLoss_Sacr_LGSI_Wagmod" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_change_RRRunoff" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="rr/balansdt.his" type="HIS">
+                <parameters>
+                    <parameter name="Cum_InAtNode" toleranceAbsolute="0.0001" />
+                    <parameter name="Cum_OutAtNode" toleranceAbsolute="0.0001" />
+                    <parameter name="Cum_OutViaLinks" toleranceAbsolute="0.0001" />
+                    <parameter name="CumDeltaStorage" toleranceAbsolute="0.0001" />
+                    <parameter name="CumBalanceError" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+</testCases>

@@ -1,0 +1,213 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e108_f07_c01-ref004-stnbuien" ref="drr_default">
+        <path version="2025-10-16T10:56:37.279000">e108_drr/f07_nwrw_urban/c01-ref004-stnbuien</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="RWF_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Balance_error_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_NWRW" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="rr/plvstrdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Rainfall" toleranceAbsolute="0.0001" />
+                    <parameter name="Inflow_sewer" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/balansdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Cumulative_Out" toleranceAbsolute="0.0001" />
+                    <parameter name="CumDeltaStorage" toleranceAbsolute="0.0001" />
+                    <parameter name="Cumulative_In" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f07_c02-ref22-23-loenen-bui8" ref="drr_default">
+        <path version="2025-10-16T11:09:05.236000">e108_drr/f07_nwrw_urban/c02-ref22-23-loenen-bui8</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Storage_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Balance_error_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="RWF_DWF_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Evaporation_NWRW" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="rr/plvstrdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Inflow_sewer" toleranceAbsolute="0.0001" />
+                    <parameter name="Infl_sewer_2" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f07_c03-ref26-loenen-inloopbeek" ref="drr_default">
+        <path version="2025-10-16T11:16:32.267000">e108_drr/f07_nwrw_urban/c03-ref26-loenen-inloopbeek</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Storage_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Evaporation_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Infiltr_runoff_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Infiltr_storage_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Balance_error_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="RWF_DWF_NWRW" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="rr/balansdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Cumulative_Out" toleranceAbsolute="0.0001" />
+                    <parameter name="CumDeltaStorage" toleranceAbsolute="0.0001" />
+                    <parameter name="Delta_Storage" toleranceAbsolute="0.0001" />
+                    <parameter name="Total_Out" toleranceAbsolute="0.0001" />
+                    <parameter name="Total_In" toleranceAbsolute="0.0001" />
+                    <parameter name="Cumulative_In" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f07_c04-alltypessurface-nostorageinfiltration-dt5min" ref="drr_default">
+        <path version="2025-10-16T11:22:25.137000">e108_drr/f07_nwrw_urban/c04-alltypessurface-nostorageinfiltration-dt5min</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Rainfall_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="RWF_DWF_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Infiltr_runoff_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Evaporation_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Infiltr_storage_NWRW" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f07_c05-alltypessurface-nostorageinfiltration-dt1min" ref="drr_default">
+        <path version="2025-10-16T11:25:33.672000">e108_drr/f07_nwrw_urban/c05-alltypessurface-nostorageinfiltration-dt1min</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Infiltr_runoff_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="RWF_DWF_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Evaporation_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Infiltr_storage_NWRW" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f07_c06-alltypessurface-withstorageinfiltration-dt5min" ref="drr_default">
+        <path version="2025-10-16T11:29:32.839000">e108_drr/f07_nwrw_urban/c06-alltypessurface-withstorageinfiltration-dt5min</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Evaporation_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="RWF_DWF_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Infiltr_runoff_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Infiltr_storage_NWRW" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="rr/plvstrdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Infil_Depress" toleranceAbsolute="0.0001" />
+                    <parameter name="Inf_cap_Surf" toleranceAbsolute="0.0001" />
+                    <parameter name="StorageDepress" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f07_c07-alltypessurface-withstorageinfiltration-dt1min" ref="drr_default">
+        <path version="2025-10-16T11:34:48.103000">e108_drr/f07_nwrw_urban/c07-alltypessurface-withstorageinfiltration-dt1min</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Storage_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Infiltr_storage_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Evaporation_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="RWF_DWF_NWRW" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="rr/plvstrdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="StorageDepress" toleranceAbsolute="0.0001" />
+                    <parameter name="Inf_cap_Surf" toleranceAbsolute="0.0001" />
+                    <parameter name="Infil_Depress" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f07_c08-alltypessurface-withstorageinfiltration-dt10s" ref="drr_default">
+        <path version="2025-10-16T11:37:21.140000">e108_drr/f07_nwrw_urban/c08-alltypessurface-withstorageinfiltration-dt10s</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="RWF_DWF_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Balance_error_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Infiltr_runoff_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Infiltr_storage_NWRW" toleranceAbsolute="0.001" />
+                    <parameter name="Evaporation_NWRW" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="rr/plvstrdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Inf_cap_Dyn" toleranceAbsolute="0.0001" />
+                    <parameter name="Infil_Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="Dynamic_storage" toleranceAbsolute="0.0001" />
+                    <parameter name="Infil_Depress" toleranceAbsolute="0.0001" />
+                    <parameter name="Inflow_sewer" toleranceAbsolute="0.0001" />
+                    <parameter name="StorageDepress" toleranceAbsolute="0.0001" />
+                    <parameter name="Inf_cap_Surf" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f07_c09-greenroof-wadi" ref="drr_default">
+        <path version="2025-10-16T11:41:16.953000">e108_drr/f07_nwrw_urban/c09-greenroof-wadi</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/plvstrdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Storage_sp1" toleranceAbsolute="0.0001" />
+                    <parameter name="Storage_sp2" toleranceAbsolute="0.0001" />
+                    <parameter name="Storage_sp6" toleranceAbsolute="0.0001" />
+                    <parameter name="Wadi_inflow" toleranceAbsolute="0.0001" />
+                    <parameter name="Wadi_infiltr" toleranceAbsolute="0.0001" />
+                    <parameter name="Wadi_level" toleranceAbsolute="0.0001" />
+                    <parameter name="Wadi_drain" toleranceAbsolute="0.0001" />
+                    <parameter name="Storage_sp5" toleranceAbsolute="0.0001" />
+                    <parameter name="Wadi_spill" toleranceAbsolute="0.0001" />
+                    <parameter name="Wadi_storage" toleranceAbsolute="0.0001" />
+                    <parameter name="Storage_sp4" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/balansdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="CumBalanceError" toleranceAbsolute="0.001" />
+                    <parameter name="Cum_InViaLinks" toleranceAbsolute="0.001" />
+                    <parameter name="Cum_InAtNode" toleranceAbsolute="0.001" />
+                    <parameter name="Cum_OutViaLinks" toleranceAbsolute="0.001" />
+                    <parameter name="Cum_OutAtNode" toleranceAbsolute="0.001" />
+                    <parameter name="CumDeltaStorage" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+</testCases>

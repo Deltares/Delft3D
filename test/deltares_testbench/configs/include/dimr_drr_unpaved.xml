@@ -1,6 +1,3 @@
-    <!--
-    testCases
-    -->
     <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <testCase name="e108(drr)_f01(unpaved)_c01_400_Ernst" ref="drr_default">
             <path version="2024-01-12T07:40:00">e108_drr/f01_unpaved/c01_400_Ernst</path>
@@ -66,7 +63,7 @@
         </testCase>
 
 
-	<!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen  
+	<!--  Run test below again as soon as Stef Hummel fixed the ECModule bug, reported by Geert Prinsen
 	
         <testCase name="e108(drr)_f01(unpaved)_c03_402_Ernst" ref="drr_default">
             <path>e108_drr/f01_unpaved/c03_402_Ernst</path>
@@ -365,5 +362,382 @@
             </checks>
             <maxRunTime>60.0</maxRunTime>
             <!-- seconds -->
+        </testCase>
+        <testCase name="e108_f01_c16_PercolationLikeSbk213" ref="drr_default">
+            <path version="2025-10-20T11:24:50.032000">e108_drr/f01_unpaved/c16_PercolationLikeSbk213</path>
+            <maxRunTime>90.0</maxRunTime>
+            <checks>
+                <file name="rr/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Land_depth" toleranceAbsolute="0.0001" />
+                        <parameter name="Percolation" toleranceAbsolute="0.0001" />
+                        <parameter name="GWLevel_Surface" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="rr/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Balance_error_RR_Rural" toleranceAbsolute="0.0001" />
+                        <parameter name="Use_Greenhouses" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Net_Seepage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c17_ref019-QuernerCapsim" ref="drr_default">
+            <path version="2025-10-20T11:36:10.901000">e108_drr/f01_unpaved/c17_ref019-QuernerCapsim</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_coefficient" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c18_HupselCapsim" ref="drr_default">
+            <path version="2025-10-20T11:40:40.652000">e108_drr/f01_unpaved/c18_HupselCapsim</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Percolation" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_coefficient" toleranceAbsolute="0.0001" />
+                        <parameter name="Surf_Runoff" toleranceAbsolute="0.0001" />
+                        <parameter name="Capill_Rise" toleranceAbsolute="0.0001" />
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Balance_error_RR_Rural" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c19_UnpavedNoIrrigation" ref="drr_default">
+            <path version="2025-10-20T11:50:03.068000">e108_drr/f01_unpaved/c19_UnpavedNoIrrigation</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="GWLevel_Surface" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/balansdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="CumBalanceError" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c20_IrrigationSW" ref="drr_default">
+            <path version="2025-10-20T11:56:51.713000">e108_drr/f01_unpaved/c20_IrrigationSW</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c21_IrrigationSWlargegift" ref="drr_default">
+            <path version="2025-10-20T12:04:59.948000">e108_drr/f01_unpaved/c21_IrrigationSWlargegift</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Irrigat_GWdem" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c22_IrrigationGW" ref="drr_default">
+            <path version="2025-10-20T12:09:20.825000">e108_drr/f01_unpaved/c22_IrrigationGW</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Irrigat_GWdem" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c23_IrrigationGWlargegift" ref="drr_default">
+            <path version="2025-10-20T12:13:23.764000">e108_drr/f01_unpaved/c23_IrrigationGWlargegift</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Irrigat_GWdem" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c24_IrrigationExt" ref="drr_default">
+            <path version="2025-10-20T12:20:48.278000">e108_drr/f01_unpaved/c24_IrrigationExt</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Irrigat_GWdem" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c25_IrrigationExtlargegift" ref="drr_default">
+            <path version="2025-10-20T12:24:15.227000">e108_drr/f01_unpaved/c25_IrrigationExtlargegift</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Irrigat_GWdem" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c26_IrrigationSWNoCapsimCrit22Target21" ref="drr_default">
+            <path version="2025-10-20T12:26:40.928000">e108_drr/f01_unpaved/c26_IrrigationSWNoCapsimCrit22Target21</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Irrigat_GWdem" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c27_IrrigationSWNoCapsimCrit27Target24" ref="drr_default">
+            <path version="2025-10-20T12:28:57.559000">e108_drr/f01_unpaved/c27_IrrigationSWNoCapsimCrit27Target24</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Irrigat_GWdem" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c28_IrrigationGWNoCapsimCrit22Target21" ref="drr_default">
+            <path version="2025-10-20T12:32:24.350000">e108_drr/f01_unpaved/c28_IrrigationGWNoCapsimCrit22Target21</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Irrigat_GWdem" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c29_IrrigationExtAndWait10Days" ref="drr_default">
+            <path version="2025-10-20T12:44:35.611000">e108_drr/f01_unpaved/c29_IrrigationExtAndWait10Days</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Irrigat_GWdem" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/3blinks.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Link_flow" toleranceAbsolute="0.00001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e108_f01_c30_IrrigationSWAndWait10Days" ref="drr_default">
+            <path version="2025-10-20T12:48:06.533000">e108_drr/f01_unpaved/c30_IrrigationSWAndWait10Days</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="RR/upflowdt.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Irrigat_GWdem" toleranceAbsolute="0.0001" />
+                        <parameter name="IrrigationSup" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                        <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                        <parameter name="Actual_Evap" toleranceAbsolute="0.0001" />
+                        <parameter name="Pot_Evapor" toleranceAbsolute="0.0001" />
+                        <parameter name="Unsat_Zone" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/rrbalans.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                        <parameter name="Boundaries_in" toleranceAbsolute="0.0001" />
+                        <parameter name="Evap_Irr_Loss_Unpaved" toleranceAbsolute="0.0001" />
+                        <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                        <parameter name="Storage_Unpaved" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="RR/3blinks.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="Link_flow" toleranceAbsolute="0.00001" />
+                    </parameters>
+                </file>
+            </checks>
         </testCase>
     </testCases>
