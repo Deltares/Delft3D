@@ -301,6 +301,16 @@ contains
       end if
       allocate (f1dimppar%bfrict(3, nbran))
 
+      if (allocated(f1dimppar%sectc)) then
+         deallocate (f1dimppar%sectc)
+      end if
+      allocate (f1dimppar%sectc(ngrid, 3))
+
+      if (allocated(f1dimppar%sectv)) then
+         deallocate (f1dimppar%sectv)
+      end if
+      allocate (f1dimppar%sectv(ngrid, 3))
+      
       if (allocated(nd_mor)) then
          deallocate (nd_mor)
       end if
