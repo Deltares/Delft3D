@@ -1,5 +1,6 @@
 @ echo off
 
+
 rem Usage:
 rem     Either:
 rem         Call this script with one argument being the path to a Dimrset-bin folder containing a matching run script
@@ -15,8 +16,16 @@ if "%~1" == "" (
     set dimrset_bin=%1
 )
 
+
+del /f COSUMO\FF2NF\FF2NF*.* >del.log 2>&1
+del /f del.log
+
+
+set NPROC=2
+
+
 rem Remove quotes surrounding dimrset_bin, add the appropriate run script, re-add quotes
-call "%dimrset_bin:"=%\run_dflow2d3d.bat"
+call "%dimrset_bin:"=%\run_dflow2d3d_parallel.bat" %NPROC%
 
 
 rem pause
