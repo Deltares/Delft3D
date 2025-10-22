@@ -9,7 +9,7 @@ subroutine SOFLOW(&
 &nlev   , nstru                             ,&
 &branch , bfrict                            ,&
 &bfricp , hpack  , qpack  ,x       ,waoft   ,&
-&grid                                       ,&        
+&grid   , sectc  , sectv                    ,&        
 &wft    , aft    ,wtt     ,att     , of     ,&
 &hlev                                       ,&
 &hbdpar , qbdpar                            ,&
@@ -745,7 +745,6 @@ subroutine SOFLOW(&
 !    only main channel
 !
    do kgrid=1,ngrid
-      sectc(kgrid,1)=0
 
 !    I think this may need to be moved outside and compute based
 !    on the actual water level? maybe only initialization?

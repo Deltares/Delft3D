@@ -208,8 +208,13 @@ module m_f1dimp_data
                                                                 !`sectc(:,3)` = `wfh1` 
                                                                 ! wfh1(ngrid)       I  Flow width Wf at water level h=h1 for every
                                                                 ! 
-         
-         
+      
+      real   , allocatable, dimension(:,:)             :: sectv !`sectv(1,2)` = `secth0`               
+                                                                ! secth0(ngrid)     I  H0-value (for 1 or 2 sub sections) for every
+                                                                !                         grid point.
+                                                                !`sectv(1,3)` = `secth1`         
+                                                                ! secth1(ngrid)     I  H0-value (for 2 sub section) for every grid
+                                                                !                         point.
       
       real   , allocatable, dimension(:,:)             :: waoft ! <waoft>: P, double(<ngrid>,14): cross-sectional variables
       

@@ -1326,6 +1326,7 @@ contains
 
       real, dimension(:, :), pointer :: bfricp
       real, dimension(:, :), pointer :: sectc
+      real, dimension(:, :), pointer :: sectv
 
 !
 !output
@@ -1337,7 +1338,7 @@ contains
 !local
 !
 
-      integer :: kbr, ksre, k2, idx_fm, idx_crs
+      integer :: kbr, ksre, k2, idx_fm, idx_crs, idx_h
       integer :: last_friction_type !< to check that friction type is the same in all sections
 
 !----------------------------------------
@@ -1351,6 +1352,7 @@ contains
       bfrict => f1dimppar%bfrict
       bfricp => f1dimppar%bfricp
       sectc => f1dimppar%sectc
+      sectv => f1dimppar%sectv
 
 !----------------------------------------
 !BEGIN CALC
@@ -1420,17 +1422,62 @@ contains
          !                       For a sedredge cross section : 1 )
          sectc(ksre,1)=network%crs%cross(idx_crs)%frictionsectionscount-1
          
+         idx_h=network%crs%cross(idx_crs)%TABDEF%PLAINSLOCATION(1)
+         !`sectv(1,2)` = `secth0`
+         ! secth0(ngrid)     I  H0-value (for 1 or 2 sub sections) for every
+         !                         grid point.
+         sectv(ksre,2)=network%crs%cross(idx_crs)%TABDEF%HEIGHT(idx_h)
          !
          !`sectc(:,2)` = `wfh0` 
          ! wfh0(ngrid)       I  Flow width Wf at water level h=h0 for every
          !                      grid point.
+         sectc(ksre,2)=network%crs%cross(idx_crs)%TABDEF%FLOWWIDTH(idx_h)
+         
+         idx_h=network%crs%cross(idx_crs)%TABDEF%PLAINSLOCATION(2)
+         !`sectv(1,3)` = `secth1`         
+         ! secth1(ngrid)     I  H0-value (for 2 sub section) for every grid
+         !                         point.
+         sectv(ksre,3)=network%crs%cross(idx_crs)%TABDEF%HEIGHT(idx_h)
          !
          !`sectc(:,3)` = `wfh1` 
          ! wfh1(ngrid)       I  Flow width Wf at water level h=h1 for every
          !                      grid point.
-         
-         !network%crs%cross(idx_crs)%frictiontypepos
+         sectc(ksre,3)=network%crs%cross(idx_crs)%TABDEF%FLOWWIDTH(idx_h)
 
+         !bfricp(6,ngrid)   I  Bed friction parameters:
+         !                     (1,i) = Parameter for positive flow direction
+         !                             in main section (depending on friction
+         !                             type):
+         !                             =     Chezy constant value
+         !                             =     Table pointer (Q or h table)
+         !                             =     Nikuradse parameter kn for Ni-
+         !                                   kuradse formula
+         !                             =     Manning parameter nm for Manning
+         !                                   formula
+         !                             =     Strickler coefficient ks for
+         !                                   Strickler formula
+         !                     (2,i) = Parameter for negative flow direction
+         !                             in main section (depending on friction
+         !                             type) Same definitions as bfricp(1,i).
+         !                     (3,i) = Parameter for positive flow direction
+         !                             in sub sec 1 (depending on friction
+         !                             type):
+         !                             =     Chezy constant value
+         !                             =     Nikuradse parameter kn for Niku-
+         !                                   radse formula
+         !                             =     Manning parameter nm for Manning
+         !                                   formula
+         !                             =     Strickler coefficient ks for
+         !                                   Strickler formula
+         !                     (4,i) = Parameter for negative flow direction
+         !                             in sub sec 1 (depending on friction
+         !                             type) Same definition as bfricp (3,i):
+         !                     (5,i) = Parameter for positive flow direction
+         !                             in sub sec 2 (depending on friction
+         !                             type) Same definition as bfricp (3,i).
+         !                     (6,i) = Parameter for negative flow direction
+         !                             in sub sec 2 (depending on friction
+         !                             type) Same definition as bfricp (3,i).
          bfricp(1, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(1)
          bfricp(2, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(1)
          !deal properly with the values below when friction per section varies.
@@ -1438,40 +1485,6 @@ contains
          bfricp(4, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(2)
          bfricp(5, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(3)
          bfricp(6, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(3)
-!bfricp(6,ngrid)   I  Bed friction parameters:
-!                     (1,i) = Parameter for positive flow direction
-!                             in main section (depending on friction
-!                             type):
-!                             =     Chezy constant value
-!                             =     Table pointer (Q or h table)
-!                             =     Nikuradse parameter kn for Ni-
-!                                   kuradse formula
-!                             =     Manning parameter nm for Manning
-!                                   formula
-!                             =     Strickler coefficient ks for
-!                                   Strickler formula
-!                     (2,i) = Parameter for negative flow direction
-!                             in main section (depending on friction
-!                             type) Same definitions as bfricp(1,i).
-!                     (3,i) = Parameter for positive flow direction
-!                             in sub sec 1 (depending on friction
-!                             type):
-!                             =     Chezy constant value
-!                             =     Nikuradse parameter kn for Niku-
-!                                   radse formula
-!                             =     Manning parameter nm for Manning
-!                                   formula
-!                             =     Strickler coefficient ks for
-!                                   Strickler formula
-!                     (4,i) = Parameter for negative flow direction
-!                             in sub sec 1 (depending on friction
-!                             type) Same definition as bfricp (3,i):
-!                     (5,i) = Parameter for positive flow direction
-!                             in sub sec 2 (depending on friction
-!                             type) Same definition as bfricp (3,i).
-!                     (6,i) = Parameter for negative flow direction
-!                             in sub sec 2 (depending on friction
-!                             type) Same definition as bfricp (3,i).
 
       end do !ksre
 
