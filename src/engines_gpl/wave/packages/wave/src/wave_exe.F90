@@ -103,12 +103,13 @@ program waves_main
       if (ichar(mdw_file(i:i)) == 0) mdw_file(i:i) = ' '
    enddo
 
-   retval = wave_main_init(mode_in, mdw_file)
-
-
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    call initialize_fm_coupling()
+#endif
 
+   retval = wave_main_init(mode_in, mdw_file)
+
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    ! DIMR calls wave ones, updating it to 0.0 seconds, before running FM and wave at later time points
    retval = wave_main_step(0.0_hp)
    call advance_fm_time_window()
