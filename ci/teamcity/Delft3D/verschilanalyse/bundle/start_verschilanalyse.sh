@@ -3,7 +3,8 @@
 set -eo pipefail
 
 # Import bash utility functions.
-source util.sh
+# shellcheck disable=SC1091
+source "$(dirname "${BASH_SOURCE[0]}")/util.sh"
 
 function show_help {
     cat - <<EOF
@@ -21,20 +22,20 @@ Usage: $0 -a <apptainer-image> -r <s3-path-prefix> -o <s3-path-prefix> [-m <mode
 EOF
 }
 
+APPTAINER=
+REFERENCE_PREFIX=
+CURRENT_PREFIX=
+MODELS_PATH=
+MODEL_FILTER=
+JOB_IDS=()
+
 parse_args() {
     local PARSED_OPTIONS
     PARSED_OPTIONS=$(getopt -o 'a:c:r:m:f:' -l 'apptainer:,current-prefix:,reference-prefix:,models-path:,model-filter:' -- "$@") || {
         show_help
-        exit 1
+        return 1
     }
     eval set -- "$PARSED_OPTIONS"
-
-    # shellcheck disable=SC2034
-    APPTAINER=
-    REFERENCE_PREFIX=
-    CURRENT_PREFIX=
-    MODELS_PATH=
-    MODEL_FILTER=
 
     while true; do
         case "$1" in
@@ -64,16 +65,16 @@ parse_args() {
                 ;;
             *)
                 show_help
-                exit 1
+                return 1
                 ;;
         esac
     done
 }
     
 validate_inputs() {
-    if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX ; then
+    if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX MODELS_PATH; then
         show_help
-        exit 1
+        return 1
     fi
 }
 
@@ -203,7 +204,6 @@ main() {
     MODELS_PATH=${MODELS_PATH:-input}
     build_model_regex
     prepare_environment
-    JOB_IDS=()
     cleanup_old_builds
     prepare_modules
     prepare_directories
@@ -211,6 +211,7 @@ main() {
     DOWNLOAD_REFS_JOB_ID=$(download_output_data)
     pull_apptainer_image
     submit_jobs
+    export JOB_IDS
     UPLOAD_OUTPUT_JOB_ID=$(archive_and_upload_output)
     RUN_VERSCHILLENTOOL_JOB_ID=$(run_verschillentool "$DOWNLOAD_REFS_JOB_ID" "$UPLOAD_OUTPUT_JOB_ID")
     trigger_teamcity_build "$RUN_VERSCHILLENTOOL_JOB_ID"
