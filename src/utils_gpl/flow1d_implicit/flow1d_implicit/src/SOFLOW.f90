@@ -741,19 +741,21 @@ subroutine SOFLOW(&
    
    strhis=0
    strhis(9,1)=1
-!
-!    only main channel
-!
+
+   
    do kgrid=1,ngrid
 
-!    I think this may need to be moved outside and compute based
-!    on the actual water level? maybe only initialization?
-       
-      !cpack should be taken from bfricp internally? 
-      !cpack(kgrid,1)=bfricp(1,kgrid)
-      !cpack(kgrid,2)=bfricp(1,kgrid)
-      !cpack(kgrid,3)=bfricp(3,kgrid)
-      !cpack(kgrid,4)=bfricp(5,kgrid)
+      ![SOFLOW] cpack -> [FLOW] cp -> [FLOWIT] cpa ->
+      !   [FLHYPA] c ->
+      !      c(1,1) -> [FLBOCH] c
+      !      c(1,2) -> [FLBOCK] cs 
+      !   [FLDSCO] cp -> [FLABCD] cp 
+      !      cp(1,1) -> [FLNORM] chz 
+      
+      cpack(kgrid,1)=bfricp(1,kgrid)
+      cpack(kgrid,2)=bfricp(1,kgrid)
+      cpack(kgrid,3)=bfricp(3,kgrid) !I do not see where is this used
+      cpack(kgrid,4)=bfricp(5,kgrid) !I do not see where is this used
 
       !waoft(kgrid,1)=wft(kgrid,1)
       !waoft(kgrid,2)=wtt(kgrid,1)

@@ -258,8 +258,9 @@ subroutine FLHYPA(time   ,iter   ,nbran  ,ngrid  ,branch ,typcr  ,&
    &waoft(1,3)     ,waoft(1,6)     ,sectv(1,4)     ,&
 !  <Afh1>          <Oh0>           <Oh1>
    &sectv(1,5)     ,sectv(1,6)     ,sectv(1,7)     ,&
-!  <Asubsc>
+!  <Asubsc>                        <c>
    &prslot ,psltvr ,sectv(1,1)     ,c(1,1) ,r(1,1) ,&
+!  <cs>
    &c(1,2) ,r(1,2) ,alfab          ,&
    &iter   ,theta2 ,omalfa         ,omr    ,omw    ,&
 !  <alfabp>        <c2rp>           <wfp>
