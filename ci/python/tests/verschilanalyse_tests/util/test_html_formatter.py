@@ -78,7 +78,6 @@ def test_make_summary_page__find_all_sections_and_check_tags() -> None:
         "model-run-table": "table",
         "commit-id-list": "ul",
         "prefix-list": "ul",
-        "model-list": "ul",
         "his-water-level-tolerance-list": "ul",
         "his-flow-velocity-tolerance-list": "ul",
         "map-water-level-tolerance-list": "ul",
