@@ -35,16 +35,19 @@ module m_combinepaths
 !!
 !! Examples:
 !!
-!! first_name            second_name         new_name
-!! file1.txt             file2.txt           file2.txt
-!! dir\file1.txt         file2.txt           dir\file2.txt
-!! dir/file1.txt         file2.txt           dir/file2.txt
-!! c:\dir\file1.txt      file2.txt           c:\dir\file2.txt
-!! //dir/file1.txt       file2.txt           //dir/file2.txt
-!! c:\dir\file1.txt      ..\dir2\file2.txt   c:\dir\..\dir2\file2.txt
-!! //dir/file1.txt       ../dir2/file2.txt   //dir/../dir2/file2.txt
-!! c:\dir\file1.txt      d:\dir2\file2.txt   d:\dir2\file2.txt
-!! //dir/file1.txt       //dir2/file2.txt    //dir2/file2.txt
+!! first_name             second_name              new_name
+!! file1.txt              file2.txt                file2.txt
+!! dir\file1.txt          file2.txt                dir\file2.txt
+!! dir/file1.txt          file2.txt                dir/file2.txt
+!! c:\dir\file1.txt       file2.txt                c:\dir\file2.txt
+!! \\agent\dir\file1.txt  file2.txt                \\agent\dir\file2.txt
+!! /dir/file1.txt         file2.txt                /dir/file2.txt
+!! c:\dir\file1.txt       ..\dir2\file2.txt        c:\dir\..\dir2\file2.txt
+!! \\agent\dir\file1.txt  ..\dir2\file2.txt        \\agent\dir\..\dir2\file2.txt
+!! /dir/file1.txt         ../dir2/file2.txt        /dir/../dir2/file2.txt
+!! c:\dir\file1.txt       d:\dir2\file2.txt        d:\dir2\file2.txt
+!! /dir/file1.txt         /dir2/file2.txt          /dir2/file2.txt
+!! \\agent\dir\file1.txt  \\agent2\dir2\file2.txt  \\agent2\\dir2\file2.txt
 pure function combinepaths (first_name, second_name) result(new_name)
    character(*), intent(in)  :: first_name !< reference file name
    character(*), intent(in)  :: second_name !< specification of new file relative to first_name
@@ -59,7 +62,12 @@ pure function combinepaths (first_name, second_name) result(new_name)
          ! don't append it to first_name!
          return
          
-      elseif (new_name(1:2) == '//') then
+      elseif (new_name(1:2) == '\\') then
+         ! second_name contains an absolute UNC path
+         ! don't append it to first_name!
+         return
+         
+      elseif (new_name(1:1) == '/') then
          ! second_name contains an absolute Linux/UNIX path
          ! don't append it to first_name!
          return

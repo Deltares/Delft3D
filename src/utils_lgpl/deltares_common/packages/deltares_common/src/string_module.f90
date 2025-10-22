@@ -1184,12 +1184,11 @@ contains
    real(kind=dp), intent(inout) :: value !< Converted real value
    integer, intent(out) :: ierr !< Error code: 0 if successful, non-zero otherwise
 
-   character(len=15), parameter :: REAL_CHARS = '0123456789-+.eE' !< characters that may appear in a real number
+   character(len=17), parameter :: REAL_CHARS = '0123456789-+.eEdD' !< characters that may appear in a real number
    character(len=2), parameter :: SPACE_CHARS = ' '//achar(9) !< space and tab characters
    integer :: i !< loop index for scanning the string
    integer :: ifirst !< index of first non-space character (beginning of token)
    integer :: ilast !< index of last non-space character (end of token)
-   character(len=20) :: fmt !< format string for reading the real number
    
    ifirst = -1
    ilast = len_trim(string)

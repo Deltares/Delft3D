@@ -2233,7 +2233,7 @@ contains
       integer :: length
       integer :: valcount
       integer :: ierr
-      character(17) :: realchars = '0123456789-+.eE'
+      character(17) :: realchars = '0123456789-+.eEdD'
       character(2) :: spacechars = ' '//achar(9)
       character(20) :: fmt
       character(255) :: avalue
