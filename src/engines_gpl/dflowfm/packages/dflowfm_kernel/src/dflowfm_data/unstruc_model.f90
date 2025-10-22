@@ -453,10 +453,6 @@ contains
          return
       end if
 
-      if (len_trim(md_extfile) > 0) then
-         ! DEBUG: call convert_externalforcings_file(md_extfile)
-      end if
-
       ! load the caching file - if there is any
       call load_caching_file(md_ident, md_netfile, md_usecaching)
 

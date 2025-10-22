@@ -339,13 +339,13 @@ contains
 
       call duikerstoprofs()
 
-      if (newculverts) then
+      if (newculverts .and. network%brs%count > 0) then !branch admin exists to determine flow nodes/links from
          ! find the 1d2d flowlinks required for longculvertsToProfs
          do i = 1, nlongculverts
             numcoords = size(longculverts(i)%xcoords)
             call find1d2dculvertlinks(network, longculverts(i), numcoords)
             !this routine is called here because the culvert links need to be filled, cannot be done during Geominit.
-            call setLongCulvert1D2DLinkAngles(i)
+            !call setLongCulvert1D2DLinkAngles(i)
          end do
          call longculvertsToProfs(.true.)
       else

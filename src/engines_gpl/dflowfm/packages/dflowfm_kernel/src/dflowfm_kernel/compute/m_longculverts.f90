@@ -101,6 +101,8 @@ contains
       use m_filez, only: newfil
       use tree_data_types, only: tree_data
       use tree_structures, only: maxlen
+      use m_readCrossSections, only: parseCrossSectionDefinitionFile
+      use m_CrossSections, only: fill_hashtable
 
       implicit none
 
@@ -128,7 +130,7 @@ contains
       logical :: success
       integer :: istart
       integer :: nlongculverts0
-      integer :: mout
+      !integer :: mout
       integer :: longculvertindex
       integer :: longculvertindex2
       character(len=IdLen) :: temppath, tempname, tempext
@@ -233,9 +235,9 @@ contains
             call prop_set(block_ptr, '', 'type', 'rectangle')
 
             longculverts(nlongculverts)%id = st_id
-            longculverts(nlongculverts)%numlinks = numcoords - 1
-            allocate (longculverts(nlongculverts)%netlinks(numcoords - 1))
-            allocate (longculverts(nlongculverts)%flowlinks(numcoords - 1))
+            longculverts(nlongculverts)%numlinks = numcoords + 1
+            allocate (longculverts(nlongculverts)%netlinks(longculverts(nlongculverts)%numlinks))
+            allocate (longculverts(nlongculverts)%flowlinks(longculverts(nlongculverts)%numlinks))
             longculverts(nlongculverts)%flowlinks = -999
             allocate (longculverts(nlongculverts)%bl(numcoords))
             call increasepol(numcoords, 0)
@@ -338,8 +340,8 @@ contains
       call restorepol()
       istart = 1
       do i = nlongculverts0 + 1, nlongculverts
-         longculverts(i)%netlinks = links(istart + 1:istart + 1 + longculverts(i)%numlinks - 1)
-         istart = istart + longculverts(i)%numlinks + 2
+         longculverts(i)%netlinks = links(istart:istart + longculverts(i)%numlinks - 1)
+         istart = istart + longculverts(i)%numlinks
       end do
 
       ! Loop all structures once again, and for long culverts: add the newly created branchids.
@@ -365,16 +367,21 @@ contains
          else
             longculvertindex = longculvertindex + 1
             call prop_set(str_ptr, '', 'branchId', nbranchids(longculvertindex))
+            longculverts(longculvertindex)%branchid = nbranchids(longculvertindex)
+            call add_longculvert_branch(network, longculverts(longculvertindex))
          end if
       end do
 
+      call parseCrossSectionDefinitionFile(prop_ptr, network)
+      call tree_destroy(prop_ptr)
+      call fill_hashtable(network%CSDefinitions)
       ! write new crsdef file
       !call newfil(mout, crsdef_output)
-      call prop_write_inifile(mout, prop_ptr, ierr)
-      call tree_destroy(prop_ptr)
+      !call prop_write_inifile(mout, prop_ptr, ierr)
+      !call tree_destroy(prop_ptr)
       ! write new structures file
       !call newfil(mout, structures_output)
-      call prop_write_inifile(mout, strs_ptr, ierr)
+      !call prop_write_inifile(mout, strs_ptr, ierr)
       call tree_destroy(strs_ptr)
 
    end subroutine convertLongCulvertsAsNetwork
@@ -686,6 +693,7 @@ contains
 
       if (newculverts) then
          do ilongc = 1, nlongculverts
+            call setLongCulvert1D2DLinkAngles(ilongc)
             do i = 2, longculverts(ilongc)%numlinks - 1
                Lf = abs(longculverts(ilongc)%flowlinks(i))
                if (Lf > 0) then
@@ -984,6 +992,8 @@ contains
 
       call reallocP(meshgeom1d%nnodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%nnodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%nodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%nodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
       !allocate(nnodeids(meshgeom1d%nnodes))
       call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
       call reallocP(meshgeom1d%nodeidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
@@ -1020,6 +1030,8 @@ contains
          !net nodes are start + end points of 1d branch
          meshgeom1d%nnodex(newnetnodeindex:newnetnodeindex + 1) = [xplCulv(jstart), xplCulv(jend)]
          meshgeom1d%nnodey(newnetnodeindex:newnetnodeindex + 1) = [yplCulv(jstart), yplCulv(jend)]
+         meshgeom1d%nodex(newnetnodeindex:newnetnodeindex + 1) = [xplCulv(jstart), xplCulv(jend)]
+         meshgeom1d%nodey(newnetnodeindex:newnetnodeindex + 1) = [yplCulv(jstart), yplCulv(jend)]
          meshgeom1d%nedge_nodes(1:2, currentbranchindex) = [newnetnodeindex, newnetnodeindex + 1]
          write (nodechar, '(I0)') newnetnodeindex
          nnodeids(newnetnodeindex) = 'BR_longCulvert_'//trim(ipolychar)//'_node_'//trim(nodechar)
@@ -1128,6 +1140,27 @@ contains
       end if
 
    end subroutine addlongculvertcrosssections
+   !> Add new branch iformation to the network. Only add necessary information for long culverts (incomplete!)
+   subroutine add_longculvert_branch(network, longculvert)
+      use precision, only: dp
+      use m_hash_search
+      use m_readCrossSections
+      use m_network
+      type(t_network), intent(inout) :: network !< Network structure
+      type(t_longculvert), intent(in) :: longculvert !< Branch id on which to place the cross section
+   
+      integer :: inext
+
+            inext = network%brs%count + 1
+            if (inext > network%brs%size) then
+               call realloc(network%brs)
+            end if
+            
+            network%brs%branch(inext)%Id = longculvert%branchId
+!network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMB
+!network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
+
+   end subroutine add_longculvert_branch
 
    !> Fills in flowlink numbers for a given longculvert.
    !! Note 1: This long culvert is considered invalid if its starting node, or ending node, is outside the global network.
@@ -1174,6 +1207,7 @@ contains
          call realloc(inodeGlob, 2, keepExisting=.false., fill=0)
 
          branch_idx = hashsearch(network%brs%hashlist, longculvert%branchId)
+
          !Find the last 1D node of the branch
          if (branch_idx > 0 .and. network%BRS%size >= i) then
             inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
@@ -1418,6 +1452,7 @@ contains
          else !> old style long culvert input
             if (md_convertlongculverts > 0) then !> convert on-the-fly
                call makelongculverts_commandline(md_1dfiles)
+               newculverts = .true.
             else ! initialize old-style (Herman) long culverts
                call initialize_existing_long_culverts(structure_files)
                call setnodadm(0)
@@ -1454,6 +1489,10 @@ contains
       use messagehandling, only: IDLEN
       use gridoperations, only: findcells
       use m_globalparameters, only: t_filenames
+      use unstruc_channel_flow, only: network
+      use m_network, only: admin_network
+      use m_1d_networkreader, only: construct_network_from_meshgeom
+      use m_save_ugrid_state
 
       type(t_filenames), intent(in) :: md_1dfiles
       character(len=9), allocatable :: md_culvertprefix
@@ -1465,7 +1504,7 @@ contains
       character(len=200), dimension(:), allocatable :: fnames
       ! character(len=IDLEN) :: temppath, tempname, tempext
 
-      integer :: istat, ifil
+      integer :: istat, ifil, ierr
       call findcells(0)
       md_culvertprefix = 'converted_'
       if (len_trim(md_1dfiles%structures) > 0) then
@@ -1483,15 +1522,28 @@ contains
             converted_fnamesstring = trim(trim(converted_fnamesstring)//', ')//tempstring_fnames
          end do
          deallocate (fnames)
+        ! ierr = construct_network_from_meshgeom(network, meshgeom, nbranchids, nbranchlongnames, nnodeids, &
+        !                                           nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, nodesOnBranchVertices, jampi, my_rank)
          call setnodadm(0)
          call finalizeLongCulvertsInNetwork()
 
-         !call split_filename(md_netfile, temppath, tempname, tempext)
-         !tempname = trim(md_culvertprefix)//tempname
-         !tempstring_netfile = cat_filename(temppath, tempname, tempext)
+        !call split_filename(md_netfile, temppath, tempname, tempext)
+        !tempname = trim(md_culvertprefix)//tempname
+        !tempstring_netfile = cat_filename(temppath, tempname, tempext)
 
-         !call unc_write_net(tempstring_netfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
+         call unc_write_net('testnet.nc', janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
+         nbranchlongnames = nbranchids
+         nnodelongnames = nnodeids
+         allocate(nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
+         network%numl = meshgeom1d%numedge
+         ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
+                                                   nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
 
+         !do i = 1, nlongculverts
+         !call addlongculvertcrosssections(network, longculverts(nlongculverts)%branchid, csDefId, longculverts(nlongculverts)%bl, iref)
+
+
+         !call admin_network(network, ierr)
          !md_netfile = tempstring_netfile
          !md_1dfiles%structures = converted_fnamesstring
          !md_1dfiles%cross_section_definitions = converted_crsdefsstring
