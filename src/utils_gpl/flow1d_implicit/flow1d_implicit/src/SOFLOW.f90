@@ -748,10 +748,12 @@ subroutine SOFLOW(&
 
 !    I think this may need to be moved outside and compute based
 !    on the actual water level? maybe only initialization?
-      cpack(kgrid,1)=bfricp(1,kgrid)
-      cpack(kgrid,2)=bfricp(1,kgrid)
-      cpack(kgrid,3)=bfricp(3,kgrid)
-      cpack(kgrid,4)=bfricp(5,kgrid)
+       
+      !cpack should be taken from bfricp internally? 
+      !cpack(kgrid,1)=bfricp(1,kgrid)
+      !cpack(kgrid,2)=bfricp(1,kgrid)
+      !cpack(kgrid,3)=bfricp(3,kgrid)
+      !cpack(kgrid,4)=bfricp(5,kgrid)
 
       !waoft(kgrid,1)=wft(kgrid,1)
       !waoft(kgrid,2)=wtt(kgrid,1)
