@@ -1325,6 +1325,7 @@ contains
       integer, dimension(:, :), pointer :: bfrict
 
       real, dimension(:, :), pointer :: bfricp
+      real, dimension(:, :), pointer :: sectc
 
 !
 !output
@@ -1349,6 +1350,7 @@ contains
       grd_sre_fm => f1dimppar%grd_sre_fm
       bfrict => f1dimppar%bfrict
       bfricp => f1dimppar%bfricp
+      sectc => f1dimppar%sectc
 
 !----------------------------------------
 !BEGIN CALC

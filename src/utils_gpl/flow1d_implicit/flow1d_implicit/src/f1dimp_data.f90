@@ -197,7 +197,7 @@ module m_f1dimp_data
                                                                 !                      cross section:
                                                                 !                      c1sec (0) : Main section only (0 sub sections
                                                                 !                      c2sec (1) : 1 sub section
-         )                                                      !                      c3sec (2) : 2 sub sections
+                                                                !                      c3sec (2) : 2 sub sections
                                                                 !                      (For a circle cross section   : 0 ;
                                                                 !                       For a sedredge cross section : 1 )         
                                                                 !
