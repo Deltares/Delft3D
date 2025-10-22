@@ -2860,7 +2860,8 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Volat_OMP ","kvOMP     ",   1,"x",1
 "Volat_OMP ","cHeOMP    ",   2,"x",1
 "Sed_OMP   ","fSedOMP   ",   1,"x",1
-"Sed_OMP   ","VxSedOMP  ",   2,"x",0
+"Sed_OMP   ","fSedOMPS2 ",   2,"x",1
+"Sed_OMP   ","VxSedOMP  ",   3,"x",0
 "TraSe2_OMP","VxUpwOMP  ",   1,"x",0
 "TraSe2_OMP","VxDownOMP ",   2,"x",0
 "TRSOXY    ","fTRSOXY   ",   1,"x",1

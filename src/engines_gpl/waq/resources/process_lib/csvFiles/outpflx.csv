@@ -1013,6 +1013,7 @@ outfpr,outffl,outfnm,outfdo
 "Los_S1_OMP","dLossOMPS1",   1,"x"
 "Los_S2_OMP","dLossOMPS2",   1,"x"
 "Sed_OMP   ","dSedOMP   ",   1,"x"
+"Sed_OMP   ","dSedOMPS2 ",   2,"x"
 "AtmDep_OMP","dAtmDepOMP",   1,"x"
 "Dfwast_OMP","dDfwastOMP",   1,"x"
 "Damrear   ","dDamrear  ",   1,"x"

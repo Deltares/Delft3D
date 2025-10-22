@@ -1742,6 +1742,10 @@ stocfl,stocsu,stocsc
 "dSedOMP   ","OMP-par   ",  -1.00000
 "dSedOMP   ","OMPS1     ",   1.00000
 "dSedOMP   ","OMPS1-par ",   1.00000
+"dSedOMPS2 ","OMP       ",  -1.00000
+"dSedOMPS2 ","OMP-par   ",  -1.00000
+"dSedOMPS2 ","OMPS2     ",   1.00000
+"dSedOMPS2 ","OMPS2-par ",   1.00000
 "dAtmDepOMP","OMP       ",   1.00000
 "dAtmDepOMP","OMP-Par   ",   1.00000
 "dDfwastOMP","OMP       ",   1.00000
