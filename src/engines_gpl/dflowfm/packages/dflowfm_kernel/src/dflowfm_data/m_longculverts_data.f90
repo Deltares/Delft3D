@@ -41,6 +41,7 @@ module m_longculverts_data
    type, public :: t_longculvert
       character(len=IdLen) :: id
       character(len=IdLen) :: branchid !< if newculverts, corresponding network branch
+      character(len=IdLen) :: csdefid !< if newculverts, corresponding network crossdef
       integer :: numlinks !< Number of links of the long culvert
       integer, dimension(:), allocatable :: netlinks !< Net link numbers of the long culvert
       integer, dimension(:), allocatable :: flowlinks !< Flow link numbers of the long culvert

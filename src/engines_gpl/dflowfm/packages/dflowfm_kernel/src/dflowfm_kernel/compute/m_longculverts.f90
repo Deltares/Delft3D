@@ -232,6 +232,7 @@ contains
             csDefId = 'CsDef_longCulvert_'//trim(st_id)
             call prop_set(block_ptr, '', 'id', csDefId)
             call prop_set(str_ptr, '', 'csDefId', csDefId) ! Directly refer to this new csdef in the converted structure.
+            longculverts(nlongculverts)%csdefid = csDefId
             call prop_set(block_ptr, '', 'type', 'rectangle')
 
             longculverts(nlongculverts)%id = st_id
@@ -1504,7 +1505,7 @@ contains
       character(len=200), dimension(:), allocatable :: fnames
       ! character(len=IDLEN) :: temppath, tempname, tempext
 
-      integer :: istat, ifil, ierr
+      integer :: istat, ifil, ierr, i
       call findcells(0)
       md_culvertprefix = 'converted_'
       if (len_trim(md_1dfiles%structures) > 0) then
@@ -1539,9 +1540,9 @@ contains
          ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
                                                    nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
 
-         !do i = 1, nlongculverts
-         !call addlongculvertcrosssections(network, longculverts(nlongculverts)%branchid, csDefId, longculverts(nlongculverts)%bl, iref)
-
+         do i = 1, nlongculverts
+            call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
+         end do
 
          !call admin_network(network, ierr)
          !md_netfile = tempstring_netfile
