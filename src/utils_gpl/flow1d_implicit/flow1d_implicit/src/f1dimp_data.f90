@@ -215,6 +215,18 @@ module m_f1dimp_data
                                                                 !`sectv(1,3)` = `secth1`         
                                                                 ! secth1(ngrid)     I  H0-value (for 2 sub section) for every grid
                                                                 !                         point.
+                                                                !`sectv(1,4)` = `afh0`
+                                                                ! afh0(ngrid)       I  Flow area Af at water level h=h0 for every
+                                                                !                      grid point.
+                                                                !`sectv(1,5)` = `afh1`
+                                                                ! afh1(ngrid)       I  Flow area Af at water level h=h1 for every
+                                                                !                      grid point.   
+                                                                ! `sectv(1,6)` = `oh0`
+                                                                ! oh0(ngrid)        I  Wetted perimeter Ot at water level h=h0 for
+                                                                !                      every grid point.
+                                                                ! `sectv(1,7)` = `oh1`
+                                                                ! oh1(ngrid)        I  Wetted perimeter Ot at water level h=h1 for
+                                                                !                      every grid point.      
       
       real   , allocatable, dimension(:,:)             :: waoft ! <waoft>: P, double(<ngrid>,14): cross-sectional variables
       
