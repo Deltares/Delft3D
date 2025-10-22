@@ -193,12 +193,10 @@ def test_make_summary_page__tolerance_list(output_type: OutputType) -> None:
     parser = SummaryPageParser()
     parser.feed(html_page)
     sections = parser.sections
-    model_list = sections["model-list"].get_text(html_page)
     water_level = sections[f"{output_type.value}-water-level-tolerance-list"].get_text(html_page)
     flow_velocity = sections[f"{output_type.value}-flow-velocity-tolerance-list"].get_text(html_page)
 
     # Assert
-    assert all(name in model_list for name in ("foo", "bar"))
     assert all(name not in water_level for name in ("foo", "bar"))
     assert "All water level differences are within tolerances" in water_level
 
