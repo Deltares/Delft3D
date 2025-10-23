@@ -56,7 +56,7 @@ contains
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_wave_coupling()
-      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, precicef_requires_initial_data
+      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, precicef_requires_initial_data, precicef_set_triangle
       use m_partitioninfo, only: numranks, my_rank
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none (type, external)
@@ -78,6 +78,8 @@ contains
 
       mesh_coordinates = [ 0, 0, 0, 1, 1, 1, 1, 0 ]
       call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
+      call precicef_set_triangle(mesh_name, vertex_ids(1), vertex_ids(2), vertex_ids(4), len(mesh_name))
+      call precicef_set_triangle(mesh_name, vertex_ids(2), vertex_ids(3), vertex_ids(4), len(mesh_name))
 
       call precicef_requires_initial_data(is_initial_data_required)
       print *, '[FM] Is data required? ', is_initial_data_required

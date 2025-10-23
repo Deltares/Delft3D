@@ -113,7 +113,7 @@ end subroutine couple_to_greeter_dummy
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    function initialize_fm_coupling() result(vertex_ids)
-      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, precicef_requires_initial_data
+      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, precicef_requires_initial_data, precicef_set_triangle
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none (type, external)
 
@@ -135,6 +135,11 @@ end subroutine couple_to_greeter_dummy
 
       mesh_coordinates = [ 0.0, 0.0, 0.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.0, 0.5, 0.0 ]
       call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
+      
+      !!call precicef_set_triangle(mesh_name, vertex_ids(1), vertex_ids(2), vertex_ids(6), len(mesh_name))
+      !!call precicef_set_triangle(mesh_name, vertex_ids(2), vertex_ids(4), vertex_ids(6), len(mesh_name))
+      !!call precicef_set_triangle(mesh_name, vertex_ids(3), vertex_ids(4), vertex_ids(6), len(mesh_name))
+      !!call precicef_set_triangle(mesh_name, vertex_ids(4), vertex_ids(5), vertex_ids(6), len(mesh_name))
 
       call precicef_requires_initial_data(is_initial_data_required)
       print *, '[wave] Is data required? ', is_initial_data_required

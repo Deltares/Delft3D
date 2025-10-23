@@ -23,7 +23,7 @@
     <receive-mesh name="wave-mesh" from="wave"/>
     <write-data name="fm-data" mesh="fm-mesh"/>
     <read-data name="wave-data" mesh="fm-mesh"/>
-    <mapping:nearest-neighbor direction="write" from="fm-mesh" to="wave-mesh" constraint="consistent" />
+    <mapping:linear-cell-interpolation direction="write" from="fm-mesh" to="wave-mesh" constraint="conservative" />
   </participant>
 
   <participant name="wave">
@@ -38,7 +38,7 @@
 
   <coupling-scheme:serial-explicit>
     <time-window-size value="3600" method="fixed" />
-    <max-time value="90000" />
+    <max-time value="3600" />
     <participants first="wave" second="fm" />
     <exchange data="fm-data" mesh="wave-mesh" from="fm" to="wave" initialize="true" />
     <exchange data="wave-data" mesh="fm-mesh" from="wave" to="fm" />
