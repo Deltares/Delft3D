@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
-<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3" 
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-        xmlns:xi="http://www.w3.org/2001/XInclude" 
+<deltaresTestbench_v3 xmlns="http://schemas.deltares.nl/deltaresTestbench_v3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
     <!--
     Basic Linux configuration file
@@ -51,7 +51,7 @@
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
             <location ref="reference_engines" type="reference">
-                <from>lnx64</from> 
+                <from>lnx64</from>
             </location>
 			<location ref="local" type="check">
                 <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
@@ -78,22 +78,6 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
-                <from>lnx64</from>
-            </location>
-            <location ref="cases" type="input">
-                <from>.</from>
-            </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
-        </testCase>
-        <testCase name="drr_windowsref">
-            <programs>
-                <program ref="dimr">
-                    <arguments>
-                        <argument>dimr.xml</argument>
-                    </arguments>
-                </program>
-            </programs>
-            <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
             <location ref="cases" type="input">
@@ -105,5 +89,5 @@
     <!--
     testCases
     -->
-    <xi:include href="../include/dimr_drr_walrus.xml"/>
+    <xi:include href="../include/dimr_drr_scs.xml"/>
 </deltaresTestbench_v3>

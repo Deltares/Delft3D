@@ -61,7 +61,7 @@ object WindowsTest : BuildType({
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
-        
+
     }
 
     features {
@@ -101,7 +101,7 @@ object WindowsTest : BuildType({
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
             conditions { equals("copy_cases", "true") }
             workingDir = "test/deltares_testbench"
-            scriptContent = "cp -r data/cases copy_cases"
+            scriptContent = "xcopy \"data\\cases\" \"copy_cases\" /E /I"
         }
     }
 
