@@ -1424,6 +1424,7 @@ contains
 
          num_longculverts = num_longculverts + size(nodes)
          num_newculverts = num_newculverts + count(node_has_key(nodes, 'branchId'))
+         deallocate(nodes)
       end do
       if (num_longculverts > 0) then
          nlongculverts = num_longculverts
