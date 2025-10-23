@@ -60,7 +60,7 @@
       <programs>
           <program ref="dflowfm" seq="1">
             <arguments>
-              <argument>tunnel.mdu</argument>
+              <argument>converted_tunnel.mdu</argument>
             </arguments>
           </program>
       </programs>
