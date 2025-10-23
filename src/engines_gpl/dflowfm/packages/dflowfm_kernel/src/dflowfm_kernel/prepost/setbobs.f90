@@ -50,6 +50,7 @@ contains
       use m_structures, only: network
       use m_longculverts, only: find1d2dculvertlinks, setLongCulvert1D2DLinkAngles, longculvertsToProfs
       use m_longculverts_data, only: newculverts, nlongculverts, longculverts
+      use unstruc_model, only: md_convertlongculverts
 
       integer :: L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, Lf, mis, i, numcoords, ibotL
       real(kind=dp) :: bl1, bl2, bedlevel_at_link, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
@@ -339,7 +340,7 @@ contains
 
       call duikerstoprofs()
 
-      if (newculverts .and. network%brs%count > 0) then !branch admin exists to determine flow nodes/links from
+      if (newculverts .and. md_convertlongculverts == 0) then ! not converted on-the-fly!
          ! find the 1d2d flowlinks required for longculvertsToProfs
          do i = 1, nlongculverts
             numcoords = size(longculverts(i)%xcoords)
