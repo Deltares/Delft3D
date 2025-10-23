@@ -1469,7 +1469,6 @@ contains
          ! afh1(ngrid)       I  Flow area Af at water level h=h1 for every
          !                      grid point.  
          sectv(ksre,5)=network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
-         
          ! `sectv(1,7)` = `oh1`
          ! oh1(ngrid)        I  Wetted perimeter Ot at water level h=h1 for
          !                      every grid point.
@@ -1481,11 +1480,6 @@ contains
          !                      grid point.
          sectc(ksre,3)=network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
 
-
- 
-
-
-         
          !bfricp(6,ngrid)   I  Bed friction parameters:
          !                     (1,i) = Parameter for positive flow direction
          !                             in main section (depending on friction
@@ -1522,7 +1516,6 @@ contains
          !                             type) Same definition as bfricp (3,i).
          bfricp(1, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(1)
          bfricp(2, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(1)
-         !deal properly with the values below when friction per section varies.
          bfricp(3, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(2)
          bfricp(4, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(2)
          bfricp(5, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(3)
