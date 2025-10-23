@@ -39,8 +39,9 @@ module m_delete_dry_points_and_areas
    public :: delete_dry_points_and_areas
 
    interface
-      module subroutine delete_dry_points_and_areas
+      module subroutine delete_dry_points_and_areas(update_blcell)
          implicit none
+         logical, intent(in) :: update_blcell !< Flag specifying whether the blcell array should be updated after removing dry cells.
       end subroutine delete_dry_points_and_areas
    end interface
 

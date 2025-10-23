@@ -696,10 +696,16 @@
           DSRMAP(7,54) = TranslateString (LanguageHandle,'DWF companies [m3/s]')
         endif
         Do idum=1,54
+           UNITS (7,idum) = TranslateString (LanguageHandle,'m3/s')
+        Enddo
+        Do idum=36, 47
            UNITS (7,idum) = TranslateString (LanguageHandle,'m3')
         Enddo
+        UNITS (7,8 ) = TranslateString (LanguageHandle,'m3')
+        UNITS (7,9 ) = TranslateString (LanguageHandle,'m3')
         UNITS (7,10) = TranslateString (LanguageHandle,'mm hour-1')
         UNITS (7,11) = TranslateString (LanguageHandle,'mm hour-1')
+        UNITS (7,52) = TranslateString (LanguageHandle,'m3')
         UNITS (7,53) = TranslateString (LanguageHandle,'m')
 ! ***                          BALANS MAP
         DSRMAP(8,1) = TranslateString (LanguageHandle,'Total In [m3]')

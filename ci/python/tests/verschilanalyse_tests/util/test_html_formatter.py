@@ -78,7 +78,6 @@ def test_make_summary_page__find_all_sections_and_check_tags() -> None:
         "model-run-table": "table",
         "commit-id-list": "ul",
         "prefix-list": "ul",
-        "model-list": "ul",
         "his-water-level-tolerance-list": "ul",
         "his-flow-velocity-tolerance-list": "ul",
         "map-water-level-tolerance-list": "ul",
@@ -194,12 +193,10 @@ def test_make_summary_page__tolerance_list(output_type: OutputType) -> None:
     parser = SummaryPageParser()
     parser.feed(html_page)
     sections = parser.sections
-    model_list = sections["model-list"].get_text(html_page)
     water_level = sections[f"{output_type.value}-water-level-tolerance-list"].get_text(html_page)
     flow_velocity = sections[f"{output_type.value}-flow-velocity-tolerance-list"].get_text(html_page)
 
     # Assert
-    assert all(name in model_list for name in ("foo", "bar"))
     assert all(name not in water_level for name in ("foo", "bar"))
     assert "All water level differences are within tolerances" in water_level
 

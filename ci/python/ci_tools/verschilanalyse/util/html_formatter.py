@@ -76,11 +76,6 @@ class HtmlFormatter:
                     <li>Current verschilanalyse: {current_commit_id}</li>
                     <li>Reference verschilanalyse: {reference_commit_id}</li>
                 </ul>
-                <p>
-                    The verschillentool successfully compared the output of
-                    the following models:
-                </p>
-                {model_list}
                 <h3>Links</h3>
                 {links_section}
             </body>
