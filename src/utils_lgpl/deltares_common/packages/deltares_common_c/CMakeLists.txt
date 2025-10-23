@@ -30,7 +30,6 @@ set(source  src/bmi_shared_lib_fortran_api.c
             src/cpuinfo.cpp
             src/cutil.c
             src/getcwd.c
-            src/getopt.cpp
             src/getputarray.cpp
             src/meminfo.cpp
             src/sems.cpp
