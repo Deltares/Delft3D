@@ -576,7 +576,6 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
                          & filename_tmp, flowLinkConnectivity)
     use netcdf
     use dwaves_version_module
-    use MessageHandling
     implicit none
 !
 ! Parameters
@@ -1005,10 +1004,8 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
           ! Indices of the triangles are added to elemconn(:3,:)
           ! Not used: edgeindx, numedge, triedge, xh, yh, nh, trisize
           !
-         !  call tricall(jatri, xcc, ycc, nelm, elemconntmp, maxelem, &
-         !             & edgeindx, numedge, triedge, xh, yh, nh, trisize)
-         call setmessage(level_fatal, "Call to triangle encountered")
-
+          call tricall(jatri, xcc, ycc, nelm, elemconntmp, maxelem, &
+                     & edgeindx, numedge, triedge, xh, yh, nh, trisize)
           !
           ! Turn the triangles in elemconn into quadrilaterals (rectangles):
           ! point4 == point3

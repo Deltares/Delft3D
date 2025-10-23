@@ -713,7 +713,6 @@
 
 
    subroutine DLAUN(XS,YS,NS,jatri,ierr)
-   use messagehandling, only: setmessage, LEVEL_FATAL
    implicit none
    real(kind=hp), intent(in) :: XS(:), YS(:)
    integer, intent(out)      :: ierr
@@ -770,8 +769,7 @@
       MAXTRI = NSM !?
 
       numtri = NSM ! Input value should specify max nr of triangles in indx.
-      ! CALL TRICALL(jatri,XS,YS,NS,INDX,NUMTRI,EDGEINDX,NUMEDGE,TRIEDGE,XH,YH,NH,trisize)
-      call setmessage(level_fatal, "Call to triangle encountered")
+      CALL TRICALL(jatri,XS,YS,NS,INDX,NUMTRI,EDGEINDX,NUMEDGE,TRIEDGE,XH,YH,NH,trisize)
       if ( numtri < 0 ) nsm = -numtri
    end do
 

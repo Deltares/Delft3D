@@ -149,6 +149,7 @@ target_link_libraries(${library_name} PRIVATE
                       polypack
                       trachytopes_io
                       trachytopes_kernel
+                      triangle_c
                       waq_definition
                       wq_processes
                       waq_process

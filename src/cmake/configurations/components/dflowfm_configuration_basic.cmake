@@ -128,6 +128,11 @@ if(WIN32)
     endif()
 endif(WIN32)
 
+# triangle
+if(NOT TARGET triangle_c)
+    add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
+endif()
+
 # libsigwatch
 if(NOT TARGET libsigwatch)
     add_subdirectory(${checkout_src_root}/${libsigwatch_module} libsigwatch)

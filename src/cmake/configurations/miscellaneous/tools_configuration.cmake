@@ -15,6 +15,11 @@ if(NOT TARGET deltares_common_mpi)
     add_subdirectory(${checkout_src_root}/${deltares_common_mpi_module} deltares_common_mpi)
 endif()
 
+# triangle
+if(NOT TARGET triangle_c)
+    add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
+endif()
+
 # gridgeom
 if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
