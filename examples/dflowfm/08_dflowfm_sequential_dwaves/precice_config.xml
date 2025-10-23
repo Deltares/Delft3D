@@ -4,6 +4,8 @@
     <sink type="file" output="precice_debug_output.txt" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
   </log>
 
+  <profiling directory="."/>
+
   <data:scalar name="fm-data" />
   <data:scalar name="wave-data" />
 

@@ -532,6 +532,8 @@ function wave_master_step(stepsize) result(retval)
 !
    retval = 0
    !
+   call precice_start_profiling_section("wave_main")
+
    if (wavedata%mode /= stand_alone) then
       !
       ! In combination with flow, perform the swan computation (including mapping etc.)
@@ -639,6 +641,7 @@ function wave_master_step(stepsize) result(retval)
          enddo
       endif
    endif
+   call precice_stop_last_profiling_section()
    if (numranks>1) call wave_mpi_bcast(SWAN_DONE, ierr)
 end function wave_master_step
 
