@@ -65,7 +65,7 @@ contains
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
       character(kind=c_char, len=*), parameter :: mesh_name = "fm-mesh"
       character(kind=c_char, len=*), parameter :: data_name = "fm-data"
-      integer(kind=c_int), parameter :: number_of_vertices = 13;
+      integer(kind=c_int), parameter :: number_of_vertices = 4;
       real(kind=c_double), dimension(number_of_vertices * 2) :: mesh_coordinates
       integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
       real(kind=c_double), dimension(number_of_vertices) :: initial_data
@@ -76,14 +76,14 @@ contains
       call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
       print *, '[FM] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
 
-      mesh_coordinates = [(real(i / 2, kind=c_double), integer :: i = 0, 2 * number_of_vertices - 1)] ! Diagonal line {(0, 0), (1, 1), (2, 2), ...}
+      mesh_coordinates = [ 0, 0, 0, 1, 1, 1, 1, 0 ]
       call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
 
       call precicef_requires_initial_data(is_initial_data_required)
       print *, '[FM] Is data required? ', is_initial_data_required
 
       if (is_initial_data_required == 1) then
-         initial_data = [(mesh_coordinates(2 * i - 1), integer :: i = 1, number_of_vertices)] ! fm-data is equal to x-coordinates
+         initial_data = [ 1, 0, 1, 0 ] ! fm-data is one on the diagonal of the square (0,0) and (1,1)
          call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
       end if
 

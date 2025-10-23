@@ -117,7 +117,7 @@ end subroutine couple_to_greeter_dummy
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none (type, external)
 
-      integer(kind=c_int), parameter :: number_of_vertices = 12;
+      integer(kind=c_int), parameter :: number_of_vertices = 6;
       integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "wave"
@@ -133,14 +133,14 @@ end subroutine couple_to_greeter_dummy
       call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
       print *, '[wave] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
 
-      mesh_coordinates = [(real(i / 2, kind=c_double) + 0.5_c_double, integer :: i = 0, 2 * number_of_vertices - 1)] ! Diagonal line {(0.5, 0.5), (1.5, 1.5), (2.5, 2.5), ...}
+      mesh_coordinates = [ 0.0, 0.0, 0.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.0, 0.5, 0.0 ]
       call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
 
       call precicef_requires_initial_data(is_initial_data_required)
       print *, '[wave] Is data required? ', is_initial_data_required
 
       if (is_initial_data_required == 1) then
-         initial_data = [(hypot(mesh_coordinates(2 * i - 1), mesh_coordinates(2 * i)), integer :: i = 1, number_of_vertices)] ! wave-data is equal to distance from origin
+         initial_data = [ 0.0, 0.0, 1.0, 0.0, 0.0, 1.0 ] ! wave-data basically ignored, so anything goes here.
          call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
       end if
 
