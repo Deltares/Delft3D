@@ -42,8 +42,9 @@ module m_createsamplesinpolygon2
 contains
 
    subroutine CREATESAMPLESINPOLYGON2()
+      use messagehandling, only: setmessage, level_fatal
       use precision, only: dp
-      use m_ec_triangle, only: numtri, indx, edgeindx, triedge, numedge
+      use m_ec_triangle, only: numtri, indx, edgeindx, triedge    !, numedge
       use M_SAMPLES, only: ns, increasesam, zs, xs, ys
       use M_MISSING, only: dmiss, jins
       use m_sferic, only: jsferic
@@ -126,7 +127,9 @@ contains
 
          numtri = ntx ! Input value should specify max nr of triangles in indx.
          NN = ntx ! used to check array size of xs, ys in tricall
-         call TRICALL(2, XPL, YPL, NPL1, INDX, NUMTRI, EDGEINDX, NUMEDGE, TRIEDGE, XS(NS1), YS(NS1), NN, TRIAREA)
+         !call TRICALL(2, XPL, YPL, NPL1, INDX, NUMTRI, EDGEINDX, NUMEDGE, TRIEDGE, XS(NS1), YS(NS1), NN, TRIAREA)
+         call setmessage(level_fatal, "Call to triangle encountered")
+         
          if (numtri < 0) ntx = -numtri
          if (nn < 0) ntx = max(ntx, -nn)
       end do

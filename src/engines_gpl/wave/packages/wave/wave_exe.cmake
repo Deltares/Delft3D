@@ -25,7 +25,6 @@ if (WIN32)
                             wave_manager
                             nefis
                             netcdff
-                            triangle_c
                             swan
                             ) 
 
@@ -53,7 +52,6 @@ if(UNIX)
                             wave_kernel
                             wave_manager
                             nefis
-                            triangle_c
                             swan
                             esmfsm
                             netcdff

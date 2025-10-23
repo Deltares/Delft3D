@@ -8,7 +8,7 @@ set(oss_dependencies    deltares_common
                         io_netcdf_data
                         kdtree_wrapper
                         kdtree2
-                        triangle_c)
+                        )
 
 target_include_directories(${library_name}  PRIVATE ${version_include_dir} ${rc_dir})
 
@@ -20,7 +20,7 @@ endif(UNIX)
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies}
                                           kdtree2
-                                          triangle_c)
+                                          )
 
     # Set additional compilation properties
     target_compile_options(${library_name} PRIVATE "${heap_arrays_one_flag}")

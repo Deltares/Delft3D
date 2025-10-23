@@ -38,7 +38,6 @@ if(UNIX)
                             polypack
                             trachytopes_io
                             trachytopes_kernel
-                            triangle_c
                             wq_processes
                             waq_process
                             waq_utils_c
@@ -84,7 +83,6 @@ if(WIN32)
                          polypack
                          trachytopes_io
                          trachytopes_kernel
-                         triangle_c
                          wq_processes
                          waq_process
                          waq_utils_c
