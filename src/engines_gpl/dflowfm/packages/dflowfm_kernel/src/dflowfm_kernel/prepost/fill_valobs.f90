@@ -281,13 +281,15 @@ contains
             end if
             
             ! Finally; vertical positions
-            !          interface
-            call interpolate_horizontal (zws,i,IPNT_ZWS,UNC_LOC_W)
-            !          centre: make temporary array with cellcentres
-            do j = 2, ndkx
-               tmp_interp(j) = 0.5_dp * (zws(j) + zws(j - 1))
-            end do
-            call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)     
+            if (model_is_3D()) then       
+               !       interface
+               call interpolate_horizontal (zws,i,IPNT_ZWS,UNC_LOC_W)
+               !       centre: make temporary array with cellcentres
+               do j = 2, ndkx
+                  tmp_interp(j) = 0.5_dp * (zws(j) + zws(j - 1))
+               end do
+               call interpolate_horizontal (tmp_interp,i,IPNT_ZCS,UNC_LOC_S3D)
+            end if
 
             ! Frome here: everything as snapped!!!
             if (jawind > 0) then
