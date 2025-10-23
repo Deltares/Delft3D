@@ -53,6 +53,7 @@ module wave_main
    public :: initialize_fm_coupling
    public :: is_fm_coupling_ongoing
    public :: advance_fm_time_window
+   public :: read_fm_data
 #endif
    
    public wavedata
@@ -72,33 +73,30 @@ subroutine couple_to_greeter_dummy()
    use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
       precicef_set_vertices, precicef_read_data, &
       precicef_get_data_dimensions, precicef_get_max_time_step_size
+   use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
 
-   integer(kind=c_int), parameter :: precice_component_name_length = 4
-   character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "wave"
-   integer(kind=c_int), parameter :: precice_config_name_length = 21
-   character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
-   integer(kind=c_int), parameter :: mesh_name_length = 9
-   character(kind=c_char, len=mesh_name_length), parameter :: mesh_name = "wave-mesh"
+   character(kind=c_char, len=*), parameter :: precice_component_name = "wave"
+   character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
+   character(kind=c_char, len=*), parameter :: mesh_name = "wave-mesh"
    integer(kind=c_int), parameter :: max_greeting_length = 34
    integer(kind=c_int) :: mesh_dimensions
    real(kind=c_double), dimension(max_greeting_length * 2) :: mesh_coordinates
    integer(kind=c_int), dimension(max_greeting_length) :: vertex_ids
-   integer(kind=c_int), parameter :: data_name_length = 8
-   character(kind=c_char, len=data_name_length), parameter :: data_name = "greeting"
-   integer :: data_size, data_dimension
+   character(kind=c_char, len=*), parameter :: data_name = "greeting"
+   integer(kind=c_int) :: data_size, data_dimension
    real(kind=c_double), dimension(:), allocatable :: data_values
    character(kind=c_char), dimension(:), allocatable :: converted_data
    real(kind=c_double) :: precice_time_step
 
-   call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
-   call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, mesh_name_length)
+   call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
+   call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
    print *, '[wave] The number of dimensions of the wave-mesh is ', mesh_dimensions
 
    mesh_coordinates = 0.0_c_double
-   call precicef_set_vertices(mesh_name, max_greeting_length, mesh_coordinates, vertex_ids, mesh_name_length)
+   call precicef_set_vertices(mesh_name, max_greeting_length, mesh_coordinates, vertex_ids, len(mesh_name))
    call precicef_initialize()
 
-   call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, mesh_name_length, data_name_length)
+   call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, len(mesh_name), len(data_name))
    data_size = data_dimension * max_greeting_length
    print *, '[wave] data dimension: ', data_dimension, ' data size: ', data_size
    call realloc(data_values, data_size)
@@ -106,7 +104,7 @@ subroutine couple_to_greeter_dummy()
    call precicef_get_max_time_step_size(precice_time_step)
    print *, '[wave] max time step: ', precice_time_step
    call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, precice_time_step, data_values, &
-                              mesh_name_length, data_name_length)
+                              len(mesh_name), len(data_name))
 
    converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
    print *, '[wave] message read: ', converted_data
@@ -114,38 +112,46 @@ end subroutine couple_to_greeter_dummy
 #endif
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   subroutine initialize_fm_coupling()
-      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data
+   function initialize_fm_coupling() result(vertex_ids)
+      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, precicef_requires_initial_data
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none (type, external)
+
+      integer(kind=c_int), parameter :: number_of_vertices = 12;
+      integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "wave"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
       character(kind=c_char, len=*), parameter :: mesh_name = "wave-mesh"
       character(kind=c_char, len=*), parameter :: data_name = "wave-data"
-      integer(kind=c_int), parameter :: number_of_vertices = 12;
       real(kind=c_double), dimension(number_of_vertices * 2) :: mesh_coordinates
-      integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
       real(kind=c_double), dimension(number_of_vertices) :: initial_data
-
+      integer(kind=c_int) :: is_initial_data_required
       integer(kind=c_int) :: mesh_dimensions
 
       call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
       call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
-      print *, '[D-Waves] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
+      print *, '[wave] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
 
-      mesh_coordinates = [(real(i / 2, kind=c_double) + 0.5_c_double, integer :: i = 1, 2 * number_of_vertices)] ! Diagonal line {(0.5,0.5), (1.5,1.5), (2.5,2.5), ...}
+      mesh_coordinates = [(real(i / 2, kind=c_double) + 0.5_c_double, integer :: i = 0, 2 * number_of_vertices - 1)] ! Diagonal line {(0.5, 0.5), (1.5, 1.5), (2.5, 2.5), ...}
       call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
 
-      initial_data = [(hypot(mesh_coordinates(2 * i - 1), mesh_coordinates(2 * i)), integer :: i = 1, number_of_vertices)] ! wave-data is equal to distance from origin
-      call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
+      call precicef_requires_initial_data(is_initial_data_required)
+      print *, '[wave] Is data required? ', is_initial_data_required
+
+      if (is_initial_data_required == 1) then
+         initial_data = [(hypot(mesh_coordinates(2 * i - 1), mesh_coordinates(2 * i)), integer :: i = 1, number_of_vertices)] ! wave-data is equal to distance from origin
+         call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
+      end if
 
       call precicef_initialize()
-   end subroutine initialize_fm_coupling
+   end function initialize_fm_coupling
 
    function is_fm_coupling_ongoing() result(is_ongoing)
       use precice, only: precicef_is_coupling_ongoing
       use, intrinsic :: iso_c_binding, only: c_int
+      implicit none (type, external)
+
       integer(kind=c_int) :: is_ongoing
 
       call precicef_is_coupling_ongoing(is_ongoing)
@@ -154,12 +160,39 @@ end subroutine couple_to_greeter_dummy
    subroutine advance_fm_time_window()
       use, intrinsic :: iso_c_binding, only: c_double
       use precice, only: precicef_get_max_time_step_size, precicef_advance
+      implicit none (type, external)
 
       real(kind=c_double) :: max_time_step
 
       call precicef_get_max_time_step_size(max_time_step)
       call precicef_advance(max_time_step)
    end subroutine advance_fm_time_window
+
+   subroutine read_fm_data(relative_time, vertex_ids)
+      use, intrinsic :: iso_c_binding, only: c_double, c_int, c_char
+      use precice, only: precicef_read_data, precicef_get_data_dimensions, precicef_get_mesh_vertex_size, precicef_get_mesh_vertex_ids_and_coordinates
+      use m_alloc, only: realloc
+      implicit none (type, external)
+
+      real(kind=c_double), intent(in) :: relative_time
+      integer(kind=c_int), dimension(:), intent(in) :: vertex_ids
+
+      character(kind=c_char, len=*), parameter :: mesh_name = "wave-mesh"
+      character(kind=c_char, len=*), parameter :: data_name = "fm-data"
+      integer(kind=c_int) :: data_size, data_dimension, mesh_size
+      real(kind=c_double), dimension(:), allocatable :: vertex_coordinates
+      real(kind=c_double), dimension(:), allocatable :: data_values
+
+      call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, len(mesh_name), len(data_name))
+      call precicef_get_mesh_vertex_size(mesh_name, mesh_size, len(mesh_name))
+      print *, '[wave] Reading dimensions of ', data_name, ' on mesh ', mesh_name, '. Dimension: ', data_dimension, ', vertex size: ', mesh_size, '.'
+      data_size = data_dimension * mesh_size
+
+      call realloc(data_values, data_size)
+      call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, relative_time, data_values, len(mesh_name), len(data_name))
+
+      print *, '[wave] Read data ', data_name, ': ', data_values
+   end subroutine read_fm_data
 #endif
 !
 ! ====================================================================================

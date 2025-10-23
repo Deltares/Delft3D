@@ -37,7 +37,7 @@ program waves_main
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    use precice, only: precicef_get_max_time_step_size
    use, intrinsic :: iso_c_binding, only: c_double
-   use wave_main, only: initialize_fm_coupling, is_fm_coupling_ongoing, advance_fm_time_window
+   use wave_main, only: initialize_fm_coupling, is_fm_coupling_ongoing, advance_fm_time_window, read_fm_data
 #endif
    !
    ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -63,6 +63,7 @@ program waves_main
    character(256)                               :: mdw_file     ! filename mdw file
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    real(kind=c_double) :: max_time_step
+   integer(kind=c_int), dimension(:), allocatable :: vertex_ids
 #endif
 
    !
@@ -104,7 +105,7 @@ program waves_main
    enddo
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   call initialize_fm_coupling()
+   vertex_ids = initialize_fm_coupling()
 #endif
 
    retval = wave_main_init(mode_in, mdw_file)
@@ -112,10 +113,12 @@ program waves_main
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    ! DIMR calls wave ones, updating it to 0.0 seconds, before running FM and wave at later time points
    retval = wave_main_step(0.0_hp)
+   call read_fm_data(0.0_c_double, vertex_ids)
    call advance_fm_time_window()
 
    do while(is_fm_coupling_ongoing())
       call precicef_get_max_time_step_size(max_time_step)
+      call read_fm_data(max_time_step, vertex_ids)
       stepsize = real(max_time_step, kind=hp)
       retval = wave_main_step(stepsize)
       call advance_fm_time_window()
