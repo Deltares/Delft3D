@@ -75,6 +75,7 @@ contains
         INTEGER(kind = int_wp) :: IKMRKN, IKMRKV
 
         IP = IPOINT
+
         !
         IFLUX = 0
         DO ISEG = 1, num_cells
@@ -141,6 +142,7 @@ contains
         !
 
         !.....Exchangeloop over de horizontale richting
+        !     And prepare the array of pointers by increasing them
         IP = IPOINT
         DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
             process_space_real(IP(44)) = 0.0
@@ -149,7 +151,6 @@ contains
         end do
 
         !.....Exchangeloop over de verticale richting
-        IP = IPOINT
         DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
 
             process_space_real(IP(44)) = 0.0
