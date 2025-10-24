@@ -2,6 +2,7 @@
 #include "ini/ini_read.h"
 #include "unity.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 void setUp(void) {}

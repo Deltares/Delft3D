@@ -1,5 +1,3 @@
-if(WIN32)
-
 cmake_minimum_required(VERSION 3.15)
 
 project(libdsle)
@@ -139,4 +137,3 @@ add_subdirectory(tests)
 install(
     TARGETS
     dsle RUNTIME DESTINATION lib)
-endif(WIN32)
