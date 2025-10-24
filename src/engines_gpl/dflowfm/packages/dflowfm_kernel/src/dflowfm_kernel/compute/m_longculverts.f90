@@ -1524,8 +1524,6 @@ contains
             converted_fnamesstring = trim(trim(converted_fnamesstring)//', ')//tempstring_fnames
          end do
          deallocate (fnames)
-        ! ierr = construct_network_from_meshgeom(network, meshgeom, nbranchids, nbranchlongnames, nnodeids, &
-        !                                           nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, nodesOnBranchVertices, jampi, my_rank)
          call setnodadm(0)
          call finalizeLongCulvertsInNetwork()
 
@@ -1545,7 +1543,6 @@ contains
             call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
          end do
 
-         !call admin_network(network, ierr)
          !md_netfile = tempstring_netfile
          !md_1dfiles%structures = converted_fnamesstring
          !md_1dfiles%cross_section_definitions = converted_crsdefsstring
