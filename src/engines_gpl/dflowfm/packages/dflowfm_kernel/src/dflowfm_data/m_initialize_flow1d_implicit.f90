@@ -1319,6 +1319,7 @@ contains
       use m_f1dimp
       use unstruc_channel_flow, only: network
       use messagehandling, only: msgbuf, err_flush
+      use m_Roughness, only: R_CHEZY
 
       implicit none
 
@@ -1350,6 +1351,7 @@ contains
 
       integer :: kbr, ksre, k2, idx_fm, idx_crs, idx_h
       integer :: last_friction_type !< to check that friction type is the same in all sections
+      integer, parameter :: CFRCHC = 1 !< Chezy constant. Defined in <sobcon.i>, but not accessible here.
 
 !----------------------------------------
 !BEGIN POINT
@@ -1374,17 +1376,20 @@ contains
 
          !bfrict
          do k2 = 1, network%rgs%count !< network%rgs%count = 3 - > main channel, floodplain 1, floodplain 2
+            !Check that the type of friction in FM is valid in SRE. 
             select case (network%rgs%rough(k2)%frictiontype) 
-            case (0)
-               bfrict(k2, kbr) = 1
+            case (R_CHEZY)
+               bfrict(k2, kbr) = CFRCHC
             case default
                write (msgbuf, '(a)') 'Only constant Chezy friction is supported at the moment.'
                call err_flush()
                iresult = 1
             end select
+            
+            !Check that the same type of friction is applied to all subsections. 
             if (k2>1) then
-                if (bfrict(k2, kbr) /= bfrict(k2-1, kbr)) then
-                   write (msgbuf, '(a)') 'The same type of friction must be applied to all sections (i.e., main channel, floodplain 1, floodplain 2, ...).'
+                if (network%rgs%rough(k2)%frictiontype /= network%rgs%rough(k2-1)%frictiontype) then
+                   write (msgbuf, '(a)') 'The same type of friction must be applied to all subsections (i.e., main channel, floodplain 1, floodplain 2, ...).'
                    call err_flush()
                    iresult = 1
                 end if
