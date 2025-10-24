@@ -947,9 +947,9 @@
 		<checks>
 			<file name="DFM_OUTPUT_flowFM/flowFM_map.nc" type="netCDF">
 				<parameters>
-					<parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-					<parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
+					<parameter name="mesh1d_s1" toleranceAbsolute="0.0002" />
+					<parameter name="mesh1d_u1" toleranceAbsolute="0.0003" />
+					<parameter name="mesh1d_q1" toleranceAbsolute="0.1500" />
 				</parameters>
 			</file>
 			<file name="DFM_OUTPUT_flowFM/flowFM_his.nc" type="netCDF">

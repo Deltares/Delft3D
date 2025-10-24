@@ -1,4 +1,4 @@
-function open_datdef(filnam    ,fds       ,readonly)
+function open_datdef(filnam_in ,fds       ,readonly)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -44,7 +44,7 @@ function open_datdef(filnam    ,fds       ,readonly)
 !
     integer                   :: open_datdef
     integer     , intent(out) :: fds
-    character(*), intent(in)  :: filnam
+    character(*), intent(in)  :: filnam_in
     logical     , intent(in)  :: readonly
 !
 ! Local variables
@@ -55,10 +55,12 @@ function open_datdef(filnam    ,fds       ,readonly)
     character(1)      :: coding
     character(256)    :: dat_file
     character(256)    :: def_file
+    character(:), allocatable :: filnam
 !
 !! executable statements -------------------------------------------------------
 !
     fds = -1
+    filnam = filnam_in
     call remove_leading_spaces(filnam    ,len_fn    )
     dat_file = filnam(1:len_fn)//'.dat'
     def_file = filnam(1:len_fn)//'.def'

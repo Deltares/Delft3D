@@ -68,16 +68,14 @@
  */
 //------------------------------------------------------------------------------
 
-
 #define FLOW2D3D_MAIN
 
 #include "flow2d3d.h"
 
 #if defined(HAVE_CONFIG_H)
-#define Sleep sleep
+#   define Sleep sleep
 #endif
 #if defined (WIN32)
-#   include <windows.h>
 #   define strdup _strdup
 #endif
 

@@ -120,6 +120,8 @@ class TestAssertPreconditionsFunction:
             "Git connection successful",
             "Testing SSH connection...",
             "SSH connection successful",
+            "Testing Jira connection...",
+            "Jira connection successful",
             "Asserted all preconditions.",
             "Preconditions check completed and returned 0 errors!",
         ]

@@ -193,7 +193,7 @@ contains
          ausav(1, n) = 0.0_dp
       end if
 
-      if (gatedoorheight > 0.0_dp) then ! now add water overflowing top of gate
+      if (gatedoorheight > 0.0_dp .and. gatedoorheight < huge(1.0_dp) .and. gateloweredgelevel < huge(1.0_dp)) then ! now add water overflowing top of gate
          zs = gateloweredgelevel + gatedoorheight
          zbi(2) = zs
          if (husb > zs) then ! husb = upwind waterlevel instead of height
