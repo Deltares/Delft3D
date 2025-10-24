@@ -494,39 +494,6 @@
             </file>
         </checks>
     </testCase>
-<!-- flaky in Windows container
-    <testCase name="e02_f203_c05_Waal_trachytopes_2D_single" ref="dimr">
-       <path version="2025-09-08T09:45:49.723000">e02_dflowfm/f203_3D_trachytopes/c05_Waal_trachytopes_2D_single</path>
-       <programs>
-           <program ref="dimr" seq="1">
-             <arguments>
-               <argument>-c 4 -m dimr_config.xml</argument>
-             </arguments>
-           </program>
-           <program ref="dfmoutput" seq="2">
-            <arguments>
-              <argument>-d</argument>
-              <argument>mapmerge</argument>
-              <argument>--infile</argument>
-              <argument>dflowfmoutput/Waal_2D_0000_map.nc </argument>
-              <argument>dflowfmoutput/Waal_2D_0001_map.nc </argument>
-              <argument>dflowfmoutput/Waal_2D_0002_map.nc </argument>
-              <argument>dflowfmoutput/Waal_2D_0003_map.nc </argument>
-              <argument>--outfile</argument>
-              <argument>dflowfmoutput/Waal_2D_merged_map.nc </argument>
-            </arguments>
-           </program>
-       </programs>
-        <maxRunTime>60.0</maxRunTime>
-        <checks>
-            <file name="dflowfmoutput/Waal_2D_merged_map.nc" type="netcdf">
-                <parameters>
-                    <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-                </parameters>
-            </file>
-        </checks>
-    </testCase>
--->
     <!-- The testcase below is copied "as is" from "dimr_dflowfm_all_but_validation_cases.xml" .
          Here it is executed again, but now with "mpiexec -c 1" prepended.
          Motivation: Slurm related scripts always prepend mpiexec
