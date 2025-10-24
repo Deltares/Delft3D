@@ -2,7 +2,6 @@ import io
 import textwrap
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Tuple
 
 import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
@@ -11,12 +10,11 @@ from s3_path_wrangler.paths import S3Path
 
 from src.config.local_paths import LocalPaths
 from src.config.types.path_type import PathType
-from src.suite.test_bench_settings import TestBenchSettings
-from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.xml_config_parser import XmlConfigParser
 from test.helpers import minio_tool as helper
 from tools.minio.config import (
-    IndexItem,
+    ConfigData,
+    ConfigParser,
     TestBenchConfigWriter,
     TestCaseData,
     TestCaseId,
@@ -198,7 +196,7 @@ class TestTestCasePattern:
 
 
 class TestTestCaseIndex:
-    def test_find_test_case__no_glob__find_case_in_all_configs(self) -> None:
+    def test_find_test_case__no_glob__find_case_in_all_configs(self, mocker: MockerFixture) -> None:
         # Arrange
         test_cases = [helper.make_test_case(name) for name in ("bar", "baz", "foo")]
         paths = [
@@ -206,17 +204,19 @@ class TestTestCaseIndex:
             Path("configs/foo/my_second_config.xml"),
             Path("configs/hidden_config.xml"),
         ]
-        index = TestCaseIndex({path: IndexItem(test_cases, []) for path in paths})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=test_cases)
+        index = TestCaseIndex(paths, config_parser)
 
         # Act
-        test_case, configs = index.find_test_case(TestCasePattern(name_filter="foo"))
+        result = index.find_test_case(TestCasePattern(name_filter="foo"))
 
         # Assert
-        assert all(path in configs for path in paths)
-        assert test_case is not None
-        assert test_case.name == "foo"
+        assert all(path in result.configs for path in paths)
+        assert result.test_case_data is not None
+        assert result.test_case_data.name == "foo"
 
-    def test_find_test_case__with_glob__find_case_in_matching_configs(self) -> None:
+    def test_find_test_case__with_glob__find_case_in_matching_configs(self, mocker: MockerFixture) -> None:
         # Arrange
         test_cases = [helper.make_test_case(name) for name in ("bar", "baz", "foo")]
         paths = [
@@ -224,36 +224,41 @@ class TestTestCaseIndex:
             Path("configs/foo/my_second_config.xml"),
             Path("configs/hidden_config.xml"),
         ]
-        index = TestCaseIndex({path: IndexItem(test_cases, []) for path in paths})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=test_cases)
+        index = TestCaseIndex(paths, config_parser)
 
         # Act
-        test_case, configs = index.find_test_case(TestCasePattern(name_filter="foo", config_glob="foo/*.xml"))
+        result = index.find_test_case(TestCasePattern(name_filter="foo", config_glob="foo/*.xml"))
 
         # Assert
-        assert test_case is not None
-        assert test_case.name == "foo"
-        assert len(configs) == 2
-        assert paths[-1] not in configs
-        assert all(path in configs for path in paths[:2])
+        assert result.test_case_data is not None
+        assert result.test_case_data.name == "foo"
+        assert len(result.configs) == 2
+        assert paths[-1] not in result.configs
+        assert all(path in result.configs for path in paths[:2])
 
-    def test_find_test_case__multiple_matches_in_config__raise_error(self) -> None:
+    def test_find_test_case__multiple_matches_in_config__raise_error(self, mocker: MockerFixture) -> None:
         # Arrange
         test_cases = [helper.make_test_case(name) for name in ("bar", "baz", "foo")]
-        index = TestCaseIndex({Path("configs/just_one_config.xml"): IndexItem(test_cases, [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=test_cases)
+        index = TestCaseIndex([Path("configs/just_one_config.xml")], config_parser)
 
         # Act, Assert
         with pytest.raises(MinioToolError, match="matches multiple test cases"):
             index.find_test_case(TestCasePattern(name_filter="ba"))
 
-    def test_find_test_cases(self) -> None:
+    def test_find_test_cases(self, mocker: MockerFixture) -> None:
         # Arrange
-        index = TestCaseIndex(
-            {
-                Path("configs/foo.xml"): IndexItem([helper.make_test_case(name) for name in ("bar", "baz")], []),
-                Path("configs/bar.xml"): IndexItem([helper.make_test_case(name) for name in ("baz", "foo")], []),
-                Path("configs/baz.xml"): IndexItem([helper.make_test_case(name) for name in ("foo", "bar")], []),
-            }
-        )
+        config_parser = mocker.Mock(spec=ConfigParser)
+        configs = [Path("configs/foo.xml"), Path("configs/bar.xml"), Path("configs/baz.xml")]
+        config_parser.parse_config.side_effect = [
+            ConfigData([helper.make_test_case(name) for name in ("bar", "baz")]),
+            ConfigData([helper.make_test_case(name) for name in ("baz", "foo")]),
+            ConfigData([helper.make_test_case(name) for name in ("foo", "bar")]),
+        ]
+        index = TestCaseIndex(configs, config_parser)
 
         # Act
         result = index.find_test_cases(
@@ -279,47 +284,39 @@ class TestTestCaseIndex:
         assert len(baz_cases) == 2
         assert sorted(case.name for case in baz_cases) == ["bar", "foo"]
 
-    def test_get_default_test_cases(self) -> None:
+    def test_get_config_data(self, mocker: MockerFixture) -> None:
         # Arrange
         config = Path("configs/my-config.xml")
-        index = TestCaseIndex(
-            {
-                config: IndexItem(
-                    test_cases=[helper.make_test_case("foo")],
-                    default_test_cases=[
-                        helper.make_default_test_case(name, max_run_time=42.0) for name in ("bar", "baz")
-                    ],
-                )
-            }
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(
+            test_cases=[helper.make_test_case("foo")],
+            default_test_cases=[helper.make_default_test_case(name, max_run_time=42.0) for name in ("bar", "baz")],
         )
+        index = TestCaseIndex([config], config_parser)
 
         # Act
-        cases = index.get_default_test_cases(config)
+        config_data = index.get_config_data(config)
 
         # Assert
-        assert len(cases) == 2
-        assert cases[0].name == "bar"
-        assert cases[0].max_run_time == 42.0
-        assert cases[1].name == "baz"
-        assert cases[1].max_run_time == 42.0
+        assert config_data
+        default_cases = config_data.default_test_cases
+        assert len(default_cases) == 2
+        assert default_cases[0].name == "bar"
+        assert default_cases[0].max_run_time == 42.0
+        assert default_cases[1].name == "baz"
+        assert default_cases[1].max_run_time == 42.0
 
 
-class TestConfigIndexBuilder:
-    def test_build_index__wrong_first_tag__log_warning(self, fs: FakeFilesystem, mocker: MockerFixture) -> None:
+class TestConfigParser:
+    def test_parse_config__wrong_first_tag__log_warning(self, fs: FakeFilesystem, mocker: MockerFixture) -> None:
         # Arrange
-        logger = mocker.Mock(spec=IMainLogger)
         fs.create_file(Path("configs/bad_config.xml"), contents="<wrongTag />")
-        index_builder = helper.make_config_index_builder(logger=logger)
+        config_parser = helper.make_config_parser()
 
-        # Act
-        index = index_builder.build_index([Path("configs/bad_config.xml")])
+        with pytest.raises(ValueError, match="Not a testbench config"):
+            config_parser.parse_config(Path("configs/bad_config.xml"))
 
-        # Assert
-        assert not index.index
-        logger.warning.assert_called_once()
-        assert "Invalid" in logger.warning.call_args.args[0]
-
-    def test_build_index__parse_config(self, fs: FakeFilesystem, mocker: MockerFixture) -> None:
+    def test_parse_config(self, fs: FakeFilesystem, mocker: MockerFixture) -> None:
         # Arrange
         config_path = Path("configs/good_config.xml")
         fs.create_file(
@@ -331,21 +328,17 @@ class TestConfigIndexBuilder:
         )
         version = datetime.now(timezone.utc)
         test_case_config = helper.make_test_case_config("foo", "c999_minio_tool/c01_foo", version=version)
-        config_parser = mocker.Mock(spec=XmlConfigParser)
-        config_parser.default_cases = []
-        config_parser.load.return_value = (LocalPaths(), [], [test_case_config])
-        index_builder = helper.make_config_index_builder(config_parser=config_parser)
+        xml_parser = mocker.Mock(spec=XmlConfigParser)
+        xml_parser.default_cases = []
+        xml_parser.load.return_value = (LocalPaths(), [], [test_case_config])
+        config_parser = helper.make_config_parser(xml_parser=xml_parser)
 
         # Act
-        index = index_builder.build_index([config_path])
-
+        config_data = config_parser.parse_config(config_path)
+        case, *other_cases = config_data.test_cases
         # Assert
-        case, configs = index.find_test_case(TestCasePattern(name_filter="foo"))
 
-        assert case is not None
-        assert len(configs) == 1
-        assert configs[0] == config_path
-
+        assert not other_cases
         assert case.name == "foo"
         assert case.case_dir == Path("cases/foo")
         assert case.reference_dir == Path("references/lnx64/foo")
@@ -354,34 +347,25 @@ class TestConfigIndexBuilder:
         assert case.version is not None
         assert abs((case.version - version).total_seconds()) < 1
 
-    def test_build_index__multiple_configs(self, fs: FakeFilesystem, mocker: MockerFixture) -> None:
+    def test_parse_config__multiple_cases(self, fs: FakeFilesystem, mocker: MockerFixture) -> None:
         # Arrange
-        config_paths = [Path(f"configs/{name}.xml") for name in ("foo", "bar", "baz")]
-        for config_path in config_paths:
-            fs.create_file(config_path, contents="<deltaresTestbench_v3 />")
+        config_path = Path("configs/my_config.xml")
+        fs.create_file(config_path, contents="<deltaresTestbench_v3 />")
 
-        test_cases = {
-            Path("configs/foo.xml"): [helper.make_test_case_config(name, name) for name in ("bar", "baz")],
-            Path("configs/bar.xml"): [helper.make_test_case_config(name, name) for name in ("baz", "foo")],
-            Path("configs/baz.xml"): [helper.make_test_case_config(name, name) for name in ("foo", "bar")],
-        }
+        test_cases = [helper.make_test_case_config(name, name) for name in ("foo", "bar", "baz")]
+        default_cases = [helper.make_default_test_case("default")]
 
-        def load_side_effect(settings: TestBenchSettings, _: IMainLogger) -> Tuple:
-            return LocalPaths(), [], test_cases[Path(settings.config_file)]
-
-        config_parser = mocker.Mock(spec=XmlConfigParser)
-        config_parser.load.side_effect = load_side_effect
-        config_parser.default_cases = []
-        index_builder = helper.make_config_index_builder(config_parser=config_parser)
+        xml_parser = mocker.Mock(spec=XmlConfigParser)
+        xml_parser.load.return_value = (LocalPaths(), [], test_cases)
+        xml_parser.default_cases = default_cases
+        config_parser = helper.make_config_parser(xml_parser=xml_parser)
 
         # Act
-        index = index_builder.build_index(config_paths)
-        index_map = index.index
+        config_data = config_parser.parse_config(config_path)
 
         # Assert
-        assert len(index_map) == 3
-        assert all(path in index_map for path in config_paths)
-        assert all(len(index_item.test_cases) == 2 for index_item in index_map.values())
+        assert sorted(case.name for case in config_data.test_cases) == ["bar", "baz", "foo"]
+        assert config_data.default_test_cases == default_cases
 
 
 class TestTestBenchConfigWriter:

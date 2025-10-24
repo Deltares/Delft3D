@@ -13,6 +13,12 @@ object TemplateFailureCondition : Template({
         errorMessage = true
         failOnText {
             conditionType = BuildFailureOnText.ConditionType.REGEXP
+            pattern = "tar: Exiting with failure"
+            failureMessage = "Tar failure"
+            reverse = false
+        }
+        failOnText {
+            conditionType = BuildFailureOnText.ConditionType.REGEXP
             pattern = "Artifacts path .* not found"
             failureMessage = "Artifacts are missing"
             reverse = false

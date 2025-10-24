@@ -10,7 +10,8 @@ object Publish : BuildType({
 
     templates(
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateFailureCondition
     )
 
     name = "Publish Container"
@@ -188,15 +189,15 @@ object Publish : BuildType({
             name = "Copy Apptainer packages to share"
             workingDir = "src/scripts_lgpl/singularity"
             scriptContent = """
-                tar -vczf %brand%_%release_type%-%release_version%.tar.gz \
-                    %brand%_%release_type%-%release_version%.sif \
+                tar -vczf %brand%_%release_version%-%release_type%.tar.gz \
+                    %brand%_%release_version%-%release_type%.sif \
                     readme.txt \
                     run_singularity.sh \
                     execute_singularity_h7.sh \
                     submit_singularity_h7.sh
                 
                 # Copy the artifact to network
-                cp -vf %brand%_%release_type%-%release_version%.tar.gz /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Singularity
+                cp -vf %brand%_%release_version%-%release_type%.tar.gz /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Singularity
             """.trimIndent()
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }

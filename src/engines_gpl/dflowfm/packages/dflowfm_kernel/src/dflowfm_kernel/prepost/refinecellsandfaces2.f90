@@ -171,7 +171,7 @@ contains
       end if
 
 !  take dry cells into account (after findcells)
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell = .false.)
 
 !  try to find brother links in the original net
       linkbrother = 0
@@ -254,7 +254,7 @@ contains
          call mess(LEVEL_INFO, 'refinement efficiency factor', real(dble(nump_virtual) / dble(max(nump, 1))))
 
 !     take dry cells into account (after findcells)
-         call delete_dry_points_and_areas()
+         call delete_dry_points_and_areas(update_blcell = .false.)
 
          if (jagui == 1) then
             ja = 1
@@ -297,7 +297,7 @@ contains
          where (kc == -1) kc = 1
          if (NPL > 0) call store_and_set_kc()
          call findcells(1000) !     take dry cells into account (after findcells)
-         call delete_dry_points_and_areas()
+         call delete_dry_points_and_areas(update_blcell = .false.)
          if (NPL > 0) call restore_kc()
 
 !     remove isolated hanging nodes and update netcell administration (no need for setnodadm)

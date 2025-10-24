@@ -31,7 +31,7 @@ LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
 // Version
 //
 
-#include "zsf_version.h"
+#include "dsle_version.h"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION MAJOR,MINOR,REVISION
@@ -56,7 +56,7 @@ BEGIN
             VALUE "InternalName", COMPANY_NAME
             VALUE "LegalCopyright", LEGAL_COPYRIGHT
             VALUE "LegalTrademarks", LEGAL_TRADEMARKS
-            VALUE "OriginalFilename", "zsf.dll\0"
+            VALUE "OriginalFilename", "dsle.dll\0"
             VALUE "PrivateBuild", "-\0"
             VALUE "ProductName", PRODUCT_NAME
             VALUE "ProductVersion", VERSION_FULL

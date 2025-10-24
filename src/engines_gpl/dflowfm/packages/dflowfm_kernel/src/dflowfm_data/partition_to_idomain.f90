@@ -72,7 +72,7 @@ contains
 !     reenable polygons
       NPL = NPL_save
 
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell = .false.)
 
       call cosphiunetcheck(1)
 

@@ -22,7 +22,7 @@ static void sealock_set_2d_defaults(dfm_volumes_t *volumes) {
 int sealock_defaults(sealock_state_t *lock) {
   // Init calculation parameters with defaults.
   lock->phase_args = PHASE_WISE_CLEAR_ARGS();
-  zsf_param_default(&lock->parameters);
+  dsle_param_default(&lock->parameters);
   lock->parameters.allowed_head_difference = 0.1; // 10 cm.
   // Set up default volumes/profile for '2D' case.
   sealock_set_2d_defaults(&lock->from_lake_volumes);
@@ -60,7 +60,7 @@ int sealock_init(sealock_state_t *lock, time_t start_time, unsigned int max_num_
 
   if (status == SEALOCK_OK) {
     // Initialize parameters consistent with current and given settings.
-    status = zsf_initialize_state(&lock->parameters, &lock->phase_state,
+    status = dsle_initialize_state(&lock->parameters, &lock->phase_state,
                                   lock->phase_state.salinity_lock, lock->phase_state.head_lock);
   }
 
@@ -141,13 +141,13 @@ static int sealock_update_cycle_average_parameters(sealock_state_t *lock, time_t
 static int sealock_cycle_average_step(sealock_state_t *lock, time_t time) {
   int status = SEALOCK_OK;
 
-  status = zsf_calc_steady(&lock->parameters, &lock->results, NULL);
+  status = dsle_calc_steady(&lock->parameters, &lock->results, NULL);
   // Adjust result value signs to align with D-Flow FM conventions.
   if (status == SEALOCK_OK) {
     lock->results.discharge_from_lake = -lock->results.discharge_from_lake;
     lock->results.discharge_from_sea = -lock->results.discharge_from_sea;
   } else {
-    log_error("zsf_calc_steady(..) returned %d: %s!\n", status, zsf_error_msg(status));
+    log_error("dsle_calc_steady(..) returned %d: %s!\n", status, dsle_error_msg(status));
   }
 
   return status;
@@ -283,24 +283,24 @@ static int sealock_phase_wise_step(sealock_state_t *lock, time_t time) {
     log_info("%s: Updating '%s' to phase %d.\n", __func__, lock->id, lock->phase_args.routine);
     switch (lock->phase_args.routine) {
     case 1:
-      status = zsf_step_phase_1(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
+      status = dsle_step_phase_1(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
                                 &lock->phase_results);
       break;
     case 2:
-      status = zsf_step_phase_2(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
+      status = dsle_step_phase_2(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
                                 &lock->phase_results);
       break;
     case 3:
-      status = zsf_step_phase_3(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
+      status = dsle_step_phase_3(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
                                 &lock->phase_results);
       break;
     case 4:
-      status = zsf_step_phase_4(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
+      status = dsle_step_phase_4(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
                                 &lock->phase_results);
       break;
     default:
       if (lock->phase_args.routine < 0) {
-        status = zsf_step_flush_doors_closed(&lock->parameters, lock->phase_args.duration,
+        status = dsle_step_flush_doors_closed(&lock->parameters, lock->phase_args.duration,
                                              &lock->phase_state, &lock->phase_results);
       } else {
         status = SEALOCK_ERROR;
@@ -311,8 +311,8 @@ static int sealock_phase_wise_step(sealock_state_t *lock, time_t time) {
     if (status == 2 && (lock->phase_args.routine == 2 || lock->phase_args.routine == 4)) {
       // There was a larger than allowed difference between the head and the lock when opening the doors.
       // Calculations should continue, but we do need to log a warning.
-      log_warning("zsf_step_phase_%d(..) returned %d: %s!\n", lock->phase_args.routine, status,
-                  zsf_error_msg(status));
+      log_warning("dsle_step_phase_%d(..) returned %d: %s!\n", lock->phase_args.routine, status,
+                  dsle_error_msg(status));
       status = SEALOCK_OK;
     }
 
@@ -321,11 +321,11 @@ static int sealock_phase_wise_step(sealock_state_t *lock, time_t time) {
       status = sealock_phase_results_to_results(lock);
     } else {
       if (lock->phase_args.routine > 0) {
-        log_error("zsf_step_phase_%d(..) returned %d: %s!\n", lock->phase_args.routine, status,
-                  zsf_error_msg(status));
+        log_error("dsle_step_phase_%d(..) returned %d: %s!\n", lock->phase_args.routine, status,
+                  dsle_error_msg(status));
       } else if (lock->phase_args.routine < 0) {
-        log_error("zsf_step_flush_doors_closed(..) returned %d: %s!\n", status,
-                  zsf_error_msg(status));
+        log_error("dsle_step_flush_doors_closed(..) returned %d: %s!\n", status,
+                  dsle_error_msg(status));
       }
     }
   }
