@@ -1107,13 +1107,9 @@ contains
       !
       ! Local variables
       !
-      integer :: k1
-      integer :: k2
       integer :: spacepos
       integer :: vallength
       real(dp) :: float
-      character(100), parameter :: FALSITY = '|0|N|NO|F|FALSE|.FALSE.|N|NEE|O|ONWAAR|OFF|'
-      character(100), parameter :: TRUTH = '|1|Y|YES|T|TRUE|.TRUE.|J|JA|W|WAAR|ON|'
       !
       ierr = conversion_error
       vallength = len_trim(string)
@@ -1122,27 +1118,18 @@ contains
          return
       end if
       spacepos = index(string, ' ')
-      if (spacepos > 0) vallength = min(spacepos - 1, vallength)
+      if (spacepos > 0) vallength = spacepos - 1
       !
       ! Extract the logical part
       !
-      k1 = index(TRUTH, str_toupper(string(1:vallength)))
-      k2 = index(FALSITY, str_toupper(string(1:vallength)))
-      !
-      ! The value must match a complete word in string truth or falsity, bordered by two '|'s
-      !
-      if (k1 > 0) then
-         if (TRUTH(k1 - 1:k1 - 1) == '|' .and. TRUTH(k1 + vallength:k1 + vallength) == '|') then
-            ierr = no_error
-            bool = .true.
-         end if
-      end if
-      if (k2 > 0) then
-         if (FALSITY(k2 - 1:k2 - 1) == '|' .and. FALSITY(k2 + vallength:k2 + vallength) == '|') then
-            ierr = no_error
-            bool = .false.
-         end if
-      end if
+      select case (str_toupper(string(1:vallength)))
+      case ('TRUE', 'T', 'Y', 'YES', '.TRUE.', 'J', 'JA', 'W', 'WAAR', 'ON', '1')
+         bool = .true.
+         ierr = no_error
+      case ('FALSE', 'F', 'N', 'NO', '.FALSE.', 'NEE', 'O', 'OFF', 'ONWAAR', '0')
+         bool = .false.
+         ierr = no_error
+      end select
       if (ierr /= no_error) then
          call convert_to_real(string, float, ierr)
          if (ierr == no_error) then

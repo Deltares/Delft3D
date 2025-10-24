@@ -251,9 +251,9 @@ subroutine test_convert_to_real
     !
     ! Valid real values
     !
-    strings = ['1.0', '-2.5', '3.14159', '0.0', '1e3', '-4.2E-2', '  7.5  ', '2.5 with comments', '42', '0.025', '2.3d2' ]
-    values_sp = [ 1.0_sp, -2.5_sp, 3.14159_sp, 0.0_sp, 1e3_sp, -4.2e-2_sp, 7.5_sp, 2.5_sp, 42.0_sp, 0.025_sp, 2.3e2_sp ]
-    values_dp = [ 1.0_dp, -2.5_dp, 3.14159_dp, 0.0_dp, 1e3_dp, -4.2e-2_dp, 7.5_dp, 2.5_dp, 42.0_dp, 0.025_dp, 2.3e2_dp ]
+    strings = ['1.0', '-2.5', '3.14159', '0.0', '1e3', '-4.2E-2', '  7.5  ', '2.5 with comments', '42', '.42', '0.025', '2.3d2' ]
+    values_sp = [ 1.0_sp, -2.5_sp, 3.14159_sp, 0.0_sp, 1e3_sp, -4.2e-2_sp, 7.5_sp, 2.5_sp, 42.0_sp, 0.42_sp, 0.025_sp, 2.3e2_sp ]
+    values_dp = [ 1.0_dp, -2.5_dp, 3.14159_dp, 0.0_dp, 1e3_dp, -4.2e-2_dp, 7.5_dp, 2.5_dp, 42.0_dp, 0.42_dp, 0.025_dp, 2.3e2_dp ]
     do i = 1, size(strings)
        ! single precision
        value_sp = -999.0_sp

@@ -101,7 +101,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     character(256)                                                    :: string
     character(11)                                                     :: fmttmp !< Format file ('formatted  ')
     character(:), allocatable                                         :: filmor
-    character(len=:), allocatable                                     :: filename
+    character(:), allocatable                                         :: filename
 !
 !! executable statements -------------------------------------------------------
 !
