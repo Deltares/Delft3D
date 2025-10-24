@@ -14,7 +14,7 @@ execute_process(COMMAND git rev-parse HEAD
   OUTPUT_STRIP_TRAILING_WHITESPACE
   ERROR_QUIET
 )
-execute_process(COMMAND git describe --tags --first-parent HEAD
+execute_process(COMMAND git foo describe --tags --first-parent HEAD
   OUTPUT_VARIABLE git_describe
   OUTPUT_STRIP_TRAILING_WHITESPACE
   ERROR_QUIET
@@ -23,6 +23,9 @@ execute_process(COMMAND git describe --tags --first-parent HEAD
 string(REPLACE "-g" ".g" git_describe "${git_describe}")
 string(REPLACE "-dirty" ".dirty" git_describe "${git_describe}")
 string(REPLACE "-" "+" git_describe "${git_describe}")
+if (NOT git_describe)
+    set(git_describe "unknown")
+endif()
 set(PACKAGE_VERSION_FULL "${git_describe}")
 
 configure_file(config.h.in config.h ESCAPE_QUOTES)
