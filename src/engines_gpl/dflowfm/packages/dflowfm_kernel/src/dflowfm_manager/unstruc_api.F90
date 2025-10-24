@@ -59,14 +59,14 @@ contains
       use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, precicef_requires_initial_data, precicef_set_triangle
       use m_partitioninfo, only: numranks, my_rank
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
-      implicit none (type, external)
+      implicit none(type, external)
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "fm"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
       character(kind=c_char, len=*), parameter :: mesh_name = "fm-mesh"
       character(kind=c_char, len=*), parameter :: data_name = "fm-data"
-      integer(kind=c_int), parameter :: number_of_vertices = 4;
-      real(kind=c_double), dimension(number_of_vertices * 2) :: mesh_coordinates
+      integer(kind=c_int), parameter :: number_of_vertices = 4
+      real(kind=c_double), dimension(number_of_vertices*2) :: mesh_coordinates
       integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
       real(kind=c_double), dimension(number_of_vertices) :: initial_data
       integer(kind=c_int) :: is_initial_data_required
@@ -76,7 +76,7 @@ contains
       call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
       print *, '[FM] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
 
-      mesh_coordinates = [ 0, 0, 0, 1, 1, 1, 1, 0 ]
+      mesh_coordinates = [0.0_c_double, 0.0_c_double, 0.0_c_double, 1.0_c_double, 1.0_c_double, 1.0_c_double, 1.0_c_double, 0.0_c_double]
       call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
       call precicef_set_triangle(mesh_name, vertex_ids(1), vertex_ids(2), vertex_ids(4), len(mesh_name))
       call precicef_set_triangle(mesh_name, vertex_ids(2), vertex_ids(3), vertex_ids(4), len(mesh_name))
@@ -85,7 +85,7 @@ contains
       print *, '[FM] Is data required? ', is_initial_data_required
 
       if (is_initial_data_required == 1) then
-         initial_data = [ 1, 0, 1, 0 ] ! fm-data is one on the diagonal of the square (0,0) and (1,1)
+         initial_data = [1.0_c_double, 0.0_c_double, 1.0_c_double, 0.0_c_double] ! fm-data is one on the diagonal of the square (0,0) and (1,1)
          call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
       end if
 
@@ -95,7 +95,7 @@ contains
 
    subroutine finalize_wave_coupling()
       use precice, only: precicef_finalize
-      implicit none (type, external)
+      implicit none(type, external)
 
       call precicef_finalize()
    end subroutine finalize_wave_coupling
@@ -404,7 +404,7 @@ contains
       use precice, only: precicef_advance
       use, intrinsic :: iso_c_binding, only: c_double
 #endif
-      implicit none (type, external)
+      implicit none(type, external)
 
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.

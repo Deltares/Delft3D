@@ -65,11 +65,11 @@ contains
    subroutine couple_to_greeter_dummy()
       use m_alloc, only: realloc
       use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
-         precicef_set_vertices, precicef_read_data, precicef_get_data_dimensions, precicef_get_max_time_step_size
+                         precicef_set_vertices, precicef_read_data, precicef_get_data_dimensions, precicef_get_max_time_step_size
 
       real(kind=c_double) :: precice_time_step
       integer(kind=c_int) :: mesh_dimensions
-      real(kind=c_double), dimension(max_greeting_length * 2) :: mesh_coordinates
+      real(kind=c_double), dimension(max_greeting_length*2) :: mesh_coordinates
       real(kind=c_double), dimension(:), allocatable :: greeting_values
       character(kind=c_char, len=:), allocatable :: converted_greeting_values
       integer(kind=c_int) :: greeting_dimension, response_dimension
@@ -101,7 +101,7 @@ contains
       call precicef_read_data(mesh_name, greeting_name, greeting_size, vertex_ids, precice_time_step, greeting_values, &
                               mesh_name_length, greeting_name_length)
 
-      allocate(character(kind=c_char, len=greeting_size) :: converted_greeting_values)
+      allocate (character(kind=c_char, len=greeting_size) :: converted_greeting_values)
       do i = 1, greeting_size
          if (int(greeting_values(i)) /= 0) then
             converted_greeting_values(i:i) = char(int(greeting_values(i)), kind=c_char)
@@ -126,8 +126,8 @@ contains
       !! Insert calls to read from another participant using preCICE coupling here, if needed.
       call realloc(greeting_values, greeting_size)
       call precicef_read_data(mesh_name, greeting_name, greeting_size, vertex_ids, time_step, greeting_values, &
-                             mesh_name_length, greeting_name_length)
-      allocate(character(kind=c_char, len=greeting_size) :: converted_greeting_values)
+                              mesh_name_length, greeting_name_length)
+      allocate (character(kind=c_char, len=greeting_size) :: converted_greeting_values)
       do i = 1, greeting_size
          if (int(greeting_values(i)) /= 0) then
             converted_greeting_values(i:i) = char(int(greeting_values(i)), kind=c_char)
@@ -173,7 +173,7 @@ contains
       real(kind=c_double), dimension(:), allocatable :: converted_response_values
 
       ! Create response message with current time
-      write(temp_string, '(A,F12.6)') 'FM: My current time is ', time1
+      write (temp_string, '(A,F12.6)') 'FM: My current time is ', time1
       ! Get actual length of the string (without trailing spaces)
       string_length = len_trim(temp_string)
       ! Ensure we don't exceed max_greeting_length
@@ -188,7 +188,7 @@ contains
       end do
 
       call precicef_write_data(mesh_name, response_name, response_size, vertex_ids, converted_response_values, &
-                                mesh_name_length, response_name_length)
+                               mesh_name_length, response_name_length)
 
       print *, '[FM] Response sent: ', temp_string(1:string_length)
 
@@ -268,7 +268,7 @@ contains
 
       end do
 #if defined(HAS_PRECICE_FM_GREETER_COUPLING)
-         call finalize_greeter_dummy_coupling()
+      call finalize_greeter_dummy_coupling()
 #endif
       if (apply_transport_is_used) then
          call finish_outgoing_lat_concentration(dtrange)
