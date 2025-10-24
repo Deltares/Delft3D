@@ -72,7 +72,7 @@ parse_args() {
 }
     
 validate_inputs() {
-    if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX MODELS_PATH; then
+    if ! util.check_vars_are_set APPTAINER REFERENCE_PREFIX CURRENT_PREFIX MODELS_PATH MODEL_FILTER; then
         show_help
         return 1
     fi
@@ -116,8 +116,14 @@ prepare_modules() {
 }
 
 prepare_directories() {
-    # Create log dir and input dir.
-    mkdir -p "${LOG_DIR}/models" "${VAHOME}/${MODELS_PATH}"
+    if [[ -z "$LOG_DIR" || -z "$VAHOME" || -z "$MODELS_PATH" ]]; then
+        echo "Error: LOG_DIR, VAHOME, or MODELS_PATH is empty" >&2
+        return 1
+        
+        else
+            # Create log dir and input dir.
+            mkdir -p "${LOG_DIR}/models" "${VAHOME}/${MODELS_PATH}"
+    fi
 }
 
 sync_input_data() {
@@ -149,7 +155,8 @@ pull_apptainer_image() {
 submit_jobs() {
     # Find and submit all 'submit_apptainer_h7.sh' scripts.
     local SUBMIT_SCRIPTS
-    SUBMIT_SCRIPTS=$(find "${VAHOME}/${MODELS_PATH}" -type f -name submit_apptainer_h7.sh -iregex "$MODEL_REGEX")
+    SUBMIT_SCRIPTS="$(find "${VAHOME}/${MODELS_PATH}" -type f -name submit_apptainer_h7.sh -iregex "$MODEL_REGEX")"
+
     for SCRIPT in $SUBMIT_SCRIPTS; do
         local MODEL_DIR
         MODEL_DIR=$(echo "$SCRIPT" | sed -n -e 's|^\([-/_0-9A-Za-z]*\)/computations/.*$|\1|p')
