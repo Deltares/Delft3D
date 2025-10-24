@@ -80,7 +80,7 @@ module unstruc_netcdf
               t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
               unc_def_idomain, unc_def_iglobal, fill_netlink_geometry, &
               open_files_, open_datasets_, nopen_files_, unc_read_merged_map, t_unc_merged, &
-              blcell, read_mesh2d_face_z, face_z_stdname
+              read_mesh2d_face_z, face_z_stdname
 
    integer, parameter :: UNC_CONV_CFOLD = 1 !< Old CF-only conventions.
    integer, parameter :: UNC_CONV_UGRID = 2 !< New CF+UGRID conventions.
@@ -586,7 +586,6 @@ module unstruc_netcdf
       module procedure unc_put_att_char
    end interface unc_put_att
 
-   real(kind=hp), allocatable :: blcell(:)
    character(len=:), allocatable :: face_z_stdname
 
 contains
@@ -11723,6 +11722,7 @@ contains
       use m_find1dcells, only: find1dcells
       use m_set_nod_adm
       use m_inquire_link_type, only: is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
+      use m_cell_geometry, only: blcell
       implicit none
 
       integer, intent(in) :: ncid !< NetCDF file id
@@ -12689,6 +12689,7 @@ contains
       use io_netcdf
       use netcdf
       use m_alloc
+      use m_cell_geometry, only: blcell
       integer, intent(in) :: ioncid, im, numface
 
       integer :: i, ierr, id_netnodef, ncid

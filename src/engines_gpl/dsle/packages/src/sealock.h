@@ -4,7 +4,7 @@
 #define SEALOCK_H
 
 #include "csv/load_csv.h"
-#include "zsf.h"
+#include "dsle.h"
 #include "io_layer_distribution.h"
 #include <time.h>
 
@@ -17,22 +17,22 @@ extern "C" {
 
 typedef int sealock_index_t;
 
-typedef enum zsf_computation_mode_enum {
+typedef enum dsle_computation_mode_enum {
   cycle_average_mode = 0,
   phase_wise_mode
-} zsf_computation_mode_t;
+} dsle_computation_mode_t;
 
-typedef struct zsf_phase_wise_args_struct {
+typedef struct dsle_phase_wise_args_struct {
   int run_update;
   int routine;
   time_t time;              // current time
   time_t time_step;         // time step taken from previous time to current time
   time_t time_duration_end; // time when the phase ends.
   double duration;          // duration of the active phase.
-} zsf_phase_wise_args_t;
+} dsle_phase_wise_args_t;
 
 #define PHASE_WISE_CLEAR_ARGS()                                                                     \
-  (zsf_phase_wise_args_t) {                                                                         \
+  (dsle_phase_wise_args_t) {                                                                         \
     .run_update = 0, .routine = 0, .time = 0, .time_step = 0, .time_duration_end = 0, .duration = 0 \
   }
 
@@ -71,14 +71,14 @@ typedef struct dfm_results3d_struct {
 
 typedef struct sealock_state_struct {
   char *id;
-  // ZSF
-  zsf_param_t parameters;
-  zsf_phase_wise_args_t phase_args;
-  zsf_phase_state_t phase_state;
-  zsf_phase_transports_t phase_results;
-  zsf_results_t results;
-  zsf_aux_results_t aux_results;
-  zsf_computation_mode_t computation_mode;
+  // DSLE
+  dsle_param_t parameters;
+  dsle_phase_wise_args_t phase_args;
+  dsle_phase_state_t phase_state;
+  dsle_phase_transports_t phase_results;
+  dsle_results_t results;
+  dsle_aux_results_t aux_results;
+  dsle_computation_mode_t computation_mode;
   // Cycle average
   char *operational_parameters_file;
   csv_context_t timeseries_data;

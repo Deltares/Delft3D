@@ -63,6 +63,8 @@ set(curl_module ${third_party_open_path}/curl)
 set(hdf5_module ${third_party_open_path}/hdf5)
 set(microsoftredist_module ${third_party_open_path}/microsoftredist)
 
+# getopt
+set(getopt_module ${third_party_open_path}/getopt/${cmake_directory})
 set(precice_module ${third_party_open_path}/precice)
 
 if(WIN32)

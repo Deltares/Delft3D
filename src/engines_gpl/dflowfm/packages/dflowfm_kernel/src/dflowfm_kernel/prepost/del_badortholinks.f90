@@ -86,7 +86,7 @@ contains
       end if
 
 !   take dry cells into account (after findcells)
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell = .false.)
 
       call makenetnodescoding() ! need it for allocation nb
 
