@@ -1,8 +1,8 @@
 #!/bin/bash
 
 RUN_DATE=$(date "+%Y%m%d_%H%M%S")
-REPO_ROOT=$(cd ../../..; pwd)
-PATH=${REPO_ROOT}/install_all/bin/:$PATH
+#REPO_ROOT=$(cd ../../..; pwd)
+#PATH=${REPO_ROOT}/install_all/bin/:$PATH
 
 
 cd dflowfm

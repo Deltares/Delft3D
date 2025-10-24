@@ -62,6 +62,7 @@ subroutine run_swan (casl)
     !
     ! SWAN execution
     !
+    call precicef_start_profiling_section("run_swan")
     if (swan_run%exemode == SWAN_MODE_LIB) then
        !
        ! As built-in function.
@@ -86,6 +87,7 @@ subroutine run_swan (casl)
        endif
        !
        write(*,'(a)')'>>...Start SWAN run'
+
        if (numranks > 1) then
           call wave_mpi_bcast(SWAN_GO, ierr)
           if ( ierr == MPI_SUCCESS ) then
@@ -120,6 +122,8 @@ subroutine run_swan (casl)
           call util_system(swanCommand(1:len_trim(swanCommand)+5))
        endif
     endif
+
+    call precicef_stop_last_profiling_section()
     write(*,'(a)')'>>...End of SWAN run'
     !
     ! Check SWAN output file norm_end
