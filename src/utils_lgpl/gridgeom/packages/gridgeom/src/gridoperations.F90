@@ -705,6 +705,7 @@ contains
       double precision :: X(4), Y(4)
 
       integer, dimension(:), allocatable :: Lperm_new
+      integer, dimension(:,:), allocatable :: kn_original
 
       integer :: jacrosscheck ! remove 2D crossing netlinks (1) or not (0)
       integer :: japermout ! output permutation array (1) or not (0)
@@ -791,43 +792,47 @@ contains
       jathindams = 0
       lc = 0
       nlinkremoved = 0
+      if (any(kn(3, :) == 0)) then
+         jathindams = 1
+      end if
+      kn_original = kn
       do L = 1, NUML ! LINKS AANSCHUIVEN, 1d EERST
          K1 = KN(1, L); K2 = KN(2, L); K3 = KN(3, L)
-         if (k3 == 0) then
-            jathindams = 1
-         end if
-         ja = 0
-         if (K1 /= 0 .and. K2 /= 0 .and. K1 /= K2) then
-            JA = 1
-            if (XK(K1) == DMISS .or. XK(K2) == DMISS) then ! EXTRA CHECK: ONE MISSING
-               JA = 0
-            else !            : OR BOTH EQUAL
-               if ((K3 == 1 .or. k3 == 6) .and. allocated(dxe)) then ! User-defined net link lengths
-                  if (dxe(L) /= dmiss .and. dxe(L) <= 0d0) then ! X/Y of K1, K2 may be equal, as long as length > 0
-                     ja = 0
-                  end if
-               else if (XK(K1) == XK(K2) .and. YK(K1) == YK(K2)) then
-                  JA = 0
+         ja = is_valid_link(L, k1, k2, k3)
+         if (JA == 1) then
+            if (K3 == 0 .or. K3 == 2) then
+               L2 = L2 + 1
+               KN2(1, L2) = K1; KN2(2, L2) = K2; KN2(3, L2) = K3
+               if (japermout == 1) then
+                  Lperm_new(numL - L2 + 1) = Lperm(L) ! fill 2D links from the back of the temp. array
+               end if
+            else if (K3 == LINK_1D) then
+               L1 = L1 + 1
+               KN(1, L1) = K1; KN(2, L1) = K2; KN(3, L1) = K3
+               if (japermout == 1) then
+                  Lperm_new(L1) = Lperm(L) ! fill 1D links from the start of the temp. array
                end if
             end if
-            if (JA == 1) then
-               if (K3 == 0 .or. K3 == 2) then
-                  L2 = L2 + 1
-                  KN2(1, L2) = K1; KN2(2, L2) = K2; KN2(3, L2) = K3
-                  if (japermout == 1) then
-                     Lperm_new(numL - L2 + 1) = Lperm(L) ! fill 2D links from the back of the temp. array
-                  end if
-               else if (K3 == 1 .or. K3 > 2) then
-                  L1 = L1 + 1
-                  KN(1, L1) = K1; KN(2, L1) = K2; KN(3, L1) = K3
-                  if (japermout == 1) then
-                     Lperm_new(L1) = Lperm(L) ! fill 1D links from the start of the temp. array
-                  end if
-               end if
-               KC(K1) = 1; KC(K2) = 1
-            end if
+            KC(K1) = 1; KC(K2) = 1
+         else
+            ! save removed links, so the flow1d admin can be updated later on
+            nlinkremoved = nlinkremoved + 1
+            LC(nlinkremoved) = L
          end if
-         if (ja == 0) then
+      end do
+
+      do L = 1, NUML ! extra loop to put 1D2D in the middle
+         K1 = kn_original(1, L); K2 = kn_original(2, L); K3 = kn_original(3, L)
+         ja = is_valid_link(L, k1, k2, k3)
+         if (JA == 1) then
+            if (K3 == LINK_1D2D_INTERNAL .or. K3 == LINK_1D2D_LONGITUDINAL .or. K3 == LINK_1D2D_STREETINLET .or. k3 == LINK_1D2D_ROOF) then !
+               L1 = L1 + 1
+               KN(1, L1) = K1; KN(2, L1) = K2; KN(3, L1) = K3
+               if (japermout == 1) then
+                  Lperm_new(L1) = Lperm(L) ! fill 1D links from the start of the temp. array
+               end if
+            end if
+         else
             ! save removed links, so the flow1d admin can be updated later on
             nlinkremoved = nlinkremoved + 1
             LC(nlinkremoved) = L
@@ -4531,5 +4536,32 @@ contains
       dLinkangle = atan2(dy, dx)
       return
    end function dLinkangle
+
+!> Determines if a network link is valid for processing.
+   !! A link is considered valid if it connects two different, non-zero nodes
+   !! with valid coordinates. Special conditions apply for user-defined link lengths.
+   pure function is_valid_link(L, K1, K2, K3) result(ja)
+      use network_data
+      use m_missing, only: dmiss
+      implicit none
+      integer, intent(in) :: L, K1, K2, K3
+      integer :: ja
+
+      ja = 0
+      if (K1 /= 0 .and. K2 /= 0 .and. K1 /= K2) then
+         JA = 1
+         if (XK(K1) == DMISS .or. XK(K2) == DMISS) then ! EXTRA CHECK: ONE MISSING
+            JA = 0
+         else !            : OR BOTH EQUAL
+            if ((K3 == 1 .or. k3 == 6) .and. allocated(dxe)) then ! User-defined net link lengths
+               if (dxe(L) /= dmiss .and. dxe(L) <= 0d0) then ! X/Y of K1, K2 may be equal, as long as length > 0
+                  ja = 0
+               end if
+            else if (XK(K1) == XK(K2) .and. YK(K1) == YK(K2)) then
+               JA = 0
+            end if
+         end if
+      end if
+   end function is_valid_link
 
 end module gridoperations
