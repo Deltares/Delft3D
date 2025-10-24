@@ -265,7 +265,7 @@ contains
       !   enddo
       !   deallocate(fnames)
       !end if
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell = .false.)
 
 ! also disabled isolated cells due to cutcells and store masks
       call cutcell_list(6, 1)

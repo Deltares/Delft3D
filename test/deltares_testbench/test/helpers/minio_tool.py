@@ -25,7 +25,7 @@ from src.utils.logging.i_main_logger import IMainLogger
 from src.utils.logging.log_level import LogLevel
 from src.utils.minio_rewinder import Rewinder
 from src.utils.xml_config_parser import XmlConfigParser
-from tools.minio.config import ConfigIndexBuilder, DefaultTestCaseData, TestCaseData, TestCaseIndex, TestCaseWriter
+from tools.minio.config import ConfigParser, DefaultTestCaseData, TestCaseData, TestCaseIndex, TestCaseWriter
 from tools.minio.minio_tool import MinioTool
 from tools.minio.prompt import Prompt
 
@@ -141,24 +141,24 @@ def make_default_test_case(name: str, max_run_time: float = 1500.0) -> DefaultTe
     )
 
 
-def make_config_index_builder(
+def make_config_parser(
     settings: TestBenchSettings | None = None,
-    config_parser: XmlConfigParser | None = None,
+    xml_parser: XmlConfigParser | None = None,
     logger: IMainLogger | None = None,
-) -> ConfigIndexBuilder:
-    """Create a ConfigIndexBuilder with default settings and logger."""
+) -> ConfigParser:
+    """Create a ConfigParser with default settings and logger."""
     if settings is None:
         credentials = Credentials()
         credentials.name = "commandline"
         settings = TestBenchSettings()
-        settings.server_base_url = ConfigIndexBuilder.DEFAULT_SERVER_BASE_URL
+        settings.server_base_url = ConfigParser.DEFAULT_SERVER_BASE_URL
         settings.credentials = credentials
         settings.override_paths = ""
-    if config_parser is None:
-        config_parser = XmlConfigParser()
+    if xml_parser is None:
+        xml_parser = XmlConfigParser()
     if logger is None:
         logger = ConsoleLogger(log_level=LogLevel.ERROR)
-    return ConfigIndexBuilder(settings=settings, config_parser=config_parser, logger=logger)
+    return ConfigParser(settings=settings, xml_parser=xml_parser, logger=logger)
 
 
 def make_config_content(name_version_pairs: List[Tuple[str, Optional[datetime]]]) -> str:

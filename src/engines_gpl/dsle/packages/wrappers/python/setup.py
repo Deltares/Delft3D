@@ -1,6 +1,6 @@
 """Model for salt intrusion through shipping locks.
 
-pyzsf calculates the salt intrusion through shipping locks based on
+pydsle calculates the salt intrusion through shipping locks based on
 easy-to-estimate operational parameters.
 """
 import sys
@@ -36,7 +36,7 @@ except (FileNotFoundError, ValueError):
     version = "0.0.1dev0"
 
 setup(
-    name="pyzsf",
+    name="pydsle",
     version=version,
     description=DOCLINES[0],
     classifiers=[_f for _f in CLASSIFIERS.split("\n") if _f],
@@ -45,12 +45,12 @@ setup(
     author_email="jack@vreeken.me",
     maintainer="Jack Vreeken",
     license="LGPLv3",
-    keywords="zsf shipping locks salt intrusion",
+    keywords="dsle shipping locks salt intrusion",
     platforms=["Windows", "Linux", "Mac OS-X", "Unix"],
     packages=find_packages("src"),
     package_dir={"": "src"},
     setup_requires=["cffi >= 1.0.0"],
-    cffi_modules=["src/_pyzsf_build.py:ffibuilder"],
+    cffi_modules=["src/_pydsle_build.py:ffibuilder"],
     install_requires=["cffi >= 1.0.0"],
     tests_require=["pytest", "pytest-runner", "numpy"],
     python_requires=">=3.6",

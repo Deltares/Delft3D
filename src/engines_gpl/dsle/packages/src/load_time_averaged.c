@@ -1,20 +1,20 @@
 /* read time averaged data from csv */
 
 #include "load_time_averaged.h"
-#include "zsf.h"
+#include "dsle.h"
 
 // -- Define setters, all are named set_(attribute_name)
-CSV_DOUBLE_SETTER(zsf_param_t, ship_volume_lake_to_sea);
-CSV_DOUBLE_SETTER(zsf_param_t, ship_volume_sea_to_lake);
-CSV_DOUBLE_SETTER(zsf_param_t, door_time_to_open);
-CSV_DOUBLE_SETTER(zsf_param_t, leveling_time);
-CSV_DOUBLE_SETTER(zsf_param_t, density_current_factor_sea);
-CSV_DOUBLE_SETTER(zsf_param_t, density_current_factor_lake);
-CSV_DOUBLE_SETTER(zsf_param_t, num_cycles);
+CSV_DOUBLE_SETTER(dsle_param_t, ship_volume_lake_to_sea);
+CSV_DOUBLE_SETTER(dsle_param_t, ship_volume_sea_to_lake);
+CSV_DOUBLE_SETTER(dsle_param_t, door_time_to_open);
+CSV_DOUBLE_SETTER(dsle_param_t, leveling_time);
+CSV_DOUBLE_SETTER(dsle_param_t, density_current_factor_sea);
+CSV_DOUBLE_SETTER(dsle_param_t, density_current_factor_lake);
+CSV_DOUBLE_SETTER(dsle_param_t, num_cycles);
 
 // Custom setter for flushing_discharge.
 int set_flushing_discharge(void *ptr, csv_value_t value) {
-  zsf_param_t *dataptr = (zsf_param_t *)ptr;
+  dsle_param_t *dataptr = (dsle_param_t *)ptr;
   // TODO: Confirm this is ok?
   dataptr->flushing_discharge_high_tide = value.data.double_value;
   dataptr->flushing_discharge_low_tide = value.data.double_value;
