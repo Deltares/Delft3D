@@ -14,7 +14,7 @@ execute_process(COMMAND git rev-parse HEAD
   OUTPUT_STRIP_TRAILING_WHITESPACE
   ERROR_QUIET
 )
-execute_process(COMMAND git foo describe --tags --first-parent HEAD
+execute_process(COMMAND git describe --tags --first-parent HEAD
   OUTPUT_VARIABLE git_describe
   OUTPUT_STRIP_TRAILING_WHITESPACE
   ERROR_QUIET
