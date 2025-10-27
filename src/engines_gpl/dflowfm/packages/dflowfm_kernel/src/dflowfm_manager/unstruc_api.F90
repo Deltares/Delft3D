@@ -60,7 +60,7 @@ contains
                   precicef_write_data, precicef_requires_initial_data, precicef_set_triangle, precicef_requires_mesh_connectivity_for
       use m_partitioninfo, only: numranks, my_rank
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
-      implicit none (type, external)
+      implicit none(type, external)
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "fm"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
@@ -80,13 +80,13 @@ contains
       !!Update number_of_vertices based on chosen mesh
 
       !! Define a simple square mesh with two triangles
-      !mesh_coordinates = [ 0, 0, 0, 1, 1, 1, 1, 0 ] 
+      !mesh_coordinates = real([ 0, 0, 0, 1, 1, 1, 1, 0 ] , kind=c_double) ! four vertices of a square
       !call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
       !call precicef_set_triangle(mesh_name, vertex_ids(1), vertex_ids(2), vertex_ids(4), len(mesh_name))
       !call precicef_set_triangle(mesh_name, vertex_ids(2), vertex_ids(3), vertex_ids(4), len(mesh_name))
 
       !! Define a simple rectangular mesh with four triangles in a unity box with one vertex at origin
-      mesh_coordinates = [ 0.0, 0.0, 0.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.0, 0.5, 0.0 ] 
+      mesh_coordinates = real([ 0.0, 0.0, 0.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.0, 0.5, 0.0 ], kind=c_double)
       call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
       call precicef_set_triangle(mesh_name, vertex_ids(1), vertex_ids(2), vertex_ids(6), len(mesh_name))
       call precicef_set_triangle(mesh_name, vertex_ids(2), vertex_ids(3), vertex_ids(6), len(mesh_name))
@@ -99,8 +99,8 @@ contains
       print *, '[FM] Is mesh connectivity required for ', mesh_name, '? ', is_mesh_connectivity_required
 
       if (is_initial_data_required == 1) then
-         !! initial_data = [ 1, 0, 1, 0 ] ! fm-data is one on the diagonal of the square (0,0) and (1,1)
-         initial_data = [ 0.0, 0.0, 1.0, 0.0, 0.0, 1.0 ] ! fm-data is 1.0 on x=0.5 line
+         !! initial_data = real([ 1, 0, 1, 0 ], kind=c_double) ! fm-data is one on the diagonal of the square (0,0) and (1,1)
+         initial_data = real([ 0.0, 0.0, 1.0, 0.0, 0.0, 1.0 ], kind=c_double) ! fm-data is 1.0 on x=0.5 line
          call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
       end if
 
@@ -110,7 +110,7 @@ contains
 
    subroutine finalize_wave_coupling()
       use precice, only: precicef_finalize
-      implicit none (type, external)
+      implicit none(type, external)
 
       call precicef_finalize()
    end subroutine finalize_wave_coupling
@@ -419,7 +419,7 @@ contains
       use precice, only: precicef_advance
       use, intrinsic :: iso_c_binding, only: c_double
 #endif
-      implicit none (type, external)
+      implicit none(type, external)
 
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.

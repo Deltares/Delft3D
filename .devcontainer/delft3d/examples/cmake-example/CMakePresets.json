@@ -1,0 +1,55 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "fm-suite-debug",
+            "displayName": "FM-suite Debug",
+            "binaryDir": "${sourceDir}/../../build_fm-suite_debug",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "fm-suite",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_fm-suite_debug/install",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "fm-suite-release",
+            "displayName": "FM-suite Release",
+            "binaryDir": "${sourceDir}/../../build_fm-suite_release",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "fm-suite",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_fm-suite_release/install",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "fm-suite-debug-build",
+            "displayName": "FM-suite Debug Build",
+            "configurePreset": "fm-suite-debug",
+            "jobs": 24
+        },
+        {
+            "name": "fm-suite-release-build",
+            "displayName": "FM-suite Release Build",
+            "configurePreset": "fm-suite-release",
+            "jobs": 24
+        }
+    ], 
+    "testPresets": [
+        {
+            "configurePreset": "fm-suite-debug",
+            "name": "fm-suite-debug-test",
+            "displayName": "FM-suite Debug Test",
+            "configuration": "Debug"
+        },
+        {
+            "configurePreset": "fm-suite-release",
+            "name": "fm-suite-release-test",
+            "displayName": "FM-suite Release Test",
+            "configuration": "Release"
+        }
+    ]
+}

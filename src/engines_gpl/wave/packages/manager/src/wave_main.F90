@@ -137,13 +137,13 @@ end subroutine couple_to_greeter_dummy
       !!Update number_of_vertices based on chosen mesh
 
       !! Define a simple square mesh with two triangles
-      mesh_coordinates = [ 0, 0, 0, 1, 1, 1, 1, 0 ]
+      mesh_coordinates = real([ 0, 0, 0, 1, 1, 1, 1, 0 ], kind=c_double)
       call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
       call precicef_set_triangle(mesh_name, vertex_ids(1), vertex_ids(2), vertex_ids(4), len(mesh_name))
       call precicef_set_triangle(mesh_name, vertex_ids(2), vertex_ids(3), vertex_ids(4), len(mesh_name))
 
       !! Define a simple rectangular mesh with four triangles in a unity box with one vertex at origin
-      !mesh_coordinates = [ 0.0, 0.0, 0.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.0, 0.5, 0.0 ]
+      !mesh_coordinates = real([ 0.0, 0.0, 0.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.0, 0.5, 0.0 ], kind=c_double)
       !call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
       !call precicef_set_triangle(mesh_name, vertex_ids(1), vertex_ids(2), vertex_ids(6), len(mesh_name))
       !call precicef_set_triangle(mesh_name, vertex_ids(2), vertex_ids(3), vertex_ids(6), len(mesh_name))
@@ -156,7 +156,7 @@ end subroutine couple_to_greeter_dummy
       print *, '[wave] Is mesh connectivity required for ', mesh_name, '? ', is_mesh_connectivity_required
 
       if (is_initial_data_required == 1) then
-         initial_data = [ 0.0, 0.0, 0.0, 0.0] ! wave-data basically ignored, so anything goes here.
+         initial_data = real([ 0.0, 0.0, 0.0, 0.0], kind=c_double) ! wave-data basically ignored, so anything goes here.
          call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
       end if
 

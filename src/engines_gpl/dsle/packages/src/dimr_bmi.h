@@ -4,7 +4,7 @@
 
 /* DIMR bmi interface prototypes */
 // TODO: Move/include this header for export purposes?
-#include "zsf.h"
+#include "dsle.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -20,23 +20,23 @@ extern "C" {
 
 #define DIMR_BMI_MAXDIMS (6) // Used in get_var_shape.
 
-ZSF_EXPORT int ZSF_CALLCONV initialize(const char *config_file);
-ZSF_EXPORT int ZSF_CALLCONV finalize();                              // Always returns DIMR_BMI_OK
-ZSF_EXPORT int ZSF_CALLCONV set_var(const char *key, void *src_ptr); // In BMI 2.0 = set_value
-ZSF_EXPORT int ZSF_CALLCONV get_var(const char *key, void *dst_ptr); // In BMI 2.0 = get_value
+DSLE_EXPORT int DSLE_CALLCONV initialize(const char *config_file);
+DSLE_EXPORT int DSLE_CALLCONV finalize();                              // Always returns DIMR_BMI_OK
+DSLE_EXPORT int DSLE_CALLCONV set_var(const char *key, void *src_ptr); // In BMI 2.0 = set_value
+DSLE_EXPORT int DSLE_CALLCONV get_var(const char *key, void *dst_ptr); // In BMI 2.0 = get_value
 int get_value_ptr(char *key, void **dst_ptr); // In DIMR **dst_ptr always is a double.
-ZSF_EXPORT int ZSF_CALLCONV update(double dt);
-ZSF_EXPORT int ZSF_CALLCONV get_var_shape(char *key, int *dims); // dims -> int[6]
+DSLE_EXPORT int DSLE_CALLCONV update(double dt);
+DSLE_EXPORT int DSLE_CALLCONV get_var_shape(char *key, int *dims); // dims -> int[6]
 
 /* Not needed? (also mostly not BMI standard) */
 int update_until(double update_time);
 
-ZSF_EXPORT void ZSF_CALLCONV get_version_string(char **version_string);
+DSLE_EXPORT void DSLE_CALLCONV get_version_string(char **version_string);
 void get_attribute(char *name, char *value);
-ZSF_EXPORT void ZSF_CALLCONV get_start_time(double *start_time_ptr);
-ZSF_EXPORT void ZSF_CALLCONV get_end_time(double *end_time_ptr);
-ZSF_EXPORT void ZSF_CALLCONV get_time_step(double *time_step_ptr);
-ZSF_EXPORT void ZSF_CALLCONV get_current_time(double *current_time_ptr);
+DSLE_EXPORT void DSLE_CALLCONV get_start_time(double *start_time_ptr);
+DSLE_EXPORT void DSLE_CALLCONV get_end_time(double *end_time_ptr);
+DSLE_EXPORT void DSLE_CALLCONV get_time_step(double *time_step_ptr);
+DSLE_EXPORT void DSLE_CALLCONV get_current_time(double *current_time_ptr);
 void set_dimr_logger(void *logptr); // Points to a Log object (see log.h in DIMR)
 void set_logger_c_callback(
     void (*callback)(char *msg)); // Takes a function pointer (not sure what is prototype is)

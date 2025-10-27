@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from pyzsf import ZSFUnsteady
+from pydsle import DSLEUnsteady
 
 
 class TestSaltLoadUnsteady(unittest.TestCase):
@@ -44,7 +44,7 @@ class TestSaltLoadUnsteady(unittest.TestCase):
     def test_flush_doors_closed(self):
         init_sal = 15.0
 
-        c = ZSFUnsteady(init_sal, 0.0, **self.parameters)
+        c = DSLEUnsteady(init_sal, 0.0, **self.parameters)
 
         # Sanity check when flushing with no discharge
         duration = 1000.0

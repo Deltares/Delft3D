@@ -36,7 +36,7 @@ module m_flow_externaloutput
    use m_inctime_split, only: inctime_split
    use m_waveconst
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    private

@@ -140,6 +140,7 @@ module process_registration
     use m_totdep
     use m_sulfox
     use m_stadsc
+    use m_stamea
     use m_specfe
     use m_sedsod
     use m_resant
@@ -379,6 +380,7 @@ contains
                             process_routine_info('STADAY', STADAY), &
                             process_routine_info('STADPT', STADPT), &
                             process_routine_info('STADSC', STADSC), &
+                            process_routine_info('STAMEA', STAMEA), &
                             process_routine_info('STAGEO', STAGEO), &
                             process_routine_info('STAPRC', STAPRC), &
                             process_routine_info('STAQTL', STAQTL), &
