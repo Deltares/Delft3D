@@ -443,6 +443,9 @@ contains
             md_blmfile = inarg
             call mess(LEVEL_INFO, 'Using bloom species definition file: '//trim(md_blmfile))
 
+         case ('convertlongculverts')
+            call mess(LEVEL_ERROR, '--convertlongculverts has been made obsolete, work in progress!')
+
          case default
             inquire (FILE=trim(inarg), EXIST=JAWEL)
             if (JAWEL) then
