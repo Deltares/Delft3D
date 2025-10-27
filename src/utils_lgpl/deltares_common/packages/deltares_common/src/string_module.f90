@@ -35,6 +35,7 @@ module string_module
 ! NONE
 !!--declarations----------------------------------------------------------------
 
+   use precision, only: dp, sp
    implicit none
 
    private
@@ -70,16 +71,27 @@ module string_module
    public :: int2str
    public :: get_version_major_minor_integer
    public :: str_split 
+   public :: convert_to_logical
+   public :: convert_to_real
    
    interface strip_quotes
       module procedure strip_quotes1
       module procedure strip_quotes2
    end interface strip_quotes
+   
+   interface convert_to_real
+      module procedure convert_to_real_sp
+      module procedure convert_to_real_dp
+   end interface convert_to_real
 
    ! parameters
    integer, parameter, public :: ichar_space = ichar(' ')
    integer, parameter, public :: ichar_forward_slash = ichar('/')
    integer, parameter, public :: ichar_underscore = ichar('_')
+   
+   integer, parameter, public :: no_error = 0
+   integer, parameter, public :: empty_string = 1
+   integer, parameter, public :: conversion_error = 2
    
 contains
 
@@ -585,7 +597,7 @@ contains
    end subroutine find_first_word
 
    !> Determine the index of the first letter in a string.
-      !! Failure is indicated by: index = 0
+   !! Failure is indicated by: index = 0
    pure function find_first_letter(string) result(idx)
       integer :: idx !< index of first letter
       character(len=*), intent(in) :: string !< string to inspect
@@ -1079,5 +1091,134 @@ contains
    last_token=MAXTOKENS
    
    end subroutine str_split
+   
+      
+   !> Convert the first token into a logical value
+   !! Requires a string as input, returns a logical (bool) as output.
+   !! The logical is unassigned in case of a conversion error.
+   !! The function returns an error code ierr that equals
+   !!    no_error, empty_string, conversion_error
+   subroutine convert_to_logical(string, bool, ierr)
+      use precision_basics, only: comparereal, dp
+      !
+      character(len=*), intent(in) :: string !< Input string to be converted
+      logical, intent(inout) :: bool !< Converted logical value
+      integer, intent(out) :: ierr !< Error code: 0 if successful, non-zero otherwise
+      !
+      ! Local variables
+      !
+      integer :: spacepos
+      integer :: vallength
+      real(dp) :: float
+      !
+      ierr = conversion_error
+      vallength = len_trim(string)
+      if (vallength == 0) then
+         ierr = empty_string
+         return
+      end if
+      spacepos = index(string, ' ')
+      if (spacepos > 0) vallength = spacepos - 1
+      !
+      ! Extract the logical part
+      !
+      select case (str_toupper(string(1:vallength)))
+      case ('TRUE', 'T', 'Y', 'YES', '.TRUE.', 'J', 'JA', 'W', 'WAAR', 'ON', '1')
+         bool = .true.
+         ierr = no_error
+      case ('FALSE', 'F', 'N', 'NO', '.FALSE.', 'NEE', 'O', 'OFF', 'ONWAAR', '0')
+         bool = .false.
+         ierr = no_error
+      end select
+      if (ierr /= no_error) then
+         call convert_to_real(string, float, ierr)
+         if (ierr == no_error) then
+            if (comparereal(float,0.0_dp) == 0) then
+               bool = .false.
+            else
+               bool = .true.
+            end if
+         else
+            ierr = conversion_error
+         end if
+      end if
+   end subroutine convert_to_logical
+
+   !> Convert the first token into a single precision floating point value
+   !! Requires a string as input, returns a value as output.
+   !! The value is unassigned in case of a conversion error.
+   !! The routine returns an error code ierr that equals
+   !!    no_error, empty_string, conversion_error
+   pure subroutine convert_to_real_sp(string, value, ierr)
+   character(len=*), intent(in) :: string !< Input string to be converted
+   real(kind=sp), intent(inout) :: value !< Converted real value
+   integer, intent(out) :: ierr !< Error code: no_error if successful, non-zero otherwise
+   
+   real(kind=dp) :: value_dp !< temporary double precision variable
+   call convert_to_real_dp(string, value_dp, ierr)
+   if (ierr == no_error) then
+      value = real(value_dp, kind=sp)
+   end if
+   end subroutine convert_to_real_sp
+
+   !> Convert the first token into a double precision floating point value
+   !! Requires a string as input, returns a value as output.
+   !! The value is unassigned in case of a conversion error.
+   !! The routine returns an error code ierr that equals
+   !!    no_error, empty_string, conversion_error
+   pure subroutine convert_to_real_dp(string, value, ierr)
+   character(len=*), intent(in) :: string !< Input string to be converted
+   real(kind=dp), intent(inout) :: value !< Converted real value
+   integer, intent(out) :: ierr !< Error code: 0 if successful, non-zero otherwise
+
+   character(len=17), parameter :: REAL_CHARS = '0123456789-+.eEdD' !< characters that may appear in a real number
+   character(len=2), parameter :: SPACE_CHARS = ' '//achar(9) !< space and tab characters
+   integer :: i !< loop index for scanning the string
+   integer :: ifirst !< index of first non-space character (beginning of token)
+   integer :: ilast !< index of last non-space character (end of token)
+   
+   ifirst = -1
+   ilast = len_trim(string)
+   if (ilast == 0) then
+      ierr = empty_string
+      return
+   end if
+   
+   ierr = no_error
+   do i = 1, len_trim(string)
+      if (ifirst < 0) then
+         if (index(SPACE_CHARS, string(i:i)) > 0) then
+            ! reading spaces before float
+         elseif (index(REAL_CHARS, string(i:i)) > 0) then
+            ifirst = i
+         else
+            ! unsupported character encountered before number reading started
+            ierr = conversion_error
+            return
+         end if
+      else
+         if (index(SPACE_CHARS, string(i:i)) > 0) then
+            ! found space after float
+            ilast = i - 1
+            exit
+         elseif (index(REAL_CHARS, string(i:i)) > 0) then
+            ! reading character that may represent a real
+         else
+            ! unsupported character encountered after number reading started
+            ierr = conversion_error
+            return
+         end if
+      end if
+   end do
+   !
+   ! reached the end of the string without encountering an unsupported character
+   ! try to convert
+   !
+   read (string(ifirst:ilast), *, iostat=ierr) value
+   if (ierr /= 0) then
+      ierr = conversion_error
+   end if
+
+   end subroutine convert_to_real_dp
    
 end module string_module
