@@ -84,10 +84,10 @@ object LinuxTest : BuildType({
     }
 
     steps {
-        id = "run_tests"
         mergeTargetBranch {}
         python {
             name = "Run TestBench.py"
+            id = "run_testbench"
             workingDir = "test/deltares_testbench/"
             pythonVersion = customPython {
                 executable = "python3"
