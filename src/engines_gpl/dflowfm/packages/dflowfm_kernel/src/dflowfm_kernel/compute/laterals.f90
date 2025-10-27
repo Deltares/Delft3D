@@ -86,7 +86,7 @@ module m_laterals
    real(kind=dp), allocatable, target, dimension(:, :, :), public :: incoming_lat_concentration !< Concentration of the inflowing water at the lateral discharge location.
    real(kind=dp), allocatable, target, dimension(:, :), public :: lateral_volume_per_layer !< Total water volume per layer, for each lateral (kmx,numlatsg).
 
-   type t_flowparameter !< General structure for Flow parameters that require averaging.
+   type t_flow_parameter !< General class for Flow parameters that require averaging.
       real(kind=dp), dimension(:), allocatable :: values !< Averaged values of the flow parameter.
       logical :: is_used = .false. !< Indicates whether this flow parameter is used.
       real(kind=dp), dimension(:), pointer :: input_variable !< Input variable to be averaged.
