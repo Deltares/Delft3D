@@ -77,6 +77,7 @@ object WindowsTest : BuildType({
         mergeTargetBranch {}
         python {
             name = "Run TestBench.py"
+            id = "run_testbench"
             workingDir = "test/deltares_testbench/"
             command = file {
                 filename = "TestBench.py"
