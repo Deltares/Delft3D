@@ -1,6 +1,12 @@
 #include "sealock.h"
 #include "unity.h"
-#include <load_phase_wise.h>
+#include "timestamp.h"
+#include "load_phase_wise.h"
+
+#include <string.h>
+
+// defined in `load_phase_wise.c`
+extern int init_phase_wise_timeseries_csv_context(csv_context_t* context);
 
 void setUp(void) {}
 
