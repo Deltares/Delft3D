@@ -113,11 +113,12 @@ end subroutine couple_to_greeter_dummy
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    function initialize_fm_coupling() result(vertex_ids)
-      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, precicef_requires_initial_data, precicef_set_triangle
+      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, &
+                         precicef_requires_initial_data, precicef_set_triangle, precicef_requires_mesh_connectivity_for
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none (type, external)
 
-      integer(kind=c_int), parameter :: number_of_vertices = 6;
+      integer(kind=c_int), parameter :: number_of_vertices = 4;
       integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "wave"
@@ -126,26 +127,36 @@ end subroutine couple_to_greeter_dummy
       character(kind=c_char, len=*), parameter :: data_name = "wave-data"
       real(kind=c_double), dimension(number_of_vertices * 2) :: mesh_coordinates
       real(kind=c_double), dimension(number_of_vertices) :: initial_data
-      integer(kind=c_int) :: is_initial_data_required
+      integer(kind=c_int) :: is_initial_data_required, is_mesh_connectivity_required
       integer(kind=c_int) :: mesh_dimensions
 
       call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
       call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
       print *, '[wave] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
 
-      mesh_coordinates = [ 0.0, 0.0, 0.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.0, 0.5, 0.0 ]
+      !!Update number_of_vertices based on chosen mesh
+
+      !! Define a simple square mesh with two triangles
+      mesh_coordinates = [ 0, 0, 0, 1, 1, 1, 1, 0 ]
       call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
-      
-      !!call precicef_set_triangle(mesh_name, vertex_ids(1), vertex_ids(2), vertex_ids(6), len(mesh_name))
-      !!call precicef_set_triangle(mesh_name, vertex_ids(2), vertex_ids(4), vertex_ids(6), len(mesh_name))
-      !!call precicef_set_triangle(mesh_name, vertex_ids(3), vertex_ids(4), vertex_ids(6), len(mesh_name))
-      !!call precicef_set_triangle(mesh_name, vertex_ids(4), vertex_ids(5), vertex_ids(6), len(mesh_name))
+      call precicef_set_triangle(mesh_name, vertex_ids(1), vertex_ids(2), vertex_ids(4), len(mesh_name))
+      call precicef_set_triangle(mesh_name, vertex_ids(2), vertex_ids(3), vertex_ids(4), len(mesh_name))
+
+      !! Define a simple rectangular mesh with four triangles in a unity box with one vertex at origin
+      !mesh_coordinates = [ 0.0, 0.0, 0.0, 1.0, 0.5, 1.0, 1.0, 1.0, 1.0, 0.0, 0.5, 0.0 ]
+      !call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
+      !call precicef_set_triangle(mesh_name, vertex_ids(1), vertex_ids(2), vertex_ids(6), len(mesh_name))
+      !call precicef_set_triangle(mesh_name, vertex_ids(2), vertex_ids(3), vertex_ids(6), len(mesh_name))
+      !call precicef_set_triangle(mesh_name, vertex_ids(3), vertex_ids(4), vertex_ids(6), len(mesh_name))
+      !call precicef_set_triangle(mesh_name, vertex_ids(4), vertex_ids(5), vertex_ids(6), len(mesh_name))
 
       call precicef_requires_initial_data(is_initial_data_required)
       print *, '[wave] Is data required? ', is_initial_data_required
+      call precicef_requires_mesh_connectivity_for(mesh_name, is_mesh_connectivity_required, len(mesh_name))
+      print *, '[wave] Is mesh connectivity required for ', mesh_name, '? ', is_mesh_connectivity_required
 
       if (is_initial_data_required == 1) then
-         initial_data = [ 0.0, 0.0, 1.0, 0.0, 0.0, 1.0 ] ! wave-data basically ignored, so anything goes here.
+         initial_data = [ 0.0, 0.0, 0.0, 0.0] ! wave-data basically ignored, so anything goes here.
          call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
       end if
 

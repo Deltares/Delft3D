@@ -23,7 +23,7 @@
     <receive-mesh name="wave-mesh" from="wave"/>
     <write-data name="fm-data" mesh="fm-mesh"/>
     <read-data name="wave-data" mesh="fm-mesh"/>
-    <mapping:linear-cell-interpolation direction="write" from="fm-mesh" to="wave-mesh" constraint="conservative" />
+    <mapping:nearest-projection direction="write" from="fm-mesh" to="wave-mesh" constraint="conservative" />
   </participant>
 
   <participant name="wave">
