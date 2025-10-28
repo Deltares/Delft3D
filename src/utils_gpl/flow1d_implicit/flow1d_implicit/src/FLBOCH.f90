@@ -433,14 +433,12 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
             
 !              Variables used in `getFrictionValue` (new `FLCHZT`)         
             idx_crs = grd_sre_cs(i)   
-            isec_fm=int(asubsc(i))+1
             dpt=hi-crs%cross(idx_crs)%bedlevel
 !
 !              * Situation *****************************
 !              * 1. main section                       *
 !              * 2. 1 or 2 sub sections, but h < h0    *
 !              *****************************************
-!
             if   ( int( asubsc(i) ) .eq. 0 ) then
 !
 !                 ****************
@@ -469,9 +467,8 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&0      ,hi     ,qi     ,ui     ,&
                   !&r0     ,c0     )
                 
-                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(rmain), DBLE(dpt), crs%cross(idx_crs)%chainage)
-                
-                
+                  isec_fm=1 ! main section
+                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(r0), DBLE(dpt), crs%cross(idx_crs)%chainage)
                endif
 !
                alfab(i) = 1.0
@@ -516,11 +513,14 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                      c0 = sqrt (psltvr(2,i)/r0)
                   endif
                else
-                  call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
-                  &bfrict ,bfricp ,maxtab ,ntabm  ,&
-                  &ntab   ,table  ,d90    ,engpar ,&
-                  &0      ,hi     ,qi     ,ui     ,&
-                  &r0     ,c0     )
+                  !call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
+                  !&bfrict ,bfricp ,maxtab ,ntabm  ,&
+                  !&ntab   ,table  ,d90    ,engpar ,&
+                  !&0      ,hi     ,qi     ,ui     ,&
+                  !&r0     ,c0     )
+                   
+                  isec_fm=1 ! main section
+                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(r0), DBLE(dpt), crs%cross(idx_crs)%chainage)
                endif
 !
 !                 Store R and C for main section. (sub section 0)
@@ -563,11 +563,14 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                      c1 = sqrt (psltvr(2,i)/r1)
                   endif
                else
-                  call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
-                  &bfrict ,bfricp ,maxtab ,ntabm  ,&
-                  &ntab   ,table  ,d90    ,engpar ,&
-                  &1      ,hi     ,qi     ,ui     ,&
-                  &r1     ,c1     )
+                  !call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
+                  !&bfrict ,bfricp ,maxtab ,ntabm  ,&
+                  !&ntab   ,table  ,d90    ,engpar ,&
+                  !&1      ,hi     ,qi     ,ui     ,&
+                  !&r1     ,c1     )
+                   
+                  isec_fm=2 !sub section 1
+                  c1 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(r1), DBLE(dpt), crs%cross(idx_crs)%chainage)
                endif
 !
 !                 Store R and C for sub section 1
@@ -627,11 +630,14 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                      c0 = sqrt (psltvr(2,i)/r0)
                   endif
                else
-                  call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
-                  &bfrict ,bfricp ,maxtab ,ntabm  ,&
-                  &ntab   ,table  ,d90    ,engpar ,&
-                  &0      ,hi     ,qi     ,ui     ,&
-                  &r0     ,c0     )
+                  !call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
+                  !&bfrict ,bfricp ,maxtab ,ntabm  ,&
+                  !&ntab   ,table  ,d90    ,engpar ,&
+                  !&0      ,hi     ,qi     ,ui     ,&
+                  !&r0     ,c0     )
+                  
+                  isec_fm=1 !main section 
+                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(r0), DBLE(dpt), crs%cross(idx_crs)%chainage)
                endif
 !
 !                 Store R and C for main section
@@ -671,11 +677,14 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                      c1 = sqrt (psltvr(2,i)/r1)
                   endif
                else
-                  call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
-                  &bfrict ,bfricp ,maxtab ,ntabm  ,&
-                  &ntab   ,table  ,d90    ,engpar ,&
-                  &1      ,hi     ,qi     ,ui     ,&
-                  &r1     ,c1     )
+                  !call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
+                  !&bfrict ,bfricp ,maxtab ,ntabm  ,&
+                  !&ntab   ,table  ,d90    ,engpar ,&
+                  !&1      ,hi     ,qi     ,ui     ,&
+                  !&r1     ,c1     )
+                  
+                  isec_fm=2 !sub section 1
+                  c1 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(r1), DBLE(dpt), crs%cross(idx_crs)%chainage)
                endif
 !
 !                 Store R and C for sub section 1
@@ -718,11 +727,14 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                      c2 = sqrt (psltvr(2,i)/r2)
                   endif
                else
-                  call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
-                  &bfrict ,bfricp ,maxtab ,ntabm  ,&
-                  &ntab   ,table  ,d90    ,engpar ,&
-                  &2      ,hi     ,qi     ,ui     ,&
-                  &r2     ,c2     )
+                  !call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
+                  !&bfrict ,bfricp ,maxtab ,ntabm  ,&
+                  !&ntab   ,table  ,d90    ,engpar ,&
+                  !&2      ,hi     ,qi     ,ui     ,&
+                  !&r2     ,c2     )
+                  
+                  isec_fm=3 !sub section 2 
+                  c2 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(r2), DBLE(dpt), crs%cross(idx_crs)%chainage)
                endif
 !
 !                 Store R and C for sub section 2
