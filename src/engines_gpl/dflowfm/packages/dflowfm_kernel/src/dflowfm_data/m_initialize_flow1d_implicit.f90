@@ -1442,6 +1442,7 @@ contains
          !                       For a sedredge cross section : 1 )
          sectc(ksre,1)=network%crs%cross(idx_crs)%frictionsectionscount-1
          
+         if (network%crs%cross(idx_crs)%frictionsectionscount>1) then
          !!!
          !!!SUBSECTION 1
          !!!
@@ -1465,7 +1466,10 @@ contains
          ! wfh0(ngrid)       I  Flow width Wf at water level h=h0 for every
          !                      grid point.
          sectc(ksre,2)=network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
+         
+         endif 
 
+         if (network%crs%cross(idx_crs)%frictionsectionscount>2) then
          !!!
          !!!SUBSECTION 2
          !!!
