@@ -77,32 +77,17 @@ contains
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_wave_coupling()
-      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, precicef_advance
+      use precice, only: precicef_create, precicef_initialize
       use m_partitioninfo, only: numranks, my_rank
-      use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
+      use, intrinsic :: iso_c_binding, only: c_char
       implicit none(type, external)
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "fm"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
-      character(kind=c_char, len=*), parameter :: mesh_name = "fm-mesh"
-      character(kind=c_char, len=*), parameter :: data_name = "fm-data"
-      integer(kind=c_int), parameter :: number_of_vertices = 13
-      real(kind=c_double), dimension(number_of_vertices*2) :: mesh_coordinates
-      integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
-      real(kind=c_double), dimension(number_of_vertices) :: initial_data
-
-      integer(kind=c_int) :: mesh_dimensions
 
       call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
-      call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
-      print *, '[FM] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
 
-      mesh_coordinates = [(real(i/2, kind=c_double), integer :: i=1, 2 * number_of_vertices)] ! Diagonal line {(0,0), (1,1), (2,2), ...}
-      call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
-
-      initial_data = [(real(i, kind=c_double), integer :: i=1, number_of_vertices)] ! fm-data is equal to x-coordinates
-      call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
-
+      call register_com_mesh_with_precice()
       call register_flow_nodes_with_precice()
       call precicef_initialize()
 
@@ -178,6 +163,20 @@ contains
       call precicef_set_mesh_triangles(mesh_name, num_triangles, precice_triangle_nodes, len(mesh_name))
       print *, '[FM] Registered ', num_triangles, ' triangles with preCICE'
    end subroutine register_flow_nodes_with_precice
+
+   subroutine register_com_mesh_with_precice()
+      use precice, only: precicef_set_vertices
+      use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
+      implicit none(type, external)
+
+      character(kind=c_char, len=*), parameter :: mesh_name = "com_mesh"
+      real(kind=c_double), dimension(2) :: mesh_coordinates
+      integer(kind=c_int), dimension(1) :: vertex_ids
+
+      mesh_coordinates = [0.0_c_double, 0.0_c_double]
+
+      call precicef_set_vertices(mesh_name, 1, mesh_coordinates, vertex_ids, len(mesh_name))
+   end subroutine register_com_mesh_with_precice
 
    subroutine finalize_wave_coupling()
       use precice, only: precicef_finalize

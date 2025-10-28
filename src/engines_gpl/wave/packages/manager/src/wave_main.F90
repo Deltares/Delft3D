@@ -67,80 +67,64 @@ module wave_main
 contains
 
 #if defined(HAS_PRECICE_WAVE_GREETER_COUPLING)
-subroutine couple_to_greeter_dummy()
-   use m_alloc, only: realloc
-   use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
-      precicef_set_vertices, precicef_read_data, &
-      precicef_get_data_dimensions, precicef_get_max_time_step_size
+   subroutine couple_to_greeter_dummy()
+      use m_alloc, only: realloc
+      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_initialize, &
+                         precicef_set_vertices, precicef_read_data, &
+                         precicef_get_data_dimensions, precicef_get_max_time_step_size
 
-   integer(kind=c_int), parameter :: precice_component_name_length = 4
-   character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "wave"
-   integer(kind=c_int), parameter :: precice_config_name_length = 21
-   character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
-   integer(kind=c_int), parameter :: mesh_name_length = 9
-   character(kind=c_char, len=mesh_name_length), parameter :: mesh_name = "wave-mesh"
-   integer(kind=c_int), parameter :: max_greeting_length = 34
-   integer(kind=c_int) :: mesh_dimensions
-   real(kind=c_double), dimension(max_greeting_length * 2) :: mesh_coordinates
-   integer(kind=c_int), dimension(max_greeting_length) :: vertex_ids
-   integer(kind=c_int), parameter :: data_name_length = 8
-   character(kind=c_char, len=data_name_length), parameter :: data_name = "greeting"
-   integer :: data_size, data_dimension
-   real(kind=c_double), dimension(:), allocatable :: data_values
-   character(kind=c_char), dimension(:), allocatable :: converted_data
-   real(kind=c_double) :: precice_time_step
+      integer(kind=c_int), parameter :: precice_component_name_length = 4
+      character(kind=c_char, len=precice_component_name_length), parameter :: precice_component_name = "wave"
+      integer(kind=c_int), parameter :: precice_config_name_length = 21
+      character(kind=c_char, len=precice_config_name_length), parameter :: precice_config_name = "../precice_config.xml"
+      integer(kind=c_int), parameter :: mesh_name_length = 9
+      character(kind=c_char, len=mesh_name_length), parameter :: mesh_name = "wave-mesh"
+      integer(kind=c_int), parameter :: max_greeting_length = 34
+      integer(kind=c_int) :: mesh_dimensions
+      real(kind=c_double), dimension(max_greeting_length*2) :: mesh_coordinates
+      integer(kind=c_int), dimension(max_greeting_length) :: vertex_ids
+      integer(kind=c_int), parameter :: data_name_length = 8
+      character(kind=c_char, len=data_name_length), parameter :: data_name = "greeting"
+      integer :: data_size, data_dimension
+      real(kind=c_double), dimension(:), allocatable :: data_values
+      character(kind=c_char), dimension(:), allocatable :: converted_data
+      real(kind=c_double) :: precice_time_step
 
-   call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
-   call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, mesh_name_length)
-   print *, '[wave] The number of dimensions of the wave-mesh is ', mesh_dimensions
+      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, precice_component_name_length, precice_config_name_length)
+      call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, mesh_name_length)
+      print *, '[wave] The number of dimensions of the wave-mesh is ', mesh_dimensions
 
-   mesh_coordinates = 0.0_c_double
-   call precicef_set_vertices(mesh_name, max_greeting_length, mesh_coordinates, vertex_ids, mesh_name_length)
-   call precicef_initialize()
+      mesh_coordinates = 0.0_c_double
+      call precicef_set_vertices(mesh_name, max_greeting_length, mesh_coordinates, vertex_ids, mesh_name_length)
+      call precicef_initialize()
 
-   call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, mesh_name_length, data_name_length)
-   data_size = data_dimension * max_greeting_length
-   print *, '[wave] data dimension: ', data_dimension, ' data size: ', data_size
-   call realloc(data_values, data_size)
+      call precicef_get_data_dimensions(mesh_name, data_name, data_dimension, mesh_name_length, data_name_length)
+      data_size = data_dimension * max_greeting_length
+      print *, '[wave] data dimension: ', data_dimension, ' data size: ', data_size
+      call realloc(data_values, data_size)
 
-   call precicef_get_max_time_step_size(precice_time_step)
-   print *, '[wave] max time step: ', precice_time_step
-   call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, precice_time_step, data_values, &
+      call precicef_get_max_time_step_size(precice_time_step)
+      print *, '[wave] max time step: ', precice_time_step
+      call precicef_read_data(mesh_name, data_name, data_size, vertex_ids, precice_time_step, data_values, &
                               mesh_name_length, data_name_length)
 
-   converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i = 1, data_size)]
-   print *, '[wave] message read: ', converted_data
-end subroutine couple_to_greeter_dummy
+      converted_data = [(char(int(data_values(i)), kind=c_char), integer :: i=1, data_size)]
+      print *, '[wave] message read: ', converted_data
+   end subroutine couple_to_greeter_dummy
 #endif
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_fm_coupling(mdw_file_name)
-      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data
-      use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
-      implicit none (type, external)
+      use precice, only: precicef_create, precicef_initialize
+      use, intrinsic :: iso_c_binding, only: c_char
+      implicit none(type, external)
 
       character(len=*), intent(in) :: mdw_file_name
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "wave"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
-      character(kind=c_char, len=*), parameter :: mesh_name = "wave-mesh"
-      character(kind=c_char, len=*), parameter :: data_name = "wave-data"
-      integer(kind=c_int), parameter :: number_of_vertices = 12;
-      real(kind=c_double), dimension(number_of_vertices * 2) :: mesh_coordinates
-      integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
-      real(kind=c_double), dimension(number_of_vertices) :: initial_data
-
-      integer(kind=c_int) :: mesh_dimensions
 
       call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
-      call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
-      print *, '[D-Waves] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
-
-      mesh_coordinates = [(real(i / 2, kind=c_double) + 0.5_c_double, integer :: i = 1, 2 * number_of_vertices)] ! Diagonal line {(0.5,0.5), (1.5,1.5), (2.5,2.5), ...}
-      call precicef_set_vertices(mesh_name, number_of_vertices, mesh_coordinates, vertex_ids, len(mesh_name))
-
-      initial_data = [(hypot(mesh_coordinates(2 * i - 1), mesh_coordinates(2 * i)), integer :: i = 1, number_of_vertices)] ! wave-data is equal to distance from origin
-      call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
 
       call register_wave_nodes_with_precice(mdw_file_name)
       call precicef_initialize()
@@ -181,12 +165,12 @@ end subroutine couple_to_greeter_dummy
 
       result = get_swan_grid(mdw_file_name, swan_grid)
       if (result /= 0) then
-         write(*,'(a)') '[Wave] *** ERROR: Failed to get Swan grid for preCICE registration'
+         write (*, '(a)') '[Wave] *** ERROR: Failed to get Swan grid for preCICE registration'
          return
       end if
 
-      allocate(mesh_coordinates(2 * swan_grid%npts))
-      allocate(vertex_ids(swan_grid%npts))
+      allocate (mesh_coordinates(2 * swan_grid%npts))
+      allocate (vertex_ids(swan_grid%npts))
 
       ! Fill mesh_coordinates array with x,y pairs from the Swan grid
       ! The grid%x and grid%y arrays are indexed as (mmax, nmax)
@@ -200,7 +184,7 @@ end subroutine couple_to_greeter_dummy
       end do
 
       call precicef_set_vertices(mesh_name, swan_grid%npts, mesh_coordinates, vertex_ids, len(mesh_name))
-      write(*,'(a,i0,a)') '[Wave] Registered ', swan_grid%npts, ' vertices with preCICE'
+      write (*, '(a,i0,a)') '[Wave] Registered ', swan_grid%npts, ' vertices with preCICE'
    end subroutine register_wave_nodes_with_precice
 
    function get_swan_grid(mdw_file, swan_grid) result(retval)
@@ -208,80 +192,80 @@ end subroutine couple_to_greeter_dummy
       use swan_flow_grid_maps, only: grid
       implicit none(type, external)
 
-      character(*), intent(in) :: mdw_file     ! filename mdw file
-      type(grid), intent(out) :: swan_grid     ! Swan grid structure
-      integer :: retval                        ! return value: 0=success, 1=error
+      character(*), intent(in) :: mdw_file ! filename mdw file
+      type(grid), intent(out) :: swan_grid ! Swan grid structure
+      integer :: retval ! return value: 0=success, 1=error
 
-      integer :: lun                           ! file unit for mdw file
-      integer :: ios                           ! I/O status
-      character(256) :: line                   ! line read from file
-      character(256) :: grid_filename          ! grid filename from mdw
-      character(256) :: key                    ! key part of key=value
-      character(256) :: value                  ! value part of key=value
-      integer :: eq_pos                        ! position of '=' in line
-      logical :: in_domain                     ! flag: in [Domain] section
-      logical :: grid_found                    ! flag: grid filename found
+      integer :: lun ! file unit for mdw file
+      integer :: ios ! I/O status
+      character(256) :: line ! line read from file
+      character(256) :: grid_filename ! grid filename from mdw
+      character(256) :: key ! key part of key=value
+      character(256) :: value ! value part of key=value
+      integer :: eq_pos ! position of '=' in line
+      logical :: in_domain ! flag: in [Domain] section
+      logical :: grid_found ! flag: grid filename found
 
       retval = 0
       in_domain = .false.
       grid_found = .false.
       grid_filename = ' '
 
-      open(newunit=lun, file=mdw_file, status='old', action='read', iostat=ios)
+      open (newunit=lun, file=mdw_file, status='old', action='read', iostat=ios)
       if (ios /= 0) then
-         write(*,'(3a)') '[Wave] *** ERROR: Unable to open mdw file: ', trim(mdw_file)
+         write (*, '(3a)') '[Wave] *** ERROR: Unable to open mdw file: ', trim(mdw_file)
          retval = 1
          return
-      endif
+      end if
 
       do while (.true.)
-         read(lun, '(A)', iostat=ios) line
+         read (lun, '(A)', iostat=ios) line
          if (ios /= 0) exit
 
          line = adjustl(line)
          if (line(1:8) == '[Domain]') then
             in_domain = .true.
             cycle
-         endif
+         end if
 
          ! Check for start of new section (exits [Domain])
          if (line(1:1) == '[' .and. in_domain) then
             in_domain = .false.
-         endif
+         end if
 
          if (in_domain) then
             eq_pos = index(line, '=')
             if (eq_pos > 0) then
-               key = adjustl(line(1:eq_pos-1))
-               value = adjustl(line(eq_pos+1:))
+               key = adjustl(line(1:eq_pos - 1))
+               value = adjustl(line(eq_pos + 1:))
 
                if (trim(key) == 'Grid') then
                   grid_filename = trim(value)
                   grid_found = .true.
                   exit
-               endif
-            endif
-         endif
-      enddo
+               end if
+            end if
+         end if
+      end do
 
-      close(lun)
+      close (lun)
 
       if (.not. grid_found) then
-         write(*,'(a)') '[Wave] *** ERROR: Grid filename not found in [Domain] section of mdw file'
+         write (*, '(a)') '[Wave] *** ERROR: Grid filename not found in [Domain] section of mdw file'
          retval = 1
          return
-      endif
+      end if
 
-      write(*,'(3a)') '[Wave] Reading Swan grid from file: ', trim(grid_filename)
+      write (*, '(3a)') '[Wave] Reading Swan grid from file: ', trim(grid_filename)
       call read_grd(grid_filename, swan_grid%x, swan_grid%y, swan_grid%kcs, swan_grid%covered, &
-                   swan_grid%mmax, swan_grid%nmax, swan_grid%sferic, swan_grid%xymiss)
+                    swan_grid%mmax, swan_grid%nmax, swan_grid%sferic, swan_grid%xymiss)
 
       swan_grid%grid_name = grid_filename
       swan_grid%grid_file_type = 'FLOW'
       swan_grid%xy_loc = 'CORNER'
       swan_grid%npts = swan_grid%mmax * swan_grid%nmax
 
-      write(*,'(a,i0,a,i0,a)') '[Wave] Swan grid dimensions: mmax=', swan_grid%mmax, ', nmax=', swan_grid%nmax
+      write (*, '(a,i0,a,i0,a)') '[Wave] Swan grid dimensions: mmax=', swan_grid%mmax, ', nmax=', swan_grid%nmax
    end function get_swan_grid
 #endif
 !
