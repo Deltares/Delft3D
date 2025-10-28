@@ -1490,6 +1490,10 @@ contains
          !                      grid point.
          sectc(ksre,3)=network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
 
+         endif
+         
+         
+         !`bfricp` is not used anymore. We directly use `network` inside Sobek-RE.
          !bfricp(6,ngrid)   I  Bed friction parameters:
          !                     (1,i) = Parameter for positive flow direction
          !                             in main section (depending on friction
@@ -1524,13 +1528,7 @@ contains
          !                     (6,i) = Parameter for negative flow direction
          !                             in sub sec 2 (depending on friction
          !                             type) Same definition as bfricp (3,i).
-         bfricp(1, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(1)
-         bfricp(2, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(1)
-         bfricp(3, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(2)
-         bfricp(4, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(2)
-         bfricp(5, ksre) = network%crs%cross(idx_crs)%frictionvaluepos(3)
-         bfricp(6, ksre) = network%crs%cross(idx_crs)%frictionvalueneg(3)
-
+         
       end do !ksre
 
    end subroutine inifm1dimp_fbrp
