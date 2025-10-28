@@ -470,6 +470,7 @@ end function wave_init
 !
 ! ====================================================================================
 function wave_main_step(stepsize) result(retval)
+   use precice, only: precicef_start_profiling_section, precicef_stop_last_profiling_section
    implicit none
 !
 ! return value
@@ -490,7 +491,9 @@ function wave_main_step(stepsize) result(retval)
       !
       ! master node does all the work ...
       !
+      call precicef_start_profiling_section("wave_master_step", 16)
       retval = wave_master_step(stepsize)
+      call precicef_stop_last_profiling_section()
    else
       !
       ! nothing to do for slave nodes except for waiting and calling swan as needed
@@ -507,6 +510,7 @@ end function wave_main_step
 !
 ! ====================================================================================
 function wave_master_step(stepsize) result(retval)
+   use precice, only: precicef_start_profiling_section, precicef_stop_last_profiling_section
    implicit none
 !
 ! return value
@@ -532,7 +536,7 @@ function wave_master_step(stepsize) result(retval)
 !
    retval = 0
    !
-   !call precicef_start_profiling_section("wave_main")
+   !call precicef_start_profiling_section("wave_master_step", 16)
 
    if (wavedata%mode /= stand_alone) then
       !

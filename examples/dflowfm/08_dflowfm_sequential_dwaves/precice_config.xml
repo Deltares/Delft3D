@@ -39,7 +39,7 @@
 
   <coupling-scheme:serial-explicit>
     <time-window-size value="3600" method="fixed" />
-    <max-time value="90000" />
+    <max-time value="7200" />
     <participants first="wave" second="fm" />
     <exchange data="fm-data" mesh="wave-mesh" from="fm" to="wave" />
     <exchange data="wave-data" mesh="fm-mesh" from="wave" to="fm" />

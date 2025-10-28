@@ -39,6 +39,7 @@ subroutine run_swan (casl)
     use swan_input
     use wave_mpi, only: numranks, wave_mpi_bcast, wave_mpi_barrier, engine_comm_world, MPI_SUCCESS, SWAN_GO
     use system_utils, only: SCRIPT_EXTENSION
+    use precice, only: precicef_start_profiling_section, precicef_stop_last_profiling_section
     !
     implicit none
 !
@@ -62,7 +63,7 @@ subroutine run_swan (casl)
     !
     ! SWAN execution
     !
-    call precicef_start_profiling_section("run_swan")
+    call precicef_start_profiling_section("run_swan", 8)
     if (swan_run%exemode == SWAN_MODE_LIB) then
        !
        ! As built-in function.
