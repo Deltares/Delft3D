@@ -522,6 +522,11 @@ contains
       allocate (f1dimppar%nodnod(nnode, nbrnod + 1))
 
 !
+!network
+!
+      f1dimppar%network => network
+
+!
 !debug
 !
 

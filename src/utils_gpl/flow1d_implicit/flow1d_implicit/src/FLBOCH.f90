@@ -6,7 +6,9 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
 &prslot ,psltvr ,asubsc ,c      ,r      ,cs     ,&
 &rs     ,alfab  ,&
 &iter   ,theta2 ,omalfa ,omr    ,omw    ,&
-&alfabp ,c2rp   ,wfp    ,wf     ,juer   ,ker    )
+&alfabp ,c2rp   ,wfp    ,wf     ,juer   ,ker    ,&
+&fm1dimp                                         &
+&)
 
 !=======================================================================
 !            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
@@ -257,6 +259,10 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
 !
 !
 !***********************************************************************
+   use m_f1dimp, only: f1dimppar_type    
+   use m_network, only: getFrictionValue 
+   
+   type(f1dimppar_type), intent(in) :: fm1dimp
 !
 !     Declaration of Parameters:
 !
@@ -284,6 +290,7 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
 !
    logical lslot
    integer ibr, i1, i2, i
+   integer isec_fm
    double precision hi, qi
    real    ui, h0, hh1, dz,&
    &af0, o0, r0, c0,&
@@ -298,6 +305,15 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
    include '../include/sobcon.i'
    include '../include/errcod.i'
 !
+  associate(&
+      rgs => fm1dimp%network%rgs , &
+      spdata => fm1dimp%network%spdata ,&
+      crs => fm1dimp%network%crs ,&
+      grd_sre_cs => fm1dimp%grd_sre_cs &
+      )
+           
+    
+   
    do 200 ibr = 1, nbran
 !
 !        i1 = global grid point number at node n1
@@ -414,6 +430,11 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
 !
             h0  = secth0(i)
             hh1 = secth1(i)
+            
+!              Variables used in `getFrictionValue` (new `FLCHZT`)         
+            idx_crs = grd_sre_cs(i)   
+            isec_fm=int(asubsc(i))+1
+            dpt=hi-crs%cross(idx_crs)%bedlevel
 !
 !              * Situation *****************************
 !              * 1. main section                       *
@@ -442,11 +463,15 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                      c0 = sqrt (psltvr(2,i)/r0)
                   endif
                else
-                  call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
-                  &bfrict ,bfricp ,maxtab ,ntabm  ,&
-                  &ntab   ,table  ,d90    ,engpar ,&
-                  &0      ,hi     ,qi     ,ui     ,&
-                  &r0     ,c0     )
+                  !call FLCHZT(ibr    ,i      ,nbran  ,ngrid  ,&
+                  !&bfrict ,bfricp ,maxtab ,ntabm  ,&
+                  !&ntab   ,table  ,d90    ,engpar ,&
+                  !&0      ,hi     ,qi     ,ui     ,&
+                  !&r0     ,c0     )
+                
+                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(rmain), DBLE(dpt), crs%cross(idx_crs)%chainage)
+                
+                
                endif
 !
                alfab(i) = 1.0
@@ -771,4 +796,5 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
 !
 200 continue
 !
+    end associate
 end

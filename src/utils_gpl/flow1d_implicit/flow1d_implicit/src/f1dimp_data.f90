@@ -36,6 +36,8 @@ module m_f1dimp_data
    ! Contains variables and parameters related to flow 1d implicit module
    !
    use precision
+   use m_network, only: t_network
+   
    !use m_flowgeom, only: tnode !you cannot because <flow1d_implicit> project does not depend on <dflowfm_kernel>
    
    implicit none
@@ -339,7 +341,13 @@ module m_f1dimp_data
                                                                  !       (6,j) = Correction coefficient cw.
                                                                  !       (7,j) = Submergence limit Slim.
                                                                  !       (8,j) = Table pointer for drowned reduction
+
                                                                  !               curve f(h2/h1).
+      !*******
+      !network
+      !*******
+      type(t_network), pointer :: network
+      
       !*******
       !debug variables
       !*******

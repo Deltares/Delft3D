@@ -49,3 +49,8 @@ src/**/FortranCInterface.h
 /ci/DIMRset_delivery/venv/**
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
+
+# my local files
+/test/deltares_testbench/venv_test
+/test/deltares_testbench/*.bat
+*.bat
