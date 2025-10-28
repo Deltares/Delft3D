@@ -1352,10 +1352,22 @@ contains
 !
 !local
 !
-
-      integer :: kbr, ksre, k2, idx_fm, idx_crs, idx_h
+      
+      integer :: ksre, k2, idx_fm, idx_crs, idx_h
       integer :: last_friction_type !< to check that friction type is the same in all sections
-      integer, parameter :: CFRCHC = 1 !< Chezy constant. Defined in <sobcon.i>, but not accessible here.
+
+      
+      !Defined in <sobcon.i>, but not accessible here.
+      !
+      !cfrchc (1) : Chezy constant
+      !cfrchq (2) : Chezy function of discharge
+      !cfrchh (3) : Chezy function of water level
+      !cfrman (4) : Manning constant
+      !cfrskn (5) : Strickler 1 constant ( k n )
+      !cfrsks (6) : Strickler 2 constant ( k s )
+      !cfrnik (7) : Nikuradze constant
+      !cfreng (8) : Engelund predictor
+
 
 !----------------------------------------
 !BEGIN POINT
@@ -1376,43 +1388,8 @@ contains
 
       iresult = 0 !no error
 
-      do kbr = 1, nbran
-
-         !bfrict
-         do k2 = 1, network%rgs%count !< network%rgs%count = 3 - > main channel, floodplain 1, floodplain 2
-            !Check that the type of friction in FM is valid in SRE. 
-            select case (network%rgs%rough(k2)%frictiontype) 
-            case (R_CHEZY)
-               bfrict(k2, kbr) = CFRCHC
-            case default
-               write (msgbuf, '(a)') 'Only constant Chezy friction is supported at the moment.'
-               call err_flush()
-               iresult = 1
-            end select
-            
-            !Check that the same type of friction is applied to all subsections. 
-            if (k2>1) then
-                if (network%rgs%rough(k2)%frictiontype /= network%rgs%rough(k2-1)%frictiontype) then
-                   write (msgbuf, '(a)') 'The same type of friction must be applied to all subsections (i.e., main channel, floodplain 1, floodplain 2, ...).'
-                   call err_flush()
-                   iresult = 1
-                end if
-            end if 
-         end do
-!
-!bfrict(1,i)=cfrchc (1) : Chezy constant
-!bfrict(1,i)=cfrchq (2) : Chezy function of discharge
-!bfrict(1,i)=cfrchh (3) : Chezy function of water level
-!bfrict(1,i)=cfrman (4) : Manning constant
-!bfrict(1,i)=cfrskn (5) : Strickler 1 constant ( k n )
-!bfrict(1,i)=cfrsks (6) : Strickler 2 constant ( k s )
-!bfrict(1,i)=cfrnik (7) : Nikuradze constant
-!bfrict(1,i)=cfreng (8) : Engelund predicto
-
-      end do !kbr
-
       last_friction_type=network%rgs%rough(1)%frictiontype !initially the overall value. It has already been checked it is the same for all section. 
-      
+ 
       do ksre = 1, ngrid
 
          idx_fm = grd_sre_fm(ksre) !index of the global grid point in fm for the global gridpoint <k> in SRE
