@@ -1324,7 +1324,6 @@ contains
       use m_f1dimp
       use unstruc_channel_flow, only: network
       use messagehandling, only: msgbuf, err_flush
-      use m_Roughness, only: R_CHEZY
 
       implicit none
 
