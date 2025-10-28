@@ -1097,7 +1097,9 @@ subroutine SOFLOW(&
       &waoft ,grsize,engpar,scifri,&
       &pfa   ,juer  ,cpack ,rpack ,&
       &afwfqs,alfab ,&
-      &wtt   ,att   ,ker    )
+      &wtt   ,att   ,ker          ,&
+      &fm1dimp                     &
+      &)
    endif
 
 !     FM1DIMP2DO: remove debug

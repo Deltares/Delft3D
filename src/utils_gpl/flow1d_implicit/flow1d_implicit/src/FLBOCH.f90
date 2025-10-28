@@ -468,7 +468,7 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&r0     ,c0     )
                 
                   isec_fm=1 ! main section
-                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(r0), DBLE(dpt), crs%cross(idx_crs)%chainage)
+                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, hi, qi, DBLE(ui), DBLE(r0), DBLE(dpt), crs%cross(idx_crs)%chainage)
                endif
 !
                alfab(i) = 1.0
@@ -520,7 +520,7 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&r0     ,c0     )
                    
                   isec_fm=1 ! main section
-                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(r0), DBLE(dpt), crs%cross(idx_crs)%chainage)
+                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, hi, qi, DBLE(ui), DBLE(r0), DBLE(dpt), crs%cross(idx_crs)%chainage)
                endif
 !
 !                 Store R and C for main section. (sub section 0)
@@ -570,7 +570,7 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&r1     ,c1     )
                    
                   isec_fm=2 !sub section 1
-                  c1 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(r1), DBLE(dpt), crs%cross(idx_crs)%chainage)
+                  c1 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, hi, qi, DBLE(ui), DBLE(r1), DBLE(dpt), crs%cross(idx_crs)%chainage)
                endif
 !
 !                 Store R and C for sub section 1
@@ -684,7 +684,7 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&r1     ,c1     )
                   
                   isec_fm=2 !sub section 1
-                  c1 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, h(i), q(i), DBLE(ui), DBLE(r1), DBLE(dpt), crs%cross(idx_crs)%chainage)
+                  c1 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, hi, qi, DBLE(ui), DBLE(r1), DBLE(dpt), crs%cross(idx_crs)%chainage)
                endif
 !
 !                 Store R and C for sub section 1
