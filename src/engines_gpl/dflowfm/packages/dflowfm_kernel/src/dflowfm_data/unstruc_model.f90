@@ -855,7 +855,6 @@ contains
       if (len_trim(md_pillarfile) > 0) then
          japillar = 3
       end if
-      call prop_get(md_ptr, 'geometry', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, success)
       call prop_get(md_ptr, 'geometry', 'GulliesFile', md_gulliesfile, success)
       call prop_get(md_ptr, 'geometry', 'RoofsFile', md_roofsfile, success)
 
@@ -1311,6 +1310,8 @@ contains
          call mess(LEVEL_ERROR, 'Invalid flow solver '''//trim(md_flow_solver)//''' . Select between `generic1d2d3d` and `implicit1d`.')
       end select
 
+      call prop_get(md_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, success)
+      
       !implicit1d
       call prop_get(md_ptr, 'implicit1d', 'omega', f1dimppar%omega)
       call prop_get(md_ptr, 'implicit1d', 'psi', f1dimppar%psi)
@@ -2708,7 +2709,6 @@ contains
       call prop_set(prop_ptr, 'geometry', 'Cutcelllist', trim(md_Cutcelllist), 'File with names of cutcell polygons, e.g. cutcellpolygons.lst')
       call prop_set(prop_ptr, 'geometry', 'FixedWeirFile', trim(md_fixedweirfile), 'Polyline file *_fxw.pliz, containing fixed weirs with rows x, y, crest level, left ground level, right ground level')
       call prop_set(prop_ptr, 'geometry', 'PillarFile', trim(md_pillarfile), 'Polyline file *_pillar.pliz, containing four colums with x, y, diameter and Cd coefficient')
-      call prop_set(prop_ptr, 'geometry', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, 'Use far-field velocity for pillars and dikes (0: no (default), 1: yes)')
       call prop_set(prop_ptr, 'geometry', 'Gulliesfile', trim(md_gulliesfile), 'Polyline file *_gul.pliz, containing lowest bed level along talweg x, y, z level')
       call prop_set(prop_ptr, 'geometry', 'Roofsfile', trim(md_roofsfile), 'Polyline file *_rof.pliz, containing roofgutter heights x, y, z level')
       call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type')
@@ -3318,6 +3318,8 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Oceaneddyxoff', Oceaneddyxoff)
       end if
 
+      call prop_set(prop_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, 'Use far-field velocity for pillars and dikes (0: no (default), 1: yes)')
+      
       if (testdryflood /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Testdryingflooding', testdryflood, 'Test for drying flooding algoritm (0: D-Flow FM, 1: Delft3D-FLOW)')
       end if
