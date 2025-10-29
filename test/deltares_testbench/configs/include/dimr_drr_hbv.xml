@@ -1,0 +1,96 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e108_f06_c01-ref232-moezel" ref="drr_default">
+        <path version="2025-10-16T09:39:24.115000">e108_drr/f06_hbv/c01-ref232-moezel</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrrunoff.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Rainfall" toleranceAbsolute="0.0001" />
+                    <parameter name="Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_DrySnowC" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_LowerZoneC" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_FreeWaterC" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_BaseFlow" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_UpperZoneC" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_InterFlow" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_Temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="ActEvap" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_QuickFlow" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_SoilMoisture" toleranceAbsolute="0.0001" />
+                    <parameter name="PotEvap" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Boundaries_out" toleranceAbsolute="0.001" />
+                    <parameter name="Balance_error_RR_Rural" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_change_RRRunoff" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="rr/3blinks.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Link_flow" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f06_c02-reggehbv" ref="drr_default">
+        <path version="2025-10-16T09:55:09.069000">e108_drr/f06_hbv/c02-reggehbv</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrrunoff.nc" type="netcdf">
+                <parameters>
+                    <parameter name="HBV_DirectRunoff" toleranceAbsolute="0.0001" />
+                    <parameter name="PotEvap" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_Percolation" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_Infiltration" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_QuickFlow" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_InterFlow" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_Seepage" toleranceAbsolute="0.0001" />
+                    <parameter name="Rainfall" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_LowerZoneC" toleranceAbsolute="0.0001" />
+                    <parameter name="ActEvap" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_BaseFlow" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_SoilMoisture" toleranceAbsolute="0.0001" />
+                    <parameter name="Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_UpperZoneC" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/balansdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="DeltaStorage" toleranceAbsolute="0.001" />
+                    <parameter name="TotalInViaLinks" toleranceAbsolute="0.001" />
+                    <parameter name="TotalOutViaLinks" toleranceAbsolute="0.001" />
+                    <parameter name="TotalOutAtNode" toleranceAbsolute="0.001" />
+                    <parameter name="TotalInAtNode" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f06_c03-reggehbv-netcdfrainfall" ref="drr_default">
+        <path version="2025-10-16T10:02:50.784000">e108_drr/f06_hbv/c03-reggehbv-netcdfrainfall</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrrunoff.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_Snowmelt" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_InterFlow" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_Snowfall" toleranceAbsolute="0.0001" />
+                    <parameter name="PotEvap" toleranceAbsolute="0.0001" />
+                    <parameter name="ActEvap" toleranceAbsolute="0.0001" />
+                    <parameter name="Rainfall" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_Refreezing" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_Temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_UpperZoneC" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_LowerZoneC" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_Infiltration" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_SoilMoisture" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_Percolation" toleranceAbsolute="0.0001" />
+                    <parameter name="HBV_DrySnowC" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+</testCases>

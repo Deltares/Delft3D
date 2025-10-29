@@ -49,3 +49,7 @@ src/**/FortranCInterface.h
 /ci/DIMRset_delivery/venv/**
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
+/nieuweTestcase.txt
+/test/deltares_testbench/upload_new_testcase.bat
+/test/deltares_testbench/update_reference.bat
+/test/deltares_testbench/RUN_TESTBENCH.BAT

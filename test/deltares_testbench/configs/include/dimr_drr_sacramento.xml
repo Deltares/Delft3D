@@ -1,0 +1,145 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e108_f05_c01-hcp2" ref="drr_default">
+        <path version="2025-10-16T08:11:32.179000">e108_drr/f05_sacramento/c01-hcp2</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/sacrmnto.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Comp_Baseflow" toleranceAbsolute="0.0001" />
+                    <parameter name="LowZoneFreePriC" toleranceAbsolute="0.0001" />
+                    <parameter name="Total_Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="UppZoneFreeWatC" toleranceAbsolute="0.0001" />
+                    <parameter name="Tot_Percolation" toleranceAbsolute="0.0001" />
+                    <parameter name="Rout_Surf_Unp" toleranceAbsolute="0.0001" />
+                    <parameter name="Act_Evaporation" toleranceAbsolute="0.0001" />
+                    <parameter name="Pot_Evaporation" toleranceAbsolute="0.0001" />
+                    <parameter name="UppZoneTensionC" toleranceAbsolute="0.0001" />
+                    <parameter name="Rout_Interfl_Unp" toleranceAbsolute="0.0001" />
+                    <parameter name="Rout_DirectImp" toleranceAbsolute="0.0001" />
+                    <parameter name="Precipitation" toleranceAbsolute="0.0001" />
+                    <parameter name="LowZoneTensionC" toleranceAbsolute="0.0001" />
+                    <parameter name="TotalRoutedSurface_Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="LowZoneFreeSecC" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.001" />
+                    <parameter name="Balance_error_RR_Rural" toleranceAbsolute="0.001" />
+                    <parameter name="Boundaries_out" toleranceAbsolute="0.001" />
+                    <parameter name="Evap_Sacramento" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_Routing_Sacramento_LGSI" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_Sacramento" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f05_c02-taiwan-pinlin" ref="drr_default">
+        <path version="2025-10-16T08:42:17.737000">e108_drr/f05_sacramento/c02-taiwan-pinlin</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/sacrmnto.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Precipitation" toleranceAbsolute="0.0001" />
+                    <parameter name="Rout_Interfl_Unp" toleranceAbsolute="0.0001" />
+                    <parameter name="Total_Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="Comp_Baseflow" toleranceAbsolute="0.0001" />
+                    <parameter name="Rout_Surf_Unp" toleranceAbsolute="0.0001" />
+                    <parameter name="Rout_DirectImp" toleranceAbsolute="0.0001" />
+                    <parameter name="UnroutedRunoff_Imp_Area" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Evap_Sacramento" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_Routing_Sacramento_LGSI" toleranceAbsolute="0.001" />
+                    <parameter name="Boundaries_out" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_Sacramento" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+            <file name="rr/bndflodt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Flow" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/3blinks.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Link_flow" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f05_c03-softsup37729-dt5min" ref="drr_default">
+        <path version="2025-10-16T08:59:46.460000">e108_drr/f05_sacramento/c03-softsup37729-dt5min</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/sacrmnto.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Comp_Baseflow" toleranceAbsolute="0.0001" />
+                    <parameter name="Total_Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="TotalRoutedSurface_Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="Precipitation" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Balance_error_RR_Rural" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.001" />
+                    <parameter name="Boundaries_out" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_Sacramento" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f05_c04-softsup37729-dt30s" ref="drr_default">
+        <path version="2025-10-16T09:07:42.546000">e108_drr/f05_sacramento/c04-softsup37729-dt30s</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/sacrmnto.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Comp_Baseflow_avg" toleranceAbsolute="0.0001" />
+                    <parameter name="Precipitation_avg" toleranceAbsolute="0.0001" />
+                    <parameter name="TotalRoutedSurface_Runoff_avg" toleranceAbsolute="0.0001" />
+                    <parameter name="Total_Runoff_avg" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Boundaries_out" toleranceAbsolute="0.001" />
+                    <parameter name="Balance_error_RR_Rural" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_Sacramento" toleranceAbsolute="0.001" />
+                    <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f05_c05-taiwan-UNIH" ref="drr_default">
+        <path version="2025-10-16T09:12:37.565000">e108_drr/f05_sacramento/c05-taiwan-UNIH</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/sacrmnto.nc" type="netcdf">
+                <parameters>
+                    <parameter name="LowZoneFreePriC" toleranceAbsolute="0.0001" />
+                    <parameter name="UppZoneFreeWatC" toleranceAbsolute="0.0001" />
+                    <parameter name="Total_Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="LowZoneTensionC" toleranceAbsolute="0.0001" />
+                    <parameter name="UppZoneTensionC" toleranceAbsolute="0.0001" />
+                    <parameter name="Unrouted_Surf" toleranceAbsolute="0.0001" />
+                    <parameter name="Rout_Surf_Unp" toleranceAbsolute="0.0001" />
+                    <parameter name="LowZoneFreeSecC" toleranceAbsolute="0.0001" />
+                    <parameter name="Precipitation" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_Sacramento" toleranceAbsolute="0.001" />
+                    <parameter name="Balance_error_RR_Rural" toleranceAbsolute="0.001" />
+                    <parameter name="Boundaries_out" toleranceAbsolute="0.001" />
+                    <parameter name="Storage_Routing_Sacramento_LGSI" toleranceAbsolute="0.001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+</testCases>

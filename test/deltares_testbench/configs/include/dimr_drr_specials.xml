@@ -1,0 +1,116 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e108_f09_c01-MuskingumRoutingDonau" ref="drr_default">
+        <path version="2025-10-17T12:34:06.776000">e108_drr/f09_specials/c01-MuskingumRoutingDonau</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="RR/3blinks.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Link_inflow" toleranceAbsolute="0.0001" />
+                    <parameter name="Link_flow" toleranceAbsolute="0.0001" />
+                    <parameter name="Link_outflow" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f09_c02-Ref003Paved" ref="drr_default">
+        <path version="2025-10-17T12:37:19.671000">e108_drr/f09_specials/c02-Ref003Paved</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/rrbalans.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Rainfall_ext_irrigation_supply" toleranceAbsolute="0.0001" />
+                    <parameter name="Storage_Paved" toleranceAbsolute="0.0001" />
+                    <parameter name="Evap_Paved" toleranceAbsolute="0.0001" />
+                    <parameter name="Boundaries_out" toleranceAbsolute="0.0001" />
+                    <parameter name="DWF_Paved" toleranceAbsolute="0.0001" />
+                    <parameter name="Balance_error_RR_Rural" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/pvstordt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Dynamic_Storage" toleranceAbsolute="0.0001" />
+                    <parameter name="Spill_WWS" toleranceAbsolute="0.0001" />
+                    <parameter name="Spill_CSS_SWS" toleranceAbsolute="0.0001" />
+                    <parameter name="Pump_WWS" toleranceAbsolute="0.0001" />
+                    <parameter name="Storage_CSS_SWS" toleranceAbsolute="0.0001" />
+                    <parameter name="Storage_WWS" toleranceAbsolute="0.0001" />
+                    <parameter name="Pump_CSS_SWS" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f09_c03-3RRBoundariesOffLine" ref="drr_default">
+        <path version="2025-10-17T12:44:50.717000">e108_drr/f09_specials/c03-3RRBoundariesOffLine</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/bndflodt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Boundary_Level" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f09_c04-RRBoundariesPartOfflinePartOnline" ref="drr_default">
+        <path version="2025-10-17T12:48:12.157000">e108_drr/f09_specials/c04-RRBoundariesPartOfflinePartOnline</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/bndflodt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Boundary_Level" toleranceAbsolute="0.0001" />
+                    <parameter name="Flow" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="dflowfm/output/FlowFM_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="lateral_realized_discharge_average" toleranceAbsolute="0.0001" />
+                    <parameter name="lateral_prescribed_discharge_instantaneous" toleranceAbsolute="0.0001" />
+                    <parameter name="lateral_realized_discharge_instantaneous" toleranceAbsolute="0.0001" />
+                    <parameter name="lateral_prescribed_discharge_average" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f09_c05-RRBoundariesPartOfflinePartOnlinev2" ref="drr_default">
+        <path version="2025-10-17T12:53:29.526000">e108_drr/f09_specials/c05-RRBoundariesPartOfflinePartOnlinev2</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/bndflodt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Boundary_Level" toleranceAbsolute="0.0001" />
+                    <parameter name="Flow" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="dflowfm/output/FlowFM_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="lateral_realized_discharge_average" toleranceAbsolute="0.0001" />
+                    <parameter name="lateral_prescribed_discharge_average" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e108_f09_c06-ImprovedOnlineCouplingWithUNPgwlInitAtOWlvl" ref="drr_default">
+        <path version="2025-10-17T12:57:47.340000">e108_drr/f09_specials/c06-ImprovedOnlineCouplingWithUNPgwlInitAtOWlvl</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="rr/upflowdt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Groundw_Level" toleranceAbsolute="0.0001" />
+                    <parameter name="Surf_Runoff" toleranceAbsolute="0.0001" />
+                    <parameter name="Groundw_outfl" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="rr/bndflodt.nc" type="netcdf">
+                <parameters>
+                    <parameter name="Boundary_Level" toleranceAbsolute="0.0001" />
+                    <parameter name="Flow" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="dflowfm/output/FlowFM_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="lateral_prescribed_discharge_average" toleranceAbsolute="0.0001" />
+                    <parameter name="lateral_prescribed_discharge_instantaneous" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+</testCases>

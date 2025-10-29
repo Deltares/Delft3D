@@ -4,7 +4,7 @@
         xmlns:xi="http://www.w3.org/2001/XInclude"
         xsi:schemaLocation="http://schemas.deltares.nl/deltaresTestbench_v3 http://content.oss.deltares.nl/schemas/deltaresTestbench_v3-2.00.xsd">
     <!--
-    Basic Linux configuration file
+    Basic Windows configuration file: For "wes" (Wind Enhanced Scheme)
     -->
     <config>
         <localPaths>
@@ -13,17 +13,17 @@
             <referenceDir>./data/reference_results</referenceDir>
         </localPaths>
         <locations>
-         <location name="reference_results">
+            <location name="reference_engines">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references</root>
             </location>
-         <location name="cases">
+            <location name="reference_results">
+                <credential ref="commandline"/>
+                <root>{server_base_url}/references</root>
+            </location>
+            <location name="cases">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/cases</root>
-            </location>
-         <location name="reference_engines">
-                <credential ref="commandline"/>
-                <root>{server_base_url}/references/bin</root>
             </location>
             <location name="engines_to_compare">
                 <credential ref="commandline"/>
@@ -44,25 +44,20 @@
             mpi
         -->
         <program name="command_prompt">
-            <path>/bin/bash</path>
+            <path>cmd</path>
             <arguments>
-                <argument>-c</argument>
+                <argument>/C</argument>
             </arguments>
         </program>
-        <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+        <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+            <path>bin/run_dimr.bat</path>
+            <shell ref="command_prompt"/>
             <location ref="reference_engines" type="reference">
-                <from>lnx64</from>
+                <from>win64</from>
             </location>
-         <location ref="local" type="check">
-                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+            <location ref="engines_to_compare" type="check">
+                <from>teamcity_artifacts/x64</from>
             </location>
-            <path>bin/dimr</path>
-            <environments>
-                <!-- <environment name="D3D_HOME" type="path">[programpath(dimr)]/../..</environment> -->
-                <!-- <environment name="ARCH" type="raw">lnx64</environment> -->
-                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <!-- <environment name="LD_PRELOAD" type="path">[programpath(dimr)]/../lib/libmkl_core.so</environment> -->
-            </environments>
         </program>
     </programs>
     <!--
@@ -78,16 +73,17 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
-                <from>win64</from>              <!-- adjusted to win64 ipv lnx64 -->
+                <from>win64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+            <maxRunTime>60.0</maxRunTime>
+            <!-- seconds -->
         </testCase>
     </defaultTestCases>
     <!--
     testCases
     -->
-    <xi:include href="../include/dimr_drr_unpaved.xml"/>
+    <xi:include href="../include/dimr_drr_specials.xml"/>
 </deltaresTestbench_v3>

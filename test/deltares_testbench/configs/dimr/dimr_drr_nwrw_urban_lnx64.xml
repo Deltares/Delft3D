@@ -13,15 +13,15 @@
             <referenceDir>./data/reference_results</referenceDir>
         </localPaths>
         <locations>
-         <location name="reference_results">
+			<location name="reference_results">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references</root>
             </location>
-         <location name="cases">
+			<location name="cases">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/cases</root>
             </location>
-         <location name="reference_engines">
+			<location name="reference_engines">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references/bin</root>
             </location>
@@ -53,7 +53,7 @@
             <location ref="reference_engines" type="reference">
                 <from>lnx64</from>
             </location>
-         <location ref="local" type="check">
+			<location ref="local" type="check">
                 <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
             </location>
             <path>bin/dimr</path>
@@ -78,7 +78,7 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
-                <from>win64</from>              <!-- adjusted to win64 ipv lnx64 -->
+                <from>win64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
@@ -89,5 +89,5 @@
     <!--
     testCases
     -->
-    <xi:include href="../include/dimr_drr_unpaved.xml"/>
+    <xi:include href="../include/dimr_drr_nwrw_urban.xml"/>
 </deltaresTestbench_v3>
