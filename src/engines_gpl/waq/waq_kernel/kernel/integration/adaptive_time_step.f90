@@ -634,8 +634,9 @@ contains
 
         ! Big loop over the substeps
         do i_substep = 1, count_substeps
+            ! Interpolation factor of this step
             fact = real(i_substep) / real(count_substeps, kind = dp)
-                                                                ! Interpolation factor of this step
+
                                                                 ! ||i_substep ||  boxes to integrate        ||    modulo logic ||
                                                                 !  last box to integrate for this sub step
                                                                 ! | 1         | fbox                         |                 |
@@ -657,12 +658,13 @@ contains
             i_cell_begin = count_cells_for_box(count_boxes + 2) + 1   !  loop limits for cells in this box
             i_cell_end =   count_cells_for_box(count_boxes + 1)
 
-            !  PART2a1: sum the mass and volume vertically in the first layer and
-            !  make the column averaged concentrations
+            !  PART2a1: sum the mass and volume vertically
+            !  to calculate the column averaged concentrations
+            !  assigning those values to the upper-most cell in each column
             do i = i_cell_begin, i_cell_end
                 cell_i = sorted_cells(i)
                 j = nvert(2, cell_i)                                    ! column number if cell_i == head of column
-                if (j <= 0) cycle                                       ! negative or zero => not head of column
+                if (j <= 0) cycle                                       ! negative or zero if not head of column
                 i_top_curr_col = nvert(1, j)                            ! pointer to first cell of this column
                 if (j < num_cells) then
                     i_top_next_col = nvert(1, j + 1)                    ! pointer to first cell of next column
@@ -702,7 +704,7 @@ contains
                 iter = iter + 1
                 do i = i_flow_begin, i_flow_end
                     iq = sorted_fluxes(i)
-                    if (iq < 0) cycle                                 ! this flux has been resolved already
+                    if (iq < 0) cycle                ! this flux has been resolved already (it has been previously marked with a negative number)
                     if (flow(iq) == 0.0) cycle
                     q = flow(iq) * dt(first_box_smallest_dt)
                     ifrom = ipoint(1, iq)
@@ -713,17 +715,17 @@ contains
                     end if
                     if (ifrom < 0) then  ! B.C. at cell from
                         if (q > 0.0d0) then
-                            ito = ivert(nvert(1, abs(nvert(2, ito))))   ! cell-nr at offset of head of collumn in ivert
+                            ito = ivert(nvert(1, abs(nvert(2, ito))))   ! idx of cell head of collumn
                             volint(ito) = volint(ito) + q
                             do substance_i = 1, num_substances_transported
-                                dq = q * bound(substance_i, -ifrom) !! ?? does the array boud contain the bc with positive indices for the corresponding negative ones in cell indexing????
+                                dq = q * bound(substance_i, -ifrom) !! ?? does the array "bound" contain the bc with positive indices for the corresponding negative ones in cell indexing????
                                 rhs(substance_i, ito) = rhs(substance_i, ito) + dq
                                 conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                                 if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) + dq
                                 if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
                             end do
-                            sorted_fluxes(i) = -sorted_fluxes(i)           ! this flux is resolved now
-                            changed = changed + 1                          ! nr. of handled fluxes
+                            sorted_fluxes(i) = -sorted_fluxes(i)           ! mark this flux as resolved
+                            changed = changed + 1                          ! count fluxes taken care of
                         end if
                         cycle
                     end if
@@ -743,9 +745,15 @@ contains
                         end if
                         cycle
                     end if
-                    if (q > 0) then      ! No B.C., Internal volumes
-                        if (idx_box_cell(ito) == count_boxes + 1) then                  ! cell 'to' should be filling up (wetting) if q > 0
-                            if (idx_box_cell(ifrom) == count_boxes + 1) then            ! cell 'from' is also wetting in this time step
+
+                    ! No B.C. => Internal volumes
+
+                    ! if q is going in direction 'from' --> 'to'
+                    if (q > 0) then
+                        ! if destination cell 'to' is wetting (if q > 0)
+                        if (idx_box_cell(ito) == count_boxes + 1) then
+                            ! if origin cell 'from' is also wetting in this time step
+                            if (idx_box_cell(ifrom) == count_boxes + 1) then
                                 ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))   ! idx of upper most cell in column of cell from
                                 ito =   ivert(nvert(1, abs(nvert(2, ito))))     ! idx of upper most cell in column of cell to
                                 if (volint(ifrom) >= q) then           !  it should then have enough volume
@@ -759,12 +767,13 @@ contains
                                         conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                                         if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
                                     end do
-                                    sorted_fluxes(i) = -sorted_fluxes(i)
-                                    changed = changed + 1
+                                    sorted_fluxes(i) = -sorted_fluxes(i)  ! mark this flux as dealt with
+                                    changed = changed + 1                 ! add one to the number of fluxes dealt with
                                 else
-                                    remained = remained + 1                  !  flux not resolved yet by lack of volume
+                                    remained = remained + 1               ! add one to the number of fluxes not dealt with because of no water
                                 end if
-                            else                                             !       'from' is not 'wetting' so it has enough volume
+                            ! else origin cell 'from' is not 'wetting', so it has enough volume
+                            else
                                 ito = ivert(nvert(1, abs(nvert(2, ito))))
                                 volint(ifrom) = volint(ifrom) - q
                                 volint(ito) = volint(ito) + q
@@ -776,15 +785,19 @@ contains
                                     conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                                     if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
                                 end do
-                                sorted_fluxes(i) = -sorted_fluxes(i)
-                                changed = changed + 1
+                                sorted_fluxes(i) = -sorted_fluxes(i)  ! mark this flux as dealt with
+                                changed = changed + 1                 ! add one to the number of fluxes dealt with
                             end if
                         end if
+                    ! else q is going in direction 'to' --> 'from' (or q==0)
                     else                                              ! same procedure but now mirrorred for q < 0
+                        ! if destination cell ('from') is wetting
                         if (idx_box_cell(ifrom) == count_boxes + 1) then
+                            ! if origin cell ('to') is also wetting
                             if (idx_box_cell(ito) == count_boxes + 1) then
-                                ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
-                                ito = ivert(nvert(1, abs(nvert(2, ito))))
+                                ifrom = ivert(nvert(1, abs(nvert(2, ifrom)))) ! upper-most cell in 'from' cell column
+                                ito = ivert(nvert(1, abs(nvert(2, ito))))     ! upper-most cell in 'to' cell column
+                                ! if origin cell ('to') won't go dry
                                 if (volint(ito) > -q) then
                                     volint(ifrom) = volint(ifrom) - q
                                     volint(ito) = volint(ito) + q
@@ -796,11 +809,13 @@ contains
                                         if (volint(ito) > 1.0d-25) conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                                         if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
                                     end do
-                                    sorted_fluxes(i) = -sorted_fluxes(i)
-                                    changed = changed + 1
+                                    sorted_fluxes(i) = -sorted_fluxes(i) ! mark this flux as dealt with
+                                    changed = changed + 1                ! add one to the number of fluxes dealt with
+                                ! else origin cell ('to') will go dry
                                 else
-                                    remained = remained + 1
+                                    remained = remained + 1              ! add one to the number of fluxes not dealt with because of no water
                                 end if
+                            ! else origin cell ('to') is not wetting
                             else
                                 ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
                                 volint(ifrom) = volint(ifrom) - q
@@ -813,8 +828,8 @@ contains
                                     if (volint(ito) > 1.0d-25) conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                                     if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
                                 end do
-                                sorted_fluxes(i) = -sorted_fluxes(i)
-                                changed = changed + 1
+                                sorted_fluxes(i) = -sorted_fluxes(i) ! mark this flux as dealt with
+                                changed = changed + 1                ! add one to the number of fluxes dealt with
                             end if
                         end if
                     end if
@@ -845,7 +860,8 @@ contains
                 if (fluxes) then
                     if (iqdmp(iq) > 0) ipb = iqdmp(iq)
                 end if
-                if (ifrom < 0) then                                  ! The 'from' element was a boundary.
+                ! if 'from' cell is a B.C.
+                if (ifrom < 0) then
                     if (q < 0.0d0) then
                         ito = ivert(nvert(1, abs(nvert(2, ito))))
                         volint(ito) = volint(ito) + q
@@ -859,7 +875,8 @@ contains
                     end if
                     cycle
                 end if
-                if (ito < 0) then                                  ! The 'to'   element was a boundary.
+                ! if 'to' cell is a boundary
+                if (ito < 0) then
                     if (q > 0.0d0) then
                         ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))
                         volint(ifrom) = volint(ifrom) - q
@@ -873,7 +890,11 @@ contains
                     end if
                     cycle
                 end if
-                if (q > 0) then                                      ! The normal case
+
+                ! inner cells, no B.C.
+
+                ! if q is going in direction 'from' --> 'to'
+                if (q > 0) then
                     ifrom = ivert(nvert(1, abs(nvert(2, ifrom))))         !    'from' should be wetting if q > 0
                     volint(ifrom) = volint(ifrom) - q
                     volint(ito) = volint(ito) + q
@@ -885,6 +906,7 @@ contains
                         conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                         if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
                     end do
+                ! else q is going in direction 'to' --> 'from'
                 else                                                      ! The mirrorred case
                     ito = ivert(nvert(1, abs(nvert(2, ito))))         !    'to' should be wetting if q < 0
                     volint(ifrom) = volint(ifrom) - q
@@ -938,7 +960,8 @@ contains
             do i = i_cell_begin, i_cell_end
                 cell_i = sorted_cells(i)
                 j = nvert(2, cell_i)
-                if (j > 0) then                                      ! this is head of column
+                ! if cell is top of column
+                if (j > 0) then
                     i_top_curr_col = nvert(1, j)
                     if (j < num_cells) then
                         i_top_next_col = nvert(1, j + 1)
@@ -946,6 +969,7 @@ contains
                         i_top_next_col = num_cells + 1
                     end if
                     vol = 0.0d0                                            ! determine new integrated volume in the flow-file
+                    ! loop along all cells in current column
                     do j = i_top_curr_col, i_top_next_col - 1
                         iseg2 = ivert(j)
                         vol = vol + fact * volnew(iseg2) + (1.0d0 - fact) * volold(iseg2)
@@ -953,8 +977,9 @@ contains
                             rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, iseg2) * dt(first_box_smallest_dt)
                         end do
                     end do
+                    ! calculate concentrations based on new volumes
                     if (vol > 1.0d-25) then
-                        do substance_i = 1, num_substances_transported                                  !    the new concentrations
+                        do substance_i = 1, num_substances_transported
                             conc(substance_i, cell_i) = rhs(substance_i, cell_i) / vol
                         end do
                     end if
@@ -987,13 +1012,16 @@ contains
                     ifrom = ipoint(1, iq)
                     ito = ipoint(2, iq)
                     if (ifrom == 0 .or. ito == 0) cycle
-                    if (ifrom < 0) then                               ! The 'from' element was a boundary.
+                    ! 'from' cell is a boundary
+                    if (ifrom < 0) then
                         volint(ito) = volint(ito) + q
+                        ! if flow is in direction 'from' --> 'to'
                         if (q > 0.0d0) then
                             do substance_i = 1, num_substances_transported
                                 dq = q * bound(substance_i, -ifrom)
                                 rhs(substance_i, ito) = rhs(substance_i, ito) + dq
                             end do
+                        ! else flow is in direction 'to' --> 'from'
                         else
                             do substance_i = 1, num_substances_transported
                                 dq = q * conc(substance_i, ito)
@@ -1002,13 +1030,16 @@ contains
                         end if
                         cycle
                     end if
-                    if (ito < 0) then                               ! The 'to' element was a boundary.
+                    ! 'to' cell is a boundary
+                    if (ito < 0) then
                         volint(ifrom) = volint(ifrom) - q
+                        ! if flow is in direction 'from' --> 'to'
                         if (q > 0.0d0) then
                             do substance_i = 1, num_substances_transported
                                 dq = q * conc(substance_i, ifrom)
                                 rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
                             end do
+                        ! else flow is in direction 'to' --> 'from'
                         else
                             do substance_i = 1, num_substances_transported
                                 dq = q * bound(substance_i, -ito)
@@ -1017,14 +1048,18 @@ contains
                         end if
                         cycle
                     end if
-                    volint(ifrom) = volint(ifrom) - q                      ! The regular case
+
+                    ! Inner cells, no boundaries
+                    volint(ifrom) = volint(ifrom) - q
                     volint(ito) = volint(ito) + q
+                    ! if flow is in direction 'from' --> 'to'
                     if (q > 0.0d0) then
                         do substance_i = 1, num_substances_transported
                             dq = q * conc(substance_i, ifrom)
                             rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
                             rhs(substance_i, ito) = rhs(substance_i, ito) + dq
                         end do
+                    ! else flow is in direction 'to' --> 'from'
                     else
                         do substance_i = 1, num_substances_transported
                             dq = q * conc(substance_i, ito)
@@ -1053,7 +1088,6 @@ contains
             if (timon) call timstop(ithand3)
 
             ! PART2c: apply the horizontal flux correction for all cells in the boxes of this time step
-
             if (timon) call timstrt("flux correction", ithand4)
             do ibox = first_box_smallest_dt, nbox, -1
                 i_flow_begin = count_flows_for_box(ibox + 1) + 1
