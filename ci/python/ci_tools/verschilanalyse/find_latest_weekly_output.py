@@ -38,10 +38,9 @@ class VerschilAnalyseReporter:
             suffix = obj.object_name.removeprefix(self._prefix)
             match suffix.split("/", maxsplit=2):
                 case [tag, "logs", _]:
-                    if "weekly" in tag:
-                        logs[tag] = (obj.object_name, obj.last_modified)
+                    logs[tag] = (obj.object_name, obj.last_modified)
                 case [tag, "output", postfix]:
-                    if "weekly" in tag and postfix.endswith(".zip"):
+                    if postfix.endswith(".zip"):
                         models[tag].append(postfix.removesuffix(".zip"))
 
         return [
