@@ -9,14 +9,20 @@
         {
             "type": "volume",
             "source": "delft3d-history",
-            "target": "/home/dev/.history",
+            "target": "/home/dev/.history"
         },
         // Volume for the `~/.aws/` directory. You can store your MinIO credentials here.
+        //{
+        //    "type": "volume",
+        //    "source": "delft3d-aws",
+        //    "target": "/home/dev/.aws",
+        //},
+        // Volume for ESiWACE
         {
-            "type": "volume",
-            "source": "delft3d-aws",
-            "target": "/home/dev/.aws",
-        },
+            "type": "bind",
+            "source": "${localEnv:HOME}/ESiWACE3",
+            "target": "/workspaces/Delft3D/ESiWACE3"
+        }
     ],
     "customizations": {
         "vscode": {
@@ -31,7 +37,7 @@
                 "ms-python.mypy-type-checker",
                 "charliermarsh.ruff",
                 "tamasfe.even-better-toml",
-                "ms-vscode.hexeditor",
+                "ms-vscode.hexeditor"
             ]
         }
     }

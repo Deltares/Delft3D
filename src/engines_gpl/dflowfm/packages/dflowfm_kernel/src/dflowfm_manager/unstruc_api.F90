@@ -56,8 +56,10 @@ contains
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_wave_coupling()
-      use precice, only: precicef_create, precicef_get_mesh_dimensions, precicef_set_vertices, precicef_initialize, precicef_write_data, precicef_advance
-      use m_partitioninfo, only: numranks, my_rank
+      use precice, only: precicef_create_with_communicator, precicef_get_mesh_dimensions, precicef_set_vertices, &
+                  precicef_initialize, precicef_write_data, precicef_advance, precicef_get_max_time_step_size
+      use m_partitioninfo, only: numranks, my_rank,  DFM_COMM_DFMWORLD
+      use m_flowtimes, only: dt_user
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none (type, external)
 
@@ -69,10 +71,17 @@ contains
       real(kind=c_double), dimension(number_of_vertices * 2) :: mesh_coordinates
       integer(kind=c_int), dimension(number_of_vertices) :: vertex_ids
       real(kind=c_double), dimension(number_of_vertices) :: initial_data
+      real(kind=c_double) :: max_time_step
+      real(kind=c_double) :: tolerance = 1.0e-12_c_double
+      real(kind=c_double) :: remainder
 
       integer(kind=c_int) :: mesh_dimensions
 
-      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
+      ! First create preCICE to be able to query max time step
+      call precicef_create_with_communicator(precice_component_name, precice_config_name, my_rank, numranks, DFM_COMM_DFMWORLD, len(precice_component_name), len(precice_config_name))
+
+      print *, '[FM] max_time_step (', max_time_step, ') at initialization is compatible with dt_user (', dt_user, ')'
+      
       call precicef_get_mesh_dimensions(mesh_name, mesh_dimensions, len(mesh_name))
       print *, '[FM] Defining , ', mesh_name, ' with dimension ', mesh_dimensions
 
@@ -83,8 +92,34 @@ contains
       call precicef_write_data(mesh_name, data_name, number_of_vertices, vertex_ids, initial_data, len(mesh_name), len(data_name))
 
       call precicef_initialize()
+            call precicef_get_max_time_step_size(max_time_step)
+      
+      ! Check if max_time_step is a multiple of dt_user
+      remainder = mod(real(max_time_step, kind=c_double), real(dt_user, kind=c_double))
+      if (abs(remainder) > tolerance .and. abs(remainder - real(dt_user, kind=c_double)) > tolerance) then
+         print *, '[FM] ERROR: max_time_step (', max_time_step, ') is not a multiple of dt_user (', dt_user, ')'
+         print *, '[FM] Remainder: ', remainder
+         return
+      end if   
 
    end subroutine initialize_wave_coupling
+
+   function is_wave_coupling_ongoing() result(is_ongoing)
+      use precice, only: precicef_is_coupling_ongoing
+      use, intrinsic :: iso_c_binding, only: c_int
+      integer(kind=c_int) :: is_ongoing
+
+      call precicef_is_coupling_ongoing(is_ongoing)
+   end function is_wave_coupling_ongoing
+
+   subroutine advance_time_window(dt_user)
+      use precice, only: precicef_advance      
+      use, intrinsic :: iso_c_binding, only:  c_double
+      real(kind=c_double), intent(in) :: dt_user
+      if (is_wave_coupling_ongoing()) then
+         call precicef_advance(real(dt_user, kind=c_double))
+      end if
+   end subroutine advance_time_window
 
    subroutine finalize_wave_coupling()
       use precice, only: precicef_finalize
@@ -391,10 +426,6 @@ contains
       use m_drawthis
       use m_draw_nu
       use m_flowtimes, only: dt_user
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-      use precice, only: precicef_advance
-      use, intrinsic :: iso_c_binding, only: c_double
-#endif
       implicit none (type, external)
 
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
@@ -414,7 +445,7 @@ contains
       call flow_usertimestep(key, iresult) ! one user_step consists of several flow computational time steps
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-      call precicef_advance(real(dt_user, kind=c_double))
+      call advance_time_window(dt_user)
 #endif
       if (iresult /= DFM_NOERR) then
          jastop = 1
