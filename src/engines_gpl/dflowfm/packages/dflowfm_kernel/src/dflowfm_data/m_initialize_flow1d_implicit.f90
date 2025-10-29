@@ -93,6 +93,7 @@ contains
       use m_sediment, only: stmpar, jased, stm_included
       use m_fm_erosed, only: link1sign, link1sign2
       use m_oned_functions, only: gridpoint2cross, t_gridp2cs
+      use m_alloc, only: realloc
 
       implicit none
 
@@ -234,131 +235,51 @@ contains
       ntabm = ntabm + table_length_stru * 2
 
 !allocate
-      if (allocated(f1dimppar%grd_sre_fm)) then
-         deallocate (f1dimppar%grd_sre_fm)
-      end if
-      allocate (f1dimppar%grd_sre_fm(ngrid))
-
-      if (allocated(f1dimppar%grd_fm_sre)) then
-         deallocate (f1dimppar%grd_fm_sre)
-      end if
-      allocate (f1dimppar%grd_fm_sre(ndx_max)) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
-      f1dimppar%grd_fm_sre = 0
-
-      if (allocated(f1dimppar%grd_fm_sre2)) then
-         deallocate (f1dimppar%grd_fm_sre2)
-      end if
-      allocate (f1dimppar%grd_fm_sre2(ndx_max)) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
-      f1dimppar%grd_fm_sre2 = 0
-
-      if (allocated(f1dimppar%grd_fmL_sre)) then
-         deallocate (f1dimppar%grd_fmL_sre)
-      end if
-      allocate (f1dimppar%grd_fmL_sre(lnx1D, 2))
-
-      if (allocated(f1dimppar%branch)) then
-         deallocate (f1dimppar%branch)
-      end if
-      allocate (f1dimppar%branch(4, nbran))
-
-      if (allocated(f1dimppar%x)) then
-         deallocate (f1dimppar%x)
-      end if
-      allocate (f1dimppar%x(ngrid))
-
-      if (allocated(f1dimppar%grid)) then
-         deallocate (f1dimppar%grid)
-      end if
-      allocate (f1dimppar%grid(ngrid))
-
-      if (allocated(f1dimppar%grd_sre_cs)) then
-         deallocate (f1dimppar%grd_sre_cs)
-      end if
-      allocate (f1dimppar%grd_sre_cs(ngrid))
-
-      if (allocated(f1dimppar%hpack)) then
-         deallocate (f1dimppar%hpack)
-      end if
-      allocate (f1dimppar%hpack(ngrid, 3))
-
-      if (allocated(f1dimppar%qpack)) then
-         deallocate (f1dimppar%qpack)
-      end if
-      allocate (f1dimppar%qpack(ngrid, 3))
-
-      if (allocated(f1dimppar%grd_fmLb_sre)) then
-         deallocate (f1dimppar%grd_fmLb_sre)
-      end if
-      allocate (f1dimppar%grd_fmLb_sre(lnx1Db - lnxi, 2))
-
-      if (allocated(f1dimppar%waoft)) then
-         deallocate (f1dimppar%waoft)
-      end if
-      allocate (f1dimppar%waoft(ngrid, 18))
-
-      if (allocated(f1dimppar%bfrict)) then
-         deallocate (f1dimppar%bfrict)
-      end if
-      allocate (f1dimppar%bfrict(3, nbran))
-
-      if (allocated(f1dimppar%sectc)) then
-         deallocate (f1dimppar%sectc)
-      end if
-      allocate (f1dimppar%sectc(ngrid, 3))
-
-      if (allocated(f1dimppar%sectv)) then
-         deallocate (f1dimppar%sectv)
-      end if
-      allocate (f1dimppar%sectv(ngrid, 8))
-      
-      if (allocated(nd_mor)) then
+      call realloc(f1dimppar%grd_sre_fm, ngrid)
+      call realloc(f1dimppar%grd_fm_sre, ndx_max) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
+         f1dimppar%grd_fm_sre = 0
+      call realloc(f1dimppar%grd_fm_sre2, ndx_max) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
+         f1dimppar%grd_fm_sre2 = 0
+      call realloc(f1dimppar%grd_fmL_sre, lnx1D, 2)
+      call realloc(f1dimppar%branch, 4, nbran)
+      call realloc(f1dimppar%x, ngrid)
+      call realloc(f1dimppar%grid, ngrid)
+      call realloc(f1dimppar%grd_sre_cs, ngrid)
+      call realloc(f1dimppar%hpack, ngrid, 3)
+      call realloc(f1dimppar%qpack, ngrid, 3)
+      call realloc(f1dimppar%grd_fmLb_sre, lnx1Db - lnxi, 2)
+      call realloc(f1dimppar%waoft, ngrid, 18)
+      call realloc(f1dimppar%bfrict, 3, nbran)
+      call realloc(f1dimppar%sectc, 1, ngrid, 1, 3)
+      call realloc(f1dimppar%sectv, ngrid, 8)
+      !`nd_mor` is a derived type. We cannot use `realloc` here.
+      if (allocated(nd_mor)) then 
          deallocate (nd_mor)
       end if
       allocate (nd_mor(ndx_max)) !more than we need
-      do kd = 1, ndx
-         nd_mor(kd) = nd(kd)
-      end do
-
-      if (allocated(f1dimppar%grd_fmmv_fmsv)) then
-         deallocate (f1dimppar%grd_fmmv_fmsv)
-      end if
-      allocate (f1dimppar%grd_fmmv_fmsv(ndx_max)) !more than we need
-      grd_fmmv_fmsv => f1dimppar%grd_fmmv_fmsv
-
-      if (allocated(f1dimppar%strtyp)) then
-         deallocate (f1dimppar%strtyp)
-      end if
-      allocate (f1dimppar%strtyp(10, nstru))
-
-      if (allocated(f1dimppar%strpar)) then
-         deallocate (f1dimppar%strpar)
-      end if
-      allocate (f1dimppar%strpar(dmstrpar, nstru))
-
-!allocate every node with itself
-      do kd = 1, ndx_max
-         grd_fmmv_fmsv(kd) = kd
-      end do
-
-      if (allocated(ln_mor)) then
-         deallocate (ln_mor)
-      end if
-      allocate (ln_mor(2, lnx_max))
-      do kl = 1, lnx
-         do kd = 1, 2
-            ln_mor(kd, kl) = ln(kd, kl)
+         do kd = 1, ndx
+            nd_mor(kd) = nd(kd)
          end do
-      end do
-
-      if (allocated(f1dimppar%grd_ghost_link_closest)) then
-         deallocate (f1dimppar%grd_ghost_link_closest)
-      end if
-      allocate (f1dimppar%grd_ghost_link_closest(lnx_max)) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
-      grd_ghost_link_closest => f1dimppar%grd_ghost_link_closest
-      do kl = 1, lnx
-         grd_ghost_link_closest(kl) = kl
-      end do
-
+      call realloc(f1dimppar%grd_fmmv_fmsv, ndx_max) !more than we need
+         grd_fmmv_fmsv => f1dimppar%grd_fmmv_fmsv
+         !allocate every node with itself
+         do kd = 1, ndx_max
+            grd_fmmv_fmsv(kd) = kd
+         end do
+      call realloc(f1dimppar%strtyp, 10, nstru)
+      call realloc(f1dimppar%strpar, dmstrpar, nstru)
+      call realloc(ln_mor, 2, lnx_max)
+         do kl = 1, lnx
+            do kd = 1, 2
+               ln_mor(kd, kl) = ln(kd, kl)
+            end do
+         end do
+      call realloc(f1dimppar%grd_ghost_link_closest, lnx_max) !we allocate more than we need. The maximum number of bifurcations and confluences is less than the number of nodes.
+         grd_ghost_link_closest => f1dimppar%grd_ghost_link_closest
+         do kl = 1, lnx
+            grd_ghost_link_closest(kl) = kl
+         end do
+         
 !FM1DIMP2DO: I am now adapting the input for using the morphodynamic implementation of Pure 1D. However,
 !I amnot sure it is the best. This should be revisited with Bert :).
       if (jased > 0 .and. stm_included) then !passing if no morphpdynamics
@@ -377,6 +298,7 @@ contains
       end do
 
 !copy to <gridpoint2cross_o>
+      !`gridpoint2cross_o` is a derived type. No `realloc` possible. 
       if (allocated(gridpoint2cross_o)) then
          deallocate (gridpoint2cross_o)
       end if
@@ -402,6 +324,7 @@ contains
          return
       end if
 
+      !`gridpoint2cross` is a derived type. No `realloc` possible. 
       if (allocated(gridpoint2cross)) then
          deallocate (gridpoint2cross)
       end if
@@ -419,107 +342,44 @@ contains
 !gridpoints
 !
 
-      if (allocated(f1dimppar%bfricp)) then
-         deallocate (f1dimppar%bfricp)
-      end if
-      allocate (f1dimppar%bfricp(6, ngrid)) !needs the part with FP1, FP2
-
-      if (allocated(f1dimppar%nlev)) then
-         deallocate (f1dimppar%nlev)
-      end if
-      allocate (f1dimppar%nlev(ngrid))
-
-      if (allocated(f1dimppar%bedlevel)) then
-         deallocate (f1dimppar%bedlevel)
-      end if
-      allocate (f1dimppar%bedlevel(ngrid))
-
-      if (allocated(f1dimppar%sectc)) then
-         deallocate (f1dimppar%sectc)
-      end if
-      allocate (f1dimppar%sectc(ngrid,3))
+      call realloc(f1dimppar%bfricp, 6, ngrid)
+      call realloc(f1dimppar%nlev, ngrid)
+      call realloc(f1dimppar%bedlevel, ngrid)
+      call realloc(f1dimppar%sectc, ngrid, 3)
 !
 !cross-section (gridpoint,level)
 !
-
-      if (allocated(f1dimppar%wft)) then
-         deallocate (f1dimppar%wft)
-      end if
-      allocate (f1dimppar%wft(ngrid, maxlev))
-
-      if (allocated(f1dimppar%aft)) then
-         deallocate (f1dimppar%aft)
-      end if
-      allocate (f1dimppar%aft(ngrid, maxlev))
-
-      if (allocated(f1dimppar%wtt)) then
-         deallocate (f1dimppar%wtt)
-      end if
-      allocate (f1dimppar%wtt(ngrid, maxlev))
-
-      if (allocated(f1dimppar%att)) then
-         deallocate (f1dimppar%att)
-      end if
-      allocate (f1dimppar%att(ngrid, maxlev))
-
-      if (allocated(f1dimppar%of)) then
-         deallocate (f1dimppar%of)
-      end if
-      allocate (f1dimppar%of(ngrid, maxlev))
-
-      if (allocated(f1dimppar%hlev)) then
-         deallocate (f1dimppar%hlev)
-      end if
-      allocate (f1dimppar%hlev(ngrid, maxlev))
+      
+      call realloc(f1dimppar%wft, ngrid, maxlev)
+      call realloc(f1dimppar%aft, ngrid, maxlev)
+      call realloc(f1dimppar%wtt, ngrid, maxlev)
+      call realloc(f1dimppar%att, ngrid, maxlev)
+      call realloc(f1dimppar%of, ngrid, maxlev)
+      call realloc(f1dimppar%hlev, ngrid, maxlev)
 
 !
 !table information
 !
 
-      if (allocated(f1dimppar%ntab)) then
-         deallocate (f1dimppar%ntab)
-      end if
-      allocate (f1dimppar%ntab(4, maxtab))
+      call realloc(f1dimppar%ntab, 4, maxtab)
 
 !
 !BC
 !
 
-      if (allocated(f1dimppar%hbdpar)) then
-         deallocate (f1dimppar%hbdpar)
-      end if
-      allocate (f1dimppar%hbdpar(3, nhstat))
-
-      if (allocated(f1dimppar%qbdpar)) then
-         deallocate (f1dimppar%qbdpar)
-      end if
-      allocate (f1dimppar%qbdpar(3, nqstat))
-
-      if (allocated(f1dimppar%table)) then
-         deallocate (f1dimppar%table)
-      end if
-      allocate (f1dimppar%table(ntabm))
+      call realloc(f1dimppar%hbdpar, 3, nhstat)
+      call realloc(f1dimppar%qbdpar, 3, nqstat)
+      call realloc(f1dimppar%table, ntabm)
 
 !
 !node
 !
 
-      if (allocated(f1dimppar%node)) then
-         deallocate (f1dimppar%node)
-      end if
-      allocate (f1dimppar%node(4, nnode))
-      node => f1dimppar%node
-      node = -999 !we use this value to check that it has not been filled.
-
-      if (allocated(f1dimppar%numnod)) then
-         deallocate (f1dimppar%numnod)
-      end if
-      allocate (f1dimppar%numnod(nnode))
-
-      if (allocated(f1dimppar%nodnod)) then
-         deallocate (f1dimppar%nodnod)
-      end if
-      allocate (f1dimppar%nodnod(nnode, nbrnod + 1))
+      call realloc(f1dimppar%node, 4, nnode)
+         node => f1dimppar%node
+         node = -999 !we use this value to check that it has not been filled.
+      call realloc(f1dimppar%numnod, nnode)
+      call realloc(f1dimppar%nodnod, nnode, nbrnod + 1)
 
 !
 !network
@@ -1399,6 +1259,8 @@ contains
 
          !In FM it is possible that the friction type is different in the main channel than in the
          !floodplains. This is not possible in SOBEK-RE. Here we check that all are equal.
+         !
+         !Is this really true? Also when calling `getFrictionValue` rather than `FLCHZT`?
          do k2 = 1, network%crs%cross(idx_crs)%frictionsectionscount
             if (last_friction_type /= network%crs%cross(idx_crs)%frictiontypepos(k2)) then
                write (msgbuf, '(a)') 'The same type of friction must be applied to all sections (i.e., main channel, floodplain 1, floodplain 2, ...) at all cross-sections.'
