@@ -5,6 +5,7 @@
    implicit none
    real(kind=dp)                     :: dmiss           = -999.0_dp
    real(kind=dp), parameter          :: dmiss_pos       = 999.0_dp
+   real(kind=dp), parameter          :: dmiss_neg       = -999.0_dp
    real(kind=dp)                     :: xymis           = -999.0_dp
    real(kind=dp)                     :: dxymis          = -999.0_dp
    !double precision                 :: ieee_negative_inf = -1.7976931348623158e+308 ! IEEE standard for the maximum negative value

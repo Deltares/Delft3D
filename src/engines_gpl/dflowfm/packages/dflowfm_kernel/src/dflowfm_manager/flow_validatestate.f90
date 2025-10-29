@@ -56,6 +56,7 @@ contains
       use m_transport
       use dfm_error
       use m_get_ucx_ucy_eul_mag
+      use m_missing, only: dmiss_neg
 
       integer, intent(out) :: iresult ! validation result status
       real(kind=dp) :: dtavgwindow
@@ -164,7 +165,7 @@ contains
       end if
 
       if (min_water_level_change_break > 0.0_dp) then
-         s1_s0_abs_max_current = dmiss
+         s1_s0_abs_max_current = dmiss_neg
          do k = 1, ndx
             if (abs(s1(k) - s0(k)) > s1_s0_abs_max_current) then
                s1_s0_abs_max_current = abs(s1(k) - s0(k))
