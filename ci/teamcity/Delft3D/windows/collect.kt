@@ -113,6 +113,5 @@ object WindowsCollect : BuildType({
     requirements {
         exists("env.PYTHON_PATH")
         contains("teamcity.agent.jvm.os.name", "Windows")
-        exists("VS2022")
     }
 })
