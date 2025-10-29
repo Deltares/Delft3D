@@ -117,7 +117,7 @@ function(F90TWTEST NAME)
         set(F2HFILE "${CMAKE_CURRENT_BINARY_DIR}/${F2HNAME}")
         F90TWF2H(INFILES ${FTW_F2HFILES} OUTFILE ${F2HFILE})
         add_custom_target(${F2HTRGNAME} ALL DEPENDS ${F2HFILE})
-        set_target_properties(${F2HTRGNAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH})
+        set_target_properties(${F2HTRGNAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH}/f2h)
     else()
         set(F2HFILE)
     endif()
@@ -129,6 +129,8 @@ function(F90TWTEST NAME)
     set_property(TARGET ${FLIBNAME}
         APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${XF90FILES}
     )
+    set_target_properties(${FLIBNAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH})
+
     if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
         target_compile_options(${FLIBNAME} PRIVATE "-ffree-line-length-none")
     endif()
@@ -143,7 +145,7 @@ function(F90TWTEST NAME)
     target_link_libraries(${NAME} PRIVATE ${FLIBNAME} f90tw_gtest)
     target_compile_definitions(${NAME} PUBLIC ${FTW_DEFINITIONS})
     add_dependencies(${NAME} ${FLIBNAME})
-    set_target_properties(${NAME} ${FLIBNAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH})
+    set_target_properties(${NAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH}/cpp)
     if(WIN32)
         add_custom_command(TARGET ${NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${NAME}> $<TARGET_RUNTIME_DLLS:${NAME}>
