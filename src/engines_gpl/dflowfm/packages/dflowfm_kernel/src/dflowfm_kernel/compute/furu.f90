@@ -208,7 +208,7 @@ contains
                   u1L0 = u1L
                   u1L = ru(L) - fu(L) * ds
                   
-                  if (huvli(L) <= 1.0_dp .or. abs(u1L - u1L0) <= 1.0e-2_dp) then ! less than 1 m deep or small change in velocity: exit - is this check OK? WO
+                  if (huvli(L) <= 1.0_dp .or. abs(u1L - u1L0) <= 1.0e-2_dp) then ! less than 1 m deep or small change in velocity: exit
                      exit ! furu_loop
                   end if
                end do
