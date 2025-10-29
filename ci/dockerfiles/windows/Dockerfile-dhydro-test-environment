@@ -15,8 +15,6 @@ RUN New-Item -ItemType SymbolicLink -Path 'C:\\Program Files\\Python312\\python3
 
 ADD win-requirements.txt C:\\temp\\win-requirements.txt
 
-RUN Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'C:\\temp\\get-pip.py'; \
-    & 'C:\\Program Files\\Python312\\python.exe' C:\\temp\\get-pip.py; \
-    & 'C:\\Program Files\\Python312\\python.exe' -m pip install --upgrade pip; \
+RUN & 'C:\\Program Files\\Python312\\python.exe' -m pip install --upgrade pip; \
     & 'C:\\Program Files\\Python312\\python.exe' -m pip install -r C:\\temp\\win-requirements.txt; \
-    Remove-Item C:\\temp\\win-requirements.txt,C:\\temp\\get-pip.py
+    Remove-Item C:\\temp\\win-requirements.txt

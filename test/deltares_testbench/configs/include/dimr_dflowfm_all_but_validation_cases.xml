@@ -166,6 +166,18 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f003_c097_changevelocityatstructure" ref="dflowfm_default">
+      <path version="2025-10-16T12:38:40.535000">e02_dflowfm/f003_advection/c097_changevelocityatstructure</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_ucmag" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f004_c011_manning" ref="dflowfm_default">
       <path version="2025-04-14T09:50:41.624000">e02_dflowfm/f004_bottomfriction/c011_manning</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -8092,7 +8104,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f422_c60_thindams" ref="dflowfm_restart_platform">
-      <path version="2025-04-09T14:25:11.235000">e02_dflowfm/f422_morphology_2D_restart/c60_thindams</path>
+      <path version="2025-10-28T15:21:14.879000">e02_dflowfm/f422_morphology_2D_restart/c60_thindams</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="main/dflowfmoutput/dams_sed_20010101_002000_rst.nc" type="netCDF">
@@ -9039,6 +9051,18 @@
     </testCase>
     <testCase name="e02_f500_c04_hydro_genstruct" ref="dflowfm_default">
       <path version="2025-05-21T11:29:02.367000">e02_dflowfm/f500_implicit1d/c04_hydro_genstruct</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f500_c05_cs_subsections" ref="dflowfm_default">
+      <path version="2025-10-22T12:39:42.388000">e02_dflowfm/f500_implicit1d/c05_cs_subsections</path>
       <maxRunTime>600.0000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
