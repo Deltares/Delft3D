@@ -3242,7 +3242,7 @@ contains
       end if
 
       if (writeall .or. (dtminbreak > 0.0_dp)) then
-         call prop_set(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', min_water_level_change_break, 'stop the simulation when then water level change is below this value')
+         call prop_set(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', min_water_level_change_break, 'stop the simulation when the water level change is below this value')
       end if
       
       if ((writeall .or. (sscmax > 0.0_dp)) .and. jased == 4) then
