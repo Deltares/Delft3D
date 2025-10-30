@@ -1,4 +1,4 @@
-subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
+subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_levels)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2025.
@@ -50,6 +50,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
    integer, intent(in) :: n_swan_grids
    type(wave_data_type) :: wavedata
    integer, intent(in) :: selectedtime ! <=0: no time selected, >0: only compute for swan_run%timwav(selectedtime)
+   real, dimension(14), optional, intent(out) :: bed_levels
 !
 ! Local variables
 !
@@ -82,6 +83,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
    character(15) :: refdstr
    character(500) :: message
    type(swan_dom), pointer :: dom
+   integer :: i, j, index
 !
 !! executable statements -------------------------------------------------------
 !
@@ -446,6 +448,18 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             write (*, '(a,i10,a,f10.3)') '  Write WAVE NetCDF his file, nest ', i_swan, ' time ', wavedata%time%timmin
             call write_wave_his_netcdf(swan_grids(i_swan), swan_output_fields, n_swan_grids, i_swan, &
                                & wavedata)
+         end if
+
+         if (present(bed_levels)) then
+            do j = 1, swan_input_fields%nmax
+               do i = 1, swan_input_fields%mmax
+                  index = (j - 1) * swan_input_fields%mmax + i
+                  if (index > 14) then
+                     exit
+                  end if
+                  bed_levels(index) = swan_input_fields%dps(i, j)
+               end do
+            end do
          end if
 
          call dealloc_input_fields(swan_input_fields, wavedata%mode)

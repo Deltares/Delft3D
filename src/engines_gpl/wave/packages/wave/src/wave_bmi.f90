@@ -140,10 +140,11 @@ integer function update(dt) bind(C, name="update")
   ! Local
   integer  :: retval
   real(hp) :: stepsize
+  integer, dimension(1) :: vertex_ids
   !
   ! Body
   stepsize = real(dt,hp)
-  retval   = wave_main_step(stepsize)
+  retval   = wave_main_step(stepsize, vertex_ids)
   update   = retval
 end function update
 !

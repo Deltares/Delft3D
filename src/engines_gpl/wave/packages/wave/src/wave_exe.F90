@@ -63,6 +63,7 @@ program waves_main
    character(256)                               :: mdw_file     ! filename mdw file
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    real(kind=c_double) :: max_time_step
+   integer(kind=c_int), dimension(:), allocatable :: vertex_ids
 #endif
 
    !
@@ -104,20 +105,20 @@ program waves_main
    enddo
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   call initialize_fm_coupling(mdw_file)
+   call initialize_fm_coupling(mdw_file, vertex_ids)
 #endif
 
    retval = wave_main_init(mode_in, mdw_file)
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    ! DIMR calls wave ones, updating it to 0.0 seconds, before running FM and wave at later time points
-   retval = wave_main_step(0.0_hp)
+   retval = wave_main_step(0.0_hp, vertex_ids)
    call advance_fm_time_window()
 
    do while(is_fm_coupling_ongoing())
       call precicef_get_max_time_step_size(max_time_step)
       stepsize = real(max_time_step, kind=hp)
-      retval = wave_main_step(stepsize)
+      retval = wave_main_step(stepsize, vertex_ids)
       call advance_fm_time_window()
    end do
 #else

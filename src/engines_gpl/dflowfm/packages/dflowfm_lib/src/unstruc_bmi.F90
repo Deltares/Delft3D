@@ -246,6 +246,7 @@ contains
 
       character(kind=c_char), intent(in) :: c_config_file(MAXSTRLEN)
       character(len=strlen(c_config_file)) :: config_file
+      type(init_result_t) :: init_result
 
       ! Extra local variables
       integer :: inerr ! number of the initialisation error
@@ -323,7 +324,8 @@ contains
       call startpetsc()
 #endif
 
-      c_iresult = flowinit()
+      init_result= flowinit()
+      c_iresult = init_result%iresult
 
       time_user = tstart_user
 
