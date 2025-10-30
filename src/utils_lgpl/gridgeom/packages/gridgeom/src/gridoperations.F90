@@ -902,8 +902,8 @@ contains
          !end do
       end if
 
-      NUML1D = L1
-      NUML = L2
+      NUML1D = num_1d_links + num_1d2d_links
+      NUML = NUML1D + num_2d_links
 
      allocate (KC2(NUMK))
       KK = 0
