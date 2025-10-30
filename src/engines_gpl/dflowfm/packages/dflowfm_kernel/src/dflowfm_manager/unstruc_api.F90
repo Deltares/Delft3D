@@ -77,16 +77,23 @@ contains
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_wave_coupling()
-      use precice, only: precicef_create, precicef_initialize
-      use m_partitioninfo, only: numranks, my_rank
-      use, intrinsic :: iso_c_binding, only: c_char
+      use precice, only: precicef_create, precicef_create_with_communicator, precicef_get_mesh_dimensions, precicef_set_vertices, &
+                         precicef_initialize, precicef_write_data, precicef_advance, precicef_get_max_time_step_size
+      use m_partitioninfo, only: jampi, numranks, my_rank, DFM_COMM_DFMWORLD
+      use m_flowtimes, only: dt_user
+      use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none(type, external)
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "fm"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
 
-      call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
-
+      if (jampi == 0) then
+         print *, '[FM] Initializing preCICE for serial execution'
+         call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
+      else
+         print *, '[FM] Initializing preCICE for parallel execution with ', numranks, ' ranks. This is rank ', my_rank
+         call precicef_create_with_communicator(precice_component_name, precice_config_name, my_rank, numranks, DFM_COMM_DFMWORLD, len(precice_component_name), len(precice_config_name))
+      end if
       call register_com_mesh_with_precice()
       call register_flow_nodes_with_precice()
       call precicef_initialize()
@@ -177,6 +184,23 @@ contains
 
       call precicef_set_vertices(mesh_name, 1, mesh_coordinates, vertex_ids, len(mesh_name))
    end subroutine register_com_mesh_with_precice
+
+   function is_wave_coupling_ongoing() result(is_ongoing)
+      use precice, only: precicef_is_coupling_ongoing
+      use, intrinsic :: iso_c_binding, only: c_int
+      integer(kind=c_int) :: is_ongoing
+
+      call precicef_is_coupling_ongoing(is_ongoing)
+   end function is_wave_coupling_ongoing
+
+   subroutine advance_time_window(dt_user)
+      use precice, only: precicef_advance
+      use, intrinsic :: iso_c_binding, only: c_double
+      real(kind=c_double), intent(in) :: dt_user
+      if (is_wave_coupling_ongoing()) then
+         call precicef_advance(real(dt_user, kind=c_double))
+      end if
+   end subroutine advance_time_window
 
    subroutine finalize_wave_coupling()
       use precice, only: precicef_finalize
@@ -483,10 +507,6 @@ contains
       use m_drawthis
       use m_draw_nu
       use m_flowtimes, only: dt_user
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-      use precice, only: precicef_advance
-      use, intrinsic :: iso_c_binding, only: c_double
-#endif
       implicit none(type, external)
 
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
@@ -506,7 +526,7 @@ contains
       call flow_usertimestep(key, iresult) ! one user_step consists of several flow computational time steps
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-      call precicef_advance(real(dt_user, kind=c_double))
+      call advance_time_window(dt_user)
 #endif
       if (iresult /= DFM_NOERR) then
          jastop = 1
