@@ -38,28 +38,34 @@ end subroutine tests_combinepaths
 ! The comments in the source file define a nice set of test cases - use these to test the code
 !
 subroutine test_combine
-    character(len=20), dimension(9) :: firstname, secondname, expected
+    use m_combinepaths, only: combinepaths
+    
+    character(len=30), dimension(12) :: firstname, secondname, expected
+    character(len=:), allocatable   :: combined_name
 
     integer                               :: i
 
-    !              firstname             secondname IN                          secondname OUT
-    firstname(1) = 'file1.txt'         ; secondname(1) = 'file2.txt'         ;  expected(1) = 'file2.txt'
-    firstname(2) = 'dir\file1.txt'     ; secondname(2) = 'file2.txt'         ;  expected(2) = 'dir\file2.txt'
-    firstname(3) = 'dir/file1.txt'     ; secondname(3) = 'file2.txt'         ;  expected(3) = 'dir/file2.txt'
-    firstname(4) = 'c:\dir\file1.txt'  ; secondname(4) = 'file2.txt'         ;  expected(4) = 'c:\dir\file2.txt'
-    firstname(5) = '//dir/file1.txt'   ; secondname(5) = 'file2.txt'         ;  expected(5) = '//dir/file2.txt'
-    firstname(6) = 'c:\dir\file1.txt'  ; secondname(6) = '..\dir2\file2.txt' ;  expected(6) = 'c:\dir\..\dir2\file2.txt'
-    firstname(7) = '//dir/file1.txt'   ; secondname(7) = '../dir2/file2.txt' ;  expected(7) = '//dir/../dir2/file2.txt'
-    firstname(8) = 'c:\dir\file1.txt'  ; secondname(8) = 'd:\dir2\file2.txt' ;  expected(8) = 'd:\dir2\file2.txt'
-    firstname(9) = '//dir/file1.txt'   ; secondname(9) = '//dir2/file2.txt'  ;  expected(9) = '//dir2/file2.txt'
+    !              firstname                    secondname IN                                 secondname OUT
+    firstname(1) = 'file1.txt'                ; secondname(1) = 'file2.txt'                ;  expected(1) = 'file2.txt'
+    firstname(2) = 'dir\file1.txt'            ; secondname(2) = 'file2.txt'                ;  expected(2) = 'dir\file2.txt'
+    firstname(3) = 'dir/file1.txt'            ; secondname(3) = 'file2.txt'                ;  expected(3) = 'dir/file2.txt'
+    firstname(4) = 'c:\dir\file1.txt'         ; secondname(4) = 'file2.txt'                ;  expected(4) = 'c:\dir\file2.txt'
+    firstname(5) = '\\agent\dir\file1.txt'    ; secondname(5) = 'file2.txt'                ;  expected(5) = '\\agent\dir\file2.txt'
+    firstname(6) = '/dir/file1.txt'           ; secondname(6) = 'file2.txt'                ;  expected(6) = '/dir/file2.txt'
+    firstname(7) = 'c:\dir\file1.txt'         ; secondname(7) = '..\dir2\file2.txt'        ;  expected(7) = 'c:\dir\..\dir2\file2.txt'
+    firstname(8) = '\\agent\dir\file1.txt'    ; secondname(8) = '..\dir2\file2.txt'        ;  expected(8) = '\\agent\dir\..\dir2\file2.txt'
+    firstname(9) = '/dir/file1.txt'           ; secondname(9) = '../dir2/file2.txt'        ;  expected(9) = '/dir/../dir2/file2.txt'
+    firstname(10) = 'c:\dir\file1.txt'        ; secondname(10) = 'd:\dir2\file2.txt'       ;  expected(10) = 'd:\dir2\file2.txt'
+    firstname(11) = '/dir/file1.txt'          ; secondname(11) = '/dir2/file2.txt'         ;  expected(11) = '/dir2/file2.txt'
+    firstname(12) = '\\agent\dir\file1.txt'   ; secondname(12) = '\\agent2\dir2\file2.txt' ;  expected(12) = '\\agent2\dir2\file2.txt'
 
     !
     ! Check each case
     !
     do i = 1,size(firstname)
-        call combinepaths( firstname(i), secondname(i) )
+        combined_name = combinepaths( firstname(i), secondname(i) )
 
-        call assert_equal( secondname(i), expected(i), "Constructed name is as expected" )
+        call assert_equal( combined_name, expected(i), "Constructed name is as expected" )
     enddo
 end subroutine test_combine
 

@@ -23,13 +23,12 @@
 // are registered trademarks of Stichting Deltares, and remain the property of
 // Stichting Deltares.All rights reserved.
 //
-// ------------------------------------------------------------------------------ -
-// $Id$
-// $HeadURL : https ://svn.oss.deltares.nl/repos/delft3d/trunk/src/utils_lgpl/deltares_common/packages/deltares_common/src/combinepaths.f90 $
-// --description---------------------------------------------------------------- -
-// This routine obtains the current
-// working directorty(cwd).Code based on : https://stackoverflow.com/questions/30279228/is-there-an-alternative-to-getcwd-in-fortran-2003-2008.
-//------------------------------------------------------------------------------ -
+// -------------------------------------------------------------------------------
+
+// --description------------------------------------------------------------------
+// This routine obtains the current working directory (cwd).
+// Code based on : https://stackoverflow.com/questions/30279228/is-there-an-alternative-to-getcwd-in-fortran-2003-2008.
+//--------------------------------------------------------------------------------
 
 #ifdef _WIN32
 #include <direct.h>
