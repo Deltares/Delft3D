@@ -15657,7 +15657,6 @@ contains
       use Timers
       use m_modelbounds
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
-      use m_inquire_link_type, only: is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
 
       implicit none
 
@@ -15807,8 +15806,18 @@ contains
             end if
          end do
 
-         n1dedges = count_1d_edges(numl1d)
-         n1d2dcontacts = count(is_valid_1d2d_netlink([(l, l=1, numl1d)]))
+!count 1d mesh edges and 1d2d contacts
+         n1dedges = 0
+         n1d2dcontacts = 0
+         do L = 1, lnx1d
+            if (kcu(L) == 1) then
+               n1dedges = n1dedges + 1
+            else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
+               n1d2dcontacts = n1d2dcontacts + 1
+            else
+               continue
+            end if
+         end do
 
          if (jabndnd_ == 1) then
             ! when writing boundary points, include the boundary links as well
@@ -15858,7 +15867,7 @@ contains
                   edgeoffsets_remap(n1dedges) = meshgeom1d%edgeoffsets(L1)
                end if
 
-            else if (is_valid_1d2d_netlink(l)) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
+            else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
                ! 1D2D link, find the 2D flow node and store its cell center as '1D' node coordinates
                n1d2dcontacts = n1d2dcontacts + 1
                id_tsp%contactstoln(n1d2dcontacts) = L

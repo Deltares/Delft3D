@@ -77,6 +77,7 @@ object WindowsTest : BuildType({
         mergeTargetBranch {}
         python {
             name = "Run TestBench.py"
+            id = "RUNNER_testbench"
             workingDir = "test/deltares_testbench/"
             command = file {
                 filename = "TestBench.py"
@@ -101,7 +102,7 @@ object WindowsTest : BuildType({
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
             conditions { equals("copy_cases", "true") }
             workingDir = "test/deltares_testbench"
-            scriptContent = "xcopy \"data\\cases\" \"copy_cases\" /E /I"
+            scriptContent = "xcopy \"data\\cases\" \"copy_cases\" /E /I /Y"
         }
     }
 

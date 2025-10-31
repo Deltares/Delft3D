@@ -212,12 +212,8 @@ contains
       end do
 
       if (jased == 4 .and. ibedlevtyp /= 1) then
-         if (stmpar%morpar%bedupd) then
-            call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ') ! setbobs call after fm_erosed resets the bed level for ibedlevtyp > 1, resulting in no bed level change
-            return
-         else
-            call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ')
-         end if
+         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ') ! setbobs call after fm_erosed resets the bed level for ibedlevtyp > 1, resulting in no bed level change
+         return
       end if
 
       nbr = network%brs%count

@@ -42,7 +42,7 @@ static const struct layered_discharge_struct {
 
 typedef struct layered_discharge_struct layered_discharge_t;
 
-double *io_layer_linear_z_positions(const number_of_layers);
+double *io_layer_linear_z_positions(const int number_of_layers);
 
 int io_layer_init_2d(profile_t *profile);
 
@@ -56,6 +56,7 @@ double integrate_piecewise_linear_profile(const profile_t *profile, const double
 int distribute_discharge_over_layers(double total_discharge, const profile_t *profile,
                                      const layers_t *layers,
                                      layered_discharge_t *layered_discharge_result);
+
 #ifdef __cplusplus
 }
 #endif
