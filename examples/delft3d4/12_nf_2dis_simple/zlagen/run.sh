@@ -15,5 +15,10 @@ else
     dimrset_bin=$1
 fi
 
-$dimrset_bin/run_delpar.sh fti_tracer.inp
+
+rm -f COSUMO/FF2NF/FF2NF*.*
+
+
+
+$dimrset_bin/run_dflow2d3d.sh
 
