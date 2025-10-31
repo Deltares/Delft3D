@@ -24,7 +24,6 @@
 
   <participant name="fm">
     <provide-mesh name="fm_flow_nodes" />
-    <receive-mesh name="wave_nodes" from="wave" />
     <write-data name="bed_levels" mesh="fm_flow_nodes" />
     <provide-mesh name="com_mesh" />
     <write-data name="com_data_fm_to_wave" mesh="com_mesh" />

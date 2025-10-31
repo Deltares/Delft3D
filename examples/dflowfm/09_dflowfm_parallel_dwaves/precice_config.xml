@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<precice-configuration>
+  <log>
+    <sink type="file" output="precice_output.txt" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
+    <sink type="stream" output="stdout" filter= "(%Severity% > debug) or (%Severity% >= debug and %Module% contains ParticipantImpl) or (%Severity% >= debug and %Module% contains partition) or (%Severity% >= debug and %Module% contains PointToPointCommunication)" enabled="true" />
+  </log>
+
+  <profiling mode="fundamental" flush-every="50" directory="." synchronize="false"/>
+
+  <data:scalar name="com_data_fm_to_wave" />
+  <data:scalar name="com_data_wave_to_fm" />
+  <data:scalar name="water_levels" />
+
+  <mesh name="fm_com_mesh" dimensions="2">
+    <use-data name="com_data_fm_to_wave" />
+    <use-data name="com_data_wave_to_fm" />
+  </mesh>
+
+  <mesh name="fm_flow_nodes" dimensions="2">
+    <use-data name="water_levels" />
+  </mesh>
+
+  <mesh name="wave_nodes" dimensions="2">
+    <use-data name="water_levels" />
+  </mesh>
+
+  <participant name="fm">
+    <provide-mesh name="fm_com_mesh" />
+    <write-data name="com_data_fm_to_wave" mesh="fm_com_mesh" />
+    <read-data name="com_data_wave_to_fm" mesh="fm_com_mesh" />
+    <provide-mesh name="fm_flow_nodes" />
+    <write-data name="water_levels" mesh="fm_flow_nodes" />
+  </participant>
+
+  <participant name="wave">
+    <receive-mesh name="fm_com_mesh" from="fm" />
+    <read-data name="com_data_fm_to_wave" mesh="fm_com_mesh" />
+    <write-data name="com_data_wave_to_fm" mesh="fm_com_mesh" />
+    <provide-mesh name="wave_nodes" />
+    <receive-mesh name="fm_flow_nodes" from="fm" />
+    <read-data name="water_levels" mesh="wave_nodes" />
+    <mapping:linear-cell-interpolation direction="read" from="fm_flow_nodes" to="wave_nodes" constraint="consistent" />
+  </participant>
+
+  <m2n:sockets acceptor="fm" connector="wave" exchange-directory=".." />
+
+  <coupling-scheme:serial-explicit>
+    <time-window-size value="3600" method="fixed" />
+    <max-time value="90000" />
+    <participants first="wave" second="fm" />
+    <exchange data="com_data_fm_to_wave" mesh="fm_com_mesh" from="fm" to="wave" />
+    <exchange data="com_data_wave_to_fm" mesh="fm_com_mesh" from="wave" to="fm" />
+    <exchange data="water_levels" mesh="fm_flow_nodes" from="fm" to="wave" />
+  </coupling-scheme:serial-explicit>
+</precice-configuration>
