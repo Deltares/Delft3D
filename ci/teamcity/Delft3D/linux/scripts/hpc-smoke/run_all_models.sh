@@ -73,6 +73,56 @@ submit_dependent_tc_job() {
     fi
 }
 
+validate_and_handle_help_run() {
+    local platform="$1"
+    
+    # Handle help request
+    if [ "$platform" = "-h" ] || [ "$platform" = "--help" ]; then
+        print_help_run
+        exit 0
+    fi
+    
+    # Validate platform
+    if ! is_supported_platform "$platform"; then
+        echo "Unknown system: '$platform'"
+        echo ""
+        print_help_run
+        exit 1
+    fi
+}
+
+parse_run_arguments() {
+    local platform="$1"
+    shift  # Remove platform from arguments
+    
+    local run_dependent=""
+    
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --run_dependent)
+                run_dependent="true"
+                shift
+                ;;
+            *)
+                echo "Unknown option: $1"
+                print_help_run
+                exit 1
+                ;;
+        esac
+    done
+    
+    echo "$run_dependent"
+}
+
+print_help_run() {
+    echo "Usage: $0 [h7|delftblue|snellius] [--run_dependent]"
+    echo "  h7         : Run for H7"
+    echo "  delftblue  : Run for DelftBlue"
+    echo "  snellius   : Run for Snellius"
+    echo "  --run_dependent : Optional flag to schedule a dependent TeamCity job"
+    echo "                      (if provided, a dependent TeamCity job will be scheduled)"
+}
+
 main() {
     local platform="$1"
     

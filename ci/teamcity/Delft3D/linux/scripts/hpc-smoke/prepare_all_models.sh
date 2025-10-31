@@ -5,11 +5,58 @@ script_dir="$(dirname "${BASH_SOURCE[0]}")"
 source "$script_dir/common_utilities.sh"
 
 readonly TEMPLATE_SUBMIT_SCRIPT="template_submit.sh"
-readonly APPTAINER_FOLDER="~/smoke/apptainer"
+readonly APPTAINER_FOLDER="~/apptainer"
 
 # Global variables for configuration
 declare -A MODEL_CONFIG
 CONFIG_FILE=""
+
+get_platform_config() {
+    local platform="$1"
+    
+    declare -gA PLATFORM_CONFIG
+    
+    case "$platform" in
+        "h7")
+            PLATFORM_CONFIG=(
+                ["platform"]="h7"
+                ["partition"]="4vcpu"
+                ["memory"]=""
+                ["module_load"]="module purge\\nmodule load intelmpi/2021.11.0"
+                ["execute_script"]="execute_singularity_h7.sh"
+                ["partitioning_cmd_template"]="srun -n 1 -N 1 \$apptainerFolder/\$execute_script --containerfolder \$apptainerFolder --modelfolder \$modelFolder dflowfm --partition:ndomains=\$SLURM_NTASKS:icgsolver=6 \$mduFile"
+                ["simulation_cmd_template"]="srun \$apptainerFolder/\$execute_script --containerfolder \$apptainerFolder --modelfolder \$modelFolder dimr \$dimrFile"
+            )
+            ;;
+        "delftblue")
+            PLATFORM_CONFIG=(
+                ["platform"]="delftblue"
+                ["partition"]="compute"
+                ["memory"]="#SBATCH --mem-per-cpu=2G"
+                ["module_load"]="module purge\\nmodule load slurm\\nmodule load 2023rl\\nmodule load intel/oneapi-all\\nexport I_MPI_PMI_LIBRARY=/cm/shared/apps/slurm/current/lib64/libpmi2.so\\nexport FI_PROVIDER=tcp\\nexport I_MPI_FABRICS=shm:tcp"				
+                ["execute_script"]="execute_singularity_delftblue.sh"
+                ["partitioning_cmd_template"]="srun -n 1 -N 1 \$apptainerFolder/\$execute_script --containerfolder \$apptainerFolder --modelfolder \$modelFolder dflowfm --partition:ndomains=\$SLURM_NTASKS:icgsolver=6 \$mduFile"
+                ["simulation_cmd_template"]="srun \$apptainerFolder/\$execute_script --containerfolder \$apptainerFolder --modelfolder \$modelFolder dimr \$dimrFile"
+            )
+            ;;
+        "snellius")
+            PLATFORM_CONFIG=(
+                ["platform"]="snellius"
+                ["partition"]="rome"
+                ["memory"]=""
+                ["module_load"]="module purge\\nmodule load 2023\\nmodule load intel/2023a"
+                ["execute_script"]="execute_singularity_snellius.sh"
+                ["partitioning_cmd_template"]="\$apptainerFolder/\$execute_script \$modelFolder run_dflowfm.sh --partition:ndomains=\$SLURM_NTASKS:icgsolver=6 \$mduFile"
+                ["simulation_cmd_template"]="\$apptainerFolder/\$execute_script \$modelFolder run_dimr.sh -m \$dimrFile"
+            )
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+    
+    return 0
+}
 
 parse_json_config() {
     local config_file="$1"
@@ -70,50 +117,6 @@ get_model_config_from_json() {
     fi
     
     return 1
-}
-
-get_platform_config() {
-    local platform="$1"
-    
-    declare -gA PLATFORM_CONFIG
-    
-    case "$platform" in
-        "h7")
-            PLATFORM_CONFIG=(
-                ["platform"]="h7"
-                ["partition"]="4vcpu"
-                ["module_load"]="module purge\\nmodule load intelmpi/2021.11.0"
-                ["execute_script"]="execute_singularity_h7.sh"
-                ["partitioning_cmd_template"]="srun -n 1 -N 1 \$apptainerFolder/\$execute_script --containerfolder \$apptainerFolder --modelfolder \$modelFolder dflowfm --partition:ndomains=\$SLURM_NTASKS:icgsolver=6 \$mduFile"
-                ["simulation_cmd_template"]="srun \$apptainerFolder/\$execute_script --containerfolder \$apptainerFolder --modelfolder \$modelFolder dimr \$dimrFile"
-            )
-            ;;
-        "delftblue")
-            PLATFORM_CONFIG=(
-                ["platform"]="delftblue"
-                ["partition"]="delftblue"
-                ["module_load"]="module purge\\nmodule load 2023\\nmodule load intel/2023a"
-                ["execute_script"]="execute_singularity_delftblue.sh"
-                ["partitioning_cmd_template"]="\$apptainerFolder/\$execute_script --containerfolder \$apptainerFolder --modelfolder \$modelFolder run_dflowfm.sh --partition:ndomains=\$SLURM_NTASKS:icgsolver=6 \$mduFile"
-                ["simulation_cmd_template"]="\$apptainerFolder/\$execute_script --containerfolder \$apptainerFolder --modelfolder \$modelFolder run_dimr.sh -m \$dimrFile"
-            )
-            ;;
-        "snellius")
-            PLATFORM_CONFIG=(
-                ["platform"]="snellius"
-                ["partition"]="rome"
-                ["module_load"]="module purge\\nmodule load 2023\\nmodule load intel/2023a"
-                ["execute_script"]="execute_singularity_snellius.sh"
-                ["partitioning_cmd_template"]="\$apptainerFolder/\$execute_script \$modelFolder run_dflowfm.sh --partition:ndomains=\$SLURM_NTASKS:icgsolver=6 \$mduFile"
-                ["simulation_cmd_template"]="\$apptainerFolder/\$execute_script \$modelFolder run_dimr.sh -m \$dimrFile"
-            )
-            ;;
-        *)
-            return 1
-            ;;
-    esac
-    
-    return 0
 }
 
 get_user_nodes_and_tasks() {
@@ -234,6 +237,7 @@ substitute_all_templates() {
     
     # Platform-specific substitutions
     substitute_template "$script_file" "{PARTITION_NAME}" "${PLATFORM_CONFIG[partition]}"
+    substitute_template "$script_file" "{MEMORY}" "${PLATFORM_CONFIG[memory]}"
     substitute_template "$script_file" "{MODULE_LOAD_SECTION}" "${PLATFORM_CONFIG[module_load]}"
     substitute_template "$script_file" "{EXECUTE_SCRIPT}" "${PLATFORM_CONFIG[execute_script]}"
     substitute_template "$script_file" "{PARTITIONING_COMMAND}" "${PLATFORM_CONFIG[partitioning_cmd_template]}"
@@ -310,6 +314,61 @@ process_all_directories() {
             continue
         fi
     done
+}
+
+validate_and_handle_help_prepare() {
+    local platform="$1"
+    
+    # Handle help request
+    if [ "$platform" = "-h" ] || [ "$platform" = "--help" ]; then
+        print_help_prepare
+        exit 0
+    fi
+    
+    # Validate platform
+    if ! is_supported_platform "$platform"; then
+        echo "Unknown system: '$platform'"
+        echo ""
+        print_help_prepare
+        exit 1
+    fi
+}
+
+parse_prepare_arguments() {
+    local platform="$1"
+    shift  # Remove platform from arguments
+    
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --config)
+                if [ -n "$2" ] && [ "${2:0:1}" != "-" ]; then
+                    CONFIG_FILE="$2"
+                    shift 2
+                else
+                    echo "Error: --config requires a file path argument"
+                    print_help_prepare
+                    exit 1
+                fi
+                ;;
+            *)
+                echo "Unknown option: $1"
+                print_help_prepare
+                exit 1
+                ;;
+        esac
+    done
+    
+    # Always return empty string since prepare doesn't support run_dependent
+    echo ""
+}
+
+print_help_prepare() {
+    echo "Usage: $0 [h7|delftblue|snellius] [--config CONFIG_FILE]"
+    echo "  h7         : Run for H7"
+    echo "  delftblue  : Run for DelftBlue"
+    echo "  snellius   : Run for Snellius"
+    echo "  --config CONFIG_FILE : Optional JSON configuration file specifying nodes and tasks for models"
+    echo "                         If not provided or model not found in config, interactive mode will be used"
 }
 
 main() {

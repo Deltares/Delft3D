@@ -11,6 +11,14 @@
         "e112_f01_c11_waardenburg": {
             "nodes": 1,
             "tasks_per_node": 1
+        },
+        "e02_f030_c001_frisianinlet_dynamo": {
+            "nodes": 1,
+            "tasks_per_node": 1
+        },
+        "e100_f00_c00": {
+            "nodes": 1,
+            "tasks_per_node": 1
         }
     }
 }

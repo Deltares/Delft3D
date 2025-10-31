@@ -16,6 +16,7 @@
 #SBATCH --time 00:29:00         #-t, reduce the expected time if possible to increase your priority.
 #SBATCH --chdir=./              #chdir set as /path/to/runfolder is useful when calling this script from a different directory.
 #SBATCH --partition={PARTITION_NAME}        #Type of partition. Choose the type appropriate for your job.
+{MEMORY}                        #(optional argument, depending on your HPC configuration) Memory per CPU core. Adjust based on your model requirements.
 ##SBATCH --exclusive            #To avoid any interference from other jobs running on the same node,
                                 #or when a user wants to use all RAM available on the node. In many cases this option can be omitted.
                                 #Extra costs might be associated with this option.
