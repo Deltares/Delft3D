@@ -56,14 +56,9 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c102_longculvert_new" ref="dflowfm_default">
-      <path version="2025-04-22T09:52:19.028000">e02_dflowfm/f002_1D2D/c102_longculvert_new</path>
+      <path version="2025-10-23T11:30:56.060000">e02_dflowfm/f002_1D2D/c102_longculvert_new</path>
       <programs>
           <program ref="dflowfm" seq="1">
-            <arguments>
-              <argument>tunnel.mdu --convertlongculverts converted_</argument>
-            </arguments>
-          </program>
-          <program ref="dflowfm" seq="2">
             <arguments>
               <argument>converted_tunnel.mdu</argument>
             </arguments>

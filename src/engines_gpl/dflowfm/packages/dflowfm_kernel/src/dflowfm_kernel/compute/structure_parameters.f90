@@ -43,7 +43,7 @@ contains
       use m_1d_structures, only: get_crest_level, get_culvert_state, get_gle, get_opening_height, getpumpcapacity, getpumpstage, getpumpreductionfactor
       use m_GlobalParameters, only: st_pump, st_weir, st_unset, st_orifice, st_bridge, st_culvert, st_uni_weir, st_general_st, st_compound, st_longculvert
       use m_partitioninfo, only: jampi, reducebuf, nreducebuf, my_rank, idomain, reduce_crs
-      use m_longculverts, only: nlongculverts, longculverts, newculverts
+      use m_longculverts_data, only: nlongculverts, longculverts, newculverts
       use m_dambreak_breach, only: fill_dambreak_values, n_db_signals
       use m_link_ghostdata, only: link_ghostdata
       use m_1d_structures, only: t_structure
