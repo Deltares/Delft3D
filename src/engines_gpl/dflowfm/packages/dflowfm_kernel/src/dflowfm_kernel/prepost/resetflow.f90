@@ -115,7 +115,7 @@ contains
       call reset_hydrology_data()
 
       call reset_nearfieldData()
-      
+
       call reset_flow_validatestate()
 
    end subroutine resetFlow

@@ -33,7 +33,7 @@
 !> this module contains the real flow times, only to be managed by setting times in module m_usertimes
 module m_flowtimes
    use precision, only: dp
-   
+
    implicit none
 
    character(len=8) :: refdat !< Reference date (e.g., '20090101'). All times (tstart_user, tend_user, etc.) are w.r.t. to this date.

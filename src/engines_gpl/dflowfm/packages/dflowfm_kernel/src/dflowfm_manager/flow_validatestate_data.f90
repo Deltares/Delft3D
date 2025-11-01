@@ -35,7 +35,7 @@ module m_flow_validatestate_data
 
    use precision, only: dp
    implicit none
-   
+
    integer, parameter :: VALIDATESTATEWINDOWSIZE = 100 !< Number of time steps to include in the sliding average, don't set this too optimistic to avoid too fast simulation breaks.
    integer :: window_start !< Start index in dtavg_window for the moving time window to compute sliding average dt
    integer :: window_current !< Current index in dtavg_window for the moving time window to compute sliding average dt
