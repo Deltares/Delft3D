@@ -43,7 +43,6 @@ module unstruc_model
    use netcdf, only: nf90_double
    use properties, only: prop_get, prop_file, tree_create, tree_destroy
    use m_waveconst
-   use m_flowparameters, only: min_water_level_change_break
 
    implicit none
 
@@ -728,7 +727,7 @@ contains
       use m_circumcenter_method, only: md_circumcenter_method, circumcenter_method, extract_circumcenter_method, circumcenter_tolerance
       use m_check_positive_value, only: check_positive_value
       use m_add_baroclinic_pressure, only: rhointerfaces
-
+      use m_flow_validatestate_data
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -1233,15 +1232,15 @@ contains
          end do
       end if
 
-      call prop_get(md_ptr, 'numerics', 'Maxwaterleveldiff', s01max)
-      call prop_get(md_ptr, 'numerics', 'Maxvelocitydiff', u01max)
-      call prop_get(md_ptr, 'numerics', 'Maxvelocity', umagmax)
-      call prop_get(md_ptr, 'numerics', 'Waterlevelwarn', s01warn)
-      call prop_get(md_ptr, 'numerics', 'Velocitywarn', u01warn)
-      call prop_get(md_ptr, 'numerics', 'Velmagnwarn', umagwarn)
-      call prop_get(md_ptr, 'numerics', 'MinTimestepBreak', dtminbreak)
-      call prop_get(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', min_water_level_change_break)
-      call prop_get(md_ptr, 'numerics', 'MaxSSC', sscmax)
+      call prop_get(md_ptr, 'numerics', 'Maxwaterleveldiff', s01_max_err)
+      call prop_get(md_ptr, 'numerics', 'Maxvelocitydiff', u01_max_err)
+      call prop_get(md_ptr, 'numerics', 'Maxvelocity', umag_max_err)
+      call prop_get(md_ptr, 'numerics', 'Waterlevelwarn', s1_max_warn)
+      call prop_get(md_ptr, 'numerics', 'Velocitywarn', u1abs_max_warn)
+      call prop_get(md_ptr, 'numerics', 'Velmagnwarn', umag_max_warn)
+      call prop_get(md_ptr, 'numerics', 'MinTimestepBreak', dtavg_min_err)
+      call prop_get(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', s01maxavg_min_err)
+      call prop_get(md_ptr, 'numerics', 'MaxSSC', ssc_max_err)
       call prop_get(md_ptr, 'numerics', 'Epshu', epshu)
       call prop_get(md_ptr, 'numerics', 'Epsz0', epsz0)
       epshs = 0.2_dp * epshu ! minimum waterdepth for setting cfu
@@ -1311,7 +1310,7 @@ contains
       end select
 
       call prop_get(md_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, success)
-      
+
       !implicit1d
       call prop_get(md_ptr, 'implicit1d', 'omega', f1dimppar%omega)
       call prop_get(md_ptr, 'implicit1d', 'psi', f1dimppar%psi)
@@ -2654,6 +2653,7 @@ contains
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
+      use m_flow_validatestate_data, only: dtavg_min_err, s01maxavg_min_err, s01_max_err, u01_max_err, umag_max_err, s1_max_warn, u1abs_max_warn, umag_max_err, ssc_max_err, umag_max_warn
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -3213,40 +3213,40 @@ contains
          end do
       end if
 
-      if (writeall .or. (s01max > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxwaterleveldiff', s01max, 'upper bound (in m) on water level changes (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (s01_max_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Maxwaterleveldiff', s01_max_err, 'upper bound (in m) on water level changes (<= 0: no bounds). Run will abort when violated.')
       end if
 
-      if (writeall .or. (u01max > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxvelocitydiff', u01max, 'upper bound (in m/s) on velocity changes (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (u01_max_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Maxvelocitydiff', u01_max_err, 'upper bound (in m/s) on velocity changes (<= 0: no bounds). Run will abort when violated.')
       end if
 
-      if (writeall .or. (umagmax > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxvelocity', umagmax, 'upper bound (in m/s) on velocity (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (umag_max_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Maxvelocity', umag_max_err, 'upper bound (in m/s) on velocity (<= 0: no bounds). Run will abort when violated.')
       end if
 
-      if (writeall .or. (s01warn > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Waterlevelwarn', s01warn, 'warning level (in m) on water level (<= 0: no check).')
+      if (writeall .or. (s1_max_warn > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Waterlevelwarn', s1_max_warn, 'warning level (in m) on water level (<= 0: no check).')
       end if
 
-      if (writeall .or. (u01warn > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Velocitywarn', u01warn, 'warning level (in m/s) on velocity u1 (<= 0: no check).')
+      if (writeall .or. (u1abs_max_warn > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Velocitywarn', u1abs_max_warn, 'warning level (in m/s) on velocity u1 (<= 0: no check).')
       end if
 
-      if (writeall .or. (umagwarn > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Velmagnwarn', umagwarn, 'warning level (in m/s) on velocity magnitude (<= 0: no check).')
+      if (writeall .or. (umag_max_warn > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Velmagnwarn', umag_max_warn, 'warning level (in m/s) on velocity magnitude (<= 0: no check).')
       end if
 
-      if (writeall .or. (dtminbreak > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'MinTimestepBreak', dtminbreak, 'smallest allowed timestep (in s), checked on a sliding average of several timesteps. Run will abort when violated.')
+      if (writeall .or. (dtavg_min_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'MinTimestepBreak', dtavg_min_err, 'smallest allowed timestep (in s), checked on a sliding average of several timesteps. Run will abort when violated.')
       end if
 
-      if (writeall .or. (dtminbreak > 0.0_dp)) then
-         call prop_set(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', min_water_level_change_break, 'stop the simulation when the water level change is below this value')
+      if (writeall .or. (dtavg_min_err > 0.0_dp)) then
+         call prop_set(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', s01maxavg_min_err, 'stop the simulation when the water level change is below this value')
       end if
-      
-      if ((writeall .or. (sscmax > 0.0_dp)) .and. jased == 4) then
-         call prop_set(prop_ptr, 'numerics', 'MaxSSC', sscmax, 'upper bound (in kg/m3) on SSC (<= 0: no bounds). Run will abort when violated.')
+
+      if ((writeall .or. (ssc_max_err > 0.0_dp)) .and. jased == 4) then
+         call prop_set(prop_ptr, 'numerics', 'MaxSSC', ssc_max_err, 'upper bound (in kg/m3) on SSC (<= 0: no bounds). Run will abort when violated.')
       end if
 
       call prop_set(prop_ptr, 'numerics', 'Epshu', epshu, 'Threshold water depth for wet and dry cells')
@@ -3319,7 +3319,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, 'Use far-field velocity for pillars and dikes (0: no (default), 1: yes)')
-      
+
       if (testdryflood /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Testdryingflooding', testdryflood, 'Test for drying flooding algoritm (0: D-Flow FM, 1: Delft3D-FLOW)')
       end if

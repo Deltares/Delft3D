@@ -35,7 +35,7 @@ module m_flowparameters
    use m_sediment, only: jased
    use m_missing
    use m_waveconst
-   use messagehandling, only : idlen
+   use messagehandling, only: idlen
 
    implicit none
 
@@ -330,15 +330,6 @@ module m_flowparameters
    real(kind=dp), parameter :: eps10 = 1d-10 !<
    real(kind=dp), parameter :: eps20 = 1d-20 !< turbulenceTimeIntegrationFactor
    real(kind=dp) :: epshsdif = 1d-2 !< hs < epshsdif: no vertical diffusion if hs < epshsdif
-   real(kind=dp) :: s01max !< water level threshold (m) between s0 and s1 in validation routine
-   real(kind=dp) :: u01max !< velocity threshold (m/s) between u0 and u1 in validation routine
-   real(kind=dp) :: umagmax !< velocity threshold (m/s) for velocity magnitude in validation routine
-   real(kind=dp) :: s01warn !< warning level water level (m) between s0 in validation routine
-   real(kind=dp) :: u01warn !< warning level velocity (m/s) between u0 in validation routine
-   real(kind=dp) :: umagwarn !< warning level velocity (m/s) for velocity magnitude in validation routine
-   real(kind=dp) :: sscmax !< error level concentration (kg/m3) for velocity magnitude in validation routine
-   ! See also m_flowtimes::dtminbreak
-   real(kind=dp) :: min_water_level_change_break !< end simulation when max abs change in water level < this value (m)
    ! parameters controlling flooding/drying/solving
    integer :: testdryflood !< Flag for testing alternative drying flooding algoritm; 0 = standard, 1 =Delft3D-FLOW
    integer :: testfixedweirs !< Flag for fixed weir options; 0 = original Villemonte approach, 1 = Sieben2007
@@ -816,7 +807,7 @@ contains
       upot0 = dmiss
       ukin0 = dmiss
       deltasalinity = dmiss
-      
+
       ibedlevtyp1D = 3 !< 1 : same, 1D, 1 = tiles, xz(flow)=zk(net), bob(1,2) = max(zkr,zkl) , 3=mean netnode based
 
       izbndpos = 0 !< 0 : waterlevel boundary location as in D3DFLOW, 1=on network boundary, 2=on specified boundary polyline
@@ -890,16 +881,6 @@ contains
 
       zbnd = 2.0_dp ! for now only, uniform waterlevel on boundary
 
-      s01max = 0.0_dp ! max. water level change: off
-      u01max = 0.0_dp ! max. velocity change: off
-      umagmax = 0.0_dp ! max. velocity: off
-      ! See also: m_flowtimes::dtminbreak
-      s01warn = 0.0_dp
-      u01warn = 0.0_dp
-      umagwarn = 0.0_dp
-      sscmax = 0.0_dp
-      min_water_level_change_break = dmiss
-      
       ! parameters controlling flooding/drying/solving
       epshu = 1.0e-4_dp ! minimum waterdepth for setting hu>0
       epshs = 0.2_dp * epshu ! minimum waterdepth for setting cfu

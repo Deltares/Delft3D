@@ -42,7 +42,6 @@ module m_flow ! flow arrays-999
    use m_alloc
    use m_vegetation
    use m_ship
-   use m_flowtimes, only: NUMDTWINDOWSIZE
 
    implicit none
 
@@ -478,8 +477,6 @@ module m_flow ! flow arrays-999
    real(kind=dp) :: epsmaxlev = 1.0e-8_dp !< eps lev diff (m)
    real(kind=dp) :: epsmaxlevm = 1.0e-8_dp !< eps lev diff (m) minus part
 
-   real(kind=dp), dimension(NUMDTWINDOWSIZE) :: s1_s0_abs_max = dmiss_pos !< vector for max absolute waterlevel change over dtwindow (m)
-   integer :: it_s1_s0_abs_max = 1 !< index for s1_s0_abs_max
    logical :: debugon !< texts  yes or no
    logical :: validateon !< should we validate flow state yes or no (switched off at water drop)
    integer :: noddifmaxlev !< node number of max lev diff ()

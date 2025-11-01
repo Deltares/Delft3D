@@ -173,7 +173,7 @@ contains
 
                do itu1 = 1, 4 ! furu_loop
                   if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then ! Delft3D-Wave Stokes-drift correction
-                  
+
                      if (modind < 9) then
                         frL = cfwavhi(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
                      elseif (modind == 9) then
@@ -189,7 +189,7 @@ contains
                      if ((jaBaptist >= 2) .or. trachy_resistance) then
                         frL = frL + alfav(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
                      end if
-                  
+
                   else if (ifxedweirfrictscheme > 0) then
                      if (iadv(L) == IADV_SUBGRID_WEIR .or. kcu(L) == 3) then
                         call fixedweirfriction2D(L, k1, k2, frL)
@@ -201,13 +201,13 @@ contains
                   else
                      frL = cfuhi(L) * sqrt(u1L * u1L + v2) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
                   end if
-                  
+
                   bui = 1.0_dp / (dti + advi(L) + frL)
                   fu(L) = cu * bui
                   ru(L) = du * bui
                   u1L0 = u1L
                   u1L = ru(L) - fu(L) * ds
-                  
+
                   if (huvli(L) <= 1.0_dp .or. abs(u1L - u1L0) <= 1.0e-2_dp) then ! less than 1 m deep or small change in velocity: exit
                      exit ! furu_loop
                   end if
