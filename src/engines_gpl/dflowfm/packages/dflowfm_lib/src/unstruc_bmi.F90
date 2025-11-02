@@ -2465,7 +2465,7 @@ contains
                                input_variable=s1, &
                                weighing_variable=a1, &
                                index_start=n1latsg, &
-                               index_end=n2latsg, &
+                               index_end=n2latsg, & 
                                index_to_node=nnlat)
             call average_waterlevels_per_lateral%update()
          end if
