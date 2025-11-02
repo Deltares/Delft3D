@@ -2470,7 +2470,7 @@ contains
             call average_waterlevels_per_lateral%update()
          end if
 
-         if (k1 > 0) then
+         if (item_index > 0) then
             c_lateral_pointer = c_loc(average_waterlevels_per_lateral%values(item_index))
          else
             c_lateral_pointer = c_null_ptr
