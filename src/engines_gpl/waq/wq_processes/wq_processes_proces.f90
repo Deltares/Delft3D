@@ -136,7 +136,8 @@ contains
         real(kind = dp) :: dtspro     ! fractional step dts
         integer(kind = int_wp) :: ipp_dts     ! pointer in default array to process specific dts
         integer(kind = int_wp) :: ipp_delt    ! pointer in default array to process specific delt
-        INTEGER(kind = int_wp) :: ISTEP, num_exchanges
+        INTEGER(kind = int_wp) :: num_exchanges
+        INTEGER(kind = int_wp), save :: ISTEP = 0
         integer(kind = int_wp) :: open_shared_library
         integer(kind = int_wp), save :: ifirst = 1
         logical :: lfound
@@ -155,7 +156,7 @@ contains
 
         real(kind = dp), save :: time_bloom_next = -huge(time_bloom_next)
 
-        integer(4) :: ithndl =  0
+        integer(4), save :: ithndl =  0
 
         if (timon) call timstrt ("wq_processes_proces", ithndl)
 
