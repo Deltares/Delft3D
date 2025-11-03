@@ -142,7 +142,6 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `cutCellList` 🔬 | File with names of cutcell polygons, e.g. cutcellpolygons.lst. |  |  |  |
 | `uniformTyp1D` 🔬 | Uniform type for channel profiles not specified by profloc. |  |  |  |
 | `1D2DInternalLinkType` 🔬 | Link treatment method for type-3 internal links. |  |  |  |
-| `orgFloorLevTopLayDef` 🔬 | Keep original definition of floor level of top layer. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `pipeFile` 🔬 | File \*.pliz containing pipe-based 'culverts'. |  |  |  |
 | `groundLayerThickness` 🔬 | Only in pipes: groundlayer thickness. |  |  | [m] |
 | `extrBl` 🔬 | Extrapolate bed level at boundaries according to the slope. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |

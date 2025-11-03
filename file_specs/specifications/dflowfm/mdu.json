@@ -715,12 +715,6 @@
                     "status": "research"
                 },
                 {
-                    "key": "orgFloorLevTopLayDef",
-                    "value_type": "intbool",
-                    "description": "Keep original definition of floor level of top layer.",
-                    "status": "research"
-                },
-                {
                     "key": "pipeFile",
                     "value_type": "path",
                     "description": "File *.pliz containing pipe-based 'culverts'.",
