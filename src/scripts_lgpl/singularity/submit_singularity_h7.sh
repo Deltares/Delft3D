@@ -1,11 +1,11 @@
 #! /bin/bash
  
-# This is a script for submitting single or multi-node simulations to the Slurm cluster at Deltares (H7).
+# This is a script for submitting single or multi-node simulations to the Slurm cluster at Deltares.
 # Note: Apptainer is the replacement for Singularity.
 
 # Usage:
 #   - Modify this script where needed (e.g. number of nodes, number of tasks per node, Apptainer version).
-#   - Execute this script from the command line of H7 using:
+#   - Execute this script from the command line using:
 #     sbatch ./submit_singularity_h7.sh
 #
 
@@ -31,7 +31,6 @@ module load intelmpi/2021.11.0   # Load the  message-passing library for paralle
  
  
 #--- Setup the container ------------------------------------------------------------------------------------
-# For use within Deltares, Delft3D FM Apptainer containers are available here: P:\d-hydro\delft3dfm_containers\
 # Specify the folder that contains the required version of the Apptainer container
 containerFolder=/path/to/folder/containing/the/sif
 

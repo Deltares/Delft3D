@@ -2015,6 +2015,7 @@ contains
       use m_observations
       use m_monitoring_crosssections
       use m_strucs
+      use m_longculverts_data , only: longculverts
       use m_structures, only: valdambreak
       use m_1d_structures
       use m_wind

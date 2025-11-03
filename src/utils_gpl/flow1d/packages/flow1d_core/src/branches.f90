@@ -363,7 +363,7 @@ contains
                   pbr%grd_input(i) = ngrid_input
                end if
             end if
-
+ 
             ! Administer grid points sequences:
             if (iUCandidate <= pbr%uPointsCount) then
                ! When next u-point does not lie between current gridpoint #i and next #i+1,

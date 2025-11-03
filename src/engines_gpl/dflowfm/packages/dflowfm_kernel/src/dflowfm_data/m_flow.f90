@@ -42,7 +42,6 @@ module m_flow ! flow arrays-999
    use m_alloc
    use m_vegetation
    use m_ship
-   use precision, only: sp
 
    implicit none
 

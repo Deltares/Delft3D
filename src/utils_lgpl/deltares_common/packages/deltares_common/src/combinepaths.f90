@@ -1,4 +1,4 @@
-subroutine combinepaths (firstname, secondname)
+module m_combinepaths
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -25,73 +25,66 @@ subroutine combinepaths (firstname, secondname)
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
-!  
-!  
-!!--description-----------------------------------------------------------------
-! This routine appends the secondname to the path part of firstname, and returns
-! it as an updated version of secondname. Both firstname and secondname may
-! initially contain absolute, relative or no path information.
-!
-! RESTRICTION: The combined path/file length should be less than 256 characters.
-!
-! Examples:
-!
-! firstname             secondname IN       secondname OUT
-! file1.txt             file2.txt           file2.txt
-! dir\file1.txt         file2.txt           dir\file2.txt
-! dir/file1.txt         file2.txt           dir/file2.txt
-! c:\dir\file1.txt      file2.txt           c:\dir\file2.txt
-! //dir/file1.txt       file2.txt           //dir/file2.txt
-! c:\dir\file1.txt      ..\dir2\file2.txt   c:\dir\..\dir2\file2.txt
-! //dir/file1.txt       ../dir2/file2.txt   //dir/../dir2/file2.txt
-! c:\dir\file1.txt      d:\dir2\file2.txt   d:\dir2\file2.txt
-! //dir/file1.txt       //dir2/file2.txt    //dir2/file2.txt
-!
-!!--pseudo code and references--------------------------------------------------
-! NONE
-!!--declarations----------------------------------------------------------------
-    implicit none
-!
-! Global variables
-!
-    character(*), intent(in)  :: firstname
-    character(*)              :: secondname
-!
-! Local variables
-!
-    integer        :: ipos
-    character(256) :: newname
-!
-!! executable statements -------------------------------------------------------
-!
-    secondname = adjustl(secondname)
-    if (len_trim(secondname) > 2) then
-       if (secondname(2:2) == ':') then
-          !
-          ! secondname contains an absolute Windows path
-          ! don't append it to firstname!
-          !
-          return
-       elseif (secondname(1:2) == '//') then
-          !
-          ! secondname contains an absolute Linux/UNIX path
-          ! don't append it to firstname!
-          !
-          return
-       endif
-    endif
-    !
-    ! secondname contains file name or relative path.
-    ! firstname may contain absolute, relative or no path.
-    !
-    ipos = index(firstname, '/', BACK=.true.)
-    ipos = max(ipos,index(firstname, char(92), BACK=.true.)) ! char(92)==backslash
-    !
-    ! ipos = 0: no separator in firstname; 
-    ! no path in firstname to add to secondname; return
-    !
-    if (ipos == 0) return
-    newname = ' '
-    write(newname,'(2a)') firstname(:ipos), trim(secondname)
-    secondname = newname
-end subroutine combinepaths
+   implicit none
+
+   contains
+   
+!> This function appends the second_name to the path part of first_name, and
+!! returns it as a new string. Both first_name and second_name may initially
+!! contain absolute, relative or no path information.
+!!
+!! Examples:
+!!
+!! first_name             second_name              new_name
+!! file1.txt              file2.txt                file2.txt
+!! dir\file1.txt          file2.txt                dir\file2.txt
+!! dir/file1.txt          file2.txt                dir/file2.txt
+!! c:\dir\file1.txt       file2.txt                c:\dir\file2.txt
+!! \\agent\dir\file1.txt  file2.txt                \\agent\dir\file2.txt
+!! /dir/file1.txt         file2.txt                /dir/file2.txt
+!! c:\dir\file1.txt       ..\dir2\file2.txt        c:\dir\..\dir2\file2.txt
+!! \\agent\dir\file1.txt  ..\dir2\file2.txt        \\agent\dir\..\dir2\file2.txt
+!! /dir/file1.txt         ../dir2/file2.txt        /dir/../dir2/file2.txt
+!! c:\dir\file1.txt       d:\dir2\file2.txt        d:\dir2\file2.txt
+!! /dir/file1.txt         /dir2/file2.txt          /dir2/file2.txt
+!! \\agent\dir\file1.txt  \\agent2\dir2\file2.txt  \\agent2\\dir2\file2.txt
+pure function combinepaths (first_name, second_name) result(new_name)
+   character(*), intent(in)  :: first_name !< reference file name
+   character(*), intent(in)  :: second_name !< specification of new file relative to first_name
+   character(len=:), allocatable :: new_name !< combined file name
+
+   integer :: ipos ! position of last path separator in first_name
+
+   new_name = adjustl(second_name)
+   if (len_trim(new_name) > 2) then
+      if (new_name(2:2) == ':') then
+         ! second_name contains an absolute Windows path
+         ! don't append it to first_name!
+         return
+         
+      elseif (new_name(1:2) == '\\') then
+         ! second_name contains an absolute UNC path
+         ! don't append it to first_name!
+         return
+         
+      elseif (new_name(1:1) == '/') then
+         ! second_name contains an absolute Linux/UNIX path
+         ! don't append it to first_name!
+         return
+         
+      endif
+   endif
+
+   ! second_name contains file name or relative path.
+   ! first_name may contain absolute, relative or no path.
+   ipos = index(first_name, '/', BACK=.true.)
+   ipos = max(ipos,index(first_name, char(92), BACK=.true.)) ! char(92)==backslash
+   ! ipos = 0: no separator in first_name; 
+   ! no path in first_name to add to second_name; return
+   if (ipos == 0) return
+   
+   ! otherwise append the second_name to the path part of first_name
+   new_name = first_name(:ipos)//new_name
+end function combinepaths
+
+end module m_combinepaths
