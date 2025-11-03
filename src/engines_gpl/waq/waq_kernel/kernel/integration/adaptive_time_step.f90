@@ -56,7 +56,7 @@ contains
             surface, aleng, ipoint, idpnt, ivpnt, &
             amass, conc, dconc2, bound, idt, &
             idx_box_cell, idx_box_flow, work, volint, sorted_cells, &
-            sorted_fluxes, deriv, wdrawal, iaflag, amass2, &
+            sorted_flows, deriv, wdrawal, iaflag, amass2, &
             ndmpq, num_monitoring_cells, num_waste_loads, iqdmp, dmpq, &
             isdmp, dmps, iwaste, wstdmp, integration_id, &
             ilflag, rhs, diag, acodia, bcodia, &
@@ -86,7 +86,7 @@ contains
         real(kind = real_wp), intent(in) :: area(num_exchanges)               !< Exchange areas in m2
         real(kind = real_wp), intent(in) :: flow(num_exchanges)               !< Flows through the exchange areas in m3/s
         real(kind = real_wp), intent(in) :: surface(nosss)          !< Horizontal surface area
-        real(kind = real_wp), intent(inout) :: aleng(2, num_exchanges)           !< Mixing length to and from the exchange area
+        real(kind = real_wp), intent(inout) :: aleng(2, num_exchanges)           !< Length from interface / exchange to center of cell in direction 'to' [aleng(1,...)] and 'from' [aleng(2,...)]
         integer(kind = int_wp), intent(in) :: ipoint(4, num_exchanges)          !< From, to, from-1, to+1 volume numbers
         integer(kind = int_wp), intent(in) :: idpnt(num_substances_transported)            !< Additional dispersion number per substance
         integer(kind = int_wp), intent(in) :: ivpnt(num_substances_transported)            !< Additional velocity number per substance
@@ -100,7 +100,7 @@ contains
         real(kind = dp), intent(inout) :: work(3, num_cells)          !< Work array
         real(kind = dp), intent(inout) :: volint(num_cells)           !< Fractional migrating volume
         integer(kind = int_wp), intent(inout) :: sorted_cells(num_cells)            !< Order of segments
-        integer(kind = int_wp), intent(inout) :: sorted_fluxes(num_exchanges)              !< Order of fluxes
+        integer(kind = int_wp), intent(inout) :: sorted_flows(num_exchanges)              !< Order of fluxes
         real(kind = real_wp), intent(inout) :: deriv(num_substances_total, nosss)     !< Derivatives of the concentrations
         real(kind = real_wp), intent(inout) :: wdrawal(num_cells)          !< Withdrawals applied to all substances
         integer(kind = int_wp), intent(in) :: iaflag                  !< If 1 then accumulate mass in report array
@@ -120,8 +120,10 @@ contains
         real(kind = dp), intent(inout) :: diag(num_substances_total, nosss)      !< Local diagonal filled with volumes
         real(kind = dp), intent(inout) :: acodia(num_substances_total, max(num_exchanges_z_dir + num_exchanges_bottom_dir, 1)) !< Local work array lower codiagonal
         real(kind = dp), intent(inout) :: bcodia(num_substances_total, max(num_exchanges_z_dir + num_exchanges_bottom_dir, 1)) !< Local work array upper codiagonal
-        integer(kind = int_wp), intent(inout) :: nvert(2, num_cells)         !< Number of vertical cells per column, entry point in ivert
-        integer(kind = int_wp), intent(inout) :: ivert(num_cells)            !< Number of vertical columns
+        integer(kind = int_wp), intent(inout) :: nvert(2, num_cells)         !< Auxiliary variable for cells per column. After initialisation, it contains:
+                                                                             !! nvert(1,idx_col) == index in ivert of uppermost cell for column idx; 
+                                                                             !! nvert(2,idx_cell) == number of column of cell idx (positive if uppermost cell, otherwise negative)
+        integer(kind = int_wp), intent(inout) :: ivert(num_cells)            !< Indices of cells sorted by columns
         integer(kind = int_wp), intent(in) :: num_constants                  !< Number of constants used
         character(20), intent(in) :: coname(num_constants)          !< Constant names
         real(kind = real_wp), intent(in) :: const(num_constants)           !< Constants
@@ -165,7 +167,7 @@ contains
         integer(kind = int_wp), save :: count_boxes                   !< Number of baskets for transportables
         integer(kind = int_wp), allocatable, save :: count_cells_for_box(:)   !< Baskets accumulator cells
         integer(kind = int_wp), allocatable, save :: count_flows_for_box(:)   !< Baskets accumulator flows    , nob+2 stays dry
-        real(kind = dp), allocatable, save :: dt(:)           !< Delta time value of baskets  , nob+1 becomes wet
+        real(kind = dp), allocatable, save :: delta_t_box(:)           !< Delta time value of baskets  , nob+1 becomes wet
         integer(kind = int_wp), allocatable, save :: sep_vert_flow_per_box(:) !< Separation point flows in 3rd direction
         integer(kind = int_wp), save :: count_columns                !< Number of cells per layer
         integer(kind = int_wp) :: isums, isumf                !< Accumulators
@@ -174,14 +176,14 @@ contains
         integer(kind = int_wp) :: idx_cell, idx_flux          !< Offsets in the arrays
         integer(kind = int_wp) :: first_box                   !< First box (with smallest dt) that has been assigned to cells
         integer(kind = int_wp) :: last_box                    !< Last box (with largest dt) that has been assigned to cells
-        integer(kind = int_wp) :: nbox                        !< Last box to integrate at current sub step
+        integer(kind = int_wp) :: last_integr_box             !< Last box to integrate at current sub step
         real(kind = dp) :: fact                               !< Interpolation factor for volumes
         integer(kind = int_wp) :: i_substep, count_substeps   !< Fractional step variables
         integer(kind = int_wp) :: i_cell_begin, i_cell_end, i_flow_begin, i_flow_end          !< Loop variables per box
         integer(kind = int_wp) :: i_top_curr_col, i_top_next_col !< Help variables parallellism
         integer(kind = int_wp) :: ilay                        !< Loop counter layers
         integer(kind = int_wp) :: maxlay                      !< Maximum number of layers observed in this model
-        integer(kind = int_wp) :: bmax                        !< Maximum box number in a column
+        integer(kind = int_wp) :: box_max                        !< Maximum box number in a column
         integer(kind = int_wp) :: changed, remained, iter     !< Flooding help variables
         real(kind = dp), allocatable, save :: low(:), dia(:), upr(:) !< Matrix of one column
         logical massbal                                     !< Set .true. if iaflag eq 1
@@ -226,7 +228,7 @@ contains
                 count_boxes = 13
                 write (file_unit, '(A,i3)') ' Default number of baskets : ', count_boxes
             end if
-            allocate (count_cells_for_box(count_boxes + 2), count_flows_for_box(count_boxes + 2), sep_vert_flow_per_box(count_boxes + 2), dt(count_boxes + 1))
+            allocate (count_cells_for_box(count_boxes + 2), count_flows_for_box(count_boxes + 2), sep_vert_flow_per_box(count_boxes + 2), delta_t_box(count_boxes + 1))
             report = .false.
             i = index_in_array('Iteration report    ', coname)
             if (i > 0) then
@@ -244,7 +246,8 @@ contains
                         '          This is known to cause problems in some cases'
             end if
 
-            if (num_exchanges_z_dir == 0) then         ! vertically integrated model
+            ! if vertically integrated model
+            if (num_exchanges_z_dir == 0) then
                 do cell_i = 1, num_cells
                     nvert(1, cell_i) = cell_i
                     nvert(2, cell_i) = cell_i
@@ -252,7 +255,9 @@ contains
                 end do
                 count_columns = num_cells
                 write (file_unit, '(A)') ' This model is vertically integrated!'
-            else                            ! model with (per cell varying nr of) layers
+
+            ! else model with multiple layers(number possibly different per cell)
+            else
                 ivert = 0
                 nvert = -1                                    !  Determine whether cells have a horizontal exchange
                 do iq = 1, noqh   ! clean-up nvert for all cells with horizontal flow
@@ -271,47 +276,47 @@ contains
                     ifrom = ipoint(1, iq)
                     ito = ipoint(2, iq)
                     if (ifrom <= 0 .or. ito <= 0) cycle
-                    nvert(1, ifrom) = ito                       !  this is the one cell below 'ifrom'
-                    nvert(2, ito) = ifrom                     !  this is the one cell above 'ito'
+                    nvert(1, ifrom) = ito                 !  nvert(1, idx) HERE means cells below cell idx
+                    nvert(2, ito) = ifrom                 !  nvert(2, idx) HERE means cells above cell idx
                 end do
                 idx_flux = 0
                 do cell_i = 1, num_cells
-                    if (nvert(2, cell_i) == 0) then           !  this cell starts a column (has no 'ifrom')
+                    if (nvert(2, cell_i) == 0) then       !  this cell has no cell above --> it is the uppermost one of a column (has no 'ifrom')
                         idx_flux = idx_flux + 1
-                        nvert(2, cell_i) = idx_flux                  !  column starts at ioff in ivert
+                        nvert(2, cell_i) = idx_flux       !  new column starts at idx_flux in ivert
                         ivert(idx_flux) = cell_i
-                        i = nvert(1, cell_i)                       !  this is the cell below
-                        do while (i > 0)
+                        i = nvert(1, cell_i)              !  index of cell below
+                        do while (i > 0)                  ! loop until we reach the bottom of the column (sediment latyer)
                             idx_flux = idx_flux + 1
                             ivert(idx_flux) = i
                             i = nvert(1, i)
                         end do
                     else
-                        nvert(2, cell_i) = 0
+                        nvert(2, cell_i) = 0   ! mark this cell as no upper-most one, so no start of column
                     end if
                 end do
                 count_columns = 0
                 do cell_i = 1, num_cells
-                    if (nvert(2, cell_i) > 0) then
+                    if (nvert(2, cell_i) > 0) then ! if cell is upper-most one == top of column
                         count_columns = count_columns + 1
-                        nvert(1, count_columns) = nvert(2, cell_i)         !  to find head of column
-                        nvert(2, cell_i) = count_columns                !  point to column number
+                        nvert(1, count_columns) = nvert(2, cell_i)    !  idx of upper-most cell in ivert (to find head of column)
+                        nvert(2, cell_i) = count_columns              !  column number
                     end if
                 end do
                 if (count_columns < num_cells) nvert(1, count_columns + 1) = idx_flux + 1
                 write (file_unit, '(A,i8,A)') ' This model has            : ', count_columns, ' columns of cells'
                 maxlay = 0
                 do i = 1, count_columns
-                    i_cell_begin = nvert(1, i)                   !  index of order of the the cell starting (=on top of) column with column index i
+                    i_cell_begin = nvert(1, i)                 !  index of order (in ivert) of the upper-most cell, starting (=on top of) column with column index i
                     if (i < num_cells) then
-                        i_cell_end = nvert(1, i + 1)           !  index of order of the the cell starting (=on top of) column with column index i+1
+                        i_cell_end = nvert(1, i + 1)           !  index of order (in ivert) of the upper-most cell starting (=on top of) column with column index i+1
                     else
                         i_cell_end = num_cells + 1
                     end if
-                    maxlay = max(maxlay, i_cell_end - i_cell_begin)     ! maximum previous and number of cells between columns i and i+1
-                    do j = i_cell_begin + 1, i_cell_end - 1             !  fill nvert(2,cell) for non-head of column cells
+                    maxlay = max(maxlay, i_cell_end - i_cell_begin)     !  maximum previous and number of cells between columns i and i+1
+                    do j = i_cell_begin + 1, i_cell_end - 1             !  loop along cells in that column to assign cells to ivert and mark nvert(2,cell) for non upper-most cells
                         cell_i = ivert(j)
-                        nvert(2, cell_i) = -i           !  for non-head of column cells point to minus the column #
+                        nvert(2, cell_i) = -i           !  for non upper-most cells, make the index negative to point to minus the column number
                     end do
                 end do
                 allocate (low(maxlay), dia(maxlay), upr(maxlay))
@@ -331,15 +336,14 @@ contains
         end if
 
         ! PART 1 : make the administration for the variable time step approach
-        !   1a: fill the array with time-tresholds per basket, 13 baskets span 1 hour - 0.9 second
 
-        dt(1) = real(idt, kind = dp)
+        !   1a: fill the array with time-tresholds per basket, 13 baskets span 1 hour - 0.9 second
+        delta_t_box(1) = real(idt, kind = dp)
         do ibox = 2, count_boxes
-            dt(ibox) = dt(ibox - 1) / 2.0d0
+            delta_t_box(ibox) = delta_t_box(ibox - 1) / 2.0d0
         end do
 
-        !   1b: sum the outgoing (1,..) and ingoing (2,..) horizontal flows and constant diffusions (3,..) per cell
-
+        !   1b: sum the outgoing [work(1,..)] and ingoing [work(2,..)] horizontal flows and constant diffusions [work(3,..)] per cell
         work = 0.0d0
         d = disp(1)
         al = aleng(1, 1)
@@ -362,7 +366,7 @@ contains
             a = area(iq)
             q = flow(iq)
             if (ilflag == 1) al = aleng(1, iq) + aleng(2, iq)
-            e = d * a / al
+            e = d * a / al ! conductance "flow rate" due to dispersion across this exchange
             if (ifrom < 0) then ! ifrom == B.C. => modify flows for ito
                 if (q > 0.0d0) then
                     work(2, ito) = work(2, ito) + q ! increase in inflow
@@ -411,20 +415,21 @@ contains
         idx_box_cell = 0
         wetting = .false.
         do cell_i = 1, num_cells
-            ! dry cell
-            if (work(1, cell_i) <= 0.0d0 .and. & ! no outflow
-                    work(2, cell_i) <= 0.0d0 .and. & ! no inflow
-                    work(3, cell_i) <= 0.0d0) then ! no dispersive flow
-                idx_box_cell(cell_i) = count_boxes + 2 !  cell is dry, number is 1 higher than
-                cycle !  the nr of wet and 'wetting' basket
+            ! no flow at all => dry cell assigned to box (count_boxes + 2)
+            if (work(1, cell_i) <= 0.0d0 .and. &       ! no outflow
+                    work(2, cell_i) <= 0.0d0 .and. &   ! no inflow
+                    work(3, cell_i) <= 0.0d0) then     ! no dispersive flow
+                idx_box_cell(cell_i) = count_boxes + 2 ! cell is dry, the number (count_boxes + 2) is 1 higher than
+                cycle                                  ! the number of wet and 'wetting' basket (count_boxes + 1)
             end if
-            if ((work(1, cell_i) + work(3, cell_i)) * dt(1) < volold(cell_i)) then    !  box 1 works even if volnew(cell_i) is zero
+            if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(1) < volold(cell_i)) then    !  box 1 works even if volnew(cell_i) is zero
                 idx_box_cell(cell_i) = 1
                 cycle
             end if
+            ! if the volume has NOT decreased at the end of the timestep
             if (volnew(cell_i) >= volold(cell_i)) then  !  use only volold(cell_i) to determine fractional step
                 do ibox = 2, count_boxes
-                    if ((work(1, cell_i) + work(3, cell_i)) * dt(ibox) < volold(cell_i)) then
+                    if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(ibox) < volold(cell_i)) then
                         idx_box_cell(cell_i) = ibox     !  this cell in the basket of this dt(ibox)
                         exit
                     end if
@@ -433,9 +438,11 @@ contains
                         wetting = .true.      !  by simultaneous inflow: 'wetting' basket.
                     end if
                 end do
+           ! else the volume has decreased at the end of the timestep
             else !  also the last fractional step should be stable
                 do ibox = 2, count_boxes
-                    if ((work(1, cell_i) + work(3, cell_i) - (volold(cell_i) - volnew(cell_i)) / dt(1)) * dt(ibox) < volnew(cell_i)) then
+                    ! if net value of delta_vol for delta_t_box(ibox) < volnew(cell_i)
+                    if ((work(1, cell_i) + work(3, cell_i) - (volold(cell_i) - volnew(cell_i)) / delta_t_box(1)) * delta_t_box(ibox) < volnew(cell_i)) then
                         idx_box_cell(cell_i) = ibox        !  this cell in the basket of this dt(ibox)
                         exit
                     end if
@@ -447,7 +454,7 @@ contains
             end if
         end do
 
-        !   1d: give each cell of a column the highest basket nr. of the column
+        !   1d: assign each cell the highest box number of the column it belongs to
         do i = 1, count_columns
             i_cell_begin = nvert(1, i)
             if (i < num_cells) then
@@ -455,18 +462,18 @@ contains
             else
                 i_cell_end = num_cells + 1
             end if
-            bmax = 0
+            box_max = 0
             do j = i_cell_begin, i_cell_end - 1
                 cell_i = ivert(j)
                 if (idx_box_cell(cell_i) <= count_boxes + 1) then
-                    bmax = max(bmax, idx_box_cell(cell_i))
+                    box_max = max(box_max, idx_box_cell(cell_i))
                 end if
             end do
-            if (bmax == 0) cycle
+            if (box_max == 0) cycle
             do j = i_cell_begin, i_cell_end - 1
                 cell_i = ivert(j)
                 if (idx_box_cell(cell_i) <= count_boxes + 1) then
-                    idx_box_cell(cell_i) = bmax
+                    idx_box_cell(cell_i) = box_max
                 end if
             end do
         end do
@@ -487,13 +494,13 @@ contains
             end do
         end if
 
-        !   1e: count how many cells in the entire domain are assigned to each type of basket
+        !   1e: count how many cells in the entire domain are assigned to each type of box (basket)
         count_cells_for_box = 0
         do cell_i = 1, num_cells
             count_cells_for_box(idx_box_cell(cell_i)) = count_cells_for_box(idx_box_cell(cell_i)) + 1
         end do
 
-        !   1f: determine how many fluxes in the entire domain are assigned to each type of basket (highest of 'from' and 'to')
+        !   1f: assign a box to each flow and determine how many fluxes in the entire domain are assigned to each type of box or basket (highest of 'from' and 'to')
         count_flows_for_box = 0
         idx_box_flow = 0
         do iq = 1, num_exchanges
@@ -522,7 +529,7 @@ contains
         end if
 
         ! 1h: determine execution order of the cells and fluxes
-        !     sort based on box number, from high to low 
+        !     sort based on box number, from high to low, so from
         !     smaller dt -> run earlier
         !     to larger dt -> run later
         idx_cell = 0
@@ -541,7 +548,7 @@ contains
             do iq = 1, noqh
                 if (idx_box_flow(iq) == ibox) then
                     idx_flux = idx_flux + 1
-                    sorted_fluxes(idx_flux) = iq
+                    sorted_flows(idx_flux) = iq
                 end if
             end do
 
@@ -552,12 +559,12 @@ contains
             do iq = noqh + 1, num_exchanges
                 if (idx_box_flow(iq) == ibox) then
                     idx_flux = idx_flux + 1
-                    sorted_fluxes(idx_flux) = iq
+                    sorted_flows(idx_flux) = iq
                 end if
             end do
         end do
 
-        ! lowest active box number
+        ! find lowest ACTIVELY USED box number
         ! largest time step => last box to evaluate
         do ibox = 1, count_boxes
             if (count_cells_for_box(ibox) > 0) then
@@ -566,7 +573,7 @@ contains
             end if
         end do
 
-        ! highest active box number 
+        ! find highest ACTIVELY USED box number
         ! smallest time step => first box to evaluate
         do ibox = count_boxes, 1, -1
             if (count_cells_for_box(ibox) > 0) then
@@ -592,9 +599,9 @@ contains
         
         if (report) then
             write (file_unit, '(a,i2,A,i2,A,i2)') 'Nr of boxes: ', count_used_boxes, ',first: ', last_box_largest_dt, ', last: ', first_box
-            write (file_unit, '(a,e15.7/)') 'Smallest time step in sec.: ', dt(first_box)
+            write (file_unit, '(a,e15.7/)') 'Smallest time step in sec.: ', delta_t_box(first_box)
         end if
-        dt(count_boxes + 1) = dt(first_box) ! boxes running wet are calculated using the smallest step size
+        delta_t_box(count_boxes + 1) = delta_t_box(first_box) ! boxes running wet are calculated using the smallest step size
 
         !   1i: Create backpointers from cell to order of execution and to box nr.
 
@@ -605,18 +612,20 @@ contains
         
         work = 0.0
         ! Fill the off-diagonals only once per time step
+        ! only done for vertical flows
         do ibox = count_boxes, last_box_largest_dt, -1
             ! first vertical flow for this box index
             i_flow_begin = sep_vert_flow_per_box(ibox) + 1
             ! last vertical flow for this box index
             i_flow_end = count_flows_for_box(ibox)
             
+            ! loop along vertical flows assigned to type ibox
             do i = i_flow_begin, i_flow_end
-                iq = sorted_fluxes(i)
+                iq = sorted_flows(i)
                 ifrom = ipoint(1, iq)             !  The diagonal now is the sum of the
                 ito = ipoint(2, iq)               !  new volume that increments with each step
-                if (ifrom == 0 .or. ito == 0) cycle
-                q = flow(iq) * dt(ibox)
+                if (ifrom == 0 .or. ito == 0) cycle ! if there's any thin wall
+                q = flow(iq) * delta_t_box(ibox)
                 work(3, ifrom) = q               ! flow through lower surface (central or upwind now arranged in one spot, further down)
                 work(1, ito) = q                 ! flow through upper surface
             end do
@@ -626,8 +635,8 @@ contains
         ! PART2: set the fractional step loop for this time step
         do cell_i = 1, num_cells
             do substance_i = 1, num_substances_transported
-                dconc2(substance_i, cell_i) = conc(substance_i, cell_i)      ! Initialize dconc2. Becomes new estimate
-                rhs(substance_i, cell_i)    = amass(substance_i, cell_i)
+                dconc2(substance_i, cell_i) = conc (substance_i, cell_i)      ! Initialize dconc2. Becomes new estimate
+                rhs(substance_i, cell_i)    = amass(substance_i, cell_i)      ! rhs == masses, not concentrations
             end do
         end do
 
@@ -637,17 +646,17 @@ contains
 
         ! Big loop over the substeps
         do i_substep = 1, count_substeps
-            ! Interpolation factor of this step
+            ! fraction of time-step == interpolation factor of this step
             fact = real(i_substep) / real(count_substeps, kind = dp)
                                                                 ! ||i_substep ||  boxes to integrate        ||  modulo logic  ||
                                                                 ! | 1         | fbox                         |                 |
                                                                 ! | 2         | fbox, fbox-1                 | mod(2    ) = 0  |
-            nbox = first_box                                    ! | 3         | fbox                         |                 |
+            last_integr_box = first_box                                    ! | 3         | fbox                         |                 |
             idx_flux = 1                                        ! | 4         | fbox, fbox-1, fbox-2         | mod(2&4  ) = 0  |
             do ibox = 1, count_used_boxes - 1                   ! | 5         | fbox                         |                 |
                 idx_flux = idx_flux * 2                         ! | 6         | fbox, fbox-1                 | mod(2    ) = 0  |
                 if (mod(i_substep, idx_flux) == 0) then         ! | 7         | fbox                         |                 |
-                    nbox = nbox - 1                             ! | 8         | fbox, fbox-1, fbox-2, fbox-3 | mod(2&4&8) = 0  |
+                    last_integr_box = last_integr_box - 1                             ! | 8         | fbox, fbox-1, fbox-2, fbox-3 | mod(2&4&8) = 0  |
                 end if                                          ! | ...       | ...                          |                 |
             end do
 
@@ -704,10 +713,10 @@ contains
                 remained = 0
                 iter = iter + 1
                 do i = i_flow_begin, i_flow_end
-                    iq = sorted_fluxes(i)
+                    iq = sorted_flows(i)
                     if (iq < 0) cycle                ! this flux has been resolved already (it has been previously marked with a negative number)
                     if (flow(iq) == 0.0) cycle
-                    q = flow(iq) * dt(first_box)
+                    q = flow(iq) * delta_t_box(first_box)
                     ifrom = ipoint(1, iq)
                     ito =   ipoint(2, iq)
                     ipb = 0
@@ -725,7 +734,7 @@ contains
                                 if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) + dq
                                 if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
                             end do
-                            sorted_fluxes(i) = -sorted_fluxes(i)           ! mark this flux as resolved
+                            sorted_flows(i) = -sorted_flows(i)           ! mark this flux as resolved
                             changed = changed + 1                          ! count fluxes taken care of
                         end if
                         cycle
@@ -741,7 +750,7 @@ contains
                                 if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) - dq
                                 if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
                             end do
-                            sorted_fluxes(i) = -sorted_fluxes(i)
+                            sorted_flows(i) = -sorted_flows(i)
                             changed = changed + 1
                         end if
                         cycle
@@ -768,7 +777,7 @@ contains
                                         conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                                         if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
                                     end do
-                                    sorted_fluxes(i) = -sorted_fluxes(i)  ! mark this flux as dealt with
+                                    sorted_flows(i) = -sorted_flows(i)  ! mark this flux as dealt with
                                     changed = changed + 1                 ! add one to the number of fluxes dealt with
                                 else
                                     remained = remained + 1               ! add one to the number of fluxes not dealt with because of no water
@@ -786,7 +795,7 @@ contains
                                     conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                                     if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
                                 end do
-                                sorted_fluxes(i) = -sorted_fluxes(i)  ! mark this flux as dealt with
+                                sorted_flows(i) = -sorted_flows(i)  ! mark this flux as dealt with
                                 changed = changed + 1                 ! add one to the number of fluxes dealt with
                             end if
                         end if
@@ -810,7 +819,7 @@ contains
                                         if (volint(ito) > 1.0d-25) conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                                         if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
                                     end do
-                                    sorted_fluxes(i) = -sorted_fluxes(i) ! mark this flux as dealt with
+                                    sorted_flows(i) = -sorted_flows(i) ! mark this flux as dealt with
                                     changed = changed + 1                ! add one to the number of fluxes dealt with
                                 ! else origin cell ('to') will go dry
                                 else
@@ -829,7 +838,7 @@ contains
                                     if (volint(ito) > 1.0d-25) conc(substance_i, ito) = rhs(substance_i, ito) / volint(ito)
                                     if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dq
                                 end do
-                                sorted_fluxes(i) = -sorted_fluxes(i) ! mark this flux as dealt with
+                                sorted_flows(i) = -sorted_flows(i) ! mark this flux as dealt with
                                 changed = changed + 1                ! add one to the number of fluxes dealt with
                             end if
                         end if
@@ -851,10 +860,10 @@ contains
             ! these cells that should have reasonable concentrations
             ! and enough volume now
             do i = i_flow_begin, i_flow_end
-                iq = sorted_fluxes(i)
+                iq = sorted_flows(i)
                 if (iq < 0) cycle
                 if (flow(iq) == 0.0) cycle
-                q = flow(iq) * dt(first_box)
+                q = flow(iq) * delta_t_box(first_box)
                 ifrom = ipoint(1, iq)
                 ito = ipoint(2, iq)
                 ipb = 0
@@ -923,14 +932,14 @@ contains
                 end if
             end do
             do i = i_flow_begin, i_flow_end                                             ! All fluxes of the 'wetting-group' should have been resolved
-                sorted_fluxes(i) = abs(sorted_fluxes(i))                                  ! Reset the flux pointer to its positive value
+                sorted_flows(i) = abs(sorted_flows(i))                                  ! Reset the flux pointer to its positive value
             end do
 
             ! PART2a3: apply all withdrawals that were present in the hydrodynamics as negative wasteload rather than as open boundary flux
             do i = i_cell_begin, i_cell_end
                 iseg2 = sorted_cells(i)                                          ! cell number
                 if (wdrawal(iseg2) == 0.0) cycle
-                q = wdrawal(iseg2) * dt(first_box)
+                q = wdrawal(iseg2) * delta_t_box(first_box)
                 cell_i = ivert(nvert(1, abs(nvert(2, iseg2))))             ! cell number of head of column
                 if (q <= volint(cell_i)) then
                     volint(cell_i) = volint(cell_i) - q
@@ -975,7 +984,7 @@ contains
                         iseg2 = ivert(j)
                         vol = vol + fact * volnew(iseg2) + (1.0d0 - fact) * volold(iseg2)
                         do substance_i = 1, num_substances_transported                                  !    apply the derivatives (also wasteloads)
-                            rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, iseg2) * dt(first_box)
+                            rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, iseg2) * delta_t_box(first_box)
                         end do
                     end do
                     ! calculate concentrations based on new volumes
@@ -1003,13 +1012,13 @@ contains
 
             ! PART2b: set a first order initial horizontal step for all cells in the boxes of this time step
             if (timon) call timstrt("explicit hor-step", ithand3)
-            do ibox = first_box, nbox, -1
+            do ibox = first_box, last_integr_box, -1
                 i_flow_begin = count_flows_for_box(ibox + 1) + 1
                 i_flow_end = sep_vert_flow_per_box(ibox)
                 do i = i_flow_begin, i_flow_end
-                    iq = sorted_fluxes(i)
+                    iq = sorted_flows(i)
                     if (flow(iq) == 0.0) cycle
-                    q = flow(iq) * dt(ibox)
+                    q = flow(iq) * delta_t_box(ibox)
                     ifrom = ipoint(1, iq)
                     ito = ipoint(2, iq)
                     if (ifrom == 0 .or. ito == 0) cycle
@@ -1072,7 +1081,7 @@ contains
             end do                                                     ! End of the loop over boxes
             
             ! Update dconc2 (Estimate of conc used in flux correction)
-            do ibox = first_box, nbox, -1
+            do ibox = first_box, last_integr_box, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
@@ -1092,13 +1101,13 @@ contains
 
             ! PART2c: apply the horizontal flux correction for all cells in the boxes of this time step
             if (timon) call timstrt("flux correction", ithand4)
-            do ibox = first_box, nbox, -1
+            do ibox = first_box, last_integr_box, -1
                 i_flow_begin = count_flows_for_box(ibox + 1) + 1
                 i_flow_end = sep_vert_flow_per_box(ibox)
                 do i = i_flow_begin, i_flow_end
 
                     ! initialisations
-                    iq = sorted_fluxes(i)
+                    iq = sorted_flows(i)
                     ifrom = ipoint(1, iq)
                     ito = ipoint(2, iq)
                     ifrom_1 = ipoint(3, iq)
@@ -1136,17 +1145,17 @@ contains
                         if (.not. loword) then
                             f2 = f1
                             if (q < 0.0d0) f2 = f2 - 1.0
-                            d = d + min(-f2 * q + 0.5d0 * q * q * dt(ibox) / a / al, 0.0d0)
+                            d = d + min(-f2 * q + 0.5d0 * q * q * delta_t_box(ibox) / a / al, 0.0d0)
                         end if
-                        d = d * dt(ibox)
+                        d = d * delta_t_box(ibox)
                         do substance_i = 1, num_substances_transported
                             dq = d * (bound(substance_i, -ifrom) - conc(substance_i, ito))
                             rhs(substance_i, ito) = rhs(substance_i, ito) + dq
                             dconc2(substance_i, ito) = dconc2(substance_i, ito) + dq / vto
                             if (q > 0.0d0) then
-                                dq = dq + q * bound(substance_i, -ifrom) * dt(ibox)
+                                dq = dq + q * bound(substance_i, -ifrom) * delta_t_box(ibox)
                             else
-                                dq = dq + q * conc(substance_i, ito) * dt(ibox)
+                                dq = dq + q * conc(substance_i, ito) * delta_t_box(ibox)
                             end if
                             if (dq > 0.0d0) then
                                 if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) + dq
@@ -1166,17 +1175,17 @@ contains
                         if (.not. loword) then
                             f2 = f1
                             if (q < 0) f2 = f2 - 1.0d0
-                            d = d + min(-f2 * q + 0.5d0 * q * q * dt(ibox) / a / al, 0.0d0)
+                            d = d + min(-f2 * q + 0.5d0 * q * q * delta_t_box(ibox) / a / al, 0.0d0)
                         end if
-                        d = d * dt(ibox)
+                        d = d * delta_t_box(ibox)
                         do substance_i = 1, num_substances_transported
                             dq = d * (conc(substance_i, ifrom) - bound(substance_i, -ito))
                             rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dq
                             dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dq / vfrom
                             if (q > 0.0d0) then
-                                dq = dq + q * conc(substance_i, ifrom) * dt(ibox)
+                                dq = dq + q * conc(substance_i, ifrom) * delta_t_box(ibox)
                             else
-                                dq = dq + q * bound(substance_i, -ito) * dt(ibox)
+                                dq = dq + q * bound(substance_i, -ito) * delta_t_box(ibox)
                             end if
                             if (dq > 0.0d0) then
                                 if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) + dq
@@ -1193,8 +1202,8 @@ contains
                     vto = volint(ito)
                     f2 = f1
                     if (q < 0.0d0) f2 = f2 - 1.0d0
-                    d = e + min(-f2 * q + 0.5d0 * q * q * dt(ibox) / a / al, 0.0d0)
-                    d = d * dt(ibox)
+                    d = e + min(-f2 * q + 0.5d0 * q * q * delta_t_box(ibox) / a / al, 0.0d0)
+                    d = d * delta_t_box(ibox)
                     do substance_i = 1, num_substances_transported
                         if (d < 0.0d0) then
                             e2 = d * (conc(substance_i, ifrom) - conc(substance_i, ito))
@@ -1245,9 +1254,9 @@ contains
                         dconc2(substance_i, ito) = dconc2(substance_i, ito) + dq / vto
                         if (ipb > 0) then
                             if (q > 0.0d0) then
-                                dq = dq + q * conc(substance_i, ifrom) * dt(ibox)
+                                dq = dq + q * conc(substance_i, ifrom) * delta_t_box(ibox)
                             else
-                                dq = dq + q * conc(substance_i, ito) * dt(ibox)
+                                dq = dq + q * conc(substance_i, ito) * delta_t_box(ibox)
                             end if
                             if (dq > 0.0d0) then
                                 dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dq
@@ -1262,7 +1271,7 @@ contains
 
             ! PART2c1: Set the vertical advection of water only for all cells in the boxes of this time step
             if (timon) call timstrt("implicit ver-step", ithand5)
-            do ibox = first_box, nbox, -1
+            do ibox = first_box, last_integr_box, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
@@ -1352,13 +1361,13 @@ contains
 
             ! PART2c2: apply all withdrawals that were present in the hydrodynamics as negative wasteload rather than as open boundary flux
             if (timon) call timstrt("massbal", ithand6)
-            do ibox = first_box, nbox, -1
+            do ibox = first_box, last_integr_box, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
                     cell_i = sorted_cells(i)                                          ! cell number
                     if (wdrawal(cell_i) == 0.0) cycle
-                    q = wdrawal(cell_i) * dt(ibox)
+                    q = wdrawal(cell_i) * delta_t_box(ibox)
                     if (q <= volint(cell_i)) then
                         volint(cell_i) = volint(cell_i) - q
                     else
@@ -1388,7 +1397,7 @@ contains
                 i_flow_begin = sep_vert_flow_per_box(ibox) + 1
                 i_flow_end = count_flows_for_box(ibox)
                 do i = i_flow_begin, i_flow_end
-                    iq = sorted_fluxes(i)
+                    iq = sorted_flows(i)
                     ipb = iqdmp(iq)
                     if (ipb == 0) cycle
                     ifrom = ipoint(1, iq)
@@ -1398,7 +1407,7 @@ contains
 
                     ! if upwind differences
                     if (vertical_upwind) then
-                        q = flow(iq) * dt(ibox)
+                        q = flow(iq) * delta_t_box(ibox)
                         ! if flow q goes from cell 'from' to 'to'
                         if (q > 0.0) then
                             do substance_i = 1, num_substances_transported
@@ -1414,7 +1423,7 @@ contains
                         end if
                     ! else central differences
                     else
-                        q = flow(iq) * dt(ibox) / 2.0d0
+                        q = flow(iq) * delta_t_box(ibox) / 2.0d0
                         ! if flow q goes from cell 'from' to 'to'
                         if (q > 0.0) then
                             do substance_i = 1, num_substances_transported
@@ -1433,7 +1442,7 @@ contains
             end do
 
             ! PART2e: store the final results in the appropriate arrays for next fractional steps
-            do ibox = first_box, nbox, -1
+            do ibox = first_box, last_integr_box, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
@@ -1443,13 +1452,13 @@ contains
                     ! if cell is not dry
                     if (vol > 1.0d-25) then
                         do substance_i = 1, num_substances_transported
-                            rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, cell_i) * dt(ibox)
+                            rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, cell_i) * delta_t_box(ibox)
                             conc(substance_i, cell_i) = rhs(substance_i, cell_i) / vol
                         end do
                     ! else cell is dry
                     else
                         do substance_i = 1, num_substances_transported
-                            rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, cell_i) * dt(ibox)
+                            rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, cell_i) * delta_t_box(ibox)
                             conc(substance_i, cell_i) = dconc2(substance_i, cell_i)
                         end do
                     end if
@@ -1485,12 +1494,12 @@ contains
         if (timon) call timstrt("vert.add.fluxes", ithand7)
 
         ! adjust the vertical distances (mixing lengths) in the grid
-        do ibox = count_boxes + 1, nbox, -1
+        do ibox = count_boxes + 1, last_integr_box, -1
             i_flow_begin = sep_vert_flow_per_box(ibox) + 1
             i_flow_end = count_flows_for_box(ibox)
             ! loop along vertical flows in each box
             do i = i_flow_begin, i_flow_end
-                iq = sorted_fluxes(i)
+                iq = sorted_flows(i)
                 ifrom = ipoint(1, iq)
                 ito = ipoint(2, iq)
                 if (ifrom == 0 .or. ito == 0) cycle
