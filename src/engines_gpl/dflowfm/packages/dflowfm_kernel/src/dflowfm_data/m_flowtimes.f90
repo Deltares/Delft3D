@@ -33,6 +33,7 @@
 !> this module contains the real flow times, only to be managed by setting times in module m_usertimes
 module m_flowtimes
    use precision, only: dp
+
    implicit none
 
    character(len=8) :: refdat !< Reference date (e.g., '20090101'). All times (tstart_user, tend_user, etc.) are w.r.t. to this date.
@@ -63,12 +64,10 @@ module m_flowtimes
    real(kind=dp) :: dti !< inverse  computational timestep (1/s)
    real(kind=dp) :: dtprev !< previous computational timestep (s)  (1s is a bit like sobek)
    real(kind=dp) :: dtmin !< dt < dtmin : surely crashed
-   real(kind=dp) :: dtminbreak !< smallest allowed timestep (in s), checked on a sliding average of several timesteps in validation routine.
    real(kind=dp) :: dtminhis !< smallest timestep within most recent his interval
    real(kind=dp) :: tfac !< time unit in seconds
-   real(kind=dp), allocatable :: tvalswindow(:) !< (NUMDTWINDOWSIZE) Time1 values in a moving time window to compute sliding average dt
-   integer, parameter :: NUMDTWINDOWSIZE = 100 !< Number of time steps to include in the sliding average, don't set this too optimistic to avoid too fast simulation breaks.
-   integer :: idtwindow_start !< Current start index in tvalswindow(:) array. This array is filled in a cyclic order, with never more than NUMDTWINDOWSIZE time values.
+
+   integer :: window_start !< Current start index in dtavg_window(:) array. This array is filled in a cyclic order, with never more than VALIDATESTATEWINDOWSIZE time values.
    real(kind=dp) :: time0 !< current   julian (s) of s0
    real(kind=dp) :: time1 !< current   julian (s) of s1  ! and of course, time1 = time0 + dt
    real(kind=dp) :: tim1bnd !< last time boundary signals were given
@@ -213,7 +212,6 @@ contains
       dt_nodal = 21600.0_dp !< User specified time step (s) for nodal factors update.
       dt_max = 30.0_dp !< Computational timestep limit by user.
       dtmin = 1.0e-4_dp !< dt < dtmin : surely crashed
-      dtminbreak = 0.0_dp !< smallest allowed timestep, otherwise break: off
       dtminhis = 9.0e9_dp !< smallest timestep within most recent his interval
       dt_init = 1.0_dp
       dt_trach = 1200.0_dp !< User specified DtTrt Trachytope roughness update time interval (s)
@@ -271,7 +269,7 @@ contains
          deallocate (map_classes_ucdir)
       end if
 
-      tmini = -1d9 !< initial time for updating the 4 above
+      tmini = -1.0e9_dp !< initial time for updating the 4 above
 
       dt_update_roughness = 86400.0_dp
 
@@ -286,13 +284,14 @@ contains
 !! Upon loading of new model/MDU, use default_flowtimes() instead.
    subroutine reset_flowtimes()
 
+      implicit none
       dtprev = dt_init !< previous computational timestep (s)  (1s is a bit like sobek)
       dts = dt_init !< internal computational timestep (s)
       dti = 1.0_dp / dts !< inverse  computational timestep (1/s)
       time0 = 0.0_dp !< current   julian (s) of s0
       time1 = 0.0_dp !< current   julian (s) of s1  ! and of course, time1 = time0 + dt
-      tim1bnd = -9d9 !< last time bnd signals were given
-      tim1fld = -9d9 !< last time bnd signals were given
+      tim1bnd = -9.0e9_dp !< last time bnd signals were given
+      tim1fld = -9.0e9_dp !< last time bnd signals were given
 
       call setTUDUnitString()
 
@@ -319,13 +318,6 @@ contains
       time_timings = tstart_user !< next time for timing output
       time_split = tstart_user !< next time for a new time-split output file
       time_split0 = time_split !< Start time for the current time-split output file.
-      if (dtminbreak > 0.0_dp) then
-         if (.not. allocated(tvalswindow)) then
-            allocate (tvalswindow(NUMDTWINDOWSIZE))
-         end if
-         idtwindow_start = 1 ! Start fresh, with first time0 on pos #1.
-         tvalswindow(idtwindow_start) = tstart_user
-      end if
 
       it_map = 0 !< Nr of snapshots presently in map file
       it_wav = 0 !< Nr of snapshots presently in time-avg'd file JRE

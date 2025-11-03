@@ -15,6 +15,12 @@ if "%~1" == "" (
     set dimrset_bin=%1
 )
 
+
+del /f COSUMO\FF2NF\FF2NF*.* >del.log 2>&1
+del /f del.log
+
+
+rem Remove quotes surrounding dimrset_bin, add the appropriate run script, re-add quotes
 call "%dimrset_bin:"=%\run_dflow2d3d.bat"
 
 

@@ -15,6 +15,7 @@ if "%~1" == "" (
     set dimrset_bin=%1
 )
 
+rem Remove quotes surrounding dimrset_bin, add the appropriate run script, re-add quotes
 call "%dimrset_bin:"=%\run_dflow2d3d.bat"
 
 

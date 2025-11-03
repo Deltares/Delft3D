@@ -117,7 +117,7 @@ contains
       use m_1d_structures
       use m_structures
       use m_GlobalParameters
-      use m_longculverts
+      use m_longculverts_data, only: nlongculverts
       use m_laterals, only: numlatsg, nNodesLat, geomXLat, geomYLat, nlatnd, nodeCountLat
       use odugrid
       use m_statistical_output_types, only: SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
@@ -1458,7 +1458,7 @@ contains
       use m_dambreak_breach, only: get_dambreak_names
       use unstruc_channel_flow, only: network
       use m_flowparameters, only: jahisweir, jahisorif, jahispump, jahisgate, jahiscgen, jahisuniweir, jahisdambreak, jahisculv, jahisbridge, jahiscmpstru, jahislongculv, jahiscdam, jahissourcesink, jahislateral
-      use m_longculverts, only: longculverts, nlongculverts
+      use m_longculverts_data, only: longculverts, nlongculverts
       use m_GlobalParameters, only: ST_PUMP
       use m_structures, only: number_of_pump_nodes, jaoldstr
       use m_laterals, only: lat_ids, numlatsg
