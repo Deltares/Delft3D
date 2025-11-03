@@ -1188,7 +1188,8 @@
                     "default_value": 0.0,
                     "value_type": "float",
                     "description": "Smallest allowed timestep, checked on a sliding average of several timesteps. Run will abort when violated.",
-                    "unit": "s"
+                    "unit": "s",
+                    "status": "research"
                 },
                 {
                     "key": "epshu",
@@ -1827,6 +1828,20 @@
                     "value_type": "string",
                     "description": "TODO.",
                     "status": "research"
+                },
+                {
+                    "key": "pillarFarFieldVelocity",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Use far-field velocity for pillars.",
+                    "status": "research"
+                },
+                {
+                    "key": "minWaterlevelChangeBreak",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Stop the simulation when the rolling mean of the maximum water level change is below this value (considered when larger than 0.0).",
+                    "unit": "m"
                 }
             ]
         },

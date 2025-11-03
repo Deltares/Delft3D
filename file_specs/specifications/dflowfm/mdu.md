@@ -215,7 +215,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `waterLevelWarn` | Warning level on water level (<= 0: no check). | `0.0` |  | [m AD] |
 | `velocityWarn` | Warning level on velocity (<= 0: no check). | `0.0` |  | [m/s] |
 | `velMagnWarn` | Warning level on velocity magnitude (<= 0: no check). | `0.0` |  | [m/s] |
-| `minTimeStepBreak` | Smallest allowed timestep, checked on a sliding average of several timesteps. Run will abort when violated. | `0.0` |  | [s] |
+| `minTimeStepBreak` 🔬 | Smallest allowed timestep, checked on a sliding average of several timesteps. Run will abort when violated. | `0.0` |  | [s] |
 | `epshu` | Threshold water depth for wetting and drying. | `0.0001` |  | [m] |
 | `epsMaxLev` | Stop criterium for non linear iteration. | `1e-08` |  |  |
 | `epsMaxLevM` | Stop criterium for Nested Newton loop in non-linear iteration. | `1e-08` |  |  |
@@ -286,6 +286,8 @@ This section contains the settings of specific parts of the flow solver, such as
 | `ilutype` 🔬 | TODO. |  |  |  |
 | `nlevel` 🔬 | TODO. |  |  |  |
 | `dtol` 🔬 | TODO. |  |  |  |
+| `pillarFarFieldVelocity` 🔬 | Use far-field velocity for pillars. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
+| `minWaterlevelChangeBreak` | Stop the simulation when the rolling mean of the maximum water level change is below this value (considered when larger than 0.0). | `0.0` |  | [m] |
 
 
 # [physics]
