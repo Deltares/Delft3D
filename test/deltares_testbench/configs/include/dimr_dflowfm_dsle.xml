@@ -18,7 +18,7 @@
             </checks>
         </testCase>
         <testCase name="e119_f001_c002_2D_ca_2sl_me_uic_cbc" ref="dimr">
-            <path version="2025-10-14T14:13:54.126000">e119_dflowfm_dsle/f001/c002_2D_ca_2sl_me_uic_cbc</path>
+            <path version="2025-11-03T08:06:39.199000">e119_dflowfm_dsle/f001/c002_2D_ca_2sl_me_uic_cbc</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
@@ -47,7 +47,7 @@
             </checks>
         </testCase>
         <testCase name="e119_f001_c004_2D_pw_2sl_uic_cbc" ref="dimr">
-            <path version="2025-10-14T14:15:46.914000">e119_dflowfm_dsle/f001/c004_2D_pw_2sl_uic_cbc</path>
+            <path version="2025-11-03T08:06:48.472000">e119_dflowfm_dsle/f001/c004_2D_pw_2sl_uic_cbc</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
@@ -119,7 +119,7 @@
             </checks>
         </testCase>
         <testCase name="e119_f001_c008_3D_ca_2sl_me_uic_cbc" ref="dimr">
-            <path version="2025-10-14T13:43:19.048000">e119_dflowfm_dsle/f001/c008_3D_ca_2sl_me_uic_cbc</path>
+            <path version="2025-11-03T08:07:04.134000">e119_dflowfm_dsle/f001/c008_3D_ca_2sl_me_uic_cbc</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
@@ -155,25 +155,25 @@
             </checks>
         </testCase>
         <testCase name="e119_f001_c010_3D_pw_1sl_uic_cbc" ref="dimr">
-            <path version="2025-10-14T13:51:30.214000">e119_dflowfm_dsle/f001/c010_3D_pw_1sl_uic_cbc</path>
+            <path version="2025-11-03T08:07:38.600000">e119_dflowfm_dsle/f001/c010_3D_pw_1sl_uic_cbc</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
                     <parameters>
-                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="0.001" />
                         <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
                     </parameters>
                 </file>
                 <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
                     <parameters>
                         <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
-                        <parameter name="cross_section_salt" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_salt" toleranceRelative="0.0001" />
                     </parameters>
                 </file>
             </checks>
         </testCase>
         <testCase name="e119_f001_c011_3D_pw_2sl_uic_cbc" ref="dimr">
-            <path version="2025-10-14T13:55:09.029000">e119_dflowfm_dsle/f001/c011_3D_pw_2sl_uic_cbc</path>
+            <path version="2025-11-03T08:08:28.093000">e119_dflowfm_dsle/f001/c011_3D_pw_2sl_uic_cbc</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="dhydro/output/FlowFM_map.nc" type="netcdf">

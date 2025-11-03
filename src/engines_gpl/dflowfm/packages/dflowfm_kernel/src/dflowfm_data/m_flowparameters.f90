@@ -35,7 +35,7 @@ module m_flowparameters
    use m_sediment, only: jased
    use m_missing
    use m_waveconst
-   use messagehandling, only : idlen
+   use messagehandling, only: idlen
 
    implicit none
 
@@ -219,12 +219,12 @@ module m_flowparameters
 
    integer :: izbndpos !< 0 : waterlevel boundary location as in D3DFLOW, 1=on network boundary, 2=on specified boundary polyline
 
-   real(kind=dp) :: blmeanbelow !<  : if not -999d0, below this level the cell centre bedlevel is the mean of surrouding netnodes
-   real(kind=dp) :: blminabove !<  : if not -999d0, above this level the cell centre bedlevel is the min of surrouding netnodes
+   real(kind=dp) :: blmeanbelow !<  : if not dmiss, below this level the cell centre bedlevel is the mean of surrouding netnodes
+   real(kind=dp) :: blminabove !<  : if not dmiss, above this level the cell centre bedlevel is the min of surrouding netnodes
    real(kind=dp) :: blmin !<  : lowest bedlevel point in model
 
-   real(kind=dp) :: upot0 = -999.0_dp !<  : initial potential energy
-   real(kind=dp) :: ukin0 = -999.0_dp !<  : initial potential energy
+   real(kind=dp) :: upot0 !<  : initial potential energy
+   real(kind=dp) :: ukin0 !<  : initial potential energy
 
    integer :: jaupdbndbl !< Update bl at boundary (1 = update, 0 = no update)
    integer :: jaupdbobbl1d !< Update bl and bobs for 1d network (call to setbobs_1d only at initialization)
@@ -314,7 +314,7 @@ module m_flowparameters
    real(kind=dp) :: waterdepthini1D !< uniform initial depth (m)
    real(kind=dp) :: uini !< uniform initial velociy    (m/s),
    real(kind=dp) :: salini !< uniform initial sal        (ppt)
-   real(kind=dp) :: deltasalinity = -999d0 !< uniform initial sal        (ppt)
+   real(kind=dp) :: deltasalinity !< uniform initial sal        (ppt)
    real(kind=dp) :: Sal0abovezlev !< sal=0 above lev= zlev      (m)
    real(kind=dp) :: temini !< uniform initial temp       (degC)
    real(kind=dp) :: spirini !< uniform initial spirint    (m/s)
@@ -330,15 +330,6 @@ module m_flowparameters
    real(kind=dp), parameter :: eps10 = 1d-10 !<
    real(kind=dp), parameter :: eps20 = 1d-20 !< turbulenceTimeIntegrationFactor
    real(kind=dp) :: epshsdif = 1d-2 !< hs < epshsdif: no vertical diffusion if hs < epshsdif
-   real(kind=dp) :: s01max !< water level threshold (m) between s0 and s1 in validation routine
-   real(kind=dp) :: u01max !< velocity threshold (m/s) between u0 and u1 in validation routine
-   real(kind=dp) :: umagmax !< velocity threshold (m/s) for velocity magnitude in validation routine
-   real(kind=dp) :: s01warn !< warning level water level (m) between s0 in validation routine
-   real(kind=dp) :: u01warn !< warning level velocity (m/s) between u0 in validation routine
-   real(kind=dp) :: umagwarn !< warning level velocity (m/s) for velocity magnitude in validation routine
-   real(kind=dp) :: sscmax !< error level concentration (kg/m3) for velocity magnitude in validation routine
-   ! See also m_flowtimes::dtminbreak
-
    ! parameters controlling flooding/drying/solving
    integer :: testdryflood !< Flag for testing alternative drying flooding algoritm; 0 = standard, 1 =Delft3D-FLOW
    integer :: testfixedweirs !< Flag for fixed weir options; 0 = original Villemonte approach, 1 = Sieben2007
@@ -447,9 +438,9 @@ module m_flowparameters
 
    real(kind=dp) :: botlayminthick !< minimum bot layer thickness (m)
 
-   real(kind=dp) :: uniformsalinityabovez = -999d0 !< above this level uniform inisaltop (m) dmiss==do not use
+   real(kind=dp) :: uniformsalinityabovez !< above this level uniform inisaltop (m) dmiss==do not use
 
-   real(kind=dp) :: uniformsalinitybelowz = -999d0 !< below this level uniform inisal    (m) dmiss==do not use
+   real(kind=dp) :: uniformsalinitybelowz !< below this level uniform inisal    (m) dmiss==do not use
 
    integer :: jbasqbnddownwindhs !< 0 : original hu on qbnd, 1 = downwind hs on qbnd
 
@@ -809,8 +800,13 @@ contains
       ! 4 : Bottom levels at velocity points  (=flow links), using min  network levels xk, yk, zk  bl = lowest connected link
       ! 5 : Bottom levels at velocity points  (=flow links), using max  network levels xk, yk, zk  bl = lowest connected link
 
-      blmeanbelow = -999.0_dp
-      blminabove = -999.0_dp
+      blmeanbelow = dmiss
+      blminabove = dmiss
+      uniformsalinityabovez = dmiss
+      uniformsalinitybelowz = dmiss
+      upot0 = dmiss
+      ukin0 = dmiss
+      deltasalinity = dmiss
 
       ibedlevtyp1D = 3 !< 1 : same, 1D, 1 = tiles, xz(flow)=zk(net), bob(1,2) = max(zkr,zkl) , 3=mean netnode based
 
@@ -860,7 +856,7 @@ contains
       ifixedweirscheme1D2D = 0 !< 0 = use regular fixedweirscheme also on 1D2D links, 1 = iterative 1d2d lateral coupling on 1D2D links
       fixedweircontraction = 1.0_dp !< flow width = flow width*fixedweircontraction
       fixedweirtopwidth = 3.0_dp !< e.g. 4.00 (m)
-      fixedweirtopfrictcoef = -999.0_dp !< if .ne. dmiss, use this friction coefficient on top width
+      fixedweirtopfrictcoef = dmiss !< if .ne. dmiss, use this friction coefficient on top width
       fixedweirtalud = 4.0_dp !< e.g. 1 to 4 talud
       isimplefixedweirs = 1
       ifxedweirfrictscheme = 0 !< 0 = friction based on hu, 1 = friction based on subgrid weirfriction scheme
@@ -872,27 +868,18 @@ contains
       jacheckmonitor = 0
 
       sini = 0.0_dp ! uniform initial waterlevel (m),   (uniform bottom level = zkuni)
-      waterdepthini1D = -999.0_dp
+      waterdepthini1D = dmiss
       uini = 0 ! uniform initial velocity   (m/s)
       salini = 0.0_dp !< uniform initial sal       (ppt)
       temini = 6.0_dp !< uniform initial temp      (degC)
       spirini = 0.0_dp !< uniform initial spirint   (m/s)
 
-      Sal0abovezlev = -999.0_dp !< if not dmiss, only seta salini below this level
+      Sal0abovezlev = dmiss !< if not dmiss, only seta salini below this level
       zkdropstep = 1.0e-2_dp !< Amount of bottomlevel to be added with dropland (m)
       sdropstep = 1.0_dp !< Amount of water to be added with dropwater (m)
-      uniformhu = -999.0_dp !< Uniformhu
+      uniformhu = dmiss !< Uniformhu
 
       zbnd = 2.0_dp ! for now only, uniform waterlevel on boundary
-
-      s01max = 0.0_dp ! max. water level change: off
-      u01max = 0.0_dp ! max. velocity change: off
-      umagmax = 0.0_dp ! max. velocity: off
-      ! See also: m_flowtimes::dtminbreak
-      s01warn = 0.0_dp
-      u01warn = 0.0_dp
-      umagwarn = 0.0_dp
-      sscmax = 0.0_dp
 
       ! parameters controlling flooding/drying/solving
       epshu = 1.0e-4_dp ! minimum waterdepth for setting hu>0
