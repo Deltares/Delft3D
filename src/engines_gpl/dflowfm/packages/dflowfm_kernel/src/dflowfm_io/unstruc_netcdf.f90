@@ -15850,7 +15850,7 @@ contains
             else
                L = lnxi + (Li - lnx1d)
             end if
-            if (is_valid_1d_netlink(l)) then ! internal 1D edges and open boundary links
+            if (abs(kcu(L)) == 1) then ! internal 1D edges and open boundary links
                n1dedges = n1dedges + 1
                edge_nodes(1:2, n1dedges) = ln(1:2, L) - ndx2d !only 1d edge nodes
                !mappings
