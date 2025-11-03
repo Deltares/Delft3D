@@ -2945,8 +2945,8 @@ contains
       if (writeall .or. useVolumeTables) then
          call prop_set(prop_ptr, 'volumeTables', 'useVolumeTables', useVolumeTables, 'Use 1D volume tables (0: no, 1: yes).')
          if (useVolumeTables) then
-            call prop_set(md_ptr, 'volumeTables', 'increment', tableIncrement, 'Desired increment for volume tables')
-            call prop_set(md_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile, 'Use volume table file (0: no, 1: yes)')
+            call prop_set(prop_ptr, 'volumeTables', 'increment', tableIncrement, 'Desired increment for volume tables')
+            call prop_set(prop_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile, 'Use volume table file (0: no, 1: yes)')
          end if
       end if
 
@@ -3225,8 +3225,8 @@ contains
          call prop_set(prop_ptr, 'numerics', 'MinTimestepBreak', dtavg_min_err, 'smallest allowed timestep (in s), checked on a sliding average of several timesteps. Run will abort when violated.')
       end if
 
-      if (writeall .or. (dtavg_min_err > 0.0_dp)) then
-         call prop_set(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', s01maxavg_min_err, 'stop the simulation when the water level change is below this value')
+      if (writeall .or. (s01maxavg_min_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'MinWaterlevelChangeBreak', s01maxavg_min_err, 'Stop the simulation when the rolling mean of the maximum water level change is below this value (m), (considered when larger than 0.0)')
       end if
 
       if ((writeall .or. (ssc_max_err > 0.0_dp)) .and. jased == 4) then
