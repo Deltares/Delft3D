@@ -27,13 +27,36 @@ docker login \
 # Template JSON config files to use the configurable models path
 find config -name '*.json' -exec sed -i "s|/data/input/|/data/${MODELS_PATH}/|g" {} \;
 
-# Run verschillentool (all configs).
-find config -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
-    --volume="${VAHOME}/${MODELS_PATH}:/data/${MODELS_PATH}:ro" \
-    --volume="${VAHOME}/reference:/data/reference:ro" \
-    --volume="${PWD}/{}:/data/{}:ro" \
-    --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
-    containers.deltares.nl/delft3d/verschillentool:release_v1.0.2 --config "/data/{}" ';'
+# Function to check if all NetCDF files referenced in a JSON config exist
+check_model_files_exist() {
+    local json_file="$1"
+    
+    # Extract file paths from JSON (looking for .nc files)
+    local nc_paths=$(grep -o '"/data/[^"]*\.nc"' "$json_file" | tr -d '"' | sed "s|^/data/|${VAHOME}/|")
+    
+    for nc_path in $nc_paths; do
+        if [[ ! -f "$nc_path" ]]; then
+            echo "Missing file: $nc_path (from config: $json_file)"
+            return 1
+        fi
+    done
+    return 0
+}
+
+# Run verschillentool only for configs with available model data
+for json_config in $(find config -name '*.json' -iregex "$MODEL_REGEX"); do
+    if check_model_files_exist "$json_config"; then
+        echo "Running verschillentool for: $json_config"
+        docker run --rm \
+            --volume="${VAHOME}/${MODELS_PATH}:/data/${MODELS_PATH}:ro" \
+            --volume="${VAHOME}/reference:/data/reference:ro" \
+            --volume="${PWD}/${json_config}:/data/${json_config}:ro" \
+            --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
+            containers.deltares.nl/delft3d/verschillentool:release_v1.0.2 --config "/data/${json_config}"
+    else
+        echo "Skipping verschillentool for: $json_config (missing model files)"
+    fi
+done
 
 # Use the last part of the REFERENCE_PREFIX as the REFERENCE_TAG
 REFERENCE_TAG="${REFERENCE_PREFIX##*/}"
