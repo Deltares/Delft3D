@@ -49,7 +49,7 @@ contains
       use m_drawthis, only: ndraw
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
-      use m_transport, only: dtmin_transp, kk_dtmin
+      use m_transport, only: dtmin_transp, kk_dtmin, NUMCONST
       use m_get_dtmax, only: get_dtmax
       use m_comp_dxiAu, only: comp_dxiAu
       use m_flowparameters, only: ja_transport_local_time_step
@@ -471,17 +471,19 @@ contains
             end if
          end if
 
-!        Transport based time step restriction
-!        compute areas of horizontal diffusive fluxes divided by Dx
-         call comp_dxiAu()
-
-!        Get maximum transport time step
-         call get_dtmax()
-
-         if (ja_transport_local_time_step == 0) then
-            if (dts > dtmin_transp) then
-               dts = dtmin_transp; kkcflmx = kk_dtmin
-            end if
+         if (NUMCONST > 0) then
+!            Transport based time step restriction
+!            compute areas of horizontal diffusive fluxes divided by Dx
+             call comp_dxiAu()
+    
+!            Get maximum transport time step
+             call get_dtmax()
+    
+             if (ja_transport_local_time_step == 0) then
+                if (dts > dtmin_transp) then
+                   dts = dtmin_transp; kkcflmx = kk_dtmin
+                end if
+             end if
          end if
 
          if (dts > dt_max) then
