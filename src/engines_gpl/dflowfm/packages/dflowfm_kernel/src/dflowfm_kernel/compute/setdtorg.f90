@@ -481,8 +481,6 @@ contains
          if (ja_transport_local_time_step == 0) then
              if (dts > dtmin_transp) then
                 dts = dtmin_transp; kkcflmx = kk_dtmin
-             else
-                dtsc = dts ! Courant-driven timestep
              end if
          end if
 
