@@ -1,4 +1,9 @@
-subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowVelocityType)
+module m_get_flow_fields
+implicit none
+private
+public :: get_flow_fields
+contains
+subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowVelocityType)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -356,3 +361,4 @@ if (sr%swveg .and. sr%dom(1)%qextnd(q_veg) >= 1) then
    !
    call dealloc_input_fields(fif, wavedata%mode)
 end subroutine get_flow_fields
+end module m_get_flow_fields

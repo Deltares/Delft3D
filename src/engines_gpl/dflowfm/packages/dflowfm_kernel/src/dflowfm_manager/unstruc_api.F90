@@ -84,11 +84,10 @@ module unstruc_api
 contains
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   subroutine initialize_precice_coupling()
+   subroutine initialize_precice_coupling(flow_vertex_ids)
       use precice, only: precicef_create, precicef_create_with_communicator, precicef_get_mesh_dimensions, precicef_set_vertices, &
-                         precicef_initialize, precicef_write_data, precicef_advance, precicef_get_max_time_step_size
+                         precicef_initialize, precicef_write_data, precicef_advance, precicef_get_max_time_step_size, precicef_requires_initial_data
       use m_partitioninfo, only: jampi, numranks, my_rank, DFM_COMM_DFMWORLD
-      use m_flowtimes, only: dt_user
       use m_flowgeom, only: bl
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       implicit none(type, external)
@@ -100,6 +99,8 @@ contains
       character(kind=c_char, len=*), parameter :: mesh_name = "fm_flow_nodes"
       character(kind=c_char, len=*), parameter :: data_name = "bed_levels"
       integer(kind=c_int) :: is_initial_data_required
+      real(kind=c_double), dimension(:), allocatable :: inverted_bed_levels
+      integer :: i
 
       if (jampi == 0) then
          print *, '[FM] Initializing preCICE for serial execution'
@@ -112,7 +113,11 @@ contains
       call register_flow_nodes_with_precice(flow_vertex_ids)
       call precicef_requires_initial_data(is_initial_data_required)
       if (is_initial_data_required /= 0) then
-         call precicef_write_data(mesh_name, data_name, size(flow_vertex_ids), flow_vertex_ids, bl, len(mesh_name), len(data_name))
+         allocate(inverted_bed_levels(size(flow_vertex_ids)))
+         do i = 1, size(flow_vertex_ids)
+            inverted_bed_levels(i) = -bl(i)
+         end do
+         call precicef_write_data(mesh_name, data_name, size(flow_vertex_ids), flow_vertex_ids, inverted_bed_levels, len(mesh_name), len(data_name))
       end if
       call precicef_initialize()
    end subroutine initialize_precice_coupling
@@ -136,17 +141,27 @@ contains
       real(kind=c_double) :: dummy_trisize
       integer(kind=c_int) :: num_triangles, jatri, is_required, i
 
+      x_coordinates = xz(1:ndxi)
+      y_coordinates = yz(1:ndxi)
+
+      allocate (mesh_coordinates(2 * ndxi))
+      do i = 1, ndxi
+         mesh_coordinates(2 * i - 1) = x_coordinates(i)
+         mesh_coordinates(2 * i) = y_coordinates(i)
+      end do
+
+      allocate (flow_vertex_ids(ndxi))
+      call precicef_set_vertices(mesh_name, ndxi, mesh_coordinates, flow_vertex_ids, len(mesh_name))
+      print *, '[FM] Registered ', ndxi, ' vertices with preCICE'
+
       call precicef_requires_mesh_connectivity_for(mesh_name, is_required, len(mesh_name))
 
       if (is_required == 0) then
-         print *, '[FM] Mesh does not need to be registered with PreCICE.'
+         print *, '[FM] Mesh connectivity does not need to be registered with PreCICE.'
          return
       else
          print *, '[FM] Registering mesh with PreCICE.'
       end if
-
-      x_coordinates = xz(1:ndxi)
-      y_coordinates = yz(1:ndxi)
 
       ! Allocate arrays for triangulation output
       ! Maximum possible triangles for n points is approximately 2*n
@@ -169,16 +184,6 @@ contains
          print *, '[FM] Successfully generated ', num_triangles, ' triangles for ', ndxi, ' nodes'
       end if
 
-      allocate (mesh_coordinates(2 * ndxi))
-      do i = 1, ndxi
-         mesh_coordinates(2 * i - 1) = x_coordinates(i)
-         mesh_coordinates(2 * i) = y_coordinates(i)
-      end do
-
-      allocate (flow_vertex_ids(ndxi))
-      call precicef_set_vertices(mesh_name, ndxi, mesh_coordinates, flow_vertex_ids, len(mesh_name))
-      print *, '[FM] Registered ', ndxi, ' vertices with preCICE'
-
       allocate (precice_triangle_nodes(3 * num_triangles))
       do i = 1, 3 * num_triangles
          precice_triangle_nodes(i) = flow_vertex_ids(triangle_nodes(i))
@@ -192,7 +197,7 @@ contains
       use precice, only: precicef_set_vertices
       implicit none(type, external)
 
-      character(kind=c_char, len=*), parameter :: mesh_name = "fm_com_mesh"
+      character(kind=c_char, len=*), parameter :: mesh_name = "com_mesh"
       real(kind=c_double), dimension(2) :: mesh_coordinates
       integer(kind=c_int), dimension(1) :: vertex_ids
 
@@ -211,7 +216,7 @@ contains
    end function is_coupling_ongoing
 
    subroutine advance_precice_time_window(user_time_step, bed_levels, flow_vertex_ids)
-      use precice, only: precicef_advance
+      use precice, only: precicef_advance, precicef_write_data
       use precision, only: dp
       use, intrinsic :: iso_c_binding, only: c_double
       implicit none(type, external)
@@ -222,28 +227,19 @@ contains
 
       character(kind=c_char, len=*), parameter :: mesh_name = "fm_flow_nodes"
       character(kind=c_char, len=*), parameter :: data_name = "bed_levels"
+      real(kind=c_double), dimension(:), allocatable :: inverted_bed_levels
+      integer :: i
+
+      allocate(inverted_bed_levels(size(flow_vertex_ids)))
+      do i = 1, size(flow_vertex_ids)
+         inverted_bed_levels(i) = -bed_levels(i)
+      end do
 
       if (is_coupling_ongoing() /= 0) then
-         call precicef_write_data(mesh_name, data_name, size(flow_vertex_ids), flow_vertex_ids, bed_levels, len(mesh_name), len(data_name))
+         call precicef_write_data(mesh_name, data_name, size(flow_vertex_ids), flow_vertex_ids, inverted_bed_levels, len(mesh_name), len(data_name))
          call precicef_advance(real(user_time_step, kind=c_double))
       end if
    end subroutine advance_precice_time_window
-
-   subroutine advance_precice_coupling(user_time_step, bed_levels, flow_vertex_ids)
-      use precice, only: precicef_advance, precicef_write_data
-      use precision, only: dp
-      implicit none(type, external)
-
-      real(kind=dp), intent(in) :: user_time_step
-      real(kind=dp), dimension(:), intent(in) :: bed_levels
-      integer(kind=c_int), dimension(:), intent(in) :: flow_vertex_ids
-
-      character(kind=c_char, len=*), parameter :: mesh_name = "fm_flow_nodes"
-      character(kind=c_char, len=*), parameter :: data_name = "bed_levels"
-
-      call precicef_write_data(mesh_name, data_name, size(flow_vertex_ids), flow_vertex_ids, bed_levels, len(mesh_name), len(data_name))
-      call precicef_advance(real(user_time_step, kind=c_double))
-   end subroutine advance_precice_coupling
 
    subroutine finalize_precice_coupling()
       use precice, only: precicef_finalize
@@ -408,10 +404,6 @@ contains
       use messagehandling, only: warn_flush
       use unstruc_display
       use unstruc_model
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-      use m_flowtimes, only: dt_user
-      use m_flowgeom, only: bl
-#endif
       integer :: jastop
       type(init_result_t) :: init_result
 
@@ -421,12 +413,9 @@ contains
       iresult = init_result%iresult
       jastop = 0
       do while (time_user < tstop_user .and. jastop == 0 .and. iresult == DFM_NOERR) ! time loop
-         call flowstep(jastop, iresult)
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-         call advance_precice_coupling(dt_user, bl, init_result%flow_vertex_ids)
-#endif
+         call flowstep(jastop, init_result)
       end do
-      if (iresult /= DFM_NOERR) then
+      if (init_result%iresult /= DFM_NOERR) then
          call mess(LEVEL_WARN, 'Error during computation time loop. Details follow:')
          call dfm_strerror(msgbuf, iresult)
          call warn_flush()
@@ -554,21 +543,24 @@ contains
 #endif
    end function flowinit
 
-   subroutine flowstep(jastop, iresult)
+   subroutine flowstep(jastop, init_result)
       use unstruc_display, only: ntek, plottofile
       use m_gui
       use dfm_error
       use m_drawthis
       use m_draw_nu
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
       use m_flowtimes, only: dt_user
+      use m_flowgeom, only: bl
+#endif
       implicit none(type, external)
 
       integer, intent(out) :: jastop !< Communicate back to caller: whether to stop computations (1) or not (0)
-      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
+      type(init_result_t), intent(inout) :: init_result
       integer :: key
 
       jastop = 0
-      iresult = DFM_GENERICERROR
+      init_result%iresult = DFM_GENERICERROR
 
       if (jatimer == 1) call starttimer(ITOTAL)
 
@@ -577,12 +569,12 @@ contains
          goto 1234
       end if
 
-      call flow_usertimestep(key, iresult) ! one user_step consists of several flow computational time steps
+      call flow_usertimestep(key, init_result%iresult) ! one user_step consists of several flow computational time steps
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-      call advance_precice_time_window(dt_user)
+      call advance_precice_time_window(dt_user, bl, init_result%flow_vertex_ids)
 #endif
-      if (iresult /= DFM_NOERR) then
+      if (init_result%iresult /= DFM_NOERR) then
          jastop = 1
          goto 888
       end if
@@ -609,7 +601,7 @@ contains
 
 1234  if (jatimer == 1) call stoptimer(ITOTAL)
 
-      iresult = DFM_NOERR
+      init_result%iresult = DFM_NOERR
       return ! Return with success
 
 888   continue

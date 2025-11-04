@@ -1,3 +1,8 @@
+module m_swan_tot
+   implicit none
+   private
+   public :: swan_tot
+   contains
 subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_levels)
 !----- GPL ---------------------------------------------------------------------
 !
@@ -40,7 +45,9 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_leve
    use buffer
    use meteo
    use m_deletehotfile
+   use m_get_flow_fields, only: get_flow_fields
    use write_swan_datafile, only: write_swan_file
+   use, intrinsic :: iso_c_binding, only: c_double
    !
    implicit none
 !
@@ -50,7 +57,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_leve
    integer, intent(in) :: n_swan_grids
    type(wave_data_type) :: wavedata
    integer, intent(in) :: selectedtime ! <=0: no time selected, >0: only compute for swan_run%timwav(selectedtime)
-   real, dimension(14), optional, intent(out) :: bed_levels
+   real(kind=c_double), dimension(:), allocatable, intent(inout) :: bed_levels
 !
 ! Local variables
 !
@@ -450,15 +457,23 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_leve
                                & wavedata)
          end if
 
-         if (present(bed_levels)) then
+         if (allocated(bed_levels)) then
+            index = 0
             do j = 1, swan_input_fields%nmax
                do i = 1, swan_input_fields%mmax
-                  index = (j - 1) * swan_input_fields%mmax + i
-                  if (index > 14) then
-                     exit
+                  if (swan_grids(i_swan)%kcs(i, j) == 1) then
+                     index = index + 1
+                     if (index > size(bed_levels)) then
+                        write(*,'(a,i0,a,i0)') '*** WARNING: More active nodes (', index-1, &
+                           ') than bed_levels array size (', size(bed_levels), ')'
+                        exit
+                     end if
+                     bed_levels(index) = real(swan_input_fields%dps(i, j), kind=c_double)
                   end if
-                  bed_levels(index) = swan_input_fields%dps(i, j)
                end do
+               if (index > size(bed_levels)) then
+                  exit
+               end if
             end do
          end if
 
@@ -548,3 +563,4 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_leve
       end if
    end do ! time steps
 end subroutine swan_tot
+end module m_swan_tot
