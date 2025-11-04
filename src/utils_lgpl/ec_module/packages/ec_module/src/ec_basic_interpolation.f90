@@ -746,7 +746,7 @@
    NUMEDGE = 0
    IF (NS  <  3) RETURN
 
-   if (jatri /= 1 .and. jatri /= 3) then
+   if (jatri /= 1) then
       return
    end if
 
