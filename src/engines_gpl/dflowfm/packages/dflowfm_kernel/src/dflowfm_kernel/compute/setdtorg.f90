@@ -476,12 +476,12 @@ contains
          call comp_dxiAu()
 
 !        Get maximum transport time step
-         call get_dtmax()      
+         call get_dtmax()
 
          if (ja_transport_local_time_step == 0) then
-             if (dts > dtmin_transp) then
-                dts = dtmin_transp; kkcflmx = kk_dtmin
-             end if
+            if (dts > dtmin_transp) then
+               dts = dtmin_transp; kkcflmx = kk_dtmin
+            end if
          end if
 
          if (dts > dt_max) then
