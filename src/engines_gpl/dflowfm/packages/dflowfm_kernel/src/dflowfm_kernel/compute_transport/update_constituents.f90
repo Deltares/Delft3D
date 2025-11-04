@@ -85,7 +85,6 @@ contains
       use m_get_ndeltasteps, only: get_ndeltasteps
       use m_get_jaupdatehorflux, only: get_jaupdatehorflux
       use m_get_jaupdate, only: get_jaupdate
-      use m_get_dtmax, only: get_dtmax
       use m_fill_rho, only: fill_rho
       use m_fill_constituents, only: fill_constituents
       use m_extract_rho, only: extract_rho
@@ -97,7 +96,6 @@ contains
       use m_comp_horfluxtot, only: comp_horfluxtot
       use m_comp_fluxver, only: comp_fluxver
       use m_comp_fluxhor3d, only: comp_fluxhor3d
-      use m_comp_dxiau, only: comp_dxiau
       use m_flowgeom, only: Ndx, Ndxi, Lnx ! static mesh information
       use m_flow, only: Ndkx, Lnkx, u1, q1, au, qw, zws, sqi, vol1, kbot, ktop, Lbot, Ltop, kmxn, kmxL, kmx, viu, vicwws, wsf, jadecaytracers
       use m_flowtimes, only: dts
@@ -143,12 +141,6 @@ contains
       else
          call fill_constituents(1)
       end if
-
-!  compute areas of horizontal diffusive fluxes divided by Dx
-      call comp_dxiAu()
-
-!  get maximum transport time step
-      call get_dtmax()
 
       call get_ndeltasteps()
 

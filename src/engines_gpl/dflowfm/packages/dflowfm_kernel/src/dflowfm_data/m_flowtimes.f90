@@ -73,6 +73,7 @@ module m_flowtimes
    real(kind=dp) :: tim1bnd !< last time boundary signals were given
    real(kind=dp) :: tim1fld !< last time field    signals were given
    integer :: ja_time_step_analysis = 0
+   integer :: ja_transport_local_time_step = 1 !< local time stepping for transport 0=no, 1=yes
    real(kind=dp), allocatable :: dtcell(:) !< time step per cell based on CFL (s), size:ndkx
    real(kind=dp), allocatable :: time_wetground(:) !< Cumulative time when water is above ground level, size: ndxi (now only for 1d, later also for 2d)
 

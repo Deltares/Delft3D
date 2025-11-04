@@ -1770,6 +1770,7 @@ contains
       call prop_get(md_ptr, 'Time', 'dtInit', dt_init)
 
       call prop_get(md_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis)
+      call prop_get(md_ptr, 'Time', 'transportLocalTimeStepping', ja_transport_local_time_step)
 
       call prop_get(md_ptr, 'Time', 'startDateTime', start_date_time, success)
       if (len_trim(start_date_time) > 0 .and. success) then
@@ -3651,7 +3652,8 @@ contains
       call prop_set(prop_ptr, 'Time', 'dtFacMax', dt_fac_max, 'Max timestep increase factor ( )')
       call prop_set(prop_ptr, 'Time', 'dtInit', dt_init, 'Initial computation timestep (s)')
 
-      call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no, 1=see file *.steps')
+      call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no, 1=yes (default)')
+      call prop_set(prop_ptr, 'Time', 'transportLocalTimeStep', ja_transport_local_time_step, '0=no, 1=yes (default) enables local time stepping in the transport module')
 
       if (writeall .or. ja_timestep_auto /= 1) then
          call prop_set(prop_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
