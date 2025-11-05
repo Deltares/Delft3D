@@ -358,6 +358,7 @@ cmake .. \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DENABLE_PARALLEL4=ON \
+    -DENABLE_DAP=OFF \
     -DZLIB_INCLUDE_DIR=/usr/local/include \
     -DZLIB_LIBRARY=/usr/local/lib/libz.so \
     -DSzip_INCLUDE_DIRS=/usr/local/include \
