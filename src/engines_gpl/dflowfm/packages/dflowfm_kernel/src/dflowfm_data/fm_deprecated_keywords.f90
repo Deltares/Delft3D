@@ -23,6 +23,7 @@ contains
 
       ! Adding DEPRECATED MDU keywords
       call add_deprecated_keyword(deprecated_mdu_keywords, 'General', 'AutoStart', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'OrgFloorlevtoplaydef', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
@@ -38,7 +39,6 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'iThinDykeScheme', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'manholeFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'noOptimizedPolygon', OBSOLETE)
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'OrgFloorlevtoplaydef', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'hkad', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'iThinDykeScheme', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'thinDykeContraction', OBSOLETE)
