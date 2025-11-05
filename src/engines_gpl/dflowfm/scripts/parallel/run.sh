@@ -2,7 +2,7 @@
 #$ -V
 #$ -j yes
 
-MPIRUNEXEC=/path/to/mpirun
+MPIRUNEXEC=/opt/mpich2-1.0.8-intel64/bin/mpirun
 
 OPTS=-autostartstop
 
@@ -20,7 +20,7 @@ else
 fi
 echo "processes per node: $processes_per_node"
 
-exedir=''
+exedir=/u/pijl/bin 
 #libdir=$D3D_HOME/flow2d3d/lib 
 libdir=''
 

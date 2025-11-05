@@ -9,12 +9,7 @@ nNodes=1
 nProc=3
 
 # set DIMR version to be used
-if [ -z "$1" ]; then
-    dimrdir=../../../build_all/lnx64/bin
-else
-    dimrdir=$1
-fi
-
+dimrdir=/p/d-hydro/dimrset/latest
 
 # select queue; one of : normal-e3-c7 , normal-e5-c7
 queue=normal-e3-c7
@@ -36,10 +31,10 @@ export jobName="${PWD##*/}"
 
 
 if [ "$nPart" == "1" ]; then
-    $dimrdir/run_dimr.sh -m $dimrFile
+    $dimrdir/lnx64/bin/run_dimr.sh -m $dimrFile
 else
     cd fm
-    $dimrdir/run_dflowfm.sh --partition:ndomains=$nPart:icgsolver=6 $mduFile
+    $dimrdir/lnx64/bin/run_dflowfm.sh --partition:ndomains=$nPart:icgsolver=6 $mduFile
     cd ..
-    $dimrdir/run_dimr.sh -c $nProc -m $dimrFile
+    $dimrdir/lnx64/bin/run_dimr.sh -c $nProc -m $dimrFile
 fi

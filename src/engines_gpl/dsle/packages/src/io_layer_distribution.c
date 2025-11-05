@@ -3,11 +3,10 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "log/log.h"
 
-static inline const int fsign(const double x) { return (x > 0) - (x < 0); }
+inline const int fsign(const double x) { return (x > 0) - (x < 0); }
 
 void cleanup_profile(profile_t *profile) {
   if (profile == NULL) {

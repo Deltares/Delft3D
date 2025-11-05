@@ -83,6 +83,7 @@ real(hp)           :: ws
 real(hp)           :: zumod
 character(len=256) :: runid
 character(len=256) :: filenm
+character(len=256) :: error_message
 !
 ! Local variables: parameters
 !

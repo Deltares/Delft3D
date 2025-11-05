@@ -86,8 +86,6 @@ contains
       use fm_statistical_output
       use fm_deprecated_keywords, only: default_fm_deprecated_keywords
       use m_sediment, only: deallocgrains, default_sediment
-      use m_flow_validatestate, only: default_flow_validatestate
-
       implicit none
 
       ! Only reset counters and other scalars, allocatables should be
@@ -171,7 +169,6 @@ contains
       call reset_sedtra()
       call deallocgrains()
       call default_sediment()
-      call default_flow_validatestate()
 
       !Reset samples:
       ns = 0

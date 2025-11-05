@@ -1,3 +1,5 @@
+if(WIN32)
+
 cmake_minimum_required(VERSION 3.15)
 
 project(libdsle)
@@ -23,9 +25,6 @@ execute_process(COMMAND git describe --tags --first-parent HEAD
 string(REPLACE "-g" ".g" git_describe "${git_describe}")
 string(REPLACE "-dirty" ".dirty" git_describe "${git_describe}")
 string(REPLACE "-" "+" git_describe "${git_describe}")
-if (NOT git_describe)
-    set(git_describe "unknown")
-endif()
 set(PACKAGE_VERSION_FULL "${git_describe}")
 
 configure_file(config.h.in config.h ESCAPE_QUOTES)
@@ -140,3 +139,4 @@ add_subdirectory(tests)
 install(
     TARGETS
     dsle RUNTIME DESTINATION lib)
+endif(WIN32)
