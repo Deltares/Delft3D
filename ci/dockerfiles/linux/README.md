@@ -228,3 +228,15 @@ cmake --install build_fm-suite_debug
 This should allow you to build the binaries. Since this folder was mounted from Ubuntu in WSL2, the resulting binaries will be located there.
 Note that these will be written there with root privileges (since sudo was used), and sudo will be required again to remove these directories.
 Afterwards, the resulting binaries can be run within a clean almalinux 8 image if the install was successful.
+
+### Run test case
+When the build is finished you can try to run a test case using the examples folder:
+```
+cd /checkouts/delft3d/examples/dflowfm/01_dflowfm_sequential/
+./run_example.sh
+```
+Be sure to have the following  environment variables set:
+```
+export PATH="/checkouts/delft3d/install_fm-suite_debug/bin:${PATH}" 
+export LD_LIBRARY_PATH="/checkouts/delft3d/install_fm-suite_debug/lib:${LD_LIBRARY_PATH}"
+```
