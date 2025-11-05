@@ -471,19 +471,17 @@ contains
             end if
          end if
 
-         if (NUMCONST > 0) then
-!            Transport based time step restriction
-!            compute areas of horizontal diffusive fluxes divided by Dx
-             call comp_dxiAu()
-    
-!            Get maximum transport time step
-             call get_dtmax()
-    
-             if (ja_transport_local_time_step == 0) then
-                if (dts > dtmin_transp) then
-                   dts = dtmin_transp; kkcflmx = kk_dtmin
-                end if
-             end if
+         if (ja_transport_local_time_step == 0 .and. NUMCONST > 0) then
+!           Transport based time step restriction (based on previous flow conditions)
+!           compute areas of horizontal diffusive fluxes divided by Dx
+            call comp_dxiAu()
+
+!           Get maximum transport time step (based on previous flow conditions)
+            call get_dtmax()
+
+            if (dts > dtmin_transp) then
+               dts = dtmin_transp; kkcflmx = kk_dtmin
+            end if
          end if
 
          if (dts > dt_max) then
