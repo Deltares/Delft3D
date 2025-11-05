@@ -37,7 +37,6 @@ module m_f1dimp_data
    !
    use precision
    use m_network, only: t_network
-   
    !use m_flowgeom, only: tnode !you cannot because <flow1d_implicit> project does not depend on <dflowfm_kernel>
    
    implicit none
@@ -97,8 +96,8 @@ module m_f1dimp_data
       
       integer                          :: istep                  !<  Current time step number (at t n+1 ) 
       !integer, dimension(2)            :: itim                   !<   Actual time level (at t n+1 ) expressed in date and time. Format:
-      !                                                               !– itim(1) = YYYYMMDD (year,month,day)
-      !                                                               !– itim(2) = HHMMSSHH (hour,minute,second, hundredth of a second)
+      !                                                               !â€“ itim(1) = YYYYMMDD (year,month,day)
+      !                                                               !â€“ itim(2) = HHMMSSHH (hour,minute,second, hundredth of a second)
       
       double precision                :: time                   !<  Actual time level (at t n+1 ) in seconds.
       double precision                :: dtf                    !<  Flow time step in seconds.     
