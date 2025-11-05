@@ -188,7 +188,7 @@ contains
          sam0tot = sam1tot
          sam1tot = 0.0_dp
 
-         !$OMP PARALLEL DO &
+         !$OMP PARALLEL DO                &
          !$OMP PRIVATE(cell_index_3d,kb,kt,km) &
          !$OMP REDUCTION(+:sam1tot)
          do cell_index_2d = 1, ndxi
@@ -240,7 +240,7 @@ contains
       end if
 
       if (stm_included) then
-         !$OMP PARALLEL DO &
+         !$OMP PARALLEL DO             &
          !$OMP PRIVATE(cell_index_2d,kb,kt,cell_index_3d)
          do cell_index_2d = 1, ndx
             call getkbotktop(cell_index_2d, kb, kt)
@@ -272,7 +272,7 @@ contains
 
             jastep = 1 ! 1 = first hor. transport, then limiting
 
-            !$OMP PARALLEL DO &
+            !$OMP PARALLEL DO    &
             !$OMP PRIVATE(k,flx,seq,wse,hsk,dtvi,wsemx,j,qb,dgrlay,kb) &
             !$OMP REDUCTION(+:dvolbot)
             do k = 1, ndxi
@@ -327,7 +327,7 @@ contains
 
             sedi = 0.0_dp
 
-            !$OMP PARALLEL DO &
+            !$OMP PARALLEL DO    &
             !$OMP PRIVATE(kk,flx, seq, wse, hsk,n,k,dtvi,wsemx,j,qb,dgrlay,kb) &
             !$OMP REDUCTION(+:dvolbot)
 
@@ -371,7 +371,7 @@ contains
             end do
             !$OMP END PARALLEL DO
 
-            !$OMP PARALLEL DO &
+            !$OMP PARALLEL DO    &
             !$OMP PRIVATE(k,j,kb)
             do k = 1, ndxi
                kb = kbot(k)
@@ -400,14 +400,14 @@ contains
                   constituents(itemp, kb) = constituents(itemp, ki)
                end if
                if (jased > 0) then
-                  if (stm_included) then
+                  if (.not. stm_included) then
+                     do j = 1, mxgr
+                        sed(j, kb) = sed(j, ki)
+                     end do
+                  else
                      do j = 1, stmpar%lsedsus
                         jj = ised1 + j - 1
                         constituents(jj, kb) = constituents(jj, ki)
-                     end do
-                  else
-                     do j = 1, mxgr
-                        sed(j, kb) = sed(j, ki)
                      end do
                   end if
                end if
