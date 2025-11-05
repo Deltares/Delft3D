@@ -822,6 +822,11 @@ contains
                l1d2d = l1d2d + 1
                kn_new(1:3, l1d2d) = [K1, K2, K3]
                if (japermout == 1) Lperm_new(l1d2d) = Lperm(L)
+            !else if (K3 == LINK_1D2D_INTERNAL .or. K3 == LINK_1D2D_LONGITUDINAL .or. &
+            !         K3 == LINK_1D2D_STREETINLET .or. K3 == LINK_1D2D_ROOF) then
+            !   l1 = l1 + 1
+            !   kn_new(1:3, l1) = [K1, K2, K3]
+            !   if (japermout == 1) Lperm_new(l1) = Lperm(L)
             else if (K3 == 0 .or. K3 == 2) then
                l2 = l2 + 1
                kn_new(1:3, l2) = [K1, K2, K3]
