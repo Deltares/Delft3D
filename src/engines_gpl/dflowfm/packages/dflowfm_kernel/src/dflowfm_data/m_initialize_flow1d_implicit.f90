@@ -250,7 +250,6 @@ contains
       call realloc(f1dimppar%grd_fmLb_sre, lnx1Db - lnxi, 2)
       call realloc(f1dimppar%waoft, ngrid, 18)
       call realloc(f1dimppar%bfrict, 3, nbran)
-      call realloc(f1dimppar%sectc, 1, ngrid, 1, 3)
       call realloc(f1dimppar%sectv, ngrid, 8)
       !`nd_mor` is a derived type. We cannot use `realloc` here.
       if (allocated(nd_mor)) then 
