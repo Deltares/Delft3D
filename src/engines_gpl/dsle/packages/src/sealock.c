@@ -4,6 +4,7 @@
 #include "load_phase_wise.h"
 #include "load_time_averaged.h"
 #include "timestamp.h"
+#include "log/log.h"
 
 #include <assert.h>
 #include <float.h>

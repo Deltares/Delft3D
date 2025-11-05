@@ -889,9 +889,11 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        endif
        taks0 = max(aksfac*rc, 0.01_fp*h1)
        !
-       if (wave .and. tp(nm)>0.0_fp) then
-          delr  = 0.025_fp
-          taks0 = max(0.5_fp*delr, taks0)
+       if (wave) then
+          if (tp(nm)>0.0_fp) then
+             delr  = 0.025_fp
+             taks0 = max(0.5_fp*delr, taks0)
+          endif
        endif
        !
        ! Limit maximum aks to 20% of water depth

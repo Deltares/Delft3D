@@ -2223,7 +2223,7 @@ contains
       use m_statistical_output_types, only: process_data_interface_double
       use m_transport, only: NUMCONST, itemp, isalt, ised1
       use m_sediment, only: stm_included, stmpar
-      use m_longculverts, only: nlongculverts
+      use m_longculverts_data, only: nlongculverts
       use m_monitoring_crosssections, only: ncrs
       use m_monitoring_runupgauges, only: num_rugs, rug
       use m_fm_wq_processes, only: jawaqproc, numwqbots

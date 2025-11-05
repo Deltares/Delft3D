@@ -45,6 +45,7 @@ module m_readCrossSections
    private
    
    public readCrossSectionDefinitions
+   public parseCrossSectionDefinitionFile
    public readCrossSectionLocationFile
    public finalizeCrs
    !public write_cross_section_definition_cache
