@@ -311,9 +311,6 @@ subroutine FLBOCH(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
       crs => fm1dimp%network%crs ,&
       grd_sre_cs => fm1dimp%grd_sre_cs &
       )
-           
-    
-   
    do 200 ibr = 1, nbran
 !
 !        i1 = global grid point number at node n1
