@@ -43,7 +43,6 @@ contains
       use m_transport
       use m_partitioninfo
       use unstruc_model
-      use m_flowparameters, only: jawriteDetailedTimers
       use unstruc_files, only: mdia
       use m_flowtimes
       use timers
@@ -69,7 +68,6 @@ contains
 
       call mess(LEVEL_INFO, 'Initialising water quality processes')
 
-      jawriteDetailedTimers = 1
       if (timon) call timstrt("fm_wq_processes_ini_sub", ithndl)
 
       ibflag = 0

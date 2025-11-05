@@ -246,7 +246,7 @@ contains
          end do
       end if
 
-      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG) .and. .not. flowWithoutWaves) then
+      if ((jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG)) then ! .and. .not. flowWithoutWaves) then
          call tauwavefetch(time_in_seconds)
       end if
 
