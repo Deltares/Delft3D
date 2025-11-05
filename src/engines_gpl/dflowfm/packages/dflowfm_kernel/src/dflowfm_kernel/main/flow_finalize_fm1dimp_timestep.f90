@@ -127,9 +127,6 @@ contains
          end do
       end if
       
-         
-               
-               
    end subroutine flow_finalize_fm1dimp_timestep
 
 end module m_flow_finalize_fm1dimp_timestep
