@@ -121,6 +121,7 @@ module unstruc_model
    character(len=255) :: md_cutcelllist = ' ' !< contains list of cutcell polygons (e.g., *_cut.lst)
    character(len=255) :: md_fixedweirfile = ' ' !< Fixed weir pliz's                 (e.g., *_fxw.pli), = pli with x,y, Z  column
    character(len=255) :: md_pillarfile = ' ' !< pillar pliz's                     (e.g., *_pillar.pli), = pli with x,y, diameter and Cd columns
+   integer :: md_pillar_use_far_field_velocity = 0 !< 0: use local velocity, 1: use far-field velocity for computing pillar drag force
    character(len=255) :: md_roofsfile = ' ' !< Roof pliz's                      (e.g., *_roof.pli), = pli with x,y, Z  column
    character(len=255) :: md_gulliesfile = ' ' !< gullies pliz's                    (e.g., *_gul.pli), = pli with x,y, Z  column
    character(len=255) :: md_vertplizfile = ' ' !< Vertical layering pliz's          (e.g., *_vlay.pliz), = pliz with x,y, Z, first Z =nr of layers, second Z = laytyp
@@ -416,7 +417,7 @@ contains
       use fm_external_forcings_data, only: pillar
       use m_sferic
       use unstruc_caching
-      use m_longculverts
+      use m_longculverts, only: initialize_long_culverts
       use unstruc_channel_flow
       use unstruc_netcdf, only: unc_meta_net_file
       use system_utils, only: remove_path
@@ -430,7 +431,6 @@ contains
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
       character(len=200), dimension(:), allocatable :: fnames
-      character(len=1024) :: fnamesstring
       real(kind=dp), dimension(2) :: tempbob
 
       integer :: istat, minp, ifil, jadoorladen
@@ -452,10 +452,6 @@ contains
 
       if (istat /= 0) then
          return
-      end if
-
-      if (len_trim(md_extfile) > 0) then
-         ! DEBUG: call convert_externalforcings_file(md_extfile)
       end if
 
       ! load the caching file - if there is any
@@ -495,20 +491,7 @@ contains
          call SetMessage(LEVEL_INFO, 'Reading Structures ...')
          call readStructures(network, md_1dfiles%structures, is_path_relative=md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
-
-         if (md_convertlongculverts == 0) then
-            fnamesstring = md_1dfiles%structures
-            call strsplit(fnamesstring, 1, fnames, 1)
-            call loadLongCulvertsAsNetwork(fnames(1), 0, istat)
-            do ifil = 2, size(fnames)
-               call loadLongCulvertsAsNetwork(fnames(ifil), 1, istat)
-            end do
-            deallocate (fnames)
-            if (.not. newculverts .and. nlongculverts > 0) then
-               call setnodadm(0)
-               call finalizeLongCulvertsInNetwork()
-            end if
-         end if
+         call initialize_long_culverts(md_1dfiles, md_convertlongculverts)
       end if
 
       call timstop(timerHandle)
@@ -726,7 +709,7 @@ contains
       use m_circumcenter_method, only: md_circumcenter_method, circumcenter_method, extract_circumcenter_method, circumcenter_tolerance
       use m_check_positive_value, only: check_positive_value
       use m_add_baroclinic_pressure, only: rhointerfaces
-
+      use m_flow_validatestate_data
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -818,6 +801,7 @@ contains
       call prop_get(md_ptr, bnam, 'InputSpecific', md_input_specific)
       call prop_get(md_ptr, bnam, 'ModelSpecific', md_specific)
       call prop_get(md_ptr, bnam, 'PathsRelativeToParent', md_paths_relto_parent)
+      call prop_get(md_ptr, bnam, 'ConvertLongCulverts', md_convertlongculverts)
 
 ! Geometry
       call prop_get(md_ptr, 'geometry', 'CrossDefFile', md_1dfiles%cross_section_definitions, success)
@@ -1160,16 +1144,13 @@ contains
       !ideally, we move all this sort of reworking to another subroutine
       if (jaextrapbl == 1) then
          if (ibedlevtyp /= 1) then
-            jaextrapbl = 0
-            call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: BedlevType /= 1 and jaextrapbl == 1. It is not possible to extrapolate bed level if the bed level is not at cell centres. Extrapolation has been disabled.')
+            call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: BedlevType /= 1 and jaextrapbl == 1. It is not possible to extrapolate bed level if the bed level is not at cell centres. set [geometry] ExtrBl = 0.')
          end if
          if (Izbndpos /= 0) then
-            jaextrapbl = 0
-            call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Izbndpos /= 0 and jaextrapbl == 1. It is not possible to extrapolate bed level if the bed level at the boundary is not set at ghost. Extrapolation has been disabled.')
+            call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Izbndpos /= 0 and jaextrapbl == 1. It is not possible to extrapolate bed level if the bed level at the boundary is not set at ghost. [geometry] ExtrBl = 0.')
          end if
          if (Jaconveyance2D /= -1) then
-            jaextrapbl = 0
-            call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Conveyance2D /= -1 and jaextrapbl == 1. It is not possible to extrapolate bed level if conveyance is not calculated as HU. Extrapolation has been disabled.')
+            call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Conveyance2D /= -1 and jaextrapbl == 1. It is not possible to extrapolate bed level if conveyance is not calculated as HU. [geometry] ExtrBl = 0.')
          end if
       end if !jaextrapbl
       call prop_get(md_ptr, 'numerics', 'Tlfsmo', Tlfsmo)
@@ -1234,14 +1215,15 @@ contains
          end do
       end if
 
-      call prop_get(md_ptr, 'numerics', 'Maxwaterleveldiff', s01max)
-      call prop_get(md_ptr, 'numerics', 'Maxvelocitydiff', u01max)
-      call prop_get(md_ptr, 'numerics', 'Maxvelocity', umagmax)
-      call prop_get(md_ptr, 'numerics', 'Waterlevelwarn', s01warn)
-      call prop_get(md_ptr, 'numerics', 'Velocitywarn', u01warn)
-      call prop_get(md_ptr, 'numerics', 'Velmagnwarn', umagwarn)
-      call prop_get(md_ptr, 'numerics', 'MinTimestepBreak', dtminbreak)
-      call prop_get(md_ptr, 'numerics', 'MaxSSC', sscmax)
+      call prop_get(md_ptr, 'numerics', 'Maxwaterleveldiff', s01_max_err)
+      call prop_get(md_ptr, 'numerics', 'Maxvelocitydiff', u01_max_err)
+      call prop_get(md_ptr, 'numerics', 'Maxvelocity', umag_max_err)
+      call prop_get(md_ptr, 'numerics', 'Waterlevelwarn', s1_max_warn)
+      call prop_get(md_ptr, 'numerics', 'Velocitywarn', u1abs_max_warn)
+      call prop_get(md_ptr, 'numerics', 'Velmagnwarn', umag_max_warn)
+      call prop_get(md_ptr, 'numerics', 'MinTimestepBreak', dtavg_min_err)
+      call prop_get(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', s01maxavg_min_err)
+      call prop_get(md_ptr, 'numerics', 'MaxSSC', ssc_max_err)
       call prop_get(md_ptr, 'numerics', 'Epshu', epshu)
       call prop_get(md_ptr, 'numerics', 'Epsz0', epsz0)
       epshs = 0.2_dp * epshu ! minimum waterdepth for setting cfu
@@ -1309,6 +1291,8 @@ contains
       case default
          call mess(LEVEL_ERROR, 'Invalid flow solver '''//trim(md_flow_solver)//''' . Select between `generic1d2d3d` and `implicit1d`.')
       end select
+
+      call prop_get(md_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, success)
 
       !implicit1d
       call prop_get(md_ptr, 'implicit1d', 'omega', f1dimppar%omega)
@@ -1481,8 +1465,7 @@ contains
       call prop_get(md_ptr, 'sediment', 'Sedimentmodelnr', jased) ! 1 = krone, 2 = svr, 3 engelund, 4=D3D
       !ideally this is moved to a subroutine that groups reworking
       if (jadpuopt == 2 .and. jased /= 4) then
-         jadpuopt = 1
-         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Dpuopt = 2 and Sedimentmodelnr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update. Dpuopt has been set to 1 (min value).')
+         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Dpuopt = 2 and Sedimentmodelnr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update or set [geometry] Dpuopt = 1 (min value).')
       end if
       call prop_get(md_ptr, 'sediment', 'SedFile', md_sedfile, success)
       call prop_get(md_ptr, 'sediment', 'MorFile', md_morfile, success)
@@ -2653,6 +2636,7 @@ contains
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
+      use m_flow_validatestate_data, only: dtavg_min_err, s01maxavg_min_err, s01_max_err, u01_max_err, umag_max_err, s1_max_warn, u1abs_max_warn, umag_max_err, ssc_max_err, umag_max_warn
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -2677,6 +2661,7 @@ contains
       call prop_set(prop_ptr, 'General', 'fileVersion', trim(tmpstr), 'File format version (do not edit this)')
       call prop_set(prop_ptr, 'General', 'ModelSpecific', md_specific, 'Optional ''model specific ID'', to enable certain custom runtime function calls (instead of via MDU name).')
       call prop_set(prop_ptr, 'General', 'PathsRelativeToParent', md_paths_relto_parent, 'Default: 0. Whether or not (1/0) to resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir.')
+      call prop_set(prop_ptr, 'General', 'ConvertLongCulverts', md_convertlongculverts, 'Default: 0. Wheter or not to convert long culvert input to 1D2D long culverts')
 
 ! Geometry
       call prop_set(prop_ptr, 'geometry', 'NetFile', trim(md_netfile), 'Unstructured grid file *_net.nc')
@@ -2960,8 +2945,8 @@ contains
       if (writeall .or. useVolumeTables) then
          call prop_set(prop_ptr, 'volumeTables', 'useVolumeTables', useVolumeTables, 'Use 1D volume tables (0: no, 1: yes).')
          if (useVolumeTables) then
-            call prop_set(md_ptr, 'volumeTables', 'increment', tableIncrement, 'Desired increment for volume tables')
-            call prop_set(md_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile, 'Use volume table file (0: no, 1: yes)')
+            call prop_set(prop_ptr, 'volumeTables', 'increment', tableIncrement, 'Desired increment for volume tables')
+            call prop_set(prop_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile, 'Use volume table file (0: no, 1: yes)')
          end if
       end if
 
@@ -3212,36 +3197,40 @@ contains
          end do
       end if
 
-      if (writeall .or. (s01max > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxwaterleveldiff', s01max, 'upper bound (in m) on water level changes (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (s01_max_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Maxwaterleveldiff', s01_max_err, 'upper bound (in m) on water level changes (<= 0: no bounds). Run will abort when violated.')
       end if
 
-      if (writeall .or. (u01max > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxvelocitydiff', u01max, 'upper bound (in m/s) on velocity changes (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (u01_max_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Maxvelocitydiff', u01_max_err, 'upper bound (in m/s) on velocity changes (<= 0: no bounds). Run will abort when violated.')
       end if
 
-      if (writeall .or. (umagmax > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxvelocity', umagmax, 'upper bound (in m/s) on velocity (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (umag_max_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Maxvelocity', umag_max_err, 'upper bound (in m/s) on velocity (<= 0: no bounds). Run will abort when violated.')
       end if
 
-      if (writeall .or. (s01warn > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Waterlevelwarn', s01warn, 'warning level (in m) on water level (<= 0: no check).')
+      if (writeall .or. (s1_max_warn > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Waterlevelwarn', s1_max_warn, 'warning level (in m) on water level (<= 0: no check).')
       end if
 
-      if (writeall .or. (u01warn > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Velocitywarn', u01warn, 'warning level (in m/s) on velocity u1 (<= 0: no check).')
+      if (writeall .or. (u1abs_max_warn > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Velocitywarn', u1abs_max_warn, 'warning level (in m/s) on velocity u1 (<= 0: no check).')
       end if
 
-      if (writeall .or. (umagwarn > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Velmagnwarn', umagwarn, 'warning level (in m/s) on velocity magnitude (<= 0: no check).')
+      if (writeall .or. (umag_max_warn > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Velmagnwarn', umag_max_warn, 'warning level (in m/s) on velocity magnitude (<= 0: no check).')
       end if
 
-      if (writeall .or. (dtminbreak > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'MinTimestepBreak', dtminbreak, 'smallest allowed timestep (in s), checked on a sliding average of several timesteps. Run will abort when violated.')
+      if (writeall .or. (dtavg_min_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'MinTimestepBreak', dtavg_min_err, 'smallest allowed timestep (in s), checked on a sliding average of several timesteps. Run will abort when violated.')
       end if
 
-      if ((writeall .or. (sscmax > 0.0_dp)) .and. jased == 4) then
-         call prop_set(prop_ptr, 'numerics', 'MaxSSC', sscmax, 'upper bound (in kg/m3) on SSC (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (s01maxavg_min_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'MinWaterlevelChangeBreak', s01maxavg_min_err, 'Stop the simulation when the rolling mean of the maximum water level change is below this value (m), (considered when larger than 0.0)')
+      end if
+
+      if ((writeall .or. (ssc_max_err > 0.0_dp)) .and. jased == 4) then
+         call prop_set(prop_ptr, 'numerics', 'MaxSSC', ssc_max_err, 'upper bound (in kg/m3) on SSC (<= 0: no bounds). Run will abort when violated.')
       end if
 
       call prop_set(prop_ptr, 'numerics', 'Epshu', epshu, 'Threshold water depth for wet and dry cells')
@@ -3312,6 +3301,8 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Oceaneddyyoff', Oceaneddyyoff)
          call prop_set(prop_ptr, 'numerics', 'Oceaneddyxoff', Oceaneddyxoff)
       end if
+
+      call prop_set(prop_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, 'Use far-field velocity for pillars and dikes (0: no (default), 1: yes)')
 
       if (testdryflood /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Testdryingflooding', testdryflood, 'Test for drying flooding algoritm (0: D-Flow FM, 1: Delft3D-FLOW)')

@@ -21,8 +21,7 @@ CSV_DOUBLE_SETTER(phase_wise_row_t, sill_height_lake);
 CSV_DOUBLE_SETTER(phase_wise_row_t, sill_height_sea);
 
 
-// Load time averaged data from csv.
-int load_phase_wise_timeseries(csv_context_t *context, char *filepath) {
+int init_phase_wise_timeseries_csv_context(csv_context_t* context) {
   int status = init_csv_context(context);
 
   // Set up columns
@@ -52,5 +51,11 @@ int load_phase_wise_timeseries(csv_context_t *context, char *filepath) {
   status = status || def_csv_column(context, "sill_height_lake", double_type, set_sill_height_lake);
   status = status || def_csv_column(context, "sill_height_sea", double_type, set_sill_height_sea);
 
+  return status;
+}
+
+// Load time averaged data from csv.
+int load_phase_wise_timeseries(csv_context_t *context, char *filepath) {
+  int status = init_phase_wise_timeseries_csv_context(context);
   return status || load_csv(context, filepath) ? CSV_ERROR : CSV_OK;
 }

@@ -50,7 +50,7 @@ contains
       use unstruc_model, only: md_structurefile_dir
       use unstruc_files, only: resolvePath
       use string_module, only: strcmpi
-      use m_longculverts, only: nlongculverts
+      use m_longculverts_data, only: nlongculverts
       use m_partitioninfo, only: jampi
       use messagehandling, only: IDLEN
       use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration
@@ -250,7 +250,7 @@ contains
       use unstruc_model, only: md_structurefile_dir
       use unstruc_files, only: resolvePath
       use string_module, only: str_tolower, strcmpi
-      use m_longculverts, only: nlongculverts
+      use m_longculverts_data, only: nlongculverts
       use m_partitioninfo, only: jampi
       use m_qnerror, only: qnerror
       use m_read_property, only: read_property

@@ -56,7 +56,7 @@ int finalize() {
 // we don't make any attempt to recognize what each part is.
 // Note1: This function DOES change the content of the supplied key string.
 // Note2: This function is NOT thread safe. (strtok_r() does not exist in MSVC)
-inline int parse_key(char *key, char **vartype_ptr, char **lock_id_ptr, char **quantity_ptr) {
+static inline int parse_key(char *key, char **vartype_ptr, char **lock_id_ptr, char **quantity_ptr) {
   char *token = NULL;
 
   assert(vartype_ptr != NULL);

@@ -49,6 +49,7 @@ src/**/FortranCInterface.h
 /ci/DIMRset_delivery/venv/**
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
+unit-test-report-windows.xml
 
 # my local files
 /test/deltares_testbench/venv_test
