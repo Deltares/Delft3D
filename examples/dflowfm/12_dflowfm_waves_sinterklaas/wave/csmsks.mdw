@@ -1,0 +1,89 @@
+[WaveFileInformation]
+   FileVersion          = 02.00                        
+[General]                  
+   OnlyInputVerify      = false                        
+   SimMode              = non-stationary               
+   TimeStep             = 30.
+   Timeinterval         = 60.   
+   DirConvention        = nautical                     
+   ReferenceDate        = 2013-12-01                   
+   WindSpeed            =  0.0000000e+000              
+   WindDir              =  0.0000000e+000              
+   MeteoFile            = sinterklaasstorm.amu         
+   MeteoFile            = sinterklaasstorm.amv         
+[Constants]
+   WaterLevelCorrection =  0.0000000e+000              
+   Gravity              =  9.8100004e+000              
+   WaterDensity         =  1.0250000e+003              
+   NorthDir             =  9.0000000e+001              
+   MinimumDepth         =  5.0000001e-002              
+[Processes]
+   GenModePhys          = 3                            
+   Breaking             = true                         
+   BreakAlpha           =  1.0000000e+000              
+   BreakGamma           =  7.3000002e-001              
+   Triads               = false                        
+   TriadsAlpha          =  1.0000000e-001              
+   TriadsBeta           =  2.2000000e+000              
+   BedFriction          = jonswap                      
+   BedFricCoef          =  6.4000002e-002                                     
+   WindGrowth           = true                        
+   WhiteCapping         = Westhuysen                   
+   Quadruplets          = true                        
+   Refraction           = true                         
+   FreqShift            = true                         
+   WaveForces           = dissipation 3d                 
+[Numerics]
+   DirSpaceCDD          =  1.0             
+   FreqSpaceCSS         =  5.0000000e-001              
+   RChHsTm01            =  2.0000000e-002              
+   RChMeanHs            =  2.0000000e-002              
+   RChMeanTm01          =  2.0000000e-002              
+   PercWet              =  9.9900000e+001              
+   MaxIter              = 2                           
+[Output]
+   TestOutputLevel      = 0                            
+   TraceCalls           = false                        
+   UseHotFile           = true                         
+   MapWriteInterval     =  6.0000000e+001              
+   WriteCOM             = true                         
+   COMWriteInterval     =  3.0000000e+001
+   COMFile              = ../fm/DFM_OUTPUT_zun/zun_com.nc
+   LocationFile         = g04.loc                      
+   WriteTable           = true                         
+   WriteSpec1D          = false                         
+   WriteSpec2D          = false                        
+   Int2KeepHotfile      = 120                          
+   FlowGrid             = g04ll.grd                    
+   MapWriteNetCDF       = true                         
+[Domain]
+   Grid                 = csm_swn.grd                  
+   FlowBedLevel         = 0                            
+   FlowWaterLevel       = 1                            
+   FlowVelocity         = 0                            
+   FlowWind             = 0                            
+   BedLevel             = csm_swn.dep                  
+   DirSpace             = circle                       
+   NDir                 = 36                           
+   StartDir             =  0.0000000e+000              
+   EndDir               =  0.0000000e+000              
+   FreqMin              =  5.0000001e-002              
+   FreqMax              =  1.0000000e+000              
+   NFreq                = 24                           
+   Output               = false                        
+[Domain]
+   Grid                 = g04ll.grd                    
+   FlowBedLevel         = 0                            
+   FlowWaterLevel       = 1                            
+   FlowVelocity         = 0                            
+   FlowWind             = 0                            
+   BedLevel             = g05.dep                      
+   DirSpace             = circle                       
+   NDir                 = 36                           
+   StartDir             =  0.0000000e+000              
+   EndDir               =  0.0000000e+000              
+   FreqMin              =  5.0000001e-002              
+   FreqMax              =  1.0000000e+000              
+   NFreq                = 24                           
+   NestedInDomain       = 1                            
+   Output               = true                         
