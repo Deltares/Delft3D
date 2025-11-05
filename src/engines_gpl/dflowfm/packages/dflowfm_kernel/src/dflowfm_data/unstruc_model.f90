@@ -2992,7 +2992,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff, 'Auto Timestepdiff in Transport, 0 : lim diff, no lim Dt_tr, 1 : no lim diff, lim Dt_tr, 2: no lim diff, no lim Dt_tr, 3=implicit (only 2D)')
-      call prop_set(prop_ptr, 'numerics', 'transportLocalTimeStep', ja_transport_local_time_step, '0=no, 1=yes (default) enables local time stepping in the transport module')
+      call prop_set(prop_ptr, 'numerics', 'transportLocalTimeStep', ja_transport_local_time_step, '0=no, 1=yes (default), 2=yes but all cells use the same local time step. Flag for local time stepping in the transport module')
       call prop_set(prop_ptr, 'numerics', 'Implicitdiffusion2D', Implicitdiffusion2D, '1 = Yes, 0 = No')
 
       call prop_set(prop_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport, 'Diagnostic ("frozen") transport (0: prognostic transport, 1: diagnostic transport)')

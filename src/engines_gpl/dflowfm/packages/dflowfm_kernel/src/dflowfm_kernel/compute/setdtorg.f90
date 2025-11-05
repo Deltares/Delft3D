@@ -49,10 +49,6 @@ contains
       use m_drawthis, only: ndraw
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
-      use m_transport, only: dtmin_transp, kk_dtmin, NUMCONST
-      use m_get_dtmax, only: get_dtmax
-      use m_comp_dxiAu, only: comp_dxiAu
-      use m_flowparameters, only: ja_transport_local_time_step
 
       integer, intent(out) :: jareduced ! maximum time-step is already globally reduced (1) or not (0)
 
@@ -471,19 +467,6 @@ contains
             end if
          end if
 
-         if (ja_transport_local_time_step == 0 .and. NUMCONST > 0) then
-!           Transport based time step restriction (based on previous flow conditions)
-!           compute areas of horizontal diffusive fluxes divided by Dx
-            call comp_dxiAu()
-
-!           Get maximum transport time step (based on previous flow conditions)
-            call get_dtmax()
-
-            if (dts > dtmin_transp) then
-               dts = dtmin_transp; kkcflmx = kk_dtmin
-            end if
-         end if
-
          if (dts > dt_max) then
             dts = dt_max; kkcflmx = 0; dtsc = 0
          else
@@ -538,7 +521,6 @@ contains
 !       write(mout, '(3F14.4, I8)')         time0/60d0, dts, dtsc, kkcflmx
 !    endif
 ! endif
-
       if (kkcflmx > 0 .and. jamapFlowAnalysis > 0) then
          limitingTimestepEstimation(kkcflmx) = limitingTimestepEstimation(kkcflmx) + 1
       end if

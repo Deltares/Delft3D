@@ -104,7 +104,7 @@ contains
       use m_turbulence, only: sigdifi
       use m_transport
       use m_mass_balance_areas
-      use m_flowparameters, only: limtypsa, limtyptm, limtypsed, flowwithoutwaves, ja_transport_local_time_step
+      use m_flowparameters, only: limtypsa, limtyptm, limtypsed, flowwithoutwaves
       use m_alloc
       use m_partitioninfo
       use m_timer
@@ -144,13 +144,11 @@ contains
          call fill_constituents(1)
       end if
 
-      if (ja_transport_local_time_step == 1) then  
-!        compute areas of horizontal diffusive fluxes divided by Dx
-         call comp_dxiAu()
+!     compute areas of horizontal diffusive fluxes divided by Dx
+      call comp_dxiAu()
 
-!        get maximum transport time step
-         call get_dtmax()
-      end if
+!     get maximum transport time step
+      call get_dtmax()
 
       call get_ndeltasteps()
 
