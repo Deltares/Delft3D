@@ -262,7 +262,7 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
 !
   associate(&
       rgs => fm1dimp%network%rgs , &
-      spdata => fm1dimp%network%spdata ,&
+      spdata => fm1dimp%network%spdata , &
       crs => fm1dimp%network%crs ,&
       grd_sre_cs => fm1dimp%grd_sre_cs &
       )									
