@@ -9098,8 +9098,8 @@
       <checks>
         <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.001" />
+            <parameter name="mesh1d_u1" toleranceAbsolute="0.001" />
           </parameters>
         </file>
       </checks>

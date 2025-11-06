@@ -216,7 +216,7 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
 !
 !***********************************************************************
    use m_f1dimp, only: f1dimppar_type     
-   use m_network, only: getFrictionValue 	  
+   use m_network, only: getFrictionValue 	 
    
    type(f1dimppar_type), intent(in) :: fm1dimp
 !
@@ -263,7 +263,6 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
   associate(&
       rgs => fm1dimp%network%rgs , &
       spdata => fm1dimp%network%spdata , &
-      crs => fm1dimp%network%crs ,&
       grd_sre_cs => fm1dimp%grd_sre_cs &
       )									
    do 400 ibr = 1, nbran
@@ -367,6 +366,12 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
 !           Loop over cross sections (grid points)
 !
          do 300 i = i1, i2
+            
+            idx_crs = grd_sre_cs(i) !index of the cross-section in FM structure 
+            associate(&
+                crs =>  fm1dimp%network%crs%cross(idx_crs)%tabdef, &
+                chainage => fm1dimp%network%crs%cross(idx_crs)%chainage &
+                )	
 !
 !              hi : waterlevel h=h(n+1)
 !
@@ -428,7 +433,7 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&ui     ,r0     ,c0     )
                    
                   isec_fm=1 ! main section
-                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r0), DBLE(dpt), crs%cross(idx_crs)%chainage)
+                  c0 = getFrictionValue(rgs, spdata, crs, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r0), DBLE(dpt), chainage)
                endif
 !
                alfab(i) = 1.0
@@ -483,7 +488,7 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&ui     ,r0     ,c0     )
                    
                   isec_fm=1 ! main section
-                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r0), DBLE(dpt), crs%cross(idx_crs)%chainage)																																			
+                  c0 = getFrictionValue(rgs, spdata, crs, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r0), DBLE(dpt), chainage)
                endif
 !
 !                 Store R, C, Af and Wf for main section.
@@ -534,7 +539,7 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&ui     ,r1     ,c1     )
                    
                   isec_fm=2 !sub section 1
-                  c1 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r1), DBLE(dpt), crs%cross(idx_crs)%chainage)
+                  c1 = getFrictionValue(rgs, spdata, crs, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r1), DBLE(dpt), chainage)
                endif
 !
 !                 Store R, C, Af and Wf for sub section.
@@ -602,7 +607,7 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&ui     ,r0     ,c0     )
                    
                   isec_fm=1 !main section 
-                  c0 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r0), DBLE(dpt), crs%cross(idx_crs)%chainage)
+                  c0 = getFrictionValue(rgs, spdata, crs, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r0), DBLE(dpt), chainage)
                endif
 !
 !                 Store R, C, Af and Wf for main section.
@@ -649,7 +654,7 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&ui     ,r1     ,c1     )
                    
                   isec_fm=2 !sub section 1
-                  c1 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r1), DBLE(dpt), crs%cross(idx_crs)%chainage)
+                  c1 = getFrictionValue(rgs, spdata, crs, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r1), DBLE(dpt), chainage)
                endif
 !
 !                 Store R, C, Af and Wf for sub section.
@@ -700,7 +705,7 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                   !&ui     ,r2     ,c2     )
                    
                   isec_fm=3 !sub section 2 
-                  c2 = getFrictionValue(rgs, spdata, crs%cross(idx_crs)%tabdef, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r2), DBLE(dpt), crs%cross(idx_crs)%chainage)
+                  c2 = getFrictionValue(rgs, spdata, crs, ibr, isec_fm, i, hi, q2(i), DBLE(ui), DBLE(r2), DBLE(dpt), chainage)
                endif
 !
 !                 Store R, C, Af and Wf for sub section 2
@@ -733,6 +738,7 @@ subroutine FLVNP1(nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
                c(i) = sqrt ( c2r / r(i) )
 
             endif
+            end associate
 300      continue
       endif
 400 continue
