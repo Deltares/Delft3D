@@ -8,7 +8,7 @@ The engines cover hydrodynamics (D-Flow FM, Delft3D-FLOW), hydrology (D-Hydrolog
 </div>
 
 ## Documentation
-For a description of the functionality included in the various components, please check the nightly draft builds of our manuals on the following pages for [**Delft3D 4**](https://oss.deltares.nl/web/delft3d/manuals) and [**Delft3D FM manuals:**](https://oss.deltares.nl/web/delft3dfm/downloads).
+For a description of the functionality included in the various components, please check the nightly draft builds of our [Delft3D 4](https://oss.deltares.nl/web/delft3d/manuals) and [Delft3D FM](https://oss.deltares.nl/web/delft3dfm/downloads) manuals.
 
 ## Support packages
 
