@@ -32,7 +32,6 @@
 
 module m_update_matrix
 
-
    use precision, only: dp
    implicit none
 

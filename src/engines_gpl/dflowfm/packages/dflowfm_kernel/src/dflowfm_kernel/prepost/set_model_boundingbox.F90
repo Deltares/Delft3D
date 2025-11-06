@@ -31,7 +31,6 @@
 !
 module m_set_model_boundingbox
 
-
    use precision, only: dp
    implicit none
 

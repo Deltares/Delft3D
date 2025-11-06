@@ -1266,10 +1266,10 @@ contains
                call err_flush()
                iresult = 1
             end if
-            last_friction_type=network%crs%cross(idx_crs)%frictiontypepos(k2)
+            last_friction_type = network%crs%cross(idx_crs)%frictiontypepos(k2)
          end do
-         
-         !`sectc(:,1)` = `subsec` 
+
+         !`sectc(:,1)` = `subsec`
          ! subsec(ngrid)     I  Defines the number of sub sections for every
          !                      cross section:
          !                      c1sec (0) : Main section only (0 sub sections)
@@ -1283,23 +1283,23 @@ contains
          !!!
          !!!SUBSECTION 1
          !!!
-         idx_h=network%crs%cross(idx_crs)%tabdef%plainslocation(1)
-         
+         idx_h = network%crs%cross(idx_crs)%tabdef%plainslocation(1)
+
          !`sectv(1,2)` = `secth0`
          ! secth0(ngrid)     I  H0-value (for 1 or 2 sub sections) for every
          !                         grid point.
-         sectv(ksre,2)=network%crs%cross(idx_crs)%tabdef%height(idx_h)
+         sectv(ksre, 2) = network%crs%cross(idx_crs)%tabdef%height(idx_h)
          !`sectv(1,4)` = `afh0`
          ! afh0(ngrid)       I  Flow area Af at water level h=h0 for every
          !                      grid point.
-         sectv(ksre,4)=network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
+         sectv(ksre, 4) = network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
          ! `sectv(1,6)` = `oh0`
          ! oh0(ngrid)        I  Wetted perimeter Ot at water level h=h0 for
-         !                      every grid point.         
-         sectv(ksre,6)=network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
-         
+         !                      every grid point.
+         sectv(ksre, 6) = network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
+
          !
-         !`sectc(:,2)` = `wfh0` 
+         !`sectc(:,2)` = `wfh0`
          ! wfh0(ngrid)       I  Flow width Wf at water level h=h0 for every
          !                      grid point.
          sectc(ksre,2)=network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
@@ -1310,26 +1310,26 @@ contains
          !!!
          !!!SUBSECTION 2
          !!!
-         idx_h=network%crs%cross(idx_crs)%tabdef%plainslocation(2)
-         
-         !`sectv(1,3)` = `secth1`         
+         idx_h = network%crs%cross(idx_crs)%tabdef%plainslocation(2)
+
+         !`sectv(1,3)` = `secth1`
          ! secth1(ngrid)     I  H0-value (for 2 sub section) for every grid
          !                         point.
-         sectv(ksre,3)=network%crs%cross(idx_crs)%tabdef%height(idx_h)
+         sectv(ksre, 3) = network%crs%cross(idx_crs)%tabdef%height(idx_h)
          !`sectv(1,5)` = `afh1`
          ! afh1(ngrid)       I  Flow area Af at water level h=h1 for every
-         !                      grid point.  
-         sectv(ksre,5)=network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
+         !                      grid point.
+         sectv(ksre, 5) = network%crs%cross(idx_crs)%tabdef%flowarea(idx_h)
          ! `sectv(1,7)` = `oh1`
          ! oh1(ngrid)        I  Wetted perimeter Ot at water level h=h1 for
          !                      every grid point.
-         sectv(ksre,7)=network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
-         
+         sectv(ksre, 7) = network%crs%cross(idx_crs)%tabdef%wetperimeter(idx_h)
+
          !
-         !`sectc(:,3)` = `wfh1` 
+         !`sectc(:,3)` = `wfh1`
          ! wfh1(ngrid)       I  Flow width Wf at water level h=h1 for every
          !                      grid point.
-         sectc(ksre,3)=network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
+         sectc(ksre, 3) = network%crs%cross(idx_crs)%tabdef%flowwidth(idx_h)
 
          endif
          

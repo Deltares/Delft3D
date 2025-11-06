@@ -32,7 +32,6 @@
 
 module m_makepdf
 
-
    use precision, only: dp
    implicit none
 

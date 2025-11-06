@@ -38,7 +38,6 @@
 !>     -is not a member of ghostlist_sall
 module m_disable_invalid_ghostcells_with_wu
 
-
    use precision, only: dp
    implicit none
 

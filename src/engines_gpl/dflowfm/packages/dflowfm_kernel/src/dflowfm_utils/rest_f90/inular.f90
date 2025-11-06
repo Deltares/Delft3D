@@ -32,7 +32,6 @@
 
 module m_inular
 
-
    use precision, only: dp
    implicit none
 

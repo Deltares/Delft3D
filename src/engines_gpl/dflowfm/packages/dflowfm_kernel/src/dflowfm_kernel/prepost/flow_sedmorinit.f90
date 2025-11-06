@@ -32,7 +32,6 @@
 
 module m_flow_sedmorinit
 
-
    use precision, only: dp
    implicit none
 

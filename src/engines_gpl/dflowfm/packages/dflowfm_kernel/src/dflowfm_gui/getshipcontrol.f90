@@ -34,7 +34,7 @@ module m_getshipcontrol
 
    use m_tekship, only: tekship
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
 contains

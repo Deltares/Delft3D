@@ -111,12 +111,12 @@ contains
                   if (comparereal(au_nostrucs(L), 0.0_dp) == 1) then
                      !There is flow over the weir crest. Hence, `hu>0`, so `au>0` and `au_nostrucs>0`.
                      u1correction = q1(L) / au_nostrucs(L) - u1(L)
-                  elseif (comparereal(q1(L),0.0_dp) /= 0) then
+                  elseif (comparereal(q1(L), 0.0_dp) /= 0) then
                      !There is no flow over the weir crest, but there is flow at the link because, for
-                     !instance, there is a pump. 
-                     u1correction = - u1(L)
+                     !instance, there is a pump.
+                     u1correction = -u1(L)
                   else
-                     !There is no flow at the link, so no correction. 
+                     !There is no flow at the link, so no correction.
                      cycle !to next structure
                      !It would be the same as:
                      !u1correction=0.0_dp
@@ -127,7 +127,7 @@ contains
                   ucx(k1) = ucx(k1) + wcx1(L) * u1correction
                   ucy(k1) = ucy(k1) + wcy1(L) * u1correction
                   ucx(k2) = ucx(k2) + wcx2(L) * u1correction
-                  ucy(k2) = ucy(k2) + wcy2(L) * u1correction   
+                  ucy(k2) = ucy(k2) + wcy2(L) * u1correction
                end do
             end if
          end if

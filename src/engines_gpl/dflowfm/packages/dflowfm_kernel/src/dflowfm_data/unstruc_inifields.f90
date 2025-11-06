@@ -266,7 +266,7 @@ contains
                                    iloctype, operand, transformcoef, ja, varname)
          ! convert quantity name used in configuration file to a consistent internal name
          qid = quantity_name_config_file_to_internal_name(qid)
-         
+
          if (ja == 1) then
             call resolvePath(filename, basedir)
             ib = ib + 1
@@ -343,10 +343,10 @@ contains
                ec_item = ec_undef_int
                call setzcs()
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, quantity_value_count, filename, &
-                                                   filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
-                                                   varname=varname, tgt_item1=ec_item)
+                                                 filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
+                                                 varname=varname, tgt_item1=ec_item)
                success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                                        tunit, tstart_user, target_array)
+                                                                      tunit, tstart_user, target_array)
                if (.not. success) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
                end if
@@ -691,7 +691,7 @@ contains
       end if
 
       if (strcmpi(quantity(1:13), 'initialtracer')) then
-          call read_tracer_properties(node_ptr, transformcoef)
+         call read_tracer_properties(node_ptr, transformcoef)
       end if
 
       ! We've made it to here, success!
@@ -1784,7 +1784,7 @@ contains
          else
             write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
                ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
-                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+               'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
             call warn_flush()
             success = .false.
          end if
@@ -1795,7 +1795,7 @@ contains
          else
             write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
                ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
-                      'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+               'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
             call warn_flush()
             success = .false.
          end if
@@ -1806,7 +1806,7 @@ contains
          else
             write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
                ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
-                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+               'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
             call warn_flush()
             success = .false.
          end if
@@ -2207,8 +2207,8 @@ contains
 
       real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
       real(kind=dp), dimension(:, :), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
-                                                                      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
-                                                                      !< The second dimension is the 3D grid cell dimension (1:ndkx)
+      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
+      !< The second dimension is the 3D grid cell dimension (1:ndkx)
       integer, intent(in) :: first_index !< The value for the first "constituent" index of the output array.
       real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
       real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.

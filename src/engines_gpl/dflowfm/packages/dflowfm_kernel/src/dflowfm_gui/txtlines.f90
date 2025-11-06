@@ -32,7 +32,6 @@
 
 module m_txtlines
 
-
    use precision, only: dp
    implicit none
 

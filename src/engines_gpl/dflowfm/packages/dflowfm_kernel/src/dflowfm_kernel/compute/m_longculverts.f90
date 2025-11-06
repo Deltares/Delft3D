@@ -1149,15 +1149,15 @@ contains
       use m_network
       type(t_network), intent(inout) :: network !< Network structure
       type(t_longculvert), intent(in) :: longculvert !< Branch id on which to place the cross section
-   
+
       integer :: inext
 
-            inext = network%brs%count + 1
-            if (inext > network%brs%size) then
-               call realloc(network%brs)
-            end if
-            
-            network%brs%branch(inext)%Id = longculvert%branchId
+      inext = network%brs%count + 1
+      if (inext > network%brs%size) then
+         call realloc(network%brs)
+      end if
+
+      network%brs%branch(inext)%Id = longculvert%branchId
 !network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMB
 !network%BRS%Branch(branch_idx)%TONODE%GRIDNUMBER
 
@@ -1424,7 +1424,7 @@ contains
 
          num_longculverts = num_longculverts + size(nodes)
          num_newculverts = num_newculverts + count(node_has_key(nodes, 'branchId'))
-         deallocate(nodes)
+         deallocate (nodes)
       end do
       if (num_longculverts > 0) then
          nlongculverts = num_longculverts
@@ -1527,17 +1527,17 @@ contains
          call setnodadm(0)
          call finalizeLongCulvertsInNetwork()
 
-        !call split_filename(md_netfile, temppath, tempname, tempext)
-        !tempname = trim(md_culvertprefix)//tempname
-        !tempstring_netfile = cat_filename(temppath, tempname, tempext)
+         !call split_filename(md_netfile, temppath, tempname, tempext)
+         !tempname = trim(md_culvertprefix)//tempname
+         !tempstring_netfile = cat_filename(temppath, tempname, tempext)
 
          call unc_write_net('testnet.nc', janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
          nbranchlongnames = nbranchids
          nnodelongnames = nnodeids
-         allocate(nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
+         allocate (nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
          network%numl = meshgeom1d%numedge
          ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
-                                                   nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
+                                                nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
 
          do i = 1, nlongculverts
             call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)

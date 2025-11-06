@@ -32,7 +32,6 @@
 
 module m_alloc9basicwavearrays
 
-
    use precision, only: dp
    implicit none
 
