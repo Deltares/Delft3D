@@ -871,7 +871,15 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep) {
             // Sync all partitions to execute the same component
             // This ensures that all flow calculations are finished before a wave calculation is started
             if (use_mpi) {
-                int ierr = MPI_Barrier(MPI_COMM_WORLD);
+              MPI_Request req = MPI_REQUEST_NULL;
+              // Dont use default MPI_Barrier spinlock, instead allow other processes to use cpu by periodically polling for barrier completion
+              int ierr = MPI_Ibarrier(MPI_COMM_WORLD, &req);
+              while (true) {
+                int complete;
+                MPI_Test(&req,&complete,MPI_STATUS_IGNORE);
+                if (complete) { break; } 
+                sleep(0.5);
+              }
             }
 
             if (i == cb->masterSubBlockId) {
