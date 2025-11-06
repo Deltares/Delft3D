@@ -45,7 +45,7 @@ contains
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
                         kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
-                        numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, jaorgFloorlevtoplaydef, dztop, dztopuniabovez, &
+                        numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, dztop, dztopuniabovez, &
                         sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
                         kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
                         dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
@@ -263,14 +263,10 @@ contains
                if (Floorlevtoplay == dmiss) then
                   zmx = sini
                else
-                  if (jaorgFloorlevtoplaydef == 1) then
-                     zmx = Floorlevtoplay
+                  if (dztop == dmiss) then
+                    zmx = Floorlevtoplay
                   else
-                     if (dztop == dmiss) then
-                        zmx = Floorlevtoplay
-                     else
-                        zmx = Floorlevtoplay + dztop
-                     end if
+                     zmx = Floorlevtoplay + dztop
                   end if
                end if
             end if
