@@ -45,7 +45,7 @@ contains
       use m_netw
       use m_flowgeom
       use m_sferic
-      use m_longculverts
+      use m_longculverts_data, only: newculverts, nlongculverts, longculverts
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
 

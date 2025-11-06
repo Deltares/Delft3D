@@ -2015,6 +2015,7 @@ contains
       use m_observations
       use m_monitoring_crosssections
       use m_strucs
+      use m_longculverts_data , only: longculverts
       use m_structures, only: valdambreak
       use m_1d_structures
       use m_wind
@@ -2432,8 +2433,8 @@ contains
 
    !> Returns the c_ptr for a variable on a lateral location
    function get_pointer_to_lateral_variable(item_name, field_name) result(c_lateral_pointer)
-      use m_laterals, only: qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
-                            lateral_volume_per_layer, num_layers
+      use m_laterals, only: qplat, nnlat, n1latsg, n2latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
+                            lateral_volume_per_layer, num_layers, average_waterlevels_per_lateral, numlatsg
       use m_flow, only: s1
       use string_module, only: str_token
 
@@ -2458,10 +2459,19 @@ contains
          end if
          return
       case ("water_level")
-         ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
-         k1 = nnlat(n1latsg(item_index))
-         if (k1 > 0) then
-            c_lateral_pointer = c_loc(s1(k1))
+         if (.not. average_waterlevels_per_lateral%is_used) then
+            ! Just in time initialization, update will be called at the end of flow_run_some_timesteps.
+            call average_waterlevels_per_lateral%initialize(num_elements=numlatsg, &
+                               input_variable=s1, &
+                               weighing_variable=a1, &
+                               index_start=n1latsg, &
+                               index_end=n2latsg, & 
+                               index_to_node=nnlat)
+            call average_waterlevels_per_lateral%update()
+         end if
+
+         if (item_index > 0) then
+            c_lateral_pointer = c_loc(average_waterlevels_per_lateral%values(item_index))
          else
             c_lateral_pointer = c_null_ptr
          end if

@@ -45,9 +45,9 @@ contains
       use m_cell_geometry, only: xz, yz, ba, blcell
       use m_alloc
       use m_partitioninfo, only: idomain, iglobal_s
-      
+
       logical, intent(in) :: update_blcell !< Flag specifying whether the blcell array should be updated after removing dry cells.
-      
+
       integer, dimension(:), allocatable :: numnew ! permutation array
 
       integer :: i, ic, icL, icR, icnew, isL, isR, L, num, N, numpnew
@@ -55,7 +55,7 @@ contains
       integer :: jaidomain
       integer :: jaiglobal_s
       logical :: update_blcell_and_non_empty !< local flag indicating that blcell should be updated and is not empty
-      
+
       update_blcell_and_non_empty = .false.
       if (update_blcell) then
          if (allocated(blcell)) then
@@ -193,7 +193,7 @@ contains
             xzw(icnew) = xzw(ic)
             yzw(icnew) = yzw(ic)
             ba(icnew) = ba(ic)
-            
+
             if (update_blcell_and_non_empty) then
                blcell(icnew) = blcell(ic)
             end if

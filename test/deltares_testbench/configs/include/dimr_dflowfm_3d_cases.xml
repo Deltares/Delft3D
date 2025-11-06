@@ -217,7 +217,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f019_c013_tracer_channel3D" ref="dflowfm_default">
-     <path version="2025-10-07T06:56:47.306000">e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
+     <path version="2025-10-20T19:09">e02_dflowfm/f019_transport/c013_tracer_channel3D</path>
      <maxRunTime>15000.0000000</maxRunTime>
      <checks>
       <file name="dflowfmoutput/tracer3D_his.nc" type="netCDF">
@@ -982,7 +982,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f208_c011_gate_sub_3Dz" ref="platform_specific">
-      <path version="2025-10-08T15:43:50.919000">e02_dflowfm/f208_3D_hydraulic_structures/c011_gate_sub_3Dz</path>
+      <path version="2025-10-16T07:22:38.995000">e02_dflowfm/f208_3D_hydraulic_structures/c011_gate_sub_3Dz</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfm/dflowfmoutput/gatesub_3Dz_his.nc" type="netCDF">

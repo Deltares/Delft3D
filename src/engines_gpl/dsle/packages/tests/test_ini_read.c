@@ -2,6 +2,7 @@
 #include "ini/ini_read.h"
 #include "unity.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 void setUp(void) {}
@@ -59,7 +60,7 @@ static int my_ini_handler(char *section, char *key, char *value, void *data_ptr)
 }
 
 static void test_ini_read() {
-  char *filepath = "test_ini_input.ini";
+  char *filepath = "test_data/ini_read/test_ini_input.ini";
   int status = ini_read(filepath, my_ini_handler, NULL);
   TEST_ASSERT_MESSAGE(status == INI_OK, "Failed to load INI file.");
 }

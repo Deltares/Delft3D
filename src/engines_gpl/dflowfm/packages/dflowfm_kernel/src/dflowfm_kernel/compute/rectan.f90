@@ -43,7 +43,7 @@ contains
    subroutine rectan(hpr, br, hr, area, width, japerim, perim, closed)
       use precision, only: dp
       use m_flow, only: slotw1D
-      use m_longculverts, only: newculverts
+      use m_longculverts_data, only: newculverts
 
       integer :: japerim
       real(kind=dp) :: hpr ! hoogte   in profiel

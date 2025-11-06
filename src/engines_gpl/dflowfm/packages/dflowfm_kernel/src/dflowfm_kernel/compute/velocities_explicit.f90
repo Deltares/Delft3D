@@ -32,7 +32,6 @@
 
 module m_velocities_explicit
 
-
    use precision, only: dp
    implicit none
 

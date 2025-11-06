@@ -35,7 +35,7 @@
 
 module m_parms
 
-use precision, only: dp
+   use precision, only: dp
 #ifdef HAVE_PARMS
 #include "../third_party_open/pARMS/pARMS_3.2/include/fparms.h"
    parms_Map :: map ! map (represents how data are distributed across processors, see [1])

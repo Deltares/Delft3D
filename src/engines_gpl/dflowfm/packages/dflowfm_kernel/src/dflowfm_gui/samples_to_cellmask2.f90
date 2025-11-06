@@ -33,7 +33,6 @@
 ! update cellmask from samples
 module m_samples_to_cellmask2
 
-
    use precision, only: dp
    implicit none
 

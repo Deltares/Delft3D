@@ -43,7 +43,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                & nambnd    ,julday    ,mor_ptr   ,sedpar    ,morpar    , &
                & fwfac     ,morlyr    ,griddim)
 !!--declarations----------------------------------------------------------------
-    use precision
+    use precision, only: fp
     use properties
     use table_handles
     use bedcomposition_module
@@ -94,12 +94,14 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     real(fp)                   , dimension(:) , allocatable           :: xxprog
     real(fp)                   , dimension(MAX_NUSERFRAC)             :: rfield
     logical                                                           :: ex       !< Logical flag for file existence
+    logical                                                           :: is_float !< Logical flag for property value being a float
     character(10)                                                     :: versionstring
     character(256)                                                    :: errmsg
     character(256)                                                    :: pxxstr
     character(256)                                                    :: string
     character(11)                                                     :: fmttmp !< Format file ('formatted  ')
     character(:), allocatable                                         :: filmor
+    character(:), allocatable                                         :: filename
 !
 !! executable statements -------------------------------------------------------
 !
@@ -173,29 +175,28 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
           ! First assume that 'MorFac' contains a filename
           ! If the file does not exist, assume that 'MorFac' contains a uniform value (real)
           !
-          string = ' '
-          call prop_get(mor_ptr, 'Morphology', 'MorFac', string)
-          !
-          ! Intel 7.0 crashes on an inquire statement when file = ' '
-          !
-          if (string == ' ') then
-             ex = .false.
-          else
-             call combinepaths(filmor, string)
-             inquire (file = trim(string), exist = ex)
-          end if
-          if (.not. ex) then
+          call prop_get(mor_ptr, 'Morphology', 'MorFac', filmor, is_float, morpar%morfac, filename)
+          if (is_float) then
              morpar%varyingmorfac = .false.
-             call prop_get(mor_ptr, 'Morphology', 'MorFac', morpar%morfac)
+             
           else
              morpar%varyingmorfac = .true.
              morpar%morfac = -1.0
-             call readtable(morpar%morfacfile, trim(string), julday, errmsg)
-             if (errmsg /= ' ') then
-                call write_error(errmsg, unit=lundia)
+             inquire (file = filename, exist = ex)
+             if (ex) then
+                call readtable(morpar%morfacfile, filename, julday, errmsg)
+                if (errmsg /= ' ') then
+                   call write_error(errmsg, unit=lundia)
+                   error = .true.
+                   return
+                end if
+                
+             else
+                call write_error('RDMOR: MorFac file not found: '//trim(filename), unit=lundia)
                 error = .true.
                 return
-              end if
+                
+             end if
           end if
        
           call read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, nto, sedpar%anymud, &
@@ -351,6 +352,7 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     character(256)                                          :: errmsg
     character(256)                                          :: string
     logical                                                 :: exist
+    logical                                                 :: is_float
     integer                                                 :: j, nm
     !
     ! === start for calculating sediment transport
@@ -484,39 +486,31 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     ! === global / maximum dry cell erosion factor
     !
-    call prop_get(mor_ptr, 'Morphology', 'ThetSD', morpar%flsthetsd)
-    !
-    !
-    ! Intel 7.0 crashes on an inquire statement when file = ' '
-    !
-    if (morpar%flsthetsd == ' ') then
-        exist = .false.
+    morpar%thetsduni = 0.0_fp
+    call prop_get(mor_ptr, 'Morphology', 'ThetSD', filmor, is_float, morpar%thetsduni, morpar%flsthetsd)
+    if (is_float) then
+       morpar%flsthetsd = ' '
+       morpar%thetsd = max(0.0_fp,min(morpar%thetsduni,1.0_fp))
+       
     else
-        call combinepaths(filmor, morpar%flsthetsd)
-        inquire (file = morpar%flsthetsd, exist = exist)
-    end if
-    if (exist) then
-        !
-        ! Space varying data has been specified
-        ! Use routine that also read the depth file to read the data
-        !
-        call depfil_stm(lundia    ,error     ,morpar%flsthetsd    ,fmttmp    , &
-                        & morpar%thetsd    ,1         ,1         ,griddim   , errmsg)
-        if (error) then
-            call write_error(errmsg, unit=lundia)
-            return
-        end if
-        do nm = 1, griddim%nmmax
-            morpar%thetsd(nm) = max(0.0_fp, min(morpar%thetsd(nm), 1.0_fp))
-        enddo
-    else
-        morpar%flsthetsd = ' '
-        morpar%thetsduni = 0.0_fp
-        call prop_get(mor_ptr, 'Morphology', 'ThetSD', morpar%thetsduni)
-        !
-        ! Uniform data has been specified
-        !
-        morpar%thetsd = max(0.0_fp,min(morpar%thetsduni,1.0_fp))
+       inquire (file = morpar%flsthetsd, exist = exist)
+       if (exist) then
+          call depfil_stm(lundia    ,error     ,morpar%flsthetsd    ,fmttmp    , &
+                          & morpar%thetsd    ,1         ,1         ,griddim   , errmsg)
+          if (error) then
+              call write_error(errmsg, unit=lundia)
+              return
+          end if
+          do nm = 1, griddim%nmmax
+              morpar%thetsd(nm) = max(0.0_fp, min(morpar%thetsd(nm), 1.0_fp))
+          end do
+          
+       else
+          call write_error('ThetSD file not found: '//trim(morpar%flsthetsd), unit=lundia)
+          error = .true.
+          return
+          
+       end if
     end if
     !
     ! === maximum depth for variable dry cell erosion factor
@@ -697,6 +691,7 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
     use handles
     use message_module
     use dfparall, only: parll
+    use m_combinepaths, only: combinepaths
     
     implicit none
 !    
@@ -721,7 +716,7 @@ subroutine read_morphology_boundary_conditions(mor_ptr, morbnd, bcmfilnam, bcmfi
     bcmfilnam = ' '
     call prop_get(mor_ptr, 'Morphology', 'BcFil', bcmfilnam)
     if (bcmfilnam /= ' ') then
-        call combinepaths(filmor, bcmfilnam)
+        bcmfilnam = combinepaths(filmor, bcmfilnam)
         !write (lundia, '(3a)') txtput1, ': ', trim(bcmfilnam)
         call readtable(bcmfile, bcmfilnam, julday, errmsg)
         if (errmsg /= ' ') then
@@ -1431,7 +1426,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     logical                                , pointer :: upwindbedload
     logical                                , pointer :: pure1d_mor
     character(256)                         , pointer :: bcmfilnam
-    character(256)                         , pointer :: flsthetsd
     character(20)          , dimension(:)  , pointer :: namsed
     type(handletype)                       , pointer :: bcmfile
     type(handletype)                       , pointer :: morfacfile
@@ -1551,7 +1545,6 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     eulerisoglm         => morpar%eulerisoglm
     glmisoeuler         => morpar%glmisoeuler
     l_suscor            => morpar%l_suscor
-    flsthetsd           => morpar%flsthetsd
     thetsduni           => morpar%thetsduni
     suscorfac           => morpar%suscorfac
     upwindbedload       => mornum%upwindbedload
@@ -1688,9 +1681,9 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     write (lundia, '(2a,e20.4)') txtput1, ':', bedw
     txtput1 = 'Min.depth for sed. calculations(SEDTHR)'
     write (lundia, '(2a,e20.4)') txtput1, ':', sedthr
-    if (flsthetsd /= ' ') then
+    if (morpar%flsthetsd /= ' ') then
        txtput1 = 'File dry cell erosion fact(THETSD)'
-       write (lundia, '(3a)') txtput1, ':  ', trim(flsthetsd)
+       write (lundia, '(3a)') txtput1, ':  ', morpar%flsthetsd
     else
        txtput1 = 'Uniform dry cell erosion fact(THETSD)'
        write (lundia, '(2a,e12.4)') txtput1, ':', thetsduni
@@ -2140,11 +2133,12 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
 !
     integer                         , pointer :: iflufflyr
     real(fp)      , dimension(:)    , pointer :: mfluni
-    real(fp)      , dimension(:,:)  , pointer :: bfluff0
-    real(fp)      , dimension(:,:)  , pointer :: bfluff1
+    real(fp)      , dimension(:,:)  , pointer :: bfluff
     real(fp)      , dimension(:,:)  , pointer :: depfac
     character(256), dimension(:)    , pointer :: mflfil
+    character(256)                  , pointer :: bfluff_fil
     !
+    integer                   :: i
     integer                   :: istat
     integer                   :: l
     integer                   :: nm
@@ -2152,10 +2146,13 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
     integer                   :: nmub
     real(fp)                  :: rmissval
     logical                   :: ex
+    logical                   :: is_float
     type(tree_data), pointer  :: sedblock_ptr
-    character(256)            :: filfluff
     character(11)             :: fmttmp       ! Format file ('formatted  ') 
     character(256)            :: errmsg
+    character(:), allocatable :: filename !< filename for spatial data
+    character(:), allocatable :: key !< key to read burial term
+    character(:), allocatable :: quantity !< name of quantity in error messages
 !
 !! executable statements -------------------------------------------------------
 !
@@ -2174,16 +2171,13 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
     istat = allocfluffy(flufflyr, lsed, nmlb, nmub)
     !
     if (istat/=0) then
-       errmsg = 'RDFLUFFLYR: memory alloc error'
-       call write_error(errmsg, unit=lundia)
+       call write_error('RDFLUFFLYR: memory alloc error', unit=lundia)
        error = .true.
        return
     end if
     !
     mfluni  => flufflyr%mfluni
     depfac  => flufflyr%depfac
-    bfluff0 => flufflyr%bfluff0
-    bfluff1 => flufflyr%bfluff1
     mflfil  => flufflyr%mflfil
     !
     mfluni = 0.0_fp
@@ -2191,169 +2185,123 @@ subroutine rdflufflyr(lundia   ,error    ,filmor   ,lsed     ,mor_ptr ,flufflyr,
     do l = 1,lsed
         sedblock_ptr => sedpar%sedblock(l)
         if (sedpar%sedtyp(l) <= sedpar%max_mud_sedtyp) then
-            call prop_get(sedblock_ptr, '*', 'IniFluffMass', mflfil(l))
-            !
-            ! Intel 7.0 crashes on an inquire statement when file = ' '
-            !
-            if (mflfil(l) == ' ') mflfil(l) = 'dummyname'
-            inquire (file = mflfil(l), exist = ex)
-            !
-            if (.not.ex) then
-                call prop_get(sedblock_ptr, '*', 'IniFluffMass', mfluni(l))
+            ! TODO: The next line should use filsed instead of filmor ...
+            call prop_get(sedblock_ptr, '*', 'IniFluffMass', filmor, is_float, mfluni(l), filename)
+            mflfil(l) = filename
+            if (.not. is_float) then
+               mflfil(l) = filename
+               mfluni(l) = -999.0_fp
             end if
         end if
     enddo
     !
     if (iflufflyr==1) then
-        bfluff0 = 0.0_fp
-        bfluff1 = 0.0_fp
-        !
-        ! Burial term 1 fluff layer constant in time:
-        ! uniform or spatially varying value
-        !
-        filfluff = ''
-        call prop_get(mor_ptr, 'FluffLayer', 'BurFluff0', filfluff)
-        !
-        ! Intel 7.0 crashes on an inquire statement when file = ' '
-        !
-        if (filfluff == ' ') filfluff = 'dummyname'
-        inquire (file = filfluff, exist = ex)
-        !
-        if (ex) then
-            !
-            ! read data from file
-            !
-            call depfil_stm(lundia    ,error     ,filfluff  ,fmttmp    , &
-                          & bfluff0   ,lsed      ,1         ,griddim   ,errmsg )
-            if (error) then
-                call write_error(errmsg, unit=lundia)
-                errmsg = 'Unable to read burial term 1 from ' // trim(filfluff)
-                call write_error(errmsg, unit=lundia)
+       do i = 0, 1 ! loop over burial terms
+          if (i==0) then ! is this mixing of 0/1-based indexing clear for the user?
+             key = 'BurFluff0'
+             quantity = 'burial term 1'
+             bfluff => flufflyr%bfluff0
+             bfluff_fil => flufflyr%bfluff0_fil
+          else
+             key = 'BurFluff1'
+             quantity = 'burial term 2'
+             bfluff => flufflyr%bfluff1
+             bfluff_fil => flufflyr%bfluff1_fil
+          end if
+          bfluff = 0.0_fp
+          !
+          call prop_get(mor_ptr, 'FluffLayer', key, filmor, is_float, bfluff(1,1), filename)
+          if (is_float) then
+             if (bfluff(1,1) < 0.0_fp) then
+                call write_error('Value for '//quantity//' should be positive in '//trim(filmor), unit=lundia)
+                error = .true.
                 return
-            end if
-            flufflyr%bfluff0_fil = filfluff
-            !
-            ! check input
-            !
-            do nm = nmlb, nmub
-                if (bfluff0(1,nm) < 0.0_fp .and. bfluff0(1,nm) /= rmissval ) then
-                    errmsg = 'Burial term 1 should be positive in ' // trim(filfluff)
+             end if
+             bfluff(1,:) = bfluff(1,1)
+          else
+             inquire (file = filename, exist = ex)
+             if (ex) then
+                !
+                ! read data from file
+                !
+                call depfil_stm(lundia    ,error     ,filename  ,fmttmp    , &
+                              & bfluff    ,lsed      ,1         ,griddim   ,errmsg )
+                if (error) then
                     call write_error(errmsg, unit=lundia)
+                    call write_error('Unable to read '//quantity//' from '//filename, unit=lundia)
                     return
                 end if
-            enddo
-        else
-            filfluff = ' '
-            call prop_get(mor_ptr, 'FluffLayer', 'BurFluff0', bfluff0(1,1))
-            if (bfluff0(1,1) < 0.0_fp) then
-                errmsg = 'Burial term 1 should be positive in ' // trim(filmor)
-                call write_error(errmsg, unit=lundia)
+                flufflyr%bfluff0_fil = filename
+                !
+                ! check input
+                !
+                do nm = nmlb, nmub
+                    if (bfluff(1,nm) < 0.0_fp .and. bfluff(1,nm) /= rmissval ) then
+                        call write_error('Values for '//quantity//' should be positive in '//filename, unit=lundia)
+                        error = .true.
+                        return
+                    end if
+                enddo
+             else
+                call write_error('File for '//quantity//' not found: '//filename, unit=lundia)
+                error = .true.
                 return
-            end if
-            bfluff0(1,:) = bfluff0(1,1)
-        end if
-        do l = 2, lsed
-            bfluff0(l,:) = bfluff0(1,:)
-        enddo
-        !
-        ! Burial term 2 fluff layer constant in time:
-        ! uniform or spatially varying value
-        !
-        filfluff = ''
-        call prop_get(mor_ptr, 'FluffLayer', 'BurFluff1', filfluff)
-        !
-        ! Intel 7.0 crashes on an inquire statement when file = ' '
-        !
-        if (filfluff == ' ') filfluff = 'dummyname'
-        inquire (file = filfluff, exist = ex)
-        !
-        if (ex) then
-            !
-            ! read data from file
-            !
-            call depfil_stm(lundia    ,error     ,filfluff  ,fmttmp    , &
-                          & bfluff1   ,lsed      ,1         ,griddim   ,errmsg)
-            if (error) then
-                call write_error(errmsg, unit=lundia)
-                errmsg = 'Unable to read burial term 2 from ' // trim(filfluff)
-                call write_error(errmsg, unit=lundia)
-                return
-            end if
-            flufflyr%bfluff1_fil = filfluff
-            !
-            ! check input
-            !
-            do nm = nmlb, nmub
-                if (bfluff1(1,nm) < 0.0_fp .and. bfluff1(1,nm) /= rmissval ) then
-                    errmsg = 'Burial term 2 should be positive in ' // trim(filfluff)
-                    call write_error(errmsg, unit=lundia)
-                    return
-                end if
-            enddo
-        else
-            filfluff = ' '
-            call prop_get(mor_ptr, 'FluffLayer', 'BurFluff1', bfluff1(1,1))
-            if (bfluff1(1,1) < 0.0_fp ) then
-                errmsg = 'Burial term 2 should be positive in ' // trim(filmor)
-                call write_error(errmsg, unit=lundia)
-                return
-            end if
-            bfluff1(1,:) = bfluff1(1,1)
-        end if
-        do l = 2, lsed
-            bfluff1(l,:) = bfluff1(1,:)
-        enddo
-        !
+             end if
+          end if
+          do l = 2, lsed
+              bfluff(l,:) = bfluff(1,:)
+          end do
+       end do
+
     elseif (iflufflyr==2) then
-        depfac = 0.0_fp   
-        !
-        ! Deposition factor constant in time:
-        ! uniform or spatially varying value
-        !
-        filfluff = ''
-        call prop_get(mor_ptr, 'FluffLayer', 'DepFac', filfluff)
-        !
-        ! Intel 7.0 crashes on an inquire statement when file = ' '
-        !
-        if (filfluff == ' ') filfluff = 'dummyname'
-        inquire (file = filfluff, exist = ex)
-        !
-        if (ex) then
-            !
-            ! read data from file
-            !
-            call depfil_stm(lundia    ,error     ,filfluff  ,fmttmp    , &
-                          & depfac    ,lsed      ,1         ,griddim   , errmsg)
-            if (error) then
-                call write_error(errmsg, unit=lundia)
-                errmsg = 'Unable to read deposition factor from ' // trim(filfluff)
-                call write_error(errmsg, unit=lundia)
-                return
-            end if
-            flufflyr%depfac_fil = filfluff
-            !
-            ! check input
-            !
-            do nm = nmlb, nmub
-                if ((depfac(1,nm) < 0.0_fp .or. depfac(1,nm)>1.0_fp) .and. depfac(1,nm) /= rmissval  ) then
-                    errmsg = 'Deposition factor should be between 0 and 1 in ' // trim(filfluff)
-                    call write_error(errmsg, unit=lundia)
-                    return
-                end if
-            enddo
-        else
-            filfluff = ' '
-            call prop_get(mor_ptr, 'FluffLayer', 'DepFac', depfac(1,1))
-            if (depfac(1,1) < 0.0_fp .or. depfac(1,1) > 1.0_fp) then
-                errmsg = 'Deposition factor should be between 0 and 1 in ' // trim(filmor)
-                call write_error(errmsg, unit=lundia)
-                return
-            end if
-            depfac(1,:) = depfac(1,1)
-        end if
-        do l = 2, lsed
-            depfac(l,:) = depfac(1,:)
-        enddo 
+       depfac = 0.0_fp   
+       !
+       ! Deposition factor constant in time:
+       ! uniform or spatially varying value
+       !
+       call prop_get(mor_ptr, 'FluffLayer', 'DepFac', filmor, is_float, depfac(1,1), filename)
+       if (is_float) then
+          if (depfac(1,1) < 0.0_fp .or. depfac(1,1) > 1.0_fp) then
+             call write_error('Deposition factor should be between 0 and 1 in '//trim(filmor), unit=lundia)
+             error = .true.
+             return
+          end if
+          flufflyr%depfac_fil = ' '
+          depfac(1,:) = depfac(1,1)
+          
+       else
+          inquire(file = filename, exist = ex)
+          if (ex) then
+             !
+             ! read data from file
+             !
+             call depfil_stm(lundia    ,error     ,filename  ,fmttmp    , &
+                           & depfac    ,lsed      ,1         ,griddim   , errmsg)
+             if (error) then
+                 call write_error(errmsg, unit=lundia)
+                 call write_error('Unable to read deposition factor from '//filename, unit=lundia)
+                 return
+             end if
+             flufflyr%depfac_fil = filename
+             !
+             ! check input
+             !
+             do nm = nmlb, nmub
+                 if ((depfac(1,nm) < 0.0_fp .or. depfac(1,nm)>1.0_fp) .and. depfac(1,nm) /= rmissval  ) then
+                     call write_error('Deposition factor should be between 0 and 1 in '//filename, unit=lundia)
+                     error = .true.
+                     return
+                 end if
+             enddo
+          else
+             call write_error('File for deposition factor not found: '//filename, unit=lundia)
+             error = .true.
+             return
+          end if
+       end if
+       do l = 2, lsed
+           depfac(l,:) = depfac(1,:)
+       end do 
     end if                                                                                                                                                         
 end subroutine rdflufflyr
 

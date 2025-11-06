@@ -32,7 +32,6 @@
 
 module m_apply_sediment_bc
 
-
    use precision, only: dp
    implicit none
 

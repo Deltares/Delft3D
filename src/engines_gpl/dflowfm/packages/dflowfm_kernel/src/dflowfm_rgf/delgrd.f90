@@ -34,7 +34,7 @@ module m_delgrd
 
    use m_savegrd, only: savegrd
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    private

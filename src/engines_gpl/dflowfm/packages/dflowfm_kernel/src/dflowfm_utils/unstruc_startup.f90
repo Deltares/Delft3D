@@ -44,7 +44,7 @@ module unstruc_startup
    use properties
    use messagehandling, only: err_flush
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
 contains

@@ -122,6 +122,8 @@ real, dimension(:)                       , pointer :: table
 real, dimension(:)                       , pointer :: x
 
 real, dimension(:,:)                     , pointer :: bfricp
+real, dimension(:,:)                     , pointer :: sectc
+real, dimension(:,:)                     , pointer :: sectv
 real, dimension(:,:)                     , pointer :: wft
 real, dimension(:,:)                     , pointer :: aft
 real, dimension(:,:)                     , pointer :: wtt
@@ -210,6 +212,8 @@ qpack  => f1dimppar%qpack
 x      => f1dimppar%x
 waoft  => f1dimppar%waoft 
 grid   => f1dimppar%grid
+sectc  => f1dimppar%sectc
+sectv  => f1dimppar%sectv
 
 !cross-sectional shape
 wft  => f1dimppar%wft 
@@ -279,7 +283,7 @@ call SOFLOW( &
         &   branch , bfrict                            , &
 !dependent on gridpoints 
         &   bfricp , hpack  , qpack  ,x       , waoft  , & 
-        &   grid                                       , &
+        &   grid   , sectc  , sectv                    , &
 !cross-sectional shape
         &   wft    , aft    ,wtt     ,att     , of     , & 
         &   hlev                                       , &
@@ -317,3 +321,4 @@ write(42,*) waoft(:,3)
 endif
 
 end subroutine SOFLOW_wrap
+    

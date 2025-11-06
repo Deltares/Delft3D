@@ -35,7 +35,7 @@ module m_assignijgrid
 
    use m_grow_ijc, only: grow_ijc
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    private

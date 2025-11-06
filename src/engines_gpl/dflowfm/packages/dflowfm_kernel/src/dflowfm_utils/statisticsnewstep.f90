@@ -32,7 +32,6 @@
 
 module m_statisticsnewstep
 
-
    use precision, only: dp
    implicit none
 
