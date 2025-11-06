@@ -2,7 +2,7 @@ name: "Schedule Interaction Limit for collaborators_only"
 on:
   # Should be less than the expiration time of the interaction limits
   schedule:
-    - cron: "*/5 * * * *" # Every 5 minutes
+    - cron: "0 0 1 */5 *" # Every 5 months
   workflow_dispatch:
 jobs:
   main:
