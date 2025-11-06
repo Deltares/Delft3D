@@ -339,10 +339,7 @@ contains
         ! PART 1 : make the administration for the variable time step approach
 
         !   1a: fill the array with time-tresholds per basket, 13 baskets span 1 hour - 0.9 second
-        delta_t_box(1) = real(idt, kind = dp)
-        do ibox = 2, count_boxes
-            delta_t_box(ibox) = delta_t_box(ibox - 1) / 2.0d0
-        end do
+        delta_t_box = assign_delta_t_to_boxes(idt, count_boxes)
 
         !   1b: sum the outgoing [work(1,..)] and ingoing [work(2,..)] horizontal flows and constant diffusions [work(3,..)] per cell
         work = 0.0d0
@@ -1907,5 +1904,22 @@ contains
         deriv = 0.0d0
         if (timon) call timstop(ithandl)
     end subroutine locally_adaptive_time_step
+
+    function assign_delta_t_to_boxes(idt, count_boxes) result(delta_t_box)
+        ! Assign the delta t to each box based on its index
+        implicit none
+        integer, intent(in) :: idt
+        integer, intent(in) :: count_boxes
+
+        real(kind = dp) :: delta_t_box(count_boxes + 1)
+
+        ! Compute the sub-time step delta t for each box
+        delta_t_box(1) = real(idt, kind = dp)
+        do ibox = 2, count_boxes 
+            delta_t_box(ibox) = delta_t_box(ibox - 1) / 2.0d0
+        end do
+        delta_t_box(count_boxes + 1) = 0.0d0  ! for cells running wet, will be overwritten later on.
+
+    end function assign_delta_t_to_boxes
 
 end module m_locally_adaptive_time_step
