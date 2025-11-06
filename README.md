@@ -28,11 +28,6 @@ Community websites:
 - **Delft3D 4 Community website:** https://oss.deltares.nl/web/delft3d
 - **Delft3D FM Community website:** https://oss.deltares.nl/web/delft3dfm
 
-Information on compiling:
+For information on compiling, testing and development see the [development](doc/development.md) page.
 
-- **Compiling:** [here](doc/old_README.md)
-- **Contributing:** to be completed
-
-If you are new to contributing to open source, [this
-guide](https://opensource.guide/how-to-contribute/) helps explain why, what,
-and how to successfully get involved.
+If you are new to contributing to open source, [this guide](https://opensource.guide/how-to-contribute/) helps explain why, what, and how to successfully get involved.

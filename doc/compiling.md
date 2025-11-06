@@ -1,11 +1,6 @@
-# Tarball
-Please use the tarball containing the latest released version of the source code, located at:
-https://oss.deltares.nl/en/web/delft3dfm/get-started#Download%20source%20code
-See section "Workflow" below in case you want to contribute to the source code.
+# Compiling Delft3D
 
-# About compiling https://github.com/Deltares/Delft3D
-
-#### Windows:
+## Windows
 - build.bat from an Intel oneAPI command prompt for Intel 64 for Visual Studio 2022.
   Execute "build.bat -help" to show the usage.
 - Open the generated solution from the command prompt to ensure that the intel environment is inherited by visual studio. For example:
@@ -14,7 +9,7 @@ See section "Workflow" below in case you want to contribute to the source code.
   "cmake --build build_fm-suite --config Debug"
   "cmake --install build_fm-suite --config Debug"
 
-#### Linux:
+## Linux
 - build.sh
   Execute "./build.sh --help" to show the usage
   Currently used as default build process: "./build.sh fm-suite --compiler intel21"
@@ -56,21 +51,6 @@ Replace "..." by the actual path on your system to the checkout directory.
   - A small set of QuickTests will be triggered on TeamCity. Continuation is only possible when it succeeds. This will take at least 30 minutes.
   - You have to assign the MergeRequest to a core developer for reviewing and testing. When succeeded, the tester/reviewer is allowed to merge into trunk.
 - Official binary deliveries are only allowed using Deltares TeamCity server
-
-# Branch naming
-\<kernel\>/\<type\>/\<ISSUENR\>_short_description
-with:
-- \<kernel\>  : one of: all, d3d4, fm, none, part, rr, swan, waq, wave, tc
-  -> Use all/none/\<specific\> to trigger all/none/specific tests
-  -> Not needed for type \<research\>.
-- \<type\>    : one of: bugfix, doc, feature, poc, release, research, task
-  -> Use \<research\> for branches that will not be merged into trunk directly.
-- \<ISSUENR\> : JIRA issue number
-  -> Not needed for type \<research\>.
-
-Examples:
-- fm/feature/UNST-1234_improve_partition_file
-- research/improve_flow_scheme
 
 # Unit tests
 ## Running Unit tests
