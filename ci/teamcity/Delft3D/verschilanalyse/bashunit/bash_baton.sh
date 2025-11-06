@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 path=$(dirname "$(realpath "$0")")
-bash_baton_image="containers.deltares.nl/teamcity_agent/bash_baton:release_v1.0.0"
+bash_baton_image="containers.deltares.nl/bashbaton/bashbaton:release_v1.0.0"
 
 container_name="VA-tests"
 test_dir="${path}/../bashunit"
