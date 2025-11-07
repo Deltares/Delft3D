@@ -107,14 +107,6 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
             """.trimIndent()
         }
     }
-    
-    features {
-        dockerRegistryConnections {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D"
-            }
-        }
-    }
 
     dependencies { snapshot(LinuxSubmitH7ContainerSmokeTest) {} }
 })
