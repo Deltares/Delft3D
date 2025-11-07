@@ -2616,8 +2616,8 @@ contains
          ncvarnames(1) = 'tcc' ! cloud cover (fraction)
          ncstdnames(1) = 'cloud_area_fraction'
       case ('humidity')
-         ncstdnames(1) = 'humidity'
-         ncstdnames_fallback(1) = 'relative_humidity'
+         ncstdnames(1) = 'relative_humidity'
+         ncstdnames_fallback(1) = 'humidity'
       case ('dewpoint')
          ncvarnames(1) = 'd2m' ! dew-point temperature
          ncstdnames(1) = 'dew_point_temperature'
@@ -2763,7 +2763,7 @@ contains
             else
                nameVar = trim(ncvarnames(i))
             end if
-            call setECMessage("Variable '"//nameVar//"' not found in NetCDF file '"//trim(fileReaderPtr%filename))
+            call setECMessage("Variable '" // nameVar // "' not found in NetCDF file '" // trim(fileReaderPtr%filename) // "'.")
             return
          end if
          fileReaderPtr%standard_names(idvar) = ncstdnames(i) ! overwrite the standardname by the one required
