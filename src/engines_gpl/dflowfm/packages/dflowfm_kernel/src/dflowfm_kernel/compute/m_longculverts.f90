@@ -1083,7 +1083,6 @@ contains
          kn3typ = 5
          call longculvert_create_endpoint(jend, k1)
          call connectdbn(k2, k1, linksCulv(jend + 1))
-
          !advance pointer
          jpoint = jend + 2
       end do
@@ -1537,6 +1536,8 @@ contains
          do i = 1, nlongculverts
             call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
          end do
+         i = 0
+         call admin_network(network, i)
          call unc_write_net('testnet.nc', janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
 
          !md_netfile = tempstring_netfile
