@@ -245,13 +245,13 @@ substitute_all_templates() {
     substitute_template "$script_file" "{PLATFORM_NAME}" "${PLATFORM_CONFIG[platform]^^}"
 }
 
-process_directory() {
+prepare_directory() {
     local dir="$1"
     local platform="$2"
     local submit_script_name="$3"
-    
-    echo "    Processing directory: $dir"
-    
+
+    echo "    Preparing directory: $dir"
+
     # Setup submit script
     if ! setup_submit_script "$TEMPLATE_SUBMIT_SCRIPT" "$dir/$submit_script_name"; then
         return 1
@@ -299,7 +299,7 @@ process_directory() {
     return 0
 }
 
-process_all_directories() {
+prepare_all_directories() {
     local platform="$1"
     local submit_script_name="submit_$platform.sh"
     
@@ -307,10 +307,10 @@ process_all_directories() {
     local job_ids=()
     
     for dir in $dirs; do
-    echo "Found directory with dimr file: $dir, try to process and submit job"
-        # Process directory first
-        if ! process_directory "$dir" "$platform" "$submit_script_name"; then
-            echo "    Failed to process directory $dir, skipping job submission" >&2
+        echo "Found directory with dimr file: $dir, try to prepare for submitting job"
+        # Prepare directory first
+        if ! prepare_directory "$dir" "$platform" "$submit_script_name"; then
+            echo "    Failed to prepare directory $dir" >&2
             continue
         fi
     done
@@ -395,9 +395,9 @@ main() {
         echo "No configuration file provided, using interactive mode for all models"
     fi
     
-    process_all_directories "$platform"
+    prepare_all_directories "$platform"
 
-    echo "All jobs processed successfully"
+    echo "All jobs prepared successfully"
 }
 
 # Call main function with all arguments
