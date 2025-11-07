@@ -26,6 +26,11 @@
 !-------------------------------------------------------------------------------
 !
 !
+      module m_merge_domains
+      implicit none
+
+      contains
+
       subroutine merge_domains(hyd, domain_hyd_coll)
 
       ! function : merge the domains, make pointers to final domain
@@ -40,15 +45,15 @@
       ! declaration of the arguments
 
       type(t_hydrodynamics)                            :: hyd                    ! description of the hydrodynamics
-      type(t_hydrodynamics_collection)                       :: domain_hyd_coll        ! description of all domain hydrodynamics
+      type(t_hydrodynamics_collection)                 :: domain_hyd_coll        ! description of all domain hydrodynamics
 
       ! local declarations
 
       integer                                :: n_domain               ! number of domains
       integer                                :: i_domain               ! index in collection
       integer                                :: idmn                   ! flow like domain index (0:n_domain-1)
-      type(t_hydrodynamics), pointer                   :: d_hyd                  ! description of one domain hydrodynamics
-      type(t_hydrodynamics), pointer                   :: l_hyd                  ! description of a linked domain hydrodynamics
+      type(t_hydrodynamics), pointer         :: d_hyd                  ! description of one domain hydrodynamics
+      type(t_hydrodynamics), pointer         :: l_hyd                  ! description of a linked domain hydrodynamics
       integer                                :: nosegl                 ! total number of segments per layer
       integer                                :: num_boundary_conditions                  ! total number of boundaries
       integer                                :: nobndl                 ! total number of boundaries per layer
@@ -68,9 +73,9 @@
       integer                                :: isect                  ! index of section
       integer                                :: no_bnd                 ! number of boundaries in section
       integer                                :: i_bnd                  ! index of boundary
-      type(t_openbnd_section), pointer           :: openbndsect            ! single section
-      type(t_open_boundary_line),pointer             :: openbndlin             ! single open boundary lin
-      type(t_openbnd_section)                    :: new_sect               ! single section new
+      type(t_openbnd_section), pointer       :: openbndsect            ! single section
+      type(t_open_boundary_line),pointer     :: openbndlin             ! single open boundary lin
+      type(t_openbnd_section)                :: new_sect               ! single section new
       logical                                :: bnd_active             ! if a boundary is active
       integer                                :: iret                   ! return value
       integer                                :: ik                     ! node counter
@@ -113,7 +118,7 @@
       hyd%crs  = d_hyd%crs
       hyd%conv_type  = d_hyd%conv_type
       hyd%conv_version  = d_hyd%conv_version
-      
+
       ! copy waqgeom layer information from first domain
       hyd%waqgeom%num_layers = d_hyd%waqgeom%num_layers
       hyd%waqgeom%numtopsig = d_hyd%waqgeom%numtopsig
@@ -453,6 +458,9 @@
          end do
       end do
 
+      ! determine the stable numbering for the boundary cells
+      call sort_and_number_boundaries( domain_hyd_coll%hyd_pnts(1:domain_hyd_coll%current_size), num_boundary_conditions )
+
       ! exchanges
       ! gather the exchanges per layer, and in such a way that the internal exchanges come first, and overlap with the edge face table
       num_exchanges_u_dir  = 0
@@ -496,9 +504,10 @@
                      num_exchanges_u_dir = num_exchanges_u_dir + 1
                      d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                      if (abs(ip1) .le. d_hyd%nobndl) then
-                        num_boundary_conditions = num_boundary_conditions + 1
-                        d_hyd%iglobal_bnd(-ip1) = -num_boundary_conditions
-                        call renum_bnd(d_hyd%openbndsect_coll,ip1,-num_boundary_conditions)
+                        !num_boundary_conditions = num_boundary_conditions + 1
+                        !d_hyd%iglobal_bnd(-ip1) = -num_boundary_conditions
+                        !call renum_bnd(d_hyd%openbndsect_coll,ip1,-num_boundary_conditions)
+                        call renum_bnd(d_hyd%openbndsect_coll,ip1,d_hyd%iglobal_bnd(-ip1))
                      end if
                   end if
                else if (ip1 .ge. min_seg .and. ip1 .le. max_seg .and. ip2 .lt. 0) then !ip1 between min +1 and max
@@ -508,9 +517,10 @@
                      num_exchanges_u_dir = num_exchanges_u_dir + 1
                      d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                      if (abs(ip2) .le. d_hyd%nobndl) then
-                        num_boundary_conditions = num_boundary_conditions + 1
-                        d_hyd%iglobal_bnd(-ip2) = -num_boundary_conditions
-                        call renum_bnd(d_hyd%openbndsect_coll,ip2,-num_boundary_conditions)
+                        !num_boundary_conditions = num_boundary_conditions + 1
+                        !d_hyd%iglobal_bnd(-ip2) = -num_boundary_conditions
+                        !call renum_bnd(d_hyd%openbndsect_coll,ip2,-num_boundary_conditions)
+                        call renum_bnd(d_hyd%openbndsect_coll,ip1,d_hyd%iglobal_bnd(-ip2))
                      end if
                   end if
                end if
@@ -532,9 +542,10 @@
                   num_exchanges_u_dir = num_exchanges_u_dir + 1
                   d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                   if (abs(ip1) .le. d_hyd%nobndl) then
-                     num_boundary_conditions = num_boundary_conditions + 1
-                     d_hyd%iglobal_bnd(-ip1) = -num_boundary_conditions
-                     call renum_bnd(d_hyd%openbndsect_coll,ip1,-num_boundary_conditions)
+                     !num_boundary_conditions = num_boundary_conditions + 1
+                     !d_hyd%iglobal_bnd(-ip1) = -num_boundary_conditions
+                     !call renum_bnd(d_hyd%openbndsect_coll,ip1,-num_boundary_conditions)
+                     call renum_bnd(d_hyd%openbndsect_coll,ip1,d_hyd%iglobal_bnd(-ip1))
                   end if
                end if
             else if (ip1 .gt. 0 .and. ip2 .lt. 0) then
@@ -544,9 +555,10 @@
                   num_exchanges_u_dir = num_exchanges_u_dir + 1
                   d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                   if (abs(ip2) .le. d_hyd%nobndl) then
-                     num_boundary_conditions = num_boundary_conditions + 1
-                     d_hyd%iglobal_bnd(-ip2) = -num_boundary_conditions
-                     call renum_bnd(d_hyd%openbndsect_coll,ip2,-num_boundary_conditions)
+                     !num_boundary_conditions = num_boundary_conditions + 1
+                     !d_hyd%iglobal_bnd(-ip2) = -num_boundary_conditions
+                     !call renum_bnd(d_hyd%openbndsect_coll,ip2,-num_boundary_conditions)
+                     call renum_bnd(d_hyd%openbndsect_coll,ip1,d_hyd%iglobal_bnd(-ip2))
                   end if
                end if
             end if
@@ -603,7 +615,7 @@
             endif
          enddo
       enddo
-      
+
       ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
       ! equals the number of boundary conditions per layer times the number of layers
       if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
@@ -1004,7 +1016,7 @@
             end if
          end do
       end do
-      
+
       ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
       ! equals the number of boundary conditions per layer times the number of layers
       if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
@@ -1198,3 +1210,183 @@
       end do
       return
       end
+
+      subroutine sort_and_number_boundaries( hyd_pnts, num_boundaries )
+
+      use m_hydmod
+
+      implicit none
+
+      ! Use the properties of the boundary sections to sort
+      ! the individual boundary cells in such a way that a
+      ! numbering results that is independent of the partitioning.
+      ! Note: D-Flow FM does not provide such a numbering itself,
+      ! unlike with the internal cells.
+
+      type(t_hydrodynamics), dimension(:), intent(inout) :: hyd_pnts
+      integer, intent(out)                               :: num_boundaries
+
+      type :: t_cell_properties
+          character(len=40)                      :: name
+          real(kind=kind(1.0d0)), dimension(4)   :: coordinates
+          integer                                :: domain_index
+          integer                                :: section_index
+          integer                                :: bound_index
+          integer                                :: original_index
+          integer                                :: sorted_index = -1
+      end type t_cell_properties
+
+      type(t_cell_properties), allocatable, dimension(:) :: cell_list
+      type(t_cell_properties), allocatable, dimension(:) :: new_cell_list
+      type(t_cell_properties)                            :: new_cell
+      type(t_openbnd_section)                            :: section
+      type(t_open_boundary_line)                         :: bound
+      integer                                            :: b, c, d, s
+
+      !
+      ! Gather the information per domain into a single list
+      !
+      allocate( cell_list(0) )
+
+      do d = 1,size(hyd_pnts)
+          do s = 1,hyd_pnts(d)%openbndsect_coll%current_size
+              section = hyd_pnts(d)%openbndsect_coll%openbndsect_pnts(s)
+
+              do b = 1,section%openbndlin_coll%current_size
+                  bound = section%openbndlin_coll%openbndlin_pnts(b)
+
+                  new_cell%name           = section%name
+                  new_cell%coordinates    = [bound%x1, bound%y1, bound%x2, bound%y2]
+                  new_cell%domain_index   = d
+                  new_cell%section_index  = s
+                  new_cell%bound_index    = b
+                  new_cell%original_index = bound%ibnd
+
+                  cell_list = [cell_list, new_cell]
+              enddo
+          enddo
+      enddo
+
+      !
+      ! Sort the list:
+      ! - First by section name
+      ! - Then by coordinates (one by one)
+      !
+      write(88,*) 'Original (unsorted):'
+      do c = 1,size(cell_list)
+          d = cell_list(c)%domain_index
+          s = cell_list(c)%section_index
+          b = cell_list(c)%bound_index
+
+          write(88,'(20g15.5)') c, cell_list(c)%name, d, s, b, cell_list(c)%coordinates
+      enddo
+
+      call sort_lexicographically( cell_list )
+
+      write(88,*) 'Original (sorted):'
+      do c = 1,size(cell_list)
+          d = cell_list(c)%domain_index
+          s = cell_list(c)%section_index
+          b = cell_list(c)%bound_index
+
+          write(88,'(20g15.5)') c, cell_list(c)%name, d, s, b, cell_list(c)%coordinates
+      enddo
+
+      call remove_duplicates( cell_list, new_cell_list )
+
+      !
+      ! Fill the new numbering in in the domain list
+      !
+      num_boundaries = size(new_cell_list)
+
+      write(88,*) 'Reduced:'
+      do c = 1,size(new_cell_list)
+          d = new_cell_list(c)%domain_index
+          s = new_cell_list(c)%section_index
+          b = new_cell_list(c)%bound_index
+
+          write(88,'(20g15.5)') c, new_cell_list(c)%name, d, s, b, new_cell_list(c)%coordinates
+      enddo
+
+      do c = 1,size(new_cell_list)
+          d = new_cell_list(c)%domain_index
+          s = new_cell_list(c)%section_index
+          b = new_cell_list(c)%bound_index
+
+          !hyd_pnts(d)%openbndsect_coll%openbndsect_pnts(s)%openbndlin_coll%openbndlin_pnts(b)%ibnd_new = &
+          hyd_pnts(d)%iglobal_bnd(b) = -new_cell_list(c)%sorted_index
+      enddo
+
+      contains
+
+
+      subroutine sort_lexicographically( cell_list )
+
+      !     Use a simple bubblesort to sort the boundary segments in a persistent way
+
+      type(t_cell_properties), dimension(:), intent(inout) :: cell_list
+
+      type(t_cell_properties)                              :: bstore
+      integer                                             :: i, c
+      logical                                             :: changed, swap
+
+      changed = .true.
+
+      do while (changed)
+          changed = .false.
+
+          do i = 2,size(cell_list)
+              swap = .false.
+              if ( cell_list(i)%name < cell_list(i-1)%name ) then
+                  swap = .true.
+              elseif ( cell_list(i)%name == cell_list(i-1)%name ) then
+                  do c = 1,4
+                      if ( cell_list(i)%coordinates(c) < cell_list(i-1)%coordinates(c) ) then
+                          swap = .true.
+                      elseif ( cell_list(i)%coordinates(c) == cell_list(i-1)%coordinates(c) ) then
+                          cycle
+                      else
+                          exit
+                      endif
+                  enddo
+              endif
+              if ( swap ) then
+                  changed          = .true.
+                  bstore           = cell_list(i)
+                  cell_list(i)   = cell_list(i-1)
+                  cell_list(i-1) = bstore
+              endif
+          enddo
+      enddo
+      end subroutine sort_lexicographically
+
+
+      subroutine remove_duplicates( cell_list, new_cell_list )
+
+      !     Go through the sorted list and remove the duplicates
+
+      type(t_cell_properties), dimension(:), intent(in)               :: cell_list
+      type(t_cell_properties), dimension(:), intent(out), allocatable :: new_cell_list
+
+      integer                                             :: i, j
+
+      new_cell_list = [cell_list(1)]
+      j           = 1
+
+      do i = 2,size(cell_list)
+          if ( cell_list(i)%name /= cell_list(j)%name .or. &
+               any( cell_list(i)%coordinates /= cell_list(j)%coordinates ) ) then
+              new_cell_list = [new_cell_list, cell_list(i)]
+              j           = i
+          endif
+      enddo
+
+      do i = 1,size(new_cell_list)
+          new_cell_list(i)%sorted_index = i
+      enddo
+
+      end subroutine remove_duplicates
+
+      end subroutine sort_and_number_boundaries
+
+      end module m_merge_domains
