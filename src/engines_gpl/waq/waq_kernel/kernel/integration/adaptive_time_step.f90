@@ -238,94 +238,101 @@ contains
                                     num_exchanges_u_dir, disp0bnd, disp0q0, &
                                     work)
 
+        
+        call assign_dt_boxes_to_cells(num_cells, work, delta_t_box, &
+        volnew, volold, count_boxes, ivert, nvert, &
+        count_cells_for_box, count_columns, &
+        file_unit, report, &
+        idx_box_cell)
+
         !   1c: assign a box/ basket number to each cell
-        idx_box_cell = 0
-        wetting = .false.
-        do cell_i = 1, num_cells
-            ! no flow at all => dry cell assigned to box (count_boxes + 2)
-            if (work(1, cell_i) <= 0.0d0 .and. &       ! no outflow
-                    work(2, cell_i) <= 0.0d0 .and. &   ! no inflow
-                    work(3, cell_i) <= 0.0d0) then     ! no dispersive flow
-                idx_box_cell(cell_i) = count_boxes + 2 ! cell is dry, the number (count_boxes + 2) is 1 higher than
-                cycle                                  ! the number of wet and 'wetting' basket (count_boxes + 1)
-            end if
-            if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(1) < volold(cell_i)) then    !  box 1 works even if volnew(cell_i) is zero
-                idx_box_cell(cell_i) = 1
-                cycle
-            end if
-            ! if the volume has NOT decreased at the end of the timestep
-            if (volnew(cell_i) >= volold(cell_i)) then  !  use only volold(cell_i) to determine fractional step
-                do ibox = 2, count_boxes
-                    if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(ibox) < volold(cell_i)) then
-                        idx_box_cell(cell_i) = ibox     !  this cell in the basket of this dt(ibox)
-                        exit
-                    end if
-                    if (ibox == count_boxes) then   !  no suitable time step in range
-                        idx_box_cell(cell_i) = count_boxes + 1    !  cell is filling up / becoming wet
-                        wetting = .true.      !  by simultaneous inflow: 'wetting' basket.
-                    end if
-                end do
-           ! else the volume has decreased at the end of the timestep
-            else !  also the last fractional step should be stable
-                do ibox = 2, count_boxes
-                    ! if net value of delta_vol for delta_t_box(ibox) < volnew(cell_i)
-                    if ((work(1, cell_i) + work(3, cell_i) - (volold(cell_i) - volnew(cell_i)) / delta_t_box(1)) * delta_t_box(ibox) < volnew(cell_i)) then
-                        idx_box_cell(cell_i) = ibox        !  this cell in the basket of this dt(ibox)
-                        exit
-                    end if
-                    if (ibox == count_boxes) then               ! no suitable time step in range
-                        idx_box_cell(cell_i) = count_boxes + 1  ! so cell is considered becoming dry
-                        wetting = .true.                        ! by simultaneous inflow: 'wetting' basket.
-                    end if
-                end do
-            end if
-        end do
+        ! idx_box_cell = 0
+        ! wetting = .false.
+        ! do cell_i = 1, num_cells
+        !     ! no flow at all => dry cell assigned to box (count_boxes + 2)
+        !     if (work(1, cell_i) <= 0.0d0 .and. &       ! no outflow
+        !             work(2, cell_i) <= 0.0d0 .and. &   ! no inflow
+        !             work(3, cell_i) <= 0.0d0) then     ! no dispersive flow
+        !         idx_box_cell(cell_i) = count_boxes + 2 ! cell is dry, the number (count_boxes + 2) is 1 higher than
+        !         cycle                                  ! the number of wet and 'wetting' basket (count_boxes + 1)
+        !     end if
+        !     if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(1) < volold(cell_i)) then    !  box 1 works even if volnew(cell_i) is zero
+        !         idx_box_cell(cell_i) = 1
+        !         cycle
+        !     end if
+        !     ! if the volume has NOT decreased at the end of the timestep
+        !     if (volnew(cell_i) >= volold(cell_i)) then  !  use only volold(cell_i) to determine fractional step
+        !         do ibox = 2, count_boxes
+        !             if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(ibox) < volold(cell_i)) then
+        !                 idx_box_cell(cell_i) = ibox     !  this cell in the basket of this dt(ibox)
+        !                 exit
+        !             end if
+        !             if (ibox == count_boxes) then   !  no suitable time step in range
+        !                 idx_box_cell(cell_i) = count_boxes + 1    !  cell is filling up / becoming wet
+        !                 wetting = .true.      !  by simultaneous inflow: 'wetting' basket.
+        !             end if
+        !         end do
+        !    ! else the volume has decreased at the end of the timestep
+        !     else !  also the last fractional step should be stable
+        !         do ibox = 2, count_boxes
+        !             ! if net value of delta_vol for delta_t_box(ibox) < volnew(cell_i)
+        !             if ((work(1, cell_i) + work(3, cell_i) - (volold(cell_i) - volnew(cell_i)) / delta_t_box(1)) * delta_t_box(ibox) < volnew(cell_i)) then
+        !                 idx_box_cell(cell_i) = ibox        !  this cell in the basket of this dt(ibox)
+        !                 exit
+        !             end if
+        !             if (ibox == count_boxes) then               ! no suitable time step in range
+        !                 idx_box_cell(cell_i) = count_boxes + 1  ! so cell is considered becoming dry
+        !                 wetting = .true.                        ! by simultaneous inflow: 'wetting' basket.
+        !             end if
+        !         end do
+        !     end if
+        ! end do
 
-        !   1d: assign each cell the highest box number of the column it belongs to
-        do i = 1, count_columns
-            i_cell_begin = nvert(1, i)
-            if (i < num_cells) then
-                i_cell_end = nvert(1, i + 1)
-            else
-                i_cell_end = num_cells + 1
-            end if
-            box_max = 0
-            do j = i_cell_begin, i_cell_end - 1
-                cell_i = ivert(j)
-                if (idx_box_cell(cell_i) <= count_boxes + 1) then
-                    box_max = max(box_max, idx_box_cell(cell_i))
-                end if
-            end do
-            if (box_max == 0) cycle
-            do j = i_cell_begin, i_cell_end - 1
-                cell_i = ivert(j)
-                if (idx_box_cell(cell_i) <= count_boxes + 1) then
-                    idx_box_cell(cell_i) = box_max
-                end if
-            end do
-        end do
-        if (wetting .and. report) then
-            if (count_columns == num_cells) then
-                write (file_unit, '(/A/A)') &
-                        ' WARNING in locally_adaptive_time_step, next cells are becoming wet or dry:', &
-                        '  cell       outflow         inflow          diffusion       volume-1        volume-2'
-            else
-                write (file_unit, '(/A/A)') &
-                        ' WARNING in locally_adaptive_time_step, next cells and the cells underneith are becoming wet or dry:', &
-                        '  cell       outflow         inflow          diffusion       volume-1        volume-2'
-            end if
-            do i = 1, count_columns
-                cell_i = ivert(nvert(1, i))
-                if (idx_box_cell(cell_i) == count_boxes + 1) write (file_unit, '(i10,5e16.7)') &
-                        cell_i, work(1, cell_i), work(2, cell_i), work(3, cell_i), volold(cell_i), volnew(cell_i)
-            end do
-        end if
+        ! !   1d: assign each cell the highest box number of the column it belongs to
+        ! do i = 1, count_columns
+        !     i_cell_begin = nvert(1, i)
+        !     if (i < num_cells) then
+        !         i_cell_end = nvert(1, i + 1)
+        !     else
+        !         i_cell_end = num_cells + 1
+        !     end if
+        !     box_max = 0
+        !     do j = i_cell_begin, i_cell_end - 1
+        !         cell_i = ivert(j)
+        !         if (idx_box_cell(cell_i) <= count_boxes + 1) then
+        !             box_max = max(box_max, idx_box_cell(cell_i))
+        !         end if
+        !     end do
+        !     if (box_max == 0) cycle
+        !     do j = i_cell_begin, i_cell_end - 1
+        !         cell_i = ivert(j)
+        !         if (idx_box_cell(cell_i) <= count_boxes + 1) then
+        !             idx_box_cell(cell_i) = box_max
+        !         end if
+        !     end do
+        ! end do
+        ! if (wetting .and. report) then
+        !     if (count_columns == num_cells) then
+        !         write (file_unit, '(/A/A)') &
+        !                 ' WARNING in locally_adaptive_time_step, next cells are becoming wet or dry:', &
+        !                 '  cell       outflow         inflow          diffusion       volume-1        volume-2'
+        !     else
+        !         write (file_unit, '(/A/A)') &
+        !                 ' WARNING in locally_adaptive_time_step, next cells and the cells underneith are becoming wet or dry:', &
+        !                 '  cell       outflow         inflow          diffusion       volume-1        volume-2'
+        !     end if
+        !     do i = 1, count_columns
+        !         cell_i = ivert(nvert(1, i))
+        !         if (idx_box_cell(cell_i) == count_boxes + 1) write (file_unit, '(i10,5e16.7)') &
+        !                 cell_i, work(1, cell_i), work(2, cell_i), work(3, cell_i), volold(cell_i), volnew(cell_i)
+        !     end do
+        ! end if
 
-        !   1e: count how many cells in the entire domain are assigned to each type of box (basket)
-        count_cells_for_box = 0
-        do cell_i = 1, num_cells
-            count_cells_for_box(idx_box_cell(cell_i)) = count_cells_for_box(idx_box_cell(cell_i)) + 1
-        end do
+        ! !   1e: count how many cells in the entire domain are assigned to each type of box (basket)
+        ! count_cells_for_box = 0
+        ! do cell_i = 1, num_cells
+        !     count_cells_for_box(idx_box_cell(cell_i)) = count_cells_for_box(idx_box_cell(cell_i)) + 1
+        ! end do
 
         !   1f: assign a box to each flow and determine how many fluxes in the entire domain are assigned to each type of box or basket (highest of 'from' and 'to')
         count_flows_for_box = 0
@@ -2040,8 +2047,8 @@ contains
         integer :: num_cells !< total number of cells in the model
         real(kind = dp), intent(in) :: work(3, num_cells) !< work array with outgoing, incoming and dispersive flows per cell
         real(kind = dp), intent(in) :: delta_t_box(:) !< delta t assigned to each box
-        real(kind = dp), intent(in) :: volnew(:) !< new volume in each cell at the end of the current time step
-        real(kind = dp), intent(in) :: volold(:) !< old volume in each cell at the beginning of the current time step
+        real(kind = real_wp), intent(in) :: volnew(:) !< new volume in each cell at the end of the current time step
+        real(kind = real_wp), intent(in) :: volold(:) !< old volume in each cell at the beginning of the current time step
         integer, intent(in) :: count_boxes !< number of delta time boxes or baskets
         integer, intent(out) :: count_cells_for_box(:) !< number of cells assigned to each box
         integer, intent(in) :: file_unit !< unit number for output messages
