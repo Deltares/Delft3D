@@ -175,8 +175,8 @@ contains
         integer(kind = int_wp) :: ibox                        !< Auxiliary variable for loops along boxes
         integer(kind = int_wp) :: count_used_boxes            !< Number of used boxes
         integer(kind = int_wp) :: idx_cell, idx_flux          !< Offsets in the arrays
-        integer(kind = int_wp) :: first_box_smallest_dt                   !< First box (with smallest dt) that has been assigned to cells
-        integer(kind = int_wp) :: last_box                    !< Last box (with largest dt) that has been assigned to cells
+        integer(kind = int_wp) :: first_box_smallest_dt       !< First box (with smallest dt) that has been assigned to cells
+        integer(kind = int_wp) :: last_box_largest_dt         !< Last box (with largest dt) that has been assigned to cells
         integer(kind = int_wp) :: last_integr_box             !< Last box to integrate at current sub step
         real(kind = dp) :: fact                               !< Interpolation factor for volumes
         integer(kind = int_wp) :: i_substep, count_substeps   !< Fractional step variables
@@ -247,86 +247,86 @@ contains
                         '          This is known to cause problems in some cases'
             end if
 
-            call compute_ordering_arrays(num_cells, num_exchanges, num_exchanges_z_dir&
-                                       noqh, ipoint, ivert, nvert, &
-                                       low, dia, upr)
+            call compute_ordering_arrays(num_cells, num_exchanges, num_exchanges_z_dir, &
+                                       file_unit, noqh, ipoint, ivert, nvert, &
+                                       low, dia, upr, maxlay, count_columns)
 
-            ! if vertically integrated model
-            if (num_exchanges_z_dir == 0) then
-                do cell_i = 1, num_cells
-                    nvert(1, cell_i) = cell_i
-                    nvert(2, cell_i) = cell_i
-                    ivert(cell_i) = cell_i
-                end do
-                count_columns = num_cells
-                write (file_unit, '(A)') ' This model is vertically integrated!'
+            ! ! if vertically integrated model
+            ! if (num_exchanges_z_dir == 0) then
+            !     do cell_i = 1, num_cells
+            !         nvert(1, cell_i) = cell_i
+            !         nvert(2, cell_i) = cell_i
+            !         ivert(cell_i) = cell_i
+            !     end do
+            !     count_columns = num_cells
+            !     write (file_unit, '(A)') ' This model is vertically integrated!'
 
-            ! else model with multiple layers(number possibly different per cell)
-            else
-                ivert = 0
-                nvert = -1                                    !  Determine whether cells have a horizontal exchange
-                do iq = 1, noqh   ! clean-up nvert for all cells with horizontal flow
-                    ifrom = ipoint(1, iq)
-                    ito = ipoint(2, iq)
-                    if (ifrom > 0) then
-                        nvert(1, ifrom) = 0
-                        nvert(2, ifrom) = 0
-                    end if
-                    if (ito > 0) then
-                        nvert(1, ito) = 0
-                        nvert(2, ito) = 0
-                    end if
-                end do
-                do iq = noqh + 1, num_exchanges                           !  Make the vertical administration
-                    ifrom = ipoint(1, iq)
-                    ito = ipoint(2, iq)
-                    if (ifrom <= 0 .or. ito <= 0) cycle
-                    nvert(1, ifrom) = ito                 !  nvert(1, idx) HERE means cells below cell idx
-                    nvert(2, ito) = ifrom                 !  nvert(2, idx) HERE means cells above cell idx
-                end do
-                idx_flux = 0
-                do cell_i = 1, num_cells
-                    if (nvert(2, cell_i) == 0) then       !  this cell has no cell above --> it is the uppermost one of a column (has no 'ifrom')
-                        idx_flux = idx_flux + 1
-                        nvert(2, cell_i) = idx_flux       !  new column starts at idx_flux in ivert
-                        ivert(idx_flux) = cell_i
-                        i = nvert(1, cell_i)              !  index of cell below
-                        do while (i > 0)                  ! loop until we reach the bottom of the column (sediment latyer)
-                            idx_flux = idx_flux + 1
-                            ivert(idx_flux) = i
-                            i = nvert(1, i)
-                        end do
-                    else
-                        nvert(2, cell_i) = 0   ! mark this cell as no upper-most one, so no start of column
-                    end if
-                end do
-                count_columns = 0
-                do cell_i = 1, num_cells
-                    if (nvert(2, cell_i) > 0) then ! if cell is upper-most one == top of column
-                        count_columns = count_columns + 1
-                        nvert(1, count_columns) = nvert(2, cell_i)    !  idx of upper-most cell in ivert (to find head of column)
-                        nvert(2, cell_i) = count_columns              !  column number
-                    end if
-                end do
-                if (count_columns < num_cells) nvert(1, count_columns + 1) = idx_flux + 1
-                write (file_unit, '(A,i8,A)') ' This model has            : ', count_columns, ' columns of cells'
-                maxlay = 0
-                do i = 1, count_columns
-                    i_cell_begin = nvert(1, i)                 !  index of order (in ivert) of the upper-most cell, starting (=on top of) column with column index i
-                    if (i < num_cells) then
-                        i_cell_end = nvert(1, i + 1)           !  index of order (in ivert) of the upper-most cell starting (=on top of) column with column index i+1
-                    else
-                        i_cell_end = num_cells + 1
-                    end if
-                    maxlay = max(maxlay, i_cell_end - i_cell_begin)     !  maximum previous and number of cells between columns i and i+1
-                    do j = i_cell_begin + 1, i_cell_end - 1             !  loop along cells in that column to assign cells to ivert and mark nvert(2,cell) for non upper-most cells
-                        cell_i = ivert(j)
-                        nvert(2, cell_i) = -i           !  for non upper-most cells, make the index negative to point to minus the column number
-                    end do
-                end do
-                allocate (low(maxlay), dia(maxlay), upr(maxlay))
-                write (file_unit, '(A,i4,A)') ' This model has at most    : ', maxlay, ' layers'
-            end if
+            ! ! else model with multiple layers(number possibly different per cell)
+            ! else
+            !     ivert = 0
+            !     nvert = -1                                    !  Determine whether cells have a horizontal exchange
+            !     do iq = 1, noqh   ! clean-up nvert for all cells with horizontal flow
+            !         ifrom = ipoint(1, iq)
+            !         ito = ipoint(2, iq)
+            !         if (ifrom > 0) then
+            !             nvert(1, ifrom) = 0
+            !             nvert(2, ifrom) = 0
+            !         end if
+            !         if (ito > 0) then
+            !             nvert(1, ito) = 0
+            !             nvert(2, ito) = 0
+            !         end if
+            !     end do
+            !     do iq = noqh + 1, num_exchanges                           !  Make the vertical administration
+            !         ifrom = ipoint(1, iq)
+            !         ito = ipoint(2, iq)
+            !         if (ifrom <= 0 .or. ito <= 0) cycle
+            !         nvert(1, ifrom) = ito                 !  nvert(1, idx) HERE means cells below cell idx
+            !         nvert(2, ito) = ifrom                 !  nvert(2, idx) HERE means cells above cell idx
+            !     end do
+            !     idx_flux = 0
+            !     do cell_i = 1, num_cells
+            !         if (nvert(2, cell_i) == 0) then       !  this cell has no cell above --> it is the uppermost one of a column (has no 'ifrom')
+            !             idx_flux = idx_flux + 1
+            !             nvert(2, cell_i) = idx_flux       !  new column starts at idx_flux in ivert
+            !             ivert(idx_flux) = cell_i
+            !             i = nvert(1, cell_i)              !  index of cell below
+            !             do while (i > 0)                  ! loop until we reach the bottom of the column (sediment latyer)
+            !                 idx_flux = idx_flux + 1
+            !                 ivert(idx_flux) = i
+            !                 i = nvert(1, i)
+            !             end do
+            !         else
+            !             nvert(2, cell_i) = 0   ! mark this cell as no upper-most one, so no start of column
+            !         end if
+            !     end do
+            !     count_columns = 0
+            !     do cell_i = 1, num_cells
+            !         if (nvert(2, cell_i) > 0) then ! if cell is upper-most one == top of column
+            !             count_columns = count_columns + 1
+            !             nvert(1, count_columns) = nvert(2, cell_i)    !  idx of upper-most cell in ivert (to find head of column)
+            !             nvert(2, cell_i) = count_columns              !  column number
+            !         end if
+            !     end do
+            !     if (count_columns < num_cells) nvert(1, count_columns + 1) = idx_flux + 1
+            !     write (file_unit, '(A,i8,A)') ' This model has            : ', count_columns, ' columns of cells'
+            !     maxlay = 0
+            !     do i = 1, count_columns
+            !         i_cell_begin = nvert(1, i)                 !  index of order (in ivert) of the upper-most cell, starting (=on top of) column with column index i
+            !         if (i < num_cells) then
+            !             i_cell_end = nvert(1, i + 1)           !  index of order (in ivert) of the upper-most cell starting (=on top of) column with column index i+1
+            !         else
+            !             i_cell_end = num_cells + 1
+            !         end if
+            !         maxlay = max(maxlay, i_cell_end - i_cell_begin)     !  maximum previous and number of cells between columns i and i+1
+            !         do j = i_cell_begin + 1, i_cell_end - 1             !  loop along cells in that column to assign cells to ivert and mark nvert(2,cell) for non upper-most cells
+            !             cell_i = ivert(j)
+            !             nvert(2, cell_i) = -i           !  for non upper-most cells, make the index negative to point to minus the column number
+            !         end do
+            !     end do
+            !     allocate (low(maxlay), dia(maxlay), upr(maxlay))
+            !     write (file_unit, '(A,i4,A)') ' This model has at most    : ', maxlay, ' layers'
+            ! end if
             !    after this all: ivert(1:num_cells)         contains all water cell numbers in their order of appearance in the columns
             !                    nvert(1,1:count_columns)   contains the index for ivert of the first (=upper-most) cell of each column 1:count_columns
             !                    nvert(1,count_columns+1)   contains the start location of the non existing column count_columns+1
@@ -1917,6 +1917,9 @@ contains
 
         real(kind = dp) :: delta_t_box(count_boxes + 1)
 
+        ! Local variables
+        integer :: ibox !< box index in loops
+
         ! Compute the sub-time step delta t for each box
         delta_t_box(1) = real(idt, kind = dp)
         do ibox = 2, count_boxes 
@@ -1926,12 +1929,13 @@ contains
 
     end function assign_delta_t_to_boxes
 
-    subroutine compute_ordering_arrays(num_cells, num_exchanges, num_exchanges_z_dir &
-                                       noqh, ipoint, ivert, nvert, &
-                                       low, dia, upr)
+    subroutine compute_ordering_arrays(num_cells, num_exchanges, num_exchanges_z_dir, &
+                                       file_unit, noqh, ipoint, ivert, nvert, &
+                                       low, dia, upr, maxlay, count_columns)
         integer, intent(in) :: num_cells                !< total number of cells in the model
         integer, intent(in) :: num_exchanges            !< total number of exchanges or flows between cells
         integer, intent(in) :: num_exchanges_z_dir      !< number of vertical exchanges or flows between cells in z direction
+        integer, intent(in) :: file_unit                !< unit number for output messages
         integer, intent(in) :: noqh                     !< number of horizontal exchanges or flows between cells
         integer, intent(in) :: ipoint(4, num_exchanges) !< exchange connectivity array (indices of cells before and after exchange)
         integer, intent(inout) :: ivert(num_cells)      !< ordering array of cells in vertical columns
@@ -1939,10 +1943,18 @@ contains
         real(kind = dp), intent(inout), allocatable :: low(:) !< lower diagonal for tridiagonal matrix solver
         real(kind = dp), intent(inout), allocatable :: dia(:) !< diagonal for tridiagonal matrix solver
         real(kind = dp), intent(inout), allocatable :: upr(:) !< upper diagonal for tridiagonal matrix solver
+        integer, intent(inout) :: maxlay                 !< maximum number of layers in any column
+        integer, intent(inout) :: count_columns         !< total number of columns in the model
 
         ! Local variables
         integer :: cell_i !< cell index in loops
+        integer :: i, j   !< indices in loops
         integer :: iq     !< exchange index in loops
+        integer :: ifrom  !< index of cell from which flow originates
+        integer :: ito    !< index of cell to which flow goes
+        integer :: idx_flux        !< index in ivert for vertical ordering
+        integer :: i_cell_begin  !< begin index of cells in a column
+        integer :: i_cell_end    !< end index of cells in a column
         real(kind = dp), parameter :: tiny = 1.0d-25    !< small number to avoid division by zero
 
         ! if vertically integrated or 2D model, set ordering arrays to trivial values
