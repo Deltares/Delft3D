@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e108_f05_c01-hcp2" ref="drr_default">
-        <path version="2025-10-16T08:11:32.179000">e108_drr/f05_sacramento/c01-hcp2</path>
+        <path version="2025-11-07T08:11:32.179000">e108_drr/f05_sacramento/c01-hcp2</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/sacrmnto.nc" type="netcdf">
@@ -35,7 +35,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f05_c02-taiwan-pinlin" ref="drr_default">
-        <path version="2025-10-16T08:42:17.737000">e108_drr/f05_sacramento/c02-taiwan-pinlin</path>
+        <path version="2025-11-07T08:42:17.737000">e108_drr/f05_sacramento/c02-taiwan-pinlin</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/sacrmnto.nc" type="netcdf">
@@ -71,7 +71,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f05_c03-softsup37729-dt5min" ref="drr_default">
-        <path version="2025-10-16T08:59:46.460000">e108_drr/f05_sacramento/c03-softsup37729-dt5min</path>
+        <path version="2025-11-07T08:59:46.460000">e108_drr/f05_sacramento/c03-softsup37729-dt5min</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/sacrmnto.nc" type="netcdf">
@@ -93,7 +93,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f05_c04-softsup37729-dt30s" ref="drr_default">
-        <path version="2025-10-16T09:07:42.546000">e108_drr/f05_sacramento/c04-softsup37729-dt30s</path>
+        <path version="2025-11-07T09:07:42.546000">e108_drr/f05_sacramento/c04-softsup37729-dt30s</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/sacrmnto.nc" type="netcdf">
@@ -115,7 +115,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f05_c05-taiwan-UNIH" ref="drr_default">
-        <path version="2025-10-16T09:12:37.565000">e108_drr/f05_sacramento/c05-taiwan-UNIH</path>
+        <path version="2025-11-07T09:12:37.565000">e108_drr/f05_sacramento/c05-taiwan-UNIH</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/sacrmnto.nc" type="netcdf">

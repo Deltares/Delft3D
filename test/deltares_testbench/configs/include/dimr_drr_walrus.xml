@@ -425,7 +425,7 @@
             <!-- seconds -->
         </testCase>
 	    <testCase name="e108_f03_c13_WalrusSurfaceWaterRsvFull" ref="drr_windowsref">
-            <path version="2025-10-14T12:00:00">e108_drr/f03_walrus/c13_WalrusSurfaceWaterRsvFull</path>
+            <path version="2025-11-07T12:00:00">e108_drr/f03_walrus/c13_WalrusSurfaceWaterRsvFull</path>
             <maxRunTime>60.0</maxRunTime>
             <checks>
                 <file name="rr/rrrunoff.nc" type="netcdf">

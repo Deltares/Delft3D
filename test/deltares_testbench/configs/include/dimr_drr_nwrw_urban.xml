@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e108_f07_c01-ref004-stnbuien" ref="drr_default">
-        <path version="2025-10-16T10:56:37.279000">e108_drr/f07_nwrw_urban/c01-ref004-stnbuien</path>
+        <path version="2025-11-07T10:56:37.279000">e108_drr/f07_nwrw_urban/c01-ref004-stnbuien</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrbalans.nc" type="netcdf">
@@ -27,7 +27,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f07_c02-ref22-23-loenen-bui8" ref="drr_default">
-        <path version="2025-10-16T11:09:05.236000">e108_drr/f07_nwrw_urban/c02-ref22-23-loenen-bui8</path>
+        <path version="2025-11-07T11:09:05.236000">e108_drr/f07_nwrw_urban/c02-ref22-23-loenen-bui8</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrbalans.nc" type="netcdf">
@@ -48,7 +48,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f07_c03-ref26-loenen-inloopbeek" ref="drr_default">
-        <path version="2025-10-16T11:16:32.267000">e108_drr/f07_nwrw_urban/c03-ref26-loenen-inloopbeek</path>
+        <path version="2025-11-07T11:16:32.267000">e108_drr/f07_nwrw_urban/c03-ref26-loenen-inloopbeek</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrbalans.nc" type="netcdf">
@@ -75,7 +75,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f07_c04-alltypessurface-nostorageinfiltration-dt5min" ref="drr_default">
-        <path version="2025-10-16T11:22:25.137000">e108_drr/f07_nwrw_urban/c04-alltypessurface-nostorageinfiltration-dt5min</path>
+        <path version="2025-11-07T11:22:25.137000">e108_drr/f07_nwrw_urban/c04-alltypessurface-nostorageinfiltration-dt5min</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrbalans.nc" type="netcdf">
@@ -91,7 +91,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f07_c05-alltypessurface-nostorageinfiltration-dt1min" ref="drr_default">
-        <path version="2025-10-16T11:25:33.672000">e108_drr/f07_nwrw_urban/c05-alltypessurface-nostorageinfiltration-dt1min</path>
+        <path version="2025-11-07T11:25:33.672000">e108_drr/f07_nwrw_urban/c05-alltypessurface-nostorageinfiltration-dt1min</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrbalans.nc" type="netcdf">
@@ -107,7 +107,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f07_c06-alltypessurface-withstorageinfiltration-dt5min" ref="drr_default">
-        <path version="2025-10-16T11:29:32.839000">e108_drr/f07_nwrw_urban/c06-alltypessurface-withstorageinfiltration-dt5min</path>
+        <path version="2025-11-07T11:29:32.839000">e108_drr/f07_nwrw_urban/c06-alltypessurface-withstorageinfiltration-dt5min</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrbalans.nc" type="netcdf">
@@ -130,7 +130,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f07_c07-alltypessurface-withstorageinfiltration-dt1min" ref="drr_default">
-        <path version="2025-10-16T11:34:48.103000">e108_drr/f07_nwrw_urban/c07-alltypessurface-withstorageinfiltration-dt1min</path>
+        <path version="2025-11-07T11:34:48.103000">e108_drr/f07_nwrw_urban/c07-alltypessurface-withstorageinfiltration-dt1min</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrbalans.nc" type="netcdf">
@@ -152,7 +152,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f07_c08-alltypessurface-withstorageinfiltration-dt10s" ref="drr_default">
-        <path version="2025-10-16T11:37:21.140000">e108_drr/f07_nwrw_urban/c08-alltypessurface-withstorageinfiltration-dt10s</path>
+        <path version="2025-11-07T11:37:21.140000">e108_drr/f07_nwrw_urban/c08-alltypessurface-withstorageinfiltration-dt10s</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrbalans.nc" type="netcdf">
@@ -180,7 +180,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f07_c09-greenroof-wadi" ref="drr_default">
-        <path version="2025-10-16T11:41:16.953000">e108_drr/f07_nwrw_urban/c09-greenroof-wadi</path>
+        <path version="2025-11-07T11:41:16.953000">e108_drr/f07_nwrw_urban/c09-greenroof-wadi</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/plvstrdt.nc" type="netcdf">

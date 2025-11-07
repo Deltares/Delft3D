@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e108_f08_c01_Springendal" ref="drr_default">
-        <path version="2025-10-16T14:33:47.533000">e108_drr/f08_lgsi/c01_Springendal</path>
+        <path version="2025-11-07T10:33:47.533000">e108_drr/f08_lgsi/c01_Springendal</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -36,7 +36,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f08_c02_Roelinksbeek" ref="drr_default">
-        <path version="2025-10-16T14:43:54.703000">e108_drr/f08_lgsi/c02_Roelinksbeek</path>
+        <path version="2025-11-07T10:43:54.703000">e108_drr/f08_lgsi/c02_Roelinksbeek</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -67,7 +67,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f08_c03_Rijssen" ref="drr_default">
-        <path version="2025-10-16T14:55:10.969000">e108_drr/f08_lgsi/c03_Rijssen</path>
+        <path version="2025-11-07T10:55:10.969000">e108_drr/f08_lgsi/c03_Rijssen</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -97,7 +97,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f08_c04_Dimmie" ref="drr_default">
-        <path version="2025-10-16T15:02:26.007000">e108_drr/f08_lgsi/c04_Dimmie</path>
+        <path version="2025-11-07T11:02:26.007000">e108_drr/f08_lgsi/c04_Dimmie</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -118,7 +118,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f08_c05_3juli" ref="drr_default">
-        <path version="2025-10-16T15:05:56.491000">e108_drr/f08_lgsi/c05_3juli</path>
+        <path version="2025-11-07T11:05:56.491000">e108_drr/f08_lgsi/c05_3juli</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -140,7 +140,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f08_c06_DinkelwithCachefile" ref="drr_default">
-        <path version="2025-10-16T15:20:57.026000">e108_drr/f08_lgsi/c06_DinkelwithCachefile</path>
+        <path version="2025-11-07T11:20:57.026000">e108_drr/f08_lgsi/c06_DinkelwithCachefile</path>
         <maxRunTime>90.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.his" type="HIS">

@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e108_f09_c01-MuskingumRoutingDonau" ref="drr_default">
-        <path version="2025-10-17T12:34:06.776000">e108_drr/f09_specials/c01-MuskingumRoutingDonau</path>
+        <path version="2025-11-07T12:34:06.776000">e108_drr/f09_specials/c01-MuskingumRoutingDonau</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="RR/3blinks.nc" type="netcdf">
@@ -13,7 +13,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f09_c02-Ref003Paved" ref="drr_default">
-        <path version="2025-10-17T12:37:19.671000">e108_drr/f09_specials/c02-Ref003Paved</path>
+        <path version="2025-11-07T12:37:19.671000">e108_drr/f09_specials/c02-Ref003Paved</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrbalans.nc" type="netcdf">
@@ -40,7 +40,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f09_c03-3RRBoundariesOffLine" ref="drr_default">
-        <path version="2025-10-17T12:44:50.717000">e108_drr/f09_specials/c03-3RRBoundariesOffLine</path>
+        <path version="2025-11-07T12:44:50.717000">e108_drr/f09_specials/c03-3RRBoundariesOffLine</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/bndflodt.nc" type="netcdf">
@@ -51,7 +51,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f09_c04-RRBoundariesPartOfflinePartOnline" ref="drr_default">
-        <path version="2025-10-17T12:48:12.157000">e108_drr/f09_specials/c04-RRBoundariesPartOfflinePartOnline</path>
+        <path version="2025-11-07T12:48:12.157000">e108_drr/f09_specials/c04-RRBoundariesPartOfflinePartOnline</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/bndflodt.nc" type="netcdf">
@@ -71,7 +71,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f09_c05-RRBoundariesPartOfflinePartOnlinev2" ref="drr_default">
-        <path version="2025-10-17T12:53:29.526000">e108_drr/f09_specials/c05-RRBoundariesPartOfflinePartOnlinev2</path>
+        <path version="2025-11-07T12:53:29.526000">e108_drr/f09_specials/c05-RRBoundariesPartOfflinePartOnlinev2</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/bndflodt.nc" type="netcdf">
@@ -89,7 +89,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f09_c06-ImprovedOnlineCouplingWithUNPgwlInitAtOWlvl" ref="drr_default">
-        <path version="2025-10-17T12:57:47.340000">e108_drr/f09_specials/c06-ImprovedOnlineCouplingWithUNPgwlInitAtOWlvl</path>
+        <path version="2025-11-07T12:57:47.340000">e108_drr/f09_specials/c06-ImprovedOnlineCouplingWithUNPgwlInitAtOWlvl</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/upflowdt.nc" type="netcdf">

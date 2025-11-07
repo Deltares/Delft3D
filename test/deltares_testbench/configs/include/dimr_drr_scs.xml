@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e108_f04_c01_cn30-100-init-amc-avg" ref="drr_default">
-        <path version="2025-09-11T12:31:52.736000">e108_drr/f04_scs/c01_cn30-100-init-amc-avg</path>
+        <path version="2025-11-07T12:31:52.736000">e108_drr/f04_scs/c01_cn30-100-init-amc-avg</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -20,7 +20,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f04_c02_cn30-100-init-amc-wet" ref="drr_default">
-        <path version="2025-10-14T14:42:23.142000">e108_drr/f04_scs/c02_cn30-100-init-amc-wet</path>
+        <path version="2025-11-07T14:42:23.142000">e108_drr/f04_scs/c02_cn30-100-init-amc-wet</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -65,7 +65,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f04_c03_cn80-var-flowpathlength" ref="drr_default">
-        <path version="2025-10-14T14:58:16.912000">e108_drr/f04_scs/c03_cn80-var-flowpathlength</path>
+        <path version="2025-11-07T14:58:16.912000">e108_drr/f04_scs/c03_cn80-var-flowpathlength</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -86,7 +86,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f04_c04_cn80-var-slope" ref="drr_default">
-        <path version="2025-10-14T15:07:21.357000">e108_drr/f04_scs/c04_cn80-var-slope</path>
+        <path version="2025-11-07T15:07:21.357000">e108_drr/f04_scs/c04_cn80-var-slope</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -105,7 +105,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f04_c05-uh-scs-hms-snyder" ref="drr_default">
-        <path version="2025-10-14T15:15:28.542000">e108_drr/f04_scs/c05-uh-scs-hms-snyder</path>
+        <path version="2025-11-07T15:15:28.542000">e108_drr/f04_scs/c05-uh-scs-hms-snyder</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -125,7 +125,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f04_c06-hechms-linrsv" ref="drr_default">
-        <path version="2025-10-14T15:20:36.243000">e108_drr/f04_scs/c06-hechms-linrsv</path>
+        <path version="2025-11-07T15:20:36.243000">e108_drr/f04_scs/c06-hechms-linrsv</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -148,7 +148,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f04_c07-greenampt-case1" ref="drr_default">
-        <path version="2025-10-14T15:26:08.270000">e108_drr/f04_scs/c07-greenampt-case1</path>
+        <path version="2025-11-07T15:26:08.270000">e108_drr/f04_scs/c07-greenampt-case1</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -170,7 +170,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f04_c08-greenampt-recovery" ref="drr_default">
-        <path version="2025-10-14T15:31:23.897000">e108_drr/f04_scs/c08-greenampt-recovery</path>
+        <path version="2025-11-07T15:31:23.897000">e108_drr/f04_scs/c08-greenampt-recovery</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -193,7 +193,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f04_c09-snyder-uhdf" ref="drr_default">
-        <path version="2025-10-14T15:37:27.726000">e108_drr/f04_scs/c09-snyder-uhdf</path>
+        <path version="2025-11-07T15:37:27.726000">e108_drr/f04_scs/c09-snyder-uhdf</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
@@ -207,7 +207,7 @@
         </checks>
     </testCase>
     <testCase name="e108_f04_c10-snyder-withbaseflow" ref="drr_default">
-        <path version="2025-10-14T15:41:13.499000">e108_drr/f04_scs/c10-snyder-withbaseflow</path>
+        <path version="2025-11-07T15:41:13.499000">e108_drr/f04_scs/c10-snyder-withbaseflow</path>
         <maxRunTime>60.0</maxRunTime>
         <checks>
             <file name="rr/rrrunoff.nc" type="netcdf">
