@@ -6912,8 +6912,8 @@ contains
                   case (2)
                      rhol = stmpar%sedpar%rhosol(sedtot2sedsus(l))
                   end select
-                  toutputx(:, l) = sedtra%e_ssn(:, l) / rhol
-                  toutputy(:, l) = sedtra%e_sst(:, l) / rhol
+                  toutputx(:, l) = (sedtra%e_ssn(:, l) + sedtra%e_sswn(:, l)) / rhol
+                  toutputy(:, l) = (sedtra%e_sst(:, l) + sedtra%e_sswt(:, l)) / rhol
                end do
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ssn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sst, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
@@ -6931,8 +6931,8 @@ contains
                case (2)
                   rhol = stmpar%sedpar%rhosol(l)
                end select
-               toutputx(:, l) = sedtra%e_sbn(:, l) / rhol
-               toutputy(:, l) = sedtra%e_sbt(:, l) / rhol
+               toutputx(:, l) = (sedtra%e_sbn(:, l) - sedtra%e_sswn(:, l)) / rhol
+               toutputy(:, l) = (sedtra%e_sbt(:, l) - sedtra%e_sswt(:, l)) / rhol
             end do
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbn, UNC_LOC_U, toutputx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sbt, UNC_LOC_U, toutputy, jabndnd=jabndnd_)
