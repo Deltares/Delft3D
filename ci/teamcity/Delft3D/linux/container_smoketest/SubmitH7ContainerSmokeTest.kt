@@ -131,12 +131,12 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
             name = "Remove folder using 'at' in 7 days."
             commands = """
                 cd ~/%h7_work_directory%
-                cat > README_CLEANUP.txt << 'EOF'
+                cat > README_CLEANUP.txt << EOF
                 This directory contains temporary smoke test files and will be automatically removed in 7 days.
-
+                
                 Directory: ~/%h7_work_directory%
-                Created: $(date)
-                Scheduled for removal: $(date -d '+7 days')
+                Created: ${'$'}(date)
+                Scheduled for removal: ${'$'}(date -d '+7 days')
 
                 This cleanup is managed by the 'at' command to free up disk space.
                 Do not store any important files in this directory permanently.
