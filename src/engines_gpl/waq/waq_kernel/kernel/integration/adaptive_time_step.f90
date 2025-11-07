@@ -25,6 +25,8 @@ module m_locally_adaptive_time_step
     use m_string_utils
 
     implicit none
+    private
+    public :: locally_adaptive_time_step
 
 contains
 
@@ -203,6 +205,8 @@ contains
 
         ! Initialisations
         if (timon) call timstrt("administration", ithand1)
+        ! shouldn't these lines be run only ONCE as well??
+        ! !!!!!!!
         noqh = num_exchanges_u_dir + num_exchanges_v_dir
         massbal = iaflag == 1
         disp0q0 = btest(integration_id, 0)
@@ -210,140 +214,24 @@ contains
         loword = btest(integration_id, 2)
         fluxes = btest(integration_id, 3)
         vertical_upwind = .not. btest(integration_id, 18)
+        ! !!!!!!!
 
+        
         if (init == 0) then
-            write (file_unit, '(A)') ' Using local flexible time step method (scheme 24)'
-            if (vertical_upwind) then
-                write (file_unit, '(A)') ' Using upwind discretisation for vertical advection.'
-            else
-                write (file_unit, '(A)') ' Using central discretisation for vertical advection.'
-            end if
-
-            sw_settling = is_command_arg_specified('-settling_backwards')
-            if (sw_settling) write (file_unit, *) ' option -settling_backwards found'
-            i = index_in_array('Number_of_baskets   ', coname)
-            if (i > 0) then
-                count_boxes = const(i)
-                write (file_unit, '(A,i3)') ' Number of baskets         : ', count_boxes
-            else
-                count_boxes = 13
-                write (file_unit, '(A,i3)') ' Default number of baskets : ', count_boxes
-            end if
+            call parse_scheme_options(file_unit, vertical_upwind, coname, const, disp0q0, &
+                                    count_boxes, report)
             allocate (count_cells_for_box(count_boxes + 2), count_flows_for_box(count_boxes + 2), sep_vert_flow_per_box(count_boxes + 2), delta_t_box(count_boxes + 1))
-            report = .false.
-            i = index_in_array('Iteration report    ', coname)
-            if (i > 0) then
-                report = const(i) > 0
-            end if
-            if (report) then
-                write (file_unit, '(A)') ' Iteration report          : switched on'
-            else
-                write (file_unit, '(A)') ' Iteration report          : switched off'
-            end if
-
-            if (.not. disp0q0) then
-                write (file_unit, '(/3A)') &
-                        ' WARNING: Dispersion allowed if flow rate is zero', &
-                        '          This is known to cause problems in some cases'
-            end if
-
             call compute_ordering_arrays(num_cells, num_exchanges, num_exchanges_z_dir, &
                                        file_unit, noqh, ipoint, ivert, nvert, &
                                        low, dia, upr, maxlay, count_columns)
 
-            ! ! if vertically integrated model
-            ! if (num_exchanges_z_dir == 0) then
-            !     do cell_i = 1, num_cells
-            !         nvert(1, cell_i) = cell_i
-            !         nvert(2, cell_i) = cell_i
-            !         ivert(cell_i) = cell_i
-            !     end do
-            !     count_columns = num_cells
-            !     write (file_unit, '(A)') ' This model is vertically integrated!'
-
-            ! ! else model with multiple layers(number possibly different per cell)
-            ! else
-            !     ivert = 0
-            !     nvert = -1                                    !  Determine whether cells have a horizontal exchange
-            !     do iq = 1, noqh   ! clean-up nvert for all cells with horizontal flow
-            !         ifrom = ipoint(1, iq)
-            !         ito = ipoint(2, iq)
-            !         if (ifrom > 0) then
-            !             nvert(1, ifrom) = 0
-            !             nvert(2, ifrom) = 0
-            !         end if
-            !         if (ito > 0) then
-            !             nvert(1, ito) = 0
-            !             nvert(2, ito) = 0
-            !         end if
-            !     end do
-            !     do iq = noqh + 1, num_exchanges                           !  Make the vertical administration
-            !         ifrom = ipoint(1, iq)
-            !         ito = ipoint(2, iq)
-            !         if (ifrom <= 0 .or. ito <= 0) cycle
-            !         nvert(1, ifrom) = ito                 !  nvert(1, idx) HERE means cells below cell idx
-            !         nvert(2, ito) = ifrom                 !  nvert(2, idx) HERE means cells above cell idx
-            !     end do
-            !     idx_flux = 0
-            !     do cell_i = 1, num_cells
-            !         if (nvert(2, cell_i) == 0) then       !  this cell has no cell above --> it is the uppermost one of a column (has no 'ifrom')
-            !             idx_flux = idx_flux + 1
-            !             nvert(2, cell_i) = idx_flux       !  new column starts at idx_flux in ivert
-            !             ivert(idx_flux) = cell_i
-            !             i = nvert(1, cell_i)              !  index of cell below
-            !             do while (i > 0)                  ! loop until we reach the bottom of the column (sediment latyer)
-            !                 idx_flux = idx_flux + 1
-            !                 ivert(idx_flux) = i
-            !                 i = nvert(1, i)
-            !             end do
-            !         else
-            !             nvert(2, cell_i) = 0   ! mark this cell as no upper-most one, so no start of column
-            !         end if
-            !     end do
-            !     count_columns = 0
-            !     do cell_i = 1, num_cells
-            !         if (nvert(2, cell_i) > 0) then ! if cell is upper-most one == top of column
-            !             count_columns = count_columns + 1
-            !             nvert(1, count_columns) = nvert(2, cell_i)    !  idx of upper-most cell in ivert (to find head of column)
-            !             nvert(2, cell_i) = count_columns              !  column number
-            !         end if
-            !     end do
-            !     if (count_columns < num_cells) nvert(1, count_columns + 1) = idx_flux + 1
-            !     write (file_unit, '(A,i8,A)') ' This model has            : ', count_columns, ' columns of cells'
-            !     maxlay = 0
-            !     do i = 1, count_columns
-            !         i_cell_begin = nvert(1, i)                 !  index of order (in ivert) of the upper-most cell, starting (=on top of) column with column index i
-            !         if (i < num_cells) then
-            !             i_cell_end = nvert(1, i + 1)           !  index of order (in ivert) of the upper-most cell starting (=on top of) column with column index i+1
-            !         else
-            !             i_cell_end = num_cells + 1
-            !         end if
-            !         maxlay = max(maxlay, i_cell_end - i_cell_begin)     !  maximum previous and number of cells between columns i and i+1
-            !         do j = i_cell_begin + 1, i_cell_end - 1             !  loop along cells in that column to assign cells to ivert and mark nvert(2,cell) for non upper-most cells
-            !             cell_i = ivert(j)
-            !             nvert(2, cell_i) = -i           !  for non upper-most cells, make the index negative to point to minus the column number
-            !         end do
-            !     end do
-            !     allocate (low(maxlay), dia(maxlay), upr(maxlay))
-            !     write (file_unit, '(A,i4,A)') ' This model has at most    : ', maxlay, ' layers'
-            ! end if
-            !    after this all: ivert(1:num_cells)         contains all water cell numbers in their order of appearance in the columns
-            !                    nvert(1,1:count_columns)   contains the index for ivert of the first (=upper-most) cell of each column 1:count_columns
-            !                    nvert(1,count_columns+1)   contains the start location of the non existing column count_columns+1
-            !                    nvert(2,1:num_cells)       contains the column number of each cell, negative if not head of column
-            !    the procedure works for any cell numbering if: the columns all are 1D-vertical so all 1-cell wide stacks
-            !                                                   the vertical exchanges run from num_exchanges_u_dir+num_exchanges_v_dir+1 to num_exchanges_u_dir+num_exchanges_v_dir+num_exchanges_z_dir
-            !                                                   the positive velocity or flow is from ipoint(1,iq) to ipoint(2,iq)
-            !    it is easily seen that for 2D-horizontal models ivert and nvert(1:2,*) just contain the sequential cell numbers and
-            !                    count_columns = num_cells. Since nvert(1,num_cells+1) is out of range, you will find statements that deal with this.
-            write (file_unit, '(A)') ' '
             init = 1    !   do this only once per simulation
         end if
 
         ! PART 1 : make the administration for the variable time step approach
 
         !   1a: fill the array with time-tresholds per basket, 13 baskets span 1 hour - 0.9 second
-        delta_t_box = assign_delta_t_to_boxes(idt, count_boxes)
+        delta_t_box = get_delta_t_for_boxes(idt, count_boxes)
 
         !   1b: sum the outgoing [work(1,..)] and ingoing [work(2,..)] horizontal flows and constant diffusions [work(3,..)] per cell
         work = 0.0d0
@@ -1909,7 +1797,62 @@ contains
         if (timon) call timstop(ithandl)
     end subroutine locally_adaptive_time_step
 
-    function assign_delta_t_to_boxes(idt, count_boxes) result(delta_t_box)
+    subroutine parse_scheme_options(file_unit, vertical_upwind, coname, const, disp0q0, &
+        count_boxes, report)
+        ! Parse the options for the local flexible time step scheme and report settings
+        use m_cli_utils, only: is_command_arg_specified
+
+        implicit none
+
+        integer(kind = int_wp), intent(in) :: file_unit !< unit number for output messages
+        logical, intent(in) :: vertical_upwind !< flag for vertical upwind discretisation
+        character(20), intent(in) :: coname(:)          !< Constant names
+        real(kind = real_wp), intent(in) :: const(:)           !< Constants
+        logical, intent(in) :: disp0q0 !< flag for dispersion allowed if flow rate is zero
+        integer(kind = int_wp), intent(out) :: count_boxes !< number of boxes or baskets
+        logical, intent(out) :: report !< flag for report
+        
+        ! Local variables
+        logical :: sw_settling !< flag for settling backwards option
+        integer(kind = int_wp) :: i !< index in loops
+
+
+        write (file_unit, '(A)') ' Using local flexible time step method (scheme 24)'
+        if (vertical_upwind) then
+            write (file_unit, '(A)') ' Using upwind discretisation for vertical advection.'
+        else
+            write (file_unit, '(A)') ' Using central discretisation for vertical advection.'
+        end if
+
+        sw_settling = is_command_arg_specified('-settling_backwards')
+        if (sw_settling) write (file_unit, *) ' option -settling_backwards found'
+        i = index_in_array('Number_of_baskets   ', coname)
+        if (i > 0) then
+            count_boxes = const(i)
+            write (file_unit, '(A,i3)') ' Number of baskets         : ', count_boxes
+        else
+            count_boxes = 13
+            write (file_unit, '(A,i3)') ' Default number of baskets : ', count_boxes
+        end if
+        report = .false.
+        i = index_in_array('Iteration report    ', coname)
+        if (i > 0) then
+            report = const(i) > 0
+        end if
+        if (report) then
+            write (file_unit, '(A)') ' Iteration report          : switched on'
+        else
+            write (file_unit, '(A)') ' Iteration report          : switched off'
+        end if
+
+        if (.not. disp0q0) then
+            write (file_unit, '(/3A)') &
+                    ' WARNING: Dispersion allowed if flow rate is zero', &
+                    '          This is known to cause problems in some cases'
+        end if
+    end subroutine parse_scheme_options
+
+    function get_delta_t_for_boxes(idt, count_boxes) result(delta_t_box)
         ! Assign the delta t to each box based on its index
         implicit none
         integer, intent(in) :: idt
@@ -1927,7 +1870,7 @@ contains
         end do
         delta_t_box(count_boxes + 1) = 0.0d0  ! for cells running wet, will be overwritten later on.
 
-    end function assign_delta_t_to_boxes
+    end function get_delta_t_for_boxes
 
     subroutine compute_ordering_arrays(num_cells, num_exchanges, num_exchanges_z_dir, &
                                        file_unit, noqh, ipoint, ivert, nvert, &
@@ -2030,8 +1973,17 @@ contains
             end do
             allocate (low(maxlay), dia(maxlay), upr(maxlay))
             write (file_unit, '(A,i4,A)') ' This model has at most    : ', maxlay, ' layers'
-
+            write (file_unit, '(A)') ' '
         end if
+        !    after this all: ivert(1:num_cells)         contains all water cell numbers in their order of appearance in the columns
+        !                    nvert(1,1:count_columns)   contains the index for ivert of the first (=upper-most) cell of each column 1:count_columns
+        !                    nvert(1,count_columns+1)   contains the start location of the non existing column count_columns+1
+        !                    nvert(2,1:num_cells)       contains the column number of each cell, negative if not head of column
+        !    the procedure works for any cell numbering if: the columns all are 1D-vertical so all 1-cell wide stacks
+        !                                                   the vertical exchanges run from num_exchanges_u_dir+num_exchanges_v_dir+1 to num_exchanges_u_dir+num_exchanges_v_dir+num_exchanges_z_dir
+        !                                                   the positive velocity or flow is from ipoint(1,iq) to ipoint(2,iq)
+        !    it is easily seen that for 2D-horizontal models ivert and nvert(1:2,*) just contain the sequential cell numbers and
+        !                    count_columns = num_cells. Since nvert(1,num_cells+1) is out of range, you will find statements that deal with this.
 
     end subroutine compute_ordering_arrays
 
