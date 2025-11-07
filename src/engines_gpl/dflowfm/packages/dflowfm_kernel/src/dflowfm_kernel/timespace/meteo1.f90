@@ -598,7 +598,7 @@ contains
    !
    ! ==========================================================================
    !>
-   subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps) ! call schrama's routines on reduced set
+   subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps)
       use m_sferic
       use m_flowparameters, only: jatidep, jaselfal, jamaptidep
       use m_partitioninfo
@@ -3261,16 +3261,6 @@ contains
       !
       ! ====================================================================
       !
-      !     Programmer     E.J.O. Schrama
-      !
-      !     Original URL: https://repos.deltares.nl/repos/simona/bo_omgeving/simona/src/waqua/waqpro/routines/wastfr.f
-      !     $Revision: 1850 $, $Date: 2008-04-18 09:19:37 +0200 (Fri, 18 Apr 2008) $
-      !
-      !     Version 1.1    Date 22-05-2008   c81402: extended for evaluation of
-      !                                              tidal forces on grids (AVe,
-      !                                              VORtech)
-      !     Version 1.0    Date 24-01-2008   initial version
-      !
       !     Copyright © 2025, Rijkswaterstaat, All Rights Reserved.
       !
       !     This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
@@ -3855,10 +3845,6 @@ contains
    !>
    subroutine legpol1(theta, n, m, pnm)
       ! ====================================================================
-      !
-      !     Programmer     E. Schrama <e.j.o.schrama@tudelft.nl>
-      !
-      ! ********************************************************************
       !
       !     DESCRIPTION
       !
