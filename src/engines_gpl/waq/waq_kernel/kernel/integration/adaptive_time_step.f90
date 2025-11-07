@@ -216,7 +216,7 @@ contains
         vertical_upwind = .not. btest(integration_id, 18)
         ! !!!!!!!
 
-        
+
         if (init == 0) then
             call parse_scheme_options(file_unit, vertical_upwind, coname, const, disp0q0, &
                                     count_boxes, report)
@@ -233,73 +233,10 @@ contains
         !   1a: fill the array with time-tresholds per basket, 13 baskets span 1 hour - 0.9 second
         delta_t_box = get_delta_t_for_boxes(idt, count_boxes)
 
-        !   1b: sum the outgoing [work(1,..)] and ingoing [work(2,..)] horizontal flows and constant diffusions [work(3,..)] per cell
-        work = 0.0d0
-        d = disp(1)
-        al = aleng(1, 1)
-        do iq = 1, num_exchanges ! sum inflows and outflows of each interface for each cell
-
-            ! Note: If the model uses an unstructured grid, num_exchanges_v_dir may be zero, so noqh == num_exchanges_u_dir.
-            ! Therefore first check for the vertical direction, then for the second
-            ! horizontal direction
-            if (iq == noqh + 1) then
-                d = 0.0d0
-                al = aleng(1, 2)
-            elseif (iq == num_exchanges_u_dir + 1) then
-                d = disp(2)
-                al = aleng(2, 1)
-            end if
-            ifrom = ipoint(1, iq)
-            ito = ipoint(2, iq)
-            if (ifrom == 0 .or. ito == 0) cycle
-            if (ifrom < 0 .and. ito < 0) cycle
-            a = area(iq)
-            q = flow(iq)
-            if (ilflag == 1) al = aleng(1, iq) + aleng(2, iq)
-            e = d * a / al ! conductance "flow rate" due to dispersion across this exchange
-            if (ifrom < 0) then ! ifrom == B.C. => modify flows for ito
-                if (q > 0.0d0) then
-                    work(2, ito) = work(2, ito) + q ! increase in inflow
-                else
-                    work(1, ito) = work(1, ito) - q ! increase in outflow (-q>0)
-                end if
-                if (.not. disp0bnd) then
-                    if (q /= 0.0 .or. .not. disp0q0) then
-                        work(3, ito) = work(3, ito) + e
-                    end if
-                end if
-                cycle
-            end if
-            if (ito < 0) then ! ito == B.C. => modify flows for ifrom
-                if (q > 0.0) then
-                    work(1, ifrom) = work(1, ifrom) + q
-                else
-                    work(2, ifrom) = work(2, ifrom) - q
-                end if
-                if (.not. disp0bnd) then
-                    if (q /= 0.0 .or. .not. disp0q0) then
-                        work(3, ifrom) = work(3, ifrom) + e
-                    end if
-                end if
-                cycle
-            end if 
-            ! Internal => increase flows for ifrom and ito
-            if (q > 0.0) then
-                if (ifrom > 0) work(1, ifrom) = work(1, ifrom) + q ! increase outflow for ifrom
-                if (ito > 0)   work(2, ito)   = work(2, ito)   + q ! increase inflow  for ito
-            else
-                if (ifrom > 0) work(2, ifrom) = work(2, ifrom) - q ! increase inflow  for ifrom
-                if (ito > 0)   work(1, ito)   = work(1, ito)   - q ! increase outflow for ito   
-            end if
-            if (q /= 0.0 .or. .not. disp0q0) then
-                work(3, ifrom) = work(3, ifrom) + e
-                work(3, ito) = work(3, ito) + e
-            end if
-        end do
-        ! Add withdrawals to outflows
-        do cell_i = 1, num_cells
-            work(1, cell_i) = work(1, cell_i) + wdrawal(cell_i)
-        end do
+        call calculate_flows_for_cells(num_cells, num_exchanges, noqh, &
+                                    area, flow, ipoint, disp, aleng, wdrawal, ilflag, &
+                                    num_exchanges_u_dir, disp0bnd, disp0q0, &
+                                    work)
 
         !   1c: assign a box/ basket number to each cell
         idx_box_cell = 0
@@ -1852,26 +1789,6 @@ contains
         end if
     end subroutine parse_scheme_options
 
-    function get_delta_t_for_boxes(idt, count_boxes) result(delta_t_box)
-        ! Assign the delta t to each box based on its index
-        implicit none
-        integer, intent(in) :: idt
-        integer, intent(in) :: count_boxes
-
-        real(kind = dp) :: delta_t_box(count_boxes + 1)
-
-        ! Local variables
-        integer :: ibox !< box index in loops
-
-        ! Compute the sub-time step delta t for each box
-        delta_t_box(1) = real(idt, kind = dp)
-        do ibox = 2, count_boxes 
-            delta_t_box(ibox) = delta_t_box(ibox - 1) / 2.0d0
-        end do
-        delta_t_box(count_boxes + 1) = 0.0d0  ! for cells running wet, will be overwritten later on.
-
-    end function get_delta_t_for_boxes
-
     subroutine compute_ordering_arrays(num_cells, num_exchanges, num_exchanges_z_dir, &
                                        file_unit, noqh, ipoint, ivert, nvert, &
                                        low, dia, upr, maxlay, count_columns)
@@ -1986,5 +1903,130 @@ contains
         !                    count_columns = num_cells. Since nvert(1,num_cells+1) is out of range, you will find statements that deal with this.
 
     end subroutine compute_ordering_arrays
+
+    function get_delta_t_for_boxes(idt, count_boxes) result(delta_t_box)
+        ! Assign the delta t to each box based on its index
+        implicit none
+        integer, intent(in) :: idt
+        integer, intent(in) :: count_boxes
+
+        real(kind = dp) :: delta_t_box(count_boxes + 1)
+
+        ! Local variables
+        integer :: ibox !< box index in loops
+
+        ! Compute the sub-time step delta t for each box
+        delta_t_box(1) = real(idt, kind = dp)
+        do ibox = 2, count_boxes 
+            delta_t_box(ibox) = delta_t_box(ibox - 1) / 2.0d0
+        end do
+        delta_t_box(count_boxes + 1) = 0.0d0  ! for cells running wet, will be overwritten later on.
+
+    end function get_delta_t_for_boxes
+
+    subroutine calculate_flows_for_cells(num_cells, num_exchanges, noqh, &
+        area, flow, ipoint, disp, aleng, wdrawal, ilflag, &
+        num_exchanges_u_dir, disp0bnd, disp0q0, &
+        work)
+        !< Calculates the total incoming [work(2,...)], outgoing (including withdrawal) [work(1,...)] and dispersive [work(3,...)] flows for each cell based on the exchanges
+        implicit none
+        integer, intent(in) :: num_cells                !< total number of cells in the model
+        integer, intent(in) :: num_exchanges            !< total number of exchanges or flows between cells
+        integer, intent(in) :: noqh                     !< number of horizontal exchanges or flows between cells
+        real(kind = real_wp), intent(in) :: area(num_exchanges) !< area of each exchange
+        real(kind = real_wp), intent(in) :: flow(num_exchanges) !< flow rate through each exchange
+        integer, intent(in) :: ipoint(4, num_exchanges) !< exchange connectivity array (indices of cells before and after exchange)
+        real(kind = real_wp), intent(in) :: disp(3) !< dispersion coefficient in all three directions
+        real(kind = real_wp), intent(in) :: aleng(2, num_exchanges) !< Length from interface / exchange to center of cell in direction 'to' [aleng(1,...)] and 'from' [aleng(2,...)]
+        real(kind = real_wp), intent(in) :: wdrawal(num_cells) !< withdrawal flow per cell
+        integer(kind = int_wp), intent(in) :: ilflag                  !< If 0 then only 3 constant lenght values are used, if 1 then aleng arrays are used
+        integer(kind = int_wp), intent(in) :: num_exchanges_u_dir !<number of exchanges in the first horizontal direction>
+        logical, intent(in) :: disp0bnd !< flag for no dispersion at boundary
+        logical, intent(in) :: disp0q0 !< flag for no dispersion allowed if flow rate is zero
+
+        real(kind = dp), intent(out) :: work(3, num_cells) !< work array to store incoming (1), outgoing (2) and dispersive (3) flows per cell
+
+        ! Local variables
+        integer :: idx_exchange !< exchange index in loops
+        integer :: cell_i_from  !< index of cell from which flow originates
+        integer :: cell_i_to    !< index of cell to which flow goes
+        real(kind = dp) :: flow_rate !< flow rate through the exchange
+        real(kind = dp) :: al !< length from interface / exchange to center of cell
+        real(kind = dp) :: d  !< dispersion coefficient for the exchange
+        real(kind = dp) :: a  !< area of the exchange
+        real(kind = dp) :: q  !< flow rate through the exchange
+        real(kind = dp) :: e  !< dispersive flow rate through the exchange
+        integer :: cell_i    !< cell index in loops
+
+        ! Initialize work array
+        work = 0.0d0
+        d = disp(1)
+        al = aleng(1, 1)
+        ! Loop over all exchanges to compute incoming, outgoing and dispersive flows per cell
+        do idx_exchange = 1, num_exchanges
+            ! Note: If the model uses an unstructured grid, num_exchanges_v_dir may be zero, so noqh == num_exchanges_u_dir.
+            ! Therefore first check for the vertical direction, then for the second
+            ! horizontal direction
+            if (idx_exchange == noqh + 1) then
+                d = 0.0d0
+                al = aleng(1, 2)
+            elseif (idx_exchange == num_exchanges_u_dir + 1) then
+                d = disp(2)
+                al = aleng(2, 1)
+            end if
+            cell_i_from = ipoint(1, idx_exchange)
+            cell_i_to = ipoint(2, idx_exchange)
+            if (cell_i_from == 0 .or. cell_i_to == 0) cycle
+            if (cell_i_from < 0 .and. cell_i_to < 0) cycle
+            a = area(idx_exchange)
+            q = flow(idx_exchange)
+            if (ilflag == 1) al = aleng(1, idx_exchange) + aleng(2, idx_exchange)
+            e = d * a / al ! conductance "flow rate" due to dispersion across this exchange
+            if (cell_i_from < 0) then ! cell_i_from == B.C. => modify flows for cell_i_to
+                if (q > 0.0d0) then
+                    work(2, cell_i_to) = work(2, cell_i_to) + q ! increase in inflow
+                else
+                    work(1, cell_i_to) = work(1, cell_i_to) - q ! increase in outflow (-q > 0)
+                end if
+                if (.not. disp0bnd) then
+                    if (q /= 0.0 .or. .not. disp0q0) then
+                        work(3, cell_i_to) = work(3, cell_i_to) + e
+                    end if
+                end if
+                cycle
+            end if
+            if (cell_i_to < 0) then ! cell_i_to == B.C. => modify flows for cell_i_from
+                if (q > 0.0) then
+                    work(1, cell_i_from) = work(1, cell_i_from) + q
+                else
+                    work(2, cell_i_from) = work(2, cell_i_from) - q
+                end if
+                if (.not. disp0bnd) then
+                    if (q /= 0.0 .or. .not. disp0q0) then
+                        work(3, cell_i_from) = work(3, cell_i_from) + e
+                    end if
+                end if
+                cycle
+            end if
+            ! Internal => increase flows for cell_i_from and cell_i_to
+            if (q > 0.0) then
+                if (cell_i_from > 0) work(1, cell_i_from) = work(1, cell_i_from) + q ! increase outflow for cell_i_from
+                if (cell_i_to > 0)   work(2, cell_i_to)   = work(2, cell_i_to)   + q ! increase inflow  for cell_i_to
+            else
+                if (cell_i_from > 0) work(2, cell_i_from) = work(2, cell_i_from) - q ! increase inflow  for cell_i_from
+                if (cell_i_to > 0)   work(1, cell_i_to)   = work(1, cell_i_to)   - q ! increase outflow for cell_i_to
+            end if
+            if (q /= 0.0 .or. .not. disp0q0) then
+                work(3, cell_i_from) = work(3, cell_i_from) + e
+                work(3, cell_i_to) = work(3, cell_i_to) + e
+            end if
+        end do
+
+        ! Add withdrawals to outflows
+        do cell_i = 1, num_cells
+            work(1, cell_i) = work(1, cell_i) + wdrawal(cell_i)
+        end do
+
+    end subroutine calculate_flows_for_cells
 
 end module m_locally_adaptive_time_step
