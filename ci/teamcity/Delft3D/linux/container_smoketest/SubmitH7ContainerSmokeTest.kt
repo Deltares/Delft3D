@@ -127,6 +127,30 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
                 password = "%h7_account_password%"
             }
         }
+        sshExec {
+            name = "Remove folder using 'at' in 7 days."
+            commands = """
+                cd ~/%h7_work_directory%
+                cat > README_CLEANUP.txt << 'EOF'
+                This directory contains temporary smoke test files and will be automatically removed in 7 days.
+
+                Directory: ~/%h7_work_directory%
+                Created: $(date)
+                Scheduled for removal: $(date -d '+7 days')
+
+                This cleanup is managed by the 'at' command to free up disk space.
+                Do not store any important files in this directory permanently.
+                EOF
+                
+                # Schedule removal of this directory after 7 days using 'at'
+                echo "rm -rf ~/%h7_work_directory%" | at now + 7 days
+            """.trimIndent()
+            targetUrl = "h7.directory.intra"
+            authMethod = password {
+                username = "%h7_account_username%"
+                password = "%h7_account_password%"
+            }
+        }
     }
 
     dependencies {
