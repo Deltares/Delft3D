@@ -713,6 +713,7 @@
 
 
    subroutine DLAUN(XS,YS,NS,jatri,ierr)
+      use m_delaunay_triangulate, only: delaunay_triangulate_with_edges
    implicit none
    real(kind=hp), intent(in) :: XS(:), YS(:)
    integer, intent(out)      :: ierr
@@ -769,7 +770,10 @@
       MAXTRI = NSM !?
 
       numtri = NSM ! Input value should specify max nr of triangles in indx.
-      CALL TRICALL(jatri,XS,YS,NS,INDX,NUMTRI,EDGEINDX,NUMEDGE,TRIEDGE,XH,YH,NH,trisize)
+      indx=0
+      numtri = 0
+      call delaunay_triangulate_with_edges(xs, ys, ns, indx, numtri, nsm, &
+                                              EDGEINDX, numedge, nsm, triedge, ierr)
       if ( numtri < 0 ) nsm = -numtri
    end do
 
