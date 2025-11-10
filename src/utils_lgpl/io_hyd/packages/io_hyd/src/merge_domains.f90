@@ -565,27 +565,6 @@
          end do
       end do
 
-      block
-      integer :: b, d, s
-      type(t_openbnd_section)                            :: section
-      type(t_open_boundary_line)                         :: bound
-
-      write(88,*) 'Openbndsect 2:'
-
-      do d = 1,domain_hyd_coll%current_size
-          do s = 1,domain_hyd_coll%hyd_pnts(d)%openbndsect_coll%current_size
-              section = domain_hyd_coll%hyd_pnts(d)%openbndsect_coll%openbndsect_pnts(s)
-
-              do b = 1,section%openbndlin_coll%current_size
-                  bound = section%openbndlin_coll%openbndlin_pnts(b)
-                  write(88,*) d,s,b, trim(section%name), bound%ibnd_new
-
-              enddo
-          enddo
-      enddo
-      end block
-
-
       ! exchange totals
       hyd%num_exchanges_u_dir = num_exchanges_u_dir
       hyd%num_exchanges_v_dir = 0
@@ -1269,8 +1248,6 @@
       !
       allocate( cell_list(0) )
 
-      write(88,*) 'Openbndsect:'
-
       e = 0
       do d = 1,size(hyd_pnts)
           do s = 1,hyd_pnts(d)%openbndsect_coll%current_size
@@ -1288,9 +1265,6 @@
                   new_cell%original_index = bound%ibnd
 
                   cell_list = [cell_list, new_cell]
-
-                  write(88,*) d,s,b, trim(section%name), bound%ibnd_new
-
               enddo
           enddo
       enddo
@@ -1300,39 +1274,17 @@
       ! - First by section name
       ! - Then by coordinates (one by one)
       !
-      write(88,*) 'Original (unsorted):'
-      do c = 1,size(cell_list)
-          d = cell_list(c)%domain_index
-          s = cell_list(c)%section_index
-          b = cell_list(c)%bound_index
-
-          write(88,'(20g15.5)') c, cell_list(c)%name, d, s, b, cell_list(c)%coordinates
-      enddo
-
-      write(88,*) 'Openbndsect 2:'
-
       do d = 1,size(hyd_pnts)
           do s = 1,hyd_pnts(d)%openbndsect_coll%current_size
               section = hyd_pnts(d)%openbndsect_coll%openbndsect_pnts(s)
 
               do b = 1,section%openbndlin_coll%current_size
                   bound = section%openbndlin_coll%openbndlin_pnts(b)
-                  write(88,*) d,s,b, trim(section%name), bound%ibnd_new
-
               enddo
           enddo
       enddo
 
       call sort_lexicographically( cell_list )
-
-      write(88,*) 'Original (sorted):'
-      do c = 1,size(cell_list)
-          d = cell_list(c)%domain_index
-          s = cell_list(c)%section_index
-          b = cell_list(c)%bound_index
-
-          write(88,'(20g15.5)') c, cell_list(c)%name, d, s, b, cell_list(c)%coordinates
-      enddo
 
       call identify_duplicates( cell_list, new_cell_list )
 
@@ -1340,15 +1292,6 @@
       ! Fill the new numbering in in the domain list
       !
       num_boundaries = size(new_cell_list)
-
-      write(88,*) 'Reduced:'
-      do c = 1,size(new_cell_list)
-          d = new_cell_list(c)%domain_index
-          s = new_cell_list(c)%section_index
-          b = new_cell_list(c)%bound_index
-
-          write(88,'(20g15.5)') c, new_cell_list(c)%name, d, s, b, new_cell_list(c)%sorted_index, new_cell_list(c)%original_index
-      enddo
 
       do c = 1,size(new_cell_list)
           d = new_cell_list(c)%domain_index
@@ -1420,7 +1363,6 @@
       do i = 2,size(cell_list)
           if ( new_cell_list(i)%name /= new_cell_list(j)%name .or. &
                any( new_cell_list(i)%coordinates /= new_cell_list(j)%coordinates ) ) then
-              write(88,'(10g15.6)') i, j, k, new_cell_list(i)%coordinates
               j = i      ! Register this entry
               k = k + 1
           endif
