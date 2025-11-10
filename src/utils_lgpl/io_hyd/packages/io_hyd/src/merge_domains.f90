@@ -565,6 +565,27 @@
          end do
       end do
 
+      block
+      integer :: b, d, s
+      type(t_openbnd_section)                            :: section
+      type(t_open_boundary_line)                         :: bound
+
+      write(88,*) 'Openbndsect 2:'
+
+      do d = 1,domain_hyd_coll%current_size
+          do s = 1,domain_hyd_coll%hyd_pnts(d)%openbndsect_coll%current_size
+              section = domain_hyd_coll%hyd_pnts(d)%openbndsect_coll%openbndsect_pnts(s)
+
+              do b = 1,section%openbndlin_coll%current_size
+                  bound = section%openbndlin_coll%openbndlin_pnts(b)
+                  write(88,*) d,s,b, trim(section%name), bound%ibnd_new
+
+              enddo
+          enddo
+      enddo
+      end block
+
+
       ! exchange totals
       hyd%num_exchanges_u_dir = num_exchanges_u_dir
       hyd%num_exchanges_v_dir = 0
@@ -1241,28 +1262,35 @@
       type(t_cell_properties)                            :: new_cell
       type(t_openbnd_section)                            :: section
       type(t_open_boundary_line)                         :: bound
-      integer                                            :: b, c, d, s
+      integer                                            :: b, c, d, e, s
 
       !
       ! Gather the information per domain into a single list
       !
       allocate( cell_list(0) )
 
+      write(88,*) 'Openbndsect:'
+
+      e = 0
       do d = 1,size(hyd_pnts)
           do s = 1,hyd_pnts(d)%openbndsect_coll%current_size
               section = hyd_pnts(d)%openbndsect_coll%openbndsect_pnts(s)
 
               do b = 1,section%openbndlin_coll%current_size
                   bound = section%openbndlin_coll%openbndlin_pnts(b)
+                  e     = e + 1
 
                   new_cell%name           = section%name
                   new_cell%coordinates    = [bound%x1, bound%y1, bound%x2, bound%y2]
                   new_cell%domain_index   = d
                   new_cell%section_index  = s
-                  new_cell%bound_index    = b
+                  new_cell%bound_index    = e
                   new_cell%original_index = bound%ibnd
 
                   cell_list = [cell_list, new_cell]
+
+                  write(88,*) d,s,b, trim(section%name), bound%ibnd_new
+
               enddo
           enddo
       enddo
@@ -1281,6 +1309,20 @@
           write(88,'(20g15.5)') c, cell_list(c)%name, d, s, b, cell_list(c)%coordinates
       enddo
 
+      write(88,*) 'Openbndsect 2:'
+
+      do d = 1,size(hyd_pnts)
+          do s = 1,hyd_pnts(d)%openbndsect_coll%current_size
+              section = hyd_pnts(d)%openbndsect_coll%openbndsect_pnts(s)
+
+              do b = 1,section%openbndlin_coll%current_size
+                  bound = section%openbndlin_coll%openbndlin_pnts(b)
+                  write(88,*) d,s,b, trim(section%name), bound%ibnd_new
+
+              enddo
+          enddo
+      enddo
+
       call sort_lexicographically( cell_list )
 
       write(88,*) 'Original (sorted):'
@@ -1292,7 +1334,7 @@
           write(88,'(20g15.5)') c, cell_list(c)%name, d, s, b, cell_list(c)%coordinates
       enddo
 
-      call remove_duplicates( cell_list, new_cell_list )
+      call identify_duplicates( cell_list, new_cell_list )
 
       !
       ! Fill the new numbering in in the domain list
@@ -1305,13 +1347,13 @@
           s = new_cell_list(c)%section_index
           b = new_cell_list(c)%bound_index
 
-          write(88,'(20g15.5)') c, new_cell_list(c)%name, d, s, b, new_cell_list(c)%coordinates
+          write(88,'(20g15.5)') c, new_cell_list(c)%name, d, s, b, new_cell_list(c)%sorted_index, new_cell_list(c)%original_index
       enddo
 
       do c = 1,size(new_cell_list)
           d = new_cell_list(c)%domain_index
           s = new_cell_list(c)%section_index
-          b = new_cell_list(c)%bound_index
+          b = abs( new_cell_list(c)%original_index )
 
           !hyd_pnts(d)%openbndsect_coll%openbndsect_pnts(s)%openbndlin_coll%openbndlin_pnts(b)%ibnd_new = &
           hyd_pnts(d)%iglobal_bnd(b) = -new_cell_list(c)%sorted_index
@@ -1361,31 +1403,31 @@
       end subroutine sort_lexicographically
 
 
-      subroutine remove_duplicates( cell_list, new_cell_list )
+      subroutine identify_duplicates( cell_list, new_cell_list )
 
       !     Go through the sorted list and remove the duplicates
 
       type(t_cell_properties), dimension(:), intent(in)               :: cell_list
       type(t_cell_properties), dimension(:), intent(out), allocatable :: new_cell_list
 
-      integer                                             :: i, j
+      integer                                             :: i, j, k
 
-      new_cell_list = [cell_list(1)]
-      j           = 1
+      new_cell_list = cell_list
+      j             = 1
+      k             = 1
+      new_cell_list(1)%sorted_index = k
 
       do i = 2,size(cell_list)
-          if ( cell_list(i)%name /= cell_list(j)%name .or. &
-               any( cell_list(i)%coordinates /= cell_list(j)%coordinates ) ) then
-              new_cell_list = [new_cell_list, cell_list(i)]
-              j           = i
+          if ( new_cell_list(i)%name /= new_cell_list(j)%name .or. &
+               any( new_cell_list(i)%coordinates /= new_cell_list(j)%coordinates ) ) then
+              write(88,'(10g15.6)') i, j, k, new_cell_list(i)%coordinates
+              j = i      ! Register this entry
+              k = k + 1
           endif
+          new_cell_list(i)%sorted_index = k
       enddo
 
-      do i = 1,size(new_cell_list)
-          new_cell_list(i)%sorted_index = i
-      enddo
-
-      end subroutine remove_duplicates
+      end subroutine identify_duplicates
 
       end subroutine sort_and_number_boundaries
 
