@@ -55,7 +55,7 @@ module wave_main
    public :: is_fm_coupling_ongoing
    public :: advance_fm_time_window
 #endif
-   
+
    public wavedata
 !
 ! Module variables
@@ -115,20 +115,21 @@ contains
 #endif
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   subroutine initialize_fm_coupling(mdw_file_name, vertex_ids)
+   subroutine initialize_fm_coupling(mdw_file_name, precice_state)
       use precice, only: precicef_create, precicef_initialize
+      use m_precice_state_t, only: precice_state_t
       use, intrinsic :: iso_c_binding, only: c_char
       implicit none(type, external)
 
       character(len=*), intent(in) :: mdw_file_name
-      integer(kind=c_int), dimension(:), allocatable, intent(out) :: vertex_ids
+      type(precice_state_t), intent(out) :: precice_state
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "wave"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
 
       call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
 
-      call register_wave_nodes_with_precice(mdw_file_name, vertex_ids)
+      call register_wave_nodes_with_precice(mdw_file_name, precice_state)
       call precicef_initialize()
    end subroutine initialize_fm_coupling
 
@@ -150,20 +151,22 @@ contains
       call precicef_advance(max_time_step)
    end subroutine advance_fm_time_window
 
-   subroutine register_wave_nodes_with_precice(mdw_file_name, vertex_ids)
+   subroutine register_wave_nodes_with_precice(mdw_file_name, precice_state)
       use precice, only: precicef_set_vertices
+      use m_precice_state_t, only: precice_state_t
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       use swan_flow_grid_maps, only: grid
       implicit none(type, external)
 
       character(len=*), intent(in) :: mdw_file_name
-      integer(kind=c_int), dimension(:), allocatable, intent(out) :: vertex_ids
+      type(precice_state_t), intent(out) :: precice_state
 
-      character(kind=c_char, len=*), parameter :: mesh_name = "wave_nodes"
       integer :: result
       type(grid) :: swan_grid
       real(kind=c_double), dimension(:), allocatable :: mesh_coordinates
       integer :: i, j, node_index, active_count
+
+      precice_state = precice_state_t()
 
       result = get_swan_grid(mdw_file_name, swan_grid, active_count)
       if (result /= 0) then
@@ -174,7 +177,7 @@ contains
       write (*, '(a,i0,a,i0,a)') '[Wave] Grid has ', active_count, ' active nodes out of ', swan_grid%npts, ' total'
 
       allocate (mesh_coordinates(2 * active_count))
-      allocate (vertex_ids(active_count))
+      allocate (precice_state%vertex_ids(active_count))
 
       node_index = 0
       do j = 1, swan_grid%nmax
@@ -187,7 +190,7 @@ contains
          end do
       end do
 
-      call precicef_set_vertices(mesh_name, active_count, mesh_coordinates, vertex_ids, len(mesh_name))
+      call precicef_set_vertices(precice_state%swan_mesh_name, active_count, mesh_coordinates, precice_state%vertex_ids, len(precice_state%swan_mesh_name))
       write (*, '(a,i0,a)') '[Wave] Registered ', active_count, ' vertices with preCICE'
    end subroutine register_wave_nodes_with_precice
 
@@ -308,36 +311,36 @@ contains
       write (*, '(a,i0,a,i0,a)') '[Wave] Swan grid dimensions: mmax=', swan_grid%mmax, ', nmax=', swan_grid%nmax
    end function get_swan_grid
 
-   subroutine compare_precice_bed_levels(com_bed_levels, vertex_ids)
-      use precice, only: precicef_read_data, precicef_get_max_time_step_size
-      implicit none(type, external)
-      real(kind=c_double), dimension(:), intent(in) :: com_bed_levels
-      integer(kind=c_int), dimension(:), intent(in) :: vertex_ids
+   ! subroutine compare_precice_bed_levels(com_bed_levels, vertex_ids)
+   !    use precice, only: precicef_read_data, precicef_get_max_time_step_size
+   !    implicit none(type, external)
+   !    real(kind=c_double), dimension(:), intent(in) :: com_bed_levels
+   !    integer(kind=c_int), dimension(:), intent(in) :: vertex_ids
 
-      character(kind=c_char, len=*), parameter :: mesh_name = "wave_nodes"
-      character(kind=c_char, len=*), parameter :: data_name = "bed_levels"
-      real(kind=c_double) :: precice_time_step
-      real(kind=c_double), dimension(:), allocatable :: data_values
-      integer :: n_points
+   !    character(kind=c_char, len=*), parameter :: mesh_name = "wave_nodes"
+   !    character(kind=c_char, len=*), parameter :: data_name = "bed_levels"
+   !    real(kind=c_double) :: precice_time_step
+   !    real(kind=c_double), dimension(:), allocatable :: data_values
+   !    integer :: n_points
 
-      n_points = size(vertex_ids)
+   !    n_points = size(vertex_ids)
 
-      if (size(com_bed_levels) /= n_points) then
-         write(*,'(a,i0,a,i0)') '*** WARNING: COM bed levels array size (', size(com_bed_levels), &
-            ') does not match vertex_ids size (', n_points, ')'
-      end if
+   !    if (size(com_bed_levels) /= n_points) then
+   !       write(*,'(a,i0,a,i0)') '*** WARNING: COM bed levels array size (', size(com_bed_levels), &
+   !          ') does not match vertex_ids size (', n_points, ')'
+   !    end if
 
-      call precicef_get_max_time_step_size(precice_time_step)
+   !    call precicef_get_max_time_step_size(precice_time_step)
 
-      allocate(data_values(n_points))
-      call precicef_read_data(mesh_name, data_name, n_points, vertex_ids, 0.0_c_double, data_values, len(mesh_name), len(data_name))
+   !    allocate(data_values(n_points))
+   !    call precicef_read_data(mesh_name, data_name, n_points, vertex_ids, 0.0_c_double, data_values, len(mesh_name), len(data_name))
 
-      write(*, '(a,i0,a)') '[wave] Comparing ', min(n_points, size(com_bed_levels)), ' bed level values:'
-      write(*, '(a)') '[wave] COM data (from ESMF regridding):'
-      write(*, *) com_bed_levels
-      write(*, '(a)') '[wave] preCICE data (from preCICE interpolation):'
-      write(*, *) data_values
-   end subroutine compare_precice_bed_levels
+   !    write(*, '(a,i0,a)') '[wave] Comparing ', min(n_points, size(com_bed_levels)), ' bed level values:'
+   !    write(*, '(a)') '[wave] COM data (from ESMF regridding):'
+   !    write(*, *) com_bed_levels
+   !    write(*, '(a)') '[wave] preCICE data (from preCICE interpolation):'
+   !    write(*, *) data_values
+   ! end subroutine compare_precice_bed_levels
 #endif
 !
 ! ====================================================================================
@@ -647,7 +650,8 @@ end function wave_init
 
 !
 ! ====================================================================================
-function wave_main_step(stepsize, vertex_ids) result(retval)
+function  wave_main_step(stepsize, precice_state) result(retval)
+   use m_precice_state_t, only: precice_state_t
    implicit none
 !
 ! return value
@@ -657,7 +661,7 @@ function wave_main_step(stepsize, vertex_ids) result(retval)
 ! Globals
 !
    real(hp) :: stepsize
-   integer(kind=c_int), dimension(:), intent(in) :: vertex_ids
+   type(precice_state_t), intent(in) :: precice_state
 !
 ! Local variables
 !
@@ -669,7 +673,7 @@ function wave_main_step(stepsize, vertex_ids) result(retval)
       !
       ! master node does all the work ...
       !
-      retval = wave_master_step(stepsize, vertex_ids)
+      retval = wave_master_step(stepsize, precice_state)
    else
       !
       ! nothing to do for slave nodes except for waiting and calling swan as needed
@@ -685,7 +689,8 @@ end function wave_main_step
 
 !
 ! ====================================================================================
-function wave_master_step(stepsize, vertex_ids) result(retval)
+function wave_master_step(stepsize, precice_state) result(retval)
+   use m_precice_state_t, only: precice_state_t
    implicit none
 !
 ! return value
@@ -695,7 +700,7 @@ function wave_master_step(stepsize, vertex_ids) result(retval)
 ! Globals
 !
    real(hp) :: stepsize
-   integer(kind=c_int), dimension(:), intent(in) :: vertex_ids
+   type(precice_state_t), intent(in) :: precice_state
 !
 ! Locals
 !
@@ -707,15 +712,11 @@ function wave_master_step(stepsize, vertex_ids) result(retval)
    integer                                      :: iold
    integer                                      :: timtscale    ! time in tscale units, integer representation
    real(hp)                                     :: tend
-   real(kind=c_double), dimension(:), allocatable :: com_bed_levels
 !
 !! executable statements -----------------------------------------------
 !
    retval = 0
    !
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   allocate(com_bed_levels(size(vertex_ids)))
-#endif
    !
    if (wavedata%mode /= stand_alone) then
       !
@@ -757,10 +758,7 @@ function wave_master_step(stepsize, vertex_ids) result(retval)
          !
          ! Run n_swan nested SWAN runs
          !
-         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, com_bed_levels)
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-         call compare_precice_bed_levels(com_bed_levels, vertex_ids)
-#endif
+         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, precice_state)
          write(*,'(a)')'*  End of Delft3D-WAVE'
          write(*,'(a)')'*****************************************************************'
          !
@@ -779,14 +777,14 @@ function wave_master_step(stepsize, vertex_ids) result(retval)
       ! Standalone swan computation
       !
       if (swan_run%flowgridfile == ' ') then
-         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, com_bed_levels)
+         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, precice_state)
       elseif (swan_run%timwav(1) < 0.0) then
          !
          ! No times specified in mdw file: just do one computation with specified timestep
          !
          swan_run%timwav(1) = wavedata%time%timsec + stepsize / 60.0_hp
          swan_run%nttide    = 1
-         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, com_bed_levels)
+         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, precice_state)
       else
          !
          ! Times specified in mdw file: compute all specified times between tcur en tcur+tstep
@@ -813,7 +811,7 @@ function wave_master_step(stepsize, vertex_ids) result(retval)
                ! iold is needed when timwav(i)="current time" or "step_end_time",
                ! to avoid doing the same computation twice
                !
-               call swan_tot(n_swan_grids, n_flow_grids, wavedata, i, com_bed_levels)
+               call swan_tot(n_swan_grids, n_flow_grids, wavedata, i, precice_state)
                iold = i
             else
                !

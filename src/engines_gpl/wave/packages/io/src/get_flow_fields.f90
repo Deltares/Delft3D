@@ -3,7 +3,7 @@ implicit none
 private
 public :: get_flow_fields
 contains
-subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowVelocityType)
+subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowVelocityType, precice_state)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -41,6 +41,9 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
    use swan_input
    use flow_data
    use wave_data
+   use precice, only: precicef_read_data
+   use m_precice_state_t, only: precice_state_t
+   use, intrinsic :: iso_c_binding, only: c_int, c_double
    !
    implicit none
 !
@@ -56,11 +59,11 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
    integer, dimension(:,:), pointer :: covered
    type(wave_data_type)             :: wavedata
    type(swan_type)                  :: sr               ! swan input structure
+   type(precice_state_t), intent(in) :: precice_state
 !
 ! Local variables
 !
-   integer            :: i
-   integer            :: j
+   integer            :: i, j, precice_index
    integer            :: iprint       = 0
    real               :: alpb         = 0.0
    real               :: dummy        = -999.0
@@ -68,6 +71,8 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
    logical            :: clbot        = .true.
    character(256)     :: mudfilnam    = ' '
    type(input_fields) :: fif                    ! input fields defined on flow grid
+   real(kind=c_double), dimension(:), allocatable :: bed_level_values
+   integer :: n_points
 
    interface
       subroutine grmap_esmf(i1, f1, n1, f2, mmax, nmax, f2s, f2g)
@@ -107,7 +112,7 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
    if (sr%dom(i_swan)%qextnd(q_bath)>0) then
       if (sr%flowgridfile == ' ') then
          !
-         ! Read depth from com-file
+         ! Read depth from com-file (Delft3d4)
          !
          call get_dep (fif%dps, fif%mmax, fif%nmax, &
                      & fg%grid_name)
@@ -119,19 +124,20 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
                    & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
                    & iprint       )
       else
-         !
-         ! Read depth from netcdf-file
-         !
-         call get_var_netcdf (i_flow, wavedata%time , 'dps', &
-                            & fif%dps, fif%mmax, fif%nmax, &
-                            & sr%flowgridfile, wavedata%output%lastvalidflowfield)
-         !
-         ! Map depth to SWAN grid, using ESMF_Regrid weights
-         !
-         call grmap_esmf (i_flow,         fif%dps , fif%npts, &
-                        & sif%dps       , sif%mmax, sif%nmax, &
-                        & f2s           , sg                )
-         !
+         n_points = size(precice_state%vertex_ids)
+         allocate(bed_level_values(n_points))
+         call precicef_read_data(precice_state%swan_mesh_name, precice_state%bed_levels_name, &
+                                 n_points, precice_state%vertex_ids, 0.0_c_double, bed_level_values, &
+                                 len(precice_state%swan_mesh_name), len(precice_state%bed_levels_name))
+         precice_index = 0
+         do j = 1, sif%nmax
+            do i = 1, sif%mmax
+               if (sg%kcs(i, j) /= 0) then
+                  precice_index = precice_index + 1
+                  sif%dps(i, j) = bed_level_values(precice_index)
+               end if
+            end do
+         end do
       endif
    endif
    !

@@ -3,7 +3,7 @@ module m_swan_tot
    private
    public :: swan_tot
    contains
-subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_levels)
+subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_state)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2025.
@@ -47,7 +47,8 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_leve
    use m_deletehotfile
    use m_get_flow_fields, only: get_flow_fields
    use write_swan_datafile, only: write_swan_file
-   use, intrinsic :: iso_c_binding, only: c_double
+   use m_precice_state_t, only: precice_state_t
+   use, intrinsic :: iso_c_binding, only: c_int
    !
    implicit none
 !
@@ -57,7 +58,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_leve
    integer, intent(in) :: n_swan_grids
    type(wave_data_type) :: wavedata
    integer, intent(in) :: selectedtime ! <=0: no time selected, >0: only compute for swan_run%timwav(selectedtime)
-   real(kind=c_double), dimension(:), allocatable, intent(inout) :: bed_levels
+   type(precice_state_t), intent(in) :: precice_state
 !
 ! Local variables
 !
@@ -90,7 +91,6 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_leve
    character(15) :: refdstr
    character(500) :: message
    type(swan_dom), pointer :: dom
-   integer :: i, j, index
 !
 !! executable statements -------------------------------------------------------
 !
@@ -171,7 +171,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_leve
                write (*, '(a,i0,a)') '  Get flow fields, domain ', i_flow, ' :'
                call get_flow_fields(i_flow, i_swan, swan_input_fields, flow_grids(i_flow), swan_grids(i_swan), &
                                    & flow2swan_maps(i_swan, i_flow), wavedata, &
-                                   & swan_run, dom%flowVelocityType)
+                                   & swan_run, dom%flowVelocityType, precice_state)
             end do
          end if
          !
@@ -455,26 +455,6 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, bed_leve
             write (*, '(a,i10,a,f10.3)') '  Write WAVE NetCDF his file, nest ', i_swan, ' time ', wavedata%time%timmin
             call write_wave_his_netcdf(swan_grids(i_swan), swan_output_fields, n_swan_grids, i_swan, &
                                & wavedata)
-         end if
-
-         if (allocated(bed_levels)) then
-            index = 0
-            do j = 1, swan_input_fields%nmax
-               do i = 1, swan_input_fields%mmax
-                  if (swan_grids(i_swan)%kcs(i, j) == 1) then
-                     index = index + 1
-                     if (index > size(bed_levels)) then
-                        write(*,'(a,i0,a,i0)') '*** WARNING: More active nodes (', index-1, &
-                           ') than bed_levels array size (', size(bed_levels), ')'
-                        exit
-                     end if
-                     bed_levels(index) = real(swan_input_fields%dps(i, j), kind=c_double)
-                  end if
-               end do
-               if (index > size(bed_levels)) then
-                  exit
-               end if
-            end do
          end if
 
          call dealloc_input_fields(swan_input_fields, wavedata%mode)
