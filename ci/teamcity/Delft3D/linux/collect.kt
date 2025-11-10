@@ -68,7 +68,7 @@ object LinuxCollect : BuildType({
         }
         step {
             name = "Upload artifact to Nexus"
-            type = "RawUploadNexus"
+            type = "RawUploadNexusLinux"
             executionMode = BuildStep.ExecutionMode.DEFAULT
             param("file_path", "dimrset_lnx64_%build.vcs.number%.tar.gz")
             param("nexus_username", "%nexus_username%")
