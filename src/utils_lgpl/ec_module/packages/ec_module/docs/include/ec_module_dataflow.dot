@@ -1,0 +1,112 @@
+/**
+ * @file ec_module_dataflow.dot
+ * @brief EC-Module Data Flow Diagram
+ * @details Shows the complete data processing pipeline within EC-Module
+ * 
+ * To generate diagram in Doxygen, use:
+ * @dot
+ * digraph ec_dataflow {
+ *     // Include this file content
+ * }
+ * @enddot
+ */
+
+digraph ec_module_dataflow {
+    // Graph attributes
+    rankdir=LR;
+    bgcolor="white";
+    fontname="Arial";
+    fontsize=12;
+    
+    // Node styling
+    node [shape=record, style=filled, fontname="Arial", fontsize=9];
+    edge [fontname="Arial", fontsize=8];
+    
+    // Data sources
+    subgraph cluster_sources {
+        label="Data Sources";
+        style=filled;
+        fillcolor="lightgray";
+        
+        netcdf_files [label="NetCDF Files\n|Grid Data|Time Series", fillcolor="lightblue"];
+        ascii_files [label="ASCII Files\n|Boundary Conditions|Meteorology", fillcolor="lightgreen"];
+        bc_files [label="BC Files\n|Forcing Data|Parameters", fillcolor="lightyellow"];
+    }
+    
+    // File readers
+    subgraph cluster_readers {
+        label="File Readers";
+        style=filled;
+        fillcolor="orange";
+        
+        nc_reader [label="NetCDF Reader\n|ecNetcdfInit|ecNetcdfRead", fillcolor="orange"];
+        ascii_reader [label="ASCII Reader\n|ecBCInit|ecBCRead", fillcolor="orange"];
+        multi_reader [label="Multi-file Reader\n|ecFieldCreate", fillcolor="orange"];
+    }
+    
+    // EC-Module core processing
+    subgraph cluster_core {
+        label="EC-Module Core";
+        style=filled;
+        fillcolor="red";
+        
+        ec_instance [label="EC Instance\n|tEcInstance|Item Management", fillcolor="red", fontcolor="white"];
+        field_manager [label="Field Manager\n|tEcField|Data Structure", fillcolor="red", fontcolor="white"];
+        connection_mgr [label="Connection Manager\n|tEcConnection|Link Management", fillcolor="red", fontcolor="white"];
+    }
+    
+    // Interpolation engine
+    subgraph cluster_interpolation {
+        label="Spatial Interpolation";
+        style=filled;
+        fillcolor="green";
+        
+        triangulation [label="Triangulation\n|ecTriangulationCreate|Delaunay Triangles", fillcolor="lightgreen"];
+        bilinear [label="Bilinear\n|ecBilinearInterpolation|Grid-based", fillcolor="lightgreen"];
+        averaging [label="Averaging\n|ecAveraging|Point-to-Grid", fillcolor="lightgreen"];
+        kdtree [label="KD-Tree\n|ecKDTreeCreate|Nearest Neighbor", fillcolor="lightgreen"];
+    }
+    
+    // Target processing
+    subgraph cluster_targets {
+        label="Target Models";
+        style=filled;
+        fillcolor="purple";
+        
+        dflowfm_data [label="D-Flow FM\n|Meteorology|Boundaries", fillcolor="lightcoral"];
+        dwaq_data [label="D-Water Quality\n|Flow Data|Concentrations", fillcolor="lightcoral"];
+        morph_data [label="D-Morphology\n|Velocities|Sediment", fillcolor="lightcoral"];
+        wave_data [label="D-Waves\n|Wind|Water Levels", fillcolor="lightcoral"];
+    }
+    
+    // Data flow connections
+    netcdf_files -> nc_reader [label="read"];
+    ascii_files -> ascii_reader [label="parse"];
+    bc_files -> multi_reader [label="load"];
+    
+    nc_reader -> ec_instance [label="register"];
+    ascii_reader -> field_manager [label="create fields"];
+    multi_reader -> connection_mgr [label="setup connections"];
+    
+    ec_instance -> triangulation [label="coordinate\nmapping"];
+    field_manager -> bilinear [label="grid\ninterpolation"];
+    connection_mgr -> averaging [label="point\naggregation"];
+    ec_instance -> kdtree [label="spatial\nsearch"];
+    
+    triangulation -> dflowfm_data [label="interpolated\nmeteorology"];
+    bilinear -> dwaq_data [label="flow\nfields"];
+    averaging -> morph_data [label="sediment\ntransport"];
+    kdtree -> wave_data [label="boundary\nforcing"];
+    
+    // Time synchronization (across all interpolation methods)
+    time_sync [label="Time Synchronization\n|ecTimeInterpolation", shape=ellipse, fillcolor="yellow"];
+    
+    triangulation -> time_sync [style=dashed, label="temporal"];
+    bilinear -> time_sync [style=dashed, label="temporal"];
+    averaging -> time_sync [style=dashed, label="temporal"];
+    kdtree -> time_sync [style=dashed, label="temporal"];
+    
+    // Title
+    labelloc="t";
+    label="EC-Module Data Processing Pipeline";
+}

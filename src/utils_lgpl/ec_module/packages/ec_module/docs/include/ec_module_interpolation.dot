@@ -1,0 +1,146 @@
+/**
+ * @file ec_module_interpolation.dot
+ * @brief EC-Module Interpolation Methods
+ * @details Detailed view of spatial and temporal interpolation algorithms in EC-Module
+ * 
+ * To generate diagram in Doxygen, use:
+ * @dot
+ * digraph ec_interpolation {
+ *     // Include this file content
+ * }
+ * @enddot
+ */
+
+digraph ec_module_interpolation {
+    // Graph attributes
+    rankdir=TB;
+    bgcolor="white";
+    fontname="Arial";
+    fontsize=12;
+    
+    // Node styling
+    node [shape=record, style=filled, fontname="Arial", fontsize=9];
+    edge [fontname="Arial", fontsize=8];
+    
+    // Input data types
+    subgraph cluster_input {
+        label="Input Data Types";
+        style=filled;
+        fillcolor="lightgray";
+        
+        point_data [label="Point Data\n|{Meteorological Stations|Boundary Points|Observation Data}", fillcolor="lightblue"];
+        grid_data [label="Grid Data\n|{Regular Grids|Curvilinear Grids|Unstructured Meshes}", fillcolor="lightgreen"];
+        time_series [label="Time Series\n|{Temporal Sequences|Multi-dimensional|Variable Time Steps}", fillcolor="lightyellow"];
+    }
+    
+    // Spatial interpolation methods
+    subgraph cluster_spatial {
+        label="Spatial Interpolation Methods";
+        style=filled;
+        fillcolor="orange";
+        
+        triangulation [label="Triangulation\n|{Delaunay Triangulation|Barycentric Coordinates|Natural Neighbors}", fillcolor="orange"];
+        bilinear [label="Bilinear Interpolation\n|{Grid-based|Four-point|Rectangular Cells}", fillcolor="orange"];
+        nearest [label="Nearest Neighbor\n|{KD-Tree Search|Voronoi Cells|Distance-based}", fillcolor="orange"];
+        averaging [label="Spatial Averaging\n|{Weighted Average|Inverse Distance|Gaussian Kernel}", fillcolor="orange"];
+    }
+    
+    // Temporal interpolation
+    subgraph cluster_temporal {
+        label="Temporal Interpolation";
+        style=filled;
+        fillcolor="green";
+        
+        linear_time [label="Linear Interpolation\n|{Time-weighted|Piecewise Linear|Continuous}", fillcolor="lightgreen"];
+        block_time [label="Block Function\n|{Constant Intervals|Step-wise|Nearest Time}", fillcolor="lightgreen"];
+        harmonic_time [label="Harmonic Analysis\n|{Tidal Components|Fourier Series|Phase-amplitude}", fillcolor="lightgreen"];
+    }
+    
+    // Coordinate transformations
+    subgraph cluster_coordinates {
+        label="Coordinate Systems";
+        style=filled;
+        fillcolor="purple";
+        
+        cartesian [label="Cartesian\n|{X-Y Coordinates|Local Projection|Metric System}", fillcolor="lightcoral"];
+        spherical [label="Spherical\n|{Lat-Lon Coordinates|Geographic System|WGS84}", fillcolor="lightcoral"];
+        curvilinear [label="Curvilinear\n|{Body-fitted|Orthogonal|Non-orthogonal}", fillcolor="lightcoral"];
+    }
+    
+    // Algorithm implementations
+    subgraph cluster_algorithms {
+        label="Core Algorithms";
+        style=filled;
+        fillcolor="red";
+        
+        delaunay [label="Delaunay Algorithm\n|{Triangle Generation|Circumcircle Test|Edge Flipping}", fillcolor="red", fontcolor="white"];
+        kdtree_alg [label="KD-Tree Algorithm\n|{Space Partitioning|Balanced Tree|Range Search}", fillcolor="red", fontcolor="white"];
+        polygon_alg [label="Polygon Algorithm\n|{Point-in-Polygon|Clipping|Intersection}", fillcolor="red", fontcolor="white"];
+        transformation [label="Coordinate Transform\n|{Projection|Rotation|Scaling}", fillcolor="red", fontcolor="white"];
+    }
+    
+    // Target applications
+    subgraph cluster_targets {
+        label="Target Applications";
+        style=filled;
+        fillcolor="yellow";
+        
+        meteo_forcing [label="Meteorological Forcing\n|{Wind Fields|Pressure|Temperature|Humidity}", fillcolor="yellow"];
+        boundary_cond [label="Boundary Conditions\n|{Water Levels|Discharges|Concentrations}", fillcolor="yellow"];
+        initial_cond [label="Initial Conditions\n|{Field Initialization|Restart Data|Spin-up}", fillcolor="yellow"];
+        coupling_data [label="Model Coupling\n|{Inter-model Data|Feedback|Synchronization}", fillcolor="yellow"];
+    }
+    
+    // Data flow connections
+    
+    // Input to spatial methods
+    point_data -> triangulation [label="scattered points"];
+    point_data -> nearest [label="station data"];
+    grid_data -> bilinear [label="regular grid"];
+    grid_data -> averaging [label="grid cells"];
+    
+    // Spatial to temporal
+    triangulation -> linear_time [label="interpolated field"];
+    bilinear -> block_time [label="grid values"];
+    nearest -> harmonic_time [label="point values"];
+    averaging -> linear_time [label="averaged field"];
+    
+    // Coordinate transformations
+    cartesian -> triangulation [label="local coords"];
+    spherical -> bilinear [label="geo coords"];
+    curvilinear -> averaging [label="curved grid"];
+    
+    // Algorithm implementations
+    delaunay -> triangulation [label="implements"];
+    kdtree_alg -> nearest [label="implements"];
+    polygon_alg -> averaging [label="implements"];
+    transformation -> cartesian [label="converts to"];
+    transformation -> spherical [label="converts to"];
+    transformation -> curvilinear [label="converts to"];
+    
+    // Time series input
+    time_series -> linear_time [label="temporal data"];
+    time_series -> block_time [label="step data"];
+    time_series -> harmonic_time [label="periodic data"];
+    
+    // Output to applications
+    linear_time -> meteo_forcing [label="time-varying"];
+    block_time -> boundary_cond [label="constant periods"];
+    harmonic_time -> initial_cond [label="periodic initial"];
+    
+    triangulation -> coupling_data [label="spatial coupling"];
+    bilinear -> meteo_forcing [label="gridded meteo"];
+    nearest -> boundary_cond [label="point boundaries"];
+    averaging -> coupling_data [label="area coupling"];
+    
+    // Quality control and validation
+    validation [label="Quality Control\n|{Range Checking|Consistency|Missing Data}", shape=ellipse, fillcolor="cyan"];
+    
+    linear_time -> validation [style=dashed, label="validate"];
+    triangulation -> validation [style=dashed, label="validate"];
+    bilinear -> validation [style=dashed, label="validate"];
+    
+    // Title
+    labelloc="t";
+    label="EC-Module Interpolation Methods and Algorithms";
+}

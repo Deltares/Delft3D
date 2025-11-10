@@ -1,0 +1,158 @@
+/**
+ * @file ec_module_deep_integration.dot
+ * @brief Deep Integration Patterns of EC-Module within Delft3D
+ * @details Shows instantiation patterns, global data structures, memory sharing, and runtime coupling
+ * 
+ * To generate diagram in Doxygen, use:
+ * @dot
+ * digraph ec_deep_integration {
+ *     // Include this file content
+ * }
+ * @enddot
+ */
+
+digraph ec_module_deep_integration {
+    // Graph attributes
+    rankdir=TB;
+    bgcolor="white";
+    fontname="Arial";
+    fontsize=12;
+    
+    // Node styling
+    node [shape=box, style=filled, fontname="Arial", fontsize=9];
+    edge [fontname="Arial", fontsize=8];
+    
+    // DIMR Level (Top orchestration layer)
+    subgraph cluster_dimr {
+        label="DIMR Integration Manager";
+        style=filled;
+        fillcolor="lightsteelblue";
+        
+        dimr_config [label="DIMR Config\nXML Configuration\nProcess Management\nComponent Orchestration", fillcolor="steelblue", fontcolor="white"];
+        component_manager [label="Component Manager\nFlow2D3D | D-Flow FM\nD-WAQ | D-Waves | RTC", fillcolor="lightblue"];
+    }
+    
+    // D-Flow FM Instance Level
+    subgraph cluster_dflowfm_instance {
+        label="D-Flow FM Instance";
+        style=filled;
+        fillcolor="lightcyan";
+        
+        // Global EC Instance (Singleton Pattern)
+        ec_global_instance [label="Global EC Instance\ntype(tEcInstance), pointer, save\necInstancePtr\nSingleton per D-Flow FM process\nCoordinate System Setup", fillcolor="red", fontcolor="white"];
+        
+        // D-Flow FM Core Modules
+        meteo_module [label="m_meteo Module\ninitialize_ec_module()\nGlobal Item IDs\nFlow-EC Interface", fillcolor="orange"];
+        flow_init [label="Flow Initialization\nflow_flowinit()\ncall initialize_ec_module()\nEC instance creation", fillcolor="orange"];
+        ext_forcings [label="External Forcings\nfm_external_forcings\nBoundary Updates\nTime-space Relations", fillcolor="orange"];
+    }
+    
+    // Global Data Structures and Shared Memory
+    subgraph cluster_global_data {
+        label="Shared Global Data Structures";
+        style=filled;
+        fillcolor="lightyellow";
+        
+        // Flow Arrays (Target Memory)
+        flow_arrays [label="Flow Arrays (Targets)\ns1(ndx) - Water levels\nu1(lnx) - Velocities\nconstituents(:,:)\nGrid coordinates\nBoundary conditions", fillcolor="lightgreen"];
+        
+        // Meteo Arrays (Target Memory) 
+        meteo_arrays [label="Meteo Arrays (Targets)\nwindx, windy - Wind components\npatm - Atmospheric pressure\nrainfall, evaporation\ntemperature, humidity", fillcolor="lightgreen"];
+        
+        // EC Item Registry (Linking Structure)
+        item_registry [label="EC Item Registry\nitem_windx, item_windy\nitem_waterlevelbnd\nitem_velocitybnd\nitem_salinitybnd\nTarget Item IDs", fillcolor="yellow"];
+        
+        // Grid Geometry (Shared Reference)
+        grid_geometry [label="Grid Geometry\nxz(ndx), yz(ndx) - Node coordinates\nxu(lnx), yu(lnx) - Link coordinates\nba(ndx) - Cell areas\nCoordinate system", fillcolor="lightcoral"];
+    }
+    
+    // EC-Module Internal Structure
+    subgraph cluster_ec_internals {
+        label="EC-Module Internal Memory Management";
+        style=filled;
+        fillcolor="mistyrose";
+        
+        // EC Instance Components
+        ec_connections [label="EC Connections\necConnectionsPtr(10)\nSource-Target Links\nInterpolation Methods\nMemory References", fillcolor="pink"];
+        ec_fields [label="EC Fields\necFieldsPtr\nData Arrays\nSpatial-Temporal Data\nNetCDF mappings", fillcolor="pink"];
+        ec_converters [label="EC Converters\necConvertersPtr\nUnit Conversions\nCoordinate Transforms\nValue Mappings", fillcolor="pink"];
+        ec_filereaders [label="EC File Readers\nFile I/O Handles\nNetCDF Readers\nASCII Parsers\nMulti-file Support", fillcolor="pink"];
+    }
+    
+    // Memory Sharing and References
+    subgraph cluster_memory_sharing {
+        label="Memory Sharing Patterns";
+        style=filled;
+        fillcolor="lavender";
+        
+        pointer_targets [label="Target Pointers\nDirect Memory References\nNo Data Copying\nReal-time Updates\nFortran C_LOC mappings", fillcolor="mediumpurple", fontcolor="white"];
+        spatial_coupling [label="Spatial Coupling\nKD-Tree Spatial Search\nTriangulation References\nGrid Interpolation\nNearest Neighbor", fillcolor="mediumpurple", fontcolor="white"];
+        temporal_sync [label="Temporal Synchronization\nTime Step Coordination\nInterpolation in Time\nData Validity Windows\nUpdate Triggers", fillcolor="mediumpurple", fontcolor="white"];
+    }
+    
+    // Runtime Data Flow
+    subgraph cluster_runtime_flow {
+        label="Runtime Data Flow Pattern";
+        style=filled;
+        fillcolor="lightgray";
+        
+        update_cycle [label="Update Cycle\n1. ec_gettimespacevalue()\n2. Interpolate to targets\n3. Update flow arrays\n4. Continue simulation", fillcolor="gray", fontcolor="white"];
+        boundary_update [label="Boundary Updates\nfm_external_forcings_update_boundaries\nDirect array updates\nReal-time forcing", fillcolor="darkgray", fontcolor="white"];
+    }
+    
+    // Integration Connections
+    
+    // DIMR to D-Flow FM
+    dimr_config -> component_manager [label="orchestrate"];
+    component_manager -> flow_init [label="initialize\nprocess"];
+    
+    // EC Instance Creation
+    flow_init -> ec_global_instance [label="call initialize_ec_module()"];
+    meteo_module -> ec_global_instance [label="manages\nsingleton"];
+    
+    // Global Data Structure Connections
+    ec_global_instance -> ec_connections [label="allocates\nmanages"];
+    ec_global_instance -> ec_fields [label="allocates\nmanages"];
+    ec_global_instance -> ec_converters [label="allocates\nmanages"];
+    ec_global_instance -> ec_filereaders [label="allocates\nmanages"];
+    
+    // Item Registry Connections
+    meteo_module -> item_registry [label="populates\nitem IDs"];
+    item_registry -> ec_connections [label="links items\nto connections"];
+    
+    // Memory Sharing
+    ec_connections -> pointer_targets [label="target\npointers"];
+    pointer_targets -> flow_arrays [label="direct memory\nreference"];
+    pointer_targets -> meteo_arrays [label="direct memory\nreference"];
+    
+    // Grid Sharing
+    flow_init -> grid_geometry [label="provides\ncoordinates"];
+    ec_global_instance -> spatial_coupling [label="spatial\noperations"];
+    spatial_coupling -> grid_geometry [label="uses grid\nreferences"];
+    
+    // Runtime Operations
+    ext_forcings -> update_cycle [label="triggers"];
+    update_cycle -> ec_global_instance [label="ec_gettimespacevalue()"];
+    ec_global_instance -> spatial_coupling [label="interpolate"];
+    spatial_coupling -> temporal_sync [label="time sync"];
+    temporal_sync -> pointer_targets [label="update targets"];
+    
+    // Boundary Updates
+    boundary_update -> flow_arrays [label="direct\nupdate"];
+    update_cycle -> boundary_update [label="coordinates"];
+    
+    // File I/O Flow
+    ec_filereaders -> ec_fields [label="loads data"];
+    ec_fields -> ec_connections [label="provides\nsource data"];
+    
+    // Coordinate System Setup
+    ec_global_instance -> grid_geometry [label="coordinate\nsystem setup\n(EC_COORDS_SFERIC/CARTESIAN)"];
+    
+    // Title and Notes
+    labelloc="t";
+    label="EC-Module Deep Integration Patterns in Delft3D\nShowing Instance Management, Memory Sharing, and Runtime Coupling";
+    
+    // Add detailed annotations
+    annotation [label="Key Integration Patterns:\n• Single EC instance per D-Flow FM process\n• Direct memory references (no copying)\n• Shared coordinate system and grid geometry\n• Real-time array updates via pointers\n• Spatial interpolation with grid coupling\n• Temporal synchronization in update cycles", 
+                shape=box, fillcolor="lightyellow", style=filled];
+}

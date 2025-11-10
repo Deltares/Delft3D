@@ -1,0 +1,8 @@
+\mainpage External Coupling Module
+
+This documentation is intended for developers working with the EC-module code.
+This guide currently documents the EC module and its interface.
+
+- \subpage EC_module_interface
+- \subpage EC_module_dot_diagrams
+- \subpage EC_module_analysis

@@ -1,0 +1,112 @@
+/**
+ * @file ec_module_dependencies.dot
+ * @brief EC-Module Dependency Tree
+ * @details Shows the hierarchical dependency structure of EC-Module components
+ * 
+ * To generate diagram in Doxygen, use:
+ * @dot
+ * digraph ec_dependencies {
+ *     // Include this file content
+ * }
+ * @enddot
+ */
+
+digraph ec_module_dependencies {
+    // Graph attributes
+    rankdir=TB;
+    bgcolor="white";
+    fontname="Arial";
+    fontsize=12;
+    
+    // Node styling
+    node [shape=box, style=filled, fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=8, color="navy"];
+    
+    // Define rank levels for layered layout
+    {rank=same; ec_module;}
+    
+    {rank=same; deltares_common; gridgeom; kdtree2; io_netcdf; ec_support;}
+    
+    {rank=same; precision; netcdf_fortran; kdtree_wrapper; io_netcdf_data; string_module; alloc;}
+    
+    {rank=same; netcdf_c; hdf5; mpi; blas_lapack; spherepack; polypack;}
+    
+    // Top level - EC-Module
+    ec_module [label="EC-Module\n(Main Package)", fillcolor="red", fontcolor="white"];
+    
+    // Second level - Core dependencies
+    deltares_common [label="deltares_common\n(Shared Utilities)", fillcolor="orange"];
+    gridgeom [label="gridgeom\n(Geometric Operations)", fillcolor="orange"];
+    kdtree2 [label="kdtree2\n(Spatial Search)", fillcolor="orange"];
+    io_netcdf [label="io_netcdf\n(NetCDF Interface)", fillcolor="orange"];
+    ec_support [label="ec_support\n(Helper Functions)", fillcolor="orange"];
+    
+    // Third level - Implementation libraries
+    precision [label="precision\n(Floating Point)", fillcolor="lightblue"];
+    netcdf_fortran [label="netcdf-fortran\n(NetCDF F90)", fillcolor="lightblue"];
+    kdtree_wrapper [label="kdtree_wrapper\n(C Interface)", fillcolor="lightblue"];
+    io_netcdf_data [label="io_netcdf_data\n(Data Structures)", fillcolor="lightblue"];
+    string_module [label="string_module\n(String Operations)", fillcolor="lightblue"];
+    alloc [label="m_alloc\n(Memory Management)", fillcolor="lightblue"];
+    
+    // Fourth level - System libraries
+    netcdf_c [label="NetCDF-C\n(C Library)", fillcolor="lightgreen"];
+    hdf5 [label="HDF5\n(Data Format)", fillcolor="lightgreen"];
+    mpi [label="MPI\n(Parallel Comm)", fillcolor="lightgreen"];
+    blas_lapack [label="BLAS/LAPACK\n(Linear Algebra)", fillcolor="lightgreen"];
+    spherepack [label="SPHEREPACK\n(Spherical Harmonics)", fillcolor="lightgreen"];
+    polypack [label="POLYPACK\n(Polygon Operations)", fillcolor="lightgreen"];
+    
+    // Primary dependencies
+    ec_module -> deltares_common [label="utilities"];
+    ec_module -> gridgeom [label="geometry"];
+    ec_module -> kdtree2 [label="spatial search"];
+    ec_module -> io_netcdf [label="file I/O"];
+    ec_module -> ec_support [label="helpers"];
+    
+    // Secondary dependencies
+    deltares_common -> precision [label="types"];
+    deltares_common -> string_module [label="strings"];
+    deltares_common -> alloc [label="memory"];
+    
+    gridgeom -> spherepack [label="spherical"];
+    gridgeom -> polypack [label="polygons"];
+    gridgeom -> blas_lapack [label="math"];
+    
+    kdtree2 -> kdtree_wrapper [label="C interface"];
+    
+    io_netcdf -> netcdf_fortran [label="F90 API"];
+    io_netcdf -> io_netcdf_data [label="structures"];
+    
+    // System level dependencies
+    netcdf_fortran -> netcdf_c [label="C library"];
+    netcdf_c -> hdf5 [label="storage"];
+    
+    kdtree_wrapper -> blas_lapack [label="linear algebra"];
+    
+    // MPI used by multiple components
+    deltares_common -> mpi [label="parallel", style=dashed];
+    gridgeom -> mpi [label="distributed", style=dashed];
+    io_netcdf -> mpi [label="parallel I/O", style=dashed];
+    
+    // Compilation dependencies (shown as dotted lines)
+    ec_module -> precision [style=dotted, label="compilation"];
+    
+    // Title and legend
+    labelloc="t";
+    label="EC-Module Dependency Hierarchy";
+    
+    // Add legend
+    subgraph cluster_legend {
+        label="Legend";
+        style=filled;
+        fillcolor="lightyellow";
+        
+        leg_main [label="Main Package", shape=box, fillcolor="red", fontcolor="white"];
+        leg_core [label="Core Dependencies", shape=box, fillcolor="orange"];
+        leg_impl [label="Implementation", shape=box, fillcolor="lightblue"];
+        leg_sys [label="System Libraries", shape=box, fillcolor="lightgreen"];
+        
+        leg_main -> leg_core -> leg_impl -> leg_sys [style=invis];
+    }
+}

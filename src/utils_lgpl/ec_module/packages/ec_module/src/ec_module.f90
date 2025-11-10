@@ -25,7 +25,9 @@
 
 !  
 !  
-
+!<
+!> \include{doc} ec_module-mainpage.dox
+!> \page EC_module_interface External Coupling Module Interface
 !> This module contains the interfaces of the EC-module.
 !! It is the main access point to the EC-module.
 !! All interaction with an instance of the EC-module should take place through these interfaces.

@@ -1,0 +1,79 @@
+/**
+ * @file ec_module_architecture.dot
+ * @brief EC-Module Architecture Diagram
+ * @details Shows the central role of EC-Module in Delft3D suite data exchange and coupling
+ * 
+ * To generate diagram in Doxygen, use:
+ * @dot
+ * digraph ec_architecture {
+ *     // Include this file content
+ * }
+ * @enddot
+ */
+
+digraph ec_module_architecture {
+    // Graph attributes
+    rankdir=TB;
+    bgcolor="white";
+    fontname="Arial";
+    fontsize=12;
+    
+    // Node styling
+    node [shape=box, style=filled, fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=8, color=gray50];
+    
+    // Define clusters for grouping
+    subgraph cluster_models {
+        label="Delft3D Model Suite";
+        style=filled;
+        fillcolor="lightgray";
+        
+        dflowfm [label="D-Flow FM\n(Flow Simulation)", fillcolor="lightblue"];
+        dwaq [label="D-Water Quality\n(Water Quality)", fillcolor="lightgreen"];
+        dmorphology [label="D-Morphology\n(Sediment Transport)", fillcolor="lightyellow"];
+        dwaves [label="D-Waves\n(Wave Modeling)", fillcolor="lightcoral"];
+    }
+    
+    subgraph cluster_infrastructure {
+        label="Infrastructure Components";
+        style=filled;
+        fillcolor="lightsteelblue";
+        
+        ecmodule [label="EC-Module\n(Central Data Exchange)", fillcolor="red", fontcolor="white"];
+        gridgeom [label="Grid Geometry\n(Mesh Operations)", fillcolor="orange"];
+        netcdf_io [label="NetCDF I/O\n(File Operations)", fillcolor="purple", fontcolor="white"];
+    }
+    
+    subgraph cluster_external {
+        label="External Coupling";
+        style=filled;
+        fillcolor="lightpink";
+        
+        precice [label="preCICE\n(D-Waves only)", fillcolor="magenta", fontcolor="white"];
+        external [label="External Models\n(Third-party)", fillcolor="darkred", fontcolor="white"];
+    }
+    
+    // Core EC-Module connections
+    ecmodule -> dflowfm [label="meteorology\nboundary conditions"];
+    ecmodule -> dwaq [label="flow data\nconcentrations"];
+    ecmodule -> dmorphology [label="flow fields\nsediment data"];
+    ecmodule -> dwaves [label="flow conditions\nwave forcing"];
+    
+    // Infrastructure connections
+    ecmodule -> gridgeom [label="spatial\ninterpolation"];
+    ecmodule -> netcdf_io [label="file I/O\ndata access"];
+    
+    // External coupling (separate from EC-Module)
+    dwaves -> precice [label="direct\nintegration"];
+    precice -> external [label="multi-physics\ncoupling"];
+    
+    // Data flow from models back to EC-Module
+    dflowfm -> ecmodule [label="computed\nresults", style=dashed];
+    
+    // Grid geometry support
+    gridgeom -> dflowfm [label="mesh data"];
+    
+    // Title and notes
+    labelloc="t";
+    label="EC-Module Architecture in Delft3D Suite\n(preCICE integration currently in D-Waves only)";
+}
