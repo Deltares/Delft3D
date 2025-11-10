@@ -13,14 +13,16 @@
 ## Build steps
 - Download or clone the source code from https://github.com/Deltares/Delft3D
 - Execute `build.bat` **from an Intel oneAPI command prompt for Intel 64 for Visual Studio 2022**.
-  Execute "build.bat -help" to show the usage.
+  Execute `build.bat -help` to show the usage.
   This step uses CMake to create the Visual Studio build environment.
   By default, it creates the build environment for the Delft3D FM Suite (`fm-suite`).
 - Open the generated solution from the command prompt to ensure that the intel environment is inherited by visual studio. For example:
-  "devenv build_fm-suite\fm-suite.sln"
+  `devenv build_fm-suite\fm-suite.sln`
 - Build from Visual Studio, or alternatively, use the command line to run
-  "cmake --build build_fm-suite --config Debug"
-  "cmake --install build_fm-suite --config Debug"
+
+   `cmake --build build_fm-suite --config Debug`
+
+   `cmake --install build_fm-suite --config Debug`
 
 ## Alternative: without build-script
 Refer to the [README](src\cmake\README) file in the CMake folder.

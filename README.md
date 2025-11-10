@@ -28,7 +28,7 @@ In case you encounter bugs, please report them to our **support team:** https://
 ## Open Source Community
 
 Community websites for [Delft3D 4](https://oss.deltares.nl/web/delft3d) and [Delft3D FM](https://oss.deltares.nl/web/delft3dfm).
-Source code repositories for the Delft3D [simulation engines](https://github.com/Deltares/Delft3D) (self-reference to this page unless you're looking at a forked version), the MATLAB-based postprocessing package [Delft3D-QUICKPLOT](https://github.com/Deltares/QUICKPLOT), the Python-based pre- and postprocessing packages [dfm_tools](https://github.com/Deltares/dfm_tools) and [hydrolib-core](https://github.com/Deltares/HYDROLIB-core), and our grid generation library [MeshKernel](https://github.com/Deltares/MeshKernel).
+Source code repositories for the Delft3D [simulation engines](https://github.com/Deltares/Delft3D) (self-reference to this page unless you're looking at a forked version), the MATLAB-based postprocessing package [QUICKPLOT](https://github.com/Deltares/QUICKPLOT), the Python-based pre- and postprocessing packages [dfm_tools](https://github.com/Deltares/dfm_tools) and [hydrolib-core](https://github.com/Deltares/HYDROLIB-core), and our grid generation library [MeshKernel](https://github.com/Deltares/MeshKernel).
 
 A set of pre-compiled user interfaces (Windows only) is available for Delft3D 4 after registration on the Deltares software website.
 See [this page](https://download.deltares.nl/en/delft3d-4-gui-open-source) for details.
