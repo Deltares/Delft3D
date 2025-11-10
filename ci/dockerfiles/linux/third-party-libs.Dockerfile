@@ -1,6 +1,6 @@
 # syntax=containers.deltares.nl/docker-proxy/docker/dockerfile:1.4
 
-ARG INTEL_ONEAPI_VERSION=2024
+ARG INTEL_ONEAPI_VERSION=2025
 ARG BUILDTOOLS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-buildtools
 ARG BUILDTOOLS_IMAGE_TAG=oneapi-${INTEL_ONEAPI_VERSION}
 
@@ -9,7 +9,7 @@ ARG BUILDTOOLS_IMAGE_PATH=${BUILDTOOLS_IMAGE_URL}:${BUILDTOOLS_IMAGE_TAG}
 FROM ${BUILDTOOLS_IMAGE_PATH} AS base
 
 ARG INTEL_ONEAPI_VERSION
-ARG INTEL_FORTRAN_COMPILER=ifort
+ARG INTEL_FORTRAN_COMPILER=ifx
 ARG DEBUG=0
 ARG CACHE_ID_SUFFIX=cache-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${DEBUG}
 
@@ -197,7 +197,7 @@ RUN --mount=type=cache,target=/var/cache/src/,id=petsc-${CACHE_ID_SUFFIX} <<"EOF
 set -eo pipefail
 source /opt/intel/oneapi/setvars.sh
 
-URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.19.0.tar.gz'
+URL='https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-3.23.4.tar.gz'
 BASEDIR=$(basename -s '.tar.gz' "$URL")
 if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
     echo "CACHED ${BASEDIR}"

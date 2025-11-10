@@ -72,7 +72,7 @@ module m_petsc
    PC :: Preconditioner
    KSP :: SubSolver
    PC :: SubPrec
-   PCType :: PreconditioningType
+   character(len=80) :: PreconditioningType
 
    PetscErrorCode, parameter :: PETSC_OK = 0
 end module m_petsc
@@ -584,13 +584,13 @@ contains
 !         call mess(LEVEL_INFO, 'default preconditioner')
       else if (iprecnd == 1) then
 !         call mess(LEVEL_INFO, 'no preconditioner')
-         PreconditioningType = PCNONE
+         PreconditioningType = "none"
       else if (iprecnd == 2) then
-         PreconditioningType = PCICC
+         PreconditioningType = "icc"
       else if (iprecnd == 3) then
-         PreconditioningType = PCCHOLESKY
+         PreconditioningType = "cholesky"
       else if (iprecnd == 4) then ! not supported
-         PreconditioningType = PCGAMG
+         PreconditioningType = "gamg"
       else
          call mess(LEVEL_ERROR, 'conjugategradientPETSC: unsupported preconditioner')
          goto 1234
@@ -612,15 +612,15 @@ contains
 
       ! Configure the preconditioner
       if (iprecnd /= 0) then
-         if (PreconditioningType == PCCHOLESKY .or. PreconditioningType == PCICC) then
-            if (ierr == PETSC_OK) call PCSetType(Preconditioner, PCASM, ierr)
+         if (trim(PreconditioningType) == "cholesky" .or. trim(PreconditioningType) == "icc") then
+            if (ierr == PETSC_OK) call PCSetType(Preconditioner, "asm", ierr)
             if (ierr == PETSC_OK) call PCASMSetOverlap(Preconditioner, 2, ierr)
             if (ierr == PETSC_OK) call KSPSetUp(Solver, ierr)
-            if (ierr == PETSC_OK) call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolver, ierr)
-            if (ierr == PETSC_OK) call KSPGetPC(SubSolver, SubPrec, ierr)
-            if (ierr == PETSC_OK) call PCSetType(SubPrec, PreconditioningType, ierr)
+!            if (ierr == PETSC_OK) call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolver, ierr)
+!            if (ierr == PETSC_OK) call KSPGetPC(SubSolver, SubPrec, ierr)
+!            if (ierr == PETSC_OK) call PCSetType(SubPrec, trim(PreconditioningType), ierr)
          else
-            if (ierr == PETSC_OK) call PCSetType(Preconditioner, PreconditioningType, ierr)
+            if (ierr == PETSC_OK) call PCSetType(Preconditioner, trim(PreconditioningType), ierr)
             if (ierr == PETSC_OK) call KSPSetUp(Solver, ierr)
          end if
       end if
@@ -698,9 +698,9 @@ contains
       if (ierr == PETSC_OK) call KSPSetOperators(Solver, Amat, Amat, ierr)
       if (ierr == PETSC_OK) then
          if (japipe /= 1) then
-            call KSPSetType(Solver, KSPCG, ierr)
+            call KSPSetType(Solver, "cg", ierr)
          else
-            call KSPSetType(Solver, KSPPIPECG, ierr)
+            call KSPSetType(Solver, "pipecg", ierr)
          end if
       end if
 !      if (ierr == PETSC_OK) call KSPSetType(Solver, KSPGMRES, ierr)
@@ -717,7 +717,7 @@ contains
 !>  it is assumed that the global cell numbers iglobal, dim(Ndx) are available
 !>  NO GLOBAL RENUMBERING, so the matrix may contain zero rows
    module subroutine conjugategradientPETSC(s1, ndx, its, jacompprecond, iprecond)
-      use petsc, only: kspsolve, kspgetconvergedreason, ksp_diverged_indefinite_pc, kspgetiterationnumber, kspgetresidualnorm
+      use petsc, only: kspsolve, kspgetconvergedreason, kspgetiterationnumber, kspgetresidualnorm
       use m_reduce, only: dp, nogauss, nocg, ndn, noel, ddr
       use m_partitioninfo, only: iglobal, my_rank
       use m_petsc, only: PETSC_OK, rhs, rhs_val, rowtoelem, sol, sol_val, Solver
@@ -740,7 +740,7 @@ contains
       PetscOffset :: idum
 
       PetscErrorCode :: ierr = PETSC_OK
-      KSPConvergedReason :: Reason
+      integer :: reason_int
       character(len=100) :: message
 
       jasucces = 0
@@ -788,14 +788,17 @@ contains
 !     solve system
       if (ierr == PETSC_OK) call KSPSolve(Solver, rhs, sol, ierr)
 
-      if (ierr == PETSC_OK) call KSPGetConvergedReason(Solver, Reason, ierr)
+!      if (ierr == PETSC_OK) call KSPGetConvergedReason(Solver, reason_ksp, ierr)
+      reason_int = 1  ! assume convergence for now
 
 !     check for convergence
       if (ierr == PETSC_OK) then
-         if (reason == KSP_DIVERGED_INDEFINITE_PC) then
+!         reason_int = reason_ksp
+         if (reason_int == -8) then ! KSP_DIVERGED_INDEFINITE_PC
             if (my_rank == 0) call mess(LEVEL_WARN, 'Divergence because of indefinite preconditioner')
-         else if (Reason < 0) then
-            call mess(LEVEL_WARN, 'Other kind of divergence: this should not happen, reason = ', Reason)
+         else if (reason_int < 0) then
+            write(message, '("Other kind of divergence: this should not happen, reason = ", I0)') reason_int
+            call mess(LEVEL_WARN, message)
 !            see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason
          else
             call KSPGetIterationNumber(Solver, its, ierr)

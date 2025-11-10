@@ -64,21 +64,21 @@ object WindowsBuildEnvironmentI24 : BuildType({
                 platform = DockerCommandStep.ImagePlatform.Windows
                 namesAndTags = """
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%-%container.tag%
                 """.trimIndent()
                 commandArgs = "--no-cache"
             }
         }
         dockerCommand {
-            name = "Docker push"
+            name = "Docker push commithash"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%-%container.tag%
                 """.trimIndent()
             }
         }
         dockerCommand {
-            name = "Docker push"
+            name = "Docker push container tag"
             commandType = push {
                 namesAndTags = """
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
@@ -89,21 +89,23 @@ object WindowsBuildEnvironmentI24 : BuildType({
     }
 
     triggers {
-        vcs {
-            triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
-            branchFilter = "+:<default>".trimIndent()
-            param("trigger.type", "vcs")
-        }
-        schedule {
-            schedulingPolicy = weekly {
-                dayOfWeek = ScheduleTrigger.DAY.Sunday
-                hour = 10
-                minute = 0
+        if (DslContext.getParameter("weekly_build_environment_trigger").lowercase() == "true") {
+            vcs {
+                triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
+                branchFilter = "+:<default>".trimIndent()
+                param("trigger.type", "vcs")
             }
-            branchFilter = "+:<default>"
-            triggerBuild = always()
-            withPendingChangesOnly = false
-            param("trigger.type", "schedule")
+            schedule {
+                schedulingPolicy = weekly {
+                    dayOfWeek = ScheduleTrigger.DAY.Sunday
+                    hour = 10
+                    minute = 0
+                }
+                branchFilter = "+:<default>"
+                triggerBuild = always()
+                withPendingChangesOnly = false
+                param("trigger.type", "schedule")
+            }
         }
     }
 

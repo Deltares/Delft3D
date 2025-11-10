@@ -85,6 +85,7 @@ project {
 
         buildType(WindowsBuildEnvironmentI24)
         buildType(WindowsTestEnvironment)
+        buildType(WindowsBuildTools)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
         buildType(WindowsCollect)
@@ -94,6 +95,7 @@ project {
         buildTypesOrder = arrayListOf(
             WindowsBuildEnvironmentI24,
             WindowsTestEnvironment,
+            WindowsBuildTools,
             WindowsBuild,
             WindowsBuild2D3DSP,
             WindowsCollect,

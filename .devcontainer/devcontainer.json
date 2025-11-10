@@ -1,0 +1,57 @@
+{
+    "name": "Delft3D Linux environment",
+    "image": "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:DEVOPSDSC-603-oneapi-2025-ifx-release",
+    
+    // Configure tool-specific properties.
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "cmake.configureOnOpen": false,
+                "cmake.buildDirectory": "${workspaceFolder}/build_${buildType}",
+                "files.associations": {
+                    "*.inp": "plaintext",
+                    "*.mdf": "plaintext",
+                    "*.xml": "xml"
+                }
+            },
+            
+            // Add the IDs of extensions you want installed when the container is created.
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-vscode.cmake-tools",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-python.python",
+                "ms-fortran.linter-gfortran",
+                "krvajalm.linter-gfortran",
+                "ekibun.fortranbreaker"
+            ]
+        }
+    },
+
+    // Features to add to the dev container. More info: https://containers.dev/features.
+    "features": {
+        "ghcr.io/devcontainers/features/git": "latest"
+    },
+
+    // Use 'postCreateCommand' to run commands after the container is created.
+    "postCreateCommand": "bash -c 'source /root/.bashrc && echo \"Development container ready for Delft3D\" && which git || dnf install -y git'",
+
+    // Configure tool-specific properties.
+    "remoteEnv": {
+        "DELFT3D_HOME": "/workspaces/delft3d"
+    },
+
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    "remoteUser": "root",
+
+    // Mount the workspace - adjusted for WSL environment
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/delft3d,type=bind,consistency=cached",
+    "workspaceFolder": "/workspaces/delft3d",
+
+    // Container environment variables
+    "containerEnv": {
+        "WORKSPACE": "/workspaces/delft3d"
+    }
+}
