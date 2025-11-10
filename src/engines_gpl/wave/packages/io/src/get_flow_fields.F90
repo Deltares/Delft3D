@@ -41,10 +41,11 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
    use swan_input
    use flow_data
    use wave_data
-   use precice, only: precicef_read_data
    use m_precice_state_t, only: precice_state_t
-   use, intrinsic :: iso_c_binding, only: c_int, c_double
-   !
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   use precice, only: precicef_read_data
+   use, intrinsic :: iso_c_binding, only: c_double
+#endif
    implicit none
 !
 ! Global variables
@@ -71,8 +72,10 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
    logical            :: clbot        = .true.
    character(256)     :: mudfilnam    = ' '
    type(input_fields) :: fif                    ! input fields defined on flow grid
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    real(kind=c_double), dimension(:), allocatable :: bed_level_values
    integer :: n_points
+#endif
 
    interface
       subroutine grmap_esmf(i1, f1, n1, f2, mmax, nmax, f2s, f2g)
@@ -124,6 +127,7 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
                    & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
                    & iprint       )
       else
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
          n_points = size(precice_state%vertex_ids)
          allocate(bed_level_values(n_points))
          call precicef_read_data(precice_state%swan_mesh_name, precice_state%bed_levels_name, &
@@ -138,6 +142,21 @@ subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowV
                end if
             end do
          end do
+#else
+         !
+         ! Read depth from netcdf-file
+         !
+         call get_var_netcdf (i_flow, wavedata%time , 'dps', &
+                            & fif%dps, fif%mmax, fif%nmax, &
+                            & sr%flowgridfile, wavedata%output%lastvalidflowfield)
+         !
+         ! Map depth to SWAN grid, using ESMF_Regrid weights
+         !
+         call grmap_esmf (i_flow,         fif%dps , fif%npts, &
+                        & sif%dps       , sif%mmax, sif%nmax, &
+                        & f2s           , sg                )
+         !
+#endif
       endif
    endif
    !

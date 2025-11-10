@@ -34,9 +34,9 @@ program waves_main
 !!--declarations----------------------------------------------------------------
    use wave_main, only: wave_main_init, wave_main_step, wave_main_finish
    use precision
+   use m_precice_state_t, only: precice_state_t
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    use precice, only: precicef_get_max_time_step_size
-   use m_precice_state_t, only: precice_state_t
    use, intrinsic :: iso_c_binding, only: c_double
    use wave_main, only: initialize_fm_coupling, is_fm_coupling_ongoing, advance_fm_time_window
 #endif
