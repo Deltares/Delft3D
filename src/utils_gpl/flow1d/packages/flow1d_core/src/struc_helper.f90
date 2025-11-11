@@ -183,7 +183,7 @@ module m_struc_helper
       double precision, intent(in), optional    :: Cz       !< Chezy value, used for resistance on structure, see also ::dx_struc.
       double precision, intent(in), optional    :: lambda   !< Extra resistance.
       double precision, intent(in), optional    :: hs1w     !< Upstream water depth (based on water level).
-      double precision, intent(in), optional    :: dx_struc !< Crest length (in flow direction), used only when lambda is 0 or absent. For resistance on structure.
+      double precision, intent(in), optional    :: dx_struc !< Cres`t length (in flow direction), used only when lambda is 0 or absent. For resistance on structure.
       !
       ! Local variables
       !
