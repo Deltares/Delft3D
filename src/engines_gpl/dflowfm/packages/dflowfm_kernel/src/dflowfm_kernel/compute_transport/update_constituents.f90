@@ -167,8 +167,8 @@ contains
          end if
       end if
 
-      jaupdate = 1 ! always update the first step
-      jaupdatehorflux=1 ! always update the first step
+      jaupdatehorflux = 1 
+      jaupdate = 1
       
       fluxhor = 0.0_dp ! not necessary
       sumhorflux = 0.0_dp
@@ -220,6 +220,7 @@ contains
          end if
 
          call starttimer(IDEBUG)
+         fluxhor=0.0_dp
          call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
          call stoptimer(IDEBUG)
 
