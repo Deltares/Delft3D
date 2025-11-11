@@ -73,7 +73,6 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
     real(fp) :: x3
     
     real(fp) :: sink_implicit_factor = 0.0_fp
-    tsd = 999.0_fp
 !
 !! executable statements -------------------------------------------------------
 !
