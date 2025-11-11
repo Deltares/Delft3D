@@ -497,6 +497,7 @@
             do iq = 1, d_hyd%num_exchanges_u_dir
                ip1 = d_hyd%ipoint(1,iq)
                ip2 = d_hyd%ipoint(2,iq)
+
                if ( ip1 .lt. 0 .and. ip2 .ge. min_seg .and. ip2 .le. max_seg) then
                   ! ip1 is a boundary and ip2 is in this layer
                   if(d_hyd%idomain(ip2) .eq. idmn .and. (.not.d_hyd%ispoint_bnd(abs(ip1)))) then
@@ -504,7 +505,7 @@
                      num_exchanges_u_dir = num_exchanges_u_dir + 1
                      d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                      if (abs(ip1) .le. d_hyd%nobndl) then
-                        !num_boundary_conditions = num_boundary_conditions + 1
+                        num_boundary_conditions = num_boundary_conditions + 1
                         !d_hyd%iglobal_bnd(-ip1) = -num_boundary_conditions
                         !call renum_bnd(d_hyd%openbndsect_coll,ip1,-num_boundary_conditions)
                         call renum_bnd(d_hyd%openbndsect_coll,ip1,d_hyd%iglobal_bnd(-ip1))
@@ -517,13 +518,14 @@
                      num_exchanges_u_dir = num_exchanges_u_dir + 1
                      d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                      if (abs(ip2) .le. d_hyd%nobndl) then
-                        !num_boundary_conditions = num_boundary_conditions + 1
+                        num_boundary_conditions = num_boundary_conditions + 1
                         !d_hyd%iglobal_bnd(-ip2) = -num_boundary_conditions
                         !call renum_bnd(d_hyd%openbndsect_coll,ip2,-num_boundary_conditions)
-                        call renum_bnd(d_hyd%openbndsect_coll,ip1,d_hyd%iglobal_bnd(-ip2))
+                        call renum_bnd(d_hyd%openbndsect_coll,ip2,d_hyd%iglobal_bnd(-ip2))
                      end if
                   end if
                end if
+
             end do
          end do
       end do
@@ -542,7 +544,7 @@
                   num_exchanges_u_dir = num_exchanges_u_dir + 1
                   d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                   if (abs(ip1) .le. d_hyd%nobndl) then
-                     !num_boundary_conditions = num_boundary_conditions + 1
+                     num_boundary_conditions = num_boundary_conditions + 1
                      !d_hyd%iglobal_bnd(-ip1) = -num_boundary_conditions
                      !call renum_bnd(d_hyd%openbndsect_coll,ip1,-num_boundary_conditions)
                      call renum_bnd(d_hyd%openbndsect_coll,ip1,d_hyd%iglobal_bnd(-ip1))
@@ -555,7 +557,7 @@
                   num_exchanges_u_dir = num_exchanges_u_dir + 1
                   d_hyd%iglobal_link(iq) = num_exchanges_u_dir
                   if (abs(ip2) .le. d_hyd%nobndl) then
-                     !num_boundary_conditions = num_boundary_conditions + 1
+                     num_boundary_conditions = num_boundary_conditions + 1
                      !d_hyd%iglobal_bnd(-ip2) = -num_boundary_conditions
                      !call renum_bnd(d_hyd%openbndsect_coll,ip2,-num_boundary_conditions)
                      call renum_bnd(d_hyd%openbndsect_coll,ip1,d_hyd%iglobal_bnd(-ip2))
