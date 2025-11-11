@@ -926,7 +926,6 @@ contains
          call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
          call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
          call prop_get(md_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay)
-         call prop_get(md_ptr, 'geometry', 'OrgFloorlevtoplaydef', jaorgFloorlevtoplaydef)
          call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
          call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
          call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
@@ -2896,10 +2895,6 @@ contains
             call prop_set(prop_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay, 'Floor level of top layer')
          end if
 
-         if (writeall .or. jaorgFloorlevtoplaydef /= 0) then
-            call prop_set(prop_ptr, 'geometry', 'OrgFloorlevtoplaydef', jaorgFloorlevtoplaydef, 'keep original definition of Floor level of top layer')
-         end if
-
          if (writeall .or. zlaybot /= dmiss) then
             call prop_set(prop_ptr, 'geometry', 'ZlayBot', zlaybot, 'level of bottom layer in z-layers')
          end if
@@ -3423,7 +3418,7 @@ contains
          end if
          if (writeall .or. use_salinity_freezing_point) then
             call prop_set(prop_ptr, 'physics', 'salinityDependentFreezingPoint', use_salinity_freezing_point, &
-                          'Enable salinity-dependent freezing point (0 = no, 1 = yes)')
+                          'Enable salinity-dependent freezing point (0 = no, 1 = yes). tempMin should be below 0 degrees Celsius.')
          end if
          if (writeall .or. surftempsmofac > 0.0_dp) then
             call prop_set(prop_ptr, 'physics', 'Surftempsmofac', Surftempsmofac, 'Hor . Smoothing factor for surface water in heatflx comp. (0.0-1.0), 0=no')

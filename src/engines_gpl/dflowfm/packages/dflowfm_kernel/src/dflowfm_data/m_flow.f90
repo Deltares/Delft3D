@@ -82,7 +82,6 @@ module m_flow ! flow arrays-999
    real(kind=dp) :: dztopuniabovez = -999.0_dp !< bottom level of lowest uniform layer == blmin if not specified
    real(kind=dp) :: Floorlevtoplay = -999.0_dp !< floor  level of top zlayer, == sini if not specified
    real(kind=dp) :: dztop = -999.0_dp !< if specified, dz of top layer, kmx = computed, if not, dz = (ztop-zbot)/kmx
-   integer :: jaorgFloorlevtoplaydef = 0 !< 0=correct floorlevtoplay, 1 = org wrong floorlevtoplay
    real(kind=dp) :: zlaybot = -999.0_dp !< if specified, first zlayer starts from zlaybot, if not, it starts from the lowest bed point
    real(kind=dp) :: zlaytop = -999.0_dp !< if specified, highest zlayer ends at zlaytop, if not, it ends at the initial water level
    real(kind=dp), allocatable :: aak(:) !< coefficient vertical mom exchange of kmx layers

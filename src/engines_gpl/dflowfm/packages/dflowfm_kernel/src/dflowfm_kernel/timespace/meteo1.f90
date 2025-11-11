@@ -46,10 +46,6 @@ module timespace_read
 !
 !!--pseudo code and references--------------------------------------------------
 !
-! Stef.Hummel@WlDelft.nl
-! Herman.Kernkamp@WlDelft.nl
-! Adri.Mourits@WlDelft.nl
-!
 !!--declarations----------------------------------------------------------------
    use precision, only: dp
    implicit none
@@ -142,11 +138,6 @@ module timespace_data
 !!--description-----------------------------------------------------------------
 !
 !!--pseudo code and references--------------------------------------------------
-!
-! Stef.Hummel@deltares.nl
-! Herman.Kernkamp@deltares.nl
-! Adri.Mourits@deltares.nl
-! Edwin.Spee@deltares.nl
 !
 !!--declarations----------------------------------------------------------------
    use precision
@@ -598,7 +589,7 @@ contains
    !
    ! ==========================================================================
    !>
-   subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps) ! call schrama's routines on reduced set
+   subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps)
       use m_sferic
       use m_flowparameters, only: jatidep, jaselfal, jamaptidep
       use m_partitioninfo
@@ -3261,25 +3252,10 @@ contains
       !
       ! ====================================================================
       !
-      !     Programmer     E.J.O. Schrama
+      !     Copyright © 2025, Rijkswaterstaat, All Rights Reserved.
       !
-      !     Original URL: https://repos.deltares.nl/repos/simona/bo_omgeving/simona/src/waqua/waqpro/routines/wastfr.f
-      !     $Revision: 1850 $, $Date: 2008-04-18 09:19:37 +0200 (Fri, 18 Apr 2008) $
-      !
-      !     Version 1.1    Date 22-05-2008   c81402: extended for evaluation of
-      !                                              tidal forces on grids (AVe,
-      !                                              VORtech)
-      !     Version 1.0    Date 24-01-2008   initial version
-      !
-      !     Copyright (c) "E.J.O. Schrama".
-      !     Permission to copy or distribute this software or documentation
-      !     in hard copy or soft copy granted only by written license
-      !     obtained from "Rijkswaterstaat".
-      !     All rights reserved. No part of this publication may be
-      !     reproduced, stored in a retrieval system (e.g., in memory, disk,
-      !     or core) or be transmitted by any means, electronic, mechanical,
-      !     photocopy, recording, or otherwise, without written permission
-      !     from the publisher.
+      !     This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
+      !     https://www.rijkswaterstaat.nl/formulieren/contactformulier, software.support@deltares.nl
       !
       ! ********************************************************************
       !
@@ -3746,12 +3722,6 @@ contains
    subroutine astrol(mjdate, six)
       ! ====================================================================
       !
-      !     Programmer     R. D. Ray
-      !
-      !     Version 1.0    Date dec. 1990    initial version
-      !
-      ! ********************************************************************
-      !
       !     DESCRIPTION
       !
       !     This copied from richard's subroutine astrol, in goes the
@@ -3765,7 +3735,6 @@ contains
       !     by David Cartwright (personal comm., Nov. 1990).
       !     TIME is UTC in decimal MJD.
       !     All longitudes returned in degrees.
-      !     R. D. Ray    Dec. 1990
       !
       !     Non-vectorized version.
       !
@@ -3860,10 +3829,6 @@ contains
    !>
    subroutine legpol1(theta, n, m, pnm)
       ! ====================================================================
-      !
-      !     Programmer     E. Schrama <e.j.o.schrama@tudelft.nl>
-      !
-      ! ********************************************************************
       !
       !     DESCRIPTION
       !
@@ -4502,7 +4467,6 @@ contains
    !>
    subroutine pinpok(xl, yl, n, x, y, inside)
 
-      ! Author: H. Kernkamp
       implicit none
 
       real(kind=dp), intent(in) :: xl, yl ! point under consideration
@@ -5406,12 +5370,6 @@ module timespace
 !    meteogetpaver    : returns the average atmospheric pressure read
 !    meteogetpcorr    : returns whether pressure correction is switched on on
 !                       the boundaries
-!
-!!--pseudo code and references--------------------------------------------------
-!
-! Stef.Hummel@WlDelft.nl
-! Herman.Kernkamp@WlDelft.nl
-! Adri.Mourits@WlDelft.nl
 !
 !!--declarations----------------------------------------------------------------
    use precision

@@ -281,7 +281,7 @@ contains
                lnn(L) = -lnn(L)
             end if
          end do
-         call remove_masked_netcells(update_blcell = .false.)
+         call remove_masked_netcells(update_blcell=.false.)
          if (allocated(cellmask)) then
             deallocate (cellmask)
          end if

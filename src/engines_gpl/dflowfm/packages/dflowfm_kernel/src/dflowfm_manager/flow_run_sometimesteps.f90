@@ -62,7 +62,6 @@ contains
          call reset_outgoing_lat_concentration()
          call distribute_lateral_discharge(qplat, qqlat)
       end if
-      
 
       iresult = DFM_GENERICERROR
       if (dtrange < 0) then

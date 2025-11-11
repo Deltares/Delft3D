@@ -1119,15 +1119,21 @@ contains
                      ! 2. sand to bed layer
                      sedflx = sinksetot(j, nm) * bai_mor(nm)
                      !
-                     if (sedtyp(l) == SEDTYP_SAND) then
-                        sedflx = sedflx + ssccum(l, nm)
-                     elseif (sedtyp(l) <= max_mud_sedtyp) then
-                        ! 3. if silt/clay and drying, mass to fluff layer
-                        if (iflufflyr == 1) then
-                           mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm)
-                        else ! iflufflyr == 2
-                           mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm)
-                           sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
+                     ! 3. in case of drying cell, assign mass to the appropriate layer (fluff/bed)
+                     if (ssccum(l, nm) > 0.0_fp) then
+                        if (sedtyp(l) <= max_mud_sedtyp) then
+                           ! if silt/clay some mass may go to fluff layer
+                           if (iflufflyr == 1 .or. mfluff(l, nm) < 0.0_fp) then
+                              ! all mass to fluff layer
+                              mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm) * dts
+                           else ! iflufflyr == 2
+                              ! part to fluff layer, part to bed layer
+                              mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm) * dts
+                              sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
+                           end if
+                        else
+                           ! for sand all mass to bed layer
+                           sedflx = sedflx + ssccum(l, nm)
                         end if
                      end if
                   end if

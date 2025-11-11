@@ -56,7 +56,7 @@ module unstruc_display
    use m_lnabs
    use m_waveconst
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    public dis_info_1d_link

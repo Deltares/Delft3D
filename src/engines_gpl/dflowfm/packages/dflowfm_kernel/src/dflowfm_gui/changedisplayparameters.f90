@@ -34,7 +34,7 @@ module m_changedisplayparameters
 
    use m_settextsize
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
 contains

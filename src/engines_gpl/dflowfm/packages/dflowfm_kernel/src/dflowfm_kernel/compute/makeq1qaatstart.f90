@@ -32,7 +32,6 @@
 
 module m_makeq1qaatstart
 
-
    use precision, only: dp
    implicit none
 
