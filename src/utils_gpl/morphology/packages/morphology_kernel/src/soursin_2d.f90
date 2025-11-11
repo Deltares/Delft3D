@@ -113,9 +113,9 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
        sour_im = (hots-wsl)/h1
        sink    = wsl/h1
     else
-       sour_ex = 0.0_fp
+       sour_ex = -rsedeq*wsl ! 0.0_fp
        sour_im = 0.0_fp
-       sink = wsl/h1
+       sink = 0.0_fp ! wsl/h1
     endif
 end subroutine soursin_2d
 
