@@ -76,9 +76,10 @@ object LinuxCollect : BuildType({
             param("plugin.docker.imageId", "")
             param("teamcity.step.phase", "")
             param("nexus_password", "%nexus_password%")
-            param("nexus_url", "https://artifacts.deltares.nl/repository/")
+            param("nexus_repo", "/delft3d-dev")
+            param("nexus_url", "https://artifacts.deltares.nl/repository")
             param("plugin.docker.run.parameters", "")
-            param("target_path", "delft3d-dev/linux/dimrset/dimrset_lnx64_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
+            param("target_path", "/linux/dimrset/dimrset_lnx64_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
         }
     }
 
