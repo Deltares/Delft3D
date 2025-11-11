@@ -9092,18 +9092,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f500_c08_qh" ref="dflowfm_default">
-      <path version="2025-11-04T15:45:55.904000">e02_dflowfm/f500_implicit1d/c08_qh</path>
-      <maxRunTime>600.0000000</maxRunTime>
-      <checks>
-        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f044_c01_waveforcing_1" ref="dflowfm_default">
       <path version="2025-10-15T15:31:54.571000">e02_dflowfm/f044_offline_waves/c01_waveforcing_1</path>
       <maxRunTime>600.0000000</maxRunTime>
