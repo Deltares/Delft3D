@@ -29,25 +29,6 @@
 	</config>
 
 	<programs>
-		<program name="command_prompt">			<!-- The order is important. Start with the following programs: command_prompt, mpi -->
-			<path>/bin/bash</path>
-			<arguments>
-				<argument>-c</argument>
-			</arguments>
-		</program>
-		<program name="execute_container" logOutputToFile="true" programStringRemoveQuotes="true">
-			<location ref="local" type="check">
-				<from>teamcity_artifacts</from>				<!-- just the first part of the directory structure, will be filled by TeamCity -->
-			</location>
-			<path>execute_singularity_tc.sh</path>
-			<environments>
-				<environment name="OMP_NUM_THREADS" type="raw">1</environment>
-			</environments>
-			<arguments>
-				<argument>-p</argument>
-				<argument>2</argument>
-			</arguments>
-		</program>
 		<program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true">
 			<location ref="local" type="check">
 				<from>teamcity_artifacts</from>
@@ -64,31 +45,42 @@
 				<argument>-m dimr.xml</argument>
 			</arguments>
 		</program>
-		<program name="dimr_waq" logOutputToFile="true" programStringRemoveQuotes="true">
+		<program name="execute_container" logOutputToFile="true" programStringRemoveQuotes="true">
 			<location ref="local" type="check">
-				<from>teamcity_artifacts</from>
+				<from>teamcity_artifacts</from>				<!-- just the first part of the directory structure, will be filled by TeamCity -->
 			</location>
 			<path>execute_singularity_tc.sh</path>
 			<environments>
 				<environment name="OMP_NUM_THREADS" type="raw">1</environment>
-				<environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
 			</environments>
 			<arguments>
 				<argument>-p</argument>
 				<argument>2</argument>
-				<argument>run_dimr.sh</argument>
-				<argument>-m dimr_waq.xml</argument>
 			</arguments>
-		</program>
-		<program name="checkhydbal" addSearchPaths="false" logOutputToFile="true">
-			<path>thirdparty/checkhydbal/lnx64/run_checkhydbal.sh</path>
-		</program>
-		<program name="poi2asc" addSearchPaths="false" logOutputToFile="true">
-			<path>thirdparty/poi2asc/lnx64/run_poi2asc.sh</path>
 		</program>
 	</programs>
 
 	<defaultTestCases>
+		<testCase name="dimr_trunk">
+            <programs>
+                <program ref="execute_singularity">
+                    <arguments>
+                        <argument>-p</argument>
+                        <argument>2</argument>
+                        <argument>run_dimr.sh</argument>
+                        <argument>-m</argument>
+                        <argument>dimr_config.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+        </testCase>
 		<testCase name="dimr_trunk_lnx64">
 			<programs>
 				<program ref="execute_container">
@@ -126,23 +118,26 @@
 			<maxRunTime>14400.0</maxRunTime>
 		</testCase>
 		<testCase name="dflowfm_default">
+			<programs>
+				<program ref="dimr">
+					<arguments>
+						<argument>-m dimr.xml</argument>
+					</arguments>
+				</program>
+			</programs>
 			<location ref="cases" type="input">
-				<from>.</from>				<!-- if "to" is not specified, "from" is used as target -->
+				<!-- if "to" is not specified, "from" is used as target -->
+				<from>.</from>
+			</location>
+			<location ref="local" type="check">
+				<from>teamcity_artifacts/lnx64/bin</from>
 			</location>
 			<location ref="reference_results" type="reference">
 				<from>win64</from>
 			</location>
 			<maxRunTime>3600.0</maxRunTime>
+			<!-- seconds -->
 		</testCase>
-        <testCase name="container_dimr">
-            <location ref="reference_results" type="reference">
-                <from>lnx64</from>
-            </location>
-            <location ref="cases" type="input">
-                <from>.</from>
-            </location>
-            <maxRunTime>60.0</maxRunTime>
-        </testCase>
         <testCase name="container_postproc">
             <location ref="reference_results" type="reference">
                 <from>win64</from>
