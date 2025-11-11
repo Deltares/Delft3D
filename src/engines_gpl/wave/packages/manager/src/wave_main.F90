@@ -152,7 +152,7 @@ contains
    end subroutine advance_fm_time_window
 
    subroutine register_wave_nodes_with_precice(mdw_file_name, precice_state)
-      use precice, only: precicef_set_vertices
+      use precice, only: precicef_set_vertices, precicef_set_mesh_triangles
       use m_precice_state_t, only: precice_state_t
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       use swan_flow_grid_maps, only: grid
@@ -166,6 +166,11 @@ contains
       real(kind=c_double), dimension(:), allocatable :: mesh_coordinates
       integer :: i, j, node_index, active_count
 
+      integer(kind=c_int), dimension(:,:), allocatable :: node_indices
+      integer(kind=c_int), dimension(:), allocatable :: triangle_nodes
+      integer(kind=c_int), dimension(:), allocatable :: precice_triangle_nodes
+      integer(kind=c_int) :: num_triangles, is_required
+
       precice_state = precice_state_t()
 
       result = get_swan_grid(mdw_file_name, swan_grid, active_count)
@@ -178,20 +183,64 @@ contains
 
       allocate (mesh_coordinates(2 * active_count))
       allocate (precice_state%vertex_ids(active_count))
+      allocate (node_indices(swan_grid%mmax, swan_grid%nmax))
 
       node_index = 0
       do j = 1, swan_grid%nmax
          do i = 1, swan_grid%mmax
             if (swan_grid%kcs(i, j) == 1) then
                node_index = node_index + 1
+               node_indices(i,j) = node_index
                mesh_coordinates(2 * node_index - 1) = real(swan_grid%x(i, j), kind=c_double)
                mesh_coordinates(2 * node_index) = real(swan_grid%y(i, j), kind=c_double)
+            else
+               node_indices(i,j) = 0
             end if
          end do
       end do
 
+      print *, '[Wave] node_index = ', node_index
       call precicef_set_vertices(precice_state%swan_mesh_name, active_count, mesh_coordinates, precice_state%vertex_ids, len(precice_state%swan_mesh_name))
       write (*, '(a,i0,a)') '[Wave] Registered ', active_count, ' vertices with preCICE'
+
+      ! TODO: Triangulation
+      ! Allocate temproray buffer, at most we have two triangles per node.
+      allocate (triangle_nodes(2 * active_count * 3))
+      num_triangles = 0
+      do j = 1, swan_grid%nmax - 1
+         do i = 1, swan_grid%mmax - 1
+            if (swan_grid%kcs(i, j) == 1 &
+            & .and. swan_grid%kcs(i + 1, j) == 1 &
+            & .and. swan_grid%kcs(i + 1, j + 1) == 1 &
+            & .and. swan_grid%kcs(i, j + 1) == 1) then
+               ! Triangle one (bottom left)
+               triangle_nodes(3 * num_triangles + 1) = node_indices(i, j)
+               triangle_nodes(3 * num_triangles + 2) = node_indices(i + 1, j + 1)
+               triangle_nodes(3 * num_triangles + 3) = node_indices(i, j + 1)
+               num_triangles = num_triangles + 1
+               ! Triangle two (top right)
+               triangle_nodes(3 * num_triangles + 1) = node_indices(i, j)
+               triangle_nodes(3 * num_triangles + 2) = node_indices(i + 1, j)
+               triangle_nodes(3 * num_triangles + 3) = node_indices(i + 1, j + 1)
+               num_triangles = num_triangles + 1
+            end if
+         end do
+      end do
+
+      if (num_triangles <= 0) then
+         print *, '[Wave] Error in triangulation'
+         return
+      else
+         print *, '[Wave] Successfully generated ', num_triangles, ' triangles for ', node_index, ' nodes'
+      end if
+
+      allocate (precice_triangle_nodes(3 * num_triangles))
+      do i = 1, 3 * num_triangles
+         precice_triangle_nodes(i) = precice_state%vertex_ids(triangle_nodes(i))
+      end do
+
+      call precicef_set_mesh_triangles(precice_state%swan_mesh_name, num_triangles, precice_triangle_nodes, len(precice_state%swan_mesh_name))
+      print *, '[Wave] Registered ', num_triangles, ' triangles with preCICE'
    end subroutine register_wave_nodes_with_precice
 
    function get_swan_grid(mdw_file, swan_grid, number_of_active_nodes) result(retval)

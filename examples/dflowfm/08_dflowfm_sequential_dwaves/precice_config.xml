@@ -38,6 +38,7 @@
     <receive-mesh name="com_mesh" from="fm" />
     <read-data name="com_data_fm_to_wave" mesh="com_mesh" />
     <write-data name="com_data_wave_to_fm" mesh="com_mesh" />
+    <!--<export:vtu directory="precice-exports" />-->
   </participant>
 
   <m2n:sockets acceptor="fm" connector="wave" exchange-directory=".." />
