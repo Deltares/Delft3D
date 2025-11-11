@@ -51,12 +51,10 @@ contains
         use grid_search_mod
         use spec_feat_par
         use m_sferic, only: jsferic
-        use m_sferic_part, only: ptref
-        use geometry_module, only: Cart3Dtospher, sphertocart3D
-        use mathconsts, only: raddeg_hp, pi
-        use physicalconsts, only: earth_radius
+        use mathconsts, only: pi
         use random_generator
         use m_part_modeltypes
+        use m_fm_particles_in_grid, only: displace_spherical, part_findcellsingle
         implicit none
 
         !     Arguments
@@ -149,6 +147,7 @@ contains
         real   (dp) :: dpangle, dxp, dyp, dradius, xx, yy
         integer(int_wp) :: ilay, isub      ! loop variables layers and substances
         integer(int_wp) :: cellid            ! ID of the first cell in the column of cells (for accessing laytop and laybot)
+        integer(int_wp) :: ierror            ! Error indicator
 
         integer(int_wp) :: np                ! Number of particles to add
 
@@ -290,55 +289,60 @@ contains
                 nplay(laywaste(ie)) = nopnow
             endif
 
+            ! Horizontal distribution (spreaded in a circle if required)
+            ! Check if the new particle position is inside the active grid,
+            ! otherwise retry. Note: this is not necessary for point releases.
+
             nulay = 1
             ipart = 0
 
             do i = ibegin, iend
-
-                !         give particles gridcell and coordinates of the continuous load
-
-                npart (i) = nwasth
-                mpart (i) = mwasth
-                xpart (i) = xwasth
-                ypart (i) = ywasth
-                laypart(i) = laywaste(ie)
-                if (modtyp == model_two_layer_temp) then
-                    t0buoy(i) = t0cf (ic)                    ! could be taken out of the particle loop
-                    abuoy (i) = 2.0 * sqrt(acf(ic) * idelt)      ! even complete out of this routine
-                else
-                    t0buoy(i) = 0.0
-                    abuoy (i) = 0.0
-                endif
-
-                !     horizontal distribution (spreaded in a circle if required - this is at present copied for part09fm
-
-                nulay = 1
-
-                if (radiuh/=-999.0) then
-                    !              spread the particles over a circle
-                    ! this is the code to deal with sferical models (if needed) te get the distances correct
-                    dpangle = 2.0D0 * pi * rnd(rseed)
-                    dradius = sqrt(rnd(rseed)) * radiuh !noteradius is in m. need to convert to degrees.
-                    dxp = cos(dpangle) * dradius
-                    dyp = sin(dpangle) * dradius
-                    xpart(i) = xwasth + dxp !radius(iload)/2. * rnd(rseed)
-                    ypart(i) = ywasth + dyp !radius(iload)/2. * rnd(rseed)
-                    ! trpart(ipart) = iwtime(iload)
-                    if (jsferic == 1) then
-                        dradius = atan2(dradius, earth_radius) * raddeg_hp !in degrees
-                        dxp = cos(dpangle) * dradius
-                        dyp = sin(dpangle) * dradius
-                        ! the distance is expressed in degrees (to make a circle for spherical models,
-                        call Cart3Dtospher(dble(xwasth), dble(ywasth), dble(zwasth), xx, yy, ptref)
-                        xx = xx + dxp
-                        yy = yy + dyp
-                        call sphertocart3D(xx, yy, xpart(i), ypart(i), zpart(i))
+                do
+                    npart (i) = nwasth
+                    mpart (i) = mwasth
+                    xpart (i) = xwasth
+                    ypart (i) = ywasth
+                    laypart(i) = laywaste(ie)
+                    if (modtyp == model_two_layer_temp) then
+                        t0buoy(i) = t0cf (ic)                    ! could be taken out of the particle loop
+                        abuoy (i) = 2.0 * sqrt(acf(ic) * idelt)      ! even complete out of this routine
+                    else
+                        t0buoy(i) = 0.0
+                        abuoy (i) = 0.0
                     endif
 
-                else
-                    radiuh = 0
-                end if
+                    !     horizontal distribution (spreaded in a circle if required - this is at present copied for part09fm
 
+                    nulay = 1
+
+                    if (radiuh/=-999.0) then
+
+                        ! Spread the particles over a circle
+                        !     radiusr = radiuh * sqrt(rnd(rseed))
+
+                        dpangle = 2.0D0 * pi * rnd(rseed)
+                        dradius = sqrt(rnd(rseed)) * radiuh !Note: radius is in m.
+                        dxp = cos(dpangle) * dradius
+                        dyp = sin(dpangle) * dradius
+
+                        if (jsferic == 0) then
+                            xpart(i) = xwasth + dxp
+                            ypart(i) = ywasth + dyp
+                            call part_findcellsingle( xpart(i), ypart(i), mpart(i), ierror )
+                        else
+                            call displace_spherical( real(xwasth,dp), real(ywasth,dp), real(zwasth,dp), &
+                                     dxp, dyp, xpart(i), ypart(i), zpart(i), mpart(i) )
+                        endif
+
+                        if ( mpart(i) > 0 ) then
+                            exit ! The particle is in an appropriate cell
+                        endif
+
+                    else
+                        radiuh = 0
+                        exit
+                    end if
+                enddo
 
                 !         give the particles a layer number
                 do
