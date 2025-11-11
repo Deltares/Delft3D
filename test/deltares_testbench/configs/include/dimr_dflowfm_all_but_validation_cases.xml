@@ -3099,7 +3099,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f010_c022_sill_sub_ini_newkeywords" ref="dflowfm_default">
-      <path version="2025-10-15T15:16:20.411000">e02_dflowfm/f010_structures/c022_sill_sub_ini_newkeywords</path>
+      <path version="2026-05-12T08:56:34.477000">e02_dflowfm/f010_structures/c022_sill_sub_ini_newkeywords</path>
       <maxRunTime>10.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/weirsub_his.nc" type="netCDF">

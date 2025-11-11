@@ -188,6 +188,7 @@ contains
                      pstru%generalst%fu(:, L0) = 0.0_dp
                      pstru%generalst%ru(:, L0) = 0.0_dp
                      pstru%generalst%au(:, L0) = 0.0_dp
+                     pstru%generalst%au_max(L0) = 0.0_dp
                      pstru%generalst%state(:, L0) = 0
                   else if (pstru%type == ST_CULVERT) then
                      pstru%culvert%state = 0

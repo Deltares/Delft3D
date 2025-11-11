@@ -141,7 +141,7 @@ module m_struc_helper
    end subroutine UpAndDownstreamParameters
    
    !> Calculate FU and RU
-   subroutine furu_iter(fuL, ruL, s1k2, s1k1, u1L, qL, auL, fr, cu, rhsc, dxdt, dx_struc, hs1w, lambda, Cz)
+   subroutine furu_iter(fuL, ruL, s1k2, s1k1, u1L, auL, fr, cu, rhsc, dxdt, dx_struc, hs1w, lambda, Cz)
       !=======================================================================
       !                       Deltares
       !                One-Two Dimensional Modelling System
@@ -177,14 +177,13 @@ module m_struc_helper
       double precision, intent(in)              :: rhsc     !< Right hand side term in structure equation.
       double precision, intent(in)              :: s1k2     !< water level s1(k2).
       double precision, intent(in)              :: s1k1     !< water level s1(k1).
-      double precision, intent(in)              :: qL       !< discharge on flow link through structure.
       double precision, intent(in)              :: auL      !< Flow area of structure.
       double precision, intent(inout)           :: u1L      !< Flow velocity on flow link through structure.
       double precision, intent(in)              :: dxdt     !< dx/dt
       double precision, intent(in), optional    :: Cz       !< Chezy value, used for resistance on structure, see also ::dx_struc.
       double precision, intent(in), optional    :: lambda   !< Extra resistance.
       double precision, intent(in), optional    :: hs1w     !< Upstream water depth (based on water level).
-      double precision, intent(in), optional    :: dx_struc !< Crest length (in flow direction), used only when lambda is 0 or absent. For resistance on structure.
+      double precision, intent(in), optional    :: dx_struc !< Cres`t length (in flow direction), used only when lambda is 0 or absent. For resistance on structure.
       !
       ! Local variables
       !
@@ -204,7 +203,7 @@ module m_struc_helper
       endif
       
       bu   = dxdt + (1+dxfrL) * fr
-      du   = (strucalfa  * qL / max(auL, 1.0d-4) + (1 - strucalfa) * u1L) * dxdt + rhsc
+      du   = u1L * dxdt + rhsc
       fuL  = cu / bu
       ruL  = du / bu
       u1L  = ruL - fuL * (s1k2 - s1k1)
