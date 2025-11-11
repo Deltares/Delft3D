@@ -2860,7 +2860,7 @@ contains
                   call ecProviderSearchStdOrVarnames(fileReaderPtr, j, varid, ncvarnames=coord_names, ignore_case=.true.)
                   if (varid < 0) then
                      call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                       //"' coordinates variable '"//trim(coord_names(2))//"' referenced but not found.')
+                                       //"' coordinates variable '"//trim(coord_names(2))//"' referenced but not found.'")
                   else
                      if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'projection_x_coordinate')) then
