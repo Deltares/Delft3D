@@ -87,7 +87,7 @@ contains
       use m_transport, only: ised1, constituents, isalt, itemp
       use dfparall
       use m_alloc
-      use m_missing, only: dmiss_neg, dmiss_pos
+      use m_missing, only: dmiss_neg
       use m_turbulence, only: vicwws, turkinws, rhowat
       use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
@@ -1008,7 +1008,7 @@ contains
             !
             suspfrac = has_advdiff(tratyp(l))
             !
-            tsd = dmiss_pos
+            tsd = dmiss_neg
             di50 = sedd50(l)
             if (di50 < 0.0_fp) then
                !  Space varying sedd50 specified in array sedd50fld:
