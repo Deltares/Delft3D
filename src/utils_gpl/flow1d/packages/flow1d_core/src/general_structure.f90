@@ -1,4 +1,42 @@
-module m_General_Structure
+   module general_Structure_interface
+      implicit none
+      !
+      !
+      ! Public interfaces
+      !
+      
+      
+   abstract interface
+      subroutine ComputeGS(genstr, direction, L0, maxWidth, bob0, fuL, ruL, auL, as1, as2, structwidth, s1m1, s1m2, &
+                                      qtotal, Cz, dxL, dt, SkipDimensionChecks)
+         ! modules
+
+         ! Global variables
+         use m_General_Structure, only: t_GeneralStructure
+         type(t_GeneralStructure), pointer, intent(inout) :: genstr               !< Derived type containing general structure information.
+         integer,                           intent(in   ) :: direction            !< Orientation of flow link w.r.t. the structure. (1d0 for same direction, -1d0 for reverse.)
+         integer,                           intent(in   ) :: L0                   !< Local link index.
+         double precision,                  intent(inout) :: maxWidth             !< Maximal width of the structure. Normally the the width of the flow link.
+         double precision,                  intent(in   ) :: bob0(2)              !< Bed level of channel upstream and downstream of the structure.
+         double precision,                  intent(  out) :: fuL                  !< fu component of momentum equation.
+         double precision,                  intent(  out) :: ruL                  !< Right hand side component of momentum equation.
+         double precision,                  intent(inout) :: auL                  !< Flow area of structure opening.
+         double precision,                  intent(in   ) :: as1                  !< (Geometrical) upstream flow area.
+         double precision,                  intent(in   ) :: as2                  !< (Geometrical) downstream flow area.
+         double precision,                  intent(  out) :: structwidth          !< Flow width of structure.
+         double precision,                  intent(in   ) :: s1m1                 !< (Geometrical) upstream water level.
+         double precision,                  intent(in   ) :: s1m2                 !< (Geometrical) downstream water level.
+         double precision,                  intent(in   ) :: qtotal               !< Total discharge (in case of a compound structure this is not equal to 
+                                                                                 !< the discharge through the structure).
+         double precision,                  intent(in   ) :: Cz                   !< Chezy value.
+         double precision,                  intent(in   ) :: dxL                  !< Length of the flow link.
+         double precision,                  intent(in   ) :: dt                   !< Time step (s).
+         logical,                           intent(in   ) :: SkipDimensionChecks  !< Flag indicating whether the dimensions of the structure is to be limited
+      end subroutine ComputeGS
+   end interface ComputeGS
+   end module general_Structure_interface
+   
+   module m_General_Structure
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2017-2025.                                
@@ -38,6 +76,7 @@ module m_General_Structure
    double precision, public    :: gatefrac_eps = 1d-5
 
    public ComputeGeneralStructure
+   public ComputeGeneralStructure_fullwidth
    public dealloc
    public update_widths
    
@@ -198,7 +237,7 @@ contains
          crest   = max(bob0(1), bob0(2), genstr%zs)
       else
          crest = genstr%zs
-         maxwidth = genstr%ws
+         !maxwidth = genstr%ws
       endif
       
       gle = max(crest, genstr%gateLowerEdgeLevel)
@@ -294,23 +333,24 @@ contains
          zgate = gle+genstr%gatedoorheight
          u1L = ru(2) - fu(2)*dsL 
          qL = Au(2)*u1L
-
          call flqhgs(fu(2), ru(2), u1L, dxL, dt, structwidth, au(2), qL, flowDir, &
                      hu, hd, uu, zgate, gatefraction*wstr, w2, wsd, zb2, ds1, ds2, dg,                &
                      rhoast, cgf, cgd, cwf, cwd, mugf, 0d0, 0d0, dx_struc, ds, genstr%state(2,L0), velheight)
       else
          fu(1) = 0d0
          ru(1) = 0d0
+         au(1) = 0d0
          fu(2) = 0d0
          ru(2) = 0d0
+         au(2) = 0d0
       endif
       
       if (gatefraction< 1d0 - gatefrac_eps) then
          ! calculate flow asif no door is present
          dg = huge(1d0)
          u1L = ru(3) - fu(3)*dsL 
-         qL = Au(3)*u1L
          
+         qL = Au(3)*u1L
          call flqhgs(fu(3), ru(3), u1L, dxL, dt, structwidth, au(3), qL, flowDir, &
                      hu, hd, uu, zs, (1d0-gatefraction)*wstr, w2, wsd, zb2, ds1, ds2, dg,                &
                      rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc, ds, genstr%state(3,L0), velheight)
@@ -319,6 +359,7 @@ contains
       else
          fu(3) = 0d0
          ru(3) = 0d0
+         au(3) = 0d0
       endif
       
       auL =  (au(1) + au(2)) + au(3)
@@ -335,6 +376,240 @@ contains
       !TEMP = laatste statement
       
    end subroutine computeGeneralStructure
+
+   !> compute FU, RU and AU for a single flow link in a general structure.
+   subroutine computeGeneralStructure_fullwidth(genstr, direction, L0, maxWidth, bob0, fuL, ruL, auL, as1, as2, structwidth, s1m1, s1m2, &
+                                      qtotal, Cz, dxL, dt, SkipDimensionChecks)
+      ! modules
+
+      ! Global variables
+      type(t_GeneralStructure), pointer, intent(inout) :: genstr               !< Derived type containing general structure information.
+      integer,                           intent(in   ) :: direction            !< Orientation of flow link w.r.t. the structure. (1d0 for same direction, -1d0 for reverse.)
+      integer,                           intent(in   ) :: L0                   !< Local link index.
+      double precision,                  intent(inout) :: maxWidth             !< Maximal width of the structure. Normally the the width of the flow link.
+      double precision,                  intent(in   ) :: bob0(2)              !< Bed level of channel upstream and downstream of the structure.
+      double precision,                  intent(  out) :: fuL                  !< fu component of momentum equation.
+      double precision,                  intent(  out) :: ruL                  !< Right hand side component of momentum equation.
+      double precision,                  intent(inout) :: auL                  !< Flow area of structure opening.
+      double precision,                  intent(in   ) :: as1                  !< (Geometrical) upstream flow area.
+      double precision,                  intent(in   ) :: as2                  !< (Geometrical) downstream flow area.
+      double precision,                  intent(  out) :: structwidth          !< Flow width of structure.
+      double precision,                  intent(in   ) :: s1m1                 !< (Geometrical) upstream water level.
+      double precision,                  intent(in   ) :: s1m2                 !< (Geometrical) downstream water level.
+      double precision,                  intent(in   ) :: qtotal               !< Total discharge (in case of a compound structure this is not equal to 
+                                                                               !< the discharge through the structure).
+      double precision,                  intent(in   ) :: Cz                   !< Chezy value.
+      double precision,                  intent(in   ) :: dxL                  !< Length of the flow link.
+      double precision,                  intent(in   ) :: dt                   !< Time step (s).
+      logical,                           intent(in   ) :: SkipDimensionChecks  !< Flag indicating whether the dimensions of the structure is to be limited
+                                                                               !< by the cross sectional dimensions of the channel and correct, or not.
+      !
+      !
+      ! Local variables
+      !
+      double precision :: alm
+      double precision :: arm
+      double precision :: s1ml
+      double precision :: s1mr
+      double precision :: qL
+      double precision :: bobstru(2)             !< same as BOB0, but with respect to the structure orientation
+
+      logical                        :: velheight
+      integer                        :: allowedflowdir
+      double precision               :: cgd
+      double precision               :: cgf
+      double precision               :: crest
+      double precision               :: cwd
+      double precision               :: cwf
+      double precision               :: dg
+      double precision               :: ds
+      double precision               :: ds1
+      double precision               :: ds2
+      double precision               :: hd
+      double precision               :: hu
+      double precision               :: lambda
+      double precision               :: mugf
+      double precision               :: rhoast
+      double precision               :: rholeft
+      double precision               :: rhoright
+      double precision               :: flowDir
+      double precision               :: ud
+      double precision               :: uu
+      double precision               :: w2
+      double precision               :: wsd
+      double precision               :: wstr
+      double precision               :: zb2
+      double precision               :: zs
+      double precision               :: zgate
+      double precision               :: gatefraction
+      double precision               :: gle
+      double precision               :: dx_struc  
+      double precision               :: dsL
+      double precision               :: maxFlowL
+      double precision               :: u1L           
+      double precision, dimension(3) :: fu
+      double precision, dimension(3) :: ru
+      double precision, dimension(3) :: au
+      
+      !
+      !
+      !! executable statements -------------------------------------------------------
+      !
+
+      genstr%zs_actual = genstr%zs
+      genstr%gateLowerEdgeLevel_actual = genstr%gateLowerEdgeLevel
+      
+      if (.not. SkipDimensionChecks) then
+         crest   = max(bob0(1), bob0(2), genstr%zs)
+      else
+         crest = genstr%zs
+         !maxwidth = genstr%ws
+      endif
+      
+      gle = max(crest, genstr%gateLowerEdgeLevel)
+      genstr%gateLowerEdgeLevel_actual = gle
+      ! upstream flow area should always be larger or equal to the flow area at the crest
+      alm  = max(as1, auL)
+      arm  = max(as2, auL)
+      s1ml = s1m1
+      s1mr = s1m2
+      dsL   = s1m2 - s1m1 
+
+      dx_struc = genstr%crestlength
+      
+      velheight = genstr%velheight
+      !
+      call UpAndDownstreamParameters(s1ml, s1mr, alm, arm, qtotal, velheight, &
+                                     rholeft, rhoright, crest, hu, hd,uu, ud, flowDir)
+      !
+      ! apply orientation of the flow link to the direction dependend parameters
+      
+      if (SkipDimensionChecks) then
+         bobstru = -1d5
+      else if (direction > 0) then
+         bobstru(1) = bob0(1)
+         bobstru(2) = bob0(2)
+      else
+         bobstru(1) = bob0(2)
+         bobstru(2) = bob0(1)
+      endif
+      
+      allowedflowdir = genstr%allowedflowdir
+      if ((allowedflowdir == 3) .or. &
+          (direction*flowDir == 1  .and. allowedflowDir == 2) .or. &
+          (direction*flowDir == -1 .and. allowedflowDir == 1)) then
+        fuL = 0.0d0
+        ruL = 0.0d0
+        auL = 0.0d0
+        genstr%fu(:,L0) = 0.0d0
+        genstr%ru(:,L0) = 0.0d0
+        genstr%au(:,L0) = 0.0d0     
+        return
+      endif
+
+      call flgtar(genstr, L0, maxWidth, bobstru, direction*flowDir, zs, wstr, w2, wsd, zb2, ds1, ds2, cgf, cgd,   &
+                  cwf, cwd, mugf, lambda)
+      !
+      rhoast = rhoright/rholeft
+      if (flowDir < 0.0) rhoast = 1.0d0 / rhoast
+      !
+      
+      gatefraction = genstr%gateclosedfractiononlink(L0)
+      
+      fu = genstr%fu(:,L0) 
+      ru = genstr%ru(:,L0) 
+      au = genstr%au(:,L0) 
+      if (gatefraction > gatefrac_eps) then
+         ! calculate flow under gate
+         dg = gle - zs
+
+         u1L = ru(1) - fu(1)*dsL 
+         
+         qL = Au(1) * u1L
+
+         qL = Au(1)/gatefraction * u1L
+         call flqhgs(fu(1), ru(1), u1L, dxL, dt, structwidth, au(1), qL, flowDir, &
+                     hu, hd, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, dg,                &
+                     rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc, ds, genstr%state(1,L0), velheight)
+         au(1) = gatefraction*au(1)
+        
+         genstr%sOnCrest(L0) = ds + crest     ! waterlevel on crest
+         
+         ! Flow limiter is only available for an orifice type structure. In this case only flow under the door 
+         ! is possible. For General Structures (and Weirs) this limiter is not further implemented, only part "1"
+         ! (out of 1:3) of the flow is limited.
+         ! In 2D the maximum flow rate is divided over all individual links, where the limiter is applied for 
+         ! each flow link individually, weighted by flow link width.
+
+         ! qL is in orientation of structure (as are the limitFlow values)
+         qL = direction * au(1) * (ru(1) - fu(1)*dsL )
+         if (qL > 0d0 .and. genstr%uselimitFlowPos) then
+            maxFlowL = genstr%limitFlowPos * gatefraction*wstr / genstr%ws_actual
+            if (qL > maxFlowL) then
+               fu(1) = 0.0
+               ru(1) = direction * maxFlowL / max(1d-6,au(1))
+            endif
+         else if (qL < 0d0 .and. genstr%uselimitFlowNeg) then
+            maxFlowL = genstr%limitFlowNeg * gatefraction*wstr / genstr%ws_actual
+            if (abs(qL) > maxFlowL) then
+               fu(1) = 0.0
+               ru(1) = -  direction * maxFlowL /  max(1d-6,au(1))
+            endif
+       
+         endif
+
+         !calculate flow over gate
+         dg = huge(1d0)
+         zgate = gle+genstr%gatedoorheight
+         u1L = ru(2) - fu(2)*dsL 
+
+         qL = Au(2)/gatefraction * u1L
+         call flqhgs(fu(2), ru(2), u1L, dxL, dt, structwidth, au(2), qL, flowDir, &
+                     hu, hd, uu, zgate, wstr, w2, wsd, zb2, ds1, ds2, dg,                &
+                     rhoast, cgf, cgd, cwf, cwd, mugf, 0d0, 0d0, dx_struc, ds, genstr%state(2,L0), velheight)
+         au(2) = gatefraction*au(2)
+      else
+         fu(1) = 0d0
+         ru(1) = 0d0
+         au(1) = 0d0
+         fu(2) = 0d0
+         ru(2) = 0d0
+         au(2) = 0d0
+      endif
+      
+      if (gatefraction< 1d0 - gatefrac_eps) then
+         ! calculate flow asif no door is present
+         dg = huge(1d0)
+         u1L = ru(3) - fu(3)*dsL 
+         
+
+         qL = Au(3)*u1L / (1.0d0-gatefraction)
+         call flqhgs(fu(3), ru(3), u1L, dxL, dt, structwidth, au(3), qL, flowDir, &
+                     hu, hd, uu, zs, wstr, w2, wsd, zb2, ds1, ds2, dg,                &
+                     rhoast, cgf, cgd, cwf, cwd, mugf, lambda, Cz, dx_struc, ds, genstr%state(3,L0), velheight)
+         au(3) = (1d0 - gatefraction)*au(3)
+         genstr%sOnCrest(L0) = ds + crest     ! waterlevel on crest
+
+      else
+         fu(3) = 0d0
+         ru(3) = 0d0
+         au(3) = 0d0
+      endif
+      
+      auL =  (au(1) + au(2)) + au(3)
+      if (auL > 0d0) then
+         fuL = (fu(1)*au(1) + fu(2)*au(2) + fu(3)*au(3))/auL
+         ruL = (ru(1)*au(1) + ru(2)*au(2) + ru(3)*au(3))/auL
+      else
+         fuL = 0d0
+         ruL = 0d0
+      endif
+      genstr%fu(:,L0) = fu
+      genstr%ru(:,L0) = ru
+      genstr%au(:,L0) = au
+      !TEMP = laatste statement
+      
+   end subroutine computeGeneralStructure_fullwidth
 
    !> Compute coefficients for structure equation                                   
    subroutine flgtar(genstr, L0, maxWidth, bobstru, flowDir, zs, wstr, w2, wsd, zb2, ds1, ds2, cgf,  &
