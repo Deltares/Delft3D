@@ -34,6 +34,7 @@ program waves_main
 !!--declarations----------------------------------------------------------------
    use wave_main, only: wave_main_init, wave_main_step, wave_main_finish
    use precision
+   use m_precice_state_t, only: precice_state_t
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    use precice, only: precicef_get_max_time_step_size
    use, intrinsic :: iso_c_binding, only: c_double
@@ -61,6 +62,7 @@ program waves_main
    real(hp)                                     :: stepsize
    character(20)                                :: tmpchar
    character(256)                               :: mdw_file     ! filename mdw file
+   type(precice_state_t) :: precice_state
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    real(kind=c_double) :: max_time_step
 #endif
@@ -104,25 +106,25 @@ program waves_main
    enddo
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   call initialize_fm_coupling(mdw_file)
+   call initialize_fm_coupling(mdw_file, precice_state)
 #endif
 
    retval = wave_main_init(mode_in, mdw_file)
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    ! DIMR calls wave ones, updating it to 0.0 seconds, before running FM and wave at later time points
-   retval = wave_main_step(0.0_hp)
+   retval = wave_main_step(0.0_hp, precice_state)
    call advance_fm_time_window()
 
    do while(is_fm_coupling_ongoing())
       call precicef_get_max_time_step_size(max_time_step)
       stepsize = real(max_time_step, kind=hp)
-      retval = wave_main_step(stepsize)
+      retval = wave_main_step(stepsize, precice_state)
       call advance_fm_time_window()
    end do
 #else
    stepsize = -1.0_hp
-   retval = wave_main_step(stepsize)
+   retval = wave_main_step(stepsize, precice_state)
 #endif
    !
    ! ====================================================================================

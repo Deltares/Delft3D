@@ -1,4 +1,9 @@
-subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowVelocityType)
+module m_get_flow_fields
+implicit none
+private
+public :: get_flow_fields
+contains
+subroutine get_flow_fields(i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flowVelocityType, precice_state)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -36,7 +41,11 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
    use swan_input
    use flow_data
    use wave_data
-   !
+   use m_precice_state_t, only: precice_state_t
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   use precice, only: precicef_read_data
+   use, intrinsic :: iso_c_binding, only: c_double
+#endif
    implicit none
 !
 ! Global variables
@@ -51,11 +60,11 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
    integer, dimension(:,:), pointer :: covered
    type(wave_data_type)             :: wavedata
    type(swan_type)                  :: sr               ! swan input structure
+   type(precice_state_t), intent(in) :: precice_state
 !
 ! Local variables
 !
-   integer            :: i
-   integer            :: j
+   integer            :: i, j, precice_index
    integer            :: iprint       = 0
    real               :: alpb         = 0.0
    real               :: dummy        = -999.0
@@ -63,6 +72,10 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
    logical            :: clbot        = .true.
    character(256)     :: mudfilnam    = ' '
    type(input_fields) :: fif                    ! input fields defined on flow grid
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+   real(kind=c_double), dimension(:), allocatable :: bed_level_values
+   integer :: n_points
+#endif
 
    interface
       subroutine grmap_esmf(i1, f1, n1, f2, mmax, nmax, f2s, f2g)
@@ -102,7 +115,7 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
    if (sr%dom(i_swan)%qextnd(q_bath)>0) then
       if (sr%flowgridfile == ' ') then
          !
-         ! Read depth from com-file
+         ! Read depth from com-file (Delft3d4)
          !
          call get_dep (fif%dps, fif%mmax, fif%nmax, &
                      & fg%grid_name)
@@ -114,6 +127,22 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
                    & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
                    & iprint       )
       else
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+         n_points = size(precice_state%vertex_ids)
+         allocate(bed_level_values(n_points))
+         call precicef_read_data(precice_state%swan_mesh_name, precice_state%bed_levels_name, &
+                                 n_points, precice_state%vertex_ids, 0.0_c_double, bed_level_values, &
+                                 len(precice_state%swan_mesh_name), len(precice_state%bed_levels_name))
+         precice_index = 0
+         do j = 1, sif%nmax
+            do i = 1, sif%mmax
+               if (sg%kcs(i, j) /= 0) then
+                  precice_index = precice_index + 1
+                  sif%dps(i, j) = bed_level_values(precice_index)
+               end if
+            end do
+         end do
+#else
          !
          ! Read depth from netcdf-file
          !
@@ -127,6 +156,7 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
                         & sif%dps       , sif%mmax, sif%nmax, &
                         & f2s           , sg                )
          !
+#endif
       endif
    endif
    !
@@ -356,3 +386,4 @@ if (sr%swveg .and. sr%dom(1)%qextnd(q_veg) >= 1) then
    !
    call dealloc_input_fields(fif, wavedata%mode)
 end subroutine get_flow_fields
+end module m_get_flow_fields

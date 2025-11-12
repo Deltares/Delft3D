@@ -133,6 +133,7 @@ integer function update(dt) bind(C, name="update")
   use messagehandling
   use wave_main
   use iso_c_binding, only: c_double
+  use m_precice_state_t, only: precice_state_t
   !
   ! Global
   real(c_double), value, intent(in) :: dt
@@ -140,10 +141,11 @@ integer function update(dt) bind(C, name="update")
   ! Local
   integer  :: retval
   real(hp) :: stepsize
+  type(precice_state_t) :: precice_state
   !
   ! Body
   stepsize = real(dt,hp)
-  retval   = wave_main_step(stepsize)
+  retval   = wave_main_step(stepsize, precice_state)
   update   = retval
 end function update
 !

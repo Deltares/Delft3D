@@ -1,4 +1,9 @@
-subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
+module m_swan_tot
+   implicit none
+   private
+   public :: swan_tot
+   contains
+subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_state)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2025.
@@ -40,7 +45,10 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
    use buffer
    use meteo
    use m_deletehotfile
+   use m_get_flow_fields, only: get_flow_fields
    use write_swan_datafile, only: write_swan_file
+   use m_precice_state_t, only: precice_state_t
+   use, intrinsic :: iso_c_binding, only: c_int
    !
    implicit none
 !
@@ -50,6 +58,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
    integer, intent(in) :: n_swan_grids
    type(wave_data_type) :: wavedata
    integer, intent(in) :: selectedtime ! <=0: no time selected, >0: only compute for swan_run%timwav(selectedtime)
+   type(precice_state_t), intent(in) :: precice_state
 !
 ! Local variables
 !
@@ -162,7 +171,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                write (*, '(a,i0,a)') '  Get flow fields, domain ', i_flow, ' :'
                call get_flow_fields(i_flow, i_swan, swan_input_fields, flow_grids(i_flow), swan_grids(i_swan), &
                                    & flow2swan_maps(i_swan, i_flow), wavedata, &
-                                   & swan_run, dom%flowVelocityType)
+                                   & swan_run, dom%flowVelocityType, precice_state)
             end do
          end if
          !
@@ -534,3 +543,4 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
       end if
    end do ! time steps
 end subroutine swan_tot
+end module m_swan_tot

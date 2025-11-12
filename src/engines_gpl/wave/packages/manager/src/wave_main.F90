@@ -41,6 +41,7 @@ module wave_main
    use wave_mpi
    use meteo
    use dwaves_version_module
+   use m_swan_tot, only: swan_tot
 
    implicit none
 
@@ -54,7 +55,7 @@ module wave_main
    public :: is_fm_coupling_ongoing
    public :: advance_fm_time_window
 #endif
-   
+
    public wavedata
 !
 ! Module variables
@@ -114,19 +115,21 @@ contains
 #endif
 
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-   subroutine initialize_fm_coupling(mdw_file_name)
+   subroutine initialize_fm_coupling(mdw_file_name, precice_state)
       use precice, only: precicef_create, precicef_initialize
+      use m_precice_state_t, only: precice_state_t
       use, intrinsic :: iso_c_binding, only: c_char
       implicit none(type, external)
 
       character(len=*), intent(in) :: mdw_file_name
+      type(precice_state_t), intent(out) :: precice_state
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "wave"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
 
       call precicef_create(precice_component_name, precice_config_name, my_rank, numranks, len(precice_component_name), len(precice_config_name))
 
-      call register_wave_nodes_with_precice(mdw_file_name)
+      call register_wave_nodes_with_precice(mdw_file_name, precice_state)
       call precicef_initialize()
    end subroutine initialize_fm_coupling
 
@@ -148,52 +151,106 @@ contains
       call precicef_advance(max_time_step)
    end subroutine advance_fm_time_window
 
-   subroutine register_wave_nodes_with_precice(mdw_file_name)
-      use precice, only: precicef_set_vertices
+   subroutine register_wave_nodes_with_precice(mdw_file_name, precice_state)
+      use precice, only: precicef_set_vertices, precicef_set_mesh_triangles
+      use m_precice_state_t, only: precice_state_t
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       use swan_flow_grid_maps, only: grid
       implicit none(type, external)
 
       character(len=*), intent(in) :: mdw_file_name
+      type(precice_state_t), intent(out) :: precice_state
 
-      character(kind=c_char, len=*), parameter :: mesh_name = "wave_nodes"
       integer :: result
       type(grid) :: swan_grid
       real(kind=c_double), dimension(:), allocatable :: mesh_coordinates
-      integer(kind=c_int), dimension(:), allocatable :: vertex_ids
-      integer :: i, j, node_index
+      integer :: i, j, node_index, active_count
 
-      result = get_swan_grid(mdw_file_name, swan_grid)
+      integer(kind=c_int), dimension(:,:), allocatable :: node_indices
+      integer(kind=c_int), dimension(:), allocatable :: triangle_nodes
+      integer(kind=c_int), dimension(:), allocatable :: precice_triangle_nodes
+      integer(kind=c_int) :: num_triangles, is_required
+
+      precice_state = precice_state_t()
+
+      result = get_swan_grid(mdw_file_name, swan_grid, active_count)
       if (result /= 0) then
          write (*, '(a)') '[Wave] *** ERROR: Failed to get Swan grid for preCICE registration'
          return
       end if
 
-      allocate (mesh_coordinates(2 * swan_grid%npts))
-      allocate (vertex_ids(swan_grid%npts))
+      write (*, '(a,i0,a,i0,a)') '[Wave] Grid has ', active_count, ' active nodes out of ', swan_grid%npts, ' total'
 
-      ! Fill mesh_coordinates array with x,y pairs from the Swan grid
-      ! The grid%x and grid%y arrays are indexed as (mmax, nmax)
+      allocate (mesh_coordinates(2 * active_count))
+      allocate (precice_state%vertex_ids(active_count))
+      allocate (node_indices(swan_grid%mmax, swan_grid%nmax))
+
       node_index = 0
       do j = 1, swan_grid%nmax
          do i = 1, swan_grid%mmax
-            node_index = node_index + 1
-            mesh_coordinates(2 * node_index - 1) = real(swan_grid%x(i, j), kind=c_double)
-            mesh_coordinates(2 * node_index) = real(swan_grid%y(i, j), kind=c_double)
+            if (swan_grid%kcs(i, j) == 1) then
+               node_index = node_index + 1
+               node_indices(i,j) = node_index
+               mesh_coordinates(2 * node_index - 1) = real(swan_grid%x(i, j), kind=c_double)
+               mesh_coordinates(2 * node_index) = real(swan_grid%y(i, j), kind=c_double)
+            else
+               node_indices(i,j) = 0
+            end if
          end do
       end do
 
-      call precicef_set_vertices(mesh_name, swan_grid%npts, mesh_coordinates, vertex_ids, len(mesh_name))
-      write (*, '(a,i0,a)') '[Wave] Registered ', swan_grid%npts, ' vertices with preCICE'
+      print *, '[Wave] node_index = ', node_index
+      call precicef_set_vertices(precice_state%swan_mesh_name, active_count, mesh_coordinates, precice_state%vertex_ids, len(precice_state%swan_mesh_name))
+      write (*, '(a,i0,a)') '[Wave] Registered ', active_count, ' vertices with preCICE'
+
+      ! TODO: Triangulation
+      ! Allocate temproray buffer, at most we have two triangles per node.
+      allocate (triangle_nodes(2 * active_count * 3))
+      num_triangles = 0
+      do j = 1, swan_grid%nmax - 1
+         do i = 1, swan_grid%mmax - 1
+            if (swan_grid%kcs(i, j) == 1 &
+            & .and. swan_grid%kcs(i + 1, j) == 1 &
+            & .and. swan_grid%kcs(i + 1, j + 1) == 1 &
+            & .and. swan_grid%kcs(i, j + 1) == 1) then
+               ! Triangle one (bottom left)
+               triangle_nodes(3 * num_triangles + 1) = node_indices(i, j)
+               triangle_nodes(3 * num_triangles + 2) = node_indices(i + 1, j + 1)
+               triangle_nodes(3 * num_triangles + 3) = node_indices(i, j + 1)
+               num_triangles = num_triangles + 1
+               ! Triangle two (top right)
+               triangle_nodes(3 * num_triangles + 1) = node_indices(i, j)
+               triangle_nodes(3 * num_triangles + 2) = node_indices(i + 1, j)
+               triangle_nodes(3 * num_triangles + 3) = node_indices(i + 1, j + 1)
+               num_triangles = num_triangles + 1
+            end if
+         end do
+      end do
+
+      if (num_triangles <= 0) then
+         print *, '[Wave] Error in triangulation'
+         return
+      else
+         print *, '[Wave] Successfully generated ', num_triangles, ' triangles for ', node_index, ' nodes'
+      end if
+
+      allocate (precice_triangle_nodes(3 * num_triangles))
+      do i = 1, 3 * num_triangles
+         precice_triangle_nodes(i) = precice_state%vertex_ids(triangle_nodes(i))
+      end do
+
+      call precicef_set_mesh_triangles(precice_state%swan_mesh_name, num_triangles, precice_triangle_nodes, len(precice_state%swan_mesh_name))
+      print *, '[Wave] Registered ', num_triangles, ' triangles with preCICE'
    end subroutine register_wave_nodes_with_precice
 
-   function get_swan_grid(mdw_file, swan_grid) result(retval)
+   function get_swan_grid(mdw_file, swan_grid, number_of_active_nodes) result(retval)
       use read_grids, only: read_grd
       use swan_flow_grid_maps, only: grid
       implicit none(type, external)
 
       character(*), intent(in) :: mdw_file ! filename mdw file
       type(grid), intent(out) :: swan_grid ! Swan grid structure
+      integer, intent(out) :: number_of_active_nodes
       integer :: retval ! return value: 0=success, 1=error
 
       integer :: lun ! file unit for mdw file
@@ -207,6 +264,7 @@ contains
       logical :: grid_found ! flag: grid filename found
 
       retval = 0
+      number_of_active_nodes = 0
       in_domain = .false.
       grid_found = .false.
       grid_filename = ' '
@@ -264,6 +322,40 @@ contains
       swan_grid%grid_file_type = 'FLOW'
       swan_grid%xy_loc = 'CORNER'
       swan_grid%npts = swan_grid%mmax * swan_grid%nmax
+
+      block
+         integer :: coord_i, coord_j
+         do coord_j = 1, swan_grid%nmax
+            do coord_i = 1, swan_grid%mmax
+               if (swan_grid%kcs(coord_i, coord_j) == 1) then
+                  number_of_active_nodes = number_of_active_nodes + 1
+               end if
+            end do
+         end do
+      end block
+
+      ! Write coordinates to file for debugging
+      block
+         integer :: coord_unit, coord_i, coord_j
+         open(newunit=coord_unit, file='wave_coordinates_debug.txt', status='replace', action='write')
+         write(coord_unit, '(a,i0)') 'x-coordinates: ', number_of_active_nodes
+         do coord_j = 1, swan_grid%nmax
+            do coord_i = 1, swan_grid%mmax
+               if (swan_grid%kcs(coord_i, coord_j) == 1) then
+                  write(coord_unit, *) swan_grid%x(coord_i, coord_j)
+               end if
+            end do
+         end do
+         write(coord_unit, '(a,i0)') 'y-coordinates: ', number_of_active_nodes
+         do coord_j = 1, swan_grid%nmax
+            do coord_i = 1, swan_grid%mmax
+               if (swan_grid%kcs(coord_i, coord_j) == 1) then
+                  write(coord_unit, *) swan_grid%y(coord_i, coord_j)
+               end if
+            end do
+         end do
+         close(coord_unit)
+      end block
 
       write (*, '(a,i0,a,i0,a)') '[Wave] Swan grid dimensions: mmax=', swan_grid%mmax, ', nmax=', swan_grid%nmax
    end function get_swan_grid
@@ -576,7 +668,8 @@ end function wave_init
 
 !
 ! ====================================================================================
-function wave_main_step(stepsize) result(retval)
+function  wave_main_step(stepsize, precice_state) result(retval)
+   use m_precice_state_t, only: precice_state_t
    implicit none
 !
 ! return value
@@ -586,6 +679,7 @@ function wave_main_step(stepsize) result(retval)
 ! Globals
 !
    real(hp) :: stepsize
+   type(precice_state_t), intent(in) :: precice_state
 !
 ! Local variables
 !
@@ -597,7 +691,7 @@ function wave_main_step(stepsize) result(retval)
       !
       ! master node does all the work ...
       !
-      retval = wave_master_step(stepsize)
+      retval = wave_master_step(stepsize, precice_state)
    else
       !
       ! nothing to do for slave nodes except for waiting and calling swan as needed
@@ -613,7 +707,8 @@ end function wave_main_step
 
 !
 ! ====================================================================================
-function wave_master_step(stepsize) result(retval)
+function wave_master_step(stepsize, precice_state) result(retval)
+   use m_precice_state_t, only: precice_state_t
    implicit none
 !
 ! return value
@@ -623,6 +718,7 @@ function wave_master_step(stepsize) result(retval)
 ! Globals
 !
    real(hp) :: stepsize
+   type(precice_state_t), intent(in) :: precice_state
 !
 ! Locals
 !
@@ -638,6 +734,7 @@ function wave_master_step(stepsize) result(retval)
 !! executable statements -----------------------------------------------
 !
    retval = 0
+   !
    !
    if (wavedata%mode /= stand_alone) then
       !
@@ -679,7 +776,7 @@ function wave_master_step(stepsize) result(retval)
          !
          ! Run n_swan nested SWAN runs
          !
-         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0)
+         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, precice_state)
          write(*,'(a)')'*  End of Delft3D-WAVE'
          write(*,'(a)')'*****************************************************************'
          !
@@ -698,14 +795,14 @@ function wave_master_step(stepsize) result(retval)
       ! Standalone swan computation
       !
       if (swan_run%flowgridfile == ' ') then
-         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0)
+         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, precice_state)
       elseif (swan_run%timwav(1) < 0.0) then
          !
          ! No times specified in mdw file: just do one computation with specified timestep
          !
          swan_run%timwav(1) = wavedata%time%timsec + stepsize / 60.0_hp
          swan_run%nttide    = 1
-         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0)
+         call swan_tot(n_swan_grids, n_flow_grids, wavedata, 0, precice_state)
       else
          !
          ! Times specified in mdw file: compute all specified times between tcur en tcur+tstep
@@ -732,7 +829,7 @@ function wave_master_step(stepsize) result(retval)
                ! iold is needed when timwav(i)="current time" or "step_end_time",
                ! to avoid doing the same computation twice
                !
-               call swan_tot(n_swan_grids, n_flow_grids, wavedata, i)
+               call swan_tot(n_swan_grids, n_flow_grids, wavedata, i, precice_state)
                iold = i
             else
                !

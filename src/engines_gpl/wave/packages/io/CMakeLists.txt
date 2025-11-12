@@ -16,6 +16,9 @@ set(oss_dependencies    wave_data
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 target_link_libraries(${library_name} ${oss_dependencies})
 
+if(HAS_PRECICE_FM_WAVE_COUPLING)
+    target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_FM_WAVE_COUPLING)
+endif()
 
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
