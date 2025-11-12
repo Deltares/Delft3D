@@ -32,7 +32,6 @@
 
 module m_loadbitmap
 
-
    use precision, only: dp
    implicit none
 

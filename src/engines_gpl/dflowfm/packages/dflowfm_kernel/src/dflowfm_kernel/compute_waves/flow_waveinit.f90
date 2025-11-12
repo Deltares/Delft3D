@@ -34,7 +34,7 @@ module m_flow_waveinit
 
    use m_xbeachwaves, only: allocstatsolverarrays
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    private

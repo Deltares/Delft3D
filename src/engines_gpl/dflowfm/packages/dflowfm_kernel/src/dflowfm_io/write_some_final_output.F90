@@ -32,7 +32,6 @@
 
 module m_write_some_final_output
 
-
    use precision, only: dp
    implicit none
 

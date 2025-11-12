@@ -34,7 +34,6 @@
 ! This is the general hook-up to wave conditions for online wave coupling
 module m_flow_initwaveforcings_runtime
 
-
    use precision, only: dp
    implicit none
 

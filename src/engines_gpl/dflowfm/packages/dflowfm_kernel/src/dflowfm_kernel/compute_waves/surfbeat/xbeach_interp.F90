@@ -32,7 +32,6 @@
 
 module interp
 
-
    use precision, only: dp
    implicit none
 

@@ -32,7 +32,6 @@
 
 module m_updatebalance
 
-
    use precision, only: dp
    implicit none
 

@@ -32,7 +32,6 @@
 
 module m_wave_makeplotvars
 
-
    use precision, only: dp
    implicit none
 

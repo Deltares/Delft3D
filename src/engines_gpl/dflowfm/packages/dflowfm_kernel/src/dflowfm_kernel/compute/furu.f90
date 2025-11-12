@@ -171,49 +171,47 @@ contains
                   advi(L) = advi(L) + frculin(L) / hu(L)
                end if
 
-               itu1 = 0
+               do itu1 = 1, 4 ! furu_loop
+                  if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then ! Delft3D-Wave Stokes-drift correction
 
-10             continue
+                     if (modind < 9) then
+                        frL = cfwavhi(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
+                     elseif (modind == 9) then
+                        frL = cfhi_vanrijn(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
+                     elseif (modind == 10) then ! Ruessink 2003
+                        uorbL = 0.5_dp * (uorb(k1) + uorb(k2))
+                        frL = cfuhi(L) * sqrt((u1L - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16_dp * uorbL * fsqrtt)**2)
+                     end if
+                     !
+                     du = du0 + frL * ustokes(L)
+                     !
+                     ! and add vegetation stem drag with eulerian velocities, assumes fixed stem
+                     if ((jaBaptist >= 2) .or. trachy_resistance) then
+                        frL = frL + alfav(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
+                     end if
 
-               if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then ! Delft3D-Wave Stokes-drift correction
-
-                  if (modind < 9) then
-                     frL = cfwavhi(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
-                  elseif (modind == 9) then
-                     frL = cfhi_vanrijn(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
-                  elseif (modind == 10) then ! Ruessink 2003
-                     uorbL = 0.5_dp * (uorb(k1) + uorb(k2))
-                     frL = cfuhi(L) * sqrt((u1L - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16_dp * uorbL * fsqrtt)**2)
-                  end if
-                  !
-                  du = du0 + frL * ustokes(L)
-                  !
-                  ! and add vegetation stem drag with eulerian velocities, assumes fixed stem
-                  if ((jaBaptist >= 2) .or. trachy_resistance) then
-                     frL = frL + alfav(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
-                  end if
-
-               else if (ifxedweirfrictscheme > 0) then
-                  if (iadv(L) == IADV_SUBGRID_WEIR .or. kcu(L) == 3) then
-                     call fixedweirfriction2D(L, k1, k2, frL)
+                  else if (ifxedweirfrictscheme > 0) then
+                     if (iadv(L) == IADV_SUBGRID_WEIR .or. kcu(L) == 3) then
+                        call fixedweirfriction2D(L, k1, k2, frL)
+                     else
+                        frL = cfuhi(L) * sqrt(u1L * u1L + v2) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
+                     end if
+                  else if ((jaBaptist >= 2) .or. trachy_resistance) then
+                     frL = (cfuhi(L) + alfav(L)) * sqrt(u1L * u1L + v2) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
                   else
                      frL = cfuhi(L) * sqrt(u1L * u1L + v2) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
                   end if
-               else if ((jaBaptist >= 2) .or. trachy_resistance) then
-                  frL = (cfuhi(L) + alfav(L)) * sqrt(u1L * u1L + v2) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
-               else
-                  frL = cfuhi(L) * sqrt(u1L * u1L + v2) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu
-               end if
 
-               bui = 1.0_dp / (dti + advi(L) + frL)
-               fu(L) = cu * bui
-               ru(L) = du * bui
-               u1L0 = u1L
-               u1L = ru(L) - fu(L) * ds
-               itu1 = itu1 + 1
-               if (huvli(L) > 1.0_dp .and. itu1 < 4 .and. abs(u1L - u1L0) > 1.0e-2_dp) then ! less than 1 m deep
-                  goto 10
-               end if
+                  bui = 1.0_dp / (dti + advi(L) + frL)
+                  fu(L) = cu * bui
+                  ru(L) = du * bui
+                  u1L0 = u1L
+                  u1L = ru(L) - fu(L) * ds
+
+                  if (huvli(L) <= 1.0_dp .or. abs(u1L - u1L0) <= 1.0e-2_dp) then ! less than 1 m deep or small change in velocity: exit
+                     exit ! furu_loop
+                  end if
+               end do
 
             end if
 

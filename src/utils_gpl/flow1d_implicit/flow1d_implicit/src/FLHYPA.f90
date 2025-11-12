@@ -7,7 +7,9 @@ subroutine FLHYPA(time   ,iter   ,nbran  ,ngrid  ,branch ,typcr  ,&
 &x      ,nexres ,exres  ,lsalt  ,izwft  ,juer   ,&
 &prslot ,psltvr ,waoft  ,c      ,r      ,alfab  ,&
 &tauwi  ,ksi    ,a1m    ,ker    ,dt1    ,theta2 ,&
-&exrstp ,omalfa ,omc    ,omr    ,omw    )
+&exrstp ,omalfa ,omc    ,omr    ,omw            ,&
+&fm1dimp                                         &
+&)
 
 !=======================================================================
 !            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
@@ -173,6 +175,9 @@ subroutine FLHYPA(time   ,iter   ,nbran  ,ngrid  ,branch ,typcr  ,&
 !
 !
 !***********************************************************************
+   use m_f1dimp, only: f1dimppar_type     
+   
+   type(f1dimppar_type), intent(in) :: fm1dimp
 !
 !     Include constants
 !
@@ -250,22 +255,25 @@ subroutine FLHYPA(time   ,iter   ,nbran  ,ngrid  ,branch ,typcr  ,&
    call FLBOCH (nbran  ,ngrid  ,branch ,typcr  ,bfrict ,bfricp ,&
    &h1     ,h      ,q1     ,q      ,maxlev ,hlev   ,&
    &wft    ,maxtab ,ntabm  ,ntab   ,table  ,&
-!                  <subsec>        <secth0>        <secth1>
+!  <subsec>        <secth0>        <secth1>
    &sectc(1,1)     ,sectv(1,2)     ,sectv(1,3)     ,&
-!                  <wfh0>          <wfh1>
+!  <wfh0>          <wfh1>
    &sectc(1,2)     ,sectc(1,3)     ,grsize ,engpar ,&
-!                  <Af>            <O>             <Afh0>
+!  <Af>            <O>             <Afh0>
    &waoft(1,3)     ,waoft(1,6)     ,sectv(1,4)     ,&
-!                  <Afh1>          <Oh0>           <Oh1>
+!  <Afh1>          <Oh0>           <Oh1>
    &sectv(1,5)     ,sectv(1,6)     ,sectv(1,7)     ,&
-!                                  <Asubsc>
+!  <Asubsc>                        <c>
    &prslot ,psltvr ,sectv(1,1)     ,c(1,1) ,r(1,1) ,&
+!  <cs>
    &c(1,2) ,r(1,2) ,alfab          ,&
    &iter   ,theta2 ,omalfa         ,omr    ,omw    ,&
-!                  <alfabp>        <c2rp>           <wfp>
+!  <alfabp>        <c2rp>           <wfp>
    &waoft(1,7)     ,waoft(1,8)     ,waoft(1,9)     ,&
-!                  <wf>
-   &waoft(1,1)     ,juer   ,ker    )
+!  <wf>
+   &waoft(1,1)     ,juer   ,ker                    ,&
+   &fm1dimp                                        ,&
+   &)
 
 !     FM1DIMP2DO: remove debug
 !      write(42,*) 'a'

@@ -32,7 +32,6 @@
 
 module m_setkfs
 
-
    use precision, only: dp
    implicit none
 

@@ -52,7 +52,7 @@ contains
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: lnxi => lnxi_mor
       use m_fm_erosed, only: ndx => ndx_mor
-      
+
       implicit none
 
       integer, intent(in) :: lsedtot !< number of sediment fractions

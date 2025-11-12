@@ -38,7 +38,7 @@ module m_hydrology
    use m_flowgeom
    use horton, only: HORTON_CAPSTAT_NOCHANGE
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 contains
 

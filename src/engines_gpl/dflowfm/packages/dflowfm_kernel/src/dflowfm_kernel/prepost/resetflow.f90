@@ -65,6 +65,8 @@ contains
       use m_sedtrails_data
       use m_nearfield, only: reset_nearfieldData
       use m_laterals, only: reset_lateral
+      use m_flow_validatestate, only: reset_flow_validatestate
+
       implicit none
 
       ! Only reset counters and other scalars, allocatables should be
@@ -113,6 +115,8 @@ contains
       call reset_hydrology_data()
 
       call reset_nearfieldData()
+
+      call reset_flow_validatestate()
 
    end subroutine resetFlow
 

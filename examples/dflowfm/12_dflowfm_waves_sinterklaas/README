@@ -1,0 +1,7 @@
+This is a temporary addition for preCICE PoC.
+
+Additional data files are required to run this case and can be found at:
+N:\Deltabox\Bulletin\srivasta\SinterklaasstormCase\Sinterklaasstorm_preCICE\wave\sinterklaasstorm.amu
+N:\Deltabox\Bulletin\srivasta\SinterklaasstormCase\Sinterklaasstorm_preCICE\wave\sinterklaasstorm.amv
+
+Copy these files to the wave/ folder.

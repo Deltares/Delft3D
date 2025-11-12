@@ -635,8 +635,8 @@ contains
       real(kind=dp), intent(out) :: mbamorfac
       real(kind=dp), intent(out) :: mbabedmass(lsedtot, nomba)
       real(kind=dp), intent(out) :: mbabedshortmass(lsedtot, nomba)
-      real(kind=dp), allocatable, intent(out) :: mbafluffmass(:, :)
-      real(kind=dp), allocatable, intent(out) :: mbamassreduce(:, :)
+      real(kind=dp), allocatable, intent(inout) :: mbafluffmass(:, :)
+      real(kind=dp), allocatable, intent(inout) :: mbamassreduce(:, :)
 
       integer :: imba !< mass balance area number
       integer :: ised !< sediment fraction
