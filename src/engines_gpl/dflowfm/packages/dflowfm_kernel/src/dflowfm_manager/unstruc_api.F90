@@ -278,6 +278,8 @@ contains
       use m_get_ucx_ucy_eul_mag, only: getucxucyeulmag
       use m_fm_precice_state_t, only: fm_precice_state_t
       use precice, only: precicef_write_data
+      use m_flow, only: ndkx
+      use messagehandling, only: err
       implicit none(type, external)
 
       type(fm_precice_state_t), intent(in) :: precice_state
@@ -285,7 +287,12 @@ contains
 
       integer :: n_points
 
+      ! n_points equals ndx (the number of flow nodes in 2D) but the velocity vector has ndkx elements (3D nodes)
+      ! We do not support 3D FM models through preCICE, check and exit if it does contain one
       n_points = size(precice_state%flow_vertex_ids)
+      if (n_points /= ndkx) then
+         call err('[FM] Error: preCICE coupling only supports 2D FM models. Current model contains 3D nodes.')
+      end if
       allocate(flow_velocity_vector(n_points * 2))
       allocate(flow_velocity_magnitude(n_points))
 
