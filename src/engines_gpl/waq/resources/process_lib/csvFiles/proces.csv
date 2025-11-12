@@ -679,7 +679,7 @@ procid,procco,procfo,procnm
 "AtmDep_Sal",123,"ATMDEP    ","Atmospheric deposition salinity                   "
 "AtmDep_Ecl",123,"ATMDEP    ","Atmospheric deposition E-coli bacteria            "
 "AttribOut ",123,"ATTOUT    ","Output segment attribute                          "
-"Cascade   ",123,"CASCAD    "," Cascadal transformation                          "
+"Cascade   ",123,"CASCAD    ","Cascadal transformation                           "
 "Decay1    ",123,"DECTRA    ","Decay of decayable tracer 1                       "
 "Decay2    ",123,"DECTRA    ","Decay of decayable tracer 2                       "
 "Decay3    ",123,"DECTRA    ","Decay of decayable tracer 3                       "

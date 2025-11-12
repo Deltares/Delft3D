@@ -129,7 +129,7 @@ contains
             write(lunrep, '(a)' ) 'Please set the process parameter "SwResBuf" to 0', &
                                   'otherwise resuspension is not accounted for correctly', &
                                   'in conjunction with Res_DM'
-            write(*,      '(a)' ) 'Please set the process parameter "SwResBuf" to 1', &
+            write(*,      '(a)' ) 'Please set the process parameter "SwResBuf" to 0', &
                                   'otherwise resuspension is not accounted for correctly', &
                                   'in conjunction with Res_DM'
             call stop_with_error

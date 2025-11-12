@@ -54,13 +54,16 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+        implicit none
 
         REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
         INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
                 IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-        integer(kind = int_wp) :: iq, iseg
+        integer(kind = int_wp) :: iq, iseg, iflux, ikmrk1, ikmrk2, ivan, inaar, ikmrkv, ikmrkn
+        integer(kind = int_wp) :: ip1, ip2, ip3, ip4, ip5, ip6, ip7, ip8, ip9, ip10, ip11, ip12, ip13, ip14
+        integer(kind = int_wp) :: in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11, in12, in13, in14
+        REAL(kind = real_wp) :: sfl1, sfl2, sfl1s2, sfl2s2, q1, q2, depth, fompoc, fomphy, vspoc, vsphy, vsomi
+
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -73,6 +76,9 @@ contains
         IP9 = IPOINT(9)
         IP10 = IPOINT(10)
         IP11 = IPOINT(11)
+        IP12 = IPOINT(12)
+        IP13 = IPOINT(13)
+        IP14 = IPOINT(14)
 
         IN1 = INCREM(1)
         IN2 = INCREM(2)
@@ -85,6 +91,9 @@ contains
         IN9 = INCREM(9)
         IN10 = INCREM(10)
         IN11 = INCREM(11)
+        IN12 = INCREM(12)
+        IN13 = INCREM(13)
+        IN14 = INCREM(14)
         !
         IFLUX = 0
         DO ISEG = 1, num_cells
@@ -95,9 +104,11 @@ contains
                     !
                     SFL1 = process_space_real(IP1)
                     SFL2 = process_space_real(IP2)
-                    Q1 = process_space_real(IP3)
-                    Q2 = process_space_real(IP4)
-                    DEPTH = process_space_real(IP5)
+                    SFL1S2 = process_space_real(IP3)
+                    SFL2S2 = process_space_real(IP4)
+                    Q1 = process_space_real(IP5)
+                    Q2 = process_space_real(IP6)
+                    DEPTH = process_space_real(IP7)
 
                     !***********************************************************************
                     !**** Processes connected to the SEDIMENTATION of OMV
@@ -105,9 +116,11 @@ contains
 
                     !     SEDIMENTATION
                     FL(1 + IFLUX) = (SFL1 * Q1 + SFL2 * Q2) / DEPTH
+                    FL(2 + IFLUX) = (SFL1S2 * Q1 + SFL2S2 * Q2) / DEPTH
 
                     !     SEDIMENTATION SCALED
-                    process_space_real(IP10) = FL(1 + IFLUX) * DEPTH
+                    process_space_real(IP12) = FL(1 + IFLUX) * DEPTH
+                    process_space_real(IP13) = FL(2 + IFLUX) * DEPTH
 
                 ENDIF
             ENDIF
@@ -118,7 +131,10 @@ contains
             IP3 = IP3 + INCREM (3)
             IP4 = IP4 + INCREM (4)
             IP5 = IP5 + INCREM (5)
-            IP10 = IP10 + INCREM (10)
+            IP6 = IP6 + INCREM (6)
+            IP7 = IP7 + INCREM (7)
+            IP12 = IP12 + INCREM (12)
+            IP13 = IP13 + INCREM (13)
             !
         end do
         !
@@ -126,15 +142,15 @@ contains
         DO IQ = 1, num_exchanges_u_dir + num_exchanges_v_dir
 
             !........VxSedOMI op nul
-            process_space_real(IP11) = 0.0
+            process_space_real(IP14) = 0.0
 
-            IP11 = IP11 + IN11
+            IP14 = IP14 + IN14
 
         end do
 
         !.....Startwaarden VxSedPOC en VxSedPhyt
-        IP8 = IP8 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN8
-        IP9 = IP9 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN9
+        IP10 = IP10 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN10
+        IP11 = IP11 + (num_exchanges_u_dir + num_exchanges_v_dir) * IN11
 
         !.....Exchangeloop over de verticale richting
         DO IQ = num_exchanges_u_dir + num_exchanges_v_dir + 1, num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir + num_exchanges_bottom_dir
@@ -154,24 +170,24 @@ contains
 
                     FL(1 + (IVAN - 1) * NOFLUX) = 0.0
 
-                    FOMPOC = process_space_real(IP6 + (IVAN - 1) * IN6)
-                    FOMPHY = process_space_real(IP7 + (IVAN - 1) * IN7)
+                    FOMPOC = process_space_real(IP8 + (IVAN - 1) * IN8)
+                    FOMPHY = process_space_real(IP9 + (IVAN - 1) * IN9)
 
-                    VSPOC = process_space_real(IP8)
-                    VSPHY = process_space_real(IP9)
+                    VSPOC = process_space_real(IP10)
+                    VSPHY = process_space_real(IP11)
 
                     VSOMI = FOMPOC * VSPOC + FOMPHY * VSPHY
-                    process_space_real(IP11) = VSOMI
+                    process_space_real(IP14) = VSOMI
 
                 ELSEIF (IKMRKV==1.AND.IKMRKN==1) THEN
 
                     ! Water-water uitwisseling
 
-                    FOMPOC = process_space_real(IP6 + (IVAN - 1) * IN6)
-                    FOMPHY = process_space_real(IP7 + (IVAN - 1) * IN7)
+                    FOMPOC = process_space_real(IP8 + (IVAN - 1) * IN8)
+                    FOMPHY = process_space_real(IP9 + (IVAN - 1) * IN9)
 
-                    VSPOC = process_space_real(IP8)
-                    VSPHY = process_space_real(IP9)
+                    VSPOC = process_space_real(IP10)
+                    VSPHY = process_space_real(IP11)
 
                     ! Berekenen VxSedOMI
 
@@ -179,19 +195,19 @@ contains
                             FOMPHY * VSPHY
 
                     !..............VxSedOMI toekennen aan de process_space_real
-                    process_space_real(IP11) = VSOMI
+                    process_space_real(IP14) = VSOMI
 
                 ELSE
-                    process_space_real(IP11) = 0.0
+                    process_space_real(IP14) = 0.0
                 ENDIF
             ELSE
-                process_space_real(IP11) = 0.0
+                process_space_real(IP14) = 0.0
             ENDIF
 
             !........Exchangepointers ophogen
-            IP8 = IP8 + IN8
-            IP9 = IP9 + IN9
+            IP10 = IP10 + IN10
             IP11 = IP11 + IN11
+            IP14 = IP14 + IN14
 
         end do
 

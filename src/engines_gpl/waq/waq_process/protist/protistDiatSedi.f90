@@ -218,7 +218,6 @@ contains
                         process_space_real(ipnt(spInc + 4)) = MaxSed_N
                         process_space_real(ipnt(spInc + 5)) = MaxSed_P
                         process_space_real(ipnt(spInc + 6)) = MaxSed_Si
-
                     enddo ! end loop over species
 
                 endif ! end if check for dry cell
@@ -253,10 +252,10 @@ contains
                 if (ikmrkv==1 .and. ikmrkn==1) then
                     ! water-water exchange
                     ! convert value from m/d to m/s
-                    Depth = process_space_real(ipnt(6) + (i_origin - 1) * increm(6))
-                    Depth2 = process_space_real(ipnt(6) + (i_dest - 1) * increm(6))
-                    MinDepth = process_space_real(ipnt(3) + (i_origin - 1) * increm(3))
-                    MinDepth2 = process_space_real(ipnt(3) + (i_dest - 1) * increm(3))
+                    Depth = process_space_real(ipoint(6) + (i_origin - 1) * increm(6))
+                    Depth2 = process_space_real(ipoint(6) + (i_dest - 1) * increm(6))
+                    MinDepth = process_space_real(ipoint(3) + (i_origin - 1) * increm(3))
+                    MinDepth2 = process_space_real(ipoint(3) + (i_dest - 1) * increm(3))
 
                     do iSpec = 1, nrSpec
 
@@ -265,7 +264,6 @@ contains
                         else
                             process_space_real(ipnt(inpItems + nrSpec + nrSpec * nrSpecOut + iSpec)) = 0.0
                         endif ! end check if min depth large enough
-
                     enddo ! end loop over species
                 endif ! end check water - water
             endif ! end check boundaries
