@@ -236,6 +236,7 @@ contains
 
       call precice_write_bed_levels(precice_state, bed_levels)
       call precice_write_water_levels(precice_state, water_levels)
+      call precice_write_flow_velocities(precice_state)
    end subroutine precice_write_data
 
    subroutine precice_write_bed_levels(precice_state, bed_levels)
@@ -262,7 +263,6 @@ contains
    subroutine precice_write_water_levels(precice_state, water_levels)
       use precision, only: dp
       use m_fm_precice_state_t, only: fm_precice_state_t
-      use, intrinsic :: iso_c_binding, only: c_double
       use precice, only: precicef_write_data
       implicit none(type, external)
       type(fm_precice_state_t), intent(in) :: precice_state
@@ -272,6 +272,29 @@ contains
                                size(precice_state%flow_vertex_ids), precice_state%flow_vertex_ids, &
                                water_levels, len(precice_state%mesh_name), len(precice_state%water_levels_name))
    end subroutine precice_write_water_levels
+
+   subroutine precice_write_flow_velocities(precice_state)
+      use precision, only: dp
+      use m_get_ucx_ucy_eul_mag, only: getucxucyeulmag
+      use m_fm_precice_state_t, only: fm_precice_state_t
+      use precice, only: precicef_write_data
+      implicit none(type, external)
+
+      type(fm_precice_state_t), intent(in) :: precice_state
+      real(kind=dp), dimension(:), allocatable :: flow_velocity_vector, flow_velocity_magnitude
+
+      integer :: n_points
+
+      n_points = size(precice_state%flow_vertex_ids)
+      allocate(flow_velocity_vector(n_points * 2))
+      allocate(flow_velocity_magnitude(n_points))
+
+      call getucxucyeulmag(n_points, flow_velocity_vector(1::2), flow_velocity_vector(2::2), flow_velocity_magnitude, 0, 0)
+
+      call precicef_write_data(precice_state%mesh_name, precice_state%flow_velocity_name, &
+                               size(precice_state%flow_vertex_ids), precice_state%flow_vertex_ids, &
+                               flow_velocity_vector, len(precice_state%mesh_name), len(precice_state%flow_velocity_name))
+   end subroutine precice_write_flow_velocities
 #endif
 
 !> Initializes global program/core data, not specific to a particular model.

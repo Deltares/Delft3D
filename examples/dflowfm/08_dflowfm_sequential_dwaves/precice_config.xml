@@ -6,11 +6,13 @@
   </log>
 
   <data:scalar name="bed_levels" />
+  <data:scalar name="water_levels" />
   <data:scalar name="com_data_fm_to_wave" />
   <data:scalar name="com_data_wave_to_fm" />
 
   <mesh name="fm_flow_nodes" dimensions="2">
     <use-data name="bed_levels" />
+    <use-data name="water_levels" />
   </mesh>
 
   <mesh name="com_mesh" dimensions="2">
@@ -20,11 +22,13 @@
 
   <mesh name="wave_nodes" dimensions="2">
     <use-data name="bed_levels" />
+    <use-data name="water_levels" />
   </mesh>
 
   <participant name="fm">
     <provide-mesh name="fm_flow_nodes" />
     <write-data name="bed_levels" mesh="fm_flow_nodes" />
+    <write-data name="water_levels" mesh="fm_flow_nodes" />
     <provide-mesh name="com_mesh" />
     <write-data name="com_data_fm_to_wave" mesh="com_mesh" />
     <read-data name="com_data_wave_to_fm" mesh="com_mesh" />
@@ -34,6 +38,7 @@
     <provide-mesh name="wave_nodes" />
     <receive-mesh name="fm_flow_nodes" from="fm" />
     <read-data name="bed_levels" mesh="wave_nodes" />
+    <read-data name="water_levels" mesh="wave_nodes" />
     <mapping:linear-cell-interpolation direction="read" from="fm_flow_nodes" to="wave_nodes" constraint="consistent" />
     <receive-mesh name="com_mesh" from="fm" />
     <read-data name="com_data_fm_to_wave" mesh="com_mesh" />
@@ -47,6 +52,7 @@
     <max-time value="90000" />
     <participants first="wave" second="fm" />
     <exchange data="bed_levels" mesh="fm_flow_nodes" from="fm" to="wave" initialize="true" />
+    <exchange data="water_levels" mesh="fm_flow_nodes" from="fm" to="wave" initialize="true" />
     <exchange data="com_data_fm_to_wave" mesh="com_mesh" from="fm" to="wave" />
     <exchange data="com_data_wave_to_fm" mesh="com_mesh" from="wave" to="fm" />
   </coupling-scheme:serial-explicit>
