@@ -308,7 +308,7 @@ contains
    subroutine precice_write_wind(precice_state)
       use, intrinsic :: iso_c_binding, only: c_double
       use m_fm_precice_state_t, only: fm_precice_state_t
-      use m_wind, only: wx, wy
+      use m_wind, only: wx, wy, jawind
       use precice, only: precicef_write_data
       implicit none(type, external)
 
@@ -317,6 +317,9 @@ contains
       integer :: n_points, n, i
       real(kind=c_double), dimension(:), allocatable :: wind_velocity_vector
 
+      if (jawind == 0) then
+         return
+      end if
       n_points = size(precice_state%flow_vertex_ids)
       allocate (wind_velocity_vector(2 * n_points), source=0.0_c_double)
 
@@ -337,14 +340,16 @@ contains
 
    subroutine precice_write_vegetation(precice_state)
       use precice, only: precicef_write_data
-      use m_vegetation, only: rnveg, diaveg, stemheight
+      use m_vegetation, only: rnveg, diaveg, stemheight, javeg
       use m_fm_precice_state_t, only: fm_precice_state_t
       implicit none(type, external)
 
       type(fm_precice_state_t), intent(in) :: precice_state
 
       integer :: n_points
-
+      if (javeg == 0) then
+         return
+      end if
       n_points = size(precice_state%flow_vertex_ids)
 
       call precicef_write_data(precice_state%mesh_name, precice_state%vegetation_stem_density_name, &
