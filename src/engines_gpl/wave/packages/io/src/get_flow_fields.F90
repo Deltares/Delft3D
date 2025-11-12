@@ -293,6 +293,11 @@ contains
             write (*, '(a)') "ERROR: trying to read vegetation from Delft3D4-FLOW com-file. Not implemented yet."
             call wavestop(1, "ERROR: trying to read vegetation from Delft3D4-FLOW com-file. Not implemented yet.")
          else
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_stem_density_name, sif%veg)
+            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_diameter_name, sif%diaveg)
+            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_height_name, sif%veg_stemheight)
+#else
             !
             ! Read vegetation parameters from netcdf-file
             !
@@ -317,6 +322,7 @@ contains
             call grmap_esmf(i_flow, fif%veg_stemheight, fif%npts, &
                            & sif%veg_stemheight, sif%mmax, sif%nmax, &
                            & f2s, sg)
+#endif
             ! It seems that SWAN only accepts constant values for diaveg and veg_stemheight
             !
             maxval = -1.0e10

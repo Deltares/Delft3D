@@ -11,6 +11,9 @@ module m_wave_precice_state_t
       character(kind=c_char, len=12) :: water_levels_name = "water_levels"
       character(kind=c_char, len=13) :: flow_velocity_name = "flow_velocity"
       character(kind=c_char, len=13) :: wind_velocity_name = "wind_velocity"
+      character(kind=c_char, len=23) :: vegetation_stem_density_name = "vegetation_stem_density"
+      character(kind=c_char, len=19) :: vegetation_diameter_name = "vegetation_diameter"
+      character(kind=c_char, len=17) :: vegetation_height_name = "vegetation_height"
 #endif
    end type wave_precice_state_t
 end module m_wave_precice_state_t

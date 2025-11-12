@@ -237,6 +237,8 @@ contains
       call precice_write_bed_levels(precice_state, bed_levels)
       call precice_write_water_levels(precice_state, water_levels)
       call precice_write_flow_velocities(precice_state)
+      call precice_write_wind(precice_state)
+      call precice_write_vegetation(precice_state)
    end subroutine precice_write_data
 
    subroutine precice_write_bed_levels(precice_state, bed_levels)
@@ -299,7 +301,7 @@ contains
       call getucxucyeulmag(n_points, flow_velocity_vector(1::2), flow_velocity_vector(2::2), flow_velocity_magnitude, 0, 0)
 
       call precicef_write_data(precice_state%mesh_name, precice_state%flow_velocity_name, &
-                               size(precice_state%flow_vertex_ids), precice_state%flow_vertex_ids, &
+                               n_points, precice_state%flow_vertex_ids, &
                                flow_velocity_vector, len(precice_state%mesh_name), len(precice_state%flow_velocity_name))
    end subroutine precice_write_flow_velocities
 
@@ -309,6 +311,7 @@ contains
       use m_wind, only: wx, wy
       use precice, only: precicef_write_data
       implicit none(type, external)
+
       type(fm_precice_state_t), intent(in) :: precice_state
 
       integer :: n_points, n, i
@@ -328,9 +331,34 @@ contains
          end if
       end do
       call precicef_write_data(precice_state%mesh_name, precice_state%wind_velocity_name, &
-                               size(precice_state%flow_vertex_ids), precice_state%flow_vertex_ids, &
+                               n_points, precice_state%flow_vertex_ids, &
                                wind_velocity_vector, len(precice_state%mesh_name), len(precice_state%wind_velocity_name))
    end subroutine precice_write_wind
+
+   subroutine precice_write_vegetation(precice_state)
+      use precice, only: precicef_write_data
+      use m_vegetation, only: rnveg, diaveg, stemheight
+      use m_fm_precice_state_t, only: fm_precice_state_t
+      implicit none(type, external)
+
+      type(fm_precice_state_t), intent(in) :: precice_state
+
+      integer :: n_points
+
+      n_points = size(precice_state%flow_vertex_ids)
+
+      call precicef_write_data(precice_state%mesh_name, precice_state%vegetation_stem_density_name, &
+                               n_points, precice_state%flow_vertex_ids, &
+                               rnveg, len(precice_state%mesh_name), len(precice_state%vegetation_stem_density_name))
+
+      call precicef_write_data(precice_state%mesh_name, precice_state%vegetation_diameter_name, &
+                               n_points, precice_state%flow_vertex_ids, &
+                               diaveg, len(precice_state%mesh_name), len(precice_state%vegetation_diameter_name))
+
+      call precicef_write_data(precice_state%mesh_name, precice_state%vegetation_height_name, &
+                               n_points, precice_state%flow_vertex_ids, &
+                               stemheight, len(precice_state%mesh_name), len(precice_state%vegetation_height_name))
+   end subroutine precice_write_vegetation
 #endif
 
 !> Initializes global program/core data, not specific to a particular model.
