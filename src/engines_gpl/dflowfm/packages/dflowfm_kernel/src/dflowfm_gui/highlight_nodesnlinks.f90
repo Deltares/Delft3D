@@ -33,7 +33,6 @@
 !> Highlights net/flow nodes and/or links, when specified in display parameters.
 module m_highlight_nodesnlinks
 
-
    use precision, only: dp
    implicit none
 

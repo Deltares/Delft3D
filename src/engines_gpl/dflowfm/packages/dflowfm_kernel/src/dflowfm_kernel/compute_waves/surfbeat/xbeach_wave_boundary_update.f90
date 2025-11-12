@@ -1408,7 +1408,7 @@ contains
       specinterp%fp = specinterp%f(i)
       call tpDcalc(specinterp%Sf, specinterp%f, specinterp%trep, waveBoundaryParameters(ibnd)%trepfac, waveBoundaryParameters(ibnd)%Tm01switch)
       specinterp%dirm = 270.0_dp - 180.0_dp / par_pi * atan2(sum(sin(specinterp%ang) * specinterp%Sd) / sum(specinterp%Sd), &
-                                                         sum(cos(specinterp%ang) * specinterp%Sd) / sum(specinterp%Sd))
+                                                             sum(cos(specinterp%ang) * specinterp%Sd) / sum(specinterp%Sd))
 
       specinterp%dirm = mod(specinterp%dirm, 360.0_dp)
 

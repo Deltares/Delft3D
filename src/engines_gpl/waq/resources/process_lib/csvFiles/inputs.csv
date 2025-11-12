@@ -598,9 +598,10 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Reflection","RefDay    ",   3,"Y","x",1
 "Reflection","AuxSys    ",   4,"Y","x",1
 "DepAve    ","SWDepAve  ",   1,"Y","x",1
-"DepAve    ","TimMultBl ",   2,"Y","x",1
-"DepAve    ","Depth     ",   3,"N","x",1
-"DepAve    ","BloomDepth",   4,"N","x",1
+"DepAve    ","BloomStep ",   2,"Y","x",1
+"DepAve    ","DELT      ",   3,"N"," ",1
+"DepAve    ","Depth     ",   4,"N","x",1
+"DepAve    ","BloomDepth",   5,"N","x",1
 "vtrans    ","IDT       ",   1,"N"," ",1
 "vtrans    ","DELT      ",   2,"N"," ",1
 "vtrans    ","PeriodVTRA",   3,"N","x",1
@@ -629,11 +630,11 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "EffMBlo   ","DayL      ",   6,"Y","x",1
 "EffMBlo   ","DELT      ",   7,"N","x",1
 "EffABlo_P ","DELT      ",   1,"N"," ",1
-"EffABlo_P ","TimMultBl ",   2,"Y","x",1
+"EffABlo_P ","BloomStep ",   2,"Y","x",1
 "EffABlo_P ","EffTAlg   ",   3,"N","x",1
 "EffABlo_P ","EffMAlg   ",   4,"N","x",1
 "EffABlo   ","DELT      ",   1,"N"," ",1
-"EffABlo   ","TimMultBl ",   2,"Y","x",1
+"EffABlo   ","BloomStep ",   2,"Y","x",1
 "EffABlo   ","EffTALG01 ",   3,"N","x",1
 "EffABlo   ","EffTALG02 ",   4,"B","x",1
 "EffABlo   ","EffTALG03 ",   5,"B","x",1
@@ -695,7 +696,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "EffABlo   ","EffMALG29 ",  61,"N","x",1
 "EffABlo   ","EffMALG30 ",  62,"N","x",1
 "BLOOM_P   ","BLComment ",   1,"Y"," ",1
-"BLOOM_P   ","TimMultBl ",   2,"Y","x",1
+"BLOOM_P   ","BloomStep ",   2,"Y","x",1
 "BLOOM_P   ","ExtVl     ",   3,"N","x",1
 "BLOOM_P   ","ExtVlPhBl ",   4,"N","x",1
 "BLOOM_P   ","Temp      ",   5,"Y","x",1
@@ -761,7 +762,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "BLOOM_P   ","MrtB2Alg  ",  65,"Y","x",1
 "BLOOM_P   ","FixAlg    ",  66,"Y","x",1
 "BLOOM_P   ","EffiAlg   ",  67,"O"," ",1
-"BLOOM     ","TimMultBl ",   1,"Y","x",1
+"BLOOM     ","BloomStep ",   1,"Y","x",1
 "BLOOM     ","ExtVl     ",   2,"N","x",1
 "BLOOM     ","ExtVlPhBl ",   3,"N","x",1
 "BLOOM     ","Temp      ",   4,"Y","x",1
@@ -4412,7 +4413,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Res_DM    ","MinDepth  ",  10,"Y","x",1
 "Res_DM    ","Surf      ",  11,"N","x",1
 "Res_DM    ","SWResusp  ",  12,"Y"," ",1
-"Res_DM    ","SWResBuf  ",  13,"Y"," ",1
+"Res_DM    ","SwResBuf  ",  13,"Y"," ",1
 "Bur_DM    ","fSedDM    ",   1,"N","x",1
 "Bur_DM    ","fResS1DM  ",   2,"Y","x",1
 "Bur_DM    ","fResS2DM  ",   3,"Y","x",1

@@ -33,7 +33,6 @@
 !> Initializes all administration necessary for writing lateral discharge output to his-files.
 module m_init_lateral_his
 
-
    use precision, only: dp
    implicit none
 

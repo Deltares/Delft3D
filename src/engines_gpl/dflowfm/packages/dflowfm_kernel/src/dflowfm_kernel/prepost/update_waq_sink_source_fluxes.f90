@@ -39,7 +39,6 @@
 !! calling subroutine should also be taken over in this routine!
 module m_update_waq_sink_source_fluxes
 
-
    use precision, only: dp
    implicit none
 

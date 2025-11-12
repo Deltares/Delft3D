@@ -11,7 +11,8 @@ add_library(${library_name} ${source_files}
                             ${include_files})
 
 # Specify dependencies
-set(oss_dependencies    deltares_common) 
+set(oss_dependencies    deltares_common
+                        flow1d_core)
 
 target_link_libraries(${library_name} ${oss_dependencies})
 

@@ -34,7 +34,7 @@ module m_inidat
    use m_wrirgf, only: wrirgf
    use m_maketekaltimes, only: maketekaltimes
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    private

@@ -49,7 +49,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_calibration, only: calibration_backup_frcu
    use unstruc_channel_flow, only: network
    use time_class, only: c_time, ecgetvalues
-   use m_longculverts, only: nlongculverts
+   use m_longculverts_data, only: nlongculverts
    use m_nearfield, only: nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
    use m_airdensity, only: get_airdensity
    use m_laterals, only: numlatsg

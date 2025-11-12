@@ -124,7 +124,7 @@ contains
 
                !-----------------------------------------------------------------------------------------------
 
-               nonlincont: do ! entry point for non-linear continuity
+               nonlincont: do ! entry point for non-linear continuity interation
                   call s1nod()
                   if (ifixedWeirScheme1d2d == 1) then
                      if (last_iteration) then
