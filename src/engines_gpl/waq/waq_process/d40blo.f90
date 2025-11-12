@@ -130,7 +130,6 @@ contains
         !     RADIAT  R     1             Irradiation (W/m2)
         !     SILICA  R     1             Silicate (gSi/m3)
         !     SWCLIM  I     1             Carbon limitation switch (0 inactive, 1 active)
-        !     TIMMUL  R     1             Time step multiplyer Bloom call (-)
         !     TEMPER  R     1             Temperature (degrees C)
         !     TOTNUT  R     4             C, N, P, Si in algae (gX/m3)
         !     NUTCON  I*4   8             Nutrients involved in active nutrient constraints
@@ -155,7 +154,7 @@ contains
         logical  lmixo, lfixn, lcarb
         integer(kind = int_wp) :: ntyp_a, ngro_a, &
                 nset, id
-        real(kind = real_wp) :: timmul, temper, radiat, depthw, depth, daylen, &
+        real(kind = real_wp) :: temper, radiat, depthw, depth, daylen, &
                 ammoni, nitrat, phosph, silica, deltat, blstep, &
                 exttot, deat4, nuptak, frammo, fbod5, extalg, &
                 chloro, totnut(4), algdm, &
@@ -210,9 +209,8 @@ contains
             call get_log_unit_number(lunrep)
             call blfile(lunrep)
 
-            timmul = process_space_real(ipoint(1))
+            blstep = process_space_real(ipoint(1))
             deltat = process_space_real(ipoint(19))
-            blstep = timmul * deltat
             rdcnt = - blstep
             id = 0
             swclim = nint(process_space_real(ipoint(28)))
@@ -471,9 +469,8 @@ contains
         ENDIF
         ! END3DL
 
-        TIMMUL = process_space_real(IP1)
+        BLSTEP = process_space_real(IP1)
         DELTAT = process_space_real(IP19)
-        BLSTEP = TIMMUL * DELTAT
         RDCNT = RDCNT + BLSTEP
         IF ((AINT(RDCNT / 7.) + 1)/=ID) THEN
             ID = AINT(RDCNT / 7.) + 1
@@ -603,7 +600,6 @@ contains
                 ENDIF
                 ! END3DL
                 !
-                TIMMUL = process_space_real(IP1)
                 EXTTOT = process_space_real(IP2)
                 EXTALG = process_space_real(IP3)
                 TEMPER = process_space_real(IP4)

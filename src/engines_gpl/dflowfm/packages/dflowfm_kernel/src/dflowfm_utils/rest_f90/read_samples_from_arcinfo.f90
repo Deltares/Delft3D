@@ -34,7 +34,6 @@
 !! Samples are being stored in a global dataset of m_samples.
 module m_read_samples_from_arcinfo
 
-
    use precision, only: dp
    implicit none
 

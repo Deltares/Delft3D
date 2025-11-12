@@ -72,7 +72,7 @@ contains
       call FINDCELLS(0)
 
 !   take dry cells into account (after findcells)
-      call delete_dry_points_and_areas(update_blcell = .false.)
+      call delete_dry_points_and_areas(update_blcell=.false.)
 
       JAREMOVE = 0
       do L = 1, NUML ! REMOVE SMALL CIRCUMCENTRE DISTANCES

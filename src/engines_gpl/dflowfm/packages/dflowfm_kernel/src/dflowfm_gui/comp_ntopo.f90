@@ -33,7 +33,6 @@
 !> compute change in topology functional and get the nodes and cells involved
 module m_comp_ntopo
 
-
    use precision, only: dp
    implicit none
 

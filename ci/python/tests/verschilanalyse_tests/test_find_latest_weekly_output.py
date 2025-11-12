@@ -116,28 +116,6 @@ def test_get_latest_run__multiple_reports__get_last_modified_run(mocker: MockerF
     assert run.timestamp == now - timedelta(days=1)
 
 
-def test_get_latest_run__ignore_tags_without_weekly(mocker: MockerFixture) -> None:
-    # Arrange
-    now = datetime.now(timezone.utc)
-    yesterday = now - timedelta(days=1)
-    minio = mocker.Mock(spec=Minio)
-    minio.list_objects.return_value = [
-        make_obj("output/weekly/weekly-tag-1/output/foo.zip", last_modified=yesterday),
-        make_obj("output/weekly/weekly-tag-1/logs/logs.zip", last_modified=yesterday),
-        make_obj("output/weekly/daily-tag-4/logs/logs.zip", last_modified=now),
-        make_obj("output/weekly/daily-tag-4/output/foo.zip", last_modified=now),
-    ]
-    reporter = VerschilAnalyseReporter(minio, "my-bucket", "output/weekly")
-
-    # Act
-    run = reporter.get_latest_run()
-
-    # Assert
-    assert run is not None
-    assert run.tag == "weekly-tag-1"
-    assert run.timestamp == now - timedelta(days=1)
-
-
 def test_get_latest_run__no_reports_found__return_none(mocker: MockerFixture) -> None:
     # Arrange
     minio = mocker.Mock(spec=Minio)

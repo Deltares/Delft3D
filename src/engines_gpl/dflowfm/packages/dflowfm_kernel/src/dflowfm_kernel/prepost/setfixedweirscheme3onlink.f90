@@ -32,7 +32,6 @@
 
 module m_setfixedweirscheme3onlink
 
-
    use precision, only: dp
    implicit none
 

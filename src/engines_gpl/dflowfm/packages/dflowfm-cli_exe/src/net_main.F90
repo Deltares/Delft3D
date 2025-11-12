@@ -99,7 +99,6 @@ program unstruc
    use m_qnrgf, only: jqn
    use m_read_commandline, only: read_commandline
    use m_flow_modelinit, only: flow_modelinit
-   use m_makelongculverts_commandline, only: makelongculverts_commandline
    use m_makenet_sub, only: makenet
    use m_partition_from_commandline, only: partition_from_commandline
    use m_refine_from_commandline, only: refine_from_commandline
@@ -359,11 +358,6 @@ program unstruc
 
    if (jagui == 1 .and. len_trim(md_cfgfile) > 0) then
       call load_displaysettings(md_cfgfile)
-   end if
-   if (md_convertlongculverts == 1) then
-      call findcells(0)
-      call makelongculverts_commandline()
-      goto 1234 !      stop
    end if
 
    if (len_trim(md_ident) > 0) then

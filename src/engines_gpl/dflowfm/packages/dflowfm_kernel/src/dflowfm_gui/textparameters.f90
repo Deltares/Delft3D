@@ -32,7 +32,6 @@
 
 module m_textparameters
 
-
    use precision, only: dp
    implicit none
 

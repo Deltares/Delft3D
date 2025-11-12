@@ -44,7 +44,7 @@ contains
       use unstruc_caching
       use network_data, only: nump, nump1d2d, lne, lnn, xzw, yzw, netcell
       use m_flowgeom, only: xz, yz, ba
-      
+
       logical, intent(in) :: update_blcell !< Flag specifying whether the blcell array should be updated after removing dry cells.
 
       logical cache_success

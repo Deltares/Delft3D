@@ -1,5 +1,8 @@
 /*
-  Copyright © 2004, Rijkswaterstaat/RIZA & ®HKV Consultants, All Rights Reserved.
+  Copyright Â© 2025, Rijkswaterstaat, All Rights Reserved.
+  
+  This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
+  https://www.rijkswaterstaat.nl/formulieren/contactformulier, software.support@deltares.nl
 
   DESCRIPTION
     RIZA OpenMI Buffer implementation
@@ -55,7 +58,7 @@ int APIENTRY RobInitialize(const char * logFileName)
 /// </summary>
 void APIENTRY RobVersion(char *version)
 {
-  sprintf(version, "Rob copyright © %s  Rijkswaterstaat/RIZA  version %s\n", ROB_VERYEAR, ROB_VERSION);
+  sprintf(version, "Rob copyright ï¿½ %s  Rijkswaterstaat/RIZA  version %s\n", ROB_VERYEAR, ROB_VERSION);
 }
 
 /// <summary>
