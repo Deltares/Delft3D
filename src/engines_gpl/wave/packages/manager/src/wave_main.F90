@@ -359,37 +359,6 @@ contains
 
       write (*, '(a,i0,a,i0,a)') '[Wave] Swan grid dimensions: mmax=', swan_grid%mmax, ', nmax=', swan_grid%nmax
    end function get_swan_grid
-
-   ! subroutine compare_precice_bed_levels(com_bed_levels, vertex_ids)
-   !    use precice, only: precicef_read_data, precicef_get_max_time_step_size
-   !    implicit none(type, external)
-   !    real(kind=c_double), dimension(:), intent(in) :: com_bed_levels
-   !    integer(kind=c_int), dimension(:), intent(in) :: vertex_ids
-
-   !    character(kind=c_char, len=*), parameter :: mesh_name = "wave_nodes"
-   !    character(kind=c_char, len=*), parameter :: data_name = "bed_levels"
-   !    real(kind=c_double) :: precice_time_step
-   !    real(kind=c_double), dimension(:), allocatable :: data_values
-   !    integer :: n_points
-
-   !    n_points = size(vertex_ids)
-
-   !    if (size(com_bed_levels) /= n_points) then
-   !       write(*,'(a,i0,a,i0)') '*** WARNING: COM bed levels array size (', size(com_bed_levels), &
-   !          ') does not match vertex_ids size (', n_points, ')'
-   !    end if
-
-   !    call precicef_get_max_time_step_size(precice_time_step)
-
-   !    allocate(data_values(n_points))
-   !    call precicef_read_data(mesh_name, data_name, n_points, vertex_ids, 0.0_c_double, data_values, len(mesh_name), len(data_name))
-
-   !    write(*, '(a,i0,a)') '[wave] Comparing ', min(n_points, size(com_bed_levels)), ' bed level values:'
-   !    write(*, '(a)') '[wave] COM data (from ESMF regridding):'
-   !    write(*, *) com_bed_levels
-   !    write(*, '(a)') '[wave] preCICE data (from preCICE interpolation):'
-   !    write(*, *) data_values
-   ! end subroutine compare_precice_bed_levels
 #endif
 !
 ! ====================================================================================
