@@ -206,6 +206,9 @@ contains
                       & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
                       & iprint)
          else
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%flow_velocity_name, sif%u1, sif%v1)
+#else
             !
             ! Read velocity components from netcdf-file
             !
@@ -233,6 +236,7 @@ contains
             call grmap_esmf(i_flow, fif%v1, fif%npts, &
                            & sif%v1, sif%mmax, sif%nmax, &
                            & f2s, sg)
+#endif
          end if
       end if
       !
@@ -370,12 +374,12 @@ contains
       call dealloc_input_fields(fif, wavedata%mode)
    end subroutine get_flow_fields
 
-   subroutine precice_read_data(swan_grid_mask, m_max, n_max, precice_state, field_name, output_field)
-      use, intrinsic :: iso_c_binding, only: c_double
+   subroutine precice_read_data(swan_grid_mask, m_max, n_max, precice_state, field_name, output_field_x, output_field_y)
+      use, intrinsic :: iso_c_binding, only: c_double, c_int
       use precision, only: sp
       use m_wave_precice_state_t, only: wave_precice_state_t
       use swan_flow_grid_maps, only: input_fields, grid
-      use precice, only: precicef_read_data
+      use precice, only: precicef_read_data, precicef_get_data_dimensions
       implicit none(type, external)
 
       integer, dimension(:, :), intent(in) :: swan_grid_mask
@@ -383,22 +387,34 @@ contains
       integer, intent(in) :: n_max
       type(wave_precice_state_t), intent(in) :: precice_state
       character(*), intent(in) :: field_name
-      real(kind=sp), dimension(:, :), intent(inout) :: output_field
+      real(kind=sp), dimension(:, :), intent(inout) :: output_field_x
+      real(kind=sp), dimension(:, :), optional, intent(inout) :: output_field_y
 
-      integer :: n_points, precice_index, i, j
+      integer :: n_vertices, precice_index, i, j
+      integer(kind=c_int) :: data_dimension
       real(kind=c_double), dimension(:), allocatable :: data_values
 
-      n_points = size(precice_state%vertex_ids)
-      allocate (data_values(n_points))
+      call precicef_get_data_dimensions(precice_state%swan_mesh_name, field_name, data_dimension, &
+                                   len(precice_state%swan_mesh_name), len(field_name))
+
+      if (data_dimension > 1 .and. .not. present(output_field_y)) then
+         write (*, '(a)') "ERROR: trying to read vector data from PreCICE without providing both output fields."
+         stop
+      end if
+      n_vertices = size(precice_state%vertex_ids)
+      allocate (data_values(n_vertices * data_dimension))
       call precicef_read_data(precice_state%swan_mesh_name, field_name, &
-                              n_points, precice_state%vertex_ids, 0.0_c_double, data_values, &
+                              n_vertices, precice_state%vertex_ids, 0.0_c_double, data_values, &
                               len(precice_state%swan_mesh_name), len(field_name))
-      precice_index = 0
+      precice_index = 1
       do j = 1, n_max
          do i = 1, m_max
             if (swan_grid_mask(i, j) /= 0) then
-               precice_index = precice_index + 1
-               output_field(i, j) = data_values(precice_index)
+               output_field_x(i, j) = data_values(precice_index)
+               if (present(output_field_y)) then
+                  output_field_y(i, j) = data_values(precice_index + 1)
+               end if
+               precice_index = precice_index + data_dimension
             end if
          end do
       end do

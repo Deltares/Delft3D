@@ -9,6 +9,7 @@ module m_wave_precice_state_t
       character(kind=c_char, len=10) :: swan_mesh_name = "wave_nodes"
       character(kind=c_char, len=10) :: bed_levels_name = "bed_levels"
       character(kind=c_char, len=12) :: water_levels_name = "water_levels"
+      character(kind=c_char, len=13) :: flow_velocity_name = "flow_velocity"
 #endif
    end type wave_precice_state_t
 end module m_wave_precice_state_t
