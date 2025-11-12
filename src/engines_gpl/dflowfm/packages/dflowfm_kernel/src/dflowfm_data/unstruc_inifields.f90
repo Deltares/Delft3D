@@ -655,7 +655,7 @@ contains
          end if
 
          ! read value
-         if (filetype == inside_polygon) then
+         if ((filetype == inside_polygon) .and. .not. strcmpi(quantity, 'initialvertical', 15)) then
             call prop_get(node_ptr, '', 'value', transformcoef(1), retVal)
             if (.not. retVal) then
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), &
