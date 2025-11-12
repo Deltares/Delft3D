@@ -50,7 +50,7 @@ object Publish : BuildType({
     }
 
     params {
-        select("release_type", "pre-release", display = ParameterDisplay.PROMPT, options = listOf("pre-release", "release"))
+        select("release_type", "development", display = ParameterDisplay.PROMPT, options = listOf("development", "release"))
         text("release_version", "2.29.xx", 
             label = "Release version", 
             description = "e.g. '2.29.03' or '2025.02'", 
@@ -63,6 +63,7 @@ object Publish : BuildType({
         param("commit_id_short", "%dep.${LinuxBuild.id}.commit_id_short%")
         param("source_image", "containers.deltares.nl/delft3d-dev/delft3d-runtime-container:alma10-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
         param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_version%-%release_type%")
+        param("destination_image_rolling", "containers.deltares.nl/delft3d/%brand%:%release_type%")
     }
 
     if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
@@ -148,6 +149,31 @@ object Publish : BuildType({
                 namesAndTags = """
                     "%destination_image_specific%"
                 """.trimIndent()
+            }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+        }
+        dockerCommand {
+            name = "Tag rolling development image"
+            enabled = false
+            commandType = other {
+                subCommand = "tag"
+                commandArgs = "%destination_image_specific% %destination_image_rolling%"
+            }
+            conditions {
+                equals("release_type", "development")
+            }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+        }
+        dockerCommand {
+            name = "Push rolling development tag"
+            enabled = false
+            commandType = push {
+                namesAndTags = """
+                    "%destination_image_rolling%"
+                """.trimIndent()
+            }
+            conditions {
+                equals("release_type", "development")
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
