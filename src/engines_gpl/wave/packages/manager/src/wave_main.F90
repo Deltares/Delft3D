@@ -117,12 +117,12 @@ contains
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_fm_coupling(mdw_file_name, precice_state)
       use precice, only: precicef_create, precicef_initialize
-      use m_precice_state_t, only: precice_state_t
+      use m_wave_precice_state_t, only: wave_precice_state_t
       use, intrinsic :: iso_c_binding, only: c_char
       implicit none(type, external)
 
       character(len=*), intent(in) :: mdw_file_name
-      type(precice_state_t), intent(out) :: precice_state
+      type(wave_precice_state_t), intent(out) :: precice_state
 
       character(kind=c_char, len=*), parameter :: precice_component_name = "wave"
       character(kind=c_char, len=*), parameter :: precice_config_name = "../precice_config.xml"
@@ -153,13 +153,13 @@ contains
 
    subroutine register_wave_nodes_with_precice(mdw_file_name, precice_state)
       use precice, only: precicef_set_vertices, precicef_set_mesh_triangles
-      use m_precice_state_t, only: precice_state_t
+      use m_wave_precice_state_t, only: wave_precice_state_t
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
       use swan_flow_grid_maps, only: grid
       implicit none(type, external)
 
       character(len=*), intent(in) :: mdw_file_name
-      type(precice_state_t), intent(out) :: precice_state
+      type(wave_precice_state_t), intent(out) :: precice_state
 
       integer :: result
       type(grid) :: swan_grid
@@ -171,7 +171,7 @@ contains
       integer(kind=c_int), dimension(:), allocatable :: precice_triangle_nodes
       integer(kind=c_int) :: num_triangles, is_required
 
-      precice_state = precice_state_t()
+      precice_state = wave_precice_state_t()
 
       result = get_swan_grid(mdw_file_name, swan_grid, active_count)
       if (result /= 0) then
@@ -669,7 +669,7 @@ end function wave_init
 !
 ! ====================================================================================
 function  wave_main_step(stepsize, precice_state) result(retval)
-   use m_precice_state_t, only: precice_state_t
+   use m_wave_precice_state_t, only: wave_precice_state_t
    implicit none
 !
 ! return value
@@ -679,7 +679,7 @@ function  wave_main_step(stepsize, precice_state) result(retval)
 ! Globals
 !
    real(hp) :: stepsize
-   type(precice_state_t), intent(in) :: precice_state
+   type(wave_precice_state_t), intent(in) :: precice_state
 !
 ! Local variables
 !
@@ -708,7 +708,7 @@ end function wave_main_step
 !
 ! ====================================================================================
 function wave_master_step(stepsize, precice_state) result(retval)
-   use m_precice_state_t, only: precice_state_t
+   use m_wave_precice_state_t, only: wave_precice_state_t
    implicit none
 !
 ! return value
@@ -718,7 +718,7 @@ function wave_master_step(stepsize, precice_state) result(retval)
 ! Globals
 !
    real(hp) :: stepsize
-   type(precice_state_t), intent(in) :: precice_state
+   type(wave_precice_state_t), intent(in) :: precice_state
 !
 ! Locals
 !

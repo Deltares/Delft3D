@@ -240,13 +240,14 @@ contains
       use unstruc_files
       use m_partitioninfo
       use check_mpi_env
+      use m_fm_precice_state_t, only: fm_precice_state_t
 #ifdef HAVE_MPI
       use mpi
 #endif
 
       character(kind=c_char), intent(in) :: c_config_file(MAXSTRLEN)
       character(len=strlen(c_config_file)) :: config_file
-      type(init_result_t) :: init_result
+      type(fm_precice_state_t) :: precice_state
 
       ! Extra local variables
       integer :: inerr ! number of the initialisation error
@@ -324,8 +325,7 @@ contains
       call startpetsc()
 #endif
 
-      init_result= flowinit()
-      c_iresult = init_result%iresult
+      c_iresult = flowinit(precice_state)
 
       time_user = tstart_user
 

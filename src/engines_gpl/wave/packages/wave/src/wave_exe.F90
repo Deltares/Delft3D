@@ -34,7 +34,7 @@ program waves_main
 !!--declarations----------------------------------------------------------------
    use wave_main, only: wave_main_init, wave_main_step, wave_main_finish
    use precision
-   use m_precice_state_t, only: precice_state_t
+   use m_wave_precice_state_t, only: wave_precice_state_t
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    use precice, only: precicef_get_max_time_step_size
    use, intrinsic :: iso_c_binding, only: c_double
@@ -62,7 +62,7 @@ program waves_main
    real(hp)                                     :: stepsize
    character(20)                                :: tmpchar
    character(256)                               :: mdw_file     ! filename mdw file
-   type(precice_state_t) :: precice_state
+   type(wave_precice_state_t) :: precice_state
 #if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    real(kind=c_double) :: max_time_step
 #endif
