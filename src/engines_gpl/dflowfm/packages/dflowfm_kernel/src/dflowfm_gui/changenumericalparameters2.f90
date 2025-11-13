@@ -94,7 +94,6 @@ contains
       HELPM(i) = '0 = no, 1 = YES                                             '; i = i + 1
       HELPM(i) = '0=No, 1=Upwe, 2=Cente, 3=Upwi, 4=Centi, 5=4,3, 6=MCexpl     '; i = i + 1
       HELPM(i) = '0=No, 6=subgrid, 7=rajaratnam, 8=Tabelb, 9=Willemontenotyet '; i = i + 1
-      HELPM(i) = 'Sigma adaptation timescale, only for layertype == 4         '; i = i + 1
       HELPM(i) = '1 = yes, 0 = no                                             '; i = i + 1
       HELPM(i) = '0=never switch off ho term vertical                         '; i = i + 1
       HELPM(i) = '0=never switch off ho term hor mom                          '; i = i + 1
