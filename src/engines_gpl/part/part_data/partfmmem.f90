@@ -49,8 +49,6 @@ module m_part_flow
 
     integer, parameter :: LAYTP_SIGMA = 1
     integer, parameter :: LAYTP_Z = 2
-    integer, parameter :: LAYTP_LEFTSIGMA = 3
-    integer, parameter :: LAYTP_LEFTZ = 4
 
     ! flow arrays
 
