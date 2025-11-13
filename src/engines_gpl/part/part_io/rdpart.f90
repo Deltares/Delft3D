@@ -71,6 +71,7 @@ contains
         character(32)                 filvers         ! to read the file version number
         character(32)                 cwork           ! small character workstring
         character(256)                 cbuffer         ! character buffer
+
         integer  (int_wp)                 ibuffer         ! integer buffer
         integer  (int_wp)                 i, k            ! loop variables
         integer  (int_wp)                 ios             ! help variable io-status
@@ -655,23 +656,29 @@ contains
             endif
         endif
 
-        ! read special features
-        ! add defaults when special features are not used first
-        vertical_bounce = .true.
-        apply_wind_drag = .false.
-        max_wind_drag_depth = 0.0
-        write_restart_file = .false.
-        max_restart_age = -1
-        pldebug = .false.
-        screens = .false.
-        nrowsscreens = 0
-        partinifile = ' '
-        partrelfile = ' '
-        abmmodel = .false.
-        abmmodelname = ""
-        abmstagedev = ""
-        chronrev = .false.
-        selstage = 0.0
+      ! read special features
+      ! add defaults when special features are not used first
+      vertical_bounce = .true.
+      apply_wind_drag = .false.
+      max_wind_drag_depth = 0.5 ! default, when using leeway without the apply_wind_drag keyword
+      write_restart_file = .false.
+      scale_vdif_depth = 1.0
+      max_restart_age = -1
+      pldebug = .false.
+      screens = .false.
+      nrowsscreens = 0
+      partinifile = ' '
+      partrelfile = ' '
+      abmmodel = .false.
+      abmmodelname = ""
+      abmstagedev = ""
+      chronrev = .false.
+      selstage = 0.0
+      leeway = .false.
+      leeway_csvfile = ""
+      leeway_multiplier = 0.
+      leeway_modifier = 0.
+      leeway_angle = 0.0
 
         if (gettoken(cbuffer, id, itype, ierr2) /= 0) then
             if (ierr2 == 2) then
@@ -694,6 +701,13 @@ contains
                         if (gettoken (max_wind_drag_depth, ierr2) /= 0) goto 9005
                         if (max_wind_drag_depth<0.0) goto 9005
                         write (lun2, '(/a,f13.4)') ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
+                    case ('scale_vdif_depth')
+                        write (lun2, '(/a)') ' Found keyword "scale_vdif_depth".'
+                        apply_wind_drag = .true.
+                        if (gettoken (scale_vdif_depth, ierr2) /= 0) goto 9005
+                        if (scale_vdif_depth<0.0) goto 9005
+                        write (lun2, '(/a,f13.4)') ' Scale factor for vertical diffusion for particles in top layer: ', scale_vdif_depth
+
                     case ('write_restart_file')
                         write (lun2, '(/a)') '  Found keyword "write_restart_file".'
                         write (lun2, '(/a,a)') '  At the end of a simulation, delpar will write ', &
@@ -813,7 +827,7 @@ contains
                         if (gettoken(abmmodelname, ierr2) /= 0) goto 9402   ! ABM model name
                         write (lun2, '(/a)') '  Found ABM model name : ', abmmodelname
                         select case (trim(abmmodelname)) ! Set ABM model
-                        case ("test")
+                        case ("general")
                             abmmt = 0        ! model type none
                         case ("european_eel")
                             abmmt = 1        ! model type European eel
@@ -853,6 +867,23 @@ contains
                         chronrev = .true.
                         if (gettoken(selstage, ierr2) /= 0) goto 9407   ! Give stage for release
                         write (lun2, '(/a,f10.3)') '  Found stage for reversed release : ', selstage
+                    case ('leeway')
+                        if (modtyp /= 1) goto 9408
+                        write ( lun2, '(/a)' ) '  Found keyword -test- "leeway".'
+                        if ( gettoken( leeway_multiplier     , ierr2 ) .ne. 0 ) goto 9409   ! Give stage for release
+                        if ( gettoken( leeway_modifier     , ierr2 ) .ne. 0 ) goto 9409   ! Give stage for release
+                        if ( gettoken( leeway_angle     , ierr2 ) .ne. 0 ) goto 9409   ! Give stage for release
+                        write ( lun2, 3601 ) leeway_multiplier, leeway_modifier, leeway_angle
+                        leeway = .true.
+                        apply_wind_drag = .true.
+                        write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
+                    case ('leeway_csvfile')
+                        if (modtyp /= 1) goto 9408
+                        call get_leeway_params_from_csv(lun2, substi(1), leeway_multiplier, leeway_modifier, leeway_angle)
+                        leeway = .true.
+                        apply_wind_drag = .true.
+                        write ( lun2, '(/a,f13.4)' ) ' Maximum depth for particles in top layer to be subject to wind drag: ', max_wind_drag_depth
+                        write ( lun2, 3601 ) leeway_multiplier, leeway_modifier, leeway_angle
                     case default
                         write (lun2, '(/a,a)') '  Unrecognised keyword: ', trim(cbuffer)
                         goto 9000
@@ -1409,25 +1440,25 @@ contains
 
             !       location of the instantaneous release
 
-            if (.not. oil) then
-                if (nolayp == 1) then
-                    if (gettoken(xwaste(i), ierr2) /= 0) goto 4042
-                    if (gettoken(ywaste(i), ierr2) /= 0) goto 4042
-                    if (gettoken(zwaste(i), ierr2) /= 0) goto 4042
-                    kwaste(i) = 1
-                else
-                    if (gettoken(xwaste(i), ierr2) /= 0) goto 4042
-                    if (gettoken(ywaste(i), ierr2) /= 0) goto 4042
-                    if (gettoken(kwaste(i), ierr2) /= 0) goto 4042
-                    if (abs(kwaste(i)) > nolayp) goto 4066
-                    zwaste(i) = 0.0
-                endif
+         if ( .not. oil .and. .not. leeway) then
+            if ( nolayp == 1 ) then
+               if ( gettoken( xwaste(i), ierr2 ) /= 0 ) goto 4042
+               if ( gettoken( ywaste(i), ierr2 ) /= 0 ) goto 4042
+               if ( gettoken( zwaste(i), ierr2 ) /= 0 ) goto 4042
+               kwaste(i) = 1
             else
-                if (gettoken(xwaste(i), ierr2) /= 0) goto 4042
-                if (gettoken(ywaste(i), ierr2) /= 0) goto 4042
-                zwaste(i) = 0.0
-                kwaste(i) = 1
+               if ( gettoken( xwaste(i), ierr2 ) /= 0 ) goto 4042
+               if ( gettoken( ywaste(i), ierr2 ) /= 0 ) goto 4042
+               if ( gettoken( kwaste(i), ierr2 ) /= 0 ) goto 4042
+               if (abs(kwaste(i)) > nolayp) goto 4066
+               zwaste(i) = 0.0
             endif
+         else
+            if ( gettoken( xwaste(i), ierr2 ) /= 0 ) goto 4042
+            if ( gettoken( ywaste(i), ierr2 ) /= 0 ) goto 4042
+            zwaste(i) = 0.0
+            kwaste(i) = 1
+         endif
 
             !       option for release radius (and release radius)
 
@@ -1527,21 +1558,21 @@ contains
 
             !       location of the continuous release
 
-            if (gettoken(xwaste(i + nodye), ierr2) /= 0) goto 4047
-            if (gettoken(ywaste(i + nodye), ierr2) /= 0) goto 4047
-            if (.not. oil) then
-                if (nolayp == 1) then
-                    if (gettoken(zwaste(i + nodye), ierr2) /= 0) goto 4047
-                    kwaste(i + nodye) = 1
-                else
-                    if (gettoken(kwaste(i + nodye), ierr2) /= 0) goto 4047
-                    if (abs(kwaste(i + nodye)) > nolayp) goto 4067
-                    zwaste(i + nodye) = 0.0
-                endif
+         if ( gettoken( xwaste(i + nodye), ierr2 ) /= 0 ) goto 4047
+         if ( gettoken( ywaste(i + nodye), ierr2 ) /= 0 ) goto 4047
+         if ( .not. oil  .and. .not. leeway) then
+            if ( nolayp == 1 ) then
+               if ( gettoken( zwaste(i + nodye), ierr2 ) /= 0 ) goto 4047
+               kwaste(i + nodye) = 1
             else
-                zwaste(i + nodye) = 0.0
-                kwaste(i + nodye) = 1
+               if ( gettoken( kwaste(i + nodye), ierr2 ) /= 0 ) goto 4047
+               if (abs(kwaste(i + nodye)) > nolayp) goto 4067
+               zwaste(i + nodye) = 0.0
             endif
+         else
+            zwaste(i + nodye) = 0.0
+            kwaste(i + nodye) = 1
+         endif
 
             !       radius and scale (% of particles)
 
@@ -2238,7 +2269,11 @@ contains
         3507 format(/'  ', A, ' is active in the current model'/)
         3508 format(/'  ', A, ' is NOT active in the current model, settings not used!'/)
         3509 format(/'  No parameters found for plastic named : ', A)
-        3510  format(/'  Parameters were found for all plastics'/)
+        3510 format(/'  Parameters were found for all plastics'/)
+        3601 format(12x,'leeway multiplier           : ',f7.3, /,     &
+                    12x,'leeway modifier             : ',f7.3, /,     &
+                    12x,'leeway divergence       [%] : ',f7.1,/)
+
 
         11    write(*, *) ' Error when reading the model type '
         write(*, *) ' Is this version 3.50?'
@@ -2462,43 +2497,48 @@ contains
         call stop_exit(1)
 
         9101  write(lun2, *) ' Error: found plastics_parameters, but this is not a plastics model (modtye /= 6 (model_prob_dens_settling) '
-        call stop_exit(1)
+              call stop_exit(1)
         9103  write(lun2, *) ' Error: expected substance name of a plastic to be specified '
-        call stop_exit(1)
+              call stop_exit(1)
         9104  write(lun2, *) ' Error: could not read plastic parameter correctly for ', trim(cplastic)
-        call stop_exit(1)
+              call stop_exit(1)
         9105  write(lun2, *) ' Error: zero or negative mean size specified for ', trim(cplastic)
-        call stop_exit(1)
+              call stop_exit(1)
         9106  write(lun2, *) ' Error: plastic "', trim(cplastic), '" was already defined! '
-        call stop_exit(1)
+              call stop_exit(1)
         9107  write(lun2, '(/A,I3,A)') '  Error: ', plmissing, ' plastic(s) is/are not parametrised! '
-        call stop_exit(1)
+              call stop_exit(1)
         9201  write(lun2, *) ' Error: expected leftside permeability of screens!'
-        call stop_exit(1)
+              call stop_exit(1)
         9202  write(lun2, *) ' Error: expected rightside permeability of screens!'
-        call stop_exit(1)
+              call stop_exit(1)
         9203  write(lun2, *) ' Error: expected screens polygon file name!'
-        9204  write(lun2, *) ' Error: could not open screens polygon-file: ' // trim(fiscreens)
-        call stop_exit(1)
+        9204  write(lun2, *) ' Error: could not open screens polygon-file: '//trim(fiscreens)
+              call stop_exit(1)
         9301  write(lun2, *) ' Error: reading part FM ini file name!'
-        call stop_exit(1)
+              call stop_exit(1)
         9302  write(lun2, *) ' Error: reading part FM elease file name!'
-        call stop_exit(1)
+              call stop_exit(1)
         9401  write(lun2, *) ' Error: found "ABMmodel" keyword, but this is not a ABM model (modtyp /= 7 (model_abm)) '
-        call stop_exit(1)
+              call stop_exit(1)
         9402  write(lun2, *) ' Error: expected abm model name!'
-        call stop_exit(1)
+              call stop_exit(1)
         9403  write(lun2, *) ' Error: no suitable abm model name supplied!'
-        call stop_exit(1)
+              call stop_exit(1)
         9404  write(lun2, *) ' Error: expected abm stage development method name!'
-        call stop_exit(1)
+              call stop_exit(1)
         9405  write(lun2, *) ' Error: no suitable stage delelopment method name supplied!'
-        call stop_exit(1)
+              call stop_exit(1)
         9406  write(lun2, *) ' Error: found "RevChron" keyword, but this is not a ABM model (modtyp /= 7 (model_abm)) '
-        call stop_exit(1)
+              call stop_exit(1)
         9407  write(lun2, *) ' Error: expected stage of reversed release!'
-        call stop_exit(1)
-
+              call stop_exit(1)
+        9408  write(lun2, *) ' Error: found "Leeway" keyword, but this is not a tracer model (modtyp /= 1 ) '
+              call stop_exit(1)
+        9409  write(lun2, *) ' Error: expected real!'
+              call stop_exit(1)
+        9410  write(lun2, *) ' Error: Leeway file not found!'
+              call stop_exit(1)
     end
 
     subroutine getdim_dis (lun, dis_file, nrowsmax, lunlog)
@@ -2730,5 +2770,59 @@ contains
         return
     end function more_data
 
+
+    subroutine get_leeway_params_from_csv(lun2, subst_name, leeway_multiplier, leeway_modifier, leeway_angle)
+
+        use system_utils, only: get_executable_directory
+
+        integer, intent(in)          :: lun2
+        character(len=*), intent(in) :: subst_name
+        real(sp), intent(out)        :: leeway_multiplier, leeway_angle
+        real(dp), intent(out)        :: leeway_modifier
+
+        character(20)                :: leeway_id                 ! character buffer
+        character(256)               :: cbuffer, exe_dir          ! character buffer
+        character(256)               :: leeway_csvfile            ! name of the CSV file
+        integer                      :: i, cindex, ierr, lunfil
+        logical                      :: found
+
+        ! get path and add the name of the leeway file
+        call get_executable_directory( exe_dir, ierr)
+        leeway_csvfile = trim(exe_dir) // '../share/delft3d/leewayfactors.csv'
+        write ( lun2, '(/a,a)' ) '  Using leeway csvfile:', trim(leeway_csvfile)
+
+        open( newunit = lunfil, file = leeway_csvfile, status = 'old', iostat = ierr )
+
+        if ( ierr /= 0 ) then
+            write ( lun2, '(/a,a)' ) '  ERROR: leeway csvfile could not be opened - please check'
+            call stop_exit(1)
+        endif
+
+        found = .false.
+
+        read( lunfil, '(a)') cbuffer
+        read( cbuffer, * ) leeway_id
+        do
+            read( lunfil, '(a)' ) cbuffer
+            read( cbuffer, * ) leeway_id
+            if ( subst_name == leeway_id ) then
+                found = .true.
+                exit
+            endif
+        enddo
+
+        if ( .not. found ) then
+            write ( lun2, '(/a,a)' ) '  ERROR: object ', trim(subst_name), ' not found in leeway csvfile. Please check'
+            call stop_exit(1)
+        endif
+
+        cindex = 1
+        do i = 1, 5
+            cindex = cindex + index(cbuffer(cindex:) , ",")
+        enddo
+        read( cbuffer(cindex:), * ) leeway_multiplier, leeway_modifier, leeway_angle
+        close( lunfil )
+
+    end subroutine get_leeway_params_from_csv
 
 end module m_rdpart
