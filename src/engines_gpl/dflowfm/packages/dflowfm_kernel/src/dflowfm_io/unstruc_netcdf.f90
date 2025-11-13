@@ -2765,38 +2765,34 @@ contains
       ierr = nf90_def_dim(imapfile, 'wdim', kmx + 1, id_wdim)
       !
       if (jafullgridoutput == 0) then
-         if (layertype < 3) then !time-independent sigma layer and z layer
-            ierr = nf90_def_var(imapfile, 'LayCoord_cc', nf90_double, [id_laydim], id_laycoordcc)
-            ierr = nf90_def_var(imapfile, 'LayCoord_w', nf90_double, [id_wdim], id_laycoordw)
+         ierr = nf90_def_var(imapfile, 'LayCoord_cc', nf90_double, [id_laydim], id_laycoordcc)
+         ierr = nf90_def_var(imapfile, 'LayCoord_w', nf90_double, [id_wdim], id_laycoordw)
+         !
+         !define and write compact form output of sigma or z-layer
+         if (layertype == LAYTP_SIGMA) then !all sigma layers
+            ierr = nf90_put_att(imapfile, id_laycoordcc, 'standard_name', 'ocean_sigma_coordinate')
+            ierr = nf90_put_att(imapfile, id_laycoordcc, 'long_name', 'sigma layer coordinate at flow element center')
+            ierr = nf90_put_att(imapfile, id_laycoordcc, 'units', '')
+            ierr = nf90_put_att(imapfile, id_laycoordcc, 'positive', 'up')
+            ierr = nf90_put_att(imapfile, id_laycoordcc, 'formula_terms', 'sigma: LayCoord_cc eta: s1 bedlevel: FlowElem_bl')
             !
-            !define and write compact form output of sigma or z-layer
-            if (layertype == 1) then !all sigma layers
-               ierr = nf90_put_att(imapfile, id_laycoordcc, 'standard_name', 'ocean_sigma_coordinate')
-               ierr = nf90_put_att(imapfile, id_laycoordcc, 'long_name', 'sigma layer coordinate at flow element center')
-               ierr = nf90_put_att(imapfile, id_laycoordcc, 'units', '')
-               ierr = nf90_put_att(imapfile, id_laycoordcc, 'positive', 'up')
-               ierr = nf90_put_att(imapfile, id_laycoordcc, 'formula_terms', 'sigma: LayCoord_cc eta: s1 bedlevel: FlowElem_bl')
-               !
-               ierr = nf90_put_att(imapfile, id_laycoordw, 'standard_name', 'ocean_sigma_coordinate')
-               ierr = nf90_put_att(imapfile, id_laycoordw, 'long_name', 'sigma layer coordinate at vertical interface')
-               ierr = nf90_put_att(imapfile, id_laycoordw, 'units', '')
-               ierr = nf90_put_att(imapfile, id_laycoordw, 'positive', 'up')
-               ierr = nf90_put_att(imapfile, id_laycoordw, 'formula_terms', 'sigma: LayCoord_w eta: s1 bedlevel: FlowElem_bl')
-               !
-            elseif (layertype == 2) then !all z layers
-               ierr = nf90_put_att(imapfile, id_laycoordcc, 'standard_name', '')
-               ierr = nf90_put_att(imapfile, id_laycoordcc, 'long_name', 'z layer coordinate at flow element center')
-               ierr = nf90_put_att(imapfile, id_laycoordcc, 'positive', 'up')
-               ierr = nf90_put_att(imapfile, id_laycoordcc, 'units', 'm')
-               !
-               ierr = nf90_put_att(imapfile, id_laycoordw, 'standard_name', '')
-               ierr = nf90_put_att(imapfile, id_laycoordw, 'long_name', 'z layer coordinate at vertical interface')
-               ierr = nf90_put_att(imapfile, id_laycoordw, 'positive', 'up')
-               ierr = nf90_put_att(imapfile, id_laycoordw, 'units', 'm')
-               !
-            end if
-         else
-            call mess(LEVEL_WARN, 'No grid outputdata given - Set "FullGridOutput = 1" in .mdu file to output grid data')
+            ierr = nf90_put_att(imapfile, id_laycoordw, 'standard_name', 'ocean_sigma_coordinate')
+            ierr = nf90_put_att(imapfile, id_laycoordw, 'long_name', 'sigma layer coordinate at vertical interface')
+            ierr = nf90_put_att(imapfile, id_laycoordw, 'units', '')
+            ierr = nf90_put_att(imapfile, id_laycoordw, 'positive', 'up')
+            ierr = nf90_put_att(imapfile, id_laycoordw, 'formula_terms', 'sigma: LayCoord_w eta: s1 bedlevel: FlowElem_bl')
+            !
+         elseif (layertype == LAYTP_Z) then !all z layers
+            ierr = nf90_put_att(imapfile, id_laycoordcc, 'standard_name', '')
+            ierr = nf90_put_att(imapfile, id_laycoordcc, 'long_name', 'z layer coordinate at flow element center')
+            ierr = nf90_put_att(imapfile, id_laycoordcc, 'positive', 'up')
+            ierr = nf90_put_att(imapfile, id_laycoordcc, 'units', 'm')
+            !
+            ierr = nf90_put_att(imapfile, id_laycoordw, 'standard_name', '')
+            ierr = nf90_put_att(imapfile, id_laycoordw, 'long_name', 'z layer coordinate at vertical interface')
+            ierr = nf90_put_att(imapfile, id_laycoordw, 'positive', 'up')
+            ierr = nf90_put_att(imapfile, id_laycoordw, 'units', 'm')
+            !
          end if
       else
          ! structured 3d time-dependent output data
@@ -2869,22 +2865,20 @@ contains
          ierr = nf90_inq_dimid(imapfile, 'wdim', id_wdim(iid))
          !
          if (jafullgridoutput == 0) then
-            if (layertype < 3) then
-               !time-independent sigma layer and z layer
-               ierr = nf90_inq_varid(imapfile, 'LayCoord_cc', id_laycoordcc(iid))
-               ierr = nf90_inq_varid(imapfile, 'LayCoord_w', id_laycoordw(iid))
-               !
-               ! write 3d time-independent output data to netcdf file
-               !
-               if (layertype == 1) then
-                  ! structured 3d time-independent output data (sigma-layer)
-                  ierr = nf90_put_var(imapfile, id_laycoordcc(iid), 0.5_dp * (zslay(1:kmx, 1) + zslay(0:kmx - 1, 1)), start=[1], count=[kmx])
-                  ierr = nf90_put_var(imapfile, id_laycoordw(iid), zslay(0:kmx, 1), start=[1], count=[kmx + 1])
-               elseif (layertype == 2) then
-                  ! structured 3d time-independent output data (z-layer)
-                  !  ierr = nf90_put_var(imapfile, id_laycoordcc(iid), 0.5d0*(zslay(1:kmx,1)+zslay(0:kmx-1,1)), start=[ 1 ], count=[ kmx ])
-                  !  ierr = nf90_put_var(imapfile, id_laycoordw(iid) , zslay(0:kmx,1), start=[ 1 ], count=[ kmx+1 ])
-               end if
+            !time-independent sigma layer and z layer
+            ierr = nf90_inq_varid(imapfile, 'LayCoord_cc', id_laycoordcc(iid))
+            ierr = nf90_inq_varid(imapfile, 'LayCoord_w', id_laycoordw(iid))
+            !
+            ! write 3d time-independent output data to netcdf file
+            !
+            if (layertype == LAYTP_SIGMA) then
+               ! structured 3d time-independent output data (sigma-layer)
+               ierr = nf90_put_var(imapfile, id_laycoordcc(iid), 0.5_dp * (zslay(1:kmx, 1) + zslay(0:kmx - 1, 1)), start=[1], count=[kmx])
+               ierr = nf90_put_var(imapfile, id_laycoordw(iid), zslay(0:kmx, 1), start=[1], count=[kmx + 1])
+            elseif (layertype == LAYTP_Z) then
+               ! structured 3d time-independent output data (z-layer)
+               !  ierr = nf90_put_var(imapfile, id_laycoordcc(iid), 0.5d0*(zslay(1:kmx,1)+zslay(0:kmx-1,1)), start=[ 1 ], count=[ kmx ])
+               !  ierr = nf90_put_var(imapfile, id_laycoordw(iid) , zslay(0:kmx,1), start=[ 1 ], count=[ kmx+1 ])
             end if
          else
             ! get id's for structured 3d time-dependant output data

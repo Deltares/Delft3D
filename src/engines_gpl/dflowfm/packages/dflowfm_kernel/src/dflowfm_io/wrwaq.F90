@@ -605,7 +605,6 @@ contains
             write (lunhyd, '(A        )') 'z-layers-ztop multi-layerdefinition '
             write (lunhyd, '(A        )') 'z-layers-zbot multi-layerdefinition '
          end if
-      elseif (layertype /= LAYTP_SIGMA) then ! all other options
          ! we do not yet know what to do with z/sigma combinations
          write (lunhyd, '(A        )') 'z-layers-ztop mixed-layerdefinition '
          write (lunhyd, '(A        )') 'z-layers-zbot mixed-layerdefinition '

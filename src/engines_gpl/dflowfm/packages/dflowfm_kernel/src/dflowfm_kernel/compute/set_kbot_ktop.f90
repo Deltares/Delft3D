@@ -266,7 +266,7 @@ contains
          zws0 = zws
       end if
 
-      if (layertype > 1) then ! ln does not change in sigma only
+      if (layertype == LAYTP_Z) then ! ln does not change in sigma only
          call update_link_connectivity()
       end if
    end subroutine set_kbot_ktop
@@ -516,7 +516,7 @@ contains
       end do
 
       ! Update link connectivity only if boundary nodes experienced wetting or significant layer changes
-      if (need_link_update .and. layertype > 1) then
+      if (need_link_update .and. layertype == LAYTP_Z) then
          call update_link_connectivity()
       end if
    end subroutine update_vertical_coordinates_boundary

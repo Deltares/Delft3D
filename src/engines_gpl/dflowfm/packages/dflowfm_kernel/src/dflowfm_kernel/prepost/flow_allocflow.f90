@@ -44,7 +44,7 @@ contains
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
-                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, LAYTP_SIGMA, LAYTP_Z, kmx, kbotc, kmxc, &
                         numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, dztop, dztopuniabovez, &
                         sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
                         kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
@@ -226,7 +226,7 @@ contains
             end if
          end if
 
-         if (layertype == 1 .or. layertype == 4) then ! all sigma
+         if (layertype == LAYTP_SIGMA .or. layertype == 4) then ! all sigma
             mxlaydefs = 1
             laytyp(1) = 1
             laymx(1) = kmx
@@ -236,7 +236,7 @@ contains
                call realloc(dkx, ndx, stat=ierr, keepexisting=.false.)
                call aerr('dkx(ndx)', ierr, ndx)
             end if
-         else if (layertype == 2) then ! all z
+         else if (layertype == LAYTP_Z) then ! all z
             mxlaydefs = 1
             laytyp(1) = 2
 

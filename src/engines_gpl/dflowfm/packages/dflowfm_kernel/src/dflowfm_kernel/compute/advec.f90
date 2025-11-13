@@ -859,7 +859,7 @@ contains
                   !    advel = (acl(L)*qu1 + (1d0-acl(L))*qu2) / volu
                   ! endif
 
-                  if (layertype == 1) then
+                  if (layertype == LAYTP_SIGMA) then
 
                      if (iadv(LL) == -6) then ! .and. newzbndadv == 1 ) then
 
@@ -926,7 +926,7 @@ contains
 
                      end if
 
-                  else if (layertype == 2 .and. jahazlayer == 0) then ! default fixed layers
+                  else if (layertype == LAYTP_Z .and. jahazlayer == 0) then ! default fixed layers
 
                      Ltx = Lt - Lb + 1
                      volukk(1:Ltx) = 0.0_dp
@@ -978,7 +978,7 @@ contains
 
                      end do
 
-                  else if (layertype == 2 .and. jahazlayer == 1) then
+                  else if (layertype == LAYTP_Z .and. jahazlayer == 1) then
 
                      n1 = ln(1, LL); n2 = ln(2, LL)
                      call getkbotktop(n1, kb1, kt1); ktx1 = kt1 - kb1 + 1
@@ -1015,7 +1015,7 @@ contains
                         end if
                      end do
 
-                  else if (layertype == 2 .and. jahazlayer == 2) then ! lineinterp
+                  else if (layertype == LAYTP_Z .and. jahazlayer == 2) then ! lineinterp
 
                      n1 = ln(1, LL); n2 = ln(2, LL)
                      call getkbotktop(n1, kb1, kt1)
@@ -1070,7 +1070,7 @@ contains
                         end if
                      end do
 
-                  else if (layertype == 2 .and. jahazlayer == 4) then
+                  else if (layertype == LAYTP_Z .and. jahazlayer == 4) then
 
                      n1 = ln(1, LL); n2 = ln(2, LL)
                      call getkbotktop(n1, kb1, kt1); ktx1 = kb1 + kmxn(n1) - 1
