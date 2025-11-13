@@ -46,7 +46,7 @@ Bamin                             = 1.d-6               # Minimum grid cell area
 OpenBoundaryTolerance             = 3.                  # Search tolerance factor between boundary polyline and grid cells, in cell size units
 RenumberFlowNodes                 = 1                   # Renumber the flow nodes (1: yes, 0: no)
 Kmx                               = 0                   # Maximum number of vertical layers
-Layertype                         = 1                   # Vertical layer type (1: all sigma, 2: all z, 3: use VertplizFile)
+Layertype                         = 1                   # Vertical layer type (1: all sigma, 2: z or z-sigma)
 Numtopsig                         = 0                   # Number of sigma layers in top of z-layer model
 SigmaGrowthFactor                 = 1.                  # Layer thickness growth factor from bed up
 StretchType                       = 0                   # Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential
