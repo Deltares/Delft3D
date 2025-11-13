@@ -64,7 +64,6 @@ module m_flow ! flow arrays-999
    integer :: numtopsig = 0 !< number of top layers in sigma
    integer :: janumtopsiguniform = 1 !< specified nr of top layers in sigma is same everywhere
 
-   real(kind=dp) :: Tsigma = 100 !< relaxation period density controlled sigma
    integer, parameter :: LAYTP_SIGMA = 1
    integer, parameter :: LAYTP_Z = 2
 
@@ -140,10 +139,7 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable :: zslay(:, :) !< dim = (: , maxlaydefs) z or s coordinate,
    real(kind=dp), allocatable :: wflaynod(:, :) !< dim = (3 , ndx) weight factors to flownodes indlaynod
    integer, allocatable :: indlaynod(:, :) !< dim = (3 , ndx)
-   real(kind=dp), allocatable :: dkx(:) !< dim = ndx, density controlled sigma, sigma level of interface height
-   real(kind=dp), allocatable :: sdkx(:) !< dim = ndx, density controlled sigma, sum of .., only layertype == 4
 
-   real(kind=dp), allocatable :: asig(:) !< alfa of sigma at nodes, 1d0=full sigma, 0d0=full z, 0.5d0=fifty/fifty
    real(kind=dp), allocatable :: ustb(:) !< ustar at Lbot, dim=Lnx,
    real(kind=dp), allocatable :: ustw(:) !< ustar at Ltop, dim=Lnx
    real(kind=dp), allocatable :: ustbc(:) !< ustar at bed at netnodes, dim=numk

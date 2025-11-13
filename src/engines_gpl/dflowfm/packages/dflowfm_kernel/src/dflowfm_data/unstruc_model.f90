@@ -656,7 +656,7 @@ contains
       !                         dztopuniabovez, dztop, uniformhu, jahazlayer, Floorlevtoplay,         &
       !                         javakeps,                                                             &
       !                         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,  &
-      !                         Tsigma, jarhoxu,                                                      &
+      !                         jarhoxu,                                                      &
       !                         iStrchType, STRCH_UNIFORM, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
 
       use m_globalparameters, only: sl
@@ -931,7 +931,6 @@ contains
          call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
          call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
          call prop_get(md_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay)
-         call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
          call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
          call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
          call prop_get(md_ptr, 'geometry', 'StretchType', iStrchType)
@@ -2606,7 +2605,7 @@ contains
       use m_flow ! ,                !  only : kmx, layertype, mxlayz, sigmagrowthfactor, numtopsig, &
       !         Iturbulencemodel, spirbeta, dztopuniabovez, dztop, jahazlayer, Floorlevtoplay ,  &
       !         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,         &
-      !         Tsigma, jarhoxu, iStrchType, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
+      !         jarhoxu, iStrchType, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
       use m_flowgeom ! ,              only : wu1Duni, Bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
@@ -2909,9 +2908,6 @@ contains
 
          if (writeall .or. dztopuniabovez /= dmiss) then
             call prop_set(prop_ptr, 'geometry', 'Dztopuniabovez', Dztopuniabovez, 'Above this level layers will have uniform Dztop, below we use SigmaGrowthFactor')
-         end if
-         if (Tsigma /= 100.0_dp) then
-            call prop_set(prop_ptr, 'geometry', 'Tsigma', Tsigma, 'Sigma Adaptation period for Layertype==4 (s)')
          end if
 
          if (writeall .or. keepzlayeringatbed /= 2) then

@@ -37,7 +37,7 @@ module m_changenumericalparameters2
 contains
 
    subroutine CHANGENUMERICALPARAMETERS2()
-      use m_flow, only: iturbulencemodel, jaustarint, javakeps, idensform, jarhoxu, javasal, ifixedweirscheme, tsigma, cffacver, cffachormom, cfexphormom, cfconhormom, javatem, javiuplus3d, jaqaisq1, addksources, jalogprofatubndin, javau, jacomp, drop2d, drop3d, jastructurelayersactive, max_iterations_pressure_density
+      use m_flow, only: iturbulencemodel, jaustarint, javakeps, idensform, jarhoxu, javasal, ifixedweirscheme, cffacver, cffachormom, cfexphormom, cfconhormom, javatem, javiuplus3d, jaqaisq1, addksources, jalogprofatubndin, javau, jacomp, drop2d, drop3d, jastructurelayersactive, max_iterations_pressure_density
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
       use unstruc_display_data, only: npos
       use m_helpnow, only: nlevel, wrdkey
@@ -66,7 +66,6 @@ contains
       OPTION(i) = 'JARHOXU                                 '; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'JAVASAL                                 '; it(2 * i) = 2; i = i + 1
       OPTION(i) = 'IFIXEDWEIRSCHEME                        '; it(2 * i) = 2; i = i + 1
-      OPTION(i) = 'Tsigma                                  '; it(2 * i) = 6; i = i + 1
       OPTION(i) = 'Cffacver                                '; it(2 * i) = 6; i = i + 1
       OPTION(i) = 'Cffachormom                             '; it(2 * i) = 6; i = i + 1
       OPTION(i) = 'Cfexphormom                             '; it(2 * i) = 6; i = i + 1
@@ -187,7 +186,6 @@ contains
       call IFORMPUTINTEGER(2 * i, JARHOXU); i = i + 1
       call IFORMPUTINTEGER(2 * i, JAVASAL); i = i + 1
       call IFORMPUTINTEGER(2 * i, ifixedweirscheme); i = i + 1
-      call IFORMPUTdouble(2 * i, Tsigma, '(F7.3)'); i = i + 1
       call IFORMPUTdouble(2 * i, Cffacver, '(F7.3)'); i = i + 1
       call IFORMPUTdouble(2 * i, Cffachormom, '(F7.3)'); i = i + 1
       call IFORMPUTdouble(2 * i, Cfexphormom, '(F7.3)'); i = i + 1
@@ -250,7 +248,6 @@ contains
             call IFORMGETINTEGER(2 * i, JARHOXU); i = i + 1
             call IFORMGETINTEGER(2 * i, JAVASAL); i = i + 1
             call IFORMGETINTEGER(2 * i, IFIXEDWEIRSCHEME); i = i + 1
-            call IFORMGETdouble(2 * i, Tsigma); i = i + 1
             call IFORMGETdouble(2 * i, Cffacver); i = i + 1
             call IFORMGETdouble(2 * i, Cffachormom); i = i + 1
             call IFORMGETdouble(2 * i, Cfexphormom); i = i + 1
