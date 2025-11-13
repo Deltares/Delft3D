@@ -985,7 +985,7 @@ contains
             end if
             success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
          else if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'humidity')
+            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'relative_humidity')
             sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
             sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
             sourceItemId_4 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_net_downward_shortwave_flux')
