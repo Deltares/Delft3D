@@ -5977,6 +5977,17 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f022_c107_sedimentation_mass_balance" ref="dflowfm_default">
+      <path version="2025-11-04T15:32:21.694000">e02_dflowfm/f022_morphology_2D/c107_sedimentation_mass_balance</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/masscon_mass_balances.nc" type="netCDF">
+          <parameters>
+            <parameter name="const1_balance_cumerror" toleranceAbsolute="0.0000001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f022_c300_sedimentmodelnr1_1PK" ref="dflowfm_default">
       <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c300_sedimentmodelnr1_1PK</path>
       <maxRunTime>20.0</maxRunTime>

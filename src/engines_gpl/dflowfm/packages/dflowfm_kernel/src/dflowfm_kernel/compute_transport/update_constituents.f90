@@ -144,10 +144,10 @@ contains
          call fill_constituents(1)
       end if
 
-!  compute areas of horizontal diffusive fluxes divided by Dx
+!     compute areas of horizontal diffusive fluxes divided by Dx
       call comp_dxiAu()
 
-!  get maximum transport time step
+!     get maximum transport time step
       call get_dtmax()
 
       call get_ndeltasteps()
@@ -156,7 +156,7 @@ contains
       dts_store = dts
 
 !  set dts to smallest timestep
-      dts = dts / nsubsteps
+      dts = dts / real(nsubsteps, kind=dp)
 
       if (jampi /= 0) then
 !     determine at which sub timesteps to update
@@ -167,8 +167,9 @@ contains
          end if
       end if
 
+      jaupdatehorflux = 1 
       jaupdate = 1
-
+      
       fluxhor = 0.0_dp ! not necessary
       sumhorflux = 0.0_dp
 
@@ -185,9 +186,9 @@ contains
             fluxver = 0.0_dp
          end if
 
-!     determine which fluxes need to be updated
+!     determine which fluxes need to be updated in a second step
          if (nsubsteps > 1) then
-            call get_jaupdatehorflux(nsubsteps, limtyp, jaupdate, jaupdatehorflux)
+            call get_jaupdatehorflux(limtyp, jaupdate, jaupdatehorflux)
          end if
 
 !     compute horizontal fluxes, explicit part
@@ -219,6 +220,7 @@ contains
          end if
 
          call starttimer(IDEBUG)
+         fluxhor=0.0_dp
          call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
          call stoptimer(IDEBUG)
 

@@ -87,7 +87,7 @@ contains
       use m_transport, only: ised1, constituents, isalt, itemp
       use dfparall
       use m_alloc
-      use m_missing
+      use m_missing, only: dmiss_neg, dmiss_pos
       use m_turbulence, only: vicwws, turkinws, rhowat
       use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
@@ -1014,7 +1014,7 @@ contains
             !
             suspfrac = has_advdiff(tratyp(l))
             !
-            tsd = -999.0_fp
+            tsd = dmiss_pos
             di50 = sedd50(l)
             if (di50 < 0.0_fp) then
                !  Space varying sedd50 specified in array sedd50fld:
@@ -1342,6 +1342,18 @@ contains
          end do
       end do
       deallocate (evel, stat=istat)
+      if (jasourcesink == 0) then
+         sourse = 0.0_dp
+         sinkse = 0.0_dp
+         sour_im = 0.0_dp
+      elseif (jasourcesink == 1) then
+         !
+      elseif (jasourcesink == 2) then
+         sinkse = 0.0_dp
+         sour_im = 0.0_dp
+      elseif (jasourcesink == 3) then
+         sourse = 0.0_dp
+      end if      
       !
       ! Add implicit part of source term to sinkse
       !
@@ -1350,17 +1362,6 @@ contains
             sinkse(nm, l) = sinkse(nm, l) + sour_im(nm, l)
          end do
       end do
-      !
-      if (jasourcesink == 0) then
-         sourse = 0d0
-         sinkse = 0d0
-      elseif (jasourcesink == 1) then
-         !
-      elseif (jasourcesink == 2) then
-         sinkse = 0d0
-      elseif (jasourcesink == 3) then
-         sourse = 0d0
-      end if
       !
 
       deallocate (dzdx, dzdy, stat=istat)

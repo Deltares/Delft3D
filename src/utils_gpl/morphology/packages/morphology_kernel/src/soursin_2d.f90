@@ -71,6 +71,8 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
     real(fp) :: x
     real(fp) :: x2
     real(fp) :: x3
+    
+    real(fp) :: sink_implicit_factor = 0.0_fp
 !
 !! executable statements -------------------------------------------------------
 !
@@ -109,13 +111,13 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
           !
        endif
        hots = wsl/(tsd*factsd)
-       sour_ex = rsedeq*hots/h0
+       sour_ex = rsedeq*(hots/h0 - (1.0_fp - sink_implicit_factor)*wsl)  !entrainment ( explicit sedimentation could be included as -rsedeq*wsl ) 
        sour_im = (hots-wsl)/h1
-       sink    = wsl/h1
+       sink    = sink_implicit_factor * wsl/h1
     else
-       sour_ex = 0.0_fp
+       sour_ex = rsedeq*( - (1.0_fp - sink_implicit_factor)*wsl)
        sour_im = 0.0_fp
-       sink = wsl/h1
+       sink = sink_implicit_factor * wsl/h1
     endif
 end subroutine soursin_2d
 
