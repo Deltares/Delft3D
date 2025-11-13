@@ -62,7 +62,7 @@ module unstruc_inifields
 
    type t_target_arrays
       logical :: time_dependent_array !< Whether the target arrays are time-dependent.
-      integer :: first_index !< Firsst index of a double indexed array.
+      integer :: first_index !< First index of a double indexed array.
       integer :: location_type !< Type of target locations: e.g UNC_LOC_S, UNC_LOC_U.
       integer :: value_count !< Number of values per target location.
       real(kind=dp), pointer, dimension(:) ::  x_loc !< X-coordinates of target locations.
@@ -322,7 +322,7 @@ contains
             if (strcmpi(groupname, 'Initial')) then
                call process_initial_block(qid, inifilename, targets, method)
             else
-               call process_parameter_block(qid, inifilename, targets)
+               call process_parameter_block(qid, inifilename, targets, filetype)
             end if
 
             ! This part of the code might be moved or changed. (See UNST-8247)
@@ -1562,9 +1562,10 @@ contains
 
    !> Set the control parameters for the actual reading of the items from the input file or
    !! connecting the input to the EC-module.
-   subroutine process_parameter_block(qid, inifilename, targets)
+   subroutine process_parameter_block(qid, inifilename, targets, filetype)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
+      use timespace_parameters, only : NCGRID
       use tree_data_types
       use tree_structures
       use messageHandling
@@ -1599,6 +1600,7 @@ contains
       character(len=*), intent(in) :: qid !< Name of the quantity.
       character(len=*), intent(in) :: inifilename !< Name of the ini file.
       type (t_target_arrays), intent(inout) :: targets !< derived type containing pointers to target arrays.
+      integer, intent(in) :: filetype !< type of the file being read (PARAMETER_FILE or FORCING_FILE).
 
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
@@ -1634,6 +1636,9 @@ contains
          select case (str_tolower(qid_base))
          case ('frictioncoefficient')
             targets%location_type = UNC_LOC_U
+            if (filetype == NCGRID) then
+               targets%time_dependent_array = .true.
+            end if
             targets%p_2d => frcu
          case ('advectiontype')
             targets%location_type = UNC_LOC_U
@@ -2076,11 +2081,11 @@ contains
 
    subroutine fill_field_values(targets, filename, filetype, method, operand, &
                                 transformcoef, kcsini, success)
-
+      use messagehandling
       use m_alloc, only: reallocP
       use timespace, only: timespaceinitialfield
       use m_missing, only: dmiss
-      use m_flow, only: ndkx
+      use m_flow, only: ndkx, sa1
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_3DV
 
       type(t_target_arrays), intent(inout) :: targets !< derived type containing pointers to target arrays.
@@ -2091,7 +2096,7 @@ contains
       real(kind=dp), dimension(:), intent(in) :: transformcoef !< The transformation coefficients.
       integer, dimension(:), allocatable, intent(inout) :: kcsini !< Mask array.
       logical, intent(inout) :: success !< The success of the filling of the field values.
-      integer :: loc_type
+      integer :: loc_type, i
 
       integer :: num_items !< The number of target locations.
       character(len=1) :: used_operand !< The operand to be used for filling the field values.
@@ -2117,10 +2122,15 @@ contains
          if (associated(targets%p_3d)) then
             call initialfield2Dto3D_dbl_indx(targets%p_2d, targets%p_3d, targets%first_index, transformcoef(13), transformcoef(14), &
                                              operand)
-            deallocate (targets%p_3d)
+            !deallocate (targets%p_3d)
             targets%p_3d => null()
          end if
       end if
+      do i = 1, ndkx
+         write(msgbuf, '(i6, f16.6)') i, sa1(i)
+         call msg_flush()
+      end do 
+      
    end subroutine fill_field_values
 
    subroutine set_coordinates_for_location_type(targets, num_items, kcsini)
