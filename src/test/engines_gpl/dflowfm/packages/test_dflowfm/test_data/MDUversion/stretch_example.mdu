@@ -54,7 +54,7 @@ Layertype         = 1
 Numtopsig         = 0
 SigmaGrowthFactor = 1
 Kmx               = 18        # Maximum number of vertical layers
-Layertype         = 1         # Vertical layer type (1: all sigma, 2: all z, 3: use VertplizFile)
+Layertype         = 1         # Vertical layer type (1: all sigma, 2: z or z-sigma)
 Numtopsig         = 0         # Number of sigma layers in top of z-layer model
 SigmaGrowthFactor = 1.        # Layer thickness growth factor from bed up
 StretchType       = 1         # Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential

@@ -40,7 +40,7 @@ Bamin                                = 1.d-6                                 # M
 OpenBoundaryTolerance                = 3.                                    # Search tolerance factor between boundary polyline and grid cells. Unit: in cell size units (i.e., not metres).
 RenumberFlowNodes                    = 0                                     # Switch on or off (1/0) the renumbering of flow nodes for slight speedup.
 Kmx                                  = 8                                     # Max nr of vertical layers
-Layertype                            = 1                                     # 1= all sigma, 2 = all z, 3 = use VertplizFile
+Layertype                            = 1                                     # 1 = all sigma, 2 = z or z-sigma
 Numtopsig                            = 0                                     # Nr of sigmalayers in top of Zlayer model
 SigmaGrowthFactor                    = 1.                                    # layer thickness growth factor from bed up
  
@@ -48,7 +48,7 @@ SigmaGrowthFactor                    = 1.                                    # l
 CFLMax                               = 0.7                                   # Max. Courant nr.
 AdvecType                            = 33                                    # Adv type, 0=no, 1= Wenneker, qu-udzt, 2=1, q(uio-u), 3=Perot q(uio-u), 4=Perot q(ui-u), 5=Perot q(ui-u) without itself
 Lincontin                            = 0                                     # Default 0; Set to 1 for linearizing d(Hu)/dx; link to AdvecType
-TimeStepType                         = 2                                     #  0=only transport, 1=transport + velocity update, 2=full implicit step_reduce, 3=step_jacobi, 4=explicit
+TimeStepType                         = 2                                     # 0=only transport, 1=transport + velocity update, 2=full implicit step_reduce, 3=step_jacobi, 4=explicit
 Limtyphu                             = 0                                     # Limiter type for waterdepth in continuity eq., 0=no, 1=minmod,2=vanLeer,3=Kooren,4=Monotone Central
 Limtypmom                            = 4                                     # Limiter type for cell center advection velocity, 0=no, 1=minmod,2=vanLeer,3=Kooren,4=Monotone Central
 Limtypsa                             = 4                                     # Limiter type for salinity transport,           0=no, 1=minmod,2=vanLeer,3=Kooren,4=Monotone Central
