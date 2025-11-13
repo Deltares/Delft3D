@@ -135,13 +135,14 @@ contains
         if (timon) call timstrt("rdhydr", ithndl)
         !
         lunut = lunit(2)
+        num_layers_grid = mnmaxk / num_rows / num_columns
         if (zmodel) then
-            depmin = 0.05
+            depmin = 0.05 / num_layers_grid
         else
             depmin = 0.05 * num_rows * num_columns / mnmaxk
-            depmin = max(depmin, 0.001)
         end if
-        num_layers_grid = mnmaxk / num_rows / num_columns
+        depmin = max(depmin, 0.001)
+
         if (idelt == -999) then
             !
             !        Save current value of idelt for later
@@ -292,36 +293,12 @@ contains
             update = updatv
             !
         endif
-        !
-        if (zmodel) then
-            ! only make sure the deepest
-            do i2 = 2, num_columns
-                do i1 = 2, num_rows
-                    i0 = lgrid(i1, i2)
-                    if (i0  >  0) then
-                        i03d = i0 + (laybot(i1, i2) - 1) * num_rows * num_columns
-                        volume(i03d) = max(volume(i03d), hsurf(i0) * depmin)
-                    end if
-                end do
-            end do
-        else
-            do i = 1, mnmaxk
 
-                !          limit volume to 5cm
-
-                i2 = mod(i, num_rows * num_columns)
-                if(i2==0) i2 = num_rows * num_columns
-                volume(i) = max(volume(i), hsurf(i2) * depmin)
-
-                !          apply scaling to vertical diffusion
-                !          the .vdf file at the moment contains the D3D-FLOW dicww array in m2/s.
-                !          typically: doffset = vicmol/sigmol(substance)
-                !                     dscale  = 1.0   /sigdif(substance)
-                !                     dminim  = gdp%gdphysco%dicoww       if I interpreted D3D-FLOW correctly (lp)
-                !          off course only do this if the vertical diffusion was updated with the file-values
-
-            end do
-        end if
+        ! Make sure the volume is non-zero (the water column is at least, roughly, 5 cm)
+        do i = 1, mnmaxk
+            i2 = 1 + mod(i-1, num_rows * num_columns)
+            volume(i) = max(volume(i), hsurf(i2) * depmin)
+        end do
         !
         !     end of routine
         !

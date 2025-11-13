@@ -375,7 +375,7 @@ contains
                     else
                         zpart(i) = zwaste(ie) / pblay
                     endif
-                elseif (modtyp == model_oil .and. kpart(i) == 1) then   !   for one layer models (2dh),
+                elseif ((modtyp == model_oil .or. leeway) .and. kpart(i) == 1) then   !   for one layer models (2dh),
                     zpart(i) = zwaste(ie)           !      the release will be in the user-defined location
                 elseif (num_layers == 1) then
                     zpart(i) = zwaste(ie) / 100.0

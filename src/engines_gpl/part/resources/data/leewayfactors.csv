@@ -1,0 +1,55 @@
+Object code,Catagory,Sub catagories,Primary leeway Descriptors,Secondary leeway descriptors,Multiplier,Modifier(m/s),Angle (deg)
+PIW,PIW,,--,--,0.011,0.04,30
+PIW_V,PIW,Vertical,--,--,0.005,0.04,18
+PIW_S,PIW,Sitting,--,--,0.012,0.00,18
+PIW_H_SU,PIW,Horizontal,Survival suit,--,0.014,0.05,30
+PIW_H_SC,PIW,Horizontal,Scuba suit,--,0.007,0.04,30
+PIW_H_D,PIW,Horizontal,deceased,--,0.015,0.04,30
+S_CRAFT_M,Survival Craft,Marine Life Rafts,--,--,0.042,0.02,28
+S_CRAFT_M_NB1,Survival Craft,Marine Life Rafts,No Ballast Systems,no canopy no drogue,0.057,0.11,24
+S_CRAFT_M_NB2,Survival Craft,Marine Life Rafts,No Ballast Systems,no canopy w/ drogue,0.044,-0.10,28
+S_CRAFT_M_NB3,Survival Craft,Marine Life Rafts,No Ballast Systems,canopy no drogue,0.037,0.06,24
+S_CRAFT_M_NB4,Survival Craft,Marine Life Rafts,No Ballast Systems,canopy w/ drogue,0.030,0.00,28
+S_CRAFT_M_SB1,Survival Craft,Marine Life Rafts,Shallow Ballast Systems and Canopy,--,0.029,0.00,22
+S_CRAFT_M_SB2,Survival Craft,Marine Life Rafts,Shallow Ballast Systems and Canopy,no drogue,0.032,-0.01,22
+S_CRAFT_M_SB3,Survival Craft,Marine Life Rafts,Shallow Ballast Systems and Canopy,with drogue,0.025,0.01,22
+S_CRAFT_M_SB4,Survival Craft,Marine Life Rafts,Shallow Ballast Systems and Canopy,Capsized,0.017,-0.05,8
+S_CRAFT_M_DB,Survival Craft,Marine Life Rafts,Deep Ballast Systems & Canopies,(table 1-2 for levels 4-6),0.030,0.01,13
+S_CRAFT_OM_L,Survival Craft,Other Maritime survival Craft,life capsule USCG,--,0.038,-0.04,22
+S_CRAFT_OM_U,Survival Craft,Other Maritime survival Craft,USCG Sea Rescue Kit,--,0.025,-0.02,7
+S_CRAFT_A_NB,Survival Craft,Aviation life rafts,no ballast,w/canopy 4-6-person w/o/ frogue,0.037,0.06,24
+S_CRAFT_A_E,Survival Craft,Aviation life rafts,Evac/ Slide,4-6-person,0.028,-0.01,15
+P_CRAFT_SK,Person-powered Craft,Sea kayak,W/person on aft deck,--,0.011,0.12,15
+P_CRAFT_SB,Person-powered Craft,surtf board,w/ person,--,0.020,0.00,15
+P_CRAFT_WS,Person-powered Craft,Windsurfer,w/ person and mast & sail in water,--,0.023,0.05,12
+S_VESSELS_MH_FULL,Sailing vessels,Mono hull,Full keel,Deep Draft,0.030,0.00,48
+S_VESSELS_MH_FIN,Sailing vessels,Mono hull,Fin keel,Shoal draft,0.040,0.00,48
+P_VESSELS_S_FB,Power vessels,Skiffs,Flat bottom,boston whaler,0.034,0.02,22
+P_VESSELS_S_VHC,Power vessels,Skiffs,V-Hull,std. Configuration,0.030,0.04,15
+P_VESSELS_S_VHS,Power vessels,Skiffs,V-Hull,swamped,0.017,0.00,15
+P_VESSELS_SB,Power vessels,Sport Boats,Cuddy cabin,modified V-hull,0.069,-0.04,19
+P_VESSELS_SF,Power vessels,Sport fisher,center console,open cockpit,0.060,-0.05,22
+P_VESSELS_C,Power vessels,Commercial Fishing vessels,--,--,0.037,0.01,48
+P_VESSELS_C_SP,Power vessels,Commercial Fishing vessels,Sampans,--,0.040,0.00,48
+P_VESSELS_C_ST,Power vessels,Commercial Fishing vessels,Side-stern trawler,--,0.042,0.00,48
+P_VESSELS_C_LL,Power vessels,Commercial Fishing vessels,Longliners,--,0.037,0.00,48
+P_VESSELS_C_J,Power vessels,Commercial Fishing vessels,Junk,--,0.027,0.05,48
+P_VESSELS_C_GN,Power vessels,Commercial Fishing vessels,Gill-netter,w/rear reel,0.040,0.01,33
+P_VESSELS_CF,Power vessels,Coastal freighter,--,--,0.028,0.00,48
+B_DEBRIS,Boating Debris,F/V debris,--,--,0.020,0.00,10
+B_DEBRIS_BB,Boating Debris,Bait/whar box holds a cubic meteer of ice,--,--,0.013,0.14,31
+B_DEBRIS_BB_LL,Boating Debris,Bait/whar box holds a cubic meteer of ice,lightly loaded,--,0.026,0.09,15
+B_DEBRIS_BB_FL,Boating Debris,Bait/whar box holds a cubic meteer of ice,fully loaded,--,0.016,0.08,33
+ML_RAFT4,Maritime life rafts with deep ballast systems and canopies,4-6 person capacity,--,--,0.029,0.02,15
+ML_RAFT4_ND,Maritime life rafts with deep ballast systems and canopies,4-6 person capacity,without drogue,--,0.038,-0.02,15
+ML_RAFT4_NDL,Maritime life rafts with deep ballast systems and canopies,4-6 person capacity,without drogue,light loading,0.038,-0.02,15
+ML_RAFT4_NDH,Maritime life rafts with deep ballast systems and canopies,4-6 person capacity,without drogue,heavy loading,0.036,-0.02,15
+ML_RAFT4_WD,Maritime life rafts with deep ballast systems and canopies,4-6 person capacity,with drogue,--,0.018,0.02,12
+ML_RAFT4_WDL,Maritime life rafts with deep ballast systems and canopies,4-6 person capacity,with drogue,light loading,0.016,0.03,24
+ML_RAFT4_WDH,Maritime life rafts with deep ballast systems and canopies,4-6 person capacity,with drogue,heavy loading,0.021,0.00,20
+ML_RAFT15,Maritime life rafts with deep ballast systems and canopies,15-25 person capacity,--,--,0.036,-0.05,10
+ML_RAFT15_NDL,Maritime life rafts with deep ballast systems and canopies,15-25 person capacity,without drogue,light loading,0.039,-0.03,9
+ML_RAFT15_WD_H,Maritime life rafts with deep ballast systems and canopies,15-25 person capacity,with drogue,heavy loading,0.031,-0.04,9
+ML_RAFT_C,Maritime life rafts with deep ballast systems and canopies,capsized,--,--,0.009,0.00,12
+ML_RAFT_S,Maritime life rafts with deep ballast systems and canopies,swamped,--,--,0.010,-0.02,8
+TESTOBJ,Maritime life rafts with deep ballast systems and canopies,swamped,--,--,0.020, 0.00,35

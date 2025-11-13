@@ -689,14 +689,14 @@ contains
 
                     !     The different parts of the fractions are accumulated here
 
-                    wsumt (ifrac) = wsumt(ifrac) + wpart(ioilt(ifrac), i)
-                    wsumd (ifrac) = wsumd(ifrac) + wpart(ioild(ifrac), i)
-                    if (wpart(ioilt(ifrac), i) > 0.0)then
-                        viscsurf   (ifrac) = viscsurf   (ifrac) + viso   (ifrac, i)
-                        fwatoilsurf(ifrac) = fwatoilsurf(ifrac) + fwatoil(ifrac, i)
-                        densurf    (ifrac) = densurf    (ifrac) + rhooilv(ifrac, i)
-                        isurf(ifrac) = isurf(ifrac) + 1
-                    endif
+!                    wsumt (ifrac) = wsumt(ifrac) + wpart(ioilt(ifrac), i)
+!                    wsumd (ifrac) = wsumd(ifrac) + wpart(ioild(ifrac), i)
+!                    if (wpart(ioilt(ifrac), i) > 0.0)then
+!                        viscsurf   (ifrac) = viscsurf   (ifrac) + viso   (ifrac, i)
+!                        fwatoilsurf(ifrac) = fwatoilsurf(ifrac) + fwatoil(ifrac, i)
+!                        densurf    (ifrac) = densurf    (ifrac) + rhooilv(ifrac, i)
+!                        isurf(ifrac) = isurf(ifrac) + 1
+!                    endif
                 end do
             endif
 
@@ -726,6 +726,14 @@ contains
                 rhooilv(ifrac, i) = rhow * fwatoil(ifrac, i) + rhooil(ifrac) * (1.0 - fwatoil(ifrac, i))         &
                         * (1.0 + cde * totfe(ifrac, i)) * (1.0 - cdt * (temp0 - temp0)) !if we work with temp dependent density then change temp0-temp0 into temp-reftemp (reference temperature)
                 !the var temp is used for the calculation of the evaporation
+                wsumt (ifrac) = wsumt(ifrac) + wpart(ioilt(ifrac), i)
+                wsumd (ifrac) = wsumd(ifrac) + wpart(ioild(ifrac), i)
+                if (wpart(ioilt(ifrac), i) > 0.0)then
+                    viscsurf   (ifrac) = viscsurf   (ifrac) + viso   (ifrac, i)
+                    fwatoilsurf(ifrac) = fwatoilsurf(ifrac) + fwatoil(ifrac, i)
+                    densurf    (ifrac) = densurf    (ifrac) + rhooilv(ifrac, i)
+                    isurf(ifrac) = isurf(ifrac) + 1
+                endif
             end do
 
             !     End of the loop ovver all particles i

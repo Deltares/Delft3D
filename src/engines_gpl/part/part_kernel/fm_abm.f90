@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2025.
+!!  Copyright (C)  Stichting Deltares, 2012-2024.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -21,7 +21,7 @@
 !!  of Stichting Deltares remain the property of Stichting Deltares. All
 !!  rights reserved.
 
-module abm_mod
+module fm_abm_mod
     !
     !  data definition module(s)
     !
@@ -33,39 +33,37 @@ module abm_mod
     !
     use larvm2_mod                  ! explicit interface
     use tidal_state_mod             ! explicit interface
+    use spec_feat_par               ! expliciti interface
+    use partmem, only: npwndw, ihdel, layt, nolayp, tcktot, &
+        npmax, nmaxp, mmaxp, mnmax2, mnmaxk, laybot, laytop, angle, &
+        vol2
+    use m_part_times, only: tstart_user, tstop_user, dts
+    use m_particles, laypart => kpart
+    use m_part_mesh
+    use m_part_geom
+    use m_part_flow
 
     !behavioral modules
-    use behv_test_mod               ! explicit interface
-    use behv_atlantic_salmon_mod    ! explicit interface
-    use behv_european_eel_mod       ! explicit interface
-    use behv_mauve_stinger_mod      ! explicit interface
-    use behv_horseshoecrab_mod      ! explicit interface
-    use behv_mangrove_mod           ! explicit interface
-    use behv_asiancarpeggs_mod      ! explicit interface
-
-    use intpltd_stagedev_mod        ! explicit interface
+    use behv_general_mod               ! explicit interface
     !
     implicit none
 
 contains
-    subroutine abm (lunrep, itime, idelt, num_rows, num_columns, &
+    subroutine fm_abm (lunpr, itime, num_rows, num_columns, &
             layt, nosegl, num_layers, mnmaxk, lgrid, &
             lgrid2, lgrid3, nopart, npwndw, nosubs, &
-            npart, mpart, kpart, xpart, ypart, &
-            zpart, wpart, iptime, wsettl, locdep, &
+            mpart, wpart, iptime, wsettl, locdep, &
             num_constants, const, conc, xa, ya, &
-            angle, vol1, vol2, flow, depth, &
+            flow, depth, &
             vdiff1, salin1, temper1, v_swim, d_swim, &
-            itstrtp, vel1, vel2, abmmt, abmsd, &
-            chronrev, selstage, zmodel, laybot, laytop)
+            itstrtp, vel1, vel2, zmodel, laybot, laytop)
 
         ! function  : calculates individual based model specifics
 
         ! arguments :
 
-        integer(int_wp), intent(in) :: lunrep              ! report file
+        integer(int_wp), intent(in) :: lunpr              ! report file
         integer(int_wp), intent(in) :: itime               ! time in seconds
-        integer(int_wp), intent(in) :: idelt               ! time step size in seconds
         integer(int_wp), intent(in) :: num_rows                ! first grid dimension
         integer(int_wp), intent(in) :: num_columns                ! second grid dimension
         integer(int_wp), intent(in) :: layt                ! number of layers of hydr. database
@@ -84,9 +82,6 @@ contains
         integer(int_wp), pointer :: npart (:)         ! first  grid index of the particles
         integer(int_wp), pointer :: mpart (:)         ! second grid index of the particles
         integer(int_wp), pointer :: kpart (:)         ! third grid index of the particles
-        real   (sp), pointer :: xpart (:)         ! x-value (0.0-1.0) first  direction within grid cell
-        real   (sp), pointer :: ypart (:)         ! y-value (0.0-1.0) second direction within grid cell
-        real   (sp), pointer :: zpart (:)         ! z-value (0.0-1.0) third  direction within grid cell
         real   (sp), pointer :: wpart (:, :)      ! weight factors of the subs per particle
         integer(int_wp), pointer :: iptime(:)         ! particle age in seconds
         real   (sp), pointer :: wsettl(:)         ! settling per particle
@@ -97,9 +92,6 @@ contains
         real   (sp), pointer :: conc  (:, :)     ! concentration array in transport grid
         real   (sp), pointer :: xa    (:)         ! x-coordiante in real world
         real   (sp), pointer :: ya    (:)         ! y-coordinate in real world
-        real   (sp), pointer :: angle (:)         ! angle with horizontal
-        real   (sp), pointer :: vol1  (:)         ! volume begin hydr step
-        real   (sp), pointer :: vol2  (:)         ! volume end hydr step
         real   (sp), pointer :: flow  (:)         ! all flows
         real   (sp), pointer :: vdiff1(:)         ! vert. diffusion segment numbering
         real   (sp), pointer :: salin1(:)         ! salinity segment numbering
@@ -111,7 +103,7 @@ contains
         real   (sp), pointer :: vel2  (:)         ! velocity end hydr step
 
         logical :: zmodel              ! indicates zmodel
-        logical :: debug = .false.     ! indicates debugging mode
+        logical :: debug = .true.     ! indicates debugging mode
 
         ! from input (const)
 
@@ -149,6 +141,12 @@ contains
 
         ! local :
 
+        real   (sp), allocatable :: xpart_rp (:)         ! x-value (0.0-1.0) first  direction within grid cell
+        real   (sp), pointer :: ypart_rp (:)         ! y-value (0.0-1.0) second direction within grid cell
+        real   (sp), pointer :: zpart_rp (:)         ! z-value (0.0-1.0) third  direction within grid cell
+        real   (sp), pointer :: angle_rp (:)         ! angle with horizontal
+        real   (sp), pointer :: vol1_rp  (:)         ! volume begin hydr step
+        real   (sp), pointer :: vol2_rp  (:)         ! volume end hydr step
         real(sp), pointer, save :: phase_diurn(:)      ! phase in diurnal behaviour
         integer(int_wp) :: ipart               ! particle index
         real   (sp) :: stage               ! stage development
@@ -168,6 +166,7 @@ contains
         real   (sp) :: salinity            ! salinity
         real   (sp) :: salprev             ! salinity previous
         logical :: eb_tide             ! eb_tide
+        integer(int_wp)  :: idelt               ! time step size in seconds
         real   (sp) :: delt                ! timestep in days
         real   (sp) :: day                 ! time in days
         real   (sp) :: duration            ! duration of current stage
@@ -187,7 +186,7 @@ contains
         integer :: kseg                ! k - 1
         integer :: ktopp               ! ktopp
         integer :: kbotp               ! kbotp
-        integer (int_wp) :: iseg                ! iseg
+        integer (int_wp) :: iseg, ilayer       ! iseg
         integer :: isegl               ! isegl
         integer :: isegb               ! isegb
         real   (sp) :: z                   ! z
@@ -203,7 +202,7 @@ contains
         logical :: frelease = .false.  ! first release (used for rev chron)
         logical, pointer, save :: ebb_flow(:)       ! true if flow is ebb
 
-        integer :: abmmt                          ! actual model type
+!        integer :: abmmt                          ! actual model type
 
         integer, parameter :: model_none = 0     ! model type none
         integer, parameter :: model_european_eel = 1     ! model type European eel
@@ -233,14 +232,13 @@ contains
         integer, parameter :: h_behaviour_temp_sal = 2  ! horizontal behaviour towards lowest salinity
         ! avoinding temperature boundaries
 
-        integer :: abmsd                     ! stage development method
+!        integer :: abmsd                     ! stage development method
 
         integer, parameter :: dev_fixed = 0   ! value based stage development
         integer, parameter :: dev_linear = 1   ! linear exponential stage development
         integer, parameter :: dev_intpltd = 2   ! interplolated stage development
         integer, parameter :: dev_asian_carp_egg = 3   ! asian carp egg stage development
 
-        logical :: chronrev                  ! reverse chronological order of ABM model
         real :: selstage                  ! stage for release in reversed ABM model
 
         real :: vswim                  ! swimming velocity
@@ -316,16 +314,26 @@ contains
         real, save :: par_tmin               ! parameter Tmin to determine larvae gas bladder infalation time based on temperature
 
         !Set debugging mode
-        ! debug = .true.
-
-        if(debug) write(88, *) 'Time: ', itime
-
+        debug = .true.
+        idelt = dts
+        if(debug) then
+            write(88, *) 'Time: ', itime
+            write(88, *) 'tstart_user (tstep1), tstop_user: ', tstart_user+ dts, tstop_user
+        endif
+        ! to allow general use of the behaviour modules
+        allocate(xpart_rp(npmax))
+!        xpart_rp = xpart
+!        ypart_rp = ypart
+!        zpart_rp = zpart
+!        angle_rp = angle
+!        vol1_rp = vol1
+!        vol2_rp = vol2
         ! Check if the current time (sec) is equal to start time
-        if (itime == itstrtp) then
+        if (itime == tstart_user + dts) then
 
             !If the number of constants are equal to 0 deactivate the larvae model
             if (num_constants == 0) then
-                write(lunrep, *) 'ERROR no constants, no larvae model activated'
+                write(lunpr, *) 'ERROR no constants, no larvae model activated'
                 write(*, *) 'ERROR no constants, no larvae model activated'
                 l_larvae = .false.
                 stop
@@ -336,7 +344,7 @@ contains
 
             !If these stages are <= 0 then deactivate larvae model
             if (nstage <= 0) then
-                write(lunrep, *) 'ERROR no stages, no larvae model activated'
+                write(lunpr, *) 'ERROR no stages, no larvae model activated'
                 write(*, *) 'ERROR no stages, no larvae model activated'
                 l_larvae = .false.
                 stop
@@ -347,13 +355,13 @@ contains
                 ! number of stages * 18 (variable number of constants per stage) then
                 ! deactivate the larvae model
                 if(abmsd /= dev_asian_carp_egg) then
-                    write(lunrep, *) 'ERROR "dev_asian_carp_egg" is not activated for stage development, no larvae model activated'
+                    write(lunpr, *) 'ERROR "dev_asian_carp_egg" is not activated for stage development, no larvae model activated'
                     write(*, *) 'ERROR "dev_asian_carp_egg" is not activated for stage development, no larvae model activated'
                     l_larvae = .false.
                     stop
                 endif
                 if (num_constants /= nfix_ace + nstage * nvar) then
-                    write(lunrep, *) 'ERROR no of constants inconsistent with stages of asian carp model, no larvae model activated'
+                    write(lunpr, *) 'ERROR no of constants inconsistent with stages of asian carp model, no larvae model activated'
                     write(*, *) 'ERROR no of constants inconsistent with stages of asian carp model, no larvae model activated'
                     l_larvae = .false.
                     stop
@@ -367,7 +375,7 @@ contains
                 ! number of stages * 18 (variable number of constants per stage) then
                 ! deactivate the larvae model
                 if (num_constants /= nfix_std + nstage * nvar) then
-                    write(lunrep, *) 'ERROR no of constants inconsistent with stages, no larvae model activated'
+                    write(lunpr, *) 'ERROR no of constants inconsistent with stages, no larvae model activated'
                     write(*, *) 'ERROR no of constants inconsistent with stages, no larvae model activated'
                     l_larvae = .false.
                     stop
@@ -543,14 +551,15 @@ contains
         !Determine the tide for the complete grid
         !Based on the volume and the velocity for all the segments
         !returning true in ebb_flow when it is low tide
-        call tidal_state(lunrep, itime, zmodel, itstrtp, nosegl, tide_opt, vol1, vol2, vel1, vel2, ebb_flow)
+        !call tidal_state(lunpr, itime, zmodel, itstrtp, nosegl, tide_opt, vol1, vol2, vel1, vel2, ebb_flow)
 
 
         !If the situation is met output the amount
         !of larvae per m2 per gridcell
         if (itime >= it_start_m2 .and. itime <= it_stop_m2 .and. mod(itime - it_start_m2, idt_m2) < idelt) then
-            call larvm2 (lunrep, itime, nosegl, num_layers, nosubs, &
-                    conc)
+            ! this does not work in fm (yet) TODO
+!            call larvm2 (lunpr, itime, nosegl, num_layers, nosubs, &
+!                    conc)
         endif
 
         ! Open an csv file for every day output on the position
@@ -568,37 +577,61 @@ contains
         ! Loop for the first active particle to all the number of particles
         ! and store the position and forcing of the particle
         do ipart = npwndw, nopart
+            if (ipart == 27) write(88,*)' start loop Particle 27, m, cellnr =', mpart(ipart), abs(cell2nod(mpart(ipart)))
+            m = abs(cell2nod(mpart(ipart)))            !Cellnumber , Second grid index of the current particle
+            if (m > nosegl) then
+                write (88, '(a34,1x,i)')' m reference larger than allowed: ', m  !TEMPORARY TO AVOID CRASH DDRING DEBUG, WILL NEED TO BE REMOVED
+!                exit
+            endif
+            
+  !          n = npart(ipart)            !First grid index of the current particle
+            k = min(laypart(ipart), num_layers) !Third grid index of k which can not be higher than the number of layers
+            kb = laypart(ipart)            !Third grid index of k (actual position)
+            z = hpart(ipart)            !The z value within the gridcell (0.0 - 1.0)
+            iseg = abs(cell2nod(mpart(ipart))) + nosegl * (k - 1)         !The grid number (conc array), corrected for the layer where the particle is
 
-            m = mpart(ipart)            !Second grid index of the current particle
-            n = npart(ipart)            !First grid index of the current particle
-            k = min(kpart(ipart), num_layers) !Third grid index of k which can not be higher than the number of layers
-            kb = kpart(ipart)            !Third grid index of k (actual position)
-            z = zpart(ipart)            !The z value within the gridcell (0.0 - 1.0)
-            iseg = lgrid3(n, m)             !The original grid number (conc array)
-
-            if(debug) write(88, *) '     iseg, n , m, kb :', iseg, n, m, kb
+            if(debug) write(88, '(a24, 5(i, x))')'     iseg, m, z, k, kb :', iseg, m, z, k, kb
 
             if (iseg > 0) then    !If the segment numer is larger than 0 and the particle is within model domain
 
-                ktopp = laytop(n, m)
-                kbotp = laybot(n, m)
+!                ktopp = laytop(n, iseg)
+!                kbotp = laybot(n, iseg)
+                if (zmodel) then
+                    ktopp = laytop(1, iseg)
+                    kbotp = laybot(1, iseg)
+                else
+                    ktopp = 1
+                    kbotp = num_layers
+                endif
 
-                isegl = iseg + (k - 1) * nosegl     !Segment number 3d of the particle(segment number + current layer * segments per layer)
-                isegb = iseg + (num_layers - 1) * nosegl    !Segment number 3d of the particle on the bottom.
-
-                laydep = locdep(lgrid2(n, m), k)                                                !Depth of the layer in which the particle is positioned (is used for substraction)
-                if(k /= 1) laydep = laydep - locdep(lgrid2(n, m), k - 1)                      !Distance of particle from the above layer
+                !isegl = iseg + (k - 1) * nosegl     !Segment number 3d of the particle(segment number + current layer * segments per layer)
+                isegb = abs(cell2nod(mpart(ipart))) + nosegl * (kmx - 1)    !Segment number 3d of the particle on the bottom., will need to be checked how it is used
+                !partcell =abs(cell2nod(mpart(ipart))) * (1.0 + laypart(ipart)
+!                write(88, *) ' Calculated particle cll inlayer 1): ', partcell)
+                write(88, '(a43,1x,6(i,1x), f5.2)' )' m, k, kmx, nosegl ,ndx, h0 with iseg,  is:', m, k, kmx, nosegl, iseg, ndx, h0(iseg)
+                laydep = h0(m)                 !Depth of the layer 1 in the column in which the particle is positioned (is used for substraction)
+                ilayer =1
+                totdep = laydep
+                do while (ilayer < kmx) 
+                    ilayer = ilayer + 1
+                    if (ilayer < k) then
+                        laydep = h0(m * ilayer + nosegl) !layer depth of particlesegment (bottom of layer)
+                        totdep = totdep + laydep
+!                    else
+!                        totdep = totdep + h0(m * ilayer + nosegl)
+                    end if
+                end do
 
                 nlay = num_layers
-                if(zmodel) nlay = laybot(n, m)                                                 ! get location specific number of layers when zmodel
+  !              if(zmodel) nlay = laybot(n, m)  NO ZMODEL YET        ! get location specific number of layers when zmodel
 
-                totdep = locdep(lgrid2(n, m), nlay)                                             !The total depth of the gridcell
-                zlevel = locdep(lgrid2(n, m), nlay) - locdep(lgrid2(n, m), k) + (1. - z) * laydep     !Depth of particel measured from bottom
-                zdepth = locdep(lgrid2(n, m), k) - (1. - z) * laydep                                !Depth of particel measured from surface
-
-                verdiff = vdiff1(isegl)      !Verticle diffusion of particle segment 3d numbering
-                temp = temper1(isegl)     !Temperature of particle segment 3d numbering
-                salinity = salin1(isegl)      !Salinity of particle segment 3d numbering
+                !totdep = h0(m + nosegl * kmx)                                             !The total depth of the gridcell
+                !zlevel = totdep - laydep     !Depth of particel measured from bottom
+                zdepth = totdep - (1. - hpart(ipart)) * h0(iseg)                                !Depth of particel measured from surface
+                zlevel = totdep - zdepth     !Depth of particel measured from bottomdisp
+                verdiff = vdiff1(iseg)      !Verticle diffusion of particle segment 3d numbering
+                temp = temper1(iseg)     !Temperature of particle segment 3d numbering
+                salinity = salin1(iseg)      !Salinity of particle segment 3d numbering
 
                 if(temp == 0.0 .and. zmodel) then
                     !issue in zmodel with temper1, salin1 and vdiff1 due to varying water level in zmodel
@@ -647,8 +680,8 @@ contains
                         istage = 1
                         fstage = 0.0                                  ! Start at 0 fraction of current stage
                         stime = 0.0                                  ! Set the time spent in the stage to 0
-                        kpart(ipart) = layer_release                  ! Position the particle in the release layer for the Third grid dimension track
-                        zpart(ipart) = 0.5
+                        laypart(ipart) = layer_release                  ! Position the particle in the release layer for the Third grid dimension track
+                        hpart(ipart) = 0.5
                         k = layer_release                  ! Position the particle in the release layer for the Third gird layers track
                         kb = layer_release                  ! Position the particle in the release layer for the Third gird actual layers track
                         duration = -999.                          ! Set a default value for duration
@@ -675,13 +708,13 @@ contains
                     b = bstage(istage)                               ! Determine the b-coefficient for stage development
                     duration = exp(a + b * stemp)                        ! Determine the duration of stage development based on a, b and stage experienced temp
 
-                case(dev_intpltd)                                                            !Stage development 2
-                    call intpltd_stagedev(lunrep, stemp, dev_factor)
-                    duration = astage(istage) + bstage(istage) * (1 - dev_factor)
+!                case(dev_intpltd)                                                            !Stage development 2
+!                    call intpltd_stagedev(lunpr, stemp, dev_factor)
+!                    duration = astage(istage) + bstage(istage) * (1 - dev_factor)
 
                 case(dev_asian_carp_egg)                                                     !Stage development 3
                     if(abmmt /= 6) then
-                        write(lunrep, *) ' error, stage development method for asian carp egg defined, but not set as model'  ! Give an error notice that stage development is not defined
+                        write(lunpr, *) ' error, stage development method for asian carp egg defined, but not set as model'  ! Give an error notice that stage development is not defined
                         call stop_exit(1)                                                         ! Stop the calculation
                     endif
                     if(istage == 1) then                                                   ! stage developement for eggs (stage 1)
@@ -703,7 +736,7 @@ contains
 
                 case default                                                                 !Stage development Default
 
-                    write(lunrep, *) ' error, stage development method type not defined'       ! Give an error notice that stage development is not defined
+                    write(lunpr, *) ' error, stage development method type not defined'       ! Give an error notice that stage development is not defined
                     call stop_exit(1)                                                         ! Stop the calculation
 
                 end select
@@ -712,8 +745,8 @@ contains
                     fstage = min((selstage - REAL(INT(selstage))), 0.9999)          ! Set the current development fase of stage (can't be higher than 1)
                     stime = fstage * duration              ! Set the time spent in the stage to 0
                     stage = REAL(istage) + fstage          ! Set the real stage
-                    kpart(ipart) = layer_release                  ! Position the particle in the release layer for the Third grid dimension track
-                    zpart(ipart) = 0.5
+                    laypart(ipart) = layer_release                  ! Position the particle in the release layer for the Third grid dimension track
+                    hpart(ipart) = 0.5
                     k = layer_release                  ! Position the particle in the release layer for the Third gird layers track
                     kb = layer_release                  ! Position the particle in the release layer for the Third gird actual layers track
                     if(debug) write(88, *) 'First release :', fstage, stage, k
@@ -753,7 +786,7 @@ contains
                 fstage = max(fstage, 0.0)                         ! Make sure fstage does not become negative
                 stage = istage + fstage                         ! Calculate the current stage (as real)
 
-                if(debug) write(88, *) '     stage set to:', stage
+                if(debug) write(88, *) '     stage set to:', stage, ', duration: ',duration
 
                 wpart(2, ipart) = stage                              !Store the stage
                 wpart(3, ipart) = stime                              !Store the time spent in stage
@@ -786,16 +819,16 @@ contains
                 !Deactivate particles in nursery stage who have arrived in nursery area
 
                 if (istage >= istage_nursery .and. is_nursery .and. .not. chronrev) then !If the stage of nursery is reached and nursery is true
-                    kpart(ipart) = num_layers + 1                                              ! Add the particles to the storage layer (total layers + 1)
+                    laypart(ipart) = num_layers + 1                                              ! Add the particles to the storage layer (total layers + 1)
                 elseif (istage > 0 .or. chronrev) then                             !If nursery is not reached and particles are active
 
                     !Release any particle from bottom
 
                     if (kb > num_layers) then                                            !If the layer the particle is positioned is higher than the number of layers
-                        kpart(ipart) = num_layers                                              ! Place the particle in the layer above the bottom for the third dimension track
+                        laypart(ipart) = num_layers                                              ! Place the particle in the layer above the bottom for the third dimension track
                         k = num_layers                                              ! Place the particle in the layer above the bottom for the third dimension layers
                         kb = num_layers                                              ! Place the particle in the layer above the bottom for the third dimension actual position
-                        zpart(ipart) = 0.5                                                ! Place the particle in the middle of the cell in the third dimension
+                        hpart(ipart) = 0.5                                                ! Place the particle in the middle of the cell in the third dimension
                     endif
 
 
@@ -809,137 +842,23 @@ contains
                     case(model_none)
 
                         if(chronrev) then
-                            write(lunrep, *) ' error, no revere modelling implemented for "behv_test"'       ! Give an error notice that reversed modelling is not implemented
+                            write(lunpr, *) ' error, no revere modelling implemented for "behv_general"'       ! Give an error notice that reversed modelling is not implemented
                             call stop_exit(1)                                                               ! Stop the calculation
                         endif
 
-                        call behv_test (btype, hbtype, v_swim, d_swim, n, &
-                                m, num_rows, num_columns, mnmaxk, lgrid, &
-                                lgrid2, lgrid3, nosegl, wpart, ipart, &
-                                wsettl, k, kpart, zpart, xpart, &
-                                ypart, num_layers, idelt, day, phase_diurn, &
+                        call behv_general (btype, hbtype, v_swim, d_swim, n, &
+                                m, num_rows, num_columns, mnmaxk, &
+                                nosegl, wpart, ipart, &
+                                wsettl, k, kpart, num_layers, idelt, day, phase_diurn, &
                                 ebb_flow, flow, depth, salin1, temper1, &
-                                vol1, vol2, vel1, vel2, fstage, &
+                                vel1, vel2, fstage, &
                                 ztop, zlevel, zdepth, zbot, buoy, &
                                 vzact, vz, buoy1, buoy2, ztop1, &
                                 ztop2, zbot1, zbot2, vzact1, vzact2, &
-                                vswim1, vswim2, iseg, lunrep, angle)
-
-                    case (model_european_eel)
-
-                        if(chronrev) then
-                            write(lunrep, *) ' error, no revere modelling implemented for "model_european_eel"'       ! Give an error notice that reversed modelling is not implemented
-                            call stop_exit(1)                                                                        ! Stop the calculation
-                        endif
-
-                        call behv_european_eel (btype, hbtype, v_swim, d_swim, n, &
-                                m, num_rows, num_columns, mnmaxk, lgrid, &
-                                lgrid2, lgrid3, nosegl, wpart, ipart, &
-                                wsettl, k, kpart, zpart, xpart, &
-                                ypart, num_layers, idelt, day, phase_diurn, &
-                                ebb_flow, flow, depth, salin1, temper1, &
-                                vol1, vol2, vel1, vel2, fstage, &
-                                ztop, zlevel, zdepth, zbot, buoy, &
-                                vzact, vz, buoy1, buoy2, ztop1, &
-                                ztop2, zbot1, zbot2, vzact1, vzact2, &
-                                vswim1, vswim2, iseg, lunrep, angle)
-
-                    case (model_atlantic_salmon)
-
-                        if(chronrev) then
-                            write(lunrep, *) ' error, no revere modelling implemented for "model_atlantic_salmon"'    ! Give an error notice that reversed modelling is not implemented
-                            call stop_exit(1)                                                                        ! Stop the calculation
-                        endif
-
-                        call behv_atlantic_salmon (btype, hbtype, v_swim, d_swim, n, &
-                                m, num_rows, num_columns, mnmaxk, lgrid, &
-                                lgrid2, lgrid3, nosegl, wpart, ipart, &
-                                wsettl, k, kpart, zpart, xpart, &
-                                ypart, num_layers, idelt, day, phase_diurn, &
-                                ebb_flow, flow, depth, salin1, temper1, &
-                                vol1, vol2, vel1, vel2, fstage, &
-                                ztop, zlevel, zdepth, zbot, buoy, &
-                                vzact, vz, buoy1, buoy2, ztop1, &
-                                ztop2, zbot1, zbot2, vzact1, vzact2, &
-                                vswim1, vswim2, iseg, lunrep, angle)
-
-                    case (model_mauve_stinger)
-
-                        if(chronrev) then
-                            write(lunrep, *) ' error, no revere modelling implemented for "model_mauve_stinger"'      ! Give an error notice that reversed modelling is not implemented
-                            call stop_exit(1)                                                                        ! Stop the calculation
-                        endif
-
-                        call behv_mauve_stinger (btype, hbtype, v_swim, d_swim, n, &
-                                m, num_rows, num_columns, mnmaxk, lgrid, &
-                                lgrid2, lgrid3, nosegl, wpart, ipart, &
-                                wsettl, k, kpart, zpart, xpart, &
-                                ypart, num_layers, idelt, day, phase_diurn, &
-                                ebb_flow, flow, depth, salin1, temper1, &
-                                vol1, vol2, vel1, vel2, fstage, &
-                                ztop, zlevel, zdepth, zbot, buoy, &
-                                vzact, vz, buoy1, buoy2, ztop1, &
-                                ztop2, zbot1, zbot2, vzact1, vzact2, &
-                                vswim1, vswim2, iseg, lunrep, angle)
-
-                    case (model_horseshoecrab)
-
-                        if(chronrev) then
-                            write(lunrep, *) ' error, no revere modelling implemented for "model_horseshoecrab"'      ! Give an error notice that reversed modelling is not implemented
-                            call stop_exit(1)                                                                        ! Stop the calculation
-                        endif
-
-                        call behv_horseshoecrab (btype, hbtype, v_swim, d_swim, n, &
-                                m, num_rows, num_columns, mnmaxk, lgrid, &
-                                lgrid2, lgrid3, nosegl, wpart, ipart, &
-                                wsettl, k, kpart, zpart, xpart, &
-                                ypart, num_layers, idelt, day, phase_diurn, &
-                                ebb_flow, flow, depth, salin1, temper1, &
-                                vol1, vol2, vel1, vel2, fstage, &
-                                ztop, zlevel, zdepth, zbot, buoy, &
-                                vzact, vz, buoy1, buoy2, ztop1, &
-                                ztop2, zbot1, zbot2, vzact1, vzact2, &
-                                vswim1, vswim2, iseg, lunrep, angle)
-
-                    case (model_mangrove_seeds)
-
-                        if(chronrev) then
-                            write(lunrep, *) ' error, no revere modelling implemented for "model_mangrove_seeds"'     ! Give an error notice that reversed modelling is not implemented
-                            call stop_exit(1)                                                                        ! Stop the calculation
-                        endif
-
-                        call behv_mangrove (btype, hbtype, v_swim, d_swim, n, &
-                                m, num_rows, num_columns, mnmaxk, lgrid, &
-                                lgrid2, lgrid3, nosegl, wpart, ipart, &
-                                wsettl, k, kpart, zpart, xpart, &
-                                ypart, num_layers, idelt, day, phase_diurn, &
-                                ebb_flow, flow, depth, salin1, temper1, &
-                                vol1, vol2, vel1, vel2, fstage, &
-                                ztop, zlevel, zdepth, zbot, buoy, &
-                                vzact, vz, buoy1, buoy2, ztop1, &
-                                ztop2, zbot1, zbot2, vzact1, vzact2, &
-                                vswim1, vswim2, iseg, lunrep, angle)
-
-                    case (model_asian_carp_eggs)
-
-                        call behv_asiancarpeggs (btype, hbtype, v_swim, d_swim, n, &
-                                m, num_rows, num_columns, mnmaxk, lgrid, &
-                                lgrid2, lgrid3, nosegl, wpart, ipart, &
-                                wsettl, k, kpart, zpart, xpart, &
-                                ypart, num_layers, &
-                                ktopp, kbotp, idelt, day, phase_diurn, &
-                                ebb_flow, flow, depth, vdiff1, salin1, &
-                                temper1, vol1, vol2, vel1, vel2, &
-                                fstage, ztop, zlevel, zdepth, zbot, &
-                                buoy, vzact, vz, buoy1, buoy2, &
-                                ztop1, ztop2, zbot1, zbot2, vzact1, &
-                                vzact2, vswim1, vswim2, iseg, lunrep, &
-                                angle, factor_alpha, factor_beta, factor_delta, &
-                                factor_eta, factor_gamma, factor_phi)
-
+                                vswim1, vswim2, iseg, lunpr )
                     case default                                                                  !ABM model Default
 
-                        write(lunrep, *) ' error, ABM model type not defined'                      ! Give an error notice that vertical behaviour is not defined
+                        write(lunpr, *) ' error, ABM model type not defined'                      ! Give an error notice that vertical behaviour is not defined
                         call stop_exit(1)                                                         ! Stop the calculation
 
                     end select
@@ -1008,6 +927,8 @@ contains
             !
 
         enddo
+        !partcel = abs(cell2nod(mpart(ipart)))  ! the segment number of the layer 1
+!        if (ipart > 27) write(88,*)' end loop Particle 27, CELLNR=', abs(cell2nod(mpart(ipart)))
 
 
         ! every day output position to csv file
@@ -1016,6 +937,7 @@ contains
             close(luncsv)                                                                                               ! Close the output file
             ncum = 0                                                                                                    ! Set the ncum to 0
         endif
+        if (debug) write(88, * ) ' End fm_abm, deriver wsettl for particle: 27, wsettle: ', wsettl(27)
 
         if (timon) call timstop (ithndl)                                                                           !If the subroutine timer is on stop timing and save time spent
         return                                                                                                         !Return from the subroutine

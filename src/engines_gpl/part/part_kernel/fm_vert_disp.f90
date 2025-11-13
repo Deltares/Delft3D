@@ -104,6 +104,7 @@ contains
         use m_part_parameters
         use m_particles, laypart => kpart
         use partmem
+        use spec_feat_par, only: abmmodel
         use m_waq_precision
         use m_part_mesh
         use random_generator
@@ -146,14 +147,14 @@ contains
         tp = real(iptime(ipart), kind = kind(tp))
         abuac = abuoy(ipart)
         dran1 = drand(1)
-        wsettl = 1.0_dp
+!        wsettl = 1.0_dp
         itdelt = idelt
         ! calculate shearstress parameters for sedimentation and erosion
         uscrit = sqrt(taucs / rhow)
         uecrit = sqrt(tauce / rhow)
 
-        ! calculate settling velocity, check what happens if we change wsettl externally, then we do not need to calculate.
-        call partvs(lunpr, itime, nosubs, nopart, ivtset, &
+        ! calculate settling velocity, check what happens if we change wsettl externally (eg the abm module_, then we do not need to calculate.
+        if (.not. abmmodel) call partvs(lunpr, itime, nosubs, nopart, ivtset, &
                 ivtime, vsfour, vsfact, wpart, wsettl, &
                 modtyp, 0, ndxi, lgrid3, num_layers, &
                 mpart, mpart, laypart, nosegp, noseglp, &
@@ -220,7 +221,7 @@ contains
             rise = dvz < 0.0_dp
             sink = dvz > 0.0_dp
             neutral = dvz == 0_dp
-            dhpart = (dvz - vz) / (h0(cellid) + tiny(h0(cellid)))
+            dhpart = (dvz - vz) / h0(cellid)
             if (depthp <= 0.0) then
                 call  v_part_bounce(ipart, depthp, totdepth, dhpart, top_layer, bottom_layer)
             elseif (depthp >= totdepth) then

@@ -49,6 +49,7 @@ if(WIN32)
 endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
+install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/data/leewayfactors.csv  DESTINATION share/delft3d)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_delpar.${platform_extension} DESTINATION bin)
 if(WIN32)
     install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/dshell_run_delpar.${platform_extension} DESTINATION bin)

@@ -562,6 +562,7 @@ contains
                         zpart(Nopart) = zpart(Nopart) - dn * dnn(3, k)
                     end if
                 end if
+
                 mpart(Nopart) = mrpart(irpart)
             end if
             iptime(irpart) = 0.0
