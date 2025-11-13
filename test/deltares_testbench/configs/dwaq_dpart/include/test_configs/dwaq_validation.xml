@@ -590,6 +590,50 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e03_f09_c61_channel2d_scheme23" ref="dwaq_default">
+        <path version="2025-11-13T15:19:05.729000">e03_waq/f09_validation_water_quality_delwaq/c61_channel2d_scheme23</path>
+        <checks>
+            <file name="channel2d-option23.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="channel2d-option23.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e03_f09_c62_channel3d_scheme17" ref="dwaq_default">
+        <path version="2025-11-13T15:19:07.961000">e03_waq/f09_validation_water_quality_delwaq/c62_channel3d_scheme17</path>
+        <checks>
+            <file name="channel3d_option17.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e03_f09_c63_channel3d_scheme18" ref="dwaq_default">
+        <path version="2025-11-13T15:19:09.944000">e03_waq/f09_validation_water_quality_delwaq/c63_channel3d_scheme18</path>
+        <checks>
+            <file name="channel3d_option18.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+
     <testCase name="e03_f09_c101_saturation_option1_0d" ref="dwaq_default">
         <path version="2025-01-30T15:29:56.926000">e03_waq/f09_validation_water_quality_delwaq/c101_saturation_option1_0d</path>
         <checks>
