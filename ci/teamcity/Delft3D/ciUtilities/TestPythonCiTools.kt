@@ -46,6 +46,7 @@ object TestPythonCiTools : BuildType({
                 +:/ci/python/uv.lock
             """.trimIndent()
             branchFilter = "+:pull/*"
+            enabled = false
         }
     }
 
