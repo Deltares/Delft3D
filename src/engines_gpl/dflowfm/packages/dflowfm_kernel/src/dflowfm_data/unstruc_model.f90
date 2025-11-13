@@ -911,7 +911,7 @@ contains
          call prop_get(md_ptr, 'geometry', 'Layertype', Layertype)
          if (Layertype == LAYTP_Z) then
             mxlayz = kmx
-         elseif (Layertype /= 1 .and. Layertype /= 2) then
+         elseif (Layertype /= LAYTP_SIGMA .and. Layertype /= LAYTP_Z) then
             write (msgbuf, '(a,i0,a)'), 'Invalid layertype ', layertype, &
                ' specified in model definition file. Valid values are 1 (sigma-layers) or 2 (z-layers, z-sigma-layers).'
             call err_flush()
