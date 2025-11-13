@@ -60,15 +60,13 @@ module m_flow ! flow arrays-999
    integer :: nplot !< vertical profile to be plotted at node nr
    integer :: kplotfrombedorsurface = 2 !< up or down k
    integer :: kplotordepthaveraged = 1 !< 1 = kplot, 2 = averaged
-   integer :: layertype !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
+   integer :: layertype !< 1 = all sigma, 2 = z or z-sigma
    integer :: numtopsig = 0 !< number of top layers in sigma
    integer :: janumtopsiguniform = 1 !< specified nr of top layers in sigma is same everywhere
 
    real(kind=dp) :: Tsigma = 100 !< relaxation period density controlled sigma
    integer, parameter :: LAYTP_SIGMA = 1
    integer, parameter :: LAYTP_Z = 2
-   integer, parameter :: LAYTP_LEFTSIGMA = 3
-   integer, parameter :: LAYTP_LEFTZ = 4
 
    integer :: iStrchType = -1 !< Stretching type for non-uniform layers, 1=user defined, 2=exponential, otherwise=uniform
    integer, parameter :: STRCH_USER = 1
@@ -559,7 +557,7 @@ contains
       mxlays = 1 ! max nr of sigma layers in flow domain
       kplot = 1 ! layer nr to be plotted
       nplot = 1 ! vertical profile to be plotted at node nr
-      layertype = 1 !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
+      layertype = 1 !< 1 = all sigma, 2 = z or z-sigma
       iturbulencemodel = 3 !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
       ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
       sigmagrowthfactor = 1.0_dp !<layer thickness growth factor from bed up

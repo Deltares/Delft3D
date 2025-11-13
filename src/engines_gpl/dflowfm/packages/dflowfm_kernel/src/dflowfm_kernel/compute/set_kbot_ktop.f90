@@ -133,121 +133,121 @@ contains
             end if
          end do
 
-      else if (Layertype == 4) then ! density controlled sigma
-         dkx = 0.5_dp
-         do n = 1, ndx
-            drhok = 0.01_dp
-            kb = kbot(n)
-            kt = kb - 1 + kmxn(n)
-            ktop(n) = kt
-            do k = kb + 1, kt
-               if (abs(rho(k) - rho(k - 1)) > drhok) then
-                  drhok = abs(rho(k) - rho(k - 1))
-                  dkx(n) = dble(k - kb) / dble(kt - kb + 1)
-                  dkx(n) = min(0.8_dp, dkx(n))
-                  dkx(n) = max(0.2_dp, dkx(n))
-               end if
-            end do
-         end do
+      ! else if (Layertype == 4) then ! density controlled sigma
+      !    dkx = 0.5_dp
+      !    do n = 1, ndx
+      !       drhok = 0.01_dp
+      !       kb = kbot(n)
+      !       kt = kb - 1 + kmxn(n)
+      !       ktop(n) = kt
+      !       do k = kb + 1, kt
+      !          if (abs(rho(k) - rho(k - 1)) > drhok) then
+      !             drhok = abs(rho(k) - rho(k - 1))
+      !             dkx(n) = dble(k - kb) / dble(kt - kb + 1)
+      !             dkx(n) = min(0.8_dp, dkx(n))
+      !             dkx(n) = max(0.2_dp, dkx(n))
+      !          end if
+      !       end do
+      !    end do
 
-         do j = 1, 10
-            sdkx = 0.0_dp
-            do L = 1, Lnx
-               k1 = ln(1, L)
-               k2 = ln(2, L)
-               sdkx(k1) = sdkx(k1) + dkx(k2)
-               sdkx(k2) = sdkx(k2) + dkx(k1)
-            end do
+      !    do j = 1, 10
+      !       sdkx = 0.0_dp
+      !       do L = 1, Lnx
+      !          k1 = ln(1, L)
+      !          k2 = ln(2, L)
+      !          sdkx(k1) = sdkx(k1) + dkx(k2)
+      !          sdkx(k2) = sdkx(k2) + dkx(k1)
+      !       end do
 
-            a = 0.25_dp
-            do n = 1, ndx
-               dkx(n) = a * dkx(n) + (1.0_dp - a) * sdkx(n) / dble(nd(n)%lnx)
-            end do
-         end do
+      !       a = 0.25_dp
+      !       do n = 1, ndx
+      !          dkx(n) = a * dkx(n) + (1.0_dp - a) * sdkx(n) / dble(nd(n)%lnx)
+      !       end do
+      !    end do
 
-         numbd = 0.5_dp * kmx
-         numtp = kmx - numbd
-         aaa = 1.05_dp
-         aa = min(1.0_dp, exp(-dts / Tsigma))
+      !    numbd = 0.5_dp * kmx
+      !    numtp = kmx - numbd
+      !    aaa = 1.05_dp
+      !    aa = min(1.0_dp, exp(-dts / Tsigma))
 
-         dkx = 0.5_dp
+      !    dkx = 0.5_dp
 
-         do n = 1, ndx
+      !    do n = 1, ndx
 
-            call getkbotktop(n, kb, kt)
+      !       call getkbotktop(n, kb, kt)
 
-            h0 = s1(n) - zws(kb - 1)
-            h00 = max(epshu, zws0(kt) - zws0(kb - 1))
-            sig = 0.0_dp
-            dsig0 = 0.1_dp / dble(numtp)
+      !       h0 = s1(n) - zws(kb - 1)
+      !       h00 = max(epshu, zws0(kt) - zws0(kb - 1))
+      !       sig = 0.0_dp
+      !       dsig0 = 0.1_dp / dble(numtp)
 
-            do k = 1, kmxn(n)
-               if (k == 1) then
-                  dsig = dkx(n) * (1.0_dp - aaa) / (1.0_dp - aaa**numbd)
-                  dsig = dsig * aaa**(numbd - 1)
-               else if (k <= numbd) then
-                  dsig = dsig / aaa
-               else if (k == numbd + 1) then
-                  dsig = (1.0_dp - sig) * (1.0_dp - aaa) / (1.0_dp - aaa**numtp)
-               else
-                  dsig = dsig * aaa
-               end if
+      !       do k = 1, kmxn(n)
+      !          if (k == 1) then
+      !             dsig = dkx(n) * (1.0_dp - aaa) / (1.0_dp - aaa**numbd)
+      !             dsig = dsig * aaa**(numbd - 1)
+      !          else if (k <= numbd) then
+      !             dsig = dsig / aaa
+      !          else if (k == numbd + 1) then
+      !             dsig = (1.0_dp - sig) * (1.0_dp - aaa) / (1.0_dp - aaa**numtp)
+      !          else
+      !             dsig = dsig * aaa
+      !          end if
 
-               sig = sig + dsig
+      !          sig = sig + dsig
 
-               kk = kb + k - 1
-               if (k == kmxn(n)) then
-                  zws(kk) = s1(n)
-               else
-                  if (jazws0 == 1) then
-                     zsl = zslay(k, 1)
-                  else
-                     zsl = (1.0_dp - aa) * sig + aa * (zws0(kk) - zws0(kb - 1)) / h00
-                  end if
-                  zws(kk) = zws(kb - 1) + h0 * zsl
-               end if
+      !          kk = kb + k - 1
+      !          if (k == kmxn(n)) then
+      !             zws(kk) = s1(n)
+      !          else
+      !             if (jazws0 == 1) then
+      !                zsl = zslay(k, 1)
+      !             else
+      !                zsl = (1.0_dp - aa) * sig + aa * (zws0(kk) - zws0(kb - 1)) / h00
+      !             end if
+      !             zws(kk) = zws(kb - 1) + h0 * zsl
+      !          end if
 
-               vol1(kk) = ba(n) * (zws(kk) - zws(kk - 1)) ! just for now here
-               vol1(n) = vol1(n) + vol1(kk)
-            end do
-         end do
-         return ! sigma only: quick exit
+      !          vol1(kk) = ba(n) * (zws(kk) - zws(kk - 1)) ! just for now here
+      !          vol1(n) = vol1(n) + vol1(kk)
+      !       end do
+      !    end do
+      !    return ! sigma only: quick exit
 
-      else if (Layertype == 3) then ! mix : first do sigma and z
-         do n = 1, ndx
-            kb = kbot(n)
+      ! else if (Layertype == 3) then ! mix : first do sigma and z
+      !    do n = 1, ndx
+      !       kb = kbot(n)
 
-            Ldn = laydefnr(n)
-            if (Ldn > 0) then
-               if (Laytyp(Ldn) == 1) then ! sigma
-                  h0 = s1(n) - zws(kb - 1)
-                  do k = 1, kmxn(n) - 1
-                     zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
-                  end do
-                  ktop(n) = kb + kmxn(n) - 1
-                  zws(ktop(n)) = s1(n)
-               else if (Laytyp(Ldn) == 2) then ! z
+      !       Ldn = laydefnr(n)
+      !       if (Ldn > 0) then
+      !          if (Laytyp(Ldn) == 1) then ! sigma
+      !             h0 = s1(n) - zws(kb - 1)
+      !             do k = 1, kmxn(n) - 1
+      !                zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
+      !             end do
+      !             ktop(n) = kb + kmxn(n) - 1
+      !             zws(ktop(n)) = s1(n)
+      !          else if (Laytyp(Ldn) == 2) then ! z
 
-                  ktx = kb + kmxn(n) - 1
-                  call getzlayerindices(n, nlayb, nrlay)
-                  do k = kb, ktx
-                     kk = k - kb + nlayb
-                     zkk = zslay(kk, Ldn)
-                     if (zkk < s1(n) - toplayminthick .and. k < ktx) then
-                        zws(k) = zkk
-                     else
-                        zws(k) = s1(n)
-                        ktop(n) = k
-                        if (ktx > k) then
-                           zws(k + 1:ktx) = zws(k)
-                        end if
-                        exit
-                     end if
-                  end do
-               end if
-            end if
-         end do
-      end if
+      !             ktx = kb + kmxn(n) - 1
+      !             call getzlayerindices(n, nlayb, nrlay)
+      !             do k = kb, ktx
+      !                kk = k - kb + nlayb
+      !                zkk = zslay(kk, Ldn)
+      !                if (zkk < s1(n) - toplayminthick .and. k < ktx) then
+      !                   zws(k) = zkk
+      !                else
+      !                   zws(k) = s1(n)
+      !                   ktop(n) = k
+      !                   if (ktx > k) then
+      !                      zws(k + 1:ktx) = zws(k)
+      !                   end if
+      !                   exit
+      !                end if
+      !             end do
+      !          end if
+      !       end if
+      !    end do
+      ! end if
 
       do n = 1, ndx
 
@@ -387,100 +387,100 @@ contains
             end if
          end do
 
-      else if (Layertype == 4) then ! density controlled sigma
-         ! Simplified version for boundary nodes only - skip the global smoothing,
-         ! because looping over all nodes would be too expensive for updating boundary nodes only.
-         numbd = 0.5_dp * kmx
-         numtp = kmx - numbd
-         aaa = 1.05_dp
-         aa = min(1.0_dp, exp(-dts / Tsigma))
+      ! else if (Layertype == 4) then ! density controlled sigma
+      !    ! Simplified version for boundary nodes only - skip the global smoothing,
+      !    ! because looping over all nodes would be too expensive for updating boundary nodes only.
+      !    numbd = 0.5_dp * kmx
+      !    numtp = kmx - numbd
+      !    aaa = 1.05_dp
+      !    aa = min(1.0_dp, exp(-dts / Tsigma))
 
-         do i_bnd = 1, nbndz
-            n = kbndz(1, i_bnd)
-            if (n <= 0 .or. n > ndx) then
-               cycle
-            end if
+      !    do i_bnd = 1, nbndz
+      !       n = kbndz(1, i_bnd)
+      !       if (n <= 0 .or. n > ndx) then
+      !          cycle
+      !       end if
 
-            call getkbotktop(n, kb, kt)
+      !       call getkbotktop(n, kb, kt)
 
-            h0 = s0(n) - zws(kb - 1)
-            h00 = max(epshu, zws0(kt) - zws0(kb - 1))
-            sig = 0.0_dp
-            vol1(n) = 0.0_dp
+      !       h0 = s0(n) - zws(kb - 1)
+      !       h00 = max(epshu, zws0(kt) - zws0(kb - 1))
+      !       sig = 0.0_dp
+      !       vol1(n) = 0.0_dp
 
-            do k = 1, kmxn(n)
-               if (k == 1) then
-                  dsig = 0.5_dp * (1.0_dp - aaa) / (1.0_dp - aaa**numbd) ! Use default dkx = 0.5
-                  dsig = dsig * aaa**(numbd - 1)
-               else if (k <= numbd) then
-                  dsig = dsig / aaa
-               else if (k == numbd + 1) then
-                  dsig = (1.0_dp - sig) * (1.0_dp - aaa) / (1.0_dp - aaa**numtp)
-               else
-                  dsig = dsig * aaa
-               end if
+      !       do k = 1, kmxn(n)
+      !          if (k == 1) then
+      !             dsig = 0.5_dp * (1.0_dp - aaa) / (1.0_dp - aaa**numbd) ! Use default dkx = 0.5
+      !             dsig = dsig * aaa**(numbd - 1)
+      !          else if (k <= numbd) then
+      !             dsig = dsig / aaa
+      !          else if (k == numbd + 1) then
+      !             dsig = (1.0_dp - sig) * (1.0_dp - aaa) / (1.0_dp - aaa**numtp)
+      !          else
+      !             dsig = dsig * aaa
+      !          end if
 
-               sig = sig + dsig
-               kk = kb + k - 1
+      !          sig = sig + dsig
+      !          kk = kb + k - 1
 
-               if (k == kmxn(n)) then
-                  zws(kk) = s0(n)
-               else
-                  zsl = (1.0_dp - aa) * sig + aa * (zws0(kk) - zws0(kb - 1)) / h00
-                  zws(kk) = zws(kb - 1) + h0 * zsl
-               end if
+      !          if (k == kmxn(n)) then
+      !             zws(kk) = s0(n)
+      !          else
+      !             zsl = (1.0_dp - aa) * sig + aa * (zws0(kk) - zws0(kb - 1)) / h00
+      !             zws(kk) = zws(kb - 1) + h0 * zsl
+      !          end if
 
-               vol1(kk) = ba(n) * (zws(kk) - zws(kk - 1))
-               vol1(n) = vol1(n) + vol1(kk)
-            end do
-         end do
-         return ! Early exit - no link updates needed for density sigma layers, volumes already calculated
+      !          vol1(kk) = ba(n) * (zws(kk) - zws(kk - 1))
+      !          vol1(n) = vol1(n) + vol1(kk)
+      !       end do
+      !    end do
+      !    return ! Early exit - no link updates needed for density sigma layers, volumes already calculated
 
-      else if (Layertype == 3) then ! mixed layers
-         do i_bnd = 1, nbndz
-            n = kbndz(1, i_bnd)
-            if (n <= 0 .or. n > ndx) then
-               cycle
-            end if
+      ! else if (Layertype == 3) then ! mixed layers
+      !    do i_bnd = 1, nbndz
+      !       n = kbndz(1, i_bnd)
+      !       if (n <= 0 .or. n > ndx) then
+      !          cycle
+      !       end if
 
-            kb = kbot(n)
-            kt0 = ktop(n) ! Store original ktop for comparison
+      !       kb = kbot(n)
+      !       kt0 = ktop(n) ! Store original ktop for comparison
 
-            Ldn = laydefnr(n)
-            if (Ldn > 0) then
-               if (Laytyp(Ldn) == 1) then ! sigma
-                  h0 = s0(n) - zws(kb - 1)
-                  do k = 1, kmxn(n) - 1
-                     zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
-                  end do
-                  ktop(n) = kb + kmxn(n) - 1
-                  zws(ktop(n)) = s0(n)
-               else if (Laytyp(Ldn) == 2) then ! z
-                  ktx = kb + kmxn(n) - 1
-                  call getzlayerindices(n, nlayb, nrlay)
-                  do k = kb, ktx
-                     kk = k - kb + nlayb
-                     zkk = zslay(kk, Ldn)
-                     if (zkk < s0(n) - toplayminthick .and. k < ktx) then
-                        zws(k) = zkk
-                     else
-                        zws(k) = s0(n)
-                        ktop(n) = k
-                        if (ktx > k) then
-                           zws(k + 1:ktx) = zws(k)
-                        end if
-                        exit
-                     end if
-                  end do
-               end if
-            end if
+      !       Ldn = laydefnr(n)
+      !       if (Ldn > 0) then
+      !          if (Laytyp(Ldn) == 1) then ! sigma
+      !             h0 = s0(n) - zws(kb - 1)
+      !             do k = 1, kmxn(n) - 1
+      !                zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
+      !             end do
+      !             ktop(n) = kb + kmxn(n) - 1
+      !             zws(ktop(n)) = s0(n)
+      !          else if (Laytyp(Ldn) == 2) then ! z
+      !             ktx = kb + kmxn(n) - 1
+      !             call getzlayerindices(n, nlayb, nrlay)
+      !             do k = kb, ktx
+      !                kk = k - kb + nlayb
+      !                zkk = zslay(kk, Ldn)
+      !                if (zkk < s0(n) - toplayminthick .and. k < ktx) then
+      !                   zws(k) = zkk
+      !                else
+      !                   zws(k) = s0(n)
+      !                   ktop(n) = k
+      !                   if (ktx > k) then
+      !                      zws(k + 1:ktx) = zws(k)
+      !                   end if
+      !                   exit
+      !                end if
+      !             end do
+      !          end if
+      !       end if
 
-            ! Check if this node experienced significant layer changes
-            if (ktop(n) /= kt0) then
-               need_link_update = .true.
-            end if
-         end do
-      end if
+      !       ! Check if this node experienced significant layer changes
+      !       if (ktop(n) /= kt0) then
+      !          need_link_update = .true.
+      !       end if
+      !    end do
+      ! end if
 
       ! Handle overlap zones for all boundary nodes
       do i_bnd = 1, nbndz

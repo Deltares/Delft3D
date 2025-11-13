@@ -165,13 +165,6 @@ contains
       call realloc(laymx, mxlaydefs, stat=ierr, keepexisting=.false.)
       call aerr('laymx(mxlaydefs)', ierr, mxlaydefs)
 
-      if (layertype >= 2) then
-         call realloc(nlaybn, ndx, stat=ierr, fill=0, keepexisting=.false.)
-         call aerr('nlaybn(ndx)', ierr, ndx)
-         call realloc(nrlayn, ndx, stat=ierr, fill=0, keepexisting=.false.)
-         call aerr('nrlayn(ndx)', ierr, ndx)
-      end if
-
       do k = 1, Ndx
          kbot(k) = k
          ktop(k) = k
@@ -216,26 +209,10 @@ contains
          mx = 0
          laydefnr = 1
 
-         if (layertype == 3) then
-            inquire (file=md_vertplizfile, exist=jawel)
-            if (jawel) then
-               call oldfil(mpol, md_vertplizfile)
-            else
-               call qnerror('vertical_layering.pliz not found, switch back to sigma', ' ', ' ')
-               layertype = 1
-            end if
-         end if
-
-         if (layertype == LAYTP_SIGMA .or. layertype == 4) then ! all sigma
+         if (layertype == LAYTP_SIGMA) then ! all sigma
             mxlaydefs = 1
             laytyp(1) = 1
             laymx(1) = kmx
-            if (layertype == 4) then
-               call realloc(sdkx, ndx, stat=ierr, keepexisting=.false.)
-               call aerr('sdkx(ndx)', ierr, ndx)
-               call realloc(dkx, ndx, stat=ierr, keepexisting=.false.)
-               call aerr('dkx(ndx)', ierr, ndx)
-            end if
          else if (layertype == LAYTP_Z) then ! all z
             mxlaydefs = 1
             laytyp(1) = 2
@@ -303,8 +280,6 @@ contains
             mxlayz = mx
             kmx = mx ! repair code
             laymx(1) = mx
-         else if (layertype == 3) then ! combination in polygons
-            call polygonlayering(mpol)
          end if
          do k = 1, mxlaydefs
             mx = max(mx, laymx(k))
