@@ -44,7 +44,7 @@ contains
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
-                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, jamapflowanalysis, mxlaydefs, layertype, LAYTP_SIGMA, LAYTP_Z, &
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, LAYTP_SIGMA, LAYTP_Z, &
                         kmx, kbotc, kmxc, numvertdis, mxlays, zlaybot, iStrchType, zlaytop, Floorlevtoplay, dztop, dztopuniabovez, &
                         sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
                         kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, kmxx, zslay, &
@@ -162,6 +162,13 @@ contains
       call aerr('laytyp(mxlaydefs)', ierr, mxlaydefs)
       call realloc(laymx, mxlaydefs, stat=ierr, keepexisting=.false.)
       call aerr('laymx(mxlaydefs)', ierr, mxlaydefs)
+
+      if (layertype == LAYTP_Z) then
+         call realloc(nlaybn, ndx, stat=ierr, fill=0, keepexisting=.false.)
+         call aerr('nlaybn(ndx)', ierr, ndx)
+         call realloc(nrlayn, ndx, stat=ierr, fill=0, keepexisting=.false.)
+         call aerr('nrlayn(ndx)', ierr, ndx)
+      end if
 
       do k = 1, Ndx
          kbot(k) = k
