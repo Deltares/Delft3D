@@ -219,7 +219,7 @@ contains
 
         if (init == 0) then
             call parse_scheme_options(file_unit, vertical_upwind, coname, const, disp0q0, &
-                                    count_boxes, report)
+                                    count_boxes, report, sw_settling)
             allocate (count_cells_for_box(count_boxes + 2), count_flows_for_box(count_boxes + 2), sep_vert_flow_per_box(count_boxes + 2), delta_t_box(count_boxes + 1))
             call compute_ordering_arrays(num_cells, num_exchanges, num_exchanges_z_dir, &
                                        file_unit, noqh, ipoint, ivert, nvert, &
@@ -289,12 +289,8 @@ contains
         if (timon) call timstop(ithand1)
 
         ! PART2: set the fractional step loop for this time step
-        do cell_i = 1, num_cells
-            do substance_i = 1, num_substances_transported
-                dconc2(substance_i, cell_i) = conc (substance_i, cell_i)      ! Initialize dconc2. Becomes new estimate
-                rhs(substance_i, cell_i)    = amass(substance_i, cell_i)      ! rhs == masses, not concentrations
-            end do
-        end do
+        dconc2(1:num_substances_transported, 1:num_cells) = conc (1:num_substances_transported, 1:num_cells)  ! Initialize dconc2. Becomes new estimate
+        rhs(1:num_substances_transported, 1:num_cells)    = amass(1:num_substances_transported, 1:num_cells)  ! rhs == masses, not concentrations
 
         acc_remained = 0.0
         acc_changed = 0.0
@@ -304,17 +300,8 @@ contains
         do i_substep = 1, count_substeps
             ! fraction of time-step == interpolation factor of this step
             fact = real(i_substep) / real(count_substeps, kind = dp)
-                                                                ! ||i_substep ||  boxes to integrate        ||  modulo logic  ||
-                                                                ! | 1         | fbox                         |                 |
-                                                                ! | 2         | fbox, fbox-1                 | mod(2    ) = 0  |
-            last_integr_box = first_box_smallest_dt             ! | 3         | fbox                         |                 |
-            idx_flux = 1                                        ! | 4         | fbox, fbox-1, fbox-2         | mod(2&4  ) = 0  |
-            do ibox = 1, count_used_boxes - 1                   ! | 5         | fbox                         |                 |
-                idx_flux = idx_flux * 2                         ! | 6         | fbox, fbox-1                 | mod(2    ) = 0  |
-                if (mod(i_substep, idx_flux) == 0) then         ! | 7         | fbox                         |                 |
-                    last_integr_box = last_integr_box - 1       ! | 8         | fbox, fbox-1, fbox-2, fbox-3 | mod(2&4&8) = 0  |
-                end if                                          ! | ...       | ...                          |                 |
-            end do
+
+            last_integr_box = get_integration_limit_of_sub_time_step(i_substep, count_used_boxes, first_box_smallest_dt)
 
             !  PART2a: cells that change volume: in box [count_boxes + 1]; deal with those cells that are filling up with water (running wet)
             ! All sections of Part2a use delta_t_box(first_box)
@@ -1564,7 +1551,7 @@ contains
     end subroutine locally_adaptive_time_step
 
     subroutine parse_scheme_options(file_unit, vertical_upwind, coname, const, disp0q0, &
-        count_boxes, report)
+        count_boxes, report, sw_settling)
         !> Parse the options for the integration scheme (local flexible time step)
         !< and the report settings
         use m_cli_utils, only: is_command_arg_specified
@@ -1578,9 +1565,9 @@ contains
         logical, intent(in) :: disp0q0 !< flag for dispersion allowed if flow rate is zero
         integer(kind = int_wp), intent(out) :: count_boxes !< number of boxes or baskets
         logical, intent(out) :: report !< flag for report
+        logical, intent(out) :: sw_settling !< flag for settling backwards option
         
         ! Local variables
-        logical :: sw_settling !< flag for settling backwards option
         integer(kind = int_wp) :: i !< index in loops
 
 
@@ -2216,5 +2203,39 @@ contains
             end do
         end do
     end subroutine fill_in_off_diags_vertical_flows
+
+    function get_integration_limit_of_sub_time_step(i_substep, count_used_boxes, first_box_smallest_dt) result(last_integr_box)
+        !> Determines the last box (largest dt) to integrate for a given sub-time step.
+        ! Based on the binary representation of the sub-time step index, it identifies which boxes need to be integrated.
+        ! ||i_substep ||  boxes to integrate        ||  modulo logic  ||
+        ! | 1         | fbox                         |                 |
+        ! | 2         | fbox, fbox-1                 | mod(2    ) = 0  |
+        ! | 3         | fbox                         |                 |
+        ! | 4         | fbox, fbox-1, fbox-2         | mod(2&4  ) = 0  |
+        ! | 5         | fbox                         |                 |
+        ! | 6         | fbox, fbox-1                 | mod(2    ) = 0  |
+        ! | 7         | fbox                         |                 |
+        ! | 8         | fbox, fbox-1, fbox-2, fbox-3 | mod(2&4&8) = 0  |
+        ! | ...       | ...                          |                 |
+
+        implicit none
+        integer, intent(in) :: i_substep !< current sub-time step index
+        integer, intent(in) :: count_used_boxes !< number of used boxes
+        integer, intent(in) :: first_box_smallest_dt !< index of the first box (with smallest delta t) that is used
+        integer :: last_integr_box !< index of the last box (with largest delta t) to integrate for the given sub-time step
+
+        ! Local variables
+        integer :: ibox !< box index in loops
+        integer :: idx_flux !< flux index in loops
+
+        last_integr_box = first_box_smallest_dt             
+        idx_flux = 1                                        
+        do ibox = 1, count_used_boxes - 1                   
+            idx_flux = idx_flux * 2                         
+            if (mod(i_substep, idx_flux) == 0) then         
+                last_integr_box = last_integr_box - 1       
+            end if                                          
+        end do
+    end function get_integration_limit_of_sub_time_step
 
 end module m_locally_adaptive_time_step
