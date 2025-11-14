@@ -553,16 +553,21 @@ contains
 !  TODO: implement preCICE coupling here!
 !
    subroutine set_all_wave_parameters()
-      !
-      ! This routine is hit every small user step (typically every 30s)
-      !
-      print *, '[FM] We are in set_all_wave_parameters at ', ecTime%seconds()
 
       ! This part must be skipped during initialization
       if (jawave == WAVE_SWAN_ONLINE) then
          ! Finally the delayed external forcings can be initialized
          success = flow_initwaveforcings_runtime()
       end if
+
+      !
+      ! This routine is hit every small user step (typically every 30s)
+      !
+      print *, '[FM] We are in set_all_wave_parameters at ', ecTime%seconds()
+
+#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
+      ! TODO: Call precice reads here.
+#endif 
 
       if (allocated(hwavcom)) then
          success = success .and. ecGetValues(ecInstancePtr, item_hrms, ecTime)
