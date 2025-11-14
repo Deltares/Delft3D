@@ -101,12 +101,13 @@ contains
           allocate(bc%columns(bc%numcols))
        endif
     case (BC_FTYPE_NETCDF)
+
        allocate(bc%ncvarndx(1))
        if (.not.ecNetCDFscan(bc%ncptr, quantityName, plilabel, bc%ncvarndx, bc%nclocndx, &
                               bc%dimvector, vectormax=bc%quantity%vectormax)) then
           return                                               ! quantityName-plilabel combination not found
        endif
-       if (bc%numlay<=1) then
+       if (bc%numlay<=1 .or. strcmpi(quantityName,'waterlevel')) then
           bc%func = BC_FUNC_TSERIES
        else
           bc%func = BC_FUNC_TIM3D
@@ -759,6 +760,7 @@ contains
     integer(kind=8)                :: savepos    !< saved position in file, for mf_read to enabled rewinding
     real(kind=hp), dimension(1:1)  :: ec_timesteps ! to read in source time from file block
     real(kind=hp)                  :: amplitude
+    
 
     bcPtr => fileReaderPtr%bc
 
@@ -888,8 +890,10 @@ contains
           call setECMessage("Datablock end (eof) has been reached in file: "//trim(bcPtr%fname))
           return
        endif
+       
+       !TK_Temp Use FUNC to determine whether normal or TIM3D series
        if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%dimvector, &
-          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer)) then
+          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPTR.FUNC)) then
           call setECMessage("Read failure in file: "//trim(bcPtr%fname))
           return
        else
