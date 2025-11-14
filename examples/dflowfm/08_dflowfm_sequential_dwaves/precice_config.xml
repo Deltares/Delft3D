@@ -139,6 +139,7 @@
 
   <participant name="fm">
     <provide-mesh name="fm_flow_nodes" />
+    <receive-mesh name="wave_nodes" from="wave" />
     <write-data name="bed_levels" mesh="fm_flow_nodes" />
     <read-data name="hs" mesh="fm_flow_nodes" />
     <read-data name="dir" mesh="fm_flow_nodes" />
