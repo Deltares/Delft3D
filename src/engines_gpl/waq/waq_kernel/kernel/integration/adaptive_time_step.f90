@@ -54,7 +54,7 @@ contains
     subroutine locally_adaptive_time_step(file_unit, num_substances_transported, num_substances_total, num_substances_part, num_cells, &
             nosss, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges, &
             num_exchanges_bottom_dir, num_dispersion_arrays, num_velocity_arrays, disp, disper, &
-            velo, volold, volnew, area, flow, &
+            velo, vol_old, vol_new, area, flow, &
             surface, aleng, ipoint, idpnt, ivpnt, &
             amass, conc, dconc2, bound, idt, &
             idx_box_cell, idx_box_flow, work, volint, sorted_cells, &
@@ -83,8 +83,8 @@ contains
         real(kind = real_wp), intent(in) :: disp(3)                 !< Fixed dispersions in the 3 directions
         real(kind = real_wp), intent(in) :: disper(num_dispersion_arrays, num_exchanges)     !< Additional dispersions
         real(kind = real_wp), intent(in) :: velo(num_velocity_arrays, num_exchanges)       !< Additional velocities
-        real(kind = real_wp), intent(in) :: volold(nosss)           !< Volumes of the segments at start of step
-        real(kind = real_wp), intent(in) :: volnew(nosss)           !< Volumes of the segments at stop of step
+        real(kind = real_wp), intent(in) :: vol_old(nosss)           !< Volumes of the segments at start of step
+        real(kind = real_wp), intent(in) :: vol_new(nosss)           !< Volumes of the segments at stop of step
         real(kind = real_wp), intent(in) :: area(num_exchanges)               !< Exchange areas in m2
         real(kind = real_wp), intent(in) :: flow(num_exchanges)               !< Flows through the exchange areas in m3/s
         real(kind = real_wp), intent(in) :: surface(nosss)          !< Horizontal surface area
@@ -239,13 +239,14 @@ contains
 
 
         call assign_dt_boxes_to_cells(num_cells, work, delta_t_box, &
-                        volnew, volold, count_boxes, ivert, nvert, &
+                        vol_new, vol_old, count_boxes, ivert, nvert, &
                         count_cells_for_box, count_columns, &
                         file_unit, report, &
                         idx_box_cell)
 
+
         call assign_dt_boxes_to_exchanges(num_exchanges, ipoint, idx_box_cell, &
-        idx_box_flow, count_flows_for_box)
+                                        idx_box_flow, count_flows_for_box)
 
 
         ! 1g: write report on basket sizes
@@ -264,20 +265,15 @@ contains
         
 
         call calculate_span_dt_boxes(count_boxes, &
-        count_cells_for_box, count_flows_for_box, &
-        last_box_largest_dt, first_box_smallest_dt, &
-        count_used_boxes, count_substeps)
-        
-                    ! find lowest ACTUALLY USED box number
-        ! largest time step => last box to evaluate
-        
-        
+                                count_cells_for_box, count_flows_for_box, delta_t_box, &
+                                last_box_largest_dt, first_box_smallest_dt, &
+                                count_used_boxes, count_substeps)
+
+
         if (report) then
             write (file_unit, '(a,i2,A,i2,A,i2)') 'Nr of boxes: ', count_used_boxes, ',first: ', last_box_largest_dt, ', last: ', first_box_smallest_dt
             write (file_unit, '(a,e15.7/)') 'Smallest time step in sec.: ', delta_t_box(first_box_smallest_dt)
         end if
-        !  cells running wet are calculated using the smallest step size
-        delta_t_box(count_boxes + 1) = delta_t_box(first_box_smallest_dt)
 
         !   1i: Create backpointers from cell to order of execution and to box nr.
 
@@ -286,26 +282,10 @@ contains
         !   1j: Fill the off-diagonals of the matrix for the vertical advection of water only
         !    (Note that the variable work is reused with a different meaning (JvG 2016)
         
-        work = 0.0
-        ! Fill the off-diagonals only once per time step
-        ! only done for vertical flows
-        do ibox = count_boxes, last_box_largest_dt, -1 !!??????????????????????????????????????????????????????????????
-            ! first vertical flow for this box index
-            i_flow_begin = sep_vert_flow_per_box(ibox) + 1
-            ! last vertical flow for this box index
-            i_flow_end = count_flows_for_box(ibox)
-            
-            ! loop along vertical flows assigned to type ibox
-            do i = i_flow_begin, i_flow_end
-                iq = sorted_flows(i)
-                ifrom = ipoint(1, iq)             !  The diagonal now is the sum of the
-                ito = ipoint(2, iq)               !  new volume that increments with each step
-                if (ifrom == 0 .or. ito == 0) cycle ! if it is top of column or bottom of water column, rarely there's any thin wall
-                q = flow(iq) * delta_t_box(ibox)
-                work(3, ifrom) = q               ! flow through lower surface (central or upwind now arranged in one spot, further down)
-                work(1, ito) = q                 ! flow through upper surface
-            end do
-        end do
+        call fill_in_off_diags_vertical_flows(count_boxes, last_box_largest_dt, &
+                num_cells, num_exchanges, sep_vert_flow_per_box, count_flows_for_box, flow, delta_t_box, ipoint, &
+                sorted_flows, work)
+
         if (timon) call timstop(ithand1)
 
         ! PART2: set the fractional step loop for this time step
@@ -318,7 +298,7 @@ contains
 
         acc_remained = 0.0
         acc_changed = 0.0
-        volint = volold                             ! Initialize volint,  the intermediate volume ('in between').
+        volint = vol_old                             ! Initialize volint,  the intermediate volume ('in between').
 
         ! Big loop over the substeps
         do i_substep = 1, count_substeps
@@ -669,7 +649,7 @@ contains
                     ! loop along all cells in current column, sum volumes and update mass with 'deriv'
                     do j = i_top_curr_col, i_top_next_col - 1
                         iseg2 = ivert(j)
-                        vol = vol + fact * volnew(iseg2) + (1.0d0 - fact) * volold(iseg2)
+                        vol = vol + fact * vol_new(iseg2) + (1.0d0 - fact) * vol_old(iseg2)
                         do substance_i = 1, num_substances_transported                                  !    apply the derivatives (also wasteloads)
                             rhs(substance_i, cell_i) = rhs(substance_i, cell_i) + deriv(substance_i, iseg2) * delta_t_box(first_box_smallest_dt)
                         end do
@@ -683,7 +663,7 @@ contains
                     ! apply to all cells in the column the same (column-averaged) concentration (present in the upper-most cell), and also assign corresponding mass to rhs
                     do j = i_top_curr_col, i_top_next_col - 1
                         iseg2 = ivert(j) !idx of cell
-                        f1 = fact * volnew(iseg2) + (1.0d0 - fact) * volold(iseg2) ! volume of cell at end of sub-timestep
+                        f1 = fact * vol_new(iseg2) + (1.0d0 - fact) * vol_old(iseg2) ! volume of cell at end of sub-timestep
                         volint(iseg2) = f1
                         do substance_i = 1, num_substances_transported
                             conc(substance_i, iseg2) = conc(substance_i, cell_i) ! concentration in cell = concentration in upper-most cell
@@ -1145,7 +1125,7 @@ contains
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
                     cell_i = sorted_cells(i)
-                    vol = fact * volnew(cell_i) + (1.0d0 - fact) * volold(cell_i)
+                    vol = fact * vol_new(cell_i) + (1.0d0 - fact) * vol_old(cell_i)
                     volint(cell_i) = vol
                     ! if cell is not dry
                     if (vol > 1.0d-25) then
@@ -1205,8 +1185,8 @@ contains
                 ito = ipoint(2, iq)
                 ! if top of column or bottom of column = sediment interface, (or maybe thin wall) then cycle
                 if (ifrom == 0 .or. ito == 0) cycle
-                aleng(1, iq) = 0.5 * volnew(ifrom) / surface(ifrom)
-                aleng(2, iq) = 0.5 * volnew(ito) / surface(ito)
+                aleng(1, iq) = 0.5 * vol_new(ifrom) / surface(ifrom)
+                aleng(2, iq) = 0.5 * vol_new(ito) / surface(ito)
             end do
         end do
 
@@ -1215,7 +1195,7 @@ contains
         ! diag = volume of each cell
         ! rhs is increased mass in each cell after explicit step +=deriv*idt
         do cell_i = 1, nosss
-            vol = volnew(cell_i)
+            vol = vol_new(cell_i)
             do substance_i = 1, num_substances_transported
                 diag(substance_i, cell_i) = vol
                 ! if volume at sediment bed
@@ -1535,7 +1515,7 @@ contains
 
         ! Convert rhs from concentration to mass using cell volume
         9998 do cell_i = 1, num_cells
-            vol = volnew(cell_i)
+            vol = vol_new(cell_i)
             do substance_i = 1, num_substances_transported
                 rhs(substance_i, cell_i) = rhs(substance_i, cell_i) * vol
             end do
@@ -1544,7 +1524,7 @@ contains
         ! assign the double precisison results to the single precision system arrays
         ! for the bed phase only
         do cell_i = num_cells + 1, nosss
-            vol = volnew(cell_i)
+            vol = vol_new(cell_i)
             do substance_i = 1, num_substances_transported
                 amass(substance_i, cell_i) = rhs(substance_i, cell_i) * vol
                 conc(substance_i, cell_i) = rhs(substance_i, cell_i)
@@ -1560,7 +1540,7 @@ contains
         !                                                          for the water phase only
 
         9999 do cell_i = 1, num_cells
-            vol = volnew(cell_i)
+            vol = vol_new(cell_i)
             if (report) then
                 if (abs(vol - volint(cell_i)) > 1.0e-6 * max(vol, volint(cell_i))) &
                         write (file_unit, '(A,i8,A,e16.7,A,e16.7)') &
@@ -1585,7 +1565,8 @@ contains
 
     subroutine parse_scheme_options(file_unit, vertical_upwind, coname, const, disp0q0, &
         count_boxes, report)
-        ! Parse the options for the local flexible time step scheme and report settings
+        !> Parse the options for the integration scheme (local flexible time step)
+        !< and the report settings
         use m_cli_utils, only: is_command_arg_specified
 
         implicit none
@@ -1879,7 +1860,7 @@ contains
     end subroutine calculate_flows_for_cells
 
     subroutine assign_dt_boxes_to_cells(num_cells, work, delta_t_box, &
-        volnew, volold, count_boxes, ivert, nvert, &
+        vol_new, vol_old, count_boxes, ivert, nvert, &
         count_cells_for_box, count_columns, &
         file_unit, report, &
         dt_box_for_cell)
@@ -1889,8 +1870,8 @@ contains
         integer :: num_cells !< total number of cells in the model
         real(kind = dp), intent(in) :: work(3, num_cells) !< work array with outgoing, incoming and dispersive flows per cell
         real(kind = dp), intent(in) :: delta_t_box(:) !< delta t assigned to each box
-        real(kind = real_wp), intent(in) :: volnew(:) !< new volume in each cell at the end of the current time step
-        real(kind = real_wp), intent(in) :: volold(:) !< old volume in each cell at the beginning of the current time step
+        real(kind = real_wp), intent(in) :: vol_new(:) !< new volume in each cell at the end of the current time step
+        real(kind = real_wp), intent(in) :: vol_old(:) !< old volume in each cell at the beginning of the current time step
         integer, intent(in) :: count_boxes !< number of delta time boxes or baskets
         integer, intent(out) :: count_cells_for_box(:) !< number of cells assigned to each box
         integer, intent(in) :: file_unit !< unit number for output messages
@@ -1923,14 +1904,14 @@ contains
                 dt_box_for_cell(cell_i) = count_boxes + 2 ! cell is dry, the number (count_boxes + 2) is 1 higher than
                 cycle                                  ! the number of wet and 'wetting' basket (count_boxes + 1)
             end if
-            if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(1) < volold(cell_i)) then    !  box 1 works even if volnew(cell_i) is zero
+            if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(1) < vol_old(cell_i)) then    !  box 1 works even if vol_new(cell_i) is zero
                 dt_box_for_cell(cell_i) = 1
                 cycle
             end if
             ! if the volume has NOT decreased at the end of the timestep
-            if (volnew(cell_i) >= volold(cell_i)) then  !  use only volold(cell_i) to determine fractional step
+            if (vol_new(cell_i) >= vol_old(cell_i)) then  !  use only vol_old(cell_i) to determine fractional step
                 do ibox = 2, count_boxes
-                    if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(ibox) < volold(cell_i)) then
+                    if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(ibox) < vol_old(cell_i)) then
                         dt_box_for_cell(cell_i) = ibox     !  this cell in the basket of this dt(ibox)
                         exit
                     end if
@@ -1942,8 +1923,8 @@ contains
            ! else the volume has decreased at the end of the timestep
             else !  also the last fractional step should be stable
                 do ibox = 2, count_boxes
-                    ! if net value of delta_vol for delta_t_box(ibox) < volnew(cell_i)
-                    if ((work(1, cell_i) + work(3, cell_i) - (volold(cell_i) - volnew(cell_i)) / delta_t_box(1)) * delta_t_box(ibox) < volnew(cell_i)) then
+                    ! if net value of delta_vol for delta_t_box(ibox) < vol_new(cell_i)
+                    if ((work(1, cell_i) + work(3, cell_i) - (vol_old(cell_i) - vol_new(cell_i)) / delta_t_box(1)) * delta_t_box(ibox) < vol_new(cell_i)) then
                         dt_box_for_cell(cell_i) = ibox        !  this cell in the basket of this dt(ibox)
                         exit
                     end if
@@ -1991,7 +1972,7 @@ contains
             do idx_col = 1, count_columns
                 cell_i = ivert(nvert(1, idx_col))
                 if (dt_box_for_cell(cell_i) == count_boxes + 1) write (file_unit, '(i10,5e16.7)') &
-                        cell_i, work(1, cell_i), work(2, cell_i), work(3, cell_i), volold(cell_i), volnew(cell_i)
+                        cell_i, work(1, cell_i), work(2, cell_i), work(3, cell_i), vol_old(cell_i), vol_new(cell_i)
             end do
         end if
 
@@ -2126,15 +2107,16 @@ contains
     end subroutine sort_cells_and_flows_using_dt_box
 
     subroutine calculate_span_dt_boxes(count_boxes, &
-        count_cells_for_box, count_flows_for_box, &
+        count_cells_for_box, count_flows_for_box, delta_t_box, &
         last_box_largest_dt, first_box_smallest_dt, &
         count_used_boxes, count_substeps)
-
         !> Calculates the span of used delta time boxes and the number of sub-time steps required.
+        !< The smallest dt box that is used is assigned to cells that are partially full ("running wet").
         implicit none
         integer, intent(in) :: count_boxes !< number of delta time boxes or baskets
         integer, intent(inout) :: count_cells_for_box(:) !< number of cells assigned to each box
         integer, intent(inout) :: count_flows_for_box(:) !< number of exchanges assigned to each box
+        real(kind = dp), intent(inout) :: delta_t_box(:) !< delta t assigned to each box
         integer, intent(out) :: last_box_largest_dt !< index of the last box with largest delta t that is used
         integer, intent(out) :: first_box_smallest_dt !< index of the first box with smallest delta t that is used
         integer, intent(out) :: count_used_boxes !< number of used boxes
@@ -2163,6 +2145,11 @@ contains
             end if
         end do
 
+        ! Once the smallest dt that will be used (first_box_smallest_dt) has been found,
+        ! assign the same dt box to cells partially full (running wet)
+        delta_t_box(count_boxes + 1) = delta_t_box(first_box_smallest_dt)
+
+
         ! accumulate the counts in reversed order
         ! number of items for that box or any smaller box
         do ibox = count_boxes + 1, 1, -1
@@ -2179,5 +2166,55 @@ contains
             count_substeps = count_substeps * 2
         end do
     end subroutine calculate_span_dt_boxes
+
+    subroutine fill_in_off_diags_vertical_flows(count_boxes, last_box_largest_dt, &
+        num_cells, num_exchanges, sep_vert_flow_per_box, count_flows_for_box, flow, delta_t_box, ipoint, &
+        sorted_flows, work)
+
+        implicit none
+        integer, intent(in) :: count_boxes !< number of delta time boxes or baskets
+        integer(kind = int_wp), intent(in) :: last_box_largest_dt !< index of the last box (with largest delta t) that is used
+        integer(kind = int_wp), intent(in) :: sep_vert_flow_per_box(:) !< separation index of vertical flows per box
+        integer(kind = int_wp), intent(in) :: count_flows_for_box(:) !< number of exchanges assigned to each box
+        real(kind = real_wp), intent(in) :: flow(:) !< flow rate through each exchange
+        real(kind = dp), intent(inout) :: delta_t_box(:) !< delta t assigned to each box
+        integer(kind = int_wp), intent(in) :: num_cells !< number of cells
+        integer(kind = int_wp), intent(in) :: num_exchanges !< number of exchanges
+        integer(kind = int_wp), intent(in) :: ipoint(4, num_exchanges) !< exchange connectivity array (indices of cells before and after exchange)
+        integer(kind = int_wp), intent(in) :: sorted_flows(:) !< array of exchanges sorted by box index
+        real(kind = dp), intent(inout) :: work(3, num_cells) !< work array
+
+        ! Local variables
+        integer :: ibox !< box index in loops
+        integer :: idx_flow_begin !< begin index of flows for a box
+        integer :: idx_flow_end !< end index of flows for a box
+        integer :: i_flow !< loop index for flows
+        integer :: idx_flow !< index of a flow
+        integer :: ifrom !< index of cell source for a positive flow
+        integer :: ito !< index of cell target for a positive flow
+        real(kind = dp) :: dlt_vol !< delta volume for a flow
+
+        !> Fills in the off-diagonal entries for vertical flows in the tridiagonal matrix solver.
+        work = 0.0
+        ! Fill the off-diagonals only once per time step
+        ! only done for vertical flows
+        do ibox = count_boxes, last_box_largest_dt, -1 !!??????????????????????????????????????????????????????????????
+            ! first vertical flow for this box index
+            idx_flow_begin = sep_vert_flow_per_box(ibox) + 1
+            ! last vertical flow for this box index
+            idx_flow_end = count_flows_for_box(ibox)
+            
+            ! loop along vertical flows assigned to type ibox
+            do i_flow = idx_flow_begin, idx_flow_end
+                idx_flow = sorted_flows(i_flow)
+                ifrom = ipoint(1, idx_flow)             !  The diagonal now is the sum of the
+                ito = ipoint(2, idx_flow)               !  new volume that increments with each step
+                if (ifrom == 0 .or. ito == 0) cycle ! if it is top of column or bottom of water column, rarely there's any thin wall
+                dlt_vol = flow(idx_flow) * delta_t_box(ibox)
+                work(3, ifrom) = dlt_vol               ! flow through lower surface (central or upwind now arranged in one spot, further down)
+                work(1, ito) = dlt_vol                 ! flow through upper surface
+            end do
+        end do
+    end subroutine fill_in_off_diags_vertical_flows
 
 end module m_locally_adaptive_time_step
