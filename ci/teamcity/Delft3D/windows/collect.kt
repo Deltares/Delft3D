@@ -85,7 +85,7 @@ object WindowsCollect : BuildType({
 
                     Write-Host "Creating ${'$'}zipName ..."
 
-                    Compress-Archive -Path "x64", "version_x64.txt" -DestinationPath ${'$'}zipName -Force
+                    Compress-Archive -Path "x64", "dimrset_version_x64.txt" -DestinationPath ${'$'}zipName -Force
 
                     Write-Host "ZIP created: ${'$'}zipName"
                 """.trimIndent()
