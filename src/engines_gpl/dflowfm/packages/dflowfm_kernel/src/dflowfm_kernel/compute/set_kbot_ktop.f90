@@ -39,23 +39,19 @@ contains
    !> Initialise vertical coordinates, calculate layer volumes, set layer interfaces
    subroutine set_kbot_ktop(jazws0)
       use precision, only: dp
-      use m_flowgeom, only: ndx, ba, bl, ln, lnx, nd
+      use m_flowgeom, only: ndx, ba, bl
       use m_flow, only: kmx, zws0, zws, ktop0, ktop, vol1, layertype, kbot, jased, kmxn, &
-                        zslay, toplayminthick, numtopsig, keepzlayeringatbed, rho, s1, epshu, laydefnr, laytyp, &
+                        zslay, toplayminthick, numtopsig, keepzlayeringatbed, s1, laydefnr, &
                         LAYTP_SIGMA, LAYTP_Z
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_zlayer_indices, only: getzlayerindices
-      use m_flowtimes, only: dts
 
       integer, intent(in) :: jazws0 !< Whether to store zws in zws0 at initialisation
 
       integer :: kb, k, n, kk, nlayb, nrlay, ktx
-      integer :: kt, Ldn, kt1, k1, k2
+      integer :: kt, kt1
       real(kind=dp) :: zkk, h0, dtopsi
       logical :: ktop_changed
-
-      integer :: numbd, numtp, j, L
-      real(kind=dp) :: drhok, a, aa, h00, zsl, aaa, sig, dsig, dsig0
 
       if (kmx == 0) then
          return
@@ -132,6 +128,7 @@ contains
                end if
             end if
          end do
+      end if
 
       do n = 1, ndx
 
@@ -161,22 +158,18 @@ contains
    subroutine update_vertical_coordinates_boundary()
       use precision, only: dp
       use m_flowgeom, only: ndx, ba, bl
-      use m_flow, only: kmx, zws, zws0, ktop, vol1, layertype, kbot, jased, kmxn, &
-                        zslay, toplayminthick, numtopsig, keepzlayeringatbed, s0, epshu, laydefnr, laytyp, &
+      use m_flow, only: kmx, zws, ktop, vol1, layertype, kbot, jased, kmxn, &
+                        zslay, toplayminthick, numtopsig, keepzlayeringatbed, s0, laydefnr, &
                         LAYTP_SIGMA, LAYTP_Z, &
                         nbndz, kbndz
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_zlayer_indices, only: getzlayerindices
-      use m_flowtimes, only: dts
 
       integer :: kb, k, n, kk, nlayb, nrlay, ktx
-      integer :: kt0, kt1, kt, Ldn
+      integer :: kt0, kt1, kt
       real(kind=dp) :: zkk, h0, dtopsi
       integer :: i_bnd
       logical :: ktop_changed
-
-      integer :: numbd, numtp
-      real(kind=dp) :: aa, h00, zsl, aaa, sig, dsig
 
       logical :: need_link_update
 
@@ -270,6 +263,7 @@ contains
                need_link_update = .true.
             end if
          end do
+      end if
 
       ! Handle overlap zones for all boundary nodes
       do i_bnd = 1, nbndz

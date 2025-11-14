@@ -2747,7 +2747,7 @@ contains
 
 !> Defines 3d net data structure for an already opened netCDF dataset.
    subroutine unc_append_3dflowgeom_def(imapfile)
-      use m_flow, only: kmx, jafullgridoutput, layertype !only kmx, zws, layertype
+      use m_flow, only: kmx, jafullgridoutput, layertype, LAYTP_SIGMA, LAYTP_Z !only kmx, zws, layertype
 
       integer, intent(in) :: imapfile
 
@@ -2819,7 +2819,7 @@ contains
    end subroutine unc_append_3dflowgeom_def
 
    subroutine unc_append_3dflowgeom_put(imapfile, jaseparate, itim_in)
-      use m_flow, only: jafullgridoutput, layertype, zslay, kmx, work0, dmiss, zws, work1
+      use m_flow, only: jafullgridoutput, layertype, LAYTP_SIGMA, LAYTP_Z, zslay, kmx, work0, dmiss, zws, work1
       use m_flowgeom, only: ndxi
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_layer_indices, only: getlayerindices !only kmx, zws, layertype
