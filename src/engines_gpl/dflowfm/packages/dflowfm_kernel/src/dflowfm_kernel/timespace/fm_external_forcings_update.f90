@@ -550,9 +550,14 @@ contains
 
 !> set wave parameters for jawave==3 (online wave coupling) and jawave==6 (SWAN data for D-WAQ)
 !
-!  TODO: Check if we hit this function and if so: implement preCICE coupling here!
+!  TODO: implement preCICE coupling here!
 !
    subroutine set_all_wave_parameters()
+      !
+      ! This routine is hit every small user step (typically every 30s)
+      !
+      print *, '[FM] We are in set_all_wave_parameters at ', ecTime%seconds()
+
       ! This part must be skipped during initialization
       if (jawave == WAVE_SWAN_ONLINE) then
          ! Finally the delayed external forcings can be initialized
