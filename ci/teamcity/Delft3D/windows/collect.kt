@@ -75,6 +75,22 @@ object WindowsCollect : BuildType({
                 matches("dep.${WindowsBuild.id}.build_type", "Release")
             }
         }
+        powerShell {
+            name = "Prepare artifact to upload"
+            scriptMode = script {
+                content = """
+                    ${'$'}ErrorActionPreference = "Stop"
+
+                    ${'$'}zipName = "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip"
+
+                    Write-Host "Creating ${'$'}zipName ..."
+
+                    Compress-Archive -Path "x64", "version_x64.txt" -DestinationPath ${'$'}zipName -Force
+
+                    Write-Host "ZIP created: ${'$'}zipName"
+                """.trimIndent()
+            }
+        }
     }
 
     failureConditions {
