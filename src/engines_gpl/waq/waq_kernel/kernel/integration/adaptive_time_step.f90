@@ -315,7 +315,7 @@ contains
             !  to calculate the column averaged concentrations
             !  assigning those values to the upper-most cell in each column
 
-            call store_total_vol_anbd_average_conc_in_uppermost_cell(i_cell_begin, i_cell_end, &
+            call store_total_vol_and_average_conc_in_uppermost_cell(i_cell_begin, i_cell_end, &
                             sorted_cells, nvert, ivert, &
                             volint, rhs, conc, num_substances_transported, num_cells)
 
@@ -2224,7 +2224,7 @@ contains
         i_cell_end =   count_cells_for_box(count_boxes + 1)
     end subroutine calculate_loop_limits_for_current_substep
 
-    subroutine store_total_vol_anbd_average_conc_in_uppermost_cell(i_cell_begin, i_cell_end, &
+    subroutine store_total_vol_and_average_conc_in_uppermost_cell(i_cell_begin, i_cell_end, &
         sorted_cells, nvert, ivert, &
         volint, rhs, conc, num_substances_transported, num_cells)
         !> sum the mass and volume vertically
@@ -2291,6 +2291,6 @@ contains
                 end do
             end if
         end do
-    end subroutine store_total_vol_anbd_average_conc_in_uppermost_cell
+    end subroutine store_total_vol_and_average_conc_in_uppermost_cell
 
 end module m_locally_adaptive_time_step
