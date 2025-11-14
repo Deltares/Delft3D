@@ -44,10 +44,10 @@ contains
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
-                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
-                        numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, dztop, dztopuniabovez, &
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, LAYTP_SIGMA, LAYTP_Z, &
+                        kmx, kbotc, kmxc, numvertdis, mxlays, zlaybot, iStrchType, zlaytop, Floorlevtoplay, dztop, dztopuniabovez, &
                         sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
-                        kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
+                        kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, kmxx, zslay, &
                         dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
                         uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
                         uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
@@ -84,7 +84,6 @@ contains
       use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, cloudiness, rain, evap, air_temperature, heatsrc, heatsrc0, &
                         air_pressure, dew_point_temperature, relative_humidity, solar_radiation, net_solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
-      use m_polygonlayering, only: polygonlayering
       use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
       use m_density_parameters, only: apply_thermobaricity
       use m_add_baroclinic_pressure, only: rhointerfaces
@@ -92,14 +91,13 @@ contains
       use m_alloc, only: realloc
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
-      integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
+      integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, Lt1, Lt2, Ldn
       integer :: laybed, laytop, nrlayL, Lf, kuni, kb
       integer :: nlayb1L, nrlay1L, nlayb2L, nrlay2L
       integer :: ndx1d
 
       real(kind=dp) :: zmn, zmx, dzm
       real(kind=dp) :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk
-      logical :: jawel
 
       if (ndx == 0) return
 
@@ -165,7 +163,7 @@ contains
       call realloc(laymx, mxlaydefs, stat=ierr, keepexisting=.false.)
       call aerr('laymx(mxlaydefs)', ierr, mxlaydefs)
 
-      if (layertype >= 2) then
+      if (layertype == LAYTP_Z) then
          call realloc(nlaybn, ndx, stat=ierr, fill=0, keepexisting=.false.)
          call aerr('nlaybn(ndx)', ierr, ndx)
          call realloc(nrlayn, ndx, stat=ierr, fill=0, keepexisting=.false.)
@@ -216,27 +214,11 @@ contains
          mx = 0
          laydefnr = 1
 
-         if (layertype == 3) then
-            inquire (file=md_vertplizfile, exist=jawel)
-            if (jawel) then
-               call oldfil(mpol, md_vertplizfile)
-            else
-               call qnerror('vertical_layering.pliz not found, switch back to sigma', ' ', ' ')
-               layertype = 1
-            end if
-         end if
-
-         if (layertype == 1 .or. layertype == 4) then ! all sigma
+         if (layertype == LAYTP_SIGMA) then ! all sigma
             mxlaydefs = 1
             laytyp(1) = 1
             laymx(1) = kmx
-            if (layertype == 4) then
-               call realloc(sdkx, ndx, stat=ierr, keepexisting=.false.)
-               call aerr('sdkx(ndx)', ierr, ndx)
-               call realloc(dkx, ndx, stat=ierr, keepexisting=.false.)
-               call aerr('dkx(ndx)', ierr, ndx)
-            end if
-         else if (layertype == 2) then ! all z
+         else if (layertype == LAYTP_Z) then ! all z
             mxlaydefs = 1
             laytyp(1) = 2
 
@@ -303,8 +285,6 @@ contains
             mxlayz = mx
             kmx = mx ! repair code
             laymx(1) = mx
-         else if (layertype == 3) then ! combination in polygons
-            call polygonlayering(mpol)
          end if
          do k = 1, mxlaydefs
             mx = max(mx, laymx(k))

@@ -597,9 +597,9 @@ contains
 
       !> default: upwind sigma oriented distribution of hu(link)
       subroutine calculate_hu_au_using_upwind_sigma()
-         use m_flow, only: layertype, LAYTP_Z, numtopsig, kmxn
+         use m_flow, only: layertype, LAYTP_SIGMA, numtopsig, kmxn
          use m_flowparameters, only: keepzlay1bedvol
-         if (layertype /= LAYTP_Z .or. keepzlay1bedvol == 0 .or. &
+         if (layertype == LAYTP_SIGMA .or. keepzlay1bedvol == 0 .or. &
              (kmxn(upstream_cell) == kmxn(downstream_cell) .and. kmxn(upstream_cell) <= numtopsig)) then
             call calculate_hu_au_upwind_based()
          else

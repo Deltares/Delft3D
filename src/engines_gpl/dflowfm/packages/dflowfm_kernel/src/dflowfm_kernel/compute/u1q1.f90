@@ -42,7 +42,7 @@ contains
 
    subroutine u1q1()
       use precision, only: dp
-      use m_flow, only: squ, sqi, qinbnd, qoutbnd, kmx, hu, u1, ru, fu, s1, q1, au, u0, qa, jaqaisq1, q1waq, iadvec, voldhu, vol1, qin, itstep, sqwave, ag, lbot, ltop, kmxl, ngatesg, l1gatesg, l2gatesg, kgate, ncgensg, l1cgensg, l2cgensg, kcgen, lnkx, layertype, laytp_sigma, ln0, qwwaq, squ2d, kbot, ktop, a1, kmxn, ww1, qw, zws0, ktop0, zws, sq
+      use m_flow, only: squ, sqi, qinbnd, qoutbnd, kmx, hu, u1, ru, fu, s1, q1, au, u0, qa, jaqaisq1, q1waq, iadvec, voldhu, vol1, qin, itstep, sqwave, ag, lbot, ltop, kmxl, ngatesg, l1gatesg, l2gatesg, kgate, ncgensg, l1cgensg, l2cgensg, kcgen, lnkx, layertype, LAYTP_Z, ln0, qwwaq, squ2d, kbot, ktop, a1, kmxn, ww1, qw, zws0, ktop0, zws, sq
       use m_flowgeom, only: lnx, ln, teta, ndxi, ba, ndx, lnxi
       use m_flowtimes, only: ti_waq, dts, ja_timestep_auto
       use m_partitioninfo, only: jampi, update_ghosts, itype_u, idomain, my_rank, itype_u3d
@@ -283,7 +283,7 @@ contains
                   end if
                   if (ti_waq > 0.0_dp) then
                      q1waq(L) = q1waq(L) + q1(L) * dts
-                     if (layertype /= LAYTP_SIGMA) then
+                     if (layertype == LAYTP_Z) then
 !                  check for differences with original linkage in cases other than sigma models
                         k01 = ln0(1, L); k02 = ln0(2, L)
                         if (k01 /= k1 .or. k02 /= k2) then

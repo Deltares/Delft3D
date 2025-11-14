@@ -473,10 +473,6 @@ contains
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured'
       elseif (layertype == LAYTP_Z) then ! z layers or z-sigma layers
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z-layers'
-      elseif (layertype == LAYTP_LEFTSIGMA) then
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-sigma-layers'
-      elseif (layertype == LAYTP_LEFTZ) then
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-z-layers'
       else ! other?
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured other'
       end if
@@ -605,7 +601,6 @@ contains
             write (lunhyd, '(A        )') 'z-layers-ztop multi-layerdefinition '
             write (lunhyd, '(A        )') 'z-layers-zbot multi-layerdefinition '
          end if
-      elseif (layertype /= LAYTP_SIGMA) then ! all other options
          ! we do not yet know what to do with z/sigma combinations
          write (lunhyd, '(A        )') 'z-layers-ztop mixed-layerdefinition '
          write (lunhyd, '(A        )') 'z-layers-zbot mixed-layerdefinition '

@@ -38,7 +38,7 @@ Dcenterinside                        = 1.                                    # l
 Bamin                                = 1.d-6                                 # Minimum gridcell area , icm cutcells
 OpenBoundaryTolerance                = 3.                                    # Search tolerance factor between boundary polyline and grid cells. Unit: in cell size units (i.e., not metres).
 Kmx                                  = 0                                     # Max nr of vertical layers
-Layertype                            = 1                                     # 1= all sigma, 2 = all z, 3 = use VertplizFile
+Layertype                            = 1                                     # 1 = all sigma, 2 = z or z-sigma
 Numtopsig                            = 0                                     # Nr of sigmalayers in top of Zlayer model
 SigmaGrowthFactor                    = 1.                                    # layer thickness growth factor from bed up
  
