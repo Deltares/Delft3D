@@ -89,9 +89,6 @@ contains
       if (allocated(netcdf%dimlen)) then
          deallocate (netcdf%dimlen)
       end if
-      if (allocated(netcdf%standard_names)) then
-         deallocate (netcdf%standard_names)
-      end if
       if (allocated(netcdf%tsid)) then
          deallocate (netcdf%tsid)
       end if
@@ -145,7 +142,7 @@ contains
       integer, optional, intent(out) :: iostat
 
       character(len=nf90_max_name) :: name
-      character(len=:), allocatable :: cf_role, positive, zunits
+      character(len=:), allocatable :: positive, zunits
       integer :: i_dim, n_dims, iVars, iTims, nVars, nTims, nGlobalAtts, unlimdimid, ierr
       integer :: tslen
       integer :: dimids_tsid(2)
@@ -176,11 +173,10 @@ contains
       do i_dim = 1, n_dims
          ierr = nf90_inquire_dimension(ncptr%ncid, i_dim, name, ncptr%dimlen(i_dim))
       end do
-      allocate (ncptr%standard_names(nVars), stat=ierr)
-      if (ierr /= 0) return
-      allocate (ncptr%long_names(nVars), stat=ierr)
-      if (ierr /= 0) return
+ 
       allocate (ncptr%variable_names(nVars), stat=ierr)
+      if (ierr /= 0) return
+      allocate (ncptr%variable_dimension(nVars), stat=ierr)
       if (ierr /= 0) return
       allocate (ncptr%vector_definitions(nVars), stat=ierr)
       if (ierr /= 0) return
@@ -190,8 +186,7 @@ contains
       if (ierr /= 0) return
       allocate (ncptr%offsets(nVars), stat=ierr)
       if (ierr /= 0) return
-      ncptr%standard_names = ' '
-      ncptr%long_names = ' '
+      
       ncptr%variable_names = ' '
       ncptr%fillvalues = -huge(dp)
       ncptr%scales = 1.0_dp
@@ -201,6 +196,7 @@ contains
       allocate (var_ndims(nVars), stat=ierr)
       if (ierr /= 0) return
       var_ndims = 0
+      
       do iVars = 1, nVars ! Inventorize variables
          ierr = nf90_inquire_attribute(ncptr%ncid, iVars, 'vector', len=len_vectordef) ! Check if this variable is just a reference to vector
          if (ierr == NF90_NOERR) then
@@ -212,10 +208,6 @@ contains
             isVector = .false.
          end if
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, name=ncptr%variable_names(iVars)) ! Variable name
-         ierr = nf90_get_att(ncptr%ncid, iVars, 'standard_name', ncptr%standard_names(iVars)) ! Standard name if available
-         if (ierr /= NF90_NOERR) ncptr%standard_names(iVars) = ncptr%variable_names(iVars) ! Variable name as fallback for standard_name
-         ierr = nf90_get_att(ncptr%ncid, iVars, 'long_name', ncptr%long_names(iVars)) ! Long name for non CF names
-
          ierr = nf90_get_att(ncptr%ncid, iVars, '_FillValue', ncptr%fillvalues(iVars))
          if (ierr /= NF90_NOERR) ncptr%fillvalues(iVars) = -huge(dp)
          ierr = nf90_get_att(ncptr%ncid, iVars, 'scale_factor', ncptr%scales(iVars))
@@ -223,7 +215,8 @@ contains
          ierr = nf90_get_att(ncptr%ncid, iVars, 'add_offset', ncptr%offsets(iVars))
          if (ierr /= NF90_NOERR) ncptr%offsets(iVars) = 0.0_dp
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, ndims=var_ndims(iVars), dimids=var_dimids(:, iVars))
-
+         ncptr%variable_dimension(iVars) = var_ndims(iVars)
+                  
          if (isVector) cycle ! vector placeholder, not a real variable with data in the file
 
          ! Check for important var: was it the stations?
@@ -262,7 +255,7 @@ contains
          zunits = ''
          
          !TK_Temp
-         if (strcmpi(trim(ncptr%standard_names(iVars)),'z') .or. strcmpi(trim(ncptr%standard_names(iVars)),'zcoordinate_c')) then 
+         if (strcmpi(trim(ncptr%variable_names(iVars)),'z') .or. strcmpi(trim(ncptr%variable_names(iVars)),'zcoordinate_c')) then 
              ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive)
              if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
                 ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
@@ -289,7 +282,6 @@ contains
          end if
       end do
 
-     
       deallocate (positive)
       deallocate (zunits)
 
@@ -317,23 +309,9 @@ contains
       integer, dimension(:), allocatable :: dimids_check
 
       success = .false.
-
-      ! search for standard_name
-      do ivar = 1, ncptr%nVars
-         ltl = len_trim(quantity)
-         if (strcmpi(trim(ncptr%standard_names(ivar)), trim(quantity))) exit
-      end do
       vmax = 1
 
-      ! if standard_name not found, search for long_name
-      if (ivar > ncptr%nVars) then
-         do ivar = 1, ncptr%nVars
-            ltl = len_trim(quantity)
-            if (strcmpi(ncptr%long_names(ivar), quantity, ltl)) exit
-         end do
-      end if
-
-      ! if also long_name not found, search for variable_name
+      ! if search for variable_name
       if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names)) then
          do ivar = 1, ncptr%nVars
             ltl = len_trim(quantity)

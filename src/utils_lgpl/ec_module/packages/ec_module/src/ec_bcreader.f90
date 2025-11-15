@@ -76,6 +76,8 @@ contains
     character(len=*), optional,    intent(in)      :: funtype
 
     integer(kind=8)                                :: fhandle
+    integer                                        :: nrVar
+    
     success = .false.
     bc%qname = quantityName
     bc%bcname = plilabel
@@ -106,11 +108,20 @@ contains
        if (.not.ecNetCDFscan(bc%ncptr, quantityName, plilabel, bc%ncvarndx, bc%nclocndx, &
                               bc%dimvector, vectormax=bc%quantity%vectormax)) then
           return                                               ! quantityName-plilabel combination not found
-       endif
-       if (bc%numlay<=1 .or. strcmpi(quantityName,'waterlevel')) then
+                              endif
+       !TK_Temp: Find number of qunantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
+       do nrVar = 1, size(bc%ncptr%variable_names)
+          if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) then
+             exit
+          endif
+       enddo
+                              
+       if (bc%ncptr%variable_dimension(nrVar) == 2) then
           bc%func = BC_FUNC_TSERIES
-       else
+       elseif (bc%ncptr%variable_dimension(nrVar) == 3) then
           bc%func = BC_FUNC_TIM3D
+       else
+           ! Hier nog een foutmelding
        endif
        ! TODO:
        ! Support specification of the time-interpolation type in the netcdf timeseries variable as an attribute
