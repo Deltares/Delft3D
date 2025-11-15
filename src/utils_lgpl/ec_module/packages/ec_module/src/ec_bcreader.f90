@@ -76,6 +76,8 @@ contains
     character(len=*), optional,    intent(in)      :: funtype
 
     integer(kind=8)                                :: fhandle
+    integer                                        :: nrVar
+    
     success = .false.
     bc%qname = quantityName
     bc%bcname = plilabel
@@ -101,15 +103,25 @@ contains
           allocate(bc%columns(bc%numcols))
        endif
     case (BC_FTYPE_NETCDF)
+
        allocate(bc%ncvarndx(1))
        if (.not.ecNetCDFscan(bc%ncptr, quantityName, plilabel, bc%ncvarndx, bc%nclocndx, &
                               bc%dimvector, vectormax=bc%quantity%vectormax)) then
           return                                               ! quantityName-plilabel combination not found
-       endif
-       if (bc%numlay<=1) then
+                              endif
+       !TK_Temp: Find number of qunantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
+       do nrVar = 1, size(bc%ncptr%variable_names)
+          if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) then
+             exit
+          endif
+       enddo
+                              
+       if (bc%ncptr%variable_dimension(nrVar) == 2) then
           bc%func = BC_FUNC_TSERIES
-       else
+       elseif (bc%ncptr%variable_dimension(nrVar) == 3) then
           bc%func = BC_FUNC_TIM3D
+       else
+           ! Hier nog een foutmelding
        endif
        ! TODO:
        ! Support specification of the time-interpolation type in the netcdf timeseries variable as an attribute
@@ -759,6 +771,7 @@ contains
     integer(kind=8)                :: savepos    !< saved position in file, for mf_read to enabled rewinding
     real(kind=hp), dimension(1:1)  :: ec_timesteps ! to read in source time from file block
     real(kind=hp)                  :: amplitude
+    
 
     bcPtr => fileReaderPtr%bc
 
@@ -888,8 +901,10 @@ contains
           call setECMessage("Datablock end (eof) has been reached in file: "//trim(bcPtr%fname))
           return
        endif
+       
+       !TK_Temp Use FUNC to determine whether normal or TIM3D series
        if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%dimvector, &
-          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer)) then
+          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPTR.FUNC)) then
           call setECMessage("Read failure in file: "//trim(bcPtr%fname))
           return
        else

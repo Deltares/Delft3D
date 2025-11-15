@@ -45,6 +45,12 @@ module m_observations_data
    real(kind=dp), allocatable :: cmxobs(:) !< maximum 2D flow velocity of observation points, 3D: maximum over all layers and time
    integer, allocatable :: kobs(:) !< node nrs of ACTIVE observation points
    integer, allocatable :: lobs(:) !< flowlink nrs of active observation points
+   integer, allocatable :: intobs(:) !< interpolated station or not
+! For storing number and weights of stations wher you want to get interpolated values
+  
+   integer, allocatable       :: neighbour_nodes_obs(:,:) !< [3, numobs+nummovobs] List of nearby flow node numbers for each observation point
+   real(kind=dp), allocatable :: neighbour_weights_obs(:,:) !< [3, numobs+nummovobs] List of weights for the  nearby flow node numbers for each observation point
+   
    ! NOTE: kobs is not maintained here (so also not after deleteObservation, etc.) All done once by obs_on_flowgrid.
    character(len=IdLen), allocatable :: namobs(:) ! names of observation points
    integer, allocatable :: locTpObs(:) !< location type of observation points, determining to which flownodes to snap to (0=1d2d, 1=1d, 2=2d, 3=1d defined by branchID+chainage)
