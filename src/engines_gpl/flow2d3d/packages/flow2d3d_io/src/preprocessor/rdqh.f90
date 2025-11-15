@@ -179,7 +179,7 @@ subroutine rdqh(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
        call flhnew(lunrd     ,lundia    ,error     ,record(:lrecrd)      ,access    , &
                  & irecrd    ,nambnd(n) ,cntent    ,interp    ,idummy    , &
                  & rdummy    ,nqhrd     ,parrd     ,npara     ,nparrd    , &
-                 & bubble    ,gdp       )
+                 & bubble    ,''        ,gdp       )
        !
        if (error) then
           exit

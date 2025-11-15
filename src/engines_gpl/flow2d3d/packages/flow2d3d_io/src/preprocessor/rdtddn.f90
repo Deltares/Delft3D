@@ -200,7 +200,7 @@ subroutine rdtddn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
        call flhnew(lunrd     ,lundia    ,error     ,record(:lrecrd)      ,access    , &
                  & irecrd    ,namsrc(n) ,disflg    ,disint(n) ,itdate    , &
                  & timscl    ,ntimrd    ,parrd     ,npara     ,nparrd    , &
-                 & bubble    ,gdp       )
+                 & bubble    ,''        ,gdp       )
        if (error) then
           exit
        endif

@@ -186,7 +186,7 @@ subroutine inibcq(lundia    ,error     ,runid     ,itbct     ,nto       , &
        call flhnew(lunbcq    ,lundia    ,error     ,record(:lrec - 1)    ,access    , &
                  & irecrd    ,nambnd(ito)          ,cntent    ,dumchr    ,idummy    , &
                  & tdummy    ,nqhrd     ,parnam    ,npara     ,nparrd    , &
-                 & bubble    ,gdp       )
+                 & bubble    ,''        ,gdp       )
        if (error) then
           exit
        endif

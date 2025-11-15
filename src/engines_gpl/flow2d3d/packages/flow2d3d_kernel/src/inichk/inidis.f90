@@ -284,7 +284,7 @@ subroutine inidis(lundia    ,error     ,runid_in  ,cyclic    ,timnow    , &
           call flhnew(lundis    ,lundia    ,error     ,record(:lrec - 1)    ,access    , &
                     & irecrd    ,namsrc(isrc)         ,cntent    ,disint(isrc)         ,itdate    , &
                     & timscl    ,ntimrd    ,parnam    ,npara     ,nparrd    , &
-                    & bubble    ,gdp       )
+                    & bubble    ,''        ,gdp       )
           if (error) then
              exit
           endif
