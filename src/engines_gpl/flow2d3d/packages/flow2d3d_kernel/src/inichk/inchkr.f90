@@ -151,6 +151,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     logical                              , pointer :: veg3d
     logical                              , pointer :: bubble
     logical                              , pointer :: lfsdu
+    logical                              , pointer :: stressStrainRelation
     integer(pntrsize)                    , pointer :: alfas
     integer(pntrsize)                    , pointer :: areau
     integer(pntrsize)                    , pointer :: areav
@@ -176,6 +177,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: dfv
     integer(pntrsize)                    , pointer :: diapl
     integer(pntrsize)                    , pointer :: dicuv
+    integer(pntrsize)                    , pointer :: dicww
     integer(pntrsize)                    , pointer :: dis
     integer(pntrsize)                    , pointer :: df
     integer(pntrsize)                    , pointer :: disch
@@ -193,6 +195,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: vmdis0
     integer(pntrsize)                    , pointer :: vmdis1
     integer(pntrsize)                    , pointer :: dxydro
+    integer(pntrsize)                    , pointer :: dudz
+    integer(pntrsize)                    , pointer :: dvdz
     integer(pntrsize)                    , pointer :: dzdeta
     integer(pntrsize)                    , pointer :: dzdksi
     integer(pntrsize)                    , pointer :: enstro
@@ -272,6 +276,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: v0
     integer(pntrsize)                    , pointer :: v1
     integer(pntrsize)                    , pointer :: vicuv
+    integer(pntrsize)                    , pointer :: vicww
+    integer(pntrsize)                    , pointer :: vicmud
     integer(pntrsize)                    , pointer :: vmdis
     integer(pntrsize)                    , pointer :: vmean
     integer(pntrsize)                    , pointer :: vmnflc
@@ -359,6 +365,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     integer(pntrsize)                    , pointer :: kcscut
     integer(pntrsize)                    , pointer :: kcu45
     integer(pntrsize)                    , pointer :: kcv45
+    integer(pntrsize)                    , pointer :: kfushr
+    integer(pntrsize)                    , pointer :: kfvshr
     integer(pntrsize)                    , pointer :: nob
     integer(pntrsize)                    , pointer :: disint
     integer(pntrsize)                    , pointer :: dismmt
@@ -376,6 +384,10 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     logical                              , pointer :: fldis
     include 'tri-dyn.igd'
     real(fp)      , dimension(:)         , pointer :: rhosol
+    character(12)                        , pointer :: tkemod
+    integer(pntrsize)                    , pointer :: clyint
+    integer(pntrsize)                    , pointer :: sltint
+    integer(pntrsize)                    , pointer :: sndint
 !
 ! Global variables
 !
@@ -515,6 +527,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     veg3d               => gdp%gdprocs%veg3d
     bubble              => gdp%gdprocs%bubble
     lfsdu               => gdp%gdprocs%lfsdu
+    stressStrainRelation => gdp%gdsedpar%stressStrainRelation
     alfas               => gdp%gdr_i_ch%alfas
     areau               => gdp%gdr_i_ch%areau
     areav               => gdp%gdr_i_ch%areav
@@ -540,6 +553,7 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     dfv                 => gdp%gdr_i_ch%dfv
     diapl               => gdp%gdr_i_ch%diapl
     dicuv               => gdp%gdr_i_ch%dicuv
+    dicww                => gdp%gdr_i_ch%dicww
     dis                 => gdp%gdr_i_ch%dis
     df                  => gdp%gdr_i_ch%df
     disch               => gdp%gdr_i_ch%disch
@@ -556,6 +570,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     umdis1              => gdp%gdr_i_ch%umdis1
     vmdis0              => gdp%gdr_i_ch%vmdis0
     vmdis1              => gdp%gdr_i_ch%vmdis1
+    dudz                 => gdp%gdr_i_ch%dudz
+    dvdz                 => gdp%gdr_i_ch%dvdz
     dxydro              => gdp%gdr_i_ch%dxydro
     dzdeta              => gdp%gdr_i_ch%dzdeta
     dzdksi              => gdp%gdr_i_ch%dzdksi
@@ -635,6 +651,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     v0                  => gdp%gdr_i_ch%v0
     v1                  => gdp%gdr_i_ch%v1
     vicuv               => gdp%gdr_i_ch%vicuv
+    vicww                => gdp%gdr_i_ch%vicww
+    vicmud               => gdp%gdr_i_ch%vicmud
     vmdis               => gdp%gdr_i_ch%vmdis
     vmean               => gdp%gdr_i_ch%vmean
     vmnflc              => gdp%gdr_i_ch%vmnflc
@@ -722,6 +740,8 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     kcscut              => gdp%gdr_i_ch%kcscut
     kcu45               => gdp%gdr_i_ch%kcu45
     kcv45               => gdp%gdr_i_ch%kcv45
+    kfushr               => gdp%gdr_i_ch%kfushr
+    kfvshr               => gdp%gdr_i_ch%kfvshr
     nob                 => gdp%gdr_i_ch%nob
     disint              => gdp%gdr_i_ch%disint
     dismmt              => gdp%gdr_i_ch%dismmt
@@ -732,12 +752,16 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     tprofc              => gdp%gdr_i_ch%tprofc
     tprofu              => gdp%gdr_i_ch%tprofu
     typbnd              => gdp%gdr_i_ch%typbnd
+    tkemod               => gdp%gdtricom%tkemod
     flcut               => gdp%gdtmpfil%flcut
     fl45                => gdp%gdtmpfil%fl45
     flbct               => gdp%gdtmpfil%flbct
     flbcc               => gdp%gdtmpfil%flbcc
     fldis               => gdp%gdtmpfil%fldis
     rhosol              => gdp%gdsedpar%rhosol
+    clyint              => gdp%gdr_i_ch%clyint
+    sltint              => gdp%gdr_i_ch%sltint
+    sndint              => gdp%gdr_i_ch%sndint
     !
     icx     = 0
     icy     = 0
@@ -748,6 +772,69 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
     call copykcuv(i(kcv), kcvcopy, gdp)
     !
     ierror = 0
+    !
+    ! Z_INIZM: Z-Model; set initial depth at velocity points
+    ! define mask arrays for velocity points
+    ! initialize QXK and QYK arrays. USE SIG array for ZK
+    ! subroutine parameter(5) = ICX := NMAX
+    ! subroutine parameter(6) = ICY := 1
+    !
+    if (zmodel) then
+       icx = nmaxddb
+       icy = 1
+       call z_inizm(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
+                  & icy       ,error     ,i(kcu)    ,i(kcv)    ,i(kcs)    , &
+                  & i(kfu)    ,i(kfv)    ,i(kfs)    ,i(kfsz1)  ,i(kfuz1)  , &
+                  & i(kfvz1)  ,i(kfsmin) ,i(kfsmax) ,i(kfumin) ,i(kfumax) , &
+                  & i(kfvmin) ,i(kfvmax) ,i(kspu)   ,i(kspv)   ,i(kcshyd) , &
+                  & d(dps)    ,r(dpu)    ,r(dpv)    ,r(s1)     ,r(thick)  , &
+                  & r(hu)     ,r(hv)     ,r(dzu1)   ,r(dzu0)   ,r(dzv1)   , &
+                  & r(dzv0)   ,r(dzs1)   ,r(dzs0)   ,r(sig)    ,r(r1)     , &
+                  & lstsci    ,r(gsqs)   ,r(qzk)    ,r(umean)  ,r(vmean)  , &
+                  & gdp       )
+       if (error) goto 9999
+       call inicut(lundia    ,error     ,runid     ,nmax      ,mmax      , &
+                 & nmaxus    ,kmax      ,flcut     ,fl45      ,i(kcu)    , &
+                 & i(kcv)    ,i(kcs)    ,i(kfsmin) ,i(kfsmax) ,i(kcu45)  , &
+                 & i(kcv45)  ,i(kcscut) ,r(xcor)   ,r(ycor)   ,r(gud)    , &
+                 & r(guu)    ,r(guv)    ,r(guz)    ,r(gvd)    ,r(gvu)    , &
+                 & r(gvv)    ,r(gvz)    ,r(gsqs)   ,r(gsqiu)  ,r(gsqiv)  , &
+                 & gdp       )
+    endif
+    !
+    ! CHKDRY: set initial depth at velocity points
+    ! define mask arrays for velocity points
+    ! initialize QXK and QYK arrays
+    ! subroutine parameter(7) = ICX := NMAX
+    ! subroutine parameter(8) = ICY := 1
+    ! ONLY FOR SIGMA LAYER MODEL ! FOR Z_MODEL CALL Z_CHKDRY
+    !
+    if (.not.zmodel) then
+       icx = nmaxddb
+       icy = 1
+       call chkdry(jstart    ,nmmaxj    ,nmmax     ,kmax      ,lsec      , &
+                 & lsecfl    ,lstsci    ,ltur      ,icx       ,icy       , &
+                 & i(kcu)    ,i(kcv)    ,i(kcs)    ,i(kfu)    , &
+                 & i(kfv)    ,i(kfs)    ,i(kspu)   ,i(kspv)   ,r(dpu)    , &
+                 & r(dpv)    ,r(hu)     ,r(hv)     ,r(hkru)   ,r(hkrv)   , &
+                 & r(thick)  ,r(s1)     ,d(dps)    ,r(u1)     ,r(v1)     , &
+                 & r(umean)  ,r(vmean)  ,r(r1)     ,r(rtur1)  ,r(guu)    , &
+                 & r(gvv)    ,r(qxk)    ,r(qyk)    ,gdp       )
+    else
+       icx = nmaxddb
+       icy = 1
+       call z_chkdry(jstart    ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
+                   & ltur      ,icx       ,icy       ,i(kcu)    , &
+                   & i(kcv)    ,i(kcs)    ,i(kfu)    ,i(kfv)    ,i(kfs)    , &
+                   & i(kspu)   ,i(kspv)   ,i(kfuz1)  ,i(kfvz1)  ,i(kfsz1)  , &
+                   & i(kfumin) ,i(kfumax) ,i(kfvmin) ,i(kfvmax) ,i(kfsmin) , &
+                   & i(kfsmax) ,r(dpu)    ,r(dpv)    ,r(hu)     ,r(hv)     , &
+                   & r(hkru)   ,r(hkrv)   ,r(s1)     ,d(dps)    ,r(u1)     , &
+                   & r(v1)     ,r(umean)  ,r(vmean)  ,r(r1)     ,r(rtur1)  , &
+                   & r(guu)    ,r(gvv)    ,r(qxk)    ,r(qyk)    ,r(dzu1)   , &
+                   & r(dzv1)   ,r(dzs1)   ,r(sig)    ,gdp       )
+    endif
+    !
     if (nsrcd > 0) then
        call chkdis(lundia    ,error     ,nsrcd     ,zmodel    ,nmax      , &
                  & mmax      ,nmaxus    ,kmax      ,ch(namsrc),i(mnksrc) , &
@@ -921,66 +1008,47 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
        if (error) goto 9999
     endif
     !
-    ! Z_INIZM: Z-Model; set initial depth at velocity points
-    ! define mask arrays for velocity points
-    ! initialize QXK and QYK arrays. USE SIG array for ZK
-    ! subroutine parameter(5) = ICX := NMAX
-    ! subroutine parameter(6) = ICY := 1
+    ! The velocities from previous half timestep are corrected for
+    ! mass flux and temporary set in WRKB3 (UEUL) and WRKB4
+    ! (VEUL) these are used in TURCLO
     !
-    if (zmodel) then
-       icx = nmaxddb
-       icy = 1
-       call z_inizm(jstart    ,nmmaxj    ,nmmax     ,kmax      ,icx       , &
-                  & icy       ,error     ,i(kcu)    ,i(kcv)    ,i(kcs)    , &
-                  & i(kfu)    ,i(kfv)    ,i(kfs)    ,i(kfsz1)  ,i(kfuz1)  , &
-                  & i(kfvz1)  ,i(kfsmin) ,i(kfsmax) ,i(kfumin) ,i(kfumax) , &
-                  & i(kfvmin) ,i(kfvmax) ,i(kspu)   ,i(kspv)   ,i(kcshyd) , &
-                  & d(dps)    ,r(dpu)    ,r(dpv)    ,r(s1)     ,r(thick)  , &
-                  & r(hu)     ,r(hv)     ,r(dzu1)   ,r(dzu0)   ,r(dzv1)   , &
-                  & r(dzv0)   ,r(dzs1)   ,r(dzs0)   ,r(sig)    ,r(r1)     , &
-                  & lstsci    ,r(gsqs)   ,r(qzk)    ,r(umean)  ,r(vmean)  , &
-                  & gdp       )
-       if (error) goto 9999
-       call inicut(lundia    ,error     ,runid     ,nmax      ,mmax      , &
-                 & nmaxus    ,kmax      ,flcut     ,fl45      ,i(kcu)    , &
-                 & i(kcv)    ,i(kcs)    ,i(kfsmin) ,i(kfsmax) ,i(kcu45)  , &
-                 & i(kcv45)  ,i(kcscut) ,r(xcor)   ,r(ycor)   ,r(gud)    , &
-                 & r(guu)    ,r(guv)    ,r(guz)    ,r(gvd)    ,r(gvu)    , &
-                 & r(gvv)    ,r(gvz)    ,r(gsqs)   ,r(gsqiu)  ,r(gsqiv)  , &
-                 & gdp       )
-    endif
+    icx = nmaxddb
+    icy = 1
+    call euler(jstart    ,nmmax     ,nmmaxj    ,kmax      ,icx       , &
+             & i(kcu)    ,i(kcv)    ,i(kfu)    ,i(kfv)    ,i(kfumx0) , &
+             & i(kfumin) ,i(kfvmx0) ,i(kfvmin) ,r(dzu0)   ,r(dzv0)   , &
+             & r(u0)     ,r(wrkb3)  ,r(v0)     ,r(wrkb4)  , &
+             & r(grmasu) ,r(grmasv) ,r(hu)     ,r(hv)     , &
+             & r(tp)     ,r(hrms)   ,r(sig)    ,r(thick)  ,r(teta)   , &
+             & r(grmsur) ,r(grmsvr) ,r(grfacu) ,r(grfacv) ,gdp       )
     !
-    ! CHKDRY: set initial depth at velocity points
-    ! define mask arrays for velocity points
-    ! initialize QXK and QYK arrays
-    ! subroutine parameter(7) = ICX := NMAX
-    ! subroutine parameter(8) = ICY := 1
-    ! ONLY FOR SIGMA LAYER MODEL ! FOR Z_MODEL CALL Z_CHKDRY
+    ! DENS  : compute densities for the first time
     !
-    if (.not.zmodel) then
-       icx = nmaxddb
-       icy = 1
-       call chkdry(jstart    ,nmmaxj    ,nmmax     ,kmax      ,lsec      , &
-                 & lsecfl    ,lstsci    ,ltur      ,icx       ,icy       , &
-                 & i(kcu)    ,i(kcv)    ,i(kcs)    ,i(kfu)    , &
-                 & i(kfv)    ,i(kfs)    ,i(kspu)   ,i(kspv)   ,r(dpu)    , &
-                 & r(dpv)    ,r(hu)     ,r(hv)     ,r(hkru)   ,r(hkrv)   , &
-                 & r(thick)  ,r(s1)     ,d(dps)    ,r(u1)     ,r(v1)     , &
-                 & r(umean)  ,r(vmean)  ,r(r1)     ,r(rtur1)  ,r(guu)    , &
-                 & r(gvv)    ,r(qxk)    ,r(qyk)    ,gdp       )
-    else
-       icx = nmaxddb
-       icy = 1
-       call z_chkdry(jstart    ,nmmaxj    ,nmmax     ,kmax      ,lstsci    , &
-                   & ltur      ,icx       ,icy       ,i(kcu)    , &
-                   & i(kcv)    ,i(kcs)    ,i(kfu)    ,i(kfv)    ,i(kfs)    , &
-                   & i(kspu)   ,i(kspv)   ,i(kfuz1)  ,i(kfvz1)  ,i(kfsz1)  , &
-                   & i(kfumin) ,i(kfumax) ,i(kfvmin) ,i(kfvmax) ,i(kfsmin) , &
-                   & i(kfsmax) ,r(dpu)    ,r(dpv)    ,r(hu)     ,r(hv)     , &
-                   & r(hkru)   ,r(hkrv)   ,r(s1)     ,d(dps)    ,r(u1)     , &
-                   & r(v1)     ,r(umean)  ,r(vmean)  ,r(r1)     ,r(rtur1)  , &
-                   & r(guu)    ,r(gvv)    ,r(qxk)    ,r(qyk)    ,r(dzu1)   , &
-                   & r(dzv1)   ,r(dzs1)   ,r(sig)    ,gdp       )
+    ifirst_dens = 1
+    call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
+            & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
+            & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
+            & r(sumrho) ,r(rhowat) ,rhosol    ,ifirst_dens,gdp       )
+    !
+    ! Eddy viscosity and diffusivity
+    !
+    icx = nmaxddb
+    icy = 1
+    call turclo(jstart    ,nmmaxj    ,nmmax     ,kmax      ,ltur      , &
+              & icx       ,icy       ,tkemod    , &
+              & i(kcs)    ,i(kfu)    ,i(kfv)    ,i(kfs)    ,r(s0)     , &
+              & d(dps)    ,r(hu)     ,r(hv)     ,r(u0)     ,r(v0)     , &
+              & r(rtur0)  ,r(thick)  ,r(sig)    ,r(rho)    ,r(vicuv)  , &
+              & r(vicww)  ,r(dicuv)  ,r(dicww)  ,r(windsu) ,r(windsv) , &
+              & r(z0urou) ,r(z0vrou) ,r(bruvai) ,r(rich)   ,r(dudz)   , &
+              & r(dvdz)   ,r(wrkb3)  ,r(wrkb4)  ,gdp       )
+    if (stressStrainRelation) then
+       call bngham(jstart    ,nmmaxj    ,kmax      ,nmmax       ,lstsci      , &
+                 & lsed      ,icx       ,icy       ,i(kfushr),i(kfvshr), &
+                 & i(kcs)    ,i(kfs)    ,r(dudz )  ,r(dvdz )    ,r(u1)       , &
+                 & r(v1)     ,r(vicmud) ,r(thick)  ,r(rhowat)   ,r(rho)      , &
+                 & r(r1)     ,d(dps)    ,r(s1)     ,r(clyint)   ,r(sltint)   , &
+                 & r(sndint) ,gdp       )       
     endif
     !
     ! Convert the coordinates of the fixed gate using DPU/DPV as reference
@@ -1057,14 +1125,6 @@ subroutine inchkr(lundia    ,error     ,runid     ,timhr     ,dischy    , &
               & r(ewabr0) ,r(ewabr1) , &
               & r(ewave0) ,r(ewave1) ,r(eroll0) ,r(eroll1) ,roller    , &
               & gdp       )
-    !
-    ! DENS  : compute densities for the first time
-    !
-    ifirst_dens = 1
-    call dens(jstart    ,nmmaxj    ,nmmax     ,kmax       ,lstsci    , &
-            & lsal      ,ltem      ,lsed      ,i(kcs)     ,saleqs    ,temeqs    , &
-            & densin    ,zmodel    ,r(thick)  ,r(r0)      ,r(rho)    , &
-            & r(sumrho) ,r(rhowat) ,rhosol    ,ifirst_dens,gdp       )
     !
     ! Z_DENGRA: compute DRHODX/DRHODY terms (only in Z-MODEL)
     !

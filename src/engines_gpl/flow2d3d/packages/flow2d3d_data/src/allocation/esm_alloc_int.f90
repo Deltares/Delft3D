@@ -350,6 +350,24 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
     ierr = mkipnt(pntnam, max(1, nmaxddb*mmaxddb*kmax*kfacz), gdp)
     if (ierr <= -9) goto 9999
     !
+    ! arrays for slurry branch, to turn off the baraclinic term.
+    !
+    pntnam = 'kfushr'     !  Mask array for baraclinic term
+                             !  upwind when special points are used for V points
+                             !  kfushr(NM,k) = 0 Discharge location
+                             !               = 1 Floating structure
+    ierr = mkipnt(pntnam, nmaxddb*mmaxddb*(kmax + 1), gdp)  ! (nmaxddb  ,mmaxddb,0:kmax)
+    if (ierr <= -9) goto 9999
+    !
+    ! arrays for slurry branch, to turn off the baraclinic term.
+    !
+    pntnam = 'kfvshr'     !  Mask array for baraclinic term
+                             !  upwind when special points are used for V points
+                             !  kfvshr(NM,0) = 1 Discharge location
+                             !               = 2 Floating structure
+    ierr = mkipnt(pntnam, nmaxddb*mmaxddb*(kmax + 1), gdp)  ! (nmaxddb  ,mmaxddb,0:kmax)
+    if (ierr <= -9) goto 9999
+    !
     ! arrays for: diffusivity
     !
     pntnam = 'idifu'         !  Work space, Identification if numerical diffusive flux is added

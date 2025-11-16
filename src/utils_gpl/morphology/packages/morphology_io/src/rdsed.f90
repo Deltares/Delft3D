@@ -44,8 +44,8 @@ contains
 
 subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                & lsedtot   ,lstsci    ,ltur      ,namcon    ,iopsus    , &
-               & nmlb      ,nmub      ,filsed    ,sed_ptr   , &
-               & sedpar    ,trapar    ,griddim   )
+               & nmlb      ,nmub      ,kmax      ,filsed    ,sed_ptr   , &
+               & slu_ptr   ,sedpar    ,trapar    ,griddim   )
 !!--description-----------------------------------------------------------------
 !
 ! Read sediment parameters from an input file
@@ -81,6 +81,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     integer                            , pointer :: nmudfrac
     integer                            , pointer :: sc_mudfac
     logical          , dimension(:)    , pointer :: cmpupdfrac
+    integer                            , pointer :: rheo
     real(fp)         , dimension(:)    , pointer :: tpsnumber
     real(fp)         , dimension(:)    , pointer :: rhosol
     real(fp)         , dimension(:,:,:), pointer :: logseddia
@@ -101,6 +102,14 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     real(fp)         , dimension(:)    , pointer :: tcguni
     real(fp)         , dimension(:)    , pointer :: mudcnt
     real(fp)         , dimension(:)    , pointer :: pmcrit
+    real(fp)         , dimension(:,:)  , pointer :: rhocf
+    real(fp)         , dimension(:,:)  , pointer :: cfvic
+    real(fp)         , dimension(:,:)  , pointer :: cfmu
+    real(fp)         , dimension(:,:)  , pointer :: xmu
+    real(fp)         , dimension(:,:)  , pointer :: cfty
+    real(fp)         , dimension(:,:)  , pointer :: cftau
+    real(fp)         , dimension(:,:)  , pointer :: tyield
+    real(fp)         , dimension(:,:)  , pointer :: taubh
     integer          , dimension(:)    , pointer :: nseddia
     integer          , dimension(:)    , pointer :: sedtyp
     integer          , dimension(:)    , pointer :: tratyp
@@ -144,8 +153,10 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     integer                                  , intent(out) :: iopsus
     integer                                  , intent(in)  :: nmlb
     integer                                  , intent(in)  :: nmub
+    integer                                  , intent(in)  :: kmax
     character(len=*)                         , intent(in)  :: filsed
     type(tree_data)                          , pointer     :: sed_ptr
+    type(tree_data)                          , pointer     :: slu_ptr
     type(sedpar_type)                        , pointer     :: sedpar
     type(trapar_type)                        , pointer     :: trapar
     type(griddimtype)             , target   , intent(in)  :: griddim
@@ -168,6 +179,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     real(fp)                    :: rmissval
     real(fp)                    :: seddxx              !< Temporary storage for sediment diameter
     real(fp)                    :: sedsg               !< Temporary storage for geometric standard deviation
+    real(fp)                    :: nclay
+    real(fp)                    :: plasin
     real(fp)                    :: tpsmud, tpssand
     logical                     :: ex
     logical                     :: is_float
@@ -190,6 +203,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
 !
     csoil                => sedpar%csoil
     mdcuni               => sedpar%mdcuni
+    rheo                 => sedpar%rheologymodel
     kssilt               => sedpar%kssilt
     kssand               => sedpar%kssand
     sc_cmf1              => sedpar%sc_cmf1
@@ -247,6 +261,13 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     fmttmp   = 'formatted'
     !
     istat = 0
+    !
+    ! Read flag stressStrainRelation first:
+    ! It influences the allocate statements
+    !
+    sedpar%stressStrainRelation = .false.
+    call prop_get_logical(slu_ptr, 'Slurry', 'stressStrainRelation', sedpar%stressStrainRelation)
+    !
     if (.not. associated(sedpar%sedd50)) then
        !
        ! allocation of namsed, rhosol, sedtyp and tratyp have been allocated in count_sed routine
@@ -285,6 +306,13 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        if (istat==0) allocate (sedpar%namclay   (          max(1,lsed)), stat = istat)
        if (istat==0) allocate (sedpar%flocsize  (          max(1,lsed)), stat = istat)
+       !
+       if (sedpar%stressStrainRelation) then
+          if (istat==0) allocate (sedpar%phiclay   (nmlb:nmub            ,kmax), stat = istat)
+          if (istat==0) allocate (sedpar%phisand   (nmlb:nmub            ,kmax), stat = istat)
+       endif
+       !
+       ! Allocation of arrays rhocf and cfvic is after reading the value of parameter stressStrainRelation
        !
        if (istat/=0) then
           errmsg = 'RDSED: memory alloc error'
@@ -400,6 +428,68 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           nmudfrac = nmudfrac + 1
        endif
     enddo
+    !
+    ! Defaults fall velocity formulation of winterwerp 2004
+    !
+    sedpar%falflc   = .false.
+    sedpar%flck3    =  0.8
+    sedpar%flck4    =  0.0130
+    sedpar%flcd0    = 10.0e-06
+    sedpar%flcr     =  0.44
+    sedpar%flcnf    =  2.15_fp
+    sedpar%flwsmin  =  0.3e-3
+    !
+    ! Defaults Schelde erosion parameters formulation Winterwerp en
+    !          van Kesteren 2004
+    sedpar%eroschel = .false.
+    sedpar%erosk1   =   1.0
+    sedpar%erosk2   =   1.0
+    sedpar%erosns   =   0.0
+    sedpar%eroscv   =   3.0e-9
+    sedpar%eroscu   = 400.0
+    sedpar%erosd50  =  20.0e-6
+    !
+    ! Defaults consolidation
+    !
+    sedpar%cons_mud     = .false.
+    sedpar%cons_kk      = 2.0e-14
+    sedpar%cons_ksig    = 2.0e8
+    sedpar%cons_eta     = 1.0e5
+    sedpar%flcnf_cons   = 2.8
+    !
+    ! Defaults Bingham
+    !
+    sedpar%bin_cvisco    = 1.0e-3
+    sedpar%bin_cnvisco   = 4.0
+    sedpar%bin_cyield    = 5.0e8
+    sedpar%bin_abingh    = 0.02
+    sedpar%pow_bng_mix   = 2.35
+    sedpar%pow_bng_silt  = 2.35
+    sedpar%pow_rich_zaki = 3.1   
+    !
+    ! Defaults erosion interface
+    !
+    sedpar%ero_intfc     = .false.
+    sedpar%nstress_intfc = 10.000
+    sedpar%erosk1_int    =  1.0
+    sedpar%erosk2_int    =  1.0
+    !
+    ! Slurry
+    !
+    sedpar%shearsettling = .false.
+    sedpar%vmudToVicuv   = .false.
+    sedpar%vicThresh     = 1.0e10_fp
+    !
+    ! Check version number of slu input file
+    !
+    versionstring = ' '
+    call prop_get_string(slu_ptr, 'SlurryFileInformation', 'FileVersion', versionstring)
+    if (versionstring /= '01.00') then
+       errmsg = 'Unexpected version number of Slurry file. Expecting "01.00"'
+       call write_error(errmsg, unit=lundia)
+       error = .true.
+       return
+    endif
     !
     ! Check version number of sed input file
     !
@@ -601,6 +691,201 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           endif
           !
           call prop_get(sed_ptr, 'SedimentOverall', 'CritFluffFactor', sc_flcf)
+       endif
+       !
+       ! Get Fall velocity winterwerp parameters
+       !
+       call prop_get_logical(sed_ptr, 'SedimentOverall', 'FalFlc', sedpar%falflc)
+       if (sedpar%falflc) then
+          call prop_get(sed_ptr, 'SedimentOverall', 'FlcNf_floc'   , sedpar%flcnf_floc )
+          call prop_get(sed_ptr, 'SedimentOverall', 'FlcK2'        , sedpar%flck2 )
+          call prop_get(sed_ptr, 'SedimentOverall', 'FlcK3'        , sedpar%flck3 )
+          call prop_get(sed_ptr, 'SedimentOverall', 'FlcK4'        , sedpar%flck4 )
+          call prop_get(sed_ptr, 'SedimentOverall', 'FlcD0'        , sedpar%flcd0 )
+          call prop_get(sed_ptr, 'SedimentOverall', 'FlcR'         , sedpar%flcr  )
+          call prop_get(sed_ptr, 'SedimentOverall', 'FlWsmin'      , sedpar%flwsmin)
+       endif
+       !
+       ! Schelde Erosion formulation parameters
+       !
+       call prop_get_logical(sed_ptr, 'SedimentOverall', 'EroSchel', sedpar%eroschel)
+       if (sedpar%eroschel) then
+          call prop_get(sed_ptr, 'SedimentOverall', 'EroSk1'    , sedpar%erosk1 )
+          call prop_get(sed_ptr, 'SedimentOverall', 'EroSk2'    , sedpar%erosk2 )
+          call prop_get(sed_ptr, 'SedimentOverall', 'EroSns'    , sedpar%erosns )
+          call prop_get(sed_ptr, 'SedimentOverall', 'EroScv'    , sedpar%eroscv )
+          call prop_get(sed_ptr, 'SedimentOverall', 'EroScu'    , sedpar%eroscu )
+          call prop_get(sed_ptr, 'SedimentOverall', 'EroSd50'   , sedpar%erosd50)
+          nclay     = (1.0 - sedpar%erosns) / 2.74
+          plasin    = 254.0 * (nclay - 0.101)
+       endif
+       !
+       ! Schelde consolidation parameters
+       !
+       call prop_get_logical(sed_ptr, 'SedimentOverall', 'cons_mud', sedpar%cons_mud)
+       if (sedpar%cons_mud) then
+          call prop_get(sed_ptr, 'SedimentOverall', 'cons_kk   '  , sedpar%cons_kk  )
+          call prop_get(sed_ptr, 'SedimentOverall', 'cons_ksig '  , sedpar%cons_ksig)
+          call prop_get(sed_ptr, 'SedimentOverall', 'cons_eta  '  , sedpar%cons_eta )
+          call prop_get(sed_ptr, 'SedimentOverall', 'FlcNf_cons'  , sedpar%flcnf_cons )
+       endif
+       !
+       ! Bingham model parameters
+       !
+       if (sedpar%stressStrainRelation) then
+          call prop_get(sed_ptr, 'SedimentOverall', 'bin_cvisco'   , sedpar%bin_cvisco  )
+          call prop_get(sed_ptr, 'SedimentOverall', 'bin_cnvisco'  , sedpar%bin_cnvisco )
+          call prop_get(sed_ptr, 'SedimentOverall', 'bin_cyield'   , sedpar%bin_cyield  )
+          call prop_get(sed_ptr, 'SedimentOverall', 'bin_abingh'   , sedpar%bin_abingh  )
+          call prop_get(sed_ptr, 'SedimentOverall', 'pow_bng_mix'  , sedpar%pow_bng_mix )
+          call prop_get(sed_ptr, 'SedimentOverall', 'pow_bng_silt' , sedpar%pow_bng_silt) 
+          call prop_get(sed_ptr, 'SedimentOverall', 'pow_rich_zaki' , sedpar%pow_rich_zaki)          
+          if (.not. sedpar%cons_mud) then
+             call prop_get(sed_ptr, 'SedimentOverall', 'FlcNf_cons'   , sedpar%flcnf_cons )
+          endif
+       endif
+       !
+       ! Erosion of interface?
+       !
+       call prop_get_logical(sed_ptr, 'SedimentOverall', 'ero_intfc', sedpar%ero_intfc)
+       if (sedpar%ero_intfc) then
+          call prop_get(sed_ptr, 'SedimentOverall', 'nstress_intfc'   , sedpar%nstress_intfc  )
+          call prop_get(sed_ptr, 'SedimentOverall', 'erosk1_int'      , sedpar%erosk1_int     )
+          call prop_get(sed_ptr, 'SedimentOverall', 'erosk2_int'      , sedpar%erosk2_int     )
+          if (.not. sedpar%eroschel) then
+             call prop_get(sed_ptr, 'SedimentOverall', 'eroSns'       , sedpar%erosns         )
+             call prop_get(sed_ptr, 'SedimentOverall', 'eroSd50'      , sedpar%erosd50        )
+          endif
+       endif
+       !
+       ! Some output parameters
+       !
+       allocate (sedpar%xmu   (nmlb:nmub,kmax), stat = istat)
+       allocate (sedpar%tyield(nmlb:nmub,kmax), stat = istat)
+       allocate (sedpar%taubh (nmlb:nmub,kmax), stat = istat)
+       xmu           => sedpar%xmu
+       tyield        => sedpar%tyield
+       taubh         => sedpar%taubh
+       xmu   (:,:) = -999.0
+       tyield(:,:) = -999.0
+       taubh (:,:) = -999.0
+       !
+       !
+       if (sedpar%stressStrainRelation) then
+          !
+          ! Slurry
+          !
+          call prop_get_logical(slu_ptr, 'Slurry', 'shearSettling', sedpar%shearsettling)
+          call prop_get        (slu_ptr, 'Slurry', 'vicThresh'    , sedpar%vicThresh)
+          call prop_get_logical(slu_ptr, 'Slurry', 'vmudToVicuv'  , sedpar%vmudToVicuv)
+          !
+          ! Rheology (Jill Hanssen's work)
+          !
+          allocate (sedpar%rhocf (nmlb:nmub,kmax), stat = istat)
+          allocate (sedpar%cfvic (nmlb:nmub,kmax), stat = istat)
+          allocate (sedpar%cfmu  (nmlb:nmub,kmax), stat = istat)
+          allocate (sedpar%cfty  (nmlb:nmub,kmax), stat = istat)
+          allocate (sedpar%cftau (nmlb:nmub,kmax), stat = istat)
+          rhocf         => sedpar%rhocf
+          cfvic         => sedpar%cfvic
+          cfmu          => sedpar%cfmu
+          cfty          => sedpar%cfty
+          cftau         => sedpar%cftau
+          rhocf (:,:) = -999.0
+          cfvic (:,:) = -999.0
+          cfmu  (:,:) = -999.0
+          cfty  (:,:) = -999.0
+          cftau (:,:) = -999.0
+          !
+          ! Shearsettling: default: not set (rheo=-1)
+          !
+          sedpar%SluSettParam1 = 1.0_fp
+          call prop_get(slu_ptr, 'Slurry', 'SluSettParam1', sedpar%SluSettParam1)
+          sedpar%SluSettParam2 = 2.0_fp
+          call prop_get(slu_ptr, 'Slurry', 'SluSettParam2', sedpar%SluSettParam2)
+          sedpar%Shearsettle_w_opt = 1.0_fp  !% Arno's formula 1, Han's formula 2;
+          call prop_get(slu_ptr, 'Slurry', 'Shearsettle_w_opt', sedpar%Shearsettle_w_opt)
+          !
+          ! Rheology: default: not set (rheo=-1)
+          !
+          string = 'dummy'
+          call prop_get(slu_ptr, 'Slurry', 'rheology', string)
+          call str_lower(string)
+          if (string /= 'dummy') then
+             if (string == 'winterwerp_kranenburg') then
+                rheo = RHEOLOGY_WINTERWERP_KRANENBURG
+             elseif (string == 'jacobs_vankesteren') then
+                rheo = RHEOLOGY_JACOBS_VANKESTEREN
+             elseif (string == 'thomas') then
+                rheo = RHEOLOGY_THOMAS
+             else
+                errmsg = 'Value of keyword "rheology" must be equal to "Winterwerp_Kranenburg", "Jacobs_vanKesteren" or "Thomas"'
+                call write_error(errmsg, unit=lundia)
+                error = .true.
+                return
+             endif
+          endif
+          !
+          ! Rheo= Winterwerp_Kranenburg: Read related parameters
+          !
+          if (rheo == RHEOLOGY_WINTERWERP_KRANENBURG) then
+             sedpar%rheo_phisim = 0.6_fp
+             call prop_get(slu_ptr, 'Winterwerp_Kranenburg', 'phisim', sedpar%rheo_phisim)
+             sedpar%rheo_ayield = 729884.0_fp
+             call prop_get(slu_ptr, 'Winterwerp_Kranenburg', 'ayield', sedpar%rheo_ayield)
+             sedpar%rheo_frcdim = 2.6426_fp
+             call prop_get(slu_ptr, 'Winterwerp_Kranenburg', 'frcdim', sedpar%rheo_frcdim)
+             sedpar%rheo_bety = 0.2752_fp
+             call prop_get(slu_ptr, 'Winterwerp_Kranenburg', 'bety', sedpar%rheo_bety)
+             sedpar%rheo_avic = 931.86_fp
+             call prop_get(slu_ptr, 'Winterwerp_Kranenburg', 'avic', sedpar%rheo_avic)
+             sedpar%rheo_powa = 3.65_fp
+             call prop_get(slu_ptr, 'Winterwerp_Kranenburg', 'powa', sedpar%rheo_powa)
+             sedpar%rheo_betv = 0.2752_fp
+             call prop_get(slu_ptr, 'Winterwerp_Kranenburg', 'betv', sedpar%rheo_betv)
+             sedpar%rheo_shrco = 5.0e6_fp
+             call prop_get(slu_ptr, 'Winterwerp_Kranenburg', 'shrco', sedpar%rheo_shrco)
+          endif
+          !
+          ! Rheo= Jacobs_vanKesteren: Read related parameters
+          !
+          if (rheo == RHEOLOGY_JACOBS_VANKESTEREN) then
+             sedpar%rheo_phisim = 0.6_fp
+             call prop_get(slu_ptr, 'Jacobs_vanKesteren', 'phisim', sedpar%rheo_phisim)
+             sedpar%rheo_ayield = 4.167_fp
+             call prop_get(slu_ptr, 'Jacobs_vanKesteren', 'ayield', sedpar%rheo_ayield)
+             sedpar%rheo_powyie = -0.14_fp
+             call prop_get(slu_ptr, 'Jacobs_vanKesteren', 'powyie', sedpar%rheo_powyie)
+             sedpar%rheo_bety = 0.2752_fp
+             call prop_get(slu_ptr, 'Jacobs_vanKesteren', 'bety', sedpar%rheo_bety)
+             sedpar%rheo_avic = 0.043_fp
+             call prop_get(slu_ptr, 'Jacobs_vanKesteren', 'avic', sedpar%rheo_avic)
+             sedpar%rheo_powvic = -0.73_fp
+             call prop_get(slu_ptr, 'Jacobs_vanKesteren', 'powvic', sedpar%rheo_powvic)
+             sedpar%rheo_betv = 0.2752_fp
+             call prop_get(slu_ptr, 'Jacobs_vanKesteren', 'betv', sedpar%rheo_betv)
+             sedpar%rheo_shrco = 5000.0_fp
+             call prop_get(slu_ptr, 'Jacobs_vanKesteren', 'shrco', sedpar%rheo_shrco)
+          endif
+          !
+          ! Rheo= Thomas: Read related parameters
+          !
+          if (rheo == RHEOLOGY_THOMAS) then
+             sedpar%rheo_phisim = 0.6_fp
+             call prop_get(slu_ptr, 'Thomas', 'phisim', sedpar%rheo_phisim)
+             sedpar%rheo_ayield = 7.45E5_fp
+             call prop_get(slu_ptr, 'Thomas', 'ayield', sedpar%rheo_ayield)
+             sedpar%rheo_powyie = 5.61_fp
+             call prop_get(slu_ptr, 'Thomas', 'powyie', sedpar%rheo_powyie)
+             sedpar%rheo_yieldk = 1.5_fp
+             call prop_get(slu_ptr, 'Thomas', 'yieldk', sedpar%rheo_yieldk)
+             sedpar%rheo_bvic = 17.7_fp
+             call prop_get(slu_ptr, 'Thomas', 'bvic', sedpar%rheo_bvic)
+             sedpar%rheo_visck = 1.25_fp
+             call prop_get(slu_ptr, 'Thomas', 'visck', sedpar%rheo_visck)
+             sedpar%rheo_shrco = 5000.0_fp
+             call prop_get(slu_ptr, 'Thomas', 'shrco', sedpar%rheo_shrco)
+          endif
        endif
        !
        do l = 1, lsedtot
@@ -1245,7 +1530,7 @@ end subroutine opensedfil
 
 
 subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
-                 & iopsus    ,sedpar    ,trapar    ,cmpupd    )
+                 & iopsus    ,rhow      ,ag        ,sedpar    ,trapar    ,cmpupd    )
 !!--description-----------------------------------------------------------------
 !
 ! Report sediment parameter to diag file
@@ -1325,12 +1610,22 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     real(fp)                  :: logsedd50
     real(fp)                  :: rmissval
     real(fp)                  :: xxinv               !< Help var. [1/xx or 1/(1-xx) in log unif distrib.]
+    real(fp)                  :: a_cu        ! coefficient
+    real(fp)                  :: b_cu        ! exponent
+    real(fp)                  :: taubin
+    real(fp)                  :: watcon      ! water content
+    real(fp)                  :: voidr       ! 1 + e/e with void ratio e
+    real(fp)                  :: sedsg       ! Temporary storage for geometric standard deviation
+    real(fp)                  :: nclay       ! Clay content
+    real(fp)                  :: plasin      ! Plasticity index
     real(fp)                  :: xm
     logical                   :: cmpupdall           !< flag indicating whether bed composition is updated for all fractions
     character(45)             :: txtput1
     character(12)             :: txtput2
     character(100)            :: txtput3
     character(256)            :: errmsg
+    real(fp), intent(in) :: rhow
+    real(fp), intent(in) :: ag
 !
 !! executable statements -------------------------------------------------------
 !
@@ -1478,6 +1773,139 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
        txtput1 = 'Critical fluff layer coverage factor'
        write (lundia, '(2a,f12.6)') txtput1,':', sc_flcf
     endif
+    !
+    if (sedpar%falflc) then
+       txtput1 = 'Fall velocity Winterwerp 2004'
+       write (lundia, '(a)') txtput1
+       txtput1 = 'FlcNf_floc   '
+       write (lundia, '(a,a,f12.6)') txtput1,':',sedpar%flcnf_floc
+       txtput1 = 'FlcK2   '
+       write (lundia, '(a,a,f12.6)') txtput1,':',sedpar%flck2
+       txtput1 = 'FlcK3   '
+       write (lundia, '(a,a,f12.6)') txtput1,':',sedpar%flck3
+       txtput1 = 'FlcK4   '
+       write (lundia, '(a,a,f12.6)') txtput1,':',sedpar%flck4
+       txtput1 = 'FlcD0   '
+       write (lundia, '(a,a,f12.6)') txtput1,':',sedpar%flcd0
+       txtput1 = 'FlcR    '
+       write (lundia, '(a,a,f12.6)') txtput1,':',sedpar%flcR
+       txtput1 = 'FlWsmin '
+       write (lundia, '(a,a,f12.6)') txtput1,':',sedpar%flwsmin
+    endif
+    !
+    if (sedpar%eroschel) then
+       txtput1 = 'New erosion formulation Schelde'
+       write (lundia, '(a)') txtput1
+       txtput1 = 'EroSk1  '
+       write (lundia, '(a,a,f14.6)') txtput1,':',sedpar%erosk1
+       txtput1 = 'EroSk2  '
+       write (lundia, '(a,a,f14.6)') txtput1,':',sedpar%erosk2
+       txtput1 = 'EroSns  '
+       write (lundia, '(a,a,f14.6)') txtput1,':',sedpar%erosns
+       txtput1 = 'EroScu  '
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%eroscu
+       txtput1 = 'EroScv  '
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%eroscv
+       txtput1 = 'EroSd50 '
+       write (lundia, '(a,a,f14.6)') txtput1,':',sedpar%erosd50
+    endif
+
+    if (sedpar%cons_mud) then
+       txtput1 = 'Consolidation of mud included'
+       write (lundia, '(a)') txtput1
+       txtput1 = 'Cons_kk   '
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%cons_kk
+       txtput1 = 'Cons_ksig '
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%cons_ksig
+       txtput1 = 'Cons_eta  '
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%cons_eta
+       txtput1 = 'FlcNf_cons'
+       write (lundia, '(a,a,f12.6)') txtput1,':',sedpar%flcnf_cons
+    endif
+
+    if (sedpar%stressStrainRelation) then
+       txtput1 = 'Non-Newtonian rheological model used'
+       write (lundia, '(a)') txtput1
+       txtput1 = 'bin_cvisco'
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%bin_cvisco
+       txtput1 = 'bin_cnvisco'
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%bin_cnvisco
+       txtput1 = 'bin_cyield'
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%bin_cyield
+       txtput1 = 'bin_abingh'
+       write (lundia, '(a,a,f14.6)') txtput1,':',sedpar%bin_abingh
+       txtput1 = 'pow_bng_mix'
+       write (lundia, '(a,a,f14.6)') txtput1,':',sedpar%pow_bng_mix
+       txtput1 = 'pow_bng_silt'
+       write (lundia, '(a,a,f14.6)') txtput1,':',sedpar%pow_bng_silt
+       txtput1 = 'pow_rich_zaki'
+       write (lundia, '(a,a,f14.6)') txtput1,':',sedpar%pow_rich_zaki       
+       if (.not. sedpar%cons_mud) then
+          txtput1 = 'FlcNf_cons'
+          write (lundia, '(a,a,f12.6)') txtput1,':',sedpar%flcnf_cons
+       endif
+    endif
+    !
+    sedpar%power   = (3. - sedpar%flcnf_cons)/ 2.
+    if (sedpar%ero_intfc) then
+       !
+       !  Inversion of normal stress criterion for erosion
+       !
+       sedpar%sedcint = rhosol(1)*(sedpar%nstress_intfc/sedpar%cons_ksig)**sedpar%power ! mass concentration g/l
+       !
+       !  Undrained shear strength C_U related to water content
+       !
+       a_cu    = 15.468
+       b_cu    = -3.24
+       watcon  = rhow/sedpar%sedcint - rhow / rhosol(1)
+       nclay     = (1. - sedpar%erosns)/2.74
+       if (watcon <= 0.0 ) then
+         write(lundia,'(a)') 'Negative water content, check RHOSOL and CDRYB '
+       else
+         sedpar%eroscu  = a_cu * (watcon / nclay)**b_cu
+       endif
+       !
+       ! Critical shear stress from erosion formulations for the
+       ! Scheldt river
+       !
+       plasin    = 254.*(nclay - .101)
+       !sedpar%tcrint(1) = 0.163*sedpar%erosk2_int*plasin**0.84
+       !
+       ! Consolidation coefficient CV
+       !
+       voidr          = 1./(1 - sedpar%sedcint/rhosol(1)) ! volume concentration needed
+       sedpar%eroscv  = voidr * sedpar%cons_kk * sedpar%cons_ksig/(ag*rhow*sedpar%power)
+       ! Parameter for internal erosion
+       sedpar%xme_int = sedpar%erosk1_int*(sedpar%eroscv/sedpar%eroscu)* &
+                    (sedpar%sedcint*sedpar%sedcint/rhosol(1)/(10.*sedpar%erosd50))
+       !
+       txtput1 = 'Erosion of interface'
+       write (lundia, '(a)') txtput1
+       txtput1 = 'nstress_intfc'
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%nstress_intfc
+       txtput1 = 'erosk1_int   '
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%erosk1_int
+       txtput1 = 'erosk2_int   '
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%erosk2_int
+       if (.not.sedpar%eroschel) then
+          txtput1 = 'erosns       '
+          write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%erosns
+          txtput1 = 'erosd50      '
+          write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%erosd50
+       endif
+
+       txtput1 = 'sedcint'
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%sedcint
+       txtput1 = 'watcon'
+       write (lundia, '(a,a,e14.6)') txtput1,':',watcon
+       txtput1 = 'eroscu'
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%eroscu
+       txtput1 = 'eroscv'
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%eroscv
+       txtput1 = 'xme_int'
+       write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%xme_int
+    endif
+    !
     if (sedpar%flnrd(0) /= ' ') then
        txtput1 = '1D nodal relations for bed/total load'
        write (lundia, '(3a)') txtput1, ':  ', trim(sedpar%flnrd(0))
@@ -1972,12 +2400,107 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
              write (lundia, '(2a,i0,a)') txtput1, ':  UNKNOWN (',iform_settle(l),')'
           end select
        endif
-
+       !
+       if (sedpar%ero_intfc) then
+          txtput1 = '  tcrint'
+          write(lundia,'(A)') 'ERROR: SEDPAR%TCRINT not yet defined'
+          !write (lundia, '(a,a,e14.6)') txtput1,':',sedpar%tcrint(l)
+       endif
+       !
        if (sedpar%flnrd(l) /= ' ') then
           txtput1 = '  1D nodal relations for bed/total load'
           write (lundia, '(3a)') txtput1, ':  ', trim(sedpar%flnrd(l))
        endif
     enddo
+    if (sedpar%shearsettling) then
+       write (lundia, '(a)') 'SLURRY: Fall velocity of sand is computed according to the shear settling formulation (dependent on mud concentration)'
+    endif
+    if (sedpar%shearsettling) then
+       write (lundia, '(a)') 'SLURRY: Fall velocity of sand is computed according to the shear settling formulation (dependent on mud concentration)'
+    endif
+    if (sedpar%shearsettling) then
+       write (lundia, '(a)') 'SLURRY: Fall velocity of sand is computed according to the shear settling formulation (dependent on mud concentration)'
+    endif
+    if (sedpar%stressStrainRelation) then
+       !
+       ! Check on maximum Bingham stress
+       !
+       taubin = sedpar%bin_cyield*2.0**(1.0/sedpar%power) / 1.e+3
+       write (lundia, *)
+       write (lundia, '(a,e12.4)') 'Indication of maximum Bingham stress : ', &
+       &  taubin
+       !
+       if ( taubin > 0.2) then 
+          write (lundia,'(a)') 'Is the Bingham stress possibly too large?'
+          write (lundia,'(a)') 'Maximum value for the Bingham stress is 1 Pascal'
+       endif
+       write (lundia, *)
+    endif
+    !
+    ! Rheology
+    !
+    if (sedpar%stressStrainRelation) then
+       txtput1 = 'rheology'
+       txtput2 = 'not specified'
+       if (sedpar%rheologymodel == RHEOLOGY_WINTERWERP_KRANENBURG) then
+          txtput2 = 'Winterwerp_Kranenburg'
+       elseif (sedpar%rheologymodel == RHEOLOGY_JACOBS_VANKESTEREN) then
+          txtput2 = 'Jacobs_vanKesteren'
+       elseif (sedpar%rheologymodel == RHEOLOGY_THOMAS) then
+          txtput2 = 'Thomas'
+       endif
+       write (lundia, '(3a)') txtput1, ': ', trim(txtput2)
+       if (sedpar%rheologymodel == RHEOLOGY_WINTERWERP_KRANENBURG) then
+          txtput1 = '  phisim'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_phisim
+          txtput1 = '  ayield'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_ayield
+          txtput1 = '  frcdim'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_frcdim
+          txtput1 = '  bety'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_bety
+          txtput1 = '  avic'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_avic
+          txtput1 = '  powa'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_powa
+          txtput1 = '  betv'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_betv
+          txtput1 = '  shrco'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_shrco
+       elseif (sedpar%rheologymodel == RHEOLOGY_JACOBS_VANKESTEREN) then
+          txtput1 = '  phisim'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_phisim
+          txtput1 = '  ayield'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_ayield
+          txtput1 = '  powyie'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_powyie
+          txtput1 = '  bety'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_bety
+          txtput1 = '  avic'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_avic
+          txtput1 = '  powvic'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_powvic
+          txtput1 = '  betv'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_betv
+          txtput1 = '  shrco'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_shrco
+       elseif (sedpar%rheologymodel == RHEOLOGY_THOMAS) then
+          txtput1 = '  phisim'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_phisim
+          txtput1 = '  ayield'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_ayield
+          txtput1 = '  powyie'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_powyie
+          txtput1 = '  yieldk'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_yieldk
+          txtput1 = '  bvic'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_bvic
+          txtput1 = '  visck'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_visck
+          txtput1 = '  shrco'
+          write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%rheo_shrco
+       endif
+    endif
     !
     write (lundia, '(a)') '*** End    of sediment input'
     write (lundia, *)

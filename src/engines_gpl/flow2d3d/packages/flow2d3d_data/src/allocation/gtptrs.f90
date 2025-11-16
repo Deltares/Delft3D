@@ -437,6 +437,8 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: kzs
     integer(pntrsize), pointer :: kzu
     integer(pntrsize), pointer :: kzv
+    integer(pntrsize), pointer :: kfushr
+    integer(pntrsize), pointer :: kfvshr
     integer(pntrsize), pointer :: mnbar
     integer(pntrsize), pointer :: mnbnd
     integer(pntrsize), pointer :: mndro
@@ -520,6 +522,10 @@ subroutine gtptrs(gdp)
     integer(pntrsize), pointer :: zwork
     integer(pntrsize), pointer :: zevap
     integer(pntrsize), pointer :: zprecp
+    integer(pntrsize), pointer :: vicmud
+    integer(pntrsize), pointer :: clyint
+    integer(pntrsize), pointer :: sltint
+    integer(pntrsize), pointer :: sndint
     integer , pointer :: lmax
     integer , pointer :: kc
     integer , pointer :: ndro
@@ -950,6 +956,8 @@ subroutine gtptrs(gdp)
     kcscut     => gdp%gdr_i_ch%kcscut
     kcu45      => gdp%gdr_i_ch%kcu45
     kcv45      => gdp%gdr_i_ch%kcv45
+    kfushr     => gdp%gdr_i_ch%kfushr
+    kfvshr     => gdp%gdr_i_ch%kfvshr
     disint     => gdp%gdr_i_ch%disint
     dismmt     => gdp%gdr_i_ch%dismmt
     nambar     => gdp%gdr_i_ch%nambar
@@ -1003,6 +1011,10 @@ subroutine gtptrs(gdp)
     wrkc3      => gdp%gdaddress%wrkc3
     wrkc4      => gdp%gdaddress%wrkc4
     zwork      => gdp%gdaddress%zwork
+    vicmud     => gdp%gdr_i_ch%vicmud
+    clyint     => gdp%gdr_i_ch%clyint    
+    sltint     => gdp%gdr_i_ch%sltint    
+    sndint     => gdp%gdr_i_ch%sndint    
     lmax       => gdp%d%lmax
     kc         => gdp%d%kc
     ndro       => gdp%d%ndro
@@ -1067,6 +1079,8 @@ subroutine gtptrs(gdp)
     kzs        = gtipnt('kzs'   , gdp)
     kzu        = gtipnt('kzu'   , gdp)
     kzv        = gtipnt('kzv'   , gdp)
+    kfushr     = gtipnt('kfushr'   , gdp)
+    kfvshr     = gtipnt('kfvshr'   , gdp)
     mnbar      = gtipnt('mnbar' , gdp)
     mnbnd      = gtipnt('MNBND' , gdp)
     mndro      = gtipnt('mndro' , gdp)
@@ -1450,6 +1464,13 @@ subroutine gtptrs(gdp)
     !
     diapl      = gtrpnt('diapl' ,gdp)
     rnpl       = gtrpnt('rnpl'  ,gdp)
+    !
+    ! Define pointers for Slurry
+    !
+    vicmud     = gtrpnt('vicmud',gdp)
+    clyint     = gtrpnt('clyint',gdp)
+    sltint     = gtrpnt('sltint',gdp)
+    sndint     = gtrpnt('sndint',gdp)
     !
     ! definition of work array pointers in include file 'ADDRESS.INC'
     !
