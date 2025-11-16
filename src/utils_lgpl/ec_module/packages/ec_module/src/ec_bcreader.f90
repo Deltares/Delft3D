@@ -111,9 +111,7 @@ contains
                               endif
        !TK_Temp: Find number of qunantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
        do nrVar = 1, size(bc%ncptr%variable_names)
-          if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) then
-             exit
-          endif
+          if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) exit
        enddo
                               
        if (bc%ncptr%variable_dimension(nrVar) == 2) then
@@ -771,7 +769,7 @@ contains
     integer(kind=8)                :: savepos    !< saved position in file, for mf_read to enabled rewinding
     real(kind=hp), dimension(1:1)  :: ec_timesteps ! to read in source time from file block
     real(kind=hp)                  :: amplitude
-    
+    integer, dimension(1)          :: nrTmp      ! Used to read vertical coordinates from his file
 
     bcPtr => fileReaderPtr%bc
 
@@ -903,9 +901,21 @@ contains
        endif
        
        !TK_Temp Use FUNC to determine whether normal or TIM3D series
+       !        First, get the vertical coordinates and store in BCPTR.VP (only for history files)
+       if (BCPtr.ncptr.ncType == 2 .and. BCPtr.FUNC == BC_FUNC_TIM3D) then
+          nrTmp(1) = BCPtr%ncptr%layervarid
+          if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,nrTmp,BCPtr%nclocndx,BCPtr%dimvector, &
+             BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr.FUNC)) then
+             call setECMessage("Read failure in file: "//trim(BCPtr%fname))
+             return
+          else
+             BCPtr%VP = values
+          endif
+       endif
+          
        if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%dimvector, &
-          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPTR.FUNC)) then
-          call setECMessage("Read failure in file: "//trim(bcPtr%fname))
+          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr.FUNC)) then
+          call setECMessage("Read failure in file: "//trim(BCPtr%fname))
           return
        else
           BCPtr%nctimndx = BCPtr%nctimndx + 1

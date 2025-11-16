@@ -154,9 +154,17 @@ contains
       success = .false.
       station_id_found = .false.
       time_found = .false.
-      
+            
       allocate (character(len=0) :: positive)
       allocate (character(len=0) :: zunits)
+      
+      ! TK_Temp, first determine old or new (his) nc file
+      !          dont lijke using file name to identify type but see no other way  
+      if (index(ncname,'_his.nc') > 0) then
+          ncptr%ncType = 2
+      else
+          ncptr%ncType = 1
+      endif
 
       ierr = nf90_open(trim(ncname), NF90_NOWRITE, ncptr%ncid)
       if (ierr /= NF90_NOERR) then
@@ -254,7 +262,9 @@ contains
          positive = ''
          zunits = ''
          
-         !TK_Temp
+         !TK_Temp: First read general information, then
+         !         only for old files, read z values 
+         !     
          if (strcmpi(trim(ncptr%variable_names(iVars)),'z') .or. strcmpi(trim(ncptr%variable_names(iVars)),'zcoordinate_c')) then 
              ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive)
              if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
@@ -264,8 +274,6 @@ contains
                 ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
                 allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
                 if (ierr /= 0) return
-                ierr = nf90_get_var(ncptr%ncid, ncptr%layervarid, ncptr%vp, (/1/), (/ncptr%nLayer/))
-                if (ierr /= NF90_NOERR) return
                 ierr = ncu_get_att(ncptr%ncid, iVars, 'units', zunits)
                 if (ierr /= NF90_NOERR) return
                 if (strcmpi(zunits, 'm')) then
@@ -280,6 +288,11 @@ contains
                 end if
              end if
          end if
+         
+         if (strcmpi(trim(ncptr%variable_names(iVars)),'z')) then
+             ierr = nf90_get_var(ncptr%ncid, ncptr%layervarid, ncptr%vp, (/1/), (/ncptr%nLayer/))
+             if (ierr /= NF90_NOERR) return
+         endif 
       end do
 
       deallocate (positive)

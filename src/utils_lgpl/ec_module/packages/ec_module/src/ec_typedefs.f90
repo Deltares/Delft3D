@@ -197,6 +197,7 @@ module m_ec_typedefs
       integer :: timedimid = -1 !< dim_id for the time coordinate
       integer :: layervarid = -1 !< var_id for the verical layer variable
       integer :: layerdimid = -1 !< dim_id for the vertical coordinate
+      integer :: ncType     = -1 !1 old, existing, nc files, 2 history file
       character(len=50) :: timeunit !< netcdf-convention time unit definition
       integer :: vptyp = -1 !< vertical coordinate type
       real(hp), allocatable, dimension(:) :: vp !< vertical coordinate (layers)
