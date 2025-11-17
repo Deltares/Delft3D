@@ -840,8 +840,6 @@ contains
       call prop_get(md_ptr, 'geometry', 'GulliesFile', md_gulliesfile, success)
       call prop_get(md_ptr, 'geometry', 'RoofsFile', md_roofsfile, success)
 
-      call prop_get(md_ptr, 'geometry', 'VertplizFile', md_vertplizfile, success)
-
       call prop_get(md_ptr, 'geometry', 'ProflocFile', md_proflocfile, success)
       call prop_get(md_ptr, 'geometry', 'ProfdefFile', md_profdeffile, success)
       call prop_get(md_ptr, 'geometry', 'ProfdefxyzFile', md_profdefxyzfile, success)
@@ -2698,7 +2696,6 @@ contains
       call prop_set(prop_ptr, 'geometry', 'PillarFile', trim(md_pillarfile), 'Polyline file *_pillar.pliz, containing four colums with x, y, diameter and Cd coefficient')
       call prop_set(prop_ptr, 'geometry', 'Gulliesfile', trim(md_gulliesfile), 'Polyline file *_gul.pliz, containing lowest bed level along talweg x, y, z level')
       call prop_set(prop_ptr, 'geometry', 'Roofsfile', trim(md_roofsfile), 'Polyline file *_rof.pliz, containing roofgutter heights x, y, z level')
-      call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type')
       call prop_set(prop_ptr, 'geometry', 'ProflocFile', trim(md_proflocfile), 'Channel profile location file *_proflocation.xyz with rows x, y, z, profile number ref')
       call prop_set(prop_ptr, 'geometry', 'ProfdefFile', trim(md_profdeffile), 'Channel profile definition file *_profdefinition.def with definition for all profile numbers')
       call prop_set(prop_ptr, 'geometry', 'ProfdefxyzFile', trim(md_profdefxyzfile), 'Channel profile definition file _profdefinition.def with definition for all profile numbers')
@@ -2873,7 +2870,7 @@ contains
       end if
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'geometry', 'Kmx', kmx, 'Maximum number of vertical layers')
-         call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: all sigma, 2: all z, 3: use VertplizFile)')
+         call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: all sigma, 2: z or z-sigma')
          call prop_set(prop_ptr, 'geometry', 'Numtopsig', Numtopsig, 'Number of sigma layers in top of z-layer model')
          if (writeall .or. janumtopsiguniform /= 1) then
             call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform', jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth)')

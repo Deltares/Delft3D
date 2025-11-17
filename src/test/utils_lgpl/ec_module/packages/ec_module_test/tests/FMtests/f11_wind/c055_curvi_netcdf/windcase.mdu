@@ -15,7 +15,6 @@ WaterLevIniFile                      =                                       # I
 LandBoundaryFile                     =                                       # Only for plotting
 ThinDamFile                          =                                       # *_thd.pli, Polyline(s) for tracing thin dams.
 FixedWeirFile                        =                                       # *_fxw.pliz, Polyline(s) x,y,z, z = fixed weir top levels (formerly fixed weir)
-VertplizFile                         =                                       # *_vlay.pliz), = pliz with x,y, Z, first Z =nr of layers, second Z = laytyp
 ProflocFile                          =                                       # *_proflocation.xyz)    x,y,z, z = profile refnumber
 ProfdefFile                          =                                       # *_profdefinition.def) definition for all profile nrs
 ProfdefxyzFile                       =                                       # *_profdefinition.def) definition for all profile nrs
