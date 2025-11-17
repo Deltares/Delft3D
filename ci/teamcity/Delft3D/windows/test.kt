@@ -85,10 +85,28 @@ object WindowsTest : BuildType({
             param("plugin.docker.imagePlatform", "")
             param("plugin.docker.imageId", "")
             param("teamcity.step.phase", "")
-            param("download_to", "./downloads")
+            param("download_to", ".")
             param("nexus_password", "%nexus_password%")
             param("nexus_url", "https://artifacts.deltares.nl/repository")
             param("plugin.docker.run.parameters", "")
+        }
+        powerShell {
+            name = "Extract artifact"
+            scriptMode = script {
+                content = """
+                    ${'$'}ErrorActionPreference = "Stop"
+
+                    ${'$'}zipName = "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip"
+
+                    ${'$'}dest = "test/deltares_testbench/data/engines/teamcity_artifacts/x64"
+
+                    Write-Host "Extracting ${'$'}zipName ..."
+
+                    Expand-Archive -Path ${'$'}zipName -DestinationPath "temp_extract"
+
+                    Copy-Item "temp_extract/x64/*" -Destination ${'$'}dest -Recurse
+                """.trimIndent()
+            }
         }
         python {
             name = "Run TestBench.py"
@@ -131,10 +149,6 @@ object WindowsTest : BuildType({
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
-            }
-            artifacts {
-                cleanDestination = true
-                artifactRules = "dimrset_x64_*.zip!/x64/**=>test/deltares_testbench/data/engines/teamcity_artifacts/x64"
             }
         }
         dependency(WindowsTestEnvironment) {
