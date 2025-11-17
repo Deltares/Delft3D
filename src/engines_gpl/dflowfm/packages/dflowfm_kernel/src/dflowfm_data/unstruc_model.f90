@@ -1746,7 +1746,6 @@ contains
 
       ! 1.02: Don't read [time] AutoTimestep (ja_timestep_auto) from MDU anymore.
       ! ibuf = 1
-      call prop_get(md_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, success)
       call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
       if (success .and. jadum /= 0) then
          call mess(LEVEL_ERROR, 'autoTimeStepDiff not supported')
