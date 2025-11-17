@@ -60,9 +60,11 @@ object Publish : BuildType({
             description = "e.g. '2.29.03' or '2025.02'", 
             display = ParameterDisplay.PROMPT)
         param("reverse.dep.*.product", "all-testbench")
+        param("is_latest_development", "false")
         param("commit_id_short", "%dep.${LinuxBuild.id}.commit_id_short%")
         param("source_image", "containers.deltares.nl/delft3d-dev/delft3d-runtime-container:alma10-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
-        param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_version%-%release_type%")
+        param("new_tag", "%release_version%-%release_type%")
+        param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%new_tag%")
     }
 
     if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
@@ -151,6 +153,32 @@ object Publish : BuildType({
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
+        python {
+            name = "Set latest development tag parameter"
+            command = module {
+                module = "ci_tools.harbor.harbor_version_checker"
+                scriptArguments = """
+                    --harbor-username "%dimrbakker_username%"
+                    --harbor-password "%dimrbakker_password%"
+                    --new-tag 
+                """.trimIndent()
+            }
+            workingDir = "ci/python"
+            environment = venv {
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
+            }
+        }
+        dockerCommand {
+            name = "Push rolling development tag"
+            commandType = push {
+                namesAndTags = """
+                    "%destination_image_specific%"
+                """.trimIndent()
+            }
+            enabled = "%is_latest_development%" == "true"
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+        }
         script {
             name = "Replace default image in run_docker.sh scripts"
             workingDir = "examples/dflowfm"
@@ -189,15 +217,15 @@ object Publish : BuildType({
             name = "Copy Apptainer packages to share"
             workingDir = "src/scripts_lgpl/singularity"
             scriptContent = """
-                tar -vczf %brand%_%release_version%-%release_type%.tar.gz \
-                    %brand%_%release_version%-%release_type%.sif \
+                tar -vczf %brand%_%new_tag%.tar.gz \
+                    %brand%_%new_tag%.sif \
                     readme.txt \
                     run_singularity.sh \
                     execute_singularity_h7.sh \
                     submit_singularity_h7.sh
                 
                 # Copy the artifact to network
-                cp -vf %brand%_%release_version%-%release_type%.tar.gz /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Singularity
+                cp -vf %brand%_%new_tag%.tar.gz /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Singularity
             """.trimIndent()
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }
