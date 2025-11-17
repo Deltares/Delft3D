@@ -601,9 +601,6 @@ contains
             write (lunhyd, '(A        )') 'z-layers-ztop multi-layerdefinition '
             write (lunhyd, '(A        )') 'z-layers-zbot multi-layerdefinition '
          end if
-         ! we do not yet know what to do with z/sigma combinations
-         write (lunhyd, '(A        )') 'z-layers-ztop mixed-layerdefinition '
-         write (lunhyd, '(A        )') 'z-layers-zbot mixed-layerdefinition '
       end if
       write (lunhyd, '(A      )') 'hydrodynamic-layers'
       do i = 1, waqpar%kmxnx
