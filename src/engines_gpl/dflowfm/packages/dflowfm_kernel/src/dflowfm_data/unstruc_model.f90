@@ -656,7 +656,7 @@ contains
       !                         dztopuniabovez, dztop, uniformhu, jahazlayer, Floorlevtoplay,         &
       !                         javakeps,                                                             &
       !                         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,  &
-      !                         Tsigma, jarhoxu,                                                      &
+      !                         jarhoxu,                                                      &
       !                         iStrchType, STRCH_UNIFORM, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
 
       use m_globalparameters, only: sl
@@ -840,8 +840,6 @@ contains
       call prop_get(md_ptr, 'geometry', 'GulliesFile', md_gulliesfile, success)
       call prop_get(md_ptr, 'geometry', 'RoofsFile', md_roofsfile, success)
 
-      call prop_get(md_ptr, 'geometry', 'VertplizFile', md_vertplizfile, success)
-
       call prop_get(md_ptr, 'geometry', 'ProflocFile', md_proflocfile, success)
       call prop_get(md_ptr, 'geometry', 'ProfdefFile', md_profdeffile, success)
       call prop_get(md_ptr, 'geometry', 'ProfdefxyzFile', md_profdefxyzfile, success)
@@ -909,12 +907,17 @@ contains
       call prop_get(md_ptr, 'geometry', 'Kmx', kmx)
       if (kmx > 0) then
          call prop_get(md_ptr, 'geometry', 'Layertype', Layertype)
-         if (Layertype /= LAYTP_SIGMA) then
+         if (Layertype == LAYTP_Z) then
             mxlayz = kmx
+         elseif (Layertype /= LAYTP_SIGMA .and. Layertype /= LAYTP_Z) then
+            write (msgbuf, '(a,i0,a)'), 'Invalid layertype ', layertype, &
+               ' specified in model definition file. Valid values are 1 (sigma-layers) or 2 (z-layers, z-sigma-layers).'
+            call err_flush()
+            istat = DFM_WRONGINPUT
          end if
 
          call prop_get(md_ptr, 'geometry', 'Numtopsig', Numtopsig, success)
-         if (success .and. numtopsig > 0 .and. layertype /= LAYTP_Z) then
+         if (success .and. numtopsig > 0 .and. layertype == LAYTP_SIGMA) then
             write (msgbuf, '(a,i0,a)'), 'The model definition file sets numtopsig to ', numtopsig, &
                ', but layertype is not 2 (z-layers or z-sigma-layers). Continuing with numtopsig = 0.'
             call warn_flush()
@@ -926,7 +929,6 @@ contains
          call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
          call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
          call prop_get(md_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay)
-         call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
          call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
          call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
          call prop_get(md_ptr, 'geometry', 'StretchType', iStrchType)
@@ -1026,7 +1028,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'EpsMaxlevm', epsmaxlevm)
       !call prop_get( md_ptr, 'numerics', 'CFLWaveFrac'     , cflw)
       call prop_get(md_ptr, 'numerics', 'AdvecType', iadvec)
-      if (Layertype > 1) then
+      if (Layertype == LAYTP_Z) then
          iadvec = 33; iadvec1D = 33
       end if
       call prop_get(md_ptr, 'numerics', 'AdvecCorrection1D2D', iadveccorr1D2D)
@@ -1244,13 +1246,13 @@ contains
       !
       ! Filter to suppress checkerboarding is also available for z-layers (so that ERROR message has been switched off)
       !
-      ! if (Layertype == 2 .and. jafilter /= 0) then
+      ! if (Layertype == LAYTP_Z .and. jafilter /= 0) then
       ! call mess(LEVEL_ERROR, 'The checkerboard-filter has not been implemented for Z-models yet', '.')
       ! endif
       !
       ! Filter to suppress checkerboarding is also available for z-layers (so that ERROR message has been switched off)
       !
-      ! if (Layertype == 2 .and. jacheckmonitor /= 0) then
+      ! if (Layertype == LAYTP_Z .and. jacheckmonitor /= 0) then
       ! call mess(LEVEL_WARN, 'The checkerboardmonitor has not been implemented for Z-models yet, is automatically switched off now.')
       ! jacheckmonitor = 0
       ! end if
@@ -2262,13 +2264,13 @@ contains
       end if
       ! Check for ocean_sigma_z in combination with numtopsig=0, then fullgridoutput=1 is the only option (UNST-5477).
       if (success) then
-         if (jafullgridoutput == 0 .and. Layertype > 1 .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
+         if (jafullgridoutput == 0 .and. Layertype == LAYTP_Z .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
             jafullgridoutput = 1
             call mess(LEVEL_WARN, 'A combination of Z- and Sigma-layers is used, but Numtopsiguniform is not 1. FullGridOutput must be set to 1.')
             call warn_flush()
          end if
       else
-         if (Layertype > 1 .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
+         if (Layertype == LAYTP_Z .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
             jafullgridoutput = 1
          end if
       end if
@@ -2601,7 +2603,7 @@ contains
       use m_flow ! ,                !  only : kmx, layertype, mxlayz, sigmagrowthfactor, numtopsig, &
       !         Iturbulencemodel, spirbeta, dztopuniabovez, dztop, jahazlayer, Floorlevtoplay ,  &
       !         fixedweirtopwidth, fixedweirtopfrictcoef, fixedweirtalud, ifxedweirfrictscheme,         &
-      !         Tsigma, jarhoxu, iStrchType, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
+      !         jarhoxu, iStrchType, STRCH_USER, STRCH_EXPONENT, STRCH_FIXLEVEL, laycof
       use m_flowgeom ! ,              only : wu1Duni, Bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
@@ -2694,7 +2696,6 @@ contains
       call prop_set(prop_ptr, 'geometry', 'PillarFile', trim(md_pillarfile), 'Polyline file *_pillar.pliz, containing four colums with x, y, diameter and Cd coefficient')
       call prop_set(prop_ptr, 'geometry', 'Gulliesfile', trim(md_gulliesfile), 'Polyline file *_gul.pliz, containing lowest bed level along talweg x, y, z level')
       call prop_set(prop_ptr, 'geometry', 'Roofsfile', trim(md_roofsfile), 'Polyline file *_rof.pliz, containing roofgutter heights x, y, z level')
-      call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type')
       call prop_set(prop_ptr, 'geometry', 'ProflocFile', trim(md_proflocfile), 'Channel profile location file *_proflocation.xyz with rows x, y, z, profile number ref')
       call prop_set(prop_ptr, 'geometry', 'ProfdefFile', trim(md_profdeffile), 'Channel profile definition file *_profdefinition.def with definition for all profile numbers')
       call prop_set(prop_ptr, 'geometry', 'ProfdefxyzFile', trim(md_profdefxyzfile), 'Channel profile definition file _profdefinition.def with definition for all profile numbers')
@@ -2869,7 +2870,7 @@ contains
       end if
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'geometry', 'Kmx', kmx, 'Maximum number of vertical layers')
-         call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: all sigma, 2: all z, 3: use VertplizFile)')
+         call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: all sigma, 2: z or z-sigma')
          call prop_set(prop_ptr, 'geometry', 'Numtopsig', Numtopsig, 'Number of sigma layers in top of z-layer model')
          if (writeall .or. janumtopsiguniform /= 1) then
             call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform', jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth)')
@@ -2905,9 +2906,6 @@ contains
          if (writeall .or. dztopuniabovez /= dmiss) then
             call prop_set(prop_ptr, 'geometry', 'Dztopuniabovez', Dztopuniabovez, 'Above this level layers will have uniform Dztop, below we use SigmaGrowthFactor')
          end if
-         if (Tsigma /= 100.0_dp) then
-            call prop_set(prop_ptr, 'geometry', 'Tsigma', Tsigma, 'Sigma Adaptation period for Layertype==4 (s)')
-         end if
 
          if (writeall .or. keepzlayeringatbed /= 2) then
             call prop_set(prop_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, '0:possibly very thin layer at bed, 1:bedlayerthickness == zlayerthickness, 2=equal thickness first two layers')
@@ -2925,7 +2923,7 @@ contains
             call prop_set(prop_ptr, 'geometry', 'ihuzcsig', ihuzcsig, 'if keepzlayeringatbed>=2 : 1,2,3=av,mx,mn of Leftsig,Rightsig,4=uniform')
          end if
 
-         if (writeall .or. jaZlayeratubybob /= 0 .and. layertype /= 1) then
+         if (writeall .or. jaZlayeratubybob /= 0 .and. layertype == LAYTP_Z) then
             call prop_set(prop_ptr, 'geometry', 'Zlayeratubybob', JaZlayeratubybob, 'Lowest connected cells governed by bob instead of by bL L/R')
          end if
       end if
@@ -3023,7 +3021,7 @@ contains
       if (jarhoxu /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Jarhoxu', Jarhoxu, 'Include density gradient in advection term (0: no(strongly advised), 1: yes, 2: Also in barotropic and baroclinic pressure term)')
       end if
-      if (writeall .or. (jahazlayer /= 0 .and. layertype /= 1)) then
+      if (writeall .or. (jahazlayer /= 0 .and. layertype == LAYTP_Z)) then
          call prop_set(prop_ptr, 'numerics', 'Horadvtypzlayer', Jahazlayer, 'Horizontal advection treatment of z-layers (1: default, 2: sigma-like)')
       end if
 

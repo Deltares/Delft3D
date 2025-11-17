@@ -44,7 +44,7 @@ contains
    subroutine setinitialverticalprofile(target_array, ndkx, filename)
       use precision, only: dp
       use m_flowgeom, only: ndxi
-      use m_flow, only: zws, layertype, keepzlayeringatbed, zslay, kmxx
+      use m_flow, only: zws, layertype, LAYTP_Z, keepzlayeringatbed, zslay, kmxx
       use m_polygon, only: xpl, ypl, npl, savepol, restorepol
       use m_reapol, only: reapol
       use m_get_kbot_ktop, only: getkbotktop
@@ -69,7 +69,7 @@ contains
             z_center(k - kb + 1) = 0.5_dp * (zws(k) + zws(k - 1))
          end do
          ktx = kt - kb + 1
-         if (layertype == 2 .and. keepzlayeringatbed /= 1 .and. rhointerfaces /= BAROC_ORIGINAL) then
+         if (layertype == LAYTP_Z .and. keepzlayeringatbed /= 1 .and. rhointerfaces /= BAROC_ORIGINAL) then
             call getzlayerindices(n, nlayb, nrlay)
             z_center(1) = 0.5_dp * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
             if (kt > kb .and. keepzlayeringatbed == 2) then

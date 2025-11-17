@@ -17,7 +17,6 @@ LandBoundaryFile                  =                     # Land boundaries file *
 ThinDamFile                       =                     # Polyline file *_thd.pli, containing thin dams
 FixedWeirFile                     =                     # Polyline file *_fxw.pliz, containing fixed weirs with rows x, y, crest level, left ground level, right ground level
 Gulliesfile                       =                     # Polyline file *_gul.pliz, containing lowest bed level along talweg x, y, z level
-VertplizFile                      =                     # Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type
 ProflocFile                       =                     # Channel profile location file *_proflocation.xyz with rows x, y, z, profile number ref
 ProfdefFile                       =                     # Channel profile definition file *_profdefinition.def with definition for all profile numbers
 ProfdefxyzFile                    =                     # Channel profile definition file _profdefinition.def with definition for all profile numbers
