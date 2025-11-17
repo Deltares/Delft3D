@@ -2860,7 +2860,7 @@ contains
                   call ecProviderSearchStdOrVarnames(fileReaderPtr, j, varid, ncvarnames=coord_names, ignore_case=.true.)
                   if (varid < 0) then
                      call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                       //"' coordinates variable '"//trim(coord_names(2))//"' referenced but not found.'")
+                                       //"' coordinates variable '"//trim(coord_names(2))//"' referenced but not found.")
                   else
                      if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'projection_x_coordinate')) then
@@ -2886,11 +2886,11 @@ contains
          if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                 //"' requires ''projection_x_coordinate'' and ''projection_y_coordinate''.")
+                                 //"' requires 'projection_x_coordinate' and 'projection_y_coordinate'.")
             end if
             if (instancePtr%coordsystem == EC_COORDS_SFERIC) then
                call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                 //"' either requires ''latitude'' and ''longitude'' or ''grid_latitude'' and ''grid_longitude''.")
+                                 //"' either requires 'latitude' and 'longitude' or 'grid_latitude' and 'grid_longitude'.")
             end if
             return
          end if
