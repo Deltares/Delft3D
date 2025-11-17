@@ -8,9 +8,9 @@ import jetbrains.buildServer.configs.kotlin.triggers.schedule
 import Delft3D.template.*
 import Delft3D.step.*
 
-object WindowsTestEnvironment : BuildType({
-
-    description = "Test-environment container image to test our Delf3D software in."
+object WindowsBuildTools : BuildType({
+    name = "Build tools"
+    description = "Build-environment container image to build our Delf3D software in."
 
     templates(
         TemplateMergeRequest,
@@ -19,12 +19,12 @@ object WindowsTestEnvironment : BuildType({
         TemplateDockerRegistry
     )
 
-    name = "Delft3D test environment container"
+    name = "Delft3D build environment intel 2025 container"
     buildNumberPattern = "%build.vcs.number%"
 
     params {
         param("trigger.type", "")
-        param("container.tag", "test-environment")
+        param("container.tag", "vs2022-intel2025")
     }
 
     vcs {
@@ -37,31 +37,34 @@ object WindowsTestEnvironment : BuildType({
         powerShell {
             name = "Get tooling from network share"
             platform = PowerShellStep.Platform.x64
+            workingDir = "ci/dockerfiles/windows"
             scriptMode = script {
-                content = """                    
+                content = """
+                    # Define the source directory
+                    ${'$'}sourceDir = "\\directory.intra\project\d-hydro\dsc-tools\toolchain2025"
+                    
                     # Get the current working directory
-                    ${'$'}destinationDir = "ci\\dockerfiles\\windows"
+                    ${'$'}destinationDir = Get-Location
                     
                     # Copy the files from the source to the destination
-                    Copy-Item -Path "\\directory.intra\project\d-hydro\dsc-tools\toolchain2024\python-3.12.7-amd64.exe" -Destination ${'$'}destinationDir
-                    Copy-Item -Path "test\\deltares_testbench\\pip\\win-requirements.txt" -Destination ${'$'}destinationDir
+                    Copy-Item -Path ${'$'}sourceDir\* -Destination ${'$'}destinationDir -Recurse
 
                     # List all the files in the destination directory
-                    Get-ChildItem -Path ${'$'}destinationDir
+                    Get-ChildItem -Path ${'$'}destinationDir -Recurse
                 """.trimIndent()
             }
         }
         dockerCommand {
-            name = "Docker build dhydro test-environment container"
+            name = "Docker build dhydro"
             commandType = build {
                 source = file {
-                    path = "ci/dockerfiles/windows/Dockerfile-dhydro-test-environment"
+                    path = "ci/dockerfiles/windows/buildtools.Dockerfile"
                 }
                 contextDir = "ci/dockerfiles/windows"
                 platform = DockerCommandStep.ImagePlatform.Windows
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%
-                    containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%build.vcs.number%
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%-%container.tag%
                 """.trimIndent()
                 commandArgs = "--no-cache"
             }
@@ -70,7 +73,7 @@ object WindowsTestEnvironment : BuildType({
             name = "Docker push commithash"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%build.vcs.number%
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%-%container.tag%
                 """.trimIndent()
             }
         }
@@ -78,7 +81,7 @@ object WindowsTestEnvironment : BuildType({
             name = "Docker push container tag"
             commandType = push {
                 namesAndTags = """
-                    containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                 """.trimIndent()
             }
             enabled = "%trigger.type%" == "vcs"

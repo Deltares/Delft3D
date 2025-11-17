@@ -12,7 +12,7 @@ contains
 end module version_module
    
    
-module bmi
+module dimr_test_bmi
   use iso_c_binding
   implicit none
   integer(c_int), BIND(C, name="MAXSTRLEN") :: MAXSTRLEN = 1024
@@ -219,5 +219,5 @@ contains
     string_to_char_array(length+1) = C_NULL_CHAR
    end function string_to_char_array
 
-end module bmi
+end module dimr_test_bmi
 

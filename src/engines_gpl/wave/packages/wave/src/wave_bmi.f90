@@ -1,4 +1,4 @@
-module bmi
+module wave_bmi
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -456,4 +456,4 @@ end function string_to_char_array
 
 
 
-end module bmi
+end module wave_bmi

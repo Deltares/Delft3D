@@ -32,7 +32,7 @@ object WindowsBuild : BuildType({
 
     params {
         param("intel_fortran_compiler", "ifx")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "f1be3f5e8eb4e77c136b4a6e46144806ebdf4fde-vs2022-intel2025")
         param("generator", """"Visual Studio 17 2022"""")
         param("enable_code_coverage_flag", "OFF")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
@@ -76,6 +76,10 @@ object WindowsBuild : BuildType({
             name = "Build"
             scriptContent = """
                 call C:/set-env-vs2022.cmd
+                mpiexec -version
+                where mpiexec
+                ifx -version
+                where ifx
                 cmake ./src/cmake -G %generator% -T fortran=%intel_fortran_compiler% -D CMAKE_BUILD_TYPE=%build_type% -D CONFIGURATION_TYPE:STRING=%product% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install -D ENABLE_CODE_COVERAGE=%enable_code_coverage_flag%
                 cmake --build ./build_%product% -j --target install --config %build_type%
 
