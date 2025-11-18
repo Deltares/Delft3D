@@ -58,6 +58,7 @@
    writetable           = true
    MapWriteNetCDF       = true
    NetCDFSinglePrecision= false
+   AppendCOM            = true
 [Domain]
    Grid                 = f34.grd
    FlowBedLevel         = 2
