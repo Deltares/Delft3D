@@ -45,6 +45,9 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     use precision
     use morphology_data_module, only: sedtra_type, sedpar_type, trapar_type, morpar_type
     use bedcomposition_module, only: getfrac, bedcomp_data
+    use m_compdiam, only: compdiam
+    use m_comphidexp, only: comphidexp
+    use m_compsandfrac, only: compsandfrac
     !
     implicit none
     !
@@ -91,6 +94,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     real(fp)                               , pointer :: mwwjhe
     real(fp)             , dimension(:)    , pointer :: rhosol
     real(fp)             , dimension(:)    , pointer :: sedd50
+    logical                                , pointer :: spatial_d50
     real(fp)             , dimension(:)    , pointer :: sedd50fld
     real(fp)             , dimension(:)    , pointer :: taucr
     real(fp)             , dimension(:)    , pointer :: tetacr
@@ -118,6 +122,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     rhosol    => sedpar%rhosol
     sedtyp    => sedpar%sedtyp
     sedd50    => sedpar%sedd50
+    spatial_d50 => sedpar%spatial_d50
     sedd50fld => sedpar%sedd50fld
     xx        => morpar%xx
     factcr    => morpar%factcr
@@ -184,7 +189,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                 & logsedsig ,nseddia   ,logseddia ,nmmax     ,nmlb      , &
                 & nmub      ,xx        ,nxx       ,sedpar%max_mud_sedtyp, sedpar%min_dxx_sedtyp, &
-                & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
+                & spatial_d50, sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
     !
     ! Determine hiding & exposure factors
     !
@@ -197,7 +202,7 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     endif
     !
     call compsandfrac(frac, sedd50, nmmax, lsedtot, sedtyp, &
-                    & sedpar%max_mud_sedtyp, sandfrac, sedd50fld, &
+                    & sedpar%max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
                     & nmlb, nmub)  
 end subroutine initsedtra
 
