@@ -111,7 +111,7 @@ contains
 
    subroutine register_flow_nodes_with_precice(flow_vertex_ids)
       use precice, only: precicef_set_vertices, precicef_set_mesh_triangles, precicef_requires_mesh_connectivity_for
-      use m_flowgeom, only: xz, yz, ndx
+      use m_flowgeom, only: xz, yz, ndxi
       implicit none(type, external)
 
       integer(kind=c_int), dimension(:), allocatable, intent(out) :: flow_vertex_ids
@@ -128,18 +128,18 @@ contains
       real(kind=c_double) :: dummy_trisize
       integer(kind=c_int) :: num_triangles, jatri, is_required, i
 
-      x_coordinates = xz(1:ndx)
-      y_coordinates = yz(1:ndx)
+      x_coordinates = xz(1:ndxi)
+      y_coordinates = yz(1:ndxi)
 
-      allocate (mesh_coordinates(2 * ndx))
-      do i = 1, ndx
+      allocate (mesh_coordinates(2 * ndxi))
+      do i = 1, ndxi
          mesh_coordinates(2 * i - 1) = x_coordinates(i)
          mesh_coordinates(2 * i) = y_coordinates(i)
       end do
 
-      allocate (flow_vertex_ids(ndx))
-      call precicef_set_vertices(mesh_name, ndx, mesh_coordinates, flow_vertex_ids, len(mesh_name))
-      print *, '[FM] Registered ', ndx, ' vertices with preCICE'
+      allocate (flow_vertex_ids(ndxi))
+      call precicef_set_vertices(mesh_name, ndxi, mesh_coordinates, flow_vertex_ids, len(mesh_name))
+      print *, '[FM] Registered ', ndxi, ' vertices with preCICE'
 
       call precicef_requires_mesh_connectivity_for(mesh_name, is_required, len(mesh_name))
 
@@ -152,7 +152,7 @@ contains
 
       ! Allocate arrays for triangulation output
       ! Maximum possible triangles for n points is approximately 2*n
-      num_triangles = 2 * ndx
+      num_triangles = 2 * ndxi
       allocate (triangle_nodes(3 * num_triangles))
 
       dummy_ns3 = 0
@@ -160,7 +160,7 @@ contains
 
       ! Call tricall with jatri=1 for Delaunay triangulation
       jatri = 1
-      call tricall(jatri, x_coordinates, y_coordinates, ndx, &
+      call tricall(jatri, x_coordinates, y_coordinates, ndxi, &
                    triangle_nodes, num_triangles, dummy_edge_nodes, dummy_num_edges, &
                    dummy_triangle_edges, dummy_xs3, dummy_ys3, dummy_ns3, dummy_trisize)
 
@@ -168,7 +168,7 @@ contains
          print *, '[FM] Error in triangulation'
          return
       else
-         print *, '[FM] Successfully generated ', num_triangles, ' triangles for ', ndx, ' nodes'
+         print *, '[FM] Successfully generated ', num_triangles, ' triangles for ', ndxi, ' nodes'
       end if
 
       allocate (precice_triangle_nodes(3 * num_triangles))
