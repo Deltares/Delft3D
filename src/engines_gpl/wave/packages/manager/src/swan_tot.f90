@@ -47,7 +47,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_
    use m_deletehotfile
    use m_get_flow_fields, only: get_flow_fields
    use write_swan_datafile, only: write_swan_file
-   use m_precice_state_t, only: precice_state_t
+   use m_wave_precice_state_t, only: wave_precice_state_t
    use, intrinsic :: iso_c_binding, only: c_int
    !
    implicit none
@@ -58,7 +58,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_
    integer, intent(in) :: n_swan_grids
    type(wave_data_type) :: wavedata
    integer, intent(in) :: selectedtime ! <=0: no time selected, >0: only compute for swan_run%timwav(selectedtime)
-   type(precice_state_t), intent(in) :: precice_state
+   type(wave_precice_state_t), intent(in) :: precice_state
 !
 ! Local variables
 !

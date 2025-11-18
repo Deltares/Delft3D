@@ -9990,7 +9990,19 @@ contains
          itim = 1
          firststep(iid) = .true.
       elseif (jaseparate_ == 2) then
-         itim = 1
+         ! For COM file: query current time dimension size to append instead of overwrite
+         ! First, ensure we have the correct dimension ID
+         ierr = nf90_inq_dimid(imapfile, 'time', id_timedim(iid))
+         if (ierr == nf90_noerr) then
+            ierr = nf90_inquire_dimension(imapfile, id_timedim(iid), len=itim)
+            if (ierr == nf90_noerr .and. itim > 0) then
+               itim = itim + 1  ! Append to next time slice
+            else
+               itim = 1  ! First time slice
+            end if
+         else
+            itim = 1  ! First time slice (dimension not found)
+         end if
       else
          it_map = it_map + 1
          itim = it_map ! Increment time dimension index
