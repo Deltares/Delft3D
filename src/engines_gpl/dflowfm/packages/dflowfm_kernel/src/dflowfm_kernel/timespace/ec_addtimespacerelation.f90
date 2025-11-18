@@ -807,7 +807,7 @@ contains
          end if
          if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_charnock)
          if (success) success = ecAddItemConnection(ecInstancePtr, item_charnock, connectionId)
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'friction_coefficient'
          else
