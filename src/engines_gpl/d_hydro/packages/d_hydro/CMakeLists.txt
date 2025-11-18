@@ -19,7 +19,6 @@ set(public_include_path ${d_hydro_lib_include_path})
 
 message(STATUS "Configuring '${executable_name}' with the following d_hydro_lib include path: '${d_hydro_lib_include_path}'")
 message(STATUS "Configuring '${executable_name}' with the following deltares_common_c include path: '${deltares_common_c_include_path}'")
-message(STATUS "Configuring '${executable_name}' with the following getopt include path: '${getopt_include_path}'")
 
 # Set version file variables
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
