@@ -58,11 +58,13 @@ contains
          do kk = 1, ndx
             call getkbotktop(kk, kb, kt)
             do k = kb, kt
-               ucmago(k) = sqrt(ucxi(k)**2 + ucyi(k)**2) ! TODO: this does not include vertical/w-component now.
+               if (k <= N) then
+                  ucmago(k) = sqrt(ucxi(k)**2 + ucyi(k)**2) ! TODO: this does not include vertical/w-component now.
+               end if
             end do
          end do
       else
-         do kk = 1, ndx
+         do kk = 1, N
             ucmago(kk) = sqrt(ucxi(kk)**2 + ucyi(kk)**2)
          end do
       end if

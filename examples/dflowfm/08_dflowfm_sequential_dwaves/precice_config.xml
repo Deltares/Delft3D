@@ -12,11 +12,88 @@
   <data:scalar name="com_data_fm_to_wave" />
   <data:scalar name="com_data_wave_to_fm" />
 
+  <data:scalar name="hs" />
+  <data:scalar name="dir" />
+  <data:scalar name="dirc" />
+  <data:scalar name="dirs" />
+  <data:scalar name="period" />
+  <data:scalar name="depth" />
+  <data:scalar name="fx" />
+  <data:scalar name="fy" />
+  <data:scalar name="wsbodyu" />
+  <data:scalar name="wsbodyv" />
+  <data:scalar name="mx" />
+  <data:scalar name="my" />
+  <data:scalar name="dissip1" />
+  <data:scalar name="dissip2" />
+  <data:scalar name="dissip3" />
+  <data:scalar name="dissip4" />
+  <data:scalar name="ubot" />
+  <data:scalar name="steep" />
+  <data:scalar name="wlen" />
+  <data:scalar name="u" />
+  <data:scalar name="v" />
+  <data:scalar name="dspr" />
+  <data:scalar name="rleak" />
+  <data:scalar name="qb" />
+  <data:scalar name="x" />
+  <data:scalar name="y" />
+  <data:scalar name="rtp" />
+  <data:scalar name="hrms" />
+  <data:scalar name="tp" />
+  <data:scalar name="pdir" />
+  <data:scalar name="windu" />
+  <data:scalar name="windv" />
+  <data:scalar name="tps" />
+  <data:scalar name="tm02" />
+  <data:scalar name="tmm10" />
+  <data:scalar name="dhsign" />
+  <data:scalar name="drtm01" />
+  <data:scalar name="setup" />
+
   <mesh name="fm_flow_nodes" dimensions="2">
     <use-data name="bed_levels" />
     <use-data name="water_levels" />
     <use-data name="flow_velocity" />
     <use-data name="wind_velocity" />
+    <use-data name="hs" />
+    <use-data name="dir" />
+    <use-data name="dirc" />
+    <use-data name="dirs" />
+    <use-data name="period" />
+    <use-data name="depth" />
+    <use-data name="fx" />
+    <use-data name="fy" />
+    <use-data name="wsbodyu" />
+    <use-data name="wsbodyv" />
+    <use-data name="mx" />
+    <use-data name="my" />
+    <use-data name="dissip1" />
+    <use-data name="dissip2" />
+    <use-data name="dissip3" />
+    <use-data name="dissip4" />
+    <use-data name="ubot" />
+    <use-data name="steep" />
+    <use-data name="wlen" />
+    <use-data name="u" />
+    <use-data name="v" />
+    <use-data name="dspr" />
+    <use-data name="rleak" />
+    <use-data name="qb" />
+    <use-data name="x" />
+    <use-data name="y" />
+    <use-data name="rtp" />
+    <use-data name="hrms" />
+    <use-data name="tp" />
+    <use-data name="pdir" />
+    <use-data name="windu" />
+    <use-data name="windv" />
+    <use-data name="tps" />
+    <use-data name="tm02" />
+    <use-data name="tmm10" />
+    <use-data name="dhsign" />
+    <use-data name="drtm01" />
+    <use-data name="setup" />
   </mesh>
 
   <mesh name="com_mesh" dimensions="2">
@@ -29,14 +106,92 @@
     <use-data name="water_levels" />
     <use-data name="flow_velocity" />
     <use-data name="wind_velocity" />
+    <use-data name="hs" />
+    <use-data name="dir" />
+    <use-data name="dirc" />
+    <use-data name="dirs" />
+    <use-data name="period" />
+    <use-data name="depth" />
+    <use-data name="fx" />
+    <use-data name="fy" />
+    <use-data name="wsbodyu" />
+    <use-data name="wsbodyv" />
+    <use-data name="mx" />
+    <use-data name="my" />
+    <use-data name="dissip1" />
+    <use-data name="dissip2" />
+    <use-data name="dissip3" />
+    <use-data name="dissip4" />
+    <use-data name="ubot" />
+    <use-data name="steep" />
+    <use-data name="wlen" />
+    <use-data name="u" />
+    <use-data name="v" />
+    <use-data name="dspr" />
+    <use-data name="rleak" />
+    <use-data name="qb" />
+    <use-data name="x" />
+    <use-data name="y" />
+    <use-data name="rtp" />
+    <use-data name="hrms" />
+    <use-data name="tp" />
+    <use-data name="pdir" />
+    <use-data name="windu" />
+    <use-data name="windv" />
+    <use-data name="tps" />
+    <use-data name="tm02" />
+    <use-data name="tmm10" />
+    <use-data name="dhsign" />
+    <use-data name="drtm01" />
+    <use-data name="setup" />
   </mesh>
 
   <participant name="fm">
     <provide-mesh name="fm_flow_nodes" />
+    <receive-mesh name="wave_nodes" from="wave" />
     <write-data name="bed_levels" mesh="fm_flow_nodes" />
     <write-data name="water_levels" mesh="fm_flow_nodes" />
     <write-data name="flow_velocity" mesh="fm_flow_nodes" />
     <write-data name="wind_velocity" mesh="fm_flow_nodes" />
+    <read-data name="hs" mesh="fm_flow_nodes" />
+    <read-data name="dir" mesh="fm_flow_nodes" />
+    <read-data name="dirc" mesh="fm_flow_nodes" />
+    <read-data name="dirs" mesh="fm_flow_nodes" />
+    <read-data name="period" mesh="fm_flow_nodes" />
+    <read-data name="depth" mesh="fm_flow_nodes" />
+    <read-data name="fx" mesh="fm_flow_nodes" />
+    <read-data name="fy" mesh="fm_flow_nodes" />
+    <read-data name="wsbodyu" mesh="fm_flow_nodes" />
+    <read-data name="wsbodyv" mesh="fm_flow_nodes" />
+    <read-data name="mx" mesh="fm_flow_nodes" />
+    <read-data name="my" mesh="fm_flow_nodes" />
+    <read-data name="dissip1" mesh="fm_flow_nodes" />
+    <read-data name="dissip2" mesh="fm_flow_nodes" />
+    <read-data name="dissip3" mesh="fm_flow_nodes" />
+    <read-data name="dissip4" mesh="fm_flow_nodes" />
+    <read-data name="ubot" mesh="fm_flow_nodes" />
+    <read-data name="steep" mesh="fm_flow_nodes" />
+    <read-data name="wlen" mesh="fm_flow_nodes" />
+    <read-data name="u" mesh="fm_flow_nodes" />
+    <read-data name="v" mesh="fm_flow_nodes" />
+    <read-data name="dspr" mesh="fm_flow_nodes" />
+    <read-data name="rleak" mesh="fm_flow_nodes" />
+    <read-data name="qb" mesh="fm_flow_nodes" />
+    <read-data name="x" mesh="fm_flow_nodes" />
+    <read-data name="y" mesh="fm_flow_nodes" />
+    <read-data name="rtp" mesh="fm_flow_nodes" />
+    <read-data name="hrms" mesh="fm_flow_nodes" />
+    <read-data name="tp" mesh="fm_flow_nodes" />
+    <read-data name="pdir" mesh="fm_flow_nodes" />
+    <read-data name="windu" mesh="fm_flow_nodes" />
+    <read-data name="windv" mesh="fm_flow_nodes" />
+    <read-data name="tps" mesh="fm_flow_nodes" />
+    <read-data name="tm02" mesh="fm_flow_nodes" />
+    <read-data name="tmm10" mesh="fm_flow_nodes" />
+    <read-data name="dhsign" mesh="fm_flow_nodes" />
+    <read-data name="drtm01" mesh="fm_flow_nodes" />
+    <read-data name="setup" mesh="fm_flow_nodes" />
+    <mapping:linear-cell-interpolation direction="read" from="wave_nodes" to="fm_flow_nodes" constraint="consistent" />
     <provide-mesh name="com_mesh" />
     <write-data name="com_data_fm_to_wave" mesh="com_mesh" />
     <read-data name="com_data_wave_to_fm" mesh="com_mesh" />
@@ -50,6 +205,44 @@
     <read-data name="water_levels" mesh="wave_nodes" />
     <read-data name="flow_velocity" mesh="wave_nodes" />
     <read-data name="wind_velocity" mesh="wave_nodes" />
+    <write-data name="hs" mesh="wave_nodes" />
+    <write-data name="dir" mesh="wave_nodes" />
+    <write-data name="dirc" mesh="wave_nodes" />
+    <write-data name="dirs" mesh="wave_nodes" />
+    <write-data name="period" mesh="wave_nodes" />
+    <write-data name="depth" mesh="wave_nodes" />
+    <write-data name="fx" mesh="wave_nodes" />
+    <write-data name="fy" mesh="wave_nodes" />
+    <write-data name="wsbodyu" mesh="wave_nodes" />
+    <write-data name="wsbodyv" mesh="wave_nodes" />
+    <write-data name="mx" mesh="wave_nodes" />
+    <write-data name="my" mesh="wave_nodes" />
+    <write-data name="dissip1" mesh="wave_nodes" />
+    <write-data name="dissip2" mesh="wave_nodes" />
+    <write-data name="dissip3" mesh="wave_nodes" />
+    <write-data name="dissip4" mesh="wave_nodes" />
+    <write-data name="ubot" mesh="wave_nodes" />
+    <write-data name="steep" mesh="wave_nodes" />
+    <write-data name="wlen" mesh="wave_nodes" />
+    <write-data name="u" mesh="wave_nodes" />
+    <write-data name="v" mesh="wave_nodes" />
+    <write-data name="dspr" mesh="wave_nodes" />
+    <write-data name="rleak" mesh="wave_nodes" />
+    <write-data name="qb" mesh="wave_nodes" />
+    <write-data name="x" mesh="wave_nodes" />
+    <write-data name="y" mesh="wave_nodes" />
+    <write-data name="rtp" mesh="wave_nodes" />
+    <write-data name="hrms" mesh="wave_nodes" />
+    <write-data name="tp" mesh="wave_nodes" />
+    <write-data name="pdir" mesh="wave_nodes" />
+    <write-data name="windu" mesh="wave_nodes" />
+    <write-data name="windv" mesh="wave_nodes" />
+    <write-data name="tps" mesh="wave_nodes" />
+    <write-data name="tm02" mesh="wave_nodes" />
+    <write-data name="tmm10" mesh="wave_nodes" />
+    <write-data name="dhsign" mesh="wave_nodes" />
+    <write-data name="drtm01" mesh="wave_nodes" />
+    <write-data name="setup" mesh="wave_nodes" />
     <mapping:linear-cell-interpolation direction="read" from="fm_flow_nodes" to="wave_nodes" constraint="consistent" />
     <receive-mesh name="com_mesh" from="fm" />
     <read-data name="com_data_fm_to_wave" mesh="com_mesh" />
@@ -67,6 +260,44 @@
     <exchange data="water_levels" mesh="fm_flow_nodes" from="fm" to="wave" initialize="true" />
     <exchange data="flow_velocity" mesh="fm_flow_nodes" from="fm" to="wave" initialize="true" />
     <exchange data="wind_velocity" mesh="fm_flow_nodes" from="fm" to="wave" initialize="true" />
+    <exchange data="hs" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="dir" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="dirc" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="dirs" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="period" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="depth" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="fx" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="fy" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="wsbodyu" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="wsbodyv" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="mx" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="my" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="dissip1" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="dissip2" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="dissip3" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="dissip4" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="ubot" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="steep" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="wlen" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="u" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="v" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="dspr" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="rleak" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="qb" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="x" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="y" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="rtp" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="hrms" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="tp" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="pdir" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="windu" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="windv" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="tps" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="tm02" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="tmm10" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="dhsign" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="drtm01" mesh="wave_nodes" from="wave" to="fm" />
+    <exchange data="setup" mesh="wave_nodes" from="wave" to="fm" />
     <exchange data="com_data_fm_to_wave" mesh="com_mesh" from="fm" to="wave" />
     <exchange data="com_data_wave_to_fm" mesh="com_mesh" from="wave" to="fm" />
   </coupling-scheme:serial-explicit>

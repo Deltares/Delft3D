@@ -280,7 +280,7 @@ contains
       use m_get_ucx_ucy_eul_mag, only: getucxucyeulmag
       use m_fm_precice_state_t, only: fm_precice_state_t
       use precice, only: precicef_write_data
-      use m_flow, only: ndkx
+      use m_flow, only: kmx
       use messagehandling, only: err
       implicit none(type, external)
 
@@ -292,7 +292,7 @@ contains
       ! n_points equals ndx (the number of flow nodes in 2D) but the velocity vector has ndkx elements (3D nodes)
       ! We do not support 3D FM models through preCICE, check and exit if it does contain one
       n_points = size(precice_state%flow_vertex_ids)
-      if (n_points /= ndkx) then
+      if (kmx > 0) then
          call err('[FM] Error: preCICE coupling only supports 2D FM models. Current model contains 3D nodes.')
       end if
       allocate(flow_velocity_vector(n_points * 2))
@@ -522,16 +522,15 @@ contains
       use messagehandling, only: warn_flush
       use unstruc_display
       use unstruc_model
-      use m_fm_precice_state_t, only: fm_precice_state_t
+      use m_fm_precice_state_t, only: fm_precice_state_t, global_fm_precice_state
       integer :: jastop
-      type(fm_precice_state_t) :: precice_state
 
       iresult = DFM_NOERR
       call mess(LEVEL_INFO, 'Start of the computation time loop')
-      iresult = flowinit(precice_state)
+      iresult = flowinit(global_fm_precice_state)
       jastop = 0
       do while (time_user < tstop_user .and. jastop == 0 .and. iresult == DFM_NOERR) ! time loop
-         call flowstep(jastop, iresult, precice_state)
+         call flowstep(jastop, iresult, global_fm_precice_state)
       end do
       if (iresult /= DFM_NOERR) then
          call mess(LEVEL_WARN, 'Error during computation time loop. Details follow:')

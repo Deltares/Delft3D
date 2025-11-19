@@ -247,7 +247,7 @@ contains
 
       character(kind=c_char), intent(in) :: c_config_file(MAXSTRLEN)
       character(len=strlen(c_config_file)) :: config_file
-      type(fm_precice_state_t) :: precice_state
+      type(fm_precice_state_t) :: precice_state !< dummy
 
       ! Extra local variables
       integer :: inerr ! number of the initialisation error

@@ -60,11 +60,15 @@ contains
             do L = Lb, Lt
                if (ustokes(L) /= 0.0_dp) then ! link flows
                   k1 = ln(1, L)
+                  if (k1 <= N) then
+                     ucxeu(k1) = ucxeu(k1) - wcx1(LL) * ustokes(L)
+                     ucyeu(k1) = ucyeu(k1) - wcy1(LL) * ustokes(L)
+                  end if
                   k2 = ln(2, L)
-                  ucxeu(k1) = ucxeu(k1) - wcx1(LL) * ustokes(L)
-                  ucyeu(k1) = ucyeu(k1) - wcy1(LL) * ustokes(L)
-                  ucxeu(k2) = ucxeu(k2) - wcx2(LL) * ustokes(L)
-                  ucyeu(k2) = ucyeu(k2) - wcy2(LL) * ustokes(L)
+                  if (k2 <= N) then
+                     ucxeu(k2) = ucxeu(k2) - wcx2(LL) * ustokes(L)
+                     ucyeu(k2) = ucyeu(k2) - wcy2(LL) * ustokes(L)
+                  end if
                end if
             end do
          end do

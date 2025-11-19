@@ -16,6 +16,19 @@ module m_fm_precice_state_t
       character(kind=c_char, len=19) :: vegetation_diameter_name = "vegetation_diameter"
       character(kind=c_char, len=17) :: vegetation_height_name = "vegetation_height"
       integer(kind=c_int), dimension(:), allocatable :: flow_vertex_ids
+      character(kind=c_char, len=2) :: fx_name = "fx"
+      character(kind=c_char, len=2) :: fy_name = "fy"
+      character(kind=c_char, len=7) :: wsbodyu_name = "wsbodyu"
+      character(kind=c_char, len=7) :: wsbodyv_name = "wsbodyv"
+      character(kind=c_char, len=2) :: mx_name = "mx"
+      character(kind=c_char, len=2) :: my_name = "my"
+      character(kind=c_char, len=7) :: dissip2_name = "dissip2" ! dsurf
+      character(kind=c_char, len=7) :: dissip3_name = "dissip3" ! dwcap
+      character(kind=c_char, len=4) :: ubot_name = "ubot"
+      character(kind=c_char, len=4) :: hrms_name = "hrms"
+      character(kind=c_char, len=2) :: tp_name = "tp"
+      character(kind=c_char, len=4) :: pdir_name = "pdir"
 #endif
    end type fm_precice_state_t
+   type(fm_precice_state_t), public :: global_fm_precice_state
 end module m_fm_precice_state_t

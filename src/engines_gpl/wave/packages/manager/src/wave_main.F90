@@ -203,8 +203,8 @@ contains
       call precicef_set_vertices(precice_state%swan_mesh_name, active_count, mesh_coordinates, precice_state%vertex_ids, len(precice_state%swan_mesh_name))
       write (*, '(a,i0,a)') '[Wave] Registered ', active_count, ' vertices with preCICE'
 
-      ! TODO: Triangulation
-      ! Allocate temproray buffer, at most we have two triangles per node.
+      ! Do Triangulation
+      ! Allocate temporary buffer, at most we have two triangles per node.
       allocate (triangle_nodes(2 * active_count * 3))
       num_triangles = 0
       do j = 1, swan_grid%nmax - 1

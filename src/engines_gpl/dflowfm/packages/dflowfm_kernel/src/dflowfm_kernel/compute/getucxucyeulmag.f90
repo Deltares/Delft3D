@@ -40,19 +40,19 @@ contains
 !! Centralized routine for multiple uses in output files.
    subroutine getucxucyeulmag(N, ucxeulg, ucyeulg, ucmago, jaeulervel, jaucmag)
       use precision, only: dp
-      use m_flow, only: ndkx, ucx, ucy
+      use m_flow, only: ucx, ucy
       use m_flowparameters, only: jawave, flowWithoutWaves
 
       integer, intent(in) :: N !< Length of cell arrays (probably ndkx)
-      real(kind=dp), intent(out) :: ucxeulg(N) !< Target array in which to store x-velocities.
-      real(kind=dp), intent(out) :: ucyeulg(N) !< Target array in which to store y-velocities.
-      real(kind=dp), intent(out) :: ucmago(N) !< Target array in which to store velocity magnitudes. May be undefined when jaucmag==0.
+      real(kind=dp), intent(inout) :: ucxeulg(:) !< Target array in which to store x-velocities.
+      real(kind=dp), intent(inout) :: ucyeulg(:) !< Target array in which to store y-velocities.
+      real(kind=dp), intent(inout) :: ucmago(:) !< Target array in which to store velocity magnitudes. May be undefined when jaucmag==0.
       integer, intent(in) :: jaeulervel !< Whether or not (1/0) to compute Eulerian velocities (i.e., substract Stokes drift)
       integer, intent(in) :: jaucmag !< Whether or not (1/0) to compute velocity magnitudes.
 
       ! Copy ucx/ucy to ucxeulg/ucyeulg
       ! They will optionally be transformed into Eulerian velocities
-      ucxeulg(1:ndkx) = ucx(1:ndkx); ucyeulg(1:ndkx) = ucy(1:ndkx)
+      ucxeulg(1:N) = ucx(1:N); ucyeulg(1:N) = ucy(1:N)
 
       ! Transform uxy/ucy into Eulerian velocities
       if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flowWithoutWaves) then
