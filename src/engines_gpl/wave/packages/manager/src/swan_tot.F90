@@ -37,6 +37,14 @@ subroutine write_swan_field_to_precice(my_field_data, my_field_name, my_swan_gri
       end do
    end do
 
+   ! Sanity check.
+   if (size(precice_state%vertex_ids) < num_nodes) then
+      print *, "[Wave] Warning: Number of nodes is larger than the mesh! "
+      print *, "       ", num_nodes, " > ", size(precice_state%vertex_ids)
+      print *, "[Wave] Writing only the nodes that will fit."
+      num_nodes = size(precice_state%vertex_ids)
+   end if
+
    ! Write it onto our mesh
    call precicef_write_data(precice_state%swan_mesh_name, my_field_name, num_nodes, precice_state%vertex_ids, data_values, len(precice_state%swan_mesh_name), len(my_field_name))
 
