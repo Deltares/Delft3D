@@ -1,0 +1,6 @@
+[core]
+    remote = storage
+    autostage = true
+['remote "storage"']
+    url = s3://dvc-test/test-dvc-testbench
+    endpointurl = https://s3.deltares.nl
