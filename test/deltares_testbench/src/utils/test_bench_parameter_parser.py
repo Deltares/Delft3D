@@ -41,6 +41,7 @@ class TestBenchParameterParser:
         settings.test_bench_startup_dir = os.getcwd()
 
         settings.server_base_url = cls.__get_argument_value("server_base_url", args) or ""
+        settings.use_dvc = cls.__get_argument_value("use_dvc", args) or False
         settings.override_paths = args.__dict__["or_paths"]
 
         # Loglevel from config.xml can be overruled by loglevel from arguments
@@ -223,6 +224,14 @@ class TestBenchParameterParser:
             default="https://s3.deltares.nl/dsc-testbench",
             required=False,
             dest="server_base_url",
+        )
+        parser.add_argument(
+            "--DVC",
+            help="Use *.dvc files for downloads from DVC repositories.",
+            action="store_true",
+            default=False,
+            required=False,
+            dest="use_dvc",
         )
         parser.add_argument(
             "--username",

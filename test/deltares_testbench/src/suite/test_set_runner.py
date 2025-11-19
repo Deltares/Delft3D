@@ -613,6 +613,9 @@ class TestSetRunner(ABC):
         elif location_type == PathType.DEPENDENCY:
             location_description = "dependency"
 
+        if self.settings.use_dvc:
+            remote_path = local_path + ".dvc"
+
         if location_type in self.skip_download:
             logger.info(f"Skipping {location_description} download (skip download argument)")
             return
