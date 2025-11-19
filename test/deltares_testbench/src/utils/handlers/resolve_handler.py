@@ -41,12 +41,12 @@ class ResolveHandler(ABC):
             r"^\\(\\)?[A-Za-z0-9]+|^\/\/[A-Za-z0-9]+", path
         ):  # assume network path starts with either [//] or [\\]
             return HandlerType.NET
+        elif path.endswith(".dvc"):
+            return HandlerType.DVC
         elif re.search(r"[A-Za-z]{1}\:\\|^\/{1}[A-Za-z0-9]|\.\.", path):  # assume local path handler [X:\] or [/]
             return HandlerType.PATH
         elif re.search(r"^ftp(s)?://", path):
             return HandlerType.FTP
-        elif re.match(r"^https://s3.deltares.nl/dvc-test/test-dvc-verschillenanalyse", path):
-            return HandlerType.DVC
         elif re.match(r"^https://minio", path) or re.match(r"^https://s3.deltares.nl", path):
             return HandlerType.MINIO
         else:

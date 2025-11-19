@@ -3,7 +3,12 @@
 Copyright (C)  Stichting Deltares, 2025
 """
 
+import os
 from typing import Optional
+
+import yaml
+from dvc.dvcfile import load_file
+from dvc.repo import Repo
 
 from src.config.credentials import Credentials
 from src.utils.handlers.i_handler import IHandler
@@ -23,22 +28,76 @@ class DVCHandler(IHandler):
         Parameters
         ----------
         from_path : str
-            DVC URL.
+            dvc file path.
         to_path : str
-            Download location.
+            Depricated: use to_path as the location of the .dvc file.
         credentials : Credentials
-            DVC credentials.
+            DVC credentials (used for remote storage access).
         version : str
-            MD5 hash string.
+            Not used for DVC, version is already in md5 hash of the .dvc file.
         logger : ILogger
             The logger that logs to a file.
         """
-        logger.info(f"Starting DVC download from: {from_path}")
-        logger.info(f"Download destination: {to_path}")
-        if version:
-            logger.info(f"Version (MD5 hash): {version}")
-        logger.info(f"Using credentials: {credentials.name}")
+        self._download_with_dvc_pull(from_path, logger)
 
-        # TODO: Implement actual DVC download logic
-        logger.warning("DVC download method is not yet implemented")
+    def _download_with_dvc_pull(
+        self, dvc_file: str, logger: ILogger
+    ) -> None:
+        """Download using DVC by reading the .dvc file and fetching from remote.
+
+        Parameters
+        ----------
+        dvc_file : str
+            Path to the .dvc file (e.g., "data/cases/e02_f002_c100.dvc").
+        logger : ILogger
+            Logger instance.
+        """
+        try:
+            logger.debug(f"Downloading DVC directory with file: {dvc_file}")
+
+            # Check if .dvc file exists
+            if not os.path.isfile(dvc_file):
+                raise FileNotFoundError(f"DVC file not found: {dvc_file}")
+
+            # Open the DVC repository
+            repo_root = self._find_dvc_root(dvc_file)
+            repo = Repo(repo_root)
+
+            dvcfile = load_file(repo, dvc_file)
+
+            # Fetch and checkout the data
+            for stage in dvcfile.stages.values():
+                repo.fetch(targets=[stage.addressing])
+
+            for stage in dvcfile.stages.values():
+                repo.checkout(targets=[stage.addressing], force=True)
+
+            logger.info(f"Downloading DVC directory complete: {dvc_file}")
+
+        except FileNotFoundError as e:
+            logger.error(f"File not found: {str(e)}")
+            raise
+        except Exception as e:
+            logger.error(f"Error during DVC pull: {str(e)}")
+            raise
+
+    def _find_dvc_root(self, path: str) -> str:
+        """Find the DVC repository root by looking for .dvc directory.
+
+        Parameters
+        ----------
+        path : str
+            Starting path to search from.
+
+        Returns
+        -------
+        str
+            Path to the DVC repository root.
+        """
+        current = os.path.dirname(os.path.abspath(path))
+        while current != '/':
+            if os.path.isdir(os.path.join(current, '.dvc')):
+                return current
+            current = os.path.dirname(current)
+        raise ValueError("Could not find DVC repository root (.dvc directory)")
 

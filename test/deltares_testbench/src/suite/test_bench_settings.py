@@ -37,6 +37,7 @@ class TestBenchSettings:
     test_bench_script_name: Optional[str] = None
     test_bench_startup_dir: Optional[str] = None
     server_base_url: str = ""
+    use_dvc: bool = False
     override_paths: str = ""
     skip_post_processing: bool = False
 
