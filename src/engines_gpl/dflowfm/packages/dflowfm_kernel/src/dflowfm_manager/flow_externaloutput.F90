@@ -51,7 +51,6 @@ contains
  !! written interval.
    subroutine flow_externaloutput(tim) ! give signals etc, write map, his etc
       use m_wrirst, only: wrirst
-      use m_wricom, only: wricom
       use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
       use m_unc_write_shp, only: unc_write_shp
       use m_flowtimes
@@ -85,7 +84,6 @@ contains
 
       real(kind=dp), intent(in) :: tim !< Current time, should in fact be time1, since all writers use s1, q1, etc.
       real(kind=dp) :: time_map_mpt
-      real(dp) :: time_com_ctv
       real(kind=dp) :: runtime
       real(kind=dp) :: tem_dif
 
@@ -203,41 +201,6 @@ contains
          end if
       end if
       call timstop(handle_extra(78))
-
-      ! Write com file
-      if (jawave == WAVE_SWAN_ONLINE) then
-         !
-         if (ti_com /= dt_user .or. ti_ctv(1) > 0) then
-            !
-            if (comparereal(tim, time_com, eps10) >= 0) then
-               !
-               call wricom(tim)
-               !call mess(LEVEL_INFO,'com file written at t=', tim)
-               !
-               ! Update next com write instant
-               if (comparereal(time_com, ti_come, eps10) == 0) then
-                  time_com = tstop_user + 1
-               else
-                  tem_dif = (tim - ti_coms) / ti_com
-                  if (isnan(tem_dif)) tem_dif = 0.0_hp
-                  time_com = max(ti_coms + (floor(tem_dif + 0.001_dp) + 1) * ti_com, ti_coms)
-                  ti_ctv_rel = ti_ctv - tim
-                  time_com_ctv = tim + minval(ti_ctv_rel, mask=ti_ctv_rel > 0)
-                  if (comparereal(time_com, time_com_ctv, eps10) == 1 .and. comparereal(tim, time_com_ctv, eps10) == -1) then
-                     time_com = time_com_ctv
-                  end if
-                  !
-                  if (comparereal(time_com, ti_come, eps10) == 1) then
-                     ! next time_com would be beyond end of com-window, write one last comfile exactly at that end.
-                     time_com = ti_come
-                  end if
-               end if
-            end if ! time_com
-         else
-            call wricom(tim) ! legacy behaviour, write at dt_user
-            !call mess(LEVEL_INFO,'com file written at t=', tim)
-         end if ! ti_com
-      end if ! jawave
 
       if (ti_xls > 0) then
          if (tim >= time_xls) then

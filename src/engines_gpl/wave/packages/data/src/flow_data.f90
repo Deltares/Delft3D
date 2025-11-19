@@ -177,51 +177,5 @@ subroutine deallocate_flow_data ()
       deallocate (mudids, stat=ierr)
    endif
 end subroutine deallocate_flow_data
-!
-!
-!===============================================================================
-function checkcomfiles(basename) result(numDomains)
-   !
-   ! Return
-   integer :: numDomains
-   !
-   ! Parameters
-   character(*), intent(in) :: basename
-   !
-   ! Locals
-   integer :: partitionlocation
-   integer :: retval
-   logical :: ex
-   character(300) :: filnam
-   !
-   ! Body
-   retval = 0
-   inquire (file = trim(basename), exist = ex)
-   if (ex) then
-      retval = 1
-   else
-      partitionlocation = index(basename, '_com.nc')
-      if (partitionlocation == 0) then
-          call wavestop(1, 'The NetCDF com file specified does not contain the substring "_com.nc"')
-      endif
-      do
-         write(filnam,'(a,a,i4.4,a)') basename(:partitionlocation-1), '_', retval, trim(basename(partitionlocation:))
-         inquire (file = trim(filnam), exist = ex)
-         if (ex) then
-            ! Found an existing com-file
-            retval = retval + 1
-         else
-            ! Not an existing com-file (anymore)
-            exit
-         endif
-      enddo
-      if (retval == 0) then
-          write(*,'(2a)') '*** ERROR: File does not exist:', trim(basename)
-          write(*,'(2a)') '           And partition variant does not exist:', trim(filnam)
-          call wavestop(1, 'No com-file to connect to')
-      endif
-   endif
-   numDomains = retval
-end function checkcomfiles
 
 end module flow_data

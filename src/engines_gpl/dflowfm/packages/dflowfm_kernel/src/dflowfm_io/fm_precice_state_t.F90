@@ -1,11 +1,8 @@
 module m_fm_precice_state_t
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    use, intrinsic :: iso_c_binding, only: c_int, c_char
-#endif
    implicit none(type, external)
    private
    type, public :: fm_precice_state_t
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
       character(kind=c_char, len=2) :: component_name = "fm"
       character(kind=c_char, len=13) :: mesh_name = "fm_flow_nodes"
       character(kind=c_char, len=10) :: bed_levels_name = "bed_levels"
@@ -28,7 +25,6 @@ module m_fm_precice_state_t
       character(kind=c_char, len=4) :: hrms_name = "hrms"
       character(kind=c_char, len=2) :: tp_name = "tp"
       character(kind=c_char, len=4) :: pdir_name = "pdir"
-#endif
    end type fm_precice_state_t
    type(fm_precice_state_t), public :: global_fm_precice_state
 end module m_fm_precice_state_t

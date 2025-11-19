@@ -95,9 +95,6 @@ module m_flowtimes
    real(kind=dp) :: ti_wav !< averaging interval spatial wave quantities (s)
    real(kind=dp) :: ti_wavs !< averaging interval spatial wave quantities
    real(kind=dp) :: ti_wave !< averaging interval spatial wave quantities
-   real(kind=dp) :: ti_com !< com file interval (s)
-   real(kind=dp) :: ti_coms !< Start of com file output period (as assigned in mdu-file) (s)
-   real(kind=dp) :: ti_come !< End   of com file output period (as assigned in mdu-file) (s)
    real(kind=dp) :: ti_sed !< averaging interval sedmor quantities (s)
    real(kind=dp) :: ti_seds !< averaging interval sedmor quantities
    real(kind=dp) :: ti_sede !< averaging interval sedmor quantities
@@ -130,14 +127,11 @@ module m_flowtimes
    character(len=1) :: ti_split_unit !< Unit for time splitting interval: Y: years, M: months, D: days, h:hours, m: minutes, s: seconds.
    real(kind=dp), allocatable :: ti_mpt(:) !< times for writing map-files (s), possibly non-equidistant in time
    real(kind=dp), allocatable :: ti_mpt_rel(:) !< times for writing map-files (s) relative to current time, possibly non-equidistant in time
-   real(kind=dp), allocatable :: ti_ctv(:) !< times for writing com-files (s), possibly non-equidistant in time
-   real(kind=dp), allocatable :: ti_ctv_rel(:) !< times for writing com-files (s) relative to current time, possibly non-equidistant in time
    real(kind=dp) :: tmini !< Initial time for updating map/his/rst
 
    real(kind=dp) :: time_choice !< Time consisting the next time_user / time_map
    real(kind=dp) :: time_out !< Next time for output in the most general sense (map, his, etc.)
    real(kind=dp) :: time_map !< Map output interval
-   real(kind=dp) :: time_com !< Com output interval
    real(kind=dp) :: time_wav !< Time-avg'd output interval xb JRE
    real(kind=dp) :: time_sed !< Time-avg'd output interval sedmor
    real(kind=dp) :: time_st !< Time-avg'd output interval sedtrails
@@ -240,9 +234,6 @@ contains
       ti_his = 120.0_dp !< history interval (s)
       ti_hiss = 0.0_dp !< Start history output (s)
       ti_hise = 0.0_dp !< End   history output (s)
-      ti_com = dt_user !< com interval (s)
-      ti_coms = 0.0_dp !< Start com output (s)
-      ti_come = 0.0_dp !< End com output (s)
       ti_sed = 0.0_dp !< Time-avg'd output interval sedmor (s), (Default: off)
       ti_seds = 0.0_dp !< Start time-avg'd output sedmor (s)
       ti_sede = 0.0_dp !< End   time-avg'd output sedmor (s)

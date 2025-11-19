@@ -50,11 +50,9 @@ module wave_main
    public wave_main_init
    public wave_main_step
    public wave_main_finish
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    public :: initialize_fm_coupling
    public :: is_fm_coupling_ongoing
    public :: advance_fm_time_window
-#endif
 
    public wavedata
 !
@@ -114,7 +112,6 @@ contains
    end subroutine couple_to_greeter_dummy
 #endif
 
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine initialize_fm_coupling(mdw_file_name, precice_state)
       use precice, only: precicef_create, precicef_initialize
       use m_wave_precice_state_t, only: wave_precice_state_t
@@ -359,7 +356,6 @@ contains
 
       write (*, '(a,i0,a,i0,a)') '[Wave] Swan grid dimensions: mmax=', swan_grid%mmax, ', nmax=', swan_grid%nmax
    end function get_swan_grid
-#endif
 !
 ! ====================================================================================
 function wave_main_init(mode_in, mdw_file) result(retval)
@@ -873,9 +869,7 @@ function wave_main_finish() result(retval)
       retval = 0
    endif
 
-#if defined(HAS_PRECICE_WAVE_GREETER_COUPLING) || defined(HAS_PRECICE_FM_WAVE_COUPLING)
    call precicef_finalize()
-#endif
 end function wave_main_finish
 
 

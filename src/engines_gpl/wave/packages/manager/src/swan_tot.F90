@@ -4,7 +4,6 @@ module m_swan_tot
    public :: swan_tot
    contains
 
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
 ! write a single field to our mesh
 subroutine write_swan_field_to_precice(my_field_data, my_field_name, my_swan_grid, precice_state)
    use precision
@@ -103,7 +102,6 @@ subroutine write_swan_data_to_precice(my_swan_output_fields, my_swan_grid, preci
    call write_swan_field_to_precice(my_swan_output_fields%setup, precice_state%setup_name, my_swan_grid, precice_state)
    !
 end subroutine write_swan_data_to_precice
-#endif
 
 subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_state)
 !----- GPL ---------------------------------------------------------------------
@@ -518,15 +516,9 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime, precice_
                                & swan_input_fields%ice_frac, swan_input_fields%floe_dia, &
                                & swan_output_fields%hs)
          end if
-         !
-         !! Added precice writing here.
-         !
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
          if (i_swan == 1) then
             call write_swan_data_to_precice(swan_output_fields, swan_grids(i_swan), precice_state)
          end if
-         !
-#endif
          if (swan_run%swwav) then
             !
             ! For each com-file (flow domain)

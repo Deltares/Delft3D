@@ -53,8 +53,6 @@ set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FO
 # Set Fortran module files location (needed for dependency bubbling on Linux)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
 
-option(HAS_PRECICE_FM_WAVE_COUPLING "Couple FM to Wave using PreCICE" OFF)
-
 # MPI
 set(OSS_MPI "IntelMPI" CACHE STRING "MPI library is IntelMPI")
 

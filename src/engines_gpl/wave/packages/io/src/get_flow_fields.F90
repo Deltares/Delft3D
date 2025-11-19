@@ -119,23 +119,7 @@ contains
                       & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
                       & iprint)
          else
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
             call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%bed_levels_name, sif%dps)
-#else
-            !
-            ! Read depth from netcdf-file
-            !
-            call get_var_netcdf(i_flow, wavedata%time, 'dps', &
-                               & fif%dps, fif%mmax, fif%nmax, &
-                               & sr%flowgridfile, wavedata%output%lastvalidflowfield)
-            !
-            ! Map depth to SWAN grid, using ESMF_Regrid weights
-            !
-            call grmap_esmf(i_flow, fif%dps, fif%npts, &
-                           & sif%dps, sif%mmax, sif%nmax, &
-                           & f2s, sg)
-            !
-#endif
          end if
       end if
       !
@@ -159,22 +143,7 @@ contains
                       & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
                       & iprint)
          else
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
             call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%water_levels_name, sif%s1)
-#else
-            !
-            ! Read water level from netcdf-file
-            !
-            call get_var_netcdf(i_flow, wavedata%time, 's1', &
-                               & fif%s1, fif%mmax, fif%nmax, &
-                               & sr%flowgridfile, wavedata%output%lastvalidflowfield)
-            !
-            ! Map water level to SWAN grid, using ESMF_Regrid weights
-            !
-            call grmap_esmf(i_flow, fif%s1, fif%npts, &
-                           & sif%s1, sif%mmax, sif%nmax, &
-                           & f2s, sg)
-#endif
          end if
       end if
       !
@@ -206,37 +175,7 @@ contains
                       & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
                       & iprint)
          else
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%flow_velocity_name, sif%u1, sif%v1)
-#else
-            !
-            ! Read velocity components from netcdf-file
-            !
-            if (fg%kmax == 1) then
-               call get_var_netcdf(i_flow, wavedata%time, 'u1', &
-                                  & fif%u1, fif%mmax, fif%nmax, &
-                                  & sr%flowgridfile, wavedata%output%lastvalidflowfield)
-               call get_var_netcdf(i_flow, wavedata%time, 'v1', &
-                                  & fif%v1, fif%mmax, fif%nmax, &
-                                  & sr%flowgridfile, wavedata%output%lastvalidflowfield)
-            else
-               call get_var_netcdf(i_flow, wavedata%time, 'u1', &
-                                  & fif%u1, fif%mmax, fif%nmax, &
-                                  & sr%flowgridfile, wavedata%output%lastvalidflowfield, fg%kmax, flowVelocityType)
-               call get_var_netcdf(i_flow, wavedata%time, 'v1', &
-                                  & fif%u1, fif%mmax, fif%nmax, &
-                                  & sr%flowgridfile, wavedata%output%lastvalidflowfield, fg%kmax, flowVelocityType)
-            end if
-            !
-            ! Map velocity components to SWAN grid, using ESMF_Regrid weights
-            !
-            call grmap_esmf(i_flow, fif%u1, fif%npts, &
-                           & sif%u1, sif%mmax, sif%nmax, &
-                           & f2s, sg)
-            call grmap_esmf(i_flow, fif%v1, fif%npts, &
-                           & sif%v1, sif%mmax, sif%nmax, &
-                           & f2s, sg)
-#endif
+            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%flow_velocity_name, sif%u1, sif%v1)
          end if
       end if
       !
@@ -260,28 +199,7 @@ contains
                       & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
                       & iprint)
          else
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
-         call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%wind_velocity_name, sif%windu, sif%windv)
-#else
-            !
-            ! Read wind components from netcdf-file
-            !
-            call get_var_netcdf(i_flow, wavedata%time, 'windx', &
-                               & fif%windu, fif%mmax, fif%nmax, &
-                               & sr%flowgridfile, wavedata%output%lastvalidflowfield)
-            call get_var_netcdf(i_flow, wavedata%time, 'windy', &
-                               & fif%windv, fif%mmax, fif%nmax, &
-                               & sr%flowgridfile, wavedata%output%lastvalidflowfield)
-            !
-            ! Map wind components to SWAN grid, using ESMF_Regrid weights
-            !
-            call grmap_esmf(i_flow, fif%windu, fif%npts, &
-                           & sif%windu, sif%mmax, sif%nmax, &
-                           & f2s, sg)
-            call grmap_esmf(i_flow, fif%windv, fif%npts, &
-                           & sif%windv, sif%mmax, sif%nmax, &
-                           & f2s, sg)
-#endif
+            call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%wind_velocity_name, sif%windu, sif%windv)
          end if
       end if
       !
@@ -293,36 +211,9 @@ contains
             write (*, '(a)') "ERROR: trying to read vegetation from Delft3D4-FLOW com-file. Not implemented yet."
             call wavestop(1, "ERROR: trying to read vegetation from Delft3D4-FLOW com-file. Not implemented yet.")
          else
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
             call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_stem_density_name, sif%veg)
             call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_diameter_name, sif%diaveg)
             call precice_read_data(sg%kcs, sif%mmax, sif%nmax, precice_state, precice_state%vegetation_height_name, sif%veg_stemheight)
-#else
-            !
-            ! Read vegetation parameters from netcdf-file
-            !
-            call get_var_netcdf(i_flow, wavedata%time, 'rnveg', &
-                               & fif%veg, fif%mmax, fif%nmax, &
-                               & sr%flowgridfile, wavedata%output%lastvalidflowfield)
-            call get_var_netcdf(i_flow, wavedata%time, 'diaveg', &
-                               & fif%diaveg, fif%mmax, fif%nmax, &
-                               & sr%flowgridfile, wavedata%output%lastvalidflowfield)
-            call get_var_netcdf(i_flow, wavedata%time, 'veg_stemheight', &
-                               & fif%veg_stemheight, fif%mmax, fif%nmax, &
-                               & sr%flowgridfile, wavedata%output%lastvalidflowfield)
-            !
-            ! Map vegetation components to SWAN grid, using ESMF_Regrid weights
-            !
-            call grmap_esmf(i_flow, fif%veg, fif%npts, &
-                           & sif%veg, sif%mmax, sif%nmax, &
-                           & f2s, sg)
-            call grmap_esmf(i_flow, fif%diaveg, fif%npts, &
-                           & sif%diaveg, sif%mmax, sif%nmax, &
-                           & f2s, sg)
-            call grmap_esmf(i_flow, fif%veg_stemheight, fif%npts, &
-                           & sif%veg_stemheight, sif%mmax, sif%nmax, &
-                           & f2s, sg)
-#endif
             ! It seems that SWAN only accepts constant values for diaveg and veg_stemheight
             !
             maxval = -1.0e10
@@ -384,7 +275,6 @@ contains
       call dealloc_input_fields(fif, wavedata%mode)
    end subroutine get_flow_fields
 
-#if defined(HAS_PRECICE_FM_WAVE_COUPLING)
    subroutine precice_read_data(swan_grid_mask, m_max, n_max, precice_state, field_name, output_field_x, output_field_y)
       use, intrinsic :: iso_c_binding, only: c_double, c_int
       use precision, only: sp
@@ -430,5 +320,4 @@ contains
          end do
       end do
    end subroutine precice_read_data
-#endif
 end module m_get_flow_fields

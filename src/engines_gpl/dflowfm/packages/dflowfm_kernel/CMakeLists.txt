@@ -159,18 +159,7 @@ target_link_libraries(${library_name} PRIVATE
                       spherepack
 )
 
-#add preCICE
-if(HAS_PRECICE_FM_WAVE_COUPLING)
-    target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_FM_WAVE_COUPLING)
-endif()
-
-if(HAS_PRECICE_FM_GREETER_COUPLING)
-    target_compile_definitions(${library_name} PRIVATE HAS_PRECICE_FM_GREETER_COUPLING)
-endif()
-
-if(HAS_PRECICE_FM_WAVE_COUPLING OR HAS_PRECICE_FM_GREETER_COUPLING)
-    target_link_libraries(${library_name} PRIVATE precice_fortran)
-endif()
+target_link_libraries(${library_name} PRIVATE precice_fortran)
 
 # Add dependencies
 if (UNIX)

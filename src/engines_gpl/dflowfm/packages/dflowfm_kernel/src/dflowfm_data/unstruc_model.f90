@@ -195,7 +195,6 @@ module unstruc_model
    integer :: md_mthtrach = 1 !< Area averaging method, 1: Nikuradse k based, 2: Chezy C based (parallel and serial)
 
    character(len=255) :: md_mptfile = ' ' !< File (.mpt) containing fixed map output times w.r.t. RefDate (in TUnit)
-   character(len=255) :: md_ctvfile = ' ' !< File (.ctv) containing fixed com output times w.r.t. RefDate (in TUnit)
 
 ! calibration factor
    character(len=256) :: md_cldfile = ' ' !< File containing calibration definitions
@@ -723,7 +722,7 @@ contains
       integer :: ibuf, ifil
       integer :: i, n, iostat, readerr, ierror
       integer :: jadum
-      real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
+      real(hp) :: ti_rst_array(3), ti_map_array(3), ti_his_array(3), ti_wav_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3)
       character(len=200), dimension(:), allocatable :: fnames
       real(kind=dp) :: tim
       real(kind=dp) :: sumlaycof
@@ -1890,21 +1889,6 @@ contains
       call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
       call check_time_interval(ti_maps, ti_map, ti_mape, dt_user, 'MapInterval', tstart_user)
 
-      if (jawave == WAVE_SWAN_ONLINE) then
-         ti_com_array = 0.0_hp
-         ti_com = dt_user !< defaults to backward compatible behaviour
-         call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
-         call getOutputTimeArrays(ti_com_array, ti_coms, ti_com, ti_come, success)
-         call check_time_interval(ti_coms, ti_com, ti_come, dt_user, 'ComInterval', tstart_user)
-         !
-         call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
-         if (success) then
-            ti_com = huge(0.0_hp)
-         end if
-         call set_output_time_vector(md_ctvfile, ti_ctv, ti_ctv_rel)
-
-      end if
-
       call prop_get(md_ptr, 'output', 'MapFormat', md_mapformat, success)
       if (md_mapformat == IFORMAT_TECPLOT) then
          call mess(LEVEL_ERROR, 'MapFormat = 2 (Tecplot) is no longer supported. Please use MapFormat=4 (UGRID).')
@@ -2646,7 +2630,7 @@ contains
       character(len=128) :: helptxt
       character(len=256) :: tmpstr
       integer :: i, ibuf, fww
-      real(kind=hp) :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3), ti_com_array(3)
+      real(kind=hp) :: ti_map_array(3), ti_rst_array(3), ti_his_array(3), ti_waq_array(3), ti_classmap_array(3), ti_st_array(3)
 
       istat = 0 ! Success
 
@@ -3770,11 +3754,6 @@ contains
       ti_map_array(2) = ti_maps
       ti_map_array(3) = ti_mape
       call prop_set(prop_ptr, 'output', 'MapInterval', ti_map_array, 'Map times (s), interval, starttime, stoptime (s), if starttime, stoptime are left blank, use whole simulation period')
-
-      ti_com_array(1) = ti_com
-      ti_com_array(2) = ti_coms
-      ti_com_array(3) = ti_come
-      call prop_set(prop_ptr, 'output', 'ComInterval', ti_com_array, 'Communication times (s), interval, starttime, stoptime (s), if starttime, stoptime are left blank, use whole simulation period')
 
       ti_rst_array(1) = ti_rst
       ti_rst_array(2) = ti_rsts
