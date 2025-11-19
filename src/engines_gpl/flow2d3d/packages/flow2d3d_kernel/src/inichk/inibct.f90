@@ -220,7 +220,7 @@ subroutine inibct(lundia    ,error     ,runid     , &
           call flhnew(lunbct    ,lundia    ,error     ,record(:lrec - 1)    ,access    , &
                     & irecrd    ,nambnd(ito)          ,cntent    ,dumchr    ,itdate    , &
                     & timscl    ,ntimrd    ,parnam    ,npara     ,nparrd    , &
-                    & bubble    ,gdp       )
+                    & bubble    ,''        ,gdp       )
           if (error) then
              exit
           endif

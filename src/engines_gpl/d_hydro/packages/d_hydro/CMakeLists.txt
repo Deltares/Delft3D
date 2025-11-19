@@ -11,13 +11,9 @@ get_module_include_path(${checkout_src_root}/${d_hydro_lib_module}
 get_module_include_path(${checkout_src_root}/${deltares_common_c_module} 
                         ${executable_name}
                         deltares_common_c_include_path)
-get_module_include_path(${checkout_src_root}/${getopt_module} 
-                        ${executable_name}
-                        getopt_include_path)
 
 message(STATUS "Configuring '${executable_name}' with the following d_hydro_lib include path: '${d_hydro_lib_include_path}'")
 message(STATUS "Configuring '${executable_name}' with the following deltares_common_c include path: '${deltares_common_c_include_path}'")
-message(STATUS "Configuring '${executable_name}' with the following getopt include path: '${getopt_include_path}'")
 
 # Set version file variables
 set(absolute_header_path "${CMAKE_CURRENT_SOURCE_DIR}/${header_path}") 
