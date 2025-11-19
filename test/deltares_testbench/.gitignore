@@ -1,5 +1,7 @@
 /logs/**
 /data/**
+# Allow DVC tracking files
+!/data/**/*.dvc
 
 # python virtual environment and caches
 .venv
