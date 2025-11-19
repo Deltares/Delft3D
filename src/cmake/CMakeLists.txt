@@ -418,3 +418,6 @@ endif()
 if(UNIX)
     add_subdirectory(${checkout_src_root}/${install_all_module} install_all)
 endif()
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt    DESTINATION share)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-3.txt    DESTINATION share)
