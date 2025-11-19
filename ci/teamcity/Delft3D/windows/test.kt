@@ -78,7 +78,7 @@ object WindowsTest : BuildType({
         python {
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
-            workingDir = "test/deltares_testbench/"
+            workingDir = "C:\\deltares_testbench"
             command = file {
                 filename = "TestBench.py"
                 scriptArguments = """
