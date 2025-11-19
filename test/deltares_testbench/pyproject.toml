@@ -13,7 +13,7 @@ description = """\
     functionality.\
 """
 authors = [
-    {name = "Team Black Ops", email = "blackops@deltares.nl"},  # Main point of contact.
+    { name = "Team Black Ops", email = "black-ops@deltares.nl" }, # Main point of contact.
     {name = "Hidde Elzinga"},
     {name = "Adri Mourits"},
     {name = "Jan Mooiman"},
@@ -31,6 +31,7 @@ dependencies = [
     "matplotlib >=3.7,<3.9",
     "numpy ~= 1.24",
     "minio ~= 7.2",
+    "dvc ~= 3.0",
     "s3-path-wrangler ~= 0.5",
     "pyreadline3 ~= 3.5.4 ; platform_system == 'Windows'"
 ]
