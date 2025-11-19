@@ -55,6 +55,7 @@ class DVCHandler(IHandler):
         try:
             logger.debug(f"Downloading DVC directory with file: {dvc_file}")
 
+
             # Check if .dvc file exists
             if not os.path.isfile(dvc_file):
                 raise FileNotFoundError(f"DVC file not found: {dvc_file}")
