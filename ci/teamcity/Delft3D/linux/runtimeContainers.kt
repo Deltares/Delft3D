@@ -58,6 +58,20 @@ object LinuxRuntimeContainers : BuildType({
             param("nexus_url", "https://artifacts.deltares.nl/repository")
             param("plugin.docker.run.parameters", "")
         }
+        script {
+            name = "Extract artifact"
+            scriptContent = """
+                echo "Extracting dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz..."
+
+                tar -xzf dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz
+
+                cp -R lnx64/bin/. dimrset/bin/.
+
+                cp -R lnx64/lib/. dimrset/lib/.
+
+                cp -R lnx64/share/. dimrset/share/.
+            """.trimIndent()
+        }
         exec {
             name = "Copy example and readme.txt"
             path = "ci/teamcity/Delft3D/linux/scripts/copyExampleAndReadMe.sh"
@@ -116,14 +130,6 @@ object LinuxRuntimeContainers : BuildType({
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
-            }
-
-            artifacts {
-                artifactRules = """
-                    dimrset_lnx64_*.tar.gz!lnx64/bin/** => dimrset/bin
-                    dimrset_lnx64_*.tar.gz!lnx64/lib/** => dimrset/lib
-                    ?:dimrset_lnx64_*.tar.gz!lnx64/share/** => dimrset/share
-                """.trimIndent()
             }
         }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
