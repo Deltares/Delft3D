@@ -45,6 +45,8 @@ class ResolveHandler(ABC):
             return HandlerType.PATH
         elif re.search(r"^ftp(s)?://", path):
             return HandlerType.FTP
+        elif re.match(r"^https://s3.deltares.nl/dvc-test/test-dvc-verschillenanalyse", path):
+            return HandlerType.DVC
         elif re.match(r"^https://minio", path) or re.match(r"^https://s3.deltares.nl", path):
             return HandlerType.MINIO
         else:
