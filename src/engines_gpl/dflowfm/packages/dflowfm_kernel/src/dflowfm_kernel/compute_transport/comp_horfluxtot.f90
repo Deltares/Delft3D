@@ -56,13 +56,12 @@ contains
       integer :: j
 
       integer(4) :: ithndl = 0
-
       if (timon) call timstrt("comp_horfluxtot", ithndl)
 
       if (kmx < 1) then
          do L = 1, Lnx
             do j = ISED1, ISEDN
-               fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * dts * dt_flux(L)
+               fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * dts
             end do
          end do
       else
@@ -71,7 +70,7 @@ contains
             Lt = Ltop(LL)
             do L = Lb, Lt
                do j = ISED1, ISEDN
-                  fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * dts * dt_flux(L)
+                  fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * dts
                end do
             end do
          end do

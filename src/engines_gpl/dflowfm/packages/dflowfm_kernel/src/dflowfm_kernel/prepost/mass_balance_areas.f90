@@ -800,17 +800,15 @@ contains
             Lt = Ltop(LL)
             k1 = mbalnfromto(1, i)
             k2 = mbalnfromto(2, i)
-            if (mod(ndeltasteps(k1), istep+1) == 0 .and. mod(ndeltasteps(k2), istep+1) == 0) then
             do L = Lb, Lt
                if (fluxhor(iconst, L) > 0.0) then
-                  mbafluxhor(2, iconst, k1, k2) = mbafluxhor(2, iconst, k1, k2) + fluxhor(iconst, L) * dt * dt_flux(L)
-                  mbafluxhor(1, iconst, k2, k1) = mbafluxhor(1, iconst, k2, k1) + fluxhor(iconst, L) * dt * dt_flux(L)
+                  mbafluxhor(2, iconst, k1, k2) = mbafluxhor(2, iconst, k1, k2) + fluxhor(iconst, L) * dt
+                  mbafluxhor(1, iconst, k2, k1) = mbafluxhor(1, iconst, k2, k1) + fluxhor(iconst, L) * dt
                else
-                  mbafluxhor(1, iconst, k1, k2) = mbafluxhor(1, iconst, k1, k2) - fluxhor(iconst, L) * dt * dt_flux(L)
-                  mbafluxhor(2, iconst, k2, k1) = mbafluxhor(2, iconst, k2, k1) - fluxhor(iconst, L) * dt * dt_flux(L)
+                  mbafluxhor(1, iconst, k1, k2) = mbafluxhor(1, iconst, k1, k2) - fluxhor(iconst, L) * dt
+                  mbafluxhor(2, iconst, k2, k1) = mbafluxhor(2, iconst, k2, k1) - fluxhor(iconst, L) * dt
                end if
             end do
-            end if
          end do
 
          ! Note: mbafluxsorsin updated in fill_constitents ... uses always dts

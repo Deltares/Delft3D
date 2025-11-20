@@ -1390,11 +1390,11 @@ contains
       
       implicit none 
       logical, save :: first = .true.
+      character(len=30), save :: filename
 
       real(kind=dp) :: time
       integer :: pos
       character(len=30) :: extra
-      character(len=30) :: filename
       
       real(kind=dp) :: mbs, mbb, mba
       integer :: k, klyr
@@ -1434,8 +1434,8 @@ contains
           end do
       end do
       mba = mbb + mbs
-      write(filename, '(a,i2,i2,a)') 'mass', values(5), values(6), '.csv'
       if (first) then 
+          write(filename, '(a,i4,i02,i02,a,i02,i02,a)') 'mass_', values(1),values(2),values(3),'_',values(5), values(6), '.csv'
           open(newunit=unit, file=filename, status='replace')
           write(unit,*) 'time, suspended [kg], bed [kg], total[kg], extra'
           first = .false.

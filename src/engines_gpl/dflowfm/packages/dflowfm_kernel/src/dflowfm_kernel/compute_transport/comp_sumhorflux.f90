@@ -73,13 +73,10 @@ contains
 !        get neighboring flownodes
             k1 = ln(1, L)
             k2 = ln(2, L)
-            if (mod(ndeltasteps(k1), istep+1) == 0 .and. mod(ndeltasteps(k2), istep+1) == 0) then
             do j = 1, NUMCONST
-               sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L) * dts * dt_flux(L)
-               sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L) * dts * dt_flux(L)
+               sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L) !* dts * dt_flux(L)
+               sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L) !* dts * dt_flux(L)
             end do  
-            ! fluxhor = 0? 
-            end if 
          end do
       else
 !     add horizontal fluxes to right-hand side
