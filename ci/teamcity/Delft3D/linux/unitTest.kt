@@ -54,6 +54,7 @@ object LinuxUnitTest : BuildType({
         }
         script {
             name = "Extract artifact"
+            enabled = false
             scriptContent = """
                 echo "Extracting dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz..."
 
@@ -158,6 +159,9 @@ object LinuxUnitTest : BuildType({
 
     dependencies {
         dependency(Trigger) {
+            artifacts {
+                artifactRules = "dimrset_lnx64_*.tar.gz!** => ."
+            }
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
             }

@@ -92,6 +92,7 @@ object WindowsTest : BuildType({
         }
         powerShell {
             name = "Extract artifact"
+            enabled = false
             scriptMode = script {
                 content = """
                     ${'$'}ErrorActionPreference = "Stop"
@@ -149,6 +150,10 @@ object WindowsTest : BuildType({
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
+            }
+            artifacts {
+                cleanDestination = true
+                artifactRules = "dimrset_x64_*.zip!/x64/**=>test/deltares_testbench/data/engines/teamcity_artifacts/x64"
             }
         }
         dependency(WindowsTestEnvironment) {
