@@ -12,8 +12,8 @@ if [ ! -d "$GIT_HOOKS_DIR" ]; then
 fi
 
 # Install pre-commit hook
-if [ -f "$HOOKS_DIR/pre-commit" ]; then
-    cp "$HOOKS_DIR/pre-commit" "$GIT_HOOKS_DIR/pre-commit"
+if [ -f "$HOOKS_DIR/pre-commit.sh" ]; then
+    cp "$HOOKS_DIR/pre-commit.sh" "$GIT_HOOKS_DIR/pre-commit"
     chmod +x "$GIT_HOOKS_DIR/pre-commit"
     echo "Installed pre-commit hook"
 else
