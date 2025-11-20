@@ -133,6 +133,14 @@ object LinuxRuntimeContainers : BuildType({
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
             }
+            
+            artifacts {
+                artifactRules = """
+                    dimrset_lnx64_*.tar.gz!lnx64/bin/** => dimrset/bin
+                    dimrset_lnx64_*.tar.gz!lnx64/lib/** => dimrset/lib
+                    ?:dimrset_lnx64_*.tar.gz!lnx64/share/** => dimrset/share
+                """.trimIndent()
+            }
         }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
             cleanDestination = true
