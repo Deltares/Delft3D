@@ -159,14 +159,14 @@ object LinuxUnitTest : BuildType({
 
     dependencies {
         dependency(Trigger) {
-            artifacts {
-                artifactRules = "dimrset_lnx64_*.tar.gz!** => ."
-            }
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
             }
         }
         dependency(LinuxCollect) {
+            artifacts {
+                artifactRules = "dimrset_lnx64_*.tar.gz!** => ."
+            }
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
