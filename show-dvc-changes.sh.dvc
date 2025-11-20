@@ -1,6 +1,6 @@
 outs:
-- md5: bc7114e4b5ffb825a957833b49e69012
-  size: 2986
+- md5: b499af44549127d7ccbb73082dd6ed40
+  size: 3718
   isexec: true
   hash: md5
   path: show-dvc-changes.sh
