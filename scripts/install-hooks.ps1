@@ -10,7 +10,7 @@ if (-not (Test-Path $GitHooksDir)) {
 }
 
 # Install pre-commit hook
-$PreCommitSrc = Join-Path $HooksDir "pre-commit"
+$PreCommitSrc = Join-Path $HooksDir "pre-commit.sh"
 $PreCommitDst = Join-Path $GitHooksDir "pre-commit"
 
 if (Test-Path $PreCommitSrc) {
