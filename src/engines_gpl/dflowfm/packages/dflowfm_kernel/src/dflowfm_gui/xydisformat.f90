@@ -32,7 +32,6 @@
 
 module m_xydisformat
 
-
    use precision, only: dp
    implicit none
 

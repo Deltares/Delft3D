@@ -976,10 +976,16 @@ contains
                      sinkse(nm, l) = 0.0_fp
                   end if
                   !
-                  sourf(l, nm) = sourfluff
+                  ! prevent fluff layer source exceeding available mass
+                  !
+                  if (mfltot <= 0.0_fp) then
+                     sourf(l, nm) = 0.0_fp
+                  else
+                     sourf(l, nm) = min(sourfluff, mfltot/dts)
+                  end if
                else
                   sinkse(nm, l) = sinktot
-                  sourse(nm, l) = sourse(nm, l) + sourfluff
+                  ! sourse(nm,l) already set (sourfluff = 0)
                end if
                !
                if (kmx > 0) then

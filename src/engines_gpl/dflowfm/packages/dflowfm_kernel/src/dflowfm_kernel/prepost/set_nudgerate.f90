@@ -38,7 +38,6 @@
 !!  caution: will overwrite nudge_rate in 1/s
 module m_set_nudgerate
 
-
    use precision, only: dp
    implicit none
 

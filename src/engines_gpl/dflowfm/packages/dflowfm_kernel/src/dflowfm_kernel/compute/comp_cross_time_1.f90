@@ -82,7 +82,7 @@ contains
          f = 2.0_dp * dot_product(x34, v34)
          g = dot_product(x34, x34)
 
-         coeffs = coeffs - dclear * dclear * [0.0_dp, 0.0_dp, e, f, g]
+         coeffs = coeffs - dclear * dclear*[0.0_dp, 0.0_dp, e, f, g]
       end if
 
       t = DMISS

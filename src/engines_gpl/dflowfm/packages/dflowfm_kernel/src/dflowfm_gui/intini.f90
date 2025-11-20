@@ -37,7 +37,7 @@ module m_intini
    use m_setcolortable
    use m_minmaxworld
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
 contains

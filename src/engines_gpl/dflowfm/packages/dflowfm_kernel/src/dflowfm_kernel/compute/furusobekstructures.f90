@@ -32,7 +32,6 @@
 
 module m_furusobekstructures
 
-
    use precision, only: dp
    implicit none
 

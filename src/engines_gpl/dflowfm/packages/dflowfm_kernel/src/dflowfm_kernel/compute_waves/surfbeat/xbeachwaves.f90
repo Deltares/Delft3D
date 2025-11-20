@@ -123,7 +123,7 @@ contains
       call writelog('l', '', 'Wave boundary condition parameters: ')
       allocate (allowednames(12), oldnames(12))
       allowednames = ['stat        ', 'bichrom     ', 'ts_1        ', 'ts_2        ', 'jons        ', 'swan        ', &
-                       'vardens     ', 'reuse       ', 'off         ', 'stat_table  ', 'jons_table  ']
+                      'vardens     ', 'reuse       ', 'off         ', 'stat_table  ', 'jons_table  ']
       oldnames = ['0 ', '1 ', '2 ', '3 ', '4 ', '5 ', '6 ', '7 ', '9 ', '40', '41']
       !             function =   file         key      default  n allowed  n old allowed  allowed names  old allowed names
       instat = readkey_str(md_surfbeatfile, 'instat', 'bichrom', 11, 11, allowednames, oldnames, required=(swave == 1))
@@ -2004,7 +2004,7 @@ contains
                ki = kbndw(2, n)
                zbndw(:, n) = e01 * 0.5_dp * &
                              (1.0_dp + cos(2 * pi * (time0 / Tlong - (sin(theta0) * (ybndw(n) - yref0) &
-                                                                    + cos(theta0) * (xbndw(n) - xref0)) / Llong))) * &
+                                                                      + cos(theta0) * (xbndw(n) - xref0)) / Llong))) * &
                              min(time0 / taper, 1.0_dp)
                if (nbndu > 0) then
                   Lb = kbndw2kbndu(n)
@@ -5619,7 +5619,7 @@ contains
       ! what time is it
       call system_clock(COUNT=clock)
       ! define the seed vector based on a prime, the clock and the set of integers
-      seed = clock + 37 * [(i - 1, i=1, n)]
+      seed = clock + 37*[(i - 1, i=1, n)]
       ! if mpi do we need a different seed on each node or the same???
       ! if we do need different seeds on each node
       ! seed *= some big prime * rank ?

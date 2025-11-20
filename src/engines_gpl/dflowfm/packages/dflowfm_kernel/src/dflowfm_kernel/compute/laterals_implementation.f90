@@ -239,14 +239,14 @@ contains
    end subroutine get_lateral_volume_per_layer
 
    !> !< Initialize flow_parameter, allocate arrays and set pointers
-      module subroutine initialize_flow_parameter(this, num_elements, input_variable, weighing_variable, &
-                                                  index_start, index_end, index_to_node)
-         class(t_flow_parameter), intent(inout) :: this !< Flow parameter object
-         integer, intent(in) :: num_elements !< Number of elements in the flow parameter.
-         real(kind=dp), dimension(:), pointer, intent(in) :: input_variable !< Input variable to be averaged.
-         real(kind=dp), dimension(:), pointer, intent(in) :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
-         integer, dimension(:), pointer, intent(in) :: index_start, index_end !< Indexing parameters for mapping input variable to flow parameter locations.
-         integer, dimension(:), pointer, intent(in) :: index_to_node !< Index mapping to flow nodes.
+   module subroutine initialize_flow_parameter(this, num_elements, input_variable, weighing_variable, &
+                                               index_start, index_end, index_to_node)
+      class(t_flow_parameter), intent(inout) :: this !< Flow parameter object
+      integer, intent(in) :: num_elements !< Number of elements in the flow parameter.
+      real(kind=dp), dimension(:), pointer, intent(in) :: input_variable !< Input variable to be averaged.
+      real(kind=dp), dimension(:), pointer, intent(in) :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
+      integer, dimension(:), pointer, intent(in) :: index_start, index_end !< Indexing parameters for mapping input variable to flow parameter locations.
+      integer, dimension(:), pointer, intent(in) :: index_to_node !< Index mapping to flow nodes.
 
       allocate (this%values(num_elements))
       this%num_elements = num_elements

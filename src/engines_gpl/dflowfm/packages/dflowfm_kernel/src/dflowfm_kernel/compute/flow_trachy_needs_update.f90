@@ -33,7 +33,6 @@
 !> helper function to make sure that the check for updating cross sections is in line with the flow_trachyupdate
 module m_flow_trachy_needs_update
 
-
    use precision, only: dp
    implicit none
 
