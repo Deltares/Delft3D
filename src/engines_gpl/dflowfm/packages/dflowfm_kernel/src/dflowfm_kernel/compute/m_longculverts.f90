@@ -1538,7 +1538,6 @@ contains
          end do
          i = 0
          call admin_network(network, i)
-         call unc_write_net('testnet.nc', janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
 
          !md_netfile = tempstring_netfile
          !md_1dfiles%structures = converted_fnamesstring
