@@ -75,6 +75,37 @@ object WindowsCollect : BuildType({
                 matches("dep.${WindowsBuild.id}.build_type", "Release")
             }
         }
+        powerShell {
+            name = "Prepare artifact to upload"
+            scriptMode = script {
+                content = """
+                    ${'$'}ErrorActionPreference = "Stop"
+
+                    ${'$'}zipName = "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip"
+
+                    Write-Host "Creating ${'$'}zipName ..."
+
+                    Compress-Archive -Path "x64", "dimrset_version_x64.txt" -DestinationPath ${'$'}zipName -Force
+
+                    Write-Host "ZIP created: ${'$'}zipName"
+                """.trimIndent()
+            }
+        }
+        step {
+            name = "Upload artifact to Nexus"
+            type = "RawUploadNexusWindows"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
+            param("nexus_username", "%nexus_username%")
+            param("plugin.docker.imagePlatform", "")
+            param("plugin.docker.imageId", "")
+            param("teamcity.step.phase", "")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_repo", "/delft3d-dev")
+            param("nexus_url", "https://artifacts.deltares.nl/repository")
+            param("plugin.docker.run.parameters", "")
+            param("target_path", "/07_day_retention/dimrset/dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
+        }
     }
 
     failureConditions {

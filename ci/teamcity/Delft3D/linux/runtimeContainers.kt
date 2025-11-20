@@ -43,6 +43,38 @@ object LinuxRuntimeContainers : BuildType({
 
     steps {
         mergeTargetBranch {}
+        step {
+            name = "Download artifact from Nexus"
+            type = "RawDownloadNexusLinux"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("artifact_path", "/07_day_retention/dimrset/dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
+            param("nexus_repo", "/delft3d-dev")
+            param("nexus_username", "%nexus_username%")
+            param("plugin.docker.imagePlatform", "")
+            param("plugin.docker.imageId", "")
+            param("teamcity.step.phase", "")
+            param("download_to", ".")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_url", "https://artifacts.deltares.nl/repository")
+            param("plugin.docker.run.parameters", "")
+        }
+        script {
+            name = "Extract artifact"
+            enabled = false
+            scriptContent = """
+                echo "Extracting dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz..."
+
+                tar -xzf dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz
+
+                mkdir dimrset
+
+                cp -r lnx64/bin dimrset/bin
+
+                cp -r lnx64/lib dimrset/lib
+
+                cp -r lnx64/share dimrset/share
+            """.trimIndent()
+        }
         exec {
             name = "Copy example and readme.txt"
             path = "ci/teamcity/Delft3D/linux/scripts/copyExampleAndReadMe.sh"
