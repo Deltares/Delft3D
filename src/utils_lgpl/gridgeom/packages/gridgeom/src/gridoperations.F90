@@ -822,11 +822,6 @@ contains
                l1d2d = l1d2d + 1
                kn_new(1:3, l1d2d) = [K1, K2, K3]
                if (japermout == 1) Lperm_new(l1d2d) = Lperm(L)
-            !else if (K3 == LINK_1D2D_INTERNAL .or. K3 == LINK_1D2D_LONGITUDINAL .or. &
-            !         K3 == LINK_1D2D_STREETINLET .or. K3 == LINK_1D2D_ROOF) then
-            !   l1 = l1 + 1
-            !   kn_new(1:3, l1) = [K1, K2, K3]
-            !   if (japermout == 1) Lperm_new(l1) = Lperm(L)
             else if (K3 == 0 .or. K3 == 2) then
                l2 = l2 + 1
                kn_new(1:3, l2) = [K1, K2, K3]
@@ -838,62 +833,6 @@ contains
          deallocate(valid_link_types)
          kn(:,1:numl) = kn_new(:, 1:numl)
       end if
-      
-      !L2 = 0; L1 = 0
-      !jathindams = 0
-      !lc = 0
-      !nlinkremoved = 0
-      !if (any(kn(3, :) == 0)) then
-      !   jathindams = 1
-      !end if
-      !kn_new = kn
-      !links = [(L, L=1, NUML)]
-      !valid_links = pack(links, is_valid_link(links, kn(1, :), kn(2, :), kn(3, :)))
-      !link_mask = pack(valid_links, kn(3, valid_links) == 1 .or. kn(3, valid_links) == 6)
-      !call set_link_permutation(link_mask, L1, kn, kn_new, japermout, Lperm, Lperm_new)
-      !link_mask = pack(valid_links, is_1d2d_link(valid_links, kn(3, valid_links)))
-      !call set_link_permutation(link_mask, L1, kn, kn_new, japermout, Lperm, Lperm_new)
-      !link_mask = pack(valid_links, kn(3, valid_links) == 2 .or. kn(3, valid_links) == 0)
-      !call set_link_permutation(link_mask, L1, kn, kn_new, japermout, Lperm, Lperm_new)
-
-      !do L = 1, NUML ! LINKS AANSCHUIVEN, 1d EERST
-      !   K1 = kn(1, L); kn = KN(2, L); kn = KN(3, L)
-      !   ja = is_valid_link(L, kn(1, L), KN(2, L), KN(3, L))
-      !   if (JA == 1) then
-      !      if (K3 == 0 .or. K3 == 2) then
-      !         L2 = L2 + 1
-      !         kn_new(1, L2) = K1; KN2(2, L2) = K2; KN2(3, L2) = K3
-      !         if (japermout == 1) then
-      !            Lperm_new(numL - L2 + 1) = Lperm(L) ! fill 2D links from the back of the temp. array
-      !         end if
-      !      else if (K3 == LINK_1D) then
-      !         L1 = L1 + 1
-      !         KN(1, L1) = K1; KN(2, L1) = K2; KN(3, L1) = K3
-      !         if (japermout == 1) then
-      !            Lperm_new(L1) = Lperm(L) ! fill 1D links from the start of the temp. array
-      !         end if
-      !      end if
-      !      KC(K1) = 1; KC(K2) = 1
-      !   else
-      !      ! save removed links, so the flow1d admin can be updated later on
-      !      nlinkremoved = nlinkremoved + 1
-      !      LC(nlinkremoved) = L
-      !   end if
-      !end do
-      !
-      !do L = 1, NUML ! extra loop to put 1D2D in the middle
-      !   K1 = kn(1, L); K2 = kn(2, L); K3 = kn(3, L)
-      !   ja = is_valid_link(L, k1, k2, k3)
-      !   if (JA == 1) then
-      !      if (K3 == LINK_1D2D_INTERNAL .or. K3 == LINK_1D2D_LONGITUDINAL .or. K3 == LINK_1D2D_STREETINLET .or. k3 == LINK_1D2D_ROOF) then !
-      !         L1 = L1 + 1
-      !         KN(1, L1) = K1; KN(2, L1) = K2; KN(3, L1) = K3
-      !         if (japermout == 1) then
-      !            Lperm_new(L1) = Lperm(L) ! fill 1D links from the start of the temp. array
-      !         end if
-      !      end if
-      !   end if
-      !end do
 
       if (japermout == 1) then
          !     copy 1D and flip 2D values from the temp. to the permutation array
@@ -901,10 +840,6 @@ contains
             Lperm(L) = Lperm_new(L)
             Lperminv(Lperm(L)) = L
          end do
-         !do L = 1, L2
-         !   Lperm(L1 + L) = Lperm_new(numL - L + 1)
-         !   Lperminv(Lperm(L1 + L)) = L1 + L
-         !end do
       end if
 
       NUML1D = num_1d_links + num_1d2d_links
@@ -946,7 +881,6 @@ contains
 
       do K = 1, NUMK ! ALLOCEER RUIMTE
          if (NMK(K) > 0) then
-            !call REALLOC(NOD(K)%LIN, NMK(K), keepexisting = .false. )
             if (allocated(NOD(K)%LIN)) then
                deallocate (NOD(K)%LIN)
             end if
