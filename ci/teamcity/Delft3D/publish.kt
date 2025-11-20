@@ -122,10 +122,17 @@ object Publish : BuildType({
             }
         }
         dockerCommand {
-            name = "Tag images"
+            name = "Tag image specific"
             commandType = other {
                 subCommand = "tag"
-                commandArgs = "%source_image% %destination_image_specific% && docker tag %source_image% %destination_image_generic%"
+                commandArgs = "%source_image% %destination_image_specific%"
+            }
+        }
+        dockerCommand {
+            name = "Tag image generic"
+            commandType = other {
+                subCommand = "tag"
+                commandArgs = "%source_image% %destination_image_generic%"
             }
         }
         dockerCommand {
