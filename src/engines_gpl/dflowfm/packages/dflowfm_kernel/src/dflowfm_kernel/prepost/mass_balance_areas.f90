@@ -761,18 +761,14 @@ contains
       if (timon) call timstop(ithndl)
    end subroutine comp_horflowmba
 
-   subroutine comp_horfluxmba(istep, dt_flux)
+   subroutine comp_horfluxmba()
       use m_flow, only: Lbot, Ltop
-      use m_flowgeom, only: lnx
       use m_flowtimes, only: dts
       use m_mass_balance_areas
       use timers
-      use m_transport, only: numconst, fluxhor, ndeltasteps
+      use m_transport, only: numconst, fluxhor
       use m_fm_erosed, only: morfac
 
-      integer, intent(in) ::istep
-      real(kind=dp), intent(in) :: dt_flux(lnx) !< time step per link
-      
       integer :: i !< balance area exchange link index
       integer :: iconst !< constituent number
       integer :: k1 !< index of balance from-area

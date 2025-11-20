@@ -234,7 +234,7 @@ contains
          if (stmpar%morpar%mornum%suspended_flux_factor /= 1.0_dp) then
             fluxhor = fluxhor * stmpar%morpar%mornum%suspended_flux_factor
          end if
-         call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux, istep, dt_flux)
+         call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
          call stoptimer(IDEBUG)
 
          if (jased == 4 .and. stmpar%lsedsus > 0) then ! at the moment, this function is only required by suspended sediment. Can be extended to other fluxes if necessary
@@ -242,7 +242,7 @@ contains
          end if
 
          if (jamba > 0) then ! at moment, this function is only required for the mass balance areas
-            call comp_horfluxmba(istep, dt_flux)
+            call comp_horfluxmba()
          end if
 
          if (kmx < 1) then ! 2D, call to 3D as well for now

@@ -41,12 +41,10 @@ module m_comp_sumhorflux
 
 contains
 
-   subroutine comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux, istep, dt_flux)
+   subroutine comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
       use precision, only: dp
       use m_flowgeom, only: Lnx, Ln ! static mesh information
       use timers, only: timon, timstrt, timstop
-      use m_flowtimes, only: dts
-      use m_transport, only: ndeltasteps
 
       implicit none
 
@@ -58,8 +56,6 @@ contains
       integer, dimension(Lnx), intent(in) :: Ltop !< flow-link based layer administration
       real(kind=dp), dimension(NUMCONST, Lnkx), intent(in) :: fluxhor !< horizontal advection fluxes
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux ! sum of horizontal fluxes, dim(NUMCONST,Ndkx)
-      real(kind=dp), dimension(Lnx), intent(in) :: dt_flux !< time step for updating flux term
-      integer, intent(in) :: istep 
       integer :: LL, L, Lb, Lt
       integer :: j, k1, k2
 
