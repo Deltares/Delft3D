@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e03_f02_c04_statistics" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2024-01-11T13:20:00">e03_waq/f02_hongkong/c04_statistics</path>
+        <dependency version="2025-11-11T09:20:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
+        <path version="2025-11-17T08:09:54.514000">e03_waq/f02_hongkong/c04_statistics</path>
         <maxRunTime>3000.0</maxRunTime>
         <checks>
             <file name="group2-test004.ada" type="NEFIS">
@@ -23,8 +23,8 @@
         </checks>
     </testCase>
     <testCase name="e03_f02_c02_scheme21" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2024-01-11T13:20:00">e03_waq/f02_hongkong/c02_scheme21</path>
+        <dependency version="2025-11-11T09:20:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
+        <path version="2025-11-17T08:09:50.654000">e03_waq/f02_hongkong/c02_scheme21</path>
         <checks>
             <file name="group2-test002.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -45,8 +45,8 @@
         </checks>
     </testCase>
     <testCase name="e03_f02_c01_eutrophication" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2025-06-25T22:20:00">e03_waq/f02_hongkong/c01_eutrophication</path>
+        <dependency version="2025-11-11T09:20:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
+        <path version="2025-11-17T08:09:48.733000">e03_waq/f02_hongkong/c01_eutrophication</path>
         <checks>
             <file name="group2-test001.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -1626,7 +1626,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c21_test021" ref="dwaq_default">
-        <path version="2025-01-24T13:03:30.427000">e03_waq/f01_general/c21_test021</path>
+        <path version="2025-11-19T13:54:11.112000">e03_waq/f01_general/c21_test021</path>
         <checks>
             <file name="d3d-waq-test021.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -1657,7 +1657,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c27_test027" ref="dwaq_default">
-        <path version="2025-01-27T10:45:40.690000">e03_waq/f01_general/c27_test027</path>
+        <path version="2025-11-19T13:54:13.004000">e03_waq/f01_general/c27_test027</path>
         <checks>
             <file name="d3d-waq-test027.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -1706,7 +1706,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c28_test028" ref="dwaq_default">
-        <path version="2025-06-25T22:20:00">e03_waq/f01_general/c28_test028</path>
+        <path version="2025-11-19T13:54:15.029000">e03_waq/f01_general/c28_test028</path>
         <checks>
             <file name="d3d-waq-test028.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -1765,7 +1765,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c29_test029" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f01_general/c29_test029</path>
+        <path version="2025-11-19T13:54:16.983000">e03_waq/f01_general/c29_test029</path>
         <checks>
             <file name="d3d-waq-test029.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -1802,7 +1802,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c30_test030" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f01_general/c30_test030</path>
+        <path version="2025-11-18T08:28:20.949000">e03_waq/f01_general/c30_test030</path>
         <checks>
             <file name="d3d-waq-test030.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2013,7 +2013,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c31_test031" ref="dwaq_default">
-        <path version="2025-09-16T11:15:22.786000">e03_waq/f01_general/c31_test031</path>
+        <path version="2025-11-18T08:28:23.815000">e03_waq/f01_general/c31_test031</path>
         <checks>
             <file name="d3d-waq-test031.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2242,7 +2242,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f01_c34_running_processes_in_parallel" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f01_general/c34_test034</path>
+        <path version="2025-11-19T13:54:20.831000">e03_waq/f01_general/c34_test034</path>
         <checks>
             <file name="deltashell_map.nc" type="netCDF">
                 <parameters>
@@ -2257,8 +2257,8 @@
         </checks>
     </testCase>
     <testCase name="e03_f02_c03_loadscenario1" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2025-06-25T22:20:00">e03_waq/f02_hongkong/c03_loadscenario1</path>
+        <dependency version="2025-11-11T09:20:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
+        <path version="2025-11-19T14:01:06.942000">e03_waq/f02_hongkong/c03_loadscenario1</path>
         <checks>
             <file name="group2-test003.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -2363,8 +2363,8 @@
         </checks>
     </testCase>
     <testCase name="e03_f02_c05_eutrophication_scheme15" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2025-06-25T22:20:00">e03_waq/f02_hongkong/c05_eutrophication_scheme15</path>
+        <dependency version="2025-11-11T09:20:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
+        <path version="2025-11-17T08:09:56.442000">e03_waq/f02_hongkong/c05_eutrophication_scheme15</path>
         <checks>
             <file name="group2-test005.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6890,7 +6890,7 @@
 
 
     <testCase name="e03_f07_c01_exercise_01" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
+        <dependency version="2025-11-11T09:20:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path version="2024-01-11T13:20:00">e03_waq/f07_course_d3dfm_env_mod/c01_exercise_01/exercise1.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -6912,7 +6912,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c02a_exercise_02a" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
+        <dependency version="2025-11-11T09:20:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path version="2025-06-25T22:20:00">e03_waq/f07_course_d3dfm_env_mod/c02a_exercise_02a/exercise2a.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -6924,7 +6924,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c02b_exercise_02b" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
+        <dependency version="2025-11-11T09:20:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path version="2025-06-25T22:20:00">e03_waq/f07_course_d3dfm_env_mod/c02b_exercise_02b/exercise2b.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -6936,7 +6936,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c03_exercise_03" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
+        <dependency version="2025-11-11T09:20:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path version="2025-01-22T16:14:59.044000">e03_waq/f07_course_d3dfm_env_mod/c03_exercise_03/exercise3.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -6960,7 +6960,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c04_exercise_04" ref="dwaq_default">
-        <dependency version="2024-01-11T09:00:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
+        <dependency version="2025-11-11T09:20:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path version="2024-01-11T13:20:00">e03_waq/f07_course_d3dfm_env_mod/c04_exercise_04/exercise4.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">
@@ -6984,7 +6984,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c05_exercise_05" ref="dwaq_default">
-        <dependency version="2025-06-05T16:15:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
+        <dependency version="2025-11-05T09:20:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path version="2025-06-25T22:20:00">e03_waq/f07_course_d3dfm_env_mod/c05_exercise_05/exercise5.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">

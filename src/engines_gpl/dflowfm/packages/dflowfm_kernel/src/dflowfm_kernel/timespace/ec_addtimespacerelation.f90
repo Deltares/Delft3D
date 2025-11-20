@@ -807,7 +807,7 @@ contains
          end if
          if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_charnock)
          if (success) success = ecAddItemConnection(ecInstancePtr, item_charnock, connectionId)
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'friction_coefficient'
          else
@@ -985,7 +985,7 @@ contains
             end if
             success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
          else if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'humidity')
+            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'relative_humidity')
             sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
             sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
             sourceItemId_4 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_net_downward_shortwave_flux')

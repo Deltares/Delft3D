@@ -2,6 +2,7 @@
 set(executable_name d_hydro)
 # Set the directory of where the source code is located.
 set(src_path src)
+
 set(header_path include)
 
 # Define include directories
@@ -11,6 +12,10 @@ get_module_include_path(${checkout_src_root}/${d_hydro_lib_module}
 get_module_include_path(${checkout_src_root}/${deltares_common_c_module} 
                         ${executable_name}
                         deltares_common_c_include_path)
+get_module_include_path(${checkout_src_root}/${getopt_module} 
+                        ${executable_name}
+                        getopt_include_path)
+set(public_include_path ${d_hydro_lib_include_path})
 
 message(STATUS "Configuring '${executable_name}' with the following d_hydro_lib include path: '${d_hydro_lib_include_path}'")
 message(STATUS "Configuring '${executable_name}' with the following deltares_common_c include path: '${deltares_common_c_include_path}'")
