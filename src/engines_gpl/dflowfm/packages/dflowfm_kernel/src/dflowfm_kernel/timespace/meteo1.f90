@@ -6799,7 +6799,7 @@ contains
          dataPtr1 => wdsu_x
          itemPtr2 => item_stressxy_y
          dataPtr2 => wdsu_y
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          itemPtr1 => item_frcu
          dataPtr1 => frcu
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
