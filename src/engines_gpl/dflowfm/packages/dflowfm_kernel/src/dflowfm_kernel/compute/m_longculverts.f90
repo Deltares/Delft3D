@@ -1002,7 +1002,6 @@ contains
       call reallocP(meshgeom1d%nodebranchidx, meshgeom1d%numnode, keepexisting=.true., fill=-999)
       call reallocP(meshgeom1d%nodeoffsets, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%edgebranchidx, meshgeom1d%numedge, keepexisting=.true., fill=-999)
-      call reallocP(meshgeom1d%linkedge, size(kc), keepexisting=.false., fill=-999)
       call reallocP(meshgeom1d%edgeoffsets, meshgeom1d%numedge, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%ngeopointx, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%ngeopointy, meshgeom1d%ngeometry, keepexisting=.true., fill=-999.0_dp)
@@ -1073,9 +1072,6 @@ contains
             meshgeom1d%nodeoffsets(newnodeindex) = pathlength
             newnodeindex = newnodeindex + 1
             call connectdbn(k1, k2, linksCulv(j))
-            if (kn3typ /= 5) then ! Save 1D edge mapping for flowgeom writing
-               meshgeom1d%linkedge(linksCulv(j)) = newedgeindex - 1
-            end if
             if (allocated(dxe)) then
                dxe(linksCulv(j)) = pathdiff
             end if
@@ -1087,7 +1083,6 @@ contains
          kn3typ = 5
          call longculvert_create_endpoint(jend, k1)
          call connectdbn(k2, k1, linksCulv(jend + 1))
-
          !advance pointer
          jpoint = jend + 2
       end do
@@ -1531,7 +1526,6 @@ contains
          !tempname = trim(md_culvertprefix)//tempname
          !tempstring_netfile = cat_filename(temppath, tempname, tempext)
 
-         call unc_write_net('testnet.nc', janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
          nbranchlongnames = nbranchids
          nnodelongnames = nnodeids
          allocate (nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
@@ -1542,6 +1536,8 @@ contains
          do i = 1, nlongculverts
             call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
          end do
+         i = 0
+         call admin_network(network, i)
 
          !md_netfile = tempstring_netfile
          !md_1dfiles%structures = converted_fnamesstring
