@@ -15858,6 +15858,9 @@ contains
                x1du(n1dedges) = xu(L)
                y1du(n1dedges) = yu(L)
                L1 = Lperm(ln2lne(L)) ! This is the edge index from *before* setnodadm(),
+               if (L1 > size(meshgeom1d%edgebranchidx)) then
+                  L1 = n1dedges !> don't remap edgebranchIDX if original array is incomplete
+               end if
                ! i.e., as was read from input *_net.nc file.
                if(associated(meshgeom1d%ngeopointx)) then
                   edgebranchidx_remap(n1dedges) = meshgeom1d%edgebranchidx(L1)
