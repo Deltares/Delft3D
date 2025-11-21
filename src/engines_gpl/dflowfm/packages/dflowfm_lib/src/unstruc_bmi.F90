@@ -41,6 +41,7 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+
    use m_cosphiunetcheck, only: cosphiunetcheck
    use m_flow_run_usertimestep, only: flow_run_usertimestep
    use m_flow_run_sometimesteps, only: flow_run_sometimesteps
@@ -88,6 +89,7 @@ module bmi
    use m_update_land_nodes
    use m_find_name, only: find_name
 
+use precision, only: dp
    implicit none
 
    ! Define some global constants
@@ -624,7 +626,7 @@ contains
       att_name = char_array_to_string(c_att_name, strlen(c_att_name))
 
       ! Look up the value of att_name
-      value = -1.0d0
+      value = -1.0_dp
    end subroutine get_double_attribute
 
    subroutine get_int_attribute(c_att_name, value) bind(C, name="get_int_attribute")

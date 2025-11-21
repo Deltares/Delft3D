@@ -16679,7 +16679,7 @@ contains
       jareinitialize_ = 0
       if (present(jareinitialize)) jareinitialize_ = jareinitialize
 
-      call readyy('Reading net data', 0d0)
+      call readyy('Reading net data', 0.0_dp)
 
       call prepare_error('Could not read net cells from NetCDF file '''//trim(filename)//''' (is not critical). Details follow:', LEVEL_DEBUG)
 
@@ -16780,7 +16780,7 @@ contains
          goto 888
       end if
 
-      call readyy('Reading net data', .1d0)
+      call readyy('Reading net data', 0.1_dp)
 
 !    if (nerr_ > 0) goto 888
 
@@ -16789,7 +16789,7 @@ contains
       !ierr = nf90_inq_varid(inetfile, 'ElemCenter_y', id_elemceny)
       !call check_error(ierr, 'y coordinate of cell center')
 
-      call readyy('Reading net data', .3d0)
+      call readyy('Reading net data', 0.3_dp)
 
       call increasenetcells(nump1d2d, 1.0, .false.)
 
@@ -16869,7 +16869,7 @@ contains
          end if
       end do
 
-      call readyy('Reading net data', .8d0)
+      call readyy('Reading net data', 0.8_dp)
 
       if (jaugrid == 1) then
          ierr = ionc_get_ncid(ioncid, inetfile)
@@ -17023,11 +17023,11 @@ contains
          end if
       end if
 
-      call readyy('Reading net data', 1d0)
+      call readyy('Reading net data', 1.0_dp)
       ierr = ionc_close(ioncid)
       if (nerr_ > 0) goto 888
 
-      call readyy('Reading net data', -1d0)
+      call readyy('Reading net data', -1.0_dp)
       return ! Return with success
 
 888   continue
@@ -17060,7 +17060,7 @@ contains
       integer, intent(in) :: jaerror2sam !< add unfound nodes to samples (1) or not (0)
       integer :: ierror = 1
       integer :: k, nn, i, jj, kk, jamerge2own
-      real(kind=dp) :: R2search = 1d-8 !< Search radius
+      real(kind=dp) :: R2search = 1.0e-8_dp !< Search radius
       real(kind=dp) :: t0, t1
       character(len=128) :: mesg
       real(kind=dp), allocatable :: x_tmp(:), y_tmp(:)
@@ -17186,7 +17186,7 @@ contains
 
       real(kind=dp), allocatable :: x_tmp(:), y_tmp(:)
       integer :: i
-      real(kind=dp) :: dist, dtol = 1d-8
+      real(kind=dp) :: dist, dtol = 1.0e-8_dp
       character(len=128) :: message
 
       ierror = 0
