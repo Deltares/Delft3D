@@ -390,7 +390,7 @@ subroutine bedtr2004(u2dh      ,d50       ,d90       ,h1        ,rhosol    , &
        do k = num_layers_grid, 1, -1
           dif_aks  = aks/h1           - (1.0_fp+sig(k)-thick(k)/2.0_fp)
           dif_upp  = 3.0_fp*deltas/h1 - (1.0_fp+sig(k)-thick(k)/2.0_fp)
-          if (dif_aks<=thick(k) .and. dif_aks>=0.0_fp) then
+          if (k >= 2 .and. dif_aks<=thick(k) .and. dif_aks>=0.0_fp) then
              !
              ! k-layer contains aks (take part above)
              !

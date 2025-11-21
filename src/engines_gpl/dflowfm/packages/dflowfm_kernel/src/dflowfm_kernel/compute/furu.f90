@@ -183,13 +183,12 @@ contains
                         frL = cfuhi(L) * sqrt((u1L - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16_dp * uorbL * fsqrtt)**2)
                      end if
                      !
-                     du = du0 + frL * ustokes(L)
-                     !
                      ! and add vegetation stem drag with eulerian velocities, assumes fixed stem
                      if ((jaBaptist >= 2) .or. trachy_resistance) then
                         frL = frL + alfav(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
                      end if
-
+                     !
+                     du = du0 + frL * ustokes(L)
                   else if (ifxedweirfrictscheme > 0) then
                      if (iadv(L) == IADV_SUBGRID_WEIR .or. kcu(L) == 3) then
                         call fixedweirfriction2D(L, k1, k2, frL)

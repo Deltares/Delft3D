@@ -6250,7 +6250,7 @@ contains
                   end if
                end if
                if (jamapwav_twav > 0 .and. allocated(twav)) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'tp', 'sea_surface_wave_period_at_variance_spectral_density_maximum', 'Peak wave period', 's')
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_twav, nc_precision, UNC_LOC_S, 'twav', 'sea_surface_wave_period_at_variance_spectral_density_maximum', 'Peak wave period', 's')
                end if
                if (jamapwav_phiwav > 0 .and. allocated(phiwav)) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_thetamean, nc_precision, UNC_LOC_S, 'thetamean', 'sea_surface_wave_from_direction', 'Wave from direction', 'degree')

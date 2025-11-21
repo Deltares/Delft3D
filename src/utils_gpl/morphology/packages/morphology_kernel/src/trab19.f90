@@ -103,6 +103,7 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     real(fp)                       :: urms2
     real(fp)                       :: ucrb, ucrs, asb, ass, term1, ceqb, ceqs
     real(fp)                       :: cmax2h
+    real(fp)                       :: alfad50
     !
     !
     !! executable statements -------------------------------------------------------
@@ -122,8 +123,13 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     ag = par(1)
     delta = par(4)
     facua = par(11)
-    facas = par(12)
-    facsk = par(13)
+    if (comparereal(facua, 0.0_fp, 1d-10) == 0) then
+       facas = par(12)
+       facsk = par(13)
+    else
+       facas = facua
+       facsk = facua
+    end if
     waveform = int(par(14))
     sws = int(par(15))
     lws = int(par(16))
@@ -134,6 +140,7 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     smax = par(21)
     reposeangle = par(22)
     cmax = par(23)
+    alfad50 = par(24)
     !
     ! limit input parameters to sensible values
     !
@@ -151,6 +158,7 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     if (smax<0.0_fp) smax=huge(0.0_fp)*1.0e-20_fp
     reposeangle = max(min(reposeangle,45.0_fp),30.0_fp)
     cmax = max(min(cmax,1.0_fp),0.0_fp)
+    alfad50 = max(min(alfad50,1.5_fp),0.0_fp)
     !
     cf = ag / chezy / chezy
     !
@@ -182,8 +190,8 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     dzdx, dzdy, dtol, phi, ucr, ucrb, Ucrs)
    !
    ! transport parameters
-   Asb=0.015_fp*h*(d50/h)**1.2_fp/(delta*ag*d50)**0.75_fp                         !bed load coefficent
-   Ass=0.012_fp*d50*dster**(-0.6_fp)/(delta*ag*d50)**1.2_fp                       !suspended load coeffient
+   Asb=0.015_fp*h*(d50/h)**1.2_fp/(delta*ag*d50)**0.75_fp                         !bed load coefficient
+   Ass=0.012_fp*d50*dster**(-0.6_fp)/(delta*ag*d50)**1.2_fp                       !suspended load coefficient
    !
    ! Van Rijn use Peak orbital flow velocity --> 0.64 corresponds to 0.4 coefficient regular waves Van Rijn (2007)
    term1=utot**2+0.64_fp*sws*urms2
@@ -200,6 +208,12 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
    if(term1>Ucrs .and. h>dtol) then
       ceqs=Ass*(term1-Ucrs)**2.4_fp
    end if
+   !
+   if (alfad50 > 0.0_fp) then
+      !uamag =  uamag * (0.000225_fp/d50)**alfad50     ! hoe kan een snelheidsasymmetrie fie zijn van korrelgrootte?
+      ceqb =  ceqb * (0.000225_fp/d50)**alfad50
+      ceqs =  ceqs * (0.000225_fp/d50)**alfad50
+   endif
    !
    cmax2h = cmax*h/2.0_fp
    ceqb  = min(ceqb,   cmax2h)               ! maximum equilibrium bed concentration

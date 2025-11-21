@@ -70,6 +70,8 @@ contains
       use fm_external_forcings, only: calculate_wind_stresses, set_external_forcings_boundaries
       use m_wind, only: update_wind_stress_each_time_step, jaheat_eachstep
       use m_fm_icecover, only: update_icecover
+      use m_update_dynveg, only: update_dynveg
+
       implicit none
 
       integer, intent(in) :: jazws0
@@ -148,6 +150,11 @@ contains
          if (iresult /= DFM_NOERR) then
             return
          end if
+      end if
+
+      ! Adapt roughness according to burial/erosion
+      if (dynroughveg > 0) then
+         call update_dynveg()
       end if
 
       call timstrt('Set conveyance       ', handle_extra(44)) ! Start cfuhi

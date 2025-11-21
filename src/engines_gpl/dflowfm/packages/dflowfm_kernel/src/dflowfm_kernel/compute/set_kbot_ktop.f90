@@ -326,7 +326,7 @@ contains
             ktop(n) = kb - 1 + kmxn(n)
          end do
          return ! Early exit - no link updates needed for sigma layers, volumes already calculated
-
+      ! JRE todo: z lyr morpho
       else if (Layertype == LAYTP_Z) then ! z or z-sigma
          do i_bnd = 1, nbndz
             n = kbndz(1, i_bnd)

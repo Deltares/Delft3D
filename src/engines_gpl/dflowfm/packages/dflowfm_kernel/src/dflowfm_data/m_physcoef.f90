@@ -51,6 +51,10 @@ module m_physcoef
    real(kind=dp) :: frcuniroof = 0.030
    real(kind=dp) :: frcuni1Dgrounlay !< uniform friction coeff groundlayer
    real(kind=dp) :: frcmax !< max friction coeff in frcu
+   integer :: dynroughveg
+   real(kind=dp) :: frcumin
+   real(kind=dp) :: droot
+   real(kind=dp) :: dstem
 
    integer :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
    real(kind=dp) :: frcunilin !< uniform friction coeff
@@ -174,6 +178,10 @@ contains
       locsaltmin = 5.0_dp
       locsaltmax = 10.0_dp
       NFEntrainmentMomentum = 0
+      dynroughveg = 0
+      droot = 0.5_dp
+      dstem = 0.5_dp
+      frcumin = 2.3e-2_dp
    end subroutine default_physcoef
 
    !> Calculates derived coefficients.

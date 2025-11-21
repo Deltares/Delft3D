@@ -182,6 +182,7 @@ contains
          end if
          !
          ! loop over the interfaces in the vertical
+         ! this does not work kmx==1
          !
          if (kmx > 0) then ! 3D
             call getkbotktop(k, kb, kt)
@@ -334,7 +335,7 @@ contains
                ws(kk, ll) = wsloc
             end do ! ll
          end do ! kk
-         if (kmx > 1) then
+         if (kmx > 1) then ! what about kmx==1
             do ll = 1, lsed
                ws(kb - 1, ll) = ws(kb, ll) ! to check
             end do ! ll

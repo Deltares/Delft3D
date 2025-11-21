@@ -39,13 +39,12 @@ module m_get_ustwav
 contains
    subroutine getustwav(LL, z00, fw, ustw2, csw, snw, Dfu, Dfuc, deltau, costu, uorbu) ! at u-point, get ustarwave and get ustokes
       use precision, only: dp
-      use m_flow, only: hu, jawavestokes, ag, jawave, rhomean, eps10
+      use m_flow, only: hu, jawavestokes, ag, eps10
       use m_flowgeom, only: ln, csu, snu
-      use m_waves, only: twav, ustokes, vstokes, phiwav, hwav, gammax, jauorb, ftauw, alfdeltau, fwfac
+      use m_waves, only: twav, ustokes, vstokes, phiwav, hwav, gammax, jauorb, ftauw, fwfac, strlyrfac
       use m_waveconst, only: STOKES_DRIFT_2NDORDER, STOKES_DRIFT_DEPTHUNIFORM, WAVE_SURFBEAT
       use m_sferic, only: twopi, dg2rd, pi
       use m_get_Lbot_Ltop, only: getlbotltop
-      use m_xbeach_data, only: R, cwav, gammaxxb, roller
       use mathconsts, only: ee
 
       integer, intent(in) :: LL
@@ -58,10 +57,11 @@ contains
       real(kind=dp), intent(out) :: uorbu
 
       real(kind=dp), external :: sinhsafei
-      integer :: k1, k2, Lb, Lt, L, Lmin
+      integer :: k1, k2, Lb, Lt, L
       real(kind=dp) :: Tsig, Hrms, asg, rk, shs, phi1, phi2, dks, aks, omeg, f1u, f2u, f3u, sintu
       real(kind=dp) :: p1, p2, h, z, uusto, fac
-      real(kind=dp) :: rolthk, rmax, erol, crol, mass
+
+      real(kind=dp), parameter :: alfaw = 20.0_dp
 
       Dfu = 0.0_dp; Dfuc = 0.0_dp; deltau = 0.0_dp; uorbu = 0.0_dp; csw = 1.0_dp; snw = 0.0_dp; costu = 1.0_dp; fw = 0.0_dp
 
@@ -113,36 +113,6 @@ contains
          ! depth averaged
          ustokes(LL) = costu * ag * asg * asg * rk / omeg / 2.0_dp / hu(LL) ! these are needed, also for 3D models (see u bnd furu)
          vstokes(LL) = sintu * ag * asg * asg * rk / omeg / 2.0_dp / hu(LL)
-
-         ! add 3D roller contribution to stokes drift
-         if (jawave == WAVE_SURFBEAT .and. roller == 1) then
-            ! roller mass flux
-            rmax = 0.125_dp * rhomean * ag * (gammaxxb * h)**2
-            erol = min(0.5_dp * (R(k1) + R(k2)), rmax)
-            crol = max(0.5_dp * (cwav(k1) + cwav(k2)), 1.0e-1_dp)
-            mass = 2.0_dp * erol / crol / rhomean
-            !
-            if (Lt > Lb) then
-               !
-               ! determine roller thickness
-               lmin = Lt
-               rolthk = 0.0_dp
-               do L = Lt - 1, Lb, -1
-                  lmin = L
-                  rolthk = hu(Lt) - hu(L)
-                  if (rolthk >= 0.5_dp * hrms) exit
-               end do
-               !
-               ! depth dependent contribution
-               ustokes(Lmin:Lt) = ustokes(Lmin:Lt) + mass / rolthk * costu
-               vstokes(Lmin:Lt) = vstokes(Lmin:Lt) + mass / rolthk * sintu
-            end if
-            !
-            ! depth averaged contribution
-            ustokes(LL) = ustokes(LL) + mass / h * costu
-            vstokes(LL) = ustokes(LL) + mass / h * sintu
-         end if
-
       end if
 
       if (shs > eps10) then
@@ -158,14 +128,15 @@ contains
          dks = 33.0_dp * z00 ! should be 30 for consistency with getust
          aks = asg * shs / dks * fac ! uorbu/(omega*ks), uorbu/omega = particle excursion length
 
-         deltau = 0.09_dp * dks * aks**0.82_dp ! thickness of wave boundary layer from Fredsoe and Deigaard
-         deltau = alfdeltau * max(deltau, ee * z00) ! alfaw = 20d0
-         deltau = min(0.5_dp * hu(LL), deltau) !
+         deltau = 0.09_dp * dks * aks**0.82_dp ! thickness of wave boundary layer from Fredsoe and Deigaard (1992)
+         deltau = max(deltau, ee * z00) ! alfaw makes wbl at least ~2ks thick
 
          call soulsby(tsig, uorbu, z00, fw) ! streaming with different calibration fac fwfac + soulsby fws
-         Dfu = 0.28_dp * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
-         Dfu = fwfac * Dfu / deltau ! divided by deltau    (m2/s3), missing rho divided out in adve denominator rho*delta
+         Dfu = 0.2821_dp * fw * uorbu**3 ! random waves: 0.28=1/2sqrt(pi) (m3/s3)
+         Dfu = fwfac * Dfu / strlyrfac / deltau ! divided by 3 deltau    (m2/s3) see van Rijn, streaming layer about 3-5 times wbl
          Dfuc = Dfu * rk / omeg * costu ! Dfuc = dfu/c/delta,  (m /s2) is contribution to adve
+         deltau = alfaw * deltau ! as in delft3d
+         deltau = min(0.5_dp * hu(LL), deltau) !
 
       else
          ustw2 = 0.0_dp

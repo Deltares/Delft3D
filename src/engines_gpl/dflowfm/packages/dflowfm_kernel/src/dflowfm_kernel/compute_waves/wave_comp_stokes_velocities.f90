@@ -78,7 +78,7 @@ contains
       deltahmin = 0.1_dp ! should be a parameter
       !
       do k = 1, ndx
-         massflux_max = 1.0_dp / 8.0_dp * sag * (hs(k)**1.5) * (gammax**2)
+         massflux_max = 0.125_dp * sag * (hs(k)**1.5) * (gammax**2)
          mnorm = min(sqrt(mxwav(k)**2 + mywav(k)**2), massflux_max)
          mangle = atan2(mywav(k), mxwav(k))
          mx(k) = mnorm * cos(mangle)

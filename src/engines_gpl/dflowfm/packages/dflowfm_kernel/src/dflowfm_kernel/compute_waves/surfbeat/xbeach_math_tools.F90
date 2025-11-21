@@ -425,19 +425,23 @@ contains
       if (present(stat)) then
          allocate (ctmp(maxfactor), sine(maxfactor), cosine(maxfactor), STAT=stat)
          if (stat /= 0) return
+         ctmp = (0.0_fftkind, 0.0_fftkind); sine = 0.0_fftkind; cosine= 0.0_fftkind
          call transform()
          deallocate (sine, cosine, STAT=stat)
          if (stat /= 0) return
          allocate (perm(nperm), STAT=stat)
          if (stat /= 0) return
+         perm = 0
          call permute()
          deallocate (perm, ctmp, STAT=stat)
          if (stat /= 0) return
       else
          allocate (ctmp(maxfactor), sine(maxfactor), cosine(maxfactor))
+         ctmp = (0.0_fftkind, 0.0_fftkind); sine = 0.0_fftkind; cosine= 0.0_fftkind
          call transform()
          deallocate (sine, cosine)
          allocate (perm(nperm))
+         perm = 0
          call permute()
          deallocate (perm, ctmp)
       end if

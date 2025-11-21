@@ -168,12 +168,12 @@ contains
 
             if (iadv(L) > 20 .and. iadv(L) < 30 .and. (.not. stm_included)) cycle ! skip update of bobs for structures
 
-            n1 = ln(1, L); n2 = ln(2, L) ! flow ref
-            k1 = lncn(1, L); k2 = lncn(2, L) ! net  ref
-            zn1 = zk(k1); if (zn1 == dmiss) zn1 = zkuni
-            zn2 = zk(k2); if (zn2 == dmiss) zn2 = zkuni
-
             if (kcu(L) == 1) then ! 1D link
+
+               n1 = ln(1, L); n2 = ln(2, L) ! flow ref
+               k1 = lncn(1, L); k2 = lncn(2, L) ! net  ref
+               zn1 = zk(k1); if (zn1 == dmiss) zn1 = zkuni
+               zn2 = zk(k2); if (zn2 == dmiss) zn2 = zkuni
 
                if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL .or. ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then ! tegeldieptes celcentra ! TODO: [TRUNKMERGE] WO/BJ: do we need stm_included in this if (consistent?)
                   if (stm_included) then
