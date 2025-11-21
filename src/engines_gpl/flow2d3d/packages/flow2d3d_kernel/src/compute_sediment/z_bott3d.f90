@@ -68,6 +68,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     use dfparall
     use sediment_basics_module
     use morstatistics, only: morstats
+    use m_slope_failure_erosion, only: slope_failure_erosion
     !
     implicit none
     !
@@ -989,6 +990,14 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              endif    ! totfixfrac > 1.0e-7
           endif       ! totdbodsd < 0.0
        enddo          ! nm
+       !
+       call slope_failure_erosion(&
+           !input
+           icx,icy,nmmax,kcu,kcv,kcs,kfs,dps,s1,lsedtot,gsqs,guu,guv,gvu,gvv,dtmor,&
+           !input/output
+           sbuu,sbvv, &
+           !global
+           gdp)
        !
        nm_pos = 2
        call dfexchg(dbodsd, 1, lsedtot, dfloat, nm_pos, gdp)

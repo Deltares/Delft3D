@@ -517,6 +517,14 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     call prop_get(mor_ptr, 'Morphology', 'HMaxTH', morpar%hmaxth)
     !
+    !
+    ! === repose slope for slope failure bank erosion (m/m)
+    !
+    call prop_get(mor_ptr, 'Morphology', 'repose', morpar%repose)
+    call prop_get(mor_ptr, 'Morphology', 'dryRepose', morpar%dryrepose)
+    call prop_get(mor_ptr, 'Morphology', 'reposeRedFac', morpar%reposeredfac)
+    call prop_get(mor_ptr, 'Morphology', 'reposeMaxDz', morpar%reposemaxdz)
+    !
     ! === factor for adjusting intensity of energy dissipation in wave boundary layer
     ! fwfac should be read from mdf-file (see rdnum)
     ! The reading of fwfac is left here for backwards compatibility
@@ -1379,6 +1387,10 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: tmor
     real(fp)                               , pointer :: tcmp
     real(fp)              , dimension(:)   , pointer :: thetsd
+    real(fp)                               , pointer :: repose
+    real(fp)                               , pointer :: dryrepose
+    real(fp)                               , pointer :: reposeredfac
+    real(fp)                               , pointer :: reposemaxdz
     real(fp)                               , pointer :: thetsduni
     real(fp)                               , pointer :: susw
     real(fp)                               , pointer :: sedthr
@@ -1481,6 +1493,10 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     tmor                => morpar%tmor
     tcmp                => morpar%tcmp
     thetsd              => morpar%thetsd
+    repose              => morpar%repose
+    dryrepose           => morpar%dryrepose
+    reposeredfac        => morpar%reposeredfac
+    reposemaxdz         => morpar%reposemaxdz
     susw                => morpar%susw
     sedthr              => morpar%sedthr
     hmaxth              => morpar%hmaxth
@@ -1697,6 +1713,24 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
        txtput1 = 'Computing THETSD for dry bank erosion'
     end if
     write (lundia, '(a)') txtput1
+    
+    if (repose > 0) then
+       txtput1 = 'Slope failure erosion mechanism active'
+       write (lundia, '(a)') txtput1
+       txtput1 = 'Repose slope for slope erosion (Repose)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', repose
+       txtput1 = 'dry Repose slope for slope erosion (DryRepose)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', dryrepose
+       txtput1 = 'Reduction factor in erosion flux calculation (default: 16.)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', reposeredfac
+       txtput1 = 'Max bed change due to erosion per cell face per (half) timestep (default: 1cm)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', reposemaxdz
+       
+    else
+       txtput1 = 'Slope failure erosion mechanism off'
+       write (lundia, '(a)') txtput1
+    end if
+    
     txtput1 = 'Tuning param. Shields Taucr (FACTCR)'
     write (lundia, '(2a,e20.4)') txtput1, ':', factcr
     txtput3 = 'Eulerian velocities i.s.o GLM velocities for' //       &
@@ -1936,6 +1970,35 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
        errmsg = 'THETSD must be in range 0 - 1'
        call write_error(errmsg, unit=lundia)
     end if
+    !
+    ! errortrap using THETSD and REPOSE
+    !
+    if (repose > 0.0_fp .and. any(thetsd > 0.0_fp)) then
+       error  = .true.
+       errmsg = 'THETSD and REPOSE should not be used simultaneously'
+       call write_error(errmsg, unit=lundia)
+    endif
+    if (repose > 0.0_fp) then
+       if(dryrepose < repose) then
+          error  = .true.
+          errmsg = 'DryRepose must be >= Repose'
+          call write_error(errmsg, unit=lundia)
+       endif
+       if(reposeredfac<8._fp)then
+           error  = .true.
+          errmsg = 'ReposeRedFac cannot be smaller than 8.'
+          call write_error(errmsg, unit=lundia)
+       endif
+       if(reposemaxdz<0._fp)then
+           error  = .true.
+           errmsg = 'ReposeMaxDz must be a positive real number'
+           call write_error(errmsg, unit=lundia)
+       elseif(reposemaxdz<0.001_fp)then
+           error  = .true.
+           errmsg = 'ReposeMaxDz must be greater than 0.001m (1mm) per (half) timestep per cell face.'
+           call write_error(errmsg, unit=lundia)
+       endif
+    endif
     !
     allocate(parnames(lsedtot*2), stat = istat)
     if (istat /= 0) then
