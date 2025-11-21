@@ -194,7 +194,7 @@ contains
             yzw(icnew) = yzw(ic)
             ba(icnew) = ba(ic)
 
-            if (update_blcell_and_non_empty) then
+            if (update_blcell_and_non_empty .and. ic <= nump) then
                blcell(icnew) = blcell(ic)
             end if
          end if
