@@ -1,17 +1,18 @@
 https://opensource.org/license/bsd-2-clause
 
 
+The BSD 2-clause license applies to the following third-party components included in the repository:
 
-"src\third_party_open\petsc":
-Copyright (c) 1991-2025, UChicago Argonne, LLC and the PETSc Developers and Contributors
-All rights reserved.
+   "src\third_party_open\petsc":
+   Copyright (c) 1991-2025, UChicago Argonne, LLC and the PETSc Developers and Contributors
+   All rights reserved.
 
 
 
-"src\third_party_open\getopt":
-Free Getopt
-Copyright (c)2002-2003 Mark K. Kim
-All rights reserved. 
+   "src\third_party_open\getopt":
+   Free Getopt
+   Copyright (c) 2002-2003 Mark K. Kim
+   All rights reserved. 
 
 
 

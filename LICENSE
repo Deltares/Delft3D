@@ -1,0 +1,37 @@
+Delft3D Software Package License Information
+
+Copyright (C) 2025 Stichting Deltares
+
+This software package contains components under multiple licenses. It is the responsibility of the user to ensure compliance with all applicable license terms when using, modifying, or redistributing this software. Mixing code under different licenses may impose additional obligations. Please review each license carefully before integration or distribution.
+By using this software, you agree to comply with the terms and conditions of the applicable licenses.
+
+
+For code owned by Deltares:
+  - GNU Affero General Public License (AGPL)
+  - GNU General Public License (GPL)
+  - GNU Lesser General Public License (LGPL)
+
+For third-party software:
+  - Apache License, Version 2.0
+  - BSD 2-Clause License (BSD-2)
+  - BSD 3-Clause License (BSD-3)
+  - GNU Affero General Public License (AGPL)
+  - GNU General Public License (GPL)
+  - GNU Lesser General Public License (LGPL)
+  - MIT License
+
+The following files next to this LICENSE file contain detailed license terms:
+  - bsd-2.txt
+  - bsd-3.txt
+  - agpl-3.0.txt
+  - gpl-3.0.txt
+  - lgpl-2.1.txt
+
+Official license texts can also be found at:
+  - Apache v2.0: https://www.apache.org/licenses/LICENSE-2.0
+  - BSD 2-Clause: https://opensource.org/licenses/BSD-2-Clause
+  - BSD 3-Clause: https://opensource.org/licenses/BSD-3-Clause
+  - AGPL v3: https://www.gnu.org/licenses/agpl-3.0.html
+  - GPL v3: https://www.gnu.org/licenses/gpl-3.0.html
+  - LGPL v2.1: https://www.gnu.org/licenses/lgpl-2.1.html
+  - MIT: https://opensource.org/license/mit

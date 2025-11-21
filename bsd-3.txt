@@ -1,44 +1,45 @@
 https://opensource.org/license/bsd-3-clause
 
 
+The BSD 3-clause license applies to the following third-party components included in the repository:
 
-"src\third_party_open\esmf":
-Earth System Modeling Framework
-Copyright (c) 2002-2025 University Corporation for Atmospheric Research,
-Massachusetts Institute of Technology, Geophysical Fluid Dynamics Laboratory,
-University of Michigan, National Centers for Environmental Prediction,
-Los Alamos National Laboratory, Argonne National Laboratory,
-NASA Goddard Space Flight Center.
-All rights reserved.
-
-
-
-"src\third_party_open\gdal\GeoTIFF":
-https://gdal.org/en/stable/license.html
+   "src\third_party_open\esmf":
+   Earth System Modeling Framework
+   Copyright (c) 2002-2025 University Corporation for Atmospheric Research,
+   Massachusetts Institute of Technology, Geophysical Fluid Dynamics Laboratory,
+   University of Michigan, National Centers for Environmental Prediction,
+   Los Alamos National Laboratory, Argonne National Laboratory,
+   NASA Goddard Space Flight Center.
+   All rights reserved.
 
 
 
-"src\third_party_open\googletest":
-Copyright 2008, Google Inc.
-All rights reserved.
+   "src\third_party_open\gdal\GeoTIFF":
+   https://gdal.org/en/stable/license.html
 
 
 
-"src\third_party_open\hdf5":
-https://portal.hdfgroup.org/display/HDF5/HDF5
-HDF5 (Hierarchical Data Format 5) Software Library and Utilities
-Copyright 2006 by The HDF Group. 
-NCSA HDF5 (Hierarchical Data Format 5) Software Library and Utilities
-Copyright 1998-2006 by The Board of Trustees of the University of Illinois. 
-All rights reserved.
+   "src\third_party_open\googletest":
+   Copyright 2008, Google Inc.
+   All rights reserved.
 
 
 
-"src\third_party_open\netcdf":
-http://www.unidata.ucar.edu/software/netcdf/copyright.html
-Copyright 2025 Unidata
-Copyright 1993-2025 University Corporation for Atmospheric Research/Unidata.
-Portions of this software were developed by the Unidata Program at the University Corporation for Atmospheric Research. 
+   "src\third_party_open\hdf5":
+   https://portal.hdfgroup.org/display/HDF5/HDF5
+   HDF5 (Hierarchical Data Format 5) Software Library and Utilities
+   Copyright 2006 by The HDF Group. 
+   NCSA HDF5 (Hierarchical Data Format 5) Software Library and Utilities
+   Copyright 1998-2006 by The Board of Trustees of the University of Illinois. 
+   All rights reserved.
+
+
+
+   "src\third_party_open\netcdf":
+   http://www.unidata.ucar.edu/software/netcdf/copyright.html
+   Copyright 2025 Unidata
+   Copyright 1993-2025 University Corporation for Atmospheric Research/Unidata.
+   Portions of this software were developed by the Unidata Program at the University Corporation for Atmospheric Research. 
 
 
 
