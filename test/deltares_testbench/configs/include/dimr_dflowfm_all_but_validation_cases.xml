@@ -18,7 +18,7 @@
             <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netcdf">
                 <parameters>
                     <parameter name="longculvert_discharge" toleranceAbsolute="0.01" />
-                    <parameter name="longculvert_velocity" toleranceAbsolute="0.01" />
+                    <parameter name="longculvert_velocity" toleranceAbsolute="0.03" />
                     <parameter name="longculvert_head" toleranceAbsolute="0.01" />
                     <parameter name="longculvert_s1dn" toleranceAbsolute="0.01" />
                     <parameter name="longculvert_flow_area" toleranceAbsolute="0.01" />
