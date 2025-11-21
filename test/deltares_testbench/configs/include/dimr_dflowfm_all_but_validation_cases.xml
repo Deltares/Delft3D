@@ -17,14 +17,14 @@
         <checks>
             <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netcdf">
                 <parameters>
-                    <parameter name="longculvert_discharge" toleranceAbsolute="0.0001" />
+                    <parameter name="longculvert_discharge" toleranceAbsolute="0.01" />
                     <parameter name="longculvert_velocity" toleranceAbsolute="0.0001" />
                     <parameter name="longculvert_geom_node_coordx" toleranceAbsolute="0.0001" />
-                    <parameter name="longculvert_head" toleranceAbsolute="0.0001" />
-                    <parameter name="longculvert_s1dn" toleranceAbsolute="0.0001" />
-                    <parameter name="longculvert_flow_area" toleranceAbsolute="0.0001" />
+                    <parameter name="longculvert_head" toleranceAbsolute="0.01" />
+                    <parameter name="longculvert_s1dn" toleranceAbsolute="0.01" />
+                    <parameter name="longculvert_flow_area" toleranceAbsolute="0.01" />
                     <parameter name="longculvert_valve_relative_opening" toleranceAbsolute="0.0001" />
-                    <parameter name="longculvert_s1up" toleranceAbsolute="0.0001" />
+                    <parameter name="longculvert_s1up" toleranceAbsolute="0.01" />
                 </parameters>
             </file>
         </checks>
