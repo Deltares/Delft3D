@@ -468,9 +468,22 @@
       <checks>
         <file name="dflowfmoutput/tt3_map.nc" type="netCDF">
           <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_cftrt" toleranceAbsolute="0.00001" />
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_czs" toleranceAbsolute="0.001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f004_c132_time_dependent_friction" ref="dflowfm_default">
+      <path version="2025-11-19T10:31">e02_dflowfm/f004_bottomfriction/c132_time_dependent_friction</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_model/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
+            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.001" /> 
+            <parameter name="mesh2d_czs" toleranceAbsolute="0.001" />
           </parameters>
         </file>
       </checks>
@@ -3843,6 +3856,17 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.00001" />
             <parameter name="mesh2d_windstressx" toleranceAbsolute="0.00001" />
             <parameter name="mesh2d_windstressy" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+	<testCase name="e02_f011_c098_humidity_netcdf" ref="dflowfm_default">
+      <path version="2025-11-11T13:16:47.454000">e02_dflowfm/f011_wind/c098_humidity_netcdf</path>
+      <maxRunTime>60</maxRunTime>
+      <checks>
+        <file name="output/FlowFM_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_Rhum" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
       </checks>

@@ -127,7 +127,7 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     character(36), dimension(1 + 2*kmax)      :: parrd  ! Parameter names read 
     character(36), dimension(2)               :: parnam ! Names of the paramaters to write to time dependent files for BCC 
     character(40)                             :: cntain
-    character(400)                            :: errmsg ! Character var. containing the error message to be written to file. The message depends on the error. 
+    character(1024)                           :: errmsg ! Character var. containing the error message to be written to file. The message depends on the error. 
     character(kmax*24*2+48)                   :: record ! Standard rec. length in an attribute file (maximum kmax*24*2 + 48) 
     character(63)                             :: tablnm ! Table name specification 
     !
@@ -143,6 +143,7 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     itdate  => gdp%gdexttim%itdate
     dt      => gdp%gdexttim%dt
     tunit   => gdp%gdexttim%tunit
+    sdt = dt*(tunit/60.0)
     !
     allocate(rwbval(kmax, 2, mxnto, lstsc))
     allocate(zstep(mxnto, lstsc))
@@ -179,9 +180,6 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
     !
     do n = 1, nto
        do l = 1, lstsc
-          ittdep = -1
-          itold  = -1
-          !
           read (lunrd, '(a)', iostat = iocond) record
           !
           ! Premature EOR encountered or error (IOCOND <> 0)
@@ -192,13 +190,8 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
              error = .true.
              call prterr(lundia    ,'G007'    ,filbcc    )
              if (iocond<0) then
-                if (itold < itfinish) then
-                   write(errmsg,'(a,a,a)') 'Last time in file ', trim(filbcc), ' <' 
-                   call prterr(lundia    ,'U042'    ,errmsg)
-                   error = .true.
-                   goto 9999
-                elseif (n<nto .or. l<lstsc) then
-                   write(errmsg,'(a,a)') 'not for all open boundaries BCC data defined in ', trim(filbcc) 
+                if (n<nto .or. l<lstsc) then
+                   write(errmsg,'(3a)') 'not for all open boundaries BCC data defined in ', trim(filbcc),', or not in the expected order'
                    call prterr(lundia    ,'U021'    ,errmsg)
                    error = .true.
                    goto 9999
@@ -206,6 +199,9 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
                 endif
              endif
           endif
+          !
+          ittdep = -1
+          itold  = -1
           !
           ! Check for EOL in file and find maximum number of characters
           ! to read if EOL is located.
@@ -220,7 +216,7 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
           call flhnew(lunrd     ,lundia    ,error     ,record(:lrecrd)      ,access    , &
                     & irecrd    ,nambnd(n) ,tprofc(n, l)         ,interp    ,itdate    , &
                     & timscl    ,ntimrd    ,parrd     ,npara     ,nparrd    , &
-                    & bubble    ,gdp       )
+                    & bubble    ,namcon(l) ,gdp       )
           if (error) goto 9999
           !
           ! Test profile definition
@@ -268,7 +264,8 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
           if (tprofc(n, l)(:4)=='step') npconc = nparrd - 1
           do np = 2, npconc
              if (parrd(np)(:20)/=namcon(l)) then
-                call prterr(lundia    ,'V096'    ,parrd(np) )
+                write(errmsg,'(8a)') 'Unexpected parameter name "',trim(parrd(np)),'" while expecting data for ',trim(namcon(l)),' at boundary "',trim(nambnd(n)),'" in file ',trim(filbcc)
+                call prterr(lundia    ,'U021'    ,errmsg )
                 error = .true.
                 goto 9999
              endif
@@ -459,7 +456,8 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
              !
              if (ier<=0) then
                 error = .true.
-                call prterr(lundia    ,'G007'    ,filbcc    )
+                write(errmsg,'(a,i0,6a)') 'Reading time step ',nr,' for ',trim(namcon(l)),' at boundary ',trim(nambnd(n)),' from ',trim(filbcc)
+                call prterr(lundia    ,'U021'    ,errmsg    )
                 !
                 write (lundia, '(a,a)') 'RECORD: ', record(:72)
                 goto 9999
@@ -471,7 +469,6 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
              !
              ! Perform some checks on time value read
              !
-             sdt = dt*(tunit/60.0)
              call chckit(lundia    ,error     ,filbcc    ,timrd     ,sdt       , &
                        & ittdep    ,itold     ,itstrt    ,nr        ,gdp       )
              if (error) goto 9999
@@ -608,10 +605,10 @@ subroutine rdtdcn(lundia    ,lunout    ,lunrd     ,error     ,filout    , &
           !
           ! Define maximum time
           !
-          if (itold/= - 1) then
+          if (itold /= -1) then
              if (itold < itfinish) then
-                write(errmsg,'(a,a,a,a,a)') 'Last time in file ', trim(filbcc), ' for section #',trim(nambnd(n)),'# <' 
-                call prterr(lundia    ,'U042'    ,errmsg)
+                write(errmsg,'(a,g0,7a,g0)') 'Last time ',timrd/timscl,' for ',trim(namcon(l)),' at boundary "',trim(nambnd(n)),'" in file ', trim(filbcc), ' is smaller than simulation stop time ',itfinish*sdt/timscl
+                call prterr(lundia    ,'U021'    ,errmsg)
                 error = .true.
                 goto 9999
              endif

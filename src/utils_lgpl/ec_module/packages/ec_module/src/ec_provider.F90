@@ -391,7 +391,8 @@ contains
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
                   "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
-                  "pseudoairpressure", "waterlevelcorrection")
+                  "pseudoairpressure", "waterlevelcorrection", &
+                  "frictioncoefficient")
                success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2616,8 +2617,8 @@ contains
          ncvarnames(1) = 'tcc' ! cloud cover (fraction)
          ncstdnames(1) = 'cloud_area_fraction'
       case ('humidity')
-         ncstdnames(1) = 'humidity'
-         ncstdnames_fallback(1) = 'relative_humidity'
+         ncstdnames(1) = 'relative_humidity'
+         ncstdnames_fallback(1) = 'humidity'
       case ('dewpoint')
          ncvarnames(1) = 'd2m' ! dew-point temperature
          ncstdnames(1) = 'dew_point_temperature'
@@ -2666,7 +2667,7 @@ contains
          ncstdnames(2) = 'sea_water_salinity'
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
          ncstdnames(1) = quantityName
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          ncvarnames(1) = 'friction_coefficient'
          ncstdnames(1) = 'friction_coefficient'
       case ('wavesignificantheight')
@@ -2763,7 +2764,7 @@ contains
             else
                nameVar = trim(ncvarnames(i))
             end if
-            call setECMessage("Variable '"//nameVar//"' not found in NetCDF file '"//trim(fileReaderPtr%filename))
+            call setECMessage("Variable '" // nameVar // "' not found in NetCDF file '" // trim(fileReaderPtr%filename) // "'.")
             return
          end if
          fileReaderPtr%standard_names(idvar) = ncstdnames(i) ! overwrite the standardname by the one required
@@ -2860,7 +2861,7 @@ contains
                   call ecProviderSearchStdOrVarnames(fileReaderPtr, j, varid, ncvarnames=coord_names, ignore_case=.true.)
                   if (varid < 0) then
                      call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                       //' coordinates variable '//trim(coord_names(2))//' referenced but not found')
+                                       //"' coordinates variable '"//trim(coord_names(2))//"' referenced but not found.")
                   else
                      if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'projection_x_coordinate')) then
@@ -2886,11 +2887,11 @@ contains
          if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                 //' requires ''projection_x_coordinate'' and ''projection_y_coordinate''.')
+                                 //"' requires 'projection_x_coordinate' and 'projection_y_coordinate'.")
             end if
             if (instancePtr%coordsystem == EC_COORDS_SFERIC) then
                call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                 //' either requires ''latitude'' and ''longitude'' or ''grid_latitude'' and ''grid_longitude''.')
+                                 //"' either requires 'latitude' and 'longitude' or 'grid_latitude' and 'grid_longitude'.")
             end if
             return
          end if

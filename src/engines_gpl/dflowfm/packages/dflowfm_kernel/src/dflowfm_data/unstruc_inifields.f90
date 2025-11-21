@@ -317,7 +317,8 @@ contains
                                           target_array_3d, first_index, method)
             else
                call process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count)
+                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count, &
+                                            filetype)
             end if
 
             ! This part of the code might be moved or changed. (See UNST-8247)
@@ -655,7 +656,7 @@ contains
          end if
 
          ! read value
-         if (filetype == inside_polygon) then
+         if (filetype == inside_polygon .and. method == METHOD_CONSTANT) then
             call prop_get(node_ptr, '', 'value', transformcoef(1), retVal)
             if (.not. retVal) then
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), &
@@ -1561,7 +1562,7 @@ contains
    !> Set the control parameters for the actual reading of the items from the input file or
    !! connecting the input to the EC-module.
    subroutine process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index, quantity_value_count)
+                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index, quantity_value_count, filetype)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
       use tree_data_types
@@ -1569,9 +1570,11 @@ contains
       use messageHandling
       use m_alloc, only: realloc, aerr
       use unstruc_files, only: resolvePath
+      use timespace_parameters, only: NCGRID
       use m_missing, only: dmiss
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL, UNC_LOC_S3D
       use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, waveforcing
+      use m_flowparameters, only: ja_friction_coefficient_time_dependent
       use m_flow, only: frcu
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
@@ -1605,7 +1608,9 @@ contains
       real(kind=sp), dimension(:, :), pointer, intent(out) :: target_array_3d_sp !< pointer to the array that corresponds to the quantity (real(kind=sp)), if it has an extra dimension.
       integer, intent(out) :: target_quantity_index !< Index of the quantity in the first dimension of target_array_3d, if applicable.
       integer, intent(out) :: quantity_value_count !< The number of values for this quantity on a single location. E.g. 1 for scalar fields, 2 for vector fields.
-
+      integer, intent(in) :: filetype !< Type of the file being read (NCGRID, etc).
+      
+      
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
       character(len=idlen) :: qid_base, qid_specific
@@ -1632,6 +1637,10 @@ contains
       case ('frictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frcu
+         if (filetype == NCGRID) then
+            time_dependent_array = .true.
+            ja_friction_coefficient_time_dependent = 1
+         end if
       case ('advectiontype')
          target_location_type = UNC_LOC_U
          target_array_integer => iadv
