@@ -4520,7 +4520,8 @@ contains
       use network_data
       use m_missing, only: dmiss
       implicit none
-      integer, intent(in) :: L, K1, K2, K3
+      integer, intent(in) :: L !< link to determine validity for
+      integer, intent(in) :: K1, K2, K3 !< start node, end node, link type, entries of kn(1:3,L)
       logical :: ja
 
       ja = 0
@@ -4538,6 +4539,7 @@ contains
             end if
          end if
       end if
+
    end function is_valid_link
 
    elemental function is_1D2D_link(L, K3) result(res)
@@ -4548,23 +4550,5 @@ contains
       res = (K3 == LINK_1D2D_INTERNAL .or. K3 == LINK_1D2D_LONGITUDINAL .or. K3 == LINK_1D2D_STREETINLET .or. k3 == LINK_1D2D_ROOF)
 
    end function is_1D2D_link
-
-   subroutine set_link_permutation(link_mask, L_start, Kn, kn_new, japermout, Lperm, Lperm_new)
-   integer, dimension(:), intent(in) :: link_mask
-   integer, dimension(:, :), intent(in) :: Kn
-   integer, dimension(:, :), intent(inout) :: Kn_new
-   integer, intent(in) :: japermout
-   integer, intent(inout) :: L_start
-   integer, dimension(:), intent(in) :: Lperm
-   integer, dimension(:), intent(inout) :: Lperm_new
-
-   integer ::  L_end
-      L_end = L_start + size(link_mask) - 1
-      kn_new(:, L_start+1:L_end) = kn(:, link_mask)
-      if (japermout == 1) then
-         Lperm_new(L_start+1:L_end) = Lperm(link_mask) ! fill 2D links from the back of the temp. array
-      end if
-
-end subroutine set_link_permutation
 
 end module gridoperations
