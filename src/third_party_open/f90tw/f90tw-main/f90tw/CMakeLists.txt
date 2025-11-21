@@ -203,7 +203,6 @@ set_property(TARGET f90twi_gtest
 
 add_library(f90tw_gtest STATIC gtest_assertions.cpp)
 set_property(TARGET f90tw_gtest PROPERTY POSITION_INDEPENDENT_CODE ON)
-set_target_properties(f90tw_gtest PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH}/cpp)
 target_include_directories(f90tw_gtest PUBLIC ${gtest_INCLUDE_DIR})
 target_link_libraries(f90tw_gtest PUBLIC f90twi_gtest gtest)
 
