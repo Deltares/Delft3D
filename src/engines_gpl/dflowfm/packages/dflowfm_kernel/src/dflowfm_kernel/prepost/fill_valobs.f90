@@ -364,7 +364,7 @@ contains
                   end do
                   do j = IVAL_SINK1, IVAL_SINKN
                      ii = j - IVAL_SINK1 + 1
-                     valobs(i, IPNT_SINK1 + ii - 1) = sedtra%sinkse(k, ii)
+                     valobs(i, IPNT_SINK1 + ii - 1) = sedtra%sink_im(k, ii)
                   end do
                end if
             end if

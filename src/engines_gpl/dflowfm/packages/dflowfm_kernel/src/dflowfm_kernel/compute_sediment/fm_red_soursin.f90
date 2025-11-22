@@ -143,7 +143,7 @@ contains
                   h0 = max(0.01_fp, s0(nm) - bl(nm))
                   h1 = max(0.01_fp, s1(nm) - bl(nm))
                   dz = (dts * morfac / cdryb(l)) &
-                      & * (sourse(nm, l) * h0 - (sinkse(nm, l) + sour_im(nm, l)) * h1 * constituents(ll, nm))
+                      & * ((sourse(nm, l)+sinkse(nm,l)) * h0 + (sink_im(nm, l) + sour_im(nm, l)) * h1 * constituents(ll, nm))
                   !
                   if (abs(dz) > h1 * dzmax) then
                      reducfac = (h1 * dzmax) / abs(dz)
@@ -159,12 +159,14 @@ contains
                      sourse(nm, l) = sourse(nm, l) * reducfac
                      sour_im(nm, l) = sour_im(nm, l) * reducfac
                      sinkse(nm, l) = sinkse(nm, l) * reducfac
+                     sink_im(nm, l) = sink_im(nm, l) * reducfac
                   end if
                   !
                   if ((sinkse(nm, l) + sour_im(nm, l)) * constituents(ll, nm) < sourse(nm, l)) then
                      sinkse(nm, l) = sinkse(nm, l) * fixfac(nm, l)
                      sourse(nm, l) = sourse(nm, l) * fixfac(nm, l)
                      sour_im(nm, l) = sour_im(nm, l) * fixfac(nm, l)
+                     sink_im(nm, l) = sink_im(nm, l) * fixfac(nm, l)
                      rsedeq(nm, l) = rsedeq(nm, l) * fixfac(nm, l)
                   end if
                end do ! nm

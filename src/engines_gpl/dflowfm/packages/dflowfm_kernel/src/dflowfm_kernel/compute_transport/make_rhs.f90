@@ -145,7 +145,7 @@ contains
                if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
 
                do j = 1, NUMCONST
-                  rhs(j, k) = (sumhorflux(j, k) / ndeltasteps(k) * dvoli + source(j, k)) * dt_loc + sed(j, k)
+                  rhs(j, k) = (sumhorflux(j, k) * dvoli + source(j, k)) * dt_loc + sed(j, k)
                   sumhorflux(j, k) = 0.0_dp
                end do
             end do

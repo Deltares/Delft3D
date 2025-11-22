@@ -503,7 +503,7 @@ contains
          case (3)
             dum = 0.0_dp
             do l = 1, stmpar%lsedsus
-               dum = dum + sedtra%sinkse(kk, l)
+               dum = dum + sedtra%sink_im(kk, l)
             end do
             znod = dum
          case (4)

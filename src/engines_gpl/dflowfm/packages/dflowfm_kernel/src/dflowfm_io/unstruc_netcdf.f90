@@ -390,6 +390,8 @@ module unstruc_netcdf
       integer :: id_sbct(MAX_ID_VAR) = -1
       integer :: id_sourse(MAX_ID_VAR) = -1 !< Variable ID for
       integer :: id_sinkse(MAX_ID_VAR) = -1
+      integer :: id_sour_im(MAX_ID_VAR) = -1 !< Variable ID for
+      integer :: id_sink_im(MAX_ID_VAR) = -1
       integer :: id_scrn(MAX_ID_VAR) = -1
       integer :: id_zk(MAX_ID_VAR) = -1 ! TODO: AvD: HK's timedep zk
       integer :: id_bl(MAX_ID_VAR) = -1 ! TODO: AvD: HK's timedep bl
@@ -5937,8 +5939,10 @@ contains
                end if
                !
                if (stmpar%morpar%moroutput%sourcesink) then
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sourse, nc_precision, UNC_LOC_S, 'sourse', '', 'Source term suspended sediment fractions', 'kg m-3 s-1', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
-                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sinkse, nc_precision, UNC_LOC_S, 'sinkse', '', 'Sink term suspended sediment fractions', 's-1', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sourse, nc_precision, UNC_LOC_S, 'sourse', '', 'Source term suspended sediment fractions (explicit)', 'kg m-3 s-1', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sinkse, nc_precision, UNC_LOC_S, 'sinkse', '', 'Sink term suspended sediment fractions (explicit)', 's-1', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sour_im, nc_precision, UNC_LOC_S, 'sour_im', '', 'Source term suspended sediment fractions (implicit)', 'kg m-3 s-1', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
+                  ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sink_im, nc_precision, UNC_LOC_S, 'sink_im', '', 'Sink term suspended sediment fractions (implicit)', 's-1', dimids=[-2, mapids%id_tsp%id_sedsusdim, -1], jabndnd=jabndnd_)
                end if
                !
                if (kmx > 0) then
@@ -7050,6 +7054,8 @@ contains
             if (stmpar%morpar%moroutput%sourcesink) then
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sourse, UNC_LOC_S, sedtra%sourse, jabndnd=jabndnd_)
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sinkse, UNC_LOC_S, sedtra%sinkse, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sour_im, UNC_LOC_S, sedtra%sour_im, jabndnd=jabndnd_)
+               ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sink_im, UNC_LOC_S, sedtra%sink_im, jabndnd=jabndnd_)
             end if
 
             if (stmpar%morpar%moroutput%suvcor) then
@@ -8218,7 +8224,7 @@ contains
          id_sbcx, id_sbcy, id_sbcx_reconstructed, id_sbcy_reconstructed, &
          id_sbwx, id_sbwy, id_sbwx_reconstructed, id_sbwy_reconstructed, &
          id_sswx, id_sswy, id_sswx_reconstructed, id_sswy_reconstructed, &
-         id_sourse, id_sinkse, id_ws, &
+         id_sourse, id_sinkse, id_sour_im, id_sink_im, id_ws, &
          id_sxtot, id_sytot, id_rsedeq, id_umod, id_zumod, id_ustar, id_dzdn, id_dzdt, id_morbl, id_aks, id_rca, &
          id_bodsed, id_dpsed, id_msed, id_lyrfrac, id_thlyr, id_poros, id_nlyrdim, &
          id_sedtotdim, id_sedsusdim, id_rho, id_potential_density, id_viu, id_diu, id_q1, id_spircrv, id_spirint, &
@@ -8867,13 +8873,23 @@ contains
                   if (stmpar%morpar%moroutput%sourcesink) then
                      ierr = nf90_def_var(imapfile, 'sourse', nf90_double, [id_flowelemdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_sourse(iid))
                      ierr = nf90_put_att(imapfile, id_sourse(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-                     ierr = nf90_put_att(imapfile, id_sourse(iid), 'long_name', 'Source term suspended sediment fractions')
+                     ierr = nf90_put_att(imapfile, id_sourse(iid), 'long_name', 'Source term suspended sediment fractions (explicit)')
                      ierr = nf90_put_att(imapfile, id_sourse(iid), 'units', 'kg/(m3 s)')
 
                      ierr = nf90_def_var(imapfile, 'sinkse', nf90_double, [id_flowelemdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_sinkse(iid))
                      ierr = nf90_put_att(imapfile, id_sinkse(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-                     ierr = nf90_put_att(imapfile, id_sinkse(iid), 'long_name', 'Sink term suspended sediment fractions')
+                     ierr = nf90_put_att(imapfile, id_sinkse(iid), 'long_name', 'Sink term suspended sediment fractions (explicit)')
                      ierr = nf90_put_att(imapfile, id_sinkse(iid), 'units', 's-1')
+
+                     ierr = nf90_def_var(imapfile, 'sour_im', nf90_double, [id_flowelemdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_sour_im(iid))
+                     ierr = nf90_put_att(imapfile, id_sour_im(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+                     ierr = nf90_put_att(imapfile, id_sour_im(iid), 'long_name', 'Source term suspended sediment fractions (implicit)')
+                     ierr = nf90_put_att(imapfile, id_sour_im(iid), 'units', 'kg/(m3 s)')
+
+                     ierr = nf90_def_var(imapfile, 'sink_im', nf90_double, [id_flowelemdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_sink_im(iid))
+                     ierr = nf90_put_att(imapfile, id_sink_im(iid), 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+                     ierr = nf90_put_att(imapfile, id_sink_im(iid), 'long_name', 'Sink term suspended sediment fractions (implicit)')
+                     ierr = nf90_put_att(imapfile, id_sink_im(iid), 'units', 's-1')
                   end if
 
                   if (stmpar%morpar%moroutput%suvcor) then
@@ -9734,6 +9750,8 @@ contains
                if (stmpar%morpar%moroutput%sourcesink) then
                   ierr = nf90_inq_varid(imapfile, 'sourse', id_sourse(iid))
                   ierr = nf90_inq_varid(imapfile, 'sinkse', id_sinkse(iid))
+                  ierr = nf90_inq_varid(imapfile, 'sour_im', id_sour_im(iid))
+                  ierr = nf90_inq_varid(imapfile, 'sink_im', id_sink_im(iid))
                end if
 
                if (stmpar%morpar%moroutput%suvcor) then
@@ -10521,6 +10539,8 @@ contains
                if (stmpar%morpar%moroutput%sourcesink) then
                   ierr = nf90_put_var(imapfile, id_sourse(iid), sedtra%sourse(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
                   ierr = nf90_put_var(imapfile, id_sinkse(iid), sedtra%sinkse(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
+                  ierr = nf90_put_var(imapfile, id_sour_im(iid), sedtra%sour_im(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
+                  ierr = nf90_put_var(imapfile, id_sink_im(iid), sedtra%sink_im(1:ndxndxi, :), [1, 1, itim], [ndxndxi, stmpar%lsedsus, 1])
                end if
 
                if (stmpar%morpar%moroutput%suvcor) then

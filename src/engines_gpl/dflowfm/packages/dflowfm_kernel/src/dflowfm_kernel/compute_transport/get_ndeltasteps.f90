@@ -47,6 +47,7 @@ contains
       use m_flowtimes, only: dts
       use m_transport, only: numnonglobal, dtmin_transp, nsubsteps, ndeltasteps, dtmax
       use timers, only: timon, timstrt, timstop
+      use m_flowparameters, only: ja_transport_local_time_step
 
       real(kind=dp) :: dt, dtmin
       real(kind=dp) :: logtwo
@@ -62,14 +63,13 @@ contains
 !  get smallest and largest time steps
       dtmin = dtmin_transp
 
-      if (dtmin >= dts) then
+      if (dtmin >= dts .or. ja_transport_local_time_step==0) then
          nsubsteps = 1
          ndeltasteps = 1
       else
          logtwo = log(2.0_dp)
          nsubsteps = max(1, 2**int(log(dts / dtmin) / logtwo + 0.9999_dp))
-         dtmin = dts / nsubsteps
-
+         dtmin = dts / real(nsubsteps, kind=dp)
 !     get number of substeps
          do kk = 1, Ndxi
             dt = dtmax(kk)
@@ -86,10 +86,10 @@ contains
             ndeltasteps(ln(1, LL)) = ndeltasteps(ln(2, LL))
          end do
 
-!      if ( nsubsteps.gt.1 ) then
-!         write(6,*) dtmin
-!      end if
-
+         if (ja_transport_local_time_step==2) then
+             ndeltasteps = nsubsteps
+             numnonglobal = ndxi
+         end if
       end if
 
       if (timon) call timstop(ithndl)

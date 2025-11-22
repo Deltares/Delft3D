@@ -233,8 +233,8 @@ contains
                   kkk = sedtra%kmxsed(kk, jsed)
                   if (kkk > 0) then
                      iconst = jsed + ISED1 - 1
-                     const_sour(iconst, kkk) = const_sour(iconst, kkk) + sedtra%sourse(kk, jsed)
-                     const_sink(iconst, kkk) = const_sink(iconst, kkk) + sedtra%sinkse(kk, jsed)
+                     const_sour(iconst, kkk) = const_sour(iconst, kkk) + sedtra%sourse(kk, jsed) - sedtra%sinkse(kk, jsed) * constituents(iconst, kkk)
+                     const_sink(iconst, kkk) = const_sink(iconst, kkk) + sedtra%sink_im(kk, jsed) + sedtra%sour_im(kk, jsed)
 
                      if (stmpar%morpar%flufflyr%iflufflyr > 0) then
                         const_sour(iconst, kkk) = const_sour(iconst, kkk) + stmpar%morpar%flufflyr%sourf(jsed, kk)

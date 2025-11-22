@@ -46,7 +46,7 @@ contains
    subroutine fm_advec_diff_2d(variable, advection_velocity, advection_discharge, source, sink, diffusion, background_diffusion_factor, limiter_type, ierror)
       use m_transport, only: dxiau
       use m_flowgeom, only: ndx, lnx, ln, ba
-      use m_flow, only: ndkx, lnkx, kbot, ktop, lbot, ltop, kmxn, kmxL
+      use m_flow, only: lnkx, kbot, ktop, lbot, ltop, kmxn, kmxL
       use m_alloc, only: realloc
       use precision, only: dp
       use m_solve_2d, only: solve_2d
@@ -136,7 +136,7 @@ contains
 
       call comp_dxiAu()
       call comp_fluxhor3d(NUMCONST, limiter_type, ndx, lnx, advection_velocity, advection_discharge, sum_flux_out, ba, kbot, lbot, ltop, kmxn, kmxL, constituent_variable, dummy, dummy, dummy_link, NSUBSTEPS, jahorupdate, ndeltasteps, jaupdateconst, horizontal_flux, dummy_ndx, dummy_ndx, 1, dxiAu, difsedsp=constituent_diffusion, background_diffusion_factor=background_diffusion_factor)
-      call comp_sumhorflux(1, 0, lnkx, ndkx, lbot, ltop, horizontal_flux, sum_horizontal_flux)
+      !call comp_sumhorflux(1, 0, lnkx, ndkx, lbot, ltop, horizontal_flux, sum_horizontal_flux, 0)
       call solve_2D(1, ndx, ba, kbot, ktop, sum_horizontal_flux, vertical_flux, constituent_source, constituent_sink, 1, jaupdate, ndeltasteps, constituent_variable, right_hand_side)
 
       variable = reshape(constituent_variable, shape=[ndx])
