@@ -7137,7 +7137,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f10_c02_microphytobenthos" ref="dwaq_default">
-        <path version="2025-01-22T16:15:03.387000">e03_waq/f10_additional_modules/c02_microphytobenthos</path>
+        <path version="2025-11-20T13:12:33.325000">e03_waq/f10_additional_modules/c02_microphytobenthos</path>
         <checks>
             <file name="mpb_dynamo.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7194,7 +7194,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f10_c04_trwp" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f10_additional_modules/c04_trwp</path>
+        <path version="2025-11-20T13:12:35.027000">e03_waq/f10_additional_modules/c04_trwp</path>
         <checks>
             <file name="c04_trwp.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7249,7 +7249,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f10_c05_resbuf" ref="dwaq_default">
-        <path version="2025-08-25T11:23:00">e03_waq/f10_additional_modules/c05_resbuf</path>
+        <path version="2025-11-20T13:12:36.600000">e03_waq/f10_additional_modules/c05_resbuf</path>
         <checks>
             <file name="c05_resbuf.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7282,7 +7282,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f10_c06_partitioning" ref="dwaq_default">
-        <path version="2024-11-28T14:55:00">e03_waq/f10_additional_modules/c06_partitioning</path>
+        <path version="2025-11-20T13:12:38.234000">e03_waq/f10_additional_modules/c06_partitioning</path>
         <checks>
             <file name="c06_partitioning.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7294,7 +7294,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f10_c08_dredging" ref="dwaq_default">
-        <path version="2025-04-24T02:00:00">e03_waq/f10_additional_modules/c08_dredging</path>
+        <path version="2025-11-20T13:14:20.792000">e03_waq/f10_additional_modules/c08_dredging</path>
         <checks>
             <file name="deltashell_his.nc" type="netCDF">
                 <parameters name="DELWAQ_RESULTS">
