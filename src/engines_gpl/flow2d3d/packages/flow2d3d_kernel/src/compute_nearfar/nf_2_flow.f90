@@ -68,6 +68,7 @@ subroutine nf_2_flow(filename, error, gdp)
     integer                                :: ierror
     integer                                :: istat
     integer                                :: numrealonline
+    integer                                :: numconsts_nf2ff    
     real(sp)                               :: version
     real(hp), dimension(:), allocatable    :: r_input
     character(40)                          :: type_string
@@ -157,13 +158,22 @@ subroutine nf_2_flow(filename, error, gdp)
        write(lundia,'(a)') "ERROR: '<NF2FF> / <discharge> / <constituentsOperator>' expected with value 'excess' or 'absolute'"
        error = .true.
     endif
+    !    !
+    ! Crash Delft3D4 when number of constituents in NF2FF file is not equal to length of nf_const.  
     !
+    call prop_get(file_ptr, 'NF2FF/discharge/constituents', line)    
+    numconsts_nf2ff = count_words(trim(line))   
+    if (numconsts_nf2ff /= lstsc) then
+        write(lundia,'(a)') "ERROR: The number of constituents in the NF2FF file does not match the number in the mdf file"           
+        call d3stop(1,gdp)          
+    endif 
+       
     r_input = -999.0_fp
     call prop_get(file_ptr, 'NF2FF/discharge/constituents', r_input, lstsc)
     do i=1,lstsc
        nf_const(i) = r_input(i)
     enddo
-    !
+    ! 
     call tree_get_node_by_name(nf2ff_ptr, 'nfresult', nfresult_ptr)
     !
     ! Intakes
