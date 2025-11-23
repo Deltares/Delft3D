@@ -183,6 +183,10 @@ contains
         real(kind = dp) :: fact                               !< Interpolation factor for volumes
         integer(kind = int_wp) :: i_substep, count_substeps   !< Fractional step variables
         integer(kind = int_wp) :: i_cell_begin, i_cell_end, i_flow_begin, i_flow_end          !< Loop variables per box
+        integer (kind = int_wp) :: i_cell_begin_cfl_risk      !< First cell in the box with CFL risk (count_boxes + 1)
+        integer (kind = int_wp) :: i_cell_end_cfl_risk        !< Last  cell in the box with CFL risk (count_boxes + 1)
+        integer (kind = int_wp) :: i_flow_begin_cfl_risk      !< First flow in the box with CFL risk (count_boxes + 1)
+        integer (kind = int_wp) :: i_flow_end_cfl_risk        !< Last  flow in the box with CFL risk (count_boxes + 1)
         integer(kind = int_wp) :: i_top_curr_col, i_top_next_col !< Help variables parallellism
         integer(kind = int_wp) :: ilay                        !< Loop counter layers
         integer(kind = int_wp) :: maxlay                      !< Maximum number of layers observed in this model
@@ -307,22 +311,22 @@ contains
             ! All sections of Part2a use delta_t_box(first_box)
             if (timon) call timstrt("flooding", ithand2)      !  'flooding' is evaluated with highest frequency
 
-            call calculate_loop_limits_for_current_substep(count_boxes, &
+            call calculate_loop_limits_for_cfl_risk(count_boxes, &
                     count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
-                    i_flow_begin, i_flow_end, i_cell_begin, i_cell_end)
+                    i_flow_begin_cfl_risk, i_flow_end_cfl_risk, i_cell_begin_cfl_risk, i_cell_end_cfl_risk)
 
             !  PART2a1: sum the mass and volume vertically
             !  to calculate the column averaged concentrations
             !  assigning those values to the upper-most cell in each column
 
-            call store_total_vol_and_average_conc_in_uppermost_cell(i_cell_begin, i_cell_end, &
+            call store_total_vol_and_average_conc_in_uppermost_cell(i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
                             sorted_cells, nvert, ivert, &
                             volint, rhs, conc, num_substances_transported, num_cells)
 
             ! PART2a1: apply all influxes to the cells first; volumes and masses are updated
             
             call update_system_for_flows_with_cfl_risk_to_interior_cells(rhs, conc, volint, sorted_flows, &
-                                    bound, fluxes, i_flow_begin, i_flow_end, num_exchanges, &
+                                    bound, fluxes, i_flow_begin_cfl_risk, i_flow_end_cfl_risk, num_exchanges, &
                                     flow, ipoint, delta_t_box, first_box_smallest_dt, &
                                     num_substances_transported, massbal, amass2, dmpq, &
                                     iqdmp, nvert, ivert, count_boxes, &
@@ -332,47 +336,56 @@ contains
             ! these cells that should have reasonable concentrations
             ! and enough volume now
             call update_system_for_remaining_flows_with_cfl_risk(rhs, conc, volint, sorted_flows, &
-                            bound, fluxes, i_flow_begin, i_flow_end, &
+                            bound, fluxes, i_flow_begin_cfl_risk, i_flow_end_cfl_risk, &
                             num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
                             num_substances_transported, massbal, amass2, dmpq, &
                             iqdmp, nvert, ivert)
 
 
+
+            call update_system_with_withdrawals_at_cells_with_cfl_risk(rhs, conc, volint, sorted_cells, &
+                    i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
+                    wdrawal, delta_t_box, first_box_smallest_dt, &
+                    num_substances_transported, massbal, amass2, dmps, &
+                    num_substances_total, num_monitoring_cells, &
+                    isdmp, nvert, ivert, &
+                    num_waste_loads, iwaste, wstdmp, file_unit)
+        
             ! PART2a3: apply all withdrawals that were present in the hydrodynamics as negative wasteload rather than as open boundary flux; uses volint
-            do i = i_cell_begin, i_cell_end
-                ! iseg2 == target cell for withdrawal
-                iseg2 = sorted_cells(i)                                          ! cell number
-                if (wdrawal(iseg2) == 0.0) cycle
-                dlt_vol = wdrawal(iseg2) * delta_t_box(first_box_smallest_dt)
-                ! cell_i == head of column for this cell, source of withdrawal
-                cell_i = ivert(nvert(1, abs(nvert(2, iseg2))))             ! cell number of head of column, source
-                if (dlt_vol <= volint(cell_i)) then
-                    volint(cell_i) = volint(cell_i) - dlt_vol
-                else
-                    write (file_unit, '(A,i8,E16.7,A,E16.7,A)') 'Warning: trying to withdraw from cell', iseg2, dlt_vol, &
-                            ' m3. Available is', volint(cell_i), ' m3!'
-                    dlt_vol = volint(cell_i)
-                    volint(cell_i) = 0.0d0
-                end if
-                ipb = isdmp(iseg2)
-                do substance_i = 1, num_substances_transported
-                    dlt_mass = dlt_vol * conc(substance_i, cell_i)
-                    rhs(substance_i, cell_i) = rhs(substance_i, cell_i) - dlt_mass
-                    if (massbal) amass2(substance_i, 3) = amass2(substance_i, 3) - dlt_mass
-                    if (ipb > 0) dmps(substance_i, ipb, 3) = dmps(substance_i, ipb, 3) + dlt_mass
-                end do
-                do k = 1, num_waste_loads
-                    if (iseg2 == iwaste(k)) then
-                        do substance_i = 1, num_substances_transported
-                            wstdmp(substance_i, k, 2) = wstdmp(substance_i, k, 2) + dlt_vol * conc(substance_i, cell_i)
-                        end do
-                        exit
-                    end if
-                end do
-            end do
+            ! do i = i_cell_begin_cfl_risk, i_cell_end_cfl_risk
+            !     ! iseg2 == target cell for withdrawal
+            !     iseg2 = sorted_cells(i)                                          ! cell number
+            !     if (wdrawal(iseg2) == 0.0) cycle
+            !     dlt_vol = wdrawal(iseg2) * delta_t_box(first_box_smallest_dt)
+            !     ! cell_i == head of column for this cell, source of withdrawal
+            !     cell_i = ivert(nvert(1, abs(nvert(2, iseg2))))             ! cell number of head of column, source
+            !     if (dlt_vol <= volint(cell_i)) then
+            !         volint(cell_i) = volint(cell_i) - dlt_vol
+            !     else
+            !         write (file_unit, '(A,i8,E16.7,A,E16.7,A)') 'Warning: trying to withdraw from cell', iseg2, dlt_vol, &
+            !                 ' m3. Available is', volint(cell_i), ' m3!'
+            !         dlt_vol = volint(cell_i)
+            !         volint(cell_i) = 0.0d0
+            !     end if
+            !     ipb = isdmp(iseg2)
+            !     do substance_i = 1, num_substances_transported
+            !         dlt_mass = dlt_vol * conc(substance_i, cell_i)
+            !         rhs(substance_i, cell_i) = rhs(substance_i, cell_i) - dlt_mass
+            !         if (massbal) amass2(substance_i, 3) = amass2(substance_i, 3) - dlt_mass
+            !         if (ipb > 0) dmps(substance_i, ipb, 3) = dmps(substance_i, ipb, 3) + dlt_mass
+            !     end do
+            !     do k = 1, num_waste_loads
+            !         if (iseg2 == iwaste(k)) then
+            !             do substance_i = 1, num_substances_transported
+            !                 wstdmp(substance_i, k, 2) = wstdmp(substance_i, k, 2) + dlt_vol * conc(substance_i, cell_i)
+            !             end do
+            !             exit
+            !         end if
+            !     end do
+            ! end do
 
             ! PART2a4: expand (apply?) the depth averaged result to all layers for this group of cells, using the interpolated column-cummulative volume vol
-            do i = i_cell_begin, i_cell_end
+            do i = i_cell_begin_cfl_risk, i_cell_end_cfl_risk
                 cell_i = sorted_cells(i)
                 j = nvert(2, cell_i)
                 ! if cell is upper-most == top of column
@@ -2043,36 +2056,38 @@ contains
         end do
     end function get_integration_limit_of_sub_time_step
 
-    subroutine calculate_loop_limits_for_current_substep(count_boxes, &
+    subroutine calculate_loop_limits_for_cfl_risk(count_boxes, &
         count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
-        i_flow_begin, i_flow_end, i_cell_begin, i_cell_end)
-        !> Calculates the loop limits for flows and cells for the current sub-time step.
+        i_flow_begin_cfl_risk, i_flow_end_cfl_risk, i_cell_begin_cfl_risk, i_cell_end_cfl_risk)
+        !> Calculates the loop limits for flows and cells for the sub-time step CFL risk (count_boxes + 1).
+        !> These limits are used to process only the flows and cells assigned to the CFL risk box.
+
         implicit none
         integer(kind = int_wp), intent(in) :: count_boxes !< number of delta time boxes or baskets
         integer(kind = int_wp), intent(in) :: count_flows_for_box(:) !< array with counts of flows for each box
         integer(kind = int_wp), intent(in) :: count_cells_for_box(:) !< array with counts of cells for each box
         integer(kind = int_wp), intent(in) :: sep_vert_flow_per_box(:) !< separation index of vertical flows per box
-        integer(kind = int_wp), intent(out) :: i_flow_begin !< beginning index for flow loop
-        integer(kind = int_wp), intent(out) :: i_flow_end !< ending index for flow loop
-        integer(kind = int_wp), intent(out) :: i_cell_begin !< beginning index for cell loop
-        integer(kind = int_wp), intent(out) :: i_cell_end !< ending index for cell loop
+        integer(kind = int_wp), intent(out) :: i_flow_begin_cfl_risk !< beginning index for flow loop
+        integer(kind = int_wp), intent(out) :: i_flow_end_cfl_risk !< ending index for flow loop
+        integer(kind = int_wp), intent(out) :: i_cell_begin_cfl_risk !< beginning index for cell loop
+        integer(kind = int_wp), intent(out) :: i_cell_end_cfl_risk !< ending index for cell loop
 
         
-        i_flow_begin = count_flows_for_box(count_boxes + 2) + 1   !  loop limits for fluxes in this box
-        i_flow_end =   sep_vert_flow_per_box(count_boxes + 1)
-        i_cell_begin = count_cells_for_box(count_boxes + 2) + 1   !  loop limits for cells in this box
-        i_cell_end =   count_cells_for_box(count_boxes + 1)
-    end subroutine calculate_loop_limits_for_current_substep
+        i_flow_begin_cfl_risk = count_flows_for_box(count_boxes + 2) + 1   !  loop limits for fluxes in this box
+        i_flow_end_cfl_risk =   sep_vert_flow_per_box(count_boxes + 1)
+        i_cell_begin_cfl_risk = count_cells_for_box(count_boxes + 2) + 1   !  loop limits for cells in this box
+        i_cell_end_cfl_risk =   count_cells_for_box(count_boxes + 1)
+    end subroutine calculate_loop_limits_for_cfl_risk
 
-    subroutine store_total_vol_and_average_conc_in_uppermost_cell(i_cell_begin, i_cell_end, &
+    subroutine store_total_vol_and_average_conc_in_uppermost_cell(i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
         sorted_cells, nvert, ivert, &
         volint, rhs, conc, num_substances_transported, num_cells)
         !> sum the mass and volume vertically
         !  to calculate the column averaged concentrations
         !  assigning those values to the upper-most cell in each column
         implicit none
-        integer, intent(in) :: i_cell_begin !< index of first cell in the boxes that need to be integrated in this sub-time step
-        integer, intent(in) :: i_cell_end   !< index of last cell in the boxes that need to be integrated in this sub-time step
+        integer, intent(in) :: i_cell_begin_cfl_risk !< index of first cell in the CFL risk box that needs to be integrated in this sub-time step
+        integer, intent(in) :: i_cell_end_cfl_risk   !< index of last cell in the CFL risk box that needs to be integrated in this sub-time step
         integer, intent(in) :: sorted_cells(:) !< array of cells sorted by box index
         integer, intent(in) :: nvert(:,:)   !< Column number and indices of cells above/below
         integer, intent(in) :: ivert(:)      !< ordering array of cells in vertical columns
@@ -2092,7 +2107,7 @@ contains
         integer :: substance_i     !< loop index for substances
         
         ! sum volumes (volint) and masses (rhs) onto upper-most cell of each column
-        do i = i_cell_begin, i_cell_end
+        do i = i_cell_begin_cfl_risk, i_cell_end_cfl_risk
             i_cell = sorted_cells(i)
             j = nvert(2, i_cell)                                    ! column number if cell_i == head of column
             if (j <= 0) cycle                                       ! negative or zero if not head of column
@@ -2114,7 +2129,7 @@ contains
         end do
         ! update average column concentrations (conc) in upper-most cell using volint
         ! if cell is dry set to 0 mass (rhs) for dissolved species
-        do i = i_cell_begin, i_cell_end
+        do i = i_cell_begin_cfl_risk, i_cell_end_cfl_risk
             i_cell = sorted_cells(i)
             j = nvert(2, i_cell)
             if (j <= 0) cycle
@@ -2134,13 +2149,13 @@ contains
     end subroutine store_total_vol_and_average_conc_in_uppermost_cell
 
     subroutine update_system_for_flows_with_cfl_risk_to_interior_cells(rhs, conc, volint, sorted_flows, &
-        bound, fluxes, i_flow_begin, i_flow_end, num_exchanges, &
+        bound, fluxes, i_flow_begin_cfl_risk, i_flow_end_cfl_risk, num_exchanges, &
         flow, ipoint, delta_t_box, first_box_smallest_dt, &
         num_substances_transported, massbal, amass2, dmpq, &
         iqdmp, nvert, ivert, count_boxes, &
         dt_box_cell, sum_remained, sum_changed, file_unit, report)
         !> Updates the system of volumes, the right-hand side (mass) and concentration arrays for the source and target cells 
-        !> of flows ending up in the domain which have been assigned a CFL condition (assigned to dt box = count_boxes + 1).
+        !> of flows ending up in the domain which have been assigned a CFL risk condition (assigned to dt box = count_boxes + 1).
 
         implicit none
 
@@ -2151,8 +2166,8 @@ contains
         integer,              intent(inout):: sorted_flows(:)            !< array of exchanges sorted by box index
         real(kind = real_wp), intent(in)   :: bound(num_substances_transported,*) !< array with binding coefficients for each substance and cell
         logical,              intent(in)   :: fluxes                     !< flag indicating if fluxes are being tracked
-        integer,              intent(in)   :: i_flow_begin               !< index of first flow with cfl condition
-        integer,              intent(in)   :: i_flow_end                 !< index of last flow with cfl condition
+        integer,              intent(in)   :: i_flow_begin_cfl_risk               !< index of first flow with cfl condition
+        integer,              intent(in)   :: i_flow_end_cfl_risk                 !< index of last flow with cfl condition
         integer,              intent(in)   :: num_exchanges              !< total number of exchanges or flows between cells
         real(kind = real_wp), intent(in)   :: flow(:)                    !< flow rate through each exchange
         integer,              intent(in)   :: ipoint(4, num_exchanges)   !< exchange connectivity array (indices of cells before and after exchange)
@@ -2201,7 +2216,7 @@ contains
         do while (remained > 0)
             changed = 0
             remained = 0
-            do i_flow = i_flow_begin, i_flow_end
+            do i_flow = i_flow_begin_cfl_risk, i_flow_end_cfl_risk
                ! initialize vars
                 flow_idx = sorted_flows(i_flow)
                 if (flow_idx < 0) cycle  ! flow already processed
@@ -2313,10 +2328,12 @@ contains
     end subroutine update_system_for_flows_with_cfl_risk_to_interior_cells
 
     subroutine update_system_for_remaining_flows_with_cfl_risk(rhs, conc, volint, sorted_flows, &
-        bound, fluxes, i_flow_begin, i_flow_end, &
+        bound, fluxes, i_flow_begin_cfl_risk, i_flow_end_cfl_risk, &
         num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
         num_substances_transported, massbal, amass2, dmpq, &
         iqdmp, nvert, ivert)
+        !> Updates the system of volumes, the right-hand side (mass) and concentration arrays for the source and target cells 
+        !> of remaining flows ending up in the domain which have been assigned a CFL risk condition (assigned to dt box = count_boxes + 1).
 
         implicit none
 
@@ -2327,8 +2344,8 @@ contains
         integer,              intent(inout):: sorted_flows(:)            !< array of exchanges sorted by box index
         real(kind = real_wp), intent(in)   :: bound(num_substances_transported,*) !< array with binding coefficients for each substance and cell
         logical,              intent(in)   :: fluxes                     !< flag indicating if fluxes are being tracked
-        integer,              intent(in)   :: i_flow_begin               !< index of first flow with cfl condition
-        integer,              intent(in)   :: i_flow_end                 !< index of last flow with cfl condition
+        integer,              intent(in)   :: i_flow_begin_cfl_risk               !< index of first flow with cfl condition
+        integer,              intent(in)   :: i_flow_end_cfl_risk                 !< index of last flow with cfl condition
         integer,              intent(in)   :: num_exchanges              !< total number of exchanges or flows between cells
         real(kind = real_wp), intent(in)   :: flow(:)                    !< flow rate through each exchange
         integer,              intent(in)   :: ipoint(4, num_exchanges)   !< exchange connectivity array (indices of cells before and after exchange)
@@ -2358,9 +2375,8 @@ contains
         logical :: target_is_bc   !< flag indicating if target cell is a boundary condition cell
        !
 
-
          ! loop along flows with cfl condition that have not yet been processed
-        do i_flow = i_flow_begin, i_flow_end
+        do i_flow = i_flow_begin_cfl_risk, i_flow_end_cfl_risk
             flow_idx = sorted_flows(i_flow)
             if (flow_idx < 0) cycle ! flow already processed
             if (flow(flow_idx) == 0.0) cycle ! negligible flow
@@ -2412,12 +2428,92 @@ contains
         end do ! loop along remaining flows with cfl condition
 
         ! Remove marks of processed flows (make them all positive)
-        do i_flow = i_flow_begin, i_flow_end  ! All fluxes possibly non CFL-compliant should have been processed
+        do i_flow = i_flow_begin_cfl_risk, i_flow_end_cfl_risk  ! All fluxes possibly non CFL-compliant should have been processed
             sorted_flows(i_flow) = abs(sorted_flows(i_flow))                                  ! Reset the flux pointer to its positive value
         end do
 
 
     end subroutine update_system_for_remaining_flows_with_cfl_risk
+
+    subroutine update_system_with_withdrawals_at_cells_with_cfl_risk(rhs, conc, volint, sorted_cells, &
+        i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
+        wdrawal, delta_t_box, first_box_smallest_dt, &
+        num_substances_transported, massbal, amass2, dmps, &
+        num_substances_total, num_monitoring_cells, &
+        isdmp, nvert, ivert, &
+        num_waste_loads, iwaste, wstdmp, file_unit)
+
+        !> Updates the system of volumes, the right-hand side (mass) and concentration arrays for withdrawals at cells 
+        !> that have been assigned a CFL condition (assigned to dt box = count_boxes + 1).
+
+        implicit none
+         ! Subroutine parameters
+        real(kind = dp),      intent(inout):: rhs(:,:)                   !< right-hand side array with masses for each substance and cell
+        real(kind = real_wp), intent(inout):: conc(:,:)                  !< concentration array for each substance and cell
+        real(kind = dp),      intent(inout):: volint(:)                  !< intermediate volume for each cell
+        integer,              intent(inout):: sorted_cells(:)            !< array of cells sorted by box index
+        integer,              intent(in)   :: i_cell_begin_cfl_risk      !< index in sorted_cells of first cell with cfl risk condition (risk of not being cfl compliant)
+        integer,              intent(in)   :: i_cell_end_cfl_risk        !< index in sorted_cells of last cell with cfl risk condition (risk of not being cfl compliant)
+        real(kind = real_wp), intent(in)   :: wdrawal(:)                 !< withdrawal rate at each cell
+        real(kind = dp),      intent(in)   :: delta_t_box(:)             !< delta t assigned to each box
+        integer,              intent(in)   :: first_box_smallest_dt      !< index of    the first box (with smallest delta t) that is used
+        integer,              intent(in)   :: num_substances_transported !< number of substances being transported
+        logical,              intent(in)   :: massbal                    !< flag indicating if mass balance
+        real(kind = real_wp), intent(inout):: amass2(:,:)                !< array for mass balance tracking
+        real(kind = real_wp), intent(inout):: dmps(num_substances_total,num_monitoring_cells,*) !< array for some process or boundary condition
+        integer,              intent(in)   :: num_substances_total       !< total number of substances
+        integer,              intent(in)   :: num_monitoring_cells       !< total number of monitoring cells
+        integer,              intent(in)   :: isdmp(:)                   !< array indicating process or boundary condition for each cell
+        integer,              intent(in)   :: nvert(:,:)                 !< Column number and indices of cells above/below
+        integer,              intent(in)   :: ivert(:)                   !< ordering array of cells in vertical columns
+        integer,              intent(in)   :: num_waste_loads            !< number of waste loads
+        integer,              intent(in)   :: iwaste(:)                  !< array with cell indices of waste load locations
+        real(kind = real_wp), intent(inout):: wstdmp(:,:,:)              !< array for waste load mass tracking
+        integer,              intent(in)   :: file_unit                  !< unit number for output messages 
+
+        ! Local variables
+        integer :: i               !< loop index for sorted cells
+        integer :: iseg2           !< index of intermediate cell in same column as i_cell
+        integer :: cell_i          !< global cell index of head of column for withdrawal
+        real(kind = dp) :: dlt_vol !< delta volume for a withdrawal
+        integer :: substance_i     !< loop index for substances 
+        real(kind = dp) :: dlt_mass !< delta mass for a substance
+        integer :: ipb            !< index for process or boundary condition
+        integer :: k               !< loop index for waste loads
+        
+        ! loop along cells with cfl condition that have withdrawals
+        do i = i_cell_begin_cfl_risk, i_cell_end_cfl_risk
+            ! iseg2 == target cell for withdrawal
+            iseg2 = sorted_cells(i)                                          ! cell number
+            if (wdrawal(iseg2) == 0.0) cycle
+            dlt_vol = wdrawal(iseg2) * delta_t_box(first_box_smallest_dt)
+            ! cell_i == head of column for this cell, source of withdrawal
+            cell_i = ivert(nvert(1, abs(nvert(2, iseg2))))             ! cell number of head of column, source
+            if (dlt_vol <= volint(cell_i)) then
+                volint(cell_i) = volint(cell_i) - dlt_vol
+            else
+                write (file_unit, '(A,i8,E16.7,A,E16.7,A)') 'Warning: trying to withdraw from cell', iseg2, dlt_vol, &
+                        ' m3. Available is', volint(cell_i), ' m3!'
+                dlt_vol = volint(cell_i)
+                volint(cell_i) = 0.0d0
+            end if
+            ipb = isdmp(iseg2)
+            do substance_i = 1, num_substances_transported
+                dlt_mass = dlt_vol * conc(substance_i, cell_i)
+                rhs(substance_i, cell_i) = rhs(substance_i, cell_i) - dlt_mass
+                if (massbal) amass2(substance_i, 3) = amass2(substance_i, 3) - dlt_mass
+                if (ipb > 0) dmps(substance_i, ipb, 3) = dmps(substance_i, ipb, 3) + dlt_mass
+            end do
+            do k = 1, num_waste_loads
+                if (iseg2 == iwaste(k)) then
+                    do substance_i = 1, num_substances_transported
+                        wstdmp(substance_i, k, 2) = wstdmp(substance_i, k, 2) + dlt_vol * conc(substance_i, cell_i)
+                    end do
+                    exit
+                end if
+            end do
+        end do
+    end subroutine update_system_with_withdrawals_at_cells_with_cfl_risk
 
     function is_bc_cell(cell_i) result(bc_flag)
         !> Determines if a cell is a boundary condition cell.
