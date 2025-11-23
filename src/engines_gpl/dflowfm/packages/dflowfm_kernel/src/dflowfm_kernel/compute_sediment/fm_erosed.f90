@@ -38,6 +38,9 @@ module m_fm_erosed_sub
    use m_fm_upwbed, only: fm_upwbed
    use m_fm_red_soursin, only: fm_red_soursin
    use m_waveconst
+   use m_compdiam, only: compdiam
+   use m_comphidexp, only: comphidexp
+   use m_compsandfrac, only: compsandfrac
 
    implicit none
 
@@ -94,7 +97,7 @@ contains
       use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor
       use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse
       use m_fm_erosed, only: hs_mor, mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, srcmax, sedtrcfac, sedd50, rhosol, nmudfrac, taucr, tetacr, dstar, iform
-      use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, sedd50fld, sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
+      use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, spatial_d50, sedd50fld, sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
       use m_fm_erosed, only: asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc
       use m_fm_erosed, only: max_integers, max_strings, dll_integers, dll_strings, dll_function, dll_handle
       use m_fm_erosed, only: mfluff, wetslope, oldmudfrac
@@ -562,7 +565,7 @@ contains
          call compdiam(frac, sedd50, sedd50, sedtyp, lsedtot, &
             & logsedsig, nseddia, logseddia, ndx, 1, &
             & ndx, xx, nxx, max_mud_sedtyp, min_dxx_sedtyp, &
-            & sedd50fld, dm, dg, dxx, dgsd)
+            & spatial_d50, sedd50fld, dm, dg, dxx, dgsd)
          !
          ! determine hiding & exposure factors
          !
@@ -578,7 +581,7 @@ contains
          ! compute sand fraction
          !
          call compsandfrac(frac, sedd50, ndx, lsedtot, sedtyp, &
-                         & max_mud_sedtyp, sandfrac, sedd50fld, &
+                         & max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
                          & 1, ndx)
       end if
       !
@@ -1016,7 +1019,7 @@ contains
             !
             tsd = -999.0_fp
             di50 = sedd50(l)
-            if (di50 < 0.0_fp) then
+            if (spatial_d50) then
                !  Space varying sedd50 specified in array sedd50fld:
                !  Recalculate dstar, tetacr and taucr for each nm,l - point
                di50 = sedd50fld(nm)

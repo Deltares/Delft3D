@@ -1,3 +1,7 @@
+module m_erosed
+   
+contains
+   
 subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                 & nst       ,lsed      ,lsedtot   ,lsal      ,ltem      , &
                 & lsecfl    ,kfs       ,kfu       ,kfv       ,sig       , &
@@ -71,6 +75,9 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use m_sand_mud
     use globaldata
     use dfparall
+    use m_compdiam, only: compdiam
+    use m_comphidexp, only: comphidexp
+    use m_compsandfrac, only: compsandfrac
     !
     implicit none
     !
@@ -89,6 +96,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:)      , pointer :: sedd10
     real(fp)         , dimension(:)      , pointer :: sedd50
     real(fp)         , dimension(:)      , pointer :: sedd90
+    logical                              , pointer :: spatial_d50
     real(fp)         , dimension(:)      , pointer :: sedd50fld
     real(fp)         , dimension(:)      , pointer :: dstar
     real(fp)         , dimension(:)      , pointer :: taucr
@@ -403,6 +411,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     sedd10              => gdp%gdsedpar%sedd10
     sedd50              => gdp%gdsedpar%sedd50
     sedd90              => gdp%gdsedpar%sedd90
+    spatial_d50         => gdp%gdsedpar%spatial_d50
     sedd50fld           => gdp%gdsedpar%sedd50fld
     dstar               => gdp%gdsedpar%dstar
     taucr               => gdp%gdsedpar%taucr
@@ -682,7 +691,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                    & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
                    & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
-                   & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
+                   & spatial_d50, sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
        !
        ! determine hiding & exposure factors
        !
@@ -693,7 +702,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! compute sand fraction
        !
        call compsandfrac(frac, sedd50, nmmax, lsedtot, sedtyp, &
-                    & max_mud_sedtyp, sandfrac, sedd50fld, &
+                    & max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
                     & gdp%d%nmlb, gdp%d%nmub)
     endif
     !
@@ -1089,7 +1098,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           ! (Re)set of Prandtl-Schmidt number moved to TKECOF
           tsd  = -999.0_fp
           di50 = sedd50(l)
-          if (di50 < 0.0_fp) then
+          if (spatial_d50) then
              !
              ! Space varying sedd50 specified in array sedd50fld:
              ! Recalculate dstar, tetacr and taucr for each nm,l - point
@@ -1471,4 +1480,6 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     !
     nhystp = nxtstp(d3dflow_sediment, gdp)
     deallocate (localpar, stat = istat)
-    end subroutine erosed
+end subroutine erosed
+                
+end module m_erosed

@@ -65,6 +65,8 @@ subroutine z_trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     use sync_flm
     use SyncRtcFlow
     use flow2d3d_timers
+    use m_fallve, only: fallve
+    use m_d3d4_flocculate, only: d3d4_flocculate
     !
     use globaldata
     !

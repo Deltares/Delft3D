@@ -47,6 +47,10 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     use SyncRtcFlow
     use flow2d3d_timers
     use flow_tables
+    use m_erosed, only: erosed
+    use m_bott3d, only: bott3d
+    use m_fallve, only: fallve
+    use m_d3d4_flocculate, only: d3d4_flocculate
     !
     use globaldata
     !
@@ -1096,6 +1100,10 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     dryrun              => gdp%gdtmpfil%dryrun
     nrcmp               => gdp%gdtfzeta%nrcmp
     typbnd              => gdp%gdr_i_ch%typbnd
+    !
+    if (.false.) then
+       write(101,*) 'write for e23_f01_c09'
+    end if
     !
     icx     = 0
     icy     = 0

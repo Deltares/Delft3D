@@ -1,3 +1,5 @@
+module m_bott3d
+contains
 subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 & lsal      ,ltem      ,kfs       ,kfu       ,kfv       , &
                 & r1        ,s0        ,kcs       , &
@@ -1246,3 +1248,5 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
        enddo
     endif
 end subroutine bott3d
+
+end module m_bott3d

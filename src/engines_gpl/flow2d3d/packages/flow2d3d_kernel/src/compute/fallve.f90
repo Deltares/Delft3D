@@ -1,3 +1,5 @@
+module m_fallve
+contains
 subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
                 & kcs       ,kfs       ,u0        ,v0        , &
                 & wphy      ,r0        ,rtur0     ,ltur      ,thick     , &
@@ -385,3 +387,5 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     enddo           ! nm
     deallocate (localpar, stat = istat)
 end subroutine fallve          
+
+end module m_fallve

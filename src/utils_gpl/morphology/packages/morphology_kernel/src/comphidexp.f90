@@ -1,3 +1,5 @@
+module m_comphidexp
+contains
 subroutine comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
                     & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
                     & mwwjhe    ,nmlb      ,nmub      )
@@ -136,3 +138,5 @@ subroutine comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
        !
     endselect
 end subroutine comphidexp
+
+end module m_comphidexp
