@@ -321,7 +321,7 @@ contains
 
             ! PART2a1: apply all influxes to the cells first; volumes and masses are updated
             
-            call update_system_for_flows_with_cfl_condition_to_interior_cells(rhs, conc, volint, sorted_flows, &
+            call update_system_for_flows_with_cfl_risk_to_interior_cells(rhs, conc, volint, sorted_flows, &
                                     bound, fluxes, i_flow_begin, i_flow_end, num_exchanges, &
                                     flow, ipoint, delta_t_box, first_box_smallest_dt, &
                                     num_substances_transported, massbal, amass2, dmpq, &
@@ -331,7 +331,7 @@ contains
             ! PART2a2: apply all outfluxes to the outer world from 
             ! these cells that should have reasonable concentrations
             ! and enough volume now
-            call update_system_for_remaining_flows_with_cfl_condition(rhs, conc, volint, sorted_flows, &
+            call update_system_for_remaining_flows_with_cfl_risk(rhs, conc, volint, sorted_flows, &
                             bound, fluxes, i_flow_begin, i_flow_end, &
                             num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
                             num_substances_transported, massbal, amass2, dmpq, &
@@ -1622,94 +1622,148 @@ contains
         integer, intent(out) :: dt_box_for_cell(num_cells) !< delta time box index assigned to each cell
 
         ! Local variables
-        logical :: wetting !< flag for wetting cells
-        integer :: cell_i          !< cell index in loops
-        integer :: ibox            !< box index in loops
-        integer :: idx_col         !< index of column in loops
-        integer :: i_cell_begin    !< begin index of cells in a column
-        integer :: i_cell_end      !< end index of cells in a column
-        integer :: box_max         !< maximum box index in a column
-        integer :: j               !< index in loops
+        logical :: cfl_risk         !< flag for cells that do not comply to CFL condition in any of the normal boxes.
+                                    !< This is always the case for cells that get some water and were initially dry or vice-versa
+        integer :: cell_i           !< global cell index
+        integer :: ibox             !< box index in loops
+        integer :: idx_col          !< index of column in loops
+        integer :: cell_begin_column!< index of the cell at the beginning of a column (upper-most)
+        integer :: cell_end_column  !< index of the cell at the end of a column (lower-most)
+        integer :: box_max          !< maximum box index in a column
+        integer :: idx_cell         !< index of cell in ivert array, used in column loops
+        integer :: cfl_risk_box     !< box index for reporting cells that do not comply to CFL condition in the normal boxes
+                                    !< (range 1 to count_boxes). It is equal to count_boxes + 1
+        integer :: dry_box          !< box index for reporting dry cells. It is equal to count_boxes + 2, one higher than cfl_risk_box
+
+        real(kind = dp) :: net_volume_decrease_in_total_delta_t !< net volume lost in the total (original) time step delta t delta_t_box(1)
+        real(kind = dp) :: rate_of_net_volume_decrease          !< rate of net volume decrease along the entire original delta t
+        real(kind = dp) :: rate_flow_out                        !< rate of flow out (advective + dispersive)
+        real(kind = dp) :: net_rate_flow_out                    !< net rate of flow out (advective + dispersive - net volume decrease rate)
+        real(kind = dp) :: net_vol_out_in_sub_dt                !< net volume flowed out during the sub time step of the current dt box
+
 
         !   1c: assign a box/ basket number to each cell
         dt_box_for_cell = 0
-        wetting = .false.
+        cfl_risk = .false.
+        cfl_risk_box = count_boxes + 1
+        dry_box = count_boxes + 2
+
         do cell_i = 1, num_cells
-            ! no flow at all => dry cell assigned to box (count_boxes + 2)
-            if (work(1, cell_i) <= 0.0d0 .and. &       ! no outflow
-                    work(2, cell_i) <= 0.0d0 .and. &   ! no inflow
-                    work(3, cell_i) <= 0.0d0) then     ! no dispersive flow
-                dt_box_for_cell(cell_i) = count_boxes + 2 ! cell is dry, the number (count_boxes + 2) is 1 higher than
-                cycle                                  ! the number of wet and 'wetting' basket (count_boxes + 1)
-            end if
-            if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(1) < vol_old(cell_i)) then    !  box 1 works even if vol_new(cell_i) is zero
+            ! if no flow at all => dry cell assigned to dry_box = count_boxes + 2
+            if (work(1, cell_i) <= 0.0d0 .and. &    ! no outflow
+                work(2, cell_i) <= 0.0d0 .and. &    ! no inflow
+                work(3, cell_i) <= 0.0d0) then      ! no dispersive flow
+                    dt_box_for_cell(cell_i) = dry_box   ! cell is dry and remains dry or is stagnant (there is no flow to or from it)
+                !     cycle
+                ! end if
+            ! else if initial volume is larger than delta vol of outgoing flows with original time step
+            ! then the cell is CFL compliant with the original delta time
+            ! assign the largest box (1) corresponding to that original time step to the cell
+            ! no need to check further boxes
+            else if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(1) < vol_old(cell_i)) then  ! original delta t is CFL compliant, so use it
                 dt_box_for_cell(cell_i) = 1
-                cycle
-            end if
-            ! if the volume has NOT decreased at the end of the timestep
-            if (vol_new(cell_i) >= vol_old(cell_i)) then  !  use only vol_old(cell_i) to determine fractional step
+                !     cycle
+                ! end if
+            ! else original delta t is not CFL compliant: all water is renewed during the original time step
+            ! applying first just the out going flows with original delta t would render the cell dry, therefore a new approach (smaller dt) is required
+            ! if the volume at the end of the original time-step is the same or larger than at the beginning
+            ! therefore, the average net flow is zero or positive
+            else if (vol_new(cell_i) >= vol_old(cell_i)) then  !  use only vol_old(cell_i) to determine fractional step
+                ! loop from larger sub time step to smaller ones to find the largest sub dt that is CFL compliant
+                ! the corresponding first suitable box found will be assigned to the cell
                 do ibox = 2, count_boxes
+                    ! if the outgoing flows (adv. + disp.) are less than the volume available in the cell at the beginning of the time step
+                    ! for the fractional time step delta_t_box(ibox), then this dt-box is suitable
+                    ! the cell is CFL compliant for this sub time step
                     if ((work(1, cell_i) + work(3, cell_i)) * delta_t_box(ibox) < vol_old(cell_i)) then
-                        dt_box_for_cell(cell_i) = ibox     !  this cell in the basket of this dt(ibox)
-                        exit
-                    end if
-                    if (ibox == count_boxes) then   !  no suitable time step in range
-                        dt_box_for_cell(cell_i) = count_boxes + 1    !  cell is filling up / becoming wet
-                        wetting = .true.      !  by simultaneous inflow: 'wetting' basket.
+                        dt_box_for_cell(cell_i) = ibox
+                             ! no need for further checking on smaller time steps, so exit loop do ibox = 2, count_boxes
+                        exit ! exit the loop over dt boxes, we found the lasrgest suitable one
                     end if
                 end do
+                ! if we have reached the last regular dt-box and no suitable sub time step has been found
+                ! then the cell has cfl condition risk, e.g. becoming wet.
+                if (ibox == cfl_risk_box) then
+                    dt_box_for_cell(cell_i) = cfl_risk_box 
+                    cfl_risk = .true.
+                end if
            ! else the volume has decreased at the end of the timestep
+           ! therefore, the average net flow is negative
             else !  also the last fractional step should be stable
+                ! find the largest sub time step that is CFL compliant:
+                ! the largest sub delta time for which the end volume hasn't left the cell yet
                 do ibox = 2, count_boxes
-                    ! if net value of delta_vol for delta_t_box(ibox) < vol_new(cell_i)
-                    if ((work(1, cell_i) + work(3, cell_i) - (vol_old(cell_i) - vol_new(cell_i)) / delta_t_box(1)) * delta_t_box(ibox) < vol_new(cell_i)) then
+                    ! if delt vol flowing out in this sub time step is < vol_new(cell_i)
+                    !if ((work(1, cell_i) + work(3, cell_i) - (vol_old(cell_i) - vol_new(cell_i)) / delta_t_box(1)) * delta_t_box(ibox) < vol_new(cell_i)) then
+                    net_volume_decrease_in_total_delta_t = (vol_old(cell_i) - vol_new(cell_i))
+                    rate_of_net_volume_decrease = net_volume_decrease_in_total_delta_t / delta_t_box(1)
+                    rate_flow_out = work(1, cell_i) + work(3, cell_i)
+                    net_rate_flow_out = rate_flow_out - rate_of_net_volume_decrease
+                    net_vol_out_in_sub_dt = net_rate_flow_out * delta_t_box(ibox)
+                    ! if the net outflow (adv. + disp. - net volume decrease rate) in this sub time step 
+                    ! is less than the new volume at the end of the time step then CFL is OK for this sub time step
+                    ! It is the largest sub time step for which this is true, the one we want
+                    if (net_vol_out_in_sub_dt < vol_new(cell_i)) then
                         dt_box_for_cell(cell_i) = ibox        !  this cell in the basket of this dt(ibox)
                         exit
                     end if
-                    if (ibox == count_boxes) then               ! no suitable time step in range
-                        dt_box_for_cell(cell_i) = count_boxes + 1  ! so cell is considered becoming dry
-                        wetting = .true.                        ! by simultaneous inflow: 'wetting' basket.
-                    end if
                 end do
+                ! if we have reached the last regular dt-box and no suitable sub time step has been found
+                ! then the cell has cfl condition risk, e.g. becoming dry.
+                if (ibox == cfl_risk_box) then
+                    dt_box_for_cell(cell_i) = cfl_risk_box
+                    cfl_risk = .true.
+                end if
+
             end if
         end do
 
-        !   1d: assign each cell the highest box number of the column it belongs to
+        !   1d: assign each cell the highest box number of the column it belongs to, but never dry_box (dry cells)
         do idx_col = 1, count_columns
-            i_cell_begin = nvert(1, idx_col)
+            ! determine the range of cells in this column
+            cell_begin_column = nvert(1, idx_col)
             if (idx_col < num_cells) then
-                i_cell_end = nvert(1, idx_col + 1)
+                cell_end_column = nvert(1, idx_col + 1) - 1
             else
-                i_cell_end = num_cells + 1
+                cell_end_column = num_cells
             end if
+
+            ! find the maximum box number in this column, never dry_box (dry cells)
             box_max = 0
-            do j = i_cell_begin, i_cell_end - 1
-                cell_i = ivert(j)
-                if (dt_box_for_cell(cell_i) <= count_boxes + 1) then
+            do idx_cell = cell_begin_column, cell_end_column
+                cell_i = ivert(idx_cell)
+                if (dt_box_for_cell(cell_i) <= cfl_risk_box) then
                     box_max = max(box_max, dt_box_for_cell(cell_i))
                 end if
             end do
+            
+            ! assign this maximum box number to all cells in the column that have a lower box number, not if dry (dry_box)
             if (box_max == 0) cycle
-            do j = i_cell_begin, i_cell_end - 1
-                cell_i = ivert(j)
-                if (dt_box_for_cell(cell_i) <= count_boxes + 1) then
+            do idx_cell = cell_begin_column, cell_end_column
+                cell_i = ivert(idx_cell)
+                if (dt_box_for_cell(cell_i) <= cfl_risk_box) then
                     dt_box_for_cell(cell_i) = box_max
                 end if
             end do
         end do
-        if (wetting .and. report) then
+
+        if (cfl_risk .and. report) then
+            write (file_unit, '(/A)') ' WARNING in locally_adaptive_time_step: some cells do not satisfy the CFL stability criterion for any standard dt box (sub-time step)!'
+            write (file_unit, '(/A)') ' This is always the case for any cell that undergoes a state transition from dry to wet or vice-versa.'
+            ! id 2D model
             if (count_columns == num_cells) then
-                write (file_unit, '(/A/A)') &
-                        ' WARNING in locally_adaptive_time_step, next cells are becoming wet or dry:', &
+                write (file_unit, '(/A)') &
+                        ' The following cells are assigned the CFL-risk dt-box "cfl_risk_box = count_boxes + 1":', &
                         '  cell       outflow         inflow          diffusion       volume-1        volume-2'
-            else
-                write (file_unit, '(/A/A)') &
-                        ' WARNING in locally_adaptive_time_step, next cells and the cells underneith are becoming wet or dry:', &
+            ! else 3D model
+                    else
+                write (file_unit, '(/A)') &
+                        ' The following cells and all cells underneath are assigned the CFL-risk dt-box "cfl_risk_box = count_boxes + 1":', &
                         '  cell       outflow         inflow          diffusion       volume-1        volume-2'
             end if
             do idx_col = 1, count_columns
                 cell_i = ivert(nvert(1, idx_col))
-                if (dt_box_for_cell(cell_i) == count_boxes + 1) write (file_unit, '(i10,5e16.7)') &
+                if (dt_box_for_cell(cell_i) == cfl_risk_box) write (file_unit, '(i10,5e16.7)') &
                         cell_i, work(1, cell_i), work(2, cell_i), work(3, cell_i), vol_old(cell_i), vol_new(cell_i)
             end do
         end if
@@ -2079,7 +2133,7 @@ contains
         end do
     end subroutine store_total_vol_and_average_conc_in_uppermost_cell
 
-    subroutine update_system_for_flows_with_cfl_condition_to_interior_cells(rhs, conc, volint, sorted_flows, &
+    subroutine update_system_for_flows_with_cfl_risk_to_interior_cells(rhs, conc, volint, sorted_flows, &
         bound, fluxes, i_flow_begin, i_flow_end, num_exchanges, &
         flow, ipoint, delta_t_box, first_box_smallest_dt, &
         num_substances_transported, massbal, amass2, dmpq, &
@@ -2256,9 +2310,9 @@ contains
         end do ! while remained > 0
 
         ! ***********************************************************************************************
-    end subroutine update_system_for_flows_with_cfl_condition_to_interior_cells
+    end subroutine update_system_for_flows_with_cfl_risk_to_interior_cells
 
-    subroutine update_system_for_remaining_flows_with_cfl_condition(rhs, conc, volint, sorted_flows, &
+    subroutine update_system_for_remaining_flows_with_cfl_risk(rhs, conc, volint, sorted_flows, &
         bound, fluxes, i_flow_begin, i_flow_end, &
         num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
         num_substances_transported, massbal, amass2, dmpq, &
@@ -2358,12 +2412,12 @@ contains
         end do ! loop along remaining flows with cfl condition
 
         ! Remove marks of processed flows (make them all positive)
-        do i = i_flow_begin, i_flow_end  ! All fluxes possibly non CFL-compliant should have been processed
-            sorted_flows(i) = abs(sorted_flows(i))                                  ! Reset the flux pointer to its positive value
+        do i_flow = i_flow_begin, i_flow_end  ! All fluxes possibly non CFL-compliant should have been processed
+            sorted_flows(i_flow) = abs(sorted_flows(i_flow))                                  ! Reset the flux pointer to its positive value
         end do
 
 
-    end subroutine update_system_for_remaining_flows_with_cfl_condition
+    end subroutine update_system_for_remaining_flows_with_cfl_risk
 
     function is_bc_cell(cell_i) result(bc_flag)
         !> Determines if a cell is a boundary condition cell.
