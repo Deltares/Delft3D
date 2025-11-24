@@ -7390,7 +7390,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c01_Protist_Coastal_Waddensea" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c01_Protist_Coastal_Waddensea</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c01_Protist_Coastal_Waddensea</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7459,7 +7459,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c02_Protist_Doggerbank" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c02_Protist_Doggerbank</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c02_Protist_Doggerbank</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7528,7 +7528,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c03_Protist_Dutch_Coast" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c03_Protist_Dutch_Coast</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c03_Protist_Dutch_Coast</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7597,7 +7597,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c04_Grevelingen" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c04_Protist_Grevelingen</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c04_Protist_Grevelingen</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7666,7 +7666,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c05_Protist_Offshore" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c05_Protist_Offshore</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c05_Protist_Offshore</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7735,7 +7735,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c06_Protist_Offshore_Mixed" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c06_Protist_Offshore_Mixed</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c06_Protist_Offshore_Mixed</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7804,7 +7804,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c07_Protist_Eastern_Scheldt" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c07_Protist_Eastern_Scheldt</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c07_Protist_Eastern_Scheldt</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7873,7 +7873,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c08_Protist_Veerse_Meer" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c08_Protist_Veerse_Meer</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c08_Protist_Veerse_Meer</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -7942,7 +7942,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c09_Protist_Voordelta" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c09_Protist_Voordelta</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c09_Protist_Voordelta</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -8011,7 +8011,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c10_Protist_Waddensea" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c10_Protist_Waddensea</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c10_Protist_Waddensea</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -8080,7 +8080,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f12_c11_Protist_Western_Scheldt" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f12_protist/c11_Protist_Western_Scheldt</path>
+        <path version="2024-01-11T13:20">e03_waq/f12_protist/c11_Protist_Western_Scheldt</path>
         <checks>
             <file name="TwoSegCol.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -10874,7 +10874,7 @@
     </testCase>
 
     <testCase name="e03_f16_c08_protist_column_mussel_rope" ref="dwaq_default">
-        <path version="2025-01-24T13:07:22.554000">e03_waq/f16_grazing/c08_protist_column_mussel_rope</path>
+        <path version="2025-01-24T13:10">e03_waq/f16_grazing/c08_protist_column_mussel_rope</path>
         <checks>
             <file name="PROTISTcolumn-mussel-rope.hda" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">

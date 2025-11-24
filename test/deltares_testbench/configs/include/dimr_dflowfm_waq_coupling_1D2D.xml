@@ -2610,7 +2610,7 @@
     </testCase>
 
     <testCase name="e02_f029_c614_Pump_with_bc_timeseries" ref="dflowfm_default">
-      <path version="2025-10-16T07:11:16.026000">e02_dflowfm/f029_hyd_file/c614_Pump_with_bc_timeseries</path>
+      <path version="2025-10-28T09:24:05.090000">e02_dflowfm/f029_hyd_file/c614_Pump_with_bc_timeseries</path>
       <programs>
         <program ref="dimr" seq="1">
         </program>
@@ -3052,7 +3052,90 @@
       </checks>
     </testCase>
 
-   
+
+    <testCase name="e02_f029_c701_laterals_prescribed_Q" ref="dflowfm_default">
+      <path version="2025-10-28T09:24:08.494000">e02_dflowfm/f029_hyd_file/c701_laterals_prescribed_Q</path>
+      <programs>
+        <program ref="dimr" seq="1">
+        </program>
+        <program ref="checkhydbal" seq="2">
+          <arguments>
+            <argument>DFM_DELWAQ_e02_f102_c01/e02_f102_c01.hyd</argument>
+          </arguments>
+        </program>
+        <!--
+        <program ref="maptonetcdf" seq="3">
+          <arguments>
+            <argument>DFM_DELWAQ_e02_f102_c01/e02_f102_c01-checkhydbal-sum.map</argument>
+            <argument>DFM_DELWAQ_e02_f102_c01/e02_f102_c01_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        <program ref="maptonetcdf" seq="4">
+          <arguments>
+            <argument>DFM_DELWAQ_e02_f102_c01/e02_f102_c01-checkhydbal-err.map</argument>
+            <argument>DFM_DELWAQ_e02_f102_c01/e02_f102_c01_waqgeom.nc</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+        -->
+        <program ref="poi2asc" seq="5">
+          <arguments>
+            <argument>DFM_DELWAQ_e02_f102_c01/e02_f102_c01.poi</argument>
+            <argument>DFM_DELWAQ_e02_f102_c01/e02_f102_c01.table</argument>
+            <argument>1</argument>
+          </arguments>
+        </program>
+      </programs>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <!--
+        <file name="DFM_DELWAQ_e02_f102_c01/e02_f102_c01-checkhydbal-sum_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_V-error-Ave-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-error-Max-m3" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Ave" toleranceAbsolute="1.0e+1"/>
+            <parameter name="mesh2d_V-rel-error-Max" toleranceAbsolute="1.0e+1"/>
+          </parameters>
+        </file>
+        -->
+        <file name="DFM_DELWAQ_e02_f102_c01/e02_f102_c01.bnd" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_e02_f102_c01/e02_f102_c01.atr" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_e02_f102_c01/e02_f102_c01.hyd" type="ASCII">
+          <!--
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+          -->
+          <skipline>file-created-by</skipline>
+          <skipline>file-creation-date</skipline>
+        </file>
+        <file name="DFM_DELWAQ_e02_f102_c01/e02_f102_c01.table" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_e02_f102_c01/e02_f102_c01-relerrvavg.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+        <file name="DFM_DELWAQ_e02_f102_c01/e02_f102_c01-relerrvmax.txt" type="ASCII">
+          <parameters>
+            <parameter name="contents" toleranceAbsolute="0.001"/>
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
 
     <testCase name="e02_f029_c702_1d-precipitation" ref="dflowfm_default">
       <path version="2025-10-16T07:12:23.822000">e02_dflowfm/f029_hyd_file/c702_1d-precipitation</path>
