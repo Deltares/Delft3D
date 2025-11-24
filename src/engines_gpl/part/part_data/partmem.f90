@@ -343,9 +343,10 @@ module spec_feat_par
     !     vertical bounce
     logical :: vertical_bounce
 
-    !     wind drag for all particles
+    !     wind drag and adaptation in depth layer of vertical diffusion for all particles
     logical :: apply_wind_drag
     real      (sp) :: max_wind_drag_depth
+    real      (sp) :: scale_vdif_depth
 
     !     restart files
     logical :: write_restart_file
@@ -371,12 +372,21 @@ module spec_feat_par
     real     (sp), pointer :: xpolscreens(:)   ! x-coordinates of screen polygon
     real     (sp), pointer :: ypolscreens(:)   ! y-coordinates of screen polygon
 
-    !     ABM
-    logical :: abmmodel          ! is ABM keyword active
-    logical :: chronrev          ! is chronology reversed
-    character(256) :: abmmodelname      ! name of ABM model used
-    character(256) :: abmstagedev       ! name of ABM model stage developement used
-    integer  (sp) :: abmmt             ! nr of ABM model used
-    integer  (sp) :: abmsd             ! nr of ABM model stage developement used
-    real     (sp) :: selstage          ! nr of ABM model stage for chronology reversed model
+!     ABM
+      logical                  :: abmmodel          ! is ABM keyword active
+      logical                  :: chronrev          ! is chronology reversed
+      character( 256)          :: abmmodelname      ! name of ABM model used
+      character( 256)          :: abmstagedev       ! name of ABM model stage developement used
+      integer  ( sp)           :: abmmt             ! nr of ABM model used
+      integer  ( sp)           :: abmsd             ! nr of ABM model stage developement used
+      real     ( sp)           :: selstage          ! nr of ABM model stage for chronology reversed model
+      
+!     leeway implementation  
+      logical                  :: leeway            ! using the leeway for SAR functionality
+      character( 256)          :: leeway_csvfile    ! filename containing predefined leeway factors
+      character( 20)           :: leeway_id         ! identifier of the leeway object
+      real     ( sp)           :: leeway_multiplier ! leeway multiplier (factor)
+      real     ( dp)           :: leeway_modifier   ! leeway modifier (correction)
+      real     ( dp)           :: leeway_modifier_rad ! leeway modifier (correction) for spherical models
+      real     ( sp)           :: leeway_angle      ! leeway divergence angle
 end module spec_feat_par

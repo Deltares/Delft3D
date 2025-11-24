@@ -37,7 +37,6 @@ contains
         use m_part_flow
         use m_part_geom, only: ba, ndx, lnx, lne2ln
         use m_part_times, only: time1
-        use partmem, only: zmodel, laytop
         use m_hydmod
         use timers
 
@@ -48,7 +47,7 @@ contains
         integer, intent(inout) :: istat
 
         !  local declarations
-        integer iseg, iq, L, K, iql, offset, isegl, ilay
+        integer iseg, iq, L, K, iql, offset
 
         integer(4) ithndl              ! handle to time this subroutine
         data ithndl / 0 /
@@ -74,20 +73,6 @@ contains
                 vol1(iseg) = real(hyd%volume(iseg), 8)
                 h1(iseg) = vol1(iseg) / ba(iseg)
             end do
-            !
-            ! Determine the top layer - in case of z-model
-            !
-            if ( zmodel ) then
-                do isegl = 1,hyd%nosegl
-                    do ilay = 1,hyd%num_layers
-                        iseg = isegl + (ilay-1) * hyd%nosegl
-                        if ( abs(vol1(iseg)) > 1.0e-6 ) then
-                            laytop(1,isegl) = ilay
-                            exit
-                        endif
-                    enddo
-                enddo
-            endif
             offset = hyd%num_layers * lnx
             do K = 1, hyd%num_layers
                 do L = 1, lnx  ! horizontal
@@ -100,6 +85,7 @@ contains
                     else
                         q1(iq) = -hyd%flow(iq)
                     endif
+
                 end do
             end do
             ! vertical exchanges:

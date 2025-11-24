@@ -134,7 +134,7 @@ module m_particles
     double precision, dimension(:), allocatable :: trpart       !< timing of to be released particles, dim(Nrpart)
     double precision, dimension(:), allocatable :: xrpart       !< x-coordinates of to be released particles, dim(Nrpart)
     double precision, dimension(:), allocatable :: yrpart       !< y-coordinates of to be released particles, dim(Nrpart)
-    double precision, dimension(:), allocatable :: zrpart       !< z-coordinates of to be released particles, dim(Nrpart), for spherical models
+    double precision, dimension(:), allocatable :: zrpart       !< z-coordinates of to be released particles, dim(Nrprt), for spherical models
     integer, dimension(:), allocatable :: mrpart       !< cell (flownode) number of to be released particles, dim(Nrpart), for spherical models
     integer, dimension(:), allocatable :: krpart       !< layer of to be released particles, dim(Nrpart)
     double precision, dimension(:), allocatable :: hrpart       !< position within the layer of to be released particles, dim(Nrpart)

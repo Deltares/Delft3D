@@ -51,9 +51,11 @@ contains
         use MessageHandling
         use partmem
         use m_part_mesh
-        use m_particles, only: NopartTot, Nrpart, trpart, xrpart, yrpart, zrpart, mrpart, irpart, laypart => kpart
+        use m_particles, only: NopartTot, Nrpart, trpart, xrpart, yrpart, zrpart, mrpart, irpart
+        use spec_feat_par, only: abmmodel
         use part10fm_mod
         use fm_oildsp_mod
+        use fm_abm_mod
         use fm_vert_disp_mod
         use m_partfm_decay
         use alloc_mod
@@ -79,8 +81,6 @@ contains
         integer(4) ithndl              ! handle to time this subroutine
         logical :: mapfil  ! true if map file extension
         logical :: trkfil   ! true if track file extension
-        logical :: error
-        character(len=200) :: msg
         data ithndl / 0 /
         if (timon) call timstrt("partfm", ithndl)
 
@@ -101,11 +101,7 @@ contains
         ! For a model based on z-layers we need extra administration
         ! but that is not part of the current implementation yet
         !
-        if ( zmodel ) then
-            allocate(laytop(1, hyd%nosegl), laytopp(1, hyd%nosegl))
-        else
-            allocate(laytop(0, 0), laytopp(0, 0))
-        endif
+        allocate(laytop(0, 0), laytopp(0, 0))
 
         !
         ! Read the grid information and the actual input file
@@ -117,6 +113,7 @@ contains
         dts = real(idelt, kind = kind(dts))
         noparttot = npmax + npmax / 100
         nopart = 0
+        npwndw = 1
         allocate(nplay(hyd%num_layers))
 
         !  part08 - calculates total released mass and mass/particle
@@ -154,12 +151,7 @@ contains
         ptref = 0.0D0
 
         if (notrak > 0) call unc_init_trk()
-        call unc_init_map(hyd, noslay, error, msg)
-        if ( error ) then
-            write (lunpr, *) trim(msg)
-            write (*    , *) trim(msg)
-            error stop
-        endif
+        call unc_init_map(hyd%crs, hyd%waqgeom, hyd%nosegl, noslay)
 
         time0 = tstart_user
         time1 = time0
@@ -193,7 +185,6 @@ contains
                     trkfil = .false.
                 endif
             endif
-
             if (trkfil) call unc_write_trk()
             if (mapfil) call unc_write_map()
 
@@ -221,8 +212,21 @@ contains
             call update_part(itime)
             call part10fm()
             !      jsferic = jsfer_old ! back to what it should be
-            call oildspfm(itime)
+            if (oil) then
+                call oildspfm(itime)
+            end if
+            if (abmmodel) then
+                call fm_abm(lunpr, itime, nmaxp, mmaxp, &
+                layt, ndx/kmx, kmx, mnmaxk, lgrid, &
+                lgrid2, lgrid3, nopart, npwndw, nosubs, &
+                mpart, wpart, iptime, wsettl, locdep, &
+                noconsp, const, concp, xa, ya, &
+                flow, depth, &
+                vdiff1, salin1, temper1, v_swim, d_swim, &
+                itstrtp, vel1, vel2, zmodel, laybot, laytop)
+            endif
             call fm_vert_disp(lun(2), itime)
+
             !     interpolation for wind speed/direction in the wind table
         end do
 
