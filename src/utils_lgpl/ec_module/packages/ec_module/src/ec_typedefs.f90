@@ -201,6 +201,7 @@ module m_ec_typedefs
       character(len=50) :: timeunit !< netcdf-convention time unit definition
       integer :: vptyp = -1 !< vertical coordinate type
       real(hp), allocatable, dimension(:) :: vp !< vertical coordinate (layers)
+      logical, allocatable, dimension(:) :: time_varying_var !< Indicates whether variable i is time varying. Needed for nesting.
    end type tEcNetCDF
 
    type tEcNetCDFPtr

@@ -137,6 +137,7 @@ contains
    !! Open a netCDF file, store ncid, standard names and long names ....
    !! Open only if this file is not already opened, so check the list of nc-objects first and return a pointer ....
    function ecNetCDFInit(ncname, ncptr, iostat) result(success)
+      use m_alloc, only: realloc
       logical :: success
       logical :: station_id_found
       logical :: time_found
@@ -190,12 +191,15 @@ contains
       if (ierr /= 0) return
       allocate (ncptr%offsets(nVars), stat=ierr)
       if (ierr /= 0) return
+      allocate (ncptr%time_varying_var(nVars), stat=ierr)
+      if (ierr /= 0) return
       ncptr%standard_names = ' '
       ncptr%long_names = ' '
       ncptr%variable_names = ' '
       ncptr%fillvalues = -huge(dp)
       ncptr%scales = 1.0_dp
       ncptr%offsets = 0.0_dp
+      ncptr%time_varying_var = .false.
       allocate (var_dimids(n_dims, nVars), stat=ierr) ! NOTE: n_dims is only an upper bound here!
       if (ierr /= 0) return
       allocate (var_ndims(nVars), stat=ierr)
@@ -263,31 +267,40 @@ contains
                time_found = .true.
             end if
          end if
+         
+         if (any(var_dimids(:, iVars) == ncptr%timedimid)) then
+            ncptr%time_varying_var(iVars) = .true.
+         end if
 
          ! Check for important var: was it vertical layering?
-         positive = ''
+         positive = '' ! axis = ''
          zunits = ''
-         ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive)
+         ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive) ! ierr = ncu_get_att(ncptr%ncid, iVars, 'axis', axis)
          if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
             ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
-            ncptr%layervarid = iVars
-            ncptr%layerdimid = var_dimids(1, iVars) ! For convenience also store the dimension ID explicitly
-            ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
-            allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
-            if (ierr /= 0) return
-            ierr = nf90_get_var(ncptr%ncid, ncptr%layervarid, ncptr%vp, (/1/), (/ncptr%nLayer/))
-            if (ierr /= NF90_NOERR) return
-            ierr = ncu_get_att(ncptr%ncid, iVars, 'units', zunits)
-            if (ierr /= NF90_NOERR) return
-            if (strcmpi(zunits, 'm')) then
-               if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
-               if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_ZSURF ! z downward
-            else
-               if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_PERCBED ! sigma upward
-               if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_PERCSURF ! sigma downward
-            end if
-            if (ncptr%vptyp < 1) then
-               call setECMessage("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
+            ! This line does not work: if (any((/ 'z            ', 'zcoordinate  ', 'zcoordinate_c'/) == ncptr%standard_names(iVars))) then
+            if (any((/ 'z            ', 'zcoordinate  '/) == ncptr%standard_names(iVars))) then
+               ncptr%layervarid = iVars
+               ncptr%layerdimid = var_dimids(1, iVars) ! For convenience also store the dimension ID explicitly
+               ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
+               if (ncptr%nLayer > size(ncptr%vp)) then
+                  call realloc (ncptr%vp, ncptr%nLayer, stat=ierr, keepExisting=.true.)
+               end if
+               if (ierr /= 0) return
+               ierr = nf90_get_var(ncptr%ncid, ncptr%layervarid, ncptr%vp, (/1/), (/ncptr%nLayer/))
+               if (ierr /= NF90_NOERR) return
+               ierr = ncu_get_att(ncptr%ncid, iVars, 'units', zunits)
+               if (ierr /= NF90_NOERR) return
+               if (strcmpi(zunits, 'm')) then
+                  if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
+                  if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_ZSURF ! z downward
+               else
+                  if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_PERCBED ! sigma upward
+                  if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_PERCSURF ! sigma downward
+               end if
+               if (ncptr%vptyp < 1) then
+                  call setECMessage("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
+               end if
             end if
          end if
       end do
@@ -320,18 +333,17 @@ contains
       integer, dimension(:), allocatable :: dimids_check
 
       success = .false.
+      ltl = len_trim_nobnd(quantity)
 
       ! search for standard_name
       do ivar = 1, ncptr%nVars
-         ltl = len_trim(quantity)
-         if (strcmpi(trim(ncptr%standard_names(ivar)), trim(quantity))) exit
+         if (strcmpi(trim(ncptr%standard_names(ivar)), trim(quantity), ltl)) exit
       end do
       vmax = 1
 
       ! if standard_name not found, search for long_name
       if (ivar > ncptr%nVars) then
          do ivar = 1, ncptr%nVars
-            ltl = len_trim(quantity)
             if (strcmpi(ncptr%long_names(ivar), quantity, ltl)) exit
          end do
       end if
@@ -339,7 +351,6 @@ contains
       ! if also long_name not found, search for variable_name
       if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names)) then
          do ivar = 1, ncptr%nVars
-            ltl = len_trim(quantity)
             if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) exit
          end do
       end if
@@ -454,5 +465,16 @@ contains
       if (ierr /= NF90_NOERR) return
       success = .true.
    end function ecNetCDFGetAttrib
+
+   function len_trim_nobnd(name) result(len_without_bnd)
+      integer :: len_without_bnd
+      character(len=*), intent(in) :: name
+
+      len_without_bnd = len_trim(name)
+      if (strcmpi(name(len_trim(name)-2:len_trim(name)), 'bnd')) then
+         len_without_bnd = len_without_bnd - 3
+      end if
+   end function len_trim_nobnd
+   
 
 end module m_ec_netcdf_timeseries
