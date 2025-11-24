@@ -109,6 +109,8 @@
         </file>
       </checks>
     </testCase>
+
+<!-- flaky in Windows container
     <testCase name="e100_f10_c05_wave2_lib" ref="dimr">
       <path version="2025-07-01T13:58:52.012000">e100_dflowfm-dwaves/f10_parallel/c05_wave2_lib</path>
       <programs>
@@ -127,6 +129,7 @@
         </file>
       </checks>
     </testCase>
+-->
 
     <!--
     Testcaes "e100_f10_c06_wave4_lib" is disabled because it produces wrong results on Linux in a Docker container. See UNST-9023

@@ -1,5 +1,8 @@
 /*
-  Copyright © 2004, Rijkswaterstaat/RIZA & ®HKV Consultants, All Rights Reserved.
+  Copyright Â© 2025, Rijkswaterstaat, All Rights Reserved.
+  
+  This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
+  https://www.rijkswaterstaat.nl/formulieren/contactformulier, software.support@deltares.nl
 
   DESCRIPTION
     RIZA OpenMI Buffer implementation

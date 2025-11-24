@@ -1,7 +1,7 @@
 subroutine flhnew(lunrd     ,lundia    ,error     ,record    ,access    , &
                 & irecrd    ,namloc    ,cntent    ,interp    ,itdate    , &
                 & timscl    ,ntimrd    ,parrd     ,npara     ,nparrd    , &
-                & bubble    ,gdp       )
+                & bubble    ,namcon    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -77,6 +77,7 @@ subroutine flhnew(lunrd     ,lundia    ,error     ,record    ,access    , &
                                                             !!  file (maximum kmax*24*2 + 48)
     character(1)                                 :: interp
     character(20)                  , intent(in)  :: namloc
+    character(*)                   , intent(in)  :: namcon
     character(36), dimension(npara), intent(out) :: parrd
 !
 ! Local variables
@@ -86,6 +87,7 @@ subroutine flhnew(lunrd     ,lundia    ,error     ,record    ,access    , &
     integer       :: ier
     integer       :: ifound
     integer       :: istart
+    integer       :: istat
     integer       :: lrec
     integer       :: nkeyfd
     integer       :: timref
@@ -96,6 +98,7 @@ subroutine flhnew(lunrd     ,lundia    ,error     ,record    ,access    , &
     character(20) :: chlp20
     character(20) :: namhlp
     character(36) :: chlp36
+    character(1024) :: errmsg ! Character var. containing the error message to be written to file. The message depends on the error. 
 !
 !! executable statements -------------------------------------------------------
 !
@@ -155,14 +158,25 @@ subroutine flhnew(lunrd     ,lundia    ,error     ,record    ,access    , &
           irecrd = irecrd + 1
           read (lunrd, '(a)', rec = irecrd) record
        else
-          read (lunrd, '(a)') record
+          read (lunrd, '(a)', iostat = istat) record
+          if (istat < 0) then
+             if (namcon == ' ') then
+                write(errmsg,'(3a)') 'Reached end-of-file while searching for data at location "', trim(namloc),'"'
+             else
+                write(errmsg,'(5a)') 'Reached end-of-file while searching for ',trim(namcon),' data at location "', trim(namloc),'"'
+             endif
+             call prterr(lundia    ,'U021'    ,errmsg  )
+             ifound = -9999
+          endif
        endif
        iend = len(record)
        nkeyfd = 0
        ! ==>>
    20  continue
        istart = 1
-       call srckey(record    ,istart    ,iend      ,ifound    ,gdp       )
+       if (ifound >= 0) then
+          call srckey(record    ,istart    ,iend      ,ifound    ,gdp       )
+       endif
        !
        !
        ! IFOUND =      -9999 error occurred
@@ -358,7 +372,7 @@ subroutine flhnew(lunrd     ,lundia    ,error     ,record    ,access    , &
              ! Number of time record should be > 0
              !
              lrec = iend - istart + 1
-             idef = 0
+             idef = -99
              call read1i(record    ,lrec      ,istart    ,iend      ,ntimrd    , &
                        & idef      ,ier       )
              if (ier <= 0) then

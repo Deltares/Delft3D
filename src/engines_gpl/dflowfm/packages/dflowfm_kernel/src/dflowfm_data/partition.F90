@@ -313,7 +313,7 @@ contains
             call find1dcells()
          end if
 
-         call delete_dry_points_and_areas()
+         call delete_dry_points_and_areas(update_blcell=.false.)
       end if
 
 !     determine number of cells
@@ -654,7 +654,7 @@ contains
       call find1dcells()
       netstat = NETSTAT_OK
 
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell=.false.)
 
       if (numk == 0 .or. numl == 0) then
          write (message, "('While making partition domain #', I0, ': empty domain (', I0, ' net nodes, ', I0, ' net links).')") idmn, numk, numl
@@ -691,7 +691,7 @@ contains
          end do
 
 !        remove masked netcells
-         call remove_masked_netcells()
+         call remove_masked_netcells(update_blcell=.false.)
 
          call partition_make_1dugrid_in_domain(idmn, numl1d, Lperm, ierror)
          if (ierror /= 0) goto 1234
@@ -4475,7 +4475,7 @@ contains
       if (netstat == NETSTAT_CELLS_DIRTY) then
          call findcells(0)
          call find1Dcells()
-         call delete_dry_points_and_areas()
+         call delete_dry_points_and_areas(update_blcell=.false.)
       end if
 
 !     check for 1D cells (not supported)

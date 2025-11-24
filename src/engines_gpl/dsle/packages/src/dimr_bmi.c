@@ -8,24 +8,24 @@
 #include <string.h>
 
 #include "log/log.h"
-#include "zsf_config.h"
+#include "dsle_config.h"
 
-const char *zsf_key_separator = "/";
-static inline int zsf_to_dimr_status(int s) { return ((s) == 0 ? DIMR_BMI_OK : DIMR_BMI_FAILURE); }
+const char *dsle_key_separator = "/";
+static inline int dsle_to_dimr_status(int s) { return ((s) == 0 ? DIMR_BMI_OK : DIMR_BMI_FAILURE); }
 
 // Global conbfiguration.
-zsf_config_t config;
+dsle_config_t config;
 
 // Exported
 int initialize(const char *config_file) {
   int status = 0;
-  log_init("ZSF", stdout);
+  log_init("DSLE", stdout);
 
   // Read ini file.
-  status = zsf_config_load(&config, config_file);
+  status = dsle_config_load(&config, config_file);
   if (status)
-    return zsf_to_dimr_status(status);
- 
+    return dsle_to_dimr_status(status);
+
   log_set_level(config.log_level);
   log_info("%s( \"%s\" ) called.\n", __func__, config_file);
 
@@ -36,13 +36,13 @@ int initialize(const char *config_file) {
     status = sealock_init(&config.locks[lock_index], config.start_time, config.max_num_z_layers);
   }
 
-  return zsf_to_dimr_status(status);
+  return dsle_to_dimr_status(status);
 }
 
 // Exported
 int finalize() {
   log_info("%s() called.\n", __func__);
-  zsf_config_unload(&config);
+  dsle_config_unload(&config);
   return DIMR_BMI_OK; // Should always return DIMR_BMI_OK
 }
 
@@ -56,7 +56,7 @@ int finalize() {
 // we don't make any attempt to recognize what each part is.
 // Note1: This function DOES change the content of the supplied key string.
 // Note2: This function is NOT thread safe. (strtok_r() does not exist in MSVC)
-inline int parse_key(char *key, char **vartype_ptr, char **lock_id_ptr, char **quantity_ptr) {
+static inline int parse_key(char *key, char **vartype_ptr, char **lock_id_ptr, char **quantity_ptr) {
   char *token = NULL;
 
   assert(vartype_ptr != NULL);
@@ -71,12 +71,12 @@ inline int parse_key(char *key, char **vartype_ptr, char **lock_id_ptr, char **q
     return DIMR_BMI_FAILURE; // Fail on empty strings.
   }
 
-  token = strtok(key, zsf_key_separator);
+  token = strtok(key, dsle_key_separator);
   while (token) {
     *vartype_ptr = *lock_id_ptr;
     *lock_id_ptr = *quantity_ptr;
     *quantity_ptr = token;
-    token = strtok(NULL, zsf_key_separator);
+    token = strtok(NULL, dsle_key_separator);
   }
   return DIMR_BMI_OK;
 }
@@ -109,7 +109,7 @@ int set_var(const char *key, void *src_ptr) {
   }
 
   if (lock_id) {
-    lock_index = zsf_config_get_lock_index(&config, lock_id);
+    lock_index = dsle_config_get_lock_index(&config, lock_id);
     if (lock_index < 0) {
       return DIMR_BMI_FAILURE;
     }
@@ -158,7 +158,7 @@ int set_var(const char *key, void *src_ptr) {
   for (int i = 0; i < dest_len; i++) {
     log_info("%s value[%d] = %g\n", __func__, i, ((double**)src_ptr)[i]);
   }
-  
+
   memcpy(dest_ptr, src_ptr, dest_len * sizeof(double));
   return DIMR_BMI_OK;
 }
@@ -182,7 +182,7 @@ int get_var(const char *key, void **dst_ptr) {
   }
 
   if (lock_id) {
-    lock_index = zsf_config_get_lock_index(&config, lock_id);
+    lock_index = dsle_config_get_lock_index(&config, lock_id);
     if (lock_index < 0) {
       return DIMR_BMI_FAILURE;
     }
@@ -262,7 +262,7 @@ int get_value_ptr(char *key, void **dst_ptr) {
 }
 
 // Exported
-// Update ZSF state.
+// Update DSLE state.
 // Advances the current time by dt seconds.
 int update(double dt) {
   int status = DIMR_BMI_OK;
@@ -313,7 +313,7 @@ int get_var_shape(char *key, int dims[DIMR_BMI_MAXDIMS]) { // dims -> int[6]
   }
 
   if (lock_id) {
-    lock_index = zsf_config_get_lock_index(&config, lock_id);
+    lock_index = dsle_config_get_lock_index(&config, lock_id);
     if (lock_index < 0) {
       return DIMR_BMI_FAILURE;
     }
@@ -365,7 +365,7 @@ int update_until(double update_time) { return DIMR_BMI_OK; }
 
 void get_version_string(char **version_string) {
   if (version_string != NULL) {
-    *version_string = ZSF_GIT_DESCRIBE;
+    *version_string = DSLE_GIT_DESCRIBE;
   }
 }
 

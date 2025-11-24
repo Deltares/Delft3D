@@ -32,7 +32,6 @@
 
 module m_copynetlinkstosam
 
-
    use precision, only: dp
    implicit none
 

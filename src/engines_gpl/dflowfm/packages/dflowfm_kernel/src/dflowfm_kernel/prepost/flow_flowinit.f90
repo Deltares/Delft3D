@@ -107,7 +107,7 @@ contains
       use m_1d_structures, only: initialize_structures_actual_params
       use m_oned_functions, only: set_max_volume_for_1d_nodes
       use m_structures
-      use m_longculverts
+      use m_longculverts, only: setFrictionForLongculverts
       use timers, only: timstrt, timstop
       use m_sethu
       use fm_external_forcings

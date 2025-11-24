@@ -80,7 +80,7 @@ module unstruc_netcdf
               t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
               unc_def_idomain, unc_def_iglobal, fill_netlink_geometry, &
               open_files_, open_datasets_, nopen_files_, unc_read_merged_map, t_unc_merged, &
-              blcell, read_mesh2d_face_z, face_z_stdname
+              read_mesh2d_face_z, face_z_stdname
 
    integer, parameter :: UNC_CONV_CFOLD = 1 !< Old CF-only conventions.
    integer, parameter :: UNC_CONV_UGRID = 2 !< New CF+UGRID conventions.
@@ -586,7 +586,6 @@ module unstruc_netcdf
       module procedure unc_put_att_char
    end interface unc_put_att
 
-   real(kind=hp), allocatable :: blcell(:)
    character(len=:), allocatable :: face_z_stdname
 
 contains
@@ -2959,7 +2958,7 @@ contains
       use m_partitioninfo, only: jampi, idomain, iglobal_s
       use m_structures, only: get_max_numlinks, valculvert, valgenstru, valweirgen, valorifgen, valpump
       use m_globalparameters, only: st_general_st, st_weir, st_orifice
-      use m_longculverts, only: nlongculverts, longculverts
+      use m_longculverts_data, only: nlongculverts, longculverts
       use m_structures_saved_parameters, only: process_structures_saved_parameters, define_ncdf_data_id, write_data_to_file
       use m_gettaus, only: gettaus
       use m_gettauswave, only: gettauswave
@@ -11723,6 +11722,7 @@ contains
       use m_find1dcells, only: find1dcells
       use m_set_nod_adm
       use m_inquire_link_type, only: is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
+      use m_cell_geometry, only: blcell
       implicit none
 
       integer, intent(in) :: ncid !< NetCDF file id
@@ -12689,6 +12689,7 @@ contains
       use io_netcdf
       use netcdf
       use m_alloc
+      use m_cell_geometry, only: blcell
       integer, intent(in) :: ioncid, im, numface
 
       integer :: i, ierr, id_netnodef, ncid
@@ -15656,6 +15657,7 @@ contains
       use Timers
       use m_modelbounds
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
+
       implicit none
 
       integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
@@ -15713,9 +15715,6 @@ contains
       n1d2dcontacts = 0
       n1dedges = 0
       start_index = 1
-      !if (present(id_tsp_)) then
-      !   id_tsp = id_tsp_
-      !endif
 
       if (ndxi <= 0) then
          call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
@@ -15789,20 +15788,25 @@ contains
             x1dn(n) = xz(ndx2d + n)
             y1dn(n) = yz(ndx2d + n)
 
-            if (n <= ndx1d) then ! exclude boundary nodes
+            if (n <= ndx1d .and. associated(meshgeom1d%ngeopointx)) then ! exclude boundary nodes
                ! Also store the original mesh1d/network variables in the new flowgeom order for ndx1d nodes:
-               k1 = nodePermutation(nd(ndx2d + n)%nod(1)) ! This is the node index from *before* setnodadm(),
+               k1 = nodePermutation(nd(ndx2d + n)%nod(1)) ! This is the netnode index from *before* setnodadm(),
                ! i.e., as was read from input *_net.nc file.
-               if (k1 > 0 .and. associated(meshgeom1d%ngeopointx)) then ! Indicates that no Deltares-0.10 network topology/branchids have been read.
+               if (size(meshgeom1d%nodeidx_inverse) > 0) then
+                  k1 = meshgeom1d%nodeidx_inverse(k1)
+               end if
                   nodebranchidx_remap(n) = meshgeom1d%nodebranchidx(k1)
                   nodeoffsets_remap(n) = meshgeom1d%nodeoffsets(k1)
-                  nodeids_remap(n) = nodeids(k1)
+                  if (allocated(nodeids)) then
+                     nodeids_remap(n) = nodeids(k1)
+                  end if
+                  if (allocated(nodelongnames)) then
                   nodelongnames_remap(n) = nodelongnames(k1)
-               end if
+                  end if
             end if
          end do
 
-         !count 1d mesh edges and 1d2d contacts
+!count 1d mesh edges and 1d2d contacts
          n1dedges = 0
          n1d2dcontacts = 0
          do L = 1, lnx1d
@@ -15814,6 +15818,7 @@ contains
                continue
             end if
          end do
+
          if (jabndnd_ == 1) then
             ! when writing boundary points, include the boundary links as well
             n1dedges = n1dedges + (lnx1db - lnxi)
@@ -15854,12 +15859,14 @@ contains
                y1du(n1dedges) = yu(L)
                L1 = Lperm(ln2lne(L)) ! This is the edge index from *before* setnodadm(),
                ! i.e., as was read from input *_net.nc file.
-               if (L1 > 0 .and. associated(meshgeom1d%ngeopointx)) then ! Indicates that no Deltares-0.10 network topology/branchids have been read.
+               if (associated(meshgeom1d%linkedge)) then 
+                  L1 = meshgeom1d%linkedge(L1)
+               end if
+               if(associated(meshgeom1d%ngeopointx)) then
                   edgebranchidx_remap(n1dedges) = meshgeom1d%edgebranchidx(L1)
                   edgeoffsets_remap(n1dedges) = meshgeom1d%edgeoffsets(L1)
-               else
-                  continue
                end if
+
             else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
                ! 1D2D link, find the 2D flow node and store its cell center as '1D' node coordinates
                n1d2dcontacts = n1d2dcontacts + 1
@@ -17368,7 +17375,7 @@ contains
       use m_1d_structures
       use m_General_Structure
       use fm_external_forcings_data
-      use m_longculverts
+      use m_longculverts_data, only : longculverts, nlongculverts
       implicit none
       integer, intent(in) :: ncid !< ID of the rst file
       character(len=*), intent(in) :: filename !< Name of rst file.

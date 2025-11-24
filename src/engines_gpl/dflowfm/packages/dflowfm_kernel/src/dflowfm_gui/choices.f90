@@ -146,7 +146,7 @@ module m_choices
    use m_connecthangingnodes, only: connecthangingnodes, removelinksofhangingnodes, makeZKbedlevels
    use m_partition_to_idomain, only: partition_to_idomain
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
 contains
@@ -270,7 +270,7 @@ contains
             call findcells(100) ! include folded cells
             call find1dcells()
 !         call findcells(0)          ! do not include folded cells
-            call delete_dry_points_and_areas()
+            call delete_dry_points_and_areas(update_blcell=.false.)
             call makenetnodescoding() ! killcell relies on node codes
          else if (NWHAT == 22) then
             call interpdivers(2) ! Network zk flow bathy

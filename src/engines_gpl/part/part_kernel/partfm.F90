@@ -132,6 +132,7 @@ contains
 
         !  calculate dump-sites in the grids
 
+
         call part06fm (lun(2), nodye, nocont, xwaste, &
                 ywaste, zwaste, nwaste, mwaste)
 
@@ -178,6 +179,7 @@ contains
             goto 1234
         end if
 
+
         do while (istat == 0)
             !     determine if map and track files must be produced
 
@@ -218,6 +220,7 @@ contains
             !     transport (advection, dispersion, winddrag)
             !      jsfer_old = jsferic
             !      jsferic = 0 ! everything in part10fm is in meters
+
             call update_part(itime)
             call part10fm()
             !      jsferic = jsfer_old ! back to what it should be

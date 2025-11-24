@@ -29,6 +29,7 @@ pushd examples/dflowfm
     shopt -s extglob
     mv -v !(examples) examples
     rm -vf examples/*/run.{sh,bat}
+    rm -vf examples/*/run_apptainer.sh
     rm -vf "${ZIP_FILE}"
     zip -vr "${ZIP_FILE}" examples
 popd

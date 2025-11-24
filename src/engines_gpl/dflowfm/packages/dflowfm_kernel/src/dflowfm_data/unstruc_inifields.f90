@@ -266,7 +266,7 @@ contains
                                    iloctype, operand, transformcoef, ja, varname)
          ! convert quantity name used in configuration file to a consistent internal name
          qid = quantity_name_config_file_to_internal_name(qid)
-         
+
          if (ja == 1) then
             call resolvePath(filename, basedir)
             ib = ib + 1
@@ -317,7 +317,8 @@ contains
                                           target_array_3d, first_index, method)
             else
                call process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count)
+                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count, &
+                                            filetype)
             end if
 
             ! This part of the code might be moved or changed. (See UNST-8247)
@@ -343,10 +344,10 @@ contains
                ec_item = ec_undef_int
                call setzcs()
                success = ec_addtimespacerelation(qid, xz(1:ndx), yz(1:ndx), mask, quantity_value_count, filename, &
-                                                   filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
-                                                   varname=varname, tgt_item1=ec_item)
+                                                 filetype, method, operand, z=zcs, pkbot=kbot, pktop=ktop, &
+                                                 varname=varname, tgt_item1=ec_item)
                success = success .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                                        tunit, tstart_user, target_array)
+                                                                      tunit, tstart_user, target_array)
                if (.not. success) then
                   call mess(LEVEL_ERROR, 'flow_initexternalforcings: error reading '//trim(qid)//'from '//trim(filename))
                end if
@@ -655,7 +656,7 @@ contains
          end if
 
          ! read value
-         if (filetype == inside_polygon) then
+         if (filetype == inside_polygon .and. method == METHOD_CONSTANT) then
             call prop_get(node_ptr, '', 'value', transformcoef(1), retVal)
             if (.not. retVal) then
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), &
@@ -691,7 +692,7 @@ contains
       end if
 
       if (strcmpi(quantity(1:13), 'initialtracer')) then
-          call read_tracer_properties(node_ptr, transformcoef)
+         call read_tracer_properties(node_ptr, transformcoef)
       end if
 
       ! We've made it to here, success!
@@ -1561,7 +1562,7 @@ contains
    !> Set the control parameters for the actual reading of the items from the input file or
    !! connecting the input to the EC-module.
    subroutine process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index, quantity_value_count)
+                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index, quantity_value_count, filetype)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
       use tree_data_types
@@ -1569,9 +1570,11 @@ contains
       use messageHandling
       use m_alloc, only: realloc, aerr
       use unstruc_files, only: resolvePath
+      use timespace_parameters, only: NCGRID
       use m_missing, only: dmiss
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL, UNC_LOC_S3D
       use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, waveforcing
+      use m_flowparameters, only: ja_friction_coefficient_time_dependent
       use m_flow, only: frcu
       use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
@@ -1605,7 +1608,9 @@ contains
       real(kind=sp), dimension(:, :), pointer, intent(out) :: target_array_3d_sp !< pointer to the array that corresponds to the quantity (real(kind=sp)), if it has an extra dimension.
       integer, intent(out) :: target_quantity_index !< Index of the quantity in the first dimension of target_array_3d, if applicable.
       integer, intent(out) :: quantity_value_count !< The number of values for this quantity on a single location. E.g. 1 for scalar fields, 2 for vector fields.
-
+      integer, intent(in) :: filetype !< Type of the file being read (NCGRID, etc).
+      
+      
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
       character(len=idlen) :: qid_base, qid_specific
@@ -1632,6 +1637,10 @@ contains
       case ('frictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frcu
+         if (filetype == NCGRID) then
+            time_dependent_array = .true.
+            ja_friction_coefficient_time_dependent = 1
+         end if
       case ('advectiontype')
          target_location_type = UNC_LOC_U
          target_array_integer => iadv
@@ -1784,7 +1793,7 @@ contains
          else
             write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
                ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
-                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
+               'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_3D, '.'
             call warn_flush()
             success = .false.
          end if
@@ -1795,7 +1804,7 @@ contains
          else
             write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
                ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
-                      'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
+               'or "WaveForcing" is not ', WAVEFORCING_RADIATION_STRESS, ' or ', WAVEFORCING_DISSIPATION_3D, '.'
             call warn_flush()
             success = .false.
          end if
@@ -1806,7 +1815,7 @@ contains
          else
             write (msgbuf, '(a,i0,a,i0,a)') 'Reading *.ext forcings file '''//trim(md_extfile)// &
                ''', quantity "'//trim(qid)//'" found but "WaveModelNr" is not ', WAVE_NC_OFFLINE, ', '// &
-                      'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
+               'or "WaveForcing" is not ', WAVEFORCING_DISSIPATION_TOTAL, '.'
             call warn_flush()
             success = .false.
          end if
@@ -2207,8 +2216,8 @@ contains
 
       real(kind=dp), dimension(:), intent(inout), target :: input_array_2d !< The input array on 2d grid cells (1:ndx).
       real(kind=dp), dimension(:, :), intent(inout) :: output_array_3d !< The output array on 3d grid cells.
-                                                                      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
-                                                                      !< The second dimension is the 3D grid cell dimension (1:ndkx)
+      !< First dimension is the "constituent" dimension, e.g., to set individual tracers or sediment fractions.
+      !< The second dimension is the 3D grid cell dimension (1:ndkx)
       integer, intent(in) :: first_index !< The value for the first "constituent" index of the output array.
       real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
       real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.

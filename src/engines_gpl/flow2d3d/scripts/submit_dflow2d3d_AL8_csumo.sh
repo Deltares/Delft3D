@@ -2,7 +2,7 @@
   
 # Usage:
     #
-    # This script runs Delft3D-FLOW in parallel on Linux H7
+    # This script runs Delft3D-FLOW in parallel on Linux Alma8
     # Adapt and use it for your own purpose
     #
     # Usage example:
@@ -69,10 +69,10 @@ D3D_HOME=
 runscript_extraopts=
 wavefile=runwithoutwaveonlinebydefault
 withrtc=false
-csumoscript=/p/1202339-rndcoastalhd/COSUMO/01_code/exe/latest/lnx_h7_2023b/run_COSUMO.sh # latest compiled version of C-SUMO
-mcrdir=/p/1202339-rndcoastalhd/COSUMO/10_MCR_linux/h7/2023b/installed/R2023b/  # Matlab Runtime compiler location (should be consistent with C-SUMO executable)
+csumoscript=/path/to/run_COSUMO.sh # latest compiled version of C-SUMO
+mcrdir=/path/to/R2023b/  # Matlab Runtime compiler location (should be consistent with C-SUMO executable)
 csumodeployed=true
-csumodir=/p/1202339-rndcoastalhd/COSUMO/01_code/
+csumodir=/path/to/01_code/
 matlabversion=2014a
 
 ulimit -s unlimited

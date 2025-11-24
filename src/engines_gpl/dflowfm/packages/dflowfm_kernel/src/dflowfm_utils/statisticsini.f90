@@ -34,7 +34,7 @@ module m_statisticsini
 
    use m_statisticsnewstep, only: statisticsnewstep
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    private

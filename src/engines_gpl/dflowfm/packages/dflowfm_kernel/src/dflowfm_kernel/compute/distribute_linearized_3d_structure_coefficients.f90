@@ -2,7 +2,7 @@
 !! over the layers of the structure.
 module m_distribute_linearized_3d_structure_coefficients
 
-use precision, only: dp
+   use precision, only: dp
 contains
    !> distribute linearized 3D structure coefficients over the layers of the structure.
    subroutine distribute_linearized_3d_structure_coefficients(structure)

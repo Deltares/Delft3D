@@ -33,7 +33,6 @@
 !> allocate transport arrays
 module m_alloc_transport
 
-
    use precision, only: dp
    implicit none
 
