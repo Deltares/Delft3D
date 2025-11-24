@@ -2948,7 +2948,7 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
-      use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, jatem, nbndtm, jased, nbndsd, numfracs, nbndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own
+      use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, jatem, nbndtm, jased, nbndsd, numfracs, nbndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: tudunitstr, refdat, dts
       use m_flowgeom, only: lnx, ndx, ndxi, ndx2d, xz, yz, bl, xu, yu, ln, lnxi
@@ -9477,13 +9477,13 @@ contains
                call definencvar(imapfile, id_ice_pressure(iid), nf90_double, idims, 'ice_pressure', 'Pressure exerted by the floating ice cover', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
             end if
             if (ice_mapout%ice_temperature) then
-                  call definencvar(imapfile, id_ice_temperature(iid), nf90_double, idims, 'ice_temperature', 'Temperature of the floating ice cover', 'K', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile, id_ice_temperature(iid), nf90_double, idims, 'ice_temperature', 'Temperature of the floating ice cover', 'K', 'FlowElem_xcc FlowElem_ycc')
             end if
             if (ice_mapout%snow_thickness) then
-                  call definencvar(imapfile, id_snow_thickness(iid), nf90_double, idims, 'snow_thickness', 'Thickness of the snow layer', 'm', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile, id_snow_thickness(iid), nf90_double, idims, 'snow_thickness', 'Thickness of the snow layer', 'm', 'FlowElem_xcc FlowElem_ycc')
             end if
             if (ice_mapout%snow_temperature) then
-                call definencvar(imapfile, id_snow_temperature(iid), nf90_double, idims, 'snow_temperature', 'Temperature of the snow layer', 'K', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile, id_snow_temperature(iid), nf90_double, idims, 'snow_temperature', 'Temperature of the snow layer', 'K', 'FlowElem_xcc FlowElem_ycc')
             end if
          end if
 
@@ -10989,7 +10989,7 @@ contains
             ierr = nf90_put_var(imapfile, id_snow_temperature(iid), snow_temperature, [1, itim], [ndxndxi, 1])
          end if
       end if
-      
+
       if (jamapheatflux > 0 .and. jatem > 1) then ! Heat modelling only
          ierr = nf90_put_var(imapfile, id_air_temperature(iid), air_temperature, [1, itim], [ndxndxi, 1])
          ierr = nf90_put_var(imapfile, id_relative_humidity(iid), relative_humidity, [1, itim], [ndxndxi, 1])
@@ -11721,7 +11721,7 @@ contains
       use fm_location_types
       use m_find1dcells, only: find1dcells
       use m_set_nod_adm
-      use m_inquire_link_type, only: is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
+      use m_inquire_link_type, only: is_valid_2d2d_netlink, is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
       use m_cell_geometry, only: blcell
       implicit none
 
@@ -11736,16 +11736,17 @@ contains
       type(t_unc_netelem_ids) :: ids_netelem
 
       integer :: nn
-      integer, allocatable :: edge_nodes(:, :), face_nodes(:, :), edge_type(:), contacts(:, :)
-
+      integer, allocatable :: edge_nodes(:, :), face_nodes(:, :), edge_type(:)
+      integer, allocatable :: contacts(:, :), contacts_2D2D(:, :), contacttype(:), contacttype_2D2D(:)
+      integer, allocatable, dimension(:) :: temp_indices
       integer :: ierr
       integer :: i, k, k1, k2, numl2d, numk2d, L, Lnew, nv, n1, n2, n
       integer :: num_1d_nodes, node_index
       logical :: jaInDefine
       integer :: id_zf
       real(kind=hp), allocatable :: xn(:), yn(:), zn(:), xe(:), ye(:), zf(:)
-      integer :: n1dedges, n1d2dcontacts, start_index
-      integer, dimension(:), allocatable :: contacttype, idomain1d, iglobal_s1d
+      integer :: n1dedges, n1d2dcontacts, n2d2dcontacts, start_index
+      integer, dimension(:), allocatable :: idomain1d, iglobal_s1d
 
       call readyy('Writing net data', 0.0_dp)
 
@@ -11796,6 +11797,20 @@ contains
       end if
       if (jsferic == 1) then
          crs%epsg_code = 4326
+      end if
+      temp_indices = [(l, l=1, numl)]
+      temp_indices = pack(temp_indices, is_valid_2d2d_netlink(temp_indices))
+      n2d2dcontacts = size(temp_indices)
+      if (n2d2dcontacts > 0) then
+         allocate (contacts_2D2D(2, n2d2dcontacts))
+         call realloc(contacttype_2D2D, n2d2dcontacts, keepExisting=.false., fill=5)
+
+         do i = 1, n2d2dcontacts
+            L = temp_indices(i)
+            n1 = abs(lne(1, L))
+            n2 = abs(lne(2, L))
+            contacts_2D2D(1:2, i) = [n1, n2]
+         end do
       end if
 
       ! 1D network geometry
@@ -12112,6 +12127,13 @@ contains
             ierr = nf90_enddef(ncid)
             ! Put the contacts
             ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontacts, contacts(1, :), contacts(2, :), contacttype)
+            ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
+         end if
+         if (n2d2dcontacts > 0) then
+            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactname), n2d2dcontacts, id_tsp%meshids2d, id_tsp%meshids2d, UG_LOC_FACE, UG_LOC_FACE, start_index)
+            ierr = nf90_enddef(ncid)
+            ! Put the contacts
+            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontacts, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D)
             ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
          end if
 
@@ -15795,14 +15817,14 @@ contains
                if (size(meshgeom1d%nodeidx_inverse) > 0) then
                   k1 = meshgeom1d%nodeidx_inverse(k1)
                end if
-                  nodebranchidx_remap(n) = meshgeom1d%nodebranchidx(k1)
-                  nodeoffsets_remap(n) = meshgeom1d%nodeoffsets(k1)
-                  if (allocated(nodeids)) then
-                     nodeids_remap(n) = nodeids(k1)
-                  end if
-                  if (allocated(nodelongnames)) then
+               nodebranchidx_remap(n) = meshgeom1d%nodebranchidx(k1)
+               nodeoffsets_remap(n) = meshgeom1d%nodeoffsets(k1)
+               if (allocated(nodeids)) then
+                  nodeids_remap(n) = nodeids(k1)
+               end if
+               if (allocated(nodelongnames)) then
                   nodelongnames_remap(n) = nodelongnames(k1)
-                  end if
+               end if
             end if
          end do
 
@@ -15859,10 +15881,10 @@ contains
                y1du(n1dedges) = yu(L)
                L1 = Lperm(ln2lne(L)) ! This is the edge index from *before* setnodadm(),
                ! i.e., as was read from input *_net.nc file.
-               if (associated(meshgeom1d%linkedge)) then 
+               if (associated(meshgeom1d%linkedge)) then
                   L1 = meshgeom1d%linkedge(L1)
                end if
-               if(associated(meshgeom1d%ngeopointx)) then
+               if (associated(meshgeom1d%ngeopointx)) then
                   edgebranchidx_remap(n1dedges) = meshgeom1d%edgebranchidx(L1)
                   edgeoffsets_remap(n1dedges) = meshgeom1d%edgeoffsets(L1)
                end if
@@ -17375,7 +17397,7 @@ contains
       use m_1d_structures
       use m_General_Structure
       use fm_external_forcings_data
-      use m_longculverts_data, only : longculverts, nlongculverts
+      use m_longculverts_data, only: longculverts, nlongculverts
       implicit none
       integer, intent(in) :: ncid !< ID of the rst file
       character(len=*), intent(in) :: filename !< Name of rst file.
