@@ -115,18 +115,18 @@ contains
       end do
 
       do L = 1, lnx
-          q1(L)=qa(L)
+         q1(L) = qa(L)
       end do
-      
+
       if (nqhbnd > 0) then
          do i = 1, nqhbnd
             do n = L1qhbnd(i), L2qhbnd(i)
                L = kbndz(3, n)
-               q1(L)=-q1(L)
+               q1(L) = -q1(L)
             end do
          end do
       end if
-      
+
    end subroutine flow_finalize_fm1dimp_timestep
 
 end module m_flow_finalize_fm1dimp_timestep

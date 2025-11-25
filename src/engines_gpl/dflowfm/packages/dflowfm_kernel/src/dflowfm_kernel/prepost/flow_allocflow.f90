@@ -264,7 +264,7 @@ contains
                   zmx = sini
                else
                   if (dztop == dmiss) then
-                    zmx = Floorlevtoplay
+                     zmx = Floorlevtoplay
                   else
                      zmx = Floorlevtoplay + dztop
                   end if

@@ -34,7 +34,6 @@
 !>    note: cell circumcenters are not updated (would require up-to-date lnn, lne)
 module m_makecell
 
-
    use precision, only: dp
    implicit none
 

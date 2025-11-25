@@ -41,7 +41,7 @@ module unstruc_inifields
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp, sp
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
    private
 
@@ -1611,8 +1611,7 @@ contains
       integer, intent(out) :: target_quantity_index !< Index of the quantity in the first dimension of target_array_3d, if applicable.
       integer, intent(out) :: quantity_value_count !< The number of values for this quantity on a single location. E.g. 1 for scalar fields, 2 for vector fields.
       integer, intent(in) :: filetype !< Type of the file being read (NCGRID, etc).
-      
-      
+
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
       character(len=idlen) :: qid_base, qid_specific

@@ -31,7 +31,7 @@ module m_structure_parameters
 
    use precision_basics, only: dp
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
    private
    public :: structure_parameters
