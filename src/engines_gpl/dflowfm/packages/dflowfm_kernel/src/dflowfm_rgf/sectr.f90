@@ -125,7 +125,7 @@ contains
       IONBENOEMD = 0
 6     continue
       do I = 1, NUMSPL
-         call READYY(' ', 0.01_dp + 0.3_dp * dble(I - 1) / dble(NUMSPL))
+         call READYY(' ', 0.01_dp + 0.3_dp * real(I - 1, kind=dp) / real(NUMSPL, kind=dp))
          do J = I + 1, NUMSPL
             call NUMPold(X, mmax, nmax, I, NUMPI)
             call NUMPold(X, mmax, nmax, J, NUMPJ)
@@ -156,14 +156,14 @@ contains
                   if (CRP * NTYP(I) < 0) then
                      call mess(LEVEL_DEBUG, ' SWITCHED J')
                      call SWITCH(X, Y, mmax, nmax, J, NUMPJ)
-                     TJ = dble(NUMPJ) - 1 - TJ
+                     TJ = real(NUMPJ, kind=dp) - 1 - TJ
                   end if
                else if (NTYP(I) == 0) then
                   NTYP(I) = -NTYP(J)
                   if (CRP * NTYP(J) > 0) then
                      call mess(LEVEL_DEBUG, ' SWITCHED I')
                      call SWITCH(X, Y, mmax, nmax, I, NUMPI)
-                     TI = dble(NUMPI) - 1 - TI
+                     TI = real(NUMPI, kind=dp) - 1 - TI
                   end if
                end if
                TIJ(I, J) = TI

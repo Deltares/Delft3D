@@ -607,7 +607,7 @@ contains
 
 !           reallocate if necessary
             if (numpi > ubound(xlist, 1)) then
-               numnew = int(1.2_dp * dble(numpi)) + 1
+               numnew = int(1.2_dp * real(numpi, kind=dp)) + 1
                call realloc(xlist, numnew)
                call realloc(ylist, numnew)
             end if
@@ -662,7 +662,7 @@ contains
 
          do I = 1, NUMPI - 1
             do k = 1, NUMK
-               TN = (I - 1) + dble(K) / dble(NUMK)
+               TN = (I - 1) + real(K, kind=dp) / real(NUMK, kind=dp)
                call SPLINT(XH, XH2, NUMPI, TN, XK)
                call SPLINT(YH, YH2, NUMPI, TN, YK)
                call LNABS(XK, YK)
@@ -1468,7 +1468,7 @@ contains
       real(kind=dp) :: dr, x00, y00, dxw, dyw, rshift
 
       nshift = nshift + 1
-      rshift = dble(nshift) / dble(numzoomshift)
+      rshift = real(nshift, kind=dp) / real(numzoomshift, kind=dp)
       i1 = int(rshift) + 1
       i1 = min(i1, npl - 1)
       dr = rshift - i1 + 1

@@ -325,7 +325,7 @@ contains
             call comp_local_coords(iloc, kk1, xk, yk, iloc(numk + 1) - 1, xloc, yloc)
          end if
 
-         call readyy('Orthogonalising net', dble(no - 1 + 0.35_dp) / itatp)
+         call readyy('Orthogonalising net', real(no - 1 + 0.35_dp, kind=dp) / itatp)
 
 !------------------------------------------------------------------------
 !     mesh adaptation
@@ -399,7 +399,7 @@ contains
          end if
 
 !     for post-processing, copy smp_mu to zk
-         zk(1:numk) = dble(smp_mu(1:numk))
+         zk(1:numk) = real(smp_mu(1:numk), kind=dp)
 
 !-------------------------------------------------
 !     compute the weights and right-hand sides
@@ -448,7 +448,7 @@ contains
             ww2y = 0.0_dp
          end if
 
-         call readyy('Orthogonalising net', dble(no - 1 + 0.8_dp) / itatp)
+         call readyy('Orthogonalising net', real(no - 1 + 0.8_dp, kind=dp) / itatp)
 !-------------------------------------------------
 ! 3. Solve the 'Laplacian' for orthogonalization/Move all points in a few iteration steps.
 
@@ -652,7 +652,7 @@ contains
             if (ja3 == 3) then
                if (keepcircumcenters /= 1) call update_cell_circumcenters()
 
-               call readyy('Orthogonalising net', dble(no) / itatp)
+               call readyy('Orthogonalising net', real(no, kind=dp) / itatp)
 
                exit tp
             end if
@@ -668,7 +668,7 @@ contains
 !     increase atpf_min for next cycle
          atpf_min = 1.0_dp - (1.0_dp - atpf_min) * 0.99_dp
 
-         call readyy('Orthogonalising net', dble(no) / itatp)
+         call readyy('Orthogonalising net', real(no, kind=dp) / itatp)
 
       end do tp !itatp
 
@@ -1002,8 +1002,8 @@ contains
             kk1L = 1; do while (netcell(icL)%nod(kk1L) /= k1); kk1L = kk1L + 1; end do
 
             N = netcell(icL)%N
-            xL = sum(xk(netcell(icL)%nod(1:N))) / dble(max(N, 1))
-            yL = sum(yk(netcell(icL)%nod(1:N))) / dble(max(N, 1))
+            xL = sum(xk(netcell(icL)%nod(1:N))) / real(max(N, 1), kind=dp)
+            yL = sum(yk(netcell(icL)%nod(1:N))) / real(max(N, 1), kind=dp)
 
             x0 = xk(k0); y0 = yk(k0); 
             x1 = xk(k1); y1 = yk(k1); 
@@ -1038,8 +1038,8 @@ contains
                icR = lne(2, ilink)
 
                N = netcell(icR)%N
-               xR = sum(xk(netcell(icR)%nod(1:N))) / dble(max(N, 1))
-               yR = sum(yk(netcell(icR)%nod(1:N))) / dble(max(N, 1))
+               xR = sum(xk(netcell(icR)%nod(1:N))) / real(max(N, 1), kind=dp)
+               yR = sum(yk(netcell(icR)%nod(1:N))) / real(max(N, 1), kind=dp)
 
 !           contribution to the volume of the left cell
                DvolR = 0.5_dp * ((x1 - xR) * (y0 - yR) - (x0 - xR) * (y1 - yR))
@@ -2094,7 +2094,7 @@ contains
                op%Az(adm%kkc(kL, ic), ic) = alphaL
                op%Az(adm%kkc(kR, ic), ic) = alphaR
             else
-               op%Az(adm%kkc(1:N, ic), ic) = 1.0_dp / dble(N)
+               op%Az(adm%kkc(1:N, ic), ic) = 1.0_dp / real(N, kind=dp)
             end if
          end do
 
@@ -2436,10 +2436,10 @@ contains
             if (L_is_square) then
                if (nb(k1) == 1 .or. nb(k1) == 4) then ! inner node
                   Nquad = nmk(k1) - 2
-                  theta_square(kk + 1) = (2.0_dp - dble(Nquad) * 0.5_dp) * pi
+                  theta_square(kk + 1) = (2.0_dp - real(Nquad, kind=dp) * 0.5_dp) * pi
                else if (nb(k1) == 2) then ! boundary node
                   Nquad = nmk(k1) - 1 - lnn(L)
-                  theta_square(kk + 1) = (1.0_dp - dble(Nquad) * 0.5_dp) * pi
+                  theta_square(kk + 1) = (1.0_dp - real(Nquad, kind=dp) * 0.5_dp) * pi
                else if (nb(k1) == 3) then ! corner node
                   theta_square(kk + 1) = 0.5_dp * pi
                end if
@@ -2520,13 +2520,13 @@ contains
          if (Ntri > 0) then
 !         dmutri = ( FAC*2d0*pi - max(DPhitot-DPhitri, dble(Ntri)*DPhimin) ) / DPhitri
             dmutri = (FAC * 2.0_dp * pi - (DPhitot - DPhitri)) / DPhitri
-            dmutri = max(dmutri, dble(Ntri) * Dphimin / DPhitri)
+            dmutri = max(dmutri, real(Ntri, kind=dp) * Dphimin / DPhitri)
             if (dmutri < 1e-4) then
                continue
             end if
          else
             if (Ntri_square > 0) then
-               dmutri_square = max(FAC * 2.0_dp * pi - (DPhitot - DPhitri_square), dble(Ntri_square) * DPhimin) / DPhitri_square
+               dmutri_square = max(FAC * 2.0_dp * pi - (DPhitot - DPhitri_square), real(Ntri_square, kind=dp) * DPhimin) / DPhitri_square
             end if
          end if
 
@@ -2619,7 +2619,7 @@ contains
             end if
 
 !        compute the optimal angle
-            Dtheta = 2.0_dp * pi / dble(netcell(adm%icell(ic))%n)
+            Dtheta = 2.0_dp * pi / real(netcell(adm%icell(ic))%n, kind=dp)
 
 !        determine the orientation of the cell (necessary for folded cells)
             kp1 = k + 1; if (kp1 > Nnodes) kp1 = kp1 - Nnodes
@@ -2669,7 +2669,7 @@ contains
          lblink_ = .false.
          if (present(lblink)) lblink_ = lblink
 
-         opt_angle = pi * (1 - 2.0_dp / dble(Nnodes))
+         opt_angle = pi * (1 - 2.0_dp / real(Nnodes, kind=dp))
 
          if (present(theta1)) then ! 'square' angle
             if (present(theta2)) then

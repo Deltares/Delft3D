@@ -116,7 +116,7 @@ contains
       KMOD = max(1, NUMK / 100)
       do N = 1, NUMP
 
-         if (mod(n, KMOD) == 0) call READYY('Refine quads', dble(n) / dble(nump))
+         if (mod(n, KMOD) == 0) call READYY('Refine quads', real(n, kind=dp) / real(nump, kind=dp))
 
          if (KNP(N) == 1) then
 
@@ -205,7 +205,7 @@ contains
 
       KMOD = max(1, NUMP / 100)
       do N = 1, NUMP
-         if (mod(n, KMOD) == 0) call READYY('Refine quads', dble(n) / dble(nump))
+         if (mod(n, KMOD) == 0) call READYY('Refine quads', real(n, kind=dp) / real(nump, kind=dp))
          if (KNP(N) == 0) then
             NF = netcell(N)%N
             if (NF == 4) then

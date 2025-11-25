@@ -80,7 +80,7 @@ contains
 
 !  Elliptic smoothing
       do iter = 1, Nsamplesmooth
-         af = dble(iter - 1) / dble(max(Nsamplesmooth - 1, 1))
+         af = real(iter - 1, kind=dp) / real(max(Nsamplesmooth - 1, 1), kind=dp)
          call readyy('Smoothing samples', af)
 
 !     copy zss(1,:,:) to zsdum

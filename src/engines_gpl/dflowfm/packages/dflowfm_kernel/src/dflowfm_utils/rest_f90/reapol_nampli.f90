@@ -200,7 +200,7 @@ contains
 
          end if
          if (mod(NPL, 100) == 0) then
-            call READYY(' ', min(1.0_dp, dble(I) / MAXPOL))
+            call READYY(' ', min(1.0_dp, real(I, kind=dp) / MAXPOL))
          end if
 
       end do row

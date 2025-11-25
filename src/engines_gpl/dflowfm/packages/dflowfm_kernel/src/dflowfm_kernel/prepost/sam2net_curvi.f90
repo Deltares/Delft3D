@@ -116,10 +116,10 @@ contains
       etamin = huge(1.0_dp)
       etamax = -etamin
       do i = 1, mc
-         xiloc = dble(i - 1)
+         xiloc = real(i - 1, kind=dp)
          do j = 1, nc
             ipoint = i + mmax * (j - 1)
-            etaloc = dble(j - 1)
+            etaloc = real(j - 1, kind=dp)
 
             xietac(1, ipoint) = xiloc
             xietac(2, ipoint) = etaloc

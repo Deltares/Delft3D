@@ -51,7 +51,7 @@ contains
 
       call READYY('Writing Depth File ', 0.0_dp)
       do N = N1, NC
-         AF = dble(N) / dble(NC)
+         AF = real(N, kind=dp) / real(NC, kind=dp)
          call READYY('Writing Dept File', AF)
          write (MMDD, '(12(1PE13.5))') (ZC(M, N), M=M1, MC)
       end do

@@ -132,14 +132,14 @@ contains
          kstart = kn(1, L)
          XPH(NPH) = XK(kstart)
          YPH(NPH) = YK(kstart)
-         ZPH(NPH) = dble(kstart)
+         ZPH(NPH) = real(kstart, kind=dp)
 !    CALL CIRR(XK(kstart), YK(kstart), 71)
          ! Add second point and then...
          kcur = kn(2, L)
          NPH = NPH + 1
          XPH(NPH) = XK(kcur)
          YPH(NPH) = YK(kcur)
-         ZPH(NPH) = dble(kcur)
+         ZPH(NPH) = real(kcur, kind=dp)
 !    CALL CIRR(XK(kcur), YK(kcur), 81)
          jalinkvisited(L) = 1
          ! ... start walking connected netlinks
@@ -168,7 +168,7 @@ contains
                end if
                XPH(NPH) = XK(kcur)
                YPH(NPH) = YK(kcur)
-               ZPH(NPH) = dble(kcur)
+               ZPH(NPH) = real(kcur, kind=dp)
                jalinkvisited(LL) = 1
 !            CALL CIRR(XK(kcur), YK(kcur), 31)
                goto 10

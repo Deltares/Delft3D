@@ -94,7 +94,7 @@ contains
             R1 = dbdistance(x0, y0, x1, y1, jsferic, jasfer3D, dmiss)
 !        determine relative position on the gridline
 !        uniform:
-            alpha = dble(j - 1) / dble(nc - 1)
+            alpha = real(j - 1, kind=dp) / real(nc - 1, kind=dp)
             beta = (1.0_dp - alpha) * R0 / R1 + alpha
 
             xc(i, j) = x0 + beta * (x1 - x0)

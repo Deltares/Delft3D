@@ -263,7 +263,7 @@ contains
                end if
                pil_rad = abs(pil_rad)
                do k = 1, mfac + 1
-                  phi = twopi * (dble(k - 1) / dble(mfac))
+                  phi = twopi * (real(k - 1, kind=dp) / real(mfac, kind=dp))
                   xpl(k) = pil_x + pil_rad * cos(phi)
                   ypl(k) = pil_y + pil_rad * sin(phi)
                end do

@@ -51,7 +51,7 @@ contains
 
       do J = 1, NC
          if (HALF > -1.0_dp) then
-            AF = HALF + 0.5_dp * dble(J) / dble(NC)
+            AF = HALF + 0.5_dp * real(J, kind=dp) / real(NC, kind=dp)
             call READYY('Reading Grid File', AF)
          end if
          read (MRGF, *, err=777, end=999) dummy, dummy, (X(I, J), I=1, MC)
@@ -63,7 +63,7 @@ contains
       backspace (MRGF)
       do J = 1, NC
          if (HALF > -1.0_dp) then
-            AF = HALF + 0.5_dp * dble(J) / dble(NC)
+            AF = HALF + 0.5_dp * real(J, kind=dp) / real(NC, kind=dp)
             call READYY('Reading Grid File', AF)
          end if
          read (MRGF, '(10X,5F12.0)', err=888, end=999) (X(I, J), I=1, MC)

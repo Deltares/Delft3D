@@ -128,7 +128,7 @@ contains
       KMOD = max(1, NUML / 100)
       do L = 1, NUML
          if (mod(L, KMOD) == 0) then
-            AF = dble(L) / dble(NUML)
+            AF = real(L, kind=dp) / real(NUML, kind=dp)
             call READYY('CHANGE FIELD VALUES', AF)
          end if
          K1 = KN(1, L)

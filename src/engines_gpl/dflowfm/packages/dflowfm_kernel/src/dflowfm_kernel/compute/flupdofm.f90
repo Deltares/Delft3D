@@ -125,7 +125,7 @@ contains
       elseif (s1(iL) < s1(ir)) then
          teken = -1.0_dp
       else ! s1(iL) == s1(ir)
-         teken = -dble(sign(1, m)) ! account for orientation of flow link w.r.t. structure
+         teken = -real(sign(1, m), kind=dp) ! account for orientation of flow link w.r.t. structure
       end if
 
       if (teken < 0) then

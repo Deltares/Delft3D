@@ -32,6 +32,7 @@
 !! *.ext file for quantities such as initialwaterlevel,
 !! frictioncoefficient, etc.
 module unstruc_inifields
+
    use m_setinitialverticalprofile, only: setinitialverticalprofile
    use m_add_tracer, only: add_tracer
    use m_setzcs, only: setzcs
@@ -40,6 +41,7 @@ module unstruc_inifields
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp, sp
 
+use precision, only: dp
    implicit none
    private
 
@@ -569,7 +571,7 @@ contains
             end if
             call averagingTypeStringToInteger(averagingType, iav)
             if (iav >= 0) then
-               transformcoef(4) = dble(iav)
+               transformcoef(4) = real(iav, kind=dp)
             else
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='// &
                   trim(quantity)//'. Field ''averagingType'' has invalid value '''//trim(averagingType)//'''. Ignoring this block.'
@@ -603,7 +605,7 @@ contains
                   call warn_flush()
                   transformcoef(8) = 1.0_dp
                else
-                  transformcoef(8) = dble(averagingNumMin)
+                  transformcoef(8) = real(averagingNumMin, kind=dp)
                end if
             end if
 
