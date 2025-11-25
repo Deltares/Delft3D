@@ -309,58 +309,15 @@ contains
 
             !  PART2a: cells that change volume: in box [count_boxes + 1]; deal with those cells that are filling up with water (running wet)
             ! All sections of Part2a use delta_t_box(first_box)
-            if (timon) call timstrt("flooding", ithand2)      !  'flooding' is evaluated with highest frequency
-
-            call calculate_loop_limits_for_cfl_risk(count_boxes, &
-                    count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
-                    i_flow_begin_cfl_risk, i_flow_end_cfl_risk, i_cell_begin_cfl_risk, i_cell_end_cfl_risk)
-
-            !  PART2a1: sum the mass and volume vertically
-            !  to calculate the column averaged concentrations
-            !  assigning those values to the upper-most cell in each column
-
-            call store_total_vol_and_average_conc_in_uppermost_cell(i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
-                            sorted_cells, nvert, ivert, &
-                            volint, rhs, conc, num_substances_transported, num_cells)
-
-            ! PART2a1: apply all influxes to the cells first; volumes and masses are updated
-            
-            call update_system_for_flows_with_cfl_risk_to_interior_cells(rhs, conc, volint, sorted_flows, &
-                                    bound, fluxes, i_flow_begin_cfl_risk, i_flow_end_cfl_risk, num_exchanges, &
-                                    flow, ipoint, delta_t_box, first_box_smallest_dt, &
-                                    num_substances_transported, massbal, amass2, dmpq, &
-                                    iqdmp, nvert, ivert, count_boxes, &
-                                    idx_box_cell, acc_remained, acc_changed, file_unit, report)
-
-            ! PART2a2: apply all outfluxes to the outer world from 
-            ! these cells that should have reasonable concentrations
-            ! and enough volume now
-            call update_system_for_remaining_flows_with_cfl_risk(rhs, conc, volint, sorted_flows, &
-                            bound, fluxes, i_flow_begin_cfl_risk, i_flow_end_cfl_risk, &
-                            num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
-                            num_substances_transported, massbal, amass2, dmpq, &
-                            iqdmp, nvert, ivert)
-
-
-
-            call update_system_with_withdrawals_at_cells_with_cfl_risk(rhs, conc, volint, sorted_cells, &
-                    i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
-                    wdrawal, delta_t_box, first_box_smallest_dt, &
-                    num_substances_transported, massbal, amass2, dmps, &
-                    num_substances_total, num_monitoring_cells, &
-                    isdmp, nvert, ivert, &
-                    num_waste_loads, iwaste, wstdmp, file_unit)
-
-
-            ! PART2a4: expand (apply?) the depth averaged result to all layers for this group of cells, using the interpolated column-cummulative volume vol
-            call redistribute_mass_assuming_same_conc_in_columns_with_cfl_risk(rhs, conc, volint, sorted_cells, &
-                        i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
-                        nvert, ivert, deriv, &
-                        vol_new, vol_old, fact, &
-                        delta_t_box, first_box_smallest_dt, &
-                        num_substances_transported, num_cells)
-
-            if (timon) call timstop(ithand2)
+            call manage_cfl_risk_items(count_boxes, count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
+                        i_flow_begin_cfl_risk, i_flow_end_cfl_risk, i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
+                        sorted_cells, sorted_flows, nvert, ivert, volint, rhs, conc, bound, fluxes, &
+                        num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
+                        num_substances_transported, num_cells, massbal, amass2, dmps, dmpq, iqdmp, &
+                        wdrawal, num_substances_total, num_monitoring_cells, isdmp, &
+                        num_waste_loads, iwaste, wstdmp, vol_new, vol_old, deriv, fact, &
+                        idx_box_cell, acc_remained, acc_changed, file_unit, report)
+            ! End of PART2a
 
             ! PART2b: set a first order initial horizontal step for all cells in the boxes of this time step: 
             ! update mass (rhs = rhs + delta_mass) of cells losing / receiving flow
@@ -1989,25 +1946,18 @@ contains
         end do
     end function get_integration_limit_of_sub_time_step
 
-    subroutine process_cfl_risk_cells(count_boxes, count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
+    subroutine manage_cfl_risk_items(count_boxes, count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
         i_flow_begin_cfl_risk, i_flow_end_cfl_risk, i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
-        sorted_cells, sorted_flows, &
-        nvert, ivert, &
-        volint, rhs, conc, &
-        bound, fluxes, &
+        sorted_cells, sorted_flows, nvert, ivert, volint, rhs, conc, bound, fluxes, &
         num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
-        num_substances_transported, num_cells, &
-        massbal, amass2, dmps, dmpq, iqdmp, &
-        wdrawal, num_substances_total, num_monitoring_cells, &
-        isdmp, &
-        num_waste_loads, iwaste, wstdmp, &
-        vol_new, vol_old, deriv, fact, &
+        num_substances_transported, num_cells, massbal, amass2, dmps, dmpq, iqdmp, &
+        wdrawal, num_substances_total, num_monitoring_cells, isdmp, &
+        num_waste_loads, iwaste, wstdmp, vol_new, vol_old, deriv, fact, &
         idx_box_cell, acc_remained, acc_changed, file_unit, report)
-
-        use timers
-
         !> Processes cells (and their corresponding flows) that are assigned to the CFL-risk delta time box.
         !> These cells do not satisfy the CFL condition for any of the standard delta time boxes
+
+        use timers
 
         implicit none
         ! Subroutine arguments
@@ -2026,7 +1976,7 @@ contains
         real(kind = dp), intent(inout) :: volint(:) !< internal volumes of cells
         real(kind = dp), intent(inout) :: rhs(:,:) !< right-hand side array for transported substances
         real(kind = real_wp), intent(inout) :: conc(:,:) !< concentration array for transported substances
-        real(kind = real_wp), intent(in) :: bound(:) !< boundary concentrations for transported substances
+        real(kind = real_wp), intent(in) :: bound(num_substances_transported, *) !< boundary concentrations for transported substances
         logical, intent(in) :: fluxes !< flags for active flows
         integer(kind = int_wp), intent(in) :: num_exchanges !< total number of exchanges or flows between cells
         real(kind = real_wp), intent(in) :: flow(:) !< flow rate through each exchange
@@ -2061,7 +2011,6 @@ contains
         integer(kind = int_wp) :: ithand2 = 0 !< timing handle
 
         if (timon) call timstrt("flooding", ithand2)      !  'flooding' is evaluated with highest frequency
-
             call calculate_loop_limits_for_cfl_risk(count_boxes, &
                     count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
                     i_flow_begin_cfl_risk, i_flow_end_cfl_risk, i_cell_begin_cfl_risk, i_cell_end_cfl_risk)
@@ -2112,7 +2061,7 @@ contains
                         num_substances_transported, num_cells)
 
             if (timon) call timstop(ithand2)
-    end subroutine process_cfl_risk_cells
+    end subroutine manage_cfl_risk_items
 
     subroutine calculate_loop_limits_for_cfl_risk(count_boxes, &
         count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
