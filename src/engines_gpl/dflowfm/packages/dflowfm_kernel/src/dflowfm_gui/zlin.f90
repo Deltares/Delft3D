@@ -33,6 +33,7 @@
 module m_zlin
 
    use m_waveconst
+   use precision, only: dp
 
    implicit none
 

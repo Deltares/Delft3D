@@ -54,7 +54,7 @@ contains
       use unstruc_files
       use m_flowgeom
       use m_flowtimes
-      use m_physcoef, only: rhomean, ag, vismol
+      use m_physcoef, only: rhomean, ag, vismol, dynroughveg
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
@@ -464,12 +464,6 @@ contains
          end if
          call realloc(avalflux, [lnx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
          !
-         ! Warn user if default wetslope is still 10.0 when using dune avalanching. Reset default to reasonable 1.0 in that case.
-         if (comparereal(stmpar%morpar%wetslope, 10.0_dp) == 0) then
-            call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Dune avalanching is switched on. Default wetslope reset to 0.1 from 10.0')
-            stmpar%morpar%wetslope = 1.0e-1_dp
-         end if
-         !
          ! Warn user if upperlimitssc is set icm with avalanching. This effectively removes sedimentation of the avalanching flux if set too strictly.
          if (comparereal(upperlimitssc, 1.0e6_dp) /= 0) then
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Upper limit imposed on ssc. This will cause large mass errors icm avalanching. Check the mass error at the end of the run.')
@@ -540,6 +534,11 @@ contains
       case default
          ! if 0, do nothing.
       end select
+      !
+      if (dynroughveg > 0) then
+         if (allocated(cumes)) deallocate(cumes)
+         call realloc(cumes, lnx,stat=ierr,fill=0.0_dp, keepExisting=.false.)
+      end if
 
 1234  return
    end subroutine flow_sedmorinit

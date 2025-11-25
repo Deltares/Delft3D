@@ -85,6 +85,7 @@ contains
       use Timers
       use m_reconstruct_sed_transports
       use m_waveconst
+      use m_physcoef, only: dynroughveg
 
       implicit none
 
@@ -264,6 +265,10 @@ contains
          call fm_blchg_no_cmpupd() !Compute bed level changes without actually updating the bed composition
          !
          call fm_apply_bed_boundary_condition(dtmor, timhr)
+         !
+         if (dynroughveg > 0) then
+            call determine_linkbased_cumblchg()
+         end if
 
       else
          !
@@ -384,6 +389,10 @@ contains
                            aksu = aks(k2, l)
                         else
                            aksu = ac1 * aks(k1, l) + ac2 * aks(k2, l)
+                        end if
+                        !
+                        if (aksu < 1e-10_dp) then
+                           cycle
                         end if
                         !
                         ! work up through layers integrating transport flux
@@ -1168,13 +1177,13 @@ contains
                do ii = 1, nd(nm)%lnx
                   LL = nd(nm)%ln(ii)
                   Lf = abs(LL)
-                  flux = avalflux(Lf, l) * wu_mor(Lf)
+                  flux = avalflux(Lf, l) * wu_mor(Lf)   ! kg m-1 s-1 m
                   call fm_sumflux(LL, sumflux, flux)
                end do
-               trndiv = trndiv + sumflux * bai_mor(nm)
+               trndiv = trndiv + sumflux * bai_mor(nm)  ! kg s-1
             end if
             !
-            dsdnm = (trndiv + sedflx - eroflx) * dtmor
+            dsdnm = (trndiv + sedflx - eroflx) * dtmor  ! kg m-2
             !
             ! Warn if bottom changes are very large,
             ! depth change NOT LIMITED
@@ -1257,7 +1266,7 @@ contains
          !
          ! If this is a cell in which sediment processes are active then ...
          !
-         if (kfsed(nm) /= 1 .or. (s1(nm) - bl(nm)) < epshs .or. thetsd(nm) <= 0) cycle ! check whether sufficient as condition
+         if (kfsed(nm) /= 1 .or. (s1(nm) - bl(nm)) <= epshs .or. thetsd(nm) <= 0) cycle ! check whether sufficient as condition
          !
          totdbodsd = 0_dp
          do l = 1, lsedtot
@@ -1619,7 +1628,7 @@ contains
             ! After review, botcrit as a parameter is a really bad idea, as it causes concentration explosions if chosen poorly or blchg is high.
             ! Instead, allow bottom level changes up until 5% of the waterdepth to influence concentrations
             ! This is in line with the bed change messages above. Above that threshold, change the concentrations as if blchg==0.95hs
-            if (hsk < epshs) cycle
+            if (hsk <= epshs) cycle
             botcrit = 0.95 * hsk
             ddp = hsk / max(hsk - blchg(k), botcrit)
             do ll = 1, stmpar%lsedsus
@@ -1636,11 +1645,11 @@ contains
                end do
             end if !ITRA1>0
          end do !k
-      else !kmx==0
+      else !kmx>0
          do ll = 1, stmpar%lsedsus ! works for sigma only
             do k = 1, ndx
                hsk = hs(k)
-               if (hsk < epshs) cycle
+               if (hsk <= epshs) cycle
                botcrit = 0.95 * hsk
                ddp = hsk / max(hsk - blchg(k), botcrit)
                call getkbotktop(k, kb, kt)
@@ -1653,7 +1662,7 @@ contains
          if (jasal > 0) then
             do k = 1, ndx
                hsk = hs(k)
-               if (hsk < epshs) cycle
+               if (hsk <= epshs) cycle
                botcrit = 0.95 * hsk
                call getkbotktop(k, kb, kt)
                do kk = kb, kt
@@ -1666,7 +1675,7 @@ contains
             do itrac = ITRA1, ITRAN
                do k = 1, ndx
                   hsk = hs(k)
-                  if (hsk < epshs) cycle
+                  if (hsk <= epshs) cycle
                   botcrit = 0.95 * hsk
                   call getkbotktop(k, kb, kt)
                   do kk = kb, kt
@@ -1959,7 +1968,7 @@ contains
          ! bed or maximum water level in surrounding wet cells
          ! (whichever is higher)
          !
-         if (hs(nm) < epshs) then
+         if (hs(nm) <= epshs) then
             s1(nm) = s1(nm) + blchg(nm)
             s0(nm) = s0(nm) + blchg(nm)
          end if
@@ -2101,5 +2110,24 @@ contains
       end do
 
    end subroutine fm_diffusion_active_layer
+
+   subroutine determine_linkbased_cumblchg()
+      use m_sediment, only: cumes
+      use m_fm_erosed, only: blchg
+      use m_flowgeom, only: lnx, ln, acl
+
+      implicit none
+
+      integer :: L, k1, k2
+      real(kind=dp) :: ac1, ac2
+
+      do L = 1, lnx
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         ac1 = acl(L); ac2 = 1_fp - ac1
+         cumes(L) = cumes(L) + ac1 * (blchg(k1)) + ac2 * (blchg(k2))
+      end do
+
+   end subroutine determine_linkbased_cumblchg
 
 end module m_fm_bott3d

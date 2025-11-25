@@ -113,7 +113,7 @@ contains
       uratio = min(uwbih / (u2dh + waveps), 5.0_dp)
       ka = ksc * exp(gamma * uratio)
       ka = min(ka, 10.0_dp * ksc, 0.2_dp * huLL)
-      ca = 18.0_fp * log10(12.0_fp * huLL / ka)
+      ca = 18.0_dp * log10(12.0_dp * huLL / ka)
       taubpuLL = ag * (u2dh * u2dh / umod) / ca**2
       z0urouL = max(3.33e-5_dp, ka / 30.0_dp)
    end subroutine getvanrijnwci
