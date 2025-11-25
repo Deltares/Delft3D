@@ -41,14 +41,12 @@ contains
         use m_part_recons
         use m_part_transport
         use m_sferic
-        use m_sferic_part, only: ptref
-        use geometry_module, only: Cart3Dtospher, sphertocart3D
-        use physicalconsts, only: earth_radius
-        use mathconsts, only: raddeg_hp
         use fileinfo, lun => lunit    ! logical unit numbers for files
         use random_generator
         use timers
         use m_part_modeltypes
+        use m_fm_particles_in_grid, only: displace_spherical, part_findcellsingle
+
 
         !locals
         logical :: partdomain, skip_pt, openbound, mirror
@@ -215,19 +213,16 @@ contains
                     openbound = .TRUE.
                 else
                     ! particle is within the model domain
-                    xpart(ipart) = xpartold + dax
-                    ypart(ipart) = ypartold + day
-                    !temporary check
-                    ! assign the new k (segment) for this new coordinate for the original coordinate system,
-                    ! if sferical provide the actual sferical coordinates.
-                    xx(1) = xpart(ipart)
-                    yy(1) = ypart(ipart)
-                    if (jsferic == 1) then
-                        call Cart3Dtospher(xpart(ipart), ypart(ipart), zpart(ipart), xx(1), yy(1), ptref)
+                    if (jsferic == 0) then
+                        xpart(ipart) = xpartold + dax
+                        ypart(ipart) = ypartold + day
+                        call part_findcellsingle(xpart(ipart), ypart(ipart), mpart(ipart), ierror)
+                    else
+                        call displace_spherical( xpartold, ypartold, zpartold, &
+                                  dax, day, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
                     endif
-                    call part_findcell(1, xx, yy, mpart(ipart:ipart), ierror)
 
-                    !  We sill need to check for internal boundaries (eg thin dam or dry cell in the FM model)
+                    !  We still need to check for internal boundaries (eg thin dam or dry cell in the FM model)
                     ! if openbound = false then there is an internal (no flow) boundary.
 
                     call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)
@@ -389,50 +384,38 @@ contains
         wdirr = wdir(mpart(ipart)) * twopi / 360.0d0
         dpxwind = - wvelo(mpart(ipart)) * sin(wdirr) !TODO check the angles . for both sferical as wel as cartesian grids.
         dpywind = - wvelo(mpart(ipart)) * cos(wdirr)  ! here it is in m/s
-        wvel_sf = atan2(wvelo(mpart(ipart)), earth_radius) * raddeg_hp !wind magnitude in degrees/sec
 
         ! drag on the difference vector: cd * (wind - flow)
         ux0 = u0x(mpart(ipart)) + alphafm(mpart(ipart)) * (xpart(ipart) - xzwcell(mpart(ipart)))  ! in m/s ?
         uy0 = u0y(mpart(ipart)) + alphafm(mpart(ipart)) * (ypart(ipart) - yzwcell(mpart(ipart)))
-        ux0old = u0x(mpartold) + alphafm(mpartold) * (xpartold - xzwcell(mpartold))  ! in m/s ?
-        uy0old = u0y(mpartold) + alphafm(mpartold) * (ypartold - yzwcell(mpartold))
-        dwx = cdrag * (dpxwind - ux0) * dts
-        dwy = cdrag * (dpywind - uy0) * dts  !this is for carthesian grids.
-        xpart(ipart) = xpartold + dwx    !cartesian
-        ypart(ipart) = ypartold + dwy    !
 
-        ! the z-coordinate needs to be updated
-        if (jsferic == 1) then
+        dwx = cdrag * (dpxwind - ux0) * dts
+        dwy = cdrag * (dpywind - uy0) * dts
+
+        if (jsferic == 0) then
+            xpart(ipart) = xpartold + dwx    !cartesian
+            ypart(ipart) = ypartold + dwy    !
+            call part_findcellsingle(xpart(ipart), ypart(ipart), mpart(ipart), ierror)
+        else
             ! if spherical then for an accurate conversion we need to calculate distances
             zpartold = zpart(ipart)
-            ux0old = atan2(ux0old, earth_radius) * raddeg_hp
-            uy0old = atan2(uy0old, earth_radius) * raddeg_hp
-            dpxwind = - wvel_sf * sin(wdirr)  ! in degrees (radians). note that the direction is from the north and defined clockwise, 0 means no x displacement
-            dpywind = - wvel_sf * cos(wdirr)
-            dwx = cdrag * (dpxwind - ux0old) * dts
-            dwy = cdrag * (dpywind - uy0old) * dts
-            call Cart3Dtospher(xpartold, ypartold, zpartold, xx(1), yy(1), ptref)
-            xx(1) = xx(1) + dwx
-            yy(1) = yy(1) + dwy
-            call sphertocart3D(xx(1), yy(1), xpart(ipart), ypart(ipart), zpart(ipart)) !to convert back to meters
+
+            call displace_spherical( xpartold, ypartold, zpartold, &
+                     dwx, dwy, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
         endif
 
-        xx(1) = xpart(ipart)
-        yy(1) = ypart(ipart)
-        if (jsferic == 1) call Cart3Dtospher(xpart(ipart), ypart(ipart), zpart(ipart), xx(1), yy(1), ptref)
-        call part_findcell(1, xx(1), yy(1), mpart(ipart:ipart), ierror)
         call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)  ! check around the starting point and end point
 
         ! if the particle goes outside the domain due to wind, use the current angle to transport, otherwise it sticks
         dstick = rnd(rseed) > fstick(ifract) ! if dstick is true then the particle will not stick
         if ((mpart(ipart) == 0 .or. .not.openbound) .and. dstick) then
             ! here we can use the fstick parameter to select whether to take the ! particle out, ie sticks.
-            fangle = datan2(ux0old, uy0old)
-            fanglew = datan2(dpywind, dpxwind)
+            fangle   = atan2(ux0old, uy0old)
+            fanglew  = atan2(dpywind, dpxwind)
             difangle = min(twopi - abs(fangle - fanglew), abs(fangle - fanglew))
 
             ! to map it on the current vector use cos
-            windcurratio = dcos(difangle) * wvelo(mpartold)
+            windcurratio = cos(difangle) * wvelo(mpartold)
             !        if ( jsfer_old ==1 )  windcurratio = dcos(difangle) *  atan2(wvelo(mpartold),earth_radius) * raddeg_hp
             dpywind = windcurratio * uy0old
             dpxwind = windcurratio * ux0old
@@ -440,15 +423,16 @@ contains
             !now we can calculate the new displacement in the direction of hte flow
             dwx = (cdrag * (dpxwind - ux0old)) * dts
             dwy = (cdrag * (dpywind - uy0old)) * dts
-            xpart(ipart) = xpartold + dwx
-            ypart(ipart) = ypartold + dwy
 
-            xx(1) = xpart(ipart)
-            yy(1) = ypart(ipart)
-            if (jsferic == 1) then
-                call Cart3Dtospher(xpart(ipart), ypart(ipart), zpart(ipart), xx(1), yy(1), ptref)
+            if (jsferic == 0) then
+                xpart(ipart) = xpartold + dwx
+                ypart(ipart) = ypartold + dwy
+                call part_findcell(1, xx(1), yy(1), mpart(ipart:ipart), ierror)
+            else
+                call displace_spherical( xpartold, ypartold, zpartold, &
+                         dwx, dwy, xpart(ipart), ypart(ipart), zpart(ipart), mpart(ipart) )
             endif
-            call part_findcell(1, xx(1), yy(1), mpart(ipart:ipart), ierror)
+
             call checkpart_openbound(ipart, xpartold, ypartold, mpartold, openbound, xcr, ycr)  ! check around the starting point and end point
 
         elseif ((mpart(ipart) == 0 .or. .not.openbound) .and. .not. dstick .and. wpart(1 + 3 * (ifract - 1), ipart) > 0.0) then
@@ -524,8 +508,14 @@ contains
 
         integer :: j, iq
 
+        integer(kind = int_wp), save :: ithndl = 0             ! handle to time this subroutine
+
         if (mpartold == 0) then
             return  ! if the particle was not in the grid then skip
+        endif
+
+        if (timon) then
+            call timstrt("checkpart_bound", ithndl)
         endif
 
         openbound = .TRUE.
@@ -546,6 +536,9 @@ contains
                     ! check whether the bondary is closed
                     if (abs(qe(L)) == 0.0D0) then
                         openbound = .FALSE.
+                        if (timon) then
+                            call timstop (ithndl)
+                        endif
                         return  ! if a closed boundary is found then return with openbound = false
                     else
                         ! ensure a tolerance so that the coordinate is actually in the next cell.
@@ -560,6 +553,9 @@ contains
                             mpart_tmp = 0  ! this is outside the grid exit the routine
                             mpart(ipart) = 0
                             openbound = .TRUE. ! has to be an open boundary because the q is greater than 0
+                            if (timon) then
+                                call timstop (ithndl)
+                            endif
                             return
                         endif
                     endif
@@ -569,9 +565,16 @@ contains
             end do
             ! if no boundary found, then we are in the same segment,  exit the routine
             if (.not. isboundary) then
+                if (timon) then
+                    call timstop (ithndl)
+                endif
                 return
             endif
         end do
+
+        if (timon) then
+            call timstop (ithndl)
+        endif
 
     end subroutine
 end module

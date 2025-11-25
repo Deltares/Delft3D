@@ -220,10 +220,10 @@ subroutine inibcc(lundia    ,error     ,runid     ,timnow    , &
              call flhnew(lunbcc    ,lundia    ,error     ,record(:lrec - 1)    ,access    , &
                        & irecrd    ,nambnd(ito)          ,tprofc(ito, istsc)   ,dumchr    ,itdate    , &
                        & timscl    ,ntimrd    ,parnam    ,npara     ,nparrd    , &
-                       & bubble    ,gdp       )
+                       & bubble    ,namcon(istsc),gdp       )
              if (error) goto 9999
              !
-             ! Test number of parameters read incombination with defined
+             ! Test number of parameters read in combination with defined
              !
              if (tprofc(ito, istsc)(:7)=='uniform') then
                 if (nparrd/=3) then
