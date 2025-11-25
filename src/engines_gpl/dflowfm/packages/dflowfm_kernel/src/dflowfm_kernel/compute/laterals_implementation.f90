@@ -238,6 +238,46 @@ contains
 
    end subroutine get_lateral_volume_per_layer
 
+   !> !< Initialize flow_parameter, allocate arrays and set pointers
+   module subroutine initialize_flow_parameter(this, num_elements, input_variable, weighing_variable, &
+                                               index_start, index_end, index_to_node)
+      class(t_flow_parameter), intent(inout) :: this !< Flow parameter object
+      integer, intent(in) :: num_elements !< Number of elements in the flow parameter.
+      real(kind=dp), dimension(:), pointer, intent(in) :: input_variable !< Input variable to be averaged.
+      real(kind=dp), dimension(:), pointer, intent(in) :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
+      integer, dimension(:), pointer, intent(in) :: index_start, index_end !< Indexing parameters for mapping input variable to flow parameter locations.
+      integer, dimension(:), pointer, intent(in) :: index_to_node !< Index mapping to flow nodes.
+
+      allocate (this%values(num_elements))
+      this%num_elements = num_elements
+      this%input_variable => input_variable
+      this%weighing_variable => weighing_variable
+      this%is_used = .true.
+      this%index_start => index_start
+      this%index_end => index_end
+      this%index_to_node => index_to_node
+   end subroutine initialize_flow_parameter
+
+   !> !< Update flow_parameter, perform averaging.
+   module subroutine update_flow_parameter(this)
+      class(t_flow_parameter), intent(inout) :: this !< General structure for Flow parameters that require averaging.
+      real(kind=dp) :: cumulative_value, cumulative_weight
+      integer :: i_element, i_index, i_node
+
+      if (.not. this%is_used) return
+
+      do i_element = 1, this%num_elements
+         cumulative_value = 0.0_dp
+         cumulative_weight = 0.0_dp
+         do i_index = this%index_start(i_element), this%index_end(i_element)
+            i_node = this%index_to_node(i_index)
+            cumulative_value = cumulative_value + this%input_variable(i_node) * this%weighing_variable(i_node)
+            cumulative_weight = cumulative_weight + this%weighing_variable(i_node)
+         end do
+         this%values(i_element) = cumulative_value / max(cumulative_weight, eps10)
+      end do
+   end subroutine update_flow_parameter
+
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !!In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
    !! While in finish_outgoing_lat_concentration, the average over time is actually computed.

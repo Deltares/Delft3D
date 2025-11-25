@@ -36,7 +36,6 @@
 !>   2) outside ALL "-1"-polygons (enclosures)
 module m_pol_to_cellmask
 
-
    use precision, only: dp
    implicit none
 

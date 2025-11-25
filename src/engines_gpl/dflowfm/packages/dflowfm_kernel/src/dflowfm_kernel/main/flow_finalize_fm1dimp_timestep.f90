@@ -49,9 +49,11 @@ contains
 !MODULES
 !
 
-      use m_flow, only: s1, u1, s0, au, qa
+      use m_flow, only: s1, u1, s0, au, qa, q1
       use m_fm_erosed, only: ndx_mor, lnx_mor, ln_mor
       use m_f1dimp, only: f1dimppar
+      use m_flowgeom, only: lnx
+      use fm_external_forcings_data, only: nqhbnd, L1qhbnd, L2qhbnd, kbndz
 
 !
 !DECLARATION
@@ -76,7 +78,7 @@ contains
 
 !locals
 
-      integer :: L, n1, n2, idx_sre, kndx
+      integer :: L, n1, n2, idx_sre, kndx, i, n
 
 !
 !SET POINTERS
@@ -109,10 +111,22 @@ contains
          n2 = grd_fm_sre(ln_mor(2, L))
          u1(L) = 0.5 * qpack(n1, 3) / waoft(n1, 3) + 0.5 * qpack(n2, 3) / waoft(n2, 3)
          au(L) = 0.5 * waoft(n1, 3) + 0.5 * waoft(n2, 3)
-         !q1(L)=au(L)*u1(L)
          qa(L) = au(L) * u1(L)
       end do
 
+      do L = 1, lnx
+          q1(L)=qa(L)
+      end do
+      
+      if (nqhbnd > 0) then
+         do i = 1, nqhbnd
+            do n = L1qhbnd(i), L2qhbnd(i)
+               L = kbndz(3, n)
+               q1(L)=-q1(L)
+            end do
+         end do
+      end if
+      
    end subroutine flow_finalize_fm1dimp_timestep
 
 end module m_flow_finalize_fm1dimp_timestep

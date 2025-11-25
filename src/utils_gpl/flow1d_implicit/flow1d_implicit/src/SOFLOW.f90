@@ -17,7 +17,8 @@ subroutine SOFLOW(&
 &node   , numnod ,nodnod                    ,&
 &strpar , strtyp                            ,&
 &debug_wr                                   ,&
-&juer&
+&juer                                       ,&
+&fm1dimp                                     &
 &)
 !*******
 !    BEGIN original interface
@@ -140,6 +141,9 @@ subroutine SOFLOW(&
 !c
 !c
 !c**********************************************************************
+   use m_f1dimp, only: f1dimppar_type     
+   
+   type(f1dimppar_type), intent(in) :: fm1dimp
 !c
 !c     Parameters
 !c
@@ -930,7 +934,9 @@ subroutine SOFLOW(&
    &triger,cnpflg,ker   ,qtyp  ,lfrou ,strbuf,&
    &ibuf  ,solbuf,buflag,indx  ,bicg  ,stdbq ,&
    &nstdb                                    ,&
-   &debug_wr)
+   &debug_wr                                 ,&
+   &fm1dimp                                   &
+   &)
 
 
 
@@ -1091,7 +1097,9 @@ subroutine SOFLOW(&
       &waoft ,grsize,engpar,scifri,&
       &pfa   ,juer  ,cpack ,rpack ,&
       &afwfqs,alfab ,&
-      &wtt   ,att   ,ker    )
+      &wtt   ,att   ,ker          ,&
+      &fm1dimp                     &
+      &)
    endif
 
 !     FM1DIMP2DO: remove debug

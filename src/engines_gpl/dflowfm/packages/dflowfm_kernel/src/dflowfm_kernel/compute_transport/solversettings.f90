@@ -33,7 +33,6 @@
 !> default solver settings
 module m_solversettings
 
-
    use precision, only: dp
    implicit none
 

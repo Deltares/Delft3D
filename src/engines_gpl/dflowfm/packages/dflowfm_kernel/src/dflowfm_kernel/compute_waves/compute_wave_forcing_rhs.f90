@@ -39,7 +39,7 @@ module m_compute_wave_forcing_rhs
    use m_setwavfu, only: setwavfu
    use m_waveconst
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    private

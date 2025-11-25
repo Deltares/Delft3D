@@ -23,7 +23,7 @@ extern "C" {
 DSLE_EXPORT int DSLE_CALLCONV initialize(const char *config_file);
 DSLE_EXPORT int DSLE_CALLCONV finalize();                              // Always returns DIMR_BMI_OK
 DSLE_EXPORT int DSLE_CALLCONV set_var(const char *key, void *src_ptr); // In BMI 2.0 = set_value
-DSLE_EXPORT int DSLE_CALLCONV get_var(const char *key, void *dst_ptr); // In BMI 2.0 = get_value
+DSLE_EXPORT int DSLE_CALLCONV get_var(const char *key, void **dst_ptr); // In BMI 2.0 = get_value
 int get_value_ptr(char *key, void **dst_ptr); // In DIMR **dst_ptr always is a double.
 DSLE_EXPORT int DSLE_CALLCONV update(double dt);
 DSLE_EXPORT int DSLE_CALLCONV get_var_shape(char *key, int *dims); // dims -> int[6]

@@ -176,12 +176,12 @@ contains
                   end if
                end if
                dtmax(kk) = cflmx * dtmax(kk)
-               
+
                if (jampi == 1) then
 !                 do not include ghost cells
                   if (idomain(kk) /= my_rank) cycle
                end if
-               
+
                if (dtmax(kk) < dtmin_transp) then
                   dtmin_transp = dtmax(kk)
                   kk_dtmin = kk

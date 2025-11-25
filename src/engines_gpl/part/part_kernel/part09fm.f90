@@ -51,12 +51,10 @@ contains
         use partmem, only: hyd
         use m_particles, only: xrpart, yrpart, zrpart
         use m_sferic, only: jsferic
-        use m_sferic_part, only: ptref
-        use geometry_module, only: Cart3Dtospher, sphertocart3D
-        use mathconsts, only: raddeg_hp, pi
-        use physicalconsts, only: earth_radius
+        use mathconsts, only: pi
         use random_generator
         use m_part_modeltypes
+        use m_fm_particles_in_grid, only: displace_spherical, part_findcellsingle
 
         implicit none
 
@@ -64,71 +62,73 @@ contains
 
         !     kind            function         name                    description
 
-        integer  (int_wp), intent(in) :: nodye                 !< nr of dye release points
-        integer  (int_wp), intent(in) :: nosubs                !< nr of substances
-        integer  (int_wp), intent(in) :: layt                  !< number of hydr. layer
-        integer  (int_wp), intent(in) :: itime                 !< actual time
-        integer  (int_wp), intent(inout) :: iwtime (nodye)        !< array of wasteload times
-        integer  (int_wp), intent(in) :: nwaste (nodye)        !< n-values of waste locations
-        integer  (int_wp), intent(in) :: mwaste (nodye)        !< m-values of waste locations
-        real     (real_wp), intent(in) :: xwaste (nodye)        !< x-values of waste locations
-        real     (real_wp), intent(in) :: ywaste (nodye)        !< y-values of waste locations
-        real     (real_wp), intent(in) :: zwaste (nodye)        !< z-values of waste locations
-        real     (real_wp), intent(in) :: amassd (nosubs, nodye) !< total masses per dye release
-        real     (real_wp), pointer :: aconc  (:, :)          !< mass per particle
-        integer  (int_wp), intent(out) :: npart  (*)            !< n-values particles
-        integer  (int_wp), intent(in) :: ndprt  (nodye)        !< no. particles per waste entry
-        integer  (int_wp), intent(out) :: mpart  (*)            !< m-values particles
-        real     (dp), intent(out) :: xpart  (*)            !< x-in-cell of particles
-        real     (dp), intent(out) :: ypart  (*)            !< y-in-cell of particles
-        real     (dp), intent(out) :: zpart  (*)            !< z-in-cell of particles
-        real     (real_wp), intent(out) :: wpart  (nosubs, *)     !< weight of the particles
-        integer  (int_wp), intent(out) :: laypart(*)            !< layer in which the particles are found
-        real     (dp), intent(out) :: hpart  (*)            !< position within the layer for the particles
-        integer  (int_wp), intent(out) :: iptime (*)            !< particle age
-        integer  (int_wp), intent(inout) :: nopart                !< number of active particles
-        real     (real_wp), intent(in) :: radius (nodye)        !< help var. radius (speed)
-        real     (sp), pointer :: xpolwaste(:, :)        !< x-coordinates of waste polygon
-        real     (sp), pointer :: ypolwaste(:, :)        !< y-coordinates of waste polygon
-        integer  (int_wp), pointer :: nrowswaste(:)         !< length of waste polygon
-        integer  (int_wp), intent(in) :: modtyp                !< for model type 2 temperature
-        integer  (int_wp), intent(in) :: lun2                  !< output report unit number
-        real     (real_wp), intent(in) :: tcktot (layt)         !< thickness hydrod.layer
-        logical, intent(in) :: zmodel
-        integer  (int_wp), intent(in) :: laytop(:, :)           !< highest active layer in z-layer model
-        integer  (int_wp), intent(in) :: laybot(:, :)           !< highest active layer in z-layer model
-        integer  (int_wp) :: nplay  (layt)         !< work array that could as well remain inside
-        integer  (int_wp), intent(inout) :: laywaste (nodye)      !< layer for the dye points
-        integer  (int_wp), intent(in) :: num_layers                 !< number of comp. layer
-        real     (real_wp), intent(inout) :: track  (10, *)         !< track array for all particles
-        character(20), intent(in) :: nmdyer (nodye)        !< names of the dye loads
-        character(20), intent(in) :: substi (nosubs)       !< names of the substances
-        real     (real_wp), intent(inout) :: rhopart  (nosubs, *)   !< density of the particles
+        integer  (int_wp), intent(in)     :: nodye                 !< nr of dye release points
+        integer  (int_wp), intent(in)     :: nosubs                !< nr of substances
+        integer  (int_wp), intent(in)     :: layt                  !< number of hydr. layer
+        integer  (int_wp), intent(in)     :: itime                 !< actual time
+        integer  (int_wp), intent(inout)  :: iwtime (nodye)        !< array of wasteload times
+        integer  (int_wp), intent(in)     :: nwaste (nodye)        !< n-values of waste locations
+        integer  (int_wp), intent(in)     :: mwaste (nodye)        !< m-values of waste locations
+        real     (real_wp), intent(in)    :: xwaste (nodye)        !< x-values of waste locations
+        real     (real_wp), intent(in)    :: ywaste (nodye)        !< y-values of waste locations
+        real     (real_wp), intent(in)    :: zwaste (nodye)        !< z-values of waste locations
+        real     (real_wp), intent(in)    :: amassd (nosubs, nodye) !< total masses per dye release
+        real     (real_wp), pointer       :: aconc  (:, :)         !< mass per particle
+        integer  (int_wp), intent(out)    :: npart  (*)            !< n-values particles
+        integer  (int_wp), intent(in)     :: ndprt  (nodye)        !< no. particles per waste entry
+        integer  (int_wp), intent(out)    :: mpart  (*)            !< m-values particles
+        real     (dp), intent(out)        :: xpart  (*)            !< x-in-cell of particles
+        real     (dp), intent(out)        :: ypart  (*)            !< y-in-cell of particles
+        real     (dp), intent(out)        :: zpart  (*)            !< z-in-cell of particles
+        real     (real_wp), intent(out)   :: wpart  (nosubs, *)    !< weight of the particles
+        integer  (int_wp), intent(out)    :: laypart(*)            !< layer in which the particles are found
+        real     (dp), intent(out)        :: hpart  (*)            !< position within the layer for the particles
+        integer  (int_wp), intent(out)    :: iptime (*)            !< particle age
+        integer  (int_wp), intent(inout)  :: nopart                !< number of active particles
+        real     (real_wp), intent(in)    :: radius (nodye)        !< help var. radius (speed)
+        real     (sp), pointer            :: xpolwaste(:, :)       !< x-coordinates of waste polygon
+        real     (sp), pointer            :: ypolwaste(:, :)       !< y-coordinates of waste polygon
+        integer  (int_wp), pointer        :: nrowswaste(:)         !< length of waste polygon
+        integer  (int_wp), intent(in)     :: modtyp                !< for model type 2 temperature
+        integer  (int_wp), intent(in)     :: lun2                  !< output report unit number
+        real     (real_wp), intent(in)    :: tcktot (layt)         !< thickness hydrod.layer
+        logical, intent(in)               :: zmodel
+        integer  (int_wp), intent(in)     :: laytop(:, :)          !< highest active layer in z-layer model
+        integer  (int_wp), intent(in)     :: laybot(:, :)          !< highest active layer in z-layer model
+        integer  (int_wp)                 :: nplay  (layt)         !< work array that could as well remain inside
+        integer  (int_wp), intent(inout)  :: laywaste (nodye)      !< layer for the dye points
+        integer  (int_wp), intent(in)     :: num_layers            !< number of comp. layer
+        real     (real_wp), intent(inout) :: track  (10, *)        !< track array for all particles
+        character(20), intent(in)         :: nmdyer (nodye)        !< names of the dye loads
+        character(20), intent(in)         :: substi (nosubs)       !< names of the substances
+        real     (real_wp), intent(inout) :: rhopart  (nosubs, *)  !< density of the particles
 
         save
 
         !     Locals
 
         logical :: lcircl            ! determines whether load is spread over a circle
-        integer(int_wp) :: id                ! loop variable dye loads
-        integer(int_wp) :: iwt               ! help variable wasteload time
-        integer(int_wp) :: ilay, isub      ! loop variables layers and substances
-        integer(int_wp) :: nwasth, mwasth    ! help variables for n and m of wastelocation
-        real   (real_wp) :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
-        real   (real_wp) :: zwasth            ! help variables for z within the layer
-        real   (real_wp) :: radiuh            ! help variable for the radius
-        real(dp), save :: rseed = 0.5d0 ! seed for random number generation
-        real(dp) :: dpangle, dxp, dyp, dradius, xx, yy
-        integer(int_wp) :: ntot              ! help variables for particles
-        integer(int_wp) :: nulay             ! help variables for the actual layer in a particle loop
-        integer(int_wp) :: i, ipart          ! loop/help variables for particles
-        integer(int_wp) :: cellid            ! ID of the first cell in the column of cells (for accessing laytop and laybot)
+        integer(int_wp)    :: id                ! loop variable dye loads
+        integer(int_wp)    :: iwt               ! help variable wasteload time
+        integer(int_wp)    :: ilay, isub        ! loop variables layers and substances
+        integer(int_wp)    :: nwasth, mwasth    ! help variables for n and m of wastelocation
+        real   (real_wp)   :: xwasth, ywasth    ! help variables for x and y of wastelocation within (n,m)
+        real   (real_wp)   :: zwasth            ! help variables for z within the layer
+        real   (real_wp)   :: radiuh            ! help variable for the radius
+        real(dp), save     :: rseed = 0.5d0     ! seed for random number generation
+        real(dp)           :: dpangle, dxp, dyp, dradius, xlong, ylat
+        integer(int_wp)    :: ntot              ! help variables for particles
+        integer(int_wp)    :: nulay             ! help variables for the actual layer in a particle loop
+        integer(int_wp)    :: i, ipart          ! loop/help variables for particles
+        integer(int_wp)    :: cellid            ! ID of the first cell in the column of cells (for accessing laytop and laybot)
+        integer(int_wp)    :: ierror            ! Error indicator
 
         integer(4) ithndl                ! handle to time this subroutine
         data       ithndl / 0 /
         if (timon) call timstrt("part09", ithndl)
 
         !     loop over the number of dye releases
+
 
         write (lun2, '(/)')
         do id = 1, nodye
@@ -185,46 +185,48 @@ contains
                 nplay(laywaste(id)) = ndprt(id)
             endif
 
-            !     horizontal distribution (spreaded in a circle if required
+            ! Horizontal distribution (spreaded in a circle if required)
+            ! Check if the new particle position is inside the active grid,
+            ! otherwise retry. Note: this is not necessary for point releases.
 
             nulay = 1
             ipart = 0
             do i = nopart + 1, nopart + ndprt(id)
-                npart(i) = 1
-                !            laypart(nopart+i) = 1 !2D for the moment!
-                xpart(i) = xwasth
-                ypart(i) = ywasth
-                zpart(i) = zwasth
-                mpart(i) = mwasth
-                laypart(i) = laywaste(id)
-                !            radiuh            = 0.0
+                do
+                    npart(i) = 1
+                    xpart(i) = xwasth
+                    ypart(i) = ywasth
+                    zpart(i) = zwasth
+                    laypart(i) = laywaste(id)
 
-                if (radiuh/=-999.0) then
-                    !              spread the particles over a circle
-                    !               radiusr = radiuh * sqrt(rnd(rseed))
-                    dpangle = 2.0D0 * pi * rnd(rseed)
-                    !               xpart(nopart+i) = xwasth + radiuh * sin(angle)
-                    !               ypart(nopart+i) = ywasth + radiuh * cos(angle)
-                    ! this is the code to deal with spherical models (if needed) to get the distances correct
-                    dradius = sqrt(rnd(rseed)) * radius(id) !noteradius is in m.
-                    dxp = cos(dpangle) * dradius
-                    dyp = sin(dpangle) * dradius
-                    xpart(i) = xwasth + dxp !radius(iload)/2. * rnd(rseed)
-                    ypart(i) = ywasth + dyp !radius(iload)/2. * rnd(rseed)
-                    if (jsferic == 1) then
-                        dradius = atan2(dradius, earth_radius) * raddeg_hp !in degrees
-                        dxp = cos(dpangle) * dradius ! distance in degrees
+                    if (radiuh/=-999.0) then
+                        !
+                        ! Spread the particles over a circle:
+                        !     radiusr = radiuh * sqrt(rnd(rseed))
+                        !
+                        dpangle = 2.0D0 * pi * rnd(rseed)
+                        dradius = sqrt(rnd(rseed)) * radius(id) ! Note: radius is in m.
+                        dxp = cos(dpangle) * dradius
                         dyp = sin(dpangle) * dradius
-                        ! the distance is expressed in degrees (to make a circle for spherical models,
-                        call Cart3Dtospher(dble(xwasth), dble(ywasth), dble(zwasth), xx, yy, ptref)
-                        xx = xx + dxp
-                        yy = yy + dyp
-                        call sphertocart3D(xx, yy, xpart(i), ypart(i), zpart(i))
-                    endif
-                else
-                    radiuh = 0
-                end if
-                !
+
+                        if (jsferic == 0) then
+                            xpart(i) = xwasth + dxp
+                            ypart(i) = ywasth + dyp
+                            call part_findcellsingle( xpart(i), ypart(i), mpart(i), ierror )
+                        else
+                            call displace_spherical( real(xwasth,dp), real(ywasth,dp), real(zwasth,dp), &
+                                     dxp, dyp, xpart(i), ypart(i), zpart(i), mpart(i) )
+                        endif
+
+
+                        if ( mpart(i) > 0 ) then
+                            exit ! The particle is in an appropriate cell
+                        endif
+                    else
+                        radiuh = 0
+                        exit
+                    end if
+                enddo
             enddo
 
 
@@ -304,6 +306,7 @@ contains
         enddo
 
         !     end of routine
+
 
         if (timon) call timstop (ithndl)
         return

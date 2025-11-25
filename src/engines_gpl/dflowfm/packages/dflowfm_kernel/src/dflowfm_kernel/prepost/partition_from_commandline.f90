@@ -85,7 +85,7 @@ contains
       end if
       netstat = NETSTAT_OK
 
-      call delete_dry_points_and_areas(update_blcell = .true.)
+      call delete_dry_points_and_areas(update_blcell=.true.)
 
       if (nump1d2d < 1) return
 
