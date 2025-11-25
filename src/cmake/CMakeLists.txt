@@ -418,3 +418,10 @@ endif()
 if(UNIX)
     add_subdirectory(${checkout_src_root}/${install_all_module} install_all)
 endif()
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-3.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../agpl-3.0.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../gpl-3.0.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../lgpl-2.1.txt
+              DESTINATION share)
