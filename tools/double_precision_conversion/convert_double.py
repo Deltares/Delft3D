@@ -335,11 +335,11 @@ class FortranDoubleConverter:
         """Check if a file needs conversion without modifying it. Returns True if conversion is needed."""
         try:
             if input_path.is_dir():
-                print(f"ERROR: {input_path} is a directory. Use --directory flag to process directories.")
+                print(f"{input_path}(1): error: Directory specified. Use --directory flag to process directories.")
                 return False
 
             if not input_path.exists():
-                print(f"ERROR: {input_path} does not exist.")
+                print(f"{input_path}(1): error: File does not exist.")
                 return False
 
             with open(input_path, 'r', encoding='utf-8') as f:
@@ -359,24 +359,33 @@ class FortranDoubleConverter:
                     if not self._is_in_string_or_comment(content, match.start()):
                         declaration_matches.append(match)
 
-                print(f"ERROR: {input_path} needs conversion:")
-                if literal_matches:
-                    print(f"  - {len(literal_matches)} double precision literals found")
-                if declaration_matches:
-                    print(f"  - {len(declaration_matches)} double precision declarations found")
+                # Report each literal with line number in Visual Studio format
+                for match in literal_matches:
+                    line_num = content[:match.start()].count('\n') + 1
+                    literal_text = match.group(0)
+                    print(f"{input_path}({line_num}): error LINT001: Double precision literal found: '{literal_text}' should be converted to _dp format")
+
+                # Report each declaration with line number in Visual Studio format
+                for match in declaration_matches:
+                    line_num = content[:match.start()].count('\n') + 1
+                    print(f"{input_path}({line_num}): error LINT002: Double precision declaration found, should be 'real(kind=dp)'")
+
+                # Add tip for auto-fixing after all errors for this file
+                if literal_matches or declaration_matches:
+                    print(f"{input_path}(1): note: Run 'python tools/double_precision_conversion/convert_double.py \"{input_path}\"' to automatically fix these errors")
 
                 return True
 
             return False
 
         except PermissionError:
-            print(f"ERROR: Permission denied accessing {input_path}")
+            print(f"{input_path}(1): error: Permission denied accessing file.")
             return False
         except UnicodeDecodeError:
-            print(f"ERROR: Cannot decode {input_path} as UTF-8 (binary file?)")
+            print(f"{input_path}(1): error: Cannot decode file as UTF-8 (binary file?).")
             return False
         except Exception as e:
-            print(f"ERROR: Unexpected error checking {input_path}: {e}")
+            print(f"{input_path}(1): error: Unexpected error checking file: {e}")
             return False
 
     def check_directory(self, directory: Path, extensions: Optional[List[str]] = None) -> Tuple[int, int]:
@@ -448,7 +457,7 @@ The script automatically adds 'use precision, only: dp' when conversions are mad
             return 1
 
         if conversion_needed:
-            print("\nERROR: Files found that need double precision conversion!")
+            print("\nBuild failed: Double precision conversion errors found. See error list above.")
             return 1
         else:
             print("All files are already converted.")
