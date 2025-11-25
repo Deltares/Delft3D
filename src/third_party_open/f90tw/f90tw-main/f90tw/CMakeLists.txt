@@ -200,6 +200,7 @@ add_dependencies(f90twi_gtest generate_assertions_gtest_f90)
 set_property(TARGET f90twi_gtest
         APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${file2}"
 )
+set_target_properties(generate_assertions_gtest_f90 PROPERTIES FOLDER third_party_open/googletest)
 
 add_library(f90tw_gtest STATIC gtest_assertions.cpp)
 set_property(TARGET f90tw_gtest PROPERTY POSITION_INDEPENDENT_CODE ON)
