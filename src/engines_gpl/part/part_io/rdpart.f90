@@ -181,7 +181,6 @@ contains
             logical :: success
 
             if (gettoken(cbuffer, idummy, rdummy, type, ierr2) /= 0) goto 4004
-            write(*,*) 'cbuffer:', trim(cbuffer), type
 
             if ( type == 1 ) then
                 if ( cbuffer == 'accept-sigma-z-layers' ) then
