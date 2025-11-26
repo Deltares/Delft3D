@@ -8,9 +8,16 @@ prompt_user() {
     local context_file=$2  # Optional file containing detailed context
     
     # Try terminal first
-    if [ -t 0 ] || exec < /dev/tty 2>/dev/null; then
+    if [ -t 0 ]; then
+        # stdin is already a terminal
         echo -n "$message"
         read -r response
+        echo "$response"
+        return 0
+    elif [ -c /dev/tty ]; then
+        # Try to read from /dev/tty
+        echo -n "$message" > /dev/tty
+        read -r response < /dev/tty
         echo "$response"
         return 0
     fi
