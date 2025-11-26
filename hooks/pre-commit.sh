@@ -5,6 +5,7 @@ set -e  # Exit on error
 # Function to prompt user (works in both terminal and GUI)
 prompt_user() {
     local message=$1
+    local context_file=$2  # Optional file containing detailed context
     
     # Try terminal first
     if [ -t 0 ] || exec < /dev/tty 2>/dev/null; then
@@ -16,17 +17,36 @@ prompt_user() {
     
     # Fallback: use temporary file approach for GUI environments
     local tmpfile=$(mktemp /tmp/git-dvc-prompt.XXXXXX)
-    cat > "$tmpfile" << EOF
+    
+    cat > "$tmpfile" << 'EOF_HEADER'
 # DVC PRE-COMMIT HOOK
+# ===================
 #
-# Question: $message
+# DVC changes were detected. Please review the changes below and decide
+# whether to update DVC tracking.
 #
-# To PROCEED with updating DVC tracking, change the line below to: ANSWER=yes
-# To SKIP updating DVC tracking, leave it as: ANSWER=no
+# INSTRUCTIONS:
+# - To PROCEED with updating DVC tracking: keep ANSWER=yes
+# - To SKIP updating DVC tracking: change ANSWER=yes to ANSWER=no
+# - Save and close this file to continue
 #
-# Save and close this file to continue.
+# ----------------------------------------------------------------------------
 
-ANSWER=no
+EOF_HEADER
+    
+    # Add context information if provided
+    if [ -n "$context_file" ] && [ -f "$context_file" ]; then
+        cat "$context_file" >> "$tmpfile"
+        echo "" >> "$tmpfile"
+        echo "# ----------------------------------------------------------------------------" >> "$tmpfile"
+        echo "" >> "$tmpfile"
+    fi
+    
+    cat >> "$tmpfile" << EOF
+
+# Question: $message
+
+ANSWER=yes
 EOF
     
     # Try to open in editor
@@ -184,8 +204,9 @@ show_file_changes() {
 prompt_and_update() {
     local tracked_dir=$1
     local dvc_file=$2
+    local context_file=$3  # File containing the detailed changes
     
-    local confirm=$(prompt_user "Do you want to update DVC tracking for '$tracked_dir'? [y/N]: ")
+    local confirm=$(prompt_user "Do you want to update DVC tracking for '$tracked_dir'? [y/N]: " "$context_file")
     
     if [ $? -ne 0 ]; then
         echo "Commit aborted due to unhandled DVC changes."
@@ -216,11 +237,34 @@ for dvc_file in $(git ls-files '*.dvc'); do
     dvc_status_output=$(dvc status "$dvc_file" 2>/dev/null)
     echo "$dvc_status_output" | grep -q "modified:" || continue
     
+    # Create a context file with all the information
+    context_file=$(mktemp /tmp/git-dvc-context.XXXXXX)
+    
+    {
+        echo "# Detected changes in '$tracked_dir'"
+        echo "# DVC file: $dvc_file"
+        echo "#"
+        echo "# DVC Status:"
+        echo "$dvc_status_output" | sed 's/^/# /'
+        echo "#"
+    } > "$context_file"
+    
+    # Capture directory summary
+    show_directory_summary "$tracked_dir" "$dvc_file" | sed 's/^/# /' >> "$context_file"
+    
+    # Capture file changes
+    show_file_changes "$tracked_dir" "$dvc_file" | sed 's/^/# /' >> "$context_file"
+    
+    # Also display to terminal/output
     echo "Detected changes in '$tracked_dir' (DVC file: $dvc_file)"
     echo "$dvc_status_output"
     echo
-    
     show_directory_summary "$tracked_dir" "$dvc_file"
     show_file_changes "$tracked_dir" "$dvc_file"
-    prompt_and_update "$tracked_dir" "$dvc_file"
+    
+    # Prompt with context
+    prompt_and_update "$tracked_dir" "$dvc_file" "$context_file"
+    
+    # Clean up context file
+    rm -f "$context_file"
 done
