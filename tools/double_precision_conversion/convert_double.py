@@ -79,14 +79,13 @@ class FortranDoubleConverter:
         )
 
         # Pattern to detect if we're inside a comment or string
-        self.comment_pattern = re.compile(r'!.*$', re.MULTILINE)
         self.string_patterns = [
             re.compile(r"'([^']*(?:''[^']*)*)'"),  # Single quotes
             re.compile(r'"([^"]*(?:""[^"]*)*)"'),  # Double quotes
         ]
 
         # Pattern to find module declaration
-        self.module_pattern = re.compile(r'^(\s*module\s+\w+\s*)$', re.MULTILINE | re.IGNORECASE)
+        self.module_pattern = re.compile(r'^\s*module\s+\w+', re.MULTILINE | re.IGNORECASE)
 
         # Pattern to find existing precision import
         self.precision_import_pattern = re.compile(
@@ -278,9 +277,11 @@ class FortranDoubleConverter:
         conversions_made = False
 
         # Convert D literals
+        # Capture the current text for this stage
+        text_for_literal_check = text
         def replace_literal_match(match):
             # Check if this match is inside a string or comment
-            if self._is_in_string_or_comment(text, match.start()):
+            if self._is_in_string_or_comment(text_for_literal_check, match.start()):
                 return match.group(0)  # Return unchanged
             return self._convert_literal(match)
 
@@ -289,9 +290,11 @@ class FortranDoubleConverter:
             conversions_made = True
 
         # Convert double precision declarations
+        # Capture the current text for this stage
+        text_for_declaration_check = text
         def replace_declaration_match(match):
             # Check if this match is inside a string or comment
-            if self._is_in_string_or_comment(text, match.start()):
+            if self._is_in_string_or_comment(text_for_declaration_check, match.start()):
                 return match.group(0)  # Return unchanged
             return self._convert_double_precision_declaration(match)
 
@@ -325,16 +328,23 @@ class FortranDoubleConverter:
                 with open(input_path, 'w', encoding='utf-8') as f:
                     f.write(converted_content)
 
-                # Count conversions for reporting
-                original_literal_matches = len(self.d_literal_pattern.findall(original_content))
-                converted_literal_matches = len(self.d_literal_pattern.findall(converted_content))
-                literal_conversions = original_literal_matches - converted_literal_matches
+                # Count conversions for reporting (only count matches not in strings/comments)
+                literal_conversions = 0
+                for match in self.d_literal_pattern.finditer(original_content):
+                    if not self._is_in_string_or_comment(original_content, match.start()):
+                        literal_conversions += 1
 
-                original_declaration_matches = len(self.double_precision_pattern.findall(original_content))
-                converted_declaration_matches = len(self.double_precision_pattern.findall(converted_content))
-                declaration_conversions = original_declaration_matches - converted_declaration_matches
+                declaration_conversions = 0
+                for match in self.double_precision_pattern.finditer(original_content):
+                    if not self._is_in_string_or_comment(original_content, match.start()):
+                        declaration_conversions += 1
 
-                print(f"Converted {literal_conversions} literals and {declaration_conversions} declarations in {input_path}")
+                dble_conversions = 0
+                for match in self.dble_pattern.finditer(original_content):
+                    if not self._is_in_string_or_comment(original_content, match.start()):
+                        dble_conversions += 1
+
+                print(f"Converted {literal_conversions} literals, {declaration_conversions} declarations, and {dble_conversions} dble() calls in {input_path}")
 
                 # Check if precision import was added
                 if not self.precision_import_pattern.search(original_content) and \
@@ -518,7 +528,7 @@ The script automatically adds 'use precision, only: dp' when conversions are mad
             return 1
 
         if conversion_needed:
-            print("\nBuild failed: Double precision conversion errors found. See error list above.")
+            print("\nBuild failed: Double precision literals and/or type declarations found that need conversion. See error list above.")
             return 1
         else:
             print("All files are already converted.")
