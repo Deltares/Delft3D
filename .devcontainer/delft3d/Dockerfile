@@ -12,15 +12,15 @@ dnf install -y sudo git dos2unix which less tree strace \
 update-alternatives --set java java-17-openjdk.x86_64
 EOF
 
-# Install bashdb from GitHub
+# Install bashdb 4.4-1.0.1 from source
 RUN <<"EOF"
 cd /tmp
-git clone --depth 1 https://github.com/Trepan-Debuggers/bashdb.git
-cd bashdb
-./autogen.sh
+curl -sSL https://downloads.sourceforge.net/project/bashdb/bashdb/4.4-1.0.1/bashdb-4.4-1.0.1.tar.gz | tar xz
+cd bashdb-4.4-1.0.1
+./configure --prefix=/usr/local
 make
 make install
-rm -rf /tmp/bashdb
+rm -rf /tmp/bashdb-4.4-1.0.1*
 EOF
 
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
