@@ -2192,7 +2192,7 @@ contains
       integer :: ierr !< Result status. NF90_NOERR if successful.
       character(len=:), allocatable :: varname
 
-      integer :: i1, i2, n
+      integer :: i_start, i2, n
 
       allocate (character(len=0) :: varname)
       varname = ''
@@ -2201,49 +2201,49 @@ contains
          goto 999
       end if
 
-      i1 = 1
+      i_start = 1
       n = len_trim(varname)
 
       ! TODO: AvD: I'd rather use a string tokenizer here.
       ! TODO: UNST-2408, support multiple sets of coordinates.
-      i2 = index(varname(i1:n), ' ')
+      i2 = index(varname(i_start:n), ' ')
       if (i2 == 0) then
          i2 = n
       else
-         i2 = i1 + i2 - 1
+         i2 = i_start + i2 - 1
       end if
-      ierr = nf90_inq_varid(ncid, varname(i1:i2 - 1), idx)
-      i1 = i2 + 1
+      ierr = nf90_inq_varid(ncid, varname(i_start:i2 - 1), idx)
+      i_start = i2 + 1
 
-      i2 = index(varname(i1:n), ' ')
+      i2 = index(varname(i_start:n), ' ')
       if (i2 == 0) then
          i2 = n + 1
       else
-         i2 = i1 + i2 - 1
+         i2 = i_start + i2 - 1
       end if
-      ierr = nf90_inq_varid(ncid, varname(i1:i2 - 1), idy)
-      i1 = i2 + 1
+      ierr = nf90_inq_varid(ncid, varname(i_start:i2 - 1), idy)
+      i_start = i2 + 1
 
       if (present(idz)) then
-         i2 = index(varname(i1:n), ' ')
+         i2 = index(varname(i_start:n), ' ')
          if (i2 == 0) then
             i2 = n + 1
          else
-            i2 = i1 + i2 - 1
+            i2 = i_start + i2 - 1
          end if
-         ierr = nf90_inq_varid(ncid, varname(i1:i2 - 1), idz)
-         i1 = i2 + 1
+         ierr = nf90_inq_varid(ncid, varname(i_start:i2 - 1), idz)
+         i_start = i2 + 1
       end if
 
       if (present(idw)) then
-         i2 = index(varname(i1:n), ' ')
+         i2 = index(varname(i_start:n), ' ')
          if (i2 == 0) then
             i2 = n + 1
          else
-            i2 = i1 + i2 - 1
+            i2 = i_start + i2 - 1
          end if
-         ierr = nf90_inq_varid(ncid, varname(i1:i2 - 1), idw)
-         i1 = i2 + 1
+         ierr = nf90_inq_varid(ncid, varname(i_start:i2 - 1), idw)
+         i_start = i2 + 1
       end if
 
       deallocate (varname)
@@ -4169,6 +4169,74 @@ contains
 
    end function ug_get_contacts_count
 
+!> Extracts mesh names from the contact attribute and queries their topology dimensions.
+!! The contact attribute has format: "mesh1_name: location1 mesh2_name: location2"
+function ug_get_contact_mesh_topology_dimensions(ncid, contactids, mesh1_topo_dim, mesh2_topo_dim) result(ierr)
+   use netcdf_utils, only: ncu_get_att
+   
+   integer, intent(in) :: ncid !< NetCDF data set id
+   type(t_ug_contacts), intent(in) :: contactids !< Mesh contact set
+   integer, intent(out) :: mesh1_topo_dim !< Topology dimension of first mesh
+   integer, intent(out) :: mesh2_topo_dim !< Topology dimension of second mesh
+   integer :: ierr !< Result status (UG_NOERR if successful)
+   
+   character(len=:), allocatable :: contact_attr
+   character(len=nf90_max_name) :: mesh1_name, mesh2_name, location1, location2
+   integer :: istart, icolon, ispace, mesh1_varid, mesh2_varid
+   
+   ierr = UG_NOERR
+   
+   ! Get the contact attribute value
+   ierr = ncu_get_att(ncid, contactids%varids(cid_contacttopo), 'contact', contact_attr)
+   call check_ug_error(ierr, 'Could not read contact attribute from mesh topology contact.')
+   if (ierr /= nf90_noerr) return
+   
+   ! Parse first mesh name
+   icolon = index(contact_attr, ':')
+   if (icolon == 0) then
+      call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing first colon.')
+      ierr = UG_SOMEERR
+      return
+   end if
+   mesh1_name = trim(adjustl(contact_attr(1:icolon-1)))
+   
+   ! Skip to second mesh name
+   istart = icolon + 1
+   ispace = index(contact_attr(istart:), ' ')
+   if (ispace == 0) then
+      call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing space separator.')
+      ierr = UG_SOMEERR
+      return
+   end if
+   istart = istart + ispace
+   
+   icolon = index(contact_attr(istart:), ':')
+   if (icolon == 0) then
+      call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing second colon.')
+      ierr = UG_SOMEERR
+      return
+   end if
+   mesh2_name = trim(adjustl(contact_attr(istart:istart+icolon-2)))
+   
+   ! Get mesh1 topology dimension
+   ierr = nf90_inq_varid(ncid, trim(mesh1_name), mesh1_varid)
+   call check_ug_error(ierr, 'Could not find mesh topology "'//trim(mesh1_name)//'".')
+   if (ierr /= nf90_noerr) return
+   
+   ierr = nf90_get_att(ncid, mesh1_varid, 'topology_dimension', mesh1_topo_dim)
+   call check_ug_error(ierr, 'Could not read topology_dimension for "'//trim(mesh1_name)//'".')
+   if (ierr /= nf90_noerr) return
+   
+   ! Get mesh2 topology dimension
+   ierr = nf90_inq_varid(ncid, trim(mesh2_name), mesh2_varid)
+   call check_ug_error(ierr, 'Could not find mesh topology "'//trim(mesh2_name)//'".')
+   if (ierr /= nf90_noerr) return
+   
+   ierr = nf90_get_att(ncid, mesh2_varid, 'topology_dimension', mesh2_topo_dim)
+   call check_ug_error(ierr, 'Could not read topology_dimension for "'//trim(mesh2_name)//'".')
+   
+end function ug_get_contact_mesh_topology_dimensions
+
 ! Writes the mesh_topology_contact mesh.
    function ug_put_mesh_contact(ncid, contactids, mesh1indexes, mesh2indexes, contacttype, contactsids, contactslongnames, startIndex) result(ierr)
       use array_module
@@ -5782,4 +5850,23 @@ contains
 999   continue
 
    end function ug_get_var_total_count
+
+!> Compact error checker that calls SetMessage only if error occurred
+subroutine check_ug_error(ierr, context_msg, level)
+   integer, intent(in) :: ierr !< Error code to check
+   character(len=*), intent(in) :: context_msg !< Context message to display if error
+   integer, optional, intent(in) :: level !< Message level (default: LEVEL_WARN)
+   
+   integer :: level_
+   
+   if (ierr /= nf90_noerr) then
+      if (present(level)) then
+         level_ = level
+      else 
+         level_ = LEVEL_WARN
+      end if
+      call SetMessage(level_, trim(context_msg))
+   end if
+end subroutine check_ug_error
+
 end module io_ugrid

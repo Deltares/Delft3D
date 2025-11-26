@@ -12260,6 +12260,7 @@ contains
       ! 1d2d links
       integer :: ncontacts, ncontactmeshes, koffset1dmesh
       integer, allocatable :: mesh1indexes(:), mesh2indexes(:), contacttype(:)
+      integer :: mesh1_topo_dim, mesh2_topo_dim
       character(len=80), allocatable :: contactslongnames(:)
       logical :: includeArrays
       logical :: do_edgelengths, need_edgelengths
@@ -12627,7 +12628,7 @@ contains
       do im = 1, ncontactmeshes
 
          ierr = ionc_get_contacts_count_ugrid(ioncid, im, ncontacts)
-
+         ierr = ionc_get_contacts_topology_dimensions(ioncid, im, mesh1_topo_dim, mesh2_topo_dim) ! networkIndex not used here
          call realloc(mesh1indexes, ncontacts, keepExisting=.false.)
          call realloc(mesh2indexes, ncontacts, keepExisting=.false.)
          call realloc(contactslongnames, ncontacts, keepExisting=.false.)

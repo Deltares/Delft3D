@@ -147,6 +147,7 @@ module io_netcdf
    public :: ionc_put_mesh_contact_ugrid
    public :: ionc_get_mesh_contact_ugrid
    public :: ionc_get_mesh_contact_links
+   public :: ionc_get_contacts_topology_dimensions
    public :: ionc_get_contact_name
    public :: ionc_get_contactids
    public :: ionc_get_contact_id_from_contact_name_ugrid
@@ -2021,6 +2022,19 @@ contains
       ierr = ug_get_contacts_count(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%contactids(contactid), ncontacts)
 
    end function ionc_get_contacts_count_ugrid
+
+!> Get the number of contact links in a specified meshcontact set.
+   function ionc_get_contacts_topology_dimensions(ioncid, contactid, mesh1_topo_dim, mesh2_topo_dim) result(ierr)
+
+      integer, intent(in) :: ioncid !< The IONC data set id.
+      integer, intent(in) :: contactid !< The contact id in the specified data set.
+      integer, intent(inout) :: mesh1_topo_dim !< Topology dimension of first mesh.
+      integer, intent(inout) :: mesh2_topo_dim !< Topology dimension of second mesh.
+      integer :: ierr !< Result status (IONC_NOERR if successful).
+
+      ierr = ug_get_contact_mesh_topology_dimensions(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%contactids(contactid), mesh1_topo_dim, mesh2_topo_dim)
+
+   end function ionc_get_contacts_topology_dimensions
 
    function ionc_put_mesh_contact_ugrid(ioncid, contactsmesh, mesh1indexes, mesh2indexes, contactsids, contactslongnames, contacttype, startIndex) result(ierr)
 
