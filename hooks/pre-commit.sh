@@ -19,16 +19,12 @@ prompt_user() {
     local tmpfile=$(mktemp /tmp/git-dvc-prompt.XXXXXX)
     
     cat > "$tmpfile" << 'EOF_HEADER'
-# DVC PRE-COMMIT HOOK
-# ===================
 EOF_HEADER
-    
     # Add context information if provided
     if [ -n "$context_file" ] && [ -f "$context_file" ]; then
-        cat "$context_file" >> "$tmpfile"
-        echo "" >> "$tmpfile"
         echo "# ----------------------------------------------------------------------------" >> "$tmpfile"
-        echo "" >> "$tmpfile"
+        cat "$context_file" >> "$tmpfile"
+        echo "# ----------------------------------------------------------------------------" >> "$tmpfile"
     fi
     
     cat >> "$tmpfile" << EOF
@@ -36,9 +32,10 @@ EOF_HEADER
 # - To PROCEED with updating DVC tracking: keep ANSWER=yes
 # - To SKIP updating DVC tracking: change ANSWER=yes to ANSWER=no
 # - Save and close this file to continue
-#
 # ----------------------------------------------------------------------------
+
 # $message
+
 ANSWER=yes
 EOF
     
