@@ -258,6 +258,7 @@ module unstruc_model
    integer :: md_fou_step !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
    integer, private :: ifixedweirscheme_input !< input value of ifixedweirscheme in mdu file
+   real(kind=dp), private :: user_provided_charnock_coefficient !< input value of Cdbreakpoints in mdu file
 
 contains
 
@@ -1581,6 +1582,7 @@ contains
          Wdb(3) = max(Wdb(3), Wdb(2) + 0.1_dp)
       else if (Icdtyp == 4) then
          call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 1)
+         user_provided_charnock_coefficient = Cdb(1)
          cdb(2) = 0.0_dp
       else if (Icdtyp == 7 .or. Icdtyp == 8) then
          call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
@@ -3521,7 +3523,7 @@ contains
 
       call prop_set(prop_ptr, 'wind', 'ICdtyp', ICdtyp, 'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: Charnock+viscous, 9: Garratt 1977).')
       if (ICdtyp == 1 .or. ICdtyp == 4 .or. ICdtyp == 5 .or. ICdtyp == 6) then
-         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:1), 'Wind drag coefficient (may be overridden by space-varying input)')
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', user_provided_charnock_coefficient, 'Wind drag coefficient (may be overridden by space-varying input)')
       else if (ICdtyp == 2) then
          call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:2), 'Wind drag coefficient break points')
          call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', Wdb(1:2), 'Wind speed break points (m/s)')
