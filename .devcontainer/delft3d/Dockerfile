@@ -52,6 +52,7 @@ RUN <<"EOF"
 uv python install 3.12
 uv tool install fortls
 uv tool install fprettify
+uv tool install dvc
 EOF
 
 # Install git prompt and completion scripts.
