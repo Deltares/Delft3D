@@ -17112,7 +17112,7 @@ contains
                NS = NS + 1
                xs(Ns) = x_tmp(kk)
                ys(NS) = y_tmp(kk)
-               zs(NS) = dble(NN)
+               zs(NS) = real(NN, kind=dp)
             end if
 
             cycle ! no points found
@@ -17137,7 +17137,7 @@ contains
                   NS = NS + 1
                   xs(Ns) = x_tmp(kk)
                   ys(NS) = y_tmp(kk)
-                  zs(NS) = dble(NN)
+                  zs(NS) = real(NN, kind=dp)
                end if
 
             end if
