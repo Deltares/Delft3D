@@ -1,7 +1,59 @@
 #!/bin/bash
 
-# Restore stdin for interactive prompts in git hooks
-exec < /dev/tty || exec < /proc/$$/fd/0 || true
+set -e  # Exit on error
+
+# Function to prompt user (works in both terminal and GUI)
+prompt_user() {
+    local message=$1
+    
+    # Try terminal first
+    if [ -t 0 ] || exec < /dev/tty 2>/dev/null; then
+        echo -n "$message"
+        read -r response
+        echo "$response"
+        return 0
+    fi
+    
+    # Fallback: use temporary file approach for GUI environments
+    local tmpfile=$(mktemp /tmp/git-dvc-prompt.XXXXXX)
+    cat > "$tmpfile" << EOF
+# DVC PRE-COMMIT HOOK
+#
+# Question: $message
+#
+# To PROCEED with updating DVC tracking, change the line below to: ANSWER=yes
+# To SKIP updating DVC tracking, leave it as: ANSWER=no
+#
+# Save and close this file to continue.
+
+ANSWER=no
+EOF
+    
+    # Try to open in editor
+    if [ -n "$VISUAL" ]; then
+        $VISUAL "$tmpfile"
+    elif [ -n "$EDITOR" ]; then
+        $EDITOR "$tmpfile"
+    elif command -v code &> /dev/null; then
+        code --wait "$tmpfile" 2>/dev/null || nano "$tmpfile" 2>/dev/null || vi "$tmpfile"
+    elif command -v nano &> /dev/null; then
+        nano "$tmpfile"
+    else
+        vi "$tmpfile"
+    fi
+    
+    # Read the answer
+    local answer=$(grep "^ANSWER=" "$tmpfile" | cut -d= -f2)
+    rm -f "$tmpfile"
+    
+    if [[ "$answer" =~ ^[Yy]es$ ]]; then
+        echo "y"
+        return 0
+    else
+        echo "n"
+        return 0
+    fi
+}
 
 readonly MAX_FILES_TO_SHOW=20
 
@@ -133,8 +185,12 @@ prompt_and_update() {
     local tracked_dir=$1
     local dvc_file=$2
     
-    echo -n "Do you want to update DVC tracking for '$tracked_dir'? [y/N]: "
-    read -r confirm
+    local confirm=$(prompt_user "Do you want to update DVC tracking for '$tracked_dir'? [y/N]: ")
+    
+    if [ $? -ne 0 ]; then
+        echo "Commit aborted due to unhandled DVC changes."
+        exit 1
+    fi
     
     if [[ "$confirm" =~ ^[Yy]$ ]]; then
         echo "Updating DVC tracking for '$tracked_dir'..."
