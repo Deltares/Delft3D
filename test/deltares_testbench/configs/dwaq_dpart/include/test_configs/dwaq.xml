@@ -150,6 +150,22 @@
             </file>
         </checks>
     </testCase>
+	    <testCase name="e03_f02_c06_statistics_stdev" ref="dwaq_default">
+        <dependency version="2024-01-11T09:00:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
+        <path version="2025-11-13T13:20:00">e03_waq/f02_hongkong/c06_statistics_stdev</path>
+        <checks>
+            <file name="group2-test004-stat.mon" type="NUMBERTEXT">
+			<skipline>1992 update year simulation        </skipline>     
+			<skipline>load scenario I                    </skipline>                                                                                          
+			<skipline>T0: 1996.11.21 00:00:00 (scu =       1s)</skipline>
+			<skipline>100.00% Completed </skipline>
+			<skipline>DUMP OF INTERMEDIATE RESULTS IN SELECTED SEGMENTS</skipline>
+			<skipline>TIME = 245D  5H  0M  0S .</skipline>
+            </file>
+        </checks>
+    </testCase>
+	
+	
     <testCase name="e03_f01_c01_test001" ref="dwaq_default">
         <path version="2024-01-11T13:20:00">e03_waq/f01_general/c01_test001</path>
         <checks>

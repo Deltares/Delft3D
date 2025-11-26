@@ -90,10 +90,11 @@ contains
         monoag(3) = 'STADPT'
         monoag(4) = 'STADSC'
         monoag(5) = 'STAMEA'
-        monoag(6) = 'STAGEO'
-        monoag(7) = 'STAPRC'
-        monoag(8) = 'STAQTL'
-        nmnoag = 8
+        monoag(6) = 'STADEV'
+        monoag(7) = 'STAGEO'
+        monoag(8) = 'STAPRC'
+        monoag(9) = 'STAQTL'
+        nmnoag = 9
 
         inquire (file = 'procnoag.dat', exist = lexi)
         if (lexi) then
