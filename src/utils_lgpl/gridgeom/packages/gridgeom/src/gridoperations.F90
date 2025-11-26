@@ -796,43 +796,40 @@ contains
       end if
       valid_links = pack([(L, L=1, NUML)], is_valid_link([(L, L=1, NUML)], kn(1, 1:NUML), kn(2, 1:NUML), kn(3, 1:NUML)))
 
-      if (size(valid_links) > 0) then
-         valid_link_types = kn(3, valid_links)
+      valid_link_types = kn(3, valid_links)
 
-         num_1d_links = count(valid_link_types == LINK_1D .or. valid_link_types == LINK_1D_MAINBRANCH)
-         num_1d2d_links = count(is_1d2d_link(valid_links, valid_link_types))
-         num_2d_links = count(valid_link_types == 0 .or. valid_link_types == LINK_2D)
+      num_1d_links = count(valid_link_types == LINK_1D .or. valid_link_types == LINK_1D_MAINBRANCH)
+      num_1d2d_links = count(is_1d2d_type(valid_link_types))
+      num_2d_links = count(valid_link_types == 0 .or. valid_link_types == LINK_2D)
 
-         l1 = 0
-         l1d2d = num_1d_links
-         l2 = num_1d_links + num_1d2d_links
+      l1 = 0
+      l1d2d = num_1d_links
+      l2 = num_1d_links + num_1d2d_links
 
-         do L_idx = 1, size(valid_links)
-            L = valid_links(L_idx)
-            K1 = kn(1, L)
-            K2 = kn(2, L)
-            K3 = kn(3, L)
+      do L_idx = 1, size(valid_links)
+         L = valid_links(L_idx)
+         K1 = kn(1, L)
+         K2 = kn(2, L)
+         K3 = kn(3, L)
 
-            if (K3 == LINK_1D) then
-               l1 = l1 + 1
-               kn_new(1:3, l1) = [K1, K2, K3]
-               if (japermout == 1) Lperm_new(l1) = Lperm(L)
-            else if (K3 == LINK_1D2D_INTERNAL .or. K3 == LINK_1D2D_LONGITUDINAL .or. &
-                     K3 == LINK_1D2D_STREETINLET .or. K3 == LINK_1D2D_ROOF) then
-               l1d2d = l1d2d + 1
-               kn_new(1:3, l1d2d) = [K1, K2, K3]
-               if (japermout == 1) Lperm_new(l1d2d) = Lperm(L)
-            else if (K3 == 0 .or. K3 == 2) then
-               l2 = l2 + 1
-               kn_new(1:3, l2) = [K1, K2, K3]
-               if (japermout == 1) Lperm_new(l2) = Lperm(L)
-            end if
-            KC(K1) = 1
-            KC(K2) = 1
-         end do
-         deallocate (valid_link_types)
-         kn(:, 1:numl) = kn_new(:, 1:numl)
-      end if
+         if (K3 == LINK_1D) then
+            l1 = l1 + 1
+            kn_new(1:3, l1) = [K1, K2, K3]
+            if (japermout == 1) Lperm_new(l1) = Lperm(L)
+         else if (is_1d2d_type(K3)) then
+            l1d2d = l1d2d + 1
+            kn_new(1:3, l1d2d) = [K1, K2, K3]
+            if (japermout == 1) Lperm_new(l1d2d) = Lperm(L)
+         else if (K3 == 0 .or. K3 == 2) then
+            l2 = l2 + 1
+            kn_new(1:3, l2) = [K1, K2, K3]
+            if (japermout == 1) Lperm_new(l2) = Lperm(L)
+         end if
+         KC(K1) = 1
+         KC(K2) = 1
+      end do
+      deallocate (valid_link_types)
+      kn(:, 1:numl) = kn_new(:, 1:numl)
 
       if (japermout == 1) then
          !     copy 1D and flip 2D values from the temp. to the permutation array
@@ -869,8 +866,6 @@ contains
       end do
 
       KC(1:NUMK) = KCK(1:NUMK)
-
-      deallocate (KC2, KCK) ! WEGWEZEN
 
       NMK = 0
       do L = 1, NUML ! TEL LINKS PER NODE
@@ -4513,7 +4508,7 @@ contains
       return
    end function dLinkangle
 
-!> Determines if a network link is valid for processing.
+   !> Determines if a network link is valid for processing.
    !! A link is considered valid if it connects two different, non-zero nodes
    !! with valid coordinates. Special conditions apply for user-defined link lengths.
    elemental function is_valid_link(L, K1, K2, K3) result(ja)
@@ -4542,13 +4537,14 @@ contains
 
    end function is_valid_link
 
-   elemental function is_1D2D_link(L, K3) result(res)
+   !> Determines if a network link is of 1D2D type based on kn(3,L) link code
+   elemental function is_1D2D_type(K3) result(res)
       use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
-      integer, intent(in) :: L, k3
+      integer, intent(in) :: k3 !< link type, entry of kn(3,L)
       logical :: res
 
       res = (K3 == LINK_1D2D_INTERNAL .or. K3 == LINK_1D2D_LONGITUDINAL .or. K3 == LINK_1D2D_STREETINLET .or. k3 == LINK_1D2D_ROOF)
 
-   end function is_1D2D_link
+   end function is_1D2D_type
 
 end module gridoperations
