@@ -373,16 +373,29 @@ contains
          end if
       end do
 
+      ! Write converted cross sections file.
+      if (write_converted_files_) then
+         call newfil(mout, crsdef_output)
+         if (mout == 0) then
+            call SetMessage(LEVEL_ERROR, 'Failed to open file ''' // trim(crsdef_output) // ''' for writing.')
+         else
+            call prop_write_inifile(mout, prop_ptr, ierr)
+         end if
+      end if
+      
       call parseCrossSectionDefinitionFile(prop_ptr, network)
       call tree_destroy(prop_ptr)
       call fill_hashtable(network%CSDefinitions)
-      ! write new crsdef file
-      !call newfil(mout, crsdef_output)
-      !call prop_write_inifile(mout, prop_ptr, ierr)
-      !call tree_destroy(prop_ptr)
-      ! write new structures file
-      !call newfil(mout, structures_output)
-      !call prop_write_inifile(mout, strs_ptr, ierr)
+      
+      ! Write converted structures file.
+      if (write_converted_files_) then
+         call newfil(mout, structures_output)
+         if (mout == 0) then
+            call SetMessage(LEVEL_ERROR, 'Failed to open file ''' // trim(structures_output) // ''' for writing.')
+         else
+            call prop_write_inifile(mout, strs_ptr, ierr)
+         end if
+      end if
       call tree_destroy(strs_ptr)
 
    end subroutine convertLongCulvertsAsNetwork
@@ -1437,7 +1450,7 @@ contains
       use m_set_nod_adm, only: setnodadm
       use m_globalparameters, only: t_filenames
 
-      type(t_filenames), intent(in) :: md_1dfiles
+      type(t_filenames), intent(inout) :: md_1dfiles
       integer, intent(in) :: md_convertlongculverts !< Flag to indicate whether to convert old-style long culverts on-the-fly.
       character(:), allocatable :: structure_files
       structure_files = md_1dfiles%structures
@@ -1491,7 +1504,7 @@ contains
       use m_1d_networkreader, only: construct_network_from_meshgeom
       use m_save_ugrid_state
 
-      type(t_filenames), intent(in) :: md_1dfiles
+      type(t_filenames), intent(inout) :: md_1dfiles
       logical, optional, intent(in) :: write_converted_files
       character(len=10), allocatable :: md_culvertprefix
       character(len=:), allocatable :: converted_fnamesstring
@@ -1535,6 +1548,9 @@ contains
          end do
          i = 0
          call admin_network(network, i)
+
+         md_1dfiles%structures = converted_fnamesstring
+         md_1dfiles%cross_section_definitions = converted_crsdefsstring
       end if
 
    end subroutine makelongculverts_commandline
