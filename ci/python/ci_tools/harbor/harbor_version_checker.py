@@ -1,5 +1,6 @@
 import argparse
 import re
+import sys
 from dataclasses import dataclass
 
 import requests
@@ -69,7 +70,7 @@ def fetch_all_tags(username: str, password: str) -> list[str]:
         if response.status_code != 200:
             print(f"Error: Failed to query API. Status code: {response.status_code}")
             print(f"Response: {response.text}")
-            break
+            sys.exit(1)
 
         artifacts = response.json()
         if not artifacts:  # No more results
