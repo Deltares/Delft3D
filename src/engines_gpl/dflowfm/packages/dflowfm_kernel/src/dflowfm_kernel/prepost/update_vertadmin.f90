@@ -68,7 +68,7 @@ contains
 
 !  bl, kmxn: filly dummy array
       do k = 1, Ndx
-         dum(1, k) = dble(kmxn(k))
+         dum(1, k) = real(kmxn(k), kind=dp)
          dum(2, k) = bl(k)
       end do
 !  udpate dummy array
@@ -104,7 +104,7 @@ contains
 
 !  kmxL: filly dummy array
       do L = 1, Lnx
-         dum(1, L) = dble(kmxL(L))
+         dum(1, L) = real(kmxL(L), kind=dp)
       end do
 !  update dummy array
       call update_ghosts(ITYPE_U, 1, Lnx, dum, ierror)

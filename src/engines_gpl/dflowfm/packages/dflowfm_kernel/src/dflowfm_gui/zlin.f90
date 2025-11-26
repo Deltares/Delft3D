@@ -103,7 +103,7 @@ contains
       else if (linval == 11) then
          zlin = bob(2, LL)
       else if (linval == 12) then
-         zlin = dble(kcu(LL))
+         zlin = real(kcu(LL), kind=dp)
       else if (linval == 13) then
          zlin = vicLu(L)
       else if (linval == 14) then

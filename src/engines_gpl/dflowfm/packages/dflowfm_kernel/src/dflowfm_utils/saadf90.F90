@@ -3406,7 +3406,7 @@ contains
          end if
       end if
 300   if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+         fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       else
          fpar(7) = zero
       end if
@@ -4007,7 +4007,7 @@ contains
       end if
 300   if (fpar(3) /= zero .and. fpar(6) /= zero .and. &
           ipar(7) > ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+         fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       else
          fpar(7) = zero
       end if
@@ -4580,7 +4580,7 @@ contains
          end if
       end if
       if (fpar(3) > zero .and. fpar(6) > zero .and. ipar(7) > ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+         fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       else
          fpar(7) = zero
       end if
@@ -5032,7 +5032,7 @@ contains
 !     nx has to be larger than 1
 !
       if (nx <= 1) return
-      h = one / dble(nx - 1)
+      h = one / real(nx - 1, kind=dp)
 !
 !     the mode
 !

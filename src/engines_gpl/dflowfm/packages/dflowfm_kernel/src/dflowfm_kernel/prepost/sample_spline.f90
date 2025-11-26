@@ -77,7 +77,7 @@ contains
       do i = 1, num - 1
          do j = 1, numref + 1
             Nr = Nr + 1
-            tn = (i - 1) + dble(j - 1) / dble(numref + 1)
+            tn = (i - 1) + real(j - 1, kind=dp) / real(numref + 1, kind=dp)
             call splint(xs, xh2, num, tn, xr(Nr))
             call splint(ys, yh2, num, tn, yr(Nr))
          end do
@@ -85,7 +85,7 @@ contains
 
 !  add last point
       Nr = Nr + 1
-      tn = dble(num - 1)
+      tn = real(num - 1, kind=dp)
       call splint(xs, xh2, num, tn, xr(Nr))
       call splint(ys, yh2, num, tn, yr(Nr))
 

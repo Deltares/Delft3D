@@ -107,8 +107,8 @@ contains
 !     muisbeweging
       Xloc = InfoGraphics(5)
       Yloc = InfoGraphics(6)
-      X = dble(xloc)
-      y = dble(yloc)
+      X = real(xloc, kind=dp)
+      y = real(yloc, kind=dp)
 
       call IGRUNITSTOPIXELS(Xloc, Yloc, IXP, IYP)
       call dPROJECT(X, Y, XLC, YLC, 2)

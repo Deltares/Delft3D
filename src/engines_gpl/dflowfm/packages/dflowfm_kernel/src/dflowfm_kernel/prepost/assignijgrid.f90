@@ -76,12 +76,12 @@ contains
       lowold = lbound(ijc)
       uppold = ubound(ijc)
 
-      numiter_guess = sqrt(dble(nump)) * 10
+      numiter_guess = sqrt(real(nump, kind=dp)) * 10
 
       call readyy('creating curvilinear grid', 0.0_dp)
 
       do iter = 1, MAXITER
-         call readyy('creating curvilinear grid', min(dble(iter - 1) / dble(numiter_guess - 1), 1.0_dp))
+         call readyy('creating curvilinear grid', min(real(iter - 1, kind=dp) / real(numiter_guess - 1, kind=dp), 1.0_dp))
 
          icount = 0
 

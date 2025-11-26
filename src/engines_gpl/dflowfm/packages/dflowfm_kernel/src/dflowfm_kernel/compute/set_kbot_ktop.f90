@@ -110,10 +110,10 @@ contains
                kt1 = max(kb, ktx - numtopsig + 1)
                if (ktop(n) >= kt1) then
                   h0 = s1(n) - zws(kt1 - 1)
-                  dtopsi = 1.0_dp / dble(ktx - kt1 + 1)
+                  dtopsi = 1.0_dp / real(ktx - kt1 + 1, kind=dp)
                   do k = kt1, ktx
                      kk = k - kt1 + 1
-                     zws(k) = zws(kt1 - 1) + h0 * dble(kk) * dtopsi
+                     zws(k) = zws(kt1 - 1) + h0 * real(kk, kind=dp) * dtopsi
                   end do
                   zws(ktx) = s1(n)
                   ktop(n) = ktx
@@ -143,7 +143,7 @@ contains
             do k = kb + 1, kt
                if (abs(rho(k) - rho(k - 1)) > drhok) then
                   drhok = abs(rho(k) - rho(k - 1))
-                  dkx(n) = dble(k - kb) / dble(kt - kb + 1)
+                  dkx(n) = real(k - kb, kind=dp) / real(kt - kb + 1, kind=dp)
                   dkx(n) = min(0.8_dp, dkx(n))
                   dkx(n) = max(0.2_dp, dkx(n))
                end if
@@ -161,7 +161,7 @@ contains
 
             a = 0.25_dp
             do n = 1, ndx
-               dkx(n) = a * dkx(n) + (1.0_dp - a) * sdkx(n) / dble(nd(n)%lnx)
+               dkx(n) = a * dkx(n) + (1.0_dp - a) * sdkx(n) / real(nd(n)%lnx, kind=dp)
             end do
          end do
 
@@ -179,7 +179,7 @@ contains
             h0 = s1(n) - zws(kb - 1)
             h00 = max(epshu, zws0(kt) - zws0(kb - 1))
             sig = 0.0_dp
-            dsig0 = 0.1_dp / dble(numtp)
+            dsig0 = 0.1_dp / real(numtp, kind=dp)
 
             do k = 1, kmxn(n)
                if (k == 1) then
@@ -359,10 +359,10 @@ contains
                kt1 = max(kb, ktx - numtopsig + 1)
                if (ktop(n) >= kt1) then
                   h0 = s0(n) - zws(kt1 - 1)
-                  dtopsi = 1.0_dp / dble(ktx - kt1 + 1)
+                  dtopsi = 1.0_dp / real(ktx - kt1 + 1, kind=dp)
                   do k = kt1, ktx
                      kk = k - kt1 + 1
-                     zws(k) = zws(kt1 - 1) + h0 * dble(kk) * dtopsi
+                     zws(k) = zws(kt1 - 1) + h0 * real(kk, kind=dp) * dtopsi
                   end do
                   zws(ktx) = s0(n)
                   ktop(n) = ktx

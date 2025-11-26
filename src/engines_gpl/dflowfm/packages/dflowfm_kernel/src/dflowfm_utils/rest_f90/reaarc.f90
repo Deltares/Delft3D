@@ -100,9 +100,9 @@ contains
 
          if (japrompt == 1) then
 !           automatic istep, jstep
-            dsqrtnumcur = sqrt(dble(iend - istart + 1)) * sqrt(dble(jend - jstart + 1))
-            distep = dsqrtnumcur / sqrt(dble(MAXARCTILE))
-            distep = dble(int(distep + 0.5_dp))
+            dsqrtnumcur = sqrt(real(iend - istart + 1, kind=dp)) * sqrt(real(jend - jstart + 1, kind=dp))
+            distep = dsqrtnumcur / sqrt(real(MAXARCTILE, kind=dp))
+            distep = real(int(distep + 0.5_dp), kind=dp)
             djstep = distep
 
             if (distep > 1.0_dp) then ! only if necessary
@@ -137,10 +137,10 @@ contains
 !        modife arcinfo module data
 !         X0 = X0 + dble(istep-1)*0.5d0*DXa
 !         Y0 = Y0 + dble(jstep-1)*0.5d0*DYa
-         X0 = X0 + (istart - 1) * Dxa + dble(istep - 1) * 0.5_dp * DXa
-         Y0 = Y0 + (jstart - 1) * Dya + dble(jstep - 1) * 0.5_dp * DYa
-         DXa = dble(istep) * DXa
-         DYa = dble(jstep) * DYa
+         X0 = X0 + (istart - 1) * Dxa + real(istep - 1, kind=dp) * 0.5_dp * DXa
+         Y0 = Y0 + (jstart - 1) * Dya + real(jstep - 1, kind=dp) * 0.5_dp * DYa
+         DXa = real(istep, kind=dp) * DXa
+         DYa = real(jstep, kind=dp) * DYa
 
       end if ! if ( LdirectReadBlock )
 

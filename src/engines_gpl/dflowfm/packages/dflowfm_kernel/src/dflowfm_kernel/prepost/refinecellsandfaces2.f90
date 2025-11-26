@@ -251,7 +251,7 @@ contains
          call findcells(1000) ! do not update node mask (kc)
          if (NPL > 0) call restore_kc()
 !      call findcells(0) ! update node mask (kc)
-         call mess(LEVEL_INFO, 'refinement efficiency factor', real(dble(nump_virtual) / dble(max(nump, 1))))
+         call mess(LEVEL_INFO, 'refinement efficiency factor', real(real(nump_virtual, kind=dp) / real(max(nump, 1), kind=dp)))
 
 !     take dry cells into account (after findcells)
          call delete_dry_points_and_areas(update_blcell=.false.)
@@ -648,8 +648,8 @@ contains
          end do
          dcellsize = dmaxcellsize
 
-         xc(1) = xc(1) / dble(N)
-         yc(1) = yc(1) / dble(N)
+         xc(1) = xc(1) / real(N, kind=dp)
+         yc(1) = yc(1) / real(N, kind=dp)
 
          if (irefinetype == ITYPE_RIDGE) then
 !------------------------------------------------------------------------
@@ -1240,7 +1240,7 @@ contains
 !           set the brother links
                Lsize = ubound(linkbrother, 1)
                if (numL > ubound(linkbrother, 1)) then
-                  Lsize = ceiling(1.2_dp * dble(numL + 1))
+                  Lsize = ceiling(1.2_dp * real(numL + 1, kind=dp))
                   call realloc(linkbrother, Lsize, keepExisting=.true., fill=0)
                end if
                linkbrother(Lnew) = L

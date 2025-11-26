@@ -220,8 +220,8 @@ contains
          do k = 1, nump
             N = netcell(k)%N
             if (N < 1) cycle
-            xx = sum(xk(netcell(k)%nod(1:N))) / dble(N)
-            yy = sum(yk(netcell(k)%nod(1:N))) / dble(N)
+            xx = sum(xk(netcell(k)%nod(1:N))) / real(N, kind=dp)
+            yy = sum(yk(netcell(k)%nod(1:N))) / real(N, kind=dp)
             if (abs(icellmask(k)) == 1) then
                call cirr(xx, yy, 31)
             else if (abs(icellmask(k)) == 2) then

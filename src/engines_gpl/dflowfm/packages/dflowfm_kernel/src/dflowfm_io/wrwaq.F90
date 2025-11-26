@@ -2459,8 +2459,8 @@ contains
       end do
       do ip = 1, waqpar%noql
          if (waqpar%aggre == 1) then
-            lenex(1, ip) = lenex(1, ip) / dble(noqa(ip))
-            lenex(2, ip) = lenex(2, ip) / dble(noqa(ip))
+            lenex(1, ip) = lenex(1, ip) / real(noqa(ip), kind=dp)
+            lenex(2, ip) = lenex(2, ip) / real(noqa(ip), kind=dp)
          end if
          ! Copy lenghts to other layers
          do kk = 1, waqpar%kmxnxa - 1

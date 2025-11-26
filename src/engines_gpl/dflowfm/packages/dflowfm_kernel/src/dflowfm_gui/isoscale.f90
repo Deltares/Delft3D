@@ -80,8 +80,8 @@ contains
       if (max(ndx, nump, npl, numk) == 0) return
 
       call IGRCHARSIZE(real(SCALESIZE), real(SCALESIZE))
-      WIC = dble(INFOGRAPHICS(3))
-      HIC = dble(INFOGRAPHICS(4))
+      WIC = real(INFOGRAPHICS(3), kind=dp)
+      HIC = real(INFOGRAPHICS(4), kind=dp)
 
       INC = NV / 30 + 1 ! Max 30 color boxes, otherwise increment > 1
 
