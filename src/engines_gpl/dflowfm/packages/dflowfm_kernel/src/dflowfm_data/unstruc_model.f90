@@ -3521,6 +3521,12 @@ contains
          end if
       end if
 
+      if (jaspacevarcharn .and. ICdtyp /= 4) then
+         write (msgbuf, '(a,i0,a)') 'A (time- and space-varying) Charnock coefficient was provided via the .ext file. [wind] ICdtyp has been reset from ', &
+             ICdtyp, ' to 4 (Charnock).'
+         call mess(LEVEL_WARN, msgbuf)
+         ICdtyp = 4
+      end if
       call prop_set(prop_ptr, 'wind', 'ICdtyp', ICdtyp, 'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: Charnock+viscous, 9: Garratt 1977).')
       if (ICdtyp == 1 .or. ICdtyp == 4 .or. ICdtyp == 5 .or. ICdtyp == 6) then
          call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', user_provided_charnock_coefficient, 'Wind drag coefficient (may be overridden by space-varying input)')
