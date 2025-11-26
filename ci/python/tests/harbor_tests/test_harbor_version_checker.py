@@ -262,11 +262,11 @@ class TestFetchAllTags:
         mock_response.text = "Unauthorized"
         mock_get = mocker.patch("ci_tools.harbor.harbor_version_checker.requests.get", return_value=mock_response)
 
-        # Act
-        result = fetch_all_tags(username, password)
+        # Act & Assert
+        with pytest.raises(SystemExit) as exc_info:
+            fetch_all_tags(username, password)
 
-        # Assert
-        assert len(result) == 0
+        assert exc_info.value.code == 1
         mock_get.assert_called_once()
 
     def test_fetch_all_tags_uses_correct_auth(self, mocker: MockerFixture) -> None:
