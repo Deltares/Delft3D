@@ -8,11 +8,34 @@ for dvc_file in $(git ls-files '*.dvc'); do
     tracked_dir="${dvc_file%.dvc}"
 
     if [ -d "$tracked_dir" ]; then
-        if dvc status "$dvc_file" 2>/dev/null | grep -q "modified:"; then
+        # Check if there are local changes not yet tracked by DVC
+        dvc_status_output=$(dvc status "$dvc_file" 2>/dev/null)
+        if echo "$dvc_status_output" | grep -q "modified:"; then
             echo "Detected changes in '$tracked_dir' (DVC file: $dvc_file)"
-            echo "Showing DVC diff:"
-            dvc diff HEAD --targets "$tracked_dir" || echo "No detailed diff available."
+            echo "DVC Status:"
+            echo "$dvc_status_output"
             echo
+            
+            # Show MD5 hash changes if .dvc file differs from HEAD
+            if git diff --quiet HEAD -- "$dvc_file" 2>/dev/null; then
+                : # No changes in .dvc file yet
+            else
+                echo "MD5 Hash changes:"
+                echo -n "  OLD: "
+                git show HEAD:"$dvc_file" 2>/dev/null | grep 'md5:' | head -1 | sed 's/^[[:space:]]*//'
+                echo -n "  NEW: "
+                grep 'md5:' "$dvc_file" | head -1 | sed 's/^[[:space:]]*//'
+                echo
+            fi
+            
+            # Show summary of directory contents
+            echo "Directory summary:"
+            file_count=$(find "$tracked_dir" -type f 2>/dev/null | wc -l)
+            dir_size=$(du -sh "$tracked_dir" 2>/dev/null | cut -f1)
+            echo "  Total files: $file_count"
+            echo "  Directory size: $dir_size"
+            echo
+            
             echo -n "Do you want to update DVC tracking for '$tracked_dir'? [y/N]: "
             read -r confirm
             if [[ "$confirm" =~ ^[Yy]$ ]]; then
