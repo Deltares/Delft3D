@@ -12,6 +12,17 @@ dnf install -y sudo git dos2unix which less tree strace \
 update-alternatives --set java java-17-openjdk.x86_64
 EOF
 
+# Install bashdb from GitHub
+RUN <<"EOF"
+cd /tmp
+git clone --depth 1 https://github.com/Trepan-Debuggers/bashdb.git
+cd bashdb
+./autogen.sh
+make
+make install
+rm -rf /tmp/bashdb
+EOF
+
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 
 # Create non-root user and grant it sudo privileges:

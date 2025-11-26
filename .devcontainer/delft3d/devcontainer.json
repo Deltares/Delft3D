@@ -32,6 +32,7 @@
                 "charliermarsh.ruff",
                 "tamasfe.even-better-toml",
                 "ms-vscode.hexeditor",
+                "rogalmic.bash-debug",
             ]
         }
     }
