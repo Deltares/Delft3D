@@ -11752,6 +11752,7 @@ contains
 
       jaInDefine = 0
       n1d2dcontacts = 0
+      n2d2dcontacts = 0
       num_1d_nodes = 0
       node_index = 0
       numl2d = 0
@@ -11814,7 +11815,7 @@ contains
       end if
 
       ! 1D network geometry
-      if (numl1d > 0) then
+      if (numl1d > 0 .and. numl1d > n2d2dcontacts) then
          ! count 1d mesh nodes, edges and 1d2d contacts
          n1dedges = count_1d_edges(numl1d)
          n1d2dcontacts = count(is_valid_1d2d_netlink([(l, l=1, numl1d)]))
