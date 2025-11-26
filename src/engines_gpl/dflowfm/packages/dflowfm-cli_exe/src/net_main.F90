@@ -284,6 +284,10 @@ program unstruc
       end if
 
       if (len_trim(md_ident) > 0) then ! partitionmduparse
+         if (md_convertlongculverts == 1) then
+            md_convertlongculverts = 0
+            call write_model_with_longculverts()
+         end if
          call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
          L = index(md_netfile, '_net') - 1
          if (len_trim(md_restartfile) > 0) then ! If there is a restart file
