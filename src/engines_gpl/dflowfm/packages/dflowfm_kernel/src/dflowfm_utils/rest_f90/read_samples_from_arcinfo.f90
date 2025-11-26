@@ -85,7 +85,7 @@ contains
 ! SPvdP: j needs to be fastest running index
       do i = 1, mca
          if (mod(i, istep) == 0) then
-            call READYY('Filtering '//trim(TEX)//' Samples Points', min(1.0_dp, dble(i) / mca))
+            call READYY('Filtering '//trim(TEX)//' Samples Points', min(1.0_dp, real(i, kind=dp) / mca))
          end if
 
          do j = nca, 1, -1 ! SPvdP: first line needs to be nca'th row

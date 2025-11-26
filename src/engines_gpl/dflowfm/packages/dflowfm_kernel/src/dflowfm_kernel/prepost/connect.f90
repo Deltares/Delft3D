@@ -93,12 +93,12 @@ contains
 
          KN(3, LNU) = KN3TYP
 
-         XK(KL) = XK(K1) + (XK(K2) - XK(K1)) * dble(LL - 1) / dble(LFAC)
-         YK(KL) = YK(K1) + (YK(K2) - YK(K1)) * dble(LL - 1) / dble(LFAC)
-         ZK(KL) = ZK(K1) + (ZK(K2) - ZK(K1)) * dble(LL - 1) / dble(LFAC)
-         XK(KR) = XK(K1) + (XK(K2) - XK(K1)) * dble(LL) / dble(LFAC)
-         YK(KR) = YK(K1) + (YK(K2) - YK(K1)) * dble(LL) / dble(LFAC)
-         ZK(KR) = ZK(K1) + (ZK(K2) - ZK(K1)) * dble(LL) / dble(LFAC)
+         XK(KL) = XK(K1) + (XK(K2) - XK(K1)) * real(LL - 1, kind=dp) / real(LFAC, kind=dp)
+         YK(KL) = YK(K1) + (YK(K2) - YK(K1)) * real(LL - 1, kind=dp) / real(LFAC, kind=dp)
+         ZK(KL) = ZK(K1) + (ZK(K2) - ZK(K1)) * real(LL - 1, kind=dp) / real(LFAC, kind=dp)
+         XK(KR) = XK(K1) + (XK(K2) - XK(K1)) * real(LL, kind=dp) / real(LFAC, kind=dp)
+         YK(KR) = YK(K1) + (YK(K2) - YK(K1)) * real(LL, kind=dp) / real(LFAC, kind=dp)
+         ZK(KR) = ZK(K1) + (ZK(K2) - ZK(K1)) * real(LL, kind=dp) / real(LFAC, kind=dp)
       end do
 
       JA = 1

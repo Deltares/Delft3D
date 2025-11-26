@@ -80,7 +80,7 @@ contains
 
 !     reallocate if necessary
          if (numj > ubound(xlist, 1)) then
-            numnew = int(1.2_dp * dble(numj)) + 1
+            numnew = int(1.2_dp * real(numj, kind=dp)) + 1
             call realloc(xlist, numnew)
             call realloc(ylist, numnew)
          end if

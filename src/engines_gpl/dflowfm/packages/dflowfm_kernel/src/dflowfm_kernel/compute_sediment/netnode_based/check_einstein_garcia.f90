@@ -40,7 +40,7 @@ contains
       ein = 0.0_dp
       z = aref
       num = 10000
-      dz = (h - z) / dble(num)
+      dz = (h - z) / real(num, kind=dp)
       z = z - 0.5_dp * dz
       do k = 1, num
          z = z + dz

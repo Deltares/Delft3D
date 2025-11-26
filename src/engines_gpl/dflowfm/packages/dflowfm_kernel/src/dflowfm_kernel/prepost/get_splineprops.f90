@@ -74,7 +74,7 @@ contains
 
 !     reallocate if necessary
          if (num > ubound(xlist, 1)) then
-            numnew = int(1.2_dp * dble(num)) + 1
+            numnew = int(1.2_dp * real(num, kind=dp)) + 1
             call realloc(xlist, numnew)
             call realloc(ylist, numnew)
          end if

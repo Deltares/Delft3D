@@ -56,7 +56,7 @@ contains
 !     RLEN = SQRT((X(1)-X(2))**2+(Y(1)-Y(2))**2)
       TOL = 0.000001_dp
 !     TOL  = 0.000005*RLEN
-      RN = dble(N)
+      RN = real(N, kind=dp)
       AX = 0.0_dp
       BX = TV
       CX = RN

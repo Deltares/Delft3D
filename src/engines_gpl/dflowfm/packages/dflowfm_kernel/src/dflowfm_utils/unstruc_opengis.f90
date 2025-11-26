@@ -154,7 +154,7 @@ contains
                lc(i) = 1
                ! We started a new path, now trace connected links as long as possible.
                do
-                  if (mod(i + iloc - 2, LMOD) == 1) call READYY('SAVE KML', half * dble(i + iloc - 2) / dble(NUML))
+                  if (mod(i + iloc - 2, LMOD) == 1) call READYY('SAVE KML', half * real(i + iloc - 2, kind=dp) / real(NUML, kind=dp))
                   lcur = 0
                   ! Find an outgoing link of current net node that wasn't yet written and has correct link type.
                   do L = 1, nmk(kcur)

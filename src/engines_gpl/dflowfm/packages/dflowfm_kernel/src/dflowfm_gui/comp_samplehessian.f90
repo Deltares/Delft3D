@@ -82,7 +82,7 @@ contains
 
       call readyy('Computing sample Hessians', 0.0_dp)
       do i = 2, MXSAM - 1
-         af = dble(i - 2) / dble(max(MXSAM - 3, 1))
+         af = real(i - 2, kind=dp) / real(max(MXSAM - 3, 1), kind=dp)
          call readyy('Computing sample Hessians', af)
          do j = 2, MYSAM - 1
 !         if ( i.eq.614 .and. j.eq.154 )

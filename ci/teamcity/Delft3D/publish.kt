@@ -163,6 +163,7 @@ object Publish : BuildType({
         }
         python {
             name = "Set latest development tag parameter"
+            pythonVersion = customPython { executable = "python3.11" }
             command = module {
                 module = "ci_tools.harbor.harbor_version_checker"
                 scriptArguments = """

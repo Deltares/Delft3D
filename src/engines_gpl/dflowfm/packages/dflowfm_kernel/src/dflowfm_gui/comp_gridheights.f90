@@ -100,7 +100,7 @@ contains
 
 !     reallocate if necessary
          if (ncs > ubound(nlistL, 1)) then
-            numnew = int(1.2_dp * dble(ncs)) + 1
+            numnew = int(1.2_dp * real(ncs, kind=dp)) + 1
             call realloc(nlistL, numnew)
             call realloc(nlistR, numnew)
             call realloc(nlist_loc, numnew)
@@ -142,7 +142,7 @@ contains
 
 !        reallocate if necessary
             if (num > ubound(xlist, 1)) then
-               numnew = int(1.2_dp * dble(num)) + 1
+               numnew = int(1.2_dp * real(num, kind=dp)) + 1
                call realloc(xlist, numnew)
                call realloc(ylist, numnew)
             end if
@@ -178,7 +178,7 @@ contains
 
 !              reallocate if necessary
                   if (ndx > ubound(hlist, 1)) then
-                     numnew = int(1.2_dp * dble(ndx)) + 1
+                     numnew = int(1.2_dp * real(ndx, kind=dp)) + 1
                      call realloc(hlist, numnew)
                   end if
                   hlist(1:ndx) = hL(j, idx(1:ndx))
@@ -207,7 +207,7 @@ contains
                         iR = iL
                      end if
 
-                     fac = max(min(dble((iL)) + fac - 1.0_dp, dble(ndx - 1)), 0.0_dp)
+                     fac = max(min(real((iL), kind=dp) + fac - 1.0_dp, real(ndx - 1, kind=dp)), 0.0_dp)
 !
                      call splint(hlist, hL2, ndx, fac, hgL(j, i))
 
@@ -225,7 +225,7 @@ contains
 
 !              reallocate if necessary
                   if (ndx > ubound(hlist, 1)) then
-                     numnew = int(1.2_dp * dble(ndx)) + 1
+                     numnew = int(1.2_dp * real(ndx, kind=dp)) + 1
                      call realloc(hlist, numnew)
                   end if
                   hlist(1:ndx) = hR(j, idx(1:ndx))
@@ -255,7 +255,7 @@ contains
                         iR = iL
                      end if
 
-                     fac = max(min(dble((iL)) + fac - 1.0_dp, dble(ndx - 1)), 0.0_dp)
+                     fac = max(min(real((iL), kind=dp) + fac - 1.0_dp, real(ndx - 1, kind=dp)), 0.0_dp)
 
 !                 spline interpolation between two original cross splines only
                      isL = splineprops(is)%ics(idx(iL))

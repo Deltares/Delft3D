@@ -52,7 +52,7 @@ contains
       do k = 1, mfac
          ns = ns + 1
          call increasesam(ns)
-         aa = dble(k) / dble(mfac + 1); bb = 1.0_dp - aa
+         aa = real(k, kind=dp) / real(mfac + 1, kind=dp); bb = 1.0_dp - aa
          xs(ns) = bb * xs(L1) + aa * xs(L2)
          ys(ns) = bb * ys(L1) + aa * ys(L2)
          zs(ns) = bb * zs(L1) + aa * zs(L2)

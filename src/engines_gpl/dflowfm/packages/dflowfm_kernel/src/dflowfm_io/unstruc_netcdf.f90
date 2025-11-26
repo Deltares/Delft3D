@@ -6529,7 +6529,7 @@ contains
       if (jamapnumlimdt > 0) then
          ! ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_numlimdt, UNC_LOC_S, numlimdt) ! TODO: AvD: integer version of this routine
          call realloc(numlimdtdbl, ndxndxi, keepExisting=.false.)
-         numlimdtdbl = dble(numlimdt) ! To prevent stack overflow. TODO: remove once integer version is available.
+         numlimdtdbl = real(numlimdt, kind=dp) ! To prevent stack overflow. TODO: remove once integer version is available.
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_numlimdt, UNC_LOC_S, numlimdtdbl, jabndnd=jabndnd_)
          deallocate (numlimdtdbl)
       end if

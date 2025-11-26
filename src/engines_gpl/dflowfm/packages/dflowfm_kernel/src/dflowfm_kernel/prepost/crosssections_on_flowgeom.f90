@@ -191,7 +191,7 @@ contains
       call READYY('Enabling cross sections on grid', 0.0_dp)
       do ic = 1, ncrs
          if (mod(ic, icMOD) == 0) then
-            call READYY('Enabling cross sections on grid', dble(ic) / dble(ncrs))
+            call READYY('Enabling cross sections on grid', real(ic, kind=dp) / real(ncrs, kind=dp))
          end if
          if (crs(ic)%loc2OC == 0) then
             if (.not. success) then

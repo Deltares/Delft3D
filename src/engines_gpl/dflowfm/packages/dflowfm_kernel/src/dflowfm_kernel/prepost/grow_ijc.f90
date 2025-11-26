@@ -82,9 +82,9 @@ contains
 
          do i = 1, 2
             if (lownew(i) /= lowold(i)) &
-               blocklow(i) = ceiling(dble(blocklow(i)) * FAC)
+               blocklow(i) = ceiling(real(blocklow(i), kind=dp) * FAC)
             if (uppnew(i) /= uppold(i)) &
-               blockupp(i) = ceiling(dble(blockupp(i)) * FAC)
+               blockupp(i) = ceiling(real(blockupp(i), kind=dp) * FAC)
          end do
 
          call realloc(ijc, uppnew, lownew, fill=IMISS)

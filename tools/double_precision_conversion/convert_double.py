@@ -4,6 +4,7 @@ convert_double.py - A script to convert Fortran double precision literals and de
 This script converts:
 1. Fortran double precision literals from `1d0` to `1.0_dp` format
 2. Variable declarations from `double precision :: var` to `real(kind=dp) :: var`
+3. dble() function calls from `dble(x)` to `real(x, kind=dp)`
 
 It focuses on literal constants with exponent-letter 'D' as specified in the Fortran standard.
 
@@ -99,6 +100,13 @@ class FortranDoubleConverter:
             re.MULTILINE | re.IGNORECASE
         )
 
+        # Pattern to match dble() function calls
+        # Matches dble(expression) where expression can contain nested parentheses
+        self.dble_pattern = re.compile(
+            r'\bdble\s*\(',
+            re.IGNORECASE
+        )
+
     def _is_in_string_or_comment(self, text: str, pos: int) -> bool:
         """Check if position is inside a string literal or comment."""
         # Check for comments first (everything after ! to end of line)
@@ -150,6 +158,42 @@ class FortranDoubleConverter:
 
         # Build the new declaration
         return f"{indent}real(kind=dp) {rest}"
+
+    def _convert_dble_calls(self, text: str) -> str:
+        """Convert dble(expr) to real(expr, kind=dp)."""
+        result = []
+        i = 0
+        while i < len(text):
+            # Check if we're at the start of a dble call
+            match = self.dble_pattern.match(text, i)
+            if match and not self._is_in_string_or_comment(text, match.start()):
+                # Found dble( - need to find matching closing parenthesis
+                paren_start = match.end() - 1  # Position of opening (
+                paren_count = 1
+                j = paren_start + 1
+
+                # Find the matching closing parenthesis
+                while j < len(text) and paren_count > 0:
+                    if text[j] == '(' and not self._is_in_string_or_comment(text, j):
+                        paren_count += 1
+                    elif text[j] == ')' and not self._is_in_string_or_comment(text, j):
+                        paren_count -= 1
+                    j += 1
+
+                if paren_count == 0:
+                    # Successfully found matching parenthesis
+                    inner_expr = text[paren_start + 1:j - 1]
+                    result.append(f"real({inner_expr}, kind=dp)")
+                    i = j
+                else:
+                    # Unmatched parenthesis, keep original
+                    result.append(text[i])
+                    i += 1
+            else:
+                result.append(text[i])
+                i += 1
+
+        return ''.join(result)
 
     def _add_precision_import(self, text: str) -> str:
         """Add 'use precision, only: dp' import if not already present."""
@@ -256,6 +300,12 @@ class FortranDoubleConverter:
         if text != original_after_literals:
             conversions_made = True
 
+        # Convert dble() function calls
+        original_after_declarations = text
+        text = self._convert_dble_calls(text)
+        if text != original_after_declarations:
+            conversions_made = True
+
         # If any conversions were made, add precision import
         if conversions_made:
             text = self._add_precision_import(text)
@@ -335,11 +385,11 @@ class FortranDoubleConverter:
         """Check if a file needs conversion without modifying it. Returns True if conversion is needed."""
         try:
             if input_path.is_dir():
-                print(f"ERROR: {input_path} is a directory. Use --directory flag to process directories.")
+                print(f"{input_path}(1): error: Directory specified. Use --directory flag to process directories.")
                 return False
 
             if not input_path.exists():
-                print(f"ERROR: {input_path} does not exist.")
+                print(f"{input_path}(1): error: File does not exist.")
                 return False
 
             with open(input_path, 'r', encoding='utf-8') as f:
@@ -359,24 +409,43 @@ class FortranDoubleConverter:
                     if not self._is_in_string_or_comment(content, match.start()):
                         declaration_matches.append(match)
 
-                print(f"ERROR: {input_path} needs conversion:")
-                if literal_matches:
-                    print(f"  - {len(literal_matches)} double precision literals found")
-                if declaration_matches:
-                    print(f"  - {len(declaration_matches)} double precision declarations found")
+                dble_matches = []
+                for match in self.dble_pattern.finditer(content):
+                    if not self._is_in_string_or_comment(content, match.start()):
+                        dble_matches.append(match)
+
+                # Report each literal with line number in Visual Studio format
+                for match in literal_matches:
+                    line_num = content[:match.start()].count('\n') + 1
+                    literal_text = match.group(0)
+                    print(f"{input_path}({line_num}): error LINT001: Double precision literal found: '{literal_text}' should be converted to _dp format")
+
+                # Report each declaration with line number in Visual Studio format
+                for match in declaration_matches:
+                    line_num = content[:match.start()].count('\n') + 1
+                    print(f"{input_path}({line_num}): error LINT002: Double precision declaration found, should be 'real(kind=dp)'")
+
+                # Report each dble() function call with line number in Visual Studio format
+                for match in dble_matches:
+                    line_num = content[:match.start()].count('\n') + 1
+                    print(f"{input_path}({line_num}): error LINT003: dble() function found, should be 'real(..., kind=dp)'")
+
+                # Add tip for auto-fixing after all errors for this file
+                if literal_matches or declaration_matches or dble_matches:
+                    print(f"{input_path}(1): note: Run 'python tools/double_precision_conversion/convert_double.py \"{input_path}\"' to automatically fix these errors")
 
                 return True
 
             return False
 
         except PermissionError:
-            print(f"ERROR: Permission denied accessing {input_path}")
+            print(f"{input_path}(1): error: Permission denied accessing file.")
             return False
         except UnicodeDecodeError:
-            print(f"ERROR: Cannot decode {input_path} as UTF-8 (binary file?)")
+            print(f"{input_path}(1): error: Cannot decode file as UTF-8 (binary file?).")
             return False
         except Exception as e:
-            print(f"ERROR: Unexpected error checking {input_path}: {e}")
+            print(f"{input_path}(1): error: Unexpected error checking file: {e}")
             return False
 
     def check_directory(self, directory: Path, extensions: Optional[List[str]] = None) -> Tuple[int, int]:
@@ -405,6 +474,7 @@ Examples:
 Conversions performed:
   - Literals: 1d0 -> 1.0_dp, 2.5d-3 -> 2.5e-3_dp, etc.
   - Declarations: double precision :: var -> real(kind=dp) :: var
+  - Function calls: dble(x) -> real(x, kind=dp)
 
 Note: All conversions are done in-place. Use git for version control safety.
 The script automatically adds 'use precision, only: dp' when conversions are made.
@@ -448,7 +518,7 @@ The script automatically adds 'use precision, only: dp' when conversions are mad
             return 1
 
         if conversion_needed:
-            print("\nERROR: Files found that need double precision conversion!")
+            print("\nBuild failed: Double precision conversion errors found. See error list above.")
             return 1
         else:
             print("All files are already converted.")

@@ -605,7 +605,7 @@ contains
       allocate (tempdir(specin%nang))
       allocate (Dd(specin%nang))
       allocate (specin%ang(specin%nang))
-      specin%dang = 2 * par_pi / dble(naint - 1)
+      specin%dang = 2 * par_pi / real(naint - 1, kind=dp)
       do i = 1, specin%nang
          specin%ang(i) = (i - 1) * specin%dang
       end do
@@ -1523,7 +1523,7 @@ contains
       !
       ! Compute combined wave height
       do iloc = 1, nspectra
-         combspec%hm0 = combspec%hm0 + specinterp(iloc)%hm0**2 / dble(nspectra)
+         combspec%hm0 = combspec%hm0 + specinterp(iloc)%hm0**2 / real(nspectra, kind=dp)
       end do
       combspec%hm0 = sqrt(combspec%hm0)
 
@@ -1566,8 +1566,8 @@ contains
          combspec%S = combspec%S + wL(iloc) * specinterp(kL(iloc))%S + wR(iloc) * specinterp(kR(iloc))%S
          combspec%Sf = combspec%Sf + wL(iloc) * specinterp(kL(iloc))%Sf + wR(iloc) * specinterp(kR(iloc))%Sf
       end do
-      combspec%S = combspec%S / dble(npb)
-      combspec%Sf = combspec%Sf / dble(npb)
+      combspec%S = combspec%S / real(npb, kind=dp)
+      combspec%Sf = combspec%Sf / real(npb, kind=dp)
       !
       ! Calculate peak wave angle
       !
@@ -1614,7 +1614,7 @@ contains
       !
       ! Compute combined wave height
       do iloc = 1, nspectra
-         combspec%hm0 = combspec%hm0 + specinterp(iloc)%hm0**2 / dble(nspectra)
+         combspec%hm0 = combspec%hm0 + specinterp(iloc)%hm0**2 / real(nspectra, kind=dp)
       end do
       combspec%hm0 = sqrt(combspec%hm0)
 

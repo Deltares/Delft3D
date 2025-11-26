@@ -34,6 +34,7 @@
 !>    note: cell circumcenters are not updated (would require up-to-date lnn, lne)
 module m_makecell
 
+   use precision, only: dp
    implicit none
 
    private
@@ -82,7 +83,7 @@ contains
 !     keepExisting=.true. instead of keepExisting = .false.
 !     the array sizes are increased with an additional growfactor
       if (nump + 1 > size(xz)) then
-         numc = ceiling(growfac * dble(max(ndx + 1, nump + 1)))
+         numc = ceiling(growfac * real(max(ndx + 1, nump + 1), kind=dp))
          call realloc(xz, numc, stat=ierr, keepExisting=.true.)
          call aerr('xz(numc)', IERR, numc)
          call realloc(yz, numc, stat=ierr, keepExisting=.true.)

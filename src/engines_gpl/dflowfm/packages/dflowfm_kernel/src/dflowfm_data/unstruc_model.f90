@@ -2234,7 +2234,7 @@ contains
       if (success) then
          read (charbuf, *, iostat=iostat) ibuf, ti_split_unit
          if (iostat == 0) then
-            ti_split = dble(ibuf)
+            ti_split = real(ibuf, kind=dp)
             select case (ti_split_unit)
             case ('Y', 'M', 'D', 'h', 'm', 's')
                if (ti_split < 0.0_dp) then ! Invalid time value, error.
@@ -2574,7 +2574,7 @@ contains
       allocate (map_classes_ucdir(n - 1), stat=ierr)
       if (ierr /= 0) call aerr('map_classes_ucdir', ierr, n + 1)
       do i = 1, n - 1
-         map_classes_ucdir(i) = dble(i) * map_classes_ucdirstep
+         map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
    end subroutine createDirectionClasses
 

@@ -110,10 +110,10 @@ contains
                if (nsteps == ceiling((time_user - time0) / dtprev)) then
                   nsteps = max(1, nsteps - 1)
                end if
-               dts = (time_user - time0) / dble(nsteps)
+               dts = (time_user - time0) / real(nsteps, kind=dp)
                ! dtmax is always leading.
                if (dts > dt_max .or. dts > dtsc) then ! Fall back to smaller step anyway.
-                  dts = (time_user - time0) / dble(nsteps + 1)
+                  dts = (time_user - time0) / real(nsteps + 1, kind=dp)
                end if
             end if
 
@@ -127,7 +127,7 @@ contains
             ! NOTE: when the model has an extremely small timestep, nsteps gets an integer overflow,
             ! then becomes negative, so the max below sets nsteps=1, violating the dtmax requirement. (UNST-1926)
             nsteps = max(1, ceiling((time_user - time0) / dts))
-            dts = (time_user - time0) / dble(nsteps)
+            dts = (time_user - time0) / real(nsteps, kind=dp)
             !end if
          end if
       else

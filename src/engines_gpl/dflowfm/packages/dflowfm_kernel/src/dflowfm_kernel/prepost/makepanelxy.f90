@@ -166,9 +166,9 @@ contains
 
 !     knoopnummers uitdelen
       do J = 1, NC
-         Y = dble(J - 1) / dble(NC - 1)
+         Y = real(J - 1, kind=dp) / real(NC - 1, kind=dp)
          do I = 1, MC
-            X = dble(I - 1) / dble(MC - 1)
+            X = real(I - 1, kind=dp) / real(MC - 1, kind=dp)
             K = (J - 1) * MC + I + K0
             XKK = XPL(1) * (1 - X) * (1 - Y) + XPL(2) * (X) * (1 - Y) + &
                   XPL(3) * (X) * (Y) + XPL(4) * (1 - X) * (Y)

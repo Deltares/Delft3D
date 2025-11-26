@@ -90,11 +90,11 @@ contains
 !  i-dir
       ip1 = i0 + (jcur - 1) * MXSAM
       ip2 = i1 + (jcur - 1) * MXSAM
-      Dh = dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(i1 - i0), 1.0_dp)
+      Dh = dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(real(i1 - i0, kind=dp), 1.0_dp)
 !  j-dir
       ip1 = icur + (j1 - 1) * MXSAM
       ip2 = icur + (j1 - 1) * MXSAM
-      Dh = max(dh, dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(j1 - j0), 1.0_dp))
+      Dh = max(dh, dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(real(j1 - j0, kind=dp), 1.0_dp))
 
       do i = i0, i1
          do j = j0, j1
@@ -125,13 +125,13 @@ contains
 
             do isub = i00, i11
                if (i /= icur) then
-                  djsub = dble(isub - icur) / dble(i - icur) * dble(j - jcur) + jcur
+                  djsub = real(isub - icur, kind=dp) / real(i - icur, kind=dp) * real(j - jcur, kind=dp) + jcur
                else
                   djsub = 0.0_dp
                end if
                do jsub = j00, j11
                   if (j /= jcur) then
-                     disub = dble(jsub - jcur) / dble(j - jcur) * dble(i - icur) + icur
+                     disub = real(jsub - jcur, kind=dp) / real(j - jcur, kind=dp) * real(i - icur, kind=dp) + icur
                   else
                      disub = 0.0_dp
                   end if
@@ -154,7 +154,7 @@ contains
                   zs_ave = zs_ave + zs(iploc)
                end if
             end do
-            zs_ave = zs_ave / dble(max(num, 1))
+            zs_ave = zs_ave / real(max(num, 1), kind=dp)
 
 !!       plot samples in subpath
 !        do isub=1,Nlist
@@ -194,7 +194,7 @@ contains
                zs_max = zs_ave
 !          reallocate if necessary
                if (Nlist > ubound(ipsub, 1)) then
-                  Nsub = int(1.2_dp * dble(Nlist)) + 1
+                  Nsub = int(1.2_dp * real(Nlist, kind=dp)) + 1
                   ierror = -Nsub
                   goto 1234
                end if

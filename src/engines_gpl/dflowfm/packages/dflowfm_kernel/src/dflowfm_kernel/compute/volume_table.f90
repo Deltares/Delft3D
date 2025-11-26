@@ -162,7 +162,7 @@ contains
       real(kind=dp) :: heightIncrement
       index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
-      heightIncrement = max(0.0_dp, ((level - this%bedLevel) - dble(index - 1) * tableIncrement))
+      heightIncrement = max(0.0_dp, ((level - this%bedLevel) - real(index - 1, kind=dp) * tableIncrement))
 
       getVolumeVoltable = this%vol(index) + this%sur(index) * heightIncrement
 
@@ -229,7 +229,7 @@ contains
       real(kind=dp) :: heightIncrement
       index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
-      heightIncrement = ((level - this%bedLevel) - dble(index - 1) * tableIncrement)
+      heightIncrement = ((level - this%bedLevel) - real(index - 1, kind=dp) * tableIncrement)
 
       getVolumeDecreasingVoltable = this%volDecreasing(index) + this%surDecreasing(index) * heightIncrement
 

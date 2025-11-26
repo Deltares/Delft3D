@@ -72,7 +72,7 @@ contains
       else
          do k = 1, ndx
             if (itel(k) /= 0) then
-               bl(k) = ztel(k) / dble(itel(k))
+               bl(k) = ztel(k) / real(itel(k), kind=dp)
             end if
          end do
          if (allocated(itel)) deallocate (itel, ztel)

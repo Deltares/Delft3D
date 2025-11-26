@@ -270,7 +270,7 @@ contains
          call PUTARR(Xc, XH, MMAX, NMAX)
          call PUTARR(Yc, YH, MMAX, NMAX)
          if (NDRAW(8) == 0) then
-            call READYY(' ', dble(K) / dble(ITSMO))
+            call READYY(' ', real(K, kind=dp) / real(ITSMO, kind=dp))
          else
             call TEKGRD(Xc, Yc, mmax, nmax, M1, N1, M2, N2, NCOLDG, NDRAW(38), -1, mc) ! key=-1 is unknown (but unused anyway)
          end if
