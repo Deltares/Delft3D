@@ -41,6 +41,7 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+
    use m_cosphiunetcheck, only: cosphiunetcheck
    use m_flow_run_usertimestep, only: flow_run_usertimestep
    use m_flow_run_sometimesteps, only: flow_run_sometimesteps
@@ -87,6 +88,7 @@ module bmi
    use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
    use m_update_land_nodes
    use m_find_name, only: find_name
+   use precision, only: dp
 
    implicit none
 
@@ -624,7 +626,7 @@ contains
       att_name = char_array_to_string(c_att_name, strlen(c_att_name))
 
       ! Look up the value of att_name
-      value = -1.0d0
+      value = -1.0_dp
    end subroutine get_double_attribute
 
    subroutine get_int_attribute(c_att_name, value) bind(C, name="get_int_attribute")
@@ -2015,7 +2017,7 @@ contains
       use m_observations
       use m_monitoring_crosssections
       use m_strucs
-      use m_longculverts_data , only: longculverts
+      use m_longculverts_data, only: longculverts
       use m_structures, only: valdambreak
       use m_1d_structures
       use m_wind
@@ -2462,11 +2464,11 @@ contains
          if (.not. average_waterlevels_per_lateral%is_used) then
             ! Just in time initialization, update will be called at the end of flow_run_some_timesteps.
             call average_waterlevels_per_lateral%initialize(num_elements=numlatsg, &
-                               input_variable=s1, &
-                               weighing_variable=a1, &
-                               index_start=n1latsg, &
-                               index_end=n2latsg, & 
-                               index_to_node=nnlat)
+                                                            input_variable=s1, &
+                                                            weighing_variable=a1, &
+                                                            index_start=n1latsg, &
+                                                            index_end=n2latsg, &
+                                                            index_to_node=nnlat)
             call average_waterlevels_per_lateral%update()
          end if
 
