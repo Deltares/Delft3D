@@ -666,7 +666,9 @@ contains
       use m_flowparameters
       use m_dambreak_breach, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
-      use m_wind ! ,                  only : icdtyp, cdb, wdb,
+      use m_wind, only: icdtyp, cdb, wdb, jaheat_eachstep, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, pavini, pavbnd, &
+          jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext,jaevap, jawind, &
+          wdb, jaevap, jawind
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jasfer3D
@@ -2607,7 +2609,8 @@ contains
       use m_flowgeom ! ,              only : wu1Duni, Bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
-      use m_wind
+      use m_wind, only: jaspacevarcharn, jaheat_eachstep, icdtyp, cdb, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, &
+          pavbnd, pavini, jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqext, wdb, jaevap, jawind
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
