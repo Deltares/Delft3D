@@ -699,13 +699,14 @@ contains
       integer :: jDupLinks, jOverlapLinks, jSmallAng, maxlin
       double precision :: sl, sm, xcr, ycr
 
-      integer, allocatable :: KC2(:), KN2(:, :), KCK(:)
+      integer, allocatable :: KC2(:), KCK(:)
       double precision :: dmaxcosp, dcosp, costriangleminangle
 
       double precision :: X(4), Y(4)
 
-      integer, dimension(:), allocatable :: Lperm_new
-
+      integer, dimension(:), allocatable :: Lperm_new, valid_links, valid_link_types
+      integer, dimension(:, :), allocatable :: kn_new
+      integer num_1d_links, num_1d2d_links, num_2d_links, l1d2d, L_idx
       integer :: jacrosscheck ! remove 2D crossing netlinks (1) or not (0)
       integer :: japermout ! output permutation array (1) or not (0)
 
@@ -785,74 +786,61 @@ contains
          kc = 0
       end if
 
-      allocate (KN2(3, NUML)); KN2 = 0 ! RESERVE KN
+      allocate (kn_new(3, NUML)); kn_new = 0 ! RESERVE KN
 
-      L2 = 0; L1 = 0
       jathindams = 0
       lc = 0
       nlinkremoved = 0
-      do L = 1, NUML ! LINKS AANSCHUIVEN, 1d EERST
-         K1 = KN(1, L); K2 = KN(2, L); K3 = KN(3, L)
-         if (k3 == 0) then
-            jathindams = 1
+      if (any(kn(3, :) == 0)) then
+         jathindams = 1
+      end if
+      valid_links = pack([(L, L=1, NUML)], is_valid_link([(L, L=1, NUML)], kn(1, 1:NUML), kn(2, 1:NUML), kn(3, 1:NUML)))
+
+      valid_link_types = kn(3, valid_links)
+
+      num_1d_links = count(valid_link_types == LINK_1D .or. valid_link_types == LINK_1D_MAINBRANCH)
+      num_1d2d_links = count(is_1d2d_type(valid_link_types))
+      num_2d_links = count(valid_link_types == 0 .or. valid_link_types == LINK_2D)
+
+      l1 = 0
+      l1d2d = num_1d_links
+      l2 = num_1d_links + num_1d2d_links
+
+      do L_idx = 1, size(valid_links)
+         L = valid_links(L_idx)
+         K1 = kn(1, L)
+         K2 = kn(2, L)
+         K3 = kn(3, L)
+
+         if (K3 == LINK_1D) then
+            l1 = l1 + 1
+            kn_new(1:3, l1) = [K1, K2, K3]
+            if (japermout == 1) Lperm_new(l1) = Lperm(L)
+         else if (is_1d2d_type(K3)) then
+            l1d2d = l1d2d + 1
+            kn_new(1:3, l1d2d) = [K1, K2, K3]
+            if (japermout == 1) Lperm_new(l1d2d) = Lperm(L)
+         else if (K3 == 0 .or. K3 == 2) then
+            l2 = l2 + 1
+            kn_new(1:3, l2) = [K1, K2, K3]
+            if (japermout == 1) Lperm_new(l2) = Lperm(L)
          end if
-         ja = 0
-         if (K1 /= 0 .and. K2 /= 0 .and. K1 /= K2) then
-            JA = 1
-            if (XK(K1) == DMISS .or. XK(K2) == DMISS) then ! EXTRA CHECK: ONE MISSING
-               JA = 0
-            else !            : OR BOTH EQUAL
-               if ((K3 == 1 .or. k3 == 6) .and. allocated(dxe)) then ! User-defined net link lengths
-                  if (dxe(L) /= dmiss .and. dxe(L) <= 0d0) then ! X/Y of K1, K2 may be equal, as long as length > 0
-                     ja = 0
-                  end if
-               else if (XK(K1) == XK(K2) .and. YK(K1) == YK(K2)) then
-                  JA = 0
-               end if
-            end if
-            if (JA == 1) then
-               if (K3 == 0 .or. K3 == 2) then
-                  L2 = L2 + 1
-                  KN2(1, L2) = K1; KN2(2, L2) = K2; KN2(3, L2) = K3
-                  if (japermout == 1) then
-                     Lperm_new(numL - L2 + 1) = Lperm(L) ! fill 2D links from the back of the temp. array
-                  end if
-               else if (K3 == 1 .or. K3 > 2) then
-                  L1 = L1 + 1
-                  KN(1, L1) = K1; KN(2, L1) = K2; KN(3, L1) = K3
-                  if (japermout == 1) then
-                     Lperm_new(L1) = Lperm(L) ! fill 1D links from the start of the temp. array
-                  end if
-               end if
-               KC(K1) = 1; KC(K2) = 1
-            end if
-         end if
-         if (ja == 0) then
-            ! save removed links, so the flow1d admin can be updated later on
-            nlinkremoved = nlinkremoved + 1
-            LC(nlinkremoved) = L
-         end if
+         KC(K1) = 1
+         KC(K2) = 1
       end do
+      deallocate (valid_link_types)
+      kn(:, 1:numl) = kn_new(:, 1:numl)
 
       if (japermout == 1) then
          !     copy 1D and flip 2D values from the temp. to the permutation array
-         do L = 1, L1
+         do L = 1, L2
             Lperm(L) = Lperm_new(L)
             Lperminv(Lperm(L)) = L
          end do
-         do L = 1, L2
-            Lperm(L1 + L) = Lperm_new(numL - L + 1)
-            Lperminv(Lperm(L1 + L)) = L1 + L
-         end do
       end if
 
-      NUML1D = L1
-      NUML = L1 + L2
-
-      do L = 1, L2
-         LL = NUML1D + L
-         KN(:, LL) = KN2(:, L) ! 2D na 1D
-      end do
+      NUML1D = num_1d_links + num_1d2d_links
+      NUML = NUML1D + num_2d_links
 
       allocate (KC2(NUMK))
       KK = 0
@@ -868,27 +856,16 @@ contains
             if (japermout == 1) then
                nodePermutation(k) = kk ! k is old node number, kk is new number
             end if
-            !else
-            !   write (msgbuf, '(a,i0,a)') 'setnodadm: removed mesh node #', K, ' (missing, or not connected in any mesh edge).'
-            !   call warn_flush()
          end if
       end do
-      !if (numk /= KK) then
-      !   write (msgbuf, '(a,i0,a,i0,a,i0,a)') 'setnodadm: ', (NUMK-KK), ' mesh nodes were removed. Input: ', NUMK, ' nodes. New: ', KK, ' nodes. See preceding messages for details.'
-      !   call warn_flush()
-      !end if
       NUMK = KK
 
       do L = 1, NUML
-         K1 = KN(1, L); K2 = KN(2, L); K3 = KN(3, L)
-         K12 = KC2(K1); K22 = KC2(K2)
-         KN2(1, L) = K12; KN2(2, L) = K22; KN2(3, L) = K3
+         kn(1, L) = KC2(kn(1, L))
+         kn(2, L) = KC2(kn(2, L))
       end do
 
-      KN(:, 1:NUML) = KN2(:, 1:NUML) ! TERUGZETTEN
       KC(1:NUMK) = KCK(1:NUMK)
-
-      deallocate (KC2, KN2, KCK) ! WEGWEZEN
 
       NMK = 0
       do L = 1, NUML ! TEL LINKS PER NODE
@@ -899,7 +876,6 @@ contains
 
       do K = 1, NUMK ! ALLOCEER RUIMTE
          if (NMK(K) > 0) then
-            !call REALLOC(NOD(K)%LIN, NMK(K), keepexisting = .false. )
             if (allocated(NOD(K)%LIN)) then
                deallocate (NOD(K)%LIN)
             end if
@@ -4531,5 +4507,44 @@ contains
       dLinkangle = atan2(dy, dx)
       return
    end function dLinkangle
+
+   !> Determines if a network link is valid for processing.
+   !! A link is considered valid if it connects two different, non-zero nodes
+   !! with valid coordinates. Special conditions apply for user-defined link lengths.
+   elemental function is_valid_link(L, K1, K2, K3) result(ja)
+      use network_data
+      use m_missing, only: dmiss
+      implicit none
+      integer, intent(in) :: L !< link to determine validity for
+      integer, intent(in) :: K1, K2, K3 !< start node, end node, link type, entries of kn(1:3,L)
+      logical :: ja
+
+      ja = 0
+      if (K1 /= 0 .and. K2 /= 0 .and. K1 /= K2) then
+         JA = 1
+         if (XK(K1) == DMISS .or. XK(K2) == DMISS) then ! EXTRA CHECK: ONE MISSING
+            JA = 0
+         else !            : OR BOTH EQUAL
+            if ((K3 == 1 .or. k3 == 6) .and. allocated(dxe)) then ! User-defined net link lengths
+               if (dxe(L) /= dmiss .and. dxe(L) <= 0d0) then ! X/Y of K1, K2 may be equal, as long as length > 0
+                  ja = 0
+               end if
+            else if (XK(K1) == XK(K2) .and. YK(K1) == YK(K2)) then
+               JA = 0
+            end if
+         end if
+      end if
+
+   end function is_valid_link
+
+   !> Determines if a network link is of 1D2D type based on kn(3,L) link code
+   elemental function is_1D2D_type(K3) result(res)
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
+      integer, intent(in) :: k3 !< link type, entry of kn(3,L)
+      logical :: res
+
+      res = (K3 == LINK_1D2D_INTERNAL .or. K3 == LINK_1D2D_LONGITUDINAL .or. K3 == LINK_1D2D_STREETINLET .or. k3 == LINK_1D2D_ROOF)
+
+   end function is_1D2D_type
 
 end module gridoperations
