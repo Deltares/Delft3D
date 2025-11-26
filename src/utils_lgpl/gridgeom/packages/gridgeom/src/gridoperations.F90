@@ -705,7 +705,7 @@ contains
       double precision :: X(4), Y(4)
 
       integer, dimension(:), allocatable :: Lperm_new, valid_links, valid_link_types
-      integer, dimension(:,:), allocatable :: kn_new
+      integer, dimension(:, :), allocatable :: kn_new
       integer num_1d_links, num_1d2d_links, num_2d_links, l1d2d, L_idx
       integer :: jacrosscheck ! remove 2D crossing netlinks (1) or not (0)
       integer :: japermout ! output permutation array (1) or not (0)
@@ -798,21 +798,21 @@ contains
 
       if (size(valid_links) > 0) then
          valid_link_types = kn(3, valid_links)
-      
+
          num_1d_links = count(valid_link_types == LINK_1D .or. valid_link_types == LINK_1D_MAINBRANCH)
-         num_1d2d_links = count(is_1d2d_link(valid_links,valid_link_types))
+         num_1d2d_links = count(is_1d2d_link(valid_links, valid_link_types))
          num_2d_links = count(valid_link_types == 0 .or. valid_link_types == LINK_2D)
-      
+
          l1 = 0
          l1d2d = num_1d_links
          l2 = num_1d_links + num_1d2d_links
-      
+
          do L_idx = 1, size(valid_links)
             L = valid_links(L_idx)
             K1 = kn(1, L)
             K2 = kn(2, L)
             K3 = kn(3, L)
-      
+
             if (K3 == LINK_1D) then
                l1 = l1 + 1
                kn_new(1:3, l1) = [K1, K2, K3]
@@ -830,8 +830,8 @@ contains
             KC(K1) = 1
             KC(K2) = 1
          end do
-         deallocate(valid_link_types)
-         kn(:,1:numl) = kn_new(:, 1:numl)
+         deallocate (valid_link_types)
+         kn(:, 1:numl) = kn_new(:, 1:numl)
       end if
 
       if (japermout == 1) then
@@ -845,7 +845,7 @@ contains
       NUML1D = num_1d_links + num_1d2d_links
       NUML = NUML1D + num_2d_links
 
-     allocate (KC2(NUMK))
+      allocate (KC2(NUMK))
       KK = 0
       do K = 1, NUMK ! NODES AANSCHUIVEN
          if (KC(K) /= 0) then
@@ -4543,7 +4543,7 @@ contains
    end function is_valid_link
 
    elemental function is_1D2D_link(L, K3) result(res)
-   use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
       integer, intent(in) :: L, k3
       logical :: res
 

@@ -88,8 +88,8 @@ module bmi
    use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
    use m_update_land_nodes
    use m_find_name, only: find_name
+   use precision, only: dp
 
-use precision, only: dp
    implicit none
 
    ! Define some global constants
@@ -2017,7 +2017,7 @@ contains
       use m_observations
       use m_monitoring_crosssections
       use m_strucs
-      use m_longculverts_data , only: longculverts
+      use m_longculverts_data, only: longculverts
       use m_structures, only: valdambreak
       use m_1d_structures
       use m_wind
@@ -2464,11 +2464,11 @@ contains
          if (.not. average_waterlevels_per_lateral%is_used) then
             ! Just in time initialization, update will be called at the end of flow_run_some_timesteps.
             call average_waterlevels_per_lateral%initialize(num_elements=numlatsg, &
-                               input_variable=s1, &
-                               weighing_variable=a1, &
-                               index_start=n1latsg, &
-                               index_end=n2latsg, & 
-                               index_to_node=nnlat)
+                                                            input_variable=s1, &
+                                                            weighing_variable=a1, &
+                                                            index_start=n1latsg, &
+                                                            index_end=n2latsg, &
+                                                            index_to_node=nnlat)
             call average_waterlevels_per_lateral%update()
          end if
 
