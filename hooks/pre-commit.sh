@@ -21,17 +21,6 @@ prompt_user() {
     cat > "$tmpfile" << 'EOF_HEADER'
 # DVC PRE-COMMIT HOOK
 # ===================
-#
-# DVC changes were detected. Please review the changes below and decide
-# whether to update DVC tracking.
-#
-# INSTRUCTIONS:
-# - To PROCEED with updating DVC tracking: keep ANSWER=yes
-# - To SKIP updating DVC tracking: change ANSWER=yes to ANSWER=no
-# - Save and close this file to continue
-#
-# ----------------------------------------------------------------------------
-
 EOF_HEADER
     
     # Add context information if provided
@@ -43,9 +32,13 @@ EOF_HEADER
     fi
     
     cat >> "$tmpfile" << EOF
-
-# Question: $message
-
+# INSTRUCTIONS:
+# - To PROCEED with updating DVC tracking: keep ANSWER=yes
+# - To SKIP updating DVC tracking: change ANSWER=yes to ANSWER=no
+# - Save and close this file to continue
+#
+# ----------------------------------------------------------------------------
+# $message
 ANSWER=yes
 EOF
     
