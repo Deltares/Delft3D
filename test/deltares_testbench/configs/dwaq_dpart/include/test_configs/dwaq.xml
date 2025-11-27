@@ -6701,7 +6701,7 @@
 
     <!-- Test cases for "new" bloom tests-->
     <testCase name="e03_f06_c01_blmdef" ref="dwaq_default">
-        <path version="2025-06-25T22:20:00">e03_waq/f06_bloom_new/c01_blmdef</path>
+        <path version="2025-11-27T15:12:17.810000">e03_waq/f06_bloom_new/c01_blmdef</path>
         <checks>
             <file name="n_blmdef.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6750,7 +6750,7 @@
         </checks>
     </testCase>
      <testCase name="e03_f06_c02_blmlcm" ref="dwaq_default">
-        <path version="2025-06-25T22:20:00">e03_waq/f06_bloom_new/c02_blmclm</path>
+        <path version="2025-11-27T15:13:31.551000">e03_waq/f06_bloom_new/c02_blmclm</path>
         <checks>
             <file name="n_blmclm.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6799,7 +6799,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f06_c03_blmmix" ref="dwaq_default">
-        <path version="2025-06-25T22:20:00">e03_waq/f06_bloom_new/c03_blmmix</path>
+        <path version="2025-11-27T15:12:20.191000">e03_waq/f06_bloom_new/c03_blmmix</path>
         <checks>
             <file name="n_blmmix.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -6850,7 +6850,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f06_c04_blmnfx" ref="dwaq_default">
-        <path version="2025-06-25T22:20:00">e03_waq/f06_bloom_new/c04_blmnfx</path>
+        <path version="2025-11-27T15:12:21.756000">e03_waq/f06_bloom_new/c04_blmnfx</path>
         <checks>
             <file name="n_blmnfx.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
