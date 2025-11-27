@@ -72,8 +72,8 @@ contains
          write (msgbu, '(a)') '* Hwang 2005, wave frequency dependent (fixed parameters + wave period)'
       else if (wind_drag_type == CD_TYPE_WUEST2003) then
          write (msgbu, '(a)') '* Wuest 2003 & Smith en Banke (fixed parameters)'
-      else if (wind_drag_type == CD_TYPE_GARRATT1977) then
-         write (msgbu, '(a)') '* Hans Hersbach, July 2010, ECMWF fit (CHarnock plus viscous term), (e.g. Charnock=0.018 and alfvisc=0.11)'
+      else if (wind_drag_type == CD_TYPE_HERSBACH2011) then
+         write (msgbu, '(a)') '* Hans Hersbach, 2011, ECMWF fit (Charnock plus viscous term), (e.g. Charnock=0.018 and alfvisc=0.11)'
       else if (wind_drag_type == CD_TYPE_CHARNOCK_PLUS_VISCOUS) then
          write (msgbu, '(a)') '* Charnock 1955 (2 parameters, Charnock plus viscous, e.g. 0.025     0.11)'
       else if (wind_drag_type == CD_TYPE_GARRATT1977) then

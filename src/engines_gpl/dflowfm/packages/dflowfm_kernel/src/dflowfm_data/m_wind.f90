@@ -114,7 +114,7 @@ module m_wind
    integer, parameter :: CD_TYPE_CHARNOCK1955 = 4
    integer, parameter :: CD_TYPE_HWANG2005 = 5
    integer, parameter :: CD_TYPE_WUEST2003 = 6
-   integer, parameter :: CD_TYPE_HERSBACH2010 = 7
+   integer, parameter :: CD_TYPE_HERSBACH2011 = 7
    integer, parameter :: CD_TYPE_CHARNOCK_PLUS_VISCOUS = 8
    integer, parameter :: CD_TYPE_GARRATT1977 = 9
 

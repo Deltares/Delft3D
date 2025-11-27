@@ -44,7 +44,7 @@ contains
    subroutine setcdwcoefficient(uwi, cd10, L)
       use precision, only: dp
       use m_wind, only: wind_drag_type, cdb, wdb, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
-          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2010, &
+          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
           CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
       use m_physcoef, only: vonkarw, viskinair
       use m_missing, only: dmiss
@@ -163,7 +163,8 @@ contains
             cd10 = 0.0044_dp / awin**1.15_dp
          end if
 
-      else if (wind_drag_type == CD_TYPE_GARRATT1977) then ! Hans Hersbach, July 2010, ECMWF fit (CHarnock plus viscous term)
+      else if (wind_drag_type == CD_TYPE_HERSBACH2011) then ! Hans Hersbach, 2011, ECMWF fit (Charnock plus viscous term)
+         ! Hersbach, H. (2011). Sea surface roughness and drag coefficient as functions of neutral wind speed. Journal of Physical Oceanography, 41(1), 247-251.
          ! https://journals.ametsoc.org/doi/full/10.1175/2010JPO4567.1
          A = (cdb(1) * (vonkarw * uwi)**2) / (ag * hsurf)
          A10log = log(A) ! (2) shows that log actually means: ln
@@ -188,7 +189,7 @@ contains
 
       end if
 
-      if (jalightwind == 1 .and. wind_drag_type /= CD_TYPE_CHARNOCK_PLUS_VISCOUS .and. wind_drag_type /= CD_TYPE_HERSBACH2010 .and. wind_drag_type /= CD_TYPE_WUEST2003 .and. wind_drag_type /= CD_TYPE_HWANG2005) then
+      if (jalightwind == 1 .and. wind_drag_type /= CD_TYPE_CHARNOCK_PLUS_VISCOUS .and. wind_drag_type /= CD_TYPE_HERSBACH2011 .and. wind_drag_type /= CD_TYPE_WUEST2003 .and. wind_drag_type /= CD_TYPE_HWANG2005) then
          if (uwi < 4.0_dp) then ! for wind < 4 m/s use wuest anyway
             awin = max(0.1_dp, uwi)
             cd10 = max(cd10, 0.0044_dp / awin**1.15_dp)
