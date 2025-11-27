@@ -12258,7 +12258,7 @@ contains
       type(t_ug_meshgeom) :: meshgeom
 
       ! 1d2d links
-      integer :: ncontacts, ncontactmeshes, koffset1dmesh
+      integer :: ncontacts, ncontactnodes, ncontactmeshes, koffset1dmesh
       integer, allocatable :: mesh1indexes(:), mesh2indexes(:), contacttype(:)
       integer :: mesh1_topo_dim, mesh2_topo_dim
       character(len=80), allocatable :: contactslongnames(:)
@@ -12628,7 +12628,6 @@ contains
       do im = 1, ncontactmeshes
 
          ierr = ionc_get_contacts_count_ugrid(ioncid, im, ncontacts)
-         ierr = ionc_get_contacts_topology_dimensions(ioncid, im, mesh1_topo_dim, mesh2_topo_dim) ! networkIndex not used here
          call realloc(mesh1indexes, ncontacts, keepExisting=.false.)
          call realloc(mesh2indexes, ncontacts, keepExisting=.false.)
          call realloc(contactslongnames, ncontacts, keepExisting=.false.)
@@ -12644,9 +12643,20 @@ contains
          ierr = ionc_get_contact_name(ioncid, im, contactname)
 
          numerr = 0
-         call increasenetw(numk_last + ncontacts, numl_last + ncontacts)
-         do l = 1, ncontacts
-            if (contacttype(L) < 3) then
+         ierr = ionc_get_contacts_topology_dimensions(ioncid, im, mesh1_topo_dim, mesh2_topo_dim) ! networkIndex not used here
+
+         !> for now we assume mesh2_topo_dim is always 2 (a 2D mesh)
+         if (mesh1_topo_dim == 2) then
+            ncontactnodes = ncontacts * 2
+         else if (mesh1_topo_dim == 1) then
+            ncontactnodes = ncontacts
+         else
+            !TODO: throw error
+         end if
+
+         call increasenetw(numk_last + ncontactnodes, numl_last + ncontacts)
+         do L = 1, ncontacts
+            if (contacttype(l) < 3) then
                numerr = numerr + 1
                if (numerr <= MAXERRPRINT) then
                   write (msgbuf, '(a,a,a,i0,a,i0,a)') 'Error while reading net file ''', trim(filename), ''', contact type of link ', &
@@ -12658,20 +12668,27 @@ contains
 
                cycle
             end if
-
+            contact1d2didx(1, contactnlinks + L) = mesh1indexes(L)
+            contact1d2didx(2, contactnlinks + L) = mesh2indexes(L)
+            contactnetlinks(contactnlinks + L) = numl_last + L
+            
+            ! new 2D node coordinates            
             XK(numk_last + l) = xface(mesh2indexes(l))
             YK(numk_last + l) = yface(mesh2indexes(l))
 
-            contact1d2didx(1, contactnlinks + L) = mesh1indexes(L)
-            contact1d2didx(2, contactnlinks + L) = mesh2indexes(L)
-            if (nodesOnBranchVertices == 1) then
-               kn(1, numl_last + l) = mesh1dUnmergedToMerged(mesh1indexes(l))
-            else
-               kn(1, numl_last + l) = mesh1indexes(l)
+            if (mesh1_topo_dim == 2) then
+               XK(numk_last + ncontacts + l) = xface(mesh1indexes(l))
+               YK(numk_last + ncontacts + l) = yface(mesh1indexes(l))
+               kn(1, numl_last + l) = numk_last + ncontacts + l
+            else if (mesh1_topo_dim == 1) then
+               if (nodesOnBranchVertices == 1) then
+                  kn(1, numl_last + l) = mesh1dUnmergedToMerged(mesh1indexes(l))
+               else
+                  kn(1, numl_last + l) = mesh1indexes(l)
+               end if
             end if
             kn(2, numl_last + l) = numk_last + l
             kn(3, numl_last + l) = contacttype(l)
-            contactnetlinks(contactnlinks + L) = numl_last + L
          end do
 
          if (numerr > 0) then
@@ -12681,10 +12698,10 @@ contains
          end if
 
          ! Set the ZK to dmiss
-         ZK(numk_last + 1:numk_last + ncontacts) = dmiss
+         ZK(numk_last + 1:numk_last + ncontactnodes) = dmiss
 
-         numk_read = numk_read + ncontacts
-         numk_last = numk_last + ncontacts
+         numk_read = numk_read + ncontactnodes
+         numk_last = numk_last + ncontactnodes
 
          numl_read = numl_read + ncontacts
          numl_last = numl_last + ncontacts
