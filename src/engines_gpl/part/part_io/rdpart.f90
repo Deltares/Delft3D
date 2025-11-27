@@ -172,6 +172,32 @@ contains
         write (lun2, 1997) cbuffer
         write (*, 1997) cbuffer
 
+        !     accept sigma-z layers?
+
+        accept_sigma_z = .false.
+        block
+            integer :: idummy, type
+            real    :: rdummy
+            logical :: success
+
+            if (gettoken(cbuffer, idummy, rdummy, type, ierr2) /= 0) goto 4004
+
+            if ( type == 1 ) then
+                if ( cbuffer == 'accept-sigma-z-layers' ) then
+                    accept_sigma_z = .true.
+                elseif ( cbuffer == 'no-sigma-z-layers' ) then
+                    accept_sigma_z = .false.
+                endif
+
+                if (gettoken(modtyp, ierr2) /= 0) goto 11
+            elseif ( type == 2 ) then
+                modtyp = idummy
+            else
+                goto 11
+            endif
+        end block
+
+
         !     read modeltype , and number of tracks, extra number of output substances and option for sed/erosion
         !
         !     Type of model: 1 - tracer (basic module)
@@ -182,7 +208,6 @@ contains
         !                    6 - Probabilistic density driven settling model
         !                    7 - ABM model
 
-        if (gettoken(modtyp, ierr2) /= 0) goto 11
         if (gettoken(notrak, ierr2) /= 0) goto 11
         if (gettoken(idummy, ierr2) /= 0) goto 11
         if (gettoken(ioption, ierr2) /= 0) goto 11
@@ -2248,6 +2273,8 @@ contains
         4002  write(*, *) 'Error: 4 title strings can not be read correctly'
         call stop_exit(1)
         4003  write(*, *) 'Error: name of hyd file can not be read correctly'
+        call stop_exit(1)
+        4004  write(*, *) 'Error: optional keyword can not be read correctly'
         call stop_exit(1)
         4007  write(*, *) &
                 'Error: numerical scheme or time-step can not be read correctly'
