@@ -2,61 +2,6 @@
 
 set -e  # Exit on error
 
-# Function to prompt user via temporary file (GUI-friendly)
-prompt_user() {
-    local message=$1
-    local context_file=$2  # Optional file containing detailed context
-    
-    # Use temporary file approach for prompting
-    local tmpfile=$(mktemp /tmp/git-dvc-prompt.XXXXXX)
-    
-    cat > "$tmpfile" << 'EOF_HEADER'
-EOF_HEADER
-    # Add context information if provided
-    if [ -n "$context_file" ] && [ -f "$context_file" ]; then
-        echo "# ----------------------------------------------------------------------------" >> "$tmpfile"
-        cat "$context_file" >> "$tmpfile"
-        echo "# ----------------------------------------------------------------------------" >> "$tmpfile"
-    fi
-    
-    cat >> "$tmpfile" << EOF
-# INSTRUCTIONS:
-# - To PROCEED with updating DVC tracking: keep ANSWER=yes
-# - To SKIP updating DVC tracking: change ANSWER=yes to ANSWER=no
-# - Save and close this file to continue
-# ----------------------------------------------------------------------------
-
-# $message
-
-ANSWER=yes
-EOF
-    
-    # Try to open in editor
-    if [ -n "$VISUAL" ]; then
-        $VISUAL "$tmpfile"
-    elif [ -n "$EDITOR" ]; then
-        $EDITOR "$tmpfile"
-    elif command -v code &> /dev/null; then
-        code --wait "$tmpfile" 2>/dev/null || nano "$tmpfile" 2>/dev/null || vi "$tmpfile"
-    elif command -v nano &> /dev/null; then
-        nano "$tmpfile"
-    else
-        vi "$tmpfile"
-    fi
-    
-    # Read the answer
-    local answer=$(grep "^ANSWER=" "$tmpfile" | cut -d= -f2)
-    rm -f "$tmpfile"
-    
-    if [[ "$answer" =~ ^[Yy]es$ ]]; then
-        echo "y"
-        return 0
-    else
-        echo "n"
-        return 0
-    fi
-}
-
 readonly MAX_FILES_TO_SHOW=20
 
 # Extract value from .dvc file
@@ -186,16 +131,12 @@ show_file_changes() {
 prompt_and_update() {
     local tracked_dir=$1
     local dvc_file=$2
-    local context_file=$3  # File containing the detailed changes
+    local tmpfile=$3
     
-    local confirm=$(prompt_user "Do you want to update DVC tracking for '$tracked_dir'? [y/N]: " "$context_file")
+    # Check if the line starts with "push" (not commented out)
+    local answer=$(grep "^push $tracked_dir" "$tmpfile" 2>/dev/null)
     
-    if [ $? -ne 0 ]; then
-        echo "Commit aborted due to unhandled DVC changes."
-        exit 1
-    fi
-    
-    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    if [ -n "$answer" ]; then
         echo "Updating DVC tracking for '$tracked_dir'..."
         if dvc add "$tracked_dir" --verbose; then
             git add "$dvc_file"
@@ -207,46 +148,102 @@ prompt_and_update() {
     else
         echo "Skipped updating '$tracked_dir'."
     fi
-    echo
 }
 
 # Main loop
+# First, collect all changed DVC directories
+changed_dirs=()
 for dvc_file in $(git ls-files '*.dvc'); do
     tracked_dir="${dvc_file%.dvc}"
     
     [ ! -d "$tracked_dir" ] && continue
     
     dvc_status_output=$(dvc status "$dvc_file" 2>/dev/null)
-    echo "$dvc_status_output" | grep -q "modified:" || continue
+    if echo "$dvc_status_output" | grep -q "modified:"; then
+        changed_dirs+=("$tracked_dir|$dvc_file")
+    fi
+done
+
+# Exit if no changes
+if [ ${#changed_dirs[@]} -eq 0 ]; then
+    exit 0
+fi
+
+# Create a single prompt file for all directories
+prompt_file=$(mktemp /tmp/git-dvc-prompt-all.XXXXXX)
+
+# Add summary section for each directory
+for entry in "${changed_dirs[@]}"; do
+    tracked_dir="${entry%|*}"
     
-    # Create a context file with all the information
-    context_file=$(mktemp /tmp/git-dvc-context.XXXXXX)
+    echo "push $tracked_dir" >> "$prompt_file"
+done
+
+cat >> "$prompt_file" << 'EOF'
+
+# ==============================================================================
+# INSTRUCTIONS
+# ==============================================================================
+# - To UPDATE a directory: push <directory>
+# - To SKIP a directory: skip <directory>
+# - Save and close this file to continue
+
+EOF
+
+# Add detailed information for each directory
+idx=1
+for entry in "${changed_dirs[@]}"; do
+    tracked_dir="${entry%|*}"
+    dvc_file="${entry#*|}"
     
     {
-        echo "# Detected changes in '$tracked_dir'"
+        echo "# =============================================================================="
+        echo "# [$idx] DETAILS FOR: $tracked_dir"
         echo "# DVC file: $dvc_file"
+        echo "# =============================================================================="
         echo "#"
-        echo "# DVC Status:"
-        echo "$dvc_status_output" | sed 's/^/# /'
+        
+        # dvc_status_output=$(dvc status "$dvc_file" 2>/dev/null)
+        # echo "# DVC Status:"
+        # echo "$dvc_status_output" | sed 's/^/# /'
+        # echo "#"
+        
+        show_directory_summary "$tracked_dir" "$dvc_file" | sed 's/^/# /'
+        show_file_changes "$tracked_dir" "$dvc_file" | sed 's/^/# /'
         echo "#"
-    } > "$context_file"
-    
-    # Capture directory summary
-    show_directory_summary "$tracked_dir" "$dvc_file" | sed 's/^/# /' >> "$context_file"
-    
-    # Capture file changes
-    show_file_changes "$tracked_dir" "$dvc_file" | sed 's/^/# /' >> "$context_file"
+    } >> "$prompt_file"
     
     # Also display to terminal/output
-    echo "Detected changes in '$tracked_dir' (DVC file: $dvc_file)"
-    echo "$dvc_status_output"
-    echo
-    show_directory_summary "$tracked_dir" "$dvc_file"
-    show_file_changes "$tracked_dir" "$dvc_file"
+    # echo "Detected changes in '$tracked_dir' (DVC file: $dvc_file)"
+    # echo "$dvc_status_output"
+    # echo
+    # show_directory_summary "$tracked_dir" "$dvc_file"
+    # show_file_changes "$tracked_dir" "$dvc_file"
+    # echo
     
-    # Prompt with context
-    prompt_and_update "$tracked_dir" "$dvc_file" "$context_file"
-    
-    # Clean up context file
-    rm -f "$context_file"
+    idx=$((idx + 1))
 done
+
+# Open the file in editor
+if [ -n "$VISUAL" ]; then
+    $VISUAL "$prompt_file"
+elif [ -n "$EDITOR" ]; then
+    $EDITOR "$prompt_file"
+elif command -v code &> /dev/null; then
+    code --wait "$prompt_file" 2>/dev/null || nano "$prompt_file" 2>/dev/null || vi "$prompt_file"
+elif command -v nano &> /dev/null; then
+    nano "$prompt_file"
+else
+    vi "$prompt_file"
+fi
+
+# Process answers for each directory
+for entry in "${changed_dirs[@]}"; do
+    tracked_dir="${entry%|*}"
+    dvc_file="${entry#*|}"
+    
+    prompt_and_update "$tracked_dir" "$dvc_file" "$prompt_file"
+done
+
+# Clean up
+rm -f "$prompt_file"
