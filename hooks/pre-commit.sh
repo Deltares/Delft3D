@@ -147,15 +147,15 @@ prompt_and_update() {
             exit 1
         fi
     elif [ -n "$revert_line" ]; then
-        echo "Reverting '$tracked_dir' to last tracked state..."
+        echo "Reverting DVC directory '$tracked_dir' to last tracked state..."
         if dvc checkout "$dvc_file" --force; then
-            echo "Successfully reverted '$tracked_dir'"
+            echo "Successfully reverted DVC directory '$tracked_dir'"
         else
-            echo "Error: Failed to revert '$tracked_dir'"
+            echo "Error: Failed to revert DVC directory '$tracked_dir'"
             exit 1
         fi
     else
-        echo "Skipped updating '$tracked_dir'."
+        echo "Skipped updating DVC directory '$tracked_dir'."
     fi
 }
 
