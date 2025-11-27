@@ -79,7 +79,6 @@ object LinuxCollect : BuildType({
             param("nexus_password", "%nexus_password%")
             param("nexus_repo", "/delft3d-dev")
             param("nexus_url", "https://artifacts.deltares.nl/repository")
-            param("plugin.docker.run.parameters", "")
             param("target_path", "/07_day_retention/dimrset/%file_path%")
         }
     }

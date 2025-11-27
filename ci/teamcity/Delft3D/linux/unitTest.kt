@@ -28,6 +28,7 @@ object LinuxUnitTest : BuildType({
     params {
         param("env.PATH", "%teamcity.build.checkoutDir%/lnx64/bin:%env.PATH%")
         param("env.LD_LIBRARY_PATH", "%teamcity.build.checkoutDir%/lnx64/lib:%env.LD_LIBRARY_PATH%")
+        param("file_path", "dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
     }
 
     vcs {
@@ -41,24 +42,20 @@ object LinuxUnitTest : BuildType({
             name = "Download artifact from Nexus"
             type = "RawDownloadNexusLinux"
             executionMode = BuildStep.ExecutionMode.DEFAULT
-            param("artifact_path", "/07_day_retention/dimrset/dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
+            param("artifact_path", "/07_day_retention/dimrset/%file_path%")
             param("nexus_repo", "/delft3d-dev")
             param("nexus_username", "%nexus_username%")
-            param("plugin.docker.imagePlatform", "")
-            param("plugin.docker.imageId", "")
-            param("teamcity.step.phase", "")
             param("download_to", ".")
             param("nexus_password", "%nexus_password%")
             param("nexus_url", "https://artifacts.deltares.nl/repository")
-            param("plugin.docker.run.parameters", "")
         }
         script {
             name = "Extract artifact"
             enabled = false
             scriptContent = """
-                echo "Extracting dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz..."
+                echo "Extracting %file_path%..."
 
-                tar -xzf dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz
+                tar -xzf %file_path%
             """.trimIndent()
         }
         python {
