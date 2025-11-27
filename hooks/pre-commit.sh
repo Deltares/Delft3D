@@ -133,16 +133,25 @@ prompt_and_update() {
     local dvc_file=$2
     local tmpfile=$3
     
-    # Check if the line starts with "push" (not commented out)
-    local answer=$(grep "^push $tracked_dir" "$tmpfile" 2>/dev/null)
+    # Check the command for this directory (accept both full and short forms)
+    local push_line=$(grep "^\(push\|p\) $tracked_dir" "$tmpfile" 2>/dev/null)
+    local revert_line=$(grep "^\(revert\|r\) $tracked_dir" "$tmpfile" 2>/dev/null)
     
-    if [ -n "$answer" ]; then
+    if [ -n "$push_line" ]; then
         echo "Updating DVC tracking for '$tracked_dir'..."
         if dvc add "$tracked_dir" --verbose; then
-            git add "$dvc_file"
+            git add -f "$dvc_file"
             echo "Successfully updated DVC tracking for '$tracked_dir'"
         else
             echo "Error: Failed to update DVC tracking for '$tracked_dir'"
+            exit 1
+        fi
+    elif [ -n "$revert_line" ]; then
+        echo "Reverting '$tracked_dir' to last tracked state..."
+        if dvc checkout "$dvc_file" --force; then
+            echo "Successfully reverted '$tracked_dir'"
+        else
+            echo "Error: Failed to revert '$tracked_dir'"
             exit 1
         fi
     else
@@ -182,10 +191,12 @@ done
 cat >> "$prompt_file" << 'EOF'
 
 # ==============================================================================
-# INSTRUCTIONS
+# Commands:
 # ==============================================================================
-# - To UPDATE a directory: push <directory>
-# - To SKIP a directory: skip <directory>
+# p, push <directory> = update a directory
+# s, skip <directory> = skip a directory
+# r, revert <directory> = revert a directory to last tracked state
+#
 # - Save and close this file to continue
 
 EOF
@@ -203,23 +214,9 @@ for entry in "${changed_dirs[@]}"; do
         echo "# =============================================================================="
         echo "#"
         
-        # dvc_status_output=$(dvc status "$dvc_file" 2>/dev/null)
-        # echo "# DVC Status:"
-        # echo "$dvc_status_output" | sed 's/^/# /'
-        # echo "#"
-        
         show_directory_summary "$tracked_dir" "$dvc_file" | sed 's/^/# /'
         show_file_changes "$tracked_dir" "$dvc_file" | sed 's/^/# /'
-        echo "#"
     } >> "$prompt_file"
-    
-    # Also display to terminal/output
-    # echo "Detected changes in '$tracked_dir' (DVC file: $dvc_file)"
-    # echo "$dvc_status_output"
-    # echo
-    # show_directory_summary "$tracked_dir" "$dvc_file"
-    # show_file_changes "$tracked_dir" "$dvc_file"
-    # echo
     
     idx=$((idx + 1))
 done
