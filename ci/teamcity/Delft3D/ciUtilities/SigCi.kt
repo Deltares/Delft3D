@@ -16,14 +16,12 @@ object SigCi : BuildType({
             type = "SigridCiUploadTemplate"
             param("sourceDir", ".")
             param("system", "dflow-flexible")
-            param("plugin.docker.imagePlatform", "")
             param("targetquality", "3.5")
-            param("plugin.docker.imageId", "")
             param("publish", "--publish")
             param("showupload", "--showupload")
+            param("enableQualityGate", "--quality-gate new-code-maintainability --minimum-score %qualityGateThreshold%")
+            param("qualityGateThreshold", "2.5")
             param("sigridciRepoUrl", "https://github.com/Software-Improvement-Group/sigridci")
-            param("teamcity.step.phase", "")
-            param("plugin.docker.run.parameters", "")
             param("customer", "deltares")
             param(
                 "include",
