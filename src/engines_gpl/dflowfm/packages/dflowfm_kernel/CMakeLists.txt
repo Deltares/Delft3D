@@ -258,6 +258,9 @@ if (WIN32)
     add_warnings_as_errors_post_build_windows(${library_name})
 endif(WIN32)
 
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/dflowfm_manager/unstruc_api.F90
+                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
+
 if (UNIX)
     target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
 endif(UNIX)

@@ -54,7 +54,12 @@ module unstruc_api
    real(kind=dp) :: cpuall0
 
    interface
+#ifdef WIN32
+#warning "C Preprocessor got here!"
+      subroutine tricall(jatri, xs, ys, ns, indx, numtri, edgeidx, numedge, triedge, xs3, ys3, ns3, trisize) bind(C, name="TRICALL")
+#else
       subroutine tricall(jatri, xs, ys, ns, indx, numtri, edgeidx, numedge, triedge, xs3, ys3, ns3, trisize) bind(C, name="tricall_")
+#endif
          use, intrinsic :: iso_c_binding, only: c_int, c_double
          implicit none(type, external)
          integer(kind=c_int), intent(in) :: jatri
