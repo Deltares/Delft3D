@@ -76,9 +76,6 @@ object LinuxCollect : BuildType({
             executionMode = BuildStep.ExecutionMode.DEFAULT
             param("file_path", "%file_path%")
             param("nexus_username", "%nexus_username%")
-            param("plugin.docker.imagePlatform", "")
-            param("plugin.docker.imageId", "")
-            param("teamcity.step.phase", "")
             param("nexus_password", "%nexus_password%")
             param("nexus_repo", "/delft3d-dev")
             param("nexus_url", "https://artifacts.deltares.nl/repository")
