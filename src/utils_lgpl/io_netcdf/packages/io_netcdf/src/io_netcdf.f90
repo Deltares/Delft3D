@@ -2252,13 +2252,13 @@ contains
    end function ionc_get_contact_topo_count
 
 !> Gets the name of the contact topology variable in an open dataset.
-   function ionc_get_contact_name(ioncid, contactid, contactname) result(ierr)
+   function ionc_get_contact_name(ioncid, contactid, contactsname) result(ierr)
       integer, intent(in) :: ioncid !< The IONC data set id.
       integer, intent(in) :: contactid !< The contact id in the specified data set.
-      character(len=*), intent(out) :: contactname !< The name of the mesh topology variable.
+      character(len=*), intent(out) :: contactsname !< The name of the mesh topology variable.
       integer :: ierr !< Result status, ionc_noerr if successful.
 
-      ierr = ug_get_contact_name(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%contactids(contactid), contactname)
+      ierr = ug_get_contact_name(datasets(ioncid)%ncid, datasets(ioncid)%ug_file%contactids(contactid), contactsname)
    end function ionc_get_contact_name
 
 !> Gets contact id from the name of a mesh contact.

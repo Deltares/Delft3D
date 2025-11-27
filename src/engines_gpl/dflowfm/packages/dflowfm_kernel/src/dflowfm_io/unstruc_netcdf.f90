@@ -840,7 +840,7 @@ contains
 !! Typical call: unc_def_var(mapids, mapids%id_s1(:), nf90_double, UNC_LOC_S, 's1', 'sea_surface_height', 'water level', 'm')
 !! Space-dependent variables will be multiply defined: on mesh1d and mesh2d-based variables (unless specified otherwise via which_meshdim argument).
    function unc_def_var_map(ncid, id_tsp, id_var, itype, iloc, var_name, standard_name, long_name, unit, is_timedep, dimids, cell_method, which_meshdim, jabndnd, ivalid_max) result(ierr)
-      use m_save_ugrid_state, only: mesh2dname, mesh1dname, contactname
+      use m_save_ugrid_state, only: mesh2dname, mesh1dname, contactsname
       use netcdf_utils, only: ncu_append_atts
       use m_flowgeom, only: ndx, ndxi, ndx2d
       use dfm_error, only: dfm_noerr
@@ -1041,7 +1041,7 @@ contains
             if (size(id_tsp%contactstoln, 1) > 0) then
                idims(idx_spacedim) = id_tsp%meshcontacts%dimids(cdim_ncontacts)
                ierr = ug_def_var(ncid, id_var(4), idims(idx_fastdim:maxrank), itype, UG_LOC_CONTACT, &
-                                 trim(contactname), var_name, standard_name, long_name, unit, ' ', cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                                 trim(contactsname), var_name, standard_name, long_name, unit, ' ', cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                                  do_deflate=unc_nccompress)
             end if
          end if
@@ -12124,14 +12124,14 @@ contains
 
          !define 1d2dcontacts only after mesh2d is completly defined
          if (n1d2dcontacts > 0) then
-            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactname), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
+            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactsname), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
             ierr = nf90_enddef(ncid)
             ! Put the contacts
             ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontacts, contacts(1, :), contacts(2, :), contacttype)
             ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
          end if
          if (n2d2dcontacts > 0) then
-            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactname), n2d2dcontacts, id_tsp%meshids2d, id_tsp%meshids2d, UG_LOC_FACE, UG_LOC_FACE, start_index)
+            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactsname), n2d2dcontacts, id_tsp%meshids2d, id_tsp%meshids2d, UG_LOC_FACE, UG_LOC_FACE, start_index)
             ierr = nf90_enddef(ncid)
             ! Put the contacts
             ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontacts, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D)
@@ -12640,7 +12640,7 @@ contains
          ierr = ionc_get_mesh_contact_ugrid(ioncid, im, mesh1indexes, mesh2indexes, hashlist_contactids%id_list(contactnlinks + 1:contactnlinks + ncontacts), contactslongnames, contacttype, 1)
          hashlist_contactids%id_count = contactnlinks + ncontacts
 
-         ierr = ionc_get_contact_name(ioncid, im, contactname)
+         ierr = ionc_get_contact_name(ioncid, im, contactsname)
 
          numerr = 0
          ierr = ionc_get_contacts_topology_dimensions(ioncid, im, mesh1_topo_dim, mesh2_topo_dim) ! networkIndex not used here
@@ -15329,7 +15329,7 @@ contains
       use m_flow, only: kmx, mxlaydefs, laymx, numtopsig, s1max
       use m_alloc
       use dfm_error
-      use m_save_ugrid_state !stores the contactname and other saved ugrid names
+      use m_save_ugrid_state !stores the contactsname and other saved ugrid names
       use m_CrossSections
       use m_flowparameters, only: jafullgridoutput
       use m_flowtimes, only: handle_extra
@@ -15593,7 +15593,7 @@ contains
 
       !define 1d2dcontacts only after mesh2d is completly defined
       if (n1d2dcontacts > 0 .and. ja2D_) then
-         ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactname), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
+         ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactsname), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
       end if
 
       ! Define domain numbers when it is a parallel run
@@ -15693,7 +15693,7 @@ contains
       use m_partitioninfo
       use m_alloc
       use dfm_error
-      use m_save_ugrid_state !stores the contactname and other saved ugrid names
+      use m_save_ugrid_state !stores the contactsname and other saved ugrid names
       use m_CrossSections
       use m_flowtimes, only: handle_extra
       use Timers

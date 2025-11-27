@@ -39,7 +39,7 @@ module m_save_ugrid_state
    type(t_ug_meshgeom) :: meshgeom1d
    character(len=ug_idsLen), allocatable :: nbranchids(:), nnodeids(:), nodeids(:)
    character(len=ug_idsLongNamesLen), allocatable :: nbranchlongnames(:), nnodelongnames(:), nodelongnames(:)
-   character(len=255) :: network1dname, mesh2dname, mesh1dname, contactname !MAXSTRLEN = 255
+   character(len=255) :: network1dname, mesh2dname, mesh1dname, contactsname !MAXSTRLEN = 255
    character(len=ug_idsLen), allocatable :: mesh1dNodeIds(:)
    integer, allocatable, dimension(:) :: mesh1dUnmergedToMerged(:)
    !integer, allocatable, dimension(:)                 :: mesh1dMergedToUnMerged(:)
@@ -60,7 +60,7 @@ contains
       network1dname = 'network1d'
       mesh1dname = 'mesh1d'
       mesh2dname = 'mesh2d'
-      contactname = 'contacts'
+      contactsname = 'contacts'
       numMesh1dBeforeMerging = 0
 
       if (allocated(mesh1dNodeIds)) then
