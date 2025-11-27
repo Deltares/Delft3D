@@ -19,8 +19,6 @@ object SigCi : BuildType({
             param("targetquality", "3.5")
             param("publish", "--publish")
             param("showupload", "--showupload")
-            param("qualityGateThreshold", "2.5")
-            param("enableQualityGate", "--quality-gate new-code-maintainability --minimum-score %qualityGateThreshold%")
             param("sigridciRepoUrl", "https://github.com/Software-Improvement-Group/sigridci")
             param("customer", "deltares")
             param(
