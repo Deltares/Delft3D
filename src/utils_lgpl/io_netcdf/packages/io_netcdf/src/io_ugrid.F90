@@ -4201,7 +4201,7 @@ function ug_get_contact_mesh_topology_dimensions(ncid, contactids, mesh1_topo_di
    mesh1_name = trim(adjustl(contact_attr(1:icolon-1)))
    
    ! Skip to second mesh name
-   istart = icolon + 1
+   istart = icolon + 2 ! skip space
    ispace = index(contact_attr(istart:), ' ')
    if (ispace == 0) then
       call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing space separator.')
