@@ -12672,9 +12672,12 @@ contains
             contact1d2didx(2, contactnlinks + L) = mesh2indexes(L)
             contactnetlinks(contactnlinks + L) = numl_last + L
             
+            kn(3, numl_last + l) = contacttype(l)
+
             ! new 2D node coordinates            
             XK(numk_last + l) = xface(mesh2indexes(l))
             YK(numk_last + l) = yface(mesh2indexes(l))
+            kn(2, numl_last + l) = numk_last + l
 
             if (mesh1_topo_dim == 2) then
                XK(numk_last + ncontacts + l) = xface(mesh1indexes(l))
@@ -12687,8 +12690,6 @@ contains
                   kn(1, numl_last + l) = mesh1indexes(l)
                end if
             end if
-            kn(2, numl_last + l) = numk_last + l
-            kn(3, numl_last + l) = contacttype(l)
          end do
 
          if (numerr > 0) then
