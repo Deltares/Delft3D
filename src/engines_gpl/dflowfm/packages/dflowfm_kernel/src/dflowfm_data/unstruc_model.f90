@@ -2694,7 +2694,9 @@ contains
       call prop_set(prop_ptr, 'geometry', 'PillarFile', trim(md_pillarfile), 'Polyline file *_pillar.pliz, containing four colums with x, y, diameter and Cd coefficient')
       call prop_set(prop_ptr, 'geometry', 'Gulliesfile', trim(md_gulliesfile), 'Polyline file *_gul.pliz, containing lowest bed level along talweg x, y, z level')
       call prop_set(prop_ptr, 'geometry', 'Roofsfile', trim(md_roofsfile), 'Polyline file *_rof.pliz, containing roofgutter heights x, y, z level')
-      call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type')
+      if (len_trim(md_vertplizfile) > 0) then
+         call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layertype')
+      end if
       call prop_set(prop_ptr, 'geometry', 'ProflocFile', trim(md_proflocfile), 'Channel profile location file *_proflocation.xyz with rows x, y, z, profile number ref')
       call prop_set(prop_ptr, 'geometry', 'ProfdefFile', trim(md_profdeffile), 'Channel profile definition file *_profdefinition.def with definition for all profile numbers')
       call prop_set(prop_ptr, 'geometry', 'ProfdefxyzFile', trim(md_profdefxyzfile), 'Channel profile definition file _profdefinition.def with definition for all profile numbers')
@@ -2869,7 +2871,11 @@ contains
       end if
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'geometry', 'Kmx', kmx, 'Maximum number of vertical layers')
-         call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers)')
+         if (layertype == LAYTP_SIGMA .or. layertype == LAYTP_Z) then
+            call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers)')
+         else if (layertype == LAYTP_POLYGON_MIXED .or. layertype == LAYTP_DENS_SIGMA)
+            call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers, 3: use VertplizFile for polygon-based mixed layering, 4: density controlled sigma-layers)')
+         end if
          call prop_set(prop_ptr, 'geometry', 'Numtopsig', Numtopsig, 'Number of sigma layers in top of z-layer model')
          if (writeall .or. janumtopsiguniform /= 1) then
             call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform', jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth)')

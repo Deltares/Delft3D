@@ -42,7 +42,7 @@ contains
       use m_flowgeom, only: ndx, ba, bl, ln, lnx, nd
       use m_flow, only: kmx, zws0, zws, ktop0, ktop, vol1, layertype, kbot, jased, kmxn, &
                         zslay, toplayminthick, numtopsig, keepzlayeringatbed, dkx, rho, s1, sdkx, tsigma, epshu, laydefnr, laytyp, &
-                        LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_Z, LAYTP_DENS_SIGMA
+                        LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_zlayer_indices, only: getzlayerindices
       use m_flowtimes, only: dts
@@ -133,7 +133,7 @@ contains
             end if
          end do
 
-      else if (Layertype == LAYTP_POLYGON_Z) then ! polygon defined z-layers
+      else if (Layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
          do n = 1, ndx
             kb = kbot(n)
 
@@ -279,7 +279,7 @@ contains
       use m_flowgeom, only: ndx, ba, bl
       use m_flow, only: kmx, zws, zws0, ktop, vol1, layertype, kbot, jased, kmxn, &
                         zslay, toplayminthick, numtopsig, keepzlayeringatbed, s0, tsigma, epshu, laydefnr, laytyp, &
-                        LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_Z, LAYTP_DENS_SIGMA, &
+                        LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA, &
                         nbndz, kbndz
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_zlayer_indices, only: getzlayerindices
@@ -387,7 +387,7 @@ contains
             end if
          end do
 
-      else if (Layertype == LAYTP_POLYGON_Z) then ! polygon defined z-layers
+      else if (Layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
          do i_bnd = 1, nbndz
             n = kbndz(1, i_bnd)
             if (n <= 0 .or. n > ndx) then

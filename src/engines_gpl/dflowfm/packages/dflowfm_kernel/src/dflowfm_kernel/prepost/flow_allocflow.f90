@@ -45,7 +45,7 @@ contains
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
                         kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, kmx, kbotc, kmxc, &
-                        layertype, LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_Z, &
+                        layertype, LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, &
                         numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, dztop, dztopuniabovez, &
                         sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, kmxx, zslay, &
                         dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
@@ -216,7 +216,7 @@ contains
          mx = 0
          laydefnr = 1
 
-         if (layertype == LAYTP_POLYGON_Z) then
+         if (layertype == LAYTP_POLYGON_MIXED) then
             inquire (file=md_vertplizfile, exist=jawel)
             if (jawel) then
                call oldfil(mpol, md_vertplizfile)
@@ -303,7 +303,7 @@ contains
             mxlayz = mx
             kmx = mx ! repair code
             laymx(1) = mx
-         else if (layertype == LAYTP_POLYGON_Z) then ! polygon defined z-layers
+         else if (layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
             call polygonlayering(mpol)
          end if
          do k = 1, mxlaydefs
