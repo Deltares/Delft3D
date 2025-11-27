@@ -2,27 +2,12 @@
 
 set -e  # Exit on error
 
-# Function to prompt user (works in both terminal and GUI)
+# Function to prompt user via temporary file (GUI-friendly)
 prompt_user() {
     local message=$1
     local context_file=$2  # Optional file containing detailed context
     
-    # Try terminal first
-    if [ -t 0 ]; then
-        # stdin is already a terminal
-        echo -n "$message"
-        read -r response
-        echo "$response"
-        return 0
-    elif [ -c /dev/tty ]; then
-        # Try to read from /dev/tty
-        echo -n "$message" > /dev/tty
-        read -r response < /dev/tty
-        echo "$response"
-        return 0
-    fi
-    
-    # Fallback: use temporary file approach for GUI environments
+    # Use temporary file approach for prompting
     local tmpfile=$(mktemp /tmp/git-dvc-prompt.XXXXXX)
     
     cat > "$tmpfile" << 'EOF_HEADER'
