@@ -180,9 +180,8 @@ module m_ec_typedefs
       integer :: ncid !< unique NetCDF ncid
       character(len=maxFileNameLen) :: ncfilename !< netCDF filename
       integer, allocatable, dimension(:) :: dimlen !< lengths of dimensions
+      integer, allocatable, dimension(:) :: variable_dimension !< lengths of dimensions
       type(str), allocatable, dimension(:) :: vector_definitions !< list of vector names
-      character(len=maxFileNameLen), allocatable, dimension(:) :: standard_names !< list of standard names
-      character(len=maxFileNameLen), allocatable, dimension(:) :: long_names !< list of long names
       character(len=maxFileNameLen), allocatable, dimension(:) :: variable_names !< list of variable names
       real(hp), allocatable, dimension(:) :: fillvalues !< missing/fillvalue for each variable
       real(hp), allocatable, dimension(:) :: scales !< multiplication scale factor for each variable
@@ -198,6 +197,7 @@ module m_ec_typedefs
       integer :: timedimid = -1 !< dim_id for the time coordinate
       integer :: layervarid = -1 !< var_id for the verical layer variable
       integer :: layerdimid = -1 !< dim_id for the vertical coordinate
+      integer :: ncType     = -1 !1 old, existing, nc files, 2 history file
       character(len=50) :: timeunit !< netcdf-convention time unit definition
       integer :: vptyp = -1 !< vertical coordinate type
       real(hp), allocatable, dimension(:) :: vp !< vertical coordinate (layers)

@@ -250,9 +250,10 @@ contains
 
          call check_netcdf_error(nf90_def_dim(ihisfile, 'name_len', strlen_netcdf, id_strlendim))
 
-         if (kmx > 0) then
-            call check_netcdf_error(nf90_def_dim(ihisfile, 'laydim', kmx, id_laydim))
-            call check_netcdf_error(nf90_def_dim(ihisfile, 'laydimw', kmx + 1, id_laydimw))
+         ! TK_Temp: Allow for writing in case of kmx = 0
+         if (kmx >= 0) then
+            call check_netcdf_error(nf90_def_dim(ihisfile, 'laydim', max(kmx,1)    , id_laydim))
+            call check_netcdf_error(nf90_def_dim(ihisfile, 'laydimw',max(kmx,1) + 1, id_laydimw))
          end if
 
          if (stm_included .and. jahissed > 0) then
@@ -1034,8 +1035,9 @@ contains
          type(ug_nc_attribute) :: extra_attributes(1)
          ierr = DFM_NOERR
 
+         ! TK_Temp: Also write vertical coordinates to his file for kmx == 0!
          if (.not. model_is_3D()) then
-            return
+!            return
          end if
          call ncu_set_att(extra_attributes(1), 'positive', 'up')
          ! If so specified, add the zcoordinate_c
@@ -1192,19 +1194,21 @@ contains
          integer :: layer
 
          ierr = DFM_NOERR
-
+         ! TK_Temp: Write vertical coordinates for kmx = 0 
          if (.not. model_is_3D()) then
-            return
+!            return
          end if
 
          if (jawrizc == 1) then
-            do layer = 1, kmx
+            ! TK_Temp: for KMX = 0
+            do layer = 1, max(kmx,1)
                call check_netcdf_error(nf90_put_var(ihisfile, id_zcs, valobs(:, IPNT_ZCS + layer - 1), start=[layer, 1, it_his], count=[1, numobs + nummovobs, 1]))
             end do
          end if
 
          if (jawrizw == 1) then
-            do layer = 1, kmx + 1
+            ! TK_Temp: for KMX = 0
+            do layer = 1, max(kmx,1) + 1
                call check_netcdf_error(nf90_put_var(ihisfile, id_zws, valobs(:, IPNT_ZWS + layer - 1), start=[layer, 1, it_his], count=[1, numobs + nummovobs, 1]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_zwu, valobs(:, IPNT_ZWU + layer - 1), start=[layer, 1, it_his], count=[1, numobs + nummovobs, 1]))
             end do
