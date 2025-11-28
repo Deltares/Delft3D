@@ -302,8 +302,8 @@ contains
             if (sum(kc(netcell(k)%nod(1:N))) == 0) cycle ! no active nodes in cell
 
             !  compute cell center
-            xc = sum(xk(netcell(k)%nod(1:N))) / dble(N)
-            yc = sum(yk(netcell(k)%nod(1:N))) / dble(N)
+            xc = sum(xk(netcell(k)%nod(1:N))) / real(N, kind=dp)
+            yc = sum(yk(netcell(k)%nod(1:N))) / real(N, kind=dp)
 
             !     loop over the nodes
             do kk = 1, N
@@ -328,7 +328,7 @@ contains
 
                !     create new node
                if (kc(knode) > 0) then
-                  call dsetnewpoint(0.5d0 * (xk(knode) + xc), 0.5d0 * (yk(knode) + yc), knew)
+                  call dsetnewpoint(0.5_dp * (xk(knode) + xc), 0.5_dp * (yk(knode) + yc), knew)
                   call cirr(xk(knew), yk(knew), 31)
                   kc(knew) = -2 ! mark as inactive, non-boundary, so it will not be disabled later on
                else ! original node not active, let knew point to original node for mesh connection later
@@ -350,12 +350,12 @@ contains
             if (kc(node1) == 0 .and. kc(node2) == 0) cycle ! no active nodes in link
 
             !     compute link center
-            xc = 0.5d0 * (xk(node1) + xk(node2))
-            yc = 0.5d0 * (yk(node1) + yk(node2))
+            xc = 0.5_dp * (xk(node1) + xk(node2))
+            yc = 0.5_dp * (yk(node1) + yk(node2))
 
             !     create new node near node1
             if (kc(node1) /= 0) then
-               call dsetnewpoint(0.5d0 * (xk(node1) + xc), 0.5d0 * (yk(node1) + yc), knew)
+               call dsetnewpoint(0.5_dp * (xk(node1) + xc), 0.5_dp * (yk(node1) + yc), knew)
                kc(knew) = -1 ! mark as inactive and on the boundary
             else ! original node not active, let knew point to original node for mesh connection later
                knew = node1
@@ -364,7 +364,7 @@ contains
             call store_newnode(node1, L, L, knew, newnodes)
             !     create new node near node2
             if (kc(node2) /= 0) then
-               call dsetnewpoint(0.5d0 * (xk(node2) + xc), 0.5d0 * (yk(node2) + yc), knew)
+               call dsetnewpoint(0.5_dp * (xk(node2) + xc), 0.5_dp * (yk(node2) + yc), knew)
                kc(knew) = -1 ! mark as inactive and on the boundary
             else ! original node not active, let knew point to original node for mesh connection later
                knew = node2
@@ -448,8 +448,8 @@ contains
             if (sum(kc(netcell(k)%nod(1:N))) == 0) cycle ! no active nodes in cell
 
             !  compute cell center
-            xc = sum(xk(netcell(k)%nod(1:N))) / dble(N)
-            yc = sum(yk(netcell(k)%nod(1:N))) / dble(N)
+            xc = sum(xk(netcell(k)%nod(1:N))) / real(N, kind=dp)
+            yc = sum(yk(netcell(k)%nod(1:N))) / real(N, kind=dp)
 
             !     loop over the nodes
             do kk = 1, N
@@ -488,8 +488,8 @@ contains
                         Link = link2
                      end if
 
-                     xc = 0.5d0 * (xk(kn(1, Link)) + xk(kn(2, Link)))
-                     yc = 0.5d0 * (yk(kn(1, Link)) + yk(kn(2, Link)))
+                     xc = 0.5_dp * (xk(kn(1, Link)) + xk(kn(2, Link)))
+                     yc = 0.5_dp * (yk(kn(1, Link)) + yk(kn(2, Link)))
 
 !                 in this case: Left and Right node must be the same on a link
 !                 first check if a node already exists on this link (from the other side)
@@ -499,8 +499,8 @@ contains
                      else if (iSE >= 0 .and. newnodes(max(1 + iSE + 2, 1), Link) > 0) then
                         knew = newnodes(1 + iSE + 2, Link)
                      else
-                        xnew = 0.5d0 * (xk(knode) + xc)
-                        ynew = 0.5d0 * (yk(knode) + yc)
+                        xnew = 0.5_dp * (xk(knode) + xc)
+                        ynew = 0.5_dp * (yk(knode) + yc)
                         call dsetnewpoint(xnew, ynew, knew)
                         call cirr(xk(knew), yk(knew), 31)
                         kc(knew) = -2 ! mark as inactive, non-boundary, so it will not be disabled later on
@@ -536,8 +536,8 @@ contains
             if (linkmask(L) == 1) then
 
                !     compute link center
-               xc = 0.5d0 * (xk(node1) + xk(node2))
-               yc = 0.5d0 * (yk(node1) + yk(node2))
+               xc = 0.5_dp * (xk(node1) + xk(node2))
+               yc = 0.5_dp * (yk(node1) + yk(node2))
 
                !     create new node near node1
                if (kc(node1) /= 0) then
@@ -549,7 +549,7 @@ contains
                   else if (iSE >= 0 .and. newnodes(max(1 + iSE + 2, 1), L) > 0) then
                      knew = newnodes(1 + iSE + 2, L)
                   else
-                     call dsetnewpoint(0.5d0 * (xk(node1) + xc), 0.5d0 * (yk(node1) + yc), knew)
+                     call dsetnewpoint(0.5_dp * (xk(node1) + xc), 0.5_dp * (yk(node1) + yc), knew)
                      call cirr(xk(knew), yk(knew), 31)
                      kc(knew) = -1
                   end if
@@ -570,7 +570,7 @@ contains
                   else if (iSE >= 0 .and. newnodes(max(1 + iSE + 2, 1), L) > 0) then
                      knew = newnodes(1 + iSE + 2, L)
                   else
-                     call dsetnewpoint(0.5d0 * (xk(node2) + xc), 0.5d0 * (yk(node2) + yc), knew)
+                     call dsetnewpoint(0.5_dp * (xk(node2) + xc), 0.5_dp * (yk(node2) + yc), knew)
                      call cirr(xk(knew), yk(knew), 31)
                      kc(knew) = -1
                   end if

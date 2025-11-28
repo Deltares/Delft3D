@@ -661,10 +661,10 @@ contains
             k2 = ln(1, L)
          end if
 
-         if (hs(k1) > 1d-2) then
+         if (hs(k1) > 1.0e-2_dp) then
             ! NOTE: pump area-weighting across links is uniform for all links (au=1).
-            au(L) = 1d0
-            hu(L) = 1d0 ! UNST-5835: restored original hu(L) = 1d0, originally set in furu(). Currently furu() resets it to 0d0 already while treating "old" structures.
+            au(L) = 1.0_dp
+            hu(L) = 1.0_dp ! UNST-5835: restored original hu(L) = 1d0, originally set in furu(). Currently furu() resets it to 0d0 already while treating "old" structures.
             ap = ap + au(L)
             vp1 = vp1 + vol1(k1)
             vp2 = vp2 + vol1(k2)
@@ -674,14 +674,14 @@ contains
       end do
 
       ! With these average waterlevels, evaluate the pump discharge.
-      if (ap > 0d0) then
+      if (ap > 0.0_dp) then
          s1k1 = s1k1 / ap
          s1k2 = s1k2 / ap
          call PrepareComputePump(struct%pump, s1k1, s1k2)
          qp = struct%pump%discharge ! Already in our local structure spatial orientation.
 
          ! Choose available volume on suction side.
-         if (qp > 0d0) then
+         if (qp > 0.0_dp) then
             vp = vp1
          else
             vp = vp2
@@ -692,16 +692,16 @@ contains
       end if
 
       ! Finally, redistribute the requested pump discharge across all flow links.
-      if (qp == 0d0 .or. ap == 0 .or. vp == 0d0) then
+      if (qp == 0.0_dp .or. ap == 0 .or. vp == 0.0_dp) then
          ! Pump is off
-         struct%fu = 0d0
-         struct%ru = 0d0
-         struct%au = 0d0
+         struct%fu = 0.0_dp
+         struct%ru = 0.0_dp
+         struct%au = 0.0_dp
       else
 
          ! Limit the pump discharge in case the volume in the cells at the suction side is limited.
-         if (abs(qp) > 0.9d0 * vp / dts) then
-            qp = sign(0.9d0 * vp / dts, qp)
+         if (abs(qp) > 0.9_dp * vp / dts) then
+            qp = sign(0.9_dp * vp / dts, qp)
             call setmessage(LEVEL_WARN, 'Discharge through pump ' &
                 & //trim(struct%id)//' is limited below capacity '//&
                 & 'by water volume on suction side.')
@@ -709,7 +709,7 @@ contains
 
          do L0 = 1, struct%numlinks
             L = struct%linknumbers(L0)
-            dir = int(sign(1d0, L * qp)) ! Includes both pumping direction and flow link w.r.t. structure spatial orientation.
+            dir = int(sign(1.0_dp, L * qp)) ! Includes both pumping direction and flow link w.r.t. structure spatial orientation.
             L = abs(L)
             if (dir > 0) then
                k1 = ln(1, L)
@@ -717,14 +717,14 @@ contains
                k1 = ln(2, L)
             end if
 
-            if (hs(k1) > 1d-2) then
-               struct%fu(L0) = 0d0
+            if (hs(k1) > 1.0e-2_dp) then
+               struct%fu(L0) = 0.0_dp
                struct%ru(L0) = qp / ap
                struct%au(L0) = ap
             else
-               struct%fu(L0) = 0d0
-               struct%ru(L0) = 0d0
-               struct%au(L0) = 0d0
+               struct%fu(L0) = 0.0_dp
+               struct%ru(L0) = 0.0_dp
+               struct%au(L0) = 0.0_dp
             end if
          end do
       end if
@@ -791,7 +791,7 @@ contains
             ! Then write xyz definition pliz
             write (nampli(numxyztype), '(a,i0)') 'PROFNR=', nprof
             nyz = pcs%levelsCount
-            xpl(npl + 1:npl + nyz) = 0d0
+            xpl(npl + 1:npl + nyz) = 0.0_dp
             ypl(npl + 1:npl + nyz) = pcs%y(1:nyz)
             zpl(npl + 1:npl + nyz) = pcs%z(1:nyz)
             npl = npl + nyz + 1
@@ -847,7 +847,7 @@ contains
       type(t_administration_1d), pointer :: adm
       integer :: i, istor, cc1, cc2, length, L, Lindex
       real(kind=dp) :: f
-      real(kind=dp), parameter :: help = -huge(1d0)
+      real(kind=dp), parameter :: help = -huge(1.0_dp)
 
       groundlevel(:) = help
       groundStorage(:) = 0
@@ -963,12 +963,12 @@ contains
       s1(ndx2d + 1:ndxi) = groundLevel(1:ndx1d)
       if (nonlin >= 2) then
          s1m(ndx2d + 1:ndxi) = groundLevel(1:ndx1d)
-         a1m = 0d0
+         a1m = 0.0_dp
       end if
 
-      vol1 = 0d0
-      vol1_f = 0d0
-      a1 = 0d0
+      vol1 = 0.0_dp
+      vol1_f = 0.0_dp
+      a1 = 0.0_dp
 
       ! 3. compute the maximal volume
       call vol12d(0)
@@ -1011,7 +1011,7 @@ contains
             if (groundStorage(ii) == 1) then ! also storage above ground: allow negative freeboard.
                freeboard(ii) = groundLevel(ii) - s1(i)
             else
-               freeboard(ii) = max(0d0, groundLevel(ii) - s1(i))
+               freeboard(ii) = max(0.0_dp, groundLevel(ii) - s1(i))
             end if
          end if
       end do
@@ -1056,7 +1056,7 @@ contains
       do i = ndx2d + 1, ndxi
          ii = i - ndx2d
          if (groundLevel(ii) /= dmiss .and. groundStorage(ii) == 1 .and. s1(i) - groundLevel(ii) >= epswetout) then ! if groundLevel is applicable
-            hsOnGround(ii) = max(0d0, s1(i) - groundLevel(ii))
+            hsOnGround(ii) = max(0.0_dp, s1(i) - groundLevel(ii))
          end if
       end do
 
@@ -1078,7 +1078,7 @@ contains
       do i = ndx2d + 1, ndxi
          ii = i - ndx2d
          if (groundLevel(ii) /= dmiss .and. groundStorage(ii) == 1 .and. s1(i) - groundLevel(ii) >= epswetout) then ! if groundLevel is applicable
-            volOnGround(ii) = max(0d0, vol1(i) - volMaxUnderground(ii))
+            volOnGround(ii) = max(0.0_dp, vol1(i) - volMaxUnderground(ii))
          end if
       end do
 
@@ -1096,7 +1096,7 @@ contains
       integer :: Lf, n
       real(kind=dp) :: flowdir
 
-      qCur1d2d = 0d0
+      qCur1d2d = 0.0_dp
       ! Don't reset vTot1d2d
       do Lf = 1, lnx1d
          if (kcu(Lf) == 3 .or. kcu(Lf) == 4 .or. kcu(Lf) == 5 .or. kcu(Lf) == 7) then

@@ -71,18 +71,18 @@ contains
       real(kind=dp) :: umodeps
 
       integer :: nit, nitm = 100
-      real(kind=dp) :: r, rv = 123.8d0, e = 8.84d0, eps = 1d-2
+      real(kind=dp) :: r, rv = 123.8_dp, e = 8.84_dp, eps = 1.0e-2_dp
       real(kind=dp) :: s, sd, er, ers, dzb, uu, vv, alin
       real(kind=dp) :: cphi, sphi
-      real(kind=dp) :: fsqrtt = sqrt(2d0)
+      real(kind=dp) :: fsqrtt = sqrt(2.0_dp)
 
-      cfuhi3D = 0d0
-      ustbLL = 0d0; cfuhiLL = 0d0; hdzb = 0d0; z00 = 0d0; cz = 0d0; nit = 0
+      cfuhi3D = 0.0_dp
+      ustbLL = 0.0_dp; cfuhiLL = 0.0_dp; hdzb = 0.0_dp; z00 = 0.0_dp; cz = 0.0_dp; nit = 0
 
-      umodeps = 1d-4
+      umodeps = 1.0e-4_dp
 
       frcn = frcu(LL)
-      if (frcn == 0d0) return
+      if (frcn == 0.0_dp) return
       friction_type = ifrcutp(LL)
 
       if (hu(LL) < trsh_u1Lb) then
@@ -94,40 +94,40 @@ contains
 10    continue
 
       if (friction_type < 10) then
-         if (frcn > 0d0) then
+         if (frcn > 0.0_dp) then
             call getczz0(hu(LL), frcn, friction_type, cz, z00)
 
-            hdzb = 0.5d0 * hu(Lb) + c9of1 * z00 ! half bottom layer plus 9z0
+            hdzb = 0.5_dp * hu(Lb) + c9of1 * z00 ! half bottom layer plus 9z0
 
-            if (z00 > 0d0) then
+            if (z00 > 0.0_dp) then
 
                if (jaustarint == 0) then
                   ! sqcf = vonkar/log(c9of1 + hdzb/z00)            ! till 012015
                   sqcf = vonkar / log(hdzb / z00)
                else if (jaustarint == 1) then ! Yoeri 2014 long time default for jaustarint == 1
                   dzb = hu(Lb) + c9of1 * z00
-                  sqcf = vonkar / (log(dzb / z00) - 1d0)
+                  sqcf = vonkar / (log(dzb / z00) - 1.0_dp)
                else if (jaustarint == 2) then ! remobilised through jaustarint == 2, good convergence
                   dzb = hu(Lb) / ee + c9of1 * z00
                   sqcf = vonkar / (log(dzb / z00))
                else if (jaustarint == 3) then ! Delft3D
-                  hdzb = 0.5d0 * hu(Lb) + z00
-                  sqcf = vonkar / (log(1d0 + 0.5d0 * hu(Lb) / z00))
+                  hdzb = 0.5_dp * hu(Lb) + z00
+                  sqcf = vonkar / (log(1.0_dp + 0.5_dp * hu(Lb) / z00))
                else if (jaustarint == 4) then
                   !hdzb  = 0.5d0*hu(Lb)     + c9of1*z00/0.65d0
-                  dzb = hu(Lb) / ee + c9of1 * z00 * 0.66d0
+                  dzb = hu(Lb) / ee + c9of1 * z00 * 0.66_dp
                   sqcf = vonkar / (log(dzb / z00))
                else if (jaustarint == 5) then
                   dzb = hu(Lb)
-                  sqcf = vonkar / ((1d0 + c9of1 * z00 / dzb) * log(dzb / z00 + c9of1) - c9of1 * z00 / dzb * log(c9of1) - 1d0)
+                  sqcf = vonkar / ((1.0_dp + c9of1 * z00 / dzb) * log(dzb / z00 + c9of1) - c9of1 * z00 / dzb * log(c9of1) - 1.0_dp)
                end if
                z0ucur(LL) = z00
             else
-               sqcf = 0d0
+               sqcf = 0.0_dp
             end if
          else
-            hdzb = 0.5d0 * hu(Lb)
-            sqcf = 0d0
+            hdzb = 0.5_dp * hu(Lb)
+            sqcf = 0.0_dp
          end if
 
          umod = sqrt(u1Lb * u1Lb + v(Lb) * v(Lb))
@@ -140,8 +140,8 @@ contains
             end if
          end if
 
-         if (umod == 0d0) then ! from dry to wet
-            umod = max(umodeps, dts * ag * dxi(LL) * min(abs(s1(ln(1, LL)) - s1(ln(2, LL))), 0.333333d0 * hu(LL)))
+         if (umod == 0.0_dp) then ! from dry to wet
+            umod = max(umodeps, dts * ag * dxi(LL) * min(abs(s1(ln(1, LL)) - s1(ln(2, LL))), 0.333333_dp * hu(LL)))
          else
             umod = max(umod, umodeps) ! 1d-6 for klopman     ! until 3D handled like 2D iterative loop , solves Roses problem: ust=1.1e-104 to the power 3 is underflow
          end if
@@ -150,7 +150,7 @@ contains
 
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             rhoL = rhomean ! for now
-            if (ustw2 > 1d-8) then
+            if (ustw2 > 1.0e-8_dp) then
                !
                ! Virtual 2dh velocity, delft3d style
                if (LL == Lb) then ! take into account layer integral approach on bnd
@@ -171,12 +171,12 @@ contains
                               (v(LL) - vstokes(LL))**2)
                end if
                !
-               if (cz > 0d0) then
+               if (cz > 0.0_dp) then
                   cdrag = ag / (cz * cz)
                   !
                   ustc2 = cdrag * u2dh**2
                else
-                  ustc2 = 0d0
+                  ustc2 = 0.0_dp
                end if
                !
                uu = u1Lb - ustokes(Lb)
@@ -192,12 +192,12 @@ contains
                   call getvanrijnwci(LL, umod, u2dh, taubpuLL, z0urouL)
                   taubxuLL = rhoL * (ustc2 + ustw2) ! depth-averaged, see taubot
                elseif (modind == 10) then ! Ruessink 2001
-                  if (cz > 0d0) then
-                     taubpuLL = cdrag * sqrt(umod**2 + (1.16d0 * uorbu * fsqrtt)**2)
+                  if (cz > 0.0_dp) then
+                     taubpuLL = cdrag * sqrt(umod**2 + (1.16_dp * uorbu * fsqrtt)**2)
                      taubxuLL = rhoL * (ustc2 + ustw2)
                   else
-                     taubpuLL = 0d0
-                     taubxuLL = 0d0
+                     taubpuLL = 0.0_dp
+                     taubxuLL = 0.0_dp
                   end if
                else if (modind == 0) then ! exception where you don't want wave influence on bed shear stress with jawave>0
                   if (sqcf > 0.0_dp) then

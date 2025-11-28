@@ -327,7 +327,7 @@ contains
       end if
 
       L = twopi * Ra ! earth's circumference in meters
-      period = 24d0 * 60d0 * 60d0 ! number of seconds in a day
+      period = 24.0_dp * 60.0_dp * 60.0_dp ! number of seconds in a day
 
       lam = L / nmode
       per = period / nfreq; Tforce = time1 / per
@@ -341,12 +341,12 @@ contains
 
       ufac = om / (h * k)
 
-      sqrtc = sqrt(-fr**2 + (0d0, 2d0) * fr * Ue0 * k + (Ue0**2) * k**2 + 4 * h * (k**2) * g)
+      sqrtc = sqrt(-fr**2 + (0.0_dp, 2.0_dp) * fr * Ue0 * k + (Ue0**2) * k**2 + 4 * h * (k**2) * g)
 
-      ep = (0.d0, 0.5d0) * ((0d0, 1d0) * fr + Ue0 * k + sqrtc)
+      ep = (0.0_dp, 0.5_dp) * ((0.0_dp, 1.0_dp) * fr + Ue0 * k + sqrtc)
       cp = app * exp(ep * t)
 
-      em = (0.d0, 0.5d0) * ((0d0, 1d0) * fr + Ue0 * k - sqrtc)
+      em = (0.0_dp, 0.5_dp) * ((0.0_dp, 1.0_dp) * fr + Ue0 * k - sqrtc)
       cm = amm * exp(em * t)
 
       cfree = sqrt(g * h)
@@ -357,13 +357,13 @@ contains
       ndxfreeL = ndxforced
       ndtfreeL = ndxfreeL / cflfreeL; ndtfreeL = min(999, ndtfreeL)
 
-      reltim = -1d0 / dreal(ep) ! relaxation period
+      reltim = -1.0_dp / dreal(ep) ! relaxation period
       if (time1 > reltim) then
          relday = reltim / (24 * 3600)
          rnrel = reltim / (twopi / omfree)
       end if
 
-      tt = (h * k**2 * g + (0d0, 1d0) * fr * om + Ue0 * k * om - om**2)
+      tt = (h * k**2 * g + (0.0_dp, 1.0_dp) * fr * om + Ue0 * k * om - om**2)
       tt0 = (h * k**2 * g + Ue0 * k * om - om**2)
 
       htt = ztyp
@@ -373,17 +373,17 @@ contains
       F = htt * tt0 / (h * k); Zp = -F / k
       htt = h * k * F / tt
 
-      eiomt = exp((0d0, 1d0) * om * t)
+      eiomt = exp((0.0_dp, 1.0_dp) * om * t)
       do n = 1, nx
-         x = xz(n) * L / 360d0 ! xx in degrees 0-360, => x in meters
+         x = xz(n) * L / 360.0_dp ! xx in degrees 0-360, => x in meters
          eiomx = exp((0, -1) * k * x)
-         uexa(n) = (0d0, -1d0) * (em * cm + ep * cp - htt * om * eiomt) * eiomx / (h * k)
-         zexa(n) = (cm + cp + (0d0, 1d0) * htt * eiomt) * eiomx
+         uexa(n) = (0.0_dp, -1.0_dp) * (em * cm + ep * cp - htt * om * eiomt) * eiomx / (h * k)
+         zexa(n) = (cm + cp + (0.0_dp, 1.0_dp) * htt * eiomt) * eiomx
       end do
 
       ampliforced = abs(htt)
       amplifreel = abs(cm)
-      amplitotal = abs((cm + cp + (0d0, 1d0) * htt * eiomt))
+      amplitotal = abs((cm + cp + (0.0_dp, 1.0_dp) * htt * eiomt))
 
 ! uexa = (0, -1) * ( (0., 0.5) * ((0, 1) * lambda + Ue0 * k - sqrtc ) *  cg1 + (0.0, 0.5) * ((0, 1) * lambda + Ue0 * k + sqrtc) * cg - 1D0 / (h * k ** 2 * g + (0, 1) * lambda * omega + Ue0 * k * omega - omega ** 2) * h * k * F * omega * exp((0, 1) * omega * t)) / h / k * exp((0, -1) * k * x)
 
@@ -407,15 +407,15 @@ contains
       sqlabda = sqrt(cfuhi(1))
       sqgi = sqrt(ag * abs(bedslope))
       tim = time1 - dts
-      et0 = exp(-tim * 2d0 * sqgi * sqlabda)
-      et = exp(-time1 * 2d0 * sqgi * sqlabda)
+      et0 = exp(-tim * 2.0_dp * sqgi * sqlabda)
+      et = exp(-time1 * 2.0_dp * sqgi * sqlabda)
 
-      ust = sqgi / max(sqlabda, 1d-10)
+      ust = sqgi / max(sqlabda, 1.0e-10_dp)
 
-      uu0 = ust * (1d0 - et0) / (1d0 + et0)
-      uu = ust * (1d0 - et) / (1d0 + et)
+      uu0 = ust * (1.0_dp - et0) / (1.0_dp + et0)
+      uu = ust * (1.0_dp - et) / (1.0_dp + et)
 
-      uu = teta0 * uu + (1d0 - teta0) * uu0
+      uu = teta0 * uu + (1.0_dp - teta0) * uu0
 
       qq = au(1) * uu
       qst = au(1) * ust
@@ -435,7 +435,7 @@ contains
       call ICTEXT(trim(TEX), 5, 30, NCOLANA)
 
       TEX = 'Time (hours)           : '
-      write (TEX(26:36), '(F11.4)') time1 / 3600d0
+      write (TEX(26:36), '(F11.4)') time1 / 3600.0_dp
       call ICTEXT(trim(TEX), 5, 33, NCOLANA)
 
    end subroutine riverfloodwave
@@ -459,7 +459,7 @@ contains
       integer, intent(in) :: j12
       integer :: k, L, num, Lweir, ncgentst
       real(kind=dp) :: slinks, srechts, eup, edo, dE, dH, foot, zg, z1, z2, z3, qg, qglab, z2lab, qsimple, tim
-      real(kind=dp) :: zupstream, zdownstream, crestheight, zcrestperfect, zminsub, zcrest, submer, qfree, g = 9.81d0, qg12, qgen, zg12
+      real(kind=dp) :: zupstream, zdownstream, crestheight, zcrestperfect, zminsub, zcrest, submer, qfree, g = 9.81_dp, qg12, qgen, zg12
       real(kind=dp) :: qweirana, uupstream, ucrest, udownstream, bedlev, crestlev, qsub, qsup, qcond, qthd, gateheight, qcrit
       real(kind=dp) :: qrajaratnam
       character(len=132) :: tex
@@ -478,7 +478,7 @@ contains
       slinks = s1(kobs(1))
       srechts = s1(kobs(3))
       bedlev = bl(kobs(1))
-      crestlev = 1d0
+      crestlev = 1.0_dp
 
       Lweir = 0
       do L = 1, lnx
@@ -508,12 +508,12 @@ contains
 
       regime = 'subcritial'
 
-      qweirana = 0d0; dE = 0d0; uupstream = 0d0; udownstream = 0d0
+      qweirana = 0.0_dp; dE = 0.0_dp; uupstream = 0.0_dp; udownstream = 0.0_dp
 
       ncgentst = -1
       if (ncgentst > 0) then
 
-         foot = 0.3048d0
+         foot = 0.3048_dp
 
          if (minp == 0) then
             call oldfil(minp, 'rajaratnam1967.data')
@@ -526,31 +526,31 @@ contains
                z2lab = foot * z2lab
                z3 = foot * z3
 
-               z3 = z1 * 0.5d0
+               z3 = z1 * 0.5_dp
 
-               crestheight = max(0.3d0 * z1, z1 - gateheight)
-               z3 = crestheight + 0.9d0 * (z1 - crestheight)
-               z3 = 0.5d0 * z3
+               crestheight = max(0.3_dp * z1, z1 - gateheight)
+               z3 = crestheight + 0.9_dp * (z1 - crestheight)
+               z3 = 0.5_dp * z3
 
                qglab = foot * foot * qglab
                call findqorifice(gateheight, crestheight, z1, z3, qg, z2, zg, regime, num, qcrit)
                call findqorifice12(gateheight, crestheight, z1, z2lab, qg12, zg12, regime, num, qcrit)
                ! if (num .ne. 50) then
-               qsimple = gateheight * sqrt(2d0 * g * (z1 - z3))
-               tim = 1440d0 * k - 23 * 60; call seconds_to_datetimestring(datetime, refdat, tim * 60d0)
-               write (mou2, '(A,20F8.3)') datetime, qglab * 10d0, qg * 10d0, qg12 * 10d0, gateheight, crestheight, z1, z3, z2, qglab, qg, qg12, qg / qglab, qg12 / qglab, zg / gateheight, zg12 / gateheight
-               tim = 1440d0 * k; call seconds_to_datetimestring(datetime, refdat, tim * 60d0)
-               write (mou2, '(A,20F8.3)') datetime, qglab * 10d0, qg * 10d0, qg12 * 10d0, gateheight, crestheight, z1, z3, z2, qglab, qg, qg12, qg / qglab, qg12 / qglab, zg / gateheight, zg12 / gateheight
+               qsimple = gateheight * sqrt(2.0_dp * g * (z1 - z3))
+               tim = 1440.0_dp * k - 23 * 60; call seconds_to_datetimestring(datetime, refdat, tim * 60.0_dp)
+               write (mou2, '(A,20F8.3)') datetime, qglab * 10.0_dp, qg * 10.0_dp, qg12 * 10.0_dp, gateheight, crestheight, z1, z3, z2, qglab, qg, qg12, qg / qglab, qg12 / qglab, zg / gateheight, zg12 / gateheight
+               tim = 1440.0_dp * k; call seconds_to_datetimestring(datetime, refdat, tim * 60.0_dp)
+               write (mou2, '(A,20F8.3)') datetime, qglab * 10.0_dp, qg * 10.0_dp, qg12 * 10.0_dp, gateheight, crestheight, z1, z3, z2, qglab, qg, qg12, qg / qglab, qg12 / qglab, zg / gateheight, zg12 / gateheight
                ! endif
             end do
 
          end if
 
-         z1 = zupstream; z3 = zdownstream; qg = 1d0
+         z1 = zupstream; z3 = zdownstream; qg = 1.0_dp
          call findqorifice(gateheight, crestheight, z1, z3, qg, z2, zg, regime, num, qcrit)
          qweirana = qg; ucrest = qg / zg; zcrest = z2; qfree = qcrit
 
-         if (mod(time1, 60000d0) == 0) then
+         if (mod(time1, 60000.0_dp) == 0) then
 
             qgen = q1(19) / wu(19)
             write (mou2, *) time1, qgen
@@ -559,21 +559,21 @@ contains
 
       else
 
-         gateheight = 9d9
+         gateheight = 9.0e9_dp
 
          call weirtheory(zupstream, zdownstream, crestheight, zcrestperfect, zminsub, zcrest, &
                          qweirana, uupstream, ucrest, udownstream, regime, qfree)
 
-         qrajaratnam = zdownstream * sqrt(2d0 * ag * (max(0d0, zupstream - zdownstream)))
+         qrajaratnam = zdownstream * sqrt(2.0_dp * ag * (max(0.0_dp, zupstream - zdownstream)))
 
       end if
 
-      if (qweirana == 0d0) return
+      if (qweirana == 0.0_dp) return
 
-      eup = zupstream + 0.5d0 * uupstream * uupstream / ag
-      edo = zdownstream + 0.5d0 * udownstream * udownstream / ag
+      eup = zupstream + 0.5_dp * uupstream * uupstream / ag
+      edo = zdownstream + 0.5_dp * udownstream * udownstream / ag
       dE = eup - edo; dH = zupstream - zdownstream
-      dE = max(0d0, dE); dH = max(0d0, dH)
+      dE = max(0.0_dp, dE); dH = max(0.0_dp, dH)
 
       TEX = 'Uup :            Ucr :               Udown :                '
       write (TEX(7:16), '(f10.3)') uupstream
@@ -589,7 +589,7 @@ contains
 
       TEX = 'Eup :            Ecr :               Edown :                '
       write (TEX(7:16), '(f10.3)') eup
-      write (TEX(24:33), '(f10.3)') zcrest + 0.5d0 * ucrest * ucrest / ag
+      write (TEX(24:33), '(f10.3)') zcrest + 0.5_dp * ucrest * ucrest / ag
       write (TEX(46:55), '(f10.3)') edo
       call ICTEXT(trim(TEX), 5, 18, Ncolana)
 
@@ -601,25 +601,25 @@ contains
 
       if (j12 == 1) then
          TEX = 'Q supergrid    :            (m2/s); Q/Qana =                              '
-         qsup = 0.1d0 * crs(4)%sumvalcur(IPNT_Q1C) ! specific
+         qsup = 0.1_dp * crs(4)%sumvalcur(IPNT_Q1C) ! specific
          write (TEX(18:27), '(f10.3)') qsup
          write (TEX(47:56), '(f10.3)') qsup / qweirana
          call ICTEXT(trim(TEX), 5, 22, 221)
 
          TEX = 'Q nothing      :            (m2/s); Q/Qana =                              '
-         qsub = 0.1d0 * crs(3)%sumvalcur(IPNT_Q1C) ! specific
+         qsub = 0.1_dp * crs(3)%sumvalcur(IPNT_Q1C) ! specific
          write (TEX(18:27), '(f10.3)') qsub
          write (TEX(47:56), '(f10.3)') qsub / qweirana
          call ICTEXT(trim(TEX), 5, 24, 221)
 
          TEX = 'Q General      :            (m2/s); Q/Qana =                              '
-         qcond = 0.1d0 * crs(2)%sumvalcur(IPNT_Q1C) ! specific
+         qcond = 0.1_dp * crs(2)%sumvalcur(IPNT_Q1C) ! specific
          write (TEX(18:27), '(f10.3)') qcond
          write (TEX(47:56), '(f10.3)') qcond / qweirana
          call ICTEXT(trim(TEX), 5, 26, 221)
 
          TEX = 'Q fixedweir    :            (m2/s); Q/Qana =                              '
-         qthd = 0.1d0 * crs(1)%sumvalcur(IPNT_Q1C) ! specific
+         qthd = 0.1_dp * crs(1)%sumvalcur(IPNT_Q1C) ! specific
          write (TEX(18:27), '(f10.3)') qthd
          write (TEX(47:56), '(f10.3)') qthd / qweirana
          call ICTEXT(trim(TEX), 5, 28, 221)
@@ -630,14 +630,14 @@ contains
                submer = zdownstream / zupstream
                write (mout, '(6F9.6)') submer, Qweirana / qfree, qthd / qfree ! qsup/qfree, qsub/qfree,
             else
-               submer = 0d0
+               submer = 0.0_dp
             end if
          end if
 
       else
 
          TEX = 'Q fixedweir  :            (m2/s); Q/Qana =                              '
-         qthd = crs(1)%sumvalcur(IPNT_Q1C) / (80d0 * sqrt(2d0)) ! specific
+         qthd = crs(1)%sumvalcur(IPNT_Q1C) / (80.0_dp * sqrt(2.0_dp)) ! specific
          write (TEX(18:27), '(f10.3)') qthd
          write (TEX(47:56), '(f10.3)') qthd / qweirana
          call ICTEXT(trim(TEX), 5, 22, 221)
@@ -674,14 +674,14 @@ contains
       hup = s0(17); hdown = s0(13); agate = zgate(1)
       if (hup > hdown + 0.0001) then
 
-         call findqorifice(agate, 0d0, hup, hdown, qgate, z2, zg, regime, num, qcrit)
+         call findqorifice(agate, 0.0_dp, hup, hdown, qgate, z2, zg, regime, num, qcrit)
 
          TEX = 'Q-Analytic bot :            (m2/s); '//regime
          write (TEX(18:27), '(f10.3)') qgate
          call ICTEXT(trim(TEX), 5, 34, ncolana)
          TEX = 'Q bot channel  :            (m2/s); Q/Qana =                              '
          write (TEX(18:27), '(f10.3)') 0.1 * q1(14)
-         write (TEX(47:56), '(f10.3)') 0.1 * q1(14) / max(1d-4, qgate)
+         write (TEX(47:56), '(f10.3)') 0.1 * q1(14) / max(1.0e-4_dp, qgate)
          call ICTEXT(trim(TEX), 5, 36, 221)
 
       end if
@@ -729,7 +729,7 @@ contains
       integer :: icrs, np, nl, ip1, kL, kR
 
       integer, save :: icount
-      real(kind=dp), save :: time2write = -1d99
+      real(kind=dp), save :: time2write = -1.0e99_dp
       logical, save :: Lwriteheader = .true., Lheaderwritten = .false.
       logical :: Lwritetime
 
@@ -738,18 +738,18 @@ contains
       character(len=40) :: tex
       real(kind=dp) :: sumba
 
-      if (abs(bedslope) < 1d-8) bedslope = -0d-5 ! SPvdP: now old mdu-files still work
+      if (abs(bedslope) < 1.0e-8_dp) bedslope = -0.0e-5_dp ! SPvdP: now old mdu-files still work
 
       hev = vicouv ! horizontal eddy viscosity
 
-      c0 = -0.5d0 * ag * bedslope ! g*i/2
+      c0 = -0.5_dp * ag * bedslope ! g*i/2
       c2 = 0.0
 
-      b = 100d0 ! channel width
+      b = 100.0_dp ! channel width
 
       dy = 10 ! cellsize near wall
 
-      hdy = 0.5d0 * dy
+      hdy = 0.5_dp * dy
 
       yw = b / 2 - hdy
 
@@ -767,7 +767,7 @@ contains
          c2 = c0 * (b / 2)**2
       end if
 
-      c0 = c0 / max(hev, 1d-8); c2 = c2 / max(hev, 1d-8)
+      c0 = c0 / max(hev, 1.0e-8_dp); c2 = c2 / max(hev, 1.0e-8_dp)
 
       xx0 = minval(xk)
       yy0 = maxval(yk) + 3 * dy
@@ -808,10 +808,10 @@ contains
          ndraw(18) = 4 + 1 ! SPvdP: plot profiles, compute analytic solution
       else
 !   velocity boundary condition only
-         if (vol0tot > 0d0) then
-            fac = 4d5 / vol0tot
+         if (vol0tot > 0.0_dp) then
+            fac = 4.0e5_dp / vol0tot
          else
-            fac = 1d0
+            fac = 1.0_dp
          end if
 
          do k = 1, nbndu
@@ -834,10 +834,10 @@ contains
 
       end if
 
-      avedif = 0d0; sumba = 0d0
+      avedif = 0.0_dp; sumba = 0.0_dp
       do k = 1, ndxi
          yy = yy0 + yz(k)
-         if (xz(k) > 390d0) then
+         if (xz(k) > 390.0_dp) then
             xx = xx0 + 50 * sqrt(ucx(k) * ucx(k) + ucy(k) * ucy(k))
             call rcirc(xx, yy)
          end if
@@ -851,11 +851,11 @@ contains
       end do
       avedif = avedif / sumba
 
-      call SETTEXTSIZEFAC(2d0)
+      call SETTEXTSIZEFAC(2.0_dp)
       TEX = 'Ave Difference (m/s) =             '
       write (TEX(24:33), '(F10.7)') avedif
       !CALL ICTEXT(TRIM(TEX),4,25,ncolana)
-      call SETTEXTSIZEFAC(1d0)
+      call SETTEXTSIZEFAC(1.0_dp)
 
 !  write cross-section data to file
       if (time0 >= time2write) then
@@ -895,7 +895,7 @@ contains
             !   sort crossings in increasing polygon coordinate
             if (nl > 0) then
                do i = 1, nl
-                  dcrs(i) = dble(crs(icrs)%path%indexp(i)) + (1d0 - crs(icrs)%path%wfp(i))
+                  dcrs(i) = real(crs(icrs)%path%indexp(i), kind=dp) + (1.0_dp - crs(icrs)%path%wfp(i))
                end do
                call sort_index(dcrs(1:nl), perm(1:nl))
             else
@@ -913,7 +913,7 @@ contains
                   yL = crs(icrs)%path%yp(ip1)
                   yR = crs(icrs)%path%yp(ip1 + 1)
 
-                  alpha = 1d0 - crs(icrs)%path%wfp(i)
+                  alpha = 1.0_dp - crs(icrs)%path%wfp(i)
 
                   x1 = xL + alpha * (xR - xL)
                   y1 = yL + alpha * (yR - yL)

@@ -32,6 +32,8 @@
 
 submodule(m_partition_METIS_to_idomain) m_partition_METIS_to_idomain_
 
+
+   use precision, only: dp
    implicit none
 
 contains
@@ -129,7 +131,7 @@ contains
 
       vwgt = 1 ! weights of vertices
       vsize = 1 ! size of vertices for computing the total communication volume
-      tpwgts = 1d0 / dble(Nparts) ! desired weight for each partition
+      tpwgts = 1.0_dp / real(Nparts, kind=dp) ! desired weight for each partition
 
 !!     make mesh
       if (method == 3) then
@@ -142,7 +144,7 @@ contains
             do k = 1, N
 !!              reallocate if necessary
                if (ipoint > icursize) then
-                  icursize = int(1.2d0 * ipoint) + 1
+                  icursize = int(1.2_dp * ipoint) + 1
                   call realloc(eind, icursize, keepExisting=.true.)
                end if
                eind(ipoint) = netcell(ic)%nod(k)

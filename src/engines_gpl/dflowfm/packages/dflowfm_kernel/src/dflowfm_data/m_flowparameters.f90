@@ -88,19 +88,19 @@ module m_flowparameters
 
    integer :: jacorioconstant = 0 !< 0=default, 1=Coriolis constant in sferic models anyway,2=beta plane, both in cart. and spher. coor.
 
-   real(kind=dp) :: Oceaneddyamp = 0.0d0 !< Amplitude of testcase Oceaneddy, negative = anticyclone
+   real(kind=dp) :: Oceaneddyamp = 0.0_dp !< Amplitude of testcase Oceaneddy, negative = anticyclone
 
-   real(kind=dp) :: Oceaneddyvel = 0.0d0 !< Velocity of testcase Oceaneddy, negative = anticyclone
+   real(kind=dp) :: Oceaneddyvel = 0.0_dp !< Velocity of testcase Oceaneddy, negative = anticyclone
 
-   real(kind=dp) :: Oceaneddysizefrac = 0.05d0 !< Length scale relative to diagonal domain size
+   real(kind=dp) :: Oceaneddysizefrac = 0.05_dp !< Length scale relative to diagonal domain size
 
-   real(kind=dp) :: Oceaneddysize = 0.0d0 !< Length scale relative to diagonal domain size
+   real(kind=dp) :: Oceaneddysize = 0.0_dp !< Length scale relative to diagonal domain size
 
-   real(kind=dp) :: Oceaneddyxoff = 0.0d0 !< relative domain size xoffset from centre
+   real(kind=dp) :: Oceaneddyxoff = 0.0_dp !< relative domain size xoffset from centre
 
-   real(kind=dp) :: Oceaneddyyoff = 0.0d0 !< relative domain size yoffset from centre
+   real(kind=dp) :: Oceaneddyyoff = 0.0_dp !< relative domain size yoffset from centre
 
-   real(kind=dp) :: Corioadamsbashfordfac = 0.5d0 !< Coriolis Adams Bashforth , 0d0 = explicit, 0.5 = AB
+   real(kind=dp) :: Corioadamsbashfordfac = 0.5_dp !< Coriolis Adams Bashforth , 0d0 = explicit, 0.5 = AB
 
    real(kind=dp) :: hhtrshcor !< if > 0 safety for hu/hs in corio for now, ==0
 
@@ -253,16 +253,16 @@ module m_flowparameters
 
    real(kind=dp) :: Uniformhu !< Uniformhu for arjen's membranes
    real(kind=dp) :: bedslope !< bed inclination testcases
-   real(kind=dp) :: bedslopedir = 45d0 !< bed inclination dir (deg)
-   real(kind=dp) :: bedwidth = 100d0 !< width of channel
-   real(kind=dp) :: bedwaveamplitude = 0d0 !< bed testcases
-   real(kind=dp) :: bedwavelength = 0d0 !< bed testcases
+   real(kind=dp) :: bedslopedir = 45.0_dp !< bed inclination dir (deg)
+   real(kind=dp) :: bedwidth = 100.0_dp !< width of channel
+   real(kind=dp) :: bedwaveamplitude = 0.0_dp !< bed testcases
+   real(kind=dp) :: bedwavelength = 0.0_dp !< bed testcases
 
    real(kind=dp) :: Slopedrop2D !< Apply losses for 'rain from the roof', only if local bottom slope > Slopedrop2D, only for Slopedrop2D  > 0.0
    logical :: drop1D !< Apply losses for all 1d links,
    real(kind=dp) :: drop2D !< Apply losses in 2D if downwind z below bob + 2/3 hu
    real(kind=dp) :: drop3D !< Apply losses in 3D if downwind z below bob + 2/3 hu
-   real(kind=dp) :: zwsbtol = 0d0 !< zws(kb0) = bl - zwsbtol
+   real(kind=dp) :: zwsbtol = 0.0_dp !< zws(kb0) = bl - zwsbtol
    integer :: keepzlayeringatbed = 2 !< only for z, 0=thin bed layer
    !< 1= : bedlayer=zlayer
    !< 2= : 0.5*(z2+z0), z0 being floor level layer 1, z2 being ceiling layer 2
@@ -306,8 +306,8 @@ module m_flowparameters
    real(kind=dp) :: fixedweirtopwidth !< , e.g. 4.00 (m)
    real(kind=dp) :: fixedweirtopfrictcoef !< if .ne. dmiss, use this friction coefficient on top width
    real(kind=dp) :: fixedweirtalud !< , e.g. 4 ( ) for 1 to 4 talud
-   real(kind=dp) :: waquaweirthetaw = 0.6d0 !< , e.g. 0.6
-   real(kind=dp) :: huweirregular = 0.0d0 !< For Tabellenboek and Villemonte:
+   real(kind=dp) :: waquaweirthetaw = 0.6_dp !< , e.g. 0.6
+   real(kind=dp) :: huweirregular = 0.0_dp !< For Tabellenboek and Villemonte:
    !< hu <  huweirregular : true flow area
    !< hu >= huweirregular : flow area as if no weir present
    real(kind=dp) :: sini !< uniform initial waterlevel (m),     (uniform bottom level = zkuni)
@@ -323,13 +323,13 @@ module m_flowparameters
    real(kind=dp) :: zkdropstep !< Amount of bottomlevel to be added with dropland (m)
    real(kind=dp) :: sdropstep !< Amount of water to be added with dropwater (m)
 
-   real(kind=dp), parameter :: eps3 = 1d-3 !< min value in storage_area check
-   real(kind=dp), parameter :: eps4 = 1d-4 !< min au in poshchk
-   real(kind=dp), parameter :: eps6 = 1d-6 !<
-   real(kind=dp), parameter :: eps8 = 1d-8 !< implicit diffusion
-   real(kind=dp), parameter :: eps10 = 1d-10 !<
-   real(kind=dp), parameter :: eps20 = 1d-20 !< turbulenceTimeIntegrationFactor
-   real(kind=dp) :: epshsdif = 1d-2 !< hs < epshsdif: no vertical diffusion if hs < epshsdif
+   real(kind=dp), parameter :: eps3 = 1.0e-3_dp !< min value in storage_area check
+   real(kind=dp), parameter :: eps4 = 1.0e-4_dp !< min au in poshchk
+   real(kind=dp), parameter :: eps6 = 1.0e-6_dp !<
+   real(kind=dp), parameter :: eps8 = 1.0e-8_dp !< implicit diffusion
+   real(kind=dp), parameter :: eps10 = 1.0e-10_dp !<
+   real(kind=dp), parameter :: eps20 = 1.0e-20_dp !< turbulenceTimeIntegrationFactor
+   real(kind=dp) :: epshsdif = 1.0e-2_dp !< hs < epshsdif: no vertical diffusion if hs < epshsdif
    ! parameters controlling flooding/drying/solving
    integer :: testdryflood !< Flag for testing alternative drying flooding algoritm; 0 = standard, 1 =Delft3D-FLOW
    integer :: testfixedweirs !< Flag for fixed weir options; 0 = original Villemonte approach, 1 = Sieben2007
@@ -341,7 +341,7 @@ module m_flowparameters
    real(kind=dp) :: chkdifd !< check diffusion, only for jatransportautotimestepdiff== 1
    real(kind=dp) :: chkwndd !< check windstress for 'drying' below this waterdepth
    real(kind=dp) :: chktempdep !< check heatfluxes for 'drying' below this waterdepth
-   real(kind=dp) :: trsh_u1Lb = 0.0d0
+   real(kind=dp) :: trsh_u1Lb = 0.0_dp
    integer :: jposhchk !< check for positive waterdepth; 0 = no
                                                         !!                               -1 = 1.0*dts, only check for dry cells and report back, restart Nested Newton, not timestep.
                                                         !!                                1 = 0.7*dts, just redo
@@ -422,17 +422,17 @@ module m_flowparameters
 
    integer :: inivel !< initial velocity (1) or not (0)
 
-   real(kind=dp) :: cffacver = 0d0 !< switch to low order at high cf in constituent transport vertical, 1d0=yes, 0d0 = no
+   real(kind=dp) :: cffacver = 0.0_dp !< switch to low order at high cf in constituent transport vertical, 1d0=yes, 0d0 = no
 
-   real(kind=dp) :: cffachormom = 1d0 !< switch to low order at high cf in horizontal mom. transport, 1d0=yes, 0d0 = no
+   real(kind=dp) :: cffachormom = 1.0_dp !< switch to low order at high cf in horizontal mom. transport, 1d0=yes, 0d0 = no
 
-   real(kind=dp) :: cfexphormom = 1d0 !< exponent of same
+   real(kind=dp) :: cfexphormom = 1.0_dp !< exponent of same
 
-   real(kind=dp) :: cfconhormom = 0d0 !< constant of same
+   real(kind=dp) :: cfconhormom = 0.0_dp !< constant of same
 
-   real(kind=dp) :: cffachu = 1d0 !< switch to low order at high cf in sethu, 1d0=yes, 0d0 = no
+   real(kind=dp) :: cffachu = 1.0_dp !< switch to low order at high cf in sethu, 1d0=yes, 0d0 = no
 
-   real(kind=dp) :: cfexphu = 1d0 !< exponent of same
+   real(kind=dp) :: cfexphu = 1.0_dp !< exponent of same
 
    real(kind=dp) :: toplayminthick !< minimum top layer thickness (m)
 
@@ -630,7 +630,7 @@ module m_flowparameters
    real(kind=dp), dimension(NPARMS_DBL) :: dparms
 
 ! parameters for nudging
-   real(kind=dp) :: Tnudgeuni = 3600d0 !< uniform nudge relaxation time
+   real(kind=dp) :: Tnudgeuni = 3600.0_dp !< uniform nudge relaxation time
 
 ! parameters for internal tides dissipation
    real(kind=dp) :: ITcap !< limit to Internal Tides Dissipation / area (J/(m^2 s))
