@@ -63,7 +63,7 @@ contains
 
       num = 0
       do kk = 1, Ndxi
-         if (mod(istep + 1, ndeltasteps(kk)) == 0) then
+         if (mod(istep, ndeltasteps(kk)) == 0) then
 !      if ( int((istep+1)/ndeltasteps(kk))*ndeltasteps(kk).eq.istep+1 ) then
             jaupdate(kk) = 1
             num = num + 1

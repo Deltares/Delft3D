@@ -990,7 +990,7 @@ contains
       use sediment_basics_module
       use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz, ndx
       use m_flow, only: kmx, s1, vol1
-      use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
+      use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor !, stmpar
       use m_fm_erosed, only: nd => nd_mor, sedtyp, depfac, max_mud_sedtyp
       use m_sediment, only: avalflux, ssccum
       use m_flowtimes, only: dts, dnt
@@ -1619,9 +1619,10 @@ contains
             ! After review, botcrit as a parameter is a really bad idea, as it causes concentration explosions if chosen poorly or blchg is high.
             ! Instead, allow bottom level changes up until 5% of the waterdepth to influence concentrations
             ! This is in line with the bed change messages above. Above that threshold, change the concentrations as if blchg==0.95hs
-            if (hsk < epshs) cycle
-            botcrit = 0.95 * hsk
-            ddp = hsk / max(hsk - blchg(k), botcrit)
+            !if (hsk < stmpar%morpar%sedthr) cycle
+            !botcrit = 0.95 * hsk
+            ddp = hsk / max(hsk - blchg(k), stmpar%morpar%sedthr)
+            if (ddp /= 1.0_dp) then !ddp/=1.0_dp
             do ll = 1, stmpar%lsedsus
                constituents(ised1 + ll - 1, k) = constituents(ised1 + ll - 1, k) * ddp
             end do !ll
@@ -1635,6 +1636,7 @@ contains
                   constituents(itrac, k) = constituents(itrac, k) * ddp
                end do
             end if !ITRA1>0
+            end if !ddp/=1.0_dp
          end do !k
       else !kmx==0
          do ll = 1, stmpar%lsedsus ! works for sigma only

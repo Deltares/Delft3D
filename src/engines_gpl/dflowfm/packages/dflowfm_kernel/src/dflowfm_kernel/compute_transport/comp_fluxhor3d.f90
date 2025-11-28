@@ -375,7 +375,7 @@ contains
                         !    dsalL(L) =  min(0d0, max(dsalL(L), sed(j,k2) - sed(j,k1) ) )
                         !endif
                         flux(j, L) = flux(j, L) - fluxfac * dsalL(L)
-                     else if (j == Itemp) then
+                     else if (j == ITEMP) then
                         !if (dtemL(L) > 0 ) then
                         !    dtemL(L) =  max(0d0, min(dtemL(L), sed(j,k2) - sed(j,k1) ) )
                         !else if (dtemL(L) < 0 ) then

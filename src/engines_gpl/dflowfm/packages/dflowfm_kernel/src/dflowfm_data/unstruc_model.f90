@@ -1063,6 +1063,7 @@ contains
       if (jatransportautotimestepdiff == 3 .and. kmx > 0) then
          call mess(LEVEL_ERROR, 'Implicit horizontaldiffusion is only implemented in 2D', 'set TransportAutoTimestepdiff = 0, 1 or 2')
       end if
+      call prop_get(md_ptr, 'numerics', 'transportLocalTimeStep', ja_transport_local_time_step)
 
       call prop_get(md_ptr, 'numerics', 'Implicitdiffusion2D', Implicitdiffusion2D)
       if (Implicitdiffusion2D == 1) then
@@ -2995,6 +2996,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff, 'Auto Timestepdiff in Transport, 0 : lim diff, no lim Dt_tr, 1 : no lim diff, lim Dt_tr, 2: no lim diff, no lim Dt_tr, 3=implicit (only 2D)')
+      call prop_set(prop_ptr, 'numerics', 'transportLocalTimeStep', ja_transport_local_time_step, '0=no, 1=yes (default), 2=yes but all cells use the same local time step. Flag for local time stepping in the transport module')
       call prop_set(prop_ptr, 'numerics', 'Implicitdiffusion2D', Implicitdiffusion2D, '1 = Yes, 0 = No')
 
       call prop_set(prop_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport, 'Diagnostic ("frozen") transport (0: prognostic transport, 1: diagnostic transport)')
@@ -3474,6 +3476,7 @@ contains
             call prop_set(prop_ptr, 'sediment', 'InMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
             call prop_set(prop_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
             call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)')
+            call prop_set(prop_ptr, 'sediment', 'SourSink', jasourcesink, 'Source-sink setting (0:off, 1:on (default), 2:only sources 3:only sinks')
          end if
 
          if (jased /= 4) then
@@ -3661,7 +3664,7 @@ contains
       call prop_set(prop_ptr, 'Time', 'dtFacMax', dt_fac_max, 'Max timestep increase factor ( )')
       call prop_set(prop_ptr, 'Time', 'dtInit', dt_init, 'Initial computation timestep (s)')
 
-      call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no, 1=see file *.steps')
+      call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no, 1=yes (default)')
 
       if (writeall .or. ja_timestep_auto /= 1) then
          call prop_set(prop_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')

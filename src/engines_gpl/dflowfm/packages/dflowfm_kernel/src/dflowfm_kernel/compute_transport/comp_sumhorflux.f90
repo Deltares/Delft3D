@@ -56,7 +56,6 @@ contains
       integer, dimension(Lnx), intent(in) :: Ltop !< flow-link based layer administration
       real(kind=dp), dimension(NUMCONST, Lnkx), intent(in) :: fluxhor !< horizontal advection fluxes
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux ! sum of horizontal fluxes, dim(NUMCONST,Ndkx)
-
       integer :: LL, L, Lb, Lt
       integer :: j, k1, k2
 
@@ -73,7 +72,7 @@ contains
             do j = 1, NUMCONST
                sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L)
                sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L)
-            end do
+            end do  
          end do
       else
 !     add horizontal fluxes to right-hand side

@@ -197,6 +197,7 @@ contains
       if (stm_included .and. ised1 > 0) then
          do grain = 1, mxgr
             do k = 1, ndx
+               ssccum(grain, k) = 0.0_dp
                if (hs(k) <= stmpar%morpar%sedthr) then
                   call getkbotktop(k, kb, kt)
                   ssccum(grain, k) = ssccum(grain, k) + sum(constituents(ISED1 + grain - 1, kb:kt) * vol1(kb:kt)) / &

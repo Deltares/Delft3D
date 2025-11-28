@@ -58,6 +58,7 @@ contains
       use m_alloc
       use unstruc_model, only: md_thetav_waq
       use m_bedform, only: bfmpar
+      use m_missing, only: imiss
 
       implicit none
 
@@ -254,10 +255,10 @@ contains
 
 !  local timestepping
       time_dtmax = -1.0_dp ! cfl-numbers not evaluated
-      nsubsteps = 1
-      ndeltasteps = 1
-      jaupdatehorflux = 1
-      numnonglobal = 0
+      nsubsteps = imiss
+      ndeltasteps = imiss
+      jaupdatehorflux = imiss
+      numnonglobal = imiss
 
 !  sediment advection velocity
       jaupdateconst = 1

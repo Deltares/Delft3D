@@ -53,10 +53,14 @@ contains
       integer, intent(in) :: maxnumthreads !< Desired maximum number of OpenMP threads.
       integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
 
+#ifdef _OPENMP
       integer :: openmp_threads
+#endif
       iresult = DFM_NOERR
 #ifndef _OPENMP
       associate (maxnumthreads => maxnumthreads) ! Required to prevent compiler error for unused variable in case OpenMP is not defined
+      end associate
+      associate (mpion => mpion) ! Required to prevent compiler error for unused variable in case OpenMP is not defined
       end associate
 #endif
 

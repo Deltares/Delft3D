@@ -231,6 +231,7 @@ module m_fm_erosed
    real(fp), dimension(:, :), pointer :: ssycum
    real(fp), dimension(:, :), pointer :: sinkse
    real(fp), dimension(:, :), pointer :: sourse
+   real(fp), dimension(:, :), pointer :: sink_im
    real(fp), dimension(:, :), pointer :: sour_im
    real(fp), dimension(:, :), pointer :: srcmax
    real(fp), dimension(:), pointer :: taub

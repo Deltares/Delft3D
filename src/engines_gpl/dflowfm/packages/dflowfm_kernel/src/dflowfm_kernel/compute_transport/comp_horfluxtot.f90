@@ -46,6 +46,7 @@ contains
       use m_transport, only: ISED1, ISEDN, fluxhor, fluxhortot
       use m_flowtimes, only: dts
       use timers, only: timon, timstrt, timstop
+      use precision, only: dp
 
       implicit none
 
@@ -53,7 +54,6 @@ contains
       integer :: j
 
       integer(4) :: ithndl = 0
-
       if (timon) call timstrt("comp_horfluxtot", ithndl)
 
       if (kmx < 1) then

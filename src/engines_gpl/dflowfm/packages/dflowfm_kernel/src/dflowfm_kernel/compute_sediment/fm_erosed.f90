@@ -44,6 +44,7 @@ module m_fm_erosed_sub
    private
 
    public :: fm_erosed
+   public :: compute_sediment_mass
 
 contains
 
@@ -87,12 +88,12 @@ contains
       use m_transport, only: ised1, constituents, isalt, itemp
       use dfparall
       use m_alloc
-      use m_missing
+      use m_missing, only: dmiss_neg, dmiss_pos
       use m_turbulence, only: vicwws, turkinws, rhowat
       use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
       use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor
-      use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse
+      use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse, sink_im
       use m_fm_erosed, only: hs_mor, mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, srcmax, sedtrcfac, sedd50, rhosol, nmudfrac, taucr, tetacr, dstar, iform
       use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, sedd50fld, sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
       use m_fm_erosed, only: asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc
@@ -125,6 +126,7 @@ contains
       logical :: flmd2l = .false.
       logical :: wave
 
+      
       integer, pointer :: iunderlyr
       real(prec), dimension(:, :), pointer :: bodsed
       !
@@ -187,6 +189,10 @@ contains
       real(fp) :: temperature
       real(fp), dimension(max(kmx, 1)) :: thicklc
       real(fp), dimension(max(kmx, 1)) :: siglc
+      real(fp) :: sink_theta      
+      real(fp) :: sour_theta      
+      real(fp) :: sink_factor      
+      real(fp) :: source_factor      
       real(fp) :: thick0
       real(fp) :: thick1
       real(fp) :: timhr
@@ -241,6 +247,11 @@ contains
       !
       error = .false.
       if (.not. stm_included) return
+      sink_theta = stmpar%morpar%mornum%sink_theta
+      sour_theta = stmpar%morpar%mornum%sour_theta
+      sink_factor = stmpar%morpar%mornum%sink_factor
+      source_factor = stmpar%morpar%mornum%source_factor
+      
       ubot_from_com = jauorbfromswan > 0
       timhr = time1 / 3600.0_fp
       !
@@ -330,6 +341,7 @@ contains
       sinkse = 0.0_fp
       sourse = 0.0_fp
       sour_im = 0.0_fp
+      sink_im = 0.0_fp
       ! source and sink terms fluff layer
       if (iflufflyr > 0) then
          sinkf = 0.0_fp
@@ -1014,7 +1026,7 @@ contains
             !
             suspfrac = has_advdiff(tratyp(l))
             !
-            tsd = -999.0_fp
+            tsd = dmiss_neg
             di50 = sedd50(l)
             if (di50 < 0.0_fp) then
                !  Space varying sedd50 specified in array sedd50fld:
@@ -1241,7 +1253,8 @@ contains
                   !
                   call soursin_2d(umod(nm), ustarc, h0, h1, &
                                 & ws(kb, l), tsd, trsedeq, factsd,    &
-                                & sourse(nm, l), sour_im(nm, l), sinkse(nm, l))
+                                & sour_theta, sink_theta, source_factor, sink_factor, &
+                                & sourse(nm, l), sour_im(nm, l), sinkse(nm, l), sink_im(nm, l))
                end if ! suspfrac
             end if ! kmaxlc = 1
             if (suspfrac) then
@@ -1342,25 +1355,20 @@ contains
          end do
       end do
       deallocate (evel, stat=istat)
-      !
-      ! Add implicit part of source term to sinkse
-      !
-      do l = 1, lsed
-         do nm = 1, ndx
-            sinkse(nm, l) = sinkse(nm, l) + sour_im(nm, l)
-         end do
-      end do
-      !
       if (jasourcesink == 0) then
-         sourse = 0d0
-         sinkse = 0d0
+         sourse = 0.0_dp
+         sinkse = 0.0_dp
+         sour_im = 0.0_dp
+         sink_im = 0.0_dp
       elseif (jasourcesink == 1) then
          !
       elseif (jasourcesink == 2) then
-         sinkse = 0d0
+         sinkse = 0.0_dp
+         sink_im = 0.0_dp
       elseif (jasourcesink == 3) then
-         sourse = 0d0
-      end if
+         sourse = 0.0_dp
+         sour_im = 0.0_dp
+      end if      
       !
 
       deallocate (dzdx, dzdy, stat=istat)
@@ -1373,4 +1381,69 @@ contains
 
    end subroutine fm_erosed
 
+   subroutine compute_sediment_mass(time, pos)
+      use precision, only: dp
+      use m_sediment, only: stmpar
+      use m_flowgeom, only: ndx, ba
+      use m_transport
+      use m_flow, only: vol0, vol1
+      
+      implicit none 
+      logical, save :: first = .true.
+      character(len=30), save :: filename
+
+      real(kind=dp) :: time
+      integer :: pos
+      character(len=30) :: extra
+      
+      real(kind=dp) :: mbs, mbb, mba
+      integer :: k, klyr
+      integer :: unit
+      integer :: values(8)
+ 
+      call date_and_time(values=values) 
+    
+      if (pos == 1) then
+          extra = 'before erosed'
+      else if (pos == 2) then
+          extra = 'after erosed'
+      else if (pos == 3) then
+          extra = 'after transport'
+      else if (pos == 4) then
+          extra = 'after bed update'
+      else if (pos == 5) then
+          extra = 'after volsur'
+      else
+          pos = 1
+          extra = 'unknown'
+      end if
+      mbs = 0.0_dp
+      if (pos < 3) then 
+         do k = 1, ndx
+             mbs = mbs+constituents(1,k)*vol0(k) ! kg suspended
+         end do
+      else
+         do k = 1, ndx
+             mbs = mbs+constituents(1,k)*vol1(k) ! kg suspended
+         end do
+      end if 
+      mbb = 0.0_dp
+      do k = 1, ndx
+          do klyr = 1, stmpar%morlyr%settings%nlyr
+             mbb = mbb+stmpar%morlyr%state%msed(1, klyr, k) * ba(k) ! kg in bed
+          end do
+      end do
+      mba = mbb + mbs
+      if (first) then 
+          write(filename, '(a,i4,i2.2,i2.2,a,i2.2,i2.2,a)') 'mass_', values(1),values(2),values(3),'_',values(5), values(6), '.csv'
+          open(newunit=unit, file=filename, status='replace')
+          write(unit,*) 'time, suspended [kg], bed [kg], total[kg], extra'
+          first = .false.
+      else 
+          open(newunit=unit, file=filename, access='append')
+      end if 
+      write(unit,'(F10.3,a,F20.4,a,F20.4,a,F20.4,a,a)') time, ',', mbs, ',', mbb, ',', mba, ', ', extra
+      close(unit)
+   end subroutine compute_sediment_mass
+   
 end module m_fm_erosed_sub
