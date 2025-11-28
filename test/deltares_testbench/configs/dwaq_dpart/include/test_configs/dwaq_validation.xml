@@ -162,7 +162,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c11_channel_flow_open_sides_scheme15" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c11_channel_flow_open_sides_scheme15</path>
+        <path version="2025-11-18T12:52:28.946000">e03_waq/f09_validation_water_quality_delwaq/c11_channel_flow_open_sides_scheme15</path>
         <checks>
             <file name="dwaq/channel_flow_open_sides.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -717,7 +717,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c103_determination_oxic_sulfic_condittions_0d" ref="dwaq_default">
-        <path version="2024-01-11T13:20:00">e03_waq/f09_validation_water_quality_delwaq/c103_determination_oxic_sulfic_conditions_0d</path>
+        <path version="2025-11-18T12:52:25.241000">e03_waq/f09_validation_water_quality_delwaq/c103_determination_oxic_sulfic_conditions_0d</path>
         <checks>
             <file name="dwaq/separate_4segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
@@ -738,7 +738,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f09_c104_calculation_diurnal_radiation_0d" ref="dwaq_default">
-        <path version="2025-06-25T22:20:00">e03_waq/f09_validation_water_quality_delwaq/c104_calculation_diurnal_radiation_0d</path>
+        <path version="2025-11-18T12:52:26.830000">e03_waq/f09_validation_water_quality_delwaq/c104_calculation_diurnal_radiation_0d</path>
         <checks>
             <file name="dwaq/separate_4segments.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
