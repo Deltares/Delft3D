@@ -87,7 +87,6 @@ contains
       integer, parameter :: Rajaratnam = 23
       integer, parameter :: Tabellenboek = 24
       integer, parameter :: Villemonte = 25
-      integer, parameter :: LINEAR_CONTINUITY = 1
       integer, parameter :: DRY_FLAG = 1
       integer, parameter :: CENTRAL_FROM_BED_TIL_SECOND_OR_FIRST_ABOVE_LOCAL_BOB = 1
       integer, parameter :: ALL_CENTRAL = 2
@@ -224,12 +223,6 @@ contains
       do link = 1, lnx ! why is it here?- it is not hu
          huvli(link) = 1.0_dp / max(epshs, acl(link) * hs(ln(1, link)) + (1.0_dp - acl(link)) * hs(ln(2, link)))
       end do
-
-      if (lincontin == LINEAR_CONTINUITY) then ! is this only for 2D? why not at the beginning?
-         do link = 1, lnx
-            hu(link) = -0.5_dp * (bob(1, link) + bob(2, link))
-         end do
-      end if
 
       if (nbnd1d2d > 0) then ! 1d2d boundary check for closed boundaries
          call sethu_1d2d()
