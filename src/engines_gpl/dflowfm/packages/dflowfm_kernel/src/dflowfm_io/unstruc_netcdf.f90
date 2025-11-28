@@ -12651,8 +12651,6 @@ contains
             ncontactnodes = ncontacts * 2
          else if (mesh1_topo_dim == 1) then
             ncontactnodes = ncontacts
-         else
-            !TODO: throw error
          end if
 
          call increasenetw(numk_last + ncontactnodes, numl_last + ncontacts)

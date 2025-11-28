@@ -4179,22 +4179,34 @@ contains
       integer, intent(out) :: mesh1_topo_dim !< Topology dimension of first mesh
       integer, intent(out) :: mesh2_topo_dim !< Topology dimension of second mesh
       integer :: ierr !< Result status (UG_NOERR if successful)
-
-      character(len=:), allocatable :: contact_attr
-      character(len=nf90_max_name) :: mesh1_name, mesh2_name, location1, location2
+   
+      character(len=:), allocatable :: contact_attr, contact_name
+      character(len=nf90_max_name) :: mesh1_name, mesh2_name, location1, location2, temp
       integer :: istart, icolon, ispace, mesh1_varid, mesh2_varid
 
       ierr = UG_NOERR
 
+      !> defaults, in case contacts attribute was incorrectly written we assume old situation
+      mesh1_topo_dim = 1
+      mesh2_topo_dim = 2
+
+      ! Get the contact variable name for better error messages
+      ierr = nf90_inquire_variable(ncid, contactids%varids(cid_contacttopo), name=temp) ! nf90_inquire cannot handle allocatable strings
+      if (ierr /= nf90_noerr) then
+         contact_name = 'unknown_contact'  ! Fallback name
+      else
+         contact_name = trim(temp)
+      end if
+
       ! Get the contact attribute value
       ierr = ncu_get_att(ncid, contactids%varids(cid_contacttopo), 'contact', contact_attr)
-      call check_ug_error(ierr, 'Could not read contact attribute from mesh topology contact.')
+      call check_ug_error(ierr, 'Could not read contact attribute from mesh topology contact "'//contact_name//'", assuming defaults.')
       if (ierr /= nf90_noerr) return
 
       ! Parse first mesh name
       icolon = index(contact_attr, ':')
       if (icolon == 0) then
-         call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing first colon.')
+         call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing first colon from mesh topology contact "'//contact_name//'", assuming defaults.')
          ierr = UG_SOMEERR
          return
       end if
@@ -4204,15 +4216,14 @@ contains
       istart = icolon + 2 ! skip space
       ispace = index(contact_attr(istart:), ' ')
       if (ispace == 0) then
-         call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing space separator.')
-         ierr = UG_SOMEERR
+         call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing space separator from mesh topology contact "'//contact_name//'", assuming defaults.')
          return
       end if
       istart = istart + ispace
 
       icolon = index(contact_attr(istart:), ':')
       if (icolon == 0) then
-         call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing second colon.')
+         call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing second colon from mesh topology contact "'//contact_name//'", assuming defaults.')
          ierr = UG_SOMEERR
          return
       end if
@@ -4220,20 +4231,20 @@ contains
 
       ! Get mesh1 topology dimension
       ierr = nf90_inq_varid(ncid, trim(mesh1_name), mesh1_varid)
-      call check_ug_error(ierr, 'Could not find mesh topology "'//trim(mesh1_name)//'".')
+      call check_ug_error(ierr, 'Could not find mesh topology "'//trim(mesh1_name)//'" from mesh topology contact "'//contact_name//'", assuming default (1).')
       if (ierr /= nf90_noerr) return
 
       ierr = nf90_get_att(ncid, mesh1_varid, 'topology_dimension', mesh1_topo_dim)
-      call check_ug_error(ierr, 'Could not read topology_dimension for "'//trim(mesh1_name)//'".')
+      call check_ug_error(ierr, 'Could not read topology_dimension for "'//trim(mesh1_name)//'" from mesh topology contact "'//contact_name//'", assuming default (1).')
       if (ierr /= nf90_noerr) return
 
       ! Get mesh2 topology dimension
       ierr = nf90_inq_varid(ncid, trim(mesh2_name), mesh2_varid)
-      call check_ug_error(ierr, 'Could not find mesh topology "'//trim(mesh2_name)//'".')
+      call check_ug_error(ierr, 'Could not find mesh topology "'//trim(mesh2_name)//'" from mesh topology contact "'//contact_name//'", assuming default (2).')
       if (ierr /= nf90_noerr) return
 
       ierr = nf90_get_att(ncid, mesh2_varid, 'topology_dimension', mesh2_topo_dim)
-      call check_ug_error(ierr, 'Could not read topology_dimension for "'//trim(mesh2_name)//'".')
+      call check_ug_error(ierr, 'Could not read topology_dimension for "'//trim(mesh2_name)//'" from mesh topology contact "'//contact_name//'", assuming default (2).')
 
    end function ug_get_contact_mesh_topology_dimensions
 
