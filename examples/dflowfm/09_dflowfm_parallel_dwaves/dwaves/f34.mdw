@@ -53,7 +53,7 @@
    UseHotFile           = false                        
    WriteCOM             = true                         
    COMWriteInterval     =  1.000000000000000000e+001         
-   COMFile              = ../dflowfm/dflowfmoutput/f34_com.nc                
+   COMFile              = ../dflowfm/output/f34_com.nc                
    locationFile         = ../dflowfm/f34_obs.xyn
    writetable           = true
    MapWriteNetCDF       = true                         

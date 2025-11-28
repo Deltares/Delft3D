@@ -1,0 +1,17 @@
+[General]
+fileVersion           = 1.01                
+fileType              = boundConds          
+
+[Forcing]
+name                  = L1_1_0001           
+function              = timeSeries          
+timeInterpolation     = linear              
+quantity              = time                
+unit                  = seconds since 1990-08-05 00:00:00
+quantity              = tracerbndNO3        
+unit                  = -
+0          0.1
+84000      0.1
+168000     0.1
+599999940  0.1
+

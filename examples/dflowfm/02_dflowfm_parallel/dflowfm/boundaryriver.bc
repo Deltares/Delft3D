@@ -1,0 +1,15 @@
+[General]
+fileVersion           = 1.01                
+fileType              = boundConds          
+
+[Forcing]
+name                  = L1_1_0001           
+function              = harmonic            
+quantity              = harmonic component  
+unit                  = minutes             
+quantity              = dischargebnd amplitude
+unit                  = m3/s                
+quantity              = dischargebnd phase  
+unit                  = deg
+0  2500  0     
+
