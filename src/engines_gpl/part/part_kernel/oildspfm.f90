@@ -725,7 +725,6 @@ contains
                 endif
                 rhooilv(ifrac, i) = rhow * fwatoil(ifrac, i) + rhooil(ifrac) * (1.0 - fwatoil(ifrac, i))         &
                         * (1.0 + cde * totfe(ifrac, i)) * (1.0 - cdt * (temp0 - temp0)) !if we work with temp dependent density then change temp0-temp0 into temp-reftemp (reference temperature)
-                !the var temp is used for the calculation of the evaporation
             end do
 
             !     End of the loop ovver all particles i

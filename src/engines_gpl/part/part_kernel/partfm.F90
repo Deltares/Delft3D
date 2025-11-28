@@ -52,8 +52,10 @@ contains
         use partmem
         use m_part_mesh
         use m_particles, only: NopartTot, Nrpart, trpart, xrpart, yrpart, zrpart, mrpart, irpart, laypart => kpart
+        use spec_feat_par, only: abmmodel
         use part10fm_mod
         use fm_oildsp_mod
+        use fm_abm_mod
         use fm_vert_disp_mod
         use m_partfm_decay
         use alloc_mod
@@ -67,6 +69,7 @@ contains
         use physicalconsts, only: earth_radius
         use mathconsts, only: raddeg_hp, pi
         use random_generator
+        use m_part_flow, only: kmx
 
         implicit none
 
@@ -221,7 +224,22 @@ contains
             call update_part(itime)
             call part10fm()
             !      jsferic = jsfer_old ! back to what it should be
-            call oildspfm(itime)
+            if (oil) then
+                call oildspfm(itime)
+            end if
+
+! AM: not yet, as support within unstructured grids is incomplete
+!            if (abmmodel) then
+!                call fm_abm(lunpr, itime, nmaxp, mmaxp, &
+!                layt, ndx/kmx, kmx, mnmaxk, lgrid, &
+!                lgrid2, lgrid3, nopart, npwndw, nosubs, &
+!                mpart, wpart, iptime, wsettl, locdep, &
+!                noconsp, const, concp, xa, ya, &
+!                flow, depth, &
+!                vdiff1, salin1, temper1, v_swim, d_swim, &
+!                itstrtp, vel1, vel2, zmodel, laybot, laytop)
+!            endif
+
             call fm_vert_disp(lun(2), itime)
             !     interpolation for wind speed/direction in the wind table
         end do
