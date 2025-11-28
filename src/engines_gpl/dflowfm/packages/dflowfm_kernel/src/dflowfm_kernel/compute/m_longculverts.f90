@@ -1128,7 +1128,7 @@ contains
             write (kchar, '(I0)') k
             pCrs%csid = trim(branchId)//'_'//trim(kchar)
             pCrs%branchid = indx
-            pCrs%bedLevel = 0.0d0
+            pCrs%bedLevel = 0.0_dp
             pCrs%shift = zpl(k) !number of gridpoints in branch should match zpl+2!!
             pCrs%chainage = network%brs%branch(indx)%gridpointschainages(k)
             call finalizeCrs(network, pCrs, iref, inext)

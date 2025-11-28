@@ -666,8 +666,8 @@ contains
          real(kind=dp) :: dl1, dl2, dL, ddmax
          real(kind=dp) :: dlinklength, dist_alt
 
-         real(kind=dp), parameter :: DMAX = 1d99
-         real(kind=dp), parameter :: fsixth = 1d0 / 6d0
+         real(kind=dp), parameter :: DMAX = 1.0e99_dp
+         real(kind=dp), parameter :: fsixth = 1.0_dp / 6.0_dp
          integer, parameter :: alpha = 1
 
 !      integer, parameter                                         :: IMISS = -999
@@ -676,13 +676,13 @@ contains
 
 !     nodemask < 1 deactivates nodes
 
-         dL = 0d0
+         dL = 0.0_dp
 
          dist = DMAX
          klink = 0
 
          kcur = kstart
-         dist(kcur) = 0d0
+         dist(kcur) = 0.0_dp
          do
             nodemask(kcur) = -nodemask(kcur)
             x1 = xk(kcur)
@@ -704,8 +704,8 @@ contains
 
                x2 = xk(kneighbor)
                y2 = yk(kneighbor)
-               x3 = 0.5d0 * (x1 + x2)
-               y3 = 0.5d0 * (y1 + y2)
+               x3 = 0.5_dp * (x1 + x2)
+               y3 = 0.5_dp * (y1 + y2)
 
                dlinklength = dbdistance(x1, y1, x2, y2, jsferic, jasfer3D, dmiss)
 
@@ -735,7 +735,7 @@ contains
                end if
 
 !           in case of netboundaries only: set penalty on weights when the link is not a boundary link
-               if (netboundonly == 1 .and. lnn(L) /= 1) ddmax = 1d6 * ddmax
+               if (netboundonly == 1 .and. lnn(L) /= 1) ddmax = 1.0e6_dp * ddmax
 
                dist_alt = dist(kcur) + dlinklength * ddmax
 
@@ -814,11 +814,11 @@ contains
             yend = ylan(jright)
          end if
 
-         disstartmin = 1d99
-         disendmin = 1d99
+         disstartmin = 1.0e99_dp
+         disendmin = 1.0e99_dp
 
-         disendmin_prev = 0d0
-         dislandend_prev = 0d0
+         disendmin_prev = 0.0_dp
+         dislandend_prev = 0.0_dp
 
          kend = 0 ! for kend_prev
          kend_prev = 0
@@ -934,8 +934,8 @@ contains
             yend = ylan(jright)
          end if
 
-         disstartmin = 1d99
-         disendmin = 1d99
+         disstartmin = 1.0e99_dp
+         disendmin = 1.0e99_dp
 
 !     get the links that are closest the land boundary start and end respectively
          do L = 1, numL

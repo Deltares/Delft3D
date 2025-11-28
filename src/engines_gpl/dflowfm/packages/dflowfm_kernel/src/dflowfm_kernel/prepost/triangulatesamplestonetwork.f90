@@ -172,18 +172,18 @@ contains
 
       NSDL = N
 
-      call READYY('TRIANGULATING', 0d0)
+      call READYY('TRIANGULATING', 0.0_dp)
 
       call DLAUN(XS, YS, NSDL, 3, ierr)
 
-      call READYY('TRIANGULATING', 0.3d0)
+      call READYY('TRIANGULATING', 0.3_dp)
 
       IN = -1
       ! Check triangles and disable some links if necessary.
       NMOD = int(NUMTRI / 40.0) + 1
       do N = 1, NUMTRI
          if (mod(N, NMOD) == 0) then
-            AF = 0.3d0 + 0.4d0 * dble(N) / dble(NUMTRI)
+            AF = 0.3_dp + 0.4_dp * real(N, kind=dp) / real(NUMTRI, kind=dp)
             call READYY('TRIANGULATING', AF)
          end if
 
@@ -216,7 +216,7 @@ contains
       L = L0
       do LL = 1, NUMEDGE
          if (mod(N, NMOD) == 0) then
-            AF = 0.7d0 + 0.3d0 * dble(LL) / dble(NUMEDGE)
+            AF = 0.7_dp + 0.3_dp * real(LL, kind=dp) / real(NUMEDGE, kind=dp)
             call READYY('TRIANGULATING', AF)
          end if
          if (EDGEINDX(1, LL) > 0) then
@@ -235,7 +235,7 @@ contains
 
          if (L > LMAX) then
             write (*, *) 'INCREASENETW(KMAX, INT(1.2_dp*NUML) )', NUML
-            call INCREASENETW(KMAX, int(1.2d0 * NUML))
+            call INCREASENETW(KMAX, int(1.2_dp * NUML))
          end if
 
       end do

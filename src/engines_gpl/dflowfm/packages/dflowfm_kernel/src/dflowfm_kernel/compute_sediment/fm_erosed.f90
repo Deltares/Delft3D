@@ -786,23 +786,23 @@ contains
          ! Calculate Van Rijn's reference height
          !
          if (iopkcw == 1) then !  iopkcw: options to calculate curr related roughness height
-            rc = 30.d0 * z0curk(nm) ! 33?
+            rc = 30.0_dp * z0curk(nm) ! 33?
          else
             rc = rdc
          end if
-         taks0 = max(aksfac * rc, 0.01d0 * h1)
+         taks0 = max(aksfac * rc, 0.01_dp * h1)
          !
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
-            if (twav(nm) > 0d0) then
-               delr = 0.025d0
-               taks0 = max(0.5d0 * delr, taks0)
+            if (twav(nm) > 0.0_dp) then
+               delr = 0.025_dp
+               taks0 = max(0.5_dp * delr, taks0)
             end if
          end if
          !
          ! Limit maximum aks to 20% of water depth
          ! (may be used when water depth becomes very small)
          !
-         taks0 = min(taks0, 0.2d0 * h1)
+         taks0 = min(taks0, 0.2_dp * h1)
          !
          ! Input parameters are passed via dll_reals/integers/strings-arrays
          !
@@ -1047,7 +1047,7 @@ contains
             end if
             !
             if (suspfrac) then
-               tsigmol = 1d0 ! molecular PS = 1d0
+               tsigmol = 1.0_dp ! molecular PS = 1d0
                tdss = dss(nm, l)
                twsk = ws(kb, l) ! was kb-1, should be same in 3D (see fallve)
             else
@@ -1068,7 +1068,7 @@ contains
             !
             ! Calculate bed porosity for dilatancy
             !
-            poros = 1d0 - cdryb(l) / rhosol(l)
+            poros = 1.0_dp - cdryb(l) / rhosol(l)
             dll_reals(RP_POROS) = real(poros, hp)
             !
             localpar(1) = ag
@@ -1257,8 +1257,8 @@ contains
       !
       do L = 1, lnxi
          k1 = ln(1, L); k2 = ln(2, L)
-         uau(L) = (acL(L) * ua(k1) + (1d0 - acL(L)) * ua(k2)) * csu(L) + &
-                  (acL(L) * va(k1) + (1d0 - acL(L)) * va(k2)) * snu(L)
+         uau(L) = (acL(L) * ua(k1) + (1.0_dp - acL(L)) * ua(k2)) * csu(L) + &
+                  (acL(L) * va(k1) + (1.0_dp - acL(L)) * va(k2)) * snu(L)
       end do
       !
       do L = lnxi + 1, lnx ! Boundaries: neumann
@@ -1352,14 +1352,14 @@ contains
       end do
       !
       if (jasourcesink == 0) then
-         sourse = 0d0
-         sinkse = 0d0
+         sourse = 0.0_dp
+         sinkse = 0.0_dp
       elseif (jasourcesink == 1) then
          !
       elseif (jasourcesink == 2) then
-         sinkse = 0d0
+         sinkse = 0.0_dp
       elseif (jasourcesink == 3) then
-         sourse = 0d0
+         sourse = 0.0_dp
       end if
       !
 

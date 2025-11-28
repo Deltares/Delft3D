@@ -498,8 +498,8 @@ contains
       do ii = 1, n
          j1 = ia(ii)
          j2 = ia(ii + 1) - 1
-         dropsum = 0.0d0
-         tnorm = 0.0d0
+         dropsum = 0.0_dp
+         tnorm = 0.0_dp
          do k = j1, j2
             tnorm = tnorm + abs(a(k))
          end do
@@ -705,7 +705,7 @@ contains
 !
          if (w(ii) == 0.0) w(ii) = (0.0001 + tol) * tnorm
 !
-         alu(ii) = 1.0d0 / w(ii)
+         alu(ii) = 1.0_dp / w(ii)
 !
 !     update pointer to beginning of next row of U.
 !
@@ -888,7 +888,7 @@ contains
 !     normal execution
 !
       its = 0
-      res = 0.0d0
+      res = 0.0_dp
 !
       do i = 1, n
          sol(i) = guess(i)
@@ -950,7 +950,7 @@ contains
 
       call amux(n, sol, wk, a, ja, ia)
       do i = 1, n
-         wk(n + i) = sol(i) - 1.0d0
+         wk(n + i) = sol(i) - 1.0_dp
          wk(i) = wk(i) - rhs(i)
       end do
 !      write (iou, *) '# the actual residual norm is', dnrm2(n,wk,1)
@@ -992,7 +992,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      afun = -1.0d0
+      afun = -1.0_dp
       return
    end function afun
 
@@ -1001,7 +1001,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      bfun = -1.0d0
+      bfun = -1.0_dp
       return
    end function bfun
 
@@ -1010,7 +1010,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      cfun = -1.0d0
+      cfun = -1.0_dp
       return
    end function cfun
 
@@ -1035,7 +1035,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      ffun = 0.0d0
+      ffun = 0.0_dp
       return
    end function ffun
 
@@ -2192,7 +2192,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one
-      parameter(one=1.0d0)
+      parameter(one=1.0_dp)
 !
 !     local variables
 !
@@ -2390,7 +2390,7 @@ contains
 !
 !     step (5)
       omega = ddot(n, w(:, 4), 1, w(:, 4), 1)
-      if (omega /= 0d0) then
+      if (omega /= 0.0_dp) then
          fpar(11) = fpar(11) + n + n
          if (brkdn(omega, ipar)) goto 900
          omega = ddot(n, w(:, 4), 1, w(:, 3), 1) / omega
@@ -2806,7 +2806,7 @@ contains
 !----------------------------------------------------------------------
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hes points to the Hessenberg matrix,
@@ -3094,7 +3094,7 @@ contains
          end if
       end if
 300   if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+         fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       else
          fpar(7) = zero
       end if
@@ -3706,7 +3706,7 @@ contains
 !     clean up the iterative solver
 !
 80    fpar(7) = zero
-      if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+      if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       if (ipar(1) > 0) then
          if (ipar(3) == 999 .and. ipar(11) /= 0) then
             ipar(1) = 0
@@ -4434,7 +4434,7 @@ contains
 !     elements of the column of the triangular matrix..
 !-----------------------------------------------------------------------
       real(kind=dp) :: zero
-      parameter(zero=0.0d0)
+      parameter(zero=0.0_dp)
 !
       npm1 = np - 1
       if (np <= 1) goto 12
@@ -5161,9 +5161,9 @@ contains
       end do
 !
       hhalf = h * half
-      x = h * dble(kx)
-      y = h * dble(ky)
-      z = h * dble(kz)
+      x = h * real(kx, kind=dp)
+      y = h * real(ky, kind=dp)
+      z = h * real(kz, kind=dp)
       cntr = zero
 !     differentiation wrt x:
       coeff = afun(x + hhalf, y, z)
@@ -5308,14 +5308,14 @@ contains
 !     some constants
 !
       real(kind=dp) :: one
-      parameter(one=1.0d0)
+      parameter(one=1.0_dp)
 !
 !     local variables
 !
       integer iedge, ix, iy, iz, k, kx, ky, kz, nfree2, node
       real(kind=dp) :: h
 !
-      h = one / dble(nx + 1)
+      h = one / real(nx + 1, kind=dp)
       kx = 1
       ky = nx
       kz = nx * ny
@@ -5419,7 +5419,7 @@ contains
       implicit none
 
       real(kind=dp) :: zero, half
-      parameter(zero=0.0d0, half=0.5d0)
+      parameter(zero=0.0_dp, half=0.5_dp)
 !
 !     local variables
 !
@@ -5443,9 +5443,9 @@ contains
 !------------
       hhalf = h * half
       h2 = h * h
-      x = h * dble(kx)
-      y = h * dble(ky)
-      z = h * dble(kz)
+      x = h * real(kx, kind=dp)
+      y = h * real(ky, kind=dp)
+      z = h * real(kz, kind=dp)
 ! differentiation wrt x:
       xh = x + hhalf
       call afunbl(nfree, xh, y, z, coeff)
@@ -5533,7 +5533,7 @@ contains
 !     parameters
 !
       real(kind=dp) :: zero
-      parameter(zero=0.0d0)
+      parameter(zero=0.0_dp)
 !
 !     local variables
 !
@@ -6152,9 +6152,9 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
-         coeff((j - 1) * nfree + j) = -1.0d0
+         coeff((j - 1) * nfree + j) = -1.0_dp
       end do
       return
    end subroutine afunbl
@@ -6174,9 +6174,9 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
-         coeff((j - 1) * nfree + j) = -1.0d0
+         coeff((j - 1) * nfree + j) = -1.0_dp
       end do
       return
    end subroutine bfunbl
@@ -6196,9 +6196,9 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
-         coeff((j - 1) * nfree + j) = -1.0d0
+         coeff((j - 1) * nfree + j) = -1.0_dp
       end do
       return
    end subroutine cfunbl
@@ -6218,7 +6218,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6239,7 +6239,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6260,7 +6260,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6281,7 +6281,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6328,7 +6328,7 @@ contains
             !
             !     compute the inner product of row i with vector x
             !
-            t = 0.0d0
+            t = 0.0_dp
             do k = ia(i), ia(i + 1) - 1
                t = t + a(k) * x(ja(k))
             end do
@@ -6342,7 +6342,7 @@ contains
       else
          do i = 1, n
 
-            t = 0.0d0
+            t = 0.0_dp
             do k = ia(i), ia(i + 1) - 1
                t = t + a(k) * x(ja(k))
             end do
@@ -6546,17 +6546,17 @@ contains
          goto 1234
       end if
 
-      call realloc(solver%a, solver%numnonzeros, keepExisting=.false., fill=0d0)
+      call realloc(solver%a, solver%numnonzeros, keepExisting=.false., fill=0.0_dp)
       call realloc(solver%ia, solver%numrows + 1, keepExisting=.false., fill=0)
       call realloc(solver%ja, solver%numnonzeros, keepExisting=.false., fill=0)
 
-      call realloc(solver%rhs, solver%numrows, keepExisting=.false., fill=0d0)
+      call realloc(solver%rhs, solver%numrows, keepExisting=.false., fill=0.0_dp)
 
-      call realloc(solver%alu, solver%numnonzerosprecond, keepExisting=.false., fill=0d0)
+      call realloc(solver%alu, solver%numnonzerosprecond, keepExisting=.false., fill=0.0_dp)
       call realloc(solver%ju, solver%numrows, keepExisting=.false., fill=0)
       call realloc(solver%jlu, solver%numnonzerosprecond, keepExisting=.false., fill=0)
 
-      call realloc(solver%work, solver%nwork, keepExisting=.false., fill=0d0)
+      call realloc(solver%work, solver%nwork, keepExisting=.false., fill=0.0_dp)
       call realloc(solver%jw, solver%nwork, keepExisting=.false., fill=0)
 
       ierror = 0

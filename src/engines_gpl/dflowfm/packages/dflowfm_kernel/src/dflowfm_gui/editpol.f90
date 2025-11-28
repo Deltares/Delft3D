@@ -508,10 +508,10 @@ contains
          key = 3
 
       else if (KEY == 84 + 32) then ! t add (to) tracer
-         call droptracer(xp, yp, 1d0)
+         call droptracer(xp, yp, 1.0_dp)
 !         call add_particles(1,xp,yp,0)
       else if (KEY == 84) then ! T t  substract from tracer
-         call droptracer(xp, yp, -1d0)
+         call droptracer(xp, yp, -1.0_dp)
 
       else if (KEY == 32) then
          call flow_spatietimestep()

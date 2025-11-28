@@ -194,11 +194,11 @@ contains
          end if
 
       end do ! k
-      call READYY('Converting ADCIRC data...', .7d0)
+      call READYY('Converting ADCIRC data...', 0.7_dp)
       call doclose(mnet)
 
       call SETNODADM(0)
-      call READYY('Converting ADCIRC data...', -1d0)
+      call READYY('Converting ADCIRC data...', -1.0_dp)
 
       ja = 0
       return

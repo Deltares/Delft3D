@@ -2019,7 +2019,7 @@ contains
       ! END MPI
 
       ! compute A pk and pk' A Pk
-      pkapki = 0d0
+      pkapki = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
          apk(ndn) = bbr(ndn) * pk(ndn)
@@ -2041,7 +2041,7 @@ contains
       ! END MPI
 
       alfak = rkzki / pkapki
-      eps = 0d0
+      eps = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
          s1(ndn) = s1(ndn) + alfak * pk(ndn)
@@ -2141,7 +2141,7 @@ contains
                if (ierror /= 0) goto 1234
             end if
          else
-            zkr = 0d0
+            zkr = 0.0_dp
          end if
       end if
 
@@ -2167,7 +2167,7 @@ contains
       end if
 
       rkzki0 = rkzki
-      rkzki = 0d0
+      rkzki = 0.0_dp
 
       do n = nogauss + 1, nogauss + nocg
          ndn = noel(n)
@@ -2280,11 +2280,11 @@ contains
 
       if (allocated(s1_ghost)) deallocate (s1_ghost)
       allocate (s1_ghost(numghost_s))
-      s1_ghost = 0d0
+      s1_ghost = 0.0_dp
 
       allocate (imask(Ndx))
 
-      call inisaad(epscg, maxmatvecs, 1d0)
+      call inisaad(epscg, maxmatvecs, 1.0_dp)
 
 !   mark ghostcells in ighostlist_s
       imask = 0
@@ -2330,7 +2330,7 @@ contains
       kbndint = 0
       if (allocated(zbndint)) deallocate (zbndint)
       allocate (zbndint(2, nbndint))
-      zbndint = 0d0
+      zbndint = 0.0_dp
 
 !   store interface ghost cells and links
       nbndint = 0
@@ -2376,9 +2376,9 @@ contains
          k1 = kbndint(1, n)
          k2 = kbndint(2, n)
          L = kbndint(3, n)
-         call adddot(xz(k1), yz(k1), 1d0)
-         call adddot(xz(k2), yz(k2), 2d0)
-         call adddot(xu(L), yu(L), 3d0)
+         call adddot(xz(k1), yz(k1), 1.0_dp)
+         call adddot(xz(k2), yz(k2), 2.0_dp)
+         call adddot(xu(L), yu(L), 3.0_dp)
       end do
       call write_dots('Lbndint_'//sdmn//'.xyz', jawritten)
 !   END DEBUG
@@ -2458,7 +2458,7 @@ contains
 
          !beta = abs(u1(L))*dts * Dxi(L)   ! CFL number in normal direcion
          !beta = 0.5d0
-         bbr(ki) = bbr(ki) - ccr(jj) * (0.5d0 - beta) / (0.5d0 + beta)
+         bbr(ki) = bbr(ki) - ccr(jj) * (0.5_dp - beta) / (0.5_dp + beta)
       end do
 
 !   initialize Saad solver and compute preconditioner, get row numbering
@@ -2507,8 +2507,8 @@ contains
             !beta = abs(u1(L))*dts * Dxi(L)   ! CFL number in normal direcion
           !!beta = 0.5d0
             !beta = 10d0
-            val = (0.5d0 - beta) * s1(ki) + (0.5d0 + beta) * s1(kb)
-            ddr(ki) = ddr(ki) - ccr(jj) * val / (0.5d0 + beta) !s1(\kb)
+            val = (0.5_dp - beta) * s1(ki) + (0.5_dp + beta) * s1(kb)
+            ddr(ki) = ddr(ki) - ccr(jj) * val / (0.5_dp + beta) !s1(\kb)
             !  bbr(ki) = bbr_sav(n) - ccr(jj)*(0.5d0-beta)/(0.5d0+beta)
 
             !zbndint(1,n) = beta
@@ -2579,7 +2579,7 @@ contains
 
             !beta = zbndint(1,n)
             val = zbndint(2, n)
-            s1(kb) = (val - (0.5d0 - beta) * s1(ki)) / (0.5d0 + beta)
+            s1(kb) = (val - (0.5_dp - beta) * s1(ki)) / (0.5_dp + beta)
          end do
 !      compute global residual
          res_global = fpar(3)**2
@@ -2641,7 +2641,7 @@ contains
 !
 !       call reduce_double3_max(maxdiff,res,maxresloc)
 
-         dum = dble(its)
+         dum = real(its, kind=dp)
          call reduce_double3_max(maxdiff, res, dum)
          its = int(dum)
 

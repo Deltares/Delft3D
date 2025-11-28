@@ -30,10 +30,12 @@
 !
 !
 module m_xbeach_filefunctions
+
 !! Contains logging functions and file administration functions
 !! Merge of logging_module and filefunctions_module
    use m_xbeach_typesandkinds
 
+use precision, only: dp
    implicit none
 
    integer, save :: logfileid
@@ -154,12 +156,12 @@ contains
       integer(4) :: count, count_rate, count_max
 
       if (initialize) then
-         lastper = 0.d0
+         lastper = 0.0_dp
          call system_clock(count, count_rate, count_max)
-         lastt = dble(count) / count_rate
+         lastt = real(count, kind=dp) / count_rate
       else
          call system_clock(count, count_rate, count_max)
-         tnow = dble(count) / count_rate
+         tnow = real(count, kind=dp) / count_rate
          if (curper >= lastper + dper .or. tnow >= lastt + dt) then
             call writelog('ls', '(f0.1,a)', curper, '% done')
             if (curper >= lastper + dper) then
@@ -1274,11 +1276,11 @@ contains
             filetype = 3
          end if
 
-         total = 0.d0
+         total = 0.0_dp
          i = 0
          select case (filetype)
          case (0)
-            total = 2.d0 * tstop
+            total = 2.0_dp * tstop
          case (1)
             do while (total < tstop .and. i < bcfiles(ifid)%nlines)
                read (fid, *, iostat=ier) t, dt, dummy
