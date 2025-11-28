@@ -469,14 +469,14 @@ contains
 
       write (lunhyd, '(a,a)') 'task      ', 'full-coupling'
 
-      if (layertype == LAYTP_SIGMA) then ! all sigma layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured'
-      elseif (layertype == LAYTP_Z) then ! z layers or z-sigma layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z-layers'
-      elseif (layertype == LAYTP_LEFTSIGMA) then
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-sigma-layers'
-      elseif (layertype == LAYTP_LEFTZ) then
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-z-layers'
+      if (layertype == LAYTP_SIGMA) then ! sigma-layers
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured sigma-layers'
+      elseif (layertype == LAYTP_Z) then ! z- or z-sigma-layers
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z- or z-sigma-layers'
+      elseif (layertype == LAYTP_POLYGON_MIXED) then
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured polygon defined z-layers'
+      elseif (layertype == LAYTP_DENS_SIGMA) then
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured density controlled sigma-layers'
       else ! other?
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured other'
       end if

@@ -2747,7 +2747,7 @@ contains
 
 !> Defines 3d net data structure for an already opened netCDF dataset.
    subroutine unc_append_3dflowgeom_def(imapfile)
-      use m_flow, only: kmx, jafullgridoutput, layertype !only kmx, zws, layertype
+      use m_flow, only: kmx, jafullgridoutput, layertype, LAYTP_SIGMA, LAYTP_Z !only kmx, zws, layertype
 
       integer, intent(in) :: imapfile
 
@@ -2760,17 +2760,17 @@ contains
                        id_laycoordcc, &
                        id_laycoordw
 
-      !define file structure
+      ! define file structure
       ierr = nf90_def_dim(imapfile, 'laydim', kmx, id_laydim)
       ierr = nf90_def_dim(imapfile, 'wdim', kmx + 1, id_wdim)
       !
       if (jafullgridoutput == 0) then
-         if (layertype < 3) then !time-independent sigma layer and z layer
+         if (layertype == LAYTP_SIGMA .or. layertype == LAYTP_Z) then ! time-independent sigma layer and z layer
             ierr = nf90_def_var(imapfile, 'LayCoord_cc', nf90_double, [id_laydim], id_laycoordcc)
             ierr = nf90_def_var(imapfile, 'LayCoord_w', nf90_double, [id_wdim], id_laycoordw)
             !
-            !define and write compact form output of sigma or z-layer
-            if (layertype == 1) then !all sigma layers
+            ! define and write compact form output of sigma or z-layer
+            if (layertype == LAYTP_SIGMA) then ! sigma-layers
                ierr = nf90_put_att(imapfile, id_laycoordcc, 'standard_name', 'ocean_sigma_coordinate')
                ierr = nf90_put_att(imapfile, id_laycoordcc, 'long_name', 'sigma layer coordinate at flow element center')
                ierr = nf90_put_att(imapfile, id_laycoordcc, 'units', '')
@@ -2783,7 +2783,7 @@ contains
                ierr = nf90_put_att(imapfile, id_laycoordw, 'positive', 'up')
                ierr = nf90_put_att(imapfile, id_laycoordw, 'formula_terms', 'sigma: LayCoord_w eta: s1 bedlevel: FlowElem_bl')
                !
-            elseif (layertype == 2) then !all z layers
+            elseif (layertype == LAYTP_Z) then ! z- or z-sigma-layers
                ierr = nf90_put_att(imapfile, id_laycoordcc, 'standard_name', '')
                ierr = nf90_put_att(imapfile, id_laycoordcc, 'long_name', 'z layer coordinate at flow element center')
                ierr = nf90_put_att(imapfile, id_laycoordcc, 'positive', 'up')
@@ -2823,7 +2823,7 @@ contains
    end subroutine unc_append_3dflowgeom_def
 
    subroutine unc_append_3dflowgeom_put(imapfile, jaseparate, itim_in)
-      use m_flow, only: jafullgridoutput, layertype, zslay, kmx, work0, dmiss, zws, work1
+      use m_flow, only: jafullgridoutput, layertype, LAYTP_SIGMA, LAYTP_Z, zslay, kmx, work0, dmiss, zws, work1
       use m_flowgeom, only: ndxi
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_layer_indices, only: getlayerindices !only kmx, zws, layertype
@@ -2869,18 +2869,18 @@ contains
          ierr = nf90_inq_dimid(imapfile, 'wdim', id_wdim(iid))
          !
          if (jafullgridoutput == 0) then
-            if (layertype < 3) then
+            if (layertype == LAYTP_SIGMA .or. layertype == LAYTP_Z) then
                !time-independent sigma layer and z layer
                ierr = nf90_inq_varid(imapfile, 'LayCoord_cc', id_laycoordcc(iid))
                ierr = nf90_inq_varid(imapfile, 'LayCoord_w', id_laycoordw(iid))
                !
                ! write 3d time-independent output data to netcdf file
                !
-               if (layertype == 1) then
+               if (layertype == LAYTP_SIGMA) then
                   ! structured 3d time-independent output data (sigma-layer)
                   ierr = nf90_put_var(imapfile, id_laycoordcc(iid), 0.5_dp * (zslay(1:kmx, 1) + zslay(0:kmx - 1, 1)), start=[1], count=[kmx])
                   ierr = nf90_put_var(imapfile, id_laycoordw(iid), zslay(0:kmx, 1), start=[1], count=[kmx + 1])
-               elseif (layertype == 2) then
+               elseif (layertype == LAYTP_Z) then
                   ! structured 3d time-independent output data (z-layer)
                   !  ierr = nf90_put_var(imapfile, id_laycoordcc(iid), 0.5d0*(zslay(1:kmx,1)+zslay(0:kmx-1,1)), start=[ 1 ], count=[ kmx ])
                   !  ierr = nf90_put_var(imapfile, id_laycoordw(iid) , zslay(0:kmx,1), start=[ 1 ], count=[ kmx+1 ])
@@ -13130,7 +13130,7 @@ contains
                call getlayerindicesLmax(is, nlayb, nrlay)
                !call getlayerindices(is, nlayb, nrlay)
                ! UNST-976: TODO: does NOT work for links yet. We need some setlbotltop call up in read_map, similar to sethu behavior.
-               !if (layertype .ne. 1 .and. jawarn < 100)  then
+               !if (layertype /= LAYTP_SIGMA .and. jawarn < 100)  then
                !    call mess(LEVEL_WARN, 'get_var_and_shift: reading 3D flow link data from '''//trim(varname)//''' is badly supported for z-layer models.')
                !    jawarn = jawarn + 1
                !endif

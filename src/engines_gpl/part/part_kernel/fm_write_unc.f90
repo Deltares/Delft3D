@@ -194,7 +194,7 @@ contains
 
             if ( num_layers > 1 ) then
                 ! Ideally:
-                ! laytp = merge( LAYTP_SIGMA, LAYTP_Z, hyd%layertype == 1) - parameters from m_flow
+                ! laytp = merge( LAYTP_SIGMA, LAYTP_Z, hyd%layertype == LAYTP_SIGMA) - parameters from m_flow
                 ! But we would drag in yet another D-Flow FM module, so hardcode the values
                 !
                 laytp = merge( LAYTP_SIGMA, LAYTP_Z, hyd%layer_type == 1)

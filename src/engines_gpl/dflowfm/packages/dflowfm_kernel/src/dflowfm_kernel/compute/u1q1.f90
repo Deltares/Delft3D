@@ -42,7 +42,9 @@ contains
 
    subroutine u1q1()
       use precision, only: dp
-      use m_flow, only: squ, sqi, qinbnd, qoutbnd, kmx, hu, u1, ru, fu, s1, q1, au, u0, qa, jaqaisq1, q1waq, iadvec, voldhu, vol1, qin, itstep, sqwave, ag, lbot, ltop, kmxl, ngatesg, l1gatesg, l2gatesg, kgate, ncgensg, l1cgensg, l2cgensg, kcgen, lnkx, layertype, laytp_sigma, ln0, qwwaq, squ2d, kbot, ktop, a1, kmxn, ww1, qw, zws0, ktop0, zws, sq
+      use m_flow, only: squ, sqi, qinbnd, qoutbnd, kmx, hu, u1, ru, fu, s1, q1, au, u0, qa, jaqaisq1, q1waq, iadvec, voldhu, vol1, &
+                        qin, itstep, sqwave, ag, lbot, ltop, kmxl, ngatesg, l1gatesg, l2gatesg, kgate, ncgensg, l1cgensg, l2cgensg, &
+                        kcgen, lnkx, layertype, LAYTP_SIGMA, ln0, qwwaq, squ2d, kbot, ktop, a1, kmxn, ww1, qw, zws0, ktop0, zws, sq
       use m_flowgeom, only: lnx, ln, teta, ndxi, ba, ndx, lnxi
       use m_flowtimes, only: ti_waq, dts, ja_timestep_auto
       use m_partitioninfo, only: jampi, update_ghosts, itype_u, idomain, my_rank, itype_u3d

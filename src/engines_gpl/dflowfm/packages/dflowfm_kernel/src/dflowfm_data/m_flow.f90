@@ -60,15 +60,16 @@ module m_flow ! flow arrays-999
    integer :: nplot !< vertical profile to be plotted at node nr
    integer :: kplotfrombedorsurface = 2 !< up or down k
    integer :: kplotordepthaveraged = 1 !< 1 = kplot, 2 = averaged
-   integer :: layertype !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
    integer :: numtopsig = 0 !< number of top layers in sigma
    integer :: janumtopsiguniform = 1 !< specified nr of top layers in sigma is same everywhere
 
-   real(kind=dp) :: Tsigma = 100 !< relaxation period density controlled sigma
-   integer, parameter :: LAYTP_SIGMA = 1
-   integer, parameter :: LAYTP_Z = 2
-   integer, parameter :: LAYTP_LEFTSIGMA = 3
-   integer, parameter :: LAYTP_LEFTZ = 4
+   real(kind=dp) :: Tsigma = 100 !< relaxation period; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
+
+   integer :: layertype !< Vertical layertype, use one of LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA parameters 
+   integer, parameter :: LAYTP_SIGMA = 1 !< Sigma-layers
+   integer, parameter :: LAYTP_Z = 2 !< Fixed z- or z-sigma-layers
+   integer, parameter :: LAYTP_POLYGON_MIXED = 3 !< Mixed layering in polygon regions (layer count + layertype in each polygon's z-values)
+   integer, parameter :: LAYTP_DENS_SIGMA = 4 !< Density controlled sigma-layers
 
    integer :: iStrchType = -1 !< Stretching type for non-uniform layers, 1=user defined, 2=exponential, otherwise=uniform
    integer, parameter :: STRCH_USER = 1
@@ -142,10 +143,10 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable :: zslay(:, :) !< dim = (: , maxlaydefs) z or s coordinate,
    real(kind=dp), allocatable :: wflaynod(:, :) !< dim = (3 , ndx) weight factors to flownodes indlaynod
    integer, allocatable :: indlaynod(:, :) !< dim = (3 , ndx)
-   real(kind=dp), allocatable :: dkx(:) !< dim = ndx, density controlled sigma, sigma level of interface height
-   real(kind=dp), allocatable :: sdkx(:) !< dim = ndx, density controlled sigma, sum of .., only layertype == 4
+   real(kind=dp), allocatable :: dkx(:) !< dim = ndx, sigma level of interface height; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
+   real(kind=dp), allocatable :: sdkx(:) !< dim = ndx, sum of ..; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
 
-   real(kind=dp), allocatable :: asig(:) !< alfa of sigma at nodes, 1d0=full sigma, 0d0=full z, 0.5d0=fifty/fifty
+   real(kind=dp), allocatable :: asig(:) !< alfa of sigma at nodes, 1d0=full sigma, 0d0=full z, 0.5d0=fifty/fifty; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
    real(kind=dp), allocatable :: ustb(:) !< ustar at Lbot, dim=Lnx,
    real(kind=dp), allocatable :: ustw(:) !< ustar at Ltop, dim=Lnx
    real(kind=dp), allocatable :: ustbc(:) !< ustar at bed at netnodes, dim=numk
@@ -559,7 +560,7 @@ contains
       mxlays = 1 ! max nr of sigma layers in flow domain
       kplot = 1 ! layer nr to be plotted
       nplot = 1 ! vertical profile to be plotted at node nr
-      layertype = 1 !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
+      layertype = LAYTP_SIGMA !< 1 = sigma-layers, 2 = z- or z-sigma-layers, 3 = polygon defined mixed layers, 4 = density controlled sigma-layers
       iturbulencemodel = 3 !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
       ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
       sigmagrowthfactor = 1.0_dp !<layer thickness growth factor from bed up

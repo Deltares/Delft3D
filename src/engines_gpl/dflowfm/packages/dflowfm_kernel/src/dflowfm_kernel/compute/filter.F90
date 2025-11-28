@@ -121,7 +121,7 @@ contains
       ! Filter to suppress checkerboarding is also available for z-layers (so that ERROR message has been switched off)
       !
       !  check for sigma-layers
-      ! if ( layertype.ne.1 ) then
+      ! if ( layertype /= LAYTP_SIGMA ) then
       ! call mess(LEVEL_ERROR, 'filter: only sigma layers supported')
 
       ! goto 1234

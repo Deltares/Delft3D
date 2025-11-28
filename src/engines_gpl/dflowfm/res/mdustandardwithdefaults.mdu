@@ -15,7 +15,6 @@ WaterLevIniFile                   =                     # Initial water levels s
 LandBoundaryFile                  =                     # Land boundaries file *.ldb, used for visualization
 ThinDamFile                       =                     # Polyline file *_thd.pli, containing thin dams
 FixedWeirFile                     =                     # Polyline file *_fxw.pliz, containing fixed weirs with rows x, y, crest level, left ground level, right ground level
-VertplizFile                      =                     # Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type
 ProflocFile                       =                     # Channel profile location file *_proflocation.xyz with rows x, y, z, profile number ref
 ProfdefFile                       =                     # Channel profile definition file *_profdefinition.def with definition for all profile numbers
 ProfdefxyzFile                    =                     # Channel profile definition file _profdefinition.def with definition for all profile numbers
@@ -46,7 +45,7 @@ Bamin                             = 1.d-6               # Minimum grid cell area
 OpenBoundaryTolerance             = 3.                  # Search tolerance factor between boundary polyline and grid cells, in cell size units
 RenumberFlowNodes                 = 1                   # Renumber the flow nodes (1: yes, 0: no)
 Kmx                               = 0                   # Maximum number of vertical layers
-Layertype                         = 1                   # Vertical layer type (1: all sigma, 2: all z, 3: use VertplizFile)
+Layertype                         = 1                   # 1 = sigma-layers, 2 = z- or z-sigma-layers
 Numtopsig                         = 0                   # Number of sigma layers in top of z-layer model
 SigmaGrowthFactor                 = 1.                  # Layer thickness growth factor from bed up
 StretchType                       = 0                   # Type of layer stretching, 0 = uniform, 1 = user defined, 2 = fixed level double exponential
