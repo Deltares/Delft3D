@@ -23,5 +23,5 @@ popd
 # If this directory doesn't already exist, create it and put a symbolic link to the default install location.
 mkdir -p "$(dirname $TESTBENCH_ARTIFACTS)"
 if [[ ! -d "$TESTBENCH_ARTIFACTS" ]]; then
-    ln -s -T "$(realpath build_fm-suite_release/install/)" "$TESTBENCH_ARTIFACTS"
+    ln -s -T "$(realpath -m build_fm-suite_release/install/)" "$TESTBENCH_ARTIFACTS"
 fi

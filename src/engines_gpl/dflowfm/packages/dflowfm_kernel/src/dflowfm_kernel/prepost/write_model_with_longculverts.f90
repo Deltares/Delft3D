@@ -59,7 +59,7 @@ contains
         ! Overwrite netfile path in model definition.
         md_netfile = tempstring_netfile
 
-        ! WRite converted model definition file with prefix 'converted_'
+        ! Write converted model definition file with prefix 'converted_'
         converted_fnamesstring = trim(trim(md_culvertprefix) // md_ident) // '.mdu'
         call writeMDUFile(converted_fnamesstring, istat)
     end subroutine write_model_with_longculverts
