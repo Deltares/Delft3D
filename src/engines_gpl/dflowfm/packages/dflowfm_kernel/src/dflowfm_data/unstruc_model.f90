@@ -710,6 +710,7 @@ contains
       use m_fm_wq_processes
       use m_xbeach_avgoutput
       use unstruc_netcdf, only: UNC_CONV_CFOLD, UNC_CONV_UGRID, unc_set_ncformat, unc_set_nccompress, unc_writeopts, UG_WRITE_LATLON, UG_WRITE_NOOPTS, unc_nounlimited, unc_noforcedflush, unc_uuidgen, unc_metadatafile
+      use unstruc_netcdf, only: output_mask
       use dfm_error
       use unstruc_messages, only: unstruc_errorhandler, loglevel_StdOut
       use system_utils, only: split_filename
@@ -1947,6 +1948,12 @@ contains
       call prop_get(md_ptr, 'output', 'FlowGeomFile', md_flowgeomfile, success)
 
       call prop_get(md_ptr, 'output', 'MapFile', md_mapfile, success)
+      call prop_get(md_ptr, 'output', 'mapMaskFile', output_mask%filename, success)
+      if (success) then
+         output_mask%is_defined = .true.
+      else
+         output_mask%is_defined = .false.
+      end if
 
       ti_map_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)

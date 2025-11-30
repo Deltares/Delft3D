@@ -60,6 +60,7 @@ module unstruc_netcdf
    use m_waveconst
    use m_get_Lbot_Ltop_max, only: getLbotLtopmax
    use m_reconstruct_hydrodynamics, only: reconstruct_hu_2D_from_3D
+   use m_output_to_polygon, only: t_variables_inside_polygon
 
    implicit none
 
@@ -81,6 +82,7 @@ module unstruc_netcdf
               unc_def_idomain, unc_def_iglobal, fill_netlink_geometry, &
               open_files_, open_datasets_, nopen_files_, unc_read_merged_map, t_unc_merged, &
               read_mesh2d_face_z, face_z_stdname
+   type(t_variables_inside_polygon), target, public :: output_mask
 
    integer, parameter :: UNC_CONV_CFOLD = 1 !< Old CF-only conventions.
    integer, parameter :: UNC_CONV_UGRID = 2 !< New CF+UGRID conventions.
@@ -986,7 +988,7 @@ contains
          ndxndxi = ndxi
       end if
 
-      ndx1d = ndxi - ndx2d
+      ndx1d = output_mask%ndxi - output_mask%ndx2d
 
       select case (iloc)
       case (UNC_LOC_CN) ! Corner point location
@@ -996,7 +998,7 @@ contains
             goto 888
          end if
          ! Internal 2d netnodes. Horizontal position: nodes in 2d mesh.
-         if (iand(which_meshdim_, 2) > 0 .and. ndx2d > 0) then ! If there are 2d flownodes, then there are 2d netnodes.
+         if (iand(which_meshdim_, 2) > 0 .and. output_mask%ndx2d > 0) then ! If there are 2d flownodes, then there are 2d netnodes.
             cell_method_ = 'point' ! NOTE: for now don't allow user-defined cell_method for corners, always point.
             idims(idx_spacedim) = id_tsp%meshids2d%dimids(mdim_node)
             ierr = ug_def_var(ncid, id_var(2), idims(idx_fastdim:maxrank), itype, UG_LOC_NODE, &
@@ -1014,7 +1016,7 @@ contains
                               do_deflate=unc_nccompress)
          end if
          ! Internal 2d flownodes. Horizontal position: faces in 2d mesh.
-         if (iand(which_meshdim_, 2) > 0 .and. ndx2d > 0) then
+         if (iand(which_meshdim_, 2) > 0 .and. output_mask%ndx2d > 0) then
             cell_measures = 'area: '//trim(mesh2dname)//'_flowelem_ba' ! relies on unc_write_flowgeom_ugrid_filepointer
             idims(idx_spacedim) = id_tsp%meshids2d%dimids(mdim_face)
             ierr = ug_def_var(ncid, id_var(2), idims(idx_fastdim:maxrank), itype, UG_LOC_FACE, &
@@ -1074,7 +1076,7 @@ contains
                               do_deflate=unc_nccompress)
          end if
          ! Internal 3d flownodes. Horizontal position: faces in 2d mesh. Vertical position: layer centers.
-         if (iand(which_meshdim_, 2) > 0 .and. ndx2d > 0) then
+         if (iand(which_meshdim_, 2) > 0 .and. output_mask%ndx2d > 0) then
             if (jamapvol1 > 0) then
                cell_measures = 'volume: '//trim(mesh2dname)//'_vol1'
             end if
@@ -1133,7 +1135,7 @@ contains
                               do_deflate=unc_nccompress)
          end if
          ! Internal 3d vertical flowlinks. Horizontal position: faces in 2d mesh. Vertical position: layer interfaces.
-         if (iand(which_meshdim_, 2) > 0 .and. ndx2d > 0) then ! If there are 2d flownodes and layers, then there are 3d vertical flowlinks.
+         if (iand(which_meshdim_, 2) > 0 .and. output_mask%ndx2d > 0) then ! If there are 2d flownodes and layers, then there are 3d vertical flowlinks.
             cell_measures = 'area: '//trim(mesh2dname)//'_flowelem_ba' ! relies on unc_write_flowgeom_ugrid_filepointer ! TODO: AvD: UNST-1100: or do we need to use a1 here??
             idims(idx_spacedim) = id_tsp%meshids2d%dimids(mdim_face)
             idims(idx_layerdim) = id_tsp%meshids2d%dimids(mdim_interface)
@@ -1410,7 +1412,7 @@ contains
 
    function unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
       use precision, only: dp
-      use m_flowgeom, only: ndx, ndx1db, ndxi, ndx2d, lnx1d, lnxi, lnx, lnx1db, ln2lne, lne2ln
+      use m_flowgeom, only: ndxi, ndx2d, lnx1d, lnxi, lnx, lnx1db, ln2lne, lne2ln
       use dfm_error, only: dfm_noerr
       use m_alloc, only: realloc
       use m_missing, only: dmiss
@@ -1419,7 +1421,7 @@ contains
       use m_get_layer_indices, only: getlayerindices
       use m_get_layer_indices_l_max, only: getlayerindiceslmax
       use m_get_Lbot_Ltop_max, only: getlbotltopmax
-      use network_data, only: numk, numl, numl1d
+      use network_data, only: numl, numl1d
       use m_flow, only: kmx
 
       implicit none
@@ -1438,6 +1440,7 @@ contains
       integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
 !TODO remove save and deallocate?
       real(kind=dp), allocatable, save :: workL(:)
+      real(kind=dp), pointer, dimension(:) :: p_data
       real(kind=dp), allocatable, save :: workS3D(:, :), workU3D(:, :), workW(:, :), workWU(:, :)
 ! temporary UGRID fix
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
@@ -1452,34 +1455,34 @@ contains
          jabndnd_ = 0
       end if
       if (jabndnd_ == 1) then
-         ndxndxi = ndx
-         last_1d = ndx1db
+         ndxndxi = output_mask%ndx
+         last_1d = output_mask%ndx1db
       else
-         ndxndxi = ndxi
-         last_1d = ndxi
+         ndxndxi = output_mask%ndxi
+         last_1d = output_mask%ndxi
       end if
 
       select case (iloc)
       case (UNC_LOC_CN) ! Corner point location
          ! Internal 1d netnodes. Horizontal position: nodes in 1d mesh.
-         if (id_var(1) > 0 .and. ndxi > ndx2d) then ! If there are 1d flownodes, then there are 1d netnodes.
+         if (id_var(1) > 0 .and. output_mask%ndxi > output_mask%ndx2d) then ! If there are 1d flownodes, then there are 1d netnodes.
             ierr = UG_NOTIMPLEMENTED ! TODO: AvD putting data on 1D corners not implemented yet.
             goto 888
          end if
          ! Internal 2d netnodes. Horizontal position: nodes in 2d mesh.
-         if (id_var(2) > 0 .and. ndx2d > 0) then ! If there are 2d flownodes, then there are 2d netnodes.
-            ierr = nf90_put_var(ncid, id_var(2), values(1:numk), start=[1, id_tsp%idx_curtime])
+         if (id_var(2) > 0 .and. output_mask%ndx2d > 0) then ! If there are 2d flownodes, then there are 2d netnodes.
+            ierr = nf90_put_var(ncid, id_var(2), p_data(output_mask%remap(values, 1, output_mask%numk, UNC_LOC_CN)), start=[1, id_tsp%idx_curtime])
          end if
 
       case (UNC_LOC_S) ! Pressure point location
-         n1d_write = last_1d - ndx2d
+         n1d_write = last_1d - output_mask%ndx2d
          ! Internal 1d flownodes. Horizontal position: nodes in 1d mesh.
          if (id_var(1) > 0 .and. n1d_write > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:last_1d), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(1), output_mask%remap(values, output_mask%ndx2d + 1, last_1d, UNC_LOC_S), start=[1, id_tsp%idx_curtime])
          end if
          ! Internal 2d flownodes. Horizontal position: faces in 2d mesh.
          if (id_var(2) > 0 .and. ndx2d > 0) then
-            ierr = nf90_put_var(ncid, id_var(2), values(1:ndx2d), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(2), output_mask%remap(values, 1, output_mask%ndx2d, UNC_LOC_S), start=[1, id_tsp%idx_curtime])
          end if
 
       case (UNC_LOC_U) ! Horizontal velocity point location
@@ -1498,20 +1501,20 @@ contains
             end if
          end if
 
-         lnx2d = lnxi - lnx1d
+         lnx2d = output_mask%lnxi - output_mask%lnx1d
          ! Internal 2d flowlinks. Horizontal position: edges in 2d mesh.
          if (id_var(2) > 0 .and. lnx2d > 0) then
-            ierr = nf90_put_var(ncid, id_var(2), values(lnx1d + 1:lnxi), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(2), values(output_mask%lnx1d + 1:output_mask%lnxi), start=[1, id_tsp%idx_curtime])
          end if
          ! External 2d flowlinks. Horizontal position: edges in 2d mesh.
-         lnx2db = lnx - lnx1db
+         lnx2db = output_mask%lnx - output_mask%lnx1db
          if (id_var(2) > 0 .and. lnx2db > 0) then
-            ierr = nf90_put_var(ncid, id_var(2), values(lnx1db + 1:lnx), start=[lnx2d + 1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(2), values(output_mask%lnx1db + 1:output_mask%lnx), start=[lnx2d + 1, id_tsp%idx_curtime])
          end if
          ! Default value is different from a fill value, use for example for zero velocities on closed edges.
          if (present(default_value)) then
             ! Number of netlinks can be > number of flowlinks, if there are closed edges.
-            numl2d = numl - numl1d
+            numl2d = output_mask%numl - output_mask%numl1d
             ! Write default_value on all closed edges.
             if (id_var(2) > 0 .and. numl2d - lnx2d - lnx2db > 0) then
                ierr = nf90_put_var(ncid, id_var(2), [default_value], start=[lnx2d + lnx2db + 1, id_tsp%idx_curtime], count=[numl2d - lnx2d - lnx2db, 1], map=[0]) ! Use map = 0 to write a single value on multiple edges in file.
@@ -1520,7 +1523,6 @@ contains
 
       case (UNC_LOC_L) ! Horizontal net link location
          ! NOTE: In the ugrid geometry, edges have been order based on flow link order. All non-flowlink net links are at the end of the edge array.
-
          call realloc(workL, numl, keepExisting=.false.)
 
          ! Permute the input values(:) from netlink ordering to flow link ordering.
@@ -1591,7 +1593,7 @@ contains
          ! TODO: AvD: include flow link bug fix (Feb 15, 2017) from 1d/2D above also in U3D and WU code below.
       case (UNC_LOC_U3D) ! Horizontal velocity point location in all layers.
          ! Fill work array.
-         call realloc(workU3D, [kmx, lnx], keepExisting=.false.)
+         call realloc(workU3D, [kmx, outputlnx], keepExisting=.false.)
          ! Loop over horizontal flowlinks.
          do LL = 1, lnx
             ! Store missing values for inactive layers (i.e. z layers below bottomlevel or above waterlevel for current horizontal flowlink LL).
@@ -5366,7 +5368,8 @@ contains
 
       nc_precision = netcdf_data_type(md_nc_map_precision)
 
-      if (ndxi <= 0) then
+      call output_mask%create_mask_arrays()
+      if (output_mask%ndxi <= 0) then
          call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
          return
       end if
@@ -5382,12 +5385,12 @@ contains
 
       ! Include boundary cells in output (ndx) or not (ndxi)
       if (jabndnd_ == 1) then
-         ndxndxi = ndx
+         ndxndxi = output_mask%ndx
       else
-         ndxndxi = ndxi
+         ndxndxi = output_mask%ndxi
       end if
 
-      ndx1d = ndxi - ndx2d
+      ndx1d = output_mask%ndxi - output_mask%ndx2d
 
       ! Prepare the U/S location for either 2D or 3D for subsequent def_var and put_var sequences.
       if (kmx > 0) then ! If layers present.
@@ -6431,12 +6434,12 @@ contains
          end if
 
          ! for 1D only
-         if (ndxi - ndx2d > 0 .and. jamapPure1D_debug /= 0) then
+         if (output_mask%ndxi - output_mask%ndx2d > 0 .and. jamapPure1D_debug /= 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_adve, nc_precision, UNC_LOC_U, 'adve', '', 'Explicit advection term', 's', which_meshdim=1, jabndnd=jabndnd_)
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_advi, nc_precision, UNC_LOC_U, 'advi', '', 'Implicit advection term', 's', which_meshdim=1, jabndnd=jabndnd_)
          end if
 
-         if (ndxi - ndx2d > 0 .and. jaPure1D >= 3 .and. jamapPure1D_debug /= 0) then
+         if (output_mask%ndxi - output_mask%ndx2d > 0 .and. jaPure1D >= 3 .and. jamapPure1D_debug /= 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1d_1, nc_precision, UNC_LOC_U, 'q1d_1', '', 'Discharge at begin of flow link', 's', which_meshdim=1, jabndnd=jabndnd_)
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1d_2, nc_precision, UNC_LOC_U, 'q1d_2', '', 'Discharge at end of flow link', 's', which_meshdim=1, jabndnd=jabndnd_)
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_volu1d, nc_precision, UNC_LOC_U, 'volu1d', '', 'Volume of flow link', 's', which_meshdim=1, jabndnd=jabndnd_)
@@ -6451,7 +6454,7 @@ contains
          end if
 
          ! for 1D only, urban
-         if (ndxi - ndx2d > 0 .and. network%loaded) then
+         if (output_mask%ndxi - output_mask%ndx2d > 0 .and. network%loaded) then
             if (jamapTimeWetOnGround > 0) then ! cumulative time when water is above ground level
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_timewetground, nc_precision, UNC_LOC_S, 'time_water_on_ground', '', 'Cumulative time water above ground level', 's', which_meshdim=1, jabndnd=jabndnd_)
             end if
@@ -8094,12 +8097,12 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_veg_stemheight, UNC_LOC_S, stemheight, jabndnd=jabndnd_)
       end if
 
-      if (ndxi - ndx2d > 0 .and. jamapPure1D_debug /= 0) then
+      if (output_mask%ndxi - output_mask%ndx2d > 0 .and. jamapPure1D_debug /= 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_adve, UNC_LOC_U, adve(:), jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_advi, UNC_LOC_U, advi(:), jabndnd=jabndnd_)
       end if
 
-      if (ndxi - ndx2d > 0 .and. jaPure1D >= 3 .and. jamapPure1D_debug /= 0) then
+      if (output_mask%ndxi - output_mask%ndx2d > 0 .and. jaPure1D >= 3 .and. jamapPure1D_debug /= 0) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1d_1, UNC_LOC_U, q1d(1, :), jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_q1d_2, UNC_LOC_U, q1d(2, :), jabndnd=jabndnd_)
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_volu1d, UNC_LOC_U, volu1D(:), jabndnd=jabndnd_)
@@ -8113,7 +8116,7 @@ contains
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_alpha_ene_1d, UNC_LOC_S, alpha_ene_1d, jabndnd=jabndnd_)
       end if
 
-      if (ndxi - ndx2d > 0 .and. network%loaded) then
+      if (output_mask%ndxi - output_mask%ndx2d > 0 .and. network%loaded) then
          if (jamapTimeWetOnGround > 0) then ! Cumulative time water above ground level
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_timewetground, UNC_LOC_S, time_wetground, jabndnd=jabndnd_)
          end if
@@ -15384,127 +15387,129 @@ contains
       integer, optional, intent(out) :: edge_mapping_table(:) !< Mapping from original edges to ordered edges (first flow links, then closed edges). To be filled if present.
       integer, optional, intent(out) :: reverse_edge_mapping_table(:) !< Mapping from ordered edges (first flow links, then closed edges) to original edges. To be filled if present.
 
-      integer :: is, i, L, Lf !< Counters.
+      integer :: j, is, i, L_global, L_mask, Lf_mask, Lf_global, count !< Counters.
       logical :: is_lne2ln_allocated, is_edge_faces_associated, is_edge_mapping_table_present, is_reverse_edge_mapping_table_present
 
       is_lne2ln_allocated = allocated(lne2ln)
       is_edge_faces_associated = associated(edge_faces)
-      is_edge_mapping_table_present = present(edge_mapping_table)
       is_reverse_edge_mapping_table_present = present(reverse_edge_mapping_table)
 
+      is_edge_mapping_table_present = present(edge_mapping_table)
       ! set LC mask to 0
       LC = 0
 
       ! Write all edges that are 2D internal flow links.
       i = 0
       ! Lf is flow link number.
-      do Lf = lnx1d + 1, lnxi
+      do Lf_mask = output_mask%lnx1d + 1, output_mask%lnxi
+         Lf_global = output_mask%link_indices(Lf_mask)
+         L_global = ln2lne(Lf_global)
+         L_mask = output_mask%netlinks_mask(L_global)
 
-         L = ln2lne(Lf)
-         if (LC(L) /= 0) then
+         if (LC(L_mask) /= 0) then
             cycle
          end if
-         LC(L) = 1
+         LC(L_mask) = 1
 
          ! i is edge number.
          i = i + 1
 
-         edge_nodes(1:2, i) = lncn(1:2, Lf)
+         edge_nodes(1:2, i) = output_mask%netlink_to_netnodes(1:2, L_mask)
          if (is_edge_faces_associated) then
-            edge_faces(1:2, i) = ln(1:2, Lf)
+            edge_faces(1:2, i) = output_mask%link_to_nodes(1:2, Lf_mask)
          end if
 
          edge_type(i) = UG_EDGETYPE_INTERNAL
-         xue(i) = xu(Lf)
-         yue(i) = yu(Lf)
+         xue(i) = xu(output_mask%link_indices(Lf_mask))
+         yue(i) = yu(output_mask%link_indices(Lf_mask))
 
          if (is_edge_mapping_table_present) then
-            edge_mapping_table(L - numl1d) = i
+            edge_mapping_table(output_mask%links_mask(L_global) - output_mask%numl1d) = i
          end if
          if (is_reverse_edge_mapping_table_present) then
-            reverse_edge_mapping_table(i) = L - numl1d
+            reverse_edge_mapping_table(i) = output_mask%links_mask(L_global) - output_mask%numl1d
          end if
       end do
 
       ! Write all edges that are 2D boundary flow links.
       ! Lf is flow link number.
-      do Lf = lnx1Db + 1, lnx
+      do Lf_mask = output_mask%lnx1Db + 1, output_mask%lnx
 
-         L = ln2lne(Lf)
-         if (LC(L) /= 0) then
+         Lf_global = output_mask%link_indices(Lf_mask)
+         L_global = ln2lne(Lf_global)
+         L_mask = output_mask%netlinks_mask(L_global)
+
+         if (LC(L_mask) /= 0) then
+            continue
             cycle
          end if
-         LC(L) = 1
+         LC(L_mask) = 1
 
          ! i is edge number.
          i = i + 1
 
-         edge_nodes(1:2, i) = lncn(1:2, Lf)
+         edge_nodes(1:2, i) = output_mask%netnodes_mask(lncn(1:2, output_mask%link_indices(Lf_mask)))
          if (is_edge_faces_associated) then
             ! NOTE: the internal face intentionally gets placed on index 1,
             ! even though the flow link has it on index 2 by definition.
-            edge_faces(1, i) = ln(2, Lf)
+            edge_faces(1, i) = output_mask%link_to_nodes(2, Lf_mask)
             edge_faces(2, i) = -999
          end if
 
          edge_type(i) = UG_EDGETYPE_BND
-         xue(i) = xu(Lf)
-         yue(i) = yu(Lf)
+         xue(i) = xu(output_mask%link_indices(Lf_mask))
+         yue(i) = yu(output_mask%link_indices(Lf_mask))
 
-         if (is_edge_mapping_table_present) then
-            edge_mapping_table(L - numl1d) = i
-         end if
-         if (is_reverse_edge_mapping_table_present) then
-            reverse_edge_mapping_table(i) = L - numl1d
-         end if
+         if (is_edge_mapping_table_present) edge_mapping_table(Lf_mask - output_mask%numl1d) = i
+         if (is_reverse_edge_mapping_table_present) reverse_edge_mapping_table(i) = Lf_mask - output_mask%numl1d
       end do
 
       ! Write all remaining edges, which are closed.
       ! Loop over all 2D net links, which includes both 2D flow links and closed 2D net links.
       ! L is net link number
       if (is_lne2ln_allocated) then
-         do L = NUML1D + 1, NUML
+         do L_mask = output_mask%NUML1D + 1, output_mask%NUML
 
             ! Lf is flow link number.
-            Lf = lne2ln(L)
+            L_global = output_mask%netlink_indices(L_mask)
 
-            if (Lf <= 0) then ! If this net link does not have a flow link (i.e. closed net link).
+            !if (Lf_global <= 0) then ! If this net link does not have a flow link (i.e. closed net link).
+            count = 0
+            do j = 1, output_mask%numl
+               count = count + LC(j)
+            end do
 
-               if (LC(L) /= 0) then
-                  cycle
-               end if
-               LC(L) = 1
-
-               ! i is edge number.
-               i = i + 1
-               edge_nodes(1:2, i) = KN(1:2, L)
-               if (lnn(L) < 2) then
-                  edge_type(i) = UG_EDGETYPE_BND_CLOSED
-               else if (kn(3, L) == 0) then
-                  edge_type(i) = UG_EDGETYPE_INTERNAL_CLOSED
-               end if
-
-               if (is_edge_faces_associated) then
-                  do is = 1, 2
-                     if (lne(is, L) > 0) then
-                        edge_faces(is, i) = lne(is, L)
-                     else
-                        edge_faces(is, i) = -999
-                     end if
-                  end do
-               end if
-
-               ! Edge coordinate is in the middle of the net link.
-               xue(i) = 0.5_dp * (xk(kn(1, L)) + xk(kn(2, L)))
-               yue(i) = 0.5_dp * (yk(kn(1, L)) + yk(kn(2, L)))
-
-               if (is_edge_mapping_table_present) then
-                  edge_mapping_table(L - numl1d) = i
-               end if
-               if (is_reverse_edge_mapping_table_present) then
-                  reverse_edge_mapping_table(i) = L - numl1d
-               end if
+            if (LC(L_mask) /= 0) then
+               cycle
             end if
+            LC(L_mask) = 1
+
+            ! i is edge number.
+            i = i + 1
+            edge_nodes(1:2, i) = output_mask%netnodes_mask(KN(1:2, L_global))
+            if (lnn(L_global) < 2) then
+               edge_type(i) = UG_EDGETYPE_BND_CLOSED
+            else if (kn(3, L_global) == 0) then
+               edge_type(i) = UG_EDGETYPE_INTERNAL_CLOSED
+            end if
+
+            if (is_edge_faces_associated) then
+               do is = 1, 2
+                  if (lne(is, L_global) > 0) then
+                     edge_faces(is, i) = lne(is, L_global)
+                  else
+                     edge_faces(is, i) = -999
+                  end if
+               end do
+            end if
+
+            ! Edge coordinate is in the middle of the net link.
+            xue(i) = 0.5_dp * (xk(kn(1, L_global)) + xk(kn(2, L_global)))
+            yue(i) = 0.5_dp * (yk(kn(1, L_global)) + yk(kn(2, L_global)))
+
+            if (is_edge_mapping_table_present) edge_mapping_table(L_mask - output_mask%numl1d) = i
+            if (is_reverse_edge_mapping_table_present) reverse_edge_mapping_table(i) = L_mask - output_mask%numl1d
+            !end if
 
          end do
       end if
@@ -15600,7 +15605,7 @@ contains
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
       integer :: ndxndxi !< Last 2/3D node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
       integer :: last_1d !< Last 1D node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
-      integer :: ndx1d !< Number of internal 1D nodes.
+      integer :: ndx1d_local !< Number of internal 1D nodes.
 
       integer :: nn
       integer, allocatable :: edge_nodes(:, :), face_nodes(:, :), edge_type(:), contacts(:, :)
@@ -15617,19 +15622,19 @@ contains
 !   type(t_crs) :: pj
 
       integer :: ierr
-      integer :: i, numContPts, numNodes, n, numl2d, L
+      integer :: i, numContPts, numNodes, numl2d_local, L, N, k
       logical :: jaInDefine
-      integer :: n1dedges, n1d2dcontacts, numk2d, start_index
+      integer :: n1dedges, n1d2dcontacts_local, numk2d_local, start_index
       integer, allocatable :: contacttype(:)
 
       ! re-mapping of 1d mesh coordinates for UGrid
       real(kind=dp), allocatable :: xue(:), yue(:)
       ! re-mapping of 2d mesh coordinates for UGrid
       real(kind=dp), allocatable :: x2dn(:), y2dn(:), z2dn(:)
-      integer :: netNodeReMappedIndex, nnSize
+      integer :: netNodeReMappedIndex, nnsize
 
       jaInDefine = 0
-      n1d2dcontacts = 0
+      n1d2dcontacts_local = 0
       n1dedges = 0
       start_index = 1
 
@@ -15649,11 +15654,11 @@ contains
 
       ! Include boundary cells in output (ndx) or not (ndxi)
       if (jabndnd_ == 1) then
-         ndxndxi = ndx
-         last_1d = ndx1db
+         ndxndxi = output_mask%ndx
+         last_1d = output_mask%ndx1db
       else
-         ndxndxi = ndxi
-         last_1d = ndxi
+         ndxndxi = output_mask%ndxi
+         last_1d = output_mask%ndxi
       end if
 
       if (present(jaFou)) then
@@ -15697,7 +15702,7 @@ contains
          end if
       end if
 
-      n1d2dcontacts = 0
+      n1d2dcontacts_local = 0
 
       if (jafullgridoutput == 0) then
          unc_writeopts = ior(unc_writeopts, UG_WRITE_LYRVAR)
@@ -15715,20 +15720,21 @@ contains
 
       ! note: unc_writeopts, waterlevelname, and bldepthname are module variables
       ! and as such implicitly passed to unc_write_1D_flowgeom_ugrid
-      call unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
-      numk2d = 0
-      ndx1d = ndxi - ndx2d
-      if (ndx2d > 0 .and. ja2D_) then ! 2D flow geometry
-         numl2d = numl - numl1d
-         numk2d = (numk - n1d2dcontacts) - ndx1d
-         call realloc(edge_nodes, [2, numl2d], fill=-999, keepExisting=.false.)
-         call reallocP(edge_faces, [2, numl2d], fill=-999)
-         call realloc(edge_type, numl2d, fill=-999, keepExisting=.false.)
-         call realloc(xue, numl2d, fill=dmiss, keepExisting=.false.)
-         call realloc(yue, numl2d, fill=dmiss, keepExisting=.false.)
-         call realloc(x2dn, numk2d, fill=dmiss, keepExisting=.false.)
-         call realloc(y2dn, numk2d, fill=dmiss, keepExisting=.false.)
-         call realloc(z2dn, numk2d, fill=dmiss, keepExisting=.false.)
+      call unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts_local)
+      numk2d_local = 0
+      ndx1d_local = output_mask%ndxi - output_mask%ndx2d
+      if (output_mask%ndx2d > 0 .and. ja2D_) then ! 2D flow geometry
+         ! count 2d net nodes
+         numk2d_local = output_mask%count_2d_netnodes()
+         numl2d_local = output_mask%numl - output_mask%numl1d
+         call realloc(edge_nodes, [2, numl2d_local], fill=-999, keepExisting=.false.)
+         call reallocP(edge_faces, [2, numl2d_local], fill=-999)
+         call realloc(edge_type, numl2d_local, fill=-999, keepExisting=.false.)
+         call realloc(xue, numl2d_local, fill=dmiss, keepExisting=.false.)
+         call realloc(yue, numl2d_local, fill=dmiss, keepExisting=.false.)
+         call realloc(x2dn, numk2d_local, fill=dmiss, keepExisting=.false.)
+         call realloc(y2dn, numk2d_local, fill=dmiss, keepExisting=.false.)
+         call realloc(z2dn, numk2d_local, fill=dmiss, keepExisting=.false.)
          call get_2d_edge_data(edge_nodes, edge_faces, edge_type, xue, yue)
 
          ! Determine max nr of vertices and contour points
@@ -15741,19 +15747,19 @@ contains
 
          ! Note: AvD: for cell corners, we write *all* net nodes (numk). This may also be '1D' nodes, but that is not problematic: they will simply not be referenced in face_nodes/edge_nodes.
          ! Note: AvD: numk may be larger than nr of cell corners. Will cause problems when writing output data on corners (mismatch in dimensions), not crucial now.
-         call realloc(face_nodes, [numNodes, ndx2d], fill=-999)
+         call realloc(face_nodes, [numNodes, output_mask%ndx2d], fill=-999)
 
          ! re-mapping by edge nodes is needed, use kc as table
          kc = 0
          netNodeReMappedIndex = 0
-         do l = 1, numl2d
+         do l = 1, numl2d_local
             nn = edge_nodes(1, l)
             if (nn > 0) then
                if (kc(nn) == 0) then
                   netNodeReMappedIndex = netNodeReMappedIndex + 1
-                  x2dn(netNodeReMappedIndex) = xk(nn)
-                  y2dn(netNodeReMappedIndex) = yk(nn)
-                  z2dn(netNodeReMappedIndex) = zk(nn)
+                  x2dn(netNodeReMappedIndex) = xk(output_mask%netnode_indices(nn))
+                  y2dn(netNodeReMappedIndex) = yk(output_mask%netnode_indices(nn))
+                  z2dn(netNodeReMappedIndex) = zk(output_mask%netnode_indices(nn))
                   kc(nn) = netNodeReMappedIndex
                end if
             end if
@@ -15761,27 +15767,28 @@ contains
             if (nn > 0) then
                if (kc(nn) == 0) then
                   netNodeReMappedIndex = netNodeReMappedIndex + 1
-                  x2dn(netNodeReMappedIndex) = xk(nn)
-                  y2dn(netNodeReMappedIndex) = yk(nn)
-                  z2dn(netNodeReMappedIndex) = zk(nn)
+                  x2dn(netNodeReMappedIndex) = xk(output_mask%netnode_indices(nn))
+                  y2dn(netNodeReMappedIndex) = yk(output_mask%netnode_indices(nn))
+                  z2dn(netNodeReMappedIndex) = zk(output_mask%netnode_indices(nn))
                   kc(nn) = netNodeReMappedIndex
                end if
             end if
          end do
 
          !remapped edge_nodes
-         do l = 1, numl2d
+         do l = 1, numl2d_local
             edge_nodes(1, l) = kc(edge_nodes(1, l))
             edge_nodes(2, l) = kc(edge_nodes(2, l))
          end do
 
          !remapped face_nodes
-         do n = 1, ndx2d
+         do k = 1, output_mask%ndx2d
+            n = output_mask%cell_indices(k)
             nnSize = size(nd(n)%nod)
             do i = 1, nnSize
-               nn = nd(n)%nod(i)
+               nn = output_mask%netnodes_mask(nd(n)%nod(i))
                if (nn > 0) then
-                  face_nodes(i, n) = kc(nn)
+                  face_nodes(i, k) = kc(nn)
                end if
             end do
          end do
@@ -15789,8 +15796,8 @@ contains
          ! TODO: AvD: lnx1d+1:lnx includes open bnd links, which may *also* be 1D boundaries (don't want that in mesh2d)
          ! note edge_faces does not need re-indexing, cell number are flow variables and 2d comes first
 
-         ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids2d, mesh2dname, 2, UG_LOC_EDGE + UG_LOC_FACE, numk2d, numl2d, ndx2d, numNodes, &
-                                     edge_nodes, face_nodes, edge_faces, null(), null(), x2dn, y2dn, xue, yue, xz(1:ndx2d), yz(1:ndx2d), &
+         ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids2d, mesh2dname, 2, UG_LOC_EDGE + UG_LOC_FACE, numk2d_local, numl2d_local, output_mask%ndx2d, numNodes, &
+                                     edge_nodes, face_nodes, edge_faces, null(), null(), x2dn, y2dn, xue, yue, xz(1:output_mask%ndx2d), yz(1:output_mask%ndx2d), &
                                      crs, -999, dmiss, start_index, layer_count, layer_type, &
                                      layer_zs=layer_zs, interface_zs=interface_zs, &
                                      nsigma_opt=numtopsig, &
@@ -15846,8 +15853,8 @@ contains
       ! ierr = nf90_put_att(igeomfile, id_flowelembl, 'positive',      'up') ! Not allowed for non-coordinate variables
 
       !define 1d2dcontacts only after mesh2d is completly defined
-      if (n1d2dcontacts > 0 .and. ja2D_) then
-         ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_1D2D, trim(contactname_1D2D), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
+      if (n1d2dcontacts_local > 0 .and. ja2D_) then
+         ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_1d2d, trim(contactname_1d2d), n1d2dcontacts_local, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
       end if
 
       ! Define domain numbers when it is a parallel run
@@ -15859,19 +15866,19 @@ contains
 
       ! -- Start data writing (time-independent data) ------------
       ! Flow cell cc coordinates (only 1D + internal 2D)
-      if (ndx1d > 0) then
-         ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
-         ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
+      if (ndx1d_local > 0) then
+         ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), output_mask%remap(ba, output_mask%ndx2d + 1, last_1d, UNC_LOC_S)) ! TODO: AvD: handle 1D/2D boundaries
+         ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), output_mask%remap(bl, output_mask%ndx2d + 1, last_1d, UNC_LOC_S)) ! TODO: AvD: handle 1D/2D boundaries
          ! TODO: AvD: UNST-1318: handle 1d zk as well
       end if
-      if (ndx2d > 0 .and. ja2D_) then
-         ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
-         ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
+      if (output_mask%ndx2d > 0 .and. ja2D_) then
+         ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), output_mask%remap(ba, 1, output_mask%ndx2d, UNC_LOC_S)) ! TODO: AvD: handle 1D/2D boundaries
+         ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), output_mask%remap(bl, 1, output_mask%ndx2d, UNC_LOC_S)) ! TODO: AvD: handle 1D/2D boundaries
          ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn)
       end if
 
       ! Put the contacts
-      if (n1d2dcontacts > 0) then
+      if (n1d2dcontacts_local > 0) then
          ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
       end if
 
@@ -15910,11 +15917,11 @@ contains
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(1:ndx2d))
          end if
          ! FlowElemDomain
-         if (ndx1d > 0) then
+         if (ndx1d_local > 0) then
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(ndx2d + 1:last_1d))
          end if
          ! FlowElemGlobalNr
-         if (ndx1d > 0) then
+         if (ndx1d_local > 0) then
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(ndx2d + 1:last_1d))
          end if
       end if
@@ -15942,6 +15949,8 @@ contains
       use precision, only: dp
 
       use m_flowgeom
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
+
       use network_data
       use m_sferic
       use m_missing
@@ -15992,7 +16001,7 @@ contains
 !   type(t_crs) :: pj
 
       integer :: ierr
-      integer :: i, numContPts, numNodes, n, L, k1, L1
+      integer :: i, numContPts, numNodes, n, k1, L1, L_masked, cell_index, L_global
       integer :: Li !< Index of 1D link (can be internal or boundary)
       integer :: id_flowelemcontourptsdim, id_flowelemcontourx, id_flowelemcontoury
       logical :: jaInDefine
@@ -16030,11 +16039,11 @@ contains
 
       ! Include boundary cells in output (ndx) or not (ndxi)
       if (jabndnd_ == 1) then
-         ndxndxi = ndx
-         last_1d = ndx1db
+         ndxndxi = output_mask%ndx
+         last_1d = output_mask%ndx1db
       else
-         ndxndxi = ndxi
-         last_1d = ndxi
+         ndxndxi = output_mask%ndxi
+         last_1d = output_mask%ndx1db
       end if
       if (present(jafou)) then
          jafou_ = jafou
@@ -16068,8 +16077,8 @@ contains
          crs%epsg_code = 4326
       end if
 
-      n1d_write = last_1d - ndx2d
-      ndx1d = ndxi - ndx2d
+      n1d_write = last_1d - output_mask%ndx2d
+      ndx1d = output_mask%ndxi - output_mask%ndx2d
 
       n1d2dcontacts = 0
       if (ndx1d > 0) then
@@ -16079,14 +16088,15 @@ contains
          call realloc(y1dn, n1d_write)
          if (associated(meshgeom1d%ngeopointx)) then ! Indicates that no Deltares-0.10 network topology/branchids have been read.
             call reallocP(nodebranchidx_remap, n1d_write)
+            nodebranchidx_remap = 1
             call reallocP(nodeoffsets_remap, n1d_write)
             call realloc(nodeids_remap, n1d_write)
             call realloc(nodelongnames_remap, n1d_write)
          end if
 
+         x1dn = output_mask%remap(xz, output_mask%ndx2d + 1, last_1d, UNC_LOC_S)
+         y1dn = output_mask%remap(yz, output_mask%ndx2d + 1, last_1d, UNC_LOC_S)
          do n = 1, n1d_write
-            x1dn(n) = xz(ndx2d + n)
-            y1dn(n) = yz(ndx2d + n)
 
             if (n <= ndx1d .and. associated(meshgeom1d%ngeopointx)) then ! exclude boundary nodes
                ! Also store the original mesh1d/network variables in the new flowgeom order for ndx1d nodes:
@@ -16109,10 +16119,11 @@ contains
 !count 1d mesh edges and 1d2d contacts
          n1dedges = 0
          n1d2dcontacts = 0
-         do L = 1, lnx1d
-            if (kcu(L) == 1) then
+         do i = 1, output_mask%lnx1d
+            L_global = output_mask%link_indices(i)
+            if (kcu(L_global) == 1) then
                n1dedges = n1dedges + 1
-            else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
+            else if (kcu(L_global) == 3 .or. kcu(L_global) == 4 .or. kcu(L_global) == 5 .or. kcu(L_global) == 7) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
                n1d2dcontacts = n1d2dcontacts + 1
             else
                continue
@@ -16121,7 +16132,7 @@ contains
 
          if (jabndnd_ == 1) then
             ! when writing boundary points, include the boundary links as well
-            n1dedges = n1dedges + (lnx1db - lnxi)
+            n1dedges = n1dedges + (output_mask%lnx1db - output_mask%lnxi)
          end if
 
          call realloc(face_nodes, [0, 0])
@@ -16142,22 +16153,23 @@ contains
          !assign values to mesh edges 1d2d contacts
          n1dedges = 0
          n1d2dcontacts = 0
-         do Li = 1, lnx1d + (lnx1db - lnxi) ! optionally include the boundary links?
-            if (Li <= lnx1d) then
-               L = Li
+         do Li = 1, output_mask%lnx1d + (output_mask%lnx1db - output_mask%lnxi) ! optionally include the boundary links?
+            if (Li <= output_mask%lnx1d) then
+               L_masked = Li
             elseif (n1d_write == ndx1d) then ! when writing only internal nodes, skip boundary links
                exit
             else
-               L = lnxi + (Li - lnx1d)
+               L_masked = output_mask%lnxi + (Li - output_mask%lnx1d)
             end if
-            if (abs(kcu(L)) == 1) then ! internal 1D edges and open boundary links
+            L_global = output_mask%link_indices(L_masked)
+            if (abs(kcu(L_global)) == 1) then ! internal 1D edges and open boundary links
                n1dedges = n1dedges + 1
-               edge_nodes(1:2, n1dedges) = ln(1:2, L) - ndx2d !only 1d edge nodes
+               edge_nodes(1:2, n1dedges) = output_mask%link_to_nodes(:, L_masked) - output_mask%ndx2d !only 1d edge nodes
                !mappings
-               id_tsp%edgetoln(n1dedges) = L
-               x1du(n1dedges) = xu(L)
-               y1du(n1dedges) = yu(L)
-               L1 = Lperm(ln2lne(L)) ! This is the edge index from *before* setnodadm(),
+               id_tsp%edgetoln(n1dedges) = L_global
+               x1du(n1dedges) = xu(L_global)
+               y1du(n1dedges) = yu(L_global)
+               L1 = Lperm(ln2lne(L_global)) ! This is the edge index from *before* setnodadm(),
                if (L1 > size(meshgeom1d%edgebranchidx)) then
                   L1 = n1dedges !> don't remap edgebranchIDX if original array is incomplete
                end if
@@ -16167,17 +16179,17 @@ contains
                   edgeoffsets_remap(n1dedges) = meshgeom1d%edgeoffsets(L1)
                end if
 
-            else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
+            else if (kcu(L_global) == 3 .or. kcu(L_global) == 4 .or. kcu(L_global) == 5 .or. kcu(L_global) == 7) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
                ! 1D2D link, find the 2D flow node and store its cell center as '1D' node coordinates
                n1d2dcontacts = n1d2dcontacts + 1
-               id_tsp%contactstoln(n1d2dcontacts) = L
-               contacttype(n1d2dcontacts) = kcu(L)
-               if (ln(1, L) > ndx2d) then ! First point of 1D link is 1D cell
-                  contacts(1, n1d2dcontacts) = ln(1, L) - ndx2d
-                  contacts(2, n1d2dcontacts) = ln(2, L) ! In m_flowgeom: 1D nodenr = ndx2d+n, in UGrid 1D flowgeom: local 1D nodenr = n.
+               id_tsp%contactstoln(n1d2dcontacts) = L_global
+               contacttype(n1d2dcontacts) = kcu(L_global)
+               if (ln(1, L_global) > ndx2d) then ! First point of 1D link is 1D cell
+                  contacts(1, n1d2dcontacts) = output_mask%link_to_nodes(1, Li) - output_mask%ndx2d
+                  contacts(2, n1d2dcontacts) = output_mask%link_to_nodes(2, Li) ! In m_flowgeom: 1D nodenr = ndx2d+n, in UGrid 1D flowgeom: local 1D nodenr = n.
                else ! Second point of 1D link is 1D cell
-                  contacts(1, n1d2dcontacts) = ln(2, L) - ndx2d
-                  contacts(2, n1d2dcontacts) = ln(1, L) !2d
+                  contacts(1, n1d2dcontacts) = output_mask%link_to_nodes(2, L_masked) - output_mask%ndx2d
+                  contacts(2, n1d2dcontacts) = output_mask%link_to_nodes(1, L_masked) !2d
                end if
             else
                continue
@@ -16236,17 +16248,20 @@ contains
          ierr = nf90_enddef(ncid)
 
          do i = 1, n1d_write
-            nn = size(nd(ndx2d + i)%x)
+            cell_index = output_mask%cell_indices(output_mask%ndx2d+i)
+            nn = size(nd(cell_index)%x)
             do n = 1, nn
-               work2(n, i) = nd(ndx2d + i)%x(n)
+               work2(n, i) = nd(cell_index)%x(n)
             end do
+            continue
          end do
          ierr = nf90_put_var(ncid, id_flowelemcontourx, work2(1:numContPts, 1:n1d_write), [1, 1], [numContPts, n1d_write])
 
          do i = 1, n1d_write
-            nn = size(nd(ndx2d + i)%x)
+            cell_index = output_mask%cell_indices(output_mask%ndx2d+i)
+            nn = size(nd(cell_index)%x)
             do n = 1, nn
-               work2(n, i) = nd(ndx2d + i)%y(n)
+               work2(n, i) = nd(cell_index)%y(n)
             end do
          end do
          ierr = nf90_put_var(ncid, id_flowelemcontoury, work2(1:numContPts, 1:n1d_write), [1, 1], [numContPts, n1d_write])
@@ -16265,7 +16280,6 @@ contains
       end if ! 1D flow grid geometry
 
       numk2d = 0
-      ndx1d = ndxi - ndx2d
 
       ierr = nf90_enddef(ncid)
 
