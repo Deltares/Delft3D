@@ -47,21 +47,21 @@ contains
         character(len=:), allocatable :: converted_fnamesstring
         character(len=:), allocatable :: tempstring_netfile
         character(len=IDLEN) :: temppath, tempname, tempext
-        integer :: istat
+        !integer :: istat
 
         md_culvertprefix = 'converted_'
 
         ! Write converted netfile with prefix 'converted_'
         call split_filename(md_netfile, temppath, tempname, tempext)
         tempstring_netfile = cat_filename(temppath, trim(md_culvertprefix) // tempname, tempext)
-        call unc_write_net(tempstring_netfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
+        !call unc_write_net(tempstring_netfile, janetcell=1, janetbnd=0, jaidomain=0, iconventions=UNC_CONV_UGRID)
 
         ! Overwrite netfile path in model definition.
         md_netfile = tempstring_netfile
 
         ! Write converted model definition file with prefix 'converted_'
         converted_fnamesstring = trim(trim(md_culvertprefix) // md_ident) // '.mdu'
-        call writeMDUFile(converted_fnamesstring, istat)
+        !call writeMDUFile(converted_fnamesstring, istat)
     end subroutine write_model_with_longculverts
 
 end module m_write_model_with_longculverts

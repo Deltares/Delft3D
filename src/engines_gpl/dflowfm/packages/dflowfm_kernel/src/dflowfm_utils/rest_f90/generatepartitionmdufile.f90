@@ -37,8 +37,30 @@ module m_generatepartitionmdufile
    private
 
    public :: generatepartitionmdufile
+   public :: generatePartitionMDUFileFromMemory
 
 contains
+
+   subroutine generatePartitionMDUFileFromMemory(filename_new)
+      use unstruc_model, only: writeMDUFilepointer
+      use m_filez, only: newfil, doclose
+      use MessageHandling, only: mess, LEVEL_FATAL
+      character(len=*), intent(in) :: filename_new
+
+      integer :: mout, istat
+
+      call newfil(mout, filename_new)
+      if (mout == 0) then
+         call mess(LEVEL_FATAL, "Failed to open file " // trim(filename_new))
+         return
+      end if
+
+      call writeMDUFilepointer(mout, .false., istat)
+      if (istat /= 0) then
+         call mess(LEVEL_FATAL, "Failed to write a partitioned MDU file " // trim(filename_new))
+         return
+      end if
+   end subroutine generatePartitionMDUFileFromMemory
 
    subroutine generatePartitionMDUFile(filename, filename_new)
       use unstruc_model, only: md_icgsolver, md_restartfile, md_mapfile, md_genpolygon, md_flowgeomfile, md_classmap_file, md_netfile, md_partitionfile, mess, level_error
