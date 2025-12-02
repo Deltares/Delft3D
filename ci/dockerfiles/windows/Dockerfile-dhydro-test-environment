@@ -13,10 +13,7 @@ RUN Start-Process python-3.12.7-amd64.exe -ArgumentList '/quiet InstallAllUsers=
 RUN Remove-Item C:\\python-3.12.7-amd64.exe
 RUN New-Item -ItemType SymbolicLink -Path 'C:\\Program Files\\Python312\\python3.exe' -Target 'C:\\Program Files\\Python312\\python.exe'
 
-ADD pip\\win-requirements.txt C:\\temp\\win-requirements.txt
-
 ADD test\\deltares_testbench C:\\deltares_testbench
 
 RUN & 'C:\\Program Files\\Python312\\python.exe' -m pip install --upgrade pip; \
-    & 'C:\\Program Files\\Python312\\python.exe' -m pip install -r C:\\temp\\win-requirements.txt; \
-    Remove-Item C:\\temp\\win-requirements.txt
+    & 'C:\\Program Files\\Python312\\python.exe' -m pip install -r C:\\deltares_testbench\\pip\\win-requirements.txt
