@@ -95,7 +95,7 @@ object WindowsTest : BuildType({
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
             dockerPull = true
-            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
+            dockerRunParameters = "-v %system.teamcity.build.checkoutDir%\\test\\deltares_testbench\\data\\engines:C:\\deltares_testbench\\data\\engines --memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
         script {
             name = "Copy cases"
