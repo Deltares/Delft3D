@@ -124,11 +124,12 @@ project {
 
         buildType(TestPythonCiTools)
         buildType(TestBenchValidation)
+        buildType(TestFortranStyler)
         buildType(CopyExamples)
         buildType(SigCi)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, CopyExamples, SigCi
+            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi
         )
     }
 
