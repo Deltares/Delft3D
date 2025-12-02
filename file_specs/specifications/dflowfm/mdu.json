@@ -155,7 +155,8 @@
                 {
                     "key": "vertPlizFile",
                     "value_type": "path",
-                    "description": "Polyline file (*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp."
+                    "description": "Polyline file (*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions).",
+                    "status": "research"
                 },
                 {
                     "key": "frictFile",
@@ -471,8 +472,7 @@
                     "description": "Vertical layer type.",
                     "enum_values": {
                         "1": "sigma-layers",
-                        "2": "z-layers",
-                        "3": "use `vertPlizFile`"
+                        "2": "z- or z-sigma-layers"
                     }
                 },
                 {
@@ -651,7 +651,7 @@
                 {
                     "key": "tSigma",
                     "value_type": "float",
-                    "description": "Sigma adaptation period for `Layertype`=4.",
+                    "description": "Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers).",
                     "unit": "s",
                     "status": "research"
                 },
