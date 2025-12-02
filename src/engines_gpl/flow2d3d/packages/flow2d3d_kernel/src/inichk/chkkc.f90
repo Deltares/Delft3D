@@ -230,7 +230,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
        mld = ml - 1
        mlu = ml + 1
        do m = mf, mlu
-          if ( (kcs(n,m)==-1) ) then
+          if ( (kcs(n,m)==-1) .and. (kcs(n+1,m)/=0) ) then
              kcv(n,m) = -1
           endif
        enddo
