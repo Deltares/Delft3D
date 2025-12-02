@@ -1,4 +1,4 @@
-!----- AGPL --------------------------------------------------------------------
+﻿ !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2025.
 !
@@ -89,8 +89,6 @@ contains
 
    end subroutine pol_to_cellmask
 
-   !> Initialize polygon data structures for cellmask checking.
-   !! Must be called once before using dbpinpol_cellmask.
    subroutine dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
       use m_alloc
       use m_missing, only: dp, dmiss
@@ -142,14 +140,12 @@ contains
             call realloc(zpl_cellmask, maxpoly, keepExisting=.true.)
          end if
 
-         ! Get polygon start and end pointer
          call get_startend(NPL - ipoint + 1, xpl(ipoint:NPL), ypl(ipoint:NPL), istart, iend, dmiss)
          istart = istart + ipoint - 1
          iend = iend + ipoint - 1
 
          if (istart >= iend .or. iend > NPL) exit
 
-         ! Store bounding box
          xpmin_cellmask(ipoly) = minval(xpl(istart:iend))
          xpmax_cellmask(ipoly) = maxval(xpl(istart:iend))
          ypmin_cellmask(ipoly) = minval(ypl(istart:iend))
@@ -157,28 +153,27 @@ contains
 
          iistart_cellmask(ipoly) = istart
          iiend_cellmask(ipoly) = iend
-
-         ! Store polygon type (sign of zpl)
          zpl_cellmask(ipoly) = zpl(istart)
 
-         ! Advance pointer
          ipoint = iend + 2
       end do
 
       Npoly_cellmask = ipoly
+
       cellmask_initialized = .true.
 
    end subroutine dbpinpol_cellmask_init
 
-   !> Check if point should be masked.
+   !> Check if point should be masked - OPTIMIZED VERSION
    elemental function dbpinpol_cellmask(xp, yp) result(mask)
-      use m_missing, only: dmiss
+      use m_missing, only: dmiss, JINS
       implicit none
 
       integer :: mask
       real(kind=dp), intent(in) :: xp, yp
 
       integer :: ipoly, in_test
+      integer :: count_drypoint
       logical :: found_inside_enclosure
       integer :: num_enclosures
       real(kind=dp) :: zpl_val
@@ -186,14 +181,14 @@ contains
       mask = 0
       if (.not. cellmask_initialized) return
 
-      found_inside_enclosure = .false.
       num_enclosures = 0
+      count_drypoint = 0
 
       ! Single loop over all polygons
       do ipoly = 1, Npoly_cellmask
          zpl_val = zpl_cellmask(ipoly)
 
-         ! Bounding box check (applies to all polygon types)
+         ! Bounding box check
          if (xp < xpmin_cellmask(ipoly) .or. xp > xpmax_cellmask(ipoly) .or. &
              yp < ypmin_cellmask(ipoly) .or. yp > ypmax_cellmask(ipoly)) cycle
 
@@ -201,13 +196,12 @@ contains
          in_test = pinpok_elemental(xp, yp, ipoly)
 
          if (zpl_val == dmiss .or. zpl_val > 0.0_dp) then
-            ! Dry point polygon (including dmiss): inside = masked
+            ! Dry point polygon
             if (in_test == 1) then
-               mask = 1
-               return ! Early exit
+               count_drypoint = count_drypoint + 1
             end if
          else if (zpl_val < 0.0_dp) then
-            ! Enclosure polygon: track if we're inside any enclosure
+            ! Enclosure polygon
             num_enclosures = num_enclosures + 1
             if (in_test == 1) then
                found_inside_enclosure = .true.
@@ -215,7 +209,18 @@ contains
          end if
       end do
 
-      ! After checking all polygons: outside all enclosures = dry
+      ! Apply odd-even rule only if counting was needed
+      if (JINS == 1) then
+         if (mod(count_drypoint, 2) == 1) then
+            mask = 1
+         end if
+      else
+         if (mod(count_drypoint, 2) == 0) then
+            mask = 1
+         end if
+      end if
+
+      ! Override with enclosure logic if applicable
       if (num_enclosures > 0 .and. .not. found_inside_enclosure) then
          mask = 1
       end if
