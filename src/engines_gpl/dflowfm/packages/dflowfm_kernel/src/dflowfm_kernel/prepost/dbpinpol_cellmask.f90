@@ -43,6 +43,7 @@ module m_dbpinpol_cellmask
    real(kind=dp), allocatable :: xpmax_cellmask(:), ypmax_cellmask(:) !< Polygon bounding box max coordinates
    real(kind=dp), allocatable :: zpl_cellmask(:) !< Polygon coordinate arrays
    integer, allocatable :: iistart_cellmask(:), iiend_cellmask(:) !< Polygon start and end indices in coordinate arrays (dim = number of polygons)
+   integer :: Npoly_cellmask = 0 !< Number of polygons stored in module arrays
    logical :: cellmask_initialized = .false. !< Flag indicating if cellmask data structures have been initialized for safety
    logical :: enclosures_present = .false. !< Flag indicating if any enclosures are present in the polygon dataset
 
@@ -112,8 +113,10 @@ contains
          ipoint = iend + 2
       end do
 
+      Npoly_cellmask = ipoly
+
       ! check if there are any enclosure polygons
-      enclosures_present = any(zpl_cellmask(1:npl) < 0.0_dp .and. zpl_cellmask(1:npl) /= dmiss)
+      enclosures_present = any(zpl_cellmask(1:Npoly_cellmask) < 0.0_dp .and. zpl_cellmask(1:Npoly_cellmask) /= dmiss)
       cellmask_initialized = .true.
 
    end subroutine dbpinpol_cellmask_init
@@ -138,7 +141,7 @@ contains
       found_inside_enclosure = .false.
 
       ! Single loop over all polygons
-      do ipoly = 1, npl
+      do ipoly = 1, Npoly_cellmask
          zpl_val = zpl_cellmask(ipoly)
 
          ! Bounding box check
@@ -188,6 +191,7 @@ contains
       if (allocated(iistart_cellmask)) deallocate (iistart_cellmask)
       if (allocated(iiend_cellmask)) deallocate (iiend_cellmask)
 
+      Npoly_cellmask = 0
       cellmask_initialized = .false.
 
    end subroutine dbpinpol_cellmask_cleanup
