@@ -214,7 +214,7 @@ module unstruc_model
    integer :: md_pmethod = 1 !< partition method: K-way (=1, default), Recursive Bisection(=2), Mesh-dual(=3)
    integer :: md_ndomains = 0 !< METIS/number of domains (>0) or use polygon (0)
    integer :: md_jacontiguous = 1 !< METIS/contiguous domains (1, default) or not (0)
-   integer :: md_icgsolver = 0 !< intended solver
+   ! integer :: md_icgsolver = 0 !< intended solver
    integer :: md_genpolygon = 0 !< generate partition polygons and use it in parallel runs (1) or writing cell subdomain information to partitioned net files (0)
    integer :: md_partugrid = 0 !< partitioned netfile is ugrid or not
    integer :: md_partseed = 0 !< User-defined seed value, passed to METIS. Useful for reproducible partitionings, but only used when /= 0.

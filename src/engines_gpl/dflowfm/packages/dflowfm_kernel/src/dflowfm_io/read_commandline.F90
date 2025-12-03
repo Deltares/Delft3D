@@ -61,6 +61,7 @@ contains
       use m_circumcenter_method, only: circumcenter_method, extract_circumcenter_method
       use m_missing, only: jadelnetlinktyp
       use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
+      use m_flowparameters, only: icgsolver
       implicit none
 
       integer :: istat !< Returned result status
@@ -127,7 +128,7 @@ contains
 !           default settings
             md_ndomains = 0
             md_jacontiguous = 1 ! by default enforce contiguous
-            md_icgsolver = 6 ! default for parallel: PetSC
+            icgsolver = 6 ! default for parallel: PetSC
             md_genpolygon = 0 ! default: no polygon
             md_pmethod = 1 ! partition method using Metis: K-way (=1, default), Recursive Bisection(=2), Mesh-dual(=3)
             md_partugrid = 0 ! ugrid for partitioned netfiles is work-in-progress
@@ -143,7 +144,7 @@ contains
                case ('contiguous')
                   md_jacontiguous = ivals(ikey)
                case ('icgsolver')
-                  md_icgsolver = ivals(ikey)
+                  icgsolver = ivals(ikey)
                case ('genpolygon')
                   md_genpolygon = ivals(ikey)
                case ('ugrid')
@@ -351,7 +352,7 @@ contains
                if (trim(Skeys(ikey)) == 'CFL') then
                   md_CFL = ivals(ikey)
                else if (trim(Skeys(ikey)) == 'icgsolver') then
-                  md_icgsolver = ivals(ikey)
+                  icgsolver = ivals(ikey)
                else if (trim(Skeys(ikey)) == 'maxmatvecs') then
                   md_maxmatvecs = ivals(ikey)
                else if (trim(Skeys(ikey)) == 'epscg') then
