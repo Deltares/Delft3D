@@ -34,7 +34,7 @@
 !! Grid enclosures are handled via the jinside=-1 option.
 module m_delete_drypoints_from_netgeom
    use m_remove_masked_netcells, only: remove_masked_netcells
-   use m_pol_to_cellmask, only: pol_to_cellmask
+   !use m_pol_to_cellmask, only: pol_to_cellmask
    use m_fix_global_polygons, only: fix_global_polygons
 
    implicit none
@@ -154,7 +154,7 @@ contains
                      call fix_global_polygons(1, 0)
                   end if
 
-                  call pol_to_cellmask() ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
+                  !call pol_to_cellmask() ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
                   call delpol()
                   call restorepol()
 
