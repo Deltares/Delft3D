@@ -12671,22 +12671,22 @@ contains
             contact1d2didx(2, contactnlinks + L) = mesh2indexes(L)
             contactnetlinks(contactnlinks + L) = numl_last + L
 
-            kn(3, numl_last + l) = contacttype(l)
+            kn(3, numl_last + L) = contacttype(L)
 
             ! new 2D node coordinates
-            XK(numk_last + l) = xface(mesh2indexes(l))
-            YK(numk_last + l) = yface(mesh2indexes(l))
-            kn(2, numl_last + l) = numk_last + l
+            XK(numk_last + L) = xface(mesh2indexes(L))
+            YK(numk_last + L) = yface(mesh2indexes(L))
+            kn(2, numl_last + L) = numk_last + L
 
             if (mesh1_topo_dim == 2) then
-               XK(numk_last + ncontacts + l) = xface(mesh1indexes(l))
-               YK(numk_last + ncontacts + l) = yface(mesh1indexes(l))
-               kn(1, numl_last + l) = numk_last + ncontacts + l
+               XK(numk_last + ncontacts + L) = xface(mesh1indexes(L))
+               YK(numk_last + ncontacts + L) = yface(mesh1indexes(L))
+               kn(1, numl_last + L) = numk_last + ncontacts + L
             else if (mesh1_topo_dim == 1) then
                if (nodesOnBranchVertices == 1) then
-                  kn(1, numl_last + l) = mesh1dUnmergedToMerged(mesh1indexes(l))
+                  kn(1, numl_last + L) = mesh1dUnmergedToMerged(mesh1indexes(L))
                else
-                  kn(1, numl_last + l) = mesh1indexes(l)
+                  kn(1, numl_last + L) = mesh1indexes(L)
                end if
             end if
          end do
