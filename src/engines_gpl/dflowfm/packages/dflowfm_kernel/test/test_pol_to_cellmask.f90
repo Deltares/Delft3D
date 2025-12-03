@@ -3,7 +3,7 @@ module test_pol_to_cellmask
    use precision, only: dp
    use m_missing, only: dmiss
    use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
-   use m_pol_to_cellmask, only: dbpinpol_cellmask_init, dbpinpol_cellmask, dbpinpol_cellmask_cleanup
+   use m_dbpinpol_cellmask, only: dbpinpol_cellmask_init, dbpinpol_cellmask, dbpinpol_cellmask_cleanup
    implicit none
 
 contains

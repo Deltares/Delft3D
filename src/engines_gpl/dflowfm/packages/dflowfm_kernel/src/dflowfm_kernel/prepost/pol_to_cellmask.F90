@@ -27,21 +27,16 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
-!> update cellmask from samples
-!> a cell is dry when it is:
-!>   1) inside ANY "1"-polygon (drypnts), OR
-!>   2) outside ALL "-1"-polygons (enclosures)
-module m_pol_to_cellmask
-
+module m_dbpinpol_cellmask
+   use m_missing, only: jins, dmiss
    use precision, only: dp
+
    implicit none
 
    private
 
-   public :: pol_to_cellmask
+   !> dbpinpol routines are public to avoid PetSC dependency in unit tests
+   public :: dbpinpol_cellmask_init, dbpinpol_cellmask_cleanup, dbpinpol_cellmask
 
    ! Module-level variables for cellmask polygon checking
    real(kind=dp), allocatable :: xpmin_cellmask(:), ypmin_cellmask(:)
@@ -53,45 +48,8 @@ module m_pol_to_cellmask
 
 contains
 
-   subroutine pol_to_cellmask()
-      use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
-      use m_partitioninfo, only: jampi
-#ifdef _OPENMP
-      use omp_lib
-      integer :: temp_threads
-#endif
-      integer :: k
-      if (allocated(cellmask)) deallocate (cellmask)
-      allocate (cellmask(nump1d2d))
-      cellmask = 0
-
-      if (NPL == 0) return
-
-      ! Initialize once
-      call dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
-#ifdef _OPENMP
-      temp_threads = omp_get_max_threads() !> Save old number of threads
-      if (jampi == 0) then
-         call omp_set_num_threads(OMP_GET_NUM_PROCS()) !> Set number of threads to max for this O(N^2) operation
-      end if !> no else, in MPI mode omp num threads is already set to 1
-#endif
-      !$OMP PARALLEL DO SCHEDULE(DYNAMIC, 100)
-      do k = 1, nump
-         cellmask(k) = dbpinpol_cellmask(xzw(k), yzw(k))
-      end do
-      !$OMP END PARALLEL DO
-#ifdef _OPENMP
-      call omp_set_num_threads(temp_threads)
-#endif
-
-      ! Cleanup
-      call dbpinpol_cellmask_cleanup()
-
-   end subroutine pol_to_cellmask
-
    subroutine dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
       use m_alloc
-      use m_missing, only: dp, dmiss
       use geometry_module, only: get_startend
 
       implicit none
@@ -166,8 +124,6 @@ contains
 
    !> Check if point should be masked - OPTIMIZED VERSION
    elemental function dbpinpol_cellmask(xp, yp) result(mask)
-      use m_missing, only: dmiss, JINS
-      implicit none
 
       integer :: mask
       real(kind=dp), intent(in) :: xp, yp
@@ -229,7 +185,6 @@ contains
 
    !> Clean up module-level cellmask polygon data structures.
    subroutine dbpinpol_cellmask_cleanup()
-      implicit none
 
       if (allocated(xpmin_cellmask)) deallocate (xpmin_cellmask)
       if (allocated(xpmax_cellmask)) deallocate (xpmax_cellmask)
@@ -247,7 +202,6 @@ contains
    !> Optimized elemental point-in-polygon test using ray casting algorithm.
    !! Accesses polygon data via module arrays.
    elemental function pinpok_elemental(xl, yl, ipoly) result(inside)
-      use m_missing, only: dmiss, JINS !< Use globals directly
 
       implicit none
 
@@ -306,5 +260,59 @@ contains
       if (jins == 0) inside = 1 - inside
 
    end function pinpok_elemental
+
+end module m_dbpinpol_cellmask
+
+!> update cellmask from samples
+!> a cell is dry when it is:
+!>   1) inside ANY "1"-polygon (drypnts), OR
+!>   2) outside ALL "-1"-polygons (enclosures)
+module m_pol_to_cellmask
+
+   use precision, only: dp
+   use m_dbpinpol_cellmask, only: dbpinpol_cellmask_init, dbpinpol_cellmask_cleanup, dbpinpol_cellmask
+   implicit none
+
+   private
+
+   public :: pol_to_cellmask
+
+contains
+
+   subroutine pol_to_cellmask()
+      use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
+      use m_partitioninfo, only: jampi
+#ifdef _OPENMP
+      use omp_lib
+      integer :: temp_threads
+#endif
+      integer :: k
+      if (allocated(cellmask)) deallocate (cellmask)
+      allocate (cellmask(nump1d2d))
+      cellmask = 0
+
+      if (NPL == 0) return
+
+      ! Initialize once
+      call dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
+#ifdef _OPENMP
+      temp_threads = omp_get_max_threads() !> Save old number of threads
+      if (jampi == 0) then
+         call omp_set_num_threads(OMP_GET_NUM_PROCS()) !> Set number of threads to max for this O(N^2) operation
+      end if !> no else, in MPI mode omp num threads is already set to 1
+#endif
+      !$OMP PARALLEL DO SCHEDULE(DYNAMIC, 100)
+      do k = 1, nump
+         cellmask(k) = dbpinpol_cellmask(xzw(k), yzw(k))
+      end do
+      !$OMP END PARALLEL DO
+#ifdef _OPENMP
+      call omp_set_num_threads(temp_threads)
+#endif
+
+      ! Cleanup
+      call dbpinpol_cellmask_cleanup()
+
+   end subroutine pol_to_cellmask
 
 end module m_pol_to_cellmask
