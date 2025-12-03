@@ -4179,7 +4179,7 @@ contains
       integer, intent(out) :: mesh1_topo_dim !< Topology dimension of first mesh (mathematical dimension, so not to be confused with a NetCDF dimension).
       integer, intent(out) :: mesh2_topo_dim !< Topology dimension of second mesh (mathematical dimension, so not to be confused with a NetCDF dimension).
       integer :: ierr !< Result status (UG_NOERR if successful)
-   
+
       character(len=:), allocatable :: contact_attr, contact_name, error_message
       character(len=nf90_max_name) :: mesh1_name, mesh2_name, location1, location2, temp
       integer :: istart, icolon, ispace, mesh1_varid, mesh2_varid
@@ -4211,14 +4211,23 @@ contains
       end if
       mesh1_name = trim(adjustl(contact_attr(1:icolon - 1)))
 
-      ! Skip to second mesh name
-      istart = icolon + 2 ! skip space
-      ispace = index(contact_attr(istart:), ' ')
+      ! Skip past first location to find second mesh name
+      ! Find the space after the first location
+      istart = icolon + 1
+      do while (istart <= len(contact_attr) .and. contact_attr(istart:istart) == ' ') !> skip possible spaces after colon
+         istart = istart + 1
+      end do
+      ispace = index(contact_attr(istart:), ' ') !> adjustl in case of an extra space after the colon
       if (ispace == 0) then
          call check_ug_error(UG_SOMEERR, 'Invalid contact attribute format: missing space separator'//error_message)
          return
       end if
-      istart = istart + ispace
+
+      ! increment istart to the first character that is not a space
+      istart = istart + ispace ! Move to the space
+      do while (istart <= len(contact_attr) .and. contact_attr(istart:istart) == ' ')
+         istart = istart + 1
+      end do
 
       icolon = index(contact_attr(istart:), ':')
       if (icolon == 0) then
