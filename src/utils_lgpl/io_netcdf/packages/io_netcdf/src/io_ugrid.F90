@@ -5752,7 +5752,7 @@ contains
       type(t_ug_file), intent(in) :: ug_file !< Ug_file struct
       character(len=*), intent(in) :: meshContactName !< the contact name associated with the mesh
       integer, intent(inout) :: contactid !< the requrestd contact id
-      character(len=nf90_max_name) :: contactsname !< the contact name
+      character(len=nf90_max_name) :: contactname !< the contact name
 
       integer :: i, ierr
 
@@ -5761,8 +5761,8 @@ contains
 
       if (ierr == 0) then
          do i = 1, size(ug_file%contactids)
-            ierr = ug_get_contact_name(ncid, ug_file%contactids(i), contactsname)
-            if (trim(meshContactName) == trim(contactsname)) then
+            ierr = ug_get_contact_name(ncid, ug_file%contactids(i), contactname)
+            if (trim(meshContactName) == trim(contactname)) then
                contactid = i
                exit
             end if
