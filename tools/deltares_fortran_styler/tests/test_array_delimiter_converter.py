@@ -1,6 +1,6 @@
 """Tests for the array delimiter converter."""
 import pytest
-from array_delimiter_converter import ArrayDelimiterConverter
+from deltares_fortran_styler.array_delimiter_converter import ArrayDelimiterConverter
 
 class TestArrayDelimiterConverter:
     """Test suite for ArrayDelimiterConverter."""

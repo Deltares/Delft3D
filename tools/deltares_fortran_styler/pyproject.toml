@@ -1,6 +1,6 @@
 [project]
 name = "deltares-fortran-styler"
-version = "1.0.0"
+version = "0.1.0"
 description = "Modular Fortran style checker and converter for Deltares style guide"
 readme = "README.md"
 authors = [
@@ -11,24 +11,16 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
+    "pytest ~= 9.0.1",
+    "pytest-cov ~= 7.0.0",
 ]
 
 [project.scripts]
-fortran-styler = "fortran_styler:main"
+fortran-styler = "deltares_fortran_styler.fortran_styler:main"
 
 [build-system]
 requires = ["setuptools>=45"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools]
-py-modules = [
-    "base_converter",
-    "double_precision_converter",
-    "array_delimiter_converter",
-    "file_processor",
-    "fortran_styler"
-]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -10,7 +10,7 @@ This module handles:
 
 from pathlib import Path
 from typing import List, Tuple, Optional, Dict
-from base_converter import FortranConverter
+from deltares_fortran_styler.base_converter import FortranConverter
 
 
 class FileProcessor:

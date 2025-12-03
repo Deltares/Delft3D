@@ -1,6 +1,6 @@
 """Tests for the double precision converter."""
 import pytest
-from double_precision_converter import DoublePrecisionConverter
+from deltares_fortran_styler.double_precision_converter import DoublePrecisionConverter
 
 class TestDoublePrecisionConverter:
     """Test suite for DoublePrecisionConverter."""

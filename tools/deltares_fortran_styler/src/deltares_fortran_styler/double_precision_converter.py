@@ -11,7 +11,7 @@ Based on Fortran standard syntax for double precision literals.
 
 import re
 from typing import Tuple, List
-from base_converter import FortranConverter, ConversionIssue
+from deltares_fortran_styler.base_converter import FortranConverter, ConversionIssue
 
 
 class DoublePrecisionConverter(FortranConverter):

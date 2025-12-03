@@ -26,9 +26,9 @@ import argparse
 from pathlib import Path
 from typing import List
 
-from file_processor import FileProcessor
-from double_precision_converter import DoublePrecisionConverter
-from array_delimiter_converter import ArrayDelimiterConverter
+from deltares_fortran_styler.file_processor import FileProcessor
+from deltares_fortran_styler.double_precision_converter import DoublePrecisionConverter
+from deltares_fortran_styler.array_delimiter_converter import ArrayDelimiterConverter
 
 
 # Registry of available converters
