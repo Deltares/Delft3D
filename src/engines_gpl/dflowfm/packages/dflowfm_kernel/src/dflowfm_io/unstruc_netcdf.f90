@@ -142,8 +142,8 @@ module unstruc_netcdf
       type(t_ug_mesh) :: meshids2d
       type(t_ug_mesh) :: meshids3d
       type(t_ug_network) :: network1d
-      type(t_ug_contact) :: meshcontacts_1D2D
-      type(t_ug_contact) :: meshcontacts_2D2D
+      type(t_ug_contact) :: meshcontact_1D2D
+      type(t_ug_contact) :: meshcontact_2D2D
 
       !
       ! Dimensions
@@ -197,7 +197,7 @@ module unstruc_netcdf
       !type(t_ug_mesh)     :: meshids2d
       !type(t_ug_mesh)     :: meshids3d
       !type(t_ug_network)  :: network1d
-      !type(t_ug_contact) :: meshcontacts_1D2D
+      !type(t_ug_contact) :: meshcontact_1D2D
       !
    !!
    !! Dimensions
@@ -1040,7 +1040,7 @@ contains
          if (iand(which_meshdim_, 4) > 0 .and. numl1d > 0) then
             !1d2d contacts
             if (size(id_tsp%contactstoln, 1) > 0) then
-               idims(idx_spacedim) = id_tsp%meshcontacts_1D2D%dimids(cdim_ncontacts)
+               idims(idx_spacedim) = id_tsp%meshcontact_1D2D%dimids(cdim_ncontacts)
                ierr = ug_def_var(ncid, id_var(4), idims(idx_fastdim:maxrank), itype, UG_LOC_CONTACT, &
                                  trim(contactname_1D2D), var_name, standard_name, long_name, unit, ' ', cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                                  do_deflate=unc_nccompress)
@@ -12125,17 +12125,17 @@ contains
 
          !define 1d2dcontacts only after mesh2d is completly defined
          if (n1d2dcontacts > 0) then
-            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts_1D2D, trim(contactname_1D2D), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
+            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_1D2D, trim(contactname_1D2D), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
             ierr = nf90_enddef(ncid)
             ! Put the contacts
-            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontacts_1D2D, contacts(1, :), contacts(2, :), contacttype)
+            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
             ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
          end if
          if (n2d2dcontacts > 0) then
-            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts_2D2D, trim(contactname_2D2D), n2d2dcontacts, id_tsp%meshids2d, id_tsp%meshids2d, UG_LOC_FACE, UG_LOC_FACE, start_index)
+            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_2D2D, trim(contactname_2D2D), n2d2dcontacts, id_tsp%meshids2d, id_tsp%meshids2d, UG_LOC_FACE, UG_LOC_FACE, start_index)
             ierr = nf90_enddef(ncid)
             ! Put the contacts
-            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontacts_2D2D, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D)
+            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_2D2D, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D)
             ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
          end if
 
@@ -15592,7 +15592,7 @@ contains
 
       !define 1d2dcontacts only after mesh2d is completly defined
       if (n1d2dcontacts > 0 .and. ja2D_) then
-         ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts_1D2D, trim(contactname_1D2D), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
+         ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_1D2D, trim(contactname_1D2D), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
       end if
 
       ! Define domain numbers when it is a parallel run
@@ -15617,7 +15617,7 @@ contains
 
       ! Put the contacts
       if (n1d2dcontacts > 0) then
-         ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontacts_1D2D, contacts(1, :), contacts(2, :), contacttype)
+         ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
       end if
 
       if (allocated(edge_type)) then
