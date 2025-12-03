@@ -423,7 +423,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f014_c151_convert_old_longculverts_before_partitioning" ref="generic">
-      <path version="2025-11-28T13:14:53.310000">e02_dflowfm/f014_parallel/c151_convert_old_longculverts_before_partitioning</path>
+      <path version="2025-12-03T12:18:53.123000">e02_dflowfm/f014_parallel/c151_convert_old_longculverts_before_partitioning</path>
       <programs>
         <program ref="dflowfm">
             <arguments>
@@ -437,7 +437,7 @@
         </program>
       </programs>
         <checks>
-          <file name="DFM_OUTPUT_converted_tunnel/converted_tunnel_0000_his.nc" type="NETCDF">
+          <file name="DFM_OUTPUT_tunnel/tunnel_0000_his.nc" type="NETCDF">
             <parameters>
               <parameter name="longculvert_discharge" toleranceAbsolute="0.005" />
             </parameters>

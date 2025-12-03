@@ -118,7 +118,6 @@ program unstruc
    use m_inidat, only: inidat
    use m_iset_jaopengl, only: iset_jaopengl
    use m_resetb, only: resetb
-   use m_write_model_with_longculverts, only: write_model_with_longculverts
 
    implicit none
 
