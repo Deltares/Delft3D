@@ -91,7 +91,7 @@ contains
       Npoly_cellmask = ipoly
 
       ! check if there are any enclosure polygons
-      enclosures_present = any(zpl_cellmask(1:Npoly_cellmask) < 0.0_dp)
+      enclosures_present = any(zpl_cellmask(1:Npoly_cellmask) < 0.0_dp .and. zpl_cellmask(1:Npoly_cellmask) /= dmiss)
       cellmask_initialized = .true.
 
    end subroutine dbpinpol_cellmask_init
