@@ -4176,8 +4176,8 @@ contains
 
       integer, intent(in) :: ncid !< NetCDF data set id
       type(t_ug_contacts), intent(in) :: contactids !< Mesh contact set
-      integer, intent(out) :: mesh1_topo_dim !< Topology dimension of first mesh
-      integer, intent(out) :: mesh2_topo_dim !< Topology dimension of second mesh
+      integer, intent(out) :: mesh1_topo_dim !< Topology dimension of first mesh (mathematical dimension, so not to be confused with a NetCDF dimension).
+      integer, intent(out) :: mesh2_topo_dim !< Topology dimension of second mesh (mathematical dimension, so not to be confused with a NetCDF dimension).
       integer :: ierr !< Result status (UG_NOERR if successful)
    
       character(len=:), allocatable :: contact_attr, contact_name, error_message
