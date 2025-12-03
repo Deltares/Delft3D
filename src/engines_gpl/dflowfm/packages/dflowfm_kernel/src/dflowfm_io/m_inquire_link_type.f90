@@ -94,7 +94,7 @@ contains
       integer, intent(in) :: link !< Net link number, present in the current network_data state.
 
       res = is_1d2d_link_type(kn(3, link)) .and. lnn(link) == 2 &
-            .and. max(abs(lne(1, link)), abs(lne(2, link))) <= nump
+            .and. abs(lne(1, link)) <= nump .and. abs(lne(2, link)) <= nump
    end function is_valid_2d2d_netlink
 
    !> Determine whether the link_type is of type 1D2D.
