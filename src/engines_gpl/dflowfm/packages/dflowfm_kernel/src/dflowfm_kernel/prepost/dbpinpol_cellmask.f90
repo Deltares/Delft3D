@@ -1,3 +1,32 @@
+!----- AGPL --------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2017-2025.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
+!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
+
 module m_dbpinpol_cellmask
    use m_missing, only: jins, dmiss
    use precision, only: dp
@@ -9,25 +38,24 @@ module m_dbpinpol_cellmask
    !> dbpinpol routines are public to avoid PetSC dependency in unit tests
    public :: dbpinpol_cellmask_init, dbpinpol_cellmask_cleanup, dbpinpol_cellmask
 
-   ! Module-level variables for cellmask polygon checking
-   real(kind=dp), allocatable :: xpmin_cellmask(:), ypmin_cellmask(:)
-   real(kind=dp), allocatable :: xpmax_cellmask(:), ypmax_cellmask(:)
-   real(kind=dp), allocatable :: xpl_cellmask(:), ypl_cellmask(:), zpl_cellmask(:)
-   integer, allocatable :: iistart_cellmask(:), iiend_cellmask(:)
-   integer :: Npoly_cellmask = 0
-   logical :: cellmask_initialized = .false.
-   logical :: enclosures_present = .false.
+   real(kind=dp), allocatable :: xpmin_cellmask(:), ypmin_cellmask(:) !< Polygon bounding box min coordinates
+   real(kind=dp), allocatable :: xpmax_cellmask(:), ypmax_cellmask(:) !< Polygon bounding box max coordinates
+   real(kind=dp), allocatable :: xpl_cellmask(:), ypl_cellmask(:), zpl_cellmask(:) !< Polygon coordinate arrays
+   integer, allocatable :: iistart_cellmask(:), iiend_cellmask(:) !< Polygon start and end indices in coordinate arrays (dim = number of polygons)
+   integer :: Npoly_cellmask = 0 !< Number of polygons stored in module arrays
+   logical :: cellmask_initialized = .false. !< Flag indicating if cellmask data structures have been initialized for safety
+   logical :: enclosures_present = .false. !< Flag indicating if any enclosures are present in the polygon dataset
 
 contains
 
+   !> Initialize module-level cellmask polygon data structures, such as the bounding boxes and iistart/iiend
+   ! this keeps the actual calculation routines elemental.
    subroutine dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
       use m_alloc
       use geometry_module, only: get_startend
 
-      implicit none
-
-      integer, intent(in) :: NPL
-      real(kind=dp), intent(in) :: xpl(NPL), ypl(NPL), zpl(NPL)
+      integer, intent(in) :: NPL !< Number of polygon points
+      real(kind=dp), intent(in) :: xpl(NPL), ypl(NPL), zpl(NPL) !< Polygon coordinate arrays
 
       integer :: MAXPOLY
       integer :: ipoint, istart, iend, ipoly
@@ -41,7 +69,6 @@ contains
          return
       end if
 
-      ! Allocate and copy full coordinate arrays
       xpl_cellmask = xpl
       ypl_cellmask = ypl
 
@@ -96,11 +123,11 @@ contains
 
    end subroutine dbpinpol_cellmask_init
 
-   !> Check if point should be masked - OPTIMIZED VERSION
+   !> Check if a point should be masked, either inside a dry-area polygon or outside an enclosure polygon.
    elemental function dbpinpol_cellmask(xp, yp) result(mask)
 
       integer :: mask
-      real(kind=dp), intent(in) :: xp, yp
+      real(kind=dp), intent(in) :: xp, yp !< Point coordinates
 
       integer :: ipoly, in_test
       integer :: count_drypoint
