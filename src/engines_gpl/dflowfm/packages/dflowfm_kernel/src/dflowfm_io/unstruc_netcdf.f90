@@ -12252,7 +12252,7 @@ contains
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
 
       integer :: ioncid, iconvtype, start_index, networkIndex
-      integer :: im, nmesh, i, L, numk_last, numl_last
+      integer :: im, nmesh, i, L, numk_last, numl_last, i_contact
       integer :: ncid, id_netnodez
       integer, allocatable :: kn12(:, :), kn3(:) ! Placeholder arrays for the edge_nodes and edge_types
       real(kind=dp) :: convversion, zk_fillvalue, altsign
@@ -12654,6 +12654,7 @@ contains
          end if
 
          call increasenetw(numk_last + ncontactnodes, numl_last + ncontacts)
+         i_contact = numk_last + 1
          do L = 1, ncontacts
             if (contacttype(l) < 3) then
                numerr = numerr + 1
@@ -12674,14 +12675,16 @@ contains
             kn(3, numl_last + L) = contacttype(L)
 
             ! new 2D node coordinates
-            XK(numk_last + L) = xface(mesh2indexes(L))
-            YK(numk_last + L) = yface(mesh2indexes(L))
-            kn(2, numl_last + L) = numk_last + L
+            XK(i_contact) = xface(mesh2indexes(L))
+            YK(i_contact) = yface(mesh2indexes(L))
+            kn(2, numl_last + L) = numk_last + i_contact
+            i_contact = i_contact + 1
 
             if (mesh1_topo_dim == 2) then
-               XK(numk_last + ncontacts + L) = xface(mesh1indexes(L))
-               YK(numk_last + ncontacts + L) = yface(mesh1indexes(L))
-               kn(1, numl_last + L) = numk_last + ncontacts + L
+               XK(i_contact) = xface(mesh1indexes(L))
+               YK(i_contact) = yface(mesh1indexes(L))
+               kn(1, numl_last + L) = numk_last + i_contact
+               i_contact = i_contact + 1
             else if (mesh1_topo_dim == 1) then
                if (nodesOnBranchVertices == 1) then
                   kn(1, numl_last + L) = mesh1dUnmergedToMerged(mesh1indexes(L))
