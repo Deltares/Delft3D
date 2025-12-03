@@ -74,6 +74,7 @@ contains
       call setsigmabnds() ! our side of preparation for 3D ec module
 
       if (nzbnd > nqhbnd) then
+         zbndz(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_waterlevelbnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
