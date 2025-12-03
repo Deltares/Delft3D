@@ -61,7 +61,7 @@ contains
                           ntid_start, ntid_end, &
                           ug_clone_network_definition, ug_clone_network_data, &
                           ug_is_link_topology, &
-                          t_ug_contacts, ug_clone_contact_definition, cdim_ncontacts
+                          t_ug_contact, ug_clone_contact_definition, cdim_ncontacts
       implicit none
 
       character(len=MAXNAMELEN), intent(inout) :: infiles(:) !< Input files names, will be sorted if not sorted already.
@@ -130,7 +130,7 @@ contains
       integer :: id_network ! ID of 'network1d' in one input file
       integer :: varid
       type(t_ug_network) :: netids_input, netids_output
-      type(t_ug_contacts) :: cids_input, cids_output
+      type(t_ug_contact) :: cids_input, cids_output
       integer :: idom, n1, n2, n3, k1, k2
       integer :: tmpdimids(NF90_MAX_VAR_DIMS)
 

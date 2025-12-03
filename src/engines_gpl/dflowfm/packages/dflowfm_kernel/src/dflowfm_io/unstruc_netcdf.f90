@@ -142,8 +142,8 @@ module unstruc_netcdf
       type(t_ug_mesh) :: meshids2d
       type(t_ug_mesh) :: meshids3d
       type(t_ug_network) :: network1d
-      type(t_ug_contacts) :: meshcontacts_1D2D
-      type(t_ug_contacts) :: meshcontacts_2D2D
+      type(t_ug_contact) :: meshcontacts_1D2D
+      type(t_ug_contact) :: meshcontacts_2D2D
 
       !
       ! Dimensions
@@ -197,7 +197,7 @@ module unstruc_netcdf
       !type(t_ug_mesh)     :: meshids2d
       !type(t_ug_mesh)     :: meshids3d
       !type(t_ug_network)  :: network1d
-      !type(t_ug_contacts) :: meshcontacts_1D2D
+      !type(t_ug_contact) :: meshcontacts_1D2D
       !
    !!
    !! Dimensions

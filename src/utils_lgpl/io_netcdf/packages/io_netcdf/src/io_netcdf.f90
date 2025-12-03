@@ -2278,7 +2278,7 @@ contains
    function ionc_get_contactids(ioncid, contactid, contactids) result(ierr)
       integer, intent(in) :: ioncid !< The IONC dataset id.
       integer, intent(in) :: contactid !< The id of the requested mesh contact in the dataset's subset of contact(s).
-      type(t_ug_contacts), intent(inout) :: contactids !< The contactids set of dimension and variable ids for the requested contactid.
+      type(t_ug_contact), intent(inout) :: contactids !< The contactids set of dimension and variable ids for the requested contactid.
       integer :: ierr !< Result status, ionc_noerr if successful.
 
       ierr = IONC_NOERR
