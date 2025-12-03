@@ -8,7 +8,7 @@ module test_pol_to_cellmask
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_mixed_polygon, test_nested_drypoint_polygons,
+   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_mixed_polygon, test_mixed_polygon,
    subroutine test_mixed_polygon() bind(C)
       ! Test with both enclosure (-1) and dry point (1) polygons
       integer :: i, k
@@ -88,7 +88,9 @@ contains
       deallocate(xzw, yzw, xpl, ypl, zpl, cellmask)
       
    end subroutine test_mixed_polygon
+   !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_pol_to_cellmask, test_nested_drypoint_polygons, test_nested_drypoint_polygons,
    subroutine test_nested_drypoint_polygons() bind(C)
       ! Test nested dry point polygons (odd-even rule)
       integer :: i, k

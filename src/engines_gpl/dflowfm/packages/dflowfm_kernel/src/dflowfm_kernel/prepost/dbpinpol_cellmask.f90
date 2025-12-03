@@ -16,6 +16,7 @@ module m_dbpinpol_cellmask
    integer, allocatable :: iistart_cellmask(:), iiend_cellmask(:)
    integer :: Npoly_cellmask = 0
    logical :: cellmask_initialized = .false.
+   logical :: enclosures_present = .false.
 
 contains
 
@@ -89,6 +90,8 @@ contains
 
       Npoly_cellmask = ipoly
 
+      ! check if there are any enclosure polygons
+      enclosures_present = any(zpl_cellmask(1:Npoly_cellmask) < 0.0_dp)
       cellmask_initialized = .true.
 
    end subroutine dbpinpol_cellmask_init
@@ -110,6 +113,7 @@ contains
 
       num_enclosures = 0
       count_drypoint = 0
+      found_inside_enclosure = .false.
 
       ! Single loop over all polygons
       do ipoly = 1, Npoly_cellmask
@@ -127,12 +131,8 @@ contains
             if (in_test == 1) then
                count_drypoint = count_drypoint + 1
             end if
-         else if (zpl_val < 0.0_dp) then
-            ! Enclosure polygon
-            num_enclosures = num_enclosures + 1
-            if (in_test == 1) then
-               found_inside_enclosure = .true.
-            end if
+         else if (zpl_val < 0.0_dp .and. in_test == 1) then
+            found_inside_enclosure = .true.
          end if
       end do
 
@@ -147,8 +147,9 @@ contains
          end if
       end if
 
-      ! Override with enclosure logic if applicable
-      if (num_enclosures > 0 .and. .not. found_inside_enclosure) then
+      ! if an enclosure is present, the point must lie inside at least one
+      ! NOTE: this means we do not handle nested enclosure polygons.
+      if (enclosures_present .and. .not. found_inside_enclosure) then
          mask = 1
       end if
 
