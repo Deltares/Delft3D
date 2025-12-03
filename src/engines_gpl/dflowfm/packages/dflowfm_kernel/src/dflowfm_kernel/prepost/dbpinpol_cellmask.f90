@@ -30,6 +30,7 @@
 module m_dbpinpol_cellmask
    use m_missing, only: jins, dmiss
    use precision, only: dp
+   use m_polygon, only: xpl, ypl, npl
 
    implicit none
 
@@ -40,9 +41,8 @@ module m_dbpinpol_cellmask
 
    real(kind=dp), allocatable :: xpmin_cellmask(:), ypmin_cellmask(:) !< Polygon bounding box min coordinates
    real(kind=dp), allocatable :: xpmax_cellmask(:), ypmax_cellmask(:) !< Polygon bounding box max coordinates
-   real(kind=dp), allocatable :: xpl_cellmask(:), ypl_cellmask(:), zpl_cellmask(:) !< Polygon coordinate arrays
+   real(kind=dp), allocatable :: zpl_cellmask(:) !< Polygon coordinate arrays
    integer, allocatable :: iistart_cellmask(:), iiend_cellmask(:) !< Polygon start and end indices in coordinate arrays (dim = number of polygons)
-   integer :: Npoly_cellmask = 0 !< Number of polygons stored in module arrays
    logical :: cellmask_initialized = .false. !< Flag indicating if cellmask data structures have been initialized for safety
    logical :: enclosures_present = .false. !< Flag indicating if any enclosures are present in the polygon dataset
 
@@ -68,9 +68,6 @@ contains
          cellmask_initialized = .true.
          return
       end if
-
-      xpl_cellmask = xpl
-      ypl_cellmask = ypl
 
       MAXPOLY = 1000
       call realloc(xpmin_cellmask, maxpoly, keepExisting=.false.)
@@ -115,10 +112,8 @@ contains
          ipoint = iend + 2
       end do
 
-      Npoly_cellmask = ipoly
-
       ! check if there are any enclosure polygons
-      enclosures_present = any(zpl_cellmask(1:Npoly_cellmask) < 0.0_dp .and. zpl_cellmask(1:Npoly_cellmask) /= dmiss)
+      enclosures_present = any(zpl_cellmask(1:npl) < 0.0_dp .and. zpl_cellmask(1:npl) /= dmiss)
       cellmask_initialized = .true.
 
    end subroutine dbpinpol_cellmask_init
@@ -143,7 +138,7 @@ contains
       found_inside_enclosure = .false.
 
       ! Single loop over all polygons
-      do ipoly = 1, Npoly_cellmask
+      do ipoly = 1, npl
          zpl_val = zpl_cellmask(ipoly)
 
          ! Bounding box check
@@ -193,7 +188,6 @@ contains
       if (allocated(iistart_cellmask)) deallocate (iistart_cellmask)
       if (allocated(iiend_cellmask)) deallocate (iiend_cellmask)
 
-      Npoly_cellmask = 0
       cellmask_initialized = .false.
 
    end subroutine dbpinpol_cellmask_cleanup
@@ -227,12 +221,12 @@ contains
       j = iend
 
       do i = istart, iend
-         if (xpl_cellmask(i) == dmiss) exit
+         if (xpl(i) == dmiss) exit
 
-         x1 = xpl_cellmask(j)
-         y1 = ypl_cellmask(j)
-         x2 = xpl_cellmask(i)
-         y2 = ypl_cellmask(i)
+         x1 = xpl(j)
+         y1 = ypl(j)
+         x2 = xpl(i)
+         y2 = ypl(i)
 
          ! Check if point is on vertex
          if (xl == x1 .and. yl == y1) then
