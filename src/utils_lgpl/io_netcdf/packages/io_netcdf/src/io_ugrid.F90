@@ -4193,9 +4193,7 @@ contains
       ! Get the contact variable name for better error messages
       ierr = nf90_inquire_variable(ncid, contactids%varids(cid_contacttopo), name=temp) ! nf90_inquire cannot handle allocatable strings
       if (ierr /= nf90_noerr) then
-         contact_name = 'unknown_contact'  ! Fallback name
-      else
-         contact_name = trim(temp)
+         call check_ug_error(UG_SOMEERR, 'Could not read contact, assuming default topology dimensions')
       end if
       error_message = ' from mesh topology contacts "'//contact_name//'", assuming defaults.'
 
