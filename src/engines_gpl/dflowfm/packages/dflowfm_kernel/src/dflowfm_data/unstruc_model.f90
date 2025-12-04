@@ -1054,7 +1054,9 @@ contains
       call prop_get(md_ptr, 'numerics', 'Limtypmom', limtypmom)
       call prop_get(md_ptr, 'numerics', 'Limtypsa', limtypsa)
       call prop_get(md_ptr, 'numerics', 'Limtypw', limtypw)
-      if (kmx > 1) then ! package deal
+
+      ! Default autotimestep value for 3D is AUTOTS_3D_INOUT
+      if (kmx > 1) then
          autotimestep = AUTOTS_3D_INOUT
       end if
 
@@ -1735,6 +1737,8 @@ contains
       call setTUDUnitString()
 
       call prop_get(md_ptr, 'Time', 'dtUser', dt_user)
+
+      ! Set default values if not specified in MDU
       if (dt_user <= 0) then
          dt_user = 300.0_dp
          dt_max = 60.0_dp
@@ -1750,7 +1754,6 @@ contains
          call msg_flush()
       end if
 
-      ! 1.02: Don't read [time] AutoTimestep (autotimestep) from MDU anymore.
       ! ibuf = 1
       call prop_get(md_ptr, 'Time', 'autoTimeStep', autotimestep, success)
       call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
