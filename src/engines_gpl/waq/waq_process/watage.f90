@@ -95,7 +95,7 @@ contains
                 CONCWA    = process_space_real(IP1)
                 CONCTR    = process_space_real(IP2)
                 DECAYR    = process_space_real(IP3)
-                THRESHOLD = process_space_real(IP4) * temp_conc
+                THRESHOLD = max( 1.0e-20, process_space_real(IP4) * temp_conc )
                 !
                 IF (DECAYR < 1E-20) CALL write_error_message ('RCDECTR in WATAGE zero')
 
