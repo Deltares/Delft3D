@@ -10,7 +10,11 @@ This module handles:
 
 from pathlib import Path
 from typing import List, Tuple, Optional, Dict
-from deltares_fortran_styler.base_converter import FortranConverter
+
+try:
+    from deltares_fortran_styler.base_converter import FortranConverter
+except ImportError:
+    from base_converter import FortranConverter
 
 
 class FileProcessor:
@@ -85,7 +89,7 @@ class FileProcessor:
                 print(f"{file_path}({issue.line_number}): error {issue.error_code}: {issue.message}")
 
             # Add a note about auto-fixing
-            print(f"{file_path}(1): note: Run 'python tools/deltares_fortran_styler/fortran_styler.py \"{file_path}\"' to automatically fix these errors")
+            print(f"{file_path}(1): note: Run 'python tools/deltares_fortran_styler/src/deltares_fortran_styler/fortran_styler.py \"{file_path}\"' to automatically fix these errors")
 
             return True, stats
 

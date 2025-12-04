@@ -385,3 +385,38 @@ z = dble(x) + dble(y)"""
         # Assert
         assert was_converted
         assert result == expected
+
+    def test_double_precision_with_comma_no_extra_space(self, converter):
+        """Test that conversion doesn't add extra space before comma."""
+        # Arrange
+        text = "   double precision, save :: x, y"
+        expected = "   real(kind=dp), save :: x, y"
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+
+        # Assert
+        assert was_converted
+        assert result == expected, f"Expected '{expected}', got '{result}'"
+
+    def test_check_reports_correct_line_number(self, converter):
+        """Test that check_text reports correct line numbers."""
+        # Arrange
+        text = """module test
+   implicit none
+   integer :: a
+   double precision :: x
+   x = 1.0d0
+end module"""
+
+        # Act
+        issues = converter.check_text(text)
+
+        # Assert
+        assert len(issues) == 2, f"Expected 2 issues, found {len(issues)}"
+        # double precision declaration should be on line 4
+        declaration_issue = [i for i in issues if i.error_code == "STYLE002"][0]
+        assert declaration_issue.line_number == 4, f"Expected line 4, got {declaration_issue.line_number}"
+        # literal should be on line 5
+        literal_issue = [i for i in issues if i.error_code == "STYLE001"][0]
+        assert literal_issue.line_number == 5, f"Expected line 5, got {literal_issue.line_number}"

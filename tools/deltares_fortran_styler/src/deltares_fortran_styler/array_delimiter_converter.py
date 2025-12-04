@@ -11,7 +11,11 @@ for array constructors.
 
 import re
 from typing import Tuple, List
-from deltares_fortran_styler.base_converter import FortranConverter, ConversionIssue
+
+try:
+    from deltares_fortran_styler.base_converter import FortranConverter, ConversionIssue
+except ImportError:
+    from base_converter import FortranConverter, ConversionIssue
 
 
 class ArrayDelimiterConverter(FortranConverter):

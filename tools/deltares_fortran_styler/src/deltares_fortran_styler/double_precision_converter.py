@@ -11,7 +11,11 @@ Based on Fortran standard syntax for double precision literals.
 
 import re
 from typing import Tuple, List
-from deltares_fortran_styler.base_converter import FortranConverter, ConversionIssue
+
+try:
+    from deltares_fortran_styler.base_converter import FortranConverter, ConversionIssue
+except ImportError:
+    from base_converter import FortranConverter, ConversionIssue
 
 
 class DoublePrecisionConverter(FortranConverter):
@@ -42,7 +46,7 @@ class DoublePrecisionConverter(FortranConverter):
         # Pattern to match double precision variable declarations
         self.double_precision_pattern = re.compile(
             r'''
-            (?P<indent>\s*)             # Capture leading whitespace
+            (?P<indent>[ \t]*)          # Capture leading whitespace (spaces and tabs only, not newlines)
             double\s+precision          # "double precision" keywords
             (?P<rest>.*)                # Everything else on the line
             ''',
@@ -109,7 +113,9 @@ class DoublePrecisionConverter(FortranConverter):
         """Convert a double precision declaration to real(kind=dp) format."""
         indent = match.group('indent')
         rest = match.group('rest').strip()
-        return f"{indent}real(kind=dp) {rest}"
+        # Add space only if rest doesn't start with a comma or other punctuation
+        separator = '' if rest.startswith(',') else ' '
+        return f"{indent}real(kind=dp){separator}{rest}"
 
     def _convert_dble_calls(self, text: str) -> str:
         """Convert dble(expr) to real(expr, kind=dp)."""
