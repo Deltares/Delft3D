@@ -44,7 +44,7 @@ contains
       use precision, only: dp
       use m_flow, only: squ, sqi, qinbnd, qoutbnd, kmx, hu, u1, ru, fu, s1, q1, au, u0, qa, jaqaisq1, q1waq, iadvec, voldhu, vol1, qin, itstep, sqwave, ag, lbot, ltop, kmxl, ngatesg, l1gatesg, l2gatesg, kgate, ncgensg, l1cgensg, l2cgensg, kcgen, lnkx, layertype, laytp_sigma, ln0, qwwaq, squ2d, kbot, ktop, a1, kmxn, ww1, qw, zws0, ktop0, zws, sq
       use m_flowgeom, only: lnx, ln, teta, ndxi, ba, ndx, lnxi
-      use m_flowtimes, only: ti_waq, dts, autotimestep
+      use m_flowtimes, only: ti_waq, dts, autotimestep, AUTOTS_3D_HOR_OUT, AUTOTS_3D_HOR_INOUT
       use m_partitioninfo, only: jampi, update_ghosts, itype_u, idomain, my_rank, itype_u3d
       use m_timer, only: jatimer, starttimer, iupdu, stoptimer
       use unstruc_channel_flow, only: network, set_u1q1_structure ! substitute u1 and q1
@@ -317,9 +317,9 @@ contains
 
          end do
 
-         if (autotimestep == 3 .or. autotimestep == 4) then ! 2D timestep
+         if (autotimestep == AUTOTS_3D_HOR_OUT .or. autotimestep == AUTOTS_3D_HOR_INOUT) then ! 2D timestep
             squ2d = squ
-            if (autotimestep == 4) then
+            if (autotimestep == AUTOTS_3D_HOR_INOUT) then
                squ2d = squ2d + sqi
             end if
          end if

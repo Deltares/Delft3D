@@ -218,7 +218,7 @@ contains
                end if
             end do
 
-            
+
          ! Research/hidden parameters
          !----------------------------
 
@@ -512,7 +512,7 @@ contains
 !    endif
 !    if (kkcflmx > 0) then
 !       if (kcflmx == 0) kcflmx = kkcflmx
-!       if (autotimestep == 3 .or. autotimestep == 4 ) then
+!       if (autotimestep == AUTOTS_3D_HOR_OUT .or. autotimestep == AUTOTS_3D_HOR_INOUT ) then
 !          write(mout, '(3F14.4,2I8,4F14.4)')  time0/60d0, dts, dtsc, kkcflmx, kcflmx-kbot(kkcflmx)+1, vol1(kcflmx), squ2D(kcflmx), squ(kcflmx), sqi(kcflmx)
 !       else
 !          write(mout, '(3F14.4,2I8,4F14.4)')  time0/60d0, dts, dtsc, kkcflmx, kcflmx-kbot(kkcflmx)+1, vol1(kcflmx), squ  (kcflmx), squ(kcflmx), sqi(kcflmx)

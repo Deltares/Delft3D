@@ -230,7 +230,7 @@ contains
       dt_init = 1.0_dp
       dt_trach = 1200.0_dp !< User specified DtTrt Trachytope roughness update time interval (s)
       dt_fac_max = 1.1_dp !< default setting
-      autotimestep = 1 !< Use CFL-based dt (with dt_max as upper bound)
+      autotimestep = AUTOTS_2D_OUT !< Use CFL-based dt (with dt_max as upper bound)
       ja_timestep_auto_visc = 0 !< Use explicit time step restriction based on viscosity term
       ja_timestep_nostruct = 0 !< Exclude (structure) links without advection from the time step limitation
       ja_timestep_noqout = 1 !< Exclude negative qin terms from the time step limitation
