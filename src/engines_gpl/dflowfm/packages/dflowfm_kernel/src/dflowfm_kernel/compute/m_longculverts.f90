@@ -112,7 +112,7 @@ contains
       character(len=:), allocatable, intent(out) :: structures_output !< structures ini output file ( = culvertprefix // structurefile )
       character(len=:), allocatable, intent(out) :: crsdef_output !< crs def ini output file
       character(len=*), optional, intent(in) :: crsdeffile !< File name of the original crsdef.ini file.
-      logical, optional, intent(in) :: write_converted_files
+      logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
       integer, intent(out) :: ierr !< Result status, DFM_NOERR in case of success.
 
       character(len=128) :: crsdef_filename
@@ -1459,7 +1459,7 @@ contains
 
       type(t_filenames), intent(inout) :: md_1dfiles
       integer, intent(in) :: md_convertlongculverts !< Flag to indicate whether to convert old-style long culverts on-the-fly.
-      logical, optional, intent(in) :: write_converted_files
+      logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
       character(:), allocatable :: structure_files
       logical :: write_converted_files_
 
@@ -1520,7 +1520,7 @@ contains
       use m_save_ugrid_state
 
       type(t_filenames), intent(inout) :: md_1dfiles
-      logical, optional, intent(in) :: write_converted_files
+      logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
       character(len=:), allocatable :: md_culvertprefix
       character(len=:), allocatable :: converted_fnamesstring
       character(len=:), allocatable :: converted_crsdefsstring

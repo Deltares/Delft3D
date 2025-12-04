@@ -39,12 +39,13 @@ module m_generatepartitionmdufile
 
 contains
 
+   !> Generate a single partition of a set of partitioned MDU files.
    subroutine generatePartitionMDUFile(filename_new)
       use unstruc_model, only: writeMDUFilepointer, md_icgsolver
       use m_flowparameters, only: icgsolver
       use m_filez, only: newfil, doclose
       use MessageHandling, only: mess, LEVEL_FATAL
-      character(len=*), intent(in) :: filename_new
+      character(len=*), intent(in) :: filename_new !< Name of the new MDU file to write, including partition number.
 
       integer :: mout, istat
 
