@@ -154,6 +154,7 @@ contains
       end if
 
       if (item_velocitybnd /= ec_undef_int) then
+         zbndu(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_velocitybnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
@@ -161,6 +162,7 @@ contains
       end if
 
       if (item_dischargebnd /= ec_undef_int) then
+         zbndq(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_dischargebnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
@@ -209,6 +211,7 @@ contains
       end if
 
       if (nbndt > 0) then
+         zbndt(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_tangentialvelocitybnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
@@ -216,6 +219,7 @@ contains
       end if
 
       if (nbnduxy > 0) then
+         zbnduxy(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_uxuyadvectionvelocitybnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
@@ -223,6 +227,7 @@ contains
       end if
 
       if (nbndn > 0) then
+         zbndn(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_normalvelocitybnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
