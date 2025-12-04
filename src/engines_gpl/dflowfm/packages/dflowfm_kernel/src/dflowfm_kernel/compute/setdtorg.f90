@@ -44,7 +44,9 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ndx, lnx1d, iadv, iadv_general_structure, ln, ndxi, lnxi, lnx, dxi, wu, ba, kcu, lncn
       use m_flow, only: jamapdtcell, plotlin, kkcflmx, kcflmx, itstep, squcor, squ, q1, qin, eps10, hs, epshu, vol1, jamapflowanalysis, flowcourantnumber, cflmx, sqwave, sqi, squ2d, rho, ag, hu, au, ihorvic, kmx, istresstyp, viclu, zws, limitingtimestepestimation
-      use m_flowtimes, only: dtcell, autotimestep, dt_max, dts, ja_timestep_nostruct, ja_timestep_noqout, dtsc, ja_timestep_auto_visc
+      use m_flowtimes, only: dtcell, autotimestep, AUTOTS_OFF, AUTOTS_2D_OUT, AUTOTS_2D_INOUT, AUTOTS_3D_HOR_OUT, AUTOTS_3D_HOR_INOUT, & 
+         AUTOTS_3D_INOUT, AUTOTS_3D_HOR_OUT_TOTAL_IN, AUTOTS_3D_INOUT_BAROCLINE, AUTOTS_3D_OUT_NOTOP, AUTOTS_3D_HOR_OUT_TOTAL_IN_NOTOP, &
+         dt_max, dts, ja_timestep_nostruct, ja_timestep_noqout, dtsc, ja_timestep_auto_visc
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_drawthis, only: ndraw
       use m_get_kbot_ktop, only: getkbotktop
@@ -66,7 +68,8 @@ contains
       jareduced = 0
       if (jamapdtcell > 0) dtcell = 0.0_dp
 
-      if (autotimestep >= 1) then
+      ! Compute dt when automic timestepping is on
+      if (autotimestep /= AUTOTS_OFF) then
 
          if (NDRAW(28) == 30 .or. NDRAW(29) == 38) then
             plotlin = dt_max
@@ -74,7 +77,15 @@ contains
 
          dts = 1.0e9_dp; kkcflmx = 0; kcflmx = 0
 
-         if (autotimestep == 1) then ! depth averaged timestep
+         ! Start selection of autotimestep method
+         !====================================================================================================
+
+         ! Production parameters 
+         !-----------------------
+
+         ! 2D outflow only
+         if (autotimestep == AUTOTS_2D_OUT) then
+
             if (itstep /= 4) then ! non-explicit time-step
                if (ja_timestep_nostruct > 0) then !< Exclude (structure) links without advection from the time step limitation
                   squcor(1:ndx) = squ(1:ndx) ! Start with already computed squ.
@@ -93,8 +104,8 @@ contains
                end if
 
                do k = 1, ndxi
-                  if (jampi == 1) then
-!               do not include ghost cells
+                  if (jampi == 1) then 
+                     ! do not include ghost cells
                      if (idomain(k) /= my_rank) cycle
                   end if
 
@@ -139,11 +150,11 @@ contains
 
             else ! explicit time-step
                do k = 1, ndxi
-                  if (jampi == 1) then
-!               do not include ghost cells
+                  if (jampi == 1) then 
+                     ! do not include ghost cells
                      if (idomain(k) /= my_rank) cycle
                   end if
-                  if (sqwave(k) > eps10) then ! outflow only
+                  if (sqwave(k) > eps10) then
                      if (hs(k) > epshu) then
                         dtsc = cflmx * vol1(k) / sqwave(k)
                         if (jamapdtcell > 0) then
@@ -158,14 +169,68 @@ contains
 
             end if
 
-         else if (autotimestep == 2) then ! depth averaged timestep
+         ! 3D horizontal outflow or inflow+outflow
+         else if (autotimestep == AUTOTS_3D_HOR_OUT .or. autotimestep == AUTOTS_3D_HOR_INOUT) then
+
+            do kk = 1, ndxi
+               if (jampi == 1) then
+                  ! do not include ghost cells
+                  if (idomain(kk) /= my_rank) cycle
+               end if
+               if (squ2D(kk) > eps10 .and. hs(kk) > epshu) then
+                  call getkbotktop(kk, kb, kt)
+                  do k = kb, kt
+                     if (squ2d(k) > eps10) then
+                        dtsc = cflmx * vol1(k) / squ2d(k)
+                        if (jamapdtcell > 0) then
+                           dtcell(k) = dtsc
+                        end if
+                        if (dtsc < dts) then
+                           dts = dtsc; kkcflmx = kk; kcflmx = k
+                        end if
+                     end if
+                  end do
+               end if
+            end do
+
+         ! 3D inflow or outflow
+         else if (autotimestep == AUTOTS_3D_INOUT) then
+
+            do kk = 1, Ndxi
+               if (jampi == 1) then
+                  ! do not include ghost cells
+                  if (idomain(kk) /= my_rank) cycle
+               end if
+               if (hs(kk) > epshu) then
+                  call getkbotktop(kk, kb, kt)
+                  do k = kb, kt
+                     if (squ(k) > eps10 .or. sqi(k) > eps10) then
+                        ! dtsc = cflmx*vol1(k)/squ(k)
+                        dtsc = cflmx * vol1(k) / max(squ(k), sqi(k))
+                        if (jamapdtcell > 0) then
+                           dtcell(k) = dtsc
+                        end if
+                        if (dtsc < dts) then
+                           dts = dtsc; kkcflmx = kk
+                        end if
+                     end if
+                  end do
+               end if
+            end do
+
+            
+         ! Research/hidden parameters
+         !----------------------------
+
+         ! 2D in+outflow
+         else if (autotimestep == AUTOTS_2D_INOUT) then
 
             do k = 1, ndxi
-               if (jampi == 1) then
-!            do not include ghost cells
+               if (jampi == 1) then 
+                  ! do not include ghost cells
                   if (idomain(k) /= my_rank) cycle
                end if
-               if (squ(k) + sqi(k) > eps10) then ! outflow+inflow
+               if (squ(k) + sqi(k) > eps10) then
                   if (hs(k) > epshu .and. vol1(k) > 0.0) then
                      dtsc = cflmx * vol1(k) / (squ(k) + sqi(k))
                      if (jamapdtcell > 0) then
@@ -179,58 +244,12 @@ contains
                end if
             end do
 
-         else if (autotimestep == 3 .or. autotimestep == 4) then ! 3 = 2D out over layers, 4=2D in+out all layers
-
-            do kk = 1, ndxi
-               if (jampi == 1) then
-!            do not include ghost cells
-                  if (idomain(kk) /= my_rank) cycle
-               end if
-               if (squ2D(kk) > eps10 .and. hs(kk) > epshu) then
-                  call getkbotktop(kk, kb, kt)
-                  do k = kb, kt
-                     if (squ2d(k) > eps10) then
-                        dtsc = cflmx * vol1(k) / squ2d(k) ! outflow or outflow+inflow
-                        if (jamapdtcell > 0) then
-                           dtcell(k) = dtsc
-                        end if
-                        if (dtsc < dts) then
-                           dts = dtsc; kkcflmx = kk; kcflmx = k
-                        end if
-                     end if
-                  end do
-               end if
-            end do
-
-         else if (autotimestep == 5) then ! full 3D
+         ! 3D horizontal outflow + total inflow
+         else if (autotimestep == AUTOTS_3D_HOR_OUT_TOTAL_IN) then
 
             do kk = 1, Ndxi
                if (jampi == 1) then
-!            do not include ghost cells
-                  if (idomain(kk) /= my_rank) cycle
-               end if
-               if (hs(kk) > epshu) then
-                  call getkbotktop(kk, kb, kt)
-                  do k = kb, kt
-                     if (squ(k) > eps10 .or. sqi(k) > eps10) then
-!                      dtsc = cflmx*vol1(k)/squ(k)
-                        dtsc = cflmx * vol1(k) / max(squ(k), sqi(k))
-                        if (jamapdtcell > 0) then
-                           dtcell(k) = dtsc
-                        end if
-                        if (dtsc < dts) then
-                           dts = dtsc; kkcflmx = kk
-                        end if
-                     end if
-                  end do
-               end if
-            end do
-            !      end if
-
-         else if (autotimestep == 6) then
-            do kk = 1, Ndxi
-               if (jampi == 1) then
-!            do not include ghost cells
+                  ! do not include ghost cells
                   if (idomain(kk) /= my_rank) cycle
                end if
                if (hs(kk) > epshu) then
@@ -254,7 +273,8 @@ contains
                end if
             end do
 
-         else if (autotimestep == 7) then ! full 3D plus barocline
+         ! 3D inflow+outflow plus barocline effects
+         else if (autotimestep == AUTOTS_3D_INOUT_BAROCLINE) then
 
             do LL = 1, Lnxi
                n1 = ln(1, LL); n2 = ln(2, LL)
@@ -277,7 +297,8 @@ contains
 
             do kk = 1, Ndxi
                if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) cycle !            do not include ghost cells
+                  ! do not include ghost cells
+                  if (idomain(kk) /= my_rank) cycle 
                end if
                if (hs(kk) > epshu) then
                   call getkbotktop(kk, kb, kt)
@@ -295,11 +316,12 @@ contains
                end if
             end do
 
-         else if (autotimestep == 8) then ! full 3D except top layer
+         ! 3D outflow excluding top layer
+         else if (autotimestep == AUTOTS_3D_OUT_NOTOP) then
 
             do kk = 1, Ndxi
                if (jampi == 1) then
-!            do not include ghost cells
+                  ! do not include ghost cells
                   if (idomain(kk) /= my_rank) cycle
                end if
                if (hs(kk) > epshu) then
@@ -318,38 +340,12 @@ contains
                end if
             end do
 
-         else if (autotimestep == 9) then ! 2D outgoing and 3D incoming fluxes
+         ! 3D horizontal outflow + total inflow, excluding top layer
+         else if (autotimestep == AUTOTS_3D_HOR_OUT_TOTAL_IN_NOTOP) then
 
             do kk = 1, Ndxi
                if (jampi == 1) then
-!            do not include ghost cells
-                  if (idomain(kk) /= my_rank) cycle
-               end if
-               if (hs(kk) > epshu) then
-                  dtsc = 9.0e9_dp
-                  if (squ(kk) > eps10) then
-                     dtsc = cflmx * vol1(kk) / squ(kk)
-                  end if
-                  call getkbotktop(kk, kb, kt)
-                  do k = kb, kt
-                     if (sqi(k) > eps10) then
-                        dtsc = min(dtsc, cflmx * vol1(k) / sqi(k))
-                        if (jamapdtcell > 0) then
-                           dtcell(k) = dtsc
-                        end if
-                        if (dtsc < dts) then
-                           dts = dtsc; kkcflmx = kk
-                        end if
-                     end if
-                  end do
-               end if
-            end do
-
-         else if (autotimestep == 10) then ! 2D outgoing and 3D incoming fluxes
-
-            do kk = 1, Ndxi
-               if (jampi == 1) then
-!            do not include ghost cells
+                  ! do not include ghost cells
                   if (idomain(kk) /= my_rank) cycle
                end if
                if (hs(kk) > epshu) then
@@ -373,6 +369,10 @@ contains
             end do
 
          end if
+
+         ! End selection of autotimestep method
+         !====================================================================================================
+
 
          ! Explicit time step restriction on viscosity term.
          if (ja_timestep_auto_visc == 1 .and. ihorvic > 0) then
