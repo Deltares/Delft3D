@@ -237,7 +237,7 @@ contains
                call msg_flush()
             end if
 
-            if (autotimestep == AUTOTS_3D_HOR_OUT .or. autotimestep == AUTOTS_3D_INOUT) then
+            if (autotimestep == AUTOTS_3D_HOR_OUT .or. autotimestep == AUTOTS_3D_HOR_INOUT) then
                if (.not. allocated(Squ2D)) allocate (squ2D(ndkx), stat=ierr)
             end if
          end if

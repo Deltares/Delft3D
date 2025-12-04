@@ -78,6 +78,8 @@ module m_flow_flowinit
 
    private
 
+   integer, parameter :: OFF = 0
+   integer, parameter :: ON = 1
    integer, parameter :: INITIALIZE = 1
    integer, parameter :: LATERAL_1D2D_LINK = 3
    integer, parameter :: STREET_INLET_1D2D_LINK = 5
