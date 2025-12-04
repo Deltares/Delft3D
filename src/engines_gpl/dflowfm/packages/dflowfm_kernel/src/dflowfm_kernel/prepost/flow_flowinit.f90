@@ -78,8 +78,6 @@ module m_flow_flowinit
 
    private
 
-   integer, parameter :: OFF = 0
-   integer, parameter :: ON = 1
    integer, parameter :: INITIALIZE = 1
    integer, parameter :: LATERAL_1D2D_LINK = 3
    integer, parameter :: STREET_INLET_1D2D_LINK = 5
@@ -383,12 +381,9 @@ contains
          end if
       end if
 
-      if (kmx < 2) then ! in 2D, use 1
-         if (autotimestep /= -123) then
-            autotimestep = ON
-         else
-            autotimestep = OFF
-         end if
+      ! In 2D, use autotimestep = AUTOTS_2D_OUT (=1), unless automatic timestepping is turned off.
+      if ((kmx < 2) .and. (autotimestep /= AUTOTS_OFF) .and. (autotimestep /= AUTOTS_2D_OUT)) then
+         autotimestep = AUTOTS_2D_OUT
       end if
 
       if (jaimplicit == ON) then
