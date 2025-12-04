@@ -44,7 +44,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ndx, lnx1d, iadv, iadv_general_structure, ln, ndxi, lnxi, lnx, dxi, wu, ba, kcu, lncn
       use m_flow, only: jamapdtcell, plotlin, kkcflmx, kcflmx, itstep, squcor, squ, q1, qin, eps10, hs, epshu, vol1, jamapflowanalysis, flowcourantnumber, cflmx, sqwave, sqi, squ2d, rho, ag, hu, au, ihorvic, kmx, istresstyp, viclu, zws, limitingtimestepestimation
-      use m_flowtimes, only: dtcell, ja_timestep_auto, dt_max, dts, ja_timestep_nostruct, ja_timestep_noqout, dtsc, ja_timestep_auto_visc
+      use m_flowtimes, only: dtcell, autotimestep, dt_max, dts, ja_timestep_nostruct, ja_timestep_noqout, dtsc, ja_timestep_auto_visc
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_drawthis, only: ndraw
       use m_get_kbot_ktop, only: getkbotktop
@@ -66,7 +66,7 @@ contains
       jareduced = 0
       if (jamapdtcell > 0) dtcell = 0.0_dp
 
-      if (ja_timestep_auto >= 1) then
+      if (autotimestep >= 1) then
 
          if (NDRAW(28) == 30 .or. NDRAW(29) == 38) then
             plotlin = dt_max
@@ -74,7 +74,7 @@ contains
 
          dts = 1.0e9_dp; kkcflmx = 0; kcflmx = 0
 
-         if (ja_timestep_auto == 1) then ! depth averaged timestep
+         if (autotimestep == 1) then ! depth averaged timestep
             if (itstep /= 4) then ! non-explicit time-step
                if (ja_timestep_nostruct > 0) then !< Exclude (structure) links without advection from the time step limitation
                   squcor(1:ndx) = squ(1:ndx) ! Start with already computed squ.
@@ -158,7 +158,7 @@ contains
 
             end if
 
-         else if (ja_timestep_auto == 2) then ! depth averaged timestep
+         else if (autotimestep == 2) then ! depth averaged timestep
 
             do k = 1, ndxi
                if (jampi == 1) then
@@ -179,7 +179,7 @@ contains
                end if
             end do
 
-         else if (ja_timestep_auto == 3 .or. ja_timestep_auto == 4) then ! 3 = 2D out over layers, 4=2D in+out all layers
+         else if (autotimestep == 3 .or. autotimestep == 4) then ! 3 = 2D out over layers, 4=2D in+out all layers
 
             do kk = 1, ndxi
                if (jampi == 1) then
@@ -202,7 +202,7 @@ contains
                end if
             end do
 
-         else if (ja_timestep_auto == 5) then ! full 3D
+         else if (autotimestep == 5) then ! full 3D
 
             do kk = 1, Ndxi
                if (jampi == 1) then
@@ -227,7 +227,7 @@ contains
             end do
             !      end if
 
-         else if (ja_timestep_auto == 6) then
+         else if (autotimestep == 6) then
             do kk = 1, Ndxi
                if (jampi == 1) then
 !            do not include ghost cells
@@ -254,7 +254,7 @@ contains
                end if
             end do
 
-         else if (ja_timestep_auto == 7) then ! full 3D plus barocline
+         else if (autotimestep == 7) then ! full 3D plus barocline
 
             do LL = 1, Lnxi
                n1 = ln(1, LL); n2 = ln(2, LL)
@@ -295,7 +295,7 @@ contains
                end if
             end do
 
-         else if (ja_timestep_auto == 8) then ! full 3D except top layer
+         else if (autotimestep == 8) then ! full 3D except top layer
 
             do kk = 1, Ndxi
                if (jampi == 1) then
@@ -318,7 +318,7 @@ contains
                end if
             end do
 
-         else if (ja_timestep_auto == 9) then ! 2D outgoing and 3D incoming fluxes
+         else if (autotimestep == 9) then ! 2D outgoing and 3D incoming fluxes
 
             do kk = 1, Ndxi
                if (jampi == 1) then
@@ -345,7 +345,7 @@ contains
                end if
             end do
 
-         else if (ja_timestep_auto == 10) then ! 2D outgoing and 3D incoming fluxes
+         else if (autotimestep == 10) then ! 2D outgoing and 3D incoming fluxes
 
             do kk = 1, Ndxi
                if (jampi == 1) then
@@ -512,7 +512,7 @@ contains
 !    endif
 !    if (kkcflmx > 0) then
 !       if (kcflmx == 0) kcflmx = kkcflmx
-!       if (ja_timestep_auto == 3 .or. ja_timestep_auto == 4 ) then
+!       if (autotimestep == 3 .or. autotimestep == 4 ) then
 !          write(mout, '(3F14.4,2I8,4F14.4)')  time0/60d0, dts, dtsc, kkcflmx, kcflmx-kbot(kkcflmx)+1, vol1(kcflmx), squ2D(kcflmx), squ(kcflmx), sqi(kcflmx)
 !       else
 !          write(mout, '(3F14.4,2I8,4F14.4)')  time0/60d0, dts, dtsc, kkcflmx, kcflmx-kbot(kkcflmx)+1, vol1(kcflmx), squ  (kcflmx), squ(kcflmx), sqi(kcflmx)

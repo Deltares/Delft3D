@@ -1055,7 +1055,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'Limtypsa', limtypsa)
       call prop_get(md_ptr, 'numerics', 'Limtypw', limtypw)
       if (kmx > 1) then ! package deal
-         ja_timestep_auto = 5
+         autotimestep = 5
       end if
 
       call prop_get(md_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff)
@@ -1738,7 +1738,7 @@ contains
       if (dt_user <= 0) then
          dt_user = 300.0_dp
          dt_max = 60.0_dp
-         ja_timestep_auto = 1
+         autotimestep = 1
       end if
 
       call prop_get(md_ptr, 'Time', 'dtNodal', dt_nodal)
@@ -1750,9 +1750,9 @@ contains
          call msg_flush()
       end if
 
-      ! 1.02: Don't read [time] AutoTimestep (ja_timestep_auto) from MDU anymore.
+      ! 1.02: Don't read [time] AutoTimestep (autotimestep) from MDU anymore.
       ! ibuf = 1
-      call prop_get(md_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, success)
+      call prop_get(md_ptr, 'Time', 'autoTimeStep', autotimestep, success)
       call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
       if (success .and. jadum /= 0) then
          call mess(LEVEL_ERROR, 'autoTimeStepDiff not supported')
@@ -3663,8 +3663,8 @@ contains
 
       call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no, 1=see file *.steps')
 
-      if (writeall .or. ja_timestep_auto /= 1) then
-         call prop_set(prop_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
+      if (writeall .or. autotimestep /= 1) then
+         call prop_set(prop_ptr, 'Time', 'autoTimeStep', autotimestep, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
       end if
       if (writeall .and. ja_timestep_auto_visc /= 1) then
          call prop_set(prop_ptr, 'Time', 'autoTimeStepVisc', ja_timestep_auto_visc, '0 = no, 1 = yes (Time limitation based on explicit diffusive term)')

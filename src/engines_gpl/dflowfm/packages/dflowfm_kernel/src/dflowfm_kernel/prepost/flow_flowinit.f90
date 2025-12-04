@@ -384,10 +384,10 @@ contains
       end if
 
       if (kmx < 2) then ! in 2D, use 1
-         if (ja_timestep_auto /= -123) then
-            ja_timestep_auto = ON
+         if (autotimestep /= -123) then
+            autotimestep = ON
          else
-            ja_timestep_auto = OFF
+            autotimestep = OFF
          end if
       end if
 
