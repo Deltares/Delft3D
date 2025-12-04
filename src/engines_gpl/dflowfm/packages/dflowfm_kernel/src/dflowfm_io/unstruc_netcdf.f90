@@ -7726,7 +7726,8 @@ contains
                call realloc(wavout2, lnkx, keepExisting=.false., fill=0.0_dp)
                if (kmx == 0) then
                   do L = 1, lnx
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      huL = max(hu(L), hmlwL)
                      windx(k1) = windx(k1) + wcx1(L) * wavfu(L) * huL * rhomean
                      windx(k2) = windx(k2) + wcx2(L) * wavfu(L) * huL * rhomean
@@ -7737,7 +7738,8 @@ contains
                   end do
                else
                   do L = 1, lnx
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      call getLbotLtop(L, Lb, Lt)
                      if (Lt < Lb) cycle
                      huL = max(hu(L), hmlwL)
@@ -7817,7 +7819,8 @@ contains
       if (jamaptaucurrent > 0 .or. jamap_chezy_elements > 0 .or. jamap_chezy_links > 0) then
          if (jawave == NO_WAVES) then ! Else, get taus from subroutine tauwave (taus = f(taucur,tauwave))
             call gettaus(1, 1)
-            workx = DMISS; worky = DMISS
+            workx = DMISS
+            worky = DMISS
             if (kmx == 0) then
                do k = 1, ndx ! stack
                   workx(k) = taus(k) * ucx(k) / max(hypot(ucx(k), ucy(k)), 1.0e-4_dp) ! could use ucmag, but not guaranteed to exist
@@ -7826,7 +7829,8 @@ contains
             else
                do k = 1, ndx
                   call getkbotktop(k, kb, kt)
-                  ux = ucx(kb); uy = ucy(kb)
+                  ux = ucx(kb)
+                  uy = ucy(kb)
                   um = max(hypot(ux, uy), 1.0e-4_dp)
                   workx(k) = taus(k) * ux / um
                   worky(k) = taus(k) * uy / um
@@ -13095,7 +13099,8 @@ contains
             if (ierr /= nf90_noerr) goto 999
          end do
          if (numDims == 3) then
-            d1 = tmpdims(1); d2 = tmpdims(2)
+            d1 = tmpdims(1)
+            d2 = tmpdims(2)
             if (allocated(tmparray2D)) then
                deallocate (tmparray2D)
             end if
@@ -15916,7 +15921,8 @@ contains
          if (allocated(work2)) then
             deallocate (work2)
          end if
-         allocate (work2(numContPts, n1d_write)); work2 = dmiss
+         allocate (work2(numContPts, n1d_write))
+         work2 = dmiss
 
          ierr = nf90_def_dim(ncid, 'n'//trim(mesh1dname)//'_FlowElemContourPts', numContPts, id_flowelemcontourptsdim)
 
@@ -16099,7 +16105,8 @@ contains
       if (allocated(work2)) then
          deallocate (work2)
       end if
-      allocate (work2(numContPts, ndxndxi)); work2 = dmiss
+      allocate (work2(numContPts, ndxndxi))
+      work2 = dmiss
 
       ierr = ncu_ensure_define_mode(igeomfile, jaInDefine)
       if (ierr /= nf90_noerr) then
@@ -16793,8 +16800,10 @@ contains
 
       call increasenetcells(nump1d2d, 1.0, .false.)
 
-      allocate (netcellnod(nv, nump1d2d)); netcellnod = 0
-      allocate (netcelllin(nv, nump1d2d)); netcelllin = 0
+      allocate (netcellnod(nv, nump1d2d))
+      netcellnod = 0
+      allocate (netcelllin(nv, nump1d2d))
+      netcelllin = 0
       if (jaugrid == 1) then
          if (im2d > 0) then
             ierr = ionc_get_face_nodes(ioncid, im2d, netcellnod(:, 1:nump), fillvalue, 1)
@@ -18273,8 +18282,10 @@ contains
       do n = 1, ndxndxi
          do LL = 1, nd(n)%lnx
             LLL = abs(nd(n)%ln(LL))
-            k1 = ln(1, LLL); k2 = ln(2, LLL)
-            k3 = 1; if (nd(n)%ln(LL) > 0) k3 = 2
+            k1 = ln(1, LLL)
+            k2 = ln(2, LLL)
+            k3 = 1
+            if (nd(n)%ln(LL) > 0) k3 = 2
             s_x(n) = s_x(n) + u_x(LLL) * wcL(k3, LLL)
             s_y(n) = s_y(n) + u_y(LLL) * wcL(k3, LLL)
          end do

@@ -2969,7 +2969,8 @@ contains
 
       allocate (angcart(combspec%nang))
       allocate (Sdcart(combspec%nang))
-      allocate (eet(ntheta_s)); eet = 0.0_dp
+      allocate (eet(ntheta_s))
+      eet = 0.0_dp
 
       xcycle = 2.0_dp * pi
       ! combspec%ang contains nautical directions from 0 to 2 pi; convert to cartesian from -3/2pi to 1/2 pi

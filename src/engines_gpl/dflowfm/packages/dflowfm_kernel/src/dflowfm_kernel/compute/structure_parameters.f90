@@ -67,7 +67,8 @@ contains
                          + network%sts%numCulverts * NUMVALS_CULVERT + network%sts%numBridges * NUMVALS_BRIDGE + network%cmps%count * NUMVALS_CMPSTRU &
                          + nlongculverts * NUMVALS_LONGCULVERT
             allocate (reducebuf(nreducebuf), stat=ierr)
-            call aerr('reducebuf  ( nreducebuf )', ierr, nreducebuf); reducebuf = 0.0_dp
+            call aerr('reducebuf  ( nreducebuf )', ierr, nreducebuf)
+            reducebuf = 0.0_dp
          end if
       end if
 
@@ -337,7 +338,8 @@ contains
                      valgategen(IVAL_HEAD, n) = valgategen(IVAL_HEAD, n) + (s1(ku) - s1(kd)) * wu(L)
                   end if
 
-                  k = kcgen(1, L); if (q1(La) < 0.0_dp) k = kcgen(2, L)
+                  k = kcgen(1, L)
+                  if (q1(La) < 0.0_dp) k = kcgen(2, L)
                   if (hs(k) > epshs) then
                      valgategen(IVAL_GATE_WIDTHWET, n) = valgategen(IVAL_GATE_WIDTHWET, n) + wu(La)
                      valgategen(IVAL_GATE_FLOWH, n) = valgategen(IVAL_GATE_FLOWH, n) + s1(k) * wu(La)

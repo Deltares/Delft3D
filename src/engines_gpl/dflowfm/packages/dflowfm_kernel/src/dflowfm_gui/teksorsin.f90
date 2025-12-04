@@ -60,7 +60,9 @@ contains
       do n = 1, numsrc ! teksorsin
          k = ksrc(1, n)
          if (k /= 0) then
-            n2 = 1; xp = xsrc(n, n2); yp = ysrc(n, n2)
+            n2 = 1
+            xp = xsrc(n, n2)
+            yp = ysrc(n, n2)
             if (inview(xp, yp)) then
                if (qsrc(n) > 0) then
                   ncol = 3
@@ -88,7 +90,9 @@ contains
          end if
          k = ksrc(4, n)
          if (k /= 0) then
-            n2 = nxsrc(n); xp = xsrc(n, n2); yp = ysrc(n, n2)
+            n2 = nxsrc(n)
+            xp = xsrc(n, n2)
+            yp = ysrc(n, n2)
             if (inview(xp, yp)) then
                if (qsrc(n) > 0) then
                   ncol = 221

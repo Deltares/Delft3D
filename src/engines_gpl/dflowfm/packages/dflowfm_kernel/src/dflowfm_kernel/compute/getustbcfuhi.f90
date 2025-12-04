@@ -77,7 +77,12 @@ contains
       real(kind=dp) :: fsqrtt = sqrt(2.0_dp)
 
       cfuhi3D = 0.0_dp
-      ustbLL = 0.0_dp; cfuhiLL = 0.0_dp; hdzb = 0.0_dp; z00 = 0.0_dp; cz = 0.0_dp; nit = 0
+      ustbLL = 0.0_dp
+      cfuhiLL = 0.0_dp
+      hdzb = 0.0_dp
+      z00 = 0.0_dp
+      cz = 0.0_dp
+      nit = 0
 
       umodeps = 1.0e-4_dp
 

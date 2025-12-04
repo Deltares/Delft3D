@@ -157,7 +157,8 @@ contains
                call MESSAGE('YOU SAVED ', filnam, ' ')
             end if
          else if (NWHAT2 == 6) then
-            call load_displaysettings('unstruc.cfg'); key = 3
+            call load_displaysettings('unstruc.cfg')
+            key = 3
          else if (NWHAT2 == 7) then
             call save_displaysettings('unstruc.cfg')
          end if

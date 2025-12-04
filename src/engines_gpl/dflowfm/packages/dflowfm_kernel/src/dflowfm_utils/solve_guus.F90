@@ -61,26 +61,32 @@ contains
       integer m, ierr
       integer idmn, k
 
-      lintot = lnx; nodtot = ndx
+      lintot = lnx
+      nodtot = ndx
 
       allocate (ij(nodtot), stat=ierr)
       call aerr('ij(nodtot)', ierr, nodtot)
 
-      allocate (nodbr2(nodtot), stat=ierr); nodbr2 = 0
+      allocate (nodbr2(nodtot), stat=ierr)
+      nodbr2 = 0
       call aerr('nodbr2(nodtot)', ierr, nodtot)
 
-      allocate (nbrstk(nodtot), stat=ierr); nbrstk = 0
+      allocate (nbrstk(nodtot), stat=ierr)
+      nbrstk = 0
       call aerr('nbrstk(nodtot)', ierr, nodtot)
 
-      allocate (nodstk(nodtot), stat=ierr); nodstk = 0
+      allocate (nodstk(nodtot), stat=ierr)
+      nodstk = 0
       call aerr('nodstk(nodtot)', ierr, nodtot)
 
       if (allocated(noel)) deallocate (noel)
-      allocate (noel(nodtot), stat=ierr); noel = 0
+      allocate (noel(nodtot), stat=ierr)
+      noel = 0
       call aerr('noel(nodtot)', ierr, nodtot)
 
       if (allocated(noel0)) deallocate (noel0)
-      allocate (noel0(nodtot), stat=ierr); noel0 = 0
+      allocate (noel0(nodtot), stat=ierr)
+      noel0 = 0
       call aerr('noel0(nodtot)', ierr, nodtot)
 
       if (allocated(ia)) deallocate (ia)
@@ -92,11 +98,13 @@ contains
       call aerr('row(nodtot)', ierr, nodtot)
 
       if (allocated(lv2)) deallocate (lv2)
-      allocate (lv2(lintot), stat=ierr); lv2 = 0
+      allocate (lv2(lintot), stat=ierr)
+      lv2 = 0
       call aerr('lv2(lintot)', ierr, lintot)
 
       if (allocated(jagauss)) deallocate (jagauss)
-      allocate (jagauss(nodtot), stat=ierr); jagauss = 1
+      allocate (jagauss(nodtot), stat=ierr)
+      jagauss = 1
       call aerr('jagauss(nodtot)', ierr, nodtot)
 
 ! check solver applicability
@@ -298,7 +306,8 @@ contains
          deallocate (ij(i)%j, ij(i)%b, stat=ierr)
          call aerr('ij(i)%j,ij(i)%b)', ierr, -2 * ij(i)%l)
 
-         nodbr2(i) = nodbr2(i) + 1; ij(i)%l = ij(i)%l + 1
+         nodbr2(i) = nodbr2(i) + 1
+         ij(i)%l = ij(i)%l + 1
 
          allocate (ij(i)%j(ij(i)%l), ij(i)%b(ij(i)%l), stat=ierr)
          call aerr('ij(i)%j(ij(i)%l),ij(i)%b(ij(i)%l)', ierr, ij(i)%l)
@@ -311,15 +320,18 @@ contains
          allocate (ij(i)%b(1), ij(i)%j(1), stat=ierr)
          call aerr('ij(i)%b(1),ij(i)%j(1)', ierr, 1)
 
-         nodbr2(i) = 1; ij(i)%l = 1
-         ij(i)%b(1) = .true.; ij(i)%j(1) = j
+         nodbr2(i) = 1
+         ij(i)%l = 1
+         ij(i)%b(1) = .true.
+         ij(i)%j(1) = j
       end if
       if (ij(j)%l /= 0) then
          logbuf(1:ij(j)%l) = ij(j)%b(1:ij(j)%l)
          intbuf(1:ij(j)%l) = ij(j)%j(1:ij(j)%l)
          deallocate (ij(j)%j, ij(j)%b, stat=ierr)
          call aerr('ij(j)%j,ij(j)%b', ierr, -2 * ij(j)%l)
-         nodbr2(j) = nodbr2(j) + 1; ij(j)%l = ij(j)%l + 1
+         nodbr2(j) = nodbr2(j) + 1
+         ij(j)%l = ij(j)%l + 1
 
          allocate (ij(j)%j(ij(j)%l), ij(j)%b(ij(j)%l), stat=ierr)
          call aerr('ij(j)%j(ij(j)%l),ij(j)%b(ij(j)%l)', ierr, 2 * ij(j)%l)
@@ -331,8 +343,10 @@ contains
       else
          allocate (ij(j)%b(1), ij(j)%j(1), stat=ierr)
          call aerr('ij(j)%b(1),ij(j)%j(1)', ierr, 1)
-         nodbr2(j) = 1; ij(j)%l = 1
-         ij(j)%b(1) = .true.; ij(j)%j(1) = i
+         nodbr2(j) = 1
+         ij(j)%l = 1
+         ij(j)%b(1) = .true.
+         ij(j)%j(1) = i
       end if
    end subroutine ijtrue
 
@@ -488,7 +502,8 @@ contains
             allocate (row(ndn)%j(nodbr2(ndn)), row(ndn)%a(nodbr2(ndn)), stat=ierr)
             call aerr('inicg', ierr, 2 * nodbr2(ndn))
             row(ndn)%l = nodbr2(ndn)
-            nocg = nocg + 1; noel(nogauss + nocg) = ndn; 
+            nocg = nocg + 1
+            noel(nogauss + nocg) = ndn
             m = 0
             do n = 1, ij(ndn)%l
                if (ij(ndn)%b(n)) then
@@ -1468,7 +1483,8 @@ contains
 
       integer m, n, np, Ltot, j, iftot, k
 
-      Ltot = 0; iftot = 0
+      Ltot = 0
+      iftot = 0
       do n = nogauss0, 1, -1
          k = 0
          ndn = noel0(n)
@@ -1495,8 +1511,14 @@ contains
          deallocate (L1row, L2row, iarow, jrow, ifrow, ift)
       end if
       if (.not. allocated(L1row)) then
-         allocate (L1row(nodtot), L2row(nodtot), iarow(Ltot), jrow(Ltot)); L1row = 0; L2row = 0; iarow = 0; jrow = 0
-         allocate (ifrow(iftot), ift(nodtot)); ifrow = 0; ift = 0
+         allocate (L1row(nodtot), L2row(nodtot), iarow(Ltot), jrow(Ltot))
+         L1row = 0
+         L2row = 0
+         iarow = 0
+         jrow = 0
+         allocate (ifrow(iftot), ift(nodtot))
+         ifrow = 0
+         ift = 0
       end if
 
       Ltot = 0
@@ -1800,21 +1822,26 @@ contains
       integer allocerr
 
       if (allocated(ccr)) deallocate (ccr)
-      allocate (ccr(0:ijstck), STAT=allocErr); ccr = 0
+      allocate (ccr(0:ijstck), STAT=allocErr)
+      ccr = 0
       call aerr('ccr(0:ijstck)', allocerr, ijstck)
 
       if (allocated(bbl)) deallocate (bbl)
-      allocate (bbl(0:ijstck), STAT=allocErr); bbl = 0
+      allocate (bbl(0:ijstck), STAT=allocErr)
+      bbl = 0
       call aerr('bbl(0:ijstck)', allocerr, ijstck)
 
       if (nonlin > 0) then
          if (allocated(ccrsav)) deallocate (ccrsav)
-         allocate (ccrsav(0:ijstck), STAT=allocErr); ccrsav = 0
+         allocate (ccrsav(0:ijstck), STAT=allocErr)
+         ccrsav = 0
          call aerr('ccrsav(0:ijstck)', allocerr, ijstck)
       end if
 
       if (allocated(bbr)) deallocate (bbr, ddr)
-      allocate (bbr(nodtot), ddr(nodtot), STAT=allocErr); bbr = 0; ddr = 0
+      allocate (bbr(nodtot), ddr(nodtot), STAT=allocErr)
+      bbr = 0
+      ddr = 0
       call aerr('bbr(nodtot), ddr(nodtot)', allocErr, 2 * nodtot)
 
       if (allocated(d0)) deallocate (d0, zkr, pk, apk, rk)
@@ -2298,7 +2325,8 @@ contains
       nbndint = 0
       do L = 1, Lnx
          do i = 1, 2
-            ip1 = i + 1; if (ip1 > 2) ip1 = ip1 - 2
+            ip1 = i + 1
+            if (ip1 > 2) ip1 = ip1 - 2
             k1 = ln(i, L)
             k2 = ln(ip1, L)
 
@@ -2336,7 +2364,8 @@ contains
       nbndint = 0
       do L = 1, Lnx
          do i = 1, 2
-            ip1 = i + 1; if (ip1 > 2) ip1 = ip1 - 2
+            ip1 = i + 1
+            if (ip1 > 2) ip1 = ip1 - 2
             k1 = ln(i, L)
             k2 = ln(ip1, L)
 

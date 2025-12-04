@@ -716,7 +716,9 @@ contains
       jaSELFALcorrectWLwithIni = 0 !< correct water level with initial atmospheric pressure in SAL
 
       ! DOODSONSTART = 55.565D0 ; DOODSONSTOP = 375.575D0 ; Doodsoneps = .00D0    ! standaard TRIWAQ alle 484 cmp
-      DOODSONSTART = 55.565_dp; DOODSONSTOP = 375.575_dp; Doodsoneps = 0.00_dp !
+      DOODSONSTART = 55.565_dp
+      DOODSONSTOP = 375.575_dp
+      Doodsoneps = 0.00_dp !
       ! DOODSONSTART = 57.555D0 ; DOODSONSTOP = 275.555D0 ; Doodsoneps = .03D0    ! Delft3D
 
       jasecflow = 0 ! include secondary flow (0=no, 1=yes)

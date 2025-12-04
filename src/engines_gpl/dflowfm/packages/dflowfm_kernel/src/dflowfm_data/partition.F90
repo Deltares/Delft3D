@@ -1182,7 +1182,8 @@ contains
                do kk = 1, netcell(ic)%N
                   k = netcell(ic)%nod(kk)
                   do i = 1, nmk(k)
-                     ip1 = i + 1; if (ip1 > nmk(k)) ip1 = ip1 - nmk(k)
+                     ip1 = i + 1
+                     if (ip1 > nmk(k)) ip1 = ip1 - nmk(k)
                      L = nod(k)%lin(i)
                      Lp1 = nod(k)%lin(ip1)
                      icother = common_cell_for_two_net_links(L, Lp1)

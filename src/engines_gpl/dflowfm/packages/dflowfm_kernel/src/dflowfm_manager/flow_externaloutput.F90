@@ -121,7 +121,9 @@ contains
       end if
 
       if (.not. allocated(ti_mpt)) then
-         allocate (ti_mpt(1), ti_mpt_rel(1)); ti_mpt(1) = 0; ti_mpt_rel(1) = 0
+         allocate (ti_mpt(1), ti_mpt_rel(1))
+         ti_mpt(1) = 0
+         ti_mpt_rel(1) = 0
       end if
 
       call timstrt('call wrimap', handle_extra(77))
@@ -284,7 +286,8 @@ contains
 
       if (ti_stat > 0) then
          if (tim >= time_stat) then
-            call step_to_screen(); time_stat = tim + ti_stat
+            call step_to_screen()
+            time_stat = tim + ti_stat
          end if
       else if (ti_stat < 0.0_dp) then
 !     base statistics output on wallclock time, if available

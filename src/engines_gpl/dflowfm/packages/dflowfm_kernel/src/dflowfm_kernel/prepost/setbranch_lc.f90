@@ -51,10 +51,14 @@ contains
       allocate (NMK0(NUMK))
       NMK0 = 0
 
-      LC = 0; NRL1D = 0; NRL1D6 = 0
+      LC = 0
+      NRL1D = 0
+      NRL1D6 = 0
       do L = 1, NUML
          if (KN(3, L) == 1 .or. KN(3, L) == 6) then
-            K1 = KN(1, L); K2 = KN(2, L); K3 = KN(3, L)
+            K1 = KN(1, L)
+            K2 = KN(2, L)
+            K3 = KN(3, L)
             NMK0(K1) = NMK0(K1) + 1
             NMK0(K2) = NMK0(K2) + 1
             if (KN(3, L) == 1) then
@@ -68,20 +72,28 @@ contains
       end do
 
       if (NRL1D + NRL1D6 == 0) then
-         netstat = NETSTAT_OK; return
+         netstat = NETSTAT_OK
+         return
       end if
 
       if (allocated(IBN)) deallocate (IBN, LIB, K1BR, NRLB)
-      allocate (IBN(NUML), LIB(NUML), K1BR(NUML), NRLB(NUML)); IBN = 0; LIB = 0; K1BR = 0; NRLB = 0
+      allocate (IBN(NUML), LIB(NUML), K1BR(NUML), NRLB(NUML))
+      IBN = 0
+      LIB = 0
+      K1BR = 0
+      NRLB = 0
 
-      IBR = 0; NRL = 0
+      IBR = 0
+      NRL = 0
 
       do J = 1, 2
 
          if (J == 1) then
-            KN316 = 6; NRL1D16 = NRL1D6
+            KN316 = 6
+            NRL1D16 = NRL1D6
          else
-            KN316 = 1; NRL1D16 = NRL1D6 + NRL1D
+            KN316 = 1
+            NRL1D16 = NRL1D6 + NRL1D
          end if
 
          do while (NRL < NRL1D16)
@@ -102,8 +114,12 @@ contains
                do L = 1, NUML
                   if (LC(L) == 0 .and. KN316 == KN(3, L)) then
                      IBR = IBR + 1
-                     LC(L) = IBR; NRL = NRL + 1
-                     LIB(NRL) = L; K1BR(NRL) = KN(1, L); IBN(NRL) = IBR; NRLB(L) = NRL
+                     LC(L) = IBR
+                     NRL = NRL + 1
+                     LIB(NRL) = L
+                     K1BR(NRL) = KN(1, L)
+                     IBN(NRL) = IBR
+                     NRLB(L) = NRL
                   end if
                end do
             end if
@@ -112,7 +128,8 @@ contains
 
       end do
 
-      IBX = IBR; MXNETBR = IBR
+      IBX = IBR
+      MXNETBR = IBR
 
       if (allocated(NETBR)) then
          deallocate (NETBR)

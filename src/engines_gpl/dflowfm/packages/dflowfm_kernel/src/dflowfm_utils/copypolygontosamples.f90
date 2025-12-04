@@ -61,7 +61,8 @@ contains
       N = NS
       call INCREASESAM(NS + NPL)
       do K = 1, NPL - 1
-         KU = K + 1; KUU = min(NPL, K + 2)
+         KU = K + 1
+         KUU = min(NPL, K + 2)
          if (XPL(K) /= DMISS .and. XPL(KU) /= DMISS) then
 
             if (jakol45 == 0) then
@@ -71,13 +72,15 @@ contains
                end if
                XS(N) = XPL(K)
                YS(N) = YPL(K)
-               ZS(N) = ZPL(K); if (ZS(N) == DMISS) ZS(N) = 1.0_dp
+               ZS(N) = ZPL(K)
+               if (ZS(N) == DMISS) ZS(N) = 1.0_dp
             end if
 
             if (JAKOL45 > 0 .and. ZPL(K) /= DMISS) then
                if (.not. (XPL(K) == XPL(KU) .and. YPL(K) == YPL(KU))) then
                   call normalout(XPL(K), YPL(K), XPL(KU), YPL(KU), rx1, ry1, jsferic, jasfer3D, dmiss, dxymis)
-                  RX2 = RX1; RY2 = RY1
+                  RX2 = RX1
+                  RY2 = RY1
                   if (K > 1) then
                      if (XPL(K - 1) /= DMISS) then
                         call normalout(XPL(K - 1), YPL(K - 1), XPL(K), YPL(K), rx2, ry2, jsferic, jasfer3D, dmiss, dxymis)
@@ -114,7 +117,8 @@ contains
                if (R > 1.0_dp) then
                   KKN = R + 1
                   do KK = 1, KKN - 1
-                     A = real(KK, kind=dp) / real(KKN, kind=dp); B = 1.0_dp - A
+                     A = real(KK, kind=dp) / real(KKN, kind=dp)
+                     B = 1.0_dp - A
 
                      if (jakol45 == 0) then
                         N = N + 1
@@ -173,7 +177,8 @@ contains
                   end if
                   XS(N) = XPL(KU)
                   YS(N) = YPL(KU)
-                  ZS(N) = ZPL(KU); if (ZS(N) == DMISS) ZS(N) = 1.0_dp
+                  ZS(N) = ZPL(KU)
+                  if (ZS(N) == DMISS) ZS(N) = 1.0_dp
                end if
 
                if (JAKOL45 > 0 .and. ZPL(KU) /= DMISS) then

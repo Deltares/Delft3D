@@ -59,43 +59,80 @@ contains
       integer :: nbut, imp, inp
       integer :: KR, KG, KB, KL
 
-      KR = 0; KG = 0; KB = 0; KL = -1
+      KR = 0
+      KG = 0
+      KB = 0
+      KL = -1
 
       NLEVEL = 4
-      OPTION(1) = 'NCOLDG=31          DESIGN GRID          '; it(2 * 1) = 2
-      OPTION(2) = 'NCOLRG=212         PREVIOUS STATE GRID  '; it(2 * 2) = 2
-      OPTION(3) = 'NCOLDN=3           DESIGN NET           '; it(2 * 3) = 2
-      OPTION(4) = 'NCOLRN=211         PREVIOUS STATE NET   '; it(2 * 4) = 2
-      OPTION(5) = 'NCOLNN=205         NETNODES             '; it(2 * 5) = 2
-      OPTION(6) = 'NCOLSP=204         SPLINES              '; it(2 * 6) = 2
-      OPTION(7) = 'NCOLLN=120         LAND BOUNDARY        '; it(2 * 7) = 2
-      OPTION(8) = 'NCOLTX=210         TEXTLINES            '; it(2 * 8) = 2
-      OPTION(9) = 'NCOLPL=221         POLYGON              '; it(2 * 9) = 2
-      OPTION(10) = 'NCOLCRS=230        CROSS SECTIONS       '; it(2 * 10) = 2
-      OPTION(11) = 'NCOLTHD=231        THIN DAMS            '; it(2 * 11) = 2
-      OPTION(12) = 'NCOLFXW=232        FIXED WEIRS          '; it(2 * 12) = 2
-      OPTION(13) = 'NCOLHL=31          HIGHLIGHT NODES/LINKS'; it(2 * 13) = 2
-      OPTION(14) = 'KLVEC=4            VECTORS 110          '; it(2 * 14) = 2
-      OPTION(15) = 'KLPROF=222         PROFILES             '; it(2 * 15) = 2
-      OPTION(16) = 'KLSCL=221          ISOSCALE LEGEND      '; it(2 * 16) = 2
-      OPTION(17) = 'KLTEX=3            NUMBERS              '; it(2 * 17) = 2
-      OPTION(18) = 'KLOBS=221          OBSERVATION POINTS   '; it(2 * 18) = 2
-      OPTION(19) = '                                        '; it(2 * 19) = 2
-      OPTION(20) = 'Change RGB of colour Nr                 '; it(2 * 20) = 2
-      OPTION(21) = 'R                                       '; it(2 * 21) = 2
-      OPTION(22) = 'G                                       '; it(2 * 22) = 2
-      OPTION(23) = 'B                                       '; it(2 * 23) = 2
-      OPTION(24) = '                                        '; it(2 * 24) = 2
-      OPTION(25) = 'R SCREEN                                '; it(2 * 25) = 2
-      OPTION(26) = 'G SCREEN                                '; it(2 * 26) = 2
-      OPTION(27) = 'B SCREEN                                '; it(2 * 27) = 2
-      OPTION(28) = '                                        '; it(2 * 28) = 2
-      OPTION(29) = 'R PLOT                                  '; it(2 * 29) = 2
-      OPTION(30) = 'G PLOT                                  '; it(2 * 30) = 2
-      OPTION(31) = 'B PLOT                                  '; it(2 * 31) = 2
-      OPTION(32) = '                                        '; it(2 * 32) = 2
-      OPTION(33) = 'JaFahrenheit                            '; it(2 * 33) = 2
-      OPTION(34) = 'KLSRC=233         SORSIN                '; it(2 * 34) = 2
+      OPTION(1) = 'NCOLDG=31          DESIGN GRID          '
+      it(2 * 1) = 2
+      OPTION(2) = 'NCOLRG=212         PREVIOUS STATE GRID  '
+      it(2 * 2) = 2
+      OPTION(3) = 'NCOLDN=3           DESIGN NET           '
+      it(2 * 3) = 2
+      OPTION(4) = 'NCOLRN=211         PREVIOUS STATE NET   '
+      it(2 * 4) = 2
+      OPTION(5) = 'NCOLNN=205         NETNODES             '
+      it(2 * 5) = 2
+      OPTION(6) = 'NCOLSP=204         SPLINES              '
+      it(2 * 6) = 2
+      OPTION(7) = 'NCOLLN=120         LAND BOUNDARY        '
+      it(2 * 7) = 2
+      OPTION(8) = 'NCOLTX=210         TEXTLINES            '
+      it(2 * 8) = 2
+      OPTION(9) = 'NCOLPL=221         POLYGON              '
+      it(2 * 9) = 2
+      OPTION(10) = 'NCOLCRS=230        CROSS SECTIONS       '
+      it(2 * 10) = 2
+      OPTION(11) = 'NCOLTHD=231        THIN DAMS            '
+      it(2 * 11) = 2
+      OPTION(12) = 'NCOLFXW=232        FIXED WEIRS          '
+      it(2 * 12) = 2
+      OPTION(13) = 'NCOLHL=31          HIGHLIGHT NODES/LINKS'
+      it(2 * 13) = 2
+      OPTION(14) = 'KLVEC=4            VECTORS 110          '
+      it(2 * 14) = 2
+      OPTION(15) = 'KLPROF=222         PROFILES             '
+      it(2 * 15) = 2
+      OPTION(16) = 'KLSCL=221          ISOSCALE LEGEND      '
+      it(2 * 16) = 2
+      OPTION(17) = 'KLTEX=3            NUMBERS              '
+      it(2 * 17) = 2
+      OPTION(18) = 'KLOBS=221          OBSERVATION POINTS   '
+      it(2 * 18) = 2
+      OPTION(19) = '                                        '
+      it(2 * 19) = 2
+      OPTION(20) = 'Change RGB of colour Nr                 '
+      it(2 * 20) = 2
+      OPTION(21) = 'R                                       '
+      it(2 * 21) = 2
+      OPTION(22) = 'G                                       '
+      it(2 * 22) = 2
+      OPTION(23) = 'B                                       '
+      it(2 * 23) = 2
+      OPTION(24) = '                                        '
+      it(2 * 24) = 2
+      OPTION(25) = 'R SCREEN                                '
+      it(2 * 25) = 2
+      OPTION(26) = 'G SCREEN                                '
+      it(2 * 26) = 2
+      OPTION(27) = 'B SCREEN                                '
+      it(2 * 27) = 2
+      OPTION(28) = '                                        '
+      it(2 * 28) = 2
+      OPTION(29) = 'R PLOT                                  '
+      it(2 * 29) = 2
+      OPTION(30) = 'G PLOT                                  '
+      it(2 * 30) = 2
+      OPTION(31) = 'B PLOT                                  '
+      it(2 * 31) = 2
+      OPTION(32) = '                                        '
+      it(2 * 32) = 2
+      OPTION(33) = 'JaFahrenheit                            '
+      it(2 * 33) = 2
+      OPTION(34) = 'KLSRC=233         SORSIN                '
+      it(2 * 34) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -279,18 +316,28 @@ contains
             call IFORMGEtINTEGER(2 * 17, KLTEX)
             call IFORMGEtINTEGER(2 * 18, KLOBS)
 
-            call IFORMGETINTEGER(2 * 20, KL); KL = min(255, KL)
-            call IFORMGETINTEGER(2 * 21, KR); KR = min(255, max(0, KR))
-            call IFORMGETINTEGER(2 * 22, KG); KG = min(255, max(0, KG))
-            call IFORMGETINTEGER(2 * 23, KB); KB = min(255, max(0, KB))
+            call IFORMGETINTEGER(2 * 20, KL)
+            KL = min(255, KL)
+            call IFORMGETINTEGER(2 * 21, KR)
+            KR = min(255, max(0, KR))
+            call IFORMGETINTEGER(2 * 22, KG)
+            KG = min(255, max(0, KG))
+            call IFORMGETINTEGER(2 * 23, KB)
+            KB = min(255, max(0, KB))
 
-            call IFORMGETINTEGER(2 * 25, NREDS); NREDS = min(255, max(0, NREDS))
-            call IFORMGETINTEGER(2 * 26, NGREENS); NGREENS = min(255, max(0, NGREENS))
-            call IFORMGETINTEGER(2 * 27, NBLUES); NBLUES = min(255, max(0, NBLUES))
+            call IFORMGETINTEGER(2 * 25, NREDS)
+            NREDS = min(255, max(0, NREDS))
+            call IFORMGETINTEGER(2 * 26, NGREENS)
+            NGREENS = min(255, max(0, NGREENS))
+            call IFORMGETINTEGER(2 * 27, NBLUES)
+            NBLUES = min(255, max(0, NBLUES))
 
-            call IFORMGETINTEGER(2 * 29, NREDP); NREDP = min(255, max(0, NREDP))
-            call IFORMGETINTEGER(2 * 30, NGREENP); NGREENP = min(255, max(0, NGREENP))
-            call IFORMGETINTEGER(2 * 31, NBLUEP); NBLUEP = min(255, max(0, NBLUEP))
+            call IFORMGETINTEGER(2 * 29, NREDP)
+            NREDP = min(255, max(0, NREDP))
+            call IFORMGETINTEGER(2 * 30, NGREENP)
+            NGREENP = min(255, max(0, NGREENP))
+            call IFORMGETINTEGER(2 * 31, NBLUEP)
+            NBLUEP = min(255, max(0, NBLUEP))
 
             call IFORMGEtINTEGER(2 * 33, JaFahrenheit)
             call IFORMGEtINTEGER(2 * 34, KLSRC)

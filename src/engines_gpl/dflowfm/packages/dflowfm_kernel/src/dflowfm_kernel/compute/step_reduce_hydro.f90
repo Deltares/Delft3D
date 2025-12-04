@@ -116,7 +116,8 @@ contains
                   ! Nested newton iteration, start with s1m at bed level.
                   s1m = bl !  s1mini
                   call volsur()
-                  difmaxlevm = 0.0_dp; noddifmaxlevm = 0
+                  difmaxlevm = 0.0_dp
+                  noddifmaxlevm = 0
                end if
 
                call s1ini()
@@ -206,7 +207,8 @@ contains
 
                   if (nonlin > 0) then
 
-                     difmaxlev = 0.0_dp; noddifmaxlev = 0
+                     difmaxlev = 0.0_dp
+                     noddifmaxlev = 0
 
                      do k = 1, ndx
                         dif = abs(s1(k) - s00(k))
@@ -271,7 +273,8 @@ contains
                      ! beyond or past this point s1 is converged
 
                      if (nonlin >= 2) then
-                        difmaxlevm = 0.0_dp; noddifmaxlevm = 0
+                        difmaxlevm = 0.0_dp
+                        noddifmaxlevm = 0
                         do k = 1, ndx
                            dif = abs(s1m(k) - s1(k))
                            if (dif > difmaxlevm) then

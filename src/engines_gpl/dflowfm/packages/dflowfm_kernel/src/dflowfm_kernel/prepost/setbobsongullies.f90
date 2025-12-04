@@ -90,7 +90,8 @@ contains
          numLL = Lnxi
       end if
 
-      kint = max(numLL / 100, 1); nt = 0
+      kint = max(numLL / 100, 1)
+      nt = 0
       do iL = 1, numLL
 
          jacros = 0
@@ -108,11 +109,14 @@ contains
             call readyy('Setbobsongullies', af)
          end if
 
-         n1 = ln(1, L); n2 = ln(2, L)
+         n1 = ln(1, L)
+         n2 = ln(2, L)
          if (jakdtree == 0) then
 
-            xa = xz(n1); ya = yz(n1)
-            xb = xz(n2); yb = yz(n2)
+            xa = xz(n1)
+            ya = yz(n1)
+            xb = xz(n2)
+            yb = yz(n2)
 
             iloop: do i = 1, 2
 
@@ -147,7 +151,8 @@ contains
 
          if (jacros == 1) then !        dig the gullies
             zc = sl * zpL(k + 1) + (1.0_dp - sl) * zpL(k)
-            bob(1, L) = min(zc, bob(1, L), bob(2, L)); bob(2, L) = bob(1, L)
+            bob(1, L) = min(zc, bob(1, L), bob(2, L))
+            bob(2, L) = bob(1, L)
             bob0(:, L) = bob(:, L)
 
             bl(n1) = min(bl(n1), zc)

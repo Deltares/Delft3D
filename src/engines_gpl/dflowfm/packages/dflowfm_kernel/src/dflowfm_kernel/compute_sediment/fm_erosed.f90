@@ -252,7 +252,10 @@ contains
       if ((istat == 0) .and. (.not. allocated(u1_tmp))) allocate (u1_tmp(1:lnx), ucxq_tmp(1:ndx), ucyq_tmp(1:ndx), stat=ierr)
 
       localpar = 0.0_fp
-      ua = 0.0_dp; va = 0.0_dp; z0rouk = 0.0_dp; z0curk = 0.0_dp; 
+      ua = 0.0_dp
+      va = 0.0_dp
+      z0rouk = 0.0_dp
+      z0curk = 0.0_dp
       if (istat /= 0) then
          error = .true.
          write (errmsg, '(a)') 'fm_erosed::error allocating memory.'
@@ -438,7 +441,8 @@ contains
       !
       taub = 0.0_dp
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          z0rouk(k1) = z0rouk(k1) + wcl(1, L) * z0urou(L)
          z0rouk(k2) = z0rouk(k2) + wcl(2, L) * z0urou(L)
          taub(k1) = taub(k1) + wcl(1, L) * taubxu(L)
@@ -451,7 +455,8 @@ contains
          if (jawave > NO_WAVES .and. v2dwbl > 0) then
             deltas = 0.0_dp
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                deltas(k1) = deltas(k1) + wcl(1, L) * wblt(L)
                deltas(k2) = deltas(k2) + wcl(2, L) * wblt(L)
             end do
@@ -584,13 +589,15 @@ contains
       !
       ! compute normal component of bed slopes at edges    (e_xxx refers to edges)
 
-      dzdx = 0.0_dp; dzdy = 0.0_dp
+      dzdx = 0.0_dp
+      dzdy = 0.0_dp
 
       do L = 1, lnx
          ! Get the bottom slope components in the cell centres; keep these, needed later on
          ! Bottom slopes are positive on downsloping parts, cf bedbc2004.f90 and info from Bert Jagers
          ! So bl(k1)-bl(k2) instead of other way round
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          dzdx(k1) = dzdx(k1) - wcx1(L) * (bl(k2) - bl(k1)) * dxi(L)
          dzdy(k1) = dzdy(k1) - wcy1(L) * (bl(k2) - bl(k1)) * dxi(L)
          dzdx(k2) = dzdx(k2) - wcx2(L) * (bl(k2) - bl(k1)) * dxi(L)
@@ -616,7 +623,8 @@ contains
 
       do L = 1, lnx
          ! Interpolate back to links
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          !       e_dzdn(L) = acl(L)*(csu(L)*dzdx(k1) + snu(L)*dzdy(k1)) + (1d0-acl(L))*(csu(L)*dzdx(k2) + snu(L)*dzdy(k2))
          e_dzdn(L) = -dxi(L) * (bl(k2) - bl(k1)) ! more accurate near boundaries
          e_dzdt(L) = acl(L) * (-snu(L) * dzdx(k1) + csu(L) * dzdy(k1)) + (1.0_dp - acl(L)) * (-snu(L) * dzdx(k2) + csu(L) * dzdy(k2)) ! affected near boundaries due to interpolation
@@ -1256,7 +1264,8 @@ contains
       ! Distribute velocity asymmetry to links
       !
       do L = 1, lnxi
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          uau(L) = (acL(L) * ua(k1) + (1.0_dp - acL(L)) * ua(k2)) * csu(L) + &
                   (acL(L) * va(k1) + (1.0_dp - acL(L)) * va(k2)) * snu(L)
       end do
@@ -1282,9 +1291,14 @@ contains
       !2DO. V: When raw transports at cell centres are requested, these are reconstructed from the edge transports in <unstruc_netcdf>. Saving
       ! <sbcx_raw> does not seem necessary.
       if (stmpar%morpar%moroutput%rawtransports) then
-         sbcx_raw = sbcx; sbcy_raw = sbcy; ! save transports before upwinding and bed slope effects
-         sbwx_raw = sbwx; sbwy_raw = sbwy; ! to compare with analytical solutions
-         sswx_raw = sswx; sswy_raw = sswy; 
+         sbcx_raw = sbcx
+         sbcy_raw = sbcy
+         ! save transports before upwinding and bed slope effects
+         sbwx_raw = sbwx
+         sbwy_raw = sbwy
+         ! to compare with analytical solutions
+         sswx_raw = sswx
+         sswy_raw = sswy
       end if
       !
       ! Upwind scheme for bed load and wave driven transport

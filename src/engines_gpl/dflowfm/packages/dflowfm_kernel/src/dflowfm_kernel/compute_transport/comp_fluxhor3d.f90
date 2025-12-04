@@ -119,9 +119,11 @@ contains
 
       if (limtyp == 6) then
 
-         dsedx = 0.0_dp; dsedy = 0.0_dp
+         dsedx = 0.0_dp
+         dsedy = 0.0_dp
          do LL = 1, lnx
-            Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+            Lb = Lbot(LL)
+            Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -233,9 +235,13 @@ contains
             end if
 
             if (u1(L) > 0.0_dp) then
-               is = 1; ku = k1; half = acL(LL)
+               is = 1
+               ku = k1
+               half = acL(LL)
             else
-               is = -1; ku = k2; half = 1.0_dp - acl(LL)
+               is = -1
+               ku = k2
+               half = 1.0_dp - acl(LL)
             end if
 
             QL = max(q1(L), 0.0_dp)

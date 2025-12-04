@@ -96,9 +96,18 @@ contains
       do K = 1, NUMP
          read (MNET, '(A)', end=777) REC
          read (REC, *, ERR=999) KK, nn, k1, k2, k3
-         L = L + 1; kn(1, L) = k1; kn(2, L) = k2; kn(3, L) = 2
-         L = L + 1; kn(1, L) = k2; kn(2, L) = k3; kn(3, L) = 2
-         L = L + 1; kn(1, L) = k3; kn(2, L) = k1; kn(3, L) = 2
+         L = L + 1
+         kn(1, L) = k1
+         kn(2, L) = k2
+         kn(3, L) = 2
+         L = L + 1
+         kn(1, L) = k2
+         kn(2, L) = k3
+         kn(3, L) = 2
+         L = L + 1
+         kn(1, L) = k3
+         kn(2, L) = k1
+         kn(3, L) = 2
       end do
 
       NUML = L
@@ -134,7 +143,9 @@ contains
       if (jamergeweirnodes == 1) then
          NPL = 0
          call increasepol(NVEL + NBOU, 0) ! Store center line of adcirc levee as one polyline per levee, for later use as fixedweir pliz.
-         XPL = dmiss; YPL = dmiss; ZPL = dmiss
+         XPL = dmiss
+         YPL = dmiss
+         ZPL = dmiss
       end if
 
       MXLAN = 0
@@ -165,8 +176,12 @@ contains
                k1 = K0 + NBVV
                k2 = K0 + IBCONN
                MXLAN = MXLAN + 1
-               XLAN(MXLAN) = XK(k1); YLAN(MXLAN) = YK(k1); ZLAN(MXLAN) = BARINHT
-               XLAN(MXLAN + NVELL + 1) = XK(k2); YLAN(MXLAN + NVELL + 1) = YK(k2); ZLAN(MXLAN + NVELL + 1) = BARINHT ! second side comes after the end of the first side
+               XLAN(MXLAN) = XK(k1)
+               YLAN(MXLAN) = YK(k1)
+               ZLAN(MXLAN) = BARINHT
+               XLAN(MXLAN + NVELL + 1) = XK(k2)
+               YLAN(MXLAN + NVELL + 1) = YK(k2)
+               ZLAN(MXLAN + NVELL + 1) = BARINHT ! second side comes after the end of the first side
 
                if (jamergeweirnodes == 1) then
                   XK(k2) = 0.5_dp * (XK0(K1) + XK0(K2))
@@ -174,7 +189,9 @@ contains
                   ZK(k2) = max(ZK(K1), ZK(K2))
 
                   NPL = NPL + 1
-                  XPL(NPL) = XK(k2); YPL(NPL) = YK(k2); ZPL(NPL) = BARINHT ! TODO: sill left/right/contract
+                  XPL(NPL) = XK(k2)
+                  YPL(NPL) = YK(k2)
+                  ZPL(NPL) = BARINHT ! TODO: sill left/right/contract
                   if (xpl(npl) < -100) then
                      continue
                   end if

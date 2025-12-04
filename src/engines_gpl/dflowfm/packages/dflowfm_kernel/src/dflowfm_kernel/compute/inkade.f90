@@ -42,13 +42,15 @@ contains
       implicit none
       integer :: i, j
       real(kind=dp) :: sx2, sy2
-      i = 0; j = 0
+      i = 0
+      j = 0
       if (sx2 > xmxs) i = 1
       if (sx2 < xmns) i = -1
       if (sy2 > ymxs) j = 1
       if (sy2 < ymns) j = -1
       if (i /= 0 .or. j /= 0) then
-         i = i + 1; i = i - 1
+         i = i + 1
+         i = i - 1
       end if
 
    end subroutine inkade

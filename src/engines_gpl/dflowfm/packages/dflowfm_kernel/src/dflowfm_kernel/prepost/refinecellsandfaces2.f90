@@ -258,7 +258,8 @@ contains
 
          if (jagui == 1) then
             ja = 1
-            dxxmax = -huge(1.0_dp); dxxmin = -dxxmax
+            dxxmax = -huge(1.0_dp)
+            dxxmin = -dxxmax
             do L = 1, numL
                dl = dlinklength(L)
                dxxmin = min(dxxmin, dl)
@@ -420,7 +421,8 @@ contains
                jacross = 0
                do kk = 1, N
                   k = netcell(ic)%nod(kk)
-                  kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
+                  kkp1 = kk + 1
+                  if (kkp1 > N) kkp1 = kkp1 - N
                   L = netcell(ic)%lin(kk)
                   Lp1 = netcell(ic)%lin(kkp1)
 
@@ -636,9 +638,11 @@ contains
 
          dmincellsize = 1.0e99_dp
          dmaxcellsize = 0.0_dp
-         xc(1) = 0.0_dp; yc(1) = 0.0_dp
+         xc(1) = 0.0_dp
+         yc(1) = 0.0_dp
          do k = 1, N
-            kp1 = k + 1; if (kp1 > N) kp1 = kp1 - N
+            kp1 = k + 1
+            if (kp1 > N) kp1 = kp1 - N
             dsize = dbdistance(x(k), y(k), x(kp1), y(kp1), jsferic, jasfer3D, dmiss)
             dlinklength(k) = dsize
             dmincellsize = min(dmincellsize, dsize)
@@ -705,11 +709,14 @@ contains
                zc = DMISS
                if (interpolationtype == 1) then
                   if (ic == 1) then
-                     jdla = 1; jakdtree = 1
+                     jdla = 1
+                     jakdtree = 1
                   else
-                     jdla = 0; jakdtree = 2
+                     jdla = 0
+                     jakdtree = 2
                   end if
-                  mxsam = mca; mysam = nca
+                  mxsam = mca
+                  mysam = nca
                   call triinterp2(Xc, Yc, zc, 1, JDLA, & !attemp to allow for smooth refinement used to be ok through jdla, does not work anymore icw kdtree
                                   XS, YS, ZS, NS, dmiss, jsferic, jins, jasfer3D, NPL, MXSAM, MYSAM, XPL, YPL, ZPL, transformcoef)
                else if (interpolationtype == 2) then
@@ -718,18 +725,22 @@ contains
                else if (interpolationtype == 4) then
                   !landsea = 0
 
-                  zmx = -1.0e9_dp; zmn = 1.0e9_dp
+                  zmx = -1.0e9_dp
+                  zmn = 1.0e9_dp
                   do m = 1, N
                      call bilinarcinfo(x(m), y(m), z(m))
                      zmx = max(zmx, z(m))
                      zmn = min(zmn, z(m))
                   end do
                   if (zmn > 0.0_dp) then ! land
-                     zc(1) = 9.0e9_dp; landsea = 3 ! no refine
+                     zc(1) = 9.0e9_dp
+                     landsea = 3 ! no refine
                   else if (zmx >= 0.0_dp .and. zmn <= 0.0_dp) then ! land/sea
-                     zc(1) = 0.0e9_dp; landsea = 1 ! always refine
+                     zc(1) = 0.0e9_dp
+                     landsea = 1 ! always refine
                   else
-                     call bilinarcinfo(xc(1), yc(1), zc(1)); landsea = 2
+                     call bilinarcinfo(xc(1), yc(1), zc(1))
+                     landsea = 2
                   end if
                end if
 
@@ -910,8 +921,10 @@ contains
                   L = netcell(ic)%lin(kk)
 
 !              do not pass on mask to already refined cells
-                  kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-                  kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
+                  kkp1 = kk + 1
+                  if (kkp1 > N) kkp1 = kkp1 - N
+                  kkm1 = kk - 1
+                  if (kkm1 < 1) kkm1 = kkm1 + N
 
                   if (linkbrother(L) /= netcell(ic)%lin(kkp1) .and. linkbrother(L) /= netcell(ic)%lin(kkm1)) then
                      jalin(L) = 1
@@ -941,8 +954,10 @@ contains
             if (jarefine(ic) == 1) then
                N = netcell(ic)%N
                do kk = 1, N
-                  kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
-                  kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
+                  kkm1 = kk - 1
+                  if (kkm1 < 1) kkm1 = kkm1 + N
+                  kkp1 = kk + 1
+                  if (kkp1 > N) kkp1 = kkp1 - N
 
                   L = netcell(ic)%lin(kk)
 
@@ -1085,9 +1100,11 @@ contains
 !    kklp:do kk=1,N
             do kk = 1, nn
 !            kkm1 = kk-1; if ( kkm1.lt.1 ) kkm1 = kkm1+N
-               kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + nn
+               kkm1 = kk - 1
+               if (kkm1 < 1) kkm1 = kkm1 + nn
 !            kkp1 = kk+1; if ( kkp1.gt.N ) kkp1 = kkp1-N
-               kkp1 = kk + 1; if (kkp1 > nn) kkp1 = kkp1 - nn
+               kkp1 = kk + 1
+               if (kkp1 > nn) kkp1 = kkp1 - nn
 !            L  = netcell(k)%lin(kk)
 !            Lm1 = netcell(k)%lin(kkm1)
 !            Lp1 = netcell(k)%lin(kkp1)
@@ -1220,7 +1237,8 @@ contains
                end if
             else
                do kk = 1, num
-                  kkp1 = kk + 1; if (kkp1 > num) kkp1 = kkp1 - num
+                  kkp1 = kk + 1
+                  if (kkp1 > num) kkp1 = kkp1 - num
                   call newlink(nods(kk), nods(kkp1), Lnew)
                end do
             end if
@@ -1410,7 +1428,8 @@ contains
 
 !       check all combinations of connected links
             do kk = 1, nmk(k)
-               kkp1 = kk + 1; if (kkp1 > nmk(k)) kkp1 = kkp1 - nmk(k)
+               kkp1 = kk + 1
+               if (kkp1 > nmk(k)) kkp1 = kkp1 - nmk(k)
 
                L = nod(k)%lin(kk)
                if (lnn(L) < 1) cycle
@@ -1536,8 +1555,10 @@ contains
 
                   if (N_eff /= 4) then ! non-quads
                      do kk = 1, N
-                        kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-                        kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
+                        kkp1 = kk + 1
+                        if (kkp1 > N) kkp1 = kkp1 - N
+                        kkm1 = kk - 1
+                        if (kkm1 < 1) kkm1 = kkm1 + N
 
                         L = netcell(k)%lin(kk)
 
@@ -1558,7 +1579,8 @@ contains
                         numlink(kk) = num
                         if (jalink(L) /= 0) jaquadlink(num) = jalink(L)
 
-                        kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
+                        kkp1 = kk + 1
+                        if (kkp1 > N) kkp1 = kkp1 - N
                         if (kk /= N .and. linkbrother(L) /= netcell(k)%lin(kkp1)) then
                            num = num + 1
                         else if (linkbrother(L) == netcell(k)%lin(kkp1)) then
@@ -1602,8 +1624,10 @@ contains
                      end if
 
                      do kk = 1, N
-                        kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-                        kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
+                        kkp1 = kk + 1
+                        if (kkp1 > N) kkp1 = kkp1 - N
+                        kkm1 = kk - 1
+                        if (kkm1 < 1) kkm1 = kkm1 + N
 
                         L = netcell(k)%lin(kk)
 
@@ -1676,8 +1700,10 @@ contains
 !        check if the link has a brother link and needs to be refined
             if (linkbrother(L) /= 0) then
 !        check if the brother link is in the cell
-               kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
-               kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
+               kkm1 = kk - 1
+               if (kkm1 < 1) kkm1 = kkm1 + N
+               kkp1 = kk + 1
+               if (kkp1 > N) kkp1 = kkp1 - N
                Lm1 = netcell(ic)%lin(kkm1)
                Lp1 = netcell(ic)%lin(kkp1)
 
@@ -1697,7 +1723,8 @@ contains
 
 !              find node pointer in cell
                   do i = 1, N
-                     kknod = kknod + 1; if (kknod > N) kknod = kknod - N
+                     kknod = kknod + 1
+                     if (kknod > N) kknod = kknod - N
 
                      if (netcell(ic)%nod(kknod) == k .and. ishangingnod(kknod) == 0) then
                         numhangnod = numhangnod + 1

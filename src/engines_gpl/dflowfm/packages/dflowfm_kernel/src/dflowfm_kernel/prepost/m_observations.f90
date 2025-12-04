@@ -213,7 +213,7 @@ contains
 
 !  2D
       i = 0
-      i0 = i; 
+      i0 = i
       IVAL_S1 = next_index(i)
       IVAL_HS = next_index(i)
       IVAL_BL = next_index(i)
@@ -321,7 +321,7 @@ contains
       MAXNUMVALOBS2D = i - i0
 
 !  3D, layer centered
-      i0 = i; 
+      i0 = i
       IVAL_UCX = next_index(i)
       IVAL_UCY = next_index(i)
       if (kmx > 0) then

@@ -79,7 +79,8 @@ contains
          s1k = aer * cs
 
          if (tim == 0) then
-            s1(k) = max(bl(k), s1k); s0(k) = s1(k)
+            s1(k) = max(bl(k), s1k)
+            s0(k) = s1(k)
             ucx(k) = -s1k * sgh * sn
             ucy(k) = s1k * sgh * cs
          end if
@@ -90,7 +91,8 @@ contains
 
       if (tim == 0) then
          do L = 1, Lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             u1(L) = 0.5_dp * (ucx(k1) + ucx(k2)) * csu(L) + 0.5_dp * (ucy(k1) + ucy(k2)) * snu(L)
             u0(L) = u1(L)
          end do
@@ -134,7 +136,8 @@ contains
 
       xff = oceaneddyxoff
       yff = oceaneddyyoff
-      imx = 1; jmx = 1
+      imx = 1
+      jmx = 1
       if (oceaneddyxoff /= 0.0_dp) imx = 2
       if (oceaneddyyoff /= 0.0_dp) jmx = 2
 
@@ -156,8 +159,10 @@ contains
 
             do k = 1, ndx
                call dbdistancehk(xz(k), yz(k), x0, y0, rr)
-               call dbdistancehk(x0, yz(k), xz(k), yz(k), xx); if (xz(k) < x0) xx = -xx
-               call dbdistancehk(xz(k), y0, xz(k), yz(k), yy); if (yz(k) < y0) yy = -yy
+               call dbdistancehk(x0, yz(k), xz(k), yz(k), xx)
+               if (xz(k) < x0) xx = -xx
+               call dbdistancehk(xz(k), y0, xz(k), yz(k), yy)
+               if (yz(k) < y0) yy = -yy
 
                cs = xx / rr
                sn = yy / rr
@@ -166,7 +171,8 @@ contains
                uvr = s1k * uv * rr
 
                if (tim == 0) then
-                  s1(k) = s1(k) + max(bl(k), s1k); s0(k) = s1(k)
+                  s1(k) = s1(k) + max(bl(k), s1k)
+                  s0(k) = s1(k)
                   ucx(k) = ucx(k) + uvr * sn
                   ucy(k) = ucy(k) - uvr * cs
                end if
@@ -181,12 +187,14 @@ contains
       if (tim == 0) then
          call set_kbot_ktop(jazws0=1)
          do L = 1, Lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             u1(L) = 0.5_dp * (ucx(k1) + ucx(k2)) * csu(L) + 0.5_dp * (ucy(k1) + ucy(k2)) * snu(L)
             u0(L) = u1(L)
             Ltop(L) = Lbot(L) + kmx - 1
             do LL = Lbot(L), Ltop(L)
-               u1(LL) = u1(L); u0(LL) = u1(L)
+               u1(LL) = u1(L)
+               u0(LL) = u1(L)
             end do
          end do
       end if

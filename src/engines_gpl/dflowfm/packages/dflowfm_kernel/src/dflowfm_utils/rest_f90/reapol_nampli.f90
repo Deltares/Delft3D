@@ -122,7 +122,9 @@ contains
          nmiss = 0
          do ! Read a single line, or multiple until a NON-dmiss line is found
             read (MPOL, '(A)', end=999) REC
-            ZZ = DMISS; dz1 = dmiss; dz2 = dmiss
+            ZZ = DMISS
+            dz1 = dmiss
+            dz2 = dmiss
             if (nkol == 10) then
                read (REC, *, iostat=ierr) XX, YY, zcrest, sillup, silldown, crestl, taludl, taludr, veg, weirtype ! read weir data from Baseline format plus weirtype
                if (ierr /= 0) goto 777
@@ -161,7 +163,9 @@ contains
             ZPL(NPL) = ZZ
             if (jakol45 == 1) then
                if (.not. allocated(DZL)) then
-                  allocate (DZL(MAXPOL), DZR(MAXPOL)); DZL = DMISS; DZR = DMISS
+                  allocate (DZL(MAXPOL), DZR(MAXPOL))
+                  DZL = DMISS
+                  DZR = DMISS
                end if
                DZL(NPL) = DZ1
                DZR(NPL) = DZ2

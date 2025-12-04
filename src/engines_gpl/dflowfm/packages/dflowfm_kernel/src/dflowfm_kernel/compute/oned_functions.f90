@@ -795,7 +795,9 @@ contains
             ypl(npl + 1:npl + nyz) = pcs%y(1:nyz)
             zpl(npl + 1:npl + nyz) = pcs%z(1:nyz)
             npl = npl + nyz + 1
-            xpl(npl) = dmiss; ypl(npl) = dmiss; zpl(npl) = dmiss ! Separator between pli/csdef
+            xpl(npl) = dmiss
+            ypl(npl) = dmiss
+            zpl(npl) = dmiss ! Separator between pli/csdef
          case default
             call QNERROR('Error in convert_cross_to_prof(), profile type not supported:', CSTypeName(pcs%crossType), '')
          end select

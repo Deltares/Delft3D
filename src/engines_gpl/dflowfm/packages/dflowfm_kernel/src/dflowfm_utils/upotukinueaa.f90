@@ -51,7 +51,12 @@ contains
       real(kind=dp) :: vtot, roav, zz, rhok, bmin
       integer k, kk
 
-      upot = 0.0_dp; ukin = 0.0_dp; ueaa = 0.0_dp; vtot = 0.0_dp; roav = 0.0_dp; bmin = 1.0e9_dp
+      upot = 0.0_dp
+      ukin = 0.0_dp
+      ueaa = 0.0_dp
+      vtot = 0.0_dp
+      roav = 0.0_dp
+      bmin = 1.0e9_dp
 
       do kk = 1, ndx
          bmin = min(bmin, bl(kk))

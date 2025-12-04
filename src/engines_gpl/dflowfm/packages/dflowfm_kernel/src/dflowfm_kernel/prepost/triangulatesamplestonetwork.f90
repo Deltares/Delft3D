@@ -194,8 +194,12 @@ contains
             cycle
          end if
 
-         K1 = INDX(1, N); K2 = INDX(2, N); K3 = INDX(3, N)
-         K1 = KS(K1); K2 = KS(K2); K3 = KS(K3)
+         K1 = INDX(1, N)
+         K2 = INDX(2, N)
+         K3 = INDX(3, N)
+         K1 = KS(K1)
+         K2 = KS(K2)
+         K3 = KS(K3)
          XP = THIRD * (XK(K1) + XK(K2) + XK(K3))
          YP = THIRD * (YK(K1) + YK(K2) + YK(K3))
          call DBPINPOL(XP, YP, IN, dmiss, JINS, NPL, xpl, ypl, ypl)

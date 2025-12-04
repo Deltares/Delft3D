@@ -619,7 +619,10 @@ contains
       if (INI == 0) then
          INI = 1
 
-         XMN = 1e30_dp; YMN = 1e30_dp; XMX = -1e30_dp; YMX = -1e30_dp
+         XMN = 1e30_dp
+         YMN = 1e30_dp
+         XMX = -1e30_dp
+         YMX = -1e30_dp
          do I = 1, ndx
             xmn = min(xz(i), xmn)
             xmx = max(xz(i), xmx)
@@ -627,11 +630,15 @@ contains
             ymx = max(yz(i), ymx)
          end do
 
-         i1 = floor(xmn); i2 = floor(xmx) + 1
-         j1 = floor(ymn); j2 = floor(ymx) + 1
+         i1 = floor(xmn)
+         i2 = floor(xmx) + 1
+         j1 = floor(ymn)
+         j2 = floor(ymx) + 1
          if (jatidep == 2) then ! gradient intp., one extra
-            i1 = i1 - 1; i2 = i2 + 1
-            j1 = j1 - 1; j2 = j2 + 1
+            i1 = i1 - 1
+            i2 = i2 + 1
+            j1 = j1 - 1
+            j2 = j2 + 1
          end if
 
          if (jaselfal == 1 .and. jampi == 1) then
@@ -664,10 +671,14 @@ contains
 !         allocate ( area(i1:i2,j1:j2), stat=ierr)
             do i = i1, i2
                do j = j1, j2
-                  xx(1) = real(i, kind=dp) - 0.5_dp; yy(1) = real(j, kind=dp) - 0.5_dp
-                  xx(2) = real(i, kind=dp) + 0.5_dp; yy(2) = real(j, kind=dp) - 0.5_dp
-                  xx(3) = real(i, kind=dp) + 0.5_dp; yy(3) = real(j, kind=dp) + 0.5_dp
-                  xx(4) = real(i, kind=dp) - 0.5_dp; yy(4) = real(j, kind=dp) + 0.5_dp
+                  xx(1) = real(i, kind=dp) - 0.5_dp
+                  yy(1) = real(j, kind=dp) - 0.5_dp
+                  xx(2) = real(i, kind=dp) + 0.5_dp
+                  yy(2) = real(j, kind=dp) - 0.5_dp
+                  xx(3) = real(i, kind=dp) + 0.5_dp
+                  yy(3) = real(j, kind=dp) + 0.5_dp
+                  xx(4) = real(i, kind=dp) - 0.5_dp
+                  yy(4) = real(j, kind=dp) + 0.5_dp
 
 !                call dAREAN( XX, YY, 4, DAREA, DLENGTH, DLENMX )
 !                area(i,j) = darea
@@ -699,8 +710,10 @@ contains
       end if
 
       do n = 1, ndx
-         m1 = floor(xz(n)); m2 = m1 + 1
-         n1 = floor(yz(n)); n2 = n1 + 1
+         m1 = floor(xz(n))
+         m2 = m1 + 1
+         n1 = floor(yz(n))
+         n2 = n1 + 1
          di = xz(n) - m1
          dj = yz(n) - n1
          f11 = (1.0_dp - di) * (1.0_dp - dj)
@@ -746,8 +759,10 @@ contains
          end do
 
          do L = 1, Lnx
-            m1 = floor(xu(L)); m2 = m1 + 1
-            n1 = floor(yu(L)); n2 = n1 + 1
+            m1 = floor(xu(L))
+            m2 = m1 + 1
+            n1 = floor(yu(L))
+            n2 = n1 + 1
             di = xu(L) - m1
             dj = yu(L) - n1
             f11 = (1.0_dp - di) * (1.0_dp - dj)
@@ -3505,8 +3520,10 @@ contains
          FACTORIAL(6) = 720.0_dp
 
          if (allocated(tideuc)) deallocate (tideuc, tideus)
-         allocate (tideuc(0:3, 2:3, IDIM1), STAT=IERR); tideuc = 0.0_dp
-         allocate (tideus(0:3, 2:3, IDIM1), STAT=IERR); tideus = 0.0_dp
+         allocate (tideuc(0:3, 2:3, IDIM1), STAT=IERR)
+         tideuc = 0.0_dp
+         allocate (tideus(0:3, 2:3, IDIM1), STAT=IERR)
+         tideus = 0.0_dp
 
          call iniharmonics(recs)
 
@@ -6104,7 +6121,9 @@ contains
 !     SPvdP: sample set can be large, delete it and do not make a copy
          call delsam(-1)
          if (allocated(d)) then
-            deallocate (d); mca = 0; nca = 0
+            deallocate (d)
+            mca = 0
+            nca = 0
          end if
 
       end if
@@ -6175,8 +6194,14 @@ contains
       real(kind=dp) :: dm, dn, am, an
       integer :: m, n
 
-      dm = (x - x0) / dxa; m = int(dm); am = dm - m; m = m + 1
-      dn = (y - y0) / dya; n = int(dn); an = dn - n; n = n + 1
+      dm = (x - x0) / dxa
+      m = int(dm)
+      am = dm - m
+      m = m + 1
+      dn = (y - y0) / dya
+      n = int(dn)
+      an = dn - n
+      n = n + 1
       z = dmiss
       if (m < mca .and. n < nca .and. m >= 1 .and. n >= 1) then
          if (d(m, n) /= dmiss .and. d(m + 1, n) /= dmiss .and. d(m, n + 1) /= dmiss .and. d(m + 1, n + 1) /= dmiss) then
