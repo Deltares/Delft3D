@@ -24,3 +24,7 @@ f90twtest(test_pol_to_cellmask
     LIBRARIES dflowfm_kernel
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
+
+# Force sequential build order for the test projects (workaround, to be fixed properly)
+add_dependencies(test_3d_layer_administration test_dflowfm_kernel_example)
+add_dependencies(test_pol_to_cellmask test_3d_layer_administration)
