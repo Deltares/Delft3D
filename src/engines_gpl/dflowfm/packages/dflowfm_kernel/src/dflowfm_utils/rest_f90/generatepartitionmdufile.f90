@@ -40,7 +40,8 @@ module m_generatepartitionmdufile
 contains
 
    subroutine generatePartitionMDUFile(filename_new)
-      use unstruc_model, only: writeMDUFilepointer
+      use unstruc_model, only: writeMDUFilepointer, md_icgsolver
+      use m_flowparameters, only: icgsolver
       use m_filez, only: newfil, doclose
       use MessageHandling, only: mess, LEVEL_FATAL
       character(len=*), intent(in) :: filename_new
@@ -53,6 +54,7 @@ contains
          return
       end if
 
+      icgsolver = md_icgsolver ! `writeMDUFilepointer` uses `icgsolver` instead of `md_icgsolver`.
       call writeMDUFilepointer(mout, .false., istat)
       if (istat /= 0) then
          call mess(LEVEL_FATAL, "Failed to write a partitioned MDU file " // trim(filename_new))

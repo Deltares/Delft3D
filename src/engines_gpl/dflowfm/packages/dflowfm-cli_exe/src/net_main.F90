@@ -67,7 +67,7 @@ program unstruc
    use m_grid, only: nmax, mmax
    use m_boat, only: maxboat
    use m_netw, only: kmax, knx, mxb, lmax, maxlan, maxpol, imake1d2dtype, i1d2dtp_1to1, netflow
-   use unstruc_model, only: md_jaopengl, md_pressakey, md_jatest, md_nruns, md_soltest, md_cfl, md_maxmatvecs, md_epsdiff, &
+   use unstruc_model, only: md_jaopengl, md_pressakey, md_jatest, md_nruns, md_soltest, md_cfl, md_icgsolver, md_maxmatvecs, md_epsdiff, &
                             md_epscg, md_convnetcells, md_netfile, md_jasavenet, md_jamake1d2dlinks, md_japartition, md_partugrid, md_ident, md_ndomains, &
                             md_jacontiguous, md_pmethod, md_genpolygon, md_partseed, md_restartfile, md_mapfile, md_classmap_file, md_flowgeomfile, md_partitionfile, &
                             md_jagridgen, md_jarefine, md_cutcells, md_cfgfile, md_convertlongculverts
@@ -75,7 +75,7 @@ program unstruc
    use unstruc_api, only: flow
    use messagehandling, only: warn_flush, msgbuf, mess, msg_flush
    use unstruc_display, only: jagui, ntek
-   use m_flowparameters, only: ibedlevtyp, icgsolver
+   use m_flowparameters, only: ibedlevtyp
    use dfm_error, only: dfm_noerr, dfm_exit, dfm_sigint
    use m_timer, only: initimer, gettimer, IAXPY
    use gridoperations, only: make1d2dinternalnetlinks, findcells
@@ -226,7 +226,7 @@ program unstruc
    end if
 
    if (md_soltest == 1) then
-      call soltest(md_CFL, icgsolver, md_maxmatvecs, md_epsdiff, md_epscg)
+      call soltest(md_CFL, md_icgsolver, md_maxmatvecs, md_epsdiff, md_epscg)
       goto 1234
    end if
 
@@ -284,9 +284,9 @@ program unstruc
       end if
 
       if (len_trim(md_ident) > 0) then ! partitionmduparse
-         icgsolver = 6 ! Use the parallel petsc solver.
+         md_icgsolver = 6 ! Use the parallel petsc solver.
          md_convertlongculverts = 0 ! The longculvert conversion is done before the partitioning of the net-file and the mdu-file.
-         call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
+         call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
          L = index(md_netfile, '_net') - 1
          if (len_trim(md_restartfile) > 0) then ! If there is a restart file
             L_merge = index(md_restartfile, '_merged')
@@ -333,7 +333,7 @@ program unstruc
             call generatePartitionMDUFile(trim(md_ident)//'_'//sdmn_loc//'.mdu')
          end do
       else
-         call partition_from_commandline(md_netfile, md_ndomains, md_jacontiguous, icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
+         call partition_from_commandline(md_netfile, md_ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
       end if
 
       goto 1234 !      stop
