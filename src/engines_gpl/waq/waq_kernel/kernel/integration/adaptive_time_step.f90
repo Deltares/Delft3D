@@ -61,7 +61,7 @@ contains
             sorted_flows, deriv, wdrawal, iaflag, amass2, &
             ndmpq, num_monitoring_cells, num_waste_loads, iqdmp, dmpq, &
             isdmp, dmps, iwaste, wstdmp, integration_id, &
-            ilflag, rhs, diag, acodia, bcodia, &
+            varying_length, rhs, diag, acodia, bcodia, &
             nvert, ivert, num_constants, coname, const)
 
         use m_cli_utils, only: is_command_arg_specified
@@ -117,7 +117,7 @@ contains
         integer(kind = int_wp), intent(in) :: iwaste(num_waste_loads)           !< Volume numbers of the waste locations
         real(kind = real_wp), intent(inout) :: wstdmp(num_substances_total, num_waste_loads, 2) !< Accumulated wasteloads 1/2 in and out
         integer(kind = int_wp), intent(in) :: integration_id          !< Integration
-        integer(kind = int_wp), intent(in) :: ilflag                  !< If 0 then only 3 constant lenght values
+        integer(kind = int_wp), intent(in) :: varying_length                  !< If 0 then only 3 constant lenght values
         real(kind = dp), intent(inout) :: rhs(num_substances_total, nosss)       !< Local right hand side
         real(kind = dp), intent(inout) :: diag(num_substances_total, nosss)      !< Local diagonal filled with volumes
         real(kind = dp), intent(inout) :: acodia(num_substances_total, max(num_exchanges_z_dir + num_exchanges_bottom_dir, 1)) !< Local work array lower codiagonal
@@ -177,8 +177,8 @@ contains
         integer(kind = int_wp) :: ibox                        !< Auxiliary variable for loops along boxes
         integer(kind = int_wp) :: count_used_boxes            !< Number of used boxes
         integer(kind = int_wp) :: idx_cell, idx_flux          !< Offsets in the arrays
-        integer(kind = int_wp) :: first_box_smallest_dt       !< First box (with smallest dt) that has been assigned to cells
-        integer(kind = int_wp) :: last_box_largest_dt         !< Last box (with largest dt) that has been assigned to cells
+        integer(kind = int_wp) :: first_box_smallest_used_dt  !< First box (with smallest dt) that has been assigned to cells
+        integer(kind = int_wp) :: last_box_largest_used_dt    !< Last box (with largest dt) that has been assigned to cells
         integer(kind = int_wp) :: last_integr_box             !< Last box to integrate at current sub step
         real(kind = dp) :: fact                               !< Interpolation factor for volumes
         integer(kind = int_wp) :: i_substep, count_substeps   !< Fractional step variables
@@ -237,7 +237,7 @@ contains
         delta_t_box = get_delta_t_for_boxes(idt, count_boxes)
 
         call calculate_flows_for_cells(num_cells, num_exchanges, noqh, &
-                                    area, flow, ipoint, disp, aleng, wdrawal, ilflag, &
+                                    area, flow, ipoint, disp, aleng, wdrawal, varying_length, &
                                     num_exchanges_u_dir, disp0bnd, disp0q0, &
                                     work)
 
@@ -270,13 +270,13 @@ contains
 
         call calculate_span_dt_boxes(count_boxes, &
                                 count_cells_for_box, count_flows_for_box, delta_t_box, &
-                                last_box_largest_dt, first_box_smallest_dt, &
+                                last_box_largest_used_dt, first_box_smallest_used_dt, &
                                 count_used_boxes, count_substeps)
 
 
         if (report) then
-            write (file_unit, '(a,i2,A,i2,A,i2)') 'Nr of boxes: ', count_used_boxes, ',first: ', last_box_largest_dt, ', last: ', first_box_smallest_dt
-            write (file_unit, '(a,e15.7/)') 'Smallest time step in sec.: ', delta_t_box(first_box_smallest_dt)
+            write (file_unit, '(a,i2,A,i2,A,i2)') 'Nr of boxes: ', count_used_boxes, ',first: ', last_box_largest_used_dt, ', last: ', first_box_smallest_used_dt
+            write (file_unit, '(a,e15.7/)') 'Smallest time step in sec.: ', delta_t_box(first_box_smallest_used_dt)
         end if
 
         !   1i: Create backpointers from cell to order of execution and to box nr.
@@ -286,7 +286,7 @@ contains
         !   1j: Fill the off-diagonals of the matrix for the vertical advection of water only
         !    (Note that the variable work is reused with a different meaning (JvG 2016)
         
-        call fill_in_off_diags_vertical_flows(count_boxes, last_box_largest_dt, &
+        call fill_in_off_diags_vertical_flows(count_boxes, last_box_largest_used_dt, &
                 num_cells, num_exchanges, sep_vert_flow_per_box, count_flows_for_box, flow, delta_t_box, ipoint, &
                 sorted_flows, work)
 
@@ -305,14 +305,14 @@ contains
             ! fraction of time-step == interpolation factor of this step
             fact = real(i_substep) / real(count_substeps, kind = dp)
 
-            last_integr_box = get_integration_limit_of_sub_time_step(i_substep, count_used_boxes, first_box_smallest_dt)
+            last_integr_box = get_integration_limit_of_sub_time_step(i_substep, count_used_boxes, first_box_smallest_used_dt)
 
             !  PART2a: cells that change volume: in box [count_boxes + 1]; deal with those cells that are filling up with water (running wet)
             ! All sections of Part2a use delta_t_box(first_box)
             call manage_cfl_risk_items(count_boxes, count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
                         i_flow_begin_cfl_risk, i_flow_end_cfl_risk, i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
                         sorted_cells, sorted_flows, nvert, ivert, volint, rhs, conc, bound, fluxes, &
-                        num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
+                        num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_used_dt, &
                         num_substances_transported, num_cells, massbal, amass2, dmps, dmpq, iqdmp, &
                         wdrawal, num_substances_total, num_monitoring_cells, isdmp, &
                         num_waste_loads, iwaste, wstdmp, vol_new, vol_old, deriv, fact, &
@@ -322,7 +322,7 @@ contains
             ! PART2b: set a first order initial horizontal step for all cells in the boxes of this time step: 
             ! update mass (rhs = rhs + delta_mass) of cells losing / receiving flow
             if (timon) call timstrt("explicit hor-step", ithand3)
-            do ibox = first_box_smallest_dt, last_integr_box, -1
+            do ibox = first_box_smallest_used_dt, last_integr_box, -1
                 i_flow_begin = count_flows_for_box(ibox + 1) + 1
                 i_flow_end = sep_vert_flow_per_box(ibox)
                 do i = i_flow_begin, i_flow_end
@@ -393,7 +393,7 @@ contains
             ! Update dconc2 in all cells along entire column (Estimate of conc used in flux correction)
             ! if not dry: dconc2 = rhs / volint
             ! if dry:     dconc2 = conc
-            do ibox = first_box_smallest_dt, last_integr_box, -1
+            do ibox = first_box_smallest_used_dt, last_integr_box, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
@@ -413,11 +413,10 @@ contains
 
             ! PART2c: apply the horizontal flux correction for all cells in the boxes of this time step
             if (timon) call timstrt("flux correction", ithand4)
-            do ibox = first_box_smallest_dt, last_integr_box, -1
+            do ibox = first_box_smallest_used_dt, last_integr_box, -1
                 i_flow_begin = count_flows_for_box(ibox + 1) + 1
                 i_flow_end = sep_vert_flow_per_box(ibox)
                 do i = i_flow_begin, i_flow_end
-
                     ! initialisations
                     iq = sorted_flows(i)
                     ifrom = ipoint(1, iq)
@@ -434,21 +433,24 @@ contains
                         if (iqdmp(iq) > 0) ipb = iqdmp(iq)
                     end if
 
+                    ! determine dispersion and length
                     if (iq <= num_exchanges_u_dir) then
-                        e = disp(1)
-                        al = aleng(1, 1)
+                        e = disp(1) ! [m2/s]; dispersion in direction 1
+                        al = aleng(1, 1) ! length from cells interface to center of cell 'to'; why not aleng(1, iq) ???
                     else
-                        e = disp(2)
-                        al = aleng(2, 1)
+                        e = disp(2) ! [m2/s]; dispersion in direction 2
+                        al = aleng(2, 1) ! length from cells interface to center of cell 'from'; why not aleng(2, iq) ???
                     end if
-                    if (ilflag == 1) then
+
+                    ! add additional dispersion
+                    if (varying_length == 1) then
                         al = aleng(1, iq) + aleng(2, iq)
                         if (al < 1.0d-25) cycle
-                        f1 = aleng(1, iq) / al
+                        f1 = aleng(1, iq) / al ! length to / total length
                     else
-                        f1 = 0.5
+                        f1 = 0.5 ! [-] no units
                     end if
-                    e = e * a / al                             !  constant dispersion in m3/s
+                    e = e * a / al        !  constant dispersion in m3/s
 
                     ! if ifrom == BC
                     if (ifrom < 0) then
@@ -515,14 +517,16 @@ contains
                     ! else, inner cells, no BC
                     vfrom = volint(ifrom)
                     vto = volint(ito)
-                    f2 = f1
+                    f2 = f1 ! [-] no units
                     if (q < 0.0d0) f2 = f2 - 1.0d0
-                    d = e + min(-f2 * q + 0.5d0 * q * q * delta_t_box(ibox) / a / al, 0.0d0)
-                    d = d * delta_t_box(ibox)
+                    d = e + min(-f2 * q + 0.5d0 * q * q * delta_t_box(ibox) / a / al, 0.0d0) ! [d] = m3/s
+                    ! d = e + q * min(-f2  + 0.5d0 * q * delta_t_box(ibox) / a / al, 0.0d0)
+                    d = d * delta_t_box(ibox) ! [d] = m3 = delta volume dispersed during this sub-time step
                     do substance_i = 1, num_substances_transported
                         if (d < 0.0d0) then
-                            e2 = d * (conc(substance_i, ifrom) - conc(substance_i, ito))
-                            s = sign(1.0d0, e2)
+                            e2 = d * (conc(substance_i, ifrom) - conc(substance_i, ito)) ! [e2] = delta mass dispersed during this sub-time step
+                            s = sign(1.0d0, e2) ! sign of delta mass dispersed; if 1 then dispersive flow is backwards wrt expected advective flow (so to->from)
+                                                ! if -1 then dispersive flow is in the same direction as advective flow (from->to)
 
                             ! concentration for node 'from-1' based on type of cell 'from-1'
                             select case (ifrom_1)
@@ -548,24 +552,24 @@ contains
                                     cto_1 = dconc2(substance_i, ito_1)
                                 ! (thin) wall
                                 case (0)
-                                    if (s > 0) then
+                                    if (s > 0) then ! s> 0: dispersive flow is backwards wrt advective flow (to->from)
                                         cto_1 = 2.0 * dconc2(substance_i, ito)
-                                    else
+                                    else ! s<0: dispersive flow is in the same direction as advective flow (from->to)
                                         cto_1 = 0.0d0
                                     end if
                                 ! boundary
                                 case (:-1)
                                     cto_1 = bound(substance_i, -ito_1)
                             end select
-                            e1 = (dconc2(substance_i, ifrom) - cfrm_1) * vfrom
-                            e3 = (cto_1 - dconc2(substance_i, ito)) * vto
+                            e1 = (dconc2(substance_i, ifrom) - cfrm_1) * vfrom ! dispersive flow limit 'from' side
+                            e3 = (cto_1 - dconc2(substance_i, ito)) * vto ! dispersive flow limit 'to' side
                             dlt_mass = s * max(0.0d0, min(s * e1, s * e2, s * e3))
                         else
                             dlt_mass = d * (dconc2(substance_i, ifrom) - dconc2(substance_i, ito))
                         end if
                         rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
                         rhs(substance_i, ito)   = rhs(substance_i, ito)   + dlt_mass
-                        dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dlt_mass / vfrom
+                        dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dlt_mass / vfrom ! = rhs(substance_i, ifrom) / volint(ifrom)
                         dconc2(substance_i, ito)   = dconc2(substance_i, ito)   + dlt_mass / vto
                         if (ipb > 0) then
                             if (q > 0.0d0) then
@@ -587,20 +591,21 @@ contains
             ! PART2c1: Set the vertical advection of water only for all cells in the boxes of this time step
             ! all columns assigned to the same box are solved simultaneously
             if (timon) call timstrt("implicit ver-step", ithand5)
-            do ibox = first_box_smallest_dt, last_integr_box, -1
+            do ibox = first_box_smallest_used_dt, last_integr_box, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end   = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
                     cell_i = sorted_cells(i)
-                    j = nvert(2, cell_i)
-                    if (j <= 0) cycle                                  ! Do this only for head of columns
-                    i_top_curr_col = nvert(1, j)
+                    j = nvert(2, cell_i) ! Get column index
+                    if (j <= 0) cycle  ! if column index is not positive, skip because it is not upper-most cell in the column
+                    i_top_curr_col = nvert(1, j) ! index in ivert of upper-most cell in this column
+                    ! determine index in ivert of upper-most cell in next column
                     if (j < num_cells) then
                         i_top_next_col = nvert(1, j + 1)
                     else
                         i_top_next_col = num_cells + 1
                     end if
-                    ! if only one cell in the column
+                    ! if only one cell in the column == 2D model
                     if (i_top_next_col == i_top_curr_col + 1) then
                         do substance_i = 1, num_substances_transported
                             rhs(substance_i, cell_i) = dconc2(substance_i, cell_i)
@@ -612,20 +617,26 @@ contains
                         ! build tridiagonal matrix
                         do j = i_top_curr_col, i_top_next_col - 1
                             cell_i = ivert(j)
+                            ! work(3,...) ==  delt_vol lost through lower surface (central or upwind now arranged in one spot, further down)
+                            ! work(1,...) == delt_vol gained through upper surface (central or upwind now arranged in one spot, further down)
                             volint(cell_i) = volint(cell_i) - work(3, cell_i) + work(1, cell_i)    ! Valid for Upwind AND Central (JvG)
                             ilay = ilay + 1
                             ! if vertical upwind: fill in (lower or main) diagonals and (upper or main) diagonals
                             if (vertical_upwind) then
                                 dia(ilay) = volint(cell_i)
 
+                                ! if delta_vol through upper surface > 0: flow is downward => subtract from lower diagonal
                                 if (work(1, cell_i) > 0.0d0) then
                                     low(ilay) = low(ilay) - work(1, cell_i)
+                                ! else flow is upward => subtract (== add in absolute value because it is negative) to main diagonal
                                 else
                                     dia(ilay) = dia(ilay) - work(1, cell_i)
                                 end if
 
+                                ! if delta_vol through lower surface > 0: flow is downward => add to main diagonal
                                 if (work(3, cell_i) > 0.0d0) then
                                     dia(ilay) = dia(ilay) + work(3, cell_i)
+                                ! else flow is upward => add (== subtract in absolute value because it is negative) to upper diagonal
                                 else
                                     upr(ilay) = upr(ilay) + work(3, cell_i)
                                 end if
@@ -679,8 +690,10 @@ contains
             if (timon) call timstop(ithand5)
 
             ! PART2c2: apply all withdrawals that were present in the hydrodynamics as negative wasteload rather than as open boundary flux
+            
             if (timon) call timstrt("massbal", ithand6)
-            do ibox = first_box_smallest_dt, last_integr_box, -1
+            ! withdrawal for the non cfl risk cells
+            do ibox = first_box_smallest_used_dt, last_integr_box, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
@@ -761,7 +774,9 @@ contains
             end do
 
             ! PART2e: store the final results in the appropriate arrays for next fractional steps
-            do ibox = first_box_smallest_dt, last_integr_box, -1
+            ! apply reactions during this fractional step as well for the non cfl risk cells
+            ! and then calculate the new concentrations
+            do ibox = first_box_smallest_used_dt, last_integr_box, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
                 i_cell_end = count_cells_for_box(ibox)
                 do i = i_cell_begin, i_cell_end
@@ -869,13 +884,13 @@ contains
             q = 0.0
             e = disp(3)
             al = aleng(1, 2)
-            if (ilflag == 1) then
+            if (varying_length == 1) then
                 al = aleng(1, iq) + aleng(2, iq)
             end if
             f1 = 0.5d0
             f2 = 0.5d0
             if (al > 1.0d-25) then
-                if (ilflag == 1) then
+                if (varying_length == 1) then
                     f1 = aleng(2, iq) / al
                     f2 = 1.0d0 - f1
                 end if
@@ -1065,11 +1080,11 @@ contains
             a = area(iq)
             e = disp(3)
             al = aleng(1, 2)
-            if (ilflag == 1) al = aleng(1, iq) + aleng(2, iq)
+            if (varying_length == 1) al = aleng(1, iq) + aleng(2, iq)
             f1 = 0.5
             f2 = 0.5
             if (al > 1.0d-25) then
-                if (ilflag == 1) then
+                if (varying_length == 1) then
                     f1 = aleng(2, iq) / al
                     f2 = 1.0d0 - f1
                 end if
@@ -1538,11 +1553,13 @@ contains
                                     !< (range 1 to count_boxes). It is equal to count_boxes + 1
         integer :: dry_box          !< box index for reporting dry cells. It is equal to count_boxes + 2, one higher than cfl_risk_box
 
-        real(kind = dp) :: net_volume_decrease_in_total_delta_t !< net volume lost in the total (original) time step delta t delta_t_box(1)
+        real(kind = dp) :: volume_decrease_in_total_delta_t !< net volume lost in the total (original) time step delta t delta_t_box(1)
         real(kind = dp) :: rate_of_net_volume_decrease          !< rate of net volume decrease along the entire original delta t
         real(kind = dp) :: rate_flow_out                        !< rate of flow out (advective + dispersive)
-        real(kind = dp) :: net_rate_flow_out                    !< net rate of flow out (advective + dispersive - net volume decrease rate)
-        real(kind = dp) :: net_vol_out_in_sub_dt                !< net volume flowed out during the sub time step of the current dt box
+        real(kind = dp) :: net_rate_flow_in                    !< net rate of flow out (advective + dispersive - net volume decrease rate)
+        real(kind = dp) :: net_vol_in_for_sub_dt                !< net volume flowed out during the sub time step of the current dt box
+        integer :: i !< index in loop printing out box counts
+        integer :: unit=888 !< unit for output
 
 
         !   1c: assign a box/ basket number to each cell
@@ -1598,15 +1615,15 @@ contains
                 do ibox = 2, count_boxes
                     ! if delt vol flowing out in this sub time step is < vol_new(cell_i)
                     !if ((work(1, cell_i) + work(3, cell_i) - (vol_old(cell_i) - vol_new(cell_i)) / delta_t_box(1)) * delta_t_box(ibox) < vol_new(cell_i)) then
-                    net_volume_decrease_in_total_delta_t = (vol_old(cell_i) - vol_new(cell_i))
-                    rate_of_net_volume_decrease = net_volume_decrease_in_total_delta_t / delta_t_box(1)
+                    volume_decrease_in_total_delta_t = (vol_old(cell_i) - vol_new(cell_i))
+                    rate_of_net_volume_decrease = volume_decrease_in_total_delta_t / delta_t_box(1)
                     rate_flow_out = work(1, cell_i) + work(3, cell_i)
-                    net_rate_flow_out = rate_flow_out - rate_of_net_volume_decrease
-                    net_vol_out_in_sub_dt = net_rate_flow_out * delta_t_box(ibox)
+                    net_rate_flow_in = rate_flow_out - rate_of_net_volume_decrease ! this includes possible pumping and withdrawals, which are not advective nor dispersive, so not included in work(j,cell_i)
+                    net_vol_in_for_sub_dt = net_rate_flow_in * delta_t_box(ibox)
                     ! if the net outflow (adv. + disp. - net volume decrease rate) in this sub time step 
                     ! is less than the new volume at the end of the time step then CFL is OK for this sub time step
                     ! It is the largest sub time step for which this is true, the one we want
-                    if (net_vol_out_in_sub_dt < vol_new(cell_i)) then
+                    if (net_vol_in_for_sub_dt < vol_new(cell_i)) then
                         dt_box_for_cell(cell_i) = ibox        !  this cell in the basket of this dt(ibox)
                         exit
                     end if
@@ -1676,6 +1693,21 @@ contains
         do cell_i = 1, num_cells
             count_cells_for_box(dt_box_for_cell(cell_i)) = count_cells_for_box(dt_box_for_cell(cell_i)) + 1
         end do
+
+        open(unit=unit, file='boxes_distribution.log', status='unknown', position = 'append', action='write')
+
+        do i = 1, count_boxes + 2
+            if (count_cells_for_box(i) > 0) then
+                if (i==count_boxes+1) then
+                    write(unit,*) ' Box ', i, ' (CFL-risk) contains ', count_cells_for_box(i), ' cells.'
+                else if (i==count_boxes+2) then
+                    write(unit,*) ' Box ', i, ' (dry) contains ', count_cells_for_box(i), ' cells.'
+                else
+                    write(unit,*) ' Box ', i, ' contains ', count_cells_for_box(i), ' cells.'
+                end if
+            end if
+        end do
+        close(unit)
 
     end subroutine assign_dt_boxes_to_cells
 
@@ -1798,12 +1830,11 @@ contains
                 end if
             end do
         end do
-
     end subroutine sort_cells_and_flows_using_dt_box
 
     subroutine calculate_span_dt_boxes(count_boxes, &
         count_cells_for_box, count_flows_for_box, delta_t_box, &
-        last_box_largest_dt, first_box_smallest_dt, &
+        last_box_largest_used_dt, first_box_smallest_used_dt, &
         count_used_boxes, count_substeps)
         !> Calculates the span of used delta time boxes and the number of sub-time steps required.
         !< The smallest dt box that is used is assigned to cells that are partially full ("running wet").
@@ -1812,8 +1843,8 @@ contains
         integer, intent(inout) :: count_cells_for_box(:) !< number of cells assigned to each box
         integer, intent(inout) :: count_flows_for_box(:) !< number of exchanges assigned to each box
         real(kind = dp), intent(inout) :: delta_t_box(:) !< delta t assigned to each box
-        integer, intent(out) :: last_box_largest_dt !< index of the last box with largest delta t that is used
-        integer, intent(out) :: first_box_smallest_dt !< index of the first box with smallest delta t that is used
+        integer, intent(out) :: last_box_largest_used_dt !< index of the last box with largest delta t that is used
+        integer, intent(out) :: first_box_smallest_used_dt !< index of the first box with smallest delta t that is used
         integer, intent(out) :: count_used_boxes !< number of used boxes
         integer, intent(out) :: count_substeps !< number of sub-time steps required
         ! Local variables
@@ -1822,10 +1853,10 @@ contains
 
         ! find lowest ACTUALLY USED box number
         ! largest time step => last box to evaluate
-        last_box_largest_dt = 0
+        last_box_largest_used_dt = 0
         do ibox = 1, count_boxes
             if (count_cells_for_box(ibox) > 0) then
-                last_box_largest_dt = ibox
+                last_box_largest_used_dt = ibox
                 exit
             end if
         end do
@@ -1835,14 +1866,14 @@ contains
 
         do ibox = count_boxes, 1, -1
             if (count_cells_for_box(ibox) > 0) then
-                first_box_smallest_dt = ibox
+                first_box_smallest_used_dt = ibox
                 exit
             end if
         end do
 
-        ! Once the smallest dt that will be used (first_box_smallest_dt) has been found,
+        ! Once the smallest dt that will be used (first_box_smallest_used_dt) has been found,
         ! assign the same dt box to cells partially full (running wet)
-        delta_t_box(count_boxes + 1) = delta_t_box(first_box_smallest_dt) !dt for cells with CFL risk condition
+        delta_t_box(count_boxes + 1) = delta_t_box(first_box_smallest_used_dt) !dt for cells with CFL risk condition
 
 
         ! accumulate the counts in reversed order
@@ -1853,11 +1884,11 @@ contains
         end do
 
         ! Number of used boxes
-        count_used_boxes = first_box_smallest_dt - last_box_largest_dt + 1
+        count_used_boxes = first_box_smallest_used_dt - last_box_largest_used_dt + 1
 
         ! calculate number of sub-time steps that will be set
         count_substeps = 1
-        do ibox = 2, first_box_smallest_dt
+        do ibox = 2, first_box_smallest_used_dt
             count_substeps = count_substeps * 2
         end do
     end subroutine calculate_span_dt_boxes
@@ -1906,13 +1937,13 @@ contains
                 ito = ipoint(2, idx_flow)               !  new volume that increments with each step
                 if (ifrom == 0 .or. ito == 0) cycle ! if it is top of column or bottom of water column, rarely there's any thin wall
                 dlt_vol = flow(idx_flow) * delta_t_box(ibox)
-                work(3, ifrom) = dlt_vol               ! flow through lower surface (central or upwind now arranged in one spot, further down)
-                work(1, ito) = dlt_vol                 ! flow through upper surface
+                work(3, ifrom) = dlt_vol ! delt_vol lost through lower surface (central or upwind now arranged in one spot, further down)
+                work(1, ito) = dlt_vol   ! delt_vol gained through upper surface (central or upwind now arranged in one spot, further down)
             end do
         end do
     end subroutine fill_in_off_diags_vertical_flows
 
-    function get_integration_limit_of_sub_time_step(i_substep, count_used_boxes, first_box_smallest_dt) result(last_integr_box)
+    function get_integration_limit_of_sub_time_step(i_substep, count_used_boxes, first_box_smallest_used_dt) result(last_integr_box)
         !> Determines the last box (largest dt) to integrate for a given sub-time step.
         ! Based on the binary representation of the sub-time step index, it identifies which boxes need to be integrated.
         ! ||i_substep ||  boxes to integrate        ||  modulo logic  ||
@@ -1929,14 +1960,14 @@ contains
         implicit none
         integer, intent(in) :: i_substep !< current sub-time step index
         integer, intent(in) :: count_used_boxes !< number of used boxes
-        integer, intent(in) :: first_box_smallest_dt !< index of the first box (with smallest delta t) that is used
+        integer, intent(in) :: first_box_smallest_used_dt !< index of the first box (with smallest delta t) that is used
         integer :: last_integr_box !< index of the last box (with largest delta t) to integrate for the given sub-time step
 
         ! Local variables
         integer :: ibox !< box index in loops
         integer :: idx_flux !< flux index in loops
 
-        last_integr_box = first_box_smallest_dt             
+        last_integr_box = first_box_smallest_used_dt             
         idx_flux = 1                                        
         do ibox = 1, count_used_boxes - 1                   
             idx_flux = idx_flux * 2                         
@@ -1949,7 +1980,7 @@ contains
     subroutine manage_cfl_risk_items(count_boxes, count_flows_for_box, count_cells_for_box, sep_vert_flow_per_box, &
         i_flow_begin_cfl_risk, i_flow_end_cfl_risk, i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
         sorted_cells, sorted_flows, nvert, ivert, volint, rhs, conc, bound, fluxes, &
-        num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
+        num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_used_dt, &
         num_substances_transported, num_cells, massbal, amass2, dmps, dmpq, iqdmp, &
         wdrawal, num_substances_total, num_monitoring_cells, isdmp, &
         num_waste_loads, iwaste, wstdmp, vol_new, vol_old, deriv, fact, &
@@ -1982,7 +2013,7 @@ contains
         real(kind = real_wp), intent(in) :: flow(:) !< flow rate through each exchange
         integer(kind = int_wp), intent(in) :: ipoint(4, num_exchanges) !< exchange connectivity array (indices of cells before and after exchange)
         real(kind = dp), intent(in) :: delta_t_box(:) !< delta t assigned to each box
-        integer(kind = int_wp), intent(in) :: first_box_smallest_dt !< index of the first box (with smallest delta t) that is used
+        integer(kind = int_wp), intent(in) :: first_box_smallest_used_dt !< index of the first box (with smallest delta t) that is used
         integer(kind = int_wp), intent(in) :: num_substances_transported !< number of substances being transported
         integer(kind = int_wp), intent(in) :: num_cells !< total number of cells
         logical, intent(inout) :: massbal !< mass balance array for transported substances
@@ -2027,7 +2058,7 @@ contains
             
             call update_system_for_flows_with_cfl_risk_to_interior_cells(rhs, conc, volint, sorted_flows, &
                                     bound, fluxes, i_flow_begin_cfl_risk, i_flow_end_cfl_risk, num_exchanges, &
-                                    flow, ipoint, delta_t_box, first_box_smallest_dt, &
+                                    flow, ipoint, delta_t_box, first_box_smallest_used_dt, &
                                     num_substances_transported, massbal, amass2, dmpq, &
                                     iqdmp, nvert, ivert, count_boxes, &
                                     idx_box_cell, acc_remained, acc_changed, file_unit, report)
@@ -2037,7 +2068,7 @@ contains
             ! and enough volume now
             call update_system_for_remaining_flows_with_cfl_risk(rhs, conc, volint, sorted_flows, &
                             bound, fluxes, i_flow_begin_cfl_risk, i_flow_end_cfl_risk, &
-                            num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
+                            num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_used_dt, &
                             num_substances_transported, massbal, amass2, dmpq, &
                             iqdmp, nvert, ivert)
 
@@ -2045,7 +2076,7 @@ contains
 
             call update_system_with_withdrawals_at_cells_with_cfl_risk(rhs, conc, volint, sorted_cells, &
                     i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
-                    wdrawal, delta_t_box, first_box_smallest_dt, &
+                    wdrawal, delta_t_box, first_box_smallest_used_dt, &
                     num_substances_transported, massbal, amass2, dmps, &
                     num_substances_total, num_monitoring_cells, &
                     isdmp, nvert, ivert, &
@@ -2057,7 +2088,7 @@ contains
                         i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
                         nvert, ivert, deriv, &
                         vol_new, vol_old, fact, &
-                        delta_t_box, first_box_smallest_dt, &
+                        delta_t_box, first_box_smallest_used_dt, &
                         num_substances_transported, num_cells)
 
             if (timon) call timstop(ithand2)
@@ -2107,30 +2138,30 @@ contains
         ! Local variables
         integer :: i               !< loop index for sorted cells
         integer :: i_cell          !< global cell index
-        integer :: j               !< column index of current cell
+        integer :: cell_idx_in_col               !< column index of current cell
         integer :: i_top_curr_col  !< index in ivert() of upper-most cell in current column
-        integer :: i_top_next_col  !< index in ivert() of upper-most cell in next column
-        integer :: iseg2           !< index of intermediate cell in same column as i_cell
+        integer :: i_bottom_curr_col  !< index in ivert() of upper-most cell in next column
+        integer :: global_cell_idx           !< index of intermediate cell in same column as i_cell
         integer :: substance_i     !< loop index for substances
         
         ! sum volumes (volint) and masses (rhs) onto upper-most cell of each column
         do i = i_cell_begin_cfl_risk, i_cell_end_cfl_risk
             i_cell = sorted_cells(i)
-            j = nvert(2, i_cell)                                    ! column number if cell_i == head of column
-            if (j <= 0) cycle                                       ! negative or zero if not head of column
-            i_top_curr_col = nvert(1, j)                            ! index in ivert() of upper-most cell of this column
-            if (j < num_cells) then
-                i_top_next_col = nvert(1, j + 1)                    ! index in ivert() of upper-most cell of next column
+            cell_idx_in_col = nvert(2, i_cell)                                    ! column number if cell_i == head of column
+            if (cell_idx_in_col <= 0) cycle                                       ! negative or zero if not head of column
+            i_top_curr_col = nvert(1, cell_idx_in_col)                            ! index in ivert() of upper-most cell of this column
+            if (cell_idx_in_col < num_cells) then
+                i_bottom_curr_col = nvert(1, cell_idx_in_col + 1) - 1             ! index in ivert() of upper-most cell of next column
             else
-                i_top_next_col = num_cells + 1                      ! or to just over the edge if j == last column
+                i_bottom_curr_col = num_cells                      ! or to just over the edge if j == last column
             end if
             ! loop along cells in one column
             ! Sum volumes and masses into upper-most cell of the column
-            do j = i_top_curr_col + 1, i_top_next_col - 1
-                iseg2 = ivert(j)                                    ! original cell number; j== index in ivert for this cell
-                volint(i_cell) = volint(i_cell) + volint(iseg2)     ! sum volumes to volumes of 'head of column'
+            do cell_idx_in_col = i_top_curr_col + 1, i_bottom_curr_col
+                global_cell_idx = ivert(cell_idx_in_col)                                    ! original cell number; j== index in ivert for this cell
+                volint(i_cell) = volint(i_cell) + volint(global_cell_idx)     ! sum volumes to volumes of 'head of column'
                 do substance_i = 1, num_substances_transported
-                    rhs(substance_i, i_cell) = rhs(substance_i, i_cell) + rhs(substance_i, iseg2)   ! sum masses along column in upper-most cell ('head of column')
+                    rhs(substance_i, i_cell) = rhs(substance_i, i_cell) + rhs(substance_i, global_cell_idx)   ! sum masses along column in upper-most cell ('head of column')
                 end do
             end do
         end do
@@ -2138,8 +2169,8 @@ contains
         ! if cell is dry set to 0 mass (rhs) for dissolved species
         do i = i_cell_begin_cfl_risk, i_cell_end_cfl_risk
             i_cell = sorted_cells(i)
-            j = nvert(2, i_cell)
-            if (j <= 0) cycle
+            cell_idx_in_col = nvert(2, i_cell)
+            if (cell_idx_in_col <= 0) cycle
             ! if cell is not dry
             if (abs(volint(i_cell)) > 1.0d-25) then
                 do substance_i = 1, num_substances_transported
@@ -2157,7 +2188,7 @@ contains
 
     subroutine update_system_for_flows_with_cfl_risk_to_interior_cells(rhs, conc, volint, sorted_flows, &
         bound, fluxes, i_flow_begin_cfl_risk, i_flow_end_cfl_risk, num_exchanges, &
-        flow, ipoint, delta_t_box, first_box_smallest_dt, &
+        flow, ipoint, delta_t_box, first_box_smallest_used_dt, &
         num_substances_transported, massbal, amass2, dmpq, &
         iqdmp, nvert, ivert, count_boxes, &
         dt_box_cell, sum_remained, sum_changed, file_unit, report)
@@ -2180,7 +2211,7 @@ contains
         integer,              intent(in)   :: ipoint(4, num_exchanges)   !< exchange connectivity array (indices of cells before and after exchange)
         integer(kind = int_wp),intent(in)  :: iqdmp(:)                   !< array indicating process or boundary condition for each flow
         real(kind = dp),      intent(in)   :: delta_t_box(:)             !< delta t assigned to each box
-        integer,              intent(in)   :: first_box_smallest_dt      !< index of the first box (with smallest delta t) that is used
+        integer,              intent(in)   :: first_box_smallest_used_dt      !< index of the first box (with smallest delta t) that is used
         integer,              intent(in)   :: num_substances_transported !< number of substances being transported
         logical,              intent(in)   :: massbal                    !< flag indicating if mass balance is enabled
         real(kind = real_wp), intent(inout):: amass2(:,:)                !< array for mass balance tracking
@@ -2229,7 +2260,7 @@ contains
                 if (flow_idx < 0) cycle  ! flow already processed
                 if (abs(flow(flow_idx)) < tiny_value) cycle  ! negligible flow
                 
-                dlt_vol = flow(flow_idx) * delta_t_box(first_box_smallest_dt)
+                dlt_vol = flow(flow_idx) * delta_t_box(first_box_smallest_used_dt) ! we should probably use delta_t_box(count_boxes + 1) here?
                 ifrom = ipoint(1, flow_idx)
                 ito =   ipoint(2, flow_idx)
                 ipb = 0
@@ -2289,6 +2320,7 @@ contains
                     if (source_will_go_dry) then
                         ! flow will NOT be processed
                         remained = remained + 1
+                        write(*,*) 'CFL risk flow could not be processed: ', i_flow, ' from cell ', i_source
                     else
                         ! flow will be successfully processed
                         volint(i_source) = volint(i_source) - dlt_vol
@@ -2323,6 +2355,7 @@ contains
                 sum_changed = sum_changed + changed
                 if (remained > 0 .and. changed == 0) then
                     if (report) then
+                        ! no progress in CFL risk flow processing
                         write (file_unit, *) 'Warning: No further progress in the wetting procedure!'
                     end if
                     exit ! exit the while loop
@@ -2336,7 +2369,7 @@ contains
 
     subroutine update_system_for_remaining_flows_with_cfl_risk(rhs, conc, volint, sorted_flows, &
         bound, fluxes, i_flow_begin_cfl_risk, i_flow_end_cfl_risk, &
-        num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_dt, &
+        num_exchanges, flow, ipoint, delta_t_box, first_box_smallest_used_dt, &
         num_substances_transported, massbal, amass2, dmpq, &
         iqdmp, nvert, ivert)
         !> Updates the system of volumes, the right-hand side (mass) and concentration arrays for the source and target cells 
@@ -2358,7 +2391,7 @@ contains
         integer,              intent(in)   :: ipoint(4, num_exchanges)   !< exchange connectivity array (indices of cells before and after exchange)
         integer(kind = int_wp),intent(in)  :: iqdmp(:)                   !< array indicating process or boundary condition for each flow
         real(kind = dp),      intent(in)   :: delta_t_box(:)             !< delta t assigned to each box
-        integer,              intent(in)   :: first_box_smallest_dt      !< index of the first box (with smallest delta t) that is used
+        integer,              intent(in)   :: first_box_smallest_used_dt      !< index of the first box (with smallest delta t) that is used
         integer,              intent(in)   :: num_substances_transported !< number of substances being transported
         logical,              intent(in)   :: massbal                    !< flag indicating if mass balance is enabled
         real(kind = real_wp), intent(inout):: amass2(:,:)                !< array for mass balance tracking
@@ -2388,7 +2421,7 @@ contains
             if (flow_idx < 0) cycle ! flow already processed
             if (flow(flow_idx) == 0.0) cycle ! negligible flow
             
-            dlt_vol = flow(flow_idx) * delta_t_box(first_box_smallest_dt)
+            dlt_vol = flow(flow_idx) * delta_t_box(first_box_smallest_used_dt)
             ifrom = ipoint(1, flow_idx)
             ito = ipoint(2, flow_idx)
             ipb = 0
@@ -2444,7 +2477,7 @@ contains
 
     subroutine update_system_with_withdrawals_at_cells_with_cfl_risk(rhs, conc, volint, sorted_cells, &
         i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
-        wdrawal, delta_t_box, first_box_smallest_dt, &
+        wdrawal, delta_t_box, first_box_smallest_used_dt, &
         num_substances_transported, massbal, amass2, dmps, &
         num_substances_total, num_monitoring_cells, &
         isdmp, nvert, ivert, &
@@ -2464,7 +2497,7 @@ contains
         integer,              intent(in)   :: i_cell_end_cfl_risk        !< index in sorted_cells of last cell with cfl risk condition (risk of not being cfl compliant)
         real(kind = real_wp), intent(in)   :: wdrawal(:)                 !< withdrawal rate at each cell
         real(kind = dp),      intent(in)   :: delta_t_box(:)             !< delta t assigned to each box
-        integer,              intent(in)   :: first_box_smallest_dt      !< index of    the first box (with smallest delta t) that is used
+        integer,              intent(in)   :: first_box_smallest_used_dt      !< index of    the first box (with smallest delta t) that is used
         integer,              intent(in)   :: num_substances_transported !< number of substances being transported
         logical,              intent(in)   :: massbal                    !< flag indicating if mass balance
         real(kind = real_wp), intent(inout):: amass2(:,:)                !< array for mass balance tracking
@@ -2496,7 +2529,7 @@ contains
             ! iseg2 == target cell for withdrawal
             iseg2 = sorted_cells(i)                                          ! cell number
             if (wdrawal(iseg2) == 0.0) cycle
-            dlt_vol = wdrawal(iseg2) * delta_t_box(first_box_smallest_dt)
+            dlt_vol = wdrawal(iseg2) * delta_t_box(first_box_smallest_used_dt)
             ! cell_i == head of column for this cell, source of withdrawal
             cell_i = ivert(nvert(1, abs(nvert(2, iseg2))))             ! cell number of head of column, source
             if (dlt_vol <= volint(cell_i)) then
@@ -2529,13 +2562,13 @@ contains
         i_cell_begin_cfl_risk, i_cell_end_cfl_risk, &
         nvert, ivert, deriv, &
         vol_new, vol_old, fact, &
-        delta_t_box, first_box_smallest_dt, &
+        delta_t_box, first_box_smallest_used_dt, &
         num_substances_transported, num_cells)
         !> Redistributes mass and volume in vertical columns for cells that have been assigned a CFL risk condition.
         !> The concentration in all cells of a column is set to the concentration in the upper-most cell of that column,
         !> and the volume in each cell is updated based on interpolation between old and new volumes
         implicit none
-         ! Subroutine parameters
+       ! Subroutine parameters
         real(kind = dp),      intent(inout):: rhs(:,:)                   !< right-hand side array with masses for each substance and cell
         real(kind = real_wp), intent(inout):: conc(:,:)                  !< concentration array for each substance and cell
         real(kind = dp),      intent(inout):: volint(:)                  !< intermediate volume for each cell
@@ -2549,9 +2582,10 @@ contains
         real(kind = real_wp), intent(in)   :: vol_old(:)                 !< old volume in each cell at start of time step
         real(kind = dp),      intent(in)   :: fact                       !< interpolation factor between beginning and end of time step
         real(kind = dp),      intent(in)   :: delta_t_box(:)             !< delta t assigned to each box
-        integer,              intent(in)   :: first_box_smallest_dt      !< index of the first box (with smallest delta t) that is used
+        integer,              intent(in)   :: first_box_smallest_used_dt      !< index of the first box (with smallest delta t) that is used
         integer,              intent(in)   :: num_substances_transported !< number of substances being transported
         integer,              intent(in)   :: num_cells                  !< total number of cells
+       !
 
         ! Local variables
         integer :: i                    !< loop index for sorted cells
@@ -2561,7 +2595,7 @@ contains
         integer :: cell_idx             !< global index of intermediate cell in same column as head_col_cell_idx
         real(kind = dp) :: vol          !< total volume in column at end of sub-timestep
         integer :: substance_i          !< loop index for substances
-        real(kind = dp) :: f1           !< interpolated volume in a cell at end of sub-timestep
+        real(kind = dp) :: interp_vol   !< interpolated volume in a cell at end of sub-timestep
         integer :: i_top_column         !< index of top cell in current column
         integer :: i_bottom_column      !< index of bottom cell in current column
         real(kind = dp) :: delta_mass   !< change in mass due to reactions and wasteloads
@@ -2584,7 +2618,7 @@ contains
                         cell_idx = ivert(cell_i)
                         vol = vol + fact * vol_new(cell_idx) + (1.0d0 - fact) * vol_old(cell_idx)
                         do substance_i = 1, num_substances_transported                                  !    apply the derivatives (also wasteloads)
-                            delta_mass = deriv(substance_i, cell_idx) * delta_t_box(first_box_smallest_dt)
+                            delta_mass = deriv(substance_i, cell_idx) * delta_t_box(first_box_smallest_used_dt)
                             rhs(substance_i, head_col_cell_idx) = rhs(substance_i, head_col_cell_idx) +  delta_mass
                         end do
                     end do
@@ -2597,12 +2631,12 @@ contains
                     ! apply to all cells in the column the same (column-averaged) concentration (present in the upper-most cell), and also assign corresponding mass to rhs
                     do cell_i = i_top_column, i_bottom_column
                         cell_idx = ivert(cell_i) !idx of cell
-                        f1 = fact * vol_new(cell_idx) + (1.0d0 - fact) * vol_old(cell_idx) ! volume of cell at end of sub-timestep
-                        volint(cell_idx) = f1
+                        interp_vol = fact * vol_new(cell_idx) + (1.0d0 - fact) * vol_old(cell_idx) ! volume of cell at end of sub-timestep
+                        volint(cell_idx) = interp_vol
                         do substance_i = 1, num_substances_transported
                             conc(substance_i, cell_idx) = conc(substance_i, head_col_cell_idx) ! concentration in cell = concentration in upper-most cell
-                            if (f1 > 1.0d-25) then
-                                rhs(substance_i, cell_idx) = conc(substance_i, head_col_cell_idx) * f1 ! assign corresponding mass
+                            if (interp_vol > 1.0d-25) then
+                                rhs(substance_i, cell_idx) = conc(substance_i, head_col_cell_idx) * interp_vol ! assign corresponding mass
                             else
                                 rhs(substance_i, cell_idx) = 0.0d0
                             end if
@@ -2611,6 +2645,250 @@ contains
                 end if
             end do
     end subroutine redistribute_mass_assuming_same_conc_in_columns_with_cfl_risk
+
+    subroutine apply_horizontal_flux_correction(rhs, conc, dconc2, volint, sorted_flows, &
+        num_exchanges, num_exchanges_u_dir, flow, ipoint, area, disp, aleng, &
+        delta_t_box, first_box_smallest_used_dt, last_integr_box, & 
+        count_flows_for_box, sep_vert_flow_per_box, &
+        disp_0_if_q_0, bound, &
+        num_substances_transported, massbal, amass2, dmpq, &
+        iqdmp, varying_length, disp_0_if_bc, useLowOrderScheme, track_fluxes)
+        !> Applies horizontal flux correction for all flows in the domain, 
+        !> using antidiffusive fluxes to correct for numerical dispersion.
+        !> Based on FCT by Boris and Book (1973)
+
+        use timers
+
+        implicit none
+         ! Subroutine parameters
+        real(kind = dp),      intent(inout):: rhs(:,:)                   !< right-hand side array with masses for each substance and cell
+        real(kind = real_wp), intent(inout):: conc(:,:)                  !< concentration array for each substance and cell
+        real(kind = dp),      intent(inout):: dconc2(:,:)                !< array for concentration changes due to dispersion
+        real(kind = dp),      intent(inout):: volint(:)                  !< intermediate volume for each cell
+        integer,              intent(inout):: sorted_flows(:)            !< array of exchanges sorted by box index
+        integer,              intent(in)   :: num_exchanges              !< total number of exchanges or flows between cells
+        integer,              intent(in)   :: num_exchanges_u_dir        !< number of exchanges in the first (u) direction
+        real(kind = real_wp), intent(in)   :: flow(:)                    !< flow rate through each exchange
+        integer,              intent(in)   :: ipoint(4, num_exchanges)  !< exchange connectivity array (indices of cells before and after exchange)
+        real(kind = real_wp), intent(in)   :: area(:)                    !< area of each exchange
+        real(kind = real_wp), intent(in)   :: disp(2)                    !< dispersion coefficients in both directions
+        real(kind = real_wp), intent(in)   :: aleng(2, num_exchanges)    !< lengths from each exchange to center cell in both directions
+        real(kind = dp),      intent(in)   :: delta_t_box(:)             !< delta t assigned to each box
+        integer,              intent(in)   :: first_box_smallest_used_dt      !< index of the first box (with smallest delta t) that is used
+        integer,              intent(in)   :: last_integr_box           !< index of last box to be integrated
+        integer,              intent(in)   :: count_flows_for_box(:)    !< array with counts of flows for each box
+        integer,              intent(in)   :: sep_vert_flow_per_box(:) !< array with separation indices of vertical flows per box
+        logical,              intent(in)   :: disp_0_if_q_0                    !< flag indicating if dispersion at zero flow is zero
+        real(kind = real_wp), intent(in)   :: bound(num_substances_transported,*) !< array with binding coefficients for each substance and cell
+        integer,              intent(in)   :: num_substances_transported !< number of substances being transported
+        logical,              intent(in)   :: massbal                    !< flag indicating if mass balance is enabled
+        real(kind = real_wp), intent(inout):: amass2(:,:)                !< array for mass balance tracking
+        real(kind = real_wp), intent(inout):: dmpq(:,:,:)                !< array for some process or boundary condition
+        integer,              intent(in)   :: iqdmp(:)                   !< array indicating process or boundary condition for each flow
+        integer,              intent(in)   :: varying_length             !< flag indicating if varying lengths are used for dispersion calculation
+        logical,              intent(in)   :: disp_0_if_bc                   !< flag indicating if dispersion at boundary conditions is zero
+        logical,              intent(in)   :: useLowOrderScheme                     !< flag indicating if low-order scheme is used (no flux correction)
+        logical,              intent(in)   :: track_fluxes               !< flag indicating if fluxes are being tracked
+       !
+
+        ! Local variables
+        integer :: ibox                !< loop index for boxes
+        integer :: i_flow_begin        !< index of first flow in a box
+        integer :: i_flow_end          !< index of last flow in a box
+        integer :: i                   !< loop index for flows
+        integer :: idx_flow            !< global flow index
+        integer :: ifrom               !< index of cell source for a positive flow
+        integer :: ito                 !< index of cell target for a positive flow
+        integer :: ifrom_1             !< index of cell source minus 1 for a positive flow
+        integer :: ito_1               !< index of cell target plus 1 for a positive flow
+        real(kind = real_wp) :: exch_area      !< area of exchange
+        real(kind = real_wp) :: q      !< flow rate through exchange
+        real(kind = real_wp) :: e      !< dispersion coefficient
+        real(kind = real_wp) :: disp_coeff      !< dispersion coefficient
+        real(kind = real_wp) :: exch_length     !< length associated with exchange
+        real(kind = real_wp) :: frctn_length_to     !< fraction of length in direction 1
+        real(kind = real_wp) :: frctn_length_from     !< factor for antidiffusive flux calculation
+        real(kind = real_wp) :: d      !< antidiffusive flux
+        integer :: ipb                !< index for process or boundary condition
+        integer :: substance_i         !< loop index for substances
+        real(kind = dp) :: dlt_mass_disp !< delta mass for a substance due to dispersion
+        real(kind = dp) :: dlt_mass !< delta mass for a substance
+        real(kind = dp) :: vol_to     !< volume of target cell
+        real(kind = dp) :: vol_from   !< volume of source cell
+        integer(kind = int_wp) :: ithand4 = 0 !< timing handle
+        real(kind = dp) :: s     !< sign of dispersive flow centered
+        real(kind = dp) :: conc_from_1     !< concentration in cell from minus 1
+        real(kind = dp) :: conc_to_1       !< concentration in cell to plus 1
+        real(kind = dp) :: disp_mass_from    !< dispersive flow at 'from' side
+        real(kind = dp) :: disp_mass_centered    !< dispersive flow centered
+        real(kind = dp) :: disp_mass_to    !< dispersive flow at 'to' side
+        real(kind = dp) :: min_disp_dlt_mass !< minimum dispersive flow
+        real(kind = dp) :: correction_term !< Second order correction term through antidiffusive flux
+        real(kind = dp) :: antidiff_flow !< antidiffusive flow
+        real(kind = dp) :: antidiff_dlt_vol !< antidiffusive delta volume
+        real(kind = dp) :: antidiff_dlt_mass !< antidiffusive delta mass
+
+        if (timon) call timstrt("flux correction", ithand4)
+            do ibox = first_box_smallest_used_dt, last_integr_box, -1
+                i_flow_begin = count_flows_for_box(ibox + 1) + 1
+                i_flow_end = sep_vert_flow_per_box(ibox)
+                do i = i_flow_begin, i_flow_end
+                    ! initialisations
+                    idx_flow = sorted_flows(i)
+                    ifrom = ipoint(1, idx_flow)
+                    ito = ipoint(2, idx_flow)
+                    ifrom_1 = ipoint(3, idx_flow)
+                    ito_1 = ipoint(4, idx_flow)
+                    if (ifrom <= 0 .and. ito <= 0) cycle
+                    if (ifrom == 0 .or. ito == 0) cycle
+                    exch_area = area(idx_flow)
+                    q = flow(idx_flow)
+                    if (abs(q) < 10.0d-25 .and. disp_0_if_q_0) cycle   ! thin dam option, no dispersion at zero flow
+                    ipb = 0
+                    if (track_fluxes) then
+                        if (iqdmp(idx_flow) > 0) ipb = iqdmp(idx_flow)
+                    end if
+
+                    ! determine dispersion and length
+                    if (idx_flow <= num_exchanges_u_dir) then
+                        disp_coeff = disp(1) ! [m2/s]; dispersion coeff in direction 1
+                        exch_length = aleng(1, 1) ! length from cells interface to center of cell 'to'; why not aleng(1, iq) ???
+                    else
+                        disp_coeff = disp(2) ! [m2/s]; dispersion coeff in direction 2
+                        exch_length = aleng(2, 1) ! length from cells interface to center of cell 'from'; why not aleng(2, iq) ???
+                    end if
+
+                    ! add additional dispersion
+                    if (varying_length == 1) then
+                        exch_length = aleng(1, idx_flow) + aleng(2, idx_flow)
+                        if (exch_length < 1.0d-25) cycle
+                        frctn_length_to = aleng(1, idx_flow) / exch_length ! length to / total length
+                    else
+                        frctn_length_to = 0.5 ! [-] no units
+                    end if
+                    e = disp_coeff * exch_area / exch_length        !  constant dispersion in m3/s
+
+                    ! if ifrom == BC
+                    if (ifrom < 0) then
+                        vol_to = volint(ito)
+                        d = e
+                        if (disp_0_if_bc) d = 0.0d0
+                        if (.not. useLowOrderScheme) then
+                            frctn_length_from = frctn_length_to
+                            if (q < 0.0d0) frctn_length_from = frctn_length_from - 1.0
+                            correction_term = 0.5d0 * q * q * delta_t_box(ibox) / exch_area / exch_length
+                            antidiff_flow = d + min(-frctn_length_from * q + correction_term, 0.0d0)
+                        else
+                            antidiff_flow = d
+                        end if
+                        antidiff_dlt_vol = antidiff_flow * delta_t_box(ibox)
+                        do substance_i = 1, num_substances_transported
+                            dlt_mass_disp = antidiff_dlt_vol * (bound(substance_i, -ifrom) - conc(substance_i, ito))
+                            rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass_disp
+                            dconc2(substance_i, ito) = dconc2(substance_i, ito) + dlt_mass_disp / vol_to
+                            if (q > 0.0d0) then
+                                dlt_mass = dlt_mass_disp + q * bound(substance_i, -ifrom) * delta_t_box(ibox)
+                            else
+                                dlt_mass = dlt_mass_disp + q * conc(substance_i, ito) * delta_t_box(ibox)
+                            end if
+                            if (dlt_mass > 0.0d0) then
+                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) + dlt_mass
+                                if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
+                            else
+                                if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) - dlt_mass
+                                if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
+                            end if
+                        end do
+                        cycle
+                    end if
+
+                    ! else, if ito == BC
+                    if (ito < 0) then
+                        vol_from = volint(ifrom)
+                        d = e
+                        if (disp_0_if_bc) d = 0.0d0
+                        if (.not. useLowOrderScheme) then
+                            frctn_length_from = frctn_length_to
+                            if (q < 0) frctn_length_from = frctn_length_from - 1.0d0
+                            correction_term = 0.5d0 * q * q * delta_t_box(ibox) / exch_area / exch_length
+                            antidiff_flow = d + min(-frctn_length_from * q + correction_term, 0.0d0)
+                        else
+                            antidiff_flow = d
+                        end if
+                        antidiff_dlt_vol = antidiff_flow * delta_t_box(ibox)
+                        do substance_i = 1, num_substances_transported
+                            dlt_mass_disp = antidiff_dlt_vol * (conc(substance_i, ifrom) - bound(substance_i, -ito))
+                            rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass_disp
+                            dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dlt_mass_disp / vol_from
+                            if (q > 0.0d0) then
+                                dlt_mass = dlt_mass_disp + q * conc(substance_i, ifrom) * delta_t_box(ibox)
+                            else
+                                dlt_mass = dlt_mass_disp + q * bound(substance_i, -ito) * delta_t_box(ibox)
+                            end if
+                            if (dlt_mass > 0.0d0) then
+                                if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) + dlt_mass
+                                if (ipb > 0) dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
+                            else
+                                if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) - dlt_mass
+                                if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
+                            end if
+                        end do
+                        cycle
+                    end if
+
+                    ! else, inner cells, no BC
+                    vol_from = volint(ifrom)
+                    vol_to = volint(ito)
+                    frctn_length_from = frctn_length_to ! [-] no units
+                    if (q < 0.0d0) frctn_length_from = frctn_length_from - 1.0d0
+                    correction_term = 0.5d0 * q * q * delta_t_box(ibox) / exch_area / exch_length
+                    antidiff_flow = e + min(-frctn_length_from * q + correction_term, 0.0d0) ! [d] = m3/s
+                    ! d = e + q * min(-f2  + 0.5d0 * q * delta_t_box(ibox) / a / al, 0.0d0)
+                    antidiff_dlt_vol = antidiff_flow * delta_t_box(ibox) ! [d] = m3 = delta volume dispersed during this sub-time step
+                    do substance_i = 1, num_substances_transported
+                        ! calculate delta mass to be dispersed during this sub-time step
+                        if (antidiff_flow < 0.0d0) then
+                            disp_mass_centered = antidiff_dlt_vol * (conc(substance_i, ifrom) - conc(substance_i, ito)) ! [e2] = delta mass dispersed during this sub-time step
+                            s = sign(1.0d0, disp_mass_centered) ! sign of delta mass dispersed; 
+                            ! if 1 then dispersive flow is backwards wrt expected advective flow (so to->from)
+                                                ! if -1 then dispersive flow is in the same direction as advective flow (from->to)
+
+                            ! concentration for node 'from-1' based on type of cell 'from-1'
+                            conc_from_1 = conc_skip_one(ifrom, ifrom_1, dconc2, bound, &
+                                             num_substances_transported, substance_i, s, .true.)
+                            ! concentration for node 'to+1' based on type of cell 'to+1'
+                            conc_to_1 = conc_skip_one(ito, ito_1, dconc2, bound, &
+                                            num_substances_transported, substance_i, s, .false.)
+
+                            disp_mass_from = (dconc2(substance_i, ifrom) - conc_from_1) * vol_from ! dispersive flow limit 'from' side
+                            disp_mass_to = (conc_to_1 - dconc2(substance_i, ito)) * vol_to ! dispersive flow limit 'to' side
+
+                            min_disp_dlt_mass = min(s * disp_mass_from, s * disp_mass_centered, s * disp_mass_to)
+                            dlt_mass = s * max(0.0d0, min_disp_dlt_mass)
+                        else
+                            dlt_mass = d * (dconc2(substance_i, ifrom) - dconc2(substance_i, ito))
+                        end if
+                        rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
+                        rhs(substance_i, ito)   = rhs(substance_i, ito)   + dlt_mass
+                        dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dlt_mass / vol_from ! = rhs(substance_i, ifrom) / volint(ifrom)
+                        dconc2(substance_i, ito)   = dconc2(substance_i, ito)   + dlt_mass / vol_to
+                        if (ipb > 0) then
+                            if (q > 0.0d0) then
+                                dlt_mass = dlt_mass + q * conc(substance_i, ifrom) * delta_t_box(ibox)
+                            else
+                                dlt_mass = dlt_mass + q * conc(substance_i, ito)   * delta_t_box(ibox)
+                            end if
+                            if (dlt_mass > 0.0d0) then
+                                dmpq(substance_i, ipb, 1) = dmpq(substance_i, ipb, 1) + dlt_mass
+                            else
+                                dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
+                            end if
+                        end if
+                    end do
+                end do
+            end do
+            if (timon) call timstop(ithand4)
+    end subroutine apply_horizontal_flux_correction
 
     function is_bc_cell(cell_i) result(bc_flag)
         !> Determines if a cell is a boundary condition cell.
@@ -2631,5 +2909,38 @@ contains
 
         i_top_cell = ivert(nvert(1, abs(nvert(2, cell_i))))
     end function get_top_cell_index
+
+    function conc_skip_one(idx_neighbor, idx_skip_one, dconc2, bound, num_substances_transported, substance_i, s, cell_direction_from) result (conc_1)
+        !> Returns the concentration in the cell from - 1 or to + 1, skipping one.
+        implicit none
+        integer(kind = int_wp), intent(in) :: idx_neighbor !< index of neighboring cell
+        integer(kind = int_wp), intent(in) :: idx_skip_one !< index of cell skipping the neighbor
+        real(kind = dp), intent(in) :: dconc2(:,:) !< array of concentration changes due to dispersion
+        real(kind = real_wp), intent(in) :: bound(num_substances_transported,*) !< array with boundary conditions
+        integer, intent(in) :: num_substances_transported !< number of substances being transported
+        integer, intent(in) :: substance_i !< index of the substance
+        real(kind = dp), intent(in) :: s !< sign of dispersive flow centered
+        logical, intent(in) :: cell_direction_from !< flag indicating if the cell direction is 'from', against default advective flow direction
+
+        ! Local variables
+        real(kind = dp) :: conc_1 !< concentration in the cell skipping one
+
+
+        select case (idx_skip_one)
+            ! normal (internal) cell
+            case (1:)
+                conc_1 = dconc2(substance_i, idx_skip_one)
+            ! (thin) wall
+            case (0)
+                if ((s > 0) .eqv. cell_direction_from) then
+                    conc_1 = 0.0d0 ! since there is a thin wall at 'from-1' cell conc is irrelevant
+                else
+                    conc_1 = 2.0d0 * dconc2(substance_i, idx_neighbor) ! linear gradient extrapolation
+                end if
+            ! boundary
+            case (:-1)
+                conc_1 = bound(substance_i, -idx_skip_one)
+        end select
+    end function conc_skip_one
 
 end module m_locally_adaptive_time_step
