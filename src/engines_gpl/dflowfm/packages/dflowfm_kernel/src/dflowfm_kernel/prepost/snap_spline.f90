@@ -128,14 +128,14 @@ contains
       do i = 1, Numnew
          iL = max(i - 1, 1)
          iR = min(i + 1, Numnew)
-         w(i) = 1.0_dp / sqrt(dbdistance(xf(iL), yf(iL), xf(ir), yf(iR), jsferic, jasfer3D, dmiss) / dble(iR - iL))
+         w(i) = 1.0_dp / sqrt(dbdistance(xf(iL), yf(iL), xf(ir), yf(iR), jsferic, jasfer3D, dmiss) / real(iR - iL, kind=dp))
       end do
 
 !  compute normal vectors at contrained spline nodes
       call spline(xsp(ispline, 1:num), num, xspp)
       call spline(ysp(ispline, 1:num), num, yspp)
       call comp_curv(num, xsp(ispline, 1:num), ysp(ispline, 1:num), xspp, yspp, 0.0_dp, curv, dn1x, dn1y, dsx, dsy)
-      call comp_curv(num, xsp(ispline, 1:num), ysp(ispline, 1:num), xspp, yspp, dble(num - 1), curv, dn2x, dn2y, dsx, dsy)
+      call comp_curv(num, xsp(ispline, 1:num), ysp(ispline, 1:num), xspp, yspp, real(num - 1, kind=dp), curv, dn2x, dn2y, dsx, dsy)
 
 ! DEBUG
 !   w = 1d0

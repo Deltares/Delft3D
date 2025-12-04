@@ -471,7 +471,7 @@ contains
 
          !if (windmodel.eq.0) then
          do k = 1, ndx
-            sigmwav(k) = sum(sigt(:, k), dim=1) / dble(ntheta)
+            sigmwav(k) = sum(sigt(:, k), dim=1) / real(ntheta, kind=dp)
             L0(k) = 2 * pi * ag / (sigmwav(k)**2)
             L1(k) = L0(k)
             Ltemp(k) = L0(k)
@@ -1866,7 +1866,7 @@ contains
                do itheta = 1, ntheta
                   sigt(itheta, :) = 2.0_dp * pi / Trep
                end do
-               sigmwav = max(sum(sigt, 1) / dble(ntheta), waveps)
+               sigmwav = max(sum(sigt, 1) / real(ntheta, kind=dp), waveps)
                call xbeach_dispersion(hs)
             end if
             !
@@ -1939,7 +1939,7 @@ contains
                   end do
                end do
 
-               sigmwav = max(sum(sigt, 1) / dble(ntheta), epshu)
+               sigmwav = max(sum(sigt, 1) / real(ntheta, kind=dp), epshu)
                call xbeach_dispersion(hs)
 
                dist = (cos(thetabin - theta0))**m
@@ -4710,7 +4710,7 @@ contains
             end do
             !
             ! Percentage of converged points
-            percok = sum(ok) / dble(mn) * 100.0_dp
+            percok = sum(ok) / real(mn, kind=dp) * 100.0_dp
             eemax = maxval(ee)
             ! Relative maximum error
             error = maxval(diff) / eemax
@@ -4877,7 +4877,7 @@ contains
          end do
          !
          if (sweep == 4) then
-            percok = sum(ok) / dble(mn) * 100.0_dp
+            percok = sum(ok) / real(mn, kind=dp) * 100.0_dp
             write (*, *) 'iteration: ', iter / 4, '   % ok: ', percok
             if (jampi > 0) then
                call reduce_double_min(percok)
@@ -5597,7 +5597,7 @@ contains
       real(kind=dp), intent(out) :: t
       integer :: count, count_rate, count_max
       call system_clock(count, count_rate, count_max)
-      t = dble(count) / count_rate
+      t = real(count, kind=dp) / count_rate
    end subroutine timer
 
 ! -----------------------------------------------------------

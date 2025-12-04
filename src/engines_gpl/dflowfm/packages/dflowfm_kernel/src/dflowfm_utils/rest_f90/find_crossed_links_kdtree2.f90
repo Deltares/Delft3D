@@ -155,7 +155,7 @@ contains
 
       do L = 1, LnxiORLnx
          if (mod(L, kint) == 0) then
-            af = dble(L) / dble(LnxiORLnx)
+            af = real(L, kind=dp) / real(LnxiORLnx, kind=dp)
             call readyy('Finding crossed links', af)
 !            write(6,"(F4.1, ' %')") af*100d0
          end if

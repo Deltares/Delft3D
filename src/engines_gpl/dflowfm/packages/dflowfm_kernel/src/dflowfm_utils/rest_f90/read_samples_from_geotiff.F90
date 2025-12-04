@@ -174,7 +174,7 @@ contains
       ns = 0
       do i = 1, nx
          if (mod(i, istep) == 0) then
-            call readyy('Reading GeoTIFF file', min(1.0_dp, 0.5_dp + 0.5_dp * dble(i) / nx))
+            call readyy('Reading GeoTIFF file', min(1.0_dp, 0.5_dp + 0.5_dp * real(i, kind=dp) / nx))
          end if
          do j = ny, 1, -1
             ns = ns + 1

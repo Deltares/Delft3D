@@ -44,10 +44,10 @@ contains
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
-                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, kmx, kbotc, kmxc, &
+                        layertype, LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, &
                         numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, dztop, dztopuniabovez, &
-                        sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
-                        kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
+                        sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, kmxx, zslay, &
                         dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
                         uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
                         uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
@@ -165,7 +165,7 @@ contains
       call realloc(laymx, mxlaydefs, stat=ierr, keepexisting=.false.)
       call aerr('laymx(mxlaydefs)', ierr, mxlaydefs)
 
-      if (layertype >= 2) then
+      if (layertype /= LAYTP_SIGMA) then
          call realloc(nlaybn, ndx, stat=ierr, fill=0, keepexisting=.false.)
          call aerr('nlaybn(ndx)', ierr, ndx)
          call realloc(nrlayn, ndx, stat=ierr, fill=0, keepexisting=.false.)
@@ -216,27 +216,27 @@ contains
          mx = 0
          laydefnr = 1
 
-         if (layertype == 3) then
+         if (layertype == LAYTP_POLYGON_MIXED) then
             inquire (file=md_vertplizfile, exist=jawel)
             if (jawel) then
                call oldfil(mpol, md_vertplizfile)
             else
                call qnerror('vertical_layering.pliz not found, switch back to sigma', ' ', ' ')
-               layertype = 1
+               layertype = LAYTP_SIGMA
             end if
          end if
 
-         if (layertype == 1 .or. layertype == 4) then ! all sigma
+         if (layertype == LAYTP_SIGMA .or. layertype == LAYTP_DENS_SIGMA) then ! pure and density controlled sigma-layers
             mxlaydefs = 1
             laytyp(1) = 1
             laymx(1) = kmx
-            if (layertype == 4) then
+            if (layertype == LAYTP_DENS_SIGMA) then
                call realloc(sdkx, ndx, stat=ierr, keepexisting=.false.)
                call aerr('sdkx(ndx)', ierr, ndx)
                call realloc(dkx, ndx, stat=ierr, keepexisting=.false.)
                call aerr('dkx(ndx)', ierr, ndx)
             end if
-         else if (layertype == 2) then ! all z
+         else if (layertype == LAYTP_Z) then ! all z
             mxlaydefs = 1
             laytyp(1) = 2
 
@@ -264,7 +264,7 @@ contains
                   zmx = sini
                else
                   if (dztop == dmiss) then
-                    zmx = Floorlevtoplay
+                     zmx = Floorlevtoplay
                   else
                      zmx = Floorlevtoplay + dztop
                   end if
@@ -303,7 +303,7 @@ contains
             mxlayz = mx
             kmx = mx ! repair code
             laymx(1) = mx
-         else if (layertype == 3) then ! combination in polygons
+         else if (layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
             call polygonlayering(mpol)
          end if
          do k = 1, mxlaydefs

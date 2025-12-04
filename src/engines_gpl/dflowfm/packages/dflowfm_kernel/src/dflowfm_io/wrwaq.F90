@@ -469,14 +469,14 @@ contains
 
       write (lunhyd, '(a,a)') 'task      ', 'full-coupling'
 
-      if (layertype == LAYTP_SIGMA) then ! all sigma layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured'
-      elseif (layertype == LAYTP_Z) then ! z layers or z-sigma layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z-layers'
-      elseif (layertype == LAYTP_LEFTSIGMA) then
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-sigma-layers'
-      elseif (layertype == LAYTP_LEFTZ) then
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-z-layers'
+      if (layertype == LAYTP_SIGMA) then ! sigma-layers
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured sigma-layers'
+      elseif (layertype == LAYTP_Z) then ! z- or z-sigma-layers
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z- or z-sigma-layers'
+      elseif (layertype == LAYTP_POLYGON_MIXED) then
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured polygon defined z-layers'
+      elseif (layertype == LAYTP_DENS_SIGMA) then
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured density controlled sigma-layers'
       else ! other?
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured other'
       end if
@@ -2459,8 +2459,8 @@ contains
       end do
       do ip = 1, waqpar%noql
          if (waqpar%aggre == 1) then
-            lenex(1, ip) = lenex(1, ip) / dble(noqa(ip))
-            lenex(2, ip) = lenex(2, ip) / dble(noqa(ip))
+            lenex(1, ip) = lenex(1, ip) / real(noqa(ip), kind=dp)
+            lenex(2, ip) = lenex(2, ip) / real(noqa(ip), kind=dp)
          end if
          ! Copy lenghts to other layers
          do kk = 1, waqpar%kmxnxa - 1

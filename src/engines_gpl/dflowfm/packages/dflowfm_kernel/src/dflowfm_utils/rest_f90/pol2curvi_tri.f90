@@ -138,9 +138,9 @@ contains
 !   xib = dbdistance(XPL(i2),YPL(i2),XPL(ib),YPL(ib)) / dbdistance(XPL(i2),YPL(i2),XPL(i3),YPL(i3))
 !   xic = dbdistance(XPL(i3),YPL(i3),XPL(ic),YPL(ic)) / dbdistance(XPL(i3),YPL(i3),XPL(i1),YPL(i1))
 
-      xia = dble(N1) / dble(Na)
-      xib = dble(N3) / dble(Nb)
-      xic = dble(N2) / dble(Ncc)
+      xia = real(N1, kind=dp) / real(Na, kind=dp)
+      xib = real(N3, kind=dp) / real(Nb, kind=dp)
+      xic = real(N2, kind=dp) / real(Ncc, kind=dp)
 
       xm = (((1.0_dp - xia) * XPL(i1) + xia * XPL(i2)) * xic + (1.0_dp - xic) * XPL(i3) + &
             ((1.0_dp - xib) * XPL(i2) + xib * XPL(i3)) * xia + (1.0_dp - xia) * XPL(i1) + &
@@ -189,13 +189,13 @@ contains
          end do
 
          do i = 1, M(itri) + 1
-            xia = dble(i - 1) / dble(M(itri))
+            xia = real(i - 1, kind=dp) / real(M(itri), kind=dp)
             xh(i, 4) = (1.0_dp - xia) * XPL(ileft(itri)) + xia * xm
             yh(i, 4) = (1.0_dp - xia) * YPL(ileft(itri)) + xia * ym
          end do
 
          do i = 1, N(itri) + 1
-            xia = dble(i - 1) / dble(N(itri))
+            xia = real(i - 1, kind=dp) / real(N(itri), kind=dp)
             xh(i, 2) = (1.0_dp - xia) * XPL(iright(itri)) + xia * xm
             yh(i, 2) = (1.0_dp - xia) * YPL(iright(itri)) + xia * ym
          end do

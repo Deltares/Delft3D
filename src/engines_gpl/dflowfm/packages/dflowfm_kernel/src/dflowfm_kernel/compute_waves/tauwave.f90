@@ -124,7 +124,7 @@ contains
          ! get current related roughness height
          !
          if (frcu(L) > 0.0_dp) then
-            cz = get_chezy(huL, dble(frcu(L)), u1(L), v(L), ifrcutp(L))
+            cz = get_chezy(huL, real(frcu(L), kind=dp), u1(L), v(L), ifrcutp(L))
          else
             cz = get_chezy(huL, frcuni, u1(L), v(L), ifrctypuni)
          end if

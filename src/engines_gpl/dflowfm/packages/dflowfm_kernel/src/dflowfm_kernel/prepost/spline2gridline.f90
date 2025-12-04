@@ -55,7 +55,7 @@ contains
 
       if (mc < 2) return ! no curvigrid possible
 
-      startstop = [0.0_dp, dble(num - 1)]
+      startstop = [0.0_dp, real(num - 1, kind=dp)]
       call makespl(startstop, xsp, ysp, max(mc, num), num, 2, mc - 1, xc, yc, kmax, sc, h)
 
       if (kmax /= mc) then

@@ -79,7 +79,7 @@ contains
       KMOD = max(1, NUMP / 100)
       do N = 1, NUMP
 
-         if (mod(n, KMOD) == 0) call READYY('CUTCELLS', dble(n) / dble(nump))
+         if (mod(n, KMOD) == 0) call READYY('CUTCELLS', real(n, kind=dp) / real(nump, kind=dp))
 
          if (KNP(N) == 0) then ! AT LEAST 1 POINT OUTSIDE POLYGON
 

@@ -228,7 +228,7 @@ contains
                   jaCdwusp = 1
                end if
 
-               iCdtyp = 1 ! only 1 coeff
+               wind_drag_type = CD_TYPE_CONST
                success = timespaceinitialfield(xu, yu, Cdwusp, lnx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
 
             else if (qid == 'windspeedfactor') then

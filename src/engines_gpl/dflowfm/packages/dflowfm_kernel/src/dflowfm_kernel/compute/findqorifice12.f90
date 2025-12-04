@@ -103,7 +103,7 @@ contains
 
       do k = 1, 10
 
-         a = 0.1_dp * dble(k) * h1
+         a = 0.1_dp * real(k, kind=dp) * h1
 
          aa = 2.0_dp * (h1 - a)
          bb = -2.0_dp * h1**2

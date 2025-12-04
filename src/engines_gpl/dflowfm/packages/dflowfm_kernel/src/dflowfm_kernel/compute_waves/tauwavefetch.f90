@@ -222,7 +222,7 @@ contains
          fetch_temp = dmiss
          calculate_for = .true.
 
-         wind_direction = twopi * (index_wind_direction - 1) / dble(nwf - 1)
+         wind_direction = twopi * (index_wind_direction - 1) / real(nwf - 1, kind=dp)
          u_wind = cos(wind_direction)
          v_wind = sin(wind_direction)
 

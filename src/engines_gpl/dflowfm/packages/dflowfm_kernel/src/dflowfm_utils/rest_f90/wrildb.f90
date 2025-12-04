@@ -101,7 +101,7 @@ contains
       ! Start writing the set of polyline(s).
       KMOD = max(1, NSH / 100)
 
-      write (cdigits, '(i1)') int(floor(log10(dble(npli)) + 1)) ! nr of digits in npli
+      write (cdigits, '(i1)') int(floor(log10(real(npli, kind=dp)) + 1)) ! nr of digits in npli
 
       if (jaNCLAN .or. jaZSH) then
          ncol = 3

@@ -3598,7 +3598,7 @@ contains
             if (abs(rlat - rlslat) > reps) then
                do nq = 2, 3
                   do mq = 0, nq
-                     fnm = 2.0_dp / dble(2 * nq + 1) * factorial(nq + mq) / factorial(nq - mq)
+                     fnm = 2.0_dp / real(2 * nq + 1, kind=dp) * factorial(nq + mq) / factorial(nq - mq)
                      fnm = sqrt(1.0_dp / (2.0_dp * pi * fnm)) * ((-1.0_dp)**mq)
                      call legpol1(rlat, nq, mq, pnm)
                      pol1(mq, nq) = fnm * pnm
@@ -3608,8 +3608,8 @@ contains
 
             if (abs(rlong - rlslon) > reps) then
                do mq = 0, 3
-                  cm1(mq) = +cos(dble(mq) * rlong)
-                  sm1(mq) = +sin(dble(mq) * rlong)
+                  cm1(mq) = +cos(real(mq, kind=dp) * rlong)
+                  sm1(mq) = +sin(real(mq, kind=dp) * rlong)
                end do
             end if
 
@@ -3661,7 +3661,7 @@ contains
       do i = 1, ntable
          argum = 0.0_dp
          do j = 1, 6
-            argfct = dble(itable(i, j))
+            argfct = real(itable(i, j), kind=dp)
             argum = argum + argfct * elmnts(j) * plsmin(j)
          end do
          ! argum = mod(argum, 360.0_dp)
@@ -6799,7 +6799,7 @@ contains
          dataPtr1 => wdsu_x
          itemPtr2 => item_stressxy_y
          dataPtr2 => wdsu_y
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          itemPtr1 => item_frcu
          dataPtr1 => frcu
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')

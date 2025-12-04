@@ -141,7 +141,7 @@ contains
       else
 !     interpolate fourth side
          do i = 1, nc
-            xi = dble(i - 1) / dble(nc - 1)
+            xi = real(i - 1, kind=dp) / real(nc - 1, kind=dp)
             xh(i, 1) = (1.0_dp - xi) * xpl(i1) + xi * xpl(i4)
             yh(i, 1) = (1.0_dp - xi) * ypl(i1) + xi * ypl(i4)
          end do

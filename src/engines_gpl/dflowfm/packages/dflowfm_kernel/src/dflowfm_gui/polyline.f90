@@ -32,6 +32,7 @@
 
 module m_polyline
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -45,9 +46,9 @@ contains
       real xr(N), yr(N)
 
       if (InOpenGLRendering) then
-         call MOVABSNOP(dble(XR(1)), dble(YR(1)))
+         call MOVABSNOP(real(XR(1), kind=dp), real(YR(1), kind=dp))
          do I = 2, N
-            call LNABSNOP(dble(XR(I)), dble(YR(I)))
+            call LNABSNOP(real(XR(I), kind=dp), real(YR(I), kind=dp))
          end do
       else
          call IGRPOLYLINE(XR, YR, N)

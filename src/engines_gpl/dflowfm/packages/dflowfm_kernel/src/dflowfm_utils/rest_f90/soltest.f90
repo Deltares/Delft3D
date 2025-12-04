@@ -80,7 +80,7 @@ contains
       Nruns = 1
 
       if (iCFL > 0.0_dp) then
-         CFL = dble(iCFL)
+         CFL = real(iCFL, kind=dp)
       end if
 
 !     settings from command line

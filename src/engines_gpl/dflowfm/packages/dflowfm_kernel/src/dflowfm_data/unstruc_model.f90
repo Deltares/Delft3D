@@ -258,6 +258,7 @@ module unstruc_model
    integer :: md_fou_step !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
    integer, private :: ifixedweirscheme_input !< input value of ifixedweirscheme in mdu file
+   real(kind=dp), private :: user_provided_charnock_coefficient !< input value of Cdbreakpoints in mdu file
 
 contains
 
@@ -665,7 +666,11 @@ contains
       use m_flowparameters
       use m_dambreak_breach, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
-      use m_wind ! ,                  only : icdtyp, cdb, wdb,
+      use m_wind, only: wind_drag_type, cdb, wdb, jaheat_eachstep, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, pavini, pavbnd, &
+          jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext,jaevap, jawind, &
+          wdb, jaevap, jawind, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
+          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
+          CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jasfer3D
@@ -1026,7 +1031,7 @@ contains
       call prop_get(md_ptr, 'numerics', 'EpsMaxlevm', epsmaxlevm)
       !call prop_get( md_ptr, 'numerics', 'CFLWaveFrac'     , cflw)
       call prop_get(md_ptr, 'numerics', 'AdvecType', iadvec)
-      if (Layertype > 1) then
+      if (Layertype /= LAYTP_SIGMA) then
          iadvec = 33; iadvec1D = 33
       end if
       call prop_get(md_ptr, 'numerics', 'AdvecCorrection1D2D', iadveccorr1D2D)
@@ -1244,13 +1249,13 @@ contains
       !
       ! Filter to suppress checkerboarding is also available for z-layers (so that ERROR message has been switched off)
       !
-      ! if (Layertype == 2 .and. jafilter /= 0) then
+      ! if (Layertype == LAYTP_Z .and. jafilter /= 0) then
       ! call mess(LEVEL_ERROR, 'The checkerboard-filter has not been implemented for Z-models yet', '.')
       ! endif
       !
       ! Filter to suppress checkerboarding is also available for z-layers (so that ERROR message has been switched off)
       !
-      ! if (Layertype == 2 .and. jacheckmonitor /= 0) then
+      ! if (Layertype == LAYTP_Z .and. jacheckmonitor /= 0) then
       ! call mess(LEVEL_WARN, 'The checkerboardmonitor has not been implemented for Z-models yet, is automatically switched off now.')
       ! jacheckmonitor = 0
       ! end if
@@ -1565,25 +1570,26 @@ contains
          end if
       end if
 
-      call prop_get(md_ptr, 'wind', 'ICdtyp', ICdtyp)
-      if (Icdtyp == 1) then
-         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 1)
-      else if (Icdtyp == 2) then
-         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
-         call prop_get(md_ptr, 'wind', 'Windspeedbreakpoints', Wdb, 2)
-         Cdb(3) = Cdb(2)
-         Wdb(2) = max(Wdb(2), Wdb(1) + 0.1_dp)
-         Wdb(3) = Wdb(2) + 0.1_dp
-      else if (Icdtyp == 3) then
-         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 3)
-         call prop_get(md_ptr, 'wind', 'Windspeedbreakpoints', Wdb, 3)
-         Wdb(2) = max(Wdb(2), Wdb(1) + 0.1_dp)
-         Wdb(3) = max(Wdb(3), Wdb(2) + 0.1_dp)
-      else if (Icdtyp == 4) then
-         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 1)
+      call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
+      if (wind_drag_type == CD_TYPE_CONST) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 1)
+      else if (wind_drag_type == CD_TYPE_SMITHBANKE_2PT) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 2)
+         call prop_get(md_ptr, 'wind', 'Windspeedbreakpoints', wdb, 2)
+         cdb(3) = cdb(2)
+         wdb(2) = max(wdb(2), wdb(1) + 0.1_dp)
+         wdb(3) = wdb(2) + 0.1_dp
+      else if (wind_drag_type == CD_TYPE_SMITHBANKE_3PT) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 3)
+         call prop_get(md_ptr, 'wind', 'Windspeedbreakpoints', wdb, 3)
+         wdb(2) = max(wdb(2), wdb(1) + 0.1_dp)
+         wdb(3) = max(wdb(3), wdb(2) + 0.1_dp)
+      else if (wind_drag_type == CD_TYPE_CHARNOCK1955) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 1)
+         user_provided_charnock_coefficient = cdb(1)
          cdb(2) = 0.0_dp
-      else if (Icdtyp == 7 .or. Icdtyp == 8) then
-         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
+      else if (wind_drag_type == CD_TYPE_GARRATT1977 .or. wind_drag_type == CD_TYPE_CHARNOCK_PLUS_VISCOUS) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 2)
       end if
       call prop_get(md_ptr, 'wind', 'Relativewind', relativewind)
       call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased)
@@ -2234,7 +2240,7 @@ contains
       if (success) then
          read (charbuf, *, iostat=iostat) ibuf, ti_split_unit
          if (iostat == 0) then
-            ti_split = dble(ibuf)
+            ti_split = real(ibuf, kind=dp)
             select case (ti_split_unit)
             case ('Y', 'M', 'D', 'h', 'm', 's')
                if (ti_split < 0.0_dp) then ! Invalid time value, error.
@@ -2262,13 +2268,13 @@ contains
       end if
       ! Check for ocean_sigma_z in combination with numtopsig=0, then fullgridoutput=1 is the only option (UNST-5477).
       if (success) then
-         if (jafullgridoutput == 0 .and. Layertype > 1 .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
+         if (jafullgridoutput == 0 .and. Layertype /= LAYTP_SIGMA .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
             jafullgridoutput = 1
             call mess(LEVEL_WARN, 'A combination of Z- and Sigma-layers is used, but Numtopsiguniform is not 1. FullGridOutput must be set to 1.')
             call warn_flush()
          end if
       else
-         if (Layertype > 1 .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
+         if (Layertype /= LAYTP_SIGMA .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
             jafullgridoutput = 1
          end if
       end if
@@ -2574,7 +2580,7 @@ contains
       allocate (map_classes_ucdir(n - 1), stat=ierr)
       if (ierr /= 0) call aerr('map_classes_ucdir', ierr, n + 1)
       do i = 1, n - 1
-         map_classes_ucdir(i) = dble(i) * map_classes_ucdirstep
+         map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
    end subroutine createDirectionClasses
 
@@ -2605,7 +2611,10 @@ contains
       use m_flowgeom ! ,              only : wu1Duni, Bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
-      use m_wind
+      use m_wind, only: jaspacevarcharn, jaheat_eachstep, wind_drag_type, cdb, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, &
+          pavbnd, pavini, jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqext, wdb, jaevap, jawind, &
+          CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
+          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003      
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
@@ -2694,7 +2703,9 @@ contains
       call prop_set(prop_ptr, 'geometry', 'PillarFile', trim(md_pillarfile), 'Polyline file *_pillar.pliz, containing four colums with x, y, diameter and Cd coefficient')
       call prop_set(prop_ptr, 'geometry', 'Gulliesfile', trim(md_gulliesfile), 'Polyline file *_gul.pliz, containing lowest bed level along talweg x, y, z level')
       call prop_set(prop_ptr, 'geometry', 'Roofsfile', trim(md_roofsfile), 'Polyline file *_rof.pliz, containing roofgutter heights x, y, z level')
-      call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type')
+      if (len_trim(md_vertplizfile) > 0) then
+         call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layertype')
+      end if
       call prop_set(prop_ptr, 'geometry', 'ProflocFile', trim(md_proflocfile), 'Channel profile location file *_proflocation.xyz with rows x, y, z, profile number ref')
       call prop_set(prop_ptr, 'geometry', 'ProfdefFile', trim(md_profdeffile), 'Channel profile definition file *_profdefinition.def with definition for all profile numbers')
       call prop_set(prop_ptr, 'geometry', 'ProfdefxyzFile', trim(md_profdefxyzfile), 'Channel profile definition file _profdefinition.def with definition for all profile numbers')
@@ -2869,7 +2880,11 @@ contains
       end if
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'geometry', 'Kmx', kmx, 'Maximum number of vertical layers')
-         call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: all sigma, 2: all z, 3: use VertplizFile)')
+         if (layertype == LAYTP_SIGMA .or. layertype == LAYTP_Z) then
+            call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers)')
+         else if (layertype == LAYTP_POLYGON_MIXED .or. layertype == LAYTP_DENS_SIGMA) then
+            call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers, 3: use VertplizFile for polygon-based mixed layering, 4: density controlled sigma-layers)')
+         end if
          call prop_set(prop_ptr, 'geometry', 'Numtopsig', Numtopsig, 'Number of sigma layers in top of z-layer model')
          if (writeall .or. janumtopsiguniform /= 1) then
             call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform', jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth)')
@@ -2925,7 +2940,7 @@ contains
             call prop_set(prop_ptr, 'geometry', 'ihuzcsig', ihuzcsig, 'if keepzlayeringatbed>=2 : 1,2,3=av,mx,mn of Leftsig,Rightsig,4=uniform')
          end if
 
-         if (writeall .or. jaZlayeratubybob /= 0 .and. layertype /= 1) then
+         if (writeall .or. jaZlayeratubybob /= 0 .and. layertype /= LAYTP_SIGMA) then
             call prop_set(prop_ptr, 'geometry', 'Zlayeratubybob', JaZlayeratubybob, 'Lowest connected cells governed by bob instead of by bL L/R')
          end if
       end if
@@ -3023,7 +3038,7 @@ contains
       if (jarhoxu /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Jarhoxu', Jarhoxu, 'Include density gradient in advection term (0: no(strongly advised), 1: yes, 2: Also in barotropic and baroclinic pressure term)')
       end if
-      if (writeall .or. (jahazlayer /= 0 .and. layertype /= 1)) then
+      if (writeall .or. (jahazlayer /= 0 .and. layertype /= LAYTP_SIGMA)) then
          call prop_set(prop_ptr, 'numerics', 'Horadvtypzlayer', Jahazlayer, 'Horizontal advection treatment of z-layers (1: default, 2: sigma-like)')
       end if
 
@@ -3519,17 +3534,23 @@ contains
          end if
       end if
 
-      call prop_set(prop_ptr, 'wind', 'ICdtyp', ICdtyp, 'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: Charnock+viscous, 9: Garratt 1977).')
-      if (ICdtyp == 1 .or. ICdtyp == 4 .or. ICdtyp == 5 .or. ICdtyp == 6) then
-         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:1), 'Wind drag coefficient (may be overridden by space-varying input)')
-      else if (ICdtyp == 2) then
-         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:2), 'Wind drag coefficient break points')
-         call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', Wdb(1:2), 'Wind speed break points (m/s)')
-      else if (ICdtyp == 3) then
-         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:3), 'Wind drag coefficient break points')
-         call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', Wdb(1:3), 'Wind speed break points (m/s)')
+      if (jaspacevarcharn .and. wind_drag_type /= CD_TYPE_CHARNOCK1955) then
+         write (msgbuf, '(a,i0,a)') 'A (time- and space-varying) Charnock coefficient was provided via the .ext file. [wind] ICdtyp has been reset from ', &
+             wind_drag_type, ' to 4 (Charnock).'
+         call mess(LEVEL_WARN, msgbuf)
+         wind_drag_type = CD_TYPE_CHARNOCK1955
+      end if
+      call prop_set(prop_ptr, 'wind', 'ICdtyp', wind_drag_type, 'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: Charnock+viscous, 9: Garratt 1977).')
+      if (wind_drag_type == CD_TYPE_CONST .or. wind_drag_type == CD_TYPE_CHARNOCK1955 .or. wind_drag_type == CD_TYPE_HWANG2005 .or. wind_drag_type == CD_TYPE_WUEST2003) then
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', user_provided_charnock_coefficient, 'Wind drag coefficient (may be overridden by space-varying input)')
+      else if (wind_drag_type == CD_TYPE_SMITHBANKE_2PT) then
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb(1:2), 'Wind drag coefficient break points')
+         call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', wdb(1:2), 'Wind speed break points (m/s)')
+      else if (wind_drag_type == CD_TYPE_SMITHBANKE_3PT) then
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb(1:3), 'Wind drag coefficient break points')
+         call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', wdb(1:3), 'Wind speed break points (m/s)')
       else
-         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:2), 'Wind drag coefficients (may be overridden by space-varying input)')
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb(1:2), 'Wind drag coefficients (may be overridden by space-varying input)')
       end if
       if (writeall .or. relativewind > 0.0_dp) then
          call prop_set(prop_ptr, 'wind', 'Relativewind', relativewind, 'Wind speed relative to top-layer water speed*relativewind, 0.0=no relative wind, 1.0=using full top layer speed)')

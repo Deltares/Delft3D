@@ -67,10 +67,10 @@ contains
 
       call splinxy(xspl, yspl, xspl2, yspl2, num)
 
-      dt = 1.0_dp / dble(NSAM)
+      dt = 1.0_dp / real(NSAM, kind=dp)
 !  number of intervals
       N = max(floor(0.9999_dp + (s1 - s0) / dt), Nmin)
-      dt = (s1 - s0) / dble(N)
+      dt = (s1 - s0) / real(N, kind=dp)
 
 !   tR = s0
 !   call splintxy(xspl,yspl,xspl2,yspl2,num,tR,xR,yR)
@@ -82,7 +82,7 @@ contains
          tL = tR
          xL = xR
          yL = yR
-         fac = dble(i) / dble(N)
+         fac = real(i, kind=dp) / real(N, kind=dp)
          tR = (1.0_dp - fac) * s0 + fac * s1
          call splintxy(xspl, yspl, xspl2, yspl2, num, tR, xR, yR)
          splinelength_int = splinelength_int + dbdistance(xL, yL, xR, yR, jsferic, jasfer3D, dmiss)

@@ -181,7 +181,7 @@ contains
                surface_area = surface_area + link_surface_area
                volu1D(La) = volu1D(La) + flow_cs_area * half_link_length
 
-               q_net_in = q_net_in + dble(sign(1, L)) * qa(La)
+               q_net_in = q_net_in + real(sign(1, L), kind=dp) * qa(La)
             end do
 
             qu_in = 0.0_dp

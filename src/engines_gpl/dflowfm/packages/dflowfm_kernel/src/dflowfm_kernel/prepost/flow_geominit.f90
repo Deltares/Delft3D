@@ -384,7 +384,7 @@ contains
 
          kcs(n) = 2
          if (mod(n, M) == 0) then
-            af = 0.2_dp + 0.6_dp * dble(n) / dble(ndx2d)
+            af = 0.2_dp + 0.6_dp * real(n, kind=dp) / real(ndx2d, kind=dp)
             call readyy('geominit-cell areas ba', af)
          end if
 

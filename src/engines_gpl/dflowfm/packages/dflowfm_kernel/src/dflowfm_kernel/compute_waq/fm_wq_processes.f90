@@ -792,7 +792,7 @@ contains
       else
          itstop_process = tstop_user
       end if
-      otime = dble(julrefdat) - 0.5_dp !refdate_mjd
+      otime = real(julrefdat, kind=dp) - 0.5_dp !refdate_mjd
 
       !     Compute refday needed for daylight process
       call compute_reference_day(refdat, refdayNr)

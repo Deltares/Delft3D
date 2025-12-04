@@ -38,6 +38,7 @@ module m_structures
    use m_flowparameters, only: jahiscgen, jahispump, jahisgate, jahiscdam, jahisweir, jahisdambreak, jahisorif, jahisculv, jahisuniweir, jahiscmpstru, jahislongculv, jahisbridge
    use m_structures_indices ! all of these indices are used in the module
 
+   use precision, only: dp
    implicit none
 
    type(tree_data), pointer, public :: strs_ptr !< A property list with all input structure specifications of the current model. Not the actual structure set.
@@ -1425,7 +1426,7 @@ contains
             end if
          end do
          if (jadif == 0) then
-            valstruct(IVAL_STATE) = dble(tmp)
+            valstruct(IVAL_STATE) = real(tmp, kind=dp)
          else
             valstruct(IVAL_STATE) = dmiss
          end if

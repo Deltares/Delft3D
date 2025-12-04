@@ -671,4 +671,38 @@ contains
 
     end subroutine part06fm
 
+    subroutine displace_spherical( xporg, yporg, zporg, dxp, dyp, xpnew, ypnew, zpnew, mpnew )
+        !>\file
+        !>            Determines the new position of a particle using spherical coordinates
+
+        use m_waq_precision, only: dp
+        use mathconsts, only:      raddeg_hp, degrad_hp
+        use physicalconsts, only:  earth_radius
+        use m_sferic_part, only:   ptref
+        use geometry_module, only: Cart3Dtospher, sphertocart3D
+
+        real(kind=dp), intent(in)  :: xporg, yporg, zporg
+        real(kind=dp), intent(in)  :: dxp, dyp
+        real(kind=dp), intent(out) :: xpnew, ypnew, zpnew
+
+        real(kind=dp)              :: xlong, ylat, dxlong, dylat
+
+        integer, intent(out)       :: mpnew
+
+        integer                    :: ierror
+
+        ierror = 0
+        call Cart3Dtospher( xporg, yporg, zporg, xlong, ylat, ptref)
+
+        dxlong = atan2( dxp, cos(ylat * degrad_hp) * earth_radius ) * raddeg_hp
+        dylat  = atan2( dyp, earth_radius ) * raddeg_hp
+        xlong  = xlong + dxlong
+        ylat   = ylat  + dylat
+
+        call sphertoCart3D( xlong, ylat, xpnew, ypnew, zpnew )
+
+        call part_findcellsingle( xlong, ylat, mpnew, ierror )
+
+    end subroutine displace_spherical
+
 end module m_fm_particles_in_grid

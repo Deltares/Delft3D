@@ -139,7 +139,7 @@ contains
 
             !  determine permutation array of flowlinks by increasing arc length order
             do i = 1, path%lnx
-               path%sp(i) = dble(path%indexp(i)) + (1.0_dp - path%wfp(i))
+               path%sp(i) = real(path%indexp(i), kind=dp) + (1.0_dp - path%wfp(i))
             end do
 
             call sort_index(path%sp(1:path%lnx), path%iperm(1:path%lnx))

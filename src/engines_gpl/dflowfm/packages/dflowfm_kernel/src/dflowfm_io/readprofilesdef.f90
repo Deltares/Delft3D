@@ -194,7 +194,7 @@ contains
                   allocate (profiles1D(n)%y(nyz), stat=ierr)
                   allocate (profiles1D(n)%z(nyz), stat=ierr)
                   do k = 1, nyz
-                     profiles1D(n)%y(k) = profiles1D(n)%width * (dble(k - 1) / dble(nyz - 1) - 0.5_dp)
+                     profiles1D(n)%y(k) = profiles1D(n)%width * (real(k - 1, kind=dp) / real(nyz - 1, kind=dp) - 0.5_dp)
                      profiles1D(n)%z(k) = profiles1D(n)%height
                   end do
                   profiles1D(n)%z(2) = 0.0_dp

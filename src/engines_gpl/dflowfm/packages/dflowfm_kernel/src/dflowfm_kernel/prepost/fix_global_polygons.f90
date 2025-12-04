@@ -327,7 +327,7 @@ contains
 !                 check if cell is inside
 !                  in = -1
 !                  call dbpinpol(xzw(i), yzw(i), in)
-                  call dbpinpol_tpolies(partition_pol, xzw(i), yzw(i), in, dble(idmn))
+                  call dbpinpol_tpolies(partition_pol, xzw(i), yzw(i), in, real(idmn, kind=dp))
 
 !                  write(6,*) i, xzw(i), yzw(i), idomain(i)
 
@@ -342,7 +342,7 @@ contains
                      call increasepol(NPL, 0)
                      xpl(1:NPL) = [xmin - 90.0_dp, xmin - 90.0_dp, xmin + 360.0_dp + 90.0_dp, xmin + 360.0_dp + 90.0_dp, xmin - 90.0_dp]
                      ypl(1:NPL) = [90.0_dp, -90.0_dp, -90.0_dp, 90.0_dp, 90.0_dp]
-                     zpl(1:NPL) = dble(idmn)
+                     zpl(1:NPL) = real(idmn, kind=dp)
                      call pol_to_tpoly(npartition_pol, partition_pol, keepExisting=.true.)
                   end if
 

@@ -86,7 +86,7 @@ contains
                      call DHITEXT(L, X, Y)
                   end do
                else
-                  call dHTEXT(dble(RNOD(K)), X, Y, Z)
+                  call dHTEXT(real(RNOD(K), kind=dp), X, Y, Z)
                end if
             end if
          end if

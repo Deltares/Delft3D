@@ -981,7 +981,7 @@ contains
                   if (mfltot <= 0.0_fp) then
                      sourf(l, nm) = 0.0_fp
                   else
-                     sourf(l, nm) = min(sourfluff, mfltot/dts)
+                     sourf(l, nm) = min(sourfluff, mfltot / dts)
                   end if
                else
                   sinkse(nm, l) = sinktot

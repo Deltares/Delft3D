@@ -277,7 +277,7 @@ contains
          do i = 1, Nout
             XPL(i) = xout(i)
             YPL(i) = yout(i)
-            ZPL(i) = dble(ipoLout(i))
+            ZPL(i) = real(ipoLout(i), kind=dp)
          end do
          if (allocated(xin)) deallocate (xin, yin)
          if (allocated(xout)) deallocate (xout, yout)

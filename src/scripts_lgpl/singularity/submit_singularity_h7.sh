@@ -40,10 +40,10 @@ containerFolder=/path/to/folder/containing/the/sif
 modelFolder=/path/to/folder/containing/the/model
 
 # Specify the folder containing your model's MDU file.
-mdufileFolder=$modelFolder/dflowfm
+mdufileFolder=/path/to/folder/containing/the/mdu/file
  
 # Specify the folder containing your DIMR configuration file.
-dimrconfigFolder=$modelFolder
+dimrconfigFolder=/path/to/folder/containing/the/dimr/configuration/file
  
 # The name of the DIMR configuration file. The default name is dimr_config.xml. This file must already exist!
 dimrFile=dimr_config.xml

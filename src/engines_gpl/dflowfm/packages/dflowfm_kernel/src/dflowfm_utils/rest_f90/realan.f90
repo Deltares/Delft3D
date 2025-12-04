@@ -119,7 +119,7 @@ contains
             NCLAN(NTOT) = NCL
          end if
          if (mod(I, 1000) == 0) then
-            call READYY(' ', min(1.0_dp, dble(I) / MAXLAN))
+            call READYY(' ', min(1.0_dp, real(I, kind=dp) / MAXLAN))
          end if
       end do
       NTOT = NTOT + 1
