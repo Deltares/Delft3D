@@ -102,13 +102,18 @@ object WindowsTest : BuildType({
                             ${'$'}inside = 'C:\artifacts_inside'
                             New-Item -Path ${'$'}inside -ItemType Directory -Force | Out-Null
 
-                            robocopy 'data\cases' "${'$'}inside\cases" *.diag *.log *.pdf /S /NJH /NJS /NP | Out-Null
-                            if (Test-Path 'logs') { robocopy 'logs' "${'$'}inside\logs" /E /NJH /NJS /NP | Out-Null }
+                            robocopy 'data\cases' "${'$'}inside\cases' *.diag *.log *.pdf /S /NJH /NJS /NP | Out-Null
+
+                            if (Test-Path 'logs') {
+                                robocopy 'logs' "${'$'}inside\logs' /E /NJH /NJS /NP | Out-Null
+                            }
 
                             if ('%copy_cases%' -eq 'true') {
                                 Compress-Archive -Path 'data\cases\*' -DestinationPath "${'$'}inside\copy_cases.zip" -Force -CompressionLevel Optimal
-                                ${'$'}size = \"{0:N1}\" -f ((Get-Item "${'$'}inside\copy_cases.zip").Length / 1MB)
-                                Write-Host \"copy_cases.zip created inside container (${'$'}size MB)\"
+
+                                ${'$'}size = '{0:N1}' -f ((Get-Item "${'$'}inside\copy_cases.zip").Length / 1MB)
+
+                                Write-Host "copy_cases.zip created inside container ($(${'$'}size) MB)"
                             }
 
                             Write-Host '##teamcity[blockClosed name=''Collecting selected artifacts inside container'']'
