@@ -62,11 +62,7 @@ class ArrayDelimiterConverter(FortranConverter):
                 paren_depth -= 1
                 if paren_depth == 0:
                     # Found potential closing - check if preceded by /
-                    # Look backwards for /
-                    j = i - 1
-                    while j >= 0 and text[j] in ' \t':
-                        j -= 1
-                    if j >= 0 and text[j] == '/':
+                    if i > 0 and text[i - 1] == '/':
                         return i  # Position of closing )
                     else:
                         # Just a regular closing paren, not part of /)
@@ -96,24 +92,17 @@ class ArrayDelimiterConverter(FortranConverter):
                     # Successfully found matching closing
                     # Extract the content between (/ and /)
                     content_start = match.end()
+                    content_end = closing_pos - 1  # Position of / before )
+                    content = text[content_start:content_end]
 
-                    # Find where the / starts before the )
-                    j = closing_pos - 1
-                    while j >= content_start and text[j] in ' \t':
-                        j -= 1
+                    # Convert to square brackets
+                    result.append('[')
+                    result.append(content.rstrip())
+                    result.append(']')
 
-                    if j >= content_start and text[j] == '/':
-                        content_end = j
-                        content = text[content_start:content_end]
-
-                        # Convert to square brackets
-                        result.append('[')
-                        result.append(content.rstrip())
-                        result.append(']')
-
-                        conversions_made = True
-                        i = closing_pos + 1
-                        continue
+                    conversions_made = True
+                    i = closing_pos + 1
+                    continue
 
             # No match or couldn't convert, keep original character
             result.append(text[i])

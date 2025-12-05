@@ -75,6 +75,19 @@ class TestSemicolonSeparatorConverter:
         assert not was_converted
         assert result == expected
 
+    def test_split_before_comment_with_semicolon(self, converter):
+        """Test that semicolons before comments are split, but semicolons in comments are preserved."""
+        # Arrange
+        text = "a = 1; b = 2 ! comment; with semicolon"
+        expected = "a = 1\nb = 2 ! comment; with semicolon"
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+
+        # Assert
+        assert was_converted
+        assert result == expected
+
     def test_ignore_semicolon_in_single_quote_string(self, converter):
         """Test that semicolons in single-quoted strings are not split."""
         # Arrange
@@ -240,6 +253,45 @@ f = 6"""
         # Arrange
         text = "msg = 'He''s here'; x = 1"
         expected = "msg = 'He''s here'\nx = 1"
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+
+        # Assert
+        assert was_converted
+        assert result == expected
+
+    def test_escaped_double_quotes_in_strings(self, converter):
+        """Test handling of escaped double quotes in strings."""
+        # Arrange
+        text = 'msg = "Say ""Hello"""; x = 1'
+        expected = 'msg = "Say ""Hello"""\nx = 1'
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+
+        # Assert
+        assert was_converted
+        assert result == expected
+
+    def test_single_quote_toggle_with_semicolons(self, converter):
+        """Test that single quotes properly toggle string mode with semicolons around."""
+        # Arrange
+        text = "a = 1; msg = 'text'; b = 2"
+        expected = "a = 1\nmsg = 'text'\nb = 2"
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+
+        # Assert
+        assert was_converted
+        assert result == expected
+
+    def test_double_quote_toggle_with_semicolons(self, converter):
+        """Test that double quotes properly toggle string mode with semicolons around."""
+        # Arrange
+        text = 'a = 1; msg = "text"; b = 2'
+        expected = 'a = 1\nmsg = "text"\nb = 2'
 
         # Act
         result, was_converted = converter.convert_text(text)
