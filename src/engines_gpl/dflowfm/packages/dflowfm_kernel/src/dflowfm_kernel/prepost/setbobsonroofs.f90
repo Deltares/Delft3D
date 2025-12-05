@@ -77,7 +77,7 @@ contains
          call aerr('infiltcaproofs(ndx)', ierr, lnx); infiltcaproofs = dmiss
       end if
 
-      call readyy('Setbobsonroofs', 0d0)
+      call readyy('Setbobsonroofs', 0.0_dp)
 
       call oldfil(minp, md_roofsfile)
       call reapol(minp, 0)
@@ -91,7 +91,7 @@ contains
          end if
       end do
 
-      zpmin = 1d10
+      zpmin = 1.0e10_dp
       do n = 1, npoly
          zpmin(n) = minval(zpl(iistart(n):iiend(n)))
       end do
@@ -120,8 +120,8 @@ contains
 
       kint = max(numLL / 100, 1); nt = 0
 
-      if (roofheightuni > 0d0) then
-         allocate (blav(npoly), nblav(npoly)); blav = 0d0; nblav = 0d0
+      if (roofheightuni > 0.0_dp) then
+         allocate (blav(npoly), nblav(npoly)); blav = 0.0_dp; nblav = 0.0_dp
          do iL = 1, numLL
 
             jacros = 0
@@ -138,7 +138,7 @@ contains
             end if
 
             if (mod(iL, kint) == 0) then
-               AF = dble(iL) / dble(numLL)
+               AF = real(iL, kind=dp) / real(numLL, kind=dp)
                call readyy('Setbobsonroofs', af)
             end if
 
@@ -207,8 +207,8 @@ contains
                   bl(n2) = zc
                   frcuroofs(L) = frcuniroof
                   if (infiltrationmodel == DFM_HYD_INFILT_CONST) then
-                     infiltcaproofs(n1) = 0d0
-                     infiltcaproofs(n2) = 0d0
+                     infiltcaproofs(n1) = 0.0_dp
+                     infiltcaproofs(n2) = 0.0_dp
                   end if
                end if
             end if
@@ -242,7 +242,7 @@ contains
          end if
 
          if (mod(iL, kint) == 0) then
-            AF = dble(iL) / dble(numLL)
+            AF = real(iL, kind=dp) / real(numLL, kind=dp)
             call readyy('Setbobsonroofs', af)
          end if
 
@@ -289,7 +289,7 @@ contains
             if (roofheightuni > 0) then
                zc = blav(ip) + roofheightuni + roofedgeheight
             else
-               zc = sl * zpL(k + 1) + (1d0 - sl) * zpL(k)
+               zc = sl * zpL(k + 1) + (1.0_dp - sl) * zpL(k)
             end if
             bob(1, L) = zc; bob(2, L) = bob(1, L)
             bob0(:, L) = bob(:, L)

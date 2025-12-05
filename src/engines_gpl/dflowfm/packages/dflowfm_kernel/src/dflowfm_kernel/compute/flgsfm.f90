@@ -160,8 +160,8 @@ contains
       ! velheight = istrtyp(7, istru)==1
       velheight = .true.
 
-      relax = 1.0d0
-      au(Lf) = 0d0; fu(Lf) = 0d0; ru(Lf) = 0d0
+      relax = 1.0_dp
+      au(Lf) = 0.0_dp; fu(Lf) = 0.0_dp; ru(Lf) = 0.0_dp
       !
       ! ng instead of istru
 
@@ -170,7 +170,7 @@ contains
       call flupdofm(m, il, ir, ng, velheight, husb, hdsb, &
                     uu, ud, teken, relax)
 
-      gatedoorheight = 0d0
+      gatedoorheight = 0.0_dp
 
       tekenstr = teken * sign(1, L) ! if flow link abs(L) is in opposite orientation to the structure's orientation, then negate the just computed upwind (flow) teken.
 

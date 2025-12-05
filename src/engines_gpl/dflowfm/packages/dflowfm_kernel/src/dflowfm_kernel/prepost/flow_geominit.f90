@@ -820,7 +820,7 @@ contains
             if (kcu(L) == 3 .and. fixedweirtopwidth > 0.0_dp) then
                weirheight = fixedweirtopwidth ! we don't have bl nor bobs yet !max(0d0, 0.5d0*(bob(1,L) + bob(2,L)) - 0.5d0*(bl(k1) + bl(k2)) )
                weirlength = fixedweirtopwidth
-               dx(L) = min(dx(L), max(weirlength + 2d0 * weirheight * fixedweirtalud, 0.5d0 * sqrt(ba(k))))
+               dx(L) = min(dx(L), max(weirlength + 2.0_dp * weirheight * fixedweirtalud, 0.5_dp * sqrt(ba(k))))
             end if
          end if
 
@@ -843,7 +843,7 @@ contains
                if (izbndpos == 0) then ! full grid cell outward
                   dx(Lf) = dxe(L)
                else if (izbndpos == 1) then ! half a grid cell outward
-                  dx(Lf) = .5d0 * dxe(L)
+                  dx(Lf) = 0.5_dp * dxe(L)
                else ! izbndpos==2                           ! on specified boundary polyline
                   continue ! nowhere supported yet
                end if
@@ -913,9 +913,9 @@ contains
       end if
 
       teta = abs(teta0) ! set spatially constant teta. Override only in setdt for ivariableteta = 2
-      if (teta0 == 1d0) then
+      if (teta0 == 1.0_dp) then
          ivariableteta = 0 ! fully implicit
-         teta = 1d0
+         teta = 1.0_dp
       else if (teta0 < 0) then
          ivariableteta = 2 ! variable teta
       else
@@ -950,7 +950,7 @@ contains
                   wu(L) = prof1d(1, LL) ! todo, wu1DUNI from max width of profile interpolations
                else
                   KA = -PROF1D(1, LL); KB = -PROF1D(2, LL); ALFA = PROF1D(3, LL)
-                  WU(L) = (1d0 - ALFA) * PROFILES1D(KA)%WIDTH + ALFA * PROFILES1D(KB)%WIDTH
+                  WU(L) = (1.0_dp - ALFA) * PROFILES1D(KA)%WIDTH + ALFA * PROFILES1D(KB)%WIDTH
                end if
             end if
          else
@@ -1002,9 +1002,9 @@ contains
       call getcellsurface1d(ba, bai)
 
       ! fraction of dist(nd1->edge) to link lenght dx
-      call readyy('geominit', 0.94d0)
+      call readyy('geominit', 0.94_dp)
 
-      acl = 0.5d0; acn = 0.5d0 ! for pipes
+      acl = 0.5_dp; acn = 0.5_dp ! for pipes
       do L = 1, lnx ! for all links,
          k1 = ln(1, L)
          k2 = ln(2, L)
@@ -1021,9 +1021,9 @@ contains
             call DLINEDIS2(xz(k1), yz(k1), xk(k3), yk(k3), xk(k4), yk(k4), JA, dxn1e, XN, YN, RL)
             call DLINEDIS2(xz(k2), yz(k2), xk(k3), yk(k3), xk(k4), yk(k4), JA, dxn2e, XN, YN, RL)
 
-            if (abs(dxn1e + dxn2e) < 1d-15) then
-               dxn1e = 5d-16
-               dxn2e = 5d-16
+            if (abs(dxn1e + dxn2e) < 1.0e-15_dp) then
+               dxn1e = 5.0e-16_dp
+               dxn2e = 5.0e-16_dp
             end if
 
             acl(L) = dxn1e / (dxn1e + dxn2e) ! weight factor of nd1
@@ -1050,9 +1050,9 @@ contains
 
       do L = 1, lnx
          ! the max func after setting dx1 fraction
-         dxi(L) = 1d0 / dx(L) ! dxi to minimise nr. of divisions
+         dxi(L) = 1.0_dp / dx(L) ! dxi to minimise nr. of divisions
          if (wu(L) > 0) then
-            wui(L) = 1d0 / wu(L)
+            wui(L) = 1.0_dp / wu(L)
          else
             write (msgbuf, '(a,i0,a)') 'flow_geominit(): wu(', L, ') = 0'
             call qnerror(trim(msgbuf), ' ', ' ')
@@ -1060,14 +1060,14 @@ contains
       end do
 
       do n = 1, ndx2D ! internal 2d nodes
-         if (ba(n) > 0d0) then
-            bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
+         if (ba(n) > 0.0_dp) then
+            bai(n) = 1.0_dp / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
          end if
       end do
 
       do n = ndx1Db + 1, ndx ! boundary 2d nodes
-         if (ba(n) > 0d0) then
-            bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
+         if (ba(n) > 0.0_dp) then
+            bai(n) = 1.0_dp / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
          end if
       end do
 
@@ -1091,11 +1091,11 @@ contains
          call allocateandset1Dnodexyarrays(n) ! na  csu en snu
       end do
 
-      call readyy('geominit', 0.98d0)
+      call readyy('geominit', 0.98_dp)
 
       call iadvecini() ! set desired advection for non (-1) links
 
-      avortho = 0d0
+      avortho = 0.0_dp
       do L = lnx1D + 1, lnx ! for all links, check link orthogonality
          if (abs(kcu(L)) == 1) cycle
          k1 = ln(1, L)
@@ -1124,7 +1124,7 @@ contains
       numlimdt = 0
 ! deallocate(kfs) ; allocate(kfs(ndx)) ! SPvdP: removed, since (1) uninitialized and (2) kfs needed in "setlinktocenterweights" later
 
-      call readyy('geominit', -1d0)
+      call readyy('geominit', -1.0_dp)
 
       if (isimplefixedweirs == 0) call fixedweirs_on_flowgeom() ! Impose fixed weirs paths on all crossed flow links.
 
@@ -1238,7 +1238,7 @@ contains
                   if (LLL < 0) then ! outflowing link: use alfa1
                      walls(10, nw) = acl(L1)
                   else
-                     walls(10, nw) = (1d0 - acl(L1))
+                     walls(10, nw) = (1.0_dp - acl(L1))
                   end if
                end if
                if (lncn(1, LLA) == k4 .or. lncn(2, LLA) == k4) then
@@ -1247,12 +1247,12 @@ contains
                   if (LLL < 0) then
                      walls(11, nw) = acl(L2)
                   else
-                     walls(11, nw) = (1d0 - acl(L2))
+                     walls(11, nw) = (1.0_dp - acl(L2))
                   end if
                end if
             end do
 
-            walls(12, nw) = 0.5d0 * dis ! half of distance circumcentre to the wall (m)
+            walls(12, nw) = 0.5_dp * dis ! half of distance circumcentre to the wall (m)
             walls(13, nw) = bl(k1) ! cell bottom level (m)
             walls(14, nw) = abs(zk(k4) - zk(k3)) ! bottom level difference (m)
             walls(15, nw) = walls(14, nw) / walls(9, nw) ! bottom level inclination()
@@ -1344,20 +1344,20 @@ contains
       end do
 
       do icn = 1, nrcnw
-         sf = 0d0; n = 0
+         sf = 0.0_dp; n = 0
          if (abs(nwalcnw(1, icn)) > 0) then
             sf = walls(6, abs(nwalcnw(1, icn))); n = n + 1
          end if
          if (abs(nwalcnw(2, icn)) > 0) then
             sf = walls(6, abs(nwalcnw(2, icn))) + sf; n = n + 1
          end if
-         if (sf > 0d0) then
-            sfcnw(icn) = sf / dble(n) ! averaged
+         if (sf > 0.0_dp) then
+            sfcnw(icn) = sf / real(n, kind=dp) ! averaged
          end if
       end do
 
       dx = max(dx, dxmin)
-      dxi = 1d0 / dx
+      dxi = 1.0_dp / dx
 
       if (allocated(jaduiktmp)) then
          do L = 1, Lnx1D

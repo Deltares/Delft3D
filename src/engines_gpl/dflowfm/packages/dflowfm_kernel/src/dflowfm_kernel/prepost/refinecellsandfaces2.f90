@@ -1350,7 +1350,7 @@ contains
 
                         if (iter == MAXITER) then
 !                        call adddot(xzw(ic),yzw(ic))
-                           call adddot(0.5d0 * (xk(kn(1, L)) + xk(kn(2, L))), 0.5d0 * (yk(kn(1, L)) + yk(kn(2, L))))
+                           call adddot(0.5_dp * (xk(kn(1, L)) + xk(kn(2, L))), 0.5_dp * (yk(kn(1, L)) + yk(kn(2, L))))
                         end if
 
                      end if
@@ -1434,8 +1434,8 @@ contains
 !          check if node k is in the middle
                k1 = kn(1, L) + kn(2, L) - k
                k2 = kn(1, Lp1) + kn(2, Lp1) - k
-               xkc = 0.5d0 * (xk(k1) + xk(k2))
-               ykc = 0.5d0 * (yk(k1) + yk(k2))
+               xkc = 0.5_dp * (xk(k1) + xk(k2))
+               ykc = 0.5_dp * (yk(k1) + yk(k2))
 
                if (jsferic == 1) then
                   call comp_middle_latitude(yk(k1), yk(k2), ykc, ierr)
@@ -1447,10 +1447,10 @@ contains
 !             check for poles
                   Lpole1 = .false.
                   Lpole2 = .false.
-                  if (abs(abs(yk(k1)) - 90d0) < dtol_pole) then
+                  if (abs(abs(yk(k1)) - 90.0_dp) < dtol_pole) then
                      Lpole1 = .true.
                   end if
-                  if (abs(abs(yk(k2)) - 90d0) < dtol_pole) then
+                  if (abs(abs(yk(k2)) - 90.0_dp) < dtol_pole) then
                      Lpole2 = .true.
                   end if
 
@@ -1462,14 +1462,14 @@ contains
                      xmn = min(xk(k1), xk(k2))
                      xmx = max(xk(k1), xk(k2))
 
-                     if (xmx - xmn > 180d0) then
-                        xkc = xkc + 180d0
+                     if (xmx - xmn > 180.0_dp) then
+                        xkc = xkc + 180.0_dp
                      end if
                   end if
                end if
 
 !          compute tolerance
-               dtol = 1d-4 * max(dbdistance(xk(k1), yk(k1), xk(k), yk(k), jsferic, jasfer3D, dmiss), &
+               dtol = 1.0e-4_dp * max(dbdistance(xk(k1), yk(k1), xk(k), yk(k), jsferic, jasfer3D, dmiss), &
                                  dbdistance(xk(k2), yk(k2), xk(k), yk(k), jsferic, jasfer3D, dmiss))
                if (dbdistance(xk(k), yk(k), xkc, ykc, jsferic, jasfer3D, dmiss) < dtol) then ! brother links found
                   linkbrother(L) = Lp1

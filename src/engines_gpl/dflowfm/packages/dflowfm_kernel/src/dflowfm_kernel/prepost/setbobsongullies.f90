@@ -69,7 +69,7 @@ contains
          return
       end if
 
-      call readyy('Setbobsongullies', 0d0)
+      call readyy('Setbobsongullies', 0.0_dp)
 
       call oldfil(minp, md_gulliesfile)
       call reapol(minp, 0)
@@ -104,7 +104,7 @@ contains
          end if
 
          if (mod(iL, kint) == 0) then
-            AF = dble(iL) / dble(numLL)
+            AF = real(iL, kind=dp) / real(numLL, kind=dp)
             call readyy('Setbobsongullies', af)
          end if
 
@@ -146,7 +146,7 @@ contains
          end if
 
          if (jacros == 1) then !        dig the gullies
-            zc = sl * zpL(k + 1) + (1d0 - sl) * zpL(k)
+            zc = sl * zpL(k + 1) + (1.0_dp - sl) * zpL(k)
             bob(1, L) = min(zc, bob(1, L), bob(2, L)); bob(2, L) = bob(1, L)
             bob0(:, L) = bob(:, L)
 

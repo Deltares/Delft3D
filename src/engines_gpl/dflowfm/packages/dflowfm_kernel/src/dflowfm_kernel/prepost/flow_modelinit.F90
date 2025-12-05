@@ -270,7 +270,7 @@ contains
 
       if (my_rank == fetch_proc_rank .and. (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG)) then
          ! All helpers need no further model initialization.
-         call tauwavefetch(0d0)
+         call tauwavefetch(0.0_dp)
          iresult = DFM_USERINTERRUPT
          return
       end if
@@ -418,11 +418,11 @@ contains
 
       ! initialize waq and add to tracer administration
       call timstrt('WAQ processes init  ', handle_extra(18)) ! waq processes init
-      if (ti_waqproc /= 0d0) then
+      if (ti_waqproc /= 0.0_dp) then
          if (jawaqproc == 1) then
             call fm_wq_processes_ini_proc()
             jawaqproc = 2
-            if (ti_waqproc > 0d0) then
+            if (ti_waqproc > 0.0_dp) then
                call fm_wq_processes_step(ti_waqproc, tstart_user)
             else
                call fm_wq_processes_step(dt_init, tstart_user)
@@ -507,7 +507,7 @@ contains
          use_u1 = .false.
          ucxq_save = ucxq
          ucyq_save = ucyq
-         if (Corioadamsbashfordfac > 0d0) then
+         if (Corioadamsbashfordfac > 0.0_dp) then
             fvcoro_save = fvcoro
          end if
       end if !restart
@@ -524,7 +524,7 @@ contains
 
       !See UNST-7754
       if (stm_included .and. jased > 0) then
-         taub = 0d0
+         taub = 0.0_dp
          do L = 1, lnx
             k1 = ln(1, L); k2 = ln(2, L)
             taub(k1) = taub(k1) + wcl(1, L) * taubxu(L)

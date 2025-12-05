@@ -1492,7 +1492,7 @@ contains
 
          allocate (xgate(ngatesg), ygate(ngatesg), zgate(ngatesg), xy2gate(2, ngatesg), kgate(3, ngate), kdg(ngatesg), stat=ierr)
          call aerr('xgate(ngatesg), ygate(ngatesg), zgate(ngatesg), xy2gate(2,ngatesg), kgate(3,ngate), kdg(ngatesg)', ierr, ngate * 10)
-         kgate = 0.0_dp; zgate = 1d10; kdg = 1
+         kgate = 0.0_dp; zgate = 1.0e10_dp; kdg = 1
 
          if (allocated(gate_ids)) then
             deallocate (gate_ids)
@@ -1563,7 +1563,7 @@ contains
          end if
          allocate (xcdam(ncdamsg), ycdam(ncdamsg), zcdam(ncdamsg), xy2cdam(2, ncdamsg), kcdam(3, ncdam), kdd(ncdamsg), stat=ierr)
          call aerr('xcdam(ncdamsg), ycdam(ncdamsg), zcdam(ncdamsg), xy2cdam(2,ncdamsg), kcdam(3,ncdam), kdd(ncdamsg)', ierr, ncdam * 10)
-         kcdam = 0.0_dp; zcdam = 1d10; kdd = 1
+         kcdam = 0.0_dp; zcdam = 1.0e10_dp; kdd = 1
 
          if (allocated(cdam_ids)) then
             deallocate (cdam_ids)
@@ -1679,7 +1679,7 @@ contains
          kx = 3
          allocate (xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg * kx), xy2cgen(2, ncgensg), kcgen(4, ncgen), kdgen(ncgensg), stat=ierr)
          call aerr('xcgen(ncgensg), ycgen(ncgensg), zcgen(ncgensg*kx), xy2cgen(2,ncgensg), kcgen(4,ncgen), kdgen(ncgensg)', ierr, ncgen * 10)
-         kcgen = 0.0_dp; zcgen = 1d10; kdgen = 1
+         kcgen = 0.0_dp; zcgen = 1.0e10_dp; kdgen = 1
 
          if (allocated(fusav)) then
             deallocate (fusav)

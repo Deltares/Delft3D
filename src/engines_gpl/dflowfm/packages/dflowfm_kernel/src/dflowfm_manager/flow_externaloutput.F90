@@ -275,7 +275,7 @@ contains
             wrwaqon = .true.
          end if
 
-         if (tim >= ti_waqs .and. tim <= ti_waqe + 0.1d0 .and. tim >= time_waq - 0.1d0) then
+         if (tim >= ti_waqs .and. tim <= ti_waqe + 0.1_dp .and. tim >= time_waq - 0.1_dp) then
             call waq_wri_couple_files(tim)
             time_waq = time_waq + ti_waq
          end if
@@ -286,7 +286,7 @@ contains
          if (tim >= time_stat) then
             call step_to_screen(); time_stat = tim + ti_stat
          end if
-      else if (ti_stat < 0d0) then
+      else if (ti_stat < 0.0_dp) then
 !     base statistics output on wallclock time, if available
          if (jatimer > 0) then
             runtime = gettimer(1, ITOTAL)
@@ -298,7 +298,7 @@ contains
       end if
 
    !! Write shape files at the initialization
-      if (abs(tim - tstart_user) < 1d-10) then
+      if (abs(tim - tstart_user) < 1.0e-10_dp) then
 #ifdef HAVE_SHAPELIB
          call unc_write_shp()
 #else

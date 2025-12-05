@@ -126,11 +126,11 @@ contains
                   if (izbndpos == 0) then ! as in D3DFLOW
 !               xz(k1)  = 2d0*xk(k3) - xk(k4)
 !               yz(k1)  = 2d0*yk(k3) - yk(k4)
-                     call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), 2d0, -1d0, xz(k1), yz(k1))
+                     call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), 2.0_dp, -1.0_dp, xz(k1), yz(k1))
                   else if (izbndpos == 1) then ! on network boundary
 !               xz(k1)  = 1.5d0*xk(k3) - 0.5d0*xk(k4)
 !               yz(k1)  = 1.5d0*yk(k3) - 0.5d0*yk(k4)
-                     call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), 1.5d0, -0.5d0, xz(k1), yz(k1))
+                     call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), 1.5_dp, -0.5_dp, xz(k1), yz(k1))
                   else if (izbndpos == 2) then ! on specified boundary polyline
 
                   end if
@@ -143,11 +143,11 @@ contains
                   if (izbndpos == 0) then ! as in D3DFLOW
 !               xz(k1) = 2d0*xk(k4) - xk(k3)
 !               yz(k1) = 2d0*yk(k4) - yk(k3)
-                     call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), -1d0, 2d0, xz(k1), yz(k1))
+                     call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), -1.0_dp, 2.0_dp, xz(k1), yz(k1))
                   else if (izbndpos == 1) then ! on network boundary
 !               xz(k1) = 1.5d0*xk(k4) - 0.5d0*xk(k3)
 !               yz(k1) = 1.5d0*yk(k4) - 0.5d0*yk(k3)
-                     call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), -0.5d0, 1.5d0, xz(k1), yz(k1))
+                     call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), -0.5_dp, 1.5_dp, xz(k1), yz(k1))
                   else if (izbndpos == 2) then ! on specified boundary polyline
 
                   end if
@@ -202,7 +202,7 @@ contains
                if (is_1d_boundary_candidate(L, 1)) then
 !            xz(k1)  = 2d0*xk(k3) - xk(k4)
 !            yz(k1)  = 2d0*yk(k3) - yk(k4)
-                  call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), 2d0, -1d0, xz(k1), yz(k1))
+                  call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), 2.0_dp, -1.0_dp, xz(k1), yz(k1))
                   ln(2, Lf) = abs(lne(1, L)) ! this overrides previous k2
                   kcu(Lf) = -1
                   kcs(k1) = -1
@@ -211,7 +211,7 @@ contains
                else if (is_1d_boundary_candidate(L, 2)) then
 !            xz(k1)  = 2d0*xk(k4) - xk(k3)
 !            yz(k1)  = 2d0*yk(k4) - yk(k3)
-                  call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), -1d0, 2.0d0, xz(k1), yz(k1))
+                  call a1x1a2x2(xk(k3), yk(k3), xk(k4), yk(k4), -1.0_dp, 2.0_dp, xz(k1), yz(k1))
                   ln(2, Lf) = abs(lne(2, L))
                   kcu(Lf) = -1
                   kcs(k1) = -1

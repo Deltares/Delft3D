@@ -1720,7 +1720,7 @@ contains
          ! Boundary condition, which may be nonzero:
          cdflocal(1) = pdflocal(1)
          do ii = 2, naint
-            cdflocal(ii) = cdflocal(ii - 1) + (pdflocal(ii) + pdflocal(ii - 1)) / 2d0
+            cdflocal(ii) = cdflocal(ii - 1) + (pdflocal(ii) + pdflocal(ii - 1)) / 2.0_dp
             ! Note: this only works if the directional
             ! bins are constant in size. Assumed multiplication
             ! by one.
@@ -1733,7 +1733,7 @@ contains
          if (randnums(wp%K + i) >= cdflocal(1)) then
             call LINEAR_INTERP(cdflocal, combspec%ang, naint, randnums(wp%K + i), wp%thetagen(i), dummy)
          else
-            call LINEAR_INTERP([0.d0, cdflocal(1)], [combspec%ang(naint) - 2 * par_pi, combspec%ang(1)], &
+            call LINEAR_INTERP([0.0_dp, cdflocal(1)], [combspec%ang(naint) - 2 * par_pi, combspec%ang(1)], &
                                2, randnums(wp%K + i), wp%thetagen(i), dummy)
          end if
          ! ensure wave direction 0<=theta<2pi
@@ -1747,9 +1747,9 @@ contains
       ! solver from wave_functions module. This function returns a negative wave length if the
       ! solver did not converge.
       do i = 1, wp%K
-         L0 = par_g * (1 / wp%fgen(i))**2 / 2d0 / par_pi ! deep water wave length
+         L0 = par_g * (1 / wp%fgen(i))**2 / 2.0_dp / par_pi ! deep water wave length
          L = iteratedispersion(L0, L0, par_pi, hb0)
-         if (L < 0.d0) then
+         if (L < 0.0_dp) then
             call writelog('lsw', '', 'No dispersion convergence found for wave train ', i, &
                           ' in boundary condition generation')
             L = -L
@@ -1776,12 +1776,12 @@ contains
       real(dp) :: L1, L2
       integer :: iter
       real(dp) :: err
-      real(dp), parameter :: aphi = 1.d0 / (((1.0d0 + sqrt(5.0d0)) / 2) + 1)
-      real(dp), parameter :: bphi = ((1.0d0 + sqrt(5.0d0)) / 2) / (((1.0d0 + sqrt(5.0d0)) / 2) + 1)
+      real(dp), parameter :: aphi = 1.0_dp / (((1.0_dp + sqrt(5.0_dp)) / 2) + 1)
+      real(dp), parameter :: bphi = ((1.0_dp + sqrt(5.0_dp)) / 2) / (((1.0_dp + sqrt(5.0_dp)) / 2) + 1)
       integer, parameter :: itermax = 150
-      real(dp), parameter :: errmax = 0.00001d0
+      real(dp), parameter :: errmax = 0.00001_dp
 
-      err = huge(0.0d0)
+      err = huge(0.0_dp)
       iter = 0
       L1 = Lestimate
       do while (err > errmax .and. iter < itermax)
@@ -1815,18 +1815,18 @@ contains
 
       real(dp), dimension(:), allocatable :: temp
 
-      real(kind=dp), parameter :: dtol = 1d-16
+      real(kind=dp), parameter :: dtol = 1.0e-16_dp
 
       allocate (temp(size(Sf)))
-      temp = 0.d0
+      temp = 0.0_dp
       where (Sf >= trepfac * maxval(Sf))
-         temp = 1.d0
+         temp = 1.0_dp
       end where
 
       if (switch == 1) then
          Trep = sum(temp * Sf) / max(sum(temp * Sf * f), dtol) ! Tm01
       else
-         Trep = sum(temp * Sf / max(f, 0.001d0)) / max(sum(temp * Sf), dtol) ! Tm-1,0
+         Trep = sum(temp * Sf / max(f, 0.001_dp)) / max(sum(temp * Sf), dtol) ! Tm-1,0
       end if
 
       deallocate (temp)
@@ -1901,13 +1901,13 @@ contains
       ! Check whether the internal frequency is high enough to describe the highest frequency
       ! wave train returned from frange (which can be used in the boundary conditions)
       if (.not. waveBoundaryParameters(ibnd)%nonhspectrum) then
-         if (wp%dtin > 0.5d0 / wp%fgen(wp%K)) then
-            wp%dtin = 0.5d0 / wp%fgen(wp%K)
+         if (wp%dtin > 0.5_dp / wp%fgen(wp%K)) then
+            wp%dtin = 0.5_dp / wp%fgen(wp%K)
             wp%dtchanged = .true.
          end if
       else
-         if (wp%dtin > 0.1d0 / wp%fgen(wp%K)) then
-            wp%dtin = 0.1d0 / wp%fgen(wp%K)
+         if (wp%dtin > 0.1_dp / wp%fgen(wp%K)) then
+            wp%dtin = 0.1_dp / wp%fgen(wp%K)
             wp%dtchanged = .true.
          end if
       end if
@@ -1932,17 +1932,17 @@ contains
       allocate (wp%taperf(wp%tslen))
       allocate (wp%taperw(wp%tslen))
       ! fill majority with unity
-      wp%taperf = 1.d0
-      wp%taperw = 1.d0
+      wp%taperf = 1.0_dp
+      wp%taperw = 1.0_dp
       if (waveBoundaryParameters(ibnd)%nonhspectrum) then
          ! begin taper by building up the wave conditions over 2 wave periods
-         ntaper = nint((2.0d0 * waveSpectrumAdministration(ibnd)%Tbc) / wp%dtin)
+         ntaper = nint((2.0_dp * waveSpectrumAdministration(ibnd)%Tbc) / wp%dtin)
       else
-         ntaper = nint((5.d0 * waveSpectrumAdministration(ibnd)%Tbc) / wp%dtin)
+         ntaper = nint((5.0_dp * waveSpectrumAdministration(ibnd)%Tbc) / wp%dtin)
       end if
       do i = 1, min(ntaper, size(wp%taperf))
-         wp%taperf(i) = tanh(5.d0 * i / ntaper) ! multiplied by five because tanh(5)=~1
-         wp%taperw(i) = tanh(5.d0 * i / ntaper)
+         wp%taperf(i) = tanh(5.0_dp * i / ntaper) ! multiplied by five because tanh(5)=~1
+         wp%taperw(i) = tanh(5.0_dp * i / ntaper)
       end do
       ! We do not want to taperw the end anymore. Instead we pass the wave height at the end of rtbc to
       ! the next wave generation iteration.
@@ -1954,9 +1954,9 @@ contains
          indend = wp%tslen
       end if
       do i = 1, min(ntaper, indend)
-         wp%taperf(indend + 1 - i) = min(wp%taperf(indend + 1 - i), tanh(5.d0 * i / ntaper))
+         wp%taperf(indend + 1 - i) = min(wp%taperf(indend + 1 - i), tanh(5.0_dp * i / ntaper))
       end do
-      wp%taperf(indend:wp%tslen) = 0.d0
+      wp%taperf(indend:wp%tslen) = 0.0_dp
       ind_end_taper = indend
    end subroutine generate_wave_time_axis
 
@@ -2062,7 +2062,7 @@ contains
             ! all components phase-resolved
             wp%PRindex = 1
          else
-            if (waveBoundaryParameters(ibnd)%swkhmin > 0.d0) then
+            if (waveBoundaryParameters(ibnd)%swkhmin > 0.0_dp) then
                ! some components resolved, some not
                where (wp%kgen * hb0 >= waveBoundaryParameters(ibnd)%swkhmin)
                   wp%PRindex = 0
@@ -2109,15 +2109,15 @@ contains
       ! Allocate Fourier coefficients for each y-position at the offshore boundary and
       ! each time step
       allocate (wp%CompFn(npb, wp%tslen))
-      wp%CompFn = 0.d0
+      wp%CompFn = 0.0_dp
       allocate (tempcmplx(wp%tslen / 2 - 1))
 
       call writelog('ls', '', 'Calculating Fourier components')
-      call progress_indicator(.true., 0.d0, 5.d0, 2.d0)
+      call progress_indicator(.true., 0.0_dp, 5.0_dp, 2.0_dp)
 
       do i = 1, wp%K
 
-         call progress_indicator(.false., dble(i) / wp%K * 100, 5.d0, 2.d0)
+         call progress_indicator(.false., real(i, kind=dp) / wp%K * 100, 5.0_dp, 2.0_dp)
 
          do ii = 1, npb
             ! Determine first half of complex Fourier coefficients of wave train
@@ -2198,7 +2198,7 @@ contains
             if (binedges(itheta, 1) > binedges(itheta, 2)) then
                ! Need to check both above and below zero degrees
                if ((wp%thetagen(i) >= binedges(itheta, 1) .and. wp%thetagen(i) <= 2 * par_pi) .or. &
-                   (wp%thetagen(i) >= 0.d0 .and. wp%thetagen(i) <= binedges(itheta, 2))) then
+                   (wp%thetagen(i) >= 0.0_dp .and. wp%thetagen(i) <= binedges(itheta, 2))) then
                   wp%WDindex(i) = itheta
                   ! We now have the correct wave bin, move to next wave component K
                   exit
@@ -2228,8 +2228,8 @@ contains
 
       ! Check the amount of energy lost to wave trains falling outside the computational
       ! domain
-      lostvar = 0.d0
-      keptvar = 0.d0
+      lostvar = 0.0_dp
+      keptvar = 0.0_dp
       do i = 1, wp%K
          if (wp%WDindex(i) == 0) then
             lostvar = lostvar + sum(wp%A(:, i)**2)
@@ -2239,7 +2239,7 @@ contains
       end do
       perclost = 100 * (lostvar / (lostvar + keptvar))
 
-      if (perclost > 5.0d0) then
+      if (perclost > 5.0_dp) then
          call writelog('lsw', '(a,f0.1,a)', 'Large amounts of energy (', perclost, &
                        '%) fall outside computational domain at the offshore boundary')
          call writelog('lsw', '', 'Check specification of input wave angles and wave directional grid')
@@ -2281,13 +2281,13 @@ contains
       ! directional spreading dependent envelope
       allocate (zeta(npb, wp%tslen, ntheta))
       allocate (Ampzeta(npb, wp%tslen, ntheta))
-      zeta = 0.d0
-      Ampzeta = 0.d0
+      zeta = 0.0_dp
+      Ampzeta = 0.0_dp
 
       allocate (eta(npb, wp%tslen))
       allocate (Amp(npb, wp%tslen))
-      eta = 0.d0
-      Amp = 0.d0
+      eta = 0.0_dp
+      Amp = 0.0_dp
 
       ! Calculate wave energy for each y-coordinate along seaside boundary for
       ! current computational directional bin
@@ -2346,7 +2346,7 @@ contains
                tempcmplx = fft(tempcmplx, inv=.true., stat=status)
 
                ! Scale result
-               tempcmplx = tempcmplx / sqrt(dble(size(tempcmplx)))
+               tempcmplx = tempcmplx / sqrt(real(size(tempcmplx), kind=dp))
 
                ! Superimpose gradual increase and decrease of energy input for
                ! current y-coordinate and computational diretional bin on
@@ -2354,7 +2354,7 @@ contains
                !
                ! Robert: use final wave elevation from last iteration to startup
                ! this boundary condition
-               zeta(iy, :, itheta) = dble(tempcmplx * wp%tslen)
+               zeta(iy, :, itheta) = real(tempcmplx * wp%tslen, kind=dp)
                ! The first time this function is called in a simulation, lastwaveelevation is unknown,
                ! so would be set to zero. However, this artificially increases the taper time, and is
                ! not useful if repeatwbc = .true., as this zero level is repeated every boundary condition
@@ -2379,7 +2379,7 @@ contains
       !
       ! Calculate energy envelope amplitude
       call writelog('ls', '(A,I0)', 'Calculating wave energy envelope at boundary ', ibnd)
-      call progress_indicator(.true., 0.d0, 5.d0, 2.d0)
+      call progress_indicator(.true., 0.0_dp, 5.0_dp, 2.0_dp)
 
       do iy = 1, npb
          ! Integrate instantaneous water level excitation of wave
@@ -2411,12 +2411,12 @@ contains
             else !  nwc==0
                ! Current computational directional bin does not contain any wave
                ! components
-               Ampzeta(iy, :, itheta) = 0.d0
+               Ampzeta(iy, :, itheta) = 0.0_dp
             end if ! nwc>0
          end do ! 1:ntheta
          ! Print status message to screen
 
-         call progress_indicator(.false., dble(iy) / (npb) * 100, 5.d0, 2.d0)
+         call progress_indicator(.false., real(iy, kind=dp) / (npb) * 100, 5.0_dp, 2.0_dp)
 
       end do ! 1:npb
       !
@@ -2427,8 +2427,8 @@ contains
 
       ! Allocate memory for energy time series
       allocate (E_tdir(npb, wp%tslen, ntheta))
-      E_tdir = 0.0d0
-      E_tdir = 0.5d0 * waveBoundaryParameters(ibnd)%rho * par_g * Ampzeta**2
+      E_tdir = 0.0_dp
+      E_tdir = 0.5_dp * waveBoundaryParameters(ibnd)%rho * par_g * Ampzeta**2
       E_tdir = E_tdir / waveBoundaryParameters(ibnd)%dtheta
       !
       ! Ensure we scale back to the correct Hm0
@@ -2438,13 +2438,13 @@ contains
             stdeta = sum(E_tdir(iy, 1:nInBoundaryFile, :)) * waveBoundaryParameters(ibnd)%dtheta ! sum energy
             stdeta = stdeta / nInBoundaryFile ! mean energy
 
-            stdzeta = (wp%Hm0interp(iy) / sqrt(2.d0))**2 * (waveBoundaryParameters(ibnd)%rho * par_g / 8d0)
+            stdzeta = (wp%Hm0interp(iy) / sqrt(2.0_dp))**2 * (waveBoundaryParameters(ibnd)%rho * par_g / 8.0_dp)
 
             E_tdir(iy, :, :) = E_tdir(iy, :, :) * stdzeta / stdeta
          end do
       end if
       !
-      if (waveBoundaryParameters(ibnd)%wbcEvarreduce < 1.d0 - 1d-10) then
+      if (waveBoundaryParameters(ibnd)%wbcEvarreduce < 1.0_dp - 1.0e-10_dp) then
          do itheta = 1, ntheta
             do iy = 1, npb
                emean = sum(E_tdir(iy, :, itheta)) / wp%tslen
@@ -2532,9 +2532,9 @@ contains
       allocate (wp%zsits(npb, wp%tslen))
       allocate (wp%uits(npb, wp%tslen))
       allocate (wp%vits(npb, wp%tslen))
-      wp%zsits = 0.d0
-      wp%uits = 0.d0
-      wp%vits = 0.d0
+      wp%zsits = 0.0_dp
+      wp%uits = 0.0_dp
+      wp%vits = 0.0_dp
       !
       ! distance of each grid point to reference point
       do j = 1, npb
@@ -2545,11 +2545,11 @@ contains
       ! total surface elevation
 
       call writelog('ls', '', 'Calculating short wave elevation time series')
-      call progress_indicator(.true., 0.d0, 5.d0, 2.d0)
+      call progress_indicator(.true., 0.0_dp, 5.0_dp, 2.0_dp)
 
       do it = 1, wp%tslen
 
-         call progress_indicator(.false., dble(it) / wp%tslen * 100, 5.d0, 2.d0)
+         call progress_indicator(.false., real(it, kind=dp) / wp%tslen * 100, 5.0_dp, 2.0_dp)
 
          do ik = 1, wp%K
             if (wp%PRindex(ik) == 1) then
@@ -2568,23 +2568,23 @@ contains
       ! depth-averaged velocity
 
       call writelog('ls', '', 'Calculating short wave velocity time series')
-      call progress_indicator(.true., 0.d0, 5.d0, 2.d0)
+      call progress_indicator(.true., 0.0_dp, 5.0_dp, 2.0_dp)
 
       do it = 1, wp%tslen
 
-         call progress_indicator(.false., dble(it) / wp%tslen * 100, 5.d0, 2.d0)
+         call progress_indicator(.false., real(it, kind=dp) / wp%tslen * 100, 5.0_dp, 2.0_dp)
 
          do ik = 1, wp%K
             if (wp%PRindex(ik) == 1) then
                do j = 1, npb
                   ! Depth-average velocity in wave direction:
-                  U = 1.d0 / hb0 * wp%wgen(ik) * wp%A(j, ik) * &
+                  U = 1.0_dp / hb0 * wp%wgen(ik) * wp%A(j, ik) * &
                       sin(wp%wgen(ik) * wp%tin(it) &
                           - wp%kgen(ik) * (sin(wp%thetagen(ik)) * disty(j) &
                                            + cos(wp%thetagen(ik)) * distx(j)) &
                           + wp%phigen(ik) &
                           ) * &
-                      1.d0 / wp%kgen(ik)
+                      1.0_dp / wp%kgen(ik)
 
                   ! Eastward component:
                   wp%uits(j, it) = wp%uits(j, it) + cos(wp%thetagen(ik)) * U
@@ -2688,11 +2688,11 @@ contains
 
       ! Run loop over wave-wave interaction components
 
-      call progress_indicator(.true., 0.d0, 5.d0, 2.d0)
+      call progress_indicator(.true., 0.0_dp, 5.0_dp, 2.0_dp)
 
       do m = 1, K - 1
 
-         call progress_indicator(.false., dble(m) / (K - 1) * 100, 5.d0, 2.d0)
+         call progress_indicator(.false., real(m, kind=dp) / (K - 1) * 100, 5.0_dp, 2.0_dp)
 
          ! Allocate memory
          allocate (term1(K - m), term2(K - m), term2new(K - m), dif(K - m), chk1(K - m), chk2(K - m))
@@ -2713,7 +2713,7 @@ contains
                                2 * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m)))
 
          ! Determine group velocity of difference waves
-         cg3(m, 1:K - m) = 2.d0 * par_pi * deltaf / k3(m, 1:K - m)
+         cg3(m, 1:K - m) = 2.0_dp * par_pi * deltaf / k3(m, 1:K - m)
 
          ! Modification Robert + Jaap: make sure that the bound long wave amplitude does not
          !                             explode when offshore boundary is too close to shore,
@@ -2732,19 +2732,19 @@ contains
          chk1 = cosh(wp%kgen(1:K - m) * hb0)
          chk2 = cosh(wp%kgen(m + 1:K) * hb0)
 
-         D(m, 1:K - m) = -par_g * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m)) / 2.d0 / term1 + &
+         D(m, 1:K - m) = -par_g * wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m)) / 2.0_dp / term1 + &
                          term2**2 / (par_g * 2) + par_g * term2 / &
                          ((par_g * k3(m, 1:K - m) * tanh(k3(m, 1:K - m) * hb0) - (term2new)**2) * term1) * &
                          (term2 * ((term1)**2 / par_g / par_g - wp%kgen(1:K - m) * wp%kgen(m + 1:K) * cos(deltheta(m, 1:K - m))) &
-                          - 0.50d0 * ((-wp%wgen(1:K - m)) * wp%kgen(m + 1:K)**2 / (chk2**2) + wp%wgen(m + 1:K) * wp%kgen(1:K - m)**2 / (chk1**2)))
+                          - 0.50_dp * ((-wp%wgen(1:K - m)) * wp%kgen(m + 1:K)**2 / (chk2**2) + wp%wgen(m + 1:K) * wp%kgen(1:K - m)**2 / (chk1**2)))
 
          ! Exclude interactions with components smaller than or equal to current
          ! component according to lower limit Herbers 1994 eq. 1
-         where (wp%fgen <= deltaf) D(m, :) = 0.d0
+         where (wp%fgen <= deltaf) D(m, :) = 0.0_dp
 
          ! Exclude interactions with components that are cut-off by the fcutoff
          ! parameter
-         if (deltaf <= waveBoundaryParameters(ibnd)%fcutoff) D(m, :) = 0.d0
+         if (deltaf <= waveBoundaryParameters(ibnd)%fcutoff) D(m, :) = 0.0_dp
 
          ! Determine phase of bound long wave assuming a local equilibrium with
          ! forcing of interacting primary waves according to Van Dongeren et al.
@@ -2784,7 +2784,7 @@ contains
       end do
       !
       ! Run a loop over the offshore boundary
-      call progress_indicator(.true., 0.d0, 5.d0, 2.d0)
+      call progress_indicator(.true., 0.0_dp, 5.0_dp, 2.0_dp)
       do j = 1, npb
          ! Determine energy of bound long wave according to Herbers 1994 eq. 1 based
          ! on difference-interaction coefficient and energy density spectra of
@@ -2806,15 +2806,15 @@ contains
          ! Menno: put the sign of D in front of D_sign
          D_sign = sign(D_sign, D)
          ! Multiply amplitude with the sign of D
-         Abnd = sqrt(2d0 * Eforc * wp%dfgen) * D_sign
+         Abnd = sqrt(2.0_dp * Eforc * wp%dfgen) * D_sign
          deallocate (D_sign)
          !
          ! Determine complex description of bound long wave per interaction pair of
          ! primary waves for first y-coordinate along seaside boundary
-         Ftemp(:, :, 1) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 * cos(theta3) ! qx
-         Ftemp(:, :, 2) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 * sin(theta3) ! qy
-         Ftemp(:, :, 3) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) * cg3 ! qtot
-         Ftemp(:, :, 4) = Abnd / 2d0 * exp(-1 * par_compi * dphi3) ! eta
+         Ftemp(:, :, 1) = Abnd / 2.0_dp * exp(-1 * par_compi * dphi3) * cg3 * cos(theta3) ! qx
+         Ftemp(:, :, 2) = Abnd / 2.0_dp * exp(-1 * par_compi * dphi3) * cg3 * sin(theta3) ! qy
+         Ftemp(:, :, 3) = Abnd / 2.0_dp * exp(-1 * par_compi * dphi3) * cg3 ! qtot
+         Ftemp(:, :, 4) = Abnd / 2.0_dp * exp(-1 * par_compi * dphi3) ! eta
          !
          ! loop over qx,qy and qtot
          do iq = 1, 4
@@ -2829,7 +2829,7 @@ contains
             !
             ! Print status message to screen
             if (iq == 3) then
-               call progress_indicator(.false., dble(j) / (npb) * 100, 5.d0, 2.d0)
+               call progress_indicator(.false., real(j, kind=dp) / (npb) * 100, 5.0_dp, 2.0_dp)
             end if
 
             !
@@ -2840,7 +2840,7 @@ contains
             ! Determine mass flux as function of time and let the flux gradually
             ! increase and decrease in and out the wave time record using the earlier
             ! specified window
-            Comptemp2 = Comptemp2 / sqrt(dble(wp%tslen))
+            Comptemp2 = Comptemp2 / sqrt(real(wp%tslen, kind=dp))
             q(j, :, iq) = real(Comptemp2 * wp%tslen) * wp%taperf
          end do ! iq=1,3
       end do ! j=1,npb
@@ -2858,7 +2858,7 @@ contains
          end do
       end if
       !
-      if (waveBoundaryParameters(ibnd)%wbcQvarreduce < 1.d0 - 1d-10) then
+      if (waveBoundaryParameters(ibnd)%wbcQvarreduce < 1.0_dp - 1.0e-10_dp) then
          do iq = 1, 4
             do j = 1, npb
                qmean = sum(q(j, :, iq)) / wp%tslen
@@ -2870,7 +2870,7 @@ contains
       if (.not. waveBoundaryParameters(ibnd)%nonhspectrum) then
          ! If doing combined wave action balance and swell wave flux with swkhmin>0 then we need to add short wave velocity
          ! to time series of q here:
-         if (waveBoundaryParameters(ibnd)%swkhmin > 0.d0) then
+         if (waveBoundaryParameters(ibnd)%swkhmin > 0.0_dp) then
             do j = 1, npb
                q(j, :, 1) = q(j, :, 1) + wp%uits(j, :) * hb0 ! x, y flux
                q(j, :, 2) = q(j, :, 2) + wp%vits(j, :) * hb0

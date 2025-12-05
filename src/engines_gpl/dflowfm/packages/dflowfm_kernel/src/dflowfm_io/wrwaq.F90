@@ -2931,12 +2931,12 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%vdf = 0d0
+      waqpar%vdf = 0.0_dp
       if (waqpar%aggre == 0 .and. waqpar%aggrel == 0) then
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb + 1, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%vdf(waqpar%isaggr(kk)) = vicwws(kk - 1)
                end if
             end do
@@ -2949,15 +2949,15 @@ contains
             do kk = kb + 1, ktx
                if (waqpar%isaggr(kk - 1) == waqpar%isaggr(kk)) then
                   ! equal to the previous layer? find next minimum, and add volume
-                  if (vol1(kk) > 1d-25) then
+                  if (vol1(kk) > 1.0e-25_dp) then
                      if (vicwws(kk - 1) < vdfmin .or. vdfmin == 0.0) vdfmin = vicwws(kk - 1)
                      volsum = volsum + vol1(kk)
                   end if
                else
                   ! not equal to previous layer? add the (minimum) dispersion * volume vor the horizontal averaging
                   waqpar%vdf(waqpar%isaggr(kk - 1)) = waqpar%vdf(waqpar%isaggr(kk - 1)) + vdfmin * volsum
-                  if (vol1(kk) > 1d-25) then
-                     vdfmin = dble(vicwws(kk - 1))
+                  if (vol1(kk) > 1.0e-25_dp) then
+                     vdfmin = real(vicwws(kk - 1), kind=dp)
                      volsum = vol1(kk)
                   end if
                end if
@@ -2966,10 +2966,10 @@ contains
             waqpar%vdf(waqpar%isaggr(ktx)) = waqpar%vdf(waqpar%isaggr(ktx)) + vdfmin * volsum
          end do
          do i = 1, waqpar%num_cells
-            if (waqpar%vol(i) > 1d-25) then
+            if (waqpar%vol(i) > 1.0e-25_dp) then
                waqpar%vdf(i) = waqpar%vdf(i) / waqpar%vol(i)
             else
-               waqpar%vdf(i) = 0d0
+               waqpar%vdf(i) = 0.0_dp
             end if
          end do
       end if
@@ -2999,7 +2999,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%area = 0d0
+      waqpar%area = 0.0_dp
 
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
          do i = 1, lnx
@@ -3026,12 +3026,12 @@ contains
 
       ! dummy areas for sink/sources
       do i = waqpar%noq12 + 1, waqpar%noq12s
-         waqpar%area(i) = 0.1d0
+         waqpar%area(i) = 0.1_dp
       end do
 
       ! dummy areas for laterals
       do i = waqpar%noq12s + 1, waqpar%noq12sl
-         waqpar%area(i) = 0.1d0
+         waqpar%area(i) = 0.1_dp
       end do
 
       ! Add area of the vertical exchanges
@@ -3071,7 +3071,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%qag = 0d0
+      waqpar%qag = 0.0_dp
 
       ! Average the accumulated discharges.
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
@@ -3081,14 +3081,14 @@ contains
             else
                L = Lbot(i)
             end if
-            waqpar%qag(i) = q1waq(L) / dble(ti_waq)
+            waqpar%qag(i) = q1waq(L) / real(ti_waq, kind=dp)
          end do
       else if (waqpar%aggre == 0 .and. waqpar%aggrel == 0) then
          do L = 1, lnx
             call getLbotLtopmax(L, Lb, Ltx)
 
             do LL = Lb, Ltx
-               waqpar%qag(waqpar%iqaggr(LL)) = q1waq(LL) / dble(ti_waq)
+               waqpar%qag(waqpar%iqaggr(LL)) = q1waq(LL) / real(ti_waq, kind=dp)
             end do
          end do
       else
@@ -3098,9 +3098,9 @@ contains
                do LL = Lb, Ltx
                   ip = abs(waqpar%iqaggr(LL))
                   if (waqpar%iqaggr(LL) > 0) then
-                     waqpar%qag(ip) = waqpar%qag(ip) + q1waq(LL) / dble(ti_waq)
+                     waqpar%qag(ip) = waqpar%qag(ip) + q1waq(LL) / real(ti_waq, kind=dp)
                   else
-                     waqpar%qag(ip) = waqpar%qag(ip) - q1waq(LL) / dble(ti_waq)
+                     waqpar%qag(ip) = waqpar%qag(ip) - q1waq(LL) / real(ti_waq, kind=dp)
                   end if
                end do
             end if
@@ -3111,14 +3111,14 @@ contains
    !! TODO: write out discharges to a separe (ascii) file for additional wasteloads?
       if (waqpar%numsrcwaq > 0) then
          do isrc = 1, waqpar%numsrcwaq
-            waqpar%qag(waqpar%noq12 + isrc) = qsrcwaq(isrc) / dble(ti_waq)
+            waqpar%qag(waqpar%noq12 + isrc) = qsrcwaq(isrc) / real(ti_waq, kind=dp)
          end do
       end if
 
       ! Add laterals
       if (waqpar%numlatwaq > 0) then
          do ilatwaq = 1, waqpar%numlatwaq
-            waqpar%qag(waqpar%noq12s + ilatwaq) = qlatwaq(ilatwaq) / dble(ti_waq)
+            waqpar%qag(waqpar%noq12s + ilatwaq) = qlatwaq(ilatwaq) / real(ti_waq, kind=dp)
          end do
       end if
 
@@ -3129,7 +3129,7 @@ contains
                call getkbotktopmax(k, kb, kt, ktx)
                do kk = kb, ktx - 1
                   if (waqpar%iqwaggr(kk) > 0) then
-                     waqpar%qag(waqpar%iqwaggr(kk)) = -qwwaq(kk) / dble(ti_waq)
+                     waqpar%qag(waqpar%iqwaggr(kk)) = -qwwaq(kk) / real(ti_waq, kind=dp)
                   end if
                end do
             end do
@@ -3138,7 +3138,7 @@ contains
                call getkbotktopmax(k, kb, kt, ktx)
                do kk = kb, ktx
                   if (waqpar%iqwaggr(kk) > 0) then
-                     waqpar%qag(waqpar%iqwaggr(kk)) = waqpar%qag(waqpar%iqwaggr(kk)) - qwwaq(kk) / dble(ti_waq)
+                     waqpar%qag(waqpar%iqwaggr(kk)) = waqpar%qag(waqpar%iqwaggr(kk)) - qwwaq(kk) / real(ti_waq, kind=dp)
                   end if
                end do
             end do
