@@ -72,68 +72,73 @@ object WindowsTest : BuildType({
         powerShell {
             name = "Run TestBench.py in persistent container"
             workingDir = "%system.teamcity.build.checkoutDir%"
-            scriptMode = BuildStep.ScriptMode.INLINE
-            script = """
-                \$container = "delft3d-test-%teamcity.build.id%"
+            scriptMode = script {
+                content = """
+                    ${'$'}container = "delft3d-test-%teamcity.build.id%"
 
-                docker run --name \$container `
-                    -v "%system.teamcity.build.checkoutDir%\\test\\deltares_testbench\\data\\engines:C:\\deltares_testbench\\data\\engines" `
-                    --memory %teamcity.agent.hardware.memorySizeMb%m `
-                    --cpus %teamcity.agent.hardware.cpuCount% `
-                    -e copy_cases="%copy_cases%" `
-                    containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag% `
-                    powershell -Command ^
-                        "
-                        Set-Location C:\\deltares_testbench;
-                        python TestBench.py `
-                            --username '%s3_dsctestbench_accesskey%' `
-                            --password '%s3_dsctestbench_secret%' `
-                            --compare `
-                            --config 'configs/%configfile%' `
-                            --filter 'testcase=%case_filter%' `
-                            --log-level DEBUG `
-                            --parallel `
-                            --teamcity;
-                        \$testExit = \$LASTEXITCODE;
+                    docker run --name ${'$'}container `
+                        -v "%system.teamcity.build.checkoutDir%\test\deltares_testbench\data\engines:C:\deltares_testbench\data\engines" `
+                        --memory %teamcity.agent.hardware.memorySizeMb%m `
+                        --cpus %teamcity.agent.hardware.cpuCount% `
+                        -e copy_cases="%copy_cases%" `
+                        containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag% `
+                        powershell -NoLogo -Command "& {
+                            Set-Location C:\deltares_testbench
 
-                        Write-Host '##teamcity[blockOpened name=''Collecting selected artifacts inside container'']';
-                        \$inside = 'C:\\artifacts_inside';
-                        New-Item -Path \$inside -ItemType Directory -Force | Out-Null;
+                            python TestBench.py `
+                                --username '%s3_dsctestbench_accesskey%' `
+                                --password '%s3_dsctestbench_secret%' `
+                                --compare `
+                                --config 'configs/%configfile%' `
+                                --filter 'testcase=%case_filter%' `
+                                --log-level DEBUG `
+                                --parallel `
+                                --teamcity
 
-                        robocopy 'data\\cases' '\$inside\\cases' *.diag *.log *.pdf /S /NJH /NJS /NP | Out-Null;
-                        if (Test-Path 'logs') { robocopy 'logs' '\$inside\\logs' /E /NJH /NJS /NP | Out-Null; }
+                            ${'$'}testExit = ${'$'}LASTEXITCODE
 
-                        if ('%copy_cases%' -eq 'true') {
-                            Compress-Archive -Path 'data\\cases\\*' -DestinationPath '\$inside\\copy_cases.zip' -Force -CompressionLevel Optimal;
-                            \$size = \"{0:N1}\" -f ((Get-Item '\$inside\\copy_cases.zip').Length / 1MB);
-                            Write-Host \"copy_cases.zip created inside container (`$size MB)\";
-                        }
+                            Write-Host '##teamcity[blockOpened name=''Collecting selected artifacts inside container'']'
 
-                        Write-Host '##teamcity[blockClosed name=''Collecting selected artifacts inside container'']';
+                            ${'$'}inside = 'C:\artifacts_inside'
+                            New-Item -Path ${'$'}inside -ItemType Directory -Force | Out-Null
 
-                        exit \$testExit
-                        "
-            """
+                            robocopy 'data\cases' "${'$'}inside\cases" *.diag *.log *.pdf /S /NJH /NJS /NP | Out-Null
+                            if (Test-Path 'logs') { robocopy 'logs' "${'$'}inside\logs" /E /NJH /NJS /NP | Out-Null }
+
+                            if ('%copy_cases%' -eq 'true') {
+                                Compress-Archive -Path 'data\cases\*' -DestinationPath "${'$'}inside\copy_cases.zip" -Force -CompressionLevel Optimal
+                                ${'$'}size = \"{0:N1}\" -f ((Get-Item "${'$'}inside\copy_cases.zip").Length / 1MB)
+                                Write-Host \"copy_cases.zip created inside container (${'$'}size MB)\"
+                            }
+
+                            Write-Host '##teamcity[blockClosed name=''Collecting selected artifacts inside container'']'
+
+                            exit ${'$'}testExit
+                        }"
+                """.trimIndent()
+            }
         }
         powerShell {
             name = "Extract artifacts from stopped container"
             executionMode = BuildStep.ExecutionMode.ALWAYS
-            scriptMode = BuildStep.ScriptMode.INLINE
-            script = """
-                \$container = "delft3d-test-%teamcity.build.id%"
-                \$target    = "%teamcity.build.checkoutDir%\\artifacts"
+            scriptMode = script {
+                content = """
+                    ${'$'}container = "delft3d-test-%teamcity.build.id%"
+                    ${'$'}target    = "%teamcity.build.checkoutDir%\artifacts"
 
-                New-Item -Path \$target -ItemType Directory -Force | Out-Null
-                docker cp \"\$container`:C:/artifacts_inside/. \"\$target\\\"
-            """
+                    New-Item -Path ${'$'}target -ItemType Directory -Force | Out-Null
+                    docker cp "${'$'}container:C:/artifacts_inside/." "${'$'}target\"
+                """.trimIndent()
+            }
         }
         powerShell {
             name = "Cleanup container"
             executionMode = BuildStep.ExecutionMode.ALWAYS
-            scriptMode = BuildStep.ScriptMode.INLINE
-            script = """
-                docker rm -f "delft3d-test-%teamcity.build.id%"
-            """
+            scriptMode = script {
+                content = """
+                    docker rm -f "delft3d-test-%teamcity.build.id%"
+                """.trimIndent()
+            }
         }
     }
 
