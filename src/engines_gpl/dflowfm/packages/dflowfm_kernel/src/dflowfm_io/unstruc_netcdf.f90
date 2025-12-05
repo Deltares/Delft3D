@@ -16704,6 +16704,7 @@ contains
       integer :: nump1d !< Local counter for number of 1d nodes ("cells")
       real(kind=dp) :: convversion !< io_netcdf conventions version number
       integer :: ncontacts, im
+      integer :: mesh1_topo_dim, mesh2_topo_dim
 
       ierr = DFM_NOERR
 
@@ -16772,9 +16773,10 @@ contains
          numl1d2d_read = 0
          ierr = ionc_get_contact_topo_count(ioncid, ncontacts)
          do im = 1, ncontacts
+            ierr = ionc_get_contacts_topology_dimensions(ioncid, im, mesh1_topo_dim, mesh2_topo_dim) ! networkIndex not used here
             ierr = ionc_get_contacts_count_ugrid(ioncid, im, numl1d2d_read)
             numl_read = numl_read + numl1d2d_read
-            numk_read = numk_read + numl1d2d_read
+            numk_read = numk_read + numl1d2d_read * mesh1_topo_dim !> if mesh1 is 2D mesh we add 2 nodes per contact link
          end do
       else
          ! No UGRID, not a problem, code below will fall back to trying old format.
