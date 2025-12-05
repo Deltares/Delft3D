@@ -57,7 +57,7 @@ contains
         use rd_token     !   for the reading of tokens
         use partmem      !   for PARTicle tracking
         use timers       !   performance timers
-        use m_timer_variables, only: intopt !   the integration option
+        use m_timer_variables, only: intsrt !   the integration option
         use waq_netcdf_utils
         use results, only: lncout       !   output settings
         use m_waq_memory_dimensions          ! System characteristics
@@ -253,7 +253,7 @@ contains
             endif
         endif
 
-        if (num_cells == 1 .and. all( intopt /= [1,5] )) then
+        if (num_cells == 1 .and. all( intsrt /= [1,5] )) then
             write (file_unit, 2011)
             call status%increase_error_count()
         endif
