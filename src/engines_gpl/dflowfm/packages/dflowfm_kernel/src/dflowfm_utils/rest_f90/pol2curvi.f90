@@ -77,7 +77,9 @@ contains
 
       ierror = 1
 
-      if (NPL <= 4) goto 1234
+      if (NPL <= 4) then
+         goto 1234
+      end if
 
 !  get start and end pointers in polygon
       call get_polstartend(NPL, XPL, YPL, i1, istart, iend)
@@ -85,9 +87,13 @@ contains
 
 !  get grid size and orientation
       mcR = i2 - i1
-      if (mcR < 0) mcR = mcR + numsubpol
+      if (mcR < 0) then
+         mcR = mcR + numsubpol
+      end if
       mcL = i1 - i2
-      if (mcL < 0) mcL = mcL + numsubpol
+      if (mcL < 0) then
+         mcL = mcL + numsubpol
+      end if
 
       if (mcR <= mcL) then
          idir = 1
@@ -98,9 +104,13 @@ contains
       end if
 
       ncR = i3 - i2
-      if (ncR < 0) ncR = ncR + numsubpol
+      if (ncR < 0) then
+         ncR = ncR + numsubpol
+      end if
       ncL = i2 - i3
-      if (ncL < 0) ncL = ncL + numsubpol
+      if (ncL < 0) then
+         ncL = ncL + numsubpol
+      end if
 
       if (idir == 1) then
          nc = ncR + 1
@@ -110,8 +120,12 @@ contains
 
 !  get fourth corner index
       i4 = i3 + idir * (mc - 1)
-      if (i4 < istart) i4 = i4 + numsubpol
-      if (i4 > iend) i4 = i4 - numsubpol
+      if (i4 < istart) then
+         i4 = i4 + numsubpol
+      end if
+      if (i4 > iend) then
+         i4 = i4 - numsubpol
+      end if
 
 !  check if polygon suffices
       if (ja4 == 1) then
@@ -139,8 +153,12 @@ contains
             xh(j, 1) = xpl(ipoint)
             yh(j, 1) = ypl(ipoint)
             ipoint = ipoint - idir
-            if (ipoint < istart) ipoint = ipoint + numsubpol
-            if (ipoint > iend) ipoint = ipoint - numsubpol
+            if (ipoint < istart) then
+               ipoint = ipoint + numsubpol
+            end if
+            if (ipoint > iend) then
+               ipoint = ipoint - numsubpol
+            end if
          end do
       else
 !     interpolate fourth side
@@ -156,8 +174,12 @@ contains
          xh(j, 2) = xpl(ipoint)
          yh(j, 2) = ypl(ipoint)
          ipoint = ipoint + idir
-         if (ipoint < istart) ipoint = ipoint + numsubpol
-         if (ipoint > iend) ipoint = ipoint - numsubpol
+         if (ipoint < istart) then
+            ipoint = ipoint + numsubpol
+         end if
+         if (ipoint > iend) then
+            ipoint = ipoint - numsubpol
+         end if
       end do
 
       ipoint = i1
@@ -165,8 +187,12 @@ contains
          xh(i, 3) = xpl(ipoint)
          yh(i, 3) = ypl(ipoint)
          ipoint = ipoint + idir
-         if (ipoint < istart) ipoint = ipoint + numsubpol
-         if (ipoint > iend) ipoint = ipoint - numsubpol
+         if (ipoint < istart) then
+            ipoint = ipoint + numsubpol
+         end if
+         if (ipoint > iend) then
+            ipoint = ipoint - numsubpol
+         end if
       end do
 
       ipoint = i4
@@ -174,8 +200,12 @@ contains
          xh(i, 4) = xpl(ipoint)
          yh(i, 4) = ypl(ipoint)
          ipoint = ipoint - idir
-         if (ipoint < istart) ipoint = ipoint + numsubpol
-         if (ipoint > iend) ipoint = ipoint - numsubpol
+         if (ipoint < istart) then
+            ipoint = ipoint + numsubpol
+         end if
+         if (ipoint > iend) then
+            ipoint = ipoint - numsubpol
+         end if
       end do
 
 !  increase grid

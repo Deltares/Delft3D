@@ -100,7 +100,9 @@ contains
 
             if (mod(k, 100) == 0) then
                call HALT2(KEY)
-               if (KEY == 1) return
+               if (KEY == 1) then
+                  return
+               end if
             end if
 
             if (xpl(k) /= dmiss .and. xpl(k + 1) /= dmiss) then

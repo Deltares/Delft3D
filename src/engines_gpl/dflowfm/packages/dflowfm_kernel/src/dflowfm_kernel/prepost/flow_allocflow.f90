@@ -101,7 +101,9 @@ contains
       real(kind=dp) :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk
       logical :: jawel
 
-      if (ndx == 0) return
+      if (ndx == 0) then
+         return
+      end if
 
       call ilowercase(md_netfile) ! INTERACTOR!
 

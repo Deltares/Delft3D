@@ -307,7 +307,9 @@ contains
             end if
 
             if (ja_timestep_auto == 3 .or. ja_timestep_auto == 4) then
-               if (.not. allocated(Squ2D)) allocate (squ2D(ndkx), stat=ierr)
+               if (.not. allocated(Squ2D)) then
+                  allocate (squ2D(ndkx), stat=ierr)
+               end if
             end if
          end if
          call IWinClose(1)

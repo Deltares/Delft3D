@@ -59,7 +59,9 @@ contains
       integer :: ierror ! error (1) or not (0)
 
       ierror = 0
-      if (NPL < 2 .or. MC < 1 .or. NC < 1) goto 1234 ! nothing to do
+      if (NPL < 2 .or. MC < 1 .or. NC < 1) then
+         goto 1234 ! nothing to do
+      end if
 
       ierror = 1
 

@@ -77,7 +77,9 @@ contains
 
             call cross(x1, y1, x2, y2, x3, y3, x4, y4, jacross, sL, sm, xcr, ycr, crp, jsferic, dmiss)
 
-            if (jacross == 1) exit kklp
+            if (jacross == 1) then
+               exit kklp
+            end if
          end do
       end do kklp
 

@@ -65,7 +65,9 @@ contains
          x3 = [xc(i, j), yc(i, j)]
          x4 = [xc(i + 1, j), yc(i + 1, j)]
 
-         if (x3(1) == DMISS .or. x4(1) == DMISS) cycle
+         if (x3(1) == DMISS .or. x4(1) == DMISS) then
+            cycle
+         end if
 
          call cross(x1(1), x1(2), x2(1), x2(2), x3(1), x3(2), x4(1), x4(2), jacross, sL, sm, xcr, ycr, crp, jsferic, dmiss)
 

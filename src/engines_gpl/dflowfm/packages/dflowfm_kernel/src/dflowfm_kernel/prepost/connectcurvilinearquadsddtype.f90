@@ -182,8 +182,12 @@ contains
                if (ja == 1) then
                   nrl(L) = nrl(L) + 1
                   nnl2(nrl(L), L) = LL ! nr of adj lnks      adj lnk nrs
-                  if (k1k > 0) k1L(L) = k1k ! merg nod 1 to nod k1k
-                  if (k2k > 0) k2L(L) = k2k ! merg nod 2 to nod k2k
+                  if (k1k > 0) then
+                     k1L(L) = k1k ! merg nod 1 to nod k1k
+                  end if
+                  if (k2k > 0) then
+                     k2L(L) = k2k ! merg nod 2 to nod k2k
+                  end if
                end if
             end if
          end do
@@ -292,7 +296,9 @@ contains
                   call nextcel(np, La, npb, k1b, k2b, Lb)
                   call dellink(La)
 
-                  if (npb == 0) cycle
+                  if (npb == 0) then
+                     cycle
+                  end if
                   call newlink(km, k1b, lnu)
                   call newlink(km, k2b, lnu)
 
@@ -314,7 +320,9 @@ contains
                   call nextcel(np, La, npb, k1b, k2b, Lb)
                   call dellink(La)
 
-                  if (npb == 0) cycle
+                  if (npb == 0) then
+                     cycle
+                  end if
                   call newlink(km, k1b, lnu)
                   call newlink(km, k2b, lnu)
 
@@ -378,7 +386,9 @@ contains
                   call newlink(km3, k2a, lnu)
 
                   call dellink(La)
-                  if (npb == 0) cycle
+                  if (npb == 0) then
+                     cycle
+                  end if
 
                   xm = 0.66_dp * xk(k1b) + 0.34_dp * xk(k2b)
                   ym = 0.66_dp * yk(k1b) + 0.34_dp * yk(k2b)
@@ -398,7 +408,9 @@ contains
                   call newlink(km2b, k2b, lnu)
 
                   call dellink(Lb)
-                  if (npd == 0) cycle
+                  if (npd == 0) then
+                     cycle
+                  end if
 
                   xm = 0.5_dp * xk(k1d) + 0.5_dp * xk(k2d)
                   ym = 0.5_dp * yk(k1d) + 0.5_dp * yk(k2d)
@@ -411,7 +423,9 @@ contains
                   call newlink(k2d, kmd, lnu)
 
                   call dellink(Ld)
-                  if (npe == 0) cycle
+                  if (npe == 0) then
+                     cycle
+                  end if
 
                   call newlink(kmd, k2e, lnu)
                   call newlink(kmd, k1e, lnu)
@@ -461,7 +475,9 @@ contains
                k3 = kn(1, L2)
                k4 = kn(2, L2)
 
-               if (k3 == 0 .or. k4 == 0) exit
+               if (k3 == 0 .or. k4 == 0) then
+                  exit
+               end if
 
                r2 = DBDISTANCE(XK(K3), YK(K3), XK(K4), YK(K4), jsferic, jasfer3D, dmiss)
                r2 = 0.3_dp * r2
@@ -542,7 +558,9 @@ contains
                   call nextcel(np, La, npb, k1b, k2b, Lb)
                   call dellink(La)
 
-                  if (npb == 0) exit
+                  if (npb == 0) then
+                     exit
+                  end if
                   call newlink(km, k1b, lnu)
                   call newlink(km, k2b, lnu)
 
@@ -564,7 +582,9 @@ contains
                   call nextcel(np, La, npb, k1b, k2b, Lb)
                   call dellink(La)
 
-                  if (npb == 0) exit
+                  if (npb == 0) then
+                     exit
+                  end if
                   call newlink(km, k1b, lnu)
                   call newlink(km, k2b, lnu)
 
@@ -601,7 +621,9 @@ contains
                   call newlink(km3, k2a, lnu)
 
                   call dellink(La)
-                  if (npb == 0) exit
+                  if (npb == 0) then
+                     exit
+                  end if
 
                   xm = 0.66_dp * xk(k1b) + 0.34_dp * xk(k2b)
                   ym = 0.66_dp * yk(k1b) + 0.34_dp * yk(k2b)
@@ -621,7 +643,9 @@ contains
                   call newlink(km2b, k2b, lnu)
 
                   call dellink(Lb)
-                  if (npd == 0) exit
+                  if (npd == 0) then
+                     exit
+                  end if
 
                   xm = 0.5_dp * xk(k1d) + 0.5_dp * xk(k2d)
                   ym = 0.5_dp * yk(k1d) + 0.5_dp * yk(k2d)
@@ -634,7 +658,9 @@ contains
                   call newlink(k2d, kmd, lnu)
 
                   call dellink(Ld)
-                  if (npe == 0) exit
+                  if (npe == 0) then
+                     exit
+                  end if
 
                   call newlink(kmd, k2e, lnu)
                   call newlink(kmd, k1e, lnu)

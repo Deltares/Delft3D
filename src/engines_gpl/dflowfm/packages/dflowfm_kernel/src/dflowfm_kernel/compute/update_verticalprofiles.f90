@@ -83,7 +83,9 @@ contains
       integer :: k, ku, LL, L, Lb, Lt, kxL, Lu, Lb0, whit
       integer :: k1, k2, n1, n2, kup, ierror
 
-      if (iturbulencemodel <= 0 .or. kmx == 0) return
+      if (iturbulencemodel <= 0 .or. kmx == 0) then
+         return
+      end if
 
       if (iadvec == 0) then
          javau = 0
@@ -261,7 +263,9 @@ contains
 
             Lt = Ltop(LL) ! surface layer index = surface interface index
             Lb = Lbot(LL) ! bed layer index
-            if (Lt < Lb) cycle
+            if (Lt < Lb) then
+               cycle
+            end if
             Lb0 = Lb - 1 ! bed interface index
 
             if (hu(LL) > 0.0_dp) then ! epshu?
@@ -329,7 +333,9 @@ contains
                         call wave_fillsurdis(k1, dis1)
                         call wave_fillsurdis(k2, dis2)
                         surdisLL = ac1 * dis1 + ac2 * dis2
-                        if (surdisLL < 1.0e-2_dp) surdisLL = 0.0_dp
+                        if (surdisLL < 1.0e-2_dp) then
+                           surdisLL = 0.0_dp
+                        end if
                         rhoLL = rhomean
                         pkwmag = fbreak * 2.0_dp * surdisLL / (rhoLL * fwavpendep * hrmsLL)
                         ! tke dirichlet boundary condition at surface
@@ -448,7 +454,9 @@ contains
                   else
                      ! distribute over layers
                      do L = Lt - 1, Lb
-                        if (hu(L + 1) < wdep) exit
+                        if (hu(L + 1) < wdep) then
+                           exit
+                        end if
                         k = L - Lb + 1
                         if (hu(L) < wdep .and. hu(L + 1) >= wdep) then
                            ! partial contribution
@@ -506,7 +514,9 @@ contains
                      do L = Lb, Lt - 1
                         k = L - Lb + 1
                         omegu = 0.5_dp * womegu(k)
-                        if (k > 1) omegu = omegu + 0.5_dp * womegu(k - 1) ! Omega at U-point in between layer interfaces
+                        if (k > 1) then
+                           omegu = omegu + 0.5_dp * womegu(k - 1) ! Omega at U-point in between layer interfaces
+                        end if
                         if (omegu > 0.0_dp) then ! omegu(k) lies below interface(k)
                            adv = omegu / dzw(k) ! omegu(k) > 0 contributes to k
                            bk(k) = bk(k) + adv
@@ -753,7 +763,9 @@ contains
                   do L = Lb, Lt - 1
                      k = L - Lb + 1
                      omegu = 0.5_dp * womegu(k)
-                     if (k > 1) omegu = omegu + 0.5_dp * womegu(k - 1) ! Omega at U-point in between layer interfaces
+                     if (k > 1) then
+                        omegu = omegu + 0.5_dp * womegu(k - 1) ! Omega at U-point in between layer interfaces
+                     end if
                      if (omegu > 0.0_dp) then
                         adv = omegu / dzw(k)
                         bk(k) = bk(k) + adv

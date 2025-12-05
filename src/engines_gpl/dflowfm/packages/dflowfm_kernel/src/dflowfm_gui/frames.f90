@@ -38,7 +38,9 @@ contains
       use m_set_col, only: setcol
 
       integer :: ncol
-      if (NOPSYS >= 2) return
+      if (NOPSYS >= 2) then
+         return
+      end if
       call SETCOL(NCOL)
       call IGRBORDER()
       return

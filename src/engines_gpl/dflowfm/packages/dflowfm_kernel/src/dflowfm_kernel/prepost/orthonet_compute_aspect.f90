@@ -153,24 +153,36 @@ contains
 !  compute normal length R
       do k = 1, nump
          N = netcell(k)%N
-         if (N < 3) cycle ! safety
+         if (N < 3) then
+            cycle ! safety
+         end if
 
 !     repeat for all links
          do kk = 1, N
 
 !        node-based curvi-like indicator
-            if (N /= 4) Liscurvi(netcell(k)%nod(kk)) = .false.
+            if (N /= 4) then
+               Liscurvi(netcell(k)%nod(kk)) = .false.
+            end if
 
             klink = netcell(k)%lin(kk)
-            if (lnn(klink) /= 1 .and. lnn(klink) /= 2) cycle
+            if (lnn(klink) /= 1 .and. lnn(klink) /= 2) then
+               cycle
+            end if
 
 !        get the other links in the right numbering
             kkm1 = kk - 1
-            if (kkm1 < 1) kkm1 = kkm1 + N
+            if (kkm1 < 1) then
+               kkm1 = kkm1 + N
+            end if
             kkp1 = kk + 1
-            if (kkp1 > N) kkp1 = kkp1 - N
+            if (kkp1 > N) then
+               kkp1 = kkp1 - N
+            end if
             kkp2 = kk + 2
-            if (kkp2 > N) kkp2 = kkp2 - N
+            if (kkp2 > N) then
+               kkp2 = kkp2 - N
+            end if
 
             klinkm1 = netcell(k)%lin(kkm1)
             klinkp1 = netcell(k)%lin(kkp1)
@@ -198,18 +210,26 @@ contains
          end do
       end do
 
-      if (ortho_pure == 1.0_dp) goto 1234 ! no curvi-like discretization
+      if (ortho_pure == 1.0_dp) then
+         goto 1234 ! no curvi-like discretization
+      end if
 
       ortho1 = 1.0_dp - ortho_pure
 
 !  compute aspect ratio in the quadrilateral part of the mesh
       do klink = 1, numL
-         if (kn(1, klink) == 0 .or. kn(2, klink) == 0) cycle ! safety
+         if (kn(1, klink) == 0 .or. kn(2, klink) == 0) then
+            cycle ! safety
+         end if
 
-         if (lnn(klink) /= 2 .and. lnn(klink) /= 1) cycle
+         if (lnn(klink) /= 2 .and. lnn(klink) /= 1) then
+            cycle
+         end if
 
 !     quads-only
-         if (.not. Liscurvi(kn(1, klink)) .or. .not. Liscurvi(kn(2, klink))) cycle
+         if (.not. Liscurvi(kn(1, klink)) .or. .not. Liscurvi(kn(2, klink))) then
+            cycle
+         end if
 
 !      if ( netcell(lne(1,klink))%N.ne.4 .or. netcell(lne(min(2,lnn(klink)),klink))%N.ne.4 ) cycle ! quad-quad links only
 

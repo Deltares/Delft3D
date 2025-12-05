@@ -73,8 +73,12 @@ contains
       ND = N2 - N1
       MFAA = MFAC
       NFAA = NFAC
-      if (MD == 0) MFAA = 1
-      if (ND == 0) NFAA = 1
+      if (MD == 0) then
+         MFAA = 1
+      end if
+      if (ND == 0) then
+         NFAA = 1
+      end if
 
       IR = 1
       INOW = 1

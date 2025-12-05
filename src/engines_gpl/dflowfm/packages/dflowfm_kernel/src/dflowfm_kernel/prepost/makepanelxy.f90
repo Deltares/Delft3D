@@ -94,13 +94,17 @@ contains
       data INI/0/
       JaNET = 1 - JPANEL
 
-      if (NPL <= 1 .or. NPL > 4) return
+      if (NPL <= 1 .or. NPL > 4) then
+         return
+      end if
 
       call SAVENET()
 
       do I = 1, NPL
          I2 = I + 1
-         if (I == 4) I2 = 1
+         if (I == 4) then
+            I2 = 1
+         end if
          DX = XPL(I) - XPL(I2)
          DY = YPL(I) - YPL(I2)
          DR(I) = sqrt(DX * DX + DY * DY)

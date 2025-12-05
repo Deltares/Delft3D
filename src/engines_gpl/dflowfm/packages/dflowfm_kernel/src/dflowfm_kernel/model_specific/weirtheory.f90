@@ -72,7 +72,9 @@ contains
 
       regime = 'subcritical'
 
-      if (zupstream < zdownstream) return
+      if (zupstream < zdownstream) then
+         return
+      end if
 
       pi = 4.0_dp * atan(1.0_dp)
       g = 9.81_dp
@@ -91,7 +93,9 @@ contains
       zc2 = -2.0_dp * h1 * cos(fi / 3.0_dp + 2.0_dp * pi / 3.0_dp)
       zc3 = -2.0_dp * h1 * cos(-fi / 3.0_dp + 2.0_dp * pi / 3.0_dp)
 
-      if (zc3 < 0) return
+      if (zc3 < 0) then
+         return
+      end if
 ! write(5,'(3e14.5)') zc1,zc2,zc3
       res1 = zc1**3 - p * zc1 + q
       res2 = zc2**3 - p * zc2 + q

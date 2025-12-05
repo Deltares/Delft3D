@@ -65,7 +65,9 @@ contains
 
          do L1 = 1, nd(k1)%nwx
             L1a = abs(nd(k1)%nw(L1))
-            if (LwDone(L1a) == 1) cycle
+            if (LwDone(L1a) == 1) then
+               cycle
+            end if
             m = m + 1
             n1 = walls(2, L1a)
             n2 = walls(3, L1a)
@@ -94,7 +96,9 @@ contains
 
          do L2 = 1, nd(k2)%nwx
             L2a = abs(nd(k2)%nw(L2))
-            if (LwDone(L2a) == 1) cycle
+            if (LwDone(L2a) == 1) then
+               cycle
+            end if
             m = m + 1
             n1 = walls(2, L2a)
             n2 = walls(3, L2a)
@@ -123,11 +127,15 @@ contains
 
          do L1 = 1, nd(k1)%lnx
             L1a = abs(nd(k1)%ln(L1))
-            if (L1a == L) cycle
+            if (L1a == L) then
+               cycle
+            end if
             k3 = ln(1, L1a) + ln(2, L1a) - k1
             do L3 = 1, nd(k3)%lnx
                L3a = abs(nd(k3)%ln(L3))
-               if (LDone(L3a) == 1) cycle
+               if (LDone(L3a) == 1) then
+                  cycle
+               end if
                m = m + 1
                cs = csu(L3a)
                sn = snu(L3a)
@@ -151,7 +159,9 @@ contains
             end do
             do L3 = 1, nd(k3)%nwx
                L3a = abs(nd(k3)%nw(L3))
-               if (LwDone(L3a) == 1) cycle
+               if (LwDone(L3a) == 1) then
+                  cycle
+               end if
                m = m + 1
                n1 = walls(2, L3a)
                n2 = walls(3, L3a)
@@ -181,11 +191,15 @@ contains
 
          do L2 = 1, nd(k2)%lnx
             L2a = abs(nd(k2)%ln(L2))
-            if (L2a == L) cycle
+            if (L2a == L) then
+               cycle
+            end if
             k3 = ln(1, L2a) + ln(2, L2a) - k2
             do L3 = 1, nd(k3)%lnx
                L3a = abs(nd(k3)%ln(L3))
-               if (LDone(L3a) == 1) cycle
+               if (LDone(L3a) == 1) then
+                  cycle
+               end if
                m = m + 1
                cs = csu(L3a)
                sn = snu(L3a)
@@ -209,7 +223,9 @@ contains
             end do
             do L3 = 1, nd(k3)%nwx
                L3a = abs(nd(k3)%nw(L3))
-               if (LwDone(L3a) == 1) cycle
+               if (LwDone(L3a) == 1) then
+                  cycle
+               end if
                m = m + 1
                n1 = walls(2, L3a)
                n2 = walls(3, L3a)
@@ -350,7 +366,9 @@ contains
 
             do L1 = 1, nd(k1)%nwx
                L1a = abs(nd(k1)%nw(L1))
-               if (LwDone(L1a) == 1) cycle
+               if (LwDone(L1a) == 1) then
+                  cycle
+               end if
                m = m + 1
                bvec(m) = 0.0_dp
                LwDone(L1a) = 1
@@ -358,7 +376,9 @@ contains
 
             do L2 = 1, nd(k2)%nwx
                L2a = abs(nd(k2)%nw(L2))
-               if (LwDone(L2a) == 1) cycle
+               if (LwDone(L2a) == 1) then
+                  cycle
+               end if
                m = m + 1
                bvec(m) = 0.0_dp
                LwDone(L2a) = 1
@@ -366,18 +386,24 @@ contains
 
             do L1 = 1, nd(k1)%lnx
                L1a = abs(nd(k1)%ln(L1))
-               if (L1a == L) cycle
+               if (L1a == L) then
+                  cycle
+               end if
                k3 = ln(1, L1a) + ln(2, L1a) - k1
                do L3 = 1, nd(k3)%lnx
                   L3a = abs(nd(k3)%ln(L3))
-                  if (LDone(L3a) == 1) cycle
+                  if (LDone(L3a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
                   bvec(m) = u1(L3a)
                   LDone(L3a) = 1
                end do
                do L3 = 1, nd(k3)%nwx
                   L3a = abs(nd(k3)%nw(L3))
-                  if (LwDone(L3a) == 1) cycle
+                  if (LwDone(L3a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
                   bvec(m) = 0.0_dp
                   LwDone(L3a) = 1
@@ -386,18 +412,24 @@ contains
 
             do L2 = 1, nd(k2)%lnx
                L2a = abs(nd(k2)%ln(L2))
-               if (L2a == L) cycle
+               if (L2a == L) then
+                  cycle
+               end if
                k3 = ln(1, L2a) + ln(2, L2a) - k2
                do L3 = 1, nd(k3)%lnx
                   L3a = abs(nd(k3)%ln(L3))
-                  if (LDone(L3a) == 1) cycle
+                  if (LDone(L3a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
                   bvec(m) = u1(L3a)
                   LDone(L3a) = 1
                end do
                do L3 = 1, nd(k3)%nwx
                   L3a = abs(nd(k3)%nw(L3))
-                  if (LwDone(L3a) == 1) cycle
+                  if (LwDone(L3a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
                   bvec(m) = 0.0_dp
                   LwDone(L3a) = 1
@@ -454,7 +486,9 @@ contains
 
                do L1 = 1, nd(k1)%nwx
                   L1a = abs(nd(k1)%nw(L1))
-                  if (LwDone(L1a) == 1) cycle
+                  if (LwDone(L1a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
                   bvec(m) = 0.0_dp
                   LwDone(L1a) = 1
@@ -462,7 +496,9 @@ contains
 
                do L2 = 1, nd(k2)%nwx
                   L2a = abs(nd(k2)%nw(L2))
-                  if (LwDone(L2a) == 1) cycle
+                  if (LwDone(L2a) == 1) then
+                     cycle
+                  end if
                   m = m + 1
                   bvec(m) = 0.0_dp
                   LwDone(L2a) = 1
@@ -470,11 +506,15 @@ contains
 
                do L1 = 1, nd(k1)%lnx
                   L1a = abs(nd(k1)%ln(L1))
-                  if (L1a == L) cycle
+                  if (L1a == L) then
+                     cycle
+                  end if
                   k3 = ln(1, L1a) + ln(2, L1a) - k1
                   do L3 = 1, nd(k3)%lnx
                      L3a = abs(nd(k3)%ln(L3))
-                     if (LDone(L3a) == 1) cycle
+                     if (LDone(L3a) == 1) then
+                        cycle
+                     end if
                      m = m + 1
                      call getLbotLtop(L3a, L3b, L3t)
                      bvec(m) = u1(L3b + LL - Lb)
@@ -482,7 +522,9 @@ contains
                   end do
                   do L3 = 1, nd(k3)%nwx
                      L3a = abs(nd(k3)%nw(L3))
-                     if (LwDone(L3a) == 1) cycle
+                     if (LwDone(L3a) == 1) then
+                        cycle
+                     end if
                      m = m + 1
                      bvec(m) = 0.0_dp
                      LwDone(L3a) = 1
@@ -491,11 +533,15 @@ contains
 
                do L2 = 1, nd(k2)%lnx
                   L2a = abs(nd(k2)%ln(L2))
-                  if (L2a == L) cycle
+                  if (L2a == L) then
+                     cycle
+                  end if
                   k3 = ln(1, L2a) + ln(2, L2a) - k2
                   do L3 = 1, nd(k3)%lnx
                      L3a = abs(nd(k3)%ln(L3))
-                     if (LDone(L3a) == 1) cycle
+                     if (LDone(L3a) == 1) then
+                        cycle
+                     end if
                      m = m + 1
                      call getLbotLtop(L3a, L3b, L3t)
                      bvec(m) = u1(L3b + LL - Lb)
@@ -503,7 +549,9 @@ contains
                   end do
                   do L3 = 1, nd(k3)%nwx
                      L3a = abs(nd(k3)%nw(L3))
-                     if (LwDone(L3a) == 1) cycle
+                     if (LwDone(L3a) == 1) then
+                        cycle
+                     end if
                      m = m + 1
                      bvec(m) = 0.0_dp
                      LwDone(L3a) = 1

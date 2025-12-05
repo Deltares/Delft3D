@@ -193,7 +193,9 @@ contains
          else
             do l = 1, lsed
                do k = 1, ndx
-                  if (hs(k) <= epshu) cycle
+                  if (hs(k) <= epshu) then
+                     cycle
+                  end if
                   call getkbotktop(k, kbot, ktop)
                   ssc = 0.0_dp
                   do kk = kbot, ktop

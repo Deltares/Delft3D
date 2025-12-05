@@ -78,7 +78,9 @@ contains
 97          continue
 
             do i = 1, maxpts - 5, 6
-               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) exit
+               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) then
+                  exit
+               end if
 
                !curx = curx + pts(i+4) ! Just take endpoint of bezier curve
                !cury = cury + pts(i+5)
@@ -129,7 +131,9 @@ contains
             ypl(npl) = starty
             ! If more than one point was given, treat as implicit subsequent lineto commands
             do i = 3, maxpts - 1, 2
-               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) exit
+               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) then
+                  exit
+               end if
 
                npl = npl + 1
                call increasepol(npl, 1)
@@ -156,7 +160,9 @@ contains
 99          continue
 
             do i = 1, maxpts - 1, 2
-               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) exit
+               if (pts(i) == dmiss .or. pts(i + 1) == dmiss) then
+                  exit
+               end if
 
                npl = npl + 1
                call increasepol(npl, 1)

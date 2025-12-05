@@ -63,9 +63,13 @@ contains
       if (jampi == 1) then
          reduced_data = [key, nodneg]
 
-         if (jatimer == 1) call starttimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call starttimer(IMPIREDUCE)
+         end if
          call reduce_int_max(2, reduced_data)
-         if (jatimer == 1) call stoptimer(IMPIREDUCE)
+         if (jatimer == 1) then
+            call stoptimer(IMPIREDUCE)
+         end if
 
          key = reduced_data(1)
          nodneg = reduced_data(2)
@@ -112,7 +116,9 @@ contains
          key = 0
          is_hu_changed = .false.
 
-         if (jposhchk == 0) return
+         if (jposhchk == 0) then
+            return
+         end if
 
          if (testdryflood == DELFT3D_FLOW_ALGORITHM_TO_PREVENT_VERY_THIN_LAYERS) then
             threshold = max(DELFT3D_MIN, min(epshu, DELFT3D_MAX))

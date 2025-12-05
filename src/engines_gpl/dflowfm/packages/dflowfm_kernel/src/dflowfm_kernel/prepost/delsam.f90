@@ -61,7 +61,9 @@ contains
          if (nsmax > 0) then
             nsmax = 0
             ns = 0
-            if (allocated(xs)) deallocate (xs, ys, zs)
+            if (allocated(xs)) then
+               deallocate (xs, ys, zs)
+            end if
             if (allocated(ipsam)) then
                deallocate (ipsam)
             end if
@@ -97,7 +99,9 @@ contains
          XI = XS(I)
          YI = YS(I)
          call DBPINPOL(xI, yI, INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
-         if (INHUL == 1) ZS(I) = dmiss
+         if (INHUL == 1) then
+            ZS(I) = dmiss
+         end if
       end do
 
       K = 0

@@ -53,7 +53,9 @@ contains
 
       if (kmx == 0 .and. growthunidicouv > 0.0) then
 
-         if (.not. allocated(supq)) allocate (supq(ndx))
+         if (.not. allocated(supq)) then
+            allocate (supq(ndx))
+         end if
          supq = 0.0_dp
          do L = 1, lnxi
             k1 = ln(1, L)

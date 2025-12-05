@@ -97,7 +97,9 @@ contains
 !
 !   activate morphology if sediment file has been specified in the mdu file
 !
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
 
       !
       inquire (file=trim(md_sedfile), exist=ex)
@@ -187,10 +189,14 @@ contains
       morbnd => stmpar%morpar%morbnd
       do k = 1, nopenbndsect
          j0 = 0
-         if (k > 1) j0 = nopenbndlin(k - 1)
+         if (k > 1) then
+            j0 = nopenbndlin(k - 1)
+         end if
          npnt = nopenbndlin(k) - j0
          morbnd(k)%npnt = npnt
-         if (associated(morbnd(k)%nm)) deallocate (morbnd(k)%nm, morbnd(k)%nxmx, morbnd(k)%lm)
+         if (associated(morbnd(k)%nm)) then
+            deallocate (morbnd(k)%nm, morbnd(k)%nxmx, morbnd(k)%lm)
+         end if
          allocate (morbnd(k)%nm(npnt))
          allocate (morbnd(k)%nxmx(npnt))
          allocate (morbnd(k)%lm(npnt))
@@ -263,7 +269,9 @@ contains
                      node_processed(k1) = node_processed(k1) + 1
                      j = node_processed(k1)
                      ic = gridpoint2cross(k1)%cross(j)
-                     if (ic == -999) cycle
+                     if (ic == -999) then
+                        cycle
+                     end if
                      if (network%crs%cross(ic)%itabdef == icd) then
                         write (chstr, '(F12.3)') network%crs%cross(ic)%chainage
                         call mess(LEVEL_WARN, '  It is used for grid point '//trim(pbr%gridPointIDs(i))//' via cross section '//trim(network%crs%cross(ic)%csid)//' on branch '//trim(pbr%id)//' at chainage '//trim(adjustl(chstr))//' m.')

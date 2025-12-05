@@ -60,7 +60,9 @@ contains
       real(kind=dp), allocatable :: zp_copy(:)
 
       if (size(NP) < NUMP) then
-         if (allocated(NP)) deallocate (NP, ZP)
+         if (allocated(NP)) then
+            deallocate (NP, ZP)
+         end if
          allocate (NP(NUMP), ZP(NUMP), STAT=IERR)
       end if
 

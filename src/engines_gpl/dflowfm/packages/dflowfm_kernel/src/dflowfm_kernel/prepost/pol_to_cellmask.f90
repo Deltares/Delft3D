@@ -60,7 +60,9 @@ contains
       allocate (cellmask(nump1d2d))
       cellmask = 0
 
-      if (NPL == 0) return ! no polygon
+      if (NPL == 0) then
+         return ! no polygon
+      end if
 
       call READYY('Applying polygon cellmask', 0.0_dp)
       KMOD = max(1, NUMP / 100)
@@ -74,7 +76,9 @@ contains
          if (in == 0) then
 !        check if cell is outside all "zpl<0" polygons (enclosure)
             call dbpinpol_optinside_perpol(xzw(k), yzw(k), 0, -1, in, num, dmiss, JINS, NPL, xpl, ypl, zpl) ! in=0: outside all "-1"-pol
-            if (num > 0) in = 1 - in ! only if at least one "-1"-type polygon was encountered
+            if (num > 0) then
+               in = 1 - in ! only if at least one "-1"-type polygon was encountered
+            end if
          end if
 
          if (in > 0) then

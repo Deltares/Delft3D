@@ -87,7 +87,9 @@ contains
 
       call delete_dry_points_and_areas(update_blcell=.true.)
 
-      if (nump1d2d < 1) return
+      if (nump1d2d < 1) then
+         return
+      end if
 
       call cosphiunetcheck(1)
 

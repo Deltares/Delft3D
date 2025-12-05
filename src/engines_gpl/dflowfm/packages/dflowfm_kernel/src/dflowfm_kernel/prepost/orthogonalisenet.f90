@@ -130,7 +130,9 @@ contains
       jarerun = 0
 
 ! return if the network comprises three nodes or less
-      if (numk < 4) return
+      if (numk < 4) then
+         return
+      end if
 
       if (jaswan == 1 .and. atpf <= 0.8_dp) then
          call fliplinks()
@@ -154,7 +156,9 @@ contains
       ik = -1
       do k = 1, numk
          call dbpinpol(xk(k), yk(k), ik, dmiss, JINS, NPL, xpl, ypl, zpl)
-         if (ik > 0) kc(k) = ik
+         if (ik > 0) then
+            kc(k) = ik
+         end if
       end do
 
 !   if ( netstat.ne.netstat_OK ) call findcells(100)
@@ -168,7 +172,9 @@ contains
 
 !  mark nodes outside polygon as stationary
       do k = 1, numk
-         if (kc(k) == 0) nb(k) = 3
+         if (kc(k) == 0) then
+            nb(k) = 3
+         end if
       end do
 
 !  snap to nearest land boundary
@@ -214,8 +220,12 @@ contains
 !-------------------------------------------------
 !  allocate arrays
       nmkx = nmkx + 1 ! Possibly one additional dummy point at boundary nodes.
-      if (allocated(xk1)) deallocate (xk1, yk1)
-      if (allocated(ww)) deallocate (ww, kk1)
+      if (allocated(xk1)) then
+         deallocate (xk1, yk1)
+      end if
+      if (allocated(ww)) then
+         deallocate (ww, kk1)
+      end if
 
       allocate (xk1(numk), yk1(numk), ww(nmkx, numk), kk1(nmkx, numk))
       allocate (rhs(2, numk), aspect(numL), smp_mu(numk), k_bc(numk))
@@ -251,7 +261,9 @@ contains
       Lcopymu = .true.
       atpf_min = 0.8_dp
 
-      if (idir == -999) idir = 0
+      if (idir == -999) then
+         idir = 0
+      end if
 
 !  k_bc stores nearest original netnode
       do k = 1, numk
@@ -296,7 +308,9 @@ contains
          if (ATPF < 1.0_dp) then
             ierror = 1
             call orthonet_comp_ops(ops, ierror) ! will make kk2 administration
-            if (ierror /= 0) goto 1234
+            if (ierror /= 0) then
+               goto 1234
+            end if
          end if
 
 !     make startpointers
@@ -338,7 +352,9 @@ contains
             if (.not. allocated(ops)) then
                ierror = 1
                call orthonet_comp_ops(ops, ierror)
-               if (ierror /= 0) goto 1234
+               if (ierror /= 0) then
+                  goto 1234
+               end if
             end if
 
             J = 0.0_dp
@@ -346,7 +362,9 @@ contains
             smpmaxx = -1.0e99_dp
 !        compute Jacobian matrices and assign intended sample values to netnodes
             do k = 1, Numk
-               if (nb(k) /= 1 .and. nb(k) /= 2 .and. nb(k) /= 3 .and. nb(k) /= 4) cycle
+               if (nb(k) /= 1 .and. nb(k) /= 2 .and. nb(k) /= 3 .and. nb(k) /= 4) then
+                  cycle
+               end if
 !            if ( nb(k).ne.1 .and. nb(k).ne.2 ) cycle
 
                if (jsferic == 1 .and. jasfer3D == 1) then
@@ -481,10 +499,14 @@ contains
 !            end do
 
                ndki: do k = 1, numk
-                  if ((nb(k) /= 1 .and. nb(k) /= 2) .or. nmk(k) < 2) cycle ndki
+                  if ((nb(k) /= 1 .and. nb(k) /= 2) .or. nmk(k) < 2) then
+                     cycle ndki
+                  end if
 
 !              quadtree refinement
-                  if (keepcircumcenters /= 0 .and. (nmk(k) /= 3 .or. nb(k) /= 1)) cycle ! hanging nodes only
+                  if (keepcircumcenters /= 0 .and. (nmk(k) /= 3 .or. nb(k) /= 1)) then
+                     cycle ! hanging nodes only
+                  end if
 
 !               if ( (nb(k).ne.1) .or. nmk(k).lt.2 ) cycle ndki
 
@@ -611,7 +633,9 @@ contains
                end if
 
 !           snap to nearest land boundary
-               if (JAPROJECT >= 2) call snap_to_landboundary()
+               if (JAPROJECT >= 2) then
+                  call snap_to_landboundary()
+               end if
 
 !           update local coordinates
                if (jsferic == 1 .and. jasfer3D == 1) then
@@ -653,7 +677,9 @@ contains
             end if
 
             if (ja3 == 3) then
-               if (keepcircumcenters /= 1) call update_cell_circumcenters()
+               if (keepcircumcenters /= 1) then
+                  call update_cell_circumcenters()
+               end if
 
                call readyy('Orthogonalising net', real(no, kind=dp) / itatp)
 
@@ -666,7 +692,9 @@ contains
 
 !-------------------------------------------------
 !     compute the new cell centers
-         if (keepcircumcenters /= 1) call update_cell_circumcenters()
+         if (keepcircumcenters /= 1) then
+            call update_cell_circumcenters()
+         end if
 
 !     increase atpf_min for next cycle
          atpf_min = 1.0_dp - (1.0_dp - atpf_min) * 0.99_dp
@@ -689,7 +717,9 @@ contains
       deallocate (ktopo)
 !   deallocate(atpf_nodes)
 
-      if (allocated(ops)) call orthonet_dealloc_ops(ops)
+      if (allocated(ops)) then
+         call orthonet_dealloc_ops(ops)
+      end if
       if (allocated(ops)) then
          deallocate (ops)
       end if
@@ -702,7 +732,9 @@ contains
       if (allocated(ww2)) then
          deallocate (ww2)
       end if
-      if (allocated(ww2x)) deallocate (ww2x, ww2y)
+      if (allocated(ww2x)) then
+         deallocate (ww2x, ww2y)
+      end if
 
       if (allocated(ic)) then
          deallocate (ic)
@@ -867,7 +899,9 @@ contains
 
          do k0 = 1, numk ! attraction parameters
 
-            if ((nb(k0) /= 1) .and. (nb(k0) /= 2)) cycle
+            if ((nb(k0) /= 1) .and. (nb(k0) /= 2)) then
+               cycle
+            end if
 
             x0 = xk(k0)
             y0 = yk(k0)
@@ -906,7 +940,9 @@ contains
                      y3 = yzw(kL)
 
                      call normaloutchk(x0, y0, x1, y1, x3, y3, xn, yn, ja, jsferic, jasfer3D, dmiss, dxymis)
-                     if (JSFERIC == 1 .and. jasfer3D == 0) xn = xn * cos(dg2rd * 0.5_dp * (y0 + y1)) ! normal vector needs to be in Cartesian coordinates
+                     if (JSFERIC == 1 .and. jasfer3D == 0) then
+                        xn = xn * cos(dg2rd * 0.5_dp * (y0 + y1)) ! normal vector needs to be in Cartesian coordinates
+                     end if
 
                      rhs(1, k0) = rhs(1, k0) + (atpf * R01 * xn / 2 + &
                                                 atpf1 * SLR * xn * 0.5_dp / mu)
@@ -993,7 +1029,9 @@ contains
 !      lne2 = Nump+1
 
          do ilink = 1, Numl
-            if (lnn(ilink) < 1) cycle
+            if (lnn(ilink) < 1) then
+               cycle
+            end if
 
             k0 = kn(1, ilink) ! first node of link
             k1 = kn(2, ilink) ! second node of link
@@ -1114,7 +1152,9 @@ contains
             do kk0 = 1, N
                k0 = netcell(icell)%nod(kk0)
 
-               if (nmk2(k0) == 0) cycle
+               if (nmk2(k0) == 0) then
+                  cycle
+               end if
 
 !            if ( nb(k0).ne.1 ) cycle   ! internal nodes only
 
@@ -1153,7 +1193,9 @@ contains
          end do
 
          do k0 = 1, Numk
-            if (nb(k0) == 1 .or. nb(k0) == 4) cycle ! non-internal cells only
+            if (nb(k0) == 1 .or. nb(k0) == 4) then
+               cycle ! non-internal cells only
+            end if
             ww2x(1, k0) = 1.0_dp
             ww2y(1, k0) = 1.0_dp
             ww2x(2:nmk2(k0), k0) = 0.0_dp
@@ -1258,7 +1300,9 @@ contains
          !  compute operators
          if (.not. allocated(ops)) then
             call orthonet_comp_ops(ops, ierror_)
-            if (ierror_ /= 0) goto 1234
+            if (ierror_ /= 0) then
+               goto 1234
+            end if
          end if
 
          allocate (xi(nmkx2), eta(nmkx2))
@@ -1273,7 +1317,9 @@ contains
             end if
 
 !         if ( nb(k0).ne.1 .and. nb(k0).ne.2 .and. nb(k0).ne.3 ) cycle
-            if (nb(k0) /= 1 .and. nb(k0) /= 2 .and. nb(k0) /= 4) cycle
+            if (nb(k0) /= 1 .and. nb(k0) /= 2 .and. nb(k0) /= 4) then
+               cycle
+            end if
             op = ops(ktopo(k0))
             !        J(1,k0) = sum( op%Jxi( 1:nmk2(k0)) * xk(kk2(1:nmk2(k0),k0)) )
             !        J(2,k0) = sum( op%Jxi( 1:nmk2(k0)) * yk(kk2(1:nmk2(k0),k0)) )
@@ -1303,7 +1349,9 @@ contains
          end if
 
 !     reallocate memory for weights ww2 if necessary
-         if (ubound(ww2, 1) < nmkx2) call realloc(ww2, [nmkx2, numk])
+         if (ubound(ww2, 1) < nmkx2) then
+            call realloc(ww2, [nmkx2, numk])
+         end if
 
 !     compose the discretization
          do k0 = 1, numk ! attraction parameters
@@ -1312,7 +1360,9 @@ contains
                continue
             end if
 
-            if (nmk(k0) < 2) cycle
+            if (nmk(k0) < 2) then
+               cycle
+            end if
 
             !-------------------------------------------------------------------------
             !     internal nodes and boundary nodes
@@ -1530,7 +1580,9 @@ contains
          else
             continue
          end if
-         if (allocated(xi)) deallocate (xi, eta)
+         if (allocated(xi)) then
+            deallocate (xi, eta)
+         end if
          if (allocated(op%Az)) then
             deallocate (op%Az, op%Gxi, op%Geta, op%Divxi, op%Diveta, op%Jxi, op%Jeta)
          else
@@ -1594,7 +1646,9 @@ contains
 
 !     compute Phi
          do k0 = 1, Numk
-            if (nb(k0) /= 1 .and. nb(k0) /= 2 .and. nb(k0) /= 4) cycle ! internal and boundary nodes only
+            if (nb(k0) /= 1 .and. nb(k0) /= 2 .and. nb(k0) /= 4) then
+               cycle ! internal and boundary nodes only
+            end if
 
 !        compute the contravariant base vectors
             det = J(1, k0) * J(4, k0) - J(3, k0) * J(2, k0) + 1.0e-9_dp
@@ -1627,7 +1681,9 @@ contains
 
          alpha = 1.0_dp
          adapt_beta = min(adapt_beta, 0.99_dp)
-         if (Phi_ave /= 0.0_dp) alpha = adapt_beta / (Phi_ave * (1.0_dp - adapt_beta))
+         if (Phi_ave /= 0.0_dp) then
+            alpha = adapt_beta / (Phi_ave * (1.0_dp - adapt_beta))
+         end if
 
          select case (adapt_method)
          case (1) ! arc-length
@@ -1746,11 +1802,15 @@ contains
          allocate (top%nmk(1), top%nmk2(1))
          allocate (top%xi(nmkx, 1), top%eta(nmkx, 1))
 
-         if (.not. allocated(kk2)) allocate (kk2(nmkx, numk))
+         if (.not. allocated(kk2)) then
+            allocate (kk2(nmkx, numk))
+         end if
 
          !  firstly, perform the administration
          do k0 = 1, numk
-            if (nmk(k0) < 2) cycle
+            if (nmk(k0) < 2) then
+               cycle
+            end if
 
 !        perform the node-to-node-through-cells connectivity administration
             call orthonet_admin(k0, adm, ierror)
@@ -1799,10 +1859,14 @@ contains
 
          !  compute and save operators for new, unique topologies
          do k0 = 1, numk
-            if (nb(k0) /= 1 .and. nb(k0) /= 2 .and. nb(k0) /= 3 .and. nb(k0) /= 4) cycle ! we need the adminstration for corner nodes, hence corner nodes are not excluded
+            if (nb(k0) /= 1 .and. nb(k0) /= 2 .and. nb(k0) /= 3 .and. nb(k0) /= 4) then
+               cycle ! we need the adminstration for corner nodes, hence corner nodes are not excluded
+            end if
             itopo = ktopo(k0)
 
-            if (itopo < 1) cycle ! really needs to be checked
+            if (itopo < 1) then
+               cycle ! really needs to be checked
+            end if
 
             !     determine if this node has a new unique topology
             if (lnewtopo(itopo)) then
@@ -1836,11 +1900,17 @@ contains
 !      call cirr(xk(k0), yk(k0), ncolhl)
 
 !     deallocate saved arrays
-         if (allocated(top%xi)) deallocate (top%xi, top%eta, top%nmk, top%nmk2)
+         if (allocated(top%xi)) then
+            deallocate (top%xi, top%eta, top%nmk, top%nmk2)
+         end if
 
          !  deallocate arrays
-         if (allocated(adm%icell)) deallocate (adm%icell, adm%kk2, adm%kkc)
-         if (allocated(xi)) deallocate (xi, eta)
+         if (allocated(adm%icell)) then
+            deallocate (adm%icell, adm%kk2, adm%kkc)
+         end if
+         if (allocated(xi)) then
+            deallocate (xi, eta)
+         end if
          if (allocated(lnewtopo)) then
             deallocate (lnewtopo)
          end if
@@ -1882,14 +1952,30 @@ contains
 
          type(tops) :: op !< structure with operators
 
-         if (allocated(op%Az)) deallocate (op%Az)
-         if (allocated(op%Gxi)) deallocate (op%Gxi)
-         if (allocated(op%Geta)) deallocate (op%Geta)
-         if (allocated(op%Divxi)) deallocate (op%Divxi)
-         if (allocated(op%Diveta)) deallocate (op%Diveta)
-         if (allocated(op%Jxi)) deallocate (op%Jxi)
-         if (allocated(op%Jeta)) deallocate (op%Jeta)
-         if (allocated(op%ww2)) deallocate (op%ww2)
+         if (allocated(op%Az)) then
+            deallocate (op%Az)
+         end if
+         if (allocated(op%Gxi)) then
+            deallocate (op%Gxi)
+         end if
+         if (allocated(op%Geta)) then
+            deallocate (op%Geta)
+         end if
+         if (allocated(op%Divxi)) then
+            deallocate (op%Divxi)
+         end if
+         if (allocated(op%Diveta)) then
+            deallocate (op%Diveta)
+         end if
+         if (allocated(op%Jxi)) then
+            deallocate (op%Jxi)
+         end if
+         if (allocated(op%Jeta)) then
+            deallocate (op%Jeta)
+         end if
+         if (allocated(op%ww2)) then
+            deallocate (op%ww2)
+         end if
 
       end subroutine orthonet_dealloc_op
 
@@ -1904,7 +1990,9 @@ contains
 
          integer :: itopo
 
-         if (.not. allocated(ops)) return
+         if (.not. allocated(ops)) then
+            return
+         end if
 
          do itopo = 1, size(ops)
             call orthonet_dealloc_op(ops(itopo))
@@ -1948,11 +2036,15 @@ contains
          !    determine if the topology is new
          lisnew = .true.
          topo: do idum = 1, 1
-            if (adm%nmk2 > ubound(top%xi, 1)) cycle topo
+            if (adm%nmk2 > ubound(top%xi, 1)) then
+               cycle topo
+            end if
 
             do itopo = 1, numtopo
 
-               if (adm%nmk /= top%nmk(itopo) .or. adm%nmk2 /= top%nmk2(itopo)) cycle
+               if (adm%nmk /= top%nmk(itopo) .or. adm%nmk2 /= top%nmk2(itopo)) then
+                  cycle
+               end if
 
                lisnew = .false.
                do k = 2, adm%nmk2 ! center node (k=0) not considered
@@ -2069,7 +2161,9 @@ contains
          real(kind=dp) :: volwwxi
 
          ierror_ = 1
-         if (present(ierror)) ierror = ierror_
+         if (present(ierror)) then
+            ierror = ierror_
+         end if
 
 !     initialize
          op%Az = 0.0_dp
@@ -2097,12 +2191,16 @@ contains
 
 !     fill the averaging matrix
          do ic = 1, adm%Ncell
-            if (adm%icell(ic) < 1 .or. nb(k0) == 3) cycle
+            if (adm%icell(ic) < 1 .or. nb(k0) == 3) then
+               cycle
+            end if
 
 !        note: linkL and linkR refer to the directly connected left and right nodes
             linkL = ic + 1 ! by construction
             linkR = linkL + 1
-            if (linkR > adm%Ncell + 1) linkR = linkR - adm%Ncell
+            if (linkR > adm%Ncell + 1) then
+               linkR = linkR - adm%Ncell
+            end if
             RlinkL = sqrt(xi(linkL)**2 + eta(linkL)**2 + 1.0e-16_dp)
             RlinkR = sqrt(xi(linkR)**2 + eta(linkR)**2 + 1.0e-16_dp)
             cDPhi = (xi(linkR) * xi(linkL) + eta(linkR) * eta(linkL)) / (RlinkL * RlinkR)
@@ -2114,9 +2212,13 @@ contains
             end do
 
             kL = k - 1
-            if (kL < 1) kL = kL + N
+            if (kL < 1) then
+               kL = kL + N
+            end if
             kR = k + 1
-            if (kR > N) kR = kR - N
+            if (kR > N) then
+               kR = kR - N
+            end if
             if (N == 3) then ! triangles: circumcenter
                alpha = 1.0_dp / (1.0_dp - cDphi**2 + 1e-8)
                alphaL = 0.5_dp * (1.0_dp - RlinkL / RlinkR * cDphi) * alpha
@@ -2167,7 +2269,9 @@ contains
 !           find the boundary cell in the icell array
 !           assume boundary at the right
 !           swap Left and Right if the boundary is at the left with I_SWAP_LR
-               if (klink /= kcellL) I_LR_SWAP = -1.0_dp
+               if (klink /= kcellL) then
+                  I_LR_SWAP = -1.0_dp
+               end if
 
                xiL = sum(xi(1:adm%nmk2) * op%Az(1:adm%nmk2, kcellL))
                etaL = sum(eta(1:adm%nmk2) * op%Az(1:adm%nmk2, kcellL))
@@ -2205,7 +2309,9 @@ contains
 !           find the left- and right-hand-side cells with respect to the link
                kcellL = klink ! by construction
                kcellR = kcellL - 1
-               if (kcellR < 1) kcellR = kcellR + adm%Ncell
+               if (kcellR < 1) then
+                  kcellR = kcellR + adm%Ncell
+               end if
 
                if (kcellR < 1) then
                   continue
@@ -2321,7 +2427,9 @@ contains
          do klink = 1, nmk(k0)
             volxi = volxi + 0.5 * (op%Divxi(klink) * xis(klink) + op%Diveta(klink) * etas(klink))
          end do
-         if (volxi == 0.0_dp) volxi = 1.0_dp
+         if (volxi == 0.0_dp) then
+            volxi = 1.0_dp
+         end if
 
          op%Divxi = op%Divxi / volxi
          op%Diveta = op%Diveta / volxi
@@ -2330,7 +2438,9 @@ contains
          do k = 1, adm%Ncell
             if (lnn(nod(k0)%lin(k)) == 2) then ! internal link
                kR = k - 1 ! right neighboring cell, left one is k by construction
-               if (kR < 1) kR = kR + nmk(k0)
+               if (kR < 1) then
+                  kR = kR + nmk(k0)
+               end if
                op%Jxi(1:nmk2(k0)) = op%Jxi(1:nmk2(k0)) + op%Divxi(k) * 0.5_dp * (op%Az(1:nmk2(k0), k) + op%Az(1:nmk2(k0), kR))
                op%Jeta(1:nmk2(k0)) = op%Jeta(1:nmk2(k0)) + op%Diveta(k) * 0.5_dp * (op%Az(1:nmk2(k0), k) + op%Az(1:nmk2(k0), kR))
             else ! boundary link, 1: center node, k+1: connected node through link k
@@ -2357,7 +2467,9 @@ contains
 
 1234     continue
 
-         if (present(ierror)) ierror = ierror_
+         if (present(ierror)) then
+            ierror = ierror_
+         end if
 
       end subroutine orthonet_comp_operators
 
@@ -2403,11 +2515,17 @@ contains
 
          ierror_ = 1
 
-         if (present(ierror)) ierror = ierror_
+         if (present(ierror)) then
+            ierror = ierror_
+         end if
 
          FAC = 1.0_dp
-         if (nb(k0) == 2) FAC = 0.5_dp ! boundary node
-         if (nb(k0) == 3) FAC = 0.25_dp ! corner node
+         if (nb(k0) == 2) then
+            FAC = 0.5_dp ! boundary node
+         end if
+         if (nb(k0) == 3) then
+            FAC = 0.25_dp ! corner node
+         end if
 
 !     initialize xi and eta to zero
          xi = 0.0_dp
@@ -2440,7 +2558,9 @@ contains
 !        get the cells icL and icR connected to both nodes
             icL = lne(1, L)
             icR = icL
-            if (lnn(L) == 2) icR = lne(2, L)
+            if (lnn(L) == 2) then
+               icR = lne(2, L)
+            end if
 
 !        if:
 !           all other cells connected to node k1 are quads, and
@@ -2453,17 +2573,22 @@ contains
                L1 = nod(k1)%lin(kk1)
                do kcell = 1, lnn(L1)
                   ic = lne(kcell, L1)
-                  if (ic /= icL .and. ic /= icR) &
+                  if (ic /= icL .and. ic /= icR) then
                      L_is_square = L_is_square .and. (netcell(ic)%n == 4)
+                  end if
                end do
-               if (.not. L_is_square) exit
+               if (.not. L_is_square) then
+                  exit
+               end if
             end do
 
 !         if ( nmk(k1).eq.4 .and. nb(k1).eq.1 ) L_is_square=.true.
 
 !        compute the optimal angle theta_square, if applicable
             kL = kk - 1
-            if (kL < 1) kL = kL + adm%Ncell
+            if (kL < 1) then
+               kL = kL + adm%Ncell
+            end if
 !        Nquad is the number of quads not connected to k1
             if (L_is_square) then
                if (nb(k1) == 1 .or. nb(k1) == 4) then ! inner node
@@ -2479,12 +2604,18 @@ contains
 !           check the total number of quads connected
 !             by adding the square cells that are in the stencil
                if (adm%icell(kk) > 1) then
-                  if (netcell(adm%icell(kk))%n == 4) Nquad = Nquad + 1
+                  if (netcell(adm%icell(kk))%n == 4) then
+                     Nquad = Nquad + 1
+                  end if
                end if
                if (adm%icell(kL) > 1) then
-                  if (netcell(adm%icell(kL))%n == 4) Nquad = Nquad + 1
+                  if (netcell(adm%icell(kL))%n == 4) then
+                     Nquad = Nquad + 1
+                  end if
                end if
-               if (Nquad > 3) L_is_square = .false.
+               if (Nquad > 3) then
+                  L_is_square = .false.
+               end if
             end if
 
 !        mark the left and right neighboring cells as square
@@ -2496,11 +2627,15 @@ contains
 !     continue with the indirectly connected links, from Ncell+2 to adm&nmk2
 !     find the 'square' angles belonging to quads
          do ic = 1, adm%Ncell
-            if (adm%icell(ic) < 1) cycle ! fictitious boundary cell
+            if (adm%icell(ic) < 1) then
+               cycle ! fictitious boundary cell
+            end if
             Nnodes = netcell(adm%icell(ic))%n
             if (Nnodes == 4) then
                do kk = 1, Nnodes
-                  if (adm%kkc(kk, ic) <= adm%Ncell + 1) cycle ! center and directly-connected cells
+                  if (adm%kkc(kk, ic) <= adm%Ncell + 1) then
+                     cycle ! center and directly-connected cells
+                  end if
                   theta_square(adm%kkc(kk, ic)) = 0.5_dp * pi
                end do
             end if
@@ -2513,7 +2648,9 @@ contains
 !     compute the internal link angle Phi
          Nquad = 0
          do kk = 1, adm%Ncell
-            if (adm%icell(kk) < 1) cycle ! fictitious boundary cell
+            if (adm%icell(kk) < 1) then
+               cycle ! fictitious boundary cell
+            end if
             Nnodes = netcell(adm%icell(kk))%n
 !        DPhi    = pi - 2d0*pi/dble(Nnodes)
             Dphi = opt_angle(Nnodes)
@@ -2521,7 +2658,9 @@ contains
 !        account for 'square' angles
             if (L_is_square_cell(kk) .or. Nnodes == 4) then
                kR = kk + 2
-               if (kR > adm%Ncell + 1) kR = kR - adm%Ncell
+               if (kR > adm%Ncell + 1) then
+                  kR = kR - adm%Ncell
+               end if
                lblink = (lnn(nod(k0)%lin(kk)) == 1)
                Dphi = opt_angle(Nnodes, theta_square(kk + 1), theta_square(kR), lblink)
                if (Nnodes == 3) then
@@ -2627,10 +2766,14 @@ contains
             Dphi0 = opt_angle(Nnodes)
             if (L_is_square_cell(ic)) then
                kR = ic + 2
-               if (kR > adm%Ncell + 1) kR = kR - adm%Ncell
+               if (kR > adm%Ncell + 1) then
+                  kR = kR - adm%Ncell
+               end if
                lblink = (lnn(nod(k0)%lin(ic)) == 1)
                Dphi0 = opt_angle(Nnodes, theta_square(ic + 1), theta_square(kR), lblink)
-               if (Nnodes == 3) Dphi0 = dmutri_square * Dphi0
+               if (Nnodes == 3) then
+                  Dphi0 = dmutri_square * Dphi0
+               end if
             else if (Nnodes == 3) then
                Dphi0 = dmutri * Dphi0
             end if
@@ -2657,9 +2800,13 @@ contains
 
 !        determine the orientation of the cell (necessary for folded cells)
             kp1 = k + 1
-            if (kp1 > Nnodes) kp1 = kp1 - Nnodes
+            if (kp1 > Nnodes) then
+               kp1 = kp1 - Nnodes
+            end if
             km1 = k - 1
-            if (km1 < 1) km1 = km1 + Nnodes
+            if (km1 < 1) then
+               km1 = km1 + Nnodes
+            end if
             if (adm%kkc(km1, ic) - adm%kkc(kp1, ic) == -1 .or. &
                 adm%kkc(km1, ic) - adm%kkc(kp1, ic) == adm%nmk - 1) then
                Dtheta = -Dtheta
@@ -2687,7 +2834,9 @@ contains
 
 1234     continue
 
-         if (present(ierror)) ierror = ierror_
+         if (present(ierror)) then
+            ierror = ierror_
+         end if
 
       end subroutine orthonet_assign_xieta
 
@@ -2703,7 +2852,9 @@ contains
          logical :: lblink_
 
          lblink_ = .false.
-         if (present(lblink)) lblink_ = lblink
+         if (present(lblink)) then
+            lblink_ = lblink
+         end if
 
          opt_angle = pi * (1 - 2.0_dp / real(Nnodes, kind=dp))
 
@@ -2711,7 +2862,9 @@ contains
             if (present(theta2)) then
                if (Nnodes == 3) then
                   opt_angle = 0.25_dp * pi
-                  if (theta1 + theta2 == pi .and. .not. lblink_) opt_angle = 0.5_dp * pi
+                  if (theta1 + theta2 == pi .and. .not. lblink_) then
+                     opt_angle = 0.5_dp * pi
+                  end if
                else if (Nnodes == 4) then
                   opt_angle = 0.5_dp * pi
                end if
@@ -2754,7 +2907,9 @@ contains
 
          do iter = 1, ITAPSM
             do k0 = 1, Numk
-               if (nb(k0) /= 1 .and. nb(k0) /= 2 .and. nb(k0) /= 4) cycle
+               if (nb(k0) /= 1 .and. nb(k0) /= 2 .and. nb(k0) /= 4) then
+                  cycle
+               end if
 
                !        get the Laplacian weights
                ww2 = 0.0_dp

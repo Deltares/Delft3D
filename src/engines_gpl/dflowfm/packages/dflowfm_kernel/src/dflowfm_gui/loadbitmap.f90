@@ -129,14 +129,30 @@ contains
          NDRAW(26) = 1
       end if
 
-      if (XB(1) == 0) XB(1) = -0.5_dp
-      if (YB(1) == 0) YB(1) = -0.5_dp
-      if (XB(2) == 0) XB(2) = MXP + 0.5_dp
-      if (YB(2) == 0) YB(2) = -0.5_dp
-      if (XB(3) == 0) XB(3) = MXP + 0.5_dp
-      if (YB(3) == 0) YB(3) = NXP + 0.5_dp
-      if (XB(4) == 0) XB(4) = -0.5_dp
-      if (YB(4) == 0) YB(4) = NXP + 0.5_dp
+      if (XB(1) == 0) then
+         XB(1) = -0.5_dp
+      end if
+      if (YB(1) == 0) then
+         YB(1) = -0.5_dp
+      end if
+      if (XB(2) == 0) then
+         XB(2) = MXP + 0.5_dp
+      end if
+      if (YB(2) == 0) then
+         YB(2) = -0.5_dp
+      end if
+      if (XB(3) == 0) then
+         XB(3) = MXP + 0.5_dp
+      end if
+      if (YB(3) == 0) then
+         YB(3) = NXP + 0.5_dp
+      end if
+      if (XB(4) == 0) then
+         XB(4) = -0.5_dp
+      end if
+      if (YB(4) == 0) then
+         YB(4) = NXP + 0.5_dp
+      end if
 
       return
 

@@ -107,7 +107,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("comp_fluxhor3D", ithndl)
+      if (timon) then
+         call timstrt("comp_fluxhor3D", ithndl)
+      end if
 
       if (present(background_diffusion_factor)) then
          background_diffusion_factor_local = background_diffusion_factor
@@ -248,7 +250,9 @@ contains
             QR = min(q1(L), 0.0_dp)
 
             do j = 1, NUMCONST
-               if (jaupdateconst(j) /= 1) cycle
+               if (jaupdateconst(j) /= 1) then
+                  cycle
+               end if
 
                sedL = sed(j, k1)
                sedR = sed(j, k2)
@@ -349,7 +353,9 @@ contains
                end if
                do j = 1, NUMCONST
 
-                  if (jaupdateconst(j) /= 1) cycle
+                  if (jaupdateconst(j) /= 1) then
+                     cycle
+                  end if
 
                   if (present(difsedsp)) then
                      difsed_const = difsedsp(j, LL)
@@ -403,7 +409,9 @@ contains
          end if
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
 
    end subroutine comp_fluxhor3D

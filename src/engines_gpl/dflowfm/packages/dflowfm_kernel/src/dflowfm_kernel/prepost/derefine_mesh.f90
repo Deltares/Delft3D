@@ -80,9 +80,13 @@ contains
 !     find the cell
          in = -1
          do k = 1, nump
-            if (netcell(k)%N < 1) cycle
+            if (netcell(k)%N < 1) then
+               cycle
+            end if
             call pinpok(xp, yp, netcell(k)%N, xk(netcell(k)%nod), yk(netcell(k)%nod), in, jins, dmiss)
-            if (in > 0) exit
+            if (in > 0) then
+               exit
+            end if
          end do
 
          if (in == 0) then ! no cell found
@@ -95,13 +99,19 @@ contains
          in = -1
          k = 0 ! default
          do L = 1, numL
-            if (lnn(L) /= 1) cycle
+            if (lnn(L) /= 1) then
+               cycle
+            end if
 !        check if this link is a true boundary link, or a link near the selecting polygon
-            if (nb(kn(1, L)) /= 2 .or. nb(kn(2, L)) /= 2) cycle
+            if (nb(kn(1, L)) /= 2 .or. nb(kn(2, L)) /= 2) then
+               cycle
+            end if
 !        get the adjacent cell
             k1 = lne(1, L)
 !        check if the adjacent cell is a quad
-            if (netcell(k1)%N /= 4) cycle
+            if (netcell(k1)%N /= 4) then
+               cycle
+            end if
 !        check if all nodes are inside the selecting polygon
             Liscell = .true.
             do i = 1, netcell(k1)%N
@@ -110,7 +120,9 @@ contains
                   exit
                end if
             end do
-            if (.not. Liscell) cycle
+            if (.not. Liscell) then
+               cycle
+            end if
 
 !        link found: get the adjacent cell and exit
             k = k1
@@ -120,7 +132,9 @@ contains
          if (k < 1) then ! no cell found: take the first quad inside the selecting polygon
             do k1 = 1, nump
 !           check if the cell is a quad
-               if (netcell(k1)%N /= 4) cycle
+               if (netcell(k1)%N /= 4) then
+                  cycle
+               end if
 !           check if all nodes are inside the selecting polygon
                Liscell = .true.
                do i = 1, netcell(k1)%N
@@ -129,7 +143,9 @@ contains
                      exit
                   end if
                end do
-               if (.not. Liscell) cycle
+               if (.not. Liscell) then
+                  cycle
+               end if
 
 !           cell found: get the cell and exit
                k = k1
@@ -138,7 +154,9 @@ contains
          end if
 
 !     still no cell found: take the first
-         if (k < 1) k = 1
+         if (k < 1) then
+            k = 1
+         end if
       end if
 
 !  allocate
@@ -174,7 +192,9 @@ contains
             if (icellmask(k) == 1) then ! 'A' cell
                do j = 1, ndirect
                   kother = kdirect(j)
-                  if (netcell(kother)%N /= 4) cycle ! quads only
+                  if (netcell(kother)%N /= 4) then
+                     cycle ! quads only
+                  end if
                   if (abs(icellmask(kother)) /= 1 .and. abs(icellmask(kother)) /= 2) then
                      icellmask(kother) = 2
                      call update_frontlist(kother)
@@ -182,7 +202,9 @@ contains
                end do
                do j = 1, nindirect
                   kother = kindirect(j)
-                  if (netcell(kother)%N /= 4) cycle ! quads only
+                  if (netcell(kother)%N /= 4) then
+                     cycle ! quads only
+                  end if
                   if (icellmask(kother) /= 3) then
                      icellmask(kother) = 3
                   end if
@@ -191,7 +213,9 @@ contains
             else if (icellmask(k) == 2) then ! 'B' cell
                do j = 1, ndirect
                   kother = kdirect(j)
-                  if (netcell(kother)%N /= 4) cycle ! quads only
+                  if (netcell(kother)%N /= 4) then
+                     cycle ! quads only
+                  end if
                   if (icellmask(kother) /= 3 .and. abs(icellmask(kother)) /= 1 .and. abs(icellmask(kother)) /= 2) then
                      icellmask(kother) = 1
                      call update_frontlist(kother)
@@ -199,7 +223,9 @@ contains
                end do
                do j = 1, nindirect
                   kother = kindirect(j)
-                  if (netcell(kother)%N /= 4) cycle ! quads only
+                  if (netcell(kother)%N /= 4) then
+                     cycle ! quads only
+                  end if
                   if (abs(icellmask(kother)) /= 2 .and. abs(icellmask(kother)) /= 1 .and. icellmask(kother) /= 3) then
                      icellmask(kother) = 2
                      call update_frontlist(kother)
@@ -219,7 +245,9 @@ contains
 !     plot
          do k = 1, nump
             N = netcell(k)%N
-            if (N < 1) cycle
+            if (N < 1) then
+               cycle
+            end if
             xx = sum(xk(netcell(k)%nod(1:N))) / real(N, kind=dp)
             yy = sum(yk(netcell(k)%nod(1:N))) / real(N, kind=dp)
             if (abs(icellmask(k)) == 1) then
@@ -291,11 +319,15 @@ contains
          if (knew > 0) then
 
 !        check number of nodes
-            if (netcell(knew)%N /= 4) return ! quads only
+            if (netcell(knew)%N /= 4) then
+               return ! quads only
+            end if
 
 !        check if cell is already in frontlist
             do i = 1, numfront
-               if (ifrontnew(i) == knew) return
+               if (ifrontnew(i) == knew) then
+                  return
+               end if
             end do
             numfrontnew = numfrontnew + 1
 

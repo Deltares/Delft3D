@@ -137,7 +137,9 @@ contains
       type(TPRunningMean), allocatable :: buffer(:)
 
       keep_ = .false.
-      if (present(keep)) keep_ = keep
+      if (present(keep)) then
+         keep_ = keep
+      end if
 
       if (keep_) then
          allocate (buffer(currentSize))

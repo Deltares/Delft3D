@@ -113,7 +113,9 @@ contains
 
       integer :: i
 
-      if (.not. allocated(rug)) return
+      if (.not. allocated(rug)) then
+         return
+      end if
 
       do i = 1, size(rug)
          call deallocCrossSectionPath(rug(i)%path)
@@ -130,7 +132,9 @@ contains
       integer :: i, size_source_rug
 
       size_source_rug = size(source_rug)
-      if (size_source_rug > size(target_rug) .or. size_source_rug == 0) return
+      if (size_source_rug > size(target_rug) .or. size_source_rug == 0) then
+         return
+      end if
 
       do i = 1, size_source_rug
          target_rug(i) = source_rug(i)

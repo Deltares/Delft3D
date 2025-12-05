@@ -55,15 +55,21 @@ contains
 
       integer :: k0, k1, k2, n0, n2, nn
       real(kind=dp) :: X0, Y0, X1, Y1, X2, Y2, COSPHI, PHI
-      if (TRIANGLEMINANGLE >= TRIANGLEMAXANGLE) return
+      if (TRIANGLEMINANGLE >= TRIANGLEMAXANGLE) then
+         return
+      end if
       JA = 1
       phimin = 1.0e3_dp
       phimax = 0.0_dp
       do NN = 1, 3
          N0 = NN - 1
-         if (N0 < 1) N0 = N0 + 3
+         if (N0 < 1) then
+            N0 = N0 + 3
+         end if
          N2 = NN + 1
-         if (N2 > 3) N2 = N2 - 3
+         if (N2 > 3) then
+            N2 = N2 - 3
+         end if
          K0 = INDX(N0, N)
          K1 = INDX(NN, N)
          K2 = INDX(N2, N)

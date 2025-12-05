@@ -72,7 +72,9 @@ contains
       do La = 1, nd(k12)%lnx ! loop over all attached links
          LLL = nd(k12)%ln(La)
          nn12 = 1
-         if (LLL > 0) nn12 = 2
+         if (LLL > 0) then
+            nn12 = 2
+         end if
          LLLL = abs(LLL)
 
          Lb2 = Lbot(LLLL)

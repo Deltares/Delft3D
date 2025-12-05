@@ -94,7 +94,9 @@ contains
       call DRAWNU(KEY)
       call KTEXT(TEX, 1, 2, 15)
       call putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
-      if (KEY /= 23) JONCE = 0
+      if (KEY /= 23) then
+         JONCE = 0
+      end if
 
       if (NUM /= 0) then
 !        ER IS EEN KEUZE

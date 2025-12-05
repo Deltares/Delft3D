@@ -163,7 +163,9 @@ contains
                do kk = 1, numk_inpoly
                   k = iperm(kk)
 
-                  if (k == 0) cycle ! already merged
+                  if (k == 0) then
+                     cycle ! already merged
+                  end if
 
                   if (mod(K, kint) == 0) then
                      call READYY(' ', min(1.0_dp, real(k, kind=dp) / kint))
@@ -223,7 +225,9 @@ contains
             end if
 
 !       deallocate kdtree
-            if (treeglob%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeglob)
+            if (treeglob%itreestat /= ITREE_EMPTY) then
+               call delete_kdtree2(treeglob)
+            end if
          end if
 
          if (jadone /= 1) then

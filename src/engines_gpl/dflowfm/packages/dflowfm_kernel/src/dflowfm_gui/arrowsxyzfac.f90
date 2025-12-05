@@ -43,7 +43,9 @@ contains
       implicit none
       real(kind=dp) :: X0, Y0, UX, UY, VFAC, zfac
 
-      if (UX == 0 .and. UY == 0) return
+      if (UX == 0 .and. UY == 0) then
+         return
+      end if
 
       uy = uy
 

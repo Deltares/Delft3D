@@ -88,7 +88,9 @@ contains
       y1 = ys(ip1)
       z1 = zss(1, ip1)
 
-      if (x0 == DMISS .or. y1 == DMISS .or. x1 == DMISS .or. y1 == DMISS) goto 1234
+      if (x0 == DMISS .or. y1 == DMISS .or. x1 == DMISS .or. y1 == DMISS) then
+         goto 1234
+      end if
 
       xL = 0.25_dp * (xs(ip0) + xs(ip1) + xs(ip0L) + xs(ip1L))
       yL = 0.25_dp * (ys(ip0) + ys(ip1) + ys(ip0L) + ys(ip1L))

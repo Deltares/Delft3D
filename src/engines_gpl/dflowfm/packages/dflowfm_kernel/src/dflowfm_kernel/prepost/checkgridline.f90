@@ -65,8 +65,12 @@ contains
 
 ! select links adjacent to at least one quad only
          doit = .false.
-         if (lnn(link) > 0) doit = (netcell(lne(1, link))%n == 4)
-         if (lnn(link) > 1) doit = doit .or. (netcell(lne(2, link))%n == 4)
+         if (lnn(link) > 0) then
+            doit = (netcell(lne(1, link))%n == 4)
+         end if
+         if (lnn(link) > 1) then
+            doit = doit .or. (netcell(lne(2, link))%n == 4)
+         end if
 
          if (doit) then
             if (othernode1 == node2) then ! valid connection

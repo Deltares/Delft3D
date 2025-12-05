@@ -116,7 +116,9 @@ contains
          end if
       end do
 
-      if (iqtail == 0) return
+      if (iqtail == 0) then
+         return
+      end if
 
 ! Loop over flow node queue: for each node, water level is already set,
 ! but now also visit its neighbouring flow nodes (this is the 'flood' step).
@@ -129,7 +131,9 @@ contains
          end if
          do iL = 1, nd(k)%lnx
             Lf = abs(nd(k)%ln(iL))
-            if (s1queue(iqcur) < minval(bob(:, Lf))) cycle ! Water level lower than link's bottom level, cannot flood across this link.
+            if (s1queue(iqcur) < minval(bob(:, Lf))) then
+               cycle ! Water level lower than link's bottom level, cannot flood across this link.
+            end if
             k2 = ln(1, Lf)
             if (k2 == k) then
                k2 = ln(2, Lf)
@@ -148,7 +152,9 @@ contains
             end if
          end do
          ! All reachable nodes have been visited, rest (if any) remains unflooded at s1ini:
-         if (iqcur == iqtail) exit
+         if (iqcur == iqtail) then
+            exit
+         end if
       end do
 
 ! Update water depth explicitly here, for direct plotting.

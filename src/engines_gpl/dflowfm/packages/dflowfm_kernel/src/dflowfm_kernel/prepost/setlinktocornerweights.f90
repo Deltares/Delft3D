@@ -124,15 +124,29 @@ contains
       end do
 
       do L = lnx1D + 1, lnx
-         if (abs(kcu(L)) == 1) cycle
+         if (abs(kcu(L)) == 1) then
+            cycle
+         end if
          k3 = lncn(1, L)
          k4 = lncn(2, L)
-         if (wcnxy(1, k3) /= 0) wcnx3(L) = wcnx3(L) / wcnxy(1, k3)
-         if (wcnxy(2, k3) /= 0) wcny3(L) = wcny3(L) / wcnxy(2, k3)
-         if (wcnxy(1, k4) /= 0) wcnx4(L) = wcnx4(L) / wcnxy(1, k4)
-         if (wcnxy(2, k4) /= 0) wcny4(L) = wcny4(L) / wcnxy(2, k4)
-         if (wcnxy(3, k3) /= 0) wcLn(1, L) = wcLn(1, L) / wcnxy(3, k3)
-         if (wcnxy(3, k4) /= 0) wcLn(2, L) = wcLn(2, L) / wcnxy(3, k4)
+         if (wcnxy(1, k3) /= 0) then
+            wcnx3(L) = wcnx3(L) / wcnxy(1, k3)
+         end if
+         if (wcnxy(2, k3) /= 0) then
+            wcny3(L) = wcny3(L) / wcnxy(2, k3)
+         end if
+         if (wcnxy(1, k4) /= 0) then
+            wcnx4(L) = wcnx4(L) / wcnxy(1, k4)
+         end if
+         if (wcnxy(2, k4) /= 0) then
+            wcny4(L) = wcny4(L) / wcnxy(2, k4)
+         end if
+         if (wcnxy(3, k3) /= 0) then
+            wcLn(1, L) = wcLn(1, L) / wcnxy(3, k3)
+         end if
+         if (wcnxy(3, k4) /= 0) then
+            wcLn(2, L) = wcLn(2, L) / wcnxy(3, k4)
+         end if
          if (irov == 2) then ! zero cornervelocities for no-slip
             if (int(wcnxy(3, k3)) /= nmk(k3)) then
                wcnx3(L) = 0.0_dp

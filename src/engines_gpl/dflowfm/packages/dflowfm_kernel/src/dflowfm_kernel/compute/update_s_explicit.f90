@@ -123,9 +123,13 @@ contains
 
 !   synchronise all water-levels
       if (jampi == 1) then
-         if (jatimer == 1) call starttimer(IUPDSALL)
+         if (jatimer == 1) then
+            call starttimer(IUPDSALL)
+         end if
          call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierror)
-         if (jatimer == 1) call stoptimer(IUPDSALL)
+         if (jatimer == 1) then
+            call stoptimer(IUPDSALL)
+         end if
       end if
 
 !    end do

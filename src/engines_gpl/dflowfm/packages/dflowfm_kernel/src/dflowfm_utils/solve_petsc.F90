@@ -252,7 +252,9 @@ contains
 !           count non-zero row entries for this row
             do i = 1, row(ndn)%l
                j = row(ndn)%j(i)
-               if (iglobal(j) == 0) cycle
+               if (iglobal(j) == 0) then
+                  cycle
+               end if
                if (mask(j) == 1) then ! in diagonal block
                   numdia = numdia + 1
                else ! in off-diagonal block
@@ -264,25 +266,53 @@ contains
       end do
 
 !     allocate module variables
-      if (allocated(rowtoelem)) deallocate (rowtoelem)
-      if (allocated(jdia)) deallocate (jdia)
-      if (allocated(idia)) deallocate (idia)
-      if (allocated(adia)) deallocate (adia)
+      if (allocated(rowtoelem)) then
+         deallocate (rowtoelem)
+      end if
+      if (allocated(jdia)) then
+         deallocate (jdia)
+      end if
+      if (allocated(idia)) then
+         deallocate (idia)
+      end if
+      if (allocated(adia)) then
+         deallocate (adia)
+      end if
 
-      if (allocated(joff)) deallocate (joff)
-      if (allocated(ioff)) deallocate (ioff)
-      if (allocated(aoff)) deallocate (aoff)
+      if (allocated(joff)) then
+         deallocate (joff)
+      end if
+      if (allocated(ioff)) then
+         deallocate (ioff)
+      end if
+      if (allocated(aoff)) then
+         deallocate (aoff)
+      end if
 
-      if (allocated(joffsav)) deallocate (joffsav)
+      if (allocated(joffsav)) then
+         deallocate (joffsav)
+      end if
 
-      if (allocated(guusidxdia)) deallocate (guusidxdia)
-      if (allocated(guusidxoff)) deallocate (guusidxoff)
+      if (allocated(guusidxdia)) then
+         deallocate (guusidxdia)
+      end if
+      if (allocated(guusidxoff)) then
+         deallocate (guusidxoff)
+      end if
 
-      if (allocated(izerorow)) deallocate (izerorow)
+      if (allocated(izerorow)) then
+         deallocate (izerorow)
+      end if
 
-      if (allocated(rhs_val)) deallocate (rhs_val)
-      if (allocated(sol_val)) deallocate (sol_val)
-      if (allocated(res_val)) deallocate (res_val)
+      if (allocated(rhs_val)) then
+         deallocate (rhs_val)
+      end if
+      if (allocated(sol_val)) then
+         deallocate (sol_val)
+      end if
+      if (allocated(res_val)) then
+         deallocate (res_val)
+      end if
       allocate (rowtoelem(numrows))
 
       allocate (jdia(numdia))
@@ -333,7 +363,9 @@ contains
 !           count non-zero row entries for this row
             do i = 1, row(ndn)%l
                j = row(ndn)%j(i)
-               if (iglobal(j) == 0) cycle
+               if (iglobal(j) == 0) then
+                  cycle
+               end if
                if (mask(j) == 1) then ! in diagonal block
                   numdia = numdia + 1
                   jdia(numdia) = iglobal(j)
@@ -405,30 +437,57 @@ contains
       rhs_val = 0.0_dp
       sol_val = 0.0_dp
       res_val = 0.0_dp
-      if (ierr == PETSC_OK) call VecCreateMPIWithArray(PETSC_COMM_WORLD, singletonBlocks, &
-                                                       numrows, PETSC_DECIDE, rhs_val, rhs, ierr)
-      if (ierr == PETSC_OK) call VecCreateMPIWithArray(PETSC_COMM_WORLD, singletonBlocks, &
-                                                       numrows, PETSC_DECIDE, sol_val, sol, ierr)
-      if (ierr == PETSC_OK) call VecCreateMPIWithArray(PETSC_COMM_WORLD, singletonBlocks, &
-                                                       numrows, PETSC_DECIDE, res_val, res, ierr)
-      if (ierr == PETSC_OK) call VecAssemblyBegin(rhs, ierr)
-      if (ierr == PETSC_OK) call VecAssemblyBegin(sol, ierr)
-      if (ierr == PETSC_OK) call VecAssemblyBegin(res, ierr)
+      if (ierr == PETSC_OK) then
+         call VecCreateMPIWithArray(PETSC_COMM_WORLD, singletonBlocks, numrows, PETSC_DECIDE, rhs_val, rhs, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecCreateMPIWithArray(PETSC_COMM_WORLD, singletonBlocks, numrows, PETSC_DECIDE, sol_val, sol, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecCreateMPIWithArray(PETSC_COMM_WORLD, singletonBlocks, numrows, PETSC_DECIDE, res_val, res, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecAssemblyBegin(rhs, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecAssemblyBegin(sol, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecAssemblyBegin(res, ierr)
+      end if
 
-      if (ierr == PETSC_OK) call VecAssemblyEnd(rhs, ierr)
-      if (ierr == PETSC_OK) call VecAssemblyEnd(sol, ierr)
-      if (ierr == PETSC_OK) call VecAssemblyEnd(res, ierr)
+      if (ierr == PETSC_OK) then
+         call VecAssemblyEnd(rhs, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecAssemblyEnd(sol, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call VecAssemblyEnd(res, ierr)
+      end if
 
-      if (ierr == PETSC_OK) ierror = 0
+      if (ierr == PETSC_OK) then
+         ierror = 0
+      end if
 
 1234  continue
 
 !     deallocate local variables
-      if (allocated(mask)) deallocate (mask)
-      if (allocated(inonzerodia)) deallocate (inonzerodia)
-      if (allocated(inonzerooff)) deallocate (inonzerooff)
-      if (allocated(idx)) deallocate (idx)
-      if (allocated(idum)) deallocate (idum)
+      if (allocated(mask)) then
+         deallocate (mask)
+      end if
+      if (allocated(inonzerodia)) then
+         deallocate (inonzerodia)
+      end if
+      if (allocated(inonzerooff)) then
+         deallocate (inonzerooff)
+      end if
+      if (allocated(idx)) then
+         deallocate (idx)
+      end if
+      if (allocated(idum)) then
+         deallocate (idum)
+      end if
 
       return
    end subroutine ini_petsc
@@ -597,31 +656,57 @@ contains
       end if
 
       ! Destroy the preconditioner and then create a new one
-      if (ierr == PETSC_OK) call KSPGetPC(Solver, Preconditioner, ierr)
+      if (ierr == PETSC_OK) then
+         call KSPGetPC(Solver, Preconditioner, ierr)
+      end if
 
       if (jafirst == 1) then
 !     do not destroy the preconditioner
          jafirst = 0
       else
-         if (ierr == PETSC_OK) call PCDestroy(Preconditioner, ierr)
+         if (ierr == PETSC_OK) then
+            call PCDestroy(Preconditioner, ierr)
+         end if
       end if
 
-      if (ierr == PETSC_OK) call PCCreate(PETSC_COMM_WORLD, Preconditioner, ierr)
-      if (ierr == PETSC_OK) call PCSetOperators(Preconditioner, Amat, Amat, ierr)
-      if (ierr == PETSC_OK) call KSPSetPC(Solver, Preconditioner, ierr)
+      if (ierr == PETSC_OK) then
+         call PCCreate(PETSC_COMM_WORLD, Preconditioner, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call PCSetOperators(Preconditioner, Amat, Amat, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call KSPSetPC(Solver, Preconditioner, ierr)
+      end if
 
       ! Configure the preconditioner
       if (iprecnd /= 0) then
          if (PreconditioningType == PCCHOLESKY .or. PreconditioningType == PCICC) then
-            if (ierr == PETSC_OK) call PCSetType(Preconditioner, PCASM, ierr)
-            if (ierr == PETSC_OK) call PCASMSetOverlap(Preconditioner, 2, ierr)
-            if (ierr == PETSC_OK) call KSPSetUp(Solver, ierr)
-            if (ierr == PETSC_OK) call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolver, ierr)
-            if (ierr == PETSC_OK) call KSPGetPC(SubSolver, SubPrec, ierr)
-            if (ierr == PETSC_OK) call PCSetType(SubPrec, PreconditioningType, ierr)
+            if (ierr == PETSC_OK) then
+               call PCSetType(Preconditioner, PCASM, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call PCASMSetOverlap(Preconditioner, 2, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call KSPSetUp(Solver, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call PCASMGetSubKSP(Preconditioner, PETSC_NULL_INTEGER, PETSC_NULL_INTEGER, SubSolver, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call KSPGetPC(SubSolver, SubPrec, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call PCSetType(SubPrec, PreconditioningType, ierr)
+            end if
          else
-            if (ierr == PETSC_OK) call PCSetType(Preconditioner, PreconditioningType, ierr)
-            if (ierr == PETSC_OK) call KSPSetUp(Solver, ierr)
+            if (ierr == PETSC_OK) then
+               call PCSetType(Preconditioner, PreconditioningType, ierr)
+            end if
+            if (ierr == PETSC_OK) then
+               call KSPSetUp(Solver, ierr)
+            end if
          end if
       end if
 
@@ -667,8 +752,9 @@ contains
 
 !     the following will destroy joff
       if (ndomains == 1) then
-         if (ierr == PETSC_OK) call MatCreateSeqAIJWithArrays(PETSC_COMM_WORLD, numrows, numrows, &
-                                                              idia, jdia, adia, Amat, ierr)
+         if (ierr == PETSC_OK) then
+            call MatCreateSeqAIJWithArrays(PETSC_COMM_WORLD, numrows, numrows, idia, jdia, adia, Amat, ierr)
+         end if
       else
 !         do i=0,ndomains-1
 !            if ( my_rank.eq.i ) then
@@ -682,20 +768,31 @@ contains
 !         end do
 !         stop
 
-         if (ierr == PETSC_OK) call MatCreateMPIAIJWithSplitArrays(PETSC_COMM_WORLD, numrows, numrows, &
-                                                                   PETSC_DETERMINE, PETSC_DETERMINE, idia, jdia, adia, ioff, joff, aoff, Amat, ierr)
+         if (ierr == PETSC_OK) then
+            call MatCreateMPIAIJWithSplitArrays(PETSC_COMM_WORLD, numrows, numrows, PETSC_DETERMINE, PETSC_DETERMINE, idia, jdia, adia, ioff, joff, aoff, Amat, ierr)
+         end if
       end if
 
-      if (ierr == PETSC_OK) call MatAssemblyBegin(Amat, MAT_FINAL_ASSEMBLY, ierr)
-      if (ierr == PETSC_OK) call MatAssemblyEnd(Amat, MAT_FINAL_ASSEMBLY, ierr)
-      if (ierr /= PETSC_OK) print *, 'conjugategradientPETSC: PETSC_ERROR (1)'
-      if (ierr /= PETSC_OK) go to 1234
+      if (ierr == PETSC_OK) then
+         call MatAssemblyBegin(Amat, MAT_FINAL_ASSEMBLY, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call MatAssemblyEnd(Amat, MAT_FINAL_ASSEMBLY, ierr)
+      end if
+      if (ierr /= PETSC_OK) then
+         print *, 'conjugategradientPETSC: PETSC_ERROR (1)'
+      end if
+      if (ierr /= PETSC_OK) then
+         go to 1234
+      end if
 
       if (ierr == PETSC_OK) then
          call KSPCreate(PETSC_COMM_WORLD, Solver, ierr)
          isKSPCreated = .true.
       end if
-      if (ierr == PETSC_OK) call KSPSetOperators(Solver, Amat, Amat, ierr)
+      if (ierr == PETSC_OK) then
+         call KSPSetOperators(Solver, Amat, Amat, ierr)
+      end if
       if (ierr == PETSC_OK) then
          if (japipe /= 1) then
             call KSPSetType(Solver, KSPCG, ierr)
@@ -704,8 +801,12 @@ contains
          end if
       end if
 !      if (ierr == PETSC_OK) call KSPSetType(Solver, KSPGMRES, ierr)
-      if (ierr == PETSC_OK) call KSPSetInitialGuessNonzero(Solver, PETSC_TRUE, ierr)
-      if (ierr == PETSC_OK) call KSPSetTolerances(Solver, RelTol, AbsTol, dTol, maxits, ierr)
+      if (ierr == PETSC_OK) then
+         call KSPSetInitialGuessNonzero(Solver, PETSC_TRUE, ierr)
+      end if
+      if (ierr == PETSC_OK) then
+         call KSPSetTolerances(Solver, RelTol, AbsTol, dTol, maxits, ierr)
+      end if
 
 !     Soheil: for imaginairy matrix entries use KSPCGSetType(Solver, ... )
 
@@ -756,7 +857,9 @@ contains
       end if
 
 !     fill vector rhs
-      if (ierr == PETSC_OK) call VecGetArray(rhs, dum, idum, ierr)
+      if (ierr == PETSC_OK) then
+         call VecGetArray(rhs, dum, idum, ierr)
+      end if
       i = 0
       rhs_val = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
@@ -767,10 +870,14 @@ contains
          end if
       end do
 
-      if (ierr == PETSC_OK) call VecRestoreArray(rhs, dum, idum, ierr)
+      if (ierr == PETSC_OK) then
+         call VecRestoreArray(rhs, dum, idum, ierr)
+      end if
 
 !     fill vector sol
-      if (ierr == PETSC_OK) call VecGetArray(sol, dum, idum, ierr)
+      if (ierr == PETSC_OK) then
+         call VecGetArray(sol, dum, idum, ierr)
+      end if
 
       sol_val = 0.0_dp
       do n = nogauss + 1, nogauss + nocg
@@ -780,20 +887,32 @@ contains
             sol_val(i) = s1(ndn)
          end if
       end do
-      if (ierr == PETSC_OK) call VecRestoreArray(sol, dum, idum, ierr)
-      if (ierr /= PETSC_OK) call mess(LEVEL_INFO, 'conjugategradientPETSC: PETSC_ERROR (3)')
+      if (ierr == PETSC_OK) then
+         call VecRestoreArray(sol, dum, idum, ierr)
+      end if
+      if (ierr /= PETSC_OK) then
+         call mess(LEVEL_INFO, 'conjugategradientPETSC: PETSC_ERROR (3)')
+      end if
 
-      if (ierr /= PETSC_OK) go to 1234
+      if (ierr /= PETSC_OK) then
+         go to 1234
+      end if
 
 !     solve system
-      if (ierr == PETSC_OK) call KSPSolve(Solver, rhs, sol, ierr)
+      if (ierr == PETSC_OK) then
+         call KSPSolve(Solver, rhs, sol, ierr)
+      end if
 
-      if (ierr == PETSC_OK) call KSPGetConvergedReason(Solver, Reason, ierr)
+      if (ierr == PETSC_OK) then
+         call KSPGetConvergedReason(Solver, Reason, ierr)
+      end if
 
 !     check for convergence
       if (ierr == PETSC_OK) then
          if (reason == KSP_DIVERGED_INDEFINITE_PC) then
-            if (my_rank == 0) call mess(LEVEL_WARN, 'Divergence because of indefinite preconditioner')
+            if (my_rank == 0) then
+               call mess(LEVEL_WARN, 'Divergence because of indefinite preconditioner')
+            end if
          else if (Reason < 0) then
             call mess(LEVEL_WARN, 'Other kind of divergence: this should not happen, reason = ', Reason)
 !            see http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPConvergedReason.html for reason
@@ -811,8 +930,12 @@ contains
             jasucces = 1
          end if
       end if
-      if (ierr /= PETSC_OK) call mess(LEVEL_ERROR, 'conjugategradientPETSC: PETSC_ERROR (after solve)')
-      if (ierr /= PETSC_OK) go to 1234
+      if (ierr /= PETSC_OK) then
+         call mess(LEVEL_ERROR, 'conjugategradientPETSC: PETSC_ERROR (after solve)')
+      end if
+      if (ierr /= PETSC_OK) then
+         go to 1234
+      end if
 
 !     fill vector sol
       do n = nogauss + 1, nogauss + nocg

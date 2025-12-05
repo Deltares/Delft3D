@@ -117,7 +117,9 @@ contains
             end if
 
             time_fetch = max(tim, time_fetch + tifetch)
-            if (tifetch == 0.0_dp) time_fetch = 1.0e30_dp
+            if (tifetch == 0.0_dp) then
+               time_fetch = 1.0e30_dp
+            end if
 
             if (use_fetch_proc == 0 .or. my_rank == fetch_proc_rank) then
                call calculate_fetch_values_for_all_wind_directions(total_nr_cells)
@@ -244,7 +246,9 @@ contains
             nr_cells_done = nr_cells_done_red
          end if
 
-         if (jagui > 0) call setcol(31)
+         if (jagui > 0) then
+            call setcol(31)
+         end if
 
          call make_list_of_upwind_cells(u_wind, v_wind)
 
@@ -286,10 +290,14 @@ contains
             do cell_link = 1, nd(cell)%lnx
                link = abs(nd(cell)%ln(cell_link))
                cell2 = ln(1, link)
-               if (cell2 == cell) cell2 = ln(2, link)
+               if (cell2 == cell) then
+                  cell2 = ln(2, link)
+               end if
                if (kcs(cell2) == 2) then ! internal
                   cs = u_wind * csu(link) + v_wind * snu(link)
-                  if (link /= nd(cell)%ln(cell_link)) cs = -cs
+                  if (link /= nd(cell)%ln(cell_link)) then
+                     cs = -cs
+                  end if
 
                   if (cs > 0) then ! internal upwind cell
                      number_of_upwind_cells(cell) = number_of_upwind_cells(cell) + 1
@@ -322,10 +330,14 @@ contains
             do cell_link = 1, nd(cell)%lnx
                link = abs(nd(cell)%ln(cell_link))
                cell2 = ln(1, link)
-               if (cell2 == cell) cell2 = ln(2, link)
+               if (cell2 == cell) then
+                  cell2 = ln(2, link)
+               end if
                if (kcs(cell2) == 2) then ! internal
                   cs = u_wind * csu(link) + v_wind * snu(link)
-                  if (link /= nd(cell)%ln(cell_link)) cs = -cs
+                  if (link /= nd(cell)%ln(cell_link)) then
+                     cs = -cs
+                  end if
 
                   if (cs > 0) then ! internal upwind cell
                      index = index + 1
@@ -399,7 +411,9 @@ contains
             max_cell_size = max(max_cell_size, dbdistance(xk(node1), yk(node1), xk(node2), yk(node2), jsferic, jasfer3D, dmiss))
             node2 = node1
          end do
-         if (jsferic == 1) max_cell_size = max_cell_size * rd2dg / ra
+         if (jsferic == 1) then
+            max_cell_size = max_cell_size * rd2dg / ra
+         end if
 
          jaopen = 0
          do cell_link = 1, nd(cell)%lnx

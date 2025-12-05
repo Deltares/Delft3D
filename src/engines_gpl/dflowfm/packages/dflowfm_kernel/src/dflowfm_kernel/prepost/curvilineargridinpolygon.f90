@@ -93,12 +93,16 @@ contains
       integer :: npc(5)
       integer :: ierror
 
-      if (npl < 4) return
+      if (npl < 4) then
+         return
+      end if
 
 !     create O-type pillar grid if the pillar radius .ne. 0d0
       if (pil_rad /= 0.0_dp) then
          call pillargrid(ierror)
-         if (ierror == 0) return ! otherwise, generate non-pillar grid
+         if (ierror == 0) then
+            return ! otherwise, generate non-pillar grid
+         end if
       end if
 
       call SAVEPOL()
@@ -194,7 +198,9 @@ contains
          N1 = NPC(N)
          N2 = NPC(N + 1)
          MAXP = NC
-         if (N == 1 .or. N == 3) MAXP = MC
+         if (N == 1 .or. N == 3) then
+            MAXP = MC
+         end if
 
          TXO = DPO(N2) - DPO(N1)
          DXO = TXO / (MAXP - 1)

@@ -101,7 +101,9 @@ contains
             if (ipol1 > 0 .and. ipol2 > 0) then
 !           delete first coinciding node
                call modln2(xpl, ypl, zpl, MAXPOL, NPL, ipol1, 0.0_dp, 0.0_dp, -2)
-               if (ipol1 == jend1) ipol1 = ipol1 - 1
+               if (ipol1 == jend1) then
+                  ipol1 = ipol1 - 1
+               end if
                ipol2 = ipol2 - 1
 !           merge
                call mergepoly(xpl, ypl, zpl, MAXPOL, NPL, ipol1, ipol2)

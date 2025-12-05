@@ -80,7 +80,9 @@ contains
          do La = 1, nd(k12)%lnx ! loop over all attached links
             LLL = nd(k12)%ln(La)
             nn12 = 1
-            if (LLL > 0) nn12 = 2
+            if (LLL > 0) then
+               nn12 = 2
+            end if
             LLLL = abs(LLL)
 
             Lb2 = Lbot(LLLL)
@@ -93,7 +95,9 @@ contains
                   volu = acL(LL) * vol1(k1) + (1.0_dp - acl(LL)) * vol1(k2)
                   if (volu > 0.0_dp) then
                      cfl = abs(qa(Lk)) * dts / volu
-                     if (nd(k12)%lnx == 3) cfl = 1.4_dp * cfl
+                     if (nd(k12)%lnx == 3) then
+                        cfl = 1.4_dp * cfl
+                     end if
                      if (cfl > 0.0_dp) then
                         tet = max(0.0_dp, 1.0_dp - 1.0_dp / cfl)
                         if (jasfer3D == 0) then

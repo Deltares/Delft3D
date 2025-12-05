@@ -196,8 +196,12 @@ contains
          !$OMP REDUCTION(+:sam1tot)
          do cell_index_2d = 1, ndxi
             call getkbotktop(cell_index_2d, kb, kt)
-            if (kt < kb) cycle
-            if (vol1(kb) < eps10) cycle
+            if (kt < kb) then
+               cycle
+            end if
+            if (vol1(kb) < eps10) then
+               cycle
+            end if
             km = kt - kb + 1
 
             do cell_index_3d = kb, kt

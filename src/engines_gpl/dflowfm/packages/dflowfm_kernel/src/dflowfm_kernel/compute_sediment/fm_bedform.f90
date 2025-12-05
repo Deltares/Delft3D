@@ -564,7 +564,9 @@ contains
                k1 = ln(1, L)
                k2 = ln(2, L)
                qbf = qbedformn(L)
-               if (ln(2, L) == k) qbf = -qbedformn(L)
+               if (ln(2, L) == k) then
+                  qbf = -qbedformn(L)
+               end if
 
                if (qbf >= 0.) then ! sum the outgoing courants
                   dum = dum + qbf

@@ -105,9 +105,13 @@ contains
             !$OMP END PARALLEL DO
 
 !      update u1
-            if (jatimer == 1) call starttimer(IUPDU)
+            if (jatimer == 1) then
+               call starttimer(IUPDU)
+            end if
             call update_ghosts(ITYPE_U, 1, Lnx, u1, ierror)
-            if (jatimer == 1) call stoptimer(IUPDU)
+            if (jatimer == 1) then
+               call stoptimer(IUPDU)
+            end if
 
 !      compute q1 and qa
             !$OMP PARALLEL DO           &
@@ -263,10 +267,14 @@ contains
 
          if (jampi == 1) then
 !      update u1
-            if (jatimer == 1) call starttimer(IUPDU)
+            if (jatimer == 1) then
+               call starttimer(IUPDU)
+            end if
 !       call update_ghosts(ITYPE_U, 1, Lnx, u1, ierror)
             call update_ghosts(ITYPE_U3D, 1, Lnkx, u1, ierror)
-            if (jatimer == 1) call stoptimer(IUPDU)
+            if (jatimer == 1) then
+               call stoptimer(IUPDU)
+            end if
          end if
 
          do LL = 1, lnx

@@ -69,7 +69,9 @@ contains
       character(len=256) :: REC
 
       if (jadoorladen /= 1) then
-         if (.not. allocated(XPL)) allocate (XPL(1), YPL(1), ZPL(1))
+         if (.not. allocated(XPL)) then
+            allocate (XPL(1), YPL(1), ZPL(1))
+         end if
          XPL = XYMIS
          YPL = XYMIS
          ZPL = XYMIS
@@ -80,10 +82,14 @@ contains
       call READYY('READING POLYGON / land boundary / CRS-FILE', 0.0_dp)
 10    continue
       read (MPOL, '(A)', end=999, ERR=888) MATR
-      if (MATR(1:1) == '*' .or. len_trim(matr) == 0) goto 10
+      if (MATR(1:1) == '*' .or. len_trim(matr) == 0) then
+         goto 10
+      end if
       read (MPOL, '(A)', end=999) REC
       read (REC, *, iostat=ierr) NROW, NKOL
-      if (ierr /= 0) goto 888
+      if (ierr /= 0) then
+         goto 888
+      end if
       jaKol45 = 0
       if (nkol < 2) then
          call QNERROR('File should contain at least 2 or 3 columns, but got:', ' ', ' ') ! nkol)
@@ -117,7 +123,9 @@ contains
       I = 0
       row: do
          I = I + 1
-         if (I > NROW) exit
+         if (I > NROW) then
+            exit
+         end if
 
          nmiss = 0
          do ! Read a single line, or multiple until a NON-dmiss line is found
@@ -127,29 +135,45 @@ contains
             dz2 = dmiss
             if (nkol == 10) then
                read (REC, *, iostat=ierr) XX, YY, zcrest, sillup, silldown, crestl, taludl, taludr, veg, weirtype ! read weir data from Baseline format plus weirtype
-               if (ierr /= 0) goto 777
+               if (ierr /= 0) then
+                  goto 777
+               end if
                ZZ = zcrest ! dummy value for zz to guarantee that ZPL will be filled
             else if (nkol == 9) then
                read (REC, *, iostat=ierr) XX, YY, zcrest, sillup, silldown, crestl, taludl, taludr, veg ! read weir data from Baseline format
-               if (ierr /= 0) goto 777
+               if (ierr /= 0) then
+                  goto 777
+               end if
                ZZ = zcrest ! dummy value for zz to guarantee that ZPL will be filled
             else if (nkol == 5) then
                read (REC, *, iostat=ierr) XX, YY, ZZ, dz1, dz2
-               if (ierr /= 0) goto 777
+               if (ierr /= 0) then
+                  goto 777
+               end if
             else if (nkol == 4) then
                read (REC, *, iostat=ierr) XX, YY, ZZ, dz1
-               if (ierr /= 0) goto 777
+               if (ierr /= 0) then
+                  goto 777
+               end if
             else if (nkol == 3) then
                read (REC, *, iostat=ierr) XX, YY, ZZ
-               if (ierr /= 0) goto 777
+               if (ierr /= 0) then
+                  goto 777
+               end if
             else
                read (REC, *, iostat=ierr) XX, YY
-               if (ierr /= 0) goto 777
+               if (ierr /= 0) then
+                  goto 777
+               end if
             end if
-            if (XX /= dmiss .and. XX /= 999.999_dp) exit
+            if (XX /= dmiss .and. XX /= 999.999_dp) then
+               exit
+            end if
             nmiss = nmiss + 1
             I = I + 1
-            if (I > NROW) exit row ! Last row was also dmiss, now exit outer 'row' loop.
+            if (I > NROW) then
+               exit row ! Last row was also dmiss, now exit outer 'row' loop.
+            end if
          end do
          if (nmiss > 0) then
             backspace (MPOL) ! Last one was NON-dmiss, preceded by one or more dmiss lines

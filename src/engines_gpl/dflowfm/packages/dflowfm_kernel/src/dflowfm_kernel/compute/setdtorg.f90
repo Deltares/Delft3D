@@ -64,7 +64,9 @@ contains
       real(kind=dp) :: squloc
 
       jareduced = 0
-      if (jamapdtcell > 0) dtcell = 0.0_dp
+      if (jamapdtcell > 0) then
+         dtcell = 0.0_dp
+      end if
 
       if (ja_timestep_auto >= 1) then
 
@@ -98,7 +100,9 @@ contains
                do k = 1, ndxi
                   if (jampi == 1) then
 !               do not include ghost cells
-                     if (idomain(k) /= my_rank) cycle
+                     if (idomain(k) /= my_rank) then
+                        cycle
+                     end if
                   end if
 
                   if (ja_timestep_nostruct > 0) then !< Exclude (structure) links without advection from the time step limitation
@@ -145,7 +149,9 @@ contains
                do k = 1, ndxi
                   if (jampi == 1) then
 !               do not include ghost cells
-                     if (idomain(k) /= my_rank) cycle
+                     if (idomain(k) /= my_rank) then
+                        cycle
+                     end if
                   end if
                   if (sqwave(k) > eps10) then ! outflow only
                      if (hs(k) > epshu) then
@@ -168,7 +174,9 @@ contains
             do k = 1, ndxi
                if (jampi == 1) then
 !            do not include ghost cells
-                  if (idomain(k) /= my_rank) cycle
+                  if (idomain(k) /= my_rank) then
+                     cycle
+                  end if
                end if
                if (squ(k) + sqi(k) > eps10) then ! outflow+inflow
                   if (hs(k) > epshu .and. vol1(k) > 0.0) then
@@ -190,7 +198,9 @@ contains
             do kk = 1, ndxi
                if (jampi == 1) then
 !            do not include ghost cells
-                  if (idomain(kk) /= my_rank) cycle
+                  if (idomain(kk) /= my_rank) then
+                     cycle
+                  end if
                end if
                if (squ2D(kk) > eps10 .and. hs(kk) > epshu) then
                   call getkbotktop(kk, kb, kt)
@@ -215,7 +225,9 @@ contains
             do kk = 1, Ndxi
                if (jampi == 1) then
 !            do not include ghost cells
-                  if (idomain(kk) /= my_rank) cycle
+                  if (idomain(kk) /= my_rank) then
+                     cycle
+                  end if
                end if
                if (hs(kk) > epshu) then
                   call getkbotktop(kk, kb, kt)
@@ -240,7 +252,9 @@ contains
             do kk = 1, Ndxi
                if (jampi == 1) then
 !            do not include ghost cells
-                  if (idomain(kk) /= my_rank) cycle
+                  if (idomain(kk) /= my_rank) then
+                     cycle
+                  end if
                end if
                if (hs(kk) > epshu) then
                   dtsc2D = dt_max
@@ -290,7 +304,9 @@ contains
 
             do kk = 1, Ndxi
                if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) cycle !            do not include ghost cells
+                  if (idomain(kk) /= my_rank) then
+                     cycle !            do not include ghost cells
+                  end if
                end if
                if (hs(kk) > epshu) then
                   call getkbotktop(kk, kb, kt)
@@ -314,7 +330,9 @@ contains
             do kk = 1, Ndxi
                if (jampi == 1) then
 !            do not include ghost cells
-                  if (idomain(kk) /= my_rank) cycle
+                  if (idomain(kk) /= my_rank) then
+                     cycle
+                  end if
                end if
                if (hs(kk) > epshu) then
                   call getkbotktop(kk, kb, kt)
@@ -338,7 +356,9 @@ contains
             do kk = 1, Ndxi
                if (jampi == 1) then
 !            do not include ghost cells
-                  if (idomain(kk) /= my_rank) cycle
+                  if (idomain(kk) /= my_rank) then
+                     cycle
+                  end if
                end if
                if (hs(kk) > epshu) then
                   dtsc = 9.0e9_dp
@@ -366,7 +386,9 @@ contains
             do kk = 1, Ndxi
                if (jampi == 1) then
 !            do not include ghost cells
-                  if (idomain(kk) /= my_rank) cycle
+                  if (idomain(kk) /= my_rank) then
+                     cycle
+                  end if
                end if
                if (hs(kk) > epshu) then
                   dtsc = 9.0e9_dp
@@ -401,7 +423,9 @@ contains
                         k2 = ln(2, L)
 
                         if (jampi == 1) then
-                           if (idomain(k1) /= my_rank .and. idomain(k2) /= my_rank) cycle ! do not include ghost cells
+                           if (idomain(k1) /= my_rank .and. idomain(k2) /= my_rank) then
+                              cycle ! do not include ghost cells
+                           end if
                         end if
 
                         dxiAu = dxi(L) * wu(L)
@@ -440,13 +464,17 @@ contains
             else if (kmx > 0) then
                if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
                   do LL = lnx1D + 1, lnx
-                     if (abs(kcu(LL)) /= 2) cycle
+                     if (abs(kcu(LL)) /= 2) then
+                        cycle
+                     end if
 
                      kk1 = ln(1, LL)
                      kk2 = ln(2, LL)
 
                      if (jampi == 1) then
-                        if (idomain(kk1) /= my_rank .and. idomain(kk2) /= my_rank) cycle ! do not include ghost cells
+                        if (idomain(kk1) /= my_rank .and. idomain(kk2) /= my_rank) then
+                           cycle ! do not include ghost cells
+                        end if
                      end if
 
                      call getLbotLtop(LL, Lb, Lt)

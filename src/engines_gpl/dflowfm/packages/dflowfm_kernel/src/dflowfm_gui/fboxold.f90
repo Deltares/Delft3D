@@ -52,7 +52,9 @@ contains
       Y(2) = real(YB1)
       Y(3) = real(YB2)
       Y(4) = real(YB2)
-      if (NCOLNOW >= 0) call PFILLERCORE(X, Y, N)
+      if (NCOLNOW >= 0) then
+         call PFILLERCORE(X, Y, N)
+      end if
       return
    end
 

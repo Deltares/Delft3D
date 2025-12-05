@@ -61,9 +61,13 @@ contains
 
       logical :: Lcommon
 
-      if (ic1 == ic2) return
+      if (ic1 == ic2) then
+         return
+      end if
 
-      if (netstat /= NETSTAT_OK) call findcells(0)
+      if (netstat /= NETSTAT_OK) then
+         call findcells(0)
+      end if
 
       ierror = 1
 
@@ -85,8 +89,12 @@ contains
             L2 = netcell(ic2)%lin(kk2)
             if (L1 == L2) then
 !           add links of cell 2
-               if (kk2 < N2) lin3(kk3 + 1:kk3 + N2 - kk2) = netcell(ic2)%lin(kk2 + 1:N2)
-               if (kk2 > 1) lin3(kk3 + N2 - kk2 + 1:kk3 + N2 - 1) = netcell(ic2)%lin(1:kk2 - 1)
+               if (kk2 < N2) then
+                  lin3(kk3 + 1:kk3 + N2 - kk2) = netcell(ic2)%lin(kk2 + 1:N2)
+               end if
+               if (kk2 > 1) then
+                  lin3(kk3 + N2 - kk2 + 1:kk3 + N2 - 1) = netcell(ic2)%lin(1:kk2 - 1)
+               end if
                kk3 = kk3 + N2 - 1
                Lcommon = .true.
                Lshare = L1
@@ -103,7 +111,9 @@ contains
          continue
       end if
 
-      if (Lshare == 0) goto 1234
+      if (Lshare == 0) then
+         goto 1234
+      end if
 
 !  make the node list
 !  determine orientation of first link
@@ -144,7 +154,9 @@ contains
       netcell(ic2)%N = 0
 
 !  delete link
-      if (jatek == 1) call teklink(Lshare, 0)
+      if (jatek == 1) then
+         call teklink(Lshare, 0)
+      end if
       call dellink(Lshare)
 
       ierror = 0
@@ -153,7 +165,9 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(nod3)) deallocate (nod3, lin3)
+      if (allocated(nod3)) then
+         deallocate (nod3, lin3)
+      end if
 
       return
    end subroutine mergecells

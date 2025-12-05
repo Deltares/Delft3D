@@ -265,11 +265,15 @@ contains
             XSC = max(0.0_dp, min(XSC, 1.0_dp))
             YSC = max(0.0_dp, min(YSC, 1.0_dp))
             call IFORMGETINTEGER(20, NDEC)
-            if (NDEC > 7) NDEC = 7
+            if (NDEC > 7) then
+               NDEC = 7
+            end if
             call IFormGetDouble(22, SCALESIZE)
             SCALESIZE = max(0.0_dp, min(SCALESIZE, 1.0_dp))
 
-            if (DVNU /= DVI .or. VMAXN /= VMAX .or. VMINN /= VMIN) JAAUTO = 0
+            if (DVNU /= DVI .or. VMAXN /= VMAX .or. VMINN /= VMIN) then
+               JAAUTO = 0
+            end if
 
             if (JAAUTO == 0) then
                DV = (NV - 1) * DVNU
@@ -304,8 +308,9 @@ contains
                NIE2 = max(NIS2 + NV2 + 1, min(NIEN, 254))
             end if
 
-            if (DVNU /= DVI2 .or. VMAXN /= VMAX2 .or. &
-                VMINN /= VMIN2) JAAUTO2 = 0
+            if (DVNU /= DVI2 .or. VMAXN /= VMAX2 .or. VMINN /= VMIN2) then
+               JAAUTO2 = 0
+            end if
 
             if (JAAUTO2 == 0) then
                DV2 = (NV2 - 1) * DVNU
