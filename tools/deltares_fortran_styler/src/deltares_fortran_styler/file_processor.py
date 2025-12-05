@@ -8,6 +8,7 @@ This module handles:
 4. Managing check vs. convert modes
 """
 
+import time
 from pathlib import Path
 from typing import List, Tuple, Optional, Dict
 
@@ -34,6 +35,7 @@ class FileProcessor:
             converters: List of FortranConverter instances to apply
         """
         self.converters = converters
+        self.timing_stats: Dict[str, float] = {converter.get_name(): 0.0 for converter in converters}
 
     def process_file(self, file_path: Path, check_mode: bool = False) -> Tuple[bool, Dict]:
         """
@@ -72,7 +74,13 @@ class FileProcessor:
 
         # Run each converter's check
         for converter in self.converters:
+            start_time = time.perf_counter()
             issues = converter.check_text(content)
+            elapsed = time.perf_counter() - start_time
+
+            # Accumulate timing for this converter
+            self.timing_stats[converter.get_name()] += elapsed
+
             all_issues.extend(issues)
 
             # Get stats if converter provides them (optional method)
@@ -235,3 +243,17 @@ class FileProcessor:
         except Exception as e:
             print(f"{file_path}(1): error: Unexpected error validating file: {e}")
             return False
+
+    def get_timing_stats(self) -> Dict[str, float]:
+        """
+        Get timing statistics for each converter.
+
+        Returns:
+            Dictionary mapping converter names to accumulated time in seconds
+        """
+        return self.timing_stats.copy()
+
+    def reset_timing_stats(self):
+        """Reset timing statistics for all converters."""
+        for converter in self.converters:
+            self.timing_stats[converter.get_name()] = 0.0
