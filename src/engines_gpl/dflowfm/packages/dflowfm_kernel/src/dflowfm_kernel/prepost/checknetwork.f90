@@ -75,12 +75,12 @@ contains
       nSearchRange = 3 !< For a given link, search at most three connected links ahead
       E = 1e-6; E1 = 1 - E
 
-      call readyy('Checking net link crossings', 0d0)
+      call readyy('Checking net link crossings', 0.0_dp)
 !! Check crossing links
       do L = 1, numl
 
          if (L >= lprog) then
-            call readyy('Checking net link crossings', dble(L) / dble(numl))
+            call readyy('Checking net link crossings', real(L, kind=dp) / real(numl, kind=dp))
             lprog = lprog + int(numl / 100.0)
          end if
          K1 = kn(1, L)

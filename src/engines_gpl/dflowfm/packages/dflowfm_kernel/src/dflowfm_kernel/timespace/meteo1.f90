@@ -664,10 +664,10 @@ contains
 !         allocate ( area(i1:i2,j1:j2), stat=ierr)
             do i = i1, i2
                do j = j1, j2
-                  xx(1) = dble(i) - 0.5_dp; yy(1) = dble(j) - 0.5_dp
-                  xx(2) = dble(i) + 0.5_dp; yy(2) = dble(j) - 0.5_dp
-                  xx(3) = dble(i) + 0.5_dp; yy(3) = dble(j) + 0.5_dp
-                  xx(4) = dble(i) - 0.5_dp; yy(4) = dble(j) + 0.5_dp
+                  xx(1) = real(i, kind=dp) - 0.5_dp; yy(1) = real(j, kind=dp) - 0.5_dp
+                  xx(2) = real(i, kind=dp) + 0.5_dp; yy(2) = real(j, kind=dp) - 0.5_dp
+                  xx(3) = real(i, kind=dp) + 0.5_dp; yy(3) = real(j, kind=dp) + 0.5_dp
+                  xx(4) = real(i, kind=dp) - 0.5_dp; yy(4) = real(j, kind=dp) + 0.5_dp
 
 !                call dAREAN( XX, YY, 4, DAREA, DLENGTH, DLENMX )
 !                area(i,j) = darea
@@ -818,8 +818,8 @@ contains
             call realloc(kk, [Ni, Nj], keepExisting=.false., fill=0)
             do j = j1, j2
                do i = i1, i2
-                  xx(i - i1 + 1, j - j1 + 1) = dble(i)
-                  yy(i - i1 + 1, j - j1 + 1) = dble(j)
+                  xx(i - i1 + 1, j - j1 + 1) = real(i, kind=dp)
+                  yy(i - i1 + 1, j - j1 + 1) = real(j, kind=dp)
                end do
             end do
             call find_nearest_flownodes_kdtree(treeglob, Ni * Nj, xx, yy, kk, jakdtree, INDTP_2D, ierror)
@@ -841,8 +841,8 @@ contains
                   if (jakdtree == 1) then
                      k = kk(i - i1 + 1, j - j1 + 1)
                   else
-                     x = dble(i)
-                     y = dble(j)
+                     x = real(i, kind=dp)
+                     y = real(j, kind=dp)
                      call in_flowcell(x, y, K)
                   end if
 
@@ -870,8 +870,8 @@ contains
                   if (jakdtree == 1) then
                      k = kk(i - i1 + 1, j - j1 + 1)
                   else
-                     x = dble(i)
-                     y = dble(j)
+                     x = real(i, kind=dp)
+                     y = real(j, kind=dp)
                      call in_flowcell(x, y, K)
                   end if
 
@@ -1080,7 +1080,7 @@ contains
             disR = (ii - i1) - (iR - i2)
          end if
 
-         alf = dble(disL) / dble(disL - disR)
+         alf = real(disL, kind=dp) / real(disL - disR, kind=dp)
 
       end if
    end subroutine findleftright
@@ -3598,7 +3598,7 @@ contains
             if (abs(rlat - rlslat) > reps) then
                do nq = 2, 3
                   do mq = 0, nq
-                     fnm = 2.0_dp / dble(2 * nq + 1) * factorial(nq + mq) / factorial(nq - mq)
+                     fnm = 2.0_dp / real(2 * nq + 1, kind=dp) * factorial(nq + mq) / factorial(nq - mq)
                      fnm = sqrt(1.0_dp / (2.0_dp * pi * fnm)) * ((-1.0_dp)**mq)
                      call legpol1(rlat, nq, mq, pnm)
                      pol1(mq, nq) = fnm * pnm
@@ -3608,8 +3608,8 @@ contains
 
             if (abs(rlong - rlslon) > reps) then
                do mq = 0, 3
-                  cm1(mq) = +cos(dble(mq) * rlong)
-                  sm1(mq) = +sin(dble(mq) * rlong)
+                  cm1(mq) = +cos(real(mq, kind=dp) * rlong)
+                  sm1(mq) = +sin(real(mq, kind=dp) * rlong)
                end do
             end if
 
@@ -3661,7 +3661,7 @@ contains
       do i = 1, ntable
          argum = 0.0_dp
          do j = 1, 6
-            argfct = dble(itable(i, j))
+            argfct = real(itable(i, j), kind=dp)
             argum = argum + argfct * elmnts(j) * plsmin(j)
          end do
          ! argum = mod(argum, 360.0_dp)
@@ -6799,7 +6799,7 @@ contains
          dataPtr1 => wdsu_x
          itemPtr2 => item_stressxy_y
          dataPtr2 => wdsu_y
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          itemPtr1 => item_frcu
          dataPtr1 => frcu
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')

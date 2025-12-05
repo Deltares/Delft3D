@@ -233,7 +233,7 @@ contains
 
          do N = 1, NUMP
 
-            if (mod(n, KMOD) == 0) call READYY('CUTCELWU', dble(n) / dble(nump))
+            if (mod(n, KMOD) == 0) call READYY('CUTCELWU', real(n, kind=dp) / real(nump, kind=dp))
 
             if (KNP(N) == 1) then ! AT LEAST 1 POINT INSIDE POLYGON, SO CHECK CUTC
 

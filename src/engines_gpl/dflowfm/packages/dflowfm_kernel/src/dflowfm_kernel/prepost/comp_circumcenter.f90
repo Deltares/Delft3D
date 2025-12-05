@@ -126,8 +126,8 @@ contains
       if (jacenterinside == 1) then
          call pinpok(xc, yc, N, xp, yp, in, jins, dmiss) ! circumcentre may not lie outside cell
          if (in == 0) then
-            xzw = sum(xp(1:N)) / dble(N)
-            yzw = sum(yp(1:N)) / dble(N)
+            xzw = sum(xp(1:N)) / real(N, kind=dp)
+            yzw = sum(yp(1:N)) / real(N, kind=dp)
             do m = 1, N
                m2 = m + 1; if (m == N) m2 = 1
                call CROSS(xzw, yzw, xc, yc, xp(m), yp(m), xp(m2), yp(m2), &

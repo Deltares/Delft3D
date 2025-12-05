@@ -134,7 +134,7 @@ contains
       km = kt - kb + 1
       km1 = km + 1
 
-      ugem = sum(ucx(kb:kt)) / dble(kt - kb + 1)
+      ugem = sum(ucx(kb:kt)) / real(kt - kb + 1, kind=dp)
 
       hwref(0) = 0.0_dp
       do k = kb, kt

@@ -77,7 +77,7 @@ contains
 
 !  add startnode to list
       nlist = nlist + 1
-      if (nlist > size(klist)) call realloc(klist, int(1.2_dp * dble(nlist)) + 1, fill=0, keepExisting=.true.)
+      if (nlist > size(klist)) call realloc(klist, int(1.2_dp * real(nlist, kind=dp)) + 1, fill=0, keepExisting=.true.)
       klist(nlist) = kstart
 
 !  process the startnode list
@@ -139,7 +139,7 @@ contains
 
 !              add new startnode to list
                   nlist = nlist + 1
-                  if (nlist > size(klist)) call realloc(klist, int(1.2_dp * dble(nlist)) + 1, fill=0, keepExisting=.true.)
+                  if (nlist > size(klist)) call realloc(klist, int(1.2_dp * real(nlist, kind=dp)) + 1, fill=0, keepExisting=.true.)
                   klist(nlist) = k
                   cycle ! do not add this node to branch
                end if
@@ -161,13 +161,13 @@ contains
                   NPL = NPL + 1
                   xpl(NPL) = xk(k)
                   ypl(NPL) = yk(k)
-                  zpl(NPL) = dble(k)
+                  zpl(NPL) = real(k, kind=dp)
                end if
                call increasepol(NPL + 1, 1)
                NPL = NPL + 1
                xpl(NPL) = xk(knext)
                ypl(NPL) = yk(knext)
-               zpl(NPL) = dble(knext)
+               zpl(NPL) = real(knext, kind=dp)
 
 !           deactivate link
                Lc(L) = 0

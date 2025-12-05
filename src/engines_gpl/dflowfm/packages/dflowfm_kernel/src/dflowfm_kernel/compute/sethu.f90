@@ -555,7 +555,7 @@ contains
 
          do link_in_3d = Lb, LLbc
             if (ihuzcsig == option_SIG) then
-               sigma = dble(link_in_3d - Lb + 1) / dble(LLbc - Lb + 1) ! fifty/fifty, .33 or so
+               sigma = real(link_in_3d - Lb + 1, kind=dp) / real(LLbc - Lb + 1, kind=dp) ! fifty/fifty, .33 or so
             else
                sigma = (zws(kb + link_in_3d - Lb) - zws(kb0)) / (zws(kb + LLbc - Lb) - zws(kb0)) ! sigmaup
                if (zws(kbd + link_in_3d - Lb) > zws(kbd0) .and. zws(kbd + LLbc - Lb) > zws(kbd0)) then

@@ -154,11 +154,11 @@ contains
 
             Z = Z0
             do N = 1, NRY
-               call readyy('makenet', dble(n - 1) / dble(nry - 1))
+               call readyy('makenet', real(n - 1, kind=dp) / real(nry - 1, kind=dp))
                do M = 1, NRX
                   if (NTYP == 0) then
-                     XX = dble(M - 1) * DX0
-                     YY = dble(N - 1) * DY0
+                     XX = real(M - 1, kind=dp) * DX0
+                     YY = real(N - 1, kind=dp) * DY0
                      X(1) = X0 + XX * CS - YY * SN; NN = 4
                      Y(1) = Y0 + YY * CS + XX * SN
                      XX = XX + DX0
@@ -173,16 +173,16 @@ contains
                      XD = 0.25_dp * (X(1) + X(2) + X(3) + X(4))
                      YD = 0.25_dp * (Y(1) + Y(2) + Y(3) + Y(4))
                   else if (NTYP == 1) then
-                     XD = X0 + DX + dble(M - 1) * 2 * DX; NN = 4
-                     YD = Y0 + DY + dble(N - 1) * 2 * DY
+                     XD = X0 + DX + real(M - 1, kind=dp) * 2 * DX; NN = 4
+                     YD = Y0 + DY + real(N - 1, kind=dp) * 2 * DY
                      X(1) = XD; Y(1) = YD - DY
                      X(2) = XD + DX; Y(2) = YD
                      X(3) = XD; Y(3) = YD + DY
                      X(4) = XD - DX; Y(4) = YD
                   else if (NTYP == 2) then
                      JN = mod(M - 1, 2)
-                     XD = X0 + DX + HS + dble(M - 1) * (DX + 2 * HS); NN = 6
-                     YD = Y0 + DY + JN * DY + dble(N - 1) * (2 * DY)
+                     XD = X0 + DX + HS + real(M - 1, kind=dp) * (DX + 2 * HS); NN = 6
+                     YD = Y0 + DY + JN * DY + real(N - 1, kind=dp) * (2 * DY)
                      X(1) = XD - HS; Y(1) = YD - DY
                      X(2) = XD + HS; Y(2) = YD - DY
                      X(3) = XD + HS + DX; Y(3) = YD
@@ -190,8 +190,8 @@ contains
                      X(5) = XD - HS; Y(5) = YD + DY
                      X(6) = XD - HS - DX; Y(6) = YD
                   else if (NTYP == 3) then
-                     XD = X0 + DX + HS + dble(M - 1) * 2 * (DX + HS); NN = 6
-                     YD = Y0 + DY + dble(N - 1) * 2 * DY
+                     XD = X0 + DX + HS + real(M - 1, kind=dp) * 2 * (DX + HS); NN = 6
+                     YD = Y0 + DY + real(N - 1, kind=dp) * 2 * DY
                      X(1) = XD - HS; Y(1) = YD - DY
                      X(2) = XD + HS; Y(2) = YD - DY
                      X(3) = XD + HS + DX; Y(3) = YD
@@ -199,8 +199,8 @@ contains
                      X(5) = XD - HS; Y(5) = YD + DY
                      X(6) = XD - HS - DX; Y(6) = YD
                   else if (NTYP == 4) then
-                     XD = X0 + DX + dble(M - 1) * 2 * DX; NN = 6
-                     YD = Y0 + DY + dble(N - 1) * 2 * DY
+                     XD = X0 + DX + real(M - 1, kind=dp) * 2 * DX; NN = 6
+                     YD = Y0 + DY + real(N - 1, kind=dp) * 2 * DY
                      X(1) = XD - DX; Y(1) = YD - DY
                      X(2) = XD + DX; Y(2) = YD - DY
                      X(3) = XD + DX + DX; Y(3) = YD
@@ -210,8 +210,8 @@ contains
                   else if (NTYP == 5) then
                      mh = nrx / 2; nh = nry / 2
                      JN = mod(M - 1, 2)
-                     XD = X0 + DX - HS + dble(M - 1 - mh) * (DX + 2 * HS); NN = 6
-                     YD = Y0 + JN * DY + dble(N - 1 - nh) * (2 * DY) - dy
+                     XD = X0 + DX - HS + real(M - 1 - mh, kind=dp) * (DX + 2 * HS); NN = 6
+                     YD = Y0 + JN * DY + real(N - 1 - nh, kind=dp) * (2 * DY) - dy
                      X(1) = XD - HS; Y(1) = YD - DY
                      X(2) = XD + HS; Y(2) = YD - DY
                      X(3) = XD + HS + DX; Y(3) = YD
@@ -243,7 +243,7 @@ contains
          call INCREASENETW(K0 + NUMKN, L0 + NUMLN)
 
          do N = 1, NRY
-            call readyy('makenet', dble(n - 1) / dble(nry - 1))
+            call readyy('makenet', real(n - 1, kind=dp) / real(nry - 1, kind=dp))
 
             call getdeltay(yy, dx0, dy0)
 
@@ -262,7 +262,7 @@ contains
             end if
 
             do M = 1, NRX
-               XX = dble(M - 1) * DX0 + xwleft
+               XX = real(M - 1, kind=dp) * DX0 + xwleft
 
                X(1) = XX
                Y(1) = YY
@@ -366,7 +366,7 @@ contains
          numk = k; numl = L
 
          rl = pi * radius
-         dd = rl / dble(nrx)
+         dd = rl / real(nrx, kind=dp)
          z2 = -(rl + dd) * bedslope
          zbn = -5.0_dp - (rl - 0.5_dp * dd) * bedslope
 

@@ -117,7 +117,7 @@ contains
          end if
 
          ! Check for zero (0d0) value on diagonal, to print a warning before a resulting Saad crash.
-         if (comparereal(bbr(n), 0d0) == 0 .and. domainCheck) then
+         if (comparereal(bbr(n), 0.0_dp) == 0 .and. domainCheck) then
             if (n <= ndx2d) then
                dim_text = '2D'
             else
@@ -186,8 +186,8 @@ contains
 !    bbr(kb) = 1d0
          if (itpbn == BOUNDARY_WATER_LEVEL) then ! waterlevelbnd
             water_level_boundary = zbndz(n)
-            if (alfsmo < 1d0) then
-               water_level_boundary = alfsmo * water_level_boundary + (1d0 - alfsmo) * zbndz0(n)
+            if (alfsmo < 1.0_dp) then
+               water_level_boundary = alfsmo * water_level_boundary + (1.0_dp - alfsmo) * zbndz0(n)
             end if
          else if (itpbn == BOUNDARY_WATER_LEVEL_NEUMANN) then ! neumannbnd, positive specified slope leads to inflow
             !water_level_boundary   = s1(k2) + zbndz(n)*dx(L)
@@ -195,26 +195,26 @@ contains
          else if (itpbn == BOUNDARY_VELOCITY_RIEMANN) then ! Riemannbnd
 !       hh   = max(epshs, 0.5d0*( hs(kb) + hs(k2) ) )
 !       water_level_boundary   = 2d0*zbndz(n) - zbndz0(n) - sqrt(hh/ag)*u1(L)
-            water_level_boundary = 2d0 * zbndz(n) - zbndz0(n)
+            water_level_boundary = 2.0_dp * zbndz(n) - zbndz0(n)
          else if (itpbn == BOUNDARY_WATER_LEVEL_OUTFLOW) then ! outflowbnd
-            if (u0(L) > 0d0) then
+            if (u0(L) > 0.0_dp) then
                water_level_boundary = s1(k2)
             else
-               hh = max(epshs, 0.5d0 * (hs(kb) + hs(k2)))
+               hh = max(epshs, 0.5_dp * (hs(kb) + hs(k2)))
                dtgh = dts * (sqrt(ag * hh))
                water_level_boundary = s1(kb) - dtgh * (dxi(L) * (s1(kb) - s1(k2)) - zbndz(n)) ! verder testen
             end if
          else if (itpbn == BOUNDARY_DISCHARGE_HEAD) then ! qhbnd
             water_level_boundary = zbndz(n)
-            if (alfsmo < 1d0) then
-               water_level_boundary = alfsmo * water_level_boundary + (1d0 - alfsmo) * zbndz0(n)
+            if (alfsmo < 1.0_dp) then
+               water_level_boundary = alfsmo * water_level_boundary + (1.0_dp - alfsmo) * zbndz0(n)
             end if
          end if
 
 !   set matrix entries
          if (itpbn == BOUNDARY_WATER_LEVEL_NEUMANN) then
 !      Neumann boundary condition
-            if (ccr(Lv2(L)) == 0d0) then ! internal cell is wet, but boundary face is inactive (see setkfs)
+            if (ccr(Lv2(L)) == 0.0_dp) then ! internal cell is wet, but boundary face is inactive (see setkfs)
                ccr(Lv2(L)) = -bbr(kb)
                bbr(k2) = bbr(k2) + bbr(kb)
                ddr(k2) = ddr(k2) + ccr(Lv2(L)) * zbndz(n) * dx(L)
@@ -225,16 +225,16 @@ contains
          else if (itpbn == BOUNDARY_VELOCITY_RIEMANN) then
 !      Riemann boundary condition (note: ccr= -Au theta fu)
             water_level_boundary = max(water_level_boundary, bl(kb) + HBMIN)
-            if (ccr(Lv2(L)) == 0d0) then ! internal cell is wet, but boundary face is inactive (see setkfs)
+            if (ccr(Lv2(L)) == 0.0_dp) then ! internal cell is wet, but boundary face is inactive (see setkfs)
                ddr(kb) = bbr(kb) * water_level_boundary ! u(L)=0 assumed
             else
-               hh = max(epshs, 0.5d0 * (hs(kb) + hs(k2)))
+               hh = max(epshs, 0.5_dp * (hs(kb) + hs(k2)))
                sqrtgfh = sqrt(ag / hh)
                if (kmx == 0) then
                   fuL = fu(L)
                   ruL = ru(L)
                else
-                  fuL = 0d0; ruL = 0d0; huL = 0d0
+                  fuL = 0.0_dp; ruL = 0.0_dp; huL = 0.0_dp
                   do LL = Lbot(L), Ltop(L)
                      hep = max(epshu, hu(L) - hu(L - 1))
                      fuL = fuL + fu(LL) * hep
@@ -256,7 +256,7 @@ contains
 
             ddr(kb) = bbr(kb) * water_level_boundary
             ddr(k2) = ddr(k2) - ccr(Lv2(L)) * water_level_boundary ! met link(L) in s1ini
-            ccr(Lv2(L)) = 0d0
+            ccr(Lv2(L)) = 0.0_dp
          end if
       end do
 
@@ -270,7 +270,7 @@ contains
          ccr(Lv2(L)) = -bbr(k2) ! some non-zero value
          bbr(k2) = bbr(k2) - ccr(Lv2(L))
          bbr(kb) = -ccr(Lv2(L)) ! should not be zero
-         ddr(kb) = 0d0
+         ddr(kb) = 0.0_dp
       end do
 
       if (nbnd1d2d > 0) then

@@ -68,11 +68,11 @@ contains
       tR = 0.0_dp
       call splintxy(xspl, yspl, xspl2, yspl2, num, tR, xR, yR)
 
-      dt = 1.0_dp / dble(NSAM)
+      dt = 1.0_dp / real(NSAM, kind=dp)
 
       splinelength = 0.0_dp
       do i = 1, num - 1
-         tR = dble(i - 1)
+         tR = real(i - 1, kind=dp)
          do j = 1, NSAM
             tL = tR
             xL = xR

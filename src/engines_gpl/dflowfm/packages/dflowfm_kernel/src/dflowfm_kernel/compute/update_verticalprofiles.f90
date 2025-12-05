@@ -278,7 +278,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! K-EPS, K-TAU z00 wave-enhanced roughness for jawave>0
 
                if (hu(LL) < trsh_u1Lb) then
-                  advi(Lb:Lt) = advi(Lb:Lt) + cfuhi3D / dble(Lt - Lb + 1)
+                  advi(Lb:Lt) = advi(Lb:Lt) + cfuhi3D / real(Lt - Lb + 1, kind=dp)
                else
                   advi(Lb) = advi(Lb) + cfuhi3D
                end if

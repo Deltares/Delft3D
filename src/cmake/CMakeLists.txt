@@ -45,7 +45,7 @@ else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
 include(compiler_options/compiler_warning_targets.cmake)
-include(compiler_options/automatic_conversions.cmake)
+include(compiler_options/fortran_styler.cmake)
 
 # Set available build configurations
 set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
@@ -418,3 +418,10 @@ endif()
 if(UNIX)
     add_subdirectory(${checkout_src_root}/${install_all_module} install_all)
 endif()
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-3.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../agpl-3.0.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../gpl-3.0.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../lgpl-2.1.txt
+              DESTINATION share)

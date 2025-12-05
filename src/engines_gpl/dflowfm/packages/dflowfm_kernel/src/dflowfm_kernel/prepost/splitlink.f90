@@ -128,7 +128,7 @@ contains
          !     set lnn and lne for new links
          !     reallocate if necessary
          if (numL > ubound(lnn, 1)) then
-            numnew = ceiling(1.2_dp * dble(numL))
+            numnew = ceiling(1.2_dp * real(numL, kind=dp))
             call realloc(lnn, numnew, keepExisting=.true.)
             call realloc(lne, [2, numnew], keepExisting=.true.)
          end if
@@ -222,7 +222,7 @@ contains
 !     set lnn and lne for new links
 !     reallocate if necessary
          if (numL > ubound(lnn, 1)) then
-            numnew = ceiling(1.2_dp * dble(numL))
+            numnew = ceiling(1.2_dp * real(numL, kind=dp))
             call realloc(lnn, numnew, keepExisting=.true.)
             call realloc(lne, [2, numnew], keepExisting=.true.)
          end if

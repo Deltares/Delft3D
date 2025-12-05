@@ -289,7 +289,7 @@ contains
             call IFORMgeTINTEGER(2 * 28, jaZlayeratubybob)
 
             if (kmx > 0 .or. mxlayz > 0) then
-               if (layertype > 1) then
+               if (layertype /= LAYTP_SIGMA) then
                   kmx = max(kmx, mxlayz); iadvec = 33
                end if
             end if

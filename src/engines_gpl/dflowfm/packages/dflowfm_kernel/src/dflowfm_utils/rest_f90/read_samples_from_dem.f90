@@ -83,11 +83,11 @@ contains
                ns = ns + 1
                xs(ns) = xarr(i, j)
                ys(ns) = yarr(i, j)
-               zs(ns) = dble(arr(i, j))
+               zs(ns) = real(arr(i, j), kind=dp)
             end if
          end do
          if (mod(i, istep) == 0) then
-            call READYY(' ', min(1.0_dp, dble(i) / dem_info%rows))
+            call READYY(' ', min(1.0_dp, real(i, kind=dp) / dem_info%rows))
          end if
       end do
       deallocate (xarr, yarr, arr)

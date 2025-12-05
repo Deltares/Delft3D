@@ -401,7 +401,7 @@ contains
                if (ihullmethod == 4) then
 
                   mmx = 20
-                  dxxx = 1.0_dp / dble(mmx)
+                  dxxx = 1.0_dp / real(mmx, kind=dp)
 
                   do k = 1, ndx
 
@@ -463,7 +463,7 @@ contains
                dysa = 2.0_dp * shb(n) / (nca - 1)
 
                mmx = 20
-               dxxx = 1.0_dp / dble(mmx)
+               dxxx = 1.0_dp / real(mmx, kind=dp)
 
                do k = 1, ndx
 

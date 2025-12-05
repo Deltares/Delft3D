@@ -84,7 +84,7 @@ contains
       end do
 
 !  compute the area increase of the indirectly connected cells
-      Darea = area_tot / dble(nindirect)
+      Darea = area_tot / real(nindirect, kind=dp)
 
 !  compute the change in the functional
       do kk = 1, nindirect

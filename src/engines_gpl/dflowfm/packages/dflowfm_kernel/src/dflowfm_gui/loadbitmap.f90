@@ -94,7 +94,7 @@ contains
                YP(4) = YP(3)
             else if (NUM == 3) then
                read (REC, *, ERR=777) XP(1), YP(1), XP(3)
-               YP(3) = YP(1) + (XP(3) - XP(1)) * dble(NXP) / dble(MXP)
+               YP(3) = YP(1) + (XP(3) - XP(1)) * real(NXP, kind=dp) / real(MXP, kind=dp)
                XP(2) = XP(3)
                YP(2) = YP(1)
                XP(4) = XP(1)

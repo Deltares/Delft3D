@@ -144,7 +144,7 @@ contains
 
 !  make the whole first gridline
       call make_wholegridline(ierror)
-      call READYY('Growing curvilinear grid', 0.4d0)
+      call READYY('Growing curvilinear grid', 0.4_dp)
 
       if (ierror == 1) goto 1234
 
@@ -173,16 +173,16 @@ contains
 
          do i = igL, igL + splineprops(is)%mfac - 1
             !     construct the cross spline through this edge
-            xe = 0.5d0 * (xg1(i) + xg1(i + 1))
-            ye = 0.5d0 * (yg1(i) + yg1(i + 1))
+            xe = 0.5_dp * (xg1(i) + xg1(i + 1))
+            ye = 0.5_dp * (yg1(i) + yg1(i + 1))
             call normalout(xg1(i), yg1(i), xg1(i + 1), yg1(i + 1), nx, ny, jsferic, jasfer3D, dmiss, dxymis)
 
             if (jsferic /= 1) then
-               xs1 = xe + 2d0 * hmax*[-nx, nx]
-               ys1 = ye + 2d0 * hmax*[-ny, ny]
+               xs1 = xe + 2.0_dp * hmax*[-nx, nx]
+               ys1 = ye + 2.0_dp * hmax*[-ny, ny]
             else
-               xs1 = xe + 2d0 * hmax*[-nx, nx] / (Ra * dg2rd)
-               ys1 = ye + 2d0 * hmax*[-ny, ny] / (Ra * dg2rd)
+               xs1 = xe + 2.0_dp * hmax*[-nx, nx] / (Ra * dg2rd)
+               ys1 = ye + 2.0_dp * hmax*[-ny, ny] / (Ra * dg2rd)
             end if
 
             isnew = mcs + 1
@@ -207,7 +207,7 @@ contains
             end if
          end do
       end do
-      call READYY('Growing curvilinear grid', .7d0)
+      call READYY('Growing curvilinear grid', 0.7_dp)
 
 !  allocate
       allocate (edgevel(mc - 1), nfac1(Nsubmax, mc - 1), dgrow1(Nsubmax, mc - 1), nlist(Nsubmax))
@@ -238,7 +238,7 @@ contains
       end do
 
 !  grow the grid
-      dt = 1d0
+      dt = 1.0_dp
       do j = jc + 1, nc
 !      idum = 1
 !      call plot(idum)
@@ -262,12 +262,12 @@ contains
             end if
          end do
 
-         if (dt < 1d-8 .or. istop == 1) exit
+         if (dt < 1.0e-8_dp .or. istop == 1) exit
       end do
 
       call postgrid()
-      call READYY('Growing curvilinear grid', 1d0)
-      call READYY('Growing curvilinear grid', -1d0)
+      call READYY('Growing curvilinear grid', 1.0_dp)
+      call READYY('Growing curvilinear grid', -1.0_dp)
 
       jatopol = 1
       call confrm('Copy center splines to polygon?', jatopol)

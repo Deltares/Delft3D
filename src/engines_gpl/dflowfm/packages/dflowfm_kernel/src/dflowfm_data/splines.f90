@@ -359,7 +359,7 @@ contains
       call FIRSTLIN(MSPL)
       call READYY('Writing Spline File', 0.0_dp)
       do I = 1, mcs
-         call READYY('Writing Spline File', dble(I) / dble(mcs))
+         call READYY('Writing Spline File', real(I, kind=dp) / real(mcs, kind=dp))
          write (MATR(2:5), '(I4.4)') I
          write (MSPL, '(A5)') MATR
          write (MSPL, '(I4,A4)') lensp(i), '   2'

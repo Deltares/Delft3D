@@ -82,7 +82,7 @@ contains
             cellmask(k) = 1
          end if
          if (mod(k, KMOD) == 0) then
-            call READYY(' ', min(1.0_dp, dble(k) / nump))
+            call READYY(' ', min(1.0_dp, real(k, kind=dp) / nump))
          end if
       end do
       call READYY(' ', -1.0_dp)

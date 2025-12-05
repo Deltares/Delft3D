@@ -807,7 +807,7 @@ contains
          end if
          if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_charnock)
          if (success) success = ecAddItemConnection(ecInstancePtr, item_charnock, connectionId)
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'friction_coefficient'
          else
@@ -985,7 +985,7 @@ contains
             end if
             success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
          else if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'humidity')
+            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'relative_humidity')
             sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
             sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
             sourceItemId_4 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_net_downward_shortwave_flux')
@@ -1207,8 +1207,8 @@ contains
 
       if (target_name == 'nudge_salinity_temperature') then
          call ecConverterGetBbox(ecInstancePtr, SourceItemID, 0, col0, col1, row0, row1, ncols, nrows, issparse, Ndatasize)
-         relcol = dble(col1 - col0 + 1) / dble(ncols)
-         relrow = dble(row1 - row0 + 1) / dble(nrows)
+         relcol = real(col1 - col0 + 1, kind=dp) / real(ncols, kind=dp)
+         relrow = real(row1 - row0 + 1, kind=dp) / real(nrows, kind=dp)
          write (txt1, "('nudge_salinity_temperature: bounding box')")
          write (txt2, "('col0-col1 X row0-row1 = ', I0, '-', I0, ' X ', I0, '-', I0, ', ncols X nrows = ', I0, ' X ', I0)") col0, col1, row0, row1, ncols, nrows
          write (txt3, "('relcol X relrow = ', F4.2, ' X ', F4.2, ' = ', F4.2)") relcol, relrow, relcol * relrow
@@ -1216,7 +1216,7 @@ contains
 
          if (issparse == 1) then
             write (txt1, "('sparse: data size = ', I0, ', ncols X nrows = ', I0, ' X ', I0, ' = ', I0)") Ndatasize, ncols, nrows, ncols * nrows
-            write (txt2, "('factor = ', F4.2)") dble(Ndatasize) / dble(Ncols * Nrows)
+            write (txt2, "('factor = ', F4.2)") real(Ndatasize, kind=dp) / real(Ncols * Nrows, kind=dp)
             call mess(LEVEL_INFO, trim(txt1)//' '//trim(txt2))
          end if
       end if

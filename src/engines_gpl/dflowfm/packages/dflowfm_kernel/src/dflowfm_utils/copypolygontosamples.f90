@@ -114,7 +114,7 @@ contains
                if (R > 1.0_dp) then
                   KKN = R + 1
                   do KK = 1, KKN - 1
-                     A = dble(KK) / dble(KKN); B = 1.0_dp - A
+                     A = real(KK, kind=dp) / real(KKN, kind=dp); B = 1.0_dp - A
 
                      if (jakol45 == 0) then
                         N = N + 1

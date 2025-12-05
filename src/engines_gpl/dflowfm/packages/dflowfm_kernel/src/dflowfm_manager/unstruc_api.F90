@@ -30,6 +30,7 @@
 !
 !
 module unstruc_api
+
    use m_updatevaluesonsourcesinks, only: updatevaluesonsourcesinks
    use m_updatebalance, only: updatebalance
    use m_flow_usertimestep, only: flow_usertimestep
@@ -48,6 +49,7 @@ module unstruc_api
    use m_flowgeom
    use unstruc_files, only: mdia
 
+use precision, only: dp
    implicit none
 
    real(kind=dp) :: cpuall0
@@ -183,7 +185,7 @@ contains
             write (tex(i:), '(i2.0)') keepzlayeringatbed; i = i + 5
             write (tex(i:), '(i2.0)') ihuz; i = i + 5
             write (tex(i:), '(i2.0)') ihuzcsig; i = i + 5
-            write (tex(i:), '(F5.2)') (time1 - tstart_user) / max(1d0, dnt); i = i + 5
+            write (tex(i:), '(F5.2)') (time1 - tstart_user) / max(1.0_dp, dnt); i = i + 5
 
             call upotukinueaa(upot, ukin, ueaa)
             write (mout, '(A30,A, 5F14.3)') filnam(1:30), ' :    '//trim(tex)//' : ', QQQ, ueaa, upot, ukin, upot + ukin

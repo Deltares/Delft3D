@@ -223,7 +223,7 @@ module fm_external_forcings_data
    real(kind=dp), allocatable :: xy2bnduxy(:, :) !< uxuyadvectionvelocity boundary 'external tolerance point'
    integer, allocatable :: kduxy(:) !< uxuyadvectionvelocity boundary points temp array
    integer, allocatable :: kbnduxy(:, :) !< uxuyadvectionvelocity boundary points index array, see lines above
-   real(kind=dp) :: zbnduxyval = -999d0
+   real(kind=dp) :: zbnduxyval = -999.0_dp
 
    integer :: nbndn !< norm.velocity boundary points dimension
    real(kind=dp), allocatable :: xbndn(:) !< norm.velocity boundary points xcor
@@ -415,7 +415,7 @@ module fm_external_forcings_data
    real(kind=dp), allocatable :: qsrcwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
    real(kind=dp), allocatable :: qlatwaq(:) !< Cumulative qsrc within current waq-timestep
    real(kind=dp), allocatable :: qlatwaq0(:) !< Cumulative qsrc at the beginning of the time step before possible reduction
-   real(kind=dp) :: addksources = 0d0 !< Add k of sources to turkin 1/0
+   real(kind=dp) :: addksources = 0.0_dp !< Add k of sources to turkin 1/0
 
    real(kind=dp), allocatable, target :: sah(:) ! temp
    real(kind=dp), allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness

@@ -114,7 +114,7 @@ contains
 
                   k2 = max(2, int(d / (3.0_dp * rcir)))
                   do kk = 1, k2
-                     a = 1.0_dp - dble(kk) / dble(k2)
+                     a = 1.0_dp - real(kk, kind=dp) / real(k2, kind=dp)
                      b = 1.0_dp - a
                      x = a * xpl(k) + b * xpl(k + 1)
                      y = a * ypl(k) + b * ypl(k + 1)
@@ -168,10 +168,10 @@ contains
          call DISP2C(XPL, YPL, NPL, RCIR, NCOLPL)
          do k = 1, npl
             if (inview(xpl(k), ypl(k))) then
-               call HTEXT(dble(k), Xpl(k), Ypl(k))
+               call HTEXT(real(k, kind=dp), Xpl(k), Ypl(k))
             end if
          end do
-         call hTEXT(dble(k), Xpl(k), Ypl(k))
+         call hTEXT(real(k, kind=dp), Xpl(k), Ypl(k))
 
       end if
    end subroutine tekpolygon
