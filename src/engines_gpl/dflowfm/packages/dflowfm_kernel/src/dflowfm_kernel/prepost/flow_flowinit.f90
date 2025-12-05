@@ -383,8 +383,8 @@ contains
          end if
       end if
 
-      ! In 2D set AUTOTS_2D_OUT as default, unless automatic timestepping is turned off.
-      if ((kmx < 2) .and. (autotimestep /= AUTOTS_OFF) .and. (autotimestep /= AUTOTS_2D_OUT)) then
+      ! In 2D set AUTOTS_2D_OUT as default
+      if ((kmx < 2) .and. (autotimestep /= AUTOTS_2D_OUT)) then
          autotimestep = AUTOTS_2D_OUT
       end if
 
