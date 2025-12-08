@@ -63,13 +63,23 @@ contains
       real(kind=dp) :: p1, p2, h, z, uusto, fac
       real(kind=dp) :: rolthk, rmax, erol, crol, mass
 
-      Dfu = 0.0_dp; Dfuc = 0.0_dp; deltau = 0.0_dp; uorbu = 0.0_dp; csw = 1.0_dp; snw = 0.0_dp; costu = 1.0_dp; fw = 0.0_dp
+      Dfu = 0.0_dp
+      Dfuc = 0.0_dp
+      deltau = 0.0_dp
+      uorbu = 0.0_dp
+      csw = 1.0_dp
+      snw = 0.0_dp
+      costu = 1.0_dp
+      fw = 0.0_dp
 
       call getLbotLtop(LL, Lb, Lt)
-      k1 = ln(1, LL); k2 = ln(2, LL)
+      k1 = ln(1, LL)
+      k2 = ln(2, LL)
       Tsig = 0.5_dp * (twav(k1) + twav(k2))
-      ustokes(Lb:Lt) = 0.0_dp; vstokes(Lb:Lt) = 0.0_dp
-      ustokes(LL) = 0.0_dp; vstokes(LL) = 0.0_dp
+      ustokes(Lb:Lt) = 0.0_dp
+      vstokes(Lb:Lt) = 0.0_dp
+      ustokes(LL) = 0.0_dp
+      vstokes(LL) = 0.0_dp
 
       if (tsig > 0.05_dp) then
          omeg = twopi / tsig
@@ -78,7 +88,8 @@ contains
          return
       end if
 
-      phi1 = phiwav(k1); phi2 = phiwav(k2)
+      phi1 = phiwav(k1)
+      phi2 = phiwav(k2)
       csw = 0.5_dp * (cos(phi1 * dg2rd) + cos(phi2 * dg2rd))
       snw = 0.5_dp * (sin(phi1 * dg2rd) + sin(phi2 * dg2rd))
 

@@ -167,7 +167,8 @@ contains
             do i = 1, 2
                kcL = kne(i, kk)
                if (kcL == 0) cycle
-               iR = i + 1; if (iR > 2) iR = iR - 2
+               iR = i + 1
+               if (iR > 2) iR = iR - 2
                kcR = kne(iR, kk)
 
                if (kcL < 0 .or. kcR < 0) then
@@ -226,7 +227,9 @@ contains
 !              take the first node that has not been removed before, but not the node that is kept, which is the first of the center cell
                   i = 1
                   do while (netcell(kcell1)%nod(i) /= kn(1, L) .and. netcell(kcell1)%nod(i) /= kn(2, L) .and. &
-                            i < netcell(kcell1)%N .and. netcell(kcell1)%nod(i) /= netcell(k)%nod(1)); i = i + 1; end do
+                            i < netcell(kcell1)%N .and. netcell(kcell1)%nod(i) /= netcell(k)%nod(1))
+                            i = i + 1
+                            end do
                   if (kk <= netcell(kcell1)%N) then
                      netcell(kcell1)%nod(i:Ndum) = netcell(kcell1)%nod(i + 1:Ndum + 1)
                   else
@@ -275,7 +278,8 @@ contains
             k2 = netcell(kcell)%nod(i)
             L = netcell(kcell)%lin(i)
             if (lnn(L) == 1) then
-               im1 = i - 1; if (im1 < 1) im1 = im1 + netcell(kcell)%N
+               im1 = i - 1
+               if (im1 < 1) im1 = im1 + netcell(kcell)%N
                L1 = netcell(kcell)%lin(im1)
                if (lnn(L1) == 1) then
                   call find_common_node(L, L1, k2)
@@ -401,7 +405,9 @@ contains
 
 !        find link position in nod%lin array
             j = 1
-            do while (nod(k)%lin(j) /= L .and. j < N); j = j + 1; end do
+            do while (nod(k)%lin(j) /= L .and. j < N)
+            j = j + 1
+            end do
             if (nod(k)%lin(j) /= L) then
                call qnerror('cleanup_nod: link not found', ' ', ' ')
                netstat = NETSTAT_CELLS_DIRTY

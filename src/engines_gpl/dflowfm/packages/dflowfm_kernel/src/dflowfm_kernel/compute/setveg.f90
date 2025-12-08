@@ -56,7 +56,8 @@ contains
          if (.not. allocated(supq)) allocate (supq(ndx))
          supq = 0.0_dp
          do L = 1, lnxi
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             qds = growthunidicouv * dxi(L) * wu(L)
             ds2 = rnveg(k2) - rnveg(k1)
             qsa = qds * ds2
@@ -86,7 +87,8 @@ contains
 
             do i = 1, num
 
-               stemcos = cos(phi); stemsin = sin(phi)
+               stemcos = cos(phi)
+               stemsin = sin(phi)
 
                if (rhoveg > 0.0_dp) then
 

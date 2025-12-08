@@ -43,12 +43,12 @@ module m_parms
    parms_PC :: pc ! preconditioner
    parms_Solver :: ksp ! solver
 
-   double precision, dimension(:), allocatable :: sol ! solution vector
-   double precision, dimension(:), allocatable :: rhs ! right-hand side vector
+   real(kind=dp), dimension(:), allocatable :: sol ! solution vector
+   real(kind=dp), dimension(:), allocatable :: rhs ! right-hand side vector
 
    integer :: numloc ! number of local rows (elements) in matrix
    integer :: nummat ! number of matrix entries
-   double precision, dimension(:), allocatable :: amat ! matrix entries, dim(nummat)
+   real(kind=dp), dimension(:), allocatable :: amat ! matrix entries, dim(nummat)
    integer, dimension(:), allocatable :: imat, jmat ! column indices and row pointers of matrix, dim(numloc+1) and dim(nummat) respectively
    integer, dimension(:), allocatable :: guusidx ! index in guus matrix-array
 
@@ -306,10 +306,10 @@ subroutine conjugategradient_parms(s1, Ndx, its)
    implicit none
 
    integer, intent(in) :: Ndx !< number of unknowns (flownodes)
-   double precision, dimension(Ndx), intent(inout) :: s1 !< water level
+   real(kind=dp), dimension(Ndx), intent(inout) :: s1 !< water level
    integer, intent(out) :: its !< number of iterations
 
-   double precision :: res ! residual norm
+   real(kind=dp) :: res ! residual norm
 
    integer :: i, j, n
 

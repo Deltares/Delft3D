@@ -53,12 +53,16 @@ contains
 
       if (jatel == 1) then
          if (.not. allocated(itel)) then
-            allocate (itel(ndx), ztel(ndx)); itel = 0; ztel = 0
+            allocate (itel(ndx), ztel(ndx))
+            itel = 0
+            ztel = 0
          end if
 
          do k = 1, ndx
-            xmn = minval(nd(k)%x); xmx = maxval(nd(k)%x)
-            ymn = minval(nd(k)%y); ymx = maxval(nd(k)%y)
+            xmn = minval(nd(k)%x)
+            xmx = maxval(nd(k)%x)
+            ymn = minval(nd(k)%y)
+            ymx = maxval(nd(k)%y)
             if (xs <= xmx .and. xs >= xmn .and. ys <= ymx .and. ys >= ymn) then
                nn = size(nd(k)%x)
                call PINPOK(Xs, Ys, Nn, nd(k)%x, nd(k)%y, IN, jins, dmiss)

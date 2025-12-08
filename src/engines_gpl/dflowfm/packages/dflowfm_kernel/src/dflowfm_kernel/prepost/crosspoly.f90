@@ -56,8 +56,10 @@ contains
       distanceStartPolygon = 0.0_dp
       do K = 1, NPL - 1
          KU = K + 1
-         XP1 = XPL(K); YP1 = YPL(K)
-         XP2 = XPL(KU); YP2 = YPL(KU)
+         XP1 = XPL(K)
+         YP1 = YPL(K)
+         XP2 = XPL(KU)
+         YP2 = YPL(KU)
          currentSegmentLength = dbdistance(xp1, yp1, xp2, yp2, jsferic, jasfer3D, dmiss)
 
          if (xp1 == DMISS .or. yp1 == DMISS .or. xp2 == DMISS .or. yp2 == DMISS) cycle ! SPvdP: added

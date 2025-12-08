@@ -98,8 +98,10 @@ contains
       yR = 0.25_dp * (ys(ip0) + ys(ip1) + ys(ip0R) + ys(ip1R))
       zR = 0.25_dp * (zss(1, ip0) + zss(1, ip1) + zss(1, ip0R) + zss(1, ip1R))
 
-      call getdxdy(xL, yL, xR, yR, cy1, cx1, jsferic); cx1 = -cx1
-      call getdxdy(x0, y0, x1, y1, cyL, cxL, jsferic); cxL = -cxL
+      call getdxdy(xL, yL, xR, yR, cy1, cx1, jsferic)
+      cx1 = -cx1
+      call getdxdy(x0, y0, x1, y1, cyL, cxL, jsferic)
+      cxL = -cxL
       !cx1 = -0.5d0*getdy(xL,yL,xR,yR)
       !cy1 =  0.5d0*getdx(xL,yL,xR,yR)
       !cxL = -0.5d0*getdy(x0,y0,x1,y1)

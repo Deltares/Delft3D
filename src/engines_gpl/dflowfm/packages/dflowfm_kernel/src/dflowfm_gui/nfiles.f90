@@ -546,7 +546,8 @@ contains
                call doclose(mtek)
                if (nwhat == 21) then
                   if (index(filnam, '.net') > 0) then
-                     call NEWFIL(MTEK, filnam); call WRINET(MTEK)
+                     call NEWFIL(MTEK, filnam)
+                     call WRINET(MTEK)
                   else
                      call unc_write_net(filnam, janetcell=0, janetbnd=0)
                   end if
@@ -625,7 +626,8 @@ contains
                end if
                call MESSAGE('YOU SAVED ', filnam, ' ')
                NUM = 0
-               md_plifile = ' '; md_plifile = filnam
+               md_plifile = ' '
+               md_plifile = filnam
             end if
          end if
       else if (NWHAT == 27) then

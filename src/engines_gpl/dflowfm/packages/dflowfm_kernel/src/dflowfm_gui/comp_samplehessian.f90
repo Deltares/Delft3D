@@ -130,8 +130,10 @@ contains
                      - 0.5_dp * (zss(1, i, j - 1) + zss(1, i, j)) * SnjL(2)) / area
 
 !           Eigendecompostion
-               VV(1, 1) = zxx; VV(1, 2) = zxy
-               VV(2, 1) = zyx; VV(2, 2) = zyy
+               VV(1, 1) = zxx
+               VV(1, 2) = zxy
+               VV(2, 1) = zyx
+               VV(2, 2) = zyy
                !call jacobi
 
 !!           checks

@@ -76,7 +76,8 @@ contains
          if (lnn(L) == 1) then ! dichte randen
             k3 = kn(1, L)
             k4 = kn(2, L)
-            kc(k3) = 1; kc(k4) = 1
+            kc(k3) = 1
+            kc(k4) = 1
          end if
       end do
 
@@ -89,7 +90,8 @@ contains
             dl = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss)
             call normaloutchk(xk(k3), yk(k3), xk(k4), yk(k4), xzw(n), yzw(n), xn, yn, ja, jsferic, jasfer3D, dmiss, dxymis)
 
-            xz2 = xzw(n) + dl * xn; yz2 = yzw(n) + dl * yn
+            xz2 = xzw(n) + dl * xn
+            yz2 = yzw(n) + dl * yn
 
             lin = 2
             do n = 1, npl - 1
@@ -97,7 +99,8 @@ contains
                   if (xpl(n + 1) /= dmiss) then
                      call cross(xpl(n), ypl(n), xpl(n + 1), ypl(n + 1), xzw(n), yzw(n), xz2, yz2, JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
                      if (jacros == 1) then
-                        kc(k3) = lin; kc(k4) = lin ! open door polygon
+                        kc(k3) = lin
+                        kc(k4) = lin ! open door polygon
                      end if
                   else
                      lin = lin + 1

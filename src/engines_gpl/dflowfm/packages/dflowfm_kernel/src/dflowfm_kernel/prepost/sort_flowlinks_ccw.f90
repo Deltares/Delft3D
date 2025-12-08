@@ -76,7 +76,8 @@ contains
          end if
 
          do L = 1, lnxx
-            K1 = ln(1, abs(nd(K)%ln(L))); K2 = ln(2, abs(nd(K)%ln(L)))
+            K1 = ln(1, abs(nd(K)%ln(L)))
+            K2 = ln(2, abs(nd(K)%ln(L)))
             if (K2 == K) then
                K2 = K1
                K1 = K

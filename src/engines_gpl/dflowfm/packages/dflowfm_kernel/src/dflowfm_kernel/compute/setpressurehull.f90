@@ -48,7 +48,8 @@ contains
       implicit none
       integer :: L, LL, k1, k2
       do LL = 1, Lnx
-         k1 = ln(1, LL); k2 = ln(2, LL)
+         k1 = ln(1, LL)
+         k2 = ln(2, LL)
          if (zsp(k1) /= 0.0_dp .or. zsp(k2) /= 0.0_dp) then
             do L = Lbot(LL), Ltop(LL)
                adve(L) = adve(L) + ag * (zsp(k2) - zsp(k1)) * dxi(LL) ! impose ship hull

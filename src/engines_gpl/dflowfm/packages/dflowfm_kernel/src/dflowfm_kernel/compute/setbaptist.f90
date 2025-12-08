@@ -50,7 +50,8 @@ contains
       real(kind=dp) :: ap, Cz, Czb, Czr, rnL, diaL, stemhL, gamhg, Cda, areastem, umag, fac, facL, Cdaleaf
 
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
 
          rnL = 0.5_dp * (rnveg(k1) + rnveg(k2))
 

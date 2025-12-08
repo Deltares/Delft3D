@@ -78,7 +78,8 @@ contains
          allocate (profiles1D(mxprof), stat=ierr)
          call aerr('profiles1D(mxprof)', ierr, 40 * nprofdefs)
 
-         allocate (npr2(mxprof)); npr2 = 0
+         allocate (npr2(mxprof))
+         npr2 = 0
 
          profiles1D(1:mxprof)%ityp = 0
          profiles1D(1:mxprof)%width = 0
@@ -176,8 +177,10 @@ contains
                   if (nyz == 0) then
                      call qnerror(' xyzprofile not found ', ' ', ' ')
                   else
-                     allocate (profiles1D(n)%y(nyz), stat=ierr); profiles1D(n)%y = 0.0_dp
-                     allocate (profiles1D(n)%z(nyz), stat=ierr); profiles1D(n)%z = 0.0_dp
+                     allocate (profiles1D(n)%y(nyz), stat=ierr)
+                     profiles1D(n)%y = 0.0_dp
+                     allocate (profiles1D(n)%z(nyz), stat=ierr)
+                     profiles1D(n)%z = 0.0_dp
                      do k = 1, nyz
                         profiles1D(n)%y(k) = yyh(k)
                         profiles1D(n)%z(k) = zzh(k)

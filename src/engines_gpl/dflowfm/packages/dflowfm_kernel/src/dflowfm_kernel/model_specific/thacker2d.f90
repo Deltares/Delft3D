@@ -77,7 +77,8 @@ contains
 
       if (ibedlevtyp == 3) then
          do k = 1, numk
-            xx = xk(k) - x0; yy = yk(k) - y0
+            xx = xk(k) - x0
+            yy = yk(k) - y0
             r = sqrt(xx * xx + yy * yy)
             rr0 = (r * r) / (r0 * r0)
             zk(k) = -h0 * (1.0_dp - rr0)
@@ -87,7 +88,8 @@ contains
 
       rms = 0.0_dp
       do k = 1, ndx
-         xx = xz(k) - x0; yy = yz(k) - y0
+         xx = xz(k) - x0
+         yy = yz(k) - y0
          r = sqrt(xx * xx + yy * yy)
          rr0 = (r * r) / (r0 * r0)
          if (ibedlevtyp /= 3) then
@@ -104,7 +106,8 @@ contains
             s1(k) = s1k
             ur = omeg * r * a * st / (2.0_dp * a1c)
             ut = (fcorio * r / (2.0_dp * a1c)) * (sa12 + a * ct - 1.0_dp)
-            cs = xx / r; sn = yy / r
+            cs = xx / r
+            sn = yy / r
             ucx(k) = ur * cs - ut * sn
             ucy(k) = ur * sn + ut * cs
          else
@@ -117,7 +120,8 @@ contains
 
       if (ini == 1) then
          do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             u1(L) = (acl(L) * ucx(k1) + (1.0_dp - acl(L)) * ucx(k2)) * csu(L) &
                     + (acl(L) * ucy(k1) + (1.0_dp - acl(L)) * ucy(k2)) * snu(L)
          end do

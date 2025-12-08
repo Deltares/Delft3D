@@ -111,7 +111,8 @@ contains
 !---------------------------------------------------------
 ! initialize cellmask
 !---------------------------------------------------------
-      cellmask = 1; ! init active
+      cellmask = 1
+      ! init active
 ! remove netcells that have one or more nodes outside the polygon
       ik = -1
       do k = 1, nump
