@@ -62,6 +62,7 @@ object Trigger : BuildType({
 
         script {
             name = "Start Linux Testbench"
+            enabled = false
 
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
@@ -134,6 +135,7 @@ object Trigger : BuildType({
 
         script {
             name = "Start Linux Unit Tests"
+            enabled = false
 
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
@@ -169,6 +171,7 @@ object Trigger : BuildType({
 
         script {
             name = "Start Windows Unit Tests"
+            enabled = false
 
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
@@ -204,6 +207,7 @@ object Trigger : BuildType({
 
         script {
             name = "Start Docker Examples"
+            enabled = false
 
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
@@ -236,21 +240,30 @@ object Trigger : BuildType({
         }
     }
 
-    if (DslContext.getParameter("enable_pre_merge_trigger").lowercase() == "true") {
-        triggers {
-            schedule {
-                schedulingPolicy = daily {
-                    hour = 20
-                }
-                branchFilter = ""
-                triggerBuild = always()
-                param("revisionRuleBuildBranch", "<default>")
+    triggers {
+        schedule {
+            schedulingPolicy = daily {
+                hour = 22
             }
-            vcs {
-                quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_CUSTOM
-                quietPeriod = 60
-                branchFilter = "+:pull/*"
+            branchFilter = ""
+            triggerBuild = always()
+            param("revisionRuleBuildBranch", "<default>")
+        }
+        schedule {
+            schedulingPolicy = daily {
+                hour = 0
             }
+            branchFilter = ""
+            triggerBuild = always()
+            param("revisionRuleBuildBranch", "<default>")
+        }
+        schedule {
+            schedulingPolicy = daily {
+                hour = 2
+            }
+            branchFilter = ""
+            triggerBuild = always()
+            param("revisionRuleBuildBranch", "<default>")
         }
     }
 
