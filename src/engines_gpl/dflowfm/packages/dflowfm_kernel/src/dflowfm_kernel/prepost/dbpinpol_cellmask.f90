@@ -39,7 +39,7 @@ module m_cellmask_from_polygon_set
 
    real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates
    real(kind=dp), allocatable :: x_poly_max(:), y_poly_max(:) !< Polygon bounding box max coordinates
-   real(kind=dp), allocatable :: z_poly_cellmask(:) !< Polygon coordinate arrays
+   real(kind=dp), allocatable :: polygon_type(:) !< Polygon type, positive or dmiss = drypoint , negative = enclosure, 
    integer, allocatable :: i_poly_start(:), i_poly_end(:) !< Polygon start and end indices in coordinate arrays (dim = number of polygons)
    integer :: polygons = 0 !< Number of polygons stored in module arrays
    logical :: cellmask_initialized = .false. !< Flag indicating if cellmask data structures have been initialized for safety
@@ -75,7 +75,7 @@ contains
       call realloc(y_poly_max, polygon_buffer_size, keepExisting=.false.)
       call realloc(i_poly_start, polygon_buffer_size, keepExisting=.false.)
       call realloc(i_poly_end, polygon_buffer_size, keepExisting=.false.)
-      call realloc(z_poly_cellmask, polygon_buffer_size, keepExisting=.false.)
+      call realloc(polygon_type, polygon_buffer_size, keepExisting=.false.)
 
       i_point = 1
       i_poly = 0
@@ -90,7 +90,7 @@ contains
             call realloc(y_poly_max, polygon_buffer_size, keepExisting=.true.)
             call realloc(i_poly_start, polygon_buffer_size, keepExisting=.true.)
             call realloc(i_poly_end, polygon_buffer_size, keepExisting=.true.)
-            call realloc(z_poly_cellmask, polygon_buffer_size, keepExisting=.true.)
+            call realloc(polygon_type, polygon_buffer_size, keepExisting=.true.)
          end if
 
          call get_startend(polygon_points - i_point + 1, x_poly(i_point:polygon_points), y_poly(i_point:polygon_points), i_start, i_end, dmiss)
@@ -108,7 +108,7 @@ contains
 
          i_poly_start(i_poly) = i_start
          i_poly_end(i_poly) = i_end
-         z_poly_cellmask(i_poly) = z_poly(i_start)
+         polygon_type(i_poly) = z_poly(i_start)
 
          i_point = i_end + 2
       end do
@@ -117,7 +117,7 @@ contains
 
       ! check if there are any enclosure polygons
       do i_poly = 1, polygons
-         if (z_poly_cellmask(i_poly) < 0.0_dp .and. z_poly_cellmask(i_poly) /= dmiss) then
+         if (polygon_type(i_poly) < 0.0_dp .and. polygon_type(i_poly) /= dmiss) then
             enclosures_present = .true.
             exit
          end if
@@ -148,7 +148,7 @@ contains
 
       ! Single loop over all polygons
       do i_poly = 1, polygons
-         z_poly_val = z_poly_cellmask(i_poly)
+         z_poly_val = polygon_type(i_poly)
 
          ! Bounding box check
          if (x < x_poly_min(i_poly) .or. x > x_poly_max(i_poly) .or. &
@@ -195,7 +195,7 @@ contains
       if (allocated(x_poly_max)) deallocate (x_poly_max)
       if (allocated(y_poly_min)) deallocate (y_poly_min)
       if (allocated(y_poly_max)) deallocate (y_poly_max)
-      if (allocated(z_poly_cellmask)) deallocate (z_poly_cellmask)
+      if (allocated(polygon_type)) deallocate (polygon_type)
       if (allocated(i_poly_start)) deallocate (i_poly_start)
       if (allocated(i_poly_end)) deallocate (i_poly_end)
 
