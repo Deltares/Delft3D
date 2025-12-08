@@ -110,10 +110,7 @@ object WindowsTest : BuildType({
 
                             if ('%copy_cases%' -eq 'true') {
                                 Compress-Archive -Path 'data\cases\*' -DestinationPath "${'$'}inside\copy_cases.zip" -Force -CompressionLevel Optimal
-
-                                ${'$'}size = '{0:N1}' -f ((Get-Item "${'$'}inside\copy_cases.zip").Length / 1MB)
-
-                                Write-Host "copy_cases.zip created inside container ($(${'$'}size) MB)"
+                                Write-Host ('copy_cases.zip created inside container ({0:N1} MB)' -f ((Get-Item "${'$'}inside\copy_cases.zip").Length / 1MB))
                             }
 
                             Write-Host '##teamcity[blockClosed name=''Collecting selected artifacts inside container'']'
