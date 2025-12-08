@@ -114,7 +114,12 @@ contains
       polygons = i_poly
 
       ! check if there are any enclosure polygons
-      enclosures_present = any(z_poly_cellmask(1:polygons) < 0.0_dp .and. z_poly_cellmask(1:polygons) /= dmiss)
+      do i_poly = 1, polygons
+         if (z_poly_cellmask(i_poly) < 0.0_dp .and. z_poly_cellmask(i_poly) /= dmiss) then
+            enclosures_present = .true.
+            exit
+         end if
+      end do
       cellmask_initialized = .true.
 
    end subroutine cellmask_from_polygon_set_init
