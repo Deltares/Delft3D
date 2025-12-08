@@ -77,7 +77,8 @@ contains
       integer :: NX, JDLA
 
       JDLA = 1
-      THIRD = 1.0_dp / 3.0_dp; TWOTHIRD = 1.0_dp - THIRD
+      THIRD = 1.0_dp / 3.0_dp
+      TWOTHIRD = 1.0_dp - THIRD
 
       call SAVEPOL()
 
@@ -126,7 +127,10 @@ contains
          ZPLO(kk - i1 + 1) = ZPL(kk)
       end do
 
-      allocate (XH(NX), YH(NX), ZH(NX), STAT=IERR); XH = DXYMIS; YH = DXYMIS; ZH = dxymis
+      allocate (XH(NX), YH(NX), ZH(NX), STAT=IERR)
+      XH = DXYMIS
+      YH = DXYMIS
+      ZH = dxymis
       call AERR('XH(NX), YH(NX) , ZH(NX)', IERR, 2 * NX)
       allocate (DPLA(NX), DXA(NX), DXS(NX), STAT=IERR)
       call AERR('DPLA(NX), DXA(NX), DXS(NX)', IERR, 3 * NX)
@@ -166,8 +170,11 @@ contains
             call SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH WEIGHTFACTOR DESIRED
          end do
 
-         RMN = 1e9; NMN = 0
-         RMX = -1e9; NMX = 0; DXSM = 1e30
+         RMN = 1e9
+         NMN = 0
+         RMX = -1e9
+         NMX = 0
+         DXSM = 1e30
          do N = 1, NPL - 1 ! CHECK SMALLEST AND LARGEST RATIOS OF ACTUAL VS DESIRED
             DXSM = min(DXS(N), DXSM)
 
@@ -175,11 +182,13 @@ contains
 
             if (N > 1) then
                if (RMA < RMN) then ! ZOEK BESTE WEGGOOIER
-                  NMN = N; RMN = RMA ! POTENTIEEL WEGGOOIPUNT, KLEINE GRIDSIZE VS STREEFSIZE
+                  NMN = N
+                  RMN = RMA ! POTENTIEEL WEGGOOIPUNT, KLEINE GRIDSIZE VS STREEFSIZE
                end if
             end if
             if (RMA > RMX) then
-               NMX = N; RMX = RMA ! POTENTIEEL BIJZETPUNT, GROTE GRIDSIZE VS STREEFSIZE
+               NMX = N
+               RMX = RMA ! POTENTIEEL BIJZETPUNT, GROTE GRIDSIZE VS STREEFSIZE
             end if
          end do
 

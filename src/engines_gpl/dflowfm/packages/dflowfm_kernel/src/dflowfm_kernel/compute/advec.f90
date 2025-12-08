@@ -115,9 +115,11 @@ contains
          do L = 1, lnxi
             if (iadv(L) == IADV_SUBGRID_WEIR) then
                if (u0(L) > 0) then
-                  kd = ln(2, L); ku = ln(1, L)
+                  kd = ln(2, L)
+                  ku = ln(1, L)
                else
-                  kd = ln(1, L); ku = ln(2, L)
+                  kd = ln(1, L)
+                  ku = ln(2, L)
                end if
                call getucxucyweironly(kd, ucx(kd), ucy(kd))
                call getucxucyweironly(ku, ucx(ku), ucy(ku))
@@ -128,8 +130,10 @@ contains
       if (jabarrieradvection == 2) then
          do n = 1, ngatesg
             do L = L1gatesg(n), L2gatesg(n)
-               LL = kgate(3, L); LL = abs(LL)
-               kd = ln(1, LL); ku = ln(2, LL)
+               LL = kgate(3, L)
+               LL = abs(LL)
+               kd = ln(1, LL)
+               ku = ln(2, LL)
                call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
                call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
             end do
@@ -139,7 +143,8 @@ contains
                associate (pstru => network%sts%struct(network%sts%gateIndices(n)))
                   do i = 1, pstru%numlinks
                      L = pstru%linknumbers(i)
-                     kd = ln(1, L); ku = ln(2, L)
+                     kd = ln(1, L)
+                     ku = ln(2, L)
                      call getucxucybarrierzero(L, kd, ucx(kd), ucy(kd))
                      call getucxucybarrierzero(L, ku, ucx(ku), ucy(ku))
                   end do
@@ -149,8 +154,10 @@ contains
             do n = 1, ngategen
                i = gate2cgen(n)
                do L = L1cgensg(i), L2cgensg(i)
-                  LL = kcgen(3, L); LL = abs(LL)
-                  kd = ln(1, LL); ku = ln(2, LL)
+                  LL = kcgen(3, L)
+                  LL = abs(LL)
+                  kd = ln(1, LL)
+                  ku = ln(2, LL)
                   call getucxucybarrierzero(LL, kd, ucx(kd), ucy(kd))
                   call getucxucybarrierzero(LL, ku, ucx(ku), ucy(ku))
                end do
@@ -160,14 +167,17 @@ contains
 
       call sethigherorderadvectionvelocities()
 
-      uqcx = 0.0_dp; uqcy = 0.0_dp; sqa = 0.0_dp
+      uqcx = 0.0_dp
+      uqcy = 0.0_dp
+      sqa = 0.0_dp
 
       if (kmx == 0) then
 
          if (jasfer3d == 1) then
 
             do L = Lnx, 1, -1
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                qL = qa(L)
                uqcx(k1) = uqcx(k1) + qL * lin2nodx(L, 1, ucxu(L), ucyu(L))
                uqcx(k2) = uqcx(k2) - qL * lin2nodx(L, 2, ucxu(L), ucyu(L))
@@ -180,7 +190,8 @@ contains
          else
 
             do L = Lnx, 1, -1
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                qL = qa(L)
                uqcx(k1) = uqcx(k1) + qL * ucxu(L)
                uqcx(k2) = uqcx(k2) - qL * ucxu(L)
@@ -195,7 +206,8 @@ contains
       else
 
          do LL = Lnx, 1, -1
-            Lb = lbot(LL); Lt = ltop(LL)
+            Lb = lbot(LL)
+            Lt = ltop(LL)
             do L = Lb, Lt
                k1 = ln(1, L) !; k1 = min(k1, ktop(ln(1,LL) ) )
                k2 = ln(2, L) !; k2 = min(k2, ktop(ln(2,LL) ) )
@@ -364,7 +376,8 @@ contains
 
             if (hu(L) > 0) then
 
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                iadvL = iadv(L)
 
                if (L > lnxi) then
@@ -701,9 +714,15 @@ contains
                   !advel = 0.5d0*(  u0(L)*u0(L) - u0(L-1)*u0(L-1) ) / dx(L)
 
                   if (u0(L) > 0.0_dp) then
-                     ku = k1; kd = k2; isg = 1; n12 = 1
+                     ku = k1
+                     kd = k2
+                     isg = 1
+                     n12 = 1
                   else
-                     ku = k2; kd = k1; isg = -1; n12 = 2
+                     ku = k2
+                     kd = k1
+                     isg = -1
+                     n12 = 2
                   end if
 
                   call getucxucynoweirs(ku, ucxku, ucyku)
@@ -824,9 +843,12 @@ contains
                      cycle ! switch off advection for inflowing waterlevel bnd's, if not normalvelocitybnds
                   end if
                end if
-               cs = csu(LL); sn = snu(LL)
-               Lb = Lbot(LL); Lt = Ltop(LL)
-               ac1 = acl(LL); ac2 = 1.0_dp - ac1
+               cs = csu(LL)
+               sn = snu(LL)
+               Lb = Lbot(LL)
+               Lt = Ltop(LL)
+               ac1 = acl(LL)
+               ac2 = 1.0_dp - ac1
 
                if (iadv(LL) == 3) then
                   call QucPer3Dsigma(1, LL, Lb, Lt, cs, sn, quk1) ! sum of (Q*uc cell centre upwind normal) at side 1 of basis link LL
@@ -834,7 +856,8 @@ contains
 
                   do L = Lb, Lt
                      advel = 0.0_dp ! advi (1/s), adve (m/s2)
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      qu1 = 0.0_dp
                      if (vol1(k1) > 0) then
                         qu1 = quk1(1, L - Lb + 1) * ac1 ! Perot weigthing
@@ -891,7 +914,8 @@ contains
                      else
 
                         do L = Lb, Lt
-                           k1 = ln(1, L); k2 = ln(2, L)
+                           k1 = ln(1, L)
+                           k2 = ln(2, L)
                            if (jasfer3D == 1) then
                               qu1 = cs * nod2linx(LL, 1, uqcx(k1), uqcy(k1)) + sn * nod2liny(LL, 1, uqcx(k1), uqcy(k1)) - u1(L) * sqa(k1)
                               qu2 = cs * nod2linx(LL, 2, uqcx(k2), uqcy(k2)) + sn * nod2liny(LL, 2, uqcx(k2), uqcy(k2)) - u1(L) * sqa(k2)
@@ -936,7 +960,8 @@ contains
                      Ltx = Lt - Lb + 1
                      volukk(1:Ltx) = 0.0_dp
                      do L = Lb, Lt
-                        k1 = ln(1, L); k2 = ln(2, L)
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
                         if (jarhoxu > 0) then
                            volukk(L - Lb + 1) = volukk(L - Lb + 1) + ac1 * vol1(k1) * rho(k1) + ac2 * vol1(k2) * rho(k2)
                         else
@@ -959,7 +984,8 @@ contains
                      end do
 
                      do L = Lb, Lt
-                        k1 = ln(1, L); k2 = ln(2, L)
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
                         if (jasfer3D == 1) then
                            qu1 = cs * nod2linx(LL, 1, uqcx(k1), uqcy(k1)) + sn * nod2liny(LL, 1, uqcx(k1), uqcy(k1)) - u1(L) * sqa(k1)
                            qu2 = cs * nod2linx(LL, 2, uqcx(k2), uqcy(k2)) + sn * nod2liny(LL, 2, uqcx(k2), uqcy(k2)) - u1(L) * sqa(k2)
@@ -985,15 +1011,20 @@ contains
 
                   else if (layertype == LAYTP_Z .and. jahazlayer == 1) then
 
-                     n1 = ln(1, LL); n2 = ln(2, LL)
-                     call getkbotktop(n1, kb1, kt1); ktx1 = kt1 - kb1 + 1
-                     call getkbotktop(n2, kb2, kt2); ktx2 = kt2 - kb2 + 1
+                     n1 = ln(1, LL)
+                     n2 = ln(2, LL)
+                     call getkbotktop(n1, kb1, kt1)
+                     ktx1 = kt1 - kb1 + 1
+                     call getkbotktop(n2, kb2, kt2)
+                     ktx2 = kt2 - kb2 + 1
                      Ltx = Lt - Lb + 1
 
                      volukk(1:Ltx) = 0.0_dp
 
                      do L = Lb, Lt
-                        k1 = ln(1, L); k2 = ln(2, L); L1 = L - Lb + 1
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
+                        L1 = L - Lb + 1
                         volukk(L1) = volukk(L1) + ac1 * vol1(k1) + ac2 * vol1(k2)
                      end do
 
@@ -1006,7 +1037,9 @@ contains
                      end do
 
                      do L = Lb, Lt
-                        k1 = ln(1, L); k2 = ln(2, L); L1 = L - Lb + 1
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
+                        L1 = L - Lb + 1
                         if (volukk(L1) > 0) then
                            if (jasfer3D == 1) then
                               qu1 = cs * nod2linx(LL, 1, uqcx(k1), uqcy(k1)) + sn * nod2liny(LL, 1, uqcx(k1), uqcy(k1)) - u1(L) * sqa(k1)
@@ -1022,7 +1055,8 @@ contains
 
                   else if (layertype == LAYTP_Z .and. jahazlayer == 2) then ! lineinterp
 
-                     n1 = ln(1, LL); n2 = ln(2, LL)
+                     n1 = ln(1, LL)
+                     n2 = ln(2, LL)
                      call getkbotktop(n1, kb1, kt1)
                      call getkbotktop(n2, kb2, kt2)
                      hs1 = max(epshs, zws(kt1) - zws(kb1 - 1))
@@ -1031,7 +1065,10 @@ contains
                      ktx01 = kt1 - kb1 + 1
                      ktx02 = kt2 - kb2 + 1
 
-                     volk1(0) = 0.0_dp; quuk1(0) = 0.0_dp; sqak1(0) = 0.0_dp; sigk1(0) = 0.0_dp
+                     volk1(0) = 0.0_dp
+                     quuk1(0) = 0.0_dp
+                     sqak1(0) = 0.0_dp
+                     sigk1(0) = 0.0_dp
                      do k = kb1, kt1
                         volk1(k - kb1 + 1) = volk1(k - kb1) + vol1(k)
                         if (jasfer3D == 1) then
@@ -1043,7 +1080,10 @@ contains
                         sigk1(k - kb1 + 1) = (zws(k) - zws(kb1 - 1)) / hs1
                      end do
 
-                     volk2(0) = 0.0_dp; quuk2(0) = 0.0_dp; sqak2(0) = 0.0_dp; sigk2(0) = 0.0_dp
+                     volk2(0) = 0.0_dp
+                     quuk2(0) = 0.0_dp
+                     sqak2(0) = 0.0_dp
+                     sigk2(0) = 0.0_dp
                      do k = kb2, kt2
                         volk2(k - kb2 + 1) = volk2(k - kb2) + vol1(k)
                         if (jasfer3D == 1) then
@@ -1055,7 +1095,9 @@ contains
                         sigk2(k - kb2 + 1) = (zws(k) - zws(kb2 - 1)) / hs2
                      end do
 
-                     do L = Lb, Lt; Ltx0 = Lt - Lb + 1; siguL(0) = 0.0_dp
+                     do L = Lb, Lt
+                     Ltx0 = Lt - Lb + 1
+                     siguL(0) = 0.0_dp
                         siguL(L - Lb + 1) = hu(L) / hu(LL)
                      end do
 
@@ -1077,13 +1119,18 @@ contains
 
                   else if (layertype == LAYTP_Z .and. jahazlayer == 4) then
 
-                     n1 = ln(1, LL); n2 = ln(2, LL)
-                     call getkbotktop(n1, kb1, kt1); ktx1 = kb1 + kmxn(n1) - 1
-                     call getkbotktop(n2, kb2, kt2); ktx2 = kb2 + kmxn(n2) - 1
+                     n1 = ln(1, LL)
+                     n2 = ln(2, LL)
+                     call getkbotktop(n1, kb1, kt1)
+                     ktx1 = kb1 + kmxn(n1) - 1
+                     call getkbotktop(n2, kb2, kt2)
+                     ktx2 = kb2 + kmxn(n2) - 1
 
                      Ltx = Lt - Lb + 1
 
-                     volukk(1:Ltx) = 0.0_dp; quuk1(1:Ltx) = 0.0_dp; sqak1(1:Ltx) = 0.0_dp
+                     volukk(1:Ltx) = 0.0_dp
+                     quuk1(1:Ltx) = 0.0_dp
+                     sqak1(1:Ltx) = 0.0_dp
 
                      do k = kb1, ln(1, Lb) - 1 ! below Lb n1
                         volukk(1) = volukk(1) + ac1 * vol1(k)
@@ -1106,7 +1153,9 @@ contains
                      end do
 
                      do L = Lb, Lt ! intermediate
-                        k1 = ln(1, L); k2 = ln(2, L); L1 = L - Lb + 1
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
+                        L1 = L - Lb + 1
                         volukk(L1) = volukk(L1) + ac1 * vol1(k1) + ac2 * vol1(k2)
                         if (jasfer3D == 1) then
                            quuk1(L1) = quuk1(L1) + ac1 * (cs * nod2linx(LL, 1, uqcx(k1), uqcy(k1)) + sn * nod2liny(LL, 1, uqcx(k1), uqcy(k1))) + &
@@ -1158,7 +1207,8 @@ contains
                   baik2 = bai(ln(2, LL))
                   do L = Lb, Lt
                      advel = 0 ! advi (1/s), adve (m/s2)
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      qu1 = 0.0_dp
                      if (vol1(k1) > 0) then
                         qu1 = quk1(1, L - Lb + 1) * ac1 * baik1
@@ -1186,7 +1236,8 @@ contains
                else if (iadv(LL) == 44) then
 
                   do L = Lb, Lt
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      if (vol1(k1) > 0) then
                         if (jasfer3D == 1) then
                            qu1 = cs * nod2linx(LL, 1, uqcx(k1), uqcy(k1)) + sn * nod2liny(LL, 1, uqcx(k1), uqcy(k1)) - u1(L) * sqa(k1)

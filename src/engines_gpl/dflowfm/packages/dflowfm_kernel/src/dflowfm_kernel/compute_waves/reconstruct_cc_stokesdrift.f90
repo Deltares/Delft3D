@@ -57,11 +57,13 @@ contains
       integer :: L, LL, Lb, Lt, k1, k2
       real(kind=dp) :: ustL
 
-      ust_x = 0.0_dp; ust_y = 0.0_dp
+      ust_x = 0.0_dp
+      ust_y = 0.0_dp
 
       if (kmx == 0) then
          do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             ustL = ustokes(L)
             ust_x(k1) = ust_x(k1) + wcx1(L) * ustL
             ust_x(k2) = ust_x(k2) + wcx2(L) * ustL
@@ -72,7 +74,8 @@ contains
          do LL = 1, lnx
             call getLbotLtopmax(LL, Lb, Lt)
             do L = Lb, Lt
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                ustL = ustokes(L)
                ust_x(k1) = ust_x(k1) + wcx1(LL) * ustL
                ust_x(k2) = ust_x(k2) + wcx2(LL) * ustL

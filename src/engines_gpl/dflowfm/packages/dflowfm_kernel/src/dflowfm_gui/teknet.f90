@@ -143,10 +143,10 @@ contains
                K2 = KN(2, L)
                if (K1 /= 0 .and. K2 /= 0) then
                   if (INVIEW(XK(K1), YK(K1)) .or. INVIEW(XK(K2), YK(K2))) then
-                     call MOVABS(XK(K1), YK(K1)); 
+                     call MOVABS(XK(K1), YK(K1))
                      call LNABS(XK(K2), YK(K2))
                      call SETLINKCOLOUR(L, 1)
-                     call MOVABS(XK(K1), YK(K1)); 
+                     call MOVABS(XK(K1), YK(K1))
                      call CIR(1.2_dp * rcir)
                      call LNABS(XK(K2), YK(K2))
                      call CIR(1.2_dp * rcir)

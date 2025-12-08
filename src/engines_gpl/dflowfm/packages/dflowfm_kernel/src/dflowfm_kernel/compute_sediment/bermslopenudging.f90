@@ -62,7 +62,8 @@ contains
       if (jawave > NO_WAVES) then
          do L = 1, lnx
             if (hu(L) < epshu) cycle
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             hwavu = max(hwav(k1), hwav(k2))
             if (hwavu > bermslopegamma * hu(L)) then
                bermslopeindex(L) = .true.
@@ -91,7 +92,8 @@ contains
          if (wu_mor(L) == 0) cycle
          if (.not. bermslopeindexbed(L) .and. .not. bermslopeindexsus(L)) cycle
          !
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          !
          ! Transports positive outgoing
          !

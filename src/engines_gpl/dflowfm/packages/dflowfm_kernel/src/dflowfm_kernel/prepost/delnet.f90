@@ -64,7 +64,8 @@ contains
 
       real(kind=dp) :: XL, YL
 
-      inhul = -1; inall = 1
+      inhul = -1
+      inall = 1
 
       if (JASAVE == 1) call SAVENET()
 
@@ -80,11 +81,13 @@ contains
       if (jadelnetlinktyp > 0) then
          do L = 1, numL
             if (kn(3, L) == jadelnetlinktyp) then
-               k1 = kn(1, L); k2 = kn(2, L)
+               k1 = kn(1, L)
+               k2 = kn(2, L)
                call half(xk(k1), yk(k1), xk(k2), yk(k2), xL, yL, jsferic, jasfer3D)
                call DBPINPOL(XL, YL, INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
                if (inhul == 1) then
-                  kn(1, L) = 0; kn(2, L) = 0
+                  kn(1, L) = 0
+                  kn(2, L) = 0
                end if
             end if
          end do
@@ -100,7 +103,8 @@ contains
          call restorepol()
 
          do L = 1, NUML
-            K1 = KN(1, L); K2 = KN(2, L)
+            K1 = KN(1, L)
+            K2 = KN(2, L)
             if (K1 /= 0 .and. K2 /= 0) then
                ! Delete links IF all of the cells they participate in are in pol.
                if (jacheckcells == 1 .and. (kn(3, L) == 0 .or. kn(3, L) == 2)) then
@@ -108,7 +112,8 @@ contains
                      inall = 1 ! todo: check als LNN(L) == 0
                      do ip = 1, LNN(L)
                         n = netcell(LNE(ip, L))%n
-                        XL = 0.0_dp; YL = 0.0_dp
+                        XL = 0.0_dp
+                        YL = 0.0_dp
                         do ic = 1, n
                            XL = XL + XK(netcell(LNE(ip, L))%nod(ic))
                            YL = YL + YK(netcell(LNE(ip, L))%nod(ic))
@@ -128,16 +133,20 @@ contains
                      call DBPINPOL(XL, YL, inall, dmiss, JINS, NPL, xpl, ypl, zpl)
                   end if
                   if (inall == 1) then
-                     KN(1, L) = 0; KC(K1) = 0
-                     KN(2, L) = 0; KC(K2) = 0
+                     KN(1, L) = 0
+                     KC(K1) = 0
+                     KN(2, L) = 0
+                     KC(K2) = 0
                   end if
                else ! Old behaviour: just check by link mids.
                   XL = 0.5_dp * (XK(K1) + XK(K2))
                   YL = 0.5_dp * (YK(K1) + YK(K2))
                   call DBPINPOL(XL, YL, INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
                   if (INHUL == 1) then
-                     KN(1, L) = 0; KC(K1) = 0
-                     KN(2, L) = 0; KC(K2) = 0
+                     KN(1, L) = 0
+                     KC(K1) = 0
+                     KN(2, L) = 0
+                     KC(K2) = 0
                   end if
                end if
             else if (K1 /= 0) then
@@ -145,16 +154,20 @@ contains
                YL = YK(K1)
                call DBPINPOL(XL, YL, INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
                if (INHUL == 1) then
-                  KN(1, L) = 0; KC(K1) = 0
-                  KN(2, L) = 0; KC(K2) = 0
+                  KN(1, L) = 0
+                  KC(K1) = 0
+                  KN(2, L) = 0
+                  KC(K2) = 0
                end if
             else if (K2 /= 0) then
                XL = XK(K2)
                YL = YK(K2)
                call DBPINPOL(XL, YL, INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
                if (INHUL == 1) then
-                  KN(1, L) = 0; KC(K1) = 0
-                  KN(2, L) = 0; KC(K2) = 0
+                  KN(1, L) = 0
+                  KC(K1) = 0
+                  KN(2, L) = 0
+                  KC(K2) = 0
                end if
             end if
 
@@ -165,7 +178,8 @@ contains
          do k = 1, numk
             call DBPINPOL(Xk(k), Yk(k), INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
             if (inhul == 1) then
-               xk(k) = dmiss; yk(k) = dmiss
+               xk(k) = dmiss
+               yk(k) = dmiss
             end if
          end do
 
@@ -186,13 +200,15 @@ contains
 
          Lc = 0
          do L = 1, numL
-            k1 = kn(1, L); k2 = kn(2, L)
+            k1 = kn(1, L)
+            k2 = kn(2, L)
             if (kc(k1) == 1 .and. kc(k2) == 1) then
                Lc(L) = 1
             end if
          end do
 
-         allocate (LC2(numL)); Lc2(1:numL) = Lc(1:numL)
+         allocate (LC2(numL))
+         Lc2(1:numL) = Lc(1:numL)
 
          do n = 1, nump
 
@@ -201,7 +217,8 @@ contains
                L = abs(netcell(n)%lin(nn))
                if (L > 0) then
                   if (Lc(L) == 0) then
-                     nzero = 1; exit
+                     nzero = 1
+                     exit
                   end if
                end if
             end do
@@ -218,7 +235,8 @@ contains
 
          do L = 1, numL
             if (LC2(L) == 1) then
-               kn(1, L) = 0; kn(2, L) = 0
+               kn(1, L) = 0
+               kn(2, L) = 0
             end if
          end do
 
@@ -234,7 +252,8 @@ contains
             if (nmk(k) == 1) then
                L = nod(k)%lin(1)
                if (kn(3, L) == 2) then
-                  xk(k) = dmiss; yk(k) = dmiss
+                  xk(k) = dmiss
+                  yk(k) = dmiss
                end if
             end if
          end do

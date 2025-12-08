@@ -182,7 +182,8 @@ contains
 
             call restoregrd()
 
-            orient = orient + 1; if (orient > 4) orient = orient - 4
+            orient = orient + 1
+            if (orient > 4) orient = orient - 4
          else
             exit
          end if

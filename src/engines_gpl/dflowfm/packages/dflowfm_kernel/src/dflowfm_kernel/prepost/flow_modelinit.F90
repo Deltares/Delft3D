@@ -526,7 +526,8 @@ contains
       if (stm_included .and. jased > 0) then
          taub = 0.0_dp
          do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             taub(k1) = taub(k1) + wcl(1, L) * taubxu(L)
             taub(k2) = taub(k2) + wcl(2, L) * taubxu(L)
          end do

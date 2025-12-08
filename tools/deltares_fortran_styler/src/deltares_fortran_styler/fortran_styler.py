@@ -31,16 +31,19 @@ try:
     from deltares_fortran_styler.file_processor import FileProcessor
     from deltares_fortran_styler.double_precision_converter import DoublePrecisionConverter
     from deltares_fortran_styler.array_delimiter_converter import ArrayDelimiterConverter
+    from deltares_fortran_styler.semicolon_separator_converter import SemicolonSeparatorConverter
 except ImportError:
     from file_processor import FileProcessor
     from double_precision_converter import DoublePrecisionConverter
     from array_delimiter_converter import ArrayDelimiterConverter
+    from semicolon_separator_converter import SemicolonSeparatorConverter
 
 
 # Registry of available converters
 AVAILABLE_CONVERTERS = {
     'double_precision': DoublePrecisionConverter,
     'array_delimiter': ArrayDelimiterConverter,
+    'semicolon_separator': SemicolonSeparatorConverter,
 }
 
 
@@ -76,8 +79,9 @@ Examples:
   python fortran_styler.py --converters double_precision --directory src/
 
 Available converters:
-  double_precision  - Convert double precision literals and declarations
-  array_delimiter   - Convert old-style array constructors (/ /) to [...]
+  double_precision    - Convert double precision literals and declarations
+  array_delimiter     - Convert old-style array constructors (/ /) to [...]
+  semicolon_separator - Split semicolon-separated statements onto separate lines
 
 By default, all converters are enabled. Use --converters to specify a subset.
 

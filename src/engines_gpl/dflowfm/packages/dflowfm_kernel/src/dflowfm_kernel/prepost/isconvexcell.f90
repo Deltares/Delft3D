@@ -64,8 +64,10 @@ contains
       N = netcell(k)%N
 
       do i = 1, N
-         ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
-         ip2 = i + 2; if (ip2 > N) ip2 = ip2 - N
+         ip1 = i + 1
+         if (ip1 > N) ip1 = ip1 - N
+         ip2 = i + 2
+         if (ip2 > N) ip2 = ip2 - N
          k1 = netcell(k)%nod(i)
          k2 = netcell(k)%nod(ip1)
          k3 = netcell(k)%nod(ip2)

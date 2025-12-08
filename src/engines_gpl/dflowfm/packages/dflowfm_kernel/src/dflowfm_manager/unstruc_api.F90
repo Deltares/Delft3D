@@ -157,7 +157,8 @@ contains
       if (index(rec, 'CHOICES') > 0) then ! first check your choices
          L1 = index(rec, '=') + 1
          read (rec(L1:), *, err=888) NUM, NWHAT
-         MODE = 1; KEY = 3
+         MODE = 1
+         KEY = 3
          call CHOICES(NUM, NWHAT, KEY)
       end if
 
@@ -178,14 +179,22 @@ contains
 
          if (ncrs > 0) then
 
-            QQQ = crs(1)%sumvalcur(1); i = 1
-            write (tex(i:), '(i2.0)') kmx; i = i + 5
-            write (tex(i:), '(i2.0)') numtopsig; i = i + 5
-            write (tex(i:), '(i2.0)') janumtopsiguniform; i = i + 5
-            write (tex(i:), '(i2.0)') keepzlayeringatbed; i = i + 5
-            write (tex(i:), '(i2.0)') ihuz; i = i + 5
-            write (tex(i:), '(i2.0)') ihuzcsig; i = i + 5
-            write (tex(i:), '(F5.2)') (time1 - tstart_user) / max(1.0_dp, dnt); i = i + 5
+            QQQ = crs(1)%sumvalcur(1)
+            i = 1
+            write (tex(i:), '(i2.0)') kmx
+            i = i + 5
+            write (tex(i:), '(i2.0)') numtopsig
+            i = i + 5
+            write (tex(i:), '(i2.0)') janumtopsiguniform
+            i = i + 5
+            write (tex(i:), '(i2.0)') keepzlayeringatbed
+            i = i + 5
+            write (tex(i:), '(i2.0)') ihuz
+            i = i + 5
+            write (tex(i:), '(i2.0)') ihuzcsig
+            i = i + 5
+            write (tex(i:), '(F5.2)') (time1 - tstart_user) / max(1.0_dp, dnt)
+            i = i + 5
 
             call upotukinueaa(upot, ukin, ueaa)
             write (mout, '(A30,A, 5F14.3)') filnam(1:30), ' :    '//trim(tex)//' : ', QQQ, ueaa, upot, ukin, upot + ukin

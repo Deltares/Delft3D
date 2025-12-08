@@ -129,7 +129,8 @@ contains
 
       if (allocated(ngs)) deallocate (ngs) ! Guus to Saad
       ! allocate(ngs(nogauss0+nocg0) )
-      allocate (ngs(nodtot)); ngs = 0
+      allocate (ngs(nodtot))
+      ngs = 0
 
       na = 0 ! matrix counter
       if (Noderivedtypes < 5) then
@@ -168,11 +169,14 @@ contains
       integer :: maxmatvecs, n30
       real(kind=dp), intent(in) :: alpha_loc !< ILU (0.0) to MILU (1.0) preconditioning
 
-      NROW = NOCG0; nax = na
+      NROW = NOCG0
+      nax = na
       ! n30  = 30
       n30 = 30
 
-      NN = NROW; mm = n30 * nn; nwk = 2 * mm
+      NN = NROW
+      mm = n30 * nn
+      nwk = 2 * mm
 
       if (allocated(IA)) then
          deallocate (iao, jao, ia, ja, perm, kolrs, jlu, ju, iw)
@@ -184,8 +188,14 @@ contains
                 perm(nn), kolrs(nn), &
                 jlu(mm), ju(nn), iw(nn * 3), stat=ierr)
       call aerr('iao(nn+1)', IERR, mm + 7 * nn + 2 * na)
-      iao = 0; jao = 0; ia = 0; ja = 0
-      jlu = 0; ju = 0; iw = 0; perm = 0
+      iao = 0
+      jao = 0
+      ia = 0
+      ja = 0
+      jlu = 0
+      ju = 0
+      iw = 0
+      perm = 0
 
       allocate (ao(na), a(na), solo(nn), rhso(nn), sol(nn), &
                 sol0(nn), rhs(nn), alu(mm), stat=ierr)
@@ -200,8 +210,12 @@ contains
       end do
       call aerr('wk(nwk)', IERR, nwk)
 
-      ao = 0.0_dp; a = 0.0_dp
-      solo = 0.0_dp; rhs = 0.0_dp; alu = 0.0_dp; wk = 0.0_dp
+      ao = 0.0_dp
+      a = 0.0_dp
+      solo = 0.0_dp
+      rhs = 0.0_dp
+      alu = 0.0_dp
+      wk = 0.0_dp
       sol = 0.0_dp
 
       ipar = 0 ! initialize all params to 0

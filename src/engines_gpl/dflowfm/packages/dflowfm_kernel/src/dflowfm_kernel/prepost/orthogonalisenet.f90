@@ -495,9 +495,12 @@ contains
                   end if
                   atpf1_loc = 1.0_dp - atpf_loc
 
-                  x0 = 0.0_dp; y0 = 0.0_dp
-                  Dx0 = 0.0_dp; Dy0 = 0.0_dp
-                  x00 = xk1(k); y00 = yk1(k)
+                  x0 = 0.0_dp
+                  y0 = 0.0_dp
+                  Dx0 = 0.0_dp
+                  Dy0 = 0.0_dp
+                  x00 = xk1(k)
+                  y00 = yk1(k)
                   w0 = 0.0_dp
                   DUM = 0.0_dp
 
@@ -998,26 +1001,42 @@ contains
             icL = lne(1, ilink) ! left neighboring cell
 
 !        find index of nodes k0 and k1 w.r.t. cell kL in netcell: kk0L and kk1L resp.
-            kk0L = 1; do while (netcell(icL)%nod(kk0L) /= k0); kk0L = kk0L + 1; end do
-            kk1L = 1; do while (netcell(icL)%nod(kk1L) /= k1); kk1L = kk1L + 1; end do
+            kk0L = 1
+            do while (netcell(icL)%nod(kk0L) /= k0)
+            kk0L = kk0L + 1
+            end do
+            kk1L = 1
+            do while (netcell(icL)%nod(kk1L) /= k1)
+            kk1L = kk1L + 1
+            end do
 
             N = netcell(icL)%N
             xL = sum(xk(netcell(icL)%nod(1:N))) / real(max(N, 1), kind=dp)
             yL = sum(yk(netcell(icL)%nod(1:N))) / real(max(N, 1), kind=dp)
 
-            x0 = xk(k0); y0 = yk(k0); 
-            x1 = xk(k1); y1 = yk(k1); 
+            x0 = xk(k0)
+            y0 = yk(k0)
+            x1 = xk(k1)
+            y1 = yk(k1)
 !        contribution to the volume of the left cell
             DvolL = 0.5_dp * ((x0 - xL) * (y1 - yL) - (x1 - xL) * (y0 - yL))
 
 !        Get the (0-1)/(L-R) frame in the right orientation by swapping nodes 0 and 1 if necessary
 !        the contribution to volume of cell L needs to be positive
             if (DvolL < 0.0_dp) then ! swap nodes 0 and 1
-               kdum = k0; k0 = k1; k1 = kdum
-               kdum = kk0L; kk0L = kk1L; kk1L = kdum
+               kdum = k0
+               k0 = k1
+               k1 = kdum
+               kdum = kk0L
+               kk0L = kk1L
+               kk1L = kdum
 
-               xdum = x0; x0 = x1; x1 = xdum
-               xdum = y0; y0 = y1; y1 = xdum
+               xdum = x0
+               x0 = x1
+               x1 = xdum
+               xdum = y0
+               y0 = y1
+               y1 = xdum
 
                DvolL = -DvolL
             end if
@@ -1057,8 +1076,14 @@ contains
                end if
 
 !           find index of nodes k0 and k1 w.r.t. cell kL in netcell: kk0L and kk1L resp.
-               kk0R = 1; do while (netcell(icR)%nod(kk0R) /= k0 .and. kk0R < N); kk0R = kk0R + 1; end do
-               kk1R = 1; do while (netcell(icR)%nod(kk1R) /= k1 .and. kk1R < N); kk1R = kk1R + 1; end do
+               kk0R = 1
+               do while (netcell(icR)%nod(kk0R) /= k0 .and. kk0R < N)
+               kk0R = kk0R + 1
+               end do
+               kk1R = 1
+               do while (netcell(icR)%nod(kk1R) /= k1 .and. kk1R < N)
+               kk1R = kk1R + 1
+               end do
 
                if (netcell(icR)%nod(kk0R) /= k0 .or. netcell(icR)%nod(kk1R) /= k1) then
                   call qnerror('orthonet_compweights_vol: node not found', ' ', ' ')
@@ -2076,16 +2101,22 @@ contains
 
 !        note: linkL and linkR refer to the directly connected left and right nodes
             linkL = ic + 1 ! by construction
-            linkR = linkL + 1; if (linkR > adm%Ncell + 1) linkR = linkR - adm%Ncell
+            linkR = linkL + 1
+            if (linkR > adm%Ncell + 1) linkR = linkR - adm%Ncell
             RlinkL = sqrt(xi(linkL)**2 + eta(linkL)**2 + 1.0e-16_dp)
             RlinkR = sqrt(xi(linkR)**2 + eta(linkR)**2 + 1.0e-16_dp)
             cDPhi = (xi(linkR) * xi(linkL) + eta(linkR) * eta(linkL)) / (RlinkL * RlinkR)
 
             N = netcell(adm%icell(ic))%n
-            k = 1; do while (netcell(adm%icell(ic))%nod(k) /= k0 .and. k < N); k = k + 1; end do
+            k = 1
+            do while (netcell(adm%icell(ic))%nod(k) /= k0 .and. k < N)
+            k = k + 1
+            end do
 
-            kL = k - 1; if (kL < 1) kL = kL + N
-            kR = k + 1; if (kR > N) kR = kR - N
+            kL = k - 1
+            if (kL < 1) kL = kL + N
+            kR = k + 1
+            if (kR > N) kR = kR - N
             if (N == 3) then ! triangles: circumcenter
                alpha = 1.0_dp / (1.0_dp - cDphi**2 + 1e-8)
                alphaL = 0.5_dp * (1.0_dp - RlinkL / RlinkR * cDphi) * alpha
@@ -2153,7 +2184,7 @@ contains
                alpha = xiL * xi1 + etaL * eta1
                alpha = alpha / (xi1**2 + eta1**2)
 
-               alpha_x = alpha; 
+               alpha_x = alpha
                if (alpha_x /= 0.5_dp) then
                   continue
                end if
@@ -2431,7 +2462,8 @@ contains
 !         if ( nmk(k1).eq.4 .and. nb(k1).eq.1 ) L_is_square=.true.
 
 !        compute the optimal angle theta_square, if applicable
-            kL = kk - 1; if (kL < 1) kL = kL + adm%Ncell
+            kL = kk - 1
+            if (kL < 1) kL = kL + adm%Ncell
 !        Nquad is the number of quads not connected to k1
             if (L_is_square) then
                if (nb(k1) == 1 .or. nb(k1) == 4) then ! inner node
@@ -2488,7 +2520,8 @@ contains
 
 !        account for 'square' angles
             if (L_is_square_cell(kk) .or. Nnodes == 4) then
-               kR = kk + 2; if (kR > adm%Ncell + 1) kR = kR - adm%Ncell
+               kR = kk + 2
+               if (kR > adm%Ncell + 1) kR = kR - adm%Ncell
                lblink = (lnn(nod(k0)%lin(kk)) == 1)
                Dphi = opt_angle(Nnodes, theta_square(kk + 1), theta_square(kR), lblink)
                if (Nnodes == 3) then
@@ -2593,7 +2626,8 @@ contains
             Nnodes = netcell(adm%icell(ic))%n
             Dphi0 = opt_angle(Nnodes)
             if (L_is_square_cell(ic)) then
-               kR = ic + 2; if (kR > adm%Ncell + 1) kR = kR - adm%Ncell
+               kR = ic + 2
+               if (kR > adm%Ncell + 1) kR = kR - adm%Ncell
                lblink = (lnn(nod(k0)%lin(ic)) == 1)
                Dphi0 = opt_angle(Nnodes, theta_square(ic + 1), theta_square(kR), lblink)
                if (Nnodes == 3) Dphi0 = dmutri_square * Dphi0
@@ -2622,8 +2656,10 @@ contains
             Dtheta = 2.0_dp * pi / real(netcell(adm%icell(ic))%n, kind=dp)
 
 !        determine the orientation of the cell (necessary for folded cells)
-            kp1 = k + 1; if (kp1 > Nnodes) kp1 = kp1 - Nnodes
-            km1 = k - 1; if (km1 < 1) km1 = km1 + Nnodes
+            kp1 = k + 1
+            if (kp1 > Nnodes) kp1 = kp1 - Nnodes
+            km1 = k - 1
+            if (km1 < 1) km1 = km1 + Nnodes
             if (adm%kkc(km1, ic) - adm%kkc(kp1, ic) == -1 .or. &
                 adm%kkc(km1, ic) - adm%kkc(kp1, ic) == adm%nmk - 1) then
                Dtheta = -Dtheta
@@ -2724,7 +2760,7 @@ contains
                ww2 = 0.0_dp
 !            ww2(1:nmk2(k0)) = ops(ktopo(k0))%ww2(1:nmk2(k0))
 
-               ww2(1:nmk2(k0)) = 1.0_dp; 
+               ww2(1:nmk2(k0)) = 1.0_dp
                ww2(1) = -sum(ww2(2:nmk2(k0)))
 
                u_temp(k0) = -sum(ww2(2:nmk2(k0)) * u_smooth(kk2(2:nmk2(k0), k0))) / ww2(1)

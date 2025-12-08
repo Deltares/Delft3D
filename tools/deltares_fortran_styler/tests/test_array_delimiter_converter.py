@@ -235,3 +235,42 @@ z = (/ 5, 6, 7 /)"""
 
         # Assert
         assert result == text
+
+    def test_regular_paren_inside_array_constructor(self, converter):
+        """Test array constructor with regular closing paren that's not part of /)."""
+        # Arrange - this tests line 73 (i += 1 when paren_depth > 0 after decrement)
+        text = "x = (/ func(), 2 /)"
+        expected = "x = [func(), 2]"
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+
+        # Assert
+        assert was_converted
+        assert result == expected
+
+    def test_unclosed_array_constructor(self, converter):
+        """Test handling of unclosed array constructor (no matching /)."""
+        # Arrange - this tests line 79 (return -1 when no closing found)
+        text = "x = (/ 1, 2, 3"
+        expected = text  # Should remain unchanged
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+
+        # Assert
+        assert not was_converted
+        assert result == expected
+
+    def test_check_long_array_constructor(self, converter):
+        """Test check_text with long array that gets truncated in snippet."""
+        # Arrange - this tests line 143 (snippet += "...")
+        text = "x = (/ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 /)"
+
+        # Act
+        issues = converter.check_text(text)
+
+        # Assert
+        assert len(issues) == 1
+        assert issues[0].error_code == "STYLE004"
+        assert "..." in issues[0].original_text  # Snippet should be truncated

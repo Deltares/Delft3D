@@ -361,7 +361,8 @@ contains
                      if (wu_mor(Lx) == 0.0_dp) cycle
                      ac1 = acL(Lx)
                      ac2 = 1_dp - ac1
-                     k1 = ln(1, Lx); k2 = ln(2, Lx)
+                     k1 = ln(1, Lx)
+                     k2 = ln(2, Lx)
                      call getLbotLtop(Lx, Lb, Lt)
                      if (Lt < Lb) cycle
                      !
@@ -436,7 +437,8 @@ contains
                            !
                            ! Get concentration in layer above this layer
                            !
-                           kf1 = ln(1, ka + 1); kf2 = ln(2, ka + 1)
+                           kf1 = ln(1, ka + 1)
+                           kf2 = ln(2, ka + 1)
                            r1avg = ac1 * constituents(ll, kf1) + ac2 * constituents(ll, kf2)
                            !
                            ! If there is a significant concentration gradient, and significant
@@ -582,7 +584,10 @@ contains
       if (istat == 0) allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
       if (istat == 0) allocate (branInIDLn(network%nds%Count), stat=istat)
 
-      qb_out(:) = 0_dp; width_out(:) = 0_dp; sb_in(:, :) = 0_dp; sb_dir(:, :, :) = 1
+      qb_out(:) = 0_dp
+      width_out(:) = 0_dp
+      sb_in(:, :) = 0_dp
+      sb_dir(:, :, :) = 1
       BranInIDLn(:) = 0
 
    !!
@@ -1283,7 +1288,8 @@ contains
             totfixfrac = 0_dp
             !
             do L = 1, nd(nm)%lnx
-               k1 = ln(1, abs(nd(nm)%ln(L))); k2 = ln(2, abs(nd(nm)%ln(L)))
+               k1 = ln(1, abs(nd(nm)%ln(L)))
+               k2 = ln(2, abs(nd(nm)%ln(L)))
                if (k2 == nm) then
                   knb = k1
                else
@@ -1326,7 +1332,8 @@ contains
                   ! process.
                   !
                   do L = 1, nd(nm)%lnx
-                     k1 = ln(1, abs(nd(nm)%ln(L))); k2 = ln(2, abs(nd(nm)%ln(L)))
+                     k1 = ln(1, abs(nd(nm)%ln(L)))
+                     k2 = ln(2, abs(nd(nm)%ln(L)))
                      Lf = abs(nd(nm)%ln(L))
                      ! cutcells
                      if (wu_mor(Lf) == 0_dp) cycle

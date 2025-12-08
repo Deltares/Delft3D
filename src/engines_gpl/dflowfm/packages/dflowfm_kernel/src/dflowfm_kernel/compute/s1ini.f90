@@ -348,7 +348,8 @@ contains
 
          do LL = 1, lnx
             if (hu(LL) > 0) then
-               k1 = ln(1, LL); k2 = ln(2, LL)
+               k1 = ln(1, LL)
+               k2 = ln(2, LL)
 
                do L = Lbot(LL), Ltop(LL)
 

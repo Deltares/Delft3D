@@ -104,10 +104,12 @@ contains
             allocate (nd(k1)%x(nn), nd(k1)%y(nn), stat=ierr)
             call aerr('nd(k1)%x(nn), nd(k1)%y(nn)', ierr, nn * 2)
 
-            k3 = kn(1, L); k4 = kn(2, L)
+            k3 = kn(1, L)
+            k4 = kn(2, L)
             if (kn(3, L) == 2) then ! in 2D mirror cell
                call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xz(k1), yz(k1), xce2, yce2, nd(k1)%x, nd(k1)%y)
-               xzw(k1) = xz(k1); yzw(k1) = yz(k1)
+               xzw(k1) = xz(k1)
+               yzw(k1) = yz(k1)
 
                if (izbndpos == 0) then ! as in D3DFLOW
 
@@ -137,8 +139,10 @@ contains
                   ln(2, Lf) = abs(lne(1, L)) ! this overrides previous k2
                   kcu(Lf) = -1
                   kcs(k1) = -1
-                  nd(k1)%x = xz(k1); nd(k1)%y = yz(k1) ! todo, naar allocateandset1D nodestuff
-                  xzw(k1) = xz(k1); yzw(k1) = yz(k1)
+                  nd(k1)%x = xz(k1)
+                  nd(k1)%y = yz(k1) ! todo, naar allocateandset1D nodestuff
+                  xzw(k1) = xz(k1)
+                  yzw(k1) = yz(k1)
                else if (is_1d_boundary_candidate(L, 2)) then
                   if (izbndpos == 0) then ! as in D3DFLOW
 !               xz(k1) = 2d0*xk(k4) - xk(k3)
@@ -154,8 +158,10 @@ contains
                   ln(2, Lf) = abs(lne(2, L))
                   kcu(Lf) = -1
                   kcs(k1) = -1
-                  nd(k1)%x = xz(k1); nd(k1)%y = yz(k1) ! todo, naar allocateandset1D nodestuff
-                  xzw(k1) = xz(k1); yzw(k1) = yz(k1)
+                  nd(k1)%x = xz(k1)
+                  nd(k1)%y = yz(k1) ! todo, naar allocateandset1D nodestuff
+                  xzw(k1) = xz(k1)
+                  yzw(k1) = yz(k1)
                end if
             end if
 
@@ -191,10 +197,12 @@ contains
             nn = 4
             allocate (nd(k1)%x(nn), nd(k1)%y(nn), stat=ierr)
             call aerr('nd(k1)%x(nn), nd(k1)%y(nn)', ierr, nn * 2)
-            k3 = kn(1, L); k4 = kn(2, L)
+            k3 = kn(1, L)
+            k4 = kn(2, L)
             if (kn(3, L) == 2) then ! in 2D mirror cell
                call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xz(k1), yz(k1), xce2, yce2, nd(k1)%x, nd(k1)%y)
-               xzw(k1) = xz(k1); yzw(k1) = yz(k1)
+               xzw(k1) = xz(k1)
+               yzw(k1) = yz(k1)
 
                kcu(Lf) = -2
                kcs(k1) = -2
@@ -206,8 +214,10 @@ contains
                   ln(2, Lf) = abs(lne(1, L)) ! this overrides previous k2
                   kcu(Lf) = -1
                   kcs(k1) = -1
-                  nd(k1)%x = xz(k1); nd(k1)%y = yz(k1) ! todo: JN: naar allocateandset1D nodestuff
-                  xzw(k1) = xz(k1); yzw(k1) = yz(k1)
+                  nd(k1)%x = xz(k1)
+                  nd(k1)%y = yz(k1) ! todo: JN: naar allocateandset1D nodestuff
+                  xzw(k1) = xz(k1)
+                  yzw(k1) = yz(k1)
                else if (is_1d_boundary_candidate(L, 2)) then
 !            xz(k1)  = 2d0*xk(k4) - xk(k3)
 !            yz(k1)  = 2d0*yk(k4) - yk(k3)
@@ -215,8 +225,10 @@ contains
                   ln(2, Lf) = abs(lne(2, L))
                   kcu(Lf) = -1
                   kcs(k1) = -1
-                  nd(k1)%x = xz(k1); nd(k1)%y = yz(k1) ! todo: JN: naar allocateandset1D nodestuff
-                  xzw(k1) = xz(k1); yzw(k1) = yz(k1)
+                  nd(k1)%x = xz(k1)
+                  nd(k1)%y = yz(k1) ! todo: JN: naar allocateandset1D nodestuff
+                  xzw(k1) = xz(k1)
+                  yzw(k1) = yz(k1)
                end if
             end if
 
@@ -242,10 +254,12 @@ contains
          allocate (nd(k1)%x(nn), nd(k1)%y(nn), stat=ierr)
          call aerr('nd(k1)%x(nn), nd(k1)%y(nn)', ierr, nn * 2)
 
-         k3 = kn(1, L); k4 = kn(2, L)
+         k3 = kn(1, L)
+         k4 = kn(2, L)
          if (kn(3, L) /= 1) then ! in 2D mirror cell
             call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xz(k1), yz(k1), xce2, yce2, nd(k1)%x, nd(k1)%y)
-            xzw(k1) = xz(k1); yzw(k1) = yz(k1)
+            xzw(k1) = xz(k1)
+            yzw(k1) = yz(k1)
 
             !xz(k1)  = 0.5d0*( xk(k3) + xk(k4 ) )
             !yz(k1)  = 0.5d0*( yk(k3) + yk(k4 ) )
@@ -282,7 +296,8 @@ contains
                      k1 = ln(1, Lf)
                      k2 = ln(2, Lf)
 
-                     k3 = kn(1, L); k4 = kn(2, L)
+                     k3 = kn(1, L)
+                     k4 = kn(2, L)
                      ! NOTE: UNST-1324: do this once more, so we have the "probe" point xce2, yce2 for the proper intersection.
                      ! TODO: AvD: remove dupliacy by merging this loop 1:nopenbndsect and the preceding loop 1:nbnd1d2d.
                      call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xz(k1), yz(k1), xce2, yce2, nd(k1)%x, nd(k1)%y)

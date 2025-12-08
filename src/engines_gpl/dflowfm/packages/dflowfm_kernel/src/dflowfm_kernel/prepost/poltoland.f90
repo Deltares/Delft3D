@@ -54,13 +54,15 @@ contains
       integer :: l, j
       real(kind=dp) :: xp, yp, xpn, ypn, dis, rL
 
-      IN = 1; if (L2 < L1) IN = -1
+      IN = 1
+      if (L2 < L1) IN = -1
       do L = L1, L2, IN
          XP = XPL(L)
          if (XP /= XYMIS) then
             YP = YPL(L)
             call TOLAND(XP, YP, 1, MXLAN, 1, xpn, ypn, dis, j, rL)
-            XPL(L) = xpn; YPL(L) = ypn
+            XPL(L) = xpn
+            YPL(L) = ypn
          end if
       end do
 

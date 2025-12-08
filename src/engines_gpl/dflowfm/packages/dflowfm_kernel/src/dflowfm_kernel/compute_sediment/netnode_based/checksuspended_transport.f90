@@ -92,7 +92,8 @@ contains
             hdune = 0.0_dp
             aref = max(dks, hdune) ! reference height is max of (nikuradse and half dune height) (m)
 
-            rhosed = 2650.0_dp; rhomean = 1000.0_dp
+            rhosed = 2650.0_dp
+            rhomean = 1000.0_dp
             rhodelta = (rhosed - rhomean) / rhomean ! rhodelta = (s-1), s=rhosed/rhomean
             sqsgd50 = sqrt(rhodelta * ag * D50)
             Temp = 20.0_dp

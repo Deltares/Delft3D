@@ -234,14 +234,17 @@ contains
                   fuL = fu(L)
                   ruL = ru(L)
                else
-                  fuL = 0.0_dp; ruL = 0.0_dp; huL = 0.0_dp
+                  fuL = 0.0_dp
+                  ruL = 0.0_dp
+                  huL = 0.0_dp
                   do LL = Lbot(L), Ltop(L)
                      hep = max(epshu, hu(L) - hu(L - 1))
                      fuL = fuL + fu(LL) * hep
                      ruL = ruL + ru(LL) * hep
                      huL = huL + hep
                   end do
-                  ful = fuL / huL; ruL = ruL / huL
+                  ful = fuL / huL
+                  ruL = ruL / huL
                end if
                cffu = ccr(Lv2(L)) / fuL
                bbr(kb) = -cffu * (fuL + sqrtgfh)

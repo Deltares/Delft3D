@@ -420,3 +420,83 @@ end module"""
         # literal should be on line 5
         literal_issue = [i for i in issues if i.error_code == "STYLE001"][0]
         assert literal_issue.line_number == 5, f"Expected line 5, got {literal_issue.line_number}"
+
+    def test_dble_with_unmatched_parenthesis(self, converter):
+        """Test handling of dble() with unmatched parenthesis."""
+        # Arrange - this tests line 147 (unmatched parenthesis, keep original)
+        text = "x = dble(5"
+        expected = text  # Should remain unchanged
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+
+        # Assert
+        assert not was_converted
+        assert result == expected
+
+    def test_literal_in_string_returns_unchanged(self, converter):
+        """Test that literal in string returns unchanged match."""
+        # Arrange - this tests line 176 (return match.group(0))
+        text = "msg = '1.0d0 is a literal'"
+        expected = text
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+
+        # Assert
+        assert not was_converted
+        assert result == expected
+
+    def test_add_imports_when_not_converted(self, converter):
+        """Test that add_required_imports returns text unchanged when no conversion was made."""
+        # Arrange - this tests line 235 (return text when not was_converted)
+        text = "real(kind=dp) :: x = 1.0_dp"
+
+        # Act
+        result = converter.add_required_imports(text, was_converted=False)
+
+        # Assert
+        assert result == text
+
+    def test_add_imports_when_import_already_exists(self, converter):
+        """Test that add_required_imports returns text unchanged when import already exists."""
+        # Arrange - this tests line 239 (return text when import exists)
+        text = """module test_module
+   use precision, only: dp
+   implicit none
+   double precision :: x
+   x = 1.0d0
+end module test_module"""
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+        result = converter.add_required_imports(result, was_converted)
+
+        # Assert
+        assert was_converted
+        # Text should have conversions but not add duplicate import
+        assert result.count("use precision, only: dp") == 1
+
+    def test_module_with_content_after_uses_before_implicit(self, converter):
+        """Test import insertion with existing use statements and content before implicit none."""
+        # Arrange - this tests line 313 branch more thoroughly
+        text = """module test
+   use mod1
+   private
+   implicit none
+   double precision :: x
+   x = 1.0d0
+end module test"""
+
+        # Act
+        result, was_converted = converter.convert_text(text)
+        result = converter.add_required_imports(result, was_converted)
+
+        # Assert
+        assert was_converted
+        assert "use mod1\n" in result
+        assert "use precision, only: dp\n" in result
+        # Precision import should be inserted before "private"
+        precision_pos = result.find("use precision, only: dp")
+        private_pos = result.find("private")
+        assert precision_pos < private_pos

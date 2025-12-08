@@ -59,7 +59,8 @@ contains
 
       if (japerim == 0) then
          calcConv = 0
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
 
          hpr = max(0.0_dp, s1(k1) - bl(k1)) ! this statement is called most nr of times through waterlevel iteration
          if (hpr > 0) then !

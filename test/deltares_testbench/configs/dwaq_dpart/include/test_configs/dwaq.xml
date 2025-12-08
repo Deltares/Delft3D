@@ -1,7 +1,7 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e03_f02_c04_statistics" ref="dwaq_default">
         <dependency version="2025-11-11T09:20:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
-        <path version="2025-11-17T08:09:54.514000">e03_waq/f02_hongkong/c04_statistics</path>
+        <path version="2025-12-05T12:32:32.206000">e03_waq/f02_hongkong/c04_statistics</path>
         <maxRunTime>3000.0</maxRunTime>
         <checks>
             <file name="group2-test004.ada" type="NEFIS">

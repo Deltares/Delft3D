@@ -2282,7 +2282,8 @@ contains
             else if (kk1 > 0 .or. kk2 > 0) then
                ! Since we do not know the (global) cell number when one of the nodes is not in the curren domain, we cannot add the link
                ! If both are in an other domain, we simply skip this.
-               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(srcname(numsrc)), ' are not in the same domain. This is not yet supported in DELWAQ output!'; call err_flush()
+               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(srcname(numsrc)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
+               call err_flush()
             end if
          end if
       end do
@@ -2607,7 +2608,8 @@ contains
                do L = 1, lnx
                   call getLbotLtopmax(L, Lb, Lt)
                   do LL = Lb, Lt
-                     k1 = ln(1, LL); k2 = ln(2, LL)
+                     k1 = ln(1, LL)
+                     k2 = ln(2, LL)
                      dv1(k1) = dv1(k1) - q1waq(LL)
                      dv1(k2) = dv1(k2) + q1waq(LL)
                   end do

@@ -95,7 +95,8 @@ contains
       uu = 0.0_dp
       ud = 0.0_dp
       if (velheight) then
-         uu = 0.0_dp; ud = 0.0_dp
+         uu = 0.0_dp
+         ud = 0.0_dp
          do k = 1, nd(il)%lnx
             LL = abs(nd(il)%ln(k))
             if (iadv(LL) /= IADV_GENERAL_STRUCTURE) then ! any non-structure point
@@ -129,8 +130,12 @@ contains
       end if
 
       if (teken < 0) then
-         tem = hdsb; hdsb = husb; husb = tem
-         tem = ud; ud = uu; uu = tem
+         tem = hdsb
+         hdsb = husb
+         husb = tem
+         tem = ud
+         ud = uu
+         uu = tem
       end if
 
    end subroutine flupdofm

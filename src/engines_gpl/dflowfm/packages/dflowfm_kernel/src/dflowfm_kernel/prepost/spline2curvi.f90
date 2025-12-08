@@ -139,7 +139,9 @@ contains
       end if
 
 !  get the properties of the center splines (no angle check)
-      nul = 0; nul1 = 0; nul2 = 0
+      nul = 0
+      nul1 = 0
+      nul2 = 0
       call get_splineprops(nul, nul1, nul2)
 
 !  make the whole first gridline

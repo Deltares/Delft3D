@@ -77,7 +77,9 @@ contains
             sa = 0.0
             ua = 0.0
          end if
-         s(m) = sa; u(m) = ua; xx(m) = xm
+         s(m) = sa
+         u(m) = ua
+         xx(m) = xm
          if (m == 2) then
             call movabs(xm, sa)
          else

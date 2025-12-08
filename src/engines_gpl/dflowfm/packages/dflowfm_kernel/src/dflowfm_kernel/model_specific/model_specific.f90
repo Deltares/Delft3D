@@ -86,7 +86,8 @@ contains
       end if
 
       if (md_ident == 'chezy') then
-         TEX = ' '; ! u=C*sqrt(hi): h=10, i=10-4,  u=C*0.03162277
+         TEX = ' '
+         ! u=C*sqrt(hi): h=10, i=10-4,  u=C*0.03162277
 
          write (TEX, '(A)') 'U_Chezy(60.) = 1.8974 m/s, U_Mann(.025) = 1.8566 m/s, U_WC(.05) = 1.9240 m/s'
          call ICTEXT(trim(TEX), 6, 24, ncolana)
@@ -96,7 +97,8 @@ contains
          call ICTEXT(trim(TEX), 6, 27, 221)
       else if (md_ident == 'equator1d') then
          call SETTEXTSIZEFAC(1.5_dp)
-         TEX = ' '; ! u=C*sqrt(hi): h=10, i=10-4,  u=C*0.03162277
+         TEX = ' '
+         ! u=C*sqrt(hi): h=10, i=10-4,  u=C*0.03162277
 
          !       1        1         2         3         4         5         6         7         8         9
          tex = 'Forced   amplitude =           (m), ndx = 360 , ndt = 360 , cfl =            '
@@ -268,15 +270,19 @@ contains
          open (newunit=lunfil, file='eqa.txt')
       end if
 
-      k1 = ln(1, 1); k2 = ln(2, 1)
+      k1 = ln(1, 1)
+      k2 = ln(2, 1)
       deltax = dbdistance(xz(k1), yz(k1), xz(k2), yz(k2), jsferic, jasfer3D, dmiss)
       call equatorialexact(t, xz, uexa, zexa, ndx, deltax)
 
       if (t == 0.0_dp) then
-         s1(1:ndx) = zexa(1:ndx); s0 = s1
+         s1(1:ndx) = zexa(1:ndx)
+         s0 = s1
          do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
-            u1(L) = 0.5_dp * csu(L) * (uexa(k1) + uexa(k2)); u0 = u1
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            u1(L) = 0.5_dp * csu(L) * (uexa(k1) + uexa(k2))
+            u0 = u1
          end do
       end if
 
@@ -291,7 +297,8 @@ contains
       end if
 
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          if (abs(xz(k1) - xz(k2)) < 180.0_dp) then
             call movabs(xz(k1), zexa(k1))
             call lnabs(xz(k2), zexa(k2))
@@ -330,14 +337,17 @@ contains
       period = 24.0_dp * 60.0_dp * 60.0_dp ! number of seconds in a day
 
       lam = L / nmode
-      per = period / nfreq; Tforce = time1 / per
+      per = period / nfreq
+      Tforce = time1 / per
       k = twopi / lam
       om = twopi / per
 
       ! deltax = dbdistance(0d0,0d0,1d0,0d0)
-      cforc = om / k; cflforced = cforc * dts / deltax
+      cforc = om / k
+      cflforced = cforc * dts / deltax
       ndxforced = lam / deltax
-      ndtforced = per / dts; ndtforced = min(999, ndtforced) ! I4 print safety
+      ndtforced = per / dts
+      ndtforced = min(999, ndtforced) ! I4 print safety
 
       ufac = om / (h * k)
 
@@ -350,12 +360,15 @@ contains
       cm = amm * exp(em * t)
 
       cfree = sqrt(g * h)
-      omfree = -imag(em); TfreeL = twopi / omfree; TFreel = time1 / TfreeL
+      omfree = -imag(em)
+      TfreeL = twopi / omfree
+      TFreel = time1 / TfreeL
       cfree = omfree / k
 
       cflfreeL = cfree * dts / deltax
       ndxfreeL = ndxforced
-      ndtfreeL = ndxfreeL / cflfreeL; ndtfreeL = min(999, ndtfreeL)
+      ndtfreeL = ndxfreeL / cflfreeL
+      ndtfreeL = min(999, ndtfreeL)
 
       reltim = -1.0_dp / dreal(ep) ! relaxation period
       if (time1 > reltim) then
@@ -370,7 +383,8 @@ contains
 
       ! F      = htt*tt/(h*k)
 
-      F = htt * tt0 / (h * k); Zp = -F / k
+      F = htt * tt0 / (h * k)
+      Zp = -F / k
       htt = h * k * F / tt
 
       eiomt = exp((0.0_dp, 1.0_dp) * om * t)
@@ -484,7 +498,8 @@ contains
       do L = 1, lnx
          if (iadv(L) == IADV_SUBGRID_WEIR .or. iadv(L) >= IADV_RAJARATNAM_WEIR .and. iadv(L) <= IADV_VILLEMONTE_WEIR) then
             crestlev = min(bob(1, L), bob(2, L))
-            Lweir = L; exit
+            Lweir = L
+            exit
          end if
       end do
 
@@ -508,7 +523,10 @@ contains
 
       regime = 'subcritial'
 
-      qweirana = 0.0_dp; dE = 0.0_dp; uupstream = 0.0_dp; udownstream = 0.0_dp
+      qweirana = 0.0_dp
+      dE = 0.0_dp
+      uupstream = 0.0_dp
+      udownstream = 0.0_dp
 
       ncgentst = -1
       if (ncgentst > 0) then
@@ -537,18 +555,25 @@ contains
                call findqorifice12(gateheight, crestheight, z1, z2lab, qg12, zg12, regime, num, qcrit)
                ! if (num .ne. 50) then
                qsimple = gateheight * sqrt(2.0_dp * g * (z1 - z3))
-               tim = 1440.0_dp * k - 23 * 60; call seconds_to_datetimestring(datetime, refdat, tim * 60.0_dp)
+               tim = 1440.0_dp * k - 23 * 60
+               call seconds_to_datetimestring(datetime, refdat, tim * 60.0_dp)
                write (mou2, '(A,20F8.3)') datetime, qglab * 10.0_dp, qg * 10.0_dp, qg12 * 10.0_dp, gateheight, crestheight, z1, z3, z2, qglab, qg, qg12, qg / qglab, qg12 / qglab, zg / gateheight, zg12 / gateheight
-               tim = 1440.0_dp * k; call seconds_to_datetimestring(datetime, refdat, tim * 60.0_dp)
+               tim = 1440.0_dp * k
+               call seconds_to_datetimestring(datetime, refdat, tim * 60.0_dp)
                write (mou2, '(A,20F8.3)') datetime, qglab * 10.0_dp, qg * 10.0_dp, qg12 * 10.0_dp, gateheight, crestheight, z1, z3, z2, qglab, qg, qg12, qg / qglab, qg12 / qglab, zg / gateheight, zg12 / gateheight
                ! endif
             end do
 
          end if
 
-         z1 = zupstream; z3 = zdownstream; qg = 1.0_dp
+         z1 = zupstream
+         z3 = zdownstream
+         qg = 1.0_dp
          call findqorifice(gateheight, crestheight, z1, z3, qg, z2, zg, regime, num, qcrit)
-         qweirana = qg; ucrest = qg / zg; zcrest = z2; qfree = qcrit
+         qweirana = qg
+         ucrest = qg / zg
+         zcrest = z2
+         qfree = qcrit
 
          if (mod(time1, 60000.0_dp) == 0) then
 
@@ -572,8 +597,10 @@ contains
 
       eup = zupstream + 0.5_dp * uupstream * uupstream / ag
       edo = zdownstream + 0.5_dp * udownstream * udownstream / ag
-      dE = eup - edo; dH = zupstream - zdownstream
-      dE = max(0.0_dp, dE); dH = max(0.0_dp, dH)
+      dE = eup - edo
+      dH = zupstream - zdownstream
+      dE = max(0.0_dp, dE)
+      dH = max(0.0_dp, dH)
 
       TEX = 'Uup :            Ucr :               Udown :                '
       write (TEX(7:16), '(f10.3)') uupstream
@@ -671,7 +698,9 @@ contains
 
       character(len=132) :: tex, regime
 
-      hup = s0(17); hdown = s0(13); agate = zgate(1)
+      hup = s0(17)
+      hdown = s0(13)
+      agate = zgate(1)
       if (hup > hdown + 0.0001) then
 
          call findqorifice(agate, 0.0_dp, hup, hdown, qgate, z2, zg, regime, num, qcrit)
@@ -767,7 +796,8 @@ contains
          c2 = c0 * (b / 2)**2
       end if
 
-      c0 = c0 / max(hev, 1.0e-8_dp); c2 = c2 / max(hev, 1.0e-8_dp)
+      c0 = c0 / max(hev, 1.0e-8_dp)
+      c2 = c2 / max(hev, 1.0e-8_dp)
 
       xx0 = minval(xk)
       yy0 = maxval(yk) + 3 * dy
@@ -834,7 +864,8 @@ contains
 
       end if
 
-      avedif = 0.0_dp; sumba = 0.0_dp
+      avedif = 0.0_dp
+      sumba = 0.0_dp
       do k = 1, ndxi
          yy = yy0 + yz(k)
          if (xz(k) > 390.0_dp) then

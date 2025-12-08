@@ -648,7 +648,8 @@ contains
             oldn = 0
             newn = 0
             do kk = 1, N
-               kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
+               kkm1 = kk - 1
+               if (kkm1 < 1) kkm1 = kkm1 + N
                L = netcell(k)%lin(kk)
                Lm1 = netcell(k)%lin(kkm1)
 
@@ -661,9 +662,12 @@ contains
             end do
 
             do kk = 1, N
-               kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
-               kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-               kkp2 = kk + 2; if (kkp2 > N) kkp2 = kkp2 - N
+               kkm1 = kk - 1
+               if (kkm1 < 1) kkm1 = kkm1 + N
+               kkp1 = kk + 1
+               if (kkp1 > N) kkp1 = kkp1 - N
+               kkp2 = kk + 2
+               if (kkp2 > N) kkp2 = kkp2 - N
 
                k1 = newn(kk)
                k2 = oldn(kkm1)
