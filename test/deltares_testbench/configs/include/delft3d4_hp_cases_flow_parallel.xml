@@ -342,8 +342,8 @@
 				</file>
 			</checks>
 		</testCase>
-		<testCase name="e01_f01_c43_parallel_bed_slope" ref="flow2d3d_default">
-			<path version="2025-12-05T13:05:36.460000">e01_d3dflow/f01_general/c43_parallel_bed_slope</path>
+		<testCase name="e01_f01_c44_parallel_bed_slope" ref="flow2d3d_default">
+			<path version="2025-12-08T05:42:43.151000">e01_d3dflow/f01_general/c44_parallel_bed_slope</path>
 			<maxRunTime>60</maxRunTime>
 			<checks>
 				<file name="trim-run01.dat" type="NEFIS">
