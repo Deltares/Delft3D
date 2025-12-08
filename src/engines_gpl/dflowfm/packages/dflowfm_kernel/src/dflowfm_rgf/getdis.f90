@@ -53,7 +53,7 @@ contains
 
       Lcurv = (H > 1.0e-8_dp)
 
-      TS = min(TS, dble(N))
+      TS = min(TS, real(N, kind=dp))
       DT = 0.1
       SS = 0
       T0 = 0

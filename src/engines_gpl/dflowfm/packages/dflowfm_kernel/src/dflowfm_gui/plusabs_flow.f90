@@ -57,7 +57,8 @@ contains
       end if
 
       if (numchoice == 1) then
-         call plusabsd(xz, yz, yz, ndx, key, s1); s1 = max(s1, bl)
+         call plusabsd(xz, yz, yz, ndx, key, s1)
+         s1 = max(s1, bl)
       else if (numchoice == 2 .and. jasal > 0) then
          if (.not. allocated(sa1)) then
             allocate (sa1(ndx))

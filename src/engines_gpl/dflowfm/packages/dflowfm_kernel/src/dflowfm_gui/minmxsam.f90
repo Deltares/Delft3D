@@ -104,7 +104,7 @@ contains
 
                x = x0 + dxa * (m - 1)
                y = y0 + dya * (n - 1)
-               z = dble(d(m, n))
+               z = real(d(m, n), kind=dp)
                if (inview(x, y) .and. z /= dmiss) then
                   if (z < rmin) then
                      rmin = z

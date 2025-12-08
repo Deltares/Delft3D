@@ -48,7 +48,9 @@ contains
       real(kind=dp) :: astar
 
       if (uorbu == 0.0_dp) then
-         fw = 0.0_dp; ustw2 = 0.0_dp; return
+         fw = 0.0_dp
+         ustw2 = 0.0_dp
+         return
       end if
 
       astar = Tsig * uorbu / z00

@@ -62,11 +62,13 @@ contains
 
       IERR = 0
       if (M >= MAXSPL) then
-         maxspl = max(10, int(1.2 * m)); IERR = 1
+         maxspl = max(10, int(1.2 * m))
+         IERR = 1
       end if
 
       if (N >= MAXSPLEN) then
-         MAXSPLEN = max(100, int(1.2 * N)); IERR = 1
+         MAXSPLEN = max(100, int(1.2 * N))
+         IERR = 1
       end if
 
       if (IERR == 0) return
@@ -359,7 +361,7 @@ contains
       call FIRSTLIN(MSPL)
       call READYY('Writing Spline File', 0.0_dp)
       do I = 1, mcs
-         call READYY('Writing Spline File', dble(I) / dble(mcs))
+         call READYY('Writing Spline File', real(I, kind=dp) / real(mcs, kind=dp))
          write (MATR(2:5), '(I4.4)') I
          write (MSPL, '(A5)') MATR
          write (MSPL, '(I4,A4)') lensp(i), '   2'

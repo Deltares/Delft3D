@@ -52,7 +52,15 @@ contains
       open (newunit=lunold, file=filename, status="old", action="read", err=999)
       open (newunit=lunnew, file=filename_new, status="replace", action="write", err=999)
 
-      k1 = 0; k2 = 0; k3 = 0; k4 = 0; k5 = 0; k6 = 0; k7 = 0; ja_innumerics = 0; ja_icgsolverset = 0
+      k1 = 0
+      k2 = 0
+      k3 = 0
+      k4 = 0
+      k5 = 0
+      k6 = 0
+      k7 = 0
+      ja_innumerics = 0
+      ja_icgsolverset = 0
       do while (.true.)
          read (lunold, "(a)", err=999, end=1212) string
          n = index(string, '=')

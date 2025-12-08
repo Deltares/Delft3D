@@ -1,6 +1,4 @@
 @ echo off
-
-
 rem Usage:
 rem     Either:
 rem         Call this script with one argument being the path to a Dimrset-bin folder containing a matching run script

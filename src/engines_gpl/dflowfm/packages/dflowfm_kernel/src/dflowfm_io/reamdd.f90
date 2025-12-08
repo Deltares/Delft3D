@@ -60,7 +60,7 @@ contains
       backspace (MMDD)
 
       do N = 1, NC
-         AF = dble(N) / dble(NC)
+         AF = real(N, kind=dp) / real(NC, kind=dp)
          call READYY('Reading md-Dept File', AF)
          read (MMDD, *, end=999, ERR=888) (RD1(M, N), M=1, MC)
       end do

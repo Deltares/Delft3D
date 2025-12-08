@@ -88,8 +88,8 @@ contains
          NKO = -1
          do I = 1, MXP
             K = (NXP - J) * MXP + I
-            XX = dble(I - 1)
-            YY = dble(J - 1)
+            XX = real(I - 1, kind=dp)
+            YY = real(J - 1, kind=dp)
             call BILINXY(XB, YB, XP, YP, XX, YY, XX2, YY2, INI)
 
             if (jainterpolate == 1) then

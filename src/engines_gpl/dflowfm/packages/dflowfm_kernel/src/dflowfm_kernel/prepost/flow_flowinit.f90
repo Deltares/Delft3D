@@ -1408,7 +1408,7 @@ contains
                   if (top_cell == bottom_cell) then
                      rr = 1.0_dp
                   else
-                     rr = dble(cell3D - bottom_cell) / dble(top_cell - bottom_cell)
+                     rr = real(cell3D - bottom_cell, kind=dp) / real(top_cell - bottom_cell, kind=dp)
                   end if
                   sa1(cell3D) = (1.0_dp - rr) * sa1(bottom_cell) + rr * satop(cell)
                end do
@@ -1772,7 +1772,7 @@ contains
          dmu = 0.0_dp
          do k = 1, numk
             dis = dbdistance(xk(k), yk(k), xx1, yy1, jsferic, jasfer3D, dmiss)
-            if (dis < 5d3) then
+            if (dis < 5.0e3_dp) then
                xx = dis / 1000.0_dp
                yy = 5.0_dp * 1.0_dp * sqrt(twopi * var) / sqrt(twopi * var) * exp(-(xx - dmu)**2 / (2.0_dp * var))
                zk(k) = zk(k) + yy
@@ -1798,7 +1798,7 @@ contains
 
             do k = 1, numk
                dis = dbdistance(xk(k), yk(k), xx1, yy1, jsferic, jasfer3D, dmiss)
-               if (dis < 5d3) then
+               if (dis < 5.0e3_dp) then
                   xx = dis / 1000.0_dp
                   yy = 11.0_dp * 1.0_dp * sqrt(twopi * var) / sqrt(twopi * var) * exp(-(xx - dmu)**2 / (2.0_dp * var))
                   zk(k) = zk(k) + yy
@@ -2077,13 +2077,13 @@ contains
                      foutk = foutk + sq(ln(2, La))
                   end if
                end do
-               s0(k) = s0(k) - foutk * 1d-1
+               s0(k) = s0(k) - foutk * 1.0e-1_dp
             end do
 
          end do
 
          chkadvd = 0.0_dp
-         s1(ndx / 2) = s1(ndx / 2) + 1d-5
+         s1(ndx / 2) = s1(ndx / 2) + 1.0e-5_dp
 
       else if (index(md_netfile, 'kelvin') > 0) then
 
@@ -2340,12 +2340,12 @@ contains
             hu(LL) = 5.0_dp
             frcu(LL) = frcuni
             call getczz0(hu(LL), frcu(LL), ifrcutp(LL), cz, z00)
-            ustb(LL) = sqrt(ag * 5.0_dp * 5d-5)
+            ustb(LL) = sqrt(ag * 5.0_dp * 5.0e-5_dp)
             cs = csu(LL)
             Lb = Lbot(LL)
             Lt = Ltop(LL)
             do L = Lb, Lt
-               zz = 5.0_dp * dble(L - Lb + 1 - 0.5_dp) / dble(Lt - Lb + 1)
+               zz = 5.0_dp * real(L - Lb + 1 - 0.5_dp, kind=dp) / real(Lt - Lb + 1, kind=dp)
                u1(L) = cs * ustb(LL) * log(c9of1 + zz / z00) / vonkar
             end do
          end do

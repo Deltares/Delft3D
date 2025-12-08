@@ -77,7 +77,8 @@ contains
             end if
          end if
 
-         zz1 = dmiss; zz2 = dmiss
+         zz1 = dmiss
+         zz2 = dmiss
          if (ityp == 1) then
             zz1 = s1(k1)
             zz2 = s1(k2)
@@ -95,7 +96,8 @@ contains
             zz2 = sgrw1(k2)
          else if (ityp == 6) then
             if (L <= lnx1D) then
-               zz1 = dmiss; zz2 = dmiss
+               zz1 = dmiss
+               zz2 = dmiss
                if (prof1D(3, L) < 0) then
                   if (s1m(k1) > bl(k1) + prof1D(2, L) .or. s1m(k2) > bl(k2) + prof1D(2, L)) then
                      zz1 = s1m(k1)

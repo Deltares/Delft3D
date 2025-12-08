@@ -54,7 +54,8 @@ contains
       integer :: k1, k2, kk, n, j
 
       if (kb1 == 0) then ! if bans unknown, first find them
-         k1 = lncn(1, L); k2 = lncn(2, L)
+         k1 = lncn(1, L)
+         k2 = lncn(2, L)
          do kk = 1, mxban
             n = nban(1, kk) ! net node
             if (kb1 == 0) then

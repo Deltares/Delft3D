@@ -131,7 +131,8 @@ contains
             else
                do k = 1, ndx
                   call getkbotktop(k, kb, kt)
-                  ux = ueux(kb); uy = ueuy(kb)
+                  ux = ueux(kb)
+                  uy = ueuy(kb)
                   um = max(hypot(ux, uy), 1.0e-4_dp)
                   workx(k) = taus(k) * ux / um
                   worky(k) = taus(k) * uy / um
@@ -220,8 +221,10 @@ contains
                valobs(i, IPNT_wy) = 0.0_dp
                do LL = 1, nd(k)%lnx
                   LLL = abs(nd(k)%ln(LL))
-                  k1 = ln(1, LLL); k2 = ln(2, LLL)
-                  k3 = 1; if (nd(k)%ln(LL) > 0) k3 = 2
+                  k1 = ln(1, LLL)
+                  k2 = ln(2, LLL)
+                  k3 = 1
+                  if (nd(k)%ln(LL) > 0) k3 = 2
                   valobs(i, IPNT_wx) = valobs(i, IPNT_wx) + wx(LLL) * wcL(k3, LLL)
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                end do

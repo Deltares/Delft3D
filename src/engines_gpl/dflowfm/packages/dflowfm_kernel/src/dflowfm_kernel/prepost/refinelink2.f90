@@ -53,10 +53,13 @@ contains
       integer :: lnu
       real(kind=dp) :: XM, YM
 
-      K1 = KN(1, L12); KC(K1) = 5
-      K2 = KN(2, L12); KC(K2) = 5
+      K1 = KN(1, L12)
+      KC(K1) = 5
+      K2 = KN(2, L12)
+      KC(K2) = 5
 
-      KN(1, L12) = 0; KN(2, L12) = 0
+      KN(1, L12) = 0
+      KN(2, L12) = 0
 
       XM = 0.5_dp * (XK(K1) + XK(K2))
       YM = 0.5_dp * (YK(K1) + YK(K2))

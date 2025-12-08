@@ -95,22 +95,29 @@ contains
       ! These types need to be mapped to one of three possible primitive locations (center/edge/corner).
       select case (ibedlevtyp)
       case (1) ! position = waterlevelpoint, cell centre
-         iprimpos = UNC_LOC_S; mx = max(numk, ndx)
+         iprimpos = UNC_LOC_S
+         mx = max(numk, ndx)
       case (2) ! position = velocitypoint, cellfacemid
-         iprimpos = UNC_LOC_U; mx = max(numk, lnx)
+         iprimpos = UNC_LOC_U
+         mx = max(numk, lnx)
       case (3, 4, 5, 6) ! position = netnode, cell corner
-         iprimpos = UNC_LOC_CN; mx = numk
+         iprimpos = UNC_LOC_CN
+         mx = numk
       end select
 
       if (mext /= 0 .or. len_trim(md_inifieldfile) > 0) then
          ! 0.a Prepare masks for 1D/2D distinctions
          kc_size_store = size(kc)
-         allocate (kcc(mx), kc1d(mx), kc2d(max(lnxi, mx))); kcc = 1; kc1D = 0; kc2D = 0
+         allocate (kcc(mx), kc1d(mx), kc2d(max(lnxi, mx)))
+         kcc = 1
+         kc1D = 0
+         kc2D = 0
          call realloc(kc, mx, keepExisting=.false., fill=0)
 
          do L = 1, numL1D
             if (kn(3, L) == 1 .or. kn(3, L) == 6) then ! TODO: AvD: why not also type 3/4/5/7?
-               k1 = kn(1, L); k2 = kn(2, L)
+               k1 = kn(1, L)
+               k2 = kn(2, L)
                if (nmk(k1) > 1) kc1D(k1) = 1
                if (nmk(k2) > 1) kc1D(k2) = 1
             end if
@@ -119,7 +126,8 @@ contains
          if (iprimpos == 3) then
             do L = 1, numL
                if (kn(3, L) == 2) then
-                  k1 = kn(1, L); k2 = kn(2, L)
+                  k1 = kn(1, L)
+                  k2 = kn(2, L)
                   kc2D(k1) = 1
                   kc2D(k2) = 1
                end if

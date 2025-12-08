@@ -185,7 +185,7 @@ contains
       call READYY('Enabling runup gauges on grid', 0.0_dp)
       do ic = 1, num_rugs
          if (mod(ic, icMOD) == 0) then
-            call READYY('Enabling runup gauges on grid', dble(ic) / dble(num_rugs))
+            call READYY('Enabling runup gauges on grid', real(ic, kind=dp) / real(num_rugs, kind=dp))
          end if
          !
          !if ( .not. success ) then   to do: caching

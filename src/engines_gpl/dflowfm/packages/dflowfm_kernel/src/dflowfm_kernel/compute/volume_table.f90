@@ -162,7 +162,7 @@ contains
       real(kind=dp) :: heightIncrement
       index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
-      heightIncrement = max(0.0_dp, ((level - this%bedLevel) - dble(index - 1) * tableIncrement))
+      heightIncrement = max(0.0_dp, ((level - this%bedLevel) - real(index - 1, kind=dp) * tableIncrement))
 
       getVolumeVoltable = this%vol(index) + this%sur(index) * heightIncrement
 
@@ -229,7 +229,7 @@ contains
       real(kind=dp) :: heightIncrement
       index = min(int(max(0.0_dp, level - this%bedLevel) / tableIncrement) + 1, this%count)
 
-      heightIncrement = ((level - this%bedLevel) - dble(index - 1) * tableIncrement)
+      heightIncrement = ((level - this%bedLevel) - real(index - 1, kind=dp) * tableIncrement)
 
       getVolumeDecreasingVoltable = this%volDecreasing(index) + this%surDecreasing(index) * heightIncrement
 
@@ -590,7 +590,7 @@ contains
             call vltbOnLinks(Lindex, L)%alloc()
 
             ! Distribute storage node contribution over flow links
-            if (vltb(n)%vol(vltb(n)%count) > 0d0) then
+            if (vltb(n)%vol(vltb(n)%count) > 0.0_dp) then
                vltbOnLinks(Lindex, L)%vol = vltb(n)%vol / numlinks
                vltbOnLinks(Lindex, L)%sur(vltb(n)%count) = vltb(n)%sur(vltb(n)%count) / numlinks
             end if
@@ -651,7 +651,7 @@ contains
          if (dxDoubleAt1DEndNodes .and. nd(nod)%lnx == 1) then
             dxL = dx(L)
          else
-            dxL = 0.5d0 * dx(L)
+            dxL = 0.5_dp * dx(L)
          end if
 
          jacustombnd1d = 0
@@ -673,8 +673,8 @@ contains
                ! Use the water level at the inner point of the boundary link
 
                if (vltb(n)%hasDecreasingWidths) then
-                  widthdecr = 0d0
-                  areadecr = 0d0
+                  widthdecr = 0.0_dp
+                  areadecr = 0.0_dp
                end if
             else
                if (L > lnxi) then ! for 1D boundary links, refer to attached link

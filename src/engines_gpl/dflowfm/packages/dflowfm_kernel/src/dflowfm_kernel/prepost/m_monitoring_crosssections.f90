@@ -222,7 +222,7 @@ contains
          crs(ncrs)%name = ' '
          crs(ncrs)%name(1:m) = name(1:m)
       else ! No name given, generate one.
-         write (cdigits, '(i1)') max(2, int(floor(log10(dble(iUniq_)) + 1)))
+         write (cdigits, '(i1)') max(2, int(floor(log10(real(iUniq_, kind=dp)) + 1)))
          write (crs(ncrs)%name, '(a,i'//cdigits//'.'//cdigits//')') trim(defaultName_), iUniq_
          iUniq_ = iUniq_ + 1
       end if

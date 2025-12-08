@@ -59,7 +59,8 @@ contains
       if (allocated(ijyes)) then
          deallocate (ijyes)
       end if
-      allocate (ijyes(mc + 1, nc + 1)); ijyes = 0
+      allocate (ijyes(mc + 1, nc + 1))
+      ijyes = 0
 
       do I = 2, MC ! set up flow oriented ijyes array, sorry for the inconvenience
          do J = 2, NC
@@ -79,9 +80,11 @@ contains
 
 666   continue
 
-      kx = k; nra = 0
+      kx = k
+      nra = 0
       do k = 1, kx
-         kd = max(1, k - 1); ku = min(kx, k + 1)
+         kd = max(1, k - 1)
+         ku = min(kx, k + 1)
 
          if (mbca > 0) then
             kk = 9
@@ -93,7 +96,8 @@ contains
          ! if (k==1 .or. ma(k).ne.mb(kd) .and. na(k).ne.nb(kd) ) then
          call bndpoint2pol(ma(k), na(k))
          if (mbca > 0) then
-            nr = nr + 1; call writeset(kk, fnam, nr, a)
+            nr = nr + 1
+            call writeset(kk, fnam, nr, a)
          end if
          ! endif
 

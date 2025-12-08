@@ -160,7 +160,8 @@ contains
       ! Update water levels and link info (open or closed) on net-links
       !
       do L = 1, numl
-         kL = lne(1, L); kR = lne(2, L)
+         kL = lne(1, L)
+         kR = lne(2, L)
          if (kL == 0 .and. kR == 0) cycle
          LF = lne2ln(L)
          if (LF > 0) then
@@ -185,7 +186,8 @@ contains
       if (init_trt) then
          !
          do L = 1, numl
-            kL = lne(1, L); kR = lne(2, L)
+            kL = lne(1, L)
+            kR = lne(2, L)
             if (kL == 0 .and. kR == 0) cycle
             trachy_fl%dir(1)%zsu_prev(L) = trachy_fl%dir(1)%blu_trt(L) + hu_trt(L)
          end do
@@ -199,7 +201,8 @@ contains
             end if
          end do
          do L = 1, numl
-            kL = lne(1, L); kR = lne(2, L)
+            kL = lne(1, L)
+            kR = lne(2, L)
             if (kL == 0 .and. kR == 0) cycle
             LF = lne2ln(L)
             if (LF > 0) then

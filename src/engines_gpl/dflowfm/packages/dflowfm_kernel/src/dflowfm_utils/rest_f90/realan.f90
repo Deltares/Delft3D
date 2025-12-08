@@ -119,7 +119,7 @@ contains
             NCLAN(NTOT) = NCL
          end if
          if (mod(I, 1000) == 0) then
-            call READYY(' ', min(1.0_dp, dble(I) / MAXLAN))
+            call READYY(' ', min(1.0_dp, real(I, kind=dp) / MAXLAN))
          end if
       end do
       NTOT = NTOT + 1
@@ -143,18 +143,22 @@ contains
       return
 
       n = 1 ! remove double points in lineseg oriented files
-      xpl(n) = xlan(1); ypl(n) = ylan(1)
+      xpl(n) = xlan(1)
+      ypl(n) = ylan(1)
       do k = 2, mxlan - 1
-         kd = k - 1; ku = k + 1
+         kd = k - 1
+         ku = k + 1
          if (xlan(k) == dmiss .and. xlan(kd) == xlan(ku) .and. ylan(kd) == ylan(ku)) then
 
          else
             n = n + 1
-            xpl(n) = xlan(k); ypl(n) = ylan(k)
+            xpl(n) = xlan(k)
+            ypl(n) = ylan(k)
          end if
       end do
       n = n + 1
-      xpl(n) = xlan(mxlan); ypl(n) = ylan(mxlan)
+      xpl(n) = xlan(mxlan)
+      ypl(n) = ylan(mxlan)
 
       npl = n
 

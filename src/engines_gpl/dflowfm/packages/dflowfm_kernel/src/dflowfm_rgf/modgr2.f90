@@ -78,9 +78,9 @@ contains
                do II = I1, I2 - IN * KLAST
                   do JJ = J1, J2 - JN * KLAST
                      if (IN == 1) then
-                        FAC = dble(II - I1) / dble(I2 - I1)
+                        FAC = real(II - I1, kind=dp) / real(I2 - I1, kind=dp)
                      else
-                        FAC = dble(JJ - J1) / dble(J2 - J1)
+                        FAC = real(JJ - J1, kind=dp) / real(J2 - J1, kind=dp)
                      end if
                      EFAC = 1 - FAC
                      XH(II, JJ) = X(II, JJ) + EFAC * DX1 + FAC * DX2

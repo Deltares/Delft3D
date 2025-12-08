@@ -391,7 +391,8 @@ contains
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
                   "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
-                  "pseudoairpressure", "waterlevelcorrection")
+                  "pseudoairpressure", "waterlevelcorrection", &
+                  "frictioncoefficient")
                success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2666,7 +2667,7 @@ contains
          ncstdnames(2) = 'sea_water_salinity'
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
          ncstdnames(1) = quantityName
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          ncvarnames(1) = 'friction_coefficient'
          ncstdnames(1) = 'friction_coefficient'
       case ('wavesignificantheight')

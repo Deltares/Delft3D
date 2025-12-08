@@ -73,7 +73,8 @@ contains
       do n = 1, numk
          if (KC(N) == 1) then
             k = k + 1
-            xs(k) = xk(n); ys(k) = yk(n)
+            xs(k) = xk(n)
+            ys(k) = yk(n)
             if (jarnod == 1) then
                zs(k) = rnod(n)
             else

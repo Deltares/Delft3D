@@ -228,13 +228,19 @@ contains
 
                !    update nod
                !    delete link from nod(k1)
-               kk = 1; do while (nod(k1)%lin(kk) /= L .and. kk <= nmk(k1)); kk = kk + 1; end do
+               kk = 1
+               do while (nod(k1)%lin(kk) /= L .and. kk <= nmk(k1))
+               kk = kk + 1
+               end do
                if (nod(k1)%lin(kk) /= L) goto 1234
                nod(k1)%lin(1:nmk(k1)) = [nod(k1)%lin(1:kk - 1), nod(k1)%lin(kk + 1:nmk(k1) + 1)]
                call realloc(nod(k1)%lin, nmk(k1))
 
                !    delete link from nod(k2)
-               kk = 1; do while (nod(k2)%lin(kk) /= L .and. kk <= nmk(k2)); kk = kk + 1; end do
+               kk = 1
+               do while (nod(k2)%lin(kk) /= L .and. kk <= nmk(k2))
+               kk = kk + 1
+               end do
                if (nod(k2)%lin(kk) /= L) goto 1234
                nod(k2)%lin(1:nmk(k2)) = [nod(k2)%lin(1:kk - 1), nod(k2)%lin(kk + 1:nmk(k2) + 1)]
                call realloc(nod(k2)%lin, nmk(k2))

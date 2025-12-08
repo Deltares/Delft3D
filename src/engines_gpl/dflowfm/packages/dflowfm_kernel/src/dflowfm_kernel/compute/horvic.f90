@@ -64,7 +64,8 @@ contains
       integer :: ik1, ik2, in3, in4
 
       horvic = 0.0_dp
-      csL = csu(L); snL = snu(L)
+      csL = csu(L)
+      snL = snu(L)
       k12 = ln(n12, L)
 
       do LL = 1, nd(k12)%lnx ! loop over all attached links
@@ -77,8 +78,10 @@ contains
             if (LLL < 0) then
                cs = csu(LLLL)
                sn = snu(LLLL)
-               k1 = ln(1, LLLL); k2 = ln(2, LLLL) ! k1 = k12
-               k3 = lncn(1, LLLL); k4 = lncn(2, LLLL)
+               k1 = ln(1, LLLL)
+               k2 = ln(2, LLLL) ! k1 = k12
+               k3 = lncn(1, LLLL)
+               k4 = lncn(2, LLLL)
                ik1 = 1
                ik2 = 2
                in3 = 1
@@ -86,8 +89,10 @@ contains
             else
                cs = -csu(LLLL)
                sn = -snu(LLLL)
-               k1 = ln(2, LLLL); k2 = ln(1, LLLL) ! k1 = k12
-               k3 = lncn(2, LLLL); k4 = lncn(1, LLLL)
+               k1 = ln(2, LLLL)
+               k2 = ln(1, LLLL) ! k1 = k12
+               k3 = lncn(2, LLLL)
+               k4 = lncn(1, LLLL)
                ik1 = 2
                ik2 = 1
                in3 = 2
@@ -106,7 +111,9 @@ contains
                duydt = (cor2liny(LLLL, in4, ucnx(k4), ucny(k4)) - cor2liny(LLLL, in3, ucnx(k3), ucny(k3))) * wui(LLLL)
             end if
 
-            c11 = cs * cs; c12 = cs * sn; c22 = sn * sn
+            c11 = cs * cs
+            c12 = cs * sn
+            c22 = sn * sn
             txx = duxdn + c11 * duxdn + c12 * (duydn - duxdt) - c22 * duydt
             tyy = duydn + c11 * duxdt + c12 * (duxdn + duydt) + c22 * duydn
 

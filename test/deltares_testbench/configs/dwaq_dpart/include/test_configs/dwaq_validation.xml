@@ -590,6 +590,82 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e03_f09_c61_channel2d_scheme23" ref="dwaq_default">
+        <path version="2025-11-21T13:47:02.523000">e03_waq/f09_validation_water_quality_delwaq/c61_channel2d_scheme23</path>
+        <checks>
+            <file name="channel2d-option23.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+            <file name="channel2d-option23.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-04"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <!-- Use DELWAQ directly because of a small glitch in the cooperation with DIMR:
+         the DELWAQ run ends before DIMR is informed about it. This happens with steady-state options -->
+    <testCase name="e03_f09_c62_channel3d_scheme17" ref="dwaq_directly">
+        <path version="2025-11-21T13:47:04.686000">e03_waq/f09_validation_water_quality_delwaq/c62_channel3d_scheme17</path>
+        <programs>
+            <program ref="WAQ">
+                <arguments>
+                    <argument>channel3d_option17.inp</argument>
+                </arguments>
+            </program>
+        </programs>
+        <location ref="reference_results" type="reference">
+            <from>lnx64</from>
+        </location>
+        <location ref="cases" type="input">
+            <from>.</from>
+        </location>
+        <maxRunTime>60.0</maxRunTime>
+        <!-- seconds -->
+        <checks>
+            <file name="channel3d_option17.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e03_f09_c63_channel3d_scheme18" ref="dwaq_directly">
+        <path version="2025-11-21T13:47:06.713000">e03_waq/f09_validation_water_quality_delwaq/c63_channel3d_scheme18</path>
+        <programs>
+            <program ref="WAQ">
+                <arguments>
+                    <argument>channel3d_option18.inp</argument>
+                </arguments>
+            </program>
+        </programs>
+        <location ref="reference_results" type="reference">
+            <from>lnx64</from>
+        </location>
+        <location ref="cases" type="input">
+            <from>.</from>
+        </location>
+        <maxRunTime>60.0</maxRunTime>
+        <!-- seconds -->
+        <checks>
+            <file name="channel3d_option18.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+
     <testCase name="e03_f09_c101_saturation_option1_0d" ref="dwaq_default">
         <path version="2025-01-30T15:29:56.926000">e03_waq/f09_validation_water_quality_delwaq/c101_saturation_option1_0d</path>
         <checks>
