@@ -347,7 +347,7 @@
 			<maxRunTime>60</maxRunTime>
 			<checks>
 				<file name="trim-run01.dat" type="NEFIS">
-					<parameters name="map-series">
+					<parameters name="map-sed-series">
 						<parameter name="DPS" toleranceAbsolute="0.0001"/>
 					</parameters>
 				</file>
