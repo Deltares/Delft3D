@@ -55,7 +55,9 @@ contains
       integer :: k, L
       real(kind=dp) :: s1k, yy, samp, ux, uy, dif, alf, tim
 
-      ux = 0.1_dp; uy = 0.0_dp; samp = ux * fcorio / ag
+      ux = 0.1_dp
+      uy = 0.0_dp
+      samp = ux * fcorio / ag
       if (tim == 0.0_dp) then
 
          do k = 1, numk
@@ -77,7 +79,8 @@ contains
          s1k = -samp * yy
 
          if (tim == 0.0_dp) then
-            s1(k) = max(bl(k), s1k); s0(k) = s1(k)
+            s1(k) = max(bl(k), s1k)
+            s0(k) = s1(k)
          end if
 
          dif = abs(s1(k) - s1k)

@@ -116,11 +116,13 @@ contains
                end if
 
                if (javau > 0) then
-                  ac1 = acL(LL); ac2 = 1.0_dp - ac1
+                  ac1 = acL(LL)
+                  ac2 = 1.0_dp - ac1
                   n1 = ln(1, LL) !; zb1 = zws(kbot(n1)-1)
                   n2 = ln(2, LL) !; zb2 = zws(kbot(n2)-1)
                   do L = Lb, Lt - 1 ! vertical omega velocity at layer interface u point
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      k = L - Lb + 1
 
                      if (n1 > ndxi) then ! open boundaries
@@ -169,11 +171,15 @@ contains
                end if
 
                if (javau > 0) then
-                  ac1 = acL(LL); ac2 = 1.0_dp - ac1
-                  n1 = ln(1, LL); !zb1 = zws(kbot(n1)-1)
-                  n2 = ln(2, LL); !zb2 = zws(kbot(n2)-1)
+                  ac1 = acL(LL)
+                  ac2 = 1.0_dp - ac1
+                  n1 = ln(1, LL)
+                  !zb1 = zws(kbot(n1)-1)
+                  n2 = ln(2, LL)
+                  !zb2 = zws(kbot(n2)-1)
                   do L = Lb, Lt - 1 ! vertical omega velocity at layer interface u point
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      k = L - Lb + 1
 
                      if (n1 > ndxi) then ! open boundaries
@@ -222,12 +228,15 @@ contains
                call update_ghosts(ITYPE_Sall3D, 1, Ndkx, turepsws, ierror)
             end if
 
-            tqcu = 0.0_dp; eqcu = 0.0_dp; sqcu = 0.0_dp
+            tqcu = 0.0_dp
+            eqcu = 0.0_dp
+            sqcu = 0.0_dp
 
             do LL = 1, lnx
                call getLbotLtop(LL, Lb, Lt)
                do L = Lb, Lt - 1
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   qqq = 0.5_dp * (q1(L) + q1(L + 1))
                   if (qqq > 0) then ! set upwind center values on links
                      tqcu(k2) = tqcu(k2) + qqq * turkinws(k1)
@@ -311,8 +320,10 @@ contains
                   end if
 
                   if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
-                     k1 = ln(1, LL); k2 = ln(2, LL)
-                     ac1 = acl(LL); ac2 = 1.0_dp - ac1
+                     k1 = ln(1, LL)
+                     k2 = ln(2, LL)
+                     ac1 = acl(LL)
+                     ac2 = 1.0_dp - ac1
                      hrmsLL = min(max(ac1 * hwav(k1) + ac2 * hwav(k2), 1.0e-2_dp), gammax * hu(LL))
                      if (hrmsLL > 0.0) then
                         call wave_fillsurdis(k1, dis1)
@@ -338,7 +349,8 @@ contains
                   vicd = vicu
                   vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * sigtkei
 
-                  k = L - Lb + 1; ku = k + 1
+                  k = L - Lb + 1
+                  ku = k + 1
 
                   dzdz1 = dzw(k) * dzu(k)
                   difd = vicd / dzdz1
@@ -356,7 +368,8 @@ contains
 
                   !c Source and sink terms                                                                           k turkin
                   if (use_density()) then
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
 
                      ! Determine Brunt-Vaisala frequency at flowlinks. N.B., bruva = N**2 / sigrho.
                      if (comparereal(drhodz(k1), 0.0_dp) == 0) then
@@ -464,11 +477,15 @@ contains
                dk(0) = tkebot
 
                if (javau > 0 .or. javakeps > 0) then
-                  ac1 = acL(LL); ac2 = 1.0_dp - ac1
-                  n1 = ln(1, LL); !zb1 = zws(kbot(n1)-1)
-                  n2 = ln(2, LL); !zb2 = zws(kbot(n2)-1)
+                  ac1 = acL(LL)
+                  ac2 = 1.0_dp - ac1
+                  n1 = ln(1, LL)
+                  !zb1 = zws(kbot(n1)-1)
+                  n2 = ln(2, LL)
+                  !zb2 = zws(kbot(n2)-1)
                   do L = Lb, Lt - 1 ! vertical omega velocity at layer interface u point
-                     k1 = ln(1, L); k2 = ln(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
                      k = L - Lb + 1
 
                      if (n1 > ndxi) then ! open boundaries
@@ -504,15 +521,18 @@ contains
 
                         if (javakeps == 3) then ! turkin
                            if (q1(L) + q1(L + 1) > 0) then
-                              kup = ln(1, L); arLL = a1(n1)
+                              kup = ln(1, L)
+                              arLL = a1(n1)
                            else
-                              kup = ln(2, L); arLL = a1(n2)
+                              kup = ln(2, L)
+                              arLL = a1(n2)
                            end if
                            volki = 1.0_dp / (dzw(k) * arLL)
                            dk(k) = dk(k) + tqcu(kup) * volki
                            bk(k) = bk(k) + sqcu(kup) * volki
                         else if (javakeps == 4) then ! turkin
-                           k1 = ln(1, L); k2 = ln(2, L)
+                           k1 = ln(1, L)
+                           k2 = ln(2, L)
                            volki = (ac1 * (vol1(k1) + vol1(k1 + 1)) + ac2 * (vol1(k2) + vol1(k2 + 1))) * 0.5_dp
                            volki = 1.0_dp / volki
                            dk(k) = dk(k) + (ac1 * tqcu(k1) + ac2 * tqcu(k2)) * volki
@@ -523,13 +543,17 @@ contains
                end if
 
                if (javeg > 0) then ! in turbulence model
-                  dke(1:Lt - Lb + 1) = 0.0_dp; k1 = ln(1, LL); k2 = ln(2, LL)
+                  dke(1:Lt - Lb + 1) = 0.0_dp
+                  k1 = ln(1, LL)
+                  k2 = ln(2, LL)
                   rnv = 0.5_dp * (rnveg(ln(1, LL)) + rnveg(ln(2, LL)))
                   if (rnv > 0.0_dp) then ! if plants are here
                      do L = Lb, Lt
                         um = sqrt(u1(L) * u1(L) + v(L) * v(L)) ! umod (m2/s2)
                         if (um > 0.0_dp) then ! and if there is flow,
-                           k = L - Lb + 1; k1 = ln(1, L); k2 = ln(2, L)
+                           k = L - Lb + 1
+                           k1 = ln(1, L)
+                           k2 = ln(2, L)
                            rnv = 0.5_dp * (rnveg(k1) + rnveg(k2))
                            if (rnv > 0) then ! if in this layer
                               if (diaveg(k1) > 0 .and. diaveg(k2) > 0) then
@@ -608,7 +632,8 @@ contains
                   vicd = vicu
                   vicu = viskin + 0.5_dp * (vicwwu(L) + vicwwu(Lu)) * sigepsi
 
-                  k = L - Lb + 1; ku = k + 1
+                  k = L - Lb + 1
+                  ku = k + 1
 
                   dzdz1 = dzw(k) * dzu(k)
                   difd = vicd / dzdz1
@@ -743,15 +768,18 @@ contains
 
                      if (javakeps == 3) then ! tureps
                         if (q1(L) + q1(L + 1) > 0) then
-                           kup = ln(1, L); arLL = a1(n1)
+                           kup = ln(1, L)
+                           arLL = a1(n1)
                         else
-                           kup = ln(2, L); arLL = a1(n2)
+                           kup = ln(2, L)
+                           arLL = a1(n2)
                         end if
                         volki = 1.0_dp / (dzw(k) * arLL)
                         dk(k) = dk(k) + eqcu(kup) * volki
                         bk(k) = bk(k) + sqcu(kup) * volki
                      else if (javakeps == 4) then ! tureps
-                        k1 = ln(1, L); k2 = ln(2, L)
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
                         volki = (ac1 * (vol1(k1) + vol1(k1 + 1)) + ac2 * (vol1(k2) + vol1(k2 + 1))) * 0.5_dp
                         volki = 1.0_dp / volki
                         dk(k) = dk(k) + (ac1 * eqcu(k1) + ac2 * eqcu(k2)) * volki
@@ -789,7 +817,8 @@ contains
                      do L = Lb, Lt - 1 ! TKE and epsilon at layer interfaces:
                         zint = hu(L) / hu(LL)
                         z1 = 1.0_dp - zint
-                        k1 = ln(1, L); k2 = ln(1, L)
+                        k1 = ln(1, L)
+                        k2 = ln(1, L)
                         tke = tkebot * z1 + tkesur * zint
                         zz = hu(L) * (1.0_dp - hu(L) / hu(LL)) ! parabolic visc
                         vicwww = zz * max(0.001_dp, ustb(LL)) * vonkar
@@ -858,7 +887,8 @@ contains
          ! Apply horizontal coupling of turkin/tureps with care:
          ! - Do not try to couple layer k in cell k1 with a layer other than k in cell k2; that may cause creep
          do L = Lb, Lt - 1
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (tur_node(k1) > eps20 .and. tur_node(k2) > eps20) then
                if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
                   dk(L - Lb + 1) = dtiL * ((1.0_dp - tur_time_int_factor) * tur_link(L) + 0.5_dp * tur_time_int_factor * (tur_node(k1) + tur_node(k2)))

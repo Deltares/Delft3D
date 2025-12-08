@@ -135,7 +135,8 @@ contains
          call BOXnop(X1B, Y1B, X2B, Y2B)
          JADRAW = 1
          if (KEY == 162 .or. KEY == 43) then
-            DY = DY * 1.01; if (JSFERTEK >= 1) DY = min(DY, 179.0_dp)
+            DY = DY * 1.01
+            if (JSFERTEK >= 1) DY = min(DY, 179.0_dp)
          else if (KEY == 160 .or. KEY == 45) then
             DY = DY / 1.01
          end if
@@ -157,7 +158,9 @@ contains
          call IMOUSECURSORHIDE()
          if (JA /= 3) then
             if (JSFERTEK >= 1) then
-               call dPROJECT(XL, YL, XL2, YL2, 2); xl = xl2; yl = yl2
+               call dPROJECT(XL, YL, XL2, YL2, 2)
+               xl = xl2
+               yl = yl2
             end if
             call SETWYnew(XL, YL, DY)
          else

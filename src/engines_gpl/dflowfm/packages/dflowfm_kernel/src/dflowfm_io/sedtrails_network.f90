@@ -76,7 +76,8 @@ contains
          allocate (xk(kmax), yk(kmax), stat=ierr)
          call aerr('xk (kmax), yk (kmax)', ierr, 2 * kmax)
 
-         xk = xymis; yk = xymis
+         xk = xymis
+         yk = xymis
       end if
 
       call sedtrails_restore()

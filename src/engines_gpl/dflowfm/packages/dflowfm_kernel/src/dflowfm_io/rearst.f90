@@ -66,7 +66,8 @@ contains
       read (Mrst, *) DUM, DUM, NDXR, LNXR
 
       if (NDXR /= NDX .or. LNXR /= LNX) then
-         write (MSGBUF, '(A)') 'DIMENSIONS ON RESTART FILE NOT EQUAL TO CURRENT MODEL DIMENSIONS'; call MSG_FLUSH()
+         write (MSGBUF, '(A)') 'DIMENSIONS ON RESTART FILE NOT EQUAL TO CURRENT MODEL DIMENSIONS'
+         call MSG_FLUSH()
          call QNERROR('DIMENSIONS ON RESTART FILE NOT EQUAL TO CURRENT MODEL DIMENSIONS', ' ', ' ')
          ja = 1
       end if

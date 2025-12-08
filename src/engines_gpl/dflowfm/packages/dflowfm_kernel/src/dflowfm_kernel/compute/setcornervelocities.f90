@@ -54,15 +54,18 @@ contains
       integer :: m, n
       real(kind=dp) :: uLx, uLy, csk, snk, sg
 
-      ucnx = 0; ucny = 0
+      ucnx = 0
+      ucny = 0
 
       if (kmx == 0) then
 
          if (jacomp <= 1) then
 
             do L = lnx1D + 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
-               k3 = lncn(1, L); k4 = lncn(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               k3 = lncn(1, L)
+               k4 = lncn(2, L)
                if (jasfer3D == 0) then
                   uLx = 0.5_dp * (ucx(k1) + ucx(k2))
                   uLy = 0.5_dp * (ucy(k1) + ucy(k2))
@@ -111,8 +114,10 @@ contains
                if (abs(kcu(LL)) == 2) then
                   call getLbotLtop(LL, Lb, Lt)
                   do L = Lb, Lt
-                     k1 = ln(1, L); k2 = ln(2, L)
-                     k3 = lncn(1, L); k4 = lncn(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
+                     k3 = lncn(1, L)
+                     k4 = lncn(2, L)
                      if (jasfer3D == 0) then
                         uLx = 0.5_dp * (ucx(k1) + ucx(k2))
                         uLy = 0.5_dp * (ucy(k1) + ucy(k2))
@@ -126,7 +131,8 @@ contains
                      ucnx(k4) = ucnx(k4) + uLx * wcnx4(LL)
                      ucny(k4) = ucny(k4) + uLy * wcny4(LL)
                      if (L == Lb) then
-                        k3 = lncn(1, LL); k4 = lncn(2, LL)
+                        k3 = lncn(1, LL)
+                        k4 = lncn(2, LL)
                         ucnx(k3) = ucnx(k3) + uLx * wcnx3(LL)
                         ucny(k3) = ucny(k3) + uLy * wcny3(LL)
                         ucnx(k4) = ucnx(k4) + uLx * wcnx4(LL)

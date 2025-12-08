@@ -54,7 +54,8 @@ contains
 
       do l = 1, lsed
          do ll = 1, lnx
-            k1 = ln(1, ll); k2 = ln(2, ll)
+            k1 = ln(1, ll)
+            k2 = ln(2, ll)
             sscx(k1, sedtot2sedsus(l)) = sscx(k1, sedtot2sedsus(l)) + wcx1(ll) * e_ssn(ll, l)
             sscx(k2, sedtot2sedsus(l)) = sscx(k2, sedtot2sedsus(l)) + wcx2(ll) * e_ssn(ll, l)
             sscy(k1, sedtot2sedsus(l)) = sscy(k1, sedtot2sedsus(l)) + wcy1(ll) * e_ssn(ll, l)
@@ -65,7 +66,8 @@ contains
       do l = 1, lsedtot
          if (has_bedload(tratyp(l))) then
             do ll = 1, lnx
-               k1 = ln(1, ll); k2 = ln(2, ll)
+               k1 = ln(1, ll)
+               k2 = ln(2, ll)
                ! bed load transports due to currents
                sbcx(k1, l) = sbcx(k1, l) + wcx1(ll) * e_sbcn(ll, l)
                sbcx(k2, l) = sbcx(k2, l) + wcx2(ll) * e_sbcn(ll, l)

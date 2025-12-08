@@ -100,14 +100,16 @@ contains
             end if
 
             do i = 1, N
-               ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
+               ip1 = i + 1
+               if (ip1 > N) ip1 = ip1 - N
                k = netcell(ic)%nod(i)
                kp1 = netcell(ic)%nod(ip1)
                xplist(i) = xk(k)
                yplist(i) = yk(k)
                !        find the link connected to this node
                do j = 0, N - 1
-                  ii = i + j; if (ii > N) ii = ii - N
+                  ii = i + j
+                  if (ii > N) ii = ii - N
                   L = netcell(ic)%lin(ii)
                   if ((kn(1, L) == k .and. kn(2, L) == kp1) .or. (kn(1, L) == kp1 .and. kn(2, L) == k)) then
                      exit ! found

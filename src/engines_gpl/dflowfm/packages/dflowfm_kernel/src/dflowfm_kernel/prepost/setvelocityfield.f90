@@ -81,7 +81,8 @@ contains
 
       end do
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          u1(L) = ((1.0_dp - acl(L)) * ucx(k1) + acl(L) * ucx(k2)) * csu(L) + & ! reversed acl weighting
                  ((1.0_dp - acl(L)) * ucy(k1) + acl(L) * ucy(k2)) * snu(L)
       end do

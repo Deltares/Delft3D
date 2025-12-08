@@ -600,10 +600,14 @@ contains
          do ifil = 1, size(fnames)
             call oldfil(minp, fnames(ifil))
             call reapol(minp, 1)
-            allocate (pillar(ifil)%xcor(npl)); pillar(ifil)%xcor = dmiss
-            allocate (pillar(ifil)%ycor(npl)); pillar(ifil)%ycor = dmiss
-            allocate (pillar(ifil)%dia(npl)); pillar(ifil)%dia = dmiss
-            allocate (pillar(ifil)%cd(npl)); pillar(ifil)%cd = dmiss
+            allocate (pillar(ifil)%xcor(npl))
+            pillar(ifil)%xcor = dmiss
+            allocate (pillar(ifil)%ycor(npl))
+            pillar(ifil)%ycor = dmiss
+            allocate (pillar(ifil)%dia(npl))
+            pillar(ifil)%dia = dmiss
+            allocate (pillar(ifil)%cd(npl))
+            pillar(ifil)%cd = dmiss
             pillar(ifil)%np = npl
             do i = 1, npl
                pillar(ifil)%xcor(i) = xpl(i)
@@ -1032,7 +1036,8 @@ contains
       !call prop_get( md_ptr, 'numerics', 'CFLWaveFrac'     , cflw)
       call prop_get(md_ptr, 'numerics', 'AdvecType', iadvec)
       if (Layertype /= LAYTP_SIGMA) then
-         iadvec = 33; iadvec1D = 33
+         iadvec = 33
+         iadvec1D = 33
       end if
       call prop_get(md_ptr, 'numerics', 'AdvecCorrection1D2D', iadveccorr1D2D)
       call prop_get(md_ptr, 'numerics', 'TimeStepType', itstep)
@@ -1389,9 +1394,12 @@ contains
       call prop_get(md_ptr, 'physics', 'Secchidepth', Secchidepth)
       call prop_get(md_ptr, 'physics', 'Secchidepth2', Secchidepth2)
       call prop_get(md_ptr, 'physics', 'Secchidepth2fraction', Secchidepth2fraction)
-      zab(1) = Secchidepth / 1.7_dp; sfr(1) = 1.0_dp
+      zab(1) = Secchidepth / 1.7_dp
+      sfr(1) = 1.0_dp
       if (Secchidepth2 > 0) then
-         zab(2) = Secchidepth2 / 1.7_dp; sfr(2) = Secchidepth2fraction; sfr(1) = 1.0_dp - sfr(2)
+         zab(2) = Secchidepth2 / 1.7_dp
+         sfr(2) = Secchidepth2fraction
+         sfr(1) = 1.0_dp - sfr(2)
       end if
 
       call prop_get(md_ptr, 'physics', 'Stanton', Stanton)

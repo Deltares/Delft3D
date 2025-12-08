@@ -144,7 +144,8 @@ contains
                   YC(2) = YI(I + 1)
                   YC(3) = YJ(J)
                   YC(4) = YJ(J + 1)
-                  SL = dmiss; SM = dmiss
+                  SL = dmiss
+                  SM = dmiss
                   call CROSS(XC(1), YC(1), XC(2), YC(2), XC(3), YC(3), XC(4), YC(4), &
                              JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
 
@@ -225,7 +226,8 @@ contains
 
       XO = XCR
       YO = YCR
-      SL = dmiss; SM = dmiss
+      SL = dmiss
+      SM = dmiss
       CRS = -1234.0_dp
       call CROSS(XC(1), YC(1), XC(2), YC(2), XC(3), YC(3), XC(4), YC(4), &
                  JACROS, SL, SM, XCR, YCR, CRS, jsferic, dmiss)

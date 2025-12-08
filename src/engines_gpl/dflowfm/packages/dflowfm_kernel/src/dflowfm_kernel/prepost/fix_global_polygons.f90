@@ -103,8 +103,10 @@ contains
                jpoint = jpoint + 1
                i = i + 1
 
-               im1 = i - 2; if (im1 < jstart) im1 = im1 + jend - jstart + 1
-               ip1 = i + 1; if (ip1 > jend) ip1 = ip1 - (jend - jstart + 1)
+               im1 = i - 2
+               if (im1 < jstart) im1 = im1 + jend - jstart + 1
+               ip1 = i + 1
+               if (ip1 > jend) ip1 = ip1 - (jend - jstart + 1)
 
 !              shift current node above previous node
                xpl(i - 1) = xpl(im1)

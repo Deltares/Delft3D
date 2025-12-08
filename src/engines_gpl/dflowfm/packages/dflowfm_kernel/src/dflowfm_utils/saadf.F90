@@ -1455,7 +1455,7 @@ contains
       integer j, k, io, i1, i2
 !-----------------------------------------------------------------------
       do j = 1, n
-         y(j) = 0.0d0
+         y(j) = 0.0_dp
       end do
       do j = 1, idiag
          io = ioff(j)
@@ -1512,7 +1512,7 @@ contains
       integer i, ii, k1, len, j
 !-----------------------------------------------------------------------
       do i = 1, n
-         y(i) = 0.0d0
+         y(i) = 0.0_dp
       end do
       do ii = 1, jdiag
          k1 = ia(ii) - 1
@@ -1559,7 +1559,7 @@ contains
 
       n = kvstc(nc + 1) - 1
       do i = 1, n
-         b(i) = 0.d0
+         b(i) = 0.0_dp
       end do
 !---------------------------------
       k = 1
@@ -2019,7 +2019,7 @@ contains
       real(dp) :: t
       integer :: k
 
-      t = 0.0d0
+      t = 0.0_dp
       do k = 1, n
          t = t + (y(k) - y1(k))**2
       end do
@@ -2087,8 +2087,8 @@ contains
       real(kind=dp) dx(1), dy(1), dtemp
       integer i, incx, incy, ix, iy, m, mp1, n
 !
-      ddot = 0.0d0
-      dtemp = 0.0d0
+      ddot = 0.0_dp
+      dtemp = 0.0_dp
       if (n <= 0) return
       if (incx == 1 .and. incy == 1) go to 20
 !
@@ -2135,8 +2135,8 @@ contains
       real(kind=dp) dx(1), dtemp
       integer i, incx, m, mp1, n, nincx
 !
-      dasum = 0.0d0
-      dtemp = 0.0d0
+      dasum = 0.0_dp
+      dtemp = 0.0_dp
       if (n <= 0) return
       if (incx == 1) go to 20
 !
@@ -2179,7 +2179,7 @@ contains
       integer i, incx, incy, ix, iy, m, mp1, n
 !
       if (n <= 0) return
-      if (da == 0.0d0) return
+      if (da == 0.0_dp) return
       if (incx == 1 .and. incy == 1) go to 20
 !
 !        code for unequal increments or equal increments
@@ -2231,7 +2231,7 @@ contains
       real(kind=dp), intent(in) :: dx(:)
       real(kind=dp) :: cutlo, cuthi, hitest, sum, xmax, zero, one
       integer :: next, nn, i, j
-      data zero, one/0.0d0, 1.0d0/
+      data zero, one/0.0_dp, 1.0_dp/
 !
 !     euclidean norm of the n-vector stored in dx() with storage
 !     increment incx .
@@ -2270,7 +2270,7 @@ contains
 !     cuthi, d.p.   same as s.p.  cuthi = 1.30438d19
 !     data cutlo, cuthi / 8.232d-11,  1.304d19 /
 !     data cutlo, cuthi / 4.441e-16,  1.304e19 /
-      data cutlo, cuthi/8.232d-11, 1.304d19/
+      data cutlo, cuthi/8.232e-11_dp, 1.304e19_dp/
 !
       if (n > 0) go to 10
       dnrm2XXX_1 = zero
@@ -2536,16 +2536,16 @@ contains
       roe = db
       if (abs(da) > abs(db)) roe = da
       scale = abs(da) + abs(db)
-      if (scale /= 0.0d0) go to 10
+      if (scale /= 0.0_dp) go to 10
 !        c = 1.0d0
-      s = 0.0d0
-      r = 0.0d0
+      s = 0.0_dp
+      r = 0.0_dp
       go to 20
 10    r = scale * sqrt((da / scale)**2 + (db / scale)**2)
-      r = sign(1.0d0, roe) * r
+      r = sign(1.0_dp, roe) * r
 !     c = da/r
       s = db / r
-20    z = 1.0d0
+20    z = 1.0_dp
       if (abs(da) > abs(db)) z = s
 !     if( abs(db) .ge. abs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
       da = r
@@ -2806,7 +2806,7 @@ contains
       ierr = 0
       do j = 1, ncol
          do i = 1, nrow
-            dns(i, j) = 0.0d0
+            dns(i, j) = 0.0_dp
          end do
       end do
 !
@@ -2868,7 +2868,7 @@ contains
       ia(1) = 1
       do i = 1, nrow
          do j = 1, ncol
-            if (dns(i, j) == 0.0d0) cycle
+            if (dns(i, j) == 0.0_dp) cycle
             if (next > nzmax) then
                ierr = i
                return
@@ -5066,7 +5066,7 @@ contains
 !   fill asky with zeros.
 !
       do k = 1, nnz
-         asky(k) = 0.0d0
+         asky(k) = 0.0_dp
       end do
 !
 !     copy nonzero elements.
@@ -5710,7 +5710,7 @@ contains
       do in = 1, ner
          do innz = 1, n
             jac(innz, in) = n
-            ac(innz, in) = 0.0d0
+            ac(innz, in) = 0.0_dp
          end do
       end do
 !
@@ -5754,7 +5754,7 @@ contains
       do in = 1, ncmax
          icount = 0
          do inn = 1, n
-            if (ac(inn, in) /= 0.0d0) icount = 1
+            if (ac(inn, in) /= 0.0_dp) icount = 1
          end do
          if (icount == 0) then
             ierr = 1
@@ -5767,7 +5767,7 @@ contains
       do inn = 1, n
          icount = 0
          do in = 1, ncmax
-            if (ac(inn, in) /= 0.0d0) icount = 1
+            if (ac(inn, in) /= 0.0_dp) icount = 1
          end do
          if (icount == 0) then
             ierr = 2
@@ -6387,15 +6387,15 @@ contains
             goto 300
          end if
 
-100      norm = 1.0d0
+100      norm = 1.0_dp
          goto 400
-200      norm = 0.0d0
+200      norm = 0.0_dp
          do k = k1, k2
             norm = norm + a(k) * a(k)
          end do
          norm = sqrt(norm)
          goto 400
-300      norm = 0.0d0
+300      norm = 0.0_dp
          do k = k1, k2
             if (abs(a(k)) > norm) then
                norm = abs(a(k))
@@ -6487,7 +6487,7 @@ contains
             goto 300
          end if
 
-100      norm = 1.0d0
+100      norm = 1.0_dp
          goto 400
 200      norm = a(row)**2
          do k = k1, k2
@@ -6693,7 +6693,7 @@ contains
             if (indu(j) == 0) then
 !     .. new entry ..
                if (value2 /= 0) then
-                  if (a(ipos) /= 0.0d0) then
+                  if (a(ipos) /= 0.0_dp) then
                      indu(j) = k
                      ja(k) = ja(ipos)
                      a(k) = a(ipos)
@@ -7061,7 +7061,7 @@ contains
       len = 0
       do i = 1, nrow
          idiag(i) = 0
-         diag(i) = 0.0d0
+         diag(i) = 0.0_dp
       end do
 !
 !     extract  diagonal elements
@@ -8189,7 +8189,7 @@ contains
       do i = 1, n
          k1 = k2
          k2 = ia(i + 1) - 1
-         t = 0.0d0
+         t = 0.0_dp
          do k = k1, k2
             t1 = abs(a(k))
             if (t1 > t) t = t1
@@ -8279,7 +8279,7 @@ contains
 10    do j = 1, n
          k1 = ia(j)
          k2 = ia(j + 1) - 1
-         t = 0.0d0
+         t = 0.0_dp
          do k = k1, k2
             t = t + a(k) * a(k)
          end do
@@ -8290,10 +8290,10 @@ contains
       call retmx(n, a, ja, ia, diag)
 !------
 12    do j = 1, n
-         if (diag(j) /= 0.0d0) then
-            diag(j) = 1.0d0 / diag(j)
+         if (diag(j) /= 0.0_dp) then
+            diag(j) = 1.0_dp / diag(j)
          else
-            diag(j) = 1.0d0
+            diag(j) = 1.0_dp
          end if
       end do
       do i = 1, n
@@ -8345,7 +8345,7 @@ contains
       ltr = ((nblk - 1) * nblk) / 2
       l = m * ltr
       do i = 1, l
-         bdiag(i) = 0.0d0
+         bdiag(i) = 0.0_dp
       end do
       ko = 0
       kb = 1
@@ -8889,7 +8889,7 @@ contains
 !
 !     compute the norm if each element.
 !
-         scal = 0.0d0
+         scal = 0.0_dp
          k1 = ia(ii)
          k2 = ia(ii + 1) - 1
          if (nrm == 0) then
@@ -8940,7 +8940,7 @@ contains
 !
 !-----------------------------------------------------------------
       do k = 1, nrow
-         diag(k) = 0.0d0
+         diag(k) = 0.0_dp
       end do
       do ii = 1, nrow
          k1 = ia(ii)
@@ -9012,11 +9012,11 @@ contains
       call rnrms(nrow, nrm, a, ja, ia, diag)
       ierr = 0
       do j = 1, nrow
-         if (diag(j) == 0.0d0) then
+         if (diag(j) == 0.0_dp) then
             ierr = j
             return
          else
-            diag(j) = 1.0d0 / diag(j)
+            diag(j) = 1.0_dp / diag(j)
          end if
       end do
       call diamua(nrow, job, a, ja, ia, diag, b, jb, ib)
@@ -9076,7 +9076,7 @@ contains
             ierr = j
             return
          else
-            diag(j) = 1.0d0 / diag(j)
+            diag(j) = 1.0_dp / diag(j)
          end if
       end do
       call amudia(nrow, job, a, ja, ia, diag, b, jb, ib)

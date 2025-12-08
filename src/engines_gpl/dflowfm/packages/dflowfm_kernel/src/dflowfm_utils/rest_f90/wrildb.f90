@@ -170,7 +170,7 @@ contains
             end if
 
             if (mod(I, KMOD) == 0) then
-               call READYY(' ', min(1d0, dble(I) / max(1, NSH)))
+               call READYY(' ', min(1.0_dp, real(I, kind=dp) / max(1, NSH)))
             end if
          end do ! pts of one polyline
       end do ! all polylines

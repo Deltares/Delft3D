@@ -94,7 +94,8 @@ contains
          L = nd(n)%ln(kk)
          La = abs(L)
          Lb = Lbot(La)
-         is = 1; if (L < 0) is = -1
+         is = 1
+         if (L < 0) is = -1
          if (is * u1(Lb) > uLx) then ! search link with highest outflow velocity
             LL = La
             uLx = is * u1(Lb)
@@ -222,7 +223,8 @@ contains
             if (dnt == 0) then ! at initialise : copy refprofiles to solution
 
                do LLs = 1, lnx
-                  Lbs = Lbot(LLs); Lts = Ltop(LLs)
+                  Lbs = Lbot(LLs)
+                  Lts = Ltop(LLs)
                   do Ls = Lbs, Lts
                      k = Ls - Lbs + 1
                      u1(Ls) = csu(LLs) * ucxref(k)
@@ -262,7 +264,8 @@ contains
 
          ucm(1:km) = sqrt(ucx(kb:kt) * ucx(kb:kt) + ucy(kb:kt) * ucy(kb:kt))
          call getvminmax(1, vmin, vmax, ucm, km)
-         vmin = 0.0_dp; vmax = 1.0_dp
+         vmin = 0.0_dp
+         vmax = 1.0_dp
          if (jaref > 0) then
             call TEKFN(1, 1, 0, ucxref, hcref, km, vmin, vmax, zmin, zmax, 31, 'vel. mag.', 0, 1, 0.0_dp, 0) ! mid-layers
          end if
@@ -298,13 +301,17 @@ contains
          if (iturbulencemodel >= 3 .and. LL > 0) then
 
             if (frcuni > 0 .and. ndraw(35) == 1) then
-               vmin = 0.0_dp; vmax = 0.0_dp; vmax = max(vmax, maxval(turkin1(Lb0:Lt)), vmin + 1.0e-5_dp)
+               vmin = 0.0_dp
+               vmax = 0.0_dp
+               vmax = max(vmax, maxval(turkin1(Lb0:Lt)), vmin + 1.0e-5_dp)
                if (jaref > 0) call TEKFN(4, 7, 0, tkin1ref, hwref, km1, vmin, vmax, zmin, zmax, 31, 'tkin1', 0, 1, 0.0_dp, 0) ! interfaces
                call TEKFN(4, 8, 1, turkin1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'tkin1', 0, 2, 0.0_dp, kplot + 1)
             end if
 
             if (frcuni > 0 .and. ndraw(35) == 1) then
-               vmin = 0.0_dp; vmax = 0.0_dp; vmax = max(vmax, maxval(tureps1(Lb0:Lt)), vmin + 1.0e-5_dp)
+               vmin = 0.0_dp
+               vmax = 0.0_dp
+               vmax = max(vmax, maxval(tureps1(Lb0:Lt)), vmin + 1.0e-5_dp)
                if (jaref > 0) call TEKFN(5, 9, 0, teps1ref, hwref, km1, vmin, vmax, zmin, zmax, 31, 'teps1', 0, 1, 0.0_dp, 0) ! interfaces
                call TEKFN(5, 10, 1, tureps1(Lb0:Lt), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'teps1', 0, 2, 0.0_dp, kplot + 1)
             end if
@@ -352,19 +359,22 @@ contains
                kk = k - kb + 1
                dijdij(kk) = drhodz(kk) * brunt_vaisala_coefficient
             end do
-            dijdij(0) = 0.0_dp; dijdij(km) = dijdij(km - 1)
+            dijdij(0) = 0.0_dp
+            dijdij(km) = dijdij(km - 1)
             vmin = minval(dijdij(1:km - 1))
             vmax = maxval(dijdij(1:km - 1))
             if (abs(vmin) < vmax) vmin = -vmax
             if (vmax < abs(vmin)) vmax = -vmin
             if (abs(vmin - vmax) < 1.0e-20_dp) then
-               vmax = vmax + 1.0e-5_dp; vmin = vmin - 1.0e-5_dp
+               vmax = vmax + 1.0e-5_dp
+               vmin = vmin - 1.0e-5_dp
             end if
             call TEKFN(7, 13, 1, dijdij(0:km), hwref, Lm1, vmin, vmax, zmin, zmax, KLPROF, 'Bruva', 0, 2, 0.0_dp, kplot + 1)
          else if (jatem > 0) then
             if (jafahrenheit > 0) then
                dijdij(1:km) = 32.0_dp + constituents(itemp, kb:kt) * 1.8_dp
-               vmin = 70.0_dp; vmax = 90.0_dp
+               vmin = 70.0_dp
+               vmax = 90.0_dp
                call TEKFN(7, 13, 1, dijdij(1:km), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'Temp (F)', 0, 2, 0.0_dp, kplot)
             else
                dijdij(1:km) = constituents(itemp, kb:kt)
@@ -372,12 +382,14 @@ contains
                call TEKFN(7, 13, 1, dijdij(1:km), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'Temp (C)', 0, 2, 0.0_dp, kplot)
             end if
          else if (jased > 0 .and. jased < 4) then
-            vmin = 1.0e2_dp; vmax = -1.0e2_dp
+            vmin = 1.0e2_dp
+            vmax = -1.0e2_dp
             vmin = min(vmin, minval(sed(1, kb:kt)))
             vmax = max(vmax, maxval(sed(1, kb:kt)), vmin + 1.0e-5_dp)
             call TEKFN(7, 13, 1, sed(1, kb:kt), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'sed', 0, 2, 0.0_dp, kplot)
          else
-            vmin = 1.0e2_dp; vmax = -1.0e2_dp
+            vmin = 1.0e2_dp
+            vmax = -1.0e2_dp
             vmin = min(vmin, minval(ucy(kb:kt)))
             vmax = max(vmax, maxval(ucy(kb:kt)), vmin + 1.0e-5_dp)
             call TEKFN(7, 13, 1, ucy(kb:kt), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'y-velocity', 0, 2, 0.0_dp, kplot)
@@ -386,13 +398,15 @@ contains
          if (jawave > NO_WAVES .and. jawaveStokes > NO_STOKES_DRIFT .and. .not. flowWithoutWaves) then
             vmin = minval(ucx(kb:kt) - ustokes(Lb:Lt))
             vmax = maxval(ucx(kb:kt) - ustokes(Lb:Lt))
-            vmax = max(abs(vmin), abs(vmax)); vmin = -vmax
+            vmax = max(abs(vmin), abs(vmax))
+            vmin = -vmax
             dijdij(1:km) = ucx(kb:kt) - ustokes(Lb:Lt)
             call TEKFN(8, 12, 1, dijdij(1:km), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'x-velocity', 0, 2, 0.0_dp, kplot)
          else
             vmin = minval(ucx(kb:kt))
             vmax = maxval(ucx(kb:kt))
-            vmax = max(abs(vmin), abs(vmax), 1.0e-4_dp); vmin = -vmax
+            vmax = max(abs(vmin), abs(vmax), 1.0e-4_dp)
+            vmin = -vmax
             call TEKFN(8, 12, 1, ucx(kb:kt), hcref, km, vmin, vmax, zmin, zmax, KLPROF, 'x-velocity', 0, 2, 0.0_dp, kplot)
          end if
 

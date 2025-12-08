@@ -56,11 +56,15 @@ contains
 
       do L = 1, lnx
          if (L > lnx1D .and. L <= lnxi) then
-            k1 = lncn(1, l); k2 = lncn(2, L) ! eigenlijk 3 en 4
-            xa = 0.5 * (xk(k1) + xk(k2)); ya = 0.5 * (yk(k1) + yk(k2))
+            k1 = lncn(1, l)
+            k2 = lncn(2, L) ! eigenlijk 3 en 4
+            xa = 0.5 * (xk(k1) + xk(k2))
+            ya = 0.5 * (yk(k1) + yk(k2))
          else
-            k1 = ln(1, L); k2 = ln(2, L)
-            xa = 0.5 * (xz(k1) + xz(k2)); ya = 0.5 * (yz(k1) + yz(k2))
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            xa = 0.5 * (xz(k1) + xz(k2))
+            ya = 0.5 * (yz(k1) + yz(k2))
          end if
 
          if (abs(XA - XP) < 3 * RCIR .and. abs(YA - YP) < 3 * RCIR) then
