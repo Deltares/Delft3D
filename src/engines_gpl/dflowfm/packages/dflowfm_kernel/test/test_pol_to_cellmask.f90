@@ -39,27 +39,57 @@ contains
       allocate(xpl(npl), ypl(npl), zpl(npl))
       
       ! Enclosure polygon (rectangle from 0,0 to 30,30) with zpl=-1
-      xpl(1) = 0.0_dp;   ypl(1) = 0.0_dp;   zpl(1) = -1.0_dp
-      xpl(2) = 30.0_dp;  ypl(2) = 0.0_dp;   zpl(2) = -1.0_dp
-      xpl(3) = 30.0_dp;  ypl(3) = 30.0_dp;  zpl(3) = -1.0_dp
-      xpl(4) = 0.0_dp;   ypl(4) = 30.0_dp;  zpl(4) = -1.0_dp
-      xpl(5) = 0.0_dp;   ypl(5) = 0.0_dp;   zpl(5) = -1.0_dp
+      xpl(1) = 0.0_dp
+      ypl(1) = 0.0_dp
+      zpl(1) = -1.0_dp
+      xpl(2) = 30.0_dp
+      ypl(2) = 0.0_dp
+      zpl(2) = -1.0_dp
+      xpl(3) = 30.0_dp
+      ypl(3) = 30.0_dp
+      zpl(3) = -1.0_dp
+      xpl(4) = 0.0_dp
+      ypl(4) = 30.0_dp
+      zpl(4) = -1.0_dp
+      xpl(5) = 0.0_dp
+      ypl(5) = 0.0_dp
+      zpl(5) = -1.0_dp
       
       ! Separator
-      xpl(6) = dmiss;    ypl(6) = dmiss;    zpl(6) = dmiss
+      xpl(6) = dmiss
+      ypl(6) = dmiss
+      zpl(6) = dmiss
       
       ! Dry point polygon (rectangle from 10,10 to 20,20) with zpl=1
-      xpl(7) = 10.0_dp;  ypl(7) = 10.0_dp;  zpl(7) = 1.0_dp
-      xpl(8) = 20.0_dp;  ypl(8) = 10.0_dp;  zpl(8) = 1.0_dp
-      xpl(9) = 20.0_dp;  ypl(9) = 20.0_dp;  zpl(9) = 1.0_dp
-      xpl(10) = 10.0_dp; ypl(10) = 20.0_dp; zpl(10) = 1.0_dp
-      xpl(11) = 10.0_dp; ypl(11) = 10.0_dp; zpl(11) = 1.0_dp
+      xpl(7) = 10.0_dp
+      ypl(7) = 10.0_dp
+      zpl(7) = 1.0_dp
+      xpl(8) = 20.0_dp
+      ypl(8) = 10.0_dp
+      zpl(8) = 1.0_dp
+      xpl(9) = 20.0_dp
+      ypl(9) = 20.0_dp
+      zpl(9) = 1.0_dp
+      xpl(10) = 10.0_dp
+      ypl(10) = 20.0_dp
+      zpl(10) = 1.0_dp
+      xpl(11) = 10.0_dp
+      ypl(11) = 10.0_dp
+      zpl(11) = 1.0_dp
       
       ! Separators
-      xpl(12) = dmiss;   ypl(12) = dmiss;   zpl(12) = dmiss
-      xpl(13) = dmiss;   ypl(13) = dmiss;   zpl(13) = dmiss
-      xpl(14) = dmiss;   ypl(14) = dmiss;   zpl(14) = dmiss
-      xpl(15) = dmiss;   ypl(15) = dmiss;   zpl(15) = dmiss
+      xpl(12) = dmiss
+      ypl(12) = dmiss
+      zpl(12) = dmiss
+      xpl(13) = dmiss
+      ypl(13) = dmiss
+      zpl(13) = dmiss
+      xpl(14) = dmiss
+      ypl(14) = dmiss
+      zpl(14) = dmiss
+      xpl(15) = dmiss
+      ypl(15) = dmiss
+      zpl(15) = dmiss
       
       ! Initialize polygon data structures
       call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
@@ -122,25 +152,51 @@ contains
       allocate(xpl(npl), ypl(npl), zpl(npl))
       
       ! Outer dry point polygon (rectangle from 0,0 to 40,40)
-      xpl(1) = 0.0_dp;   ypl(1) = 0.0_dp;   zpl(1) = 1.0_dp
-      xpl(2) = 40.0_dp;  ypl(2) = 0.0_dp;   zpl(2) = 1.0_dp
-      xpl(3) = 40.0_dp;  ypl(3) = 40.0_dp;  zpl(3) = 1.0_dp
-      xpl(4) = 0.0_dp;   ypl(4) = 40.0_dp;  zpl(4) = 1.0_dp
-      xpl(5) = 0.0_dp;   ypl(5) = 0.0_dp;   zpl(5) = 1.0_dp
+      xpl(1) = 0.0_dp
+      ypl(1) = 0.0_dp
+      zpl(1) = 1.0_dp
+      xpl(2) = 40.0_dp
+      ypl(2) = 0.0_dp
+      zpl(2) = 1.0_dp
+      xpl(3) = 40.0_dp
+      ypl(3) = 40.0_dp
+      zpl(3) = 1.0_dp
+      xpl(4) = 0.0_dp
+      ypl(4) = 40.0_dp
+      zpl(4) = 1.0_dp
+      xpl(5) = 0.0_dp
+      ypl(5) = 0.0_dp
+      zpl(5) = 1.0_dp
       
       ! Separator
-      xpl(6) = dmiss;    ypl(6) = dmiss;    zpl(6) = dmiss
+      xpl(6) = dmiss
+      ypl(6) = dmiss
+      zpl(6) = dmiss
       
       ! Inner dry point polygon (rectangle from 10,10 to 30,30)
-      xpl(7) = 10.0_dp;  ypl(7) = 10.0_dp;  zpl(7) = 1.0_dp
-      xpl(8) = 30.0_dp;  ypl(8) = 10.0_dp;  zpl(8) = 1.0_dp
-      xpl(9) = 30.0_dp;  ypl(9) = 30.0_dp;  zpl(9) = 1.0_dp
-      xpl(10) = 10.0_dp; ypl(10) = 30.0_dp; zpl(10) = 1.0_dp
-      xpl(11) = 10.0_dp; ypl(11) = 10.0_dp; zpl(11) = 1.0_dp
+      xpl(7) = 10.0_dp
+      ypl(7) = 10.0_dp
+      zpl(7) = 1.0_dp
+      xpl(8) = 30.0_dp
+      ypl(8) = 10.0_dp
+      zpl(8) = 1.0_dp
+      xpl(9) = 30.0_dp
+      ypl(9) = 30.0_dp
+      zpl(9) = 1.0_dp
+      xpl(10) = 10.0_dp
+      ypl(10) = 30.0_dp
+      zpl(10) = 1.0_dp
+      xpl(11) = 10.0_dp
+      ypl(11) = 10.0_dp
+      zpl(11) = 1.0_dp
       
       ! Separators
-      xpl(12) = dmiss;   ypl(12) = dmiss;   zpl(12) = dmiss
-      xpl(13) = dmiss;   ypl(13) = dmiss;   zpl(13) = dmiss
+      xpl(12) = dmiss
+      ypl(12) = dmiss
+      zpl(12) = dmiss
+      xpl(13) = dmiss
+      ypl(13) = dmiss
+      zpl(13) = dmiss
       
       ! Initialize polygon data structures
       call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
