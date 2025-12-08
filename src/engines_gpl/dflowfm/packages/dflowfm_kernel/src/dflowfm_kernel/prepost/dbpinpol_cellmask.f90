@@ -97,7 +97,9 @@ contains
          i_start = i_start + i_point - 1
          i_end = i_end + i_point - 1
 
-         if (i_start >= i_end .or. i_end > polygon_points) exit
+         if (i_start >= i_end .or. i_end > polygon_points) then
+            exit
+         end if
 
          x_poly_min(i_poly) = minval(x_poly(i_start:i_end))
          x_poly_max(i_poly) = maxval(x_poly(i_start:i_end))
