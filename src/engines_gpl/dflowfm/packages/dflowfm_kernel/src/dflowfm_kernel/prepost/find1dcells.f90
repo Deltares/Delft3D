@@ -86,9 +86,12 @@ contains
       KC = 2 ! ONDERSCHEID 1d EN 2d NETNODES
 
       do L = 1, NUML
-         k1 = KN(1, L); k2 = KN(2, L); k3 = KN(3, L)
+         k1 = KN(1, L)
+         k2 = KN(2, L)
+         k3 = KN(3, L)
          if (k3 >= 1 .and. k3 <= 7) then
-            KC(k1) = 1; KC(k2) = 1
+            KC(k1) = 1
+            KC(k2) = 1
          end if
       end do
 
@@ -251,7 +254,8 @@ contains
       integer :: L, k1, k2, left_cell, right_cell
 
       do L = 1, NUML1D
-         k1 = KN(1, L); k2 = KN(2, L)
+         k1 = KN(1, L)
+         k2 = KN(2, L)
          if (k1 == 0) cycle
          left_cell = get_2D_cell(L, k1, left_2D_cells)
          right_cell = get_2D_cell(L, k2, right_2D_cells)

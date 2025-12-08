@@ -61,7 +61,7 @@ contains
          k = netcell(n)%NOD(m)
          nd(n)%x(m) = xk(k)
          nd(n)%y(m) = yk(k)
-         nd(n)%nod(m) = k; 
+         nd(n)%nod(m) = k
       end do
 
       if (jsferic == 1) then ! jglobe

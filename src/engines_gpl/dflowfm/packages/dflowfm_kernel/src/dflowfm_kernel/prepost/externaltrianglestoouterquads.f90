@@ -68,7 +68,8 @@ contains
       real(kind=dp) :: XL, YL, ZL = 0.0_dp
 
       do L = 1, NUML
-         K1 = KN(1, L); K2 = KN(2, L)
+         K1 = KN(1, L)
+         K2 = KN(2, L)
          if (NMK(K1) <= 3 .and. NMK(K2) <= 3) then
             XL = 0.5_dp * (XK(K1) + XK(K2))
             YL = 0.5_dp * (YK(K1) + YK(K2))

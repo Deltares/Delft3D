@@ -586,7 +586,8 @@ contains
                      jamiss = 1
                      L = m
                      k2 = abs(lne(1, L))
-                     k3 = kn(1, L); k4 = kn(2, L)
+                     k3 = kn(1, L)
+                     k4 = kn(2, L)
 
                      call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xzz, yzz, xce2, yce2, xx, yy)
                      if (izbndpos == 0) then ! as in D3DFLOW

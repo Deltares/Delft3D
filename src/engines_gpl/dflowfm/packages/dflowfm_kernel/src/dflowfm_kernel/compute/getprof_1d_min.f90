@@ -50,7 +50,8 @@ contains
       real(kind=dp) :: alfa, hh
       integer :: LL, ka, kb, itp
 
-      area = 0.0_dp; width = 0.0_dp
+      area = 0.0_dp
+      width = 0.0_dp
 
       LL = L
       if (L > lnxi) then ! for 1D boundary links, refer to attached link
@@ -63,12 +64,14 @@ contains
       end if
 
       if (prof1D(1, LL) >= 0) then ! direct profile based upon link value
-         ka = 0; kb = 0 ! do not use profiles
+         ka = 0
+         kb = 0 ! do not use profiles
          profw = prof1D(1, LL)
          profh = prof1D(2, LL)
          itp = prof1D(3, LL)
       else
-         ka = -prof1D(1, LL); kb = -prof1D(2, LL)
+         ka = -prof1D(1, LL)
+         kb = -prof1D(2, LL)
          profw = profiles1D(ka)%width
          profh = profiles1D(ka)%height
          itp = profiles1D(ka)%ityp
@@ -86,7 +89,8 @@ contains
       end if
 
       if (ka /= 0 .and. kb /= ka) then ! interpolate in profiles
-         area2 = 0.0_dp; width2 = 0.0_dp
+         area2 = 0.0_dp
+         width2 = 0.0_dp
          profw = profiles1D(kb)%width
          profh = profiles1D(kb)%height
          itp = profiles1D(kb)%ityp

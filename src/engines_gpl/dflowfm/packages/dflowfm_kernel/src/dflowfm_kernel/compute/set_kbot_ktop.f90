@@ -42,7 +42,7 @@ contains
       use m_flowgeom, only: ndx, ba, bl, ln, lnx, nd
       use m_flow, only: kmx, zws0, zws, ktop0, ktop, vol1, layertype, kbot, jased, kmxn, &
                         zslay, toplayminthick, numtopsig, keepzlayeringatbed, dkx, rho, s1, sdkx, tsigma, epshu, laydefnr, laytyp, &
-                        LAYTP_SIGMA, LAYTP_Z
+                        LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_zlayer_indices, only: getzlayerindices
       use m_flowtimes, only: dts
@@ -65,7 +65,7 @@ contains
       ktop0 = ktop
       vol1 = 0.0_dp
 
-      if (Layertype == LAYTP_SIGMA) then ! sigma only
+      if (Layertype == LAYTP_SIGMA) then ! sigma-layers
          do n = 1, ndx
             kb = kbot(n)
 
@@ -84,7 +84,7 @@ contains
          end do
          return
 
-      else if (Layertype == LAYTP_Z) then ! z or z-sigma
+      else if (Layertype == LAYTP_Z) then ! z- or z-sigma-layers
          do n = 1, ndx
             kb = kbot(n)
 
@@ -133,7 +133,42 @@ contains
             end if
          end do
 
-      else if (Layertype == 4) then ! density controlled sigma
+      else if (Layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
+         do n = 1, ndx
+            kb = kbot(n)
+
+            Ldn = laydefnr(n)
+            if (Ldn > 0) then
+               if (Laytyp(Ldn) == 1) then ! sigma
+                  h0 = s1(n) - zws(kb - 1)
+                  do k = 1, kmxn(n) - 1
+                     zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
+                  end do
+                  ktop(n) = kb + kmxn(n) - 1
+                  zws(ktop(n)) = s1(n)
+               else if (Laytyp(Ldn) == 2) then ! z
+
+                  ktx = kb + kmxn(n) - 1
+                  call getzlayerindices(n, nlayb, nrlay)
+                  do k = kb, ktx
+                     kk = k - kb + nlayb
+                     zkk = zslay(kk, Ldn)
+                     if (zkk < s1(n) - toplayminthick .and. k < ktx) then
+                        zws(k) = zkk
+                     else
+                        zws(k) = s1(n)
+                        ktop(n) = k
+                        if (ktx > k) then
+                           zws(k + 1:ktx) = zws(k)
+                        end if
+                        exit
+                     end if
+                  end do
+               end if
+            end if
+         end do
+
+      else if (Layertype == LAYTP_DENS_SIGMA) then ! density controlled sigma-layers
          dkx = 0.5_dp
          do n = 1, ndx
             drhok = 0.01_dp
@@ -212,41 +247,6 @@ contains
             end do
          end do
          return ! sigma only: quick exit
-
-      else if (Layertype == 3) then ! mix : first do sigma and z
-         do n = 1, ndx
-            kb = kbot(n)
-
-            Ldn = laydefnr(n)
-            if (Ldn > 0) then
-               if (Laytyp(Ldn) == 1) then ! sigma
-                  h0 = s1(n) - zws(kb - 1)
-                  do k = 1, kmxn(n) - 1
-                     zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
-                  end do
-                  ktop(n) = kb + kmxn(n) - 1
-                  zws(ktop(n)) = s1(n)
-               else if (Laytyp(Ldn) == 2) then ! z
-
-                  ktx = kb + kmxn(n) - 1
-                  call getzlayerindices(n, nlayb, nrlay)
-                  do k = kb, ktx
-                     kk = k - kb + nlayb
-                     zkk = zslay(kk, Ldn)
-                     if (zkk < s1(n) - toplayminthick .and. k < ktx) then
-                        zws(k) = zkk
-                     else
-                        zws(k) = s1(n)
-                        ktop(n) = k
-                        if (ktx > k) then
-                           zws(k + 1:ktx) = zws(k)
-                        end if
-                        exit
-                     end if
-                  end do
-               end if
-            end if
-         end do
       end if
 
       do n = 1, ndx
@@ -266,7 +266,7 @@ contains
          zws0 = zws
       end if
 
-      if (layertype > 1) then ! ln does not change in sigma only
+      if (layertype /= LAYTP_SIGMA) then ! ln does not change in sigma only
          call update_link_connectivity()
       end if
    end subroutine set_kbot_ktop
@@ -279,7 +279,7 @@ contains
       use m_flowgeom, only: ndx, ba, bl
       use m_flow, only: kmx, zws, zws0, ktop, vol1, layertype, kbot, jased, kmxn, &
                         zslay, toplayminthick, numtopsig, keepzlayeringatbed, s0, tsigma, epshu, laydefnr, laytyp, &
-                        LAYTP_SIGMA, LAYTP_Z, &
+                        LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA, &
                         nbndz, kbndz
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_zlayer_indices, only: getzlayerindices
@@ -387,7 +387,52 @@ contains
             end if
          end do
 
-      else if (Layertype == 4) then ! density controlled sigma
+      else if (Layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
+         do i_bnd = 1, nbndz
+            n = kbndz(1, i_bnd)
+            if (n <= 0 .or. n > ndx) then
+               cycle
+            end if
+
+            kb = kbot(n)
+            kt0 = ktop(n) ! Store original ktop for comparison
+
+            Ldn = laydefnr(n)
+            if (Ldn > 0) then
+               if (Laytyp(Ldn) == 1) then ! sigma
+                  h0 = s0(n) - zws(kb - 1)
+                  do k = 1, kmxn(n) - 1
+                     zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
+                  end do
+                  ktop(n) = kb + kmxn(n) - 1
+                  zws(ktop(n)) = s0(n)
+               else if (Laytyp(Ldn) == 2) then ! z
+                  ktx = kb + kmxn(n) - 1
+                  call getzlayerindices(n, nlayb, nrlay)
+                  do k = kb, ktx
+                     kk = k - kb + nlayb
+                     zkk = zslay(kk, Ldn)
+                     if (zkk < s0(n) - toplayminthick .and. k < ktx) then
+                        zws(k) = zkk
+                     else
+                        zws(k) = s0(n)
+                        ktop(n) = k
+                        if (ktx > k) then
+                           zws(k + 1:ktx) = zws(k)
+                        end if
+                        exit
+                     end if
+                  end do
+               end if
+            end if
+
+            ! Check if this node experienced significant layer changes
+            if (ktop(n) /= kt0) then
+               need_link_update = .true.
+            end if
+         end do
+
+      else if (Layertype == LAYTP_DENS_SIGMA) then ! density controlled sigma-layers
          ! Simplified version for boundary nodes only - skip the global smoothing,
          ! because looping over all nodes would be too expensive for updating boundary nodes only.
          numbd = 0.5_dp * kmx
@@ -435,51 +480,6 @@ contains
             end do
          end do
          return ! Early exit - no link updates needed for density sigma layers, volumes already calculated
-
-      else if (Layertype == 3) then ! mixed layers
-         do i_bnd = 1, nbndz
-            n = kbndz(1, i_bnd)
-            if (n <= 0 .or. n > ndx) then
-               cycle
-            end if
-
-            kb = kbot(n)
-            kt0 = ktop(n) ! Store original ktop for comparison
-
-            Ldn = laydefnr(n)
-            if (Ldn > 0) then
-               if (Laytyp(Ldn) == 1) then ! sigma
-                  h0 = s0(n) - zws(kb - 1)
-                  do k = 1, kmxn(n) - 1
-                     zws(kb + k - 1) = zws(kb - 1) + h0 * zslay(k, Ldn)
-                  end do
-                  ktop(n) = kb + kmxn(n) - 1
-                  zws(ktop(n)) = s0(n)
-               else if (Laytyp(Ldn) == 2) then ! z
-                  ktx = kb + kmxn(n) - 1
-                  call getzlayerindices(n, nlayb, nrlay)
-                  do k = kb, ktx
-                     kk = k - kb + nlayb
-                     zkk = zslay(kk, Ldn)
-                     if (zkk < s0(n) - toplayminthick .and. k < ktx) then
-                        zws(k) = zkk
-                     else
-                        zws(k) = s0(n)
-                        ktop(n) = k
-                        if (ktx > k) then
-                           zws(k + 1:ktx) = zws(k)
-                        end if
-                        exit
-                     end if
-                  end do
-               end if
-            end if
-
-            ! Check if this node experienced significant layer changes
-            if (ktop(n) /= kt0) then
-               need_link_update = .true.
-            end if
-         end do
       end if
 
       ! Handle overlap zones for all boundary nodes
@@ -516,7 +516,7 @@ contains
       end do
 
       ! Update link connectivity only if boundary nodes experienced wetting or significant layer changes
-      if (need_link_update .and. layertype > 1) then
+      if (need_link_update .and. layertype /= LAYTP_SIGMA) then
          call update_link_connectivity()
       end if
    end subroutine update_vertical_coordinates_boundary

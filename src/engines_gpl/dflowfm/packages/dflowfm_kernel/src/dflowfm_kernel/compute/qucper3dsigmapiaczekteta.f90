@@ -67,7 +67,8 @@ contains
       real(kind=dp) :: ucinx, uciny
       integer :: nn12
 
-      ae = 0.0_dp; ai = 0.0_dp
+      ae = 0.0_dp
+      ai = 0.0_dp
 
       do n12 = 1, 2
          if (n12 == 1) then
@@ -78,14 +79,17 @@ contains
          k12 = ln(n12, LL)
          do La = 1, nd(k12)%lnx ! loop over all attached links
             LLL = nd(k12)%ln(La)
-            nn12 = 1; if (LLL > 0) nn12 = 2
+            nn12 = 1
+            if (LLL > 0) nn12 = 2
             LLLL = abs(LLL)
 
-            Lb2 = Lbot(LLLL); Lt2 = Ltop(LLLL)
+            Lb2 = Lbot(LLLL)
+            Lt2 = Ltop(LLLL)
             do Lk = LB2, LT2
 
                if (qa(Lk) /= 0) then ! include own link
-                  k1 = ln(1, Lb + Lk - Lb2); k2 = ln(2, Lb + Lk - Lb2)
+                  k1 = ln(1, Lb + Lk - Lb2)
+                  k2 = ln(2, Lb + Lk - Lb2)
                   volu = acL(LL) * vol1(k1) + (1.0_dp - acl(LL)) * vol1(k2)
                   if (volu > 0.0_dp) then
                      cfl = abs(qa(Lk)) * dts / volu

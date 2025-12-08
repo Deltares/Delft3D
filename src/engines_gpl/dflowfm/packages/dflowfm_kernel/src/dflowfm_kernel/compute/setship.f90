@@ -96,20 +96,26 @@ contains
          if (allocated(viusp)) then
             deallocate (viusp)
          end if
-         allocate (viusp(lnx), stat=ierr); viusp = 0.0_dp
+         allocate (viusp(lnx), stat=ierr)
+         viusp = 0.0_dp
 
          shu = 0.0_dp
          shv = 0.0_dp
          sho = 0.0_dp
 
-         fricx = 0.0_dp; fricy = 0.0_dp; fricm = 0.0_dp
-         fx2 = 0.0_dp; fy2 = 0.0_dp; fm2 = 0.0_dp
+         fricx = 0.0_dp
+         fricy = 0.0_dp
+         fricm = 0.0_dp
+         fx2 = 0.0_dp
+         fy2 = 0.0_dp
+         fm2 = 0.0_dp
 
          shx(1) = xmns + 0.6_dp * (xmxs - xmns) ! 5850.
          shy(1) = ymns + 0.3_dp * (ymxs - ymns) ! 450.
          shi(1) = pi
 
-         fstuw = 0.0_dp; froer = 0.0_dp
+         fstuw = 0.0_dp
+         froer = 0.0_dp
 
          stuwmx = 120.0_dp * rhog
          roermx = 1.0_dp
@@ -156,9 +162,12 @@ contains
             roeri = 0.06_dp ! wheel effect especially in reverse => 6 degree dev to port => left turning screw
             stuwc = 0.6_dp ! less efficient in reverse
          end if
-         css = cos(shi(n) + roeri); sns = sin(shi(n) + roeri)
+         css = cos(shi(n) + roeri)
+         sns = sin(shi(n) + roeri)
          stuwn = stuwc * stuw(n)
-         stuwx(n) = stuwn * css; stuwy(n) = stuwn * sns; stuwm(n) = 0.8_dp * shL(n) * stuwn * sin(-roeri)
+         stuwx(n) = stuwn * css
+         stuwy(n) = stuwn * sns
+         stuwm(n) = 0.8_dp * shL(n) * stuwn * sin(-roeri)
 
          if (icontroltyp(n) == 1 .or. icontroltyp(n) == 2) then ! position from txy file
             if (iniship > 0) then
@@ -209,10 +218,14 @@ contains
          rela = exp(-dts / Trelax) ! time relax for force
          shvol = 0.0_dp
          do n = 1, nshiptxy
-            fx = 0.0_dp; fy = 0.0_dp; xm = 0.0_dp; ym = 0.0_dp
+            fx = 0.0_dp
+            fy = 0.0_dp
+            xm = 0.0_dp
+            ym = 0.0_dp
 
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                if (zsp(k1) /= 0.0_dp .or. zsp(k2) /= 0.0_dp) then
 
                   !dp_length  = -rhog* ( s1(k2) -  s1(k1) )                                    !       /dx(L)    !
@@ -236,7 +249,8 @@ contains
                end if
             end do
 
-            qz = 0.0_dp; qza = 0.0_dp
+            qz = 0.0_dp
+            qza = 0.0_dp
             do k = 1, ndxi
                if (zsp(k) /= 0.0_dp) then
                   arm = xz(k) - (shx(n) + dxcog(n))
@@ -261,7 +275,9 @@ contains
 
       do n = 1, nshiptxy ! impose the ship hulls
 
-         css = cos(shi(n)); sns = sin(shi(n)); checkdw(n) = 0.0_dp
+         css = cos(shi(n))
+         sns = sin(shi(n))
+         checkdw(n) = 0.0_dp
 
          !css    = 1d0
          !sns    = 0d0
@@ -295,7 +311,8 @@ contains
                       sxr > -shL(n) * yf .and. sxr < shL(n) * yf) then
 
                      alf = 1.0_dp
-                     dss = abs(sxr) / (shL(n) * yf); frb = 0.40_dp ! 0.25d0
+                     dss = abs(sxr) / (shL(n) * yf)
+                     frb = 0.40_dp ! 0.25d0
                      if (dss > frb) then
                         alf = 0.5_dp * (cos(pi * (dss - frb) / (1.0_dp - frb)) + 1.0_dp)
                      end if
@@ -332,10 +349,12 @@ contains
                   if (syr > -shb(n) .and. syr < shb(n) .and. & ! through arcinfo
                       sxr > -shL(n) .and. sxr < shL(n)) then
                      xx = sxr + shL(n)
-                     i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n)); i1 = i0 + 1
+                     i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n))
+                     i1 = i0 + 1
                      dxx = (xx - (i0 - 1) * dxsa) / dxsa
                      yy = syr + shB(n)
-                     j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n)); j1 = j0 + 1
+                     j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n))
+                     j1 = j0 + 1
                      dyy = (yy - (j0 - 1) * dysa) / dysa
                      zsp(k) = D(i0, j0) * (1.0_dp - dxx) * (1.0_dp - dyy) + &
                               D(i1, j0) * (dxx) * (1.0_dp - dyy) + &
@@ -351,10 +370,12 @@ contains
                   if (syr > -shb(n) .and. syr < shb(n) .and. &
                       sxr > -shL(n) .and. sxr < shL(n)) then
                      xx = sxr + shL(n)
-                     i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n)); i1 = i0 + 1
+                     i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n))
+                     i1 = i0 + 1
                      dxx = (xx - (i0 - 1) * dxsa) / dxsa
                      yy = syr + shB(n)
-                     j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n)); j1 = j0 + 1
+                     j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n))
+                     j1 = j0 + 1
                      dyy = (yy - (j0 - 1) * dysa) / dysa
                      zspc(k) = D(i0, j0) * (1.0_dp - dxx) * (1.0_dp - dyy) + &
                                D(i1, j0) * (dxx) * (1.0_dp - dyy) + &
@@ -377,10 +398,12 @@ contains
                   if (syr > -shb(n) .and. syr < shb(n) .and. &
                       sxr > -shL(n) .and. sxr < shL(n)) then
                      xx = sxr + shL(n)
-                     i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n)); i1 = i0 + 1
+                     i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n))
+                     i1 = i0 + 1
                      dxx = (xx - (i0 - 1) * dxsa) / dxsa
                      yy = syr + shB(n)
-                     j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n)); j1 = j0 + 1
+                     j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n))
+                     j1 = j0 + 1
                      dyy = (yy - (j0 - 1) * dysa) / dysa
                      zspc(k) = D(i0, j0) * (1.0_dp - dxx) * (1.0_dp - dyy) + &
                                D(i1, j0) * (dxx) * (1.0_dp - dyy) + &
@@ -415,7 +438,8 @@ contains
                      end if
 
                      if (zspc(k1) == 0.0_dp .or. zspc(k2) == 0.0_dp .or. zspc(k3) == 0.0_dp .or. zspc(k4) == 0.0_dp) then
-                        zsp(k) = 0.0_dp; ar = 0.0_dp
+                        zsp(k) = 0.0_dp
+                        ar = 0.0_dp
 
                         do mm = 1, mmx
                            exx = (mm - 0.5_dp) * dxxx
@@ -434,10 +458,12 @@ contains
                               if (syr > -shb(n) .and. syr < shb(n) .and. & ! through arcinfo
                                   sxr > -shL(n) .and. sxr < shL(n)) then
                                  xx = sxr + shL(n)
-                                 i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n)); i1 = i0 + 1
+                                 i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n))
+                                 i1 = i0 + 1
                                  dxx = (xx - (i0 - 1) * dxsa) / dxsa
                                  yy = syr + shB(n)
-                                 j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n)); j1 = j0 + 1
+                                 j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n))
+                                 j1 = j0 + 1
                                  dyy = (yy - (j0 - 1) * dysa) / dysa
                                  zspk = D(i0, j0) * (1.0_dp - dxx) * (1.0_dp - dyy) + &
                                         D(i1, j0) * (dxx) * (1.0_dp - dyy) + &
@@ -467,7 +493,8 @@ contains
 
                do k = 1, ndx
 
-                  zsp(k) = 0.0_dp; ar = 0.0_dp
+                  zsp(k) = 0.0_dp
+                  ar = 0.0_dp
 
                   k1 = nd(k)%nod(1)
                   k2 = nd(k)%nod(2)
@@ -495,10 +522,12 @@ contains
                         if (syr > -shb(n) .and. syr < shb(n) .and. & ! through arcinfo
                             sxr > -shL(n) .and. sxr < shL(n)) then
                            xx = sxr + shL(n)
-                           i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n)); i1 = i0 + 1
+                           i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n))
+                           i1 = i0 + 1
                            dxx = (xx - (i0 - 1) * dxsa) / dxsa
                            yy = syr + shB(n)
-                           j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n)); j1 = j0 + 1
+                           j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n))
+                           j1 = j0 + 1
                            dyy = (yy - (j0 - 1) * dysa) / dysa
                            zspk = D(i0, j0) * (1.0_dp - dxx) * (1.0_dp - dyy) + &
                                   D(i1, j0) * (dxx) * (1.0_dp - dyy) + &
@@ -528,10 +557,12 @@ contains
                if (syr > -shb(n) .and. syr < shb(n) .and. &
                    sxr > -shL(n) .and. sxr < shL(n)) then
                   xx = sxr + shL(n)
-                  i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n)); i1 = i0 + 1
+                  i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n))
+                  i1 = i0 + 1
                   dxx = (xx - (i0 - 1) * dxsa) / dxsa
                   yy = syr + shB(n)
-                  j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n)); j1 = j0 + 1
+                  j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n))
+                  j1 = j0 + 1
                   dyy = (yy - (j0 - 1) * dysa) / dysa
                   zspc(k) = D(i0, j0) * (1.0_dp - dxx) * (1.0_dp - dyy) + &
                             D(i1, j0) * (dxx) * (1.0_dp - dyy) + &
@@ -565,7 +596,8 @@ contains
          do kk = 1, numsmo
             zsp2 = zsp
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                df = wsmo * (zsp2(k2) - zsp2(k1))
                zsp(k1) = zsp(k1) + df
                zsp(k2) = zsp(k2) - df
@@ -575,7 +607,8 @@ contains
 
          if (iniship == 0) then
             if (jarestart == 0) then
-               s0 = s0 - zsp; s1 = s0
+               s0 = s0 - zsp
+               s1 = s0
             end if
          else
             call setpressurehull()
@@ -598,14 +631,20 @@ contains
 
       do n = 1, nshiptxy
 
-         css = cos(shi(n)); sns = sin(shi(n)); cfav = 0.0_dp; aav = 0.0_dp
+         css = cos(shi(n))
+         sns = sin(shi(n))
+         cfav = 0.0_dp
+         aav = 0.0_dp
 
          if (icontroltyp(n) > 1) then
 
-            volprop = 0.0_dp; prop = 0.5_dp * shb(n); prptot = 0.0_dp
+            volprop = 0.0_dp
+            prop = 0.5_dp * shb(n)
+            prptot = 0.0_dp
 
             do L = 1, lnx ! establish propellor volume to later distribute stuw
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
 
                syr = (yz(k1) - shy(n)) * css - (xz(k1) - shx(n)) * sns
                sxr = (xz(k1) - shx(n)) * css + (yz(k1) - shy(n)) * sns
@@ -615,7 +654,8 @@ contains
                yf = 1.0_dp - (0.1_dp * abs(syr) / shb(n))
                yf2 = 1.0_dp - (0.1_dp * abs(syr2) / shb(n))
                if (ihullmethod > 0) then
-                  yf = 1.0_dp; yf2 = 1.0_dp
+                  yf = 1.0_dp
+                  yf2 = 1.0_dp
                end if
 
                if (syr > -shb(n) .and. syr < shb(n) .and. &
@@ -638,13 +678,20 @@ contains
                end if
             end do
 
-            fricx(n) = 0.0_dp; fricy(n) = 0.0_dp; fricm(n) = 0.0_dp
-            fricxe(n) = 0.0_dp; fricye(n) = 0.0_dp; fricme(n) = 0.0_dp
-            fricxi(n) = 0.0_dp; fricyi(n) = 0.0_dp; fricmi(n) = 0.0_dp
+            fricx(n) = 0.0_dp
+            fricy(n) = 0.0_dp
+            fricm(n) = 0.0_dp
+            fricxe(n) = 0.0_dp
+            fricye(n) = 0.0_dp
+            fricme(n) = 0.0_dp
+            fricxi(n) = 0.0_dp
+            fricyi(n) = 0.0_dp
+            fricmi(n) = 0.0_dp
 
             do L = 1, lnx ! impose ship by pressure field
                plotlin(L) = 0.0_dp
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                syr = (yz(k1) - shy(n)) * css - (xz(k1) - shx(n)) * sns
                sxr = (xz(k1) - shx(n)) * css + (yz(k1) - shy(n)) * sns
                syr2 = (yz(k2) - shy(n)) * css - (xz(k2) - shx(n)) * sns
@@ -653,7 +700,8 @@ contains
                yf = 1.0_dp - (0.1_dp * abs(syr) / shb(n))
                yf2 = 1.0_dp - (0.1_dp * abs(syr2) / shb(n))
                if (ihullmethod > 0) then
-                  yf = 1.0_dp; yf2 = 1.0_dp
+                  yf = 1.0_dp
+                  yf2 = 1.0_dp
                end if
 
                if (vicuship /= 0.0_dp) then
@@ -673,9 +721,11 @@ contains
                   if (vicuship /= 0.0_dp) then
                      if (vicuship > 0) then
                         if (sxr > shL(n) - 2.0_dp * shb(n)) then
-                           fac = min(shb(n), dbdistance(sxr, syr, shL(n) - shb(n), 0.0_dp, jsferic, jasfer3D, dmiss)); fac = 1.0_dp - fac / shb(n)
+                           fac = min(shb(n), dbdistance(sxr, syr, shL(n) - shb(n), 0.0_dp, jsferic, jasfer3D, dmiss))
+                           fac = 1.0_dp - fac / shb(n)
                         else if (sxr < -shL(n) + 2.0_dp * shb(n)) then
-                           fac = min(shb(n), dbdistance(sxr, syr, -shL(n) + shb(n), 0.0_dp, jsferic, jasfer3D, dmiss)); fac = 1.0_dp - fac / shb(n)
+                           fac = min(shb(n), dbdistance(sxr, syr, -shL(n) + shb(n), 0.0_dp, jsferic, jasfer3D, dmiss))
+                           fac = 1.0_dp - fac / shb(n)
                         else
                            fac = 0.0_dp
                         end if
@@ -689,7 +739,8 @@ contains
                   end if
 
                   if (japrop == 1 .and. iniship > 0) then
-                     prp = 0.0_dp; prop = 0.5_dp * shb(n) ! add propellor
+                     prp = 0.0_dp
+                     prop = 0.5_dp * shb(n) ! add propellor
                      dss = sqrt((-0.8 * shL(n) - sxr)**2 + syr**2)
                      if (dss < prop) then
                         dss = dss / prop
@@ -729,7 +780,8 @@ contains
                      end if
 
                      if (jafric >= 3) then ! Skewness correction
-                        k3 = lncn(1, L); k4 = lncn(2, L)
+                        k3 = lncn(1, L)
+                        k4 = lncn(2, L)
                         ai = (zspc(k4) - zspc(k3)) * wui(L)
                         bi = (zsp(k2) - zsp(k1)) * dxi(L)
                         Ar = Ar * sqrt(1.0_dp + ai * ai + bi * bi)
@@ -759,7 +811,8 @@ contains
                      end if
 
                      aa = Ar * 0.5_dp * (ba(k1) + ba(k2))
-                     cfav = cfav + cf * aa; aav = aav + aa
+                     cfav = cfav + cf * aa
+                     aav = aav + aa
 
                      frc = 0.5_dp * Cf * Ar ! (shb(n)+shd(n)) / shb(n)                      ! 0.5 for this is non civil but official
 
@@ -783,7 +836,8 @@ contains
                      uysh = shv(n) + sho(n) * (xu(L) - shx(n))
 
                      Lt = Ltop(L)
-                     k1t = ln(1, Lt); k2t = ln(2, Lt)
+                     k1t = ln(1, Lt)
+                     k2t = ln(2, Lt)
                      uxw = 0.5_dp * (ucx(k1t) + ucx(k2t)) ! water velocity x,y
                      uyw = 0.5_dp * (ucy(k1t) + ucy(k2t))
 

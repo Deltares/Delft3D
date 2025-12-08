@@ -516,11 +516,14 @@ contains
       ! count number of 2D links and 1D endpoints
       call count_links(mx1Dend, Nx)
 
-      allocate (xe(nx), stat=ierr); xe = 0 ! used in findexternalboundarypoints
+      allocate (xe(nx), stat=ierr)
+      xe = 0 ! used in findexternalboundarypoints
       call aerr('xe (nx)', ierr, nx)
-      allocate (ye(nx), stat=ierr); ye = 0
+      allocate (ye(nx), stat=ierr)
+      ye = 0
       call aerr('ye (nx)', ierr, nx)
-      allocate (xyen(2, nx), stat=ierr); xyen = 0.0_dp
+      allocate (xyen(2, nx), stat=ierr)
+      xyen = 0.0_dp
       call aerr('xyen(2, nx)', ierr, nx)
 
       ! some temp arrays
@@ -534,7 +537,30 @@ contains
       end if
       allocate (kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx), itpenu(nx), kew(nx), ftpet(nx), stat=ierr)
       call aerr('kce(nx), ke(nx), kez(nx), keu(nx), kes(nx), ketm(nx), kesd(nx), keuxy(nx), ket(nx), ken(nx), ke1d2d(nx), keg(nx), ked(nx), kep(nx), kedb(nx), keklep(nx), kevalv(nx), kegs(nx), kegen(nx), itpez(nx), itpenz(nx), itpeu(nx) , itpenu(nx), kew(nx), ftpet(nx)', ierr, 17 * nx)
-      kce = 0; ke = 0; kez = 0; keu = 0; kes = 0; ketm = 0; kesd = 0; keuxy = 0; ket = 0; ken = 0; ke1d2d = 0; keg = 0; ked = 0; kep = 0; kedb = 0; keklep = 0; kevalv = 0; kegen = 0; itpez = 0; itpenz = 0; itpeu = 0; itpenu = 0; kew = 0; ftpet = 1e6_dp
+      kce = 0
+      ke = 0
+      kez = 0
+      keu = 0
+      kes = 0
+      ketm = 0
+      kesd = 0
+      keuxy = 0
+      ket = 0
+      ken = 0
+      ke1d2d = 0
+      keg = 0
+      ked = 0
+      kep = 0
+      kedb = 0
+      keklep = 0
+      kevalv = 0
+      kegen = 0
+      itpez = 0
+      itpenz = 0
+      itpeu = 0
+      itpenu = 0
+      kew = 0
+      ftpet = 1e6_dp
 
       if (allocated(ketr)) then
          deallocate (ketr)
@@ -888,7 +914,8 @@ contains
             deallocate (pliname)
          end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kez(nbndz + 1:nx), numz, usemask=.true., pliname=pliname) !numz=number cells found, plname=pliname
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numz, ' nr of open bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numz, ' nr of open bndcells'
+         call msg_flush()
          nzbnd = nzbnd + 1
 
          if (qidfm == 'waterlevelbnd') then
@@ -912,14 +939,20 @@ contains
             nqhbnd = nqhbnd + 1
             numqh = numz
             if (filetype == poly_tim) then
-               call realloc(qhpliname, nqhbnd); qhpliname(nqhbnd) = pliname
+               call realloc(qhpliname, nqhbnd)
+               qhpliname(nqhbnd) = pliname
             end if
 
-            call realloc(L1qhbnd, nqhbnd); L1qhbnd(nqhbnd) = nbndz + 1
-            call realloc(L2qhbnd, nqhbnd); L2qhbnd(nqhbnd) = nbndz + numz
-            call realloc(atqh_all, nqhbnd); atqh_all(nqhbnd) = 0.0_dp
-            call realloc(atqh_sum, nqhbnd); atqh_sum(nqhbnd) = 0.0_dp
-            call realloc(qhbndz, nqhbnd); qhbndz(nqhbnd) = 0.0_dp
+            call realloc(L1qhbnd, nqhbnd)
+            L1qhbnd(nqhbnd) = nbndz + 1
+            call realloc(L2qhbnd, nqhbnd)
+            L2qhbnd(nqhbnd) = nbndz + numz
+            call realloc(atqh_all, nqhbnd)
+            atqh_all(nqhbnd) = 0.0_dp
+            call realloc(atqh_sum, nqhbnd)
+            atqh_sum(nqhbnd) = 0.0_dp
+            call realloc(qhbndz, nqhbnd)
+            qhbndz(nqhbnd) = 0.0_dp
             call realloc(qh_gamma, nqhbnd)
             qh_gamma = 0.0_dp
             call realloc(qhbndz_min, nqhbnd)
@@ -951,7 +984,8 @@ contains
       else if (qidfm == 'velocitybnd' .or. qidfm == 'dischargebnd' .or. qidfm == 'qhubnd' .or. &
                qidfm == 'criticaloutflowbnd' .or. qidfm == 'weiroutflowbnd' .or. qidfm == 'absgenbnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, keu(nbndu + 1:nx), numu, usemask=.true., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numu, ' nr of open bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numu, ' nr of open bndcells'
+         call msg_flush()
          nubnd = nubnd + 1
 
          if (qidfm == 'velocitybnd') then
@@ -959,13 +993,18 @@ contains
          else if (qidfm == 'dischargebnd') then
             itpbn = 4
             nqbnd = nqbnd + 1
-            call realloc(L1qbnd, nqbnd); L1qbnd(nqbnd) = nbndu + 1
-            call realloc(L2qbnd, nqbnd); L2qbnd(nqbnd) = nbndu + numu
-            call realloc(at_all, nqbnd); at_all(nqbnd) = 0.0_dp
-            call realloc(at_sum, nqbnd); at_sum(nqbnd) = 0.0_dp
+            call realloc(L1qbnd, nqbnd)
+            L1qbnd(nqbnd) = nbndu + 1
+            call realloc(L2qbnd, nqbnd)
+            L2qbnd(nqbnd) = nbndu + numu
+            call realloc(at_all, nqbnd)
+            at_all(nqbnd) = 0.0_dp
+            call realloc(at_sum, nqbnd)
+            at_sum(nqbnd) = 0.0_dp
             call realloc(wwssav_all, [2, nqbnd], keepExisting=.true., fill=0.0_dp)
             call realloc(wwssav_sum, [2, nqbnd], keepExisting=.true., fill=0.0_dp)
-            call realloc(huqbnd, L2qbnd(nqbnd)); huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0.0_dp
+            call realloc(huqbnd, L2qbnd(nqbnd))
+            huqbnd(L1qbnd(nqbnd):L2qbnd(nqbnd)) = 0.0_dp
          else if (qidfm == 'absgenbnd') then
             if (.not. (jawave == WAVE_SURFBEAT)) then ! Safety to avoid allocation errors later on
                call qnerror('Absorbing-generating boundary defined without activating surfbeat model. Please use appropriate wave model, or change the boundary condition type.', '  ', ' ')
@@ -997,7 +1036,8 @@ contains
 
       else if (qidfm == 'salinitybnd' .and. jasal > 0) then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kes(nbnds + 1:nx), nums, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), nums, ' nr of salinity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), nums, ' nr of salinity bndcells'
+         call msg_flush()
          if (nums > 0) then
             call appendrettime(qidfm, nbnds + 1, return_time)
             nbnds = nbnds + nums
@@ -1005,11 +1045,14 @@ contains
 
       else if (qidfm == 'waveenergybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kew(nbndw + 1:nx), numw, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numw, ' nr of wave energy bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numw, ' nr of wave energy bndcells'
+         call msg_flush()
          nwbnd = nwbnd + 1
 
-         call realloc(L1wbnd, nwbnd); L1wbnd(nwbnd) = nbndw + 1
-         call realloc(L2wbnd, nwbnd); L2wbnd(nwbnd) = nbndw + numw
+         call realloc(L1wbnd, nwbnd)
+         L1wbnd(nwbnd) = nbndw + 1
+         call realloc(L2wbnd, nwbnd)
+         L2wbnd(nwbnd) = nbndw + numw
 
          nbndw = nbndw + numw
          call realloc(fnamwbnd, nwbnd, fill='')
@@ -1017,7 +1060,8 @@ contains
 
       else if (qidfm == 'temperaturebnd' .and. jatem > 0) then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketm(nbndtm + 1:nx), numtm, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtm, ' nr of temperature bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtm, ' nr of temperature bndcells'
+         call msg_flush()
          if (numtm > 0) then
             call appendrettime(qidfm, nbndtm + 1, return_time)
             nbndtm = nbndtm + numtm
@@ -1025,7 +1069,8 @@ contains
 
       else if (qidfm == 'sedimentbnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kesd(nbndsd + 1:nx), numsd, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numsd, ' nr of sediment bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numsd, ' nr of sediment bndcells'
+         call msg_flush()
          if (numsd > 0) then
             call appendrettime(qidfm, nbndsd + 1, return_time)
             nbndsd = nbndsd + numsd
@@ -1041,7 +1086,8 @@ contains
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac) + 1:, itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtr, ' nr of tracer bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtr, ' nr of tracer bndcells'
+         call msg_flush()
          if (numtr > 0) then
             call appendrettime(qidfm, nbndtr(itrac) + 1, return_time)
             nbndtr(itrac) = nbndtr(itrac) + numtr
@@ -1076,7 +1122,8 @@ contains
          end if
 
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kesf(nbndsf(isf) + 1:, isf), numsf, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(3a,i8,a)') trim(qid), ' ', trim(filename), numsf, ' nr of sedfrac bndcells'; call msg_flush()
+         write (msgbuf, '(3a,i8,a)') trim(qid), ' ', trim(filename), numsf, ' nr of sedfrac bndcells'
+         call msg_flush()
          if (numsf > 0) then
             call appendrettime(qidfm, nbndsf(isf) + 1, return_time)
             nbndsf(isf) = nbndsf(isf) + numsf
@@ -1085,25 +1132,29 @@ contains
 
       else if (qidfm == 'tangentialvelocitybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ket(nbndt + 1:nx), numt, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numt, ' nr of tangentialvelocity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numt, ' nr of tangentialvelocity bndcells'
+         call msg_flush()
 
          nbndt = nbndt + numt
 
       else if (qidfm == 'uxuyadvectionvelocitybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, keuxy(nbnduxy + 1:nx), numuxy, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numuxy, ' nr of uxuyadvectionvelocity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numuxy, ' nr of uxuyadvectionvelocity bndcells'
+         call msg_flush()
 
          nbnduxy = nbnduxy + numuxy
 
       else if (qidfm == 'normalvelocitybnd') then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ken(nbndn + 1:nx), numn, usemask=.false., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numn, ' nr of normalvelocity bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numn, ' nr of normalvelocity bndcells'
+         call msg_flush()
 
          nbndn = nbndn + numn
 
       else if (qidfm == '1d2dbnd') then ! SOBEK1D-FM2D
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ke1d2d(nbnd1d2d + 1:nx), num1d2d, usemask=.true., rrtolrel=rrtolrel)
-         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), num1d2d, ' nr of SOBEK1D-FM2D bndcells'; call msg_flush()
+         write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), num1d2d, ' nr of SOBEK1D-FM2D bndcells'
+         call msg_flush()
 
          call addopenbndsection(num1d2d, ke1d2d(nbnd1d2d + 1:nbnd1d2d + num1d2d), filename, IBNDTP_1D2D)
          nbnd1d2d = nbnd1d2d + num1d2d
@@ -1307,7 +1358,9 @@ contains
       logical :: file_exists
 
       success = .true. ! initialization
-      xdum = 1.0_dp; ydum = 1.0_dp; kdum = 1
+      xdum = 1.0_dp
+      ydum = 1.0_dp
+      kdum = 1
 
       if (len_trim(paramvalue) > 0) then
          valuestring = paramvalue
@@ -1475,7 +1528,8 @@ contains
             nseg = kbnds(5, thrtn(i))
             if (nseg /= i) cycle
             if (nseg == 0 .or. nseg > nopenbndsect) then
-               write (msgbuf, '(i8,a)') thrtn(i), ' salinity boundary point is assigned to incorrect boundary segment'; call err_flush()
+               write (msgbuf, '(i8,a)') thrtn(i), ' salinity boundary point is assigned to incorrect boundary segment'
+               call err_flush()
                cycle
             end if
             threttim(ISALT, nseg) = thrtt(i)
@@ -1483,7 +1537,8 @@ contains
             nseg = kbndtm(5, thrtn(i))
             if (nseg /= i) cycle
             if (nseg == 0 .or. nseg > nopenbndsect) then
-               write (msgbuf, '(i8,a)') thrtn(i), ' temperature boundary point is assigned to incorrect boundary segment'; call err_flush()
+               write (msgbuf, '(i8,a)') thrtn(i), ' temperature boundary point is assigned to incorrect boundary segment'
+               call err_flush()
                cycle
             end if
             threttim(ITEMP, nseg) = thrtt(i)
@@ -1491,7 +1546,8 @@ contains
             nseg = kbndsd(5, thrtn(i))
             if (nseg /= i) cycle
             if (nseg == 0 .or. nseg > nopenbndsect) then
-               write (msgbuf, '(i8,a)') thrtn(i), ' sediment boundary point is assigned to incorrect boundary segment'; call err_flush()
+               write (msgbuf, '(i8,a)') thrtn(i), ' sediment boundary point is assigned to incorrect boundary segment'
+               call err_flush()
                cycle
             end if
             do j = ISED1, ISEDN
@@ -1504,7 +1560,8 @@ contains
                nseg = bndtr(itrac)%k(5, thrtn(i))
                if (nseg /= i) cycle
                if (nseg == 0 .or. nseg > nopenbndsect) then
-                  write (msgbuf, '(i8,a)') thrtn(i), ' tracer boundary point is assigned to incorrect boundary segment'; call err_flush()
+                  write (msgbuf, '(i8,a)') thrtn(i), ' tracer boundary point is assigned to incorrect boundary segment'
+                  call err_flush()
                   cycle
                end if
                iconst = itrac2const(itrac)
@@ -1529,7 +1586,8 @@ contains
                ierr = 1
             end if
             if (ierr /= 0) then
-               write (msgbuf, '(i8,a)') thrtn(i), ' sedfrac boundary point is assigned to incorrect boundary segment'; call err_flush()
+               write (msgbuf, '(i8,a)') thrtn(i), ' sedfrac boundary point is assigned to incorrect boundary segment'
+               call err_flush()
                cycle
             end if
          end if
@@ -1785,7 +1843,8 @@ contains
             kbanz = 0
          end if
 
-         kbndz = 0; kdz = 1
+         kbndz = 0
+         kdz = 1
 
          do k = 1, nbndz
             L = kez(k)
@@ -1897,7 +1956,8 @@ contains
       end if
 
       if (nbndu > 0) then ! similar for u bnd's
-         kbndu = 0; kdu = 1
+         kbndu = 0
+         kdu = 1
          do k = 1, nbndu
             L = keu(k)
             Lf = lne2ln(L)
@@ -1949,7 +2009,9 @@ contains
             allocate (zminmaxs(2 * nbnds))
             call aerr('zminmaxs (2*nbnds)', ierr, 2 * nbnds)
 
-            zbnds = DMISS; kbnds = 0; kds = 1
+            zbnds = DMISS
+            kbnds = 0
+            kds = 1
             do k = 1, nbnds
                L = kes(k)
                Lf = lne2ln(L)
@@ -1997,7 +2059,9 @@ contains
             call aerr('sigmabndTM(kmxd*nbndTM)', ierr, kmxd * nbndTM)
             allocate (zminmaxTM(2 * nbndTM), stat=ierr)
             call aerr('zminmaxTM(2*nbndTM)', ierr, 2 * nbndTM)
-            zbndTM = DMISS; kbndTM = 0; kdTM = 1
+            zbndTM = DMISS
+            kbndTM = 0
+            kdTM = 1
             do k = 1, nbndTM
                L = keTM(k)
                Lf = lne2ln(L)
@@ -2043,7 +2107,8 @@ contains
          if (allocated(kbndw)) deallocate (xbndw, ybndw, xy2bndw, zbndw, kbndw)
          allocate (xbndw(nbndw), ybndw(nbndw), xy2bndw(2, nbndw), zbndw(ntheta, nbndw), kbndw(4, nbndw), kdw(nbndw), stat=ierr)
          call aerr('xbndw(nbndw), ybndw(nbndw), xy2bndw(2,nbndw), zbndw(ntheta,nbndw), kbndw(4,nbndw), kdw(nbndw)', ierr, nbndw * (9 + ntheta))
-         kbndw = 0; kdw = 1
+         kbndw = 0
+         kdw = 1
          do k = 1, nbndw
             L = kew(k)
             Lf = lne2ln(L)
@@ -2090,7 +2155,8 @@ contains
          allocate (zminmaxsd(2 * nbndsd), stat=ierr)
          call aerr('zminmaxsd(2*nbndsd)', ierr, 2 * nbndsd)
 
-         kbndsd = 0; kdsd = 1
+         kbndsd = 0
+         kdsd = 1
 
          do k = 1, nbndsd
             L = kesd(k)
@@ -2218,7 +2284,8 @@ contains
 
       if (nbndt > 0) then ! Tangential velocity boundaries as u bnds
          numnos = 0
-         kbndt = 0; kdt = 1
+         kbndt = 0
+         kdt = 1
          do k = 1, nbndt
             L = ket(k)
             Lf = lne2ln(L)
@@ -2300,7 +2367,8 @@ contains
       call aerr('xbndn(tmp_nbndn), ybndn(tmp_nbndn), xy2bndn(2,tmp_nbndn), zbndn(tmp_nbndn), kbndn(4,tmp_nbndn), kdn(tmp_nbndn)', ierr, tmp_nbndn * 10)
       if (nbndn > 0) then ! Normal velocity boundaries as z bnds
          numnos = 0
-         kbndn = 0; kdn = 1
+         kbndn = 0
+         kdn = 1
          do k = 1, nbndn
             L = ken(k)
             Lf = lne2ln(L)
@@ -2337,7 +2405,11 @@ contains
          if (allocated(shx)) deallocate (xyship, shx, shy, shu, shv, shi, sho)
          allocate (xyship(2 * nshiptxy), shx(nshiptxy), shy(nshiptxy), shu(nshiptxy), shv(nshiptxy), shi(nshiptxy), sho(nshiptxy), stat=ierr)
          call aerr('xyship(2*nshiptxy), shx(nshiptxy), shy(nshiptxy), shu(nshiptxy), shv(nshiptxy), shi(nshiptxy), sho(nshiptxy)', ierr, 4 * nshiptxy)
-         iniship = 0; nshiptxy = 0; shx = 0.0_dp; shy = 0.0_dp; xyship = dmiss
+         iniship = 0
+         nshiptxy = 0
+         shx = 0.0_dp
+         shy = 0.0_dp
+         xyship = dmiss
       end if
 
       if (jased > 0) then
@@ -2349,7 +2421,8 @@ contains
          mxgr = 0 ! jre dangerous...
       end if
 
-      call setzminmax(); call setsigmabnds() ! our side of preparation for 3D ec module
+      call setzminmax()
+      call setsigmabnds() ! our side of preparation for 3D ec module
 
       ! initialise mass balance areas - always allocate these arrays
       call realloc(mbadef, Ndkx, keepExisting=.false., fill=-999)
@@ -2630,11 +2703,14 @@ contains
 
       if (jagrounLay == 1) then
          if (allocated(wigr)) deallocate (wigr, argr, pergr)
-         allocate (argr(lnx1D), stat=ierr); argr = 0.0_dp
+         allocate (argr(lnx1D), stat=ierr)
+         argr = 0.0_dp
          call aerr('argr(lnx1D)', ierr, Lnx1D)
-         allocate (wigr(lnx1D), stat=ierr); wigr = 0.0_dp
+         allocate (wigr(lnx1D), stat=ierr)
+         wigr = 0.0_dp
          call aerr('wigr(lnx1D)', ierr, Lnx1D)
-         allocate (pergr(lnx1D), stat=ierr); pergr = 0.0_dp
+         allocate (pergr(lnx1D), stat=ierr)
+         pergr = 0.0_dp
          call aerr('pergr(lnx1D)', ierr, Lnx1D)
          do L = 1, lnx1D
             if (grounlay(L) == dmiss) then
@@ -2706,7 +2782,7 @@ contains
             deallocate (bare)
          end if
          allocate (bare(ndxi), stat=ierr) ! base area for rainfall / evaporation
-         call aerr('bare(ndxi)', ierr, ndx); 
+         call aerr('bare(ndxi)', ierr, ndx)
          bare(1:ndxi) = ba(1:ndxi)
 
          if (network%loaded) then

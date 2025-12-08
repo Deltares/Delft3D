@@ -68,12 +68,12 @@ contains
          !initialize for flow nodes
          do k1 = 1, ndxi
             call getkbotktop(k1, kb, kt)
-            dzL = zws(kb) - bl(k1); 
+            dzL = zws(kb) - bl(k1)
             wsigma2 = (zws(kb) - zws0(kb)) / dts
             ucz(kb) = (ww1(kb) + wsigma2) * 0.5_dp * dzL * ba(k1) ! ww1 at bed level = 0
             do kk = kb + 1, kt
                !
-               dzL = zws(kk) - zws(kk - 1); 
+               dzL = zws(kk) - zws(kk - 1)
                wsigma1 = (zws(kk - 1) - zws0(kk - 1)) / dts
                wsigma2 = (zws(kk) - zws0(kk)) / dts
                ucz(kk) = +(ww1(kk - 1) + wsigma1) * 0.5_dp * dzL * ba(k1) ! add velocity at surface level (kk-1)
@@ -87,8 +87,8 @@ contains
             k2 = LN(2, L)
             call getkbotktop(k1, kb1, kt1)
             call getkbotktop(k2, kb2, kt2)
-            Lb = Lbot(L); 
-            Lt = Ltop(L); 
+            Lb = Lbot(L)
+            Lt = Ltop(L)
             zLc1 = bl(k1)
             zLc2 = bl(k2)
             kk1 = kb1
@@ -142,7 +142,7 @@ contains
          ucz(kb) = (ww1(kb) + wsigma2) * 0.5_dp * dzL * ba(k) ! ww1 at bed level = 0
          do kk = kb + 1, kt
             !
-            dzL = zws(kk) - zws(kk - 1); 
+            dzL = zws(kk) - zws(kk - 1)
             wsigma1 = (zws(kk - 1) - zws0(kk - 1)) / dts
             wsigma2 = (zws(kk) - zws0(kk)) / dts
             ucz(kk) = +(ww1(kk - 1) + wsigma1) * 0.5_dp * dzL * ba(k) ! add velocity at surface level (kk-1)
@@ -174,7 +174,7 @@ contains
             zlc = bl(k) ! bed level in flow node
             dzhu = hu(Lb) ! height of the bottom layer at flow link
             do LL = Lb, Lt ! get link numbers in the vertical
-               dzL = zws(kk) - zws(kk - 1); 
+               dzL = zws(kk) - zws(kk - 1)
                zlc = zlc + 0.5_dp * dzL
                !zlu = dx2*bl(k)*dxi(L) + dx1*bl(ko)*dxi(L) + hu(LL)*0.5+hu(LL-1)*0.5  (interpolated bed level at u-point)
                zlu = min(bob(1, L), bob(2, L)) + hu(LL) * 0.5_dp + hu(LL - 1) * 0.5_dp

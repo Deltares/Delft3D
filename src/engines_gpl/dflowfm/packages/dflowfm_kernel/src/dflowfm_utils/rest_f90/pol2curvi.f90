@@ -84,8 +84,10 @@ contains
       numsubpol = iend - istart + 1
 
 !  get grid size and orientation
-      mcR = i2 - i1; if (mcR < 0) mcR = mcR + numsubpol
-      mcL = i1 - i2; if (mcL < 0) mcL = mcL + numsubpol
+      mcR = i2 - i1
+      if (mcR < 0) mcR = mcR + numsubpol
+      mcL = i1 - i2
+      if (mcL < 0) mcL = mcL + numsubpol
 
       if (mcR <= mcL) then
          idir = 1
@@ -95,8 +97,10 @@ contains
          mc = mcL + 1
       end if
 
-      ncR = i3 - i2; if (ncR < 0) ncR = ncR + numsubpol
-      ncL = i2 - i3; if (ncL < 0) ncL = ncL + numsubpol
+      ncR = i3 - i2
+      if (ncR < 0) ncR = ncR + numsubpol
+      ncL = i2 - i3
+      if (ncL < 0) ncL = ncL + numsubpol
 
       if (idir == 1) then
          nc = ncR + 1

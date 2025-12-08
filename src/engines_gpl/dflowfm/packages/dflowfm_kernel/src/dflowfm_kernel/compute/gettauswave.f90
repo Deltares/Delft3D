@@ -67,7 +67,8 @@ contains
          ! Regular hydrodynamic shear stress, from Soulsby/Van Rijn/Ruessink (default)
       case (0)
          do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             tauL = taubu(L)
             workx(k1) = workx(k1) + tauL * wcx1(L)
             workx(k2) = workx(k2) + tauL * wcx2(L)
@@ -126,7 +127,8 @@ contains
             taus = sedtra%taub
          else
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                tauL = taubxu(L)
                workx(k1) = workx(k1) + tauL * wcx1(L)
                workx(k2) = workx(k2) + tauL * wcx2(L)
@@ -141,7 +143,8 @@ contains
       if (flowwithoutwaves) then
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
-            ucxb = ucx(kb); ucyb = ucy(kb)
+            ucxb = ucx(kb)
+            ucyb = ucy(kb)
             um = max(hypot(ucxb, ucyb), 1.0e-4_dp)
             if (um > 1.0e-4_dp) then
                workx(k) = taus(k) * (ucxb) / um
@@ -156,7 +159,10 @@ contains
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
             call linkstocentercartcomp(k, ustokes, ustv)
-            ucxb = ucx(kb); ucyb = ucy(kb); ucxs = ustv(1, 1); ucys = ustv(2, 1)
+            ucxb = ucx(kb)
+            ucyb = ucy(kb)
+            ucxs = ustv(1, 1)
+            ucys = ustv(2, 1)
             um = max(hypot(ucxb - ucxs, ucyb - ucys), 1.0e-4_dp)
             if (um > 1.0e-4_dp) then
                workx(k) = taus(k) * (ucxb - ucxs) / um ! taus amplitude but euler directions

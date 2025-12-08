@@ -53,8 +53,10 @@ contains
       integer :: n, ja2
 
       if (jaauto > 0) then
-         rmin = 1.0e30_dp; ndmin = 0
-         rmax = -1.0e30_dp; ndmax = 0
+         rmin = 1.0e30_dp
+         ndmin = 0
+         rmax = -1.0e30_dp
+         ndmax = 0
 
          do n = 1, ndx
             ja2 = 1
@@ -68,10 +70,12 @@ contains
                   zn = znod(n)
                   if (zn == DMISS) cycle
                   if (zn < rmin) then
-                     rmin = zn; ndmin = n
+                     rmin = zn
+                     ndmin = n
                   end if
                   if (zn > rmax) then
-                     rmax = zn; ndmax = n
+                     rmax = zn
+                     ndmax = n
                   end if
                end if
             end if

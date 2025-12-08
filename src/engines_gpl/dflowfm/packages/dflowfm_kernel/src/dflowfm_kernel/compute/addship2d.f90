@@ -64,7 +64,8 @@ contains
 
       else if (japressurehull == 3) then
 
-         v1ship = 0.0_dp; a1m = 0.0_dp
+         v1ship = 0.0_dp
+         a1m = 0.0_dp
 
          omegadomp = 1.0
          domp = 0.0_dp ! 0.01*sin(time1*omegadomp)
@@ -75,7 +76,8 @@ contains
             dysa = 2.0_dp * shb(n) / (nca - 1)
 
             do k = 1, ndx
-               dx2d = sqrt(ba(k)); d2 = 0.5_dp * dx2d * css
+               dx2d = sqrt(ba(k))
+               d2 = 0.5_dp * dx2d * css
                syr = (yz(k) - shy(n)) * css - (xz(k) - shx(n)) * sns
                sxr = (xz(k) - shx(n)) * css + (yz(k) - shy(n)) * sns
                sxrL = (xz(k) - d2 - shx(n)) * css + (yz(k) - shy(n)) * sns
@@ -93,7 +95,8 @@ contains
                      do kk = 1, numsmo
                         sxr = sxrL + (kk - 0.5_dp) * dxx
                         alf = 1.0_dp
-                        dss = abs(sxr) / (shL(n) * yf); frb = 0.40_dp ! 0.25d0
+                        dss = abs(sxr) / (shL(n) * yf)
+                        frb = 0.40_dp ! 0.25d0
                         if (dss > frb) then
                            alf = 0.5_dp * (cos(pi * (dss - frb) / (1.0_dp - frb)) + 1.0_dp)
                         end if
@@ -130,10 +133,12 @@ contains
                      end if
                   else ! arcinfo
                      xx = sxr + shL(n)
-                     i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n)); i1 = i0 + 1
+                     i0 = 1 + (mca - 1) * xx / (2.0_dp * shL(n))
+                     i1 = i0 + 1
                      dxx = (xx - (i0 - 1) * dxsa) / dxsa
                      yy = syr + shB(n)
-                     j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n)); j1 = j0 + 1
+                     j0 = 1 + (nca - 1) * yy / (2.0_dp * shB(n))
+                     j1 = j0 + 1
                      dyy = (yy - (j0 - 1) * dysa) / dysa
                      zsp(k) = D(i0, j0) * (1.0_dp - dxx) * (1.0_dp - dyy) + &
                               D(i1, j0) * (dxx) * (1.0_dp - dyy) + &
@@ -157,7 +162,8 @@ contains
          if (japerim == 1) then
 
             do L = lnx1D + 1, lnxi
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                if (zsp(k1) /= 0.0_dp .or. zsp(k2) /= 0.0_dp) then
                   !h1    = s1(k1) + zsp(k1)
                   !h2    = s1(k2) + zsp(k2)
@@ -184,7 +190,8 @@ contains
             end do
          else
             do L = lnx1D + 1, lnxi
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                if (zsp(k1) /= 0.0_dp .or. zsp(k2) /= 0.0_dp) then
                   h1 = s1(k1) + zsp(k1)
                   h2 = s1(k2) + zsp(k2)

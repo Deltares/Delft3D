@@ -149,11 +149,14 @@ contains
                      XLB = netbr(ibr)%doff
                   end if
                   do LL = 1, netbr(ibr)%NX
-                     L = netbr(ibr)%ln(LL); LA = abs(L)
+                     L = netbr(ibr)%ln(LL)
+                     LA = abs(L)
                      if (L > 0) then
-                        k1 = kn(1, La); k2 = kn(2, LA)
+                        k1 = kn(1, La)
+                        k2 = kn(2, LA)
                      else
-                        k2 = kn(1, La); k1 = kn(2, LA)
+                        k2 = kn(1, La)
+                        k1 = kn(2, LA)
                      end if
                      dxB = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
                      XLB = XLB + dxB
@@ -215,11 +218,14 @@ contains
                      XLB = netbr(ibr)%doff
                   end if
                   do LL = 1, netbr(ibr)%NX
-                     L = netbr(ibr)%ln(LL); LA = abs(L)
+                     L = netbr(ibr)%ln(LL)
+                     LA = abs(L)
                      if (L > 0) then
-                        k1 = kn(1, La); k2 = kn(2, LA)
+                        k1 = kn(1, La)
+                        k2 = kn(2, LA)
                      else
-                        k2 = kn(1, La); k1 = kn(2, LA)
+                        k2 = kn(1, La)
+                        k1 = kn(2, LA)
                      end if
                      dxB = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
                      XLB = XLB + dxB
@@ -227,7 +233,8 @@ contains
                   end do
                end do
 
-               allocate (NSBR(MXNETBR), STAT=IERR); NSBR = 0
+               allocate (NSBR(MXNETBR), STAT=IERR)
+               NSBR = 0
                call AERR('NSBR (MXNETBR)', IERR, MXNETBR)
                allocate (KBSAM(MXNETBR), STAT=IERR)
                call AERR('KBSAM(MXNETBR)', IERR, MXNETBR)
@@ -253,7 +260,8 @@ contains
                   end if
                end do
 
-               NSBR = 0; NSBRMX = 0
+               NSBR = 0
+               NSBRMX = 0
                do K = 1, Nproflocs ! REFER BACK TO SAMPLES ON BRANCH
                   L = LSAM(K)
                   IBR = LC(L)
@@ -289,14 +297,16 @@ contains
                         KLHH(KK) = KLH(IDX(KK))
                      end do
 
-                     K1 = 0; K2 = 1
+                     K1 = 0
+                     K2 = 1
                      do LL = 1, netbr(ibr)%NX
                         ! NOTE: vulnerability: netbr(:)%ln(:) contains NETlinks (see SETBRANCH_LC()), but it is used below as FLOWlinks
                         !       Not a problem as long as *no* netlinks are discarded during geominit. (Then: numl1d == lnx1d.)
                         LA = abs(NETBR(IBR)%LN(LL))
                         XL = XLLIN(LA)
                         do while (XL > XLH(K2) .and. K2 < NSBR(IBR))
-                           K2 = K2 + 1; K1 = K1 + 1
+                           K2 = K2 + 1
+                           K1 = K1 + 1
                         end do
 
                         if (XL > XLH(K2)) then
@@ -320,7 +330,8 @@ contains
                         else
                            KB = KLHH(K2)
                         end if
-                        KA = NPR(KA); KB = NPR(KB)
+                        KA = NPR(KA)
+                        KB = NPR(KB)
                         if (profiles1D(ka)%ityp <= 3 .and. profiles1D(ka)%ityp == profiles1D(kb)%ityp) then ! identical simple profs are interpolated immediately
                            PROF1D(1, LA) = (1.0_dp - alfa) * profiles1D(ka)%width + alfa * profiles1D(kb)%width
                            PROF1D(2, LA) = (1.0_dp - alfa) * profiles1D(ka)%height + alfa * profiles1D(kb)%height
@@ -345,7 +356,8 @@ contains
 
                   allocate (zkk(numk), wkk(numk))
                   do kn3now = 6, 1, -5
-                     wkk = 0.0_dp; zkk = 0.0_dp
+                     wkk = 0.0_dp
+                     zkk = 0.0_dp
                      do L = 1, lnx1D
                         if (abs(kcu(L)) == 1 .and. kn(3, ln2lne(L)) == kn3now) then ! regular 1D links
                            KA = PROF1D(1, L)

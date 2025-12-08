@@ -55,7 +55,9 @@ contains
       real(kind=dp), external :: tanhsafe, sinhsafe, sinhsafei
 
       if (depth < 0.01_dp .or. Tsig < 0.1_dp) then ! flume cases with wave nr 5
-         Uorbi = 0.0_dp; rlabd = 0.0_dp; ust = 0.0_dp
+         Uorbi = 0.0_dp
+         rlabd = 0.0_dp
+         ust = 0.0_dp
       else
          call getwavenr(depth, tsig, rk)
          hrm = min(Hrms, gammax * depth)

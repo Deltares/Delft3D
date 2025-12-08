@@ -65,7 +65,8 @@ contains
                call getLbotLtop(LLL, Lb, Lt)
                if (Lt < Lb) cycle
                do L = Lb, Lt
-                  kb = ln(1, L); ki = ln(2, L)
+                  kb = ln(1, L)
+                  ki = ln(2, L)
                   constituents(j, kb) = constituents(j, ki)
                end do
             end do
@@ -83,7 +84,8 @@ contains
                if (Lt < Lb) cycle
                if (hu(LLL) > 0.0_dp) then
                   do L = Lb, Lt
-                     kb = ln(1, L); ki = ln(2, L)
+                     kb = ln(1, L)
+                     ki = ln(2, L)
                      kk = kmxd * (k - 1) + L - Lb + 1
                      if (q1(L) > 0) then ! inflow
                         constituents(iconst, kb) = bndsf(ll)%z(kk)
@@ -112,7 +114,8 @@ contains
                call getLbotLtop(LLL, Lb, Lt)
                if (Lt < Lb) cycle
                do L = Lb, Lt
-                  kb = ln(1, L); ki = ln(2, L)
+                  kb = ln(1, L)
+                  ki = ln(2, L)
                   constituents(j, kb) = constituents(j, ki)
                end do
             end do
@@ -129,7 +132,8 @@ contains
                call getLbotLtop(LLL, Lb, Lt)
                if (Lt < Lb) cycle
                do L = Lb, Lt
-                  kb = ln(1, L); ki = ln(2, L)
+                  kb = ln(1, L)
+                  ki = ln(2, L)
                   kk = kmxd * (k - 1) + L - Lb + 1
                   if (q1(L) > 0) then ! inflow
                      constituents(iconst, kb) = bndsf(ll)%z(k)

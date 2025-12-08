@@ -122,7 +122,8 @@ contains
       end do
 
       do L = lnxi + 1, lnx ! Boundary condtions as Neumann for the curvature
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          spircrv(k1) = spircrv(k2)
       end do
 

@@ -75,7 +75,9 @@ contains
             plotlin = dt_max
          end if
 
-         dts = 1.0e9_dp; kkcflmx = 0; kcflmx = 0
+         dts = 1.0e9_dp
+         kkcflmx = 0
+         kcflmx = 0
 
          ! Supported parameters 
          !----------------------
@@ -215,10 +217,10 @@ contains
                         if (jamapdtcell > 0) then ! Store cell timestep if required
                            dtcell(k) = dtsc
                         end if
-
-                        if (dtsc < dts) then ! Check if timestep of cell is globally limiting and store cell index
+                        if (dtsc < dts) then
                            dts = dtsc
                            kkcflmx = kk
+                           kcflmx = k
                         end if
                      end if
                   end do
@@ -416,7 +418,8 @@ contains
                if (istresstyp == 2 .or. istresstyp == 3) then ! first set stressvector in cell centers
                   do L = lnx1D + 1, lnx
                      if (hu(L) > 0) then ! link will flow
-                        k1 = ln(1, L); k2 = ln(2, L)
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
 
                         if (jampi == 1) then
                            if (idomain(k1) /= my_rank .and. idomain(k2) /= my_rank) cycle ! do not include ghost cells
@@ -437,12 +440,14 @@ contains
 
                            dtsc1 = dtsc * ba(k1)
                            if (dtsc1 < dts) then
-                              dts = dtsc1; kkcflmx = k1
+                              dts = dtsc1
+                              kkcflmx = k1
                            end if
 
                            dtsc2 = dtsc * ba(k2)
                            if (dtsc2 < dts) then
-                              dts = dtsc2; kkcflmx = k2
+                              dts = dtsc2
+                              kkcflmx = k2
                            end if
 
                            if (jamapdtcell > 0) then
@@ -458,7 +463,8 @@ contains
                   do LL = lnx1D + 1, lnx
                      if (abs(kcu(LL)) /= 2) cycle
 
-                     kk1 = ln(1, LL); kk2 = ln(2, LL)
+                     kk1 = ln(1, LL)
+                     kk2 = ln(2, LL)
 
                      if (jampi == 1) then
                         if (idomain(kk1) /= my_rank .and. idomain(kk2) /= my_rank) cycle ! do not include ghost cells
@@ -466,8 +472,10 @@ contains
 
                      call getLbotLtop(LL, Lb, Lt)
                      do L = Lb, Lt
-                        k1 = ln(1, L); k2 = ln(2, L)
-                        k3 = lncn(1, L); k4 = lncn(2, L)
+                        k1 = ln(1, L)
+                        k2 = ln(2, L)
+                        k3 = lncn(1, L)
+                        k4 = lncn(2, L)
 
                         dxiAu = dxi(LL) * wu(LL)
                         if (istresstyp == 3) then
@@ -484,12 +492,14 @@ contains
 
                            dtsc1 = dtsc * ba(kk1)
                            if (dtsc1 < dts) then
-                              dts = dtsc1; kkcflmx = kk1
+                              dts = dtsc1
+                              kkcflmx = kk1
                            end if
 
                            dtsc2 = dtsc * ba(kk2)
                            if (dtsc2 < dts) then
-                              dts = dtsc2; kkcflmx = kk2
+                              dts = dtsc2
+                              kkcflmx = kk2
                            end if
 
                            if (jamapdtcell > 0) then
@@ -504,7 +514,9 @@ contains
          end if
 
          if (dts > dt_max) then
-            dts = dt_max; kkcflmx = 0; dtsc = 0
+            dts = dt_max
+            kkcflmx = 0
+            dtsc = 0
          else
             dtsc = dts ! Courant-driven timestep
          end if
