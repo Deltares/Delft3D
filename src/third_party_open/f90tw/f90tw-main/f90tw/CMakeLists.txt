@@ -129,10 +129,7 @@ function(F90TWTEST NAME)
     set_property(TARGET ${FLIBNAME}
         APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${XF90FILES}
     )
-    set_target_properties(${FLIBNAME} PROPERTIES
-        FOLDER ${FTW_VISUAL_STUDIO_PATH}
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${NAME}"
-    )
+    set_target_properties(${FLIBNAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH})
 
     if("${CMAKE_Fortran_COMPILER_ID}" MATCHES "GNU")
         target_compile_options(${FLIBNAME} PRIVATE "-ffree-line-length-none")
@@ -157,6 +154,7 @@ function(F90TWTEST NAME)
             ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${NAME}"
             LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${NAME}"
         )
+        set_target_properties(${FLIBNAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${NAME}")
         add_custom_command(TARGET ${NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${NAME}> $<TARGET_RUNTIME_DLLS:${NAME}>
             COMMAND_EXPAND_LISTS
