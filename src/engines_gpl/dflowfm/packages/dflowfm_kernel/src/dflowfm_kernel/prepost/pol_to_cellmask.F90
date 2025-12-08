@@ -1,4 +1,4 @@
-﻿!----- AGPL --------------------------------------------------------------------
+﻿ !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2025.
 !
@@ -27,14 +27,11 @@
 !
 !-------------------------------------------------------------------------------
 
-!> update cellmask from samples
-!> a cell is dry when it is:
-!>   1) inside ANY "1"-polygon (drypnts), OR
-!>   2) outside ALL "-1"-polygons (enclosures)
+!> Wrapper around cellmask_from_polygon_set that uses OpenMP to parallelize the loop over all points if not in MPI mode
 module m_pol_to_cellmask
-
    use precision, only: dp
    use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
+
    implicit none
 
    private
@@ -46,18 +43,19 @@ contains
    subroutine pol_to_cellmask()
       use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
       use m_partitioninfo, only: jampi
+      use m_alloc, only: realloc
 #ifdef _OPENMP
       use omp_lib
       integer :: temp_threads
 #endif
       integer :: k
-      if (allocated(cellmask)) deallocate (cellmask)
-      allocate (cellmask(nump1d2d))
-      cellmask = 0
 
-      if (NPL == 0) return
+      if (NPL == 0) then
+         return
+      end if
 
-      ! Initialize once
+      call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
+
       call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
 #ifdef _OPENMP
       temp_threads = omp_get_max_threads() !> Save old number of threads
@@ -74,7 +72,6 @@ contains
       call omp_set_num_threads(temp_threads)
 #endif
 
-      ! Cleanup
       call cellmask_from_polygon_set_cleanup()
 
    end subroutine pol_to_cellmask
