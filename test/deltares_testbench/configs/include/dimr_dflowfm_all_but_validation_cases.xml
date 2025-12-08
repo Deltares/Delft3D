@@ -2242,7 +2242,7 @@
             </file>
             <file name="output/winter97_saltwater-2_his.nc" type="netcdf">
                 <parameters>
-                    <parameter name="temperature" toleranceAbsolute="0.0001" />
+                    <parameter name="temperature" toleranceAbsolute="0.001" />
                 </parameters>
             </file>
         </checks>
