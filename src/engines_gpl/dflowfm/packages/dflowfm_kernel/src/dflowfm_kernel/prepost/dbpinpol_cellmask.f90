@@ -30,7 +30,6 @@
 module m_cellmask_from_polygon_set
    use m_missing, only: jins, dmiss
    use precision, only: dp
-   use m_polygon, only: xpl, ypl, npl
 
    implicit none
 
@@ -38,10 +37,10 @@ module m_cellmask_from_polygon_set
 
    public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
 
-   real(kind=dp), allocatable :: xpmin_cellmask(:), ypmin_cellmask(:) !< Polygon bounding box min coordinates
-   real(kind=dp), allocatable :: xpmax_cellmask(:), ypmax_cellmask(:) !< Polygon bounding box max coordinates
-   real(kind=dp), allocatable :: zpl_cellmask(:) !< Polygon coordinate arrays
-   integer, allocatable :: i_start_cellmask(:), i_end_cellmask(:) !< Polygon start and end indices in coordinate arrays (dim = number of polygons)
+   real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates
+   real(kind=dp), allocatable :: x_poly_max(:), y_poly_max(:) !< Polygon bounding box max coordinates
+   real(kind=dp), allocatable :: z_poly_cellmask(:) !< Polygon coordinate arrays
+   integer, allocatable :: i_poly_start(:), i_poly_end(:) !< Polygon start and end indices in coordinate arrays (dim = number of polygons)
    integer :: polygons = 0 !< Number of polygons stored in module arrays
    logical :: cellmask_initialized = .false. !< Flag indicating if cellmask data structures have been initialized for safety
    logical :: enclosures_present = .false. !< Flag indicating if any enclosures are present in the polygon dataset
@@ -50,12 +49,12 @@ contains
 
    !> Initialize module-level cellmask polygon data structures, such as the bounding boxes and iistart/iiend
    ! this keeps the actual calculation routines elemental.
-   subroutine cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
+   subroutine cellmask_from_polygon_set_init(polygon_points, x_poly, y_poly, z_poly)
       use m_alloc
       use geometry_module, only: get_startend
 
-      integer, intent(in) :: NPL !< Number of polygon points
-      real(kind=dp), intent(in) :: xpl(NPL), ypl(NPL), zpl(NPL) !< Polygon coordinate arrays
+      integer, intent(in) :: polygon_points !< Number of polygon points
+      real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinate arrays
 
       integer :: polygon_buffer_size !> polygon arrays buffer size, increases 10% every time to avoid realloc at every polygon
       integer :: i_point, i_start, i_end, i_poly
@@ -64,50 +63,50 @@ contains
          call cellmask_from_polygon_set_cleanup()
       end if
 
-      if (NPL == 0) then
+      if (polygon_points == 0) then
          cellmask_initialized = .true.
          return
       end if
 
       polygon_buffer_size = 1000
-      call realloc(xpmin_cellmask, polygon_buffer_size, keepExisting=.false.)
-      call realloc(xpmax_cellmask, polygon_buffer_size, keepExisting=.false.)
-      call realloc(ypmin_cellmask, polygon_buffer_size, keepExisting=.false.)
-      call realloc(ypmax_cellmask, polygon_buffer_size, keepExisting=.false.)
-      call realloc(i_start_cellmask, polygon_buffer_size, keepExisting=.false.)
-      call realloc(i_end_cellmask, polygon_buffer_size, keepExisting=.false.)
-      call realloc(zpl_cellmask, polygon_buffer_size, keepExisting=.false.)
+      call realloc(x_poly_min, polygon_buffer_size, keepExisting=.false.)
+      call realloc(x_poly_max, polygon_buffer_size, keepExisting=.false.)
+      call realloc(y_poly_min, polygon_buffer_size, keepExisting=.false.)
+      call realloc(y_poly_max, polygon_buffer_size, keepExisting=.false.)
+      call realloc(i_poly_start, polygon_buffer_size, keepExisting=.false.)
+      call realloc(i_poly_end, polygon_buffer_size, keepExisting=.false.)
+      call realloc(z_poly_cellmask, polygon_buffer_size, keepExisting=.false.)
 
       i_point = 1
       i_poly = 0
 
-      do while (i_point < NPL)
+      do while (i_point < polygon_points)
          i_poly = i_poly + 1
          if (i_poly > polygon_buffer_size) then
             polygon_buffer_size = ceiling(polygon_buffer_size * 1.1_dp)
-            call realloc(xpmin_cellmask, polygon_buffer_size, keepExisting=.true.)
-            call realloc(xpmax_cellmask, polygon_buffer_size, keepExisting=.true.)
-            call realloc(ypmin_cellmask, polygon_buffer_size, keepExisting=.true.)
-            call realloc(ypmax_cellmask, polygon_buffer_size, keepExisting=.true.)
-            call realloc(i_start_cellmask, polygon_buffer_size, keepExisting=.true.)
-            call realloc(i_end_cellmask, polygon_buffer_size, keepExisting=.true.)
-            call realloc(zpl_cellmask, polygon_buffer_size, keepExisting=.true.)
+            call realloc(x_poly_min, polygon_buffer_size, keepExisting=.true.)
+            call realloc(x_poly_max, polygon_buffer_size, keepExisting=.true.)
+            call realloc(y_poly_min, polygon_buffer_size, keepExisting=.true.)
+            call realloc(y_poly_max, polygon_buffer_size, keepExisting=.true.)
+            call realloc(i_poly_start, polygon_buffer_size, keepExisting=.true.)
+            call realloc(i_poly_end, polygon_buffer_size, keepExisting=.true.)
+            call realloc(z_poly_cellmask, polygon_buffer_size, keepExisting=.true.)
          end if
 
-         call get_startend(NPL - i_point + 1, xpl(i_point:NPL), ypl(i_point:NPL), i_start, i_end, dmiss)
+         call get_startend(polygon_points - i_point + 1, x_poly(i_point:polygon_points), y_poly(i_point:polygon_points), i_start, i_end, dmiss)
          i_start = i_start + i_point - 1
          i_end = i_end + i_point - 1
 
-         if (i_start >= i_end .or. i_end > NPL) exit
+         if (i_start >= i_end .or. i_end > polygon_points) exit
 
-         xpmin_cellmask(i_poly) = minval(xpl(i_start:i_end))
-         xpmax_cellmask(i_poly) = maxval(xpl(i_start:i_end))
-         ypmin_cellmask(i_poly) = minval(ypl(i_start:i_end))
-         ypmax_cellmask(i_poly) = maxval(ypl(i_start:i_end))
+         x_poly_min(i_poly) = minval(x_poly(i_start:i_end))
+         x_poly_max(i_poly) = maxval(x_poly(i_start:i_end))
+         y_poly_min(i_poly) = minval(y_poly(i_start:i_end))
+         y_poly_max(i_poly) = maxval(y_poly(i_start:i_end))
 
-         i_start_cellmask(i_poly) = i_start
-         i_end_cellmask(i_poly) = i_end
-         zpl_cellmask(i_poly) = zpl(i_start)
+         i_poly_start(i_poly) = i_start
+         i_poly_end(i_poly) = i_end
+         z_poly_cellmask(i_poly) = z_poly(i_start)
 
          i_point = i_end + 2
       end do
@@ -115,7 +114,7 @@ contains
       polygons = i_poly
 
       ! check if there are any enclosure polygons
-      enclosures_present = any(zpl_cellmask(1:polygons) < 0.0_dp .and. zpl_cellmask(1:polygons) /= dmiss)
+      enclosures_present = any(z_poly_cellmask(1:polygons) < 0.0_dp .and. z_poly_cellmask(1:polygons) /= dmiss)
       cellmask_initialized = .true.
 
    end subroutine cellmask_from_polygon_set_init
@@ -128,7 +127,7 @@ contains
 
       integer :: count_drypoint, i_poly, num_enclosures
       logical :: found_inside_enclosure, is_inside
-      real(kind=dp) :: zpl_val
+      real(kind=dp) :: z_poly_val
 
       mask = 0
       if (.not. cellmask_initialized) then
@@ -142,23 +141,23 @@ contains
 
       ! Single loop over all polygons
       do i_poly = 1, polygons
-         zpl_val = zpl_cellmask(i_poly)
+         z_poly_val = z_poly_cellmask(i_poly)
 
          ! Bounding box check
-         if (x < xpmin_cellmask(i_poly) .or. x > xpmax_cellmask(i_poly) .or. &
-             y < ypmin_cellmask(i_poly) .or. y > ypmax_cellmask(i_poly)) then
+         if (x < x_poly_min(i_poly) .or. x > x_poly_max(i_poly) .or. &
+             y < y_poly_min(i_poly) .or. y > y_poly_max(i_poly)) then
             cycle
          end if
 
          ! Point-in-polygon test
          is_inside = pinpok_elemental(x, y, i_poly)
 
-         if (zpl_val == dmiss .or. zpl_val > 0.0_dp) then
+         if (z_poly_val == dmiss .or. z_poly_val > 0.0_dp) then
             ! Dry point polygon
             if (is_inside) then
                count_drypoint = count_drypoint + 1
             end if
-         else if (zpl_val < 0.0_dp .and. is_inside) then
+         else if (z_poly_val < 0.0_dp .and. is_inside) then
             found_inside_enclosure = .true.
          end if
       end do
@@ -185,13 +184,13 @@ contains
    !> Clean up module-level cellmask polygon data structures.
    subroutine cellmask_from_polygon_set_cleanup()
 
-      if (allocated(xpmin_cellmask)) deallocate (xpmin_cellmask)
-      if (allocated(xpmax_cellmask)) deallocate (xpmax_cellmask)
-      if (allocated(ypmin_cellmask)) deallocate (ypmin_cellmask)
-      if (allocated(ypmax_cellmask)) deallocate (ypmax_cellmask)
-      if (allocated(zpl_cellmask)) deallocate (zpl_cellmask)
-      if (allocated(i_start_cellmask)) deallocate (i_start_cellmask)
-      if (allocated(i_end_cellmask)) deallocate (i_end_cellmask)
+      if (allocated(x_poly_min)) deallocate (x_poly_min)
+      if (allocated(x_poly_max)) deallocate (x_poly_max)
+      if (allocated(y_poly_min)) deallocate (y_poly_min)
+      if (allocated(y_poly_max)) deallocate (y_poly_max)
+      if (allocated(z_poly_cellmask)) deallocate (z_poly_cellmask)
+      if (allocated(i_poly_start)) deallocate (i_poly_start)
+      if (allocated(i_poly_end)) deallocate (i_poly_end)
 
       polygons = 0
       cellmask_initialized = .false.
@@ -201,6 +200,7 @@ contains
    !> Optimized elemental point-in-polygon test using ray casting algorithm.
    !! Accesses polygon data via module arrays.
    elemental function pinpok_elemental(x, y, i_poly) result(is_inside)
+      use m_polygon, only: xpl, ypl
 
       real(kind=dp), intent(in) :: x, y !< Point coordinates (scalar)
       integer, intent(in) :: i_poly !< Polygon index
@@ -212,8 +212,8 @@ contains
       is_inside = .false.
 
       ! Get polygon bounds from module variables
-      i_start = i_start_cellmask(i_poly)
-      i_end = i_end_cellmask(i_poly)
+      i_start = i_poly_start(i_poly)
+      i_end = i_poly_end(i_poly)
 
       if (i_end - i_start + 1 <= 2) then
          is_inside = .true.
