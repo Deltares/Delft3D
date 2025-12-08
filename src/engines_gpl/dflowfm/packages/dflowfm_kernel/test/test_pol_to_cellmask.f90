@@ -3,7 +3,7 @@ module test_pol_to_cellmask
    use precision, only: dp
    use m_missing, only: dmiss
    use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
-   use m_dbpinpol_cellmask, only: dbpinpol_cellmask_init, dbpinpol_cellmask, dbpinpol_cellmask_cleanup
+   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set, cellmask_from_polygon_set_cleanup
    implicit none
 
 contains
@@ -62,14 +62,14 @@ contains
       xpl(15) = dmiss;   ypl(15) = dmiss;   zpl(15) = dmiss
       
       ! Initialize polygon data structures
-      call dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
+      call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
       
       ! Process all cells
       cellmask = 0
-      cellmask = dbpinpol_cellmask(xzw, yzw)
+      cellmask = cellmask_from_polygon_set(xzw, yzw)
       
       ! Cleanup
-      call dbpinpol_cellmask_cleanup()
+      call cellmask_from_polygon_set_cleanup()
       
       ! Check results:
       ! Cell at (5,5) - inside enclosure, outside dry point -> mask=0
@@ -143,14 +143,14 @@ contains
       xpl(13) = dmiss;   ypl(13) = dmiss;   zpl(13) = dmiss
       
       ! Initialize polygon data structures
-      call dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
+      call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
       
       ! Process all cells
       cellmask = 0
-      cellmask = dbpinpol_cellmask(xzw, yzw)
+      cellmask = cellmask_from_polygon_set(xzw, yzw)
       
       ! Cleanup
-      call dbpinpol_cellmask_cleanup()
+      call cellmask_from_polygon_set_cleanup()
       
       ! Check results (odd-even rule):
       ! Cell at (5,5) - inside 1 polygon (outer) -> mask=1

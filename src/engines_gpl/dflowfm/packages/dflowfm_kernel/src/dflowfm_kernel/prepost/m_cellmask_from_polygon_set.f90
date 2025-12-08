@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_dbpinpol_cellmask
+module m_cellmask_from_polygon_set
    use m_missing, only: jins, dmiss
    use precision, only: dp
    use m_polygon, only: xpl, ypl, npl
@@ -36,8 +36,7 @@ module m_dbpinpol_cellmask
 
    private
 
-   !> dbpinpol routines are public to avoid PetSC dependency in unit tests
-   public :: dbpinpol_cellmask_init, dbpinpol_cellmask_cleanup, dbpinpol_cellmask
+   public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
 
    real(kind=dp), allocatable :: xpmin_cellmask(:), ypmin_cellmask(:) !< Polygon bounding box min coordinates
    real(kind=dp), allocatable :: xpmax_cellmask(:), ypmax_cellmask(:) !< Polygon bounding box max coordinates
@@ -51,7 +50,7 @@ contains
 
    !> Initialize module-level cellmask polygon data structures, such as the bounding boxes and iistart/iiend
    ! this keeps the actual calculation routines elemental.
-   subroutine dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
+   subroutine cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
       use m_alloc
       use geometry_module, only: get_startend
 
@@ -62,7 +61,7 @@ contains
       integer :: ipoint, istart, iend, ipoly
 
       if (cellmask_initialized) then
-         call dbpinpol_cellmask_cleanup()
+         call cellmask_from_polygon_set_cleanup()
       end if
 
       if (NPL == 0) then
@@ -119,10 +118,10 @@ contains
       enclosures_present = any(zpl_cellmask(1:Npoly_cellmask) < 0.0_dp .and. zpl_cellmask(1:Npoly_cellmask) /= dmiss)
       cellmask_initialized = .true.
 
-   end subroutine dbpinpol_cellmask_init
+   end subroutine cellmask_from_polygon_set_init
 
    !> Check if a point should be masked, either inside a dry-area polygon or outside an enclosure polygon.
-   elemental function dbpinpol_cellmask(xp, yp) result(mask)
+   elemental function cellmask_from_polygon_set(xp, yp) result(mask)
 
       integer :: mask
       real(kind=dp), intent(in) :: xp, yp !< Point coordinates
@@ -178,10 +177,10 @@ contains
          mask = 1
       end if
 
-   end function dbpinpol_cellmask
+   end function cellmask_from_polygon_set
 
    !> Clean up module-level cellmask polygon data structures.
-   subroutine dbpinpol_cellmask_cleanup()
+   subroutine cellmask_from_polygon_set_cleanup()
 
       if (allocated(xpmin_cellmask)) deallocate (xpmin_cellmask)
       if (allocated(xpmax_cellmask)) deallocate (xpmax_cellmask)
@@ -194,7 +193,7 @@ contains
       Npoly_cellmask = 0
       cellmask_initialized = .false.
 
-   end subroutine dbpinpol_cellmask_cleanup
+   end subroutine cellmask_from_polygon_set_cleanup
 
    !> Optimized elemental point-in-polygon test using ray casting algorithm.
    !! Accesses polygon data via module arrays.
@@ -258,4 +257,4 @@ contains
 
    end function pinpok_elemental
 
-end module m_dbpinpol_cellmask
+end module m_cellmask_from_polygon_set

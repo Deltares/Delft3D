@@ -34,7 +34,7 @@
 module m_pol_to_cellmask
 
    use precision, only: dp
-   use m_dbpinpol_cellmask, only: dbpinpol_cellmask_init, dbpinpol_cellmask_cleanup, dbpinpol_cellmask
+   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
    implicit none
 
    private
@@ -58,7 +58,7 @@ contains
       if (NPL == 0) return
 
       ! Initialize once
-      call dbpinpol_cellmask_init(NPL, xpl, ypl, zpl)
+      call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
 #ifdef _OPENMP
       temp_threads = omp_get_max_threads() !> Save old number of threads
       if (jampi == 0) then
@@ -67,7 +67,7 @@ contains
 #endif
       !$OMP PARALLEL DO SCHEDULE(DYNAMIC, 100)
       do k = 1, nump
-         cellmask(k) = dbpinpol_cellmask(xzw(k), yzw(k))
+         cellmask(k) = cellmask_from_polygon_set(xzw(k), yzw(k))
       end do
       !$OMP END PARALLEL DO
 #ifdef _OPENMP
@@ -75,7 +75,7 @@ contains
 #endif
 
       ! Cleanup
-      call dbpinpol_cellmask_cleanup()
+      call cellmask_from_polygon_set_cleanup()
 
    end subroutine pol_to_cellmask
 
