@@ -201,6 +201,7 @@ contains
 
       polygons = 0
       cellmask_initialized = .false.
+      enclosures_present = .false.
 
    end subroutine cellmask_from_polygon_set_cleanup
 
