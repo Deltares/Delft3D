@@ -37,11 +37,11 @@ module m_cellmask_from_polygon_set
 
    public :: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
 
-   real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates
-   real(kind=dp), allocatable :: x_poly_max(:), y_poly_max(:) !< Polygon bounding box max coordinates
-   real(kind=dp), allocatable :: polygon_type(:) !< Polygon type, positive or dmiss = drypoint , negative = enclosure, 
-   integer, allocatable :: i_poly_start(:), i_poly_end(:) !< Polygon start and end indices in coordinate arrays (dim = number of polygons)
-   integer :: polygons = 0 !< Number of polygons stored in module arrays
+   integer :: polygons = 0 !< Number of polygons stored in module arrays xpl, ypl, zpl
+   real(kind=dp), allocatable :: x_poly_min(:), y_poly_min(:) !< Polygon bounding box min coordinates, (dim = polygons)
+   real(kind=dp), allocatable :: x_poly_max(:), y_poly_max(:) !< Polygon bounding box max coordinates, (dim = polygons)
+   real(kind=dp), allocatable :: polygon_type(:) !< Polygon type, positive or dmiss = drypoint , negative = enclosure (dim = polygons)
+   integer, allocatable :: i_poly_start(:), i_poly_end(:) !< Polygon start and end indices in coordinate arrays (dim = polygons)
    logical :: cellmask_initialized = .false. !< Flag indicating if cellmask data structures have been initialized for safety
    logical :: enclosures_present = .false. !< Flag indicating if any enclosures are present in the polygon dataset
 
@@ -170,7 +170,7 @@ contains
       end do
 
       ! Apply odd-even rule only if counting was needed
-      if (JINS == 1) then
+      if (jins == 1) then
          if (mod(count_drypoint, 2) == 1) then
             mask = 1
          end if
