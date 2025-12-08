@@ -100,7 +100,7 @@ contains
       dtsc = dts
 
       ! account for user time step
-      if (autotimestep /= AUTOTS_OFF) then
+      if (autotimestep /= AUTO_TIMESTEP_OFF) then
          if (dts > dt_fac_max * dtprev) then
             dts = dt_fac_max * dtprev
             nsteps = ceiling((time_user - time0) / dts)

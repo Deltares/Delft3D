@@ -383,9 +383,9 @@ contains
          end if
       end if
 
-      ! In 2D set AUTOTS_2D_OUT as default
-      if ((kmx < 2) .and. (autotimestep /= AUTOTS_2D_OUT)) then
-         autotimestep = AUTOTS_2D_OUT
+      ! In 2D set AUTO_TIMESTEP_2D_OUT as default
+      if ((kmx < 2) .and. (autotimestep /= AUTO_TIMESTEP_2D_OUT)) then
+         autotimestep = AUTO_TIMESTEP_2D_OUT
       end if
 
       if (jaimplicit == ON) then
