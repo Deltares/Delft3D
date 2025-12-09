@@ -54,8 +54,8 @@ contains
 
       call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
 
-      !> Dynamic scheduling in case of unequal work, chunksize 100 (standard value, not tested for optimality here)
-      !$OMP PARALLEL DO SCHEDULE(DYNAMIC, 100)
+      !> Dynamic scheduling in case of unequal work, chunksize guided
+      !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do k = 1, nump
          cellmask(k) = cellmask_from_polygon_set(xzw(k), yzw(k))
       end do

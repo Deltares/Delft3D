@@ -63,8 +63,8 @@ contains
 
       allocate (left_2D_cells(NUML1D), right_2D_cells(NUML1D))
 
-      !> Dynamic scheduling in case of unequal work, chunksize 100 (standard value, not tested for optimality here)
-      !$OMP PARALLEL DO SCHEDULE(DYNAMIC, 100)
+      !> Dynamic scheduling in case of unequal work, chunksize guided
+      !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do L = 1, NUML1D
          if (KN(1, L) /= 0 .and. kn(3, L) /= LINK_1D .and. kn(3, L) /= LINK_1D_MAINBRANCH) then
             call INCELLS(Xk(KN(1, L)), Yk(KN(1, L)), left_2D_cells(L))
