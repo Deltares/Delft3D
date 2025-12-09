@@ -47,7 +47,7 @@ contains
       use dfm_error
       use unstruc_display, only: jareinitialize
       use gridoperations
-      use m_save_ugrid_state, only: contactnlinks, netlink2contact, contact1d2didx
+      use m_save_ugrid_state, only: contactnlinks, netlink2contact, contactnetlinks, contact1d2didx
       use m_qnerror
 
       character(len=*), intent(in) :: md_netfile !< net filename
@@ -146,14 +146,12 @@ contains
 
       ! 2D2D links have to be set directly as they cannot be found from netcells
       if (contactnlinks > 0) then
-         do l = 1, numl1d
+         do i = 1, size(contactnetlinks)
+            L = contactnetlinks(i)
             if (kn(3, L) == 3 .or. kn(3, L) == 4 .or. kn(3, L) == 5 .or. kn(3, L) == 7) then
                if (lnn(l) == 0 .and. lne(1, L) == 0 .and. lne(2, L) == 0) then ! empty type 5 link, must be a 2D 2D contact
-                  Lcontact = netlink2contact(L)
-                  if (Lcontact > 0) then
-                     lne(:, L) = contact1d2didx(:, Lcontact) ! 2D face is always on position #2 (as read from UGRID file)
-                     lnn(L) = 2
-                  end if
+                  lne(:, L) = contact1d2didx(:, i)
+                  lnn(L) = 2
                end if
             end if
          end do

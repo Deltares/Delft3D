@@ -47,8 +47,7 @@ module m_save_ugrid_state
    integer, allocatable :: contactnetlinks(:) !< netlink number for each contact
    integer, allocatable :: netlink2contact(:) !< Inverse mapping of contactnetlinks (only for first numl1d net links)
    integer :: contactnlinks !< Total number of links in all mesh contacts (typically we'll have one mesh contact with many netlinks part of it)
-   integer, allocatable :: contact1d2didx(:, :) !< Mapping 1D net node to 2D net face (for later use in 2D flow node snapping)
-
+   integer, allocatable :: contact1d2didx(:, :) !< cell numbers this contact connects (2D for 2D-2D links, 1D for 1D-2D links). Dimension(2, contactnlinks)
    type(t_hashlist) :: hashlist_contactids !< Hash list for quick search for contact ids.
 
 !> Sets ALL (scalar) variables in this module to their default values.
