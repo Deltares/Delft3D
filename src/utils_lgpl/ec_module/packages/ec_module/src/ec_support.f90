@@ -60,7 +60,7 @@ module m_ec_support
    public :: ecSupportFindNetCDF
    public :: ecSupportFindNetCDFByFilename
    public :: ecSupportFindBCFileByFilename
-   public :: ecSupportLookUpStdAndVarnames
+   public :: ecSupportNetcdfGetQuantityCandidateNames
    public :: ecSupportNetcdfCheckError
    public :: ecSupportNCFindCFCoordinates
    public :: ecSupportTimestringToRefdate
@@ -312,7 +312,7 @@ module m_ec_support
       ! =======================================================================
 
       !> Look up the variable and standard names for a given quantity name from predefined lists
-      subroutine ecSupportLookUpStdAndVarnames(fileName, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
+      subroutine ecSupportNetcdfGetQuantityCandidateNames(fileName, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
          character(len=*),               intent(in)    :: fileName            !< name of the file, used for error messages
          character(len=*),               intent(in)    :: quantityName        !< name of the quantity to look up
          character(len=*), dimension(:), intent(inout) :: ncstdnames          !< list with standard names to be filled
@@ -498,7 +498,7 @@ module m_ec_support
             end if
          end select
 
-      end subroutine ecSupportLookUpStdAndVarnames
+      end subroutine ecSupportNetcdfGetQuantityCandidateNames
 
       !> Retrieve the pointer to the ElementSet with id == elementSetId.
       function ecSupportFindElementSet(instancePtr, elementSetId) result(elementSetPtr)
@@ -875,10 +875,6 @@ end subroutine ecInstanceListSourceItems
             success = .true.
          endif
       end function ecSupportNetcdfCheckError
-
-      ! function ecSupportNetcdfGetQuantityCandidateNames()
-
-      ! end function ecSupportNetcdfGetQuantityCandidateNames
 
       ! =======================================================================
 

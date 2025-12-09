@@ -64,6 +64,7 @@ module m_ec_provider
    public :: ecProviderCreateQhtableItems
    public :: ecProviderCreateTimeInterpolatedItem
    public :: ecProviderInitializeTimeFrame
+   public :: ecProviderSearchStdOrVarnames
    public :: items_from_bc_quantities
 
    interface ecSetFileReaderProperties
@@ -2544,7 +2545,7 @@ contains
       idvar = -1
 
       ! Look up the standard names and variable names according to quantityName to fill ncstdnames and ncvarnames
-      call ecSupportLookUpStdAndVarnames(fileReaderPtr%filename, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
+      call ecSupportNetcdfGetQuantityCandidateNames(fileReaderPtr%filename, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
 
       ! ------------------------------------------------------------------------------------------------
       ! Inquiry of the dimids and the varids of lon/lat/time coordinate according to the CF-convention

@@ -29,6 +29,7 @@
 !> Reading/writing timeseries files in NetCDF format
 module m_ec_netcdf_timeseries
    use m_ec_parameters
+   use m_ec_provider
    use m_ec_support
    use m_ec_message
    use m_ec_typedefs
@@ -313,6 +314,9 @@ contains
       integer, dimension(:), allocatable, intent(out) :: dimids
       integer, intent(out), optional :: vectormax
 
+      character(len=*), dimension(:) :: ncstdnames          !< list with standard names to be filled
+      character(len=*), dimension(:) :: ncvarnames          !< list with variable names to be filled
+      character(len=*), dimension(:) :: ncstdnames_fallback !< list with fallback standard names to be filled
       integer :: n_dims
       integer :: ivar, itim, ltl, iv
       integer :: ierr, vmax
@@ -321,28 +325,34 @@ contains
 
       success = .false.
 
-      ! search for standard_name
-      do ivar = 1, ncptr%nVars
-         ltl = len_trim(quantity)
-         if (strcmpi(trim(ncptr%standard_names(ivar)), trim(quantity))) exit
-      end do
-      vmax = 1
+      ! get candidate names for the quantity
+      call ecSupportNetcdfGetQuantityCandidateNames(ncptr%ncfilename, quantity, ncstdnames, ncvarnames, ncstdnames_fallback)
 
-      ! if standard_name not found, search for long_name
-      if (ivar > ncptr%nVars) then
-         do ivar = 1, ncptr%nVars
-            ltl = len_trim(quantity)
-            if (strcmpi(ncptr%long_names(ivar), quantity, ltl)) exit
-         end do
-      end if
+      ! search for quantity by standard name or variable name
+      call ecProviderSearchStdOrVarnames(ncptr, ncptr%ncid, ivar, ncstdnames, ncvarnames)
 
-      ! if also long_name not found, search for variable_name
-      if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names)) then
-         do ivar = 1, ncptr%nVars
-            ltl = len_trim(quantity)
-            if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) exit
-         end do
-      end if
+      ! ! search for standard_name
+      ! do ivar = 1, ncptr%nVars
+      !    ltl = len_trim(quantity)
+      !    if (strcmpi(trim(ncptr%standard_names(ivar)), trim(quantity))) exit
+      ! end do
+      ! vmax = 1
+
+      ! ! if standard_name not found, search for long_name
+      ! if (ivar > ncptr%nVars) then
+      !    do ivar = 1, ncptr%nVars
+      !       ltl = len_trim(quantity)
+      !       if (strcmpi(ncptr%long_names(ivar), quantity, ltl)) exit
+      !    end do
+      ! end if
+
+      ! ! if also long_name not found, search for variable_name
+      ! if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names)) then
+      !    do ivar = 1, ncptr%nVars
+      !       ltl = len_trim(quantity)
+      !       if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) exit
+      !    end do
+      ! end if
 
       if (ivar <= ncptr%nVars) then
          q_id(1) = ivar
