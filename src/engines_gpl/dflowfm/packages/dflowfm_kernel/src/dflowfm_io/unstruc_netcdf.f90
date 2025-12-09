@@ -15695,7 +15695,7 @@ contains
       use m_partitioninfo
       use m_alloc
       use dfm_error
-      use m_save_ugrid_state !stores the contactname_1D2D and other saved ugrid names
+      use m_save_ugrid_state ! stores the mesh contacts, and other network topologies
       use m_CrossSections
       use m_flowtimes, only: handle_extra
       use Timers
@@ -16776,7 +16776,7 @@ contains
             ierr = ionc_get_contacts_topology_dimensions(ioncid, im, mesh1_topo_dim, mesh2_topo_dim) ! networkIndex not used here
             ierr = ionc_get_contacts_count_ugrid(ioncid, im, numl1d2d_read)
             numl_read = numl_read + numl1d2d_read
-            numk_read = numk_read + numl1d2d_read * mesh1_topo_dim !> if mesh1 is 2D mesh we add 2 nodes per contact link
+            numk_read = numk_read + numl1d2d_read * mesh1_topo_dim ! If mesh1 is 2D mesh we add 2 nodes per contact link (mesh2 is always assumed to be 2D mesh already).
          end do
       else
          ! No UGRID, not a problem, code below will fall back to trying old format.
