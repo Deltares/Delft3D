@@ -139,17 +139,17 @@ contains
          if (use_salinity_freezing_point) then
             if (isalt > 0) then ! if salinity is modeled, use local salinity to determine freezing point
                do kk = 1, ndx
-                  k = ktop(kk)
+                  k = ktop(kk) ! only the top layer is checked for freezing point
                   freezing_point_temperature = real(freezing_temperature(real(constituents(isalt, k), fp)), dp)
                   if (constituents(itemp, k) < freezing_point_temperature) then
                      constituents(itemp, k) = freezing_point_temperature
                      cells_with_min_limit = cells_with_min_limit + 1
                   end if
                end do
-            else if (isalt == 0) then ! if salinity is not modeled, use background salinity to determine freezing point
+            else ! if salinity is not modeled, use background salinity to determine freezing point
                freezing_point_temperature = real(freezing_temperature(backgroundsalinity), dp)
                do kk = 1, ndx
-                  k = ktop(kk)
+                  k = ktop(kk) ! only the top layer is checked for freezing point
                   if (constituents(itemp, k) < freezing_point_temperature) then
                      constituents(itemp, k) = freezing_point_temperature
                      cells_with_min_limit = cells_with_min_limit + 1
