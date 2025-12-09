@@ -42,12 +42,8 @@ contains
 
    subroutine pol_to_cellmask()
       use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
-      use m_partitioninfo, only: jampi
       use m_alloc, only: realloc
-#ifdef _OPENMP
-      use omp_lib
-      integer :: temp_threads
-#endif
+
       integer :: k
 
       if (NPL == 0) then
@@ -57,20 +53,13 @@ contains
       call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
 
       call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
-#ifdef _OPENMP
-      temp_threads = omp_get_max_threads() !> Save old number of threads
-      if (jampi == 0) then
-         call omp_set_num_threads(OMP_GET_NUM_PROCS()) !> Set number of threads to max for this O(N^2) operation
-      end if !> no else, in MPI mode omp num threads is already set to 1
-#endif
+
+      !> Dynamic scheduling in case of unequal work, chunksize 100 (standard value, not tested for optimality here)
       !$OMP PARALLEL DO SCHEDULE(DYNAMIC, 100)
       do k = 1, nump
          cellmask(k) = cellmask_from_polygon_set(xzw(k), yzw(k))
       end do
       !$OMP END PARALLEL DO
-#ifdef _OPENMP
-      call omp_set_num_threads(temp_threads)
-#endif
 
       call cellmask_from_polygon_set_cleanup()
 
