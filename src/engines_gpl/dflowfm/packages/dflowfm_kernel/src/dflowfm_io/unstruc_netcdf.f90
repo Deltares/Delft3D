@@ -12641,22 +12641,22 @@ contains
          ierr = ionc_get_mesh_contact_ugrid(ioncid, im, mesh1indexes, mesh2indexes, hashlist_contactids%id_list(contactnlinks + 1:contactnlinks + ncontacts), contactslongnames, contacttype, 1)
          hashlist_contactids%id_count = contactnlinks + ncontacts
 
-         ierr = ionc_get_contact_name(ioncid, im, contactname_1D2D)
-
          numerr = 0
          ierr = ionc_get_contacts_topology_dimensions(ioncid, im, mesh1_topo_dim, mesh2_topo_dim) ! networkIndex not used here
 
          !> for now we assume mesh2_topo_dim is always 2 (a 2D mesh)
          if (mesh1_topo_dim == 2) then
             ncontactnodes = ncontacts * 2
+            ierr = ionc_get_contact_name(ioncid, im, contactname_2D2D)
          else if (mesh1_topo_dim == 1) then
             ncontactnodes = ncontacts
+            ierr = ionc_get_contact_name(ioncid, im, contactname_1D2D)
          end if
 
          call increasenetw(numk_last + ncontactnodes, numl_last + ncontacts)
          new_node_index = numk_last + 1
          do L = 1, ncontacts
-            if (contacttype(l) < 3) then
+            if (contacttype(L) < 3) then
                numerr = numerr + 1
                if (numerr <= MAXERRPRINT) then
                   write (msgbuf, '(a,a,a,i0,a,i0,a)') 'Error while reading net file ''', trim(filename), ''', contact type of link ', &
