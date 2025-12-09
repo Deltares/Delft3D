@@ -133,14 +133,14 @@ contains
 
       do i = 2, M - 1
 
-         xi = dble(i - 1) / dble(M - 1)
+         xi = real(i - 1, kind=dp) / real(M - 1, kind=dp)
          Nxi = floor(xi * (N - 1) + 1)
 
          dfacL = dbdistance(xpl(n1), ypl(n1), xpl(n1) + xx(i, 1), ypl(n1) + yy(i, 1), jsferic, jasfer3D, dmiss) / RL
          dfacR = dbdistance(xpl(n1), ypl(n1), xpl(n1) + xx(i, 3), ypl(n1) + yy(i, 3), jsferic, jasfer3D, dmiss) / RR
 
          do j = 2, Nxi - 1
-            eta = dble(j - 1) / dble(Nxi - 1)
+            eta = real(j - 1, kind=dp) / real(Nxi - 1, kind=dp)
 
             jL = 1 + floor(eta * (N - 1))
             if (jL >= N) jL = N - 1

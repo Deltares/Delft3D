@@ -71,14 +71,18 @@ contains
 
       if (jsferic == 0 .or. jasfer3D == 0) return
 
-      allocate (csbw(2, mxwalls), stat=ierr); csbw = 1.0_dp
+      allocate (csbw(2, mxwalls), stat=ierr)
+      csbw = 1.0_dp
       call aerr('csbw(2,mxwalls)', ierr, 2 * Lnx)
-      allocate (snbw(2, mxwalls), stat=ierr); snbw = 0.0_dp
+      allocate (snbw(2, mxwalls), stat=ierr)
+      snbw = 0.0_dp
       call aerr('snbw(2,mxwalls)', ierr, 2 * Lnx)
 
-      allocate (csbwn(mxwalls), stat=ierr); csbwn = 1.0_dp
+      allocate (csbwn(mxwalls), stat=ierr)
+      csbwn = 1.0_dp
       call aerr('csbwn(mxwalls)', ierr, 2 * Lnx)
-      allocate (snbwn(mxwalls), stat=ierr); snbwn = 0.0_dp
+      allocate (snbwn(mxwalls), stat=ierr)
+      snbwn = 0.0_dp
       call aerr('snbwn(mxwalls)', ierr, 2 * Lnx)
 
       do nw = 1, mxwalls

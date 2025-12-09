@@ -119,7 +119,8 @@ contains
             call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK_1D_DUAL, Lnx, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
             do LL = 1, intersection_count
                L = crossed_links(LL)
-               kc(ln(1, L)) = 1; kc(ln(2, L)) = 1
+               kc(ln(1, L)) = 1
+               kc(ln(2, L)) = 1
             end do
             deallocate (crossed_links, polygon_nodes, polygon_segment_weights)
             japol = 1
@@ -285,7 +286,8 @@ contains
 
                do LL = 1, lnx
                   if (japol == 1) then
-                     k1 = ln(1, LL); k2 = ln(2, LL)
+                     k1 = ln(1, LL)
+                     k2 = ln(2, LL)
                      if (kc(k1) * kc(k2) == 0) cycle
                   end if
 
@@ -451,9 +453,14 @@ contains
          if (kmx == 0) then
             call cirr(xp(1), yp(1), ncolblack)
          else
-            xp(1) = xxmn; xp(2) = xxmx; xp(3) = xxmx; xp(4) = xxmn
-            yp(1) = zws(k - 1); yp(2) = yp(1)
-            yp(3) = zws(k); yp(4) = yp(3)
+            xp(1) = xxmn
+            xp(2) = xxmx
+            xp(3) = xxmx
+            xp(4) = xxmn
+            yp(1) = zws(k - 1)
+            yp(2) = yp(1)
+            yp(3) = zws(k)
+            yp(4) = yp(3)
             call PFILLER(xp, yp, 4, ncolblack, ncolblack)
          end if
 
@@ -551,14 +558,17 @@ contains
       if (ndraw(30) == 5) then
          call setcol(2)
          do LL = 1, lnx
-            n1 = ln(1, LL); n2 = ln(2, LL)
+            n1 = ln(1, LL)
+            n2 = ln(2, LL)
             if (japol == 1) then
                if (kc(n1) * kc(n2) == 0) cycle
             end if
 
-            xz1 = xz(n1); xz2 = xz(n2)
+            xz1 = xz(n1)
+            xz2 = xz(n2)
             do L = Lbot(LL), Ltop(LL)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                zz1 = 0.5_dp * (zws(k1) + zws(k1 - 1))
                zz2 = 0.5_dp * (zws(k2) + zws(k2 - 1))
                call movabs(xz1, zz1)
@@ -599,7 +609,9 @@ contains
       do ng = 1, ngatesg ! loop over gate signals, tekrai
          zgaten = zgate(ng)
          do n = L1gatesg(ng), L2gatesg(ng)
-            L = kgate(3, n); k1 = ln(1, L); k2 = ln(2, L)
+            L = kgate(3, n)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (japol == 1) then
                if (kc(k1) * kc(k2) == 0) cycle
             end if
@@ -633,7 +645,9 @@ contains
 
       do ng = 1, ncdamsg ! loop over gate signals, tekrai
          do n = L1cdamsg(ng), L2cdamsg(ng)
-            L = kcdam(3, n); k1 = ln(1, L); k2 = ln(2, L)
+            L = kcdam(3, n)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (japol == 1) then
                if (kc(k1) * kc(k2) == 0) cycle
             end if

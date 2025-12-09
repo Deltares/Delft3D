@@ -119,7 +119,8 @@ contains
       end if
 
       NPO = NPL
-      allocate (DPO(NPO), XPO(NPO), YPO(NPO), STAT=IERR); DPO = 0.0_dp
+      allocate (DPO(NPO), XPO(NPO), YPO(NPO), STAT=IERR)
+      DPO = 0.0_dp
       call AERR('DPO(NPO) , XPO(NPO), YPO(NPO)', IERR, NPO)
       XPO(1:NPO) = XPL(1:NPO)
       YPO(1:NPO) = YPL(1:NPO)
@@ -159,17 +160,20 @@ contains
       NR = NR + 1
       NPC(NR) = NPL
 
-      MFO = MFAC; NFO = NFAC
+      MFO = MFAC
+      NFO = NFAC
       MC = MFAC + 1
       NC = NFAC + 1
 
       if (MFO == 0) then
-         MC = NPC(2) - NPC(1) + 1; MFAC = MC - 1
+         MC = NPC(2) - NPC(1) + 1
+         MFAC = MC - 1
          JAM = 1
       end if
 
       if (NFO == 0) then
-         NC = NPC(5) - NPC(4) + 1; NFAC = NC - 1
+         NC = NPC(5) - NPC(4) + 1
+         NFAC = NC - 1
          JAN = 1
       end if
 
@@ -178,7 +182,8 @@ contains
       MNX = 5 * max(MC, NC)
       allocate (XH(MNX, 4), YH(MNX, 4))
 
-      allocate (DPA(MNX), XPA(MNX), YPA(MNX), STAT=IERR); DPA = 0.0_dp
+      allocate (DPA(MNX), XPA(MNX), YPA(MNX), STAT=IERR)
+      DPA = 0.0_dp
       call AERR('DPA(MNX) , XPA(MNX), YPA(MNX)', IERR, MNX)
 
       call accumulateDistance(XPO, YPO, DPO, NPO) ! OORSPRONKELIJKE LENGTECOORDINAAT
@@ -191,7 +196,8 @@ contains
          MAXP = NC
          if (N == 1 .or. N == 3) MAXP = MC
 
-         TXO = DPO(N2) - DPO(N1); DXO = TXO / (MAXP - 1)
+         TXO = DPO(N2) - DPO(N1)
+         DXO = TXO / (MAXP - 1)
 
          DPA = 0.0_dp
          do K = 1, MAXP
@@ -255,9 +261,11 @@ contains
 
       zc = 0.0_dp !zkuni
 
-      NDRAW8ORG = NDRAW(8); NDRAW(8) = 0
+      NDRAW8ORG = NDRAW(8)
+      NDRAW(8) = 0
       if (MFO /= 0 .and. NFO /= 0) then
-         ATPFO = ATPF; ATPF = 0.
+         ATPFO = ATPF
+         ATPF = 0.
       end if
 
       ! CALL ORTHOGRID(1,1,MC,NC)
@@ -267,7 +275,8 @@ contains
          ATPF = ATPFO
       end if
 
-      MFAC = MFO; NFAC = NFO
+      MFAC = MFO
+      NFAC = NFO
 
       call newfil(mout, 'gridnow.grd')
       call WRIRGF(mout, 'gridnow.grd')

@@ -147,15 +147,23 @@ contains
 
 ! store ordered contour of cell
       if (dout > 0.0_dp) then
-         xx(1) = x3; yy(1) = y3
-         xx(2) = x5; yy(2) = y5
-         xx(3) = x6; yy(3) = y6
-         xx(4) = x4; yy(4) = y4
+         xx(1) = x3
+         yy(1) = y3
+         xx(2) = x5
+         yy(2) = y5
+         xx(3) = x6
+         yy(3) = y6
+         xx(4) = x4
+         yy(4) = y4
       else
-         xx(4) = x3; yy(4) = y3
-         xx(3) = x5; yy(3) = y5
-         xx(2) = x6; yy(2) = y6
-         xx(1) = x4; yy(1) = y4
+         xx(4) = x3
+         yy(4) = y3
+         xx(3) = x5
+         yy(3) = y5
+         xx(2) = x6
+         yy(2) = y6
+         xx(1) = x4
+         yy(1) = y4
       end if
    end subroutine mirrorcell
 

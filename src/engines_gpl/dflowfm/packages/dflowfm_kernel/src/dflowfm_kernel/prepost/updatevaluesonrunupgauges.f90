@@ -66,7 +66,8 @@ contains
          do il = 1, rug(irug)%path%lnx
             L = abs(rug(irug)%path%ln(il))
 
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
 
             if (hs(k1) > epshu .and. hs(k2) <= epshu) then
                if (s1(k1) >= maxz) then

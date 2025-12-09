@@ -88,7 +88,7 @@ contains
 
 !           regularise grid on right hand side of this node (asymmetric)
                do ih = i + 1, iR - 1
-                  xi = dble(ih - i) / dble(iR - i) * FAC
+                  xi = real(ih - i, kind=dp) / real(iR - i, kind=dp) * FAC
                   xc(ih, j) = (1.0_dp - xi) * xc(i, j) + xi * xc(iR, j)
                   yc(ih, j) = (1.0_dp - xi) * yc(i, j) + xi * yc(iR, j)
                end do

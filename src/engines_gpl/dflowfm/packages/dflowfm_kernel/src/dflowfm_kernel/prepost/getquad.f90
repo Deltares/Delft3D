@@ -56,7 +56,8 @@ contains
       integer :: ll
       integer :: lll
 
-      K3N = 0; K4N = 0
+      K3N = 0
+      K4N = 0
 
       do K = 1, NMK(K2)
          L = NOD(K2)%LIN(K)
@@ -71,7 +72,8 @@ contains
                if (LLL == LL) cycle
                call OTHERNODE(K4, LLL, K1A)
                if (K1A == K1) then
-                  K3N = K3; K4N = K4
+                  K3N = K3
+                  K4N = K4
                end if
             end do
          end do

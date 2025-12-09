@@ -52,7 +52,10 @@ contains
 
       if (ijyes(m, n) == 0) then
 
-         mu = m + 1; nu = n + 1; md = m - 1; nd = n - 1
+         mu = m + 1
+         nu = n + 1
+         md = m - 1
+         nd = n - 1
 
          if (m <= mc .and. n > 1 .and. n < nc + 1) then
             if (ijyes(mu, n) == 1) then ! linkerrand

@@ -107,12 +107,15 @@ contains
       end if
 
       call setbobs()
-      s1 = max(bl, s1); s0 = s1; s00 = s1
+      s1 = max(bl, s1)
+      s0 = s1
+      s00 = s1
 
       hs = s1 - bl
       call volsur() ! dropland
       call flow_f0isf1() ! dropland
-      volerr = 0; volerrcum = 0
+      volerr = 0
+      volerrcum = 0
 
       if (kmx > 0) then
          call set_kbot_ktop(jazws0=1) ! dropland
