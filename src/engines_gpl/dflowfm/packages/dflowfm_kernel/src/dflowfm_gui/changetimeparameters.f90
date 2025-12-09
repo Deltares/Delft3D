@@ -209,7 +209,7 @@ contains
       i = i + 1
       call IFormPutDouble(2 * i, dt_max, '(F10.3)')
       i = i + 1
-      call IFORMPUTINTEGER(2 * i, ja_timestep_auto)
+      call IFormGetInteger(2 * i, autotimestep)
       i = i + 1
       call IFormPutDouble(2 * i, tstart_user, '(F10.0)')
       i = i + 1
@@ -276,7 +276,7 @@ contains
             i = i + 1
             call IFormGetDouble(2 * i, dt_max)
             i = i + 1
-            call IFORMgeTINTEGER(2 * i, ja_timestep_auto)
+            call IFORMgeTINTEGER(2 * i, autotimestep)
             i = i + 1
             call IFormGetDouble(2 * i, tstart_user)
             i = i + 1
