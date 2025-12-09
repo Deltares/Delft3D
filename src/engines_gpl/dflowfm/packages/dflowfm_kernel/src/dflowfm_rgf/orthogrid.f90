@@ -86,7 +86,8 @@ contains
 
       call SAVEgrd()
 
-      MX = MMAX; NX = NMAX
+      MX = MMAX
+      NX = NMAX
       allocate (XR(MX, NX), YR(MX, NX), XI2(MX, NX), XJ2(MX, NX), YI2(MX, NX), YJ2(MX, NX), &
                 A(MX, NX), B(MX, NX), C(MX, NX), D(MX, NX), E(MX, NX), &
                 ATP(MX, NX), XO(MX, NX), YO(MX, NX))
@@ -137,7 +138,8 @@ contains
 
       if (NDRAW(8) == 0) call READYY('ORTHOGONALISATION', -1.0_dp)
 
-      XC = XR; YC = YR
+      XC = XR
+      YC = YR
 
       if (JSFERIC == 1) call MAKEY(XC, YC, MMAX, NMAX)
 !     CALL TEKSHOW(X, Y, MA2, NA2, ATP, 2,'FINAL ATP')

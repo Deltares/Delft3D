@@ -146,7 +146,15 @@ function(F90TWTEST NAME)
     target_compile_definitions(${NAME} PUBLIC ${FTW_DEFINITIONS})
     add_dependencies(${NAME} ${FLIBNAME})
     set_target_properties(${NAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH}/cpp)
+
     if(WIN32)
+        # Set separate output directories for each test to avoid parallel build conflicts
+        set_target_properties(${NAME} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${NAME}"
+            ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${NAME}"
+            LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${NAME}"
+        )
+        set_target_properties(${FLIBNAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${NAME}")
         add_custom_command(TARGET ${NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${NAME}> $<TARGET_RUNTIME_DLLS:${NAME}>
             COMMAND_EXPAND_LISTS

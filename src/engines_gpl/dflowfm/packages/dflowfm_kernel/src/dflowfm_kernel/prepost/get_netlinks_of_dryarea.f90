@@ -51,11 +51,13 @@ contains
       if (allocated(kdryarea)) then
          deallocate (kdryarea)
       end if
-      allocate (kdryarea(numl)); kdryarea = 0
+      allocate (kdryarea(numl))
+      kdryarea = 0
 
       nDryLinks = 0
       do L = 1, numl
-         k1 = lne(1, L); k2 = lne(2, L)
+         k1 = lne(1, L)
+         k2 = lne(2, L)
          if (k1 > 0 .and. k2 > 0) cycle
          if (k1 <= 0 .and. k2 <= 0) cycle
          nDryLinks = nDryLinks + 1

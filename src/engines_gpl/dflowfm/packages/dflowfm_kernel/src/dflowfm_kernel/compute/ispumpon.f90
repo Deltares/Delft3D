@@ -50,7 +50,8 @@ contains
       end if
 
       if (pumponoff(1, n) == dmiss .and. pumponoff(2, n) == dmiss) then
-         ispumpon = 1; return
+         ispumpon = 1
+         return
       end if
       if (pumponoff(1, n) /= dmiss .and. s1k > pumponoff(1, n)) then
          pumponoff(5, n) = 1

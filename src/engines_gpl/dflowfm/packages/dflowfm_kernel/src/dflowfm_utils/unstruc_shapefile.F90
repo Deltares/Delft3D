@@ -323,8 +323,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -551,8 +553,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -721,8 +725,10 @@ contains
                L = openbndlin(Lb) ! Net link
                k1 = kn(1, L)
                k2 = kn(2, L)
-               tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-               tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+               tmp_x(1) = xk(k1)
+               tmp_x(2) = xk(k2)
+               tmp_y(1) = yk(k1)
+               tmp_y(2) = yk(k2)
                shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
                ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -883,8 +889,10 @@ contains
          k = ln2lne(La) ! netnode
          k1 = kn(1, k)
          k2 = kn(2, k)
-         tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-         tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+         tmp_x(1) = xk(k1)
+         tmp_x(2) = xk(k2)
+         tmp_y(1) = yk(k1)
+         tmp_y(2) = yk(k2)
          shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
          ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1096,14 +1104,18 @@ contains
          else
             maxnr = nxsrc(i)
             if (k1 > 0) then
-               tmp_x(1) = xz(k1); tmp_y(1) = yz(k1)
+               tmp_x(1) = xz(k1)
+               tmp_y(1) = yz(k1)
             else ! if this node is not in the model domain, then use the original coordinate
-               tmp_x(1) = xsrc(i, 1); tmp_y(1) = ysrc(i, 1)
+               tmp_x(1) = xsrc(i, 1)
+               tmp_y(1) = ysrc(i, 1)
             end if
             if (k2 > 0) then
-               tmp_x(2) = xz(k2); tmp_y(2) = yz(k2)
+               tmp_x(2) = xz(k2)
+               tmp_y(2) = yz(k2)
             else ! if this node is not in the model domain, then use the original coordinate
-               tmp_x(2) = xsrc(i, maxnr); tmp_y(2) = ysrc(i, maxnr)
+               tmp_x(2) = xsrc(i, maxnr)
+               tmp_y(2) = ysrc(i, maxnr)
             end if
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
@@ -1237,8 +1249,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1334,8 +1348,10 @@ contains
          k = kdryarea(L)
          k1 = kn(1, k)
          k2 = kn(2, k)
-         tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-         tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+         tmp_x(1) = xk(k1)
+         tmp_x(2) = xk(k2)
+         tmp_y(1) = yk(k1)
+         tmp_y(2) = yk(k2)
          shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
          ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1487,8 +1503,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append

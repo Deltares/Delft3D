@@ -51,11 +51,17 @@ contains
 
       real(kind=dp) :: ucxku, ucyku, ww, ac1, huweir, hunoweir, wl, wlno, at, cs, sn, fac
 
-      ucxku = 0.0_dp; ucyku = 0.0_dp
-      huweir = 0.0_dp; hunoweir = 0.0_dp; wl = 0.0_dp; wlno = 0.0_dp; at = 0.0_dp
+      ucxku = 0.0_dp
+      ucyku = 0.0_dp
+      huweir = 0.0_dp
+      hunoweir = 0.0_dp
+      wl = 0.0_dp
+      wlno = 0.0_dp
+      at = 0.0_dp
 
       do LL = 1, nd(ku)%lnx
-         Ls = nd(ku)%ln(LL); L = abs(Ls)
+         Ls = nd(ku)%ln(LL)
+         L = abs(Ls)
          if (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29) then
             huweir = huweir + wu(L) * hu(L)
             wl = wl + wu(L)
@@ -64,7 +70,8 @@ contains
       huweir = huweir / wl
 
       do LL = 1, nd(ku)%lnx
-         Ls = nd(ku)%ln(LL); L = abs(Ls)
+         Ls = nd(ku)%ln(LL)
+         L = abs(Ls)
          if (Ls < 0) then
             ac1 = acL(L)
             n12 = 1
@@ -73,7 +80,8 @@ contains
             n12 = 2
          end if
          ww = ac1 * dx(L) * wu(L)
-         cs = ww * csu(L); sn = ww * snu(L)
+         cs = ww * csu(L)
+         sn = ww * snu(L)
 
          if (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29) then
             if (jasfer3D == 0) then

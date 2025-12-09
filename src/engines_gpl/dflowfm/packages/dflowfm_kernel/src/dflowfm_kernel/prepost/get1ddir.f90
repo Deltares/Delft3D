@@ -57,12 +57,17 @@ contains
 
       integer :: n2, k, L, LL, ka, kb, k1, k2
 
-      xt = 0.0_dp; yt = 0.0_dp; ka = 0; kb = 0; n2 = 0
+      xt = 0.0_dp
+      yt = 0.0_dp
+      ka = 0
+      kb = 0
+      n2 = 0
       do k = 1, size(nd(n1)%ln)
          LL = nd(n1)%ln(k)
          L = abs(LL)
          if (kcu(L) /= 3) then
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             n2 = k2
             if (k1 /= n1) n2 = k1
             if (ka == 0) then

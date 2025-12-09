@@ -44,7 +44,8 @@ contains
       character rec * 256
       integer :: ierr, n
 
-      minproflocnr = 99999999; maxproflocnr = 0
+      minproflocnr = 99999999
+      maxproflocnr = 0
 
       n = 0
 10    read (minp, '(a)', end=999) rec

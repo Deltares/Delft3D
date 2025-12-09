@@ -92,7 +92,8 @@ contains
 777      read (MLIST, *, end=888)
          NUMFIL = NUMFIL + 1
          goto 777
-888      allocate (FILIST(NUMFIL)); filist = ' '
+888      allocate (FILIST(NUMFIL))
+filist = ' '
          rewind (MLIST)
          do N = 1, NUMFIL
             read (MLIST, '(A)') FILIST(N)
@@ -233,7 +234,9 @@ contains
 
          do L = 1, NUML
             if (LNE(1, L) == 0 .and. LNE(2, L) == 0) then
-               KN(1, L) = 0; KN(2, L) = 0; KN(3, L) = -1
+               KN(1, L) = 0
+               KN(2, L) = 0
+               KN(3, L) = -1
             end if
          end do
 

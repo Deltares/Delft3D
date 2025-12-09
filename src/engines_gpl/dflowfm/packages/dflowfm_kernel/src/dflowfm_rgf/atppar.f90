@@ -74,7 +74,12 @@ contains
       real(kind=dp) :: X1, Y1, X2, Y2, D12, X3, Y3, X4, Y4, D34, D14, D23
       save NDRAW8
 
-      A = DXYMIS; B = DXYMIS; C = DXYMIS; D = DXYMIS; E = DXYMIS; ATP = DXYMIS
+      A = DXYMIS
+      B = DXYMIS
+      C = DXYMIS
+      D = DXYMIS
+      E = DXYMIS
+      ATP = DXYMIS
 
       DG2RD = (acos(-1.0_dp)) / 180.0_dp
 !     A,B = METRISCH EN SOM, ATP,E = STUUR, C,D = SOM ATP EN E
@@ -152,7 +157,11 @@ contains
       end do
       !     CALL TEKSHOW(X, Y, M2, N2, ATP, 2,'FINAL ATP')
 
-      A = 0.0_dp; B = 0.0_dp; C = 0.0_dp; D = 0.0_dp; E = 0.0_dp
+      A = 0.0_dp
+      B = 0.0_dp
+      C = 0.0_dp
+      D = 0.0_dp
+      E = 0.0_dp
       do I = M1 + 1, M2
          do J = N1 + 1, N2
             if (IJC(I, J) == 10) then

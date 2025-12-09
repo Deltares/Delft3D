@@ -67,15 +67,20 @@ contains
 
       call SETBRANCH_LC(ium)
 
-      numk = 0; numl = 0; n = 0
+      numk = 0
+      numl = 0
+      n = 0
       do ibr = 1, mxnetbr ! SET UP BRANCH DISTANCE COORDINATE
          XLB = 0.0_dp
          do LL = 1, netbr(ibr)%NX
-            L = netbr(ibr)%ln(LL); LA = abs(L)
+            L = netbr(ibr)%ln(LL)
+            LA = abs(L)
             if (L > 0) then
-               k1 = kn0(1, La); k2 = kn0(2, LA)
+               k1 = kn0(1, La)
+               k2 = kn0(2, LA)
             else
-               k2 = kn0(1, La); k1 = kn0(2, LA)
+               k2 = kn0(1, La)
+               k1 = kn0(2, LA)
             end if
             if (LL == 1) then
                if (jaregrid == 1) then
@@ -83,13 +88,17 @@ contains
                else
                   n = n + 1
                end if
-               xpl(n) = xk0(k1); ypl(n) = yk0(k1); zpl(n) = zk0(k1)
+               xpl(n) = xk0(k1)
+               ypl(n) = yk0(k1)
+               zpl(n) = zk0(k1)
             end if
             n = n + 1
             if (n > maxpol) then
                call INCREASEPOL(int(1.5 * n), 1)
             end if
-            xpl(n) = xk0(k2); ypl(n) = yk0(k2); zpl(n) = zk0(k2)
+            xpl(n) = xk0(k2)
+            ypl(n) = yk0(k2)
+            zpl(n) = zk0(k2)
          end do
 
          if (jaregrid == 1) then
@@ -106,7 +115,8 @@ contains
             call mapToPolyline(XPL, YPL, ZPL, N, XH, YH, ZH, NH) ! HAAL HUIDIGE PUNTEN OP
 
             numk = numk + 1
-            xk(numk) = xh(1); yk(numk) = yh(1)
+            xk(numk) = xh(1)
+            yk(numk) = yh(1)
             do k = 2, nh
                numk = numk + 1
                numL = numL + 1
@@ -115,8 +125,11 @@ contains
                   call increasenetw(2 * numk, 2 * numl)
                end if
 
-               xk(numk) = xh(k); yk(numk) = yh(k)
-               kn(2, numl) = numk; kn(1, numl) = numk - 1; kn(3, numl) = 1 ! NOTE: regridded 1D now does not have kn(3,L)=4 at end points.
+               xk(numk) = xh(k)
+               yk(numk) = yh(k)
+               kn(2, numl) = numk
+               kn(1, numl) = numk - 1
+               kn(3, numl) = 1 ! NOTE: regridded 1D now does not have kn(3,L)=4 at end points.
             end do
 
             deallocate (xh, yh, zh)
@@ -124,7 +137,9 @@ contains
          else
 
             n = n + 1
-            xpl(n) = dmiss; ypl(n) = dmiss; zpl(n) = dmiss
+            xpl(n) = dmiss
+            ypl(n) = dmiss
+            zpl(n) = dmiss
 
          end if
 

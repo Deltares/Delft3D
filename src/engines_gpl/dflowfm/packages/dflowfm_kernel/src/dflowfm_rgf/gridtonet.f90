@@ -89,7 +89,8 @@ contains
       if (allocated(mn)) then
          deallocate (mn)
       end if
-      allocate (mn(mc, nc), stat=ierr); mn = 0
+      allocate (mn(mc, nc), stat=ierr)
+      mn = 0
       call aerr('mn(mc,nc)', ierr, mc * nc)
 
       do I = 1, MC

@@ -52,7 +52,8 @@ contains
       if (allocated(cellmask)) then
          deallocate (cellmask)
       end if
-      allocate (cellmask(nump1d2d)); cellmask = 0
+      allocate (cellmask(nump1d2d))
+      cellmask = 0
 
       zs(1:ns) = 1
 
@@ -70,7 +71,10 @@ contains
             ypl(npl) = yk(kk)
             zpl(npl) = 1.0_dp
          end do
-         npl = npl + 1; xpl(npl) = dmiss; ypl(npl) = dmiss; zpl(npl) = dmiss
+         npl = npl + 1
+         xpl(npl) = dmiss
+         ypl(npl) = dmiss
+         zpl(npl) = dmiss
 
       end do
 

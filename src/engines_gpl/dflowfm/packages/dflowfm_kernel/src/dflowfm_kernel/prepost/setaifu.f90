@@ -64,7 +64,8 @@ contains
       bz = bz / ba
 
       do L = 1, Lnx ! next, link bed slope  bi in link, ai cross link
-         k1 = Ln(1, L); k2 = Ln(2, L)
+         k1 = Ln(1, L)
+         k2 = Ln(2, L)
          ai = (bob(2, L) - bob(1, L)) * wui(L)
          if (L <= lnx1D) then
             bi = 0.0_dp

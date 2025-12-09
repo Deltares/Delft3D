@@ -45,10 +45,13 @@ contains
 
       integer :: KN316, JASTOP, N1, N6, KK, L, K
 
-      JASTOP = 0; N1 = 0; N6 = 0
+      JASTOP = 0
+      N1 = 0
+      N6 = 0
 
       if (NMK0(K) == 1) then
-         JASTOP = 1; return
+         JASTOP = 1
+         return
       end if
 
       do KK = 1, NMK(K)

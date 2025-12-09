@@ -50,18 +50,25 @@ contains
 
       integer :: L, k1, k2, k3, k4
       real(kind=dp) :: BL1, BL2, b21, wu2, ai, wid1, hpr1, dx1, dx2, ar1, slotsav
-      slotsav = slotw2D; slotw2D = 0.0_dp
+      slotsav = slotw2D
+      slotw2D = 0.0_dp
       v1ship = 0.0_dp
       do L = 1, lnx
-         k1 = ln(1, L); k2 = ln(2, L)
-         k3 = lncn(1, L); k4 = lncn(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         k3 = lncn(1, L)
+         k4 = lncn(2, L)
          if (zspc(k3) /= 0.0_dp .or. zspc(k4) /= 0.0_dp) then
             if (zspc(k3) < zspc(k4)) then
-               BL1 = zspc(k3); BL2 = zspc(k4)
+               BL1 = zspc(k3)
+               BL2 = zspc(k4)
             else
-               BL1 = zspc(k4); BL2 = zspc(k3)
+               BL1 = zspc(k4)
+               BL2 = zspc(k3)
             end if
-            wu2 = wu(L); b21 = BL2 - BL1; ai = b21 / wu2
+            wu2 = wu(L)
+            b21 = BL2 - BL1
+            ai = b21 / wu2
 
             hpr1 = 0.0_dp - BL1
             if (hpr1 > 0.0_dp) then

@@ -148,15 +148,19 @@ contains
 
 !     find the link in the cell
          kk1 = 1
-         do while (netcell(ic1)%lin(kk1) /= L .and. kk1 < N); kk1 = kk1 + 1; end do
+         do while (netcell(ic1)%lin(kk1) /= L .and. kk1 < N)
+         kk1 = kk1 + 1
+         end do
          if (netcell(ic1)%lin(kk1) /= L) then
             call qnerror('splitlink: link not found', ' ', ' ')
             goto 1234
          end if
 
 !     find the left and right connected links and cells
-         kkL = kk1 - 1; if (kkL < 1) kkL = kkL + N
-         kkR = kk1 + 1; if (kkR > N) kkR = kkR - N
+         kkL = kk1 - 1
+         if (kkL < 1) kkL = kkL + N
+         kkR = kk1 + 1
+         if (kkR > N) kkR = kkR - N
          LL = netcell(ic1)%lin(kkL)
          LR = netcell(ic1)%lin(kkR)
          icL = 0

@@ -165,9 +165,12 @@ contains
             if (lnn(klink) /= 1 .and. lnn(klink) /= 2) cycle
 
 !        get the other links in the right numbering
-            kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
-            kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-            kkp2 = kk + 2; if (kkp2 > N) kkp2 = kkp2 - N
+            kkm1 = kk - 1
+            if (kkm1 < 1) kkm1 = kkm1 + N
+            kkp1 = kk + 1
+            if (kkp1 > N) kkp1 = kkp1 - N
+            kkp2 = kk + 2
+            if (kkp2 > N) kkp2 = kkp2 - N
 
             klinkm1 = netcell(k)%lin(kkm1)
             klinkp1 = netcell(k)%lin(kkp1)

@@ -62,12 +62,16 @@ contains
                   end if
                end do
                if (jaweg == nmk(k)) then
-                  xk(k) = dmiss; yk(k) = dmiss; zk(k) = dmiss
+                  xk(k) = dmiss
+                  yk(k) = dmiss
+                  zk(k) = dmiss
                end if
 
             end if
          else if (zk(k) == dmiss) then
-            xk(k) = dmiss; yk(k) = dmiss; zk(k) = dmiss
+            xk(k) = dmiss
+            yk(k) = dmiss
+            zk(k) = dmiss
          end if
       end do
 
