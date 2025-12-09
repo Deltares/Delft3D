@@ -247,6 +247,7 @@ object Trigger : BuildType({
             }
             branchFilter = ""
             triggerBuild = always()
+            withPendingChangesOnly = false
             param("revisionRuleBuildBranch", "<default>")
         }
         schedule {
@@ -255,6 +256,7 @@ object Trigger : BuildType({
             }
             branchFilter = ""
             triggerBuild = always()
+            withPendingChangesOnly = false
             param("revisionRuleBuildBranch", "<default>")
         }
         schedule {
@@ -263,6 +265,7 @@ object Trigger : BuildType({
             }
             branchFilter = ""
             triggerBuild = always()
+            withPendingChangesOnly = false
             param("revisionRuleBuildBranch", "<default>")
         }
     }
