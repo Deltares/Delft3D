@@ -56,7 +56,6 @@ contains
       integer, intent(in) :: polygon_points !< Number of polygon points
       real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinate arrays
 
-      integer :: polygon_buffer_size !> polygon arrays buffer size, increases 10% every time to avoid realloc at every polygon
       integer :: i_point, i_start, i_end, i_poly
 
       if (cellmask_initialized) then
@@ -68,31 +67,22 @@ contains
          return
       end if
 
-      polygon_buffer_size = 1000
-      call realloc(x_poly_min, polygon_buffer_size, keepExisting=.false.)
-      call realloc(x_poly_max, polygon_buffer_size, keepExisting=.false.)
-      call realloc(y_poly_min, polygon_buffer_size, keepExisting=.false.)
-      call realloc(y_poly_max, polygon_buffer_size, keepExisting=.false.)
-      call realloc(i_poly_start, polygon_buffer_size, keepExisting=.false.)
-      call realloc(i_poly_end, polygon_buffer_size, keepExisting=.false.)
-      call realloc(polygon_type, polygon_buffer_size, keepExisting=.false.)
+      !> allocate maximum size arrays
+      call realloc(x_poly_min, polygon_points, keepExisting=.false.)
+      call realloc(x_poly_max, polygon_points, keepExisting=.false.)
+      call realloc(y_poly_min, polygon_points, keepExisting=.false.)
+      call realloc(y_poly_max, polygon_points, keepExisting=.false.)
+      call realloc(i_poly_start, polygon_points, keepExisting=.false.)
+      call realloc(i_poly_end, polygon_points, keepExisting=.false.)
+      call realloc(polygon_type, polygon_points, keepExisting=.false.)
 
       i_point = 1
       i_poly = 0
 
       do while (i_point < polygon_points)
          i_poly = i_poly + 1
-         if (i_poly > polygon_buffer_size) then
-            polygon_buffer_size = ceiling(polygon_buffer_size * 1.1_dp)
-            call realloc(x_poly_min, polygon_buffer_size, keepExisting=.true.)
-            call realloc(x_poly_max, polygon_buffer_size, keepExisting=.true.)
-            call realloc(y_poly_min, polygon_buffer_size, keepExisting=.true.)
-            call realloc(y_poly_max, polygon_buffer_size, keepExisting=.true.)
-            call realloc(i_poly_start, polygon_buffer_size, keepExisting=.true.)
-            call realloc(i_poly_end, polygon_buffer_size, keepExisting=.true.)
-            call realloc(polygon_type, polygon_buffer_size, keepExisting=.true.)
-         end if
 
+         !> obtain start and end indices of polygon with generic subarray extraction routine, then correct them
          call get_startend(polygon_points - i_point + 1, x_poly(i_point:polygon_points), y_poly(i_point:polygon_points), i_start, i_end, dmiss)
          i_start = i_start + i_point - 1
          i_end = i_end + i_point - 1
@@ -114,6 +104,15 @@ contains
       end do
 
       polygons = i_poly
+
+      !> resize arrays to actual number of polygons
+      call realloc(x_poly_min, polygons, keepExisting=.true.)
+      call realloc(x_poly_max, polygons, keepExisting=.true.)
+      call realloc(y_poly_min, polygons, keepExisting=.true.)
+      call realloc(y_poly_max, polygons, keepExisting=.true.)
+      call realloc(i_poly_start, polygons, keepExisting=.true.)
+      call realloc(i_poly_end, polygons, keepExisting=.true.)
+      call realloc(polygon_type, polygons, keepExisting=.true.)
 
       ! check if there are any enclosure polygons
       do i_poly = 1, polygons

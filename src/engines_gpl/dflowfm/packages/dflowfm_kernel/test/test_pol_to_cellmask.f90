@@ -2,7 +2,7 @@ module test_pol_to_cellmask
    use assertions_gtest
    use precision, only: dp
    use m_missing, only: dmiss
-   use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
+   use network_data, only: cellmask, npl, nump, xzw, yzw, xpl, ypl, zpl
    use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set, cellmask_from_polygon_set_cleanup
    implicit none
 
@@ -15,11 +15,9 @@ contains
       
       ! Setup test grid: 5x5 grid of cells
       nump = 25
-      
-      if (allocated(xzw)) deallocate(xzw)
-      if (allocated(yzw)) deallocate(yzw)
-      if (allocated(cellmask)) deallocate(cellmask)
-      allocate(xzw(nump), yzw(nump), cellmask(nump))
+      npl = 15  ! 5 points for enclosure + separator + 5 points for dry point + separators
+
+      call realloc_polyline_arrays(nump,npl)
       
       ! Create 5x5 grid of cell centers
       do i = 1, 25
@@ -30,13 +28,6 @@ contains
       ! Setup polygons:
       ! 1. Enclosure polygon (zpl=-1): covers cells at x=[0,30], y=[0,30]
       ! 2. Dry point polygon (zpl=1): inside enclosure at x=[10,20], y=[10,20]
-      
-      npl = 15  ! 5 points for enclosure + separator + 5 points for dry point + separators
-      
-      if (allocated(xpl)) deallocate(xpl)
-      if (allocated(ypl)) deallocate(ypl)
-      if (allocated(zpl)) deallocate(zpl)
-      allocate(xpl(npl), ypl(npl), zpl(npl))
       
       ! Enclosure polygon (rectangle from 0,0 to 30,30) with zpl=-1
       xpl(1) = 0.0_dp
@@ -127,12 +118,12 @@ contains
       
       ! Setup test grid: 5x5 grid of cells
       nump = 25
+
+      ! define polygon length for allocation
+      npl = 13
       
-      if (allocated(xzw)) deallocate(xzw)
-      if (allocated(yzw)) deallocate(yzw)
-      if (allocated(cellmask)) deallocate(cellmask)
-      allocate(xzw(nump), yzw(nump), cellmask(nump))
-      
+      call realloc_polyline_arrays(nump,npl)
+
       ! Create 5x5 grid of cell centers
       do i = 1, 25
          xzw(i) = mod(i-1, 5) * 10.0_dp + 5.0_dp
@@ -143,13 +134,6 @@ contains
       ! 1. Outer dry point polygon: x=[0,40], y=[0,40] with zpl=1
       ! 2. Inner dry point polygon: x=[10,30], y=[10,30] with zpl=1
       ! Cells inside odd number of polygons are masked
-      
-      npl = 13
-      
-      if (allocated(xpl)) deallocate(xpl)
-      if (allocated(ypl)) deallocate(ypl)
-      if (allocated(zpl)) deallocate(zpl)
-      allocate(xpl(npl), ypl(npl), zpl(npl))
       
       ! Outer dry point polygon (rectangle from 0,0 to 40,40)
       xpl(1) = 0.0_dp
@@ -229,5 +213,19 @@ contains
       
    end subroutine test_nested_drypoint_polygons
    !$f90tw)
+
+   subroutine realloc_polyline_arrays(nump,npl)
+      use m_alloc, only: realloc
+      integer, intent(in) :: nump, npl
+      
+      call realloc(cellmask, nump, keepexisting=.false.)
+      call realloc(xzw, nump, keepexisting=.false.)
+      call realloc(yzw, nump, keepexisting=.false.)
+
+      call realloc(xpl, npl, keepexisting=.false.)
+      call realloc(ypl, npl, keepexisting=.false.)
+      call realloc(zpl, npl, keepexisting=.false.)
+
+   end subroutine realloc_polyline_arrays
 
 end module test_pol_to_cellmask
