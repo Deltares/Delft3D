@@ -39,7 +39,7 @@ contains
    subroutine heatun(n, time_in_hours, nominal_solar_radiation)
       use precision, only: dp, comparereal, fp
       use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
-      use m_physcoef, only: ag, rhomean, backgroundsalinity, dalton, epshstem, stanton, sfr, soiltempthick, &
+      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, sfr, soiltempthick, &
                             BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, secchidepth2, surftempsmofac, &
                             jadelvappos, zab
       use m_heatfluxes, only: em, albedo, cpa, jaSecchisp, Secchisp, jamapheatflux, rcpi, &
@@ -135,7 +135,7 @@ contains
 
          heat_transfer_coefficient = 4.48_dp + 0.049_dp * water_temperature_in_cell + fwind * (3.5_dp + 2.05_dp * wind_speed_in_cell) * (1.12_dp + 0.018_dp * water_temperature_in_cell + 0.00158_dp * water_temperature_in_cell**2)
 
-         total_heat_flux = -heat_transfer_coefficient * (water_temperature_in_cell - air_temperature_in_cell)
+         total_heat_flux = -heat_transfer_coefficient * (water_temperature_in_cell - backgroundwatertemperature)
          heat_capacity_water_cell_area = rcpi * ba(n)
          heatsrc0(k_top) = heatsrc0(k_top) + total_heat_flux * heat_capacity_water_cell_area * ice_free_area_fraction ! fill heat source array
 
