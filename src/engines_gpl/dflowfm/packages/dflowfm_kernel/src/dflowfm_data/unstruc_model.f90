@@ -1059,8 +1059,10 @@ contains
       call prop_get(md_ptr, 'numerics', 'Limtypmom', limtypmom)
       call prop_get(md_ptr, 'numerics', 'Limtypsa', limtypsa)
       call prop_get(md_ptr, 'numerics', 'Limtypw', limtypw)
-      if (kmx > 1) then ! package deal
-         ja_timestep_auto = 5
+
+      ! Default autotimestep value for 3D is AUTO_TIMESTEP_3D_INOUT
+      if (kmx > 1) then
+         autotimestep = AUTO_TIMESTEP_3D_INOUT
       end if
 
       call prop_get(md_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff)
@@ -1743,10 +1745,12 @@ contains
       call setTUDUnitString()
 
       call prop_get(md_ptr, 'Time', 'dtUser', dt_user)
+
+      ! Set default values if not specified in MDU
       if (dt_user <= 0) then
          dt_user = 300.0_dp
          dt_max = 60.0_dp
-         ja_timestep_auto = 1
+         autotimestep = AUTO_TIMESTEP_2D_OUT
       end if
 
       call prop_get(md_ptr, 'Time', 'dtNodal', dt_nodal)
@@ -1758,9 +1762,8 @@ contains
          call msg_flush()
       end if
 
-      ! 1.02: Don't read [time] AutoTimestep (ja_timestep_auto) from MDU anymore.
       ! ibuf = 1
-      call prop_get(md_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, success)
+      call prop_get(md_ptr, 'Time', 'autoTimeStep', autotimestep, success)
       call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
       if (success .and. jadum /= 0) then
          call mess(LEVEL_ERROR, 'autoTimeStepDiff not supported')
@@ -3487,7 +3490,7 @@ contains
             call prop_set(prop_ptr, 'sediment', 'DzbDtMax', dzbdtmax, 'Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m)')
             call prop_set(prop_ptr, 'sediment', 'InMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
             call prop_set(prop_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
-            call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)')
+            call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)')
          end if
 
          if (jased /= 4) then
@@ -3677,8 +3680,8 @@ contains
 
       call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no, 1=see file *.steps')
 
-      if (writeall .or. ja_timestep_auto /= 1) then
-         call prop_set(prop_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
+      if (writeall .or. autotimestep /= AUTO_TIMESTEP_2D_OUT) then
+         call prop_set(prop_ptr, 'Time', 'autoTimeStep', autotimestep, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
       end if
       if (writeall .and. ja_timestep_auto_visc /= 1) then
          call prop_set(prop_ptr, 'Time', 'autoTimeStepVisc', ja_timestep_auto_visc, '0 = no, 1 = yes (Time limitation based on explicit diffusive term)')

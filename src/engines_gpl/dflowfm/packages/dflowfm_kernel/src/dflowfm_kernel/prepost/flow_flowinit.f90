@@ -383,12 +383,9 @@ contains
          end if
       end if
 
-      if (kmx < 2) then ! in 2D, use 1
-         if (ja_timestep_auto /= -123) then
-            ja_timestep_auto = ON
-         else
-            ja_timestep_auto = OFF
-         end if
+      ! In 2D set AUTO_TIMESTEP_2D_OUT as default
+      if ((kmx < 2) .and. (autotimestep /= AUTO_TIMESTEP_2D_OUT)) then
+         autotimestep = AUTO_TIMESTEP_2D_OUT
       end if
 
       if (jaimplicit == ON) then
