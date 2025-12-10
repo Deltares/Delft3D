@@ -56,7 +56,8 @@ contains
       integer :: L, nw1, nw2
       real(kind=dp) :: alfa1, alfa2, dir
 
-      FetchL = 0.0_dp; FetchD = 0.0_dp
+      FetchL = 0.0_dp
+      FetchD = 0.0_dp
 
       if (Hs(k) > 0.0_dp) then
          call getlink1(k, L) ! het is maar voor wind

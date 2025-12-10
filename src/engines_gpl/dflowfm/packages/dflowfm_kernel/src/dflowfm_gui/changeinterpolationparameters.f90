@@ -59,14 +59,22 @@ contains
       integer :: nbut, imp, inp
 
       NLEVEL = 4
-      OPTION(1) = 'INTERPOLATIONTYPE (1=TRI,2=AVE,3=CURV. TRI)'; it(2 * 1) = 2
-      OPTION(2) = 'JTEKINTERPOLATIONPROCESS (0/1)             '; it(2 * 2) = 2
-      OPTION(3) = 'IAV, AVERAGINGTYPE                         '; it(2 * 3) = 2
-      OPTION(4) = 'NUMMIN, MINUMUM NR OF POINTS IN AV         '; it(2 * 4) = 2
-      OPTION(5) = 'RCEL, RELATIVE SEARCH CELL SIZE            '; it(2 * 5) = 6
-      OPTION(6) = 'Interpolate_to , 1=bathy, 2=ZK, 3=S1, 4=ZC '; it(2 * 6) = 2
-      OPTION(7) = 'Percentileminmax, average min or max Perc %'; it(2 * 7) = 6
-      OPTION(8) = 'Mxsam                                      '; it(2 * 8) = 2
+      OPTION(1) = 'INTERPOLATIONTYPE (1=TRI,2=AVE,3=CURV. TRI)'
+      it(2 * 1) = 2
+      OPTION(2) = 'JTEKINTERPOLATIONPROCESS (0/1)             '
+      it(2 * 2) = 2
+      OPTION(3) = 'IAV, AVERAGINGTYPE                         '
+      it(2 * 3) = 2
+      OPTION(4) = 'NUMMIN, MINUMUM NR OF POINTS IN AV         '
+      it(2 * 4) = 2
+      OPTION(5) = 'RCEL, RELATIVE SEARCH CELL SIZE            '
+      it(2 * 5) = 6
+      OPTION(6) = 'Interpolate_to , 1=bathy, 2=ZK, 3=S1, 4=ZC '
+      it(2 * 6) = 2
+      OPTION(7) = 'Percentileminmax, average min or max Perc %'
+      it(2 * 7) = 6
+      OPTION(8) = 'Mxsam                                      '
+      it(2 * 8) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6

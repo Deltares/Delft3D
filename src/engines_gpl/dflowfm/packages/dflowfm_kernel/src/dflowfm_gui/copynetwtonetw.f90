@@ -52,8 +52,10 @@ contains
 
       call converparameters(ja)
 
-      KC = 0; in = -1
-      numkn = 0; numLn = 0
+      KC = 0
+      in = -1
+      numkn = 0
+      numLn = 0
       do n = 1, numk
          call DBPINPOL(XK(n), YK(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
          if (IN == 1) then
@@ -68,11 +70,14 @@ contains
          end if
       end do
 
-      K0 = numk; L0 = numL
+      K0 = numk
+      L0 = numL
       call INCREASENETW(K0 + NUMKN, L0 + NUMLN)
 
-      KC = 0; in = -1 ! redo kc after increasenetw
-      numkn = 0; numLn = 0
+      KC = 0
+      in = -1 ! redo kc after increasenetw
+      numkn = 0
+      numLn = 0
       do n = 1, numk
          call DBPINPOL(XK(n), YK(n), IN, dmiss, JINS, NPL, xpl, ypl, zpl)
          if (IN == 1) then

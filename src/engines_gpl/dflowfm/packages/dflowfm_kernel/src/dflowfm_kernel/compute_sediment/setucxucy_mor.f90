@@ -65,13 +65,16 @@ contains
       real(kind=dp) :: dischcorrection
       real(kind=dp) :: uinx, uiny
 
-      ucxq_mor = 0.0_dp; ucyq_mor = 0.0_dp ! zero arrays
-      ucx_mor = 0.0_dp; ucy_mor = 0.0_dp
+      ucxq_mor = 0.0_dp
+      ucyq_mor = 0.0_dp ! zero arrays
+      ucx_mor = 0.0_dp
+      ucy_mor = 0.0_dp
 
       if (kmx < 1) then ! original 2D coding
          do L = 1, lnx1D
             if (u1_loc(L) /= 0.0_dp .and. kcu(L) /= 3) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                wcxu = wcx1(L) * u1_loc(L)
                ucx_mor(k1) = ucx_mor(k1) + wcxu
                ucxq_mor(k1) = ucxq_mor(k1) + wcxu * hu(L)
@@ -91,7 +94,8 @@ contains
                if (struclink(L) == 1) cycle
             end if
             if (u1_loc(L) /= 0.0_dp) then ! link flows
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                wcxu = wcx1(L) * u1_loc(L)
                ucx_mor(k1) = ucx_mor(k1) + wcxu
                ucxq_mor(k1) = ucxq_mor(k1) + wcxu * hu(L)
@@ -108,7 +112,8 @@ contains
          end do
       else
          do LL = 1, lnx
-            Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+            Lb = Lbot(LL)
+            Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
                if (u1_loc(L) /= 0.0_dp) then ! link flows
                   k1 = ln0(1, L) ! use ln0 in reconstruction and in computing ucxu, use ln when fluxing
@@ -181,7 +186,8 @@ contains
          k2 = kbndz(2, n)
          LL = kbndz(3, n)
          itpbn = kbndz(4, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          if (kmx == 0) then
             if (hs(kb) > epshs) then
                if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
@@ -228,7 +234,8 @@ contains
          else
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb, Lt
-               kbk = ln(1, L); k2k = ln(2, L)
+               kbk = ln(1, L)
+               k2k = ln(2, L)
                if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx_mor(k2k), ucy_mor(k2k)) * cs + nod2liny(LL, 2, ucx_mor(k2k), ucy_mor(k2k)) * sn
@@ -241,7 +248,8 @@ contains
                      uin = ucx_mor(k2k) * cs + ucy_mor(k2k) * sn
                      ucx_mor(kbk) = uin * cs
                      ucy_mor(kbk) = uin * sn
-                     ucxq_mor(kbk) = uin * cs; ucyq_mor(kbk) = uin * sn
+                     ucxq_mor(kbk) = uin * cs
+                     ucyq_mor(kbk) = uin * sn
                   end if
                else
                   if (jasfer3D == 1) then
@@ -277,7 +285,8 @@ contains
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L)
                if (u1_loc(LL) > 0) then
-                  ucx_mor(k1) = 0.0_dp; ucy_mor(k1) = 0.0_dp
+                  ucx_mor(k1) = 0.0_dp
+                  ucy_mor(k1) = 0.0_dp
                end if
             end do
          end do
@@ -286,7 +295,8 @@ contains
             LL = kbndz(3, n)
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L)
-               ucx_mor(k1) = 0.0_dp; ucy_mor(k1) = 0.0_dp
+               ucx_mor(k1) = 0.0_dp
+               ucy_mor(k1) = 0.0_dp
             end do
          end do
       end if
@@ -295,7 +305,8 @@ contains
          kb = kbndu(1, n)
          k2 = kbndu(2, n)
          LL = kbndu(3, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          if (kmx == 0) then
             if (hs(kb) > epshs) then
                if (jacstbnd == 0) then
@@ -382,12 +393,14 @@ contains
          kb = kbndt(1, n)
          k2 = kbndt(2, n)
          LL = kbndt(3, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          call getLbotLtop(LL, Lb, Lt)
          do L = Lb, Lt
             kbk = ln(1, L)
             kk = kmxd * (n - 1) + L - Lb + 1
-            uu = u0(L); vv = zbndt(kk) ! v(L)
+            uu = u0(L)
+            vv = zbndt(kk) ! v(L)
             uucx = uu * cs - vv * sn
             uucy = uu * sn + vv * cs
             if (jasfer3D == 1) then
@@ -433,12 +446,14 @@ contains
          kb = kbndn(1, n)
          k2 = kbndn(2, n)
          LL = kbndn(3, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          call getLbotLtop(LL, Lb, Lt)
          do L = Lb, Lt
             kbk = ln(1, L)
             kk = kmxd * (n - 1) + L - Lb + 1
-            uu = zbndn(kk); vv = 0.0_dp
+            uu = zbndn(kk)
+            vv = 0.0_dp
             uucx = uu * cs - vv * sn !
             uucy = uu * sn + vv * cs
             if (jasfer3D == 1) then

@@ -42,9 +42,13 @@ contains
       implicit none
       integer :: n, kb, kt, ktx
       if (kmx == 0) then
-         kb = n; kt = n; ktx = n
+         kb = n
+         kt = n
+         ktx = n
       else
-         kb = kbot(n); kt = ktop(n); ktx = kb + kmxn(n) - 1
+         kb = kbot(n)
+         kt = ktop(n)
+         ktx = kb + kmxn(n) - 1
       end if
    end subroutine getkbotktopmax
 

@@ -159,8 +159,12 @@ contains
 !  make the contraints
       B = 0.0_dp
       C = 0.0_dp
-      B(1, 1) = dn1y; C(1, 1) = -dn1x; d(1) = dn1y * xx1 - dn1x * yy1
-      B(2, num) = dn2y; C(2, num) = -dn2x; d(2) = dn2y * xx2 - dn2x * yy2
+      B(1, 1) = dn1y
+      C(1, 1) = -dn1x
+      d(1) = dn1y * xx1 - dn1x * yy1
+      B(2, num) = dn2y
+      C(2, num) = -dn2x
+      d(2) = dn2y * xx2 - dn2x * yy2
 !  compute Schur complement
       E = matmul(B, matmul(AtWAi, transpose(B))) + matmul(C, matmul(AtWAi, transpose(C)))
       lambda = 0.0_dp

@@ -49,7 +49,8 @@ contains
       real(kind=dp) :: betas, beta, alfa
       real(kind=dp) :: fx, fy, fxl
 
-      ht_xx = 0.0_dp; ht_xy = 0.0_dp
+      ht_xx = 0.0_dp
+      ht_xy = 0.0_dp
 
       do k = 1, ndxi
          ht_xx(k) = 0.0_dp
@@ -64,7 +65,8 @@ contains
       end do
 
       do L = lnxi + 1, lnx ! Boundary conditions for spiral flow forces
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          ht_xy(k1) = 0.0_dp
          ht_xy(k1) = 0.0_dp
          if (hs(k2) < epshu) cycle
@@ -121,13 +123,15 @@ contains
       end do
 
       do L = lnxi + 1, lnx ! Boundary conditions for spiral flow forces
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          spirfx(k1) = spirfx(k2)
          spirfy(k1) = spirfy(k2)
       end do
 
       do L = 1, lnx ! Mapping forces from global coordinates to local
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          fx = acl(L) * spirfx(k1) + (1.0_dp - acl(L)) * spirfx(k2)
          fy = acl(L) * spirfy(k1) + (1.0_dp - acl(L)) * spirfy(k2)
          fxl = csu(L) * fx + snu(L) * fy

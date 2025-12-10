@@ -60,8 +60,10 @@ contains
 
       do L = 1, lnx
          if (wu_mor(L) == 0.0_dp) cycle
-         k1 = ln(1, L); k2 = ln(2, L)
-         ac1 = acL(L); ac2 = 1.0_dp - ac1
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         ac1 = acL(L)
+         ac2 = 1.0_dp - ac1
          if (hs(k1) > hswitch .or. hs(k2) > hswitch) then
             slpmax = wetslope
          else

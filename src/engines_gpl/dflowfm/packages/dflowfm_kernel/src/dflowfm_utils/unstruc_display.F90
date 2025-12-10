@@ -217,26 +217,66 @@ contains
          call iset_jaopengl(jaopengl_loc)
       end if
 
-      call prop_get(dis_ptr, '*', 'NCOLDG ', KRGB, 4, success); if (success) NCOLDG = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLRG ', KRGB, 4, success); if (success) NCOLRG = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLDN ', KRGB, 4, success); if (success) NCOLDN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLRN ', KRGB, 4, success); if (success) NCOLRN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLNN ', KRGB, 4, success); if (success) NCOLNN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLSP ', KRGB, 4, success); if (success) NCOLSP = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLLN ', KRGB, 4, success); if (success) NCOLLN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLTX ', KRGB, 4, success); if (success) NCOLTX = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLPL ', KRGB, 4, success); if (success) NCOLPL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLCRS', KRGB, 4, success); if (success) NCOLCRS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLTHD', KRGB, 4, success); if (success) NCOLTHD = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLFXW', KRGB, 4, success); if (success) NCOLFXW = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLHL ', KRGB, 4, success); if (success) NCOLHL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLVEC  ', KRGB, 4, success); if (success) KLVEC = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLAXS  ', KRGB, 4, success); if (success) KLAXS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLSCL  ', KRGB, 4, success); if (success) KLSCL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLTEX  ', KRGB, 4, success); if (success) KLTEX = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLOBS  ', KRGB, 4, success); if (success) KLOBS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLPROF ', KRGB, 4, success); if (success) KLPROF = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLSRC  ', KRGB, 4, success); if (success) KLSRC = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLDG ', KRGB, 4, success)
+      if (success) NCOLDG = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLRG ', KRGB, 4, success)
+      if (success) NCOLRG = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLDN ', KRGB, 4, success)
+      if (success) NCOLDN = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLRN ', KRGB, 4, success)
+      if (success) NCOLRN = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLNN ', KRGB, 4, success)
+      if (success) NCOLNN = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLSP ', KRGB, 4, success)
+      if (success) NCOLSP = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLLN ', KRGB, 4, success)
+      if (success) NCOLLN = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLTX ', KRGB, 4, success)
+      if (success) NCOLTX = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLPL ', KRGB, 4, success)
+      if (success) NCOLPL = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLCRS', KRGB, 4, success)
+      if (success) NCOLCRS = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLTHD', KRGB, 4, success)
+      if (success) NCOLTHD = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLFXW', KRGB, 4, success)
+      if (success) NCOLFXW = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLHL ', KRGB, 4, success)
+      if (success) NCOLHL = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLVEC  ', KRGB, 4, success)
+      if (success) KLVEC = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLAXS  ', KRGB, 4, success)
+      if (success) KLAXS = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLSCL  ', KRGB, 4, success)
+      if (success) KLSCL = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLTEX  ', KRGB, 4, success)
+      if (success) KLTEX = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLOBS  ', KRGB, 4, success)
+      if (success) KLOBS = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLPROF ', KRGB, 4, success)
+      if (success) KLPROF = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'KLSRC  ', KRGB, 4, success)
+      if (success) KLSRC = KRGB(1)
+      if (success) call SETINTRGB(KRGB)
 
       call prop_get(dis_ptr, '*', 'NREDS  ', NREDS, success)
       call prop_get(dis_ptr, '*', 'NGREENS', NGREENS, success)
@@ -429,26 +469,66 @@ contains
 
       call prop_set(dis_ptr, '*', 'jaopengl', iget_jaopengl())
 
-      KRGB(1) = NCOLDG; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLDG ', KRGB)
-      KRGB(1) = NCOLRG; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLRG ', KRGB)
-      KRGB(1) = NCOLDN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLDN ', KRGB)
-      KRGB(1) = NCOLRN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLRN ', KRGB)
-      KRGB(1) = NCOLNN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLNN ', KRGB)
-      KRGB(1) = NCOLSP; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLSP ', KRGB)
-      KRGB(1) = NCOLLN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLLN ', KRGB)
-      KRGB(1) = NCOLTX; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLTX ', KRGB)
-      KRGB(1) = NCOLPL; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLPL ', KRGB)
-      KRGB(1) = NCOLCRS; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLCRS', KRGB)
-      KRGB(1) = NCOLTHD; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLTHD', KRGB)
-      KRGB(1) = NCOLFXW; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLFXW', KRGB)
-      KRGB(1) = NCOLHL; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLHL ', KRGB)
-      KRGB(1) = KLVEC; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLVEC  ', KRGB)
-      KRGB(1) = KLAXS; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLAXS  ', KRGB)
-      KRGB(1) = KLSCL; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLSCL  ', KRGB)
-      KRGB(1) = KLTEX; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLTEX  ', KRGB)
-      KRGB(1) = KLOBS; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLOBS  ', KRGB)
-      KRGB(1) = KLPROF; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLPROF ', KRGB)
-      KRGB(1) = KLSRC; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLSRC  ', KRGB)
+      KRGB(1) = NCOLDG
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLDG ', KRGB)
+      KRGB(1) = NCOLRG
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLRG ', KRGB)
+      KRGB(1) = NCOLDN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLDN ', KRGB)
+      KRGB(1) = NCOLRN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLRN ', KRGB)
+      KRGB(1) = NCOLNN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLNN ', KRGB)
+      KRGB(1) = NCOLSP
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLSP ', KRGB)
+      KRGB(1) = NCOLLN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLLN ', KRGB)
+      KRGB(1) = NCOLTX
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLTX ', KRGB)
+      KRGB(1) = NCOLPL
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLPL ', KRGB)
+      KRGB(1) = NCOLCRS
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLCRS', KRGB)
+      KRGB(1) = NCOLTHD
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLTHD', KRGB)
+      KRGB(1) = NCOLFXW
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLFXW', KRGB)
+      KRGB(1) = NCOLHL
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLHL ', KRGB)
+      KRGB(1) = KLVEC
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLVEC  ', KRGB)
+      KRGB(1) = KLAXS
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLAXS  ', KRGB)
+      KRGB(1) = KLSCL
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLSCL  ', KRGB)
+      KRGB(1) = KLTEX
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLTEX  ', KRGB)
+      KRGB(1) = KLOBS
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLOBS  ', KRGB)
+      KRGB(1) = KLPROF
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLPROF ', KRGB)
+      KRGB(1) = KLSRC
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLSRC  ', KRGB)
 
       call prop_set(dis_ptr, '*', 'NREDS  ', NREDS)
       call prop_set(dis_ptr, '*', 'NGREENS', NGREENS)
@@ -804,7 +884,8 @@ contains
 
                call setcol(ncolfxw)
 
-               k3 = lncn(1, L); k4 = lncn(2, L)
+               k3 = lncn(1, L)
+               k4 = lncn(2, L)
 
                if (ndrawfixedweirs == 3 .or. ndrawfixedweirs == 4) then
                   call isocol(bob(1, L), ncol)
@@ -823,7 +904,9 @@ contains
          if (ndrawFixedWeirs == 2 .or. ndrawFixedWeirs == 4) then
             call setcol(ncolblack)
             do i = 1, nfxw
-               L = lnfxw(i); k3 = lncn(1, L); k4 = lncn(2, L)
+               L = lnfxw(i)
+               k3 = lncn(1, L)
+               k4 = lncn(2, L)
                xu = 0.5_dp * (xk(k3) + xk(k4))
                yu = 0.5_dp * (yk(k3) + yk(k4))
                if (ndrawFixedWeirs == 4) then
@@ -892,7 +975,8 @@ contains
          do j = 1, path%lnx
             call movabs(path%xk(1, j), path%yk(1, j))
             ! call cir(.2d0*rcir)
-            xx = path%xk(2, j); yy = path%yk(2, j)
+            xx = path%xk(2, j)
+            yy = path%yk(2, j)
             call lnabs(xx, yy)
             ! call cir(.2d0*rcir)
 
@@ -906,10 +990,14 @@ contains
             return
          else
             if (path%xk(1, jmin) > path%xk(1, jmax)) then
-               jj = jmin; jmin = jmax; jmax = jj
+               jj = jmin
+               jmin = jmax
+               jmax = jj
             end if
-            xx1 = path%xk(1, jmin); yy1 = path%yk(1, jmin)
-            xx2 = path%xk(1, jmax); yy2 = path%yk(1, jmax)
+            xx1 = path%xk(1, jmin)
+            yy1 = path%yk(1, jmin)
+            xx2 = path%xk(1, jmax)
+            yy2 = path%yk(1, jmax)
          end if
 
          ! For a monitoring cross section, plot the positive direction
@@ -924,7 +1012,8 @@ contains
       end if ! path%lnx > 0
       if (len_trim(label) > 0) then
          call igrcharfont(7)
-         xt = xx2; yt = yy2
+         xt = xx2
+         yt = yy2
          if (xt > x2 - dsix) xt = x2 - dsix
          call gtext(trim(label), xt, yt, kltex)
       end if
@@ -1056,9 +1145,11 @@ contains
       call DMINMAX(YH, N, YMIN, YMAX, 10)
 
       if (XMAX == XMIN .and. YMAX == YMIN) then
-         XMIN = 0.0_dp; YMIN = 0.0_dp
+         XMIN = 0.0_dp
+         YMIN = 0.0_dp
          call INQASP(ASPECT)
-         XMAX = 1000.0_dp; Ymax = aspect * 1000.0_dp
+         XMAX = 1000.0_dp
+         Ymax = aspect * 1000.0_dp
       end if
 
       call MINMAXWORLD(XMIN, YMIN, XMAX, YMAX)
@@ -1517,9 +1608,11 @@ contains
          write (mout, '(a)') '* Column 2 : fraction ()'
 
          msgbuf = 'BL01'
-         call msg_flush(); write (mout, '(a)') msgbuf
+         call msg_flush()
+         write (mout, '(a)') msgbuf
          write (msgbuf, '(i4,A)') npdf, ' 2 '
-         call msg_flush(); write (mout, '(a)') msgbuf
+         call msg_flush()
+         write (mout, '(a)') msgbuf
 
          do i = npdf - 1, 1, -1
             yp = yp - dyp
@@ -1527,7 +1620,8 @@ contains
             write (tex(1:), '(2F10.6)') ypdf(i), xpdf(i)
             call GTEXT(tex, xp, yp, ncolln)
             write (msgbuf, '(a)') tex
-            call msg_flush(); write (mout, '(a)') msgbuf
+            call msg_flush()
+            write (mout, '(a)') msgbuf
          end do
          call doclose(mout)
       end if

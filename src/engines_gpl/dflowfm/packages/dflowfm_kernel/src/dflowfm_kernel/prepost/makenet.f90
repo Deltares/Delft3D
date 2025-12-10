@@ -87,7 +87,8 @@ contains
          AEL = PI * THICK * THICK / 4 ! RDIAM in mm
          SIZ = SIZE
          HS = SIZE * 0.5_dp
-         CS = cos(ANGLE * PI / 180.); SN = sin(ANGLE * PI / 180.)
+         CS = cos(ANGLE * PI / 180.)
+         SN = sin(ANGLE * PI / 180.)
 
          if (NTYP <= 2) then
             DX = DX0
@@ -96,9 +97,11 @@ contains
             DX = SIZ * cos(ANGLE * PI / 180.)
             DY = SIZ * sin(ANGLE * PI / 180.)
          else if (NTYP == 4) then
-            DX = 0.5_dp * SIZ; DY = DX * sqrt(3.0_dp)
+            DX = 0.5_dp * SIZ
+            DY = DX * sqrt(3.0_dp)
          else if (NTYP == 5) then
-            DX = HS; DY = sqrt(3.0_dp) * DX
+            DX = HS
+            DY = sqrt(3.0_dp) * DX
          end if
 
          if (NPL > 0) then
@@ -112,7 +115,8 @@ contains
          end if
 
          if (NTYP == 0) then
-            MC = NRX + 1; NC = NRY + 1
+            MC = NRX + 1
+            NC = NRY + 1
             call INCREASEGRID(MC, NC)
             do N = 1, NC
                do M = 1, MC
@@ -159,65 +163,103 @@ contains
                   if (NTYP == 0) then
                      XX = real(M - 1, kind=dp) * DX0
                      YY = real(N - 1, kind=dp) * DY0
-                     X(1) = X0 + XX * CS - YY * SN; NN = 4
+                     X(1) = X0 + XX * CS - YY * SN
+                     NN = 4
                      Y(1) = Y0 + YY * CS + XX * SN
                      XX = XX + DX0
-                     X(2) = X0 + XX * CS - YY * SN; NN = 4
+                     X(2) = X0 + XX * CS - YY * SN
+                     NN = 4
                      Y(2) = Y0 + YY * CS + XX * SN
                      YY = YY + DY0
-                     X(3) = X0 + XX * CS - YY * SN; NN = 4
+                     X(3) = X0 + XX * CS - YY * SN
+                     NN = 4
                      Y(3) = Y0 + YY * CS + XX * SN
                      XX = XX - DX0
-                     X(4) = X0 + XX * CS - YY * SN; NN = 4
+                     X(4) = X0 + XX * CS - YY * SN
+                     NN = 4
                      Y(4) = Y0 + YY * CS + XX * SN
                      XD = 0.25_dp * (X(1) + X(2) + X(3) + X(4))
                      YD = 0.25_dp * (Y(1) + Y(2) + Y(3) + Y(4))
                   else if (NTYP == 1) then
-                     XD = X0 + DX + real(M - 1, kind=dp) * 2 * DX; NN = 4
+                     XD = X0 + DX + real(M - 1, kind=dp) * 2 * DX
+                     NN = 4
                      YD = Y0 + DY + real(N - 1, kind=dp) * 2 * DY
-                     X(1) = XD; Y(1) = YD - DY
-                     X(2) = XD + DX; Y(2) = YD
-                     X(3) = XD; Y(3) = YD + DY
-                     X(4) = XD - DX; Y(4) = YD
+                     X(1) = XD
+                     Y(1) = YD - DY
+                     X(2) = XD + DX
+                     Y(2) = YD
+                     X(3) = XD
+                     Y(3) = YD + DY
+                     X(4) = XD - DX
+                     Y(4) = YD
                   else if (NTYP == 2) then
                      JN = mod(M - 1, 2)
-                     XD = X0 + DX + HS + real(M - 1, kind=dp) * (DX + 2 * HS); NN = 6
+                     XD = X0 + DX + HS + real(M - 1, kind=dp) * (DX + 2 * HS)
+                     NN = 6
                      YD = Y0 + DY + JN * DY + real(N - 1, kind=dp) * (2 * DY)
-                     X(1) = XD - HS; Y(1) = YD - DY
-                     X(2) = XD + HS; Y(2) = YD - DY
-                     X(3) = XD + HS + DX; Y(3) = YD
-                     X(4) = XD + HS; Y(4) = YD + DY
-                     X(5) = XD - HS; Y(5) = YD + DY
-                     X(6) = XD - HS - DX; Y(6) = YD
+                     X(1) = XD - HS
+                     Y(1) = YD - DY
+                     X(2) = XD + HS
+                     Y(2) = YD - DY
+                     X(3) = XD + HS + DX
+                     Y(3) = YD
+                     X(4) = XD + HS
+                     Y(4) = YD + DY
+                     X(5) = XD - HS
+                     Y(5) = YD + DY
+                     X(6) = XD - HS - DX
+                     Y(6) = YD
                   else if (NTYP == 3) then
-                     XD = X0 + DX + HS + real(M - 1, kind=dp) * 2 * (DX + HS); NN = 6
+                     XD = X0 + DX + HS + real(M - 1, kind=dp) * 2 * (DX + HS)
+                     NN = 6
                      YD = Y0 + DY + real(N - 1, kind=dp) * 2 * DY
-                     X(1) = XD - HS; Y(1) = YD - DY
-                     X(2) = XD + HS; Y(2) = YD - DY
-                     X(3) = XD + HS + DX; Y(3) = YD
-                     X(4) = XD + HS; Y(4) = YD + DY
-                     X(5) = XD - HS; Y(5) = YD + DY
-                     X(6) = XD - HS - DX; Y(6) = YD
+                     X(1) = XD - HS
+                     Y(1) = YD - DY
+                     X(2) = XD + HS
+                     Y(2) = YD - DY
+                     X(3) = XD + HS + DX
+                     Y(3) = YD
+                     X(4) = XD + HS
+                     Y(4) = YD + DY
+                     X(5) = XD - HS
+                     Y(5) = YD + DY
+                     X(6) = XD - HS - DX
+                     Y(6) = YD
                   else if (NTYP == 4) then
-                     XD = X0 + DX + real(M - 1, kind=dp) * 2 * DX; NN = 6
+                     XD = X0 + DX + real(M - 1, kind=dp) * 2 * DX
+                     NN = 6
                      YD = Y0 + DY + real(N - 1, kind=dp) * 2 * DY
-                     X(1) = XD - DX; Y(1) = YD - DY
-                     X(2) = XD + DX; Y(2) = YD - DY
-                     X(3) = XD + DX + DX; Y(3) = YD
-                     X(4) = XD + DX; Y(4) = YD + DY
-                     X(5) = XD - DX; Y(5) = YD + DY
-                     X(6) = XD; Y(6) = YD
+                     X(1) = XD - DX
+                     Y(1) = YD - DY
+                     X(2) = XD + DX
+                     Y(2) = YD - DY
+                     X(3) = XD + DX + DX
+                     Y(3) = YD
+                     X(4) = XD + DX
+                     Y(4) = YD + DY
+                     X(5) = XD - DX
+                     Y(5) = YD + DY
+                     X(6) = XD
+                     Y(6) = YD
                   else if (NTYP == 5) then
-                     mh = nrx / 2; nh = nry / 2
+                     mh = nrx / 2
+                     nh = nry / 2
                      JN = mod(M - 1, 2)
-                     XD = X0 + DX - HS + real(M - 1 - mh, kind=dp) * (DX + 2 * HS); NN = 6
+                     XD = X0 + DX - HS + real(M - 1 - mh, kind=dp) * (DX + 2 * HS)
+                     NN = 6
                      YD = Y0 + JN * DY + real(N - 1 - nh, kind=dp) * (2 * DY) - dy
-                     X(1) = XD - HS; Y(1) = YD - DY
-                     X(2) = XD + HS; Y(2) = YD - DY
-                     X(3) = XD + HS + DX; Y(3) = YD
-                     X(4) = XD + HS; Y(4) = YD + DY
-                     X(5) = XD - HS; Y(5) = YD + DY
-                     X(6) = XD - HS - DX; Y(6) = YD
+                     X(1) = XD - HS
+                     Y(1) = YD - DY
+                     X(2) = XD + HS
+                     Y(2) = YD - DY
+                     X(3) = XD + HS + DX
+                     Y(3) = YD
+                     X(4) = XD + HS
+                     Y(4) = YD + DY
+                     X(5) = XD - HS
+                     Y(5) = YD + DY
+                     X(6) = XD - HS - DX
+                     Y(6) = YD
                   end if
                   call PINPOK(XD, YD, NPL, XPL, YPL, IN, jins, dmiss)
                   if (IN == 1) then
@@ -232,7 +274,10 @@ contains
          dx0 = 360.0_dp / nrx
          dy0 = dx0
          JAFIVE = 0
-         jsferic = 1; jasfer3D = 1; jaklaar = 0; z = dmiss
+         jsferic = 1
+         jasfer3D = 1
+         jaklaar = 0
+         z = dmiss
          YY = 0.0_dp
          dy0 = dx0
 
@@ -248,13 +293,17 @@ contains
             call getdeltay(yy, dx0, dy0)
 
             if (yy + 1.5_dp * dy0 > 90.0_dp) then
-               dy0 = 90.0_dp - YY; jaklaar = 1; jafive = 0
+               dy0 = 90.0_dp - YY
+               jaklaar = 1
+               jafive = 0
             else
                if (dy0 * dg2rd * ra < dxdouble .and. jafive == 0) then
-                  dx0 = 2.0_dp * dx0; jafive = 1
+                  dx0 = 2.0_dp * dx0
+                  jafive = 1
                   call getdeltay(yy, dx0, dy0)
                else
-                  jafive = 0; n12 = 0
+                  jafive = 0
+                  n12 = 0
                end if
                if (yy + 1.5_dp * dy0 > 90.0_dp) then
                   dy0 = 0.51_dp * (90.0_dp - yy)
@@ -301,7 +350,8 @@ contains
          call MERGENODESINPOLYGON()
 
          do L = 1, numL
-            k1 = kn(1, L); k2 = kn(2, L)
+            k1 = kn(1, L)
+            k2 = kn(2, L)
             if (k1 /= 0 .and. k2 /= 0) then ! jammer dan, nb na setnodadm nog zooi
                if ((nmk(k1) == 5 .or. nmk(k1) == 6) .and. (nmk(k2) == 5 .or. nmk(k2) == 6)) then
                   if (yk(k1) == yk(k2)) then
@@ -331,7 +381,9 @@ contains
             yk(k) = y0 + rr * sin(phi)
             zk(k) = zkuni - 0.5_dp * dx0 * bedslope
             do LL = 1, nrx - 1
-               phi = phi + dphi; k = k + 1; L = L + 1
+               phi = phi + dphi
+               k = k + 1
+               L = L + 1
                xk(k) = x0 + rr * cos(phi)
                yk(k) = y0 + rr * sin(phi)
                call dbdistancehk(xk(k - 1), yk(k - 1), xk(k), yk(k), dx0)
@@ -354,7 +406,8 @@ contains
          !call add2Dcell(xk(k)+3d0*radius,yk(k),zkuni,bedslope)
 
          do LL = 1, nrx - 1
-            k = k + 1; L = L + 1
+            k = k + 1
+            L = L + 1
             xk(k) = xk(k - 1)
             yk(k) = yk(k - 1) + dx0
             zk(k) = zk(k - 1) - bedslope * dx0
@@ -363,7 +416,8 @@ contains
             kn(3, L + L0) = 1
          end do
 
-         numk = k; numl = L
+         numk = k
+         numl = L
 
          rl = pi * radius
          dd = rl / real(nrx, kind=dp)
@@ -383,10 +437,16 @@ contains
          NUMLN = NRX
          call INCREASENETW(2 * NUMKN, 2 * NUMLN)
 
-         K = 1; xk(k) = x0; yk(k) = y0; zk(k) = zkuni - 0.5 * bedslope * dx0
-         L = 0; xd = 1.0_dp; yd = 0.0_dp
+         K = 1
+         xk(k) = x0
+         yk(k) = y0
+         zk(k) = zkuni - 0.5 * bedslope * dx0
+         L = 0
+         xd = 1.0_dp
+         yd = 0.0_dp
          do LL = 1, nrx
-            k = k + 1; L = L + 1
+            k = k + 1
+            L = L + 1
             if (LL > nrx / 2) then
                xd = -0.5_dp * sqrt(2.0_dp)
                yd = xd
@@ -399,7 +459,8 @@ contains
             kn(3, L) = 1
          end do
 
-         numk = k; numl = L
+         numk = k
+         numl = L
 
       end if
 

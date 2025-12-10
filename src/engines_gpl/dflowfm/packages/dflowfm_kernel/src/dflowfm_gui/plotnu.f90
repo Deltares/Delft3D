@@ -45,7 +45,8 @@ contains
       character(len=*) fnam
 
       plotje = trim(fnam)
-      key = 3; ndraw(10) = 1
+      key = 3
+      ndraw(10) = 1
       call drawnu(key)
 
    end subroutine plotnu

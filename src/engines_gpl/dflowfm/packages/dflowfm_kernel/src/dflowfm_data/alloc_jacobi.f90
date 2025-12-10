@@ -48,11 +48,14 @@ contains
       end if
 
       allocate (bbi(ndx), stat=ierr)
-      call aerr('bbi  (ndx)', ierr, ndx); bbi = 0
+      call aerr('bbi  (ndx)', ierr, ndx)
+      bbi = 0
       allocate (db(ndx), stat=ierr)
-      call aerr('db   (ndx)', ierr, ndx); db = 0
+      call aerr('db   (ndx)', ierr, ndx)
+      db = 0
       allocate (rr(ndx), stat=ierr)
-      call aerr('rr   (ndx)', ierr, ndx); rr = 0
+      call aerr('rr   (ndx)', ierr, ndx)
+      rr = 0
 
    end subroutine alloc_jacobi
 

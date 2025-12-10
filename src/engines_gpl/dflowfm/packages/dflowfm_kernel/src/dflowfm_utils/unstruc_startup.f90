@@ -447,21 +447,36 @@ contains
       ! and added some basic colors.
       !call IGRPALETTERGB(ncolgray, 128, 128, 128) ! gray is already set by default (background color).
       i = 11
-      i = i + 1; rgbvalues(1:4, i) = [ncolblack, 0, 0, 0]
-      i = i + 1; rgbvalues(1:4, i) = [ncolwhite, 255, 255, 255]
-      i = i + 1; rgbvalues(1:4, i) = [ncolred, 255, 0, 0]
-      i = i + 1; rgbvalues(1:4, i) = [ncolyellow, 255, 255, 0]
-      i = i + 1; rgbvalues(1:4, i) = [ncolgreen, 0, 255, 0] !< lime
-      i = i + 1; rgbvalues(1:4, i) = [ncolcyan, 0, 255, 255] !< aqua
-      i = i + 1; rgbvalues(1:4, i) = [ncolblue, 0, 0, 255]
-      i = i + 1; rgbvalues(1:4, i) = [ncolmagenta, 255, 0, 255] !< fuchsia
-      i = i + 1; rgbvalues(1:4, i) = [ncolmaroon, 128, 0, 0]
-      i = i + 1; rgbvalues(1:4, i) = [ncoldarkgreen, 0, 128, 0] !< green
-      i = i + 1; rgbvalues(1:4, i) = [ncolteal, 0, 128, 128]
-      i = i + 1; rgbvalues(1:4, i) = [ncolpink, 255, 0, 128]
-      i = i + 1; rgbvalues(1:4, i) = [ncolorange, 255, 128, 0]
-      i = i + 1; rgbvalues(1:4, i) = [ncollavender, 128, 128, 255]
-      i = i + 1; rgbvalues(1:4, i) = [ncolbrown, 128, 64, 0]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolblack, 0, 0, 0]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolwhite, 255, 255, 255]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolred, 255, 0, 0]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolyellow, 255, 255, 0]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolgreen, 0, 255, 0] !< lime
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolcyan, 0, 255, 255] !< aqua
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolblue, 0, 0, 255]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolmagenta, 255, 0, 255] !< fuchsia
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolmaroon, 128, 0, 0]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncoldarkgreen, 0, 128, 0] !< green
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolteal, 0, 128, 128]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolpink, 255, 0, 128]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolorange, 255, 128, 0]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncollavender, 128, 128, 255]
+      i = i + 1
+      rgbvalues(1:4, i) = [ncolbrown, 128, 64, 0]
       K = 1
       ! First load default colours into Interacter colors:
       do
@@ -504,7 +519,8 @@ contains
       NDEC = 3
       SCALESIZE = 0.5_dp
 
-      maxarctiler = 0; maxsamarcr = 0
+      maxarctiler = 0
+      maxsamarcr = 0
       call prop_get(ini_ptr, 'ARCINFOSAMPLES', 'MAXARCTILE', maxarctiler)
       call prop_get(ini_ptr, 'ARCINFOSAMPLES', 'MAXSAMARC', maxsamarcr)
 

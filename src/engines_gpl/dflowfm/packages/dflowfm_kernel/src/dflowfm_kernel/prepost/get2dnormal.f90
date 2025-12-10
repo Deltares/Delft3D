@@ -53,7 +53,9 @@ contains
       integer :: n1, k, L, LL, k3, k4
       real(kind=dp) :: xn1, yn1, a, aa, alf, xt, yt, slope
 
-      xn1 = 0.0_dp; yn1 = 0.0_dp; a = 0.0_dp
+      xn1 = 0.0_dp
+      yn1 = 0.0_dp
+      a = 0.0_dp
       do k = 1, size(nd(n1)%ln)
          LL = nd(n1)%ln(k)
          L = abs(LL)
@@ -62,8 +64,10 @@ contains
          else
             alf = 1.0_dp - acL(L)
          end if
-         aa = alf * wu(L) * dx(L); a = a + aa
-         k3 = lncn(1, L); k4 = lncn(2, L)
+         aa = alf * wu(L) * dx(L)
+         a = a + aa
+         k3 = lncn(1, L)
+         k4 = lncn(2, L)
          call normalin(xk(k3), yk(k3), xk(k4), yk(k4), xt, yt, xu(L), yu(L), jsferic, jasfer3D, dxymis)
          slope = (zk(k4) - zk(k3)) / wu(L)
          xn1 = xn1 + aa * xt * slope
