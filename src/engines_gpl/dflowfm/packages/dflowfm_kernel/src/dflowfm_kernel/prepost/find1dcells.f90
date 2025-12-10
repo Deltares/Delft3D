@@ -49,9 +49,7 @@ contains
 !>    it is assumed that kc has been allocated
 !>    it is assumed that findcells has already been called (for 2d cells)
    subroutine find1dcells()
-#ifdef _OPENMP
-      use omp_lib
-#endif
+
       implicit none
 
       integer :: k1, k2, k3, L, N, new_cell
@@ -60,17 +58,13 @@ contains
       logical :: Lisnew
       integer :: ierror
       integer :: nump1d, nump1d_i
-#ifdef _OPENMP
-      integer :: temp_threads
-#endif
+
       ierror = 1
 
       allocate (left_2D_cells(NUML1D), right_2D_cells(NUML1D))
-#ifdef _OPENMP
-      temp_threads = omp_get_max_threads() !> Save old number of threads
-      call omp_set_num_threads(OMP_GET_NUM_PROCS()) !> Set number of threads to max for this O(N^2) operation
-#endif
-      !$OMP PARALLEL DO
+
+      !> Dynamic scheduling in case of unequal work, chunksize guided
+      !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do L = 1, NUML1D
          if (KN(1, L) /= 0 .and. kn(3, L) /= LINK_1D .and. kn(3, L) /= LINK_1D_MAINBRANCH) then
             call INCELLS(Xk(KN(1, L)), Yk(KN(1, L)), left_2D_cells(L))
@@ -78,9 +72,6 @@ contains
          end if
       end do
       !$OMP END PARALLEL DO
-#ifdef _OPENMP
-      call omp_set_num_threads(temp_threads)
-#endif
 
 !     BEGIN COPY from flow_geominit
       KC = 2 ! ONDERSCHEID 1d EN 2d NETNODES

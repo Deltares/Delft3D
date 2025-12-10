@@ -37,7 +37,8 @@ module m_changetimeparameters
 contains
 
    subroutine CHANGETIMEPARAMETERS()
-      use m_flowtimes, only: dt_user, dt_max, ja_timestep_auto, tstart_user, tstop_user, ti_his, ti_map, ti_rst, ti_waq, dt_init, time1, tlfsmo, dt_fac_max, t_spinup_turb_log_prof
+      use m_flowtimes, only: dt_user, dt_max, autotimestep, AUTO_TIMESTEP_3D_HOR_OUT, AUTO_TIMESTEP_3D_HOR_INOUT, tstart_user, tstop_user, ti_his, &
+         ti_map, ti_rst, ti_waq, dt_init, time1, tlfsmo, dt_fac_max, t_spinup_turb_log_prof
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
       use unstruc_display_data, only: npos
       use m_helpnow, only: nlevel, wrdkey
@@ -208,7 +209,7 @@ contains
       i = i + 1
       call IFormPutDouble(2 * i, dt_max, '(F10.3)')
       i = i + 1
-      call IFORMPUTINTEGER(2 * i, ja_timestep_auto)
+      call IFormGetInteger(2 * i, autotimestep)
       i = i + 1
       call IFormPutDouble(2 * i, tstart_user, '(F10.0)')
       i = i + 1
@@ -275,7 +276,7 @@ contains
             i = i + 1
             call IFormGetDouble(2 * i, dt_max)
             i = i + 1
-            call IFORMgeTINTEGER(2 * i, ja_timestep_auto)
+            call IFORMgeTINTEGER(2 * i, autotimestep)
             i = i + 1
             call IFormGetDouble(2 * i, tstart_user)
             i = i + 1
@@ -306,7 +307,7 @@ contains
                call msg_flush()
             end if
 
-            if (ja_timestep_auto == 3 .or. ja_timestep_auto == 4) then
+            if (autotimestep == AUTO_TIMESTEP_3D_HOR_OUT .or. autotimestep == AUTO_TIMESTEP_3D_HOR_INOUT) then
                if (.not. allocated(Squ2D)) allocate (squ2D(ndkx), stat=ierr)
             end if
          end if

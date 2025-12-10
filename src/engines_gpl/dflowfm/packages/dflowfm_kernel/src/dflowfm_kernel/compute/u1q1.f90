@@ -46,7 +46,7 @@ contains
                         qin, itstep, sqwave, ag, lbot, ltop, kmxl, ngatesg, l1gatesg, l2gatesg, kgate, ncgensg, l1cgensg, l2cgensg, &
                         kcgen, lnkx, layertype, LAYTP_SIGMA, ln0, qwwaq, squ2d, kbot, ktop, a1, kmxn, ww1, qw, zws0, ktop0, zws, sq
       use m_flowgeom, only: lnx, ln, teta, ndxi, ba, ndx, lnxi
-      use m_flowtimes, only: ti_waq, dts, ja_timestep_auto
+      use m_flowtimes, only: ti_waq, dts, autotimestep, AUTO_TIMESTEP_3D_HOR_OUT, AUTO_TIMESTEP_3D_HOR_INOUT
       use m_partitioninfo, only: jampi, update_ghosts, itype_u, idomain, my_rank, itype_u3d
       use m_timer, only: jatimer, starttimer, iupdu, stoptimer
       use unstruc_channel_flow, only: network, set_u1q1_structure ! substitute u1 and q1
@@ -334,9 +334,9 @@ contains
 
          end do
 
-         if (ja_timestep_auto == 3 .or. ja_timestep_auto == 4) then ! 2D timestep
+         if (autotimestep == AUTO_TIMESTEP_3D_HOR_OUT .or. autotimestep == AUTO_TIMESTEP_3D_HOR_INOUT) then ! 2D timestep
             squ2d = squ
-            if (ja_timestep_auto == 4) then
+            if (autotimestep == AUTO_TIMESTEP_3D_HOR_INOUT) then
                squ2d = squ2d + sqi
             end if
          end if
