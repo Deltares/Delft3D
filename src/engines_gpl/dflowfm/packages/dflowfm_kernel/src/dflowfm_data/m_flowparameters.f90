@@ -121,7 +121,7 @@ module m_flowparameters
 
    integer :: temperature_model !< Temperature model, use one of TEMPERATURE_MODEL_... parameters
    integer, parameter :: TEMPERATURE_MODEL_NONE = 0      !< No temperature model
-   integer, parameter :: TEMPERATURE_MODEL_TRANSPORT = 1 !< Transport temperature model
+   integer, parameter :: TEMPERATURE_MODEL_TRANSPORT = 1 !< Transport only (no heat flux model)
    integer, parameter :: TEMPERATURE_MODEL_EXCESS = 3    !< Excess heat flux model
    integer, parameter :: TEMPERATURE_MODEL_COMPOSITE = 5 !< Composite heat flux model
 
