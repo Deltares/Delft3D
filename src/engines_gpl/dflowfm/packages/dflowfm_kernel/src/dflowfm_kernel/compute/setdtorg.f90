@@ -110,7 +110,9 @@ contains
 
                do k = 1, ndxi ! Go through all internal flow cells
                   if (jampi == 1) then 
-                     if (idomain(k) /= my_rank) cycle ! Do not include ghost cells
+                     if (idomain(k) /= my_rank) then
+                        cycle ! Do not include ghost cells
+                     end if
                   end if
 
                   if (ja_timestep_nostruct > 0) then ! Exclude (structure) links without advection from the time step limitation
@@ -152,7 +154,9 @@ contains
             else ! Explicit time-step
                do k = 1, ndxi ! Go through all internal flow cells
                   if (jampi == 1) then 
-                     if (idomain(k) /= my_rank) cycle ! Do not include ghost cells
+                     if (idomain(k) /= my_rank) then
+                        cycle ! Do not include ghost cells
+                     end if
                   end if
                   if (sqwave(k) > eps10) then ! Check if flux is outgoing
                      if (hs(k) > epshu) then ! Check if cell is wet
@@ -177,7 +181,9 @@ contains
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
                if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) cycle ! Do not include ghost cells
+                  if (idomain(kk) /= my_rank) then
+                     cycle ! Do not include ghost cells
+                  end if
                end if
 
                if (squ2D(kk) > eps10) then ! Check if horizontal flux is present
@@ -207,7 +213,9 @@ contains
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
                if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) cycle ! do not include ghost cells
+                  if (idomain(kk) /= my_rank) then
+                     cycle ! do not include ghost cells
+                  end if
                end if
 
                if (hs(kk) > epshu) then ! Check if cell is wet
@@ -238,7 +246,9 @@ contains
 
             do k = 1, ndxi ! Go through all internal flow cells
                if (jampi == 1) then 
-                  if (idomain(k) /= my_rank) cycle ! do not include ghost cells
+                  if (idomain(k) /= my_rank) then
+                     cycle ! do not include ghost cells
+                  end if
                end if
 
                if (squ(k) + sqi(k) > eps10) then ! Check if the total flux is positive
@@ -262,7 +272,9 @@ contains
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
                if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) cycle ! do not include ghost cells
+                  if (idomain(kk) /= my_rank) then
+                     cycle ! do not include ghost cells
+                  end if
                end if
 
                if (hs(kk) > epshu) then ! Check if cell is wet
@@ -330,7 +342,9 @@ contains
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
                if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) cycle ! do not include ghost cells
+                  if (idomain(kk) /= my_rank) then
+                     cycle ! do not include ghost cells
+                  end if
                end if
 
                if (hs(kk) > epshu) then ! Check if cell is wet
@@ -357,7 +371,9 @@ contains
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
                if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) cycle ! do not include ghost cells
+                  if (idomain(kk) /= my_rank) then
+                     cycle ! do not include ghost cells
+                  end if
                end if
 
                if (hs(kk) > epshu) then ! Check if cell is wet
@@ -384,7 +400,9 @@ contains
 
             do kk = 1, ndxi ! Go through all 2D internal flow cells
                if (jampi == 1) then
-                  if (idomain(kk) /= my_rank) cycle ! do not include ghost cells
+                  if (idomain(kk) /= my_rank) then
+                     cycle ! do not include ghost cells
+                  end if
                end if
 
                if (hs(kk) > epshu) then ! Check if cell is wet

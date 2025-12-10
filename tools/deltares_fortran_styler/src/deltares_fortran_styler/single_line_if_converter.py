@@ -384,7 +384,7 @@ class SingleLineIfConverter(FortranConverter):
 
                 issues.append(ConversionIssue(
                     line_number=line_num,
-                    error_code="STYLE005",
+                    error_code="STYLE006",
                     message="Single-line if statement found: should use 'if (...) then' / 'end if' format",
                     original_text=original_line.strip()
                 ))
