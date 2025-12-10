@@ -250,6 +250,8 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
                              !  =-1 active  point belonging to other partition (ghost point)
                              !  = 0 dry     point
                              !  = 1 active  point
+                             !  = 2 open boundary point
+                             !  = 3 Domain Decomposition boundary point
     ierr = mkipnt(pntnam, nmaxddb*mmaxddb, gdp)
     if (ierr <= -9) goto 9999
     !
@@ -257,6 +259,8 @@ subroutine esm_alloc_int(lundia, error, zmodel, gdp)
                              !  =-1 active  point belonging to other partition (ghost point)
                              !  = 0 dry     point
                              !  = 1 active  point
+                             !  = 2 open boundary point
+                             !  = 3 Domain Decomposition boundary point
     ierr = mkipnt(pntnam, nmaxddb*mmaxddb, gdp)
     if (ierr <= -9) goto 9999
     !
