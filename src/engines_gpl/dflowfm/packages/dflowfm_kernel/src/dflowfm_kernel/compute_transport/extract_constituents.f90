@@ -66,7 +66,7 @@ contains
       use m_fm_icecover, only: freezing_temperature
       use m_get_kbot_ktop, only: getkbotktop
       use m_missing, only: dmiss
-      use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, temperature_max, temperature_min
+      use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, backgroundsalinity, temperature_max, temperature_min
       use m_plotdots, only: numdots
       use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
       use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed
@@ -76,6 +76,7 @@ contains
       integer :: iconst, grain, k, kk, cells_with_min_limit, cells_with_max_limit, kb, kt
       real(kind=dp) :: minimum_salinity_value
       real(kind=dp) :: freezing_point_temperature ! freezing point temperature [degC]
+      real(kind=dp) :: salinity ! salinity [psu]
       integer(4) :: ithndl = 0
 
       integer, parameter :: IDX_SSC_MIN = 1 ! index of suspended sediment concentration messages for min limits
@@ -135,15 +136,30 @@ contains
          end if
 
          cells_with_min_limit = 0
-         if (isalt > 0 .and. use_salinity_freezing_point) then ! only at surface limit to freezing point
+
+         if (use_salinity_freezing_point) then
+
             do kk = 1, ndx
-               k = ktop(kk)
-               freezing_point_temperature = real(freezing_temperature(real(constituents(isalt, k), fp)), dp)
+
+               k = ktop(kk) ! Only the top layer is checked for freezing point
+
+               ! Choose salinity source
+               if (isalt > 0) then
+                  salinity = real(constituents(isalt, k), fp)
+               else
+                  salinity = backgroundsalinity
+               end if
+
+               ! Compute freezing point temperature
+               freezing_point_temperature = real(freezing_temperature(salinity), dp)
+
+               ! Apply limit
                if (constituents(itemp, k) < freezing_point_temperature) then
                   constituents(itemp, k) = freezing_point_temperature
                   cells_with_min_limit = cells_with_min_limit + 1
                end if
             end do
+
          end if
 
          if (temperature_min /= dmiss) then
