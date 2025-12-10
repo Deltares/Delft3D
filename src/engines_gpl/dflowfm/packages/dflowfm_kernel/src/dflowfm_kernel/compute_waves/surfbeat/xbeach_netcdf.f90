@@ -1279,26 +1279,116 @@ contains
 
       ierr = 1
       !multcum = 0d0
-      H_mean = 0.0_dp; H_var = 0.0_dp; H_min = huge(0.0_dp); H_max = -1.0_dp * huge(0.0_dp); H_varcross = 0.0_dp; H_varsquare = 0.0_dp
-      E_mean = 0.0_dp; E_var = 0.0_dp; E_min = huge(0.0_dp); E_max = -1.0_dp * huge(0.0_dp); E_varcross = 0.0_dp; E_varsquare = 0.0_dp
-      R_mean = 0.0_dp; R_var = 0.0_dp; R_min = huge(0.0_dp); R_max = -1.0_dp * huge(0.0_dp); R_varcross = 0.0_dp; R_varsquare = 0.0_dp
-      D_mean = 0.0_dp; D_var = 0.0_dp; D_min = huge(0.0_dp); D_max = -1.0_dp * huge(0.0_dp); D_varcross = 0.0_dp; D_varsquare = 0.0_dp
-      DR_mean = 0.0_dp; DR_var = 0.0_dp; DR_min = huge(0.0_dp); DR_max = -1.0_dp * huge(0.0_dp); DR_varcross = 0.0_dp; DR_varsquare = 0.0_dp
-      ust_mean = 0.0_dp; ust_var = 0.0_dp; ust_min = huge(0.0_dp); ust_max = -1.0_dp * huge(0.0_dp); ust_varcross = 0.0_dp; ust_varsquare = 0.0_dp
-      vst_mean = 0.0_dp; vst_var = 0.0_dp; vst_min = huge(0.0_dp); vst_max = -1.0_dp * huge(0.0_dp); vst_varcross = 0.0_dp; vst_varsquare = 0.0_dp
-      urms_mean = 0.0_dp; urms_var = 0.0_dp; urms_min = huge(0.0_dp); urms_max = -1.0_dp * huge(0.0_dp); urms_varcross = 0.0_dp; urms_varsquare = 0.0_dp
-      thetamean_mean = 0.0_dp; thetamean_var = 0.0_dp; thetamean_min = huge(0.0_dp); thetamean_max = -1.0_dp * huge(0.0_dp); thetamean_varcross = 0.0_dp; 
-      thetamean_varsquare = 0.0_dp; thetamean_sin = 0.0_dp; thetamean_cos = 0.0_dp
-      cwav_mean = 0.0_dp; cwav_var = 0.0_dp; cwav_min = huge(0.0_dp); cwav_max = -1.0_dp * huge(0.0_dp); cwav_varcross = 0.0_dp; cwav_varsquare = 0.0_dp
-      cgwav_mean = 0.0_dp; cgwav_var = 0.0_dp; cgwav_min = huge(0.0_dp); cgwav_max = -1.0_dp * huge(0.0_dp); cgwav_varcross = 0.0_dp; cgwav_varsquare = 0.0_dp
-      Fx_mean = 0.0_dp; Fx_var = 0.0_dp; Fx_min = huge(0.0_dp); Fx_max = -1.0_dp * huge(0.0_dp); fx_varcross = 0.0_dp; fx_varsquare = 0.0_dp
-      Fy_mean = 0.0_dp; Fy_var = 0.0_dp; Fy_min = huge(0.0_dp); Fy_max = -1.0_dp * huge(0.0_dp); fy_varcross = 0.0_dp; fy_varsquare = 0.0_dp
-      s1_mean = 0.0_dp; s1_var = 0.0_dp; s1_min = huge(0.0_dp); s1_max = -1.0_dp * huge(0.0_dp); s1_varcross = 0.0_dp; s1_varsquare = 0.0_dp
-      sigmwav_mean = 0.0_dp; sigmwav_var = 0.0_dp; sigmwav_min = huge(0.0_dp); sigmwav_max = -1.0_dp * huge(0.0_dp); sigmwav_varcross = 0.0_dp; sigmwav_varsquare = 0.0_dp
-      ucx_mean = 0.0_dp; ucx_var = 0.0_dp; ucx_min = huge(0.0_dp); ucx_max = -1.0_dp * huge(0.0_dp); ucx_varcross = 0.0_dp; ucx_varsquare = 0.0_dp
-      ucy_mean = 0.0_dp; ucy_var = 0.0_dp; ucy_min = huge(0.0_dp); ucy_max = -1.0_dp * huge(0.0_dp); ucy_varcross = 0.0_dp; ucy_varsquare = 0.0_dp
-      visx = 0.0_dp; visy = 0.0_dp
-      ududx = 0.0_dp; udvdx = 0.0_dp; vdudy = 0.0_dp; vdvdy = 0.0_dp
+      H_mean = 0.0_dp
+      H_var = 0.0_dp
+      H_min = huge(0.0_dp)
+      H_max = -1.0_dp * huge(0.0_dp)
+      H_varcross = 0.0_dp
+      H_varsquare = 0.0_dp
+      E_mean = 0.0_dp
+      E_var = 0.0_dp
+      E_min = huge(0.0_dp)
+      E_max = -1.0_dp * huge(0.0_dp)
+      E_varcross = 0.0_dp
+      E_varsquare = 0.0_dp
+      R_mean = 0.0_dp
+      R_var = 0.0_dp
+      R_min = huge(0.0_dp)
+      R_max = -1.0_dp * huge(0.0_dp)
+      R_varcross = 0.0_dp
+      R_varsquare = 0.0_dp
+      D_mean = 0.0_dp
+      D_var = 0.0_dp
+      D_min = huge(0.0_dp)
+      D_max = -1.0_dp * huge(0.0_dp)
+      D_varcross = 0.0_dp
+      D_varsquare = 0.0_dp
+      DR_mean = 0.0_dp
+      DR_var = 0.0_dp
+      DR_min = huge(0.0_dp)
+      DR_max = -1.0_dp * huge(0.0_dp)
+      DR_varcross = 0.0_dp
+      DR_varsquare = 0.0_dp
+      ust_mean = 0.0_dp
+      ust_var = 0.0_dp
+      ust_min = huge(0.0_dp)
+      ust_max = -1.0_dp * huge(0.0_dp)
+      ust_varcross = 0.0_dp
+      ust_varsquare = 0.0_dp
+      vst_mean = 0.0_dp
+      vst_var = 0.0_dp
+      vst_min = huge(0.0_dp)
+      vst_max = -1.0_dp * huge(0.0_dp)
+      vst_varcross = 0.0_dp
+      vst_varsquare = 0.0_dp
+      urms_mean = 0.0_dp
+      urms_var = 0.0_dp
+      urms_min = huge(0.0_dp)
+      urms_max = -1.0_dp * huge(0.0_dp)
+      urms_varcross = 0.0_dp
+      urms_varsquare = 0.0_dp
+      thetamean_mean = 0.0_dp
+      thetamean_var = 0.0_dp
+      thetamean_min = huge(0.0_dp)
+      thetamean_max = -1.0_dp * huge(0.0_dp)
+      thetamean_varcross = 0.0_dp
+      thetamean_varsquare = 0.0_dp
+      thetamean_sin = 0.0_dp
+      thetamean_cos = 0.0_dp
+      cwav_mean = 0.0_dp
+      cwav_var = 0.0_dp
+      cwav_min = huge(0.0_dp)
+      cwav_max = -1.0_dp * huge(0.0_dp)
+      cwav_varcross = 0.0_dp
+      cwav_varsquare = 0.0_dp
+      cgwav_mean = 0.0_dp
+      cgwav_var = 0.0_dp
+      cgwav_min = huge(0.0_dp)
+      cgwav_max = -1.0_dp * huge(0.0_dp)
+      cgwav_varcross = 0.0_dp
+      cgwav_varsquare = 0.0_dp
+      Fx_mean = 0.0_dp
+      Fx_var = 0.0_dp
+      Fx_min = huge(0.0_dp)
+      Fx_max = -1.0_dp * huge(0.0_dp)
+      fx_varcross = 0.0_dp
+      fx_varsquare = 0.0_dp
+      Fy_mean = 0.0_dp
+      Fy_var = 0.0_dp
+      Fy_min = huge(0.0_dp)
+      Fy_max = -1.0_dp * huge(0.0_dp)
+      fy_varcross = 0.0_dp
+      fy_varsquare = 0.0_dp
+      s1_mean = 0.0_dp
+      s1_var = 0.0_dp
+      s1_min = huge(0.0_dp)
+      s1_max = -1.0_dp * huge(0.0_dp)
+      s1_varcross = 0.0_dp
+      s1_varsquare = 0.0_dp
+      sigmwav_mean = 0.0_dp
+      sigmwav_var = 0.0_dp
+      sigmwav_min = huge(0.0_dp)
+      sigmwav_max = -1.0_dp * huge(0.0_dp)
+      sigmwav_varcross = 0.0_dp
+      sigmwav_varsquare = 0.0_dp
+      ucx_mean = 0.0_dp
+      ucx_var = 0.0_dp
+      ucx_min = huge(0.0_dp)
+      ucx_max = -1.0_dp * huge(0.0_dp)
+      ucx_varcross = 0.0_dp
+      ucx_varsquare = 0.0_dp
+      ucy_mean = 0.0_dp
+      ucy_var = 0.0_dp
+      ucy_min = huge(0.0_dp)
+      ucy_max = -1.0_dp * huge(0.0_dp)
+      ucy_varcross = 0.0_dp
+      ucy_varsquare = 0.0_dp
+      visx = 0.0_dp
+      visy = 0.0_dp
+      ududx = 0.0_dp
+      udvdx = 0.0_dp
+      vdudy = 0.0_dp
+      vdvdy = 0.0_dp
 
       ierr = 0
 1234  continue
@@ -1608,8 +1698,12 @@ contains
          allocate (ducxdx_(1:ndx), ducxdy_(1:ndx), ducydx_(1:ndx), ducydy_(1:ndx))
       end if
 
-      xbdsdx = 0.0_dp; xbdsdy = 0.0_dp; 
-      ududx = 0.0; vdudy = 0.0_dp; udvdx = 0.0_dp; vdvdy = 0.0_dp
+      xbdsdx = 0.0_dp
+      xbdsdy = 0.0_dp
+      ududx = 0.0
+      vdudy = 0.0_dp
+      udvdx = 0.0_dp
+      vdvdy = 0.0_dp
 
       call getcellcentergradients(s1_mean, xbdsdx, xbdsdy)
       call getcellcentergradients(ucx_mean, ducxdx_, ducxdy_)

@@ -59,7 +59,8 @@ contains
       allocate (ijc(mmax, nmax), ijyes(mmax, nmax))
 
 5     continue
-      ijc = 0; ijyes = 0
+      ijc = 0
+      ijyes = 0
 
       do I = 1, MC - 1
          do J = 1, NC - 1

@@ -59,7 +59,8 @@ contains
 
       if (jaconfirm == -1) then
          if (nsmax > 0) then
-            nsmax = 0; ns = 0
+            nsmax = 0
+            ns = 0
             if (allocated(xs)) deallocate (xs, ys, zs)
             if (allocated(ipsam)) then
                deallocate (ipsam)

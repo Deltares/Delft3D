@@ -48,7 +48,8 @@ contains
       else if (u1(L) < 0.0_dp) then
          iu = -1
       else
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          if (s1(k1) > s1(k2)) then
             iu = 1
          else

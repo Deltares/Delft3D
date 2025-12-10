@@ -63,18 +63,21 @@ contains
 
       if (ai < 1.0e-3_dp) then
          ! if (dz == 0d0) then
-         wid = wu2; wid = wid + slotw2D ! wid = max(wid, slotw2d)
+         wid = wu2
+         wid = wid + slotw2D ! wid = max(wid, slotw2d)
          ar = wid * hpr
          hyr = hpr
       else if (hpr < dz) then
-         wid = wu2 * hpr / dz; wid = wid + slotw2D ! wid = max(wid, slotw2d)
+         wid = wu2 * hpr / dz
+         wid = wid + slotw2D ! wid = max(wid, slotw2d)
          ar = 0.5_dp * wid * hpr
          if (jaconv == 1) then
             per = sqrt(hpr * hpr + wid * wid)
             hyr = ar / per
          end if
       else
-         wid = wu2; wid = wid + slotw2D ! wid = max(wid, slotw2d)
+         wid = wu2
+         wid = wid + slotw2D ! wid = max(wid, slotw2d)
          hp2 = hpr - dz
          ar = wid * 0.5_dp * (hpr + hp2)
          if (jaconv == 1) then
@@ -86,7 +89,8 @@ contains
       if (jaconv == 0) then
          return
       else if (frcn == 0.0_dp) then
-         aconv = 0.0_dp; return
+         aconv = 0.0_dp
+         return
       else if (jaconv == 1) then ! hydraulic radius type
 
          Cz = get_chezy(hyr, frcn, u1(L), v(L), friction_type)
@@ -126,7 +130,8 @@ contains
                conv = conv / ai
                aconv = (cman * ar / conv)**2
             else
-               hpr83 = hpr**d83; hp283 = hp2**d83
+               hpr83 = hpr**d83
+               hp283 = hp2**d83
                conv = (beta - hpr * deltaa / ai) * d38 * (hpr83 - hp283) + (deltaa * d311 / ai) * (hpr * hpr83 - hp2 * hp283)
                conv = conv / ai
                aconv = (cman * ar / conv)**2

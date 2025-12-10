@@ -82,7 +82,8 @@ contains
 
 !  compute the tangent vectors
       do i = 1, N
-         ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
+         ip1 = i + 1
+         if (ip1 > N) ip1 = ip1 - N
          xref = 0.0_dp ! not ok for jasfer3D=1
          yref = 0.0_dp ! not ok for jasfer3D=1
          call normalin(xp(i), yp(i), xp(ip1), yp(ip1), tx(i), ty(i), xref, yref, jsferic, jasfer3D, dxymis)
@@ -100,7 +101,8 @@ contains
 !  make the right-hand side
       rhs = 0.0_dp
       do i = 1, N
-         ip1 = i + 1; if (ip1 > N) ip1 = ip1 - N
+         ip1 = i + 1
+         if (ip1 > N) ip1 = ip1 - N
          call getdxdy(x0, y0, xf(i), yf(i), xhalf, yhalf, jsferic)
 
          dfac = tx(i) * xhalf + ty(i) * yhalf
@@ -129,7 +131,8 @@ contains
             xzw = sum(xp(1:N)) / real(N, kind=dp)
             yzw = sum(yp(1:N)) / real(N, kind=dp)
             do m = 1, N
-               m2 = m + 1; if (m == N) m2 = 1
+               m2 = m + 1
+               if (m == N) m2 = 1
                call CROSS(xzw, yzw, xc, yc, xp(m), yp(m), xp(m2), yp(m2), &
                           JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
                if (jacros == 1) then

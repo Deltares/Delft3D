@@ -106,7 +106,7 @@ contains
 
       if (jampi == 1) then
 !        source/sink could have been in ghost region
-         allocate (dum(6, Lnx)); 
+         allocate (dum(6, Lnx))
          do LL = 1, Lnx
             do i = 1, 6
                dum(i, LL) = klnup(i, LL)

@@ -60,7 +60,9 @@ contains
       else
          call SETXOR(1)
          call SETCOL(KLANK)
-         call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
+         call dPROJECT(xa, ya, xx, yy, 1)
+         xr = xx
+         yr = yy
          call IGrMARKER(xr, yr, 2)
          call SETXOR(0)
          XA = X
@@ -72,7 +74,9 @@ contains
 
       call SETXOR(1)
       call SETCOL(KLANK)
-      call dPROJECT(xa, ya, xx, yy, 1); xr = xx; yr = yy
+      call dPROJECT(xa, ya, xx, yy, 1)
+      xr = xx
+      yr = yy
       call IGrMARKER(xr, yr, 2)
       call SETXOR(0)
 

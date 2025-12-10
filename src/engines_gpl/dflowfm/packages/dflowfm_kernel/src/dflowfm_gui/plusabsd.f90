@@ -95,7 +95,8 @@ contains
             if (A /= dmiss) JA = 1
             goto 10
          else
-            JA = 1; ICHANGE = NWHAT
+            JA = 1
+            ICHANGE = NWHAT
          end if
       end if
 

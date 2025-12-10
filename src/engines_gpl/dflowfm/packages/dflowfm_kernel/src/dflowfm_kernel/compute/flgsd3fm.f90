@@ -182,7 +182,8 @@ contains
          hulp = sqrt(hulp)
          hulp1 = -q + hulp
          if (abs(hulp1) < 1e-6) then
-            u = 0; v = 0
+            u = 0
+            v = 0
          else ! hk: ook fix for Erwin, ARS 15132
             u = abs(hulp1)**c13 * sign(1.0_dp, hulp1)
             hulp1 = -q - hulp

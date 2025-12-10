@@ -56,7 +56,9 @@ contains
       real(kind=dp) :: z1, z2, h1, h2, dh, dQ, hunsat, hunsat1, hunsat2, fac, qgrw, h2Q
       real(kind=dp) :: fc, conduct, h_upw, Qmx
 
-      qingrw = 0.0_dp; qoutgrw = 0.0_dp; Volgrw = 0.0_dp
+      qingrw = 0.0_dp
+      qoutgrw = 0.0_dp
+      Volgrw = 0.0_dp
 
       if (infiltrationmodel == DFM_HYD_INFILT_HORTON) then ! Horton's infiltration equation
          ierr = infiltration_horton_formula(ndx, HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, infiltcap0, infiltcap, &
@@ -101,7 +103,8 @@ contains
             !   if ( prof1D(1,L) > 0 .and. prof1D(3,L) == 1) cycle           ! pipe profile
             !endif
 
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             hunsat1 = bl(k1) - sgrw0(k1)
             fac = min(1.0_dp, max(0.0_dp, hunsat1 / h_transfer)) ! 0 at bed, 1 at sgrw
             z1 = sgrw1(k1) * fac + s1(k1) * (1.0_dp - fac)

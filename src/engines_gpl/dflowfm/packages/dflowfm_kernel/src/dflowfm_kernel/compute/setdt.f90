@@ -65,7 +65,7 @@ contains
       integer :: nsteps
       integer :: jareduced
 
-!  compute CFL-based maximum time step and limiting flownode/time step, per subomdain
+      ! compute CFL-based maximum time step and limiting flownode/time step, per subomdain
       call setdtorg(jareduced) ! 7.1 2031
 
       ! morphological timestep reduction
@@ -89,9 +89,9 @@ contains
 
       dtsc_loc = dtsc
 
-      !  globally reduce time step
+      ! globally reduce time step
       if (jampi == 1 .and. jareduced == 0) then
-         !     globally reduce dts (dtsc may now be larger)
+         ! globally reduce dts (dtsc may now be larger)
          if (jatimer == 1) call starttimer(IMPIREDUCE)
          call reduce_double_min(dts)
          if (jatimer == 1) call stoptimer(IMPIREDUCE)
@@ -99,12 +99,12 @@ contains
 
       dtsc = dts
 
-!  account for user time step
-      if (ja_timestep_auto >= 1) then
+      ! account for user time step
+      if (autotimestep /= AUTO_TIMESTEP_OFF) then
          if (dts > dt_fac_max * dtprev) then
             dts = dt_fac_max * dtprev
             nsteps = ceiling((time_user - time0) / dts)
-            ! New timestep dts would be rounded down to same dtprev (undesired, so use nsteps-1)
+            ! new timestep dts would be rounded down to same dtprev (undesired, so use nsteps-1)
             if (1000 * dtprev > time_user - time0) then
                nsteps = ceiling((time_user - time0) / dts)
                if (nsteps == ceiling((time_user - time0) / dtprev)) then

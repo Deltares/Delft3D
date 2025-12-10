@@ -103,6 +103,7 @@ contains
          call generate_partitioning_from_pol()
       end if
 
+      netstat = NETSTAT_OK !> reset netstat before writing partitions
       if (ndomains > 1) then
          call partition_write_domains(trim(fnam), md_icgsolver, jacells, japolygon, md_partugrid)
       end if

@@ -58,7 +58,8 @@ contains
       real(kind=dp) :: yy4
       character REC * 132
       real(kind=dp) :: XX, YY, XG, YG
-      XX4 = XX; YY4 = YY
+      XX4 = XX
+      YY4 = YY
 
       if (INI == 1) then
 

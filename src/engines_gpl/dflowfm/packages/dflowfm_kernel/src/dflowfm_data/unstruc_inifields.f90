@@ -1584,7 +1584,7 @@ contains
       use fm_external_forcings_data, only: success
       use fm_external_forcings_utils, only: split_qid
       use m_heatfluxes, only: secchisp
-      use m_wind, only: ICdtyp
+      use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemdiam, stemdens, stemheight
@@ -1776,7 +1776,7 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => Cdwusp
-         iCdtyp = 1 ! only 1 coeff
+         wind_drag_type = CD_TYPE_CONST
       case ('wavesignificantheight', 'waveperiod', 'wavedirection')
          if (jawave == WAVE_NC_OFFLINE) then
             target_location_type = UNC_LOC_S
@@ -2240,7 +2240,8 @@ contains
             if (kmx == 0) then
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
             else
-               kb = kbot(n); kt = ktop(n)
+               kb = kbot(n)
+               kt = ktop(n)
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
                do k = kb, kt
                   level_at_pressure_point = 0.5_dp * (zws(k) + zws(k - 1))

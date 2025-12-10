@@ -85,12 +85,18 @@ contains
 
          call zoekinteger(minp, 'NSHIPN', nn, ja)
          call zoekinteger(minp, 'ICONTROLTYP', icontroltyp(n), ja)
-         call zoekdouble(minp, 'SHL', shL(n), ja); if (ja == 1) shL(n) = 0.5_dp * shL(n) ! shiplenght on input, then half length
-         call zoekdouble(minp, 'SHB', shB(n), ja); if (ja == 1) shB(n) = 0.5_dp * shB(n) ! idem width
-         call zoekdouble(minp, 'SHD', shd(n), ja); if (ja == 1) chkadvd = min(chkadvd, 1.0e-2_dp * shd(n))
-         call zoekdouble(minp, 'DEADW', deadw(n), ja); if (ja == 1) deadw(n) = 1000.0_dp * deadw(n) !kg
-         call zoekdouble(minp, 'POWERMX', powermx(n), ja); if (ja == 1) powermx(n) = 1000.0_dp * 0.75_dp * powermx(n) ! conversion hp to kw
-         call zoekdouble(minp, 'SPEEDMX', speedmx(n), ja); if (ja == 1) speedmx(n) = 0.514444_dp * speedmx(n) ! conversion knots to m/s
+         call zoekdouble(minp, 'SHL', shL(n), ja)
+         if (ja == 1) shL(n) = 0.5_dp * shL(n) ! shiplenght on input, then half length
+         call zoekdouble(minp, 'SHB', shB(n), ja)
+         if (ja == 1) shB(n) = 0.5_dp * shB(n) ! idem width
+         call zoekdouble(minp, 'SHD', shd(n), ja)
+         if (ja == 1) chkadvd = min(chkadvd, 1.0e-2_dp * shd(n))
+         call zoekdouble(minp, 'DEADW', deadw(n), ja)
+         if (ja == 1) deadw(n) = 1000.0_dp * deadw(n) !kg
+         call zoekdouble(minp, 'POWERMX', powermx(n), ja)
+         if (ja == 1) powermx(n) = 1000.0_dp * 0.75_dp * powermx(n) ! conversion hp to kw
+         call zoekdouble(minp, 'SPEEDMX', speedmx(n), ja)
+         if (ja == 1) speedmx(n) = 0.514444_dp * speedmx(n) ! conversion knots to m/s
 
          if (ja == 1 .and. speedmx(n) /= 0.0_dp) then
             stuwmx(n) = 0.65_dp * powermx(n) / speedmx(n) ! propellor efficiency 0.65
@@ -101,7 +107,8 @@ contains
 
          call zoekdouble(minp, 'SHX', shx(n), ja)
          call zoekdouble(minp, 'SHY', shy(n), ja)
-         call zoekdouble(minp, 'SHI', shi(n), ja); if (ja == 1) shi(n) = shi(n) * dg2rd
+         call zoekdouble(minp, 'SHI', shi(n), ja)
+         if (ja == 1) shi(n) = shi(n) * dg2rd
          call zoekdouble(minp, 'SHU', shu(n), ja)
          call zoekdouble(minp, 'SHV', shv(n), ja)
          call zoekdouble(minp, 'SHO', sho(n), ja)
@@ -134,7 +141,8 @@ contains
          if (1 == 0) then
             mca = mca + 2
             nca = nca + 2
-            allocate (e(mca, nca)); e = 0.0_dp
+            allocate (e(mca, nca))
+            e = 0.0_dp
             do i = 2, mca - 1
                do j = 2, nca - 1
                   e(i, j) = d(i - 1, j - 1)
@@ -151,7 +159,8 @@ contains
          if (allocated(vicushp)) then
             deallocate (vicushp)
          end if
-         allocate (vicushp(lnx), stat=ierr); vicushp = 0.0_dp
+         allocate (vicushp(lnx), stat=ierr)
+         vicushp = 0.0_dp
          call aerr('vicushp(lnx)', ierr, lnx)
       end if
 
