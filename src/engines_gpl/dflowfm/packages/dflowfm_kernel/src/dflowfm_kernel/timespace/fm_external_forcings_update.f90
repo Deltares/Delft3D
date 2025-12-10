@@ -146,7 +146,7 @@ contains
          end if
       end if
 
-      if (jatem > 1) then
+      if (jatem == 5) then ! Do only for composite heat flux model
          call set_temperature_models(time_in_seconds)
       end if
 

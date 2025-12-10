@@ -216,6 +216,7 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_path}/filter.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_compute_waves_surfbeat_path}/xbeach_filefunctions.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/find1dcells.f90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/pol_to_cellmask.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/flow_modelinit.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/inidat.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_kernel_prepost_path}/print_help_commandline.F90
