@@ -187,7 +187,7 @@ if (.false.) call func2()"""
 
         # Assert
         assert len(issues) == 2
-        assert all(issue.error_code == "STYLE005" for issue in issues)
+        assert all(issue.error_code == "STYLE006" for issue in issues)
 
     def test_get_conversion_stats(self, converter):
         """Test that conversion statistics are correctly computed."""
