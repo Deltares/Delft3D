@@ -540,7 +540,8 @@ contains
          else if (NWHAT == 4) then
             call CHANGEorthoparameters()
          else if (NWHAT == 5) then
-            call CHANGEGRIDPARAMETERS(); KEY = 3
+            call CHANGEGRIDPARAMETERS()
+            KEY = 3
          else if (NWHAT == 6) then
             call CHANGEINTERPOLATIONPARAMETERS()
          else if (NWHAT == 7) then
@@ -564,7 +565,8 @@ contains
          else if (NWHAT == 14) then
             call CHANGENUMERICALPARAMETERS4()
          else if (NWHAT == 15) then
-            call CHANGEcolournumbers(); KEY = 3
+            call CHANGEcolournumbers()
+            KEY = 3
          end if
          NUM = 0
       end if

@@ -109,9 +109,10 @@ contains
       call timstop(handle_extra(38)) ! End bnd
 
       if (iresult /= DFM_NOERR) then
-         write (msgbuf, *) ' Error found in EC-module '; call err_flush()
+         write (msgbuf, *) ' Error found in EC-module '
+         call err_flush()
          if (jampi == 1) then
-            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd; 
+            write (msgbuf, *) 'Error occurs on one or more processes when setting external forcings on boundaries at time=', tim1bnd
             call err_flush()
             ! Terminate all MPI processes
             call abort_all()

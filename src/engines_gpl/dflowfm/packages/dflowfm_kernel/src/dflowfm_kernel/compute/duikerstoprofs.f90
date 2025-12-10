@@ -62,12 +62,21 @@ contains
 
       call oldfil(minp, md_pipefile)
       call reapol(minp, 0)
-      allocate (jaduiktmp(1:Lnx1D)); jaduiktmp = 0
+      allocate (jaduiktmp(1:Lnx1D))
+      jaduiktmp = 0
 
       do n = 1, npl - 1
 
-         x1 = xpl(n); y1 = ypl(n); z1 = zpl(n); w1 = dzL(n); h1 = dzR(n)
-         x2 = xpl(n + 1); y2 = ypl(n + 1); z2 = zpl(n + 1); w2 = dzL(n + 1); h2 = dzR(n + 1)
+         x1 = xpl(n)
+         y1 = ypl(n)
+         z1 = zpl(n)
+         w1 = dzL(n)
+         h1 = dzR(n)
+         x2 = xpl(n + 1)
+         y2 = ypl(n + 1)
+         z2 = zpl(n + 1)
+         w2 = dzL(n + 1)
+         h2 = dzR(n + 1)
          if (x1 == DMISS .or. x2 == DMISS) cycle
          if (w1 <= 0.0_dp .or. w2 <= 0.0_dp) then
             call qnerror(' pipes: width <= 0d0, fourth column', 'in', md_pipefile)
@@ -81,15 +90,21 @@ contains
             if (Ls > 0) then
                Lf = lne2ln(Ls)
                if (kcu(Lf) == 1 .or. kcu(Lf) == 5) then
-                  k1 = ln(1, Lf); k2 = ln(2, Lf)
+                  k1 = ln(1, Lf)
+                  k2 = ln(2, Lf)
                   if (dbdistance(X1, Y1, Xzw(K1), Yzw(K1), jsferic, jasfer3D, dmiss) < dbdistance(X1, Y1, Xzw(K2), Yzw(K2), jsferic, jasfer3D, dmiss)) then
-                     bob(1, Lf) = z1; bl(k1) = min(z1, bl(k1))
-                     bob(2, Lf) = z2; bl(k2) = min(z2, bl(k2))
+                     bob(1, Lf) = z1
+                     bl(k1) = min(z1, bl(k1))
+                     bob(2, Lf) = z2
+                     bl(k2) = min(z2, bl(k2))
                   else
-                     bob(1, Lf) = z2; bl(k1) = min(z2, bl(k1))
-                     bob(2, Lf) = z1; bl(k2) = min(z1, bl(k2))
+                     bob(1, Lf) = z2
+                     bl(k1) = min(z2, bl(k1))
+                     bob(2, Lf) = z1
+                     bl(k2) = min(z1, bl(k2))
                   end if
-                  prof1D(1, Lf) = w1; wu(Lf) = w1
+                  prof1D(1, Lf) = w1
+                  wu(Lf) = w1
                   prof1D(2, Lf) = h1
                   prof1D(3, Lf) = -2 ! for now, simple rectan, closed
                   jaduiktmp(Lf) = 1

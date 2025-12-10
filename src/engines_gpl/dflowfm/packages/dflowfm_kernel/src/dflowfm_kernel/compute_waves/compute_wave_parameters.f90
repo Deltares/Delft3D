@@ -66,18 +66,22 @@ contains
          hwav = min(hwav, gammax * max(s1 - bl, 0.0_dp))
          if (kmx == 0 .and. jawavestokes > NO_STOKES_DRIFT) then
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
-               hh = hu(L); 
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               hh = hu(L)
                if (hh <= epshu) then
-                  ustokes(L) = 0.0_dp; vstokes(L) = 0.0_dp
+                  ustokes(L) = 0.0_dp
+                  vstokes(L) = 0.0_dp
                else
-                  hw = 0.5_dp * (hwav(k1) + hwav(k2)); tw = 0.5_dp * (twav(k1) + twav(k2))
+                  hw = 0.5_dp * (hwav(k1) + hwav(k2))
+                  tw = 0.5_dp * (twav(k1) + twav(k2))
                   uwi = sqrt(wx(L) * wx(L) + wy(L) * wy(L))
                   if (uwi > 0.0_dp) then
                      cs = wx(L) / uwi
                      sn = wy(L) / uwi
                   else
-                     cs = 1.0_dp; sn = 0.0_dp
+                     cs = 1.0_dp
+                     sn = 0.0_dp
                   end if
                   call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
                   ustokes(L) = ustt * (csu(L) * cs + snu(L) * sn)
@@ -146,12 +150,15 @@ contains
          end do
          if (kmx == 0 .and. jawavestokes > NO_STOKES_DRIFT) then
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
-               hh = hu(L); 
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               hh = hu(L)
                if (hh <= epshu) then
-                  ustokes(L) = 0.0_dp; vstokes(L) = 0.0_dp
+                  ustokes(L) = 0.0_dp
+                  vstokes(L) = 0.0_dp
                else
-                  hw = 0.5_dp * (hwav(k1) + hwav(k2)); tw = 0.5_dp * (twav(k1) + twav(k2))
+                  hw = 0.5_dp * (hwav(k1) + hwav(k2))
+                  tw = 0.5_dp * (twav(k1) + twav(k2))
                   cs = 0.5_dp * (cosd(phiwav(k1)) + cosd(phiwav(k2)))
                   sn = 0.5_dp * (sind(phiwav(k1)) + sind(phiwav(k2)))
                   call tauwavehk(hw, tw, hh, uorbi, rkw, ustt)
@@ -167,7 +174,8 @@ contains
 
       ! shortcut to switch off stokes influence
       if (jawavestokes == 0) then
-         ustokes = 0.0_dp; vstokes = 0.0_dp
+         ustokes = 0.0_dp
+         vstokes = 0.0_dp
       end if
 
 1234  continue

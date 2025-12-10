@@ -152,7 +152,9 @@ contains
       if (formno == 0) then
          ! closed or dry
          ! hu(m) = 0d0
-         au(m) = 0.0_dp; fu(m) = 0.0_dp; ru(m) = 0.0_dp
+         au(m) = 0.0_dp
+         fu(m) = 0.0_dp
+         ru(m) = 0.0_dp
       else
          again = .true.
       end if

@@ -94,13 +94,15 @@ contains
          fetchL = 20000.0_dp
          fetchD = 4.0_dp
          allocate (hwavsav(ndx), twavsav(ndx))
-         hwavsav = hwav; twavsav = twav
+         hwavsav = hwav
+         twavsav = twav
       end if
 
       uwi = 0.1_dp
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
-         hwav = hsig; twav = tsig
+         hwav = hsig
+         twav = tsig
       end if
       call setcdwcoefficient(uwi, Cd10, 1)
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -112,7 +114,8 @@ contains
       uwi = 0.2_dp
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
-         hwav = hsig; twav = tsig
+         hwav = hsig
+         twav = tsig
       end if
       call setcdwcoefficient(uwi, Cd10, 1)
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -125,7 +128,8 @@ contains
          uwi = uwi + 0.2_dp
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
-            hwav = hsig; twav = tsig
+            hwav = hsig
+            twav = tsig
          end if
          call setcdwcoefficient(uwi, Cd10, 1)
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -139,7 +143,8 @@ contains
          uwi = uwi + 1.0_dp
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
-            hwav = hsig; twav = tsig
+            hwav = hsig
+            twav = tsig
          end if
          call setcdwcoefficient(uwi, Cd10, 1)
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -153,7 +158,8 @@ contains
          uwi = uwi + 10.0_dp
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
-            hwav = hsig; twav = tsig
+            hwav = hsig
+            twav = tsig
          end if
          call setcdwcoefficient(uwi, Cd10, 1)
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -166,7 +172,8 @@ contains
       call doclose(msgbu)
 
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
-         hwav = hwavsav; twav = twavsav
+         hwav = hwavsav
+         twav = twavsav
          deallocate (hwavsav, twavsav)
       end if
 

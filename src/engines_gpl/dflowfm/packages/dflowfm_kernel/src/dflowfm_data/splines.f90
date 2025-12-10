@@ -62,11 +62,13 @@ contains
 
       IERR = 0
       if (M >= MAXSPL) then
-         maxspl = max(10, int(1.2 * m)); IERR = 1
+         maxspl = max(10, int(1.2 * m))
+         IERR = 1
       end if
 
       if (N >= MAXSPLEN) then
-         MAXSPLEN = max(100, int(1.2 * N)); IERR = 1
+         MAXSPLEN = max(100, int(1.2 * N))
+         IERR = 1
       end if
 
       if (IERR == 0) return

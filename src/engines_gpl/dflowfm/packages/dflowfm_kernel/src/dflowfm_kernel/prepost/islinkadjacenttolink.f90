@@ -54,10 +54,14 @@ contains
       real(kind=dp) :: x1, y1, x2, y2, x3, y3, x4, y4
       real(kind=dp) :: cosphi
 
-      x1 = xk(kn(1, L1)); y1 = yk(kn(1, L1))
-      x2 = xk(kn(2, L1)); y2 = yk(kn(2, L1))
-      x3 = xk(kn(1, L2)); y3 = yk(kn(1, L2))
-      x4 = xk(kn(2, L2)); y4 = yk(kn(2, L2))
+      x1 = xk(kn(1, L1))
+      y1 = yk(kn(1, L1))
+      x2 = xk(kn(2, L1))
+      y2 = yk(kn(2, L1))
+      x3 = xk(kn(1, L2))
+      y3 = yk(kn(1, L2))
+      x4 = xk(kn(2, L2))
+      y4 = yk(kn(2, L2))
       call adjacent(x1, y1, x2, y2, x3, y3, x4, y4, ja, k1k, k2k)
       ! Links are close to eachother, now also check whether they're almost parallel
       if (ja == 1) then

@@ -171,9 +171,12 @@ contains
                cycle
             end if
          else if (itype == ITYPE_FLOWLINK) then ! flowlinks
-            n1 = ln(1, L); n2 = ln(2, L)
-            xa = xz(n1); ya = yz(n1)
-            xb = xz(n2); yb = yz(n2)
+            n1 = ln(1, L)
+            n2 = ln(2, L)
+            xa = xz(n1)
+            ya = yz(n1)
+            xb = xz(n2)
+            yb = yz(n2)
          else if (itype == ITYPE_NETLINK) then ! netlinks, cross with netlinks
             n1 = kn(1, L)
             n2 = kn(2, L)
@@ -183,9 +186,12 @@ contains
             yb = yk(n2)
          else if (itype == ITYPE_FLOWLINK_1D_DUAL) then
             if (L <= lnx1D) then ! flowlinks, cross with perpendicular in 1D
-               n1 = ln(1, L); n2 = ln(2, L)
-               xc = xz(n1); yc = yz(n1)
-               xd = xz(n2); yd = yz(n2)
+               n1 = ln(1, L)
+               n2 = ln(2, L)
+               xc = xz(n1)
+               yc = yz(n1)
+               xd = xz(n2)
+               yd = yz(n2)
                xa = 0.5_dp * (xc + xd) - 0.5_dp * (yd - yc)
                ya = 0.5_dp * (yc + yd) + 0.5_dp * (xd - xc)
                xb = 0.5_dp * (xc + xd) + 0.5_dp * (yd - yc)

@@ -87,7 +87,8 @@ contains
             Lf = linklist(iLf)
          end if
 
-         n1 = ln(1, Lf); n2 = ln(2, Lf)
+         n1 = ln(1, Lf)
+         n2 = ln(2, Lf)
          L = ln2lne(Lf)
          if (n1 <= 0 .or. n2 <= 0 .or. L <= 0 .or. &
              n1 > ndx .or. n2 > ndx .or. L > numl) then
@@ -109,8 +110,10 @@ contains
             y2 = yk(lncn(2, Lf))
          else !   For 1D links: produce fictious 'cross/netlink'
             call normalout(xz(n1), yz(n1), xz(n2), yz(n2), xn, yn, jsferic, jasfer3D, dmiss, dxymis)
-            xn = -xn; yn = -yn ! flow link should be perpendicular to 'crs', and not vice versa.
-            xn = wu(Lf) * xn; yn = wu(Lf) * yn
+            xn = -xn
+            yn = -yn ! flow link should be perpendicular to 'crs', and not vice versa.
+            xn = wu(Lf) * xn
+            yn = wu(Lf) * yn
             if (jsferic == 1) then
                xn = rd2dg * xn / ra
                yn = rd2dg * yn / ra

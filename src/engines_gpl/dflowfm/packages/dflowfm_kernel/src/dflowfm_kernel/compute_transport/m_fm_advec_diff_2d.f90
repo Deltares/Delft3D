@@ -113,7 +113,8 @@ contains
       call realloc(vertical_flux, [1, ndx], keepExisting=.true., fill=0.0_dp)
       call realloc(right_hand_side, [1, ndx], keepExisting=.true., fill=0.0_dp)
 
-      allocate (dummy_link(1:lnkx), stat=ierror); dummy_link = 0.0
+      allocate (dummy_link(1:lnkx), stat=ierror)
+      dummy_link = 0.0
 
       call realloc(sum_horizontal_flux, ndx, keepExisting=.true., fill=0.0_dp)
       call realloc(dummy_ndx, ndx, keepExisting=.true., fill=0.0_dp)

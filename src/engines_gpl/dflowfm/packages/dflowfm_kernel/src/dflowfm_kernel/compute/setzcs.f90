@@ -42,7 +42,7 @@ contains
 
    !> Sets array zsc (z levels at layer mid-points, only for nudging)
    subroutine setzcs()
-      use m_flow, only: zcs, ndkx, zws, layertype, keepzlayeringatbed, zslay
+      use m_flow, only: zcs, ndkx, zws, layertype, LAYTP_Z, keepzlayeringatbed, zslay
       use m_flowgeom, only: ndx
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_zlayer_indices, only: getzlayerindices
@@ -61,7 +61,7 @@ contains
          do k = kb, kt
             zcs(k) = 0.5_dp * (zws(k) + zws(k - 1))
          end do
-         if (layertype == 2 .and. keepzlayeringatbed /= 1 .and. rhointerfaces /= BAROC_ORIGINAL) then
+         if (layertype == LAYTP_Z .and. keepzlayeringatbed /= 1 .and. rhointerfaces /= BAROC_ORIGINAL) then
             call getzlayerindices(kk, nlayb, nrlay)
             zcs(kb) = 0.5_dp * (zslay(nlayb - 1, 1) + zslay(nlayb, 1))
             if (kt > kb .and. keepzlayeringatbed == 2) then

@@ -58,11 +58,14 @@ contains
       real(kind=dp) :: dx1, dx2, frcn, BL1, BL2, b21, wu2, ai
       real(kind=dp) :: beta, deltaa, hyr
 
-      k1 = ln(1, L); k2 = ln(2, L)
+      k1 = ln(1, L)
+      k2 = ln(2, L)
       if (bob0(1, L) < bob0(2, L)) then
-         BL1 = bob0(1, L); BL2 = bob0(2, L)
+         BL1 = bob0(1, L)
+         BL2 = bob0(2, L)
       else
-         BL1 = bob0(2, L); BL2 = bob0(1, L)
+         BL1 = bob0(2, L)
+         BL2 = bob0(1, L)
       end if
       wu2 = wu(L)
       b21 = BL2 - BL1
@@ -93,7 +96,8 @@ contains
 
             hpr1 = hu(L)
 
-            frcn = frcu(L); friction_type = ifrcutp(L)
+            frcn = frcu(L)
+            friction_type = ifrcutp(L)
             if (jaconveyance2D > 0) then
 
                jaconv = min(2, jaconveyance2D)

@@ -58,7 +58,9 @@ contains
 
       call INCREASELAN(L + NPL)
       if (L > 0) then
-         XLAN(L) = XYMIS; YLAN(L) = XYMIS; ZLAN(L) = XYMIS
+         XLAN(L) = XYMIS
+         YLAN(L) = XYMIS
+         ZLAN(L) = XYMIS
       end if
       do K = 1, NPL
          L = L + 1

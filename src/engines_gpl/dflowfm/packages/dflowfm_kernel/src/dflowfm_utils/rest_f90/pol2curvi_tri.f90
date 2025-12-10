@@ -90,15 +90,19 @@ contains
       i3 = i3_
 
 !  get grid size and orientation
-      Na = i2 - i1; if (Na < 1) Na = Na + numsubpol
-      Nb = i3 - i2; if (Nb < 1) Nb = Nb + numsubpol
+      Na = i2 - i1
+      if (Na < 1) Na = Na + numsubpol
+      Nb = i3 - i2
+      if (Nb < 1) Nb = Nb + numsubpol
       Ncc = numsubpol - (Na + Nb)
 
       if (Ncc < 1) then
          i2 = i3_
          i3 = i2_
-         Na = i2 - i1; if (Na < 1) Na = Na + numsubpol
-         Nb = i3 - i2; if (Nb < 1) Nb = Nb + numsubpol
+         Na = i2 - i1
+         if (Na < 1) Na = Na + numsubpol
+         Nb = i3 - i2
+         if (Nb < 1) Nb = Nb + numsubpol
          Ncc = numsubpol - (Na + Nb)
       end if
 
@@ -114,9 +118,12 @@ contains
       end if
 
 !  compute midpoint
-      ia = i1 + N1; if (ia > iend) ia = ia - numsubpol
-      ib = i2 + N3; if (ib > iend) ib = ib - numsubpol
-      ic = i3 + N2; if (ic > iend) ic = ic - numsubpol
+      ia = i1 + N1
+      if (ia > iend) ia = ia - numsubpol
+      ib = i2 + N3
+      if (ib > iend) ib = ib - numsubpol
+      ic = i3 + N2
+      if (ic > iend) ic = ic - numsubpol
 
 !  set dimensions of blocks
       M = [N1, N3, N2]

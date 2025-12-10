@@ -65,14 +65,16 @@ contains
 
       if (stm_included) return
 
-      seq = 0.0_dp; flx = 0.0_dp
+      seq = 0.0_dp
+      flx = 0.0_dp
 
       if (jaceneqtr == 1) then
          k = kk
          if (ibedlevtyp == 1 .or. ibedlevtyp == 6) then ! tile type
             hsk = s1(k) - bl(k)
          else ! u-netwnodes / conv type
-            hsk = 0.0_dp; nn = 0
+            hsk = 0.0_dp
+            nn = 0
             do n = 1, netcell(k)%n
                n1 = netcell(k)%nod(n)
                dh = max(0.0_dp, s1(k) - zk(n1))
@@ -147,7 +149,9 @@ contains
          wse(1) = wse(1) * crefcav
       else
 
-         ueff = ucur; beta = 1.0_dp; twave = 0.0_dp !
+         ueff = ucur
+         beta = 1.0_dp
+         twave = 0.0_dp !
          ustar2swart = sqcf * sqcf * Ueff * Ueff
          if (jawave > NO_WAVES .and. ueff > 0.0_dp .and. .not. flowWithoutWaves) then
             if (twav(k) > 1.0e-2_dp) then

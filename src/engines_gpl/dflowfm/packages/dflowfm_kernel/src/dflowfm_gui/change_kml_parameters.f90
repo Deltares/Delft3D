@@ -75,15 +75,24 @@ contains
       jacancelled = 0
       NLEVEL = 4
 
-      OPTION(1) = 'Export flat view of unstruct. grid (0/1)'; IT(1 * 2) = 2
-      OPTION(2) = 'Export depth view of grid cells    (0/1)'; IT(2 * 2) = 2
-      OPTION(3) = '* flat or 3D view of depths        (0/1)'; IT(3 * 2) = 2
-      OPTION(4) = '* Altitude exaggeration factor          '; IT(4 * 2) = 6
-      OPTION(5) = '* Offset altitude with deepest pt. (0/1)'; IT(5 * 2) = 2
-      OPTION(6) = '* Additional offset (+ = upward)        '; IT(6 * 2) = 6
-      OPTION(7) = '* Dummy altitude for missing values     '; IT(7 * 2) = 6
-      OPTION(8) = '* Minimal value for color scale         '; IT(8 * 2) = 6
-      OPTION(9) = '* Maximal value for color scale         '; IT(9 * 2) = 6
+      OPTION(1) = 'Export flat view of unstruct. grid (0/1)'
+      IT(1 * 2) = 2
+      OPTION(2) = 'Export depth view of grid cells    (0/1)'
+      IT(2 * 2) = 2
+      OPTION(3) = '* flat or 3D view of depths        (0/1)'
+      IT(3 * 2) = 2
+      OPTION(4) = '* Altitude exaggeration factor          '
+      IT(4 * 2) = 6
+      OPTION(5) = '* Offset altitude with deepest pt. (0/1)'
+      IT(5 * 2) = 2
+      OPTION(6) = '* Additional offset (+ = upward)        '
+      IT(6 * 2) = 6
+      OPTION(7) = '* Dummy altitude for missing values     '
+      IT(7 * 2) = 6
+      OPTION(8) = '* Minimal value for color scale         '
+      IT(8 * 2) = 6
+      OPTION(9) = '* Maximal value for color scale         '
+      IT(9 * 2) = 6
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
       HELPM(1) = 'Integer value 0/1, flat grid view is faster.                '
@@ -102,10 +111,14 @@ contains
 
       IR = 0
       do I = 1, NUMPARACTUAL
-         IL = IR + 1; IR = IL + 1
-         IS(IL) = 82; IS(IR) = 10
-         IX(IL) = 10; IX(IR) = 100
-         IY(IL) = 2 * I; IY(IR) = 2 * I
+         IL = IR + 1
+         IR = IL + 1
+         IS(IL) = 82
+         IS(IR) = 10
+         IX(IL) = 10
+         IX(IR) = 100
+         IY(IL) = 2 * I
+         IY(IR) = 2 * I
          IT(IL) = 1001 ! ir staat hierboven
       end do
 
