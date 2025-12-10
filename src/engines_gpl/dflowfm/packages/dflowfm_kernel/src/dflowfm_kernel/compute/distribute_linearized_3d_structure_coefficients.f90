@@ -30,14 +30,16 @@ contains
       genstr => structure%generalst
       do L0 = 1, structure%numlinks
          Lf = structure%linknumbers(L0)
-         k1 = ln(1, Lf); k2 = ln(2, Lf) ! 1 -> 2 flow link direction
+         k1 = ln(1, Lf)
+         k2 = ln(2, Lf) ! 1 -> 2 flow link direction
 
          call getLbotLtop(Lf, Lb, Lt)
          gatefraction = genstr%gateclosedfractiononlink(L0)
 
          if (jastructurelayersactive == 0) then
             do LL = Lb, Lt
-               fu(LL) = fu(Lf); ru(LL) = ru(Lf)
+               fu(LL) = fu(Lf)
+               ru(LL) = ru(Lf)
                au(LL) = au(Lf) * (hu(LL) - hu(LL - 1)) / (hu(Lt) - hu(Lb - 1))
             end do
          else

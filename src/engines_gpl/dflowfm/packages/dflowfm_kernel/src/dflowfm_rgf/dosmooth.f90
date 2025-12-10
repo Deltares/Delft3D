@@ -258,7 +258,8 @@ contains
                         else
                            Xc(I, J) = (X41 + X42) / 2
                            Yc(I, J) = (Y41 + Y42) / 2
-                           write (msgbuf, *) 'BLOCK VORM VERLIES'; call dbg_flush()
+                           write (msgbuf, *) 'BLOCK VORM VERLIES'
+                           call dbg_flush()
                         end if
                      end if
                   end if

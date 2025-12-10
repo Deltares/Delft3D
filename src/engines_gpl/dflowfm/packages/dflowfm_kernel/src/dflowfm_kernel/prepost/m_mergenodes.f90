@@ -68,7 +68,9 @@ contains
 
          call GIVELINKNUM(K1, K2, L12)
          if (L12 /= 0) then
-            kn(1, L12) = 0; kn(2, L12) = 0; kn(3, L12) = 0
+            kn(1, L12) = 0
+            kn(2, L12) = 0
+            kn(3, L12) = 0
          end if
 
          do NM = 1, NM1 ! CHECK OF JE NIET VIA EEN ANDER PAD OOK BIJ K2 UIT KAN KOMEN. ZO JA, VERWIJDER LINK
@@ -80,7 +82,9 @@ contains
                   L2A = NOD(K22)%LIN(NN)
                   call OTHERNODE(K22, L2A, K22A)
                   if (K22A == K2) then
-                     kn(1, L2A) = 0; kn(2, L2A) = 0; kn(3, L2A) = 0
+                     kn(1, L2A) = 0
+                     kn(2, L2A) = 0
+                     kn(3, L2A) = 0
                   end if
                end do
             end if
@@ -91,14 +95,16 @@ contains
       do NM = 1, NM2
          L = NOD(K2)%LIN(NM)
          if (KN(1, L) /= 0) then
-            N = N + 1; NODLIN(N) = L
+            N = N + 1
+            NODLIN(N) = L
          end if
       end do
 
       do NM = 1, NM1
          L = NOD(K1)%LIN(NM)
          if (KN(1, L) /= 0) then
-            N = N + 1; NODLIN(N) = L
+            N = N + 1
+            NODLIN(N) = L
             if (KN(1, L) == K1) KN(1, L) = K2
             if (KN(2, L) == K1) KN(2, L) = K2
          end if

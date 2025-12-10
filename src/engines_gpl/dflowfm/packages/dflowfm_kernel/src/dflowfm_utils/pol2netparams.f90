@@ -66,7 +66,7 @@ contains
       ierror = 1
 
 !  get reference point: first non-missing
-      i = 1; 
+      i = 1
       do while (i <= NPL .and. (xpl(i) == DMISS .or. ypl(i) == DMISS))
          i = i + 1
       end do

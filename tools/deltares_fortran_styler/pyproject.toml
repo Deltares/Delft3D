@@ -1,0 +1,30 @@
+[project]
+name = "deltares-fortran-styler"
+version = "0.1.0"
+description = "Modular Fortran style checker and converter for Deltares style guide"
+readme = "README.md"
+authors = [
+    { name = "Deltares", email = "delft3d.support@deltares.nl" }
+]
+requires-python = ">=3.6"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest ~= 9.0.1",
+    "pytest-cov ~= 7.0.0",
+]
+
+[project.scripts]
+fortran-styler = "deltares_fortran_styler.fortran_styler:main"
+
+[build-system]
+requires = ["setuptools>=45"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v"

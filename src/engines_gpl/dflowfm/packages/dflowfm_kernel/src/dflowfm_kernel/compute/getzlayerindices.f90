@@ -48,7 +48,8 @@ contains
 
       Ltn = laydefnr(n)
       mx = laymx(Ltn)
-      nlayb = mx; nrlay = 1 ! default
+      nlayb = mx
+      nrlay = 1 ! default
 
       if (keepzlayeringatbed == 0 .or. keepzlayeringatbed == 1 .and. keepzlay1bedvol == 1) then
          fac = 0.2_dp

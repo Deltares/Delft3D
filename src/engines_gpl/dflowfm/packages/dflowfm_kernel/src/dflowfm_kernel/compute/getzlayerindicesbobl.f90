@@ -42,7 +42,8 @@ contains
 
       Ltn = laydefnr(n)
       mx = laymx(Ltn)
-      nlayb = mx; nrlay = 1 ! default
+      nlayb = mx
+      nrlay = 1 ! default
       do k = 1, mx
          if (zslay(k, Ltn) > bobL) then
             nlayb = k

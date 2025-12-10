@@ -65,7 +65,8 @@ contains
 
       integer, external :: OMP_GET_THREAD_NUM
 
-      XV = XX; YV = YY
+      XV = XX
+      YV = YY
 
       jout = -999
       rlout = -1.0_dp

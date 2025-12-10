@@ -69,7 +69,8 @@ contains
 
       call INCREASENETW(100000, 100000)
 
-      k1 = 0; k2 = 0
+      k1 = 0
+      k2 = 0
       do k = 1, mxlan
          if (xlan(k) == dmiss) then
             k2 = -k2
@@ -106,20 +107,28 @@ contains
 
                call mapToPolyline(Xlan(k1:k2), Ylan(k1:k2), DLAN(k1:k2), NL, XH, YH, DH, NH) ! HAAL HUIDIGE PUNTEN OP
 
-               KK = NUMK + 1; LL = NUML
+               KK = NUMK + 1
+               LL = NUML
                call INCREASENETW(KK + nh, LL + nh)
-               XK(KK) = Xlan(k1); YK(KK) = Ylan(k1)
+               XK(KK) = Xlan(k1)
+               YK(KK) = Ylan(k1)
                do N = 1, NH
                   KK = KK + 1
-                  XK(KK) = XH(N); YK(KK) = YH(N); ZK(KK) = dmiss
+                  XK(KK) = XH(N)
+                  YK(KK) = YH(N)
+                  ZK(KK) = dmiss
                   LL = LL + 1
-                  KN(1, LL) = KK - 1; KN(2, LL) = KK; KN(3, LL) = 1 ! NOTE: 1D endpoints now don't have KN(3,L)=4 automatically.
+                  KN(1, LL) = KK - 1
+                  KN(2, LL) = KK
+                  KN(3, LL) = 1 ! NOTE: 1D endpoints now don't have KN(3,L)=4 automatically.
                end do
-               NUMK = KK; NUML = LL
+               NUMK = KK
+               NUML = LL
 
             end if
 
-            k1 = 0; k2 = 0
+            k1 = 0
+            k2 = 0
          end if
       end do
 

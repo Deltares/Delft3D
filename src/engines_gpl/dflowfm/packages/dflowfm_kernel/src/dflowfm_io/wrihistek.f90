@@ -101,19 +101,31 @@ contains
          !write(mxls,'(13f14.6)') tim/Te ,  ucx(kobs(1)) / ue !   , s1(kobs(1)) - bl(kobs(1))
          if (numobs >= 2 .and. ncrs >= 1) then ! Hardcoded quantities below require at least 2 obs points and 1 crossection.
 
-            k1 = kobs(1); k2 = kobs(2)
+            k1 = kobs(1)
+            k2 = kobs(2)
             if (k1 > 0 .and. k2 > 0) then
-               ft = 0.3048; dinch = 0.0254_dp; wid = 6.0_dp * dinch
-               h1 = hs(k1); h2 = hs(k2)
-               AA1 = h1 * wid; AA2 = h2 * wid
+               ft = 0.3048
+               dinch = 0.0254_dp
+               wid = 6.0_dp * dinch
+               h1 = hs(k1)
+               h2 = hs(k2)
+               AA1 = h1 * wid
+               AA2 = h2 * wid
                QQ = crs(1)%sumvalcur(1)
-               vv1 = sqrt(ucx(k1)**2 + ucy(k1)**2); vv2 = sqrt(ucx(k2)**2 + ucy(k2)**2) ! centre value
-               vv1 = QQ / AA1; vv2 = QQ / AA2 ! average value
-               eh1 = vv1 * vv1 / (2.0_dp * ag); ee1 = s1(k1) + eh1
-               eh2 = vv2 * vv2 / (2.0_dp * ag); ee2 = s1(k2) + eh2
-               RR1 = AA1 / (wid + 2 * h1); RR2 = AA2 / (wid + 2 * h2)
-               xl1 = 1.43_dp; xl2 = 1.59_dp
-               df1 = xL1 * 0.01 * 0.01 * vv1 * vv1 / (RR1**1.333333); df2 = xL2 * 0.01 * 0.01 * vv2 * vv2 / (RR2**1.333333)
+               vv1 = sqrt(ucx(k1)**2 + ucy(k1)**2)
+               vv2 = sqrt(ucx(k2)**2 + ucy(k2)**2) ! centre value
+               vv1 = QQ / AA1
+               vv2 = QQ / AA2 ! average value
+               eh1 = vv1 * vv1 / (2.0_dp * ag)
+               ee1 = s1(k1) + eh1
+               eh2 = vv2 * vv2 / (2.0_dp * ag)
+               ee2 = s1(k2) + eh2
+               RR1 = AA1 / (wid + 2 * h1)
+               RR2 = AA2 / (wid + 2 * h2)
+               xl1 = 1.43_dp
+               xl2 = 1.59_dp
+               df1 = xL1 * 0.01 * 0.01 * vv1 * vv1 / (RR1**1.333333)
+               df2 = xL2 * 0.01 * 0.01 * vv2 * vv2 / (RR2**1.333333)
                hb = ee1 - ee2 - (df1 + df2)
                s12 = s1(k1) - s1(k2)
                Froude2 = vv2 / sqrt(ag * h2)

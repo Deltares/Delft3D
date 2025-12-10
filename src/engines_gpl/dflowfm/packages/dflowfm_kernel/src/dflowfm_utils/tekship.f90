@@ -56,7 +56,8 @@ contains
       call setcol(4)
 
       do n = 1, nshiptxy
-         css = cos(shi(n)); sns = sin(shi(n))
+         css = cos(shi(n))
+         sns = sin(shi(n))
 
          call smovabs(n, 1.0_dp, 0.0_dp)
          call slnabs(n, 0.9_dp, -1.0_dp)
@@ -104,7 +105,9 @@ contains
          sx2 = shx(n) - shL(n) * css ! rudder
          sy2 = shy(n) - shL(n) * sns
          call movabs(sx2, sy2)
-         rr = 0.4_dp * shb(n); cr = cos(shi(n) + roer(n)); sr = sin(shi(n) + roer(n))
+         rr = 0.4_dp * shb(n)
+         cr = cos(shi(n) + roer(n))
+         sr = sin(shi(n) + roer(n))
          call lnabs(sx2 - rr * cr, sy2 - rr * sr)
 
       end do

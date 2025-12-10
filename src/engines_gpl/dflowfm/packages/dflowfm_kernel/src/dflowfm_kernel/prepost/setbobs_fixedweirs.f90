@@ -58,7 +58,8 @@ contains
             ip = fxw(i)%indexp(iL)
             alpha = fxw(i)%wfp(iL)
             zc = alpha * fxw(i)%zp(ip) + (1.0_dp - alpha) * fxw(i)%zp(ip + 1)
-            bob(1, Lf) = max(zc, bob(1, Lf)); bob(2, Lf) = max(zc, bob(2, Lf))
+            bob(1, Lf) = max(zc, bob(1, Lf))
+            bob(2, Lf) = max(zc, bob(2, Lf))
          end do
       end do
    end subroutine setbobs_fixedweirs

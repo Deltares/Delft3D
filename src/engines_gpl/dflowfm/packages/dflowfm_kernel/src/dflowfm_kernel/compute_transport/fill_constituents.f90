@@ -97,7 +97,9 @@ contains
          end if
       end do
 
-      difsedu = 0.0_dp; molecular_diffusion_coeff = 0.0_dp; sigdifi = 0.0_dp
+      difsedu = 0.0_dp
+      molecular_diffusion_coeff = 0.0_dp
+      sigdifi = 0.0_dp
 
 !  diffusion coefficients
 
@@ -212,7 +214,8 @@ contains
                ! const_sour(ISPIR,kk) = 0.0_dp
                ! const_sink(ISPIR,kk) = 0.0_dp
             else
-               fcoriocof = fcorio; if (icorio > 0 .and. jsferic == 1) fcoriocof = fcoris(kk)
+               fcoriocof = fcorio
+               if (icorio > 0 .and. jsferic == 1) fcoriocof = fcoris(kk)
                alpha = sqrt(ag) / vonkar / max(czssf(kk), 20.0_dp)
                spir_ce = fcorio * hs(kk) * 0.5_dp
                spir_be = hs(kk) * spircrv(kk) * spirucm(kk)

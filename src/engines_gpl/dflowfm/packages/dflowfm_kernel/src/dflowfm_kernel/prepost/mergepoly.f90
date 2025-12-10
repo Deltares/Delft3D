@@ -106,9 +106,15 @@ contains
          ih = (i1 + im - 1) / 2
          do i = i1, ih
             ii = im - i + i1
-            xt = x(i); yt = y(i); zt = z(i)
-            x(i) = x(ii); y(i) = y(ii); z(i) = z(ii)
-            x(ii) = xt; y(ii) = yt; z(ii) = zt
+            xt = x(i)
+            yt = y(i)
+            zt = z(i)
+            x(i) = x(ii)
+            y(i) = y(ii)
+            z(i) = z(ii)
+            x(ii) = xt
+            y(ii) = yt
+            z(ii) = zt
          end do
 
          ! Flip indices, such that i1 is the rightmost
@@ -137,9 +143,15 @@ contains
          ih = (in + i2 - 1) / 2
          do i = in, ih
             ii = i2 - i + in
-            xt = x(i); yt = y(i); zt = z(i)
-            x(i) = x(ii); y(i) = y(ii); z(i) = z(ii)
-            x(ii) = xt; y(ii) = yt; z(ii) = zt
+            xt = x(i)
+            yt = y(i)
+            zt = z(i)
+            x(i) = x(ii)
+            y(i) = y(ii)
+            z(i) = z(ii)
+            x(ii) = xt
+            y(ii) = yt
+            z(ii) = zt
          end do
 
          ! Flip indices, such that i2 is the leftmost

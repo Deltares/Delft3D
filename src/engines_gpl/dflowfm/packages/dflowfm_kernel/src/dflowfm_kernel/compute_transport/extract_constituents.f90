@@ -66,7 +66,7 @@ contains
       use m_fm_icecover, only: freezing_temperature
       use m_get_kbot_ktop, only: getkbotktop
       use m_missing, only: dmiss
-      use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, temperature_max, temperature_min
+      use m_physcoef, only: salinity_max, salinity_min, use_salinity_freezing_point, backgroundsalinity, temperature_max, temperature_min
       use m_plotdots, only: numdots
       use m_sediment, only: mxgr, sed, stm_included, stmpar, ssccum, upperlimitssc
       use m_transport, only: isalt, ised1, ispir, itemp, constituents, maserrsed
@@ -135,15 +135,27 @@ contains
          end if
 
          cells_with_min_limit = 0
-         if (isalt > 0 .and. use_salinity_freezing_point) then ! only at surface limit to freezing point
-            do kk = 1, ndx
-               k = ktop(kk)
-               freezing_point_temperature = real(freezing_temperature(real(constituents(isalt, k), fp)), dp)
-               if (constituents(itemp, k) < freezing_point_temperature) then
-                  constituents(itemp, k) = freezing_point_temperature
-                  cells_with_min_limit = cells_with_min_limit + 1
-               end if
-            end do
+
+         if (use_salinity_freezing_point) then
+            if (isalt > 0) then ! if salinity is modeled, use local salinity to determine freezing point
+               do kk = 1, ndx
+                  k = ktop(kk) ! only the top layer is checked for freezing point
+                  freezing_point_temperature = real(freezing_temperature(real(constituents(isalt, k), fp)), dp)
+                  if (constituents(itemp, k) < freezing_point_temperature) then
+                     constituents(itemp, k) = freezing_point_temperature
+                     cells_with_min_limit = cells_with_min_limit + 1
+                  end if
+               end do
+            else ! if salinity is not modeled, use background salinity to determine freezing point
+               freezing_point_temperature = real(freezing_temperature(backgroundsalinity), dp)
+               do kk = 1, ndx
+                  k = ktop(kk) ! only the top layer is checked for freezing point
+                  if (constituents(itemp, k) < freezing_point_temperature) then
+                     constituents(itemp, k) = freezing_point_temperature
+                     cells_with_min_limit = cells_with_min_limit + 1
+                  end if
+               end do
+            end if
          end if
 
          if (temperature_min /= dmiss) then

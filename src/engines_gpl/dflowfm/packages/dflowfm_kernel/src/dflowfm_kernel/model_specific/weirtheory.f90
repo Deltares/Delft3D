@@ -65,7 +65,10 @@ contains
 
 ! open(5,file='weirtheory.dia')
 
-      qweir = 0; uupstream = 0; ucrest = 0; udownstream = 0
+      qweir = 0
+      uupstream = 0
+      ucrest = 0
+      udownstream = 0
 
       regime = 'subcritical'
 
@@ -210,9 +213,13 @@ contains
 
 ! write(5,'('' discharge/m:'',d15.5)') qd
 
-      u1 = qd / h1; u2 = qd / h2; u3 = qd / h3
+      u1 = qd / h1
+      u2 = qd / h2
+      u3 = qd / h3
 ! write(5,'('' velocities:'',3d15.5)') u1,u2,u3
-      fr1 = u1 / sqrt(g * h1); fr2 = u2 / sqrt(g * h2); fr3 = u3 / sqrt(g * h3)
+      fr1 = u1 / sqrt(g * h1)
+      fr2 = u2 / sqrt(g * h2)
+      fr3 = u3 / sqrt(g * h3)
 ! write(5,'('' Froude numbers:'',3d15.5)') fr1,fr2,fr3
 
       zcrest = z2

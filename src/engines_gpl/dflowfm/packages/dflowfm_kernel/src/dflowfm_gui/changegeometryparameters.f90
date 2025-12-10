@@ -65,34 +65,61 @@ contains
 
       NLEVEL = 4
 
-      OPTION(1) = 'sini                                (m) '; it(2 * 1) = 6
-      OPTION(2) = 'zkuni                               (m) '; it(2 * 2) = 6
-      OPTION(3) = 'bedslope                            ( ) '; it(2 * 3) = 6
-      OPTION(4) = 'anglat                            (deg) '; it(2 * 4) = 6
-      OPTION(5) = 'ibedlevtyp                          ( ) '; it(2 * 5) = 2
-      OPTION(6) = 'Kmx, nr of Vertical sigma layers    ( ) '; it(2 * 6) = 2
-      OPTION(7) = 'Jazlayercenterbedvel                ( ) '; it(2 * 7) = 2
-      OPTION(8) = 'Jasfer3D                            ( ) '; it(2 * 8) = 2
+      OPTION(1) = 'sini                                (m) '
+      it(2 * 1) = 6
+      OPTION(2) = 'zkuni                               (m) '
+      it(2 * 2) = 6
+      OPTION(3) = 'bedslope                            ( ) '
+      it(2 * 3) = 6
+      OPTION(4) = 'anglat                            (deg) '
+      it(2 * 4) = 6
+      OPTION(5) = 'ibedlevtyp                          ( ) '
+      it(2 * 5) = 2
+      OPTION(6) = 'Kmx, nr of Vertical sigma layers    ( ) '
+      it(2 * 6) = 2
+      OPTION(7) = 'Jazlayercenterbedvel                ( ) '
+      it(2 * 7) = 2
+      OPTION(8) = 'Jasfer3D                            ( ) '
+      it(2 * 8) = 2
 
-      OPTION(10) = 'minimum 1D link length,             (m) '; it(2 * 10) = 6
-      OPTION(11) = 'Uniform 1D link width               (m) '; it(2 * 11) = 6
-      OPTION(12) = '1D profile type                     ( ) '; it(2 * 12) = 2
-      OPTION(13) = '2D conveyance                       ( ) '; it(2 * 13) = 2
-      OPTION(14) = 'non linear continuity 2D            ( ) '; it(2 * 14) = 2
-      OPTION(15) = 'non linear continuity 1D            ( ) '; it(2 * 15) = 2
-      OPTION(16) = 'sdropstep  when dropping water      (m) '; it(2 * 16) = 6
-      OPTION(17) = 'zkdropstep when dropping land       (m) '; it(2 * 17) = 6
-      OPTION(18) = 'Ifixedweirscheme                    ( ) '; it(2 * 18) = 2
-      OPTION(19) = 'Layertype                           ( ) '; it(2 * 19) = 2
-      OPTION(20) = 'Sigmagrowthfactor                   ( ) '; it(2 * 20) = 6
-      OPTION(21) = 'Sillheightmin                       (m) '; it(2 * 21) = 6
-      OPTION(22) = 'Mxlayz nr of vertical z-layers      ( ) '; it(2 * 22) = 2
-      OPTION(23) = 'ihuzcsig, L,R sig at u central part ( ) '; it(2 * 23) = 2
-      OPTION(24) = 'Keepzlayering at bed                ( ) '; it(2 * 24) = 2
-      OPTION(25) = 'Numtopsig (only for z-layers)       ( ) '; it(2 * 25) = 2
-      OPTION(26) = 'Numtopsiguniform                    ( ) '; it(2 * 26) = 2
-      OPTION(27) = 'ihuz, only for keepzlayeringatbed>=3( ) '; it(2 * 27) = 2
-      OPTION(28) = 'jazlayeratubybob                    ( ) '; it(2 * 28) = 2
+      OPTION(10) = 'minimum 1D link length,             (m) '
+      it(2 * 10) = 6
+      OPTION(11) = 'Uniform 1D link width               (m) '
+      it(2 * 11) = 6
+      OPTION(12) = '1D profile type                     ( ) '
+      it(2 * 12) = 2
+      OPTION(13) = '2D conveyance                       ( ) '
+      it(2 * 13) = 2
+      OPTION(14) = 'non linear continuity 2D            ( ) '
+      it(2 * 14) = 2
+      OPTION(15) = 'non linear continuity 1D            ( ) '
+      it(2 * 15) = 2
+      OPTION(16) = 'sdropstep  when dropping water      (m) '
+      it(2 * 16) = 6
+      OPTION(17) = 'zkdropstep when dropping land       (m) '
+      it(2 * 17) = 6
+      OPTION(18) = 'Ifixedweirscheme                    ( ) '
+      it(2 * 18) = 2
+      OPTION(19) = 'Layertype                           ( ) '
+      it(2 * 19) = 2
+      OPTION(20) = 'Sigmagrowthfactor                   ( ) '
+      it(2 * 20) = 6
+      OPTION(21) = 'Sillheightmin                       (m) '
+      it(2 * 21) = 6
+      OPTION(22) = 'Mxlayz nr of vertical z-layers      ( ) '
+      it(2 * 22) = 2
+      OPTION(23) = 'ihuzcsig, L,R sig at u central part ( ) '
+      it(2 * 23) = 2
+      OPTION(24) = 'Keepzlayering at bed                ( ) '
+      it(2 * 24) = 2
+      OPTION(25) = 'Numtopsig (only for z-layers)       ( ) '
+      it(2 * 25) = 2
+      OPTION(26) = 'Numtopsiguniform                    ( ) '
+      it(2 * 26) = 2
+      OPTION(27) = 'ihuz, only for keepzlayeringatbed>=3( ) '
+      it(2 * 27) = 2
+      OPTION(28) = 'jazlayeratubybob                    ( ) '
+      it(2 * 28) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -290,7 +317,8 @@ contains
 
             if (kmx > 0 .or. mxlayz > 0) then
                if (layertype /= LAYTP_SIGMA) then
-                  kmx = max(kmx, mxlayz); iadvec = 33
+                  kmx = max(kmx, mxlayz)
+                  iadvec = 33
                end if
             end if
 

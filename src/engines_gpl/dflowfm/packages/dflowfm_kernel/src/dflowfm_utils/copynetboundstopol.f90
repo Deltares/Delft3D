@@ -91,7 +91,8 @@ contains
          if (needfindcells == 1) call findcells(0)
       end if
 
-      inhul1 = -1; inhul2 = -1
+      inhul1 = -1
+      inhul2 = -1
 ! Construct the new polygon set in XPH (backup pol is not used anway during this operation)
       XPH = dmiss
       NPH = 0
@@ -259,19 +260,31 @@ contains
             if (jacros == 1) then
                inland = abs(inland - 1)
                if (ia0 == -999 .and. iseg < nseg) then
-                  ia0 = ia; ib0 = ib; ic0 = ic; idir0 = idir; sl0 = sl
+                  ia0 = ia
+                  ib0 = ib
+                  ic0 = ic
+                  idir0 = idir
+                  sl0 = sl
                   iseg0 = iseg
                   cycle ! Allow a second crossing
                else
                   if (ia0 /= -999 .and. sl0 > sl) then
-                     ia = ia0; ib = ib0; ic = ic0; idir = idir0; sl = sl0
+                     ia = ia0
+                     ib = ib0
+                     ic = ic0
+                     idir = idir0
+                     sl = sl0
                      isegc = iseg0
                   end if
                end if
             else ! jacross == 0
                if (iseg == nseg) then
                   if (ia0 /= -999) then
-                     ia = ia0; ib = ib0; ic = ic0; idir = idir0; sl = sl0
+                     ia = ia0
+                     ib = ib0
+                     ic = ic0
+                     idir = idir0
+                     sl = sl0
                      isegc = iseg0
                      jacros = 1
                   end if

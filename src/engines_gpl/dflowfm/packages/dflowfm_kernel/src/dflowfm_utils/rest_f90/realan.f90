@@ -143,18 +143,22 @@ contains
       return
 
       n = 1 ! remove double points in lineseg oriented files
-      xpl(n) = xlan(1); ypl(n) = ylan(1)
+      xpl(n) = xlan(1)
+      ypl(n) = ylan(1)
       do k = 2, mxlan - 1
-         kd = k - 1; ku = k + 1
+         kd = k - 1
+         ku = k + 1
          if (xlan(k) == dmiss .and. xlan(kd) == xlan(ku) .and. ylan(kd) == ylan(ku)) then
 
          else
             n = n + 1
-            xpl(n) = xlan(k); ypl(n) = ylan(k)
+            xpl(n) = xlan(k)
+            ypl(n) = ylan(k)
          end if
       end do
       n = n + 1
-      xpl(n) = xlan(mxlan); ypl(n) = ylan(mxlan)
+      xpl(n) = xlan(mxlan)
+      ypl(n) = ylan(mxlan)
 
       npl = n
 

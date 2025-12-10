@@ -78,7 +78,8 @@ contains
          end if
          call getLbotLtop(LL, Lb, Lt)
          do L = Lb, Lt
-            kb = ln(1, L); ki = ln(2, L)
+            kb = ln(1, L)
+            ki = ln(2, L)
             do j = 1, mxgr
                if (q1(L) > 0) then
                   sed(j, kb) = seq(j) ! inflow ,  equilibrium boundary condition
