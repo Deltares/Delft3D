@@ -2958,12 +2958,13 @@
                     "key": "autoTimestep",
                     "default_value": 1,
                     "value_type": "intenum",
-                    "description": "Auto timestepping.",
+                    "description": "Automatic timestepping limited by the CFL condition. Several options are available controlling which flows are used in the CFL limit. Options 1 and 5 are the default for 2D and 3D models, respectively.",
                     "enum_values": {
-                        "0": "no",
-                        "1": "2D (hor. out)",
-                        "3": "3D (hor. out)",
-                        "5": "3D (hor. inout + ver. inout), smallest dt"
+                        "0": "Use no CFL timestep limit (use constant timestepping)",
+                        "1": "For 2D-models; use outflows in CFL timestep limit",
+                        "3": "For 3D-models; use horizontal outflows (per cell-layer) in CFL timestep limit",
+                        "4": "For 3D-models; use horizontal in- and outflows (per cell-layer) in CFL timestep limit",
+                        "5": "For 3D-models; use in- or outflows (per cell-column) in CFL timestep limit"
                     }
                 },
                 {

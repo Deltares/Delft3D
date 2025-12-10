@@ -483,7 +483,7 @@ This section contains the time settings for the model, such as start and stop ti
 | `updateRoughnessInterval` | Update interval for time dependent roughness parameters. | `86400.0` |  | [s] |
 | `tStartTlfsmo` | Start time w.r.t. `refDate` of Fourier smoothing time on water level boundaries. | `0.0` |  | [tUnit] |
 | `startDateTimeTlfsmo` | Computation start datetime w.r.t. `refDate` of Fourier smoothing time on water level boundaries, when specified, overrides `tStartTlfsmo`. |  |  | [yyyymmddhhmmss] |
-| `autoTimestep` | Auto timestepping. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: 2D (hor. out)</li><li>**`3`**: 3D (hor. out)</li><li>**`5`**: 3D (hor. inout + ver. inout), smallest dt</li></ul> |  |
+| `autoTimestep` | Automatic timestepping limited by the CFL condition. Several options are available controlling which flows are used in the CFL limit. Options 1 and 5 are the default for 2D and 3D models, respectively. | `1` | <ul><li>**`0`**: Use no CFL timestep limit (use constant timestepping)</li><li>**`1`**: For 2D-models; use outflows in CFL timestep limit</li><li>**`3`**: For 3D-models; use horizontal outflows (per cell-layer) in CFL timestep limit</li><li>**`4`**: For 3D-models; use horizontal in- and outflows (per cell-layer) in CFL timestep limit</li><li>**`5`**: For 3D-models; use in- or outflows (per cell-column) in CFL timestep limit</li></ul> |  |
 | `autoTimestepNoStruct` | Exclude structure links (and neighbours) from time step limitation. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `autoTimestepNoQOut` | Exclude negative qin terms from time step limitation. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |
 | `dtFacMax` | Max timestep increase factor in successive time steps. | `1.1` |  |  |
