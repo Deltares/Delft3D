@@ -1175,7 +1175,7 @@ contains
    end subroutine mba_prepare_values
 
    subroutine mba_prepare_names_flows(imba)
-      use m_flowparameters, only: temperature_model, jambalumpmba, jambalumpbnd, jambalumpsrc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc, srcname
       use m_mass_balance_areas
@@ -1248,13 +1248,13 @@ contains
       end if
 
       ! computed evaporation
-      if (jaevap > 0 .and. temperature_model > 3) then
+      if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_name(balance, labelext, labeleva)
       end if
    end subroutine mba_prepare_names_flows
 
    subroutine mba_prepare_values_flows(imba, overall_balance)
-      use m_flowparameters, only: temperature_model, jambalumpmba, jambalumpbnd, jambalumpsrc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc
       use m_mass_balance_areas
@@ -1329,7 +1329,7 @@ contains
       end if
 
       ! computed evaporation
-      if (jaevap > 0 .and. temperature_model > 3) then
+      if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_values(flows, imbf, [0.0_dp, p_mbafloweva(imba)])
       end if
 
@@ -1338,7 +1338,7 @@ contains
    end subroutine mba_prepare_values_flows
 
    subroutine mba_prepare_names_flows_whole_model()
-      use m_flowparameters, only: temperature_model, jambalumpbnd, jambalumpsrc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc, srcname
       use m_mass_balance_areas
@@ -1388,13 +1388,13 @@ contains
       end if
 
       ! computed evaporation
-      if (jaevap > 0 .and. temperature_model > 3) then
+      if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_name(balance, labelext, labeleva)
       end if
    end subroutine mba_prepare_names_flows_whole_model
 
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
-      use m_flowparameters, only: temperature_model, jambalumpbnd, jambalumpsrc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
       use fm_external_forcings_data, only: numsrc
       use m_mass_balance_areas
@@ -1460,7 +1460,7 @@ contains
       end if
 
       ! computed evaporation
-      if (jaevap > 0 .and. temperature_model > 3) then
+      if (jaevap > 0 .and. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          call add_values(flows, imbf, [0.0_dp, sum(p_mbafloweva(:))])
       end if
 
@@ -1469,9 +1469,9 @@ contains
    end subroutine mba_prepare_values_flows_whole_model
 
    subroutine mba_prepare_names_fluxes(imbs, imba)
-      use m_flowparameters, only: temperature_model, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
+         jambalumpbnd, jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc, srcname
-      use m_flowparameters, only: temperature_model
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1559,8 +1559,10 @@ contains
       end if
 
       ! heat flux
-      if (imbs == itemp .and. temperature_model > 1) then
-         call add_name(balance, labelext, labelheatflux)
+      if (imbs == itemp) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call add_name(balance, labelext, labelheatflux)
+         end if
       end if
 
       ! processes
@@ -1620,9 +1622,9 @@ contains
    end subroutine mba_prepare_names_fluxes
 
    subroutine mba_prepare_values_fluxes(imbs, imba, overall_balance)
-      use m_flowparameters, only: temperature_model, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
+         jambalumpbnd, jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc
-      use m_flowparameters, only: temperature_model
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, stochi
@@ -1735,8 +1737,10 @@ contains
       end if
 
       ! heat flux
-      if (imbs == itemp .and. temperature_model > 1) then
-         call add_values(fluxes, imbf, p_mbafluxheat(1:2, imba))
+      if (imbs == itemp) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call add_values(fluxes, imbf, p_mbafluxheat(1:2, imba))
+         end if
       end if
 
       ! processes
@@ -1793,9 +1797,9 @@ contains
    end subroutine mba_prepare_values_fluxes
 
    subroutine mba_prepare_names_fluxes_whole_model(imbs)
-      use m_flowparameters, only: temperature_model, jambalumpmba, jambalumpbnd, jambalumpsrc, jambalumpproc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
+         jambalumpbnd, jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc, srcname
-      use m_flowparameters, only: temperature_model
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1861,8 +1865,10 @@ contains
       end if
 
       ! heat flux
-      if (imbs == itemp .and. temperature_model > 1) then
-         call add_name(balance, labelext, labelheatflux)
+      if (imbs == itemp) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call add_name(balance, labelext, labelheatflux)
+         end if
       end if
 
       ! processes
@@ -1909,9 +1915,9 @@ contains
    end subroutine mba_prepare_names_fluxes_whole_model
 
    subroutine mba_prepare_values_fluxes_whole_model(imbs, overall_balance)
-      use m_flowparameters, only: temperature_model, jambalumpbnd, jambalumpsrc, jambalumpproc
+      use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, &
+         jambalumpsrc, jambalumpproc
       use fm_external_forcings_data, only: numsrc
-      use m_flowparameters, only: temperature_model
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, stochi
@@ -2015,8 +2021,10 @@ contains
       end if
 
       ! heat flux
-      if (imbs == itemp .and. temperature_model > 1) then
-         call add_values(fluxes, imbf, sum(p_mbafluxheat(1:2, :), 2))
+      if (imbs == itemp) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call add_values(fluxes, imbf, sum(p_mbafluxheat(1:2, :), 2))
+         end if
       end if
 
       ! processes

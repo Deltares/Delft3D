@@ -2595,7 +2595,7 @@ contains
             end if
          end if
 
-         if (temperature_model > 0 .and. jahistem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE .and. jahistem > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_TEM1:IPNT_TEM1 + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TEMPERATURE), temp_pointer)
@@ -2676,23 +2676,28 @@ contains
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_AIR_DENSITY), valobs(:, IPNT_AIRDENSITY))
          end if
 
-         ! Heat flux model
-         if (temperature_model > 1 .and. jahisheatflux > 0) then
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WIND), valobs(:, IPNT_WIND))
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
-            if (temperature_model == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RHUM), valobs(:, IPNT_RHUM))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CLOU), valobs(:, IPNT_CLOU))
+         ! Write heat flux model statistical output
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            if (jahisheatflux > 0) then
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WIND), valobs(:, IPNT_WIND))
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
+               
+               if (temperature_model == TEMPERATURE_MODEL_EXCESS) then
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QSUN), valobs(:, IPNT_QSUN))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QEVA), valobs(:, IPNT_QEVA))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QCON), valobs(:, IPNT_QCON))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QLONG), valobs(:, IPNT_QLON))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFREVA), valobs(:, IPNT_QFRE))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFRCON), valobs(:, IPNT_QFRC))
+               end if
+
+               if (temperature_model == TEMPERATURE_MODEL_COMPOSITE .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RHUM), valobs(:, IPNT_RHUM))
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CLOU), valobs(:, IPNT_CLOU))
+               end if
+
+               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QTOT), valobs(:, IPNT_QTOT))
             end if
-            if (temperature_model == 5) then
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QSUN), valobs(:, IPNT_QSUN))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QEVA), valobs(:, IPNT_QEVA))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QCON), valobs(:, IPNT_QCON))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QLONG), valobs(:, IPNT_QLON))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFREVA), valobs(:, IPNT_QFRE))
-               call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QFRCON), valobs(:, IPNT_QFRC))
-            end if
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QTOT), valobs(:, IPNT_QTOT))
          end if
 
          ! Ice model

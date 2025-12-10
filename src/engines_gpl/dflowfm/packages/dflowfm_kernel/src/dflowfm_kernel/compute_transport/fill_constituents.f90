@@ -43,7 +43,8 @@ contains
 
    subroutine fill_constituents(jas) ! if jas == 1 do sources
       use m_apply_sediment_bc, only: apply_sediment_bc
-      use m_transport, only: ISED1, ISPIR, NUMCONST, ISALT, ITEMP, ITRA1, ITRAN, constituents, const_sour, const_sink, difsedu, molecular_diffusion_coeff
+      use m_transport, only: ISED1, ISPIR, NUMCONST, ISALT, ITEMP, ITRA1, ITRAN, constituents, const_sour, const_sink, difsedu, &
+         molecular_diffusion_coeff
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
@@ -56,7 +57,8 @@ contains
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_sferic, only: jsferic, fcorio
       use m_flowtimes, only: dts
-      use m_flowparameters, only: janudge, jasecflow, temperature_model, jaequili, epshu, epshs, testdryflood, icorio
+      use m_flowparameters, only: janudge, jasecflow, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
+         TEMPERATURE_MODEL_COMPOSITE, jaequili, epshu, epshs, testdryflood, icorio
       use m_laterals, only: add_lateral_load_and_sink, apply_transport_is_used
       use m_missing, only: dmiss
       use timers, only: timon, timstrt, timstop
@@ -173,7 +175,7 @@ contains
             if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
 
 !        temperature
-            if (temperature_model > 1) then
+            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                if (use_salinity_freezing_point) then ! allowing cooling below 0 degrees
                   const_sour(ITEMP, k) = heatsrc(k) * dvoli
                else ! default behaviour since 2017
@@ -250,7 +252,7 @@ contains
          end if
       end do
 
-      if (jamba > 0 .and. temperature_model > 0) then ! Positive and negative sums for jamba, checking just once
+      if (jamba > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then ! Positive and negative sums for jamba, checking just once
 
          do kk = 1, Ndx
             imba = mbadefdomain(kk)

@@ -392,7 +392,8 @@ contains
       use m_alloc
       use m_flow, only: kmx
       use m_flowgeom, only: Ndxi, ba
-      use m_flowparameters, only: jasal, temperature_model, jawave, jawaveSwartDelwaq
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, jawave, &
+         jawaveSwartDelwaq
       use fm_external_forcings_data
       use m_transport
       use m_partitioninfo
@@ -571,7 +572,7 @@ contains
 
       icon = index_in_array(ctemperatureflow, coname_sub)
       isftem = 0
-      if (temperature_model >= 1) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          if (icon > 0) then
             num_spatial_time_fuctions = num_spatial_time_fuctions + 1
             isftem = num_spatial_time_fuctions
@@ -660,7 +661,7 @@ contains
       icon = index_in_array(cirradiation, coname_sub)
       isfradsurf = 0
       no_reflection_wq = .false.
-      if (temperature_model == 5) then
+      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
          if (icon > 0) then
             num_spatial_time_fuctions = num_spatial_time_fuctions + 1
             isfradsurf = num_spatial_time_fuctions

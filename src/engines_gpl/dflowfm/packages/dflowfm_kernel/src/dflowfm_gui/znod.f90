@@ -113,7 +113,7 @@ contains
       else if (nodval == 11) then
          if (jasal > 0) znod = constituents(isalt, k)
       else if (nodval == 12) then
-         if (temperature_model > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             if (jafahrenheit == 0) then
                znod = constituents(itemp, k)
             else
@@ -206,7 +206,7 @@ contains
 
       else if (nodval == 37) then
 
-         if (Soiltempthick > 0 .and. temperature_model > 0) then
+         if (Soiltempthick > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
             znod = tbed(kk)
          else
             znod = same(k)
@@ -229,13 +229,13 @@ contains
 
          znod = rain(kk)
 
-      else if (nodval == 41 .and. temperature_model > 0) then
+      else if (nodval == 41 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          znod = relative_humidity(kk)
-      else if (nodval == 42 .and. temperature_model > 0) then
+      else if (nodval == 42 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          znod = air_temperature(kk)
-      else if (nodval == 43 .and. temperature_model > 0) then
+      else if (nodval == 43 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
          znod = cloudiness(kk)
-      else if (nodval == 44 .and. temperature_model > 0 .and. allocated(solar_radiation)) then
+      else if (nodval == 44 .and. temperature_model /= TEMPERATURE_MODEL_NONE .and. allocated(solar_radiation)) then
          znod = solar_radiation(kk)
       else if (nodval == 45 .and. NUMCONST > 0) then
          if (iconst_cur > 0 .and. iconst_cur <= NUMCONST) then

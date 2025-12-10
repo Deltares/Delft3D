@@ -216,8 +216,10 @@ contains
          if (ierror /= 0) goto 888
       end if
 
-      if (temperature_model > 1 .and. jaheat_eachstep == 1) then
-         call heatu(tim1bnd / 3600.0_dp) ! from externalforcings
+      if (jaheat_eachstep == 1) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+            call heatu(tim1bnd / 3600.0_dp) ! from externalforcings
+         end if
       end if
       call update_icecover()
 
