@@ -146,7 +146,8 @@ contains
          end if
       end if
 
-      if (jatem == 5) then ! Do only for composite heat flux model
+      ! Set humidity or dewpoint, airtemperature and cloudiness forcings for composite heat flux model
+      if (jatem == 5) then
          call set_temperature_models(time_in_seconds)
       end if
 
@@ -275,7 +276,7 @@ contains
 !> set_temperature_models
    subroutine set_temperature_models(time_in_seconds)
       use precision, only: dp
-      use messagehandling, only: LEVEL_WARN, mess
+      use messagehandling, only: LEVEL_ERROR, mess
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
@@ -323,10 +324,11 @@ contains
          relative_humidity = calculate_relative_humidity(dew_point_temperature, air_temperature)
       end if
 
+      ! Raise error if neither of the required forcings for the composite heat flux model have been provided
       if (.not. foundtempforcing) then
-         call mess(LEVEL_WARN, &
-                   'No humidity or dewpoint, airtemperature and cloudiness forcing found, setting temperature model [physics:Temperature] = 1 (Only transport)')
-         jatem = 1
+         call mess(LEVEL_ERROR, &
+                   'Missing humidity or dewpoint, airtemperature and cloudiness forcing required by composite heat flux model.')
+         success = .false.
       end if
 
    end subroutine set_temperature_models
