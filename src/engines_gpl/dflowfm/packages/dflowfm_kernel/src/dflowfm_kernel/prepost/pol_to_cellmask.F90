@@ -1,4 +1,4 @@
-!----- AGPL --------------------------------------------------------------------
+﻿ !----- AGPL --------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2017-2025.
 !
@@ -27,16 +27,11 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
-!> update cellmask from samples
-!> a cell is dry when it is:
-!>   1) inside ANY "1"-polygon (drypnts), OR
-!>   2) outside ALL "-1"-polygons (enclosures)
+!> Wrapper around cellmask_from_polygon_set that uses OpenMP to parallelize the loop over all points if not in MPI mode
 module m_pol_to_cellmask
-
    use precision, only: dp
+   use m_cellmask_from_polygon_set, only: cellmask_from_polygon_set_init, cellmask_from_polygon_set_cleanup, cellmask_from_polygon_set
+
    implicit none
 
    private
@@ -47,47 +42,27 @@ contains
 
    subroutine pol_to_cellmask()
       use network_data, only: cellmask, nump1d2d, npl, nump, xzw, yzw, xpl, ypl, zpl
-      use m_readyy, only: readyy
-      use m_missing, only: dmiss, JINS
-      use geometry_module, only: dbpinpol_optinside_perpol
+      use m_alloc, only: realloc
 
-      integer :: in, k, KMOD
-      integer :: num
+      integer :: k
 
-      if (allocated(cellmask)) then
-         deallocate (cellmask)
+      if (NPL == 0) then
+         return
       end if
-      allocate (cellmask(nump1d2d))
-      cellmask = 0
 
-      if (NPL == 0) return ! no polygon
+      call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
 
-      call READYY('Applying polygon cellmask', 0.0_dp)
-      KMOD = max(1, NUMP / 100)
+      call cellmask_from_polygon_set_init(NPL, xpl, ypl, zpl)
 
-      !  generate cell mask
-      in = -1
+      !> Dynamic scheduling in case of unequal work, chunksize guided
+      !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do k = 1, nump
-!     check if cell is in any "zpl>0" polygons
-         call dbpinpol_optinside_perpol(xzw(k), yzw(k), 0, 1, in, num, dmiss, JINS, NPL, xpl, ypl, zpl)
-
-         if (in == 0) then
-!        check if cell is outside all "zpl<0" polygons (enclosure)
-            call dbpinpol_optinside_perpol(xzw(k), yzw(k), 0, -1, in, num, dmiss, JINS, NPL, xpl, ypl, zpl) ! in=0: outside all "-1"-pol
-            if (num > 0) in = 1 - in ! only if at least one "-1"-type polygon was encountered
-         end if
-
-         if (in > 0) then
-!        mask cell
-            cellmask(k) = 1
-         end if
-         if (mod(k, KMOD) == 0) then
-            call READYY(' ', min(1.0_dp, real(k, kind=dp) / nump))
-         end if
+         cellmask(k) = cellmask_from_polygon_set(xzw(k), yzw(k))
       end do
-      call READYY(' ', -1.0_dp)
+      !$OMP END PARALLEL DO
 
-      return
+      call cellmask_from_polygon_set_cleanup()
+
    end subroutine pol_to_cellmask
 
 end module m_pol_to_cellmask
