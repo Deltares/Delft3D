@@ -155,7 +155,7 @@ contains
 
       ! Set humidity or dewpoint, airtemperature and cloudiness forcings for composite heat flux model
       if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
-         call set_temperature_models(time_in_seconds)
+         call update_meteo_forcing(time_in_seconds)
       end if
 
       if (ja_friction_coefficient_time_dependent > 0) then
@@ -282,8 +282,8 @@ contains
 
    end subroutine set_external_forcings
 
-!> set_temperature_models
-   subroutine set_temperature_models(time_in_seconds)
+   !> Update the relative humidity, dew point temperature, air temperature, cloudiness, solar radiation, and long wave radiation forcings used in the composite heat flux model
+   subroutine update_meteo_forcing(time_in_seconds)
       use precision, only: dp
       use messagehandling, only: LEVEL_ERROR, mess
 
@@ -340,7 +340,7 @@ contains
          success = .false.
       end if
 
-   end subroutine set_temperature_models
+   end subroutine update_meteo_forcing
 
 !> get_timespace_value_by_name_and_consider_success_value
    subroutine get_timespace_value_by_name_and_consider_success_value(name, time_in_seconds)
