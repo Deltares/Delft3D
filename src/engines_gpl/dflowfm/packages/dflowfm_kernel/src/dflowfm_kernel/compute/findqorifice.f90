@@ -86,11 +86,14 @@ contains
 
       do k = 1, 50
 
-         ha = hg; hb = h3; hgc = hg
+         ha = hg
+         hb = h3
+         hgc = hg
          call qorifdif(hg, d, h1, h3, ha, qda)
          call qorifdif(hg, d, h1, h3, hb, qdb)
 
-         num = 0; qdc = 1.0e9_dp
+         num = 0
+         qdc = 1.0e9_dp
          do while (abs(qdc) > 1.0e-6_dp .and. abs(qda - qdb) > 1.0e-6_dp .and. num < 50)
 
             num = num + 1
@@ -104,9 +107,11 @@ contains
             hc = min(hc, h3)
             call qorifdif(hg, d, h1, h3, hc, qdc)
             if (qda * qdc > 0) then
-               ha = hc; qda = qdc
+               ha = hc
+               qda = qdc
             else if (qdb * qdc > 0) then
-               hb = hc; qdb = qdc
+               hb = hc
+               qdb = qdc
             end if
 
          end do
@@ -118,7 +123,11 @@ contains
          q = 0.5_dp * (qa + qb)
          qer = abs(q - qc)
          if (qer < qermin) then
-            qermin = qer; qf = q; hgf = hg; h2f = h2; nummin = num
+            qermin = qer
+            qf = q
+            hgf = hg
+            h2f = h2
+            nummin = num
          end if
 
          hg = hg + 0.01_dp * a

@@ -73,20 +73,34 @@ contains
       jacancelled = 0
       NLEVEL = 4
 
-      OPTION(1) = 'MAXIMUM NUMBER OF GRIDCELLS ALONG SPLINE'; IT(1 * 2) = 2
-      OPTION(2) = 'MAXIMUM NUMBER OF GRIDCELLS PERP. SPLINE'; IT(2 * 2) = 2
-      OPTION(3) = 'ASPECT RATIO OF FIRST GRID LAYER        '; IT(3 * 2) = 6
-      OPTION(4) = 'GRID LAYER HEIGHT GROWTH FACTOR         '; IT(4 * 2) = 6
-      OPTION(5) = 'MAXIMUM GRID LENGTH ALONG CENTER SPLINE '; IT(5 * 2) = 6
-      OPTION(6) = 'CURVATURE-ADAPTED GRID SPACING     (0,1)'; IT(6 * 2) = 2
-      OPTION(7) = 'GROW GRID OUTSIDE FIRST PART       (0,1)'; IT(7 * 2) = 2
-      OPTION(8) = 'MAX. NUM. OF GRIDCELL PERP. IN UNI. PART'; IT(8 * 2) = 2
-      OPTION(9) = '                                        '; IT(9 * 2) = 2
-      OPTION(10) = 'GRIDPTS. ON TOP OF EACH OTHER TOLERANCE '; IT(10 * 2) = 6
-      OPTION(11) = 'MINIMUM ABS. SINE OF CROSSING ANGLES   '; IT(11 * 2) = 6
-      OPTION(12) = 'PREVENT COLL.S W/OTHER GRIDPARTS  (0,1) '; IT(12 * 2) = 2
-      OPTION(13) = '                                        '; IT(13 * 2) = 2
-      OPTION(14) = 'UNIFORM GRIDSIZE (NETBND2GRID ONLY) (m) '; IT(14 * 2) = 6
+      OPTION(1) = 'MAXIMUM NUMBER OF GRIDCELLS ALONG SPLINE'
+      IT(1 * 2) = 2
+      OPTION(2) = 'MAXIMUM NUMBER OF GRIDCELLS PERP. SPLINE'
+      IT(2 * 2) = 2
+      OPTION(3) = 'ASPECT RATIO OF FIRST GRID LAYER        '
+      IT(3 * 2) = 6
+      OPTION(4) = 'GRID LAYER HEIGHT GROWTH FACTOR         '
+      IT(4 * 2) = 6
+      OPTION(5) = 'MAXIMUM GRID LENGTH ALONG CENTER SPLINE '
+      IT(5 * 2) = 6
+      OPTION(6) = 'CURVATURE-ADAPTED GRID SPACING     (0,1)'
+      IT(6 * 2) = 2
+      OPTION(7) = 'GROW GRID OUTSIDE FIRST PART       (0,1)'
+      IT(7 * 2) = 2
+      OPTION(8) = 'MAX. NUM. OF GRIDCELL PERP. IN UNI. PART'
+      IT(8 * 2) = 2
+      OPTION(9) = '                                        '
+      IT(9 * 2) = 2
+      OPTION(10) = 'GRIDPTS. ON TOP OF EACH OTHER TOLERANCE '
+      IT(10 * 2) = 6
+      OPTION(11) = 'MINIMUM ABS. SINE OF CROSSING ANGLES   '
+      IT(11 * 2) = 6
+      OPTION(12) = 'PREVENT COLL.S W/OTHER GRIDPARTS  (0,1) '
+      IT(12 * 2) = 2
+      OPTION(13) = '                                        '
+      IT(13 * 2) = 2
+      OPTION(14) = 'UNIFORM GRIDSIZE (NETBND2GRID ONLY) (m) '
+      IT(14 * 2) = 6
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
       HELPM(1) = 'INTEGER VALUE <                                             '
@@ -110,10 +124,14 @@ contains
 
       IR = 0
       do I = 1, NUMPARACTUAL
-         IL = IR + 1; IR = IL + 1
-         IS(IL) = 82; IS(IR) = 10
-         IX(IL) = 10; IX(IR) = 100
-         IY(IL) = 2 * I; IY(IR) = 2 * I
+         IL = IR + 1
+         IR = IL + 1
+         IS(IL) = 82
+         IS(IR) = 10
+         IX(IL) = 10
+         IX(IR) = 100
+         IY(IL) = 2 * I
+         IY(IR) = 2 * I
          IT(IL) = 1001 ! ir staat hierboven
       end do
 

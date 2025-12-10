@@ -58,7 +58,8 @@ contains
          qsrck = qsrc(n)
 
          if (kk > 0) then ! FROM Point
-            k = ksrc(2, n); dvoli = 1.0_dp / max(vol1(k), dtol)
+            k = ksrc(2, n)
+            dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then ! FROM k to k2
                turkinws(k) = turkinws(k) - dts * qsrck * dvoli * turkinws(k)
             else if (qsrck < 0) then ! FROM k2 to k
@@ -67,7 +68,8 @@ contains
          end if
 
          if (kk2 > 0) then ! TO Point
-            k = ksrc(5, n); dvoli = 1.0_dp / max(vol1(k), dtol)
+            k = ksrc(5, n)
+            dvoli = 1.0_dp / max(vol1(k), dtol)
             if (qsrck > 0) then
                turkinws(k) = turkinws(k) + dts * qsrck * dvoli * 0.5_dp * (qsrck / arsrc(n))**2
             else if (qsrck < 0) then

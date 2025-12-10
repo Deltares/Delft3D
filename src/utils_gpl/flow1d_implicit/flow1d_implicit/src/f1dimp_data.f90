@@ -36,25 +36,12 @@ module m_f1dimp_data
    ! Contains variables and parameters related to flow 1d implicit module
    !
    use precision
-   !use m_flowgeom, only: tnode !you cannot because <flow1d_implicit> project does not depend on <dflowfm_kernel>
+   use m_network, only: t_network
    
    implicit none
    
-   !public f1dimppar_type, tnode
    public f1dimppar_type
-   
-   !!FM1DIMP2DO: this is a copy of the <type> in <m_flowgeom>. It cannot be called the same, as both are available in <initialize_flow1d_implicit>
-   !type tnode_sre                                          !< node administration
-   !  integer                         :: lnx            !< max nr of links attached to this node
-   !  integer, allocatable            :: ln (:)         !< linknrs attached to this node, >0: to this flownode, <0: from this flownode
-   !
-   !  integer, allocatable            :: nod(:)         !< Mapping to net nodes
-   !  double precision, allocatable   :: x  (:)         !< for now, this is only for quick/aligned plotting, the corners of a cell
-   !  double precision, allocatable   :: y  (:)         !< for now, this is only for quick/aligned plotting, the corners of a cell
-   !  integer                         :: nwx            !< nr of walls attached
-   !  integer, allocatable            :: nw (:)         !< wallnrs attached to this node
-   !end type tnode_sre
- 
+    
    type f1dimppar_type
 
       ! 
@@ -95,8 +82,8 @@ module m_f1dimp_data
       
       integer                          :: istep                  !<  Current time step number (at t n+1 ) 
       !integer, dimension(2)            :: itim                   !<   Actual time level (at t n+1 ) expressed in date and time. Format:
-      !                                                               !– itim(1) = YYYYMMDD (year,month,day)
-      !                                                               !– itim(2) = HHMMSSHH (hour,minute,second, hundredth of a second)
+      !                                                               !â€“ itim(1) = YYYYMMDD (year,month,day)
+      !                                                               !â€“ itim(2) = HHMMSSHH (hour,minute,second, hundredth of a second)
       
       double precision                :: time                   !<  Actual time level (at t n+1 ) in seconds.
       double precision                :: dtf                    !<  Flow time step in seconds.     
@@ -339,24 +326,20 @@ module m_f1dimp_data
                                                                  !       (6,j) = Correction coefficient cw.
                                                                  !       (7,j) = Submergence limit Slim.
                                                                  !       (8,j) = Table pointer for drowned reduction
+
                                                                  !               curve f(h2/h1).
+      !*******
+      !network
+      !*******
+      type(t_network), pointer :: network
+      
       !*******
       !debug variables
       !*******
       integer :: fm1dimp_debug_k1 
       integer :: debug_wr 
-
-      !*******
-      !stucture variable
-      !*******
-      !type(tnode_sre), allocatable :: nd_sre(:)
-      
-
       
    end type f1dimppar_type
    
-   !type nd_type
-   !    integer, allocatable, dimension(:) :: ln
-   !end type nd_type
       
 end module m_f1dimp_data

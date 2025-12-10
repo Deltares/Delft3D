@@ -76,7 +76,10 @@ contains
       if (jsferic == 1) then
          ! DLENPOL and AREPOL are in metres, whereas Triangle gets spherical
          ! coordinates, so first scale desired TRIAREA back to spherical.
-         xplmin = 0.0_dp; xplmax = dlenpol / 4.0_dp; yplmin = 0.0_dp; yplmax = dlenpol / 4.0_dp
+         xplmin = 0.0_dp
+         xplmax = dlenpol / 4.0_dp
+         yplmin = 0.0_dp
+         yplmax = dlenpol / 4.0_dp
          call get_startend(NPL, XPL, YPL, n, nn, dmiss)
          if (nn > n) then
             xplmin = minval(xpl(n:nn))
@@ -105,7 +108,8 @@ contains
          if (allocated(INDX)) then
             deallocate (INDX)
          end if
-         allocate (INDX(3, NTX), STAT=IERR); INDX = 0
+         allocate (INDX(3, NTX), STAT=IERR)
+         INDX = 0
          call AERR('INDX(3,NTX)', IERR, int(3 * NTX))
 
          call realloc(EDGEINDX, [2, Ntx], keepExisting=.false., fill=0, stat=ierr)
@@ -133,11 +137,13 @@ contains
 
       IN = -1 ! EN BIJPLUGGEN
       do N = NS1, NS1 + NN
-         XP = XS(N); YP = YS(N)
+         XP = XS(N)
+         YP = YS(N)
          call DBPINPOL(XP, YP, IN, dmiss, JINS, NPL, xpl, ypl, ypl)
          if (IN == 1) then
             NS = NS + 1
-            XS(NS) = XP; YS(NS) = YP
+            XS(NS) = XP
+            YS(NS) = YP
          end if
       end do
 

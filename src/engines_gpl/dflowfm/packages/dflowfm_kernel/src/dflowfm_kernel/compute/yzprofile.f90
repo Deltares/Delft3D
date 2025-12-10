@@ -65,7 +65,10 @@ contains
 
       numseg = size(profiles1D(ka)%y) - 1
 
-      area = 0.0_dp; width = 0.0_dp; convall = 0.0_dp; perim = 0.0_dp
+      area = 0.0_dp
+      width = 0.0_dp
+      convall = 0.0_dp
+      perim = 0.0_dp
 
       jac = 0
       if (japerim == 1) then
@@ -79,9 +82,11 @@ contains
       do k = 1, numseg
 
          if (profiles1D(ka)%z(k) < profiles1D(ka)%z(k + 1)) then
-            BL1 = profiles1D(ka)%z(k); BL2 = profiles1D(ka)%z(k + 1)
+            BL1 = profiles1D(ka)%z(k)
+            BL2 = profiles1D(ka)%z(k + 1)
          else
-            BL2 = profiles1D(ka)%z(k); BL1 = profiles1D(ka)%z(k + 1)
+            BL2 = profiles1D(ka)%z(k)
+            BL1 = profiles1D(ka)%z(k + 1)
          end if
          hpr2 = hpr - bl1 ! TODO: LUMBRICUS: HK: is hpr niet een hu en bl een echte/nep BL?
 

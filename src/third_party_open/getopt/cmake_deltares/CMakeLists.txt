@@ -1,6 +1,6 @@
-set(source_path "${CMAKE_CURRENT_SOURCE_DIR}/..")
-
-set(public_include_path "${CMAKE_CURRENT_SOURCE_DIR}/..")
+set(source_path ${CMAKE_CURRENT_SOURCE_DIR}/..)
+set(getopt_include_path ${source_path})
+set(public_include_path ${source_path})
 
 project(getopt)
 set(getopt_INSTALL FALSE)

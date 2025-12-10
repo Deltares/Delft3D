@@ -258,7 +258,8 @@ contains
                         else
                            Xc(I, J) = (X41 + X42) / 2
                            Yc(I, J) = (Y41 + Y42) / 2
-                           write (msgbuf, *) 'BLOCK VORM VERLIES'; call dbg_flush()
+                           write (msgbuf, *) 'BLOCK VORM VERLIES'
+                           call dbg_flush()
                         end if
                      end if
                   end if
@@ -270,7 +271,7 @@ contains
          call PUTARR(Xc, XH, MMAX, NMAX)
          call PUTARR(Yc, YH, MMAX, NMAX)
          if (NDRAW(8) == 0) then
-            call READYY(' ', dble(K) / dble(ITSMO))
+            call READYY(' ', real(K, kind=dp) / real(ITSMO, kind=dp))
          else
             call TEKGRD(Xc, Yc, mmax, nmax, M1, N1, M2, N2, NCOLDG, NDRAW(38), -1, mc) ! key=-1 is unknown (but unused anyway)
          end if

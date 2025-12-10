@@ -62,14 +62,20 @@ contains
 
       if (japerim == 0) then
 
-         bob1 = bob(1, L); bob2 = bob(2, L)
+         bob1 = bob(1, L)
+         bob2 = bob(2, L)
          if (bob1 < bob2) then
-            BL1 = bob1; BL2 = bob2
+            BL1 = bob1
+            BL2 = bob2
          else
-            BL1 = bob2; BL2 = bob1
+            BL1 = bob2
+            BL2 = bob1
          end if
-         wu2 = wu(L); b21 = BL2 - BL1; ai = b21 / wu2
-         k1 = ln(1, L); k2 = ln(2, L)
+         wu2 = wu(L)
+         b21 = BL2 - BL1
+         ai = b21 / wu2
+         k1 = ln(1, L)
+         k2 = ln(2, L)
 
          hpr1 = s1(k1) - BL1
          if (hpr1 > 0) then
@@ -89,31 +95,39 @@ contains
 
       else if (hu(L) > 0.0_dp) then
 
-         bob1 = bob(1, L); bob2 = bob(2, L)
+         bob1 = bob(1, L)
+         bob2 = bob(2, L)
 
          if (bob1 < bob2) then
-            BL1 = bob1; BL2 = bob2
+            BL1 = bob1
+            BL2 = bob2
          else
-            BL1 = bob2; BL2 = bob1
+            BL1 = bob2
+            BL2 = bob1
          end if
          wu2 = wu(L)
 
-         b21 = BL2 - BL1; ai = b21 / wu2
-         k1 = ln(1, L); k2 = ln(2, L)
+         b21 = BL2 - BL1
+         ai = b21 / wu2
+         k1 = ln(1, L)
+         k2 = ln(2, L)
 
          hpr1 = get_hpr_nostruc(L)
 
          if (jaconveyance2D > 0) then
 
-            frcn = frcu(L); friction_type = ifrcutp(L)
+            frcn = frcu(L)
+            friction_type = ifrcutp(L)
 
             jaconv = jaconveyance2D
 
             if (jaconv >= 3) then !> see sysdoc5, 2D conveyance approach I , II
                if (bob(1, L) < bob(2, L)) then
-                  k3 = lncn(1, L); k4 = lncn(2, L)
+                  k3 = lncn(1, L)
+                  k4 = lncn(2, L)
                else
-                  k3 = lncn(2, L); k4 = lncn(1, L)
+                  k3 = lncn(2, L)
+                  k4 = lncn(1, L)
                end if
 
                !bb1 = sign(1d0, bob(2,L) - bob(1,L) )   ! faster coding?

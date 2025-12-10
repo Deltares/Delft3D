@@ -97,9 +97,13 @@ contains
          ic = lne(i, L)
          N = netcell(ic)%N
          if (N /= 4) cycle
-         kk = 1; do while (netcell(ic)%lin(kk) /= L .and. kk < N); kk = kk + 1; end do
+         kk = 1
+         do while (netcell(ic)%lin(kk) /= L .and. kk < N)
+         kk = kk + 1
+         end do
          if (netcell(ic)%lin(kk) /= L) cycle
-         kknext = kk + 2; if (kknext > N) kknext = kknext - N
+         kknext = kk + 2
+         if (kknext > N) kknext = kknext - N
          Nnext = Nnext + 1
          Lnext(Nnext) = netcell(ic)%lin(kknext)
       end do

@@ -429,7 +429,8 @@ contains
       integer :: l1
 
       ja = 0
-      key2 = key; call lowcas(key2)
+      key2 = key
+      call lowcas(key2)
 
 10    continue
       read (minp, '(a255)', end=999, err=998, iostat=iostat) rec

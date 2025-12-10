@@ -101,7 +101,7 @@ contains
       ! Start writing the set of polyline(s).
       KMOD = max(1, NSH / 100)
 
-      write (cdigits, '(i1)') int(floor(log10(dble(npli)) + 1)) ! nr of digits in npli
+      write (cdigits, '(i1)') int(floor(log10(real(npli, kind=dp)) + 1)) ! nr of digits in npli
 
       if (jaNCLAN .or. jaZSH) then
          ncol = 3
@@ -170,7 +170,7 @@ contains
             end if
 
             if (mod(I, KMOD) == 0) then
-               call READYY(' ', min(1d0, dble(I) / max(1, NSH)))
+               call READYY(' ', min(1.0_dp, real(I, kind=dp) / max(1, NSH)))
             end if
          end do ! pts of one polyline
       end do ! all polylines

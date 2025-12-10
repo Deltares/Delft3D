@@ -138,7 +138,8 @@ contains
 
       call allocate_and_associate(source_input, dadpar%dredge_dimension_length, time_dredged, time_ploughed)
 
-      cof0 = 1.0_dp; if (time1 > 0.0_dp) cof0 = time1
+      cof0 = 1.0_dp
+      if (time1 > 0.0_dp) cof0 = time1
       time_dredged = dadpar%tim_dredged / cof0
       time_ploughed = dadpar%tim_ploughed / cof0
 

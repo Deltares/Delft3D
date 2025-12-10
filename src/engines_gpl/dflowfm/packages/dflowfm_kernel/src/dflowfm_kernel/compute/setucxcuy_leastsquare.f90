@@ -34,15 +34,18 @@ contains
       if (allocated(AtWAiAtW)) then
          deallocate (AtWAiAtW)
       end if
-      allocate (AtWAiAtW(9, mmax, lnx), stat=ierr); AtWAiAtW = 0.0_dp
+      allocate (AtWAiAtW(9, mmax, lnx), stat=ierr)
+      AtWAiAtW = 0.0_dp
       if (allocated(ireconstu)) then
          deallocate (ireconstu)
       end if
-      allocate (ireconstu(lnx)); ireconstu = 0
+      allocate (ireconstu(lnx))
+      ireconstu = 0
       if (allocated(ireconstz)) then
          deallocate (ireconstz)
       end if
-      allocate (ireconstz(ndx)); ireconstz = 0
+      allocate (ireconstz(ndx))
+      ireconstz = 0
 
       scale = 1.0_dp
       ireconstu = 0
@@ -50,12 +53,15 @@ contains
 
       do L = 1, lnxi
          m = 0
-         AtWA = 0.0_dp; AtWAi = 0.0_dp; AtW = 0.0_dp
+         AtWA = 0.0_dp
+         AtWAi = 0.0_dp
+         AtW = 0.0_dp
          Amat = 0.0_dp
          Wmat = 0.0_dp
          LDone = 0
          LwDone = 0
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
 
          do L1 = 1, nd(k1)%nwx
             L1a = abs(nd(k1)%nw(L1))
@@ -312,10 +318,13 @@ contains
       real(kind=dp), dimension(:), allocatable :: uxu, uyu
 
       if (.not. allocated(uxu)) then
-         allocate (uxu(lnkx), uyu(lnkx)); uxu = 0.0_dp; uyu = 0.0_dp
+         allocate (uxu(lnkx), uyu(lnkx))
+         uxu = 0.0_dp
+         uyu = 0.0_dp
       end if
 
-      ucx = 0.0_dp; ucy = 0.0_dp
+      ucx = 0.0_dp
+      ucy = 0.0_dp
 
       if (kmx == 0) then !2D
          do L = 1, lnxi
@@ -324,7 +333,8 @@ contains
                cycle
             end if
 
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (ireconstu(L) == 1) then
                call perotnode2d(k1)
                call perotnode2d(k2)
@@ -424,10 +434,12 @@ contains
 
          do L = 1, lnxi
             call getLbotLtop(L, Lb, Lt)
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             do LL = Lb, Lt
                if (ireconstu(L) == 1) then
-                  kk1 = ln(1, LL); kk2 = ln(2, LL)
+                  kk1 = ln(1, LL)
+                  kk2 = ln(2, LL)
                   call perotnode3d(k1, kk1)
                   call perotnode3d(k2, kk2)
                   v(LL) = (1.0_dp - acl(L)) * (-snu(L) * ucx(kk1) + csu(L) * ucy(kk1)) + acl(L) * (-snu(L) * ucx(kk2) + csu(L) * ucy(kk2))
@@ -539,7 +551,8 @@ contains
             v(L) = 0.0_dp
             cycle
          end if
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          if (ireconstu(L) == 1) then
             call perotnode2d(k1)
             call perotnode2d(k2)
@@ -564,7 +577,8 @@ contains
       ucx(k) = 0.0_dp
       ucy(k) = 0.0_dp
       do L1 = 1, nd(k)%lnx
-         L = nd(k)%ln(L1); La = abs(L)
+         L = nd(k)%ln(L1)
+         La = abs(L)
          if (L < 0) then
             ucx(k) = ucx(k) + wcx1(La) * u1(La)
             ucy(k) = ucy(k) + wcy1(La) * u1(La)

@@ -619,7 +619,10 @@ contains
       if (INI == 0) then
          INI = 1
 
-         XMN = 1e30_dp; YMN = 1e30_dp; XMX = -1e30_dp; YMX = -1e30_dp
+         XMN = 1e30_dp
+         YMN = 1e30_dp
+         XMX = -1e30_dp
+         YMX = -1e30_dp
          do I = 1, ndx
             xmn = min(xz(i), xmn)
             xmx = max(xz(i), xmx)
@@ -627,11 +630,15 @@ contains
             ymx = max(yz(i), ymx)
          end do
 
-         i1 = floor(xmn); i2 = floor(xmx) + 1
-         j1 = floor(ymn); j2 = floor(ymx) + 1
+         i1 = floor(xmn)
+         i2 = floor(xmx) + 1
+         j1 = floor(ymn)
+         j2 = floor(ymx) + 1
          if (jatidep == 2) then ! gradient intp., one extra
-            i1 = i1 - 1; i2 = i2 + 1
-            j1 = j1 - 1; j2 = j2 + 1
+            i1 = i1 - 1
+            i2 = i2 + 1
+            j1 = j1 - 1
+            j2 = j2 + 1
          end if
 
          if (jaselfal == 1 .and. jampi == 1) then
@@ -664,10 +671,14 @@ contains
 !         allocate ( area(i1:i2,j1:j2), stat=ierr)
             do i = i1, i2
                do j = j1, j2
-                  xx(1) = dble(i) - 0.5_dp; yy(1) = dble(j) - 0.5_dp
-                  xx(2) = dble(i) + 0.5_dp; yy(2) = dble(j) - 0.5_dp
-                  xx(3) = dble(i) + 0.5_dp; yy(3) = dble(j) + 0.5_dp
-                  xx(4) = dble(i) - 0.5_dp; yy(4) = dble(j) + 0.5_dp
+                  xx(1) = real(i, kind=dp) - 0.5_dp
+                  yy(1) = real(j, kind=dp) - 0.5_dp
+                  xx(2) = real(i, kind=dp) + 0.5_dp
+                  yy(2) = real(j, kind=dp) - 0.5_dp
+                  xx(3) = real(i, kind=dp) + 0.5_dp
+                  yy(3) = real(j, kind=dp) + 0.5_dp
+                  xx(4) = real(i, kind=dp) - 0.5_dp
+                  yy(4) = real(j, kind=dp) + 0.5_dp
 
 !                call dAREAN( XX, YY, 4, DAREA, DLENGTH, DLENMX )
 !                area(i,j) = darea
@@ -699,8 +710,10 @@ contains
       end if
 
       do n = 1, ndx
-         m1 = floor(xz(n)); m2 = m1 + 1
-         n1 = floor(yz(n)); n2 = n1 + 1
+         m1 = floor(xz(n))
+         m2 = m1 + 1
+         n1 = floor(yz(n))
+         n2 = n1 + 1
          di = xz(n) - m1
          dj = yz(n) - n1
          f11 = (1.0_dp - di) * (1.0_dp - dj)
@@ -746,8 +759,10 @@ contains
          end do
 
          do L = 1, Lnx
-            m1 = floor(xu(L)); m2 = m1 + 1
-            n1 = floor(yu(L)); n2 = n1 + 1
+            m1 = floor(xu(L))
+            m2 = m1 + 1
+            n1 = floor(yu(L))
+            n2 = n1 + 1
             di = xu(L) - m1
             dj = yu(L) - n1
             f11 = (1.0_dp - di) * (1.0_dp - dj)
@@ -818,8 +833,8 @@ contains
             call realloc(kk, [Ni, Nj], keepExisting=.false., fill=0)
             do j = j1, j2
                do i = i1, i2
-                  xx(i - i1 + 1, j - j1 + 1) = dble(i)
-                  yy(i - i1 + 1, j - j1 + 1) = dble(j)
+                  xx(i - i1 + 1, j - j1 + 1) = real(i, kind=dp)
+                  yy(i - i1 + 1, j - j1 + 1) = real(j, kind=dp)
                end do
             end do
             call find_nearest_flownodes_kdtree(treeglob, Ni * Nj, xx, yy, kk, jakdtree, INDTP_2D, ierror)
@@ -841,8 +856,8 @@ contains
                   if (jakdtree == 1) then
                      k = kk(i - i1 + 1, j - j1 + 1)
                   else
-                     x = dble(i)
-                     y = dble(j)
+                     x = real(i, kind=dp)
+                     y = real(j, kind=dp)
                      call in_flowcell(x, y, K)
                   end if
 
@@ -870,8 +885,8 @@ contains
                   if (jakdtree == 1) then
                      k = kk(i - i1 + 1, j - j1 + 1)
                   else
-                     x = dble(i)
-                     y = dble(j)
+                     x = real(i, kind=dp)
+                     y = real(j, kind=dp)
                      call in_flowcell(x, y, K)
                   end if
 
@@ -1080,7 +1095,7 @@ contains
             disR = (ii - i1) - (iR - i2)
          end if
 
-         alf = dble(disL) / dble(disL - disR)
+         alf = real(disL, kind=dp) / real(disL - disR, kind=dp)
 
       end if
    end subroutine findleftright
@@ -3505,8 +3520,10 @@ contains
          FACTORIAL(6) = 720.0_dp
 
          if (allocated(tideuc)) deallocate (tideuc, tideus)
-         allocate (tideuc(0:3, 2:3, IDIM1), STAT=IERR); tideuc = 0.0_dp
-         allocate (tideus(0:3, 2:3, IDIM1), STAT=IERR); tideus = 0.0_dp
+         allocate (tideuc(0:3, 2:3, IDIM1), STAT=IERR)
+         tideuc = 0.0_dp
+         allocate (tideus(0:3, 2:3, IDIM1), STAT=IERR)
+         tideus = 0.0_dp
 
          call iniharmonics(recs)
 
@@ -3598,7 +3615,7 @@ contains
             if (abs(rlat - rlslat) > reps) then
                do nq = 2, 3
                   do mq = 0, nq
-                     fnm = 2.0_dp / dble(2 * nq + 1) * factorial(nq + mq) / factorial(nq - mq)
+                     fnm = 2.0_dp / real(2 * nq + 1, kind=dp) * factorial(nq + mq) / factorial(nq - mq)
                      fnm = sqrt(1.0_dp / (2.0_dp * pi * fnm)) * ((-1.0_dp)**mq)
                      call legpol1(rlat, nq, mq, pnm)
                      pol1(mq, nq) = fnm * pnm
@@ -3608,8 +3625,8 @@ contains
 
             if (abs(rlong - rlslon) > reps) then
                do mq = 0, 3
-                  cm1(mq) = +cos(dble(mq) * rlong)
-                  sm1(mq) = +sin(dble(mq) * rlong)
+                  cm1(mq) = +cos(real(mq, kind=dp) * rlong)
+                  sm1(mq) = +sin(real(mq, kind=dp) * rlong)
                end do
             end if
 
@@ -3661,7 +3678,7 @@ contains
       do i = 1, ntable
          argum = 0.0_dp
          do j = 1, 6
-            argfct = dble(itable(i, j))
+            argfct = real(itable(i, j), kind=dp)
             argum = argum + argfct * elmnts(j) * plsmin(j)
          end do
          ! argum = mod(argum, 360.0_dp)
@@ -6104,7 +6121,9 @@ contains
 !     SPvdP: sample set can be large, delete it and do not make a copy
          call delsam(-1)
          if (allocated(d)) then
-            deallocate (d); mca = 0; nca = 0
+            deallocate (d)
+            mca = 0
+            nca = 0
          end if
 
       end if
@@ -6175,8 +6194,14 @@ contains
       real(kind=dp) :: dm, dn, am, an
       integer :: m, n
 
-      dm = (x - x0) / dxa; m = int(dm); am = dm - m; m = m + 1
-      dn = (y - y0) / dya; n = int(dn); an = dn - n; n = n + 1
+      dm = (x - x0) / dxa
+      m = int(dm)
+      am = dm - m
+      m = m + 1
+      dn = (y - y0) / dya
+      n = int(dn)
+      an = dn - n
+      n = n + 1
       z = dmiss
       if (m < mca .and. n < nca .and. m >= 1 .and. n >= 1) then
          if (d(m, n) /= dmiss .and. d(m + 1, n) /= dmiss .and. d(m, n + 1) /= dmiss .and. d(m + 1, n + 1) /= dmiss) then
@@ -6799,7 +6824,7 @@ contains
          dataPtr1 => wdsu_x
          itemPtr2 => item_stressxy_y
          dataPtr2 => wdsu_y
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          itemPtr1 => item_frcu
          dataPtr1 => frcu
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')

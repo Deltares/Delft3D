@@ -7,7 +7,9 @@ subroutine FLHYPA(time   ,iter   ,nbran  ,ngrid  ,branch ,typcr  ,&
 &x      ,nexres ,exres  ,lsalt  ,izwft  ,juer   ,&
 &prslot ,psltvr ,waoft  ,c      ,r      ,alfab  ,&
 &tauwi  ,ksi    ,a1m    ,ker    ,dt1    ,theta2 ,&
-&exrstp ,omalfa ,omc    ,omr    ,omw    )
+&exrstp ,omalfa ,omc    ,omr    ,omw            ,&
+&fm1dimp                                         &
+&)
 
 !=======================================================================
 !            Rijkswaterstaat/RIZA and DELFT HYDRAULICS
@@ -173,6 +175,9 @@ subroutine FLHYPA(time   ,iter   ,nbran  ,ngrid  ,branch ,typcr  ,&
 !
 !
 !***********************************************************************
+   use m_f1dimp, only: f1dimppar_type     
+   
+   type(f1dimppar_type), intent(in) :: fm1dimp
 !
 !     Include constants
 !
@@ -266,7 +271,9 @@ subroutine FLHYPA(time   ,iter   ,nbran  ,ngrid  ,branch ,typcr  ,&
 !  <alfabp>        <c2rp>           <wfp>
    &waoft(1,7)     ,waoft(1,8)     ,waoft(1,9)     ,&
 !  <wf>
-   &waoft(1,1)     ,juer   ,ker    )
+   &waoft(1,1)     ,juer   ,ker                    ,&
+   &fm1dimp                                        ,&
+   &)
 
 !     FM1DIMP2DO: remove debug
 !      write(42,*) 'a'

@@ -50,7 +50,7 @@ contains
       integer, intent(in) :: N
 
       if (N > NSIZE) then
-         NSIZE = 1 + int(1.2_dp * dble(N))
+         NSIZE = 1 + int(1.2_dp * real(N, kind=dp))
 
          call realloc(xdots, NSIZE, keepExisting=.true., fill=DMISS)
          call realloc(ydots, NSIZE, keepExisting=.true., fill=DMISS)

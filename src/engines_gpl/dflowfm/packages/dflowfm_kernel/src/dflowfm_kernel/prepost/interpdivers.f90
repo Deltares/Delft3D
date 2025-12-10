@@ -122,11 +122,15 @@ contains
                N6 = 4
                allocate (XX(N6, lnx), YY(N6, lnx), NNN(lnx))
                do L = 1, lnx
-                  xx(1, L) = xz(ln(1, L)); yy(1, L) = yz(ln(1, L))
-                  xx(3, L) = xz(ln(2, L)); yy(3, L) = yz(ln(2, L))
+                  xx(1, L) = xz(ln(1, L))
+                  yy(1, L) = yz(ln(1, L))
+                  xx(3, L) = xz(ln(2, L))
+                  yy(3, L) = yz(ln(2, L))
                   Lk = ln2lne(L)
-                  xx(2, L) = xk(kn(1, Lk)); yy(2, L) = yk(kn(1, Lk))
-                  xx(4, L) = xk(kn(2, Lk)); yy(4, L) = yk(kn(2, Lk))
+                  xx(2, L) = xk(kn(1, Lk))
+                  yy(2, L) = yk(kn(1, Lk))
+                  xx(4, L) = xk(kn(2, Lk))
+                  yy(4, L) = yk(kn(2, Lk))
                end do
                nnn = 4 ! array nnn
                call averaging2(1, NS, XS, YS, ZS, IPSAM, Xu, Yu, BLu, lnx, XX, YY, N6, NNN, jakdtree, &
