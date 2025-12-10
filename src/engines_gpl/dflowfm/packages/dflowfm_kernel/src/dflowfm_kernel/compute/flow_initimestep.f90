@@ -216,7 +216,7 @@ contains
          if (ierror /= 0) goto 888
       end if
 
-      if (jatem > 1 .and. jaheat_eachstep == 1) then
+      if (temperature_model > 1 .and. jaheat_eachstep == 1) then
          call heatu(tim1bnd / 3600.0_dp) ! from externalforcings
       end if
       call update_icecover()

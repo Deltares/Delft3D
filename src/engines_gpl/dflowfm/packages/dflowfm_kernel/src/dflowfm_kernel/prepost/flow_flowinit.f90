@@ -505,12 +505,12 @@ contains
 
 !> initialize_temperature_with_uniform_value
    subroutine initialize_temperature_with_uniform_value()
-      use m_flowparameters, only: jatem, temini
+      use m_flowparameters, only: temperature_model, temini
       use m_flow, only: tem1
 
       implicit none
 
-      if (jatem > OFF) then
+      if (temperature_model > OFF) then
          tem1(:) = temini
       end if
 
@@ -1510,7 +1510,7 @@ contains
 !> Initialize salinity and temperature on boundaries
    subroutine initialize_salinity_temperature_on_boundary()
       use m_flowtimes, only: keepstbndonoutflow
-      use m_flowparameters, only: jasal, jatem
+      use m_flowparameters, only: jasal, temperature_model
       use m_flowgeom, only: ln
       use m_flow, only: sa1, q1, tem1, kbnds, kbndtm, kmxd, nbnds, nbndtm, zbnds, zbndtm
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -1545,7 +1545,7 @@ contains
          end do
       end if ! jasal
 
-      if (jatem /= OFF) then
+      if (temperature_model /= OFF) then
          do i_boundary = 1, nbndtm
             link = kbndtm(3, i_boundary)
             call getLbotLtop(link, bottom_link, top_link)
@@ -1563,7 +1563,7 @@ contains
                end if
             end do
          end do
-      end if ! jatem
+      end if ! temperature_model
 
    end subroutine initialize_salinity_temperature_on_boundary
 
@@ -1913,24 +1913,24 @@ contains
                else
                   if (xz(k) > 0.5_dp * (xzmin + xzmax) .and. (kk - kb + 1) <= locsaltlev * kmx) then
                      sa1(kk) = locsaltmax
-                     if (jatem > 0) then
+                     if (temperature_model > 0) then
                         tem1(kk) = 5.0_dp
                      end if
                   else
                      sa1(kk) = locsaltmin
-                     if (jatem > 0) then
+                     if (temperature_model > 0) then
                         tem1(kk) = 10.0_dp
                      end if
                   end if
                end if
                sa1(k) = sa1(k) + vol1(kk) * sa1(kk)
 
-               if (jatem > 0) then
+               if (temperature_model > 0) then
                   tem1(k) = tem1(k) + vol1(kk) * tem1(kk)
                end if
             end do
             sa1(k) = sa1(k) / vol1(k)
-            if (jatem > 0) then
+            if (temperature_model > 0) then
                tem1(k) = tem1(k) / vol1(k)
             end if
          end do

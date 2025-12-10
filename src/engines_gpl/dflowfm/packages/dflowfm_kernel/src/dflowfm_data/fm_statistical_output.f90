@@ -2595,7 +2595,7 @@ contains
             end if
          end if
 
-         if (jatem > 0 .and. jahistem > 0) then
+         if (temperature_model > 0 .and. jahistem > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_TEM1:IPNT_TEM1 + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TEMPERATURE), temp_pointer)
@@ -2677,14 +2677,14 @@ contains
          end if
 
          ! Heat flux model
-         if (jatem > 1 .and. jahisheatflux > 0) then
+         if (temperature_model > 1 .and. jahisheatflux > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WIND), valobs(:, IPNT_WIND))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
-            if (jatem == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
+            if (temperature_model == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RHUM), valobs(:, IPNT_RHUM))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CLOU), valobs(:, IPNT_CLOU))
             end if
-            if (jatem == 5) then
+            if (temperature_model == 5) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QSUN), valobs(:, IPNT_QSUN))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QEVA), valobs(:, IPNT_QEVA))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_QCON), valobs(:, IPNT_QCON))

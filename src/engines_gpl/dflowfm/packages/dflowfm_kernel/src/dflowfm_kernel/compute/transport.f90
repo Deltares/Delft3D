@@ -50,7 +50,7 @@ contains
       use m_density, only: set_potential_density, set_pressure_dependent_density
       use m_getverticallyaveraged
       use m_flowgeom, only: ln, ndxi, lnxi, ndx, lnx, ba, mxban, nban, banf, ban
-      use m_flow, only: apply_thermobaricity, jasal, maxitverticalforestersal, jatem, maxitverticalforestertem, limtyptm, &
+      use m_flow, only: apply_thermobaricity, jasal, maxitverticalforestersal, temperature_model, maxitverticalforestertem, limtyptm, &
                         limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, kbndu, nbndsd, kbndsd, &
                         kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, &
                         vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, &
@@ -84,7 +84,7 @@ contains
          ! limtypsa = 0
          maxitverticalforestersal = 0
       end if
-      if (jatem == 0) then
+      if (temperature_model == 0) then
          limtypTM = 0
          maxitverticalforestertem = 0
       end if
@@ -127,7 +127,7 @@ contains
 
       end if
 
-      if (jatem > 0) then
+      if (temperature_model > 0) then
          do k = 1, nbndtm ! set 1D or 3D temp boundary conditions
             LL = kbndTM(3, k)
             call getLbotLtop(LL, Lb, Lt)
@@ -403,7 +403,7 @@ contains
                if (jasal > 0 .and. keepstbndonoutflow == 0) then
                   constituents(isalt, kb) = constituents(isalt, ki)
                end if
-               if (jatem > 0 .and. keepstbndonoutflow == 0) then
+               if (temperature_model > 0 .and. keepstbndonoutflow == 0) then
                   constituents(itemp, kb) = constituents(itemp, ki)
                end if
                if (jased > 0) then

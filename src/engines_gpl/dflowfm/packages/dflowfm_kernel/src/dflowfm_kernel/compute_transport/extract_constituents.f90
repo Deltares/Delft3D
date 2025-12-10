@@ -58,7 +58,7 @@ contains
    subroutine extract_constituents()
       use precision, only: dp, fp
       use m_doforester, only: doforester
-      use m_flowparameters, only: jaequili, jalogtransportsolverlimiting, jasal, jasecflow, jatem, &
+      use m_flowparameters, only: jaequili, jalogtransportsolverlimiting, jasal, jasecflow, temperature_model, &
                                   maxitverticalforestersal, maxitverticalforestertem
       use m_flow, only: hs, kmx, kbot, ktop, ndkx, spirint, vol1
       use m_flowgeom, only: ndx, ndxi, bai_mor
@@ -123,7 +123,7 @@ contains
          end if
       end if
 
-      if (jatem > 0) then
+      if (temperature_model > 0) then
          if (temperature_max /= dmiss) then
             cells_with_max_limit = 0
             do k = 1, ndkx
@@ -203,7 +203,7 @@ contains
          call print_message(IDX_SAL_MIN, 'Minimum salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
       end if
 
-      if (jasal > 0 .and. maxitverticalforestersal > 0 .or. jatem > 0 .and. maxitverticalforestertem > 0) then
+      if (jasal > 0 .and. maxitverticalforestersal > 0 .or. temperature_model > 0 .and. maxitverticalforestertem > 0) then
          call doforester()
       end if
       !

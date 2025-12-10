@@ -119,7 +119,7 @@ module m_flowparameters
 
    integer :: jasal !< Include salinity set in mdf
 
-   integer :: jatem !< Temperature model (0=no, 5=heatfluxmodel)
+   integer :: temperature_model !< Temperature model (0=no, 5=heatfluxmodel)
 
    integer :: janudge !< temperature and salinity nudging
    integer :: jainiwithnudge !< initialize salinity and temperature with nudge variables
@@ -731,7 +731,7 @@ contains
 
       jasal = 0 ! Include salinity (autoset by flow_initexternalforcings())
 
-      jatem = 0 ! Temperature model
+      temperature_model = 0 ! Temperature model
 
       janudge = 0 ! temperature and salinity nudging
       jainiwithnudge = 0 !< initialize salinity and temperature with nudge variables

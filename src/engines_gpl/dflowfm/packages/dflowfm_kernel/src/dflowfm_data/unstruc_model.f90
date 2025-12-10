@@ -1391,7 +1391,7 @@ contains
       call prop_get(md_ptr, 'physics', 'thermobaricityInPressureGradient', thermobaricity_in_pressure_gradient)
       call validate_density_and_thermobaricity_settings(idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient)
 
-      call prop_get(md_ptr, 'physics', 'Temperature', jatem)
+      call prop_get(md_ptr, 'physics', 'Temperature', temperature_model)
       call prop_get(md_ptr, 'physics', 'InitialTemperature', temini)
       call prop_get(md_ptr, 'physics', 'Secchidepth', Secchidepth)
       call prop_get(md_ptr, 'physics', 'Secchidepth2', Secchidepth2)
@@ -2018,7 +2018,7 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred', jahisdred, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output', jahiswaq, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', jahistem, success)
-      if (success .and. jahistem == 1 .and. jatem < 1) then
+      if (success .and. jahistem == 1 .and. temperature_model < 1) then
          write (msgbuf, '(a)') 'MDU setting "Wrihis_temperature = 1" asks to write temperature to the output his file, ' &
             //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrihis_temperature = 0" ' &
             //' and do not write temperature to his file.'
@@ -2098,7 +2098,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', jamap_chezy_input, success)
 
       call prop_get(md_ptr, 'output', 'Wrimap_temperature', jamaptem, success)
-      if (success .and. jamaptem == 1 .and. jatem < 1) then
+      if (success .and. jamaptem == 1 .and. temperature_model < 1) then
          write (msgbuf, '(a)') 'MDU setting "Wrimap_temperature = 1" asks to write temperature to the output map file, ' &
             //'but no temperature is involved due to MDU setting "Temperature = 0". So we set "Wrimap_temperature = 0"' &
             //'and do not write temperature to map file.'
@@ -2159,11 +2159,11 @@ contains
       !  call mess(LEVEL_ERROR, 'writing windstress to mapfile is only implemented for NetCDF - UGrid (mapformat=4)')
       !endif
 
-      if (jatem <= 1) then
+      if (temperature_model <= 1) then
          jamapheatflux = 0
          jahisheatflux = 0
       end if
-      if (jatem < 1) then ! If no temperature is involved, then do not write temperature to output map/his files.
+      if (temperature_model < 1) then ! If no temperature is involved, then do not write temperature to output map/his files.
          jamaptem = 0
          jahistem = 0
       end if
@@ -3171,7 +3171,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Maxitverticalforestersal', Maxitverticalforestersal, 'Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)')
       end if
 
-      if (writeall .or. (kmx > 0 .and. jatem > 0)) then
+      if (writeall .or. (kmx > 0 .and. temperature_model > 0)) then
          call prop_set(prop_ptr, 'numerics', 'Maxitverticalforestertem', Maxitverticalforestertem, 'Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)')
       end if
 
@@ -3411,11 +3411,11 @@ contains
          end if
       end if
 
-      if (writeall .or. (jasal == 0 .and. (jatem > 0 .or. jased > 0))) then
+      if (writeall .or. (jasal == 0 .and. (temperature_model > 0 .or. jased > 0))) then
          call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
       end if
 
-      if (writeall .or. (jatem == 0 .and. (jasal > 0 .or. jased > 0))) then
+      if (writeall .or. (temperature_model == 0 .and. (jasal > 0 .or. jased > 0))) then
          call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
       end if
 
@@ -3423,8 +3423,8 @@ contains
          call prop_set(prop_ptr, 'physics', 'Jadelvappos', Jadelvappos, 'Only positive forced evaporation fluxes')
       end if
 
-      call prop_set(prop_ptr, 'physics', 'Temperature', jatem, 'Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)')
-      if (writeall .or. (jatem > 0)) then
+      call prop_set(prop_ptr, 'physics', 'Temperature', temperature_model, 'Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)')
+      if (writeall .or. (temperature_model > 0)) then
          call prop_set(prop_ptr, 'physics', 'InitialTemperature', temini, 'Uniform initial water temperature (degC)')
          call prop_set(prop_ptr, 'physics', 'Secchidepth', Secchidepth, 'Water clarity parameter (m)')
          if (Secchidepth2 > 0) then

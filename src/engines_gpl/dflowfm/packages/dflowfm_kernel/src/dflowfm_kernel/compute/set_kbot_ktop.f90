@@ -643,7 +643,7 @@ contains
    !> Handle constituent conservation when layers are removed
    subroutine handle_constituent_conservation(n, kt, ktx)
       use precision, only: dp
-      use m_flow, only: ktop0, vol0, jasal, jatem, qwwaq
+      use m_flow, only: ktop0, vol0, jasal, temperature_model, qwwaq
       use m_flowtimes, only: ti_waq
       use m_transport, only: Constituents, ISALT, ITEMP
 
@@ -661,7 +661,7 @@ contains
          if (jasal > 0) then
             savolkt = volkt * constituents(isalt, kt)
          end if
-         if (jatem > 0) then
+         if (temperature_model > 0) then
             tevolkt = volkt * constituents(itemp, kt)
          end if
 
@@ -671,7 +671,7 @@ contains
             if (jasal > 0) then
                savolkt = savolkt + vol0(kkk) * constituents(isalt, kkk)
             end if
-            if (jatem > 0) then
+            if (temperature_model > 0) then
                tevolkt = tevolkt + vol0(kkk) * constituents(itemp, kkk)
             end if
             if (ti_waq > 0) then
@@ -688,7 +688,7 @@ contains
                   constituents(isalt, kt + 1:ktx) = constituents(isalt, kt)
                end if
             end if
-            if (jatem > 0) then
+            if (temperature_model > 0) then
                constituents(itemp, kt) = tevolkt / volkt
                if (ktx > kt) then
                   constituents(itemp, kt + 1:ktx) = constituents(itemp, kt)

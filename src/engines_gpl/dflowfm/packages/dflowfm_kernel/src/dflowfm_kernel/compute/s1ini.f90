@@ -75,8 +75,8 @@ contains
          jaqin = 1
       end if
 
-      if (jatem > 0) then
-         if (jatem > 1) then
+      if (temperature_model > 0) then
+         if (temperature_model > 1) then
             heatsrc = heatsrc0 ! heatsrc0 established in heatu at interval usertimestep
          else
             heatsrc = 0.0_dp ! just prior to setsorsin that may add to heatsrc
@@ -248,11 +248,11 @@ contains
                if (kmx > 0) then
                   qin(kt) = qin(kt) + qin(k)
                end if
-               if (jatem >= 1) then
+               if (temperature_model >= 1) then
                   if (qin(kt) > 0) then
-                     if (jatem > 1) then
+                     if (temperature_model > 1) then
                         heatsrc(kt) = heatsrc(kt) + qin(kt) * air_temperature(k) ! rain has temp of air time varying specified
-                     else if (jatem == 1) then
+                     else if (temperature_model == 1) then
                         heatsrc(kt) = heatsrc(kt) + qin(kt) * BACKGROUND_AIR_TEMPERATURE ! or constant
                      end if
                   else

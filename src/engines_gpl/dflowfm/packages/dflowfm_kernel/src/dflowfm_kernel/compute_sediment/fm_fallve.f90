@@ -54,7 +54,7 @@ contains
       use m_flowtimes, only: time1
       use m_flowgeom, only: ndx, ln, bl, wcl, lnx
       use m_flow, only: iturbulencemodel, kmx, zws, ucxq, ucyq, ucz, s1, z0urou, ucx_mor, ucy_mor
-      use m_flowparameters, only: jasal, jatem, epshs, epsz0
+      use m_flowparameters, only: jasal, temperature_model, epshs, epsz0
       use m_transport, only: constituents, isalt, itemp, ised1
       use m_turbulence, only: turkinws, turepsws, rhowat
       use sediment_basics_module, only: SEDTYP_CLAY
@@ -204,7 +204,7 @@ contains
                   salint = backgroundsalinity
                end if
                !                !
-               if (jatem > 0) then
+               if (temperature_model > 0) then
                   temint = (tka * constituents(itemp, kk + 1) + tkb * constituents(itemp, kk)) / tkt
                else
                   temint = backgroundwatertemperature
@@ -239,7 +239,7 @@ contains
                   salint = backgroundsalinity
                end if
                !             !
-               if (jatem > 0) then
+               if (temperature_model > 0) then
                   temint = constituents(itemp, k)
                else
                   temint = backgroundwatertemperature

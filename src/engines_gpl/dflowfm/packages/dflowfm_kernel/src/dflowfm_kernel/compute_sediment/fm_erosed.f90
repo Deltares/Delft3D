@@ -89,7 +89,7 @@ contains
       use m_alloc
       use m_missing
       use m_turbulence, only: vicwws, turkinws, rhowat
-      use m_flowparameters, only: jasal, jatem, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
+      use m_flowparameters, only: jasal, temperature_model, jawave, jasecflow, jasourcesink, v2dwbl, flowWithoutWaves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, kmxsed, taub, uuu, vvv
       use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor
       use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse
@@ -783,7 +783,7 @@ contains
          else
             salinity = backgroundsalinity
          end if
-         if (jatem > 0) then
+         if (temperature_model > 0) then
             temperature = constituents(itemp, kbed) ! r0(nm, kbed, ltem)
          else
             temperature = backgroundwatertemperature

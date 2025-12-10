@@ -1058,7 +1058,7 @@ contains
          call realloc(fnamwbnd, nwbnd, fill='')
          fnamwbnd(nwbnd) = trim(filename)
 
-      else if (qidfm == 'temperaturebnd' .and. jatem > 0) then
+      else if (qidfm == 'temperaturebnd' .and. temperature_model > 0) then
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketm(nbndtm + 1:nx), numtm, usemask=.false., rrtolrel=rrtolrel)
          write (msgbuf, '(a,1x,a,i8,a)') trim(qid), trim(filename), numtm, ' nr of temperature bndcells'
          call msg_flush()
@@ -2043,7 +2043,7 @@ contains
       end if
 
       if (allocated(kbndTM)) deallocate (xbndTM, ybndTM, xy2bndTM, zbndTM, kbndTM)
-      if (jatem > 0) then
+      if (temperature_model > 0) then
          if (allocated(sigmabndTM)) then
             deallocate (sigmabndTM)
          end if
@@ -2562,8 +2562,8 @@ contains
             jawave = 0 ! no wind, no waves
             call mess(LEVEL_INFO, 'No wind, so waves is switched off ')
          end if
-         if (jatem > 1) then
-            jatem = 1 ! no wind, no heat model temperature
+         if (temperature_model > 1) then
+            temperature_model = 1 ! no wind, no heat model temperature
             call mess(LEVEL_INFO, 'No wind ?? => no heat model !')
          end if
       end if

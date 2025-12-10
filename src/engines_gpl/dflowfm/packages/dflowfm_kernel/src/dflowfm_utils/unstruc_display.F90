@@ -1740,7 +1740,7 @@ contains
          write (tex(10:21), '(E12.5)') a1ini
          call GTEXT(tex, xp, yp, ncol)
 
-         if (jatem == 5) then
+         if (temperature_model == 5) then
             yp = yp - 2 * dyp
             tex = 'QSUNav :              (W/m2)'
             write (tex(10:21), '(E12.5)') Qsunav
@@ -1825,7 +1825,7 @@ contains
          write (tex(8:20), '(F11.7)') (ukin + upot) / (ukin0 + upot0)
          call GTEXT(tex, xp, yp, ncol)
 
-         if (jasal > 0 .or. jatem > 0) then
+         if (jasal > 0 .or. temperature_model > 0) then
             yp = yp - dyp
             tex = 'Ueaa :               (kg/(m.s2))'
             write (tex(8:20), '(F11.2)') ueaa

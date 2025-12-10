@@ -32,7 +32,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_flowtimes, only: handle_ext, irefdate, tunit, time1
    use m_flowgeom, only: ndx
    use m_meteo, only: ec_gettimespacevalue, ecgetvalues, twav, success, air_pressure, pavbnd, ja_airdensity, item_air_density, air_density, ja_computed_airdensity, item_atmosphericpressure, &
-                      item_air_temperature, air_temperature, item_dew_point_temperature, dew_point_temperature, update_wind_stress_each_time_step, jatem, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
+                      item_air_temperature, air_temperature, item_dew_point_temperature, dew_point_temperature, update_wind_stress_each_time_step, temperature_model, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
                       ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, item_pump, qpump, item_longculvert_valve_relative_opening, &
                       nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, item_lateraldischarge, npumpswithlevels, numsrc, item_discharge_salinity_temperature_sorsin, qstss, item_sourcesink_discharge, &
                       item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, &
@@ -147,7 +147,7 @@ contains
       end if
 
       ! Set humidity or dewpoint, airtemperature and cloudiness forcings for composite heat flux model
-      if (jatem == 5) then
+      if (temperature_model == 5) then
          call set_temperature_models(time_in_seconds)
       end if
 
@@ -225,7 +225,7 @@ contains
          return
       end if
 
-      if (jatem > 1 .and. jaheat_eachstep == 0) then
+      if (temperature_model > 1 .and. jaheat_eachstep == 0) then
          call heatu(time_in_seconds / 3600.0_dp)
       end if
 

@@ -46,7 +46,7 @@ contains
                               fwind, qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, &
                               qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
-      use m_flowparameters, only: jahisheatflux, jatem, ja_solar_radiation_factor
+      use m_flowparameters, only: jahisheatflux, temperature_model, ja_solar_radiation_factor
       use m_missing, only: dmiss
       use m_flowgeom, only: ba, nd, ln, yz, xz
       use m_sferic, only: jsferic
@@ -131,7 +131,7 @@ contains
 
       air_temperature_in_cell = air_temperature(n)
 
-      if (jatem == 3) then ! Excess model
+      if (temperature_model == 3) then ! Excess model
 
          heat_transfer_coefficient = 4.48_dp + 0.049_dp * water_temperature_in_cell + fwind * (3.5_dp + 2.05_dp * wind_speed_in_cell) * (1.12_dp + 0.018_dp * water_temperature_in_cell + 0.00158_dp * water_temperature_in_cell**2)
 
@@ -143,7 +143,7 @@ contains
             qtotmap(n) = total_heat_flux
          end if
 
-      else if (jatem == 5) then ! Composite (ocean) model
+      else if (temperature_model == 5) then ! Composite (ocean) model
 
          ! Set surface_temperature either to water_temperature_in_cell or to ice_temperature(n) or to snow_temperature(n) and change albedo parameter in case of ice and/or snow
          if (ja_icecover == ICECOVER_SEMTNER) then

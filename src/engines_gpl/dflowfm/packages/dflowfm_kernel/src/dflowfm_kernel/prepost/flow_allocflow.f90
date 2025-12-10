@@ -51,7 +51,7 @@ contains
                         dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
                         uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
                         uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
-                        qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, &
+                        qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, temperature_model, jasal, &
                         jacreep, baroclinic_force_prev, baroclinic_pressures, integrated_baroclinic_pressures, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
                         workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
                         spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
@@ -1029,7 +1029,7 @@ contains
          call aerr('cloudiness(ndx)', ierr, ndx)
       end if
 
-      if (jatem > 0) then
+      if (temperature_model > 0) then
          call realloc(tem1, ndkx, stat=ierr, fill=temini, keepexisting=.false.)
          call aerr('tem1(ndkx)', ierr, ndkx)
          call realloc(heatsrc, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -1037,7 +1037,7 @@ contains
          call realloc(heatsrc0, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('heatsrc0(ndkx)', ierr, ndkx)
 
-         if (jatem > 1) then ! also heat modelling involved
+         if (temperature_model > 1) then ! also heat modelling involved
             call realloc(air_temperature, ndx, stat=ierr, fill=BACKGROUND_AIR_TEMPERATURE, keepexisting=.false.)
             call aerr('air_temperature(ndx)', ierr, ndx)
 
@@ -1062,12 +1062,12 @@ contains
             end if
          end if
 
-         if ((jamapheatflux > 0 .or. jahisheatflux > 0) .and. jatem > 1) then
+         if ((jamapheatflux > 0 .or. jahisheatflux > 0) .and. temperature_model > 1) then
             call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('qtotmap(ndx)', ierr, ndx)
          end if
 
-         if (jatem == 5) then ! save cd coeff if heat modelling also involved
+         if (temperature_model == 5) then ! save cd coeff if heat modelling also involved
             call realloc(cdwcof, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('cdwcof(lnx)', ierr, lnx)
 

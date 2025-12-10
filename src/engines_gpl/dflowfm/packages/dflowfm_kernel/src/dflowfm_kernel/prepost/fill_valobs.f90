@@ -46,7 +46,7 @@ contains
       use m_linkstocentercartcomp, only: linkstocentercartcomp
       use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, jahistaucurrent, jahisvelocity, jahisvelvec, ucmag, jaeulervel, &
                         flowwithoutwaves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, jahistur, javiusp, viclu, viusp, &
-                        vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, jatem, jahisrho, &
+                        vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, jahisrho, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
                         rich, jahisrain, jahis_airdensity, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
@@ -414,7 +414,7 @@ contains
                if (jasal > 0) then
                   valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
                end if
-               if (jatem > 0) then
+               if (temperature_model > 0) then
                   valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
                end if
                if (jahistur > 0) then
@@ -550,22 +550,22 @@ contains
             end if
 
 !        Heatflux
-            if (jatem > 0 .and. jahisheatflux > 0) then
+            if (temperature_model > 0 .and. jahisheatflux > 0) then
                call getlink1(k, LL)
                if (jawind > 0) then
                   valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
                end if
 
-               if (jatem > 1) then ! also heat modelling involved
+               if (temperature_model > 1) then ! also heat modelling involved
                   valobs(i, IPNT_TAIR) = air_temperature(k)
                end if
 
-               if (jatem == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
+               if (temperature_model == 5 .and. allocated(relative_humidity) .and. allocated(cloudiness)) then
                   valobs(i, IPNT_RHUM) = relative_humidity(k)
                   valobs(i, IPNT_CLOU) = cloudiness(k)
                end if
 
-               if (jatem == 5) then
+               if (temperature_model == 5) then
                   valobs(i, IPNT_QSUN) = Qsunmap(k)
                   valobs(i, IPNT_QEVA) = Qevamap(k)
                   valobs(i, IPNT_QCON) = Qconmap(k)
@@ -574,7 +574,7 @@ contains
                   valobs(i, IPNT_QFRC) = Qfrconmap(k)
                end if
 
-               if (jatem > 1) then
+               if (temperature_model > 1) then
                   valobs(i, IPNT_QTOT) = Qtotmap(k)
                end if
             end if

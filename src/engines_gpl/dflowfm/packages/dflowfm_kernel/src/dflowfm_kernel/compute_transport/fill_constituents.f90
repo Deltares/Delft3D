@@ -56,7 +56,7 @@ contains
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_sferic, only: jsferic, fcorio
       use m_flowtimes, only: dts
-      use m_flowparameters, only: janudge, jasecflow, jatem, jaequili, epshu, epshs, testdryflood, icorio
+      use m_flowparameters, only: janudge, jasecflow, temperature_model, jaequili, epshu, epshs, testdryflood, icorio
       use m_laterals, only: add_lateral_load_and_sink, apply_transport_is_used
       use m_missing, only: dmiss
       use timers, only: timon, timstrt, timstop
@@ -173,7 +173,7 @@ contains
             if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
 
 !        temperature
-            if (jatem > 1) then
+            if (temperature_model > 1) then
                if (use_salinity_freezing_point) then ! allowing cooling below 0 degrees
                   const_sour(ITEMP, k) = heatsrc(k) * dvoli
                else ! default behaviour since 2017
@@ -250,7 +250,7 @@ contains
          end if
       end do
 
-      if (jamba > 0 .and. jatem > 0) then ! Positive and negative sums for jamba, checking just once
+      if (jamba > 0 .and. temperature_model > 0) then ! Positive and negative sums for jamba, checking just once
 
          do kk = 1, Ndx
             imba = mbadefdomain(kk)
