@@ -142,7 +142,8 @@ module unstruc_netcdf
       type(t_ug_mesh) :: meshids2d
       type(t_ug_mesh) :: meshids3d
       type(t_ug_network) :: network1d
-      type(t_ug_contacts) :: meshcontacts
+      type(t_ug_contact) :: meshcontact_1D2D
+      type(t_ug_contact) :: meshcontact_2D2D
 
       !
       ! Dimensions
@@ -196,7 +197,7 @@ module unstruc_netcdf
       !type(t_ug_mesh)     :: meshids2d
       !type(t_ug_mesh)     :: meshids3d
       !type(t_ug_network)  :: network1d
-      !type(t_ug_contacts) :: meshcontacts
+      !type(t_ug_contact) :: meshcontact_1D2D
       !
    !!
    !! Dimensions
@@ -840,7 +841,7 @@ contains
 !! Typical call: unc_def_var(mapids, mapids%id_s1(:), nf90_double, UNC_LOC_S, 's1', 'sea_surface_height', 'water level', 'm')
 !! Space-dependent variables will be multiply defined: on mesh1d and mesh2d-based variables (unless specified otherwise via which_meshdim argument).
    function unc_def_var_map(ncid, id_tsp, id_var, itype, iloc, var_name, standard_name, long_name, unit, is_timedep, dimids, cell_method, which_meshdim, jabndnd, ivalid_max) result(ierr)
-      use m_save_ugrid_state, only: mesh2dname, mesh1dname, contactname
+      use m_save_ugrid_state, only: mesh2dname, mesh1dname, contactname_1D2D
       use netcdf_utils, only: ncu_append_atts
       use m_flowgeom, only: ndx, ndxi, ndx2d
       use dfm_error, only: dfm_noerr
@@ -1039,9 +1040,9 @@ contains
          if (iand(which_meshdim_, 4) > 0 .and. numl1d > 0) then
             !1d2d contacts
             if (size(id_tsp%contactstoln, 1) > 0) then
-               idims(idx_spacedim) = id_tsp%meshcontacts%dimids(cdim_ncontacts)
+               idims(idx_spacedim) = id_tsp%meshcontact_1D2D%dimids(cdim_ncontacts)
                ierr = ug_def_var(ncid, id_var(4), idims(idx_fastdim:maxrank), itype, UG_LOC_CONTACT, &
-                                 trim(contactname), var_name, standard_name, long_name, unit, ' ', cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                                 trim(contactname_1D2D), var_name, standard_name, long_name, unit, ' ', cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                                  do_deflate=unc_nccompress)
             end if
          end if
@@ -2948,7 +2949,7 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
-      use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, jatem, nbndtm, jased, nbndsd, numfracs, nbndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own
+      use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, jatem, nbndtm, jased, nbndsd, numfracs, nbndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flowwithoutwaves, jawaveswartdelwaq, jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: tudunitstr, refdat, dts
       use m_flowgeom, only: lnx, ndx, ndxi, ndx2d, xz, yz, bl, xu, yu, ln, lnxi
@@ -9481,13 +9482,13 @@ contains
                call definencvar(imapfile, id_ice_pressure(iid), nf90_double, idims, 'ice_pressure', 'Pressure exerted by the floating ice cover', 'N m-2', 'FlowElem_xcc FlowElem_ycc')
             end if
             if (ice_mapout%ice_temperature) then
-                  call definencvar(imapfile, id_ice_temperature(iid), nf90_double, idims, 'ice_temperature', 'Temperature of the floating ice cover', 'K', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile, id_ice_temperature(iid), nf90_double, idims, 'ice_temperature', 'Temperature of the floating ice cover', 'K', 'FlowElem_xcc FlowElem_ycc')
             end if
             if (ice_mapout%snow_thickness) then
-                  call definencvar(imapfile, id_snow_thickness(iid), nf90_double, idims, 'snow_thickness', 'Thickness of the snow layer', 'm', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile, id_snow_thickness(iid), nf90_double, idims, 'snow_thickness', 'Thickness of the snow layer', 'm', 'FlowElem_xcc FlowElem_ycc')
             end if
             if (ice_mapout%snow_temperature) then
-                call definencvar(imapfile, id_snow_temperature(iid), nf90_double, idims, 'snow_temperature', 'Temperature of the snow layer', 'K', 'FlowElem_xcc FlowElem_ycc')
+               call definencvar(imapfile, id_snow_temperature(iid), nf90_double, idims, 'snow_temperature', 'Temperature of the snow layer', 'K', 'FlowElem_xcc FlowElem_ycc')
             end if
          end if
 
@@ -10993,7 +10994,7 @@ contains
             ierr = nf90_put_var(imapfile, id_snow_temperature(iid), snow_temperature, [1, itim], [ndxndxi, 1])
          end if
       end if
-      
+
       if (jamapheatflux > 0 .and. jatem > 1) then ! Heat modelling only
          ierr = nf90_put_var(imapfile, id_air_temperature(iid), air_temperature, [1, itim], [ndxndxi, 1])
          ierr = nf90_put_var(imapfile, id_relative_humidity(iid), relative_humidity, [1, itim], [ndxndxi, 1])
@@ -11725,7 +11726,7 @@ contains
       use fm_location_types
       use m_find1dcells, only: find1dcells
       use m_set_nod_adm
-      use m_inquire_link_type, only: is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
+      use m_inquire_link_type, only: is_valid_2d2d_netlink, is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
       use m_cell_geometry, only: blcell
       implicit none
 
@@ -11740,21 +11741,23 @@ contains
       type(t_unc_netelem_ids) :: ids_netelem
 
       integer :: nn
-      integer, allocatable :: edge_nodes(:, :), face_nodes(:, :), edge_type(:), contacts(:, :)
-
+      integer, allocatable :: edge_nodes(:, :), face_nodes(:, :), edge_type(:)
+      integer, allocatable :: contacts(:, :), contacts_2D2D(:, :), contacttype(:), contacttype_2D2D(:)
+      integer, allocatable, dimension(:) :: temp_indices
       integer :: ierr
       integer :: i, k, k1, k2, numl2d, numk2d, L, Lnew, nv, n1, n2, n
       integer :: num_1d_nodes, node_index
       logical :: jaInDefine
       integer :: id_zf
       real(kind=hp), allocatable :: xn(:), yn(:), zn(:), xe(:), ye(:), zf(:)
-      integer :: n1dedges, n1d2dcontacts, start_index
-      integer, dimension(:), allocatable :: contacttype, idomain1d, iglobal_s1d
+      integer :: n1dedges, n1d2dcontacts, n2d2dcontacts, start_index
+      integer, dimension(:), allocatable :: idomain1d, iglobal_s1d
 
       call readyy('Writing net data', 0.0_dp)
 
       jaInDefine = 0
       n1d2dcontacts = 0
+      n2d2dcontacts = 0
       num_1d_nodes = 0
       node_index = 0
       numl2d = 0
@@ -11801,9 +11804,23 @@ contains
       if (jsferic == 1) then
          crs%epsg_code = 4326
       end if
+      temp_indices = [(l, l=1, numl)]
+      temp_indices = pack(temp_indices, is_valid_2d2d_netlink(temp_indices))
+      n2d2dcontacts = size(temp_indices)
+      if (n2d2dcontacts > 0) then
+         allocate (contacts_2D2D(2, n2d2dcontacts))
+         call realloc(contacttype_2D2D, n2d2dcontacts, keepExisting=.false., fill=5)
+
+         do i = 1, n2d2dcontacts
+            L = temp_indices(i)
+            n1 = abs(lne(1, L))
+            n2 = abs(lne(2, L))
+            contacts_2D2D(1:2, i) = [n1, n2]
+         end do
+      end if
 
       ! 1D network geometry
-      if (numl1d > 0) then
+      if (numl1d > n2d2dcontacts) then
          ! count 1d mesh nodes, edges and 1d2d contacts
          n1dedges = count_1d_edges(numl1d)
          n1d2dcontacts = count(is_valid_1d2d_netlink([(l, l=1, numl1d)]))
@@ -12112,10 +12129,17 @@ contains
 
          !define 1d2dcontacts only after mesh2d is completly defined
          if (n1d2dcontacts > 0) then
-            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactname), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
+            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_1D2D, trim(contactname_1D2D), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
             ierr = nf90_enddef(ncid)
             ! Put the contacts
-            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontacts, contacts(1, :), contacts(2, :), contacttype)
+            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
+            ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
+         end if
+         if (n2d2dcontacts > 0) then
+            ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_2D2D, trim(contactname_2D2D), n2d2dcontacts, id_tsp%meshids2d, id_tsp%meshids2d, UG_LOC_FACE, UG_LOC_FACE, start_index)
+            ierr = nf90_enddef(ncid)
+            ! Put the contacts
+            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_2D2D, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D)
             ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
          end if
 
@@ -12232,15 +12256,16 @@ contains
       integer, intent(out) :: ierr !< Return status (NetCDF operations)
 
       integer :: ioncid, iconvtype, start_index, networkIndex
-      integer :: im, nmesh, i, L, numk_last, numl_last
+      integer :: im, nmesh, i, L, numk_last, numl_last, new_node_index
       integer :: ncid, id_netnodez
       integer, allocatable :: kn12(:, :), kn3(:) ! Placeholder arrays for the edge_nodes and edge_types
       real(kind=dp) :: convversion, zk_fillvalue, altsign
       type(t_ug_meshgeom) :: meshgeom
 
       ! 1d2d links
-      integer :: ncontacts, ncontactmeshes, koffset1dmesh
+      integer :: ncontacts, ncontactnodes, ncontactmeshes, koffset1dmesh
       integer, allocatable :: mesh1indexes(:), mesh2indexes(:), contacttype(:)
+      integer :: mesh1_topo_dim, mesh2_topo_dim
       character(len=80), allocatable :: contactslongnames(:)
       logical :: includeArrays
       logical :: do_edgelengths, need_edgelengths
@@ -12608,7 +12633,6 @@ contains
       do im = 1, ncontactmeshes
 
          ierr = ionc_get_contacts_count_ugrid(ioncid, im, ncontacts)
-
          call realloc(mesh1indexes, ncontacts, keepExisting=.false.)
          call realloc(mesh2indexes, ncontacts, keepExisting=.false.)
          call realloc(contactslongnames, ncontacts, keepExisting=.false.)
@@ -12616,16 +12640,26 @@ contains
 
          call realloc(hashlist_contactids%id_list, contactnlinks + ncontacts, keepExisting=.true.) ! Remember contactids for later use.
          call realloc(contactnetlinks, contactnlinks + ncontacts, keepExisting=.true.) ! Remember contact netlink numbers for later use.
-         call realloc(contact1d2didx, [2, contactnlinks + ncontacts], keepExisting=.true.) ! Remember contact connectivity table for later use.
+         call realloc(contact_cell_idx, [2, contactnlinks + ncontacts], keepExisting=.true.) ! Remember contact connectivity table for later use.
 
          ierr = ionc_get_mesh_contact_ugrid(ioncid, im, mesh1indexes, mesh2indexes, hashlist_contactids%id_list(contactnlinks + 1:contactnlinks + ncontacts), contactslongnames, contacttype, 1)
          hashlist_contactids%id_count = contactnlinks + ncontacts
 
-         ierr = ionc_get_contact_name(ioncid, im, contactname)
-
          numerr = 0
-         call increasenetw(numk_last + ncontacts, numl_last + ncontacts)
-         do l = 1, ncontacts
+         ierr = ionc_get_contacts_topology_dimensions(ioncid, im, mesh1_topo_dim, mesh2_topo_dim) ! networkIndex not used here
+
+         !> for now we assume mesh2_topo_dim is always 2 (a 2D mesh)
+         if (mesh1_topo_dim == 2) then
+            ncontactnodes = ncontacts * 2
+            ierr = ionc_get_contact_name(ioncid, im, contactname_2D2D)
+         else if (mesh1_topo_dim == 1) then
+            ncontactnodes = ncontacts
+            ierr = ionc_get_contact_name(ioncid, im, contactname_1D2D)
+         end if
+
+         call increasenetw(numk_last + ncontactnodes, numl_last + ncontacts)
+         new_node_index = numk_last + 1
+         do L = 1, ncontacts
             if (contacttype(L) < 3) then
                numerr = numerr + 1
                if (numerr <= MAXERRPRINT) then
@@ -12638,20 +12672,30 @@ contains
 
                cycle
             end if
-
-            XK(numk_last + l) = xface(mesh2indexes(l))
-            YK(numk_last + l) = yface(mesh2indexes(l))
-
-            contact1d2didx(1, contactnlinks + L) = mesh1indexes(L)
-            contact1d2didx(2, contactnlinks + L) = mesh2indexes(L)
-            if (nodesOnBranchVertices == 1) then
-               kn(1, numl_last + l) = mesh1dUnmergedToMerged(mesh1indexes(l))
-            else
-               kn(1, numl_last + l) = mesh1indexes(l)
-            end if
-            kn(2, numl_last + l) = numk_last + l
-            kn(3, numl_last + l) = contacttype(l)
+            contact_cell_idx(1, contactnlinks + L) = mesh1indexes(L)
+            contact_cell_idx(2, contactnlinks + L) = mesh2indexes(L)
             contactnetlinks(contactnlinks + L) = numl_last + L
+
+            kn(3, numl_last + L) = contacttype(L)
+
+            ! new 2D node coordinates
+            XK(new_node_index) = xface(mesh2indexes(L))
+            YK(new_node_index) = yface(mesh2indexes(L))
+            kn(2, numl_last + L) = new_node_index
+            new_node_index = new_node_index + 1
+
+            if (mesh1_topo_dim == 2) then
+               XK(new_node_index) = xface(mesh1indexes(L))
+               YK(new_node_index) = yface(mesh1indexes(L))
+               kn(1, numl_last + L) = new_node_index
+               new_node_index = new_node_index + 1
+            else if (mesh1_topo_dim == 1) then
+               if (nodesOnBranchVertices == 1) then
+                  kn(1, numl_last + L) = mesh1dUnmergedToMerged(mesh1indexes(L))
+               else
+                  kn(1, numl_last + L) = mesh1indexes(L)
+               end if
+            end if
          end do
 
          if (numerr > 0) then
@@ -12661,10 +12705,10 @@ contains
          end if
 
          ! Set the ZK to dmiss
-         ZK(numk_last + 1:numk_last + ncontacts) = dmiss
+         ZK(numk_last + 1:numk_last + ncontactnodes) = dmiss
 
-         numk_read = numk_read + ncontacts
-         numk_last = numk_last + ncontacts
+         numk_read = numk_read + ncontactnodes
+         numk_last = numk_last + ncontactnodes
 
          numl_read = numl_read + ncontacts
          numl_last = numl_last + ncontacts
@@ -15292,7 +15336,7 @@ contains
       use m_flow, only: kmx, mxlaydefs, laymx, numtopsig, s1max
       use m_alloc
       use dfm_error
-      use m_save_ugrid_state !stores the contactname and other saved ugrid names
+      use m_save_ugrid_state !stores the contactname_1D2D and other saved ugrid names
       use m_CrossSections
       use m_flowparameters, only: jafullgridoutput
       use m_flowtimes, only: handle_extra
@@ -15556,7 +15600,7 @@ contains
 
       !define 1d2dcontacts only after mesh2d is completly defined
       if (n1d2dcontacts > 0 .and. ja2D_) then
-         ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontacts, trim(contactname), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
+         ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_1D2D, trim(contactname_1D2D), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
       end if
 
       ! Define domain numbers when it is a parallel run
@@ -15581,7 +15625,7 @@ contains
 
       ! Put the contacts
       if (n1d2dcontacts > 0) then
-         ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontacts, contacts(1, :), contacts(2, :), contacttype)
+         ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
       end if
 
       if (allocated(edge_type)) then
@@ -15656,7 +15700,7 @@ contains
       use m_partitioninfo
       use m_alloc
       use dfm_error
-      use m_save_ugrid_state !stores the contactname and other saved ugrid names
+      use m_save_ugrid_state ! stores the mesh contacts, and other network topologies
       use m_CrossSections
       use m_flowtimes, only: handle_extra
       use Timers
@@ -15800,14 +15844,14 @@ contains
                if (size(meshgeom1d%nodeidx_inverse) > 0) then
                   k1 = meshgeom1d%nodeidx_inverse(k1)
                end if
-                  nodebranchidx_remap(n) = meshgeom1d%nodebranchidx(k1)
-                  nodeoffsets_remap(n) = meshgeom1d%nodeoffsets(k1)
-                  if (allocated(nodeids)) then
-                     nodeids_remap(n) = nodeids(k1)
-                  end if
-                  if (allocated(nodelongnames)) then
+               nodebranchidx_remap(n) = meshgeom1d%nodebranchidx(k1)
+               nodeoffsets_remap(n) = meshgeom1d%nodeoffsets(k1)
+               if (allocated(nodeids)) then
+                  nodeids_remap(n) = nodeids(k1)
+               end if
+               if (allocated(nodelongnames)) then
                   nodelongnames_remap(n) = nodelongnames(k1)
-                  end if
+               end if
             end if
          end do
 
@@ -15867,7 +15911,7 @@ contains
                   L1 = n1dedges !> don't remap edgebranchIDX if original array is incomplete
                end if
                ! i.e., as was read from input *_net.nc file.
-               if(associated(meshgeom1d%ngeopointx)) then
+               if (associated(meshgeom1d%ngeopointx)) then
                   edgebranchidx_remap(n1dedges) = meshgeom1d%edgebranchidx(L1)
                   edgeoffsets_remap(n1dedges) = meshgeom1d%edgeoffsets(L1)
                end if
@@ -16667,6 +16711,7 @@ contains
       integer :: nump1d !< Local counter for number of 1d nodes ("cells")
       real(kind=dp) :: convversion !< io_netcdf conventions version number
       integer :: ncontacts, im
+      integer :: mesh1_topo_dim, mesh2_topo_dim
 
       ierr = DFM_NOERR
 
@@ -16735,9 +16780,10 @@ contains
          numl1d2d_read = 0
          ierr = ionc_get_contact_topo_count(ioncid, ncontacts)
          do im = 1, ncontacts
+            ierr = ionc_get_contacts_topology_dimensions(ioncid, im, mesh1_topo_dim, mesh2_topo_dim) ! networkIndex not used here
             ierr = ionc_get_contacts_count_ugrid(ioncid, im, numl1d2d_read)
             numl_read = numl_read + numl1d2d_read
-            numk_read = numk_read + numl1d2d_read
+            numk_read = numk_read + numl1d2d_read * mesh1_topo_dim ! If mesh1 is 2D mesh we add 2 nodes per contact link (mesh2 is always assumed to be 2D mesh already).
          end do
       else
          ! No UGRID, not a problem, code below will fall back to trying old format.
@@ -17384,7 +17430,7 @@ contains
       use m_1d_structures
       use m_General_Structure
       use fm_external_forcings_data
-      use m_longculverts_data, only : longculverts, nlongculverts
+      use m_longculverts_data, only: longculverts, nlongculverts
       implicit none
       integer, intent(in) :: ncid !< ID of the rst file
       character(len=*), intent(in) :: filename !< Name of rst file.
