@@ -33,9 +33,9 @@ module m_ug_contacts
    implicit none
 
 !contacts types
-   type t_ug_contacts
+   type t_ug_contact
       integer::dimids(cdim_end) = -1
       integer::varids(cid_end) = -1
-   end type t_ug_contacts
+   end type t_ug_contact
 
 end module m_ug_contacts

@@ -492,7 +492,7 @@ contains
          call SetMessage(LEVEL_INFO, 'Reading Structures ...')
          call readStructures(network, md_1dfiles%structures, is_path_relative=md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
-         call initialize_long_culverts(md_1dfiles, md_convertlongculverts)
+         call initialize_long_culverts(md_1dfiles, md_convertlongculverts, write_converted_files=(md_japartition == 1))
       end if
 
       call timstop(timerHandle)

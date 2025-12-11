@@ -552,9 +552,7 @@ contains
                      call unc_write_net(filnam, janetcell=0, janetbnd=0)
                   end if
                else if (nwhat == 22) then ! _net.nc with extra cell info (for example necessary for Baseline/Bas2FM input)
-                  !origial call unc_write_net(filnam, janetcell = 1, janetbnd = 0)
-                  call unc_write_net('UG'//filnam, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
-                  call unc_write_net(filnam, janetcell=1, janetbnd=1) ! wrinet
+                  call unc_write_net(filnam, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
                end if
                call MESSAGE('YOU SAVED ', filnam, ' ')
                md_netfile = ' '
