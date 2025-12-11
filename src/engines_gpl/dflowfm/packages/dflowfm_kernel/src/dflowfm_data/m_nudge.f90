@@ -36,5 +36,5 @@ module m_nudge
    real(kind=dp), allocatable, target :: nudge_salinity(:) !< 3D salinity for nudging
    real(kind=dp), allocatable, target :: nudge_time(:) !< nudge relaxation time
    real(kind=dp), allocatable, target :: nudge_rate(:) !< nudge relaxation time, 1/days
-   real(kind=dp), parameter :: NUDGE_RATE_UNIT_TO_SECI = 1d0 / (24d0 * 3600d0)
+   real(kind=dp), parameter :: NUDGE_RATE_UNIT_TO_SECI = 1.0_dp / (24.0_dp * 3600.0_dp)
 end module

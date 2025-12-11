@@ -41,7 +41,7 @@ contains
 
 !
 !==============================================================================
-integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, olv_handle, gdp) result(retval)
+integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, gdp) result(retval)
 !
 !!--declarations----------------------------------------------------------------
 !
@@ -49,7 +49,6 @@ integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, o
     use SyncRtcFlow
     use dfparall
     use flow2d3d_timers
-    use d3d_olv_class
     !
     use m_openda_exchange_items, only : openda_buffer_initialize
     !
@@ -82,7 +81,6 @@ integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, o
     integer       , intent(in)  :: nummap        ! Number of mappers (one for each DD boundaries connected with this subdomain)
                                                  ! as detected by hydra
     character(*)                :: runid_arg
-    type(olvhandle)             :: olv_handle
 !
 ! Local variables
 !
@@ -294,8 +292,7 @@ integer function trisim_init(numdom, nummap, context_id, fsm_flags, runid_arg, o
     !
     ! Start FLOW simulation
     !
-    olv_handle%fields => null()
-    call tricom_init(olv_handle, gdp)
+    call tricom_init(gdp)
     !
     ! Error status of tricom_init is returned via gdp%errorcode
     !
@@ -314,15 +311,13 @@ end function trisim_init
 !
 !
 !----------------------------------------------------------------------
-integer function trisim_step(olv_handle, gdp) result(retval)
+integer function trisim_step(gdp) result(retval)
     use globaldata
     use string_module
-    use d3d_olv_class
     !
     implicit none
     !
     type(globdat)  , target   :: gdp
-    type(olvhandle)           :: olv_handle
     !
     RetVal = 0
     !
@@ -330,7 +325,7 @@ integer function trisim_step(olv_handle, gdp) result(retval)
     ! part VII and VIII of the initialisation. That subroutine is not needed here and
     ! part VII and VIII can be found at the end of tricom_init. (VT)
     !
-    call tricom_step(olv_handle, gdp)
+    call tricom_step(gdp)
     if (gdp%errorcode /= 0) then
         retVal = -1
     else
@@ -342,16 +337,14 @@ end function trisim_step
 !
 !
 !-----------------------------------------------------------------------
-integer function trisim_finish(olv_handle, gdp) result(retVal)
+integer function trisim_finish(gdp) result(retVal)
     use globaldata
     use string_module
     use dfparall
-    use d3d_olv_class
     !    
     implicit none
     !
     ! global    
-    type(olvhandle)           :: olv_handle
     type(globdat)  , target   :: gdp
     !
     ! local
@@ -362,7 +355,7 @@ integer function trisim_finish(olv_handle, gdp) result(retVal)
     lundia => gdp%gdinout%lundia 
     retval = 0
 
-    call tricom_finish(olv_handle, gdp)
+    call tricom_finish(gdp)
 
     write(lundia,*)
     write(lundia,'(a)') '*** Simulation finished *******************************************************'

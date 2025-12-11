@@ -54,11 +54,11 @@ contains
          Y31 = getdy(x1, y1, x3, y3, jsferic)
          R2 = dbdistance(x2, y2, x1, y1, jsferic, jasfer3D, dmiss)
          R2 = R2 * R2
-         RLout = 0d0
+         RLout = 0.0_dp
          if (R2 /= 0) then
             RL = (X31 * X21 + Y31 * Y21) / R2
             RLout = RL
-            RL = max(min(1d0, RL), 0d0)
+            RL = max(min(1.0_dp, RL), 0.0_dp)
             JA = 1
             XN = X1 + RL * (x2 - x1)
             YN = Y1 + RL * (y2 - y1)
@@ -78,11 +78,11 @@ contains
          z31 = zz3 - zz1
 
          r2 = x21 * x21 + y21 * y21 + z21 * z21
-         RLout = 0d0
-         if (r2 /= 0d0) then
+         RLout = 0.0_dp
+         if (r2 /= 0.0_dp) then
             RL = (X31 * X21 + Y31 * Y21 + Z31 * Z21) / R2
             RLout = RL
-            RL = max(min(1d0, RL), 0d0)
+            RL = max(min(1.0_dp, RL), 0.0_dp)
             JA = 1
             XXN = xx1 + RL * x21
             YYN = yy1 + RL * y21
@@ -92,7 +92,7 @@ contains
             z31 = zzn - zz3
             DIS = sqrt(x31 * x31 + y31 * y31 + z31 * z31)
 
-            call Cart3Dtospher(xxn, yyn, zzn, xn, yn, maxval((/x1, x2, x3/)))
+            call Cart3Dtospher(xxn, yyn, zzn, xn, yn, maxval([x1, x2, x3]))
          end if
 
       end if

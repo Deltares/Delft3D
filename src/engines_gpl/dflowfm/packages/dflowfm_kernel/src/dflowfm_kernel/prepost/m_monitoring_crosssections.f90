@@ -125,9 +125,9 @@ contains
       end if
 
       do i = 1, size(cs)
-         call realloc(cs(i)%sumvalcur, maxnval, fill=0.0d0, keepExisting=.true.)
-         call realloc(cs(i)%sumvalcum, maxnval, fill=0.0d0, keepExisting=.true.)
-         call realloc(cs(i)%sumvalavg, maxnval, fill=0.0d0, keepExisting=.true.)
+         call realloc(cs(i)%sumvalcur, maxnval, fill=0.0_dp, keepExisting=.true.)
+         call realloc(cs(i)%sumvalcum, maxnval, fill=0.0_dp, keepExisting=.true.)
+         call realloc(cs(i)%sumvalavg, maxnval, fill=0.0_dp, keepExisting=.true.)
       end do
    end subroutine ReallocCrossSectionSums
 
@@ -222,7 +222,7 @@ contains
          crs(ncrs)%name = ' '
          crs(ncrs)%name(1:m) = name(1:m)
       else ! No name given, generate one.
-         write (cdigits, '(i1)') max(2, int(floor(log10(dble(iUniq_)) + 1)))
+         write (cdigits, '(i1)') max(2, int(floor(log10(real(iUniq_, kind=dp)) + 1)))
          write (crs(ncrs)%name, '(a,i'//cdigits//'.'//cdigits//')') trim(defaultName_), iUniq_
          iUniq_ = iUniq_ + 1
       end if

@@ -134,7 +134,7 @@ contains
       character(len=20) :: waqinput
       integer, external :: findname
       type(tEcMask) :: srcmask
-      
+
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
       logical :: exist, opened, withCharnock, withStress
 
@@ -233,7 +233,7 @@ contains
 
             if (present(forcingfile)) then
                if (present(dtnodal)) then
-                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal / 86400.d0)
+                  success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile, dtnodal=dtnodal / 86400.0_dp)
                else
                   success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile)
                end if
@@ -253,7 +253,7 @@ contains
                   success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename(1:index(filename, '.'))//'qh', refdate_mjd, tzone, ec_second, name)
                else
                   if (present(dtnodal)) then
-                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.d0, varname=varname)
+                     success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, dtnodal=dtnodal / 86400.0_dp, varname=varname)
                   else
                      if (present(varname2)) then
                         success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, varname=varname, varname2=varname2)
@@ -478,11 +478,11 @@ contains
          else
             if (ec_filetype == provFile_bc .and. target_name == 'windxy') then
                fileReaderPtr => ecSupportFindFileReader(ecInstancePtr, fileReaderId)
-               associate(column_units =>fileReaderPtr%bc%quantity%column_units)
+               associate (column_units => fileReaderPtr%bc%quantity%column_units)
                   if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('velocity', column_units(3))) then
                      ! windxy is defined by wind in x and wind in y direction
                      ec_convtype = convtype_uniform
-                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3)) ) then
+                  else if (is_correct_unit('velocity', column_units(2)) .and. is_correct_unit('from_direction', column_units(3))) then
                      ec_convtype = convtype_unimagdir
                   else
                      msgbuf = 'incorrect units found in bc file concerning the input for windxy. Only the combinations "ms-1, ms-1"'// &
@@ -511,10 +511,10 @@ contains
                itargetMaskSelect = 1
             end if
             if (itargetMaskSelect == 1) then
-               transformcoef = 1.0d0
+               transformcoef = 1.0_dp
                srcmask%msk = 0
             else
-               transformcoef = 0.0d0
+               transformcoef = 0.0_dp
                srcmask%msk = 1
             end if
 
@@ -807,7 +807,7 @@ contains
          end if
          if (success) success = ecAddConnectionTargetItem(ecInstancePtr, connectionId, item_charnock)
          if (success) success = ecAddItemConnection(ecInstancePtr, item_charnock, connectionId)
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'friction_coefficient'
          else
@@ -985,7 +985,7 @@ contains
             end if
             success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
          else if (ec_filetype == provFile_netcdf) then
-            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'humidity')
+            sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'relative_humidity')
             sourceItemId_2 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'air_temperature')
             sourceItemId_3 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'cloud_area_fraction')
             sourceItemId_4 = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'surface_net_downward_shortwave_flux')
@@ -1207,8 +1207,8 @@ contains
 
       if (target_name == 'nudge_salinity_temperature') then
          call ecConverterGetBbox(ecInstancePtr, SourceItemID, 0, col0, col1, row0, row1, ncols, nrows, issparse, Ndatasize)
-         relcol = dble(col1 - col0 + 1) / dble(ncols)
-         relrow = dble(row1 - row0 + 1) / dble(nrows)
+         relcol = real(col1 - col0 + 1, kind=dp) / real(ncols, kind=dp)
+         relrow = real(row1 - row0 + 1, kind=dp) / real(nrows, kind=dp)
          write (txt1, "('nudge_salinity_temperature: bounding box')")
          write (txt2, "('col0-col1 X row0-row1 = ', I0, '-', I0, ' X ', I0, '-', I0, ', ncols X nrows = ', I0, ' X ', I0)") col0, col1, row0, row1, ncols, nrows
          write (txt3, "('relcol X relrow = ', F4.2, ' X ', F4.2, ' = ', F4.2)") relcol, relrow, relcol * relrow
@@ -1216,7 +1216,7 @@ contains
 
          if (issparse == 1) then
             write (txt1, "('sparse: data size = ', I0, ', ncols X nrows = ', I0, ' X ', I0, ' = ', I0)") Ndatasize, ncols, nrows, ncols * nrows
-            write (txt2, "('factor = ', F4.2)") dble(Ndatasize) / dble(Ncols * Nrows)
+            write (txt2, "('factor = ', F4.2)") real(Ndatasize, kind=dp) / real(Ncols * Nrows, kind=dp)
             call mess(LEVEL_INFO, trim(txt1)//' '//trim(txt2))
          end if
       end if

@@ -71,21 +71,36 @@ contains
       integer, external :: infoinput
 
       NLEVEL = 4
-      OPTION(1) = 'ITERATIONS ORTHOGONALISE, ATTRACT. PARAM'; IT(1 * 2) = 2
-      OPTION(2) = 'ITERATIONS ORTHOGONALISE, BOUNDARY      '; IT(2 * 2) = 2
-      OPTION(3) = 'ITERATIONS ORTHOGONALISE, INNER AREA    '; IT(3 * 2) = 2
-      OPTION(4) = 'ORTHOGONALISE <-> SMOOTH;      1.0<->0.0'; IT(4 * 2) = 6
-      OPTION(5) = 'minimum ortho<->smooth on bdy; 1.0<->0.0'; IT(5 * 2) = 6
-      OPTION(6) = 'circumormasscenter;            1.0<->0.0'; IT(6 * 2) = 6
-      OPTION(7) = 'smoother <-> area homogenizer; 1.0<->0.0'; IT(7 * 2) = 6
-      OPTION(8) = 'project to (land)boundary               '; IT(8 * 2) = 2
-      OPTION(9) = 'cornernode cosine threshold             '; IT(9 * 2) = 6
-      OPTION(10) = 'mesh-adaptation method                  '; IT(10 * 2) = 2
-      OPTION(11) = 'mesh-refinement factor;        0.0<->1.0'; IT(11 * 2) = 6
-      OPTION(12) = 'smooth. iters. ''solution''    in adapt.'; IT(12 * 2) = 2
-      OPTION(13) = 'smooth. iters. monitor mat.    in adapt.'; IT(13 * 2) = 2
-      OPTION(14) = 'curvi-like <-> pure ortho;     0.0<->1.0'; IT(14 * 2) = 6
-      OPTION(15) = 'keep circumcenters (1) or not (0)       '; IT(15 * 2) = 2
+      OPTION(1) = 'ITERATIONS ORTHOGONALISE, ATTRACT. PARAM'
+      IT(1 * 2) = 2
+      OPTION(2) = 'ITERATIONS ORTHOGONALISE, BOUNDARY      '
+      IT(2 * 2) = 2
+      OPTION(3) = 'ITERATIONS ORTHOGONALISE, INNER AREA    '
+      IT(3 * 2) = 2
+      OPTION(4) = 'ORTHOGONALISE <-> SMOOTH;      1.0<->0.0'
+      IT(4 * 2) = 6
+      OPTION(5) = 'minimum ortho<->smooth on bdy; 1.0<->0.0'
+      IT(5 * 2) = 6
+      OPTION(6) = 'circumormasscenter;            1.0<->0.0'
+      IT(6 * 2) = 6
+      OPTION(7) = 'smoother <-> area homogenizer; 1.0<->0.0'
+      IT(7 * 2) = 6
+      OPTION(8) = 'project to (land)boundary               '
+      IT(8 * 2) = 2
+      OPTION(9) = 'cornernode cosine threshold             '
+      IT(9 * 2) = 6
+      OPTION(10) = 'mesh-adaptation method                  '
+      IT(10 * 2) = 2
+      OPTION(11) = 'mesh-refinement factor;        0.0<->1.0'
+      IT(11 * 2) = 6
+      OPTION(12) = 'smooth. iters. ''solution''    in adapt.'
+      IT(12 * 2) = 2
+      OPTION(13) = 'smooth. iters. monitor mat.    in adapt.'
+      IT(13 * 2) = 2
+      OPTION(14) = 'curvi-like <-> pure ortho;     0.0<->1.0'
+      IT(14 * 2) = 6
+      OPTION(15) = 'keep circumcenters (1) or not (0)       '
+      IT(15 * 2) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -126,10 +141,14 @@ contains
 
       IR = 0
       do I = 1, NUMPARACTUAL
-         IL = IR + 1; IR = IL + 1
-         IS(IL) = 82; IS(IR) = 10
-         IX(IL) = 10; IX(IR) = 92
-         IY(IL) = 2 * I; IY(IR) = 2 * I
+         IL = IR + 1
+         IR = IL + 1
+         IS(IL) = 82
+         IS(IR) = 10
+         IX(IL) = 10
+         IX(IR) = 92
+         IY(IL) = 2 * I
+         IY(IR) = 2 * I
          IT(IL) = 1001 ! ir staat hierboven
       end do
 

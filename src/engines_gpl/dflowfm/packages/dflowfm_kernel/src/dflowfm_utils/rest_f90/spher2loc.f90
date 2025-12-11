@@ -71,9 +71,9 @@ contains
          lambda0 = xref * dg2rd
 
 !           compute base vectors
-         exxp = (/cos(phi0) * cos(lambda0), cos(phi0) * sin(lambda0), sin(phi0)/)
-         eyyp = (/-sin(lambda0), cos(lambda0), 0d0/)
-         ezzp = (/-sin(phi0) * cos(lambda0), -sin(phi0) * sin(lambda0), cos(phi0)/)
+         exxp = [cos(phi0) * cos(lambda0), cos(phi0) * sin(lambda0), sin(phi0)]
+         eyyp = [-sin(lambda0), cos(lambda0), 0.0_dp]
+         ezzp = [-sin(phi0) * cos(lambda0), -sin(phi0) * sin(lambda0), cos(phi0)]
 
          do i = 1, N
 !              get 3D-coordinates
@@ -85,7 +85,7 @@ contains
             zzp = ezzp(1) * xx + ezzp(2) * yy + ezzp(3) * zz
 
 !              tranform to local spherical coordinates
-            call Cart3Dtospher(xxp, yyp, zzp, xloc(i), yloc(i), 0d0) ! local reference longitude
+            call Cart3Dtospher(xxp, yyp, zzp, xloc(i), yloc(i), 0.0_dp) ! local reference longitude
          end do
 
       end if

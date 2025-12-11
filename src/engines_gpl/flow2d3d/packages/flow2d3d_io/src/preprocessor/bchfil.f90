@@ -1,4 +1,4 @@
-subroutine bchfil(lundia    ,error     ,filbch    ,fmttmp    ,ntof      , &
+subroutine bchfil(lundia    ,error     ,filbch_in ,fmttmp    ,ntof      , &
                 & mxnto     ,kc        ,mxkc      ,omega     ,hydrbc    , &
                 & gdp       )
 !----- GPL ---------------------------------------------------------------------
@@ -60,7 +60,7 @@ subroutine bchfil(lundia    ,error     ,filbch    ,fmttmp    ,ntof      , &
     logical                                  , intent(out) :: error   ! Flag=TRUE if an error is encountered
     real(fp)     , dimension(4, mxnto, mxkc)               :: hydrbc  ! Description and declaration in esm_alloc_real.f90
     real(fp)     , dimension(kc)                           :: omega   ! Description and declaration in esm_alloc_real.f90
-    character(*)                             , intent(in)  :: filbch  ! Name of the relevant file
+    character(*)                             , intent(in)  :: filbch_in ! Name of the relevant file
     character(11)                            , intent(in)  :: fmttmp  ! Help var. for the attribute file formats (eg. the grid file)
 !
 ! Local variables
@@ -80,6 +80,7 @@ subroutine bchfil(lundia    ,error     ,filbch    ,fmttmp    ,ntof      , &
     real(fp)          :: rdef        ! Help var. containing default va- lue(s) for real variable 
     character(300)    :: errmsg      ! Character var. containing the error message to be written to file. The message depend on the error. 
     character(132)    :: rec132      ! Standard rec. length in an attribute file (132) 
+    character(:), allocatable :: filbch ! Name of the relevant file
 !
 !
 !! executable statements -------------------------------------------------------
@@ -93,6 +94,7 @@ subroutine bchfil(lundia    ,error     ,filbch    ,fmttmp    ,ntof      , &
     !
     ! Test file existence and if so read
     !
+    filbch = filbch_in
     call remove_leading_spaces(filbch, lfile)
     !
     if (exifil(filbch, lundia)) then

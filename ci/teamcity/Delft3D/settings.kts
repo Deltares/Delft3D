@@ -4,6 +4,7 @@ import jetbrains.buildServer.configs.kotlin.projectFeatures.*
 import Delft3D.*
 import Delft3D.linux.*
 import Delft3D.linux.containers.*
+import Delft3D.linux.container_smoketest.*
 import Delft3D.windows.*
 import Delft3D.template.*
 
@@ -50,12 +51,21 @@ project {
                 LinuxThirdPartyLibs,
             )
         }        
+        subProject {
+            id("SmokeTestsContainerH7")
+            name = "Smoke tests container on H7"
+            buildType(LinuxSubmitH7ContainerSmokeTest)
+            buildType(LinuxReceiveH7ContainerSmokeTest)
+            buildTypesOrder = listOf(
+                LinuxSubmitH7ContainerSmokeTest,
+                LinuxReceiveH7ContainerSmokeTest,
+            )
+        }        
         buildType(LinuxBuild)
         buildType(LinuxBuild2D3DSP)
         buildType(LinuxCollect)
         buildType(LinuxRuntimeContainers)
         buildType(LinuxRunAllContainerExamples)
-        buildType(LinuxLegacyDockerTest)
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
@@ -64,7 +74,6 @@ project {
             LinuxCollect,
             LinuxRuntimeContainers,
             LinuxRunAllContainerExamples,
-            LinuxLegacyDockerTest,
             LinuxUnitTest,
             LinuxTest
         )
@@ -74,8 +83,8 @@ project {
         id("Windows")
         name = "Windows"
 
-        buildType(WindowsBuildEnvironment)
         buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsTestEnvironment)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
         buildType(WindowsCollect)
@@ -83,8 +92,8 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironment,
             WindowsBuildEnvironmentI24,
+            WindowsTestEnvironment,
             WindowsBuild,
             WindowsBuild2D3DSP,
             WindowsCollect,
@@ -115,11 +124,12 @@ project {
 
         buildType(TestPythonCiTools)
         buildType(TestBenchValidation)
+        buildType(TestFortranStyler)
         buildType(CopyExamples)
         buildType(SigCi)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, CopyExamples, SigCi
+            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi
         )
     }
 

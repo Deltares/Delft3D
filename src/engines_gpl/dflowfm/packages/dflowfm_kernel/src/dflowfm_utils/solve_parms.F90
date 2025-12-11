@@ -34,6 +34,8 @@
 #endif
 
 module m_parms
+
+   use precision, only: dp
 #ifdef HAVE_PARMS
 #include "../third_party_open/pARMS/pARMS_3.2/include/fparms.h"
    parms_Map :: map ! map (represents how data are distributed across processors, see [1])
@@ -41,12 +43,12 @@ module m_parms
    parms_PC :: pc ! preconditioner
    parms_Solver :: ksp ! solver
 
-   double precision, dimension(:), allocatable :: sol ! solution vector
-   double precision, dimension(:), allocatable :: rhs ! right-hand side vector
+   real(kind=dp), dimension(:), allocatable :: sol ! solution vector
+   real(kind=dp), dimension(:), allocatable :: rhs ! right-hand side vector
 
    integer :: numloc ! number of local rows (elements) in matrix
    integer :: nummat ! number of matrix entries
-   double precision, dimension(:), allocatable :: amat ! matrix entries, dim(nummat)
+   real(kind=dp), dimension(:), allocatable :: amat ! matrix entries, dim(nummat)
    integer, dimension(:), allocatable :: imat, jmat ! column indices and row pointers of matrix, dim(numloc+1) and dim(nummat) respectively
    integer, dimension(:), allocatable :: guusidx ! index in guus matrix-array
 
@@ -89,7 +91,7 @@ subroutine iniparms(ierr)
 
    character(len=100) :: param
 
-   double precision, parameter :: a_init = 1d0 ! initial value for matrix entries
+   real(kind=dp), parameter :: a_init = 1.0_dp ! initial value for matrix entries
 
 #ifdef HAVE_PARMS
    call deallocparms()
@@ -172,9 +174,9 @@ subroutine iniparms(ierr)
    allocate (irows(numloc))
 
    allocate (rhs(numloc))
-   rhs = 0d0
+   rhs = 0.0_dp
    allocate (sol(numloc))
-   sol = 0d0
+   sol = 0.0_dp
 
 !  generate RCS index arrays (1-based)
    irow = 0
@@ -246,7 +248,7 @@ subroutine iniparms(ierr)
 !        default settings
    end select
 
-   if (dparms(IPARMS_DTOL) > 0d0) then
+   if (dparms(IPARMS_DTOL) > 0.0_dp) then
       call parms_pcsettol(pc, dparms(IPARMS_DTOL), ierr)
       if (ierr /= 0) goto 1234
    end if
@@ -304,10 +306,10 @@ subroutine conjugategradient_parms(s1, Ndx, its)
    implicit none
 
    integer, intent(in) :: Ndx !< number of unknowns (flownodes)
-   double precision, dimension(Ndx), intent(inout) :: s1 !< water level
+   real(kind=dp), dimension(Ndx), intent(inout) :: s1 !< water level
    integer, intent(out) :: its !< number of iterations
 
-   double precision :: res ! residual norm
+   real(kind=dp) :: res ! residual norm
 
    integer :: i, j, n
 
@@ -323,7 +325,7 @@ subroutine conjugategradient_parms(s1, Ndx, its)
 #ifdef HAVE_PARMS
    numzerorows = 0
 !   izerorow = 0
-   amat = 0d0
+   amat = 0.0_dp
 
 !  fill matrix entries
    do n = 1, nummat
@@ -348,7 +350,7 @@ subroutine conjugategradient_parms(s1, Ndx, its)
    if (ierr /= 0) goto 1234
 
 !  fill right-hand side and set initial values
-   rhs = 0d0
+   rhs = 0.0_dp
    do i = 1, numloc
       n = rowtoelem(i)
       rhs(i) = ddr(n)

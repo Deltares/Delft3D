@@ -99,13 +99,12 @@ program unstruc
    use m_qnrgf, only: jqn
    use m_read_commandline, only: read_commandline
    use m_flow_modelinit, only: flow_modelinit
-   use m_makelongculverts_commandline, only: makelongculverts_commandline
    use m_makenet_sub, only: makenet
    use m_partition_from_commandline, only: partition_from_commandline
    use m_refine_from_commandline, only: refine_from_commandline
    use m_resetFullFlowModel, only: resetFullFlowModel
    use m_dobatch, only: dobatch
-   use m_generatepartitionmdufile, only: generatepartitionmdufile
+   use m_generatepartitionmdufile, only: generatePartitionMDUFile
    use m_soltest, only: soltest
    use m_start_program, only: start_program
    use m_pressakey, only: pressakey
@@ -285,6 +284,8 @@ program unstruc
       end if
 
       if (len_trim(md_ident) > 0) then ! partitionmduparse
+         md_icgsolver = 6 ! Use the parallel petsc solver.
+         md_convertlongculverts = 0 ! The longculvert conversion is done before the partitioning of the net-file and the mdu-file.
          call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
          L = index(md_netfile, '_net') - 1
          if (len_trim(md_restartfile) > 0) then ! If there is a restart file
@@ -329,7 +330,7 @@ program unstruc
             if (len_trim(md_classmapfile_base) > 0) then
                md_classmap_file = md_classmapfile_base(1:index(md_classmapfile_base, '.nc', back=.true.) - 1)//'_'//sdmn_loc//".nc"
             end if
-            call generatePartitionMDUFile(trim(md_ident)//'.mdu', trim(md_ident)//'_'//sdmn_loc//'.mdu')
+            call generatePartitionMDUFile(trim(md_ident)//'_'//sdmn_loc//'.mdu')
          end do
       else
          call partition_from_commandline(md_netfile, md_ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
@@ -359,11 +360,6 @@ program unstruc
 
    if (jagui == 1 .and. len_trim(md_cfgfile) > 0) then
       call load_displaysettings(md_cfgfile)
-   end if
-   if (md_convertlongculverts == 1) then
-      call findcells(0)
-      call makelongculverts_commandline()
-      goto 1234 !      stop
    end if
 
    if (len_trim(md_ident) > 0) then

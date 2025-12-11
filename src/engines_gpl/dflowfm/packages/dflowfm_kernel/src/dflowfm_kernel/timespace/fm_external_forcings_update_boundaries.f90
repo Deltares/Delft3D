@@ -74,6 +74,7 @@ contains
       call setsigmabnds() ! our side of preparation for 3D ec module
 
       if (nzbnd > nqhbnd) then
+         zbndz(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_waterlevelbnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
@@ -84,7 +85,7 @@ contains
          ! loop over nqhbnd (per pli)
          do i = 1, nqhbnd
             !    prepare qtot array
-            atqh_all(i) = 0d0
+            atqh_all(i) = 0.0_dp
             do n = L1qhbnd(i), L2qhbnd(i)
                kb = kbndz(1, n)
                k2 = kbndz(2, n)
@@ -110,7 +111,7 @@ contains
          ! First step calculate the water level, using the QH-relation for a outflowing discharge + dQ
          do i = 1, nqhbnd
             q_org(i) = atqh_all(i)
-            atqh_all(i) = q_org(i) + max(min(0.001d0 * abs(q_org(i)), 1d0), 0.001d0)
+            atqh_all(i) = q_org(i) + max(min(0.001_dp * abs(q_org(i)), 1.0_dp), 0.001_dp)
          end do
          success = ec_gettimespacevalue(ecInstancePtr, item_qhbnd, irefdate, tzone, tunit, time)
          if (.not. success) then
@@ -120,7 +121,7 @@ contains
 
          ! Second step calculate the water level, using the QH-relation for a outflowing discharge - dQ
          do i = 1, nqhbnd
-            atqh_all(i) = q_org(i) - max(min(0.001d0 * abs(q_org(i)), 1d0), 0.001d0)
+            atqh_all(i) = q_org(i) - max(min(0.001_dp * abs(q_org(i)), 1.0_dp), 0.001_dp)
          end do
          success = ec_gettimespacevalue(ecInstancePtr, item_qhbnd, irefdate, tzone, tunit, time)
          if (.not. success) then
@@ -130,9 +131,9 @@ contains
 
          ! Step 3 now estimate the slope of the QH-relation at the given discharge
          do i = 1, nqhbnd
-            dQ = max(min(0.001d0 * abs(q_org(i)), 1d0), 0.001d0)
+            dQ = max(min(0.001_dp * abs(q_org(i)), 1.0_dp), 0.001_dp)
             if (comparereal(qhbndz_plus(i), qhbndz_min(i)) == 0) then
-               qh_gamma(i) = 0d0
+               qh_gamma(i) = 0.0_dp
             else
                qh_gamma(i) = 2 * dQ / (qhbndz_plus(i) - qhbndz_min(i))
             end if
@@ -153,6 +154,7 @@ contains
       end if
 
       if (item_velocitybnd /= ec_undef_int) then
+         zbndu(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_velocitybnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
@@ -160,6 +162,7 @@ contains
       end if
 
       if (item_dischargebnd /= ec_undef_int) then
+         zbndq(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_dischargebnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
@@ -208,6 +211,7 @@ contains
       end if
 
       if (nbndt > 0) then
+         zbndt(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_tangentialvelocitybnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
@@ -215,6 +219,7 @@ contains
       end if
 
       if (nbnduxy > 0) then
+         zbnduxy(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_uxuyadvectionvelocitybnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888
@@ -222,6 +227,7 @@ contains
       end if
 
       if (nbndn > 0) then
+         zbndn(:) = 0.0_dp
          success = ec_gettimespacevalue(ecInstancePtr, item_normalvelocitybnd, irefdate, tzone, tunit, time)
          if (.not. success) then
             goto 888

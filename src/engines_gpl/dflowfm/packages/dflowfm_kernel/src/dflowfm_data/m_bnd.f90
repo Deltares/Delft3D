@@ -89,9 +89,9 @@ contains
          allocate (bnd%kd(N))
          allocate (bnd%k(5, N))
 
-         bnd%x = 0d0
-         bnd%y = 0d0
-         bnd%xy2 = 0d0
+         bnd%x = 0.0_dp
+         bnd%y = 0.0_dp
+         bnd%xy2 = 0.0_dp
          bnd%kd = 0
          bnd%k = 0
 
@@ -99,11 +99,11 @@ contains
             allocate (bnd%sigma(kmx * N))
             allocate (bnd%zminmax(2 * N))
             allocate (bnd%z(kmx * N))
-            bnd%sigma = 0d0
-            bnd%z = 0d0
+            bnd%sigma = 0.0_dp
+            bnd%z = 0.0_dp
          else
             allocate (bnd%z(N))
-            bnd%z = 0d0
+            bnd%z = 0.0_dp
          end if
       end if
 

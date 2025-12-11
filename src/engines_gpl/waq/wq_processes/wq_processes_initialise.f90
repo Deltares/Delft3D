@@ -30,7 +30,7 @@ contains
 
 
     subroutine wq_processes_initialise (lunlsp, pdffil, shared_dll_so, blmfil, blmoutfil, sttfil, statprocesdef, outputs, &
-            nomult, imultp, constants, refday, noinfo, nowarn, ierr)
+            nomult, imultp, constants, refday, no_reflection_wq, noinfo, nowarn, ierr)
 
         !       Deltares Software Centre
 
@@ -66,7 +66,7 @@ contains
         use m_blmeff
         use m_algrep
         use m_actrep
-        use m_date_time_utils_external, only : write_date_time
+        use m_date_time_utils_external, only : fill_in_date_time
         use m_logger_helper, only : stop_with_error, write_log_message
         use m_rd_stt
         use m_getidentification
@@ -105,6 +105,7 @@ contains
         integer(kind = int_wp), intent(in) :: nomult           !< number of multiple substances
         integer(kind = int_wp), intent(in) :: imultp(2, nomult) !< multiple substance administration
         type(t_waq_item), intent(inout) :: constants       !< delwaq constants list
+        logical , intent(in) :: no_reflection_wq    !< switch to suppress automaticly switching on of Reflection process when BLOOM is used
         integer(kind = int_wp), intent(inout) :: noinfo           !< count of informative message
         integer(kind = int_wp), intent(inout) :: nowarn           !< count of warnings
         integer(kind = int_wp), intent(inout) :: ierr             !< error count
@@ -264,7 +265,7 @@ contains
         ! Header for lsp
         call getidentification(identification_text)
         write(lunlsp, '(XA/)') trim(identification_text)
-        call write_date_time(rundat)
+        call fill_in_date_time(rundat)
         write (lunlsp, '(A,A/)') ' Execution start: ', rundat
 
         ! Active/inactive substance list
@@ -334,6 +335,14 @@ contains
             ! fill the old_items conversion table
 
             call fill_old_items(old_items)
+            if (no_reflection_wq) then
+               write(lunlsp, '(a)') ' Running with RadSurf provided by FM. The Reflection process will not be switched on automatically when using BLOOM.'
+               do iitem = 1, old_items%current_size
+                  if (old_items%old_items(iitem)%new_name == 'Reflection') then
+                     old_items%old_items(iitem)%old_name = ' '
+                  end if
+               end do
+            end if
         endif
 
         ! open openpb dll

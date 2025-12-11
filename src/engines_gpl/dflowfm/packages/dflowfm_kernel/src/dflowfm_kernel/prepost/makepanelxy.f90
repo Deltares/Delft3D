@@ -166,9 +166,9 @@ contains
 
 !     knoopnummers uitdelen
       do J = 1, NC
-         Y = dble(J - 1) / dble(NC - 1)
+         Y = real(J - 1, kind=dp) / real(NC - 1, kind=dp)
          do I = 1, MC
-            X = dble(I - 1) / dble(MC - 1)
+            X = real(I - 1, kind=dp) / real(MC - 1, kind=dp)
             K = (J - 1) * MC + I + K0
             XKK = XPL(1) * (1 - X) * (1 - Y) + XPL(2) * (X) * (1 - Y) + &
                   XPL(3) * (X) * (Y) + XPL(4) * (1 - X) * (Y)
@@ -177,13 +177,13 @@ contains
             if (JVIEW == 1) then
                XK(K) = XKK
                YK(K) = YKK
-               ZK(K) = 0d0
+               ZK(K) = 0.0_dp
             else if (JVIEW == 2) then
                XK(K) = XKK
-               YK(K) = 0d0
+               YK(K) = 0.0_dp
                ZK(K) = YKK
             else if (JVIEW == 3) then
-               XK(K) = 0d0
+               XK(K) = 0.0_dp
                YK(K) = XKK
                ZK(K) = YKK
             end if

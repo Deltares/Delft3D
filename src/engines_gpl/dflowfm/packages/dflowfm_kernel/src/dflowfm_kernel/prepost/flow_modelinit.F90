@@ -53,7 +53,7 @@ module m_flow_modelinit
 contains
 
    !> Initializes the entire current model (geometry, boundaries, initial state)
- !! @return Error status: error (/=0) or not (0)
+ !! @return Error status: error [=0) or not (0)
    integer function flow_modelinit() result(iresult) ! initialise flowmodel
       use m_flow_geominit, only: flow_geominit
       use m_flow_fourierinit, only: flow_fourierinit
@@ -129,6 +129,7 @@ contains
       use m_init_openmp, only: init_openmp
       use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
       use m_tauwavefetch, only: tauwavefetch
+      use m_fill_constituents, only: fill_constituents
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -155,7 +156,7 @@ contains
       call datum2(rundat2)
       L = len_trim(rundat2)
 
-      if (ti_waq > 0d0) then
+      if (ti_waq > 0.0_dp) then
          call makedir(getoutputdir('waq')) ! No problem if it exists already.
       end if
 
@@ -182,10 +183,6 @@ contains
       call reset_nearfieldData()
 
       call timstop(handle_extra(1)) ! End basic steps
-
-      if (jagui == 1) then
-         call timini() ! this seems to work, initimer and timini pretty near to each other
-      end if
 
 ! JRE
       if (jawave == WAVE_SURFBEAT) then
@@ -273,7 +270,7 @@ contains
 
       if (my_rank == fetch_proc_rank .and. (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG)) then
          ! All helpers need no further model initialization.
-         call tauwavefetch(0d0)
+         call tauwavefetch(0.0_dp)
          iresult = DFM_USERINTERRUPT
          return
       end if
@@ -421,11 +418,11 @@ contains
 
       ! initialize waq and add to tracer administration
       call timstrt('WAQ processes init  ', handle_extra(18)) ! waq processes init
-      if (ti_waqproc /= 0d0) then
+      if (ti_waqproc /= 0.0_dp) then
          if (jawaqproc == 1) then
             call fm_wq_processes_ini_proc()
             jawaqproc = 2
-            if (ti_waqproc > 0d0) then
+            if (ti_waqproc > 0.0_dp) then
                call fm_wq_processes_step(ti_waqproc, tstart_user)
             else
                call fm_wq_processes_step(dt_init, tstart_user)
@@ -436,6 +433,7 @@ contains
 
       call timstrt('MBA init            ', handle_extra(24)) ! MBA init
       if (ti_mba > 0) then
+         call fill_constituents(1) ! mba_init assumes that the concentrations are in the constituents array ...
          call mba_init()
       end if
       call timstop(handle_extra(24)) ! end MBA init
@@ -468,7 +466,7 @@ contains
       end if
 
       call fm_icecover_prepare_output(s1, rho, ag) ! needs to happen before the (final/second) call to flow_obsinit
-      
+
       call timstrt('Observations init 2 ', handle_extra(28)) ! observations init 2
       call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (2nd time required to fill values in observation stations)
       call timstop(handle_extra(28)) ! end observations init 2
@@ -509,7 +507,7 @@ contains
          use_u1 = .false.
          ucxq_save = ucxq
          ucyq_save = ucyq
-         if (Corioadamsbashfordfac > 0d0) then
+         if (Corioadamsbashfordfac > 0.0_dp) then
             fvcoro_save = fvcoro
          end if
       end if !restart
@@ -526,9 +524,10 @@ contains
 
       !See UNST-7754
       if (stm_included .and. jased > 0) then
-         taub = 0d0
+         taub = 0.0_dp
          do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             taub(k1) = taub(k1) + wcl(1, L) * taubxu(L)
             taub(k2) = taub(k2) + wcl(2, L) * taubxu(L)
          end do

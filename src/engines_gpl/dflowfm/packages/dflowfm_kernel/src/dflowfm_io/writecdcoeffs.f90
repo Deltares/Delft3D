@@ -60,23 +60,23 @@ contains
       call newfil(msgbu, trim(getoutputdir())//trim(md_ident)//'_Cdwcoeff.tek')
 
       write (msgbu, '(a)') '* Wind Cdcoefficient relation : '
-      if (icdtyp == 1) then
+      if (wind_drag_type == CD_TYPE_CONST) then
          write (msgbu, '(a)') '* Constant'
-      else if (icdtyp == 2) then
+      else if (wind_drag_type == CD_TYPE_SMITHBANKE_2PT) then
          write (msgbu, '(a)') '* Smith and Banks 2 breakpoints'
-      else if (icdtyp == 3) then
+      else if (wind_drag_type == CD_TYPE_SMITHBANKE_3PT) then
          write (msgbu, '(a)') '* Smith and Banks like 3 breakpoints'
-      else if (icdtyp == 4) then
+      else if (wind_drag_type == CD_TYPE_CHARNOCK1955) then
          write (msgbu, '(a)') '* Charnock 1955 (1 parameter)'
-      else if (icdtyp == 5) then
+      else if (wind_drag_type == CD_TYPE_HWANG2005) then
          write (msgbu, '(a)') '* Hwang 2005, wave frequency dependent (fixed parameters + wave period)'
-      else if (icdtyp == 6) then
+      else if (wind_drag_type == CD_TYPE_WUEST2003) then
          write (msgbu, '(a)') '* Wuest 2003 & Smith en Banke (fixed parameters)'
-      else if (icdtyp == 7) then
-         write (msgbu, '(a)') '* Hans Hersbach, July 2010, ECMWF fit (CHarnock plus viscous term), (e.g. Charnock=0.018 and alfvisc=0.11)'
-      else if (icdtyp == 8) then
+      else if (wind_drag_type == CD_TYPE_HERSBACH2011) then
+         write (msgbu, '(a)') '* Hans Hersbach, 2011, ECMWF fit (Charnock plus viscous term), (e.g. Charnock=0.018 and alfvisc=0.11)'
+      else if (wind_drag_type == CD_TYPE_CHARNOCK_PLUS_VISCOUS) then
          write (msgbu, '(a)') '* Charnock 1955 (2 parameters, Charnock plus viscous, e.g. 0.025     0.11)'
-      else if (icdtyp == 9) then
+      else if (wind_drag_type == CD_TYPE_GARRATT1977) then
          write (msgbu, '(a)') '* Garratt, 1977 (fixed parameters)'
       end if
 
@@ -91,16 +91,18 @@ contains
       end if
 
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
-         fetchL = 20000d0
-         fetchD = 4d0
+         fetchL = 20000.0_dp
+         fetchD = 4.0_dp
          allocate (hwavsav(ndx), twavsav(ndx))
-         hwavsav = hwav; twavsav = twav
+         hwavsav = hwav
+         twavsav = twav
       end if
 
-      uwi = 0.1d0
+      uwi = 0.1_dp
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
-         hwav = hsig; twav = tsig
+         hwav = hsig
+         twav = tsig
       end if
       call setcdwcoefficient(uwi, Cd10, 1)
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -109,10 +111,11 @@ contains
          write (msgbu, '(2F14.6)') uwi, Cd10
       end if
 
-      uwi = 0.2d0
+      uwi = 0.2_dp
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
          call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
-         hwav = hsig; twav = tsig
+         hwav = hsig
+         twav = tsig
       end if
       call setcdwcoefficient(uwi, Cd10, 1)
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -122,10 +125,11 @@ contains
       end if
 
       do k = 1, 28
-         uwi = uwi + 0.2d0
+         uwi = uwi + 0.2_dp
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
-            hwav = hsig; twav = tsig
+            hwav = hsig
+            twav = tsig
          end if
          call setcdwcoefficient(uwi, Cd10, 1)
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -136,10 +140,11 @@ contains
       end do
 
       do k = 1, 24
-         uwi = uwi + 1.0d0
+         uwi = uwi + 1.0_dp
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
-            hwav = hsig; twav = tsig
+            hwav = hsig
+            twav = tsig
          end if
          call setcdwcoefficient(uwi, Cd10, 1)
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -150,10 +155,11 @@ contains
       end do
 
       do k = 1, 8
-         uwi = uwi + 10d0
+         uwi = uwi + 10.0_dp
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
             call hurdlestive(Uwi, fetchL, fetchD, Hsig, Tsig)
-            hwav = hsig; twav = tsig
+            hwav = hsig
+            twav = tsig
          end if
          call setcdwcoefficient(uwi, Cd10, 1)
          if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
@@ -166,7 +172,8 @@ contains
       call doclose(msgbu)
 
       if (jawave > NO_WAVES .and. .not. flowWithoutWaves) then
-         hwav = hwavsav; twav = twavsav
+         hwav = hwavsav
+         twav = twavsav
          deallocate (hwavsav, twavsav)
       end if
 

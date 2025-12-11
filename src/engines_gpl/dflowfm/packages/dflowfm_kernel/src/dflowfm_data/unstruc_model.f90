@@ -121,6 +121,7 @@ module unstruc_model
    character(len=255) :: md_cutcelllist = ' ' !< contains list of cutcell polygons (e.g., *_cut.lst)
    character(len=255) :: md_fixedweirfile = ' ' !< Fixed weir pliz's                 (e.g., *_fxw.pli), = pli with x,y, Z  column
    character(len=255) :: md_pillarfile = ' ' !< pillar pliz's                     (e.g., *_pillar.pli), = pli with x,y, diameter and Cd columns
+   integer :: md_pillar_use_far_field_velocity = 0 !< 0: use local velocity, 1: use far-field velocity for computing pillar drag force
    character(len=255) :: md_roofsfile = ' ' !< Roof pliz's                      (e.g., *_roof.pli), = pli with x,y, Z  column
    character(len=255) :: md_gulliesfile = ' ' !< gullies pliz's                    (e.g., *_gul.pli), = pli with x,y, Z  column
    character(len=255) :: md_vertplizfile = ' ' !< Vertical layering pliz's          (e.g., *_vlay.pliz), = pliz with x,y, Z, first Z =nr of layers, second Z = laytyp
@@ -257,6 +258,7 @@ module unstruc_model
    integer :: md_fou_step !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
    integer, private :: ifixedweirscheme_input !< input value of ifixedweirscheme in mdu file
+   real(kind=dp), private :: user_provided_charnock_coefficient !< input value of Cdbreakpoints in mdu file
 
 contains
 
@@ -416,7 +418,7 @@ contains
       use fm_external_forcings_data, only: pillar
       use m_sferic
       use unstruc_caching
-      use m_longculverts
+      use m_longculverts, only: initialize_long_culverts
       use unstruc_channel_flow
       use unstruc_netcdf, only: unc_meta_net_file
       use system_utils, only: remove_path
@@ -430,7 +432,6 @@ contains
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
 
       character(len=200), dimension(:), allocatable :: fnames
-      character(len=1024) :: fnamesstring
       real(kind=dp), dimension(2) :: tempbob
 
       integer :: istat, minp, ifil, jadoorladen
@@ -452,10 +453,6 @@ contains
 
       if (istat /= 0) then
          return
-      end if
-
-      if (len_trim(md_extfile) > 0) then
-         ! DEBUG: call convert_externalforcings_file(md_extfile)
       end if
 
       ! load the caching file - if there is any
@@ -495,20 +492,7 @@ contains
          call SetMessage(LEVEL_INFO, 'Reading Structures ...')
          call readStructures(network, md_1dfiles%structures, is_path_relative=md_paths_relto_parent > 0)
          call SetMessage(LEVEL_INFO, 'Reading Structures Done')
-
-         if (md_convertlongculverts == 0) then
-            fnamesstring = md_1dfiles%structures
-            call strsplit(fnamesstring, 1, fnames, 1)
-            call loadLongCulvertsAsNetwork(fnames(1), 0, istat)
-            do ifil = 2, size(fnames)
-               call loadLongCulvertsAsNetwork(fnames(ifil), 1, istat)
-            end do
-            deallocate (fnames)
-            if (.not. newculverts .and. nlongculverts > 0) then
-               call setnodadm(0)
-               call finalizeLongCulvertsInNetwork()
-            end if
-         end if
+         call initialize_long_culverts(md_1dfiles, md_convertlongculverts, write_converted_files=(md_japartition == 1))
       end if
 
       call timstop(timerHandle)
@@ -616,10 +600,14 @@ contains
          do ifil = 1, size(fnames)
             call oldfil(minp, fnames(ifil))
             call reapol(minp, 1)
-            allocate (pillar(ifil)%xcor(npl)); pillar(ifil)%xcor = dmiss
-            allocate (pillar(ifil)%ycor(npl)); pillar(ifil)%ycor = dmiss
-            allocate (pillar(ifil)%dia(npl)); pillar(ifil)%dia = dmiss
-            allocate (pillar(ifil)%cd(npl)); pillar(ifil)%cd = dmiss
+            allocate (pillar(ifil)%xcor(npl))
+            pillar(ifil)%xcor = dmiss
+            allocate (pillar(ifil)%ycor(npl))
+            pillar(ifil)%ycor = dmiss
+            allocate (pillar(ifil)%dia(npl))
+            pillar(ifil)%dia = dmiss
+            allocate (pillar(ifil)%cd(npl))
+            pillar(ifil)%cd = dmiss
             pillar(ifil)%np = npl
             do i = 1, npl
                pillar(ifil)%xcor(i) = xpl(i)
@@ -682,7 +670,11 @@ contains
       use m_flowparameters
       use m_dambreak_breach, only: set_dambreak_widening_method
       use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
-      use m_wind ! ,                  only : icdtyp, cdb, wdb,
+      use m_wind, only: wind_drag_type, cdb, wdb, jaheat_eachstep, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, pavini, pavbnd, &
+          jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext,jaevap, jawind, &
+          wdb, jaevap, jawind, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
+          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003, CD_TYPE_HERSBACH2011, &
+          CD_TYPE_CHARNOCK_PLUS_VISCOUS, CD_TYPE_GARRATT1977
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jasfer3D
@@ -726,7 +718,7 @@ contains
       use m_circumcenter_method, only: md_circumcenter_method, circumcenter_method, extract_circumcenter_method, circumcenter_tolerance
       use m_check_positive_value, only: check_positive_value
       use m_add_baroclinic_pressure, only: rhointerfaces
-
+      use m_flow_validatestate_data
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -818,6 +810,7 @@ contains
       call prop_get(md_ptr, bnam, 'InputSpecific', md_input_specific)
       call prop_get(md_ptr, bnam, 'ModelSpecific', md_specific)
       call prop_get(md_ptr, bnam, 'PathsRelativeToParent', md_paths_relto_parent)
+      call prop_get(md_ptr, bnam, 'ConvertLongCulverts', md_convertlongculverts)
 
 ! Geometry
       call prop_get(md_ptr, 'geometry', 'CrossDefFile', md_1dfiles%cross_section_definitions, success)
@@ -942,7 +935,6 @@ contains
          call prop_get(md_ptr, 'geometry', 'Dztop', Dztop)
          call prop_get(md_ptr, 'geometry', 'Toplayminthick', Toplayminthick)
          call prop_get(md_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay)
-         call prop_get(md_ptr, 'geometry', 'OrgFloorlevtoplaydef', jaorgFloorlevtoplaydef)
          call prop_get(md_ptr, 'geometry', 'Tsigma', Tsigma)
          call prop_get(md_ptr, 'geometry', 'ZlayBot', zlaybot)
          call prop_get(md_ptr, 'geometry', 'ZlayTop', zlaytop)
@@ -1043,8 +1035,9 @@ contains
       call prop_get(md_ptr, 'numerics', 'EpsMaxlevm', epsmaxlevm)
       !call prop_get( md_ptr, 'numerics', 'CFLWaveFrac'     , cflw)
       call prop_get(md_ptr, 'numerics', 'AdvecType', iadvec)
-      if (Layertype > 1) then
-         iadvec = 33; iadvec1D = 33
+      if (Layertype /= LAYTP_SIGMA) then
+         iadvec = 33
+         iadvec1D = 33
       end if
       call prop_get(md_ptr, 'numerics', 'AdvecCorrection1D2D', iadveccorr1D2D)
       call prop_get(md_ptr, 'numerics', 'TimeStepType', itstep)
@@ -1066,8 +1059,10 @@ contains
       call prop_get(md_ptr, 'numerics', 'Limtypmom', limtypmom)
       call prop_get(md_ptr, 'numerics', 'Limtypsa', limtypsa)
       call prop_get(md_ptr, 'numerics', 'Limtypw', limtypw)
-      if (kmx > 1) then ! package deal
-         ja_timestep_auto = 5
+
+      ! Default autotimestep value for 3D is AUTO_TIMESTEP_3D_INOUT
+      if (kmx > 1) then
+         autotimestep = AUTO_TIMESTEP_3D_INOUT
       end if
 
       call prop_get(md_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff)
@@ -1087,8 +1082,30 @@ contains
 
       call prop_get(md_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport)
 
-      call prop_get(md_ptr, 'numerics', 'Vertadvtypsal', javasal)
-      call prop_get(md_ptr, 'numerics', 'Vertadvtyptem', javatem)
+      call prop_get(md_ptr, 'numerics', 'verticalAdvectionType', vertical_advection_type, success)
+      if (success) then
+         call str_lower(vertical_advection_type)
+         select case (vertical_advection_type)
+         case ('centralimplicit')
+            javasal = VERTICAL_ADVECTION_CENTRAL_IMPLICIT
+            javatem = VERTICAL_ADVECTION_CENTRAL_IMPLICIT
+            md_thetav_waq = 0.55_dp
+         case ('higherorderupwindexplicit')
+            javasal = VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT
+            javatem = VERTICAL_ADVECTION_HIGHER_ORDER_UPWIND_EXPLICIT
+            md_thetav_waq = 0.0_dp
+         case default
+            write (msgbuf, '(a,a)') 'Did not recognise VerticalAdvectionType value: ', trim(vertical_advection_type)
+            call mess(LEVEL_ERROR, trim(msgbuf))
+            write (msgbuf, '(a)') 'Supported values are: centralImplicit and higherOrderUpwindExplicit'
+            call mess(-LEVEL_ERROR, trim(msgbuf))
+         end select
+      else
+         call prop_get(md_ptr, 'numerics', 'Vertadvtypsal', javasal)
+         call prop_get(md_ptr, 'numerics', 'Vertadvtyptem', javatem)
+         call prop_get(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
+      end if
+
       call prop_get(md_ptr, 'numerics', 'Vertadvtypmom', javau)
       call prop_get(md_ptr, 'numerics', 'Vertadvtypmom3onbnd', javau3onbnd)
 
@@ -1138,16 +1155,13 @@ contains
       !ideally, we move all this sort of reworking to another subroutine
       if (jaextrapbl == 1) then
          if (ibedlevtyp /= 1) then
-            jaextrapbl = 0
-            call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: BedlevType /= 1 and jaextrapbl == 1. It is not possible to extrapolate bed level if the bed level is not at cell centres. Extrapolation has been disabled.')
+            call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: BedlevType /= 1 and jaextrapbl == 1. It is not possible to extrapolate bed level if the bed level is not at cell centres. set [geometry] ExtrBl = 0.')
          end if
          if (Izbndpos /= 0) then
-            jaextrapbl = 0
-            call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Izbndpos /= 0 and jaextrapbl == 1. It is not possible to extrapolate bed level if the bed level at the boundary is not set at ghost. Extrapolation has been disabled.')
+            call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Izbndpos /= 0 and jaextrapbl == 1. It is not possible to extrapolate bed level if the bed level at the boundary is not set at ghost. [geometry] ExtrBl = 0.')
          end if
          if (Jaconveyance2D /= -1) then
-            jaextrapbl = 0
-            call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Conveyance2D /= -1 and jaextrapbl == 1. It is not possible to extrapolate bed level if conveyance is not calculated as HU. Extrapolation has been disabled.')
+            call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Conveyance2D /= -1 and jaextrapbl == 1. It is not possible to extrapolate bed level if conveyance is not calculated as HU. [geometry] ExtrBl = 0.')
          end if
       end if !jaextrapbl
       call prop_get(md_ptr, 'numerics', 'Tlfsmo', Tlfsmo)
@@ -1212,14 +1226,15 @@ contains
          end do
       end if
 
-      call prop_get(md_ptr, 'numerics', 'Maxwaterleveldiff', s01max)
-      call prop_get(md_ptr, 'numerics', 'Maxvelocitydiff', u01max)
-      call prop_get(md_ptr, 'numerics', 'Maxvelocity', umagmax)
-      call prop_get(md_ptr, 'numerics', 'Waterlevelwarn', s01warn)
-      call prop_get(md_ptr, 'numerics', 'Velocitywarn', u01warn)
-      call prop_get(md_ptr, 'numerics', 'Velmagnwarn', umagwarn)
-      call prop_get(md_ptr, 'numerics', 'MinTimestepBreak', dtminbreak)
-      call prop_get(md_ptr, 'numerics', 'MaxSSC', sscmax)
+      call prop_get(md_ptr, 'numerics', 'Maxwaterleveldiff', s01_max_err)
+      call prop_get(md_ptr, 'numerics', 'Maxvelocitydiff', u01_max_err)
+      call prop_get(md_ptr, 'numerics', 'Maxvelocity', umag_max_err)
+      call prop_get(md_ptr, 'numerics', 'Waterlevelwarn', s1_max_warn)
+      call prop_get(md_ptr, 'numerics', 'Velocitywarn', u1abs_max_warn)
+      call prop_get(md_ptr, 'numerics', 'Velmagnwarn', umag_max_warn)
+      call prop_get(md_ptr, 'numerics', 'MinTimestepBreak', dtavg_min_err)
+      call prop_get(md_ptr, 'numerics', 'MinWaterlevelChangeBreak', s01maxavg_min_err)
+      call prop_get(md_ptr, 'numerics', 'MaxSSC', ssc_max_err)
       call prop_get(md_ptr, 'numerics', 'Epshu', epshu)
       call prop_get(md_ptr, 'numerics', 'Epsz0', epsz0)
       epshs = 0.2_dp * epshu ! minimum waterdepth for setting cfu
@@ -1241,13 +1256,13 @@ contains
       !
       ! Filter to suppress checkerboarding is also available for z-layers (so that ERROR message has been switched off)
       !
-      ! if (Layertype == 2 .and. jafilter /= 0) then
+      ! if (Layertype == LAYTP_Z .and. jafilter /= 0) then
       ! call mess(LEVEL_ERROR, 'The checkerboard-filter has not been implemented for Z-models yet', '.')
       ! endif
       !
       ! Filter to suppress checkerboarding is also available for z-layers (so that ERROR message has been switched off)
       !
-      ! if (Layertype == 2 .and. jacheckmonitor /= 0) then
+      ! if (Layertype == LAYTP_Z .and. jacheckmonitor /= 0) then
       ! call mess(LEVEL_WARN, 'The checkerboardmonitor has not been implemented for Z-models yet, is automatically switched off now.')
       ! jacheckmonitor = 0
       ! end if
@@ -1287,6 +1302,8 @@ contains
       case default
          call mess(LEVEL_ERROR, 'Invalid flow solver '''//trim(md_flow_solver)//''' . Select between `generic1d2d3d` and `implicit1d`.')
       end select
+
+      call prop_get(md_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, success)
 
       !implicit1d
       call prop_get(md_ptr, 'implicit1d', 'omega', f1dimppar%omega)
@@ -1379,9 +1396,12 @@ contains
       call prop_get(md_ptr, 'physics', 'Secchidepth', Secchidepth)
       call prop_get(md_ptr, 'physics', 'Secchidepth2', Secchidepth2)
       call prop_get(md_ptr, 'physics', 'Secchidepth2fraction', Secchidepth2fraction)
-      zab(1) = Secchidepth / 1.7_dp; sfr(1) = 1.0_dp
+      zab(1) = Secchidepth / 1.7_dp
+      sfr(1) = 1.0_dp
       if (Secchidepth2 > 0) then
-         zab(2) = Secchidepth2 / 1.7_dp; sfr(2) = Secchidepth2fraction; sfr(1) = 1.0_dp - sfr(2)
+         zab(2) = Secchidepth2 / 1.7_dp
+         sfr(2) = Secchidepth2fraction
+         sfr(1) = 1.0_dp - sfr(2)
       end if
 
       call prop_get(md_ptr, 'physics', 'Stanton', Stanton)
@@ -1459,8 +1479,7 @@ contains
       call prop_get(md_ptr, 'sediment', 'Sedimentmodelnr', jased) ! 1 = krone, 2 = svr, 3 engelund, 4=D3D
       !ideally this is moved to a subroutine that groups reworking
       if (jadpuopt == 2 .and. jased /= 4) then
-         jadpuopt = 1
-         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: Dpuopt = 2 and Sedimentmodelnr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update. Dpuopt has been set to 1 (min value).')
+         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Dpuopt = 2 and Sedimentmodelnr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update or set [geometry] Dpuopt = 1 (min value).')
       end if
       call prop_get(md_ptr, 'sediment', 'SedFile', md_sedfile, success)
       call prop_get(md_ptr, 'sediment', 'MorFile', md_morfile, success)
@@ -1561,25 +1580,26 @@ contains
          end if
       end if
 
-      call prop_get(md_ptr, 'wind', 'ICdtyp', ICdtyp)
-      if (Icdtyp == 1) then
-         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 1)
-      else if (Icdtyp == 2) then
-         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
-         call prop_get(md_ptr, 'wind', 'Windspeedbreakpoints', Wdb, 2)
-         Cdb(3) = Cdb(2)
-         Wdb(2) = max(Wdb(2), Wdb(1) + 0.1_dp)
-         Wdb(3) = Wdb(2) + 0.1_dp
-      else if (Icdtyp == 3) then
-         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 3)
-         call prop_get(md_ptr, 'wind', 'Windspeedbreakpoints', Wdb, 3)
-         Wdb(2) = max(Wdb(2), Wdb(1) + 0.1_dp)
-         Wdb(3) = max(Wdb(3), Wdb(2) + 0.1_dp)
-      else if (Icdtyp == 4) then
-         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 1)
+      call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
+      if (wind_drag_type == CD_TYPE_CONST) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 1)
+      else if (wind_drag_type == CD_TYPE_SMITHBANKE_2PT) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 2)
+         call prop_get(md_ptr, 'wind', 'Windspeedbreakpoints', wdb, 2)
+         cdb(3) = cdb(2)
+         wdb(2) = max(wdb(2), wdb(1) + 0.1_dp)
+         wdb(3) = wdb(2) + 0.1_dp
+      else if (wind_drag_type == CD_TYPE_SMITHBANKE_3PT) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 3)
+         call prop_get(md_ptr, 'wind', 'Windspeedbreakpoints', wdb, 3)
+         wdb(2) = max(wdb(2), wdb(1) + 0.1_dp)
+         wdb(3) = max(wdb(3), wdb(2) + 0.1_dp)
+      else if (wind_drag_type == CD_TYPE_CHARNOCK1955) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 1)
+         user_provided_charnock_coefficient = cdb(1)
          cdb(2) = 0.0_dp
-      else if (Icdtyp == 7 .or. Icdtyp == 8) then
-         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', Cdb, 2)
+      else if (wind_drag_type == CD_TYPE_GARRATT1977 .or. wind_drag_type == CD_TYPE_CHARNOCK_PLUS_VISCOUS) then
+         call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 2)
       end if
       call prop_get(md_ptr, 'wind', 'Relativewind', relativewind)
       call prop_get(md_ptr, 'wind', 'Windhuorzwsbased', jawindhuorzwsbased)
@@ -1725,10 +1745,12 @@ contains
       call setTUDUnitString()
 
       call prop_get(md_ptr, 'Time', 'dtUser', dt_user)
+
+      ! Set default values if not specified in MDU
       if (dt_user <= 0) then
          dt_user = 300.0_dp
          dt_max = 60.0_dp
-         ja_timestep_auto = 1
+         autotimestep = AUTO_TIMESTEP_2D_OUT
       end if
 
       call prop_get(md_ptr, 'Time', 'dtNodal', dt_nodal)
@@ -1740,9 +1762,8 @@ contains
          call msg_flush()
       end if
 
-      ! 1.02: Don't read [time] AutoTimestep (ja_timestep_auto) from MDU anymore.
       ! ibuf = 1
-      call prop_get(md_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, success)
+      call prop_get(md_ptr, 'Time', 'autoTimeStep', autotimestep, success)
       call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
       if (success .and. jadum /= 0) then
          call mess(LEVEL_ERROR, 'autoTimeStepDiff not supported')
@@ -2230,7 +2251,7 @@ contains
       if (success) then
          read (charbuf, *, iostat=iostat) ibuf, ti_split_unit
          if (iostat == 0) then
-            ti_split = dble(ibuf)
+            ti_split = real(ibuf, kind=dp)
             select case (ti_split_unit)
             case ('Y', 'M', 'D', 'h', 'm', 's')
                if (ti_split < 0.0_dp) then ! Invalid time value, error.
@@ -2258,13 +2279,13 @@ contains
       end if
       ! Check for ocean_sigma_z in combination with numtopsig=0, then fullgridoutput=1 is the only option (UNST-5477).
       if (success) then
-         if (jafullgridoutput == 0 .and. Layertype > 1 .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
+         if (jafullgridoutput == 0 .and. Layertype /= LAYTP_SIGMA .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
             jafullgridoutput = 1
             call mess(LEVEL_WARN, 'A combination of Z- and Sigma-layers is used, but Numtopsiguniform is not 1. FullGridOutput must be set to 1.')
             call warn_flush()
          end if
       else
-         if (Layertype > 1 .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
+         if (Layertype /= LAYTP_SIGMA .and. Numtopsig > 0 .and. kmx > 0 .and. janumtopsiguniform /= 1) then
             jafullgridoutput = 1
          end if
       end if
@@ -2406,7 +2427,6 @@ contains
       call prop_get(md_ptr, 'processes', 'SubstanceFile', md_subfile, success)
       call prop_get(md_ptr, 'processes', 'AdditionalHistoryOutputFile', md_ehofile, success)
       call prop_get(md_ptr, 'processes', 'StatisticsFile', md_sttfile, success)
-      call prop_get(md_ptr, 'processes', 'ThetaVertical', md_thetav_waq, success)
       call prop_get(md_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr)
       call prop_get(md_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr)
       call prop_get(md_ptr, 'processes', 'SubstanceDensityCoupling', JaSubstancedensitycoupling)
@@ -2571,7 +2591,7 @@ contains
       allocate (map_classes_ucdir(n - 1), stat=ierr)
       if (ierr /= 0) call aerr('map_classes_ucdir', ierr, n + 1)
       do i = 1, n - 1
-         map_classes_ucdir(i) = dble(i) * map_classes_ucdirstep
+         map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
    end subroutine createDirectionClasses
 
@@ -2602,7 +2622,10 @@ contains
       use m_flowgeom ! ,              only : wu1Duni, Bamin, rrtol, jarenumber, VillemonteCD1, VillemonteCD2
       use m_flowtimes
       use m_flowparameters
-      use m_wind
+      use m_wind, only: jaspacevarcharn, jaheat_eachstep, wind_drag_type, cdb, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, &
+          pavbnd, pavini, jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqext, wdb, jaevap, jawind, &
+          CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
+          CD_TYPE_CHARNOCK1955, CD_TYPE_HWANG2005, CD_TYPE_WUEST2003      
       use network_data, only: zkuni, Dcenterinside, removesmalllinkstrsh, cosphiutrsh
       use m_circumcenter_method, only: circumcenter_method
       use m_sferic, only: anglat, anglon, jsferic, jasfer3D
@@ -2632,6 +2655,7 @@ contains
       use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
+      use m_flow_validatestate_data, only: dtavg_min_err, s01maxavg_min_err, s01_max_err, u01_max_err, umag_max_err, s1_max_warn, u1abs_max_warn, umag_max_err, ssc_max_err, umag_max_warn
 
       integer, intent(in) :: mout !< File pointer where to write to.
       logical, intent(in) :: writeall !< Write all fields, including default values
@@ -2656,6 +2680,7 @@ contains
       call prop_set(prop_ptr, 'General', 'fileVersion', trim(tmpstr), 'File format version (do not edit this)')
       call prop_set(prop_ptr, 'General', 'ModelSpecific', md_specific, 'Optional ''model specific ID'', to enable certain custom runtime function calls (instead of via MDU name).')
       call prop_set(prop_ptr, 'General', 'PathsRelativeToParent', md_paths_relto_parent, 'Default: 0. Whether or not (1/0) to resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir.')
+      call prop_set(prop_ptr, 'General', 'ConvertLongCulverts', md_convertlongculverts, 'Default: 0. Wheter or not to convert long culvert input to 1D2D long culverts')
 
 ! Geometry
       call prop_set(prop_ptr, 'geometry', 'NetFile', trim(md_netfile), 'Unstructured grid file *_net.nc')
@@ -2689,7 +2714,9 @@ contains
       call prop_set(prop_ptr, 'geometry', 'PillarFile', trim(md_pillarfile), 'Polyline file *_pillar.pliz, containing four colums with x, y, diameter and Cd coefficient')
       call prop_set(prop_ptr, 'geometry', 'Gulliesfile', trim(md_gulliesfile), 'Polyline file *_gul.pliz, containing lowest bed level along talweg x, y, z level')
       call prop_set(prop_ptr, 'geometry', 'Roofsfile', trim(md_roofsfile), 'Polyline file *_rof.pliz, containing roofgutter heights x, y, z level')
-      call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type')
+      if (len_trim(md_vertplizfile) > 0) then
+         call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layertype')
+      end if
       call prop_set(prop_ptr, 'geometry', 'ProflocFile', trim(md_proflocfile), 'Channel profile location file *_proflocation.xyz with rows x, y, z, profile number ref')
       call prop_set(prop_ptr, 'geometry', 'ProfdefFile', trim(md_profdeffile), 'Channel profile definition file *_profdefinition.def with definition for all profile numbers')
       call prop_set(prop_ptr, 'geometry', 'ProfdefxyzFile', trim(md_profdefxyzfile), 'Channel profile definition file _profdefinition.def with definition for all profile numbers')
@@ -2864,7 +2891,11 @@ contains
       end if
       if (writeall .or. (kmx > 0)) then
          call prop_set(prop_ptr, 'geometry', 'Kmx', kmx, 'Maximum number of vertical layers')
-         call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: all sigma, 2: all z, 3: use VertplizFile)')
+         if (layertype == LAYTP_SIGMA .or. layertype == LAYTP_Z) then
+            call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers)')
+         else if (layertype == LAYTP_POLYGON_MIXED .or. layertype == LAYTP_DENS_SIGMA) then
+            call prop_set(prop_ptr, 'geometry', 'Layertype', Layertype, 'Vertical layer type (1: sigma-layers, 2: z- or z-sigma-layers, 3: use VertplizFile for polygon-based mixed layering, 4: density controlled sigma-layers)')
+         end if
          call prop_set(prop_ptr, 'geometry', 'Numtopsig', Numtopsig, 'Number of sigma layers in top of z-layer model')
          if (writeall .or. janumtopsiguniform /= 1) then
             call prop_set(prop_ptr, 'geometry', 'Numtopsiguniform', jaNumtopsiguniform, 'Indicating whether the number of sigma-layers in a z-sigma-model is constant (=1) or decreasing (=0) (depending on local depth)')
@@ -2887,10 +2918,6 @@ contains
 
          if (writeall .or. Floorlevtoplay /= dmiss) then
             call prop_set(prop_ptr, 'geometry', 'Floorlevtoplay', Floorlevtoplay, 'Floor level of top layer')
-         end if
-
-         if (writeall .or. jaorgFloorlevtoplaydef /= 0) then
-            call prop_set(prop_ptr, 'geometry', 'OrgFloorlevtoplaydef', jaorgFloorlevtoplaydef, 'keep original definition of Floor level of top layer')
          end if
 
          if (writeall .or. zlaybot /= dmiss) then
@@ -2924,7 +2951,7 @@ contains
             call prop_set(prop_ptr, 'geometry', 'ihuzcsig', ihuzcsig, 'if keepzlayeringatbed>=2 : 1,2,3=av,mx,mn of Leftsig,Rightsig,4=uniform')
          end if
 
-         if (writeall .or. jaZlayeratubybob /= 0 .and. layertype /= 1) then
+         if (writeall .or. jaZlayeratubybob /= 0 .and. layertype /= LAYTP_SIGMA) then
             call prop_set(prop_ptr, 'geometry', 'Zlayeratubybob', JaZlayeratubybob, 'Lowest connected cells governed by bob instead of by bL L/R')
          end if
       end if
@@ -2933,14 +2960,14 @@ contains
 
       call prop_set(prop_ptr, 'geometry', 'ExtrBl', jaextrapbl, 'Extrapolation of bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate.')
       call prop_set(prop_ptr, 'geometry', 'calculateBedLevelOverNonActiveLinks', calc_bedlevel_over_inactive_links, &
-                     'Calculate the bed level, using the non active links in the network as well. ')
+                    'Calculate the bed level, using the non active links in the network as well. ')
 
       ! 1D Volume tables
       if (writeall .or. useVolumeTables) then
          call prop_set(prop_ptr, 'volumeTables', 'useVolumeTables', useVolumeTables, 'Use 1D volume tables (0: no, 1: yes).')
          if (useVolumeTables) then
-            call prop_set(md_ptr, 'volumeTables', 'increment', tableIncrement, 'Desired increment for volume tables')
-            call prop_set(md_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile, 'Use volume table file (0: no, 1: yes)')
+            call prop_set(prop_ptr, 'volumeTables', 'increment', tableIncrement, 'Desired increment for volume tables')
+            call prop_set(prop_ptr, 'volumeTables', 'useVolumeTableFile', useVolumeTableFile, 'Use volume table file (0: no, 1: yes)')
          end if
       end if
 
@@ -2989,8 +3016,12 @@ contains
 
       call prop_set(prop_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport, 'Diagnostic ("frozen") transport (0: prognostic transport, 1: diagnostic transport)')
 
-      call prop_set(prop_ptr, 'numerics', 'Vertadvtypsal', Javasal, 'Vertical advection type for salinity (0: none, 4: Theta implicit, 6: higher order explicit, no Forester filter).')
-      call prop_set(prop_ptr, 'numerics', 'Vertadvtyptem', Javatem, 'Vertical advection type for temperature (0: none, 4: Theta implicit, 6: higher order explicit, no Forester filter).')
+      if (len_trim(vertical_advection_type) > 0) then
+         call prop_set(prop_ptr, 'numerics', 'VerticalAdvectionType', trim(vertical_advection_type), 'String defining vertical advection types for transport constitiuents.')
+      else
+         call prop_set(prop_ptr, 'numerics', 'Vertadvtypsal', Javasal, 'Vertical advection type for salinity (0: none, 4: Theta implicit, 6: higher order explicit, no Forester filter).')
+         call prop_set(prop_ptr, 'numerics', 'Vertadvtyptem', Javatem, 'Vertical advection type for temperature (0: none, 4: Theta implicit, 6: higher order explicit, no Forester filter).')
+      end if
       call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom', javau, 'Vertical advection type in momentum equation; 3: Upwind implicit, 6: centerbased upwind explicit.')
       if (writeall .or. javau3onbnd /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Vertadvtypmom3onbnd', javau3onbnd, 'vert. adv. u1 bnd UpwimpL: 0=follow javau , 1 = on bnd, 2= on and near bnd')
@@ -3018,7 +3049,7 @@ contains
       if (jarhoxu /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Jarhoxu', Jarhoxu, 'Include density gradient in advection term (0: no(strongly advised), 1: yes, 2: Also in barotropic and baroclinic pressure term)')
       end if
-      if (writeall .or. (jahazlayer /= 0 .and. layertype /= 1)) then
+      if (writeall .or. (jahazlayer /= 0 .and. layertype /= LAYTP_SIGMA)) then
          call prop_set(prop_ptr, 'numerics', 'Horadvtypzlayer', Jahazlayer, 'Horizontal advection treatment of z-layers (1: default, 2: sigma-like)')
       end if
 
@@ -3187,36 +3218,40 @@ contains
          end do
       end if
 
-      if (writeall .or. (s01max > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxwaterleveldiff', s01max, 'upper bound (in m) on water level changes (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (s01_max_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Maxwaterleveldiff', s01_max_err, 'upper bound (in m) on water level changes (<= 0: no bounds). Run will abort when violated.')
       end if
 
-      if (writeall .or. (u01max > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxvelocitydiff', u01max, 'upper bound (in m/s) on velocity changes (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (u01_max_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Maxvelocitydiff', u01_max_err, 'upper bound (in m/s) on velocity changes (<= 0: no bounds). Run will abort when violated.')
       end if
 
-      if (writeall .or. (umagmax > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxvelocity', umagmax, 'upper bound (in m/s) on velocity (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (umag_max_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Maxvelocity', umag_max_err, 'upper bound (in m/s) on velocity (<= 0: no bounds). Run will abort when violated.')
       end if
 
-      if (writeall .or. (s01warn > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Waterlevelwarn', s01warn, 'warning level (in m) on water level (<= 0: no check).')
+      if (writeall .or. (s1_max_warn > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Waterlevelwarn', s1_max_warn, 'warning level (in m) on water level (<= 0: no check).')
       end if
 
-      if (writeall .or. (u01warn > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Velocitywarn', u01warn, 'warning level (in m/s) on velocity u1 (<= 0: no check).')
+      if (writeall .or. (u1abs_max_warn > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Velocitywarn', u1abs_max_warn, 'warning level (in m/s) on velocity u1 (<= 0: no check).')
       end if
 
-      if (writeall .or. (umagwarn > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'Velmagnwarn', umagwarn, 'warning level (in m/s) on velocity magnitude (<= 0: no check).')
+      if (writeall .or. (umag_max_warn > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'Velmagnwarn', umag_max_warn, 'warning level (in m/s) on velocity magnitude (<= 0: no check).')
       end if
 
-      if (writeall .or. (dtminbreak > 0.0_dp)) then
-         call prop_set(prop_ptr, 'numerics', 'MinTimestepBreak', dtminbreak, 'smallest allowed timestep (in s), checked on a sliding average of several timesteps. Run will abort when violated.')
+      if (writeall .or. (dtavg_min_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'MinTimestepBreak', dtavg_min_err, 'smallest allowed timestep (in s), checked on a sliding average of several timesteps. Run will abort when violated.')
       end if
 
-      if ((writeall .or. (sscmax > 0.0_dp)) .and. jased == 4) then
-         call prop_set(prop_ptr, 'numerics', 'MaxSSC', sscmax, 'upper bound (in kg/m3) on SSC (<= 0: no bounds). Run will abort when violated.')
+      if (writeall .or. (s01maxavg_min_err > 0.0_dp)) then
+         call prop_set(prop_ptr, 'numerics', 'MinWaterlevelChangeBreak', s01maxavg_min_err, 'Stop the simulation when the rolling mean of the maximum water level change is below this value (m), (considered when larger than 0.0)')
+      end if
+
+      if ((writeall .or. (ssc_max_err > 0.0_dp)) .and. jased == 4) then
+         call prop_set(prop_ptr, 'numerics', 'MaxSSC', ssc_max_err, 'upper bound (in kg/m3) on SSC (<= 0: no bounds). Run will abort when violated.')
       end if
 
       call prop_set(prop_ptr, 'numerics', 'Epshu', epshu, 'Threshold water depth for wet and dry cells')
@@ -3287,6 +3322,8 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Oceaneddyyoff', Oceaneddyyoff)
          call prop_set(prop_ptr, 'numerics', 'Oceaneddyxoff', Oceaneddyxoff)
       end if
+
+      call prop_set(prop_ptr, 'numerics', 'PillarFarFieldVelocity', md_pillar_use_far_field_velocity, 'Use far-field velocity for pillars and dikes (0: no (default), 1: yes)')
 
       if (testdryflood /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Testdryingflooding', testdryflood, 'Test for drying flooding algoritm (0: D-Flow FM, 1: Delft3D-FLOW)')
@@ -3405,7 +3442,7 @@ contains
          end if
          if (writeall .or. use_salinity_freezing_point) then
             call prop_set(prop_ptr, 'physics', 'salinityDependentFreezingPoint', use_salinity_freezing_point, &
-                          'Enable salinity-dependent freezing point (0 = no, 1 = yes)')
+                          'Enable salinity-dependent freezing point (0 = no, 1 = yes). tempMin should be below 0 degrees Celsius.')
          end if
          if (writeall .or. surftempsmofac > 0.0_dp) then
             call prop_set(prop_ptr, 'physics', 'Surftempsmofac', Surftempsmofac, 'Hor . Smoothing factor for surface water in heatflx comp. (0.0-1.0), 0=no')
@@ -3453,7 +3490,7 @@ contains
             call prop_set(prop_ptr, 'sediment', 'DzbDtMax', dzbdtmax, 'Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m)')
             call prop_set(prop_ptr, 'sediment', 'InMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
             call prop_set(prop_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
-            call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)')
+            call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)')
          end if
 
          if (jased /= 4) then
@@ -3508,17 +3545,23 @@ contains
          end if
       end if
 
-      call prop_set(prop_ptr, 'wind', 'ICdtyp', ICdtyp, 'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: Charnock+viscous, 9: Garratt 1977).')
-      if (ICdtyp == 1 .or. ICdtyp == 4 .or. ICdtyp == 5 .or. ICdtyp == 6) then
-         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:1), 'Wind drag coefficient (may be overridden by space-varying input)')
-      else if (ICdtyp == 2) then
-         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:2), 'Wind drag coefficient break points')
-         call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', Wdb(1:2), 'Wind speed break points (m/s)')
-      else if (ICdtyp == 3) then
-         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:3), 'Wind drag coefficient break points')
-         call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', Wdb(1:3), 'Wind speed break points (m/s)')
+      if (jaspacevarcharn .and. wind_drag_type /= CD_TYPE_CHARNOCK1955) then
+         write (msgbuf, '(a,i0,a)') 'A (time- and space-varying) Charnock coefficient was provided via the .ext file. [wind] ICdtyp has been reset from ', &
+             wind_drag_type, ' to 4 (Charnock).'
+         call mess(LEVEL_WARN, msgbuf)
+         wind_drag_type = CD_TYPE_CHARNOCK1955
+      end if
+      call prop_set(prop_ptr, 'wind', 'ICdtyp', wind_drag_type, 'Wind drag coefficient type (1: Const, 2: Smith&Banke (2 pts), 3: S&B (3 pts), 4: Charnock 1955, 5: Hwang 2005, 6: Wuest 2005, 7: Hersbach 2010 (2 pts), 8: Charnock+viscous, 9: Garratt 1977).')
+      if (wind_drag_type == CD_TYPE_CONST .or. wind_drag_type == CD_TYPE_CHARNOCK1955 .or. wind_drag_type == CD_TYPE_HWANG2005 .or. wind_drag_type == CD_TYPE_WUEST2003) then
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', user_provided_charnock_coefficient, 'Wind drag coefficient (may be overridden by space-varying input)')
+      else if (wind_drag_type == CD_TYPE_SMITHBANKE_2PT) then
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb(1:2), 'Wind drag coefficient break points')
+         call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', wdb(1:2), 'Wind speed break points (m/s)')
+      else if (wind_drag_type == CD_TYPE_SMITHBANKE_3PT) then
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb(1:3), 'Wind drag coefficient break points')
+         call prop_set(prop_ptr, 'wind', 'Windspeedbreakpoints', wdb(1:3), 'Wind speed break points (m/s)')
       else
-         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', Cdb(1:2), 'Wind drag coefficients (may be overridden by space-varying input)')
+         call prop_set(prop_ptr, 'wind', 'Cdbreakpoints', cdb(1:2), 'Wind drag coefficients (may be overridden by space-varying input)')
       end if
       if (writeall .or. relativewind > 0.0_dp) then
          call prop_set(prop_ptr, 'wind', 'Relativewind', relativewind, 'Wind speed relative to top-layer water speed*relativewind, 0.0=no relative wind, 1.0=using full top layer speed)')
@@ -3637,8 +3680,8 @@ contains
 
       call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no, 1=see file *.steps')
 
-      if (writeall .or. ja_timestep_auto /= 1) then
-         call prop_set(prop_ptr, 'Time', 'autoTimeStep', ja_timestep_auto, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
+      if (writeall .or. autotimestep /= AUTO_TIMESTEP_2D_OUT) then
+         call prop_set(prop_ptr, 'Time', 'autoTimeStep', autotimestep, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
       end if
       if (writeall .and. ja_timestep_auto_visc /= 1) then
          call prop_set(prop_ptr, 'Time', 'autoTimeStepVisc', ja_timestep_auto_visc, '0 = no, 1 = yes (Time limitation based on explicit diffusive term)')
@@ -3943,7 +3986,9 @@ contains
       call prop_set(prop_ptr, 'processes', 'SubstanceFile', trim(md_subfile), 'substance file')
       call prop_set(prop_ptr, 'processes', 'AdditionalHistoryOutputFile', trim(md_ehofile), 'extra history output file')
       call prop_set(prop_ptr, 'processes', 'StatisticsFile', trim(md_sttfile), 'statistics file')
-      call prop_set(prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
+      if (len_trim(vertical_advection_type) == 0) then
+         call prop_set(prop_ptr, 'processes', 'ThetaVertical', md_thetav_waq, 'theta vertical for waq')
+      end if
       call prop_set(prop_ptr, 'processes', 'DtProcesses', md_dt_waqproc, 'waq processes time step')
       call prop_set(prop_ptr, 'processes', 'VolumeDryThreshold', waq_vol_dry_thr, 'Volume below which segments are marked as dry. (m3)')
       call prop_set(prop_ptr, 'processes', 'DepthDryThreshold', waq_dep_dry_thr, 'Water depth below which segments are marked as dry. (m)')

@@ -69,8 +69,8 @@ module m_fm_wq_processes
 
    integer, parameter :: NAMWAQLEN = 128
    integer :: jawaqproc = 0 !< switch for water quality processes (1 = substances initiated, 2 = processes activated too)
-   real(hp) :: waq_vol_dry_thr = 1.0d-3 !< minimum volume for processes to be active
-   real(hp) :: waq_dep_dry_thr = 1.0d-3 !< minimum depth for processes to be active
+   real(hp) :: waq_vol_dry_thr = 1.0e-3_dp !< minimum volume for processes to be active
+   real(hp) :: waq_dep_dry_thr = 1.0e-3_dp !< minimum depth for processes to be active
    integer :: kbx !< pointer of first segment to D-Flow FM 3D administration
    integer :: ktx !< pointer of last  segment to D-Flow FM 3D administration
 

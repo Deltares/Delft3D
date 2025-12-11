@@ -62,16 +62,18 @@ contains
 
       IERR = 0
       if (M >= MAXSPL) then
-         maxspl = max(10, int(1.2 * m)); IERR = 1
+         maxspl = max(10, int(1.2 * m))
+         IERR = 1
       end if
 
       if (N >= MAXSPLEN) then
-         MAXSPLEN = max(100, int(1.2 * N)); IERR = 1
+         MAXSPLEN = max(100, int(1.2 * N))
+         IERR = 1
       end if
 
       if (IERR == 0) return
 
-      ibounds = (/maxspl, maxsplen/)
+      ibounds = [maxspl, maxsplen]
       call realloc(xsp, ibounds, stat=ierr, fill=dxymis)
       call aerr('xsp(maxspl, maxsplen)', ierr, maxspl * maxsplen)
       call realloc(ysp, ibounds, stat=ierr, fill=dxymis)
@@ -171,7 +173,7 @@ contains
       integer, intent(in) :: m
       real(kind=dp), intent(in) :: x, y
 
-      call addSplinePoints(m, (/x/), (/y/))
+      call addSplinePoints(m, [x], [y])
    end subroutine addSplinePoint
 
    subroutine addSplinePoints(m, x, y)
@@ -320,7 +322,7 @@ contains
       ! if jadoorladen...
       call delSplines()
 
-      call READYY('Reading Spline File', 0d0)
+      call READYY('Reading Spline File', 0.0_dp)
 
 10    continue
 
@@ -340,8 +342,8 @@ contains
 
 9999  continue
 
-      call READYY(' ', 1d0)
-      call READYY(' ', -1d0)
+      call READYY(' ', 1.0_dp)
+      call READYY(' ', -1.0_dp)
       call DOCLOSE(MSPL)
       return
 
@@ -357,9 +359,9 @@ contains
       integer :: i, j
       MATR = 'S   '
       call FIRSTLIN(MSPL)
-      call READYY('Writing Spline File', 0d0)
+      call READYY('Writing Spline File', 0.0_dp)
       do I = 1, mcs
-         call READYY('Writing Spline File', dble(I) / dble(mcs))
+         call READYY('Writing Spline File', real(I, kind=dp) / real(mcs, kind=dp))
          write (MATR(2:5), '(I4.4)') I
          write (MSPL, '(A5)') MATR
          write (MSPL, '(I4,A4)') lensp(i), '   2'
@@ -367,7 +369,7 @@ contains
             write (MSPL, '(1PE14.6, 1X, 1PE14.6)') xsp(I, J), ysp(I, J)
          end do
       end do
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call doclose(mspl)
       return
    end subroutine writeSplines

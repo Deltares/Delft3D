@@ -1,4 +1,4 @@
-subroutine rdencl( lunmd     ,lundia    ,error     , runid    , &
+subroutine rdencl( lunmd     ,lundia    ,error     , runid , &
                 &  mmax      ,nmaxus    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -114,8 +114,8 @@ subroutine rdencl( lunmd     ,lundia    ,error     , runid    , &
     ! define length of runid and put in fixed size array
     ! size is tested in iniid
     !
-    call remove_leading_spaces(runid     ,lrid      )
-    fixid(1:lrid) = runid(1:lrid)
+    fixid = runid
+    call remove_leading_spaces(fixid     ,lrid      )
     !=======================================================================
     ! open semi-scratch file
     !

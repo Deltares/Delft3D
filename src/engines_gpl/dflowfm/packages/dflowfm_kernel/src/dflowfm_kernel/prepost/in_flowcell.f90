@@ -57,7 +57,8 @@ contains
          NN = size(nd(K)%x)
          call PINPOK(xp, yp, NN, nd(K)%x, nd(K)%y, inn, jins, dmiss)
          if (inn == 1) then
-            KK = K; return
+            KK = K
+            return
          end if
       end do
 

@@ -104,7 +104,7 @@ contains
       !
       !     dsc contains ds or dc
       !
-      if (.not. dpsequfm(dsc, 0.0d0, 1.d-20)) then
+      if (.not. dpsequfm(dsc, 0.0_dp, 1.0e-20_dp)) then
          !
          if (dg / dsc > mugf) then
             mugfa = dg / dsc
@@ -113,7 +113,7 @@ contains
          end if
          !
          if (cgd > cw) then
-            if (dpsequfm(dg, 0.0d0, 1.0d-20)) then
+            if (dpsequfm(dg, 0.0_dp, 1.0e-20_dp)) then
                cgda = cgd
             else
                cgda = min(dsc / dg * cw, cgd)
@@ -123,7 +123,7 @@ contains
          end if
          !
          if (cgf > cw) then
-            if (dpsequfm(dg, 0.0d0, 1.0d-20)) then
+            if (dpsequfm(dg, 0.0_dp, 1.0e-20_dp)) then
                cgfa = cgf
             else
                cgfa = min(dsc / dg * cw, cgf)

@@ -26,7 +26,7 @@ module m_delwaq1_startup_screen
     use m_banner_information
     use waq_static_version_info
     use m_getidentification
-    use m_date_time_utils_external, only: write_date_time
+    use m_date_time_utils_external, only: fill_in_date_time
 
     implicit none
 
@@ -53,7 +53,7 @@ contains
         call getidentification(identification_text)
 
         write (lunrep, '(1x,a)') trim(identification_text)
-        call write_date_time(run_date_time)
+        call fill_in_date_time(run_date_time)
         write (lunrep, '(2a)') ' Execution start: ', run_date_time
 
         write (*, *)

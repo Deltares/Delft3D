@@ -69,21 +69,36 @@ contains
       integer, external :: infoinput
 
       NLEVEL = 4
-      OPTION(1) = 'MAZE TYPE: SQUARE, WIEBER, HEX, TRI  ( )'; IT(1 * 2) = 2
-      OPTION(2) = 'NR OF MAZES X                        ( )'; IT(2 * 2) = 2
-      OPTION(3) = 'NR OF MAZES Y                        ( )'; IT(3 * 2) = 2
-      OPTION(4) = 'MAZE ANGLE     1-90                (deg)'; IT(4 * 2) = 6
-      OPTION(5) = 'MAZE SIZE                            (m)'; IT(5 * 2) = 6
-      OPTION(6) = 'LINE THICKNESS                      (mm)'; IT(6 * 2) = 6
-      OPTION(7) = 'ORIGIN X                             (m)'; IT(7 * 2) = 6
-      OPTION(8) = 'ORIGIN Y                             (m)'; IT(8 * 2) = 6
-      OPTION(9) = 'ORIGIN Z                             (m)'; IT(9 * 2) = 6
-      OPTION(10) = 'DX (FOR TYPE 0 ONLY)                 (m)'; IT(10 * 2) = 6
-      OPTION(11) = 'DY (FOR TYPE 0 ONLY)                 (m)'; IT(11 * 2) = 6
-      OPTION(12) = '                                        '; IT(12 * 2) = 1001
-      OPTION(13) = 'MAZE SIZE HORIZONTAL PART HEXAGON   (cm)'; IT(13 * 2) = 6
-      OPTION(14) = 'Hanging nodes when dx <              (m)'; IT(14 * 2) = 6
-      OPTION(15) = 'Radius                               (m)'; IT(15 * 2) = 6
+      OPTION(1) = 'MAZE TYPE: SQUARE, WIEBER, HEX, TRI  ( )'
+      IT(1 * 2) = 2
+      OPTION(2) = 'NR OF MAZES X                        ( )'
+      IT(2 * 2) = 2
+      OPTION(3) = 'NR OF MAZES Y                        ( )'
+      IT(3 * 2) = 2
+      OPTION(4) = 'MAZE ANGLE     1-90                (deg)'
+      IT(4 * 2) = 6
+      OPTION(5) = 'MAZE SIZE                            (m)'
+      IT(5 * 2) = 6
+      OPTION(6) = 'LINE THICKNESS                      (mm)'
+      IT(6 * 2) = 6
+      OPTION(7) = 'ORIGIN X                             (m)'
+      IT(7 * 2) = 6
+      OPTION(8) = 'ORIGIN Y                             (m)'
+      IT(8 * 2) = 6
+      OPTION(9) = 'ORIGIN Z                             (m)'
+      IT(9 * 2) = 6
+      OPTION(10) = 'DX (FOR TYPE 0 ONLY)                 (m)'
+      IT(10 * 2) = 6
+      OPTION(11) = 'DY (FOR TYPE 0 ONLY)                 (m)'
+      IT(11 * 2) = 6
+      OPTION(12) = '                                        '
+      IT(12 * 2) = 1001
+      OPTION(13) = 'MAZE SIZE HORIZONTAL PART HEXAGON   (cm)'
+      IT(13 * 2) = 6
+      OPTION(14) = 'Hanging nodes when dx <              (m)'
+      IT(14 * 2) = 6
+      OPTION(15) = 'Radius                               (m)'
+      IT(15 * 2) = 6
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -124,10 +139,14 @@ contains
 
       IR = 0
       do I = 1, NUMPARACTUAL
-         IL = IR + 1; IR = IL + 1
-         IS(IL) = 82; IS(IR) = 10
-         IX(IL) = 10; IX(IR) = 100
-         IY(IL) = 2 * I; IY(IR) = 2 * I
+         IL = IR + 1
+         IR = IL + 1
+         IS(IL) = 82
+         IS(IR) = 10
+         IX(IL) = 10
+         IX(IR) = 100
+         IY(IL) = 2 * I
+         IY(IR) = 2 * I
          IT(IL) = 1001 ! ir staat hierboven
       end do
 

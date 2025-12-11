@@ -57,7 +57,7 @@ contains
       real(kind=dp) :: XI, YI, ZI, DA, AF, RD
 
       integer :: ichange, inhul, ja, k, maxopt, nwhat
-      real(kind=dp), save :: A = 1d0
+      real(kind=dp), save :: A = 1.0_dp
 
       JA = 0
       OPTION(1) = 'FIELD = UNIFORM VALUE, only missings    '
@@ -95,7 +95,8 @@ contains
             if (A /= dmiss) JA = 1
             goto 10
          else
-            JA = 1; ICHANGE = NWHAT
+            JA = 1
+            ICHANGE = NWHAT
          end if
       end if
 
@@ -107,10 +108,10 @@ contains
          end if
       end if
       ! CALL SAVENET()
-      call READYY('CHANGE FIELD VALUES', 0d0)
+      call READYY('CHANGE FIELD VALUES', 0.0_dp)
       do k = 1, NUMK
          if (mod(k, 1000) == 0) then
-            AF = dble(K) / dble(NUMK)
+            AF = real(K, kind=dp) / real(NUMK, kind=dp)
             call READYY('CHANGE FIELD VALUES', AF)
          end if
          XI = XK(K)
@@ -149,7 +150,7 @@ contains
             end if
          end if
       end do
-      call READYY('CHANGE FIELD VALUES', -1d0)
+      call READYY('CHANGE FIELD VALUES', -1.0_dp)
       KEY = 3
 
    end subroutine PLUSABSD

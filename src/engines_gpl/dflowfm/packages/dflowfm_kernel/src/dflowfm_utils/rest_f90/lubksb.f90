@@ -54,7 +54,7 @@ contains
             do J = II, I - 1
                SUM = SUM - A(I, J) * B(J)
             end do
-         else if (SUM /= 0d0) then
+         else if (SUM /= 0.0_dp) then
             II = I
          end if
          B(I) = SUM

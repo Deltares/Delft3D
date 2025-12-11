@@ -166,7 +166,7 @@ contains
       !     Determine cgf, cgd, cwf, cwd, mugf
       !     (flow direction dependent)
       !
-      if (teken > 0.0d0) then
+      if (teken > 0.0_dp) then
          cgf = generalstruc(ng)%pos_freegateflowcoeff
          cgd = generalstruc(ng)%pos_drowngateflowcoeff
          cwf = generalstruc(ng)%pos_freeweirflowcoeff
@@ -182,7 +182,7 @@ contains
       !
       !     Determine flow direction dependent parameters
       !
-      if (teken > 0.0d0) then
+      if (teken > 0.0_dp) then
          wsd = wsdr
          ds1 = zs - zbsr
          ds2 = zbsr - zb2

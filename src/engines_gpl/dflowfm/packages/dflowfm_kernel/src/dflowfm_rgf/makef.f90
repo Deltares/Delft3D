@@ -52,7 +52,7 @@ contains
          do J = 1, NMAX
             if (XR(I, J) /= DXYMIS) then
                FI2 = DG2RD * YR(I, J)
-               YR(I, J) = (1d0 + sin(FI2)) / cos(FI2)
+               YR(I, J) = (1.0_dp + sin(FI2)) / cos(FI2)
                YR(I, J) = log(YR(I, J))
                XR(I, J) = DG2RD * XR(I, J)
             end if

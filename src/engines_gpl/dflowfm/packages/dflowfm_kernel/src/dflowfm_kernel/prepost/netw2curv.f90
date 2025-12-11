@@ -92,7 +92,7 @@ contains
          if (allocated(ijc)) then
             deallocate (ijc)
          end if
-         call realloc(ijc, (/3, 3/), (/0, 0/), fill=IMISS)
+         call realloc(ijc, [3, 3], [0, 0], fill=IMISS)
 
 !---------------------------------------------------------
 ! assigns node-based indices (ic,jc)

@@ -10,13 +10,15 @@ object Publish : BuildType({
 
     templates(
         TemplateMonitorPerformance,
-        TemplateDockerRegistry
+        TemplateDockerRegistry,
+        TemplateFailureCondition
     )
 
     name = "Publish Container"
     description = "Currently only used for publishing the container."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
+    allowExternalStatus = true
 
     artifactRules = """
         #teamcity:symbolicLinks=as-is
@@ -48,7 +50,7 @@ object Publish : BuildType({
     }
 
     params {
-        select("release_type", "weekly", display = ParameterDisplay.PROMPT, options = listOf("daily", "weekly", "release"))
+        select("release_type", "development", display = ParameterDisplay.PROMPT, options = listOf("development", "release"))
         text("release_version", "2.29.xx", 
             label = "Release version", 
             description = "e.g. '2.29.03' or '2025.02'", 
@@ -58,10 +60,12 @@ object Publish : BuildType({
             description = "e.g. '2.29.03' or '2025.02'", 
             display = ParameterDisplay.PROMPT)
         param("reverse.dep.*.product", "all-testbench")
+        param("is_latest_development", "false")
         param("commit_id_short", "%dep.${LinuxBuild.id}.commit_id_short%")
         param("source_image", "containers.deltares.nl/delft3d-dev/delft3d-runtime-container:alma10-%dep.${LinuxBuild.id}.product%-%build.vcs.number%")
+        param("new_tag", "%release_version%-%release_type%")
+        param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%new_tag%")
         param("destination_image_generic", "containers.deltares.nl/delft3d/%brand%:%release_type%")
-        param("destination_image_specific", "containers.deltares.nl/delft3d/%brand%:%release_type%-%release_version%")
     }
 
     if (DslContext.getParameter("enable_release_publisher").lowercase() == "true") {
@@ -102,12 +106,6 @@ object Publish : BuildType({
                     onDependencyCancel = FailureAction.CANCEL
                 }
             }
-            dependency(LinuxLegacyDockerTest) {
-                snapshot {
-                    onDependencyFailure = FailureAction.FAIL_TO_START
-                    onDependencyCancel = FailureAction.CANCEL
-                }
-            }
         }
     }
 
@@ -124,17 +122,17 @@ object Publish : BuildType({
             }
         }
         dockerCommand {
-            name = "Tag generic image"
-            commandType = other {
-                subCommand = "tag"
-                commandArgs = "%source_image% %destination_image_generic%"
-            }
-        }
-        dockerCommand {
-            name = "Tag specific image"
+            name = "Tag image specific"
             commandType = other {
                 subCommand = "tag"
                 commandArgs = "%source_image% %destination_image_specific%"
+            }
+        }
+        dockerCommand {
+            name = "Tag image generic"
+            commandType = other {
+                subCommand = "tag"
+                commandArgs = "%source_image% %destination_image_generic%"
             }
         }
         dockerCommand {
@@ -155,11 +153,39 @@ object Publish : BuildType({
             """.trimIndent()
         }
         dockerCommand {
-            name = "Push generic and specific images"
+            name = "Push release image"
+            commandType = push {
+                namesAndTags = """
+                    "%destination_image_specific%"
+                """.trimIndent()
+            }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+        }
+        python {
+            name = "Set latest development tag parameter"
+            pythonVersion = customPython { executable = "python3.11" }
+            command = module {
+                module = "ci_tools.harbor.harbor_version_checker"
+                scriptArguments = """
+                    --harbor-username '%delft3d-user%'
+                    --harbor-password '%delft3d-secret%'
+                    --new-tag '%new_tag%'
+                """.trimIndent()
+            }
+            workingDir = "ci/python"
+            environment = venv {
+                requirementsFile = ""
+                pipArgs = "--editable .[all]"
+            }
+        }
+        dockerCommand {
+            conditions {
+                equals("is_latest_development", "true")
+            }
+            name = "Push rolling development tag"
             commandType = push {
                 namesAndTags = """
                     "%destination_image_generic%"
-                    "%destination_image_specific%"
                 """.trimIndent()
             }
             executionMode = BuildStep.ExecutionMode.ALWAYS
@@ -202,15 +228,15 @@ object Publish : BuildType({
             name = "Copy Apptainer packages to share"
             workingDir = "src/scripts_lgpl/singularity"
             scriptContent = """
-                tar -vczf %brand%_%release_type%-%release_version%.tar.gz \
-                    %brand%_%release_type%-%release_version%.sif \
+                tar -vczf %brand%_%new_tag%.tar.gz \
+                    %brand%_%new_tag%.sif \
                     readme.txt \
                     run_singularity.sh \
                     execute_singularity_h7.sh \
                     submit_singularity_h7.sh
                 
                 # Copy the artifact to network
-                cp -vf %brand%_%release_type%-%release_version%.tar.gz /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Singularity
+                cp -vf %brand%_%new_tag%.tar.gz /opt/Testdata/DIMR/DIMR_collectors/DIMRset_lnx64_Singularity
             """.trimIndent()
             executionMode = BuildStep.ExecutionMode.ALWAYS
         }

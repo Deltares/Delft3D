@@ -48,7 +48,7 @@ contains
       use m_physcoef, only: ag, rhomean, backgroundwatertemperature, vismol
       implicit none
       integer :: m, j
-      real(kind=dp) :: Ucr, sster, c1, c2, wster, wschk, taucr, thetcr, pclay = 0d0, fcr = 1d0
+      real(kind=dp) :: Ucr, sster, c1, c2, wster, wschk, taucr, thetcr, pclay = 0.0_dp, fcr = 1.0_dp
 
 ! where was this moved to or why was it removed?
 ! TempK         = 273d0 + backgroundwatertemperature
@@ -62,11 +62,11 @@ contains
       m = mxgr
       allocate (D90(m), rhodelta(m), sqsgd50(m), dstar(m), dstar03(m), Accr(m), Awcr(m))
 
-      D90 = 2d0 * D50
+      D90 = 2.0_dp * D50
       rhodelta = (rhosed - rhomean) / rhomean ! rhodelta = (s-1), s=rhosed/rhomean
       sqsgd50 = sqrt(rhodelta * ag * D50)
-      dstar = D50 * (rhodelta * ag / (vismol * vismol))**(1d0 / 3d0)
-      dstar03 = dstar**(-0.3d0)
+      dstar = D50 * (rhodelta * ag / (vismol * vismol))**(1.0_dp / 3.0_dp)
+      dstar03 = dstar**(-0.3_dp)
 
       do j = 1, mxgr
 
@@ -76,11 +76,11 @@ contains
          Awcr(j) = D50wa(j) * (rhodelta(j) * ag)**D50wb(j) * D50(j)**D50wc(j)
 
          Sster = D50(J) / (4 * vismol) * sqsgd50(J)
-         c1 = 1.06d0 * tanh(0.064d0 * Sster * exp(-7.5d0 / Sster**2))
-         c2 = 0.22d0 * tanh(2.34d0 * Sster**(-1.18d0) * exp(-0.0064d0 * Sster**2))
+         c1 = 1.06_dp * tanh(0.064_dp * Sster * exp(-7.5_dp / Sster**2))
+         c2 = 0.22_dp * tanh(2.34_dp * Sster**(-1.18_dp) * exp(-0.0064_dp * Sster**2))
          wster = c1 + c2 * Sster
          Ws(j) = wster * sqsgd50(j) ! van Rijn
-         Wschk = 16.17d0 * D50(j) * D50(j) / (1.80d-5 + sqrt(12.12 * D50(j)**3)) ! Ferguson,Church 2006) Wikipedia sand fall velocity
+         Wschk = 16.17_dp * D50(j) * D50(j) / (1.80e-5_dp + sqrt(12.12 * D50(j)**3)) ! Ferguson,Church 2006) Wikipedia sand fall velocity
 
          call mess(LEVEL_INFO, ' Backgroundwatertemperature (degC) ', real(Backgroundwatertemperature))
          call mess(LEVEL_INFO, ' Vismol                     (m2/s) ', real(Vismol))
@@ -88,14 +88,14 @@ contains
          call mess(LEVEL_INFO, ' Fraction diameter Dstar       ( ) ', real(Dstar(j)))
          call mess(LEVEL_INFO, ' Settling velocity Ws vR     (m/s) ', real(Ws(j)))
          call mess(LEVEL_INFO, ' Settling velocity Ws F,C    (m/s) ', real(Wschk))
-         call mess(LEVEL_INFO, ' Setting time h=5(m)        (days) ', real(5d0 / (ws(j) * 24 * 3600)))
+         call mess(LEVEL_INFO, ' Setting time h=5(m)        (days) ', real(5.0_dp / (ws(j) * 24 * 3600)))
          call mess(LEVEL_INFO, ' Rhosed                    (kg/m3) ', real(rhosed(j)))
 
-         Ucr = Accr(j) * log(4.d0 * 1d0 / D90(j))
+         Ucr = Accr(j) * log(4.0_dp * 1.0_dp / D90(j))
          call mess(LEVEL_INFO, ' Ucrc h=1 (m)             (m/s) ', real(UCr))
-         Ucr = Accr(j) * log(4.d0 * 5d0 / D90(j))
+         Ucr = Accr(j) * log(4.0_dp * 5.0_dp / D90(j))
          call mess(LEVEL_INFO, ' Ucrc h=5 (m)             (m/s) ', real(UCr))
-         Ucr = Accr(j) * log(4.d0 * 20d0 / D90(j))
+         Ucr = Accr(j) * log(4.0_dp * 20.0_dp / D90(j))
          call mess(LEVEL_INFO, ' Ucrc h=20 (m)            (m/s) ', real(UCr))
       end do
 

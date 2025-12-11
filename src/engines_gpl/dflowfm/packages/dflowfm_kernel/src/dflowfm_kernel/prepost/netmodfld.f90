@@ -73,7 +73,7 @@ contains
          yn = yk(i)
 ! intentional not in sferical coordinates
          dist = sqrt((xn - xcen)**2 + (yn - ycen)**2)
-         frac = 0.5 * (1 + cos(min(max(dist / rsx, -1d0), 1d0) * pi))
+         frac = 0.5 * (1 + cos(min(max(dist / rsx, -1.0_dp), 1.0_dp) * pi))
 
          xk(i) = xk(i) + Dx0 * frac
          yk(i) = yk(i) + Dy0 * frac

@@ -32,6 +32,7 @@
 
 module m_flow_sedmorinit
 
+   use precision, only: dp
    implicit none
 
    private
@@ -205,17 +206,13 @@ contains
             else
                morbnd(k)%alfa_dist(j) = morbnd(k)%alfa_dist(j - 1) + wu(Lf)
             end if
-            morbnd(k)%alfa_mag(j) = 1.0d0
+            morbnd(k)%alfa_mag(j) = 1.0_dp
          end do
       end do
 
       if (jased == 4 .and. ibedlevtyp /= 1) then
-         if (stmpar%morpar%bedupd) then
-            call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ') ! setbobs call after fm_erosed resets the bed level for ibedlevtyp > 1, resulting in no bed level change
-            return
-         else
-            call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ')
-         end if
+         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ') ! setbobs call after fm_erosed resets the bed level for ibedlevtyp > 1, resulting in no bed level change
+         return
       end if
 
       nbr = network%brs%count
@@ -291,7 +288,6 @@ contains
          deallocate (mtd%uau)
 
          deallocate (mtd%seddif)
-         deallocate (mtd%sed)
          deallocate (mtd%ws)
          deallocate (mtd%blchg)
 
@@ -303,7 +299,6 @@ contains
       allocate (mtd%dzbdt(ndx_mor))
       allocate (mtd%uau(lnx))
       allocate (mtd%seddif(stmpar%lsedsus, ndkx_mor))
-      allocate (mtd%sed(stmpar%lsedsus, ndkx_mor))
       allocate (mtd%ws(ndkx_mor, stmpar%lsedsus))
       allocate (mtd%blchg(Ndx_mor))
       allocate (mtd%messages)
@@ -312,7 +307,6 @@ contains
       mtd%dzbdt = 0.0_fp
       mtd%uau = 0.0_fp
       mtd%seddif = 0.0_fp
-      mtd%sed = 0.0_fp
       mtd%ws = 0.0_fp
       mtd%blchg = 0.0_fp
       !
@@ -325,10 +319,8 @@ contains
          deallocate (ssccum)
       end if
       if (stmpar%lsedsus > 0) then
-         allocate (sed(stmpar%lsedsus, Ndkx))
          allocate (ssccum(stmpar%lsedsus, Ndkx))
-         sed = 0d0
-         ssccum = 0d0
+         ssccum = 0.0_dp
       end if
       !
       call rdinimorlyr(stmpar%lsedtot, stmpar%lsedsus, mdia, error, &
@@ -433,12 +425,12 @@ contains
          if (allocated(sbcx_raw)) then
             deallocate (sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw)
          end if
-         call realloc(sbcx_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
-         call realloc(sbcy_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
-         call realloc(sbwx_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
-         call realloc(sbwy_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
-         call realloc(sswx_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
-         call realloc(sswy_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
+         call realloc(sbcx_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+         call realloc(sbcy_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+         call realloc(sbwx_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+         call realloc(sbwy_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+         call realloc(sswx_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+         call realloc(sswy_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
       end if
       !
       ! Allocate berm slope index array if wanted
@@ -449,7 +441,7 @@ contains
          call realloc(bermslopeindex, lnx, stat=ierr, fill=.false., keepExisting=.false.)
          call realloc(bermslopeindexbed, lnx, stat=ierr, fill=.false., keepExisting=.false.)
          call realloc(bermslopeindexsus, lnx, stat=ierr, fill=.false., keepExisting=.false.)
-         call realloc(bermslopecontrib, (/lnx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
+         call realloc(bermslopecontrib, [lnx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
          if (.not. (ierr == 0)) then
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Could not allocate bermslope arrays. Bermslope transport switched off.')
             stmpar%morpar%bermslopetransport = .false.
@@ -470,16 +462,16 @@ contains
          if (allocated(avalflux)) then
             deallocate (avalflux)
          end if
-         call realloc(avalflux, (/lnx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
+         call realloc(avalflux, [lnx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
          !
          ! Warn user if default wetslope is still 10.0 when using dune avalanching. Reset default to reasonable 1.0 in that case.
-         if (comparereal(stmpar%morpar%wetslope, 10d0) == 0) then
+         if (comparereal(stmpar%morpar%wetslope, 10.0_dp) == 0) then
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Dune avalanching is switched on. Default wetslope reset to 0.1 from 10.0')
-            stmpar%morpar%wetslope = 1d-1
+            stmpar%morpar%wetslope = 1.0e-1_dp
          end if
          !
          ! Warn user if upperlimitssc is set icm with avalanching. This effectively removes sedimentation of the avalanching flux if set too strictly.
-         if (comparereal(upperlimitssc, 1d6) /= 0) then
+         if (comparereal(upperlimitssc, 1.0e6_dp) /= 0) then
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Upper limit imposed on ssc. This will cause large mass errors icm avalanching. Check the mass error at the end of the run.')
          end if
       end if
@@ -525,7 +517,7 @@ contains
             goto 1234
          end if
 
-         call realloc(mergebodsed, (/stmpar%lsedtot, ndx/), stat=ierr, fill=0d0, keepExisting=.false.)
+         call realloc(mergebodsed, [stmpar%lsedtot, ndx], stat=ierr, fill=0.0_dp, keepExisting=.false.)
          !
          if (jamormergedtuser > 0 .and. my_rank == 0) then ! safety, set equal dt_user across mormerge processes once
             call put_get_time_step(stmpar%morpar%mergehandle, dt_user)

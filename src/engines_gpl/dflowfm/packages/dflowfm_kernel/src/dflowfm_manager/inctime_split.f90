@@ -54,7 +54,7 @@ contains
       integer :: iyear, imonth, iday, ihour, imin, isec, add_seconds
 
       ! Do nothing if time splitting is switched off
-      if (ti_split <= 0d0) then
+      if (ti_split <= 0.0_dp) then
          return
       end if
 

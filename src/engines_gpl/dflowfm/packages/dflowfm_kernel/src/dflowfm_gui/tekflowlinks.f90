@@ -96,8 +96,8 @@ contains
                end if
 
                if (inview(xu(L), yu(L))) then
-                  ZZ1 = 0d0 !Bob(1,L)
-                  ZZ2 = 0d0 !Bob(2,L)
+                  ZZ1 = 0.0_dp !Bob(1,L)
+                  ZZ2 = 0.0_dp !Bob(2,L)
 
                   xcl = xu(L)
                   ycl = yu(L)
@@ -135,10 +135,10 @@ contains
                         call PFILLERCORE(Xr, Yr, 4)
                      else
 !                     hw    = 0.25d0*( a1(k1) + a1(k2) )/dx(L)
-                        if (hu(L) > 0d0) then
-                           hw = 0.5d0 * Au(L) / hu(L) ! flat bed, half width
+                        if (hu(L) > 0.0_dp) then
+                           hw = 0.5_dp * Au(L) / hu(L) ! flat bed, half width
                         else
-                           hw = 1d-3
+                           hw = 1.0e-3_dp
                         end if
                         if (jsferic == 1) then
                            hw = hw * rd2dg / ra

@@ -324,7 +324,7 @@ contains
 
       ! sample the DEM values into our regular grid
 
-      call READYY('Reading DEM data', 0d0)
+      call READYY('Reading DEM data', 0.0_dp)
       do c = 1, dem_info%cols
 
          ! Read the Logical Record Type B at the start of the column
@@ -351,7 +351,7 @@ contains
          write (msgbuf, '(a,i6,a,i6,a)') 'Reading column ', profileID(2), ' (', profileSize(1), ' rows)...'
          call msg_flush()
          if (mod(c, 20) == 0) then
-            call READYY(' ', min(1d0, dble(c) / dem_info%cols))
+            call READYY(' ', min(1.0_dp, real(c, kind=dp) / dem_info%cols))
          end if
 
          ! read in all the data for this column
@@ -369,7 +369,7 @@ contains
             read (fp, '(I6)', advance='no') tempInt
 
             ! Handle Z-Resolution
-            if (tempInt /= 0 .and. dem_info%spatialResolution(3) /= 1d0) then
+            if (tempInt /= 0 .and. dem_info%spatialResolution(3) /= 1.0_dp) then
                tempInt = int(tempInt * dem_info%spatialResolution(3))
                !status( "zRez %f before = %d after = %d", dem_info->spatialResolution(2), t, tempInt)
             end if
@@ -418,7 +418,7 @@ contains
 
       end do ! c=1,dem_info%cols
 
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
    end subroutine read_dem_data
 !

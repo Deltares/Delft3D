@@ -66,7 +66,7 @@ contains
                time_sed = tstop_user + 1
             else
                tem_dif = (tim - ti_seds) / ti_sed
-               time_sed = max(ti_seds + (floor(tem_dif + 0.001d0) + 1) * ti_sed, ti_seds)
+               time_sed = max(ti_seds + (floor(tem_dif + 0.001_dp) + 1) * ti_sed, ti_seds)
 
                if (comparereal(time_sed, ti_sede, eps10) == 1) then
                   ! next time_map would be beyond end of map-window, write one last map exactly at that end.

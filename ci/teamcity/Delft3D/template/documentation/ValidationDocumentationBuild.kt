@@ -32,11 +32,15 @@ object TemplateValidationDocumentation : Template({
             name = "Generate report"
             id = "GENERATE_REPORT"
             environment = venv {
-                requirementsFile = "ci/teamcity/Delft3D/documentation/scripts/requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable ./ci/python"
             }
-            command = file {
-                filename = "ci/teamcity/Delft3D/documentation/scripts/generate_report.py"
-                scriptArguments = "--texfile %engine_dir%/doc/validation/%engine_name%_validation_doc.tex"
+            command = module {
+                module = "ci_tools.documentation.generate_validation_report"
+                scriptArguments = """
+                    --tex-file %engine_dir%/doc/validation/%engine_name%_validation_doc.tex
+                    --teamcity
+                """.trimIndent()
             }
         }
     }
@@ -52,6 +56,10 @@ object TemplateValidationDocumentation : Template({
                 branchFilter = "+:<default>"
             }
         }
+    }
+
+    features {
+        perfmon {}
     }
     
     failureConditions {

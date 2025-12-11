@@ -36,7 +36,7 @@ module m_jacobi ! arrays needed for solving jacobi
    integer :: ndxjac = 0 ! nr. of nodes already allocated for jacobi should be ndx
    integer :: lnxjac = 0 ! nr. of links already allocated for jacobi should be lnx
    integer :: itmxjac = 6666 ! max nr. of iterations in solve-jacobi
-   real(kind=dp) :: epsjac = 1d-13 ! epsilon waterlevels jacobi method (maximum)
+   real(kind=dp) :: epsjac = 1.0e-13_dp ! epsilon waterlevels jacobi method (maximum)
    real(kind=dp), allocatable :: rr(:) ! resid
    real(kind=dp), allocatable :: db(:) ! solving related, right-hand side
    real(kind=dp), allocatable :: bbi(:) ! solving related, diagonal

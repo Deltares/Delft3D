@@ -1,4 +1,4 @@
-subroutine tricom_finish(olv_handle, gdp)
+subroutine tricom_finish(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -43,9 +43,7 @@ subroutine tricom_finish(olv_handle, gdp)
     use sync_flowcouple
     use sync_flowwave
     use flow2d3d_timers
-    use d3d_olv_class
     use D3D_Sobek 
-    use D3DPublish
     use globaldata
     use dfparall
     !
@@ -334,10 +332,6 @@ subroutine tricom_finish(olv_handle, gdp)
     integer                             , pointer :: ntcur         ! Total number of timesteps on comm. file (to write to) 
     logical                             , pointer :: lrdok         ! Logical to check if reading phase has been passed. 
     real(fp)                            , pointer :: dtsec         ! DT in seconds 
-!
-! Global variables
-!
-    type(olvhandle) :: olv_handle
 !
 ! Local variables
 !
@@ -796,11 +790,6 @@ subroutine tricom_finish(olv_handle, gdp)
        call timer_stop(timer_wait, gdp)
        write(*,*) '... continue'
     endif
-    !
-    ! Close Communication with delftonline
-    !
-    call setEndFlag(olv_handle, 1) !Tells the DOL client that the simulation has ended by passing an exception
-    call free_olv(olv_handle)
     !
     ! Mormerge synchronisation
     !

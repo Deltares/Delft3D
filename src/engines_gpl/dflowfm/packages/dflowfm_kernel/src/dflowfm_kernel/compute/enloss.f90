@@ -65,45 +65,45 @@ contains
 !
 !!--declarations----------------------------------------------------------------
       use m_flowgeom, only: villemontecd1, villemontecd2
-      use precision, only: fp
+      use precision, only: dp
       use m_tabellenboek, only: tabellenboek
       implicit none
 !
 ! Global variables
 !
-      real(fp), intent(in) :: ag !  Description and declaration in esm_alloc_real.f90
-      real(fp), intent(in) :: d1 !!  Distance between crest and downstream depth
-      real(fp), intent(out) :: dte !!  Subgrid energy loss due to weir
-      real(fp), intent(in) :: dtefri !!  Energy loss due to friction
-      real(fp), intent(in) :: ewben !!  Energy height downstream
-      real(fp), intent(in) :: eweir !!  Energy height at weir
-      real(fp), intent(in) :: hkruin !!  Crest height (downward positive).
-      real(fp), intent(in) :: qunit !!  Discharge at weir crest
-      real(fp), intent(in) :: qvolk !!  Maximum discharge (super critical flow)
-      real(fp), intent(in) :: vov !!  Velocity at crest of weir
-      real(fp), intent(in) :: wsben !!  Downstream water level
-      real(fp), intent(in) :: wsbov !!  Upstream water level
+      real(dp), intent(in) :: ag !  Description and declaration in esm_alloc_real.f90
+      real(dp), intent(in) :: d1 !!  Distance between crest and downstream depth
+      real(dp), intent(out) :: dte !!  Subgrid energy loss due to weir
+      real(dp), intent(in) :: dtefri !!  Energy loss due to friction
+      real(dp), intent(in) :: ewben !!  Energy height downstream
+      real(dp), intent(in) :: eweir !!  Energy height at weir
+      real(dp), intent(in) :: hkruin !!  Crest height (downward positive).
+      real(dp), intent(in) :: qunit !!  Discharge at weir crest
+      real(dp), intent(in) :: qvolk !!  Maximum discharge (super critical flow)
+      real(dp), intent(in) :: vov !!  Velocity at crest of weir
+      real(dp), intent(in) :: wsben !!  Downstream water level
+      real(dp), intent(in) :: wsbov !!  Upstream water level
       character(4), intent(inout) :: toest !!  State weir:
                                           !!  volk = perfect weir
                                           !!  onvo = imperfect weir
       integer, intent(in) :: iflagweir !!  Flag to switch between Tabellenboek and Villemonte
-      real(fp), intent(in) :: crestl !!  crest length of weir
-      real(fp), intent(in) :: rmpben !!  ramp (talud) downstream of weir
-      real(fp), intent(in) :: rmpbov !!  ramp (talud) upstream of weir
-      real(fp), intent(in) :: veg !!  Vegetation on weir
+      real(dp), intent(in) :: crestl !!  crest length of weir
+      real(dp), intent(in) :: rmpben !!  ramp (talud) downstream of weir
+      real(dp), intent(in) :: rmpbov !!  ramp (talud) upstream of weir
+      real(dp), intent(in) :: veg !!  Vegetation on weir
       integer, intent(in) :: testfixedweirs !< Flag for fixed weir options; 0 = original D-Flow FM approach, 1 = Simona approach
 !
 ! Local variables
 !
-      real(fp) :: dtecar
-      real(fp) :: dteonv
-      real(fp) :: dtetab
-      real(fp) :: dtevol
-      real(fp) :: qqv
-      real(fp) :: theta
-      real(fp) :: vilcd(1:2) !! These parameters have to be read in
-      real(fp) :: p, pref, qvolkvil, qweir, q2rat, cd0, cd0ref, sqfac, alfitp, re
-      real(fp) :: ddive, vil1, vil2
+      real(dp) :: dtecar
+      real(dp) :: dteonv
+      real(dp) :: dtetab
+      real(dp) :: dtevol
+      real(dp) :: qqv
+      real(dp) :: theta
+      real(dp) :: vilcd(1:2) !! These parameters have to be read in
+      real(dp) :: p, pref, qvolkvil, qweir, q2rat, cd0, cd0ref, sqfac, alfitp, re
+      real(dp) :: ddive, vil1, vil2
 !
 !! executable statements -------------------------------------------------------
 !
@@ -158,11 +158,11 @@ contains
          ! cd0 and p are used to compute the energy loss, in which
          ! vegetation is included.
 
-         alfitp = exp(-0.5d0 * eweir / max(0.01d0, crestl))
+         alfitp = exp(-0.5_dp * eweir / max(0.01_dp, crestl))
          cd0ref = vilcd(1) * &
-                  (alfitp * (1.0d0 - 0.25d0 * exp(-0.5d0 * rmpbov)) + &
-                   (1.-alfitp) * (0.8d0 + 0.65d0 * exp(-0.1d0 * rmpben)))
-         cd0 = cd0ref * (1.0d0 + veg / 3.0d0)**(-1.5d0)
+                  (alfitp * (1.0_dp - 0.25_dp * exp(-0.5_dp * rmpbov)) + &
+                   (1.-alfitp) * (0.8_dp + 0.65_dp * exp(-0.1_dp * rmpben)))
+         cd0 = cd0ref * (1.0_dp + veg / 3.0_dp)**(-1.5_dp)
          !
          ! Sieben' formula of 3 February 2010:
          !
@@ -171,12 +171,12 @@ contains
          !
          ! Sieben' formula of 6 August 2010:
          !
-         ddive = min(5.0d0, d1 / eweir)
+         ddive = min(5.0_dp, d1 / eweir)
          vil1 = 1 + ddive * (1 - exp(-rmpben / vilcd(2)))
          vil1 = 1.0 / (vil1**2)
          vil2 = (1 + ddive)
          vil2 = 1.0 / (vil2**2)
-         pref = 3.0**3 / (4.0 * cd0**2) / (max(0.001d0, vil1 - vil2))
+         pref = 3.0**3 / (4.0 * cd0**2) / (max(0.001_dp, vil1 - vil2))
 
          if (testfixedweirs == 1) then
             !
@@ -191,36 +191,36 @@ contains
             !    +         (1.-exp(-0.5*e1/lkruin)) * (0.8+0.65*exp(-0.1*mben)) )
             !        p = 27/(4*cd0**2) * (1 + max(5.,d1/e1)*(1-exp(-0.1*mben)))**2
             !
-            alfitp = exp(-0.5d0 * eweir / max(0.01d0, crestl))
+            alfitp = exp(-0.5_dp * eweir / max(0.01_dp, crestl))
             cd0ref = vilcd(1) * &
-                     (alfitp * (1.0d0 - 0.25d0 * exp(-0.5d0 * rmpbov)) + &
-                      (1.-alfitp) * (0.8d0 + 0.65d0 * exp(-0.1d0 * rmpben)))
-            cd0 = cd0ref * (1.0d0 + veg / 3.0d0)**(-1.5d0)
+                     (alfitp * (1.0_dp - 0.25_dp * exp(-0.5_dp * rmpbov)) + &
+                      (1.-alfitp) * (0.8_dp + 0.65_dp * exp(-0.1_dp * rmpben)))
+            cd0 = cd0ref * (1.0_dp + veg / 3.0_dp)**(-1.5_dp)
 
-            ddive = min(5.0d0, d1 / eweir)
+            ddive = min(5.0_dp, d1 / eweir)
             vil1 = 1 + ddive * (1 - exp(-rmpben / vilcd(2)))
-            pref = (27.0 / (4.0 * cd0**2)) * max(0.001d0, vil1)**2
+            pref = (27.0 / (4.0 * cd0**2)) * max(0.001_dp, vil1)**2
          end if
 
          p = (1.0 + veg / 3.0)**3 / (1.0 + 2 * veg) * pref
 
          qvolkvil = 2.0 / 3.0 * eweir * sqrt(2.0 / 3.0 * ag * eweir) * cd0
 
-         sqfac = sqrt(max(0.0d0, 1.0d0 - max(0.0d0, ewben / eweir)**pref))
+         sqfac = sqrt(max(0.0_dp, 1.0_dp - max(0.0_dp, ewben / eweir)**pref))
          qweir = qvolkvil * sqfac
          !
          ! determine energy loss for submerged weir flow with Sieben
          !
-         q2rat = max(0.0d0, qunit**2 / qvolkvil**2)
-         if (q2rat < 1.0d0) then
-            re = max(0.00000001d0, 1.0d0 - (1.0d0 - q2rat)**(1.0d0 / p))
+         q2rat = max(0.0_dp, qunit**2 / qvolkvil**2)
+         if (q2rat < 1.0_dp) then
+            re = max(0.00000001_dp, 1.0_dp - (1.0_dp - q2rat)**(1.0_dp / p))
          else
             re = 1.
          end if
 
          q2rat = sqfac
          dteonv = re * eweir
-         qvolkvil = max(0.00000001d0, qweir)
+         qvolkvil = max(0.00000001_dp, qweir)
          qqv = 0.
       end if
 
@@ -246,7 +246,7 @@ contains
          end if
       elseif (iflagweir == 25) then !! Villemonte
          !
-         if (q2rat > 0.99d0) then
+         if (q2rat > 0.99_dp) then
             !
             ! It is a free weir flow
             !

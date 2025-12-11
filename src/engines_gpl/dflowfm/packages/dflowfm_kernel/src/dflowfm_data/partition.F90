@@ -52,8 +52,10 @@
 
 !> Interface module to METIS's native error codes.
 module m_metis
+
 ! the parameters and enumerators are taken from
 !   ../third_party_open/metis-<version>/include/metis.h
+   use precision, only: dp
    integer, parameter :: METIS_NOPTIONS = 40
 
    integer, dimension(METIS_NOPTIONS) :: opts
@@ -237,9 +239,9 @@ module m_partitioninfo
    integer :: nbndint ! number of interface links
    integer, allocatable :: kbndint(:, :) ! interface administration, similar to kbndz, etc., dim(3,nbndint)
    real(kind=dp), allocatable :: zbndint(:, :) ! (1,:): beta value, (2,:): interface value, dim(2,nbndint)
-   real(kind=dp) :: stoptol = 1d-4 ! parameter of stopping criteria for subsolver of Schwarz method
-   real(kind=dp) :: sbeta = 10d0 ! beta value in Robin-Robin coupling for Schwarz iterations
-   real(kind=dp) :: prectol = 0.50d-2 ! tolerance for drop of preconditioner
+   real(kind=dp) :: stoptol = 1.0e-4_dp ! parameter of stopping criteria for subsolver of Schwarz method
+   real(kind=dp) :: sbeta = 10.0_dp ! beta value in Robin-Robin coupling for Schwarz iterations
+   real(kind=dp) :: prectol = 0.50e-2_dp ! tolerance for drop of preconditioner
    integer :: jabicgstab = 1 !
    integer :: Nsubiters = 1000
 
@@ -311,7 +313,7 @@ contains
             call find1dcells()
          end if
 
-         call delete_dry_points_and_areas()
+         call delete_dry_points_and_areas(update_blcell=.false.)
       end if
 
 !     determine number of cells
@@ -344,7 +346,7 @@ contains
 !       by setting the first node z-value and determine number of partitions
 
 !     make all domain numbers available
-      idum = (/(i, i=1, npartition_pol)/)
+      idum = [(i, i=1, npartition_pol)]
 
 !     see wich domain numbers are already used
       do ipol = 1, npartition_pol
@@ -652,7 +654,7 @@ contains
       call find1dcells()
       netstat = NETSTAT_OK
 
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell=.false.)
 
       if (numk == 0 .or. numl == 0) then
          write (message, "('While making partition domain #', I0, ': empty domain (', I0, ' net nodes, ', I0, ' net links).')") idmn, numk, numl
@@ -689,7 +691,7 @@ contains
          end do
 
 !        remove masked netcells
-         call remove_masked_netcells()
+         call remove_masked_netcells(update_blcell=.false.)
 
          call partition_make_1dugrid_in_domain(idmn, numl1d, Lperm, ierror)
          if (ierror /= 0) goto 1234
@@ -1180,7 +1182,8 @@ contains
                do kk = 1, netcell(ic)%N
                   k = netcell(ic)%nod(kk)
                   do i = 1, nmk(k)
-                     ip1 = i + 1; if (ip1 > nmk(k)) ip1 = ip1 - nmk(k)
+                     ip1 = i + 1
+                     if (ip1 > nmk(k)) ip1 = ip1 - nmk(k)
                      L = nod(k)%lin(i)
                      Lp1 = nod(k)%lin(ip1)
                      icother = common_cell_for_two_net_links(L, Lp1)
@@ -1442,7 +1445,7 @@ contains
       integer :: node
 
       integer :: jafound
-      real(kind=dp), parameter :: TOLERANCE = 1d-4
+      real(kind=dp), parameter :: TOLERANCE = 1.0e-4_dp
       character(len=80) :: message2, message3
 
       ierror = 1
@@ -1524,7 +1527,7 @@ contains
       else
          numnew = nr_send_list(numdomains - 1) + num
          if (numnew > ubound(send_list, 1)) then
-            call realloc(send_list, int(1.2d0 * dble(numnew) + 1d0), fill=0, keepExisting=.true.)
+            call realloc(send_list, int(1.2_dp * real(numnew, kind=dp) + 1.0_dp), fill=0, keepExisting=.true.)
          end if
       end if
 
@@ -1856,7 +1859,7 @@ contains
 
 !        check recv array size
          if (icount > 2 * ubound(xy_recv, 2)) then ! reallocate if necessary
-            call realloc(xy_recv, (/2, int(1.2d0 * dble(icount / 2) + 1d0)/), keepExisting=.false., fill=0d0)
+            call realloc(xy_recv, [2, int(1.2_dp * real(icount / 2, kind=dp) + 1.0_dp)], keepExisting=.false., fill=0.0_dp)
          end if
 
          call mpi_recv(xy_recv, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, status, error)
@@ -1919,7 +1922,7 @@ contains
 
       integer :: i, k, k1, k2, L, num
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       ierror = 1
 
@@ -1957,7 +1960,7 @@ contains
          L = abs(ighostlist_u(i))
 
 !        safety check
-         dum = abs(abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L)) - 1d0)
+         dum = abs(abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L)) - 1.0_dp)
          if (dum >= dtol) then
 !           check if this is a valid ghostlink (see also subroutine "disable_invalid_ghostcells_with_wu")
             k1 = ln(1, L)
@@ -1971,7 +1974,7 @@ contains
             end if
          end if
 
-         if (abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L) + 1d0) < dtol) then
+         if (abs(csu_loc(L) * csu(L) + snu_loc(L) * snu(L) + 1.0_dp) < dtol) then
             ighostlist_u(i) = -ighostlist_u(i)
             num = num + 1
          end if
@@ -2020,7 +2023,7 @@ contains
             k = isendlist_s(j)
             xs(NS) = xzw(k)
             ys(NS) = yzw(k)
-            zs(NS) = dble(i)
+            zs(NS) = real(i, kind=dp)
          end do
       end do
 
@@ -2030,7 +2033,7 @@ contains
             k = isendlist_sall(j)
             xs(NS) = xzw(k)
             ys(NS) = yzw(k)
-            zs(NS) = dble(i)
+            zs(NS) = real(i, kind=dp)
          end do
       end do
 
@@ -2040,7 +2043,7 @@ contains
             k = abs(isendlist_u(j))
             xs(NS) = xu(k)
             ys(NS) = yu(k)
-            zs(NS) = -dble(i)
+            zs(NS) = -real(i, kind=dp)
          end do
       end do
 
@@ -2413,7 +2416,7 @@ contains
       end if
 
       if (ubound(work, 1) < num) then
-         call realloc(work, int(1.2d0 * dble(num) + 1d0))
+         call realloc(work, int(1.2_dp * real(num, kind=dp) + 1.0_dp))
       end if
 
 !     fill work array
@@ -2540,7 +2543,7 @@ contains
       end if
 
       if (ubound(workrec, 1) < num) then
-         call realloc(workrec, int(1.2d0 * dble(num) + 1d0))
+         call realloc(workrec, int(1.2_dp * real(num, kind=dp) + 1.0_dp))
       end if
 
       if (ja3d /= 1) then
@@ -2899,7 +2902,7 @@ contains
 
       if (jampi == 1) then
 !        update global ghost-cell numbers
-         dum = dble(iglobnum)
+         dum = real(iglobnum, kind=dp)
          if (jatime == 1) call starttimer(IMPICOMM)
          !call update_ghost(dum,ierror)
          if (jampi == 1) then
@@ -3032,7 +3035,7 @@ contains
 
       integer :: ierror
 
-      dum = (/var1, var2/)
+      dum = [var1, var2]
       call mpi_allreduce(dum, var_all, 2, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
       var1 = var_all(1)
       var2 = var_all(2)
@@ -3058,7 +3061,7 @@ contains
 
       integer :: ierror
 
-      dum = (/var1, var2, var3/)
+      dum = [var1, var2, var3]
       call mpi_allreduce(dum, var_all, 3, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
       var1 = var_all(1)
       var2 = var_all(2)
@@ -3086,7 +3089,7 @@ contains
 
       integer :: ierror
 
-      dum = (/var1, var2, var3, var4/)
+      dum = [var1, var2, var3, var4]
       call mpi_allreduce(dum, var_all, 4, mpi_integer, mpi_max, DFM_COMM_DFMWORLD, ierror)
       var1 = var_all(1)
       var2 = var_all(2)
@@ -3377,8 +3380,8 @@ contains
 
       integer :: i, other_domain, in, k1, ierror
 
-      real(kind=dp), parameter :: DPENALTY = 1d10 ! should be smaller than DREJECT
-      real(kind=dp), parameter :: DREJECT = 2d99 ! should be larger than DPENALTY
+      real(kind=dp), parameter :: DPENALTY = 1.0e10_dp ! should be smaller than DREJECT
+      real(kind=dp), parameter :: DREJECT = 2.0e99_dp ! should be larger than DPENALTY
 
       if (N < 1) return
 
@@ -3398,7 +3401,7 @@ contains
 !        determine preference
          if (in == 1) then
             if (idomain(k1) == my_rank) then
-               dist(i) = 0d0
+               dist(i) = 0.0_dp
             else
                dist(i) = DPENALTY
             end if
@@ -3442,18 +3445,18 @@ contains
       end do
 
 !     safety: check uniqueness
-      dist = 0d0
+      dist = 0.0_dp
       do i = 1, N
          if (kobs(i) > 0) then
-            dist(i) = 1d0
+            dist(i) = 1.0_dp
          end if
       end do
       call mpi_allreduce(dist, dist_all, N, MPI_DOUBLE_PRECISION, MPI_SUM, DFM_COMM_DFMWORLD, ierror) ! re-use (part of) dist_all
       do i = 1, N
-         if (comparereal(dist_all(i, 0), 1d0) == 1) then
+         if (comparereal(dist_all(i, 0), 1.0_dp) == 1) then
             call mess(LEVEL_ERROR, 'reduce_kobs: non-unique observation station(s)')
          end if
-         if (comparereal(dist_all(i, 0), 0d0) == 0) then
+         if (comparereal(dist_all(i, 0), 0.0_dp) == 0) then
             call mess(LEVEL_WARN, 'reduce_kobs: observation station '//trim(namobs(i))//' was not snapped to a valid flownode on any partition.')
          end if
       end do
@@ -3478,7 +3481,7 @@ contains
       integer, intent(in) :: numobs !< number of observation stations
       real(kind=dp), dimension(numobs, numvals), intent(inout) :: valobs !< values at obervations stations to be output.
 
-      real(kind=dp), parameter :: dsmall = -huge(1d0)
+      real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
       integer :: iobs, ival
       integer :: ierror
 
@@ -3520,7 +3523,7 @@ contains
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that we wish to update.
 
-      real(kind=dp), parameter :: dsmall = -huge(1d0)
+      real(kind=dp), parameter :: dsmall = -huge(1.0_dp)
       integer :: i_stat, i_loc
       real(kind=dp), pointer :: stat_output(:) !< pointer to statistical output data array that is to be written to the Netcdf file after reduction across partitions.
       real(kind=dp), allocatable :: send_buffer(:) !< send buffer for mpi reduction because MPI_IN_PLACE does not work for unknown reasons.
@@ -3596,17 +3599,17 @@ contains
 
       integer, dimension(:), allocatable :: idum
 
-      real(kind=dp), parameter :: dtol = 1d-8
-      real(kind=dp), parameter :: DLARGE = 1d99
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
+      real(kind=dp), parameter :: DLARGE = 1.0e99_dp
       real(kind=dp), parameter :: ILARGE = 10000
 
       integer :: i, ierror
 
       allocate (dum(Nproflocs))
-      dum = 0d0
+      dum = 0.0_dp
 
       allocate (idum(Nproflocs))
-      idum = 0d0
+      idum = 0.0_dp
 
       call MPI_allreduce(distsam, dum, Nproflocs, MPI_DOUBLE_PRECISION, MPI_MIN, DFM_COMM_DFMWORLD, ierror)
       if (ierror /= 0) goto 1234
@@ -3686,7 +3689,7 @@ contains
 #ifdef HAVE_MPI
 !     allocate
       allocate (resu_all(2, num_rugs))
-      resu_all = 0d0
+      resu_all = 0.0_dp
 
       call mpi_allreduce(resu, resu_all, num_rugs, mpi_2double_precision, mpi_maxloc, DFM_COMM_DFMWORLD, ierror)
       if (ierror /= 0) then
@@ -3727,7 +3730,7 @@ contains
       klp: do k = 1, Ndxi
          do LL = 1, nd(k)%lnx
             L = abs(nd(k)%ln(LL))
-            if (wu(L) /= 0d0) then
+            if (wu(L) /= 0.0_dp) then
                cycle klp
             end if
          end do
@@ -3826,7 +3829,7 @@ contains
 
       logical :: Lleftfound, Lrightfound
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
 !     count the number of branches
       numnetbr = mxnetbr
@@ -3864,18 +3867,18 @@ contains
       allocate (iordened_branches(numallnetbr))
       allocate (ipoint(numallnetbr + 1))
 
-      xyL_loc = 0d0
-      xyR_loc = 0d0
+      xyL_loc = 0.0_dp
+      xyR_loc = 0.0_dp
 
       do ibr = 1, numnetbr
          iglob = ibr + iglobalbranch_first - 1
          num = netbr(ibr)%NX
          LL = netbr(ibr)%LN(1)
          LR = netbr(ibr)%LN(num)
-         xyL_loc(1, iglob) = 0.5d0 * (xk(kn(1, abs(LL))) + xk(kn(2, abs(LL))))
-         xyL_loc(2, iglob) = 0.5d0 * (yk(kn(1, abs(LL))) + yk(kn(2, abs(LL))))
-         xyR_loc(1, iglob) = 0.5d0 * (xk(kn(1, abs(LR))) + xk(kn(2, abs(LR))))
-         xyR_loc(2, iglob) = 0.5d0 * (yk(kn(1, abs(LR))) + yk(kn(2, abs(LR))))
+         xyL_loc(1, iglob) = 0.5_dp * (xk(kn(1, abs(LL))) + xk(kn(2, abs(LL))))
+         xyL_loc(2, iglob) = 0.5_dp * (yk(kn(1, abs(LL))) + yk(kn(2, abs(LL))))
+         xyR_loc(1, iglob) = 0.5_dp * (xk(kn(1, abs(LR))) + xk(kn(2, abs(LR))))
+         xyR_loc(2, iglob) = 0.5_dp * (yk(kn(1, abs(LR))) + yk(kn(2, abs(LR))))
 
          xyL_loc(3, iglob) = dLinkangle(LL)
          xyR_loc(3, iglob) = dLinkangle(LR)
@@ -3896,9 +3899,9 @@ contains
 !     connect branches and make new global branch numbering
       inew = 0
       numnew = 0
-      dlL = 0d0
-      dlR = 0d0
-      dltot = 0d0
+      dlL = 0.0_dp
+      dlR = 0.0_dp
+      dltot = 0.0_dp
       iorient = 0
       ipoint(1) = 1
       do ibr = 1, numallnetbr
@@ -3947,8 +3950,8 @@ contains
                Lconnect = 0
             end if
 
-            dleft = 0d0
-            dlength = 0d0
+            dleft = 0.0_dp
+            dlength = 0.0_dp
             do k = 1, N
                L = netbr(ibrr)%LN(k)
                dlength = dlength + dlinklength(L)
@@ -3980,7 +3983,7 @@ contains
 
 !     compute the offset lengths and fill local branch properties
       do i = 1, numnew
-         dconnected = 0d0
+         dconnected = 0.0_dp
          do k = ipoint(i), ipoint(i + 1) - 1
             ibr_glob = abs(iordened_branches(k))
             ibrr = ibr_glob - iglobalbranch_first + 1
@@ -4145,8 +4148,8 @@ contains
                      do i = 1, num
                         L = netbr(ibr)%LN(i)
                         La = abs(L)
-                        xloc = 0.5d0 * (xk(kn(1, La)) + xk(kn(2, La)))
-                        yloc = 0.5d0 * (yk(kn(1, La)) + yk(kn(2, La)))
+                        xloc = 0.5_dp * (xk(kn(1, La)) + xk(kn(2, La)))
+                        yloc = 0.5_dp * (yk(kn(1, La)) + yk(kn(2, La)))
                         if (dbdistance(xloc, yloc, xyL_all(1, ibr_other), xyL_all(2, ibr_other), jsferic, jasfer3D, dmiss) < dtol) then
                            !                       left match found
                            Lleftfound = .true.
@@ -4300,7 +4303,7 @@ contains
          call update_ghosts(itype, 1, N, dum, ierr)
          do L = 1, Lnxi
             if (idomain(ln(1, L)) == my_rank .or. idomain(ln(2, L)) == my_rank) then
-               if (abs(dum(L) - var(L)) > 1d-12) then
+               if (abs(dum(L) - var(L)) > 1.0e-12_dp) then
                   write (6, *) 'XXX: ', my_rank, L, dum(L), var(L), dum(L) - var(L)
                end if
             end if
@@ -4310,7 +4313,7 @@ contains
          do i = 1, nghostlist_sall(ndomains - 1)
             k = ighostlist_sall(i)
             if (ighostlev_cellbased(k) > 3 .or. ighostlev_nodebased(k) > 2) cycle
-            if (abs(dum(k) - var(k)) > 1d-12) then
+            if (abs(dum(k) - var(k)) > 1.0e-12_dp) then
                write (6, *) 'XXX: ', my_rank, k, dum(k), var(k), dum(k) - var(k)
             end if
          end do
@@ -4362,19 +4365,19 @@ contains
       ierr = 0
       nsegments = size(startLinks)
       allocate (resultsSum(2, nsegments))
-      results = 0.0d0
+      results = 0.0_dp
 
       do ns = 1, nsegments
 
-         sumQuantitiesByWeight = 0d0
-         sumWeights = 0d0
+         sumQuantitiesByWeight = 0.0_dp
+         sumWeights = 0.0_dp
 
          do nl = startLinks(ns), endLinks(ns)
 
             indWeight = abs(indsWeight(nl))
             indQuantity = abs(indsQuantity(nl))
-            quantitiesByWeight = 0.0d0
-            weight = 0.0d0
+            quantitiesByWeight = 0.0_dp
+            weight = 0.0_dp
 
             if (jampi == 1) then
                ! Exclude ghost nodes
@@ -4397,15 +4400,15 @@ contains
 
             if (present(firstFilter) .and. present(firstFilterValue)) then
                if (firstFilter(indWeight) <= firstFilterValue) then
-                  quantitiesByWeight = 0.0d0
-                  weight = 0.0d0
+                  quantitiesByWeight = 0.0_dp
+                  weight = 0.0_dp
                end if
             end if
 
             if (present(secondFilter) .and. present(secondFilterValue)) then
                if (secondFilter(nl) <= secondFilterValue) then
-                  quantitiesByWeight = 0.0d0
-                  weight = 0.0d0
+                  quantitiesByWeight = 0.0_dp
+                  weight = 0.0_dp
                end if
             end if
 
@@ -4473,7 +4476,7 @@ contains
       if (netstat == NETSTAT_CELLS_DIRTY) then
          call findcells(0)
          call find1Dcells()
-         call delete_dry_points_and_areas()
+         call delete_dry_points_and_areas(update_blcell=.false.)
       end if
 
 !     check for 1D cells (not supported)
@@ -4527,7 +4530,7 @@ contains
          call copynetboundstopol(0, 0, 0, 1)
 
 !        set polygon nodal value to domain number
-         zpl(1:NPL) = dble(idmn)
+         zpl(1:NPL) = real(idmn, kind=dp)
 
 !        add polygon to tpoly-type partitioning polygons
          call pol_to_tpoly(npartition_pol, partition_pol, keepExisting=.true.)
@@ -4768,7 +4771,7 @@ contains
          call realloc(ghost_list(ghost_level)%N, number_of_domains - 1, -1, fill=0, keepExisting=.true.)
       end if
       if (number_of_data > ubound(ghost_list(ghost_level)%list, 1)) then
-         call realloc(ghost_list(ghost_level)%list, int(1.2d0 * dble(number_of_data)) + 1, fill=0, keepExisting=.true.)
+         call realloc(ghost_list(ghost_level)%list, int(1.2_dp * real(number_of_data, kind=dp)) + 1, fill=0, keepExisting=.true.)
       end if
 
       ghost_list(ghost_level)%N(domain_number) = ghost_list(ghost_level)%N(domain_number) + 1
@@ -4865,7 +4868,7 @@ contains
             if (ghost_list(ghost_level)%N(domain_number) - ghost_list(ghost_level)%N(domain_number - 1) > 0) then
                num = num + 1
                if (num > ubound(ghost_list(ghost_level)%neighdmn, 1)) then
-                  call realloc(ghost_list(ghost_level)%neighdmn, int(1.2d0 * dble(num) + 1d0), keepExisting=.true., fill=0)
+                  call realloc(ghost_list(ghost_level)%neighdmn, int(1.2_dp * real(num, kind=dp) + 1.0_dp), keepExisting=.true., fill=0)
                end if
                ghost_list(ghost_level)%neighdmn(num) = domain_number
             end if
@@ -5141,8 +5144,8 @@ contains
          end if
       end do
       nNodesCrs = sum(nodeCountCrs)
-      call realloc(geomXCrs, nNodesCrs, keepExisting=.false., fill=0d0)
-      call realloc(geomYCrs, nNodesCrs, keepExisting=.false., fill=0d0)
+      call realloc(geomXCrs, nNodesCrs, keepExisting=.false., fill=0.0_dp)
+      call realloc(geomYCrs, nNodesCrs, keepExisting=.false., fill=0.0_dp)
       if (jampi > 0) then
          ! In parallel runs, one cross section might lie on multiple subdomains. To handle this situation,
          ! we will need to know which nodes are on boundaries of a cross section on each subdomain, and the boundary nodes will be handled separately.
@@ -5245,14 +5248,14 @@ contains
          if (my_rank == 0) then
             ! Allocate arrays
             call realloc(nodeCountCrsMPI, ncrs, keepExisting=.false., fill=0)
-            call realloc(geomXCrsMPI, nNodesCrsMPI, keepExisting=.false., fill=0d0)
-            call realloc(geomYCrsMPI, nNodesCrsMPI, keepExisting=.false., fill=0d0)
+            call realloc(geomXCrsMPI, nNodesCrsMPI, keepExisting=.false., fill=0.0_dp)
+            call realloc(geomYCrsMPI, nNodesCrsMPI, keepExisting=.false., fill=0.0_dp)
 
             ! Allocate arrays that gather information from all subdomains
             ! Data on all subdomains will be gathered in a contiguous way
             call realloc(nodeCountCrsGat, ncrs * ndomains, keepExisting=.false., fill=0)
-            call realloc(xGat, nNodesCrsMPI, keepExisting=.false., fill=0d0)
-            call realloc(yGat, nNodesCrsMPI, keepExisting=.false., fill=0d0)
+            call realloc(xGat, nNodesCrsMPI, keepExisting=.false., fill=0.0_dp)
+            call realloc(yGat, nNodesCrsMPI, keepExisting=.false., fill=0.0_dp)
             call realloc(displs, ndomains, keepExisting=.false., fill=0)
             call realloc(nNodesCrsGat, ndomains, keepExisting=.false., fill=0)
             call realloc(maskBndGat, nNodesCrsMPI, keepExisting=.false., fill=0)
@@ -5365,8 +5368,8 @@ contains
             ! Copy the MPI-arrays to nodeCountCrs, geomXCrs and geomYCrs for the his-output
             nNodesCrs = nNodesCrsMPI
             nodeCountCrs(1:ncrs) = nodeCountCrsMPI(1:ncrs)
-            call realloc(geomXCrs, nNodesCrs, keepExisting=.false., fill=0d0)
-            call realloc(geomYCrs, nNodesCrs, keepExisting=.false., fill=0d0)
+            call realloc(geomXCrs, nNodesCrs, keepExisting=.false., fill=0.0_dp)
+            call realloc(geomYCrs, nNodesCrs, keepExisting=.false., fill=0.0_dp)
             geomXCrs(1:nNodesCrs) = geomXCrsMPI(1:nNodesCrs)
             geomYCrs(1:nNodesCrs) = geomYCrsMPI(1:nNodesCrs)
          end if
@@ -5485,7 +5488,7 @@ contains
 
       integer :: numdisabled
 
-      real(kind=dp), parameter :: dtol = 1d-4
+      real(kind=dp), parameter :: dtol = 1.0e-4_dp
 
       call wall_clock_time(t0)
 
@@ -5506,7 +5509,7 @@ contains
       allocate (irequest(0:2 * ndomains - 1))
 !     allocate xysnd sufficiently large
       allocate (xysnd(3, numL))
-      xysnd = 0d0
+      xysnd = 0.0_dp
 !     allocate kcesnd sufficiently large
       call realloc(kcesnd, numL, keepExisting=.false., fill=0)
 
@@ -5540,9 +5543,9 @@ contains
                if (idomain(ke(L)) == other_domain) then
                   k3 = kn(1, L)
                   k4 = kn(2, L)
-                  xysnd(1, istart + num) = 0.5d0 * (xk(k3) + xk(k4))
-                  xysnd(2, istart + num) = 0.5d0 * (yk(k3) + yk(k4))
-                  xysnd(3, istart + num) = dble(kn(3, L)) ! also send type of netlink
+                  xysnd(1, istart + num) = 0.5_dp * (xk(k3) + xk(k4))
+                  xysnd(2, istart + num) = 0.5_dp * (yk(k3) + yk(k4))
+                  xysnd(3, istart + num) = real(kn(3, L), kind=dp) ! also send type of netlink
                   num = num + 1
                end if
             end if
@@ -5557,8 +5560,8 @@ contains
       end do
 
 !     recieve requests from other domains
-      timefind1 = 0d0 ! time spent in finding netlinks
-      timefind2 = 0d0 ! time spent in finding netlinks
+      timefind1 = 0.0_dp ! time spent in finding netlinks
+      timefind2 = 0.0_dp ! time spent in finding netlinks
       istart = 1
       do other_domain = 0, ndomains - 1
          num = numrequest(my_rank, other_domain)
@@ -5581,7 +5584,7 @@ contains
          end if
 
 !        realloc
-         call realloc(xyrec, (/3, num/), keepExisting=.false., fill=0d0)
+         call realloc(xyrec, [3, num], keepExisting=.false., fill=0.0_dp)
 
 !        recieve
          call mpi_recv(xyrec, icount, mpi_double_precision, other_domain, MPI_ANY_TAG, DFM_COMM_DFMWORLD, istat, ierror)
@@ -5602,8 +5605,8 @@ contains
 !              get netlink coordinates
                k3 = kn(1, L)
                k4 = kn(2, L)
-               xL = 0.5d0 * (xk(k3) + xk(k4))
-               yL = 0.5d0 * (yk(k3) + yk(k4))
+               xL = 0.5_dp * (xk(k3) + xk(k4))
+               yL = 0.5_dp * (yk(k3) + yk(k4))
 
 !              measure distance
                dis = dbdistance(xL, yL, xyrec(1, i), xyrec(2, i), jsferic, jasfer3D, dmiss)

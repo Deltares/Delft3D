@@ -106,7 +106,7 @@ contains
 
       if (jampi == 1) then
 !        source/sink could have been in ghost region
-         allocate (dum(6, Lnx)); 
+         allocate (dum(6, Lnx))
          do LL = 1, Lnx
             do i = 1, 6
                dum(i, LL) = klnup(i, LL)
@@ -119,7 +119,7 @@ contains
 !           check if higher-order reconstruction of this link has been disabled
             Ldisabled = .true.
             do i = 1, 6
-               if (dum(i, LL) /= 0d0) then
+               if (dum(i, LL) /= 0.0_dp) then
                   Ldisabled = .false.
                   exit
                end if

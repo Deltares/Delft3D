@@ -71,10 +71,10 @@ contains
       allocate (dline(Mfile))
       allocate (num(Marray))
 
-      D = 0d0
+      D = 0.0_dp
 
-      call readyy(' ', -1d0)
-      call readyy('Reading Arcinfo file (press right mouse button to cancel)', 0d0)
+      call readyy(' ', -1.0_dp)
+      call readyy('Reading Arcinfo file (press right mouse button to cancel)', 0.0_dp)
 
 !     read last lines outside block
       ifile = 1
@@ -89,9 +89,9 @@ contains
             goto 1234
          end if
 
-         af = dble(jfile - Nfile) / dble(jstart - Nfile)
+         af = real(jfile - Nfile, kind=dp) / real(jstart - Nfile, kind=dp)
          call readyy('Reading Arcinfo file (press right mouse button to cancel)', af)
-         write (6, '("+Reading Arcinfo file: ", F7.2, "% done")') 1d2 * af
+         write (6, '("+Reading Arcinfo file: ", F7.2, "% done")') 1.0e2_dp * af
 
       end do
 
@@ -123,14 +123,14 @@ contains
             end do
          end do
 
-         af = dble(jfile - Nfile) / dble(jstart - Nfile)
+         af = real(jfile - Nfile, kind=dp) / real(jstart - Nfile, kind=dp)
          call readyy('Reading Arcinfo file (press right mouse button to cancel)', af)
-         write (6, '("+Reading Arcinfo file: ", F7.2, "% done")') 1d2 * af
+         write (6, '("+Reading Arcinfo file: ", F7.2, "% done")') 1.0e2_dp * af
 
 !        divide by the number of samples in a subcell
          do iarray = 1, Marray
             if (num(iarray) > 0) then
-               D(iarray, jarray) = D(iarray, jarray) / dble(num(iarray))
+               D(iarray, jarray) = D(iarray, jarray) / real(num(iarray), kind=dp)
             else
                D(iarray, jarray) = DMISS
             end if
@@ -146,7 +146,7 @@ contains
 
       end do ! do jarray=Narray,1,-1
 
-      call readyy(' ', -1d0)
+      call readyy(' ', -1.0_dp)
 
       call doclose(MINP)
 

@@ -62,7 +62,7 @@ contains
 
       logical :: LL, LR
 
-      velf = 0d0
+      velf = 0.0_dp
 
       num = 0 ! number of cornernodes (for ouput purposes only)
       i = 0
@@ -70,7 +70,7 @@ contains
          i = i + 1
          if (idxf(2, i) == j .and. ifront(idxf(1, i)) == 1) then
             velf(:, i) = vel(:, idxf(1, i))
-            if (velf(1, i) == DMISS) velf(:, i) = 0d0
+            if (velf(1, i) == DMISS) velf(:, i) = 0.0_dp
 
 !        check for cornernodes
             iprev = idxf(1, max(i - 1, 1))
@@ -98,9 +98,9 @@ contains
                end do
                nf = nf + 1
                if (LL) then
-                  velf(:, i) = 0d0
+                  velf(:, i) = 0.0_dp
                else
-                  velf(:, i + 1) = 0d0
+                  velf(:, i + 1) = 0.0_dp
                end if
                i = i + 1
             end if

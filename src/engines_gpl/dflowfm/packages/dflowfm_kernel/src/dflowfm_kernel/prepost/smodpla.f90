@@ -56,8 +56,8 @@ contains
 
          DH = DPLA
          do N = 2, NPL - 1
-            a1 = 0.5d0 * (dxs(n - 1) + dxs(N))
-            a2 = 0.5d0 * (dxs(n + 1) + dxs(N))
+            a1 = 0.5_dp * (dxs(n - 1) + dxs(N))
+            a2 = 0.5_dp * (dxs(n + 1) + dxs(N))
             DPLA(N) = (a2 * DH(N - 1) + a1 * DH(N + 1)) / (a2 + a1)
          end do
 

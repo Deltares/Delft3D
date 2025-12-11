@@ -83,7 +83,7 @@ contains
       allocate (polygon_nodes(Lnx))
       polygon_nodes = 0
       allocate (polygon_segment_weights(Lnx))
-      polygon_segment_weights = 0d0
+      polygon_segment_weights = 0.0_dp
       allocate (ipolnr(Nin))
       ipolnr = 999
 
@@ -557,8 +557,8 @@ contains
                   k2 = kn(2, L)
                   if (k1 > 0 .and. k2 > 0) then
                      num = num + 1
-                     Xout(Nout + num) = 0.5d0 * (xk(k1) + xk(k2))
-                     Yout(Nout + num) = 0.5d0 * (yk(k1) + yk(k2))
+                     Xout(Nout + num) = 0.5_dp * (xk(k1) + xk(k2))
+                     Yout(Nout + num) = 0.5_dp * (yk(k1) + yk(k2))
                      ipoLout(Nout + num) = numpols
                   end if
                else
@@ -586,14 +586,15 @@ contains
                      jamiss = 1
                      L = m
                      k2 = abs(lne(1, L))
-                     k3 = kn(1, L); k4 = kn(2, L)
+                     k3 = kn(1, L)
+                     k4 = kn(2, L)
 
                      call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xzz, yzz, xce2, yce2, xx, yy)
                      if (izbndpos == 0) then ! as in D3DFLOW
 
                      else if (izbndpos == 1) then ! on network boundary
-                        xzz = 0.5d0 * (xk(k3) + xk(k4))
-                        yzz = 0.5d0 * (yk(k3) + yk(k4))
+                        xzz = 0.5_dp * (xk(k3) + xk(k4))
+                        yzz = 0.5_dp * (yk(k3) + yk(k4))
                      else if (izbndpos == 2) then ! on specified boundary polyline
 
                      end if

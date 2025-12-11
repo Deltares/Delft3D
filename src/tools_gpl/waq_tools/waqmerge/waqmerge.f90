@@ -33,8 +33,9 @@ program waqmerge
     use m_banner_information
     use waq_static_version_info
     use waqmerge_version_module, only: getfullversionstring_waqmerge
-    use m_date_time_utils_external, only: write_date_time
+    use m_date_time_utils_external, only: fill_in_date_time
     use m_file_path_utils, only: extract_file_extension
+    use m_merge_domains
 
     implicit none
 
@@ -125,7 +126,7 @@ program waqmerge
 
     ! execution start
 
-    call write_date_time(rundat)
+    call fill_in_date_time(rundat)
     write (lunrep, *)
     write (lunrep, '(2a)') ' execution start : ', rundat
     write (lunrep, *)
@@ -292,7 +293,7 @@ program waqmerge
 
     ! finished
 
-    call write_date_time(rundat)
+    call fill_in_date_time(rundat)
     write (lunrep, *)
     write (lunrep, '(a)') ' normal end of execution'
     write (lunrep, '(2a)') ' execution stop : ', rundat

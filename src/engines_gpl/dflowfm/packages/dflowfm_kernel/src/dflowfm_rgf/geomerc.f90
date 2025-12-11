@@ -50,14 +50,14 @@ contains
       XX = XG * DG2RD * RA
 
       FI2 = DG2RD * YG
-      YY = (1d0 + sin(FI2)) / cos(FI2)
+      YY = (1.0_dp + sin(FI2)) / cos(FI2)
       YY = RA * log(YY)
 
       A = 6378140
       XX = XG * DG2RD * RA
       YC = DG2RD * (90 - YG)
       CY = cos(YC)
-      F = 298.257223d0
+      F = 298.257223_dp
       E = sqrt(2 / F - 1 / F**2)
 
       YY = -A * log(abs(tan(YC / 2)) * ((1 + e * CY) / (1 - e * CY))**(e / 2))

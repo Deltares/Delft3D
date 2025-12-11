@@ -62,8 +62,8 @@ module unstruc_display_data
    real(kind=dp) :: wetplot = 0.001 !< only show wet waterlevel points if (hs>wetplot)
    real(kind=dp) :: yfac = 0.0 !< cheap perspective
    integer :: jafullbottomline = 0 !<larger bottomline with more complete description in screen
-   real(kind=dp) :: profmax(20) = -999d0 !< minmax axes of tekprofiles
-   real(kind=dp) :: profmin(20) = -999d0
+   real(kind=dp) :: profmax(20) = -999.0_dp !< minmax axes of tekprofiles
+   real(kind=dp) :: profmin(20) = -999.0_dp
    real(kind=dp) :: ymn, zmn ! for tekrailines
 
 end module unstruc_display_data

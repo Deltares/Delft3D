@@ -65,12 +65,12 @@ contains
       real(kind=dp) :: ucin !< representative velocity transported along link
 
       if (kcu(L) == -1) then
-         QucPerpure1D = 0d0
+         QucPerpure1D = 0.0_dp
          return
       end if
 
       k12 = ln(n12, L)
-      QucPerpure1D = 0d0
+      QucPerpure1D = 0.0_dp
       cs = csu(L)
       sn = snu(L)
       process1D = jaPure1D > 0

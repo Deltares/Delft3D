@@ -361,7 +361,8 @@ contains
                      if (wu_mor(Lx) == 0.0_dp) cycle
                      ac1 = acL(Lx)
                      ac2 = 1_dp - ac1
-                     k1 = ln(1, Lx); k2 = ln(2, Lx)
+                     k1 = ln(1, Lx)
+                     k2 = ln(2, Lx)
                      call getLbotLtop(Lx, Lb, Lt)
                      if (Lt < Lb) cycle
                      !
@@ -436,7 +437,8 @@ contains
                            !
                            ! Get concentration in layer above this layer
                            !
-                           kf1 = ln(1, ka + 1); kf2 = ln(2, ka + 1)
+                           kf1 = ln(1, ka + 1)
+                           kf2 = ln(2, ka + 1)
                            r1avg = ac1 * constituents(ll, kf1) + ac2 * constituents(ll, kf2)
                            !
                            ! If there is a significant concentration gradient, and significant
@@ -460,7 +462,7 @@ contains
                               ! c(z) = c_a*(a/z)^R = c_a*(z/a)^-R
                               !
                               z = zktop + dzup / 2.0_fp
-                              apower = log(max(r1avg / ceavg, 1d-5)) / log(z / aksu)
+                              apower = log(max(r1avg / ceavg, 1.0e-5_dp)) / log(z / aksu)
                               if (apower > -1.05_dp .and. apower <= -1.0_dp) then ! you have decide on the eq to -1.0
                                  apower = -1.05_dp
                               elseif (apower > -1.0_dp .and. apower < -0.95_dp) then
@@ -582,7 +584,10 @@ contains
       if (istat == 0) allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
       if (istat == 0) allocate (branInIDLn(network%nds%Count), stat=istat)
 
-      qb_out(:) = 0_dp; width_out(:) = 0_dp; sb_in(:, :) = 0_dp; sb_dir(:, :, :) = 1
+      qb_out(:) = 0_dp
+      width_out(:) = 0_dp
+      sb_in(:, :) = 0_dp
+      sb_dir(:, :, :) = 1
       BranInIDLn(:) = 0
 
    !!
@@ -1119,15 +1124,21 @@ contains
                      ! 2. sand to bed layer
                      sedflx = sinksetot(j, nm) * bai_mor(nm)
                      !
-                     if (sedtyp(l) == SEDTYP_SAND) then
-                        sedflx = sedflx + ssccum(l, nm)
-                     elseif (sedtyp(l) <= max_mud_sedtyp) then
-                        ! 3. if silt/clay and drying, mass to fluff layer
-                        if (iflufflyr == 1) then
-                           mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm)
-                        else ! iflufflyr == 2
-                           mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm)
-                           sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
+                     ! 3. in case of drying cell, assign mass to the appropriate layer (fluff/bed)
+                     if (ssccum(l, nm) > 0.0_fp) then
+                        if (sedtyp(l) <= max_mud_sedtyp) then
+                           ! if silt/clay some mass may go to fluff layer
+                           if (iflufflyr == 1 .or. mfluff(l, nm) < 0.0_fp) then
+                              ! all mass to fluff layer
+                              mfluff(l, nm) = mfluff(l, nm) + ssccum(l, nm) * dts
+                           else ! iflufflyr == 2
+                              ! part to fluff layer, part to bed layer
+                              mfluff(l, nm) = mfluff(l, nm) + (1.0_fp - depfac(l, nm)) * ssccum(l, nm) * dts
+                              sedflx = sedflx + depfac(l, nm) * ssccum(l, nm)
+                           end if
+                        else
+                           ! for sand all mass to bed layer
+                           sedflx = sedflx + ssccum(l, nm)
                         end if
                      end if
                   end if
@@ -1277,7 +1288,8 @@ contains
             totfixfrac = 0_dp
             !
             do L = 1, nd(nm)%lnx
-               k1 = ln(1, abs(nd(nm)%ln(L))); k2 = ln(2, abs(nd(nm)%ln(L)))
+               k1 = ln(1, abs(nd(nm)%ln(L)))
+               k2 = ln(2, abs(nd(nm)%ln(L)))
                if (k2 == nm) then
                   knb = k1
                else
@@ -1297,7 +1309,7 @@ contains
             ! Re-distribute THET % of erosion in nm to surrounding cells
             ! THETSD is a user-specified maximum value, range 0-1
             !
-            if (totfixfrac > 1d-7) then
+            if (totfixfrac > 1.0e-7_dp) then
                !
                ! Compute local re-distribution factor THET
                !
@@ -1320,7 +1332,8 @@ contains
                   ! process.
                   !
                   do L = 1, nd(nm)%lnx
-                     k1 = ln(1, abs(nd(nm)%ln(L))); k2 = ln(2, abs(nd(nm)%ln(L)))
+                     k1 = ln(1, abs(nd(nm)%ln(L)))
+                     k2 = ln(2, abs(nd(nm)%ln(L)))
                      Lf = abs(nd(nm)%ln(L))
                      ! cutcells
                      if (wu_mor(Lf) == 0_dp) cycle
@@ -1581,14 +1594,13 @@ contains
    end subroutine fm_apply_bed_boundary_condition
 
    !< Update concentrations in water column to conserve mass because of bottom update
-   !! This needs to happen in work array sed, not constituents, because of copying back and forth later on
    subroutine fm_update_concentrations_after_bed_level_update()
       use precision, only: dp
 
       use m_flow, only: kmx, hs
       use m_flowgeom, only: ndx
-      use m_transport, only: constituents, itra1, itran, isalt
-      use m_sediment, m_sediment_sed => sed
+      use m_transport, only: constituents, itra1, itran, isalt, ised1
+      use m_sediment, only: botcrit, stmpar
       use m_fm_erosed, only: blchg
       use m_flowparameters, only: epshs, jasal
       use m_get_kbot_ktop
@@ -1618,7 +1630,7 @@ contains
             botcrit = 0.95 * hsk
             ddp = hsk / max(hsk - blchg(k), botcrit)
             do ll = 1, stmpar%lsedsus
-               m_sediment_sed(ll, k) = m_sediment_sed(ll, k) * ddp
+               constituents(ised1 + ll - 1, k) = constituents(ised1 + ll - 1, k) * ddp
             end do !ll
             !
             if (jasal > 0) then
@@ -1640,7 +1652,7 @@ contains
                ddp = hsk / max(hsk - blchg(k), botcrit)
                call getkbotktop(k, kb, kt)
                do kk = kb, kt
-                  m_sediment_sed(ll, kk) = m_sediment_sed(ll, kk) * ddp
+                  constituents(ised1 + ll - 1, kk) = constituents(ised1 + ll - 1, kk) * ddp
                end do !kk
             end do !k
          end do !ll
@@ -1703,7 +1715,7 @@ contains
             call getLbotLtop(L, Lb, Lt)
             if (Lt < Lb) cycle
             do iL = Lb, Lt
-               e_ssn(L, ll) = e_ssn(L, ll) + fluxhortot(j, iL) / max(wu_mor(L), 1d-3) ! timestep transports per layer [kg/s/m]
+               e_ssn(L, ll) = e_ssn(L, ll) + fluxhortot(j, iL) / max(wu_mor(L), 1.0e-3_dp) ! timestep transports per layer [kg/s/m]
             end do
             e_ssn(L, ll) = e_ssn(L, ll) + e_scrn(L, ll) ! bottom layer correction
          end do

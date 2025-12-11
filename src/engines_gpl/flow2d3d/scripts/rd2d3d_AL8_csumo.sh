@@ -13,7 +13,7 @@ set -eo pipefail
 
 function print_usage_info {
     echo "Usage: sbatch [SLURM OPTIONS]... ${0##*/} [OPTION]..."
-    echo "Run delft3d4 on H7."
+    echo "Run delft3d4 on Alma8."
     echo
     echo "Options:"
     echo "-c, --corespernode <M>"
@@ -49,10 +49,10 @@ debuglevel=-1
 runscript_extraopts=
 wavefile=runwithoutwaveonlinebydefault
 withrtc=0
-csumoscript=/p/1202339-rndcoastalhd/COSUMO/01_code/exe/latest/lnx_h7_2023b/run_COSUMO.sh # latest compiled version of C-SUMO
-mcrdir=/p/1202339-rndcoastalhd/COSUMO/10_MCR_linux/h7/2023b/installed/R2023b/  # Matlab Runtime compiler location (should be consistent with C-SUMO executable)
+csumoscript=/path/to/run_COSUMO.sh # latest compiled version of C-SUMO
+mcrdir=/path/to/R2023b/  # Matlab Runtime compiler location (should be consistent with C-SUMO executable)
 csumodeployed=true
-csumodir=/p/1202339-rndcoastalhd/COSUMO/01_code/
+csumodir=/path/to/COSUMO/01_code/
 matlabversion=2014a
 
 
@@ -141,7 +141,6 @@ export rundir=$(pwd)
 export reldir=${PWD##*/}
 
 export ff2nffolder=$rundir/FF2NFdir/
-# export ff2nffolder=/p/1202339-rndcoastalhd/COSUMO/09_runscripts_d3d_fm/Delft3D4/parallel/h6_c7/C-sumo_on_node/testruns/C01/FF2NFdir/
 
 # copy COSUMO_template_settings.xml to COSUMOsettings.xml
 echo "	copying COSUMO_template_settings.xml to COSUMOsettings.xml"

@@ -43,7 +43,7 @@ contains
 
       fmt = '(f10.3)'
 
-      if (value == 0d0) then
+      if (value == 0.0_dp) then
          fmt = '(f3.1)'
          return
       end if

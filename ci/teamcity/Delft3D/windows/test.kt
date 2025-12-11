@@ -14,12 +14,13 @@ import CsvProcessor
 
 object WindowsTest : BuildType({
 
-    description = "Run TestBench.py on a list of testbench XML files. (This is not containerized as we'd need more Docker-pool agents.)"
+    description = "Run TestBench.py on a list of testbench XML files."
 
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Test"
@@ -54,12 +55,13 @@ object WindowsTest : BuildType({
             options = processor.configs.zip(processor.labels) { config, label -> label to config },
             display = ParameterDisplay.PROMPT
         )
+        param("container.tag", "%build.vcs.number%")
         param("product", "unknown")
         checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
-        
+
     }
 
     features {
@@ -75,10 +77,8 @@ object WindowsTest : BuildType({
         mergeTargetBranch {}
         python {
             name = "Run TestBench.py"
+            id = "RUNNER_testbench"
             workingDir = "test/deltares_testbench/"
-            environment = venv {
-                requirementsFile = "pip/win-requirements.txt"
-            }
             command = file {
                 filename = "TestBench.py"
                 scriptArguments = """
@@ -92,19 +92,17 @@ object WindowsTest : BuildType({
                     --teamcity
                 """.trimIndent()
             }
+            dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
         script {
             name = "Copy cases"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
             conditions { equals("copy_cases", "true") }
             workingDir = "test/deltares_testbench"
-            scriptContent = "cp -r data/cases copy_cases"
-        }
-        script {
-            name = "Kill dimr.exe, mpiexec.exe, and hydra_pmi_proxy.exe"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            val script = File("${DslContext.baseDir}/windows/scripts/killExes.bat")
-            scriptContent = Util.readScript(script)
+            scriptContent = "xcopy \"data\\cases\" \"copy_cases\" /E /I /Y"
         }
     }
 
@@ -122,6 +120,12 @@ object WindowsTest : BuildType({
             artifacts {
                 cleanDestination = true
                 artifactRules = "dimrset_x64_*.zip!/x64/**=>test/deltares_testbench/data/engines/teamcity_artifacts/x64"
+            }
+        }
+        dependency(WindowsTestEnvironment) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
             }
         }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
@@ -145,9 +149,5 @@ object WindowsTest : BuildType({
             failureMessage = "There was an ERROR in the TestBench.py output."
             reverse = false
         }
-    }
-
-    requirements {
-        startsWith("teamcity.agent.jvm.os.name", "Windows 1")
     }
 })

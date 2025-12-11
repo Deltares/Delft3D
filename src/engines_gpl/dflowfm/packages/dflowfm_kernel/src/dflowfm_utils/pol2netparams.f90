@@ -66,7 +66,7 @@ contains
       ierror = 1
 
 !  get reference point: first non-missing
-      i = 1; 
+      i = 1
       do while (i <= NPL .and. (xpl(i) == DMISS .or. ypl(i) == DMISS))
          i = i + 1
       end do
@@ -81,9 +81,9 @@ contains
       sna = sin(dg2rd * ANGLE)
 
 !  get polygon min/max in rotated (xi,eta) coordinaes
-      ximin = huge(1d0)
+      ximin = huge(1.0_dp)
       ximax = -ximin
-      etamin = huge(1d0)
+      etamin = huge(1.0_dp)
       etamax = -etamin
       do i = 1, NPL
          if (xpl(i) /= DMISS) then

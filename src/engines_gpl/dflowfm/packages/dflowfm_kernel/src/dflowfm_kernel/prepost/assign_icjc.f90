@@ -85,7 +85,7 @@ contains
       if (allocated(ijc)) then
          deallocate (ijc)
       end if
-      call realloc(ijc, (/3, 3/), (/0, 0/), fill=IMISS)
+      call realloc(ijc, [3, 3], [0, 0], fill=IMISS)
 
       if (nump < 1) return
 
@@ -111,7 +111,8 @@ contains
 !---------------------------------------------------------
 ! initialize cellmask
 !---------------------------------------------------------
-      cellmask = 1; ! init active
+      cellmask = 1
+      ! init active
 ! remove netcells that have one or more nodes outside the polygon
       ik = -1
       do k = 1, nump

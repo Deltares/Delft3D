@@ -77,10 +77,6 @@ class PreconditionsChecker(StepExecutorInterface):
 
         try:
             teamcity_ok = self.__check_connection(self.services.teamcity, "TeamCity")
-            atlassian_ok = self.__check_connection(
-                self.services.atlassian,
-                "Atlassian",
-            )
             git_ok = self.__check_connection(
                 self.services.git,
                 "Git",
@@ -89,7 +85,11 @@ class PreconditionsChecker(StepExecutorInterface):
                 self.services.ssh,
                 "SSH",
             )
-            return teamcity_ok and atlassian_ok and git_ok and ssh_ok
+            jira_ok = self.__check_connection(
+                self.services.jira,
+                "Jira",
+            )
+            return teamcity_ok and git_ok and ssh_ok and jira_ok
         except Exception as e:
             self.context.log(f"Exception during connection check: {e}", severity=LogLevel.ERROR)
             return False

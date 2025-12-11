@@ -59,7 +59,7 @@ contains
       real(kind=dp) :: sum
       real(kind=dp) :: tiny
       real(kind=dp) :: vv
-      parameter(NX=4, TINY=1d-20)
+      parameter(NX=4, TINY=1.0e-20_dp)
       dimension A(NP, NP), INDX(N), VV(NX)
       JAPARALLEL = 0
       D = 1.
@@ -112,14 +112,14 @@ contains
          end if
          INDX(J) = IMAX
          if (J /= N) then
-            if (A(J, J) == 0d0) A(J, J) = TINY
+            if (A(J, J) == 0.0_dp) A(J, J) = TINY
             DUM = 1./A(J, J)
             do I = J + 1, N
                A(I, J) = A(I, J) * DUM
             end do
          end if
       end do
-      if (A(N, N) == 0d0) A(N, N) = TINY
+      if (A(N, N) == 0.0_dp) A(N, N) = TINY
       return
    end
 

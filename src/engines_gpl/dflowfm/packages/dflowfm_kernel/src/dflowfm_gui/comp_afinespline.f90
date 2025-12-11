@@ -76,14 +76,14 @@ contains
 
 !  compose the matrix
 !    note: although the y-coordinate spline is refined, it is not used
-      xloc = 0d0
-      yloc = 0d0
+      xloc = 0.0_dp
+      yloc = 0.0_dp
       do j = 1, N
-         xloc(j) = 1d0
+         xloc(j) = 1.0_dp
          call sample_spline(N, xloc, yloc, numref, Nr, xf, yf, ierror)
          if (ierror /= 0) goto 1234
          A(1:Nr, j) = xf
-         xloc(j) = 0d0
+         xloc(j) = 0.0_dp
       end do
 
       ierror = 0

@@ -32,6 +32,7 @@
 
 module m_updatebalance
 
+   use precision, only: dp
    implicit none
 
    private
@@ -64,7 +65,7 @@ contains
          end if
       end do
 
-      cumvolcur = 0d0
+      cumvolcur = 0.0_dp
    end subroutine updateBalance
 
 end module m_updatebalance

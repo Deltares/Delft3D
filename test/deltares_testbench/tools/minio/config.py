@@ -1,6 +1,7 @@
 import abc
 import io
 import itertools
+import logging
 import re
 import textwrap
 from collections import defaultdict
@@ -30,16 +31,26 @@ from tools.minio.error import MinioToolError
 
 @dataclass
 class DefaultTestCaseData:
+    """Data of a "default" test case in the testbench config.
+
+    In the testbench config, default test cases are used to set properties
+    that are shared by many test cases. A test case can specify a 'default'
+    test case and automatically inherit all of its properties.
+    """
+
     name: str
     max_run_time: float
 
     @classmethod
     def from_config(cls, config: TestCaseConfig) -> "DefaultTestCaseData":
+        """Convert a `TestCaseConfig` to `DefaultTestCaseData`."""
         return cls(name=config.name, max_run_time=config.max_run_time)
 
 
 @dataclass
 class TestCaseData:
+    """Data of a test case in the testbench config."""
+
     __test__: ClassVar[bool] = False
 
     name: str
@@ -114,6 +125,7 @@ class TestCaseData:
         return S3Path.from_bucket(abs_path.bucket) / utils.resolve_relative(abs_path.key)
 
     def to_xml(self) -> str:
+        """Convert the `TestCaseData` to an XML string."""
         if not self.version or self.version.tzinfo != timezone.utc:
             raise ValueError("Test case version must be defined and have a UTC timezone")
         version = self.version.isoformat().split("+")[0]
@@ -185,6 +197,16 @@ class TestCaseData:
 
 @dataclass
 class TestCasePattern:
+    """Pattern used to find a particular test case.
+
+    The MinIO tool needs to look up test cases in testbench config files.
+    Every test case is stored in a testbench config and should have a unique
+    name within that config. The test case pattern is used to look up test
+    cases in the test case index. The config "glob" pattern is used to limit
+    the configs to look in. All test cases with a name that contain the
+    `name_filter` as a substring should match.
+    """
+
     __test__: ClassVar[bool] = False
 
     config_glob: str = "*"
@@ -192,6 +214,12 @@ class TestCasePattern:
 
     @staticmethod
     def read_patterns_from_file(text_io: TextIO) -> "Iterable[TestCasePattern]":
+        """Read test case patterns from a test case file.
+
+        A test case file is a simple text file, where every line contains a
+        `name_filter` and a `config_glob` separated by a comma. Lines starting
+        with a `#` character are ignored.
+        """
         for linenr, line in enumerate((line.strip() for line in text_io), start=1):
             if line.startswith("#"):
                 continue
@@ -233,6 +261,17 @@ class TestCaseId:
 
     @classmethod
     def from_name(cls, name: str) -> "TestCaseId":
+        """Make a `TestCaseId` from a full test case name.
+
+        Parameters
+        ----------
+        name : str
+            The full test case name. It should match the `NAME_PATTERN`.
+
+        Returns
+        -------
+        TestCaseId
+        """
         match = cls.NAME_PATTERN.match(name)
         if not match:
             raise ValueError(f"Invalid test case name format: {name}")
@@ -245,118 +284,47 @@ class TestCaseId:
 
 
 @dataclass
-class IndexItem:
-    test_cases: Sequence[TestCaseData]
-    default_test_cases: Sequence[DefaultTestCaseData]
+class ConfigData:
+    """Data stored in a testbench config."""
+
+    test_cases: Sequence[TestCaseData] = field(default_factory=list)
+    default_test_cases: Sequence[DefaultTestCaseData] = field(default_factory=list)
 
 
-class TestCaseIndex:
-    """Index the configuration specified or the config folders xml files."""
+class ConfigParser:
+    """Parser for testbench configs."""
 
-    __test__: ClassVar[bool] = False
-
-    def __init__(self, index: Mapping[Path, IndexItem]) -> None:
-        self._index = index
-
-    @property
-    def index(self) -> Mapping[Path, IndexItem]:
-        """Return the index of config files to test cases."""
-        return self._index
-
-    def get_default_test_cases(self, config: Path) -> Sequence[DefaultTestCaseData]:
-        index_item = self._index.get(config)
-        return [] if index_item is None else index_item.default_test_cases
-
-    def find_test_cases(self, test_case_patterns: Iterable[TestCasePattern]) -> Mapping[Path, Sequence[TestCaseData]]:
-        all_matching_configs: defaultdict[Path, list[TestCaseData]] = defaultdict(list)
-
-        for pattern in test_case_patterns:
-            test_case, configs = self.find_test_case(pattern)
-            if test_case is None:
-                continue
-
-            for config_path in configs:
-                test_cases = all_matching_configs[config_path]
-                if not self.__contains_case(test_cases, test_case.name):
-                    test_cases.append(test_case)
-
-        return all_matching_configs
-
-    def find_test_case(self, test_case_pattern: TestCasePattern) -> tuple[TestCaseData | None, Sequence[Path]]:
-        test_case_map: dict[Path, TestCaseData] = {}
-        for config_path, index_item in self._index.items():
-            if not config_path.match(test_case_pattern.config_glob):
-                continue
-
-            cases = index_item.test_cases
-            matching_cases = [case for case in cases if test_case_pattern.name_filter in case.name]
-            if not matching_cases:
-                continue
-
-            if len(matching_cases) > 1:
-                suggestions = ", ".join(case.name for case in itertools.islice(matching_cases, 3))
-                raise MinioToolError(
-                    f"The pattern `{test_case_pattern.name_filter}` matches multiple test cases in "
-                    f"config file `{config_path}`.\nSuggestions: `{suggestions}`"
-                )
-
-            test_case_map[config_path] = matching_cases[0]
-
-        if not test_case_map:
-            return None, []
-
-        (first_config, first_case), *other_items = test_case_map.items()
-        first_case_locations = self.__locations(first_case)
-
-        wrong_config, wrong_case = next(
-            ((config, case) for config, case in other_items if self.__locations(case) != first_case_locations),
-            (None, None),
-        )
-        if wrong_config and wrong_case:
-            raise MinioToolError(
-                f"Test case `{first_case.name}` in config file `{first_config}` has different "
-                f"locations than test case `{wrong_case.name}` in config file `{wrong_config}`."
-            )
-
-        return first_case, list(test_case_map.keys())
-
-    @staticmethod
-    def __contains_case(case_list: Iterable[TestCaseData], case_name: str) -> bool:
-        """Check if the case list contains a case with the given name."""
-        return any(case.name == case_name for case in case_list)
-
-    @staticmethod
-    def __locations(case: TestCaseData) -> Tuple[Path, Path, S3Path, S3Path]:
-        """Return a tuple of locations for the case."""
-        return (case.case_dir, case.reference_dir, case.case_prefix, case.reference_prefix)
-
-
-class ConfigIndexBuilder:
-    """Loads test bench configs from test bench config XML files."""
-
-    DEFAULT_SERVER_BASE_URL = "s3://dsc-testbench"
-
-    __test__: ClassVar[bool] = False
+    DEFAULT_SERVER_BASE_URL: ClassVar[str] = "s3://dsc-testbench"
 
     def __init__(
         self,
         settings: TestBenchSettings,
-        config_parser: XmlConfigParser | None = None,
-        logger: IMainLogger | None = None,
+        xml_parser: XmlConfigParser,
+        logger: IMainLogger,
     ) -> None:
         self._settings = settings
-        self._logger = logger or ConsoleLogger(LogLevel.DEBUG)
-        self._config_parser = config_parser or XmlConfigParser()
+        self._xml_parser = xml_parser
+        self._logger = logger
 
-    def __load_test_cases_from_config(self, config_path: Path) -> IndexItem | None:
+    def parse_config(self, config: Path) -> ConfigData:
+        """Read and parse a testbench config.
+
+        Parameters
+        ----------
+        config : Path
+            The path to the testbench config XML file.
+
+        Returns
+        -------
+        ConfigData
+        """
         # Quickly rule out that we're really not reading an 'include' XML file.
-        if self.__first_xml_tag(config_path) != "deltaresTestbench_v3":
-            self._logger.warning(f"Invalid TestBench config file: {config_path}")
-            return None
+        if self.__first_xml_tag(config) != "deltaresTestbench_v3":
+            raise ValueError("Not a testbench config")
 
         # Now that we're pretty sure we're reading a TestBench config file: Parse the XML.
-        self._settings.config_file = str(config_path)
-        local_paths, _, test_case_configs = self._config_parser.load(self._settings, self._logger)
+        self._settings.config_file = str(config)
+        local_paths, _, test_case_configs = self._xml_parser.load(self._settings, self._logger)
 
         test_cases = sorted(
             (TestCaseData.from_config(config, local_paths) for config in test_case_configs),
@@ -367,16 +335,12 @@ class ConfigIndexBuilder:
         default_test_cases = sorted(
             (
                 DefaultTestCaseData.from_config(config)
-                for config in self._config_parser.default_cases
+                for config in self._xml_parser.default_cases
                 if config.name not in test_case_names
             ),
             key=lambda test_case: test_case.name,
         )
-        return IndexItem(test_cases=test_cases, default_test_cases=default_test_cases)
-
-    def build_index(self, configs: Iterable[Path]) -> TestCaseIndex:
-        index = {config: test_cases for config in configs if (test_cases := self.__load_test_cases_from_config(config))}
-        return TestCaseIndex(index)
+        return ConfigData(test_cases=test_cases, default_test_cases=default_test_cases)
 
     @staticmethod
     def __first_xml_tag(config_path: Path) -> str | None:
@@ -386,8 +350,8 @@ class ConfigIndexBuilder:
             return match.group("tag_name") if match else None
 
     @classmethod
-    def from_default_settings(cls) -> "ConfigIndexBuilder":
-        """Make a ConfigIndexBuilder with the default settings."""
+    def with_default_settings(cls) -> "ConfigParser":
+        """Make a ConfigParser with the default settings."""
         credentials = Credentials()
         credentials.name = "commandline"
 
@@ -396,9 +360,149 @@ class ConfigIndexBuilder:
         settings.credentials = credentials
         settings.override_paths = ""
 
+        xml_parser = XmlConfigParser()
         logger = ConsoleLogger(LogLevel.DEBUG)
 
-        return ConfigIndexBuilder(settings=settings, logger=logger)
+        return ConfigParser(settings=settings, xml_parser=xml_parser, logger=logger)
+
+
+@dataclass
+class FindTestCaseResult:
+    """The result of the `find_test_case` method in the `TestCaseIndex`."""
+
+    test_case_data: TestCaseData | None = None
+    configs: Sequence[Path] = field(default_factory=list)
+
+
+class TestCaseIndex:
+    """An index of test cases found in a set of TestBench config files."""
+
+    __test__: ClassVar[bool] = False
+
+    DEFAULT_SERVER_BASE_URL: ClassVar[str] = "s3://dsc-testbench"
+
+    def __init__(
+        self,
+        configs: Iterable[Path],
+        config_parser: ConfigParser | None = None,
+    ) -> None:
+        self._index: dict[Path, ConfigData | None] = {config: None for config in configs}
+        self._config_parser = config_parser or ConfigParser.with_default_settings()
+
+    def get_config_data(self, config: Path) -> ConfigData | None:
+        """Retrieve the `ConfigData` from a given `config`.
+
+        This method will parse the config, and store the resulting `ConfigData` in
+        the cache. Each config file is parsed at most once. If a config file fails
+        to parse, an exception will be logged and this method returns `None`.
+
+        Parameters
+        ----------
+        config : Path
+            Path to the TestBench config XML file. This config file must be
+            a member of the "index" set. Otherwise this method will return `None`.
+
+        Returns
+        -------
+        ConfigData | None
+            `None` is returned when the config can't be parsed, or is not in the index.
+        """
+        try:
+            config_data = self._index[config]
+            if config_data is not None:
+                return config_data  # Return cached `ConfigData`.
+        except KeyError:
+            logging.warning(f"Config {config} is not in the index.")
+            return None
+
+        try:
+            config_data = self._config_parser.parse_config(config)
+            self._index[config] = config_data  # Store config data in the cache.
+        except Exception as exc:
+            logging.exception(f"Failed to parse config {config}. Message: {exc.args[0]}")
+            self._index.pop(config)  # Remove config from index, to prevent parsing it again.
+
+        return config_data
+
+    def find_test_cases(self, test_case_patterns: Iterable[TestCasePattern]) -> Mapping[Path, Sequence[TestCaseData]]:
+        """Find all of the test cases using several test case patterns.
+
+        Parameters
+        ----------
+        test_case_patterns : Iterable[TestCasePattern]
+            An iterable collection of test case patterns. Each pattern matching at most one test case.
+
+        Returns
+        -------
+        Mapping[Path, Sequence[TestCaseData]]
+            All of the found test cases, indexed by config file.
+        """
+        all_matching_configs: defaultdict[Path, list[TestCaseData]] = defaultdict(list)
+
+        for pattern in test_case_patterns:
+            find_result = self.find_test_case(pattern)
+            found_test_case, found_configs = find_result.test_case_data, find_result.configs
+            if found_test_case is None:
+                continue
+
+            for found_config in found_configs:
+                other_test_cases = all_matching_configs[found_config]
+                if not any(case.name == found_test_case.name for case in other_test_cases):
+                    other_test_cases.append(found_test_case)
+
+        return all_matching_configs
+
+    def find_test_case(self, test_case_pattern: TestCasePattern) -> FindTestCaseResult:
+        """Find a single test case matching the test case pattern.
+
+        Parameters
+        ----------
+        test_case_pattern : TestCasePattern
+
+        Returns
+        -------
+        FindTestCaseResult
+            The test case data, along with all of the configs where this test case is found.
+        """
+        test_case_map: dict[Path, TestCaseData] = {}
+
+        matching_configs = [config for config in self._index.keys() if config.match(test_case_pattern.config_glob)]
+        for config_path in matching_configs:
+            index_item = self.get_config_data(config_path)
+            if index_item is None:
+                continue
+
+            cases = index_item.test_cases
+            matching_cases = [case for case in cases if test_case_pattern.name_filter in case.name]
+            if not matching_cases:
+                continue
+
+            matching_case, *other_matching_cases = matching_cases
+            if other_matching_cases:
+                suggestions = ", ".join(case.name for case in itertools.islice(matching_cases, 3))
+                raise MinioToolError(
+                    f"The pattern `{test_case_pattern.name_filter}` matches multiple test cases in "
+                    f"config file `{config_path}`.\nSuggestions: `{suggestions}`"
+                )
+
+            test_case_map[config_path] = matching_case
+
+        if not test_case_map:
+            return FindTestCaseResult()
+
+        (config_path, test_case), *other_items = test_case_map.items()
+        for other_config, other_case in other_items:
+            if self.__locations(other_case) != self.__locations(test_case):
+                raise MinioToolError(
+                    f"Test case `{test_case.name}` in config file `{config_path}` has different "
+                    f"locations than test case `{other_case.name}` in config file `{other_config}`."
+                )
+
+        return FindTestCaseResult(test_case_data=test_case, configs=list(test_case_map.keys()))
+
+    @staticmethod
+    def __locations(case: TestCaseData) -> Tuple[Path, Path, S3Path, S3Path]:
+        return (case.case_dir, case.reference_dir, case.case_prefix, case.reference_prefix)
 
 
 class TestCaseWriter(abc.ABC):

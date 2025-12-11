@@ -51,8 +51,8 @@ contains
       integer :: k, i
 
       if (jaauto > 0) then
-         rmin = 1d30
-         rmax = -1d30
+         rmin = 1.0e30_dp
+         rmax = -1.0e30_dp
 
          do k = 1, ns
             if (zs(k) == DMISS) cycle
@@ -96,15 +96,15 @@ contains
       integer :: m, n, i
 
       if (jaauto > 0) then
-         rmin = 1d30
-         rmax = -1d30
+         rmin = 1.0e30_dp
+         rmax = -1.0e30_dp
 
          do n = 1, nca
             do m = 1, mca
 
                x = x0 + dxa * (m - 1)
                y = y0 + dya * (n - 1)
-               z = dble(d(m, n))
+               z = real(d(m, n), kind=dp)
                if (inview(x, y) .and. z /= dmiss) then
                   if (z < rmin) then
                      rmin = z

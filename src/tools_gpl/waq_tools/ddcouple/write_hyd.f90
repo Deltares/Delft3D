@@ -28,7 +28,7 @@
       use m_hydmod
       use m_hyd_keys
       use ddcouple_version_module, only: getfullversionstring_ddcouple
-      use m_date_time_utils_external, only : write_date_time
+      use m_date_time_utils_external, only : fill_in_date_time
 
       implicit none
 
@@ -70,7 +70,7 @@
       call getfullversionstring_ddcouple(version)
       write(lunhyd,'(A,A)') 'file-created-by  '//trim(version)
 
-      call write_date_time(rundat)
+      call fill_in_date_time(rundat)
       datetime = rundat(1:4)//'-'//rundat(6:7)//'-'//rundat(9:10)//','//rundat(11:19)
       write(lunhyd,'(A,A)') 'file-creation-date  '//datetime
 

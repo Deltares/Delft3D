@@ -137,7 +137,8 @@ contains
       limtyp = max(limtypsa, limtyptm, limtypsed)
 
       if (jarhoonly == 1) then
-         call fill_rho(); numconst_store = numconst
+         call fill_rho()
+         numconst_store = numconst
       else if (jarhoonly == 2) then
          ! call fill_ucxucy() ; numconst_store = numconst
       else
@@ -169,20 +170,20 @@ contains
 
       jaupdate = 1
 
-      fluxhor = 0d0 ! not necessary
-      sumhorflux = 0d0
+      fluxhor = 0.0_dp ! not necessary
+      sumhorflux = 0.0_dp
 
       if (stm_included) then
-         fluxhortot = 0d0
-         sinksetot = 0d0
-         sinkftot = 0d0
-         u1sed = 0d0
-         q1sed = 0d0
+         fluxhortot = 0.0_dp
+         sinksetot = 0.0_dp
+         sinkftot = 0.0_dp
+         u1sed = 0.0_dp
+         q1sed = 0.0_dp
       end if
 
       do istep = 0, nsubsteps - 1
          if (kmx > 0) then
-            fluxver = 0d0
+            fluxver = 0.0_dp
          end if
 
 !     determine which fluxes need to be updated
@@ -280,7 +281,8 @@ contains
       dts = dts_store
 
       if (jarhoonly == 1) then
-         call extract_rho(); numconst = numconst_store
+         call extract_rho()
+         numconst = numconst_store
       else
          if (jadecaytracers > 0) then ! because tracerdecay is normally not done in DFM we do it here so as not to cause overhead elsewhere
             call decaytracers()

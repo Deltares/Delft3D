@@ -98,11 +98,13 @@ contains
       NUMKORG = NUMK
       numk_old = numk
 
-      call FINDCELLS(4); LC = 0
+      call FINDCELLS(4)
+      LC = 0
 
-      call READYY('Refine quads', 0d0)
+      call READYY('Refine quads', 0.0_dp)
 
-      allocate (KNP(NUMP)); KNP = 0
+      allocate (KNP(NUMP))
+      KNP = 0
       do N = 1, NUMP
          if (netcell(N)%N == 4) then
             K1 = netcell(N)%NOD(1)
@@ -116,7 +118,7 @@ contains
       KMOD = max(1, NUMK / 100)
       do N = 1, NUMP
 
-         if (mod(n, KMOD) == 0) call READYY('Refine quads', dble(n) / dble(nump))
+         if (mod(n, KMOD) == 0) call READYY('Refine quads', real(n, kind=dp) / real(nump, kind=dp))
 
          if (KNP(N) == 1) then
 
@@ -125,37 +127,50 @@ contains
             K3 = netcell(N)%NOD(3)
             K4 = netcell(N)%NOD(4)
 
-            L12 = netcell(N)%LIN(1); L12O = L12
-            L23 = netcell(N)%LIN(2); L23O = L23
-            L34 = netcell(N)%LIN(3); L34O = L34
-            L41 = netcell(N)%LIN(4); L41O = L41
+            L12 = netcell(N)%LIN(1)
+            L12O = L12
+            L23 = netcell(N)%LIN(2)
+            L23O = L23
+            L34 = netcell(N)%LIN(3)
+            L34O = L34
+            L41 = netcell(N)%LIN(4)
+            L41O = L41
 
             K12 = 0
             if (KN(1, L12) /= 0 .and. M13QUAD >= 0) then
-               call REFINELINK2(L12, K12); LC(L12O) = -K12; if (LNN(L12O) == 2) KC(K12) = 3
+               call REFINELINK2(L12, K12)
+               LC(L12O) = -K12
+               if (LNN(L12O) == 2) KC(K12) = 3
             end if
 
             K23 = 0
             if (KN(1, L23) /= 0 .and. M13QUAD <= 0) then
-               call REFINELINK2(L23, K23); LC(L23O) = -K23; if (LNN(L23O) == 2) KC(K23) = 3
+               call REFINELINK2(L23, K23)
+               LC(L23O) = -K23
+               if (LNN(L23O) == 2) KC(K23) = 3
             end if
 
             K34 = 0
             if (KN(1, L34) /= 0 .and. M13QUAD >= 0) then
-               call REFINELINK2(L34, K34); LC(L34O) = -K34; if (LNN(L34O) == 2) KC(K34) = 3
+               call REFINELINK2(L34, K34)
+               LC(L34O) = -K34
+               if (LNN(L34O) == 2) KC(K34) = 3
             end if
 
             K41 = 0
             if (KN(1, L41) /= 0 .and. M13QUAD <= 0) then
-               call REFINELINK2(L41, K41); LC(L41O) = -K41; if (LNN(L41O) == 2) KC(K41) = 3
+               call REFINELINK2(L41, K41)
+               LC(L41O) = -K41
+               if (LNN(L41O) == 2) KC(K41) = 3
             end if
 
             if (M13QUAD == 0) then
 
-               XM = 0.25d0 * (XK(K1) + XK(K2) + XK(K3) + XK(K4))
-               YM = 0.25d0 * (YK(K1) + YK(K2) + YK(K3) + YK(K4))
+               XM = 0.25_dp * (XK(K1) + XK(K2) + XK(K3) + XK(K4))
+               YM = 0.25_dp * (YK(K1) + YK(K2) + YK(K3) + YK(K4))
 
-               call DSETNEWPOINT(XM, YM, KM); KC(KM) = 2
+               call DSETNEWPOINT(XM, YM, KM)
+               KC(KM) = 2
 
             end if
 
@@ -205,7 +220,7 @@ contains
 
       KMOD = max(1, NUMP / 100)
       do N = 1, NUMP
-         if (mod(n, KMOD) == 0) call READYY('Refine quads', dble(n) / dble(nump))
+         if (mod(n, KMOD) == 0) call READYY('Refine quads', real(n, kind=dp) / real(nump, kind=dp))
          if (KNP(N) == 0) then
             NF = netcell(N)%N
             if (NF == 4) then
@@ -215,7 +230,9 @@ contains
                   K = netcell(N)%NOD(KK)
                   L = netcell(N)%LIN(KK)
                   if (LC(L) < 0) then
-                     KI = KI + 1; KKI(KI) = -LC(L); LL = KK
+                     KI = KI + 1
+                     KKI(KI) = -LC(L)
+                     LL = KK
                   end if
                end do
 
@@ -224,7 +241,8 @@ contains
                   LL2 = LL + 2
                   if (LL2 > 4) LL2 = LL2 - 4
                   LL2 = netcell(N)%LIN(LL2)
-                  K1 = KN(1, LL2); K2 = KN(2, LL2)
+                  K1 = KN(1, LL2)
+                  K2 = KN(2, LL2)
 
                   if (K1 /= 0 .and. K2 /= 0) then
                      call NEWLINK(K0, K1, LNU) ! ; KC(K1) = 6
@@ -249,7 +267,7 @@ contains
          end if
       end do
 
-      call READYY('Refine quads', -1d0)
+      call READYY('Refine quads', -1.0_dp)
 
       call SETNODADM(0)
 

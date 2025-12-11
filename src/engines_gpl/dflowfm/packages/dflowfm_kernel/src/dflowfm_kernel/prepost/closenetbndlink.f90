@@ -62,7 +62,8 @@ contains
       DISMIN = 9e+33
       do L = 1, NUML
          if (LNN(L) == 1) then
-            K1 = KN(1, L); K2 = KN(2, L)
+            K1 = KN(1, L)
+            K2 = KN(2, L)
             XA = XK(K1)
             YA = YK(K1)
             XB = XK(K2)

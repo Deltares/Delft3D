@@ -69,14 +69,17 @@ contains
 
       DLENAV = DLENPOL / NPL ! AVERAGE SIZE ON POLBND
 !   TRIAREA  = 0.5d0*DLENAV*DLENAV  ! AVERAGE TRIANGLE SIZE
-      TRIAREA = 0.25d0 * sqrt(3d0) * DLENAV * DLENAV ! AVERAGE TRIANGLE SIZE
+      TRIAREA = 0.25_dp * sqrt(3.0_dp) * DLENAV * DLENAV ! AVERAGE TRIANGLE SIZE
 
       SAFESIZE = 11 ! SAFETY FACTOR
 
       if (jsferic == 1) then
          ! DLENPOL and AREPOL are in metres, whereas Triangle gets spherical
          ! coordinates, so first scale desired TRIAREA back to spherical.
-         xplmin = 0d0; xplmax = dlenpol / 4d0; yplmin = 0d0; yplmax = dlenpol / 4d0
+         xplmin = 0.0_dp
+         xplmax = dlenpol / 4.0_dp
+         yplmin = 0.0_dp
+         yplmax = dlenpol / 4.0_dp
          call get_startend(NPL, XPL, YPL, n, nn, dmiss)
          if (nn > n) then
             xplmin = minval(xpl(n:nn))
@@ -105,15 +108,16 @@ contains
          if (allocated(INDX)) then
             deallocate (INDX)
          end if
-         allocate (INDX(3, NTX), STAT=IERR); INDX = 0
+         allocate (INDX(3, NTX), STAT=IERR)
+         INDX = 0
          call AERR('INDX(3,NTX)', IERR, int(3 * NTX))
 
-         call realloc(EDGEINDX, (/2, Ntx/), keepExisting=.false., fill=0, stat=ierr)
-         call realloc(TRIEDGE, (/3, Ntx/), keepExisting=.false., fill=0, stat=ierr)
+         call realloc(EDGEINDX, [2, Ntx], keepExisting=.false., fill=0, stat=ierr)
+         call realloc(TRIEDGE, [3, Ntx], keepExisting=.false., fill=0, stat=ierr)
 
          NN = NTX
          call increasesam(NS1 + NN)
-         zs(ns1:ubound(zs, 1)) = 0d0 ! zkuni ! SPvdP: used to be DMISS, but then the samples are not plotted
+         zs(ns1:ubound(zs, 1)) = 0.0_dp ! zkuni ! SPvdP: used to be DMISS, but then the samples are not plotted
 
          TRIAREA = TRIANGLESIZEFAC * TRIANGLESIZEFAC * TRIAREA
          NPL1 = NPL
@@ -133,11 +137,13 @@ contains
 
       IN = -1 ! EN BIJPLUGGEN
       do N = NS1, NS1 + NN
-         XP = XS(N); YP = YS(N)
+         XP = XS(N)
+         YP = YS(N)
          call DBPINPOL(XP, YP, IN, dmiss, JINS, NPL, xpl, ypl, ypl)
          if (IN == 1) then
             NS = NS + 1
-            XS(NS) = XP; YS(NS) = YP
+            XS(NS) = XP
+            YS(NS) = YP
          end if
       end do
 

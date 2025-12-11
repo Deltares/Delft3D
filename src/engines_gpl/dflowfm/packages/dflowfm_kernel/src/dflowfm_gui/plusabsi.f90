@@ -124,11 +124,11 @@ contains
          end if
       end if
       call SAVENET()
-      call READYY('CHANGE FIELD VALUES', 0d0)
+      call READYY('CHANGE FIELD VALUES', 0.0_dp)
       KMOD = max(1, NUML / 100)
       do L = 1, NUML
          if (mod(L, KMOD) == 0) then
-            AF = dble(L) / dble(NUML)
+            AF = real(L, kind=dp) / real(NUML, kind=dp)
             call READYY('CHANGE FIELD VALUES', AF)
          end if
          K1 = KN(1, L)
@@ -166,7 +166,7 @@ contains
             end if
          end if
       end do
-      call READYY('CHANGE FIELD VALUES', -1d0)
+      call READYY('CHANGE FIELD VALUES', -1.0_dp)
       KEY = 3
 
    end subroutine PLUSABSI

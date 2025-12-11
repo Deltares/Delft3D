@@ -37,6 +37,17 @@
 
 #pragma once
 
+// Protective defines for Winsock 2 (must be BEFORE ANY #include)
+#ifndef _WIN32_WINNT
+#   define _WIN32_WINNT 0x0600
+#endif
+#define WIN32_LEAN_AND_MEAN
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
+#if defined(WIN32)
+#   include <windows.h>
+#endif
+
 #include "d_hydro.h"
 
 class Flow2D3D;
@@ -147,7 +158,6 @@ extern "C" {
 
 #include "dd.h"
 #include "esm.h"
-#include "flowol.h"
 #include "precision.h"
 
 
@@ -214,7 +224,6 @@ class Flow2D3D : public Component {
         XmlTree *   config;         // top of Flow2D3D XML configuration tree
         const char * mdfFile;
         char *      runid;
-        FlowOL *    flowol;         // Flow online (via DelftOnline)
         DD *        dd;             // domain decomposition object
         int         esm_flags;
         void *      gdp;

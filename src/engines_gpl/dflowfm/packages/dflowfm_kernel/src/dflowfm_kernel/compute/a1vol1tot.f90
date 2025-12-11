@@ -60,9 +60,9 @@ contains
             vol1icept = sum(bare(1:ndxi) * InterceptHs(1:ndxi))
          end if
       else
-         a1tot = 0d0
-         vol1tot = 0d0
-         vol1icept = 0d0
+         a1tot = 0.0_dp
+         vol1tot = 0.0_dp
+         vol1icept = 0.0_dp
 
          do k = 1, Ndxi
             if (idomain(k) == my_rank) then
@@ -95,7 +95,7 @@ contains
 
 !   vol1ini needs to be global
          if (jampi == 1) then
-            call reduce_double_sum(1, (/vol1ini/), dum)
+            call reduce_double_sum(1, [vol1ini], dum)
             vol1ini = dum(1)
          end if
       end if

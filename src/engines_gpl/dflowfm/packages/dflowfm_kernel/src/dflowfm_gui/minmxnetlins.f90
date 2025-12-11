@@ -59,9 +59,9 @@ contains
       real(kind=dp) :: zp2
 
       if (JAAUTO > 0) then
-         RMIN = 1.0d30
+         RMIN = 1.0e30_dp
          linmin = 0
-         RMAX = -1.0d30
+         RMAX = -1.0e30_dp
          linmax = 0
          do L = 1, NUML
             K1 = KN(1, L)

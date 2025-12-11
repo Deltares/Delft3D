@@ -69,6 +69,7 @@
 ! subroutines from net.F90
 !----------------------------------------------------------------------
 module m_choices
+
    use m_delete_dry_points_and_areas, only: delete_dry_points_and_areas
    use m_zerolan, only: zerolan
    use m_stopint, only: stopint
@@ -145,6 +146,7 @@ module m_choices
    use m_connecthangingnodes, only: connecthangingnodes, removelinksofhangingnodes, makeZKbedlevels
    use m_partition_to_idomain, only: partition_to_idomain
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -247,7 +249,7 @@ contains
             call REFINECELLSANDFACES2() !  REFINECELLSONLY()
          else if (NWHAT == 14) then
             call SAVENET()
-            call derefine_mesh(0d0, 0d0, .false.)
+            call derefine_mesh(0.0_dp, 0.0_dp, .false.)
          else if (NWHAT == 15) then
             call SAVENET()
             call connectcurvilinearquadsddtype()
@@ -268,7 +270,7 @@ contains
             call findcells(100) ! include folded cells
             call find1dcells()
 !         call findcells(0)          ! do not include folded cells
-            call delete_dry_points_and_areas()
+            call delete_dry_points_and_areas(update_blcell=.false.)
             call makenetnodescoding() ! killcell relies on node codes
          else if (NWHAT == 22) then
             call interpdivers(2) ! Network zk flow bathy
@@ -538,7 +540,8 @@ contains
          else if (NWHAT == 4) then
             call CHANGEorthoparameters()
          else if (NWHAT == 5) then
-            call CHANGEGRIDPARAMETERS(); KEY = 3
+            call CHANGEGRIDPARAMETERS()
+            KEY = 3
          else if (NWHAT == 6) then
             call CHANGEINTERPOLATIONPARAMETERS()
          else if (NWHAT == 7) then
@@ -562,7 +565,8 @@ contains
          else if (NWHAT == 14) then
             call CHANGENUMERICALPARAMETERS4()
          else if (NWHAT == 15) then
-            call CHANGEcolournumbers(); KEY = 3
+            call CHANGEcolournumbers()
+            KEY = 3
          end if
          NUM = 0
       end if

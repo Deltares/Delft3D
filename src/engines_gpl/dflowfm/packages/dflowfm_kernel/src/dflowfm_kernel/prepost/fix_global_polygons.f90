@@ -90,7 +90,7 @@ contains
          i = jstart - 1
          do while (i < jend)
             i = i + 1
-            if (abs(abs(ypl(i)) - 90d0) < dtol_pole) then
+            if (abs(abs(ypl(i)) - 90.0_dp) < dtol_pole) then
 !              add node
                call increasepol(NPL + 1, 1)
                do j = NPL, i, -1
@@ -103,8 +103,10 @@ contains
                jpoint = jpoint + 1
                i = i + 1
 
-               im1 = i - 2; if (im1 < jstart) im1 = im1 + jend - jstart + 1
-               ip1 = i + 1; if (ip1 > jend) ip1 = ip1 - (jend - jstart + 1)
+               im1 = i - 2
+               if (im1 < jstart) im1 = im1 + jend - jstart + 1
+               ip1 = i + 1
+               if (ip1 > jend) ip1 = ip1 - (jend - jstart + 1)
 
 !              shift current node above previous node
                xpl(i - 1) = xpl(im1)
@@ -281,11 +283,11 @@ contains
             xpl(jend + 2 * num + 2) = xpl(jstart)
 
             if (ypl(jend + 2 * num) > 0) then
-               ypl(jend + 2 * num + 1) = 90d0
-               ypl(jend + 2 * num + 2) = 90d0
+               ypl(jend + 2 * num + 1) = 90.0_dp
+               ypl(jend + 2 * num + 2) = 90.0_dp
             else
-               ypl(jend + 2 * num + 1) = -90d0
-               ypl(jend + 2 * num + 2) = -90d0
+               ypl(jend + 2 * num + 1) = -90.0_dp
+               ypl(jend + 2 * num + 2) = -90.0_dp
             end if
 
             zpl(jend + 2 * num + 1) = zpl(jend + 2 * num)
@@ -301,14 +303,14 @@ contains
 
       if (japartpols == 1) then
 !        check if the right areas are selected and add bounding polygon if not so
-         xmin = 1d99
+         xmin = 1.0e99_dp
          xmax = -xmin
          do k = 1, numk
             xmin = min(xk(k), xmin)
             xmax = max(xk(k), xmax)
          end do
-         xmin = 0.5d0 * (xmin + xmax) - 180d0
-         xmax = xmin + 360d0
+         xmin = 0.5_dp * (xmin + xmax) - 180.0_dp
+         xmax = xmin + 360.0_dp
 
 !        clean up
          call dealloc_tpoly(partition_pol)
@@ -327,7 +329,7 @@ contains
 !                 check if cell is inside
 !                  in = -1
 !                  call dbpinpol(xzw(i), yzw(i), in)
-                  call dbpinpol_tpolies(partition_pol, xzw(i), yzw(i), in, dble(idmn))
+                  call dbpinpol_tpolies(partition_pol, xzw(i), yzw(i), in, real(idmn, kind=dp))
 
 !                  write(6,*) i, xzw(i), yzw(i), idomain(i)
 
@@ -340,9 +342,9 @@ contains
                      call delpol()
                      NPL = 5
                      call increasepol(NPL, 0)
-                     xpl(1:NPL) = (/xmin - 90d0, xmin - 90d0, xmin + 360d0 + 90d0, xmin + 360d0 + 90d0, xmin - 90d0/)
-                     ypl(1:NPL) = (/90d0, -90d0, -90d0, 90d0, 90d0/)
-                     zpl(1:NPL) = dble(idmn)
+                     xpl(1:NPL) = [xmin - 90.0_dp, xmin - 90.0_dp, xmin + 360.0_dp + 90.0_dp, xmin + 360.0_dp + 90.0_dp, xmin - 90.0_dp]
+                     ypl(1:NPL) = [90.0_dp, -90.0_dp, -90.0_dp, 90.0_dp, 90.0_dp]
+                     zpl(1:NPL) = real(idmn, kind=dp)
                      call pol_to_tpoly(npartition_pol, partition_pol, keepExisting=.true.)
                   end if
 

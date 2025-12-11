@@ -89,13 +89,7 @@ set(rtc_plugin_c_module "${rtc_module_path}/plugin_rtc_c")
 set(rtc_kernel_module "${rtc_module_path}/rtc_kernel")
 
 set(fbc_module_path "${engines_gpl_path}/fbc/packages/FBCTools")
+set(dsle_module_path "${engines_gpl_path}/dsle/packages")
 
 # Install
-set(install_fbc_module cmake/install_fbc)
-set(install_dflowfm_module cmake/install_fm)
-set(install_waq_module cmake/install_waq)
-set(install_wave_module cmake/install_wave)
-set(install_dimr_module cmake/install_dimr)
-set(install_tests_module cmake/install_tests)
-set(install_d_hydro_module cmake/install_d_hydro)
-set(install_flow2d3d_module cmake/install_flow2d3d)
+set(install_all_module cmake/install_all)

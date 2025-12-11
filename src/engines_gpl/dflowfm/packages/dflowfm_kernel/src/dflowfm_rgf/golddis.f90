@@ -39,7 +39,7 @@ contains
       real(kind=dp) :: ax, bx, cx, tol, xmin, dis, ssq
       real(kind=dp), intent(in) :: H !< for curvature adapted meshing
 
-      real(kind=dp), parameter :: R = .61803399d0, C = .38196602d0
+      real(kind=dp), parameter :: R = 0.61803399_dp, C = 0.38196602_dp
       real(kind=dp) :: x0, x1, x2, x3, f0, f1, f2, f3, d1, d2
 
 !     Eendimensionaal zoeken van 'gebracked' minimum
@@ -56,7 +56,7 @@ contains
       F1 = abs(D1 - SSQ)
       call GETDIS(P, Y, P2, Y2, N, X2, D2, H)
       F2 = abs(D2 - SSQ)
-1     if (abs(X3 - X0) > TOL * max(abs(X1) + abs(X2), 1d-8)) then
+1     if (abs(X3 - X0) > TOL * max(abs(X1) + abs(X2), 1.0e-8_dp)) then
 !     IF(ABS(X3-X0).GT.TOL) THEN
          if (F2 < F1) then
             X0 = X1

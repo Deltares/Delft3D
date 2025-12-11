@@ -55,7 +55,7 @@ contains
       data MVOL/0/, NVOL/0/
       if (MC == 0 .or. NC == 0) return
       ISHOT = 0
-      RMIN = 99d+20
+      RMIN = 99.0e+20_dp
 
 5     continue
       MV = 0

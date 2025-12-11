@@ -48,7 +48,7 @@ contains
 !
 ! Local parameters
 !
-      real(kind=dp), parameter :: c23 = 2.0d0 / 3.0d0, c13 = 1.0d0 / 3.0d0
+      real(kind=dp), parameter :: c23 = 2.0_dp / 3.0_dp, c13 = 1.0_dp / 3.0_dp
 !
 ! Global variables
 !
@@ -138,32 +138,32 @@ contains
       !     the design document River Rural integratietraject deel 3.
       !JK   WRITE  (11,*)  'IN FLGSD2 ----'
       !
-      ag = (1.0d0 - rhoast) * (w2 / 12.0d0 + wsd / 4.0d0) + 0.5d0 * (rhoast + 1.0d0)      &
+      ag = (1.0_dp - rhoast) * (w2 / 12.0_dp + wsd / 4.0_dp) + 0.5_dp * (rhoast + 1.0_dp)      &
           & * (c13 * w2 + c23 * wsd)
       d2 = hd - zb2
       !
-      terma = (4.0d0 * rhoast * cgd * cgd * dg * dg * wstr * wstr) / (w2 * d2) * (1.0d0 + lambda / d2)
-      termb = 4.0d0 * cgd * dg * wstr
+      terma = (4.0_dp * rhoast * cgd * cgd * dg * dg * wstr * wstr) / (w2 * d2) * (1.0_dp + lambda / d2)
+      termb = 4.0_dp * cgd * dg * wstr
       !
-      bg = (1.0d0 - rhoast) * ((d2 + ds1) * (w2 + wsd) / 6.d0 + ds1 * wsd * c13)            &
-         & + 0.5d0 * (rhoast + 1.0d0)                                               &
+      bg = (1.0_dp - rhoast) * ((d2 + ds1) * (w2 + wsd) / 6.0_dp + ds1 * wsd * c13)            &
+         & + 0.5_dp * (rhoast + 1.0_dp)                                               &
          & * ((ds1 + ds2 - d2) * (c13 * w2 + c23 * wsd) + (c23 * d2 + c13 * ds1)             &
          & * w2 + (c13 * d2 + c23 * ds1) * wsd) + terma - termb
       !
       hsl = elu - zs
       !
-      cg = (1.0d0 - rhoast) * ((d2 + ds1)**2 * (w2 + wsd) / 12.d0 + ds1**2 * wsd / 6.0d0)   &
-         & + 0.5d0 * (rhoast + 1.0d0) * (ds1 + ds2 - d2)                              &
+      cg = (1.0_dp - rhoast) * ((d2 + ds1)**2 * (w2 + wsd) / 12.0_dp + ds1**2 * wsd / 6.0_dp)   &
+         & + 0.5_dp * (rhoast + 1.0_dp) * (ds1 + ds2 - d2)                              &
          & * ((c23 * d2 + c13 * ds1) * w2 + (c13 * d2 + c23 * ds1) * wsd) - terma * hsl +        &
          & termb * hsl
       !
-      det = bg * bg - 4.0d0 * ag * cg
-      if (det < 0.0d0) then
+      det = bg * bg - 4.0_dp * ag * cg
+      if (det < 0.0_dp) then
          imag = .true.
          !JK      WRITE (11,*) 'Det=',det
       else
          imag = .false.
-         ds = (-bg + sqrt(det)) / (2.0d0 * ag)
+         ds = (-bg + sqrt(det)) / (2.0_dp * ag)
       end if
    end subroutine flgsd2fm
 

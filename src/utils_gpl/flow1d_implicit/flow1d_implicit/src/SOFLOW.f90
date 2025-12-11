@@ -9,7 +9,7 @@ subroutine SOFLOW(&
 &nlev   , nstru                             ,&
 &branch , bfrict                            ,&
 &bfricp , hpack  , qpack  ,x       ,waoft   ,&
-&grid                                       ,&        
+&grid   , sectc  , sectv                    ,&        
 &wft    , aft    ,wtt     ,att     , of     ,&
 &hlev                                       ,&
 &hbdpar , qbdpar                            ,&
@@ -17,7 +17,8 @@ subroutine SOFLOW(&
 &node   , numnod ,nodnod                    ,&
 &strpar , strtyp                            ,&
 &debug_wr                                   ,&
-&juer&
+&juer                                       ,&
+&fm1dimp                                     &
 &)
 !*******
 !    BEGIN original interface
@@ -140,6 +141,9 @@ subroutine SOFLOW(&
 !c
 !c
 !c**********************************************************************
+   use m_f1dimp, only: f1dimppar_type     
+   
+   type(f1dimppar_type), intent(in) :: fm1dimp
 !c
 !c     Parameters
 !c
@@ -741,18 +745,21 @@ subroutine SOFLOW(&
    
    strhis=0
    strhis(9,1)=1
-!
-!    only main channel
-!
-   do kgrid=1,ngrid
-      sectc(kgrid,1)=0
 
-!    I think this may need to be moved outside and compute based
-!    on the actual water level? maybe only initialization?
+   
+   do kgrid=1,ngrid
+
+      ![SOFLOW] cpack -> [FLOW] cp -> [FLOWIT] cpa ->
+      !   [FLHYPA] c ->
+      !      c(1,1) -> [FLBOCH] c
+      !      c(1,2) -> [FLBOCK] cs 
+      !   [FLDSCO] cp -> [FLABCD] cp 
+      !      cp(1,1) -> [FLNORM] chz 
+      
       cpack(kgrid,1)=bfricp(1,kgrid)
       cpack(kgrid,2)=bfricp(1,kgrid)
-      cpack(kgrid,3)=bfricp(3,kgrid)
-      cpack(kgrid,4)=bfricp(5,kgrid)
+      cpack(kgrid,3)=bfricp(3,kgrid) !I do not see where is this used
+      cpack(kgrid,4)=bfricp(5,kgrid) !I do not see where is this used
 
       !waoft(kgrid,1)=wft(kgrid,1)
       !waoft(kgrid,2)=wtt(kgrid,1)
@@ -927,7 +934,9 @@ subroutine SOFLOW(&
    &triger,cnpflg,ker   ,qtyp  ,lfrou ,strbuf,&
    &ibuf  ,solbuf,buflag,indx  ,bicg  ,stdbq ,&
    &nstdb                                    ,&
-   &debug_wr)
+   &debug_wr                                 ,&
+   &fm1dimp                                   &
+   &)
 
 
 
@@ -1088,7 +1097,9 @@ subroutine SOFLOW(&
       &waoft ,grsize,engpar,scifri,&
       &pfa   ,juer  ,cpack ,rpack ,&
       &afwfqs,alfab ,&
-      &wtt   ,att   ,ker    )
+      &wtt   ,att   ,ker          ,&
+      &fm1dimp                     &
+      &)
    endif
 
 !     FM1DIMP2DO: remove debug

@@ -94,13 +94,13 @@ contains
       integer :: j, n
       real(kind=dp) :: dt_loc
       real(kind=dp) :: qw_loc
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
       integer(4) :: ithndl = 0
 
       if (timon) call timstrt("solve_vertical", ithndl)
 
       dt_loc = dts
-      rhs = 0d0
+      rhs = 0.0_dp
       ac = 0.0_dp
       bc = 0.0_dp
       cc = 0.0_dp
@@ -128,15 +128,15 @@ contains
          if (kfs(kk) <= 0) cycle
 
          ktx = kb + kmxn(kk) - 1
-         a = 0d0
-         c = 0d0
-         sol = 0d0
+         a = 0.0_dp
+         c = 0.0_dp
+         sol = 0.0_dp
 
 !     add linearized sinks to diagonal
          do k = kb, kt
             n = k - kb + 1 ! layer number
             do j = 1, NUMCONST
-               b(n, j) = 1d0 + dt_loc * sink(j, k)
+               b(n, j) = 1.0_dp + dt_loc * sink(j, k)
             end do
          end do
 
@@ -150,18 +150,18 @@ contains
 
          do k = kb, kt - 1 ! assume zero-fluxes at boundary and top
             n = k - kb + 1 ! layer number
-            dvol1i = 1d0 / max(vol1(k), dtol) ! dtol: safety
-            if (testdryflood == 2) dvol1i = 1d0 / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
-            dvol2i = 1d0 / max(vol1(k + 1), dtol) ! dtol: safety
-            if (testdryflood == 2) dvol2i = 1d0 / max(vol1(k + 1), epshu * ba(kk) / max(kt - kb + 1, 1))
+            dvol1i = 1.0_dp / max(vol1(k), dtol) ! dtol: safety
+            if (testdryflood == 2) dvol1i = 1.0_dp / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
+            dvol2i = 1.0_dp / max(vol1(k + 1), dtol) ! dtol: safety
+            if (testdryflood == 2) dvol2i = 1.0_dp / max(vol1(k + 1), epshu * ba(kk) / max(kt - kb + 1, 1))
             dtba = dt_loc * ba(kk)
-            dtbazi = dtba / max(1d-4, 0.5d0 * (zws(k + 1) - zws(k - 1))) ! another safety check
-            ozmid = 0d0
-            if (xlozmidov > 0d0) then
+            dtbazi = dtba / max(1.0e-4_dp, 0.5_dp * (zws(k + 1) - zws(k - 1))) ! another safety check
+            ozmid = 0.0_dp
+            if (xlozmidov > 0.0_dp) then
                if (rho(k) < rho(k - 1)) then
-                  bruns = (rho(k - 1) - rho(k)) / (0.5d0 * (zws(k + 1) - zws(k - 1))) ! = -drhodz
+                  bruns = (rho(k - 1) - rho(k)) / (0.5_dp * (zws(k + 1) - zws(k - 1))) ! = -drhodz
                   bruns = sqrt(bruns * ag / rhomean)
-                  ozmid = 0.2d0 * xlozmidov * xlozmidov * bruns
+                  ozmid = 0.2_dp * xlozmidov * xlozmidov * bruns
                end if
             end if
 
@@ -183,7 +183,7 @@ contains
                a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
 
                ! advection
-               if (thetavert(j) > 0d0) then ! semi-implicit, use central scheme
+               if (thetavert(j) > 0.0_dp) then ! semi-implicit, use central scheme
                   if (jased > 0 .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                      if (jased < 4) then
                         qw_loc = qw(k) - wsf(j) * a1(kk)
@@ -193,7 +193,7 @@ contains
                   else
                      qw_loc = qw(k)
                   end if
-                  fluxfac = qw_loc * 0.5d0 * thetavert(j) * dt_loc
+                  fluxfac = qw_loc * 0.5_dp * thetavert(j) * dt_loc
 
                   a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
                   b(n + 1, j) = b(n + 1, j) - fluxfac * dvol2i
@@ -203,7 +203,7 @@ contains
                end if
 
                if (jased > 0 .and. jaimplicitfallvelocity == 1) then
-                  fluxfac = 0d0
+                  fluxfac = 0.0_dp
                   if (jased == 4) then
                      if (j >= ISED1 .and. j <= ISEDN) then
                         fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
@@ -214,10 +214,10 @@ contains
                   else
                      fluxfac = wsf(j) * a1(kk) * dt_loc
                   end if
-                  if (fluxfac > 0d0) then
+                  if (fluxfac > 0.0_dp) then
                      c(n, j) = c(n, j) - fluxfac * dvol1i
                      b(n + 1, j) = b(n + 1, j) + fluxfac * dvol2i
-                  else if (fluxfac < 0d0) then
+                  else if (fluxfac < 0.0_dp) then
                      b(n, j) = b(n, j) - fluxfac * dvol1i
                      a(n + 1, j) = a(n + 1, j) + fluxfac * dvol2i
                   end if
@@ -241,7 +241,7 @@ contains
       !$OMP END PARALLEL DO
       if (timon) call timstop(ithndl)
    end subroutine solve_vertical
-   
+
    !> Get vertical diffusivity at a given node and add constituent specific molecular diffusivity.
    pure function get_difsedw(node_index, constituent_index) result(val)
       use m_physcoef, only: dicoww

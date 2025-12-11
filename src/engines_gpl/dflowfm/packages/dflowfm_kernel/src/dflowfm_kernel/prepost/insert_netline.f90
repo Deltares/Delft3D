@@ -58,7 +58,7 @@ contains
       integer, intent(in) :: L_ !< link number (set to 0 first time)
 
       real(kind=dp) :: zp
-      real(kind=dp), parameter :: dcostol = 0.25d0
+      real(kind=dp), parameter :: dcostol = 0.25_dp
 
       integer, dimension(2) :: Lnext ! next links in recursion
       integer :: Nnext ! number of next links
@@ -79,7 +79,7 @@ contains
          if (L == 0) goto 1234
 
          call teknet(ja) ! whipe out previous net
-         call readyy('Inserting meshline', 0d0)
+         call readyy('Inserting meshline', 0.0_dp)
       else
          L = L_
       end if
@@ -97,14 +97,18 @@ contains
          ic = lne(i, L)
          N = netcell(ic)%N
          if (N /= 4) cycle
-         kk = 1; do while (netcell(ic)%lin(kk) /= L .and. kk < N); kk = kk + 1; end do
+         kk = 1
+         do while (netcell(ic)%lin(kk) /= L .and. kk < N)
+         kk = kk + 1
+         end do
          if (netcell(ic)%lin(kk) /= L) cycle
-         kknext = kk + 2; if (kknext > N) kknext = kknext - N
+         kknext = kk + 2
+         if (kknext > N) kknext = kknext - N
          Nnext = Nnext + 1
          Lnext(Nnext) = netcell(ic)%lin(kknext)
       end do
 
-      call splitlink(0d0, 0d0, L, dcostol, 1, ierror)
+      call splitlink(0.0_dp, 0.0_dp, L, dcostol, 1, ierror)
       if (ierror /= 0) goto 1234
 !   ja = 1
 !   call confrm(' ', ja)
@@ -113,7 +117,7 @@ contains
 !     proceed with links that are inside the selecting polygon
 !      if ( kc(kn(1,Lnext(i))).gt.0 .and. kc(kn(2,Lnext(i))).gt.0 ) then
          if (lc(Lnext(i)) > 0 .and. kn(1, Lnext(i)) > 0 .and. kn(2, Lnext(i)) > 0) then ! Lnext(i) may have been disabled/deleted in the recursion
-            call insert_netline(0d0, 0d0, Lnext(i))
+            call insert_netline(0.0_dp, 0.0_dp, Lnext(i))
          else
             continue
          end if
@@ -125,7 +129,7 @@ contains
 1234  continue
 
       if (L_ == 0) then
-         call readyy(' ', -1d0)
+         call readyy(' ', -1.0_dp)
          call teknet(ja) ! plot new net
       end if
 

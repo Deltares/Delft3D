@@ -43,6 +43,15 @@ object WindowsCollect : BuildType({
             conditions {
                 equals("dep.${WindowsBuild.id}.product", "fm-suite")
             }
+        }      
+        powerShell {
+            name = "Copy DLLs"
+            scriptMode = script {
+            content = """
+                Copy-Item "C:\Windows\System32\vcomp140.dll" -Destination "x64\lib" -Force
+                Copy-Item "C:\Windows\System32\ucrtbased.dll" -Destination "x64\lib" -Force
+            """.trimIndent()
+            }
         }
         python {
             name = "Generate list of version numbers (from what-strings)"
@@ -104,5 +113,6 @@ object WindowsCollect : BuildType({
     requirements {
         exists("env.PYTHON_PATH")
         contains("teamcity.agent.jvm.os.name", "Windows")
+        exists("VS2022")
     }
 })

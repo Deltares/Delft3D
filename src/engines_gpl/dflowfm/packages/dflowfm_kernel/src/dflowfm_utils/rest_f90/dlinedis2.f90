@@ -56,7 +56,7 @@ contains
          R2 = R2 * R2
          if (R2 /= 0) then
             RL = (X31 * X21 + Y31 * Y21) / R2
-            if (0d0 <= RL .and. RL <= 1d0) then
+            if (0.0_dp <= RL .and. RL <= 1.0_dp) then
                JA = 1
             end if
             XN = X1 + RL * (x2 - x1)
@@ -80,9 +80,9 @@ contains
          z31 = zz3 - zz1
 
          r2 = x21 * x21 + y21 * y21 + z21 * z21
-         if (r2 /= 0d0) then
+         if (r2 /= 0.0_dp) then
             RL = (X31 * X21 + Y31 * Y21 + Z31 * Z21) / R2
-            if (0d0 <= RL .and. RL <= 1d0) then
+            if (0.0_dp <= RL .and. RL <= 1.0_dp) then
                JA = 1
             end if
             XXN = xx1 + RL * x21
@@ -93,7 +93,7 @@ contains
             z31 = zzn - zz3
             DIS = sqrt(x31 * x31 + y31 * y31 + z31 * z31)
 
-            call Cart3Dtospher(xxn, yyn, zzn, xn, yn, maxval((/x1, x2, x3/)))
+            call Cart3Dtospher(xxn, yyn, zzn, xn, yn, maxval([x1, x2, x3]))
          else
             DIS = dbdistance(x3, y3, x1, y1, jsferic, jasfer3D, dmiss)
          end if

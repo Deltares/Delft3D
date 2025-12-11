@@ -55,16 +55,16 @@ contains
 
       integer, parameter :: maxiter = 1000
 
-      real(kind=dp), parameter :: dtol = 1d-8
-      real(kind=dp), parameter :: deps = 1d-2
-      real(kind=dp), parameter :: relax = 0.5d0
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
+      real(kind=dp), parameter :: deps = 1.0e-2_dp
+      real(kind=dp), parameter :: relax = 0.5_dp
 
       ierror = 1
 
-      gk = 1d0
+      gk = 1.0_dp
       fk = comp_h(gk, dheight0, nfac) - height
 
-      gkp1 = 1d0 + deps
+      gkp1 = 1.0_dp + deps
       fkp1 = comp_h(gkp1, dheight0, nfac) - height
 
       if (abs(fkp1) > dtol .and. abs(fkp1 - fk) > dtol) then
@@ -75,7 +75,7 @@ contains
             gk = gkp1
             fk = fkp1
 
-            gkp1 = gk - relax * fk / (fk - fkm1 + 1d-16) * (gk - gkm1)
+            gkp1 = gk - relax * fk / (fk - fkm1 + 1.0e-16_dp) * (gk - gkm1)
             fkp1 = comp_h(gkp1, dheight0, nfac) - height
 
 !         if ( abs(fkp1).lt.dtol .or. abs(fkp1-fk).lt.dtol ) exit

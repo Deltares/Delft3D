@@ -286,6 +286,9 @@ subroutine strfil(lundia    ,error     ,filstr    ,mmax      , &
              error = .true.
              goto 1100
           endif
+       else
+          value1 = 0.0_fp
+          value2 = 0.0_fp
        endif
        !
        ! Define local weir/ gate / rigid sheet / porous plate or

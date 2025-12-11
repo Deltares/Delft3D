@@ -52,13 +52,13 @@ contains
          do L = 1, lnx
             k1 = ln(1, L)
             k2 = ln(2, L)
-            CpilL = (Cpil(k1) + Cpil(k2)) * 0.5d0
+            CpilL = (Cpil(k1) + Cpil(k2)) * 0.5_dp
             uv = sqrt(u1(L) * u1(L) + v(L) * v(L))
             advi(L) = advi(L) + CpilL * uv / dx(L)
          end do
       else if (japillar == 3) then
          do L = 1, lnx
-            if (Cpil(L) == 0d0) cycle
+            if (Cpil(L) == 0.0_dp) cycle
             CpilL = Cpil(L)
             uv = sqrt(u1(L) * u1(L) + v(L) * v(L))
             advi(L) = advi(L) + CpilL * uv / dx(L)

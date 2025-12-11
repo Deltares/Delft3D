@@ -37,20 +37,4 @@
                 <crashOnAbort>true</crashOnAbort>
         -->
     </flow2D3D>
-    <delftOnline>
-        <enabled>true</enabled>
-        <urlFile>ove.url</urlFile>
-        <waitOnStart>false</waitOnStart>
-        <clientControl>true</clientControl>    <!-- client allowed to start, step, stop, terminate -->
-        <clientWrite>false</clientWrite>    <!-- client allowed to modify data -->
-        <!--
-            Options/alternatives:
-            1) Change port range:
-                <tcpPortRange start="51001" end="51099"/>
-            2) More output to screen (silent, error, info, trace. default: error):
-                <verbosity>trace</verbosity>
-            3) Force stack trace to be written (Linux only):
-                <crashOnAbort>true</crashOnAbort>
-        -->
-    </delftOnline>
 </deltaresHydro>

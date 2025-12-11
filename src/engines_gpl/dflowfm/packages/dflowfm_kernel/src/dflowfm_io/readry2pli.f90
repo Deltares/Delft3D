@@ -38,7 +38,7 @@ contains
       use m_filez, only: doclose
 
       integer :: mthd, mout
-      real(kind=dp) :: z = 9999d0
+      real(kind=dp) :: z = 9999.0_dp
       character(len=132) :: rec
       integer :: m, n
 

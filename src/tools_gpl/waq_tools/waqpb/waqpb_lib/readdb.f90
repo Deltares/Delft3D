@@ -37,14 +37,48 @@ subroutine readdb(lu_inp, lu_mes, csv_folder)
     character(len=*), intent(in) :: csv_folder !< Folder containing the CSV files
 
     character(len=255) c255
+    character(len=255) :: all_csv_files_name(14) !< Array of database CSV file names to check existence
     character(len=10) chkcnf(nconfm),c10
     character(len=1)  swicnf(nconfm),c1dum
-    integer      jndex , iproc , iconf , ipos  , ihulp , idum(1), error
+    logical :: file_exists
+    integer :: count_csv_files_missing
+    integer      i, jndex , iproc , iconf , ipos  , ihulp , idum(1), error
 
+
+    ! Check if all *.csv files exist before reading
+    all_csv_files_name = [csv_folder//'grpsub.csv', &
+                          csv_folder//'items.csv', &
+                          csv_folder//'fortran.csv', &
+                          csv_folder//'proces.csv', &
+                          csv_folder//'config.csv', &
+                          csv_folder//'con_pro.csv', &
+                          csv_folder//'con_sub.csv', &
+                          csv_folder//'inputs.csv', &
+                          csv_folder//'outputs.csv', &
+                          csv_folder//'outpflx.csv', &
+                          csv_folder//'stochi.csv', &
+                          csv_folder//'velocs.csv', &
+                          csv_folder//'disps.csv', &
+                          csv_folder//'old_items.csv']
+    file_exists = .true.
+    count_csv_files_missing = 0
+    do i = 1, size(all_csv_files_name)
+        inquire (file=all_csv_files_name(i), exist=file_exists)
+        if (.not. file_exists) then
+            count_csv_files_missing = count_csv_files_missing + 1
+            write (*, '(A,A,A)') 'Error: the file "', trim(all_csv_files_name(i)), '" cannot be found.'
+        end if
+    end do
+    if (count_csv_files_missing > 0) then
+        write(*, *)
+        write (*, '(A, I0, A)') 'Error: ', count_csv_files_missing, ' *.csv file(s) missing (see information above). Program stopped.'
+        stop 1
+    end if
 
     !Read database containing Processes Library
 
     !Read Table P1
+
     open(newunit = lu_inp, file=(csv_folder//'grpsub.csv'))
     read(lu_inp, *)
     nsgrp = 0

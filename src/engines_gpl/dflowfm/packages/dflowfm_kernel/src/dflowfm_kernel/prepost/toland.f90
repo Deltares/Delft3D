@@ -65,10 +65,11 @@ contains
 
       integer, external :: OMP_GET_THREAD_NUM
 
-      XV = XX; YV = YY
+      XV = XX
+      YV = YY
 
       jout = -999
-      rlout = -1d0
+      rlout = -1.0_dp
       if (MXLAN == 0) return
 
       DISMIN = 9e+33
@@ -106,7 +107,7 @@ contains
             if (Ldoit) then
                call dLINEDIS3(XX, YY, Xa, Ya, Xb, Yb, JA, DIS, XN, YN, RL)
                RLDUM = RL ! remember the unlimited rL
-               RL = min(max(RL, 0d0), 1d0)
+               RL = min(max(RL, 0.0_dp), 1.0_dp)
                if (JA == 1) then
                   if (DIS < DISMIN) then
 !$OMP CRITICAL

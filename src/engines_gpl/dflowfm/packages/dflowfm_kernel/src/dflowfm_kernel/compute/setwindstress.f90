@@ -53,15 +53,15 @@ contains
       real(kind=dp) :: local_ice_area_fraction
       integer :: L, numwav, k
 
-      windxav = 0d0
-      windyav = 0d0
+      windxav = 0.0_dp
+      windyav = 0.0_dp
 
       if (jawindstressgiven > 0) then
 
          if (jastresstowind == 0) then ! stress directly
             if (jamapwind > 0) then
-               wx = 0d0
-               wy = 0d0
+               wx = 0.0_dp
+               wy = 0.0_dp
             end if
             do L = 1, lnx
                if (rho_water_in_wind_stress /= RHO_MEAN) then
@@ -79,12 +79,12 @@ contains
                   ust2 = tau / rhoair
                   ust = sqrt(ust2)
                   z0w = cdb(2) * viskinair / ust + cdb(1) * ust2 / ag
-                  uwi = log(10d0 / (z0w)) * ust / vonkarw
+                  uwi = log(10.0_dp / (z0w)) * ust / vonkarw
                   wx(L) = uwi * wdsu_x(L) / tau
                   wy(L) = uwi * wdsu_y(L) / tau
                else
-                  wx(L) = 0d0
-                  wy(L) = 0d0
+                  wx(L) = 0.0_dp
+                  wy(L) = 0.0_dp
                end if
             end do
 
@@ -95,14 +95,14 @@ contains
       if (jawindstressgiven == 0 .or. jastresstowind == 1) then
          roa = rhoair
          row = rhomean
-         wdsu = 0d0
+         wdsu = 0.0_dp
          numwav = 0
          do L = 1, lnx
-            if (wx(L) /= 0d0 .or. wy(L) /= 0d0 .or. relativewind > 0) then ! only if some wind
+            if (wx(L) /= 0.0_dp .or. wy(L) /= 0.0_dp .or. relativewind > 0) then ! only if some wind
 
                wxL = wx(L)
                wyL = wy(L)
-               if (relativewind > 0d0) then
+               if (relativewind > 0.0_dp) then
                   uL = relativewind * U1(Ltop(L))
                   vL = relativewind * v(Ltop(L))
                   uxL = uL * csu(L) - vL * snu(L)
@@ -116,7 +116,7 @@ contains
                end if
                call setcdwcoefficient(uwi, cdw, L)
                if (ice_modify_winddrag /= ICE_WINDDRAG_NONE) then
-                  local_ice_area_fraction = 0.5d0 * (ice_area_fraction(ln(1, L)) + ice_area_fraction(ln(2, L)))
+                  local_ice_area_fraction = 0.5_dp * (ice_area_fraction(ln(1, L)) + ice_area_fraction(ln(2, L)))
                   cdw = fm_ice_drag_effect(local_ice_area_fraction, cdw)
                end if
                if (jatem == 5) then

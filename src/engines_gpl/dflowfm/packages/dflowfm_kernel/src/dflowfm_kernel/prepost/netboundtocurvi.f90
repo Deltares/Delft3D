@@ -144,9 +144,9 @@ contains
 !     determine orientation
          crs = dprodout(xpl(i), ypl(i), xpl(i + 1), ypl(i + 1), xpl(i), ypl(i), xzw(ic), yzw(ic), jsferic, jasfer3D)
          iorient_new = -1
-         if (crs > 0d0) then
+         if (crs > 0.0_dp) then
             iorient_new = 1
-         else if (crs < 0d0) then
+         else if (crs < 0.0_dp) then
             iorient_new = 0
          end if
 
@@ -192,7 +192,7 @@ contains
 !  set edge velocity
       edgevel = DMISS
 
-      if (dunigridsize <= 0d0) then
+      if (dunigridsize <= 0.0_dp) then
          do i = 1, mc - 1
             !     get the pointers to the netnodes from zpl
             k1 = int(zpl(i))
@@ -217,7 +217,7 @@ contains
             !     determine the adjacent net cell
             ic = lne(1, L)
 
-            dwidthloc = 0d0
+            dwidthloc = 0.0_dp
             !     determine cell height: take maximum distance to boundary link
             do j = 1, netcell(ic)%N
                k3 = netcell(ic)%nod(j)
@@ -239,7 +239,7 @@ contains
       end do
 
 !  grow the grid
-      dt = 1d0
+      dt = 1.0_dp
       do j = jc + 1, nc
 !      idum = 1
 !      call plot(idum)
@@ -250,7 +250,7 @@ contains
             edgevel(i) = dgrow * edgevel(i)
          end do
 
-         if (dt < 1d-8 .or. istop == 1) exit
+         if (dt < 1.0e-8_dp .or. istop == 1) exit
       end do
 
       ierror = 0

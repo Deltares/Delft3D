@@ -112,7 +112,7 @@ contains
          call sort_index(areas, perm)
 
          !  set optimal area as the average area
-         area_opt = sum(areas) / dble(nump)
+         area_opt = sum(areas) / real(nump, kind=dp)
 
          k1 = 0
          do k_ = 1, nump
@@ -145,8 +145,8 @@ contains
             end if
 
             if (Ldoit) then
-               area_tot = 0d0
-               funct = 0d0
+               area_tot = 0.0_dp
+               funct = 0.0_dp
 
                call getcellsurface(k, area, xc, yc)
                area_tot = area_tot + area
@@ -159,9 +159,9 @@ contains
 
                !     compute the area increase of the indirectly connected cells
                if (nindirect > 0) then
-                  Darea = area_tot / dble(nindirect)
+                  Darea = area_tot / real(nindirect, kind=dp)
                else
-                  Darea = 0d0
+                  Darea = 0.0_dp
                end if
 
                !     compute the change in the functional
@@ -174,7 +174,7 @@ contains
 
                !        funct = -1d0
 
-               if (funct < 0d0) then ! delete cell
+               if (funct < 0.0_dp) then ! delete cell
                   !     if (k.eq.395 ) then
                   if (Lstepbystep) then
                      !           unhighlight mesh
@@ -210,8 +210,8 @@ contains
                      kkk = kdirect(kk)
                      N = netcell(kkk)%N
                      if (N > 0) then
-                        xc = sum(xk(netcell(kkk)%nod(1:N))) / dble(N)
-                        yc = sum(yk(netcell(kkk)%nod(1:N))) / dble(N)
+                        xc = sum(xk(netcell(kkk)%nod(1:N))) / real(N, kind=dp)
+                        yc = sum(yk(netcell(kkk)%nod(1:N))) / real(N, kind=dp)
                         call cirr(xc, yc, ncolhl)
                      end if
                   end do

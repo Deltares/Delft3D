@@ -53,10 +53,10 @@ contains
       real(kind=dp) :: y2
 
       call viewport(real(X1SC(NSC)), real(Y1SC(NSC)), real(X2SC(NSC)), real(Y2SC(NSC)))
-      DX = (X2 - X1) * 0.1d0
-      DY = (Y2 - Y1) * 0.1d0
-      DXH = DX / 2d0
-      DYH = DY / 2d0
+      DX = (X2 - X1) * 0.1_dp
+      DY = (Y2 - Y1) * 0.1_dp
+      DXH = DX / 2.0_dp
+      DYH = DY / 2.0_dp
       !    CALL IGRUNITS( real(X1-DX),real(Y1-DY),real(X2+DX),real(Y2+DY) )
       call setwor(X1 - DX, Y1 - DY, X2 + DX, Y2 + DY)
 

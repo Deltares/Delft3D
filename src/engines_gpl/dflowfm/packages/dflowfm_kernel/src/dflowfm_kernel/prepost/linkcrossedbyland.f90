@@ -87,7 +87,7 @@ contains
 
       DL = dbdistance(x1, y1, x2, y2, jsferic, jasfer3D, dmiss)
       Dtol = DCLOSE * DL
-      dismin = 1d99
+      dismin = 1.0e99_dp
 
 !  loop over the segments of the land boundary
       jacross = 0
@@ -99,20 +99,20 @@ contains
          x4 = xlan(j + 1)
          y4 = ylan(j + 1)
          Dm = dbdistance(x3, y3, x4, y4, jsferic, jasfer3D, dmiss)
-         if (x3 /= dmiss .and. x4 /= dmiss .and. Dm > 0d0) then
-            rL1 = 0d0
-            rL2 = 1d0
+         if (x3 /= dmiss .and. x4 /= dmiss .and. Dm > 0.0_dp) then
+            rL1 = 0.0_dp
+            rL2 = 1.0_dp
             call dlinedis3(x1, y1, x3, y3, x4, y4, ja, dis, xn, yn, rL1)
             if (dis <= dtol) then
                jacross = 1
                jland = j
-               if (rL1 >= 0d0 .and. rL1 <= 1d0) jastop = 1
+               if (rL1 >= 0.0_dp .and. rL1 <= 1.0_dp) jastop = 1
             else
                call dlinedis3(x2, y2, x3, y3, x4, y4, ja, dis, xn, yn, rL2)
                if (dis <= dtol) then
                   jacross = 1
                   jland = j
-                  if (rL2 >= 0d0 .and. rL2 <= 1d0) jastop = 1
+                  if (rL2 >= 0.0_dp .and. rL2 <= 1.0_dp) jastop = 1
                end if
             end if
 
@@ -143,17 +143,17 @@ contains
          sm = min(rL1, rL2)
          if (j < jleft) then
             jleft = j
-            rLleft = min(max(sm, 0d0), 1d0)
+            rLleft = min(max(sm, 0.0_dp), 1.0_dp)
          else if (j == jleft) then
-            rLleft = min(max(sm, 0d0), rLleft)
+            rLleft = min(max(sm, 0.0_dp), rLleft)
          end if
 !     maximum
          sm = max(rL1, rL2)
          if (j > jright) then
             jright = j
-            rLright = min(max(sm, 0d0), 1d0)
+            rLright = min(max(sm, 0.0_dp), 1.0_dp)
          else if (j == jright) then
-            rLright = max(min(sm, 1d0), rLright)
+            rLright = max(min(sm, 1.0_dp), rLright)
          end if
 
       end if

@@ -32,6 +32,7 @@
 
 module m_loadbitmap
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -93,7 +94,7 @@ contains
                YP(4) = YP(3)
             else if (NUM == 3) then
                read (REC, *, ERR=777) XP(1), YP(1), XP(3)
-               YP(3) = YP(1) + (XP(3) - XP(1)) * dble(NXP) / dble(MXP)
+               YP(3) = YP(1) + (XP(3) - XP(1)) * real(NXP, kind=dp) / real(MXP, kind=dp)
                XP(2) = XP(3)
                YP(2) = YP(1)
                XP(4) = XP(1)
@@ -128,14 +129,14 @@ contains
          NDRAW(26) = 1
       end if
 
-      if (XB(1) == 0) XB(1) = -0.5d0
-      if (YB(1) == 0) YB(1) = -0.5d0
-      if (XB(2) == 0) XB(2) = MXP + 0.5d0
-      if (YB(2) == 0) YB(2) = -0.5d0
-      if (XB(3) == 0) XB(3) = MXP + 0.5d0
-      if (YB(3) == 0) YB(3) = NXP + 0.5d0
-      if (XB(4) == 0) XB(4) = -0.5d0
-      if (YB(4) == 0) YB(4) = NXP + 0.5d0
+      if (XB(1) == 0) XB(1) = -0.5_dp
+      if (YB(1) == 0) YB(1) = -0.5_dp
+      if (XB(2) == 0) XB(2) = MXP + 0.5_dp
+      if (YB(2) == 0) YB(2) = -0.5_dp
+      if (XB(3) == 0) XB(3) = MXP + 0.5_dp
+      if (YB(3) == 0) YB(3) = NXP + 0.5_dp
+      if (XB(4) == 0) XB(4) = -0.5_dp
+      if (YB(4) == 0) YB(4) = NXP + 0.5_dp
 
       return
 

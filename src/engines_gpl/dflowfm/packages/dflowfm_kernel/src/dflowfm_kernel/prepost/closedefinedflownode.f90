@@ -54,12 +54,13 @@ contains
       integer :: n
 
       N1 = 0
-      DISMIN = 9d33
+      DISMIN = 9.0e33_dp
       do n = 1, ndxi
          if (laydefnr(n) > 0) then
             dis = dbdistance(XP1, YP1, XZ(n), YZ(n), jsferic, jasfer3D, dmiss)
             if (dis < dismin) then
-               n1 = n; dismin = dis
+               n1 = n
+               dismin = dis
             end if
          end if
       end do

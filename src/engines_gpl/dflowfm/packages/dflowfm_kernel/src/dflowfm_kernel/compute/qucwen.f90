@@ -61,7 +61,7 @@ contains
       real(kind=dp) cs, sn, ucin, ucinx, uciny
       integer :: nn12
 
-      QucWen = 0d0
+      QucWen = 0.0_dp
       cs = csu(L)
       sn = snu(L)
 
@@ -70,12 +70,13 @@ contains
          LLL = nd(k12)%ln(LL)
          LLLL = abs(LLL)
 
-         if (qa(LLLL) == 0d0 .or. L == LLLL) then ! skip, this is link L itself
+         if (qa(LLLL) == 0.0_dp .or. L == LLLL) then ! skip, this is link L itself
 
          else
 
 !       ucin = ucxu(LLLL)*cs + ucyu(LLLL)*sn - u1(L)
-            nn12 = 1; if (LLL > 0) nn12 = 2
+            nn12 = 1
+            if (LLL > 0) nn12 = 2
             ucinx = lin2nodx(LLLL, nn12, ucxu(LLLL), ucyu(LLLL))
             uciny = lin2nody(LLLL, nn12, ucxu(LLLL), ucyu(LLLL))
             ucin = nod2linx(L, n12, ucinx, uciny) * cs + nod2liny(L, n12, ucinx, uciny) * sn - u1(L)

@@ -87,14 +87,14 @@ contains
          nf = nf + 1
          xf(nf) = xc(1, 1)
          yf(nf) = yc(1, 1)
-         idxf(:, nf) = (/1, 1/)
+         idxf(:, nf) = [1, 1]
       else
          nf = nf + 1
          j1 = jhfrontedge(iL)
          j2 = jhfrontedge(i)
          xf(nf) = xc(i, j2)
          yf(nf) = yc(i, j2)
-         idxf(:, nf) = (/i, j2/)
+         idxf(:, nf) = [i, j2]
       end if
 
       do i = 1, mc - 1
@@ -106,7 +106,7 @@ contains
                nf = nf + 1
                xf(nf) = xc(i, 1)
                yf(nf) = yc(i, 1)
-               idxf(:, nf) = (/i, 1/)
+               idxf(:, nf) = [i, 1]
             end if
 
 !        add j-edges from j1 to j2
@@ -114,32 +114,32 @@ contains
                nf = nf + 1
                xf(nf) = xc(i, j)
                yf(nf) = yc(i, j)
-               idxf(:, nf) = (/i, j/)
+               idxf(:, nf) = [i, j]
             end do
             do j = j1 - 1, j2, -1
                nf = nf + 1
                xf(nf) = xc(i, j)
                yf(nf) = yc(i, j)
-               idxf(:, nf) = (/i, j/)
+               idxf(:, nf) = [i, j]
             end do
 
 !        add i-edge from i to i+1
             nf = nf + 1
             xf(nf) = xc(i + 1, j2)
             yf(nf) = yc(i + 1, j2)
-            idxf(:, nf) = (/i + 1, j2/)
+            idxf(:, nf) = [i + 1, j2]
          else
             if (j1 > 0) then
                do j = j1 - 1, 1, -1
                   nf = nf + 1
                   xf(nf) = xc(i, j)
                   yf(nf) = yc(i, j)
-                  idxf(:, nf) = (/i, j/)
+                  idxf(:, nf) = [i, j]
                end do
                nf = nf + 1
                xf(nf) = DMISS
                yf(nf) = DMISS
-               idxf(:, nf) = (/i, 0/)
+               idxf(:, nf) = [i, 0]
             end if
          end if
 
@@ -155,7 +155,7 @@ contains
             nf = nf + 1
             xf(nf) = xc(i, j)
             yf(nf) = yc(i, j)
-            idxf(:, nf) = (/i, j/)
+            idxf(:, nf) = [i, j]
          end do
       end if
 

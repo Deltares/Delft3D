@@ -68,7 +68,7 @@ contains
       jaNCLAN = nNCLAN >= NSH
       jaZSH = nZSH >= NSH
 
-      call READYY('Writing Polygon / Land Boundary FILE', 0d0)
+      call READYY('Writing Polygon / Land Boundary FILE', 0.0_dp)
 
       MBNA = 0
       if (MBNA > 0) call newfil(mbna, 'bna.bna')
@@ -101,7 +101,7 @@ contains
       ! Start writing the set of polyline(s).
       KMOD = max(1, NSH / 100)
 
-      write (cdigits, '(i1)') int(floor(log10(dble(npli)) + 1)) ! nr of digits in npli
+      write (cdigits, '(i1)') int(floor(log10(real(npli, kind=dp)) + 1)) ! nr of digits in npli
 
       if (jaNCLAN .or. jaZSH) then
          ncol = 3
@@ -170,13 +170,13 @@ contains
             end if
 
             if (mod(I, KMOD) == 0) then
-               call READYY(' ', min(1d0, dble(I) / max(1, NSH)))
+               call READYY(' ', min(1.0_dp, real(I, kind=dp) / max(1, NSH)))
             end if
          end do ! pts of one polyline
       end do ! all polylines
 
       deallocate (istart, iend)
-11    call READYY(' ', -1d0)
+11    call READYY(' ', -1.0_dp)
       call doclose(MPOL)
 
       if (MBNA > 0) call doclose(MBNA)

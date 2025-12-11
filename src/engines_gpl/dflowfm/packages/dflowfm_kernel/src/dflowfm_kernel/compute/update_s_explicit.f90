@@ -53,7 +53,7 @@ contains
       integer :: k
       integer :: ierror
 
-      real(kind=dp), parameter :: dtol = 1d-16
+      real(kind=dp), parameter :: dtol = 1.0e-16_dp
 
 !!   check if upwinddirection has changed
 !    numchanged = 0

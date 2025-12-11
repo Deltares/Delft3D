@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1.4
+# syntax=containers.deltares.nl/docker-proxy/docker/dockerfile:1.4
 
 ARG INTEL_ONEAPI_VERSION=2024
 ARG BUILDTOOLS_IMAGE_URL=containers.deltares.nl/delft3d-dev/delft3d-buildtools

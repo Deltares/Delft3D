@@ -44,16 +44,16 @@ contains
 
       allocate (U(N))
 
-      Y2(1) = 0.d0
-      U(1) = 0.d0
+      Y2(1) = 0.0_dp
+      U(1) = 0.0_dp
 
       do I = 2, N - 1
-         P = 0.5d0 * Y2(I - 1) + 2d0
-         Y2(I) = -0.5d0 / P
-         U(I) = (6d0 * ((Y(I + 1) - Y(I)) - (Y(I) - Y(I - 1))) / 2d0 - 0.5d0 * U(I - 1)) / P
+         P = 0.5_dp * Y2(I - 1) + 2.0_dp
+         Y2(I) = -0.5_dp / P
+         U(I) = (6.0_dp * ((Y(I + 1) - Y(I)) - (Y(I) - Y(I - 1))) / 2.0_dp - 0.5_dp * U(I - 1)) / P
       end do
 
-      Y2(N) = 0.d0
+      Y2(N) = 0.0_dp
 
       do K = N - 1, 1, -1
          Y2(K) = Y2(K) * Y2(K + 1) + U(K)

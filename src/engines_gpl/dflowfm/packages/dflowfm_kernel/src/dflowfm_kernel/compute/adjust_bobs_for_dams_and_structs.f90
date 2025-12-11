@@ -91,7 +91,7 @@ contains
             k2 = ln(2, L)
          end do
          zcdamn = get_crest_level(pstru)
-         if (zcdamn == huge(1d0)) then
+         if (zcdamn == huge(1.0_dp)) then
             ! Do not shut off structures that have no relevant crest (e.g. pumps)
             cycle
          end if
@@ -131,20 +131,20 @@ contains
       ! correct BOBS for compound structures
       do icompound = 1, network%cmps%Count
          pcompound => network%cmps%compound(icompound)
-         minzcdamn = huge(1d0)
+         minzcdamn = huge(1.0_dp)
          do i = 1, pcompound%numstructs
             istru = pcompound%structure_indices(i)
             pstru => network%sts%struct(istru)
             zcdamn = get_crest_level(pstru)
-            if (zcdamn == huge(1d0)) then
+            if (zcdamn == huge(1.0_dp)) then
                ! Obviously this is a pump. So do not adust the bob
-               minzcdamn = huge(1d0)
+               minzcdamn = huge(1.0_dp)
                exit
             end if
 
             minzcdamn = min(minzcdamn, zcdamn)
          end do
-         if (minzcdamn < huge(1d0)) then
+         if (minzcdamn < huge(1.0_dp)) then
             do L0 = 1, pcompound%numlinks
                L = abs(pcompound%linknumbers(L0))
                k1 = ln(1, L)

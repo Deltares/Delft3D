@@ -81,7 +81,8 @@ contains
          numadd = 0
          do i = 1, num
             Lprev = L
-            ip1 = i + 1; if (ip1 > num) ip1 = ip1 - num
+            ip1 = i + 1
+            if (ip1 > num) ip1 = ip1 - num
             L = isleft(pli(ipol)%x(ip1), pli(ipol)%y(ip1))
             if (L .and. Lprev) then
 !            segment is internal
@@ -146,7 +147,7 @@ contains
          isleft = .false.
 
          if (x /= DMISS .and. y /= DMISS) then
-            if ((x - xa) * sx + (y - ya) * sy >= 0d0) then
+            if ((x - xa) * sx + (y - ya) * sy >= 0.0_dp) then
                isleft = .true.
             end if
          end if

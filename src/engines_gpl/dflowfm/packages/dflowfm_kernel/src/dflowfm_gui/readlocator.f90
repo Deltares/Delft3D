@@ -46,7 +46,7 @@ contains
       use m_givekey
 
       real(kind=dp) :: dpx
-      real(kind=dp), save :: f = 1d0
+      real(kind=dp), save :: f = 1.0_dp
       integer :: ini, key, ixp, iyp
       integer, save :: keyold = 0
       real :: xloc, yloc
@@ -82,8 +82,8 @@ contains
             F = 1
          end if
          KEYOLD = KEY
-         F = F * 1.08d0
-         F = min(F, 10d0)
+         F = F * 1.08_dp
+         F = min(F, 10.0_dp)
          if (KEY == 128) then
             YLC = YLC + DPX * F
          else if (KEY == 129) then
@@ -107,8 +107,8 @@ contains
 !     muisbeweging
       Xloc = InfoGraphics(5)
       Yloc = InfoGraphics(6)
-      X = dble(xloc)
-      y = dble(yloc)
+      X = real(xloc, kind=dp)
+      y = real(yloc, kind=dp)
 
       call IGRUNITSTOPIXELS(Xloc, Yloc, IXP, IYP)
       call dPROJECT(X, Y, XLC, YLC, 2)

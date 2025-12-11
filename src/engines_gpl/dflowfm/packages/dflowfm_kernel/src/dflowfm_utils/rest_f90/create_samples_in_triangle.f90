@@ -107,9 +107,9 @@ contains
 
       Msize = max(M, N)
       allocate (xx(Msize, 3))
-      xx = 0d0
+      xx = 0.0_dp
       allocate (yy(Msize, 3))
-      yy = 0d0
+      yy = 0.0_dp
       do i = 1, M
          xx(i, 1) = xpl(n1 + i - 1) - xpl(n1)
          yy(i, 1) = ypl(n1 + i - 1) - ypl(n1)
@@ -133,20 +133,20 @@ contains
 
       do i = 2, M - 1
 
-         xi = dble(i - 1) / dble(M - 1)
+         xi = real(i - 1, kind=dp) / real(M - 1, kind=dp)
          Nxi = floor(xi * (N - 1) + 1)
 
          dfacL = dbdistance(xpl(n1), ypl(n1), xpl(n1) + xx(i, 1), ypl(n1) + yy(i, 1), jsferic, jasfer3D, dmiss) / RL
          dfacR = dbdistance(xpl(n1), ypl(n1), xpl(n1) + xx(i, 3), ypl(n1) + yy(i, 3), jsferic, jasfer3D, dmiss) / RR
 
          do j = 2, Nxi - 1
-            eta = dble(j - 1) / dble(Nxi - 1)
+            eta = real(j - 1, kind=dp) / real(Nxi - 1, kind=dp)
 
             jL = 1 + floor(eta * (N - 1))
             if (jL >= N) jL = N - 1
             jR = jL + 1
 
-            dfac = 1d0 + eta * (N - 1) - jL
+            dfac = 1.0_dp + eta * (N - 1) - jL
 
             Ns = Ns + 1
 !         xs(Ns) = (1d0-xi)*xpl(n1) + xi*( (1-eta)*xpl(n2) + eta*xpl(n3) )
@@ -180,7 +180,7 @@ contains
       end do
 
       do i = 1, Ns
-         zs = 0d0
+         zs = 0.0_dp
       end do
 
 1234  continue

@@ -868,7 +868,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
              gsqsmin    = gsqs(nm)
              totfixfrac = 0.0_fp
              !
-             from_ndm = kfsed(ndm)==0 .and. kcs(ndm) /= 0 .and. kcs(ndm)<3 .and. kcv(ndm)==1 .and. dps(ndm)<dps(nm)
+             from_ndm = kfsed(ndm)==0 .and. kcs(ndm) /= 0 .and. kcs(ndm)<3 .and. abs(kcv(ndm))==1 .and. dps(ndm)<dps(nm)
              if (from_ndm) then
                 gsqsmin = min(gsqsmin,gsqs(ndm))
                 do l = 1, lsedtot
@@ -876,7 +876,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 enddo
              endif
              !
-             from_nmd = kfsed(nmd)==0 .and. kcs(nmd) /= 0 .and. kcs(nmd)<3 .and. kcu(nmd)==1 .and. dps(nmd)<dps(nm)
+             from_nmd = kfsed(nmd)==0 .and. kcs(nmd) /= 0 .and. kcs(nmd)<3 .and. abs(kcu(nmd))==1 .and. dps(nmd)<dps(nm)
              if (from_nmd) then
                 gsqsmin = min(gsqsmin,gsqs(nmd))
                 do l = 1, lsedtot
@@ -884,7 +884,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 enddo
              endif
              !
-             from_nmu = kfsed(nmu)==0 .and. kcs(nmu) /= 0 .and. kcs(nmu)<3 .and. kcu(nm)==1 .and. dps(nmu)<dps(nm)
+             from_nmu = kfsed(nmu)==0 .and. kcs(nmu) /= 0 .and. kcs(nmu)<3 .and. abs(kcu(nm))==1 .and. dps(nmu)<dps(nm)
              if (from_nmu) then
                 gsqsmin = min(gsqsmin,gsqs(nmu))
                 do l = 1, lsedtot
@@ -892,7 +892,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 enddo
              endif
              !
-             from_num = kfsed(num)==0 .and. kcs(num) /= 0 .and. kcs(num)<3 .and. kcv(nm)==1 .and. dps(num)<dps(nm)
+             from_num = kfsed(num)==0 .and. kcs(num) /= 0 .and. kcs(num)<3 .and. abs(kcv(nm))==1 .and. dps(num)<dps(nm)
              if (from_num) then
                 gsqsmin = min(gsqsmin,gsqs(num))
                 do l = 1, lsedtot

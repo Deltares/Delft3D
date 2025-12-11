@@ -24,24 +24,24 @@ module m_date_time_utils_external
 
     implicit none
     private
-    public write_date_time
+    public fill_in_date_time
 
 contains
 
     !> Current date and time containing a combination of DATE and TIME format: 'yyyy/mm/dd hh:mm:ss '
     !!
-    subroutine write_date_time(file_id)
-        
+    subroutine fill_in_date_time(string)
 
-        character(len = 20) :: file_id
-        character(len = 8) :: date
+
+        character(len = 20) :: string
+        character(len = 8)  :: date
         character(len = 10) :: time
-        character(len = 5) :: zone
-        integer :: values(8)
+        character(len = 5)  :: zone
+        integer             :: values(8)
 
         call date_and_time(date, time, zone, values)
-        write (file_id, 1000) values(1), values(2), values(3), values(5), values(6), values(7)
+        write (string, 1000) values(1), values(2), values(3), values(5), values(6), values(7)
         1000 format (i4.4, '/', i2.2, '/', i2.2, ' ', i2.2, ':', i2.2, ':', i2.2)
 
-    end subroutine write_date_time
+    end subroutine fill_in_date_time
 end module m_date_time_utils_external

@@ -77,7 +77,7 @@ contains
       integer :: i, j, i1, j1, i2, j2, iL, iR, nummax, idum, imin, imax
       integer :: iLL, iRR, jsferic_old
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 !   real(kind=dp), parameter                        :: dtolLR= 1d-2
 
 !  work in model-coordinates
@@ -92,8 +92,8 @@ contains
       do i = 1, mc - 1
          if (xc(i) == DMISS .or. xc(i + 1) == DMISS) cycle
 
-         x1 = (/xc(i), yc(i)/)
-         x2 = (/xc(i + 1), yc(i + 1)/)
+         x1 = [xc(i), yc(i)]
+         x2 = [xc(i + 1), yc(i + 1)]
          v1 = vel(:, i)
          v2 = vel(:, i + 1)
 
@@ -107,8 +107,8 @@ contains
          call get_LR(mc, xc, yc, iL, iLL, j)
          call get_LR(mc, xc, yc, iR, j, iRR)
 
-         xL = (/xc(iL), yc(iL)/)
-         xR = (/xc(iR), yc(iR)/)
+         xL = [xc(iL), yc(iL)]
+         xR = [xc(iR), yc(iR)]
 
 !     find proximity [imin,imax] on gridline
          idum = iL
@@ -129,8 +129,8 @@ contains
             if (xc1(j) == DMISS .or. xc1(j + 1) == DMISS) cycle
 !         if ( i.eq.j ) cycle
 
-            x3 = (/xc1(j), yc1(j)/)
-            x4 = (/xc1(j + 1), yc1(j + 1)/)
+            x3 = [xc1(j), yc1(j)]
+            x4 = [xc1(j + 1), yc1(j + 1)]
             v3 = vel1(:, j)
             v4 = vel1(:, j + 1)
 
@@ -156,14 +156,14 @@ contains
 !         dclearance = 0.5d0*max(dL1,dL2)
 
 !        26-06-12: set clearence to 0 in all cases
-            dclearance = 0d0
+            dclearance = 0.0_dp
 
             i1 = idx1(1, j)
             i2 = idx1(1, j + 1)
             j1 = idx1(2, j)
             j2 = idx1(2, j + 1)
             if ((i1 >= imin .and. i1 <= imax) .or. (i2 >= imin .and. i2 <= imax)) then
-               dclearance = 0d0 ! in proximity on same gridline
+               dclearance = 0.0_dp ! in proximity on same gridline
             end if
 
 !        do not include directly neighboring edges
@@ -180,14 +180,14 @@ contains
             end if
 
 !        get a lower bound for the cross time
-            hlow2 = 0.25d0 * max((minval((/d1, d2, d3, d4/)))**2 - (0.5d0 * max(dL1, dL2))**2, 0d0)
+            hlow2 = 0.25_dp * max((minval([d1, d2, d3, d4]))**2 - (0.5_dp * max(dL1, dL2))**2, 0.0_dp)
 
 !        check if the lower bounds is larger than the minimum found so far
             vv1 = sqrt(dot_product(v3 - v1, v3 - v1))
             vv2 = sqrt(dot_product(v3 - v2, v3 - v2))
             vv3 = sqrt(dot_product(v4 - v1, v4 - v1))
             vv4 = sqrt(dot_product(v4 - v2, v4 - v2))
-            maxvv = maxval((/vv1, vv2, vv3, vv4/))
+            maxvv = maxval([vv1, vv2, vv3, vv4])
 
             if (sqrt(hlow2) - dclearance > maxvv * min(tmax(i), tmax(i + 1))) then
                cycle ! no need to proceed
@@ -203,14 +203,14 @@ contains
             t3 = comp_cross_time_2(x3, x1, x2, v3, v1, v2, dclearance)
             t4 = comp_cross_time_2(x4, x1, x2, v4, v1, v2, dclearance)
 
-            tmax1234 = minval((/t1, t2, t3, t4/))
+            tmax1234 = minval([t1, t2, t3, t4])
 
             if (t1 == tmax1234) then
                tmax(i) = min(tmax(i), tmax1234)
 !            tmax1(j)   = min( tmax1(j),   tmax1234 )
 !            tmax1(j+1) = min( tmax1(j+1), tmax1234 )
             else if (t2 == tmax1234) then
-               if (tmax1234 < 1d6 .and. i == 2) then
+               if (tmax1234 < 1.0e6_dp .and. i == 2) then
                   continue
                end if
                tmax(i + 1) = min(tmax(i + 1), tmax1234)
@@ -221,7 +221,7 @@ contains
                tmax(i + 1) = min(tmax(i + 1), tmax1234)
             end if
 
-            if (tmax1234 == 0d0) exit
+            if (tmax1234 == 0.0_dp) exit
 
          end do
       end do

@@ -71,13 +71,14 @@ contains
             if (kc(k1) * kc(k2) == 0) cycle
          end if
 
-         if (jaall == 1 .and. wetplot > 0d0) then
+         if (jaall == 1 .and. wetplot > 0.0_dp) then
             if (hu(L) < wetplot) then !  hs(k1) < wetplot .or. hs(k2) < wetplot) then
                cycle
             end if
          end if
 
-         zz1 = dmiss; zz2 = dmiss
+         zz1 = dmiss
+         zz2 = dmiss
          if (ityp == 1) then
             zz1 = s1(k1)
             zz2 = s1(k2)
@@ -95,7 +96,8 @@ contains
             zz2 = sgrw1(k2)
          else if (ityp == 6) then
             if (L <= lnx1D) then
-               zz1 = dmiss; zz2 = dmiss
+               zz1 = dmiss
+               zz2 = dmiss
                if (prof1D(3, L) < 0) then
                   if (s1m(k1) > bl(k1) + prof1D(2, L) .or. s1m(k2) > bl(k2) + prof1D(2, L)) then
                      zz1 = s1m(k1)
@@ -126,14 +128,14 @@ contains
          end if
 
          if (jsferic == 1) then ! jglobe
-            if (abs(xz(k1) - xz(k2)) > 10d0) cycle
+            if (abs(xz(k1) - xz(k2)) > 10.0_dp) cycle
          end if
 
          xz1 = xz(k1)
          xz2 = xz(k2)
 
-         if (abs(zz1) < 1d-6) zz1 = 0d0 ! heh heh, eindelijk. -> #@!
-         if (abs(zz2) < 1d-6) zz2 = 0d0
+         if (abs(zz1) < 1.0e-6_dp) zz1 = 0.0_dp ! heh heh, eindelijk. -> #@!
+         if (abs(zz2) < 1.0e-6_dp) zz2 = 0.0_dp
 
          call movabs(xz1, zz1)
          call lnabs(xz2, zz2)

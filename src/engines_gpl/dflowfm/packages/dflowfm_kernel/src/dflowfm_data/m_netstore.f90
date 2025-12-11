@@ -128,8 +128,8 @@ contains
          !     maxlinks check
          if (size(iL_st) < maxlinks) then
             call realloc(lnn_st, maxlinks)
-            call realloc(lne_st, (/2, maxlinks/))
-            call realloc(kn_st, (/3, maxlinks/))
+            call realloc(lne_st, [2, maxlinks])
+            call realloc(kn_st, [3, maxlinks])
             call realloc(iL_st, maxlinks)
          end if
 

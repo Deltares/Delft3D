@@ -48,7 +48,7 @@ contains
       real(kind=dp) :: sln1, sln2, sln3
       integer :: i, ip, k1, k2, kdum
 
-      integer, dimension(3) :: icolor = (/31, 221, 31/)
+      integer, dimension(3) :: icolor = [31, 221, 31]
 
       i = 0
       do ip = 0, 3, 3
@@ -61,15 +61,15 @@ contains
          if (k1 /= 0) then
             kdum = abs(k1)
             call cirr(xz(kdum), yz(kdum), icolor(i))
-            call dHTEXT(sln1, xz(kdum), yz(kdum), 0d0)
+            call dHTEXT(sln1, xz(kdum), yz(kdum), 0.0_dp)
          else
             call cirr(xu(L), yu(L), icolor(3))
          end if
          if (k1 > 0) then
             if (k2 > 0) then
                call cirr(xz(k2), yz(k2), icolor(i))
-               call dHTEXT(sln2, xz(k2), yz(k2), 0d0)
-               call dHTEXT(sln3, xu(L), yu(L), 0d0)
+               call dHTEXT(sln2, xz(k2), yz(k2), 0.0_dp)
+               call dHTEXT(sln3, xu(L), yu(L), 0.0_dp)
             end if
          end if
       end do

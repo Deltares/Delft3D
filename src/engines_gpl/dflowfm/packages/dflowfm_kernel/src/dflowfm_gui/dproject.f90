@@ -42,7 +42,7 @@ contains
       real(kind=dp) :: x8, y8, xx4, yy4
       integer :: mode
       real(kind=dp) :: X, Y, XX, YY, SX, CX, SY, CY, SY0, CY0, RR, C, SC, CC, RN
-      real(kind=dp), save :: EPS = 1.d-20
+      real(kind=dp), save :: EPS = 1.0e-20_dp
       X = X8
       Y = Y8
       if (JSFERTEK == 0) then ! Just Transfer
@@ -56,11 +56,11 @@ contains
             CX = cos(DG2RD * (X - X0))
             SY = sin(DG2RD * (Y))
             CY = cos(DG2RD * (Y))
-            RN = 1.d0 + SY0 * SY + CY0 * CY * CX
+            RN = 1.0_dp + SY0 * SY + CY0 * CY * CX
             if (abs(RN) < EPS) then
-               RN = sign(1.d0, RN) * EPS
+               RN = sign(1.0_dp, RN) * EPS
             end if
-            RR = FAC * 2.d0 * RD2DG / RN ! FAC om naar X1,Y1,X2,Y2 te schalen
+            RR = FAC * 2.0_dp * RD2DG / RN ! FAC om naar X1,Y1,X2,Y2 te schalen
             XX = RR * CY * SX ! Stereographic to Degrees
             YY = RR * (CY0 * SY - SY0 * CY * CX)
          else if (MODE == 2) then ! X,Y to LON,LAT
@@ -72,7 +72,7 @@ contains
                CX = cos(DG2RD * (XX - X0))
                SY = sin(DG2RD * (YY))
                CY = cos(DG2RD * (YY))
-               C = 2.d0 * atan2(RR, 2.d0 * RD2DG)
+               C = 2.0_dp * atan2(RR, 2.0_dp * RD2DG)
                SC = sin(C)
                CC = cos(C)
                XX = X0 * DG2RD + atan2(XX * SC, RR * CY0 * CC - YY * SY0 * SC)
@@ -88,10 +88,10 @@ contains
 
       else if (JSFERTEK == 2) then ! MERCATOR
          if (MODE == 1) then
-            if (Y >= 89d0) Y = 89.d0
-            if (Y <= -89d0) Y = -89.d0
+            if (Y >= 89.0_dp) Y = 89.0_dp
+            if (Y <= -89.0_dp) Y = -89.0_dp
             YY = DG2RD * Y
-            YY = log(1d0 + sin(YY)) / cos(YY)
+            YY = log(1.0_dp + sin(YY)) / cos(YY)
             XX = DG2RD * X
          else if (MODE == 2) then
             YY = atan(sinh(Y))

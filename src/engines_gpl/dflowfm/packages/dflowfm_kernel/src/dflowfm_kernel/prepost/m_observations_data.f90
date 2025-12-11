@@ -129,7 +129,7 @@ module m_observations_data
    integer :: IVAL_QFRE
    integer :: IVAL_QFRC
    integer :: IVAL_QTOT
-   
+
    integer :: IVAL_ICE_S1
    integer :: IVAL_ICE_ZMIN
    integer :: IVAL_ICE_ZMAX
@@ -139,7 +139,7 @@ module m_observations_data
    integer :: IVAL_ICE_TEMPERATURE
    integer :: IVAL_SNOW_THICKNESS
    integer :: IVAL_SNOW_TEMPERATURE
-   
+
    integer :: IVAL_RHOP
    integer :: IVAL_RHO
    integer :: IVAL_SBCX1
@@ -247,7 +247,7 @@ module m_observations_data
    integer :: IPNT_QFRE
    integer :: IPNT_QFRC
    integer :: IPNT_QTOT
-   
+
    integer :: IPNT_ICE_S1
    integer :: IPNT_ICE_ZMIN
    integer :: IPNT_ICE_ZMAX
@@ -257,7 +257,7 @@ module m_observations_data
    integer :: IPNT_ICE_TEMPERATURE
    integer :: IPNT_SNOW_THICKNESS
    integer :: IPNT_SNOW_TEMPERATURE
-   
+
    integer :: IPNT_NUM
    integer :: IPNT_RHOP
    integer :: IPNT_RHO

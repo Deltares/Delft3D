@@ -73,7 +73,7 @@ contains
             write (msgbuf, '(5a)') 'Field ''', trim(key), ''' is missing in ''', trim(typeandid), '''.'
             call msg_flush()
          end if
-          
+
          goto 888
       else
          ! strvalue is now filled. Check that it does not start with a /

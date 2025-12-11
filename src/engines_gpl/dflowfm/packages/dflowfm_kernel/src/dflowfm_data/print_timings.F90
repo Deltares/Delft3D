@@ -61,7 +61,7 @@ contains
       integer :: MFILE
 
       integer, parameter :: Ntvarlist = 13
-      integer, dimension(Ntvarlist), parameter :: itvarlist = (/1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17/)
+      integer, dimension(Ntvarlist), parameter :: itvarlist = [1, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
 
       real(kind=dp), dimension(:, :), allocatable :: t_max, t_ave, tcpu_max, tcpu_ave
       integer :: itsol_max
@@ -76,10 +76,10 @@ contains
 #ifdef HAVE_MPI
          call mpi_reduce(t, t_max, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
          call mpi_reduce(t, t_ave, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_SUM, 0, DFM_COMM_DFMWORLD, ierr)
-         t_ave = t_ave / dble(ndomains)
+         t_ave = t_ave / real(ndomains, kind=dp)
          call mpi_reduce(tcpu, tcpu_max, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_MAX, 0, DFM_COMM_DFMWORLD, ierr)
          call mpi_reduce(tcpu, tcpu_ave, 3 * NUMT, MPI_DOUBLE_PRECISION, MPI_SUM, 0, DFM_COMM_DFMWORLD, ierr)
-         tcpu_ave = tcpu_ave / dble(ndomains)
+         tcpu_ave = tcpu_ave / real(ndomains, kind=dp)
 #endif
       else
          t_ave = t

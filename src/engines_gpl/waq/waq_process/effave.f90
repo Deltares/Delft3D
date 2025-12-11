@@ -47,17 +47,22 @@ contains
         !     ------   -----  ------------
 
         implicit none
+
+        integer, parameter :: max_number_algae = 30
+        integer, parameter :: number_pointers  = 2 + 3 * max_number_algae
+
         real(kind = real_wp) :: process_space_real  (*), fl    (*)
-        integer(kind = int_wp) :: ipoint(92), increm(92), num_cells, noflux, &
+        integer(kind = int_wp) :: ipoint(number_pointers), increm(number_pointers), num_cells, noflux, &
                 iexpnt(4, *), iknmrk(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
 
-        integer(kind = int_wp) :: ip(92)
-        real(kind = real_wp) :: delt, efftalg, limralg, rstep
+        integer(kind = int_wp) :: ip(number_pointers)
+        real(kind = real_wp) :: delt, efftalg, limralg, bloom_step
         integer(kind = int_wp) :: navera
         integer(kind = int_wp) :: iseg, iflux, igro
         integer(kind = int_wp) :: nspe       ! number of bloom algae species
 
-        integer(kind = int_wp), save :: istep = 0
+        real(kind = real_wp), save :: elapsed_time = 0.0_real_wp
+        logical                    :: reset
 
         !     this is in a module/include, so we might put a flag if it was read of not.
         !     this should be a 'proto-proces', and thus needs to be added to the BLOOM.SPE
@@ -66,8 +71,13 @@ contains
         call get_nspe(nspe)
 
         delt = process_space_real(ipoint(1))
-        navera = nint(process_space_real(ipoint(2)))
-        rstep = real (istep, 4)
+        bloom_step = process_space_real(ipoint(2))
+        elapsed_time = elapsed_time + delt
+
+        if ( abs(elapsed_time - bloom_step) <= 0.5 * delt ) then
+            reset        = .true.
+            elapsed_time = delt
+        endif
 
         !     Loop over segments
 
@@ -78,26 +88,24 @@ contains
 
             do igro = 1, nspe
                 efftalg = process_space_real(ip(2 + igro))
-                limralg = process_space_real(ip(32 + igro))
-                if (istep == 0) then
+                limralg = process_space_real(ip(2 + max_number_algae + igro))
+                if (reset) then
                     ! Store result over past period
-                    process_space_real(ip(62 + igro)) = efftalg
-                    ! Reset integration variable to zero and add contribution of present time step to tracer
-                    fl(iflux + igro) = (limralg - efftalg) / delt
-                else
-                    ! Add contribution of present time step to tracer
-                    fl(iflux + igro) = ((1.0 / (rstep + 1.0) * limralg) + (rstep / (rstep + 1.0) - 1.0) * efftalg) / delt
+                    process_space_real(ip(2 + 2 * max_number_algae + igro)) = efftalg
                 endif
+
+                ! Add contribution of present time step to tracer
+                fl(iflux + igro) = (limralg - efftalg) / elapsed_time
             end do
+
             ip = ip + increm
             iflux = iflux + noflux
         enddo
-        !     Add 1 to counter and check for period
-        istep = istep + 1
-        if (istep == navera) istep = istep - navera
-        !
-        return
-        !
+
+        !     Update the elapsed time - if necessary, reset
+        if ( abs(elapsed_time - bloom_step) <= 0.5 * delt ) then
+            elapsed_time = 0.0_real_wp
+        endif
     end
 
 end module m_effave

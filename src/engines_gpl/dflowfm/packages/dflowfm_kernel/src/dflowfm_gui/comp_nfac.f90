@@ -44,11 +44,11 @@ contains
       real(kind=dp), intent(in) :: h_h0 !< ratio of first grid layer height w.r.t. total grid height, i.e. h/h0
       real(kind=dp), intent(in) :: dgrow !< grow factor
 
-      if (abs(dgrow - 1d0) > 1d-8) then
+      if (abs(dgrow - 1.0_dp) > 1.0e-8_dp) then
 !      comp_nfac = floor(0.999d0+ log( (dgrow-1d0)*h_h0 + 1d0 ) / log(dgrow) )
-         comp_nfac = floor(log((dgrow - 1d0) * h_h0 + 1d0) / log(dgrow))
+         comp_nfac = floor(log((dgrow - 1.0_dp) * h_h0 + 1.0_dp) / log(dgrow))
       else
-         comp_nfac = floor(0.999d0 + h_h0)
+         comp_nfac = floor(0.999_dp + h_h0)
       end if
 
       return

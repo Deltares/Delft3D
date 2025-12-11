@@ -50,12 +50,12 @@ contains
 
       integer :: n
 
-      DDX = 0d0
-      DDX(1) = 1d0 * (DPL(2) - DPL(1))
-      DDX(NPL) = 1d0 * (DPL(NPL) - DPL(NPL - 1))
+      DDX = 0.0_dp
+      DDX(1) = 1.0_dp * (DPL(2) - DPL(1))
+      DDX(NPL) = 1.0_dp * (DPL(NPL) - DPL(NPL - 1))
 
       do N = 2, NPL - 1
-         DDX(N) = 0.5d0 * (DPL(N + 1) - DPL(N - 1))
+         DDX(N) = 0.5_dp * (DPL(N + 1) - DPL(N - 1))
       end do
 
    end subroutine averageDiff

@@ -78,7 +78,7 @@ contains
       nx = ns + ndx - 1
       call realloc(kcsfill, nx, fill=0)
       call realloc(ndqueue, nx, fill=0)
-      call realloc(s1queue, nx, fill=0d0)
+      call realloc(s1queue, nx, fill=0.0_dp)
 
       iqcur = 0 !< Index of current node in queue.
       iqtail = 0 !< Index of most recently added element in work queue.
@@ -137,7 +137,7 @@ contains
 
             if (kcsfill(k2) == 1) then
                !   Two flood areas meet: average waterlevel on their interface
-               s1(k2) = .5d0 * (s1(k2) + s1queue(iqcur))
+               s1(k2) = 0.5_dp * (s1(k2) + s1queue(iqcur))
             else if (kcsfill(k2) == 0) then
                !   Newly flooded point: set waterlevel and enqueue it for further flooding.
                s1(k2) = s1queue(iqcur)

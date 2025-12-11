@@ -56,11 +56,11 @@ contains
                         vol1, eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, &
                         potential_density, in_situ_density, rho, jacreep, lbot, ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
       use Timers, only: timstrt, timstop
-      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr
+      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, rhosed, rhobulkrhosed, grainlay, mxgr, stmpar
       use m_netw, only: zk
       use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra
       use m_flowparameters, only: jadiagnostictransport
-      use m_transport, only: numconst, constituents, isalt, itemp
+      use m_transport, only: numconst, constituents, isalt, itemp, ised1
       use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getlbotltop
@@ -69,7 +69,7 @@ contains
       integer :: L, k, k1, k2, kb, n
 
       real(kind=dp) :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
-      integer :: j, ki, jastep, cell_index_2d, cell_index_3d, kk
+      integer :: j, jj, ki, jastep, cell_index_2d, cell_index_3d, kk
       integer :: LL, Lb, Lt, kt, km
 
       real(kind=dp) :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
@@ -85,7 +85,8 @@ contains
          maxitverticalforestersal = 0
       end if
       if (jatem == 0) then
-         limtypTM = 0; maxitverticalforestertem = 0
+         limtypTM = 0
+         maxitverticalforestertem = 0
       end if
       if (jased == 0) then
          limtypsed = 0
@@ -104,7 +105,8 @@ contains
             call getLbotLtop(LL, Lb, Lt)
             kb = 0
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) >= 0 .or. keepstbndonoutflow == 1) then
                   kk = kmxd * (k - 1) + L - Lb + 1
                   constituents(isalt, kb) = zbnds(kk) ! inflow
@@ -131,7 +133,8 @@ contains
             call getLbotLtop(LL, Lb, Lt)
             kb = 0
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) >= 0 .or. keepstbndonoutflow == 1) then
                   kk = kmxd * (k - 1) + L - Lb + 1
                   constituents(itemp, kb) = zbndTM(kk) ! inflow
@@ -203,7 +206,8 @@ contains
          end do
          !$OMP END PARALLEL DO
 
-         saminbnd = 0.0_dp; samoutbnd = 0.0_dp
+         saminbnd = 0.0_dp
+         samoutbnd = 0.0_dp
 
          do LL = lnxi + 1, 0 !  lnx                                ! copy on outflow
             call getLbotLtop(LL, Lb, Lt)
@@ -211,7 +215,8 @@ contains
                cycle
             end if
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) > 0) then
                   saminbnd = saminbnd + q1(L) * constituents(isalt, kb) * dts ! mass in
                else
@@ -254,7 +259,8 @@ contains
       if (jarhoxu > 0 .and. jacreep == 1) then
          do LL = 1, lnx
             do L = Lbot(LL), Ltop(LL)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                rhou(L) = 0.5_dp * (rho(k1) + rho(k2))
             end do
          end do
@@ -392,7 +398,8 @@ contains
          end if
          do L = Lb, Lt
             if (q1(L) < 0) then
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (jasal > 0 .and. keepstbndonoutflow == 0) then
                   constituents(isalt, kb) = constituents(isalt, ki)
                end if
@@ -400,9 +407,16 @@ contains
                   constituents(itemp, kb) = constituents(itemp, ki)
                end if
                if (jased > 0) then
-                  do j = 1, mxgr
-                     sed(j, kb) = sed(j, ki)
-                  end do
+                  if (stm_included) then
+                     do j = 1, stmpar%lsedsus
+                        jj = ised1 + j - 1
+                        constituents(jj, kb) = constituents(jj, ki)
+                     end do
+                  else
+                     do j = 1, mxgr
+                        sed(j, kb) = sed(j, ki)
+                     end do
+                  end if
                end if
             end if
          end do

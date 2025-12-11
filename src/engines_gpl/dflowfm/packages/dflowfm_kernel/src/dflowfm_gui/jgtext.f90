@@ -59,10 +59,10 @@ contains
       call DRAWTEXT(real(X), real(Y), TEX)
       call GETPOS(XP, YP)
 
-      XA = XP + 0.3d0 * WIC
-      YA = YP - 0.8d0 * HIC + JAHOOG * HIC
-      XB = XA + 1.3d0 * WIC
-      YB = YA + 0.7d0 * HIC
+      XA = XP + 0.3_dp * WIC
+      YA = YP - 0.8_dp * HIC + JAHOOG * HIC
+      XB = XA + 1.3_dp * WIC
+      YB = YA + 0.7_dp * HIC
 
       if (NCOL /= 0) then
          call SETCOL(NCOL)

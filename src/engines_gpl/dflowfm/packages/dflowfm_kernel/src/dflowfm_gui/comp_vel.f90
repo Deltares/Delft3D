@@ -55,11 +55,11 @@ contains
       real(kind=dp), dimension(2) :: nL, nR, vL, vR
       real(kind=dp) :: cosphi, vR_vL, Rai
       integer :: i, iL, iR
-      real(kind=dp), parameter :: dtolcos = 1d-8 ! not the module variable
+      real(kind=dp), parameter :: dtolcos = 1.0e-8_dp ! not the module variable
 
       vel = DMISS
 
-      Rai = 1d0 / Ra
+      Rai = 1.0_dp / Ra
 
       do i = 1, mc
          if (xc(i) == DMISS .or. yc(i) == DMISS) cycle
@@ -80,7 +80,7 @@ contains
             call normalout(xc(iR), yc(iR), xc(iL), yc(iL), nL(1), nL(2), jsferic, jasfer3D, dmiss, dxymis)
 
             if (jsferic == 1) then
-               nL(1) = nL(1) * cos(dg2rd * 0.5d0 * (yc(iL) + yc(iR)))
+               nL(1) = nL(1) * cos(dg2rd * 0.5_dp * (yc(iL) + yc(iR)))
             end if
 
             nR = nL
@@ -90,8 +90,8 @@ contains
 !         dnormal = (hL+hR) / (1d0+dot_product(hL,hR)+1d-8)
 
             if (jsferic == 1) then
-               nL(1) = nL(1) * cos(dg2rd * 0.5d0 * (yc(iL) + yc(i)))
-               nR(1) = nR(1) * cos(dg2rd * 0.5d0 * (yc(iR) + yc(i)))
+               nL(1) = nL(1) * cos(dg2rd * 0.5_dp * (yc(iL) + yc(i)))
+               nR(1) = nR(1) * cos(dg2rd * 0.5_dp * (yc(iR) + yc(i)))
             end if
 
          end if
@@ -107,21 +107,21 @@ contains
          vR = edgevel(iR - 1) * nR
          vR_vL = edgevel(iR - 1) / edgevel(iL)
 
-         if (cosphi < -1d0 + dtolcos) then
+         if (cosphi < -1.0_dp + dtolcos) then
             continue
             cycle
          end if
 
-         if (cosphi < 0d0) then
+         if (cosphi < 0.0_dp) then
             continue
          end if
 
-         if ((vR_vL > cosphi .and. 1d0 / vR_vL > cosphi) .or. cosphi <= dtolcos) then
-            vel(:, i) = ((1d0 - vR_vL * cosphi) * vL + (1d0 - (1d0 / vR_vL) * cosphi) * vR) / (1d0 - cosphi**2)
+         if ((vR_vL > cosphi .and. 1.0_dp / vR_vL > cosphi) .or. cosphi <= dtolcos) then
+            vel(:, i) = ((1.0_dp - vR_vL * cosphi) * vL + (1.0_dp - (1.0_dp / vR_vL) * cosphi) * vR) / (1.0_dp - cosphi**2)
          else if (vR_vL < cosphi) then
             vel(:, i) = vR_vL / cosphi * vL
          else
-            vel(:, i) = 1d0 / (vR_vL * cosphi) * vR
+            vel(:, i) = 1.0_dp / (vR_vL * cosphi) * vR
          end if
 
 !     spherical coordinates

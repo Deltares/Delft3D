@@ -200,9 +200,6 @@ DD::SingleProcess (
 
     this->ReadConfig ();
 
-    if (this->flow->flowol)
-        this->flow->flowol->numSubdomains = this->numSubdomains;
-
     //  All joins are local, so set all flags to true in the join table
 
     for (int jid = 0 ; jid < this->numJoins ; jid++) {

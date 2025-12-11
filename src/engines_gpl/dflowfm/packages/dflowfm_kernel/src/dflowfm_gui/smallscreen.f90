@@ -45,8 +45,8 @@ contains
       real(kind=dp) :: xright
       real(kind=dp) :: ytop
 
-      YTOP = max(0.95d0, 1 - YBOT)
-      XRIGHT = max(0.90d0, 1 - XLEFT)
+      YTOP = max(0.95_dp, 1 - YBOT)
+      XRIGHT = max(0.90_dp, 1 - XLEFT)
       call viewport(real(XLEFT), real(YBOT), real(XRIGHT), real(YTOP))
 
       return

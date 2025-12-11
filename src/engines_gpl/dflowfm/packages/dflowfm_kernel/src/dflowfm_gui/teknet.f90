@@ -123,11 +123,11 @@ contains
                   k1 = kn(1, L)
                   x = xk(k1)
                   y = yk(k1)
-                  call fbox(x - 0.5d0 * rcir, y - 0.5d0 * rcir, x + 0.5d0 * rcir, y + 0.5d0 * rcir)
+                  call fbox(x - 0.5_dp * rcir, y - 0.5_dp * rcir, x + 0.5_dp * rcir, y + 0.5_dp * rcir)
                   k1 = kn(2, L)
                   x = xk(k1)
                   y = yk(k1)
-                  call fbox(x - 0.5d0 * rcir, y - 0.5d0 * rcir, x + 0.5d0 * rcir, y + 0.5d0 * rcir)
+                  call fbox(x - 0.5_dp * rcir, y - 0.5_dp * rcir, x + 0.5_dp * rcir, y + 0.5_dp * rcir)
                end if
             end do
          end if
@@ -143,13 +143,13 @@ contains
                K2 = KN(2, L)
                if (K1 /= 0 .and. K2 /= 0) then
                   if (INVIEW(XK(K1), YK(K1)) .or. INVIEW(XK(K2), YK(K2))) then
-                     call MOVABS(XK(K1), YK(K1)); 
+                     call MOVABS(XK(K1), YK(K1))
                      call LNABS(XK(K2), YK(K2))
                      call SETLINKCOLOUR(L, 1)
-                     call MOVABS(XK(K1), YK(K1)); 
-                     call CIR(1.2d0 * rcir)
+                     call MOVABS(XK(K1), YK(K1))
+                     call CIR(1.2_dp * rcir)
                      call LNABS(XK(K2), YK(K2))
-                     call CIR(1.2d0 * rcir)
+                     call CIR(1.2_dp * rcir)
                   end if
                end if
             end if

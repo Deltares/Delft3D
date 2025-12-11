@@ -85,7 +85,7 @@ contains
 !     get file basename
       len_basename = index(netfilename, '_net') - 1
       if (len_basename < 1) then
-         call qnerror('write domains: net filename error', ' ', ' ')
+         call qnerror('partition_write_domains: NetFile does not match expected format "*_net.nc"', ' ', ' ')
          goto 1234
       end if
 

@@ -391,7 +391,8 @@ contains
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
                   "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
-                  "pseudoairpressure", "waterlevelcorrection")
+                  "pseudoairpressure", "waterlevelcorrection", &
+                  "frictioncoefficient")
                success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -1752,12 +1753,12 @@ contains
 
    !> Create subproviders, which create source Items and their contained types.
       !! meteo1.f90: read1polylin
-   function ecProviderCreatePolyTimItemsBC(instancePtr, fileReaderPtr, bctfilename, quantityname) result(success)
+   function ecProviderCreatePolyTimItemsBC(instancePtr, fileReaderPtr, bctfilename, quantityname_in) result(success)
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       type(tEcFileReader), pointer :: fileReaderPtr !< intent(inout)
       character(len=*), intent(in) :: bctfilename !< in case of bct-data, we neeed the explicit filename
-      character(len=*), intent(in) :: quantityname !< in case of bct-data, we neeed the explicit quantityname
+      character(len=*), intent(in) :: quantityname_in !< in case of bct-data, we neeed the explicit quantityname
       !
       real(dp), dimension(:), allocatable :: xs !< x-coordinates of support points
       real(dp), dimension(:), allocatable :: ys !< y-coordinates of support points
@@ -1765,6 +1766,7 @@ contains
       integer :: n_points !< number of support points
       integer :: n_signals !< Number of forcing signals created (at most n_signals==n_points, but warn if n_signals==0)
       character(len=:), allocatable :: rec !< a read line
+      character(len=:), allocatable :: quantityname !< in case of bct-data, we neeed the explicit quantityname
       integer :: i !< loop counters
       integer :: istat !< status of read operation
       character(len=:), allocatable :: plipointlbl !< temporary name of current pli-point in bct context
@@ -1788,6 +1790,7 @@ contains
       !
 
 !        initialization
+      quantityname = quantityname_in
       success = .false.
       itemPT => null()
       sourceItem => null()
@@ -2614,8 +2617,8 @@ contains
          ncvarnames(1) = 'tcc' ! cloud cover (fraction)
          ncstdnames(1) = 'cloud_area_fraction'
       case ('humidity')
-         ncstdnames(1) = 'humidity'
-         ncstdnames_fallback(1) = 'relative_humidity'
+         ncstdnames(1) = 'relative_humidity'
+         ncstdnames_fallback(1) = 'humidity'
       case ('dewpoint')
          ncvarnames(1) = 'd2m' ! dew-point temperature
          ncstdnames(1) = 'dew_point_temperature'
@@ -2664,7 +2667,7 @@ contains
          ncstdnames(2) = 'sea_water_salinity'
       case ('sea_ice_area_fraction', 'sea_ice_thickness')
          ncstdnames(1) = quantityName
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          ncvarnames(1) = 'friction_coefficient'
          ncstdnames(1) = 'friction_coefficient'
       case ('wavesignificantheight')
@@ -2761,7 +2764,7 @@ contains
             else
                nameVar = trim(ncvarnames(i))
             end if
-            call setECMessage("Variable '"//nameVar//"' not found in NetCDF file '"//trim(fileReaderPtr%filename))
+            call setECMessage("Variable '" // nameVar // "' not found in NetCDF file '" // trim(fileReaderPtr%filename) // "'.")
             return
          end if
          fileReaderPtr%standard_names(idvar) = ncstdnames(i) ! overwrite the standardname by the one required
@@ -2858,7 +2861,7 @@ contains
                   call ecProviderSearchStdOrVarnames(fileReaderPtr, j, varid, ncvarnames=coord_names, ignore_case=.true.)
                   if (varid < 0) then
                      call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                       //' coordinates variable '//trim(coord_names(2))//' referenced but not found')
+                                       //"' coordinates variable '"//trim(coord_names(2))//"' referenced but not found.")
                   else
                      if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                         if (strcmpi(fileReaderPtr%standard_names(varid), 'projection_x_coordinate')) then
@@ -2884,11 +2887,11 @@ contains
          if (fgd_id < 0 .or. sgd_id < 0) then
             if (instancePtr%coordsystem == EC_COORDS_CARTESIAN) then
                call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                 //' requires ''projection_x_coordinate'' and ''projection_y_coordinate''.')
+                                 //"' requires 'projection_x_coordinate' and 'projection_y_coordinate'.")
             end if
             if (instancePtr%coordsystem == EC_COORDS_SFERIC) then
                call setECMessage("Variable '"//trim(ncstdnames(i))//"' in NetCDF file '"//trim(fileReaderPtr%filename) &
-                                 //' either requires ''latitude'' and ''longitude'' or ''grid_latitude'' and ''grid_longitude''.')
+                                 //"' either requires 'latitude' and 'longitude' or 'grid_latitude' and 'grid_longitude'.")
             end if
             return
          end if
@@ -3996,7 +3999,6 @@ contains
          do idim = 1, ndim
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, len=fileReaderPtr%dim_length(idim))
             ierror = nf90_inquire_dimension(fileReaderPtr%fileHandle, idim, name=dim_name)
-            write(*,*) trim(dim_name)
             ! Find dimension matching columns and rows
             select case (str_tolower(trim(dim_name)))
             case ('x', 'longitude', 'lon', 'projected_x', 'xc', 'grid_longitude', 'projection_x_coordinate')

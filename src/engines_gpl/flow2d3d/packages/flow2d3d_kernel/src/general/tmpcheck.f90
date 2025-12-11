@@ -1,4 +1,4 @@
-subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
+subroutine tmpcheck( runid_in, reusetmp,  tmpexist,  gdp )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -60,7 +60,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
 !
 ! Global variables
 !
-    character(*)   , intent(in)  :: runid       !!  Run identification code for the cur-
+    character(*)   , intent(in)  :: runid_in    !!  Run identification code for the cur-
                                                 !!  rent simulation (used to determine
                                                 !!  the names of the in- /output files
                                                 !!  used by the system)
@@ -76,6 +76,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
     character(12)                :: fildef      ! Empty file name 
     character(256)               :: filnam      ! File name for the time varying data file 
     character(256)               :: filrd       ! File name read from MD FLOW file
+    character(:), allocatable    :: runid       ! Run identification code for the current simulation
 !
 !
 !! executable statements -------------------------------------------------------
@@ -92,6 +93,7 @@ subroutine tmpcheck( runid, reusetmp,  tmpexist,  gdp )
     !
     ! Define length of runid
     !
+    runid = runid_in
     call remove_leading_spaces(runid, lrid)
     !  
     ! Check keyword 'ReTMP' which defines if temporary files 

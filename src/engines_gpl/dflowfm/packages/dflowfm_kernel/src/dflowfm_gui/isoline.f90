@@ -40,7 +40,7 @@ contains
       use unstruc_display, only: rcir
 
       real(kind=dp) :: xa, ya, za, xb, yb, zb, dx, s, c, d, xh(4), yh(4), zh(4)
-      dx = 0.2d0 * rcir
+      dx = 0.2_dp * rcir
       call sincosdis(xa, ya, xb, yb, s, c, d)
       xh(1) = xa + dx * s
       yh(1) = ya - dx * c

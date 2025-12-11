@@ -77,7 +77,7 @@ contains
          call realloc(nampli, 20, keepExisting=.false., fill=' ')
       end if
 
-      call READYY('READING POLYGON / land boundary / CRS-FILE', 0d0)
+      call READYY('READING POLYGON / land boundary / CRS-FILE', 0.0_dp)
 10    continue
       read (MPOL, '(A)', end=999, ERR=888) MATR
       if (MATR(1:1) == '*' .or. len_trim(matr) == 0) goto 10
@@ -122,7 +122,9 @@ contains
          nmiss = 0
          do ! Read a single line, or multiple until a NON-dmiss line is found
             read (MPOL, '(A)', end=999) REC
-            ZZ = DMISS; dz1 = dmiss; dz2 = dmiss
+            ZZ = DMISS
+            dz1 = dmiss
+            dz2 = dmiss
             if (nkol == 10) then
                read (REC, *, iostat=ierr) XX, YY, zcrest, sillup, silldown, crestl, taludl, taludr, veg, weirtype ! read weir data from Baseline format plus weirtype
                if (ierr /= 0) goto 777
@@ -144,7 +146,7 @@ contains
                read (REC, *, iostat=ierr) XX, YY
                if (ierr /= 0) goto 777
             end if
-            if (XX /= dmiss .and. XX /= 999.999d0) exit
+            if (XX /= dmiss .and. XX /= 999.999_dp) exit
             nmiss = nmiss + 1
             I = I + 1
             if (I > NROW) exit row ! Last row was also dmiss, now exit outer 'row' loop.
@@ -161,7 +163,9 @@ contains
             ZPL(NPL) = ZZ
             if (jakol45 == 1) then
                if (.not. allocated(DZL)) then
-                  allocate (DZL(MAXPOL), DZR(MAXPOL)); DZL = DMISS; DZR = DMISS
+                  allocate (DZL(MAXPOL), DZR(MAXPOL))
+                  DZL = DMISS
+                  DZR = DMISS
                end if
                DZL(NPL) = DZ1
                DZR(NPL) = DZ2
@@ -200,7 +204,7 @@ contains
 
          end if
          if (mod(NPL, 100) == 0) then
-            call READYY(' ', min(1d0, dble(I) / MAXPOL))
+            call READYY(' ', min(1.0_dp, real(I, kind=dp) / MAXPOL))
          end if
 
       end do row
@@ -213,18 +217,18 @@ contains
             npl = npl - 1
          end if
       end if
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call doclose(MPOL)
 
       return
 
 888   call QNREADERROR('SEARCHING NROWS,NCOLS, BUT GETTING', REC, MPOL)
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call doclose(MPOL)
       return
 
 777   call QNREADERROR('READING COORDINATES BUT GETTING', REC, MPOL)
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
       call doclose(MPOL)
       return
 

@@ -77,7 +77,7 @@ contains
 
 !  add startnode to list
       nlist = nlist + 1
-      if (nlist > size(klist)) call realloc(klist, int(1.2d0 * dble(nlist)) + 1, fill=0, keepExisting=.true.)
+      if (nlist > size(klist)) call realloc(klist, int(1.2_dp * real(nlist, kind=dp)) + 1, fill=0, keepExisting=.true.)
       klist(nlist) = kstart
 
 !  process the startnode list
@@ -98,7 +98,9 @@ contains
             i = 1
 
             if (inew /= 1) then
-               do while (nod(k)%lin(i) /= Lprev .and. i < nmk(k)); i = i + 1; end do
+               do while (nod(k)%lin(i) /= Lprev .and. i < nmk(k))
+               i = i + 1
+               end do
                if (nod(k)%lin(i) /= Lprev) then ! should not happen
                   continue
                   return
@@ -126,9 +128,9 @@ contains
                ic = lne(1, L)
                crs = dprodout(xk(k), yk(k), xk(knext), yk(knext), xk(k), yk(k), xzw(ic), yzw(ic), jsferic, jasfer3D)
                iorient_new = -1
-               if (crs > 0d0) then
+               if (crs > 0.0_dp) then
                   iorient_new = 1
-               else if (crs < 0d0) then
+               else if (crs < 0.0_dp) then
                   iorient_new = 0
                end if
 
@@ -139,7 +141,7 @@ contains
 
 !              add new startnode to list
                   nlist = nlist + 1
-                  if (nlist > size(klist)) call realloc(klist, int(1.2d0 * dble(nlist)) + 1, fill=0, keepExisting=.true.)
+                  if (nlist > size(klist)) call realloc(klist, int(1.2_dp * real(nlist, kind=dp)) + 1, fill=0, keepExisting=.true.)
                   klist(nlist) = k
                   cycle ! do not add this node to branch
                end if
@@ -161,13 +163,13 @@ contains
                   NPL = NPL + 1
                   xpl(NPL) = xk(k)
                   ypl(NPL) = yk(k)
-                  zpl(NPL) = dble(k)
+                  zpl(NPL) = real(k, kind=dp)
                end if
                call increasepol(NPL + 1, 1)
                NPL = NPL + 1
                xpl(NPL) = xk(knext)
                ypl(NPL) = yk(knext)
-               zpl(NPL) = dble(knext)
+               zpl(NPL) = real(knext, kind=dp)
 
 !           deactivate link
                Lc(L) = 0

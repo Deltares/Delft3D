@@ -72,7 +72,7 @@ program waqpb_export
    itmswi = .false.
    open (newunit=lu_mes, file=(settings%process_definition_folder_path//'waqpb_export.log'))
 
-   write (*, '('' Reading data......'')')
+   write (*, '('' Reading data...'')')
 
 !----------------------------------------------------------------------c
 !     READ DATABASE
@@ -119,7 +119,7 @@ program waqpb_export
 !      write (*,'('' Writing TRM tables......'')')
 !      call writrm
    if (settings%generate_latex_tables) then
-      write (*, '('' Writing TRM tables for LaTeX......'')')
+      write (*, '('' Writing TRM tables for LaTeX...'')')
       call writex
    end if
 
@@ -139,7 +139,7 @@ program waqpb_export
 !     LOOP OVER PROCESSES
 !----------------------------------------------------------------------c
 
-   write (*, '('' Making PROCES.ASC......'')')
+   write (*, '(A)') 'Creating processes overview file: ' // settings%processes_overview_file_path
    write (*, *)
    open (newunit=lunfil, file=settings%processes_overview_file_path)
 
@@ -414,7 +414,18 @@ program waqpb_export
 900 continue
    close (lu_mes)
 
-   stop 'Normal end'
+   write (*,*)
+   if (settings%wrong_version) then
+      write (*, '(A, f0.1)') 'WARNING: no or not a valid version was specified (see above). Used generated default version instead: ', settings%version
+   end if
+
+   if (settings%wrong_serial) then
+      write (*, '(A, I0)') 'WARNING: no or not a valid serial number was specified (see above). Used generated default serial instead: ', settings%serial
+   end if
+
+   write (*, *)
+   write (*, '(A)') 'Export completed successfully.'
+   stop 'Normal end.'
 end program waqpb_export
 
 function adduni(name, unit)

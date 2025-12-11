@@ -62,7 +62,8 @@ contains
       if (jawave > NO_WAVES) then
          do L = 1, lnx
             if (hu(L) < epshu) cycle
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             hwavu = max(hwav(k1), hwav(k2))
             if (hwavu > bermslopegamma * hu(L)) then
                bermslopeindex(L) = .true.
@@ -91,12 +92,13 @@ contains
          if (wu_mor(L) == 0) cycle
          if (.not. bermslopeindexbed(L) .and. .not. bermslopeindexsus(L)) cycle
          !
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          !
          ! Transports positive outgoing
          !
-         slope = max(hypot(e_dzdn(L), e_dzdt(L)), 1d-8)
-         slpfac = bermslopefac * (-e_dzdn(L) + bermslope * e_dzdn(L) / slope) / max(morfac, 1d0)
+         slope = max(hypot(e_dzdn(L), e_dzdt(L)), 1.0e-8_dp)
+         slpfac = bermslopefac * (-e_dzdn(L) + bermslope * e_dzdn(L) / slope) / max(morfac, 1.0_dp)
          do lsd = 1, lsedtot
             !
             ! slope magnitude smaller than bermslope leads to transport away from the cell, ie outward

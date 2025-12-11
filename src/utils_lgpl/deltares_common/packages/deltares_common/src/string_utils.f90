@@ -33,7 +33,7 @@ module m_string_utils
     private
     public :: join_strings, contains_any, contains_only_valid_chars, starts_with_valid_char
     public :: starts_with, index_in_array, remove_duplicates, string_equals, centre_text
-    public :: split_string
+    public :: split_string, split_string_non_empty
 
 contains
     !> Splits a string into multiple parts using the delimiter
@@ -79,6 +79,39 @@ contains
             substrings(i) = trim(substring)
         end do
     end function split_string
+
+    !> Splits a string into multiple parts using the delimiter, ignoring empty parts
+    function split_string_non_empty(input_string, delimiter) result(substrings)
+        character(len=*), intent(in) :: input_string !< input string to split
+        character(len=*), intent(in) :: delimiter    !< delimiter to use for splitting
+        character(:), dimension(:), allocatable :: substrings !< resulting non-empty sub strings
+
+        ! local
+        character(:), dimension(:), allocatable :: temp_substrings !< temporary sub strings
+        integer :: i, i_non_empty_part
+        integer :: number_of_substrings, number_of_non_empty_substrings
+        integer :: max_size_substring
+
+        temp_substrings = split_string(input_string, delimiter) !< Split the input string into parts
+        number_of_substrings = size(temp_substrings)
+        number_of_non_empty_substrings = 0
+        max_size_substring = 0
+        do i = 1, number_of_substrings
+            max_size_substring = max(max_size_substring, len_trim(temp_substrings(i)))
+            if (len_trim(temp_substrings(i)) > 0) then
+                number_of_non_empty_substrings = number_of_non_empty_substrings + 1
+            end if
+        end do
+
+        allocate (character(len=max_size_substring) :: substrings(number_of_non_empty_substrings)) !< Allocate the resulting array
+        i_non_empty_part = 1
+        do i = 1, number_of_substrings
+            if (len_trim(temp_substrings(i)) > 0) then
+                substrings(i_non_empty_part) = trim(temp_substrings(i)) !< Store non-empty parts
+                i_non_empty_part = i_non_empty_part + 1
+            end if
+        end do
+    end function split_string_non_empty
 
     !>  creates a string (of width length) with the provided text in the centre
     function centre_text(text, width) result(centred_text)

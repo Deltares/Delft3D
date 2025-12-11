@@ -30,6 +30,8 @@
 !
 !
 module m_comp_roots4
+
+   use precision, only: dp
    implicit none
 contains
 !> solves the quartic equation Ax^4+Bx^3+Cx^2+Dx+E=0
@@ -44,7 +46,7 @@ contains
 
       logical :: Lfail
 
-      real(kind=dp_14_60) :: dtol = 1d-12
+      real(kind=dp_14_60) :: dtol = 1.0e-12_dp
 
       integer :: i, ndegree
 
@@ -92,7 +94,7 @@ contains
 !    end do
 
       do i = 1, ndegree
-         if (abs(im(i)) < 1d-4) then
+         if (abs(im(i)) < 1.0e-4_dp) then
             x(i) = re(i)
          end if
       end do

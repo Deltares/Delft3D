@@ -1,4 +1,4 @@
-subroutine tricom_step(olv_handle, gdp)
+subroutine tricom_step(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -53,12 +53,9 @@ subroutine tricom_step(olv_handle, gdp)
     use sync_flowcouple
     use sync_flowwave
     use flow2d3d_timers
-    use D3DOnline
-    use D3DPublish
     use D3D_Sobek 
     use globaldata
     use dfparall
-    use d3d_olv_class
     !
     implicit none
     !
@@ -351,7 +348,6 @@ subroutine tricom_step(olv_handle, gdp)
     logical                                       :: ex            ! Help flag = TRUE when file is found
     real(fp)                                      :: zini
     character(80)                                 :: txtput        ! Text to be print
-    type(olvhandle)                               :: olv_handle
 !
 !! executable statements -------------------------------------------------------
 !
@@ -626,7 +622,6 @@ subroutine tricom_step(olv_handle, gdp)
     !
     ! Simulation time loop
     !
-    call setRunningFlag(olv_handle, 0, itstrt)    !status is: started
 
     do nst = itstrt, itstop - 1, 1
        call timer_start(timer_timeintegr, gdp)
@@ -642,12 +637,6 @@ subroutine tricom_step(olv_handle, gdp)
        call vsemnefis
        call timer_stop(timer_step2screen, gdp)
 
-       call FLOWOL_Timestep (nst)
-
-       !
-       ! Status is: simulation is running / iteration
-       !
-       call setRunningFlag(olv_handle, 1, nst)
        !
        ! Set timsec and current date and time.
        !
@@ -908,10 +897,6 @@ subroutine tricom_step(olv_handle, gdp)
        call timer_stop(timer_timeintegr, gdp)
     enddo
     
-    ! The sequence of the 2 next calls is important for the OLV client.
-    !
-    call FLOWOL_Timestep (nst)
-    !
     call timer_stop(timer_simulation, gdp)
     !
     ! Synchronisation point 3

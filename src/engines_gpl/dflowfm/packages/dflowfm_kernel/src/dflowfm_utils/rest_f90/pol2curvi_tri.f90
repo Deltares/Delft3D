@@ -90,15 +90,19 @@ contains
       i3 = i3_
 
 !  get grid size and orientation
-      Na = i2 - i1; if (Na < 1) Na = Na + numsubpol
-      Nb = i3 - i2; if (Nb < 1) Nb = Nb + numsubpol
+      Na = i2 - i1
+      if (Na < 1) Na = Na + numsubpol
+      Nb = i3 - i2
+      if (Nb < 1) Nb = Nb + numsubpol
       Ncc = numsubpol - (Na + Nb)
 
       if (Ncc < 1) then
          i2 = i3_
          i3 = i2_
-         Na = i2 - i1; if (Na < 1) Na = Na + numsubpol
-         Nb = i3 - i2; if (Nb < 1) Nb = Nb + numsubpol
+         Na = i2 - i1
+         if (Na < 1) Na = Na + numsubpol
+         Nb = i3 - i2
+         if (Nb < 1) Nb = Nb + numsubpol
          Ncc = numsubpol - (Na + Nb)
       end if
 
@@ -114,13 +118,16 @@ contains
       end if
 
 !  compute midpoint
-      ia = i1 + N1; if (ia > iend) ia = ia - numsubpol
-      ib = i2 + N3; if (ib > iend) ib = ib - numsubpol
-      ic = i3 + N2; if (ic > iend) ic = ic - numsubpol
+      ia = i1 + N1
+      if (ia > iend) ia = ia - numsubpol
+      ib = i2 + N3
+      if (ib > iend) ib = ib - numsubpol
+      ic = i3 + N2
+      if (ic > iend) ic = ic - numsubpol
 
 !  set dimensions of blocks
-      M = (/N1, N3, N2/)
-      N = (/N3, N2, N1/)
+      M = [N1, N3, N2]
+      N = [N3, N2, N1]
 
 !  set pointers of block corners
 !      ileft ------------------
@@ -130,25 +137,25 @@ contains
 !           |------------------|
 !          0                   iright
 
-      i0 = (/i1, i2, i3/)
-      ileft = (/ic, ia, ib/)
-      iright = (/ia, ib, ic/)
+      i0 = [i1, i2, i3]
+      ileft = [ic, ia, ib]
+      iright = [ia, ib, ic]
 
 !   xia = dbdistance(XPL(i1),YPL(i1),XPL(ia),YPL(ia)) / dbdistance(XPL(i1),YPL(i1),XPL(i2),YPL(i2))
 !   xib = dbdistance(XPL(i2),YPL(i2),XPL(ib),YPL(ib)) / dbdistance(XPL(i2),YPL(i2),XPL(i3),YPL(i3))
 !   xic = dbdistance(XPL(i3),YPL(i3),XPL(ic),YPL(ic)) / dbdistance(XPL(i3),YPL(i3),XPL(i1),YPL(i1))
 
-      xia = dble(N1) / dble(Na)
-      xib = dble(N3) / dble(Nb)
-      xic = dble(N2) / dble(Ncc)
+      xia = real(N1, kind=dp) / real(Na, kind=dp)
+      xib = real(N3, kind=dp) / real(Nb, kind=dp)
+      xic = real(N2, kind=dp) / real(Ncc, kind=dp)
 
-      xm = (((1d0 - xia) * XPL(i1) + xia * XPL(i2)) * xic + (1d0 - xic) * XPL(i3) + &
-            ((1d0 - xib) * XPL(i2) + xib * XPL(i3)) * xia + (1d0 - xia) * XPL(i1) + &
-            ((1d0 - xic) * XPL(i3) + xic * XPL(i1)) * xib + (1d0 - xib) * XPL(i2)) / 3d0
+      xm = (((1.0_dp - xia) * XPL(i1) + xia * XPL(i2)) * xic + (1.0_dp - xic) * XPL(i3) + &
+            ((1.0_dp - xib) * XPL(i2) + xib * XPL(i3)) * xia + (1.0_dp - xia) * XPL(i1) + &
+            ((1.0_dp - xic) * XPL(i3) + xic * XPL(i1)) * xib + (1.0_dp - xib) * XPL(i2)) / 3.0_dp
 
-      ym = (((1d0 - xia) * YPL(i1) + xia * YPL(i2)) * xic + (1d0 - xic) * YPL(i3) + &
-            ((1d0 - xib) * YPL(i2) + xib * YPL(i3)) * xia + (1d0 - xia) * YPL(i1) + &
-            ((1d0 - xic) * YPL(i3) + xic * YPL(i1)) * xib + (1d0 - xib) * YPL(i2)) / 3d0
+      ym = (((1.0_dp - xia) * YPL(i1) + xia * YPL(i2)) * xic + (1.0_dp - xic) * YPL(i3) + &
+            ((1.0_dp - xib) * YPL(i2) + xib * YPL(i3)) * xia + (1.0_dp - xia) * YPL(i1) + &
+            ((1.0_dp - xic) * YPL(i3) + xic * YPL(i1)) * xib + (1.0_dp - xib) * YPL(i2)) / 3.0_dp
 
 !  allocate arrays with boundary coordinates
       Nh = max(maxval(M), maxval(N)) + 1
@@ -189,20 +196,20 @@ contains
          end do
 
          do i = 1, M(itri) + 1
-            xia = dble(i - 1) / dble(M(itri))
-            xh(i, 4) = (1d0 - xia) * XPL(ileft(itri)) + xia * xm
-            yh(i, 4) = (1d0 - xia) * YPL(ileft(itri)) + xia * ym
+            xia = real(i - 1, kind=dp) / real(M(itri), kind=dp)
+            xh(i, 4) = (1.0_dp - xia) * XPL(ileft(itri)) + xia * xm
+            yh(i, 4) = (1.0_dp - xia) * YPL(ileft(itri)) + xia * ym
          end do
 
          do i = 1, N(itri) + 1
-            xia = dble(i - 1) / dble(N(itri))
-            xh(i, 2) = (1d0 - xia) * XPL(iright(itri)) + xia * xm
-            yh(i, 2) = (1d0 - xia) * YPL(iright(itri)) + xia * ym
+            xia = real(i - 1, kind=dp) / real(N(itri), kind=dp)
+            xh(i, 2) = (1.0_dp - xia) * XPL(iright(itri)) + xia * xm
+            yh(i, 2) = (1.0_dp - xia) * YPL(iright(itri)) + xia * ym
          end do
 
 !     allocate arrays with grid coordinates
-         call realloc(xg, (/M(itri) + 1, N(itri) + 1/), keepExisting=.false., fill=DMISS)
-         call realloc(yg, (/M(itri) + 1, N(itri) + 1/), keepExisting=.false., fill=DMISS)
+         call realloc(xg, [M(itri) + 1, N(itri) + 1], keepExisting=.false., fill=DMISS)
+         call realloc(yg, [M(itri) + 1, N(itri) + 1], keepExisting=.false., fill=DMISS)
 
          MFAC = M(itri)
          NFAC = N(itri)

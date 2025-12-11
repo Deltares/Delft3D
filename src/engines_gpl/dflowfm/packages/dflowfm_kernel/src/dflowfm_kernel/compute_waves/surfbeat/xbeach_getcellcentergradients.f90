@@ -54,8 +54,8 @@ contains
       real(kind=dp) :: hs1, hs2
 
       ! Tegeltjesdiepte approach is eenvoudiger en onnauwkeuriger, maar werkt altijd, ook met morfologie
-      dhsdx = 0d0
-      dhsdy = 0d0
+      dhsdx = 0.0_dp
+      dhsdy = 0.0_dp
       do L = 1, Lnx
          if (hu(L) > epshu) then ! link flows
             k1 = ln(1, L)

@@ -29,7 +29,7 @@ module m_waqpb_base_settings
    implicit none
 
    private
-   public :: waqpb_base_settings, param_format, separator
+   public :: waqpb_base_settings, param_format, separator, show_help_manual
 
    character(*), parameter :: param_format = '(A,t30,A,A)' !> Format for displaying parameters in help output
    character(2), parameter :: separator = ': ' !> Separator used in help output
@@ -53,6 +53,7 @@ module m_waqpb_base_settings
          import waqpb_base_settings
          class(waqpb_base_settings), intent(in) :: this
       end subroutine show_help_interface
+
       function get_accepted_flag_args_interface(this) result(accepted_flag_args)
          import waqpb_base_settings
          class(waqpb_base_settings), intent(in) :: this
@@ -160,5 +161,12 @@ contains
       write (*, param_format) '--pdef-path <path>', separator, 'Path to the folder containing the process definition files.'
       write (*, '(A,t32,A)') ' ', 'The default is the current directory.'
    end subroutine show_help_base
+
+   subroutine show_help_manual()
+      write (*, *)
+      write (*, '(A)') 'For further information, please refer to the Open Process Library manual.'
+      write (*, '(A)') 'Appendix C: "Using waqpb export and import tools" contains detailed guidance.'
+      write (*, *)
+   end subroutine show_help_manual
 
 end module m_waqpb_base_settings

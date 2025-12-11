@@ -68,16 +68,14 @@
  */
 //------------------------------------------------------------------------------
 
-
 #define FLOW2D3D_MAIN
 
 #include "flow2d3d.h"
 
 #if defined(HAVE_CONFIG_H)
-#define Sleep sleep
+#   define Sleep sleep
 #endif
 #if defined (WIN32)
-#   include <windows.h>
 #   define strdup _strdup
 #endif
 
@@ -175,14 +173,12 @@ Flow2D3D::Flow2D3D (
     FLOW2D3D = this;
 
     if (DH == NULL) {
-        this->flowol = NULL;
         return;
     }
 
     this->config             = this->DH->start;
     this->dd                 = NULL;
     this->log                = DH->log;
-    this->flowol             = NULL;
     this->mdfFile            = this->config->GetElement ("mdfFile");
     this->runid              = NULL;
 
@@ -195,17 +191,6 @@ Flow2D3D::Flow2D3D (
 
     if (ddbFile != NULL)
         this->dd = new DD (this, this->config);
-
-    // Set up DelftOnline if requested and not in slave mode.
-    // Slaves will do it themselves at the right time.
-
-    XmlTree * dolconfig = this->DH->config->Lookup ("/deltaresHydro/delftOnline");
-    if (dolconfig != NULL && this->DH->slaveArg == NULL ) {
-		if (dolconfig->GetBoolElement ("enabled", true)) {
-            this->DH->log->Write (Log::MAJOR, "Initializing DelftOnline...");
-            this->flowol = new FlowOL (this->DH, dolconfig);
-		    }
-        }
 
     // Initialize ESM/FSM
 
@@ -245,14 +230,12 @@ Flow2D3D::Flow2D3D (
     FLOW2D3D = this;
 
     if (DH == NULL) {
-        this->flowol = NULL;
         return;
     }
 
     //this->config             = this->DH->start;
     this->dd                 = NULL;
     this->log                = DH->log;
-    this->flowol             = NULL;
 
     const char *dot = strrchr(configfile, '.');
     if(!dot || dot == configfile) {
@@ -275,16 +258,6 @@ Flow2D3D::Flow2D3D (
 
     if (ddbFile != NULL)
         this->dd = new DD (this, this->config);
-
-    // Set up DelftOnline if requested and not in slave mode.
-    // Slaves will do it themselves at the right time.
-    // XmlTree * dolconfig = this->DH->config->Lookup ("/deltaresHydro/delftOnline");
-    XmlTree * dolconfig = NULL;
-    if (dolconfig != NULL && this->DH->slaveArg == NULL ) {
-        // ToDo: Check enabled element
-        this->DH->log->Write (Log::MAJOR, "Initializing DelftOnline...");
-        this->flowol = new FlowOL (this->DH, dolconfig);
-    }
 
     // Initialize ESM/FSM
 
@@ -314,11 +287,6 @@ Flow2D3D::Flow2D3D (
             char * dot = strrchr (this->runid, '.'); // search last dot
             if (dot != NULL) *dot = '\0';
 
-            if (this->flowol != NULL) {
-                this->flowol->numSubdomains = 1;
-                this->flowol->RegisterSubdomain (runid);
-                }
-
             int numsubdomains = 0;
             int nummappers    = 0;
             int initOnly      = 1;
@@ -334,8 +302,6 @@ Flow2D3D::Flow2D3D (
             //
             // This constructor is called as part of BMI_initialize
             // Do not unregister/esm_delete
-            // if (this->flowol != NULL)
-            //     this->flowol->UnregisterSubdomain ();
             // int result = ESM_Delete(context_id);
         }
     }
@@ -356,9 +322,6 @@ Flow2D3D::~Flow2D3D (
 
     if (this->runid != NULL)
         free (this->runid);
-	
-	if (this->flowol != NULL)
-		delete this->flowol;
 
     this->DH->log->Write (Log::MAJOR, "Flow2D3D instance destroyed");
     }
@@ -401,11 +364,6 @@ Flow2D3D::Run (
             char * dot = strrchr (this->runid, '.'); // search last dot
             if (dot != NULL) *dot = '\0';
 
-            if (this->flowol != NULL) {
-                this->flowol->numSubdomains = 1;
-                this->flowol->RegisterSubdomain (runid);
-                }
-
             int numsubdomains = 0;
             int nummappers    = 0;
             int initOnly      = 0;
@@ -419,8 +377,6 @@ Flow2D3D::Run (
             TRISIM (&numsubdomains, &nummappers, &context_id, &fsm_flags, runid, &initOnly, &this->gdp, strlen (runid));
             this->DH->log->Write (Log::MAJOR, "TRISIM returns (Fortran)");
 
-            if (this->flowol != NULL)
-                this->flowol->UnregisterSubdomain ();
             int result = ESM_Delete(context_id);
             }
         }

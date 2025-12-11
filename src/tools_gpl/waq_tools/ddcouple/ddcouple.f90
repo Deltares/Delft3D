@@ -32,7 +32,7 @@ program ddcouple
     use m_string_manipulation, only: upper_case
     use merge_step_mod
     use ddcouple_version_module, only: getfullversionstring_ddcouple
-    use m_date_time_utils_external, only: write_date_time
+    use m_date_time_utils_external, only: fill_in_date_time
     use m_file_path_utils, only: extract_file_extension
     use m_cli_utils, only: get_argument_by_index
 
@@ -174,7 +174,7 @@ program ddcouple
 
     interactive = .false.
     call getfullversionstring_ddcouple(version)
-    call write_date_time(rundat)
+    call fill_in_date_time(rundat)
 
     ! some init
 
@@ -1307,7 +1307,7 @@ program ddcouple
 
     ! finished
 
-    call write_date_time(rundat)
+    call fill_in_date_time(rundat)
     write (lunrep, *)
     write (lunrep, '(a)') ' Normal end of execution'
     write (lunrep, '(2a)') ' Execution stop : ', rundat

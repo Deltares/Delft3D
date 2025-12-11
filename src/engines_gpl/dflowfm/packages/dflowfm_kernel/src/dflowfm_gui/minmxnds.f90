@@ -53,12 +53,14 @@ contains
       integer :: n, ja2
 
       if (jaauto > 0) then
-         rmin = 1d30; ndmin = 0
-         rmax = -1d30; ndmax = 0
+         rmin = 1.0e30_dp
+         ndmin = 0
+         rmax = -1.0e30_dp
+         ndmax = 0
 
          do n = 1, ndx
             ja2 = 1
-            if (wetplot > 0d0) then
+            if (wetplot > 0.0_dp) then
                if (hs(n) < wetplot) then
                   ja2 = 0
                end if
@@ -68,10 +70,12 @@ contains
                   zn = znod(n)
                   if (zn == DMISS) cycle
                   if (zn < rmin) then
-                     rmin = zn; ndmin = n
+                     rmin = zn
+                     ndmin = n
                   end if
                   if (zn > rmax) then
-                     rmax = zn; ndmax = n
+                     rmax = zn
+                     ndmax = n
                   end if
                end if
             end if

@@ -254,15 +254,15 @@ contains
          rug(num_rugs)%name = ' '
          rug(num_rugs)%name(1:name_length) = name(1:name_length)
       else ! No name given, generate one.
-         write (runup_gauge_digits, '(i1)') max(2, int(floor(log10(dble(runup_gauge_id)) + 1)))
+         write (runup_gauge_digits, '(i1)') max(2, int(floor(log10(real(runup_gauge_id, kind=dp)) + 1)))
          write (rug(num_rugs)%name, '(a,i'//runup_gauge_digits//'.'//runup_gauge_digits//')') trim(defaultName_), runup_gauge_id
          runup_gauge_id = runup_gauge_id + 1
       end if
 
       ! Set default values
-      rug(num_rugs)%max_x = 0d0
-      rug(num_rugs)%max_y = 0d0
-      rug(num_rugs)%max_rug_height = -huge(0d0)
+      rug(num_rugs)%max_x = 0.0_dp
+      rug(num_rugs)%max_y = 0.0_dp
+      rug(num_rugs)%max_rug_height = -huge(0.0_dp)
 
    end subroutine add_runup_gauges
 
@@ -270,9 +270,9 @@ contains
       integer :: i
       ! Reset data for next iteration
       do i = 1, num_rugs
-         rug(i)%max_rug_height = -huge(0d0)
-         rug(i)%max_x = 0d0
-         rug(i)%max_y = 0d0
+         rug(i)%max_rug_height = -huge(0.0_dp)
+         rug(i)%max_x = 0.0_dp
+         rug(i)%max_y = 0.0_dp
       end do
    end subroutine
 

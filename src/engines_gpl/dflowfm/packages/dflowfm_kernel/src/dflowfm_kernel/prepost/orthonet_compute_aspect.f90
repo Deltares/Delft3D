@@ -67,7 +67,7 @@ contains
       logical, allocatable, dimension(:) :: Liscurvi ! node-based curvi-like indicator
 
       real(kind=dp) :: ortho1
-      real(kind=dp), parameter :: EPS = 1d-4
+      real(kind=dp), parameter :: EPS = 1.0e-4_dp
 
       allocate (R(2, numL), S(numL), Liscurvi(numk))
       R = DMISS
@@ -117,8 +117,8 @@ contains
             x0_bc = (1 - dinRy) * x0 + dinRy * x1
             y0_bc = (1 - dinRy) * y0 + dinRy * y1
 
-            xR = 2d0 * (x0_bc) - xL
-            yR = 2d0 * (y0_bc) - yL
+            xR = 2.0_dp * (x0_bc) - xL
+            yR = 2.0_dp * (y0_bc) - yL
 !---------------------------------------------------------------------
          end if
 
@@ -165,9 +165,12 @@ contains
             if (lnn(klink) /= 1 .and. lnn(klink) /= 2) cycle
 
 !        get the other links in the right numbering
-            kkm1 = kk - 1; if (kkm1 < 1) kkm1 = kkm1 + N
-            kkp1 = kk + 1; if (kkp1 > N) kkp1 = kkp1 - N
-            kkp2 = kk + 2; if (kkp2 > N) kkp2 = kkp2 - N
+            kkm1 = kk - 1
+            if (kkm1 < 1) kkm1 = kkm1 + N
+            kkp1 = kk + 1
+            if (kkp1 > N) kkp1 = kkp1 - N
+            kkp2 = kk + 2
+            if (kkp2 > N) kkp2 = kkp2 - N
 
             klinkm1 = netcell(k)%lin(kkm1)
             klinkp1 = netcell(k)%lin(kkp1)
@@ -175,14 +178,14 @@ contains
 
             R01 = dblinklength(klink)
 
-            if (R01 /= 0d0) then
+            if (R01 /= 0.0_dp) then
                aspect(klink) = S(klink) / R01
             end if
 
 !        store length R (parallel)
 !         if ( N.eq.4 .and. lnn(klink).ne.1 ) then ! inner quads
             if (N == 4) then ! quads
-               R01 = 0.5d0 * (dblinklength(klink) + dblinklength(klinkp2))
+               R01 = 0.5_dp * (dblinklength(klink) + dblinklength(klinkp2))
             else
                R01 = dblinklength(klink)
             end if
@@ -195,9 +198,9 @@ contains
          end do
       end do
 
-      if (ortho_pure == 1d0) goto 1234 ! no curvi-like discretization
+      if (ortho_pure == 1.0_dp) goto 1234 ! no curvi-like discretization
 
-      ortho1 = 1d0 - ortho_pure
+      ortho1 = 1.0_dp - ortho_pure
 
 !  compute aspect ratio in the quadrilateral part of the mesh
       do klink = 1, numL
@@ -211,14 +214,14 @@ contains
 !      if ( netcell(lne(1,klink))%N.ne.4 .or. netcell(lne(min(2,lnn(klink)),klink))%N.ne.4 ) cycle ! quad-quad links only
 
          if (lnn(klink) == 1) then
-            if (R(1, klink) /= 0d0 .and. R(1, klink) /= DMISS) then
+            if (R(1, klink) /= 0.0_dp .and. R(1, klink) /= DMISS) then
                aspect(klink) = S(klink) / R(1, klink)
             else
                continue
             end if
          else
-            if (R(1, klink) /= 0d0 .and. R(2, klink) /= 0d0 .and. R(1, klink) /= DMISS .and. R(2, klink) /= DMISS) then
-               aspect(klink) = ortho_pure * aspect(klink) + ortho1 * S(klink) / (0.5d0 * (R(1, klink) + R(2, klink)))
+            if (R(1, klink) /= 0.0_dp .and. R(2, klink) /= 0.0_dp .and. R(1, klink) /= DMISS .and. R(2, klink) /= DMISS) then
+               aspect(klink) = ortho_pure * aspect(klink) + ortho1 * S(klink) / (0.5_dp * (R(1, klink) + R(2, klink)))
             else
                continue
             end if

@@ -49,7 +49,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_calibration, only: calibration_backup_frcu
    use unstruc_channel_flow, only: network
    use time_class, only: c_time, ecgetvalues
-   use m_longculverts, only: nlongculverts
+   use m_longculverts_data, only: nlongculverts
    use m_nearfield, only: nearfield_mode, NEARFIELD_UPDATED, addNearfieldData
    use m_airdensity, only: get_airdensity
    use m_laterals, only: numlatsg
@@ -95,7 +95,7 @@ contains
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
-      
+
       integer :: i_const
 
       call timstrt('External forcings', handle_ext)
@@ -146,7 +146,7 @@ contains
          end if
       end if
 
-      if (jatem > 1) then
+      if (jatem == 5) then ! Do only for composite heat flux model
          call set_temperature_models(time_in_seconds)
       end if
 
@@ -203,7 +203,7 @@ contains
 
          !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds, qstss)
          call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_discharge, time_in_seconds)
-         do i_const = 1,numconst
+         do i_const = 1, numconst
             call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_constituent_delta(i_const), time_in_seconds)
          end do
       end if

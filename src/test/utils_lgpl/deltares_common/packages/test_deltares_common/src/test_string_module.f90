@@ -24,6 +24,7 @@
 module test_string_module
     use string_module
     use ftnunit
+    use precision_basics, only: comparereal, sp, dp
 
     implicit none
 
@@ -38,6 +39,8 @@ subroutine tests_string_module
     call test( test_string_count_words, 'Test word counting' )
     call test( test_string_split, 'Test splitting a string into an array of words' )
     call test( test_remove_chars, 'Test Removing characters given set' )
+    call test( test_convert_to_logical, 'Test converting string to logical' )
+    call test( test_convert_to_real, 'Test converting string to real' )
 end subroutine tests_string_module
 
 subroutine count_differences( string1, string2, number )
@@ -199,5 +202,86 @@ subroutine test_remove_chars
     call assert_equal( string, 'TheNumberOfWordsAndQuotedWords', "")
 end subroutine test_remove_chars
 
+subroutine test_convert_to_logical
+    character(len=20), dimension(:), allocatable :: strings
+    logical           :: value
+    integer           :: ierr
+    integer           :: i
+    !
+    ! True values
+    !
+    strings = ['TRUE', 'TRUE with comments', 'T', '1', '1.0', '2.0', '-1e5', 'Yes', 'Y', 'ja', 'j']
+    do i = 1, size(strings)
+       call convert_to_logical( strings(i), value, ierr )
+       call assert_true( value, "The value should be true when parsing: "//trim(strings(i)) )
+       call assert_equal( ierr, no_error, "No error should have occurred when parsing: "//trim(strings(i)) )
+    end do
+    !
+    ! False values
+    !
+    strings = ['FALSE', 'FALSE with comments', 'F', '0', '0.0', '0e0', 'No', 'nee', 'n' ]
+    do i = 1, size(strings)
+       call convert_to_logical( strings(i), value, ierr )
+       call assert_false( value, "The value should be false when parsing: "//trim(strings(i)) )
+       call assert_equal( ierr, no_error, "No error should have occurred when parsing: "//trim(strings(i)) )
+    end do
+    !
+    ! Invalid value
+    !
+    strings = [' ', 'INVALID', '1.0_dp', 'TRUEwith_comments_attached' ]
+    do i = 1, size(strings)
+       call convert_to_logical( strings(i), value, ierr )
+       if (i == 1) then
+          call assert_equal( ierr, empty_string, "Empty-string error should have occurred when parsing: "//trim(strings(i)) )
+       else
+          call assert_equal( ierr, conversion_error, "Conversion error should have occurred when parsing: "//trim(strings(i)) )
+       end if
+    end do
+end subroutine test_convert_to_logical
+
+subroutine test_convert_to_real
+    character(len=20), dimension(:), allocatable :: strings
+    real(sp), dimension(:), allocatable :: values_sp
+    real(dp), dimension(:), allocatable :: values_dp
+    real(sp) :: value_sp
+    real(dp) :: value_dp
+    integer          :: ierr
+    integer          :: i
+    character(len=200) :: errmsg
+    !
+    ! Valid real values
+    !
+    strings = ['1.0', '-2.5', '3.14159', '0.0', '1e3', '-4.2E-2', '  7.5  ', '2.5 with comments', '42', '.42', '0.025', '2.3d2' ]
+    values_sp = [ 1.0_sp, -2.5_sp, 3.14159_sp, 0.0_sp, 1e3_sp, -4.2e-2_sp, 7.5_sp, 2.5_sp, 42.0_sp, 0.42_sp, 0.025_sp, 2.3e2_sp ]
+    values_dp = [ 1.0_dp, -2.5_dp, 3.14159_dp, 0.0_dp, 1e3_dp, -4.2e-2_dp, 7.5_dp, 2.5_dp, 42.0_dp, 0.42_dp, 0.025_dp, 2.3e2_dp ]
+    do i = 1, size(strings)
+       ! single precision
+       value_sp = -999.0_sp
+       call convert_to_real( strings(i), value_sp, ierr )
+       call assert_equal( ierr, no_error, "No error should have occurred when parsing: "//trim(strings(i)) )
+       write(errmsg, '(A,G0,A,G0)', iostat=ierr ) "Obtained value ", value_sp, " equals expected value ", values_sp(i)
+       call assert_true( comparereal(value_sp, values_sp(i)) == 0, trim(errmsg) )
+       
+       ! double precision
+       value_dp = -999.0_dp
+       call convert_to_real( strings(i), value_dp, ierr )
+       call assert_equal( ierr, no_error, "No error should have occurred when parsing: "//trim(strings(i)) )
+       write(errmsg, '(A,G0,A,G0)', iostat=ierr ) "Obtained value ", value_dp, " equals expected value ", values_dp(i)
+       call assert_true( comparereal(value_dp, values_dp(i)) == 0, trim(errmsg) )
+    end do
+    
+    !
+    ! Invalid real values
+    !
+    strings = [' ', 'INVALID', '1.0_dp', '3.14pi' ]
+    do i = 1, size(strings)
+       call convert_to_real( strings(i), value_dp, ierr )
+       if (i == 1) then
+          call assert_equal( ierr, empty_string, "Empty-string error should have occurred when parsing: '"//trim(strings(i))//"'" )
+       else
+          call assert_equal( ierr, conversion_error, "Conversion error should have occurred when parsing: "//trim(strings(i)) )
+       end if
+    end do
+end subroutine test_convert_to_real
 
 end module test_string_module

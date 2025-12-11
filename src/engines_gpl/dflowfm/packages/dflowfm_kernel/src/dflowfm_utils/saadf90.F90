@@ -94,7 +94,7 @@ contains
 
       if (INCX == 1 .and. INCY == 1) then
 
-         DOTs = 0d0
+         DOTs = 0.0_dp
 
          if (jasafe /= 1) then
             !$OMP PARALLEL DO                                     &
@@ -129,7 +129,8 @@ contains
 
       if (allocated(ngs)) deallocate (ngs) ! Guus to Saad
       ! allocate(ngs(nogauss0+nocg0) )
-      allocate (ngs(nodtot)); ngs = 0
+      allocate (ngs(nodtot))
+      ngs = 0
 
       na = 0 ! matrix counter
       if (Noderivedtypes < 5) then
@@ -168,11 +169,14 @@ contains
       integer :: maxmatvecs, n30
       real(kind=dp), intent(in) :: alpha_loc !< ILU (0.0) to MILU (1.0) preconditioning
 
-      NROW = NOCG0; nax = na
+      NROW = NOCG0
+      nax = na
       ! n30  = 30
       n30 = 30
 
-      NN = NROW; mm = n30 * nn; nwk = 2 * mm
+      NN = NROW
+      mm = n30 * nn
+      nwk = 2 * mm
 
       if (allocated(IA)) then
          deallocate (iao, jao, ia, ja, perm, kolrs, jlu, ju, iw)
@@ -184,8 +188,14 @@ contains
                 perm(nn), kolrs(nn), &
                 jlu(mm), ju(nn), iw(nn * 3), stat=ierr)
       call aerr('iao(nn+1)', IERR, mm + 7 * nn + 2 * na)
-      iao = 0; jao = 0; ia = 0; ja = 0
-      jlu = 0; ju = 0; iw = 0; perm = 0
+      iao = 0
+      jao = 0
+      ia = 0
+      ja = 0
+      jlu = 0
+      ju = 0
+      iw = 0
+      perm = 0
 
       allocate (ao(na), a(na), solo(nn), rhso(nn), sol(nn), &
                 sol0(nn), rhs(nn), alu(mm), stat=ierr)
@@ -200,9 +210,13 @@ contains
       end do
       call aerr('wk(nwk)', IERR, nwk)
 
-      ao = 0.d0; a = 0.d0
-      solo = 0.d0; rhs = 0.d0; alu = 0.d0; wk = 0.d0
-      sol = 0d0
+      ao = 0.0_dp
+      a = 0.0_dp
+      solo = 0.0_dp
+      rhs = 0.0_dp
+      alu = 0.0_dp
+      wk = 0.0_dp
+      sol = 0.0_dp
 
       ipar = 0 ! initialize all params to 0
       ipar(2) = 1 ! no (0), left (1), right (2), both (3) precond
@@ -223,8 +237,8 @@ contains
 !   SPARSKIT SQRT(DDOT(residualvector,residualvector)) is considered, which is
 !   weighing of residualvector in L2 norm *times* the number of unknowns per
 !   direction
-      fpar = 0d0 ! initialize all params to 0
-      fpar(1) = 0.0d-16 ! relative tolerance ('exact' solve, except
+      fpar = 0.0_dp ! initialize all params to 0
+      fpar(1) = 0.0e-16_dp ! relative tolerance ('exact' solve, except
 !     fpar(2) = 1.0D-14 * 1.0D2 ! absolute tolerance  for round-off errors)
 !             = 1.0D-14 as in method GS * underestimation of number of unknowns
 !     fpar(2) = 1.0D-8  * 1.0D0 ! MB: set lower tolerance
@@ -238,7 +252,7 @@ contains
 !     alpha = 0.00000D0 ! SPvdP: set it to 0 for ILU preconditioning
       alpha = alpha_loc
 
-      tol = 0.50d-2
+      tol = 0.50e-2_dp
 
 !                       ***** PERMUTATIONS *****
 !     permselect = 1    ! MB: no permutation
@@ -498,8 +512,8 @@ contains
       do ii = 1, n
          j1 = ia(ii)
          j2 = ia(ii + 1) - 1
-         dropsum = 0.0d0
-         tnorm = 0.0d0
+         dropsum = 0.0_dp
+         tnorm = 0.0_dp
          do k = j1, j2
             tnorm = tnorm + abs(a(k))
          end do
@@ -705,7 +719,7 @@ contains
 !
          if (w(ii) == 0.0) w(ii) = (0.0001 + tol) * tnorm
 !
-         alu(ii) = 1.0d0 / w(ii)
+         alu(ii) = 1.0_dp / w(ii)
 !
 !     update pointer to beginning of next row of U.
 !
@@ -769,7 +783,7 @@ contains
 !     normal execution
 !
       its = 0
-      res = 0.0d0
+      res = 0.0_dp
 !
       ! do i = 1, n
       !   sol(i) = guess(i)
@@ -888,7 +902,7 @@ contains
 !     normal execution
 !
       its = 0
-      res = 0.0d0
+      res = 0.0_dp
 !
       do i = 1, n
          sol(i) = guess(i)
@@ -950,7 +964,7 @@ contains
 
       call amux(n, sol, wk, a, ja, ia)
       do i = 1, n
-         wk(n + i) = sol(i) - 1.0d0
+         wk(n + i) = sol(i) - 1.0_dp
          wk(i) = wk(i) - rhs(i)
       end do
 !      write (iou, *) '# the actual residual norm is', dnrm2(n,wk,1)
@@ -992,7 +1006,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      afun = -1.0d0
+      afun = -1.0_dp
       return
    end function afun
 
@@ -1001,7 +1015,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      bfun = -1.0d0
+      bfun = -1.0_dp
       return
    end function bfun
 
@@ -1010,7 +1024,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      cfun = -1.0d0
+      cfun = -1.0_dp
       return
    end function cfun
 
@@ -1035,7 +1049,7 @@ contains
       no_warning_unused_dummy_argument(x)
       no_warning_unused_dummy_argument(y)
       no_warning_unused_dummy_argument(z)
-      ffun = 0.0d0
+      ffun = 0.0_dp
       return
    end function ffun
 
@@ -1920,7 +1934,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one
-      parameter(one=1.0d0)
+      parameter(one=1.0_dp)
 !
 !     local variables
 !
@@ -2192,7 +2206,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one
-      parameter(one=1.0d0)
+      parameter(one=1.0_dp)
 !
 !     local variables
 !
@@ -2390,7 +2404,7 @@ contains
 !
 !     step (5)
       omega = ddot(n, w(:, 4), 1, w(:, 4), 1)
-      if (omega /= 0d0) then
+      if (omega /= 0.0_dp) then
          fpar(11) = fpar(11) + n + n
          if (brkdn(omega, ipar)) goto 900
          omega = ddot(n, w(:, 4), 1, w(:, 3), 1) / omega
@@ -2508,7 +2522,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
 !     local variables
 !
@@ -2806,7 +2820,7 @@ contains
 !----------------------------------------------------------------------
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hes points to the Hessenberg matrix,
@@ -3094,7 +3108,7 @@ contains
          end if
       end if
 300   if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+         fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       else
          fpar(7) = zero
       end if
@@ -3127,7 +3141,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hess points to the Hessenberg matrix,
@@ -3406,7 +3420,7 @@ contains
          end if
       end if
 300   if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+         fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       else
          fpar(7) = zero
       end if
@@ -3428,8 +3442,8 @@ contains
 !     local variables
 !
       real(kind=dp) :: one, zero, deps
-      parameter(one=1.0d0, zero=0.0d0)
-      parameter(deps=1.0d-33)
+      parameter(one=1.0_dp, zero=0.0_dp)
+      parameter(deps=1.0e-33_dp)
 !
       integer i, ii, j, jp1, j0, k, ptrw, ptrv, iv, iw, ic, is, ihm, ihd, lb, ptr
       real(kind=dp) :: alpha, beta, psi, c, s
@@ -3706,7 +3720,7 @@ contains
 !     clean up the iterative solver
 !
 80    fpar(7) = zero
-      if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+      if (fpar(3) /= zero .and. fpar(6) /= zero .and. ipar(7) > ipar(13)) fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       if (ipar(1) > 0) then
          if (ipar(3) == 999 .and. ipar(11) /= 0) then
             ipar(1) = 0
@@ -3747,7 +3761,7 @@ contains
 !-----------------------------------------------------------------------
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
 !     local variables, ptr and p2 are temporary pointers,
 !     hess points to the Hessenberg matrix,
@@ -4007,7 +4021,7 @@ contains
       end if
 300   if (fpar(3) /= zero .and. fpar(6) /= zero .and. &
           ipar(7) > ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+         fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       else
          fpar(7) = zero
       end if
@@ -4053,7 +4067,7 @@ contains
 !     local variables
 !
       real(kind=dp) :: one, zero
-      parameter(one=1.0d0, zero=0.0d0)
+      parameter(one=1.0_dp, zero=0.0_dp)
 !
       real(kind=dp) :: t, sqrt, ss, res, beta, ss1, delta, x, zeta, umm
       integer k, j, i, i2, ip2, ju, lb, lbm1, np, indp
@@ -4434,7 +4448,7 @@ contains
 !     elements of the column of the triangular matrix..
 !-----------------------------------------------------------------------
       real(kind=dp) :: zero
-      parameter(zero=0.0d0)
+      parameter(zero=0.0_dp)
 !
       npm1 = np - 1
       if (np <= 1) goto 12
@@ -4469,7 +4483,7 @@ contains
 !     (See P 202 of "matrix computation" by Golub and van Loan.)
 !-----------------------------------------------------------------------
       real(kind=dp) :: t, one, zero
-      parameter(zero=0.0d0, one=1.0d0)
+      parameter(zero=0.0_dp, one=1.0_dp)
 !
       no_warning_unused_dummy_argument(c)
       if (x == zero .and. y == zero) then
@@ -4565,7 +4579,7 @@ contains
 !     Some common operations required before terminating the CG routines
 !-----------------------------------------------------------------------
       real(kind=dp) :: zero
-      parameter(zero=0.0d0)
+      parameter(zero=0.0_dp)
 !
       if (ipar(12) /= 0) then
          ipar(1) = ipar(12)
@@ -4580,7 +4594,7 @@ contains
          end if
       end if
       if (fpar(3) > zero .and. fpar(6) > zero .and. ipar(7) > ipar(13)) then
-         fpar(7) = log10(fpar(3) / fpar(6)) / dble(ipar(7) - ipar(13))
+         fpar(7) = log10(fpar(3) / fpar(6)) / real(ipar(7) - ipar(13), kind=dp)
       else
          fpar(7) = zero
       end if
@@ -4595,7 +4609,7 @@ contains
       implicit none
       integer ipar(16)
       real(kind=dp) :: alpha, beta, zero, one
-      parameter(zero=0.0d0, one=1.0d0)
+      parameter(zero=0.0_dp, one=1.0_dp)
 !-----------------------------------------------------------------------
 !     test whether alpha is zero or an abnormal number, if yes,
 !     this routine will return .true.
@@ -4635,7 +4649,7 @@ contains
 !     some common initializations for the iterative solvers
 !-----------------------------------------------------------------------
       real(kind=dp) :: zero, one
-      parameter(zero=0.0d0, one=1.0d0)
+      parameter(zero=0.0_dp, one=1.0_dp)
       no_warning_unused_dummy_argument(dsc)
 !
 !     ipar(1) = -2 inidcate that there are not enough space in the work
@@ -4679,8 +4693,8 @@ contains
             ipar(1) = -4
             return
          else
-            fpar(1) = 1.0d-6
-            fpar(2) = 1.0d-16
+            fpar(1) = 1.0e-6_dp
+            fpar(2) = 1.0e-16_dp
          end if
       end if
 !     .. clear the fpar elements
@@ -4736,7 +4750,7 @@ contains
 !-----------------------------------------------------------------------
       integer i, k
       real(kind=dp) :: nrm0, nrm1, fct, thr, zero, one, reorth
-      parameter(zero=0.0d0, one=1.0d0, reorth=0.98d0)
+      parameter(zero=0.0_dp, one=1.0_dp, reorth=0.98_dp)
 !
 !     compute the norm of the input vector
 !
@@ -4864,10 +4878,10 @@ contains
 !
 !     this is the identity matrix.
 !
-      xyke(1, 1) = 1.0d0
-      xyke(2, 2) = 1.0d0
-      xyke(1, 2) = 0.0d0
-      xyke(2, 1) = 0.0d0
+      xyke(1, 1) = 1.0_dp
+      xyke(2, 2) = 1.0_dp
+      xyke(1, 2) = 0.0_dp
+      xyke(2, 1) = 0.0_dp
 
       return
    end subroutine xyk
@@ -5021,7 +5035,7 @@ contains
 !     some constants
 !
       real(kind=dp) :: one
-      parameter(one=1.0d0)
+      parameter(one=1.0_dp)
 !
 !     local variables
 !
@@ -5032,7 +5046,7 @@ contains
 !     nx has to be larger than 1
 !
       if (nx <= 1) return
-      h = one / dble(nx - 1)
+      h = one / real(nx - 1, kind=dp)
 !
 !     the mode
 !
@@ -5144,7 +5158,7 @@ contains
 !     some constants
 !
       real(kind=dp) :: zero, half
-      parameter(zero=0.0d0, half=0.5d0)
+      parameter(zero=0.0_dp, half=0.5_dp)
 !
 !     local variables
 !
@@ -5161,9 +5175,9 @@ contains
       end do
 !
       hhalf = h * half
-      x = h * dble(kx)
-      y = h * dble(ky)
-      z = h * dble(kz)
+      x = h * real(kx, kind=dp)
+      y = h * real(ky, kind=dp)
+      z = h * real(kz, kind=dp)
       cntr = zero
 !     differentiation wrt x:
       coeff = afun(x + hhalf, y, z)
@@ -5308,14 +5322,14 @@ contains
 !     some constants
 !
       real(kind=dp) :: one
-      parameter(one=1.0d0)
+      parameter(one=1.0_dp)
 !
 !     local variables
 !
       integer iedge, ix, iy, iz, k, kx, ky, kz, nfree2, node
       real(kind=dp) :: h
 !
-      h = one / dble(nx + 1)
+      h = one / real(nx + 1, kind=dp)
       kx = 1
       ky = nx
       kz = nx * ny
@@ -5419,7 +5433,7 @@ contains
       implicit none
 
       real(kind=dp) :: zero, half
-      parameter(zero=0.0d0, half=0.5d0)
+      parameter(zero=0.0_dp, half=0.5_dp)
 !
 !     local variables
 !
@@ -5443,9 +5457,9 @@ contains
 !------------
       hhalf = h * half
       h2 = h * h
-      x = h * dble(kx)
-      y = h * dble(ky)
-      z = h * dble(kz)
+      x = h * real(kx, kind=dp)
+      y = h * real(ky, kind=dp)
+      z = h * real(kz, kind=dp)
 ! differentiation wrt x:
       xh = x + hhalf
       call afunbl(nfree, xh, y, z, coeff)
@@ -5533,7 +5547,7 @@ contains
 !     parameters
 !
       real(kind=dp) :: zero
-      parameter(zero=0.0d0)
+      parameter(zero=0.0_dp)
 !
 !     local variables
 !
@@ -5814,7 +5828,7 @@ contains
 !     some constants
 !
       real(kind=dp) :: half, zero, one, two
-      parameter(half=0.5d0, zero=0.0d0, one=1.0d0, two=2.0d0)
+      parameter(half=0.5_dp, zero=0.0_dp, one=1.0_dp, two=2.0_dp)
 !
 !     local variables
 !
@@ -6111,7 +6125,7 @@ contains
 !     CSR matrix
 !-----------------------------------------------------------------------
       do k = ia(i), ia(i + 1) - 1
-         a(k) = 0.0d0
+         a(k) = 0.0_dp
       end do
 !
       return
@@ -6152,9 +6166,9 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
-         coeff((j - 1) * nfree + j) = -1.0d0
+         coeff((j - 1) * nfree + j) = -1.0_dp
       end do
       return
    end subroutine afunbl
@@ -6174,9 +6188,9 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
-         coeff((j - 1) * nfree + j) = -1.0d0
+         coeff((j - 1) * nfree + j) = -1.0_dp
       end do
       return
    end subroutine bfunbl
@@ -6196,9 +6210,9 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
-         coeff((j - 1) * nfree + j) = -1.0d0
+         coeff((j - 1) * nfree + j) = -1.0_dp
       end do
       return
    end subroutine cfunbl
@@ -6218,7 +6232,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6239,7 +6253,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6260,7 +6274,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6281,7 +6295,7 @@ contains
       no_warning_unused_dummy_argument(z)
       do j = 1, nfree
          do i = 1, nfree
-            coeff((j - 1) * nfree + i) = 0.0d0
+            coeff((j - 1) * nfree + i) = 0.0_dp
          end do
       end do
       return
@@ -6328,7 +6342,7 @@ contains
             !
             !     compute the inner product of row i with vector x
             !
-            t = 0.0d0
+            t = 0.0_dp
             do k = ia(i), ia(i + 1) - 1
                t = t + a(k) * x(ja(k))
             end do
@@ -6342,7 +6356,7 @@ contains
       else
          do i = 1, n
 
-            t = 0.0d0
+            t = 0.0_dp
             do k = ia(i), ia(i + 1) - 1
                t = t + a(k) * x(ja(k))
             end do
@@ -6546,17 +6560,17 @@ contains
          goto 1234
       end if
 
-      call realloc(solver%a, solver%numnonzeros, keepExisting=.false., fill=0d0)
+      call realloc(solver%a, solver%numnonzeros, keepExisting=.false., fill=0.0_dp)
       call realloc(solver%ia, solver%numrows + 1, keepExisting=.false., fill=0)
       call realloc(solver%ja, solver%numnonzeros, keepExisting=.false., fill=0)
 
-      call realloc(solver%rhs, solver%numrows, keepExisting=.false., fill=0d0)
+      call realloc(solver%rhs, solver%numrows, keepExisting=.false., fill=0.0_dp)
 
-      call realloc(solver%alu, solver%numnonzerosprecond, keepExisting=.false., fill=0d0)
+      call realloc(solver%alu, solver%numnonzerosprecond, keepExisting=.false., fill=0.0_dp)
       call realloc(solver%ju, solver%numrows, keepExisting=.false., fill=0)
       call realloc(solver%jlu, solver%numnonzerosprecond, keepExisting=.false., fill=0)
 
-      call realloc(solver%work, solver%nwork, keepExisting=.false., fill=0d0)
+      call realloc(solver%work, solver%nwork, keepExisting=.false., fill=0.0_dp)
       call realloc(solver%jw, solver%nwork, keepExisting=.false., fill=0)
 
       ierror = 0

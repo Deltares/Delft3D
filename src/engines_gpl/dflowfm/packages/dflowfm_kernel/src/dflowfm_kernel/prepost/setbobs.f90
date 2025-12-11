@@ -48,7 +48,9 @@ contains
       use m_sediment, only: stm_included
       use m_oned_functions, only: setbobs_1d
       use m_structures, only: network
-      use m_longculverts
+      use m_longculverts, only: find1d2dculvertlinks, setLongCulvert1D2DLinkAngles, longculvertsToProfs
+      use m_longculverts_data, only: newculverts, nlongculverts, longculverts
+      use unstruc_model, only: md_convertlongculverts
 
       integer :: L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, Lf, mis, i, numcoords, ibotL
       real(kind=dp) :: bl1, bl2, bedlevel_at_link, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
@@ -59,9 +61,10 @@ contains
       if (ibedlevmode == BLMODE_D3D) then
          ! DPSOPT=MAX equivalent: deepest zk/corner point
          do k = 1, ndx2d ! TODO: [TRUNKMERGE] WO: I restored ndx2d (was: ndx1db in sedmor)
-            bl(k) = huge(1d0)
+            bl(k) = huge(1.0_dp)
             do kk = 1, netcell(k)%n
-               zn1 = zk(netcell(k)%nod(kk)); if (zn1 == dmiss) zn1 = zkuni
+               zn1 = zk(netcell(k)%nod(kk))
+               if (zn1 == dmiss) zn1 = zkuni
                bl(k) = min(bl(k), zn1)
             end do
          end do
@@ -74,10 +77,10 @@ contains
                end if
             end do
          else if (ibedlevtyp > BEDLEV_TYPE_WATERLEVEL .and. ibedlevtyp <= BEDLEV_TYPE_MAX) then
-            bl = 1d30
+            bl = 1.0e30_dp
          else if (ibedlevtyp == BEDLEV_TYPE_WATERLEVEL6) then ! quick and dirty flownodes tile depth like taken from netnodes, to be able to at least run netnode zk defined models
             do k = 1, ndxi ! Was: ndx2d, but netcell includes 1D too
-               bl(k) = 0d0
+               bl(k) = 0.0_dp
                mis = 0
                do kk = 1, netcell(k)%n
                   bl(k) = bl(k) + zk(netcell(k)%nod(kk))
@@ -166,10 +169,14 @@ contains
 
             if (iadv(L) > 20 .and. iadv(L) < 30 .and. (.not. stm_included)) cycle ! skip update of bobs for structures
 
-            n1 = ln(1, L); n2 = ln(2, L) ! flow ref
-            k1 = lncn(1, L); k2 = lncn(2, L) ! net  ref
-            zn1 = zk(k1); if (zn1 == dmiss) zn1 = zkuni
-            zn2 = zk(k2); if (zn2 == dmiss) zn2 = zkuni
+            n1 = ln(1, L)
+            n2 = ln(2, L) ! flow ref
+            k1 = lncn(1, L)
+            k2 = lncn(2, L) ! net  ref
+            zn1 = zk(k1)
+            if (zn1 == dmiss) zn1 = zkuni
+            zn2 = zk(k2)
+            if (zn2 == dmiss) zn2 = zkuni
 
             if (kcu(L) == 1) then ! 1D link
 
@@ -186,7 +193,7 @@ contains
                      bl(n2) = zn2
                   end if
                else
-                  bedlevel_at_link = 0.5d0 * (zn1 + zn2) ! same as 2D, based on network, but now in flow link dir. In 2D this is net link dir
+                  bedlevel_at_link = 0.5_dp * (zn1 + zn2) ! same as 2D, based on network, but now in flow link dir. In 2D this is net link dir
                   bob(1, L) = bedlevel_at_link
                   bob(2, L) = bedlevel_at_link ! revisit
                   bl(n1) = min(bl(n1), bedlevel_at_link)
@@ -199,8 +206,10 @@ contains
 
       ! 1d-2d links
       do L = 1, lnx1D ! 1D
-         n1 = ln(1, L); n2 = ln(2, L) ! flow ref
-         k1 = lncn(1, L); k2 = lncn(2, L) ! net  ref
+         n1 = ln(1, L)
+         n2 = ln(2, L) ! flow ref
+         k1 = lncn(1, L)
+         k2 = lncn(2, L) ! net  ref
          if (ibedlevtyp == BEDLEV_TYPE_MEAN) then
             zn1 = zk(k1)
             zn2 = zk(k2)
@@ -241,12 +250,12 @@ contains
             bl(n1) = min(bl(n1), bedlevel_at_link)
             bl(n2) = min(bl(n2), bedlevel_at_link)
          else if (kcu(L) == 5 .or. kcu(L) == 7) then ! keep 1D and 2D levels
-            if (bl(n1) /= 1d30) then
+            if (bl(n1) /= 1.0e30_dp) then
                bob(1, L) = bl(n1)
             else
                bob(1, L) = zn1
             end if
-            if (bl(n2) /= 1d30) then
+            if (bl(n2) /= 1.0e30_dp) then
                bob(2, L) = bl(n2)
             else
                bob(2, L) = zn2
@@ -267,7 +276,7 @@ contains
       end do
 
       do k = 1, ndx !losse punten die geen waarde kregen
-         if (bl(k) == 1d30) then
+         if (bl(k) == 1.0e30_dp) then
             bl(k) = zkuni
          end if
       end do
@@ -276,7 +285,8 @@ contains
 
          if (iadv(L) > 20 .and. iadv(L) < 30) cycle ! skip update of bobs for structures
 
-         n1 = ln(1, L); n2 = ln(2, L)
+         n1 = ln(1, L)
+         n2 = ln(2, L)
          if (jaupdbndbl == 1) then
             !if `jadpuopt==1`, the bed level at the boundaries has been extrapolated in `setbedlevelfromextfile` and we do not want to overwrite it.
             if (jadpuopt == 1) then
@@ -285,7 +295,8 @@ contains
          end if
 
          if (kcu(L) == -1) then ! 1D randjes extrapoleren voor 1D straight channel convecyance testcase
-            k1 = lncn(1, L); k2 = lncn(2, L)
+            k1 = lncn(1, L)
+            k2 = lncn(2, L)
             k3 = 0
             do k = 1, nd(n2)%lnx
                LL = abs(nd(n2)%ln(k))
@@ -308,9 +319,11 @@ contains
                !elseif (bl(n1) == 1d30 .or. bl(n2) == 30) then
             else if (.not. network%loaded) then
 !          SPvdP: previous expression is problematic when zk(k2) and/or zk(k3) have missing values
-               zn2 = zk(k2); if (zn2 == dmiss) zn2 = zkuni
-               zn3 = zk(k3); if (zn3 == dmiss) zn3 = zkuni
-               zn1 = 1.5d0 * zn2 - 0.5d0 * zn3 ! note: actual locations of cells centers not taken into account
+               zn2 = zk(k2)
+               if (zn2 == dmiss) zn2 = zkuni
+               zn3 = zk(k3)
+               if (zn3 == dmiss) zn3 = zkuni
+               zn1 = 1.5_dp * zn2 - 0.5_dp * zn3 ! note: actual locations of cells centers not taken into account
 
                bob(1, L) = zn1
                bob(2, L) = zn1
@@ -338,31 +351,33 @@ contains
 
       call duikerstoprofs()
 
-      if (newculverts) then
+      if (newculverts .and. md_convertlongculverts == 0) then ! not converted on-the-fly!
          ! find the 1d2d flowlinks required for longculvertsToProfs
          do i = 1, nlongculverts
             numcoords = size(longculverts(i)%xcoords)
             call find1d2dculvertlinks(network, longculverts(i), numcoords)
             !this routine is called here because the culvert links need to be filled, cannot be done during Geominit.
-            call setLongCulvert1D2DLinkAngles(i)
+            !call setLongCulvert1D2DLinkAngles(i)
          end do
          call longculvertsToProfs(.true.)
       else
          call longculvertsToProfs(.false.)
       end if
-      if (blmeanbelow /= -999d0) then
+      if (blmeanbelow /= -999.0_dp) then
          do n = 1, ndx2D
-            wn = 0d0; bln = 0d0
+            wn = 0.0_dp
+            bln = 0.0_dp
             do LL = 1, nd(n)%lnx
-               Ls = nd(n)%ln(LL); L = abs(Ls)
-               bln = bln + wu(L) * 0.5d0 * (bob(1, L) + bob(2, L))
+               Ls = nd(n)%ln(LL)
+               L = abs(Ls)
+               bln = bln + wu(L) * 0.5_dp * (bob(1, L) + bob(2, L))
                wn = wn + wu(L)
             end do
-            if (wn > 0d0) then
+            if (wn > 0.0_dp) then
                bln = bln / wn
-               alf = min(1d0, (blminabove - bln) / (blminabove - blmeanbelow))
-               if (alf > 0d0) then
-                  bl(n) = alf * bln + (1d0 - alf) * bl(n)
+               alf = min(1.0_dp, (blminabove - bln) / (blminabove - blmeanbelow))
+               if (alf > 0.0_dp) then
+                  bl(n) = alf * bln + (1.0_dp - alf) * bl(n)
                end if
             end if
          end do
@@ -416,7 +431,7 @@ contains
          if (jaconveyance2D >= 1) then ! left right
             bedlevel_at_link = min(zn1, zn2)
          else if (ibedlevtyp == BEDLEV_TYPE_MEAN) then ! mean
-            bedlevel_at_link = 0.5d0 * (zn1 + zn2)
+            bedlevel_at_link = 0.5_dp * (zn1 + zn2)
          else if (ibedlevtyp == BEDLEV_TYPE_MIN) then ! min
             bedlevel_at_link = min(zn1, zn2)
          else if (ibedlevtyp == BEDLEV_TYPE_MAX) then ! max

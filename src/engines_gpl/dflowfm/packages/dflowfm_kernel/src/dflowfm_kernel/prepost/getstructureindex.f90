@@ -49,7 +49,7 @@ contains
       use fm_external_forcings_data
       use m_hash_search, only: hashsearch
       use unstruc_channel_flow, only: network
-      use m_longculverts
+      use m_longculverts_data, only: nlongculverts, longculverts
       use m_dambreak_breach, only: get_active_dambreak_index
 
       character(len=*), intent(in) :: strtypename !< the type of the structure: 'pumps', 'weirs', 'gates', ...

@@ -27,7 +27,7 @@ program checkhydbal
    use string_module
    use MessageHandling
    use m_file_path_utils
-   use m_date_time_utils_external, only: write_date_time
+   use m_date_time_utils_external, only: fill_in_date_time
    use m_cli_utils, only: store_command_arguments, is_command_arg_specified, &
                           get_command_argument_by_name, get_argument_by_index
    use checkhydbal_version_module
@@ -296,7 +296,7 @@ program checkhydbal
    end if
 
    write (report%unit, '(a,a)') ' (c) ', checkhydbal_version_full
-   call write_date_time(rundat)
+   call fill_in_date_time(rundat)
    write (report%unit, '(a,a)') ' execution start: ', rundat
    write (report%unit, *) 'input hyd-file name          : ', trim(input_hyd_file)
 
@@ -716,7 +716,7 @@ program checkhydbal
       write (report%unit, '(/a)') 'No time steps found, so no summary could be produced.'
       stop 1
    end if
-   
+
    itimet0 = 0
    do iseg = 1, noseg
       errvavg(iseg) = errvavg(iseg) / real(ntime)

@@ -110,12 +110,6 @@ module m_1d_networkreader
    if (meshgeom%nbranches .eq. -1) then
       call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in meshgeom%nbranches')
    endif
-   if (.not.associated(meshgeom%nodex)) then
-      call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in meshgeom%nodex')
-   endif
-   if (.not.associated(meshgeom%nodey)) then
-      call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in meshgeom%nodey')
-   endif
    if (.not.allocated(nodeids)) then
       call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in nodeids')
    endif

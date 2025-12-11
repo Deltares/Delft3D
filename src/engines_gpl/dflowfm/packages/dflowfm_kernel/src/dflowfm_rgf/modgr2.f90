@@ -48,7 +48,7 @@ contains
       integer :: mmax, nmax, mc, nc, nump
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)
       real(kind=dp) :: EPS, dx1, dy1, dx2, dy2, fac, efac
-      data EPS/0.00001d0/
+      data EPS/0.00001_dp/
       integer :: m1, m2, n1, n2, in, jn, i1, j1, klast, num, i, j, i2, j2, ii, jj
 !     LINESHIFT
 
@@ -78,9 +78,9 @@ contains
                do II = I1, I2 - IN * KLAST
                   do JJ = J1, J2 - JN * KLAST
                      if (IN == 1) then
-                        FAC = dble(II - I1) / dble(I2 - I1)
+                        FAC = real(II - I1, kind=dp) / real(I2 - I1, kind=dp)
                      else
-                        FAC = dble(JJ - J1) / dble(J2 - J1)
+                        FAC = real(JJ - J1, kind=dp) / real(J2 - J1, kind=dp)
                      end if
                      EFAC = 1 - FAC
                      XH(II, JJ) = X(II, JJ) + EFAC * DX1 + FAC * DX2

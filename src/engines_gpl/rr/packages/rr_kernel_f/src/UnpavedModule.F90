@@ -4570,6 +4570,7 @@ contains
 !**********************************************************************
 
 
+ use m_capsim, only : readunsa, readroot
   IMPLICIT NONE
 
   Integer       IStatus
@@ -4577,6 +4578,7 @@ contains
   Integer       IdebugCapsimFromTimestep, IdebugCapsimToTimestep
   Integer       Allocation_Error
 
+  
 !
   Character(132) CapsimFileName
 
@@ -4842,6 +4844,7 @@ contains
 
 
    Subroutine ComputeCapsim (iovh, Idebug, NodeName)
+   use m_capsim, only: simgro_ovz
 
 ! *********************************************************************
 ! Subroutine berekent onverzadigde zone voor onverhard gebied met index Iovh
@@ -7277,6 +7280,7 @@ contains
     ! ***    Stuk uit sub Init1: initialisie van onverhard gebied per tijdstap
     ! *********************************************************************
 
+    use m_capsim, only : simgro_ovz
     Implicit none
 
     Integer iDebug, iout1, IEvent, IMaand

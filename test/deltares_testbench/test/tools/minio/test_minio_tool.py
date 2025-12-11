@@ -12,7 +12,7 @@ from s3_path_wrangler.paths import S3Path
 from src.config.types.path_type import PathType
 from src.utils.minio_rewinder import Plan, PlanItem, Rewinder, VersionPair
 from test.helpers import minio_tool as helper
-from tools.minio.config import IndexItem, TestCaseData, TestCaseIndex, TestCasePattern, TestCaseWriter
+from tools.minio.config import ConfigData, ConfigParser, TestCaseData, TestCaseIndex, TestCasePattern, TestCaseWriter
 from tools.minio.error import MinioToolError
 from tools.minio.minio_tool import Command, MultiInputParser, PlannerCommandParser
 from tools.minio.prompt import Answer, Prompt
@@ -28,11 +28,13 @@ class TestMinioTool:
         with pytest.raises(MinioToolError, match="No test case found"):
             minio_tool.push(TestCasePattern(name_filter="foo"), PathType.INPUT)
 
-    def test_push__multiple_matching_test_cases__raise_error(self) -> None:
+    def test_push__multiple_matching_test_cases__raise_error(self, mocker: MockerFixture) -> None:
         # Arrange
-        test_case_index = TestCaseIndex(
-            {Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo"), helper.make_test_case("foobar")], [])}
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(
+            [helper.make_test_case(name) for name in ("foo", "foobar")]
         )
+        test_case_index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         minio_tool = helper.make_minio_tool(test_case_index=test_case_index)
 
         # Act
@@ -43,9 +45,11 @@ class TestMinioTool:
                 local_dir=Path("local"),
             )
 
-    def test_push__unsupported_path_type__raise_error(self) -> None:
+    def test_push__unsupported_path_type__raise_error(self, mocker: MockerFixture) -> None:
         # Arrange
-        test_case_index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        test_case_index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         minio_tool = helper.make_minio_tool(test_case_index=test_case_index)
 
         # Act
@@ -57,7 +61,9 @@ class TestMinioTool:
     ) -> None:
         # Arrange
         local_dir = Path("local")
-        test_case_index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        test_case_index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.build_plan.return_value = Plan(
             local_dir=Path("local"),
@@ -91,7 +97,10 @@ class TestMinioTool:
         )
         prompt = mocker.Mock(spec=Prompt)
         prompt.yes_no.return_value = False  # No, don't apply these changes.
-        test_case_index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo")], [])})
+
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        test_case_index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         minio_tool = helper.make_minio_tool(
             bucket=bucket, rewinder=rewinder, prompt=prompt, test_case_index=test_case_index
         )
@@ -119,7 +128,9 @@ class TestMinioTool:
         local_dir = Path("local")
         fs.create_file(local_dir / "foo.txt", contents="foo")
         bucket = S3Path.from_bucket("my-bucket")
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         tags = Tags()
         tags.update({"foo": "bar"})
@@ -162,7 +173,9 @@ class TestMinioTool:
         fs.create_file(local_dir / "foo.txt", contents="foo")
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
-        index = TestCaseIndex({config_path: IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        index = TestCaseIndex([config_path], config_parser)
         plan = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
@@ -208,7 +221,9 @@ class TestMinioTool:
         fs.create_file(local_dir / "foo.txt", contents="foo")
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
-        index = TestCaseIndex({config_path: IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        index = TestCaseIndex([config_path], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.build_plan.return_value = Plan(
             local_dir=local_dir,
@@ -238,9 +253,11 @@ class TestMinioTool:
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
-        index = TestCaseIndex(
-            {Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo", version=now - timedelta(days=3))], [])}
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(
+            test_cases=[helper.make_test_case("foo", version=now - timedelta(days=3))]
         )
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.detect_conflicts.return_value = [
             VersionPair(
@@ -280,9 +297,11 @@ class TestMinioTool:
         bucket = S3Path.from_bucket("my-bucket")
         now = datetime.now(timezone.utc)
 
-        test_case_index = TestCaseIndex(
-            {config_path: IndexItem([helper.make_test_case("foo", version=now - timedelta(days=3))], [])}
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(
+            test_cases=[helper.make_test_case("foo", version=now - timedelta(days=3))]
         )
+        test_case_index = TestCaseIndex([config_path], config_parser)
 
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.list_objects.return_value = [helper.make_object("references/foo.txt", last_modified=now)]
@@ -331,11 +350,13 @@ class TestMinioTool:
         with pytest.raises(MinioToolError, match="No test case found"):
             minio_tool.pull(TestCasePattern(name_filter="foo"), PathType.INPUT)
 
-    def test_pull__multiple_matching_test_cases__raise_error(self) -> None:
+    def test_pull__multiple_matching_test_cases__raise_error(self, mocker: MockerFixture) -> None:
         # Arrange
-        test_case_index = TestCaseIndex(
-            {Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo"), helper.make_test_case("foobar")], [])}
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(
+            test_cases=[helper.make_test_case("foo"), helper.make_test_case("foobar")]
         )
+        test_case_index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         minio_tool = helper.make_minio_tool(test_case_index=test_case_index)
 
         # Act
@@ -361,7 +382,9 @@ class TestMinioTool:
         fs.create_dir(local_dir)
         prompt = mocker.Mock(spec=Prompt)
         rewinder = mocker.Mock(spec=Rewinder)
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         minio_tool = helper.make_minio_tool(rewinder=rewinder, test_case_index=index, prompt=prompt)
 
         # Act
@@ -389,7 +412,9 @@ class TestMinioTool:
         # Arrange
         local_dir = Path("local")
         fs.create_file(local_dir / "bar.txt")
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.detect_conflicts.return_value = []
         prompt = mocker.Mock(spec=Prompt)
@@ -407,7 +432,9 @@ class TestMinioTool:
         # Arrange
         test_case = helper.make_test_case("foo")
         fs.create_file(test_case.reference_dir / "foo.txt")
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([test_case], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[test_case])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         prompt = mocker.Mock(spec=Prompt)
         prompt.yes_no.return_value = Answer.NO  # No, don't download files.
         rewinder = mocker.Mock(spec=Rewinder)
@@ -420,9 +447,11 @@ class TestMinioTool:
         prompt.yes_no.assert_called_once()
         rewinder.download.assert_not_called()
 
-    def test_pull__unsupported_path_type__raise_error(self) -> None:
+    def test_pull__unsupported_path_type__raise_error(self, mocker: MockerFixture) -> None:
         # Arrange
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         minio_tool = helper.make_minio_tool(test_case_index=index)
 
         # Act
@@ -432,7 +461,9 @@ class TestMinioTool:
     def test_pull__no_timestamp_no_version__skip_detect_conflicts(self, mocker: MockerFixture) -> None:
         # Arrange
         test_case = helper.make_test_case("foo")
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([test_case], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[test_case])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         minio_tool = helper.make_minio_tool(test_case_index=index, rewinder=rewinder)
 
@@ -451,7 +482,9 @@ class TestMinioTool:
         # Arrange
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
         test_case = helper.make_test_case("foo", version=three_days_ago)
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([test_case], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[test_case])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.detect_conflicts.return_value = []
         minio_tool = helper.make_minio_tool(test_case_index=index, rewinder=rewinder)
@@ -474,7 +507,9 @@ class TestMinioTool:
         # Arrange
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
         test_case = helper.make_test_case("foo", version=three_days_ago)
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([test_case], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[test_case])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         conflict = VersionPair(
             rewinded_version=None,
             latest_version=helper.make_object(
@@ -507,7 +542,9 @@ class TestMinioTool:
         # Arrange
         three_days_ago = datetime.now(timezone.utc) - timedelta(days=3)
         test_case = helper.make_test_case("foo", version=three_days_ago)
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([test_case], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[test_case])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         conflict = VersionPair(
             rewinded_version=None,
             latest_version=helper.make_object(
@@ -538,7 +575,9 @@ class TestMinioTool:
         # Arrange
         now = datetime.now(timezone.utc)
         test_case = helper.make_test_case("foo", version=now - timedelta(days=3))
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([test_case], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[test_case])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.detect_conflicts.return_value = []
         minio_tool = helper.make_minio_tool(test_case_index=index, rewinder=rewinder)
@@ -559,18 +598,20 @@ class TestMinioTool:
 
     def test_update_references__non_existent_test_case__raise_error(self) -> None:
         # Arrange
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([], [])})
+        index = TestCaseIndex({Path("configs/foo.xml"): ConfigData([], [])})
         minio_tool = helper.make_minio_tool(test_case_index=index)
 
         # Act
         with pytest.raises(MinioToolError, match="No test case found"):
             minio_tool.update_references(TestCasePattern(name_filter="foo"))
 
-    def test_update_references__multiple_matching_test_cases__raise_error(self) -> None:
+    def test_update_references__multiple_matching_test_cases__raise_error(self, mocker: MockerFixture) -> None:
         # Arrange
-        index = TestCaseIndex(
-            {Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo"), helper.make_test_case("foobar")], [])}
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(
+            test_cases=[helper.make_test_case(name) for name in ("foo", "foobar")]
         )
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         minio_tool = helper.make_minio_tool(test_case_index=index)
 
         # Act
@@ -582,7 +623,9 @@ class TestMinioTool:
     ) -> None:
         # Arrange
         local_dir = Path("local")
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.build_plan.return_value = Plan(
             local_dir=Path("local"),
@@ -605,7 +648,9 @@ class TestMinioTool:
         local_dir = Path("local")
         fs.create_file(local_dir / "foo.txt", contents="foo")
         bucket = S3Path.from_bucket("my-bucket")
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.build_plan.return_value = Plan(
             local_dir=Path("local"),
@@ -638,7 +683,9 @@ class TestMinioTool:
         # Arrange
         test_case = helper.make_test_case("foo")
         fs.create_file(test_case.case_dir / "foo.txt", contents="foo")
-        index = TestCaseIndex({Path("configs/foo.xml"): IndexItem([test_case], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[test_case])
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         tags = Tags()
         tags.update({"foo": "bar"})
         rewinder = mocker.Mock(spec=Rewinder)
@@ -679,7 +726,9 @@ class TestMinioTool:
         fs.create_file(local_dir / "foo.txt", contents="foo")
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
-        index = TestCaseIndex({config_path: IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        index = TestCaseIndex([config_path], config_parser)
         plan = Plan(
             local_dir=Path("local"),
             minio_prefix=bucket / "references",
@@ -723,7 +772,9 @@ class TestMinioTool:
         fs.create_file(local_dir / "foo.txt", contents="foo")
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
-        index = TestCaseIndex({config_path: IndexItem([helper.make_test_case("foo")], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(test_cases=[helper.make_test_case("foo")])
+        index = TestCaseIndex([config_path], config_parser)
         plan = Plan(
             local_dir=local_dir,
             minio_prefix=bucket / "references",
@@ -754,9 +805,11 @@ class TestMinioTool:
     ) -> None:
         # Arrange
         now = datetime.now(timezone.utc)
-        index = TestCaseIndex(
-            {Path("configs/foo.xml"): IndexItem([helper.make_test_case("foo", version=now - timedelta(days=3))], [])}
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(
+            test_cases=[helper.make_test_case("foo", version=now - timedelta(days=3))]
         )
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.detect_conflicts.return_value = [
             VersionPair(
@@ -794,9 +847,11 @@ class TestMinioTool:
         fs.create_file(config_path, contents="old")
         bucket = S3Path.from_bucket("my-bucket")
         now = datetime.now(timezone.utc)
-        index = TestCaseIndex(
-            {config_path: IndexItem([helper.make_test_case("foo", version=now - timedelta(days=3))], [])}
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(
+            test_cases=[helper.make_test_case("foo", version=now - timedelta(days=3))]
         )
+        index = TestCaseIndex([Path("configs/foo.xml")], config_parser)
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.detect_conflicts.return_value = [
             VersionPair(
@@ -837,11 +892,15 @@ class TestMinioTool:
             pytest.param(Path("data/cases/e42_f042_c042_new_test_case"), None, id="use-directory-name"),
         ],
     )
-    def test_new__test_case_exists_already__raise_error(self, local_dir: Path, new_test_case_name: str | None) -> None:
+    def test_new__test_case_exists_already__raise_error(
+        self, local_dir: Path, new_test_case_name: str | None, mocker: MockerFixture
+    ) -> None:
         # Arrange
         config = Path("configs/my-config.xml")
         old_test_case_name = "e42_f042_c042_life_the_universe_and_everything"
-        index = TestCaseIndex({config: IndexItem([helper.make_test_case(old_test_case_name)], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData([helper.make_test_case(old_test_case_name)])
+        index = TestCaseIndex([config], config_parser)
         minio_tool = helper.make_minio_tool(test_case_index=index)
 
         # Act
@@ -852,7 +911,9 @@ class TestMinioTool:
         # Arrange
         config = Path("configs/my-config.xml")
         local_dir = Path("data/cases/e42_f042_c042_new_test_case")
-        index = TestCaseIndex({config: IndexItem([], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = None
+        index = TestCaseIndex([config], config_parser)
 
         rewinder = mocker.Mock(spec=Rewinder)
         rewinder.autocomplete_prefix.return_value = []
@@ -867,7 +928,9 @@ class TestMinioTool:
         # Arrange
         config = Path("configs/my-config.xml")
         local_dir = Path("data/cases/e42_f042_c042_new_test_case")
-        index = TestCaseIndex({config: IndexItem([], [])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = None
+        index = TestCaseIndex([config], config_parser)
 
         rewinder = mocker.Mock(spec=Rewinder)
 
@@ -889,7 +952,10 @@ class TestMinioTool:
         bucket = S3Path.from_bucket("my-bucket")
         config = Path("configs/my-config.xml")
         local_dir = Path("data/cases/e42_f042_c042_new_test_case")
-        index = TestCaseIndex({config: IndexItem([], [])})
+
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = None
+        index = TestCaseIndex([config], config_parser)
 
         rewinder = mocker.Mock(spec=Rewinder)
 
@@ -928,7 +994,9 @@ class TestMinioTool:
         config = Path("configs/my-config.xml")
         local_dir = Path("data/cases/e42_f042_c042_new_test_case")
         default_cases = [helper.make_default_test_case(name) for name in ("foo", "bar", "baz")]
-        index = TestCaseIndex({config: IndexItem([], default_cases)})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(default_test_cases=default_cases)
+        index = TestCaseIndex([config], config_parser)
         case_prefix = bucket / "cases/e42_f042_c042"
         reference_prefix = bucket / "references/e42_f042_c042"
 
@@ -962,7 +1030,9 @@ class TestMinioTool:
         fs.create_file(local_case_dir / "foo.txt", contents="foo")
         fs.create_file(local_case_dir / "bar.txt", contents="bar")
         default_test_case = helper.make_default_test_case("default")
-        index = TestCaseIndex({config: IndexItem([], [default_test_case])})
+        config_parser = mocker.Mock(spec=ConfigParser)
+        config_parser.parse_config.return_value = ConfigData(default_test_cases=[default_test_case])
+        index = TestCaseIndex([config], config_parser)
         case_prefix = bucket / "cases/e42_f042_c042"
         reference_prefix = bucket / "references/e42_f042_c042"
 

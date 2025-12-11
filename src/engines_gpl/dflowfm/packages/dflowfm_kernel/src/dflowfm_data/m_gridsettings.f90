@@ -42,17 +42,17 @@ module M_GRIDSETTINGS
    integer :: ITSMA !< Not in use, old rgfgrid
    integer :: JADEPDESIGN = 0
    integer :: MDESIGN
-   real(kind=dp) :: BFAC = 1d0, CSMO = 0.5d0, RFAC
+   real(kind=dp) :: BFAC = 1.0_dp, CSMO = 0.5_dp, RFAC
    real(kind=dp) :: SRM, SRN, DEPSLO, FSMA, ALINEN, ALINEM
    integer :: KEEPSTARTDIR = 1
-   real(kind=dp) :: BAAS2 = 0.5d0, FACMIR = 1.2d0
+   real(kind=dp) :: BAAS2 = 0.5_dp, FACMIR = 1.2_dp
    real(kind=dp) :: SPLFAC, SPLFAC2
    integer :: JDEMO = 0
 
 ! Pillar grid settings
-   real(kind=dp) :: pil_rad = 0d0 !< pillar radius
-   real(kind=dp) :: pil_x = 0d0 !< pillar center point x-coordinate
-   real(kind=dp) :: pil_y = 0d0 !< pillar center point y-coordinate
-   real(kind=dp) :: pil_grow = 1d0 !< pillar grid growth factor *not used*
+   real(kind=dp) :: pil_rad = 0.0_dp !< pillar radius
+   real(kind=dp) :: pil_x = 0.0_dp !< pillar center point x-coordinate
+   real(kind=dp) :: pil_y = 0.0_dp !< pillar center point y-coordinate
+   real(kind=dp) :: pil_grow = 1.0_dp !< pillar grid growth factor *not used*
 
 end module M_GRIDSETTINGS

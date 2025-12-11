@@ -47,6 +47,7 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
    use properties
    use string_module, only:str_lower
    use messageHandling
+   use m_combinepaths, only: combinepaths
     
    implicit none
    
@@ -142,7 +143,7 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
             if (trim(block_name) == 'general') then
                call prop_get(block_ptr, '*', 'TableFile', pFrac%tableFile)
                if (pFrac%tableFile .ne. ' ') then
-                  call combinepaths(fileName, pFrac%tableFile)
+                  pFrac%tableFile = combinepaths(fileName, pFrac%tableFile)
                endif
                exit
             endif

@@ -218,14 +218,18 @@ class RemoteToLocal(Synchronizer):
         if self._cancel.is_set():
             return
 
-        part_size = self._plan.part_size
-        remote_object = self._source_prefix / list_item.relative_path
-        content = self._get_object_part(
-            remote_object=remote_object,
-            offset=part_index * part_size,
-            length=part_size,
-            version_id=list_item.version,
-        )
+        if list_item.size == 0:
+            # If the object size is zero, the content is empty.
+            # `get_object` raises an error when called with zero offset and length
+            content = bytes()
+        else:
+            part_size = self._plan.part_size
+            content = self._get_object_part(
+                remote_object=self._source_prefix / list_item.relative_path,
+                offset=part_index * part_size,
+                length=part_size,
+                version_id=list_item.version,
+            )
 
         if not self._cancel.is_set():
             self._put_collector_message(DownloadPart(list_item, part_index, content))

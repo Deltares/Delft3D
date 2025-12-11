@@ -67,9 +67,11 @@ contains
       if (allocated(klnup)) then
          deallocate (klnup, slnup)
       end if
-      allocate (klnup(6, lnx), stat=ierr); klnup = 0
+      allocate (klnup(6, lnx), stat=ierr)
+      klnup = 0
       call aerr('klnup(6,lnx)', ierr, lnx)
-      allocate (slnup(6, lnx), stat=ierr); slnup = 0d0
+      allocate (slnup(6, lnx), stat=ierr)
+      slnup = 0.0_dp
       call aerr('slnup(6,lnx)', ierr, lnx)
 
       if (allocated(csbup)) then
@@ -79,9 +81,11 @@ contains
 
       if (jsferic == 1 .and. jasfer3D == 1) then
 !   allocate orientation arrays
-         allocate (csbup(4, Lnx), stat=ierr); csbup = 1d0
+         allocate (csbup(4, Lnx), stat=ierr)
+         csbup = 1.0_dp
          call aerr('csbup(4,Lnx)', ierr, Lnx)
-         allocate (snbup(4, Lnx), stat=ierr); snbup = 0d0
+         allocate (snbup(4, Lnx), stat=ierr)
+         snbup = 0.0_dp
          call aerr('snbup(4,Lnx)', ierr, Lnx)
       end if
 
@@ -91,13 +95,15 @@ contains
             cycle
          end if
 
-         dxn = -csu(L); dyn = -snu(L) ! normal vector in upwind dir
+         dxn = -csu(L)
+         dyn = -snu(L) ! normal vector in upwind dir
 
          do k12 = 1, 2
 
             rmin = 0
             k = ln(k12, L)
-            kd = ln(2, L); if (k12 == 2) kd = ln(1, L)
+            kd = ln(2, L)
+            if (k12 == 2) kd = ln(1, L)
 
 ! SPvdP: (xzup, yzup) not used here
 !       xzup = 2d0*xz(k) - xz(kd)                     ! upwind position for which cell centre interpolated values
@@ -110,7 +116,8 @@ contains
             end if
 
             if (k12 == 2) then
-               dxn = -dxn; dyn = -dyn
+               dxn = -dxn
+               dyn = -dyn
             end if
 
             n = 0
@@ -142,7 +149,7 @@ contains
                ku = kun(nri(nn))
                rfr = rn(nn) * dxi(L)
 !         if (n == 1 .or. rfr < 0.1d0) then          ! if only 1 link attached or upwind point sufficiently close
-               if (rfr < 0.1d0) then ! if only 1 link attached or upwind point sufficiently close
+               if (rfr < 0.1_dp) then ! if only 1 link attached or upwind point sufficiently close
 
                   klnup(1 + 3 * (k12 - 1), L) = -ku ! flag for single value weighting
                   dxk = dbdistance(xz(k), yz(k), xz(ku), yz(ku), jsferic, jasfer3D, dmiss)
@@ -195,7 +202,8 @@ contains
                         k2 = ln(1, LL) + ln(2, LL) - k
                         if (k2 == ku .or. k2 == ku2) then
                            if (iadv(LL) == 6 .or. iadv(LL) == IADV_ORIGINAL_LATERAL_OVERFLOW) then
-                              ku = 0; ku2 = 0
+                              ku = 0
+                              ku2 = 0
                            end if
                         end if
                      end do
@@ -205,7 +213,7 @@ contains
                   slnup(2 + 3 * (k12 - 1), L) = sm
 
                   klnup(1 + 3 * (k12 - 1), L) = ku
-                  slnup(1 + 3 * (k12 - 1), L) = 1d0 - sm
+                  slnup(1 + 3 * (k12 - 1), L) = 1.0_dp - sm
 
 !             dxx  = getdx(xz(k), yz(k), xcr, ycr )
 !             dyy  = getdy(xz(k), yz(k), xcr, ycr )
@@ -236,7 +244,7 @@ contains
                   ib = (k12 - 1) * 2 + i
                   k = abs(klnup(iup, L))
                   if (k > 0) then
-                     call spher2locvec(xz(k), yz(k), 1, (/xu(L)/), (/yu(L)/), (/1d0/), (/0d0/), csbup(ib, L), snbup(ib, L), jsferic, jasfer3D, dmiss)
+                     call spher2locvec(xz(k), yz(k), 1, [xu(L)], [yu(L)], [1.0_dp], [0.0_dp], csbup(ib, L), snbup(ib, L), jsferic, jasfer3D, dmiss)
                   end if
                end do
             end do

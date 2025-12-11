@@ -219,7 +219,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     call rdtrafrm(lundia, error, filtrn, stm%lsedtot, &
                 & ipardef, rpardef, NPARDEF, stm%trapar, &
                 & stm%morpar%moroutput%sedpar, &
-                & stm%sedpar%sedtyp, stm%sedpar%sedblock, &
+                & stm%sedpar%sedtyp, filsed, stm%sedpar%sedblock, &
                 & griddim, julrefday, stm%sedpar%max_mud_sedtyp)
     if (error) return
     !

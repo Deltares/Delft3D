@@ -1,4 +1,4 @@
-subroutine delfil(runid     ,filmd     ,gdp       )
+subroutine delfil(runid_in  ,filmd     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2025.                                
@@ -70,7 +70,7 @@ subroutine delfil(runid     ,filmd     ,gdp       )
 ! Global variables
 !
     character(*)   , intent(in) :: filmd    !! File name for MD FLOW file 
-    character(*)   , intent(in) :: runid    !!  Run identification code for the current simulation
+    character(*)   , intent(in) :: runid_in !!  Run identification code for the current simulation
 !
 ! Local variables
 !
@@ -80,6 +80,7 @@ subroutine delfil(runid     ,filmd     ,gdp       )
     character(12)                  :: fildef
     character(256)                 :: filnam  ! String contaning complete file name "TMP_RUNID.extension" 
     character(256)                 :: filrd   ! File name read from Md-file/flow file 
+    character(:), allocatable      :: runid   ! Run identification code for the current simulation
 !
 !! executable statements -------------------------------------------------------
 !
@@ -96,6 +97,7 @@ subroutine delfil(runid     ,filmd     ,gdp       )
     !
     ! Define length of runid
     !
+    runid = runid_in
     call remove_leading_spaces(runid     ,lrid      )
     !
     if (.not. reusetmp) then

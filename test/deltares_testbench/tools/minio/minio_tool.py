@@ -118,8 +118,8 @@ class MinioTool:
             parameters are passed.
         """
         test_case_id = TestCaseId.from_name(test_case_name or local_dir.name)
-        test_case, _ = self._test_case_index.find_test_case(TestCasePattern(name_filter=test_case_id.identifier))
-        if test_case is not None:
+        find_result = self._test_case_index.find_test_case(TestCasePattern(name_filter=test_case_id.identifier))
+        if find_result.test_case_data is not None:
             raise MinioToolError(
                 f"A test case matching `{test_case_id}` already exists in the config file `{config_path}`. "
                 "Please use a different name."
@@ -138,7 +138,8 @@ class MinioTool:
         if default_test_case_name is None:
             default_test_case = self.__choose_default_test_case(config_path)
         else:
-            default_cases = self._test_case_index.index[config_path].default_test_cases
+            config_data = self._test_case_index.get_config_data(config_path)
+            default_cases = [] if config_data is None else config_data.default_test_cases
             match = next((case for case in default_cases if case.name == default_test_case_name), None)
             if match is None:
                 raise MinioToolError(f"Default test case not found: {default_test_case_name}")
@@ -209,8 +210,9 @@ class MinioTool:
             Raised when the test case can not be found in the config, or unsupported
             parameters are passed.
         """
-        test_case, configs = self._test_case_index.find_test_case(test_case_pattern)
-        if not test_case or not configs:
+        find_result = self._test_case_index.find_test_case(test_case_pattern)
+        test_case, configs = find_result.test_case_data, find_result.configs
+        if test_case is None:
             raise MinioToolError(f"No test case found matching `{test_case_pattern.name_filter}` in the config.")
 
         minio_prefix = test_case.get_remote_prefix(path_type)
@@ -259,8 +261,9 @@ class MinioTool:
             Raised when the test case can not be found in the config, or unsupported
             parameters are passed.
         """
-        test_case, configs = self._test_case_index.find_test_case(test_case_pattern)
-        if not test_case or not configs:
+        find_result = self._test_case_index.find_test_case(test_case_pattern)
+        test_case, configs = find_result.test_case_data, find_result.configs
+        if test_case is None:
             raise MinioToolError(f"No test case found matching `{test_case_pattern.name_filter}` in the config.")
 
         local_dir = local_dir or test_case.case_dir
@@ -318,8 +321,9 @@ class MinioTool:
         MinioToolError
             Raised when test case can't be found or if invalid arguments are passed.
         """
-        test_case, _ = self._test_case_index.find_test_case(test_case_pattern)
-        if not test_case:
+        find_result = self._test_case_index.find_test_case(test_case_pattern)
+        test_case = find_result.test_case_data
+        if test_case is None:
             raise MinioToolError(f"No test case found matching `{test_case_pattern.name_filter}` in the config.")
 
         minio_prefix = test_case.get_remote_prefix(path_type)
@@ -361,7 +365,8 @@ class MinioTool:
         return [self.__make_netcdf_file_check(path, variables) for path, variables in file_checks.items()]
 
     def __choose_default_test_case(self, config: Path) -> DefaultTestCaseData:
-        choices = self._test_case_index.get_default_test_cases(config)
+        config_data = self._test_case_index.get_config_data(config)
+        choices = [] if config_data is None else config_data.default_test_cases
         if not choices:
             raise ValueError(f"Config {config} does not have any default test cases")
 

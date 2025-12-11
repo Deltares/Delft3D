@@ -146,7 +146,7 @@ contains
                         Y2 = YR(IRR, JR + 1)
                         QB = ATP(IRR - 1, JR)
                         QC = ATP(IRR, JR)
-                        QBC = 1d0 / QB + 1d0 / QC
+                        QBC = 1.0_dp / QB + 1.0_dp / QC
                         RN = QB + QC + QBC
                         XX1 = (QB * X1 + QBC * X2 + QC * X3 + Y3 - Y1) / RN
                         YY1 = (QB * Y1 + QBC * Y2 + QC * Y3 + X1 - X3) / RN
@@ -160,7 +160,7 @@ contains
                         Y2 = YR(IRR, JR - 1)
                         QB = ATP(IRR - 1, JR - 1)
                         QC = ATP(IRR, JR - 1)
-                        QBC = 1d0 / QB + 1d0 / QC
+                        QBC = 1.0_dp / QB + 1.0_dp / QC
                         RN = QB + QC + QBC
                         XX1 = (QB * X1 + QBC * X2 + QC * X3 + Y1 - Y3) / RN
                         YY1 = (QB * Y1 + QBC * Y2 + QC * Y3 + X3 - X1) / RN
@@ -232,9 +232,9 @@ contains
                         Y1 = YR(IR, JRR - 1)
                         Y3 = YR(IR, JRR + 1)
                         Y2 = YR(IR + 1, JRR)
-                        QC = 1d0 / ATP(IR, JRR)
-                        QB = 1d0 / ATP(IR, JRR - 1)
-                        QBC = 1d0 / QB + 1d0 / QC
+                        QC = 1.0_dp / ATP(IR, JRR)
+                        QB = 1.0_dp / ATP(IR, JRR - 1)
+                        QBC = 1.0_dp / QB + 1.0_dp / QC
                         RN = QB + QC + QBC
                         XX1 = (QB * X1 + QBC * X2 + QC * X3 + Y1 - Y3) / RN
                         YY1 = (QB * Y1 + QBC * Y2 + QC * Y3 + X3 - X1) / RN
@@ -246,9 +246,9 @@ contains
                         Y1 = YR(IR, JRR - 1)
                         Y3 = YR(IR, JRR + 1)
                         Y2 = YR(IR - 1, JRR)
-                        QC = 1d0 / ATP(IR - 1, JRR)
-                        QB = 1d0 / ATP(IR - 1, JRR - 1)
-                        QBC = 1d0 / QB + 1d0 / QC
+                        QC = 1.0_dp / ATP(IR - 1, JRR)
+                        QB = 1.0_dp / ATP(IR - 1, JRR - 1)
+                        QBC = 1.0_dp / QB + 1.0_dp / QC
                         RN = QB + QC + QBC
                         XX1 = (QB * X1 + QBC * X2 + QC * X3 + Y3 - Y1) / RN
                         YY1 = (QB * Y1 + QBC * Y2 + QC * Y3 + X1 - X3) / RN
