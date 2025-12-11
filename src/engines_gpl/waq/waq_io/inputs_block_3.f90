@@ -57,6 +57,7 @@ contains
         use rd_token     !   for the reading of tokens
         use partmem      !   for PARTicle tracking
         use timers       !   performance timers
+        use m_timer_variables, only: intsrt !   the integration option
         use waq_netcdf_utils
         use results, only: lncout       !   output settings
         use m_waq_memory_dimensions          ! System characteristics
@@ -250,6 +251,11 @@ contains
                 write (file_unit, 2015) nosegp
                 call status%increase_error_count()
             endif
+        endif
+
+        if (num_cells == 1 .and. all( intsrt /= [1,5] )) then
+            write (file_unit, 2011)
+            call status%increase_error_count()
         endif
 
         ! Read optional multiple grids
@@ -559,6 +565,7 @@ contains
 
         2000 format (//' Number of segments :', I15)
         2010 format (/ ' ERROR, invalid number of segments:', I10)
+        2011 format (/ ' ERROR, number of segments is 1, use integration option 1 or 5')
         2015 format (' ERROR, nr of volumes in Delwaq not equal to nr of volumes in Delpar:', I10)
         2030 format (/ ' option selected for grid layout :', I2)
         2040 format (/ ' ERROR, option for grid layout not implemented !!!!!')
