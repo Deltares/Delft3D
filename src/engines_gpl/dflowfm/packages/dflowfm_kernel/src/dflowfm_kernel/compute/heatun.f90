@@ -157,6 +157,7 @@ contains
                surface_temperature = kelvin_to_celsius(ice_temperature(n))
             else
                ! no ice and no snow, but ice_modelling switched on
+               albedo = 0.06_fp !  Albedo is set to the albedo of water, in the same way as its initialization in m_heatfluxes.f90        
                surface_temperature = water_temperature_in_cell
             end if
          else
