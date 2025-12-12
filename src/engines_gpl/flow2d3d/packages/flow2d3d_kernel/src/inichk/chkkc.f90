@@ -221,7 +221,8 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
        enddo
     enddo
     !
-    ! set counterpart of mask arrays kcu and kcv to -1 in halo area
+    ! set kcu and kcv to -1 in halo area only if the water level point that it
+    ! connects to is (also) active (kcs /= 0)
     !
     do i = 1, norow
        n   = irocol(1, i)
@@ -230,7 +231,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
        mld = ml - 1
        mlu = ml + 1
        do m = mf, mlu
-          if ( (kcs(n,m)==-1) ) then
+          if ( (kcs(n,m) == -1) .and. (kcs(n+1,m) /= 0) ) then
              kcv(n,m) = -1
           endif
        enddo
@@ -243,7 +244,7 @@ subroutine chkkc(lundia    ,error     ,runid     ,fldry     ,fltd      , &
        nld = nl - 1
        nlu = nl + 1
        do n = nf, nlu
-          if ( (kcs(n,m) == -1) ) then
+          if ( (kcs(n,m) == -1) .and. (kcs(n,m+1) /= 0) ) then
              kcu(n,m) = -1
           endif
        enddo
