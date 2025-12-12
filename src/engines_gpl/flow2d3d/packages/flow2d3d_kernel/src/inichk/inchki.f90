@@ -45,6 +45,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     use globaldata
     use dfparall
     use m_trtrou, only: chktrt
+    use m_d3d_chktrt, only: d3d4_chktrt
     !
     implicit none
     !
@@ -340,8 +341,8 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     fltd        => gdp%gdtmpfil%fltd
     flbdfh      => gdp%gdbedformpar%flbdfh
     duneheight  => gdp%gdbedformpar%duneheight
-    flnmD50     => gdp%gdbedformpar%flnmD50
-    flnmD90     => gdp%gdbedformpar%flnmD90
+    !flnmD50     => gdp%gdbedformpar%flnmD50
+    !flnmD90     => gdp%gdbedformpar%flnmD90
     spatial_bedform     => gdp%gdbedformpar%spatial_bedform
     bedformD50          => gdp%gdbedformpar%bedformD50
     bedformD90          => gdp%gdbedformpar%bedformD90
@@ -349,7 +350,7 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     rksmr               => gdp%gdbedformpar%rksmr
     rksd                => gdp%gdbedformpar%rksd
 
-    lfbedfrmrou => gdp%gdbedformpar%lfbedfrmrou
+    !lfbedfrmrou => gdp%gdbedformpar%lfbedfrmrou
     solrad_read => gdp%gdheat%solrad_read
     swrf_file   => gdp%gdheat%swrf_file
     !
@@ -463,10 +464,15 @@ subroutine inchki(lundia    ,error     ,runid     ,sferic    ,filrgf    , &
     ! CHKTRT: checks Trachytopes if defined
     !
     if (lftrto) then
-       call chktrt(lundia    ,error     ,gdp%griddim   , & 
-                 & gdp%gdtrachy  ,flnmD50   ,flnmD90   ,lfbedfrmrou, gdp%gdprocs%sedim, gdp%d%ddbound)
+
+      call d3d4_chktrt(lundia    ,error     ,i(kcu)    ,i(kcv), gdp)
+      !call d3d4_chktrt(lundia    ,error     ,gdp%griddim   , & 
+      !           & gdp%gdtrachy  ,flnmD50   ,flnmD90   ,lfbedfrmrou, gdp%gdprocs%sedim, gdp%d%ddbound)
+
        !call chktrt(lundia    ,error     ,nmax      ,mmax      ,nmaxus    , &
        !          & i(kcu)    ,i(kcv)    ,gdp)
+       
+        
     endif
     if (error) goto 9999
     !
