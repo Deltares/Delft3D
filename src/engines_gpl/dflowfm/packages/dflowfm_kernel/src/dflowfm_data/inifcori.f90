@@ -69,7 +69,9 @@ contains
                beta = (cos(y0 * dg2rd)) / Ra
                do L = 1, lnx
                   call dbdistancehk(xu(L), y0, xu(L), yu(L), dy)
-                  if (yu(L) < y0) dy = -dy
+                  if (yu(L) < y0) then
+                     dy = -dy
+                  end if
                   fcori(L) = 2.0_dp * omega * (sin(anglat * dg2rd) + beta * dy)
                end do
             end if
@@ -89,7 +91,9 @@ contains
                beta = (cos(y0 * dg2rd)) / Ra
                do k = 1, ndx
                   call dbdistancehk(xz(k), y0, xz(k), yz(k), dy)
-                  if (yu(L) < y0) dy = -dy
+                  if (yu(L) < y0) then
+                     dy = -dy
+                  end if
                   fcori(k) = 2.0_dp * omega * (sin(anglat * dg2rd) + beta * dy)
                end do
             end if

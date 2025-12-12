@@ -141,7 +141,9 @@ contains
                do L = Lt - 1, Lb, -1
                   lmin = L
                   rolthk = hu(Lt) - hu(L)
-                  if (rolthk >= 0.5_dp * hrms) exit
+                  if (rolthk >= 0.5_dp * hrms) then
+                     exit
+                  end if
                end do
                !
                ! depth dependent contribution

@@ -626,7 +626,9 @@ contains
       !end-discharges
       if (numsrc > 0) then
          ibnd = 0
-         if (nopenbndsect > 0) ibnd = nopenbndlin(nopenbndsect)
+         if (nopenbndsect > 0) then
+            ibnd = nopenbndlin(nopenbndsect)
+         end if
          write (lunhyd, '(A      )') 'sink-sources'
          do isrc = 1, numsrc
             kk1 = ksrc(1, isrc)
@@ -777,7 +779,9 @@ contains
             end if
 
             !TODO deallocate aggregated_meshgeom
-            if (allocated(aggregated_edge_type)) deallocate (aggregated_edge_type)
+            if (allocated(aggregated_edge_type)) then
+               deallocate (aggregated_edge_type)
+            end if
          end if
 
          ! Write mesh geometry.
@@ -984,8 +988,12 @@ contains
 
             ! 0 means no face, i.e. edge is on the boundary of the mesh.
             ! Replace zeroes with missing values.
-            if (meshgeom%edge_faces(1, edge) == 0) meshgeom%edge_faces(1, edge) = missing_value
-            if (meshgeom%edge_faces(2, edge) == 0) meshgeom%edge_faces(2, edge) = missing_value
+            if (meshgeom%edge_faces(1, edge) == 0) then
+               meshgeom%edge_faces(1, edge) = missing_value
+            end if
+            if (meshgeom%edge_faces(2, edge) == 0) then
+               meshgeom%edge_faces(2, edge) = missing_value
+            end if
          end do
 
          ! Faces.
@@ -2168,17 +2176,27 @@ contains
             call getLbotLtopmax(L, Lb, Ltx)
             ip = waqpar%iqaggr(L)
             ipa = abs(ip)
-            if (ip == 0) cycle
+            if (ip == 0) then
+               cycle
+            end if
             do LL = Ltx, Lb, -1
                waqpar%iqaggr(LL) = ip + sign((waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%noq12, ip)
                iq = abs(waqpar%iqaggr(LL))
                dseg = (waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%nosegl
                dbnd = (waqpar%ilaggr(Ltx - LL + 1) - 1) * (ndx - ndxi + waqpar%numsrcbnd) ! current number of external links in FM, account for sinks sources here too!
                if (waqpar%ifrmto(1, iq) == 0) then
-                  if (waqpar%ifrmto(1, ipa) > 0) waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) + dseg
-                  if (waqpar%ifrmto(1, ipa) < 0) waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) - dbnd
-                  if (waqpar%ifrmto(2, ipa) > 0) waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) + dseg
-                  if (waqpar%ifrmto(2, ipa) < 0) waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) - dbnd
+                  if (waqpar%ifrmto(1, ipa) > 0) then
+                     waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) + dseg
+                  end if
+                  if (waqpar%ifrmto(1, ipa) < 0) then
+                     waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) - dbnd
+                  end if
+                  if (waqpar%ifrmto(2, ipa) > 0) then
+                     waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) + dseg
+                  end if
+                  if (waqpar%ifrmto(2, ipa) < 0) then
+                     waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) - dbnd
+                  end if
                end if
             end do
             Lbb = Ltx - waqpar%kmxnxa + 1
@@ -2189,8 +2207,12 @@ contains
                      iq = ip + sign((waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%noq12, ip)
                      dbnd = (waqpar%ilaggr(Ltx - LL + 1) - 1) * (ndx - ndxi + waqpar%numsrcbnd) ! current number of external links in FM, account for sinks sources here too!
                      if (waqpar%ifrmto(1, iq) == 0) then
-                        if (waqpar%ifrmto(1, ipa) < 0) waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) - dbnd
-                        if (waqpar%ifrmto(2, ipa) < 0) waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) - dbnd
+                        if (waqpar%ifrmto(1, ipa) < 0) then
+                           waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) - dbnd
+                        end if
+                        if (waqpar%ifrmto(2, ipa) < 0) then
+                           waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) - dbnd
+                        end if
                      end if
                   end if
                end do
@@ -2225,7 +2247,9 @@ contains
                waqpar%ifrmto(2, iq) = k + kk * waqpar%nosegl
                waqpar%ifrmto(3, iq) = max(k + (kk - 2) * waqpar%nosegl, 0)
                waqpar%ifrmto(4, iq) = 0
-               if (kk < waqpar%kmxnxa - 1) waqpar%ifrmto(4, iq) = k + (kk + 1) * waqpar%nosegl
+               if (kk < waqpar%kmxnxa - 1) then
+                  waqpar%ifrmto(4, iq) = k + (kk + 1) * waqpar%nosegl
+               end if
             end do
          end do
          waqpar%num_exchanges = waqpar%num_exchanges + waqpar%nosegl * (waqpar%kmxnxa - 1)
@@ -2259,7 +2283,9 @@ contains
 
       waqpar%numsrcbnd = 0
       waqpar%numsrcwaq = 0
-      if (numsrc == 0) return ! skip is no resources
+      if (numsrc == 0) then
+         return ! skip is no resources
+      end if
       call realloc(ksrcwaq, numsrc, keepexisting=.false., fill=-1)
       ! First determine the number of external sink/sources and the allocations needed
       do isrc = 1, numsrc
@@ -2952,7 +2978,9 @@ contains
                if (waqpar%isaggr(kk - 1) == waqpar%isaggr(kk)) then
                   ! equal to the previous layer? find next minimum, and add volume
                   if (vol1(kk) > 1.0e-25_dp) then
-                     if (vicwws(kk - 1) < vdfmin .or. vdfmin == 0.0) vdfmin = vicwws(kk - 1)
+                     if (vicwws(kk - 1) < vdfmin .or. vdfmin == 0.0) then
+                        vdfmin = vicwws(kk - 1)
+                     end if
                      volsum = volsum + vol1(kk)
                   end if
                else

@@ -107,7 +107,9 @@ contains
                      end if
                   end do
                   ds = abs(rrn)
-                  if (ds > epscg) exit
+                  if (ds > epscg) then
+                     exit
+                  end if
                end if
             end do
             !$xOMP END PARALLEL DO

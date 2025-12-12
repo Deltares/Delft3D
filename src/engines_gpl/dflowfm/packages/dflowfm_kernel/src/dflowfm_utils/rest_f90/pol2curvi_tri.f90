@@ -74,7 +74,9 @@ contains
 
       ierror = 1
 
-      if (NPL <= 4) goto 1234
+      if (NPL <= 4) then
+         goto 1234
+      end if
 
 !  get start and end pointers in polygon
       call get_polstartend(NPL, XPL, YPL, i1, istart, iend)
@@ -91,18 +93,26 @@ contains
 
 !  get grid size and orientation
       Na = i2 - i1
-      if (Na < 1) Na = Na + numsubpol
+      if (Na < 1) then
+         Na = Na + numsubpol
+      end if
       Nb = i3 - i2
-      if (Nb < 1) Nb = Nb + numsubpol
+      if (Nb < 1) then
+         Nb = Nb + numsubpol
+      end if
       Ncc = numsubpol - (Na + Nb)
 
       if (Ncc < 1) then
          i2 = i3_
          i3 = i2_
          Na = i2 - i1
-         if (Na < 1) Na = Na + numsubpol
+         if (Na < 1) then
+            Na = Na + numsubpol
+         end if
          Nb = i3 - i2
-         if (Nb < 1) Nb = Nb + numsubpol
+         if (Nb < 1) then
+            Nb = Nb + numsubpol
+         end if
          Ncc = numsubpol - (Na + Nb)
       end if
 
@@ -119,11 +129,17 @@ contains
 
 !  compute midpoint
       ia = i1 + N1
-      if (ia > iend) ia = ia - numsubpol
+      if (ia > iend) then
+         ia = ia - numsubpol
+      end if
       ib = i2 + N3
-      if (ib > iend) ib = ib - numsubpol
+      if (ib > iend) then
+         ib = ib - numsubpol
+      end if
       ic = i3 + N2
-      if (ic > iend) ic = ic - numsubpol
+      if (ic > iend) then
+         ic = ic - numsubpol
+      end if
 
 !  set dimensions of blocks
       M = [N1, N3, N2]
@@ -182,8 +198,12 @@ contains
             xh(i, 1) = XPL(ipoint)
             yh(i, 1) = YPL(ipoint)
             ipoint = ipoint - idir
-            if (ipoint < istart) ipoint = ipoint + numsubpol
-            if (ipoint > iend) ipoint = ipoint - numsubpol
+            if (ipoint < istart) then
+               ipoint = ipoint + numsubpol
+            end if
+            if (ipoint > iend) then
+               ipoint = ipoint - numsubpol
+            end if
          end do
 
          ipoint = i0(itri)
@@ -191,8 +211,12 @@ contains
             xh(i, 3) = XPL(ipoint)
             yh(i, 3) = YPL(ipoint)
             ipoint = ipoint + idir
-            if (ipoint < istart) ipoint = ipoint + numsubpol
-            if (ipoint > iend) ipoint = ipoint - numsubpol
+            if (ipoint < istart) then
+               ipoint = ipoint + numsubpol
+            end if
+            if (ipoint > iend) then
+               ipoint = ipoint - numsubpol
+            end if
          end do
 
          do i = 1, M(itri) + 1

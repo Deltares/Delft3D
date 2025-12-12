@@ -215,8 +215,12 @@ contains
          ! check on ghosts!
          if (jampi == 1) then
 !        if neither is in my domain, don't use it
-            if (idomain(kk1) /= my_rank .and. idomain(kk2) /= my_rank) cycle
-            if (idomain(kk1) < my_rank .or. idomain(kk2) < my_rank) cycle
+            if (idomain(kk1) /= my_rank .and. idomain(kk2) /= my_rank) then
+               cycle
+            end if
+            if (idomain(kk1) < my_rank .or. idomain(kk2) < my_rank) then
+               cycle
+            end if
          end if
          if (ba1 /= ba2) then
             nombaln = nombaln + 1
@@ -240,7 +244,9 @@ contains
                Lf = lne2ln(L)
                ! check on ghosts!
                if (jampi == 1) then
-                  if (idomain(ln(2, Lf)) /= my_rank) cycle
+                  if (idomain(ln(2, Lf)) /= my_rank) then
+                     cycle
+                  end if
                end if
                nombaln = nombaln + 1
                call realloc(mbalnlist, nombaln, keepExisting=.true., fill=Lf)
@@ -276,13 +282,17 @@ contains
          if (kk1 > 0) then
             mbasorsin(1, isrc) = mbadef(kk1)
             if (jampi == 1) then
-               if (idomain(kk1) /= my_rank) mbasorsin(1, isrc) = 0
+               if (idomain(kk1) /= my_rank) then
+                  mbasorsin(1, isrc) = 0
+               end if
             end if
          end if
          if (kk2 > 0) then
             mbasorsin(2, isrc) = mbadef(kk2)
             if (jampi == 1) then
-               if (idomain(kk2) /= my_rank) mbasorsin(2, isrc) = 0
+               if (idomain(kk2) /= my_rank) then
+                  mbasorsin(2, isrc) = 0
+               end if
             end if
          end if
          mbasorsinout(1, isrc) = mbasorsin(1, isrc)
@@ -429,7 +439,9 @@ contains
 !  If in parallel mode, reduce arrays
       write_balance = .true.
       if (jampi == 1) then
-         if (my_rank /= 0) write_balance = .false.
+         if (my_rank /= 0) then
+            write_balance = .false.
+         end if
 
          call reduce_double_sum(nomba, mbavolumeend, mbavolumereduce)
          mbavolumeend(:) = mbavolumereduce(:)
@@ -562,7 +574,9 @@ contains
 
       write_balance = .true.
       if (jampi == 1) then
-         if (my_rank /= 0) write_balance = .false.
+         if (my_rank /= 0) then
+            write_balance = .false.
+         end if
       end if
 
       if (write_balance) then
@@ -607,7 +621,9 @@ contains
       do kk = 1, ndxi
          if (jampi == 1) then
 !        do not include ghost cells
-            if (idomain(kk) /= my_rank) cycle
+            if (idomain(kk) /= my_rank) then
+               cycle
+            end if
          end if
          imba = mbadef(kk)
          call getkbotktop(kk, kb, kt)
@@ -653,7 +669,9 @@ contains
       do nm = 1, ndxi
          if (jampi == 1) then
 !        do not include ghost cells
-            if (idomain(nm) /= my_rank) cycle
+            if (idomain(nm) /= my_rank) then
+               cycle
+            end if
          end if
          imba = mbadef(nm)
          ! bed stratigraphy
@@ -707,7 +725,9 @@ contains
       do kk = 1, ndxi
          if (jampi == 1) then
 !        do not include ghost cells
-            if (idomain(kk) /= my_rank) cycle
+            if (idomain(kk) /= my_rank) then
+               cycle
+            end if
          end if
          imba = mbadef(kk)
          mbaba(imba) = mbaba(imba) + ba(kk)
@@ -726,7 +746,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("comp_horflowmba", ithndl)
+      if (timon) then
+         call timstrt("comp_horflowmba", ithndl)
+      end if
 
       do i = 1, nombaln
          LL = mbalnlist(i)
@@ -758,7 +780,9 @@ contains
          end if
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine comp_horflowmba
 
    subroutine comp_horfluxmba()
@@ -781,7 +805,9 @@ contains
 
       integer(4) :: ithndl = 0 !< timer handle
 
-      if (timon) call timstrt("comp_horfluxmba", ithndl)
+      if (timon) then
+         call timstrt("comp_horfluxmba", ithndl)
+      end if
 
       do iconst = 1, numconst
          if (imbs2sed(iconst) > 0) then
@@ -810,7 +836,9 @@ contains
          ! Note: mbafluxsorsin updated in fill_constitents ... uses always dts
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine comp_horfluxmba
 
    subroutine comp_bedload_fluxmba()

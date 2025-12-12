@@ -510,8 +510,12 @@ contains
       ! fill bed levels from values based on links
       do L = 1, network%numl
          tempbob = getbobs(network, L)
-         if (tempbob(1) > 0.5_dp * huge(1.0_dp)) tempbob(1) = dmiss
-         if (tempbob(2) > 0.5_dp * huge(1.0_dp)) tempbob(2) = dmiss
+         if (tempbob(1) > 0.5_dp * huge(1.0_dp)) then
+            tempbob(1) = dmiss
+         end if
+         if (tempbob(2) > 0.5_dp * huge(1.0_dp)) then
+            tempbob(2) = dmiss
+         end if
 
          k1 = kn(1, L)
          k2 = kn(2, L)
@@ -530,10 +534,14 @@ contains
          call strsplit(md_ldbfile, 1, fnames, 1)
          call oldfil(minp, fnames(1))
          ntot_lb = 0
-         if (minp /= 0) call realan(minp, ntot_lb)
+         if (minp /= 0) then
+            call realan(minp, ntot_lb)
+         end if
          do ifil = 2, size(fnames)
             call oldfil(minp, fnames(ifil))
-            if (minp /= 0) call realan(minp, ntot_lb)
+            if (minp /= 0) then
+               call realan(minp, ntot_lb)
+            end if
          end do
          deallocate (fnames)
       end if
@@ -1565,7 +1573,9 @@ contains
 
             ti_st_array = 0.0_dp
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
-            if (ti_st_array(1) > 0.0_dp) ti_st_array(1) = max(ti_st_array(1), dt_user)
+            if (ti_st_array(1) > 0.0_dp) then
+               ti_st_array(1) = max(ti_st_array(1), dt_user)
+            end if
             call getOutputTimeArrays(ti_st_array, ti_sts, ti_st, ti_ste, success)
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
 
@@ -1872,7 +1882,9 @@ contains
       call prop_get(md_ptr, 'trachytopes', 'TrtDef', md_trtdfile, success)
       call prop_get(md_ptr, 'trachytopes', 'TrtL', md_trtlfile, success)
       call prop_get(md_ptr, 'trachytopes', 'DtTrt', dt_trach, success)
-      if (.not. success) dt_trach = dt_user
+      if (.not. success) then
+         dt_trach = dt_user
+      end if
       call prop_get(md_ptr, 'trachytopes', 'TrtMxR', md_mxrtrach, success)
       call prop_get(md_ptr, 'trachytopes', 'TrtCll', md_trtcllfile, success)
       call prop_get(md_ptr, 'trachytopes', 'TrtMnH', md_mnhtrach, success)
@@ -2589,7 +2601,9 @@ contains
       end if
 
       allocate (map_classes_ucdir(n - 1), stat=ierr)
-      if (ierr /= 0) call aerr('map_classes_ucdir', ierr, n + 1)
+      if (ierr /= 0) then
+         call aerr('map_classes_ucdir', ierr, n + 1)
+      end if
       do i = 1, n - 1
          map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
@@ -4082,7 +4096,9 @@ contains
          call setmdia(mdia)
          call initMessaging(mdia)
 
-         if (line_copied) write (MDIA, *) 'Until here copy of previous diagnostic file'
+         if (line_copied) then
+            write (MDIA, *) 'Until here copy of previous diagnostic file'
+         end if
       end if
 
    end subroutine switch_dia_file

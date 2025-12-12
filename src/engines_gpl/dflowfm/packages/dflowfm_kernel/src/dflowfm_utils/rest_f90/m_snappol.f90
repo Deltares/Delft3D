@@ -95,22 +95,30 @@ contains
          do while ((xin(i) == dsep .or. yin(i) == dsep))
             ipolnr(i) = 0
             i = i + 1
-            if (i > Nin) exit
+            if (i > Nin) then
+               exit
+            end if
          end do
 
 !       check for end of array
-         if (i > Nin) exit
+         if (i > Nin) then
+            exit
+         end if
 
 !       mark this segment
          numpols = numpols + 1
          do while (xin(i) /= dsep .and. yin(i) /= dsep)
             ipolnr(i) = numpols
             i = i + 1
-            if (i > Nin) exit
+            if (i > Nin) then
+               exit
+            end if
          end do
 
 !       check for end of array
-         if (i > Nin) exit
+         if (i > Nin) then
+            exit
+         end if
       end do
 
 !!    BEGIN DEBUG
@@ -136,7 +144,9 @@ contains
 
 !    snap polygon (note: xout and yout are temporary arrays)
       call find_crossed_links_kdtree2(treeglob, Nin, xout, yout, itype, Lnx, BOUNDARY_ALL, NumLinks, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
-      if (ierror /= 0 .or. NumLinks == 0) goto 1234
+      if (ierror /= 0 .or. NumLinks == 0) then
+         goto 1234
+      end if
 
 !    sort crossed flowlinks in increasing polyline order
       allocate (indx(numLinks))
@@ -194,14 +204,18 @@ contains
 
             ii = ii + 1
 
-            if (ii > Numlinks) exit ! done
+            if (ii > Numlinks) then
+               exit ! done
+            end if
          end do
          NPL = i
 
 !       merge polyline section parts
          call merge_polylines()
 
-         if (NPL < 2) cycle ! no polyline section found
+         if (NPL < 2) then
+            cycle ! no polyline section found
+         end if
 
 !       copy to output
          NDIM = Nout + NPL + 1 ! add one for seperator
@@ -222,7 +236,9 @@ contains
          Yout(Nout) = dsep
          ipoLout(Nout) = 0
 
-         if (ii > NumLinks) exit ! done
+         if (ii > NumLinks) then
+            exit ! done
+         end if
       end do
 
       ierror = 0
@@ -278,7 +294,9 @@ contains
       ierror = 1
       Nout = 0
 
-      if (Nin < 1) goto 1234
+      if (Nin < 1) then
+         goto 1234
+      end if
 
 !    allocate
       allocate (namobs(Nin))
@@ -395,15 +413,33 @@ contains
       call count_links(mx1Dend, Nx)
 
 !    allocate
-      if (allocated(xe)) deallocate (xe, stat=ierror)
-      if (allocated(ye)) deallocate (ye, stat=ierror)
-      if (allocated(xyen)) deallocate (xyen, stat=ierror)
-      if (allocated(kce)) deallocate (kce, stat=ierror)
-      if (allocated(ke)) deallocate (ke, stat=ierror)
-      if (allocated(ki)) deallocate (ki, stat=ierror)
-      if (allocated(kcs)) deallocate (kcs, stat=ierror)
-      if (allocated(xdum)) deallocate (xdum, stat=ierror)
-      if (allocated(ydum)) deallocate (ydum, stat=ierror)
+      if (allocated(xe)) then
+         deallocate (xe, stat=ierror)
+      end if
+      if (allocated(ye)) then
+         deallocate (ye, stat=ierror)
+      end if
+      if (allocated(xyen)) then
+         deallocate (xyen, stat=ierror)
+      end if
+      if (allocated(kce)) then
+         deallocate (kce, stat=ierror)
+      end if
+      if (allocated(ke)) then
+         deallocate (ke, stat=ierror)
+      end if
+      if (allocated(ki)) then
+         deallocate (ki, stat=ierror)
+      end if
+      if (allocated(kcs)) then
+         deallocate (kcs, stat=ierror)
+      end if
+      if (allocated(xdum)) then
+         deallocate (xdum, stat=ierror)
+      end if
+      if (allocated(ydum)) then
+         deallocate (ydum, stat=ierror)
+      end if
 
       allocate (xe(Nx), stat=ierror)
       allocate (ye(Nx), stat=ierror)
@@ -442,18 +478,24 @@ contains
 !       advance pointer to start of segment
          do while ((xin(i) == dsep .or. yin(i) == dsep))
             i = i + 1
-            if (i > Nin) exit
+            if (i > Nin) then
+               exit
+            end if
          end do
 
 !       check for end of array
-         if (i > Nin) exit
+         if (i > Nin) then
+            exit
+         end if
 
 !       find end pointer of this polyline
          numpols = numpols + 1
          iend = i
          do while (xin(iend) /= dsep .and. yin(iend) /= dsep)
             iend = iend + 1
-            if (iend > Nin) exit
+            if (iend > Nin) then
+               exit
+            end if
          end do
          iend = iend - 1
 
@@ -621,7 +663,9 @@ contains
          if (NPL > 0) then
             do while (Xout(Nout + NPL) == DMISS .and. YOUT(Nout + NPL) == DMISS .and. NPL > 0)
                NPL = NPL - 1
-               if (NPL < 1) exit
+               if (NPL < 1) then
+                  exit
+               end if
             end do
          end if
 
@@ -636,7 +680,9 @@ contains
          i = iend + 1
 
 !       check for end of array
-         if (i > Nin) exit
+         if (i > Nin) then
+            exit
+         end if
       end do
 
 !    replace DMISS with seperator, if necessary

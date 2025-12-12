@@ -222,7 +222,9 @@ contains
       do L = 1, numl ! loop is safe for 1D/1D-2D
          kL = lne(1, L) !flow node neighbouring net-link on from-side  (also for 1D, and 1D-2D)
          kR = lne(2, L) !flow node neighbouring net-link on to-side    (also for 1D, and 1D-2D)
-         if (kL == 0 .and. kR == 0) cycle ! special case for dry areas
+         if (kL == 0 .and. kR == 0) then
+            cycle ! special case for dry areas
+         end if
          !
          if (kL /= 0 .and. kR /= 0) then
 
@@ -285,7 +287,9 @@ contains
       do L = 1, numl
          kL = lne(1, L)
          kR = lne(2, L)
-         if (kL == 0 .and. kR == 0) cycle
+         if (kL == 0 .and. kR == 0) then
+            cycle
+         end if
          LF = lne2ln(L)
          if (LF > 0) then
             !link is on flow-link

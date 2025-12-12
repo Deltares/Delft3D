@@ -146,10 +146,14 @@ contains
 
 !    synchronise all water-levels
                   if (jampi == 1) then
-                     if (jatimer == 1) call starttimer(IUPDSALL)
+                     if (jatimer == 1) then
+                        call starttimer(IUPDSALL)
+                     end if
                      itype = merge(ITYPE_SALL, ITYPE_Snonoverlap, jaoverlap == 0)
                      call update_ghosts(itype, 1, Ndx, s1, ierror)
-                     if (jatimer == 1) call stoptimer(IUPDSALL)
+                     if (jatimer == 1) then
+                        call stoptimer(IUPDSALL)
+                     end if
                   end if
 
                   if (firstnniteration .and. nonlin1D >= 3) then
@@ -189,7 +193,9 @@ contains
                      if (jposhchk == 2 .or. jposhchk == 4) then ! redo without timestep reduction, setting hu=0 => wetdry s1ini
                         cycle wetdry
                      else
-                        if (jampi == 1 .and. my_rank == 0) call mess(LEVEL_WARN, 'Redo with timestep reduction.')
+                        if (jampi == 1 .and. my_rank == 0) then
+                           call mess(LEVEL_WARN, 'Redo with timestep reduction.')
+                        end if
                         cycle setback
                      end if
                   end if
@@ -254,9 +260,13 @@ contains
                      !endif
 
                      if (jampi == 1) then
-                        if (jatimer == 1) call starttimer(IMPIREDUCE)
+                        if (jatimer == 1) then
+                           call starttimer(IMPIREDUCE)
+                        end if
                         call reduce_double_max(difmaxlev)
-                        if (jatimer == 1) call stoptimer(IMPIREDUCE)
+                        if (jatimer == 1) then
+                           call stoptimer(IMPIREDUCE)
+                        end if
                      end if
 
                      if (difmaxlev > epsmaxlev) then

@@ -103,7 +103,9 @@ contains
 
       jawritten = 0
 
-      if (numdots < 1) goto 1234
+      if (numdots < 1) then
+         goto 1234
+      end if
 
       call newfil(id, FNAM)
 

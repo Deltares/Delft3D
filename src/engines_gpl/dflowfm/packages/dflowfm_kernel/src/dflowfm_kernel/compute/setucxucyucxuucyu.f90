@@ -104,7 +104,9 @@ contains
 
             do L = lnx1D + 1, lnx
                if (jabarrieradvection == 3) then
-                  if (struclink(L) == 1) cycle
+                  if (struclink(L) == 1) then
+                     cycle
+                  end if
                end if
                if (u1(L) /= 0.0_dp) then ! link flows
                   if ((kcu(L) == 3 .or. kcu(L) == 4 .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then

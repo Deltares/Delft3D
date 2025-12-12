@@ -68,7 +68,9 @@ contains
 
       jadeleted = 0
 
-      if (ndirect < 1 .or. nindirect < 1) return
+      if (ndirect < 1 .or. nindirect < 1) then
+         return
+      end if
 
 !  Firstly, check and see if
 !     the cell to be deleted is not a corner cell, but has a link that
@@ -84,7 +86,9 @@ contains
             exit
          end if
          if (lnn(klin) == 2) then
-            if (nb(kn(1, klin)) /= 1 .and. nb(kn(2, klin)) /= 1) Lnogo = .true.
+            if (nb(kn(1, klin)) /= 1 .and. nb(kn(2, klin)) /= 1) then
+               Lnogo = .true.
+            end if
          end if
       end do
 !  check if the cell is a cornercell
@@ -92,7 +96,9 @@ contains
       do while (kk < netcell(k)%N .and. Lnogo)
          kk = kk + 1
          knod = netcell(k)%nod(kk)
-         if (nb(knod) == 3 .and. nmk(knod) <= 2) Lnogo = .false.
+         if (nb(knod) == 3 .and. nmk(knod) <= 2) then
+            Lnogo = .false.
+         end if
       end do
 
 !  check if all nodes are in the selecting polygon
@@ -159,16 +165,22 @@ contains
             do j = 1, netcell(kcell1)%N
                L = netcell(kcell1)%lin(j)
 !            if ( lnn(L).lt.2 ) kn(1:2,L) = 0
-               if (lnn(L) < 2) call cleanup_link(L)
+               if (lnn(L) < 2) then
+                  call cleanup_link(L)
+               end if
             end do
 
 !        find adjacent direct neighbors
             L1 = 0
             do i = 1, 2
                kcL = kne(i, kk)
-               if (kcL == 0) cycle
+               if (kcL == 0) then
+                  cycle
+               end if
                iR = i + 1
-               if (iR > 2) iR = iR - 2
+               if (iR > 2) then
+                  iR = iR - 2
+               end if
                kcR = kne(iR, kk)
 
                if (kcL < 0 .or. kcR < 0) then
@@ -180,7 +192,9 @@ contains
                do j = 1, netcell(kcL)%N
                   L = netcell(kcL)%lin(j)
 
-                  if (lnn(L) < 2) cycle
+                  if (lnn(L) < 2) then
+                     cycle
+                  end if
 
                   if (lne(1, L) == kcell1 .and. lne(2, L) == kcL) then
                      if (kcR /= 0) then
@@ -218,7 +232,9 @@ contains
             do j = 1, netcell(kcell1)%N
                L = netcell(kcell1)%lin(j)
 
-               if (lnn(L) < 2) cycle
+               if (lnn(L) < 2) then
+                  cycle
+               end if
 
                if (lne(1, L) == k .or. lne(2, L) == k) then
                   Ndum = netcell(kcell1)%N - 1
@@ -257,7 +273,9 @@ contains
 !     remove unwanted boundary node
       do kk = 1, nindirect
          kcell = kindirect(kk)
-         if (netcell(kcell)%N < 3) netcell(kcell)%N = 0 ! deactivate
+         if (netcell(kcell)%N < 3) then
+            netcell(kcell)%N = 0 ! deactivate
+         end if
          do i = 1, netcell(kcell)%N
             k2 = netcell(kcell)%nod(i)
             L = netcell(kcell)%lin(i)
@@ -273,13 +291,17 @@ contains
       in = -1
       kklp: do kk = 1, nindirect
          kcell = kindirect(kk)
-         if (netcell(kcell)%N < 3) netcell(kcell)%N = 0 ! deactivate
+         if (netcell(kcell)%N < 3) then
+            netcell(kcell)%N = 0 ! deactivate
+         end if
          do i = 1, netcell(kcell)%N
             k2 = netcell(kcell)%nod(i)
             L = netcell(kcell)%lin(i)
             if (lnn(L) == 1) then
                im1 = i - 1
-               if (im1 < 1) im1 = im1 + netcell(kcell)%N
+               if (im1 < 1) then
+                  im1 = im1 + netcell(kcell)%N
+               end if
                L1 = netcell(kcell)%lin(im1)
                if (lnn(L1) == 1) then
                   call find_common_node(L, L1, k2)
@@ -332,7 +354,9 @@ contains
 !  redirect nodes of directly connected cells and deactivate polygons of degree smaller than three
       do kk = 1, ndirect
          kcell = kdirect(kk)
-         if (netcell(kcell)%N < 3) netcell(kcell)%N = 0 ! deactivate
+         if (netcell(kcell)%N < 3) then
+            netcell(kcell)%N = 0 ! deactivate
+         end if
          do i = 1, netcell(kcell)%N
             k2 = netcell(kcell)%nod(i)
             L = netcell(kcell)%lin(i)
@@ -367,7 +391,9 @@ contains
          kk = 0
          do while (kk < nindirect .and. .not. Lnogo)
             kk = kk + 1
-            if (isconvexcell(kindirect(kk)) == 0) Lnogo = .true.
+            if (isconvexcell(kindirect(kk)) == 0) then
+               Lnogo = .true.
+            end if
          end do
 
          if (Lnogo) then
@@ -399,8 +425,12 @@ contains
 !     clean up nod%lin and nmk
          do i = 1, 2
             k = kn(i, L)
-            if (k < 1) cycle ! already cleaned up
-            if (.not. allocated(nod(k)%lin)) cycle
+            if (k < 1) then
+               cycle ! already cleaned up
+            end if
+            if (.not. allocated(nod(k)%lin)) then
+               cycle
+            end if
             N = nmk(k)
 
 !        find link position in nod%lin array

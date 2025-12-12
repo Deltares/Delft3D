@@ -79,30 +79,42 @@ contains
       nodstk = 0
       call aerr('nodstk(nodtot)', ierr, nodtot)
 
-      if (allocated(noel)) deallocate (noel)
+      if (allocated(noel)) then
+         deallocate (noel)
+      end if
       allocate (noel(nodtot), stat=ierr)
       noel = 0
       call aerr('noel(nodtot)', ierr, nodtot)
 
-      if (allocated(noel0)) deallocate (noel0)
+      if (allocated(noel0)) then
+         deallocate (noel0)
+      end if
       allocate (noel0(nodtot), stat=ierr)
       noel0 = 0
       call aerr('noel0(nodtot)', ierr, nodtot)
 
-      if (allocated(ia)) deallocate (ia)
+      if (allocated(ia)) then
+         deallocate (ia)
+      end if
       allocate (ia(nodtot), stat=ierr)
       call aerr('ia(nodtot)', ierr, nodtot)
 
-      if (allocated(row)) deallocate (row)
+      if (allocated(row)) then
+         deallocate (row)
+      end if
       allocate (row(nodtot), stat=ierr)
       call aerr('row(nodtot)', ierr, nodtot)
 
-      if (allocated(lv2)) deallocate (lv2)
+      if (allocated(lv2)) then
+         deallocate (lv2)
+      end if
       allocate (lv2(lintot), stat=ierr)
       lv2 = 0
       call aerr('lv2(lintot)', ierr, lintot)
 
-      if (allocated(jagauss)) deallocate (jagauss)
+      if (allocated(jagauss)) then
+         deallocate (jagauss)
+      end if
       allocate (jagauss(nodtot), stat=ierr)
       jagauss = 1
       call aerr('jagauss(nodtot)', ierr, nodtot)
@@ -186,9 +198,15 @@ contains
          m = nbr
          nodl = ln(1, nbr)
          nodr = ln(2, nbr)
-         if (m > 0) call ijtrue(nodl, nodr)
-         if (nodl /= 0) nbrstk(nodl) = nodl
-         if (nodr /= 0) nbrstk(nodr) = nodr
+         if (m > 0) then
+            call ijtrue(nodl, nodr)
+         end if
+         if (nodl /= 0) then
+            nbrstk(nodl) = nodl
+         end if
+         if (nodr /= 0) then
+            nbrstk(nodr) = nodr
+         end if
       end do
       noactive = 0
       do ndn = 1, nodtot
@@ -239,7 +257,9 @@ contains
 
       do n = 1, nodbr2(ndn)
          j = row(ndn)%j(n)
-         if (nodbr2(j) < mindgr) mindgr = nodbr2(j)
+         if (nodbr2(j) < mindgr) then
+            mindgr = nodbr2(j)
+         end if
       end do
       return
    end subroutine pointonstack
@@ -294,7 +314,9 @@ contains
       do n = 1, ij(i)%l
          k2 = ij(i)%j(n)
          if (ij(i)%j(n) == j) then
-            if (ij(i)%b(n)) return
+            if (ij(i)%b(n)) then
+               return
+            end if
             write (*, '('' error in ij stack'')')
             call error('ijtrue', ' ', ' ')
             stop
@@ -394,7 +416,9 @@ contains
          ia(n)%l = 0
          do jj = 1, ij(n)%l
             j = ij(n)%j(jj)
-            if (j < n) ia(n)%l = ia(n)%l + 1
+            if (j < n) then
+               ia(n)%l = ia(n)%l + 1
+            end if
          end do
          if (ia(n)%l > 0) then
             iad2 = 0
@@ -541,7 +565,9 @@ contains
 
       ierror = 0
 
-      if (jatimer == 1) call starttimer(ITOTALSOL)
+      if (jatimer == 1) then
+         call starttimer(ITOTALSOL)
+      end if
 
       call timstrt('Conjugate Gradient solver', handle_sol)
 
@@ -559,7 +585,9 @@ contains
          call stoptimer(IGAUSSEL)
       end if
 
-      if (jatimer == 1) call starttimer(ICG)
+      if (jatimer == 1) then
+         call starttimer(ICG)
+      end if
 
       if (icgsolver == 1) then
          call conjugategradient_omp(s1, ndx, ipre) ! ipre = 0,1    ! faster, solution depends on thread sequence
@@ -574,7 +602,9 @@ contains
             else
                call conjugategradientSAAD(ddr, s1, ndx, nocgiter, 1, 0, ierror) ! Saad, always using omp and ILUD preconditioner
             end if
-            if (ierror == 1) goto 1234
+            if (ierror == 1) then
+               goto 1234
+            end if
          else
 !      do *not* use Saad solver when nocg < 3
             call conjugategradient(s1, ndx, ipre) ! ipre = 0,1,2  ! no omp
@@ -593,7 +623,9 @@ contains
 #endif
       else if (icgsolver == 7) then
          call conjugategradient_MPI(s1, ndx, ipre, nocgiter, ierror) ! parallel cg, ipre=0,1: "global" preconditioning, ipre=3,4: block preconditioning
-         if (ierror == 1) goto 1234
+         if (ierror == 1) then
+            goto 1234
+         end if
       else if (icgsolver == 8) then
 #ifdef HAVE_PARMS
          nocgiter = 999
@@ -619,7 +651,9 @@ contains
          numcgits = numcgits + nocgiter
       end if
 
-      if (jatimer == 1) call starttimer(IGAUSSSU)
+      if (jatimer == 1) then
+         call starttimer(IGAUSSSU)
+      end if
 
       if (Noderivedtypes >= 1) then
          call gauss_substitutionjipjan(s1, ndx)
@@ -627,9 +661,13 @@ contains
          call gauss_substitution(s1, ndx)
       end if
 
-      if (jatimer == 1) call stoptimer(IGAUSSSU)
+      if (jatimer == 1) then
+         call stoptimer(IGAUSSSU)
+      end if
 
-      if (jatimer == 1) call stoptimer(ITOTALSOL)
+      if (jatimer == 1) then
+         call stoptimer(ITOTALSOL)
+      end if
 
       call timstop(handle_sol)
 
@@ -673,7 +711,9 @@ contains
 
       ierror = 0
 
-      if (nocg <= 0) return
+      if (nocg <= 0) then
+         return
+      end if
 
 ! set jasafe module variable
       jasafe = jadosafe
@@ -985,7 +1025,9 @@ contains
       real(kind=dp) :: eps
 
 ! ddr (rechterlid), bbr (diag) , ccr (off diag), s1, row, row()%j, row()%a [AvD]
-      if (nocg <= 0) return
+      if (nocg <= 0) then
+         return
+      end if
 
       nocgiter = 0
       eps = 0.0_dp
@@ -1016,7 +1058,9 @@ contains
             jj = row(ndn)%a(j)
             rk(ndn) = rk(ndn) - ccr(jj) * s1(i)
          end do
-         if (abs(rk(ndn)) > eps) eps = abs(rk(ndn))
+         if (abs(rk(ndn)) > eps) then
+            eps = abs(rk(ndn))
+         end if
          pk(ndn) = rk(ndn) / bbr(ndn)
          zkr(ndn) = pk(ndn)
          rkzki = rkzki + rk(ndn) * zkr(ndn)
@@ -1045,7 +1089,9 @@ contains
          ndn = noel(n)
          s1(ndn) = s1(ndn) + alfak * pk(ndn)
          rk(ndn) = rk(ndn) - alfak * apk(ndn)
-         if (abs(rk(ndn)) > eps) eps = abs(rk(ndn))
+         if (abs(rk(ndn)) > eps) then
+            eps = abs(rk(ndn))
+         end if
       end do
       if (ipre == 0) then ! row scaling
          do n = nogauss + 1, nogauss + nocg
@@ -1131,7 +1177,9 @@ contains
       real(kind=dp) :: rkzki, rkzki0, pkapki, alfak, betak
       real(kind=dp) :: eps
 
-      if (nocg <= 0) return
+      if (nocg <= 0) then
+         return
+      end if
 
       nocgiter = 0
       eps = 0.0_dp
@@ -1237,7 +1285,9 @@ contains
             !    write(*,*) 'after ', ndn, bbr(ndn), zkr(ndn)
             !endif
 
-            if (abs(zkr(ndn)) > eps) eps = abs(zkr(ndn))
+            if (abs(zkr(ndn)) > eps) then
+               eps = abs(zkr(ndn))
+            end if
          end do
       end if
 
@@ -1292,7 +1342,9 @@ contains
       real(kind=dp) :: rkzki, rkzki0, pkapki, alfak, betak
       real(kind=dp) :: eps
 
-      if (nocg <= 0) return
+      if (nocg <= 0) then
+         return
+      end if
 
       nocgiter = 0
       eps = 0.0_dp
@@ -1399,7 +1451,9 @@ contains
             !    write(*,*) 'after ', ndn, bbr(ndn), zkr(ndn)
             !endif
 
-            if (abs(zkr(ndn)) > eps) eps = abs(zkr(ndn))
+            if (abs(zkr(ndn)) > eps) then
+               eps = abs(zkr(ndn))
+            end if
          end do
       end if
 
@@ -1565,9 +1619,15 @@ contains
 
       if (Noderivedtypes >= 5) then
          do n = 1, nodtot
-            if (allocated(row(n)%a)) deallocate (row(n)%a)
-            if (allocated(row(n)%j)) deallocate (row(n)%j)
-            if (allocated(row(n)%f)) deallocate (row(n)%f)
+            if (allocated(row(n)%a)) then
+               deallocate (row(n)%a)
+            end if
+            if (allocated(row(n)%j)) then
+               deallocate (row(n)%j)
+            end if
+            if (allocated(row(n)%f)) then
+               deallocate (row(n)%f)
+            end if
          end do
          deallocate (row)
       end if
@@ -1719,7 +1779,9 @@ contains
       nodtot = ndx
       lintot = lnx
 
-      if (nodtot <= maxdge) maxdge = nodtot
+      if (nodtot <= maxdge) then
+         maxdge = nodtot
+      end if
 
       !
       call readyy('ini Gauss/CG', 0.0_dp)
@@ -1731,14 +1793,18 @@ contains
       nocg = 0
       nn = 0
       do
-         if (mindgr > maxdge) exit
+         if (mindgr > maxdge) then
+            exit
+         end if
          nn = nn + 1
          ndn = nn
          if (jagauss(nn) == 1) then
             if (nbrstk(ndn) /= 0 .and. nodbr2(ndn) == mindgr) then
                minold = mindgr
                call pointonstack()
-               if (minold > mindgr) nn = 0
+               if (minold > mindgr) then
+                  nn = 0
+               end if
             end if
          else
 !      write (*,*)
@@ -1755,14 +1821,22 @@ contains
       call readyy('ini Gauss/CG', 0.80_dp)
       call inigauss()
       call readyy('ini Gauss/CG', 0.90_dp)
-      if (nogauss < noactive) call inicg()
+      if (nogauss < noactive) then
+         call inicg()
+      end if
       call readyy('ini Gauss/CG', 0.95_dp)
 
       deallocate (ij)
       deallocate (nbrstk, nodstk, nodbr2)
-      if (allocated(intbuf)) deallocate (intbuf)
-      if (allocated(logbuf)) deallocate (logbuf)
-      if (allocated(jagauss)) deallocate (jagauss)
+      if (allocated(intbuf)) then
+         deallocate (intbuf)
+      end if
+      if (allocated(logbuf)) then
+         deallocate (logbuf)
+      end if
+      if (allocated(jagauss)) then
+         deallocate (jagauss)
+      end if
 
       call allocate_arrays()
 
@@ -1821,34 +1895,46 @@ contains
 
       integer allocerr
 
-      if (allocated(ccr)) deallocate (ccr)
+      if (allocated(ccr)) then
+         deallocate (ccr)
+      end if
       allocate (ccr(0:ijstck), STAT=allocErr)
       ccr = 0
       call aerr('ccr(0:ijstck)', allocerr, ijstck)
 
-      if (allocated(bbl)) deallocate (bbl)
+      if (allocated(bbl)) then
+         deallocate (bbl)
+      end if
       allocate (bbl(0:ijstck), STAT=allocErr)
       bbl = 0
       call aerr('bbl(0:ijstck)', allocerr, ijstck)
 
       if (nonlin > 0) then
-         if (allocated(ccrsav)) deallocate (ccrsav)
+         if (allocated(ccrsav)) then
+            deallocate (ccrsav)
+         end if
          allocate (ccrsav(0:ijstck), STAT=allocErr)
          ccrsav = 0
          call aerr('ccrsav(0:ijstck)', allocerr, ijstck)
       end if
 
-      if (allocated(bbr)) deallocate (bbr, ddr)
+      if (allocated(bbr)) then
+         deallocate (bbr, ddr)
+      end if
       allocate (bbr(nodtot), ddr(nodtot), STAT=allocErr)
       bbr = 0
       ddr = 0
       call aerr('bbr(nodtot), ddr(nodtot)', allocErr, 2 * nodtot)
 
-      if (allocated(d0)) deallocate (d0, zkr, pk, apk, rk)
+      if (allocated(d0)) then
+         deallocate (d0, zkr, pk, apk, rk)
+      end if
       allocate (d0(nodtot), zkr(nodtot), pk(0:nodtot), apk(nodtot), rk(nodtot), STAT=allocErr)
       call aerr('d0(nodtot), zkr(nodtot),pk(0:nodtot), apk(nodtot), rk(nodtot)', allocErr, 5 * nodtot)
 
-      if (allocated(ccc)) deallocate (ccc)
+      if (allocated(ccc)) then
+         deallocate (ccc)
+      end if
       allocate (ccc(npmax), STAT=allocErr)
       call aerr('ccc(npmax)', allocErr, npmax)
 
@@ -1949,7 +2035,9 @@ contains
          else if (ipre == 3 .or. ipre == 4) then ! Saad preconditioner
             !   compute Saad matrix, preconditioner and permutation only
             call conjugategradientSAAD(ddr, s1, ndx, nopreconditioner, -1, 1, ierror) ! ddr and s1 not used
-            if (ierror /= 0) goto 1234
+            if (ierror /= 0) then
+               goto 1234
+            end if
          end if
 
       else
@@ -1957,11 +2045,17 @@ contains
       end if
 
 ! BEGIN MPI
-      if (jatimer == 1) call starttimer(IMPICOMM)
+      if (jatimer == 1) then
+         call starttimer(IMPICOMM)
+      end if
       !call update_ghost(s1, ierror)
       call update_ghosts(ITYPE_S, 1, nodtot, s1, ierror)
-      if (jatimer == 1) call stoptimer(IMPICOMM)
-      if (ierror /= 0) goto 1234
+      if (jatimer == 1) then
+         call stoptimer(IMPICOMM)
+      end if
+      if (ierror /= 0) then
+         goto 1234
+      end if
       ! END MPI
 
       do n = nogauss + 1, nogauss + nocg
@@ -1973,7 +2067,9 @@ contains
             jj = row(ndn)%a(j)
             rk(ndn) = rk(ndn) - ccr(jj) * s1(i)
          end do
-         if (abs(rk(ndn)) > eps) eps = abs(rk(ndn))
+         if (abs(rk(ndn)) > eps) then
+            eps = abs(rk(ndn))
+         end if
 !   pk(ndn)=rk(ndn)/bbr(ndn)
 !   zkr(ndn)=pk(ndn)
 !   rkzki=rkzki+rk(ndn)*zkr(ndn)
@@ -1982,19 +2078,29 @@ contains
       ! preconditioning
       if (ipre == 3 .or. ipre == 4) then ! Saad preconditioner
 !  BEGIN MPI
-         if (jatimer == 1) call starttimer(IMPICOMM)
+         if (jatimer == 1) then
+            call starttimer(IMPICOMM)
+         end if
          !call update_ghost(rk,ierror)
          call update_ghosts(ITYPE_S, 1, nodtot, rk, ierror)
-         if (jatimer == 1) call stoptimer(IMPICOMM)
-         if (ierror /= 0) goto 1234
+         if (jatimer == 1) then
+            call stoptimer(IMPICOMM)
+         end if
+         if (ierror /= 0) then
+            goto 1234
+         end if
 ! END MPI
          if (nocg > 0) then
             if (ipre == 3) then
                call conjugategradientSAAD(rk, zkr, ndx, nopreconditioner, 0, 1, ierror) ! do not (re)compute preconditioner and permutation
-               if (ierror /= 0) goto 1234
+               if (ierror /= 0) then
+                  goto 1234
+               end if
             else if (ipre == 4) then
                call conjugategradientSAAD(rk, zkr, ndx, nopreconditioner, 2, 1, ierror) ! do not (re)compute preconditioner and permutation
-               if (ierror /= 0) goto 1234
+               if (ierror /= 0) then
+                  goto 1234
+               end if
             end if
          else
             zkr = 0.0_dp
@@ -2013,15 +2119,27 @@ contains
       end do
 
       ! BEGIN MPI
-      if (jatimer == 1) call starttimer(IMPICOMM)
+      if (jatimer == 1) then
+         call starttimer(IMPICOMM)
+      end if
       call mpi_allreduce(rkzki, rkzki_tmp, 1, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) call stoptimer(IMPICOMM)
-      if (ierror /= 0) goto 1234
+      if (jatimer == 1) then
+         call stoptimer(IMPICOMM)
+      end if
+      if (ierror /= 0) then
+         goto 1234
+      end if
       rkzki = rkzki_tmp
-      if (jatimer == 1) call starttimer(IMPICOMM)
+      if (jatimer == 1) then
+         call starttimer(IMPICOMM)
+      end if
       call mpi_allreduce(eps, eps_tmp, 1, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) call stoptimer(IMPICOMM)
-      if (ierror /= 0) goto 1234
+      if (jatimer == 1) then
+         call stoptimer(IMPICOMM)
+      end if
+      if (ierror /= 0) then
+         goto 1234
+      end if
       eps = eps_tmp
       ! END MPI
 
@@ -2038,11 +2156,17 @@ contains
 10    continue
 
       ! BEGIN MPI
-      if (jatimer == 1) call starttimer(IMPICOMM)
+      if (jatimer == 1) then
+         call starttimer(IMPICOMM)
+      end if
       !call update_ghost(pk(1:nodtot),ierror)
       call update_ghosts(ITYPE_S, 1, nodtot, pk(1:nodtot), ierror)
-      if (jatimer == 1) call stoptimer(IMPICOMM)
-      if (ierror /= 0) goto 1234
+      if (jatimer == 1) then
+         call stoptimer(IMPICOMM)
+      end if
+      if (ierror /= 0) then
+         goto 1234
+      end if
       ! END MPI
 
       ! compute A pk and pk' A Pk
@@ -2060,10 +2184,16 @@ contains
       end do
 
       ! BEGIN MPI
-      if (jatimer == 1) call starttimer(IMPICOMM)
+      if (jatimer == 1) then
+         call starttimer(IMPICOMM)
+      end if
       call mpi_allreduce(pkapki, pkapki_tmp, 1, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) call stoptimer(IMPICOMM)
-      if (ierror /= 0) goto 1234
+      if (jatimer == 1) then
+         call stoptimer(IMPICOMM)
+      end if
+      if (ierror /= 0) then
+         goto 1234
+      end if
       pkapki = pkapki_tmp
       ! END MPI
 
@@ -2073,14 +2203,22 @@ contains
          ndn = noel(n)
          s1(ndn) = s1(ndn) + alfak * pk(ndn)
          rk(ndn) = rk(ndn) - alfak * apk(ndn)
-         if (abs(rk(ndn)) > eps) eps = abs(rk(ndn))
+         if (abs(rk(ndn)) > eps) then
+            eps = abs(rk(ndn))
+         end if
       end do
 
       ! BEGIN MPI
-      if (jatimer == 1) call starttimer(IMPICOMM)
+      if (jatimer == 1) then
+         call starttimer(IMPICOMM)
+      end if
       call mpi_allreduce(eps, eps_tmp, 1, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) call stoptimer(IMPICOMM)
-      if (ierror /= 0) goto 1234
+      if (jatimer == 1) then
+         call stoptimer(IMPICOMM)
+      end if
+      if (ierror /= 0) then
+         goto 1234
+      end if
       eps = eps_tmp
       ! END MPI
 
@@ -2093,11 +2231,17 @@ contains
       else if (ipre == 1 .or. ipre == 2) then ! GS,  incomplete Choleski
 
 ! BEGIN MPI
-         if (jatimer == 1) call starttimer(IMPICOMM)
+         if (jatimer == 1) then
+            call starttimer(IMPICOMM)
+         end if
          !call update_ghost(rk,ierror)
          call update_ghosts(ITYPE_S, 1, nodtot, rk, ierror)
-         if (jatimer == 1) call stoptimer(IMPICOMM)
-         if (ierror /= 0) goto 1234
+         if (jatimer == 1) then
+            call stoptimer(IMPICOMM)
+         end if
+         if (ierror /= 0) then
+            goto 1234
+         end if
          zkr = rk
 ! END MPI
 
@@ -2121,11 +2265,17 @@ contains
          end do
 
          ! BEGIN MPI
-         if (jatimer == 1) call starttimer(IMPICOMM)
+         if (jatimer == 1) then
+            call starttimer(IMPICOMM)
+         end if
          !call update_ghost(zkr,ierror)
          call update_ghosts(ITYPE_S, 1, nodtot, zkr, ierror)
-         if (jatimer == 1) call stoptimer(IMPICOMM)
-         if (ierror /= 0) goto 1234
+         if (jatimer == 1) then
+            call stoptimer(IMPICOMM)
+         end if
+         if (ierror /= 0) then
+            goto 1234
+         end if
          ! END MPI
 
          do n = nogauss + nocg, nogauss + 1, -1
@@ -2153,19 +2303,29 @@ contains
          end do
       else if (ipre == 3 .or. ipre == 4) then ! Saad preconditioning
 !  BEGIN MPI
-         if (jatimer == 1) call starttimer(IMPICOMM)
+         if (jatimer == 1) then
+            call starttimer(IMPICOMM)
+         end if
          !call update_ghost(rk,ierror)
          call update_ghosts(ITYPE_S, 1, nodtot, rk, ierror)
-         if (jatimer == 1) call stoptimer(IMPICOMM)
-         if (ierror /= 0) goto 1234
+         if (jatimer == 1) then
+            call stoptimer(IMPICOMM)
+         end if
+         if (ierror /= 0) then
+            goto 1234
+         end if
 !  END MPI
          if (nocg > 0) then
             if (ipre == 3) then
                call conjugategradientSAAD(rk, zkr, ndx, nopreconditioner, 0, 1, ierror) ! do not (re)compute preconditioner and permutation
-               if (ierror /= 0) goto 1234
+               if (ierror /= 0) then
+                  goto 1234
+               end if
             else if (ipre == 4) then
                call conjugategradientSAAD(rk, zkr, ndx, nopreconditioner, 2, 1, ierror) ! do not (re)compute preconditioner and permutation
-               if (ierror /= 0) goto 1234
+               if (ierror /= 0) then
+                  goto 1234
+               end if
             end if
          else
             zkr = 0.0_dp
@@ -2202,10 +2362,16 @@ contains
       end do
 
       ! BEGIN MPI
-      if (jatimer == 1) call starttimer(IMPICOMM)
+      if (jatimer == 1) then
+         call starttimer(IMPICOMM)
+      end if
       call mpi_allreduce(rkzki, rkzki_tmp, 1, mpi_double_precision, mpi_sum, DFM_COMM_DFMWORLD, ierror)
-      if (jatimer == 1) call stoptimer(IMPICOMM)
-      if (ierror /= 0) goto 1234
+      if (jatimer == 1) then
+         call stoptimer(IMPICOMM)
+      end if
+      if (ierror /= 0) then
+         goto 1234
+      end if
       rkzki = rkzki_tmp
       ! END MPI
 
@@ -2223,7 +2389,9 @@ contains
 ! error handling
 1234  continue
 
-      if (ierror /= 0) call mess(LEVEL_ERROR, 'conjugategradient_MPI error')
+      if (ierror /= 0) then
+         call mess(LEVEL_ERROR, 'conjugategradient_MPI error')
+      end if
 
    end subroutine conjugategradient_MPI
 
@@ -2251,7 +2419,9 @@ contains
          do j = 1, ntot
             i = row(ndn)%j(j)
             jj = row(ndn)%a(j)
-            if (i < ndn) write (mout, *) ndn, i, ccr(jj)
+            if (i < ndn) then
+               write (mout, *) ndn, i, ccr(jj)
+            end if
          end do
       end do
       write (mout, '(A)') ';]'
@@ -2305,7 +2475,9 @@ contains
          call mess(LEVEL_ERROR, 'initestsolver: maxghostlev_s.ne.minghostlev_s+1')
       end if
 
-      if (allocated(s1_ghost)) deallocate (s1_ghost)
+      if (allocated(s1_ghost)) then
+         deallocate (s1_ghost)
+      end if
       allocate (s1_ghost(numghost_s))
       s1_ghost = 0.0_dp
 
@@ -2326,7 +2498,9 @@ contains
       do L = 1, Lnx
          do i = 1, 2
             ip1 = i + 1
-            if (ip1 > 2) ip1 = ip1 - 2
+            if (ip1 > 2) then
+               ip1 = ip1 - 2
+            end if
             k1 = ln(i, L)
             k2 = ln(ip1, L)
 
@@ -2353,10 +2527,14 @@ contains
       end do
 
 !   allocate
-      if (allocated(kbndint)) deallocate (kbndint)
+      if (allocated(kbndint)) then
+         deallocate (kbndint)
+      end if
       allocate (kbndint(3, nbndint))
       kbndint = 0
-      if (allocated(zbndint)) deallocate (zbndint)
+      if (allocated(zbndint)) then
+         deallocate (zbndint)
+      end if
       allocate (zbndint(2, nbndint))
       zbndint = 0.0_dp
 
@@ -2365,7 +2543,9 @@ contains
       do L = 1, Lnx
          do i = 1, 2
             ip1 = i + 1
-            if (ip1 > 2) ip1 = ip1 - 2
+            if (ip1 > 2) then
+               ip1 = ip1 - 2
+            end if
             k1 = ln(i, L)
             k2 = ln(ip1, L)
 
@@ -2412,7 +2592,9 @@ contains
       call write_dots('Lbndint_'//sdmn//'.xyz', jawritten)
 !   END DEBUG
 
-      if (allocated(imask)) deallocate (imask)
+      if (allocated(imask)) then
+         deallocate (imask)
+      end if
 
       return
    end subroutine initestsolver
@@ -2453,7 +2635,9 @@ contains
       real(kind=dp), dimension(:), allocatable :: bbr_sav, ddr_sav
       real(kind=dp), dimension(1) :: res_global
       real(kind=dp) :: res_global0, tolDD
-      if (nocg <= 0) return
+      if (nocg <= 0) then
+         return
+      end if
 
       ierror = 0
       itsol = 0
@@ -2630,9 +2814,13 @@ contains
          end do
 
 !      update ghost cells
-         if (jatimer == 1) call starttimer(IMPICOMM)
+         if (jatimer == 1) then
+            call starttimer(IMPICOMM)
+         end if
          call update_ghosts(ITYPE_S, 1, Ndx, s1, ierror)
-         if (jatimer == 1) call stoptimer(IMPICOMM)
+         if (jatimer == 1) then
+            call stoptimer(IMPICOMM)
+         end if
 
 !       maxdiff = 0d0
 !!      compute maximum difference
@@ -2717,8 +2905,12 @@ contains
 
 1234  continue
 
-      if (allocated(bbr_sav)) deallocate (bbr_sav)
-      if (allocated(ddr_sav)) deallocate (ddr_sav)
+      if (allocated(bbr_sav)) then
+         deallocate (bbr_sav)
+      end if
+      if (allocated(ddr_sav)) then
+         deallocate (ddr_sav)
+      end if
 
       return
    end subroutine testsolver

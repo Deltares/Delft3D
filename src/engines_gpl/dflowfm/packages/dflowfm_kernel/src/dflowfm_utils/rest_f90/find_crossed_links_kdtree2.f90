@@ -94,7 +94,9 @@ contains
 
       intersection_count = 0
 
-      if (NPL < 1) goto 1234 ! nothing to do
+      if (NPL < 1) then
+         goto 1234 ! nothing to do
+      end if
 
       LnxiORLnx = 0
 
@@ -218,7 +220,9 @@ contains
 !        count number of points in search area
          NN = kdtree2_r_count(treeinst%tree, treeinst%qv, R2search)
 
-         if (NN == 0) cycle ! no links found
+         if (NN == 0) then
+            cycle ! no links found
+         end if
 
 !        reallocate if necessary
          call realloc_results_kdtree(treeinst, NN)
@@ -255,7 +259,9 @@ contains
 1234  continue
 
 !     deallocate
-      if (treeinst%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeinst)
+      if (treeinst%itreestat /= ITREE_EMPTY) then
+         call delete_kdtree2(treeinst)
+      end if
       if (allocated(ipolsection)) then
          deallocate (ipolsection)
       end if

@@ -69,9 +69,15 @@ contains
             ff3(:, 0) = 0.0_dp
             do LL = Lb, Lt
                kk = ln(iup, LL)
-               if (genstr%au(1, L0) > 0) ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
-               if (genstr%au(2, L0) > 0) ff3(2, LL - Lb + 1) = max(0.0_dp, min(zti(2), zws(kk)) - zbi(2)) / hhi(2)
-               if (genstr%au(3, L0) > 0) ff3(3, LL - Lb + 1) = max(0.0_dp, min(zti(3), zws(kk)) - zbi(3)) / hhi(3)
+               if (genstr%au(1, L0) > 0) then
+                  ff3(1, LL - Lb + 1) = max(0.0_dp, min(zti(1), zws(kk)) - zbi(1)) / hhi(1)
+               end if
+               if (genstr%au(2, L0) > 0) then
+                  ff3(2, LL - Lb + 1) = max(0.0_dp, min(zti(2), zws(kk)) - zbi(2)) / hhi(2)
+               end if
+               if (genstr%au(3, L0) > 0) then
+                  ff3(3, LL - Lb + 1) = max(0.0_dp, min(zti(3), zws(kk)) - zbi(3)) / hhi(3)
+               end if
             end do
 
             do LL = Lb, Lt

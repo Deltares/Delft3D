@@ -125,7 +125,9 @@ contains
       Rossby = sqrt(ag * dep) / fcorio
       call dbdistancehk(xkmin, ykmin, xkmax, ykmax, rs)
       rs = oceaneddysizefrac * rs
-      if (oceaneddysize /= 0.0_dp) rs = oceaneddysize
+      if (oceaneddysize /= 0.0_dp) then
+         rs = oceaneddysize
+      end if
       samp = oceaneddyamp
       if (oceaneddyvel > 0.0_dp) then
          samp = oceaneddyvel * 2.0_dp * fcorio * rs / ag
@@ -138,8 +140,12 @@ contains
       yff = oceaneddyyoff
       imx = 1
       jmx = 1
-      if (oceaneddyxoff /= 0.0_dp) imx = 2
-      if (oceaneddyyoff /= 0.0_dp) jmx = 2
+      if (oceaneddyxoff /= 0.0_dp) then
+         imx = 2
+      end if
+      if (oceaneddyyoff /= 0.0_dp) then
+         jmx = 2
+      end if
 
       do i = 1, imx
          if (i == 2) then
@@ -160,9 +166,13 @@ contains
             do k = 1, ndx
                call dbdistancehk(xz(k), yz(k), x0, y0, rr)
                call dbdistancehk(x0, yz(k), xz(k), yz(k), xx)
-               if (xz(k) < x0) xx = -xx
+               if (xz(k) < x0) then
+                  xx = -xx
+               end if
                call dbdistancehk(xz(k), y0, xz(k), yz(k), yy)
-               if (yz(k) < y0) yy = -yy
+               if (yz(k) < y0) then
+                  yy = -yy
+               end if
 
                cs = xx / rr
                sn = yy / rr

@@ -363,7 +363,9 @@ contains
             end if
 
             linkcount = nd(k1)%lnx
-            if (allocated(gridpoint2cross(k1)%cross)) deallocate (gridpoint2cross(k1)%cross)
+            if (allocated(gridpoint2cross(k1)%cross)) then
+               deallocate (gridpoint2cross(k1)%cross)
+            end if
             allocate (gridpoint2cross(k1)%cross(linkcount))
             gridpoint2cross(k1)%num_cross_sections = linkcount
             gridpoint2cross(k1)%cross = -999
@@ -398,7 +400,9 @@ contains
                else
                   ! Internal gridpoint on branch, only 1 cross section attached
                   L = lin(i - 1)
-                  if (allocated(gridpoint2cross(k1)%cross)) deallocate (gridpoint2cross(k1)%cross)
+                  if (allocated(gridpoint2cross(k1)%cross)) then
+                     deallocate (gridpoint2cross(k1)%cross)
+                  end if
                   allocate (gridpoint2cross(k1)%cross(1))
                   gridpoint2cross(k1)%num_cross_sections = 1
                   jpos = 1
@@ -566,7 +570,9 @@ contains
          do i = 1, nstor
             pstor => network%storS%stor(i)
             n1 = pstor%grid_point
-            if (n1 <= 0) cycle
+            if (n1 <= 0) then
+               cycle
+            end if
             if (bl(n1) + eps3 < pstor%storage_area%x(1)) then
                call setmessage(LEVEL_WARN, 'At node '//trim(pstor%id)//' the bedlevel is below the bedlevel of the assigned storage area.')
                write (msgbuf, '(a,f0.2,a,f0.2,a)') 'The bedlevel (due to invert levels of incoming channels/pipes) = ', bl(n1), ' and the bottom level of the storage area is ', pstor%storage_area%x(1), '.'
@@ -887,7 +893,9 @@ contains
       ! set for storage nodes (either from a table, or a prescribed street level (storageType is reservoir or closed))
       do istor = 1, network%storS%Count
          pSto => network%storS%stor(istor)
-         if (pSto%grid_point < 1) cycle
+         if (pSto%grid_point < 1) then
+            cycle
+         end if
          i = pSto%grid_point - ndx2d
          if (.not. pSto%use_table) then ! Manhole
             if (pSto%use_street_storage) then

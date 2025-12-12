@@ -38,17 +38,35 @@ contains
 
       integer :: ispline
 
-      if (.not. allocated(splineprops)) return
+      if (.not. allocated(splineprops)) then
+         return
+      end if
 
       do ispline = 1, ubound(splineprops, 1)
-         if (allocated(splineprops(ispline)%ics)) deallocate (splineprops(ispline)%ics)
-         if (allocated(splineprops(ispline)%Lorient)) deallocate (splineprops(ispline)%Lorient)
-         if (allocated(splineprops(ispline)%t)) deallocate (splineprops(ispline)%t)
-         if (allocated(splineprops(ispline)%cosphi)) deallocate (splineprops(ispline)%cosphi)
-         if (allocated(splineprops(ispline)%hL)) deallocate (splineprops(ispline)%hL)
-         if (allocated(splineprops(ispline)%hR)) deallocate (splineprops(ispline)%hR)
-         if (allocated(splineprops(ispline)%NsubL)) deallocate (splineprops(ispline)%NsubL)
-         if (allocated(splineprops(ispline)%NsubR)) deallocate (splineprops(ispline)%NsubR)
+         if (allocated(splineprops(ispline)%ics)) then
+            deallocate (splineprops(ispline)%ics)
+         end if
+         if (allocated(splineprops(ispline)%Lorient)) then
+            deallocate (splineprops(ispline)%Lorient)
+         end if
+         if (allocated(splineprops(ispline)%t)) then
+            deallocate (splineprops(ispline)%t)
+         end if
+         if (allocated(splineprops(ispline)%cosphi)) then
+            deallocate (splineprops(ispline)%cosphi)
+         end if
+         if (allocated(splineprops(ispline)%hL)) then
+            deallocate (splineprops(ispline)%hL)
+         end if
+         if (allocated(splineprops(ispline)%hR)) then
+            deallocate (splineprops(ispline)%hR)
+         end if
+         if (allocated(splineprops(ispline)%NsubL)) then
+            deallocate (splineprops(ispline)%NsubL)
+         end if
+         if (allocated(splineprops(ispline)%NsubR)) then
+            deallocate (splineprops(ispline)%NsubR)
+         end if
       end do
 
       deallocate (splineprops)

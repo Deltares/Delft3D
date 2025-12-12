@@ -277,7 +277,9 @@ contains
          call ITEXTCOLOUR('BLACK', 'WHITE')
       end if
       call IOUTMenuHoriz(OPTION, MAXOPT, 1, LI, IW, 0, 1)
-      if (JA /= 2) return
+      if (JA /= 2) then
+         return
+      end if
 
       KEY = InfoInput(55)
       if (KEY /= 23) then
@@ -330,7 +332,9 @@ contains
          return
       else if (KEY >= 24 .and. KEY <= 26) then
          call FKEYS(KEY)
-         if (KEY == 3) return
+         if (KEY == 3) then
+            return
+         end if
          goto 10
       else
          KEY = 0

@@ -85,7 +85,9 @@ contains
       Ne = nump1d2d
 
 !     deallocate
-      if (allocated(idomain)) deallocate (idomain)
+      if (allocated(idomain)) then
+         deallocate (idomain)
+      end if
 
 !     allocate
       allocate (idomain(Ne), stat=ierror)
@@ -110,23 +112,33 @@ contains
       if (jacontiguous == 1) then
          if (method == 1 .or. method == 0) then ! K-way (method = 1) is the default (method = 0) now
             ierror = metisopts(opts, "CONTIG", 1) ! enforce contiguous domains, observation: number of cells per domain becomes less homogeneous
-            if (ierror /= 0) goto 1234
+            if (ierror /= 0) then
+               goto 1234
+            end if
          else if (method == 2) then
             call mess(LEVEL_WARN, 'Contiguous option is not available for Recursive Bisection method (method = 2). To enforce contiguous option, use K-way partitioning (default) method (method = 1).')
          end if
       end if
       ierror = metisopts(opts, "DBGLVL", 1) ! output
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       ierror = metisopts(opts, "UFACTOR", 1) ! allowed load imbalance TODO, MJ: should be an integer x, and tolerance is (1+x)/1000 according to manual, but 1+x/1000 according to us and "macros.h"
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       ierror = metisopts(opts, "NITER", 100) ! observation: increasing this number will visually improve the partitioning
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       if (iseed /= 0) then
          ierror = metisopts(opts, "SEED", iseed) ! User-defined seed value, for reproducible partitionings.
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
       end if
 
       vwgt = 1 ! weights of vertices

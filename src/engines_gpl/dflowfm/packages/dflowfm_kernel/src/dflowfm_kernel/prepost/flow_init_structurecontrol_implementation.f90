@@ -414,7 +414,9 @@ contains
 
          ! check if this structure concerns Flow1D type structure
          call prop_get(str_ptr, '', 'branchid', branchid, success)
-         if (.not. success) call prop_get(str_ptr, '', 'numCoordinates', branchid, success)
+         if (.not. success) then
+            call prop_get(str_ptr, '', 'numCoordinates', branchid, success)
+         end if
          if (success) then
             if (.not. strcmpi(strtype, 'pump') .and. .not. strcmpi(strtype, 'dambreak')) then
                cycle

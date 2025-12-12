@@ -87,7 +87,9 @@ contains
             k2 = ln(2, Lf)
 
             do l = 1, lsedtot
-               if (.not. has_bedload(tratyp(l))) cycle ! cycle if this fraction doesn't include bedload
+               if (.not. has_bedload(tratyp(l))) then
+                  cycle ! cycle if this fraction doesn't include bedload
+               end if
                !
                ! check for active sediment cell
                if (kfsed(k1) * kfsed(k2) == 0) then
@@ -162,7 +164,9 @@ contains
                k2 = ln(2, Lf) ! internal node
                !
                do l = 1, lsedtot
-                  if (.not. has_bedload(tratyp(l))) cycle ! cycle if this fraction doesn't include bedload
+                  if (.not. has_bedload(tratyp(l))) then
+                     cycle ! cycle if this fraction doesn't include bedload
+                  end if
                   !
                   if (kfsed(k1) * kfsed(k2) == 0) then
                      e_sn(Lf, l) = 0.0_dp
@@ -185,14 +189,18 @@ contains
                ! cross-check next statements below with Bert
             else if (hu(Lf) <= epshu) then ! dry
                do l = 1, lsedtot
-                  if (.not. has_bedload(tratyp(l))) cycle ! cycle if this fraction doesn't include bedload
+                  if (.not. has_bedload(tratyp(l))) then
+                     cycle ! cycle if this fraction doesn't include bedload
+                  end if
                   !
                   e_sn(Lf, l) = 0.0_dp
                   e_st(Lf, l) = 0.0_dp
                end do
             else ! inflow and wet
                do l = 1, lsedtot
-                  if (.not. has_bedload(tratyp(l))) cycle ! cycle if this fraction doesn't include bedload
+                  if (.not. has_bedload(tratyp(l))) then
+                     cycle ! cycle if this fraction doesn't include bedload
+                  end if
                   !
                   if (kfsed(k1) * kfsed(k2) == 0) then
                      e_sn(Lf, l) = 0.0_dp

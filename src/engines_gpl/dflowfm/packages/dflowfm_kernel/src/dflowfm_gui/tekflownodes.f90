@@ -83,7 +83,9 @@ contains
             if (ja2 == 1 .or. nodewhat == 3) then ! nodewhat==3: always show bottom
                if (inview(xz(k), yz(k))) then
                   zn = znod(k)
-                  if (zn == DMISS) cycle
+                  if (zn == DMISS) then
+                     cycle
+                  end if
                   if (nodemode == 3 .or. nodemode == 3 + 3) then ! isolines within cell
                      if (k <= ndx2d) then
                         call ISOSMOOTHflownode(k)

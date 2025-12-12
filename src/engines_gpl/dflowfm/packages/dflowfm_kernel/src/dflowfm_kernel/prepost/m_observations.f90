@@ -601,7 +601,9 @@ contains
       istart = iend + 1
       iend = iend + MAXNUMVALOBS2D
       do i = 1, MAXNUMVALOBS2D
-         if (i == ivar) return
+         if (i == ivar) then
+            return
+         end if
          ipnt = ipnt + 1
       end do
 
@@ -609,7 +611,9 @@ contains
       istart = iend + 1
       iend = iend + MAXNUMVALOBS3D
       do i = istart, iend
-         if (i == ivar) return
+         if (i == ivar) then
+            return
+         end if
          ipnt = ipnt + max(kmx, 1)
       end do
 
@@ -617,7 +621,9 @@ contains
       istart = iend + 1
       iend = iend + MAXNUMVALOBS3Dw
       do i = istart, iend
-         if (i == ivar) return
+         if (i == ivar) then
+            return
+         end if
          ipnt = ipnt + max(kmx, 1) + 1
       end do
 
@@ -626,7 +632,9 @@ contains
          istart = iend + 1
          iend = iend + MAXNUMVALOBSLYR
          do i = istart, iend
-            if (i == ivar) return
+            if (i == ivar) then
+               return
+            end if
             ipnt = ipnt + nlyrs
          end do
       end if

@@ -118,7 +118,9 @@ contains
       KMOD = max(1, NUMK / 100)
       do N = 1, NUMP
 
-         if (mod(n, KMOD) == 0) call READYY('Refine quads', real(n, kind=dp) / real(nump, kind=dp))
+         if (mod(n, KMOD) == 0) then
+            call READYY('Refine quads', real(n, kind=dp) / real(nump, kind=dp))
+         end if
 
          if (KNP(N) == 1) then
 
@@ -140,28 +142,36 @@ contains
             if (KN(1, L12) /= 0 .and. M13QUAD >= 0) then
                call REFINELINK2(L12, K12)
                LC(L12O) = -K12
-               if (LNN(L12O) == 2) KC(K12) = 3
+               if (LNN(L12O) == 2) then
+                  KC(K12) = 3
+               end if
             end if
 
             K23 = 0
             if (KN(1, L23) /= 0 .and. M13QUAD <= 0) then
                call REFINELINK2(L23, K23)
                LC(L23O) = -K23
-               if (LNN(L23O) == 2) KC(K23) = 3
+               if (LNN(L23O) == 2) then
+                  KC(K23) = 3
+               end if
             end if
 
             K34 = 0
             if (KN(1, L34) /= 0 .and. M13QUAD >= 0) then
                call REFINELINK2(L34, K34)
                LC(L34O) = -K34
-               if (LNN(L34O) == 2) KC(K34) = 3
+               if (LNN(L34O) == 2) then
+                  KC(K34) = 3
+               end if
             end if
 
             K41 = 0
             if (KN(1, L41) /= 0 .and. M13QUAD <= 0) then
                call REFINELINK2(L41, K41)
                LC(L41O) = -K41
-               if (LNN(L41O) == 2) KC(K41) = 3
+               if (LNN(L41O) == 2) then
+                  KC(K41) = 3
+               end if
             end if
 
             if (M13QUAD == 0) then
@@ -188,8 +198,12 @@ contains
                end if
             else if (M13QUAD > 0) then
 
-               if (K12 == 0) K12 = -LC(L12)
-               if (K34 == 0) K34 = -LC(L34)
+               if (K12 == 0) then
+                  K12 = -LC(L12)
+               end if
+               if (K34 == 0) then
+                  K34 = -LC(L34)
+               end if
                call NEWLINK(K12, K34, lnu)
             end if
 
@@ -208,8 +222,12 @@ contains
 
             else if (M13QUAD < 0) then
 
-               if (K23 == 0) K23 = -LC(L23)
-               if (K41 == 0) K41 = -LC(L41)
+               if (K23 == 0) then
+                  K23 = -LC(L23)
+               end if
+               if (K41 == 0) then
+                  K41 = -LC(L41)
+               end if
                call NEWLINK(K23, K41, lnu)
 
             end if
@@ -220,7 +238,9 @@ contains
 
       KMOD = max(1, NUMP / 100)
       do N = 1, NUMP
-         if (mod(n, KMOD) == 0) call READYY('Refine quads', real(n, kind=dp) / real(nump, kind=dp))
+         if (mod(n, KMOD) == 0) then
+            call READYY('Refine quads', real(n, kind=dp) / real(nump, kind=dp))
+         end if
          if (KNP(N) == 0) then
             NF = netcell(N)%N
             if (NF == 4) then
@@ -239,7 +259,9 @@ contains
                if (KI == 1) then
                   K0 = KKI(1)
                   LL2 = LL + 2
-                  if (LL2 > 4) LL2 = LL2 - 4
+                  if (LL2 > 4) then
+                     LL2 = LL2 - 4
+                  end if
                   LL2 = netcell(N)%LIN(LL2)
                   K1 = KN(1, LL2)
                   K2 = KN(2, LL2)

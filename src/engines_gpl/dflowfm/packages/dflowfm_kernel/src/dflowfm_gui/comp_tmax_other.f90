@@ -90,7 +90,9 @@ contains
 
 !  check for crossings with other grid
       do i = 1, mc - 1
-         if (xc(i) == DMISS .or. xc(i + 1) == DMISS) cycle
+         if (xc(i) == DMISS .or. xc(i + 1) == DMISS) then
+            cycle
+         end if
 
          x1 = [xc(i), yc(i)]
          x2 = [xc(i + 1), yc(i + 1)]
@@ -114,19 +116,25 @@ contains
          idum = iL
          do j = 1, nummax
             call get_LR(mc, xc, yc, idum, imin, i1)
-            if (imin == idum) exit
+            if (imin == idum) then
+               exit
+            end if
             idum = imin
          end do
 
          idum = iR
          do j = 1, nummax
             call get_LR(mc, xc, yc, idum, i1, imax)
-            if (imax == idum) exit
+            if (imax == idum) then
+               exit
+            end if
             idum = imax
          end do
 
          do j = 1, mc1 - 1
-            if (xc1(j) == DMISS .or. xc1(j + 1) == DMISS) cycle
+            if (xc1(j) == DMISS .or. xc1(j + 1) == DMISS) then
+               cycle
+            end if
 !         if ( i.eq.j ) cycle
 
             x3 = [xc1(j), yc1(j)]
@@ -137,8 +145,12 @@ contains
             dL2 = dbdistance(x3(1), x3(2), x4(1), x4(2), jsferic, jasfer3D, dmiss)
 !         if ( dL2.lt.dtolLR ) cycle
 
-            if (dbdistance(x1(1), x1(2), x3(1), x3(2), jsferic, jasfer3D, dmiss) < dtolLR .or. dbdistance(x2(1), x2(2), x4(1), x4(2), jsferic, jasfer3D, dmiss) < dtolLR) cycle
-            if (dbdistance(x2(1), x2(2), x3(1), x3(2), jsferic, jasfer3D, dmiss) < dtolLR .or. dbdistance(x1(1), x1(2), x4(1), x4(2), jsferic, jasfer3D, dmiss) < dtolLR) cycle
+            if (dbdistance(x1(1), x1(2), x3(1), x3(2), jsferic, jasfer3D, dmiss) < dtolLR .or. dbdistance(x2(1), x2(2), x4(1), x4(2), jsferic, jasfer3D, dmiss) < dtolLR) then
+               cycle
+            end if
+            if (dbdistance(x2(1), x2(2), x3(1), x3(2), jsferic, jasfer3D, dmiss) < dtolLR .or. dbdistance(x1(1), x1(2), x4(1), x4(2), jsferic, jasfer3D, dmiss) < dtolLR) then
+               cycle
+            end if
 
 !         d = dbdistance(xL(1),xL(2),x3(1),x3(2)); if ( d.lt.dtolLR ) cycle
 !         d = dbdistance(xL(1),xL(2),x4(1),x4(2)); if ( d.lt.dtolLR ) cycle
@@ -150,7 +162,9 @@ contains
             d3 = dbdistance(x1(1), x1(2), x4(1), x4(2), jsferic, jasfer3D, dmiss)
             d4 = dbdistance(x2(1), x2(2), x4(1), x4(2), jsferic, jasfer3D, dmiss)
 
-            if (d1 < dtol .or. d2 < dtol .or. d3 < dtol .or. d4 < dtol) cycle
+            if (d1 < dtol .or. d2 < dtol .or. d3 < dtol .or. d4 < dtol) then
+               cycle
+            end if
 
 !        compute clearance
 !         dclearance = 0.5d0*max(dL1,dL2)
@@ -221,7 +235,9 @@ contains
                tmax(i + 1) = min(tmax(i + 1), tmax1234)
             end if
 
-            if (tmax1234 == 0.0_dp) exit
+            if (tmax1234 == 0.0_dp) then
+               exit
+            end if
 
          end do
       end do

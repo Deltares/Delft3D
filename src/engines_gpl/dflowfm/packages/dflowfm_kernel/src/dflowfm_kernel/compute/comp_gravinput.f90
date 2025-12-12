@@ -84,8 +84,12 @@ contains
             Ldoit1 = .true.
             Ldoit2 = .true.
             if (jampi == 1) then
-               if (idomain(k1) /= my_rank) Ldoit1 = .false.
-               if (idomain(k2) /= my_rank) Ldoit2 = .false.
+               if (idomain(k1) /= my_rank) then
+                  Ldoit1 = .false.
+               end if
+               if (idomain(k2) /= my_rank) then
+                  Ldoit2 = .false.
+               end if
             end if
 
             if (Ldoit1 .and. k1 <= Ndxi) then ! boundary cells excluded

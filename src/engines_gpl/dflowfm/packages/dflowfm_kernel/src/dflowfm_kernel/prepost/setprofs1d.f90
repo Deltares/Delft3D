@@ -90,7 +90,9 @@ contains
       integer :: kn3now
 
       if (jampi /= 1) then
-         if (lnx1D == 0) return
+         if (lnx1D == 0) then
+            return
+         end if
       end if
 
       fnam = trim(md_proflocfile)

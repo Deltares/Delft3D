@@ -196,7 +196,9 @@ contains
       integer, parameter :: MAXOP = 64
       character(len=40) :: OPTION(MAXOP)
 
-      if (netstat /= NETSTAT_OK) call setnodadm(0)
+      if (netstat /= NETSTAT_OK) then
+         call setnodadm(0)
+      end if
 
       if (NUM == 1) then
          !     load en save files

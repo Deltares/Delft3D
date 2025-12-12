@@ -77,7 +77,9 @@ contains
                sy = (ac1 * sytot(k1, ised) + ac2 * sytot(k2, ised)) / cdryb(ised) * mf
                sL = csu(L) * sx + snu(L) * sy
                !
-               if (k2 == k) sL = -sL
+               if (k2 == k) then
+                  sL = -sL
+               end if
                !
                if (sL >= 0.0_dp) then ! outgoing transport fluxes only
                   dum = dum + sL * wu(L)

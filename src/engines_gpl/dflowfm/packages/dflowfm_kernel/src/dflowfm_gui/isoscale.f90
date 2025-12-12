@@ -73,11 +73,17 @@ contains
       character(LEN=17) :: MINTEX, MAXTEX
       real INFOGRAPHICS
 
-      if (NDRAW(12) == 2 .or. NDRAW(12) == 4) return
+      if (NDRAW(12) == 2 .or. NDRAW(12) == 4) then
+         return
+      end if
 
-      if (NDRAW(8) <= 1 .and. NDRAW(28) <= 1 .and. ndrawpol <= 2) return
+      if (NDRAW(8) <= 1 .and. NDRAW(28) <= 1 .and. ndrawpol <= 2) then
+         return
+      end if
 
-      if (max(ndx, nump, npl, numk) == 0) return
+      if (max(ndx, nump, npl, numk) == 0) then
+         return
+      end if
 
       call IGRCHARSIZE(real(SCALESIZE), real(SCALESIZE))
       WIC = real(INFOGRAPHICS(3), kind=dp)

@@ -49,8 +49,12 @@ contains
       integer :: k2
       integer :: L
 
-      if (.not. stmpar%morpar%mornum%pure1d) return
-      if (link1_initialized) return
+      if (.not. stmpar%morpar%mornum%pure1d) then
+         return
+      end if
+      if (link1_initialized) then
+         return
+      end if
 
       ! if (isassociated(link1)) deallocate(link1, link1sign) ! if link1 were associated then link1_initailized is true and this statement isn't reached
       allocate (link1(ndx), link1sign(ndx)) !V: I do not understand why the size is <ndx> and then the loop is on <lnx1D>. Also, there should be values for the boundary links?

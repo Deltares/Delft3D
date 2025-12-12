@@ -73,16 +73,32 @@ contains
       df = 1.0_dp / (D50a * ff**(nx - 1))
       do i = 1, nx
          !D50 = D50a*ff**(i-1)
-         if (i == 1) D50 = 0.000062
-         if (i == 2) D50 = 0.0002
-         if (i == 3) D50 = 0.0006
-         if (i == 4) D50 = 0.002
+         if (i == 1) then
+            D50 = 0.000062
+         end if
+         if (i == 2) then
+            D50 = 0.0002
+         end if
+         if (i == 3) then
+            D50 = 0.0006
+         end if
+         if (i == 4) then
+            D50 = 0.002
+         end if
          do j = 1, nx
             ! hsk = hska*ff**(j-1)
-            if (j == 1) hsk = 1.0_dp
-            if (j == 2) hsk = 5.0_dp
-            if (j == 3) hsk = 20.0_dp
-            if (j == 4) hsk = 40.0_dp
+            if (j == 1) then
+               hsk = 1.0_dp
+            end if
+            if (j == 2) then
+               hsk = 5.0_dp
+            end if
+            if (j == 3) then
+               hsk = 20.0_dp
+            end if
+            if (j == 4) then
+               hsk = 40.0_dp
+            end if
 
             d90 = 2.0_dp * d50 ! grainsize
             dks = 3.0_dp * d90 ! nikuradse

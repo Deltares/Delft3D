@@ -75,7 +75,9 @@ contains
 
       ierror = 1
 
-      if (MXSAM < 3 .or. MYSAM < 3) goto 1234
+      if (MXSAM < 3 .or. MYSAM < 3) then
+         goto 1234
+      end if
 
       zss(4, 1:MXSAM, 1:MYSAM) = 0.0_dp
       zss(5, 1:MXSAM, 1:MYSAM) = DMISS
@@ -103,16 +105,24 @@ contains
             ihasridge = 0
             do
                call comp_samplegradi(0, i, j, gradiR, SniR, dareaiR, dum)
-               if (gradiR(1) == DMISS .or. gradiR(1) == DMISS) exit
+               if (gradiR(1) == DMISS .or. gradiR(1) == DMISS) then
+                  exit
+               end if
 
                call comp_samplegradi(0, i - 1, j, gradiL, SniL, dum, dareaiL)
-               if (gradiL(1) == DMISS .or. gradiL(1) == DMISS) exit
+               if (gradiL(1) == DMISS .or. gradiL(1) == DMISS) then
+                  exit
+               end if
 
                call comp_samplegradi(1, i, j, gradjR, SnjR, dareajR, dum)
-               if (gradjR(1) == DMISS .or. gradjR(1) == DMISS) exit
+               if (gradjR(1) == DMISS .or. gradjR(1) == DMISS) then
+                  exit
+               end if
 
                call comp_samplegradi(1, i, j - 1, gradjL, SnjL, dum, dareajL)
-               if (gradjL(1) == DMISS .or. gradjL(1) == DMISS) exit
+               if (gradjL(1) == DMISS .or. gradjL(1) == DMISS) then
+                  exit
+               end if
 
                area = dareaiL + dareaiR + dareajL + dareajR
                zxx = (gradiR(1) * SniR(1) - gradiL(1) * SniL(1) + gradjR(1) * SnjR(1) - gradjL(1) * SnjL(1)) / area

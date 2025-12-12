@@ -58,7 +58,9 @@ contains
       real(kind=dp) :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds1x, ds1y, ds2x, ds2y
       real(kind=dp) :: dsx, dsy
 
-      if (limtypmom < 1) return
+      if (limtypmom < 1) then
+         return
+      end if
 
       if (kmx == 0) then
 
@@ -94,12 +96,16 @@ contains
                   ib = 2
                end if
 
-               if (hs(ln(1, LL)) < Chkadvd .or. hs(ln(2, LL)) < Chkadvd) cycle
+               if (hs(ln(1, LL)) < Chkadvd .or. hs(ln(2, LL)) < Chkadvd) then
+                  cycle
+               end if
 
                if (limtypmom == 6) then
 
 !         use klnup to check for disabled higher-order correction
-                  if (klnup(1, LL) == 0) cycle
+                  if (klnup(1, LL) == 0) then
+                     cycle
+                  end if
 
                   if (jasfer3D == 0) then
                      ! ds1x =  -ducdx(k)*is
@@ -114,7 +120,9 @@ contains
                else
 
                   kku = klnup(1 + ip, LL)
-                  if (kku == 0) cycle
+                  if (kku == 0) then
+                     cycle
+                  end if
                   ku = abs(kku)
 
                   if (kku < 0) then
@@ -129,7 +137,9 @@ contains
                   else
 
                      ku2 = abs(klnup(2 + ip, LL))
-                     if (ku2 == 0) cycle
+                     if (ku2 == 0) then
+                        cycle
+                     end if
                      sl1 = slnup(1 + ip, LL)
                      sl2 = slnup(2 + ip, LL)
                      if (jasfer3D == 0) then
@@ -221,14 +231,18 @@ contains
 
                   end if
 
-                  if (hs(ln(1, LL)) < Chkadvd .or. hs(ln(2, LL)) < Chkadvd) cycle
+                  if (hs(ln(1, LL)) < Chkadvd .or. hs(ln(2, LL)) < Chkadvd) then
+                     cycle
+                  end if
 
                   if (limtypmom == 6) then
 !         ds1x =  -ducdx(k)*is
 !         ds1y =  -ducdy(k)*is
 
 !        use klnup to check for disabled higher-order correction
-                     if (klnup(1, LL) == 0) cycle
+                     if (klnup(1, LL) == 0) then
+                        cycle
+                     end if
 
 !         ds1x = (ducxdx(k)*csu(LL) + ducxdy(k)*snu(LL)) * is * Dx(LL)
 !         ds1y = (ducydx(k)*csu(LL) + ducydy(k)*snu(LL)) * is * Dx(LL)
@@ -239,10 +253,14 @@ contains
                   else
 
                      kku = klnup(1 + ip, LL)
-                     if (kku == 0) cycle
+                     if (kku == 0) then
+                        cycle
+                     end if
                      kkua = abs(kku)
                      ku = kbot(kkua) + kmxn(kkua) - (Lb + kmxL(LL) - L)
-                     if (ku < kbot(kkua) .or. ku > ktop(kkua)) cycle
+                     if (ku < kbot(kkua) .or. ku > ktop(kkua)) then
+                        cycle
+                     end if
 
                      if (kku < 0) then
 
@@ -258,7 +276,9 @@ contains
 
                         kkub = abs(klnup(2 + ip, LL))
                         ku2 = kbot(kkub) + kmxn(kkub) - (Lb + kmxL(LL) - L)
-                        if (ku2 < kbot(kkub) .or. ku2 > ktop(kkub)) cycle
+                        if (ku2 < kbot(kkub) .or. ku2 > ktop(kkub)) then
+                           cycle
+                        end if
 
                         sl1 = slnup(1 + ip, LL)
                         sl2 = slnup(2 + ip, LL)

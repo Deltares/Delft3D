@@ -3162,7 +3162,9 @@ contains
             end if
             do i = 1, numfracs
                iconst = ifrac2const(i)
-               if (iconst == 0) cycle
+               if (iconst == 0) then
+                  cycle
+               end if
                if (max_threttim(iconst) > 0.0_dp) then ! allocated on NUMCONST
                   write (numsedfracstr, numformat) i
                   ierr = nf90_def_dim(irstfile, 'sfbndpt'//trim(numsedfracstr), nbndsf(i), id_bndsedfracdim(i))
@@ -3602,13 +3604,17 @@ contains
             if (stmpar%morpar%bedupd) then
                nCrs = 0
                do i = 1, size(network%crs%cross)
-                  if (network%crs%cross(i)%crossindx == 0) exit
+                  if (network%crs%cross(i)%crossindx == 0) then
+                     exit
+                  end if
                   nCrs = nCrs + 1
                end do
                pCSs => network%CSDefinitions%CS
                jmax = 0
                do i = 1, size(pCSs)
-                  if (pCSs(i)%levelscount == 0) exit
+                  if (pCSs(i)%levelscount == 0) then
+                     exit
+                  end if
                   jmax = max(jmax, pCSs(i)%levelscount)
                end do
                ierr = nf90_def_dim(irstfile, trim(mesh1dname)//'_crs_maxdim', jmax, id_jmax)
@@ -3768,7 +3774,9 @@ contains
             end if
             do i = 1, numfracs
                iconst = ifrac2const(i)
-               if (iconst == 0) cycle
+               if (iconst == 0) then
+                  cycle
+               end if
                if (max_threttim(iconst) > 0.0_dp) then
                   write (numsedfracstr, numformat) i
                   ierr = nf90_def_var(irstfile, 'tsedfracbnd'//numsedfracstr, nf90_double, [id_bndsedfracdim(i), id_timedim], id_tsedfracbnd(i))
@@ -4688,7 +4696,9 @@ contains
             end if
             ! lyrfrac
             if (stmpar%morpar%moroutput%lyrfrac) then
-               if (.not. allocated(frac)) allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
+               if (.not. allocated(frac)) then
+                  allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
+               end if
                frac = -999.0_dp
 
                if (stmpar%morlyr%settings%iporosity == 0) then
@@ -4718,7 +4728,9 @@ contains
             end if
             ! porosity
             if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
-               if (.not. allocated(poros)) allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
+               if (.not. allocated(poros)) then
+                  allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
+               end if
                poros = 1.0_dp - stmpar%morlyr%state%svfrac
                ierr = nf90_put_var(irstfile, id_poros, poros(:, 1:ndxi), [1, 1, itim], [stmpar%morlyr%settings%nlyr, ndxi, 1])
             end if
@@ -4774,7 +4786,9 @@ contains
          if (numfracs > 0) then !JRE sedfrac
             do i = 1, numfracs
                iconst = ifrac2const(i)
-               if (iconst == 0) cycle
+               if (iconst == 0) then
+                  cycle
+               end if
                if (max_threttim(iconst) > 0.0_dp) then
                   ierr = nf90_put_var(irstfile, id_tsedfracbnd(i), bndsf(i)%tht, [1, itim], [nbndsf(i), 1])
                   ierr = nf90_put_var(irstfile, id_zsedfracbnd(i), bndsf(i)%thz, [1, itim], [nbndsf(i) * kmxd, 1])
@@ -5225,7 +5239,9 @@ contains
 
       if (iconv == UNC_CONV_UGRID) then
          jabndnd = 0
-         if (jamapbnd > 0) jabndnd = 1
+         if (jamapbnd > 0) then
+            jabndnd = 1
+         end if
          call unc_write_map_filepointer_ugrid(mapids, 0.0_dp, jabndnd)
       else
          call unc_write_map_filepointer(mapids%ncid, 0.0_dp, 1)
@@ -5348,7 +5364,9 @@ contains
          call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
          return
       end if
-      if (timon) call timstrt("unc_write_map_filepointer_ugrid", handle_extra(70))
+      if (timon) then
+         call timstrt("unc_write_map_filepointer_ugrid", handle_extra(70))
+      end if
 
       if (present(jabndnd)) then
          jabndnd_ = jabndnd
@@ -5393,7 +5411,9 @@ contains
 
       ! Only write net and flow geometry data the first time, or for a separate map file.
       if (ndim == 0) then
-         if (timon) call timstrt("unc_write_flowgeom_filepointer_ugrid INIT", handle_extra(71))
+         if (timon) then
+            call timstrt("unc_write_flowgeom_filepointer_ugrid INIT", handle_extra(71))
+         end if
 
          ierr = ug_addglobalatts(mapids%ncid, ug_meta_fm)
 
@@ -6160,13 +6180,17 @@ contains
                if (stmpar%morpar%bedupd) then
                   nCrs = 0
                   do i = 1, size(network%crs%cross)
-                     if (network%crs%cross(i)%crossindx == 0) exit
+                     if (network%crs%cross(i)%crossindx == 0) then
+                        exit
+                     end if
                      nCrs = nCrs + 1
                   end do
                   pCSs => network%CSDefinitions%CS
                   jmax = 0
                   do i = 1, size(pCSs)
-                     if (pCSs(i)%levelscount == 0) exit
+                     if (pCSs(i)%levelscount == 0) then
+                        exit
+                     end if
                      jmax = max(jmax, pCSs(i)%levelscount)
                   end do
                   ierr = nf90_def_dim(mapids%ncid, trim(mesh1dname)//'_crs_maxdim', jmax, mapids%id_tsp%id_jmax)
@@ -6510,13 +6534,17 @@ contains
          !    end if
          ! endif
 
-         if (timon) call timstop(handle_extra(71))
+         if (timon) then
+            call timstop(handle_extra(71))
+         end if
 
       end if
       ! End of writing time-independent flow geometry data.
 
       ! -- Start data writing (flow data) ------------------------
-      if (timon) call timstrt("unc_write_map_filepointer_ugrid TIME write", handle_extra(72))
+      if (timon) then
+         call timstrt("unc_write_map_filepointer_ugrid TIME write", handle_extra(72))
+      end if
 
       mapids%id_tsp%idx_curtime = mapids%id_tsp%idx_curtime + 1 ! Increment time dimension index
       itim = mapids%id_tsp%idx_curtime
@@ -6525,8 +6553,12 @@ contains
       ierr = nf90_put_var(mapids%ncid, mapids%id_time, tim, [itim])
       ierr = nf90_put_var(mapids%ncid, mapids%id_timestep, dts, [itim])
 
-      if (timon) call timstop(handle_extra(72))
-      if (timon) call timstrt("unc_write_map_filepointer_ugrid vars", handle_extra(73))
+      if (timon) then
+         call timstop(handle_extra(72))
+      end if
+      if (timon) then
+         call timstrt("unc_write_map_filepointer_ugrid vars", handle_extra(73))
+      end if
       if (jamapnumlimdt > 0) then
          ! ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_numlimdt, UNC_LOC_S, numlimdt) ! TODO: AvD: integer version of this routine
          call realloc(numlimdtdbl, ndxndxi, keepExisting=.false.)
@@ -6892,7 +6924,9 @@ contains
                         found = 0
                         do kkk = kb, kt
                            found = found + 1
-                           if (kkk == kk) exit ! meh...
+                           if (kkk == kk) then
+                              exit ! meh...
+                           end if
                         end do
                         toutputx(k, l) = found
                      end do
@@ -7409,7 +7443,9 @@ contains
             end if
             !
             if (stmpar%morpar%moroutput%lyrfrac) then
-               if (.not. allocated(frac)) allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
+               if (.not. allocated(frac)) then
+                  allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
+               end if
                frac = -999.0_dp
 
                if (stmpar%morlyr%settings%iporosity == 0) then
@@ -7434,7 +7470,9 @@ contains
             end if
             !
             if (stmpar%morlyr%settings%iporosity > 0 .and. stmpar%morpar%moroutput%poros) then
-               if (.not. allocated(poros)) allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
+               if (.not. allocated(poros)) then
+                  allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
+               end if
                poros = 1.0_dp - stmpar%morlyr%state%svfrac
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_poros, UNC_LOC_S, poros, locdim=2, jabndnd=jabndnd_)
             end if
@@ -7583,7 +7621,9 @@ contains
       ! Meteo forcings
       if (jawind > 0) then
          allocate (windx(ndxndxi), windy(ndxndxi), stat=ierr)
-         if (ierr /= 0) call aerr('windx/windy', ierr, ndxndxi)
+         if (ierr /= 0) then
+            call aerr('windx/windy', ierr, ndxndxi)
+         end if
 
          if (jamapwind > 0) then
             call linktonode2(wx, wy, windx, windy, ndxndxi)
@@ -7742,7 +7782,9 @@ contains
                      k1 = ln(1, L)
                      k2 = ln(2, L)
                      call getLbotLtop(L, Lb, Lt)
-                     if (Lt < Lb) cycle
+                     if (Lt < Lb) then
+                        cycle
+                     end if
                      huL = max(hu(L), hmlwL)
                      do LL = Lb, Lt
                         if (LL == Lb) then
@@ -8100,8 +8142,12 @@ contains
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < zsrc(1, isrc)) nkbot = nk
-                  if (zws(nk) < zsrc2(1, isrc)) nktop = nk
+                  if (zws(nk) < zsrc(1, isrc)) then
+                     nkbot = nk
+                  end if
+                  if (zws(nk) < zsrc2(1, isrc)) then
+                     nktop = nk
+                  end if
                end do
                do nk = nkbot, nktop
                   work1d(nk) = work1d(nk) - qstss((1 + numconst) * (isrc - 1) + 1) / real(nktop - nkbot + 1, hp)
@@ -8115,8 +8161,12 @@ contains
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < zsrc(2, isrc)) nkbot = nk
-                  if (zws(nk) < zsrc2(2, isrc)) nktop = nk
+                  if (zws(nk) < zsrc(2, isrc)) then
+                     nkbot = nk
+                  end if
+                  if (zws(nk) < zsrc2(2, isrc)) then
+                     nktop = nk
+                  end if
                end do
                do nk = nkbot, nktop
                   work1d(nk) = work1d(nk) + qstss((1 + numconst) * (isrc - 1) + 1) / real(nktop - nkbot + 1, hp)
@@ -8125,8 +8175,12 @@ contains
          end do
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_nrfld, UNC_LOC_S3D, work1d, jabndnd=jabndnd_)
       end if
-      if (timon) call timstop(handle_extra(73))
-      if (timon) call timstop(handle_extra(70))
+      if (timon) then
+         call timstop(handle_extra(73))
+      end if
+      if (timon) then
+         call timstop(handle_extra(70))
+      end if
 
    end subroutine unc_write_map_filepointer_ugrid
 !> Adds variable at nodes to map-file.
@@ -8269,7 +8323,9 @@ contains
 
       real(kind=dp), dimension(:), pointer :: dens
 
-      if (.not. allocated(id_dxx) .and. stm_included) allocate (id_dxx(1:stmpar%morpar%nxx, 1:2))
+      if (.not. allocated(id_dxx) .and. stm_included) then
+         allocate (id_dxx(1:stmpar%morpar%nxx, 1:2))
+      end if
 
       ! If jaseparate_==1 or this map file was just opened for the first time:
       ! only write net+vardefs first time, and write subsequent flow snapshots in later calls.
@@ -10763,7 +10819,9 @@ contains
                !
                ! lyrfrac
                if (stmpar%morpar%moroutput%lyrfrac) then
-                  if (.not. allocated(frac)) allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
+                  if (.not. allocated(frac)) then
+                     allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr, 1:ndx))
+                  end if
                   frac = -999.0_dp
 
                   if (stmpar%morlyr%settings%iporosity == 0) then
@@ -10787,7 +10845,9 @@ contains
                end if
                !
                if (stmpar%morlyr%settings%iporosity > 0) then
-                  if (.not. allocated(poros)) allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
+                  if (.not. allocated(poros)) then
+                     allocate (poros(1:stmpar%morlyr%settings%nlyr, 1:ndx))
+                  end if
                   poros = 1.0_dp - stmpar%morlyr%state%svfrac
                end if
                !
@@ -10934,7 +10994,9 @@ contains
 
       if (jawind > 0 .and. ((jamapwind > 0 .and. jawindstressgiven == 0) .or. (jaseparate_ == 2))) then
          allocate (windx(ndxndxi), windy(ndxndxi), stat=ierr)
-         if (ierr /= 0) call aerr('windx/windy', ierr, ndxndxi)
+         if (ierr /= 0) then
+            call aerr('windx/windy', ierr, ndxndxi)
+         end if
          !windx/y is not set to 0.0 for flownodes without links !
          windx = 0.0_dp
          windy = 0.0_dp
@@ -11229,7 +11291,9 @@ contains
             istart = istart + ipoint - 1
             iend = iend + ipoint - 1
 
-            if (istart >= iend .or. iend > NPL) exit ! done
+            if (istart >= iend .or. iend > NPL) then
+               exit ! done
+            end if
 
             iistart(ipoly) = istart
             iiend(ipoly) = iend
@@ -11487,20 +11551,28 @@ contains
       ! Netcells
       ! Netcell-to-netnode mapping
       ierr = nf90_def_var(inetfile, 'NetElemNode', nf90_int, [ids%id_netelemmaxnodedim, ids%id_netelemdim], ids%id_netelemnode)
-      if (ierr /= 0) goto 999
+      if (ierr /= 0) then
+         goto 999
+      end if
       ierr = nf90_put_att(inetfile, ids%id_netelemnode, 'long_name', 'mapping from net cell to net nodes (counterclockwise)')
       ierr = nf90_put_att(inetfile, ids%id_netelemnode, 'start_index', 1)
       ierr = nf90_put_att(inetfile, ids%id_netelemnode, '_FillValue', intmiss)
 
       ierr = nf90_def_var(inetfile, 'NetElemLink', nf90_int, [ids%id_netelemmaxnodedim, ids%id_netelemdim], ids%id_netelemlink)
-      if (ierr /= 0) goto 999
+      if (ierr /= 0) then
+         goto 999
+      end if
       ierr = nf90_put_att(inetfile, ids%id_netelemlink, 'long_name', 'mapping from net cell to its net links (counterclockwise)')
       ierr = nf90_put_att(inetfile, ids%id_netelemlink, 'short_name', 'netcell()%LIN')
 
       ierr = nf90_def_var(inetfile, trim(prefix)//'NetLinkContour_x', nf90_double, [ids%id_netlinkcontourptsdim, ids%id_netlinkdim], ids%id_netlinkcontourx)
-      if (ierr /= 0) goto 999
+      if (ierr /= 0) then
+         goto 999
+      end if
       ierr = nf90_def_var(inetfile, trim(prefix)//'NetLinkContour_y', nf90_double, [ids%id_netlinkcontourptsdim, ids%id_netlinkdim], ids%id_netlinkcontoury)
-      if (ierr /= 0) goto 999
+      if (ierr /= 0) then
+         goto 999
+      end if
       ierr = unc_addcoordatts(inetfile, ids%id_netlinkcontourx, ids%id_netlinkcontoury, jsferic)
       ierr = nf90_put_att(inetfile, ids%id_netlinkcontourx, 'long_name', 'list of x-contour points of momentum control volume surrounding each net/flow link')
       ierr = nf90_put_att(inetfile, ids%id_netlinkcontoury, 'long_name', 'list of y-contour points of momentum control volume surrounding each net/flow link')
@@ -11508,9 +11580,13 @@ contains
       ierr = nf90_put_att(inetfile, ids%id_netlinkcontoury, '_FillValue', dmiss)
 
       ierr = nf90_def_var(inetfile, 'NetLink_xu', nf90_double, [ids%id_netlinkdim], ids%id_netlinkxu)
-      if (ierr /= 0) goto 999
+      if (ierr /= 0) then
+         goto 999
+      end if
       ierr = nf90_def_var(inetfile, 'NetLink_yu', nf90_double, [ids%id_netlinkdim], ids%id_netlinkyu)
-      if (ierr /= 0) goto 999
+      if (ierr /= 0) then
+         goto 999
+      end if
       ierr = unc_addcoordatts(inetfile, ids%id_netlinkxu, ids%id_netlinkyu, jsferic)
       ierr = nf90_put_att(inetfile, ids%id_netlinkxu, 'long_name', 'x-coordinate of net link center (velocity point)')
       ierr = nf90_put_att(inetfile, ids%id_netlinkyu, 'long_name', 'y-coordinate of net link center (velocity point)')
@@ -11539,9 +11615,13 @@ contains
 
       ! Write net cells
       ierr = nf90_inquire_dimension(inetfile, ids%id_netelemmaxnodedim, len=nv)
-      if (ierr /= 0) goto 999
+      if (ierr /= 0) then
+         goto 999
+      end if
       allocate (netcellnod(nv, nump1d2d), netcelllin(nv, nump1d2d), stat=ierr)
-      if (ierr /= 0) goto 888
+      if (ierr /= 0) then
+         goto 888
+      end if
       netcellnod = intmiss
       netcelllin = intmiss
       do k = 1, nump1d2d
@@ -11550,19 +11630,33 @@ contains
          netcelllin(1:nv1, k) = netcell(k)%lin
       end do
       ierr = nf90_put_var(inetfile, ids%id_netelemnode, netcellnod)
-      if (ierr == 0) ierr = nf90_put_var(inetfile, ids%id_netelemlink, netcelllin)
-      if (ierr /= 0) goto 999
+      if (ierr == 0) then
+         ierr = nf90_put_var(inetfile, ids%id_netelemlink, netcelllin)
+      end if
+      if (ierr /= 0) then
+         goto 999
+      end if
       deallocate (netcellnod, netcelllin)
 
       call readyy('Writing net data', 0.65_dp)
       allocate (xtt(4, numl), ytt(4, numl), xut(numl), yut(numl), stat=ierr)
-      if (ierr /= 0) goto 888
+      if (ierr /= 0) then
+         goto 888
+      end if
       call fill_netlink_geometry(xtt, ytt, xut, yut)
       ierr = nf90_put_var(inetfile, ids%id_netlinkcontourx, xtt, [1, 1], [4, numl])
-      if (ierr == 0) ierr = nf90_put_var(inetfile, ids%id_netlinkcontoury, ytt, [1, 1], [4, numl])
-      if (ierr == 0) ierr = nf90_put_var(inetfile, ids%id_netlinkxu, xut)
-      if (ierr == 0) ierr = nf90_put_var(inetfile, ids%id_netlinkyu, yut)
-      if (ierr /= 0) goto 999
+      if (ierr == 0) then
+         ierr = nf90_put_var(inetfile, ids%id_netlinkcontoury, ytt, [1, 1], [4, numl])
+      end if
+      if (ierr == 0) then
+         ierr = nf90_put_var(inetfile, ids%id_netlinkxu, xut)
+      end if
+      if (ierr == 0) then
+         ierr = nf90_put_var(inetfile, ids%id_netlinkyu, yut)
+      end if
+      if (ierr /= 0) then
+         goto 999
+      end if
 
       deallocate (xtt, ytt, xut, yut)
 
@@ -11613,7 +11707,9 @@ contains
 
             ! 'left' half
             n1 = lne(1, L)
-            if (n1 < 0) n1 = -n1
+            if (n1 < 0) then
+               n1 = -n1
+            end if
             x3 = xk(k1)
             y3 = yk(k1)
             x4 = xk(k2)
@@ -11651,7 +11747,9 @@ contains
             if (lnn(l) == 2) then
                ! second half
                n1 = lne(2, L)
-               if (n1 < 0) n1 = -n1
+               if (n1 < 0) then
+                  n1 = -n1
+               end if
                xzn = xz(n1)
                yzn = yz(n1)
                call dlinedis2(xzn, yzn, x3, y3, x4, y4, ja, dis, xp, yp, rl)
@@ -11685,11 +11783,21 @@ contains
       integer :: ierr
 
       ierr = nf90_def_var(inetfile, 'idomain', nf90_int, [id_netelemdim], id_idomain)
-      if (ierr == NF90_NOERR) ierr = nf90_put_att(inetfile, id_idomain, 'long_name', 'partition subdomain numbers')
-      if (ierr == NF90_NOERR) ierr = nf90_put_att(inetfile, id_idomain, 'short_name', 'idomain')
-      if (ierr == NF90_NOERR) ierr = nf90_put_att(inetfile, id_idomain, 'valid_max', ndomains) ! the total number of subdomains
-      if (ierr == NF90_NOERR) ierr = nf90_put_att(inetfile, id_idomain, 'mesh', 'Mesh2D')
-      if (ierr == NF90_NOERR) ierr = nf90_put_att(inetfile, id_idomain, 'location', 'face')
+      if (ierr == NF90_NOERR) then
+         ierr = nf90_put_att(inetfile, id_idomain, 'long_name', 'partition subdomain numbers')
+      end if
+      if (ierr == NF90_NOERR) then
+         ierr = nf90_put_att(inetfile, id_idomain, 'short_name', 'idomain')
+      end if
+      if (ierr == NF90_NOERR) then
+         ierr = nf90_put_att(inetfile, id_idomain, 'valid_max', ndomains) ! the total number of subdomains
+      end if
+      if (ierr == NF90_NOERR) then
+         ierr = nf90_put_att(inetfile, id_idomain, 'mesh', 'Mesh2D')
+      end if
+      if (ierr == NF90_NOERR) then
+         ierr = nf90_put_att(inetfile, id_idomain, 'location', 'face')
+      end if
    end function unc_def_idomain
 
 !> helper function to define iglobal_s
@@ -11700,11 +11808,21 @@ contains
       integer :: ierr
 
       ierr = nf90_def_var(inetfile, 'iglobal_s', nf90_int, [id_netelemdim], id_iglobal_s)
-      if (ierr == NF90_NOERR) ierr = nf90_put_att(inetfile, id_iglobal_s, 'long_name', 'global netcell numbers')
-      if (ierr == NF90_NOERR) ierr = nf90_put_att(inetfile, id_iglobal_s, 'short_name', 'iglobal_s')
-      if (ierr == NF90_NOERR) ierr = nf90_put_att(inetfile, id_iglobal_s, 'valid_max', Nglobal_s)
-      if (ierr == NF90_NOERR) ierr = nf90_put_att(inetfile, id_iglobal_s, 'mesh', 'Mesh2D')
-      if (ierr == NF90_NOERR) ierr = nf90_put_att(inetfile, id_iglobal_s, 'location', 'face')
+      if (ierr == NF90_NOERR) then
+         ierr = nf90_put_att(inetfile, id_iglobal_s, 'long_name', 'global netcell numbers')
+      end if
+      if (ierr == NF90_NOERR) then
+         ierr = nf90_put_att(inetfile, id_iglobal_s, 'short_name', 'iglobal_s')
+      end if
+      if (ierr == NF90_NOERR) then
+         ierr = nf90_put_att(inetfile, id_iglobal_s, 'valid_max', Nglobal_s)
+      end if
+      if (ierr == NF90_NOERR) then
+         ierr = nf90_put_att(inetfile, id_iglobal_s, 'mesh', 'Mesh2D')
+      end if
+      if (ierr == NF90_NOERR) then
+         ierr = nf90_put_att(inetfile, id_iglobal_s, 'location', 'face')
+      end if
    end function unc_def_iglobal
 
 ! NOTE: AvD: this routine below is a temporary working function that should replace unc_write_ugrid soon.
@@ -12014,10 +12132,18 @@ contains
             ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
          end if
 
-         if (allocated(xn)) deallocate (xn)
-         if (allocated(yn)) deallocate (yn)
-         if (allocated(edge_nodes)) deallocate (edge_nodes)
-         if (allocated(edge_type)) deallocate (edge_type)
+         if (allocated(xn)) then
+            deallocate (xn)
+         end if
+         if (allocated(yn)) then
+            deallocate (yn)
+         end if
+         if (allocated(edge_nodes)) then
+            deallocate (edge_nodes)
+         end if
+         if (allocated(edge_type)) then
+            deallocate (edge_type)
+         end if
       end if ! 1D network geometry
 
       call readyy('Writing net data', 0.3_dp)
@@ -12747,7 +12873,9 @@ contains
       do i = 1, size(std_names)
          ierr = ionc_inq_varid_by_standard_name(ioncid, im, UG_LOC_FACE, std_names(i), id_netnodef)
          face_z_stdname = trim(std_names(i))
-         if (ierr == nf90_noerr) exit
+         if (ierr == nf90_noerr) then
+            exit
+         end if
       end do
       if (ierr == nf90_noerr) then
          call realloc(blcell, numface, keepExisting=.false.)
@@ -12815,20 +12943,26 @@ contains
 
       ierr = unc_open(filename, nf90_nowrite, inetfile)
       call check_error(ierr, 'file '''//trim(filename)//'''')
-      if (nerr_ > 0) return
+      if (nerr_ > 0) then
+         return
+      end if
 
       ! Get nr of nodes and edges
       ierr = nf90_inq_dimid(inetfile, 'nNetNode', id_netnodedim)
       call check_error(ierr, 'nNetNode')
       ierr = nf90_inq_dimid(inetfile, 'nNetLink', id_netlinkdim)
       call check_error(ierr, 'nNetLink')
-      if (nerr_ > 0) return
+      if (nerr_ > 0) then
+         return
+      end if
 
       ierr = nf90_inquire_dimension(inetfile, id_netnodedim, len=numk_read)
       call check_error(ierr, 'node count')
       ierr = nf90_inquire_dimension(inetfile, id_netlinkdim, len=numl_read)
       call check_error(ierr, 'link count')
-      if (nerr_ > 0) return
+      if (nerr_ > 0) then
+         return
+      end if
 
       call readyy('Reading net data', 0.05_dp)
 
@@ -12863,7 +12997,9 @@ contains
       call check_error(ierr, 'netlinks')
       ierr = nf90_inq_varid(inetfile, 'NetLinkType', id_netlinktype)
       call check_error(ierr, 'netlinktypes')
-      if (nerr_ > 0) return
+      if (nerr_ > 0) then
+         return
+      end if
 
       ierr = nf90_get_var(inetfile, id_netnodex, XK(numk_keep + 1:numk_keep + numk_read))
       call check_error(ierr, 'x values')
@@ -13096,7 +13232,9 @@ contains
       end if
 
       ierr = nf90_inq_varid(ncid, varname, id_var)
-      if (ierr /= 0) goto 999
+      if (ierr /= 0) then
+         goto 999
+      end if
       if (kmx == 0 .or. loctype == UNC_LOC_S .or. loctype == UNC_LOC_U) then
          if (jamergedmap /= 1) then
             ierr = nf90_get_var(ncid, id_var, targetarr(target_shift_ + 1:target_shift_ + loccount), start=[locstart, it_read], count=[loccount, 1])
@@ -13106,7 +13244,9 @@ contains
                ierr = nf90_inquire_variable(ncid, id_var, ndims=numDims, dimids=rhdims)
                do i = 1, numDims - 1
                   ierr = nf90_inquire_dimension(ncid, rhdims(i), len=tmpdims(i))
-                  if (ierr /= nf90_noerr) goto 999
+                  if (ierr /= nf90_noerr) then
+                     goto 999
+                  end if
                end do
                if (numDims == 2 .or. (numDims == 1 .and. it_read == 1)) then
                   d1 = tmpdims(1)
@@ -13115,7 +13255,9 @@ contains
                   end if
                   allocate (tmparray1D(d1))
                   ierr = nf90_get_var(ncid, id_var, tmparray1D, start=[1, it_read], count=[d1, 1])
-                  if (ierr /= nf90_noerr) goto 999
+                  if (ierr /= nf90_noerr) then
+                     goto 999
+                  end if
                else
                   call mess(LEVEL_WARN, 'get_var_and_shift: rank of the array  '''//trim(varname)//''' can only be 2 for 2D models (time+space).')
                   goto 999
@@ -13128,7 +13270,9 @@ contains
                end do
             else
                ierr = nf90_get_var(ncid, id_var, tmparr(1:loccount), start=[locstart, it_read], count=[loccount, 1])
-               if (ierr /= nf90_noerr) goto 999
+               if (ierr /= nf90_noerr) then
+                  goto 999
+               end if
                do i = 1, loccount
                   i_target = i + target_shift_
                   targetarr(iloc_own(i_target)) = tmparr(i)
@@ -13140,7 +13284,9 @@ contains
          ierr = nf90_inquire_variable(ncid, id_var, ndims=numDims, dimids=rhdims)
          do i = 1, numDims - 1
             ierr = nf90_inquire_dimension(ncid, rhdims(i), len=tmpdims(i))
-            if (ierr /= nf90_noerr) goto 999
+            if (ierr /= nf90_noerr) then
+               goto 999
+            end if
          end do
          if (numDims == 3) then
             d1 = tmpdims(1)
@@ -13152,7 +13298,9 @@ contains
             ierr = nf90_get_var(ncid, id_var, tmparray2D, start=[1, 1, it_read], count=[d1, d2, 1])
             ! TODO: consider using loccount etc.: ierr = nf90_get_var(ncid, id_var, tmparray2D, start = [1, locstart, it_read], count = [d1, loccount, 1])
 
-            if (ierr /= nf90_noerr) goto 999
+            if (ierr /= nf90_noerr) then
+               goto 999
+            end if
          else
             call mess(LEVEL_WARN, 'get_var_and_shift: rank of the array  '''//trim(varname)//''' can only be 3 for 3D models (time+2D space+layers).')
             goto 999
@@ -13340,7 +13488,9 @@ contains
       end if
       ierr = unc_open(filename, nf90_nowrite, imapfile)
       call check_error(ierr, 'file '''//trim(filename)//'''')
-      if (nerr_ > 0) goto 999
+      if (nerr_ > 0) then
+         goto 999
+      end if
 
       !-- Sequential model, or parallel? If parallel: merged-map file, or separate partition-map files?
       ! First check whether the restart NetCDF file contains a fully merged model, or is just a partition.
@@ -13464,8 +13614,12 @@ contains
          ! number of partitions is the same, but the partition itself differs
          success = unc_read_merged_map(um, imapfile, filename, ierr)
       end if
-      if (.not. success) goto 999
-      if (ierr /= 0) return
+      if (.not. success) then
+         goto 999
+      end if
+      if (ierr /= 0) then
+         return
+      end if
 
       call readyy('Reading map data', 0.05_dp)
 
@@ -14289,9 +14443,13 @@ contains
             if (stmpar%morpar%bedupd) then
                if (jarstignorebl == 0) then
                   ierr = nf90_inq_dimid(imapfile, trim(mesh1dname)//'_crs_maxdim', id_jmax)
-                  if (ierr == 0) ierr = nf90_inquire_dimension(imapfile, id_jmax, len=jmax)
+                  if (ierr == 0) then
+                     ierr = nf90_inquire_dimension(imapfile, id_jmax, len=jmax)
+                  end if
                   ierr = nf90_inq_dimid(imapfile, trim(mesh1dname)//'_ncrs', id_ncrs)
-                  if (ierr == 0) ierr = nf90_inquire_dimension(imapfile, id_ncrs, len=nCrs)
+                  if (ierr == 0) then
+                     ierr = nf90_inquire_dimension(imapfile, id_ncrs, len=nCrs)
+                  end if
                   if (allocated(work1d_z)) then
                      deallocate (work1d_z, work1d_n)
                   end if
@@ -14305,7 +14463,9 @@ contains
                      network%crs%cross(i)%bedlevel = work1d_z(1, i)
                   end do
                   ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_n', id_flowelemcrsn)
-                  if (ierr == 0) ierr = nf90_get_var(imapfile, id_flowelemcrsn, work1d_n(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
+                  if (ierr == 0) then
+                     ierr = nf90_get_var(imapfile, id_flowelemcrsn, work1d_n(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
+                  end if
                   if (ierr == 0) then
                      do i = 1, nCrs
                         do j = 1, network%crs%cross(i)%tabdef%levelscount
@@ -14353,11 +14513,17 @@ contains
             end if
          end if
          if (numfracs > 0) then ! sediment fractions stm model
-            if (.not. allocated(id_tsedfracbnd)) allocate (id_tsedfracbnd(numfracs))
-            if (.not. allocated(id_zsedfracbnd)) allocate (id_zsedfracbnd(numfracs))
+            if (.not. allocated(id_tsedfracbnd)) then
+               allocate (id_tsedfracbnd(numfracs))
+            end if
+            if (.not. allocated(id_zsedfracbnd)) then
+               allocate (id_zsedfracbnd(numfracs))
+            end if
             do i = 1, numfracs
                iconst = ifrac2const(i)
-               if (iconst == 0) cycle
+               if (iconst == 0) then
+                  cycle
+               end if
                if (max_threttim(iconst) > 0.0_dp) then
                   write (numsedfracstr, numformat) i
                   ierr = nf90_inq_varid(imapfile, 'tsedfracbnd'//numsedfracstr, id_tsedfracbnd(i))
@@ -14368,8 +14534,12 @@ contains
             end do
          end if
          if (numtracers > 0) then
-            if (.not. allocated(id_ttrabnd)) allocate (id_ttrabnd(numtracers))
-            if (.not. allocated(id_ztrabnd)) allocate (id_ztrabnd(numtracers))
+            if (.not. allocated(id_ttrabnd)) then
+               allocate (id_ttrabnd(numtracers))
+            end if
+            if (.not. allocated(id_ztrabnd)) then
+               allocate (id_ztrabnd(numtracers))
+            end if
             do i = 1, numtracers
                iconst = itrac2const(i)
                if (max_threttim(iconst) > 0.0_dp) then
@@ -14439,7 +14609,9 @@ contains
       !-- Synchronisation to other domains, only for merged-map input
       if (jampi == 1 .and. um%jamergedmap == 1) then
          !-- S/S3D --
-         if (jatimer == 1) call starttimer(IUPDSALL)
+         if (jatimer == 1) then
+            call starttimer(IUPDSALL)
+         end if
 
          call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierr)
          call update_ghosts(ITYPE_SALL, 1, Ndx, s0, ierr)
@@ -14454,10 +14626,14 @@ contains
 
          end if
 
-         if (jatimer == 1) call stoptimer(IUPDSALL)
+         if (jatimer == 1) then
+            call stoptimer(IUPDSALL)
+         end if
 
          !-- U/U3D --
-         if (jatimer == 1) call starttimer(IUPDU)
+         if (jatimer == 1) then
+            call starttimer(IUPDU)
+         end if
 
          if (kmx == 0) then ! 2D
             call update_ghosts(ITYPE_U, 1, Lnx, u1, ierr)
@@ -14470,7 +14646,9 @@ contains
             call update_ghosts(ITYPE_U3D, 1, Lnkx, qa, ierr)
          end if
 
-         if (jatimer == 1) call stoptimer(IUPDU)
+         if (jatimer == 1) then
+            call stoptimer(IUPDU)
+         end if
 
          if (ierr /= 0) then
             ierr = DFM_MODELNOTINITIALIZED
@@ -14633,7 +14811,9 @@ contains
                call check_error(ierr, 'link count')
                ierr = nf90_inq_varid(imapfile, 'FlowLink_xu', id_xu)
                ierr = nf90_inq_varid(imapfile, 'FlowLink_yu', id_yu)
-               if (nerr_ > 0) return
+               if (nerr_ > 0) then
+                  return
+               end if
 
                call realloc(xuu, lnx_merge, keepExisting=.false.)
                call realloc(yuu, lnx_merge, keepExisting=.false.)
@@ -14793,7 +14973,9 @@ contains
                end if
             end if
 
-            if (nerr_ > 0) return
+            if (nerr_ > 0) then
+               return
+            end if
 
             call realloc(inode_merge2own, ndxi_merge, keepExisting=.false., fill=-999)
             call find_flownodesorlinks_merge(ndxi_merge, xmc, ymc, ndxi, um%ndxi_own, um%inode_own, um%inode_merge, 1, 1, inode_merge2own)
@@ -14826,7 +15008,9 @@ contains
             ierr = nf90_get_var(imapfile, id_yu, yuu)
             call check_error(ierr, 'yuu')
 
-            if (nerr_ > 0) return
+            if (nerr_ > 0) then
+               return
+            end if
 
             call find_flownodesorlinks_merge(lnx_merge, xuu, yuu, lnx, um%lnx_own, um%ilink_own, um%ilink_merge, 0, 1)
 
@@ -14862,7 +15046,9 @@ contains
             end if
 
             deallocate (xmc, ymc, xuu, yuu)
-            if (ndxbnd_own > 0 .and. jaoldrstfile == 0) deallocate (xbnd_read, ybnd_read)
+            if (ndxbnd_own > 0 .and. jaoldrstfile == 0) then
+               deallocate (xbnd_read, ybnd_read)
+            end if
          end if
       else ! If rst file is a non-merged rst file
          ! NOTE: intentional: if jampi==1, but rst file is a normal separate rst file
@@ -14878,14 +15064,18 @@ contains
          call check_error(ierr, 'nFlowElem')
          ierr = nf90_inq_dimid(imapfile, 'nFlowLink', id_flowlinkdim)
          call check_error(ierr, 'nFlowLink')
-         if (nerr_ > 0) return
+         if (nerr_ > 0) then
+            return
+         end if
 
          ! Ask for dimensions of nodes and edges, ergo: the number of netnodes and netlinks
          ierr = nf90_inquire_dimension(imapfile, id_flowelemdim, len=um%ndxi_read)
          call check_error(ierr, 'elem count')
          ierr = nf90_inquire_dimension(imapfile, id_flowlinkdim, len=um%lnx_read)
          call check_error(ierr, 'link count')
-         if (nerr_ > 0) return
+         if (nerr_ > 0) then
+            return
+         end if
 
          ! Ask file for the dimension of its own boundary points
          ierr = nf90_inq_dimid(imapfile, 'nFlowElemBnd', um%id_bnddim)
@@ -14954,12 +15144,22 @@ contains
             call realloc(xmc, um%ndxi_read, keepExisting=.false.)
             call realloc(ymc, um%ndxi_read, keepExisting=.false.)
             ierr = nf90_inq_varid(imapfile, 'FlowElem_xzw', id_xzw)
-            if (ierr == nf90_noerr) call check_error(ierr, 'center of mass x-coordinate')
-            if (ierr == nf90_noerr) ierr = nf90_inq_varid(imapfile, 'FlowElem_yzw', id_yzw)
-            if (ierr == nf90_noerr) call check_error(ierr, 'center of mass y-coordinate')
+            if (ierr == nf90_noerr) then
+               call check_error(ierr, 'center of mass x-coordinate')
+            end if
+            if (ierr == nf90_noerr) then
+               ierr = nf90_inq_varid(imapfile, 'FlowElem_yzw', id_yzw)
+            end if
+            if (ierr == nf90_noerr) then
+               call check_error(ierr, 'center of mass y-coordinate')
+            end if
 
-            if (ierr == nf90_noerr) ierr = nf90_get_var(imapfile, id_xzw, xmc)
-            if (ierr == nf90_noerr) ierr = nf90_get_var(imapfile, id_yzw, ymc)
+            if (ierr == nf90_noerr) then
+               ierr = nf90_get_var(imapfile, id_xzw, xmc)
+            end if
+            if (ierr == nf90_noerr) then
+               ierr = nf90_get_var(imapfile, id_yzw, ymc)
+            end if
 
             if (ierr == nf90_noerr) then
                ! check flownodes numbering with rst file
@@ -14980,8 +15180,12 @@ contains
             ierr = nf90_inq_varid(imapfile, 'FlowLink_yu', id_yu)
             call check_error(ierr, 'velocity point y-coordinate')
 
-            if (ierr == nf90_noerr) ierr = nf90_get_var(imapfile, id_xu, xuu)
-            if (ierr == nf90_noerr) ierr = nf90_get_var(imapfile, id_yu, yuu)
+            if (ierr == nf90_noerr) then
+               ierr = nf90_get_var(imapfile, id_xu, xuu)
+            end if
+            if (ierr == nf90_noerr) then
+               ierr = nf90_get_var(imapfile, id_yu, yuu)
+            end if
 
             if (ierr == nf90_noerr) then
                ! Check flowlinks numbering with rst file
@@ -15179,14 +15383,20 @@ contains
          i = i + 1
 
          edge_nodes(1:2, i) = lncn(1:2, Lf)
-         if (is_edge_faces_associated) edge_faces(1:2, i) = ln(1:2, Lf)
+         if (is_edge_faces_associated) then
+            edge_faces(1:2, i) = ln(1:2, Lf)
+         end if
 
          edge_type(i) = UG_EDGETYPE_INTERNAL
          xue(i) = xu(Lf)
          yue(i) = yu(Lf)
 
-         if (is_edge_mapping_table_present) edge_mapping_table(L - numl1d) = i
-         if (is_reverse_edge_mapping_table_present) reverse_edge_mapping_table(i) = L - numl1d
+         if (is_edge_mapping_table_present) then
+            edge_mapping_table(L - numl1d) = i
+         end if
+         if (is_reverse_edge_mapping_table_present) then
+            reverse_edge_mapping_table(i) = L - numl1d
+         end if
       end do
 
       ! Write all edges that are 2D boundary flow links.
@@ -15214,8 +15424,12 @@ contains
          xue(i) = xu(Lf)
          yue(i) = yu(Lf)
 
-         if (is_edge_mapping_table_present) edge_mapping_table(L - numl1d) = i
-         if (is_reverse_edge_mapping_table_present) reverse_edge_mapping_table(i) = L - numl1d
+         if (is_edge_mapping_table_present) then
+            edge_mapping_table(L - numl1d) = i
+         end if
+         if (is_reverse_edge_mapping_table_present) then
+            reverse_edge_mapping_table(i) = L - numl1d
+         end if
       end do
 
       ! Write all remaining edges, which are closed.
@@ -15257,8 +15471,12 @@ contains
                xue(i) = 0.5_dp * (xk(kn(1, L)) + xk(kn(2, L)))
                yue(i) = 0.5_dp * (yk(kn(1, L)) + yk(kn(2, L)))
 
-               if (is_edge_mapping_table_present) edge_mapping_table(L - numl1d) = i
-               if (is_reverse_edge_mapping_table_present) reverse_edge_mapping_table(i) = L - numl1d
+               if (is_edge_mapping_table_present) then
+                  edge_mapping_table(L - numl1d) = i
+               end if
+               if (is_reverse_edge_mapping_table_present) then
+                  reverse_edge_mapping_table(i) = L - numl1d
+               end if
             end if
 
          end do
@@ -15393,7 +15611,9 @@ contains
          return
       end if
 
-      if (timon) call timstrt("unc_write_flowgeom_filepointer_ugrid", handle_extra(69))
+      if (timon) then
+         call timstrt("unc_write_flowgeom_filepointer_ugrid", handle_extra(69))
+      end if
       if (present(jabndnd)) then
          jabndnd_ = jabndnd
       else
@@ -15678,7 +15898,9 @@ contains
 
       ! Leave the dataset in the same mode as we got it.
       ierr = ncu_restore_mode(ncid, jaInDefine)
-      if (timon) call timstop(handle_extra(69))
+      if (timon) then
+         call timstop(handle_extra(69))
+      end if
 
       !call readyy('Writing flow geometry data',-1d0)
       return
@@ -15770,7 +15992,9 @@ contains
          return
       end if
 
-      if (timon) call timstrt("unc_write_flowgeom_filepointer_ugrid", handle_extra(69))
+      if (timon) then
+         call timstrt("unc_write_flowgeom_filepointer_ugrid", handle_extra(69))
+      end if
       if (present(jabndnd)) then
          jabndnd_ = jabndnd
       else
@@ -16066,7 +16290,9 @@ contains
 
       ! Leave the dataset in the same mode as we got it.
       ierr = ncu_restore_mode(ncid, jaInDefine)
-      if (timon) call timstop(handle_extra(69))
+      if (timon) then
+         call timstop(handle_extra(69))
+      end if
 
       ierr = nf90_sync(ncid)
       !call readyy('Writing flow geometry data',-1d0)
@@ -16529,7 +16755,9 @@ contains
 
       ierr = unc_open(trim(fileName), nf90_nowrite, iNetcdfFile)
       call check_error(ierr, 'file '''//trim(fileName)//'''')
-      if (nerr_ > 0) goto 999
+      if (nerr_ > 0) then
+         goto 999
+      end if
 
       ! Ask for dimension id of nodes and edges
       ierr = nf90_inq_dimid(iNetcdfFile, 'nFlowElem', id_flowelemdim)
@@ -16721,7 +16949,9 @@ contains
       end if
 
       jaidomain_ = 0
-      if (present(jaidomain)) jaidomain_ = jaidomain
+      if (present(jaidomain)) then
+         jaidomain_ = jaidomain
+      end if
 
       jaiglobal_s_ = 0
       if (present(jaiglobal_s)) then
@@ -16729,7 +16959,9 @@ contains
       end if
 
       jareinitialize_ = 0
-      if (present(jareinitialize)) jareinitialize_ = jareinitialize
+      if (present(jareinitialize)) then
+         jareinitialize_ = jareinitialize
+      end if
 
       call readyy('Reading net data', 0.0_dp)
 
@@ -16791,16 +17023,22 @@ contains
 
          ierr = unc_open(filename, nf90_nowrite, inetfile)
          call check_error(ierr, 'file '''//trim(filename)//'''')
-         if (nerr_ > 0) goto 888
+         if (nerr_ > 0) then
+            goto 888
+         end if
 
          ! Get nr of cells
          ierr = nf90_inq_dimid(inetfile, 'nNetElem', id_netelemdim)
          call check_error(ierr, 'nNetElem')
-         if (nerr_ > 0) goto 888
+         if (nerr_ > 0) then
+            goto 888
+         end if
 
          ierr = nf90_inquire_dimension(inetfile, id_netelemdim, len=nump1d2d)
          call check_error(ierr, 'Elem count')
-         if (nerr_ > 0) goto 888
+         if (nerr_ > 0) then
+            goto 888
+         end if
 
          ! check number of netlinks in the network file
          ierr = nf90_inq_dimid(inetfile, 'nNetLink', id_netlinkdim)
@@ -16817,9 +17055,13 @@ contains
          ! check max number of vertices
          ierr = nf90_inq_dimid(inetfile, 'nNetElemMaxNode', id_netelemmaxnodedim)
          !    call check_error(ierr, 'nNetElemMaxNode')
-         if (ierr /= NF90_NOERR) goto 888
+         if (ierr /= NF90_NOERR) then
+            goto 888
+         end if
          ierr = nf90_inquire_dimension(inetfile, id_netelemmaxnodedim, len=nv)
-         if (ierr /= NF90_NOERR) goto 888
+         if (ierr /= NF90_NOERR) then
+            goto 888
+         end if
 
       end if
 
@@ -16885,10 +17127,14 @@ contains
       else
          ierr = nf90_inq_varid(inetfile, 'NetElemNode', id_netelemnode)
          !    call check_error(ierr, 'NetElemNode')
-         if (ierr /= NF90_NOERR) goto 888
+         if (ierr /= NF90_NOERR) then
+            goto 888
+         end if
          ierr = nf90_inq_varid(inetfile, 'NetElemLink', id_netelemlink)
          !    call check_error(ierr, 'NetElemLink')
-         if (ierr /= NF90_NOERR) goto 888
+         if (ierr /= NF90_NOERR) then
+            goto 888
+         end if
 
          ierr = nf90_get_att(inetfile, id_netelemnode, '_FillValue', fillvalue)
          ! Read Netcell connectivity arrays
@@ -17057,7 +17303,9 @@ contains
             call check_error(ierr, 'nNetLink')
             ierr = nf90_inquire_dimension(inetfile, id_netlinkdim, len=numl)
             call check_error(ierr, 'link count')
-            if (nerr_ > 0) goto 888
+            if (nerr_ > 0) then
+               goto 888
+            end if
 
             ierr = nf90_inq_varid(inetfile, 'NetLink', id_netlink)
             call check_error(ierr, 'NetLink')
@@ -17080,7 +17328,9 @@ contains
 
       call readyy('Reading net data', 1.0_dp)
       ierr = ionc_close(ioncid)
-      if (nerr_ > 0) goto 888
+      if (nerr_ > 0) then
+         goto 888
+      end if
 
       call readyy('Reading net data', -1.0_dp)
       return ! Return with success
@@ -18331,7 +18581,9 @@ contains
             k1 = ln(1, LLL)
             k2 = ln(2, LLL)
             k3 = 1
-            if (nd(n)%ln(LL) > 0) k3 = 2
+            if (nd(n)%ln(LL) > 0) then
+               k3 = 2
+            end if
             s_x(n) = s_x(n) + u_x(LLL) * wcL(k3, LLL)
             s_y(n) = s_y(n) + u_y(LLL) * wcL(k3, LLL)
          end do
@@ -18371,7 +18623,9 @@ contains
       end if
 
       allocate (temp_array(size(array)), stat=ierr)
-      if (ierr /= 0) call aerr('temp_array', ierr, size(array))
+      if (ierr /= 0) then
+         call aerr('temp_array', ierr, size(array))
+      end if
 
       do cell = 1, size(kfs)
          if (kfs(cell) == 0) then
@@ -18419,7 +18673,9 @@ contains
       end if
 
       allocate (temp_array(size(array)), stat=ierr)
-      if (ierr /= 0) call aerr('temp_array', ierr, size(array))
+      if (ierr /= 0) then
+         call aerr('temp_array', ierr, size(array))
+      end if
 
       do face = 1, size(hu)
          if (hu(face) == 0) then

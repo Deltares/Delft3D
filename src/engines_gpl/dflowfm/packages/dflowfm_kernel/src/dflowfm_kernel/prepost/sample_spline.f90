@@ -55,7 +55,9 @@ contains
 
       Nr_in = Nr
 
-      if (num < 1) goto 1234
+      if (num < 1) then
+         goto 1234
+      end if
 
 !  compute the number of samples
       Nr = num + (num - 1) * numref

@@ -54,9 +54,13 @@ contains
          call LNABS(X(I), Y(I))
       end do
       call MOVABS(X(1), Y(1))
-      if (rcx > 0) call fbox(x(1) - rcx, y(1) - rcy, x(1) + rcx, y(1) + rcy) ! CIR(RCIR)
+      if (rcx > 0) then
+         call fbox(x(1) - rcx, y(1) - rcy, x(1) + rcx, y(1) + rcy) ! CIR(RCIR)
+      end if
       do I = 2, N
-         if (rcx > 0) call fbox(x(i) - rcx, y(i) - rcy, x(i) + rcx, y(i) + rcy) ! CIR(RCIR)
+         if (rcx > 0) then
+            call fbox(x(i) - rcx, y(i) - rcy, x(i) + rcx, y(i) + rcy) ! CIR(RCIR)
+         end if
       end do
 
       return

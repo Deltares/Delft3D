@@ -62,7 +62,9 @@ contains
       Rai = 1.0_dp / Ra
 
       do i = 1, mc
-         if (xc(i) == DMISS .or. yc(i) == DMISS) cycle
+         if (xc(i) == DMISS .or. yc(i) == DMISS) then
+            cycle
+         end if
 
 !     first, compute the normal vector
 

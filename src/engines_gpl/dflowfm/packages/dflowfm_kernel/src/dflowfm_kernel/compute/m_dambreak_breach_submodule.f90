@@ -603,7 +603,9 @@ contains
             if (jampi > 0) then
                call link_ghostdata(my_rank, idomain(ln(1, flow_link)), idomain(ln(2, flow_link)), &
                                    is_ghost_link, link_domain_number)
-               if (is_ghost_link == 1) cycle
+               if (is_ghost_link == 1) then
+                  cycle
+               end if
             end if
             values(IVAL_WIDTH, n) = values(IVAL_WIDTH, n) + dambreaks(n)%link_actual_width(link)
             values(IVAL_DB_CRESTW, n) = values(IVAL_DB_CRESTW, n) + dambreaks(n)%link_actual_width(link)
