@@ -315,9 +315,9 @@ module m_ec_support
       subroutine ecSupportNetcdfGetQuantityCandidateNames(fileName, quantityName, ncstdnames, ncvarnames, ncstdnames_fallback, varname)
          character(len=*),               intent(in)    :: fileName            !< name of the file, used for error messages
          character(len=*),               intent(in)    :: quantityName        !< name of the quantity to look up
-         character(len=*), dimension(:), intent(inout) :: ncstdnames          !< list with standard names to be filled
-         character(len=*), dimension(:), intent(inout) :: ncvarnames          !< list with variable names to be filled
-         character(len=*), dimension(:), intent(inout) :: ncstdnames_fallback !< list with fallback standard names to be filled
+         character(len=*), dimension(:), intent(out) :: ncstdnames          !< list with standard names to be filled
+         character(len=*), dimension(:), intent(out) :: ncvarnames          !< list with variable names to be filled
+         character(len=*), dimension(:), intent(out) :: ncstdnames_fallback !< list with fallback standard names to be filled
          character(len=*), optional,     intent(in)    :: varname             !< user-supplied name of variabele, required for 'waveperiod' quantity
 
 

@@ -314,11 +314,13 @@ contains
       integer, dimension(:), allocatable, intent(out) :: dimids
       integer, intent(out), optional :: vectormax
 
-      character(len=*), dimension(:) :: ncstdnames          !< list with standard names to be filled
-      character(len=*), dimension(:) :: ncvarnames          !< list with variable names to be filled
-      character(len=*), dimension(:) :: ncstdnames_fallback !< list with fallback standard names to be filled
+      character(len=NF90_MAX_NAME), dimension(4) :: ncstdnames          !< list with standard names to be filled
+      character(len=NF90_MAX_NAME), dimension(4) :: ncvarnames          !< list with variable names to be filled
+      character(len=NF90_MAX_NAME), dimension(1) :: ncstdnames_fallback !< list with fallback standard names to be filled
+      character(len=NF90_MAX_NAME) :: quantity_candidate
+      
       integer :: n_dims
-      integer :: ivar, itim, ltl, iv
+      integer :: ivar, jvar, itim, ltl, iv
       integer :: ierr, vmax
       character(len=30), dimension(:), allocatable :: elmnames
       integer, dimension(:), allocatable :: dimids_check
@@ -328,31 +330,37 @@ contains
       ! get candidate names for the quantity
       call ecSupportNetcdfGetQuantityCandidateNames(ncptr%ncfilename, quantity, ncstdnames, ncvarnames, ncstdnames_fallback)
 
-      ! search for quantity by standard name or variable name
-      call ecProviderSearchStdOrVarnames(ncptr, ncptr%ncid, ivar, ncstdnames, ncvarnames)
+      ! search for standard_name
+      do jvar = 1, size(ncstdnames)
+         quantity_candidate = ncstdnames(jvar)
+         do ivar = 1, ncptr%nVars
+            ltl = len_trim(quantity_candidate)
+            if (strcmpi(trim(ncptr%standard_names(ivar)), trim(quantity_candidate))) exit
+         end do
+      end do
+      vmax = 1
 
-      ! ! search for standard_name
-      ! do ivar = 1, ncptr%nVars
-      !    ltl = len_trim(quantity)
-      !    if (strcmpi(trim(ncptr%standard_names(ivar)), trim(quantity))) exit
-      ! end do
-      ! vmax = 1
+      ! if standard_name not found, search for long_name
+      if (ivar > ncptr%nVars) then
+         do jvar = 1, size(ncstdnames_fallback)
+            quantity_candidate = ncstdnames_fallback(jvar)
+            do ivar = 1, ncptr%nVars
+               ltl = len_trim(quantity_candidate)
+               if (strcmpi(ncptr%long_names(ivar), quantity_candidate, ltl)) exit
+            end do
+         end do
+      end if
 
-      ! ! if standard_name not found, search for long_name
-      ! if (ivar > ncptr%nVars) then
-      !    do ivar = 1, ncptr%nVars
-      !       ltl = len_trim(quantity)
-      !       if (strcmpi(ncptr%long_names(ivar), quantity, ltl)) exit
-      !    end do
-      ! end if
-
-      ! ! if also long_name not found, search for variable_name
-      ! if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names)) then
-      !    do ivar = 1, ncptr%nVars
-      !       ltl = len_trim(quantity)
-      !       if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) exit
-      !    end do
-      ! end if
+      ! if also long_name not found, search for variable_name
+      if (ivar > ncptr%nVars .and. allocated(ncptr%variable_names)) then
+         do jvar = 1, size(ncvarnames)
+            quantity_candidate = ncvarnames(jvar)
+            do ivar = 1, ncptr%nVars
+               ltl = len_trim(quantity_candidate)
+               if (strcmpi(ncptr%variable_names(ivar), quantity_candidate, ltl)) exit
+            end do
+         end do
+      end if
 
       if (ivar <= ncptr%nVars) then
          q_id(1) = ivar
