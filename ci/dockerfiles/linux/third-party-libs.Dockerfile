@@ -318,7 +318,7 @@ pushd "/var/cache/src/${BASEDIR}"
     --enable-build-mode=$BUILD_MODE \
     --enable-fortran \
     --enable-parallel \
-    --disable-szlib
+    --disable-szlib \
     --with-zlib=/usr/local/include,/usr/local/lib \
     --with-szlib=/usr/local
 make --jobs=$(nproc)
