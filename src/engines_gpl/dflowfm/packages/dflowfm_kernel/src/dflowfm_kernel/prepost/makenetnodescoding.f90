@@ -57,7 +57,9 @@ contains
       do L = 1, NUML ! NODE BOUNDARY ADMINISTRATION
          K1 = KN(1, L)
          K2 = KN(2, L)
-         if (k1 < 1 .or. k2 < 1) cycle ! SPvdP: safety
+         if (k1 < 1 .or. k2 < 1) then
+            cycle ! SPvdP: safety
+         end if
          if (KN(3, L) == 2 .or. KN(3, L) == 0) then
             if (NB(K1) /= -1 .and. NB(K2) /= -1) then
                if (LNN(L) == 0) then ! LINK ZONDER BUURCELLEN
@@ -116,7 +118,9 @@ contains
       end do
       do k = 1, numk
 !      if (kc(k) == 0) nb(k) = 0
-         if (nmk(k) < 2) nb(k) = -1 ! hanging node
+         if (nmk(k) < 2) then
+            nb(k) = -1 ! hanging node
+         end if
       end do
    end subroutine MAKENETNODESCODING
 end module m_makenetnodescoding

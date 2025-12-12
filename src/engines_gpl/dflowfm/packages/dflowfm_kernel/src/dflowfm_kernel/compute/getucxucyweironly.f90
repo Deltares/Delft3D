@@ -93,7 +93,9 @@ contains
             end if
          else
             fac = 1.0_dp
-            if (huweir > 0.0_dp) fac = max(1.0_dp, hu(L) / huweir)
+            if (huweir > 0.0_dp) then
+               fac = max(1.0_dp, hu(L) / huweir)
+            end if
             if (jasfer3D == 0) then
                ucxku = ucxku + cs * u0(L) * fac
                ucyku = ucyku + sn * u0(L) * fac

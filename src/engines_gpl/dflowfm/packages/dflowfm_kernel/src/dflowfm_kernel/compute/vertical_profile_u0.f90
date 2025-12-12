@@ -95,9 +95,13 @@ contains
       if (javau == 3) then
          jav3 = 1
       else if (javau3onbnd == 1) then
-         if (LL > lnxi) jav3 = 1
+         if (LL > lnxi) then
+            jav3 = 1
+         end if
       else if (javau3onbnd == 2) then
-         if (iadv(LL) == 6) jav3 = 1
+         if (iadv(LL) == 6) then
+            jav3 = 1
+         end if
       end if
 
       do L = Lb, Lt - 1

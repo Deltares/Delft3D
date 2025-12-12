@@ -66,7 +66,9 @@ contains
       do k = 1, Ndx
          lnxx = nd(k)%lnx
 
-         if (lnxx <= 1) cycle
+         if (lnxx <= 1) then
+            cycle
+         end if
 
          if (lnxx > maxlin) then
             maxlin = lnxx
@@ -98,7 +100,9 @@ contains
             end if
 
             arglin(L) = phi - phi0
-            if (arglin(L) < 0.0_dp) arglin(L) = arglin(L) + 2.0_dp * pi
+            if (arglin(L) < 0.0_dp) then
+               arglin(L) = arglin(L) + 2.0_dp * pi
+            end if
          end do
 
          call sort_index(arglin(1:lnxx), inn(1:lnxx))

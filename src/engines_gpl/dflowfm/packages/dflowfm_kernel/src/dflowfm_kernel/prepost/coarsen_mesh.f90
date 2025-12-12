@@ -92,7 +92,9 @@ contains
 
       call makenetnodescoding()
 
-      if (nump < 1) return
+      if (nump < 1) then
+         return
+      end if
 
       iter = 0
       numchanged = 1
@@ -178,7 +180,9 @@ contains
                   !     if (k.eq.395 ) then
                   if (Lstepbystep) then
                      !           unhighlight mesh
-                     if (k1 >= 1 .and. k1 <= nump) call teknode(k1, 1)
+                     if (k1 >= 1 .and. k1 <= nump) then
+                        call teknode(k1, 1)
+                     end if
                      !           whipe out previous net image
                      do kk = 1, netcell(k)%N
                         call teknode(netcell(k)%nod(kk), 211)
@@ -188,7 +192,9 @@ contains
 
                   !        delete the cell and update administration
                   call deletecell(k, ndirect, nindirect, kdirect, kindirect, kne, .false., ja)
-                  if (ja == 1) numchanged = numchanged + 1
+                  if (ja == 1) then
+                     numchanged = numchanged + 1
+                  end if
 
                   if (Lstepbystep) then
                      !           new net image
@@ -273,7 +279,9 @@ contains
          write (6, *) 'coarsen mesh: ', area_opt, iter, numchanged
       end do
 
-      if (Lstepbystep) call READLOCATOR(X, Y, KEY)
+      if (Lstepbystep) then
+         call READLOCATOR(X, Y, KEY)
+      end if
 
       return
    end subroutine coarsen_mesh

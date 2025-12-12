@@ -146,12 +146,16 @@ contains
 
       do L = lnxi + 1, lnx
          if (kcu(L) == -1) then
-            if (japerim == 0 .and. nonlin1D == 0) cycle
+            if (japerim == 0 .and. nonlin1D == 0) then
+               cycle
+            end if
             if (japerim == 1 .or. .not. useVolumeTables) then
                call addlink1D(L, japerim) ! 1D boundary links
             end if
          else
-            if (japerim == 0 .and. nonlin2D == 0) cycle
+            if (japerim == 0 .and. nonlin2D == 0) then
+               cycle
+            end if
             call addlink2D(L, japerim) ! 2D boundary links
          end if
       end do

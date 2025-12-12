@@ -67,7 +67,9 @@ contains
 
       do K = 1, N
          K2 = K + 1
-         if (K == N) K2 = 1
+         if (K == N) then
+            K2 = 1
+         end if
          call CONNECTDB(kk(k), kk(k2), lnu)
       end do
 

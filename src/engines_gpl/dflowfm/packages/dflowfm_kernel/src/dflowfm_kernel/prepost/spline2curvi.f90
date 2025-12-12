@@ -115,7 +115,9 @@ contains
       mfacmax = mfac
       nc = nfac + 1
 
-      if (mcs < 1) goto 1234 ! no splines
+      if (mcs < 1) then
+         goto 1234 ! no splines
+      end if
 
 !  save splines
       call savesplines()
@@ -148,9 +150,13 @@ contains
       call make_wholegridline(ierror)
       call READYY('Growing curvilinear grid', 0.4_dp)
 
-      if (ierror == 1) goto 1234
+      if (ierror == 1) then
+         goto 1234
+      end if
 
-      if (mc < 2) goto 1234 ! no curvigrid
+      if (mc < 2) then
+         goto 1234 ! no curvigrid
+      end if
 
 !  make all gridedge based cross splines
 !  remember original spline information
@@ -163,7 +169,9 @@ contains
 
 !  construct new, or artificial, cross splines through the grid edge center points
       do is = 1, mcs_old
-         if (splineprops(is)%id /= 0) cycle ! center splines only
+         if (splineprops(is)%id /= 0) then
+            cycle ! center splines only
+         end if
 
 !      id(is)        = 0
          iLRmfac(1, is) = splineprops(is)%iL
@@ -191,7 +199,9 @@ contains
 
             call addSplinePoint(isnew, xs1(1), ys1(1))
             call addSplinePoint(isnew, xs1(2), ys1(2))
-            if (.not. Lnewsplines) Lnewsplines = .true.
+            if (.not. Lnewsplines) then
+               Lnewsplines = .true.
+            end if
          end do
       end do
 
@@ -200,7 +210,9 @@ contains
 
 !  artificial cross spline: remove the last part of the subintervals (since it makes no sence, as the artificial cross spline has an arbitrary, but sufficiently large, length)
       do is = 1, mcs_old
-         if (splineprops(is)%id /= 0) cycle ! center splines only
+         if (splineprops(is)%id /= 0) then
+            cycle ! center splines only
+         end if
          do j = 1, splineprops(is)%ncs
             js = splineprops(is)%ics(j)
             if (splineprops(js)%id == 3) then ! artificial cross spline only
@@ -217,7 +229,9 @@ contains
 !  compute edge velocities
 
       call comp_edgevel(mc, edgevel, dgrow1, nfac1, ierror)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       call increasegrid(mc, nc)
       xc = DMISS
@@ -264,7 +278,9 @@ contains
             end if
          end do
 
-         if (dt < 1.0e-8_dp .or. istop == 1) exit
+         if (dt < 1.0e-8_dp .or. istop == 1) then
+            exit
+         end if
       end do
 
       call postgrid()
@@ -285,19 +301,27 @@ contains
 1234  continue
 
 !  deallocate
-      if (allocated(edgevel)) deallocate (edgevel, nfac1, dgrow1, nlist)
+      if (allocated(edgevel)) then
+         deallocate (edgevel, nfac1, dgrow1, nlist)
+      end if
       if (allocated(ifront)) then
          deallocate (ifront)
       end if
-      if (allocated(xg1)) deallocate (xg1, yg1, sg1)
+      if (allocated(xg1)) then
+         deallocate (xg1, yg1, sg1)
+      end if
       call deallocate_splineprops()
 
 !  restore
       mfac = mfacmax
-      if (Lnewsplines) call restoresplines()
+      if (Lnewsplines) then
+         call restoresplines()
+      end if
 
 !  in case of error: restore previous the grid
-      if (ierror == 1) call restoregrd()
+      if (ierror == 1) then
+         call restoregrd()
+      end if
 
       return
    end subroutine spline2curvi

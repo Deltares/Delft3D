@@ -118,8 +118,12 @@ contains
             if (kn(3, L) == 1 .or. kn(3, L) == 6) then ! TODO: AvD: why not also type 3/4/5/7?
                k1 = kn(1, L)
                k2 = kn(2, L)
-               if (nmk(k1) > 1) kc1D(k1) = 1
-               if (nmk(k2) > 1) kc1D(k2) = 1
+               if (nmk(k1) > 1) then
+                  kc1D(k1) = 1
+               end if
+               if (nmk(k2) > 1) then
+                  kc1D(k2) = 1
+               end if
             end if
          end do
 

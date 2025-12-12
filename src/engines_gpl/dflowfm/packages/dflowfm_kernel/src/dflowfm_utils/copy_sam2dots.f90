@@ -47,7 +47,9 @@ contains
 
       integer :: i
 
-      if (NS < 1) return
+      if (NS < 1) then
+         return
+      end if
 
       do i = 1, Ns
          call adddot(xs(i), ys(i), zs(i))

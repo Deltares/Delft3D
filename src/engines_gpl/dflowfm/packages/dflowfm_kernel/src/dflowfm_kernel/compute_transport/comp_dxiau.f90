@@ -57,7 +57,9 @@ contains
       real(kind=dp) :: hh, ff
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("comp_dxiAu", ithndl)
+      if (timon) then
+         call timstrt("comp_dxiAu", ithndl)
+      end if
 
       if (jalimitdtdiff == 0) then
          if (kmx == 0) then
@@ -138,7 +140,9 @@ contains
          end do
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine comp_dxiAu
 

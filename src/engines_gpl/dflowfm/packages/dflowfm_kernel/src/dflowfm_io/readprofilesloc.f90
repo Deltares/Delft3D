@@ -49,7 +49,9 @@ contains
 
       n = 0
 10    read (minp, '(a)', end=999) rec
-      if (rec(1:1) == '*') goto 10
+      if (rec(1:1) == '*') then
+         goto 10
+      end if
       n = n + 1
       goto 10
 
@@ -58,7 +60,9 @@ contains
 
       n = 0
 20    read (minp, '(a)', end=888) rec
-      if (rec(1:1) == '*') goto 20
+      if (rec(1:1) == '*') then
+         goto 20
+      end if
       n = n + 1
       read (rec, *) xpr(n), ypr(n), npr(n)
 

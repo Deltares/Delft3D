@@ -70,7 +70,9 @@ contains
          i = i + 1
          if (idxf(2, i) == j .and. ifront(idxf(1, i)) == 1) then
             velf(:, i) = vel(:, idxf(1, i))
-            if (velf(1, i) == DMISS) velf(:, i) = 0.0_dp
+            if (velf(1, i) == DMISS) then
+               velf(:, i) = 0.0_dp
+            end if
 
 !        check for cornernodes
             iprev = idxf(1, max(i - 1, 1))

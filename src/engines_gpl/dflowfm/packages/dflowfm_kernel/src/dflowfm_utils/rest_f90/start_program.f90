@@ -78,12 +78,16 @@ contains
       write (msgbuf, '(a,a)') 'Command: ', cmd(1:cmdlen)
       call msg_flush()
 
-      if (jaGUI /= 1) return
+      if (jaGUI /= 1) then
+         return
+      end if
 
 !     initialisatiefiles
       call initProgram()
 
-      if (jaGUI /= 1) return
+      if (jaGUI /= 1) then
+         return
+      end if
 
 ! SPvdP: disabled mouse-check for mouseless buildserver
 !      JMOUSE = INFOHARDWARE(13)
@@ -108,7 +112,9 @@ contains
 
 15    continue
       NUMCLARGS = INFOOPSYSTEM(2)
-      if (NUMCLARGS > 0 .or. INFOFILE == 1) return
+      if (NUMCLARGS > 0 .or. INFOFILE == 1) then
+         return
+      end if
       KEY = 0
       JA = 2
 

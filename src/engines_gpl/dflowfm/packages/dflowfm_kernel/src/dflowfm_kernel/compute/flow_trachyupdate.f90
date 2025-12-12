@@ -162,7 +162,9 @@ contains
       do L = 1, numl
          kL = lne(1, L)
          kR = lne(2, L)
-         if (kL == 0 .and. kR == 0) cycle
+         if (kL == 0 .and. kR == 0) then
+            cycle
+         end if
          LF = lne2ln(L)
          if (LF > 0) then
             ! flow link crosses with net link
@@ -188,7 +190,9 @@ contains
          do L = 1, numl
             kL = lne(1, L)
             kR = lne(2, L)
-            if (kL == 0 .and. kR == 0) cycle
+            if (kL == 0 .and. kR == 0) then
+               cycle
+            end if
             trachy_fl%dir(1)%zsu_prev(L) = trachy_fl%dir(1)%blu_trt(L) + hu_trt(L)
          end do
          !
@@ -203,7 +207,9 @@ contains
          do L = 1, numl
             kL = lne(1, L)
             kR = lne(2, L)
-            if (kL == 0 .and. kR == 0) cycle
+            if (kL == 0 .and. kR == 0) then
+               cycle
+            end if
             LF = lne2ln(L)
             if (LF > 0) then
                cftrt(L, 3) = frcu(LF) !link is on flow-link

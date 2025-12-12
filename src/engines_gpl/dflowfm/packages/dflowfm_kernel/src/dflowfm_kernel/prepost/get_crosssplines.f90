@@ -86,7 +86,9 @@ contains
          end if
 
 !     non-cross splines may only cross with cross splines visa versa
-         if ((num == 2 .and. numj == 2) .or. (num > 2 .and. numj > 2)) cycle
+         if ((num == 2 .and. numj == 2) .or. (num > 2 .and. numj > 2)) then
+            cycle
+         end if
 
 !     get the intersection of the splines
          xlist(1:numj) = xsp(js, 1:numj)

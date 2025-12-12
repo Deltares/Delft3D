@@ -65,9 +65,13 @@ contains
 
       do i = 1, N
          ip1 = i + 1
-         if (ip1 > N) ip1 = ip1 - N
+         if (ip1 > N) then
+            ip1 = ip1 - N
+         end if
          ip2 = i + 2
-         if (ip2 > N) ip2 = ip2 - N
+         if (ip2 > N) then
+            ip2 = ip2 - N
+         end if
          k1 = netcell(k)%nod(i)
          k2 = netcell(k)%nod(ip1)
          k3 = netcell(k)%nod(ip2)
@@ -75,7 +79,9 @@ contains
          cosphi = dcosphi(xk(k1), yk(k1), xk(k2), yk(k2), xk(k2), yk(k2), xk(k3), yk(k3), jsferic, jasfer3D, dxymis)
 
 !      if ( abs(cosphi).lt.TOL .or. abs(1d0-abs(cosphi)).lt.TOL ) cycle
-         if (abs(1.0_dp - abs(cosphi)) < TOL) cycle
+         if (abs(1.0_dp - abs(cosphi)) < TOL) then
+            cycle
+         end if
 
 !     check counterclockwise
          if (rechtsaf(k1, k2, k3)) then

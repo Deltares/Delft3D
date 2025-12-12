@@ -101,7 +101,9 @@ contains
       do ilink = 1, nmk(node1)
          L = nod(node1)%lin(ilink)
          othernode = kn(1, L) + kn(2, L) - node1
-         if (othernode == node2) exit
+         if (othernode == node2) then
+            exit
+         end if
       end do
 
       if (lnn(L) /= 2 .or. node2 /= othernode) then
@@ -159,9 +161,13 @@ contains
          lconflict = .false.
       end if
 
-      if (.not. lconflict) call checkvalidnode(k1, icnew1, jcnew1, lconflict)
+      if (.not. lconflict) then
+         call checkvalidnode(k1, icnew1, jcnew1, lconflict)
+      end if
 
-      if (.not. lconflict) call checkvalidnode(k2, icnew2, jcnew2, lconflict)
+      if (.not. lconflict) then
+         call checkvalidnode(k2, icnew2, jcnew2, lconflict)
+      end if
 
       if (.not. lconflict) then
 !---------------------------------------------------------

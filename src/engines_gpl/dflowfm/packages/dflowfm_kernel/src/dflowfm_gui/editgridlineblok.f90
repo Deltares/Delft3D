@@ -108,7 +108,9 @@ contains
       end if
 
       call putget_un(NUM, NWHAT, NPUT, NUMB, XP, YP, KEY)
-      if (KEY /= 23) JONCE = 0
+      if (KEY /= 23) then
+         JONCE = 0
+      end if
 
       if (NUM /= 0) then
 !        ER IS EEN KEUZE
@@ -137,10 +139,18 @@ contains
                   MB(IPT) = MP
                   NB(IPT) = NP
                   call CIRR(Xc(MP, NP), Yc(MP, NP), NCOLLN)
-                  if (NPT == 1) NPUT = 11
-                  if (NPT == 2) NPUT = 14
-                  if (NPT == 3) NPUT = 15
-                  if (NPT == 4) NPUT = 19
+                  if (NPT == 1) then
+                     NPUT = 11
+                  end if
+                  if (NPT == 2) then
+                     NPUT = 14
+                  end if
+                  if (NPT == 3) then
+                     NPUT = 15
+                  end if
+                  if (NPT == 4) then
+                     NPUT = 19
+                  end if
                else
                   call QNERROR('POINT 1 AND 2 SHOULD LIE', &
                                'ON THE SAME GRIDLINE', ' ')
@@ -156,10 +166,18 @@ contains
                      MB(NPT) = MP
                      NB(NPT) = NP
                      call CIRR(Xc(MB(NPT), NB(NPT)), Yc(MB(NPT), NB(NPT)), NCOLLN)
-                     if (NPT == 1) NPUT = 11
-                     if (NPT == 2) NPUT = 14
-                     if (NPT == 3) NPUT = 15
-                     if (NPT == 4) NPUT = 19
+                     if (NPT == 1) then
+                        NPUT = 11
+                     end if
+                     if (NPT == 2) then
+                        NPUT = 14
+                     end if
+                     if (NPT == 3) then
+                        NPUT = 15
+                     end if
+                     if (NPT == 4) then
+                        NPUT = 19
+                     end if
                   else
                      call QNERROR('POINT 1 AND 2 SHOULD LIE', 'ON THE SAME GRIDLINE', ' ')
                   end if
@@ -170,7 +188,9 @@ contains
 !                 oud punt geclickt; uitgummen
                   call SAVEB(NPUT)
                   call CIRR(Xc(MB(IPT), NB(IPT)), Yc(MB(IPT), NB(IPT)), 0)
-                  if (IPT <= 2) call TEKB(Xc, Yc, MMAX, NMAX, 0)
+                  if (IPT <= 2) then
+                     call TEKB(Xc, Yc, MMAX, NMAX, 0)
+                  end if
                   MB(IPT) = 0
                   NB(IPT) = 0
                   NPUT = 16
@@ -239,7 +259,9 @@ contains
                         N1B, M2B, N2B, NCOLDG, NDRAW(38), key, mc)
             call TEKGRD(Xch, Ych, mmax, nmax, M1B, &
                         N1B, M2B, N2B, NCOLRG, NDRAW(16), key, mch)
-            if (NPT <= 2) KEY = 3
+            if (NPT <= 2) then
+               KEY = 3
+            end if
             call RESETB(NPUT)
             NPUT = 10
          end if

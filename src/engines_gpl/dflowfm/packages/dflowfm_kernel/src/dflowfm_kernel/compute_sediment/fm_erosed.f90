@@ -240,16 +240,26 @@ contains
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
       !
       error = .false.
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
       ubot_from_com = jauorbfromswan > 0
       timhr = time1 / 3600.0_fp
       !
       ! Allocate memory
       allocate (dzdx(1:ndx), dzdy(1:ndx), stat=istat)
-      if (istat == 0) allocate (localpar(npar), stat=istat)
-      if (istat == 0) allocate (ua(1:ndx), va(1:ndx), stat=istat)
-      if (istat == 0) allocate (z0rouk(1:ndx), z0curk(1:ndx), deltas(1:ndx), stat=istat)
-      if ((istat == 0) .and. (.not. allocated(u1_tmp))) allocate (u1_tmp(1:lnx), ucxq_tmp(1:ndx), ucyq_tmp(1:ndx), stat=ierr)
+      if (istat == 0) then
+         allocate (localpar(npar), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (ua(1:ndx), va(1:ndx), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (z0rouk(1:ndx), z0curk(1:ndx), deltas(1:ndx), stat=istat)
+      end if
+      if ((istat == 0) .and. (.not. allocated(u1_tmp))) then
+         allocate (u1_tmp(1:lnx), ucxq_tmp(1:ndx), ucyq_tmp(1:ndx), stat=ierr)
+      end if
 
       localpar = 0.0_fp
       ua = 0.0_dp
@@ -644,7 +654,9 @@ contains
          ! do not calculate sediment sources, sinks, and bed load
          ! transport in areas with very shallow water.
          !
-         if ((s1(nm) - bl(nm)) <= epshu) cycle ! dry
+         if ((s1(nm) - bl(nm)) <= epshu) then
+            cycle ! dry
+         end if
          !
          call getkbotktop(nm, kb, kt)
          if (kfsed(nm) == 0) then ! shallow but not dry, ie ]epshu sedthresh]
@@ -948,7 +960,9 @@ contains
                !
                fracf = 0.0_fp
                if (iflufflyr > 0) then
-                  if (mfltot > 0.0_fp) fracf = max(0.0_fp, mfluff(l, nm)) / mfltot
+                  if (mfltot > 0.0_fp) then
+                     fracf = max(0.0_fp, mfluff(l, nm)) / mfltot
+                  end if
                end if
                !
                kmaxsd = 1 ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
@@ -1329,8 +1343,12 @@ contains
       !
       allocate (evel(lsed), stat=istat)
       do nm = 1, ndx
-         if (pmcrit(nm) < 0.0_fp) cycle
-         if (mudfrac(nm) <= 0.0_fp .or. mudfrac(nm) >= 1.0_fp) cycle
+         if (pmcrit(nm) < 0.0_fp) then
+            cycle
+         end if
+         if (mudfrac(nm) <= 0.0_fp .or. mudfrac(nm) >= 1.0_fp) then
+            cycle
+         end if
          !
          ! compute erosion velocities
          !
@@ -1338,7 +1356,9 @@ contains
          do l = 1, lsed
             ll = lstart + l
             kmaxsd = kmxsed(nm, l) ! meaning of kmaxsd changes here!
-            if (frac(nm, l) > 0.0_fp) evel(l) = (sourse(nm, l) - sour_im(nm, l) * constituents(ll, kmaxsd)) / (cdryb(l) * frac(nm, l))
+            if (frac(nm, l) > 0.0_fp) then
+               evel(l) = (sourse(nm, l) - sour_im(nm, l) * constituents(ll, kmaxsd)) / (cdryb(l) * frac(nm, l))
+            end if
          end do
          !
          ! recompute erosion velocities
@@ -1378,7 +1398,9 @@ contains
       !
 
       deallocate (dzdx, dzdy, stat=istat)
-      if (istat == 0) deallocate (localpar, stat=istat)
+      if (istat == 0) then
+         deallocate (localpar, stat=istat)
+      end if
       if (istat /= 0) then
          error = .true.
          write (errmsg, '(a)') 'fm_erosed::error deallocating memory.'

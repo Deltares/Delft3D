@@ -327,8 +327,12 @@ contains
       if (qid == 'generalstructure') then
          call mess(LEVEL_WARN, 'Keyword [generalstructure] is not supported in the external forcing file. &
  &                               Please use a structure file <*.ini> instead.')
-         if (NUMGENERALKEYWRD_OLD < NTRANSFORMCOEF) call mess(LEVEL_WARN, 'Not all expected keywords are provided.')
-         if (NUMGENERALKEYWRD_OLD > NTRANSFORMCOEF) call mess(LEVEL_WARN, 'More keywords provided than expected.')
+         if (NUMGENERALKEYWRD_OLD < NTRANSFORMCOEF) then
+            call mess(LEVEL_WARN, 'Not all expected keywords are provided.')
+         end if
+         if (NUMGENERALKEYWRD_OLD > NTRANSFORMCOEF) then
+            call mess(LEVEL_WARN, 'More keywords provided than expected.')
+         end if
          do k = 1, NUMGENERALKEYWRD_OLD
             call readandchecknextrecord(minp, rec, generalkeywrd_old(k), jaopt)
             if (jaopt == 1) then
@@ -467,7 +471,9 @@ contains
       end if
 
 10    read (minp, '(a)', end=999) rec
-      if (rec(1:1) == '*') goto 10
+      if (rec(1:1) == '*') then
+         goto 10
+      end if
       if (present(pliname)) then
          pliname = trim(rec)
       end if
@@ -650,13 +656,17 @@ contains
             j1 = -j1
          end if
 
-         if (allocated(XZ2)) deallocate (XZ2, YZ2, TD2)
+         if (allocated(XZ2)) then
+            deallocate (XZ2, YZ2, TD2)
+         end if
          allocate (xz2(i1:i2, j1:j2), stat=ierr) ! tot aerr
          allocate (yz2(i1:i2, j1:j2), stat=ierr)
          allocate (td2(i1:i2, j1:j2), stat=ierr)
 
          if (jatidep > 1) then ! gradient intp.
-            if (allocated(td2_x)) deallocate (td2_x, td2_y)
+            if (allocated(td2_x)) then
+               deallocate (td2_x, td2_y)
+            end if
             allocate (td2_x(i1:i2, j1:j2), stat=ierr)
             allocate (td2_y(i1:i2, j1:j2), stat=ierr)
          end if
@@ -665,7 +675,9 @@ contains
 
          if (jaselfal > 0) then
 !         if (allocated(self) ) deallocate ( self, avhs, area ) MVL ask Camille
-            if (allocated(self)) deallocate (self, avhs)
+            if (allocated(self)) then
+               deallocate (self, avhs)
+            end if
             allocate (self(i1:i2, j1:j2), stat=ierr)
             allocate (avhs(i1:i2, j1:j2), stat=ierr)
 !         allocate ( area(i1:i2,j1:j2), stat=ierr)
@@ -3519,7 +3531,9 @@ contains
          FACTORIAL(5) = 120.0_dp
          FACTORIAL(6) = 720.0_dp
 
-         if (allocated(tideuc)) deallocate (tideuc, tideus)
+         if (allocated(tideuc)) then
+            deallocate (tideuc, tideus)
+         end if
          allocate (tideuc(0:3, 2:3, IDIM1), STAT=IERR)
          tideuc = 0.0_dp
          allocate (tideus(0:3, 2:3, IDIM1), STAT=IERR)
@@ -3551,11 +3565,17 @@ contains
          N = 0
 10       continue
          N = N + 1
-         if (N > 484) goto 20
+         if (N > 484) then
+            goto 20
+         end if
          RECORD = RECS(N)
          ! read(luhar,'(a)',end=20) record
-         if (idebug >= 10) write (6, *) record
-         if (record(1:1) == '%') go to 10
+         if (idebug >= 10) then
+            write (6, *) record
+         end if
+         if (record(1:1) == '%') then
+            go to 10
+         end if
          read (record, *) (kk(i), i=1, 7), har
          !
          !            in the CTE tables there is a null line for theoretic
@@ -3827,7 +3847,9 @@ contains
       do i = 2, 6
 
          six(i) = mod(six(i), circle)
-         if (six(i) < 0.0_dp) six(i) = six(i) + circle
+         if (six(i) < 0.0_dp) then
+            six(i) = six(i) + circle
+         end if
 
       end do
       !
@@ -3890,19 +3912,39 @@ contains
       !         obtaining associated Legendre functions?
       !
       if (n == 0) then
-         if (m == 0) pnm = 1.0_dp
+         if (m == 0) then
+            pnm = 1.0_dp
+         end if
       else if (n == 1) then
-         if (m == 0) pnm = sp
-         if (m == 1) pnm = cp
+         if (m == 0) then
+            pnm = sp
+         end if
+         if (m == 1) then
+            pnm = cp
+         end if
       else if (n == 2) then
-         if (m == 0) pnm = 1.5_dp * sp * sp - 0.5_dp
-         if (m == 1) pnm = 3.0_dp * sp * cp
-         if (m == 2) pnm = 3.0_dp * cp * cp
+         if (m == 0) then
+            pnm = 1.5_dp * sp * sp - 0.5_dp
+         end if
+         if (m == 1) then
+            pnm = 3.0_dp * sp * cp
+         end if
+         if (m == 2) then
+            pnm = 3.0_dp * cp * cp
+         end if
       else if (n == 3) then
-         if (m == 0) pnm = 2.5_dp * sp * sp * sp - 1.5_dp * sp
-         if (m == 1) pnm = cp * (7.5_dp * sp * sp - 1.5_dp)
-         if (m == 2) pnm = 15.0_dp * cp * cp * sp
-         if (m == 3) pnm = 15.0_dp * cp * cp * cp
+         if (m == 0) then
+            pnm = 2.5_dp * sp * sp * sp - 1.5_dp * sp
+         end if
+         if (m == 1) then
+            pnm = cp * (7.5_dp * sp * sp - 1.5_dp)
+         end if
+         if (m == 2) then
+            pnm = 15.0_dp * cp * cp * sp
+         end if
+         if (m == 3) then
+            pnm = 15.0_dp * cp * cp * cp
+         end if
       end if
    end subroutine legpol1
    !
@@ -4501,7 +4543,9 @@ contains
 5        continue
          np = np + 1
          if (np <= n) then
-            if (x(np) /= dmiss_default) goto 5
+            if (x(np) /= dmiss_default) then
+               goto 5
+            end if
          end if
          np = np - 1
          inside = 0
@@ -4538,8 +4582,12 @@ contains
             end if
          end if
          i = i + 1
-         if (i < np) goto 10
-         if (mod(rechts, 2) /= 0) inside = 1 - inside
+         if (i < np) then
+            goto 10
+         end if
+         if (mod(rechts, 2) /= 0) then
+            inside = 1 - inside
+         end if
       end if
    end subroutine pinpok
    !
@@ -4704,8 +4752,12 @@ contains
       end if
 
       jgetw = 0 ! niets met gewichten, doe interpolatie
-      if (present(indxn) .and. jdla == 1) jgetw = 1 ! haal gewichten       doe interpolatie , gebruik gewichten
-      if (present(indxn) .and. jdla == 0) jgetw = 2 !                      doe interpolatie , gebruik gewichten
+      if (present(indxn) .and. jdla == 1) then
+         jgetw = 1 ! haal gewichten       doe interpolatie , gebruik gewichten
+      end if
+      if (present(indxn) .and. jdla == 0) then
+         jgetw = 2 !                      doe interpolatie , gebruik gewichten
+      end if
 
       do n = 1, mnx
          if (kcs(n) == 1) then
@@ -5963,7 +6015,9 @@ contains
          inside = -1
          do k = 1, nx
             if (jakc == 1) then
-               if (kcc(k) == 0) cycle
+               if (kcc(k) == 0) then
+                  cycle
+               end if
             end if
             call dbpinpol(xu(k), yu(k), inside, dmiss, JINS, NPL, xpl, ypl, zpl)
             if (inside == 1) then
@@ -6097,7 +6151,9 @@ contains
                msgbuf = errorInfo%message
                call warn_flush()
             end if
-            if (.not. errorInfo%success) return
+            if (.not. errorInfo%success) then
+               return
+            end if
 
 !         restore settings
             iav = iav_store
@@ -6596,7 +6652,9 @@ contains
       allocate (item_waqsfun(nosfunext))
       item_waqsfun = ec_undef_int
 
-      if (allocated(item_sourcesink_constituent_delta)) deallocate (item_sourcesink_constituent_delta)
+      if (allocated(item_sourcesink_constituent_delta)) then
+         deallocate (item_sourcesink_constituent_delta)
+      end if
       allocate (item_sourcesink_constituent_delta(numconst))
       item_sourcesink_constituent_delta = ec_undef_int
 
@@ -7159,14 +7217,20 @@ contains
       if (itemId == ec_undef_int) then ! if Target Item already exists, do NOT create a new one ...
          itemId = ecCreateItem(ecInstancePtr)
          success = ecSetItemRole(instancePtr, itemId, itemType_target)
-         if (success) success = ecSetItemQuantity(instancePtr, itemId, quantityId)
+         if (success) then
+            success = ecSetItemQuantity(instancePtr, itemId, quantityId)
+         end if
       end if
       ! ... but we would like to use the newest targetFIELD for this item, since old targetFIELDs can refer to the
       ! wrong data location (Arr1DPtr). This happens in the case that the demand-side arrays are reallocated while
       ! building the targets! Same is done for the elementset, so we are sure to always connect the latest
       ! elementset to this target.
-      if (success) success = ecSetItemElementSet(instancePtr, itemId, elementSetId)
-      if (success) success = ecSetItemTargetField(instancePtr, itemId, fieldId)
+      if (success) then
+         success = ecSetItemElementSet(instancePtr, itemId, elementSetId)
+      end if
+      if (success) then
+         success = ecSetItemTargetField(instancePtr, itemId, fieldId)
+      end if
    end function createItem
 
    ! ==========================================================================
@@ -7183,13 +7247,21 @@ contains
       real(kind=dp), pointer, optional :: inputptr !< pointer to an input arg for the converter (for QHBND)
       !
       success = ecSetConverterType(instancePtr, converterId, convtype)
-      if (success) success = ecSetConverterOperand(instancePtr, converterId, operand)
-      if (success) success = ecSetConverterInterpolation(instancePtr, converterId, method)
+      if (success) then
+         success = ecSetConverterOperand(instancePtr, converterId, operand)
+      end if
+      if (success) then
+         success = ecSetConverterInterpolation(instancePtr, converterId, method)
+      end if
       if (present(srcmask)) then
-         if (success) success = ecSetConverterMask(instancePtr, converterId, srcmask)
+         if (success) then
+            success = ecSetConverterMask(instancePtr, converterId, srcmask)
+         end if
       end if
       if (present(inputptr)) then
-         if (success) success = ecSetConverterInputPointer(instancePtr, converterId, inputptr)
+         if (success) then
+            success = ecSetConverterInputPointer(instancePtr, converterId, inputptr)
+         end if
       end if
 
    end function initializeConverter
@@ -7205,8 +7277,12 @@ contains
       integer, intent(inout) :: targetItemId !<
       !
       success = ecAddConnectionSourceItem(instancePtr, connectionId, sourceItemId)
-      if (success) success = ecAddConnectionTargetItem(instancePtr, connectionId, targetItemId)
-      if (success) success = ecAddItemConnection(instancePtr, targetItemId, connectionId)
+      if (success) then
+         success = ecAddConnectionTargetItem(instancePtr, connectionId, targetItemId)
+      end if
+      if (success) then
+         success = ecAddItemConnection(instancePtr, targetItemId, connectionId)
+      end if
    end function initializeConnection
 
    ! ==========================================================================
@@ -7305,31 +7381,49 @@ contains
       success = .false.
       !
       if (trim(group_name) == 'rainfall') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'rainfall_rate') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall_rate, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall_rate, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'airdensity') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_air_density, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_air_density, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'humidity_airtemperature_cloudiness') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hac_humidity, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hac_humidity, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'humidity_airtemperature_cloudiness_solarradiation') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hacs_relative_humidity, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hacs_relative_humidity, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'dewpoint_airtemperature_cloudiness') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dac_dew_point_temperature, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dac_dew_point_temperature, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dacs_dew_point_temperature, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dacs_dew_point_temperature, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'dewpoint') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dew_point_temperature, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dew_point_temperature, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'airtemperature') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_air_temperature, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_air_temperature, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
 
       if ((trim(group_name) == 'dewpoint_airtemperature_cloudiness' .and. item_dac_dew_point_temperature /= ec_undef_int) &
@@ -7341,13 +7435,19 @@ contains
       end if
 
       if (index(group_name, 'airpressure_windx_windy') == 1) then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_apwxwy_p, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_apwxwy_p, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'bedrock_surface_elevation') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_subsiduplift, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_subsiduplift, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (index(group_name, 'wavedirection') == 1) then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dir, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dir, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       success = .true.
    end function ec_gettimespacevalue_by_name

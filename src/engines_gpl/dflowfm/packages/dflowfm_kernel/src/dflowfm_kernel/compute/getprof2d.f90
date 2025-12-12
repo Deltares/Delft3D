@@ -112,7 +112,9 @@ contains
          end if
 
          jac = jaconv
-         if (jaconv == 3 .and. beta == 0.0_dp) jac = 2
+         if (jaconv == 3 .and. beta == 0.0_dp) then
+            jac = 2
+         end if
          if (jac == 2) then
             if (ai < 1.0e-3_dp) then ! see sysdoc 5 1D conveyance
                aconv = (cman / hpr**d23)**2

@@ -63,7 +63,9 @@ contains
       integer :: kk, k, n, nn, in, ncol, j
       real(kind=dp) :: dropstep !< Amount to add (in meters, may be negative)
 
-      if (ndx == 0) return
+      if (ndx == 0) then
+         return
+      end if
 
       dropstep = idir * zkdropstep
 

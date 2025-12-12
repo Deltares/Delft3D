@@ -77,7 +77,9 @@ contains
          end do
       end if
 
-      if (KC(KP) == -1) call DCIRR(XK(KP), YK(KP), ZK(KP), NCOL)
+      if (KC(KP) == -1) then
+         call DCIRR(XK(KP), YK(KP), ZK(KP), NCOL)
+      end if
       return
    end subroutine TEKNODE
 

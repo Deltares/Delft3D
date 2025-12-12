@@ -59,7 +59,9 @@ contains
       do k = 1, numk
          if (nb(k) == 1 .or. nb(k) == 2 .or. nb(k) == 3) then
             numlanseg = lanseg_map(k)
-            if (numlanseg < 1) cycle
+            if (numlanseg < 1) then
+               cycle
+            end if
             jstart = lanseg_startend(1, numlanseg)
             jend = lanseg_startend(2, numlanseg)
             call toland(xk(k), yk(k), jstart, jend, 0, xn, yn, ddis, j, rL)

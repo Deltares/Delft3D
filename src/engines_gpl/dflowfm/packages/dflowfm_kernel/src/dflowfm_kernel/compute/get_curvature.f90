@@ -50,7 +50,9 @@ contains
 
       do k = 1, ndx
          spirucm(k) = 0.0_dp
-         if (hs(k) < epshu) cycle
+         if (hs(k) < epshu) then
+            cycle
+         end if
          spirucm(k) = sqrt(ucx(k) * ucx(k) + ucy(k) * ucy(k))
       end do
 
@@ -97,7 +99,9 @@ contains
             end if
             cof0 = sqrt(cofx * cofx + cofy * cofy)
             cofw = 1.0_dp / cof0
-            if (cof0 < 1.0e-6_dp) cofw = 1.0e6_dp
+            if (cof0 < 1.0e-6_dp) then
+               cofw = 1.0e6_dp
+            end if
             cofx = cofw * cofx
             cofy = cofw * cofy
             cofu = cofw * cofu
@@ -112,7 +116,9 @@ contains
          end do
          cof0 = cofa * cofc - cofb * cofb
          spircrv(k) = 0.0_dp
-         if (cof0 < 1.0e-6_dp .or. n < 2) cycle
+         if (cof0 < 1.0e-6_dp .or. n < 2) then
+            cycle
+         end if
          dudx = (cofd * cofc - cofb * cofe) / cof0
          dudy = (cofa * cofe - cofd * cofb) / cof0
          dvdx = (coff * cofc - cofb * cofg) / cof0

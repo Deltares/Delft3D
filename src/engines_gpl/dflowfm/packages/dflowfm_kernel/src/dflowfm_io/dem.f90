@@ -128,7 +128,9 @@ contains
          return
       end if
 
-      if (allocated(arr)) deallocate (arr, xarr, yarr)
+      if (allocated(arr)) then
+         deallocate (arr, xarr, yarr)
+      end if
       allocate (arr(dem_info%rows, dem_info%cols), &
                 xarr(dem_info%rows, dem_info%cols), &
                 yarr(dem_info%rows, dem_info%cols))

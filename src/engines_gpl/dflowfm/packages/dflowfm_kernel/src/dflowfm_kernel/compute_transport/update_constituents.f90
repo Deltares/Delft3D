@@ -129,8 +129,12 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (NUMCONST == 0) return ! nothing to do
-      if (timon) call timstrt("update_constituents", ithndl)
+      if (NUMCONST == 0) then
+         return ! nothing to do
+      end if
+      if (timon) then
+         call timstrt("update_constituents", ithndl)
+      end if
 
       ierror = 1
 
@@ -251,13 +255,17 @@ contains
          if (jampi > 0) then
 !        communicate every numstepssync'th or last subtimestep
             if (mod(istep + 1, numstepssync) == 0 .or. istep + 1 == nsubsteps) then
-               if (jatimer == 1) call starttimer(IUPDSALL)
+               if (jatimer == 1) then
+                  call starttimer(IUPDSALL)
+               end if
                if (kmx < 1) then ! 2D
                   call update_ghosts(ITYPE_Sall, NUMCONST, Ndx, constituents, ierror)
                else ! 3D
                   call update_ghosts(ITYPE_Sall3D, NUMCONST, Ndkx, constituents, ierror)
                end if
-               if (jatimer == 1) call stoptimer(IUPDSALL)
+               if (jatimer == 1) then
+                  call stoptimer(IUPDSALL)
+               end if
             end if
          end if
 
@@ -293,7 +301,9 @@ contains
       ierror = 0
 1234  continue
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine update_constituents
 

@@ -47,7 +47,9 @@ contains
       integer :: l
       integer :: n
       character TEX * 23
-      if (KP == 0) return
+      if (KP == 0) then
+         return
+      end if
       call DRCIRC(XK(KP), YK(KP), ZK(KP))
 
       TEX = 'NODE NR    :           '
@@ -74,7 +76,9 @@ contains
          call KTEXT(TEX, IWS - 22, 15 + N, 15)
       end do
 
-      if (netflow == 2) return
+      if (netflow == 2) then
+         return
+      end if
 
       TEX = 'NR OF ELEMS:           '
       write (TEX(14:), '(I10)') NMK(KP)

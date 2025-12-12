@@ -219,7 +219,9 @@ contains
 
          ja = 1
          call confrm('Continue?', ja)
-         if (ja /= 1) exit
+         if (ja /= 1) then
+            exit
+         end if
 
 !     compute sample points
          xf = matmul(A, xsp(ispline, 1:num))

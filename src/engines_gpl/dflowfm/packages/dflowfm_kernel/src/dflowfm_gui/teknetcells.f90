@@ -75,7 +75,9 @@ contains
       integer :: k, kk, ja, ncol, nodemode, nn
       integer :: ntopology, numcellstoplot
 
-      if (netwhat <= 1) return
+      if (netwhat <= 1) then
+         return
+      end if
 
       nodemode = NDRAW(19)
 
@@ -112,7 +114,9 @@ contains
       end if
 
       numcellstoplot = nump
-      if (netwhat == 2 .or. netwhat >= 15 .and. netwhat <= 19) numcellstoplot = nump1d2d ! only for cell or domain numbers
+      if (netwhat == 2 .or. netwhat >= 15 .and. netwhat <= 19) then
+         numcellstoplot = nump1d2d ! only for cell or domain numbers
+      end if
 
       if (numcellstoplot > size(rlin)) then
          call realloc(rlin, numcellstoplot)
@@ -179,8 +183,12 @@ contains
 
          do k = 1, numcellstoplot
             if (mod(k, 200) == 0) then
-               if (jahalt /= -1234) call halt2(ja)
-               if (ja == 1) return
+               if (jahalt /= -1234) then
+                  call halt2(ja)
+               end if
+               if (ja == 1) then
+                  return
+               end if
             end if
 
             if (inview(xzw(k), yzw(k)) .and. rlin(k) /= DMISS) then
@@ -215,13 +223,19 @@ contains
       if (netwhat == 4 .or. netwhat == 5) then
          do k = 1, numcellstoplot
             if (mod(k, 200) == 0) then
-               if (jahalt /= -1234) call halt2(ja)
-               if (ja == 1) return
+               if (jahalt /= -1234) then
+                  call halt2(ja)
+               end if
+               if (ja == 1) then
+                  return
+               end if
             end if
 
             if (inview(xzw(k), yzw(k))) then
                call orthonet_compute_orientation(aspect, uu1, vv1, uu2, vv2, k)
-               if (jacol == 1) call setcol(3)
+               if (jacol == 1) then
+                  call setcol(3)
+               end if
 
                if (jsferic == 1) then
                   xfac = 1.0_dp / cos(yzw(k) * dg2rd)
@@ -230,15 +244,23 @@ contains
                end if
 
                if (uu1**2 + vv1**2 < uu2**2 + vv2**2) then
-                  if (jacol == 1) call setcol(3)
+                  if (jacol == 1) then
+                     call setcol(3)
+                  end if
                   call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, 0.5_dp * VFAC)
                   call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, -0.5_dp * VFAC)
-                  if (jacol == 1) call setcol(221)
+                  if (jacol == 1) then
+                     call setcol(221)
+                  end if
                else
-                  if (jacol == 1) call setcol(221)
+                  if (jacol == 1) then
+                     call setcol(221)
+                  end if
                   call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, 0.5_dp * VFAC)
                   call arrowsxy(xzw(k), yzw(k), uu1 * xfac, vv1, -0.5_dp * VFAC)
-                  if (jacol == 1) call setcol(3)
+                  if (jacol == 1) then
+                     call setcol(3)
+                  end if
                end if
                call arrowsxy(xzw(k), yzw(k), uu2 * xfac, vv2, 0.5_dp * VFAC)
                call arrowsxy(xzw(k), yzw(k), uu2 * xfac, vv2, -0.5_dp * VFAC)

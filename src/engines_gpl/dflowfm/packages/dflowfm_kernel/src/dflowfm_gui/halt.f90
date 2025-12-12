@@ -43,7 +43,9 @@ contains
 !     kappen met ALLES
       JA = 0
       call INKEYEVENTIMM(NUMKEY)
-      if (NUMKEY /= -999 .and. NUMKEY /= 257 .and. NUMKEY /= 254) JA = 1
+      if (NUMKEY /= -999 .and. NUMKEY /= 257 .and. NUMKEY /= 254) then
+         JA = 1
+      end if
       return
    end
 

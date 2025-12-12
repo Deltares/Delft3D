@@ -256,9 +256,13 @@ contains
          ! Note: dtmor in seconds, morft in days!
          !
          morft = morft + dtmor / DAY2SEC
-         if (morfac > 0.0_dp) hydrt = hydrt + dts / DAY2SEC
+         if (morfac > 0.0_dp) then
+            hydrt = hydrt + dts / DAY2SEC
+         end if
          if (stmpar%morpar%moroutput%morstats) then
-            if (comparereal(time1, ti_seds, eps10) >= 0) morstatt0 = morft
+            if (comparereal(time1, ti_seds, eps10) >= 0) then
+               morstatt0 = morft
+            end if
          end if
          !
          call fm_blchg_no_cmpupd() !Compute bed level changes without actually updating the bed composition
@@ -358,13 +362,17 @@ contains
                   ! Determine aks
                   !
                   do Lx = 1, lnx
-                     if (wu_mor(Lx) == 0.0_dp) cycle
+                     if (wu_mor(Lx) == 0.0_dp) then
+                        cycle
+                     end if
                      ac1 = acL(Lx)
                      ac2 = 1_dp - ac1
                      k1 = ln(1, Lx)
                      k2 = ln(2, Lx)
                      call getLbotLtop(Lx, Lb, Lt)
-                     if (Lt < Lb) cycle
+                     if (Lt < Lb) then
+                        cycle
+                     end if
                      !
                      ! try new approach - should be smoother
                      ! don't worry about direction of the flow
@@ -578,11 +586,21 @@ contains
    !!
 
       istat = 0
-      if (istat == 0) allocate (qb_out(network%nds%Count), stat=istat)
-      if (istat == 0) allocate (width_out(network%nds%Count), stat=istat)
-      if (istat == 0) allocate (sb_in(network%nds%Count, lsedtot), stat=istat)
-      if (istat == 0) allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
-      if (istat == 0) allocate (branInIDLn(network%nds%Count), stat=istat)
+      if (istat == 0) then
+         allocate (qb_out(network%nds%Count), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (width_out(network%nds%Count), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (sb_in(network%nds%Count, lsedtot), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (sb_dir(network%nds%Count, lsedtot, network%nds%maxnumberofconnections), stat=istat)
+      end if
+      if (istat == 0) then
+         allocate (branInIDLn(network%nds%Count), stat=istat)
+      end if
 
       qb_out(:) = 0_dp
       width_out(:) = 0_dp
@@ -631,7 +649,9 @@ contains
       !
       do inod = 1, network%nds%Count
          pnod => network%nds%node(inod)
-         if (pnod%numberofconnections == 1) cycle
+         if (pnod%numberofconnections == 1) then
+            cycle
+         end if
          if (pnod%nodeType == nt_LinkNode) then ! connection node
             k1 = pnod%gridnumber
             do j = 1, nd(k1)%lnx
@@ -680,7 +700,9 @@ contains
 
                facCheck = 0._dp
 
-               if (pnod%numberofconnections == 1) cycle
+               if (pnod%numberofconnections == 1) then
+                  cycle
+               end if
 
                ! loop over branches and determine redistribution of incoming sediment
                k3 = pnod%gridnumber
@@ -768,11 +790,21 @@ contains
    !! Deallocate
    !!
 
-      if (istat == 0) deallocate (qb_out, stat=istat)
-      if (istat == 0) deallocate (width_out, stat=istat)
-      if (istat == 0) deallocate (sb_in, stat=istat)
-      if (istat == 0) deallocate (sb_dir, stat=istat)
-      if (istat == 0) deallocate (BranInIDLn, stat=istat)
+      if (istat == 0) then
+         deallocate (qb_out, stat=istat)
+      end if
+      if (istat == 0) then
+         deallocate (width_out, stat=istat)
+      end if
+      if (istat == 0) then
+         deallocate (sb_in, stat=istat)
+      end if
+      if (istat == 0) then
+         deallocate (sb_dir, stat=istat)
+      end if
+      if (istat == 0) then
+         deallocate (BranInIDLn, stat=istat)
+      end if
 
       if (istat /= 0) then
          error = .true.
@@ -879,9 +911,13 @@ contains
                lm = morbnd(jb)%lm(ib)
                k2 = morbnd(jb)%nxmx(ib)
                if (jampi == 1) then
-                  if (.not. (idomain(k2) == my_rank)) cycle ! internal cells at boundary are in the same domain as the link
+                  if (.not. (idomain(k2) == my_rank)) then
+                     cycle ! internal cells at boundary are in the same domain as the link
+                  end if
                end if
-               if (u1(lm) < 0.0_dp) cycle
+               if (u1(lm) < 0.0_dp) then
+                  cycle
+               end if
                call get_tau(k2, taucurc, czc, jawaveswartdelwaq_local)
                tausum2(1) = tausum2(1) + taucurc**2 ! sum of the shear stress squared
             end do ! the distribution of bedload is scaled with square stress
@@ -893,14 +929,18 @@ contains
                !
                ! bed load transport only for fractions with bedload component
                !
-               if (.not. has_bedload(tratyp(l))) cycle
+               if (.not. has_bedload(tratyp(l))) then
+                  cycle
+               end if
                li = li + 1
                !
                do ib = 1, morbnd(jb)%npnt
                   lm = morbnd(jb)%lm(ib)
                   k2 = morbnd(jb)%nxmx(ib)
                   if (jampi == 1) then
-                     if (.not. (idomain(k2) == my_rank)) cycle
+                     if (.not. (idomain(k2) == my_rank)) then
+                        cycle
+                     end if
                   end if
                   sbsum = sbsum + bc_mor_array(li) * wu_mor(lm) ! sum the total bedload flux throughout boundary
                end do
@@ -928,7 +968,9 @@ contains
                !
                ! Detect the case based on the value of nxmx.
                !
-               if (u1(lm) < 0.0_dp) cycle ! check based on depth averaged velocity value
+               if (u1(lm) < 0.0_dp) then
+                  cycle ! check based on depth averaged velocity value
+               end if
                !
                ! The velocity/transport points to the left and top are part
                ! of this cell. nxmx contains by default the index of the
@@ -942,7 +984,9 @@ contains
                   !
                   ! bed load transport only for fractions with bedload component
                   !
-                  if (.not. has_bedload(tratyp(l))) cycle
+                  if (.not. has_bedload(tratyp(l))) then
+                     cycle
+                  end if
                   li = li + 1
                   !
                   if (morbnd(jb)%ibcmt(3) == lsedbed) then
@@ -1077,7 +1121,9 @@ contains
                         LL = nd(nm)%ln(ii)
                         Lf = abs(LL)
                         call getLbotLtop(Lf, Lb, Lt)
-                        if (Lt < Lb) cycle
+                        if (Lt < Lb) then
+                           cycle
+                        end if
                         flux = 0_dp
                         do iL = Lb, Lt
                            flux = flux + fluxhortot(j, iL)
@@ -1262,7 +1308,9 @@ contains
          !
          ! If this is a cell in which sediment processes are active then ...
          !
-         if (kfsed(nm) /= 1 .or. (s1(nm) - bl(nm)) < epshs .or. thetsd(nm) <= 0) cycle ! check whether sufficient as condition
+         if (kfsed(nm) /= 1 .or. (s1(nm) - bl(nm)) < epshs .or. thetsd(nm) <= 0) then
+            cycle ! check whether sufficient as condition
+         end if
          !
          totdbodsd = 0_dp
          do l = 1, lsedtot
@@ -1336,7 +1384,9 @@ contains
                      k2 = ln(2, abs(nd(nm)%ln(L)))
                      Lf = abs(nd(nm)%ln(L))
                      ! cutcells
-                     if (wu_mor(Lf) == 0_dp) cycle
+                     if (wu_mor(Lf) == 0_dp) then
+                        cycle
+                     end if
                      !
                      if (k2 == nm) then
                         knb = k1
@@ -1522,7 +1572,9 @@ contains
             ! will be equal to 1.
             !
             icond = morbnd(jb)%icond
-            if (u1(lm) < 0_dp) icond = 0 ! to do: 3d
+            if (u1(lm) < 0_dp) then
+               icond = 0 ! to do: 3d
+            end if
             !
             select case (icond)
             case (0, 4, 5)
@@ -1626,7 +1678,9 @@ contains
             ! After review, botcrit as a parameter is a really bad idea, as it causes concentration explosions if chosen poorly or blchg is high.
             ! Instead, allow bottom level changes up until 5% of the waterdepth to influence concentrations
             ! This is in line with the bed change messages above. Above that threshold, change the concentrations as if blchg==0.95hs
-            if (hsk < epshs) cycle
+            if (hsk < epshs) then
+               cycle
+            end if
             botcrit = 0.95 * hsk
             ddp = hsk / max(hsk - blchg(k), botcrit)
             do ll = 1, stmpar%lsedsus
@@ -1647,7 +1701,9 @@ contains
          do ll = 1, stmpar%lsedsus ! works for sigma only
             do k = 1, ndx
                hsk = hs(k)
-               if (hsk < epshs) cycle
+               if (hsk < epshs) then
+                  cycle
+               end if
                botcrit = 0.95 * hsk
                ddp = hsk / max(hsk - blchg(k), botcrit)
                call getkbotktop(k, kb, kt)
@@ -1660,7 +1716,9 @@ contains
          if (jasal > 0) then
             do k = 1, ndx
                hsk = hs(k)
-               if (hsk < epshs) cycle
+               if (hsk < epshs) then
+                  cycle
+               end if
                botcrit = 0.95 * hsk
                call getkbotktop(k, kb, kt)
                do kk = kb, kt
@@ -1673,7 +1731,9 @@ contains
             do itrac = ITRA1, ITRAN
                do k = 1, ndx
                   hsk = hs(k)
-                  if (hsk < epshs) cycle
+                  if (hsk < epshs) then
+                     cycle
+                  end if
                   botcrit = 0.95 * hsk
                   call getkbotktop(k, kb, kt)
                   do kk = kb, kt
@@ -1711,9 +1771,13 @@ contains
          j = lstart + ll ! constituent index
          do L = 1, lnx
             e_ssn(L, ll) = 0_dp
-            if (wu_mor(L) == 0_dp) cycle
+            if (wu_mor(L) == 0_dp) then
+               cycle
+            end if
             call getLbotLtop(L, Lb, Lt)
-            if (Lt < Lb) cycle
+            if (Lt < Lb) then
+               cycle
+            end if
             do iL = Lb, Lt
                e_ssn(L, ll) = e_ssn(L, ll) + fluxhortot(j, iL) / max(wu_mor(L), 1.0e-3_dp) ! timestep transports per layer [kg/s/m]
             end do

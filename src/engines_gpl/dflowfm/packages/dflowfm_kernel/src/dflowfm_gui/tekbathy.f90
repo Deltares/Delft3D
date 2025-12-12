@@ -53,7 +53,9 @@ contains
       integer :: k, ja, nn, ncol
       real(kind=dp) :: zn
 
-      if (ndraw(39) == 0) return
+      if (ndraw(39) == 0) then
+         return
+      end if
 
       nodewhat = ndraw(28)
       ndraw(28) = 3
